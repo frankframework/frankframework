@@ -1,6 +1,6 @@
 /*
- * $Log: PostboxSenderPipe.java,v $
- * Revision 1.2  2004-05-21 10:47:30  a1909356#db2admin
+ * $Log: PostboxRetrieverPipe.java,v $
+ * Revision 1.1  2004-05-21 10:47:30  a1909356#db2admin
  * Add (modifications) due to the postbox retriever implementation
  *
  * Revision 1.1  2004/05/21 07:59:30  unknown <unknown@ibissource.org>
@@ -12,13 +12,17 @@ package nl.nn.adapterframework.pipes;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Hashtable;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasSender;
+import nl.nn.adapterframework.core.IPostboxListener;
 import nl.nn.adapterframework.core.IPostboxSender;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.IbisException;
+import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.ParameterValueResolver;
+import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -54,9 +58,10 @@ import nl.nn.adapterframework.core.TimeOutException;
  * @author John Dekker
  * @version Id
  */
-public class PostboxSenderPipe  extends FixedForwardPipe implements HasSender  {
-	public static final String version="$Id: PostboxSenderPipe.java,v 1.2 2004-05-21 10:47:30 a1909356#db2admin Exp $";
-	private IPostboxSender sender = null;
+public class PostboxRetrieverPipe  extends FixedForwardPipe {
+	public static final String version="$Id: PostboxRetrieverPipe.java,v 1.1 2004-05-21 10:47:30 a1909356#db2admin Exp $";
+	private IPostboxListener listener = null;
+	private String resultOnEmptyPostbox = "empty postbox";
 		
 	/** 
 	 * @see nl.nn.adapterframework.core.IPipe#configure()
@@ -64,75 +69,50 @@ public class PostboxSenderPipe  extends FixedForwardPipe implements HasSender  {
 	public void configure() throws ConfigurationException {
 		super.configure();
 
-		if (getSender() == null) {
+		if (getListener() == null) {
 				throw new ConfigurationException(getLogPrefix(null) + "no sender defined ");
 		}
-		String senderName = getSender().getName();
-		if (senderName == null || senderName.equals("")) {
-			getSender().setName(getName() + "-sender");
-		}
-		getSender().configure();
 	}
 
-	/** 
-	 * @see nl.nn.adapterframework.pipes.MessageSendingPipe#sendMessage(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession, java.lang.String, nl.nn.adapterframework.core.ISender, java.util.HashMap)
-	 */
-	protected String sendMessage(Object input, PipeLineSession session, String correlationID, ISender sender, HashMap threadContext)
-		throws SenderException {
-		
-		try {
-			ParameterValueResolver resolver = new ParameterValueResolver(input, session);
-			ArrayList paramValues = resolver.getValues(getParameterList());
-			return ((IPostboxSender)getSender()).sendMessage(correlationID, (String)input, paramValues);
-		}
-		catch(SenderException e) {
-			throw e;
-		}
-		catch(IbisException e) {
-			throw new SenderException("Error while sending message in pipe " + getName(), e);			
-		}
-		 
-	}
-	
 	/**
 	 * @return
 	 */
-	public ISender getSender() {
-		return sender;
+	public IPostboxListener getListener() {
+		return listener;
 	}
 
 	/**
-	 * @param sender
+	 * @param listener
 	 */
-	public void setSender(IPostboxSender sender) {
-		this.sender = sender;
+	public void setListener(IPostboxListener listener) {
+		this.listener = listener;
 	}
 
-	/* 
+	/** 
 	 * @see nl.nn.adapterframework.core.IPipe#start()
 	 */
 	public void start() throws PipeStartException {
 		try {
-			getSender().open();
+			getListener().open();
 		} 
 		catch (Exception e) {
 			throw new PipeStartException(e);
 		}
 	}
 
-	/* 
+	/** 
 	 * @see nl.nn.adapterframework.core.IPipe#stop()
 	 */
 	public void stop() {
 		try {
-			getSender().close();
+			getListener().close();
 		} 
 		catch (Exception e) {
 			log.warn(getLogPrefix(null) + " exception closing sender", e);
 		}
 	}
 
-	/*
+	/**
 	 * @see nl.nn.adapterframework.core.IPipe#doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)
 	 */
 	public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRunException {
@@ -140,22 +120,42 @@ public class PostboxSenderPipe  extends FixedForwardPipe implements HasSender  {
 			throw new PipeRunException(this, "String expected, got a [" + input.getClass().getName() + "]");
 		}
 
+		HashMap threadContext = null;
 		try {
-			HashMap threadContext=new HashMap();
-			String correlationID = session.getMessageId();
-
-			// sendResult has a messageID for async senders, the result for sync senders
-			String result = sendMessage(input, session, correlationID, getSender(), threadContext);
-
-			if (log.isInfoEnabled()) {
-					log.info(getLogPrefix(session) + "sending message to [" + getSender().getName());
-			} 
+			threadContext = getListener().openThread();
+			Object rawMessage = getListener().retrieveRawMessage((String)input, threadContext);
 			
+			if (rawMessage == null)
+				return new PipeRunResult(findForward("emptyPostbox"), getResultOnEmptyPostbox());
+				
+			String result = getListener().getStringFromRawMessage(rawMessage, threadContext);
 			return new PipeRunResult(getForward(), result);
 		} 
 		catch (Exception e) {
 			throw new PipeRunException( this, getLogPrefix(session) + "caught exception", e);
 		} 
+		finally {
+			try {
+				getListener().closeThread(threadContext);
+			} 
+			catch (ListenerException le) {
+				log.error(getLogPrefix(session)+"got error closing listener");
+			}
+		}
+	}
+
+	/**
+	 * @return
+	 */
+	public String getResultOnEmptyPostbox() {
+		return resultOnEmptyPostbox;
+	}
+
+	/**
+	 * @param string
+	 */
+	public void setResultOnEmptyPostbox(String string) {
+		resultOnEmptyPostbox = string;
 	}
 
 }

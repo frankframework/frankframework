@@ -1,6 +1,9 @@
 /*
  * $Log: JMSFacade.java,v $
- * Revision 1.11  2004-05-03 07:11:32  NNVZNL01#L180564
+ * Revision 1.12  2004-05-21 10:47:30  a1909356#db2admin
+ * Add (modifications) due to the postbox retriever implementation
+ *
+ * Revision 1.11  2004/05/03 07:11:32  Johan Verrips <johan.verrips@ibissource.org>
  * Updated message selector behaviour
  *
  * Revision 1.10  2004/04/26 09:58:06  Johan Verrips <johan.verrips@ibissource.org>
@@ -47,7 +50,7 @@ import javax.naming.NamingException;
  * @author    Gerrit van Brakel
  */
 public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version="$Id: JMSFacade.java,v 1.11 2004-05-03 07:11:32 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: JMSFacade.java,v 1.12 2004-05-21 10:47:30 a1909356#db2admin Exp $";
 
 	private String name;
 
@@ -277,7 +280,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	 * @throws NamingException
 	 * @throws JMSException
 	 */
-	private MessageConsumer getMessageConsumer(Session session, Destination destination, String selector) throws NamingException, JMSException {
+	public MessageConsumer getMessageConsumer(Session session, Destination destination, String selector) throws NamingException, JMSException {
 			if (useTopicFunctions)
 				return getTopicSubscriber((TopicSession)session, (Topic)destination, selector);
 			else

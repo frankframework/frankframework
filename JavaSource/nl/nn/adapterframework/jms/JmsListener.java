@@ -1,6 +1,9 @@
 /*
  * $Log: JmsListener.java,v $
- * Revision 1.11  2004-05-03 07:11:50  NNVZNL01#L180564
+ * Revision 1.12  2004-05-21 10:47:30  a1909356#db2admin
+ * Add (modifications) due to the postbox retriever implementation
+ *
+ * Revision 1.11  2004/05/03 07:11:50  Johan Verrips <johan.verrips@ibissource.org>
  * Updated message selector behaviour
  *
  * Revision 1.10  2004/03/31 15:01:53  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -26,6 +29,7 @@ package nl.nn.adapterframework.jms;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ICorrelatedPullingListener;
+import nl.nn.adapterframework.core.IPostboxListener;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.HasSender;
 import nl.nn.adapterframework.core.PipeLineResult;
@@ -105,8 +109,8 @@ import java.util.HashMap;
  * @author Gerrit van Brakel
  * @since 4.0.1
  */
-public class JmsListener extends JMSFacade implements ICorrelatedPullingListener, HasSender {
-	public static final String version="$Id: JmsListener.java,v 1.11 2004-05-03 07:11:50 NNVZNL01#L180564 Exp $";
+public class JmsListener extends JMSFacade implements IPostboxListener, ICorrelatedPullingListener, HasSender {
+	public static final String version="$Id: JmsListener.java,v 1.12 2004-05-21 10:47:30 a1909356#db2admin Exp $";
 
 
   private long timeOut = 3000;
@@ -496,5 +500,32 @@ public void setUseReplyTo(boolean newUseReplyTo) {
 public boolean getUseReplyTo() {
 	return useReplyTo;
 }
+
+	/** 
+	 * @see nl.nn.adapterframework.core.IPostboxListener#retrieveRawMessage(java.lang.String, java.util.HashMap)
+	 */
+	public Object retrieveRawMessage(String messageSelector, HashMap threadContext) throws ListenerException {
+		Session newSession = null, session = null;
+		MessageConsumer mc = null;
+		try {
+			// check to see if session in threadcontext can be reused, otherwise create new
+			if (!isTransacted() && threadContext!=null ) {
+				session = (Session)threadContext.get(THREAD_CONTEXT_SESSION_KEY); 		
+			} 
+			else {
+				newSession = session = createSession();
+			}
+			mc = getMessageConsumer(session, getDestination(), messageSelector);
+			Object result = (timeOut<0) ? mc.receiveNoWait() : mc.receive(timeOut);
+			return result;
+		} 
+		catch (Exception e) {
+			throw new ListenerException("["+getName()+"] exception preparing to retrieve message", e);
+		}
+		finally {
+			if (mc != null) try { mc.close(); } catch(JMSException e) { }
+			if (newSession != null) try { newSession.close(); } catch(JMSException e) { }
+		}
+	}
 
 }
