@@ -1,6 +1,9 @@
 /*
  * $Log: BrowseQueueExecute.java,v $
- * Revision 1.1  2004-06-16 12:25:52  NNVZNL01#L180564
+ * Revision 1.2  2004-08-20 12:57:10  L190409
+ * reduced logging
+ *
+ * Revision 1.1  2004/06/16 12:25:52  Johan Verrips <johan.verrips@ibissource.org>
  * Initial version of Queue browsing functionality
  *
  *
@@ -42,7 +45,7 @@ import org.apache.struts.action.DynaActionForm;
  */
 public class BrowseQueueExecute extends ActionBase {
 
-	public static final String version = "$Id: BrowseQueueExecute.java,v 1.1 2004-06-16 12:25:52 NNVZNL01#L180564 Exp $";
+	public static final String version = "$Id: BrowseQueueExecute.java,v 1.2 2004-08-20 12:57:10 L190409 Exp $";
 	public ActionForward execute(
 		ActionMapping mapping,
 		ActionForm form,
@@ -101,38 +104,37 @@ public class BrowseQueueExecute extends ActionBase {
 				"numberOfMessages",
 				Integer.toString(messages.size()));
 			if (!form_numberOfMessagesOnly) {
-				for (int i = 0; i < messages.size(); i++) {
-					Message msg = (Message) messages.get(i);
-					if (msg instanceof TextMessage) {
-						TextMessage tm = (TextMessage) msg;
-						if (log.isDebugEnabled())
-							log.debug("Found message " + tm.getText());
+/*				
+				try {
+					for (int i = 0; i < messages.size(); i++) {
+						Message msg = (Message) messages.get(i);
+						if (msg instanceof TextMessage) {
+							TextMessage tm = (TextMessage) msg;
+							if (log.isDebugEnabled())
+								log.debug("Found message " + tm.getText());
+						}
 					}
+				} catch (JMSException je) {
+					log.error(je);
+					errors.add(
+						"",
+						new ActionError(
+							"errors.generic",
+							"error occured browsing messages:" + je.getMessage()));
 				}
+*/				
 				browseQueueForm.set("messages", messages);
 			} else
 				browseQueueForm.set("messages", new ArrayList());
 		} catch (MessageBrowseException e) {
 			log.error("Error occured browsing the queue", e);
 			String errorString = e.getMessage();
-			if (e.getCause() != null) {
-				if (StringUtils.isNotEmpty(e.getCause().getMessage())) {
-					errorString += " cause:" + e.getCause();
-				}
-			}
 			errorString = XmlUtils.encodeChars(errorString);
 			errors.add(
 				"",
 				new ActionError(
 					"errors.generic",
 					"error occured browsing messages:" + errorString));
-		} catch (JMSException je) {
-			log.error(je);
-			errors.add(
-				"",
-				new ActionError(
-					"errors.generic",
-					"error occured browsing messages:" + je.getMessage()));
 		}
 
 		browser.close();
