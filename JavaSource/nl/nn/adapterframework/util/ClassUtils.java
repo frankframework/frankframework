@@ -1,3 +1,9 @@
+/*
+ * $Log: ClassUtils.java,v $
+ * Revision 1.4  2004-11-08 08:31:17  L190409
+ * added log-keyword in comments
+ *
+ */
 package nl.nn.adapterframework.util;
 
 import org.apache.log4j.Logger;
@@ -14,7 +20,7 @@ import java.net.URL;
  *
  */
 public class ClassUtils {
-	public static final String version="$Id: ClassUtils.java,v 1.3 2004-03-26 10:42:39 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: ClassUtils.java,v 1.4 2004-11-08 08:31:17 L190409 Exp $";
 	
 	private static Logger log = Logger.getLogger("ClassUtils");
     /**
