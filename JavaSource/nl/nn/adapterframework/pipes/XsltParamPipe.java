@@ -18,11 +18,11 @@ import java.io.IOException;
  * @version Id
  */
 public class XsltParamPipe extends XsltPipe {
-	public static final String version="$Id: XsltParamPipe.java,v 1.1 2004-04-06 10:16:16 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: XsltParamPipe.java,v 1.2 2004-04-06 12:57:53 NNVZNL01#L180564 Exp $";
 
 	public void configure() throws ConfigurationException {
 		super.configure();
-		if (this.getMaxThreads()>1) log.warn("Pipe ["+getName()+"] should have set maxThreads to 1, as the Pipe is NOT threadsafe!");
+		if (this.getMaxThreads()!=1) log.warn("Pipe ["+getName()+"] should have set maxThreads to 1, as the Pipe is NOT threadsafe!");
 	}
 	/**
 	 * Here the actual transforming is done. Under weblogic the transformer object becomes
