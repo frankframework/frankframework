@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaRequesterSender.java,v $
- * Revision 1.4  2004-07-15 07:43:31  L190409
+ * Revision 1.5  2004-07-19 09:52:14  L190409
+ * made multi-threading, like JmsSender
+ *
+ * Revision 1.4  2004/07/15 07:43:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.3  2004/07/08 12:55:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -54,9 +57,7 @@ import org.apache.commons.lang.StringUtils;
  * @since 4.2
  */
 public class IfsaRequesterSender extends IfsaFacade implements ISender {
-	public static final String version="$Id: IfsaRequesterSender.java,v 1.4 2004-07-15 07:43:31 L190409 Exp $";
-	private QueueSession session;
-	private QueueSender sender;
+	public static final String version="$Id: IfsaRequesterSender.java,v 1.5 2004-07-19 09:52:14 L190409 Exp $";
   
 	public IfsaRequesterSender() {
   		super(false); // instantiate IfsaFacade as a requestor	
@@ -65,9 +66,7 @@ public class IfsaRequesterSender extends IfsaFacade implements ISender {
   	public void open() throws SenderException {
 	  	try {
 		 	openService();
-		  	session = createSession();
-		  	sender = createSender(session, getServiceQueue());
-		} catch (Exception e) {
+		} catch (IfsaException e) {
 			throw new SenderException(getLogPrefix()+"could not start Sender", e);
 	  	}
   	}
@@ -76,18 +75,9 @@ public class IfsaRequesterSender extends IfsaFacade implements ISender {
 	 */
 	public void close() throws SenderException {
 	    try {
-	        if (sender != null) {
-	            sender.close();
-	        }
-	        if (session != null) {
-	            session.close();
-	        }
 	        closeService();
 	    } catch (Throwable e) {
 	        throw new SenderException(getLogPrefix() + "got error occured stopping sender", e);
-	    } finally {
-	        sender = null;
-	        session = null;
 	    }
 	}
 
@@ -137,26 +127,43 @@ public class IfsaRequesterSender extends IfsaFacade implements ISender {
 	public String sendMessage(String message)
 	    throws SenderException, TimeOutException {
 	    String result = null;
+		QueueSession session = null;
+		QueueSender sender = null;
 		    
 		
 		try {
-	    TextMessage sentMessage;
-	
-		synchronized (sender) {
+			session = createSession();
+			sender = createSender(session, getServiceQueue());
+
 			// TODO: handle UDZs
-			sentMessage=sendMessage(session, sender, message, null);
-		}
-		if (isSynchronous()){
-	
-			TextMessage msg=null;
-		    msg=getRawReplyMessage(sentMessage);
-			result=msg.getText();
-				
-	    }
+		    TextMessage sentMessage=sendMessage(session, sender, message, null);
+
+			if (isSynchronous()){
+		
+				TextMessage msg=null;
+			    msg=getRawReplyMessage(sentMessage);
+				result=msg.getText();
+					
+		    }
 		} catch (JMSException e) {
 			throw new SenderException(getLogPrefix()+"caught JMSException in sendMessage()",e);
 		} catch (IfsaException e) {
 			throw new SenderException(getLogPrefix()+"caught IfsaException in sendMessage()",e);
+		} finally {
+			if (sender != null) {
+				try {
+					sender.close();
+				} catch (JMSException e) {
+					log.debug(getLogPrefix()+"Exception closing sender", e);
+				}
+			}
+			if (session != null) {
+				try {
+					session.close();
+				} catch (JMSException e) {
+					log.debug(getLogPrefix()+"Exception closing session", e);
+				}
+			}
 		}
 	    return result;
 	
