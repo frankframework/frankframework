@@ -1,6 +1,9 @@
 /*
  * $Log: Adios2XmlPipe.java,v $
- * Revision 1.4  2004-04-07 06:36:40  NNVZNL01#L180564
+ * Revision 1.5  2004-04-07 06:58:21  NNVZNL01#L180564
+ * adjusted bericht.toXML() to bericht.toXML(true) to add an xml header
+ *
+ * Revision 1.4  2004/04/07 06:36:40  Johan Verrips <johan.verrips@ibissource.org>
  * removed unused log variable
  *
  * Revision 1.3  2004/03/26 09:50:52  Johan Verrips <johan.verrips@ibissource.org>
@@ -82,7 +85,7 @@ import java.io.BufferedReader;
  * @version Id
  */
 public class Adios2XmlPipe extends FixedForwardPipe {
-	public static final String version="$Id: Adios2XmlPipe.java,v 1.4 2004-04-07 06:36:40 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: Adios2XmlPipe.java,v 1.5 2004-04-07 06:58:21 NNVZNL01#L180564 Exp $";
 
 	private Hashtable rubriek2nummer;	 
 	private Hashtable record2nummer;
@@ -323,7 +326,7 @@ public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRu
             bericht.addAttribute("rekenbox", rekenbox);
         }
         makeXml(bericht, v.asString());
-        result = bericht.toXML();
+        result = bericht.toXML(true);
     }
     return new PipeRunResult(getForward(), result);
 }
