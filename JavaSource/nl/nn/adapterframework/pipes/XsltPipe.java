@@ -11,9 +11,9 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
-import org.apache.commons.pool.BaseKeyedPoolableObjectFactory;
-import org.apache.commons.pool.KeyedObjectPool;
-import org.apache.commons.pool.impl.GenericKeyedObjectPool;
+import org.apache.commons.pool.BasePoolableObjectFactory;
+import org.apache.commons.pool.ObjectPool;
+import org.apache.commons.pool.impl.GenericObjectPool;
 
 import java.io.IOException;
 
@@ -41,9 +41,9 @@ import java.io.IOException;
  */
 
 public class XsltPipe extends FixedForwardPipe {
-	public static final String version="$Id: XsltPipe.java,v 1.7 2004-08-31 12:54:32 a1909356#db2admin Exp $";
+	public static final String version="$Id: XsltPipe.java,v 1.8 2004-08-31 13:02:29 a1909356#db2admin Exp $";
 
-	private static KeyedObjectPool transformerPool;
+	private static ObjectPool transformerPool;
 	private String styleSheetName;
 	private boolean omitXmlDeclaration=true;
 	
@@ -62,8 +62,8 @@ public void configure() throws ConfigurationException {
 		throw new ConfigurationException(getLogPrefix(null)+"is not properly configured: styleSheetName is null");
 	}
     try {
-    	transformerPool = new GenericKeyedObjectPool(new BaseKeyedPoolableObjectFactory() {
-			public Object makeObject(Object key) throws Exception {
+    	transformerPool = new GenericObjectPool(new BasePoolableObjectFactory() {
+			public Object makeObject() throws Exception {
 				Transformer t = XmlUtils.createTransformer(ClassUtils.getResourceURL(this, styleSheetName));
 				if (isOmitXmlDeclaration())
 					t.setOutputProperty("omit-xml-declaration", "yes");
@@ -129,14 +129,14 @@ public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRu
 	 * Return the current transformer
 	 */
 	public Transformer openTransformer() throws Exception {
-		return (Transformer)transformerPool.borrowObject(getName());
+		return (Transformer)transformerPool.borrowObject();
 	}
 
 	/**
 	 * Return the current transformer
 	 */
 	public void closeTransformer(Transformer t) throws Exception {
-		transformerPool.returnObject(getName(), t);
+		transformerPool.returnObject(t);
 	}
 
 	/**
