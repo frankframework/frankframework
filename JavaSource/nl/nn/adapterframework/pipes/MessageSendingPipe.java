@@ -1,6 +1,9 @@
 /*
  * $Log: MessageSendingPipe.java,v $
- * Revision 1.9  2004-07-07 13:49:12  L190409
+ * Revision 1.10  2004-07-19 13:23:51  L190409
+ * improved logging + no exception but only warning on timeout if no timeoutforward exists
+ *
+ * Revision 1.9  2004/07/07 13:49:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved handling of timeout when no timeout-forward exists
  *
  * Revision 1.8  2004/06/21 09:58:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -67,7 +70,7 @@ import java.util.HashMap;
  */
 
 public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
-	public static final String version = "$Id: MessageSendingPipe.java,v 1.9 2004-07-07 13:49:12 L190409 Exp $";
+	public static final String version = "$Id: MessageSendingPipe.java,v 1.10 2004-07-19 13:23:51 L190409 Exp $";
 	private final static String TIMEOUTFORWARD = "timeout";
 
 	private String resultOnTimeOut = "receiver timed out";
@@ -141,7 +144,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 				if (log.isInfoEnabled())
 					log.info(
 						getLogPrefix(session)
-							+ "sending message to ["
+							+ "sent message to ["
 							+ getSender().getName()
 							+ "] synchronously");
 				result = sendResult;
@@ -154,7 +157,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 				if (log.isInfoEnabled())
 					log.info(
 						getLogPrefix(session)
-							+ "sending message to ["
+							+ "sent message to ["
 							+ getSender().getName()
 							+ "] messageID ["
 							+ messageID
@@ -184,10 +187,12 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 			}
 			return new PipeRunResult(getForward(), result);
 		} catch (TimeOutException toe) {
-			log.warn(getLogPrefix(session) + "timeout occured", toe);
 			PipeForward timeoutForward = findForward(TIMEOUTFORWARD);
 			if (timeoutForward==null) {
-				throw new PipeRunException(this, getLogPrefix(session)+"timeout, but no timeout-forward defined",toe);
+				log.warn(getLogPrefix(session) + "timeout occured, but no timeout-forward defined", toe);
+				timeoutForward=getForward();
+			} else {
+				log.warn(getLogPrefix(session) + "timeout occured", toe);
 			}
 			return new PipeRunResult(timeoutForward,getResultOnTimeOut());
 
@@ -199,7 +204,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 		} finally {
 			if (getListener()!=null)
 				try {
-					log.debug(getLogPrefix(session)+" is closing listener");
+					log.debug(getLogPrefix(session)+"is closing listener");
 					replyListener.closeThread(threadContext);
 				} catch (ListenerException le) {
 					log.error(getLogPrefix(session)+"got error closing listener", le);
@@ -226,18 +231,18 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 		}
 	}
 	public void stop() {
-		log.info(getLogPrefix(null) + " is closing");
+		log.info(getLogPrefix(null) + "is closing");
 		try {
 			getSender().close();
 		} catch (SenderException e) {
-			log.warn(getLogPrefix(null) + " exception closing sender", e);
+			log.warn(getLogPrefix(null) + "exception closing sender", e);
 		}
 		if (getListener() != null) {
 			try {
-				log.info(getLogPrefix(null) + " is closing; closing listener");
+				log.info(getLogPrefix(null) + "is closing; closing listener");
 				getListener().close();
 			} catch (ListenerException e) {
-				log.warn(getLogPrefix(null) + " Exception closing listener", e);
+				log.warn(getLogPrefix(null) + "Exception closing listener", e);
 			}
 		}
 	}
