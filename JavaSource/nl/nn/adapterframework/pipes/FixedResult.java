@@ -38,13 +38,15 @@ import java.io.IOException;
  * @author Johan Verrips
  */
 public class FixedResult extends FixedForwardPipe {
-	public static final String version="$Id: FixedResult.java,v 1.3 2004-03-26 10:42:36 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: FixedResult.java,v 1.4 2004-08-23 10:05:17 L190409 Exp $";
     private String fileName;
     private String returnString;
     /**
      * checks for correct configuration, and translates the fileName to
-     * a file, to check existence. The field fileName is overriden with the
-     * URL.getFile() information.
+     * a file, to check existence. 
+     * If a fileName was specified, the contents of the file is put in the
+     * <code>returnString</code>, so that allways the <code>returnString</code>
+     * may be returned.
      * @throws ConfigurationException
      */
     public void configure() throws ConfigurationException {
@@ -52,7 +54,7 @@ public class FixedResult extends FixedForwardPipe {
 	    
         if (StringUtils.isNotEmpty(fileName)) {
             try {
-                Misc.resourceToString(ClassUtils.getResourceURL(this,fileName));
+				returnString = Misc.resourceToString(ClassUtils.getResourceURL(this,fileName));
             } catch (Throwable e) {
                 throw new ConfigurationException("Pipe [" + getName() + "] got exception loading ["+fileName+"]", e);
             }
@@ -61,12 +63,12 @@ public class FixedResult extends FixedForwardPipe {
             throw new ConfigurationException("Pipe [" + getName() + "] has neither fileName nor returnString specified");
         }
     }
-public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRunException {
-
-    log.debug(getLogPrefix(session)+ " returning fixed result [" + returnString + "]");
-
-    return new PipeRunResult(getForward(), returnString);
-}
+	public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRunException {
+	
+	    log.debug(getLogPrefix(session)+ " returning fixed result [" + returnString + "]");
+	
+	    return new PipeRunResult(getForward(), returnString);
+	}
     public String getFileName() {
         return fileName;
     }
@@ -84,20 +86,5 @@ public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRu
     }
     public void setReturnString(String returnString) {
         this.returnString = returnString;
-    }
-    /**
-     * If a fileName was specified, the contents of the file is put in the
-     * <code>returnString</code>, so that allways the <code>returnString</code>
-     * may be returned.
-     * @throws PipeStartException
-     */
-    public void start() throws PipeStartException {
-        if (StringUtils.isNotEmpty(fileName)) {
-            try {
-                returnString = Misc.resourceToString(ClassUtils.getResourceURL(this, fileName), SystemUtils.LINE_SEPARATOR);
-            } catch (IOException e) {
-                throw new PipeStartException("Pipe [" + getName() + "] got exception", e);
-            }
-        }
     }
 }
