@@ -11,9 +11,10 @@ import java.util.Vector;
  * Subelements can be added with the addSubElement method.
  * the toXML function returns the node and subnodes as an indenten xml string.
  * @version Id
+ * @author Johan Verrips
  **/
 public class XmlBuilder {
-	public static final String version="$Id: XmlBuilder.java,v 1.4 2004-04-07 06:56:44 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: XmlBuilder.java,v 1.5 2005-01-07 09:27:23 NNVZNL01#L180564 Exp $";
 	
   private ArrayList attributeNames = new ArrayList();;
   private Hashtable attributes = new Hashtable();;
