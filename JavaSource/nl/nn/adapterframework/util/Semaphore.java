@@ -1,5 +1,7 @@
 package nl.nn.adapterframework.util;
 
+import nl.nn.adapterframework.core.TimeOutException;
+
 /**
  * A semaphore is a flag used to check whether a resource is currently being 
  * used by another thread or process and wait for the other process to release it.
@@ -22,7 +24,7 @@ package nl.nn.adapterframework.util;
 
 
 public class Semaphore {
-	public static final String version="$Id: Semaphore.java,v 1.3 2004-03-26 10:42:39 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: Semaphore.java,v 1.4 2004-10-25 08:37:40 L190409 Exp $";
 	
     private int counter;
     
@@ -45,6 +47,24 @@ public class Semaphore {
         }
         counter--;
     }
+
+	/**
+	 * Decrements internal counter, blocking if the counter is already
+	 * zero.
+	 *
+	 * @exception InterruptedException passed from this.wait().
+	 * @exception TimeOutException if the time specified has passed, but the counter cannot be decreased.
+	 */
+	public synchronized void acquire(long timeout) throws InterruptedException, TimeOutException {
+		while (counter == 0) {
+			this.wait(timeout);
+		}
+		if (counter==0) {
+			throw new TimeOutException("Timeout of ["+timeout+"] ms expired");
+		}
+		counter--;
+	}
+
     /**
      * Increments internal counter, possibly awakening the thread
      * wait()ing in acquire()
@@ -54,5 +74,9 @@ public class Semaphore {
         if (counter == 1) {
             this.notify();
         }
+    }
+    
+    public synchronized boolean isReleased() {
+    	return counter>0;
     }
 }
