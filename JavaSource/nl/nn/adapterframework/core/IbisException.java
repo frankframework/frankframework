@@ -1,6 +1,9 @@
 /*
  * $Log: IbisException.java,v $
- * Revision 1.8  2004-07-07 13:55:06  L190409
+ * Revision 1.9  2004-07-07 14:30:15  L190409
+ * toString(): classes, messages and root cause
+ *
+ * Revision 1.8  2004/07/07 13:55:06  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved toString() method, including fields of causes
  *
  * Revision 1.7  2004/07/06 06:57:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -30,7 +33,7 @@ import org.apache.commons.lang.exception.NestableException;
  * @author Gerrit van Brakel
  */
 public class IbisException extends NestableException {
-		public static final String version="$Id: IbisException.java,v 1.8 2004-07-07 13:55:06 L190409 Exp $";
+		public static final String version="$Id: IbisException.java,v 1.9 2004-07-07 14:30:15 L190409 Exp $";
 
 	static {
 		// add methodname to find cause of JMS-Exceptions
@@ -79,9 +82,11 @@ public class IbisException extends NestableException {
 
 		result = "message: "+getMessage()+"\ncause-trace:\n"; 
 		for (t=this; t!=null; t=ExceptionUtils.getCause(t)) {
-//			result += "\nclass: "+t.getClass().getName()+"\nmessage:"+t.getMessage()+"\n";
-			result += "\nclass: "+t.getClass().getName();
-			result += "\nfields:\n"+ToStringBuilder.reflectionToString(t)+"\n";
+			result += "\nclass: "+t.getClass().getName()+"\nmessage:"+t.getMessage()+"\n";
+		}
+		t=ExceptionUtils.getRootCause(this);
+		if (t!=null) {
+			result += "\nroot cause:\n"+ToStringBuilder.reflectionToString(t)+"\n";
 		}
 		return result;
 	}
