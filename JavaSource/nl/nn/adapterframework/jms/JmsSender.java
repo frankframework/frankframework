@@ -1,6 +1,9 @@
 /*
  * $Log: JmsSender.java,v $
- * Revision 1.9  2004-08-16 11:27:56  L190409
+ * Revision 1.10  2004-09-01 07:30:00  L190409
+ * correction in documentation
+ *
+ * Revision 1.9  2004/08/16 11:27:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed timeToLive back to messageTimeToLive
  *
  * Revision 1.8  2004/08/16 09:26:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -47,7 +50,7 @@ import javax.jms.Message;
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>classname</td><td>nl.nn.adapterframework.jms.JmsSender</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setName(String) name}</td>  <td>name of the listener</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setName(String) name}</td><td>name of the sender</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDestinationName(String) destinationName}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDestinationType(String) destinationType}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMessageTimeToLive(long) messageTimeToLive}</td><td>&nbsp;</td><td>0</td></tr>
@@ -64,7 +67,7 @@ import javax.jms.Message;
  */
 
 public class JmsSender extends JMSFacade implements ISender, IPostboxSender {
-	public static final String version = "$Id: JmsSender.java,v 1.9 2004-08-16 11:27:56 L190409 Exp $";
+	public static final String version = "$Id: JmsSender.java,v 1.10 2004-09-01 07:30:00 L190409 Exp $";
 	private String replyToName = null;
 
 	public JmsSender() {
