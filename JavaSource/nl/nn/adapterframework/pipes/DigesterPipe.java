@@ -1,3 +1,9 @@
+/*
+ * $Log: DigesterPipe.java,v $
+ * Revision 1.7  2004-03-24 13:53:36  L190409
+ * cosmetic changes
+ *
+ */
 package nl.nn.adapterframework.pipes;
 
 import java.io.ByteArrayInputStream;
@@ -19,7 +25,10 @@ import org.apache.commons.digester.xmlrules.DigesterLoader;
   * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setDigesterRulesFile(String) setDigesterRulesFile}</td><td>name of file that containts the rules for xml parsing</td><td>(none)</td></tr>
+ * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setMaxThreads(int) maxThreads}</td><td>maximum number of threads that may call {@link #doPipe(Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously</td><td>0 (unlimited)</td></tr>
+ * <tr><td>{@link #setForwardName(String) forwardName}</td>  <td>name of forward returned upon completion</td><td>"success"</td></tr>
+ * <tr><td>{@link #setDigesterRulesFile(String) digesterRulesFile}</td><td>name of file that containts the rules for xml parsing</td><td>(none)</td></tr>
  * </table>
  
  * <p><b>Exits:</b>
@@ -27,35 +36,28 @@ import org.apache.commons.digester.xmlrules.DigesterLoader;
  * <tr><th>state</th><th>condition</th></tr>
  * <tr><td>"success"</td><td>default</td></tr>
  * </table></p>
- * <p> $Id: DigesterPipe.java,v 1.6 2004-02-09 11:41:14 a1909356#db2admin Exp $ </p>
+ * <p> $Id: DigesterPipe.java,v 1.7 2004-03-24 13:53:36 L190409 Exp $ </p>
  * @author Richard Punt
  * @since 4.0.1 : adjustments to support multi-threading
  */
 
 public class DigesterPipe extends FixedForwardPipe {
+	public static final String version="$Id: DigesterPipe.java,v 1.7 2004-03-24 13:53:36 L190409 Exp $";
 
 	private PipeRunResult pipeRunResult;
 	private String digesterRulesFile;
 	private URL rulesURL;
-
-	public DigesterPipe() {
-		super();
-	}
 
 	public void configure() throws ConfigurationException {
 		super.configure();
 
 		try {
      		 rulesURL = ClassUtils.getResourceURL(this, digesterRulesFile);
- 			Digester digester = DigesterLoader.createDigester(rulesURL);
+ 			 DigesterLoader.createDigester(rulesURL); // load rules to check if they can be loaded when needed
 		} catch (Exception e) {
-			throw new ConfigurationException(
-				"Pipe ["
-					+ super.getName()
-					+ "] Digester rules file not found: "
-					+ digesterRulesFile);
+			throw new ConfigurationException(getLogPrefix(null)+"Digester rules file ["+digesterRulesFile+"] not found", e); 
 		}
-		log.debug("End configuration of pipe [" + super.getName() + "]");
+		log.debug(getLogPrefix(null)+"End of configuration");
 	}
 
 	public PipeRunResult doPipe(Object input, PipeLineSession session)
@@ -64,36 +66,26 @@ public class DigesterPipe extends FixedForwardPipe {
 		//Multi threading: instantiate digester for each request as the digester is NOT thread-safe.		
 		Digester digester = DigesterLoader.createDigester(rulesURL);
 			
-		PipeRunResult pipeRunResult = new PipeRunResult();
-		pipeRunResult.setPipeForward(findForward("success"));
-
 		try {
 			ByteArrayInputStream xmlInputStream =
 				new ByteArrayInputStream(input.toString().getBytes());
 
-			return new PipeRunResult(
-				findForward("success"),
-				digester.parse(xmlInputStream));
+			return new PipeRunResult(getForward(), digester.parse(xmlInputStream));
 				
 		} catch (Exception e) {
-			log.error(
-				new PipeRunException(
-					this,
-					"Pipe [" + super.getName() + "]: " + e.getMessage()),
-				e);
-			throw new PipeRunException(
-				this,
-				"Pipe [" + super.getName() + "]: " + e.getMessage(),
-				e);
+			throw new PipeRunException(this, getLogPrefix(session)+"exception in digesting", e);
 		}
 	}
 
+
+	/**
+	 * Sets the location of the resource with digester rules used for processing messages. 
+	 */
+	public void setDigesterRulesFile(String digesterRulesFile) {
+		this.digesterRulesFile = digesterRulesFile;
+	}
 	public String getDigesterRulesFile() {
 		return digesterRulesFile;
-	}
-
-	public void setDigesterRulesFile(String rhs) {
-		digesterRulesFile = rhs;
 	}
 
 }
