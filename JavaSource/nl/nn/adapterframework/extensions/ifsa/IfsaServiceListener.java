@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaServiceListener.java,v $
- * Revision 1.3  2004-03-24 15:27:24  L190409
+ * Revision 1.4  2004-03-26 07:25:42  NNVZNL01#L180564
+ * Updated erorhandling
+ *
+ * Revision 1.3  2004/03/24 15:27:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * solved uncaught exception in error message
  *
  */
@@ -38,7 +41,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * @version Id
  */
 public class IfsaServiceListener extends IfsaFacade implements IPullingListener, INamedObject {
-	public static final String version="$Id: IfsaServiceListener.java,v 1.3 2004-03-24 15:27:24 L190409 Exp $";
+	public static final String version="$Id: IfsaServiceListener.java,v 1.4 2004-03-26 07:25:42 NNVZNL01#L180564 Exp $";
 
     private final static String THREAD_CONTEXT_SESSION_KEY = "session";
     private final static String THREAD_CONTEXT_RECEIVER_KEY = "receiver";
@@ -272,7 +275,7 @@ public Object getRawMessage(HashMap threadContext) throws ListenerException {
         String source;
         try {
         	source = header.getIFSA_Source();
-        } catch (JMSException e) {
+        } catch (Exception e) {
         	source = "unknown due to exeption:"+e.getMessage();
         }
         log.error("["
