@@ -1,6 +1,9 @@
 /*
  * $Log: Adios2XmlPipe.java,v $
- * Revision 1.8  2005-01-04 12:55:01  L190409
+ * Revision 1.9  2005-01-05 12:31:50  L190409
+ * allow for colons in 'waarde'
+ *
+ * Revision 1.8  2005/01/04 12:55:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * automatic recognition of xml-input for adios2xml conversion
  * ignore unknown labels converting adios2xml
  *
@@ -90,14 +93,15 @@ import java.net.URL;
  * <table border="1">
  * <tr><th>state</th><th>condition</th></tr>
  * <tr><td>"success"</td><td>default</td></tr>
- * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>
+ * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>default, when specified</td></tr>
+ * <tr><td><i>{@link #setNoConversionForwardName(String) noConversionForwardName}</i></td><td>succes, but no conversion took place</td></tr>
  * </table>
  * </p>
  * @author Gerrit van Brakel
  * @version Id
  */
 public class Adios2XmlPipe extends FixedForwardPipe {
-	public static final String version="$Id: Adios2XmlPipe.java,v 1.8 2005-01-04 12:55:01 L190409 Exp $";
+	public static final String version="$Id: Adios2XmlPipe.java,v 1.9 2005-01-05 12:31:50 L190409 Exp $";
 
 	private Hashtable rubriek2nummer;	 
 	private Hashtable record2nummer;
@@ -369,16 +373,6 @@ public class Adios2XmlPipe extends FixedForwardPipe {
 	 * mind the delimiters,where a record has or hasnot an indexnummer and a label likewise.
 	 */
 	public String makeXml(String s, PipeLineSession session) throws PipeRunException {
-	 	String labelnr, waarde, lbw,index,recindex,recordnr;
-	 	String rubrieknaam,recordnaam;
-	
-	 	lbw ="";
-	 	labelnr="";
-	 	waarde="";
-	 	recordnr="";
-	 	recordnaam=null;
-	 	index="";
-	 	recindex="";
 
 		XmlBuilder bericht = new XmlBuilder("adios");
 		bericht.addAttribute("type", "rekenuitvoer");
@@ -388,22 +382,27 @@ public class Adios2XmlPipe extends FixedForwardPipe {
 		}
 	 
 		StringTokenizer st1 = new StringTokenizer(s,";\n");
-		while (st1.hasMoreTokens()) 
-		{
-			lbw=st1.nextToken();
-			StringTokenizer st2 = new StringTokenizer(lbw,":");
-			while (st2.hasMoreTokens())
-			{
-				labelnr = st2.nextToken();
-				if (st2.hasMoreTokens()) 
-					waarde = st2.nextToken();
-				else 
+		while (st1.hasMoreTokens()) {
+			String regel=st1.nextToken();
+			StringTokenizer st2 = new StringTokenizer(regel,":");
+			if (st2.hasMoreTokens()) {
+				String labelnr = st2.nextToken();
+				String waarde;
+				String recordnr="";
+				String recordnaam=null;
+				String index="";
+				String recindex="";
+
+				if (regel.length()>labelnr.length()) {
+					waarde = regel.substring(regel.indexOf(':')+1); // 'waarde' might contain colons, so nextToken() doesn't work correctly
+				} else { 
 					waarde="NVT";
+				}
 				waarde =waarde.trim();
-		    	rubrieknaam = (String)nummer2rubriek.get(labelnr);
+		    	String rubrieknaam = (String)nummer2rubriek.get(labelnr);
 	
-				if (rubrieknaam==null) 
-				{   // label not found in hashtabel, so check for other format.
+				if (rubrieknaam==null) {
+					// label not found in hashtabel, so check for other format.
 					// check on record, label combination
 					StringTokenizer st3 = new StringTokenizer(labelnr,",");
 					labelnr = st3.nextToken();
@@ -470,9 +469,6 @@ public class Adios2XmlPipe extends FixedForwardPipe {
 				rubriek.addAttribute("waarde", waarde);
 				bericht.addSubElement(rubriek);
 	
-				recordnaam=null;
-				recordnr="";
-				index="";
 		    }
 		}
 		return bericht.toXML(true);
