@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaProviderListener.java,v $
- * Revision 1.3  2004-07-15 07:43:04  L190409
+ * Revision 1.4  2004-07-19 09:50:03  L190409
+ * try to send exceptionmessage as reply when sending reply results in exception
+ *
+ * Revision 1.3  2004/07/15 07:43:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.2  2004/07/08 12:55:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -65,7 +68,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * @since 4.2
  */
 public class IfsaProviderListener extends IfsaFacade implements IPullingListener, INamedObject {
-	public static final String version="$Id: IfsaProviderListener.java,v 1.3 2004-07-15 07:43:04 L190409 Exp $";
+	public static final String version="$Id: IfsaProviderListener.java,v 1.4 2004-07-19 09:50:03 L190409 Exp $";
 
     private final static String THREAD_CONTEXT_SESSION_KEY = "session";
     private final static String THREAD_CONTEXT_RECEIVER_KEY = "receiver";
@@ -163,6 +166,11 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 	        try {
 	            sendReply(session, (Message) rawMessage, plr.getResult());
 	        } catch (IfsaException e) {
+	        	try {
+					sendReply(session, (Message) rawMessage, "<exception>"+e.getMessage()+"</exception>");
+	        	} catch (IfsaException e2) {
+	        		log.warn(getLogPrefix()+"exception sending errormessage as reply",e2);
+	        	}
 	            throw new ListenerException(getLogPrefix()+"Exception on sending result", e);
 	        }
 	    }
