@@ -1,6 +1,9 @@
 /*
  * $Log: JmsSender.java,v $
- * Revision 1.7  2004-05-21 07:59:30  a1909356#db2admin
+ * Revision 1.8  2004-08-16 09:26:01  L190409
+ * corrected JavaDoc
+ *
+ * Revision 1.7  2004/05/21 07:59:30  unknown <unknown@ibissource.org>
  * Add (modifications) due to the postbox sender implementation
  *
  * Revision 1.6  2004/03/31 12:04:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -40,15 +43,16 @@ import javax.jms.Message;
  * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>classname</td><td>nl.nn.adapterframework.receivers.JmsMessageReceiver</td><td>&nbsp;</td></tr>
+ * <tr><td>classname</td><td>nl.nn.adapterframework.jms.JmsSender</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td>  <td>name of the listener</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setDestinationName(String) listener.destinationName}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setDestinationType(String) listener.destinationType}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setPersistent(boolean) listener.persistent}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setAcknowledgeMode(String) listener.acknowledgeMode}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setTransacted(boolean) listener.transacted}</td><td>&nbsp;</td><td>false</td></tr>
- * <tr><td>{@link #setReplyToName(String) listener.ReplyToName}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setJmsRealm(String) listener.jmsRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setDestinationName(String) destinationName}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setDestinationType(String) destinationType}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setTimeToLive(long) timeToLive}</td><td>&nbsp;</td><td>0</td></tr>
+ * <tr><td>{@link #setPersistent(boolean) persistent}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setAcknowledgeMode(String) acknowledgeMode}</td><td>&nbsp;</td><td>AUTO_ACKNOWLEDGE</td></tr>
+ * <tr><td>{@link #setTransacted(boolean) transacted}</td><td>&nbsp;</td><td>false</td></tr>
+ * <tr><td>{@link #setReplyToName(String) ReplyToName}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * @version Id
@@ -57,7 +61,7 @@ import javax.jms.Message;
  */
 
 public class JmsSender extends JMSFacade implements ISender, IPostboxSender {
-	public static final String version = "$Id: JmsSender.java,v 1.7 2004-05-21 07:59:30 a1909356#db2admin Exp $";
+	public static final String version = "$Id: JmsSender.java,v 1.8 2004-08-16 09:26:01 L190409 Exp $";
 	private String replyToName = null;
 
 	public JmsSender() {
