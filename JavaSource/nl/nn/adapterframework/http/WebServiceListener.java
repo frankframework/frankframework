@@ -1,6 +1,9 @@
 /*
- * $Log: WebServiceMessagePusher.java,v $
- * Revision 1.2  2004-08-09 13:54:13  L190409
+ * $Log: WebServiceListener.java,v $
+ * Revision 1.1  2004-08-23 07:13:40  L190409
+ * renamed WebServiceMessagePusher to WebServiceListener
+ *
+ * Revision 1.2  2004/08/09 13:54:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed ServiceClient to MessageHandler
  *
  * Revision 1.1  2004/07/15 07:40:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -42,8 +45,8 @@ import java.util.HashMap;
  * @version Id
  * @author Gerrit van Brakel 
  */
-public class WebServiceMessagePusher  implements IPushingListener, ServiceClient, Serializable {
-	public static final String version="$Id: WebServiceMessagePusher.java,v 1.2 2004-08-09 13:54:13 L190409 Exp $";
+public class WebServiceListener  implements IPushingListener, ServiceClient, Serializable {
+	public static final String version="$Id: WebServiceListener.java,v 1.1 2004-08-23 07:13:40 L190409 Exp $";
 	protected Logger log = Logger.getLogger(this.getClass());;
 
 	private IMessageHandler handler;        	
