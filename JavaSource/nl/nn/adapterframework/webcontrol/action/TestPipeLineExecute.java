@@ -16,7 +16,7 @@ import java.util.Iterator;
 /**
  *
  * Test the Pipeline of an adapter
- * <p>$Id: TestPipeLineExecute.java,v 1.3 2004-03-08 13:01:33 L190409 Exp $</p>
+ * <p>$Id: TestPipeLineExecute.java,v 1.4 2004-11-10 13:02:40 L190409 Exp $</p>
  * @author  Johan Verrips
  * @see nl.nn.adapterframework.configuration.Configuration
  * @see nl.nn.adapterframework.core.Adapter
@@ -24,7 +24,7 @@ import java.util.Iterator;
  */
 
 public final class TestPipeLineExecute extends ActionBase {
-	public static final String version="$Id: TestPipeLineExecute.java,v 1.3 2004-03-08 13:01:33 L190409 Exp $";
+	public static final String version="$Id: TestPipeLineExecute.java,v 1.4 2004-11-10 13:02:40 L190409 Exp $";
 	
 
 public ActionForward execute(
@@ -51,7 +51,7 @@ public ActionForward execute(
 
     // if no message and no formfile, send an error
     if ((form_message == null) || (form_message.length() == 0)) {
-        if (form_file.getFileSize() == 0) {
+        if ((form_file==null) || (form_file.getFileSize() == 0)) {
             storeFormData(null,null,null, pipeLineTestForm);
             errors.add("", new ActionError("errors.generic", "Nothing to send or test"));
         }
