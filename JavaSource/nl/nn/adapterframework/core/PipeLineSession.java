@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLineSession.java,v $
- * Revision 1.5  2005-02-10 07:49:00  L190409
+ * Revision 1.6  2005-03-07 11:06:26  NNVZNL01#L180564
+ * PipeLineSession became a extension of HashMap
+ *
+ * Revision 1.5  2005/02/10 07:49:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed clearing of pipelinesession a start of pipeline
  *
  * Revision 1.4  2004/03/30 07:29:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -12,7 +15,8 @@
  */
 package nl.nn.adapterframework.core;
 
-import java.util.Hashtable;
+import java.util.HashMap;
+
 
 /**
  * The <code>PipeLineSession</code> is an object similar to
@@ -29,8 +33,8 @@ import java.util.Hashtable;
  * @author  Johan Verrips IOS
  * @since   version 3.2.2
  */
-public class PipeLineSession extends Hashtable implements IXAEnabled {
-	public static final String version="$Id: PipeLineSession.java,v 1.5 2005-02-10 07:49:00 L190409 Exp $";
+public class PipeLineSession extends HashMap implements IXAEnabled {
+	public static final String version="$Id: PipeLineSession.java,v 1.6 2005-03-07 11:06:26 NNVZNL01#L180564 Exp $";
 
 	public static final String originalMessageKey="originalMessage";
 	public static final String messageIdKey="messageId";
@@ -48,6 +52,7 @@ public class PipeLineSession extends Hashtable implements IXAEnabled {
 	public PipeLineSession(java.util.Map t) {
 		super(t);
 	}
+
 	
 	/**
 	 * @return the messageId that was passed to the <code>PipeLine</code>
