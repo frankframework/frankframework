@@ -1,6 +1,10 @@
 /*
  * $Log: WebServiceSender.java,v $
- * Revision 1.5  2004-09-01 12:24:16  L190409
+ * Revision 1.6  2004-09-02 13:25:39  L190409
+ * improved fault-handling
+ * added handling of encodingStyleUri
+ *
+ * Revision 1.5  2004/09/01 12:24:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved fault handling
  *
  * Revision 1.4  2004/08/31 15:52:22  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -94,11 +98,11 @@ import javax.xml.transform.TransformerException;
  */
 
 public class WebServiceSender extends HttpSender {
-	public static final String version="$Id: WebServiceSender.java,v 1.5 2004-09-01 12:24:16 L190409 Exp $";
+	public static final String version="$Id: WebServiceSender.java,v 1.6 2004-09-02 13:25:39 L190409 Exp $";
 	
 
 	private String soapActionURI = "";
-//	private String encodingStyleURI=null;
+	private String encodingStyleURI=null;
 //	private String methodName = "";
 	
 	private Transformer extractBody;
@@ -137,9 +141,15 @@ public class WebServiceSender extends HttpSender {
 	}
 
 	protected HttpMethod getMethod(String message) throws SenderException {
+		
+		String encodingStyle="";
+		if (!StringUtils.isEmpty(getEncodingStyleURI())) {
+			encodingStyle="soapenv:encodingStyle=\""+ getEncodingStyleURI()+"\" ";
+		}
 		String soapmsg= 
 		"<soapenv:Envelope " + 
-			"xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\">" +
+			"xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" "+encodingStyle +
+			"xmlns:xsi=\"http://www.w3.org/1999/XMLSchema-instance\" >" + 
 			"<soapenv:Body>" +	
 				message +
 			"</soapenv:Body>"+
@@ -175,7 +185,7 @@ public class WebServiceSender extends HttpSender {
 		} catch (Exception e) {
 			throw new SenderException("cannot retrieve result message",e);
 		}
-		if (!StringUtils.isEmpty(fault) && fault.equals("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")) {
+		if (!StringUtils.isEmpty(fault) && !fault.equals("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")) {
 			throw new SenderException("SOAP Fault caught ["+fault+"]");
 		}
 		return (result);
@@ -226,7 +236,7 @@ public class WebServiceSender extends HttpSender {
 		this.soapActionURI = soapActionURI;
 	}
 
-/*
+
 	public String getEncodingStyleURI() {
 		return encodingStyleURI;
 	}
@@ -234,8 +244,6 @@ public class WebServiceSender extends HttpSender {
 	public void setEncodingStyleURI(String string) {
 		encodingStyleURI = string;
 	}
-
-*/
 
 
 }
