@@ -1,22 +1,8 @@
 package nl.nn.adapterframework.core;
 
-import java.io.IOException;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.xpath.XPath;
-import org.apache.xpath.XPathContext;
-import org.apache.xpath.objects.XObject;
-import org.w3c.dom.Document;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-
-import nl.nn.adapterframework.util.Variant;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
