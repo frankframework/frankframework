@@ -1,6 +1,9 @@
 /*
  * $Log: Parameter.java,v $
- * Revision 1.6  2004-10-19 15:27:19  L190409
+ * Revision 1.7  2004-10-25 08:32:56  L190409
+ * parameters for parameters
+ *
+ * Revision 1.6  2004/10/19 15:27:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * moved transformation to pool
  *
  * Revision 1.5  2004/10/19 13:50:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -36,6 +39,7 @@ import org.apache.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.core.IWithParameters;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.TransformerPool;
@@ -52,8 +56,8 @@ import nl.nn.adapterframework.util.XmlUtils;
  * 
  * @author Richard Punt / Gerrit van Brakel
  */
-public class Parameter implements INamedObject {
-	public static final String version="$Id: Parameter.java,v 1.6 2004-10-19 15:27:19 L190409 Exp $";
+public class Parameter implements INamedObject, IWithParameters {
+	public static final String version="$Id: Parameter.java,v 1.7 2004-10-25 08:32:56 L190409 Exp $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	private String name = null;
@@ -64,7 +68,15 @@ public class Parameter implements INamedObject {
 	private String defaultValue = null;
 
 	private TransformerPool transformerPool = null;
+	protected ParameterList paramList = null;
 	private boolean configured = false;
+
+	public void addParameter(Parameter p) { 
+		if (paramList==null) {
+			paramList=new ParameterList();
+		}
+		paramList.add(p);
+	}
 
 	public void configure() throws ConfigurationException {
 		if (!StringUtils.isEmpty(getXpathExpression())) {
@@ -93,6 +105,13 @@ public class Parameter implements INamedObject {
 			} catch (TransformerConfigurationException te) {
 				throw new ConfigurationException("Parameter ["+getName()+"] got error creating transformer from [" + styleSheetUrl.toString() + "]", te);
 			}
+			if (paramList!=null) {
+				paramList.configure();
+			}
+		}  else {
+			if (paramList!=null) {
+				throw new ConfigurationException("Parameter ["+getName()+"] can only have parameters itself if a styleSheetName is specified");
+			}
 		}
 		configured = true;
 	}
@@ -103,7 +122,7 @@ public class Parameter implements INamedObject {
 	 * @return the raw value as object
 	 * @throws IbisException
 	 */
-	public Object getValue(ParameterResolutionContext r) throws ParameterException {
+	public Object getValue(ParameterResolutionContext prc) throws ParameterException {
 		Object result = null;
 		log.debug("Calcualting value for Parameter ["+getName()+"]");
 		if (!configured) {
@@ -113,7 +132,7 @@ public class Parameter implements INamedObject {
 		if (pool != null) {
 			try {
 				if (StringUtils.isNotEmpty(getSessionKey())) {
-					String source = (String)(r.getSession().get(getSessionKey()));
+					String source = (String)(prc.getSession().get(getSessionKey()));
 					if (StringUtils.isNotEmpty(source)) {
 						log.debug("Parameter ["+getName()+"] using sessionvariable ["+getSessionKey()+"] as source for transformation");
 						result = pool.transform(source,null,null);
@@ -121,14 +140,14 @@ public class Parameter implements INamedObject {
 						log.debug("Parameter ["+getName()+"] sessionvariable ["+getSessionKey()+"] empty, no transformation will be performed");
 					}
 				} else {
-					result = pool.transform(r.getInputSource(),null,null);
+					result = pool.transform(prc.getInputSource(),paramList,prc);
 				}
 			} catch (Exception e) {
 				throw new ParameterException("Parameter ["+getName()+"] exception on transformation to get parametervalue", e);
 			}
 		} else {
 			if (StringUtils.isNotEmpty(getSessionKey())) {
-				result=r.getSession().get(getSessionKey());
+				result=prc.getSession().get(getSessionKey());
 			}
 		}
 		if (result != null) {
