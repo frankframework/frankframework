@@ -18,7 +18,7 @@ import java.io.IOException;
  * @version Id
  */
 public class XsltParamPipe extends XsltPipe {
-	public static final String version = "$Id: XsltParamPipe.java,v 1.3 2004-05-21 07:37:24 a1909356#db2admin Exp $";
+	public static final String version = "$Id: XsltParamPipe.java,v 1.4 2004-05-24 13:28:50 a1909356#db2admin Exp $";
 
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -43,7 +43,7 @@ public class XsltParamPipe extends XsltPipe {
 			Iterator i = getParameterList().iterator();
 			while (i.hasNext()) {
 				Parameter p = (Parameter) i.next();
-				Object value = resolver.getValue(p);
+				Object value = resolver.getRawValue(p);
 
 				if (value != null) {
 					getTransformer().setParameter(p.getName(), value);

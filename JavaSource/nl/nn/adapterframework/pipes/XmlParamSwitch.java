@@ -19,7 +19,7 @@ import javax.xml.transform.Transformer;
  * @version Id
  */
 public class XmlParamSwitch extends XmlSwitch {
-	public static final String version="$Id: XmlParamSwitch.java,v 1.2 2004-05-21 07:37:24 a1909356#db2admin Exp $";
+	public static final String version="$Id: XmlParamSwitch.java,v 1.3 2004-05-24 13:28:50 a1909356#db2admin Exp $";
 
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -39,7 +39,7 @@ public class XmlParamSwitch extends XmlSwitch {
 				Iterator i = getParameterList().iterator();
 				while (i.hasNext()) {
 					Parameter p = (Parameter) i.next();
-					Object value = resolver.getValue(p); 
+					Object value = resolver.getRawValue(p); 
 					
 					if (value != null) {
 						getServiceSelectionTransformer().setParameter(p.getName(), value);
