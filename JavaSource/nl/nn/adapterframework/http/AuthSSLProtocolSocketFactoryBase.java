@@ -1,6 +1,9 @@
 /*
  * $Log: AuthSSLProtocolSocketFactoryBase.java,v $
- * Revision 1.1  2004-10-14 15:35:10  L190409
+ * Revision 1.2  2005-02-02 16:36:26  L190409
+ * added hostname verification, default=false
+ *
+ * Revision 1.1  2004/10/14 15:35:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * refactored AuthSSLProtocolSocketFactory group
  *
  * Revision 1.3  2004/09/09 14:50:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -16,7 +19,9 @@
 package nl.nn.adapterframework.http;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -25,6 +30,10 @@ import java.security.cert.CertificateException;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.Enumeration;
+
+import javax.net.ssl.SSLPeerUnverifiedException;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.SSLSocket;
 
 import org.apache.commons.httpclient.protocol.SecureProtocolSocketFactory;
 import org.apache.log4j.Logger;
@@ -145,6 +154,7 @@ public abstract class AuthSSLProtocolSocketFactoryBase implements SecureProtocol
 	protected URL truststoreUrl = null;
 	protected String truststorePassword = null;
 	protected Object sslContext = null;
+	protected boolean verifyHostname=true;
 
     /**
      * Constructor for AuthSSLProtocolSocketFactory. Either a keystore or truststore file
@@ -157,10 +167,18 @@ public abstract class AuthSSLProtocolSocketFactoryBase implements SecureProtocol
      * @param truststoreUrl URL of the truststore file. May be <tt>null</tt> if HTTPS server
      *        authentication is not to be used.
      * @param truststorePassword Password to unlock the truststore.
+     *
+     * @param verifyHostname  The host name verification flag. If set to 
+     * 		  <code>true</code> the SSL sessions server host name will be compared
+     * 		  to the host name returned in the server certificates "Common Name" 
+     * 		  field of the "SubjectDN" entry.  If these names do not match a
+     * 		  Exception is thrown to indicate this.  Enabling host name verification 
+     * 		  will help to prevent man-in-the-middle attacks.  If set to 
+     * 		  <code>false</code> host name verification is turned off.
      */
     public AuthSSLProtocolSocketFactoryBase (
         final URL keystoreUrl, final String keystorePassword, final String keystoreType, 
-        final URL truststoreUrl, final String truststorePassword)
+        final URL truststoreUrl, final String truststorePassword, final boolean verifyHostname)
     {
         super();
         this.keystoreUrl = keystoreUrl;
@@ -168,6 +186,7 @@ public abstract class AuthSSLProtocolSocketFactoryBase implements SecureProtocol
 		this.keystoreType = keystoreType;
         this.truststoreUrl = truststoreUrl;
         this.truststorePassword = truststorePassword;
+        this.verifyHostname = verifyHostname;
     }
 
 	public abstract void initSSLContext() throws NoSuchAlgorithmException, KeyStoreException, GeneralSecurityException, IOException;
@@ -196,9 +215,9 @@ public abstract class AuthSSLProtocolSocketFactoryBase implements SecureProtocol
         throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException
     {
         if (url == null) {
-            throw new IllegalArgumentException("Keystore url may not be null");
+            throw new IllegalArgumentException("Keystore url for "+prefix+" may not be null");
         }
-        log.debug("Initializing key store");
+        log.debug("Initializing keystore for "+prefix+" from "+url.toString());
         KeyStore keystore  = KeyStore.getInstance(keyStoreType);
         keystore.load(url.openStream(), password != null ? password.toCharArray(): null);
 		if (log.isDebugEnabled()) {
@@ -219,6 +238,91 @@ public abstract class AuthSSLProtocolSocketFactoryBase implements SecureProtocol
 		}
         return keystore;
     }
+ 
+	/**
+	 * Describe <code>verifyHostname</code> method here.
+	 *
+	 * @param socket a <code>SSLSocket</code> value
+	 * @exception SSLPeerUnverifiedException  If there are problems obtaining
+	 * the server certificates from the SSL session, or the server host name 
+	 * does not match with the "Common Name" in the server certificates 
+	 * SubjectDN.
+	 * @exception UnknownHostException  If we are not able to resolve
+	 * the SSL sessions returned server host name. 
+	 */
+	protected void verifyHostname(SSLSocket socket) 
+		throws SSLPeerUnverifiedException, UnknownHostException {
+		if (! verifyHostname) 
+			return;
+
+		SSLSession session = socket.getSession();
+		if (session==null) {
+			throw new UnknownHostException("could not obtain session from socket");
+		}
+		String hostname = session.getPeerHost();
+		try {
+			InetAddress.getByName(hostname);
+		} catch (UnknownHostException uhe) {
+			String msg = "Could not resolve SSL sessions server hostname: " + hostname;
+			// Under WebSphere, hostname can be equal to proxy-hostname
+			log.warn(msg,uhe);
+//			throw new UnknownHostException(msg);
+		}
+
+		javax.security.cert.X509Certificate[] certs = session.getPeerCertificateChain();
+		if (certs == null || certs.length == 0) 
+			throw new SSLPeerUnverifiedException("No server certificates found!");
+        
+		//get the servers DN in its string representation
+		String dn = certs[0].getSubjectDN().getName();
+
+		//might be useful to print out all certificates we receive from the
+		//server, in case one has to debug a problem with the installed certs.
+		if (log.isDebugEnabled()) {
+			log.debug("Server certificate chain:");
+			for (int i = 0; i < certs.length; i++) {
+				log.debug("X509Certificate[" + i + "]=" + certs[i]);
+			}
+		}
+		//get the common name from the first cert
+		String cn = getCN(dn);
+		if (hostname.equalsIgnoreCase(cn)) {
+			if (log.isDebugEnabled()) {
+				log.debug("Target hostname valid: " + cn);
+			}
+		} else {
+			throw new SSLPeerUnverifiedException(
+				"HTTPS hostname invalid: expected '" + hostname + "', received '" + cn + "'");
+		}
+	}
+
     
+	/**
+	 * Parses a X.500 distinguished name for the value of the 
+	 * "Common Name" field.
+	 * This is done a bit sloppy right now and should probably be done a bit
+	 * more according to <code>RFC 2253</code>.
+	 *
+	 * @param dn  a X.500 distinguished name.
+	 * @return the value of the "Common Name" field.
+	 */
+	protected String getCN(String dn) {
+		int i = 0;
+		i = dn.indexOf("CN=");
+		if (i == -1) {
+			return null;
+		}
+		//get the remaining DN without CN=
+		dn = dn.substring(i + 3);  
+		// System.out.println("dn=" + dn);
+		char[] dncs = dn.toCharArray();
+		for (i = 0; i < dncs.length; i++) {
+			if (dncs[i] == ','  && i > 0 && dncs[i - 1] != '\\') {
+				break;
+			}
+		}
+		return dn.substring(0, i);
+	}
+
 }
 

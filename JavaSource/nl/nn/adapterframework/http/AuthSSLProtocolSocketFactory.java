@@ -1,6 +1,9 @@
 /*
  * $Log: AuthSSLProtocolSocketFactory.java,v $
- * Revision 1.4  2004-10-14 15:35:10  L190409
+ * Revision 1.5  2005-02-02 16:36:26  L190409
+ * added hostname verification, default=false
+ *
+ * Revision 1.4  2004/10/14 15:35:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * refactored AuthSSLProtocolSocketFactory group
  *
  * Revision 1.3  2004/09/09 14:50:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -36,6 +39,7 @@ import java.security.UnrecoverableKeyException;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocket;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 
@@ -160,9 +164,9 @@ public class AuthSSLProtocolSocketFactory extends AuthSSLProtocolSocketFactoryBa
      */
 	public AuthSSLProtocolSocketFactory(
 		final URL keystoreUrl, final String keystorePassword, final String keystoreType, 
-		final URL truststoreUrl, final String truststorePassword)
+		final URL truststoreUrl, final String truststorePassword, final boolean verifyHostname)
 	{
-		super(keystoreUrl, keystorePassword, keystoreType, truststoreUrl, truststorePassword);
+		super(keystoreUrl, keystorePassword, keystoreType, truststoreUrl, truststorePassword, verifyHostname);
 	}
     
     private static KeyManager[] createKeyManagers(final KeyStore keystore, final String password)
@@ -231,13 +235,10 @@ public class AuthSSLProtocolSocketFactory extends AuthSSLProtocolSocketFactoryBa
         InetAddress clientHost,
         int clientPort)
         throws IOException, UnknownHostException
-   {
-       return getSSLContext().getSocketFactory().createSocket(
-            host,
-            port,
-            clientHost,
-            clientPort
-        );
+   	{
+	   SSLSocket sslSocket = (SSLSocket) getSSLContext().getSocketFactory().createSocket(host,port,clientHost,clientPort);
+	   verifyHostname(sslSocket);
+	   return sslSocket;
     }
 
     /**
@@ -246,10 +247,9 @@ public class AuthSSLProtocolSocketFactory extends AuthSSLProtocolSocketFactoryBa
     public Socket createSocket(String host, int port)
         throws IOException, UnknownHostException
     {
-        return getSSLContext().getSocketFactory().createSocket(
-            host,
-            port
-        );
+		SSLSocket sslSocket = (SSLSocket) getSSLContext().getSocketFactory().createSocket(host,port);
+		verifyHostname(sslSocket);
+		return sslSocket;
     }
 
     /**
@@ -262,12 +262,11 @@ public class AuthSSLProtocolSocketFactory extends AuthSSLProtocolSocketFactoryBa
         boolean autoClose)
         throws IOException, UnknownHostException
     {
-        return getSSLContext().getSocketFactory().createSocket(
-            socket,
-            host,
-            port,
-            autoClose
-        );
+		SSLSocket sslSocket = (SSLSocket) getSSLContext().getSocketFactory().createSocket(socket,host,port,autoClose);
+		verifyHostname(sslSocket);
+		return sslSocket;
     }
+    
+
 }
 

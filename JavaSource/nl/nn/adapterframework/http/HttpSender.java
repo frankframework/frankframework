@@ -1,6 +1,9 @@
 /*
  * $Log: HttpSender.java,v $
- * Revision 1.12  2004-12-23 16:11:13  L190409
+ * Revision 1.13  2005-02-02 16:36:26  L190409
+ * added hostname verification, default=false
+ *
+ * Revision 1.12  2004/12/23 16:11:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Explicit check for open connections
  *
  * Revision 1.11  2004/12/23 12:12:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -98,6 +101,7 @@ import nl.nn.adapterframework.util.ClassUtils;
  * <tr><td>{@link #setCertificatePassword(String) certificatePassword}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setTruststore(String) truststore}</td><td>resource URL to truststore to be used for authentication</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setTruststorePassword(String) truststorePassword}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setVerifyHostname(boolean) verifyHostname}</td><td>when true, the hostname in the certificate will be checked against the actual hostname</td><td>true</td></tr>
  * <tr><td>{@link #setJdk13Compatibility(boolean) jdk13Compatibility}</td><td>enables the use of certificates on JDK 1.3.x. The SUN reference implementation JSSE 1.0.3 is included for convenience</td><td>false</td></tr>
  * <tr><td>{@link #setSetStaleChecking(boolean) staleChecking}</td><td>controls whether connections checked to be stale, i.e. appear open, but are not.</td><td>true</td></tr>
  * <tr><td>{@link #setEncodeMessages(boolean) encodeMessages}</td><td>specifies whether messages will encoded, e.g. spaces will be replaced by '+' etc.</td><td>false</td></tr>
@@ -110,7 +114,7 @@ import nl.nn.adapterframework.util.ClassUtils;
  * @since 4.2c
  */
 public class HttpSender implements ISenderWithParameters, HasPhysicalDestination {
-	public static final String version = "$Id: HttpSender.java,v 1.12 2004-12-23 16:11:13 L190409 Exp $";
+	public static final String version = "$Id: HttpSender.java,v 1.13 2005-02-02 16:36:26 L190409 Exp $";
 	protected Logger log = Logger.getLogger(this.getClass());;
 
 	private String name;
@@ -136,6 +140,7 @@ public class HttpSender implements ISenderWithParameters, HasPhysicalDestination
 	private String truststore=null;
 	private String truststorePassword=null;
 	
+	private boolean verifyHostname=true;
 	private boolean jdk13Compatibility=false;
 	private boolean staleChecking=true;
 	private boolean encodeMessages=false;
@@ -239,7 +244,7 @@ public class HttpSender implements ISenderWithParameters, HasPhysicalDestination
 			if (!StringUtils.isEmpty(getTruststore())) {
 				truststoreUrl = ClassUtils.getResourceURL(this, getTruststore());
 				if (truststoreUrl==null) {
-					throw new ConfigurationException("cannot find URL for certificate resource ["+getTruststore()+"]");
+					throw new ConfigurationException("cannot find URL for truststore resource ["+getTruststore()+"]");
 				}
 				log.debug("resolved truststore-URL to ["+certificateUrl.toString()+"]");
 			}
@@ -255,11 +260,11 @@ public class HttpSender implements ISenderWithParameters, HasPhysicalDestination
 						System.setProperty("java.protocol.handler.pkgs","com.sun.net.ssl.internal.www.protocol");
 						socketfactory = new AuthSSLProtocolSocketFactoryForJsse10x(
 							certificateUrl, getCertificatePassword(), getKeystoreType(),
-							truststoreUrl, getTruststorePassword());
+							truststoreUrl, getTruststorePassword(),isVerifyHostname());
 					} else {
 						socketfactory = new AuthSSLProtocolSocketFactory(
 							certificateUrl, getCertificatePassword(), getKeystoreType(),
-							truststoreUrl, getTruststorePassword());
+							truststoreUrl, getTruststorePassword(),isVerifyHostname());
 					}
 					socketfactory.initSSLContext();	
 				} catch (Throwable t) {
@@ -567,6 +572,14 @@ public class HttpSender implements ISenderWithParameters, HasPhysicalDestination
 
 	public void setStaleChecking(boolean b) {
 		staleChecking = b;
+	}
+
+	public boolean isVerifyHostname() {
+		return verifyHostname;
+	}
+
+	public void setVerifyHostname(boolean b) {
+		verifyHostname = b;
 	}
 
 }
