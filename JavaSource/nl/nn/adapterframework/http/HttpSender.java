@@ -1,6 +1,9 @@
 /*
  * $Log: HttpSender.java,v $
- * Revision 1.4  2004-08-31 15:51:37  L190409
+ * Revision 1.5  2004-09-01 12:24:16  L190409
+ * improved fault handling
+ *
+ * Revision 1.4  2004/08/31 15:51:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added extractResult method
  *
  * Revision 1.3  2004/08/31 10:13:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -70,18 +73,18 @@ import nl.nn.adapterframework.util.ClassUtils;
  * <tr><td>{@link #setProxyPassword(String) proxyPassword}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setProxyRealm(String) proxyRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setKeystoreType(String) keystoreType}</td><td>&nbsp;</td><td>pkcs12</td></tr>
- * <tr><td>{@link #setCertificate(String) certificate}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setCertificate(String) certificate}</td><td>resource URL to certificate to be used for authentication</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setCertificatePassword(String) certificatePassword}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setTruststore(String) truststore}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setTruststore(String) truststore}</td><td>resource URL to truststore to be used for authentication</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setTruststorePassword(String) truststorePassword}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setAddSecurityProviders(boolean) addSecurityProviders}</td><td>if true, basic SUN security providers are added to the list of providers</td><td>false</td></tr>
  * </table>
  * </p>
  * @author Gerrit van Brakel
- * @since 4.2
+ * @since 4.2c
  */
 public class HttpSender implements ISender, HasPhysicalDestination {
-	public static final String version = "$Id: HttpSender.java,v 1.4 2004-08-31 15:51:37 L190409 Exp $";
+	public static final String version = "$Id: HttpSender.java,v 1.5 2004-09-01 12:24:16 L190409 Exp $";
 	protected Logger log = Logger.getLogger(this.getClass());;
 
 	private String name;
@@ -195,19 +198,6 @@ public class HttpSender implements ISender, HasPhysicalDestination {
 		connectionManager = new MultiThreadedHttpConnectionManager();
 		connectionManager.setMaxConnectionsPerHost(getMaxConnections());
 		httpclient.setHttpConnectionManager(connectionManager);
-/*		
-		// attempt to pre-open connection, didn't work....
-		HttpConnection connection =	connectionManager.getConnection(httpclient.getHostConfiguration());
-		log.debug("pre-opening connection");
-		try {
-			connection.open();
-		} catch (IOException e) {
-			throw new SenderException("cannot open connection",e); 
-		}
-		log.debug("closing pre-opened connection");
-		connection.close();
-		connection.releaseConnection();
-*/
 	}
 
 	public void close() throws SenderException {
@@ -244,6 +234,10 @@ public class HttpSender implements ISender, HasPhysicalDestination {
 	}
 	
 	public String extractResult(HttpMethod httpmethod) throws SenderException {
+		int statusCode = httpmethod.getStatusCode();
+		if (statusCode!=200) {
+			throw new SenderException(statusCode+": "+httpmethod.getStatusText());
+		}
 		return httpmethod.getResponseBodyAsString();
 	}
 
