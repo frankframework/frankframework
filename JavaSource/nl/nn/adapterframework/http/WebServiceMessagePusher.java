@@ -1,22 +1,28 @@
 /*
  * $Log: WebServiceMessagePusher.java,v $
- * Revision 1.2  2004-06-30 12:34:13  L190409
+ * Revision 1.1  2004-07-15 07:40:43  L190409
+ * introduction of http package
+ *
+ * Revision 1.2  2004/06/30 12:34:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added (dummy) setter for exceptionlistener
  *
  * Revision 1.1  2004/06/22 12:12:52  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * introduction of MessagePushers and PushingReceivers
  *
  */
-package nl.nn.adapterframework.receivers;
+package nl.nn.adapterframework.http;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IMessagePusher;
+import nl.nn.adapterframework.core.IPushingListener;
 import nl.nn.adapterframework.core.IbisExceptionListener;
+import nl.nn.adapterframework.receivers.ServiceClient;
+import nl.nn.adapterframework.receivers.ServiceDispatcher;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.log4j.Logger;
 
 import java.io.Serializable;
+import java.util.HashMap;
 
 /**
  * Implementation of a {@link nl.nn.adapterframework.core.IMessagePusher pushing listener},
@@ -30,8 +36,8 @@ import java.io.Serializable;
  * @version Id
  * @author Gerrit van Brakel 
  */
-public class WebServiceMessagePusher  implements IMessagePusher, ServiceClient, Serializable {
-	public static final String version="$Id: WebServiceMessagePusher.java,v 1.2 2004-06-30 12:34:13 L190409 Exp $";
+public class WebServiceMessagePusher  implements IPushingListener, ServiceClient, Serializable {
+	public static final String version="$Id: WebServiceMessagePusher.java,v 1.1 2004-07-15 07:40:43 L190409 Exp $";
 	protected Logger log = Logger.getLogger(this.getClass());;
 
 	private ServiceClient handler;        	
@@ -94,6 +100,20 @@ public class WebServiceMessagePusher  implements IMessagePusher, ServiceClient, 
 
 	public void setExceptionListener(IbisExceptionListener listener) {
 		// do nothing, no exceptions known
+	}
+
+	/* (non-Javadoc)
+	 * @see nl.nn.adapterframework.core.IListener#getIdFromRawMessage(java.lang.Object, java.util.HashMap)
+	 */
+	public String getIdFromRawMessage(Object rawMessage, HashMap threadContext)  {
+		return null;
+	}
+
+	/* (non-Javadoc)
+	 * @see nl.nn.adapterframework.core.IListener#getStringFromRawMessage(java.lang.Object, java.util.HashMap)
+	 */
+	public String getStringFromRawMessage(Object rawMessage, HashMap threadContext) {
+		return (String) rawMessage;
 	}
 
 

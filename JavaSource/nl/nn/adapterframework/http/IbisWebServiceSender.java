@@ -1,10 +1,13 @@
 /*
  * $Log: IbisWebServiceSender.java,v $
- * Revision 1.1  2004-06-01 13:53:22  L190409
+ * Revision 1.1  2004-07-15 07:40:43  L190409
+ * introduction of http package
+ *
+ * Revision 1.1  2004/06/01 13:53:22  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * eerste versie
  *
  */
-package nl.nn.adapterframework.pipes;
+package nl.nn.adapterframework.http;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -36,7 +39,7 @@ import nl.nn.adapterframework.util.AppConstants;
  * @author Gerrit van Brakel
  */
 public class IbisWebServiceSender implements ISender {
-	public static final String version = "$Id: IbisWebServiceSender.java,v 1.1 2004-06-01 13:53:22 L190409 Exp $";
+	public static final String version = "$Id: IbisWebServiceSender.java,v 1.1 2004-07-15 07:40:43 L190409 Exp $";
 
 	private String name;
 	private String ibisHost = "localhost";
