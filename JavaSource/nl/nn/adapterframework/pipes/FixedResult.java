@@ -7,10 +7,13 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StringResolver;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
 
 import java.io.IOException;
+import java.util.Properties;
 
 /**
  * Provides an example of a pipe. It may return the contents of a file
@@ -25,6 +28,7 @@ import java.io.IOException;
  * <tr><td>{@link #setForwardName(String) forwardName}</td>  <td>name of forward returned upon completion</td><td>"success"</td></tr>
  * <tr><td>{@link #setFileName(String) fileName}</td>        <td>name of the file containing the resultmessage</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setReturnString(String) returnString}</td><td>returned message</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setSubstituteVars(boolean) substitute}</td><td>Should values between ${ and } be resolved from the PipeLineSession</td><td>False</td></tr>
  * </table>
  * </p>
  * <p><b>Exits:</b>
@@ -38,9 +42,19 @@ import java.io.IOException;
  * @author Johan Verrips
  */
 public class FixedResult extends FixedForwardPipe {
-	public static final String version="$Id: FixedResult.java,v 1.5 2004-08-23 13:09:58 L190409 Exp $";
+	public static final String version="$Id: FixedResult.java,v 1.6 2004-08-27 08:16:54 NNVZNL01#L180564 Exp $";
     private String fileName;
     private String returnString;
+    private boolean substituteVars=false;
+
+	public void setSubstituteVars(boolean substitute){
+		this.substituteVars=substitute;
+	}
+
+	public boolean getSubstituteVars(){
+		return this.substituteVars;
+	}
+
     /**
      * checks for correct configuration, and translates the fileName to
      * a file, to check existence. 
@@ -64,10 +78,13 @@ public class FixedResult extends FixedForwardPipe {
         }
     }
 	public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRunException {
+		String result=returnString;
+		if (getSubstituteVars()){
+			result=StringResolver.substVars(returnString, session);
+		}
+	    log.debug(getLogPrefix(session)+ " returning fixed result [" + result + "]");
 	
-	    log.debug(getLogPrefix(session)+ " returning fixed result [" + returnString + "]");
-	
-	    return new PipeRunResult(getForward(), returnString);
+	    return new PipeRunResult(getForward(), result);
 	}
     public String getFileName() {
         return fileName;
