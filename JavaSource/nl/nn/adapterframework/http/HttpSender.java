@@ -1,6 +1,9 @@
 /*
  * $Log: HttpSender.java,v $
- * Revision 1.10  2004-10-19 06:39:21  L190409
+ * Revision 1.11  2004-12-23 12:12:12  L190409
+ * staleChecking optional
+ *
+ * Revision 1.10  2004/10/19 06:39:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * modified parameter handling, introduced IWithParameters
  *
  * Revision 1.9  2004/10/14 15:35:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -34,6 +37,7 @@
 package nl.nn.adapterframework.http;
 
 import java.io.IOException;
+import java.net.SocketException;
 import java.net.URL;
 import java.net.URLEncoder;
 
@@ -41,6 +45,7 @@ import java.net.URLEncoder;
 import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.HostConfiguration;
 import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpConnection;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
@@ -91,6 +96,7 @@ import nl.nn.adapterframework.util.ClassUtils;
  * <tr><td>{@link #setTruststore(String) truststore}</td><td>resource URL to truststore to be used for authentication</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setTruststorePassword(String) truststorePassword}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setJdk13Compatibility(boolean) jdk13Compatibility}</td><td>enables the use of certificates on JDK 1.3.x. The SUN reference implementation JSSE 1.0.3 is included for convenience</td><td>false</td></tr>
+ * <tr><td>{@link #setSetStaleChecking(boolean) staleChecking}</td><td>controls whether connections checked to be stale, i.e. appear open, but are not.</td><td>true</td></tr>
  * <tr><td>{@link #setEncodeMessages(boolean) encodeMessages}</td><td>specifies whether messages will encoded, e.g. spaces will be replaced by '+' etc.</td><td>false</td></tr>
  * </table>
  * </p>
@@ -101,7 +107,7 @@ import nl.nn.adapterframework.util.ClassUtils;
  * @since 4.2c
  */
 public class HttpSender implements ISenderWithParameters, HasPhysicalDestination {
-	public static final String version = "$Id: HttpSender.java,v 1.10 2004-10-19 06:39:21 L190409 Exp $";
+	public static final String version = "$Id: HttpSender.java,v 1.11 2004-12-23 12:12:12 L190409 Exp $";
 	protected Logger log = Logger.getLogger(this.getClass());;
 
 	private String name;
@@ -128,6 +134,7 @@ public class HttpSender implements ISenderWithParameters, HasPhysicalDestination
 	private String truststorePassword=null;
 	
 	private boolean jdk13Compatibility=false;
+	private boolean staleChecking=true;
 	private boolean encodeMessages=false;
 
 	protected URI uri;
@@ -136,12 +143,58 @@ public class HttpSender implements ISenderWithParameters, HasPhysicalDestination
 
 	protected ParameterList paramList = null;
 
+/*
+	private class IbisMultiThreadedHttpConnectionManager extends MultiThreadedHttpConnectionManager {
+		
+		protected boolean checkConnection(HttpConnection connection)  {
+			boolean status = connection.isOpen();
+			log.debug("IbisMultiThreadedHttpConnectionManager["+name+"] connection open ["+status+"]");
+			if (status) {
+				try {
+					connection.setSoTimeout(connection.getSoTimeout());
+				} catch (SocketException e) {
+					log.warn("IbisMultiThreadedHttpConnectionManager["+name+"] SocketException while checking", e);
+					connection.close();
+					return false;
+				} catch (IllegalStateException e) {
+					log.warn("IbisMultiThreadedHttpConnectionManager["+name+"] IllegalStateException while checking", e);
+					connection.close();
+					return false;
+				}
+			}
+			return true;
+		}
+		
+//		public void releaseConnection(HttpConnection connection) {
+//			log.debug("IbisMultiThreadedHttpConnectionManager["+name+"] closing connection before release");
+//			connection.close();
+//			super.releaseConnection(connection);
+//		}
+		
+		public HttpConnection getConnection(HostConfiguration hostConfiguration) {
+			log.debug("IbisMultiThreadedHttpConnectionManager["+name+"] getConnection(HostConfiguration)");
+			HttpConnection result = super.getConnection(hostConfiguration);			
+			checkConnection(result);
+			return result;
+		}
+		public HttpConnection getConnection(HostConfiguration hostConfiguration, long timeout) throws HttpException {
+			log.debug("IbisMultiThreadedHttpConnectionManager["+name+"] getConnection(HostConfiguration, timeout["+timeout+"])");
+			HttpConnection result = super.getConnection(hostConfiguration, timeout);
+			int count=10;
+			while (count-->0 && !checkConnection(result)) {
+				releaseConnection(result);
+				result= super.getConnection(hostConfiguration, timeout);
+			} 
+			return result;
+		}
+	}
+*/
 	protected void addProvider(String name) {
 		try {
 			Class clazz = Class.forName(name);
 			java.security.Security.addProvider((java.security.Provider)clazz.newInstance());
 		} catch (Throwable t) {
-			log.error("cannot add provider ["+name+"]");
+			log.error("cannot add provider ["+name+"], "+t.getClass().getName()+": "+t.getMessage());
 		}
 	}
 
@@ -215,7 +268,7 @@ public class HttpSender implements ISenderWithParameters, HasPhysicalDestination
 			} else {
 				hostconfiguration.setHost(uri.getHost(),uri.getPort(),uri.getScheme());
 			}
-			log.debug("configured for httpclient for host: "+hostconfiguration.getHostURL());
+			log.debug("configured httpclient for host ["+hostconfiguration.getHostURL()+"]");
 			
 			if (!StringUtils.isEmpty(getUserName())) {
 				httpclient.getState().setAuthenticationPreemptive(true);
@@ -236,8 +289,14 @@ public class HttpSender implements ISenderWithParameters, HasPhysicalDestination
 	}
 
 	public void open() throws SenderException {
+//		connectionManager = new IbisMultiThreadedHttpConnectionManager();
 		connectionManager = new MultiThreadedHttpConnectionManager();
 		connectionManager.setMaxConnectionsPerHost(getMaxConnections());
+		log.debug("set up connectionManager, stale checking ["+connectionManager.isConnectionStaleCheckingEnabled()+"]");
+		if (connectionManager.isConnectionStaleCheckingEnabled() != isStaleChecking()) {
+			log.info("set up connectionManager, setting stale checking ["+isStaleChecking()+"]");
+			connectionManager.setConnectionStaleCheckingEnabled(isStaleChecking());
+		}
 		httpclient.setHttpConnectionManager(connectionManager);
 	}
 
@@ -498,6 +557,14 @@ public class HttpSender implements ISenderWithParameters, HasPhysicalDestination
 
 	public void setEncodeMessages(boolean b) {
 		encodeMessages = b;
+	}
+
+	public boolean isStaleChecking() {
+		return staleChecking;
+	}
+
+	public void setStaleChecking(boolean b) {
+		staleChecking = b;
 	}
 
 }
