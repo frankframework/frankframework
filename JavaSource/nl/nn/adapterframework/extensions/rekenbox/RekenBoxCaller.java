@@ -1,6 +1,9 @@
 /*
  * $Log: RekenBoxCaller.java,v $
- * Revision 1.3  2004-03-26 09:50:52  NNVZNL01#L180564
+ * Revision 1.4  2004-08-09 13:57:13  L190409
+ * improved determination of rekenbox-name
+ *
+ * Revision 1.3  2004/03/26 09:50:52  Johan Verrips <johan.verrips@ibissource.org>
  * Updated javadoc
  *
  * Revision 1.2  2004/03/24 15:30:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -10,6 +13,9 @@
 package nl.nn.adapterframework.extensions.rekenbox;
 
 import java.io.File;
+
+import org.apache.commons.lang.StringUtils;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -60,8 +66,8 @@ import nl.nn.adapterframework.util.Misc;
  * @version Id
  */
 public class RekenBoxCaller extends FixedForwardPipe {
-	public static final String version="$Id: RekenBoxCaller.java,v 1.3 2004-03-26 09:50:52 NNVZNL01#L180564 Exp $";
-	private String runPath;
+	public static final String version="$Id: RekenBoxCaller.java,v 1.4 2004-08-09 13:57:13 L190409 Exp $";
+	private String runPath="";
 	private String executableExtension="exe"; //bat, com or exe
 	private String inputOutputDirectory;
 	private String templateDir;
@@ -71,12 +77,7 @@ public class RekenBoxCaller extends FixedForwardPipe {
  * output-property to communicate the name of the rekenbox to adios2Xml converter
  */
 private String rekenboxSessionKey=null;
-/**
- * RekenBoxCaller constructor comment.
- */
-public RekenBoxCaller() {
-	super();
-}
+
 public void configure() throws ConfigurationException {
 	super.configure();
 }
@@ -100,6 +101,13 @@ public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRu
 	if (rekenboxName.equals("")) {
 		throw new PipeRunException(this, getLogPrefix(session)+"cannot determine rekenboxName from ["+sInput+"]");
 	}
+	
+	int i=rekenboxName.length();
+	int n=sInput.length();
+	while (i<n && " :;".indexOf(sInput.charAt(i))>=0) {
+		i++;
+	}
+	String rekenboxInput = sInput.substring(i);
 	
     String exeName = runPath+rekenboxName+ "."+executableExtension;
 	if (!(new File(exeName).exists())) {
@@ -129,7 +137,7 @@ public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRu
 
     try {
         // put input in a file
-		Misc.stringToFile( sInput, inputFileName);
+		Misc.stringToFile( rekenboxInput, inputFileName);
 		
 		log.debug(getLogPrefix(session)+" will issue command ["+callAndArgs+"]");
   
