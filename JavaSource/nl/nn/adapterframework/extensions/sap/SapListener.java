@@ -1,6 +1,9 @@
 /*
- * $Log: SapMessagePusher.java,v $
- * Revision 1.4  2004-08-09 13:56:23  L190409
+ * $Log: SapListener.java,v $
+ * Revision 1.1  2004-08-23 07:12:05  L190409
+ * renamed SapMessagePusher to SapListener
+ *
+ * Revision 1.4  2004/08/09 13:56:23  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed ServiceClient to MessageHandler
  *
  * Revision 1.3  2004/07/19 09:45:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -63,8 +66,8 @@ import com.sap.mw.jco.JCO.Server;
  * @author Gerrit van Brakel
  * @since 4.2
  */
-public class SapMessagePusher extends SapFunctionFacade implements IPushingListener, SapFunctionHandler, JCO.ServerExceptionListener, JCO.ServerErrorListener {
-	public static final String version="$Id: SapMessagePusher.java,v 1.4 2004-08-09 13:56:23 L190409 Exp $";
+public class SapListener extends SapFunctionFacade implements IPushingListener, SapFunctionHandler, JCO.ServerExceptionListener, JCO.ServerErrorListener {
+	public static final String version="$Id: SapListener.java,v 1.1 2004-08-23 07:12:05 L190409 Exp $";
 
 	private String progid;	 // progid of the RFC-destination
         	
