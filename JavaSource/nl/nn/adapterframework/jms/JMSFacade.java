@@ -1,6 +1,9 @@
 /*
  * $Log: JMSFacade.java,v $
- * Revision 1.12  2004-05-21 10:47:30  a1909356#db2admin
+ * Revision 1.13  2004-06-16 12:25:52  NNVZNL01#L180564
+ * Initial version of Queue browsing functionality
+ *
+ * Revision 1.12  2004/05/21 10:47:30  unknown <unknown@ibissource.org>
  * Add (modifications) due to the postbox retriever implementation
  *
  * Revision 1.11  2004/05/03 07:11:32  Johan Verrips <johan.verrips@ibissource.org>
@@ -27,15 +30,17 @@
  *
  */
 package nl.nn.adapterframework.jms;
+import java.util.Enumeration;
 
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IXAEnabled;
 import nl.nn.adapterframework.core.IbisException;
+import nl.nn.adapterframework.core.MessageBrowseException;
 
 import com.ibm.mq.jms.JMSC;
 import com.ibm.mq.jms.MQQueue;
 import nl.nn.adapterframework.core.INamedObject;
-
+import nl.nn.adapterframework.core.IMessageBrowser;
 import javax.jms.*;
 import javax.naming.NamingException;
 
@@ -50,7 +55,7 @@ import javax.naming.NamingException;
  * @author    Gerrit van Brakel
  */
 public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version="$Id: JMSFacade.java,v 1.12 2004-05-21 10:47:30 a1909356#db2admin Exp $";
+	public static final String version="$Id: JMSFacade.java,v 1.13 2004-06-16 12:25:52 NNVZNL01#L180564 Exp $";
 
 	private String name;
 
@@ -724,5 +729,23 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	public boolean isTransacted() {
 		return transacted;
 	}
+
+/**
+ * Create a browser session
+ * @return
+ * @throws javax.naming.NamingException
+ * @throws JMSException
+ */
+public QueueSession getQueueBrowserSession()
+	   throws javax.naming.NamingException, JMSException {
+	   	QueueSession browserSession=null;
+	      	this.setTransacted(false);
+	      	this.setAckMode(Session.AUTO_ACKNOWLEDGE);
+			   	 browserSession = createQueueSession((QueueConnection)getConnection());
+		   log.debug(
+			   "["+name+"] got browserSession");
+	   return browserSession;
+   }
+
 
 }
