@@ -2,12 +2,15 @@
 package nl.nn.adapterframework.pipes;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.*;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.util.XmlUtils;
 import java.util.Iterator;
+
+import javax.xml.transform.Transformer;
 
 /**
  * Extension of the {@link XmlSwitch XmlSwitch}: an xml switch that can use parameters. The parameters
@@ -16,7 +19,7 @@ import java.util.Iterator;
  * @version Id
  */
 public class XmlParamSwitch extends XmlSwitch {
-	public static final String version="$Id: XmlParamSwitch.java,v 1.1 2004-04-06 12:57:14 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: XmlParamSwitch.java,v 1.2 2004-05-21 07:37:24 a1909356#db2admin Exp $";
 
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -29,21 +32,20 @@ public class XmlParamSwitch extends XmlSwitch {
 		PipeForward pipeForward=null;
 
 		try {
-		   if (getServiceSelectionTransformer() != null) {
-				getServiceSelectionTransformer().clearParameters();
+			final Transformer transformer = getServiceSelectionTransformer();
+		   	if (transformer != null) {
+				transformer.clearParameters();
+				ParameterValueResolver resolver = new ParameterValueResolver(input, session);
 				Iterator i = getParameterList().iterator();
 				while (i.hasNext()) {
-					PipeParameter p = (PipeParameter) i.next();
-					if (p.getValue(session)!=null) {
-						
-						getServiceSelectionTransformer().setParameter(
-							p.getName(),
-							p.getValue(session));
-
-						log.debug(getLogPrefix(session)+"registering parameter ["
-								+ p.toString()
-								+ "] on transformer");
-					} else {
+					Parameter p = (Parameter) i.next();
+					Object value = resolver.getValue(p); 
+					
+					if (value != null) {
+						getServiceSelectionTransformer().setParameter(p.getName(), value);
+						log.debug(getLogPrefix(session)+"registering parameter [" + p.toString()+ "] on transformer");
+					} 
+					else {
 						log.warn(getLogPrefix(session)+"omitting parameter ["+p.getName()+"] as it has a null-value");
 					}
 				}
@@ -77,7 +79,6 @@ public class XmlParamSwitch extends XmlSwitch {
 			  throw new PipeRunException (this, "cannot find forward or pipe named ["+forward+"]");
 		}
 		return new PipeRunResult(pipeForward, input);
-	
 	}
 	
 

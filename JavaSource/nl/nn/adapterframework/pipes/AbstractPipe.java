@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractPipe.java,v $
- * Revision 1.5  2004-04-06 10:16:16  NNVZNL01#L180564
+ * Revision 1.6  2004-05-21 07:37:08  a1909356#db2admin
+ * Moved PipeParameter to core
+ *
+ * Revision 1.5  2004/04/06 10:16:16  Johan Verrips <johan.verrips@ibissource.org>
  * Added PipeParameter and implemented it. Added XsltParamPipe also
  *
  * Revision 1.4  2004/03/30 07:30:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -10,6 +13,7 @@
 package nl.nn.adapterframework.pipes;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.*;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -59,7 +63,7 @@ import java.util.Hashtable;
  * @see nl.nn.adapterframework.core.PipeLineSession
  */
 public abstract class AbstractPipe implements IPipe {
-  public static final String version="$Id: AbstractPipe.java,v 1.5 2004-04-06 10:16:16 NNVZNL01#L180564 Exp $";
+  public static final String version="$Id: AbstractPipe.java,v 1.6 2004-05-21 07:37:08 a1909356#db2admin Exp $";
   private String name;
   protected Logger log = Logger.getLogger(this.getClass());
   private Hashtable pipeForwards=new Hashtable();
@@ -196,7 +200,7 @@ public void configure() throws ConfigurationException{
 	 * Add a parameter to the list of parameters
 	 * @param rhs the PipeParameter.
 	 */
-	public void addParameter(PipeParameter rhs) {
+	public void addParameter(Parameter rhs) {
 		log.debug("Pipe ["+getName()+"] added parameter ["+rhs.toString()+"]");
 		parameterList.add(rhs);
 	}
