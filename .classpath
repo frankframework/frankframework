@@ -20,5 +20,6 @@
     <classpathentry kind="lib" path="H:/Ios/1_OO_straat/Technologie/libraries/Apache commons/cli/cli-1.0/commons-cli-1.0.jar"/>
     <classpathentry kind="var" path="WAS_50_PLUGINDIR/mqjms/Java/lib/com.ibm.mqjms.jar"/>
     <classpathentry kind="lib" path="H:/Ios/1_OO_straat/Technologie/libraries/IFSAPackageNT110/java/lib/ifsajms.jar"/>
+    <classpathentry kind="var" path="WAS_50_PLUGINDIR/lib/jmxc.jar"/>
     <classpathentry kind="output" path="bin"/>
 </classpath>
