@@ -1,6 +1,9 @@
 /*
  * $Log: IPushingListener.java,v $
- * Revision 1.2  2004-08-03 13:09:51  L190409
+ * Revision 1.3  2004-09-08 14:15:11  L190409
+ * removed unused imports
+ *
+ * Revision 1.2  2004/08/03 13:09:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * moved afterMessageProcessed to IListener
  *
  * Revision 1.1  2004/07/15 07:38:22  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -15,10 +18,6 @@
  */
 package nl.nn.adapterframework.core;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-
-import java.util.HashMap;
-
 /**
  * Defines listening behaviour of message driven receivers.
  * 
@@ -27,7 +26,7 @@ import java.util.HashMap;
  * @since 4.2
  */
 public interface IPushingListener extends IListener {
-	public static final String version="$Id: IPushingListener.java,v 1.2 2004-08-03 13:09:51 L190409 Exp $";
+	public static final String version="$Id: IPushingListener.java,v 1.3 2004-09-08 14:15:11 L190409 Exp $";
 
 
 /**

@@ -1,6 +1,9 @@
 /*
  * $Log: IPullingListener.java,v $
- * Revision 1.6  2004-08-03 13:10:56  L190409
+ * Revision 1.7  2004-09-08 14:15:11  L190409
+ * removed unused imports
+ *
+ * Revision 1.6  2004/08/03 13:10:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * moved afterMessageProcessed to IListener
  *
  * Revision 1.5  2004/07/15 07:38:22  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -15,8 +18,6 @@
  */
 package nl.nn.adapterframework.core;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-
 import java.util.HashMap;
 /**
  * Defines listening behaviour of pulling receivers.
@@ -27,7 +28,7 @@ import java.util.HashMap;
  * @author Gerrit van Brakel
  */
 public interface IPullingListener extends IListener {
-		public static final String version="$Id: IPullingListener.java,v 1.6 2004-08-03 13:10:56 L190409 Exp $";
+		public static final String version="$Id: IPullingListener.java,v 1.7 2004-09-08 14:15:11 L190409 Exp $";
 
 /**
  * Prepares a thread for receiving messages.

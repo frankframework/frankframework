@@ -1,6 +1,9 @@
 /*
  * $Log: IListener.java,v $
- * Revision 1.3  2004-08-23 13:07:26  L190409
+ * Revision 1.4  2004-09-08 14:15:11  L190409
+ * removed unused imports
+ *
+ * Revision 1.3  2004/08/23 13:07:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated JavaDoc
  *
  * Revision 1.2  2004/08/03 13:09:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -14,7 +17,6 @@
 package nl.nn.adapterframework.core;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.receivers.ServiceClient;
 
 import java.util.HashMap;
 
@@ -26,7 +28,7 @@ import java.util.HashMap;
  * @since 4.2
  */
 public interface IListener extends INamedObject {
-	public static final String version="$Id: IListener.java,v 1.3 2004-08-23 13:07:26 L190409 Exp $";
+	public static final String version="$Id: IListener.java,v 1.4 2004-09-08 14:15:11 L190409 Exp $";
 
 /**
  * <code>configure()</code> is called once at startup of the framework in the configure method of the owner of this listener. 
