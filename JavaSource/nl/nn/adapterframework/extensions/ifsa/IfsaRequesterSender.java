@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaRequesterSender.java,v $
- * Revision 1.7  2004-07-20 13:28:38  L190409
+ * Revision 1.8  2004-07-22 11:03:02  L190409
+ * improved logging of non-TextMessages
+ *
+ * Revision 1.7  2004/07/20 13:28:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * implemented IFSA timeout mode
  *
  * Revision 1.6  2004/07/19 13:20:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -65,7 +68,7 @@ import com.ing.ifsa.IFSATimeOutMessage;
  * @since 4.2
  */
 public class IfsaRequesterSender extends IfsaFacade implements ISender {
-	public static final String version="$Id: IfsaRequesterSender.java,v 1.7 2004-07-20 13:28:38 L190409 Exp $";
+	public static final String version="$Id: IfsaRequesterSender.java,v 1.8 2004-07-22 11:03:02 L190409 Exp $";
   
 	public IfsaRequesterSender() {
   		super(false); // instantiate IfsaFacade as a requestor	
@@ -108,7 +111,7 @@ public class IfsaRequesterSender extends IfsaFacade implements ISender {
 	private TextMessage getRawReplyMessage(TextMessage sentMessage) throws SenderException, TimeOutException {
 	
 		String correlationID;
-	    TextMessage msg = null;
+	    Object msg = null;
 		QueueSession replySession;
 		QueueReceiver replyReceiver;
 	    try {
@@ -116,7 +119,9 @@ public class IfsaRequesterSender extends IfsaFacade implements ISender {
 		    replySession = createSession();
 		    replyReceiver = getReplyReceiver(replySession, sentMessage);
 	
-		    msg = (TextMessage) replyReceiver.receive(getExpiry());
+			long timeout = getExpiry();
+			log.debug(getLogPrefix()+"start waiting at most ["+timeout+"] ms for reply on message with correlation ID ["+correlationID+"]");
+		    msg = replyReceiver.receive(timeout);
 	    } catch (Exception e) {
 	        throw new SenderException(getLogPrefix()+"got exception retrieving reply", e);
 	    }
@@ -132,8 +137,12 @@ public class IfsaRequesterSender extends IfsaFacade implements ISender {
 		if (msg instanceof IFSATimeOutMessage) {
 			throw new TimeOutException(getLogPrefix()+"received IFSATimeOutMessage waiting for reply with correlationID [" + correlationID + "]");
 		}
-	    return msg;
-	    
+		try {
+			TextMessage result = (TextMessage)msg;
+			return result;
+		} catch (Exception e) {
+			throw new SenderException(getLogPrefix()+"reply received for message with correlationId [" + correlationID + "] cannot be cast to TextMessage ["+msg.getClass().getName()+"]",e);
+		}
 	
 	}
 	/**
