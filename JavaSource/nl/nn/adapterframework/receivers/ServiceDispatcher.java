@@ -21,7 +21,7 @@ import java.util.TreeSet;
  * @see ServiceDispatcherBean
  */
 public class ServiceDispatcher  {
-	public static final String version="$Id: ServiceDispatcher.java,v 1.4 2004-03-26 10:43:01 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: ServiceDispatcher.java,v 1.5 2004-06-22 11:57:19 L190409 Exp $";
 	
 	protected Logger log = Logger.getLogger(this.getClass());
 	private Hashtable registeredListeners=new Hashtable();
@@ -106,7 +106,11 @@ public class ServiceDispatcher  {
      * @param listener a ServiceListener implementation
      */
 	public  void registerServiceListener(ServiceListener listener){
-		registeredListeners.put(listener.getName(), listener);
-		log.info("Listener ["+listener.getName()+"] registered at ServiceDispatcher");
+		registerServiceClient(listener.getName(), listener);
+	}
+
+	public  void registerServiceClient(String name, ServiceClient listener){
+		registeredListeners.put(name, listener);
+		log.info("Listener ["+name+"] registered at ServiceDispatcher");
 	}
 }
