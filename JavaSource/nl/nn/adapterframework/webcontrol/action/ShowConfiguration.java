@@ -1,6 +1,9 @@
 /*
  * $Log: ShowConfiguration.java,v $
- * Revision 1.4  2004-03-26 10:42:58  NNVZNL01#L180564
+ * Revision 1.5  2004-06-16 13:07:41  NNVZNL01#L180564
+ * Added identity transform functionality to resolve entities
+ *
+ * Revision 1.4  2004/03/26 10:42:58  Johan Verrips <johan.verrips@ibissource.org>
  * added @version tag in javadoc
  *
  * Revision 1.3  2004/03/23 17:02:52  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -9,8 +12,11 @@
  */
 package nl.nn.adapterframework.webcontrol.action;
 
+import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.StringResolver;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.XmlUtils;
+
 import org.apache.commons.lang.SystemUtils;
 import org.apache.log4j.Logger;
 import org.apache.struts.action.ActionForm;
@@ -40,7 +46,7 @@ import java.net.URL;
  */
 
 public final class ShowConfiguration extends ActionBase {
-	public static final String version="$Id: ShowConfiguration.java,v 1.4 2004-03-26 10:42:58 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: ShowConfiguration.java,v 1.5 2004-06-16 13:07:41 NNVZNL01#L180564 Exp $";
 	
 
 
@@ -79,6 +85,11 @@ public ActionForward execute(
         }
         
         in.close();
+        try {
+        result=XmlUtils.identityTransform(result);
+        } catch(DomBuilderException e){
+        	log.error(e);
+        }
         if (AppConstants.getInstance().getBoolean("showConfiguration.resolve.variables", true))
 			result=StringResolver.substVars(result, AppConstants.getInstance());
         
