@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaFacade.java,v $
- * Revision 1.12  2004-07-20 13:28:07  L190409
+ * Revision 1.13  2004-07-20 16:37:47  L190409
+ * toch maar niet IFSA-mode timeout
+ *
+ * Revision 1.12  2004/07/20 13:28:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * implemented IFSA timeout mode
  *
  * Revision 1.11  2004/07/19 13:20:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -63,7 +66,7 @@ import javax.jms.*;
  * @since 4.2
  */
 public class IfsaFacade implements INamedObject, HasPhysicalDestination {
-	public static final String version="$Id: IfsaFacade.java,v 1.12 2004-07-20 13:28:07 L190409 Exp $";
+	public static final String version="$Id: IfsaFacade.java,v 1.13 2004-07-20 16:37:47 L190409 Exp $";
     protected Logger log = Logger.getLogger(this.getClass());
     
 	private final static String IFSA_INITIAL_CONTEXT_FACTORY="com.ing.ifsa.IFSAContextFactory";
@@ -153,8 +156,10 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 	    } catch (JMSException e) {
 	        throw new IfsaException("exception closing service",e);
 	    } finally {
+	    	// make sure all objects are reset, to be able to restart after IFSA parameters have changed (e.g. at iterative installation time)
 	        queue = null;
 	        connection = null;
+			ifsaQueueConnectionFactory = null;
 			context = null;
 	    }
 	}
@@ -188,12 +193,12 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 				if (isRequestor()) {
 					queue = (Queue) getContext().lookupService(getServiceId());
 					if (log.isDebugEnabled()) {
-						log.debug(getLogPrefix()+ "got Queue to send messages on");
+						log.debug(getLogPrefix()+ "got Queue to send messages on "+getPhysicalDestinationName());
 					}
 				} else {
 					queue = (Queue) getContext().lookupProviderInput();
 					if (log.isDebugEnabled()) {
-						log.debug(getLogPrefix()+ "got Queue to receive messages from]");
+						log.debug(getLogPrefix()+ "got Queue to receive messages from "+getPhysicalDestinationName());
 					}
 				}
 	
@@ -224,7 +229,8 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 	 */
 	public QueueSession createSession() throws IfsaException {
 		try {
-			return connection.createQueueSession(isTransacted(), Session.AUTO_ACKNOWLEDGE + IFSAConstants.QueueSession.IFSA_MODE);
+//			return connection.createQueueSession(isTransacted(), Session.AUTO_ACKNOWLEDGE + IFSAConstants.QueueSession.IFSA_MODE);
+			return connection.createQueueSession(isTransacted(), Session.AUTO_ACKNOWLEDGE);
 		} catch (JMSException e) {
 			throw new IfsaException(e);
 		}
