@@ -5,15 +5,16 @@ import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.core.PipeStartException;
+import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
 import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.pool.BasePoolableObjectFactory;
-import org.apache.commons.pool.ObjectPool;
-import org.apache.commons.pool.impl.GenericObjectPool;
 
 
 import java.io.IOException;
@@ -42,10 +43,10 @@ import java.io.IOException;
  * @author Johan Verrips
  */
 public class XmlSwitch extends AbstractPipe {
-	public static final String version="$Id: XmlSwitch.java,v 1.7 2004-08-31 13:19:58 a1909356#db2admin Exp $";
+	public static final String version="$Id: XmlSwitch.java,v 1.8 2004-10-05 10:58:22 L190409 Exp $";
 	
-    private static final String DEFAULT_SERVICESELECTION_XSLT = XmlUtils.XSLT_GETROOTNODENAME;
-	private ObjectPool transformerPool;
+    private static final String DEFAULT_SERVICESELECTION_XPATH = XmlUtils.XPATH_GETROOTNODENAME;
+	private TransformerPool transformerPool;
 	private String xpathExpression=null;
     private String serviceSelectionStylesheetFilename=null;
     private String notFoundForwardName=null;
@@ -61,59 +62,55 @@ public class XmlSwitch extends AbstractPipe {
 			}
 		}
 
-		transformerPool = new GenericObjectPool(new BasePoolableObjectFactory() {
-			public Object makeObject() throws Exception {
-				// create a transformer for the service selection
-				if (!StringUtils.isEmpty(getXpathExpression())) {
-					if (serviceSelectionStylesheetFilename != null) {
-						throw new ConfigurationException(getLogPrefix(null) + "cannot have both an xpathExpression and a serviceSelectionStylesheetFilename specified");
-					}
-					try {
-						return XmlUtils.createXPathEvaluator(getXpathExpression(), "text");
-					} 
-					catch (javax.xml.transform.TransformerConfigurationException te) {
-						throw new ConfigurationException(getLogPrefix(null) + "got error creating transformer from xpathExpression [" + getXpathExpression() + "]", te);
-					}
-				} 
-				else {
-					if (serviceSelectionStylesheetFilename != null) {
-						try {
-							return XmlUtils.createTransformer(ClassUtils.getResourceURL(this, serviceSelectionStylesheetFilename));
-						} 
-						catch (IOException e) {
-							throw new ConfigurationException(getLogPrefix(null) + "cannot retrieve ["+ serviceSelectionStylesheetFilename + "]", e);
-						} 
-						catch (javax.xml.transform.TransformerConfigurationException te) {
-							throw new ConfigurationException(getLogPrefix(null) + "got error creating transformer from file [" + serviceSelectionStylesheetFilename + "]", te);
-						}
-					} 
-					else {
-						try {
-							// create a transformer that looks to the root node 
-							return XmlUtils.createTransformer(DEFAULT_SERVICESELECTION_XSLT);
-						} 
-						catch (javax.xml.transform.TransformerConfigurationException te) {
-							throw new ConfigurationException(getLogPrefix(null) + "got error creating transformer from string [" + DEFAULT_SERVICESELECTION_XSLT + "]", te);
-						}
-					}
+		if (!StringUtils.isEmpty(getXpathExpression())) {
+			if (!StringUtils.isEmpty(getServiceSelectionStylesheetFilename())) {
+				throw new ConfigurationException(getLogPrefix(null) + "cannot have both an xpathExpression and a serviceSelectionStylesheetFilename specified");
+			}
+			try {
+				transformerPool = new TransformerPool(XmlUtils.createXPathEvaluatorSource(getXpathExpression(), "text"));
+			} 
+			catch (TransformerConfigurationException te) {
+				throw new ConfigurationException(getLogPrefix(null) + "got error creating transformer from xpathExpression [" + getXpathExpression() + "]", te);
+			}
+		} 
+		else {
+			if (!StringUtils.isEmpty(getServiceSelectionStylesheetFilename())) {
+				try {
+					transformerPool = new TransformerPool(ClassUtils.getResourceURL(this, getServiceSelectionStylesheetFilename()));
+				} catch (IOException e) {
+					throw new ConfigurationException(getLogPrefix(null) + "cannot retrieve ["+ serviceSelectionStylesheetFilename + "]", e);
+				} catch (TransformerConfigurationException te) {
+					throw new ConfigurationException(getLogPrefix(null) + "got error creating transformer from file [" + serviceSelectionStylesheetFilename + "]", te);
+				}
+			} else {
+				try {
+					// create a transformer that looks to the root node 
+					transformerPool = new TransformerPool(XmlUtils.createXPathEvaluatorSource(DEFAULT_SERVICESELECTION_XPATH, "text"));
+				} catch (TransformerConfigurationException te) {
+					throw new ConfigurationException(getLogPrefix(null) + "got error creating XPathEvaluator from string [" + DEFAULT_SERVICESELECTION_XPATH + "]", te);
 				}
 			}
-		});
+		}
+	}
+	
+	public void start() throws PipeStartException {
+		super.start();
+		if (transformerPool!=null) {
+			try {
+				transformerPool.open();
+			} catch (Exception e) {
+				throw new PipeStartException(getLogPrefix(null)+"cannot start TransformerPool", e);
+			}
+		}
+	}
+	
+	public void stop() {
+		super.stop();
+		if (transformerPool!=null) {
+			transformerPool.close();
+		}
 	}
 
-	/**
-	 * Get a transformer from the pool 
-	 */
-	public Transformer openTransformer() throws Exception {
-		return (Transformer)transformerPool.borrowObject();
-	}
-
-	/**
-	 * Return the transformer to the pool
-	 */
-	public void closeTransformer(Transformer t) throws Exception {
-		transformerPool.returnObject(t);
-	}
 
 	/**
 	 * This is where the action takes place, the switching is done. Pipes may only throw a PipeRunException,
@@ -129,7 +126,10 @@ public class XmlSwitch extends AbstractPipe {
 	
 		Transformer t = null;
 		try {
-	 		t = openTransformer();
+	 		t = transformerPool.getTransformer();
+			if (getParameterList()!=null) {
+				XmlUtils.setTransformerParameters(t, new ParameterResolutionContext(input, session).getValues(getParameterList()));
+			}
             forward = XmlUtils.transformXml(t, sInput);
             log.debug(getLogPrefix(session)+ "determined forward ["+forward+"]");
 
@@ -142,17 +142,20 @@ public class XmlSwitch extends AbstractPipe {
 		}
 	    catch (Throwable e) {
 		    try {
-			    configure();
-			    start();
-			    log.debug(getLogPrefix(session)+ ": transformer was reinitialized as an error occured on the last transformation");
+		    	transformerPool.invalidateTransformer(t);
+			    log.info(getLogPrefix(session)+ ": transformer was removed from pool, as an error occured on the last transformation");
 		    } 
 		    catch (Throwable e2) {
-			    log.error("Pipe [" + getName() + "] got error on reinitializing the transformer", e2);
+			    log.error("Pipe [" + getName() + "] got error on removing transformer from pool", e2);
 		    }
 	   	    throw new PipeRunException(this, getLogPrefix(null)+"got exception on transformation", e);
 	    }
 		finally {
-			try { closeTransformer(t); } catch(Exception e) {}
+			try { 
+				transformerPool.releaseTransformer(t);
+			} catch (Exception e) {
+				log.warn(getLogPrefix(null)+"got exception releasing transformer",e);
+			}
 		}
 		
 		if (pipeForward==null) {
@@ -160,6 +163,7 @@ public class XmlSwitch extends AbstractPipe {
 		}
 		return new PipeRunResult(pipeForward, input);
 	}
+	
 	public String getServiceSelectionStylesheetFilename() {
 		return serviceSelectionStylesheetFilename;
 	}
