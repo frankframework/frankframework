@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.8  2004-04-06 12:43:14  NNVZNL01#L180564
+ * Revision 1.9  2004-04-28 14:32:42  NNVZNL01#L180564
+ * Corrected erroneous pipe run statistics
+ *
+ * Revision 1.8  2004/04/06 12:43:14  Johan Verrips <johan.verrips@ibissource.org>
  * added CommitOnState
  *
  * Revision 1.7  2004/03/31 12:04:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -84,7 +87,7 @@ import javax.transaction.UserTransaction;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version="$Id: PipeLine.java,v 1.8 2004-04-06 12:43:14 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: PipeLine.java,v 1.9 2004-04-28 14:32:42 NNVZNL01#L180564 Exp $";
     private Logger log = Logger.getLogger(this.getClass());
 	private Adapter adapter; // for logging purposes, and for transaction managing
 	private boolean transacted=false;
@@ -289,8 +292,6 @@ public class PipeLine {
 	    PipeRunResult pipeRunResult;
 	    // the PipeLineResult 
 		PipeLineResult pipeLineResult=new PipeLineResult();   
-	    
-	    long pipeStartTime = System.currentTimeMillis();
 	
 	
 		
@@ -301,6 +302,9 @@ public class PipeLine {
 	    IPipe pipeToRun = (IPipe) pipelineTable.get(firstPipe);
 	    
 	    while (!ready){
+	    	
+			long pipeStartTime= System.currentTimeMillis();
+			
 			if (log.isDebugEnabled()){  // for performance reasons
 				StringBuffer sb=new StringBuffer();
 				sb.append("Pipeline of adapter ["+adapter.getName()+"] messageId ["+messageId+"] is about to call pipe ["+ pipeToRun.getName()+"]");
@@ -343,6 +347,7 @@ public class PipeLine {
 		        }
 	        } else { //no restrictions on the maximum number of threads (s==null)
 		        try {
+		        	
 			        pipeRunResult = pipeToRun.doPipe(object, pipeLineSession);
 	 		    } finally {
 				        long pipeEndTime = System.currentTimeMillis();
