@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaFacade.java,v $
- * Revision 1.17  2004-08-09 08:46:07  L190409
+ * Revision 1.18  2004-08-23 13:12:25  L190409
+ * updated JavaDoc
+ *
+ * Revision 1.17  2004/08/09 08:46:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * small changes
  *
  * Revision 1.16  2004/08/03 13:07:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -79,7 +82,7 @@ import javax.jms.*;
  * @since 4.2
  */
 public class IfsaFacade implements INamedObject, HasPhysicalDestination {
-	public static final String version="$Id: IfsaFacade.java,v 1.17 2004-08-09 08:46:07 L190409 Exp $";
+	public static final String version="$Id: IfsaFacade.java,v 1.18 2004-08-23 13:12:25 L190409 Exp $";
     protected Logger log = Logger.getLogger(this.getClass());
     
 	private final static String IFSA_INITIAL_CONTEXT_FACTORY="com.ing.ifsa.IFSAContextFactory";
@@ -290,10 +293,6 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 	 * by IFSA.<br/>
 	 * For a clientconnection, the receiver is done with the <code>getClientReplyQueue</code>
 	 * @see javax.jms.QueueReceiver
-	 * @see IfsaBase#getQueue()
-	 * @return                                   The queueReceiver value
-	 * @exception  javax.naming.NamingException  Description of the Exception
-	 * @exception  javax.jms.JMSException                  Description of the Exception
 	 */
 	protected QueueReceiver getServiceReceiver(
 		QueueSession session)
@@ -399,11 +398,6 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 	 * without the <code>selector</code> information, as this is not allowed
 	 * by IFSA.<br/>
 	 * For a clientconnection, the receiver is done with the <code>getClientReplyQueue</code>
-	 * @see javax.jms.QueueReceiver
-	 * @see IfsaBase#getQueue()
-	 * @return                                   The queueReceiver value
-	 * @exception  javax.naming.NamingException  Description of the Exception
-	 * @exception  javax.jms.JMSException                  Description of the Exception
 	 */
 	public QueueReceiver getReplyReceiver(QueueSession session, Message sentMessage)
 	    throws IfsaException {
@@ -458,7 +452,7 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 	 * Indicates whether the object at hand represents a Client (returns <code>False</code>) or
 	 * a Server (returns <code>True</code>).
 	 *
-	 * @see #isClient()
+	 * @see #isRequestor()
 	 */
 	public boolean isProvider() throws IfsaException {
 		return ! isRequestor();

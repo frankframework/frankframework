@@ -1,6 +1,9 @@
 /*
  * $Log: JMSFacade.java,v $
- * Revision 1.16  2004-08-18 09:20:58  a1909356#db2admin
+ * Revision 1.17  2004-08-23 13:08:36  L190409
+ * updated JavaDoc
+ *
+ * Revision 1.16  2004/08/18 09:20:58  unknown <unknown@ibissource.org>
  * Make getConnection and closeConnection thread safe
  *
  * Revision 1.15  2004/08/16 11:27:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -73,7 +76,6 @@ import javax.naming.NamingException;
  * <tr><td>{@link #setPersistent(boolean) persistent}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setAcknowledgeMode(String) acknowledgeMode}</td><td>&nbsp;</td><td>AUTO_ACKNOWLEDGE</td></tr>
  * <tr><td>{@link #setTransacted(boolean) transacted}</td><td>&nbsp;</td><td>false</td></tr>
- * <tr><td>{@link #setReplyToName(String) ReplyToName}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
@@ -83,7 +85,7 @@ import javax.naming.NamingException;
  * @author    Gerrit van Brakel
  */
 public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version="$Id: JMSFacade.java,v 1.16 2004-08-18 09:20:58 a1909356#db2admin Exp $";
+	public static final String version="$Id: JMSFacade.java,v 1.17 2004-08-23 13:08:36 L190409 Exp $";
 
 	private String name;
 
@@ -767,21 +769,18 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 		return transacted;
 	}
 
-/**
- * Create a browser session
- * @return
- * @throws javax.naming.NamingException
- * @throws JMSException
- */
-public QueueSession getQueueBrowserSession()
-	   throws javax.naming.NamingException, JMSException {
-	   	QueueSession browserSession=null;
-	      	this.setTransacted(false);
-	      	this.setAckMode(Session.AUTO_ACKNOWLEDGE);
-			   	 browserSession = createQueueSession((QueueConnection)getConnection());
-		   log.debug(
-			   "["+name+"] got browserSession");
-	   return browserSession;
+	/**
+	 * Create a browser session
+	 */
+	public QueueSession getQueueBrowserSession()
+		   throws javax.naming.NamingException, JMSException {
+		   	QueueSession browserSession=null;
+		      	this.setTransacted(false);
+		      	this.setAckMode(Session.AUTO_ACKNOWLEDGE);
+				   	 browserSession = createQueueSession((QueueConnection)getConnection());
+			   log.debug(
+				   "["+name+"] got browserSession");
+		   return browserSession;
    }
 
 

@@ -1,6 +1,9 @@
 /*
  * $Log: SapSystem.java,v $
- * Revision 1.2  2004-07-07 13:56:01  L190409
+ * Revision 1.3  2004-08-23 13:11:58  L190409
+ * updated JavaDoc
+ *
+ * Revision 1.2  2004/07/07 13:56:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * remove ClientPool before adding it
  *
  * Revision 1.1  2004/07/06 07:09:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -16,7 +19,7 @@ package nl.nn.adapterframework.extensions.sap;
 import com.sap.mw.jco.*;
 
 import nl.nn.adapterframework.core.INamedObject;
-import nl.nn.adapterframework.util.*;
+import nl.nn.adapterframework.util.GlobalListItem;
 
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -41,7 +44,7 @@ import org.apache.log4j.Logger;
  * @since 4.1.1
  */
 public class SapSystem extends GlobalListItem {
-	public static final String version="$Id: SapSystem.java,v 1.2 2004-07-07 13:56:01 L190409 Exp $";
+	public static final String version="$Id: SapSystem.java,v 1.3 2004-08-23 13:11:58 L190409 Exp $";
 
 	private int maxConnections = 10;
 
@@ -59,8 +62,6 @@ public class SapSystem extends GlobalListItem {
 
 	/**
 	 * Retrieve a SapSystem from the list of systems.
-	 * @param name
-	 * @return
 	 */
 	public static SapSystem getSystem(String name) {
 		return (SapSystem)getItem(name);
@@ -130,115 +131,67 @@ public class SapSystem extends GlobalListItem {
 
 	}
 
-	/**
-	 * @return
-	 */
 	public String getGwhost() {
 		return gwhost;
 	}
 
-	/**
-	 * @return
-	 */
 	public String getLanguage() {
 		return language;
 	}
 
-	/**
-	 * @return
-	 */
 	public String getMandant() {
 		return mandant;
 	}
 
-	/**
-	 * @return
-	 */
 	public String getPasswd() {
 		return passwd;
 	}
 
-	/**
-	 * @return
-	 */
 	public String getSystemnr() {
 		return systemnr;
 	}
 
-	/**
-	 * @return
-	 */
 	public String getUserid() {
 		return userid;
 	}
 
-	/**
-	 * @param string
-	 */
 	public void setGwhost(String string) {
 		gwhost = string;
 	}
 
-	/**
-	 * @param string
-	 */
 	public void setLanguage(String string) {
 		language = string;
 	}
 
-	/**
-	 * @param string
-	 */
 	public void setMandant(String string) {
 		mandant = string;
 	}
 
 
-	/**
-	 * @param string
-	 */
 	public void setPasswd(String string) {
 		passwd = string;
 	}
 
-	/**
-	 * @param string
-	 */
 	public void setSystemnr(String string) {
 		systemnr = string;
 	}
 
-	/**
-	 * @param string
-	 */
 	public void setUserid(String string) {
 		userid = string;
 	}
 
-	/**
-	 * @return
-	 */
 	public int getMaxConnections() {
 		return maxConnections;
 	}
 
-	/**
-	 * @param i
-	 */
 	public void setMaxConnections(int i) {
 		maxConnections = i;
 	}
 
-	/**
-	 * @return
-	 */
 	public int getServiceOffset() {
 		return serviceOffset;
 	}
 
-	/**
-	 * @param i
-	 */
 	public void setServiceOffset(int i) {
 		serviceOffset = i;
 	}

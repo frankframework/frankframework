@@ -1,6 +1,9 @@
 /*
  * $Log: JmsRealm.java,v $
- * Revision 1.5  2004-03-30 07:30:00  L190409
+ * Revision 1.6  2004-08-23 13:08:36  L190409
+ * updated JavaDoc
+ *
+ * Revision 1.5  2004/03/30 07:30:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.4  2004/03/26 10:42:55  Johan Verrips <johan.verrips@ibissource.org>
@@ -26,12 +29,12 @@ import org.apache.log4j.Logger;
  * in the JMSBase class the function PropertyUtils.copyProperties is used, which cannot
  * handle this.
  * @version Id
- * @see JMSBase#setJmsRealm
+ * @see JMSFacade#setJmsRealm
  * @author Johan Verrips IOS
  */
 public class JmsRealm {
 	//TODO: change to J2eeRealm
-	public static final String version="$Id: JmsRealm.java,v 1.5 2004-03-30 07:30:00 L190409 Exp $";
+	public static final String version="$Id: JmsRealm.java,v 1.6 2004-08-23 13:08:36 L190409 Exp $";
 	private String realmName;
 	private Logger log = Logger.getLogger(this.getClass());
 

@@ -21,14 +21,8 @@ import org.apache.log4j.Logger;
  */
 public class JmxUtils {
 	static Logger log=Logger.getLogger("JmxUtils");
-	public static final String version="$Id: JmxUtils.java,v 1.1 2004-04-23 14:35:37 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: JmxUtils.java,v 1.2 2004-08-23 13:11:09 L190409 Exp $";
 
-	/**
-	 * 
-	 */
-	public JmxUtils() {
-		super();
-	}
 
 	/**
 	 * Registers an mBean at an MBeanServer. If there is already an mbean registered 
@@ -81,7 +75,6 @@ public class JmxUtils {
 	 * @param klass 
 	 * @param description
 	 * @param signature
-	 * @return
 	 */
 	public static ModelMBeanOperationInfo buildGetterModelMBeanOperationInfo(
 		String name,

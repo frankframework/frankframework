@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.3  2004-08-16 14:09:58  a1909356#db2admin
+ * Revision 1.4  2004-08-23 13:10:48  L190409
+ * updated JavaDoc
+ *
+ * Revision 1.3  2004/08/16 14:09:58  unknown <unknown@ibissource.org>
  * Return returnIfStopped value in case adapter is stopped
  *
  * Revision 1.2  2004/08/09 13:46:52  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -57,7 +60,6 @@ import javax.transaction.UserTransaction;
  * <tr><td>classname</td><td>name of the class, mostly a class that extends this class</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td>  <td>name of the receiver as known to the adapter</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setNumThreads(int) numThreads}</td><td>the number of threads listening in parallel for messages</td><td>1</td></tr>
- * <tr><td>{@link #setCommitOnState(String) commitOnState}</td><td>exit state required to commit messages</td><td>success</td></tr>
  * <tr><td>{@link #setOnError(String) onError}</td><td>one of 'continue' or 'close'. Controls the behaviour of the receiver when it encounters an error sending a reply</td><td>continue</td></tr>
  * <tr><td>{@link #setTransacted(boolean) transacted}</td><td>if set to <code>true, messages will be received and processed under transaction control. If processing fails, messages will be sent to the error-sender. (see below)</code></td><td><code>false</code></td></tr>
  * </table>
@@ -98,7 +100,7 @@ import javax.transaction.UserTransaction;
  * If {@link #setTransacted(boolean) transacted} is set to <code>true, messages will be either committed or rolled back.
  * All message-processing transactions are committed, unless one or more of the following apply:
  * <ul>
- * <li>the exitState of the pipeline is not equal {@link #setCommitOnState(String) commitOnState} (that defaults to 'success')</li>
+ * <li>The PipeLine is transacted and the exitState of the pipeline is not equal to {@link nl.nn.adapterframework.core.PipeLine#setCommitOnState(String) commitOnState} (that defaults to 'success')</li>
  * <li>a PipeRunException or another runtime-exception has been thrown by any Pipe or by the PipeLine</li>
  * <li>the setRollBackOnly() method has been called on the userTransaction (not accessible by Pipes)</li>
  * </ul>
@@ -107,12 +109,10 @@ import javax.transaction.UserTransaction;
  * @version Id
  * @author     Gerrit van Brakel
  * @since 4.2
- * 
- * UNDER CONSTRUCTION - Gerrit
  */
 public class ReceiverBase
     implements IReceiver, IReceiverStatistics, Runnable, IMessageHandler, IbisExceptionListener, HasSender {
-	public static final String version="$Id: ReceiverBase.java,v 1.3 2004-08-16 14:09:58 a1909356#db2admin Exp $";
+	public static final String version="$Id: ReceiverBase.java,v 1.4 2004-08-23 13:10:48 L190409 Exp $";
 	protected Logger log = Logger.getLogger(this.getClass());
  
 	private String returnIfStopped="";
@@ -597,7 +597,7 @@ public class ReceiverBase
 	}
 
 	/**
-	 * Process the received message with {@link #processRequest(String, String)}.
+	 * Process the received message with {@link #processRequest(IListener, String, String)}.
 	 * A messageId is generated that is unique and consists of the name of this listener and a GUID
 	 */
 	public String processRequest(IListener origin, String message) throws ListenerException {

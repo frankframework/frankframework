@@ -35,7 +35,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
  * </p>
  * <table border="1">
  * <tr><th>nested elements</th><th>description</th></tr>
- * <tr><td>{@link ICorrelatedPullingListener listener}</td><td>specification of a listener to listen to for replies, assuming these to arrive quickly!</td></tr>
+ * <tr><td>{@link nl.nn.adapterframework.core.ICorrelatedPullingListener listener}</td><td>specification of a listener to listen to for replies, assuming these to arrive quickly!</td></tr>
  * </table>
  * </p>
  * <p><b>Exits:</b>
@@ -51,7 +51,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
  */
 
 public class MailSenderPipe extends MessageSendingPipe {
-public static final String version="$Id: MailSenderPipe.java,v 1.3 2004-03-26 10:42:37 NNVZNL01#L180564 Exp $";
+public static final String version="$Id: MailSenderPipe.java,v 1.4 2004-08-23 13:10:09 L190409 Exp $";
 	
 public MailSenderPipe() {
 	super();

@@ -1,6 +1,9 @@
 /*
  * $Log: PostboxSenderPipe.java,v $
- * Revision 1.2  2004-05-21 10:47:30  a1909356#db2admin
+ * Revision 1.3  2004-08-23 13:10:09  L190409
+ * updated JavaDoc
+ *
+ * Revision 1.2  2004/05/21 10:47:30  unknown <unknown@ibissource.org>
  * Add (modifications) due to the postbox retriever implementation
  *
  * Revision 1.1  2004/05/21 07:59:30  unknown <unknown@ibissource.org>
@@ -27,7 +30,7 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 
 /**
- * Sends a message using a {@link ISender} and optionally receives a reply from the same sender, or from a {@link ICorrelatedPullingListener listener}.
+ * Sends a message using a {@link ISender} and optionally receives a reply from the same sender, or from a {@link nl.nn.adapterframework.core.ICorrelatedPullingListener listener}.
  *
  * <p><b>Configuration:</b>
  * <table border="1">
@@ -55,12 +58,9 @@ import nl.nn.adapterframework.core.TimeOutException;
  * @version Id
  */
 public class PostboxSenderPipe  extends FixedForwardPipe implements HasSender  {
-	public static final String version="$Id: PostboxSenderPipe.java,v 1.2 2004-05-21 10:47:30 a1909356#db2admin Exp $";
+	public static final String version="$Id: PostboxSenderPipe.java,v 1.3 2004-08-23 13:10:09 L190409 Exp $";
 	private IPostboxSender sender = null;
 		
-	/** 
-	 * @see nl.nn.adapterframework.core.IPipe#configure()
-	 */
 	public void configure() throws ConfigurationException {
 		super.configure();
 
@@ -74,9 +74,6 @@ public class PostboxSenderPipe  extends FixedForwardPipe implements HasSender  {
 		getSender().configure();
 	}
 
-	/** 
-	 * @see nl.nn.adapterframework.pipes.MessageSendingPipe#sendMessage(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession, java.lang.String, nl.nn.adapterframework.core.ISender, java.util.HashMap)
-	 */
 	protected String sendMessage(Object input, PipeLineSession session, String correlationID, ISender sender, HashMap threadContext)
 		throws SenderException {
 		
@@ -93,24 +90,15 @@ public class PostboxSenderPipe  extends FixedForwardPipe implements HasSender  {
 		}
 		 
 	}
-	
-	/**
-	 * @return
-	 */
+
 	public ISender getSender() {
 		return sender;
 	}
 
-	/**
-	 * @param sender
-	 */
 	public void setSender(IPostboxSender sender) {
 		this.sender = sender;
 	}
 
-	/* 
-	 * @see nl.nn.adapterframework.core.IPipe#start()
-	 */
 	public void start() throws PipeStartException {
 		try {
 			getSender().open();
@@ -120,9 +108,6 @@ public class PostboxSenderPipe  extends FixedForwardPipe implements HasSender  {
 		}
 	}
 
-	/* 
-	 * @see nl.nn.adapterframework.core.IPipe#stop()
-	 */
 	public void stop() {
 		try {
 			getSender().close();
@@ -132,9 +117,6 @@ public class PostboxSenderPipe  extends FixedForwardPipe implements HasSender  {
 		}
 	}
 
-	/*
-	 * @see nl.nn.adapterframework.core.IPipe#doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)
-	 */
 	public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRunException {
 		if (! (input instanceof String)) {
 			throw new PipeRunException(this, "String expected, got a [" + input.getClass().getName() + "]");

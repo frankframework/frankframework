@@ -10,10 +10,10 @@ import nl.nn.adapterframework.pipes.MessageSendingPipe;
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setForwardName(String) forwardName}</td>  <td>name of forward returned upon completion</td><td>"success"</td></tr>
- * <tr><td>{@link nl.nn.adapterframework.extension.ifsa.IfsaClient#setClientName(String) sender.clientName}</td><td>name of the client application, on which behalf the service is called</td><td></td></tr>
- * <tr><td>{@link nl.nn.adapterframework.extension.ifsa.IfsaClient#setJndiPath(String) sender.JndiPath}</td><td></td><td></td></tr>
- * <tr><td>{@link nl.nn.adapterframework.extension.ifsa.IfsaClient#setServiceName(String) sender.serviceName}</td><td>name of the service to be called</td><td></td></tr>
- * <tr><td>{@link nl.nn.adapterframework.extension.ifsa.IfsaClient#setMessageProtocol(String) sender.messageProtocol}</td><td>protocol of IFSA-Service to be called. Possible values 
+ * <tr><td>{@link nl.nn.adapterframework.extensions.ifsa_1_1.IfsaClient#setClientName(String) sender.clientName}</td><td>name of the client application, on which behalf the service is called</td><td></td></tr>
+ * <tr><td>{@link nl.nn.adapterframework.extensions.ifsa_1_1.IfsaClient#setJndiPath(String) sender.JndiPath}</td><td></td><td></td></tr>
+ * <tr><td>{@link nl.nn.adapterframework.extensions.ifsa_1_1.IfsaClient#setServiceName(String) sender.serviceName}</td><td>name of the service to be called</td><td></td></tr>
+ * <tr><td>{@link nl.nn.adapterframework.extensions.ifsa_1_1.IfsaClient#setMessageProtocol(String) sender.messageProtocol}</td><td>protocol of IFSA-Service to be called. Possible values 
  * <ul>
  *   <li>"FF": Fire & Forget protocol</li>
  *   <li>"RR": Request-Reply protocol</li>
@@ -33,7 +33,7 @@ import nl.nn.adapterframework.pipes.MessageSendingPipe;
  */
  
 public class IfsaClientPipe extends MessageSendingPipe {
-	public static final String version="$Id: IfsaClientPipe.java,v 1.1 2004-07-06 07:07:26 L190409 Exp $";
+	public static final String version="$Id: IfsaClientPipe.java,v 1.2 2004-08-23 13:12:09 L190409 Exp $";
 public IfsaClientPipe() {
 	super();
 	setSender(new IfsaClient());

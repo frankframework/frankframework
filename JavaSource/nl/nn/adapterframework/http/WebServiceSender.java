@@ -1,6 +1,9 @@
 /*
  * $Log: WebServiceSender.java,v $
- * Revision 1.2  2004-08-17 15:22:15  L190409
+ * Revision 1.3  2004-08-23 13:08:14  L190409
+ * updated JavaDoc
+ *
+ * Revision 1.2  2004/08/17 15:22:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * first version using Axis
  *
  */
@@ -58,7 +61,7 @@ import java.security.cert.Certificate;
  */
 
 public class WebServiceSender implements ISender, HasPhysicalDestination {
-	public static final String version="$Id: WebServiceSender.java,v 1.2 2004-08-17 15:22:15 L190409 Exp $";
+	public static final String version="$Id: WebServiceSender.java,v 1.3 2004-08-23 13:08:14 L190409 Exp $";
 	protected Logger log = Logger.getLogger(this.getClass());
 	
 
@@ -368,44 +371,27 @@ public class WebServiceSender implements ISender, HasPhysicalDestination {
 	public void setUserName(String string) {
 		userName = string;
 	}
-	/**
-	 * @return
-	 */
+
 	public String getCertificate() {
 		return certificate;
 	}
 
-	/**
-	 * @return
-	 */
 	public String getCertificatePassword() {
 		return certificatePassword;
 	}
 
-	/**
-	 * @return
-	 */
 	public String getKeystoreType() {
 		return keystoreType;
 	}
 
-	/**
-	 * @param string
-	 */
 	public void setCertificate(String string) {
 		certificate = string;
 	}
 
-	/**
-	 * @param string
-	 */
 	public void setCertificatePassword(String string) {
 		certificatePassword = string;
 	}
 
-	/**
-	 * @param string
-	 */
 	public void setKeystoreType(String string) {
 		keystoreType = string;
 	}

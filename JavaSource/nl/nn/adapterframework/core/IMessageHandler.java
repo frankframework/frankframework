@@ -1,6 +1,9 @@
 /*
  * $Log: IMessageHandler.java,v $
- * Revision 1.2  2004-08-09 14:00:02  L190409
+ * Revision 1.3  2004-08-23 13:07:26  L190409
+ * updated JavaDoc
+ *
+ * Revision 1.2  2004/08/09 14:00:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * introduced formatErrorMessage
  * some interface-changes
  *
@@ -21,7 +24,7 @@ import java.util.HashMap;
  * @since 4.2
  */
 public interface IMessageHandler {
-	public static final String version="$Id: IMessageHandler.java,v 1.2 2004-08-09 14:00:02 L190409 Exp $";
+	public static final String version="$Id: IMessageHandler.java,v 1.3 2004-08-23 13:07:26 L190409 Exp $";
 	
 	/**
 	 * Will use listener to perform getIdFromRawMessage(), getStringFromRawMessage and afterMessageProcessed 
@@ -29,12 +32,12 @@ public interface IMessageHandler {
 	public void processRawMessage(IListener origin, Object message, HashMap context) throws ListenerException;
 	
 	/**
-	 * Same as {@link processRequest(IListener,Object,HashMap)}, but now updates IdleStatistics too
+	 * Same as {@link #processRawMessage(IListener,Object,HashMap)}, but now updates IdleStatistics too
 	 */
 	public void processRawMessage(IListener origin, Object message, HashMap context, long waitingTime) throws ListenerException;
 
 	/**
-	 * Same as {@link processRequest(IListener,Object,HashMap)}, but now without context, for convenience
+	 * Same as {@link #processRawMessage(IListener,Object,HashMap)}, but now without context, for convenience
 	 */
 	public void processRawMessage(IListener origin, Object message) throws ListenerException;
 	

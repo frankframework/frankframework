@@ -1,8 +1,8 @@
 /*
- * Created on 21-apr-04
+ * $Log: JmxMbeanHelper.java,v $
+ * Revision 1.5  2004-08-23 13:07:26  L190409
+ * updated JavaDoc
  *
- * To change the template for this generated file go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
  */
 package nl.nn.adapterframework.configuration;
 
@@ -30,11 +30,9 @@ import nl.nn.adapterframework.util.JmxUtils;
 
  */
 public class JmxMbeanHelper {
-	public static final String version="$Id: JmxMbeanHelper.java,v 1.4 2004-05-03 07:13:33 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: JmxMbeanHelper.java,v 1.5 2004-08-23 13:07:26 L190409 Exp $";
  	private static Logger log = Logger.getLogger("AdapterMBean");
-		public JmxMbeanHelper() {
-		super();
-	}
+ 	
 
 	/**
 	 * Hooks an {@link nl.nn.adapterframework.core.Adapter Adapter} to the MBean server

@@ -7,7 +7,7 @@ import nl.nn.adapterframework.jms.JmsSender;
  * Sends a message (the PipeInput) to a Topic or Queue, 
  *  and receives a message from another Topic or Queue after the input message has been sent.
  *
- * If a {@link ICorrelatedPullingListener listener} is specified it waits for a reply with
+ * If a {@link nl.nn.adapterframework.core.ICorrelatedPullingListener listener} is specified it waits for a reply with
  * the correct correlationID.
  * </p>
  * <p>The receiving of messages is done with a selector on the JMSCorrelationId
@@ -31,7 +31,7 @@ import nl.nn.adapterframework.jms.JmsSender;
  * </table>
  * <table border="1">
  * <tr><th>nested elements</th><th>description</th></tr>
- * <tr><td>{@link ICorrelatedPullingListener listener}</td><td>specification of queue to listen to for a reply</td></tr>
+ * <tr><td>{@link nl.nn.adapterframework.core.ICorrelatedPullingListener listener}</td><td>specification of queue to listen to for a reply</td></tr>
  * </table>
  * </p>
  * <p><b>Exits:</b>
@@ -47,7 +47,7 @@ import nl.nn.adapterframework.jms.JmsSender;
  */
 
 public class JmsCommunicator extends MessageSendingPipe {
-	public static final String version="$Id: JmsCommunicator.java,v 1.4 2004-03-31 12:04:21 L190409 Exp $";
+	public static final String version="$Id: JmsCommunicator.java,v 1.5 2004-08-23 13:10:09 L190409 Exp $";
 
 public JmsCommunicator() {
 	super();

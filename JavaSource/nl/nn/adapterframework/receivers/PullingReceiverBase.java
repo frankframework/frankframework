@@ -38,7 +38,6 @@ import javax.transaction.UserTransaction;
  * <tr><td>classname</td><td>name of the class, mostly a class that extends this class</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td>  <td>name of the receiver as known to the adapter</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setNumThreads(int) numThreads}</td><td>the number of threads listening in parallel for messages</td><td>1</td></tr>
- * <tr><td>{@link #setCommitOnState(String) commitOnState}</td><td>exit state required to commit messages</td><td>success</td></tr>
  * <tr><td>{@link #setOnError(String) onError}</td><td>one of 'continue' or 'close'. Controls the behaviour of the receiver when it encounters an error sending a reply</td><td>continue</td></tr>
  * <tr><td>{@link #setTransacted(boolean) transacted}</td><td>if set to <code>true, messages will be received and processed under transaction control. If processing fails, messages will be sent to the error-sender. (see below)</code></td><td><code>false</code></td></tr>
  * </table>
@@ -79,7 +78,7 @@ import javax.transaction.UserTransaction;
  * If {@link #setTransacted(boolean) transacted} is set to <code>true, messages will be either committed or rolled back.
  * All message-processing transactions are committed, unless one or more of the following apply:
  * <ul>
- * <li>the exitState of the pipeline is not equal {@link #setCommitOnState(String) commitOnState} (that defaults to 'success')</li>
+ * <li>The PipeLine is transacted and the exitState of the pipeline is not equal to {@link nl.nn.adapterframework.core.PipeLine#setCommitOnState(String) commitOnState} (that defaults to 'success')</li>
  * <li>a PipeRunException or another runtime-exception has been thrown by any Pipe or by the PipeLine</li>
  * <li>the setRollBackOnly() method has been called on the userTransaction (not accessible by Pipes)</li>
  * </ul>
@@ -91,7 +90,7 @@ import javax.transaction.UserTransaction;
  */
 public class PullingReceiverBase
     implements IReceiver, IReceiverStatistics, Runnable, HasSender {
-	public static final String version="$Id: PullingReceiverBase.java,v 1.12 2004-08-18 10:06:13 a1909356#db2admin Exp $";
+	public static final String version="$Id: PullingReceiverBase.java,v 1.13 2004-08-23 13:10:48 L190409 Exp $";
     	
 
 	public static final String ONERROR_CONTINUE = "continue";

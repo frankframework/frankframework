@@ -1,6 +1,9 @@
 /*
  * $Log: FilePipe.java,v $
- * Revision 1.5  2004-04-27 11:03:35  a1909356#db2admin
+ * Revision 1.6  2004-08-23 13:10:09  L190409
+ * updated JavaDoc
+ *
+ * Revision 1.5  2004/04/27 11:03:35  unknown <unknown@ibissource.org>
  * Renamed internal Transformer interface to prevent naming confusions
  *
  * Revision 1.3  2004/04/26 13:06:53  unknown <unknown@ibissource.org>
@@ -48,7 +51,6 @@ import sun.misc.BASE64Encoder;
  * <tr><td>{@link #setDirectory(String) directory}</td><td>base directory where files are stored in or read from</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setActions(String) actions}</td><td>name of forward returned upon completion</td><td>"success"</td></tr>
  * <tr><td>{@link #setWriteSuffix(String) writeSuffix}</td><td>suffix of the file to be created</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setWriteTag(String) writeTag}</td><td>the xml tag to encapsulate the filename in</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * <p><b>Exits:</b>
@@ -64,7 +66,7 @@ import sun.misc.BASE64Encoder;
  *
  */
 public class FilePipe extends FixedForwardPipe {
-	public static final String version="$Id: FilePipe.java,v 1.5 2004-04-27 11:03:35 a1909356#db2admin Exp $";
+	public static final String version="$Id: FilePipe.java,v 1.6 2004-08-23 13:10:09 L190409 Exp $";
 	private List transformers;
 	protected String actions;
 	protected String directory;

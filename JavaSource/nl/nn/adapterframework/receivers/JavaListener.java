@@ -1,6 +1,9 @@
 /*
  * $Log: JavaListener.java,v $
- * Revision 1.1  2004-08-23 07:38:20  L190409
+ * Revision 1.2  2004-08-23 13:10:48  L190409
+ * updated JavaDoc
+ *
+ * Revision 1.1  2004/08/23 07:38:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * renamed JavaPusher to JavaListener
  *
  * Revision 1.4  2004/08/16 14:10:32  unknown <unknown@ibissource.org>
@@ -49,7 +52,7 @@ import nl.nn.adapterframework.jms.JmsRealm;
  */
 public class JavaListener implements IPushingListener {
 	private static Map registeredListeners; 
-	public static final String version="$Id: JavaListener.java,v 1.1 2004-08-23 07:38:20 L190409 Exp $";
+	public static final String version="$Id: JavaListener.java,v 1.2 2004-08-23 13:10:48 L190409 Exp $";
 	protected Logger log = Logger.getLogger(this.getClass());;
 	private String name;
 	private String jndiName;
@@ -58,9 +61,6 @@ public class JavaListener implements IPushingListener {
 	
 	
 
-	/**
-	 * @return
-	 */
 	public IMessageHandler getHandler() {
 		return handler;
 	}
@@ -92,7 +92,6 @@ public class JavaListener implements IPushingListener {
 
 	/**
 	 * Get all registered JavaListeners
-	 * @return
 	 */
 	private synchronized static Map getListeners() {
 		if (registeredListeners == null) {
@@ -101,30 +100,18 @@ public class JavaListener implements IPushingListener {
 		return registeredListeners;
 	}
 	
-	/* (non-Javadoc)
-	 * @see nl.nn.adapterframework.core.IPushingListener#setExceptionListener(nl.nn.adapterframework.core.IbisExceptionListener)
-	 */
 	public void setExceptionListener(IbisExceptionListener listener) {
 		// do nothing, no exceptions known
 	}
 
-	/* (non-Javadoc)
-	 * @see nl.nn.adapterframework.core.IPushingListener#setHandler(nl.nn.adapterframework.core.IMessageHandler)
-	 */
 	public void setHandler(IMessageHandler handler) {
 		this.handler = handler;
 	}
 
-	/* (non-Javadoc)
-	 * @see nl.nn.adapterframework.core.IListener#afterMessageProcessed(nl.nn.adapterframework.core.PipeLineResult, java.lang.Object, java.util.HashMap)
-	 */
 	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessage, HashMap context) throws ListenerException {
 		// do nothing
 	}
 
-	/* (non-Javadoc)
-	 * @see nl.nn.adapterframework.core.IListener#close()
-	 */
 	public void close() throws ListenerException {
 		if (getJndiName() != null) {
 			try {
@@ -215,24 +202,14 @@ public class JavaListener implements IPushingListener {
 		return ToStringBuilder.reflectionToString(this);
 	}
 	
-	/**
-	 * @return
-	 * @throws NamingException
-	 */
 	private Context getContext() throws NamingException {
 		return jndiBase.getContext();
 	}
 	
-	/**
-	 * @throws NamingException
-	 */
 	private void closeContext() throws NamingException {
 		jndiBase.closeContext();
 	}
 
-	/**
-	 * @param jmsRealmName
-	 */
 	public void setJmsRealm(String jmsRealmName){
 		JmsRealm.copyRealm(jndiBase, jmsRealmName);
 	}
@@ -243,23 +220,14 @@ public class JavaListener implements IPushingListener {
 		return jndiName;
 	}
 
-	/**
-	 * @param jndiName
-	 */
 	public void setJndiName(String jndiName) {
 		this.jndiName = jndiName;
 	}
 
-	/**
-	 * @return
-	 */
 	public String getName() {
 		return name;
 	}
 
-	/**
-	 * @param string
-	 */
 	public void setName(String name) {
 		this.name = name;
 	}

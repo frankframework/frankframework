@@ -48,7 +48,7 @@ public class IfsaFacade implements INamedObject {
 
     private String name;
 	private int ackMode = 1;
-	public static final String version="$Id: IfsaFacade.java,v 1.1 2004-07-06 07:07:26 L190409 Exp $";
+	public static final String version="$Id: IfsaFacade.java,v 1.2 2004-08-23 13:12:09 L190409 Exp $";
  
  	private final static String DEFAULT_PROVIDER_URL="IFSA APPLICATION BUS";
  	
@@ -249,10 +249,6 @@ public class IfsaFacade implements INamedObject {
 	 * by IFSA.<br/>
 	 * For a clientconnection, the receiver is done with the <code>getClientReplyQueue</code>
 	 * @see javax.jms.QueueReceiver
-	 * @see IfsaBase#getQueue()
-	 * @return                                   The queueReceiver value
-	 * @exception  javax.naming.NamingException  Description of the Exception
-	 * @exception  javax.jms.JMSException                  Description of the Exception
 	 */
 	public QueueReceiver getReplyReceiver(
 	    QueueSession session, Message sentMessage)
@@ -349,10 +345,6 @@ public class IfsaFacade implements INamedObject {
 	 * by IFSA.<br/>
 	 * For a clientconnection, the receiver is done with the <code>getClientReplyQueue</code>
 	 * @see javax.jms.QueueReceiver
-	 * @see IfsaBase#getQueue()
-	 * @return                                   The queueReceiver value
-	 * @exception  javax.naming.NamingException  Description of the Exception
-	 * @exception  javax.jms.JMSException                  Description of the Exception
 	 */
 	protected QueueReceiver getServiceReceiver(
 	    QueueSession session)

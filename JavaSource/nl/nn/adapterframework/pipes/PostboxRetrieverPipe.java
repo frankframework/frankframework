@@ -1,6 +1,9 @@
 /*
  * $Log: PostboxRetrieverPipe.java,v $
- * Revision 1.2  2004-05-21 12:05:09  a1909356#db2admin
+ * Revision 1.3  2004-08-23 13:10:09  L190409
+ * updated JavaDoc
+ *
+ * Revision 1.2  2004/05/21 12:05:09  unknown <unknown@ibissource.org>
  * Correct errors in javadoc
  *
  * Revision 1.1  2004/05/21 10:47:30  unknown <unknown@ibissource.org>
@@ -42,8 +45,8 @@ import nl.nn.adapterframework.core.TimeOutException;
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMaxThreads(int) maxThreads}</td><td>maximum number of threads that may call {@link #doPipe(Object, PipeLineSession)} simultaneously</td><td>0 (unlimited)</td></tr>
- * <tr><td>{@link #setResultOnEmptyPostbox(Strnig) resultOnEmptyPostbox}</td><td>result when no object is on postbox</td><td>empty postbox</td></tr>
-  * <tr><td>{@link #setForwardName(String) forwardName}</td>  <td>name of forward returned upon completion</td><td>"success"</td></tr>
+ * <tr><td>{@link #setResultOnEmptyPostbox(String) resultOnEmptyPostbox}</td><td>result when no object is on postbox</td><td>empty postbox</td></tr>
+ * <tr><td>{@link #setForwardName(String) forwardName}</td>  <td>name of forward returned upon completion</td><td>"success"</td></tr>
  * <tr><td>{@link #addParameter(Parameter) parameterList}</td><td>Parameters of the Pipe</td><td>&nbsp;</td></tr>
  * <tr><td><code>listener.*</td><td>any attribute of the listener instantiated by descendant classes</td><td>&nbsp;</td></tr>
  * </table>
@@ -64,13 +67,10 @@ import nl.nn.adapterframework.core.TimeOutException;
  * @version Id
  */
 public class PostboxRetrieverPipe  extends FixedForwardPipe {
-	public static final String version="$Id: PostboxRetrieverPipe.java,v 1.2 2004-05-21 12:05:09 a1909356#db2admin Exp $";
+	public static final String version="$Id: PostboxRetrieverPipe.java,v 1.3 2004-08-23 13:10:09 L190409 Exp $";
 	private IPostboxListener listener = null;
 	private String resultOnEmptyPostbox = "empty postbox";
 		
-	/** 
-	 * @see nl.nn.adapterframework.core.IPipe#configure()
-	 */
 	public void configure() throws ConfigurationException {
 		super.configure();
 
@@ -79,23 +79,14 @@ public class PostboxRetrieverPipe  extends FixedForwardPipe {
 		}
 	}
 
-	/**
-	 * @return
-	 */
 	public IPostboxListener getListener() {
 		return listener;
 	}
 
-	/**
-	 * @param listener
-	 */
 	public void setListener(IPostboxListener listener) {
 		this.listener = listener;
 	}
 
-	/** 
-	 * @see nl.nn.adapterframework.core.IPipe#start()
-	 */
 	public void start() throws PipeStartException {
 		try {
 			getListener().open();
@@ -105,9 +96,6 @@ public class PostboxRetrieverPipe  extends FixedForwardPipe {
 		}
 	}
 
-	/** 
-	 * @see nl.nn.adapterframework.core.IPipe#stop()
-	 */
 	public void stop() {
 		try {
 			getListener().close();
@@ -117,9 +105,6 @@ public class PostboxRetrieverPipe  extends FixedForwardPipe {
 		}
 	}
 
-	/**
-	 * @see nl.nn.adapterframework.core.IPipe#doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)
-	 */
 	public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRunException {
 		if (! (input instanceof String)) {
 			throw new PipeRunException(this, "String expected, got a [" + input.getClass().getName() + "]");
@@ -149,16 +134,10 @@ public class PostboxRetrieverPipe  extends FixedForwardPipe {
 		}
 	}
 
-	/**
-	 * @return
-	 */
 	public String getResultOnEmptyPostbox() {
 		return resultOnEmptyPostbox;
 	}
 
-	/**
-	 * @param string
-	 */
 	public void setResultOnEmptyPostbox(String string) {
 		resultOnEmptyPostbox = string;
 	}

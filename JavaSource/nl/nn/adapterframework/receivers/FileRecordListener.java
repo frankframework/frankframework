@@ -1,6 +1,9 @@
 /*
  * $Log: FileRecordListener.java,v $
- * Revision 1.5  2004-03-26 10:43:03  NNVZNL01#L180564
+ * Revision 1.6  2004-08-23 13:10:48  L190409
+ * updated JavaDoc
+ *
+ * Revision 1.5  2004/03/26 10:43:03  Johan Verrips <johan.verrips@ibissource.org>
  * added @version tag in javadoc
  *
  * Revision 1.4  2004/03/23 18:16:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -40,7 +43,7 @@ import org.apache.commons.lang.builder.ToStringStyle;
  * @author  Johan Verrips
  */
 public class FileRecordListener implements IPullingListener, INamedObject {
-	public static final String version="$Id: FileRecordListener.java,v 1.5 2004-03-26 10:43:03 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: FileRecordListener.java,v 1.6 2004-08-23 13:10:48 L190409 Exp $";
 
 	private String inputDirectory;
 	private String wildcard;
@@ -52,16 +55,6 @@ public class FileRecordListener implements IPullingListener, INamedObject {
 	private long recordNo = 0; // the current record number;
 	private Iterator recordIterator = null;
 	private String inputFileName; // the name of the file currently in process
-
-	/**
-	 * FileReceiver constructor comment.
-	 */
-	public FileRecordListener() {
-		super();
-	}
-	/**
-	 * If the state is "success", fire the sender.
-	 */
 
 	public void afterMessageProcessed(
 		PipeLineResult processResult,

@@ -1,6 +1,9 @@
 /*
  * $Log: TransactionalStorage.java,v $
- * Revision 1.5  2004-08-18 09:20:14  a1909356#db2admin
+ * Revision 1.6  2004-08-23 13:10:48  L190409
+ * updated JavaDoc
+ *
+ * Revision 1.5  2004/08/18 09:20:14  unknown <unknown@ibissource.org>
  * Add some logging
  *
  * Revision 1.4  2004/03/31 12:04:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -31,7 +34,7 @@ import nl.nn.adapterframework.core.TimeOutException;
 import org.apache.log4j.Logger;
 
 /**
- * Stores a message using a {@link ISender} and retrieves is back from a {@link ICorrelatedPullingListener listener}.
+ * Stores a message using a {@link ISender} and retrieves is back from a {@link nl.nn.adapterframework.core.ICorrelatedPullingListener listener}.
  *
  * <p><b>Configuration:</b>
  * <table border="1">
@@ -42,8 +45,8 @@ import org.apache.log4j.Logger;
  * </table>
  * <table border="1">
  * <tr><th>nested elements</th><th>description</th></tr>
- * <tr><td>{@link ISender sender}</td><td>specification of sender to send messages with</td></tr>
- * <tr><td>{@link ICorrelatedPullingListener listener}</td><td>specification of listener to listen to for replies</td></tr>
+ * <tr><td>{@link nl.nn.adapterframework.core.ISender sender}</td><td>specification of sender to send messages with</td></tr>
+ * <tr><td>{@link nl.nn.adapterframework.core.ICorrelatedPullingListener listener}</td><td>specification of listener to listen to for replies</td></tr>
  * </table>
  * </p>
  * @version Id
@@ -52,7 +55,7 @@ import org.apache.log4j.Logger;
  */
 
 public class TransactionalStorage implements ITransactionalStorage {
-	public static final String version="$Id: TransactionalStorage.java,v 1.5 2004-08-18 09:20:14 a1909356#db2admin Exp $";
+	public static final String version="$Id: TransactionalStorage.java,v 1.6 2004-08-23 13:10:48 L190409 Exp $";
     protected Logger log = Logger.getLogger(this.getClass());
 	
     private ISender sender=null;

@@ -1,6 +1,9 @@
 /*
  * $Log: MessageSendingPipe.java,v $
- * Revision 1.11  2004-08-09 13:52:34  L190409
+ * Revision 1.12  2004-08-23 13:10:09  L190409
+ * updated JavaDoc
+ *
+ * Revision 1.11  2004/08/09 13:52:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * introduction of function propagateName()
  * catches more exceptions in start()
  *
@@ -45,7 +48,7 @@ import java.util.HashMap;
 import org.apache.commons.lang.StringUtils;
 
 /**
- * Sends a message using a {@link ISender} and optionally receives a reply from the same sender, or from a {@link ICorrelatedPullingListener listener}.
+ * Sends a message using a {@link ISender} and optionally receives a reply from the same sender, or from a {@link nl.nn.adapterframework.core.ICorrelatedPullingListener listener}.
  *
  * <p><b>Configuration:</b>
  * <table border="1">
@@ -59,8 +62,8 @@ import org.apache.commons.lang.StringUtils;
  * </table>
  * <table border="1">
  * <tr><th>nested elements</th><th>description</th></tr>
- * <tr><td>{@link ISender sender}</td><td>specification of sender to send messages with</td></tr>
- * <tr><td>{@link ICorrelatedPullingListener listener}</td><td>specification of listener to listen to for replies</td></tr>
+ * <tr><td>{@link nl.nn.adapterframework.core.ISender sender}</td><td>specification of sender to send messages with</td></tr>
+ * <tr><td>{@link nl.nn.adapterframework.core.ICorrelatedPullingListener listener}</td><td>specification of listener to listen to for replies</td></tr>
  * </table>
  * </p>
  * <p><b>Exits:</b>
@@ -76,7 +79,7 @@ import org.apache.commons.lang.StringUtils;
  */
 
 public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
-	public static final String version = "$Id: MessageSendingPipe.java,v 1.11 2004-08-09 13:52:34 L190409 Exp $";
+	public static final String version = "$Id: MessageSendingPipe.java,v 1.12 2004-08-23 13:10:09 L190409 Exp $";
 	private final static String TIMEOUTFORWARD = "timeout";
 
 	private String resultOnTimeOut = "receiver timed out";

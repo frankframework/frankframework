@@ -1,6 +1,9 @@
 /*
  * $Log: IListener.java,v $
- * Revision 1.2  2004-08-03 13:09:51  L190409
+ * Revision 1.3  2004-08-23 13:07:26  L190409
+ * updated JavaDoc
+ *
+ * Revision 1.2  2004/08/03 13:09:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * moved afterMessageProcessed to IListener
  *
  * Revision 1.1  2004/07/15 07:38:22  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -23,11 +26,11 @@ import java.util.HashMap;
  * @since 4.2
  */
 public interface IListener extends INamedObject {
-	public static final String version="$Id: IListener.java,v 1.2 2004-08-03 13:09:51 L190409 Exp $";
+	public static final String version="$Id: IListener.java,v 1.3 2004-08-23 13:07:26 L190409 Exp $";
 
 /**
  * <code>configure()</code> is called once at startup of the framework in the configure method of the owner of this listener. 
- * Purpose of this method is to reduce creating connections to databases etc. in the {@link #getRawMessage(HashMap) getRawMessage()} method.
+ * Purpose of this method is to reduce creating connections to databases etc. in the {@link nl.nn.adapterframework.core.IPullingListener#getRawMessage(HashMap)} method.
  * As much as possible class-instantiating should take place in the
  * <code>configure()</code> or <code>open()</code> method, to improve performance.
  */ 
@@ -46,14 +49,14 @@ void open() throws ListenerException;
 void close() throws ListenerException;
 
 /**
- * Extracts ID-string from message obtained from {@link #getRawMessage(HashMap)}. May also extract
+ * Extracts ID-string from message obtained from {@link nl.nn.adapterframework.core.IPullingListener#getRawMessage(HashMap)}. May also extract
  * other parameters from the message and put those in the threadContext.
  * @return ID-string of message for adapter.
  */
 String getIdFromRawMessage(Object rawMessage, HashMap context) throws ListenerException;
 
 /**
- * Extracts string from message obtained from {@link #getRawMessage(HashMap)}. May also extract
+ * Extracts string from message obtained from {@link nl.nn.adapterframework.core.IPullingListener#getRawMessage(HashMap)}. May also extract
  * other parameters from the message and put those in the threadContext.
  * @return input message for adapter.
  */

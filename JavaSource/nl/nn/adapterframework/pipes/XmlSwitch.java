@@ -24,7 +24,7 @@ import java.io.IOException;
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setServiceSelectionStylesheetFilename(String) serviceSelectionStylesheetFilename}</td><td>stylesheet may return a String representing the forward to look up</td><td><i>a stylesheet that returns the name of the root-element</i></td></tr>
  * <tr><td>{@link #setXpathExpression(String) xpathExpression}</td><td>XPath-expression that returns a String representing the forward to look up</td><td></td></tr>
- * <tr><td>{@link #setNotFoundPipeName(String) setNotFoundPipeName(String)}</td><td>Pipename returned when the pipename derrived from the stylesheet could not be found.</i></td></tr>
+ * <tr><td>{@link #setNotFoundForwardName(String) setNotFoundForwardName(String)}</td><td>Forward returned when the pipename derived from the stylesheet could not be found.</i></td></tr>
  * </table>
  * </p>
  * <p><b>Exits:</b>
@@ -38,7 +38,7 @@ import java.io.IOException;
  * @author Johan Verrips
  */
 public class XmlSwitch extends AbstractPipe {
-	public static final String version="$Id: XmlSwitch.java,v 1.5 2004-07-19 14:52:43 L190409 Exp $";
+	public static final String version="$Id: XmlSwitch.java,v 1.6 2004-08-23 13:10:09 L190409 Exp $";
 	
     private static final String DEFAULT_SERVICESELECTION_XSLT = XmlUtils.XSLT_GETROOTNODENAME;
     private Transformer serviceSelectionTransformer;
