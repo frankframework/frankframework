@@ -1,6 +1,11 @@
 /*
  * $Log: TransformerPool.java,v $
- * Revision 1.7  2005-01-10 08:56:10  L190409
+ * Revision 1.8  2005-03-04 07:52:45  NNVZNL01#L180564
+ * Multi-threading caused problems with closed streams on creating transfomers.
+ * Transformers are now instantiated by a Templates object, which solves this problem
+ * and increases perfomance
+ *
+ * Revision 1.7  2005/01/10 08:56:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Xslt parameter handling by Maps instead of by Ibis parameter system
  *
  * Revision 1.6  2004/12/20 15:11:56  Johan Verrips <johan.verrips@ibissource.org>
@@ -30,6 +35,7 @@ import java.net.URL;
 import java.util.Map;
 
 import javax.xml.transform.Source;
+import javax.xml.transform.Templates;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -46,31 +52,35 @@ import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 
 /**
- * Pool of transformers. 
+ * Pool of transformers. As of IBIS 4.2.e the Templates object is used to improve
+ * performance and work around threading problems with the api.  
  * 
  * @author Gerrit van Brakel
  */
 public class TransformerPool {
-	public static final String version = "$Id: TransformerPool.java,v 1.7 2005-01-10 08:56:10 L190409 Exp $";
+	public static final String version = "$Id: TransformerPool.java,v 1.8 2005-03-04 07:52:45 NNVZNL01#L180564 Exp $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	private TransformerFactory tFactory = TransformerFactory.newInstance();
-	private Source source;
 
+	private Templates templates;
+	
 	private ObjectPool pool = new GenericObjectPool(new BasePoolableObjectFactory() {
 		public Object makeObject() throws Exception {
 			return createTransformer();
+			
 		}
 	}); 
 
 	public TransformerPool(StreamSource source, String sysId) throws TransformerConfigurationException {
 		super();
-		this.source=source;
+		StreamSource theSource=source;
 		if (StringUtils.isNotEmpty(sysId)) {
-			this.source.setSystemId(sysId);
+			theSource.setSystemId(sysId);
 			log.debug("setting systemId to ["+sysId+"]");
 		}
-		
+		templates=tFactory.newTemplates(theSource);
+
 		// check if a transformer can be initiated
 		Transformer t = getTransformer();
 		
@@ -95,11 +105,14 @@ public class TransformerPool {
 
 	
 	public void open() throws Exception {
+			
+
 	}
 	
 	public void close() {
 		try {
 			pool.clear();
+			
 		} catch (Exception e) {
 			log.warn("exception clearing transformerPool",e);
 		}
@@ -137,11 +150,12 @@ public class TransformerPool {
 
 
     protected synchronized Transformer createTransformer() throws TransformerConfigurationException {
-		Transformer t = tFactory.newTransformer(source);
+    	
+		Transformer t = templates.newTransformer();
 
 
 		if (t==null) {
-			throw new TransformerConfigurationException("cannot instantiate transformer from Source ["+source.getSystemId()+"]");
+			throw new TransformerConfigurationException("cannot instantiate transformer");
 		}
     	return t;
     }
