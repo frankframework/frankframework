@@ -1,9 +1,18 @@
+/*
+ * $Log: JMSFacade.java,v $
+ * Revision 1.5  2004-03-24 08:24:46  L190409
+ * enabled XA transactions
+ * renamed original 'transacted' into 'jmsTransacted'
+ *
+ */
 package nl.nn.adapterframework.jms;
 
+import nl.nn.adapterframework.core.HasPhysicalDestination;
+import nl.nn.adapterframework.core.IXAEnabled;
 import nl.nn.adapterframework.core.IbisException;
+
 import com.ibm.mq.jms.JMSC;
 import com.ibm.mq.jms.MQQueue;
-import org.apache.commons.beanutils.PropertyUtils;
 import nl.nn.adapterframework.core.INamedObject;
 
 import javax.jms.*;
@@ -16,12 +25,17 @@ import javax.naming.NamingException;
  * <br/>
  * The <code>destinationType</code> field specifies which
  * type should be used.<br/>
- * <p>$Id: JMSFacade.java,v 1.4 2004-03-11 09:23:51 NNVZNL01#L180564 Exp $</p>
+ * <p>$Id: JMSFacade.java,v 1.5 2004-03-24 08:24:46 L190409 Exp $</p>
  * @author    Gerrit van Brakel
  */
-public class JMSFacade extends JNDIBase implements INamedObject{
-	public static final String version="$Id: JMSFacade.java,v 1.4 2004-03-11 09:23:51 NNVZNL01#L180564 Exp $";
+public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
+	public static final String version="$Id: JMSFacade.java,v 1.5 2004-03-24 08:24:46 L190409 Exp $";
 
+	private String name;
+
+	private boolean transacted = false;
+	private boolean jmsTransacted = false;
+	private String subscriberType = "DURABLE"; // DURABLE or TRANSIENT
 
     private int ackMode = Session.AUTO_ACKNOWLEDGE;
     private boolean persistent;
@@ -32,7 +46,6 @@ public class JMSFacade extends JNDIBase implements INamedObject{
 
     private Connection connection;
     private Destination destination;
-
 
     //<code>forceMQCompliancy</code> is used to perform MQ specific replying.
     //If the MQ destination is not a JMS receiver, format errors occur.
@@ -45,50 +58,146 @@ public class JMSFacade extends JNDIBase implements INamedObject{
     // Queue fields
     //---------------------------------------------------------------------
     private String queueConnectionFactoryName;
+	private String queueConnectionFactoryNameXA;
     private QueueConnectionFactory queueConnectionFactory = null;
     //---------------------------------------------------------------------
     // Topic fields
     //---------------------------------------------------------------------
     private String topicConnectionFactoryName;
+	private String topicConnectionFactoryNameXA;
     private TopicConnectionFactory topicConnectionFactory = null;
 
-    private boolean transacted = false;
-    private String subscriberType = "DURABLE"; // DURABLE or TRANSIENT
+    
+    
+	/**
+	 *  Gets the queueConnectionFactory 
+	 *
+	 * @return                                   The queueConnectionFactory value
+	 * @exception  javax.naming.NamingException  Description of the Exception
+	 */
+	private QueueConnectionFactory getQueueConnectionFactory()
+		throws NamingException {
+		if (null == queueConnectionFactory) {
+			String qcfName = isTransacted() ? getQueueConnectionFactoryNameXA() : getQueueConnectionFactoryName();
+			log.debug("["+name+"] searching for queueConnectionFactory [" + qcfName + "]");
+			queueConnectionFactory =
+				(QueueConnectionFactory) getContext().lookup(qcfName);
+			log.info("["+name+"] queueConnectionFactory [" + qcfName + "] found: [" + queueConnectionFactory + "]");
+		}
+		return queueConnectionFactory;
+	}
+	private TopicConnectionFactory getTopicConnectionFactory()
+		throws NamingException, JMSException {
+		if (null == topicConnectionFactory) {
+			String tcfName = isTransacted() ? getTopicConnectionFactoryNameXA() : getTopicConnectionFactoryName();
+			log.debug("["+name+"] searching for topicConnectionFactory [" + tcfName + "]");
+			topicConnectionFactory =
+				(TopicConnectionFactory) getContext().lookup(tcfName);
+			log.info("["+name+"] topicConnectionFactory [" + tcfName + "] found: [" + topicConnectionFactory + "]");
+		}
+		return topicConnectionFactory;
+	}
 
-    private String name;
-public void close() throws IbisException {
-    try {
-        if (connection != null) {
-            connection.close();
-        }
-    } catch (JMSException e) {
-        throw new IbisException(e);
-    } finally {
-	    destination = null;
-	    connection = null;
+	/**
+	 * Returns a connection for a topic or a queue
+	 */
+	protected Connection getConnection() throws NamingException, JMSException {
+		if (connection == null) {
+		log.debug("["+getName()+"] creating connection, useTopicFunctions=["+useTopicFunctions+"], isTransacted=["+isTransacted()+"]");
+		if (useTopicFunctions)
+			connection = getTopicConnectionFactory().createTopicConnection();
+		else
+			connection = getQueueConnectionFactory().createQueueConnection();
+		}
+		connection.start();
+		return connection;
+	}
+    
+	/**
+	 *  Gets the queueSession 
+	 *
+	 * @see javax.jms.QueueSession
+	 * @return                                   The queueSession value
+	 * @exception  javax.naming.NamingException
+	 * @exception  javax.jms.JMSException
+	 */
+	private QueueSession createQueueSession(QueueConnection connection)
+		throws NamingException, JMSException {
+		return connection.createQueueSession(isJmsTransacted(), getAckMode());
+	}
+	private TopicSession createTopicSession(TopicConnection connection)
+		throws NamingException, JMSException {
+		return connection.createTopicSession(isJmsTransacted(), getAckMode());
+	}
+	/**
+	 * Returns a session on the connection for a topic or a queue
+	 */
+	public Session createSession() throws NamingException, JMSException {
+		if (useTopicFunctions)
+			return createTopicSession((TopicConnection)getConnection());
+		else
+			return createQueueSession((QueueConnection)getConnection());
+	}
+
+/*
+ * Returns a session on the connection for a topic or a queue, and enlists the XA-resources to the transaction 
+ * 
+ */
+/*
+public Session createSession(Transaction tx) throws NamingException, JMSException, SystemException, RollbackException {
+	XASession xas;
+	Session result;
+//	log.debug("["+getName()+"] creating XASession");
+	log.debug("["+getName()+"] creating XASession in transaction, status before="+JtaUtil.displayTransactionStatus(tx));
+	if (!isTransacted()) {
+		log.warn("["+getName()+"] has attribute transacted=\"false\", will not take part in transaction ["+tx+"]");
+		return createSession();
+	}
+    if (useTopicFunctions) {
+		XATopicSession xats;
+		xats = ((XATopicConnection)getConnection(true)).createXATopicSession();
+		xas = xats;
+		result = xats.getTopicSession();
+	}
+    else{
+		XAQueueSession xaqs;
+		xaqs = ((XAQueueConnection)getConnection(true)).createXAQueueSession();
+		xas = xaqs;
+		result = xaqs.getQueueSession();
     }
+	log.debug("["+getName()+"] enlisting XAResource of XASession ["+xas+"]");
+	log.debug("enlisting XAResource of XASession ["+xas+"] to transaction, status before="+JtaUtil.displayTransactionStatus(tx));
+	tx.enlistResource(xas.getXAResource());
+	log.debug("enlisted XAResource of XASession ["+xas+"] to transaction, status before="+JtaUtil.displayTransactionStatus(tx));
+	log.debug("["+getName()+"] registering ResourceCloser for XASession ["+xas+"]");
+	tx.registerSynchronization(new ResourceCloser(this, xas));
+	return result;
 }
-/**
- *  Gets the queueSession 
- *
- * @see javax.jms.QueueSession
- * @return                                   The queueSession value
- * @exception  javax.naming.NamingException
- * @exception  javax.jms.JMSException
- */
-private QueueSession createQueueSession(QueueConnection connection)
-    throws javax.naming.NamingException, JMSException {
-    return connection.createQueueSession(transacted, ackMode);
+*/
+
+public void open() throws IbisException {
+	try {
+		connection = getConnection();
+		destination = getDestination();
+	} catch (Exception e) {
+		throw new IbisException(e);
+	}
 }
-/**
- * Returns a session on the connection for a topic or a queue
- */
-public Session createSession() throws NamingException, JMSException {
-    if (useTopicFunctions)
-        return createTopicSession((TopicConnection)getConnection());
-    else
-        return createQueueSession((QueueConnection)getConnection());
+   
+public void close() throws IbisException {
+	try {
+		if (connection != null) {
+			connection.close();
+		}
+	} catch (JMSException e) {
+		throw new IbisException(e);
+	} finally {
+		destination = null;
+		connection = null;
+	}
 }
+
+
 public TextMessage createTextMessage(Session session, String correlationID, String message)
    throws javax.naming.NamingException, JMSException {
     TextMessage textMessage = null;
@@ -99,10 +208,7 @@ public TextMessage createTextMessage(Session session, String correlationID, Stri
     textMessage.setText(message);
     return textMessage;
 }
-private TopicSession createTopicSession(TopicConnection connection)
-    throws javax.naming.NamingException, JMSException {
-    return connection.createTopicSession(transacted, ackMode);
-}
+
 	/**
 	 * enforces the setting of <code>forceMQCompliancy</code><br/>
 	 * this method has to be called prior to creating a <code>QueueSender</code>
@@ -154,22 +260,16 @@ private TopicSession createTopicSession(TopicConnection connection)
 
         return ackString;
     }
-/**
- * Returns a connection for a topic or a queue
- */
-public Connection getConnection() throws NamingException, JMSException {
-	if (connection == null) {
-    if (useTopicFunctions)
-        connection = getTopicConnectionFactory().createTopicConnection();
-    else
-        connection = getQueueConnectionFactory().createQueueConnection();
-	}
-	return connection;
-}
+
 public Destination getDestination() throws NamingException, JMSException {
 
     if (destination == null) {
-	    destination = getDestination(getConnection());
+	    if (!useTopicFunctions || persistent) {
+	        destination = getDestination(getDestinationName());
+	    } else {
+	        destination = createTopicSession((TopicConnection) getConnection()).createTopic(
+	            getDestinationName());
+	    }
     }
     return destination;
 }
@@ -184,17 +284,7 @@ public Destination getDestination() throws NamingException, JMSException {
         dest=(Destination) getContext().lookup(destinationName);
         return dest;
     }
-protected Destination getDestination(Connection connection)
-    throws NamingException, JMSException {
 
-    if (!useTopicFunctions || persistent) {
-        return getDestination(getDestinationName());
-    } else {
-        return createTopicSession((TopicConnection) connection).createTopic(
-            getDestinationName());
-    }
-
-}
     /**
      *  Gets the name of the destination, this may be a 
      * <code>queue</code> or <code>topic</code> name. 
@@ -214,6 +304,15 @@ protected Destination getDestination(Connection connection)
     public String getForceMQCompliancy() {
 	    return forceMQCompliancy;
     }
+
+public MessageConsumer getMessageConsumerForCorrelationId(Session session, Destination destination, String correlationId) throws NamingException, JMSException {
+	if (correlationId==null)
+		return getMessageConsumer(session, destination, null);
+	else
+		return getMessageConsumer(session, destination, "JMSCorrelationID='" + correlationId + "'");
+}
+
+
 public MessageConsumer getMessageConsumer(Session session, Destination destination, String selector) throws NamingException, JMSException {
     if (useTopicFunctions)
         return getTopicSubscriber((TopicSession)session, (Topic)destination, selector);
@@ -226,19 +325,15 @@ public MessageConsumer getMessageConsumer(Session session, Destination destinati
      */
 
     public MessageProducer getMessageProducer(Session session, Destination destination)
-        throws javax.naming.NamingException, JMSException {
+        throws NamingException, JMSException {
         if (useTopicFunctions)
             return getTopicPublisher((TopicSession)session, (Topic)destination);
 
         else
             return getQueueSender((QueueSession)session, (Queue)destination);
     }
-/**
- * Insert the method's description here.
- * Creation date: (22-05-2003 12:09:18)
- * @return java.lang.String
- */
-public java.lang.String getName() {
+    
+public String getName() {
 	return name;
 }
     /**
@@ -249,46 +344,22 @@ public java.lang.String getName() {
     public boolean getPersistent() {
         return persistent;
     }
-public String getPhysicalDestinationName(Destination destination) {
+public String getPhysicalDestinationName() {
 
-    String result = "-";
+    String result = null;
 
-    if (destination != null) {
-        try {
+	try {
+	    if (getDestination() != null) {
             if (useTopicFunctions)
                 result = ((Topic) destination).getTopicName();
             else
                 result = ((Queue) destination).getQueueName();
-        } catch (javax.jms.JMSException je) {
-            log.warn("[" + name + "] got exception on getPhysicalDestinationName", je);
-        }
+	    }
+    } catch (Exception je) {
+        log.warn("[" + name + "] got exception in getPhysicalDestinationName", je);
     }
-    return result;
+    return getDestinationType()+"("+getDestinationName()+") ["+result+"]";
 }
-    /**
-     *  Gets the queueConnectionFactory 
-     *
-     * @return                                   The queueConnectionFactory value
-     * @exception  javax.naming.NamingException  Description of the Exception
-     */
-    private QueueConnectionFactory getQueueConnectionFactory()
-        throws javax.naming.NamingException {
-        if (null == queueConnectionFactory) {
-            log.debug("["+name+"] searching for queueConnectionFactory [" + queueConnectionFactoryName + "]");
-            queueConnectionFactory =
-                (QueueConnectionFactory) getContext().lookup(queueConnectionFactoryName);
-            log.debug("["+name+"] queueConnectionFactory " + queueConnectionFactoryName + " found");
-        }
-        return queueConnectionFactory;
-    }
-    /**
-     *  Gets the queueConnectionFactoryName 
-     *
-     * @return    The queueConnectionFactoryName value
-     */
-    public String getQueueConnectionFactoryName() {
-        return queueConnectionFactoryName;
-    }
     /**
      *  Gets the queueReceiver 
      * @see javax.jms.QueueReceiver
@@ -297,9 +368,9 @@ public String getPhysicalDestinationName(Destination destination) {
      * @exception  javax.jms.JMSException                  Description of the Exception
      */
 private QueueReceiver getQueueReceiver(QueueSession session, Queue destination, String selector)
-    throws javax.naming.NamingException, JMSException {
+    throws NamingException, JMSException {
     QueueReceiver queueReceiver = session.createReceiver(destination, selector);
-    log.debug("["+name+"] got receiver for queue " + queueReceiver.getQueue().getQueueName()+"]");
+//    log.debug("["+name+"] got receiver for queue " + queueReceiver.getQueue().getQueueName()+"]");
     return queueReceiver;
 }
 /**
@@ -310,7 +381,7 @@ private QueueReceiver getQueueReceiver(QueueSession session, Queue destination, 
   * @exception  javax.jms.JMSException
   */
 private QueueSender getQueueSender(QueueSession session, Queue destination)
-    throws javax.naming.NamingException, JMSException {
+    throws NamingException, JMSException {
     QueueSender queueSender;
     enforceMQCompliancy(destination);
     queueSender = session.createSender(destination);
@@ -324,34 +395,19 @@ private QueueSender getQueueSender(QueueSession session, Queue destination)
     public String getSubscriberType() {
         return subscriberType;
     }
-    private TopicConnectionFactory getTopicConnectionFactory()
-        throws javax.naming.NamingException, JMSException {
-        if (null == topicConnectionFactory) {
-            topicConnectionFactory =
-                (TopicConnectionFactory) getContext().lookup(topicConnectionFactoryName);
-        }
-        return topicConnectionFactory;
-    }
-    /**
-     *  Gets the topicConnectionFactoryName 
-     *
-     * @return    The topicConnectionFactoryName value
-     */
-    public String getTopicConnectionFactoryName() {
-        return topicConnectionFactoryName;
-    }
+
 /**
  * Gets a topicPublisher for a specified topic
  */
 private TopicPublisher getTopicPublisher(TopicSession session, Topic topic)
-    throws javax.naming.NamingException, JMSException {
+    throws NamingException, JMSException {
     return session.createPublisher(topic);
 }
 private TopicSubscriber getTopicSubscriber(
     TopicSession session,
     Topic topic,
     String selector)
-    throws javax.naming.NamingException, JMSException {
+    throws NamingException, JMSException {
 
     TopicSubscriber topicSubscriber;
     if (subscriberType.equalsIgnoreCase("DURABLE")) {
@@ -384,18 +440,11 @@ private TopicSubscriber getTopicSubscriber(
      * parameter for creating the <code>TopicSession</code>
      * @see javax.jms.TopicConnection#createTopicSession
      */
-    public boolean getTransacted() {
+    public boolean isTransacted() {
         return transacted;
     }
-public void open() throws IbisException {
-    try {
-        connection = getConnection();
-        connection.start();
-        destination = getDestination(connection);
-    } catch (Exception e) {
-        throw new IbisException(e);
-    }
-}
+    
+    
 public void send(MessageProducer messageProducer, Message message)
     throws NamingException, JMSException {
 
@@ -404,6 +453,7 @@ public void send(MessageProducer messageProducer, Message message)
     else
          ((QueueSender) messageProducer).send(message);
 }
+
 public void send(Session session, Destination dest, Message message)
     throws NamingException, JMSException {
 
@@ -492,29 +542,7 @@ private void sendByTopic(TopicSession session, Topic destination, Message messag
 	    forceMQCompliancy=ct;
 	    
     }
- 	/**
- 	 * loads JNDI properties from a JmsRealm
- 	 * @see JmsRealm
- 	 */ 
-	public void setJmsRealm(String jmsRealmName){
-	    JmsRealm jmsRealm=JmsRealmFactory.getInstance().getJmsRealm(jmsRealmName);
-	    if (null==jmsRealm){
-		    log.error("["+name+"] jmsRealm ["+jmsRealmName+"] does not exist");
-		    return;
-	    }
-	    try {
-		    PropertyUtils.copyProperties(this, jmsRealm);
-	    }catch (Exception e) {
-			log.error("["+name+"] unable to copy properties of JmsRealm:"+e.getMessage());
-		}
-	    log.info("["+name+"] loaded properties from jmsRealm ["+jmsRealm.toString()+"]");
-		    
-    }
-/**
- * Insert the method's description here.
- * Creation date: (22-05-2003 12:09:18)
- * @param newName java.lang.String
- */
+
 public void setName(java.lang.String newName) {
 	name = newName;
 }
@@ -547,14 +575,9 @@ public void setName(java.lang.String newName) {
         } else
             this.subscriberType = subscriberType;
     }
-    /**
-     *  sets the topicConnectionFactoryName 
-     *
-     */
-    public void setTopicConnectionFactoryName(String name) {
-        topicConnectionFactoryName=name;
-    }
-    /**
+
+    
+	/**
      * Is it under transaction control?
      * @see javax.jms.TopicConnection#createTopicSession
      * @param transacted
@@ -572,15 +595,76 @@ public void setName(java.lang.String newName) {
         sb.append(super.toString());
         if (useTopicFunctions) {
             sb.append("[topicName=" + destinationName + "]");
-            sb.append("[transacted=" + transacted + "]");
 	        sb.append("[topicConnectionFactoryName=" + topicConnectionFactoryName + "]");
+	        sb.append("[topicConnectionFactoryNameXA=" + topicConnectionFactoryNameXA + "]");
         } else {
             sb.append("[queueName=" + destinationName + "]");
 	        sb.append("[queueConnectionFactoryName=" + queueConnectionFactoryName + "]");
+	        sb.append("[queueConnectionFactoryNameXA=" + queueConnectionFactoryNameXA + "]");
         }
 //        sb.append("[physicalDestinationName="+getPhysicalDestinationName()+"]");
         sb.append("[ackMode=" + getAcknowledgeModeAsString(ackMode) + "]");
         sb.append("[persistent=" + persistent + "]");
+        sb.append("[transacted=" + transacted + "]");
         return sb.toString();
     }
+
+
+	/**
+	 *  Gets the queueConnectionFactoryName 
+	 *
+	 * @return    The queueConnectionFactoryName value
+	 */
+	public String getQueueConnectionFactoryName() {
+		return queueConnectionFactoryName;
+	}
+	/**
+	 * Returns the queueConnectionFactoryNameXA.
+	 * @return String
+	 */
+	public String getQueueConnectionFactoryNameXA() {
+		return queueConnectionFactoryNameXA;
+	}
+
+	/**
+	*  Gets the topicConnectionFactoryName 
+	*
+	* @return    The topicConnectionFactoryName value
+	*/
+   public String getTopicConnectionFactoryName() {
+	   return topicConnectionFactoryName;
+   }
+
+	/**
+	 * Returns the topicConnectionFactoryNameXA.
+	 * @return String
+	 */
+	public String getTopicConnectionFactoryNameXA() {
+		return topicConnectionFactoryNameXA;
+	}
+
+	/**
+	 * Sets the queueConnectionFactoryNameXA.
+	 * @param queueConnectionFactoryNameXA The queueConnectionFactoryNameXA to set
+	 */
+	public void setQueueConnectionFactoryNameXA(String queueConnectionFactoryNameXA) {
+		this.queueConnectionFactoryNameXA = queueConnectionFactoryNameXA;
+	}
+
+	/**
+	 * Sets the topicConnectionFactoryNameXA.
+	 * @param topicConnectionFactoryNameXA The topicConnectionFactoryNameXA to set
+	 */
+	public void setTopicConnectionFactoryNameXA(String topicConnectionFactoryNameXA) {
+		this.topicConnectionFactoryNameXA = topicConnectionFactoryNameXA;
+	}
+
+	public boolean isJmsTransacted() {
+		return jmsTransacted;
+	}
+
+	public void setJmsTransacted(boolean jmsTransacted) {
+		this.jmsTransacted = jmsTransacted;
+	}
+
 }
