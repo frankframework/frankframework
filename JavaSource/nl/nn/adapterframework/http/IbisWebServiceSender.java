@@ -1,6 +1,9 @@
 /*
  * $Log: IbisWebServiceSender.java,v $
- * Revision 1.2  2004-08-09 13:55:31  L190409
+ * Revision 1.3  2004-08-31 15:51:15  L190409
+ * added ToDo
+ *
+ * Revision 1.2  2004/08/09 13:55:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed ServiceListenerName to ServiceName
  *
  * Revision 1.1  2004/07/15 07:40:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -42,7 +45,7 @@ import nl.nn.adapterframework.util.AppConstants;
  * @since 4.2
  */
 public class IbisWebServiceSender implements ISender {
-	public static final String version = "$Id: IbisWebServiceSender.java,v 1.2 2004-08-09 13:55:31 L190409 Exp $";
+	public static final String version = "$Id: IbisWebServiceSender.java,v 1.3 2004-08-31 15:51:15 L190409 Exp $";
 
 	private String name;
 	private String ibisHost = "localhost";
@@ -75,6 +78,7 @@ public class IbisWebServiceSender implements ISender {
 	public String sendMessage(String correlationID, String message)
 		throws SenderException, TimeOutException {
 		try {
+			//TODO: afvangen als server gestopt is, en timeout van maken ofzo.
 			return proxy.dispatchRequest(getServiceName(),correlationID,message);
 		} catch (SOAPException e) {
 			throw new SenderException("exception sending message with correlationID ["+correlationID+"] to endPoint["+getEndPoint()+"]",e);
