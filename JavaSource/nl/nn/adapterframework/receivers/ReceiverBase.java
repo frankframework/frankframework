@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.9  2005-03-04 08:53:29  NNVZNL01#L180564
+ * Revision 1.10  2005-03-07 11:04:36  NNVZNL01#L180564
+ * PipeLineSession became a extension of HashMap, using other iterator
+ *
+ * Revision 1.9  2005/03/04 08:53:29  Johan Verrips <johan.verrips@ibissource.org>
  * Fixed IndexOutOfBoundException in getProcessStatistics  due to multi threading.
  * Adjusted this too for getIdleStatistics
  *
@@ -129,7 +132,7 @@ import javax.transaction.UserTransaction;
  */
 public class ReceiverBase
     implements IReceiver, IReceiverStatistics, Runnable, IMessageHandler, IbisExceptionListener, HasSender {
-	public static final String version="$Id: ReceiverBase.java,v 1.9 2005-03-04 08:53:29 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: ReceiverBase.java,v 1.10 2005-03-07 11:04:36 NNVZNL01#L180564 Exp $";
 	protected Logger log = Logger.getLogger(this.getClass());
  
 	private String returnIfStopped="";
@@ -704,13 +707,13 @@ public class ReceiverBase
 					pipelineSession.putAll(threadContext);
 					if (log.isDebugEnabled()) {
 						String contextDump = "PipeLineSession variables for correlationId ["+id+"]:";
-						for (Enumeration en=pipelineSession.keys(); en.hasMoreElements();) {
-							String key = (String)en.nextElement();
+						for (Iterator it=pipelineSession.keySet().iterator(); it.hasNext();) {
+							String key = (String)it.next();
 							Object value = pipelineSession.get(key);
 							if (key.equals("messageText")) {
 								value = "(... see elsewhere ...)";
 							}
-							contextDump+=" "+key+"=["+value.toString()+"]";
+							contextDump+=" "+key+"=["+(value==null? "null": value.toString())+"]";
 						}
 						log.debug(contextDump);
 					}
