@@ -1,6 +1,9 @@
 /*
  * $Log: JmsListener.java,v $
- * Revision 1.6  2004-03-26 10:42:55  NNVZNL01#L180564
+ * Revision 1.7  2004-03-26 11:01:43  NNVZNL01#L180564
+ * added forceMessageIdAsCorrelationId
+ *
+ * Revision 1.6  2004/03/26 10:42:55  Johan Verrips <johan.verrips@ibissource.org>
  * added @version tag in javadoc
  *
  * Revision 1.5  2004/03/24 08:26:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -46,6 +49,7 @@ import java.util.HashMap;
  * <tr><td>{@link #setTimeOut(long) listener.timeOut}</td><td>receiver timeout, in milliseconds</td><td>3000 [ms]</td></tr>
  * <tr><td>{@link #setUseReplyTo(boolean) listener.useReplyTo}</td><td>&nbsp;</td><td>true</td></tr>
  * <tr><td>{@link #setJmsRealm(String) listener.jmsRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setForceMessageIdAsCorrelationId(boolean) forceMessageIdAsCorrelationId}</td><td>forces that not the Correlation ID of the received message is used in a reply, but the Message ID. Through the logging you also see the messageID instead of the correlationID.</td><td>false</td></tr>
  * </table>
  *</p><p><b>Using transacted() and acknowledgement</b><br/>
  * If transacted() is true: it should ensure that a message is received and processed on a both or nothing basis. IBIS will commit
@@ -77,7 +81,7 @@ import java.util.HashMap;
  * @since 4.0.1
  */
 public class JmsListener extends JMSFacade implements ICorrelatedPullingListener, HasSender {
-	public static final String version="$Id: JmsListener.java,v 1.6 2004-03-26 10:42:55 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: JmsListener.java,v 1.7 2004-03-26 11:01:43 NNVZNL01#L180564 Exp $";
 
 
   private long timeOut = 3000;
@@ -86,8 +90,23 @@ public class JmsListener extends JMSFacade implements ICorrelatedPullingListener
 	
   private final static String THREAD_CONTEXT_SESSION_KEY="session";
   private final static String THREAD_CONTEXT_MESSAGECONSUMER_KEY="messageConsumer";
+  private boolean forceMessageIdAsCorrelationId=false;
  
   private String commitOnState="success";
+  
+  /**
+   * By default, the JmsListener takes the Correlation ID (if present) as the ID that has to be put in the
+   * correlation id of the reply. When you set ForceMessageIdAsCorrelationId to <code>true</code>,
+   * the messageID set in the correlationID of the reply.
+   * @param force
+   */
+  public void setForceMessageIdAsCorrelationId(boolean force){
+  	 forceMessageIdAsCorrelationId=force;
+  }
+  public boolean getForceMessageIdAsCorrelationId(){
+  	return forceMessageIdAsCorrelationId;
+  }
+  
 public JmsListener() {
 	super();
 }
@@ -279,11 +298,17 @@ public String getIdFromRawMessage(Object rawMessage, HashMap threadContext) thro
 		// retrieve CorrelationID
 		// --------------------------
         try {
-            cid = message.getJMSCorrelationID();
-            if (cid==null) {
-              cid = id;
-              log.debug("Setting correlation ID to MessageId");
-            }
+        	if (getForceMessageIdAsCorrelationId()){
+        		if (log.isDebugEnabled()) log.debug("forcing the messageID to be the correlationID");
+				cid =id;
+        	}
+        	else {
+	            cid = message.getJMSCorrelationID();
+	            if (cid==null) {
+	              cid = id;
+	              log.debug("Setting correlation ID to MessageId");
+	            }
+	        }
         } catch (JMSException ignore) {
 	        log.debug("ignoring JMSException in getJMSCorrelationID()", ignore);
         }
