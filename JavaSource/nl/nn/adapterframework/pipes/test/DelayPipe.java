@@ -1,3 +1,9 @@
+/*
+ * $Log: DelayPipe.java,v $
+ * Revision 1.2  2004-03-24 13:32:09  L190409
+ * removed warning
+ *
+ */
 package nl.nn.adapterframework.pipes.test;
 
 import nl.nn.adapterframework.core.PipeRunException;
@@ -35,7 +41,7 @@ public class DelayPipe extends AbstractPipe {
         log.info(
             "Pipe [" + this.getName() + "] will sleep for " + sleepDelay + " milliseconds");
         try {
-            Thread.currentThread().sleep(sleepDelay);
+            Thread.sleep(sleepDelay);
         } catch (InterruptedException e) {
             throw new PipeRunException(this, "Interrupt caught", e);
         }
