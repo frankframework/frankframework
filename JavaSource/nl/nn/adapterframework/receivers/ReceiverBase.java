@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.7  2005-01-13 08:56:04  L190409
+ * Revision 1.8  2005-02-10 08:17:34  L190409
+ * included context dump in debug
+ *
+ * Revision 1.7  2005/01/13 08:56:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Make threadContext-attributes available in PipeLineSession
  *
  * Revision 1.6  2004/10/12 15:14:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -55,6 +58,7 @@ import org.apache.commons.lang.builder.ToStringStyle;
 import org.apache.log4j.Logger;
 import javax.transaction.Status;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -121,7 +125,7 @@ import javax.transaction.UserTransaction;
  */
 public class ReceiverBase
     implements IReceiver, IReceiverStatistics, Runnable, IMessageHandler, IbisExceptionListener, HasSender {
-	public static final String version="$Id: ReceiverBase.java,v 1.7 2005-01-13 08:56:04 L190409 Exp $";
+	public static final String version="$Id: ReceiverBase.java,v 1.8 2005-02-10 08:17:34 L190409 Exp $";
 	protected Logger log = Logger.getLogger(this.getClass());
  
 	private String returnIfStopped="";
@@ -694,6 +698,18 @@ public class ReceiverBase
 			PipeLineSession pipelineSession = new PipeLineSession();
 			if (threadContext!=null) {
 					pipelineSession.putAll(threadContext);
+					if (log.isDebugEnabled()) {
+						String contextDump = "PipeLineSession variables for correlationId ["+id+"]:";
+						for (Enumeration en=pipelineSession.keys(); en.hasMoreElements();) {
+							String key = (String)en.nextElement();
+							Object value = pipelineSession.get(key);
+							if (key.equals("messageText")) {
+								value = "(... see elsewhere ...)";
+							}
+							contextDump+=" "+key+"=["+value.toString()+"]";
+						}
+						log.debug(contextDump);
+					}
 			}
 			PipeLineResult pipeLineResult = adapter.processMessage(id, message, pipelineSession);
 			result=pipeLineResult.getResult();
