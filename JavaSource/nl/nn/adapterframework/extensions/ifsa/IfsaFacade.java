@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaFacade.java,v $
- * Revision 1.18  2004-08-23 13:12:25  L190409
+ * Revision 1.19  2005-01-13 08:15:08  L190409
+ * made queue type IfsaQueue
+ *
+ * Revision 1.18  2004/08/23 13:12:25  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated JavaDoc
  *
  * Revision 1.17  2004/08/09 08:46:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -82,7 +85,7 @@ import javax.jms.*;
  * @since 4.2
  */
 public class IfsaFacade implements INamedObject, HasPhysicalDestination {
-	public static final String version="$Id: IfsaFacade.java,v 1.18 2004-08-23 13:12:25 L190409 Exp $";
+	public static final String version="$Id: IfsaFacade.java,v 1.19 2005-01-13 08:15:08 L190409 Exp $";
     protected Logger log = Logger.getLogger(this.getClass());
     
 	private final static String IFSA_INITIAL_CONTEXT_FACTORY="com.ing.ifsa.IFSAContextFactory";
@@ -99,7 +102,7 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
     private IFSAQueueConnectionFactory ifsaQueueConnectionFactory = null;
     private IFSAContext context = null;
     private QueueConnection connection = null;
-	private Queue queue;
+	private IFSAQueue queue;
 	
 	private boolean requestor=false;
 	private boolean provider=false;
@@ -218,16 +221,16 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 	 * when it concerns a Requester <code>lookupService(serviceId)</code> is used.
 	 * This method distinguishes a server-input queue and a client-input queue
 	 */
-	protected Queue getServiceQueue() throws IfsaException {
+	protected IFSAQueue getServiceQueue() throws IfsaException {
 		if (queue == null) {
 			try {
 				if (isRequestor()) {
-					queue = (Queue) getContext().lookupService(getServiceId());
+					queue = (IFSAQueue) getContext().lookupService(getServiceId());
 					if (log.isDebugEnabled()) {
 						log.info(getLogPrefix()+ "got Queue to send messages on "+getPhysicalDestinationName());
 					}
 				} else {
-					queue = (Queue) getContext().lookupProviderInput();
+					queue = (IFSAQueue) getContext().lookupProviderInput();
 					if (log.isDebugEnabled()) {
 						log.info(getLogPrefix()+ "got Queue to receive messages from "+getPhysicalDestinationName());
 					}
