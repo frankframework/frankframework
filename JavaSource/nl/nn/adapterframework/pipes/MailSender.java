@@ -1,6 +1,9 @@
 /*
  * $Log: MailSender.java,v $
- * Revision 1.7  2004-10-19 13:53:45  L190409
+ * Revision 1.8  2004-10-19 16:12:29  L190409
+ * made Transport per thread instead of per instance
+ *
+ * Revision 1.7  2004/10/19 13:53:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * graceful handling of empty recipients
  *
  * Revision 1.6  2004/10/19 06:39:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -40,6 +43,7 @@ import javax.activation.DataSource;
 import javax.activation.URLDataSource;
 import javax.mail.BodyPart;
 import javax.mail.Message;
+import javax.mail.MessagingException;
 import javax.mail.Multipart;
 import javax.mail.Session;
 import javax.mail.Transport;
@@ -114,7 +118,7 @@ import java.util.Properties;
  */
 
 public class MailSender implements ISenderWithParameters {
-	public static final String version = "$Id: MailSender.java,v 1.7 2004-10-19 13:53:45 L190409 Exp $";
+	public static final String version = "$Id: MailSender.java,v 1.8 2004-10-19 16:12:29 L190409 Exp $";
 
 	protected Logger log = Logger.getLogger(this.getClass());
 	private String name;
@@ -130,7 +134,6 @@ public class MailSender implements ISenderWithParameters {
 
 	private Session session;
 	private Properties properties;
-	private Transport transport;
 
 	protected ParameterList paramList = null;
 
@@ -164,20 +167,7 @@ public class MailSender implements ISenderWithParameters {
 	 */
 	public void open() throws SenderException {
 		try {
-			session = Session.getInstance(properties, null);
-			session.setDebug(log.isDebugEnabled());
-//			log.debug("MailSender [" + getName() + "] got session to [" + properties + "]");
-
-			// connect to the transport 
-			transport = session.getTransport("smtp");
-
-			transport.connect(smtpHost, smtpUserid, smtpPassword);
-			if (log.isDebugEnabled()) {
-				log.debug("MailSender [" + getName() + "] got transport to" 
-						+ " [smtpHost=" + smtpHost+ "]"
-						+ " [smtpUserid="+ smtpUserid
-						+ " [smtpPassword="+ smtpPassword + "]");
-			}
+			getSession();
 
 		} catch (Exception e) {
 			throw new SenderException("Error opening MailSender", e);
@@ -188,17 +178,28 @@ public class MailSender implements ISenderWithParameters {
 	 * Close the <code>transport</code> layer.
 	 */
 	public void close() throws SenderException {
-		try {
+/*		try {
 			if (transport!=null) {
 				transport.close();
 			}
 		} catch (Exception e) {
 			throw new SenderException("error closing transport", e);
 		}
+*/
 	}
 
 	public boolean isSynchronous() {
 		return false;
+	}
+
+
+	protected Session getSession() {
+		if (session == null) {
+			session = Session.getInstance(properties, null);
+			session.setDebug(log.isDebugEnabled());
+//			log.debug("MailSender [" + getName() + "] got session to [" + properties + "]");
+		}
+		return session;
 	}
 
 
@@ -377,14 +378,42 @@ public class MailSender implements ISenderWithParameters {
 
 			log.debug(sb.toString());
 			msg.setSentDate(new Date());
+			msg.saveChanges();
 			// send the message
-			transport.sendMessage(msg, msg.getAllRecipients());
+			putOnTransport(msg);
 
 		} catch (Exception e) {
 			throw new SenderException("MailSender got error", e);
 		}
 	}
 
+	protected void putOnTransport(Message msg) throws SenderException {
+		// connect to the transport 
+		Transport transport=null;
+		try {
+			transport = session.getTransport("smtp");
+			transport.connect(smtpHost, smtpUserid, smtpPassword);
+/*			if (log.isDebugEnabled()) {
+				log.debug("MailSender [" + getName() + "] got transport to" 
+						+ " [smtpHost=" + smtpHost+ "]"
+						+ " [smtpUserid="+ smtpUserid
+						+ " [smtpPassword="+ smtpPassword + "]");
+			}
+*/						
+			transport.sendMessage(msg, msg.getAllRecipients());
+			transport.close();
+		} catch (Exception e) {
+			throw new SenderException("MailSender [" + getName() + "] cannot connect send message to smtpHost ["+getSmtpHost()+"]",e);
+		} finally {
+			if (transport!=null) {
+				try {
+					transport.close();
+				} catch (MessagingException e1) {
+					log.warn("MailSender [" + getName() + "] got exception closing connection", e1);
+				}
+			}
+		}
+	}
 
 
 	/**
