@@ -1,6 +1,9 @@
 /*
  * $Log: JavaPusher.java,v $
- * Revision 1.3  2004-08-16 14:09:58  a1909356#db2admin
+ * Revision 1.4  2004-08-16 14:10:32  a1909356#db2admin
+ * Remove warnings
+ *
+ * Revision 1.3  2004/08/16 14:09:58  unknown <unknown@ibissource.org>
  * Return returnIfStopped value in case adapter is stopped
  *
  * Revision 1.2  2004/08/13 06:47:26  unknown <unknown@ibissource.org>
@@ -43,7 +46,7 @@ import nl.nn.adapterframework.jms.JmsRealm;
  */
 public class JavaPusher implements IPushingListener {
 	private static Map registeredJavaPushers; 
-	public static final String version="$Id: JavaPusher.java,v 1.3 2004-08-16 14:09:58 a1909356#db2admin Exp $";
+	public static final String version="$Id: JavaPusher.java,v 1.4 2004-08-16 14:10:32 a1909356#db2admin Exp $";
 	protected Logger log = Logger.getLogger(this.getClass());;
 	private String name;
 	private String jndiName;
@@ -105,9 +108,9 @@ public class JavaPusher implements IPushingListener {
 	 * Unregister recevier, so that it can't be used by proxies
 	 * @param name
 	 */
-	private static void unregisterJavaPusher(String name) {
-		getJavaPushers().remove(name);
-	}
+//	private static void unregisterJavaPusher(String name) {
+//		getJavaPushers().remove(name);
+//	}
 
 	/**
 	 * @param name
