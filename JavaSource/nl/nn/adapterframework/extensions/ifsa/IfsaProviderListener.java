@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaProviderListener.java,v $
- * Revision 1.5  2004-09-22 06:48:08  NNVZNL01#L180564
+ * Revision 1.6  2004-09-22 07:03:36  NNVZNL01#L180564
+ * Added logstatements for closing receiver and session
+ *
+ * Revision 1.5  2004/09/22 06:48:08  Johan Verrips <johan.verrips@ibissource.org>
  * Changed loglevel in getStringFromRawMessage to warn
  *
  * Revision 1.4  2004/07/19 09:50:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -71,7 +74,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * @since 4.2
  */
 public class IfsaProviderListener extends IfsaFacade implements IPullingListener, INamedObject {
-	public static final String version="$Id: IfsaProviderListener.java,v 1.5 2004-09-22 06:48:08 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: IfsaProviderListener.java,v 1.6 2004-09-22 07:03:36 NNVZNL01#L180564 Exp $";
 
     private final static String THREAD_CONTEXT_SESSION_KEY = "session";
     private final static String THREAD_CONTEXT_RECEIVER_KEY = "receiver";
@@ -121,12 +124,14 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 			QueueReceiver receiver = (QueueReceiver) threadContext.remove(THREAD_CONTEXT_RECEIVER_KEY);
 			if (receiver != null) {
 				receiver.close();
+				log.debug("closed receiver ["+getName()+"]");
 			}
 	
 			QueueSession session = (QueueSession) threadContext.remove(THREAD_CONTEXT_SESSION_KEY);
 			if (session != null) {
 				session.close();
-			}
+				log.debug("closed session for receiver ["+getName()+"]");
+						}
 		} catch (Exception e) {
 			throw new ListenerException(getLogPrefix()+"exception closing thread", e);
 		}
