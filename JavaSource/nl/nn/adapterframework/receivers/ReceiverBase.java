@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.5  2004-08-25 09:11:33  a1909356#db2admin
+ * Revision 1.6  2004-10-12 15:14:11  L190409
+ * removed unused code
+ *
+ * Revision 1.5  2004/08/25 09:11:33  unknown <unknown@ibissource.org>
  * Add waitForRunstate with timeout
  *
  * Revision 1.4  2004/08/23 13:10:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -22,7 +25,6 @@ import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.core.IErrorMessageFormatter;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IMessageHandler;
 import nl.nn.adapterframework.core.IPullingListener;
@@ -115,7 +117,7 @@ import javax.transaction.UserTransaction;
  */
 public class ReceiverBase
     implements IReceiver, IReceiverStatistics, Runnable, IMessageHandler, IbisExceptionListener, HasSender {
-	public static final String version="$Id: ReceiverBase.java,v 1.5 2004-08-25 09:11:33 a1909356#db2admin Exp $";
+	public static final String version="$Id: ReceiverBase.java,v 1.6 2004-10-12 15:14:11 L190409 Exp $";
 	protected Logger log = Logger.getLogger(this.getClass());
  
 	private String returnIfStopped="";
@@ -462,8 +464,6 @@ public class ReceiverBase
 		IPullingListener listener = (IPullingListener)getListener();
 
 		if (isTransacted()) {
-			String message;
-			String messageId;
 			Object rawMessage;
 			
 			UserTransaction utx = null;
