@@ -16,11 +16,11 @@ import javax.naming.NamingException;
  * <br/>
  * The <code>destinationType</code> field specifies which
  * type should be used.<br/>
- * <p>$Id: JMSFacade.java,v 1.3 2004-03-11 08:29:46 NNVZNL01#L180564 Exp $</p>
+ * <p>$Id: JMSFacade.java,v 1.4 2004-03-11 09:23:51 NNVZNL01#L180564 Exp $</p>
  * @author    Gerrit van Brakel
  */
 public class JMSFacade extends JNDIBase implements INamedObject{
-	public static final String version="$Id: JMSFacade.java,v 1.3 2004-03-11 08:29:46 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: JMSFacade.java,v 1.4 2004-03-11 09:23:51 NNVZNL01#L180564 Exp $";
 
 
     private int ackMode = Session.AUTO_ACKNOWLEDGE;
@@ -139,8 +139,6 @@ private TopicSession createTopicSession(TopicConnection connection)
      * @return          The acknowledgeModeAsString value
      */
     public String getAcknowledgeModeAsString(int ackMode) {
-        Session session = null;
-
         String ackString;
         if (Session.AUTO_ACKNOWLEDGE == ackMode) {
             ackString = "Auto";

@@ -21,7 +21,7 @@ import javax.jms.DeliveryMode;
 import javax.jms.Destination;
 import javax.jms.TextMessage;
 import javax.jms.JMSException;
-import javax.naming.NamingException;
+
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 
@@ -35,7 +35,7 @@ public class IfsaServiceListener extends IfsaFacade implements IPullingListener,
 
     private final static String THREAD_CONTEXT_SESSION_KEY = "session";
     private final static String THREAD_CONTEXT_RECEIVER_KEY = "receiver";
-	public static final String version="$Id: IfsaServiceListener.java,v 1.1 2004-03-11 08:13:36 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: IfsaServiceListener.java,v 1.2 2004-03-11 09:23:52 NNVZNL01#L180564 Exp $";
 
     private String commitOnState;
     private long timeOut = 3000;

@@ -8,7 +8,6 @@ import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.receivers.JmsMessageReceiver; // import for documentation...
 
 import javax.jms.*;
 import java.util.Date;
@@ -39,7 +38,7 @@ import java.util.HashMap;
  * 3.2.6, as from Websphere 5.0 / j2ee 1.4 setMessageListener is not allowed within a container.</p>
  * <p>As from version 4.0 The receiver will, when a reply-to address is specified and useReplyTo is true, by itself
  * send the answer to the reply-to queue. This makes sure that the JNDI properties are the same.</p>
- *<p>$Id: JmsMessageListener.java,v 1.2 2004-02-04 10:02:05 a1909356#db2admin Exp $</p>
+ *<p>$Id: JmsMessageListener.java,v 1.3 2004-03-11 09:23:51 NNVZNL01#L180564 Exp $</p>
  * @deprecated This class is deprecated, as it extends the deprecated class {@link JMSBase}. Please use 
  *             {@link JmsListener} instead.
  *
@@ -47,7 +46,7 @@ import java.util.HashMap;
  * @since 4.0
  */
 public class JmsMessageListener extends JMSBase implements ICorrelatedPullingListener, HasSender {
-	public static final String version="$Id: JmsMessageListener.java,v 1.2 2004-02-04 10:02:05 a1909356#db2admin Exp $";
+	public static final String version="$Id: JmsMessageListener.java,v 1.3 2004-03-11 09:23:51 NNVZNL01#L180564 Exp $";
 
 	private MessageConsumer mc = null;	
 	private long timeOut = 3000;

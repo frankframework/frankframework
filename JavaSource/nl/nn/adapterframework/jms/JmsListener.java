@@ -8,9 +8,6 @@ import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.receivers.JmsReceiver;
-
-import org.apache.commons.lang.StringUtils;
 
 import javax.jms.*;
 import java.util.Date;
@@ -60,12 +57,12 @@ import java.util.HashMap;
  * <p><b>Notice:</b> the JmsListener is ONLY capable of processing
  * <code>javax.jms.TextMessage</code>s <br/><br/>
  * </p>
- * <p>$Id: JmsListener.java,v 1.3 2004-03-11 08:29:46 NNVZNL01#L180564 Exp $</p>
+ * <p>$Id: JmsListener.java,v 1.4 2004-03-11 09:23:51 NNVZNL01#L180564 Exp $</p>
  * @author Gerrit van Brakel
  * @since 4.0.1
  */
 public class JmsListener extends JMSFacade implements ICorrelatedPullingListener, HasSender {
-	public static final String version="$Id: JmsListener.java,v 1.3 2004-03-11 08:29:46 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: JmsListener.java,v 1.4 2004-03-11 09:23:51 NNVZNL01#L180564 Exp $";
 
 
   private long timeOut = 3000;

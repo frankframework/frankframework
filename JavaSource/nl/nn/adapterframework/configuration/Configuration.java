@@ -2,11 +2,10 @@ package nl.nn.adapterframework.configuration;
 
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IReceiver;
-import nl.nn.adapterframework.extensions.coolgen.CoolGenWrapperPipe;
-import nl.nn.adapterframework.receivers.PullingReceiverBase;
+
 import nl.nn.adapterframework.scheduler.AdapterJob;
 import nl.nn.adapterframework.scheduler.JobDef;
-import nl.nn.adapterframework.scheduler.SchedulerAdapter;
+
 import nl.nn.adapterframework.util.AppConstants;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
@@ -32,7 +31,7 @@ import java.util.Enumeration;
  */
 public class Configuration {
     Logger log; 
-    public static final String version="$Id: Configuration.java,v 1.3 2004-03-11 08:20:39 NNVZNL01#L180564 Exp $";
+    public static final String version="$Id: Configuration.java,v 1.4 2004-03-11 09:23:51 NNVZNL01#L180564 Exp $";
      
     private Hashtable adapterTable = new Hashtable();
 

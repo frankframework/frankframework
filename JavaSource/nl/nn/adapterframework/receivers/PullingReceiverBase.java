@@ -36,13 +36,13 @@ import java.util.Iterator;
  * </table>
  * </p>
  * </p>
- * <p>$Id: PullingReceiverBase.java,v 1.2 2004-02-04 10:02:11 a1909356#db2admin Exp $</p>
+ * <p>$Id: PullingReceiverBase.java,v 1.3 2004-03-11 09:23:50 NNVZNL01#L180564 Exp $</p>
  * @author     Gerrit van Brakel
  * @since 4.0
  */
 public class PullingReceiverBase
     implements IReceiver, IReceiverStatistics, Runnable, HasSender {
-	public static final String version="$Id: PullingReceiverBase.java,v 1.2 2004-02-04 10:02:11 a1909356#db2admin Exp $";
+	public static final String version="$Id: PullingReceiverBase.java,v 1.3 2004-03-11 09:23:50 NNVZNL01#L180564 Exp $";
     	
 
 	public static final String ONERROR_CONTINUE = "continue";
@@ -195,14 +195,13 @@ public ISender getSender() {
     protected PipeLineResult onMessage(String message, String id, HashMap threadContext) {
 
 	    PipeLineResult result = null;
-	    String answer = "";
+	    
 	    String state = "";
 
         try {
 	        if (null!=adapter) {
 	          // notify the adapter and send the result to the sender
 	          result = adapter.processMessage(id, message);
-	          answer = result.getResult();
 	          state = result.getState();
 	          log.debug("["+getName()+"] proccessed request with exit-state ["+state+"]");
 	        }
@@ -340,12 +339,11 @@ public void run() {
  */
 protected void setListener(IPullingListener newListener) {
 	listener = newListener;
-	String listenerName="<none>";
+	
 	if (listener instanceof INamedObject)  {
 		
 		if (StringUtils.isEmpty(((INamedObject)listener).getName())) {
 			((INamedObject) listener).setName(this.getName());
-			listenerName=this.getName();
 		}
 	}
 	

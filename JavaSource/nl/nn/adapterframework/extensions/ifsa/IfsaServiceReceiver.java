@@ -1,10 +1,6 @@
 package nl.nn.adapterframework.extensions.ifsa;
 
-import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.receivers.PullingReceiverBase;
-
-import java.util.HashMap;
 
 /** 
  * IFSA Server-side Receiver: the easy way to turn your application into an IFSA service.
@@ -31,7 +27,7 @@ import java.util.HashMap;
  * @version Id
  */
 public class IfsaServiceReceiver extends PullingReceiverBase {
-	public static final String version="$Id: IfsaServiceReceiver.java,v 1.1 2004-03-11 08:13:36 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: IfsaServiceReceiver.java,v 1.2 2004-03-11 09:23:52 NNVZNL01#L180564 Exp $";
 public IfsaServiceReceiver() {
 	super();
 	setListener(new IfsaServiceListener());

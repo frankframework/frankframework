@@ -7,10 +7,8 @@ import java.io.Writer;
 import java.io.IOException;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.TransformerFactoryConfigurationError;
+
 import javax.xml.transform.Source;
-import javax.xml.transform.stream.StreamSource;
 import java.beans.PropertyVetoException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -66,7 +64,7 @@ public class CoolGenWrapperPipe
     private Transformer postProcTransformer = null;
     private Transformer proxyInputFixTransformer = null;
 
-	public static final String version="$Id: CoolGenWrapperPipe.java,v 1.1 2004-03-11 08:13:38 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: CoolGenWrapperPipe.java,v 1.2 2004-03-11 09:23:52 NNVZNL01#L180564 Exp $";
 
 /**
   * configure the pipe by creating the required XSLT-transformers using
@@ -393,6 +391,7 @@ public String getPreProcStylesheetName() {
             "Pipe [" + getName() + "] creates proxy with class [" + proxyClassName + "]");
         try {
 	        dummyProxy = createProxy(proxyClassName);
+	        
         } catch (ConfigurationException e) {
 	        throw new PipeStartException("Pipe [" + getName() + "] could not create proxy with class [" + proxyClassName + "]", e);
         }
