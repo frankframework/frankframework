@@ -1,6 +1,9 @@
 /*
  * $Log: Parameter.java,v $
- * Revision 1.8  2005-01-13 08:08:33  L190409
+ * Revision 1.9  2005-03-07 11:10:05  NNVZNL01#L180564
+ * Javadoc geupdate
+ *
+ * Revision 1.8  2005/01/13 08:08:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Xslt parameter handling by Maps instead of by Ibis parameter system
  *
  * Revision 1.7  2004/10/25 08:32:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -55,12 +58,43 @@ import nl.nn.adapterframework.util.XmlUtils;
  * parameters get their value at the time of processing the message. Value can be retrieved from the message itself,
  * or from the pipelineSession. If this does not result in a value (or if neither of these is specified), a default value 
  * can be specified. If an XPathExpression or stylesheet is specified, it will be applied to the message or the value retrieved
- * from the pipelineSession
+ * from the pipelineSession.
+ * <br/>
+ * * <p><b>Configuration:</b>
+ * <table border="1">
+ * <tr><th>attributes</th><th>description</th><th>default</th></tr>
+ * <tr><td>classname</td><td>name of the class, mostly a class that extends this class</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setName(String) name}</td>  <td>name of the receiver as known to the adapter</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setType(String) type}</td><td>"string" or "xml". "xml" renders a xml-nodeset as an xml-string; "string" renders the contents of the first node</td><td>string</td></tr>
+ * <tr><td>{@link #setSessionKey(String) sessionKey}</td><td>&nbsp;</td><td>Key of the PipeLineSession. Is specified, the value of the PipeLineSession variable is used as input for the XpathExpression or Stylesheet. If no xpathExpression or Stylesheet are specified, the value is returned.</td></tr>
+ * <tr><td>{@link #setXpathExpression(String) xpathExpression}</td><td>The xpath expression. </td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setStyleSheetName(String) styleSheetName}</td><td>Reference to a respirce with the stylesheet</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setDefaultValue(String) defaultValue}</td><td>If the result of sessionKey, XpathExpressen and/or Stylesheet returns null or an empty String, this value is returned</td><td>&nbsp;</td></tr>
+ * </table>
+ * </p>
+ * Examples:
+ * <pre>
  * 
+ * stored under SessionKey 'TransportInfo':
+ *  &lt;transportinfo&gt;
+ *   &lt;to&gt;***@zonnet.nl&lt;/to&gt;
+ *   &lt;to&gt;***@zonnet.nl&lt;/to&gt;
+ *   &lt;cc&gt;***@zonnet.nl&lt;/cc&gt;
+ *  &lt;/transportinfo&gt;
+ * 
+ * to obtain all 'to' addressees as a parameter:
+ * sessionKey="TransportInfo"
+ * xpathExpression="transportinfo/to"
+ * type="xml"
+ * 
+ * Result:
+ *   &lt;to&gt;***@zonnet.nl&lt;/to&gt;
+ *   &lt;to&gt;***@zonnet.nl&lt;/to&gt;
+  * </pre>
  * @author Richard Punt / Gerrit van Brakel
  */
 public class Parameter implements INamedObject, IWithParameters {
-	public static final String version="$Id: Parameter.java,v 1.8 2005-01-13 08:08:33 L190409 Exp $";
+	public static final String version="$Id: Parameter.java,v 1.9 2005-03-07 11:10:05 NNVZNL01#L180564 Exp $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	private String name = null;
@@ -91,7 +125,7 @@ public class Parameter implements INamedObject, IWithParameters {
 				if ("xml".equalsIgnoreCase(getType())) {
 					xsltSource = XmlUtils.createXPathEvaluatorSource("",getXpathExpression(),"xml", false); 
 				} else {
-					xsltSource = XmlUtils.createXPathEvaluatorSource(getXpathExpression(),"text"); 
+					xsltSource = XmlUtils.createXPathEvaluatorSource(getXpathExpression(),"text");
 				}
 				transformerPool = new TransformerPool(xsltSource);
 			} 
@@ -127,7 +161,7 @@ public class Parameter implements INamedObject, IWithParameters {
 	 */
 	public Object getValue(ParameterResolutionContext prc) throws ParameterException {
 		Object result = null;
-		log.debug("Calcualting value for Parameter ["+getName()+"]");
+		log.debug("Calculating value for Parameter ["+getName()+"]");
 		if (!configured) {
 			throw new ParameterException("Parameter ["+getName()+"] not configured");
 		}
