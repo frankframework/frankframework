@@ -1,6 +1,9 @@
 /*
  * $Log: JmsListener.java,v $
- * Revision 1.12  2004-05-21 10:47:30  a1909356#db2admin
+ * Revision 1.13  2005-01-04 13:16:51  L190409
+ * updated javadoc
+ *
+ * Revision 1.12  2004/05/21 10:47:30  unknown <unknown@ibissource.org>
  * Add (modifications) due to the postbox retriever implementation
  *
  * Revision 1.11  2004/05/03 07:11:50  Johan Verrips <johan.verrips@ibissource.org>
@@ -56,16 +59,16 @@ import java.util.HashMap;
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>classname</td><td>nl.nn.adapterframework.receivers.JmsMessageReceiver</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td>  <td>name of the listener</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setDestinationName(String) listener.destinationName}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setDestinationType(String) listener.destinationType}</td><td>"QUEUE" or "TOPIC"</td><td>"QUEUE"</td></tr>
- * <tr><td>{@link #setTransacted(boolean) listener.transacted}</td><td>when true, the processing joins a transaction set up by the Pipeline or Receiver</td><td>false</td></tr>
- * <tr><td>{@link #setJmsTransacted(boolean) listener.jmsTransacted}</td><td>when true, sessions are explicitly committed (exit-state equals commitOnState) or rolled-back (other exit-states) </td><td>false</td></tr>
- * <tr><td>{@link #setCommitOnState(String) listener.commitOnState}</td><td>&nbsp;</td><td>"success"</td></tr>
- * <tr><td>{@link #setAcknowledgeMode(String) listener.acknowledgeMode}</td><td>"auto", "dups" or "client"</td><td>"auto"</td></tr>
- * <tr><td>{@link #setPersistent(boolean) listener.persistent}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setTimeOut(long) listener.timeOut}</td><td>receiver timeout, in milliseconds</td><td>3000 [ms]</td></tr>
- * <tr><td>{@link #setUseReplyTo(boolean) listener.useReplyTo}</td><td>&nbsp;</td><td>true</td></tr>
- * <tr><td>{@link #setJmsRealm(String) listener.jmsRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setDestinationName(String) destinationName}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setDestinationType(String) destinationType}</td><td>"QUEUE" or "TOPIC"</td><td>"QUEUE"</td></tr>
+ * <tr><td>{@link #setTransacted(boolean) transacted}</td><td>when true, the processing joins a transaction set up by the Pipeline or Receiver</td><td>false</td></tr>
+ * <tr><td>{@link #setJmsTransacted(boolean) jmsTransacted}</td><td>when true, sessions are explicitly committed (exit-state equals commitOnState) or rolled-back (other exit-states) </td><td>false</td></tr>
+ * <tr><td>{@link #setCommitOnState(String) commitOnState}</td><td>&nbsp;</td><td>"success"</td></tr>
+ * <tr><td>{@link #setAcknowledgeMode(String) acknowledgeMode}</td><td>"auto", "dups" or "client"</td><td>"auto"</td></tr>
+ * <tr><td>{@link #setPersistent(boolean) persistent}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setTimeOut(long) timeOut}</td><td>receiver timeout, in milliseconds</td><td>3000 [ms]</td></tr>
+ * <tr><td>{@link #setUseReplyTo(boolean) useReplyTo}</td><td>&nbsp;</td><td>true</td></tr>
+ * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setForceMQCompliancy(String) forceMQCompliancy}</td><td>Possible values: 'MQ' or 'JMS'. Setting to 'MQ' informs the MQ-server that the replyto queue is not JMS compliant.</td><td>JMS</td></tr>
  * <tr><td>{@link #setForceMessageIdAsCorrelationId(boolean) forceMessageIdAsCorrelationId}</td><td>forces that not the Correlation ID of the received message is used in a reply, but the Message ID. Through the logging you also see the messageID instead of the correlationID.</td><td>false</td></tr>
  * </table>
@@ -110,7 +113,7 @@ import java.util.HashMap;
  * @since 4.0.1
  */
 public class JmsListener extends JMSFacade implements IPostboxListener, ICorrelatedPullingListener, HasSender {
-	public static final String version="$Id: JmsListener.java,v 1.12 2004-05-21 10:47:30 a1909356#db2admin Exp $";
+	public static final String version="$Id: JmsListener.java,v 1.13 2005-01-04 13:16:51 L190409 Exp $";
 
 
   private long timeOut = 3000;
