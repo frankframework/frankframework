@@ -1,3 +1,9 @@
+/**
+ * $Log: Configuration.java,v $
+ * Revision 1.7  2004-03-26 09:56:43  NNVZNL01#L180564
+ * Updated javadoc
+ *
+ */
 package nl.nn.adapterframework.configuration;
 
 import nl.nn.adapterframework.core.IAdapter;
@@ -35,7 +41,7 @@ import java.util.Enumeration;
  */
 public class Configuration {
     protected Logger log; 
-    public static final String version="$Id: Configuration.java,v 1.6 2004-03-26 09:56:15 NNVZNL01#L180564 Exp $";
+    public static final String version="$Id: Configuration.java,v 1.7 2004-03-26 09:56:43 NNVZNL01#L180564 Exp $";
      
     private Hashtable adapterTable = new Hashtable();
 
