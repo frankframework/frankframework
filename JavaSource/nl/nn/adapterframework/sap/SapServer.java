@@ -1,6 +1,9 @@
 /*
  * $Log: SapServer.java,v $
- * Revision 1.1  2004-06-22 06:56:44  L190409
+ * Revision 1.2  2004-06-23 11:40:17  L190409
+ * included error-logging and added transaction-related function-stubs
+ *
+ * Revision 1.1  2004/06/22 06:56:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * First version of SAP package
  *
  */
@@ -11,15 +14,15 @@ import nl.nn.adapterframework.util.XmlBuilder;
 
 import org.apache.log4j.Logger;
 
-import com.sap.mw.jco.*;
+import com.sap.mw.jco.JCO;
 
 /**
  * Object that acts as a SAP-server. Currently used to receive RFC-function calls from SAP.
  * @author Gerrit van Brakel
  * @since 4.1.1
  */
-public class SapServer extends JCO.Server {
-	public static final String version="$Id: SapServer.java,v 1.1 2004-06-22 06:56:44 L190409 Exp $";
+public class SapServer extends JCO.Server implements JCO.ServerExceptionListener, JCO.ServerErrorListener , JCO.ServerStateChangedListener {
+	public static final String version="$Id: SapServer.java,v 1.2 2004-06-23 11:40:17 L190409 Exp $";
 	protected Logger log = Logger.getLogger(this.getClass());
 	
 	private SapFunctionHandler handler = null;
@@ -28,7 +31,11 @@ public class SapServer extends JCO.Server {
 		super(system.getGwhost(), system.getGwserv(), progid, system.getRepository());
 		this.handler = handler;
 		log.info("SapServer connected to ["+system.getGwhost()+":"+system.getGwserv()+"] using progid ["+progid+"]");
-	}
+
+		JCO.addServerExceptionListener(this);
+		JCO.addServerErrorListener(this);
+		JCO.addServerStateChangedListener(this);
+  	}
 
 	/*
 	 *  Not really necessary to override this function but for demonstration purposes...
@@ -59,6 +66,88 @@ public class SapServer extends JCO.Server {
 		} catch (SapException e) {
 			throw new JCO.AbapException("IbisException", e.getMessage());
 		}
+	}
+	
+	
+
+	/**
+	 *  SAP JCo.Server javadoc says:
+	 *  This function will be invoked when a transactional RFC is being called from a
+	 *  SAP R/3 system. The function has to store the TID in permanent storage and return <code>true</code>.
+	 *  The method has to return <code>false</code> if the a transaction with this ID has already
+	 *  been process. Throw an exception if anything goes wrong. The transaction processing will be
+	 *  aborted thereafter.<b>
+	 *  Derived servers must override this method to actually implement the transaction ID management.
+	 *  @param tid the transaction ID
+	 *  @return <code>true</code> if the ID is valid and not in use otherwise, <code>false</code> otherwise
+	 */
+	protected boolean onCheckTID(String tid)
+	{
+		return true;
+	}
+
+	/**
+	 *  SAP JCo.Server javadoc says:
+	 *  This function will be called after the <em>local</em> transaction has been completed.
+	 *  All resources assiciated with this TID can be released.<b>
+	 *  Derived servers must override this method to actually implement the transaction ID management.
+	 *  @param tid the transaction ID
+	 */
+	protected void onConfirmTID(String tid)
+	{
+	}
+
+	/**
+	 *  SAP JCo.Server javadoc says:
+	 *  This function will be called after <em>all</em> RFC functions belonging to a certain transaction
+	 *  have been successfully completed. <b>
+	 *  Derived servers can override this method to locally commit the transaction.
+	 *  @param tid the transaction ID
+	 */
+	protected void onCommit(String tid)
+	{
+	}
+
+	/**
+	 *  SAP JCo.Server javadoc says:
+	 *  This function will be called if an error in one of the RFC functions belonging to
+	 *  a certain transaction has occurred.<b>
+	 *  Derived servers can override this method to locally rollback the transaction.
+	 *  @param tid the transaction ID
+	 */
+	protected void onRollback(String tid)
+	{
+	}
+
+	
+
+	public void serverExceptionOccurred(JCO.Server server, Exception e) {
+		log.error("Exception in SapServer [" + server.getProgID() + "]", e);
+	}
+
+	public void serverErrorOccurred(JCO.Server server, Error err)
+	{
+		log.error("Error in SapServer [" + server.getProgID() + "]", err);
+	}
+
+
+	public String stateToString(int state) {
+		String result="";
+		if ((state & JCO.STATE_STOPPED    ) != 0) result += " STOPPED ";
+		if ((state & JCO.STATE_STARTED    ) != 0) result += " STARTED ";
+		if ((state & JCO.STATE_LISTENING  ) != 0) result += " LISTENING ";
+		if ((state & JCO.STATE_TRANSACTION) != 0) result += " TRANSACTION ";
+		if ((state & JCO.STATE_BUSY       ) != 0) result += " BUSY ";
+		return result;
+		
+	}
+	/* (non-Javadoc)
+	 * @see com.sap.mw.jco.JCO.ServerStateChangedListener#serverStateChangeOccurred(com.sap.mw.jco.JCO.Server, int, int)
+	 */
+	public void serverStateChangeOccurred(JCO.Server server, int old_state, int new_state) {
+		log.debug("Server [" + server.getProgID() + "] changed state from ["
+				+stateToString(old_state)+"] to ["+stateToString(new_state)+"]");
+		
 	}
  
 }
