@@ -1,6 +1,9 @@
 /*
  * $Log: JmsListener.java,v $
- * Revision 1.10  2004-03-31 15:01:53  L190409
+ * Revision 1.11  2004-05-03 07:11:50  NNVZNL01#L180564
+ * Updated message selector behaviour
+ *
+ * Revision 1.10  2004/03/31 15:01:53  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fixed javadoc
  *
  * Revision 1.9  2004/03/31 12:04:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -103,7 +106,7 @@ import java.util.HashMap;
  * @since 4.0.1
  */
 public class JmsListener extends JMSFacade implements ICorrelatedPullingListener, HasSender {
-	public static final String version="$Id: JmsListener.java,v 1.10 2004-03-31 15:01:53 L190409 Exp $";
+	public static final String version="$Id: JmsListener.java,v 1.11 2004-05-03 07:11:50 NNVZNL01#L180564 Exp $";
 
 
   private long timeOut = 3000;
@@ -225,7 +228,7 @@ public HashMap openThread() throws ListenerException {
 			Session session = createSession();
 			threadContext.put(THREAD_CONTEXT_SESSION_KEY, session);
 		
-			MessageConsumer mc = getMessageConsumer(session, getDestination(), null);
+			MessageConsumer mc = getMessageConsumer(session, getDestination());
 			threadContext.put(THREAD_CONTEXT_MESSAGECONSUMER_KEY, mc);
 		}
 		return threadContext;

@@ -1,6 +1,9 @@
 /*
  * $Log: JMSFacade.java,v $
- * Revision 1.10  2004-04-26 09:58:06  NNVZNL01#L180564
+ * Revision 1.11  2004-05-03 07:11:32  NNVZNL01#L180564
+ * Updated message selector behaviour
+ *
+ * Revision 1.10  2004/04/26 09:58:06  Johan Verrips <johan.verrips@ibissource.org>
  * Added time-to-live on sent messages
  *
  * Revision 1.9  2004/03/31 12:04:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -44,7 +47,7 @@ import javax.naming.NamingException;
  * @author    Gerrit van Brakel
  */
 public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version="$Id: JMSFacade.java,v 1.10 2004-04-26 09:58:06 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: JMSFacade.java,v 1.11 2004-05-03 07:11:32 NNVZNL01#L180564 Exp $";
 
 	private String name;
 
@@ -85,6 +88,16 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	private String topicConnectionFactoryNameXA;
     private TopicConnectionFactory topicConnectionFactory = null;
 
+	//the MessageSelector will provide filter functionality, as specified
+	//javax.jms.Message.
+    private String messageSelector=null;
+    
+    public String getMessageSelector() {
+    	return messageSelector;
+    }
+    public void setMessageSelector(String newMessageSelector) {
+    	this.messageSelector=newMessageSelector;
+    }
     
     
 	/**
@@ -234,6 +247,15 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
         return dest;
     }
 
+	/**
+	 * Gets a MessageConsumer object for either Topics or Queues.
+	 * @param session the Session object
+	 * @param destination a Destination object
+	 * @param correlationId the Correlation ID as a String value
+	 * @return a MessageConsumer with the right filter (messageSelector)
+	 * @throws NamingException
+	 * @throws JMSException
+	 */
 
 	public MessageConsumer getMessageConsumerForCorrelationId(Session session, Destination destination, String correlationId) throws NamingException, JMSException {
 		if (correlationId==null)
@@ -242,14 +264,39 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 			return getMessageConsumer(session, destination, "JMSCorrelationID='" + correlationId + "'");
 	}
 	
-	
-	public MessageConsumer getMessageConsumer(Session session, Destination destination, String selector) throws NamingException, JMSException {
-	    if (useTopicFunctions)
-	        return getTopicSubscriber((TopicSession)session, (Topic)destination, selector);
-	    else
-	        return getQueueReceiver((QueueSession)session, (Queue)destination, selector);
+	/**
+	 * Create a MessageConsumer. In this overloaded function the selector is taken into account.
+	 * This ensures that listeners (or other extensions of this class) do not influence how the selector
+	 * is used: when a correlationID should be in the filter the  <code>getMessageConsumerForCorrelationId</code>
+	 * should be used, other wise the <code>getMessageConsumer</code> function which has no attribute for
+	 * <code>selector</code>. Whe a MessageSelector is set, it will be used when no correlation id is required.
+	 * @param session the Session
+	 * @param destination the Destination
+	 * @param selector the MessageSelector
+	 * @return MessageConsumer
+	 * @throws NamingException
+	 * @throws JMSException
+	 */
+	private MessageConsumer getMessageConsumer(Session session, Destination destination, String selector) throws NamingException, JMSException {
+			if (useTopicFunctions)
+				return getTopicSubscriber((TopicSession)session, (Topic)destination, selector);
+			else
+				return getQueueReceiver((QueueSession)session, (Queue)destination, selector);
 	}
-	
+	/**
+	 * Create a MessageConsumer, on a specific session and for a specific destination.
+	 * This functions hides wether we work via Topics or Queues and wether or not a 
+	 * messageSelector is set. 
+	 * @param session the Session
+	 * @param destination the Destination
+	 * @return the MessageConsumer
+	 * @throws NamingException
+	 * @throws JMSException
+	 */
+	public MessageConsumer getMessageConsumer(Session session, Destination destination) throws NamingException, JMSException {
+		return getMessageConsumer(session, destination, getMessageSelector());
+	}
+
     /**
      * gets a sender. if topicName is used the <code>getTopicPublisher()</code>
      * is used, otherwise the <code>getQueueSender()</code>
