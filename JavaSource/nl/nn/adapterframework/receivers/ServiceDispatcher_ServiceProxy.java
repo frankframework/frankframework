@@ -15,12 +15,12 @@ import java.util.Vector;
 /**
  * WebService proxy class that can be used in applications that need to communciate with
  * the IBIS Adapterframework via a webservice.
- * <p>$Id: ServiceDispatcher_ServiceProxy.java,v 1.3 2004-03-10 11:45:58 a1909356#db2admin Exp $</p>
+ * <p>$Id: ServiceDispatcher_ServiceProxy.java,v 1.4 2004-03-10 15:06:26 a1909356#db2admin Exp $</p>
  */
 
 public class ServiceDispatcher_ServiceProxy
 {
-		public static final String version="$Id: ServiceDispatcher_ServiceProxy.java,v 1.3 2004-03-10 11:45:58 a1909356#db2admin Exp $";
+		public static final String version="$Id: ServiceDispatcher_ServiceProxy.java,v 1.4 2004-03-10 15:06:26 a1909356#db2admin Exp $";
 
   private Call call = new Call();
   private URL url = null;
@@ -133,8 +133,8 @@ public class ServiceDispatcher_ServiceProxy
   public static void main (String argv[]) {
 	try {
   		ServiceDispatcher_ServiceProxy proxy=new ServiceDispatcher_ServiceProxy();
-  		proxy.setEndPoint ( new URL("http://localhost:9080/Ibis/servlet/rpcrouter"));
-  		String result=proxy.dispatchRequest("TestWebService", "correlationID01", "rekenboxverzoek");
+  		proxy.setEndPoint ( new URL("http://myhost:myport9080/AdapterFramework/servlet/rpcrouter"));
+  		String result=proxy.dispatchRequest("RekenBoxWebService", "correlationID01", "rekenboxverzoek");
   		System.out.println(result);
   		
   	} catch (Exception e) {
