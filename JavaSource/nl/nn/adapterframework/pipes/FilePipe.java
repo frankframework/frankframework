@@ -1,7 +1,7 @@
 /*
  * $Log: FilePipe.java,v $
- * Revision 1.4  2004-04-27 06:16:12  NNVZNL01#L180564
- * added working via getters
+ * Revision 1.5  2004-04-27 11:03:35  a1909356#db2admin
+ * Renamed internal Transformer interface to prevent naming confusions
  *
  * Revision 1.3  2004/04/26 13:06:53  unknown <unknown@ibissource.org>
  * Support for file en- and decoding
@@ -48,6 +48,7 @@ import sun.misc.BASE64Encoder;
  * <tr><td>{@link #setDirectory(String) directory}</td><td>base directory where files are stored in or read from</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setActions(String) actions}</td><td>name of forward returned upon completion</td><td>"success"</td></tr>
  * <tr><td>{@link #setWriteSuffix(String) writeSuffix}</td><td>suffix of the file to be created</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setWriteTag(String) writeTag}</td><td>the xml tag to encapsulate the filename in</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * <p><b>Exits:</b>
@@ -63,7 +64,7 @@ import sun.misc.BASE64Encoder;
  *
  */
 public class FilePipe extends FixedForwardPipe {
-	public static final String version="$Id: FilePipe.java,v 1.4 2004-04-27 06:16:12 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: FilePipe.java,v 1.5 2004-04-27 11:03:35 a1909356#db2admin Exp $";
 	private List transformers;
 	protected String actions;
 	protected String directory;
@@ -84,7 +85,6 @@ public class FilePipe extends FixedForwardPipe {
 		while (tok.hasMoreTokens()) {
 			String token = tok.nextToken();
 			
-			Transformer t = null;
 			if ("write".equalsIgnoreCase(token))
 				transformers.add(new FileWriter());
 			else if ("read".equalsIgnoreCase(token))
@@ -103,7 +103,7 @@ public class FilePipe extends FixedForwardPipe {
 		
 		// configure the transformers
 		for (Iterator it = transformers.iterator(); it.hasNext(); ) {
-			((Transformer)it.next()).configure();
+			((TransformerAction)it.next()).configure();
 		}
 	}
 	
@@ -114,7 +114,7 @@ public class FilePipe extends FixedForwardPipe {
 		try {
 			byte[] inValue = (input == null) ? null : input.toString().getBytes();
 			for (Iterator it = transformers.iterator(); it.hasNext(); ) {
-				inValue = ((Transformer)it.next()).go(inValue, session);
+				inValue = ((TransformerAction)it.next()).go(inValue, session);
 			}
 			return new PipeRunResult(getForward(), inValue == null ? null : new String(inValue));
 		}
@@ -127,7 +127,7 @@ public class FilePipe extends FixedForwardPipe {
 	 * The pipe supports several actions. All actions are implementations in
 	 * inner-classes that implement the Transformer interface.
 	 */
-	private interface Transformer {
+	private interface TransformerAction {
 		/* 
 		 * @see nl.nn.adapterframework.core.IPipe#configure()
 		 */
@@ -142,7 +142,7 @@ public class FilePipe extends FixedForwardPipe {
 	/**
 	 * Encodes the input 
 	 */
-	private class Encoder implements Transformer {
+	private class Encoder implements TransformerAction {
 		public BASE64Encoder encoder = new BASE64Encoder();
 		public void configure() {}
 		public byte[] go(byte[] in, PipeLineSession session) throws Exception {
@@ -153,7 +153,7 @@ public class FilePipe extends FixedForwardPipe {
 	/**
 	 * Decodes the input
 	 */
-	private class Decoder implements Transformer {
+	private class Decoder implements TransformerAction {
 		public BASE64Decoder decoder = new BASE64Decoder();
 		public void configure() {}
 		public byte[] go(byte[] in, PipeLineSession session) throws Exception {
@@ -164,7 +164,7 @@ public class FilePipe extends FixedForwardPipe {
 	/**
 	 * Write the input to a file in the specified directory.
 	 */
-	private class FileWriter implements Transformer {
+	private class FileWriter implements TransformerAction {
 		// create the directory structure if not exists and
 		// check the permissions
 		public void configure() throws ConfigurationException {
@@ -198,7 +198,7 @@ public class FilePipe extends FixedForwardPipe {
 	 * Reads the file, which name is specified in the input, from the specified directory.
 	 * The class supports the deletion of the file after reading.
 	 */
-	private class FileReader implements Transformer {
+	private class FileReader implements TransformerAction {
 		private boolean deleteAfterRead;
 		
 		FileReader() {
@@ -236,7 +236,7 @@ public class FilePipe extends FixedForwardPipe {
 	/**
 	 * Delete the file.
 	 */
-	private class FileDeleter implements Transformer {
+	private class FileDeleter implements TransformerAction {
 		public void configure() throws ConfigurationException {
 			if (StringUtils.isNotEmpty(getDirectory())) {
 				File file = new File(getDirectory());
