@@ -1,6 +1,9 @@
 /*
  * $Log: IbisException.java,v $
- * Revision 1.9  2004-07-07 14:30:15  L190409
+ * Revision 1.10  2004-07-08 08:55:58  L190409
+ * cosmetic changes in toString()
+ *
+ * Revision 1.9  2004/07/07 14:30:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * toString(): classes, messages and root cause
  *
  * Revision 1.8  2004/07/07 13:55:06  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -33,7 +36,7 @@ import org.apache.commons.lang.exception.NestableException;
  * @author Gerrit van Brakel
  */
 public class IbisException extends NestableException {
-		public static final String version="$Id: IbisException.java,v 1.9 2004-07-07 14:30:15 L190409 Exp $";
+		public static final String version="$Id: IbisException.java,v 1.10 2004-07-08 08:55:58 L190409 Exp $";
 
 	static {
 		// add methodname to find cause of JMS-Exceptions
@@ -86,7 +89,7 @@ public class IbisException extends NestableException {
 		}
 		t=ExceptionUtils.getRootCause(this);
 		if (t!=null) {
-			result += "\nroot cause:\n"+ToStringBuilder.reflectionToString(t)+"\n";
+			result += "\nroot cause:\n"+ToStringBuilder.reflectionToString(t,ToStringStyle.MULTI_LINE_STYLE)+"\n";
 		}
 		return result;
 	}
