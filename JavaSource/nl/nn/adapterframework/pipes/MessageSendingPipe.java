@@ -1,6 +1,9 @@
 /*
  * $Log: MessageSendingPipe.java,v $
- * Revision 1.14  2004-09-08 14:16:37  L190409
+ * Revision 1.15  2004-10-05 10:53:20  L190409
+ * added support for parameterized senders
+ *
+ * Revision 1.14  2004/09/08 14:16:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * catch more throwables in doPipe()
  *
  * Revision 1.13  2004/09/01 11:28:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -36,9 +39,11 @@ package nl.nn.adapterframework.pipes;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
+import nl.nn.adapterframework.core.IParameterizedSender;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.HasSender;
 import nl.nn.adapterframework.core.ICorrelatedPullingListener;
+import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -48,6 +53,7 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.errormessageformatters.ErrorMessageFormatter;
+import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 
 
 import java.util.HashMap;
@@ -71,6 +77,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><th>nested elements</th><th>description</th></tr>
  * <tr><td>{@link nl.nn.adapterframework.core.ISender sender}</td><td>specification of sender to send messages with</td></tr>
  * <tr><td>{@link nl.nn.adapterframework.core.ICorrelatedPullingListener listener}</td><td>specification of listener to listen to for replies</td></tr>
+ * <tr><td>{@link nl.nn.adapterframework.parameters.Parameter param}</td><td>any parameters defined on the pipe will be handed to the sender, if this is a {@link IParameterizedSender}</td></tr>
  * </table>
  * </p>
  * <p><b>Exits:</b>
@@ -87,7 +94,7 @@ import org.apache.commons.lang.StringUtils;
  */
 
 public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
-	public static final String version = "$Id: MessageSendingPipe.java,v 1.14 2004-09-08 14:16:37 L190409 Exp $";
+	public static final String version = "$Id: MessageSendingPipe.java,v 1.15 2004-10-05 10:53:20 L190409 Exp $";
 	private final static String TIMEOUTFORWARD = "timeout";
 	private final static String EXCEPTIONFORWARD = "exception";
 
@@ -125,7 +132,11 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 				getLogPrefix(null) + "no sender defined ");
 		}
 
-		getSender().configure();
+		if (getSender() instanceof IParameterizedSender && getParameterList()!=null) {
+			((IParameterizedSender)getSender()).configure(getParameterList());
+		} else {
+			getSender().configure();
+		}
 		if (getSender() instanceof HasPhysicalDestination) {
 			log.info(getLogPrefix(null)+"has sender on "+((HasPhysicalDestination)getSender()).getPhysicalDestinationName());
 		}
@@ -243,7 +254,15 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 
 	protected String sendMessage(Object input, PipeLineSession session, String correlationID, ISender sender, HashMap threadContext) throws SenderException, TimeOutException {
 		// sendResult has a messageID for async senders, the result for sync senders
-		return sender.sendMessage(correlationID, (String) input);
+		if (getSender() instanceof IParameterizedSender && getParameterList()!=null) {
+			IParameterizedSender psender = (IParameterizedSender) getSender();
+			try {
+				return psender.sendMessage(correlationID, (String) input, new ParameterResolutionContext(input, session).getValues(getParameterList()));
+			} catch (ParameterException e) { 
+				throw new SenderException(e);
+			}
+		} 
+		return getSender().sendMessage(correlationID, (String) input);
 	}
 
 	public void start() throws PipeStartException {
