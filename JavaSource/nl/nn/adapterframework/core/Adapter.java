@@ -1,6 +1,9 @@
 /*
  * $Log: Adapter.java,v $
- * Revision 1.6  2004-04-06 14:52:52  NNVZNL01#L180564
+ * Revision 1.7  2004-04-13 11:37:13  NNVZNL01#L180564
+ * When the Adapter was in state "ERROR", it could not be stopped anymore. Fixed it.
+ *
+ * Revision 1.6  2004/04/06 14:52:52  Johan Verrips <johan.verrips@ibissource.org>
  * Updated handling of errors in receiver.configure()
  *
  * Revision 1.5  2004/03/30 07:29:53  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -64,7 +67,7 @@ import javax.transaction.UserTransaction;
  */
 
 public class Adapter extends JNDIBase implements Runnable, IAdapter{
-	public static final String version="$Id: Adapter.java,v 1.6 2004-04-06 14:52:52 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: Adapter.java,v 1.7 2004-04-13 11:37:13 NNVZNL01#L180564 Exp $";
 	private Vector receivers=new Vector();
 	private long lastMessageDate =0;
     private PipeLine pipeline;
@@ -546,14 +549,14 @@ public void run() {
 		        log.info("Adapter [" + getName() + "] up and running");
             
 		        waitForRunState(RunStateEnum.STOPPING);
-
+			    log.debug("***stopping adapter");
 		        it = receivers.iterator();
                 while (it.hasNext()) {
                     IReceiver receiver = (IReceiver) it.next();
                     receiver.waitForRunState(RunStateEnum.STOPPED);
                     log.info("Adapter [" + getName() + "] stopped [" + receiver.getName() + "]");
                 }
-
+				
                 int currentNumOfMessagesInProcess = getNumOfMessagesInProcess();
 				if (currentNumOfMessagesInProcess>0) {
 					String msg = "Adapter ["+name+"] is being stopped while still processing "+currentNumOfMessagesInProcess+" messages, waiting for them to finish";
@@ -641,11 +644,14 @@ public void startRunning() {
 	synchronized (runState) {
 		RunStateEnum currentRunState = getRunState();
 		
-		if (!currentRunState.equals(RunStateEnum.STARTED) && 
-			!currentRunState.equals(RunStateEnum.ERROR)) {
+		if (!currentRunState.equals(RunStateEnum.STARTED) && (!currentRunState.equals(RunStateEnum.ERROR))) {
 			String msg = "Adapter ["+name+"] in state ["+ currentRunState +"] while stopAdapter() command is issued, ignoring command";
 			log.warn(msg);
 			messageKeeper.add(msg);
+			return;
+		}
+		if (currentRunState.equals(RunStateEnum.ERROR)) {
+			runState.setRunState(RunStateEnum.STOPPED);
 			return;
 		}
 		
@@ -662,8 +668,9 @@ public void startRunning() {
 		  		messageKeeper.add("received error stopping receiver ["+receiver.getName()+"] : "+e.getMessage());
 		  	}
 	  	}
-
+	  	
 		runState.setRunState(RunStateEnum.STOPPING);
+
 	}
   }
   public String toString(){
