@@ -1,6 +1,9 @@
 /*
  * $Log: IAdapter.java,v $
- * Revision 1.5  2004-06-16 12:34:46  NNVZNL01#L180564
+ * Revision 1.6  2004-08-09 08:43:46  L190409
+ * added formatErrorMessage()
+ *
+ * Revision 1.5  2004/06/16 12:34:46  Johan Verrips <johan.verrips@ibissource.org>
  * Added AutoStart functionality on Adapter
  *
  * Revision 1.4  2004/03/26 10:42:50  Johan Verrips <johan.verrips@ibissource.org>
@@ -27,7 +30,7 @@ import javax.transaction.UserTransaction;
  * @version Id
  **/
 public interface IAdapter extends IManagable {
-	public static final String version="$Id: IAdapter.java,v 1.5 2004-06-16 12:34:46 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: IAdapter.java,v 1.6 2004-08-09 08:43:46 L190409 Exp $";
   /**
    * Instruct the adapter to configure itself. The adapter will call the
    * pipeline to configure itself, the pipeline will call the individual
@@ -57,5 +60,13 @@ public interface IAdapter extends IManagable {
 	 *  return true when the current thread is running under a transaction.
 	 */
 	public boolean inTransaction() throws TransactionException;
+
+	public String formatErrorMessage(
+		String errorMessage,
+		Throwable t,
+		String originalMessage,
+		String messageID,
+		INamedObject objectInError,
+		long receivedTime);
 
 }
