@@ -1,6 +1,9 @@
 /*
  * $Log: IMessagePusher.java,v $
- * Revision 1.1  2004-06-22 11:52:44  L190409
+ * Revision 1.2  2004-06-30 10:04:17  L190409
+ * added INamedObject implementation, added setExceptionListener
+ *
+ * Revision 1.1  2004/06/22 11:52:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * first version
  *
  */
@@ -10,14 +13,16 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.receivers.ServiceClient;
 
 import java.util.HashMap;
+
 /**
  * Defines listening behaviour of message driven receivers.
  * 
  * @version Id
  * @author Gerrit van Brakel
+ * @since 4.2
  */
-public interface IMessagePusher {
-	public static final String version="$Id: IMessagePusher.java,v 1.1 2004-06-22 11:52:44 L190409 Exp $";
+public interface IMessagePusher extends INamedObject {
+	public static final String version="$Id: IMessagePusher.java,v 1.2 2004-06-30 10:04:17 L190409 Exp $";
 
 /**
  * <code>configure()</code> is called once at startup of the framework in the configure method of the owner of this listener. 
@@ -44,5 +49,10 @@ void close() throws ListenerException;
  * Each of the received messages must be pushed through handler.processMessage()
  */
 void setHandler(ServiceClient handler);
+
+/**
+ * Set a (single) listener that will be notified of any exceptions.
+ */
+void setExceptionListener(IbisExceptionListener listener);
 
 }
