@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaRequesterSender.java,v $
- * Revision 1.1  2004-07-05 14:28:10  L190409
+ * Revision 1.2  2004-07-07 13:58:54  L190409
+ * cosmetic changes
+ *
+ * Revision 1.1  2004/07/05 14:28:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Firs version, converted from IfsaClient
  *
  */
@@ -45,7 +48,7 @@ import org.apache.commons.lang.StringUtils;
  * @since 4.2
  */
 public class IfsaRequesterSender extends IfsaFacade implements ISender {
-	public static final String version="$Id: IfsaRequesterSender.java,v 1.1 2004-07-05 14:28:10 L190409 Exp $";
+	public static final String version="$Id: IfsaRequesterSender.java,v 1.2 2004-07-07 13:58:54 L190409 Exp $";
 	private QueueSession session;
 	private QueueSender sender;
   
@@ -145,9 +148,9 @@ public class IfsaRequesterSender extends IfsaFacade implements ISender {
 				
 	    }
 		} catch (JMSException e) {
-			throw new SenderException(getLogPrefix()+"Error sending message ["+ message +"]",e);
+			throw new SenderException(getLogPrefix()+"caught JMSException in sendMessage()",e);
 		} catch (IfsaException e) {
-			throw new SenderException(getLogPrefix()+"Error sending message ["+ message +"]",e);
+			throw new SenderException(getLogPrefix()+"caught IfsaException in sendMessage()",e);
 		}
 	    return result;
 	
