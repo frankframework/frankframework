@@ -5,10 +5,11 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
 /**
  * ErrorMessageFormatter for JUICE, introduced with the Y01-project.
+ * <p>$Id: Y01ErrorMessageFormatter.java,v 1.2 2004-02-04 10:02:10 a1909356#db2admin Exp $</p>
  * @author Johan Verrips IOS
  */
 public class Y01ErrorMessageFormatter extends ErrorMessageFormatter {
-	public static final String version="$Id: Y01ErrorMessageFormatter.java,v 1.1 2004-02-04 08:36:18 a1909356#db2admin Exp $";
+	public static final String version="$Id: Y01ErrorMessageFormatter.java,v 1.2 2004-02-04 10:02:10 a1909356#db2admin Exp $";
 
 /**
  * format method comment.

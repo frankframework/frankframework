@@ -24,13 +24,13 @@ import java.net.URL;
  * the variables (${variable}) in the configuration.xml are resolved. </p>
  * <p>For security-reasons you might set this value to <code>false</code>, so that passwords
  * configured in the <code>environment entries</code> of the application server are not revealed.</p>
- * 
+ * <p>$Id: ShowConfiguration.java,v 1.2 2004-02-04 10:02:09 a1909356#db2admin Exp $</p>
  * @author  Johan Verrips
  * @see nl.nn.adapterframework.configuration.Configuration
  */
 
 public final class ShowConfiguration extends ActionBase {
-	public static final String version="$Id: ShowConfiguration.java,v 1.1 2004-02-04 08:36:18 a1909356#db2admin Exp $";
+	public static final String version="$Id: ShowConfiguration.java,v 1.2 2004-02-04 10:02:09 a1909356#db2admin Exp $";
 	
 
 

@@ -8,9 +8,12 @@ import org.apache.commons.lang.exception.NestableException;
 /**
  * Base Exception with exhaustive toString() and compact getMessage()
  * @author Gerrit van Brakel
+ * 
+ * <p>$Id: IbisException.java,v 1.2 2004-02-04 10:02:00 a1909356#db2admin Exp $</p>
+ *
  */
 public class IbisException extends NestableException {
-		public static final String version="$Id: IbisException.java,v 1.1 2004-02-04 08:36:12 a1909356#db2admin Exp $";
+		public static final String version="$Id: IbisException.java,v 1.2 2004-02-04 10:02:00 a1909356#db2admin Exp $";
 
 public IbisException() {
 	super();

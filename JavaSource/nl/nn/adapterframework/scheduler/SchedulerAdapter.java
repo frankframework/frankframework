@@ -11,6 +11,7 @@ import java.util.Date;
 /**
  * The SchedulerAdapter is an adapter for the <a href="http://quartz.sourceforge.net">Quartz scheduler</a> <br/>
  * It transforms the information from the scheduler to XML.
+ * <p>$Id: SchedulerAdapter.java,v 1.2 2004-02-04 10:02:12 a1909356#db2admin Exp $</p>
  * @author  Johan Verrips
  * @since 4.0
  * Date: Nov 27, 2003
@@ -18,7 +19,7 @@ import java.util.Date;
  * To change this template use Options | File Templates.
  */
 public class SchedulerAdapter {
-	public static final String version="$Id: SchedulerAdapter.java,v 1.1 2004-02-04 08:36:20 a1909356#db2admin Exp $";
+	public static final String version="$Id: SchedulerAdapter.java,v 1.2 2004-02-04 10:02:12 a1909356#db2admin Exp $";
 	
     private Scheduler theScheduler;
     protected Logger log=Logger.getLogger(this.getClass());

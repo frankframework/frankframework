@@ -29,10 +29,10 @@ import java.util.*;
 * cmd:[(a,b), c]
 *
 * </code> </pre>
-*
+*<p>$Id: StringTagger.java,v 1.2 2004-02-04 10:02:03 a1909356#db2admin Exp $</p>
 */
 public class StringTagger implements Map {
-	public static final String version="$Id: StringTagger.java,v 1.1 2004-02-04 08:36:07 a1909356#db2admin Exp $";
+	public static final String version="$Id: StringTagger.java,v 1.2 2004-02-04 10:02:03 a1909356#db2admin Exp $";
 	
 
 

@@ -10,12 +10,13 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 /**
  * Handles various function for an adapter: start, stop.
+ * <p>$Id: AdapterHandler.java,v 1.2 2004-02-04 10:02:08 a1909356#db2admin Exp $</p>
  * @author  Johan Verrips
  * @see nl.nn.adapterframework.core.Adapter
  */
 
 public final class AdapterHandler extends ActionBase {
-		public static final String version="$Id: AdapterHandler.java,v 1.1 2004-02-04 08:36:17 a1909356#db2admin Exp $";
+		public static final String version="$Id: AdapterHandler.java,v 1.2 2004-02-04 10:02:08 a1909356#db2admin Exp $";
 
 
 

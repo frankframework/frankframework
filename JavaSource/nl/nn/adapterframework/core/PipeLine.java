@@ -18,11 +18,12 @@ import java.util.Hashtable;
  * <br/>
  * In the AppConstants there may be a property named "log.logIntermediaryResults" (true/false)
  * which indicates wether the intermediary results (between calling pipes) have to be logged.
+ * <p>$Id: PipeLine.java,v 1.2 2004-02-04 10:02:00 a1909356#db2admin Exp $</p>
  * 
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version="$Id: PipeLine.java,v 1.1 2004-02-04 08:36:12 a1909356#db2admin Exp $";
+	public static final String version="$Id: PipeLine.java,v 1.2 2004-02-04 10:02:00 a1909356#db2admin Exp $";
     private Logger log = Logger.getLogger(this.getClass());
 	private String adapterName; // for logging purposes
     private Hashtable pipeStatistics = new Hashtable();

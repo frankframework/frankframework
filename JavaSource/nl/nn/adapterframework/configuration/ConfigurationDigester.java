@@ -26,13 +26,14 @@ import java.net.URL;
  * <p>Since 4.0.1, the configuration.xml is first resolved using the {@link nl.nn.adapterframework.util.StringResolver resolver},
  * with tries to resolve ${variable} with the {@link nl.nn.adapterframework.util.AppConstants AppConstants}, so that
  * both the values from the property files as the environment setting are available.<p>
- * <p>$Id: ConfigurationDigester.java,v 1.2 2004-02-04 08:39:49 a1909356#db2admin Exp $</p>
+ * 
+ * <p>$Id: ConfigurationDigester.java,v 1.3 2004-02-04 10:02:07 a1909356#db2admin Exp $</p>
  * @author Johan Verrips
  * @see Configuration
  *
  */
 public class ConfigurationDigester {
-	public static final String version="$Id: ConfigurationDigester.java,v 1.2 2004-02-04 08:39:49 a1909356#db2admin Exp $";
+	public static final String version="$Id: ConfigurationDigester.java,v 1.3 2004-02-04 10:02:07 a1909356#db2admin Exp $";
     static Digester digester;
     protected Logger log = Logger.getLogger(this.getClass());
 	private static final String CONFIGURATION_FILE_DEFAULT  = "Configuration.xml";
@@ -60,8 +61,6 @@ public static void main(String args[]) {
         if (null!=config) 
         config.listObjects();
 
-//        System.out.println(
-//            config.getRegisteredAdapter("Y01 Broker").toString());
         System.out.println("------------------------------------------");
         System.out.println("       start adapters");
     }

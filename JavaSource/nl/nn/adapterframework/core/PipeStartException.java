@@ -4,11 +4,12 @@ package nl.nn.adapterframework.core;
  * Exception that indicates that the starting of a {@link IPipe Pipe}
  * did not succeed.<br/>
 
+ * <p>$Id: PipeStartException.java,v 1.2 2004-02-04 10:02:00 a1909356#db2admin Exp $</p>
  * @see nl.nn.adapterframework.pipes.AbstractPipe#start()
  * @author Johan Verrips IOS
  */
 public class PipeStartException extends IbisException{
-	public static final String version="$Id: PipeStartException.java,v 1.1 2004-02-04 08:36:12 a1909356#db2admin Exp $";
+	public static final String version="$Id: PipeStartException.java,v 1.2 2004-02-04 10:02:00 a1909356#db2admin Exp $";
 	
 	private String pipeNameInError=null;
 /**

@@ -9,11 +9,12 @@ import java.util.*;
  * Singleton that has the different jmsRealms.   <br/>
  * Typical use: JmsRealmFactory.getInstance().&lt;method to execute&gt;
  * <br/>
+ * <p>$Id: JmsRealmFactory.java,v 1.2 2004-02-04 10:02:07 a1909356#db2admin Exp $</p>
  * @author Johan Verrips IOS
  * @see JmsRealm
  */
 public class JmsRealmFactory {
-	public static final String version="$Id: JmsRealmFactory.java,v 1.1 2004-02-04 08:36:16 a1909356#db2admin Exp $";
+	public static final String version="$Id: JmsRealmFactory.java,v 1.2 2004-02-04 10:02:07 a1909356#db2admin Exp $";
 
 
     private static JmsRealmFactory self = null;

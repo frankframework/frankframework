@@ -3,9 +3,10 @@ package nl.nn.adapterframework.core;
 /**
  * Exception thrown when the <code>doPipe()</code> method
  * of a {@link IPipe Pipe} runs in error.
+ * <p>$Id: PipeRunException.java,v 1.2 2004-02-04 10:02:00 a1909356#db2admin Exp $</p>
  */
 public class PipeRunException extends IbisException {
-	public static final String version="$Id: PipeRunException.java,v 1.1 2004-02-04 08:36:12 a1909356#db2admin Exp $";
+	public static final String version="$Id: PipeRunException.java,v 1.2 2004-02-04 10:02:00 a1909356#db2admin Exp $";
 	
 	IPipe pipeInError=null;
 public PipeRunException(IPipe pipe, String msg) {

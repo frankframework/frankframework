@@ -21,11 +21,12 @@ import java.util.Hashtable;
  *
  * <b>Note</b>: Make sure the <code>soap.xml</code>-file is placed in the 'current' directory. This still
  * needs to be a file, but often only single file per instance is sufficient.
+ * <p>$Id: SoapConfigManager.java,v 1.2 2004-02-04 10:02:04 a1909356#db2admin Exp $</p>
  *
  * @author Gerrit van Brakel IOS
  */
 public class SoapConfigManager extends XMLConfigManager {
-	public static final String version="$Id: SoapConfigManager.java,v 1.1 2004-02-04 08:36:09 a1909356#db2admin Exp $";
+	public static final String version="$Id: SoapConfigManager.java,v 1.2 2004-02-04 10:02:04 a1909356#db2admin Exp $";
 	
     private Logger log = Logger.getLogger(this.getClass());
 public void loadRegistry() throws SOAPException {

@@ -51,11 +51,12 @@ import java.util.Vector;
  * <tr><td>{@link #setDefaultSubject(String) defaultSubject}</td><td>value of the Subject: header if not specified in message itself</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
+ * <p>$Id: MailSender.java,v 1.2 2004-02-04 10:01:56 a1909356#db2admin Exp $</p>
  * @author Johan Verrips
  */
 
 public class MailSender implements ISender {
-	public static final String version="$Id: MailSender.java,v 1.1 2004-02-04 08:36:04 a1909356#db2admin Exp $";
+	public static final String version="$Id: MailSender.java,v 1.2 2004-02-04 10:01:56 a1909356#db2admin Exp $";
 
     protected Logger log = Logger.getLogger(this.getClass());;
     private String smtpHost;

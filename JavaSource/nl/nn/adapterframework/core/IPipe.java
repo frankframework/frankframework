@@ -4,11 +4,13 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 
 /**
  * A Pipe represents an action to take in a {@link PipeLine}.
+ * 
+ * <p>$Id: IPipe.java,v 1.2 2004-02-04 10:01:58 a1909356#db2admin Exp $</p>
  *
  * @author Johan Verrips
  */
 public interface IPipe extends INamedObject {
-	public static final String version="$Id: IPipe.java,v 1.1 2004-02-04 08:36:10 a1909356#db2admin Exp $";
+	public static final String version="$Id: IPipe.java,v 1.2 2004-02-04 10:01:58 a1909356#db2admin Exp $";
 
 /**
  * <code>configure()</code> is called once after the {@link PipeLine} is registered

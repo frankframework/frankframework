@@ -14,13 +14,14 @@ import java.util.TreeSet;
  * This class is exposed as a webservice, to be able to provide a single point
  * of entry to all adapters that have a ServiceListener as a IReceiver.
  * <p>Creation date: (24-03-2003 11:06:48)</p>
+ * <p>$Id: ServiceDispatcher.java,v 1.2 2004-02-04 10:02:11 a1909356#db2admin Exp $</p>
  * @author Johan Verrips
  * @see ServiceClient
  * @see ServiceListener
  * @see ServiceDispatcherBean
  */
 public class ServiceDispatcher  {
-	public static final String version="$Id: ServiceDispatcher.java,v 1.1 2004-02-04 08:36:19 a1909356#db2admin Exp $";
+	public static final String version="$Id: ServiceDispatcher.java,v 1.2 2004-02-04 10:02:11 a1909356#db2admin Exp $";
 	
 	protected Logger log = Logger.getLogger(this.getClass());
 	private Hashtable registeredListeners=new Hashtable();

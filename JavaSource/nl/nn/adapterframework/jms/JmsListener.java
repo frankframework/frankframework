@@ -60,11 +60,12 @@ import java.util.HashMap;
  * <p><b>Notice:</b> the JmsListener is ONLY capable of processing
  * <code>javax.jms.TextMessage</code>s <br/><br/>
  * </p>
+ * <p>$Id: JmsListener.java,v 1.2 2004-02-04 10:02:07 a1909356#db2admin Exp $</p>
  * @author Gerrit van Brakel
  * @since 4.0.1
  */
 public class JmsListener extends JMSFacade implements ICorrelatedPullingListener, HasSender {
-	public static final String version="$Id: JmsListener.java,v 1.1 2004-02-04 08:36:16 a1909356#db2admin Exp $";
+	public static final String version="$Id: JmsListener.java,v 1.2 2004-02-04 10:02:07 a1909356#db2admin Exp $";
 
 
   private long timeOut = 3000;

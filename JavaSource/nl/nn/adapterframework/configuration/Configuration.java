@@ -27,11 +27,11 @@ import java.util.Enumeration;
  * @author Johan Verrips
  * @see    nl.nn.adapterframework.configuration.ConfigurationException
  * @see    nl.nn.adapterframework.core.IAdapter
- * <p>$Revision: 1.1 $</p>
+ * <p>$Id $</p>
  */
 public class Configuration {
     Logger log; 
-    public static final String version="$Id: Configuration.java,v 1.1 2004-02-04 08:36:16 a1909356#db2admin Exp $";
+    public static final String version="$Id: Configuration.java,v 1.2 2004-02-04 10:02:08 a1909356#db2admin Exp $";
      
     private Hashtable adapterTable = new Hashtable();
 

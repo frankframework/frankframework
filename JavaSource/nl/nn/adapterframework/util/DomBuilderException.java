@@ -3,10 +3,11 @@ package nl.nn.adapterframework.util;
 import org.apache.commons.lang.exception.NestableException;
 
 public class DomBuilderException extends NestableException {
-	public static final String version="$Id: DomBuilderException.java,v 1.1 2004-02-04 08:36:09 a1909356#db2admin Exp $";
+	public static final String version="$Id: DomBuilderException.java,v 1.2 2004-02-04 10:02:04 a1909356#db2admin Exp $";
 	
 /**
  * DomBuilderException constructor comment.
+ * <p>$Id: DomBuilderException.java,v 1.2 2004-02-04 10:02:04 a1909356#db2admin Exp $</p>
  */
 public DomBuilderException() {
 	super();

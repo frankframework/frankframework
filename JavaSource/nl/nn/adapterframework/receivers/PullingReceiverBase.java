@@ -36,12 +36,13 @@ import java.util.Iterator;
  * </table>
  * </p>
  * </p>
+ * <p>$Id: PullingReceiverBase.java,v 1.2 2004-02-04 10:02:11 a1909356#db2admin Exp $</p>
  * @author     Gerrit van Brakel
  * @since 4.0
  */
 public class PullingReceiverBase
     implements IReceiver, IReceiverStatistics, Runnable, HasSender {
-	public static final String version="$Id: PullingReceiverBase.java,v 1.1 2004-02-04 08:36:19 a1909356#db2admin Exp $";
+	public static final String version="$Id: PullingReceiverBase.java,v 1.2 2004-02-04 10:02:11 a1909356#db2admin Exp $";
     	
 
 	public static final String ONERROR_CONTINUE = "continue";

@@ -19,12 +19,13 @@ import java.util.ArrayList;
 
 /**
  * Executes the sending of a message with JMS
+ * <p>$Id: SendJmsMessageExecute.java,v 1.2 2004-02-04 10:02:09 a1909356#db2admin Exp $</p>
  * @author  Johan Verrips
  * @see nl.nn.adapterframework.configuration.Configuration
  */
 
 public final class SendJmsMessageExecute extends ActionBase {
-	public static final String version="$Id: SendJmsMessageExecute.java,v 1.1 2004-02-04 08:36:17 a1909356#db2admin Exp $";
+	public static final String version="$Id: SendJmsMessageExecute.java,v 1.2 2004-02-04 10:02:09 a1909356#db2admin Exp $";
 	
 public ActionForward execute(
     ActionMapping mapping,

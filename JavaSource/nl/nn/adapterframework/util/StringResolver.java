@@ -5,12 +5,13 @@ import org.apache.log4j.Logger;
 import java.util.Properties;
 /**
  * Provide functionality to resolve ${property.key} to the value of the property key, recursively.
+ * <p>$Id: StringResolver.java,v 1.2 2004-02-04 10:02:00 a1909356#db2admin Exp $</p>
  * 
  * <p>Creation date: (15-08-2003 13:47:20)</p>
  * @author Johan Verrips 
  */
 public class StringResolver {
-	public static final String version="$Id: StringResolver.java,v 1.1 2004-02-04 08:36:06 a1909356#db2admin Exp $";
+	public static final String version="$Id: StringResolver.java,v 1.2 2004-02-04 10:02:00 a1909356#db2admin Exp $";
 	
     static String DELIM_START = "${";
     static char DELIM_STOP = '}';

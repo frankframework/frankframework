@@ -5,11 +5,12 @@ import java.io.IOException;
 import java.util.Date;
 /**
  * List the contents of a directory as XML.
+ * <p>$Id: Dir2Xml.java,v 1.2 2004-02-04 10:02:02 a1909356#db2admin Exp $</p>
  *
  * @author Johan Verrips IOS
  */
 public class Dir2Xml  {
-	public static final String version="$Id: Dir2Xml.java,v 1.1 2004-02-04 08:36:07 a1909356#db2admin Exp $";
+	public static final String version="$Id: Dir2Xml.java,v 1.2 2004-02-04 10:02:02 a1909356#db2admin Exp $";
 	
   String path;
   String wildcard="*.*";

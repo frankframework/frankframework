@@ -5,10 +5,11 @@ package nl.nn.adapterframework.util;
  * If, after the maximum has exceeded, another element is put
  * in the vector the oldest element is removed.
  * <p>Creation date: (03-03-2003 9:10:43)</p>
+ * <p>$Id: SizeLimitedVector.java,v 1.2 2004-02-04 10:02:04 a1909356#db2admin Exp $</p>
  * @author Johan Verrips
  */
 public class SizeLimitedVector extends java.util.Vector {
-	public static final String version="$Id: SizeLimitedVector.java,v 1.1 2004-02-04 08:36:09 a1909356#db2admin Exp $";
+	public static final String version="$Id: SizeLimitedVector.java,v 1.2 2004-02-04 10:02:04 a1909356#db2admin Exp $";
 	
 	private int maxSize=Integer.MAX_VALUE;
 /**

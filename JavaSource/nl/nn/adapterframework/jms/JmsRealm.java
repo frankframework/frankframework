@@ -9,12 +9,12 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * This class is not an extension of JNDIBase, which would be logical, because
  * in the JMSBase class the function PropertyUtils.copyProperties is used, which cannot
  * handle this.
- *
+ * <p>$Id: JmsRealm.java,v 1.2 2004-02-04 10:02:07 a1909356#db2admin Exp $</p>
  * @see JMSBase#setJmsRealm
  * @author Johan Verrips IOS
  */
 public class JmsRealm  {
-	public static final String version="$Id: JmsRealm.java,v 1.1 2004-02-04 08:36:15 a1909356#db2admin Exp $";
+	public static final String version="$Id: JmsRealm.java,v 1.2 2004-02-04 10:02:07 a1909356#db2admin Exp $";
 	private String realmName;
 
 	private String queueConnectionFactoryName;

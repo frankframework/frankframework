@@ -10,14 +10,14 @@ import javax.jms.Message;
 
 /**
  * This class sends messages with JMS.
- *
+ * <p>$Id: JmsMessageSender.java,v 1.2 2004-02-04 10:02:06 a1909356#db2admin Exp $</p>
  * @deprecated This class is deprecated, as it extends the deprecated class {@link JMSBase}. Please use 
  *             {@link JmsSender} instead.
  *
  */
 
 public class JmsMessageSender extends JMSBase implements ISender {
-	public static final String version="$Id: JmsMessageSender.java,v 1.1 2004-02-04 08:36:15 a1909356#db2admin Exp $";
+	public static final String version="$Id: JmsMessageSender.java,v 1.2 2004-02-04 10:02:06 a1909356#db2admin Exp $";
 
 
     private String replyToName=null;

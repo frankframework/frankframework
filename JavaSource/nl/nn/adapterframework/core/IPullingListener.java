@@ -7,10 +7,13 @@ import java.util.HashMap;
  * Defines listening behaviour of pulling receivers.
  * Pulling receivers are receivers that poll for a message, as opposed to pushing receivers
  * that are 'message driven'
+ * 
+ * <p>$Id: IPullingListener.java,v 1.2 2004-02-04 10:01:58 a1909356#db2admin Exp $</p>
+ * 
  * @author Gerrit van Brakel
  */
 public interface IPullingListener {
-		public static final String version="$Id: IPullingListener.java,v 1.1 2004-02-04 08:36:10 a1909356#db2admin Exp $";
+		public static final String version="$Id: IPullingListener.java,v 1.2 2004-02-04 10:01:58 a1909356#db2admin Exp $";
 
 /**
  * Called to perform actions (like committing or sending a reply) after a message has been processed by the Pipeline. 

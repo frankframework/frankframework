@@ -2,12 +2,13 @@ package nl.nn.adapterframework.util;
 
 /**
  * Utility class to support run-state management
+ * <p>$Id: RunStateManager.java,v 1.2 2004-02-04 10:02:02 a1909356#db2admin Exp $</p>
  *
  *
  * @author Gerrit van Brakel
  */
 public class RunStateManager  {
-	public static final String version="$Id: RunStateManager.java,v 1.1 2004-02-04 08:36:07 a1909356#db2admin Exp $";
+	public static final String version="$Id: RunStateManager.java,v 1.2 2004-02-04 10:02:02 a1909356#db2admin Exp $";
 	
 	private RunStateEnum runState = RunStateEnum.STOPPED;
 

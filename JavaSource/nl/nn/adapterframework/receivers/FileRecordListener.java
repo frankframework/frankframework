@@ -28,10 +28,11 @@ import org.apache.commons.lang.builder.ToStringStyle;
  * found, it is read in a String object and parsed to records. When used in a receiver like 
  * {@link FileRecordReceiver } these records are to be processed by the adapter.
  * After reading the file, the file is renamed and moved to a directory.
+ * <p>$Id: FileRecordListener.java,v 1.2 2004-02-04 10:02:12 a1909356#db2admin Exp $</p>
  * @author  Johan Verrips
  */
 public class FileRecordListener implements IPullingListener, INamedObject {
-	public static final String version="$Id: FileRecordListener.java,v 1.1 2004-02-04 08:36:20 a1909356#db2admin Exp $";
+	public static final String version="$Id: FileRecordListener.java,v 1.2 2004-02-04 10:02:12 a1909356#db2admin Exp $";
  
     private String inputDirectory;
     private String wildcard;

@@ -32,13 +32,14 @@ import java.util.HashMap;
  * </table>
  * </p>
  * </p>
+ * <p>$Id: JmsMessageReceiver.java,v 1.2 2004-02-04 10:02:11 a1909356#db2admin Exp $</p>
  * @deprecated This class is deprecated, as it uses the deprecated class {@link JmsMessageListener}. Please use 
  *             {@link JmsReceiver} instead.
  *
  * @author     Gerrit van Brakel
  */
 public class JmsMessageReceiver extends PullingReceiverBase {
-	public static final String version="$Id: JmsMessageReceiver.java,v 1.1 2004-02-04 08:36:19 a1909356#db2admin Exp $";
+	public static final String version="$Id: JmsMessageReceiver.java,v 1.2 2004-02-04 10:02:11 a1909356#db2admin Exp $";
 	
 public JmsMessageReceiver() {
 	super();

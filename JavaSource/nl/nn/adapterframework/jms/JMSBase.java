@@ -15,13 +15,15 @@ import javax.naming.NamingException;
  * The <code>destinationType</code> field specifies which
  * type should be used.<br/>
  *
+ * <p>$Id: JMSBase.java,v 1.2 2004-02-04 10:02:07 a1909356#db2admin Exp $</p>
+ * 
  * @deprecated This class remembers too much: It stores jms-receivers and jms-senders
  *             as object-members. Please use {@link JMSFacade} instead.
  *
  * @author     Johan Verrips
  */
 public class JMSBase extends JNDIBase {
-	public static final String version="$Id: JMSBase.java,v 1.1 2004-02-04 08:36:15 a1909356#db2admin Exp $";
+	public static final String version="$Id: JMSBase.java,v 1.2 2004-02-04 10:02:07 a1909356#db2admin Exp $";
 
 
     private int ackMode;

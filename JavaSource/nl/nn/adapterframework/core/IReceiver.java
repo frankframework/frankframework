@@ -21,6 +21,8 @@ import nl.nn.adapterframework.util.RunStateEnum;
  * to do the actual work, which returns a <code>{@link PipeLineResult}</code>. The receiver
  * may observe the status in the <code>{@link PipeLineResult}</code> to perfom committing
  * requests.
+ * 
+ * <p>$Id: IReceiver.java,v 1.2 2004-02-04 10:02:00 a1909356#db2admin Exp $</p>
  *
  *  @author Johan Verrips
  *  @see IAdapter
@@ -30,7 +32,7 @@ import nl.nn.adapterframework.util.RunStateEnum;
  *
  */
 public interface IReceiver extends IManagable {
-	public static final String version="$Id: IReceiver.java,v 1.1 2004-02-04 08:36:13 a1909356#db2admin Exp $";
+	public static final String version="$Id: IReceiver.java,v 1.2 2004-02-04 10:02:00 a1909356#db2admin Exp $";
 
  	/**
  	 * This method is called by the <code>IAdapter</code> to let the

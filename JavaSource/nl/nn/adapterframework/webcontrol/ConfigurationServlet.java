@@ -28,10 +28,11 @@ import java.util.Iterator;
  *   <li>digester-rules - the name of the digester-rules file</li>
  *   <li>autoStart - when TRUE : automatically start the adapters</li>
  * </ul>
+ * <p>$Id: ConfigurationServlet.java,v 1.2 2004-02-04 10:02:13 a1909356#db2admin Exp $</p>
  * @author    Johan Verrips
  */
 public class ConfigurationServlet extends HttpServlet {
-	public static final String version="$Id: ConfigurationServlet.java,v 1.1 2004-02-04 08:36:21 a1909356#db2admin Exp $";
+	public static final String version="$Id: ConfigurationServlet.java,v 1.2 2004-02-04 10:02:13 a1909356#db2admin Exp $";
 	
     // logging category for this class
     protected Logger log = Logger.getLogger(this.getClass());

@@ -13,11 +13,12 @@ import java.io.IOException;
  * {@link ErrorMessageFormatter}.
  * <p>If the transformation does not succeed, this standard error message
  * is returned and an exception is logged.
+ * <p>$Id: XslErrorMessageFormatter.java,v 1.2 2004-02-04 10:02:10 a1909356#db2admin Exp $</p>
  *
  * @author Johan Verrips IOS
  */
 public class XslErrorMessageFormatter extends ErrorMessageFormatter {
-	public static final String version="$Id: XslErrorMessageFormatter.java,v 1.1 2004-02-04 08:36:18 a1909356#db2admin Exp $";
+	public static final String version="$Id: XslErrorMessageFormatter.java,v 1.2 2004-02-04 10:02:10 a1909356#db2admin Exp $";
 
 
     private String styleSheet;

@@ -26,11 +26,11 @@ import java.util.Date;
  *    &lt;/originalMessage&gt;
  * &lt;/errorMessage&gt;
  * </pre></code>
- * 
+ * <p>$Id: ErrorMessageFormatter.java,v 1.2 2004-02-04 10:02:10 a1909356#db2admin Exp $</p>
  * @author  Gerrit van Brakel
  */
 public class ErrorMessageFormatter implements IErrorMessageFormatter {
-	public static final String version="$Id: ErrorMessageFormatter.java,v 1.1 2004-02-04 08:36:18 a1909356#db2admin Exp $";
+	public static final String version="$Id: ErrorMessageFormatter.java,v 1.2 2004-02-04 10:02:10 a1909356#db2admin Exp $";
 
     protected Logger log = Logger.getLogger(this.getClass());
 

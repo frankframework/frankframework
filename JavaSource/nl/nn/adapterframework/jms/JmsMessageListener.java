@@ -39,7 +39,7 @@ import java.util.HashMap;
  * 3.2.6, as from Websphere 5.0 / j2ee 1.4 setMessageListener is not allowed within a container.</p>
  * <p>As from version 4.0 The receiver will, when a reply-to address is specified and useReplyTo is true, by itself
  * send the answer to the reply-to queue. This makes sure that the JNDI properties are the same.</p>
- *
+ *<p>$Id: JmsMessageListener.java,v 1.2 2004-02-04 10:02:05 a1909356#db2admin Exp $</p>
  * @deprecated This class is deprecated, as it extends the deprecated class {@link JMSBase}. Please use 
  *             {@link JmsListener} instead.
  *
@@ -47,7 +47,7 @@ import java.util.HashMap;
  * @since 4.0
  */
 public class JmsMessageListener extends JMSBase implements ICorrelatedPullingListener, HasSender {
-	public static final String version="$Id: JmsMessageListener.java,v 1.1 2004-02-04 08:36:13 a1909356#db2admin Exp $";
+	public static final String version="$Id: JmsMessageListener.java,v 1.2 2004-02-04 10:02:05 a1909356#db2admin Exp $";
 
 	private MessageConsumer mc = null;	
 	private long timeOut = 3000;

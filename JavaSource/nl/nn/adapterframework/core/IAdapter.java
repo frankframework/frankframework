@@ -9,9 +9,11 @@ import java.util.Iterator;
  * <code>IReceiver</code>s as well as the <code>PipeLine</code> and statistics.
  * The Adapter is the class that is responsible for configuring, initializing and
  * accessing/activating IReceivers, Pipelines, statistics etc.
- */
+ * 
+ * <p>$Id: IAdapter.java,v 1.2 2004-02-04 10:02:00 a1909356#db2admin Exp $</p>
+ **/
 public interface IAdapter extends IManagable {
-	public static final String version="$Id: IAdapter.java,v 1.1 2004-02-04 08:36:13 a1909356#db2admin Exp $";
+	public static final String version="$Id: IAdapter.java,v 1.2 2004-02-04 10:02:00 a1909356#db2admin Exp $";
   /**
    * Instruct the adapter to configure itself. The adapter will call the
    * pipeline to configure itself, the pipeline will call the individual

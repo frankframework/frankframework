@@ -15,11 +15,12 @@ import java.util.Vector;
 /**
  * WebService proxy class that can be used in applications that need to communciate with
  * the IBIS Adapterframework via a webservice.
+ * <p>$Id: ServiceDispatcher_ServiceProxy.java,v 1.2 2004-02-04 10:02:12 a1909356#db2admin Exp $</p>
  */
 
 public class ServiceDispatcher_ServiceProxy
 {
-		public static final String version="$Id: ServiceDispatcher_ServiceProxy.java,v 1.1 2004-02-04 08:36:20 a1909356#db2admin Exp $";
+		public static final String version="$Id: ServiceDispatcher_ServiceProxy.java,v 1.2 2004-02-04 10:02:12 a1909356#db2admin Exp $";
 
   private Call call = new Call();
   private URL url = null;

@@ -10,10 +10,11 @@ import java.util.Hashtable;
 /**
  * Provides all JNDI functions and is meant to act as a base class.
  * <br/>
+ * <p>$Id: JNDIBase.java,v 1.2 2004-02-04 10:02:07 a1909356#db2admin Exp $</p>
  * @author Johan Verrips IOS
  */
 public class JNDIBase {
-	public static final String version="$Id: JNDIBase.java,v 1.1 2004-02-04 08:36:16 a1909356#db2admin Exp $";
+	public static final String version="$Id: JNDIBase.java,v 1.2 2004-02-04 10:02:07 a1909356#db2admin Exp $";
 
     // JNDI
     private String providerURL = null;

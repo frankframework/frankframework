@@ -46,10 +46,11 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
  * <tr><td>"timeout"</td><td>no data was received (timeout on listening), if a listener was specified.</td></tr>
  * </table>
  * </p>
+ * <p>$Id: MailSenderPipe.java,v 1.2 2004-02-04 10:01:57 a1909356#db2admin Exp $</p>
  */
 
 public class MailSenderPipe extends MessageSendingPipe {
-public static final String version="$Id: MailSenderPipe.java,v 1.1 2004-02-04 08:36:06 a1909356#db2admin Exp $";
+public static final String version="$Id: MailSenderPipe.java,v 1.2 2004-02-04 10:01:57 a1909356#db2admin Exp $";
 	
 public MailSenderPipe() {
 	super();

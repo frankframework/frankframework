@@ -12,13 +12,14 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * </ul><br/>
  * <code>Pipe</code>s return a <code>PipeRunResult</code> with the information
  * as above.
+ * <p>$Id: PipeRunResult.java,v 1.2 2004-02-04 10:02:00 a1909356#db2admin Exp $</p>
  * @see PipeForward
  * @see nl.nn.adapterframework.pipes.AbstractPipe#doPipe
  * @see nl.nn.adapterframework.pipes.AbstractPipe#findForward
  * @author Johan Verrips
  */
 public class PipeRunResult {
-	public static final String version="$Id: PipeRunResult.java,v 1.1 2004-02-04 08:36:12 a1909356#db2admin Exp $";
+	public static final String version="$Id: PipeRunResult.java,v 1.2 2004-02-04 10:02:00 a1909356#db2admin Exp $";
 
     private PipeForward pipeForward;
     private Object result;

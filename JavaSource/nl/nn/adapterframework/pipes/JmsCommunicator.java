@@ -42,12 +42,12 @@ import nl.nn.adapterframework.jms.JmsSender;
  * <tr><td>"timeout"</td><td>no data was received (timeout on listening), while a receiver was specified.</td></tr>
  * </table>
  * </p>
- *
+ * <p>$Id: JmsCommunicator.java,v 1.2 2004-02-04 10:01:56 a1909356#db2admin Exp $</p>
  * @author Johan Verrips
  */
 
 public class JmsCommunicator extends MessageSendingPipe {
-	public static final String version="$Id: JmsCommunicator.java,v 1.1 2004-02-04 08:36:04 a1909356#db2admin Exp $";
+	public static final String version="$Id: JmsCommunicator.java,v 1.2 2004-02-04 10:01:56 a1909356#db2admin Exp $";
 
 public JmsCommunicator() {
 	super();

@@ -5,9 +5,11 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 /**
  * The <code>ISender</code> is responsible for sending a message to
  * some destination.
+ * 
+ * <p>$Id: ISender.java,v 1.2 2004-02-04 10:01:58 a1909356#db2admin Exp $</p>
  */
 public interface ISender extends INamedObject {
-		public static final String version="$Id: ISender.java,v 1.1 2004-02-04 08:36:10 a1909356#db2admin Exp $";
+		public static final String version="$Id: ISender.java,v 1.2 2004-02-04 10:01:58 a1909356#db2admin Exp $";
 
 /**
  * Stop/close the sender and deallocate resources.

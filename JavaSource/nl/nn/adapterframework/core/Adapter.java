@@ -32,6 +32,8 @@ import java.util.Vector;
  * object, which returns a {@link PipeLineResult}. If an error occurs during
  * the pipeline execution, the state in the <code>PipeLineResult</code> is set
  * to the state specified by <code>setErrorState</code>, which defaults to "ERROR".
+ * 
+ * <p>$Id: Adapter.java,v 1.2 2004-02-04 10:01:58 a1909356#db2admin Exp $</p>
  *
  * @author Johan Verrips
  * @see    nl.nn.adapterframework.core.IReceiver
@@ -44,7 +46,7 @@ import java.util.Vector;
  */
 
 public class Adapter implements Runnable, IAdapter{
-	public static final String version="$Id: Adapter.java,v 1.1 2004-02-04 08:36:11 a1909356#db2admin Exp $";
+	public static final String version="$Id: Adapter.java,v 1.2 2004-02-04 10:01:58 a1909356#db2admin Exp $";
 	private Vector receivers=new Vector();
 	private long lastMessageDate =0;
     private PipeLine pipeline;

@@ -10,9 +10,13 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
-
+/**
+ * Execute a service test
+ * <p>$Id: TestServiceExecute.java,v 1.2 2004-02-04 10:02:09 a1909356#db2admin Exp $</p>
+ * @author Johan Verrips
+ */
 public class TestServiceExecute extends ActionBase {
-	public static final String version="$Id: TestServiceExecute.java,v 1.1 2004-02-04 08:36:17 a1909356#db2admin Exp $";
+	public static final String version="$Id: TestServiceExecute.java,v 1.2 2004-02-04 10:02:09 a1909356#db2admin Exp $";
 	
 
     public ActionForward execute(

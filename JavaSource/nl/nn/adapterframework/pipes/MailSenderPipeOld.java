@@ -60,7 +60,7 @@ import java.util.Vector;
  * </p>
  *
  * <b>Note:</b> spelling of all occurrences of 'recepient' has been corrected into 'recipient'
- *
+ * <p>$Id: MailSenderPipeOld.java,v 1.2 2004-02-04 10:01:56 a1909356#db2admin Exp $</p>
  * @deprecated Replaced by {@link MailSenderPipe}
  * @author Johan Verrips
  */

@@ -11,12 +11,13 @@ import java.util.Hashtable;
  * is stored in the key identified by <code>originalMessageKey</code>.
  * The messageId is stored under the key identified by <code>messageId</code>.
  * </p>
+ * <p>$Id: PipeLineSession.java,v 1.2 2004-02-04 10:02:00 a1909356#db2admin Exp $</p>
  *
  * @author Johan Verrips IOS
  * @since version 3.2.2
  */
 public class PipeLineSession extends Hashtable {
-	public static final String version="$Id: PipeLineSession.java,v 1.1 2004-02-04 08:36:13 a1909356#db2admin Exp $";
+	public static final String version="$Id: PipeLineSession.java,v 1.2 2004-02-04 10:02:00 a1909356#db2admin Exp $";
 
 	public static final String originalMessageKey="originalMessage";
 	public static final String messageIdKey="messageId";

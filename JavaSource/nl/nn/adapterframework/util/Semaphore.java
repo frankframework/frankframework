@@ -16,12 +16,13 @@ package nl.nn.adapterframework.util;
  * If a semaphore is fully occupied, new threads wanting to use it will wait until some thread releases its l
  * ock by upping the semaphore. For a semaphore to work, the check for full, and the decrement must be done 
  * all in one atomic uninterruptible instruction. This is done by the {@link #release()} method.</p>
+ * <p>$Id: Semaphore.java,v 1.2 2004-02-04 10:02:02 a1909356#db2admin Exp $</p>
  *
  */
 
 
 public class Semaphore {
-	public static final String version="$Id: Semaphore.java,v 1.1 2004-02-04 08:36:07 a1909356#db2admin Exp $";
+	public static final String version="$Id: Semaphore.java,v 1.2 2004-02-04 10:02:02 a1909356#db2admin Exp $";
 	
     private int counter;
     

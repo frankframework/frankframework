@@ -24,15 +24,14 @@ import org.quartz.JobExecutionException;
  * is stored in the job data map. As the configuration is not serializable, due to the nature of the
  * adapters, the quartz database support cannot be used.
  * </p>
+ * <p>$Id: AdapterJob.java,v 1.2 2004-02-04 10:02:12 a1909356#db2admin Exp $</p>
  *
  * @author  Johan Verrips
- * <p>Date: Nov 22, 2003
- * Time: 11:31:58 AM</p>
  * @see nl.nn.adapterframework.core.IAdapter
  * @see nl.nn.adapterframework.configuration.Configuration
   */
 public class AdapterJob extends BaseJob implements Job  {
-	public static final String version="$Id: AdapterJob.java,v 1.1 2004-02-04 08:36:21 a1909356#db2admin Exp $";
+	public static final String version="$Id: AdapterJob.java,v 1.2 2004-02-04 10:02:12 a1909356#db2admin Exp $";
 	
     public AdapterJob() {
             super();

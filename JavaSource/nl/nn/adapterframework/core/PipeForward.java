@@ -12,12 +12,14 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * pipeName is defined in the <code>path</code> property.<br/><br/>
  * In this manner it is possible to influence the flow through the pipeline
  * without affecting the Java-code. Simply change the forwarding-XML.<br/>
+ * 
+ * <p>$Id: PipeForward.java,v 1.2 2004-02-04 10:01:57 a1909356#db2admin Exp $</p>
  * @see PipeLine
  * @see nl.nn.adapterframework.pipes.AbstractPipe#findForward
  * @author Johan Verrips
  */
 public class PipeForward {
-		public static final String version="$Id: PipeForward.java,v 1.1 2004-02-04 08:36:10 a1909356#db2admin Exp $";
+		public static final String version="$Id: PipeForward.java,v 1.2 2004-02-04 10:01:57 a1909356#db2admin Exp $";
 
     private String name;
     private String path;

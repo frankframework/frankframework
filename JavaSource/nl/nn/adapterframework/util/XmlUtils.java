@@ -48,10 +48,11 @@ import java.util.LinkedList;
  * Some utilities for working with XML. As soon as the Apache XML Commons project
  * delivers something usefull, this class will possibly be removed.
  * <p>Creation date: (20-02-2003 8:05:19)</p>
+ * <p>$Id: XmlUtils.java,v 1.2 2004-02-04 10:02:00 a1909356#db2admin Exp $</p>
  * @author Johan Verrips IOS
  */
 public class XmlUtils {
-	public static final String version="$Id: XmlUtils.java,v 1.1 2004-02-04 08:36:06 a1909356#db2admin Exp $";
+	public static final String version="$Id: XmlUtils.java,v 1.2 2004-02-04 10:02:00 a1909356#db2admin Exp $";
 	
     static final String W3C_XML_SCHEMA       = "http://www.w3.org/2001/XMLSchema";
     static final String JAXP_SCHEMA_LANGUAGE = "http://java.sun.com/xml/jaxp/properties/schemaLanguage";

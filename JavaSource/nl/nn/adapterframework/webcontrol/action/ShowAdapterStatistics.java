@@ -23,14 +23,14 @@ import java.util.TreeSet;
  * <code>Action</code> to retrieve the statistics from a
  * specific adapter. The pipeline statistics are sorted by
  * pipename.
- *
+ * <p>$Id: ShowAdapterStatistics.java,v 1.2 2004-02-04 10:02:10 a1909356#db2admin Exp $</p>
  * @author  Johan Verrips
  * @see nl.nn.adapterframework.core.PipeLine
  * @see nl.nn.adapterframework.core.Adapter
  */
 
 public final class ShowAdapterStatistics extends ActionBase {
-	public static final String version="$Id: ShowAdapterStatistics.java,v 1.1 2004-02-04 08:36:18 a1909356#db2admin Exp $";
+	public static final String version="$Id: ShowAdapterStatistics.java,v 1.2 2004-02-04 10:02:10 a1909356#db2admin Exp $";
 	
 
     private DecimalFormat df=new DecimalFormat(DateUtils.FORMAT_MILLISECONDS);

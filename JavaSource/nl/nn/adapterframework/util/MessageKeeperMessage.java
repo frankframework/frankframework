@@ -6,11 +6,11 @@ import java.util.Date;
  * Although this could be an inner class of the MessageKeeper,
  * it's made "standalone" to provide the use of iterators and
  * enumerators with the MessageKeeper.
- *
+ * <p>$Id: MessageKeeperMessage.java,v 1.2 2004-02-04 10:02:04 a1909356#db2admin Exp $</p>
  * @author Johan Verrips IOS
  */
 public class MessageKeeperMessage {
-	public static final String version="$Id: MessageKeeperMessage.java,v 1.1 2004-02-04 08:36:09 a1909356#db2admin Exp $";
+	public static final String version="$Id: MessageKeeperMessage.java,v 1.2 2004-02-04 10:02:04 a1909356#db2admin Exp $";
 	
 
 	private Date messageDate=new Date();

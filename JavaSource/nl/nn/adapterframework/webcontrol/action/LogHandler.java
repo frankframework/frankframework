@@ -16,10 +16,11 @@ import java.io.IOException;
 /**
  * This handler updates the root log level and the value in the AppConstants named "log.logIntermediaryResults".
  * <p>Creation date: (03-11-2003 11:22:42)</p>
+ * <p>$Id: LogHandler.java,v 1.2 2004-02-04 10:02:08 a1909356#db2admin Exp $</p>
  * @author Johan Verrips IOS
  */
 public class LogHandler extends ActionBase {
-	public static final String version="$Id: LogHandler.java,v 1.1 2004-02-04 08:36:17 a1909356#db2admin Exp $";
+	public static final String version="$Id: LogHandler.java,v 1.2 2004-02-04 10:02:08 a1909356#db2admin Exp $";
 	
 	 public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response)
         throws IOException, ServletException {

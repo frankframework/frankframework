@@ -4,10 +4,11 @@ package nl.nn.adapterframework.core;
  * The PipeLineExit, that represents a terminator of the PipeLine, provides a placeholder
  * for a path (corresponding to a pipeforward) and a state (that is returned to the receiver). 
  * </p>
+ * <p>$Id: PipeLineExit.java,v 1.2 2004-02-04 10:01:57 a1909356#db2admin Exp $</p>
  * @author Johan Verrips
  */
 public class PipeLineExit {
-	public static final String version="$Id: PipeLineExit.java,v 1.1 2004-02-04 08:36:10 a1909356#db2admin Exp $";
+	public static final String version="$Id: PipeLineExit.java,v 1.2 2004-02-04 10:01:57 a1909356#db2admin Exp $";
 	
 	private String path;
 	private String state;
