@@ -91,7 +91,7 @@ import javax.transaction.UserTransaction;
  */
 public class PullingReceiverBase
     implements IReceiver, IReceiverStatistics, Runnable, HasSender {
-	public static final String version="$Id: PullingReceiverBase.java,v 1.11 2004-08-18 09:19:57 a1909356#db2admin Exp $";
+	public static final String version="$Id: PullingReceiverBase.java,v 1.12 2004-08-18 10:06:13 a1909356#db2admin Exp $";
     	
 
 	public static final String ONERROR_CONTINUE = "continue";
@@ -155,6 +155,13 @@ private void closeAllResources() {
 	if (errorSender != null) {
 		try {
 			errorSender.close();
+		} catch (Exception e) {
+			log.error("Receiver [" + getName()+ "]: error closing errorSender", e);
+		}
+	}
+	if (getSender() != null) {
+		try {
+			getSender().close();
 		} catch (Exception e) {
 			log.error("Receiver [" + getName()+ "]: error closing errorSender", e);
 		}
@@ -532,7 +539,18 @@ public void startRunning() {
             return;
         }
     }
-    try {
+	// on exit resouces must be in a state that runstate is or can be set to 'STARTED'
+	try {
+		if (getSender()!=null) {
+			getSender().open();
+		}
+		if (getErrorSender()!=null) {
+			getErrorSender().open();
+		}
+		if (getInProcessStorage()!=null) {
+			getInProcessStorage().open();
+		}
+
 	    String msg=("Receiver [" + getName()  + "] starts listening.");
 	    log.info(msg);
 	    adapter.getMessageKeeper().add(msg);
@@ -552,7 +570,7 @@ public void startRunning() {
 		}
 
             
-    } catch (ListenerException e) {
+    } catch (Exception e) {
         log.error("error occured while starting receiver [" + getName() + "]", e);
         if (null != adapter)
             adapter.getMessageKeeper().add(
