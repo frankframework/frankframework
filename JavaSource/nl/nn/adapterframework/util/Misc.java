@@ -10,7 +10,7 @@ import java.rmi.server.UID;
  * @version Id
  */
 public class Misc {
-	public static final String version = "$Id: Misc.java,v 1.7 2004-08-24 05:54:58 a1909356#db2admin Exp $";
+	public static final String version = "$Id: Misc.java,v 1.8 2004-08-26 06:34:16 NNVZNL01#L180564 Exp $";
 
 	public static String createSimpleUUID_old() {
 		StringBuffer sb = new StringBuffer();
@@ -104,12 +104,14 @@ public class Misc {
 				}
 			}
 			if (curChar != '\r' && curChar != '\n' && curChar != -1) {
-				sb.append((char) curChar);
+				String appendStr =""+(char) curChar;
+				sb.append(xmlEncode ? (XmlUtils.encodeChars(appendStr)):(appendStr));
 			}
 			prevChar = curChar;
 		}
-		return (xmlEncode) ? XmlUtils.encodeChars(sb.toString()) : sb.toString();
+		return sb.toString();
 	}
+
 
 	public static String streamToString(InputStream stream, String endOfLineString, boolean xmlEncode)
 		throws IOException {
