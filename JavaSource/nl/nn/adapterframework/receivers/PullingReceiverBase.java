@@ -91,7 +91,7 @@ import javax.transaction.UserTransaction;
  */
 public class PullingReceiverBase
     implements IReceiver, IReceiverStatistics, Runnable, HasSender {
-	public static final String version="$Id: PullingReceiverBase.java,v 1.15 2004-08-26 13:32:09 L190409 Exp $";
+	public static final String version="$Id: PullingReceiverBase.java,v 1.16 2005-02-10 08:16:58 L190409 Exp $";
     	
 
 	public static final String ONERROR_CONTINUE = "continue";
@@ -187,8 +187,10 @@ public void info(String msg) {
 }
 
 public void configure() throws ConfigurationException {
- try {
- 
+  try {
+ 	
+ 	warn("Receiver ["+getName()+"] is using class ["+getClass().getName()+"] which is deprecated. Please consider using [nl.nn.adapterframework.receivers.GenericReceiver] or a class based on [nl.nn.adapterframework.receivers.ReceiverBase] instead");
+ 	
 	if (getListener()==null) {
 		throw new ConfigurationException("Receiver ["+getName()+"] has no listener");
 	}
