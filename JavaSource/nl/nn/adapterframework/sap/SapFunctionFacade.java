@@ -1,6 +1,9 @@
 /*
  * $Log: SapFunctionFacade.java,v $
- * Revision 1.2  2004-06-22 12:14:42  L190409
+ * Revision 1.3  2004-06-30 12:36:47  L190409
+ * improved exception reporting
+ *
+ * Revision 1.2  2004/06/22 12:14:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * made Logger protected instead of private
  *
  * Revision 1.1  2004/06/22 06:56:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -17,6 +20,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IbisException;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -40,10 +44,10 @@ import com.sap.mw.jco.*;
  * If no replyFieldIndex or replyFieldName is specified, output is converted from/to xml. 
  * </p>
  * @author Gerrit van Brakel
- * @since 4.1.1
+ * @since 4.2
  */
-public class SapFunctionFacade {
-	public static final String version="$Id: SapFunctionFacade.java,v 1.2 2004-06-22 12:14:42 L190409 Exp $";
+public class SapFunctionFacade implements INamedObject{
+	public static final String version="$Id: SapFunctionFacade.java,v 1.3 2004-06-30 12:36:47 L190409 Exp $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	private String name;
@@ -73,7 +77,7 @@ public class SapFunctionFacade {
 			try {
 				ftemplate = sapSystem.getRepository().getFunctionTemplate(getFunctionName());
 			} catch (Exception e) {
-				throw new SapException("exception obtaining template for function ["+getFunctionName()+"]");
+				throw new SapException("exception obtaining template for function ["+getFunctionName()+"]", e);
 			}
 			if (ftemplate == null) {
 				throw new SapException("could not obtain template for function ["+getFunctionName()+"]");
@@ -81,7 +85,7 @@ public class SapFunctionFacade {
 			try {
 				calculateStaticFieldIndices(ftemplate);
 			} catch (Exception e) {
-				throw new SapException("Exception calculation field-indices ["+getFunctionName()+"]");
+				throw new SapException("Exception calculation field-indices ["+getFunctionName()+"]", e);
 			}
 		}
 	}
