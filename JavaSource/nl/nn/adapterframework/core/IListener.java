@@ -1,6 +1,9 @@
 /*
  * $Log: IListener.java,v $
- * Revision 1.1  2004-07-15 07:38:22  L190409
+ * Revision 1.2  2004-08-03 13:09:51  L190409
+ * moved afterMessageProcessed to IListener
+ *
+ * Revision 1.1  2004/07/15 07:38:22  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * introduction of IListener as common root for Pulling and Pushing listeners
  *
  *
@@ -20,7 +23,7 @@ import java.util.HashMap;
  * @since 4.2
  */
 public interface IListener extends INamedObject {
-	public static final String version="$Id: IListener.java,v 1.1 2004-07-15 07:38:22 L190409 Exp $";
+	public static final String version="$Id: IListener.java,v 1.2 2004-08-03 13:09:51 L190409 Exp $";
 
 /**
  * <code>configure()</code> is called once at startup of the framework in the configure method of the owner of this listener. 
@@ -47,13 +50,19 @@ void close() throws ListenerException;
  * other parameters from the message and put those in the threadContext.
  * @return ID-string of message for adapter.
  */
-String getIdFromRawMessage(Object rawMessage, HashMap threadContext) throws ListenerException;
+String getIdFromRawMessage(Object rawMessage, HashMap context) throws ListenerException;
 
 /**
  * Extracts string from message obtained from {@link #getRawMessage(HashMap)}. May also extract
  * other parameters from the message and put those in the threadContext.
  * @return input message for adapter.
  */
-String getStringFromRawMessage(Object rawMessage, HashMap threadContext) throws ListenerException;
+String getStringFromRawMessage(Object rawMessage, HashMap context) throws ListenerException;
+
+/**
+ * Called to perform actions (like committing or sending a reply) after a message has been processed by the Pipeline. 
+ */
+void afterMessageProcessed(PipeLineResult processResult, Object rawMessage, HashMap context) throws ListenerException;
+
 
 }

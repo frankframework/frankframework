@@ -1,6 +1,9 @@
 /*
  * $Log: IPullingListener.java,v $
- * Revision 1.5  2004-07-15 07:38:22  L190409
+ * Revision 1.6  2004-08-03 13:10:56  L190409
+ * moved afterMessageProcessed to IListener
+ *
+ * Revision 1.5  2004/07/15 07:38:22  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * introduction of IListener as common root for Pulling and Pushing listeners
  *
  * Revision 1.4  2004/03/30 07:29:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -24,12 +27,7 @@ import java.util.HashMap;
  * @author Gerrit van Brakel
  */
 public interface IPullingListener extends IListener {
-		public static final String version="$Id: IPullingListener.java,v 1.5 2004-07-15 07:38:22 L190409 Exp $";
-
-/**
- * Called to perform actions (like committing or sending a reply) after a message has been processed by the Pipeline. 
- */
-void afterMessageProcessed(PipeLineResult processResult, Object rawMessage, HashMap threadContext) throws ListenerException;
+		public static final String version="$Id: IPullingListener.java,v 1.6 2004-08-03 13:10:56 L190409 Exp $";
 
 /**
  * Prepares a thread for receiving messages.
