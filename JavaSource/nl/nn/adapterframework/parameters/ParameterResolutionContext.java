@@ -1,6 +1,9 @@
 /*
  * $Log: ParameterResolutionContext.java,v $
- * Revision 1.3  2005-01-13 08:08:33  L190409
+ * Revision 1.4  2005-02-10 08:15:24  L190409
+ * fixed bug in map-generation
+ *
+ * Revision 1.3  2005/01/13 08:08:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Xslt parameter handling by Maps instead of by Ibis parameter system
  *
  * Revision 1.2  2004/10/14 16:07:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -34,7 +37,10 @@ import org.w3c.dom.Document;
 
 /*
  * $Log: ParameterResolutionContext.java,v $
- * Revision 1.3  2005-01-13 08:08:33  L190409
+ * Revision 1.4  2005-02-10 08:15:24  L190409
+ * fixed bug in map-generation
+ *
+ * Revision 1.3  2005/01/13 08:08:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Xslt parameter handling by Maps instead of by Ibis parameter system
  *
  * Revision 1.2  2004/10/14 16:07:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -62,7 +68,7 @@ import org.w3c.dom.Document;
  * @version Id
  */
 public class ParameterResolutionContext {
-	public static final String version="$Id: ParameterResolutionContext.java,v 1.3 2005-01-13 08:08:33 L190409 Exp $";
+	public static final String version="$Id: ParameterResolutionContext.java,v 1.4 2005-02-10 08:15:24 L190409 Exp $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	private String input;
@@ -115,7 +121,7 @@ public class ParameterResolutionContext {
 		for (Iterator it= parameters.iterator(); it.hasNext(); ) {
 			Parameter p=(Parameter)it.next();
 			
-			result.put(p.getName(),getValue(p));
+			result.put(p.getName(),getValue(p).getValue());
 		}
 		return result;
 	}
