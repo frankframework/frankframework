@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaFacade.java,v $
- * Revision 1.13  2004-07-20 16:37:47  L190409
+ * Revision 1.14  2004-07-22 11:01:04  L190409
+ * added configurable timeOut
+ *
+ * Revision 1.13  2004/07/20 16:37:47  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * toch maar niet IFSA-mode timeout
  *
  * Revision 1.12  2004/07/20 13:28:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -56,6 +59,7 @@ import javax.jms.*;
  * <tr><td>{@link #setApplicationId(String) applicationId}</td><td>the ApplicationID, in the form of "IFSA://<i>AppId</i>"</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setServiceId(String) serviceId}</td><td>only for Requesters: the ServiceID, in the form of "IFSA://<i>ServiceID</i>"</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMessageProtocol(String) messageProtocol}</td><td>protocol of IFSA-Service to be called. Possible values 
+ * <tr><td>{@link #setTimeOut(long) listener.timeOut}</td><td>receiver timeout, in milliseconds</td><td>defined by IFSA expiry</td></tr>
  * <ul>
  *   <li>"FF": Fire & Forget protocol</li>
  *   <li>"RR": Request-Reply protocol</li>
@@ -66,7 +70,7 @@ import javax.jms.*;
  * @since 4.2
  */
 public class IfsaFacade implements INamedObject, HasPhysicalDestination {
-	public static final String version="$Id: IfsaFacade.java,v 1.13 2004-07-20 16:37:47 L190409 Exp $";
+	public static final String version="$Id: IfsaFacade.java,v 1.14 2004-07-22 11:01:04 L190409 Exp $";
     protected Logger log = Logger.getLogger(this.getClass());
     
 	private final static String IFSA_INITIAL_CONTEXT_FACTORY="com.ing.ifsa.IFSAContextFactory";
@@ -76,6 +80,9 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 	private String applicationId;
 	private String serviceId;
 	private IfsaMessageProtocolEnum messageProtocol;
+
+	private long timeOut = -1; // when set (>=0), overrides IFSA-expiry
+
 
     private IFSAQueueConnectionFactory ifsaQueueConnectionFactory = null;
     private IFSAContext context = null;
@@ -317,6 +324,10 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 	    }
 	}
 	public long getExpiry() throws IfsaException {
+		long expiry = getTimeOut();
+		if (expiry>=0) {
+			return expiry;
+		}
 	    try {
 	        return ((IFSAQueue) getServiceQueue()).getExpiry();
 	    } catch (JMSException e) {
@@ -605,4 +616,12 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 	public String getName() {
 		return name;
 	}
+
+	public long getTimeOut() {
+		return timeOut;
+	}
+	public void setTimeOut(long timeOut) {
+		this.timeOut = timeOut;
+	}
+
 }
