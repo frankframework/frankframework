@@ -1,6 +1,9 @@
 /*
  * $Log: Configuration.java,v $
- * Revision 1.12  2004-07-06 07:06:05  L190409
+ * Revision 1.13  2004-08-09 08:43:00  L190409
+ * removed pushing receiverbase
+ *
+ * Revision 1.12  2004/07/06 07:06:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added PushingReceiver and Sap-extensions
  *
  * Revision 1.11  2004/06/30 10:01:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -57,7 +60,7 @@ import java.util.Enumeration;
  */
 public class Configuration {
     protected Logger log; 
-    public static final String version="$Id: Configuration.java,v 1.12 2004-07-06 07:06:05 L190409 Exp $";
+    public static final String version="$Id: Configuration.java,v 1.13 2004-08-09 08:43:00 L190409 Exp $";
      
     private Hashtable adapterTable = new Hashtable();
 
@@ -328,7 +331,7 @@ public class Configuration {
     	sb.append(nl.nn.adapterframework.receivers.ServiceDispatcher.version+SystemUtils.LINE_SEPARATOR);
     	sb.append(nl.nn.adapterframework.receivers.ServiceListener.version+SystemUtils.LINE_SEPARATOR);
     	sb.append(nl.nn.adapterframework.receivers.PullingReceiverBase.version+SystemUtils.LINE_SEPARATOR);
-		sb.append(nl.nn.adapterframework.receivers.PushingReceiverBase.version+SystemUtils.LINE_SEPARATOR);
+		sb.append(nl.nn.adapterframework.receivers.ReceiverBase.version+SystemUtils.LINE_SEPARATOR);
     	sb.append(nl.nn.adapterframework.util.AppConstants.version+SystemUtils.LINE_SEPARATOR);
     	sb.append(nl.nn.adapterframework.util.Variant.version+SystemUtils.LINE_SEPARATOR);
     	sb.append(nl.nn.adapterframework.util.XmlUtils.version+SystemUtils.LINE_SEPARATOR);
