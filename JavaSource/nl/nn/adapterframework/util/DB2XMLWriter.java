@@ -39,7 +39,7 @@ import java.sql.Types;
 
 public class DB2XMLWriter
 {
-	public static final String version="$Id: DB2XMLWriter.java,v 1.4 2004-03-26 10:42:42 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: DB2XMLWriter.java,v 1.5 2004-04-08 16:01:30 nnvznl01#l181303 Exp $";
 	
    protected Logger log = Logger.getLogger(this.getClass());
 
@@ -136,6 +136,9 @@ public class DB2XMLWriter
    public synchronized String getXML(ResultSet rs, int maxlength) {
      if (null==rs) return "";
 
+	if( maxlength < 0 )
+		maxlength = Integer.MAX_VALUE;
+		
      XmlBuilder mainElement=new XmlBuilder(docname);
 
      try {
