@@ -1,6 +1,9 @@
 /*
  * $Log: SapSystem.java,v $
- * Revision 1.1  2004-07-06 07:09:05  L190409
+ * Revision 1.2  2004-07-07 13:56:01  L190409
+ * remove ClientPool before adding it
+ *
+ * Revision 1.1  2004/07/06 07:09:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * moved SAP functionality to extensions
  *
  * Revision 1.1  2004/06/22 06:56:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -38,7 +41,7 @@ import org.apache.log4j.Logger;
  * @since 4.1.1
  */
 public class SapSystem extends GlobalListItem {
-	public static final String version="$Id: SapSystem.java,v 1.1 2004-07-06 07:09:05 L190409 Exp $";
+	public static final String version="$Id: SapSystem.java,v 1.2 2004-07-07 13:56:01 L190409 Exp $";
 
 	private int maxConnections = 10;
 
@@ -70,6 +73,11 @@ public class SapSystem extends GlobalListItem {
 			//    The pool will be saved in the pool list to be used
 			//    from other threads by JCO.getClient(SID).
 			//    The pool must be explicitely removed by JCO.removeClientPool(SID)
+			try {
+				JCO.removeClientPool(getName());
+			} catch (Exception e) {
+				log.debug("exception removing ClientPool for SapSystem ["+getName()+"], probably because it didn't exist",e);
+			}
 			JCO.addClientPool( getName(),         // Alias for this pool
 							   getMaxConnections(),          // Max. number of connections
 								getMandant(),
@@ -84,11 +92,11 @@ public class SapSystem extends GlobalListItem {
 			//    redundant instances cause performance and memory waste.
 			log.debug("creating repository for SapSystem ["+getName()+"]");
 			repository = JCO.createRepository(getName()+"-repository", getName());
-		} catch (Exception e) {
-			log.error("exception configuring SapSystem ["+getName()+"]");
+		} catch (Throwable t) {
+			log.error("exception configuring SapSystem ["+getName()+"]", t);
 		}
 		if (repository == null) {
-			throw new NullPointerException("SapSystem ["+getName()+"] cannot create repository");
+			log.error("SapSystem ["+getName()+"] could not create repository");
 		}
 		
 	}
