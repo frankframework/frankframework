@@ -1,6 +1,9 @@
 /*
  * $Log: Afm2EdiFactSender.java,v $
- * Revision 1.1  2005-02-02 16:37:54  L190409
+ * Revision 1.2  2005-02-24 12:20:02  L190409
+ * removed unused imports
+ *
+ * Revision 1.1  2005/02/02 16:37:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * copied Afm2Edifact code from fb-broker
  *
  */
@@ -16,10 +19,8 @@ import org.w3c.dom.NodeList;
 
 import org.apache.log4j.Logger;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -41,7 +42,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  */
 public class Afm2EdiFactSender implements ISender {
 	protected Logger logger = Logger.getLogger(this.getClass());
-	public static final String version = "$Id: Afm2EdiFactSender.java,v 1.1 2005-02-02 16:37:54 L190409 Exp $";
+	public static final String version = "$Id: Afm2EdiFactSender.java,v 1.2 2005-02-24 12:20:02 L190409 Exp $";
 
 	public final static String VERWERKTAG = "VRWRKCD";
 	public final static String TPNRTAG = "AL_RECCRT";
