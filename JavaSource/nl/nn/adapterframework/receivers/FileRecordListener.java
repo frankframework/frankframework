@@ -1,10 +1,15 @@
+/*
+ * $Log: FileRecordListener.java,v $
+ * Revision 1.4  2004-03-23 18:16:26  L190409
+ * cosmetic changes
+ *
+ */
 package nl.nn.adapterframework.receivers;
 
 import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -28,12 +33,11 @@ import org.apache.commons.lang.builder.ToStringStyle;
  * found, it is read in a String object and parsed to records. When used in a receiver like 
  * {@link FileRecordReceiver } these records are to be processed by the adapter.
  * After reading the file, the file is renamed and moved to a directory.
- * <p>$Id: FileRecordListener.java,v 1.3 2004-02-09 11:01:23 a1909356#db2admin Exp $</p>
+ * <p>$Id: FileRecordListener.java,v 1.4 2004-03-23 18:16:26 L190409 Exp $</p>
  * @author  Johan Verrips
  */
 public class FileRecordListener implements IPullingListener, INamedObject {
-	public static final String version =
-		"$Id: FileRecordListener.java,v 1.3 2004-02-09 11:01:23 a1909356#db2admin Exp $";
+	public static final String version="$Id: FileRecordListener.java,v 1.4 2004-03-23 18:16:26 L190409 Exp $";
 
 	private String inputDirectory;
 	private String wildcard;
@@ -68,15 +72,7 @@ public class FileRecordListener implements IPullingListener, INamedObject {
 					sender.sendMessage(
 						(String) threadContext.get("cid"),
 						processResult.getResult());
-				} catch (SenderException e) {
-					throw new ListenerException(
-						"error sending message with correlationId["
-							+ cid
-							+ " msg ["
-							+ processResult.getResult()
-							+ "]",
-						e);
-				} catch (TimeOutException e) {
+				} catch (Exception e) {
 					throw new ListenerException(
 						"error sending message with correlationId["
 							+ cid
@@ -305,7 +301,7 @@ public class FileRecordListener implements IPullingListener, INamedObject {
 
 		// if nothing was found, just sleep thight.
 		try {
-			Thread.currentThread().sleep(responseTime);
+			Thread.sleep(responseTime);
 		} catch (InterruptedException e) {
 			throw new ListenerException("interupted...", e);
 		}
@@ -395,8 +391,7 @@ public class FileRecordListener implements IPullingListener, INamedObject {
 	}
 	public String toString() {
 		String result = super.toString();
-		ToStringBuilder ts = new ToStringBuilder(this);
-		ts.setDefaultStyle(ToStringStyle.MULTI_LINE_STYLE);
+		ToStringBuilder ts = new ToStringBuilder(this, ToStringStyle.MULTI_LINE_STYLE);
 		ts.append("name", getName());
 		ts.append("inputDirectory", getInputDirectory());
 		ts.append("wildcard", getWildcard());
