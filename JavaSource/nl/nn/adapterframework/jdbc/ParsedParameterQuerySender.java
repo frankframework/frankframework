@@ -1,6 +1,9 @@
 /*
  * $Log: ParsedParameterQuerySender.java,v $
- * Revision 1.2  2004-03-26 10:43:08  NNVZNL01#L180564
+ * Revision 1.3  2004-04-08 16:11:31  nnvznl01#l181303
+ * getStatement directly uses the parameterParser
+ *
+ * Revision 1.2  2004/03/26 10:43:08  Johan Verrips <johan.verrips@ibissource.org>
  * added @version tag in javadoc
  *
  * Revision 1.1  2004/03/24 13:28:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -39,7 +42,7 @@ import java.sql.SQLException;
  * @since 	4.1
  */
 public class ParsedParameterQuerySender extends FixedQuerySender {
-	public static final String version="$Id: ParsedParameterQuerySender.java,v 1.2 2004-03-26 10:43:08 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: ParsedParameterQuerySender.java,v 1.3 2004-04-08 16:11:31 nnvznl01#l181303 Exp $";
 	private String queryParameterParserClassName="nl.nn.adapterframework.jdbc.QueryParameterParser";
 
 	protected IQueryParameterParser createParameterParser(String queryParameterParserClassName) throws JdbcException {
@@ -54,12 +57,12 @@ public class ParsedParameterQuerySender extends FixedQuerySender {
 	protected void setParameters(PreparedStatement stmt, String correlationID, String message) throws JdbcException {
 		IQueryParameterParser qpp = createParameterParser(getQueryParameterParserClassName());
 		qpp.parse(stmt, correlationID,message);
-	}
+	} 
 
 	protected PreparedStatement getStatement(Connection con, String correlationID, String message) throws JdbcException, SQLException {
 		PreparedStatement stmt = super.getStatement(con, correlationID, message);
-		setParameters(stmt, correlationID, message);
-		return stmt;
+		IQueryParameterParser qpp = createParameterParser(getQueryParameterParserClassName());
+		return qpp.parse(stmt, correlationID,message);
 	}
 
 	/**
