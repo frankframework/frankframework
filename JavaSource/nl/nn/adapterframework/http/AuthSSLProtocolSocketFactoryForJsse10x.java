@@ -1,6 +1,9 @@
 /*
  * $Log: AuthSSLProtocolSocketFactoryForJsse10x.java,v $
- * Revision 1.2  2004-10-14 15:35:10  L190409
+ * Revision 1.3  2004-12-23 12:06:03  L190409
+ * explicit SSLContect provider
+ *
+ * Revision 1.2  2004/10/14 15:35:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * refactored AuthSSLProtocolSocketFactory group
  *
  * Revision 1.1  2004/09/09 14:50:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -105,7 +108,7 @@ public class AuthSSLProtocolSocketFactoryForJsse10x extends AuthSSLProtocolSocke
                 KeyStore keystore = createKeyStore(this.truststoreUrl, this.truststorePassword, this.keystoreType, "Trusted Certificate");
                 trustmanagers = createTrustManagers(keystore);
             }
-            SSLContext sslcontext = SSLContext.getInstance("SSL");
+            SSLContext sslcontext = SSLContext.getInstance("SSL",new com.sun.net.ssl.internal.ssl.Provider());
             sslcontext.init(keymanagers, trustmanagers, null);
             return sslcontext;
     }
