@@ -6,6 +6,8 @@ import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
+
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import javax.servlet.ServletContext;
@@ -32,7 +34,7 @@ import java.util.Iterator;
  * @author    Johan Verrips
  */
 public class ConfigurationServlet extends HttpServlet {
-	public static final String version="$Id: ConfigurationServlet.java,v 1.3 2004-03-26 10:43:10 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: ConfigurationServlet.java,v 1.4 2005-02-24 10:47:40 L190409 Exp $";
 	
     // logging category for this class
     protected Logger log = Logger.getLogger(this.getClass());
@@ -40,6 +42,8 @@ public class ConfigurationServlet extends HttpServlet {
     static final String DFLT_DIGESTER_RULES = "digester-rules.xml";
     static final String DFLT_CONFIGURATION = "Configuration.xml";
     static final String DFLT_AUTOSTART = "TRUE";
+    
+    public String lastErrorMessage=null;
 
     public boolean areAdaptersStopped() {
         Configuration config = getConfiguration();
@@ -117,6 +121,9 @@ public class ConfigurationServlet extends HttpServlet {
                 out.println("<p> Configuration successfully completed</p></body>");
             } else {
                 out.println("<p> Errors occured during configuration. Please, examine logfiles</p>");
+                if (StringUtils.isNotEmpty(lastErrorMessage)) {
+					out.println("<p>"+lastErrorMessage+"</p>");
+                }
             }
         } else {
             out.println(
@@ -199,6 +206,7 @@ public class ConfigurationServlet extends HttpServlet {
                             ClassUtils.getResourceURL(this, configurationFile));
         } catch (Throwable e) {
             log.error("Error occured unmarshalling configuration:", e);
+			lastErrorMessage=e.getMessage();
         }
 
         // if configuration did not succeed, log and return.

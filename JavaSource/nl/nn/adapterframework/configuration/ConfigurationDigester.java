@@ -1,6 +1,9 @@
 /*
  * $Log: ConfigurationDigester.java,v $
- * Revision 1.8  2004-10-14 15:32:30  L190409
+ * Revision 1.9  2005-02-24 10:48:00  L190409
+ * added display of error message at reinitialize
+ *
+ * Revision 1.8  2004/10/14 15:32:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved logging
  *
  * Revision 1.7  2004/06/16 13:04:28  Johan Verrips <johan.verrips@ibissource.org>
@@ -69,7 +72,7 @@ import java.net.URL;
  * @see Configuration
  */
 public class ConfigurationDigester {
-	public static final String version="$Id: ConfigurationDigester.java,v 1.8 2004-10-14 15:32:30 L190409 Exp $";
+	public static final String version="$Id: ConfigurationDigester.java,v 1.9 2005-02-24 10:48:00 L190409 Exp $";
     protected Logger log = Logger.getLogger(this.getClass());
 	private static final String CONFIGURATION_FILE_DEFAULT  = "Configuration.xml";
 	private static final String DIGESTER_RULES_DEFAULT      = "digester-rules.xml";
@@ -86,7 +89,11 @@ public static void main(String args[]) {
     if (args.length>=2)
       digester_rules_file = args[1];
       
-    config = cd.unmarshalConfiguration(digester_rules_file, configuration_file);
+    try {
+		config = cd.unmarshalConfiguration(digester_rules_file, configuration_file);
+	} catch (ConfigurationException e) {
+		System.out.println(e.getMessage());
+	}
 
     if (null == config) {
         System.out.println("Errors occured during configuration");
@@ -103,7 +110,7 @@ public static void main(String args[]) {
     if (null!=config)config.startAdapters();
 
 }
-    public Configuration unmarshalConfiguration(String digesterRulesFile, String configurationFile)
+    public Configuration unmarshalConfiguration(String digesterRulesFile, String configurationFile) throws ConfigurationException
     {
         Configuration config = new Configuration();
 
@@ -112,7 +119,7 @@ public static void main(String args[]) {
  
 		return config;
     }
-    public Configuration unmarshalConfiguration(URL digesterRulesURL, URL configurationFileURL){
+    public Configuration unmarshalConfiguration(URL digesterRulesURL, URL configurationFileURL) throws ConfigurationException{
         Configuration config = new Configuration(digesterRulesURL, configurationFileURL);
 
         Digester digester = new Digester();
@@ -144,12 +151,12 @@ public static void main(String args[]) {
 				
             digester.parse(is);
 
-        } catch (Throwable e) {
+        } catch (Throwable t) {
         	// wrap exception to be sure it gets rendered via the IbisException-renderer
-        	e = new ConfigurationException("error during unmarshalling configuration from file ["+configurationFileURL +
-			"] with digester-rules-file ["+digesterRulesURL+"]", e);
+			ConfigurationException e = new ConfigurationException("error during unmarshalling configuration from file ["+configurationFileURL +
+			"] with digester-rules-file ["+digesterRulesURL+"]", t);
             log.error(e);
-            return null;
+            throw (e);
         }
         log.info("************** Configuration completed **************");
 		return config;
