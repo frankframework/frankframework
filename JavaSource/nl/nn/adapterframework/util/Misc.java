@@ -10,7 +10,7 @@ import java.rmi.server.UID;
  * @version Id
  */
 public class Misc {
-	public static final String version="$Id: Misc.java,v 1.4 2004-07-20 13:12:00 a1909356#db2admin Exp $";
+	public static final String version="$Id: Misc.java,v 1.5 2004-08-17 16:09:37 L190409 Exp $";
 	
 	public static String createSimpleUUID_old() {
 		StringBuffer sb=new StringBuffer();
@@ -116,6 +116,18 @@ public static String readerToString(
     return sb.toString();
 
 }
+
+public static String streamToString(InputStream stream, String endOfLineString, boolean xmlEncode) 
+throws IOException {
+	return readerToString(new InputStreamReader(stream), endOfLineString, xmlEncode);
+}
+
+public static String resourceToString(URL resource, String endOfLineString, boolean xmlEncode)
+	throws IOException {
+
+	return streamToString(resource.openStream(), endOfLineString, xmlEncode);
+}
+
 public static String resourceToString(URL resource) throws IOException {
     return resourceToString(resource, null, false);
 }
@@ -123,14 +135,10 @@ public static String resourceToString(URL resource, String endOfLineString)
     throws IOException {
     return resourceToString(resource, endOfLineString, false);
 }
-public static String resourceToString(
-    URL resource, 
-    String endOfLineString,
-    boolean xmlEncode)
-    throws IOException {
 
-	return readerToString(new InputStreamReader(resource.openStream()), endOfLineString, xmlEncode);
-}
+
+
+
 	public static void stringToFile(String string, String fileName)
        throws IOException
     {
