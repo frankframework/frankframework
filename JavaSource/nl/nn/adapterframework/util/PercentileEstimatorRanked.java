@@ -1,6 +1,9 @@
 /*
  * $Log: PercentileEstimatorRanked.java,v $
- * Revision 1.1  2005-03-10 09:52:16  L190409
+ * Revision 1.2  2005-04-06 13:08:55  L190409
+ * improved by using extrapolation for extreme percentiles
+ *
+ * Revision 1.1  2005/03/10 09:52:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * reworked percentile estimation
  *
  * Revision 1.1  2005/02/24 12:24:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -121,14 +124,7 @@ public class PercentileEstimatorRanked extends PercentileEstimatorBase {
 		if ((pos & 1)==0) {
 			pos--;
 		}
-			
-		if (pos<=0) {
-			return min; 
-		}
-		if (pos>=count*2-1) {
-			return max; 
-		}
-		
+
 		long rankBefore;   // greatest rank for which rank*2-1 is less or equal to pos
 		long rankAfter;    // smallest rank for which rank*2+1 is larger than pos
 
