@@ -1,6 +1,9 @@
 /*
  * $Log: MessageSendingPipe.java,v $
- * Revision 1.5  2004-03-30 07:30:05  L190409
+ * Revision 1.6  2004-04-15 15:07:57  NNVZNL01#L180564
+ * when a timeout occured, the receiver was not closed. Fixed it.
+ *
+ * Revision 1.5  2004/03/30 07:30:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  */
@@ -53,7 +56,7 @@ import java.util.HashMap;
  */
 
 public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
-	public static final String version = "$Id: MessageSendingPipe.java,v 1.5 2004-03-30 07:30:05 L190409 Exp $";
+	public static final String version = "$Id: MessageSendingPipe.java,v 1.6 2004-04-15 15:07:57 NNVZNL01#L180564 Exp $";
 
 	private ISender sender = null;
 	private ICorrelatedPullingListener listener = null;
@@ -106,6 +109,8 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 				"String expected, got a [" + input.getClass().getName() + "]");
 		}
 		String result = null;
+		ICorrelatedPullingListener replyListener = getListener();
+		HashMap threadContext=new HashMap();
 		try {
 			String correlationID = session.getMessageId();
 
@@ -142,7 +147,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 							+ "]");
 			}
 
-			ICorrelatedPullingListener replyListener = getListener();
+			
 			if (replyListener != null) {
 				if (log.isDebugEnabled())
 					log.debug(
@@ -150,12 +155,12 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 							+ "starts listening for return message with correlationID ["
 							+ correlationID
 							+ "]");
-				HashMap threadContext = replyListener.openThread();
+				threadContext = replyListener.openThread();
 				Object msg =
 					replyListener.getRawMessage(correlationID, threadContext);
 				result =
 					replyListener.getStringFromRawMessage(msg, threadContext);
-				replyListener.closeThread(threadContext);
+				
 			}
 			if (result == null) {
 				result = "";
@@ -172,6 +177,14 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 				this,
 				getLogPrefix(session) + "caught exception",
 				e);
+		} finally {
+			if (getListener()!=null)
+				try {
+					log.debug(getLogPrefix(session)+" is closing listener");
+					replyListener.closeThread(threadContext);
+				} catch (ListenerException le) {
+					log.error(getLogPrefix(session)+"got error closing listener");
+				}
 		}
 	}
 
