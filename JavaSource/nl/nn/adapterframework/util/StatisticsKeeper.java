@@ -1,6 +1,9 @@
 /*
  * $Log: StatisticsKeeper.java,v $
- * Revision 1.6  2005-02-02 16:37:16  L190409
+ * Revision 1.7  2005-02-17 09:55:42  L190409
+ * changed percentile estimator to basic
+ *
+ * Revision 1.6  2005/02/02 16:37:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * modular percentile estimation
  *
  * Revision 1.5  2005/01/13 09:05:53  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -19,9 +22,9 @@ import java.util.StringTokenizer;
  * @author Johan Verrips / Gerrit van Brakel
  */
 public class StatisticsKeeper {
-	public static final String version="$Id: StatisticsKeeper.java,v 1.6 2005-02-02 16:37:16 L190409 Exp $";
+	public static final String version="$Id: StatisticsKeeper.java,v 1.7 2005-02-17 09:55:42 L190409 Exp $";
 	
-	private static final boolean calculatePercentiles=false;
+	private static final boolean calculatePercentiles=true;
 	
 	private String name = null;
 	private long min = Integer.MAX_VALUE;
@@ -45,7 +48,7 @@ public class StatisticsKeeper {
     public static final String DEFAULT_BOUNDARY_LIST="100,500,1000,5000";
 
 	public static final String percentileConfigKey="Statistics.percentiles";
-	public static final String DEFAULT_P_LIST="25,50,75,90,95";
+	public static final String DEFAULT_P_LIST="50,90,95,98";
 
 	protected PercentileEstimator pest;	
 
@@ -73,7 +76,7 @@ public class StatisticsKeeper {
 	    }
 
 		if (calculatePercentiles) {
-			pest = new PercentileEstimatorBase(percentileConfigKey,DEFAULT_P_LIST,30);
+			pest = new PercentileEstimatorBase(percentileConfigKey,DEFAULT_P_LIST,1000);
 		}
 	}
 /*	
