@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcQuerySenderBase.java,v $
- * Revision 1.5  2004-04-08 16:12:16  nnvznl01#l181303
+ * Revision 1.6  2004-10-19 06:41:08  L190409
+ * modified parameter handling
+ *
+ * Revision 1.5  2004/04/08 16:12:16  Dennis van Loon <dennis.van.loon@ibissource.org>
  * changed default value for maxRows to -1 (show All)
  *
  * Revision 1.4  2004/03/31 12:04:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -24,8 +27,13 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.ISender;
+import nl.nn.adapterframework.core.ISenderWithParameters;
+import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.ParameterList;
+import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.util.DB2XMLWriter;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -33,44 +41,57 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 /**
  * This executes the query that is obtained from the (here still abstract) method getStatement.
  * Descendent classes can override getStatement to provide meaningful statements.
+ * If used with parameters, the values of the parameters will be applied to the statement.
  *
  * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>classname</td><td>nl.nn.adapterframework.jdbc.JdbcQuerySenderBase</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setName(String) name}</td>  <td>name of the listener</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setDatasourceName(String) datasourceName}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setDatasourceNameXA(String) datasourceNameXA}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setName(String) name}</td>  <td>name of the sender</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setDatasourceName(String) datasourceName}</td><td>can be configured from JmsRealm, too</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setDatasourceNameXA(String) datasourceNameXA}</td><td>can be configured from JmsRealm, too</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setUsername(String) username}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setPassword(String) password}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setTransacted(boolean) transacted}</td><td>&nbsp;</td><td>false</td></tr>
  * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setQueryType(String) queryType}</td><td>either "select" for queries that return data, or anything else for queries that return no data</td><td>"other"</td></tr>
+ * <tr><td>{@link #setQueryType(String) queryType}</td><td>either "select" for queries that return data, or anything else for queries that return no data.</td><td>"other"</td></tr>
  * <tr><td>{@link #setMaxRows(int) maxRows}</td><td>maximum number of rows returned</td><td>0 (unlimited)</td></tr>
  * <tr><td>{@link #setStartRow(int) startRow}</td><td>the number of the first row returned from the output</td><td>1</td></tr>
  * </table>
  * </p>
  * 
+ * Queries that return no data (queryType 'other') return a message indicating the number of rows processed
+ * 
  * @version Id
  * @author  Gerrit van Brakel
  * @since 	4.1
  */
-public abstract class JdbcQuerySenderBase extends JdbcFacade implements ISender {
-	public static final String version="$Id: JdbcQuerySenderBase.java,v 1.5 2004-04-08 16:12:16 nnvznl01#l181303 Exp $";
+public abstract class JdbcQuerySenderBase extends JdbcFacade implements ISenderWithParameters {
+	public static final String version="$Id: JdbcQuerySenderBase.java,v 1.6 2004-10-19 06:41:08 L190409 Exp $";
 
 	private String queryType = "other";
 	private int startRow=1;
 	private int maxRows=-1; // return all rows
 	private Connection connection=null;
 
+	protected ParameterList paramList = null;
+
 	public JdbcQuerySenderBase() {
 		super();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see nl.nn.adapterframework.core.ISender#configure()
-	 */
+
+	public void addParameter(Parameter p) { 
+		if (paramList==null) {
+			paramList=new ParameterList();
+		}
+		paramList.add(p);
+	}
+
+	public void configure(ParameterList parameterList) throws ConfigurationException {
+		configure();		
+	}
+
 	public void configure() throws ConfigurationException {
 		try {
 			if (getDatasource()==null) {
@@ -78,6 +99,9 @@ public abstract class JdbcQuerySenderBase extends JdbcFacade implements ISender 
 			}
 		} catch (JdbcException e) {
 			throw new ConfigurationException(e);
+		}
+		if (paramList!=null) {
+			paramList.configure();
 		}
 	}
 
@@ -118,11 +142,17 @@ public abstract class JdbcQuerySenderBase extends JdbcFacade implements ISender 
 	 */
 	protected abstract PreparedStatement getStatement(Connection con, String correlationID, String message) throws JdbcException, SQLException;
 	
+
+
 	public String sendMessage(String correlationID, String message) throws SenderException {
+		return sendMessage(correlationID, message, null);
+	}
+
+	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException {
 		if (isTransacted()) {
 			try {
 				Connection c = getConnection();
-				String result = sendMessage(correlationID, message, c);
+				String result = sendMessage(c, correlationID, message, prc);
 				c.close();
 				return result;
 			} catch (SQLException e) {
@@ -132,22 +162,34 @@ public abstract class JdbcQuerySenderBase extends JdbcFacade implements ISender 
 			}
 		} else {
 			synchronized (connection) {
-				return sendMessage(correlationID, message, connection);
+				return sendMessage(connection, correlationID, message, prc);
 			}
 		}
 	}
 
-	private String sendMessage(String correlationID, String message, Connection connection) throws SenderException{
+	protected void applyParamteters(PreparedStatement statement, ParameterValueList parameters) throws SQLException {
+		// statement.clearParameters();
+		for (int i=0; i< parameters.size(); i++) {
+			statement.setString(i, parameters.getParameterValue(i).asStringValue(""));
+		}
+	}
+	
+	private String sendMessage(Connection connection, String correlationID, String message, ParameterResolutionContext prc) throws SenderException{
 		PreparedStatement statement;
 		
 		try {
 			statement = getStatement(connection, correlationID, message);
-			if (isSynchronous()) {
+			if (prc != null && paramList != null) {
+				applyParamteters(statement, prc.getValues(paramList));
+			}
+			if ("select".equalsIgnoreCase(getQueryType())) {
 				return executeSelectQuery(statement);
 			} else {
 				int numRowsAffected = statement.executeUpdate();
 				return "<result><rowsupdated>" + numRowsAffected + "</rowsupdated></result>";
 			}
+		} catch (ParameterException e) {
+			throw new SenderException(getLogPrefix() + "got exception evaluating parameters", e);
 		} catch (SQLException e) {
 			throw new SenderException(getLogPrefix() + "got exception sending message", e);
 		} catch (JdbcException e) {
@@ -222,5 +264,6 @@ public abstract class JdbcQuerySenderBase extends JdbcFacade implements ISender 
 	public int getStartRow() {
 		return startRow;
 	}
+
 
 }
