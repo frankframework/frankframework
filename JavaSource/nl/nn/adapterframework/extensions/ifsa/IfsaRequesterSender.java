@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaRequesterSender.java,v $
- * Revision 1.6  2004-07-19 13:20:42  L190409
+ * Revision 1.7  2004-07-20 13:28:38  L190409
+ * implemented IFSA timeout mode
+ *
+ * Revision 1.6  2004/07/19 13:20:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * cosmetic changes to logging
  *
  * Revision 1.5  2004/07/19 09:52:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -36,6 +39,8 @@ import javax.jms.TextMessage;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.StringUtils;
 
+import com.ing.ifsa.IFSATimeOutMessage;
+
 
 /**
  * {@link ISender} that sends a message to an IFSA service and, in case the messageprotocol is RR (Request-Reply)
@@ -60,7 +65,7 @@ import org.apache.commons.lang.StringUtils;
  * @since 4.2
  */
 public class IfsaRequesterSender extends IfsaFacade implements ISender {
-	public static final String version="$Id: IfsaRequesterSender.java,v 1.6 2004-07-19 13:20:42 L190409 Exp $";
+	public static final String version="$Id: IfsaRequesterSender.java,v 1.7 2004-07-20 13:28:38 L190409 Exp $";
   
 	public IfsaRequesterSender() {
   		super(false); // instantiate IfsaFacade as a requestor	
@@ -122,8 +127,11 @@ public class IfsaRequesterSender extends IfsaFacade implements ISender {
 	        log.error(getLogPrefix()+"error closing replyreceiver or replysession", e);
 	    }
 	    if (msg == null) {
-	        throw new TimeOutException(getLogPrefix()+"waiting for reply with correlationID [" + correlationID + "]");
+	        throw new TimeOutException(getLogPrefix()+" timed out waiting for reply with correlationID [" + correlationID + "]");
 	    }
+		if (msg instanceof IFSATimeOutMessage) {
+			throw new TimeOutException(getLogPrefix()+"received IFSATimeOutMessage waiting for reply with correlationID [" + correlationID + "]");
+		}
 	    return msg;
 	    
 	

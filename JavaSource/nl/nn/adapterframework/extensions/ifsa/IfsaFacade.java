@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaFacade.java,v $
- * Revision 1.11  2004-07-19 13:20:20  L190409
+ * Revision 1.12  2004-07-20 13:28:07  L190409
+ * implemented IFSA timeout mode
+ *
+ * Revision 1.11  2004/07/19 13:20:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * increased logging + close connection on 'close'
  *
  * Revision 1.10  2004/07/15 07:35:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -60,7 +63,7 @@ import javax.jms.*;
  * @since 4.2
  */
 public class IfsaFacade implements INamedObject, HasPhysicalDestination {
-	public static final String version="$Id: IfsaFacade.java,v 1.11 2004-07-19 13:20:20 L190409 Exp $";
+	public static final String version="$Id: IfsaFacade.java,v 1.12 2004-07-20 13:28:07 L190409 Exp $";
     protected Logger log = Logger.getLogger(this.getClass());
     
 	private final static String IFSA_INITIAL_CONTEXT_FACTORY="com.ing.ifsa.IFSAContextFactory";
@@ -78,9 +81,6 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 	
 	private boolean requestor=false;
 	private boolean provider=false;
-
-	private int ackMode = Session.AUTO_ACKNOWLEDGE;
-
 
 	public IfsaFacade(boolean asProvider) {
 		super();
@@ -224,8 +224,7 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 	 */
 	public QueueSession createSession() throws IfsaException {
 		try {
-			//TODO: incorporate IFSA_MODE for IFSA-compliant TimeOut
-			return connection.createQueueSession(isTransacted(), ackMode);
+			return connection.createQueueSession(isTransacted(), Session.AUTO_ACKNOWLEDGE + IFSAConstants.QueueSession.IFSA_MODE);
 		} catch (JMSException e) {
 			throw new IfsaException(e);
 		}
@@ -365,8 +364,7 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 	 * @exception  javax.naming.NamingException  Description of the Exception
 	 * @exception  javax.jms.JMSException                  Description of the Exception
 	 */
-	public QueueReceiver getReplyReceiver(
-	    QueueSession session, Message sentMessage)
+	public QueueReceiver getReplyReceiver(QueueSession session, Message sentMessage)
 	    throws IfsaException {
 	
 		QueueReceiver queueReceiver;
@@ -384,11 +382,6 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 			throw new IfsaException(e);
 		}
 		
-		try {
-	//		timeOut=((IFSAQueue) getServiceQueue()).getExpiry();
-		} catch (Exception e) {
-			throw new IfsaException("error retrieving timeOut value", e);
-		}
 		
 		try {
 	
