@@ -1,6 +1,9 @@
 /*
  * $Log: SapFunctionFacade.java,v $
- * Revision 1.3  2004-07-19 09:45:03  L190409
+ * Revision 1.4  2004-08-20 12:29:02  L190409
+ * fixed bug in findFieldIndex
+ *
+ * Revision 1.3  2004/07/19 09:45:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added getLogPrefix()
  *
  * Revision 1.2  2004/07/15 07:44:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -56,7 +59,7 @@ import com.sap.mw.jco.*;
  * @since 4.2
  */
 public class SapFunctionFacade implements INamedObject{
-	public static final String version="$Id: SapFunctionFacade.java,v 1.3 2004-07-19 09:45:03 L190409 Exp $";
+	public static final String version="$Id: SapFunctionFacade.java,v 1.4 2004-08-20 12:29:02 L190409 Exp $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	private String name;
@@ -180,10 +183,15 @@ public class SapFunctionFacade implements INamedObject{
 	 *  0  : no index found, convert all fields to/from xml.
 	 */
 	protected int findFieldIndex(JCO.ParameterList params, int index, String name) {
-		if (index!=0) {
+		if (index!=0 || StringUtils.isEmpty(name)) {
 			return index;
 		}
-		return (1+params.indexOf(name));
+		try {
+			return (1+params.indexOf(name));
+		} catch (Exception e) {
+			log.warn("["+getName()+"] exception finding FieldIndex for name ["+name+"]", e);
+			return 0;
+		}
 	}
 
 	public String getCorrelationIdFromField(JCO.Function function) {
