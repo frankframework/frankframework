@@ -1,6 +1,9 @@
 /*
  * $Log: MessageSendingPipe.java,v $
- * Revision 1.13  2004-09-01 11:28:14  L190409
+ * Revision 1.14  2004-09-08 14:16:37  L190409
+ * catch more throwables in doPipe()
+ *
+ * Revision 1.13  2004/09/01 11:28:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added exception-forward
  *
  * Revision 1.12  2004/08/23 13:10:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -84,7 +87,7 @@ import org.apache.commons.lang.StringUtils;
  */
 
 public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
-	public static final String version = "$Id: MessageSendingPipe.java,v 1.13 2004-09-01 11:28:14 L190409 Exp $";
+	public static final String version = "$Id: MessageSendingPipe.java,v 1.14 2004-09-08 14:16:37 L190409 Exp $";
 	private final static String TIMEOUTFORWARD = "timeout";
 	private final static String EXCEPTIONFORWARD = "exception";
 
@@ -219,14 +222,14 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 			}
 			return new PipeRunResult(timeoutForward,getResultOnTimeOut());
 
-		} catch (Exception e) {
+		} catch (Throwable t) {
 			PipeForward exceptionForward = findForward(EXCEPTIONFORWARD);
 			if (exceptionForward!=null) {
-				log.warn(getLogPrefix(session) + "exception occured, forwarded to ["+exceptionForward.getPath()+"]", e);
-				String resultmsg=new ErrorMessageFormatter().format(getLogPrefix(session),e,this,(String)input,session.getMessageId(),0);
+				log.warn(getLogPrefix(session) + "exception occured, forwarded to ["+exceptionForward.getPath()+"]", t);
+				String resultmsg=new ErrorMessageFormatter().format(getLogPrefix(session),t,this,(String)input,session.getMessageId(),0);
 				return new PipeRunResult(exceptionForward,resultmsg);
 			}
-			throw new PipeRunException(this, getLogPrefix(session) + "caught exception", e);
+			throw new PipeRunException(this, getLogPrefix(session) + "caught exception", t);
 		} finally {
 			if (getListener()!=null)
 				try {
