@@ -5,12 +5,12 @@ package nl.nn.adapterframework.core;
  * This is used for instance in ShowConfiguration, to show the Senders of receivers
  * that have one
  * 
- * <p>$Id: HasSender.java,v 1.2 2004-02-04 10:01:58 a1909356#db2admin Exp $</p>
+ * <p>$Id: HasSender.java,v 1.3 2004-03-23 16:42:59 L190409 Exp $</p>
  *
  * @author Gerrit van Brakel
  */
 public interface HasSender extends INamedObject {
-		public static final String version="$Id: HasSender.java,v 1.2 2004-02-04 10:01:58 a1909356#db2admin Exp $";
+	public static final String version="$Id: HasSender.java,v 1.3 2004-03-23 16:42:59 L190409 Exp $";
 
 	public ISender getSender();
 }
