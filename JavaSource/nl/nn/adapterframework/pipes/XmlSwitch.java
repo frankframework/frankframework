@@ -43,7 +43,7 @@ import java.io.IOException;
  * @author Johan Verrips
  */
 public class XmlSwitch extends AbstractPipe {
-	public static final String version="$Id: XmlSwitch.java,v 1.10 2004-10-19 15:27:19 L190409 Exp $";
+	public static final String version="$Id: XmlSwitch.java,v 1.11 2004-10-25 08:33:55 L190409 Exp $";
 	
     private static final String DEFAULT_SERVICESELECTION_XPATH = XmlUtils.XPATH_GETROOTNODENAME;
 	private TransformerPool transformerPool;
@@ -56,6 +56,7 @@ public class XmlSwitch extends AbstractPipe {
 	 * switch uses the root node. 
 	 */
 	public void configure() throws ConfigurationException {
+		super.configure();
 		if (getNotFoundForwardName()!=null) {
 			if (findForward(getNotFoundForwardName())==null){
 				throw new ConfigurationException(getLogPrefix(null)+"has a notFoundForwardName attribute. However, this forward ["+getNotFoundForwardName()+"] is not configured.");
