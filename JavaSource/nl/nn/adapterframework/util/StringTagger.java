@@ -32,7 +32,7 @@ import java.util.*;
 *@version Id
 */
 public class StringTagger implements Map {
-	public static final String version="$Id: StringTagger.java,v 1.3 2004-03-26 10:42:40 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: StringTagger.java,v 1.4 2004-08-24 13:19:59 a1909356#db2admin Exp $";
 	
 
 
@@ -374,7 +374,7 @@ public class StringTagger implements Map {
                 String tok=toks.nextToken();
                 if (tok.equals(""+FieldSeperator)) {
                     if (nesting==0) {
-                        Multi.addElement(tokvalue);
+                        Multi.addElement(tokvalue.trim());
                         tokvalue="";
                     } else {
                         tokvalue+=tok;
@@ -390,7 +390,7 @@ public class StringTagger implements Map {
                     tokvalue+=tok;
                 }
             }
-            Multi.addElement(tokvalue);
+            Multi.addElement(tokvalue.trim());
         }
         multitokens.put(name,Multi);
     }
