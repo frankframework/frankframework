@@ -1,39 +1,32 @@
+/*
+ * $Log: IfsaException.java,v $
+ * Revision 1.2  2004-07-05 14:30:41  L190409
+ * made descender of IbisException
+ *
+ */
 package nl.nn.adapterframework.extensions.ifsa;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.builder.ToStringStyle;
-import org.apache.commons.lang.exception.ExceptionUtils;
-import org.apache.commons.lang.exception.NestableException;
+import nl.nn.adapterframework.core.IbisException;
 
 /**
- * Base Exception with exhaustive toString()
+ * Exception thrown by Ifsa-related classes.
  *
  * @see nl.nn.adapterframework.core.IbisException
  *
  * @author Gerrit van Brakel
  * @version Id
  */
-public class IfsaException extends NestableException {
-public IfsaException() {
-	super();
-}
-public IfsaException(String arg1) {
-	super(arg1);
-}
-public IfsaException(String arg1, Throwable arg2) {
-	super(arg1, arg2);
-}
-public IfsaException(Throwable arg1) {
-	super(arg1);
-}
-	public String toString() {
-		String result="";
-		Throwable t;
-		String additionalMethodNames[] = { "getLinkedException" };
-
-		for (t=this; t!=null; t=ExceptionUtils.getCause(t,additionalMethodNames)) {
-			result += "\nclass: "+t.getClass().getName()+"\nmessage:"+t.getMessage()+"\nfields:\n"+ToStringBuilder.reflectionToString(t,ToStringStyle.MULTI_LINE_STYLE)+"\n";
-		}
-	return result;
- }
+public class IfsaException extends IbisException {
+	public IfsaException() {
+		super();
+	}
+	public IfsaException(String msg) {
+		super(msg);
+	}
+	public IfsaException(String msg, Throwable t) {
+		super(msg, t);
+	}
+	public IfsaException(Throwable t) {
+		super(t);
+	}
 }
