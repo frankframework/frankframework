@@ -5,6 +5,7 @@ import java.io.IOException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang.StringUtils;
@@ -16,6 +17,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.util.Variant;
+import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Generic parameter definition
@@ -37,6 +39,7 @@ public class Parameter {
 	private String defaultValue = null;
 	private String sessionKey = null;
 	private String xpathExpression = null;
+	private Transformer transformer = null;
 
 	public void setName(String rhs) {
 		name = rhs;
@@ -52,6 +55,10 @@ public class Parameter {
 
 	public String getDefaultValue() {
 		return defaultValue;
+	}
+
+	Transformer getTransformer() {
+		return transformer;
 	}
 
 	public void setSessionKey(String rhs) {
@@ -91,8 +98,9 @@ public class Parameter {
 	/**
 	 * @param xpathExpression to extract the parameter value from the (xml formatted) input 
 	 */
-	public void setXpathExpression(String xpathExpression) {
+	public void setXpathExpression(String xpathExpression) throws TransformerException {
 		this.xpathExpression = xpathExpression;
+		this.transformer = XmlUtils.createXPathEvaluator(xpathExpression);
 	}
 
 }

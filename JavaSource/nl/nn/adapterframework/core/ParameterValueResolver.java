@@ -9,8 +9,11 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
+import javax.xml.transform.dom.DOMSource;
 
+import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.Variant;
+import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
@@ -23,7 +26,10 @@ import org.xml.sax.SAXException;
 
 /*
  * $Log: ParameterValueResolver.java,v $
- * Revision 1.1  2004-05-21 07:58:47  a1909356#db2admin
+ * Revision 1.2  2004-05-25 09:27:56  a1909356#db2admin
+ * Optimize performance by caching the transformer
+ *
+ * Revision 1.1  2004/05/21 07:58:47  unknown <unknown@ibissource.org>
  * Moved PipeParameter to core
  *
  */
@@ -37,7 +43,7 @@ import org.xml.sax.SAXException;
 public class ParameterValueResolver {
 	private Object input;
 	private Hashtable session;
-	private Document document;
+	private DOMSource inputSource;
 
 	/**
 	 * constructor
@@ -60,11 +66,9 @@ public class ParameterValueResolver {
 		if (StringUtils.isNotEmpty(p.getSessionKey())) {
 			result=getSession().get(p.getSessionKey());
 		}
-		else if (StringUtils.isNotEmpty(p.getXpathExpression())) {
+		else if (p.getTransformer() != null) {
 			try {
-				// apache specific classes for running xpath
-				XPath xp = new XPath(p.getXpathExpression(), null, null, XPath.SELECT);
-				result =  xp.execute(new XPathContext(), getDocument(), null).toString();
+				result = XmlUtils.transformXml(p.getTransformer(), getInputSource());
 			}
 			catch (Exception e) {
 				throw new IbisException("Error while getting parametervalue for parameter " + p.getName(), e);
@@ -135,14 +139,12 @@ public class ParameterValueResolver {
 	 * @throws SAXException
 	 * @throws IOException
 	 */
-	private Document getDocument() throws ParserConfigurationException, SAXException, IOException {
-		if (document == null) {
-			DocumentBuilder db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-			Variant inputVar = new Variant((String)input);
-			InputSource in = inputVar.asXmlInputSource();
-			document = db.parse(in);
+	private DOMSource getInputSource() throws DomBuilderException {
+		if (inputSource == null) {
+			Document doc = XmlUtils.buildDomDocument((String)input);
+			inputSource = new DOMSource(doc); 
 		}
-		return document;
+		return inputSource;
 	}
 
 	/**
@@ -160,18 +162,11 @@ public class ParameterValueResolver {
 	}
 
 	/**
-	 * @param document contains the DOM document parsed from the (xml formatted) input 
-	 */
-	private void setDocument(Document document) {
-		this.document = document;
-	}
-
-	/**
 	 * @param input the (xml formatted) input message
 	 */
 	public void setInput(Object input) {
 		this.input = input;
-		this.document = null;
+		this.inputSource = null;
 	}
 
 	/**
