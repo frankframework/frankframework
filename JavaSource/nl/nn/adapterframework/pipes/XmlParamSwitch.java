@@ -19,13 +19,12 @@ import javax.xml.transform.Transformer;
  * @version Id
  */
 public class XmlParamSwitch extends XmlSwitch {
-	public static final String version="$Id: XmlParamSwitch.java,v 1.4 2004-08-31 13:19:58 a1909356#db2admin Exp $";
+	public static final String version="$Id: XmlParamSwitch.java,v 1.5 2004-08-31 13:20:58 a1909356#db2admin Exp $";
 
 	public void configure() throws ConfigurationException {
 		super.configure();
-		if (this.getMaxThreads()!=1) log.warn("Pipe ["+getName()+"] should have set maxThreads to 1, as the Pipe is NOT threadsafe!");
-		
 	}
+	
 	public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRunException{
 		String forward="";
 		String sInput=(String) input;

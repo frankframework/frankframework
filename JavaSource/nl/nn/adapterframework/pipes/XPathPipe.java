@@ -1,6 +1,9 @@
 /*
  * $Log: XPathPipe.java,v $
- * Revision 1.4  2004-08-03 12:28:46  L190409
+ * Revision 1.5  2004-08-31 13:19:58  a1909356#db2admin
+ * Allow multithreading
+ *
+ * Revision 1.4  2004/08/03 12:28:46  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * replaced embedded stylesheet with call to xmlutils.createxpathevaluator
  *
  * Revision 1.3  2004/05/05 09:30:53  Johan Verrips <johan.verrips@ibissource.org>
@@ -22,6 +25,9 @@ import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.stream.StreamSource;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.pool.BasePoolableObjectFactory;
+import org.apache.commons.pool.ObjectPool;
+import org.apache.commons.pool.impl.GenericObjectPool;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -53,7 +59,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  */
 public class XPathPipe extends FixedForwardPipe {
 	private String xpathExpression;
-	private Transformer transformer;
+	private ObjectPool transformerPool;
 	private String sessionKey=null;
 	
 	/* 
@@ -66,9 +72,13 @@ public class XPathPipe extends FixedForwardPipe {
 			throw new ConfigurationException(getLogPrefix(null)+"xpathExpression must be filled");
 						
 		try {
-			transformer = XmlUtils.createXPathEvaluator(getXpathExpression()); 
+			transformerPool = new GenericObjectPool(new BasePoolableObjectFactory() {
+				public Object makeObject() throws Exception {
+					return XmlUtils.createXPathEvaluator(getXpathExpression());
+				}
+			}); 
 		}
-		catch(TransformerConfigurationException e) {
+		catch(Exception e) {
 			throw new ConfigurationException(getLogPrefix(null)+"cannot create XPath-evaluator from ["+getXpathExpression()+"]",e);
 		}
 	}
@@ -81,11 +91,16 @@ public class XPathPipe extends FixedForwardPipe {
 		String out = null; 
 		
 		if (! StringUtils.isEmpty(in)) {
+			Transformer t = null;
 			try {
-				out = XmlUtils.transformXml(transformer, in);
+				t = (Transformer)transformerPool.borrowObject();
+				out = XmlUtils.transformXml(t, in);
 			} 
 			catch (Exception e) {
 				throw new PipeRunException(this, getLogPrefix(session)+"error during xsl transformation", e);
+			}
+			finally {
+				try { transformerPool.returnObject(t); } catch(Exception e) {}
 			}
 		}
 		if (StringUtils.isEmpty(getSessionKey())){
