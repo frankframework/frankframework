@@ -28,14 +28,14 @@ import java.util.Enumeration;
 /**
  * The Configuration is placeholder of all configuration objects. Besides that, it provides
  * functions for starting and stopping adapters as a facade.
+ * @version Id
  * @author Johan Verrips
  * @see    nl.nn.adapterframework.configuration.ConfigurationException
  * @see    nl.nn.adapterframework.core.IAdapter
- * <p>$Id $</p>
  */
 public class Configuration {
     protected Logger log; 
-    public static final String version="$Id: Configuration.java,v 1.5 2004-03-23 16:39:20 L190409 Exp $";
+    public static final String version="$Id: Configuration.java,v 1.6 2004-03-26 09:56:15 NNVZNL01#L180564 Exp $";
      
     private Hashtable adapterTable = new Hashtable();
 
