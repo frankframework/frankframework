@@ -1,9 +1,16 @@
+/*
+ * $Log: SendJmsMessageExecute.java,v $
+ * Revision 1.3  2004-03-23 16:58:47  L190409
+ * now uses unique ID for sending test-messages
+ *
+ */
 package nl.nn.adapterframework.webcontrol.action;
 
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.util.StringTagger;
 import org.apache.struts.action.*;
@@ -19,13 +26,13 @@ import java.util.ArrayList;
 
 /**
  * Executes the sending of a message with JMS
- * <p>$Id: SendJmsMessageExecute.java,v 1.2 2004-02-04 10:02:09 a1909356#db2admin Exp $</p>
+ * <p>$Id: SendJmsMessageExecute.java,v 1.3 2004-03-23 16:58:47 L190409 Exp $</p>
  * @author  Johan Verrips
  * @see nl.nn.adapterframework.configuration.Configuration
  */
 
 public final class SendJmsMessageExecute extends ActionBase {
-	public static final String version="$Id: SendJmsMessageExecute.java,v 1.2 2004-02-04 10:02:09 a1909356#db2admin Exp $";
+	public static final String version="$Id: SendJmsMessageExecute.java,v 1.3 2004-03-23 16:58:47 L190409 Exp $";
 	
 public ActionForward execute(
     ActionMapping mapping,
@@ -81,7 +88,7 @@ public ActionForward execute(
 
     try {
 	    qms.open();
-        qms.sendMessage("testmessage",form_message);
+        qms.sendMessage("testmsg_"+Misc.createUUID(),form_message);
     } catch (SenderException e) {
         log.error(e);
         errors.add(
