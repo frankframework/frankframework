@@ -1,6 +1,9 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.12  2004-10-12 15:15:22  L190409
+ * Revision 1.13  2004-10-26 15:35:55  L190409
+ * reduced logging for transformer parameter setting
+ *
+ * Revision 1.12  2004/10/12 15:15:22  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected XmlDeclaration-handling
  *
  * Revision 1.11  2004/10/05 09:56:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -94,7 +97,7 @@ import java.util.LinkedList;
  */
 public class XmlUtils {
 	public static final String version =
-		"$Id: XmlUtils.java,v 1.12 2004-10-12 15:15:22 L190409 Exp $";
+		"$Id: XmlUtils.java,v 1.13 2004-10-26 15:35:55 L190409 Exp $";
 
 	static final String W3C_XML_SCHEMA = "http://www.w3.org/2001/XMLSchema";
 	static final String JAXP_SCHEMA_LANGUAGE =
@@ -606,7 +609,7 @@ public class XmlUtils {
 					
 			if (value != null) {
 				t.setParameter(p.getName(), value);
-				log.debug("setting parameter [" + p.toString()+ "] on transformer");
+				log.debug("setting parameter [" + p.getName()+ "] on transformer");
 			} 
 			else {
 				log.warn("omitting setting of parameter ["+p.getName()+"] on transformer, as it has a null-value");
