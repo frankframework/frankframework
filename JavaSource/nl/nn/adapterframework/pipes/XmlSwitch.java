@@ -20,6 +20,7 @@ import java.io.IOException;
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setServiceSelectionStylesheetFilename(String) serviceSelectionStylesheetFilename}</td><td>stylesheet may return a String representing the forward to look up</td><td><i>a stylesheet that returns the name of the root-element</i></td></tr>
+ * <tr><td>{@link #setNotFoundPipeName(String) setNotFoundPipeName(String)}</td><td>Pipename returned when the pipename derrived from the stylesheet could not be found.</i></td></tr>
  * </table>
  * </p>
  * <p><b>Exits:</b>
@@ -33,11 +34,19 @@ import java.io.IOException;
  * @author Johan Verrips
  */
 public class XmlSwitch extends AbstractPipe {
-	public static final String version="$Id: XmlSwitch.java,v 1.3 2004-03-26 10:42:34 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: XmlSwitch.java,v 1.4 2004-04-06 12:57:37 NNVZNL01#L180564 Exp $";
 	
 	    private static final String DEFAULT_SERVICESELECTION_XSLT = XmlUtils.XSLT_GETROOTNODENAME;
 	    private Transformer serviceSelectionTransformer;
 	    private String serviceSelectionStylesheetFilename=null;
+	    private String notFoundForwardName=null;
+		/**
+		 * return the current transformer
+		 * @return Transformer
+		 */
+	    protected Transformer getServiceSelectionTransformer() {
+	    	return serviceSelectionTransformer;
+	    }
 	
 	/**
 	 * If no {@link #setServiceSelectionStylesheetFilename(String) serviceSelectionStylesheetFilename} is specified, the
@@ -68,6 +77,11 @@ public class XmlSwitch extends AbstractPipe {
 	            throw new ConfigurationException( "Pipe [" + getName() + "] got error creating transformer from string [" + DEFAULT_SERVICESELECTION_XSLT + "]", te);
             }
 		}
+		if (getNotFoundForwardName()!=null) {
+			if (findForward(getNotFoundForwardName())==null){
+				throw new ConfigurationException("Pipe [" + getName() + "] has a notFoundForwardName attribute. However, this forward ["+getNotFoundForwardName()+"] is not configured.");
+			}
+		}
         
 
 	}
@@ -91,8 +105,12 @@ public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRu
         } else {
             log.warn(getLogPrefix(session)+ " cannot determine forward due to lack of serviceSelectionTransformer");
         }
-	
-		pipeForward=findForward(forward);
+		if (findForward(forward)!=null) 
+			pipeForward=findForward(forward);
+		else {
+			log.info(getLogPrefix(session)+"determined forward ["+forward+"], which is not defined. Will use ["+getNotFoundForwardName()+"] instead");
+			pipeForward=findForward(getNotFoundForwardName());
+		}
 	
 	}
     catch (Throwable e) {
@@ -120,5 +138,12 @@ public String getServiceSelectionStylesheetFilename() {
  */
 public void setServiceSelectionStylesheetFilename(String newServiceSelectionStylesheetFilename) {
 	serviceSelectionStylesheetFilename = newServiceSelectionStylesheetFilename;
+}
+
+public void setNotFoundForwardName(String notFound){
+	notFoundForwardName=notFound;
+}
+public String getNotFoundForwardName(){
+	return notFoundForwardName;
 }
 }
