@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.13  2005-01-13 08:55:15  L190409
+ * Revision 1.14  2005-02-10 07:49:00  L190409
+ * removed clearing of pipelinesession a start of pipeline
+ *
+ * Revision 1.13  2005/01/13 08:55:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Make threadContext-attributes available in PipeLineSession
  *
  * Revision 1.12  2004/08/19 09:07:02  unknown <unknown@ibissource.org>
@@ -99,7 +102,7 @@ import javax.transaction.UserTransaction;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version="$Id: PipeLine.java,v 1.13 2005-01-13 08:55:15 L190409 Exp $";
+	public static final String version="$Id: PipeLine.java,v 1.14 2005-02-10 07:49:00 L190409 Exp $";
     private Logger log = Logger.getLogger(this.getClass());
 	private Adapter adapter; // for logging purposes, and for transaction managing
 	private boolean transacted=false;
@@ -244,7 +247,7 @@ public class PipeLine {
 		if (message == null) {
 			throw new PipeRunException(null, "Pipeline of adapter ["+ adapter.getName()+"] received null message");
 		}
-		pipeLineSession.reset(message, messageId);
+		pipeLineSession.set(message, messageId);
 		pipeLineSession.setTransacted(isTransacted());
 		UserTransaction utx = null;
 		PipeLineResult result;

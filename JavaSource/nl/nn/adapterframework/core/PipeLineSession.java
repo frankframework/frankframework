@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLineSession.java,v $
- * Revision 1.4  2004-03-30 07:29:54  L190409
+ * Revision 1.5  2005-02-10 07:49:00  L190409
+ * removed clearing of pipelinesession a start of pipeline
+ *
+ * Revision 1.4  2004/03/30 07:29:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.3  2004/03/23 17:51:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -27,7 +30,7 @@ import java.util.Hashtable;
  * @since   version 3.2.2
  */
 public class PipeLineSession extends Hashtable implements IXAEnabled {
-	public static final String version="$Id: PipeLineSession.java,v 1.4 2004-03-30 07:29:54 L190409 Exp $";
+	public static final String version="$Id: PipeLineSession.java,v 1.5 2005-02-10 07:49:00 L190409 Exp $";
 
 	public static final String originalMessageKey="originalMessage";
 	public static final String messageIdKey="messageId";
@@ -64,11 +67,13 @@ public class PipeLineSession extends Hashtable implements IXAEnabled {
 	 * passed to the <code>PipeLine</code> under the key <code>orininalMessageKey</code>
 	 * 
 	 */
-	protected void reset(String message, String messageId) {
-		clear();
+	
+	protected void set(String message, String messageId) {
+		// clear(); Dat moet niet meer!
 		put(originalMessageKey, message);
 	    put(messageIdKey, messageId);
 	}
+
 	
 	/**
 	 * Indicates the processing of this pipeline is either commited in one transaction, or 
