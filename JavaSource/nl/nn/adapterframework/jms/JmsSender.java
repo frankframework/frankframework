@@ -1,6 +1,9 @@
 /*
  * $Log: JmsSender.java,v $
- * Revision 1.8  2004-08-16 09:26:01  L190409
+ * Revision 1.9  2004-08-16 11:27:56  L190409
+ * changed timeToLive back to messageTimeToLive
+ *
+ * Revision 1.8  2004/08/16 09:26:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected JavaDoc
  *
  * Revision 1.7  2004/05/21 07:59:30  unknown <unknown@ibissource.org>
@@ -47,7 +50,7 @@ import javax.jms.Message;
  * <tr><td>{@link #setName(String) name}</td>  <td>name of the listener</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDestinationName(String) destinationName}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDestinationType(String) destinationType}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setTimeToLive(long) timeToLive}</td><td>&nbsp;</td><td>0</td></tr>
+ * <tr><td>{@link #setMessageTimeToLive(long) messageTimeToLive}</td><td>&nbsp;</td><td>0</td></tr>
  * <tr><td>{@link #setPersistent(boolean) persistent}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setAcknowledgeMode(String) acknowledgeMode}</td><td>&nbsp;</td><td>AUTO_ACKNOWLEDGE</td></tr>
  * <tr><td>{@link #setTransacted(boolean) transacted}</td><td>&nbsp;</td><td>false</td></tr>
@@ -61,7 +64,7 @@ import javax.jms.Message;
  */
 
 public class JmsSender extends JMSFacade implements ISender, IPostboxSender {
-	public static final String version = "$Id: JmsSender.java,v 1.8 2004-08-16 09:26:01 L190409 Exp $";
+	public static final String version = "$Id: JmsSender.java,v 1.9 2004-08-16 11:27:56 L190409 Exp $";
 	private String replyToName = null;
 
 	public JmsSender() {

@@ -1,6 +1,9 @@
 /*
  * $Log: JMSFacade.java,v $
- * Revision 1.14  2004-08-16 09:26:30  L190409
+ * Revision 1.15  2004-08-16 11:27:56  L190409
+ * changed timeToLive back to messageTimeToLive
+ *
+ * Revision 1.14  2004/08/16 09:26:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed messageTimeToLive to timeToLive
  *
  * Revision 1.13  2004/06/16 12:25:52  Johan Verrips <johan.verrips@ibissource.org>
@@ -63,7 +66,7 @@ import javax.naming.NamingException;
  * <tr><td>{@link #setName(String) name}</td>  <td>name of the listener</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDestinationName(String) destinationName}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDestinationType(String) destinationType}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setTimeToLive(long) timeToLive}</td><td>&nbsp;</td><td>0</td></tr>
+ * <tr><td>{@link #setMessageTimeToLive(long) messageTimeToLive}</td><td>&nbsp;</td><td>0</td></tr>
  * <tr><td>{@link #setPersistent(boolean) persistent}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setAcknowledgeMode(String) acknowledgeMode}</td><td>&nbsp;</td><td>AUTO_ACKNOWLEDGE</td></tr>
  * <tr><td>{@link #setTransacted(boolean) transacted}</td><td>&nbsp;</td><td>false</td></tr>
@@ -77,7 +80,7 @@ import javax.naming.NamingException;
  * @author    Gerrit van Brakel
  */
 public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version="$Id: JMSFacade.java,v 1.14 2004-08-16 09:26:30 L190409 Exp $";
+	public static final String version="$Id: JMSFacade.java,v 1.15 2004-08-16 11:27:56 L190409 Exp $";
 
 	private String name;
 
@@ -87,7 +90,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 
     private int ackMode = Session.AUTO_ACKNOWLEDGE;
     private boolean persistent;
-	private long timeToLive=0;
+	private long messageTimeToLive=0;
     private String destinationName;
     private boolean useTopicFunctions = false;
 
@@ -340,8 +343,8 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
         } else {
 			mp = getQueueSender((QueueSession)session, (Queue)destination);
         }
-		if (getTimeToLive()>0)
-			mp.setTimeToLive(getTimeToLive());	    
+		if (getMessageTimeToLive()>0)
+			mp.setTimeToLive(getMessageTimeToLive());	    
         return mp;
     }
     
@@ -736,15 +739,15 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	 * Set the time-to-live in milliseconds of a message
 	 * @param exp time in milliseconds
 	 */
-	public void setTimeToLive(long ttl){
-		this.timeToLive=ttl;
+	public void setMessageTimeToLive(long ttl){
+		this.messageTimeToLive=ttl;
 	}
 	/**
 	 * Get the  time-to-live in milliseconds of a message
 	 * @param exp time in milliseconds
 	 */
-	public long getTimeToLive(){
-		return this.timeToLive;
+	public long getMessageTimeToLive(){
+		return this.messageTimeToLive;
 	}
 	/**
 	 * Indicates whether messages are send under transaction control.
