@@ -1,6 +1,9 @@
 /*
  * $Log: SapListener.java,v $
- * Revision 1.3  2004-10-05 10:41:24  L190409
+ * Revision 1.4  2005-03-10 14:48:42  L190409
+ * removed trace setting
+ *
+ * Revision 1.3  2004/10/05 10:41:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed unused imports
  *
  * Revision 1.2  2004/08/23 13:11:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -67,7 +70,7 @@ import com.sap.mw.jco.*;
  * @since 4.2
  */
 public class SapListener extends SapFunctionFacade implements IPushingListener, SapFunctionHandler, JCO.ServerExceptionListener, JCO.ServerErrorListener {
-	public static final String version="$Id: SapListener.java,v 1.3 2004-10-05 10:41:24 L190409 Exp $";
+	public static final String version="$Id: SapListener.java,v 1.4 2005-03-10 14:48:42 L190409 Exp $";
 
 	private String progid;	 // progid of the RFC-destination
         	
@@ -92,7 +95,7 @@ public class SapListener extends SapFunctionFacade implements IPushingListener, 
 	public void open() throws ListenerException {
 		try {
 			openFacade();
-			sapServer.setTrace(true);
+//			sapServer.setTrace(true);
 			sapServer.start();
 		} catch (Exception e) {
 			throw new ListenerException(getLogPrefix()+"could not start", e);
