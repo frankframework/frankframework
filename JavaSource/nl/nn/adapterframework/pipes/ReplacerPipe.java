@@ -1,6 +1,9 @@
 /*
  * $Log: ReplacerPipe.java,v $
- * Revision 1.1  2004-08-03 11:28:12  L190409
+ * Revision 1.2  2004-08-24 06:47:53  a1909356#db2admin
+ * Addition checks in config
+ *
+ * Revision 1.1  2004/08/03 11:28:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * first version
  * 
  */
@@ -43,7 +46,7 @@ import nl.nn.adapterframework.util.Variant;
  * @since 4.2
  */
 public class ReplacerPipe extends FixedForwardPipe {
-	public static final String version="$Id: ReplacerPipe.java,v 1.1 2004-08-03 11:28:12 L190409 Exp $";
+	public static final String version="$Id: ReplacerPipe.java,v 1.2 2004-08-24 06:47:53 a1909356#db2admin Exp $";
 
 	private String find;
 	private String replace;
@@ -51,9 +54,12 @@ public class ReplacerPipe extends FixedForwardPipe {
 	
 	public void configure() throws ConfigurationException {
 		super.configure();
-		if (getFind() == null) {
+		if (StringUtils.isEmpty(getFind())) {
 			throw new ConfigurationException(getLogPrefix(null) + "cannot have empty find-attribute");
 		}
+		if (getReplace() == null) {
+			throw new ConfigurationException(getLogPrefix(null) + "cannot have a null replace-attribute");
+		}		
 		log.info(getLogPrefix(null)+ "finds ["+getFind()+"] relaces with ["+getReplace()+"]");
 		if (!StringUtils.isEmpty(getLineSeparatorSymbol())) {
 			find=replace(find,lineSeparatorSymbol,System.getProperty("line.separator"));
