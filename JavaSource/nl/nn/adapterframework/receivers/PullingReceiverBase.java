@@ -13,6 +13,7 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.HasSender;
 import nl.nn.adapterframework.core.PipeLineResult;
+import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.util.Counter;
 import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.RunStateManager;
@@ -90,7 +91,7 @@ import javax.transaction.UserTransaction;
  */
 public class PullingReceiverBase
     implements IReceiver, IReceiverStatistics, Runnable, HasSender {
-	public static final String version="$Id: PullingReceiverBase.java,v 1.10 2004-07-22 11:05:32 L190409 Exp $";
+	public static final String version="$Id: PullingReceiverBase.java,v 1.11 2004-08-18 09:19:57 a1909356#db2admin Exp $";
     	
 
 	public static final String ONERROR_CONTINUE = "continue";
@@ -144,7 +145,20 @@ private void closeAllResources() {
         log.error(
             "Receiver [" + getName()+ "]: error closing connection", e);
     }
-
+    if (inProcessStorage != null) {
+    	try {
+			inProcessStorage.close();
+		} catch (Exception e) {
+			log.error("Receiver [" + getName()+ "]: error closing inProcessStorage", e);
+		}
+    }
+	if (errorSender != null) {
+		try {
+			errorSender.close();
+		} catch (Exception e) {
+			log.error("Receiver [" + getName()+ "]: error closing errorSender", e);
+		}
+	}
 }
 
 /** 
