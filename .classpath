@@ -20,14 +20,14 @@
     <classpathentry kind="var" path="WAS_50_PLUGINDIR/mqjms/Java/lib/com.ibm.mqjms.jar"/>
     <classpathentry kind="var" path="WAS_50_PLUGINDIR/lib/jmxc.jar"/>
     <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-    <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/commons-httpclient-2.0.1.jar"/>
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/ifsajms-2.0-1.2.jar"/>
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/commons-cli-1.0.jar"/>
-    <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/jsse.jar"/>
-    <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/jnet.jar"/>
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/jcert.jar"/>
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/commons-pool-1.2.jar"/>
     <classpathentry kind="lib" path="sapjco.jar"/>
     <classpathentry kind="lib" path="WSAD51-security.jar"/>
+    <classpathentry kind="var" path="SERVERJDK_50_PLUGINDIR/jre/lib/ext/ibmjsse.jar"/>
+    <classpathentry exported="true" kind="lib" path="jsse.jar"/>
+    <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/commons-httpclient-2.0.2.jar"/>
     <classpathentry kind="output" path="bin"/>
 </classpath>
