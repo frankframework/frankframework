@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaFacade.java,v $
- * Revision 1.8  2004-07-08 08:56:46  L190409
+ * Revision 1.9  2004-07-08 12:55:57  L190409
+ * logging refinements
+ *
+ * Revision 1.8  2004/07/08 08:56:46  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * show physical destination after configure
  *
  * Revision 1.7  2004/07/06 14:50:06  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -51,7 +54,7 @@ import javax.jms.*;
  * @since 4.2
  */
 public class IfsaFacade implements INamedObject, HasPhysicalDestination {
-	public static final String version="$Id: IfsaFacade.java,v 1.8 2004-07-08 08:56:46 L190409 Exp $";
+	public static final String version="$Id: IfsaFacade.java,v 1.9 2004-07-08 12:55:57 L190409 Exp $";
     protected Logger log = Logger.getLogger(this.getClass());
     
 	private final static String IFSA_INITIAL_CONTEXT_FACTORY="com.ing.ifsa.IFSAContextFactory";
@@ -83,7 +86,7 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 	}
 	
 	public String getLogPrefix() {
-		return this.getClass().getName() + "["+ getName()+ "] of application ["+getApplicationId()+"] serviceId ["+getServiceId()+"] ";
+		return this.getClass().getName() + "["+ getName()+ "] of application ["+getApplicationId()+"] service ["+getPhysicalDestinationName()+"]";
 	}
 
 	/**
@@ -101,7 +104,7 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 						+ "], should be one of the following "
 						+ IfsaMessageProtocolEnum.getNames());
 		} catch (IfsaException e) {
-			throw new ConfigurationException(getLogPrefix()+"exception checking configuration",e);
+			throw new ConfigurationException("exception checking configuration",e);
 		}
 	}
 
@@ -117,7 +120,7 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
                 log.debug(getLogPrefix()+"closed connection for service");
 	        }
 	    } catch (JMSException e) {
-	        throw new IfsaException(e);
+	        throw new IfsaException("exception closing service",e);
 	    } finally {
 	        queue = null;
 	        connection = null;
@@ -136,7 +139,7 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 			}
 			return context;
 		} catch (NamingException e) {
-			throw new IfsaException(e);
+			throw new IfsaException("could not obtain context", e);
 		}
 	}
 
@@ -153,17 +156,17 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 				if (isRequestor()) {
 					queue = (Queue) getContext().lookupService(getServiceId());
 					if (log.isDebugEnabled()) {
-						log.debug(getLogPrefix()+ "got Queue ["+getPhysicalDestinationName()+"] to send messages on");
+						log.debug(getLogPrefix()+ "got Queue to send messages on");
 					}
 				} else {
 					queue = (Queue) getContext().lookupProviderInput();
 					if (log.isDebugEnabled()) {
-						log.debug(getLogPrefix()+ "got Queue ["+getPhysicalDestinationName()+" to receive messages from]");
+						log.debug(getLogPrefix()+ "got Queue to receive messages from]");
 					}
 				}
 	
 			} catch (NamingException e) {
-				throw new IfsaException(getLogPrefix()+"could not obtain serviceQueue", e);
+				throw new IfsaException("could not obtain serviceQueue", e);
 			}
 		}
 		return queue;
@@ -180,7 +183,7 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 			}
 			return connection;
 		} catch (Exception e) {
-			throw new IfsaException(getLogPrefix()+"could not obtain connection", e);
+			throw new IfsaException("could not obtain connection", e);
 		}
 	}
 
@@ -234,7 +237,7 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 		if (isProvider()) {
 			queueReceiver = session.createReceiver(getServiceQueue());
 		} else {
-			throw new IfsaException(getLogPrefix()+ "cannot obtain ServiceReceiver: Requestor cannot act as Provider");
+			throw new IfsaException("cannot obtain ServiceReceiver: Requestor cannot act as Provider");
 		}
 		if (log.isDebugEnabled()) {
 			log.debug(getLogPrefix()+ "got receiver for queue ["
@@ -280,7 +283,7 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 	    try {
 	        return ((IFSAQueue) getServiceQueue()).getExpiry();
 	    } catch (JMSException e) {
-	        throw new IfsaException(getLogPrefix()+"error retrieving timeOut value", e);
+	        throw new IfsaException("error retrieving timeOut value", e);
 	    }
 	}
 	/**
@@ -337,7 +340,7 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 		QueueReceiver queueReceiver;
 		    
 	    if (isProvider()) {
-	        throw new IfsaException(getLogPrefix()+"cannot get ReplyReceiver: Provider cannot act as Requestor");
+	        throw new IfsaException("cannot get ReplyReceiver: Provider cannot act as Requestor");
 	    } 
 	
 	    String correlationId;
@@ -351,17 +354,19 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 		
 		try {
 	//		timeOut=((IFSAQueue) getServiceQueue()).getExpiry();
-		} catch (Exception e) {throw new IfsaException("error retrieving timeOut value", e);}
+		} catch (Exception e) {
+			throw new IfsaException("error retrieving timeOut value", e);
+		}
 		
 		try {
 	
 			if (getIfsaQueueConnectionFactory().IsClientTransactional()) {
 						String selector="JMSCorrelationID='" + correlationId + "'";
 			            queueReceiver = session.createReceiver(replyQueue, selector);
-			            log.debug("** transactional client - selector ["+selector+"]");
+			            log.debug(getLogPrefix()+"** transactional client - selector ["+selector+"]");
 	            	} else {
 	            		queueReceiver = session.createReceiver(replyQueue);
-	            		log.debug("** non-transactional client" );
+	            		log.debug(getLogPrefix()+"** non-transactional client" );
 	            	}	
 		} catch (JMSException e) {
 			throw new IfsaException(e);
@@ -376,10 +381,10 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 	public boolean isRequestor() throws IfsaException {
 			
 		if (requestor && provider) {
-	        throw new IfsaException(getLogPrefix()+"cannot be both Requestor and Provider");
+	        throw new IfsaException("cannot be both Requestor and Provider");
 		}
 		if (!requestor && !provider) {
-	        throw new IfsaException(getLogPrefix()+"not configured as Requestor or Provider");
+	        throw new IfsaException("not configured as Requestor or Provider");
 		}
 		return requestor;
 	}
@@ -443,9 +448,7 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 	        // perform commit
 	        if (isTransacted()) {
 	            session.commit();
-	            if (log.isDebugEnabled()) {
-		            log.debug(getLogPrefix()+ "committing (send) transaction");
-	            }
+	            log.debug(getLogPrefix()+ "committing (send) transaction");
 	        }
 	
 	        return msg;
@@ -464,8 +467,11 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 	    try {
 	        TextMessage answer = session.createTextMessage();
 	        answer.setText(response);
-	        QueueSender tqs =
-	            session.createSender((Queue) received_message.getJMSReplyTo());
+			Queue replyQueue = (Queue)received_message.getJMSReplyTo();
+			if (log.isDebugEnabled()) {
+				log.debug(getLogPrefix()+"obtained replyQueue ["+replyQueue.getQueueName()+"]");
+			}
+	        QueueSender tqs = session.createSender(replyQueue );
 	        if (log.isDebugEnabled()) {
 	            log.debug(getLogPrefix()
 	            		+ "] sending reply to ["

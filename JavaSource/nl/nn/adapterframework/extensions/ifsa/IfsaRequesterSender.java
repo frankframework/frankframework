@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaRequesterSender.java,v $
- * Revision 1.2  2004-07-07 13:58:54  L190409
+ * Revision 1.3  2004-07-08 12:55:57  L190409
+ * logging refinements
+ *
+ * Revision 1.2  2004/07/07 13:58:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * cosmetic changes
  *
  * Revision 1.1  2004/07/05 14:28:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -48,7 +51,7 @@ import org.apache.commons.lang.StringUtils;
  * @since 4.2
  */
 public class IfsaRequesterSender extends IfsaFacade implements ISender {
-	public static final String version="$Id: IfsaRequesterSender.java,v 1.2 2004-07-07 13:58:54 L190409 Exp $";
+	public static final String version="$Id: IfsaRequesterSender.java,v 1.3 2004-07-08 12:55:57 L190409 Exp $";
 	private QueueSession session;
 	private QueueSender sender;
   
@@ -62,7 +65,7 @@ public class IfsaRequesterSender extends IfsaFacade implements ISender {
 		  	session = createSession();
 		  	sender = createSender(session, getServiceQueue());
 		} catch (Exception e) {
-			throw new SenderException(e);
+			throw new SenderException(getLogPrefix()+"could not start Sender", e);
 	  	}
   	}
 	/**

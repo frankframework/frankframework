@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaProviderListener.java,v $
- * Revision 1.1  2004-07-05 14:28:38  L190409
+ * Revision 1.2  2004-07-08 12:55:57  L190409
+ * logging refinements
+ *
+ * Revision 1.1  2004/07/05 14:28:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * First version, converted from IfsaServiceListener
  *
  * Revision 1.4  2004/03/26 07:25:42  Johan Verrips <johan.verrips@ibissource.org>
@@ -59,7 +62,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * @since 4.2
  */
 public class IfsaProviderListener extends IfsaFacade implements IPullingListener, INamedObject {
-	public static final String version="$Id: IfsaProviderListener.java,v 1.1 2004-07-05 14:28:38 L190409 Exp $";
+	public static final String version="$Id: IfsaProviderListener.java,v 1.2 2004-07-08 12:55:57 L190409 Exp $";
 
     private final static String THREAD_CONTEXT_SESSION_KEY = "session";
     private final static String THREAD_CONTEXT_RECEIVER_KEY = "receiver";
@@ -75,7 +78,7 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 		try {
 			openService();
 		} catch (IfsaException e) {
-			throw new ListenerException(getLogPrefix()+"error opening", e);
+			throw new ListenerException(getLogPrefix(),e);
 		}
 	}
 	public HashMap openThread() throws ListenerException {
@@ -91,15 +94,15 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 	
 		return threadContext;
 		} catch (IfsaException e) {
-			throw new ListenerException(getLogPrefix()+" opening listener thread", e);
+			throw new ListenerException(getLogPrefix()+"exception in openThread()", e);
 		}
 	}
 
 	public void close() throws ListenerException {
 		try {
 			closeService();
-		} catch (Exception e) {
-			throw new ListenerException(getLogPrefix()+"exception in close",e);
+		} catch (IfsaException e) {
+			throw new ListenerException(getLogPrefix(),e);
 		}
 	}
 	public void closeThread(HashMap threadContext) throws ListenerException {
@@ -157,7 +160,7 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 	        try {
 	            sendReply(session, (Message) rawMessage, plr.getResult());
 	        } catch (IfsaException e) {
-	            throw new ListenerException(getLogPrefix()+"got error sending result", e);
+	            throw new ListenerException(getLogPrefix()+"Exception on sending result", e);
 	        }
 	    }
 	}
@@ -184,10 +187,8 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 	    try {
 	        message = (TextMessage) rawMessage;
 	    } catch (ClassCastException e) {
-	        log.error(
-	            "message received by receiver ["
-	                + getName()
-	                + "] was not of type TextMessage, but ["
+	        log.error(getLogPrefix()+
+	            "message received was not of type TextMessage, but ["
 	                + rawMessage.getClass().getName()
 	                + "]",
 	            e);
@@ -259,13 +260,10 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 	        ifsaServiceDestination = ((IFSATextMessage) message).getService();
 	        serviceDestination = ToStringBuilder.reflectionToString(ifsaServiceDestination);
 	    } catch (JMSException e) {
-	        log.error("[" + getName() + "] got error getting serviceDestination", e);
+	        log.error(getLogPrefix() + "got error getting serviceDestination", e);
 	    }
 	
-	    log.info(
-	        "Receiver ["
-	            + getName()
-	            + "] got message with JMSDeliveryMode=["
+	    log.info(getLogPrefix()+ "got message with JMSDeliveryMode=["
 	            + mode
 	            + "] \n  JMSMessageID=["
 	            + id
@@ -297,7 +295,7 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 	
 	        result = receiver.receive(getTimeOut());
 	    } catch (JMSException e) {
-	        throw new ListenerException(e);
+	        throw new ListenerException(getLogPrefix(),e);
 	    }
 	    
 	    if (result instanceof IFSAPoisonMessage) {
@@ -308,9 +306,7 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 	        } catch (Exception e) {
 	        	source = "unknown due to exeption:"+e.getMessage();
 	        }
-	        log.error("["
-	                + getName()
-	                + "] received IFSAPoisonMessage "
+	        log.error(getLogPrefix()+ "received IFSAPoisonMessage "
 	                + "source ["
 	                + source
 	                + "]"
@@ -330,20 +326,20 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 	    try {
 	        message = (TextMessage) rawMessage;
 	    } catch (ClassCastException e) {
-	        log.error("message received by receiver ["+ getName()+ "] was not of type TextMessage, but ["+rawMessage.getClass().getName()+"]", e);
+	        log.error(getLogPrefix()+ "message received  was not of type TextMessage, but ["+rawMessage.getClass().getName()+"]", e);
 	        return null;
 	    }
 	    try {
 	    	return message.getText();
 	    } catch (JMSException e) {
-		    throw new ListenerException(e);
+		    throw new ListenerException(getLogPrefix(),e);
 	    }
 	}
 	
 	public String getCommitOnState() {
 		return commitOnState;
 	}
-	public void setCommitOnState(java.lang.String newCommitOnState) {
+	public void setCommitOnState(String newCommitOnState) {
 		commitOnState = newCommitOnState;
 	}
 
