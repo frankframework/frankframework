@@ -40,7 +40,7 @@ import org.apache.commons.lang.StringUtils;
 public class IfsaClient extends IfsaFacade implements ISender {
   private QueueSession session;
   private QueueSender sender;
-  public static final String version="$Id: IfsaClient.java,v 1.2 2004-03-11 09:15:29 NNVZNL01#L180564 Exp $";	
+  public static final String version="$Id: IfsaClient.java,v 1.3 2004-06-30 08:31:00 L190409 Exp $";	
 /**
  * Stop the sender and deallocate resources.
  */
@@ -134,7 +134,8 @@ public String sendMessage(String message)
     TextMessage sentMessage;
 
 	synchronized (sender) {
-		sentMessage=sendMessage(session, sender, message);
+		// TODO: handle UDZs
+		sentMessage=sendMessage(session, sender, message, null);
 	}
 	if (isSynchronous()){
 
