@@ -1,6 +1,9 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.11  2004-10-05 09:56:59  L190409
+ * Revision 1.12  2004-10-12 15:15:22  L190409
+ * corrected XmlDeclaration-handling
+ *
+ * Revision 1.11  2004/10/05 09:56:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * introduction of TransformerPool
  *
  * Revision 1.10  2004/09/01 07:15:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -91,7 +94,7 @@ import java.util.LinkedList;
  */
 public class XmlUtils {
 	public static final String version =
-		"$Id: XmlUtils.java,v 1.11 2004-10-05 09:56:59 L190409 Exp $";
+		"$Id: XmlUtils.java,v 1.12 2004-10-12 15:15:22 L190409 Exp $";
 
 	static final String W3C_XML_SCHEMA = "http://www.w3.org/2001/XMLSchema";
 	static final String JAXP_SCHEMA_LANGUAGE =
@@ -215,6 +218,7 @@ public class XmlUtils {
 
 	public static String createXPathEvaluatorSource(String XPathExpression)
 		throws TransformerConfigurationException {
+			/*
 		if (StringUtils.isEmpty(XPathExpression))
 			throw new TransformerConfigurationException("XPathExpression must be filled");
 
@@ -231,23 +235,25 @@ public class XmlUtils {
 				+ "</xsl:stylesheet>";
 
 		return xsl;
+			*/
+			return createXPathEvaluatorSource(XPathExpression,"text");
 	}
 
 	/*
 	 * version of createXPathEvaluator that allows to set outputMethod, and uses copy-of instead of value-of
 	 */
-	public static String createXPathEvaluatorSource(String namespaceDefs, String XPathExpression, String outputMethod) throws TransformerConfigurationException {
+	public static String createXPathEvaluatorSource(String namespaceDefs, String XPathExpression, String outputMethod, boolean includeXmlDeclaration) throws TransformerConfigurationException {
 		if (StringUtils.isEmpty(XPathExpression))
 			throw new TransformerConfigurationException("XPathExpression must be filled");
 		
 		if (namespaceDefs==null) {
 			namespaceDefs="";
-		}	
+		}
 			
 		String xsl = 
-			"<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+			// "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
 			"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"1.0\" xmlns:xalan=\"http://xml.apache.org/xslt\">" +
-			"<xsl:output method=\""+outputMethod+"\"/>" +
+			"<xsl:output method=\""+outputMethod+"\" omit-xml-declaration=\""+ (includeXmlDeclaration ? "no": "yes") +"\"/>" +
 			"<xsl:strip-space elements=\"*\"/>" +
 			"<xsl:template match=\"/\">" +
 			"<xsl:copy-of "+namespaceDefs+" select=\"" + XPathExpression + "\"/>" +
@@ -255,6 +261,10 @@ public class XmlUtils {
 			"</xsl:stylesheet>";
 	
 		return xsl;
+	}
+
+	public static String createXPathEvaluatorSource(String namespaceDefs, String XPathExpression, String outputMethod) throws TransformerConfigurationException {
+		return createXPathEvaluatorSource(namespaceDefs, XPathExpression, outputMethod, false);
 	}
 
 	public static String createXPathEvaluatorSource(String XPathExpression, String outputMethod) throws TransformerConfigurationException {
