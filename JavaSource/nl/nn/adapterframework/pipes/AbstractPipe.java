@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractPipe.java,v $
- * Revision 1.7  2004-10-05 10:47:03  L190409
+ * Revision 1.8  2004-10-19 13:51:58  L190409
+ * parameter-configure in configure()
+ *
+ * Revision 1.7  2004/10/05 10:47:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * retyped ParameterList
  *
  * Revision 1.6  2004/05/21 07:37:08  unknown <unknown@ibissource.org>
@@ -66,24 +69,26 @@ import java.util.Hashtable;
  * @see nl.nn.adapterframework.core.PipeLineSession
  */
 public abstract class AbstractPipe implements IPipe {
-  public static final String version="$Id: AbstractPipe.java,v 1.7 2004-10-05 10:47:03 L190409 Exp $";
+  public static final String version="$Id: AbstractPipe.java,v 1.8 2004-10-19 13:51:58 L190409 Exp $";
   private String name;
   protected Logger log = Logger.getLogger(this.getClass());
   private Hashtable pipeForwards=new Hashtable();
   private int maxThreads = 0;
   private ParameterList parameterList = new ParameterList();
   
-/**
- * <code>configure()</code> is called after the {@link nl.nn.adapterframework.core.PipeLine Pipeline} is registered
- * at the {@link nl.nn.adapterframework.core.Adapter Adapter}. Purpose of this method is to reduce
- * creating connections to databases etc. in the {@link #doPipe(Object) doPipe()} method.
- * As much as possible class-instantiating should take place in the
- * <code>configure()</code> method, to improve performance.
- 
- */ 
-public void configure() throws ConfigurationException{
-	
-  }
+	/**
+	 * <code>configure()</code> is called after the {@link nl.nn.adapterframework.core.PipeLine Pipeline} is registered
+	 * at the {@link nl.nn.adapterframework.core.Adapter Adapter}. Purpose of this method is to reduce
+	 * creating connections to databases etc. in the {@link #doPipe(Object) doPipe()} method.
+	 * As much as possible class-instantiating should take place in the
+	 * <code>configure()</code> method, to improve performance.
+	 */ 
+	public void configure() throws ConfigurationException{
+		ParameterList params = getParameterList();
+		if (params!=null) {
+			params.configure();
+		}
+	}
 /**
  * This is where the action takes place. Pipes may only throw a PipeRunException,
  * to be handled by the caller of this object.
