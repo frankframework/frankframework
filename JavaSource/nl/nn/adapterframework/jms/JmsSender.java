@@ -1,6 +1,9 @@
 /*
  * $Log: JmsSender.java,v $
- * Revision 1.3  2004-03-23 18:22:39  L190409
+ * Revision 1.4  2004-03-26 09:50:51  NNVZNL01#L180564
+ * Updated javadoc
+ *
+ * Revision 1.3  2004/03/23 18:22:39  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * enabled Transaction control
  *
  */
@@ -33,13 +36,13 @@ import javax.jms.Message;
  * <tr><td>{@link #setJmsRealm(String) listener.jmsRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
- * <p>$Id: JmsSender.java,v 1.3 2004-03-23 18:22:39 L190409 Exp $</p>
+ * <p>$Id: JmsSender.java,v 1.4 2004-03-26 09:50:51 NNVZNL01#L180564 Exp $</p>
  *
  * @author Gerrit van Brakel
  */
 
 public class JmsSender extends JMSFacade implements ISender {
-	public static final String version="$Id: JmsSender.java,v 1.3 2004-03-23 18:22:39 L190409 Exp $";
+	public static final String version="$Id: JmsSender.java,v 1.4 2004-03-26 09:50:51 NNVZNL01#L180564 Exp $";
 
   private String replyToName=null;
 
@@ -118,7 +121,7 @@ public String sendMessage(String correlationID, String message) throws SenderExc
 }
 /**
  * Sends the message
- * @returns the messageId of the message
+ * @return the messageId of the message
  */
 public String sendMessage(String correlationID, String message, Session s, MessageProducer mp)
     throws SenderException {

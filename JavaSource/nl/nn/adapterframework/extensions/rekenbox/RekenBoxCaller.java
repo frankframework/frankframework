@@ -1,6 +1,9 @@
 /*
  * $Log: RekenBoxCaller.java,v $
- * Revision 1.2  2004-03-24 15:30:30  L190409
+ * Revision 1.3  2004-03-26 09:50:52  NNVZNL01#L180564
+ * Updated javadoc
+ *
+ * Revision 1.2  2004/03/24 15:30:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * cleaned up unused comments
  *
  */
@@ -35,7 +38,7 @@ import nl.nn.adapterframework.util.Misc;
  * <tr><td>{@link #setExecutableExtension(String) executableExtension}</td><td>extension of rekenbox-executable</td><td>exe</td></tr>
  * <tr><td>{@link #setCleanup(boolean) cleanup}</td><td>if true, input and output files are removed after the call to the rekenbox is finished</td><td>true</td></tr>
  * <tr><td>{@link #setCommandLineType(String) commandLineType}</td><td>name of rekenbox to be called</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setRekenboxSessionKey(String) rekenboxSessionKey}</td><td>key in {@link pipeSession} to store rekenbox name in</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setRekenboxSessionKey(String) rekenboxSessionKey}</td><td>key in {@link nl.nn.adapterframework.core.PipeLineSession pipeLineSession} to store rekenbox name in</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * <p><b>Exits:</b>
@@ -57,7 +60,7 @@ import nl.nn.adapterframework.util.Misc;
  * @version Id
  */
 public class RekenBoxCaller extends FixedForwardPipe {
-	public static final String version="$Id: RekenBoxCaller.java,v 1.2 2004-03-24 15:30:30 L190409 Exp $";
+	public static final String version="$Id: RekenBoxCaller.java,v 1.3 2004-03-26 09:50:52 NNVZNL01#L180564 Exp $";
 	private String runPath;
 	private String executableExtension="exe"; //bat, com or exe
 	private String inputOutputDirectory;

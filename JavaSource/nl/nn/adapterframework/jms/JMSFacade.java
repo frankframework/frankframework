@@ -1,6 +1,9 @@
 /*
  * $Log: JMSFacade.java,v $
- * Revision 1.5  2004-03-24 08:24:46  L190409
+ * Revision 1.6  2004-03-26 09:50:51  NNVZNL01#L180564
+ * Updated javadoc
+ *
+ * Revision 1.5  2004/03/24 08:24:46  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * enabled XA transactions
  * renamed original 'transacted' into 'jmsTransacted'
  *
@@ -25,11 +28,11 @@ import javax.naming.NamingException;
  * <br/>
  * The <code>destinationType</code> field specifies which
  * type should be used.<br/>
- * <p>$Id: JMSFacade.java,v 1.5 2004-03-24 08:24:46 L190409 Exp $</p>
+ * <p>$Id: JMSFacade.java,v 1.6 2004-03-26 09:50:51 NNVZNL01#L180564 Exp $</p>
  * @author    Gerrit van Brakel
  */
 public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version="$Id: JMSFacade.java,v 1.5 2004-03-24 08:24:46 L190409 Exp $";
+	public static final String version="$Id: JMSFacade.java,v 1.6 2004-03-26 09:50:51 NNVZNL01#L180564 Exp $";
 
 	private String name;
 
@@ -444,42 +447,61 @@ private TopicSubscriber getTopicSubscriber(
         return transacted;
     }
     
-    
-public void send(MessageProducer messageProducer, Message message)
+/**
+ * Send a message
+ * @param messageProducer
+ * @param message
+ * @return messageID of the sent message
+ * @throws NamingException
+ * @throws JMSException
+ */    
+public String send(MessageProducer messageProducer, Message message)
     throws NamingException, JMSException {
 
     if (messageProducer instanceof TopicPublisher)
          ((TopicPublisher) messageProducer).publish(message);
     else
          ((QueueSender) messageProducer).send(message);
+    return message.getJMSMessageID();
 }
-
-public void send(Session session, Destination dest, Message message)
+/**
+ * Send a message
+ * @param session
+ * @param dest destination
+ * @param message
+ * @return message ID of the sent message
+ * @throws NamingException
+ * @throws JMSException
+ */
+public String send(Session session, Destination dest, Message message)
     throws NamingException, JMSException {
 
     if (dest instanceof Topic)
-        sendByTopic((TopicSession)session, (Topic)dest, message);
+        return sendByTopic((TopicSession)session, (Topic)dest, message);
     else
-        sendByQueue((QueueSession)session, (Queue)dest, message);
+        return sendByQueue((QueueSession)session, (Queue)dest, message);
 }
 /**
  * Send a message to a Destination of type Queue.
  * This method respects the <code>replyToComplianceType</code> field,
  * as if it is set to "MQ", 
+ * @return messageID of the sent message
  */
-private void sendByQueue(QueueSession session, Queue destination, Message message)
+private String sendByQueue(QueueSession session, Queue destination, Message message)
     throws NamingException, JMSException {
     enforceMQCompliancy(destination);
     QueueSender tqs = session.createSender(destination);
     tqs.send(message);
     tqs.close();
+    return message.getJMSMessageID();
 }
-private void sendByTopic(TopicSession session, Topic destination, Message message)
+private String sendByTopic(TopicSession session, Topic destination, Message message)
     throws NamingException, JMSException {
 
     TopicPublisher tps = session.createPublisher(destination);
     tps.publish(message);
     tps.close();
+	return message.getJMSMessageID();
 
 }
     /**

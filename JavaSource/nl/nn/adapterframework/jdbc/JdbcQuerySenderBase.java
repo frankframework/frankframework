@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcQuerySenderBase.java,v $
- * Revision 1.1  2004-03-24 13:28:20  L190409
+ * Revision 1.2  2004-03-26 09:50:52  NNVZNL01#L180564
+ * Updated javadoc
+ *
+ * Revision 1.1  2004/03/24 13:28:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * initial version
  *
  */
@@ -39,12 +42,12 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * </table>
  * </p>
  * 
- * <p>$Id: JdbcQuerySenderBase.java,v 1.1 2004-03-24 13:28:20 L190409 Exp $</p>
+ * <p>$Id: JdbcQuerySenderBase.java,v 1.2 2004-03-26 09:50:52 NNVZNL01#L180564 Exp $</p>
  * @author  Gerrit van Brakel
  * @since 	4.1
  */
 public abstract class JdbcQuerySenderBase extends JdbcFacade implements ISender {
-	public static final String version="$Id: JdbcQuerySenderBase.java,v 1.1 2004-03-24 13:28:20 L190409 Exp $";
+	public static final String version="$Id: JdbcQuerySenderBase.java,v 1.2 2004-03-26 09:50:52 NNVZNL01#L180564 Exp $";
 
 	private String queryType = "other";
 	private int startRow=1;
@@ -93,7 +96,7 @@ public abstract class JdbcQuerySenderBase extends JdbcFacade implements ISender 
 
 	
 	/**
-	 * returns <code>true</code> if the {@link setQueryType(String) queryType} is set to "select".
+	 * returns <code>true</code> if the {@link #setQueryType(String) queryType} is set to "select".
 	 * @see nl.nn.adapterframework.core.ISender#isSynchronous()
 	 */
 	public boolean isSynchronous() {

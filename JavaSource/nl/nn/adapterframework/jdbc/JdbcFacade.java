@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcFacade.java,v $
- * Revision 1.1  2004-03-24 13:28:20  L190409
+ * Revision 1.2  2004-03-26 09:50:52  NNVZNL01#L180564
+ * Updated javadoc
+ *
+ * Revision 1.1  2004/03/24 13:28:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * initial version
  *
  */
@@ -23,12 +26,12 @@ import org.apache.log4j.Logger;
 /**
  * Provides functions for JDBC connections.
  * 
- * <p>$Id: JdbcFacade.java,v 1.1 2004-03-24 13:28:20 L190409 Exp $</p>
+ * <p>$Id: JdbcFacade.java,v 1.2 2004-03-26 09:50:52 NNVZNL01#L180564 Exp $</p>
  * @author  Gerrit van Brakel
  * @since 	4.1
  */
 public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version="$Id: JdbcFacade.java,v 1.1 2004-03-24 13:28:20 L190409 Exp $";
+	public static final String version="$Id: JdbcFacade.java,v 1.2 2004-03-26 09:50:52 NNVZNL01#L180564 Exp $";
     protected Logger log = Logger.getLogger(this.getClass());
 	
 	private String name;
@@ -47,8 +50,8 @@ protected String getLogPrefix() {
 }
 
 	/**
-	 * Returns either {@link getDatasourceName() datasourceName} or {@link getDatasourceNameXA() datasourceNameXA},
-	 * depending on the value of {@link isTransacted()}.
+	 * Returns either {@link #getDatasourceName() datasourceName} or {@link #getDatasourceNameXA() datasourceNameXA},
+	 * depending on the value of {@link #isTransacted()}.
 	 * If the right one is not specified, the other is used. 
 	 */
 	public String getDataSourceNameToUse() throws JdbcException {
@@ -126,7 +129,7 @@ protected String getLogPrefix() {
 	}
 
 	/**
-	 * Sets the JNDI name of datasource that is used when {@link isTransacted()} returns <code>false</code> 
+	 * Sets the JNDI name of datasource that is used when {@link #isTransacted()} returns <code>false</code> 
 	 */
 	public void setDatasourceName(String datasourceName) {
 		this.datasourceName = datasourceName;
@@ -135,7 +138,7 @@ protected String getLogPrefix() {
 		return datasourceName;
 	}
 	/**
-	 * Sets the JNDI name of datasource that is used when {@link isTransacted()} returns <code>true</code> 
+	 * Sets the JNDI name of datasource that is used when {@link #isTransacted()} returns <code>true</code> 
 	 */
 	public void setDatasourceNameXA(String datasourceNameXA) {
 		this.datasourceNameXA = datasourceNameXA;
@@ -146,7 +149,7 @@ protected String getLogPrefix() {
 
 	/**
 	 * Sets the user name that is used to open the database connection.
-	 * If a value is set, it will be used together with the (@link setPassword(String) specified password} 
+	 * If a value is set, it will be used together with the (@link #setPassword(String) specified password} 
 	 * to open the connection to the database.
 	 */
 	public void setUsername(String username) {
@@ -158,7 +161,7 @@ protected String getLogPrefix() {
 
 	/**
 	 * Sets the password that is used to open the database connection.
-	 * @see setPassword(String)
+	 * @see #setPassword(String)
 	 */
 	public void setPassword(String password) {
 		this.password = password;

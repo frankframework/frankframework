@@ -31,7 +31,7 @@ public class IfsaFacade {
 
     private String name;
 	private int ackMode = 1;
-	public static final String version="$Id: IfsaFacade.java,v 1.2 2004-03-11 09:18:33 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: IfsaFacade.java,v 1.3 2004-03-26 09:50:51 NNVZNL01#L180564 Exp $";
  
     /**
      * the Queue object, as looked up from <code>serviceName</code>
@@ -391,7 +391,7 @@ public boolean isClient() throws IfsaException {
  * Indicates whether the object at hand represents a Client (returns <code>False</code>) or
  * a Server (returns <code>True</code>).
  *
- * @see isClient()
+ * @see #isClient()
  */
 public boolean isServer() throws IfsaException {
 	return ! isClient();

@@ -1,6 +1,9 @@
 /*
  * $Log: TransactionalStorage.java,v $
- * Revision 1.1  2004-03-23 17:26:40  L190409
+ * Revision 1.2  2004-03-26 09:50:52  NNVZNL01#L180564
+ * Updated javadoc
+ *
+ * Revision 1.1  2004/03/23 17:26:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * initial version
  *
  */
@@ -25,24 +28,22 @@ import org.apache.log4j.Logger;
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setMaxThreads(int) maxThreads}</td><td>maximum number of threads that may call {@link #doPipe(Object, PipeLineSession)} simultaneously</td><td>0 (unlimited)</td></tr>
  * <tr><td>{@link #setForwardName(String) forwardName}</td>  <td>name of forward returned upon completion</td><td>"success"</td></tr>
- * <tr><td>{@link #setResultOnTimeOut(String) resultOnTimeOut}</td><td>result returned when no return-message was received within the timeout limit</td><td>"receiver timed out"</td></tr>
  * <tr><td><code>sender.*</td><td>any attribute of the sender instantiated by descendant classes</td><td>&nbsp;</td></tr>
  * </table>
  * <table border="1">
  * <tr><th>nested elements</th><th>description</th></tr>
- * <tr><td>{@link IXASender sender}</td><td>specification of sender to send messages with</td></tr>
- * <tr><td>{@link IXACorrelatedPullingListener listener}</td><td>specification of listener to listen to for replies</td></tr>
+ * <tr><td>{@link ISender sender}</td><td>specification of sender to send messages with</td></tr>
+ * <tr><td>{@link ICorrelatedPullingListener listener}</td><td>specification of listener to listen to for replies</td></tr>
  * </table>
  * </p>
- * <p>$Id: TransactionalStorage.java,v 1.1 2004-03-23 17:26:40 L190409 Exp $</p>
+ * <p>$Id: TransactionalStorage.java,v 1.2 2004-03-26 09:50:52 NNVZNL01#L180564 Exp $</p>
  * @author Gerrit van Brakel
  * @since 4.1
  */
 
 public class TransactionalStorage implements ITransactionalStorage {
-	public static final String version="$Id: TransactionalStorage.java,v 1.1 2004-03-23 17:26:40 L190409 Exp $";
+	public static final String version="$Id: TransactionalStorage.java,v 1.2 2004-03-26 09:50:52 NNVZNL01#L180564 Exp $";
     protected Logger log = Logger.getLogger(this.getClass());
 	
     private ISender sender=null;

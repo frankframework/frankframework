@@ -1,6 +1,9 @@
 /*
  * $Log: JtaUtil.java,v $
- * Revision 1.1  2004-03-23 17:14:31  L190409
+ * Revision 1.2  2004-03-26 09:50:52  NNVZNL01#L180564
+ * Updated javadoc
+ *
+ * Revision 1.1  2004/03/23 17:14:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * initial version
  *
  */
@@ -16,12 +19,12 @@ import javax.transaction.UserTransaction;
 
 /**
  * Utility functions for JTA 
- * <p>$Id: JtaUtil.java,v 1.1 2004-03-23 17:14:31 L190409 Exp $</p>
+ * <p>$Id: JtaUtil.java,v 1.2 2004-03-26 09:50:52 NNVZNL01#L180564 Exp $</p>
  * @author Gerrit van Brakel
  * @since  4.1
  */
 public class JtaUtil {
-	private static final String version="$Id: JtaUtil.java,v 1.1 2004-03-23 17:14:31 L190409 Exp $";
+	private static final String version="$Id: JtaUtil.java,v 1.2 2004-03-26 09:50:52 NNVZNL01#L180564 Exp $";
     private static UserTransaction utx;
 
 	/**
@@ -46,7 +49,7 @@ public class JtaUtil {
 	}
 
 	/**
-	 * Convenience function for {@link displayTransactionStatus(int status)}
+	 * Convenience function for {@link #displayTransactionStatus(int status)}
 	 */
 	public static String displayTransactionStatus(Transaction tx) {
 		try {
@@ -56,7 +59,7 @@ public class JtaUtil {
 		}
 	}
 	/**
-	 * Convenience function for {@link displayTransactionStatus(int status)}
+	 * Convenience function for {@link #displayTransactionStatus(int status)}
 	 */
 	public static String displayTransactionStatus(UserTransaction utx) {
 		try {
@@ -67,7 +70,7 @@ public class JtaUtil {
 	}
 	
 	/**
-	 * Convenience function for {@link displayTransactionStatus(int status)}
+	 * Convenience function for {@link #displayTransactionStatus(int status)}
 	 */
 	public static String displayTransactionStatus(TransactionManager tm) {
 		try {
@@ -88,7 +91,7 @@ public class JtaUtil {
 	 * Returns a UserTransaction object, that is used by Receivers and PipeLines to demarcate transactions. 
 	 * @param ctx
 	 * @param UserTransactionUrl
-	 * @return
+	 * @return UserTransaction
 	 * @throws NamingException
 	 */
 	public static UserTransaction getUserTransaction(Context ctx, String UserTransactionUrl) throws NamingException {
