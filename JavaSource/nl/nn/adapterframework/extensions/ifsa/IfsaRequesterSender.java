@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaRequesterSender.java,v $
- * Revision 1.8  2004-07-22 11:03:02  L190409
+ * Revision 1.9  2004-08-26 11:12:00  NNVZNL01#L180564
+ * Aangepast dat wanneer niet synchroon het messageid wordt teruggeven
+ *
+ * Revision 1.8  2004/07/22 11:03:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved logging of non-TextMessages
  *
  * Revision 1.7  2004/07/20 13:28:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -68,7 +71,7 @@ import com.ing.ifsa.IFSATimeOutMessage;
  * @since 4.2
  */
 public class IfsaRequesterSender extends IfsaFacade implements ISender {
-	public static final String version="$Id: IfsaRequesterSender.java,v 1.8 2004-07-22 11:03:02 L190409 Exp $";
+	public static final String version="$Id: IfsaRequesterSender.java,v 1.9 2004-08-26 11:12:00 NNVZNL01#L180564 Exp $";
   
 	public IfsaRequesterSender() {
   		super(false); // instantiate IfsaFacade as a requestor	
@@ -174,6 +177,8 @@ public class IfsaRequesterSender extends IfsaFacade implements ISender {
 				result=msg.getText();
 				log.debug(getLogPrefix()+"reply received");
 					
+		    } else{
+		    	 result=sentMessage.getJMSMessageID(); 
 		    }
 		} catch (JMSException e) {
 			throw new SenderException(getLogPrefix()+"caught JMSException in sendMessage()",e);
