@@ -1,7 +1,5 @@
 package nl.nn.adapterframework.core;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.builder.ToStringStyle;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang.exception.NestableException;
 
@@ -9,11 +7,11 @@ import org.apache.commons.lang.exception.NestableException;
  * Base Exception with exhaustive toString() and compact getMessage()
  * @author Gerrit van Brakel
  * 
- * <p>$Id: IbisException.java,v 1.2 2004-02-04 10:02:00 a1909356#db2admin Exp $</p>
+ * <p>$Id: IbisException.java,v 1.3 2004-03-23 15:25:00 NNVZNL01#L180564 Exp $</p>
  *
  */
 public class IbisException extends NestableException {
-		public static final String version="$Id: IbisException.java,v 1.2 2004-02-04 10:02:00 a1909356#db2admin Exp $";
+		public static final String version="$Id: IbisException.java,v 1.3 2004-03-23 15:25:00 NNVZNL01#L180564 Exp $";
 
 public IbisException() {
 	super();
@@ -28,7 +26,7 @@ public IbisException(Throwable arg1) {
 	super(arg1);
 }
     public String getMessage() {
-	    String messages[]=getMessages();
+	    String messages[]=getMessages(); 
 	    String last_message=null;
 		String result=null;
 	    
@@ -45,16 +43,24 @@ public IbisException(Throwable arg1) {
 	    if (result==null) {
 		    result=toString();
 	    }
+	   
 	    return result;
     }
-	public String toString() {
+    
+    
+/**
+ * Retrieves the messages of all exceptions
+ */
+public String toString() {
 		String result="";
 		Throwable t;
 		String additionalMethodNames[] = { "getLinkedException" };
-
+ 
 		for (t=this; t!=null; t=ExceptionUtils.getCause(t,additionalMethodNames)) {
-			result += "\nclass: "+t.getClass().getName()+"\nmessage:"+t.getMessage()+"\nfields:\n"+ToStringBuilder.reflectionToString(t,ToStringStyle.MULTI_LINE_STYLE)+"\n";
+//			result += "\nclass: "+t.getClass().getName()+"\nmessage:"+t.getMessage()+"\nfields:\n"+ToStringBuilder.reflectionToString(t,ToStringStyle.MULTI_LINE_STYLE)+"\n";
+			result += "\nclass: "+t.getClass().getName()+"\nmessage:"+t.getMessage()+"\n";
 		}
+		
 	return result;
  }
 }
