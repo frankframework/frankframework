@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.12  2004-08-19 09:07:02  a1909356#db2admin
+ * Revision 1.13  2005-01-13 08:55:15  L190409
+ * Make threadContext-attributes available in PipeLineSession
+ *
+ * Revision 1.12  2004/08/19 09:07:02  unknown <unknown@ibissource.org>
  * Add not-null validation for message
  *
  * Revision 1.11  2004/07/20 13:04:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -96,7 +99,7 @@ import javax.transaction.UserTransaction;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version="$Id: PipeLine.java,v 1.12 2004-08-19 09:07:02 a1909356#db2admin Exp $";
+	public static final String version="$Id: PipeLine.java,v 1.13 2005-01-13 08:55:15 L190409 Exp $";
     private Logger log = Logger.getLogger(this.getClass());
 	private Adapter adapter; // for logging purposes, and for transaction managing
 	private boolean transacted=false;
@@ -227,9 +230,11 @@ public class PipeLine {
 	 * @return the result of the processing.
 	 * @throws PipeRunException when something went wrong in the pipes.
 	 */
-	public PipeLineResult process(String messageId, String message) throws PipeRunException {
+	public PipeLineResult process(String messageId, String message, PipeLineSession pipeLineSession) throws PipeRunException {
 	
-	    PipeLineSession pipeLineSession= new PipeLineSession();
+		if (pipeLineSession==null) {
+			pipeLineSession= new PipeLineSession();
+		}
 		// reset the PipeLineSession and store the message and its id in the session
 		if (messageId==null) {
 				messageId=Misc.createSimpleUUID();

@@ -1,6 +1,9 @@
 /*
  * $Log: Adapter.java,v $
- * Revision 1.14  2004-09-08 14:14:41  L190409
+ * Revision 1.15  2005-01-13 08:55:15  L190409
+ * Make threadContext-attributes available in PipeLineSession
+ *
+ * Revision 1.14  2004/09/08 14:14:41  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * adjusted error logging
  *
  * Revision 1.13  2004/08/19 07:16:21  unknown <unknown@ibissource.org>
@@ -89,7 +92,7 @@ import javax.transaction.UserTransaction;
  */
 
 public class Adapter extends JNDIBase implements Runnable, IAdapter {
-	public static final String version = "$Id: Adapter.java,v 1.14 2004-09-08 14:14:41 L190409 Exp $";
+	public static final String version = "$Id: Adapter.java,v 1.15 2005-01-13 08:55:15 L190409 Exp $";
 	private Vector receivers = new Vector();
 	private long lastMessageDate = 0;
 	private PipeLine pipeline;
@@ -443,6 +446,11 @@ public class Adapter extends JNDIBase implements Runnable, IAdapter {
 	 *
 	 */
 	public PipeLineResult processMessage(String messageId, String message) {
+		return processMessage(messageId, message, null);
+	}
+	
+	public PipeLineResult processMessage(String messageId, String message, PipeLineSession pipeLineSession) {
+
 		PipeLineResult result = new PipeLineResult();
 
 		long startTime = System.currentTimeMillis();
@@ -470,7 +478,7 @@ public class Adapter extends JNDIBase implements Runnable, IAdapter {
 		}
 
 		try {
-			result = pipeline.process(messageId, message);
+			result = pipeline.process(messageId, message,pipeLineSession);
 			if (log.isDebugEnabled()) {
 				log.debug(
 					"Adapter ["

@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaProviderListener.java,v $
- * Revision 1.6  2004-09-22 07:03:36  NNVZNL01#L180564
+ * Revision 1.7  2005-01-13 08:55:37  L190409
+ * Make threadContext-attributes available in PipeLineSession
+ *
+ * Revision 1.6  2004/09/22 07:03:36  Johan Verrips <johan.verrips@ibissource.org>
  * Added logstatements for closing receiver and session
  *
  * Revision 1.5  2004/09/22 06:48:08  Johan Verrips <johan.verrips@ibissource.org>
@@ -33,10 +36,12 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.INamedObject;
 
+import com.ing.ifsa.IFSAMessage;
 import com.ing.ifsa.IFSAPoisonMessage;
 import com.ing.ifsa.IFSAHeader;
+import com.ing.ifsa.IFSAService;
 import com.ing.ifsa.IFSAServiceName;
-import com.ing.ifsa.IFSATextMessage;
+import com.ing.ifsa.IFSAServicesProvided;
 
 import java.util.HashMap;
 import java.util.Date;
@@ -74,7 +79,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * @since 4.2
  */
 public class IfsaProviderListener extends IfsaFacade implements IPullingListener, INamedObject {
-	public static final String version="$Id: IfsaProviderListener.java,v 1.6 2004-09-22 07:03:36 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: IfsaProviderListener.java,v 1.7 2005-01-13 08:55:37 L190409 Exp $";
 
     private final static String THREAD_CONTEXT_SESSION_KEY = "session";
     private final static String THREAD_CONTEXT_RECEIVER_KEY = "receiver";
@@ -89,10 +94,20 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 	public void open() throws ListenerException {
 		try {
 			openService();
-		} catch (IfsaException e) {
+			
+			IFSAServicesProvided services = getServiceQueue().getIFSAServicesProvided();
+
+			for (int i = 0; i < services.getNumberOfServices(); i++) {
+				IFSAServiceName service = services.getService(i);
+				
+				String protocol=(service.IsFireAndForgetService() ? "Fire and Forget" : "Request/Reply");
+				log.info(getLogPrefix()+"providing ServiceName ["+service.getServiceName()+"] ServiceGroup [" + service.getServiceGroup()+"] protocol [" + protocol+"] ServiceVersion [" + service.getServiceVersion()+"]");				
+			}
+		} catch (Exception e) {
 			throw new ListenerException(getLogPrefix(),e);
 		}
 	}
+	
 	public HashMap openThread() throws ListenerException {
 		HashMap threadContext = new HashMap();
 	
@@ -222,8 +237,9 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 	    Date dTimeStamp = null;
 	    Destination replyTo = null;
 	    String messageText = null;
-	    IFSAServiceName ifsaServiceDestination = null;
-	    String serviceDestination = null;
+		String fullIfsaServiceName = null;
+	    IFSAServiceName requestedService = null;
+	    String ifsaServiceName=null, ifsaGroup=null, ifsaOccurrence=null, ifsaVersion=null;
 	    try {
 	        if (message.getJMSDeliveryMode() == DeliveryMode.NON_PERSISTENT) {
 	            mode = "NON_PERSISTENT";
@@ -279,24 +295,25 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 	    // retrieve ifsaServiceDestination
 	    // --------------------------
 	    try {
-	        ifsaServiceDestination = ((IFSATextMessage) message).getService();
-	        serviceDestination = ToStringBuilder.reflectionToString(ifsaServiceDestination);
+			fullIfsaServiceName = ((IFSAMessage) message).getServiceString();
+			requestedService = ((IFSAMessage) message).getService();
+			
+			ifsaServiceName = requestedService.getServiceName();
+			ifsaGroup = requestedService.getServiceGroup();
+			ifsaOccurrence = requestedService.getServiceOccurance();
+			ifsaVersion = requestedService.getServiceVersion();
+			
 	    } catch (JMSException e) {
 	        log.error(getLogPrefix() + "got error getting serviceDestination", e);
 	    }
 	
-	    log.info(getLogPrefix()+ "got message with JMSDeliveryMode=["
-	            + mode
-	            + "] \n  JMSMessageID=["
-	            + id
-	            + "] \n  JMSCorrelationID=["
-	            + cid
-	            + "] \n  Timestamp=["
-	            + dTimeStamp.toString()
-	            + "] \n  ReplyTo=["
-	            + ((replyTo == null) ? "none" : replyTo.toString())
-	            + "] \n Message=["
-	            + message.toString()
+	    log.info(getLogPrefix()+ "got message for [" + fullIfsaServiceName
+	    		+ "] with JMSDeliveryMode=[" + mode
+	            + "] \n  JMSMessageID=[" + id
+	            + "] \n  JMSCorrelationID=["+ cid
+	            + "] \n  Timestamp=[" + dTimeStamp.toString()
+	            + "] \n  ReplyTo=[" + ((replyTo == null) ? "none" : replyTo.toString())
+	            + "] \n Message=[" + message.toString()
 	            + "]");
 	
 	    threadContext.put("id", id);
@@ -304,7 +321,11 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 	    threadContext.put("timestamp", dTimeStamp);
 	    threadContext.put("replyTo", replyTo);
 	    threadContext.put("messageText", messageText);
-	    threadContext.put("serviceDestination", serviceDestination);
+	    threadContext.put("fullIfsaServiceName", fullIfsaServiceName);
+	    threadContext.put("ifsaServiceName", ifsaServiceName);
+	    threadContext.put("ifsaGroup", ifsaGroup);
+	    threadContext.put("ifsaOccurrence", ifsaOccurrence);
+	    threadContext.put("ifsaVersion", ifsaVersion);
 	    return id;
 	}
 	/**

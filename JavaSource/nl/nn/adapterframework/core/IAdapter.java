@@ -1,6 +1,9 @@
 /*
  * $Log: IAdapter.java,v $
- * Revision 1.6  2004-08-09 08:43:46  L190409
+ * Revision 1.7  2005-01-13 08:55:15  L190409
+ * Make threadContext-attributes available in PipeLineSession
+ *
+ * Revision 1.6  2004/08/09 08:43:46  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added formatErrorMessage()
  *
  * Revision 1.5  2004/06/16 12:34:46  Johan Verrips <johan.verrips@ibissource.org>
@@ -30,7 +33,7 @@ import javax.transaction.UserTransaction;
  * @version Id
  **/
 public interface IAdapter extends IManagable {
-	public static final String version="$Id: IAdapter.java,v 1.6 2004-08-09 08:43:46 L190409 Exp $";
+	public static final String version="$Id: IAdapter.java,v 1.7 2005-01-13 08:55:15 L190409 Exp $";
   /**
    * Instruct the adapter to configure itself. The adapter will call the
    * pipeline to configure itself, the pipeline will call the individual
@@ -47,6 +50,8 @@ public interface IAdapter extends IManagable {
 	public IReceiver getReceiverByName(String receiverName);
 	public Iterator getReceiverIterator();
 	public PipeLineResult processMessage(String correlationID, String message);
+	public PipeLineResult processMessage(String correlationID, String message, PipeLineSession pipeLineSession);
+
   	public void registerPipeLine (PipeLine pipeline) throws ConfigurationException;
   	public void setName(String name);
   	public boolean isAutoStart();

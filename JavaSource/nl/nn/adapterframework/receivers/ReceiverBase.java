@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.6  2004-10-12 15:14:11  L190409
+ * Revision 1.7  2005-01-13 08:56:04  L190409
+ * Make threadContext-attributes available in PipeLineSession
+ *
+ * Revision 1.6  2004/10/12 15:14:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed unused code
  *
  * Revision 1.5  2004/08/25 09:11:33  unknown <unknown@ibissource.org>
@@ -38,6 +41,7 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.HasSender;
 import nl.nn.adapterframework.core.PipeLineResult;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.util.Counter;
 import nl.nn.adapterframework.util.JtaUtil;
@@ -117,7 +121,7 @@ import javax.transaction.UserTransaction;
  */
 public class ReceiverBase
     implements IReceiver, IReceiverStatistics, Runnable, IMessageHandler, IbisExceptionListener, HasSender {
-	public static final String version="$Id: ReceiverBase.java,v 1.6 2004-10-12 15:14:11 L190409 Exp $";
+	public static final String version="$Id: ReceiverBase.java,v 1.7 2005-01-13 08:56:04 L190409 Exp $";
 	protected Logger log = Logger.getLogger(this.getClass());
  
 	private String returnIfStopped="";
@@ -687,7 +691,11 @@ public class ReceiverBase
 			if (isTransacted()) {
 				prepareToProcessMessageTransacted(utx,id,message);
 			}
-			PipeLineResult pipeLineResult = adapter.processMessage(id, message);
+			PipeLineSession pipelineSession = new PipeLineSession();
+			if (threadContext!=null) {
+					pipelineSession.putAll(threadContext);
+			}
+			PipeLineResult pipeLineResult = adapter.processMessage(id, message, pipelineSession);
 			result=pipeLineResult.getResult();
 			
 			try {
