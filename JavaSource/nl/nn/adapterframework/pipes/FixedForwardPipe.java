@@ -1,6 +1,9 @@
 /*
  * $Log: FixedForwardPipe.java,v $
- * Revision 1.4  2004-03-26 10:42:34  NNVZNL01#L180564
+ * Revision 1.5  2004-10-19 13:52:31  L190409
+ * super.configure in configure()
+ *
+ * Revision 1.4  2004/03/26 10:42:34  Johan Verrips <johan.verrips@ibissource.org>
  * added @version tag in javadoc
  *
  * Revision 1.3  2004/03/24 14:04:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -35,7 +38,7 @@ import nl.nn.adapterframework.core.PipeForward;
  * @author Gerrit van Brakel
  */
 public class FixedForwardPipe extends AbstractPipe {
- 	public static final String version="$Id: FixedForwardPipe.java,v 1.4 2004-03-26 10:42:34 NNVZNL01#L180564 Exp $";
+ 	public static final String version="$Id: FixedForwardPipe.java,v 1.5 2004-10-19 13:52:31 L190409 Exp $";
 
     private String forwardName = "success";
     private PipeForward forward;
@@ -43,6 +46,7 @@ public class FixedForwardPipe extends AbstractPipe {
      * checks for correct configuration of forward
      */
     public void configure() throws ConfigurationException {
+    	super.configure();
         forward = findForward(forwardName);
         if (forward == null)
             throw new ConfigurationException(getLogPrefix(null) + "has no forward with name [" + forwardName + "]");
