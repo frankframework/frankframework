@@ -23,18 +23,16 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.JmxUtils;
 
 /**
+ * Jmx helper class, to make JMX MBeans from {@link nl.nn.adapterframework.core.Adapter Adapters}. 
  * @author Johan Verrips
- *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * @version Id
+ * @since 4.1.1
+
  */
 public class JmxMbeanHelper {
-
-	private static Logger log = Logger.getLogger("AdapterMBean");
-	/**
-	 * 
-	 */
-	public JmxMbeanHelper() {
+	public static final String version="$Id: JmxMbeanHelper.java,v 1.2 2004-04-26 07:08:54 NNVZNL01#L180564 Exp $";
+ 	private static Logger log = Logger.getLogger("AdapterMBean");
+		public JmxMbeanHelper() {
 		super();
 	}
 
