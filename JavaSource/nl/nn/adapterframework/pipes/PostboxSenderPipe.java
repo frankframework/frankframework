@@ -1,6 +1,9 @@
 /*
  * $Log: PostboxSenderPipe.java,v $
- * Revision 1.3  2004-08-23 13:10:09  L190409
+ * Revision 1.4  2004-10-05 11:38:14  L190409
+ * deprecated, all functionality is in GenericMessageSendingPipe
+ *
+ * Revision 1.3  2004/08/23 13:10:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated JavaDoc
  *
  * Revision 1.2  2004/05/21 10:47:30  unknown <unknown@ibissource.org>
@@ -12,22 +15,6 @@
  */
 package nl.nn.adapterframework.pipes;
 
-
-import java.util.ArrayList;
-import java.util.HashMap;
-
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.HasSender;
-import nl.nn.adapterframework.core.IPostboxSender;
-import nl.nn.adapterframework.core.ISender;
-import nl.nn.adapterframework.core.IbisException;
-import nl.nn.adapterframework.core.ParameterValueResolver;
-import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.core.PipeRunException;
-import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.core.PipeStartException;
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
 
 /**
  * Sends a message using a {@link ISender} and optionally receives a reply from the same sender, or from a {@link nl.nn.adapterframework.core.ICorrelatedPullingListener listener}.
@@ -56,88 +43,8 @@ import nl.nn.adapterframework.core.TimeOutException;
   * 
  * @author John Dekker
  * @version Id
+ * @deprecated please use plain GenericMessageSendingPipe, that has same functionality (since 4.2d)
  */
-public class PostboxSenderPipe  extends FixedForwardPipe implements HasSender  {
-	public static final String version="$Id: PostboxSenderPipe.java,v 1.3 2004-08-23 13:10:09 L190409 Exp $";
-	private IPostboxSender sender = null;
-		
-	public void configure() throws ConfigurationException {
-		super.configure();
-
-		if (getSender() == null) {
-				throw new ConfigurationException(getLogPrefix(null) + "no sender defined ");
-		}
-		String senderName = getSender().getName();
-		if (senderName == null || senderName.equals("")) {
-			getSender().setName(getName() + "-sender");
-		}
-		getSender().configure();
-	}
-
-	protected String sendMessage(Object input, PipeLineSession session, String correlationID, ISender sender, HashMap threadContext)
-		throws SenderException {
-		
-		try {
-			ParameterValueResolver resolver = new ParameterValueResolver(input, session);
-			ArrayList paramValues = resolver.getValues(getParameterList());
-			return ((IPostboxSender)getSender()).sendMessage(correlationID, (String)input, paramValues);
-		}
-		catch(SenderException e) {
-			throw e;
-		}
-		catch(IbisException e) {
-			throw new SenderException("Error while sending message in pipe " + getName(), e);			
-		}
-		 
-	}
-
-	public ISender getSender() {
-		return sender;
-	}
-
-	public void setSender(IPostboxSender sender) {
-		this.sender = sender;
-	}
-
-	public void start() throws PipeStartException {
-		try {
-			getSender().open();
-		} 
-		catch (Exception e) {
-			throw new PipeStartException(e);
-		}
-	}
-
-	public void stop() {
-		try {
-			getSender().close();
-		} 
-		catch (Exception e) {
-			log.warn(getLogPrefix(null) + " exception closing sender", e);
-		}
-	}
-
-	public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRunException {
-		if (! (input instanceof String)) {
-			throw new PipeRunException(this, "String expected, got a [" + input.getClass().getName() + "]");
-		}
-
-		try {
-			HashMap threadContext=new HashMap();
-			String correlationID = session.getMessageId();
-
-			// sendResult has a messageID for async senders, the result for sync senders
-			String result = sendMessage(input, session, correlationID, getSender(), threadContext);
-
-			if (log.isInfoEnabled()) {
-					log.info(getLogPrefix(session) + "sending message to [" + getSender().getName());
-			} 
-			
-			return new PipeRunResult(getForward(), result);
-		} 
-		catch (Exception e) {
-			throw new PipeRunException( this, getLogPrefix(session) + "caught exception", e);
-		} 
-	}
-
+public class PostboxSenderPipe extends GenericMessageSendingPipe  {
+	public static final String version="$Id: PostboxSenderPipe.java,v 1.4 2004-10-05 11:38:14 L190409 Exp $";
 }
