@@ -1,6 +1,9 @@
 /*
  * $Log: ParameterValue.java,v $
- * Revision 1.1  2004-10-05 09:52:25  L190409
+ * Revision 1.2  2004-10-12 15:08:07  L190409
+ * added asCollection() method
+ *
+ * Revision 1.1  2004/10/05 09:52:25  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * moved parameter code  to package parameters
  *
  * Revision 1.1  2004/05/21 07:58:47  unknown <unknown@ibissource.org>
@@ -8,6 +11,14 @@
  *
  */
 package nl.nn.adapterframework.parameters;
+
+import java.util.Collection;
+
+import org.w3c.dom.Element;
+
+import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.util.DomBuilderException;
+import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * 
@@ -111,5 +122,17 @@ public class ParameterValue {
 	 */
 	public String asStringValue(String defaultValue) {
 		return value != null ? value.toString() : defaultValue;
+	}
+
+	public Collection asCollection() throws ParameterException {
+		if (value == null) {
+			return null;
+		}
+		try {
+			Element holder = XmlUtils.buildElement("<root>"+value+"</root>");
+			return XmlUtils.getChildTags(holder, "*");
+		} catch (DomBuilderException e) {
+			throw new ParameterException("Parameter ["+getDefinition().getName()+"] cannot create Collection from ["+value+"]");
+		}
 	}
 }

@@ -1,6 +1,9 @@
 /*
  * $Log: Parameter.java,v $
- * Revision 1.1  2004-10-05 09:51:17  L190409
+ * Revision 1.2  2004-10-12 15:06:48  L190409
+ * added asCollection() method
+ *
+ * Revision 1.1  2004/10/05 09:51:17  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * moved to package parameters
  * added getValue()
  *
@@ -11,14 +14,19 @@
  */
 package nl.nn.adapterframework.parameters;
 
+import java.io.IOException;
+import java.net.URL;
+
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -33,15 +41,55 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author Richard Punt / Gerrit van Brakel
  */
 public class Parameter implements INamedObject {
-	public static final String version="$Id: Parameter.java,v 1.1 2004-10-05 09:51:17 L190409 Exp $";
+	public static final String version="$Id: Parameter.java,v 1.2 2004-10-12 15:06:48 L190409 Exp $";
+	protected Logger log = Logger.getLogger(this.getClass());
 
 	private String name = null;
 	private String type = null;
-	private String defaultValue = null;
 	private String sessionKey = null;
-	private String xpathExpression = null;
-	private TransformerPool transformerPool = null;
+	private String xpathExpression = null; 
+	private String styleSheetName = null; 
+	private String defaultValue = null;
 
+	private TransformerPool transformerPool = null;
+	private boolean configured = false;
+
+	public void configure() throws ConfigurationException {
+		if (!StringUtils.isEmpty(getSessionKey())) {
+			if (!StringUtils.isEmpty(getXpathExpression()) || !StringUtils.isEmpty(styleSheetName)) {
+				throw new ConfigurationException("Parameter ["+getName()+"] can have only one of sessionKey ["+getSessionKey()+"], xpathExpression ["+getXpathExpression()+"] and styleSheetName ["+styleSheetName+"]");
+			}
+		} else {
+			if (!StringUtils.isEmpty(getXpathExpression())) {
+				if (!StringUtils.isEmpty(styleSheetName)) {
+					throw new ConfigurationException("Parameter ["+getName()+"] cannot have both an xpathExpression and a styleSheetName specified");
+				}
+				try {
+					String xsltSource;
+					if ("xml".equalsIgnoreCase(getType())) {
+						xsltSource = XmlUtils.createXPathEvaluatorSource(getXpathExpression(),"xml"); 
+					} else {
+						xsltSource = XmlUtils.createXPathEvaluatorSource(getXpathExpression(),"text"); 
+					}
+					transformerPool = new TransformerPool(xsltSource);
+				} 
+				catch (TransformerConfigurationException te) {
+					throw new ConfigurationException("Parameter ["+getName()+"] got error creating transformer from xpathExpression [" + getXpathExpression() + "]", te);
+				}
+			} 
+			if (!StringUtils.isEmpty(styleSheetName)) {
+				URL styleSheetUrl = ClassUtils.getResourceURL(this, styleSheetName); 
+				try {
+					transformerPool = new TransformerPool(styleSheetUrl);
+				} catch (IOException e) {
+					throw new ConfigurationException("Parameter ["+getName()+"] cannot retrieve ["+ styleSheetName + "]", e);
+				} catch (TransformerConfigurationException te) {
+					throw new ConfigurationException("Parameter ["+getName()+"] got error creating transformer from [" + styleSheetUrl.toString() + "]", te);
+				}
+			}
+		}
+		configured = true;
+	}
 
 	/**
 	 * determines the raw value 
@@ -51,29 +99,42 @@ public class Parameter implements INamedObject {
 	 */
 	public Object getValue(ParameterResolutionContext r) throws ParameterException {
 		Object result = null;
+		if (!configured) {
+			throw new ParameterException("Parameter ["+getName()+"] not configured");
+		}
 		if (StringUtils.isNotEmpty(getSessionKey())) {
 			result=r.getSession().get(getSessionKey());
 		}
-		else if (getTransformerPool() != null) {
-			Transformer t;
-			try {
-				t = getTransformerPool().getTransformer();
+		else {
+			TransformerPool pool = getTransformerPool();
+			if (pool != null) {
+				Transformer t;
 				try {
-					result = XmlUtils.transformXml(t, r.getInputSource());
-				} catch (Exception e) {
+					t = pool.getTransformer();
 					try {
-						getTransformerPool().invalidateTransformer(t);
-					} catch (Exception ee) {
-						// ignore silently...
+						result = XmlUtils.transformXml(t, r.getInputSource());
+					} catch (Exception e) {
+						try {
+							pool.invalidateTransformer(t);
+						} catch (Exception ee) {
+							// ignore silently...
+						}
+						throw new ParameterException("Parameter ["+getName()+"] exception on transformation to get paramtervalue", e);
+					} finally {
+						pool.releaseTransformer(t);
 					}
-					throw new ParameterException("Paremeter ["+getName()+"] exception on transformation to get paramtervalue", e);
+				} catch (TransformerConfigurationException e) {
+					throw new ParameterException("Parameter ["+getName()+"] caught exception while obtaining transformer to extract parameter value", e);
 				}
-			} catch (TransformerConfigurationException e) {
-				throw new ParameterException("Paremeter ["+getName()+"] caught exception while obtaining transformer to extract parameter value", e);
 			}
 		}
+		if (result != null) {
+			log.debug("Parameter ["+getName()+"] resolved to ["+result+"]");
+			return result;
+		}
+		log.debug("Parameter ["+getName()+"] resolved to defaultvalue ["+getDefaultValue()+"]");
 		// if value is null then return specified default value
-		return (result == null) ? getDefaultValue() : result; 
+		return getDefaultValue(); 
 	}
 
 
@@ -134,10 +195,15 @@ public class Parameter implements INamedObject {
 	/**
 	 * @param xpathExpression to extract the parameter value from the (xml formatted) input 
 	 */
-	public void setXpathExpression(String xpathExpression) throws TransformerException {
+	public void setXpathExpression(String xpathExpression) {
 		this.xpathExpression = xpathExpression;
-		if (this.xpathExpression != null)
-			this.transformerPool = new TransformerPool(XmlUtils.createXPathEvaluatorSource(xpathExpression));
+	}
+
+	/**
+	 * Specify the stylesheet to use
+	 */
+	public void setStyleSheetName(String stylesheetName){
+		this.styleSheetName=stylesheetName;
 	}
 
 }
