@@ -1,0 +1,43 @@
+package nl.nn.adapterframework.webcontrol.action;
+
+import nl.nn.adapterframework.scheduler.SchedulerAdapter;
+import org.apache.struts.action.ActionForm;
+import org.apache.struts.action.ActionForward;
+import org.apache.struts.action.ActionMapping;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+
+/**
+ * Retrieves the Scheduler metadata and the jobgroups with there jobs
+ * from the Scheduler.
+ * @author  Johan Verrips
+ */
+
+public final class ShowSchedulerStatus extends ActionBase {
+	public static final String version="$Id: ShowSchedulerStatus.java,v 1.1 2004-02-04 08:36:16 a1909356#db2admin Exp $";
+	
+
+
+    public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response)
+        throws IOException, ServletException {
+
+
+        // Initialize action
+        initAction(request);
+
+        SchedulerAdapter scheduler=new SchedulerAdapter();
+
+	    request.setAttribute("metadata", scheduler.getSchedulerMetaDataToXml());
+        request.setAttribute("jobdata", scheduler.getJobGroupNamesWithJobsToXml());
+
+
+
+        // Forward control to the specified success URI
+        log.debug("forward to success");
+        return (mapping.findForward("success"));
+
+    }
+}

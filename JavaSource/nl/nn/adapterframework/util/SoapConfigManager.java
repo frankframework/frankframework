@@ -1,0 +1,78 @@
+package nl.nn.adapterframework.util;
+
+import org.apache.log4j.Logger;
+import org.apache.soap.Constants;
+import org.apache.soap.SOAPException;
+import org.apache.soap.server.DeploymentDescriptor;
+import org.apache.soap.server.XMLConfigManager;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Hashtable;
+/**
+ * Read-only implementation of org.apache.soap.server.XMLConfigManager.
+ *
+ * Uses resources rather than files as the original XMLConfigManager. The latter does not work
+ * on BEA WebLogic and probably other Containers that do not extract their .war or .ear files,
+ * but run them directly from the archive-file itself.
+ *
+ * <b>Note</b>: Make sure the <code>soap.xml</code>-file is placed in the 'current' directory. This still
+ * needs to be a file, but often only single file per instance is sufficient.
+ *
+ * @author Gerrit van Brakel IOS
+ */
+public class SoapConfigManager extends XMLConfigManager {
+	public static final String version="$Id: SoapConfigManager.java,v 1.1 2004-02-04 08:36:09 a1909356#db2admin Exp $";
+	
+    private Logger log = Logger.getLogger(this.getClass());
+public void loadRegistry() throws SOAPException {
+    URL servicesRegistry;
+    String message;
+    try {
+        servicesRegistry = context.getResource(filename);
+    } catch (MalformedURLException e) {
+	    message = "cannot find URL for registry from resource-name '" + filename + "'";
+	    log.error(message,e);
+        throw new SOAPException(Constants.FAULT_CODE_SERVER, message, e);
+    }
+
+    if (servicesRegistry == null) {
+		message = "cannot find registry from resource-name '" + filename + "'";
+		log.error(message);
+        throw new SOAPException(Constants.FAULT_CODE_SERVER, message);
+    }
+
+    Element element = null;
+    try {
+        Document document = xdb.parse(servicesRegistry.openStream());
+        element = document.getDocumentElement();
+    } catch (Exception e) {
+	    message = "exception while reading servicesRegistry from "+servicesRegistry;
+		log.error(message,e);
+        throw new SOAPException(Constants.FAULT_CODE_SERVER, message, e);
+    }
+    log.info("loading servicesRegistry from "+servicesRegistry);;
+    NodeList nodelist =
+        element.getElementsByTagNameNS(
+            "http://xml.apache.org/xml-soap/deployment",
+            "service");
+    int i = nodelist.getLength();
+    dds = new Hashtable();
+    for (int j = 0; j < i; j++) {
+        Element element1 = (Element) nodelist.item(j);
+        DeploymentDescriptor deploymentdescriptor =
+            DeploymentDescriptor.fromXML(element1);
+        String s = deploymentdescriptor.getID();
+        log.info("deploying service "+s);
+        dds.put(s, deploymentdescriptor);
+    }
+}
+    public void saveRegistry()
+        throws SOAPException
+    {
+        throw new SOAPException(Constants.FAULT_CODE_SERVER, "Will not save services-registry: this is a read-only ConfigManager ");
+    }
+}

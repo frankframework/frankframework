@@ -1,0 +1,225 @@
+package nl.nn.adapterframework.util;
+
+import org.apache.log4j.Logger;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.Constructor;
+import java.net.URL;
+/**
+ * A collection of class management utility methods.
+ * @author Johan Verrips
+ *
+ */
+public class ClassUtils {
+	public static final String version="$Id: ClassUtils.java,v 1.1 2004-02-04 08:36:07 a1909356#db2admin Exp $";
+	
+	private static Logger log = Logger.getLogger("ClassUtils");
+    /**
+     * Return the context classloader.
+     * BL: if this is command line operation, the classloading issues
+     *     are more sane.  During servlet execution, we explicitly set
+     *     the ClassLoader.
+     *
+     * @return The context classloader.
+     */
+    public static ClassLoader getClassLoader() {
+        return Thread.currentThread().getContextClassLoader();
+    }
+  /**
+  * Retrieves the constructor of a class, based on the parameters
+  *
+  **/
+  public static Constructor getConstructorOnType(Class clas,Class[] parameterTypes) {
+    Constructor theConstructor=null;
+    try {
+      theConstructor=clas.getDeclaredConstructor(parameterTypes);
+    } catch (java.lang.NoSuchMethodException E)
+      {System.err.println(E);
+       System.err.println("Class: "+clas.getName());
+         for(int i=0;i<parameterTypes.length;i++) System.err.println("Parameter "+i+" type "+parameterTypes[i].getName());
+
+      }
+  return theConstructor;
+  }
+    /**
+     * Return a resource URL.
+     * BL: if this is command line operation, the classloading issues
+     *     are more sane.  During servlet execution, we explicitly set
+     *     the ClassLoader.
+     *
+     * @return The context classloader.
+     * @deprecated Use getResourceURL().openStream instead.
+     */
+    public static InputStream getResourceAsStream(Class klass, String resource) throws  IOException {
+	    InputStream stream=null;
+	    URL url=getResourceURL(klass, resource);
+     
+ 
+	     stream=url.openStream();
+        return stream;
+         
+    }
+  /**
+     * Get a resource-URL, first from Class then from ClassLoader
+     * if not found with class.
+	 *
+     * @deprecated Use getResourceURL(Object, resource) instead.
+     * 
+     */
+    static public URL getResourceURL(Class klass, String resource)
+    {
+        URL url = null;
+        
+        if (klass == null)
+        {
+            klass = ClassUtils.class;
+        }
+        
+        url = klass.getResource(resource);
+        if (url == null)
+        {
+            url = klass.getClassLoader().getResource(resource);
+        }
+        if (url==null)
+          log.warn("cannot find URL for resource ["+resource+"]");
+        else
+       	  log.debug("resolved resource-string ["+resource+"] to URL ["+url.toString()+"]");
+        return url;
+    }
+  /**
+     * Get a resource-URL, first from Class then from ClassLoader
+     * if not found with class.
+     * 
+     */
+    static public URL getResourceURL(Object obj, String resource)
+    {
+        return getResourceURL(obj.getClass(), resource);
+    }
+    /**
+     * Tests if a class implements a given interface
+     *
+     * @return true if class implements given interface.
+     */
+    public static boolean implementsInterface(Class class1, Class iface) {
+        return iface.isAssignableFrom (class1);
+    }
+    /**
+     * Tests if a class implements a given interface
+     *
+     * @return true if class implements given interface.
+     */
+    public static boolean implementsInterface(String className, String iface) throws Exception {
+        Class class1 = ClassUtils.loadClass (className);
+        Class class2 = ClassUtils.loadClass (iface);
+        return ClassUtils.implementsInterface(class1, class2);
+    }
+    /**
+     * Determine the last modification date for this
+     * class file or its enclosing library
+     *
+     * @param aClass A class whose last modification date is queried
+     * @return The time the given class was last modified
+     * @exception IOException IOError
+     * @exception IllegalArgumentException The class was not loaded from a file
+     * or directory
+     */
+    public static long lastModified(Class aClass)
+        throws IOException, IllegalArgumentException  {
+        URL url = aClass.getProtectionDomain().getCodeSource().getLocation();
+
+        if (!url.getProtocol().equals("file")) {
+            throw new IllegalArgumentException("Class was not loaded from a file url");
+        }
+
+        File directory = new File(url.getFile());
+        if (!directory.isDirectory()) {
+            throw new IllegalArgumentException("Class was not loaded from a directory");
+        }
+
+        String className = aClass.getName();
+        String basename = className.substring(className.lastIndexOf(".") + 1);
+
+        File file = new File(directory, basename + ".class");
+
+        return file.lastModified();
+    }
+    /**
+     * Load a class given its name.
+     * BL: We wan't to use a known ClassLoader--hopefully the heirarchy
+     *     is set correctly.
+     *
+     * @param className A class name
+     * @return The class pointed to by <code>className</code>
+     * @exception ClassNotFoundException If a loading error occurs
+     */
+    public static Class loadClass(String className) throws ClassNotFoundException {
+        return ClassUtils.getClassLoader().loadClass(className);
+    }
+    /**
+     * Create a new instance given a class name. The constructor of the class
+     * does NOT have parameters.
+     *
+     * @param className A class name
+     * @return A new instance
+     * @exception Exception If an instantiation error occurs
+     */
+    public static Object newInstance(String className) throws Exception {
+        return ClassUtils.loadClass(className).newInstance();
+    }
+  /**
+   * creates a new instance of an object, based on the classname as string, the classes
+   * and the actual parameters.
+   */
+  public static Object newInstance(String className, Class[] parameterClasses, Object[] parameterObjects) {
+    // get a class object
+    Class clas = null;
+    try {
+      clas=ClassUtils.loadClass(className);
+    } catch (java.lang.ClassNotFoundException C) {System.err.println(C);}
+
+     Constructor con;
+     con= ClassUtils.getConstructorOnType(clas, parameterClasses);
+     Object theObject=null;
+     try {
+        theObject=con.newInstance(parameterObjects);
+      } catch(java.lang.InstantiationException E) {System.err.println(E);}
+        catch(java.lang.IllegalAccessException A) {System.err.println(A);}
+        catch(java.lang.reflect.InvocationTargetException T) {System.err.println(T);}
+     return theObject;
+
+  }
+/**
+ * Creates a new instance from a class, while it looks for a constructor
+ * that matches the parameters, and initializes the object (by calling the constructor)
+ * Notice: this does not work when the instantiated object uses an interface class
+ * as a parameter, as the class names are, in that case, not the same..
+ *
+ * @param className a class Name
+ * @param parameterObjects the parameters for the constructor
+ * @return A new Instance
+ *
+ **/
+public static Object newInstance(String className, Object[] parameterObjects) {
+    Class parameterClasses[] = new Class[parameterObjects.length];
+    for (int i = 0; i < parameterObjects.length; i++)
+        parameterClasses[i] = parameterObjects[i].getClass();
+    return newInstance(className, parameterClasses, parameterObjects);
+}
+    /**
+     * Gets the absolute pathname of the class file
+     * containing the specified class name, as prescribed
+     * by the current classpath.
+     *
+     * @param aClass A class
+     */
+     public static String which(Class aClass) {
+        String path = null;
+        try {
+            path = aClass.getProtectionDomain().getCodeSource().getLocation().toString();
+        } catch (Throwable t){
+        }
+        return path;
+    }
+}

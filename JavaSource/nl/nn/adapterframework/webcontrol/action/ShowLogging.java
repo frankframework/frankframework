@@ -1,0 +1,66 @@
+package nl.nn.adapterframework.webcontrol.action;
+
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.Dir2Xml;
+import org.apache.struts.action.ActionForm;
+import org.apache.struts.action.ActionForward;
+import org.apache.struts.action.ActionMapping;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+/**
+ * Shows the logging files.
+ * <p>Retrieves the values <code>logging.path</code>
+ * and <code>logging.wildcard</code> to perform a directory listing
+ * that will be shown in the jsp. These values should be stored 
+ * in the deployment specific properties file, as the container
+ * may override the output of logging.</p>
+ * <p>the logging.path variable may be a system variable, e.g.
+ * <code><pre>
+ * logging.path=${log.dir}
+ * <pre></code>
+ * </p>
+ * Creation date: (26-02-2003 12:42:00)
+ * @author Johan Verrips IOS
+ */
+public class ShowLogging extends ActionBase {
+	public static final String version="$Id: ShowLogging.java,v 1.1 2004-02-04 08:36:17 a1909356#db2admin Exp $";
+	
+public ActionForward execute(
+    ActionMapping mapping,
+    ActionForm form,
+    HttpServletRequest request,
+    HttpServletResponse response)
+    throws IOException, ServletException {
+
+    // Initialize action
+    initAction(request);
+    // Retrieve logging directory for browsing
+	String path=AppConstants.getInstance().getResolvedProperty("logging.path");
+	String wildcard=AppConstants.getInstance().getProperty("logging.wildcard");
+    Dir2Xml dx=new Dir2Xml();
+    dx.setPath(path);
+    if (wildcard!=null) dx.setWildCard(wildcard);
+    String listresult;
+    try {
+	    listresult=dx.getDirList();
+    } catch (Exception e) {
+	    log.error("probably a misdefinition in property logging.path", e);
+	    log.warn("returning empty result for directory listing");
+	    listresult="<directory/>";
+    }
+    request.setAttribute("Dir2Xml", listresult);
+
+
+  // Report any errors we have discovered back to the original form
+    if (!errors.isEmpty()) {
+        saveErrors(request, errors);
+    }
+    // Forward control to the specified success URI
+    log.debug("forward to success");
+    return (mapping.findForward("success"));
+
+}
+}

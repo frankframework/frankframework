@@ -1,0 +1,325 @@
+package nl.nn.adapterframework.scheduler;
+
+import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.XmlBuilder;
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+import org.quartz.*;
+import org.quartz.impl.StdSchedulerFactory;
+
+import java.util.Date;
+/**
+ * The SchedulerAdapter is an adapter for the <a href="http://quartz.sourceforge.net">Quartz scheduler</a> <br/>
+ * It transforms the information from the scheduler to XML.
+ * @author  Johan Verrips
+ * @since 4.0
+ * Date: Nov 27, 2003
+ * Time: 8:54:46 PM
+ * To change this template use Options | File Templates.
+ */
+public class SchedulerAdapter {
+	public static final String version="$Id: SchedulerAdapter.java,v 1.1 2004-02-04 08:36:20 a1909356#db2admin Exp $";
+	
+    private Scheduler theScheduler;
+    protected Logger log=Logger.getLogger(this.getClass());
+
+    /**
+     * The constructor gets a scheduler instance from the StdSchedulerFactory.
+     */
+    public SchedulerAdapter(){
+        log=Logger.getLogger(this.getClass());
+         try {
+            setTheScheduler(new StdSchedulerFactory().getScheduler());
+        } catch (Exception e) {
+            log.error(e);
+        }
+    }
+    /**
+     * Get all jobgroups, jobs within this group, the jobdetail and the
+     * associated triggers in XML format.
+     */
+
+    public String getJobGroupNamesWithJobsToXml() {
+        XmlBuilder xbRoot = new XmlBuilder("jobGroups");
+
+        try {
+            // process groups
+            String[] jgnames = theScheduler.getJobGroupNames();
+
+            for (int i = 0; i < jgnames.length; i++) {
+                XmlBuilder el = new XmlBuilder("jobGroup");
+                el.addAttribute("name", jgnames[i]);
+
+                // process jobs within group
+                XmlBuilder jb = new XmlBuilder("jobs");
+                String[] jobNames = theScheduler.getJobNames(jgnames[i]);
+
+                for (int j = 0; j < jobNames.length; j++) {
+                    XmlBuilder jn = new XmlBuilder("job");
+                    jn.addAttribute("name", jobNames[j]);
+
+                    // details for job
+                    XmlBuilder jd = jobDetailToXmlBuilder(jobNames[j], jgnames[i]);
+                    jn.addSubElement(jd);
+
+                    // get the triggers for this job
+                    XmlBuilder tr= getJobTriggers(jobNames[j], jgnames[i]);
+                    jn.addSubElement(tr);
+
+                    XmlBuilder datamap = jobDataMapToXmlBuilder(jobNames[j], jgnames[i]);
+                    jn.addSubElement(datamap);
+                    jb.addSubElement(jn);
+                }
+                el.addSubElement(jb);
+                xbRoot.addSubElement(el);
+            }
+        } catch (org.quartz.SchedulerException se) {
+           log.error(se);
+        }
+        return xbRoot.toXML();
+    }
+    public XmlBuilder getJobTriggers(String jobName, String groupName) {
+
+        XmlBuilder xbRoot = new XmlBuilder("triggersForJob");
+
+        xbRoot.addAttribute("jobName", jobName);
+        xbRoot.addAttribute("groupName", groupName);
+        try {
+            String[] tgnames = theScheduler.getTriggerGroupNames();
+
+            for (int i = 0; i < tgnames.length; i++) {
+                String[] triggerNames = theScheduler.getTriggerNames(tgnames[i]);
+
+                for (int s = 0; s < triggerNames.length; s++) {
+                    Trigger trigger = theScheduler.getTrigger(triggerNames[s], tgnames[i]);
+
+                    if ((trigger.getJobName().equals(jobName)) && (trigger.getJobGroup().equals(groupName))) {
+                        XmlBuilder tr = triggerToXmlBuilder(triggerNames[s], tgnames[i]);
+
+                        xbRoot.addSubElement(tr);
+                    }
+                }
+            }
+        } catch (org.quartz.SchedulerException se) {
+            log.error(se);
+
+        }
+
+        return xbRoot;
+
+    }
+    public String getSchedulerCalendarNamesToXml() {
+        XmlBuilder xbRoot = new XmlBuilder("schedulerCalendars");
+
+        try {
+            String[] names = theScheduler.getCalendarNames();
+
+            for (int i = 0; i < names.length; i++) {
+                XmlBuilder el = new XmlBuilder("calendar");
+
+                el.setValue(names[i]);
+                xbRoot.addSubElement(el);
+            }
+        } catch (org.quartz.SchedulerException se) {
+            log.error(se.toString());
+        }
+        return xbRoot.toXML();
+    }
+    public String getSchedulerMetaDataToXml() {
+        XmlBuilder xbRoot = new XmlBuilder("schedulerMetaData");
+
+        try {
+            SchedulerMetaData smd = theScheduler.getMetaData();
+
+            xbRoot.addAttribute("schedulerName", smd.getSchedulerName());
+            xbRoot.addAttribute("schedulerInstanceId", smd.getSchedulerInstanceId().toString());
+            xbRoot.addAttribute("version", smd.getVersion());
+            xbRoot.addAttribute("isPaused", (smd.isPaused() ? "True" : "False"));
+            xbRoot.addAttribute("isSchedulerRemote", (smd.isSchedulerRemote() ? "True" : "False"));
+            xbRoot.addAttribute("isShutdown", (smd.isShutdown() ? "True" : "False"));
+            xbRoot.addAttribute("isStarted", (smd.isStarted() ? "True" : "False"));
+            xbRoot.addAttribute("jobStoreSupportsPersistence", (smd.jobStoreSupportsPersistence() ? "True" : "False"));
+            xbRoot.addAttribute("numJobsExecuted", Integer.toString(smd.numJobsExecuted()));
+            try {
+                Date runningSince = smd.runningSince();
+
+                xbRoot.addAttribute("runningSince", (null == runningSince ? "unknown" : DateUtils.format(runningSince, DateUtils.FORMAT_GENERICDATETIME)));
+            } catch (Exception e) {
+	            log.debug(e);
+	        };
+            xbRoot.addAttribute("jobStoreClass", smd.getJobStoreClass().getName());
+            xbRoot.addAttribute("schedulerClass", smd.getSchedulerClass().getName());
+            xbRoot.addAttribute("threadPoolClass", smd.getThreadPoolClass().getName());
+            xbRoot.addAttribute("threadPoolSize", Integer.toString(smd.getThreadPoolSize()));
+        } catch (SchedulerException se) {
+            log.error(se);
+        }
+
+        return xbRoot.toXML();
+
+    }
+    public Scheduler getTheScheduler() {
+        return theScheduler;
+    }
+    public String getTriggerGroupNamesWithTriggersToXml() {
+        XmlBuilder xbRoot = new XmlBuilder("triggerGroups");
+
+        try {
+            // process groups
+            String[] tgnames = theScheduler.getTriggerGroupNames();
+
+            for (int i = 0; i < tgnames.length; i++) {
+                XmlBuilder el = new XmlBuilder("triggerGroup");
+
+                el.addAttribute("name", tgnames[i]);
+
+                // process jobs within group
+                XmlBuilder tgg = new XmlBuilder("triggers");
+                String[] triggerNames = theScheduler.getTriggerNames(tgnames[i]);
+
+                for (int j = 0; j < triggerNames.length; j++) {
+                    XmlBuilder tn = new XmlBuilder("trigger");
+
+                    tn.addAttribute("name", triggerNames[j]);
+
+                    //detail of trigger
+                    XmlBuilder td = triggerToXmlBuilder(triggerNames[j], tgnames[i]);
+
+                    tn.addSubElement(td);
+
+                    tgg.addSubElement(tn);
+                }
+                el.addSubElement(tgg);
+
+                xbRoot.addSubElement(el);
+            }
+        } catch (org.quartz.SchedulerException se) {
+            log.error(se);
+        }
+        return xbRoot.toXML();
+    }
+    public XmlBuilder jobDataMapToXmlBuilder(String jobName, String groupName) {
+
+        XmlBuilder xbRoot = new XmlBuilder("jobDataMap");
+
+        try {
+            JobDataMap jd = theScheduler.getJobDetail(jobName, groupName).getJobDataMap();
+
+            xbRoot.addAttribute("containsTransientData", (jd.containsTransientData() ? "True" : "False"));
+            xbRoot.addAttribute("allowsTransientData", (jd.getAllowsTransientData() ? "True" : "False"));
+            xbRoot.addAttribute("jobName", jobName);
+            xbRoot.addAttribute("groupName", groupName);
+
+            String[] keys = jd.getKeys();
+
+            for (int i = 0; i < keys.length; i++) {
+                String name = keys[i];
+                String value="";
+                if (jd.get(keys[i])!=null) {
+                   value = jd.get(keys[i]).toString();
+                }
+                Object obj=jd.get(keys[i]);
+                XmlBuilder ds = new XmlBuilder("property");
+
+
+                ds.addAttribute("key", name);
+                if (obj!=null){
+                    ds.addAttribute("className", obj.getClass().getName());
+                } else ds.addAttribute("className", "null");
+                ds.setValue(value);
+
+                xbRoot.addSubElement(ds);
+            }
+        } catch (org.quartz.SchedulerException se) {
+            log.error(se);
+        }
+        return xbRoot;
+    }
+    public XmlBuilder jobDetailToXmlBuilder(String jobName, String groupName) {
+        XmlBuilder xbRoot = new XmlBuilder("jobDetail");
+
+        try {
+            JobDetail jd = theScheduler.getJobDetail(jobName, groupName);
+
+            xbRoot.addAttribute("fullName", jd.getFullName());
+            xbRoot.addAttribute("jobName", jd.getName());
+            xbRoot.addAttribute("groupName", jd.getGroup());
+            String description="-";
+            if (StringUtils.isNotEmpty(jd.getDescription()))
+                description=jd.getDescription();
+
+            xbRoot.addAttribute("description", description);
+            xbRoot.addAttribute("isStateful", (jd.isStateful() ? "True" : "False"));
+            xbRoot.addAttribute("isDurable", (jd.isDurable() ? "True" : "False"));
+            xbRoot.addAttribute("isVolatile", (jd.isVolatile() ? "True" : "False"));
+            xbRoot.addAttribute("jobClass", jd.getJobClass().getName());
+        } catch (org.quartz.SchedulerException se) {
+            log.error(se);
+        }
+        return xbRoot;
+    }
+    public static void main(String args[]) {
+        SchedulerAdapter t = new SchedulerAdapter();
+
+        try {
+            System.out.println("name:" + t.getTheScheduler().getSchedulerName());
+            System.out.println("MetaData:" + t.getTheScheduler().getMetaData().toString());
+            System.out.println("xml metadata: " + t.getSchedulerMetaDataToXml());
+            System.out.println("xml calendars: " + t.getSchedulerCalendarNamesToXml());
+            System.out.println("JobGroupNamesWithJobs" + t.getJobGroupNamesWithJobsToXml());
+            System.out.println("TriggerGroupNamesWithTriggers" + t.getTriggerGroupNamesWithTriggersToXml());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    public void setTheScheduler(Scheduler value) {
+        theScheduler = value;
+    }
+    public XmlBuilder triggerToXmlBuilder(String triggerName, String groupName) {
+        XmlBuilder xbRoot = new XmlBuilder("triggerDetail");
+
+        try {
+            Trigger trigger = theScheduler.getTrigger(triggerName, groupName);
+
+            xbRoot.addAttribute("fullName", trigger.getFullName());
+            xbRoot.addAttribute("triggerName", trigger.getName());
+            xbRoot.addAttribute("triggerGroup", trigger.getGroup());
+            String cn = trigger.getCalendarName();
+
+            xbRoot.addAttribute("calendarName", (cn == null ? "none" : cn));
+            Date date;
+
+            try {
+                date = trigger.getEndTime();
+                xbRoot.addAttribute("endTime", (null == date ? "" : DateUtils.format(date, DateUtils.FORMAT_GENERICDATETIME)));
+            } catch (Exception e) { log.debug(e); };
+            try {
+                date = trigger.getFinalFireTime();
+                xbRoot.addAttribute("finalFireTime", (null == date ? "" : DateUtils.format(date, DateUtils.FORMAT_GENERICDATETIME)));
+            } catch (Exception e) { log.debug(e); };
+            try {
+                date = trigger.getNextFireTime();
+                xbRoot.addAttribute("nextFireTime", (null == date ? "" : DateUtils.format(date, DateUtils.FORMAT_GENERICDATETIME)));
+            } catch (Exception e) { log.debug(e); };
+            try {
+                date = trigger.getStartTime();
+                xbRoot.addAttribute("startTime", (null == date ? "" : DateUtils.format(date, DateUtils.FORMAT_GENERICDATETIME)));
+            } catch (Exception e) { log.debug(e); };
+            xbRoot.addAttribute("misfireInstruction", Integer.toString(trigger.getMisfireInstruction()));
+            if (trigger instanceof CronTrigger) {
+                xbRoot.addAttribute("triggerType", "cron");
+                 xbRoot.addAttribute( "cronExpression", ((CronTrigger)trigger).getCronExpression());
+            }
+            else if (trigger instanceof SimpleTrigger) xbRoot.addAttribute("triggerType", "simple");
+            else xbRoot.addAttribute("triggerType", "unknown");
+
+            xbRoot.addAttribute("jobGroup", trigger.getJobGroup());
+            xbRoot.addAttribute("jobName", trigger.getJobName());
+            xbRoot.addAttribute("isVolatile", (trigger.isVolatile() ? "True" : "False"));
+
+        } catch (SchedulerException se) {
+            log.error(se);
+        }
+        return xbRoot;
+    }
+}
