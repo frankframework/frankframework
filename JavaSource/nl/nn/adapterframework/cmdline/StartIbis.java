@@ -22,7 +22,7 @@ import javax.management.MBeanServerFactory;
  */
 public class StartIbis {
 	public static final String version =
-		"$Id: StartIbis.java,v 1.3 2004-04-26 09:35:07 NNVZNL01#L180564 Exp $";
+		"$Id: StartIbis.java,v 1.4 2005-01-04 12:53:12 L190409 Exp $";
 	static final String DFLT_DIGESTER_RULES = "digester-rules.xml";
 	static final String DFLT_CONFIGURATION = "Configuration.xml";
 	static final String DFLT_AUTOSTART = "TRUE";
@@ -33,7 +33,6 @@ public class StartIbis {
 	 */
 	public StartIbis() {
 		super();
-		// TODO Auto-generated constructor stub
 	}
 	public static void main(String[] args) {
 		StartIbis si=new StartIbis();
