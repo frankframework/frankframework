@@ -1,6 +1,9 @@
 /*
  * $Log: PushingReceiverBase.java,v $
- * Revision 1.2  2004-06-30 10:51:41  L190409
+ * Revision 1.3  2004-07-15 07:48:41  L190409
+ * changed IMessagePusher to IPushingListener
+ *
+ * Revision 1.2  2004/06/30 10:51:41  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * included exception listening mechanism
  *
  * Revision 1.1  2004/06/22 12:12:52  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -11,7 +14,7 @@ package nl.nn.adapterframework.receivers;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.core.IMessagePusher;
+import nl.nn.adapterframework.core.IPushingListener;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.IReceiverStatistics;
@@ -55,13 +58,13 @@ import java.util.Iterator;
  */
 public class PushingReceiverBase  implements IReceiver, IReceiverStatistics, HasSender, IbisExceptionListener,
         ServiceClient, Serializable {
-	public static final String version="$Id: PushingReceiverBase.java,v 1.2 2004-06-30 10:51:41 L190409 Exp $";
+	public static final String version="$Id: PushingReceiverBase.java,v 1.3 2004-07-15 07:48:41 L190409 Exp $";
 	protected Logger log = Logger.getLogger(this.getClass());;
         	
 	private String name;
 	private String returnIfStopped="";
 
-	private IMessagePusher listener;
+	private IPushingListener listener;
 	private ISender sender;
 
 	private IAdapter adapter;
@@ -75,7 +78,7 @@ public class PushingReceiverBase  implements IReceiver, IReceiverStatistics, Has
 	 * initialize listener and register <code>this</code> to the JNDI
 	 */
 	public void configure() throws ConfigurationException {
-		IMessagePusher listener = getListener();
+		IPushingListener listener = getListener();
 		if (listener==null) {
 			throw new ConfigurationException(getLogPrefix()+"has no listener");
 		}
@@ -290,13 +293,13 @@ public class PushingReceiverBase  implements IReceiver, IReceiverStatistics, Has
 	/**
 	 * @return
 	 */
-	public IMessagePusher getListener() {
+	public IPushingListener getListener() {
 		return listener;
 	}
 	/**
 	 * @param pusher
 	 */
-	protected void setListener(IMessagePusher listener) {
+	protected void setListener(IPushingListener listener) {
 		this.listener = listener;
 	}
 	/**

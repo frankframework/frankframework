@@ -1,6 +1,9 @@
 /*
  * $Log: SapMessagePusher.java,v $
- * Revision 1.1  2004-07-06 07:09:05  L190409
+ * Revision 1.2  2004-07-15 07:47:12  L190409
+ * changed IMessagePusher to IPushingListener
+ *
+ * Revision 1.1  2004/07/06 07:09:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * moved SAP functionality to extensions
  *
  * Revision 1.2  2004/06/30 12:38:06  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -13,15 +16,17 @@
 package nl.nn.adapterframework.extensions.sap;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IMessagePusher;
+import nl.nn.adapterframework.core.IPushingListener;
 import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.receivers.ServiceClient;
+import nl.nn.adapterframework.util.Misc;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.log4j.Logger;
 
+import java.util.HashMap;
 import java.util.Iterator;
 
 import com.sap.mw.jco.*;
@@ -50,8 +55,8 @@ import com.sap.mw.jco.JCO.Server;
  * @author Gerrit van Brakel
  * @since 4.2
  */
-public class SapMessagePusher extends SapFunctionFacade implements IMessagePusher, SapFunctionHandler, JCO.ServerExceptionListener, JCO.ServerErrorListener {
-	public static final String version="$Id: SapMessagePusher.java,v 1.1 2004-07-06 07:09:05 L190409 Exp $";
+public class SapMessagePusher extends SapFunctionFacade implements IPushingListener, SapFunctionHandler, JCO.ServerExceptionListener, JCO.ServerErrorListener {
+	public static final String version="$Id: SapMessagePusher.java,v 1.2 2004-07-15 07:47:12 L190409 Exp $";
 
 	private String progid;	 // progid of the RFC-destination
         	
@@ -111,16 +116,10 @@ public class SapMessagePusher extends SapFunctionFacade implements IMessagePushe
 		return ToStringBuilder.reflectionToString(this);
 	}
 
-	/**
-	 * @return
-	 */
 	public String getProgid() {
 		return progid;
 	}
 
-	/**
-	 * @param string
-	 */
 	public void setProgid(String string) {
 		progid = string;
 	}
@@ -136,22 +135,24 @@ public class SapMessagePusher extends SapFunctionFacade implements IMessagePushe
 		JCO.addServerErrorListener(this);
 	}
 
-	/* (non-Javadoc)
-	 * @see com.sap.mw.jco.JCO.ServerExceptionListener#serverExceptionOccurred(com.sap.mw.jco.JCO.Server, java.lang.Exception)
-	 */
 	public void serverExceptionOccurred(JCO.Server server, Exception e) {
 		if (exceptionListener!=null) {
 			exceptionListener.exceptionThrown(this, new SapException("exception in SapServer ["+server.getProgID()+"]",e));
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see com.sap.mw.jco.JCO.ServerErrorListener#serverErrorOccurred(com.sap.mw.jco.JCO.Server, java.lang.Error)
-	 */
 	public void serverErrorOccurred(JCO.Server server, Error e) {
 		if (exceptionListener!=null) {
 			exceptionListener.exceptionThrown(this, new SapException("error in SapServer ["+server.getProgID()+"]",e));
 		}
+	}
+
+	public String getIdFromRawMessage(Object rawMessage, HashMap threadContext) throws ListenerException {
+		return null;
+	}
+
+	public String getStringFromRawMessage(Object rawMessage, HashMap threadContext) throws ListenerException {
+		return functionCall2message((JCO.Function) rawMessage);
 	}
 
 }
