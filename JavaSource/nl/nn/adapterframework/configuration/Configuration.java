@@ -1,6 +1,9 @@
 /*
  * $Log: Configuration.java,v $
- * Revision 1.11  2004-06-30 10:01:58  L190409
+ * Revision 1.12  2004-07-06 07:06:05  L190409
+ * added PushingReceiver and Sap-extensions
+ *
+ * Revision 1.11  2004/06/30 10:01:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * modified error handling
  *
  * Revision 1.10  2004/06/16 12:34:46  Johan Verrips <johan.verrips@ibissource.org>
@@ -54,7 +57,7 @@ import java.util.Enumeration;
  */
 public class Configuration {
     protected Logger log; 
-    public static final String version="$Id: Configuration.java,v 1.11 2004-06-30 10:01:58 L190409 Exp $";
+    public static final String version="$Id: Configuration.java,v 1.12 2004-07-06 07:06:05 L190409 Exp $";
      
     private Hashtable adapterTable = new Hashtable();
 
@@ -325,6 +328,7 @@ public class Configuration {
     	sb.append(nl.nn.adapterframework.receivers.ServiceDispatcher.version+SystemUtils.LINE_SEPARATOR);
     	sb.append(nl.nn.adapterframework.receivers.ServiceListener.version+SystemUtils.LINE_SEPARATOR);
     	sb.append(nl.nn.adapterframework.receivers.PullingReceiverBase.version+SystemUtils.LINE_SEPARATOR);
+		sb.append(nl.nn.adapterframework.receivers.PushingReceiverBase.version+SystemUtils.LINE_SEPARATOR);
     	sb.append(nl.nn.adapterframework.util.AppConstants.version+SystemUtils.LINE_SEPARATOR);
     	sb.append(nl.nn.adapterframework.util.Variant.version+SystemUtils.LINE_SEPARATOR);
     	sb.append(nl.nn.adapterframework.util.XmlUtils.version+SystemUtils.LINE_SEPARATOR);
@@ -340,11 +344,16 @@ public class Configuration {
     	sb.append(nl.nn.adapterframework.webcontrol.action.ShowConfigurationStatus.version+SystemUtils.LINE_SEPARATOR);
     	sb.append(nl.nn.adapterframework.scheduler.SchedulerAdapter.version +SystemUtils.LINE_SEPARATOR);
     	sb.append(nl.nn.adapterframework.extensions.coolgen.CoolGenWrapperPipe.version +SystemUtils.LINE_SEPARATOR);
-		sb.append(nl.nn.adapterframework.extensions.ifsa.IfsaClient.version +SystemUtils.LINE_SEPARATOR);
 		sb.append(nl.nn.adapterframework.extensions.ifsa.IfsaFacade.version +SystemUtils.LINE_SEPARATOR);
-		sb.append(nl.nn.adapterframework.extensions.ifsa.IfsaServiceListener.version +SystemUtils.LINE_SEPARATOR);
+		sb.append(nl.nn.adapterframework.extensions.ifsa.IfsaRequesterSender.version +SystemUtils.LINE_SEPARATOR);
+		sb.append(nl.nn.adapterframework.extensions.ifsa.IfsaProviderListener.version +SystemUtils.LINE_SEPARATOR);
 		sb.append(nl.nn.adapterframework.extensions.rekenbox.RekenBoxCaller.version +SystemUtils.LINE_SEPARATOR);
 		sb.append(nl.nn.adapterframework.extensions.rekenbox.Adios2XmlPipe.version +SystemUtils.LINE_SEPARATOR);
+		sb.append(nl.nn.adapterframework.extensions.sap.SapFunctionFacade.version +SystemUtils.LINE_SEPARATOR);
+		sb.append(nl.nn.adapterframework.extensions.sap.SapMessagePusher.version +SystemUtils.LINE_SEPARATOR);
+		sb.append(nl.nn.adapterframework.extensions.sap.SapSender.version +SystemUtils.LINE_SEPARATOR);
+		sb.append(nl.nn.adapterframework.extensions.sap.SapFunctionHandler.version +SystemUtils.LINE_SEPARATOR);
+		sb.append(nl.nn.adapterframework.extensions.sap.SapSystem.version +SystemUtils.LINE_SEPARATOR);
     	return sb.toString();
     	
     }
