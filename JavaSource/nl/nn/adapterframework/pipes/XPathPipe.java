@@ -1,6 +1,9 @@
 /*
  * $Log: XPathPipe.java,v $
- * Revision 1.2  2004-04-27 11:42:40  a1909356#db2admin
+ * Revision 1.3  2004-05-05 09:30:53  NNVZNL01#L180564
+ * added sessionkey feature
+ *
+ * Revision 1.2  2004/04/27 11:42:40  unknown <unknown@ibissource.org>
  * Access properties via getters
  *
  * Revision 1.1  2004/04/27 10:52:17  unknown <unknown@ibissource.org>
@@ -28,6 +31,10 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setXpathExpression(String) xpathExpression}</td><td>Expression to evaluate</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setSessionKey(String) sessionKey}</td><td>If specified, the result is put 
+ * in the PipeLineSession under the specified key, and the result of this pipe will be 
+ * the same as the input (the xml). If NOT specified, the result of the xpath expression 
+ * will be the result of this pipe</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * <p><b>Exits:</b>
@@ -44,6 +51,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 public class XPathPipe extends FixedForwardPipe {
 	private String xpathExpression;
 	private Transformer transformer;
+	private String sessionKey=null;
 	
 	/* 
 	 * @see nl.nn.adapterframework.core.IPipe#configure()
@@ -87,7 +95,12 @@ public class XPathPipe extends FixedForwardPipe {
 				throw new PipeRunException(this, "Error during xsl transformation", e);
 			}
 		}
-		return new PipeRunResult(getForward(), out);
+		if (StringUtils.isEmpty(getSessionKey())){
+			return new PipeRunResult(getForward(), out);
+		} else {
+			session.put(getSessionKey(), out);
+			return new PipeRunResult(getForward(), input);
+		}
 	}
 	
 	/**
@@ -102,6 +115,21 @@ public class XPathPipe extends FixedForwardPipe {
 	 */
 	public void setXpathExpression(String xpathExpression) {
 		this.xpathExpression = xpathExpression;
+	}
+	
+	/**
+	 * The name of the key in the <code>PipeLineSession</code> to store the input in
+	 * @see nl.nn.adapterframework.core.PipeLineSession
+	 */
+	public String getSessionKey() {
+		return sessionKey;
+	}
+	/**
+	 * The name of the key in the <code>PipeLineSession</code> to store the input in
+	 * @see nl.nn.adapterframework.core.PipeLineSession
+	 */
+	public void setSessionKey(String newSessionKey) {
+		sessionKey = newSessionKey;
 	}
 
 }
