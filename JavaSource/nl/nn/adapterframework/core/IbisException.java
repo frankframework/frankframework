@@ -1,6 +1,9 @@
 /*
  * $Log: IbisException.java,v $
- * Revision 1.6  2004-03-30 07:29:59  L190409
+ * Revision 1.7  2004-07-06 06:57:57  L190409
+ * improved workings of getMessage()
+ *
+ * Revision 1.6  2004/03/30 07:29:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.5  2004/03/26 10:42:50  Johan Verrips <johan.verrips@ibissource.org>
@@ -24,8 +27,13 @@ import org.apache.commons.lang.exception.NestableException;
  * @author Gerrit van Brakel
  */
 public class IbisException extends NestableException {
-		public static final String version="$Id: IbisException.java,v 1.6 2004-03-30 07:29:59 L190409 Exp $";
+		public static final String version="$Id: IbisException.java,v 1.7 2004-07-06 06:57:57 L190409 Exp $";
 
+	static {
+		// add methodname to find cause of JMS-Exceptions
+		ExceptionUtils.addCauseMethodName("getLinkedException");
+	}
+	
 public IbisException() {
 	super();
 }
@@ -64,9 +72,8 @@ public IbisException(Throwable arg1) {
 	public String toString() {
 		String result="";
 		Throwable t;
-		String additionalMethodNames[] = { "getLinkedException" };
  
-		for (t=this; t!=null; t=ExceptionUtils.getCause(t,additionalMethodNames)) {
+		for (t=this; t!=null; t=ExceptionUtils.getCause(t)) {
 			result += "\nclass: "+t.getClass().getName()+"\nmessage:"+t.getMessage()+"\n";
 //			result += "fields:\n"+ToStringBuilder.reflectionToString(t,ToStringStyle.MULTI_LINE_STYLE)+"\n";
 		}
