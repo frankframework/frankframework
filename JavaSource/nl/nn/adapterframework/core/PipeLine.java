@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.10  2004-07-05 09:54:44  NNVZNL01#L180564
+ * Revision 1.11  2004-07-20 13:04:45  L190409
+ * Corrected erroneous pipe run statistics (yet another time)
+ *
+ * Revision 1.10  2004/07/05 09:54:44  Johan Verrips <johan.verrips@ibissource.org>
  * Improved errorhandling mechanism: when a PipeRunException occured, transactions where still committed
  *
  * Revision 1.9  2004/04/28 14:32:42  Johan Verrips <johan.verrips@ibissource.org>
@@ -90,7 +93,7 @@ import javax.transaction.UserTransaction;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version="$Id: PipeLine.java,v 1.10 2004-07-05 09:54:44 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: PipeLine.java,v 1.11 2004-07-20 13:04:45 L190409 Exp $";
     private Logger log = Logger.getLogger(this.getClass());
 	private Adapter adapter; // for logging purposes, and for transaction managing
 	private boolean transacted=false;
@@ -339,7 +342,7 @@ public class PipeLine {
 			        // keep waiting statistics for thread-limited pipes
 			        long startWaiting = System.currentTimeMillis();
 			        s.acquire();
-			        waitingDuration = startWaiting - System.currentTimeMillis();
+			        waitingDuration = System.currentTimeMillis() - startWaiting;
 	
 			        StatisticsKeeper sk = (StatisticsKeeper) pipeWaitingStatistics.get(pipeToRun.getName());
 	  			    sk.addValue(waitingDuration);
