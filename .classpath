@@ -23,5 +23,6 @@
     <classpathentry kind="lib" path="H:/Ios/1_OO_straat/Technologie/libraries/SAP jco/sapjco-ntintel-2.0.10/sapjco.jar"/>
     <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/commons-httpclient-2.0.1.jar"/>
+    <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/commons-pool.jar"/>
     <classpathentry kind="output" path="bin"/>
 </classpath>
