@@ -1,6 +1,9 @@
 /*
  * $Log: IbisException.java,v $
- * Revision 1.7  2004-07-06 06:57:57  L190409
+ * Revision 1.8  2004-07-07 13:55:06  L190409
+ * improved toString() method, including fields of causes
+ *
+ * Revision 1.7  2004/07/06 06:57:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved workings of getMessage()
  *
  * Revision 1.6  2004/03/30 07:29:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -27,25 +30,26 @@ import org.apache.commons.lang.exception.NestableException;
  * @author Gerrit van Brakel
  */
 public class IbisException extends NestableException {
-		public static final String version="$Id: IbisException.java,v 1.7 2004-07-06 06:57:57 L190409 Exp $";
+		public static final String version="$Id: IbisException.java,v 1.8 2004-07-07 13:55:06 L190409 Exp $";
 
 	static {
 		// add methodname to find cause of JMS-Exceptions
 		ExceptionUtils.addCauseMethodName("getLinkedException");
 	}
 	
-public IbisException() {
-	super();
-}
-public IbisException(String arg1) {
-	super(arg1);
-}
-public IbisException(String arg1, Throwable arg2) {
-	super(arg1, arg2);
-}
-public IbisException(Throwable arg1) {
-	super(arg1);
-}
+	public IbisException() {
+		super();
+	}
+	public IbisException(String message) {
+		super(message);
+	}
+	public IbisException(String message, Throwable cause) {
+		super(message, cause);
+	}
+	public IbisException(Throwable cause) {
+		super(cause);
+	}
+	
     public String getMessage() {
 	    String messages[]=getMessages(); 
 	    String last_message=null;
@@ -72,10 +76,12 @@ public IbisException(Throwable arg1) {
 	public String toString() {
 		String result="";
 		Throwable t;
- 
+
+		result = "message: "+getMessage()+"\ncause-trace:\n"; 
 		for (t=this; t!=null; t=ExceptionUtils.getCause(t)) {
-			result += "\nclass: "+t.getClass().getName()+"\nmessage:"+t.getMessage()+"\n";
-//			result += "fields:\n"+ToStringBuilder.reflectionToString(t,ToStringStyle.MULTI_LINE_STYLE)+"\n";
+//			result += "\nclass: "+t.getClass().getName()+"\nmessage:"+t.getMessage()+"\n";
+			result += "\nclass: "+t.getClass().getName();
+			result += "\nfields:\n"+ToStringBuilder.reflectionToString(t)+"\n";
 		}
 		return result;
 	}
