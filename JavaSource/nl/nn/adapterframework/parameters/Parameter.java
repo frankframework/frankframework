@@ -1,6 +1,9 @@
 /*
  * $Log: Parameter.java,v $
- * Revision 1.2  2004-10-12 15:06:48  L190409
+ * Revision 1.3  2004-10-14 16:04:28  L190409
+ * improved logging
+ *
+ * Revision 1.2  2004/10/12 15:06:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added asCollection() method
  *
  * Revision 1.1  2004/10/05 09:51:17  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -41,7 +44,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author Richard Punt / Gerrit van Brakel
  */
 public class Parameter implements INamedObject {
-	public static final String version="$Id: Parameter.java,v 1.2 2004-10-12 15:06:48 L190409 Exp $";
+	public static final String version="$Id: Parameter.java,v 1.3 2004-10-14 16:04:28 L190409 Exp $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	private String name = null;
@@ -99,6 +102,7 @@ public class Parameter implements INamedObject {
 	 */
 	public Object getValue(ParameterResolutionContext r) throws ParameterException {
 		Object result = null;
+		log.debug("Calcualting value for Parameter ["+getName()+"]");
 		if (!configured) {
 			throw new ParameterException("Parameter ["+getName()+"] not configured");
 		}
@@ -119,7 +123,7 @@ public class Parameter implements INamedObject {
 						} catch (Exception ee) {
 							// ignore silently...
 						}
-						throw new ParameterException("Parameter ["+getName()+"] exception on transformation to get paramtervalue", e);
+						throw new ParameterException("Parameter ["+getName()+"] exception on transformation to get parametervalue", e);
 					} finally {
 						pool.releaseTransformer(t);
 					}
