@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcTransactionalStorage.java,v $
- * Revision 1.1  2004-03-24 13:28:20  L190409
+ * Revision 1.2  2004-03-25 13:48:57  L190409
+ * enhanced creation of table
+ *
+ * Revision 1.1  2004/03/24 13:28:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * initial version
  *
  */
@@ -35,16 +38,20 @@ import nl.nn.adapterframework.util.JdbcUtil;
  * </table>
  * </p>
  * 
- * <p>$Id: JdbcTransactionalStorage.java,v 1.1 2004-03-24 13:28:20 L190409 Exp $</p>
+ * <p>$Id: JdbcTransactionalStorage.java,v 1.2 2004-03-25 13:48:57 L190409 Exp $</p>
  * @author  Gerrit van Brakel
  * @since 	4.1
  */
 public class JdbcTransactionalStorage extends DirectQuerySender implements ITransactionalStorage {
-	public static final String version="$Id: JdbcTransactionalStorage.java,v 1.1 2004-03-24 13:28:20 L190409 Exp $";
+	public static final String version="$Id: JdbcTransactionalStorage.java,v 1.2 2004-03-25 13:48:57 L190409 Exp $";
 	
     private String tableName="inprocstore";
     private String idField="messageid";
     private String messageField="message";
+    
+    // these values are only used when the table is created. 
+	protected static final int MAXIDLEN=100;		
+	protected static final int MAXMESSAGELEN=3000;
 	
 	public JdbcTransactionalStorage() {
 		super();
@@ -56,24 +63,42 @@ public class JdbcTransactionalStorage extends DirectQuerySender implements ITran
 	}
 	
 	
-	public void createTable(Connection conn) throws SQLException {
-		String query=null;
-		Statement stmt = conn.createStatement();
-		query="CREATE TABLE "+getTableName()+" ("+getIdField()+" VARCHAR NOT NULL PRIMARY KEY, "+getMessageField()+" VARCHAR)";
-		log.debug(getLogPrefix()+"creating table ["+getTableName()+"] using query ["+query+"]");
-		stmt.execute(query);
+	public void createTable(Connection conn) throws JdbcException {
+		Statement stmt;
+		try {
+			stmt = conn.createStatement();
+		} catch (SQLException e) {
+			throw new JdbcException(getLogPrefix()+" creating statement to create table:", e);
+		}
+		//TODO: suppurt storage of large messages, e.g. in a blob
+		String query="CREATE TABLE "+getTableName()+" ("+getIdField()+" VARCHAR("+MAXIDLEN+") PRIMARY KEY, "+getMessageField()+" VARCHAR("+MAXMESSAGELEN+"))";
+		try {
+			log.debug(getLogPrefix()+"creating table ["+getTableName()+"] using query ["+query+"]");
+			stmt.execute(query);
+		} catch (SQLException e) {
+			throw new JdbcException(getLogPrefix()+" executing query ["+query+"]", e);
+		}
 	}	
 	
 	public void configure() throws ConfigurationException {
 		super.configure();
 		try {
 			Connection conn = getConnection();
-			if (!JdbcUtil.tableExists(conn, getTableName())) {
+			boolean tableMustBeCreated;
+			try {
+				tableMustBeCreated = !JdbcUtil.tableExists(conn, getTableName());
+			} catch (SQLException e) {
+				log.warn(getLogPrefix()+"exception determining existence of table ["+getTableName()+"] for transactional storage, trying to create anyway."+ e.getMessage());
+				tableMustBeCreated=true;
+			}
+			if (tableMustBeCreated) {
 				log.info(getLogPrefix()+"creating table ["+getTableName()+"] for transactional storage");
 				createTable(conn);
 			}
 			conn.close();
-		} catch (Exception e) {
+		} catch (JdbcException e) {
+			throw new ConfigurationException(e);
+		} catch (SQLException e) {
 			throw new ConfigurationException(getLogPrefix()+"exception creating table ["+getTableName()+"]",e);
 		} 
 	}
