@@ -1,6 +1,10 @@
 /*
  * $Log: ConfigurationDigester.java,v $
- * Revision 1.6  2004-06-16 06:57:00  NNVZNL01#L180564
+ * Revision 1.7  2004-06-16 13:04:28  NNVZNL01#L180564
+ * improved  the ClassPathEntityResolver functionality in combination with
+ * resolving variables
+ *
+ * Revision 1.6  2004/06/16 06:57:00  Johan Verrips <johan.verrips@ibissource.org>
  * Added the ClassPathEntityResolver to resolve entities within the classpath
  *
  * Revision 1.5  2004/03/30 07:30:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -18,6 +22,8 @@ import org.xml.sax.InputSource;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.Variant;
+import nl.nn.adapterframework.util.XmlUtils;
+
 import org.apache.commons.digester.Digester;
 import org.apache.commons.digester.xmlrules.FromXmlRuleSet;
 import org.apache.log4j.Logger;
@@ -61,7 +67,7 @@ import java.net.URL;
  * @see Configuration
  */
 public class ConfigurationDigester {
-	public static final String version="$Id: ConfigurationDigester.java,v 1.6 2004-06-16 06:57:00 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: ConfigurationDigester.java,v 1.7 2004-06-16 13:04:28 NNVZNL01#L180564 Exp $";
     protected Logger log = Logger.getLogger(this.getClass());
 	private static final String CONFIGURATION_FILE_DEFAULT  = "Configuration.xml";
 	private static final String DIGESTER_RULES_DEFAULT      = "digester-rules.xml";
@@ -115,7 +121,7 @@ public static void main(String args[]) {
 		
         // push config on the stack
         digester.push(config);
-
+ 
         try {
             // digester-rules.xml bevat de rules voor het digesten
             
@@ -126,7 +132,8 @@ public static void main(String args[]) {
 			String lineSeperator=SystemUtils.LINE_SEPARATOR;
 	        if (null==lineSeperator) lineSeperator="\n";
 			String configString=Misc.resourceToString(configurationFileURL, lineSeperator, false);
-			
+			configString=XmlUtils.identityTransform(configString);
+			log.debug(configString);
 			//Resolve any variables
 			String resolvedConfig=StringResolver.substVars(configString, AppConstants.getInstance());
 
