@@ -1,3 +1,9 @@
+/*
+ * $Log: Misc.java,v $
+ * Revision 1.9  2004-10-26 15:36:36  L190409
+ * set UTF-8 as default inputstream encoding
+ *
+ */
 package nl.nn.adapterframework.util;
 
 import java.io.*;
@@ -10,7 +16,8 @@ import java.rmi.server.UID;
  * @version Id
  */
 public class Misc {
-	public static final String version = "$Id: Misc.java,v 1.8 2004-08-26 06:34:16 NNVZNL01#L180564 Exp $";
+	public static final String version = "$Id: Misc.java,v 1.9 2004-10-26 15:36:36 L190409 Exp $";
+	public static final String DEFAULT_INPUT_STREAM_ENCODING="UTF-8";
 
 	public static String createSimpleUUID_old() {
 		StringBuffer sb = new StringBuffer();
@@ -112,10 +119,15 @@ public class Misc {
 		return sb.toString();
 	}
 
+	public static String streamToString(InputStream stream, String endOfLineString, String streamEncoding, boolean xmlEncode)
+		throws IOException {
+		return readerToString(new InputStreamReader(stream,streamEncoding), endOfLineString, xmlEncode);
+	}
+
 
 	public static String streamToString(InputStream stream, String endOfLineString, boolean xmlEncode)
 		throws IOException {
-		return readerToString(new InputStreamReader(stream), endOfLineString, xmlEncode);
+		return streamToString(stream,endOfLineString, DEFAULT_INPUT_STREAM_ENCODING, xmlEncode);
 	}
 
 	public static String resourceToString(URL resource, String endOfLineString, boolean xmlEncode) throws IOException {
