@@ -1,18 +1,18 @@
 package nl.nn.adapterframework.pipes;
 
-import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.core.PipeForward;
-import nl.nn.adapterframework.core.PipeRunException;
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.util.ClassUtils;
-import org.apache.commons.digester.Digester;
-import org.apache.commons.digester.xmlrules.*;
-import java.io.*;
+import java.io.ByteArrayInputStream;
 import java.net.URL;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.util.ClassUtils;
+import org.apache.commons.digester.Digester;
+import org.apache.commons.digester.xmlrules.DigesterLoader;
+
 /**
- * Converts an XML string (input) to a set of java object using the
+ * Converts an XML string (input) to a set of java objects using the
  * <a href="http://jakarta.apache.org/commons/digester">digester</a>.
  * <p>The result is an anonymous object. Your digester-rules file should specify
  * how the xml file is parsed, and what the root object will be.</p>
@@ -27,7 +27,7 @@ import java.net.URL;
  * <tr><th>state</th><th>condition</th></tr>
  * <tr><td>"success"</td><td>default</td></tr>
  * </table></p>
- * <p> $Id: DigesterPipe.java,v 1.3 2004-02-09 11:07:13 a1909356#db2admin Exp $ </p>
+ * <p> $Id: DigesterPipe.java,v 1.4 2004-02-09 11:37:51 a1909356#db2admin Exp $ </p>
  * @author Richard Punt
  * @since 4.0.1 : adjustments to support multi-threading
  */
