@@ -1,8 +1,13 @@
+/*
+ * $Log: MailSender.java,v $
+ * Revision 1.3  2004-03-24 13:58:36  L190409
+ * removed TimeOutException
+ *
+ */
 package nl.nn.adapterframework.pipes;
 
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -51,12 +56,12 @@ import java.util.Vector;
  * <tr><td>{@link #setDefaultSubject(String) defaultSubject}</td><td>value of the Subject: header if not specified in message itself</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
- * <p>$Id: MailSender.java,v 1.2 2004-02-04 10:01:56 a1909356#db2admin Exp $</p>
+ * <p>$Id: MailSender.java,v 1.3 2004-03-24 13:58:36 L190409 Exp $</p>
  * @author Johan Verrips
  */
 
 public class MailSender implements ISender {
-	public static final String version="$Id: MailSender.java,v 1.2 2004-02-04 10:01:56 a1909356#db2admin Exp $";
+	public static final String version="$Id: MailSender.java,v 1.3 2004-03-24 13:58:36 L190409 Exp $";
 
     protected Logger log = Logger.getLogger(this.getClass());;
     private String smtpHost;
@@ -143,7 +148,7 @@ public void open() throws SenderException {
 /**
  * Send a mail conforming to the XML input
  */
-public String sendMessage(String correlationID, String input) throws SenderException, TimeOutException {
+public String sendMessage(String correlationID, String input) throws SenderException {
 	// initialize this request
 	String from=defaultFrom;
 	String subject=defaultSubject;
