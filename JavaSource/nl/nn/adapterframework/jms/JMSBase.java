@@ -1,8 +1,13 @@
+/*
+ * $Log: JMSBase.java,v $
+ * Revision 1.5  2004-03-23 18:24:38  L190409
+ * delegated copying of JmsRealm properties to method of JmsRealm
+ *
+ */
 package nl.nn.adapterframework.jms;
 
 import com.ibm.mq.jms.JMSC;
 import com.ibm.mq.jms.MQQueue;
-import org.apache.commons.beanutils.PropertyUtils;
 
 import javax.jms.*;
 import javax.naming.NamingException;
@@ -15,7 +20,7 @@ import javax.naming.NamingException;
  * The <code>destinationType</code> field specifies which
  * type should be used.<br/>
  *
- * <p>$Id: JMSBase.java,v 1.4 2004-03-11 09:23:50 NNVZNL01#L180564 Exp $</p>
+ * <p>$Id: JMSBase.java,v 1.5 2004-03-23 18:24:38 L190409 Exp $</p>
  * 
  * @deprecated This class remembers too much: It stores jms-receivers and jms-senders
  *             as object-members. Please use {@link JMSFacade} instead.
@@ -23,7 +28,7 @@ import javax.naming.NamingException;
  * @author     Johan Verrips
  */
 public class JMSBase extends JNDIBase {
-	public static final String version="$Id: JMSBase.java,v 1.4 2004-03-11 09:23:50 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: JMSBase.java,v 1.5 2004-03-23 18:24:38 L190409 Exp $";
 
 
     private int ackMode;
@@ -250,8 +255,6 @@ public class JMSBase extends JNDIBase {
      * @return          The acknowledgeModeAsString value
      */
     public String getAcknowledgeModeAsString(int ackMode) {
-        
-
         String ackString;
         if (Session.AUTO_ACKNOWLEDGE == ackMode) {
             ackString = "Auto";
@@ -750,39 +753,14 @@ public java.lang.String getName() {
  	 * @see JmsRealm
  	 */ 
 	public void setJmsRealm(String jmsRealmName){
-	    JmsRealm jmsRealm=JmsRealmFactory.getInstance().getJmsRealm(jmsRealmName);
-	    if (null==jmsRealm){
-		    log.error("["+name+"] jmsRealm ["+jmsRealmName+"] does not exist");
-		    return;
-	    }
-	    try {
-		    PropertyUtils.copyProperties(this, jmsRealm);
-	    }catch (Exception e) {
-			log.error("["+name+"] unable to copy properties of JmsRealm:"+e.getMessage());
-		}
-	    log.info("["+name+"] loaded properties from jmsRealm ["+jmsRealm.toString()+"]");
-		    
-    }
-/**
- * Insert the method's description here.
- * Creation date: (22-05-2003 12:09:18)
- * @param newName java.lang.String
- */
+		JmsRealm.copyRealm(this,jmsRealmName);
+	}
 public void setName(java.lang.String newName) {
 	name = newName;
 }
-    /**
-     *  Sets the persistent 
-     *
-     * @param  value  The new persistent value
-     */
     public void setPersistent(boolean value) {
         persistent = value;
     }
-    /**
-     *  sets the queueConnectionFactoryName 
-     *
-    */
     public void setQueueConnectionFactoryName(String name) {
         queueConnectionFactoryName=name;
     }
