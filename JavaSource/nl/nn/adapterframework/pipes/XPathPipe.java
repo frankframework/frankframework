@@ -1,6 +1,9 @@
 /*
  * $Log: XPathPipe.java,v $
- * Revision 1.3  2004-05-05 09:30:53  NNVZNL01#L180564
+ * Revision 1.4  2004-08-03 12:28:46  L190409
+ * replaced embedded stylesheet with call to xmlutils.createxpathevaluator
+ *
+ * Revision 1.3  2004/05/05 09:30:53  Johan Verrips <johan.verrips@ibissource.org>
  * added sessionkey feature
  *
  * Revision 1.2  2004/04/27 11:42:40  unknown <unknown@ibissource.org>
@@ -60,23 +63,13 @@ public class XPathPipe extends FixedForwardPipe {
 		super.configure();
 
 		if (StringUtils.isEmpty(xpathExpression))
-			throw new ConfigurationException("xpathExpression must be filled");
-			
-		String xsl = 
-			"<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
-			"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"1.0\" xmlns:xalan=\"http://xml.apache.org/xslt\">" +
-			"<xsl:output method=\"text\"/>" +
-			"<xsl:strip-space elements=\"*\"/>" +
-   			"<xsl:template match=\"/\">" +
-			"<xsl:value-of select=\"" + getXpathExpression() + "\"/>" +
-			"</xsl:template>" +
-			"</xsl:stylesheet>";
-			
+			throw new ConfigurationException(getLogPrefix(null)+"xpathExpression must be filled");
+						
 		try {
-			transformer = XmlUtils.createTransformer(new StreamSource(new ByteArrayInputStream(xsl.getBytes())));
+			transformer = XmlUtils.createXPathEvaluator(getXpathExpression()); 
 		}
 		catch(TransformerConfigurationException e) {
-			throw new ConfigurationException(e);
+			throw new ConfigurationException(getLogPrefix(null)+"cannot create XPath-evaluator from ["+getXpathExpression()+"]",e);
 		}
 	}
 
@@ -89,10 +82,10 @@ public class XPathPipe extends FixedForwardPipe {
 		
 		if (! StringUtils.isEmpty(in)) {
 			try {
-				out = XmlUtils.transformXml(transformer, new StreamSource(new ByteArrayInputStream(in.getBytes())));
+				out = XmlUtils.transformXml(transformer, in);
 			} 
 			catch (Exception e) {
-				throw new PipeRunException(this, "Error during xsl transformation", e);
+				throw new PipeRunException(this, getLogPrefix(session)+"error during xsl transformation", e);
 			}
 		}
 		if (StringUtils.isEmpty(getSessionKey())){
