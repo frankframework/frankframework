@@ -1,7 +1,15 @@
+/*
+ * $Log: PipeLine.java,v $
+ * Revision 1.4  2004-03-24 08:29:17  L190409
+ * changed String 'adapterName' to Adapter 'adapter'
+ * enabled XA transactions
+ *
+ */
 package nl.nn.adapterframework.core;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.Semaphore;
 import nl.nn.adapterframework.util.StatisticsKeeper;
@@ -9,6 +17,9 @@ import org.apache.log4j.Logger;
 
 import java.util.Enumeration;
 import java.util.Hashtable;
+
+import javax.transaction.Status;
+import javax.transaction.UserTransaction;
 
 /**
  * Processor and keeper of a line of {@link IPipe Pipes}.
@@ -18,14 +29,15 @@ import java.util.Hashtable;
  * <br/>
  * In the AppConstants there may be a property named "log.logIntermediaryResults" (true/false)
  * which indicates wether the intermediary results (between calling pipes) have to be logged.
- * <p>$Id: PipeLine.java,v 1.3 2004-03-11 09:12:57 NNVZNL01#L180564 Exp $</p>
+ * <p>$Id: PipeLine.java,v 1.4 2004-03-24 08:29:17 L190409 Exp $</p>
  * 
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version="$Id: PipeLine.java,v 1.3 2004-03-11 09:12:57 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: PipeLine.java,v 1.4 2004-03-24 08:29:17 L190409 Exp $";
     private Logger log = Logger.getLogger(this.getClass());
-	private String adapterName; // for logging purposes
+	private Adapter adapter; // for logging purposes, and for transaction managing
+	private boolean transacted=false;
     private Hashtable pipeStatistics = new Hashtable();
     private Hashtable pipeWaitingStatistics = new Hashtable();
     private Hashtable globalForwards = new Hashtable();
@@ -70,7 +82,7 @@ public void configurePipes() throws ConfigurationException {
     Enumeration pipeNames=pipelineTable.keys();
     while (pipeNames.hasMoreElements()) {
 		String pipeName=(String)pipeNames.nextElement();
-        log.debug("Pipeline of ["+adapterName+"] configuring "+pipelineTable.get(pipeName).toString());
+        log.debug("Pipeline of ["+adapter.getName()+"] configuring "+pipelineTable.get(pipeName).toString());
 		IPipe pipe=(IPipe) pipelineTable.get(pipeName);
 
 		// register the global forwards at the Pipes
@@ -83,7 +95,7 @@ public void configurePipes() throws ConfigurationException {
 			pipe.registerForward(pipeForward);
 		}
 		pipe.configure();
-		log.debug("Pipeline of ["+adapterName+"]: Pipe ["+pipeName+"] successfully configured");
+		log.debug("Pipeline of ["+adapter.getName()+"]: Pipe ["+pipeName+"] successfully configured");
 	}
     if (pipeLineExits.size()<1) {
 	    throw new ConfigurationException("no PipeLine Exits specified");
@@ -137,6 +149,7 @@ private Semaphore getSemaphore(IPipe pipeToRun) {
     return null;
 
 }
+
 /**
  * The <code>process</code> method does the processing of a message.<br/>
  * It retrieves the first pipe to execute from the <code>firstPipe</code field,
@@ -148,15 +161,8 @@ private Semaphore getSemaphore(IPipe pipeToRun) {
  * @throws PipeRunException when something went wrong in the pipes.
  */
 public PipeLineResult process(String messageId, String message) throws PipeRunException {
-    // Object is the object that is passed to and returned from Pipes
-    Object object = (Object) message;
-    PipeRunResult pipeRunResult;
-    
-    long pipeStartTime = System.currentTimeMillis();
 
     PipeLineSession pipeLineSession= new PipeLineSession();
-    // the PipeLineResult 
-	PipeLineResult pipeLineResult=new PipeLineResult();   
 	// reset the PipeLineSession and store the message and its id in the session
 	if (messageId==null) {
 			messageId=Misc.createSimpleUUID();
@@ -164,6 +170,61 @@ public PipeLineResult process(String messageId, String message) throws PipeRunEx
 
 	} 
 	pipeLineSession.reset(message, messageId);
+	pipeLineSession.setTransacted(isTransacted());
+	UserTransaction utx = null;
+	PipeLineResult result;
+
+	try {
+		if (isTransacted() && !adapter.inTransaction()) {
+			log.debug("Pipeline of adapter ["+ adapter.getName()+"], starting transaction for msgid ["+messageId+"]");
+			utx = adapter.getUserTransaction();
+			utx.begin();
+		}
+	} catch (Exception e) {
+		throw new PipeRunException(null, "Pipeline of adapter ["+ adapter.getName()+"] got exception starting transaction for msgid ["+messageId+"]");
+	}
+
+	try {
+		result = processPipeLine(messageId, message, pipeLineSession);
+		if (utx!=null) {
+			int txStatus = utx.getStatus();
+			if (txStatus == Status.STATUS_ACTIVE) {
+				log.debug("Pipeline of adapter ["+ adapter.getName()+"], msgid ["+messageId+"] transaction has status ACTIVE, performing commit");
+				utx.commit();
+			}
+			else {
+				log.warn("Pipeline of adapter ["+ adapter.getName()+"], msgid ["+messageId+"] transaction has status "+JtaUtil.displayTransactionStatus(txStatus)+", performing ROLL BACK");
+				utx.rollback();
+			}
+		}
+		return result;
+	} catch (Exception e) {
+		if (utx!=null) {
+			log.info("Pipeline of adapter ["+ adapter.getName()+"], msgid ["+messageId+"] caught exception, will now perform rollback, (exception will be rethrown, exception message ["+ e.getMessage()+"])");
+			try {
+				utx.rollback();
+			} catch (Exception txe) {
+				log.error("Pipeline of adapter ["+ adapter.getName()+"], msgid ["+messageId+"] got error rolling back transaction", txe);
+			}
+		}
+		if (e instanceof PipeRunException)
+			throw (PipeRunException)e;
+		else
+			throw new PipeRunException(null, "Pipeline of adapter ["+ adapter.getName()+"] got error handling transaction", e);
+	}
+
+}
+
+protected PipeLineResult processPipeLine(String messageId, String message, PipeLineSession pipeLineSession) throws PipeRunException {
+    // Object is the object that is passed to and returned from Pipes
+    Object object = (Object) message;
+    PipeRunResult pipeRunResult;
+    // the PipeLineResult 
+	PipeLineResult pipeLineResult=new PipeLineResult();   
+    
+    long pipeStartTime = System.currentTimeMillis();
+
+
 	
     // ready indicates wether the pipeline processing is complete
     boolean ready=false;
@@ -174,7 +235,7 @@ public PipeLineResult process(String messageId, String message) throws PipeRunEx
     while (!ready){
 		if (log.isDebugEnabled()){  // for performance reasons
 			StringBuffer sb=new StringBuffer();
-			sb.append("Pipeline of adapter ["+adapterName+"] messageId ["+messageId+"] is about to call pipe ["+ pipeToRun.getName()+"]");
+			sb.append("Pipeline of adapter ["+adapter.getName()+"] messageId ["+messageId+"] is about to call pipe ["+ pipeToRun.getName()+"]");
 
 			if (AppConstants.getInstance().getProperty("log.logIntermediaryResults")!=null) {
 				if (AppConstants.getInstance().getProperty("log.logIntermediaryResults").equalsIgnoreCase("true")) {
@@ -183,7 +244,6 @@ public PipeLineResult process(String messageId, String message) throws PipeRunEx
 			}
 			log.debug(sb.toString());
 		}
-
 
         // start it
 		long waitingDuration = 0;
@@ -230,12 +290,12 @@ public PipeLineResult process(String messageId, String message) throws PipeRunEx
 
                 
         if (pipeForward==null){
-            throw new PipeRunException(pipeToRun, "Pipeline of ["+adapterName+"] received result from pipe ["+pipeToRun.getName()+"] without a pipeForward");
+            throw new PipeRunException(pipeToRun, "Pipeline of ["+adapter.getName()+"] received result from pipe ["+pipeToRun.getName()+"] without a pipeForward");
         }
         // get the next pipe to run
         String nextPath=pipeForward.getPath();
         if ((null==nextPath) || (nextPath.length()==0)){
-            throw new PipeRunException(pipeToRun, "Pipeline of ["+adapterName+"] got an path that equals null or has a zero-length value from pipe ["+pipeToRun.getName()+"]. Check the configuration, probably forwards are not defined for this pipe.");
+            throw new PipeRunException(pipeToRun, "Pipeline of ["+adapter.getName()+"] got an path that equals null or has a zero-length value from pipe ["+pipeToRun.getName()+"]. Check the configuration, probably forwards are not defined for this pipe.");
         }
 
         if (null!=pipeLineExits.get(nextPath)){
@@ -245,14 +305,14 @@ public PipeLineResult process(String messageId, String message) throws PipeRunEx
             ready=true;
 			if (log.isDebugEnabled()){  // for performance reasons
 	        log.debug(
-	            "Pipeline of adapter ["+ adapterName+ "] finished processing messageId ["+messageId+"] result: ["+ object.toString()+ "] with exit-state ["+state+"]");
+	            "Pipeline of adapter ["+ adapter.getName()+ "] finished processing messageId ["+messageId+"] result: ["+ object.toString()+ "] with exit-state ["+state+"]");
 			}
         } else {
 	        pipeToRun=(IPipe)pipelineTable.get(pipeForward.getPath());
         }
 
 		if (pipeToRun==null) {
-			throw new PipeRunException(null, "Pipeline of adapter ["+ adapterName+"] got an erroneous definition. Pipe to execute. ["+pipeForward.getPath()+ "] is not defined.");
+			throw new PipeRunException(null, "Pipeline of adapter ["+ adapter.getName()+"] got an erroneous definition. Pipe to execute. ["+pipeForward.getPath()+ "] is not defined.");
 		}
 		
     }
@@ -272,8 +332,8 @@ public PipeLineResult process(String messageId, String message) throws PipeRunEx
      * Register the adapterName of this Pipelineprocessor. 
      * @param adapterName
      */
-    public void setAdapterName(String adapterName) {
-        this.adapterName = adapterName;
+    public void setAdapter(Adapter adapter) {
+        this.adapter = adapter;
     }
    /**
     * The indicator for the end of the processing, with default state "undefined".
@@ -296,18 +356,18 @@ public PipeLineResult process(String messageId, String message) throws PipeRunEx
         firstPipe=pipeName;
     }
 public void start() throws PipeStartException {
-    log.info("Pipeline of ["+adapterName+"] is starting pipeline");
+    log.info("Pipeline of ["+adapter.getName()+"] is starting pipeline");
 
     Enumeration pipeNames = pipelineTable.keys();
     while (pipeNames.hasMoreElements()) {
         String pipeName = (String) pipeNames.nextElement();
 
         IPipe pipe = (IPipe) pipelineTable.get(pipeName);
-        log.debug("Pipeline of ["+adapterName+"] starting " + pipe.getName());
+        log.debug("Pipeline of ["+adapter.getName()+"] starting " + pipe.getName());
         pipe.start();
-        log.debug("Pipeline of ["+adapterName+"] successfully started pipe [" + pipe.getName() + "]");
+        log.debug("Pipeline of ["+adapter.getName()+"] successfully started pipe [" + pipe.getName() + "]");
     }
-    log.info("Pipeline of ["+adapterName+"] is successfully started pipeline");
+    log.info("Pipeline of ["+adapter.getName()+"] is successfully started pipeline");
 
 }
 /**
@@ -316,17 +376,17 @@ public void start() throws PipeStartException {
  * @see IPipe#stop
  */
 public void stop() {
-    log.info("Pipeline of ["+adapterName+"] is closing pipeline");
+    log.info("Pipeline of ["+adapter.getName()+"] is closing pipeline");
     Enumeration pipeNames = pipelineTable.keys();
     while (pipeNames.hasMoreElements()) {
         String pipeName = (String) pipeNames.nextElement();
 
         IPipe pipe = (IPipe) pipelineTable.get(pipeName);
-        log.debug("Pipeline of ["+adapterName+"] is stopping [" + pipe.getName()+"]");
+        log.debug("Pipeline of ["+adapter.getName()+"] is stopping [" + pipe.getName()+"]");
         pipe.stop();
-        log.debug("Pipeline of ["+adapterName+"] successfully stopped pipe [" + pipe.getName() + "]");
+        log.debug("Pipeline of ["+adapter.getName()+"] successfully stopped pipe [" + pipe.getName() + "]");
     }
-    log.debug("Pipeline of ["+adapterName+"] successfully closed pipeline");
+    log.debug("Pipeline of ["+adapter.getName()+"] successfully closed pipeline");
 
 }
     /**
@@ -338,13 +398,14 @@ public void stop() {
      */
     public String toString(){
         String result="";
-        result+="[adapterName="+adapterName+"]";
+        result+="[adapterName="+(adapter==null ? "-none-" : adapter.getName())+"]";
+        result+="[startPipe="+firstPipe+"]";
+        result+="[transacted="+transacted+"]";
         Enumeration pipeNames=pipelineTable.keys();
         while (pipeNames.hasMoreElements()){
             String pipeName=(String)pipeNames.nextElement();
             result+="["+((IPipe)pipelineTable.get(pipeName)).getName()+"]";
         }
-        result+="[startPipe="+firstPipe+"]";
         Enumeration exitKeys=pipeLineExits.keys();
         while (exitKeys.hasMoreElements()){
             String exitPath=(String)exitKeys.nextElement();
@@ -353,4 +414,13 @@ public void stop() {
         }
         return result;
     }
+
+	public boolean isTransacted() {
+		return transacted;
+	}
+
+	public void setTransacted(boolean transacted) {
+		this.transacted = transacted;
+	}
+
 }
