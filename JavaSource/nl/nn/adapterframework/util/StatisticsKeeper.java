@@ -10,7 +10,7 @@ import java.util.StringTokenizer;
  * @author Johan Verrips
  */
 public class StatisticsKeeper {
-	public static final String version="$Id: StatisticsKeeper.java,v 1.3 2004-03-26 10:42:42 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: StatisticsKeeper.java,v 1.4 2004-07-22 11:13:16 L190409 Exp $";
 	
 	private String name = null;
 	private long min = Integer.MAX_VALUE;
@@ -18,17 +18,19 @@ public class StatisticsKeeper {
     private long count = 0;
     private long total = 0;
     private long totalSquare=0;
+	private long first=0;
     private long last=0;
     private long classBoundaries[];
     private long classCounts[];
 
    	// key that is looked up to retrieve texts to be signalled
 	private static String statConfigKey="Statistics.boundaries";
-    
+ 
+ 	public static final int NUM_STATIC_ITEMS=8;   
     public static final int ITEM_TYPE_INTEGER=1;
     public static final int ITEM_TYPE_TIME=2;
     public static final int ITEM_TYPE_FRACTION=3;
-    public static final String DEFAULT_BOUNDARY_LIST="100,500,1000";
+    public static final String DEFAULT_BOUNDARY_LIST="100,500,1000,5000";
 /**
  * Constructor for StatisticsKeeper.
  *
@@ -65,6 +67,9 @@ public StatisticsKeeper(StatisticsKeeper stat) {
     classCounts = new long[classBoundaries.length];
 }
 public void addValue(long value) {
+	if (count==0) { 
+		first=value;
+	}
     ++count;
     total += value;
     if (value > max) {
@@ -103,7 +108,7 @@ public long[] getClassCounts() {
     }
     public int getItemCount()
     {
-        return 7+classBoundaries.length;
+        return NUM_STATIC_ITEMS+classBoundaries.length;
     }
     public String getItemName(int index)
     {
@@ -112,10 +117,11 @@ public long[] getClassCounts() {
 		    case 1: return "min";
 		    case 2: return "max";
 		    case 3: return "avg";
-		    case 4: return "total";
-		    case 5: return "stdDev";
-		    case 6: return "last";
-		    default : return "< "+classBoundaries[index-7]+"ms";
+			case 4: return "stdDev";
+			case 5: return "first";
+			case 6: return "last";
+		    case 7: return "total";
+		    default : return "< "+classBoundaries[index-NUM_STATIC_ITEMS]+"ms";
 	    }
     }
     public int getItemType(int index)
@@ -127,7 +133,8 @@ public long[] getClassCounts() {
 		    case 3: return ITEM_TYPE_TIME;
 		    case 4: return ITEM_TYPE_TIME;
 		    case 5: return ITEM_TYPE_TIME;
-		    case 6: return ITEM_TYPE_TIME;
+			case 6: return ITEM_TYPE_TIME;
+		    case 7: return ITEM_TYPE_TIME;
 		    default : return ITEM_TYPE_FRACTION;
 	    }
     }
@@ -138,16 +145,20 @@ public long[] getClassCounts() {
 		    case 1: if (getCount() == 0) return null; else return new Long(getMin());
 		    case 2: if (getCount() == 0) return null; else return new Long(getMax());
 		    case 3: if (getCount() == 0) return null; else return new Double(getAvg());
-		    case 4: if (getCount() == 0) return null; else return new Long(getTotal());
-		    case 5: if (getCount() == 0) return null; else return new Double(getStdDev());
-		    case 6: if (getCount() == 0) return null; else return new Double(getLast());
+			case 4: if (getCount() == 0) return null; else return new Double(getStdDev());
+		    case 5: if (getCount() == 0) return null; else return new Long(getFirst());
+		    case 6: if (getCount() == 0) return null; else return new Long(getLast());
+			case 7: if (getCount() == 0) return null; else return new Long(getTotal());
 		    default : if (getCount() == 0) return null; 
-		    	else return new Double(new Double(classCounts[index-7]).doubleValue()/getCount());
+		    	else return new Double(new Double(classCounts[index-NUM_STATIC_ITEMS]).doubleValue()/getCount());
 	    }
     }
-    public long getLast() {
-	    return last;
+    public long getFirst() {
+	    return first;
     }
+	public long getLast() {
+		return last;
+	}
     public long getMax()
     {
         return max;
@@ -156,14 +167,10 @@ public long[] getClassCounts() {
     {
         return min;
     }
-/**
- * Insert the method's description here.
- * Creation date: (04-11-2003 10:50:11)
- * @return java.lang.String
- */
-public java.lang.String getName() {
-	return name;
-}
+
+	public String getName() {
+		return name;
+	}
     public double getStdDev() {
     	
     	return Math.sqrt(getVariance());
