@@ -1,6 +1,9 @@
 /*
  * $Log: TransformerPool.java,v $
- * Revision 1.2  2004-10-12 15:15:03  L190409
+ * Revision 1.3  2004-10-14 16:12:00  L190409
+ * made creation of Transformes synchronized
+ *
+ * Revision 1.2  2004/10/12 15:15:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected XmlDeclaration-handling
  *
  * Revision 1.1  2004/10/05 09:56:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -30,7 +33,7 @@ import org.apache.log4j.Logger;
  * @author Gerrit van Brakel
  */
 public class TransformerPool {
-	public static final String version = "$Id: TransformerPool.java,v 1.2 2004-10-12 15:15:03 L190409 Exp $";
+	public static final String version = "$Id: TransformerPool.java,v 1.3 2004-10-14 16:12:00 L190409 Exp $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	private TransformerFactory tFactory = TransformerFactory.newInstance();
@@ -92,7 +95,7 @@ public class TransformerPool {
 		pool.invalidateObject(t);
 	}
 
-    protected Transformer createTransformer() throws TransformerConfigurationException {
+    protected synchronized Transformer createTransformer() throws TransformerConfigurationException {
 		Transformer t = tFactory.newTransformer(source);
 		if (t==null) {
 			throw new TransformerConfigurationException("cannot instantiate transformer from Source ["+source.getSystemId()+"]");
