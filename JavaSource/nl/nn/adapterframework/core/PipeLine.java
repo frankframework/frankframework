@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.11  2004-07-20 13:04:45  L190409
+ * Revision 1.12  2004-08-19 09:07:02  a1909356#db2admin
+ * Add not-null validation for message
+ *
+ * Revision 1.11  2004/07/20 13:04:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Corrected erroneous pipe run statistics (yet another time)
  *
  * Revision 1.10  2004/07/05 09:54:44  Johan Verrips <johan.verrips@ibissource.org>
@@ -93,7 +96,7 @@ import javax.transaction.UserTransaction;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version="$Id: PipeLine.java,v 1.11 2004-07-20 13:04:45 L190409 Exp $";
+	public static final String version="$Id: PipeLine.java,v 1.12 2004-08-19 09:07:02 a1909356#db2admin Exp $";
     private Logger log = Logger.getLogger(this.getClass());
 	private Adapter adapter; // for logging purposes, and for transaction managing
 	private boolean transacted=false;
@@ -232,7 +235,10 @@ public class PipeLine {
 				messageId=Misc.createSimpleUUID();
 				log.error("null value for messageId, setting to ["+messageId+"]");
 	
-		} 
+		}
+		if (message == null) {
+			throw new PipeRunException(null, "Pipeline of adapter ["+ adapter.getName()+"] received null message");
+		}
 		pipeLineSession.reset(message, messageId);
 		pipeLineSession.setTransacted(isTransacted());
 		UserTransaction utx = null;
