@@ -1,6 +1,9 @@
 /*
  * $Log: WebServiceSender.java,v $
- * Revision 1.7  2004-09-08 14:17:28  L190409
+ * Revision 1.8  2004-09-09 14:48:47  L190409
+ * removed unused imports
+ *
+ * Revision 1.7  2004/09/08 14:17:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * better handling of SOAP faults
  *
  * Revision 1.6  2004/09/02 13:25:39  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -23,53 +26,25 @@
 package nl.nn.adapterframework.http;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.HasPhysicalDestination;
-import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.XmlUtils;
 
 
-import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.log4j.Logger;
 
 
-
-/*
-import org.apache.soap.Constants;
-import org.apache.soap.Fault;
-import org.apache.soap.encoding.SOAPMappingRegistry;
-import org.apache.soap.rpc.Call;
-import org.apache.soap.rpc.Parameter;
-import org.apache.soap.rpc.Response;
-import org.apache.soap.transport.http.SOAPHTTPConnection;
-*/
-
-
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.net.URL;
 
-/*
-import javax.xml.soap.MessageFactory;
-import javax.xml.soap.SOAPBody;
-import javax.xml.soap.SOAPException;
-import javax.xml.soap.SOAPFault;
-import javax.xml.soap.SOAPMessage;
-import javax.xml.soap.SOAPPart;
-*/
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
 
 /**
- * Sender that sends a message via a WebService
+ * Sender that sends a message via a WebService.
  * 
  * <p><b>Configuration:</b>
  * <table border="1">
@@ -101,7 +76,7 @@ import javax.xml.transform.TransformerException;
  */
 
 public class WebServiceSender extends HttpSender {
-	public static final String version="$Id: WebServiceSender.java,v 1.7 2004-09-08 14:17:28 L190409 Exp $";
+	public static final String version="$Id: WebServiceSender.java,v 1.8 2004-09-09 14:48:47 L190409 Exp $";
 	
 
 	private String soapActionURI = "";
