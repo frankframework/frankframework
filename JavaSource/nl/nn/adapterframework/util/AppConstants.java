@@ -83,7 +83,7 @@ import org.apache.commons.lang.StringUtils;
  * 
  */
 public final class AppConstants extends Properties implements Serializable{
-	public static final String version="$Id: AppConstants.java,v 1.3 2004-03-26 10:42:43 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: AppConstants.java,v 1.4 2005-02-17 09:48:04 L190409 Exp $";
 	
 	public final static String propertiesFileName="AppConstants.properties";
 	private static AppConstants self=null;
@@ -286,16 +286,19 @@ public synchronized void load(String filename) {
         try {
             URL url = ClassUtils.getResourceURL(this, theFilename);
 
-            InputStream is = url.openStream();
-            load(is);
-            log.info("Application constants loaded from [" + url.toString() + "]");
-            if (getProperty(additionalPropertiesFileKey) != null) {
-                // prevent reloading of the same file over and over again
-                String loadFile = getProperty(additionalPropertiesFileKey);
-                this.remove(additionalPropertiesFileKey);
-                load(loadFile);
-            }
-
+			if (url==null) {
+				log.warn("cannot find resource ["+theFilename+"] to load additional properties from, ignoring");
+			} else {
+	            InputStream is = url.openStream();
+	            load(is);
+	            log.info("Application constants loaded from [" + url.toString() + "]");
+	            if (getProperty(additionalPropertiesFileKey) != null) {
+	                // prevent reloading of the same file over and over again
+	                String loadFile = getProperty(additionalPropertiesFileKey);
+	                this.remove(additionalPropertiesFileKey);
+	                load(loadFile);
+	            }
+			}
         } catch (IOException e) {
             log.error("error reading [" + propertiesFileName + "]", e);
         }
