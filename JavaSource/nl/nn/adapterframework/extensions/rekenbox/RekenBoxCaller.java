@@ -1,18 +1,16 @@
+/*
+ * $Log: RekenBoxCaller.java,v $
+ * Revision 1.2  2004-03-24 15:30:30  L190409
+ * cleaned up unused comments
+ *
+ */
 package nl.nn.adapterframework.extensions.rekenbox;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.BufferedReader;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.Hashtable;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.util.Misc;
 /**
@@ -59,13 +57,13 @@ import nl.nn.adapterframework.util.Misc;
  * @version Id
  */
 public class RekenBoxCaller extends FixedForwardPipe {
+	public static final String version="$Id: RekenBoxCaller.java,v 1.2 2004-03-24 15:30:30 L190409 Exp $";
 	private String runPath;
 	private String executableExtension="exe"; //bat, com or exe
 	private String inputOutputDirectory;
 	private String templateDir;
 	private boolean cleanup=true;
 	private String commandLineType="straigth";
-	public static final String version="$Id: RekenBoxCaller.java,v 1.1 2004-03-11 08:13:38 NNVZNL01#L180564 Exp $";
 /**
  * output-property to communicate the name of the rekenbox to adios2Xml converter
  */
@@ -80,12 +78,12 @@ public void configure() throws ConfigurationException {
 	super.configure();
 }
 /**
- * positie 1 t/m 8 bepalen de naam van de executable
+ * positie 1 t/m 8 bepalen de naam van de executable, of tot aan de ':' (wat het eerst komt)
  */
 public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRunException {
     if (!(input instanceof String))
         throw new PipeRunException(this, 
-            "expected java.lang.String, got [" + input.getClass().getName() + "], value ["+input+"]");
+            getLogPrefix(session)+"expected java.lang.String, got [" + input.getClass().getName() + "], value ["+input+"]");
     String sInput = (String) input;
 //	log.debug("Pipe ["+name+"] got input ["+sInput+"]");
 
@@ -97,12 +95,12 @@ public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRu
 	rekenboxName = (rekenboxName+":").substring(0, (rekenboxName+":").indexOf(":")).trim();
 
 	if (rekenboxName.equals("")) {
-		throw new PipeRunException(this, "Pipe ["+getName()+"] cannot determine rekenboxName from ["+sInput+"]");
+		throw new PipeRunException(this, getLogPrefix(session)+"cannot determine rekenboxName from ["+sInput+"]");
 	}
 	
     String exeName = runPath+rekenboxName+ "."+executableExtension;
 	if (!(new File(exeName).exists())) {
-		throw new PipeRunException(this, "Pipe ["+getName()+"] executable file ["+exeName+"] does not exist; requestmessage: ["+sInput+"]");
+		throw new PipeRunException(this, getLogPrefix(session)+"executable file ["+exeName+"] does not exist; requestmessage: ["+sInput+"]");
 	}
 
 	if (getRekenboxSessionKey() != null) {
@@ -145,15 +143,8 @@ public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRu
 //		log.debug("Pipe ["+name+"] retrieved result ["+result+"]");
 	    return new PipeRunResult(getForward(), result);
 		
-		} catch (IOException e) {
-        log.error("Pipe ["+getName()+"] got IOException!", e);
-        throw new PipeRunException(this, "Pipe ["+getName()+"] got IOException!", e);
-    } catch (InterruptedException e) {
-        log.error("Interrupted waiting for process!");
-        throw new PipeRunException(this, getName() + "got InterruptedException", e);
     } catch (Exception e) {
-	   	log.error("Pipe ["+getName()+"] got Exception : ",e);
-	   	throw new PipeRunException(this, getName() + "got Exception", e);
+	   	throw new PipeRunException(this, getLogPrefix(session)+"got Exception executing rekenbox", e);
     } finally {
 		// cleanup
 		if (isCleanup()){
@@ -163,91 +154,46 @@ public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRu
     }
     
 }
-/**
- * Insert the method's description here.
- * Creation date: (15-07-2003 10:52:01)
- * @return java.lang.String
- */
-public java.lang.String getCommandLineType() {
+public String getCommandLineType() {
 	return commandLineType;
 }
-/**
- * Insert the method's description here.
- * Creation date: (16-04-2003 8:38:31)
- * @return java.lang.String
- */
-public java.lang.String getExecutableExtension() {
+public String getExecutableExtension() {
 	return executableExtension;
 }
-/**
- * Insert the method's description here.
- * Creation date: (16-04-2003 8:38:31)
- * @return java.lang.String
- */
-public java.lang.String getInputOutputDirectory() {
+public String getInputOutputDirectory() {
 	return inputOutputDirectory;
 }
-/**
- * Insert the method's description here.
- * Creation date: (20-08-2003 11:25:21)
- * @return java.lang.String
- */
-public java.lang.String getRekenboxSessionKey() {
+public String getRekenboxSessionKey() {
 	return rekenboxSessionKey;
 }
-public java.lang.String getRunPath() {
+public String getRunPath() {
 	return runPath;
 }
-public java.lang.String getTemplateDir() {
+public String getTemplateDir() {
 	return templateDir;
 }
 public boolean isCleanup() {
 	return cleanup;
 }
-/**
- * Insert the method's description here.
- * Creation date: (16-04-2003 11:15:10)
- * @param newCleanup boolean
- */
 public void setCleanup(boolean newCleanup) {
 	cleanup = newCleanup;
 }
-/**
- * Insert the method's description here.
- * Creation date: (15-07-2003 10:52:01)
- * @param newCommandLineType java.lang.String
- */
-public void setCommandLineType(java.lang.String newCommandLineType) {
+public void setCommandLineType(String newCommandLineType) {
 	commandLineType = newCommandLineType;
 }
 public void setExecutableExtension(String newExecutableExtension) {
 	executableExtension = newExecutableExtension;
 }
-/**
- * Insert the method's description here.
- * Creation date: (16-04-2003 8:38:31)
- * @param newInputOutputDirectory java.lang.String
- */
-public void setInputOutputDirectory(java.lang.String newInputOutputDirectory) {
+public void setInputOutputDirectory(String newInputOutputDirectory) {
 	inputOutputDirectory = newInputOutputDirectory;
 }
-/**
- * Insert the method's description here.
- * Creation date: (20-08-2003 11:25:21)
- * @param newRekenboxSessionKey java.lang.String
- */
-public void setRekenboxSessionKey(java.lang.String newRekenboxSessionKey) {
+public void setRekenboxSessionKey(String newRekenboxSessionKey) {
 	rekenboxSessionKey = newRekenboxSessionKey;
 }
-/**
- * Insert the method's description here.
- * Creation date: (16-04-2003 8:38:31)
- * @param newRunPath java.lang.String
- */
-public void setRunPath(java.lang.String newRunPath) {
+public void setRunPath(String newRunPath) {
 	runPath = newRunPath;
 }
-public void setTemplateDir(java.lang.String newTemplateDir) {
+public void setTemplateDir(String newTemplateDir) {
 	templateDir = newTemplateDir;
 }
 }
