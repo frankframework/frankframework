@@ -35,7 +35,7 @@ import java.io.IOException;
  */
 
 public class XsltPipe extends FixedForwardPipe {
-	public static final String version="$Id: XsltPipe.java,v 1.3 2004-03-26 10:42:37 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: XsltPipe.java,v 1.4 2004-04-06 10:19:40 NNVZNL01#L180564 Exp $";
 
 	private String styleSheetName;
 	private Transformer transformer;
@@ -120,5 +120,11 @@ public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRu
 	 */
 	public void setStyleSheetName(String stylesheetName){
 		this.styleSheetName=stylesheetName;
+	}
+	/**
+	 * Return the current transformer
+	 */
+	public Transformer getTransformer() {
+		return transformer;
 	}
 }
