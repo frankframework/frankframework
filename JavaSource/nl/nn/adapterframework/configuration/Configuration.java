@@ -1,6 +1,9 @@
 /*
  * $Log: Configuration.java,v $
- * Revision 1.8  2004-03-30 07:30:05  L190409
+ * Revision 1.9  2004-04-23 14:45:36  NNVZNL01#L180564
+ * added JMX support
+ *
+ * Revision 1.8  2004/03/30 07:30:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.7  2004/03/26 09:56:43  Johan Verrips <johan.verrips@ibissource.org>
@@ -45,7 +48,7 @@ import java.util.Enumeration;
  */
 public class Configuration {
     protected Logger log; 
-    public static final String version="$Id: Configuration.java,v 1.8 2004-03-30 07:30:05 L190409 Exp $";
+    public static final String version="$Id: Configuration.java,v 1.9 2004-04-23 14:45:36 NNVZNL01#L180564 Exp $";
      
     private Hashtable adapterTable = new Hashtable();
 
@@ -53,6 +56,25 @@ public class Configuration {
     private URL configurationURL;
     private URL digesterRulesURL;
     private String configurationName = "";
+    private boolean enableJMX=false;
+    
+    /**
+     *Set JMX extensions as enabled or not. Default is that JMX extensions are NOT enabled.
+     * @param enable
+     * @since 4.1.1
+     */
+    public void setEnableJMX(boolean enable){
+    	enableJMX=enable;
+    }
+
+	/**
+	 * Are JMX extensions enabled?
+     * @since 4.1.1
+	 * @return boolean
+	 */    
+    public boolean isEnableJMX(){
+    	return enableJMX;
+    }
 
     /**
      *	initializes the log and the AppConstants
@@ -185,12 +207,25 @@ public class Configuration {
         }
 
     }
+    
+    /**
+     * Register an adapter with the configuration.  If JMX is {@link #setEnableJMX(boolean) enabled},
+     * the adapter will be visible and managable as an MBEAN. 
+     * @param adapter
+     * @throws ConfigurationException
+     */
     public void registerAdapter(IAdapter adapter) throws ConfigurationException {
         if (null != adapterTable.get(adapter.getName())) {
             throw new ConfigurationException("Adapter [" + adapter.getName() + "] already registered.");
         }
         adapterTable.put(adapter.getName(), adapter);
-        log.info("Registering adapter [" + adapter.getName() + "]");
+		if (isEnableJMX()) {
+			log.debug("Registering adapter [" + adapter.getName() + "] to the JMX server");
+	        JmxMbeanHelper.hookupAdapter( (nl.nn.adapterframework.core.Adapter) adapter);
+	        log.info ("[" + adapter.getName() + "] registered to the JMX server");
+		}
+
+        
 
         if (log.isDebugEnabled()) {
             try {
