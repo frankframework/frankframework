@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcQuerySenderBase.java,v $
- * Revision 1.4  2004-03-31 12:04:19  L190409
+ * Revision 1.5  2004-04-08 16:12:16  nnvznl01#l181303
+ * changed default value for maxRows to -1 (show All)
+ *
+ * Revision 1.4  2004/03/31 12:04:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fixed javadoc
  *
  * Revision 1.3  2004/03/26 10:43:07  Johan Verrips <johan.verrips@ibissource.org>
@@ -53,11 +56,11 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * @since 	4.1
  */
 public abstract class JdbcQuerySenderBase extends JdbcFacade implements ISender {
-	public static final String version="$Id: JdbcQuerySenderBase.java,v 1.4 2004-03-31 12:04:19 L190409 Exp $";
+	public static final String version="$Id: JdbcQuerySenderBase.java,v 1.5 2004-04-08 16:12:16 nnvznl01#l181303 Exp $";
 
 	private String queryType = "other";
 	private int startRow=1;
-	private int maxRows=0;
+	private int maxRows=-1; // return all rows
 	private Connection connection=null;
 
 	public JdbcQuerySenderBase() {
@@ -157,8 +160,9 @@ public abstract class JdbcQuerySenderBase extends JdbcFacade implements ISender 
 			if (getMaxRows()>0) {
 				statement.setMaxRows(getMaxRows()+ ( getStartRow()>1 ? getStartRow()-1 : 0));
 			}
+
 			ResultSet resultset = statement.executeQuery();
-	
+			
 			if (getStartRow()>1) {
 				resultset.absolute(getStartRow()-1);
 				log.debug(getLogPrefix() + "Index set at position: " +  resultset.getRow() );
