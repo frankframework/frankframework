@@ -1,3 +1,10 @@
+/*
+ * $Log: JNDIBase.java,v $
+ * Revision 1.3  2004-03-23 17:59:02  L190409
+ * cosmetic changes
+ * added setJmsRealm
+ *
+ */
 package nl.nn.adapterframework.jms;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -10,11 +17,11 @@ import java.util.Hashtable;
 /**
  * Provides all JNDI functions and is meant to act as a base class.
  * <br/>
- * <p>$Id: JNDIBase.java,v 1.2 2004-02-04 10:02:07 a1909356#db2admin Exp $</p>
+ * <p>$Id: JNDIBase.java,v 1.3 2004-03-23 17:59:02 L190409 Exp $</p>
  * @author Johan Verrips IOS
  */
 public class JNDIBase {
-	public static final String version="$Id: JNDIBase.java,v 1.2 2004-02-04 10:02:07 a1909356#db2admin Exp $";
+	public static final String version="$Id: JNDIBase.java,v 1.3 2004-03-23 17:59:02 L190409 Exp $";
 
     // JNDI
     private String providerURL = null;
@@ -33,12 +40,7 @@ public class JNDIBase {
             context = null;
         }
     }
-    /**
-     * Insert the method's description here.
-     * Creation date: (31-03-2003 8:19:59)
-     * @return java.lang.String
-     */
-    public java.lang.String getAuthentication() {
+    public String getAuthentication() {
         return authentication;
     }
     /**
@@ -79,12 +81,7 @@ public class JNDIBase {
         }
         return context;
     }
-    /**
-     * Insert the method's description here.
-     * Creation date: (31-03-2003 8:19:59)
-     * @return java.lang.String
-     */
-    public java.lang.String getCredentials() {
+    public String getCredentials() {
         return credentials;
     }
     /**
@@ -106,27 +103,12 @@ public class JNDIBase {
     public String getSecurityProtocol() {
         return securityProtocol;
     }
-    /**
-     * Insert the method's description here.
-     * Creation date: (03-04-2003 8:50:36)
-     * @return java.lang.String
-     */
     public java.lang.String getUrlPkgPrefixes() {
         return urlPkgPrefixes;
     }
-    /**
-     * Insert the method's description here.
-     * Creation date: (31-03-2003 8:19:59)
-     * @param newAuthentication java.lang.String
-     */
     public void setAuthentication(java.lang.String newAuthentication) {
         authentication = newAuthentication;
     }
-    /**
-     * Insert the method's description here.
-     * Creation date: (31-03-2003 8:19:59)
-     * @param newCredentials java.lang.String
-     */
     public void setCredentials(java.lang.String newCredentials) {
         credentials = newCredentials;
     }
@@ -170,4 +152,13 @@ public class JNDIBase {
         return ts.toString();
 
     }
+
+	/**
+	 * loads JNDI (and other) properties from a JmsRealm
+	 * @see JmsRealm
+	 */ 
+	public void setJmsRealm(String jmsRealmName){
+		JmsRealm.copyRealm(this,jmsRealmName);
+	}
+
 }
