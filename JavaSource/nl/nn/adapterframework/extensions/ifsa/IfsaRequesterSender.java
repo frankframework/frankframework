@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaRequesterSender.java,v $
- * Revision 1.5  2004-07-19 09:52:14  L190409
+ * Revision 1.6  2004-07-19 13:20:42  L190409
+ * cosmetic changes to logging
+ *
+ * Revision 1.5  2004/07/19 09:52:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * made multi-threading, like JmsSender
  *
  * Revision 1.4  2004/07/15 07:43:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -57,10 +60,15 @@ import org.apache.commons.lang.StringUtils;
  * @since 4.2
  */
 public class IfsaRequesterSender extends IfsaFacade implements ISender {
-	public static final String version="$Id: IfsaRequesterSender.java,v 1.5 2004-07-19 09:52:14 L190409 Exp $";
+	public static final String version="$Id: IfsaRequesterSender.java,v 1.6 2004-07-19 13:20:42 L190409 Exp $";
   
 	public IfsaRequesterSender() {
   		super(false); // instantiate IfsaFacade as a requestor	
+	}
+
+	public void configure() throws ConfigurationException {
+		super.configure();
+		log.info(getLogPrefix()+" configured sender on "+getPhysicalDestinationName());
 	}
 	
   	public void open() throws SenderException {
@@ -132,17 +140,22 @@ public class IfsaRequesterSender extends IfsaFacade implements ISender {
 		    
 		
 		try {
+			log.debug(getLogPrefix()+"creating session and sender");
 			session = createSession();
 			sender = createSender(session, getServiceQueue());
 
 			// TODO: handle UDZs
+			log.debug(getLogPrefix()+"sending message");
 		    TextMessage sentMessage=sendMessage(session, sender, message, null);
+			log.debug(getLogPrefix()+"message sent");
 
 			if (isSynchronous()){
 		
+				log.debug(getLogPrefix()+"waiting for reply");
 				TextMessage msg=null;
 			    msg=getRawReplyMessage(sentMessage);
 				result=msg.getText();
+				log.debug(getLogPrefix()+"reply received");
 					
 		    }
 		} catch (JMSException e) {
