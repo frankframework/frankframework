@@ -1,6 +1,9 @@
 /*
  * $Log: SapMessagePusher.java,v $
- * Revision 1.3  2004-07-19 09:45:03  L190409
+ * Revision 1.4  2004-08-09 13:56:23  L190409
+ * changed ServiceClient to MessageHandler
+ *
+ * Revision 1.3  2004/07/19 09:45:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added getLogPrefix()
  *
  * Revision 1.2  2004/07/15 07:47:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -19,9 +22,11 @@
 package nl.nn.adapterframework.extensions.sap;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IMessageHandler;
 import nl.nn.adapterframework.core.IPushingListener;
 import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.receivers.ServiceClient;
 import nl.nn.adapterframework.util.Misc;
 
@@ -59,12 +64,12 @@ import com.sap.mw.jco.JCO.Server;
  * @since 4.2
  */
 public class SapMessagePusher extends SapFunctionFacade implements IPushingListener, SapFunctionHandler, JCO.ServerExceptionListener, JCO.ServerErrorListener {
-	public static final String version="$Id: SapMessagePusher.java,v 1.3 2004-07-19 09:45:03 L190409 Exp $";
+	public static final String version="$Id: SapMessagePusher.java,v 1.4 2004-08-09 13:56:23 L190409 Exp $";
 
 	private String progid;	 // progid of the RFC-destination
         	
 	private SapServer sapServer;
-	private ServiceClient handler;
+	private IMessageHandler handler;
 	private IbisExceptionListener exceptionListener;
 
 	/**
@@ -101,13 +106,37 @@ public class SapMessagePusher extends SapFunctionFacade implements IPushingListe
 	}
 
 
+	public String getIdFromRawMessage(Object rawMessage, HashMap threadContext) throws ListenerException {
+		return getCorrelationIdFromField((JCO.Function) rawMessage);
+	}
+
+	public String getStringFromRawMessage(Object rawMessage, HashMap threadContext) throws ListenerException {
+		return functionCall2message((JCO.Function) rawMessage);
+	}
+
+	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessage, HashMap threadContext) throws ListenerException {
+		try {
+			message2FunctionResult((JCO.Function) rawMessage, processResult.getResult());
+		} catch (SapException e) {
+			throw new ListenerException(e);
+		}
+	}
+
+/*
 	public void processFunctionCall(JCO.Function function) throws SapException {
 		String request = functionCall2message(function);
 		String correlationId = getCorrelationIdFromField(function);
 		String result = handler.processRequest(correlationId, request);
 		message2FunctionResult(function, result);
 	}
-
+*/
+	public void processFunctionCall(JCO.Function function) throws SapException {
+		try {
+			handler.processRawMessage(this, function, null);
+		} catch (ListenerException e) {
+			throw new SapException(e);
+		}
+	}
 
 	/**
 	 * The <code>toString()</code> method retrieves its value
@@ -128,7 +157,7 @@ public class SapMessagePusher extends SapFunctionFacade implements IPushingListe
 	}
 
 
-	public void setHandler(ServiceClient handler) {
+	public void setHandler(IMessageHandler handler) {
 		this.handler=handler;
 	}
 
@@ -150,12 +179,5 @@ public class SapMessagePusher extends SapFunctionFacade implements IPushingListe
 		}
 	}
 
-	public String getIdFromRawMessage(Object rawMessage, HashMap threadContext) throws ListenerException {
-		return null;
-	}
-
-	public String getStringFromRawMessage(Object rawMessage, HashMap threadContext) throws ListenerException {
-		return functionCall2message((JCO.Function) rawMessage);
-	}
 
 }

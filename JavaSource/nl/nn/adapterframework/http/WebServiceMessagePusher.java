@@ -1,6 +1,9 @@
 /*
  * $Log: WebServiceMessagePusher.java,v $
- * Revision 1.1  2004-07-15 07:40:43  L190409
+ * Revision 1.2  2004-08-09 13:54:13  L190409
+ * changed ServiceClient to MessageHandler
+ *
+ * Revision 1.1  2004/07/15 07:40:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * introduction of http package
  *
  * Revision 1.2  2004/06/30 12:34:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -13,8 +16,11 @@
 package nl.nn.adapterframework.http;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IMessageHandler;
 import nl.nn.adapterframework.core.IPushingListener;
 import nl.nn.adapterframework.core.IbisExceptionListener;
+import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.receivers.ServiceClient;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
 
@@ -37,10 +43,10 @@ import java.util.HashMap;
  * @author Gerrit van Brakel 
  */
 public class WebServiceMessagePusher  implements IPushingListener, ServiceClient, Serializable {
-	public static final String version="$Id: WebServiceMessagePusher.java,v 1.1 2004-07-15 07:40:43 L190409 Exp $";
+	public static final String version="$Id: WebServiceMessagePusher.java,v 1.2 2004-08-09 13:54:13 L190409 Exp $";
 	protected Logger log = Logger.getLogger(this.getClass());;
 
-	private ServiceClient handler;        	
+	private IMessageHandler handler;        	
 	private String name;
 
 	/**
@@ -48,6 +54,9 @@ public class WebServiceMessagePusher  implements IPushingListener, ServiceClient
 	 */
 	public void configure() throws ConfigurationException {
 		try {
+			if (handler==null) {
+				throw new ConfigurationException("handler has not been set");
+			}
 		    log.debug("registering listener ["+name+"] with ServiceDispatcher");
 	        ServiceDispatcher.getInstance().registerServiceClient(name, this);
 		} catch (Exception e){
@@ -62,12 +71,36 @@ public class WebServiceMessagePusher  implements IPushingListener, ServiceClient
 		// do nothing special
 	}
 
+
+	public String getIdFromRawMessage(Object rawMessage, HashMap threadContext)  {
+		return null;
+	}
+	public String getStringFromRawMessage(Object rawMessage, HashMap threadContext) {
+		return (String) rawMessage;
+	}
+	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessage, HashMap threadContext) throws ListenerException {
+	}
+
+
+
 	public String processRequest(String message) {
-		return handler.processRequest(message);
+		
+		String result;
+		try {
+			return handler.processRequest(this, message);
+		} catch (ListenerException e) {
+			return handler.formatException(null,null, message,e);
+		}
 	}
 
 	public String processRequest(String correlationId, String message) {
-		return handler.processRequest(correlationId, message);
+		String result;
+		try {
+			log.debug("wspusher processing ["+correlationId+"]");
+			return handler.processRequest(this, correlationId, message);
+		} catch (ListenerException e) {
+			return handler.formatException(null,correlationId, message,e);
+		}
 	}
 
 
@@ -94,27 +127,11 @@ public class WebServiceMessagePusher  implements IPushingListener, ServiceClient
 		this.name=name;
 	}
 
-	public void setHandler(ServiceClient handler) {
+	public void setHandler(IMessageHandler handler) {
 		this.handler=handler;
 	}
 
 	public void setExceptionListener(IbisExceptionListener listener) {
 		// do nothing, no exceptions known
 	}
-
-	/* (non-Javadoc)
-	 * @see nl.nn.adapterframework.core.IListener#getIdFromRawMessage(java.lang.Object, java.util.HashMap)
-	 */
-	public String getIdFromRawMessage(Object rawMessage, HashMap threadContext)  {
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see nl.nn.adapterframework.core.IListener#getStringFromRawMessage(java.lang.Object, java.util.HashMap)
-	 */
-	public String getStringFromRawMessage(Object rawMessage, HashMap threadContext) {
-		return (String) rawMessage;
-	}
-
-
 }
