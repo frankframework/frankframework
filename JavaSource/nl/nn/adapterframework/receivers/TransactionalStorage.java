@@ -1,6 +1,9 @@
 /*
  * $Log: TransactionalStorage.java,v $
- * Revision 1.4  2004-03-31 12:04:21  L190409
+ * Revision 1.5  2004-08-18 09:20:14  a1909356#db2admin
+ * Add some logging
+ *
+ * Revision 1.4  2004/03/31 12:04:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fixed javadoc
  *
  * Revision 1.3  2004/03/26 10:43:03  Johan Verrips <johan.verrips@ibissource.org>
@@ -49,7 +52,7 @@ import org.apache.log4j.Logger;
  */
 
 public class TransactionalStorage implements ITransactionalStorage {
-	public static final String version="$Id: TransactionalStorage.java,v 1.4 2004-03-31 12:04:21 L190409 Exp $";
+	public static final String version="$Id: TransactionalStorage.java,v 1.5 2004-08-18 09:20:14 a1909356#db2admin Exp $";
     protected Logger log = Logger.getLogger(this.getClass());
 	
     private ISender sender=null;
@@ -148,6 +151,7 @@ protected void setSender(ISender sender) {
 	}
 
 	public void open() throws SenderException, ListenerException {
+		log.debug(getLogPrefix()+"is opening");
         getSender().open();
         getListener().open();
 	}
