@@ -1,6 +1,9 @@
 /*
  * $Log: HttpSender.java,v $
- * Revision 1.11  2004-12-23 12:12:12  L190409
+ * Revision 1.12  2004-12-23 16:11:13  L190409
+ * Explicit check for open connections
+ *
+ * Revision 1.11  2004/12/23 12:12:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * staleChecking optional
  *
  * Revision 1.10  2004/10/19 06:39:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -107,7 +110,7 @@ import nl.nn.adapterframework.util.ClassUtils;
  * @since 4.2c
  */
 public class HttpSender implements ISenderWithParameters, HasPhysicalDestination {
-	public static final String version = "$Id: HttpSender.java,v 1.11 2004-12-23 12:12:12 L190409 Exp $";
+	public static final String version = "$Id: HttpSender.java,v 1.12 2004-12-23 16:11:13 L190409 Exp $";
 	protected Logger log = Logger.getLogger(this.getClass());;
 
 	private String name;
@@ -143,7 +146,6 @@ public class HttpSender implements ISenderWithParameters, HasPhysicalDestination
 
 	protected ParameterList paramList = null;
 
-/*
 	private class IbisMultiThreadedHttpConnectionManager extends MultiThreadedHttpConnectionManager {
 		
 		protected boolean checkConnection(HttpConnection connection)  {
@@ -188,7 +190,7 @@ public class HttpSender implements ISenderWithParameters, HasPhysicalDestination
 			return result;
 		}
 	}
-*/
+
 	protected void addProvider(String name) {
 		try {
 			Class clazz = Class.forName(name);
@@ -289,8 +291,8 @@ public class HttpSender implements ISenderWithParameters, HasPhysicalDestination
 	}
 
 	public void open() throws SenderException {
-//		connectionManager = new IbisMultiThreadedHttpConnectionManager();
-		connectionManager = new MultiThreadedHttpConnectionManager();
+		connectionManager = new IbisMultiThreadedHttpConnectionManager();
+//		connectionManager = new MultiThreadedHttpConnectionManager();
 		connectionManager.setMaxConnectionsPerHost(getMaxConnections());
 		log.debug("set up connectionManager, stale checking ["+connectionManager.isConnectionStaleCheckingEnabled()+"]");
 		if (connectionManager.isConnectionStaleCheckingEnabled() != isStaleChecking()) {
