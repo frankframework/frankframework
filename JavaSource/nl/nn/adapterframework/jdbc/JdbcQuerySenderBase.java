@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcQuerySenderBase.java,v $
- * Revision 1.6  2004-10-19 06:41:08  L190409
+ * Revision 1.7  2004-11-10 12:56:55  L190409
+ * corrected parameter setting routine
+ *
+ * Revision 1.6  2004/10/19 06:41:08  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * modified parameter handling
  *
  * Revision 1.5  2004/04/08 16:12:16  Dennis van Loon <dennis.van.loon@ibissource.org>
@@ -67,7 +70,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * @since 	4.1
  */
 public abstract class JdbcQuerySenderBase extends JdbcFacade implements ISenderWithParameters {
-	public static final String version="$Id: JdbcQuerySenderBase.java,v 1.6 2004-10-19 06:41:08 L190409 Exp $";
+	public static final String version="$Id: JdbcQuerySenderBase.java,v 1.7 2004-11-10 12:56:55 L190409 Exp $";
 
 	private String queryType = "other";
 	private int startRow=1;
@@ -170,7 +173,7 @@ public abstract class JdbcQuerySenderBase extends JdbcFacade implements ISenderW
 	protected void applyParamteters(PreparedStatement statement, ParameterValueList parameters) throws SQLException {
 		// statement.clearParameters();
 		for (int i=0; i< parameters.size(); i++) {
-			statement.setString(i, parameters.getParameterValue(i).asStringValue(""));
+			statement.setString(i+1, parameters.getParameterValue(i).asStringValue(""));
 		}
 	}
 	
