@@ -1,8 +1,13 @@
+/*
+ * $Log: Adios2XmlPipe.java,v $
+ * Revision 1.2  2004-03-24 15:28:46  L190409
+ * removed unused variables
+ *
+ */
 package nl.nn.adapterframework.extensions.rekenbox;
 
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -10,7 +15,6 @@ import nl.nn.adapterframework.util.Variant;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.ClassUtils;
 
-import javax.xml.transform.Source;
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.parsers.SAXParser;
 import org.xml.sax.SAXException;
@@ -72,7 +76,7 @@ import java.io.BufferedReader;
  * @version Id
  */
 public class Adios2XmlPipe extends FixedForwardPipe {
-	public static final String version="$Id: Adios2XmlPipe.java,v 1.1 2004-03-11 08:13:37 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: Adios2XmlPipe.java,v 1.2 2004-03-24 15:28:46 L190409 Exp $";
 
 	private Hashtable rubriek2nummer;	 
 	private Hashtable record2nummer;
@@ -216,17 +220,14 @@ public void configure() throws ConfigurationException{
 		SAXParserFactory parserFactory = SAXParserFactory.newInstance();
 		saxParser = parserFactory.newSAXParser();
  	} catch (Throwable e) {
-	 	throw new ConfigurationException("pipe ["+getName()+"] cannot configure a parser", e);
+	 	throw new ConfigurationException(getLogPrefix(null)+"cannot configure a parser", e);
  	}
  	
 
 	try {
 
     	BufferedReader bufinput = new BufferedReader(new InputStreamReader(ClassUtils.getResourceURL(this,getAdiosDefinities()).openStream()));
- 		char[] buffer = new char[140];
  		String line,labelnr,waarde;
- 		int labeln,i;
- 		char c;
 
  		line = bufinput.readLine();
 
@@ -248,7 +249,7 @@ public void configure() throws ConfigurationException{
        					
        					// als de key al bestaat betekend dit dat er een fout zit in de invoer
        					if (nummer2rubriek.containsKey(labelnr))	{
-	       					throw new ConfigurationException("pipe ["+getName()+"] rubriek ["+labelnr+"] komt meermaals voor. Waarde1: ["+nummer2rubriek.get(labelnr)+"], Waarde2: ["+waarde+"]");
+	       					throw new ConfigurationException(getLogPrefix(null)+"rubriek ["+labelnr+"] komt meermaals voor. Waarde1: ["+nummer2rubriek.get(labelnr)+"], Waarde2: ["+waarde+"]");
        					}
        					nummer2rubriek.put(labelnr,waarde);
        					rubriek2nummer.put(waarde,labelnr);
@@ -275,7 +276,7 @@ public void configure() throws ConfigurationException{
          				//System.out.println("record label: " + labelnr + "   \t" + waarde);
 
          				if (nummer2record.containsKey(labelnr))	{
-	       					throw new ConfigurationException("pipe ["+getName()+"] record ["+labelnr+"] komt meermaals voor. Waarde1: ["+nummer2record.get(labelnr)+"], Waarde2: ["+waarde+"]");
+	       					throw new ConfigurationException(getLogPrefix(null)+"record ["+labelnr+"] komt meermaals voor. Waarde1: ["+nummer2record.get(labelnr)+"], Waarde2: ["+waarde+"]");
        					}
        					nummer2record.put(labelnr,waarde);
        					record2nummer.put(waarde,labelnr);
@@ -292,7 +293,7 @@ public void configure() throws ConfigurationException{
  		bufinput.close();
  	}
  	catch 	(IOException e) {
-	 	throw new ConfigurationException("IOException on ["+getAdiosDefinities()+"]", e);
+	 	throw new ConfigurationException(getLogPrefix(null)+"IOException on ["+getAdiosDefinities()+"]", e);
  	}
 
  }
@@ -325,41 +326,9 @@ public String findRekenbox(PipeLineSession session) {
     if (getRekenboxSessionKey() != null) {
         return (String)session.get(getRekenboxSessionKey());
     }
-
     return getRekenbox();
 }
-/**
- * Insert the method's description here.
- * Creation date: (19-08-2003 15:15:56)
- * @return java.lang.String
- */
-public java.lang.String getAdiosDefinities() {
-	return adiosDefinities;
-}
-/**
- * Insert the method's description here.
- * Creation date: (25-08-2003 17:03:31)
- * @return java.lang.String
- */
-public java.lang.String getDirection() {
-	return direction;
-}
-/**
- * Insert the method's description here.
- * Creation date: (19-08-2003 15:39:25)
- * @return java.lang.String
- */
-public java.lang.String getRekenbox() {
-	return rekenbox;
-}
-/**
- * Insert the method's description here.
- * Creation date: (20-08-2003 10:31:22)
- * @return java.lang.String
- */
-public java.lang.String getRekenboxSessionKey() {
-	return rekenboxSessionKey;
-}
+
 public String makeAdios(InputSource bericht) throws PipeRunException {
 
     try {
@@ -369,16 +338,11 @@ public String makeAdios(InputSource bericht) throws PipeRunException {
         return handler.getResult();
 
     } catch (Throwable t) {
-        throw new PipeRunException(this,
-            "pipe ["
-                + getName()
-                + "] got error while transforming xml to adios, input ["
-                + bericht
-                + "]", t);
+        throw new PipeRunException(this, getLogPrefix(null)+"got error while transforming xml to adios, input ["+ bericht+ "]", t);
     }
 }
-/*
- * The calcbox tool Adios exports the file "NNRSCONS.PAS" = adiosfile in BidiBundle.properties
+/**
+ * The calcbox tool Adios exports the file "NNRSCONS.PAS" = adiosDefinities in configuration attributes.
  * this file containts both "rubrieken" and "records" which together form
  * the adios message te be send to the calcbox
  * the most difficult format used is record[recordindex],label[index]:waarde;
@@ -386,8 +350,7 @@ public String makeAdios(InputSource bericht) throws PipeRunException {
  */
 
  public void makeXml(XmlBuilder bericht, String s) throws PipeRunException {
- 	String labelnr, waarde, lbw,hlabel,index,recindex,recordnr;
- 	char c;
+ 	String labelnr, waarde, lbw,index,recindex,recordnr;
  	Object val,valrec;
 
 
@@ -472,36 +435,56 @@ public String makeAdios(InputSource bericht) throws PipeRunException {
  		}
  	}
  	catch (NoSuchElementException e) { 
-	 	throw new PipeRunException(this, "pipe ["+getName()+"] No such element in adios: label: "+ labelnr + ", waarde: "+ waarde + ", record:"+ valrec,e);
+	 	throw new PipeRunException(this, getLogPrefix(null)+"No such element in adios: label: "+ labelnr + ", waarde: "+ waarde + ", record:"+ valrec,e);
  	}
- }
-public void setAdiosDefinities(java.lang.String newAdiosDefinities) {
+}
+
+
+
+/**
+ * sets URL to pascal file with label-constants generated by ADIOS-utility.
+ */
+public void setAdiosDefinities(String newAdiosDefinities) {
 	adiosDefinities = newAdiosDefinities;
 }
+public String getAdiosDefinities() {
+	return adiosDefinities;
+}
+
 /**
- * Insert the method's description here.
- * Creation date: (25-08-2003 17:03:31)
- * @param newDirection java.lang.String
+ * sets transformation direction. Possible values 
+ * <ul>
+ *   <li>"Xml2Adios": transform an Adios-XML file to ascii-Adios</li>
+ *   <li>"Adios2Xml": transform an ascii-Adios file to Adios-XML</li>
+ * </ul>
+ * default: Adios2Xml
  */
-public void setDirection(java.lang.String newDirection) {
+public void setDirection(String newDirection) {
 	direction = newDirection;
 }
+public String getDirection() {
+	return direction;
+}
+
 /**
- * Insert the method's description here.
- * Creation date: (19-08-2003 15:39:25)
- * @param newRekenbox java.lang.String
+ * sets name of rekenbox to be called
  */
-public void setRekenbox(java.lang.String newRekenbox) {
+public void setRekenbox(String newRekenbox) {
 	rekenbox = newRekenbox;
 }
+public String getRekenbox() {
+	return rekenbox;
+}
+
 /**
- * Insert the method's description here.
- * Creation date: (20-08-2003 10:31:22)
- * @param newRekenboxSessionKey java.lang.String
+ * sets name of key in {@link pipeSession} to retrieve rekenbox name from 
  */
-public void setRekenboxSessionKey(java.lang.String newRekenboxSessionKey) {
+public void setRekenboxSessionKey(String newRekenboxSessionKey) {
 	rekenboxSessionKey = newRekenboxSessionKey;
 }
-public void start() throws PipeStartException { 
+public String getRekenboxSessionKey() {
+	return rekenboxSessionKey;
 }
+ 
+ 
 }
