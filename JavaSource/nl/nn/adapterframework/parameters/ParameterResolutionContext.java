@@ -1,6 +1,9 @@
 /*
  * $Log: ParameterResolutionContext.java,v $
- * Revision 1.1  2004-10-05 09:51:54  L190409
+ * Revision 1.2  2004-10-14 16:07:34  L190409
+ * changed from Object,Hashtable to String, PipelineSession
+ *
+ * Revision 1.1  2004/10/05 09:51:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed from ParameterResolver to ParameterResolutionContext
  * moved to package parameters
  *
@@ -9,7 +12,6 @@ package nl.nn.adapterframework.parameters;
 
 
 import java.util.ArrayList;
-import java.util.Hashtable;
 import java.util.Iterator;
 
 import javax.xml.transform.dom.DOMSource;
@@ -22,12 +24,16 @@ import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.XmlUtils;
 
 
+import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 
 
 /*
  * $Log: ParameterResolutionContext.java,v $
- * Revision 1.1  2004-10-05 09:51:54  L190409
+ * Revision 1.2  2004-10-14 16:07:34  L190409
+ * changed from Object,Hashtable to String, PipelineSession
+ *
+ * Revision 1.1  2004/10/05 09:51:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed from ParameterResolver to ParameterResolutionContext
  * moved to package parameters
  *
@@ -49,8 +55,11 @@ import org.w3c.dom.Document;
  * @version Id
  */
 public class ParameterResolutionContext {
-	private Object input;
-	private Hashtable session;
+	public static final String version="$Id: ParameterResolutionContext.java,v 1.2 2004-10-14 16:07:34 L190409 Exp $";
+	protected Logger log = Logger.getLogger(this.getClass());
+
+	private String input;
+	private PipeLineSession session;
 	private DOMSource inputSource;
 
 	/**
@@ -58,7 +67,7 @@ public class ParameterResolutionContext {
 	 * @param input contains the input (xml formatted) message
 	 * @param session 
 	 */		
-	public ParameterResolutionContext(Object input, Hashtable session) {
+	public ParameterResolutionContext(String input, PipeLineSession session) {
 		this.input = input;
 		this.session = session;
 	}
@@ -125,7 +134,9 @@ public class ParameterResolutionContext {
 	 */
 	public DOMSource getInputSource() throws DomBuilderException {
 		if (inputSource == null) {
-			Document doc = XmlUtils.buildDomDocument((String)input);
+			// TODO try SaxInputSource
+			log.debug("Constructing DomInputSource for ParameterResolutionContext");
+			Document doc = XmlUtils.buildDomDocument(input);
 			inputSource = new DOMSource(doc); 
 		}
 		return inputSource;
@@ -134,21 +145,21 @@ public class ParameterResolutionContext {
 	/**
 	 * @return the (possibly xml formatted) input message
 	 */
-	public Object getInput() {
+	public String getInput() {
 		return input;
 	}
 
 	/**
 	 * @return hashtable with session variables
 	 */
-	public Hashtable getSession() {
+	public PipeLineSession getSession() {
 		return session;
 	}
 
 	/**
 	 * @param input the (xml formatted) input message
 	 */
-	public void setInput(Object input) {
+	public void setInput(String input) {
 		this.input = input;
 		this.inputSource = null;
 	}
