@@ -1,6 +1,9 @@
 /*
  * $Log: PostboxRetrieverPipe.java,v $
- * Revision 1.1  2004-05-21 10:47:30  a1909356#db2admin
+ * Revision 1.2  2004-05-21 12:05:09  a1909356#db2admin
+ * Correct errors in javadoc
+ *
+ * Revision 1.1  2004/05/21 10:47:30  unknown <unknown@ibissource.org>
  * Add (modifications) due to the postbox retriever implementation
  *
  * Revision 1.1  2004/05/21 07:59:30  unknown <unknown@ibissource.org>
@@ -31,20 +34,22 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 
 /**
- * Sends a message using a {@link ISender} and optionally receives a reply from the same sender, or from a {@link ICorrelatedPullingListener listener}.
+ * Retrieves a message using an {@link IPostboxListener}. Note that most listeners allow you to specify a timeout. The timeout has the following
+ * meaning: <0 = no wait, 0 = block until message available, >= 0 maximum wait in milliseconds
  *
  * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMaxThreads(int) maxThreads}</td><td>maximum number of threads that may call {@link #doPipe(Object, PipeLineSession)} simultaneously</td><td>0 (unlimited)</td></tr>
- * <tr><td>{@link #setForwardName(String) forwardName}</td>  <td>name of forward returned upon completion</td><td>"success"</td></tr>
+ * <tr><td>{@link #setResultOnEmptyPostbox(Strnig) resultOnEmptyPostbox}</td><td>result when no object is on postbox</td><td>empty postbox</td></tr>
+  * <tr><td>{@link #setForwardName(String) forwardName}</td>  <td>name of forward returned upon completion</td><td>"success"</td></tr>
  * <tr><td>{@link #addParameter(Parameter) parameterList}</td><td>Parameters of the Pipe</td><td>&nbsp;</td></tr>
- * <tr><td><code>sender.*</td><td>any attribute of the sender instantiated by descendant classes</td><td>&nbsp;</td></tr>
+ * <tr><td><code>listener.*</td><td>any attribute of the listener instantiated by descendant classes</td><td>&nbsp;</td></tr>
  * </table>
  * <table border="1">
  * <tr><th>nested elements</th><th>description</th></tr>
- * <tr><td>{@link IPostboxSender sender}</td><td>specification of postbox sender to send messages with</td></tr>
+ * <tr><td>{@link IPostboxListener listener}</td><td>specification of postbox listener to retrieve messages from</td></tr>
  * </table>
  * </p>
  * <p><b>Exits:</b>
@@ -59,7 +64,7 @@ import nl.nn.adapterframework.core.TimeOutException;
  * @version Id
  */
 public class PostboxRetrieverPipe  extends FixedForwardPipe {
-	public static final String version="$Id: PostboxRetrieverPipe.java,v 1.1 2004-05-21 10:47:30 a1909356#db2admin Exp $";
+	public static final String version="$Id: PostboxRetrieverPipe.java,v 1.2 2004-05-21 12:05:09 a1909356#db2admin Exp $";
 	private IPostboxListener listener = null;
 	private String resultOnEmptyPostbox = "empty postbox";
 		
