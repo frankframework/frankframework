@@ -3,17 +3,14 @@ package nl.nn.adapterframework.extensions.ifsa;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.ISender;
-import nl.nn.adapterframework.core.ListenerException;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 
-import com.ing.ifsa.*;
 
-import javax.naming.NamingException;
 import javax.jms.*;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.StringUtils;
-import java.util.HashMap;
 
 
 /**
@@ -43,7 +40,7 @@ import java.util.HashMap;
 public class IfsaClient extends IfsaFacade implements ISender {
   private QueueSession session;
   private QueueSender sender;
-  public static final String version="$Id: IfsaClient.java,v 1.1 2004-03-11 08:13:36 NNVZNL01#L180564 Exp $";	
+  public static final String version="$Id: IfsaClient.java,v 1.2 2004-03-11 09:15:29 NNVZNL01#L180564 Exp $";	
 /**
  * Stop the sender and deallocate resources.
  */
@@ -132,8 +129,7 @@ public String sendMessage(String message)
     throws SenderException, TimeOutException {
     String result = null;
 	    
-	Queue replyToQueue=null;
-
+	
 	try {
     TextMessage sentMessage;
 

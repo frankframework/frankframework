@@ -18,12 +18,12 @@ import java.util.Hashtable;
  * <br/>
  * In the AppConstants there may be a property named "log.logIntermediaryResults" (true/false)
  * which indicates wether the intermediary results (between calling pipes) have to be logged.
- * <p>$Id: PipeLine.java,v 1.2 2004-02-04 10:02:00 a1909356#db2admin Exp $</p>
+ * <p>$Id: PipeLine.java,v 1.3 2004-03-11 09:12:57 NNVZNL01#L180564 Exp $</p>
  * 
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version="$Id: PipeLine.java,v 1.2 2004-02-04 10:02:00 a1909356#db2admin Exp $";
+	public static final String version="$Id: PipeLine.java,v 1.3 2004-03-11 09:12:57 NNVZNL01#L180564 Exp $";
     private Logger log = Logger.getLogger(this.getClass());
 	private String adapterName; // for logging purposes
     private Hashtable pipeStatistics = new Hashtable();
@@ -150,7 +150,6 @@ private Semaphore getSemaphore(IPipe pipeToRun) {
 public PipeLineResult process(String messageId, String message) throws PipeRunException {
     // Object is the object that is passed to and returned from Pipes
     Object object = (Object) message;
-    IPipe lastExecutedPipe;
     PipeRunResult pipeRunResult;
     
     long pipeStartTime = System.currentTimeMillis();
@@ -185,7 +184,7 @@ public PipeLineResult process(String messageId, String message) throws PipeRunEx
 			log.debug(sb.toString());
 		}
 
-		lastExecutedPipe=pipeToRun;
+
         // start it
 		long waitingDuration = 0;
 

@@ -1,19 +1,6 @@
 package nl.nn.adapterframework.extensions.ifsa;
 
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
-import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.core.PipeRunException;
-import nl.nn.adapterframework.core.PipeStartException;
-import nl.nn.adapterframework.configuration.ConfigurationException;
-
-import org.apache.commons.lang.builder.ToStringBuilder;
-
-import javax.jms.JMSException;
-import javax.naming.NamingException;
-
-
-import java.util.Enumeration;
-import java.util.Hashtable;
 
 /**
  * Perform a call to an IFSA Service. 
@@ -46,7 +33,7 @@ import java.util.Hashtable;
  */
  
 public class IfsaClientPipe extends MessageSendingPipe {
-	public static final String version="$Id: IfsaClientPipe.java,v 1.1 2004-03-11 08:13:36 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: IfsaClientPipe.java,v 1.2 2004-03-11 09:16:04 NNVZNL01#L180564 Exp $";
 public IfsaClientPipe() {
 	super();
 	setSender(new IfsaClient());

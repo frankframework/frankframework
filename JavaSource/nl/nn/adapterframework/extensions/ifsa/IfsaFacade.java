@@ -3,7 +3,6 @@ package nl.nn.adapterframework.extensions.ifsa;
 import com.ing.ifsa.*;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.enum.Enum;
 
 import org.apache.log4j.Logger;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -32,7 +31,7 @@ public class IfsaFacade {
 
     private String name;
 	private int ackMode = 1;
-	public static final String version="$Id: IfsaFacade.java,v 1.1 2004-03-11 08:13:36 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: IfsaFacade.java,v 1.2 2004-03-11 09:18:33 NNVZNL01#L180564 Exp $";
  
     /**
      * the Queue object, as looked up from <code>serviceName</code>
@@ -254,18 +253,15 @@ public QueueReceiver getReplyReceiver(
 
     String correlationId;
     Queue replyQueue;
-    String replyQueueName;
-    long timeOut;
     try {
 		correlationId=sentMessage.getJMSCorrelationID();
 		replyQueue=(Queue)sentMessage.getJMSReplyTo();
-		replyQueueName=replyQueue.getQueueName();
 	} catch (JMSException e) {
 		throw new IfsaException(e);
 	}
 	
 	try {
-		timeOut=((IFSAQueue) getServiceQueue()).getExpiry();
+//		timeOut=((IFSAQueue) getServiceQueue()).getExpiry();
 	} catch (Exception e) {throw new IfsaException("error retrieving timeOut value", e);}
 	
 	try {
