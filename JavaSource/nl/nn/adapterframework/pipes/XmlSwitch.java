@@ -11,6 +11,10 @@ import nl.nn.adapterframework.util.XmlUtils;
 import javax.xml.transform.Transformer;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.pool.BasePoolableObjectFactory;
+import org.apache.commons.pool.ObjectPool;
+import org.apache.commons.pool.impl.GenericObjectPool;
+
 
 import java.io.IOException;
 
@@ -38,62 +42,79 @@ import java.io.IOException;
  * @author Johan Verrips
  */
 public class XmlSwitch extends AbstractPipe {
-	public static final String version="$Id: XmlSwitch.java,v 1.6 2004-08-23 13:10:09 L190409 Exp $";
+	public static final String version="$Id: XmlSwitch.java,v 1.7 2004-08-31 13:19:58 a1909356#db2admin Exp $";
 	
     private static final String DEFAULT_SERVICESELECTION_XSLT = XmlUtils.XSLT_GETROOTNODENAME;
-    private Transformer serviceSelectionTransformer;
+	private ObjectPool transformerPool;
 	private String xpathExpression=null;
     private String serviceSelectionStylesheetFilename=null;
     private String notFoundForwardName=null;
-	/**
-	 * return the current transformer
-	 * @return Transformer
-	 */
-    protected Transformer getServiceSelectionTransformer() {
-    	return serviceSelectionTransformer;
-    }
-	
+
 	/**
 	 * If no {@link #setServiceSelectionStylesheetFilename(String) serviceSelectionStylesheetFilename} is specified, the
 	 * switch uses the root node. 
 	 */
 	public void configure() throws ConfigurationException {
-		// create a transformer for the service selection
-		if (!StringUtils.isEmpty(getXpathExpression())) {
-			if (serviceSelectionStylesheetFilename != null) {
-				throw new ConfigurationException( getLogPrefix(null)+"cannot have both an xpathExpression and a serviceSelectionStylesheetFilename specified");
-			}
-			try {
-				serviceSelectionTransformer = XmlUtils.createXPathEvaluator(getXpathExpression(),"text");
-			} catch (javax.xml.transform.TransformerConfigurationException te) {
-				throw new ConfigurationException( getLogPrefix(null)+"got error creating transformer from xpathExpression [" + getXpathExpression() + "]", te);
-			}
-		} else {
-			if (serviceSelectionStylesheetFilename != null) {
-		        try {
-			        serviceSelectionTransformer = XmlUtils.createTransformer(ClassUtils.getResourceURL(this,serviceSelectionStylesheetFilename));
-		        } catch (IOException e) {
-	                throw new ConfigurationException( getLogPrefix(null)+"cannot retrieve [" + serviceSelectionStylesheetFilename + "]", e);
-	            } catch (javax.xml.transform.TransformerConfigurationException te) {
-		            throw new ConfigurationException(getLogPrefix(null)+"got error creating transformer from file [" + serviceSelectionStylesheetFilename + "]", te);
-	            }
-	        } else {
-	       	   try {
-				// create a transformer that looks to the root node 
-		        serviceSelectionTransformer = XmlUtils.createTransformer( DEFAULT_SERVICESELECTION_XSLT);
-	            } catch (javax.xml.transform.TransformerConfigurationException te) {
-		            throw new ConfigurationException(getLogPrefix(null)+"got error creating transformer from string [" + DEFAULT_SERVICESELECTION_XSLT + "]", te);
-	            }
-			}
-		}
 		if (getNotFoundForwardName()!=null) {
 			if (findForward(getNotFoundForwardName())==null){
 				throw new ConfigurationException(getLogPrefix(null)+"has a notFoundForwardName attribute. However, this forward ["+getNotFoundForwardName()+"] is not configured.");
 			}
 		}
-        
 
+		transformerPool = new GenericObjectPool(new BasePoolableObjectFactory() {
+			public Object makeObject() throws Exception {
+				// create a transformer for the service selection
+				if (!StringUtils.isEmpty(getXpathExpression())) {
+					if (serviceSelectionStylesheetFilename != null) {
+						throw new ConfigurationException(getLogPrefix(null) + "cannot have both an xpathExpression and a serviceSelectionStylesheetFilename specified");
+					}
+					try {
+						return XmlUtils.createXPathEvaluator(getXpathExpression(), "text");
+					} 
+					catch (javax.xml.transform.TransformerConfigurationException te) {
+						throw new ConfigurationException(getLogPrefix(null) + "got error creating transformer from xpathExpression [" + getXpathExpression() + "]", te);
+					}
+				} 
+				else {
+					if (serviceSelectionStylesheetFilename != null) {
+						try {
+							return XmlUtils.createTransformer(ClassUtils.getResourceURL(this, serviceSelectionStylesheetFilename));
+						} 
+						catch (IOException e) {
+							throw new ConfigurationException(getLogPrefix(null) + "cannot retrieve ["+ serviceSelectionStylesheetFilename + "]", e);
+						} 
+						catch (javax.xml.transform.TransformerConfigurationException te) {
+							throw new ConfigurationException(getLogPrefix(null) + "got error creating transformer from file [" + serviceSelectionStylesheetFilename + "]", te);
+						}
+					} 
+					else {
+						try {
+							// create a transformer that looks to the root node 
+							return XmlUtils.createTransformer(DEFAULT_SERVICESELECTION_XSLT);
+						} 
+						catch (javax.xml.transform.TransformerConfigurationException te) {
+							throw new ConfigurationException(getLogPrefix(null) + "got error creating transformer from string [" + DEFAULT_SERVICESELECTION_XSLT + "]", te);
+						}
+					}
+				}
+			}
+		});
 	}
+
+	/**
+	 * Get a transformer from the pool 
+	 */
+	public Transformer openTransformer() throws Exception {
+		return (Transformer)transformerPool.borrowObject();
+	}
+
+	/**
+	 * Return the transformer to the pool
+	 */
+	public void closeTransformer(Transformer t) throws Exception {
+		transformerPool.returnObject(t);
+	}
+
 	/**
 	 * This is where the action takes place, the switching is done. Pipes may only throw a PipeRunException,
 	 * to be handled by the caller of this object.<br/>
@@ -106,32 +127,33 @@ public class XmlSwitch extends AbstractPipe {
 	    String sInput=(String) input;
 	    PipeForward pipeForward=null;
 	
+		Transformer t = null;
 		try {
-	 	   if (serviceSelectionTransformer != null) {
-	            forward = XmlUtils.transformXml(serviceSelectionTransformer, sInput);
-	            log.debug(getLogPrefix(session)+ "determined forward ["+forward+"]");
-	
-	        } else {
-	            log.warn(getLogPrefix(session)+ " cannot determine forward due to lack of serviceSelectionTransformer");
-	        }
-			if (findForward(forward)!=null) 
+	 		t = openTransformer();
+            forward = XmlUtils.transformXml(t, sInput);
+            log.debug(getLogPrefix(session)+ "determined forward ["+forward+"]");
+
+			if (findForward(forward) != null) 
 				pipeForward=findForward(forward);
 			else {
 				log.info(getLogPrefix(session)+"determined forward ["+forward+"], which is not defined. Will use ["+getNotFoundForwardName()+"] instead");
 				pipeForward=findForward(getNotFoundForwardName());
 			}
-		
 		}
 	    catch (Throwable e) {
 		    try {
 			    configure();
 			    start();
 			    log.debug(getLogPrefix(session)+ ": transformer was reinitialized as an error occured on the last transformation");
-		    } catch (Throwable e2) {
+		    } 
+		    catch (Throwable e2) {
 			    log.error("Pipe [" + getName() + "] got error on reinitializing the transformer", e2);
 		    }
 	   	    throw new PipeRunException(this, getLogPrefix(null)+"got exception on transformation", e);
 	    }
+		finally {
+			try { closeTransformer(t); } catch(Exception e) {}
+		}
 		
 		if (pipeForward==null) {
 			  throw new PipeRunException (this, getLogPrefix(null)+"cannot find forward or pipe named ["+forward+"]");

@@ -19,7 +19,7 @@ import javax.xml.transform.Transformer;
  * @version Id
  */
 public class XmlParamSwitch extends XmlSwitch {
-	public static final String version="$Id: XmlParamSwitch.java,v 1.3 2004-05-24 13:28:50 a1909356#db2admin Exp $";
+	public static final String version="$Id: XmlParamSwitch.java,v 1.4 2004-08-31 13:19:58 a1909356#db2admin Exp $";
 
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -31,8 +31,9 @@ public class XmlParamSwitch extends XmlSwitch {
 		String sInput=(String) input;
 		PipeForward pipeForward=null;
 
+		Transformer transformer = null;
 		try {
-			final Transformer transformer = getServiceSelectionTransformer();
+			transformer = openTransformer();
 		   	if (transformer != null) {
 				transformer.clearParameters();
 				ParameterValueResolver resolver = new ParameterValueResolver(input, session);
@@ -42,14 +43,14 @@ public class XmlParamSwitch extends XmlSwitch {
 					Object value = resolver.getRawValue(p); 
 					
 					if (value != null) {
-						getServiceSelectionTransformer().setParameter(p.getName(), value);
+						transformer.setParameter(p.getName(), value);
 						log.debug(getLogPrefix(session)+"registering parameter [" + p.toString()+ "] on transformer");
 					} 
 					else {
 						log.warn(getLogPrefix(session)+"omitting parameter ["+p.getName()+"] as it has a null-value");
 					}
 				}
-				forward = XmlUtils.transformXml(getServiceSelectionTransformer(), sInput);
+				forward = XmlUtils.transformXml(transformer, sInput);
 				log.debug(getLogPrefix(session)+ "determined forward ["+forward+"]");
 
 			} else {
@@ -73,6 +74,9 @@ public class XmlParamSwitch extends XmlSwitch {
 				log.error("Pipe [" + getName() + "] got error on reinitializing the transformer", e2);
 			}
 			throw new PipeRunException(this, "Pipe [" + getName() + "] got exception on transformation", e);
+		}
+		finally {
+			try { closeTransformer(transformer); } catch(Exception e) {}
 		}
 	
 		if (pipeForward==null) {

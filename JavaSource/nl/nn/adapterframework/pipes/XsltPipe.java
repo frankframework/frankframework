@@ -41,9 +41,9 @@ import java.io.IOException;
  */
 
 public class XsltPipe extends FixedForwardPipe {
-	public static final String version="$Id: XsltPipe.java,v 1.8 2004-08-31 13:02:29 a1909356#db2admin Exp $";
+	public static final String version="$Id: XsltPipe.java,v 1.9 2004-08-31 13:19:58 a1909356#db2admin Exp $";
 
-	private static ObjectPool transformerPool;
+	private ObjectPool transformerPool;
 	private String styleSheetName;
 	private boolean omitXmlDeclaration=true;
 	
@@ -126,14 +126,14 @@ public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRu
 	}
 	
 	/**
-	 * Return the current transformer
+	 * Get a transformer from the pool 
 	 */
 	public Transformer openTransformer() throws Exception {
 		return (Transformer)transformerPool.borrowObject();
 	}
 
 	/**
-	 * Return the current transformer
+	 * Return the transformer to the pool
 	 */
 	public void closeTransformer(Transformer t) throws Exception {
 		transformerPool.returnObject(t);
