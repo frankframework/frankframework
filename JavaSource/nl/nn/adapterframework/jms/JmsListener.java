@@ -1,3 +1,9 @@
+/*
+ * $Log: JmsListener.java,v $
+ * Revision 1.5  2004-03-24 08:26:20  L190409
+ * enabled XA transactions
+ *
+ */
 package nl.nn.adapterframework.jms;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -9,12 +15,18 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 
-import javax.jms.*;
+import javax.jms.DeliveryMode;
+import javax.jms.Destination;
+import javax.jms.JMSException;
+import javax.jms.MessageConsumer;
+import javax.jms.Session;
+import javax.jms.TextMessage;
+
 import java.util.Date;
 import java.util.HashMap;
 
 /**
- * A true multi-threaded {@link nl.nn.adapterframework.core.IPullingListener Listener}-class for {@link JmsReceiver JmsReceiver}.
+ * A true multi-threaded {@link nl.nn.adapterframework.core.IPullingListener Listener}-class for {@link nl.nn.adapterframework.receivers.JmsReceiver JmsReceiver}.
  * <br/>
 
  * <p><b>Configuration:</b>
@@ -57,12 +69,12 @@ import java.util.HashMap;
  * <p><b>Notice:</b> the JmsListener is ONLY capable of processing
  * <code>javax.jms.TextMessage</code>s <br/><br/>
  * </p>
- * <p>$Id: JmsListener.java,v 1.4 2004-03-11 09:23:51 NNVZNL01#L180564 Exp $</p>
+ * <p>$Id: JmsListener.java,v 1.5 2004-03-24 08:26:20 L190409 Exp $</p>
  * @author Gerrit van Brakel
  * @since 4.0.1
  */
 public class JmsListener extends JMSFacade implements ICorrelatedPullingListener, HasSender {
-	public static final String version="$Id: JmsListener.java,v 1.4 2004-03-11 09:23:51 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: JmsListener.java,v 1.5 2004-03-24 08:26:20 L190409 Exp $";
 
 
   private long timeOut = 3000;
@@ -76,20 +88,17 @@ public class JmsListener extends JMSFacade implements ICorrelatedPullingListener
 public JmsListener() {
 	super();
 }
-/**
- * in the case of a reply to address, the receiver sends the message. Otherwise the sending is delegated
- * to the <code>sender</code> object.
- */
-public void afterMessageProcessed(PipeLineResult plr, Object rawMessage, HashMap threadContext)
-    throws ListenerException {
 
+
+public void afterMessageProcessed(PipeLineResult plr, Object rawMessage, HashMap threadContext) throws ListenerException {
     String cid = (String) threadContext.get("cid");
 
     try {
         Destination replyTo = (Destination) threadContext.get("replyTo");
-		Session session = (Session)threadContext.get(THREAD_CONTEXT_SESSION_KEY);
 
+		// handle reply
         if (getUseReplyTo() && (replyTo != null)) {
+			Session session=null;
 
 			log.debug(
                 "sending reply message with correlationID["
@@ -97,7 +106,16 @@ public void afterMessageProcessed(PipeLineResult plr, Object rawMessage, HashMap
                     + "], replyTo ["
                     + replyTo.toString()
                     + "]");
-            send(session, replyTo, createTextMessage(session, cid, plr.getResult()));
+            if (threadContext!=null) {
+				session = (Session)threadContext.get(THREAD_CONTEXT_SESSION_KEY);
+            }
+            if (session==null) { 
+            	session=createSession();
+				send(session, replyTo, createTextMessage(session, cid, plr.getResult()));
+				session.close();            	
+            }  else {
+				send(session, replyTo, createTextMessage(session, cid, plr.getResult()));
+            }
         } else {
 			if (sender==null) {
 				log.info("["+getName()+"] has no sender, not sending the result.");
@@ -107,29 +125,78 @@ public void afterMessageProcessed(PipeLineResult plr, Object rawMessage, HashMap
 		                "["+getName()+"] no replyTo address found or not configured to use replyTo, using default destination" 
 		                + "sending message with correlationID[" + cid + "] [" + plr.getResult() + "]");
 				}
-           		sender.sendMessage(cid, plr.getResult());
+				/*
+				if (isTransacted() && sender instanceof IXASender && tx!=null) {
+					((IXASender)sender).sendMessage(cid, plr.getResult(),tx);
+				} else 
+				*/
+				sender.sendMessage(cid, plr.getResult());
 			}
         }
-   		String successState = getCommitOnState();
-	    if (getTransacted()) {
-
-       		if (successState!=null && successState.equals(plr.getState())) {
-        		session.commit();
-       		} else {
-	       		log.warn("Listener ["+getName()+"] message ["+ (String)threadContext.get("id") +"] not committed nor rolled back either");
-           		// session.rollback();
-       		}
-    	} else {
-       		if (getAckMode() == Session.CLIENT_ACKNOWLEDGE) {
-	       		if (successState!=null && successState.equals(plr.getState())) {
-        	  		((TextMessage)rawMessage).acknowledge();
-	       		}
-       		}
+        
+        // handle transaction details
+	    if (!isTransacted()) {
+    		if (isJmsTransacted()) {
+				// the following if transacted using transacted sessions, instead of XA-enabled sessions.
+				Session session = (Session)threadContext.get(THREAD_CONTEXT_SESSION_KEY);
+				if (session == null) {
+					log.warn("Listener ["+getName()+"] message ["+ (String)threadContext.get("id") +"] has no session to commit or rollback");
+				} else {
+			   		String successState = getCommitOnState();
+		       		if (successState!=null && successState.equals(plr.getState())) {
+						session.commit();
+					} else {
+			       		log.warn("Listener ["+getName()+"] message ["+ (String)threadContext.get("id") +"] not committed nor rolled back either");
+			       		//TODO: enable rollback, or remove support for JmsTransacted altogether (XA-transactions should do it all)
+		           		// session.rollback();
+		       		}
+				}
+	    	} else {
+				if (getAckMode() == Session.CLIENT_ACKNOWLEDGE) {
+					log.debug("["+getName()+"] acknowledges message with id ["+cid+"]");
+					((TextMessage)rawMessage).acknowledge();
+				}
+    		}
     	}
     } catch (Exception e) {
         throw new ListenerException(e);
     }
 }
+
+public void open() throws ListenerException {
+	try {
+		super.open();
+	} catch (Exception e) {
+		throw new ListenerException("error opening listener [" + getName() + "]", e);
+	}
+
+	try {
+		if (sender != null)
+			sender.open();
+	} catch (SenderException e) {
+		throw new ListenerException("error opening sender [" + sender.getName() + "]", e);
+	}
+}
+
+public HashMap openThread() throws ListenerException {
+	HashMap threadContext = new HashMap();
+
+	try {
+		if (!isTransacted()) { 
+			Session session = createSession();
+			threadContext.put(THREAD_CONTEXT_SESSION_KEY, session);
+		
+			MessageConsumer mc = getMessageConsumer(session, getDestination(), null);
+			threadContext.put(THREAD_CONTEXT_MESSAGECONSUMER_KEY, mc);
+		}
+		return threadContext;
+	} catch (Exception e) {
+		throw new ListenerException("exception in ["+getName()+"]", e);
+	}
+}
+
+
+
 public void close() throws ListenerException {
     try {
 	    super.close();
@@ -144,20 +211,22 @@ public void close() throws ListenerException {
 public void closeThread(HashMap threadContext) throws ListenerException {
 
     try {
-
-        MessageConsumer mc = (MessageConsumer) threadContext.remove(THREAD_CONTEXT_MESSAGECONSUMER_KEY);
-        if (mc != null) {
-            mc.close();
-        }
-
-        Session session = (Session) threadContext.remove(THREAD_CONTEXT_SESSION_KEY);
-        if (session != null) {
-            session.close();
-        }
+		if (!isTransacted()) {
+	        MessageConsumer mc = (MessageConsumer) threadContext.remove(THREAD_CONTEXT_MESSAGECONSUMER_KEY);
+	        if (mc != null) {
+	            mc.close();
+	        }
+	
+	        Session session = (Session) threadContext.remove(THREAD_CONTEXT_SESSION_KEY);
+	        if (session != null) {
+	            session.close();
+	        }
+		}
     } catch (Exception e) {
         throw new ListenerException("exception in [" + getName() + "]", e);
     }
 }
+
 public void configure() throws ConfigurationException {
     ISender sender = getSender();
     if (sender != null) {
@@ -266,40 +335,63 @@ public String getIdFromRawMessage(Object rawMessage, HashMap threadContext) thro
         }
     return cid;
 }
-/**
- * Retrieves a message with the specified correlationId from queue or other channel, but does no processing on it.
- */
-public Object getRawMessage(String correlationId,HashMap threadContext) throws ListenerException, TimeOutException {
-	
-	TextMessage msg = null;
-	
-	try {
-		Session session = (Session)threadContext.get(THREAD_CONTEXT_SESSION_KEY);
-		MessageConsumer mc = getMessageConsumer(session, getDestination(), "JMSCorrelationID='" + correlationId + "'");
 
-		msg = (TextMessage)mc.receive(timeOut);
-		mc.close();
-	} catch (Exception e) {
-		throw new ListenerException("exception while waiting for message with correlationId ["+correlationId+"]");
-    }
-	if (msg==null) {
-  	  	throw new TimeOutException("waiting for message with correlationId ["+correlationId+"]");
-	}
-    return msg;
-	  
-}
+
+
+
 /**
  * Retrieves messages from queue or other channel, but does no processing on it.
  */
 public Object getRawMessage(HashMap threadContext) throws ListenerException {
-    try {
-	    MessageConsumer mc = (MessageConsumer)threadContext.get(THREAD_CONTEXT_MESSAGECONSUMER_KEY);
-
-	    return mc.receive(timeOut);
-    } catch (JMSException e) {
-        throw new ListenerException(e);
-    }
+	return getRawMessageFromDestination(null, threadContext);
 }
+
+public Object getRawMessage(String correlationId, HashMap threadContext) throws ListenerException, TimeOutException {
+	Object msg = getRawMessageFromDestination(correlationId, threadContext);
+	if (msg==null) {
+		throw new TimeOutException("waiting for message with correlationId ["+correlationId+"]");
+	}
+	return msg;
+}
+
+/**
+ * Retrieves messages from queue or other channel under transaction control, but does no processing on it.
+ */
+private Object getRawMessageFromDestination(String correlationId, HashMap threadContext) throws ListenerException {
+	Session session;
+	MessageConsumer mc;
+	try {
+		if (!isTransacted() && threadContext!=null ) {
+			session = (Session)threadContext.get(THREAD_CONTEXT_SESSION_KEY); 		
+			if (threadContext!=null && correlationId==null) {
+				mc = (MessageConsumer)threadContext.get(THREAD_CONTEXT_MESSAGECONSUMER_KEY);
+			} else {
+				mc = getMessageConsumerForCorrelationId(session, getDestination(), correlationId);
+			}
+		} else {
+			session = createSession();
+			mc = getMessageConsumerForCorrelationId(session, getDestination(), correlationId);
+		}
+	} catch (Exception e) {
+		throw new ListenerException("["+getName()+"] exception preparing to retrieve message", e);
+	}
+	Object msg = null;
+	try {
+		msg = mc.receive(getTimeOut());
+		if (isTransacted() || threadContext==null || correlationId!=null) {
+			mc.close();
+			if (isTransacted() || threadContext==null ) {
+				session.close();
+			}
+		}
+	} catch (Exception e) {
+		throw new ListenerException("["+getName()+"] exception in retrieving message", e);
+	}
+	return msg;
+}
+
+
+
 public ISender getSender() {
 	return sender;
 }
@@ -322,46 +414,13 @@ public String getStringFromRawMessage(Object rawMessage, HashMap threadContext) 
 	    throw new ListenerException(e);
     }
 }
-/**
- * Insert the method's description here.
- * Creation date: (24-11-2003 17:54:35)
- * @return long
- */
 public long getTimeOut() {
 	return timeOut;
 }
 public boolean getUseReplyTo() {
 	return useReplyTo;
 }
-public void open() throws ListenerException {
-    try {
-        super.open();
-    } catch (Exception e) {
-        throw new ListenerException("error opening listener [" + getName() + "]", e);
-    }
 
-    try {
-        if (sender != null)
-            sender.open();
-    } catch (SenderException e) {
-        throw new ListenerException("error opening sender [" + sender.getName() + "]", e);
-    }
-}
-public HashMap openThread() throws ListenerException {
-	HashMap threadContext = new HashMap();
-
-	try {
-	Session session = createSession();
-	threadContext.put(THREAD_CONTEXT_SESSION_KEY, session);
-
-	MessageConsumer mc = getMessageConsumer(session, getDestination(), null);
-	threadContext.put(THREAD_CONTEXT_MESSAGECONSUMER_KEY, mc);
-
-	return threadContext;
-	} catch (Exception e) {
-		throw new ListenerException("exception in ["+getName()+"]", e);
-	}
-}
 public void setCommitOnState(String newCommitOnState) {
 	commitOnState = newCommitOnState;
 }
