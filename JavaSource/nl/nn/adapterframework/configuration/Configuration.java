@@ -10,7 +10,11 @@ import nl.nn.adapterframework.util.AppConstants;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
 import org.apache.log4j.Logger;
-import org.quartz.*;
+import org.quartz.CronTrigger;
+import org.quartz.JobDetail;
+import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
+import org.quartz.SchedulerFactory;
 import org.quartz.impl.StdSchedulerFactory;
 
 import java.net.URL;
@@ -30,8 +34,8 @@ import java.util.Enumeration;
  * <p>$Id $</p>
  */
 public class Configuration {
-    Logger log; 
-    public static final String version="$Id: Configuration.java,v 1.4 2004-03-11 09:23:51 NNVZNL01#L180564 Exp $";
+    protected Logger log; 
+    public static final String version="$Id: Configuration.java,v 1.5 2004-03-23 16:39:20 L190409 Exp $";
      
     private Hashtable adapterTable = new Hashtable();
 
