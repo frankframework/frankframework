@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaRequesterSender.java,v $
- * Revision 1.3  2004-07-08 12:55:57  L190409
+ * Revision 1.4  2004-07-15 07:43:31  L190409
+ * updated javadoc
+ *
+ * Revision 1.3  2004/07/08 12:55:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * logging refinements
  *
  * Revision 1.2  2004/07/07 13:58:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -39,7 +42,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>classname</td><td>nl.nn.adapterframework.extensions.ifsa.IfsaRequesterSender</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the object</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setApplicationId(String) applicationId}</td><td>the ApplicationID, in the form of "IFSA://<i>AppId</i>"</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setServiceId(String) serviceId}</td><td></td><td>the ServiceID of the service to be called, in the form of "IFSA://<i>ServiceID</i>"</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setServiceId(String) serviceId}</td><td>the ServiceID of the service to be called, in the form of "IFSA://<i>ServiceID</i>"</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMessageProtocol(String) messageProtocol}</td><td>protocol of IFSA-Service to be called. Possible values 
  * <ul>
  *   <li>"FF": Fire & Forget protocol</li>
@@ -51,7 +54,7 @@ import org.apache.commons.lang.StringUtils;
  * @since 4.2
  */
 public class IfsaRequesterSender extends IfsaFacade implements ISender {
-	public static final String version="$Id: IfsaRequesterSender.java,v 1.3 2004-07-08 12:55:57 L190409 Exp $";
+	public static final String version="$Id: IfsaRequesterSender.java,v 1.4 2004-07-15 07:43:31 L190409 Exp $";
 	private QueueSession session;
 	private QueueSender sender;
   
@@ -88,6 +91,9 @@ public class IfsaRequesterSender extends IfsaFacade implements ISender {
 	    }
 	}
 
+	/**
+	 * returns true for Request/Reply configurations
+	 */
 	public boolean isSynchronous() {
 		return getMessageProtocolEnum().equals(IfsaMessageProtocolEnum.REQUEST_REPLY);
 	}
@@ -125,10 +131,7 @@ public class IfsaRequesterSender extends IfsaFacade implements ISender {
 	
 	}
 	/**
-	 * Send a message to the destination for this service.
-	 * This method may be called after the <code>init() </code>
-	 * method is called.
-	 * <p>As IFSA does not allow setting the correlationID</p>
+	 * Execute a request to the IFSA service.
 	 * @return in Request/Reply, the retrieved message or TIMEOUT, otherwise null
 	 */
 	public String sendMessage(String message)
@@ -159,10 +162,8 @@ public class IfsaRequesterSender extends IfsaFacade implements ISender {
 	
 	}
 	/**
-	 * Send a message to the destination for this service.
-	 * This method may be called after the <code>init() </code>
-	 * method is called.
-	 * <p>As IFSA does not allow setting the correlationID</p>
+	 * Execute a request to the IFSA service.
+	 * <p>As IFSA does not allow setting the correlationID, the value supplied is not used</p>
 	 * @return in Request/Reply, the retrieved message or TIMEOUT, otherwise null
 	 */
 	public String sendMessage(String dummyCorrelationId, String message) throws SenderException, TimeOutException {

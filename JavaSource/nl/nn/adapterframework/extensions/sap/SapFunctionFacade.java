@@ -1,6 +1,9 @@
 /*
  * $Log: SapFunctionFacade.java,v $
- * Revision 1.1  2004-07-06 07:09:05  L190409
+ * Revision 1.2  2004-07-15 07:44:30  L190409
+ * updated javadoc
+ *
+ * Revision 1.1  2004/07/06 07:09:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * moved SAP functionality to extensions
  *
  * Revision 1.3  2004/06/30 12:36:47  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -50,7 +53,7 @@ import com.sap.mw.jco.*;
  * @since 4.2
  */
 public class SapFunctionFacade implements INamedObject{
-	public static final String version="$Id: SapFunctionFacade.java,v 1.1 2004-07-06 07:09:05 L190409 Exp $";
+	public static final String version="$Id: SapFunctionFacade.java,v 1.2 2004-07-15 07:44:30 L190409 Exp $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	private String name;
@@ -100,7 +103,7 @@ public class SapFunctionFacade implements INamedObject{
 
 
 
-	static void setParameters(JCO.ParameterList params, String message, int fieldIndex) throws SapException {
+	static protected void setParameters(JCO.ParameterList params, String message, int fieldIndex) throws SapException {
 		if (params !=null) {
 			if (fieldIndex>0) {
 				params.setValue(message,fieldIndex-1);
@@ -275,122 +278,72 @@ public class SapFunctionFacade implements INamedObject{
 	}
 
 
-	/**
-	 * @return
-	 */
 	public int getCorrelationIdFieldIndex() {
 		return correlationIdFieldIndex;
 	}
 
-	/**
-	 * @return
-	 */
 	public String getCorrelationIdFieldName() {
 		return correlationIdFieldName;
 	}
 
-	/**
-	 * @return
-	 */
 	public int getReplyFieldIndex() {
 		return replyFieldIndex;
 	}
 
-	/**
-	 * @return
-	 */
 	public String getReplyFieldName() {
 		return replyFieldName;
 	}
 
-	/**
-	 * @return
-	 */
 	public int getRequestFieldIndex() {
 		return requestFieldIndex;
 	}
 
-	/**
-	 * @return
-	 */
 	public String getRequestFieldName() {
 		return requestFieldName;
 	}
 
-	/**
-	 * @param i
-	 */
 	public void setCorrelationIdFieldIndex(int i) {
 		correlationIdFieldIndex = i;
 	}
 
-	/**
-	 * @param string
-	 */
 	public void setCorrelationIdFieldName(String string) {
 		correlationIdFieldName = string;
 	}
 
-	/**
-	 * @param i
-	 */
 	public void setReplyFieldIndex(int i) {
 		replyFieldIndex = i;
 	}
 
-	/**
-	 * @param string
-	 */
 	public void setReplyFieldName(String string) {
 		replyFieldName = string;
 	}
 
-	/**
-	 * @param i
-	 */
 	public void setRequestFieldIndex(int i) {
 		requestFieldIndex = i;
 	}
 
-	/**
-	 * @param string
-	 */
 	public void setRequestFieldName(String string) {
 		requestFieldName = string;
 	}
-	/**
-	 * @return
-	 */
+
 	public String getName() {
 		return name;
 	}
 
-	/**
-	 * @param string
-	 */
 	public void setName(String string) {
 		name = string;
 	}
 
 
-	/**
-	 * @return
-	 */
 	public String getSapSystemName() {
 		return sapSystemName;
 	}
 
 
-	/**
-	 * @param string
-	 */
 	public void setSapSystemName(String string) {
 		sapSystemName = string;
 	}
 
-	/**
-	 * @return
-	 */
 	protected String getFunctionName() {
 		return null;
 	}
