@@ -1,6 +1,9 @@
 /*
  * $Log: MailSender.java,v $
- * Revision 1.8  2004-10-19 16:12:29  L190409
+ * Revision 1.9  2004-10-26 07:45:20  L190409
+ * check if any recipients are found
+ *
+ * Revision 1.8  2004/10/19 16:12:29  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * made Transport per thread instead of per instance
  *
  * Revision 1.7  2004/10/19 13:53:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -118,7 +121,7 @@ import java.util.Properties;
  */
 
 public class MailSender implements ISenderWithParameters {
-	public static final String version = "$Id: MailSender.java,v 1.8 2004-10-19 16:12:29 L190409 Exp $";
+	public static final String version = "$Id: MailSender.java,v 1.9 2004-10-26 07:45:20 L190409 Exp $";
 
 	protected Logger log = Logger.getLogger(this.getClass());
 	private String name;
@@ -309,6 +312,7 @@ public class MailSender implements ISenderWithParameters {
 			msg.setFrom(new InternetAddress(from));
 			msg.setSubject(subject);
 			Iterator iter = recipients.iterator();
+			boolean recipientsFound=false;
 			while (iter.hasNext()) {
 				Element recipientElement = (Element) iter.next();
 				String recipient = XmlUtils.getStringValue(recipientElement);
@@ -322,12 +326,16 @@ public class MailSender implements ISenderWithParameters {
 						recipientType = Message.RecipientType.BCC;
 					}
 					msg.addRecipient(recipientType, new InternetAddress(recipient));
+					recipientsFound = true;
 					if (log.isDebugEnabled()) {
 						sb.append("[recipient("+typeAttr+")=" + recipient + "]");
 					}
 				} else {
 					log.debug("empty recipient found, ignoring");
 				}
+			}
+			if (!recipientsFound) {
+				throw new SenderException("MailSender [" + getName() + "] did not find any valid recipients");
 			}
 
 			if (attachments==null || attachments.size()==0) {
@@ -354,17 +362,10 @@ public class MailSender implements ISenderWithParameters {
 					log.debug("found attachment ["+attachmentName+"] type ["+attachmentType+"] url ["+attachmentUrl+"]contents ["+attachmentText+"]");
 					
 					messageBodyPart = new MimeBodyPart();
-//					messageBodyPart.setText(attachment);
 					
 					DataSource attachmentDataSource;
 					if (!StringUtils.isEmpty(attachmentUrl)) {
 						attachmentDataSource = new URLDataSource(new URL(attachmentUrl));
-						/*	
-						messageBodyPart.setDataHandler(new DataHandler(attachmentDataSource));
-					} 
-					else {
-						attachmentDataSource = new StringDataSource(attachment,attachmentName,attachmentType);
-					*/			
 						messageBodyPart.setDataHandler(new DataHandler(attachmentDataSource));
 					}
 				    
@@ -393,13 +394,6 @@ public class MailSender implements ISenderWithParameters {
 		try {
 			transport = session.getTransport("smtp");
 			transport.connect(smtpHost, smtpUserid, smtpPassword);
-/*			if (log.isDebugEnabled()) {
-				log.debug("MailSender [" + getName() + "] got transport to" 
-						+ " [smtpHost=" + smtpHost+ "]"
-						+ " [smtpUserid="+ smtpUserid
-						+ " [smtpPassword="+ smtpPassword + "]");
-			}
-*/						
 			transport.sendMessage(msg, msg.getAllRecipients());
 			transport.close();
 		} catch (Exception e) {
