@@ -1,6 +1,10 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.8  2005-02-10 08:17:34  L190409
+ * Revision 1.9  2005-03-04 08:53:29  NNVZNL01#L180564
+ * Fixed IndexOutOfBoundException in getProcessStatistics  due to multi threading.
+ * Adjusted this too for getIdleStatistics
+ *
+ * Revision 1.8  2005/02/10 08:17:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * included context dump in debug
  *
  * Revision 1.7  2005/01/13 08:56:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -125,7 +129,7 @@ import javax.transaction.UserTransaction;
  */
 public class ReceiverBase
     implements IReceiver, IReceiverStatistics, Runnable, IMessageHandler, IbisExceptionListener, HasSender {
-	public static final String version="$Id: ReceiverBase.java,v 1.8 2005-02-10 08:17:34 L190409 Exp $";
+	public static final String version="$Id: ReceiverBase.java,v 1.9 2005-03-04 08:53:29 NNVZNL01#L180564 Exp $";
 	protected Logger log = Logger.getLogger(this.getClass());
  
 	private String returnIfStopped="";
@@ -963,10 +967,13 @@ public class ReceiverBase
 		}
 	
 		if (result==null) {
-			result = new StatisticsKeeper(threadsProcessing+1+" threads processing");
-			processStatistics.add(threadsProcessing, result);
+			while (processStatistics.size()<threadsProcessing+1){
+				result = new StatisticsKeeper((processStatistics.size()+1)+" threads processing");
+				processStatistics.add(processStatistics.size(), result);
+			}
 		}
-		return result;
+		
+		return (StatisticsKeeper) processStatistics.get(threadsProcessing);
 	}
 	
 	protected synchronized StatisticsKeeper getIdleStatistics(int threadsProcessing) {
@@ -978,10 +985,12 @@ public class ReceiverBase
 		}
 
 		if (result==null) {
-			result = new StatisticsKeeper(threadsProcessing+" threads processing");
-			idleStatistics.add(threadsProcessing, result);
+			while (idleStatistics.size()<threadsProcessing+1){
+			result = new StatisticsKeeper((threadsProcessing+1)+" threads processing");
+				idleStatistics.add(threadsProcessing, result);
+			}
 		}
-		return result;
+		return (StatisticsKeeper) idleStatistics.get(threadsProcessing);
 	}
 	
 	/**
