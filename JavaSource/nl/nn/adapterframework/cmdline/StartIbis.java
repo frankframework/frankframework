@@ -22,11 +22,11 @@ import javax.management.MBeanServerFactory;
  */
 public class StartIbis {
 	public static final String version =
-		"$Id: StartIbis.java,v 1.2 2004-04-26 08:45:34 NNVZNL01#L180564 Exp $";
+		"$Id: StartIbis.java,v 1.3 2004-04-26 09:35:07 NNVZNL01#L180564 Exp $";
 	static final String DFLT_DIGESTER_RULES = "digester-rules.xml";
 	static final String DFLT_CONFIGURATION = "Configuration.xml";
 	static final String DFLT_AUTOSTART = "TRUE";
-	private static Logger log = Logger.getLogger("StartIbis");
+	private  Logger log = Logger.getLogger(this.getClass());
 
 	/**
 	 * 
@@ -36,10 +36,11 @@ public class StartIbis {
 		// TODO Auto-generated constructor stub
 	}
 	public static void main(String[] args) {
-		initConfig(DFLT_CONFIGURATION, DFLT_DIGESTER_RULES, DFLT_AUTOSTART);
+		StartIbis si=new StartIbis();
+		si.initConfig(DFLT_CONFIGURATION, DFLT_DIGESTER_RULES, DFLT_AUTOSTART);
 
 	}
-	public static boolean initConfig(
+	public boolean initConfig(
 		String configurationFile,
 		String digesterRulesFile,
 		String autoStart) {
