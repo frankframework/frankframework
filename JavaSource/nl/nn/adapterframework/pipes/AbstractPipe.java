@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractPipe.java,v $
- * Revision 1.4  2004-03-30 07:30:05  L190409
+ * Revision 1.5  2004-04-06 10:16:16  NNVZNL01#L180564
+ * Added PipeParameter and implemented it. Added XsltParamPipe also
+ *
+ * Revision 1.4  2004/03/30 07:30:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  */
@@ -13,7 +16,8 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeLineSession;
-
+import java.util.ArrayList;
+import java.util.Iterator;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.log4j.Logger;
 
@@ -40,6 +44,8 @@ import java.util.Hashtable;
  * Also, the setting of something in the <code>PipeLineSession</code> should be done using
  * this technique (specifying the key under which to store the value by a parameter).
  * </p>
+ * <p>Since 4.1 this class also has parameters, so that decendants of this class automatically are parameter-enabled.
+ * However, your documentation should say if and how parameters are used!<p>
  * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
@@ -53,20 +59,23 @@ import java.util.Hashtable;
  * @see nl.nn.adapterframework.core.PipeLineSession
  */
 public abstract class AbstractPipe implements IPipe {
-  public static final String version="$Id: AbstractPipe.java,v 1.4 2004-03-30 07:30:05 L190409 Exp $";
+  public static final String version="$Id: AbstractPipe.java,v 1.5 2004-04-06 10:16:16 NNVZNL01#L180564 Exp $";
   private String name;
   protected Logger log = Logger.getLogger(this.getClass());
   private Hashtable pipeForwards=new Hashtable();
   private int maxThreads = 0;
-
+  private ArrayList parameterList = new ArrayList();
+  
 /**
  * <code>configure()</code> is called after the {@link nl.nn.adapterframework.core.PipeLine Pipeline} is registered
  * at the {@link nl.nn.adapterframework.core.Adapter Adapter}. Purpose of this method is to reduce
  * creating connections to databases etc. in the {@link #doPipe(Object) doPipe()} method.
  * As much as possible class-instantiating should take place in the
  * <code>configure()</code> method, to improve performance.
+ 
  */ 
 public void configure() throws ConfigurationException{
+	
   }
 /**
  * This is where the action takes place. Pipes may only throw a PipeRunException,
@@ -182,4 +191,22 @@ public void configure() throws ConfigurationException{
     public String toString() {
 		return ToStringBuilder.reflectionToString(this);
     }
+
+	/**
+	 * Add a parameter to the list of parameters
+	 * @param rhs the PipeParameter.
+	 */
+	public void addParameter(PipeParameter rhs) {
+		log.debug("Pipe ["+getName()+"] added parameter ["+rhs.toString()+"]");
+		parameterList.add(rhs);
+	}
+
+	/**
+	 * return the Parameters
+	 */
+	public ArrayList getParameterList() {
+		return parameterList;
+	}
+
+
 }
