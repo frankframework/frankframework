@@ -30,7 +30,7 @@ import nl.nn.adapterframework.util.JmxUtils;
 
  */
 public class JmxMbeanHelper {
-	public static final String version="$Id: JmxMbeanHelper.java,v 1.2 2004-04-26 07:08:54 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: JmxMbeanHelper.java,v 1.3 2004-04-26 08:45:54 NNVZNL01#L180564 Exp $";
  	private static Logger log = Logger.getLogger("AdapterMBean");
 		public JmxMbeanHelper() {
 		super();
@@ -177,49 +177,49 @@ public class JmxMbeanHelper {
 
 				JmxUtils.buildGetterModelMBeanOperationInfo(
 					"getNumOfMessagesProcessed",
-					"Adapter",
+					adapter.getClass().getName(),
 					"get the NumOfMessagesProcessed",
 					"long"),
 
 				JmxUtils.buildGetterModelMBeanOperationInfo(
 					"getNumOfMessagesInProcess",
-					"Adapter",
+					adapter.getClass().getName(),
 					"get the NumOfMessagesInProcess",
 					"int"),
 				
 				JmxUtils.buildGetterModelMBeanOperationInfo(
 					"getNumOfMessagesInError",
-					"Adapter",
+					adapter.getClass().getName(),
 					"get the NumOfMessagesInError",
 					"long"),
 
 				JmxUtils.buildGetterModelMBeanOperationInfo(
 					"getDescription",
-					"Adapter",
+					adapter.getClass().getName(),
 					"get the description",
 					"java.lang.String"),
 
 				JmxUtils.buildGetterModelMBeanOperationInfo(
 					"getLastMessageDate",
-					"Adapter",
+					adapter.getClass().getName(),
 					"get the date/time of the last message",
 					"java.lang.String"),
 				
 				JmxUtils.buildGetterModelMBeanOperationInfo(
 					"getStatsUpSince",
-					"Adapter",
+					adapter.getClass().getName(),
 					"Up since",
 					"java.lang.String"),
 				
 				JmxUtils.buildGetterModelMBeanOperationInfo(
 					"getRunState",
-					"Adapter",
+					adapter.getClass().getName(),
 					"RunState",
 					"nl.nn.adapterframework.util.RunStateEnum"),
 
 				JmxUtils.buildGetterModelMBeanOperationInfo(
 					"configurationSucceeded",
-					"Adapter",
+					adapter.getClass().getName(),
 					"configurationSucceeded",
 					"boolean")
 
