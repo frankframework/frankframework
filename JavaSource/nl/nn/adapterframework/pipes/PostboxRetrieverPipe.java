@@ -1,6 +1,9 @@
 /*
  * $Log: PostboxRetrieverPipe.java,v $
- * Revision 1.3  2004-08-23 13:10:09  L190409
+ * Revision 1.4  2004-10-05 11:39:36  L190409
+ * removed unused imports
+ *
+ * Revision 1.3  2004/08/23 13:10:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated JavaDoc
  *
  * Revision 1.2  2004/05/21 12:05:09  unknown <unknown@ibissource.org>
@@ -16,25 +19,15 @@
 package nl.nn.adapterframework.pipes;
 
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Hashtable;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.HasSender;
 import nl.nn.adapterframework.core.IPostboxListener;
-import nl.nn.adapterframework.core.IPostboxSender;
-import nl.nn.adapterframework.core.ISender;
-import nl.nn.adapterframework.core.IbisException;
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.core.ParameterValueResolver;
-import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
 
 /**
  * Retrieves a message using an {@link IPostboxListener}. Note that most listeners allow you to specify a timeout. The timeout has the following
@@ -67,7 +60,7 @@ import nl.nn.adapterframework.core.TimeOutException;
  * @version Id
  */
 public class PostboxRetrieverPipe  extends FixedForwardPipe {
-	public static final String version="$Id: PostboxRetrieverPipe.java,v 1.3 2004-08-23 13:10:09 L190409 Exp $";
+	public static final String version="$Id: PostboxRetrieverPipe.java,v 1.4 2004-10-05 11:39:36 L190409 Exp $";
 	private IPostboxListener listener = null;
 	private String resultOnEmptyPostbox = "empty postbox";
 		
