@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaFacade.java,v $
- * Revision 1.6  2004-07-05 14:29:45  L190409
+ * Revision 1.7  2004-07-06 14:50:06  L190409
+ * included PhysicalDestination
+ *
+ * Revision 1.6  2004/07/05 14:29:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * restructuring to align with IFSA naming scheme
  *
  */
@@ -8,6 +11,7 @@ package nl.nn.adapterframework.extensions.ifsa;
 
 import com.ing.ifsa.*;
 
+import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 
@@ -43,8 +47,8 @@ import javax.jms.*;
  * @author Johan Verrips / Gerrit van Brakel
  * @since 4.2
  */
-public class IfsaFacade implements INamedObject {
-	public static final String version="$Id: IfsaFacade.java,v 1.6 2004-07-05 14:29:45 L190409 Exp $";
+public class IfsaFacade implements INamedObject, HasPhysicalDestination {
+	public static final String version="$Id: IfsaFacade.java,v 1.7 2004-07-06 14:50:06 L190409 Exp $";
     protected Logger log = Logger.getLogger(this.getClass());
     
 	private final static String IFSA_INITIAL_CONTEXT_FACTORY="com.ing.ifsa.IFSAContextFactory";
@@ -519,6 +523,26 @@ public class IfsaFacade implements INamedObject {
 	    return result;
 	
 	}
+
+	public String getPhysicalDestinationName() {
+	
+		String result = null;
+	
+		try {
+			if (isRequestor()) {
+				result = getServiceId();
+			} else {
+				result = getApplicationId();
+			}
+			if (getServiceQueue() != null) {
+				result += " ["+ getServiceQueue().getQueueName()+"]";
+			}
+		} catch (Exception je) {
+			log.warn(getLogPrefix()+"got exception in getPhysicalDestinationName", je);
+		}
+		return result;
+	}
+
 
 	/**
 	 * set the IFSA service Id, for requesters only
