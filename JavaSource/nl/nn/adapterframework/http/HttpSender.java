@@ -1,6 +1,9 @@
 /*
  * $Log: HttpSender.java,v $
- * Revision 1.8  2004-10-12 15:10:17  L190409
+ * Revision 1.9  2004-10-14 15:35:10  L190409
+ * refactored AuthSSLProtocolSocketFactory group
+ *
+ * Revision 1.8  2004/10/12 15:10:17  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * made parameterized version
  *
  * Revision 1.7  2004/09/09 14:50:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -92,7 +95,7 @@ import nl.nn.adapterframework.util.ClassUtils;
  * @since 4.2c
  */
 public class HttpSender implements IParameterizedSender, HasPhysicalDestination {
-	public static final String version = "$Id: HttpSender.java,v 1.8 2004-10-12 15:10:17 L190409 Exp $";
+	public static final String version = "$Id: HttpSender.java,v 1.9 2004-10-14 15:35:10 L190409 Exp $";
 	protected Logger log = Logger.getLogger(this.getClass());;
 
 	private String name;
@@ -175,7 +178,7 @@ public class HttpSender implements IParameterizedSender, HasPhysicalDestination 
 			HostConfiguration hostconfiguration = httpclient.getHostConfiguration();		           
 			
 			if (certificateUrl!=null || truststoreUrl!=null) {
-				AuthSSLProtocolSocketFactory socketfactory ;
+				AuthSSLProtocolSocketFactoryBase socketfactory ;
 				try {
 					if (isJdk13Compatibility()) {
 						addProvider("sun.security.provider.Sun");
@@ -189,7 +192,7 @@ public class HttpSender implements IParameterizedSender, HasPhysicalDestination 
 							certificateUrl, getCertificatePassword(), getKeystoreType(),
 							truststoreUrl, getTruststorePassword());
 					}
-					socketfactory.init();	
+					socketfactory.initSSLContext();	
 				} catch (Throwable t) {
 					throw new ConfigurationException("cannot create or initialize SocketFactory",t);
 				}

@@ -1,6 +1,6 @@
 /*
- * $Log: AuthSSLProtocolSocketFactory.java,v $
- * Revision 1.4  2004-10-14 15:35:10  L190409
+ * $Log: AuthSSLProtocolSocketFactoryBase.java,v $
+ * Revision 1.1  2004-10-14 15:35:10  L190409
  * refactored AuthSSLProtocolSocketFactory group
  *
  * Revision 1.3  2004/09/09 14:50:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -16,28 +16,18 @@
 package nl.nn.adapterframework.http;
 
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.Socket;
 import java.net.URL;
-import java.net.UnknownHostException;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
+import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
+import java.util.Enumeration;
 
-//import com.sun.net.ssl.KeyManager;
-//import com.sun.net.ssl.KeyManagerFactory;
-//import com.sun.net.ssl.SSLContext;
-//import com.sun.net.ssl.TrustManager;
-//import com.sun.net.ssl.TrustManagerFactory;
-
-// javax.net.ssl is jdk 1.4.x ...
-import javax.net.ssl.KeyManager;
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
+import org.apache.commons.httpclient.protocol.SecureProtocolSocketFactory;
+import org.apache.log4j.Logger;
 
 /**
  * <p>
@@ -144,7 +134,17 @@ import javax.net.ssl.TrustManagerFactory;
  * </p>
  */
 
-public class AuthSSLProtocolSocketFactory extends AuthSSLProtocolSocketFactoryBase {
+public abstract class AuthSSLProtocolSocketFactoryBase implements SecureProtocolSocketFactory {
+
+    /** Log object for this class. */
+	protected static Logger log = Logger.getLogger(AuthSSLProtocolSocketFactoryBase.class);;
+
+	protected URL keystoreUrl = null;
+	protected String keystorePassword = null;
+	protected String keystoreType = "null";
+	protected URL truststoreUrl = null;
+	protected String truststorePassword = null;
+	protected Object sslContext = null;
 
     /**
      * Constructor for AuthSSLProtocolSocketFactory. Either a keystore or truststore file
@@ -158,116 +158,67 @@ public class AuthSSLProtocolSocketFactory extends AuthSSLProtocolSocketFactoryBa
      *        authentication is not to be used.
      * @param truststorePassword Password to unlock the truststore.
      */
-	public AuthSSLProtocolSocketFactory(
-		final URL keystoreUrl, final String keystorePassword, final String keystoreType, 
-		final URL truststoreUrl, final String truststorePassword)
-	{
-		super(keystoreUrl, keystorePassword, keystoreType, truststoreUrl, truststorePassword);
+    public AuthSSLProtocolSocketFactoryBase (
+        final URL keystoreUrl, final String keystorePassword, final String keystoreType, 
+        final URL truststoreUrl, final String truststorePassword)
+    {
+        super();
+        this.keystoreUrl = keystoreUrl;
+        this.keystorePassword = keystorePassword;
+		this.keystoreType = keystoreType;
+        this.truststoreUrl = truststoreUrl;
+        this.truststorePassword = truststorePassword;
+    }
+
+	public abstract void initSSLContext() throws NoSuchAlgorithmException, KeyStoreException, GeneralSecurityException, IOException;
+
+	protected void initSSLContextNoExceptions(){
+		if (this.sslContext == null) {
+			try {
+				initSSLContext();
+			} catch (NoSuchAlgorithmException e) {
+				log.error("Unsupported algorithm exception", e);
+				throw new Error("Unsupported algorithm exception: " + e.getMessage());
+			} catch (KeyStoreException e) {
+				log.error("Keystore exception", e);
+				throw new Error("Keystore exception: " + e.getMessage());
+			} catch (GeneralSecurityException e) {
+				log.error("Key management exception", e);
+				throw new Error("Key management exception: " + e.getMessage());
+			} catch (IOException e) {
+				log.error("I/O error reading keystore/truststore file", e);
+				throw new Error("I/O error reading keystore/truststore file: " + e.getMessage());
+			}
+		}
 	}
+
+    protected static KeyStore createKeyStore(final URL url, final String password, String keyStoreType, String prefix) 
+        throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException
+    {
+        if (url == null) {
+            throw new IllegalArgumentException("Keystore url may not be null");
+        }
+        log.debug("Initializing key store");
+        KeyStore keystore  = KeyStore.getInstance(keyStoreType);
+        keystore.load(url.openStream(), password != null ? password.toCharArray(): null);
+		if (log.isDebugEnabled()) {
+			Enumeration aliases = keystore.aliases();
+			while (aliases.hasMoreElements()) {
+				String alias = (String)aliases.nextElement();
+				log.debug(prefix+" '" + alias + "':");
+				Certificate trustedcert = keystore.getCertificate(alias);
+				if (trustedcert != null && trustedcert instanceof X509Certificate) {
+					X509Certificate cert = (X509Certificate)trustedcert;
+					log.debug("  Subject DN: " + cert.getSubjectDN());
+					log.debug("  Signature Algorithm: " + cert.getSigAlgName());
+					log.debug("  Valid from: " + cert.getNotBefore() );
+					log.debug("  Valid until: " + cert.getNotAfter());
+					log.debug("  Issuer: " + cert.getIssuerDN());
+				}
+			}
+		}
+        return keystore;
+    }
     
-    private static KeyManager[] createKeyManagers(final KeyStore keystore, final String password)
-        throws KeyStoreException, NoSuchAlgorithmException, UnrecoverableKeyException 
-    {
-        if (keystore == null) {
-            throw new IllegalArgumentException("Keystore may not be null");
-        }
-        log.debug("Initializing key manager");
-        KeyManagerFactory kmfactory = KeyManagerFactory.getInstance(
-            KeyManagerFactory.getDefaultAlgorithm());
-        kmfactory.init(keystore, password != null ? password.toCharArray(): null);
-        return kmfactory.getKeyManagers(); 
-    }
-
-    private static TrustManager[] createTrustManagers(final KeyStore keystore)
-        throws KeyStoreException, NoSuchAlgorithmException
-    { 
-        if (keystore == null) {
-            throw new IllegalArgumentException("Keystore may not be null");
-        }
-        log.debug("Initializing trust manager");
-        TrustManagerFactory tmfactory = TrustManagerFactory.getInstance(
-            TrustManagerFactory.getDefaultAlgorithm());
-        tmfactory.init(keystore);
-        TrustManager[] trustmanagers = tmfactory.getTrustManagers();
-        return trustmanagers; 
-    }
-
-
-	private SSLContext createSSLContext() throws NoSuchAlgorithmException, KeyStoreException, GeneralSecurityException, IOException {
-			KeyManager[] keymanagers = null;
-			TrustManager[] trustmanagers = null;
-			if (this.keystoreUrl != null) {
-				KeyStore keystore = createKeyStore(this.keystoreUrl, this.keystorePassword, this.keystoreType, "Certificate chain");
-				keymanagers = createKeyManagers(keystore, this.keystorePassword);
-			}
-			if (this.truststoreUrl != null) {
-				KeyStore keystore = createKeyStore(this.truststoreUrl, this.truststorePassword, this.keystoreType, "Trusted Certificate");
-				trustmanagers = createTrustManagers(keystore);
-			}
-			SSLContext sslcontext = SSLContext.getInstance("SSL");
-			sslcontext.init(keymanagers, trustmanagers, null);
-			return sslcontext;
-	}
-
-	public void initSSLContext() throws NoSuchAlgorithmException, KeyStoreException, GeneralSecurityException, IOException {
-		if (this.sslContext == null) {
-			sslContext = createSSLContext();
-		}
-	}
-
-	private SSLContext getSSLContext() {
-		if (this.sslContext == null) {
-			initSSLContextNoExceptions();
-		}
-		return (SSLContext)this.sslContext;
-	}
-
-    /**
-     * @see SecureProtocolSocketFactory#createSocket(java.lang.String,int,java.net.InetAddress,int)
-     */
-    public Socket createSocket(
-        String host,
-        int port,
-        InetAddress clientHost,
-        int clientPort)
-        throws IOException, UnknownHostException
-   {
-       return getSSLContext().getSocketFactory().createSocket(
-            host,
-            port,
-            clientHost,
-            clientPort
-        );
-    }
-
-    /**
-     * @see SecureProtocolSocketFactory#createSocket(java.lang.String,int)
-     */
-    public Socket createSocket(String host, int port)
-        throws IOException, UnknownHostException
-    {
-        return getSSLContext().getSocketFactory().createSocket(
-            host,
-            port
-        );
-    }
-
-    /**
-     * @see SecureProtocolSocketFactory#createSocket(java.net.Socket,java.lang.String,int,boolean)
-     */
-    public Socket createSocket(
-        Socket socket,
-        String host,
-        int port,
-        boolean autoClose)
-        throws IOException, UnknownHostException
-    {
-        return getSSLContext().getSocketFactory().createSocket(
-            socket,
-            host,
-            port,
-            autoClose
-        );
-    }
 }
 

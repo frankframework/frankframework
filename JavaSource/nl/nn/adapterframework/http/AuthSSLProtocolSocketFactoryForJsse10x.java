@@ -1,6 +1,9 @@
 /*
  * $Log: AuthSSLProtocolSocketFactoryForJsse10x.java,v $
- * Revision 1.1  2004-09-09 14:50:07  L190409
+ * Revision 1.2  2004-10-14 15:35:10  L190409
+ * refactored AuthSSLProtocolSocketFactory group
+ *
+ * Revision 1.1  2004/09/09 14:50:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added JDK1.3.x compatibility
  *
  * Revision 1.2  2004/09/08 14:18:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -22,10 +25,6 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import java.util.Enumeration;
 
 import com.sun.net.ssl.KeyManager;
 import com.sun.net.ssl.KeyManagerFactory;
@@ -46,9 +45,7 @@ import com.sun.net.ssl.TrustManagerFactory;
  * 
  */
 
-public class AuthSSLProtocolSocketFactoryForJsse10x extends AuthSSLProtocolSocketFactory {
-
-    private SSLContext sslcontext = null;
+public class AuthSSLProtocolSocketFactoryForJsse10x extends AuthSSLProtocolSocketFactoryBase {
 
     /**
      * Constructor for AuthSSLProtocolSocketFactory. Either a keystore or truststore file
@@ -67,18 +64,6 @@ public class AuthSSLProtocolSocketFactoryForJsse10x extends AuthSSLProtocolSocke
         final URL truststoreUrl, final String truststorePassword)
     {
         super(keystoreUrl, keystorePassword, keystoreType, truststoreUrl, truststorePassword);
-    }
-
-    private static KeyStore createKeyStore(final URL url, final String password, String keyStoreType) 
-        throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException
-    {
-        if (url == null) {
-            throw new IllegalArgumentException("Keystore url may not be null");
-        }
-        log.debug("Initializing key store");
-        KeyStore keystore  = KeyStore.getInstance(keyStoreType);
-        keystore.load(url.openStream(), password != null ? password.toCharArray(): null);
-        return keystore;
     }
     
     private static KeyManager[] createKeyManagers(final KeyStore keystore, final String password)
@@ -109,83 +94,33 @@ public class AuthSSLProtocolSocketFactoryForJsse10x extends AuthSSLProtocolSocke
     }
 
 
-	public void init() throws NoSuchAlgorithmException, KeyStoreException, GeneralSecurityException, IOException {
-		this.sslcontext = createSSLContext();
-	}
-
     private SSLContext createSSLContext() throws NoSuchAlgorithmException, KeyStoreException, GeneralSecurityException, IOException {
             KeyManager[] keymanagers = null;
             TrustManager[] trustmanagers = null;
             if (this.keystoreUrl != null) {
-                KeyStore keystore = createKeyStore(this.keystoreUrl, this.keystorePassword, this.keystoreType);
-                if (log.isDebugEnabled()) {
-                    Enumeration aliases = keystore.aliases();
-                    while (aliases.hasMoreElements()) {
-                        String alias = (String)aliases.nextElement();                        
-                        Certificate[] certs = keystore.getCertificateChain(alias);
-                        if (certs != null) {
-                            log.debug("Certificate chain '" + alias + "':");
-                            for (int c = 0; c < certs.length; c++) {
-                                if (certs[c] instanceof X509Certificate) {
-                                    X509Certificate cert = (X509Certificate)certs[c];
-                                    log.debug(" Certificate " + (c + 1) + ":");
-                                    log.debug("  Subject DN: " + cert.getSubjectDN());
-                                    log.debug("  Signature Algorithm: " + cert.getSigAlgName());
-                                    log.debug("  Valid from: " + cert.getNotBefore() );
-                                    log.debug("  Valid until: " + cert.getNotAfter());
-                                    log.debug("  Issuer: " + cert.getIssuerDN());
-                                }
-                            }
-                        }
-                    }
-                }
+                KeyStore keystore = createKeyStore(this.keystoreUrl, this.keystorePassword, this.keystoreType, "Certificate chain");
                 keymanagers = createKeyManagers(keystore, this.keystorePassword);
             }
             if (this.truststoreUrl != null) {
-                KeyStore keystore = createKeyStore(this.truststoreUrl, this.truststorePassword, this.keystoreType);
-                if (log.isDebugEnabled()) {
-                    Enumeration aliases = keystore.aliases();
-                    while (aliases.hasMoreElements()) {
-                        String alias = (String)aliases.nextElement();
-                        log.debug("Trusted certificate '" + alias + "':");
-                        Certificate trustedcert = keystore.getCertificate(alias);
-                        if (trustedcert != null && trustedcert instanceof X509Certificate) {
-                            X509Certificate cert = (X509Certificate)trustedcert;
-                            log.debug("  Subject DN: " + cert.getSubjectDN());
-                            log.debug("  Signature Algorithm: " + cert.getSigAlgName());
-                            log.debug("  Valid from: " + cert.getNotBefore() );
-                            log.debug("  Valid until: " + cert.getNotAfter());
-                            log.debug("  Issuer: " + cert.getIssuerDN());
-                        }
-                    }
-                }
+                KeyStore keystore = createKeyStore(this.truststoreUrl, this.truststorePassword, this.keystoreType, "Trusted Certificate");
                 trustmanagers = createTrustManagers(keystore);
             }
             SSLContext sslcontext = SSLContext.getInstance("SSL");
             sslcontext.init(keymanagers, trustmanagers, null);
             return sslcontext;
-
     }
 
+	public void initSSLContext() throws NoSuchAlgorithmException, KeyStoreException, GeneralSecurityException, IOException {
+		if (this.sslContext == null) {
+			sslContext = createSSLContext();
+		}
+	}
+
     private SSLContext getSSLContext() {
-        if (this.sslcontext == null) {
-			try {
-				init();
-			} catch (NoSuchAlgorithmException e) {
-				log.error("Unsupported algorithm exception", e);
-				throw new Error("Unsupported algorithm exception: " + e.getMessage());
-			} catch (KeyStoreException e) {
-				log.error("Keystore exception", e);
-				throw new Error("Keystore exception: " + e.getMessage());
-			} catch (GeneralSecurityException e) {
-				log.error("Key management exception", e);
-				throw new Error("Key management exception: " + e.getMessage());
-			} catch (IOException e) {
-				log.error("I/O error reading keystore/truststore file", e);
-				throw new Error("I/O error reading keystore/truststore file: " + e.getMessage());
-			}
+        if (this.sslContext == null) {
+			initSSLContextNoExceptions();
         }
-        return this.sslcontext;
+        return (SSLContext)this.sslContext;
     }
 
     /**
@@ -235,5 +170,7 @@ public class AuthSSLProtocolSocketFactoryForJsse10x extends AuthSSLProtocolSocke
             autoClose
         );
     }
+
+
 }
 
