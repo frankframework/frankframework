@@ -1,6 +1,9 @@
 /*
  * $Log: Adios2XmlPipe.java,v $
- * Revision 1.5  2004-04-07 06:58:21  NNVZNL01#L180564
+ * Revision 1.6  2004-08-09 13:58:14  L190409
+ * improved check for existence of interface-file
+ *
+ * Revision 1.5  2004/04/07 06:58:21  Johan Verrips <johan.verrips@ibissource.org>
  * adjusted bericht.toXML() to bericht.toXML(true) to add an xml header
  *
  * Revision 1.4  2004/04/07 06:36:40  Johan Verrips <johan.verrips@ibissource.org>
@@ -40,6 +43,7 @@ import java.util.NoSuchElementException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.BufferedReader;
+import java.net.URL;
 
 /**
  * Transforms between ascii-ADIOS and an XML representation of ADIOS.
@@ -85,7 +89,7 @@ import java.io.BufferedReader;
  * @version Id
  */
 public class Adios2XmlPipe extends FixedForwardPipe {
-	public static final String version="$Id: Adios2XmlPipe.java,v 1.5 2004-04-07 06:58:21 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: Adios2XmlPipe.java,v 1.6 2004-08-09 13:58:14 L190409 Exp $";
 
 	private Hashtable rubriek2nummer;	 
 	private Hashtable record2nummer;
@@ -191,12 +195,7 @@ public class Adios2XmlPipe extends FixedForwardPipe {
 
    
 
-/**
- * constructor
- */
-public Adios2XmlPipe() {
-	super();
-}
+
 /**
  * Checks if a String consists of digits only hence it is a label number
  */
@@ -235,7 +234,11 @@ public void configure() throws ConfigurationException{
 
 	try {
 
-    	BufferedReader bufinput = new BufferedReader(new InputStreamReader(ClassUtils.getResourceURL(this,getAdiosDefinities()).openStream()));
+		URL url = ClassUtils.getResourceURL(this,getAdiosDefinities()); 
+		if (url==null) {
+			throw new ConfigurationException(getLogPrefix(null)+"cannot find adios definitions from resource ["+getAdiosDefinities()+"]");
+		}
+    	BufferedReader bufinput = new BufferedReader(new InputStreamReader(url.openStream()));
  		String line,labelnr,waarde;
 
  		line = bufinput.readLine();
@@ -301,7 +304,7 @@ public void configure() throws ConfigurationException{
 
  		bufinput.close();
  	}
- 	catch 	(IOException e) {
+ 	catch (IOException e) {
 	 	throw new ConfigurationException(getLogPrefix(null)+"IOException on ["+getAdiosDefinities()+"]", e);
  	}
 
