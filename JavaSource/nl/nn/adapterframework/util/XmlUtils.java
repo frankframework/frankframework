@@ -1,6 +1,9 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.9  2004-06-21 10:04:38  L190409
+ * Revision 1.10  2004-09-01 07:15:24  L190409
+ * added namespaced xpath evaluator
+ *
+ * Revision 1.9  2004/06/21 10:04:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added version of createXPathEvaluator() that allows to 
  * set output-method to xml (instead of only text), and uses copy-of instead of
  * value-of
@@ -80,7 +83,7 @@ import java.util.LinkedList;
  */
 public class XmlUtils {
 	public static final String version =
-		"$Id: XmlUtils.java,v 1.9 2004-06-21 10:04:38 L190409 Exp $";
+		"$Id: XmlUtils.java,v 1.10 2004-09-01 07:15:24 L190409 Exp $";
 
 	static final String W3C_XML_SCHEMA = "http://www.w3.org/2001/XMLSchema";
 	static final String JAXP_SCHEMA_LANGUAGE =
@@ -223,9 +226,13 @@ public class XmlUtils {
 	/*
 	 * version of createXPathEvaluator that allows to set outputMethod, and uses copy-of instead of value-of
 	 */
-	public static Transformer createXPathEvaluator(String XPathExpression, String outputMethod) throws TransformerConfigurationException {
+	public static Transformer createXPathEvaluator(String namespaceDefs, String XPathExpression, String outputMethod) throws TransformerConfigurationException {
 		if (StringUtils.isEmpty(XPathExpression))
 			throw new TransformerConfigurationException("XPathExpression must be filled");
+		
+		if (namespaceDefs==null) {
+			namespaceDefs="";
+		}	
 			
 		String xsl = 
 			"<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
@@ -233,11 +240,15 @@ public class XmlUtils {
 			"<xsl:output method=\""+outputMethod+"\"/>" +
 			"<xsl:strip-space elements=\"*\"/>" +
 			"<xsl:template match=\"/\">" +
-			"<xsl:copy-of select=\"" + XPathExpression + "\"/>" +
+			"<xsl:copy-of "+namespaceDefs+" select=\"" + XPathExpression + "\"/>" +
 			"</xsl:template>" +
 			"</xsl:stylesheet>";
 	
 		return  createTransformer(xsl);
+	}
+
+	public static Transformer createXPathEvaluator(String XPathExpression, String outputMethod) throws TransformerConfigurationException {
+		return createXPathEvaluator(null, XPathExpression, outputMethod);
 	}
 
 
