@@ -1,6 +1,9 @@
 /*
  * $Log: Configuration.java,v $
- * Revision 1.10  2004-06-16 12:34:46  NNVZNL01#L180564
+ * Revision 1.11  2004-06-30 10:01:58  L190409
+ * modified error handling
+ *
+ * Revision 1.10  2004/06/16 12:34:46  Johan Verrips <johan.verrips@ibissource.org>
  * Added AutoStart functionality on Adapter
  *
  * Revision 1.9  2004/04/23 14:45:36  Johan Verrips <johan.verrips@ibissource.org>
@@ -51,7 +54,7 @@ import java.util.Enumeration;
  */
 public class Configuration {
     protected Logger log; 
-    public static final String version="$Id: Configuration.java,v 1.10 2004-06-16 12:34:46 NNVZNL01#L180564 Exp $";
+    public static final String version="$Id: Configuration.java,v 1.11 2004-06-30 10:01:58 L190409 Exp $";
      
     private Hashtable adapterTable = new Hashtable();
 
@@ -227,17 +230,7 @@ public class Configuration {
 	        JmxMbeanHelper.hookupAdapter( (nl.nn.adapterframework.core.Adapter) adapter);
 	        log.info ("[" + adapter.getName() + "] registered to the JMX server");
 		}
-
-        
-
-        if (log.isDebugEnabled()) {
-            try {
-                adapter.configure();
-            } catch (Exception e) {
-                log.error("error configuring adapter [" + adapter.getName() + "]", e);
-            }
-        } else
-            adapter.configure();
+        adapter.configure();
 
     }
     /**
