@@ -86,7 +86,8 @@ public class Parameter {
 	 */
 	public void setXpathExpression(String xpathExpression) throws TransformerException {
 		this.xpathExpression = xpathExpression;
-		this.transformer = XmlUtils.createXPathEvaluator(xpathExpression);
+		if (this.xpathExpression != null)
+			this.transformer = XmlUtils.createXPathEvaluator(xpathExpression);
 	}
 
 }

@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.4  2004-08-23 13:10:48  L190409
+ * Revision 1.5  2004-08-25 09:11:33  a1909356#db2admin
+ * Add waitForRunstate with timeout
+ *
+ * Revision 1.4  2004/08/23 13:10:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated JavaDoc
  *
  * Revision 1.3  2004/08/16 14:09:58  unknown <unknown@ibissource.org>
@@ -112,7 +115,7 @@ import javax.transaction.UserTransaction;
  */
 public class ReceiverBase
     implements IReceiver, IReceiverStatistics, Runnable, IMessageHandler, IbisExceptionListener, HasSender {
-	public static final String version="$Id: ReceiverBase.java,v 1.4 2004-08-23 13:10:48 L190409 Exp $";
+	public static final String version="$Id: ReceiverBase.java,v 1.5 2004-08-25 09:11:33 a1909356#db2admin Exp $";
 	protected Logger log = Logger.getLogger(this.getClass());
  
 	private String returnIfStopped="";
@@ -914,6 +917,10 @@ public class ReceiverBase
 	public void waitForRunState(RunStateEnum requestedRunState) throws InterruptedException {
 		runState.waitForRunState(requestedRunState);
 	}
+	public boolean waitForRunState(RunStateEnum requestedRunState, long timeout) throws InterruptedException {
+		return runState.waitForRunState(requestedRunState, timeout);
+	}
+	
 		/**
 		 * Get the {@link RunStateEnum runstate} of this receiver.
 		 */

@@ -1,6 +1,9 @@
 /*
  * $Log: IReceiver.java,v $
- * Revision 1.5  2004-03-31 12:04:20  L190409
+ * Revision 1.6  2004-08-25 09:11:33  a1909356#db2admin
+ * Add waitForRunstate with timeout
+ *
+ * Revision 1.5  2004/03/31 12:04:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fixed javadoc
  *
  * Revision 1.4  2004/03/30 07:29:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -43,7 +46,7 @@ import nl.nn.adapterframework.util.RunStateEnum;
  *
  */
 public interface IReceiver extends IManagable {
-	public static final String version="$Id: IReceiver.java,v 1.5 2004-03-31 12:04:20 L190409 Exp $";
+	public static final String version="$Id: IReceiver.java,v 1.6 2004-08-25 09:11:33 a1909356#db2admin Exp $";
 
  	/**
  	 * This method is called by the <code>IAdapter</code> to let the
@@ -67,5 +70,6 @@ public interface IReceiver extends IManagable {
      */
     public void setAdapter(IAdapter adapter);
     
-void waitForRunState(RunStateEnum requestedRunState) throws InterruptedException;
+	void waitForRunState(RunStateEnum requestedRunState) throws InterruptedException;
+	boolean waitForRunState(RunStateEnum requestedRunState, long timeout) throws InterruptedException;
 }

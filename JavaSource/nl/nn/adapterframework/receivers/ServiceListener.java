@@ -40,7 +40,7 @@ import java.util.Iterator;
 public class ServiceListener  implements IReceiver, IReceiverStatistics, HasSender,
         ServiceClient,
         Serializable {
-	public static final String version="$Id: ServiceListener.java,v 1.3 2004-03-26 10:43:03 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: ServiceListener.java,v 1.4 2004-08-25 09:11:33 a1909356#db2admin Exp $";
         	
 	private IAdapter adapter;
 	private RunStateManager runState = new RunStateManager();
@@ -256,7 +256,12 @@ public void stopRunning() {
 	return ToStringBuilder.reflectionToString(this);
 
   }
-public void waitForRunState(RunStateEnum requestedRunState) throws InterruptedException {
-	runState.waitForRunState(requestedRunState);
-}
+  
+	public void waitForRunState(RunStateEnum requestedRunState) throws InterruptedException {
+		runState.waitForRunState(requestedRunState);
+	}
+
+	public boolean waitForRunState(RunStateEnum requestedRunState, long timeout) throws InterruptedException {
+		return runState.waitForRunState(requestedRunState, timeout);
+	}
 }

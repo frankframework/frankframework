@@ -90,7 +90,7 @@ import javax.transaction.UserTransaction;
  */
 public class PullingReceiverBase
     implements IReceiver, IReceiverStatistics, Runnable, HasSender {
-	public static final String version="$Id: PullingReceiverBase.java,v 1.13 2004-08-23 13:10:48 L190409 Exp $";
+	public static final String version="$Id: PullingReceiverBase.java,v 1.14 2004-08-25 09:11:33 a1909356#db2admin Exp $";
     	
 
 	public static final String ONERROR_CONTINUE = "continue";
@@ -608,6 +608,9 @@ public void stopRunning() {
     }
 public void waitForRunState(RunStateEnum requestedRunState) throws InterruptedException {
 	runState.waitForRunState(requestedRunState);
+}
+public boolean waitForRunState(RunStateEnum requestedRunState, long timeout) throws InterruptedException {
+	return runState.waitForRunState(requestedRunState, timeout);
 }
 	/**
 	 * Get the {@link RunStateEnum runstate} of this receiver.
