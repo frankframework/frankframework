@@ -1,6 +1,9 @@
 /*
  * $Log: JMSFacade.java,v $
- * Revision 1.13  2004-06-16 12:25:52  NNVZNL01#L180564
+ * Revision 1.14  2004-08-16 09:26:30  L190409
+ * changed messageTimeToLive to timeToLive
+ *
+ * Revision 1.13  2004/06/16 12:25:52  Johan Verrips <johan.verrips@ibissource.org>
  * Initial version of Queue browsing functionality
  *
  * Revision 1.12  2004/05/21 10:47:30  unknown <unknown@ibissource.org>
@@ -51,11 +54,30 @@ import javax.naming.NamingException;
  * <br/>
  * The <code>destinationType</code> field specifies which
  * type should be used.<br/>
+ * This class sends messages with JMS.
+ *
+ * <p><b>Configuration:</b>
+ * <table border="1">
+ * <tr><th>attributes</th><th>description</th><th>default</th></tr>
+ * <tr><td>classname</td><td>nl.nn.adapterframework.jms.JMSFacade</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setName(String) name}</td>  <td>name of the listener</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setDestinationName(String) destinationName}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setDestinationType(String) destinationType}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setTimeToLive(long) timeToLive}</td><td>&nbsp;</td><td>0</td></tr>
+ * <tr><td>{@link #setPersistent(boolean) persistent}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setAcknowledgeMode(String) acknowledgeMode}</td><td>&nbsp;</td><td>AUTO_ACKNOWLEDGE</td></tr>
+ * <tr><td>{@link #setTransacted(boolean) transacted}</td><td>&nbsp;</td><td>false</td></tr>
+ * <tr><td>{@link #setReplyToName(String) ReplyToName}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ * </table>
+ * </p>
+ *
+ * @author Gerrit van Brakel
  * @version Id
  * @author    Gerrit van Brakel
  */
 public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version="$Id: JMSFacade.java,v 1.13 2004-06-16 12:25:52 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: JMSFacade.java,v 1.14 2004-08-16 09:26:30 L190409 Exp $";
 
 	private String name;
 
@@ -65,6 +87,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 
     private int ackMode = Session.AUTO_ACKNOWLEDGE;
     private boolean persistent;
+	private long timeToLive=0;
     private String destinationName;
     private boolean useTopicFunctions = false;
 
@@ -73,7 +96,6 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
     private Connection connection;
     private Destination destination;
 
-	private long messageTimeToLive=0;
 
 
     //<code>forceMQCompliancy</code> is used to perform MQ specific replying.
@@ -234,7 +256,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	public Destination getDestination() throws NamingException, JMSException {
 	
 	    if (destination == null) {
-		    if (!useTopicFunctions || persistent) {
+		    if (!useTopicFunctions || getPersistent()) {
 		        destination = getDestination(getDestinationName());
 		    } else {
 		        destination = createTopicSession((TopicConnection) getConnection()).createTopic(
@@ -311,11 +333,16 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
      */
     public MessageProducer getMessageProducer(Session session, Destination destination)
         throws NamingException, JMSException {
-        if (useTopicFunctions)
-            return getTopicPublisher((TopicSession)session, (Topic)destination);
-
-        else
-            return getQueueSender((QueueSession)session, (Queue)destination);
+		
+		MessageProducer mp;
+        if (useTopicFunctions) {
+			mp = getTopicPublisher((TopicSession)session, (Topic)destination);
+        } else {
+			mp = getQueueSender((QueueSession)session, (Queue)destination);
+        }
+		if (getTimeToLive()>0)
+			mp.setTimeToLive(getTimeToLive());	    
+        return mp;
     }
     
 	public String getPhysicalDestinationName() {
@@ -416,9 +443,6 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	public String send(MessageProducer messageProducer, Message message)
 	    throws NamingException, JMSException {
 
-		if (getMessageTimeToLive()>0)
-				messageProducer.setTimeToLive(getMessageTimeToLive());	    
-	
 	    if (messageProducer instanceof TopicPublisher) {
 	         ((TopicPublisher) messageProducer).publish(message);
 	    } else {
@@ -484,7 +508,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
         }
 	//  sb.append("[physicalDestinationName="+getPhysicalDestinationName()+"]");
         sb.append("[ackMode=" + getAcknowledgeModeAsString(ackMode) + "]");
-        sb.append("[persistent=" + persistent + "]");
+        sb.append("[persistent=" + getPersistent() + "]");
         sb.append("[transacted=" + transacted + "]");
         return sb.toString();
     }
@@ -712,15 +736,15 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	 * Set the time-to-live in milliseconds of a message
 	 * @param exp time in milliseconds
 	 */
-	public void setMessageTimeToLive(long exp){
-		this.messageTimeToLive=exp;
+	public void setTimeToLive(long ttl){
+		this.timeToLive=ttl;
 	}
 	/**
 	 * Get the  time-to-live in milliseconds of a message
 	 * @param exp time in milliseconds
 	 */
-	public long getMessageTimeToLive(){
-		return this.messageTimeToLive;
+	public long getTimeToLive(){
+		return this.timeToLive;
 	}
 	/**
 	 * Indicates whether messages are send under transaction control.
