@@ -1,21 +1,15 @@
 /*
  * $Log: HttpSender.java,v $
- * Revision 1.1  2004-08-20 13:04:40  L190409
+ * Revision 1.2  2004-08-24 11:41:27  a1909356#db2admin
+ * Remove warnings
+ *
+ * Revision 1.1  2004/08/20 13:04:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * first version
  *
  */
 package nl.nn.adapterframework.http;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLConnection;
-
-import javax.xml.transform.Result;
 
 import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.HttpClient;
@@ -29,7 +23,6 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.util.Misc;
 
 /**
  * Sender that gets information via a HTTP post or get
@@ -38,7 +31,7 @@ import nl.nn.adapterframework.util.Misc;
  * @since 4.2
  */
 public class HttpSender implements ISender {
-	public static final String version = "$Id: HttpSender.java,v 1.1 2004-08-20 13:04:40 L190409 Exp $";
+	public static final String version = "$Id: HttpSender.java,v 1.2 2004-08-24 11:41:27 a1909356#db2admin Exp $";
 	protected Logger log = Logger.getLogger(this.getClass());;
 
 	private String name;
