@@ -1,6 +1,9 @@
 /*
  * $Log: Adapter.java,v $
- * Revision 1.7  2004-04-13 11:37:13  NNVZNL01#L180564
+ * Revision 1.8  2004-04-28 08:31:41  NNVZNL01#L180564
+ * Added getRunStateAsString function
+ *
+ * Revision 1.7  2004/04/13 11:37:13  Johan Verrips <johan.verrips@ibissource.org>
  * When the Adapter was in state "ERROR", it could not be stopped anymore. Fixed it.
  *
  * Revision 1.6  2004/04/06 14:52:52  Johan Verrips <johan.verrips@ibissource.org>
@@ -67,7 +70,7 @@ import javax.transaction.UserTransaction;
  */
 
 public class Adapter extends JNDIBase implements Runnable, IAdapter{
-	public static final String version="$Id: Adapter.java,v 1.7 2004-04-13 11:37:13 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: Adapter.java,v 1.8 2004-04-28 08:31:41 NNVZNL01#L180564 Exp $";
 	private Vector receivers=new Vector();
 	private long lastMessageDate =0;
     private PipeLine pipeline;
@@ -327,6 +330,10 @@ public long getNumOfMessagesProcessed() {
 	}
 public RunStateEnum getRunState() {
 	return runState.getRunState();
+}
+
+public String getRunStateAsString() {
+	return runState.getRunState().toString();
 }
 /**
  * Return the total processing duration as a StatisticsKeeper
