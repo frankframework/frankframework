@@ -1,6 +1,9 @@
 /*
  * $Log: JavaListener.java,v $
- * Revision 1.2  2004-08-23 13:10:48  L190409
+ * Revision 1.3  2004-10-05 09:59:24  L190409
+ * removed unused code
+ *
+ * Revision 1.2  2004/08/23 13:10:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated JavaDoc
  *
  * Revision 1.1  2004/08/23 07:38:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -51,11 +54,13 @@ import nl.nn.adapterframework.jms.JmsRealm;
  * @version Id
  */
 public class JavaListener implements IPushingListener {
-	private static Map registeredListeners; 
-	public static final String version="$Id: JavaListener.java,v 1.2 2004-08-23 13:10:48 L190409 Exp $";
-	protected Logger log = Logger.getLogger(this.getClass());;
+	public static final String version="$Id: JavaListener.java,v 1.3 2004-10-05 09:59:24 L190409 Exp $";
+	protected Logger log = Logger.getLogger(this.getClass());
+	
 	private String name;
 	private String jndiName;
+
+	private static Map registeredListeners; 
 	private IMessageHandler handler;
 	private JNDIBase jndiBase = new JNDIBase();        	
 	
@@ -166,7 +171,6 @@ public class JavaListener implements IPushingListener {
 	 * @return result of processing
 	 */
 	public String processRequest(String message) {
-		String result;
 		try {
 			return handler.processRequest(this, message);
 		} 
@@ -181,7 +185,6 @@ public class JavaListener implements IPushingListener {
 	 * @return result of processing
 	 */
 	public String processRequest(String correlationId, String message) {
-		String result;
 		try {
 			if (log.isDebugEnabled())
 				log.debug("javareceiver " + getName() + " processing [" + correlationId + "]");

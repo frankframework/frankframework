@@ -1,6 +1,9 @@
 /*
  * $Log: GenericReceiver.java,v $
- * Revision 1.1  2004-08-03 13:04:30  L190409
+ * Revision 1.2  2004-10-05 09:59:56  L190409
+ * removed unused code
+ *
+ * Revision 1.1  2004/08/03 13:04:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * introduction of GenericReceiver
  *
  * Revision 1.3  2004/03/30 07:30:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -16,7 +19,6 @@
 package nl.nn.adapterframework.receivers;
 
 import nl.nn.adapterframework.core.IListener;
-import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 
@@ -31,7 +33,7 @@ import nl.nn.adapterframework.core.ITransactionalStorage;
  * @since 4.1
  */
 public class GenericReceiver extends ReceiverBase {
-	public static final String version="$Id: GenericReceiver.java,v 1.1 2004-08-03 13:04:30 L190409 Exp $";
+	public static final String version="$Id: GenericReceiver.java,v 1.2 2004-10-05 09:59:56 L190409 Exp $";
 
 	public void setListener(IListener listener) {
 		super.setListener(listener);
