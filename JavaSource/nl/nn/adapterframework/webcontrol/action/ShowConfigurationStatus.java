@@ -23,7 +23,7 @@ import java.util.Iterator;
  */
 
 public final class ShowConfigurationStatus extends ActionBase {
-	public static final String version="$Id: ShowConfigurationStatus.java,v 1.3 2004-03-26 10:42:59 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: ShowConfigurationStatus.java,v 1.4 2004-05-26 07:32:10 NNVZNL01#L180564 Exp $";
 	
 
 
@@ -94,7 +94,7 @@ public final class ShowConfigurationStatus extends ActionBase {
           XmlBuilder adapterMessages=new XmlBuilder("adapterMessages");
           for (int t=0; t<adapter.getMessageKeeper().size(); t++){
  	          XmlBuilder adapterMessage=new XmlBuilder("adapterMessage");
-              adapterMessage.setValue(adapter.getMessageKeeper().getMessage(t).getMessageText());
+              adapterMessage.setCdataValue(adapter.getMessageKeeper().getMessage(t).getMessageText());
               adapterMessage.addAttribute("date", DateUtils.format(adapter.getMessageKeeper().getMessage(t).getMessageDate(), DateUtils.FORMAT_GENERICDATETIME));
 			  adapterMessages.addSubElement(adapterMessage);
 	          
