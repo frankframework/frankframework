@@ -1,3 +1,9 @@
+/*
+ * $Log: FixedResult.java,v $
+ * Revision 1.7  2004-09-01 07:21:11  L190409
+ * correction in documentation
+ *
+ */
 package nl.nn.adapterframework.pipes;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -28,7 +34,7 @@ import java.util.Properties;
  * <tr><td>{@link #setForwardName(String) forwardName}</td>  <td>name of forward returned upon completion</td><td>"success"</td></tr>
  * <tr><td>{@link #setFileName(String) fileName}</td>        <td>name of the file containing the resultmessage</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setReturnString(String) returnString}</td><td>returned message</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSubstituteVars(boolean) substitute}</td><td>Should values between ${ and } be resolved from the PipeLineSession</td><td>False</td></tr>
+ * <tr><td>{@link #setSubstituteVars(boolean) substituteVars}</td><td>Should values between ${ and } be resolved from the PipeLineSession</td><td>False</td></tr>
  * </table>
  * </p>
  * <p><b>Exits:</b>
@@ -42,7 +48,7 @@ import java.util.Properties;
  * @author Johan Verrips
  */
 public class FixedResult extends FixedForwardPipe {
-	public static final String version="$Id: FixedResult.java,v 1.6 2004-08-27 08:16:54 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: FixedResult.java,v 1.7 2004-09-01 07:21:11 L190409 Exp $";
     private String fileName;
     private String returnString;
     private boolean substituteVars=false;
@@ -94,7 +100,7 @@ public class FixedResult extends FixedForwardPipe {
     }
     /**
      * Sets the name of the filename. The fileName should not be specified
-     * as an absolute path, but as a file in the classpath.
+     * as an absolute path, but as a resource in the classpath.
      *
      * @param fileName the name of the file to return the contents from
      */
