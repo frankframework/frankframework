@@ -4,19 +4,31 @@ import java.io.*;
 import java.net.InetAddress;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.rmi.server.UID;
 /**
  * Miscellanous conversion functions.
  * @version Id
  */
 public class Misc {
-	public static final String version="$Id: Misc.java,v 1.3 2004-03-26 10:42:43 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: Misc.java,v 1.4 2004-07-20 13:12:00 a1909356#db2admin Exp $";
 	
-	public static String createSimpleUUID() {
+	public static String createSimpleUUID_old() {
 		StringBuffer sb=new StringBuffer();
 		sb.append(System.currentTimeMillis());
 		sb.append('-');
 		sb.append(Math.round(Math.random()*1000000));
 		return sb.toString();
+	}
+
+	/**
+	* Creates a Universally Unique Identifier, via the java.rmi.server.UID class.
+	*/
+		public static String createSimpleUUID() {
+		UID uid = new UID();
+
+		// Replace semi colons by underscores, so IBIS will support it
+		String uidString = uid.toString().replace(':', '_');
+		return uidString;
 	}
 	 /**
      * Creates a Universally Unique Identifier.
@@ -51,6 +63,10 @@ public class Misc {
         
         return s.toString();
     }
+    
+
+    
+    
 /**
  * Please consider using resourceToString() instead of relying on files.
  */
