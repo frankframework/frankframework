@@ -13,7 +13,7 @@ import java.util.Vector;
  * @version Id
  **/
 public class XmlBuilder {
-	public static final String version="$Id: XmlBuilder.java,v 1.3 2004-03-26 10:42:38 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: XmlBuilder.java,v 1.4 2004-04-07 06:56:44 NNVZNL01#L180564 Exp $";
 	
   private ArrayList attributeNames = new ArrayList();;
   private Hashtable attributes = new Hashtable();;
@@ -186,4 +186,10 @@ public void addSubElement(XmlBuilder newElement) {
 
     return sb.toString();
   }
+
+  public String toXML(boolean xmlHeader) {
+  	if (xmlHeader) return  "<?xml version=\"1.0\"?>"+NEWLINE+toXML();
+  	else return toXML();
+  }
+  
 }
