@@ -1,6 +1,9 @@
 /*
  * $Log: Configuration.java,v $
- * Revision 1.13  2004-08-09 08:43:00  L190409
+ * Revision 1.14  2004-08-23 07:41:40  L190409
+ * renamed Pushers to Listeners
+ *
+ * Revision 1.13  2004/08/09 08:43:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed pushing receiverbase
  *
  * Revision 1.12  2004/07/06 07:06:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -60,7 +63,7 @@ import java.util.Enumeration;
  */
 public class Configuration {
     protected Logger log; 
-    public static final String version="$Id: Configuration.java,v 1.13 2004-08-09 08:43:00 L190409 Exp $";
+    public static final String version="$Id: Configuration.java,v 1.14 2004-08-23 07:41:40 L190409 Exp $";
      
     private Hashtable adapterTable = new Hashtable();
 
@@ -340,6 +343,10 @@ public class Configuration {
     	sb.append(nl.nn.adapterframework.pipes.XmlValidator.version+SystemUtils.LINE_SEPARATOR);
     	sb.append(nl.nn.adapterframework.pipes.XmlSwitch.version+SystemUtils.LINE_SEPARATOR);
     	sb.append(nl.nn.adapterframework.errormessageformatters.ErrorMessageFormatter.version+SystemUtils.LINE_SEPARATOR);
+		sb.append(nl.nn.adapterframework.http.HttpSender.version +SystemUtils.LINE_SEPARATOR);
+		sb.append(nl.nn.adapterframework.http.WebServiceSender.version +SystemUtils.LINE_SEPARATOR);
+		sb.append(nl.nn.adapterframework.http.IbisWebServiceSender.version +SystemUtils.LINE_SEPARATOR);
+		sb.append(nl.nn.adapterframework.http.WebServiceListener.version +SystemUtils.LINE_SEPARATOR);
     	sb.append(nl.nn.adapterframework.webcontrol.ConfigurationServlet.version+SystemUtils.LINE_SEPARATOR);
     	sb.append(nl.nn.adapterframework.webcontrol.IniDynaActionForm.version+SystemUtils.LINE_SEPARATOR);
     	sb.append(nl.nn.adapterframework.webcontrol.action.ActionBase.version+SystemUtils.LINE_SEPARATOR);
@@ -353,7 +360,7 @@ public class Configuration {
 		sb.append(nl.nn.adapterframework.extensions.rekenbox.RekenBoxCaller.version +SystemUtils.LINE_SEPARATOR);
 		sb.append(nl.nn.adapterframework.extensions.rekenbox.Adios2XmlPipe.version +SystemUtils.LINE_SEPARATOR);
 		sb.append(nl.nn.adapterframework.extensions.sap.SapFunctionFacade.version +SystemUtils.LINE_SEPARATOR);
-		sb.append(nl.nn.adapterframework.extensions.sap.SapMessagePusher.version +SystemUtils.LINE_SEPARATOR);
+		sb.append(nl.nn.adapterframework.extensions.sap.SapListener.version +SystemUtils.LINE_SEPARATOR);
 		sb.append(nl.nn.adapterframework.extensions.sap.SapSender.version +SystemUtils.LINE_SEPARATOR);
 		sb.append(nl.nn.adapterframework.extensions.sap.SapFunctionHandler.version +SystemUtils.LINE_SEPARATOR);
 		sb.append(nl.nn.adapterframework.extensions.sap.SapSystem.version +SystemUtils.LINE_SEPARATOR);
