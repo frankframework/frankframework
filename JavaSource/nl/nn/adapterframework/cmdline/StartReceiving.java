@@ -17,7 +17,7 @@ import org.apache.commons.cli.HelpFormatter;
  * @created    14 februari 2003
  */
 public class StartReceiving {
-	public static final String version="$Id: StartReceiving.java,v 1.1 2004-02-04 08:36:13 a1909356#db2admin Exp $";
+	public static final String version="$Id: StartReceiving.java,v 1.2 2004-03-23 16:34:40 L190409 Exp $";
 	
 
 	static final String DFLT_ACKNOWLEDGEMODE = "client";
@@ -59,7 +59,7 @@ public class StartReceiving {
 			
 
 			// persistent
-			int secs            = -1;
+		//	int secs            = -1;
 			// seconds to timeout
 
 			// see if an ack mode has been specified. If it hasn't
@@ -85,9 +85,9 @@ public class StartReceiving {
 					persistent = true;
 				}
 
-				if (cmdline.hasOption("timeout")) {
-					secs = Integer.parseInt(cmdline.getOptionValue("timeout"));
-				}
+		//		if (cmdline.hasOption("timeout")) {
+		//			secs = Integer.parseInt(cmdline.getOptionValue("timeout"));
+		//		}
 
 				JmsMessageReceiver receiver   = new JmsMessageReceiver();
 				JmsMessageListener listener   = (JmsMessageListener)(receiver.getListener());
