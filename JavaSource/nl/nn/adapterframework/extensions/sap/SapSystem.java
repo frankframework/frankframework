@@ -1,11 +1,14 @@
 /*
  * $Log: SapSystem.java,v $
- * Revision 1.1  2004-06-22 06:56:44  L190409
+ * Revision 1.1  2004-07-06 07:09:05  L190409
+ * moved SAP functionality to extensions
+ *
+ * Revision 1.1  2004/06/22 06:56:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * First version of SAP package
  *
  *
  */
-package nl.nn.adapterframework.sap;
+package nl.nn.adapterframework.extensions.sap;
 
 import com.sap.mw.jco.*;
 
@@ -35,7 +38,7 @@ import org.apache.log4j.Logger;
  * @since 4.1.1
  */
 public class SapSystem extends GlobalListItem {
-	public static final String version="$Id: SapSystem.java,v 1.1 2004-06-22 06:56:44 L190409 Exp $";
+	public static final String version="$Id: SapSystem.java,v 1.1 2004-07-06 07:09:05 L190409 Exp $";
 
 	private int maxConnections = 10;
 

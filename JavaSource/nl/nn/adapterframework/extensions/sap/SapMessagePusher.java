@@ -1,13 +1,16 @@
 /*
  * $Log: SapMessagePusher.java,v $
- * Revision 1.2  2004-06-30 12:38:06  L190409
+ * Revision 1.1  2004-07-06 07:09:05  L190409
+ * moved SAP functionality to extensions
+ *
+ * Revision 1.2  2004/06/30 12:38:06  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * included exceptionlistener
  *
  * Revision 1.1  2004/06/22 12:19:08  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * first version of SAP message pusher
  *
  */
-package nl.nn.adapterframework.sap;
+package nl.nn.adapterframework.extensions.sap;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessagePusher;
@@ -48,7 +51,7 @@ import com.sap.mw.jco.JCO.Server;
  * @since 4.2
  */
 public class SapMessagePusher extends SapFunctionFacade implements IMessagePusher, SapFunctionHandler, JCO.ServerExceptionListener, JCO.ServerErrorListener {
-	public static final String version="$Id: SapMessagePusher.java,v 1.2 2004-06-30 12:38:06 L190409 Exp $";
+	public static final String version="$Id: SapMessagePusher.java,v 1.1 2004-07-06 07:09:05 L190409 Exp $";
 
 	private String progid;	 // progid of the RFC-destination
         	

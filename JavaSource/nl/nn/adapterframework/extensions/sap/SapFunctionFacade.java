@@ -1,6 +1,9 @@
 /*
  * $Log: SapFunctionFacade.java,v $
- * Revision 1.3  2004-06-30 12:36:47  L190409
+ * Revision 1.1  2004-07-06 07:09:05  L190409
+ * moved SAP functionality to extensions
+ *
+ * Revision 1.3  2004/06/30 12:36:47  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved exception reporting
  *
  * Revision 1.2  2004/06/22 12:14:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -10,7 +13,7 @@
  * First version of SAP package
  *
  */
-package nl.nn.adapterframework.sap;
+package nl.nn.adapterframework.extensions.sap;
 
 import java.util.HashMap;
 
@@ -47,7 +50,7 @@ import com.sap.mw.jco.*;
  * @since 4.2
  */
 public class SapFunctionFacade implements INamedObject{
-	public static final String version="$Id: SapFunctionFacade.java,v 1.3 2004-06-30 12:36:47 L190409 Exp $";
+	public static final String version="$Id: SapFunctionFacade.java,v 1.1 2004-07-06 07:09:05 L190409 Exp $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	private String name;

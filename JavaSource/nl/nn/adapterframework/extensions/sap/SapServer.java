@@ -1,6 +1,9 @@
 /*
  * $Log: SapServer.java,v $
- * Revision 1.3  2004-06-30 12:38:57  L190409
+ * Revision 1.1  2004-07-06 07:09:05  L190409
+ * moved SAP functionality to extensions
+ *
+ * Revision 1.3  2004/06/30 12:38:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed self from exceptionlisteners
  *
  * Revision 1.2  2004/06/23 11:40:17  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -10,7 +13,7 @@
  * First version of SAP package
  *
  */
-package nl.nn.adapterframework.sap;
+package nl.nn.adapterframework.extensions.sap;
 
 import nl.nn.adapterframework.receivers.ServiceClient;
 import nl.nn.adapterframework.util.XmlBuilder;
@@ -25,7 +28,7 @@ import com.sap.mw.jco.JCO;
  * @since 4.2
  */
 public class SapServer extends JCO.Server implements JCO.ServerExceptionListener, JCO.ServerErrorListener , JCO.ServerStateChangedListener {
-	public static final String version="$Id: SapServer.java,v 1.3 2004-06-30 12:38:57 L190409 Exp $";
+	public static final String version="$Id: SapServer.java,v 1.1 2004-07-06 07:09:05 L190409 Exp $";
 	protected Logger log = Logger.getLogger(this.getClass());
 	
 	private SapFunctionHandler handler = null;

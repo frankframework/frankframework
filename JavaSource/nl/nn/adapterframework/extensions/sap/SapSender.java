@@ -1,13 +1,16 @@
 /*
  * $Log: SapSender.java,v $
- * Revision 1.2  2004-07-05 10:50:18  L190409
+ * Revision 1.1  2004-07-06 07:09:05  L190409
+ * moved SAP functionality to extensions
+ *
+ * Revision 1.2  2004/07/05 10:50:18  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected version setting
  *
  * Revision 1.1  2004/06/22 06:56:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * First version of SAP package
  *
  */
-package nl.nn.adapterframework.sap;
+package nl.nn.adapterframework.extensions.sap;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -39,7 +42,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
  * @since 4.2
  */
 public class SapSender extends SapFunctionFacade implements ISender {
-	public static final String version="$Id: SapSender.java,v 1.2 2004-07-05 10:50:18 L190409 Exp $";
+	public static final String version="$Id: SapSender.java,v 1.1 2004-07-06 07:09:05 L190409 Exp $";
 	
 	//TODO: allow functionName to be set dynamically from a parameter or from the message
 	private String functionName=null;
