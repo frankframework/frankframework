@@ -1,6 +1,9 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.14  2004-10-26 16:18:08  L190409
+ * Revision 1.15  2004-11-10 13:01:45  L190409
+ * added dynamic setting of copy-method in createXpathEvaluatorSource
+ *
+ * Revision 1.14  2004/10/26 16:18:08  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * set UTF-8 as default inputstream encoding
  *
  * Revision 1.13  2004/10/26 15:35:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -100,7 +103,7 @@ import java.util.LinkedList;
  */
 public class XmlUtils {
 	public static final String version =
-		"$Id: XmlUtils.java,v 1.14 2004-10-26 16:18:08 L190409 Exp $";
+		"$Id: XmlUtils.java,v 1.15 2004-11-10 13:01:45 L190409 Exp $";
 
 	static final String W3C_XML_SCHEMA = "http://www.w3.org/2001/XMLSchema";
 	static final String JAXP_SCHEMA_LANGUAGE =
@@ -255,6 +258,13 @@ public class XmlUtils {
 		if (namespaceDefs==null) {
 			namespaceDefs="";
 		}
+		
+		String copyMethod;	
+		if ("xml".equals(outputMethod)) {
+			copyMethod="copy-of";
+		} else {
+			copyMethod="value-of";
+		}			
 			
 		String xsl = 
 			// "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
@@ -262,7 +272,7 @@ public class XmlUtils {
 			"<xsl:output method=\""+outputMethod+"\" omit-xml-declaration=\""+ (includeXmlDeclaration ? "no": "yes") +"\"/>" +
 			"<xsl:strip-space elements=\"*\"/>" +
 			"<xsl:template match=\"/\">" +
-			"<xsl:copy-of "+namespaceDefs+" select=\"" + XPathExpression + "\"/>" +
+			"<xsl:"+copyMethod+" "+namespaceDefs+" select=\"" + XPathExpression + "\"/>" +
 			"</xsl:template>" +
 			"</xsl:stylesheet>";
 	
