@@ -1,6 +1,10 @@
 /*
  * $Log: WebServiceSender.java,v $
- * Revision 1.9  2004-10-12 15:10:49  L190409
+ * Revision 1.10  2004-10-14 15:34:26  L190409
+ * included ParameterValueList in getMethod(), 
+ * in order to override HttpSenders' getMethod()
+ *
+ * Revision 1.9  2004/10/12 15:10:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added attribute throwApplicationFaults
  *
  * Revision 1.8  2004/09/09 14:48:47  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -31,6 +35,7 @@ package nl.nn.adapterframework.http;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.util.XmlUtils;
 
 
@@ -80,7 +85,7 @@ import javax.xml.transform.TransformerException;
  */
 
 public class WebServiceSender extends HttpSender {
-	public static final String version="$Id: WebServiceSender.java,v 1.9 2004-10-12 15:10:49 L190409 Exp $";
+	public static final String version="$Id: WebServiceSender.java,v 1.10 2004-10-14 15:34:26 L190409 Exp $";
 	
 
 	private String soapActionURI = "";
@@ -129,7 +134,7 @@ public class WebServiceSender extends HttpSender {
 */		
 	}
 
-	protected HttpMethod getMethod(String message) throws SenderException {
+	protected HttpMethod getMethod(String message, ParameterValueList parameters) throws SenderException {
 		
 		String encodingStyle="";
 		if (!StringUtils.isEmpty(getEncodingStyleURI())) {
@@ -144,7 +149,8 @@ public class WebServiceSender extends HttpSender {
 			"</soapenv:Body>"+
 		"</soapenv:Envelope>";
 
-		HttpMethod method = super.getMethod(soapmsg,null);
+		HttpMethod method = super.getMethod(soapmsg,parameters);
+		log.debug("setting SOAPAction header ["+getSoapActionURI()+"]");
 		method.addRequestHeader("SOAPAction",getSoapActionURI());
 		return method;
 	}
