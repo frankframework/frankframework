@@ -4,6 +4,7 @@ import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.PipeLineResult;
 import org.apache.struts.action.*;
 import org.apache.struts.upload.FormFile;
+import nl.nn.adapterframework.util.Misc;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -15,7 +16,7 @@ import java.util.Iterator;
 /**
  *
  * Test the Pipeline of an adapter
- * <p>$Id: TestPipeLineExecute.java,v 1.2 2004-02-04 10:02:08 a1909356#db2admin Exp $</p>
+ * <p>$Id: TestPipeLineExecute.java,v 1.3 2004-03-08 13:01:33 L190409 Exp $</p>
  * @author  Johan Verrips
  * @see nl.nn.adapterframework.configuration.Configuration
  * @see nl.nn.adapterframework.core.Adapter
@@ -23,7 +24,7 @@ import java.util.Iterator;
  */
 
 public final class TestPipeLineExecute extends ActionBase {
-	public static final String version="$Id: TestPipeLineExecute.java,v 1.2 2004-02-04 10:02:08 a1909356#db2admin Exp $";
+	public static final String version="$Id: TestPipeLineExecute.java,v 1.3 2004-03-08 13:01:33 L190409 Exp $";
 	
 
 public ActionForward execute(
@@ -100,7 +101,7 @@ public ActionForward execute(
     }
 
     // Execute the request
-    PipeLineResult pipeLineResult=adapter.processMessage("testmessage", form_message);
+    PipeLineResult pipeLineResult=adapter.processMessage("testmessage"+Misc.createSimpleUUID(), form_message);
     form_resultText = pipeLineResult.getResult();
     form_resultState= pipeLineResult.getState();
 	
