@@ -1,6 +1,9 @@
 /*
  * $Log: ParsedParameterQuerySender.java,v $
- * Revision 1.3  2004-04-08 16:11:31  nnvznl01#l181303
+ * Revision 1.4  2004-10-19 08:12:32  L190409
+ * made obsolete with introduction of generic parameter handling
+ *
+ * Revision 1.3  2004/04/08 16:11:31  Dennis van Loon <dennis.van.loon@ibissource.org>
  * getStatement directly uses the parameterParser
  *
  * Revision 1.2  2004/03/26 10:43:08  Johan Verrips <johan.verrips@ibissource.org>
@@ -40,9 +43,10 @@ import java.sql.SQLException;
  * @version Id
  * @author  Gerrit van Brakel
  * @since 	4.1
+ * @deprecated Please use FixedQuerySender with nested {@link nl.nn.adapterframework.parameters.Parameter parameters} instead.
  */
 public class ParsedParameterQuerySender extends FixedQuerySender {
-	public static final String version="$Id: ParsedParameterQuerySender.java,v 1.3 2004-04-08 16:11:31 nnvznl01#l181303 Exp $";
+	public static final String version="$Id: ParsedParameterQuerySender.java,v 1.4 2004-10-19 08:12:32 L190409 Exp $";
 	private String queryParameterParserClassName="nl.nn.adapterframework.jdbc.QueryParameterParser";
 
 	protected IQueryParameterParser createParameterParser(String queryParameterParserClassName) throws JdbcException {

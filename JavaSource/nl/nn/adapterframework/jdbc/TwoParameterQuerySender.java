@@ -1,6 +1,9 @@
 /*
  * $Log: TwoParameterQuerySender.java,v $
- * Revision 1.2  2004-03-26 10:43:08  NNVZNL01#L180564
+ * Revision 1.3  2004-10-19 08:12:32  L190409
+ * made obsolete with introduction of generic parameter handling
+ *
+ * Revision 1.2  2004/03/26 10:43:08  Johan Verrips <johan.verrips@ibissource.org>
  * added @version tag in javadoc
  *
  * Revision 1.1  2004/03/24 13:28:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -28,9 +31,10 @@ import java.sql.SQLException;
  * @version Id
  * @author  Gerrit van Brakel
  * @since 	4.1
+ * @deprecated Please use FixedQuerySender with nested {@link nl.nn.adapterframework.parameters.Parameter parameters} instead.
  */
 public class TwoParameterQuerySender extends OneParameterQuerySender {
-	public static final String version="$Id: TwoParameterQuerySender.java,v 1.2 2004-03-26 10:43:08 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: TwoParameterQuerySender.java,v 1.3 2004-10-19 08:12:32 L190409 Exp $";
 
 	protected PreparedStatement getStatement(Connection con, String correlationID, String message) throws JdbcException, SQLException {
 		PreparedStatement stmt = super.getStatement(con, correlationID, message);

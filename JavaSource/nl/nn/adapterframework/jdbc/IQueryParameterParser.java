@@ -1,6 +1,9 @@
 /*
  * $Log: IQueryParameterParser.java,v $
- * Revision 1.3  2004-04-08 16:03:51  nnvznl01#l181303
+ * Revision 1.4  2004-10-19 08:12:32  L190409
+ * made obsolete with introduction of generic parameter handling
+ *
+ * Revision 1.3  2004/04/08 16:03:51  Dennis van Loon <dennis.van.loon@ibissource.org>
  * Parse method now gives back a PreparedStatement
  *
  * Revision 1.2  2004/03/26 10:43:07  Johan Verrips <johan.verrips@ibissource.org>
@@ -19,9 +22,10 @@ import java.sql.PreparedStatement;
  * @version Id
  * @author Gerrit van Brakel
  * @since  4.1
+ * @deprecated This class has become obsolete with the arrival of generic {@link nl.nn.adapterframework.parameters.Parameter parameters}.
  */
 public interface IQueryParameterParser {
-	public static final String version = "$Id: IQueryParameterParser.java,v 1.3 2004-04-08 16:03:51 nnvznl01#l181303 Exp $";
+	public static final String version = "$Id: IQueryParameterParser.java,v 1.4 2004-10-19 08:12:32 L190409 Exp $";
 
 	/**
 	 * parse message and set parameters found to the statement in stmt. 
