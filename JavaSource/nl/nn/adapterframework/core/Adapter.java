@@ -1,6 +1,9 @@
 /*
  * $Log: Adapter.java,v $
- * Revision 1.10  2004-06-16 13:08:11  NNVZNL01#L180564
+ * Revision 1.11  2004-06-30 10:02:23  L190409
+ * improved error reporting
+ *
+ * Revision 1.10  2004/06/16 13:08:11  Johan Verrips <johan.verrips@ibissource.org>
  * Added configuration error when no pipeline was configured
  *
  * Revision 1.9  2004/06/16 12:34:46  Johan Verrips <johan.verrips@ibissource.org>
@@ -76,7 +79,7 @@ import javax.transaction.UserTransaction;
  */
 
 public class Adapter extends JNDIBase implements Runnable, IAdapter{
-	public static final String version="$Id: Adapter.java,v 1.10 2004-06-16 13:08:11 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: Adapter.java,v 1.11 2004-06-30 10:02:23 L190409 Exp $";
 	private Vector receivers=new Vector();
 	private long lastMessageDate =0;
     private PipeLine pipeline;
@@ -151,8 +154,15 @@ public void configure() throws ConfigurationException {
     	throw new ConfigurationException(msg);
     }
     	 
-    pipeline.setAdapter(this);
-    pipeline.configurePipes();
+    try {
+		pipeline.setAdapter(this);
+		pipeline.configurePipes();
+    } catch (ConfigurationException e) {
+		String msg = "Adapter [" + getName() + "] got error initializing pipeline";
+		messageKeeper.add(msg+": "+e.getMessage());
+		log.error(msg,e);
+		throw e;    	
+    }
 
     messageKeeper.add("pipeline successfully configured");
     Iterator it = receivers.iterator();
