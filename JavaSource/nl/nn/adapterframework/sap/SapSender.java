@@ -1,6 +1,9 @@
 /*
  * $Log: SapSender.java,v $
- * Revision 1.1  2004-06-22 06:56:45  L190409
+ * Revision 1.2  2004-07-05 10:50:18  L190409
+ * corrected version setting
+ *
+ * Revision 1.1  2004/06/22 06:56:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * First version of SAP package
  *
  */
@@ -33,10 +36,10 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
  * If no replyFieldIndex or replyFieldName is specified, output is converted to xml. 
  * </p>
  * @author Gerrit van Brakel
- * @since 4.1.1
+ * @since 4.2
  */
 public class SapSender extends SapFunctionFacade implements ISender {
-	public static final String version="$Id: SapSender.java,v 1.1 2004-06-22 06:56:45 L190409 Exp $";
+	public static final String version="$Id: SapSender.java,v 1.2 2004-07-05 10:50:18 L190409 Exp $";
 	
 	//TODO: allow functionName to be set dynamically from a parameter or from the message
 	private String functionName=null;
@@ -83,15 +86,9 @@ public class SapSender extends SapFunctionFacade implements ISender {
 	}
 
 
-	/**
-	 * @return
-	 */
 	public String getFunctionName() {
 		return functionName;
 	}
-	/**
-	 * @param string
-	 */
 	public void setFunctionName(String string) {
 		functionName = string;
 	}
