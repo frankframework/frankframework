@@ -1,52 +1,69 @@
 /*
  * $Log: FilePipe.java,v $
- * Revision 1.1  2004-04-26 11:51:34  a1909356#db2admin
+ * Revision 1.2  2004-04-26 13:04:50  a1909356#db2admin
+ * Support for file en- and decoding
+ *
+ * Revision 1.1  2004/04/26 11:51:34  unknown <unknown@ibissource.org>
  * Support for file en- and decoding
  *
  */
 package nl.nn.adapterframework.pipes;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.helpers.Transform;
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+
+import org.apache.commons.lang.StringUtils;
+
 import sun.misc.BASE64Decoder;
 import sun.misc.BASE64Encoder;
 
+
 /**
- * @author J. Dekker
- * @version Id
- *
  * FilePipe allows to write to or read from a file. 
  * Write will create a file in the specified directory. The name is a concatenation
  * of the correlation id, a string that guarantees the filename to be unique and the
  * specified writeSuffic.
  * The pipe also support base64 en- and decoding.
+ * 
+ * <p><b>Configuration:</b>
+ * <table border="1">
+ * <tr><th>attributes</th><th>description</th><th>default</th></tr>
+ * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setDirectory(String) directory}</td><td>base directory where files are stored in or read from</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setActions(String) actions}</td><td>name of forward returned upon completion</td><td>"success"</td></tr>
+ * <tr><td>{@link #setWriteSuffix(String) writeSuffix}</td><td>suffix of the file to be created</td><td>&nbsp;</td></tr>
+ * </table>
+ * </p>
+ * <p><b>Exits:</b>
+ * <table border="1">
+ * <tr><th>state</th><th>condition</th></tr>
+ * <tr><td>"success"</td><td>default</td></tr>
+ * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>
+ * </table>
+ * </p>
+ * 
+ * @author J. Dekker
+ * @version Id
+ *
  */
 public class FilePipe extends FixedForwardPipe {
-	public static final String version="$Id: FilePipe.java,v 1.1 2004-04-26 11:51:34 a1909356#db2admin Exp $";
+	public static final String version="$Id: FilePipe.java,v 1.2 2004-04-26 13:04:50 a1909356#db2admin Exp $";
 	private List transformers;
 	protected String actions;
 	protected String directory;
 	protected String writeSuffix;
 
-	/* 
+	/** 
 	 * @see nl.nn.adapterframework.core.IPipe#configure()
 	 */
 	public void configure() throws ConfigurationException {
@@ -84,7 +101,7 @@ public class FilePipe extends FixedForwardPipe {
 		}
 	}
 	
-	/* 
+	/** 
 	 * @see nl.nn.adapterframework.core.IPipe#doPipe(Object, PipeLineSession)
 	 */
 	public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRunException {
@@ -101,8 +118,8 @@ public class FilePipe extends FixedForwardPipe {
 	}
 	
 	/**
-	 * The pipe supports several actions. All actions are implementations of the
-	 * Transformer interface.
+	 * The pipe supports several actions. All actions are implementations in
+	 * inner-classes that implement the Transformer interface.
 	 */
 	private interface Transformer {
 		/* 
@@ -110,13 +127,14 @@ public class FilePipe extends FixedForwardPipe {
 		 */
 		void configure() throws ConfigurationException;
 		/*
-		 * do the transformation
+		 * transform the in and return the result
+		 * @see nl.nn.adapterframework.core.IPipe#doPipe(Object, PipeLineSession)
 		 */
 		byte[] go(byte[] in, PipeLineSession session) throws Exception;
 	}
 	
 	/**
-	 * Encodes the input
+	 * Encodes the input 
 	 */
 	private class Encoder implements Transformer {
 		public BASE64Encoder encoder = new BASE64Encoder();
