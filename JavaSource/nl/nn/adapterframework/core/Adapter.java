@@ -2,11 +2,15 @@ package nl.nn.adapterframework.core;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.errormessageformatters.ErrorMessageFormatter;
+import nl.nn.adapterframework.jms.JNDIBase;
+import nl.nn.adapterframework.jms.JmsRealm;
 import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.MessageKeeper;
 import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.RunStateManager;
 import nl.nn.adapterframework.util.StatisticsKeeper;
+
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.log4j.Logger;
 
@@ -14,6 +18,9 @@ import java.util.Date;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Vector;
+
+import javax.transaction.SystemException;
+import javax.transaction.UserTransaction;
 /**
  * The Adapter is the central manager in the IBIS Adapterframework, that has knowledge
  * and uses {@link IReceiver IReceivers} and a {@link PipeLine}.
@@ -33,7 +40,7 @@ import java.util.Vector;
  * the pipeline execution, the state in the <code>PipeLineResult</code> is set
  * to the state specified by <code>setErrorState</code>, which defaults to "ERROR".
  * 
- * <p>$Id: Adapter.java,v 1.2 2004-02-04 10:01:58 a1909356#db2admin Exp $</p>
+ * <p>$Id: Adapter.java,v 1.3 2004-03-23 16:41:40 L190409 Exp $</p>
  *
  * @author Johan Verrips
  * @see    nl.nn.adapterframework.core.IReceiver
@@ -45,8 +52,8 @@ import java.util.Vector;
  * 
  */
 
-public class Adapter implements Runnable, IAdapter{
-	public static final String version="$Id: Adapter.java,v 1.2 2004-02-04 10:01:58 a1909356#db2admin Exp $";
+public class Adapter extends JNDIBase implements Runnable, IAdapter{
+	public static final String version="$Id: Adapter.java,v 1.3 2004-03-23 16:41:40 L190409 Exp $";
 	private Vector receivers=new Vector();
 	private long lastMessageDate =0;
     private PipeLine pipeline;
@@ -69,6 +76,7 @@ public class Adapter implements Runnable, IAdapter{
 	// state to put in PipeLineResult when a PipeRunException occurs;
 	private String errorState = "ERROR";
 
+    private String userTransactionUrl = "java:comp/UserTransaction";
     
     /**
 	 * The nummer of message currently in process
@@ -96,7 +104,7 @@ public void configure() throws ConfigurationException {
     log.debug("configuring adapter [" + getName() + "]");
     messageKeeper = new MessageKeeper(messageKeeperSize);
     statsMessageProcessingDuration = new StatisticsKeeper(getName());
-    pipeline.setAdapterName(getName());
+    pipeline.setAdapter(this);
     pipeline.configurePipes();
 
     messageKeeper.add("pipeline successfully configured");
@@ -191,6 +199,78 @@ public java.lang.String getErrorState() {
   public String getName(){
   	return name;
   }
+ 
+
+public UserTransaction getUserTransaction() throws TransactionException {
+
+	try {
+		return JtaUtil.getUserTransaction(getContext(),getUserTransactionUrl());
+	} catch (Exception e) {
+		throw new TransactionException("["+name+"] could not obtain UserTransaction from URL ["+getUserTransactionUrl()+"]",e);
+	}
+}
+
+/*
+protected TransactionManager getTransactionManager() throws TransactionException {
+
+	if (tm == null) {
+		try {
+	    Class c = Class.forName(getTransactionManagerFactoryClassName());
+	   	tm = (TransactionManager) c.getMethod(getTransactionManagerFactoryMethod(), null).invoke(null, null);
+		} catch (Exception e) {
+			throw new TransactionException("["+name+"] could not obtain TransactionManager",e);
+		}
+	}
+	return tm;
+}
+*/
+
+public boolean inTransaction() throws TransactionException {
+	try {
+		return JtaUtil.inTransaction(getUserTransaction());
+	} catch (SystemException e) {
+		throw new TransactionException("["+name+"] could not obtain transaction status",e);
+	}
+}
+
+ 
+/*
+public boolean inTransaction() throws TransactionException {
+	try {
+		Transaction tx = getTransaction();
+		return tx != null && tx.getStatus() != Status.STATUS_NO_TRANSACTION;
+	} catch (SystemException e) {
+		throw new TransactionException("["+name+"] could not obtain transaction status",e);
+	}
+}
+*/
+
+/*
+public Transaction createTransaction() throws TransactionException {
+	TransactionManager tm = getTransactionManager();
+	try {
+		log.debug("starting transaction, status before="+JtaUtil.displayTransactionStatus(tm));
+		tm.begin();
+		log.debug("started transaction, status after="+JtaUtil.displayTransactionStatus(tm));
+	} catch (Exception e) {
+		log.debug("exception in starting transaction, status after="+JtaUtil.displayTransactionStatus(tm));
+		throw new TransactionException("["+name+"] could not start transaction",e);
+	}
+	return getTransaction();
+}	
+
+public Transaction getTransaction() throws TransactionException {
+	TransactionManager tm = getTransactionManager();
+	try {
+		log.debug("getting transaction, status before="+JtaUtil.displayTransactionStatus(tm));
+		return tm.getTransaction();	
+	} catch (SystemException e) {
+		throw new TransactionException("["+name+"] could not obtain transaction",e);
+	}
+}  
+
+*/
+
 /**
  * The number of messages for which processing ended unsuccessfully.
  */
@@ -378,6 +458,7 @@ public PipeLineResult processMessage(
    */
   public void registerPipeLine (PipeLine pipeline) throws ConfigurationException{
   	this.pipeline=pipeline;
+  	pipeline.setAdapter(this);
   	log.debug("Adapter ["+name+"] registered pipeline ["+pipeline.toString()+"]");
 
   }
@@ -598,4 +679,26 @@ public void waitForNoMessagesInProcess() throws InterruptedException {
 public void waitForRunState(RunStateEnum requestedRunState) throws InterruptedException {
 	runState.waitForRunState(requestedRunState);
 }
+ 	/**
+ 	 * loads TransactionManager properties from a JmsRealm
+ 	 * @see JmsRealm
+ 	 */ 
+	public void setJmsRealm(String jmsRealmName){
+		JmsRealm.copyRealm(this,jmsRealmName);
+    }
+
+	/**
+	 * The JNDI-key under which the UserTransaction can be retrieved
+	 */
+	public String getUserTransactionUrl() {
+		return userTransactionUrl;
+	}
+
+	/**
+	 * The JNDI-key under which the UserTransaction can be retrieved
+	 */
+	public void setUserTransactionUrl(String userTransactionUrl) {
+		this.userTransactionUrl = userTransactionUrl;
+	}
+
 }
