@@ -1,8 +1,15 @@
+/*
+ * $Log: IfsaFacade.java,v $
+ * Revision 1.6  2004-07-05 14:29:45  L190409
+ * restructuring to align with IFSA naming scheme
+ *
+ */
 package nl.nn.adapterframework.extensions.ifsa;
 
 import com.ing.ifsa.*;
 
 import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.configuration.ConfigurationException;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -16,67 +23,97 @@ import javax.naming.*;
 import javax.jms.*;
 
 /**
- * Base class for IFSA 1.1/2.0 functions.
+ * Base class for IFSA 2.0 functions.
  * <br/>
- * <p>When clientName is filled, a client connection is assumed, when serverName
- * is used a server connection is assumed.</p>
- * <p>messageProtocol indicates wether to use Fire &amp; Forget or Request/Reply</p>
+ * <p>Descenderclasses must set either Requester or Provider behaviour in their constructor.</p>
  * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>classname</td><td>nl.nn.adapterframework.extensions.ifsa.IfsaFacade</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the object</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setClientName(String) clientName}</td><td>only for Requestors: the ApplicationID, in the form of "IFSA://<i>AppId</i>"</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setServerName(String) serverName}</td><td>only for Providers: the ApplicationID, in the form of "IFSA://<i>AppId</i>"</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setServiceName(String) serviceName}</td><td></td><td><ul><li>for Requestors: the ServiceID, in the form of "IFSA://<i>ServiceID</i>"</li>
- * 													                        <li>for IFSA 1.0 Providers: the ServiceID, in the form of "IFSA://<i>ServiceID</i>"</li>
- * 													                        <li>for IFSA 2.0 Providers: the ApplicationID, in the form of "IFSA://<i>AppId</i>"</li></ul></td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setMessageProtocl(String) messageProtocol}</td><td>Either 'RR' (Request/Reply) or 'FF' (Fire&Forget)</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setJndiPath(String) jndiPath}</td><td>only for IFSA 1.0: the path to the jndi-bindings file</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setApplicationId(String) applicationId}</td><td>the ApplicationID, in the form of "IFSA://<i>AppId</i>"</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setServiceId(String) serviceId}</td><td></td><td>only for Requesters: the ServiceID, in the form of "IFSA://<i>ServiceID</i>"</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setMessageProtocol(String) messageProtocol}</td><td>protocol of IFSA-Service to be called. Possible values 
+ * <ul>
+ *   <li>"FF": Fire & Forget protocol</li>
+ *   <li>"RR": Request-Reply protocol</li>
+ * </ul></td><td><td>&nbsp;</td></td></tr>
  * </table>
  * 
  * @author Johan Verrips / Gerrit van Brakel
- * @version Id
+ * @since 4.2
  */
 public class IfsaFacade implements INamedObject {
-    protected Logger log = Logger.getLogger(this.getClass());;
-    private boolean transacted;
-    private String jndiPath;
+	public static final String version="$Id: IfsaFacade.java,v 1.6 2004-07-05 14:29:45 L190409 Exp $";
+    protected Logger log = Logger.getLogger(this.getClass());
+    
+	private final static String IFSA_INITIAL_CONTEXT_FACTORY="com.ing.ifsa.IFSAContextFactory";
+	private final static String IFSA_PROVIDER_URL="IFSA APPLICATION BUS";
+
+	private String name;
+	private String applicationId;
+	private String serviceId;
+	private IfsaMessageProtocolEnum messageProtocol;
+
     private IFSAQueueConnectionFactory ifsaQueueConnectionFactory = null;
     private IFSAContext context = null;
     private QueueConnection connection = null;
+	private Queue queue;
+	
+	private boolean requestor=false;
+	private boolean provider=false;
 
-    private String name;
-	private int ackMode = 1;
-	public static final String version="$Id: IfsaFacade.java,v 1.5 2004-06-30 12:32:42 L190409 Exp $";
- 
- 	private final static String DEFAULT_PROVIDER_URL="IFSA APPLICATION BUS";
- 	
-    /**
-     * the Queue object, as looked up from <code>serviceName</code>
-     */
-    private Queue queue;
+	private int ackMode = Session.AUTO_ACKNOWLEDGE;
 
-    /**
-     * the queue or servicename, e.g. <code>"IFSA://aServiceId"</code>
-     */
-    private String serviceName;
 
-    private String clientName;
-    private String serverName;
-    /**
-     * messageProtocol
-     */
-    private IfsaMessageProtocolEnum messageProtocol;
+	public IfsaFacade(boolean asProvider) {
+		super();
+		if (asProvider) {
+			provider=true;
+		}
+		else
+			requestor=true;
+	}
+	
+	public String getLogPrefix() {
+		return this.getClass().getName() + "["+ getName()+ "] of application ["+getApplicationId()+"] serviceId ["+getServiceId()+"] ";
+	}
+
+	/**
+	 * This method performs some basic checks.
+	 */
+	public void configure() throws ConfigurationException {
+		// perform some basic checks
+		try {
+			if (isRequestor() && StringUtils.isEmpty(getServiceId()))
+				throw new ConfigurationException(getLogPrefix()+"serviceId is not specified");
+			if (getMessageProtocolEnum() == null)
+				throw new ConfigurationException(getLogPrefix()+
+					"invalid messageProtocol specified ["
+						+ getMessageProtocolEnum()
+						+ "], should be one of the following "
+						+ IfsaMessageProtocolEnum.getNames());
+		} catch (IfsaException e) {
+			throw new ConfigurationException(getLogPrefix()+"exception checking configuration",e);
+		}
+	}
+
+	public void openService() throws IfsaException {
+		try {
+			connection = getConnection();
+			connection.start();
+			queue = getServiceQueue();
+		} catch (Exception e) {
+			throw new IfsaException(e);
+		}
+	}
 
 	public void closeService() throws IfsaException {
 	    try {
 	        if (connection != null) {
 	            connection.close();
 	            if (log.isDebugEnabled()) {
-	                log.debug("["+ getName()+ "]"+(isClient() ? "client [" + getClientName() + "]" : "serverName [" + getServerName() + "]")
-	                            + " closed connection for service"
-	                            + " of service [" +getServiceName()+ "]");
+	                log.debug(getLogPrefix()+"closed connection for service");
 	            }
 	        }
 	    } catch (JMSException e) {
@@ -86,59 +123,131 @@ public class IfsaFacade implements INamedObject {
 	        connection = null;
 	    }
 	}
-	/**
-	 * This method performs some basic checks.
-	 */
-	public void configure(boolean asClient) throws IfsaException {
-	    // perform some basic checks
-	    if (asClient && !isClient()) {
-	        throw new IfsaException("["+ getName()+ "] "+
-	            "Server [" + getServerName() + "] cannot act as a client");
-	    }
-	    if (!asClient && isClient()) {
-	        throw new IfsaException("["+ getName()+ "] "+
-	            "Client [" + getClientName() + "] cannot act as a server");
-	    }
 	
-	    if (StringUtils.isEmpty(getServiceName()))
-	        throw new IfsaException("["+ getName()+ "] serviceName is not specified");
-	    if (getMessageProtocolEnum() == null)
-	        throw new IfsaException("["+ getName()+ "]"+
-	            "invalid MessageProtocol specified ["
-	                + getMessageProtocolEnum()
-	                + "], should be one of the following "
-	                + IfsaMessageProtocolEnum.getNames());
+	
+	private IFSAContext getContext() throws IfsaException {
+		try {
+			if (context == null) {
+				Hashtable env = new Hashtable(11);
+				env.put(Context.INITIAL_CONTEXT_FACTORY, IFSA_INITIAL_CONTEXT_FACTORY);
+				env.put(Context.PROVIDER_URL, IFSA_PROVIDER_URL);
+				// Create context as required by IFSA 2.0. Ignore the deprecation....
+				context = new IFSAContext((Context) new InitialContext(env));
+			}
+			return context;
+		} catch (NamingException e) {
+			throw new IfsaException(e);
+		}
 	}
+
+	/**
+	 * Looks up the <code>serviceId</code> in the <code>IFSAContext</code>.<br/>
+	 * <p>The method is knowledgable of Provider versus Requester processing.
+	 * When the request concerns a Provider <code>lookupProviderInput</code> is used,
+	 * when it concerns a Requester <code>lookupService(serviceId)</code> is used.
+	 * This method distinguishes a server-input queue and a client-input queue
+	 */
+	protected Queue getServiceQueue() throws IfsaException {
+		if (queue == null) {
+			try {
+				if (isRequestor()) {
+					queue = (Queue) getContext().lookupService(getServiceId());
+					if (log.isDebugEnabled()) {
+						log.debug(getLogPrefix()+ "got Queue to send messages on");
+					}
+				} else {
+					queue = (Queue) getContext().lookupProviderInput();
+					if (log.isDebugEnabled()) {
+						log.debug(getLogPrefix()+ "got Queue to receive messages from");
+					}
+				}
+	
+			} catch (NamingException e) {
+				throw new IfsaException(e);
+			}
+		}
+		return queue;
+	}
+
+	/**
+	 * Returns a connection for the queue corresponding to the service
+	 */
+	protected QueueConnection getConnection() throws IfsaException {
+		try {
+			if (connection == null) {
+				connection = getIfsaQueueConnectionFactory().createQueueConnection();
+			}
+			return connection;
+		} catch (Exception e) {
+			throw new IfsaException(e);
+		}
+	}
+
+	/**
+	 *  Create a session on the connection to the service
+	 */
+	public QueueSession createSession() throws IfsaException {
+		try {
+			//TODO: incorporate IFSA_MODE for IFSA-compliant TimeOut
+			return connection.createQueueSession(isTransacted(), ackMode);
+		} catch (JMSException e) {
+			throw new IfsaException(e);
+		}
+	}
+
+	
 	protected QueueSender createSender(QueueSession session, Queue queue)
 	    throws IfsaException {
 	
 	    try {
 	        QueueSender queueSender = session.createSender(queue);
 	        if (log.isDebugEnabled()) {
-	            log.debug("["+ getName()+ "]"+
-		                        (isClient() ? "client [" + getClientName() + "]" : "serverName [" + getServerName() + "]")
-	                            + " got queueSender for"
-	                            + " service [" +getServiceName()+ "]"
-	                            + ToStringBuilder.reflectionToString((IFSAQueueSender) queueSender));
+	            log.debug(getLogPrefix()+ " got queueSender ["
+	                            + ToStringBuilder.reflectionToString((IFSAQueueSender) queueSender)+ "]");
 	        }
 	        return queueSender;
 	    } catch (Exception e) {
 	        throw new IfsaException(e);
 	    }
 	}
+
 	/**
-	 *  Create a session on the connection to the service
+	 * Gets the queueReceiver, by utilizing the <code>getInputQueue()</code> method.<br/>
+	 * For serverside getQueueReceiver() the creating of the QueueReceiver is done
+	 * without the <code>selector</code> information, as this is not allowed
+	 * by IFSA.<br/>
+	 * For a clientconnection, the receiver is done with the <code>getClientReplyQueue</code>
+	 * @see javax.jms.QueueReceiver
+	 * @see IfsaBase#getQueue()
+	 * @return                                   The queueReceiver value
+	 * @exception  javax.naming.NamingException  Description of the Exception
+	 * @exception  javax.jms.JMSException                  Description of the Exception
 	 */
-	public QueueSession createSession() throws IfsaException {
-	    try {
-	        return connection.createQueueSession(isTransacted(), ackMode);
-	    } catch (JMSException e) {
-	        throw new IfsaException(e);
-	    }
+	protected QueueReceiver getServiceReceiver(
+		QueueSession session)
+		throws IfsaException {
+	
+		try {
+		QueueReceiver queueReceiver;
+		    
+		if (isProvider()) {
+			queueReceiver = session.createReceiver(getServiceQueue());
+		} else {
+			throw new IfsaException(getLogPrefix()+ "cannot obtain ServiceReceiver: Requestor cannot act as Provider");
+		}
+		if (log.isDebugEnabled()) {
+			log.debug(getLogPrefix()+ "got receiver for queue ["
+					+ queueReceiver.getQueue().getQueueName()
+					+ "] "+ ToStringBuilder.reflectionToString(queueReceiver));
+		}
+	
+		return queueReceiver;
+		} catch (JMSException e) {
+			throw new IfsaException(e);
+		}
 	}
-	    public String getClientName() {
-	        return clientName;
-	    }
+	
+	
 	/**
 	 * Retrieves the reply queue for a <b>client</b> connection. If the
 	 * client is transactional the replyqueue is retrieved from IFSA,
@@ -155,41 +264,14 @@ public class IfsaFacade implements INamedObject {
 	         * No -> dynamic reply queue
 	         */
 	        if (getIfsaQueueConnectionFactory().IsClientTransactional()) { // Static
-	            replyQueue = (Queue) getContext().lookupReply(clientName);
-	            log.debug("[" +name+"] got static reply queue [" +replyQueue.getQueueName()+"]");            
+	            replyQueue = (Queue) getContext().lookupReply(getApplicationId());
+	            log.debug(getLogPrefix()+"got static reply queue [" +replyQueue.getQueueName()+"]");            
 	        } else { // Temporary Dynamic
 	            replyQueue =  session.createTemporaryQueue();
-	            log.debug("[" +name+"] got dynamic reply queue [" +replyQueue.getQueueName()+"]");
+	            log.debug(getLogPrefix()+"got dynamic reply queue [" +replyQueue.getQueueName()+"]");
 	        }
 	        return replyQueue;
 	    } catch (Exception e) {
-	        throw new IfsaException(e);
-	    }
-	}
-	/**
-	 * Returns a connection for the queue corresponding to the service
-	 */
-	protected QueueConnection getConnection() throws IfsaException {
-	    try {
-	        if (connection == null) {
-	            connection = getIfsaQueueConnectionFactory().createQueueConnection();
-	        }
-	        return connection;
-	    } catch (Exception e) {
-	        throw new IfsaException(e);
-	    }
-	
-	}
-	private IFSAContext getContext() throws IfsaException {
-	    try {
-	        if (context == null) {
-	            Hashtable env = new Hashtable(11);
-	            env.put(Context.INITIAL_CONTEXT_FACTORY, "com.ing.ifsa.IFSAContextFactory");
-	            env.put(Context.PROVIDER_URL, getProviderUrl());
-	            context = new IFSAContext((Context) new InitialContext(env));
-	        }
-	        return context;
-	    } catch (NamingException e) {
 	        throw new IfsaException(e);
 	    }
 	}
@@ -197,7 +279,7 @@ public class IfsaFacade implements INamedObject {
 	    try {
 	        return ((IFSAQueue) getServiceQueue()).getExpiry();
 	    } catch (JMSException e) {
-	        throw new IfsaException("error retrieving timeOut value", e);
+	        throw new IfsaException(getLogPrefix()+"error retrieving timeOut value", e);
 	    }
 	}
 	/**
@@ -209,18 +291,11 @@ public class IfsaFacade implements INamedObject {
 		try {	     
 	    if (ifsaQueueConnectionFactory == null) {
 	
-		    if (isClient()) {
-	            ifsaQueueConnectionFactory =
-	                (IFSAQueueConnectionFactory) getContext().lookupBusConnection(getClientName());
-	            log.debug("["+name+"] got ifsaQueueConnectionFactory for client [" + clientName + "]");
-		    } else {
-	            ifsaQueueConnectionFactory =
-	                (IFSAQueueConnectionFactory) getContext().lookupBusConnection(getServerName());
-	            log.debug("["+name+"] got ifsaQueueConnectionFactory for server [" + serverName + "]");
-	        }
+            ifsaQueueConnectionFactory =
+                (IFSAQueueConnectionFactory) getContext().lookupBusConnection(getApplicationId());
 	
 		    if (log.isDebugEnabled()) {
-			    log.debug("["+name+"] got ifsaQueueConnectionFactory with properties:" 
+			    log.debug(getLogPrefix()+"got ifsaQueueConnectionFactory with properties:" 
 		            + ToStringBuilder.reflectionToString(ifsaQueueConnectionFactory) +"\n" 
 		        	+ " isServer: " +ifsaQueueConnectionFactory.IsServer()+"\n"  
 		        	+ " isClientNonTransactional:" +ifsaQueueConnectionFactory.IsClientNonTransactional()+"\n" 
@@ -260,8 +335,8 @@ public class IfsaFacade implements INamedObject {
 	
 		QueueReceiver queueReceiver;
 		    
-	    if (isServer()) {
-	        throw new IfsaException("Server ["+serverName+"] cannot act as Client");
+	    if (isProvider()) {
+	        throw new IfsaException(getLogPrefix()+"cannot get ReplyReceiver: Provider cannot act as Requestor");
 	    } 
 	
 	    String correlationId;
@@ -293,113 +368,19 @@ public class IfsaFacade implements INamedObject {
 	
 	    return queueReceiver;
 	}
-	public String getServerName() {
-	    return serverName;
-	}
-	public String getServiceName() {
-	    return serviceName;
-	}
-	/**
-	 * Looks up the <code>serviceName</code> in the <code>IFSAContext</code>.<br/>
-	 * <p>The method is knowledgable of Server versus Client processing.
-	 * When the request concerns a Server <code>lookupServerInput</code> is used,
-	 * when it concerns a Client <code>lookupService</code> is used.
-	 * This method distinguishes a server-input queue and a client-input queue
-	 */
-	protected Queue getServiceQueue() throws IfsaException {
-	    if (queue == null) {
-	        try {
-	            if (isClient()) {
-	                queue = (Queue) getContext().lookupService(serviceName);
-	                if (log.isDebugEnabled()) {
-	                    log.debug(
-	                        "["
-	                            + name
-	                            + "] got Queue for serviceName ["
-	                            + serviceName
-	                            + "] for client ["
-	                            + clientName
-	                            + "]");
-	                }
-	            } else {
-	            	// TODO: replace by lookupProviderInput(), for IFSA 2.0
-	                queue = (Queue) getContext().lookupServerInput(serviceName);
-	                if (log.isDebugEnabled()) {
-	                    log.debug(
-	                        "["
-	                            + name
-	                            + "] got Queue for serviceName ["
-	                            + serviceName
-	                            + "] for server ["
-	                            + serverName
-	                            + "]");
-	                }
-	            }
-	
-	        } catch (NamingException e) {
-	            throw new IfsaException(e);
-	        }
-	    }
-	    return queue;
-	}
-	/**
-	 * Gets the queueReceiver, by utilizing the <code>getInputQueue()</code> method.<br/>
-	 * For serverside getQueueReceiver() the creating of the QueueReceiver is done
-	 * without the <code>selector</code> information, as this is not allowed
-	 * by IFSA.<br/>
-	 * For a clientconnection, the receiver is done with the <code>getClientReplyQueue</code>
-	 * @see javax.jms.QueueReceiver
-	 * @see IfsaBase#getQueue()
-	 * @return                                   The queueReceiver value
-	 * @exception  javax.naming.NamingException  Description of the Exception
-	 * @exception  javax.jms.JMSException                  Description of the Exception
-	 */
-	protected QueueReceiver getServiceReceiver(
-	    QueueSession session)
-	    throws IfsaException {
-	
-		try {
-	    QueueReceiver queueReceiver;
-		    
-	    if (isServer()) {
-	        queueReceiver = session.createReceiver(getServiceQueue());
-	    } else {
-	    	throw new IfsaException("Client ["+getClientName()+"] cannot act as Server");
-	    }
-	    if (log.isDebugEnabled()) {
-	        log.debug(
-	            "["
-	                + name
-	                + "] got receiver for queue ["
-	                + queueReceiver.getQueue().getQueueName()
-	                + "]"
-	                + " serviceName ["
-	                + serviceName
-	                + "]"
-	                + "serverName [" + serverName + "] "
-	                + ToStringBuilder.reflectionToString(queueReceiver));
-	    }
-	
-	    return queueReceiver;
-	    } catch (JMSException e) {
-	        throw new IfsaException(e);
-	    }
-	}
 	/**
 	 * Indicates whether the object at hand represents a Client (returns <code>True</code>) or
 	 * a Server (returns <code>False</code>).
 	 */
-	public boolean isClient() throws IfsaException {
-		boolean client = StringUtils.isNotEmpty(getClientName());
-		boolean server = StringUtils.isNotEmpty(getServerName());
-	
-		if (client && server) {
-	        throw new IfsaException("Object ["+getName()+"] cannot be both client ["+ getClientName() + "] and server ["+ getServerName() +"]");
+	public boolean isRequestor() throws IfsaException {
+			
+		if (requestor && provider) {
+	        throw new IfsaException(getLogPrefix()+"cannot be both Requestor and Provider");
 		}
-		if (!client && !server) {
-	        throw new IfsaException("Object ["+getName()+"] not configured as client or server");
+		if (!requestor && !provider) {
+	        throw new IfsaException(getLogPrefix()+"not configured as Requestor or Provider");
 		}
-		return client;
+		return requestor;
 	}
 	/**
 	 * Indicates whether the object at hand represents a Client (returns <code>False</code>) or
@@ -407,21 +388,8 @@ public class IfsaFacade implements INamedObject {
 	 *
 	 * @see #isClient()
 	 */
-	public boolean isServer() throws IfsaException {
-		return ! isClient();
-	}
-	public boolean isTransacted() {
-	
-	    return transacted;
-	}
-	public void openService() throws IfsaException {
-	    try {
-	        connection = getConnection();
-	        connection.start();
-	        queue = getServiceQueue();
-	    } catch (Exception e) {
-	        throw new IfsaException(e);
-	    }
+	public boolean isProvider() throws IfsaException {
+		return ! isRequestor();
 	}
     /**
      * Sends a message,and if transacted, the queueSession is committed.
@@ -437,7 +405,7 @@ public class IfsaFacade implements INamedObject {
 	        msg.setText(message);
 			if (udzMap != null) {
 				// TODO: Handle UDZs
-				log.warn("IfsaClient ["+clientName+"]: processing of UDZ maps not yet implemented");
+				log.warn(getLogPrefix()+"IfsaClient: processing of UDZ maps not yet implemented");
 				/*
 				// process the udzMap
 				IFSAUDZ udzObject = ((IFSAMessage) msg).getOutgoingUDZObject();
@@ -446,8 +414,8 @@ public class IfsaFacade implements INamedObject {
 			}
 			String replyToQueueName="-"; 
 	        //Client side
-	        if (!isClient()) {
-		        throw new IfsaException("Server ["+ getServerName() + "] cannot use sendMessage, should use sendReply");
+	        if (!isRequestor()) {
+		        throw new IfsaException(getLogPrefix()+ "Provider cannot use sendMessage, should use sendReply");
 	        }
 	        if (messageProtocol.equals(IfsaMessageProtocolEnum.REQUEST_REPLY)) {
 	            // set reply-to address
@@ -459,14 +427,8 @@ public class IfsaFacade implements INamedObject {
 	         	// not applicable
 	        }
 	
-	        log.info(
-	            "["+name+"] serviceName ["
-	                + serviceName
-	                + "]"
-	                + (StringUtils.isNotEmpty(clientName)
-	                    ? "clientName [" + clientName + "]"
-	                    : "serverName [" + serverName + "]")
-	                + " messageProtocol ["
+	        log.info(getLogPrefix()
+	        	    + " messageProtocol ["
 	                + messageProtocol
 	                + "] replyToQueueName ["
 	                + replyToQueueName
@@ -481,16 +443,8 @@ public class IfsaFacade implements INamedObject {
 	        if (isTransacted()) {
 	            session.commit();
 	            if (log.isDebugEnabled()) {
-	            log.debug(
-	                "["+name+"]  serviceName ["
-	                    + serviceName
-	                    + "]"
-	                    + (StringUtils.isNotEmpty(clientName)
-	                        ? "clientName [" + clientName + "]"
-	                        : "serverName [" + serverName + "]")
-	                    + " committing (send) transaction");
+		            log.debug(getLogPrefix()+ "committing (send) transaction");
 	            }
-	
 	        }
 	
 	        return msg;
@@ -500,41 +454,29 @@ public class IfsaFacade implements INamedObject {
 		}
 	}
 	
-/**
- * Intended for server-side reponse sending and implies that the received
- * message *always* contains a reply-to address.
- */
-public void sendReply(QueueSession session, Message received_message, String response)
-    throws IfsaException {
-    try {
-        TextMessage answer = session.createTextMessage();
-        answer.setText(response);
-        QueueSender tqs =
-            session.createSender((Queue) received_message.getJMSReplyTo());
-        if (log.isDebugEnabled()) {
-            log.debug(
-                "["
-                    + name
-                    + "] ["
-                    + serverName
-                    + "] service ["
-                    + serviceName
-                    + "] sending reply to ["
-                    + received_message.getJMSReplyTo()
-                    + "]");
-        }
-        ((IFSAServerQueueSender) tqs).sendReply(received_message, answer);
-        tqs.close();
-    } catch (JMSException e) {
-        throw new IfsaException(e);
-    }
-}
-public void setClientName(java.lang.String newClientName) {
-    if (!(StringUtils.isEmpty(serverName))) {
-        log.error("[" + name + "] trying to set clientName, while serverName is already set");
-    }
-    clientName = newClientName;
-}
+	/**
+	 * Intended for server-side reponse sending and implies that the received
+	 * message *always* contains a reply-to address.
+	 */
+	public void sendReply(QueueSession session, Message received_message, String response)
+	    throws IfsaException {
+	    try {
+	        TextMessage answer = session.createTextMessage();
+	        answer.setText(response);
+	        QueueSender tqs =
+	            session.createSender((Queue) received_message.getJMSReplyTo());
+	        if (log.isDebugEnabled()) {
+	            log.debug(getLogPrefix()
+	            		+ "] sending reply to ["
+	                    + received_message.getJMSReplyTo()
+	                    + "]");
+	        }
+	        ((IFSAServerQueueSender) tqs).sendReply(received_message, answer);
+	        tqs.close();
+	    } catch (JMSException e) {
+	        throw new IfsaException(e);
+	    }
+	}
 
     /**
      * Method logs a warning when the newMessageProtocol is not FF or RR.
@@ -545,7 +487,7 @@ public void setClientName(java.lang.String newClientName) {
      */
     public void setMessageProtocol(String newMessageProtocol) {
 	    if (null==IfsaMessageProtocolEnum.getEnum(newMessageProtocol)) {
-        	throw new IllegalArgumentException(
+        	throw new IllegalArgumentException(getLogPrefix()+
                 "illegal messageProtocol ["
                     + newMessageProtocol
                     + "] specified, it should be one of the values "
@@ -553,44 +495,20 @@ public void setClientName(java.lang.String newClientName) {
 
         	}
         messageProtocol = IfsaMessageProtocolEnum.getEnum(newMessageProtocol);
-        log.debug("["+name+"] message protocol set to "+messageProtocol.getName());
-
-        if (messageProtocol.equals(IfsaMessageProtocolEnum.FIRE_AND_FORGET)) {
-            transacted = true;
-            log.debug("["+name+"] set transacted to true");
-        } else {
-            transacted = false;
-            log.debug("["+name+"] set transacted to false");
-        }
+        log.debug(getLogPrefix()+"message protocol set to "+messageProtocol.getName());
     }
-    /**
-     * <p>Set the name of the server.</p>
-     * This also takes care that server side lookups are performed.
-     * Creation date: (08-05-2003 9:03:53)
-     * @param newServerName java.lang.String the URI of the server
-     */
-    public void setServerName(String newServerName) {
-        if (!(StringUtils.isEmpty(clientName))) {
-            log.error("["+name+"] trying to set serverName, while clientName is already set");
-        }
-        serverName = newServerName;
-    }
-    /**
-     * set the IFSA service name
-     * @param newServiceName the name of the service, e.g. IFSA://appID
-     */
-    public void setServiceName(String newServiceName) {
-        serviceName = newServiceName;
+    
+    public boolean isTransacted() {
+    	return getMessageProtocolEnum().equals(IfsaMessageProtocolEnum.FIRE_AND_FORGET);
     }
     
 	public String toString() {
 	    String result = super.toString();
 	    ToStringBuilder ts = new ToStringBuilder(this);
-	    ts.append("jndiPath", jndiPath);
-		ts.append("providerUrl", getProviderUrl());
-	    ts.append("serviceName", serviceName);
-	    ts.append("serverName", serverName);
-	    ts.append("clientName", clientName);
+		ts.append("IFSA_INITIAL_CONTEXT_FACTORY", IFSA_INITIAL_CONTEXT_FACTORY);
+		ts.append("IFSA_PROVIDER_URL", IFSA_PROVIDER_URL);
+		ts.append("applicationId", applicationId);
+	    ts.append("serviceId", serviceId);
 	    if (messageProtocol != null)
 	        ts.append("messageProtocol", messageProtocol.getName());
 	    else
@@ -602,22 +520,26 @@ public void setClientName(java.lang.String newClientName) {
 	
 	}
 
-	public String getProviderUrl() {
-		if (StringUtils.isEmpty(getJndiPath())) { 	
-			return DEFAULT_PROVIDER_URL; 
-		}
-		return "file:"+getJndiPath();
-	}
 	/**
-	 * The name of the path to the jndi (.bindings file).
-	 * Be sure to give only the path! For IFSA 2.0 behaviour, do not specify a jndi-path
+	 * set the IFSA service Id, for requesters only
+	 * @param newServiceId the name of the service, e.g. IFSA://SERVICE/CLAIMINFORMATIONMANAGEMENT/NLDFLT/FINDCLAIM:01
 	 */
-	public void setJndiPath(String newJndiPath) {
-		jndiPath = newJndiPath;
+	public void setServiceId(String newServiceId) {
+		serviceId = newServiceId;
 	}
-	public String getJndiPath() {
-		return jndiPath;
+
+	public String getServiceId() {
+		return serviceId;
 	}
+
+
+	public void setApplicationId(String newApplicationId) {
+		applicationId = newApplicationId;
+	}
+	public String getApplicationId() {
+		return applicationId;
+	}
+
 
 	public void setName(String newName) {
 		name = newName;
