@@ -10,6 +10,11 @@ import nl.nn.adapterframework.util.XmlUtils;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
+
+import org.apache.commons.pool.BaseKeyedPoolableObjectFactory;
+import org.apache.commons.pool.KeyedObjectPool;
+import org.apache.commons.pool.impl.GenericKeyedObjectPool;
+
 import java.io.IOException;
 
 
@@ -36,10 +41,10 @@ import java.io.IOException;
  */
 
 public class XsltPipe extends FixedForwardPipe {
-	public static final String version="$Id: XsltPipe.java,v 1.6 2004-07-20 08:42:53 L190409 Exp $";
+	public static final String version="$Id: XsltPipe.java,v 1.7 2004-08-31 12:54:32 a1909356#db2admin Exp $";
 
+	private static KeyedObjectPool transformerPool;
 	private String styleSheetName;
-	private Transformer transformer;
 	private boolean omitXmlDeclaration=true;
 	
 
@@ -57,17 +62,17 @@ public void configure() throws ConfigurationException {
 		throw new ConfigurationException(getLogPrefix(null)+"is not properly configured: styleSheetName is null");
 	}
     try {
-        transformer =
-            XmlUtils.createTransformer(
-                ClassUtils.getResourceURL(this, styleSheetName));
-                if (isOmitXmlDeclaration())
-        			transformer.setOutputProperty("omit-xml-declaration", "yes");
-        		else transformer.setOutputProperty("omit-xml-declaration","no");
-  
-    } catch (IOException e) {
-        throw new ConfigurationException(getLogPrefix(null)+"cannot retrieve [" + styleSheetName + "]",e);
-    } catch (TransformerConfigurationException te) {
-        throw new ConfigurationException(getLogPrefix(null)+"got error creating transformer from file [" + styleSheetName+ "]", te);
+    	transformerPool = new GenericKeyedObjectPool(new BaseKeyedPoolableObjectFactory() {
+			public Object makeObject(Object key) throws Exception {
+				Transformer t = XmlUtils.createTransformer(ClassUtils.getResourceURL(this, styleSheetName));
+				if (isOmitXmlDeclaration())
+					t.setOutputProperty("omit-xml-declaration", "yes");
+				else 
+					t.setOutputProperty("omit-xml-declaration","no");
+					
+				return t;
+  			}
+		});
     } catch (Exception e) {
         throw new ConfigurationException(getLogPrefix(null)+"exception in configure", e);
     }
@@ -79,34 +84,39 @@ public void configure() throws ConfigurationException {
  * via the configure() and start() methods.
  */
 public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRunException {
-    String stringResult = null;
-
     if (!(input instanceof String)) {
         throw new PipeRunException(this,
             getLogPrefix(session)+"got an invalid type as input, expected String, got "
                 + input.getClass().getName());
     }
+    
+    Transformer transformer = null;
     try {
-
-        stringResult = XmlUtils.transformXml(transformer, (String) input);
-
-    } catch (TransformerException te) {
+		transformer = openTransformer();
+        String stringResult = XmlUtils.transformXml(transformer, (String) input);
+		return new PipeRunResult(getForward(), stringResult);
+    } 
+    catch (TransformerException te) {
         PipeRunException pre = new PipeRunException(this, getLogPrefix(session)+" cannot transform input", te);
-            try {
-                configure();
-                start();
-                log.debug(
-	                 getLogPrefix(session)
-	                + " transformer was reinitialized as an error occured on the last transformation");
-            } catch (Throwable e2) {
-                log.error(getLogPrefix(session)+ "got error on reinitializing the transformer", e2);
-            }
+        try {
+            configure();
+            start();
+            log.debug(
+                 getLogPrefix(session)
+                + " transformer was reinitialized as an error occured on the last transformation");
+        } catch (Throwable e2) {
+            log.error(getLogPrefix(session)+ "got error on reinitializing the transformer", e2);
+        }
         throw pre;
-    } catch (IOException ie) {
-		throw new PipeRunException(this, getLogPrefix(session)+ "IOException on transforming input", ie);
+    } 
+    catch (Exception ie) {
+		throw new PipeRunException(this, getLogPrefix(session)+ "Exception on transforming input", ie);
     }
-
-    return new PipeRunResult(getForward(), stringResult);
+    finally {
+    	if (transformer != null) {
+    		try { closeTransformer(transformer); } catch(Exception e) {};
+    	}
+    }
 }
 	/**
 	 * Specify the stylesheet to use
@@ -114,12 +124,21 @@ public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRu
 	public void setStyleSheetName(String stylesheetName){
 		this.styleSheetName=stylesheetName;
 	}
+	
 	/**
 	 * Return the current transformer
 	 */
-	public Transformer getTransformer() {
-		return transformer;
+	public Transformer openTransformer() throws Exception {
+		return (Transformer)transformerPool.borrowObject(getName());
 	}
+
+	/**
+	 * Return the current transformer
+	 */
+	public void closeTransformer(Transformer t) throws Exception {
+		transformerPool.returnObject(getName(), t);
+	}
+
 	/**
 	 * set the "omit xml declaration" on the transfomer. Defaults to true.
 	 * @return true or false
