@@ -1,6 +1,9 @@
 /*
  * $Log: IPullingListener.java,v $
- * Revision 1.4  2004-03-30 07:29:54  L190409
+ * Revision 1.5  2004-07-15 07:38:22  L190409
+ * introduction of IListener as common root for Pulling and Pushing listeners
+ *
+ * Revision 1.4  2004/03/30 07:29:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.3  2004/03/26 10:42:45  Johan Verrips <johan.verrips@ibissource.org>
@@ -20,34 +23,13 @@ import java.util.HashMap;
  * @version Id
  * @author Gerrit van Brakel
  */
-public interface IPullingListener {
-		public static final String version="$Id: IPullingListener.java,v 1.4 2004-03-30 07:29:54 L190409 Exp $";
+public interface IPullingListener extends IListener {
+		public static final String version="$Id: IPullingListener.java,v 1.5 2004-07-15 07:38:22 L190409 Exp $";
 
 /**
  * Called to perform actions (like committing or sending a reply) after a message has been processed by the Pipeline. 
  */
 void afterMessageProcessed(PipeLineResult processResult, Object rawMessage, HashMap threadContext) throws ListenerException;
-
-/**
- * <code>configure()</code> is called once at startup of the framework in the configure method of the owner of this listener. 
- * Purpose of this method is to reduce creating connections to databases etc. in the {@link #getRawMessage(HashMap) getRawMessage()} method.
- * As much as possible class-instantiating should take place in the
- * <code>configure()</code> or <code>open()</code> method, to improve performance.
- */ 
-public void configure() throws ConfigurationException;
-
-/**
- * Prepares the listener for receiving messages.
- * <code>open()</code> is called once each time the listener is started.
- * After that, {@link #openThread()} is called for each thread that will listen for messages.
- */
-void open() throws ListenerException;
-
-/**
- * Close all resources used for listening
- * Called once, after for each thread that listens for messages {@link #closeThread(HashMap)} is called.
- */
-void close() throws ListenerException;
 
 /**
  * Prepares a thread for receiving messages.
@@ -73,17 +55,4 @@ void closeThread(HashMap threadContext) throws ListenerException;
  */
 Object getRawMessage(HashMap threadContext) throws ListenerException;
 
-/**
- * Extracts ID-string from message obtained from {@link #getRawMessage(HashMap)}. May also extract
- * other parameters from the message and put those in the threadContext.
- * @return ID-string of message for adapter.
- */
-String getIdFromRawMessage(Object rawMessage, HashMap threadContext) throws ListenerException;
-
-/**
- * Extracts string from message obtained from {@link #getRawMessage(HashMap)}. May also extract
- * other parameters from the message and put those in the threadContext.
- * @return input message for adapter.
- */
-String getStringFromRawMessage(Object rawMessage, HashMap threadContext) throws ListenerException;
 }
