@@ -22,14 +22,14 @@ import java.net.URL;
  * <tr><td>{@link #setDigesterRulesFile(String) setDigesterRulesFile}</td><td>name of file that containts the rules for xml parsing</td><td>(none)</td></tr>
  * </table>
  
- *  * <p><b>Exits:</b>
+ * <p><b>Exits:</b>
  * <table border="1">
  * <tr><th>state</th><th>condition</th></tr>
  * <tr><td>"success"</td><td>default</td></tr>
- * </table>
- * <p>$Id: DigesterPipe.java,v 1.1 2004-02-09 11:00:54 a1909356#db2admin Exp $</p>
+ * </table></p>
+ * <p>$Id: DigesterPipe.java,v 1.2 2004-02-09 11:06:52 a1909356#db2admin Exp $</p>
  * @author Richard Punt
- * @since 4.0.1 (some adjustments by Johan Verrips)
+ * @since 4.0.1 : adjustments to support multi-threading
  */
 
 public class DigesterPipe extends FixedForwardPipe {
