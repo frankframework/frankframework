@@ -9,13 +9,37 @@ import java.sql.Types;
 
 /**
  * Transforms a java.sql.Resultset to a XML stream.
- * <p>$Id: DB2XMLWriter.java,v 1.2 2004-02-04 10:02:04 a1909356#db2admin Exp $</p>
+ * Example of a result:
+ * <code><pre>
+ * &lt;result&gt;
+	&lt;fielddefinition&gt;
+		&lt;field name="fieldname"
+		          type="columnType" 
+		          columnDisplaySize=""
+		          precision=""
+		          scale=""
+		          isCurrency=""
+		          columnTypeName=""
+		          columnClassName=""/&gt;
+		 &lt;field ...../&gt;
+	&lt;/fielddefinition&gt;
+	&lt;rowset&gt;
+		&lt;row number="1"&gt;
+			&lt;field name="fieldname"&gt;value&lt;/field&gt;
+			&lt;field name="fieldname"&gt;value&lt;/field&gt;
+			&lt;field name="fieldname"&gt;value&lt;/field&gt;
+			&lt;field name="fieldname"&gt;value&lt;/field&gt;
+		&lt;/row&gt;
+	&lt;/rowset&gt;
+&lt;/result&gt;
+</pre></code>
+ * <p>$Id: DB2XMLWriter.java,v 1.3 2004-03-10 14:29:57 a1909356#db2admin Exp $</p>
  * @author Johan Verrips
  **/
 
 public class DB2XMLWriter
 {
-	public static final String version="$Id: DB2XMLWriter.java,v 1.2 2004-02-04 10:02:04 a1909356#db2admin Exp $";
+	public static final String version="$Id: DB2XMLWriter.java,v 1.3 2004-03-10 14:29:57 a1909356#db2admin Exp $";
 	
    protected Logger log = Logger.getLogger(this.getClass());
 
