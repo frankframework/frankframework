@@ -1,6 +1,9 @@
 /*
  * $Log: JMSFacade.java,v $
- * Revision 1.9  2004-03-31 12:04:19  L190409
+ * Revision 1.10  2004-04-26 09:58:06  NNVZNL01#L180564
+ * Added time-to-live on sent messages
+ *
+ * Revision 1.9  2004/03/31 12:04:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fixed javadoc
  *
  * Revision 1.8  2004/03/30 07:30:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -41,7 +44,7 @@ import javax.naming.NamingException;
  * @author    Gerrit van Brakel
  */
 public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version="$Id: JMSFacade.java,v 1.9 2004-03-31 12:04:19 L190409 Exp $";
+	public static final String version="$Id: JMSFacade.java,v 1.10 2004-04-26 09:58:06 NNVZNL01#L180564 Exp $";
 
 	private String name;
 
@@ -58,6 +61,9 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 
     private Connection connection;
     private Destination destination;
+
+	private long messageTimeToLive=0;
+
 
     //<code>forceMQCompliancy</code> is used to perform MQ specific replying.
     //If the MQ destination is not a JMS receiver, format errors occur.
@@ -354,11 +360,16 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	 */    
 	public String send(MessageProducer messageProducer, Message message)
 	    throws NamingException, JMSException {
+
+		if (getMessageTimeToLive()>0)
+				messageProducer.setTimeToLive(getMessageTimeToLive());	    
 	
-	    if (messageProducer instanceof TopicPublisher)
+	    if (messageProducer instanceof TopicPublisher) {
 	         ((TopicPublisher) messageProducer).publish(message);
-	    else
+	    } else {
 	         ((QueueSender) messageProducer).send(message);
+		}
+
 	    return message.getJMSMessageID();
 	}
 	/**
@@ -641,6 +652,20 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	 */
 	public void setTransacted(boolean transacted) {
 		this.transacted = transacted;
+	}
+	/**
+	 * Set the time-to-live in milliseconds of a message
+	 * @param exp time in milliseconds
+	 */
+	public void setMessageTimeToLive(long exp){
+		this.messageTimeToLive=exp;
+	}
+	/**
+	 * Get the  time-to-live in milliseconds of a message
+	 * @param exp time in milliseconds
+	 */
+	public long getMessageTimeToLive(){
+		return this.messageTimeToLive;
 	}
 	/**
 	 * Indicates whether messages are send under transaction control.
