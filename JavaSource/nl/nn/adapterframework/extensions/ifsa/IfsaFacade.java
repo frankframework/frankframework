@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaFacade.java,v $
- * Revision 1.16  2004-08-03 13:07:27  L190409
+ * Revision 1.17  2004-08-09 08:46:07  L190409
+ * small changes
+ *
+ * Revision 1.16  2004/08/03 13:07:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved closing
  *
  * Revision 1.15  2004/07/22 13:19:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -76,7 +79,7 @@ import javax.jms.*;
  * @since 4.2
  */
 public class IfsaFacade implements INamedObject, HasPhysicalDestination {
-	public static final String version="$Id: IfsaFacade.java,v 1.16 2004-08-03 13:07:27 L190409 Exp $";
+	public static final String version="$Id: IfsaFacade.java,v 1.17 2004-08-09 08:46:07 L190409 Exp $";
     protected Logger log = Logger.getLogger(this.getClass());
     
 	private final static String IFSA_INITIAL_CONTEXT_FACTORY="com.ing.ifsa.IFSAContextFactory";
@@ -134,6 +137,8 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 	public void configure() throws ConfigurationException {
 		// perform some basic checks
 		try {
+			if (StringUtils.isEmpty(getApplicationId()))
+				throw new ConfigurationException(getLogPrefix()+"applicationId is not specified");
 			if (isRequestor() && StringUtils.isEmpty(getServiceId()))
 				throw new ConfigurationException(getLogPrefix()+"serviceId is not specified");
 			if (getMessageProtocolEnum() == null)
@@ -577,12 +582,13 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 		ts.append("IFSA_PROVIDER_URL", IFSA_PROVIDER_URL);
 		ts.append("applicationId", applicationId);
 	    ts.append("serviceId", serviceId);
-	    if (messageProtocol != null)
-	        ts.append("messageProtocol", messageProtocol.getName());
+	    if (messageProtocol != null) {
+			ts.append("messageProtocol", messageProtocol.getName());
+			ts.append("transacted", isTransacted());
+	    }
 	    else
 	        ts.append("messageProtocol", "null!");
 	
-	    ts.append("transacted", isTransacted());
 	    result += ts.toString();
 	    return result;
 	
@@ -601,8 +607,8 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 			if (getConnection()!=null && getServiceQueue() != null) {
 				result += " ["+ getServiceQueue().getQueueName()+"]";
 			}
-		} catch (Exception je) {
-			log.warn(getLogPrefix()+"got exception in getPhysicalDestinationName", je);
+		} catch (Throwable t) {
+			log.warn(getLogPrefix()+"got exception in getPhysicalDestinationName", t);
 		}
 		return result;
 	}
