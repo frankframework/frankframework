@@ -1,6 +1,9 @@
 /*
  * $Log: MailSender.java,v $
- * Revision 1.6  2004-10-19 06:39:20  L190409
+ * Revision 1.7  2004-10-19 13:53:45  L190409
+ * graceful handling of empty recipients
+ *
+ * Revision 1.6  2004/10/19 06:39:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * modified parameter handling, introduced IWithParameters
  *
  * Revision 1.5  2004/10/14 16:13:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -111,7 +114,7 @@ import java.util.Properties;
  */
 
 public class MailSender implements ISenderWithParameters {
-	public static final String version = "$Id: MailSender.java,v 1.6 2004-10-19 06:39:20 L190409 Exp $";
+	public static final String version = "$Id: MailSender.java,v 1.7 2004-10-19 13:53:45 L190409 Exp $";
 
 	protected Logger log = Logger.getLogger(this.getClass());
 	private String name;
@@ -308,17 +311,21 @@ public class MailSender implements ISenderWithParameters {
 			while (iter.hasNext()) {
 				Element recipientElement = (Element) iter.next();
 				String recipient = XmlUtils.getStringValue(recipientElement);
-				String typeAttr = recipientElement.getAttribute("type");
-				Message.RecipientType recipientType = Message.RecipientType.TO;
-				if ("cc".equalsIgnoreCase(typeAttr)) {
-					recipientType = Message.RecipientType.CC;
-				}
-				if ("bcc".equalsIgnoreCase(typeAttr)) {
-					recipientType = Message.RecipientType.BCC;
-				}
-				msg.addRecipient(recipientType, new InternetAddress(recipient));
-				if (log.isDebugEnabled()) {
-					sb.append("[recipient("+typeAttr+")=" + recipient + "]");
+				if (StringUtils.isNotEmpty(recipient)) {
+					String typeAttr = recipientElement.getAttribute("type");
+					Message.RecipientType recipientType = Message.RecipientType.TO;
+					if ("cc".equalsIgnoreCase(typeAttr)) {
+						recipientType = Message.RecipientType.CC;
+					}
+					if ("bcc".equalsIgnoreCase(typeAttr)) {
+						recipientType = Message.RecipientType.BCC;
+					}
+					msg.addRecipient(recipientType, new InternetAddress(recipient));
+					if (log.isDebugEnabled()) {
+						sb.append("[recipient("+typeAttr+")=" + recipient + "]");
+					}
+				} else {
+					log.debug("empty recipient found, ignoring");
 				}
 			}
 
