@@ -1,3 +1,9 @@
+/*
+ * $Log: CoolGenWrapperPipe.java,v $
+ * Revision 1.3  2004-03-24 15:26:31  L190409
+ * cosmetic changes
+ *
+ */
 package nl.nn.adapterframework.extensions.coolgen;
 
 import java.net.URL;
@@ -52,8 +58,9 @@ import nl.nn.adapterframework.util.ClassUtils;
  * @author Johan Verrips
  * @version Id
  */
-public class CoolGenWrapperPipe
-    extends FixedForwardPipe {
+public class CoolGenWrapperPipe extends FixedForwardPipe {
+	public static final String version="$Id: CoolGenWrapperPipe.java,v 1.3 2004-03-24 15:26:31 L190409 Exp $";
+
     private String clientId;
     private String clientPassword;
     private String proxyClassName;
@@ -64,16 +71,25 @@ public class CoolGenWrapperPipe
     private Transformer postProcTransformer = null;
     private Transformer proxyInputFixTransformer = null;
 
-	public static final String version="$Id: CoolGenWrapperPipe.java,v 1.2 2004-03-11 09:23:52 NNVZNL01#L180564 Exp $";
 
-/**
-  * configure the pipe by creating the required XSLT-transformers using
-  * {@link #createTransformers() }
-  */
-public void configure() throws ConfigurationException {
-	super.configure();
-    createTransformers();
-}
+	/**
+	  * configure the pipe by creating the required XSLT-transformers using
+	  * {@link #createTransformers() }
+	  */
+	public void configure() throws ConfigurationException {
+		super.configure();
+	    createTransformers();
+	}
+	public void start() throws PipeStartException{
+		log.debug(getLogPrefix(null)+"creates proxy with class [" + proxyClassName + "]");
+		try {
+			createProxy(proxyClassName); // just to try if is possible...
+		} catch (ConfigurationException e) {
+			throw new PipeStartException(e);
+		}
+
+	}
+	
     public CoolGenXMLProxy createProxy(String proxyName)
         throws ConfigurationException {
         CoolGenXMLProxy proxy;
@@ -86,12 +102,8 @@ public void configure() throws ConfigurationException {
                 proxy.setTracing(1);
             else
                 proxy.setTracing(0);
-        } catch (ClassNotFoundException e) {
-            throw new ConfigurationException(e);
-        } catch (InstantiationException e) {
-            throw new ConfigurationException(e);
-        } catch (IllegalAccessException e) {
-            throw new ConfigurationException(e);
+        } catch (Exception e) {
+            throw new ConfigurationException(getLogPrefix(null)+"could not create proxy ["+proxyName+"]", e);
         }
         return proxy;
     }
@@ -120,28 +132,21 @@ public void createTransformers() throws ConfigurationException {
 
             if (preprocUrl == null)
                 throw new ConfigurationException(
-                    "Pipe ["
-                        + getName()
-                        + "] cannot find resource for preProcTransformer, URL-String ["
+                        getLogPrefix(null)+"cannot find resource for preProcTransformer, URL-String ["
                         + preProcStylesheetName
                         + "]");
 
-            log.debug(
-                "Pipe ["
-                    + getName()
-                    + "] creating preprocTransformer from URL ["
+            log.debug(getLogPrefix(null)+"creating preprocTransformer from URL ["
                     + preprocUrl.toString()
                     + "]");
             preProcTransformer = XmlUtils.createTransformer(preprocUrl);
         } catch (IOException e) {
             throw new ConfigurationException(
-                "Pipe [" + getName() + "] cannot retrieve [" + preProcStylesheetName + "]",
+                getLogPrefix(null)+"cannot retrieve [" + preProcStylesheetName + "]",
                 e);
         } catch (javax.xml.transform.TransformerConfigurationException te) {
             throw new ConfigurationException(
-                "Pipe ["
-                    + getName()
-                    + "] got error creating transformer from file ["
+                getLogPrefix(null)+"got error creating transformer from file ["
                     + preProcStylesheetName
                     + "]",
                 te);
@@ -153,28 +158,22 @@ public void createTransformers() throws ConfigurationException {
             URL postprocUrl = ClassUtils.getResourceURL(this, postProcStylesheetName);
             if (postprocUrl == null)
                 throw new ConfigurationException(
-                    "Pipe ["
-                        + getName()
-                        + "] cannot find resource for postProcTransformer, URL-String ["
+                    getLogPrefix(null)+"cannot find resource for postProcTransformer, URL-String ["
                         + postProcStylesheetName
                         + "]");
 
             log.debug(
-                "Pipe ["
-                    + getName()
-                    + "] creating postprocTransformer from URL ["
+                getLogPrefix(null)+"creating postprocTransformer from URL ["
                     + postprocUrl.toString()
                     + "]");
             postProcTransformer = XmlUtils.createTransformer(postprocUrl);
         } catch (IOException e) {
             throw new ConfigurationException(
-                "Pipe [" + getName() + "] cannot retrieve [" + postProcStylesheetName + "]",
+                getLogPrefix(null)+"cannot retrieve [" + postProcStylesheetName + "]",
                 e);
         } catch (javax.xml.transform.TransformerConfigurationException te) {
             throw new ConfigurationException(
-                "Pipe ["
-                    + getName()
-                    + "] got error creating transformer from file ["
+                getLogPrefix(null)+"got error creating transformer from file ["
                     + postProcStylesheetName
                     + "]",
                 te);
@@ -187,16 +186,12 @@ public void createTransformers() throws ConfigurationException {
 
         if (schemaUrl == null)
             throw new ConfigurationException(
-                "Pipe ["
-                    + getName()
-                    + "] cannot find resource for proxyInputSchema, URL-String ["
+                getLogPrefix(null)+"cannot find resource for proxyInputSchema, URL-String ["
                     + proxyInputSchema
                     + "]");
 
         log.debug(
-            "Pipe ["
-                + getName()
-                + "] creating CoolGenInputViewSchema from URL ["
+            getLogPrefix(null)+"creating CoolGenInputViewSchema from URL ["
                 + schemaUrl.toString()
                 + "]");
 
@@ -222,9 +217,7 @@ public void createTransformers() throws ConfigurationException {
             proxyInputFixTransformer = XmlUtils.createTransformer(stylesheet);
         } catch (javax.xml.transform.TransformerConfigurationException te) {
             throw new ConfigurationException(
-                "Pipe ["
-                    + getName()
-                    + "] got error creating transformer from string ["
+                getLogPrefix(null)+"got error creating transformer from string ["
                     + stylesheet
                     + "]",
                 te);
@@ -301,7 +294,7 @@ public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRu
         try {
             proxy.clear();
         } catch (PropertyVetoException e) {
-            throw new PipeRunException(this, "Pipe [" + getName() + "] cannot clear CoolGen proxy", e);
+            throw new PipeRunException(this, getLogPrefix(session)+"cannot clear CoolGen proxy", e);
         }
         try {
         proxy.executeXML(new StringReader(proxypreProc), proxyResult);
@@ -318,83 +311,73 @@ public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRu
             try {
                 proxy = createProxy(proxyClassName);
             } catch (ConfigurationException e) {
-                throw new PipeRunException(this, "cannot recreate proxy ["+proxyClassName+"]", e);
+                throw new PipeRunException(this,  getLogPrefix(session)+"cannot recreate proxy ["+proxyClassName+"]", e);
             }
-            throw new PipeRunException(this, "error excuting proxy ["+proxyClassName+"]:"+ err);
+            throw new PipeRunException(this,  getLogPrefix(session)+"error excuting proxy ["+proxyClassName+"]:"+ err);
         }
         } catch (XmlProxyException xpe) {
             try {
                 proxy = createProxy(proxyClassName);
             } catch (ConfigurationException ce) {
-                log.error("pipe [" + getName() + "] cannot recreate proxy", xpe);
+                log.error(getLogPrefix(session)+"cannot recreate proxy", xpe);
             }
-            throw new PipeRunException(this, "pipe [" + getName() + "] error excecuting proxy", xpe);
+            throw new PipeRunException(this,  getLogPrefix(session)+"error excecuting proxy", xpe);
         }
 
         if (postProcTransformer != null) {
-            log.debug(
-               getLogPrefix(session)+" CoolGen proxy returned: [" + proxyResult.toString() + "]");
-            wrapperResult =
-                XmlUtils.transformXml(postProcTransformer, proxyResult.toString());
+            log.debug(getLogPrefix(session)+" CoolGen proxy returned: [" + proxyResult.toString() + "]");
+            wrapperResult = XmlUtils.transformXml(postProcTransformer, proxyResult.toString());
         } else
             wrapperResult = proxyResult.toString();
     } catch (IOException e) {
-        throw new PipeRunException(this, "IOException excecuting proxy", e);
+        throw new PipeRunException(this, getLogPrefix(session)+"IOException excecuting proxy", e);
     } catch (TransformerException e) {
-        throw new PipeRunException(this, "TransformerException excecuting proxy", e);
+        throw new PipeRunException(this, getLogPrefix(session)+"TransformerException excecuting proxy", e);
     }
 
     return new PipeRunResult(getForward(),wrapperResult) ;
 }
-public String getClientId() {
-    return clientId;
-}
-public String getClientPassword() {
-    return clientPassword;
-}
-   public String getPostProcStylesheetName() {
-        return postProcStylesheetName;
-    }
-public String getPreProcStylesheetName() {
-    return preProcStylesheetName;
-}
-    public java.lang.String getProxyClassName() {
-        return proxyClassName;
-    }
-    public String getProxyInputSchema() {
-        return proxyInputSchema;
-    }
-    public void setClientId(java.lang.String newClientId) {
-        clientId = newClientId;
-    }
-    public void setClientPassword(java.lang.String newClientPassword) {
-        clientPassword = newClientPassword;
-    }
-    public void setPostProcStylesheetName(
-        java.lang.String newPostProcStylesheetName) {
-        postProcStylesheetName = newPostProcStylesheetName;
-    }
-    public void setPreProcStylesheetName(
-        java.lang.String newPreProcStylesheetName) {
-        preProcStylesheetName = newPreProcStylesheetName;
 
-    }
-    public void setProxyClassName(java.lang.String newProxyClassName) {
-        proxyClassName = newProxyClassName;
-    }
-    public void setProxyInputSchema(String newProxyInputSchema) {
-        proxyInputSchema = newProxyInputSchema;
-    }
-    public void start() throws PipeStartException{
-		CoolGenXMLProxy dummyProxy;
-        log.debug(
-            "Pipe [" + getName() + "] creates proxy with class [" + proxyClassName + "]");
-        try {
-	        dummyProxy = createProxy(proxyClassName);
-	        
-        } catch (ConfigurationException e) {
-	        throw new PipeStartException("Pipe [" + getName() + "] could not create proxy with class [" + proxyClassName + "]", e);
-        }
 
-    }
+	public void setClientId(java.lang.String newClientId) {
+		clientId = newClientId;
+	}
+	public String getClientId() {
+	    return clientId;
+	}
+	
+	public void setClientPassword(java.lang.String newClientPassword) {
+		clientPassword = newClientPassword;
+	}
+	public String getClientPassword() {
+	    return clientPassword;
+	}
+
+	public void setPreProcStylesheetName(String newPreProcStylesheetName) {
+		preProcStylesheetName = newPreProcStylesheetName;
+	}
+	public String getPreProcStylesheetName() {
+		return preProcStylesheetName;
+	}
+
+	public void setPostProcStylesheetName(String newPostProcStylesheetName) {
+		postProcStylesheetName = newPostProcStylesheetName;
+	}
+	public String getPostProcStylesheetName() {
+	    return postProcStylesheetName;
+	}
+	
+	public String getProxyClassName() {
+	    return proxyClassName;
+	}
+	public String getProxyInputSchema() {
+	    return proxyInputSchema;
+	}
+	
+	public void setProxyInputSchema(String newProxyInputSchema) {
+		proxyInputSchema = newProxyInputSchema;
+	}
+	public void setProxyClassName(java.lang.String newProxyClassName) {
+	    proxyClassName = newProxyClassName;
+	}
 }
