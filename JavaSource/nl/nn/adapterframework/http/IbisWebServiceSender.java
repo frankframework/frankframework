@@ -1,6 +1,9 @@
 /*
  * $Log: IbisWebServiceSender.java,v $
- * Revision 1.1  2004-07-15 07:40:43  L190409
+ * Revision 1.2  2004-08-09 13:55:31  L190409
+ * changed ServiceListenerName to ServiceName
+ *
+ * Revision 1.1  2004/07/15 07:40:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * introduction of http package
  *
  * Revision 1.1  2004/06/01 13:53:22  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -27,24 +30,24 @@ import nl.nn.adapterframework.util.AppConstants;
  * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>classname</td><td>nl.nn.adapterframework.receivers.JmsMessageReceiver</td><td>&nbsp;</td></tr>
+ * <tr><td>classname</td><td>nl.nn.adapterframework.http.IbisWebServiceSender</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td>  <td>name of the sender</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setIbisHost(String) ibisHost}</td><td>name (or ipaddress) and optinally port of the host where the ibis to be called is running</td><td>localhost</td></tr>
  * <tr><td>{@link #setIbisInstance(String) ibisInstance}</td><td>name of the ibis instance to be called</td><td>name of the current instance</td></tr>
- * <tr><td>{@link #setServiceListenerName(String) serviceListenerName}</td><td>Name of the receiver that should be called</td><td>"serviceListener"</td></tr>
+ * <tr><td>{@link #setServiceName(String) serviceName}</td><td>Name of the receiver that should be called</td><td>"serviceListener"</td></tr>
  * </table>
  * </p>
- * @version Id
  *
  * @author Gerrit van Brakel
+ * @since 4.2
  */
 public class IbisWebServiceSender implements ISender {
-	public static final String version = "$Id: IbisWebServiceSender.java,v 1.1 2004-07-15 07:40:43 L190409 Exp $";
+	public static final String version = "$Id: IbisWebServiceSender.java,v 1.2 2004-08-09 13:55:31 L190409 Exp $";
 
 	private String name;
 	private String ibisHost = "localhost";
 	private String ibisInstance = null;
-	private String serviceListenerName = "serviceListener";
+	private String serviceName = "serviceListener";
 	private ServiceDispatcher_ServiceProxy proxy;
 	
 	public void configure() throws ConfigurationException {
@@ -72,9 +75,9 @@ public class IbisWebServiceSender implements ISender {
 	public String sendMessage(String correlationID, String message)
 		throws SenderException, TimeOutException {
 		try {
-			return proxy.dispatchRequest(getServiceListenerName(),correlationID,message);
+			return proxy.dispatchRequest(getServiceName(),correlationID,message);
 		} catch (SOAPException e) {
-			throw new SenderException("exception sending message ["+message+"] with correlationID ["+correlationID+"] to endPoint["+getEndPoint()+"]",e);
+			throw new SenderException("exception sending message with correlationID ["+correlationID+"] to endPoint["+getEndPoint()+"]",e);
 		}
 	}
 
@@ -103,11 +106,11 @@ public class IbisWebServiceSender implements ISender {
 		this.ibisInstance=ibisInstance;
 	}
 
-	public String getServiceListenerName() {
-		return serviceListenerName;
+	public String getServiceName() {
+		return serviceName;
 	}
-	public void setServiceListenerName(String serviceListenerName) {
-		this.serviceListenerName=serviceListenerName;
+	public void setServiceName(String serviceName) {
+		this.serviceName=serviceName;
 	}
 
 }
