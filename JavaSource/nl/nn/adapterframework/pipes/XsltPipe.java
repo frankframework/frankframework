@@ -1,6 +1,9 @@
 /*
  * $Log: XsltPipe.java,v $
- * Revision 1.10  2004-10-05 10:55:59  L190409
+ * Revision 1.11  2004-10-12 15:13:43  L190409
+ * changed handling of output of  XmlDeclaration
+ *
+ * Revision 1.10  2004/10/05 10:55:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * reworked pooling (using TransformerPool)
  * included functionality of XPathPipe:
  *   added xpathExpression attribute
@@ -37,7 +40,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setForwardName(String) forwardName}</td><td>name of forward returned upon completion</td><td>"success"</td></tr>
  * <tr><td>{@link #setStyleSheetName(String) styleSheetName}</td><td>stylesheet to apply to the input message</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setXpathExpression(String) xpathExpression}</td><td>alternatively: XPath-expression to create stylesheet from</td><td></td></tr>
- * <tr><td>{@link #setOmitXmlDeclaration(boolean) setOmitXmlDeclaration}</td><td>forse the transformer to omit the xml declaration</td><td>true</td></tr>
+ * <tr><td>{@link #setOmitXmlDeclaration(boolean) setOmitXmlDeclaration}</td><td>force the transformer generated from the XPath-expression to omit the xml declaration</td><td>true</td></tr>
  * <tr><td>{@link #setSessionKey(String) sessionKey}</td><td>If specified, the result is put 
  * in the PipeLineSession under the specified key, and the result of this pipe will be 
  * the same as the input (the xml). If NOT specified, the result of the xpath expression 
@@ -60,7 +63,7 @@ import org.apache.commons.lang.StringUtils;
  */
 
 public class XsltPipe extends FixedForwardPipe {
-	public static final String version="$Id: XsltPipe.java,v 1.10 2004-10-05 10:55:59 L190409 Exp $";
+	public static final String version="$Id: XsltPipe.java,v 1.11 2004-10-12 15:13:43 L190409 Exp $";
 
 	private TransformerPool transformerPool;
 	private String xpathExpression=null;
@@ -84,7 +87,7 @@ public class XsltPipe extends FixedForwardPipe {
 				throw new ConfigurationException(getLogPrefix(null) + "cannot have both an xpathExpression and a styleSheetName specified");
 			}
 			try {
-				transformerPool = new TransformerPool(XmlUtils.createXPathEvaluatorSource(getXpathExpression(), "text"));
+				transformerPool = new TransformerPool(XmlUtils.createXPathEvaluatorSource("",getXpathExpression(), "text", !isOmitXmlDeclaration()));
 			} 
 			catch (TransformerConfigurationException te) {
 				throw new ConfigurationException(getLogPrefix(null) + "got error creating transformer from xpathExpression [" + getXpathExpression() + "]", te);
@@ -102,12 +105,6 @@ public class XsltPipe extends FixedForwardPipe {
 			} else {
 				throw new ConfigurationException(getLogPrefix(null) + "either xpathExpression or styleSheetName must be specified");
 			}
-		}
-		if (isOmitXmlDeclaration()) {
-			transformerPool.setIncludeXmlDeclaration(false);
-		}
-		else {
-			transformerPool.setIncludeXmlDeclaration(true);
 		}
 	}
 
