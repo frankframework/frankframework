@@ -36,7 +36,7 @@ import java.io.IOException;
  */
 
 public class XsltPipe extends FixedForwardPipe {
-	public static final String version="$Id: XsltPipe.java,v 1.5 2004-04-07 06:36:00 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: XsltPipe.java,v 1.6 2004-07-20 08:42:53 L190409 Exp $";
 
 	private String styleSheetName;
 	private Transformer transformer;
@@ -54,7 +54,7 @@ public void configure() throws ConfigurationException {
     super.configure();
 
     if (styleSheetName==null) {
-		throw new ConfigurationException("Pipe ["+getName()+"] is not properly configured: styleSheetName is null");
+		throw new ConfigurationException(getLogPrefix(null)+"is not properly configured: styleSheetName is null");
 	}
     try {
         transformer =
@@ -65,20 +65,11 @@ public void configure() throws ConfigurationException {
         		else transformer.setOutputProperty("omit-xml-declaration","no");
   
     } catch (IOException e) {
-        throw new ConfigurationException(
-            "Pipe [" + getName() + "] cannot retrieve [" + styleSheetName + "]");
+        throw new ConfigurationException(getLogPrefix(null)+"cannot retrieve [" + styleSheetName + "]",e);
     } catch (TransformerConfigurationException te) {
-        throw new ConfigurationException(
-            "Pipe ["
-                + getName()
-                + "] got error creating transformer from file ["
-                + styleSheetName
-                + "]",
-            te);
+        throw new ConfigurationException(getLogPrefix(null)+"got error creating transformer from file [" + styleSheetName+ "]", te);
     } catch (Exception e) {
-	    log.error(e);
-        throw new ConfigurationException(
-            "Pipe [" + getName() + "] got exception: "+e.getMessage(), e);
+        throw new ConfigurationException(getLogPrefix(null)+"exception in configure", e);
     }
 
 }
@@ -92,18 +83,15 @@ public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRu
 
     if (!(input instanceof String)) {
         throw new PipeRunException(this,
-            "Pipe ["
-                + getName()
-                + "] got an invalid type as input, expected String, got "
+            getLogPrefix(session)+"got an invalid type as input, expected String, got "
                 + input.getClass().getName());
     }
-    log.debug("Pipe [" + getName() + "] input [" + input + "]");
     try {
 
         stringResult = XmlUtils.transformXml(transformer, (String) input);
 
     } catch (TransformerException te) {
-        PipeRunException pre = new PipeRunException(this, "TransformerException while transforming ["+input+"]",te);
+        PipeRunException pre = new PipeRunException(this, getLogPrefix(session)+" cannot transform input", te);
             try {
                 configure();
                 start();
@@ -111,14 +99,11 @@ public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRu
 	                 getLogPrefix(session)
 	                + " transformer was reinitialized as an error occured on the last transformation");
             } catch (Throwable e2) {
-                log.error(
-                    getLogPrefix(session)+ "got error on reinitializing the transformer",
-                    e2);
+                log.error(getLogPrefix(session)+ "got error on reinitializing the transformer", e2);
             }
         throw pre;
     } catch (IOException ie) {
-        PipeRunException prei = new PipeRunException(this, "IOException while transforming ["+input+"]",ie);
-        throw prei;
+		throw new PipeRunException(this, getLogPrefix(session)+ "IOException on transforming input", ie);
     }
 
     return new PipeRunResult(getForward(), stringResult);
