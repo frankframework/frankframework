@@ -1,6 +1,9 @@
 /*
  * $Log: JMSFacade.java,v $
- * Revision 1.15  2004-08-16 11:27:56  L190409
+ * Revision 1.16  2004-08-18 09:20:58  a1909356#db2admin
+ * Make getConnection and closeConnection thread safe
+ *
+ * Revision 1.15  2004/08/16 11:27:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed timeToLive back to messageTimeToLive
  *
  * Revision 1.14  2004/08/16 09:26:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -80,7 +83,7 @@ import javax.naming.NamingException;
  * @author    Gerrit van Brakel
  */
 public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version="$Id: JMSFacade.java,v 1.15 2004-08-16 11:27:56 L190409 Exp $";
+	public static final String version="$Id: JMSFacade.java,v 1.16 2004-08-18 09:20:58 a1909356#db2admin Exp $";
 
 	private String name;
 
@@ -166,14 +169,20 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	 * Returns a connection for a topic or a queue
 	 */
 	protected Connection getConnection() throws NamingException, JMSException {
-		if (connection == null) {
-		log.debug("["+getName()+"] creating connection, useTopicFunctions=["+useTopicFunctions+"], isTransacted=["+isTransacted()+"]");
-		if (useTopicFunctions)
-			connection = getTopicConnectionFactory().createTopicConnection();
-		else
-			connection = getQueueConnectionFactory().createQueueConnection();
+		boolean initialized = false;
+		synchronized(this) {
+			initialized = (connection != null); 
+			if (! initialized) {
+				log.debug("["+getName()+"] creating connection, useTopicFunctions=["+useTopicFunctions+"], isTransacted=["+isTransacted()+"]");
+				if (useTopicFunctions)
+					connection = getTopicConnectionFactory().createTopicConnection();
+				else
+					connection = getQueueConnectionFactory().createQueueConnection();
+				log.debug("connection created " + connection);
+			}
 		}
-		connection.start();
+		if (! initialized)
+			connection.start();
 		return connection;
 	}
     
@@ -212,9 +221,10 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 		}
 	}
 	   
-	public void close() throws IbisException {
+	public synchronized void close() throws IbisException {
 		try {
 			if (connection != null) {
+				log.debug("closing connection " + connection);
 				connection.close();
 			}
 		} catch (JMSException e) {
