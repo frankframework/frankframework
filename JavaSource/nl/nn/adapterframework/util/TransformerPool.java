@@ -1,6 +1,9 @@
 /*
  * $Log: TransformerPool.java,v $
- * Revision 1.4  2004-10-19 15:27:19  L190409
+ * Revision 1.5  2004-10-26 16:26:03  L190409
+ * set UTF-8 as default inputstream encoding
+ *
+ * Revision 1.4  2004/10/19 15:27:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * moved transformation to pool
  *
  * Revision 1.3  2004/10/14 16:12:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -43,7 +46,7 @@ import org.w3c.dom.Document;
  * @author Gerrit van Brakel
  */
 public class TransformerPool {
-	public static final String version = "$Id: TransformerPool.java,v 1.4 2004-10-19 15:27:19 L190409 Exp $";
+	public static final String version = "$Id: TransformerPool.java,v 1.5 2004-10-26 16:26:03 L190409 Exp $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	private TransformerFactory tFactory = TransformerFactory.newInstance();
@@ -65,7 +68,7 @@ public class TransformerPool {
 	}	
 
 	public TransformerPool(URL url) throws TransformerConfigurationException, IOException {
-		this(new StreamSource(url.openStream()));
+		this(new StreamSource(url.openStream(),Misc.DEFAULT_INPUT_STREAM_ENCODING));
 		source.setSystemId(url.toString());
 	}
 	
