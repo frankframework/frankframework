@@ -1,6 +1,9 @@
 /*
  * $Log: Adapter.java,v $
- * Revision 1.11  2004-06-30 10:02:23  L190409
+ * Revision 1.12  2004-07-06 07:00:44  L190409
+ * configure now throws less exceptions
+ *
+ * Revision 1.11  2004/06/30 10:02:23  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved error reporting
  *
  * Revision 1.10  2004/06/16 13:08:11  Johan Verrips <johan.verrips@ibissource.org>
@@ -79,7 +82,7 @@ import javax.transaction.UserTransaction;
  */
 
 public class Adapter extends JNDIBase implements Runnable, IAdapter{
-	public static final String version="$Id: Adapter.java,v 1.11 2004-06-30 10:02:23 L190409 Exp $";
+	public static final String version="$Id: Adapter.java,v 1.12 2004-07-06 07:00:44 L190409 Exp $";
 	private Vector receivers=new Vector();
 	private long lastMessageDate =0;
     private PipeLine pipeline;
@@ -157,31 +160,30 @@ public void configure() throws ConfigurationException {
     try {
 		pipeline.setAdapter(this);
 		pipeline.configurePipes();
-    } catch (ConfigurationException e) {
+
+	    messageKeeper.add("pipeline successfully configured");
+	    Iterator it = receivers.iterator();
+	    while (it.hasNext()) {
+	        IReceiver receiver = (IReceiver) it.next();
+	
+	        log.info(
+	            "Adapter [" + name + "] is initializing receiver [" + receiver.getName() + "]");
+	        receiver.setAdapter(this);
+	        try {
+	            receiver.configure();
+			    messageKeeper.add("receiver [" + receiver.getName() + "] successfully configured");
+	        } catch (ConfigurationException e) {
+		        String msg = "Adapter [" + getName() + "] got error initializing receiver ["+ receiver.getName() +"]";
+		        log.error(msg,e);
+	            messageKeeper.add(msg+": "+e.getMessage());
+	        }
+	    }
+	    configurationSucceeded = true;
+	} catch (ConfigurationException e) {
 		String msg = "Adapter [" + getName() + "] got error initializing pipeline";
 		messageKeeper.add(msg+": "+e.getMessage());
 		log.error(msg,e);
-		throw e;    	
-    }
-
-    messageKeeper.add("pipeline successfully configured");
-    Iterator it = receivers.iterator();
-    while (it.hasNext()) {
-        IReceiver receiver = (IReceiver) it.next();
-
-        log.info(
-            "Adapter [" + name + "] is initializing receiver [" + receiver.getName() + "]");
-        receiver.setAdapter(this);
-        try {
-            receiver.configure();
-		    messageKeeper.add("receiver [" + receiver.getName() + "] successfully configured");
-        } catch (ConfigurationException e) {
-	        String msg = "Adapter [" + getName() + "] got error initializing receiver ["+ receiver.getName() +"]";
-	        log.error(msg,e);
-            messageKeeper.add(msg+": "+e.getMessage());
-        }
-    }
-    configurationSucceeded = true;
+	}
 }
 /**
  * Decrease the number of messages in process
