@@ -1,6 +1,9 @@
 /*
  * $Log: BrowseQueueExecute.java,v $
- * Revision 1.2  2004-08-20 12:57:10  L190409
+ * Revision 1.3  2004-10-12 15:15:54  L190409
+ * removed unused imports
+ *
+ * Revision 1.2  2004/08/20 12:57:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * reduced logging
  *
  * Revision 1.1  2004/06/16 12:25:52  Johan Verrips <johan.verrips@ibissource.org>
@@ -15,9 +18,6 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.TextMessage;
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -32,12 +32,10 @@ import nl.nn.adapterframework.util.StringTagger;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.webcontrol.IniDynaActionForm;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.struts.action.ActionError;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.DynaActionForm;
 
 /**
  * @version Id
@@ -45,7 +43,7 @@ import org.apache.struts.action.DynaActionForm;
  */
 public class BrowseQueueExecute extends ActionBase {
 
-	public static final String version = "$Id: BrowseQueueExecute.java,v 1.2 2004-08-20 12:57:10 L190409 Exp $";
+	public static final String version = "$Id: BrowseQueueExecute.java,v 1.3 2004-10-12 15:15:54 L190409 Exp $";
 	public ActionForward execute(
 		ActionMapping mapping,
 		ActionForm form,
