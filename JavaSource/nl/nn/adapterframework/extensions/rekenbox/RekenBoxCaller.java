@@ -1,6 +1,9 @@
 /*
  * $Log: RekenBoxCaller.java,v $
- * Revision 1.7  2004-09-01 11:17:54  L190409
+ * Revision 1.8  2004-10-05 10:40:20  L190409
+ * improved filename generation
+ *
+ * Revision 1.7  2004/09/01 11:17:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed unnecessary code
  *
  * Revision 1.6  2004/09/01 08:18:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -22,11 +25,9 @@
  */
 package nl.nn.adapterframework.extensions.rekenbox;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -35,6 +36,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
+import nl.nn.adapterframework.util.Counter;
 import nl.nn.adapterframework.util.Misc;
 /**
  * Perform a call to a RekenBox.
@@ -60,6 +62,8 @@ import nl.nn.adapterframework.util.Misc;
  * <tr><td>{@link #setExecutableExtension(String) executableExtension}</td><td>extension of rekenbox-executable</td><td>exe</td></tr>
  * <tr><td>{@link #setCleanup(boolean) cleanup}</td><td>if true, input and output files are removed after the call to the rekenbox is finished</td><td>true</td></tr>
  * <tr><td>{@link #setRekenboxSessionKey(String) rekenboxSessionKey}</td><td>key in {@link nl.nn.adapterframework.core.PipeLineSession pipeLineSession} to store rekenbox name in</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setDataFilenamePrefix(String) dataFilenamePrefix}</td><td>first part of filenames that communicate requests and replies to rekenbox</td><td>rb</td></tr>
+ * <tr><td>{@link #setMaxRequestNumber(String) maxRequestNumber}</td><td>maximal number that will be concatenated to dataFilenamePrefix</td><td>1000</td></tr>
  * </table>
  * </p>
  * <p><b>Exits:</b>
@@ -81,7 +85,7 @@ import nl.nn.adapterframework.util.Misc;
  * @version Id
  */
 public class RekenBoxCaller extends FixedForwardPipe {
-	public static final String version="$Id: RekenBoxCaller.java,v 1.7 2004-09-01 11:17:54 L190409 Exp $";
+	public static final String version="$Id: RekenBoxCaller.java,v 1.8 2004-10-05 10:40:20 L190409 Exp $";
 	
 	private String runPath="";
 	private String executableExtension="exe"; //bat, com or exe
@@ -90,12 +94,14 @@ public class RekenBoxCaller extends FixedForwardPipe {
 	private String rekenBoxName; // can be set for fixed rekenbox
 	private boolean cleanup=true;
 	private String commandLineType="straight";
+	private String rekenboxSessionKey=null; // output-property to communicate the name of the rekenbox to adios2Xml converter
 	
+	private String dataFilenamePrefix ="rb";
+	private long maxRequestNumber=1000;
+	private NumberFormat formatter;
+	private static Counter requestCounter = new Counter(0);
+
 	private File inputOutputDir;
-	/**
-	 * output-property to communicate the name of the rekenbox to adios2Xml converter
-	 */
-	private String rekenboxSessionKey=null;
 
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -112,6 +118,34 @@ public class RekenBoxCaller extends FixedForwardPipe {
 		if (!inputOutputDir.isDirectory()) {
 			throw new ConfigurationException(getLogPrefix(null)+"inputOutputDirectory ["+getInputOutputDirectory()+"] is not a directory");
 		}
+		formatter = new DecimalFormat("000000000000".substring(0,Long.toString(getMaxRequestNumber()).length()));
+		String baseFileName=getBaseFileName();
+		log.debug(getLogPrefix(null)+"first filename will be ["+baseFileName+"]");
+		requestCounter.decrease();
+	}
+	
+	protected boolean inputFileExists(long requestno,String extension) {
+		return new File(inputOutputDir,makeFileName(requestno,extension)).exists();
+	}
+
+	protected String makeFileName(long requestno, String extension) {
+		return getDataFilenamePrefix() + formatter.format(requestno)+extension;
+	}
+	
+	public String getBaseFileName() {
+		boolean didReset=false;
+		long requestno;
+		
+		for(requestno=requestCounter.increase(); inputFileExists(requestno,".INV"); requestno=requestCounter.increase()) {
+			if (!didReset && requestno>=getMaxRequestNumber()) {
+				synchronized (requestCounter){
+					if (requestCounter.getValue()>=getMaxRequestNumber())	{
+						requestCounter.decrease(getMaxRequestNumber());
+					}
+				}
+			}
+		}
+		return makeFileName(requestno,"");
 	}
 
 	/**
@@ -153,15 +187,8 @@ public class RekenBoxCaller extends FixedForwardPipe {
 		if (getRekenboxSessionKey() != null) {
 	        session.put(getRekenboxSessionKey(),rekenboxName);
 	    }
-/*	    
-		try {
-			File outfile = File.createTempFile("rbc",".UIT",inputOutputDir);
-			
-		} catch (Exception e) {
-			throw new PipeRunException(this, getLogPrefix(session)+"got Exception creating tempfile", e);
-		}
-*/			
-	    String baseFileName=Misc.createSimpleUUID();
+
+	    String baseFileName=getBaseFileName();
 	    String inputFileName=inputOutputDirectory+baseFileName+".INV";
 	    String outputFileName=inputOutputDirectory+baseFileName+".UIT";
 	    
@@ -270,6 +297,22 @@ public class RekenBoxCaller extends FixedForwardPipe {
 	}
 	public void setRekenBoxName(String string) {
 		rekenBoxName = string;
+	}
+
+	public String getDataFilenamePrefix() {
+		return dataFilenamePrefix;
+	}
+
+	public long getMaxRequestNumber() {
+		return maxRequestNumber;
+	}
+
+	public void setDataFilenamePrefix(String string) {
+		dataFilenamePrefix = string;
+	}
+
+	public void setMaxRequestNumber(long l) {
+		maxRequestNumber = l;
 	}
 
 }
