@@ -1,6 +1,9 @@
 /*
  * $Log: IPostboxSender.java,v $
- * Revision 1.2  2004-10-05 10:03:04  L190409
+ * Revision 1.3  2004-10-19 06:39:20  L190409
+ * modified parameter handling, introduced IWithParameters
+ *
+ * Revision 1.2  2004/10/05 10:03:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * replaced by IParameterizedSender
  *
  * Revision 1.1  2004/05/21 07:59:30  unknown <unknown@ibissource.org>
@@ -16,5 +19,5 @@ package nl.nn.adapterframework.core;
  * @author John Dekker
  * @version Id
  */
-public interface IPostboxSender extends IParameterizedSender {
+public interface IPostboxSender extends ISenderWithParameters {
 }

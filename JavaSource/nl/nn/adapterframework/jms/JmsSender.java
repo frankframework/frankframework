@@ -1,6 +1,9 @@
 /*
  * $Log: JmsSender.java,v $
- * Revision 1.12  2004-10-12 15:12:34  L190409
+ * Revision 1.13  2004-10-19 06:39:21  L190409
+ * modified parameter handling, introduced IWithParameters
+ *
+ * Revision 1.12  2004/10/12 15:12:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * reworked handling of  ParameterValueList
  *
  * Revision 1.11  2004/10/05 10:43:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -37,7 +40,9 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPostboxSender;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
+import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 
@@ -72,8 +77,10 @@ import javax.jms.Message;
  */
 
 public class JmsSender extends JMSFacade implements ISender, IPostboxSender {
-	public static final String version = "$Id: JmsSender.java,v 1.12 2004-10-12 15:12:34 L190409 Exp $";
+	public static final String version = "$Id: JmsSender.java,v 1.13 2004-10-19 06:39:21 L190409 Exp $";
 	private String replyToName = null;
+	
+	protected ParameterList paramList = null;
 
 	public JmsSender() {
 		super();
@@ -103,18 +110,20 @@ public class JmsSender extends JMSFacade implements ISender, IPostboxSender {
 		}
 	}
 
-	/**
-	 * Configures the sender
-	 */
-	public void configure() throws ConfigurationException {
+	public void addParameter(Parameter p) { 
+		if (paramList==null) {
+			paramList=new ParameterList();
+		}
+		paramList.add(p);
 	}
 
 	/**
 	 * Configures the sender
 	 */
-	public void configure(ParameterList parameters) throws ConfigurationException {
-		parameters.configure();
-		configure();
+	public void configure() throws ConfigurationException {
+		if (paramList!=null) {
+			paramList.configure();
+		}
 	}
 
 	public boolean isSynchronous() {
@@ -131,7 +140,7 @@ public class JmsSender extends JMSFacade implements ISender, IPostboxSender {
 	/** 
 	 * @see nl.nn.adapterframework.core.IPostboxSender#sendMessage(java.lang.String, java.lang.String, java.util.ArrayList)
 	 */
-	public String sendMessage(String correlationID, String message, ParameterValueList msgProperties) throws SenderException {
+	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException {
 		Session s = null;
 		MessageProducer mp = null;
 
@@ -142,9 +151,11 @@ public class JmsSender extends JMSFacade implements ISender, IPostboxSender {
 			// create message
 			Message msg = createTextMessage(s, correlationID, message);
 
+
 			// set properties
-			if (null != msgProperties)
-				setProperties(msg, msgProperties);
+			if (prc != null && paramList != null) {
+				setProperties(msg, prc.getValues(paramList));
+			}
 			if (null != replyToName) {
 				msg.setJMSReplyTo(getDestination(replyToName));
 				log.debug("replyTo set to [" + msg.getJMSReplyTo().toString() + "]");

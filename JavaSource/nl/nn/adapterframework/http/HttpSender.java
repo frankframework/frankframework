@@ -1,6 +1,9 @@
 /*
  * $Log: HttpSender.java,v $
- * Revision 1.9  2004-10-14 15:35:10  L190409
+ * Revision 1.10  2004-10-19 06:39:21  L190409
+ * modified parameter handling, introduced IWithParameters
+ *
+ * Revision 1.9  2004/10/14 15:35:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * refactored AuthSSLProtocolSocketFactory group
  *
  * Revision 1.8  2004/10/12 15:10:17  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -52,10 +55,13 @@ import org.apache.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
-import nl.nn.adapterframework.core.IParameterizedSender;
+import nl.nn.adapterframework.core.ISenderWithParameters;
+import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
+import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -94,8 +100,8 @@ import nl.nn.adapterframework.util.ClassUtils;
  * @author Gerrit van Brakel
  * @since 4.2c
  */
-public class HttpSender implements IParameterizedSender, HasPhysicalDestination {
-	public static final String version = "$Id: HttpSender.java,v 1.9 2004-10-14 15:35:10 L190409 Exp $";
+public class HttpSender implements ISenderWithParameters, HasPhysicalDestination {
+	public static final String version = "$Id: HttpSender.java,v 1.10 2004-10-19 06:39:21 L190409 Exp $";
 	protected Logger log = Logger.getLogger(this.getClass());;
 
 	private String name;
@@ -128,6 +134,8 @@ public class HttpSender implements IParameterizedSender, HasPhysicalDestination 
 	private MultiThreadedHttpConnectionManager connectionManager;
 	protected HttpClient httpclient;
 
+	protected ParameterList paramList = null;
+
 	protected void addProvider(String name) {
 		try {
 			Class clazz = Class.forName(name);
@@ -138,10 +146,13 @@ public class HttpSender implements IParameterizedSender, HasPhysicalDestination 
 	}
 
 
-	public void configure(ParameterList parameterList) throws ConfigurationException {
-		parameterList.configure();
-		configure();
+	public void addParameter(Parameter p) { 
+		if (paramList==null) {
+			paramList=new ParameterList();
+		}
+		paramList.add(p);
 	}
+
 	
 	public void configure() throws ConfigurationException {
 //		System.setProperty("javax.net.debug","all");
@@ -149,6 +160,9 @@ public class HttpSender implements IParameterizedSender, HasPhysicalDestination 
 		httpclient.setTimeout(getTimeout());
 		httpclient.setConnectionTimeout(getTimeout());
 		
+		if (paramList!=null) {
+			paramList.configure();
+		}
 		if (StringUtils.isEmpty(getUrl())) {
 			throw new ConfigurationException("Url must be specified");
 		}
@@ -299,8 +313,16 @@ public class HttpSender implements IParameterizedSender, HasPhysicalDestination 
 		return httpmethod.getResponseBodyAsString();
 	}
 
-	public String sendMessage(String correlationID, String message, ParameterValueList parameters) throws SenderException, TimeOutException {
-		HttpMethod httpmethod=getMethod(message, parameters);
+	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+		ParameterValueList pvl = null;
+		try {
+			if (prc !=null && paramList !=null) {
+				pvl=prc.getValues(paramList);
+			}
+		} catch (ParameterException e) {
+			throw new SenderException("Sender ["+getName()+"] caught exception evaluating parameters",e);
+		}
+		HttpMethod httpmethod=getMethod(message, pvl);
 		
 		try {
 			httpclient.executeMethod(httpmethod);

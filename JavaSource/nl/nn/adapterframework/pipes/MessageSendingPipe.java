@@ -1,6 +1,9 @@
 /*
  * $Log: MessageSendingPipe.java,v $
- * Revision 1.16  2004-10-14 16:11:12  L190409
+ * Revision 1.17  2004-10-19 06:39:20  L190409
+ * modified parameter handling, introduced IWithParameters
+ *
+ * Revision 1.16  2004/10/14 16:11:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed ParameterResolutionContext from Object,Hashtable to String, PipelineSession
  *
  * Revision 1.15  2004/10/05 10:53:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -42,11 +45,10 @@ package nl.nn.adapterframework.pipes;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
-import nl.nn.adapterframework.core.IParameterizedSender;
+import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.HasSender;
 import nl.nn.adapterframework.core.ICorrelatedPullingListener;
-import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -56,6 +58,7 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.errormessageformatters.ErrorMessageFormatter;
+import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 
 
@@ -97,7 +100,7 @@ import org.apache.commons.lang.StringUtils;
  */
 
 public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
-	public static final String version = "$Id: MessageSendingPipe.java,v 1.16 2004-10-14 16:11:12 L190409 Exp $";
+	public static final String version = "$Id: MessageSendingPipe.java,v 1.17 2004-10-19 06:39:20 L190409 Exp $";
 	private final static String TIMEOUTFORWARD = "timeout";
 	private final static String EXCEPTIONFORWARD = "exception";
 
@@ -124,6 +127,13 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 		propagateName();
 	}
 
+	public void addParameter(Parameter p){
+		if (getSender() instanceof ISenderWithParameters && getParameterList()!=null) {
+			((ISenderWithParameters)getSender()).addParameter(p);
+		}
+	}
+
+
 	/**
 	 * Checks whether a sender is defined for this pipe.
 	 */
@@ -135,11 +145,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 				getLogPrefix(null) + "no sender defined ");
 		}
 
-		if (getSender() instanceof IParameterizedSender && getParameterList()!=null) {
-			((IParameterizedSender)getSender()).configure(getParameterList());
-		} else {
-			getSender().configure();
-		}
+		getSender().configure();
 		if (getSender() instanceof HasPhysicalDestination) {
 			log.info(getLogPrefix(null)+"has sender on "+((HasPhysicalDestination)getSender()).getPhysicalDestinationName());
 		}
@@ -257,13 +263,9 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 
 	protected String sendMessage(Object input, PipeLineSession session, String correlationID, ISender sender, HashMap threadContext) throws SenderException, TimeOutException {
 		// sendResult has a messageID for async senders, the result for sync senders
-		if (getSender() instanceof IParameterizedSender && getParameterList()!=null) {
-			IParameterizedSender psender = (IParameterizedSender) getSender();
-			try {
-				return psender.sendMessage(correlationID, (String) input, new ParameterResolutionContext((String)input, session).getValues(getParameterList()));
-			} catch (ParameterException e) { 
-				throw new SenderException(e);
-			}
+		if (getSender() instanceof ISenderWithParameters && getParameterList()!=null) {
+			ISenderWithParameters psender = (ISenderWithParameters) getSender();
+			return psender.sendMessage(correlationID, (String) input, new ParameterResolutionContext((String)input, session));
 		} 
 		return getSender().sendMessage(correlationID, (String) input);
 	}

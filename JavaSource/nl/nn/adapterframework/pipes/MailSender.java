@@ -1,6 +1,9 @@
 /*
  * $Log: MailSender.java,v $
- * Revision 1.5  2004-10-14 16:13:28  L190409
+ * Revision 1.6  2004-10-19 06:39:20  L190409
+ * modified parameter handling, introduced IWithParameters
+ *
+ * Revision 1.5  2004/10/14 16:13:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * parametrization and adding of attachments
  *
  * Revision 1.4  2004/03/26 10:42:34  Johan Verrips <johan.verrips@ibissource.org>
@@ -12,12 +15,14 @@
  */
 package nl.nn.adapterframework.pipes;
 
-import nl.nn.adapterframework.core.IParameterizedSender;
+import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
+import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.util.DomBuilderException;
@@ -105,8 +110,8 @@ import java.util.Properties;
  * @author Johan Verrips/Gerrit van Brakel
  */
 
-public class MailSender implements IParameterizedSender {
-	public static final String version = "$Id: MailSender.java,v 1.5 2004-10-14 16:13:28 L190409 Exp $";
+public class MailSender implements ISenderWithParameters {
+	public static final String version = "$Id: MailSender.java,v 1.6 2004-10-19 06:39:20 L190409 Exp $";
 
 	protected Logger log = Logger.getLogger(this.getClass());
 	private String name;
@@ -124,9 +129,14 @@ public class MailSender implements IParameterizedSender {
 	private Properties properties;
 	private Transport transport;
 
-	public void configure(ParameterList parameterList) throws ConfigurationException {
-		parameterList.configure();
-		configure();
+	protected ParameterList paramList = null;
+
+
+	public void addParameter(Parameter p) { 
+		if (paramList==null) {
+			paramList=new ParameterList();
+		}
+		paramList.add(p);
 	}
 
 	public void configure() throws ConfigurationException {
@@ -138,6 +148,9 @@ public class MailSender implements IParameterizedSender {
 			properties.put("mail.smtp.host", getSmtpHost());
 		} catch (Throwable t) {
 			throw new ConfigurationException("MailSender ["+getName()+"] cannot set smtpHost ["+getSmtpHost()+"] in properties");
+		}
+		if (paramList!=null) {
+			paramList.configure();
 		}
 	}
 
@@ -187,34 +200,36 @@ public class MailSender implements IParameterizedSender {
 
 
 
-	public String sendMessage(String correlationID,	String message,	ParameterValueList parameters) throws SenderException, TimeOutException {
+	public String sendMessage(String correlationID,	String message,	ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		String from=null;;
 		String subject=null;
 		Collection recipients=null;
 		Collection attachments=null;
+		ParameterValueList pvl;
 		ParameterValue pv;
 		
 		try {
-			pv = parameters.getParameterValue("from");
+			pvl = prc.getValues(paramList);
+			pv = pvl.getParameterValue("from");
 			if (pv != null) {
 				from = pv.asStringValue(null);  
 				log.debug("MailSender ["+getName()+"] retrieved from-parameter ["+from+"]");
 			}
-			pv = parameters.getParameterValue("subject");
+			pv = pvl.getParameterValue("subject");
 			if (pv != null) {
 				subject = pv.asStringValue(null);  
 				log.debug("MailSender ["+getName()+"] retrieved subject-parameter ["+subject+"]");
 			}
-			pv = parameters.getParameterValue("message");
+			pv = pvl.getParameterValue("message");
 			if (pv != null) {
 				message = pv.asStringValue(message);  
 				log.debug("MailSender ["+getName()+"] retrieved message-parameter ["+message+"]");
 			}
-			pv = parameters.getParameterValue("recipients");
+			pv = pvl.getParameterValue("recipients");
 			if (pv != null) {
 				recipients = pv.asCollection();  
 			}
-			pv = parameters.getParameterValue("attachments");
+			pv = pvl.getParameterValue("attachments");
 			if (pv != null) {
 				attachments = pv.asCollection();  
 			}
