@@ -1,6 +1,9 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.13  2004-10-26 15:35:55  L190409
+ * Revision 1.14  2004-10-26 16:18:08  L190409
+ * set UTF-8 as default inputstream encoding
+ *
+ * Revision 1.13  2004/10/26 15:35:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * reduced logging for transformer parameter setting
  *
  * Revision 1.12  2004/10/12 15:15:22  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -97,7 +100,7 @@ import java.util.LinkedList;
  */
 public class XmlUtils {
 	public static final String version =
-		"$Id: XmlUtils.java,v 1.13 2004-10-26 15:35:55 L190409 Exp $";
+		"$Id: XmlUtils.java,v 1.14 2004-10-26 16:18:08 L190409 Exp $";
 
 	static final String W3C_XML_SCHEMA = "http://www.w3.org/2001/XMLSchema";
 	static final String JAXP_SCHEMA_LANGUAGE =
@@ -195,7 +198,7 @@ public class XmlUtils {
 		Document output;
 
 		try {
-			in = new InputStreamReader(url.openStream());
+			in = new InputStreamReader(url.openStream(),Misc.DEFAULT_INPUT_STREAM_ENCODING);
 		} catch (IOException e) {
 			throw new DomBuilderException(e);
 		}
@@ -301,7 +304,7 @@ public class XmlUtils {
 	public static synchronized Transformer createTransformer(URL url)
 		throws TransformerConfigurationException, IOException {
 
-		StreamSource stylesource = new StreamSource(url.openStream());
+		StreamSource stylesource = new StreamSource(url.openStream(),Misc.DEFAULT_INPUT_STREAM_ENCODING);
 		stylesource.setSystemId(url.toString());
 		return createTransformer(stylesource);
 	}
