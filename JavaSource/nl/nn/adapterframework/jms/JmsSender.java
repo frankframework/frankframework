@@ -1,6 +1,9 @@
 /*
  * $Log: JmsSender.java,v $
- * Revision 1.10  2004-09-01 07:30:00  L190409
+ * Revision 1.11  2004-10-05 10:43:58  L190409
+ * made into parameterized sender
+ *
+ * Revision 1.10  2004/09/01 07:30:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * correction in documentation
  *
  * Revision 1.9  2004/08/16 11:27:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -33,9 +36,11 @@ import java.util.Iterator;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPostboxSender;
 import nl.nn.adapterframework.core.ISender;
-import nl.nn.adapterframework.core.ParameterValue;
-import nl.nn.adapterframework.core.ParameterValueResolver;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.parameters.ParameterList;
+import nl.nn.adapterframework.parameters.ParameterValue;
+import nl.nn.adapterframework.parameters.ParameterValueList;
+
 import org.apache.commons.lang.builder.ToStringBuilder;
 
 import javax.jms.JMSException;
@@ -67,7 +72,7 @@ import javax.jms.Message;
  */
 
 public class JmsSender extends JMSFacade implements ISender, IPostboxSender {
-	public static final String version = "$Id: JmsSender.java,v 1.10 2004-09-01 07:30:00 L190409 Exp $";
+	public static final String version = "$Id: JmsSender.java,v 1.11 2004-10-05 10:43:58 L190409 Exp $";
 	private String replyToName = null;
 
 	public JmsSender() {
@@ -104,6 +109,13 @@ public class JmsSender extends JMSFacade implements ISender, IPostboxSender {
 	public void configure() throws ConfigurationException {
 	}
 
+	/**
+	 * Configures the sender
+	 */
+	public void configure(ParameterList parameters) throws ConfigurationException {
+		configure();
+	}
+
 	public boolean isSynchronous() {
 		return false;
 	}
@@ -118,7 +130,7 @@ public class JmsSender extends JMSFacade implements ISender, IPostboxSender {
 	/** 
 	 * @see nl.nn.adapterframework.core.IPostboxSender#sendMessage(java.lang.String, java.lang.String, java.util.ArrayList)
 	 */
-	public String sendMessage(String correlationID, String message, ArrayList msgProperties) throws SenderException {
+	public String sendMessage(String correlationID, String message, ParameterValueList msgProperties) throws SenderException {
 		Session s = null;
 		MessageProducer mp = null;
 
@@ -167,8 +179,8 @@ public class JmsSender extends JMSFacade implements ISender, IPostboxSender {
 	private void setProperties(final Message msg, ArrayList msgProperties) throws JMSException {
 		for (Iterator it = msgProperties.iterator(); it.hasNext();) {
 			ParameterValue property = (ParameterValue) it.next();
-			String type = property.getType().getType();
-			String name = property.getType().getName();
+			String type = property.getDefinition().getType();
+			String name = property.getDefinition().getName();
 
 			if ("boolean".equalsIgnoreCase(type))
 				msg.setBooleanProperty(name, property.asBooleanValue(false));
