@@ -1,6 +1,9 @@
 /*
  * $Log: HttpSender.java,v $
- * Revision 1.7  2004-09-09 14:50:07  L190409
+ * Revision 1.8  2004-10-12 15:10:17  L190409
+ * made parameterized version
+ *
+ * Revision 1.7  2004/09/09 14:50:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added JDK1.3.x compatibility
  *
  * Revision 1.6  2004/09/08 14:18:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -26,6 +29,7 @@ package nl.nn.adapterframework.http;
 
 import java.io.IOException;
 import java.net.URL;
+import java.net.URLEncoder;
 
 
 import org.apache.commons.httpclient.Credentials;
@@ -45,9 +49,12 @@ import org.apache.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
-import nl.nn.adapterframework.core.ISender;
+import nl.nn.adapterframework.core.IParameterizedSender;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.parameters.ParameterList;
+import nl.nn.adapterframework.parameters.ParameterValue;
+import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.util.ClassUtils;
 
 /**
@@ -75,6 +82,7 @@ import nl.nn.adapterframework.util.ClassUtils;
  * <tr><td>{@link #setTruststore(String) truststore}</td><td>resource URL to truststore to be used for authentication</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setTruststorePassword(String) truststorePassword}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setJdk13Compatibility(boolean) jdk13Compatibility}</td><td>enables the use of certificates on JDK 1.3.x. The SUN reference implementation JSSE 1.0.3 is included for convenience</td><td>false</td></tr>
+ * <tr><td>{@link #setEncodeMessages(boolean) encodeMessages}</td><td>specifies whether messages will encoded, e.g. spaces will be replaced by '+' etc.</td><td>false</td></tr>
  * </table>
  * </p>
  * Note:
@@ -83,8 +91,8 @@ import nl.nn.adapterframework.util.ClassUtils;
  * @author Gerrit van Brakel
  * @since 4.2c
  */
-public class HttpSender implements ISender, HasPhysicalDestination {
-	public static final String version = "$Id: HttpSender.java,v 1.7 2004-09-09 14:50:07 L190409 Exp $";
+public class HttpSender implements IParameterizedSender, HasPhysicalDestination {
+	public static final String version = "$Id: HttpSender.java,v 1.8 2004-10-12 15:10:17 L190409 Exp $";
 	protected Logger log = Logger.getLogger(this.getClass());;
 
 	private String name;
@@ -111,6 +119,7 @@ public class HttpSender implements ISender, HasPhysicalDestination {
 	private String truststorePassword=null;
 	
 	private boolean jdk13Compatibility=false;
+	private boolean encodeMessages=false;
 
 	protected URI uri;
 	private MultiThreadedHttpConnectionManager connectionManager;
@@ -123,6 +132,12 @@ public class HttpSender implements ISender, HasPhysicalDestination {
 		} catch (Throwable t) {
 			log.error("cannot add provider ["+name+"]");
 		}
+	}
+
+
+	public void configure(ParameterList parameterList) throws ConfigurationException {
+		parameterList.configure();
+		configure();
 	}
 	
 	public void configure() throws ConfigurationException {
@@ -218,17 +233,48 @@ public class HttpSender implements ISender, HasPhysicalDestination {
 		return true;
 	}
 
-	protected HttpMethod getMethod(String message) throws SenderException {
-		try { 
-			String path=uri.getPath();
-			if (!StringUtils.isEmpty(uri.getQuery())) {
-				path += "?"+uri.getQuery();
+	protected boolean appendParameters(boolean parametersAppended, StringBuffer path, ParameterValueList parameters) {
+		if (parameters!=null) {
+			log.debug("appending ["+parameters.size()+"] parameters");
+		}
+		for(int i=0; i<parameters.size(); i++) {
+			if (parametersAppended) {
+				path.append("&");
+			} else {
+				path.append("?");
+				parametersAppended = true;
 			}
+			ParameterValue pv = parameters.getParameterValue(i);
+			String parameterToAppend=pv.getDefinition().getName()+"="+URLEncoder.encode(pv.asStringValue(""));
+			log.debug("appending parameter ["+parameterToAppend+"]");
+			path.append(parameterToAppend);
+		}
+		return parametersAppended;
+	}
+
+	protected HttpMethod getMethod(String message, ParameterValueList parameters) throws SenderException {
+		try { 
+			boolean parametersAppended = false;
+			if (isEncodeMessages()) {
+				message = URLEncoder.encode(message);
+			}
+			StringBuffer path = new StringBuffer(uri.getPath());
+			if (!StringUtils.isEmpty(uri.getQuery())) {
+				path.append("?"+uri.getQuery());
+				parametersAppended = true;
+			}
+			if (parameters!=null) {
+				parametersAppended = appendParameters(parametersAppended,path,parameters);
+				log.debug("path after appending of parameters ["+path.toString()+"]");
+			}
+			
 			if (getMethodType().equals("GET")) {
-				return new GetMethod(path+message);
+				GetMethod result = new GetMethod(path+(parameters==null? message:""));
+				log.debug("HttpSender constructed GET-method ["+result.getQueryString()+"]");
+				return result;
 			} else {
 				if (getMethodType().equals("POST")) {
-					PostMethod postMethod = new PostMethod(path);
+					PostMethod postMethod = new PostMethod(path.toString());
 					postMethod.setRequestBody(message);
 				
 					return postMethod;
@@ -250,8 +296,8 @@ public class HttpSender implements ISender, HasPhysicalDestination {
 		return httpmethod.getResponseBodyAsString();
 	}
 
-	public String sendMessage(String correlationID, String message) throws SenderException, TimeOutException {
-		HttpMethod httpmethod=getMethod(message);
+	public String sendMessage(String correlationID, String message, ParameterValueList parameters) throws SenderException, TimeOutException {
+		HttpMethod httpmethod=getMethod(message, parameters);
 		
 		try {
 			httpclient.executeMethod(httpmethod);
@@ -265,6 +311,11 @@ public class HttpSender implements ISender, HasPhysicalDestination {
 			httpmethod.releaseConnection();
 		}
 	}
+
+	public String sendMessage(String correlationID, String message) throws SenderException, TimeOutException {
+		return sendMessage(correlationID, message, null);
+	}
+
 
 	public String getName() {
 		return name;
@@ -414,6 +465,14 @@ public class HttpSender implements ISender, HasPhysicalDestination {
 
 	public void setJdk13Compatibility(boolean b) {
 		jdk13Compatibility = b;
+	}
+
+	public boolean isEncodeMessages() {
+		return encodeMessages;
+	}
+
+	public void setEncodeMessages(boolean b) {
+		encodeMessages = b;
 	}
 
 }
