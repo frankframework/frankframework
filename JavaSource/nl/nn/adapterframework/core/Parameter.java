@@ -1,3 +1,10 @@
+/*
+ * $Log: Parameter.java,v $
+ * Revision 1.5  2004-08-26 09:04:47  L190409
+ * added log keyword in comment
+ * made implement INamedObject
+ *
+ */
 package nl.nn.adapterframework.core;
 
 import javax.xml.transform.Transformer;
@@ -9,16 +16,9 @@ import nl.nn.adapterframework.util.XmlUtils;
  * Generic parameter definition
  * 
  * @author Richard Punt
- * @version Id
  */
-public class Parameter {
-
-	/**
-	 * Default constructor 
-	 */
-	public Parameter() {
-		super();
-	}
+public class Parameter implements INamedObject {
+	public static final String version="$Id: Parameter.java,v 1.5 2004-08-26 09:04:47 L190409 Exp $";
 
 	private String name = null;
 	private String type = null;
