@@ -1,6 +1,9 @@
 /*
  * $Log: FilePipe.java,v $
- * Revision 1.3  2004-04-26 13:06:53  a1909356#db2admin
+ * Revision 1.4  2004-04-27 06:16:12  NNVZNL01#L180564
+ * added working via getters
+ *
+ * Revision 1.3  2004/04/26 13:06:53  unknown <unknown@ibissource.org>
  * Support for file en- and decoding
  *
  * Revision 1.2  2004/04/26 13:04:50  unknown <unknown@ibissource.org>
@@ -60,7 +63,7 @@ import sun.misc.BASE64Encoder;
  *
  */
 public class FilePipe extends FixedForwardPipe {
-	public static final String version="$Id: FilePipe.java,v 1.3 2004-04-26 13:06:53 a1909356#db2admin Exp $";
+	public static final String version="$Id: FilePipe.java,v 1.4 2004-04-27 06:16:12 NNVZNL01#L180564 Exp $";
 	private List transformers;
 	protected String actions;
 	protected String directory;
@@ -165,8 +168,8 @@ public class FilePipe extends FixedForwardPipe {
 		// create the directory structure if not exists and
 		// check the permissions
 		public void configure() throws ConfigurationException {
-			if (StringUtils.isNotEmpty(directory)) {
-				File file = new File(directory);
+			if (StringUtils.isNotEmpty(getDirectory())) {
+				File file = new File(getDirectory());
 				if (!file.exists()) {
 					file.mkdirs();
 				} 
@@ -176,7 +179,7 @@ public class FilePipe extends FixedForwardPipe {
 			}
 		}
 		public byte[] go(byte[] in, PipeLineSession session) throws Exception {
-			File dirFile = new File(directory);
+			File dirFile = new File(getDirectory());
 			File tmpFile = File.createTempFile((String)session.getMessageId(), writeSuffix, dirFile);
 			FileOutputStream fos = new FileOutputStream(tmpFile);
 			
@@ -205,15 +208,15 @@ public class FilePipe extends FixedForwardPipe {
 			this.deleteAfterRead = deleteAfterRead;
 		}
 		public void configure() throws ConfigurationException {
-			if (StringUtils.isNotEmpty(directory)) {
-				File file = new File(directory);
+			if (StringUtils.isNotEmpty(getDirectory())) {
+				File file = new File(getDirectory());
 				if (! (file.exists() && file.isDirectory() && file.canRead())) {
 					throw new ConfigurationException(directory + " is not a directory, or no read permission");
 				}
 			}
 		}
 		public byte[] go(byte[] in, PipeLineSession session) throws Exception {
-			File file = new File(directory, new String(in));
+			File file = new File(getDirectory(), new String(in));
 			FileInputStream fis = new FileInputStream(file);
 			
 			try {
@@ -235,15 +238,15 @@ public class FilePipe extends FixedForwardPipe {
 	 */
 	private class FileDeleter implements Transformer {
 		public void configure() throws ConfigurationException {
-			if (StringUtils.isNotEmpty(directory)) {
-				File file = new File(directory);
+			if (StringUtils.isNotEmpty(getDirectory())) {
+				File file = new File(getDirectory());
 				if (! (file.exists() && file.isDirectory())) {
 					throw new ConfigurationException(directory + " is not a directory");
 				}
 			}
 		}
 		public byte[] go(byte[] in, PipeLineSession session) throws Exception {
-			File file = new File(directory, new String(in));
+			File file = new File(getDirectory(), new String(in));
 			file.delete();
 			return in;
 		}
