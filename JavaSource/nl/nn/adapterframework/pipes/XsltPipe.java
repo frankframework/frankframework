@@ -21,6 +21,7 @@ import java.io.IOException;
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setForwardName(String) forwardName}</td><td>name of forward returned upon completion</td><td>"success"</td></tr>
  * <tr><td>{@link #setStyleSheetName(String) styleSheetName}</td><td>stylesheet to apply to the input message</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setOmitXmlDeclaration(boolean) setOmitXmlDeclaration}</td><td>forse the transformer to omit the xml declaration</td><td>true</td></tr>
  * </table>
  * </p>
  * <p><b>Exits:</b>
@@ -35,10 +36,15 @@ import java.io.IOException;
  */
 
 public class XsltPipe extends FixedForwardPipe {
-	public static final String version="$Id: XsltPipe.java,v 1.4 2004-04-06 10:19:40 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: XsltPipe.java,v 1.5 2004-04-07 06:36:00 NNVZNL01#L180564 Exp $";
 
 	private String styleSheetName;
 	private Transformer transformer;
+	private boolean omitXmlDeclaration=true;
+	
+
+	
+	
 /**
  * The <code>configure()</code> method instantiates a transformer for the specified
  * XSL. If the stylesheetname cannot be accessed, a ConfigurationException is thrown.
@@ -54,7 +60,9 @@ public void configure() throws ConfigurationException {
         transformer =
             XmlUtils.createTransformer(
                 ClassUtils.getResourceURL(this, styleSheetName));
-        transformer.setOutputProperty("omit-xml-declaration", "yes");
+                if (isOmitXmlDeclaration())
+        			transformer.setOutputProperty("omit-xml-declaration", "yes");
+        		else transformer.setOutputProperty("omit-xml-declaration","no");
   
     } catch (IOException e) {
         throw new ConfigurationException(
@@ -127,4 +135,19 @@ public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRu
 	public Transformer getTransformer() {
 		return transformer;
 	}
+	/**
+	 * set the "omit xml declaration" on the transfomer. Defaults to true.
+	 * @return true or false
+	 */
+	public boolean isOmitXmlDeclaration() {
+		return omitXmlDeclaration;
+	}
+
+	/**
+	 * @param b boolean.
+	 */
+	public void setOmitXmlDeclaration(boolean b) {
+		omitXmlDeclaration = b;
+	}
+
 }
