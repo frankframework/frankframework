@@ -1,6 +1,9 @@
 /*
  * $Log: HttpSender.java,v $
- * Revision 1.3  2004-08-31 10:13:35  L190409
+ * Revision 1.4  2004-08-31 15:51:37  L190409
+ * added extractResult method
+ *
+ * Revision 1.3  2004/08/31 10:13:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added security handling
  *
  * Revision 1.2  2004/08/24 11:41:27  unknown <unknown@ibissource.org>
@@ -78,7 +81,7 @@ import nl.nn.adapterframework.util.ClassUtils;
  * @since 4.2
  */
 public class HttpSender implements ISender, HasPhysicalDestination {
-	public static final String version = "$Id: HttpSender.java,v 1.3 2004-08-31 10:13:35 L190409 Exp $";
+	public static final String version = "$Id: HttpSender.java,v 1.4 2004-08-31 15:51:37 L190409 Exp $";
 	protected Logger log = Logger.getLogger(this.getClass());;
 
 	private String name;
@@ -239,6 +242,10 @@ public class HttpSender implements ISender, HasPhysicalDestination {
 		}
 
 	}
+	
+	public String extractResult(HttpMethod httpmethod) throws SenderException {
+		return httpmethod.getResponseBodyAsString();
+	}
 
 	public String sendMessage(String correlationID, String message) throws SenderException, TimeOutException {
 		HttpMethod httpmethod=getMethod(message);
@@ -246,7 +253,7 @@ public class HttpSender implements ISender, HasPhysicalDestination {
 		try {
 			httpclient.executeMethod(httpmethod);
 			log.debug("status:"+httpmethod.getStatusLine().toString());	
-			return httpmethod.getResponseBodyAsString();	
+			return extractResult(httpmethod);	
 		} catch (HttpException e) {
 			throw new SenderException(e);
 		} catch (IOException e) {
