@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaFacade.java,v $
- * Revision 1.15  2004-07-22 13:19:02  L190409
+ * Revision 1.16  2004-08-03 13:07:27  L190409
+ * improved closing
+ *
+ * Revision 1.15  2004/07/22 13:19:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * let requestor receive IFSATimeOutMessages
  *
  * Revision 1.14  2004/07/22 11:01:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -73,7 +76,7 @@ import javax.jms.*;
  * @since 4.2
  */
 public class IfsaFacade implements INamedObject, HasPhysicalDestination {
-	public static final String version="$Id: IfsaFacade.java,v 1.15 2004-07-22 13:19:02 L190409 Exp $";
+	public static final String version="$Id: IfsaFacade.java,v 1.16 2004-08-03 13:07:27 L190409 Exp $";
     protected Logger log = Logger.getLogger(this.getClass());
     
 	private final static String IFSA_INITIAL_CONTEXT_FACTORY="com.ing.ifsa.IFSAContextFactory";
@@ -160,11 +163,21 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 	public void closeService() throws IfsaException {
 	    try {
 	        if (connection != null) {
-	            connection.close();
-                log.debug(getLogPrefix()+"closed connection for service");
+				try {
+		            connection.close();
+	                log.debug(getLogPrefix()+"closed connection for service");
+					} catch (JMSException e) {
+						throw new IfsaException("exception closing connection of service",e);
+				}
 	        }
-	    } catch (JMSException e) {
-	        throw new IfsaException("exception closing service",e);
+			if (context != null) {
+				try {
+					context.close();
+					log.debug(getLogPrefix()+"closed context for service");
+				} catch (NamingException e) {
+					throw new IfsaException("exception closing context of service",e);
+				}
+			}
 	    } finally {
 	    	// make sure all objects are reset, to be able to restart after IFSA parameters have changed (e.g. at iterative installation time)
 	        queue = null;
