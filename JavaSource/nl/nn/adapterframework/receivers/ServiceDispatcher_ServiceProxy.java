@@ -15,12 +15,12 @@ import java.util.Vector;
 /**
  * WebService proxy class that can be used in applications that need to communciate with
  * the IBIS Adapterframework via a webservice.
- * <p>$Id: ServiceDispatcher_ServiceProxy.java,v 1.2 2004-02-04 10:02:12 a1909356#db2admin Exp $</p>
+ * <p>$Id: ServiceDispatcher_ServiceProxy.java,v 1.3 2004-03-10 11:45:58 a1909356#db2admin Exp $</p>
  */
 
 public class ServiceDispatcher_ServiceProxy
 {
-		public static final String version="$Id: ServiceDispatcher_ServiceProxy.java,v 1.2 2004-02-04 10:02:12 a1909356#db2admin Exp $";
+		public static final String version="$Id: ServiceDispatcher_ServiceProxy.java,v 1.3 2004-03-10 11:45:58 a1909356#db2admin Exp $";
 
   private Call call = new Call();
   private URL url = null;
@@ -34,6 +34,13 @@ public class ServiceDispatcher_ServiceProxy
     this.url = new URL("http://localhost:8080/AdapterFramework/servlet/rpcrouter");
     this.SOAPActionURI = "urn:service-dispatcher";
   }
+  /**
+	 * Dispatch a request
+	 * @param meth1_inType1 ServiceName
+	 * @param meth1_inType2 Message
+	 * @return String the result
+	 * @throws SOAPException
+	 */
   public synchronized java.lang.String dispatchRequest
     (java.lang.String meth1_inType1,
     java.lang.String meth1_inType2) throws SOAPException
@@ -69,6 +76,52 @@ public class ServiceDispatcher_ServiceProxy
       return (java.lang.String)retValue.getValue();
     }
   }
+  /**
+   * Dispatch a request
+   * @param meth1_inType1 ServiceName
+   * @param meth1_inType2 CorrelationID
+   * @param meth1_inType3 Message
+   * @return String the result
+   * @throws SOAPException
+   */
+  public synchronized java.lang.String dispatchRequest
+	 (java.lang.String meth1_inType1,
+	 java.lang.String meth1_inType2, java.lang.String meth1_inType3) throws SOAPException
+   {
+	 if (url == null)
+	 {
+	   throw new SOAPException(Constants.FAULT_CODE_CLIENT,
+	   "A URL must be specified via " +
+	   "ServiceDispatcher_ServiceProxy.setEndPoint(URL).");
+	 }
+
+	 call.setMethodName("dispatchRequest");
+	 Vector params = new Vector();
+	 Parameter meth1_inType1Param = new Parameter("meth1_inType1",
+	   java.lang.String.class, meth1_inType1, null);
+	 params.addElement(meth1_inType1Param);
+	 Parameter meth1_inType2Param = new Parameter("meth1_inType2",
+	   java.lang.String.class, meth1_inType2, null);
+	 params.addElement(meth1_inType2Param);
+	Parameter meth1_inType3Param = new Parameter("meth1_inType3",
+	  java.lang.String.class, meth1_inType3, null);
+	params.addElement(meth1_inType3Param);
+	 call.setParams(params);
+	 Response resp = call.invoke(url, SOAPActionURI);
+
+	 // Check the response.
+	 if (resp.generatedFault())
+	 {
+	   Fault fault = resp.getFault();
+
+	   throw new SOAPException(fault.getFaultCode(), fault.getFaultString());
+	 }
+	 else
+	 {
+	   Parameter retValue = resp.getReturnValue();
+	   return (java.lang.String)retValue.getValue();
+	 }
+   }
   public synchronized URL getEndPoint()
   {
     return url;
@@ -76,5 +129,17 @@ public class ServiceDispatcher_ServiceProxy
   public synchronized void setEndPoint(URL url)
   {
     this.url = url;
+  }
+  public static void main (String argv[]) {
+	try {
+  		ServiceDispatcher_ServiceProxy proxy=new ServiceDispatcher_ServiceProxy();
+  		proxy.setEndPoint ( new URL("http://localhost:9080/Ibis/servlet/rpcrouter"));
+  		String result=proxy.dispatchRequest("TestWebService", "correlationID01", "rekenboxverzoek");
+  		System.out.println(result);
+  		
+  	} catch (Exception e) {
+  		System.out.println(e.getMessage());
+  	}
+  	
   }
 }
