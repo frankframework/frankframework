@@ -1,6 +1,9 @@
 /*
  * $Log: Adios2XmlPipe.java,v $
- * Revision 1.3  2004-03-26 09:50:52  NNVZNL01#L180564
+ * Revision 1.4  2004-04-07 06:36:40  NNVZNL01#L180564
+ * removed unused log variable
+ *
+ * Revision 1.3  2004/03/26 09:50:52  Johan Verrips <johan.verrips@ibissource.org>
  * Updated javadoc
  *
  * Revision 1.2  2004/03/24 15:28:46  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -79,7 +82,7 @@ import java.io.BufferedReader;
  * @version Id
  */
 public class Adios2XmlPipe extends FixedForwardPipe {
-	public static final String version="$Id: Adios2XmlPipe.java,v 1.3 2004-03-26 09:50:52 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: Adios2XmlPipe.java,v 1.4 2004-04-07 06:36:40 NNVZNL01#L180564 Exp $";
 
 	private Hashtable rubriek2nummer;	 
 	private Hashtable record2nummer;
@@ -101,7 +104,7 @@ public class Adios2XmlPipe extends FixedForwardPipe {
 
  	    class Xml2AdiosHandler extends DefaultHandler {
         private StringBuffer result = new StringBuffer(10000);
-        private Logger log = Logger.getLogger(this.getClass());
+        //private Logger log = Logger.getLogger(this.getClass());
 
         public String getResult() {
             return result.toString();
