@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaFacade.java,v $
- * Revision 1.14  2004-07-22 11:01:04  L190409
+ * Revision 1.15  2004-07-22 13:19:02  L190409
+ * let requestor receive IFSATimeOutMessages
+ *
+ * Revision 1.14  2004/07/22 11:01:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added configurable timeOut
  *
  * Revision 1.13  2004/07/20 16:37:47  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -70,7 +73,7 @@ import javax.jms.*;
  * @since 4.2
  */
 public class IfsaFacade implements INamedObject, HasPhysicalDestination {
-	public static final String version="$Id: IfsaFacade.java,v 1.14 2004-07-22 11:01:04 L190409 Exp $";
+	public static final String version="$Id: IfsaFacade.java,v 1.15 2004-07-22 13:19:02 L190409 Exp $";
     protected Logger log = Logger.getLogger(this.getClass());
     
 	private final static String IFSA_INITIAL_CONTEXT_FACTORY="com.ing.ifsa.IFSAContextFactory";
@@ -200,12 +203,12 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 				if (isRequestor()) {
 					queue = (Queue) getContext().lookupService(getServiceId());
 					if (log.isDebugEnabled()) {
-						log.debug(getLogPrefix()+ "got Queue to send messages on "+getPhysicalDestinationName());
+						log.info(getLogPrefix()+ "got Queue to send messages on "+getPhysicalDestinationName());
 					}
 				} else {
 					queue = (Queue) getContext().lookupProviderInput();
 					if (log.isDebugEnabled()) {
-						log.debug(getLogPrefix()+ "got Queue to receive messages from "+getPhysicalDestinationName());
+						log.info(getLogPrefix()+ "got Queue to receive messages from "+getPhysicalDestinationName());
 					}
 				}
 	
@@ -236,8 +239,11 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 	 */
 	public QueueSession createSession() throws IfsaException {
 		try {
-//			return connection.createQueueSession(isTransacted(), Session.AUTO_ACKNOWLEDGE + IFSAConstants.QueueSession.IFSA_MODE);
-			return connection.createQueueSession(isTransacted(), Session.AUTO_ACKNOWLEDGE);
+			int mode = Session.AUTO_ACKNOWLEDGE; 
+			if (isRequestor()) {
+				mode += IFSAConstants.QueueSession.IFSA_MODE; // let requestor receive IFSATimeOutMessages
+			}
+			return connection.createQueueSession(isTransacted(), mode);
 		} catch (JMSException e) {
 			throw new IfsaException(e);
 		}
