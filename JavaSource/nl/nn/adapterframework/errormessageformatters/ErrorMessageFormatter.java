@@ -1,6 +1,9 @@
 /*
  * $Log: ErrorMessageFormatter.java,v $
- * Revision 1.4  2004-03-30 07:30:00  L190409
+ * Revision 1.5  2004-09-01 11:26:14  L190409
+ * made receivedTime optional (only used if non-zero)
+ *
+ * Revision 1.4  2004/03/30 07:30:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  */
@@ -37,7 +40,7 @@ import java.util.Date;
  * @author  Gerrit van Brakel
  */
 public class ErrorMessageFormatter implements IErrorMessageFormatter {
-	public static final String version="$Id: ErrorMessageFormatter.java,v 1.4 2004-03-30 07:30:00 L190409 Exp $";
+	public static final String version="$Id: ErrorMessageFormatter.java,v 1.5 2004-09-01 11:26:14 L190409 Exp $";
 
     protected Logger log = Logger.getLogger(this.getClass());
 	
@@ -87,7 +90,9 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter {
 			
 	    XmlBuilder originalMessageXml = new XmlBuilder("originalMessage");
 	    originalMessageXml.addAttribute("messageId", messageId);
-	    originalMessageXml.addAttribute("receivedTime", new Date(receivedTime).toString());
+	    if (receivedTime!=0) {
+			originalMessageXml.addAttribute("receivedTime", new Date(receivedTime).toString());
+	    }
 	   	originalMessageXml.setCdataValue(originalMessage);
 	    errorXml.addSubElement(originalMessageXml);
 	
