@@ -1,6 +1,9 @@
 /*
  * $Log: WebServiceSender.java,v $
- * Revision 1.10  2004-10-14 15:34:26  L190409
+ * Revision 1.11  2005-02-24 12:15:15  L190409
+ * moved SOAP conversion coding to SOAP-wrapper
+ *
+ * Revision 1.10  2004/10/14 15:34:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * included ParameterValueList in getMethod(), 
  * in order to override HttpSenders' getMethod()
  *
@@ -36,19 +39,10 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.ParameterValueList;
-import nl.nn.adapterframework.util.XmlUtils;
 
 
 import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
-
-
-import java.io.IOException;
-
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
 
 
 /**
@@ -85,23 +79,14 @@ import javax.xml.transform.TransformerException;
  */
 
 public class WebServiceSender extends HttpSender {
-	public static final String version="$Id: WebServiceSender.java,v 1.10 2004-10-14 15:34:26 L190409 Exp $";
+	public static final String version="$Id: WebServiceSender.java,v 1.11 2005-02-24 12:15:15 L190409 Exp $";
 	
 
 	private String soapActionURI = "";
 	private String encodingStyleURI=null;
 //	private String methodName = "";
 	private boolean throwApplicationFaults=true;
-	
-	private Transformer extractBody;
-	private Transformer extractFaultCount;
-	private Transformer extractFaultCode;
-	private Transformer extractFaultString;
-	private final static String extractNamespaces="xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\"";
-	private final static String extractBodyXPath="/soapenv:Envelope/soapenv:Body/*";
-	private final static String extractFaultCountXPath="count(/soapenv:Envelope/soapenv:Body/soapenv:Fault)";
-	private final static String extractFaultCodeXPath="/soapenv:Envelope/soapenv:Body/soapenv:Fault/faultcode";
-	private final static String extractFaultStringXPath="/soapenv:Envelope/soapenv:Body/soapenv:Fault/faultstring";
+	private SoapWrapper soapConverter;
 	
 //	private MessageFactory soapMessageFactory;
 	
@@ -117,14 +102,7 @@ public class WebServiceSender extends HttpSender {
 
 	public void configure() throws ConfigurationException {
 		super.configure();
-		try {
-			extractBody = XmlUtils.createXPathEvaluator(extractNamespaces,extractBodyXPath,"xml");
-			extractFaultCount = XmlUtils.createXPathEvaluator(extractNamespaces,extractFaultCountXPath,"text");
-			extractFaultCode = XmlUtils.createXPathEvaluator(extractNamespaces,extractFaultCodeXPath,"text");
-			extractFaultString = XmlUtils.createXPathEvaluator(extractNamespaces,extractFaultStringXPath,"text");
-		} catch (TransformerConfigurationException e) {
-			throw new ConfigurationException("cannot create transformer from expression ["+extractBodyXPath+"] or ["+extractFaultStringXPath+"]",e);
-		}
+		soapConverter=SoapWrapper.getInstance();
 /*		
 		try {
 			soapMessageFactory = MessageFactory.newInstance();
@@ -136,65 +114,29 @@ public class WebServiceSender extends HttpSender {
 
 	protected HttpMethod getMethod(String message, ParameterValueList parameters) throws SenderException {
 		
-		String encodingStyle="";
-		if (!StringUtils.isEmpty(getEncodingStyleURI())) {
-			encodingStyle="soapenv:encodingStyle=\""+ getEncodingStyleURI()+"\" ";
-		}
-		String soapmsg= 
-		"<soapenv:Envelope " + 
-			"xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" "+encodingStyle +
-			"xmlns:xsi=\"http://www.w3.org/1999/XMLSchema-instance\" >" + 
-			"<soapenv:Body>" +	
-				message +
-			"</soapenv:Body>"+
-		"</soapenv:Envelope>";
-
+		String soapmsg= soapConverter.putInEnvelope(message, getEncodingStyleURI());
 		HttpMethod method = super.getMethod(soapmsg,parameters);
 		log.debug("setting SOAPAction header ["+getSoapActionURI()+"]");
+		method.addRequestHeader("Content-Type","text/xml");
 		method.addRequestHeader("SOAPAction",getSoapActionURI());
 		return method;
 	}
 
-	protected void checkForSoapFault(String responseBody, Throwable nested) throws SenderException {
-		String faultString=null;
-		String faultCode=null;
-		int faultCount=0;
-		try {
-			String faultCountString = XmlUtils.transformXml(extractFaultCount, responseBody);
-			faultCount = Integer.parseInt(faultCountString);
-			log.debug("fault count="+faultCount);
-			if (faultCount > 0) {
-				faultCode = XmlUtils.transformXml(extractFaultCode, responseBody);
-				faultString = XmlUtils.transformXml(extractFaultString, responseBody);
-				log.debug("faultCode="+faultCode);
-				log.debug("faultString="+faultString);
-			}
-		} catch (IOException e) {
-			log.debug("IOException extracting fault message",e);
-		} catch (TransformerException e) {
-			log.debug("TransformerException extracting fault message:"+e.getMessageAndLocation());
-		}
-		if (faultCount > 0) {
-			String msg = "WebServiceSender ["+getName()+"] caught SOAP fault ["+faultCode+"]: "+faultString;
-			log.info(msg);
-			throw new SenderException(msg, nested);
-		}
-	}
 
 	public String extractResult(HttpMethod httpmethod) throws SenderException {
 		String httpResult;
 		try {
 			httpResult = super.extractResult(httpmethod);
 		} catch (SenderException e) {
-			checkForSoapFault(httpmethod.getResponseBodyAsString(), e);
+			soapConverter.checkForSoapFault(httpmethod.getResponseBodyAsString(), e);
 			throw e;
 		}
 		
 		if (isThrowApplicationFaults()) {
-			checkForSoapFault(httpmethod.getResponseBodyAsString(), null);
+			soapConverter.checkForSoapFault(httpmethod.getResponseBodyAsString(), null);
 		}
 		try {
-			String result = XmlUtils.transformXml(extractBody, httpResult);
+			String result = soapConverter.getBody(httpResult);
 			return (result);
 		} catch (Exception e) {
 			throw new SenderException("cannot retrieve result message",e);
