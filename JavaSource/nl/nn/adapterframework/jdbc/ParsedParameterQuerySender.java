@@ -1,6 +1,9 @@
 /*
  * $Log: ParsedParameterQuerySender.java,v $
- * Revision 1.4  2004-10-19 08:12:32  L190409
+ * Revision 1.5  2005-03-31 08:12:46  L190409
+ * included deprecation warning
+ *
+ * Revision 1.4  2004/10/19 08:12:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * made obsolete with introduction of generic parameter handling
  *
  * Revision 1.3  2004/04/08 16:11:31  Dennis van Loon <dennis.van.loon@ibissource.org>
@@ -18,6 +21,8 @@ package nl.nn.adapterframework.jdbc;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
 
 /**
  * QuerySender that accepts an XML string containing paramters for the query.
@@ -46,8 +51,13 @@ import java.sql.SQLException;
  * @deprecated Please use FixedQuerySender with nested {@link nl.nn.adapterframework.parameters.Parameter parameters} instead.
  */
 public class ParsedParameterQuerySender extends FixedQuerySender {
-	public static final String version="$Id: ParsedParameterQuerySender.java,v 1.4 2004-10-19 08:12:32 L190409 Exp $";
+	public static final String version="$Id: ParsedParameterQuerySender.java,v 1.5 2005-03-31 08:12:46 L190409 Exp $";
 	private String queryParameterParserClassName="nl.nn.adapterframework.jdbc.QueryParameterParser";
+
+	public void configure() throws ConfigurationException {
+		log.warn("Sender ["+getName()+"] is using class ["+getClass().getName()+"] which is deprecated. Please consider using [nl.nn.adapterframework.jdbc.FixedQuerySender] instead");
+		super.configure();
+	}
 
 	protected IQueryParameterParser createParameterParser(String queryParameterParserClassName) throws JdbcException {
 		try {
