@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaFacade.java,v $
- * Revision 1.10  2004-07-15 07:35:44  L190409
+ * Revision 1.11  2004-07-19 13:20:20  L190409
+ * increased logging + close connection on 'close'
+ *
+ * Revision 1.10  2004/07/15 07:35:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * cosmetic changes
  *
  * Revision 1.9  2004/07/08 12:55:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -57,7 +60,7 @@ import javax.jms.*;
  * @since 4.2
  */
 public class IfsaFacade implements INamedObject, HasPhysicalDestination {
-	public static final String version="$Id: IfsaFacade.java,v 1.10 2004-07-15 07:35:44 L190409 Exp $";
+	public static final String version="$Id: IfsaFacade.java,v 1.11 2004-07-19 13:20:20 L190409 Exp $";
     protected Logger log = Logger.getLogger(this.getClass());
     
 	private final static String IFSA_INITIAL_CONTEXT_FACTORY="com.ing.ifsa.IFSAContextFactory";
@@ -95,10 +98,10 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 		try {
 			if (isRequestor()) {
 				objectType = "IfsaRequester";
-				serviceInfo = "of Application ["+getApplicationId()+"] requesting for Service ["+getPhysicalDestinationName()+"]"; 
+				serviceInfo = "of Application ["+getApplicationId()+"] "; 
 			} else {
 				objectType = "IfsaProvider";				
-				serviceInfo = "for Application ["+getApplicationId()+"]"; 
+				serviceInfo = "for Application ["+getApplicationId()+"] "; 
 			} 
 		} catch (IfsaException e) {
 			log.debug("Exception determining objectType in getLogPrefix",e);
@@ -152,6 +155,7 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 	    } finally {
 	        queue = null;
 	        connection = null;
+			context = null;
 	    }
 	}
 	
@@ -435,6 +439,9 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
         throws IfsaException {
 
 	    try {
+			if (!isRequestor()) {
+				throw new IfsaException(getLogPrefix()+ "Provider cannot use sendMessage, should use sendReply");
+			}
 	        TextMessage msg = session.createTextMessage();
 	        msg.setText(message);
 			if (udzMap != null) {
@@ -448,9 +455,6 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 			}
 			String replyToQueueName="-"; 
 	        //Client side
-	        if (!isRequestor()) {
-		        throw new IfsaException(getLogPrefix()+ "Provider cannot use sendMessage, should use sendReply");
-	        }
 	        if (messageProtocol.equals(IfsaMessageProtocolEnum.REQUEST_REPLY)) {
 	            // set reply-to address
 	            Queue replyTo=getClientReplyQueue(session);
