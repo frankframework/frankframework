@@ -38,7 +38,7 @@ import java.io.IOException;
  * @author Johan Verrips
  */
 public class FixedResult extends FixedForwardPipe {
-	public static final String version="$Id: FixedResult.java,v 1.4 2004-08-23 10:05:17 L190409 Exp $";
+	public static final String version="$Id: FixedResult.java,v 1.5 2004-08-23 13:09:58 L190409 Exp $";
     private String fileName;
     private String returnString;
     /**
@@ -54,7 +54,7 @@ public class FixedResult extends FixedForwardPipe {
 	    
         if (StringUtils.isNotEmpty(fileName)) {
             try {
-				returnString = Misc.resourceToString(ClassUtils.getResourceURL(this,fileName));
+				returnString = Misc.resourceToString(ClassUtils.getResourceURL(this,fileName), SystemUtils.LINE_SEPARATOR);
             } catch (Throwable e) {
                 throw new ConfigurationException("Pipe [" + getName() + "] got exception loading ["+fileName+"]", e);
             }
