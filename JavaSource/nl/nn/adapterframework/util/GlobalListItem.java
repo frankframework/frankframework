@@ -1,6 +1,9 @@
 /*
  * $Log: GlobalListItem.java,v $
- * Revision 1.2  2004-06-22 11:51:34  L190409
+ * Revision 1.3  2004-06-23 11:31:02  L190409
+ * configure() removed for aliases
+ *
+ * Revision 1.2  2004/06/22 11:51:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added aliasFor attribute
  *
  * Revision 1.1  2004/06/21 15:07:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -31,13 +34,16 @@ import org.apache.log4j.Logger;
  * @author Gerrit van Brakel
  */
 public class GlobalListItem implements INamedObject {
-	public static final String version="$Id: GlobalListItem.java,v 1.2 2004-06-22 11:51:34 L190409 Exp $";
+	public static final String version="$Id: GlobalListItem.java,v 1.3 2004-06-23 11:31:02 L190409 Exp $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
     private static Hashtable items = new Hashtable();
     private String name;
     private String aliasFor;
 
+	/**
+	 * configure() will be called once for each item registered, except for the aliasses.
+	 */
 	protected void configure() {
 	}
 
@@ -82,12 +88,14 @@ public class GlobalListItem implements INamedObject {
         }
         return result;
     }
+    
     /**
-     * register an item
-     * @param sapSystem
+     * Register an item in the list
      */
     public void registerItem(Object dummyParent) {
-		this.configure();
+    	if (StringUtils.isEmpty(getAliasFor())) {
+			configure();
+    	}
 		items.put(getName(), this);
         log.debug("globalItemList registered item [" + toString() + "]");
     }
@@ -95,26 +103,17 @@ public class GlobalListItem implements INamedObject {
     public String toString(){
         return ToStringBuilder.reflectionToString(this);
     }
-	/**
-	 * @return
-	 */
-	public String getName() {
-		return name;
-	}
 
 	/**
-	 * @param string
+	 * The name under which the item can be retrieved.
 	 */
 	public void setName(String string) {
 		name = string;
 	}
-
-	/**
-	 * @return
-	 */
-	public String getAliasFor() {
-		return aliasFor;
+	public String getName() {
+		return name;
 	}
+
 
 	/**
 	 * If this attribute is set, the item is only an alias for another item.
@@ -122,6 +121,9 @@ public class GlobalListItem implements INamedObject {
 	 */
 	public void setAliasFor(String string) {
 		aliasFor = string;
+	}
+	public String getAliasFor() {
+		return aliasFor;
 	}
 
 }
