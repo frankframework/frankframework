@@ -1,6 +1,9 @@
 /*
  * $Log: JNDIBase.java,v $
- * Revision 1.4  2004-03-26 10:42:55  NNVZNL01#L180564
+ * Revision 1.5  2005-01-13 08:09:31  L190409
+ * modifications for LDAP-pipe
+ *
+ * Revision 1.4  2004/03/26 10:42:55  Johan Verrips <johan.verrips@ibissource.org>
  * added @version tag in javadoc
  *
  * Revision 1.3  2004/03/23 17:59:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -15,6 +18,8 @@ import org.apache.log4j.Logger;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
+import javax.naming.NamingException;
+
 import java.util.Hashtable;
 
 /**
@@ -24,7 +29,8 @@ import java.util.Hashtable;
  * @author Johan Verrips IOS
  */
 public class JNDIBase {
-	public static final String version="$Id: JNDIBase.java,v 1.4 2004-03-26 10:42:55 NNVZNL01#L180564 Exp $";
+	protected Logger log = Logger.getLogger(this.getClass());
+	public static final String version="$Id: JNDIBase.java,v 1.5 2005-01-13 08:09:31 L190409 Exp $";
 
     // JNDI
     private String providerURL = null;
@@ -35,7 +41,8 @@ public class JNDIBase {
     private String urlPkgPrefixes = null;
     private String securityProtocol = null;
 
-  protected Logger log = Logger.getLogger(this.getClass());
+
+
 
     public void closeContext() throws javax.naming.NamingException {
         if (null != context) {
@@ -43,9 +50,24 @@ public class JNDIBase {
             context = null;
         }
     }
-    public String getAuthentication() {
-        return authentication;
-    }
+    
+	protected Hashtable getJndiEnv() {
+		Hashtable jndiEnv = new Hashtable();
+
+		jndiEnv.put(Context.INITIAL_CONTEXT_FACTORY, getInitialContextFactoryName());
+		if (providerURL != null)
+			jndiEnv.put(Context.PROVIDER_URL, getProviderURL());
+		if (authentication != null)
+			jndiEnv.put(Context.SECURITY_AUTHENTICATION, getAuthentication());
+		if (credentials != null)
+			jndiEnv.put(Context.SECURITY_CREDENTIALS, getCredentials());
+		if (urlPkgPrefixes != null)
+			jndiEnv.put(Context.URL_PKG_PREFIXES, getUrlPkgPrefixes());
+		if (securityProtocol != null)
+			jndiEnv.put(Context.SECURITY_PROTOCOL, getSecurityProtocol());
+		return jndiEnv;
+	}
+	
     /**
      *  Gets the Context<br/>
      *  When InitialContextFactory and ProviderURL are set, these are used
@@ -58,32 +80,18 @@ public class JNDIBase {
      * @return                                   The context value
      * @exception  javax.naming.NamingException  Description of the Exception
      */
-    public Context getContext() throws javax.naming.NamingException {
+    public Context getContext() throws NamingException {
 
         if (null == context) {
             if (getInitialContextFactoryName() != null) {
-                Hashtable JMSEnv = new Hashtable();
-
-                JMSEnv.put(Context.INITIAL_CONTEXT_FACTORY, initialContextFactoryName);
-                if (providerURL != null)
-                    JMSEnv.put(Context.PROVIDER_URL, providerURL);
-                if (authentication != null)
-                    JMSEnv.put(Context.SECURITY_AUTHENTICATION, authentication);
-                if (credentials != null)
-                    JMSEnv.put(Context.SECURITY_CREDENTIALS, credentials);
-                if (urlPkgPrefixes != null)
-                    JMSEnv.put(Context.URL_PKG_PREFIXES, urlPkgPrefixes);
-                if (securityProtocol != null)
-                    JMSEnv.put(Context.SECURITY_PROTOCOL, securityProtocol);
-                context = (Context) new InitialContext(JMSEnv);
-
-
+                context = (Context) new InitialContext(getJndiEnv());
             } else {
                 context = (Context) new InitialContext();
             }
         }
         return context;
     }
+    
     public String getCredentials() {
         return credentials;
     }
@@ -162,6 +170,10 @@ public class JNDIBase {
 	 */ 
 	public void setJmsRealm(String jmsRealmName){
 		JmsRealm.copyRealm(this,jmsRealmName);
+	}
+
+	public String getAuthentication() {
+		return authentication;
 	}
 
 }
