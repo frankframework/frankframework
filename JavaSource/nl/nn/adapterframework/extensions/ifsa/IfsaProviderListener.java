@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaProviderListener.java,v $
- * Revision 1.7  2005-01-13 08:55:37  L190409
+ * Revision 1.8  2005-02-17 09:45:30  L190409
+ * increased logging
+ *
+ * Revision 1.7  2005/01/13 08:55:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Make threadContext-attributes available in PipeLineSession
  *
  * Revision 1.6  2004/09/22 07:03:36  Johan Verrips <johan.verrips@ibissource.org>
@@ -79,7 +82,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * @since 4.2
  */
 public class IfsaProviderListener extends IfsaFacade implements IPullingListener, INamedObject {
-	public static final String version="$Id: IfsaProviderListener.java,v 1.7 2005-01-13 08:55:37 L190409 Exp $";
+	public static final String version="$Id: IfsaProviderListener.java,v 1.8 2005-02-17 09:45:30 L190409 Exp $";
 
     private final static String THREAD_CONTEXT_SESSION_KEY = "session";
     private final static String THREAD_CONTEXT_RECEIVER_KEY = "receiver";
@@ -304,16 +307,20 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 			ifsaVersion = requestedService.getServiceVersion();
 			
 	    } catch (JMSException e) {
-	        log.error(getLogPrefix() + "got error getting serviceDestination", e);
+	        log.error(getLogPrefix() + "got error getting serviceparameter", e);
 	    }
 	
 	    log.info(getLogPrefix()+ "got message for [" + fullIfsaServiceName
 	    		+ "] with JMSDeliveryMode=[" + mode
 	            + "] \n  JMSMessageID=[" + id
 	            + "] \n  JMSCorrelationID=["+ cid
+				+ "] \n  ifsaServiceName=["+ ifsaServiceName
+				+ "] \n  ifsaGroup=["+ ifsaGroup
+				+ "] \n  ifsaOccurrence=["+ ifsaOccurrence
+				+ "] \n  ifsaVersion=["+ ifsaVersion
 	            + "] \n  Timestamp=[" + dTimeStamp.toString()
 	            + "] \n  ReplyTo=[" + ((replyTo == null) ? "none" : replyTo.toString())
-	            + "] \n Message=[" + message.toString()
+	            + "] \n  Message=[" + message.toString()
 	            + "]");
 	
 	    threadContext.put("id", id);
