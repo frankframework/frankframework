@@ -1,6 +1,9 @@
 /*
  * $Log: RekenBoxCaller.java,v $
- * Revision 1.6  2004-09-01 08:18:00  L190409
+ * Revision 1.7  2004-09-01 11:17:54  L190409
+ * removed unnecessary code
+ *
+ * Revision 1.6  2004/09/01 08:18:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * create output file in advance
  *
  * Revision 1.5  2004/08/17 15:48:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -78,7 +81,7 @@ import nl.nn.adapterframework.util.Misc;
  * @version Id
  */
 public class RekenBoxCaller extends FixedForwardPipe {
-	public static final String version="$Id: RekenBoxCaller.java,v 1.6 2004-09-01 08:18:00 L190409 Exp $";
+	public static final String version="$Id: RekenBoxCaller.java,v 1.7 2004-09-01 11:17:54 L190409 Exp $";
 	
 	private String runPath="";
 	private String executableExtension="exe"; //bat, com or exe
@@ -150,13 +153,14 @@ public class RekenBoxCaller extends FixedForwardPipe {
 		if (getRekenboxSessionKey() != null) {
 	        session.put(getRekenboxSessionKey(),rekenboxName);
 	    }
-	    
+/*	    
 		try {
 			File outfile = File.createTempFile("rbc",".UIT",inputOutputDir);
 			
 		} catch (Exception e) {
 			throw new PipeRunException(this, getLogPrefix(session)+"got Exception creating tempfile", e);
-		}	
+		}
+*/			
 	    String baseFileName=Misc.createSimpleUUID();
 	    String inputFileName=inputOutputDirectory+baseFileName+".INV";
 	    String outputFileName=inputOutputDirectory+baseFileName+".UIT";
