@@ -1,6 +1,9 @@
 /*
  * $Log: SapListener.java,v $
- * Revision 1.2  2004-08-23 13:11:58  L190409
+ * Revision 1.3  2004-10-05 10:41:24  L190409
+ * removed unused imports
+ *
+ * Revision 1.2  2004/08/23 13:11:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated JavaDoc
  *
  * Revision 1.1  2004/08/23 07:12:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -33,18 +36,12 @@ import nl.nn.adapterframework.core.IPushingListener;
 import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
-import nl.nn.adapterframework.receivers.ServiceClient;
-import nl.nn.adapterframework.util.Misc;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.log4j.Logger;
 
 import java.util.HashMap;
-import java.util.Iterator;
 
 import com.sap.mw.jco.*;
-import com.sap.mw.jco.JCO.Server;
 
 /**
  * Implementation of a {@link nl.nn.adapterframework.core.IPushingListener},
@@ -70,7 +67,7 @@ import com.sap.mw.jco.JCO.Server;
  * @since 4.2
  */
 public class SapListener extends SapFunctionFacade implements IPushingListener, SapFunctionHandler, JCO.ServerExceptionListener, JCO.ServerErrorListener {
-	public static final String version="$Id: SapListener.java,v 1.2 2004-08-23 13:11:58 L190409 Exp $";
+	public static final String version="$Id: SapListener.java,v 1.3 2004-10-05 10:41:24 L190409 Exp $";
 
 	private String progid;	 // progid of the RFC-destination
         	

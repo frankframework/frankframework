@@ -1,6 +1,9 @@
 /*
  * $Log: Adios2XmlPipe.java,v $
- * Revision 1.6  2004-08-09 13:58:14  L190409
+ * Revision 1.7  2004-10-05 10:38:37  L190409
+ * removed unused imports
+ *
+ * Revision 1.6  2004/08/09 13:58:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved check for existence of interface-file
  *
  * Revision 1.5  2004/04/07 06:58:21  Johan Verrips <johan.verrips@ibissource.org>
@@ -35,7 +38,6 @@ import org.xml.sax.Attributes;
 import org.xml.sax.helpers.DefaultHandler;
 
 import org.apache.commons.lang.SystemUtils;
-import org.apache.log4j.Logger;
 
 import java.util.Hashtable;
 import java.util.StringTokenizer;
@@ -89,7 +91,7 @@ import java.net.URL;
  * @version Id
  */
 public class Adios2XmlPipe extends FixedForwardPipe {
-	public static final String version="$Id: Adios2XmlPipe.java,v 1.6 2004-08-09 13:58:14 L190409 Exp $";
+	public static final String version="$Id: Adios2XmlPipe.java,v 1.7 2004-10-05 10:38:37 L190409 Exp $";
 
 	private Hashtable rubriek2nummer;	 
 	private Hashtable record2nummer;

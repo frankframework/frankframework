@@ -1,6 +1,9 @@
 /*
  * $Log: SapSystem.java,v $
- * Revision 1.3  2004-08-23 13:11:58  L190409
+ * Revision 1.4  2004-10-05 10:41:24  L190409
+ * removed unused imports
+ *
+ * Revision 1.3  2004/08/23 13:11:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated JavaDoc
  *
  * Revision 1.2  2004/07/07 13:56:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -18,12 +21,9 @@ package nl.nn.adapterframework.extensions.sap;
 
 import com.sap.mw.jco.*;
 
-import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.util.GlobalListItem;
 
-import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.log4j.Logger;
 /**
  * A SapSystem is a provider of repository information and connections to a SAP-system.
  * <p><b>Configuration:</b>
@@ -44,7 +44,7 @@ import org.apache.log4j.Logger;
  * @since 4.1.1
  */
 public class SapSystem extends GlobalListItem {
-	public static final String version="$Id: SapSystem.java,v 1.3 2004-08-23 13:11:58 L190409 Exp $";
+	public static final String version="$Id: SapSystem.java,v 1.4 2004-10-05 10:41:24 L190409 Exp $";
 
 	private int maxConnections = 10;
 

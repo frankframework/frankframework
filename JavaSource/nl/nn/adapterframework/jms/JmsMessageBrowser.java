@@ -1,6 +1,9 @@
 /*
  * $Log: JmsMessageBrowser.java,v $
- * Revision 1.1  2004-06-16 12:25:52  NNVZNL01#L180564
+ * Revision 1.2  2004-10-05 10:41:59  L190409
+ * removed unused imports
+ *
+ * Revision 1.1  2004/06/16 12:25:52  Johan Verrips <johan.verrips@ibissource.org>
  * Initial version of Queue browsing functionality
  *
  *
@@ -13,7 +16,6 @@ import javax.jms.JMSException;
 import javax.jms.Queue;
 import javax.jms.QueueBrowser;
 import javax.jms.QueueSession;
-import javax.jms.Session;
 
 import javax.naming.NamingException;
 
@@ -27,7 +29,7 @@ import nl.nn.adapterframework.core.MessageBrowseException;
  * @see nl.nn.adapterframework.webcontrol.action.BrowseQueue
  */
 public class JmsMessageBrowser extends JMSFacade implements  IMessageBrowser{
-	public static final String version = "$Id: JmsMessageBrowser.java,v 1.1 2004-06-16 12:25:52 NNVZNL01#L180564 Exp $";
+	public static final String version = "$Id: JmsMessageBrowser.java,v 1.2 2004-10-05 10:41:59 L190409 Exp $";
 	QueueSession session;
 	
 	public JmsMessageBrowser() {

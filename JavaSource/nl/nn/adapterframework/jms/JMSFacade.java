@@ -1,6 +1,9 @@
 /*
  * $Log: JMSFacade.java,v $
- * Revision 1.17  2004-08-23 13:08:36  L190409
+ * Revision 1.18  2004-10-05 10:41:59  L190409
+ * removed unused imports
+ *
+ * Revision 1.17  2004/08/23 13:08:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated JavaDoc
  *
  * Revision 1.16  2004/08/18 09:20:58  unknown <unknown@ibissource.org>
@@ -42,17 +45,14 @@
  *
  */
 package nl.nn.adapterframework.jms;
-import java.util.Enumeration;
 
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IXAEnabled;
 import nl.nn.adapterframework.core.IbisException;
-import nl.nn.adapterframework.core.MessageBrowseException;
 
 import com.ibm.mq.jms.JMSC;
 import com.ibm.mq.jms.MQQueue;
 import nl.nn.adapterframework.core.INamedObject;
-import nl.nn.adapterframework.core.IMessageBrowser;
 import javax.jms.*;
 import javax.naming.NamingException;
 
@@ -85,7 +85,7 @@ import javax.naming.NamingException;
  * @author    Gerrit van Brakel
  */
 public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version="$Id: JMSFacade.java,v 1.17 2004-08-23 13:08:36 L190409 Exp $";
+	public static final String version="$Id: JMSFacade.java,v 1.18 2004-10-05 10:41:59 L190409 Exp $";
 
 	private String name;
 
