@@ -1,32 +1,27 @@
 package nl.nn.adapterframework.core;
 
-import java.io.IOException;
+
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
 import javax.xml.transform.dom.DOMSource;
 
 import nl.nn.adapterframework.util.DomBuilderException;
-import nl.nn.adapterframework.util.Variant;
+
 import nl.nn.adapterframework.util.XmlUtils;
 
-import org.apache.commons.lang.ArrayUtils;
+
 import org.apache.commons.lang.StringUtils;
-import org.apache.xpath.XPath;
-import org.apache.xpath.XPathContext;
-import org.apache.xpath.objects.XObject;
 import org.w3c.dom.Document;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
+
 
 /*
  * $Log: ParameterValueResolver.java,v $
- * Revision 1.2  2004-05-25 09:27:56  a1909356#db2admin
+ * Revision 1.3  2004-06-16 13:08:20  NNVZNL01#L180564
+ * removed unused imports
+ *
+ * Revision 1.2  2004/05/25 09:27:56  unknown <unknown@ibissource.org>
  * Optimize performance by caching the transformer
  *
  * Revision 1.1  2004/05/21 07:58:47  unknown <unknown@ibissource.org>
