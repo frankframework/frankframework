@@ -1,6 +1,9 @@
-/**
+/*
  * $Log: Configuration.java,v $
- * Revision 1.7  2004-03-26 09:56:43  NNVZNL01#L180564
+ * Revision 1.8  2004-03-30 07:30:05  L190409
+ * updated javadoc
+ *
+ * Revision 1.7  2004/03/26 09:56:43  Johan Verrips <johan.verrips@ibissource.org>
  * Updated javadoc
  *
  */
@@ -34,6 +37,7 @@ import java.util.Enumeration;
 /**
  * The Configuration is placeholder of all configuration objects. Besides that, it provides
  * functions for starting and stopping adapters as a facade.
+ * 
  * @version Id
  * @author Johan Verrips
  * @see    nl.nn.adapterframework.configuration.ConfigurationException
@@ -41,7 +45,7 @@ import java.util.Enumeration;
  */
 public class Configuration {
     protected Logger log; 
-    public static final String version="$Id: Configuration.java,v 1.7 2004-03-26 09:56:43 NNVZNL01#L180564 Exp $";
+    public static final String version="$Id: Configuration.java,v 1.8 2004-03-30 07:30:05 L190409 Exp $";
      
     private Hashtable adapterTable = new Hashtable();
 

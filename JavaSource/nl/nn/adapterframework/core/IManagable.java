@@ -1,6 +1,9 @@
-/**
+/*
  * $Log: IManagable.java,v $
- * Revision 1.3  2004-03-26 10:42:50  NNVZNL01#L180564
+ * Revision 1.4  2004-03-30 07:29:54  L190409
+ * updated javadoc
+ *
+ * Revision 1.3  2004/03/26 10:42:50  Johan Verrips <johan.verrips@ibissource.org>
  * added @version tag in javadoc
  *
  */
@@ -10,13 +13,12 @@ import nl.nn.adapterframework.util.RunStateEnum;
 /**
  * Models starting and stopping of objects that support such behaviour.
  * 
- * @versin $Id: IManagable.java,v 1.3 2004-03-26 10:42:50 NNVZNL01#L180564 Exp $
- * 
+ * @version Id
  * @author Gerrit van Brakel
  * @since 4.0
  */
 public interface IManagable extends INamedObject {
-		public static final String version="$Id: IManagable.java,v 1.3 2004-03-26 10:42:50 NNVZNL01#L180564 Exp $";
+		public static final String version="$Id: IManagable.java,v 1.4 2004-03-30 07:29:54 L190409 Exp $";
 
 	
 /**

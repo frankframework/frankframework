@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLineSession.java,v $
- * Revision 1.3  2004-03-23 17:51:15  L190409
+ * Revision 1.4  2004-03-30 07:29:54  L190409
+ * updated javadoc
+ *
+ * Revision 1.3  2004/03/23 17:51:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added methods for Transaction control
  *
  */
@@ -18,30 +21,31 @@ import java.util.Hashtable;
  * is stored in the key identified by <code>originalMessageKey</code>.
  * The messageId is stored under the key identified by <code>messageId</code>.
  * </p>
- * <p>$Id: PipeLineSession.java,v 1.3 2004-03-23 17:51:15 L190409 Exp $</p>
- *
- * @author Johan Verrips IOS
- * @since version 3.2.2
+ * 
+ * @version Id
+ * @author  Johan Verrips IOS
+ * @since   version 3.2.2
  */
 public class PipeLineSession extends Hashtable implements IXAEnabled {
-	public static final String version="$Id: PipeLineSession.java,v 1.3 2004-03-23 17:51:15 L190409 Exp $";
+	public static final String version="$Id: PipeLineSession.java,v 1.4 2004-03-30 07:29:54 L190409 Exp $";
 
 	public static final String originalMessageKey="originalMessage";
 	public static final String messageIdKey="messageId";
 	private boolean transacted=false;
 
-public PipeLineSession() {
-	super();
-}
-public PipeLineSession(int initialCapacity) {
-	super(initialCapacity);
-}
-public PipeLineSession(int initialCapacity, float loadFactor) {
-	super(initialCapacity, loadFactor);
-}
-public PipeLineSession(java.util.Map t) {
-	super(t);
-}
+	public PipeLineSession() {
+		super();
+	}
+	public PipeLineSession(int initialCapacity) {
+		super(initialCapacity);
+	}
+	public PipeLineSession(int initialCapacity, float loadFactor) {
+		super(initialCapacity, loadFactor);
+	}
+	public PipeLineSession(java.util.Map t) {
+		super(t);
+	}
+	
 	/**
 	 * @return the messageId that was passed to the <code>PipeLine</code>
 	 */
@@ -67,13 +71,12 @@ public PipeLineSession(java.util.Map t) {
 	}
 	
 	/**
-	 * Indicates the processing of this pipeline is either commited in one transactions, or 
-	 * rolled back to the situation prior to starting the pipeline.
+	 * Indicates the processing of this pipeline is either commited in one transaction, or 
+	 * rolled back to the situation prior to starting the pipeline, using XA-transactions.
 	 */
 	public boolean isTransacted() {
 		return transacted;
 	}
-
 	public void setTransacted(boolean transacted) {
 		this.transacted = transacted;
 	}

@@ -1,6 +1,9 @@
-/**
+/*
  * $Log: IReceiverStatistics.java,v $
- * Revision 1.3  2004-03-26 10:42:50  NNVZNL01#L180564
+ * Revision 1.4  2004-03-30 07:29:59  L190409
+ * updated javadoc
+ *
+ * Revision 1.3  2004/03/26 10:42:50  Johan Verrips <johan.verrips@ibissource.org>
  * added @version tag in javadoc
  *
  */
@@ -13,17 +16,17 @@ import java.util.Iterator;
  * displaying.
  * 
  * @version Id
- *  
- *  @author Gerrit van Brakel
+ * @author Gerrit van Brakel
  */
 public interface IReceiverStatistics  {
-		public static final String version="$Id: IReceiverStatistics.java,v 1.3 2004-03-26 10:42:50 NNVZNL01#L180564 Exp $";
+		public static final String version="$Id: IReceiverStatistics.java,v 1.4 2004-03-30 07:29:59 L190409 Exp $";
 
 /**
  * @return an iterator of {@link nl.nn.adapterframework.util.StatisticsKeeper}s describing the durations of time that
  * the receiver has been waiting between messages.
  */
 Iterator getIdleStatisticsIterator();
+
 /**
  * @return an iterator of {@link nl.nn.adapterframework.util.StatisticsKeeper}s describing the durations of time that
  * the receiver has been waiting for the adapter to process messages.

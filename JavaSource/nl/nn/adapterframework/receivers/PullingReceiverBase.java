@@ -35,19 +35,62 @@ import javax.transaction.UserTransaction;
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>classname</td><td>name of the class, mostly a class that extends this class</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setName(String) name}</td>  <td>name of the receiver as known to the adapter</td><td>"&nbsp;</td></tr>
+ * <tr><td>{@link #setName(String) name}</td>  <td>name of the receiver as known to the adapter</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setNumThreads(int) numThreads}</td><td>the number of threads listening in parallel for messages</td><td>1</td></tr>
+ * <tr><td>{@link #setCommitOnState(String) commitOnState}</td><td>exit state required to commit messages</td><td>success</td></tr>
  * <tr><td>{@link #setOnError(String) onError}</td><td>one of 'continue' or 'close'. Controls the behaviour of the receiver when it encounters an error sending a reply</td><td>continue</td></tr>
+ * <tr><td>{@link #setTransacted(boolean) transacted}</td><td>if set to <code>true, messages will be received and processed under transaction control. If processing fails, messages will be sent to the error-sender. (see below)</code></td><td><code>false</code></td></tr>
  * </table>
  * </p>
+ * <p>
+ * <table border="1">
+ * <tr><th>nested elements (accessible in descender-classes)</th><th>description</th></tr>
+ * <tr><td>{@link nl.nn.adapterframework.core.IPullingListener listener}</td><td>the listener used to receive messages from</td></tr>
+ * <tr><td>{@link nl.nn.adapterframework.core.ITransactionalStorage inProcessStorage}</td><td>mandatory for {@link #setTransacted(boolean) transacted} receivers: place to store messages during processing.</td></tr>
+ * <tr><td>{@link nl.nn.adapterframework.core.ISender errorSender}</td><td>optional for {@link #setTransacted(boolean) transacted} receviers: 
+ * will be called to store messages that failed to process. If no errorSender is specified, failed messages will remain in inProcessStorage</td></tr>
+ * </table>
  * </p>
+ * <p><b>Transaction control</b><br>
+ * If {@link #setTransacted(boolean) transacted} is set to <code>true, messages will be received and processed under transaction control.
+ * This means that after a message has been read and processed and the transaction has ended, one of the following apply:
+ * <ul>
+ * <table border="1">
+ * <tr><th>situation</th><th>input listener</th><th>Pipeline</th><th>inProcess storage</th><th>errorSender</th><th>summary of effect</th></tr>
+ * <tr><td>successful</td><td>message read and committed</td><td>message processed</td><td>unchanged</td><td>unchanged</td><td>message processed</td></tr>
+ * <tr><td>procesing failed</td><td>message read and committed</td><td>message processing failed and rolled back</td><td>unchanged</td><td>message sent</td><td>message only transferred from listener to errroSender</td></tr>
+ * <tr><td>listening failed</td><td>unchanged: listening rolled back</td><td>no processing performed</td><td>unchanged</td><td>unchanged</td><td>no changes, input message remains on input available for listener</td></tr>
+ * <tr><td>transfer to inprocess storage failed</td><td>unchanged: listening rolled back</td><td>no processing performed</td><td>unchanged</td><td>unchanged</td><td>no changes, input message remains on input available for listener</td></tr>
+ * <tr><td>transfer to errorSender failed</td><td>message read and committed</td><td>message processing failed and rolled back</td><td>message present</td><td>unchanged</td><td>message only transferred from listener to inProcess storage</td></tr>
+ * </table> 
+ * If the application or the server crashes in the middle of one or more transactions, these transactions 
+ * will be recovered and rolled back after the server/application is restarted. Then allways exactly one of 
+ * the following applies for any message touched at any time by Ibis by a transacted receiver:
+ * <ul>
+ * <li>It is processed correctly by the pipeline and removed from the input-queue, 
+ *     not present in inProcess storage and not send to the errorSender</li> 
+ * <li>It is not processed at all by the pipeline, or processing by the pipeline has been rolled back; 
+ *     the message is removed from the input queue and either (one of) still in inProcess storage <i>or</i> sent to the errorSender</li>
+ * </ul>
+ * </p>
+ *
+ * <p><b>commit or rollback</b><br>
+ * If {@link #setTransacted(boolean) transacted} is set to <code>true, messages will be either committed or rolled back.
+ * All message-processing transactions are committed, unless one or more of the following apply:
+ * <ul>
+ * <li>the exitState of the pipeline is not equal {@link #setCommitOnState(String) commitOnState} (that defaults to 'success')</li>
+ * <li>a PipeRunException or another runtime-exception has been thrown by any Pipe or by the PipeLine</li>
+ * <li>the setRollBackOnly() method has been called on the userTransaction (not accessible by Pipes)</li>
+ * </ul>
+ * </p>
+ *
  * @version Id
  * @author     Gerrit van Brakel
  * @since 4.0
  */
 public class PullingReceiverBase
     implements IReceiver, IReceiverStatistics, Runnable, HasSender {
-	public static final String version="$Id: PullingReceiverBase.java,v 1.5 2004-03-26 10:43:01 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: PullingReceiverBase.java,v 1.6 2004-03-30 07:30:04 L190409 Exp $";
     	
 
 	public static final String ONERROR_CONTINUE = "continue";
@@ -78,6 +121,8 @@ public class PullingReceiverBase
     private ISender errorSender=null;
     
     private boolean transacted=false;
+    
+    //TODO: move commitOnState to PipeLine, to enable correct behaviour for transacted pipelines with non-transacted receivers. The Pipeline should use it to decide to call setRollBackOnly() or not. 
 	private String commitOnState="success"; // exit state on which receiver will commit XA transactions
 
 /**
@@ -198,24 +243,6 @@ public Iterator getIdleStatisticsIterator() {
     public long getMessagesReceived() {
 	    return numReceived.getValue();
     }
-/**
- * Get the name of this receiver
- * @return java.lang.String
- */
-public String getName() {
-	return name;
-}
-/**
- * Get the number of threads that this receiver is working with.
- * Creation date: (28-10-2003 14:51:19)
- * @return int
- */
-public int getNumThreads() {
-	return numThreads;
-}
-public String getOnError() {
-	return onError;
-}
 public Iterator getProcessStatisticsIterator() {
 	return processStatistics.iterator();
 }
@@ -456,36 +483,7 @@ public void run() {
     }
 
 
-/**
- * Sets the name of the Receiver. .If the listener implements the {@link nl.nn.adapterframework.core.INamedObject name} interface and no <code>getName()</code>
- * of the listener is empty, the name of this object is given to the listener.
- * Creation date: (04-11-2003 12:06:29)
- */
-public void setName(String newName) {
-	name = newName;
-	IPullingListener listener=getListener();
-	if (listener instanceof INamedObject)  {
-			if (StringUtils.isEmpty(((INamedObject)listener).getName())) {
-				((INamedObject) listener).setName(newName);
-			}
-	} 
-	ITransactionalStorage inProcess = getInProcessStorage();
-	if (inProcess != null) {
-		inProcess.setName("inProcessStorage of ["+name+"]");
-	}
-	ISender errorSender = getErrorSender();
-	if (errorSender != null) {
-		errorSender.setName("errorSender of ["+name+"]");
-	}
-}
 
-public void setNumThreads(int newNumThreads) {
-	numThreads = newNumThreads;
-}
-
-public void setOnError(String newOnError) {
-	onError = newOnError;
-}
 protected void startProcessingMessage(long waitingDuration) {
 	synchronized (threadsProcessing) {
 		int threadCount = (int) threadsProcessing.getValue();
@@ -588,21 +586,6 @@ public ISender getSender() {
 		return null;
 	}
 }
-	/**
-	 * Returns the transacted.
-	 * @return boolean
-	 */
-	public boolean isTransacted() {
-		return transacted;
-	}
-
-	/**
-	 * Sets the transacted.
-	 * @param transacted The transacted to set
-	 */
-	public void setTransacted(boolean transacted) {
-		this.transacted = transacted;
-	}
 /**
  * Returns the listener
  * @return IPullingListener
@@ -659,15 +642,69 @@ protected void setListener(IPullingListener newListener) {
 		errorSender.setName("errorSender of ["+getName()+"]");
 	}
 
-	public String getCommitOnState() {
-		return commitOnState;
+	/**
+	 * Controls the use of XA-transactions.
+	 */
+	public void setTransacted(boolean transacted) {
+		this.transacted = transacted;
+	}
+	public boolean isTransacted() {
+		return transacted;
 	}
 
 	/**
-	 * the state on which the receiver will commit the transaction
+	 * the exit state of the pipeline on which the receiver will commit the transaction.
 	 */
 	public void setCommitOnState(String string) {
 		commitOnState = string;
+	}
+	public String getCommitOnState() {
+		return commitOnState;
+	}
+	
+	/**
+	 * Sets the name of the Receiver. 
+	 * If the listener implements the {@link nl.nn.adapterframework.core.INamedObject name} interface and <code>getName()</code>
+	 * of the listener is empty, the name of this object is given to the listener.
+	 */
+	public void setName(String newName) {
+		name = newName;
+		IPullingListener listener=getListener();
+		if (listener instanceof INamedObject)  {
+				if (StringUtils.isEmpty(((INamedObject)listener).getName())) {
+					((INamedObject) listener).setName("listner of ["+newName+"]");
+				}
+		} 
+		ITransactionalStorage inProcess = getInProcessStorage();
+		if (inProcess != null) {
+			inProcess.setName("inProcessStorage of ["+newName+"]");
+		}
+		ISender errorSender = getErrorSender();
+		if (errorSender != null) {
+			errorSender.setName("errorSender of ["+newName+"]");
+		}
+	}
+	public String getName() {
+		return name;
+	}
+	
+	/**
+	 * The number of threads that this receiver is working with.
+	 */
+	public void setNumThreads(int newNumThreads) {
+		numThreads = newNumThreads;
+	}
+	public int getNumThreads() {
+		return numThreads;
+	}
+
+
+
+	public void setOnError(String newOnError) {
+		onError = newOnError;
+	}
+	public String getOnError() {
+		return onError;
 	}
 
 }

@@ -1,3 +1,9 @@
+/*
+ * $Log: MessageSendingPipe.java,v $
+ * Revision 1.5  2004-03-30 07:30:05  L190409
+ * updated javadoc
+ *
+ */
 package nl.nn.adapterframework.pipes;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -43,41 +49,22 @@ import java.util.HashMap;
  * </table>
  * </p>
  * @version Id</p>
- * @author Gerrit van Brakel
+ * @author  Gerrit van Brakel
  */
 
 public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
-	public static final String version =
-		"$Id: MessageSendingPipe.java,v 1.4 2004-03-26 10:42:34 NNVZNL01#L180564 Exp $";
+	public static final String version = "$Id: MessageSendingPipe.java,v 1.5 2004-03-30 07:30:05 L190409 Exp $";
 
 	private ISender sender = null;
 	private ICorrelatedPullingListener listener = null;
 	private String resultOnTimeOut = "receiver timed out";
 	private String linkMethod = "CORRELATIONID";
 
-	/**
-	 * For async communication, the server side may either use the messageID or the correlationID
-	 * in the correlationID field of the message. Use this property to set the behaviour.
-	 * <p>Use <code>MESSAGEID</code> to let the listener wait for a message with the messageID of the
-	 * sent message in the correlation ID field</p>
-	 * <p>Use <code>CORRELATIONID</code> to let the listener wait for a message with the correlationID of the
-	 * sent message in the correlation ID field</p>
-	 * When you use the method CORRELATIONID you have the advantage that you can trace your request
-	 * as the messageID as it is known in the Adapter is used as the correlationID. In the logging you should be able
-	 * to follow the message more clearly. When you use the method MESSAGEID, the messageID (unique for every
-	 * message) will be expected in the correlationID field of the returned message.
-	 * 
-	 * @param method either MESSAGEID or CORRELATIONID
-	 */
-	public void setLinkMethod(String method) {
-		linkMethod = method;
-	}
-	public String getLinkMethod() {
-		return linkMethod;
-	}
+	
 	public MessageSendingPipe() {
 		super();
 	}
+
 	/**
 	 * Checks whether a sender is defined for this pipe.
 	 */
@@ -187,55 +174,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 				e);
 		}
 	}
-	public ICorrelatedPullingListener getListener() {
-		return listener;
-	}
-	/**
-	 * Insert the method's description here.
-	 * Creation date: (27-10-2003 17:01:22)
-	 * @return java.lang.String
-	 */
-	public java.lang.String getResultOnTimeOut() {
-		return resultOnTimeOut;
-	}
-	public ISender getSender() {
-		return sender;
-	}
-	/**
-	 * Register a {@link ICorrelatedPullingListener} at this Pipe
-	 */
-	protected void setListener(ICorrelatedPullingListener listener) {
-		this.listener = listener;
-		log.debug(
-			"pipe ["
-				+ getName()
-				+ " registered listener ["
-				+ listener.toString()
-				+ "]");
-	}
-	/**
-	 * Insert the method's description here.
-	 * Creation date: (27-10-2003 17:01:22)
-	 * @param newResultOnTimeOut java.lang.String
-	 */
-	public void setResultOnTimeOut(java.lang.String newResultOnTimeOut) {
-		resultOnTimeOut = newResultOnTimeOut;
-	}
-	/**
-	 * Register a ISender at this Pipe
-	 * @see ISender
-	 */
-	protected void setSender(ISender sender) {
-		this.sender = sender;
-		log.debug(
-			"pipe ["
-				+ getName()
-				+ " registered sender ["
-				+ sender.getName()
-				+ "] with properties ["
-				+ sender.toString()
-				+ "]");
-	}
+
 	public void start() throws PipeStartException {
 		try {
 			getSender().open();
@@ -263,4 +202,74 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 			}
 		}
 	}
+	
+	/**
+	 * Register a {@link ICorrelatedPullingListener} at this Pipe
+	 */
+	protected void setListener(ICorrelatedPullingListener listener) {
+		this.listener = listener;
+		log.debug(
+			"pipe ["
+				+ getName()
+				+ " registered listener ["
+				+ listener.toString()
+				+ "]");
+	}
+	public ICorrelatedPullingListener getListener() {
+		return listener;
+	}
+
+	/**
+	 * Register a ISender at this Pipe
+	 * @see ISender
+	 */
+	protected void setSender(ISender sender) {
+		this.sender = sender;
+		log.debug(
+			"pipe ["
+				+ getName()
+				+ " registered sender ["
+				+ sender.getName()
+				+ "] with properties ["
+				+ sender.toString()
+				+ "]");
+	}
+	public ISender getSender() {
+		return sender;
+	}
+	
+	/**
+	 * The message that is returned when the time listening for a reply message
+	 * exceeds the timeout, or in other situations no reply message is received.
+	 */
+	public void setResultOnTimeOut(String newResultOnTimeOut) {
+		resultOnTimeOut = newResultOnTimeOut;
+	}
+	public String getResultOnTimeOut() {
+		return resultOnTimeOut;
+	}
+
+	/**
+	 * For asynchronous communication, the server side may either use the messageID or the correlationID
+	 * in the correlationID field of the reply message. Use this property to set the behaviour of the reply-listener.
+	 * <ul>
+	 * <li>Use <code>MESSAGEID</code> to let the listener wait for a message with the messageID of the
+	 * sent message in the correlation ID field</li>
+	 * <li>Use <code>CORRELATIONID</code> to let the listener wait for a message with the correlationID of the
+	 * sent message in the correlation ID field</li>
+	 * </ul>
+	 * When you use the method CORRELATIONID you have the advantage that you can trace your request
+	 * as the messageID as it is known in the Adapter is used as the correlationID. In the logging you should be able
+	 * to follow the message more clearly. When you use the method MESSAGEID, the messageID (unique for every
+	 * message) will be expected in the correlationID field of the returned message.
+	 * 
+	 * @param method either MESSAGEID or CORRELATIONID
+	 */
+	public void setLinkMethod(String method) {
+		linkMethod = method;
+	}
+	public String getLinkMethod() {
+		return linkMethod;
+	}
+
 }

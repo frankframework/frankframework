@@ -1,12 +1,19 @@
+/*
+ * $Log: PipeRunException.java,v $
+ * Revision 1.4  2004-03-30 07:29:54  L190409
+ * updated javadoc
+ *
+ */
 package nl.nn.adapterframework.core;
 
 /**
  * Exception thrown when the <code>doPipe()</code> method
  * of a {@link IPipe Pipe} runs in error.
  * @version Id
+ * @author  Johan Verrips
  */
 public class PipeRunException extends IbisException {
-	public static final String version="$Id: PipeRunException.java,v 1.3 2004-03-26 10:42:50 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: PipeRunException.java,v 1.4 2004-03-30 07:29:54 L190409 Exp $";
 	
 	IPipe pipeInError=null;
 public PipeRunException(IPipe pipe, String msg) {
@@ -18,7 +25,7 @@ public PipeRunException(IPipe pipe, String msg, Throwable e) {
 	setPipeInError(pipe);
 }
 /**
- * The name of the pipe in error.
+ * The pipe in error.
  * @return java.lang.String Name of the pipe in error
  */
 public IPipe getPipeInError() {

@@ -1,6 +1,9 @@
-/**
+/*
  * $Log: PipeForward.java,v $
- * Revision 1.3  2004-03-26 10:42:44  NNVZNL01#L180564
+ * Revision 1.4  2004-03-30 07:29:54  L190409
+ * updated javadoc
+ *
+ * Revision 1.3  2004/03/26 10:42:44  Johan Verrips <johan.verrips@ibissource.org>
  * added @version tag in javadoc
  *
  */
@@ -20,12 +23,12 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * without affecting the Java-code. Simply change the forwarding-XML.<br/>
  * 
  * @version Id
+ * @author Johan Verrips
  * @see PipeLine
  * @see nl.nn.adapterframework.pipes.AbstractPipe#findForward
- * @author Johan Verrips
  */
 public class PipeForward {
-		public static final String version="$Id: PipeForward.java,v 1.3 2004-03-26 10:42:44 NNVZNL01#L180564 Exp $";
+		public static final String version="$Id: PipeForward.java,v 1.4 2004-03-30 07:29:54 L190409 Exp $";
 
     private String name;
     private String path;
@@ -45,7 +48,7 @@ public class PipeForward {
   	/**
 	 * the <code>name</code> is a symbolic reference to a <code>path</code>.<br/>
 	 */
-  public void setName(String name) {
+    public void setName(String name) {
         this.name = name;
     }
 	/**

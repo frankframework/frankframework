@@ -1,40 +1,31 @@
+/*
+ * $Log: SenderException.java,v $
+ * Revision 1.4  2004-03-30 07:29:54  L190409
+ * updated javadoc
+ *
+ */
 package nl.nn.adapterframework.core;
 
 /**
  * Exception thrown by the ISender (implementation) to notify
  * that the sending did not succeed.
+ * 
  * @version Id
- *
+ * @author  Gerrit van Brakel
  */
 public class SenderException extends IbisException {
-	public static final String version="$Id: SenderException.java,v 1.3 2004-03-26 10:42:44 NNVZNL01#L180564 Exp $";
-	
-/**
- * SendException constructor comment.
- */
-public SenderException() {
-	super();
-}
-/**
- * SendException constructor comment.
- * @param arg1 java.lang.String
- */
-public SenderException(String arg1) {
-	super(arg1);
-}
-/**
- * SendException constructor comment.
- * @param arg1 java.lang.String
- * @param arg2 java.lang.Throwable
- */
-public SenderException(String arg1, Throwable arg2) {
-	super(arg1, arg2);
-}
-/**
- * SendException constructor comment.
- * @param arg1 java.lang.Throwable
- */
-public SenderException(Throwable arg1) {
-	super(arg1);
-}
+	public static final String version="$Id: SenderException.java,v 1.4 2004-03-30 07:29:54 L190409 Exp $";
+		
+	public SenderException() {
+		super();
+	}
+	public SenderException(String errMsg) {
+		super(errMsg);
+	}
+	public SenderException(String errMsg, Throwable t) {
+		super(errMsg, t);
+	}
+	public SenderException(Throwable t) {
+		super(t);
+	}
 }

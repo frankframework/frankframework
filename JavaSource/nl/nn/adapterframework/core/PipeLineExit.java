@@ -1,3 +1,9 @@
+/*
+ * $Log: PipeLineExit.java,v $
+ * Revision 1.4  2004-03-30 07:29:54  L190409
+ * updated javadoc
+ *
+ */
 package nl.nn.adapterframework.core;
 
 /**
@@ -8,46 +14,22 @@ package nl.nn.adapterframework.core;
  * @author Johan Verrips
  */
 public class PipeLineExit {
-	public static final String version="$Id: PipeLineExit.java,v 1.3 2004-03-26 10:42:44 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: PipeLineExit.java,v 1.4 2004-03-30 07:29:54 L190409 Exp $";
 	
 	private String path;
 	private String state;
-/**
- * PipeLineExit constructor comment.
- */
-public PipeLineExit() {
-	super();
-}
-/**
- * Insert the method's description here.
- * Creation date: (06-06-2003 8:34:28)
- * @return java.lang.String
- */
-public java.lang.String getPath() {
-	return path;
-}
-/**
- * Insert the method's description here.
- * Creation date: (06-06-2003 8:34:28)
- * @return java.lang.String
- */
-public java.lang.String getState() {
-	return state;
-}
-/**
- * Insert the method's description here.
- * Creation date: (06-06-2003 8:34:28)
- * @param newPath java.lang.String
- */
-public void setPath(java.lang.String newPath) {
-	path = newPath;
-}
-/**
- * Insert the method's description here.
- * Creation date: (06-06-2003 8:34:28)
- * @param newState java.lang.String
- */
-public void setState(java.lang.String newState) {
-	state = newState;
-}
+
+	public String getPath() {
+		return path;
+	}
+	public void setPath(String newPath) {
+		path = newPath;
+	}
+	
+	public String getState() {
+		return state;
+	}
+	public void setState(String newState) {
+		state = newState;
+	}
 }

@@ -1,6 +1,9 @@
-/**
+/*
  * $Log: ICorrelatedPullingListener.java,v $
- * Revision 1.3  2004-03-26 10:42:50  NNVZNL01#L180564
+ * Revision 1.4  2004-03-30 07:29:59  L190409
+ * updated javadoc
+ *
+ * Revision 1.3  2004/03/26 10:42:50  Johan Verrips <johan.verrips@ibissource.org>
  * added @version tag in javadoc
  *
  */
@@ -13,12 +16,11 @@ import java.util.HashMap;
  * message, specified by a correlation ID.
  * 
  * @version Id
- *
  * @author Gerrit van Brakel
  * @since 4.0
  */
 public interface ICorrelatedPullingListener extends IPullingListener{
-		public static final String version="$Id: ICorrelatedPullingListener.java,v 1.3 2004-03-26 10:42:50 NNVZNL01#L180564 Exp $";
+		public static final String version="$Id: ICorrelatedPullingListener.java,v 1.4 2004-03-30 07:29:59 L190409 Exp $";
 
 /**
  * Retrieves messages from queue or other channel,  but retrieves only

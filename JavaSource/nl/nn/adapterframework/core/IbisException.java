@@ -1,6 +1,9 @@
 /*
  * $Log: IbisException.java,v $
- * Revision 1.5  2004-03-26 10:42:50  NNVZNL01#L180564
+ * Revision 1.6  2004-03-30 07:29:59  L190409
+ * updated javadoc
+ *
+ * Revision 1.5  2004/03/26 10:42:50  Johan Verrips <johan.verrips@ibissource.org>
  * added @version tag in javadoc
  *
  * Revision 1.4  2004/03/23 16:48:17  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -16,13 +19,12 @@ import org.apache.commons.lang.exception.NestableException;
 
 /**
  * Base Exception with exhaustive toString() and compact getMessage()
- * @author Gerrit van Brakel
  * 
- *@version Id
- *
+ * @version Id
+ * @author Gerrit van Brakel
  */
 public class IbisException extends NestableException {
-		public static final String version="$Id: IbisException.java,v 1.5 2004-03-26 10:42:50 NNVZNL01#L180564 Exp $";
+		public static final String version="$Id: IbisException.java,v 1.6 2004-03-30 07:29:59 L190409 Exp $";
 
 public IbisException() {
 	super();

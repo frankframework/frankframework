@@ -1,3 +1,9 @@
+/*
+ * $Log: PipeStartException.java,v $
+ * Revision 1.4  2004-03-30 07:29:59  L190409
+ * updated javadoc
+ *
+ */
 package nl.nn.adapterframework.core;
 
 /**
@@ -5,11 +11,11 @@ package nl.nn.adapterframework.core;
  * did not succeed.<br/>
 
  * @version Id
- * @see nl.nn.adapterframework.pipes.AbstractPipe#start()
  * @author Johan Verrips IOS
+ * @see nl.nn.adapterframework.pipes.AbstractPipe#start()
  */
 public class PipeStartException extends IbisException{
-	public static final String version="$Id: PipeStartException.java,v 1.3 2004-03-26 10:42:50 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: PipeStartException.java,v 1.4 2004-03-30 07:29:59 L190409 Exp $";
 	
 	private String pipeNameInError=null;
 /**

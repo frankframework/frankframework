@@ -1,3 +1,9 @@
+/*
+ * $Log: PipeLineResult.java,v $
+ * Revision 1.4  2004-03-30 07:29:53  L190409
+ * updated javadoc
+ *
+ */
 package nl.nn.adapterframework.core;
 
 /**
@@ -12,7 +18,7 @@ package nl.nn.adapterframework.core;
  * @author Johan Verrips
  */
 public class PipeLineResult {
-	public static final String version="$Id: PipeLineResult.java,v 1.3 2004-03-26 10:42:50 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: PipeLineResult.java,v 1.4 2004-03-30 07:29:53 L190409 Exp $";
 
 	private String result;
 	private String state;
@@ -24,28 +30,28 @@ public class PipeLineResult {
  * Creation date: (06-06-2003 8:25:02)
  * @return java.lang.String
  */
-public java.lang.String getResult() {
+public String getResult() {
 	return result;
 }
 /**
  * Get the exit-state of the pipeliness
  * @return java.lang.String
  */
-public java.lang.String getState() {
+public String getState() {
 	return state;
 }
 /**
  * set the result of the PipeLine processing to the specified value.
  * @param newResult java.lang.String
  */
-public void setResult(java.lang.String newResult) {
+public void setResult(String newResult) {
 	result = newResult;
 }
 /**
  * set the state of the pipeline. 
  * @param newState java.lang.String
  */
-public void setState(java.lang.String newState) {
+public void setState(String newState) {
 	state = newState;
 }
 	public String toString(){

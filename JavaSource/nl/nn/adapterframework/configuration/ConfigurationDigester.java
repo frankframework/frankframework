@@ -1,6 +1,9 @@
-/**
+/*
  * $Log: ConfigurationDigester.java,v $
- * Revision 1.4  2004-03-26 10:42:50  NNVZNL01#L180564
+ * Revision 1.5  2004-03-30 07:30:05  L190409
+ * updated javadoc
+ *
+ * Revision 1.4  2004/03/26 10:42:50  Johan Verrips <johan.verrips@ibissource.org>
  * added @version tag in javadoc
  *
  */
@@ -36,10 +39,9 @@ import java.net.URL;
  * @version Id
  * @author Johan Verrips
  * @see Configuration
- *
  */
 public class ConfigurationDigester {
-	public static final String version="$Id: ConfigurationDigester.java,v 1.4 2004-03-26 10:42:50 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: ConfigurationDigester.java,v 1.5 2004-03-30 07:30:05 L190409 Exp $";
     static Digester digester;
     protected Logger log = Logger.getLogger(this.getClass());
 	private static final String CONFIGURATION_FILE_DEFAULT  = "Configuration.xml";

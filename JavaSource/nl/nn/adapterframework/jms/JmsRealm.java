@@ -1,6 +1,9 @@
 /*
  * $Log: JmsRealm.java,v $
- * Revision 1.4  2004-03-26 10:42:55  NNVZNL01#L180564
+ * Revision 1.5  2004-03-30 07:30:00  L190409
+ * updated javadoc
+ *
+ * Revision 1.4  2004/03/26 10:42:55  Johan Verrips <johan.verrips@ibissource.org>
  * added @version tag in javadoc
  *
  * Revision 1.3  2004/03/23 18:06:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -28,7 +31,7 @@ import org.apache.log4j.Logger;
  */
 public class JmsRealm {
 	//TODO: change to J2eeRealm
-	public static final String version="$Id: JmsRealm.java,v 1.4 2004-03-26 10:42:55 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: JmsRealm.java,v 1.5 2004-03-30 07:30:00 L190409 Exp $";
 	private String realmName;
 	private Logger log = Logger.getLogger(this.getClass());
 
@@ -49,17 +52,12 @@ public class JmsRealm {
 	private String username;
 	private String password;
     
-	private String transactionManagerFactoryClassName;
-	private String transactionManagerFactoryMethod;
 	private String userTransactionUrl;
 
-/**
- * JndiConfiguration constructor comment.
- */
-public JmsRealm() {
+	public JmsRealm() {
+		super();
+	}
 
-	super();
-}
  	/**
  	 * Includes another realm into this one
  	 */ 
@@ -211,21 +209,6 @@ public void setTopicConnectionFactoryName(java.lang.String newTopicConnectionFac
 		return topicConnectionFactoryNameXA;
 	}
 
-	/**
-	 * Returns the transactionManagerFactoryClassName.
-	 * @return String
-	 */
-	public String getTransactionManagerFactoryClassName() {
-		return transactionManagerFactoryClassName;
-	}
-
-	/**
-	 * Returns the transactionManagerFactoryMethod.
-	 * @return String
-	 */
-	public String getTransactionManagerFactoryMethod() {
-		return transactionManagerFactoryMethod;
-	}
 
 	/**
 	 * Sets the queueConnectionFactoryNameXA.
@@ -243,22 +226,6 @@ public void setTopicConnectionFactoryName(java.lang.String newTopicConnectionFac
 		this.topicConnectionFactoryNameXA = topicConnectionFactoryNameXA;
 	}
 
-	/**
-	 * Sets the transactionManagerFactoryClassName.
-	 * @param transactionManagerFactoryClassName The transactionManagerFactoryClassName to set
-	 */
-	public void setTransactionManagerFactoryClassName(String transactionManagerFactoryClassName) {
-		this.transactionManagerFactoryClassName =
-			transactionManagerFactoryClassName;
-	}
-
-	/**
-	 * Sets the transactionManagerFactoryMethod.
-	 * @param transactionManagerFactoryMethod The transactionManagerFactoryMethod to set
-	 */
-	public void setTransactionManagerFactoryMethod(String transactionManagerFactoryMethod) {
-		this.transactionManagerFactoryMethod = transactionManagerFactoryMethod;
-	}
 
 	public String getDatasourceName() {
 		return datasourceName;

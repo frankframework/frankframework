@@ -1,6 +1,9 @@
-/**
+/*
  * $Log: Adapter.java,v $
- * Revision 1.4  2004-03-26 10:42:45  NNVZNL01#L180564
+ * Revision 1.5  2004-03-30 07:29:53  L190409
+ * updated javadoc
+ *
+ * Revision 1.4  2004/03/26 10:42:45  Johan Verrips <johan.verrips@ibissource.org>
  * added @version tag in javadoc
  *
  */
@@ -47,7 +50,6 @@ import javax.transaction.UserTransaction;
  * to the state specified by <code>setErrorState</code>, which defaults to "ERROR".
  * 
  * @version Id
- *
  * @author Johan Verrips
  * @see    nl.nn.adapterframework.core.IReceiver
  * @see    nl.nn.adapterframework.core.PipeLine
@@ -59,7 +61,7 @@ import javax.transaction.UserTransaction;
  */
 
 public class Adapter extends JNDIBase implements Runnable, IAdapter{
-	public static final String version="$Id: Adapter.java,v 1.4 2004-03-26 10:42:45 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: Adapter.java,v 1.5 2004-03-30 07:29:53 L190409 Exp $";
 	private Vector receivers=new Vector();
 	private long lastMessageDate =0;
     private PipeLine pipeline;

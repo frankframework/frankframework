@@ -1,3 +1,9 @@
+/*
+ * $Log: XslErrorMessageFormatter.java,v $
+ * Revision 1.4  2004-03-30 07:30:00  L190409
+ * updated javadoc
+ *
+ */
 package nl.nn.adapterframework.errormessageformatters;
 
 
@@ -13,50 +19,54 @@ import java.io.IOException;
  * {@link ErrorMessageFormatter}.
  * <p>If the transformation does not succeed, this standard error message
  * is returned and an exception is logged.
+ * 
  * @version Id
- *
  * @author Johan Verrips IOS
  */
 public class XslErrorMessageFormatter extends ErrorMessageFormatter {
-	public static final String version="$Id: XslErrorMessageFormatter.java,v 1.3 2004-03-26 10:43:00 NNVZNL01#L180564 Exp $";
-
+	public static final String version="$Id: XslErrorMessageFormatter.java,v 1.4 2004-03-30 07:30:00 L190409 Exp $";
 
     private String styleSheet;
-public String format(
-    String message,
-    Throwable t,
-    INamedObject location,
-    String originalMessage,
-    String messageId,
-    long receivedTime) {
-
-	String result = super.format(message, t, location, originalMessage, messageId, receivedTime);
-
-    if (styleSheet != null) {
-
-        try {
-            Transformer errorTransformer =
-                XmlUtils.createTransformer(
-                    ClassUtils.getResourceURL(this, styleSheet));
-            result = XmlUtils.transformXml(errorTransformer, result);
-        } catch (IOException e) {
-            log.error(" cannot retrieve [" + styleSheet + "]", e);
-        } catch (javax.xml.transform.TransformerConfigurationException te) {
-            log.error("got error creating transformer from file [" + styleSheet + "]", te);
-        } catch (Exception tfe) {
-            log.error(
-                "could not transform [" + result + "] using stylesheet [" + styleSheet + "]",
-                tfe);
-        }
-    } else
-        log.warn("no stylesheet defined for XslErrorMessageFormatter");
-    return result;
-	    
-}
-public java.lang.String getStyleSheet() {
-	return styleSheet;
-}
-public void setStyleSheet(java.lang.String newStyleSheet) {
-	styleSheet = newStyleSheet;
-}
+    
+	public String format(
+	    String message,
+	    Throwable t,
+	    INamedObject location,
+	    String originalMessage,
+	    String messageId,
+	    long receivedTime) {
+	
+		String result = super.format(message, t, location, originalMessage, messageId, receivedTime);
+	
+	    if (styleSheet != null) {
+	
+	        try {
+	            Transformer errorTransformer =
+	                XmlUtils.createTransformer(
+	                    ClassUtils.getResourceURL(this, styleSheet));
+	            result = XmlUtils.transformXml(errorTransformer, result);
+	        } catch (IOException e) {
+	            log.error(" cannot retrieve [" + styleSheet + "]", e);
+	        } catch (javax.xml.transform.TransformerConfigurationException te) {
+	            log.error("got error creating transformer from file [" + styleSheet + "]", te);
+	        } catch (Exception tfe) {
+	            log.error(
+	                "could not transform [" + result + "] using stylesheet [" + styleSheet + "]",
+	                tfe);
+	        }
+	    } else
+	        log.warn("no stylesheet defined for XslErrorMessageFormatter");
+	    return result;
+		    
+	}
+	
+	/**
+	 * URL to the stylesheet used to transform the output of the {@link ErrorMessagFormatter} 
+	 */
+	public String getStyleSheet() {
+		return styleSheet;
+	}
+	public void setStyleSheet(String newStyleSheet) {
+		styleSheet = newStyleSheet;
+	}
 }

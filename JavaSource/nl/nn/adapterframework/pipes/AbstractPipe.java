@@ -1,3 +1,9 @@
+/*
+ * $Log: AbstractPipe.java,v $
+ * Revision 1.4  2004-03-30 07:30:05  L190409
+ * updated javadoc
+ *
+ */
 package nl.nn.adapterframework.pipes;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -47,7 +53,7 @@ import java.util.Hashtable;
  * @see nl.nn.adapterframework.core.PipeLineSession
  */
 public abstract class AbstractPipe implements IPipe {
-  public static final String version="$Id: AbstractPipe.java,v 1.3 2004-03-26 10:42:36 NNVZNL01#L180564 Exp $";
+  public static final String version="$Id: AbstractPipe.java,v 1.4 2004-03-30 07:30:05 L190409 Exp $";
   private String name;
   protected Logger log = Logger.getLogger(this.getClass());
   private Hashtable pipeForwards=new Hashtable();
@@ -97,34 +103,23 @@ public void configure() throws ConfigurationException{
     public final PipeForward findForward(String forward){
         return (PipeForward)pipeForwards.get(forward);
     }
-/**
- * Convenience method for building up log statements.
- * This method may be called from within the <code>doPipe()</code> method with the current <code>PipeLineSession</code>
- * as a parameter. Then it will use this parameter to retrieve the messageId. The method can be called with a <code>null</code> parameter
- * from the <code>configure()</code>, <code>start()</code> and <code>stop()</code> methods.
- * @return String with the name of the pipe and the message id of the current message.
- */
-protected String getLogPrefix(PipeLineSession session){
-	  StringBuffer sb=new StringBuffer();
-	  sb.append("Pipe ["+getName()+"] ");
-	  if (session!=null) {
-		  sb.append("msgId ["+session.getMessageId()+"] ");
-	  }
-	  return sb.toString();
-  }
-/**
- * Indicates the maximum number of treads ;that may call {@link #doPipe(Object, PipeLineSession)} simultaneously in case
- *  A value of 0 indicates an unlimited number of threads.
- */
-public int getMaxThreads() {
-	return maxThreads;
-}
-    /**
-     * The functional name of this pipe
-     */
-  public String getName() {
-  	return this.name;
-  }
+    
+	/**
+	 * Convenience method for building up log statements.
+	 * This method may be called from within the <code>doPipe()</code> method with the current <code>PipeLineSession</code>
+	 * as a parameter. Then it will use this parameter to retrieve the messageId. The method can be called with a <code>null</code> parameter
+	 * from the <code>configure()</code>, <code>start()</code> and <code>stop()</code> methods.
+	 * @return String with the name of the pipe and the message id of the current message.
+	 */
+	protected String getLogPrefix(PipeLineSession session){
+		  StringBuffer sb=new StringBuffer();
+		  sb.append("Pipe ["+getName()+"] ");
+		  if (session!=null) {
+			  sb.append("msgId ["+session.getMessageId()+"] ");
+		  }
+		  return sb.toString();
+	}
+
   /**
    * Register a PipeForward object to this Pipe. Global Forwards are added
    * by the PipeLine. If a forward is already registered, it logs a warning.
@@ -140,27 +135,21 @@ public int getMaxThreads() {
  	  	  log.warn("PipeForward ["+forward.getName()+"] already registered for pipe ["+name+"] ignoring this one");
  	  
   }
-public void setMaxThreads(int newMaxThreads) {
-	maxThreads = newMaxThreads;
-}
-    /**
-     * The functional name of this pipe
-     */
-  public void setName(String name) {
-  	this.name=name;
-  }
-	/**
-	 * Perform necessary action to start the pipe. This method is executed
-	 * after the {@link #configure()} method, for eacht start and stop command of the
-	 * adapter.
-	 */
-	public void start() throws PipeStartException{
-	  }
+
+	
+  /**
+   * Perform necessary action to start the pipe. This method is executed
+   * after the {@link #configure()} method, for eacht start and stop command of the
+   * adapter.
+   */
+  public void start() throws PipeStartException{
+	}
   /**
    * Perform necessary actions to stop the <code>Pipe</code>.<br/>
    * For instance, closing JMS connections, dbms connections etc.
    */
   public void stop() {}
+    
   /**
    * The <code>toString()</code> method retrieves its value
    * by reflection, so overriding this method is mostly not
@@ -168,8 +157,29 @@ public void setMaxThreads(int newMaxThreads) {
    * @see org.apache.commons.lang.builder.ToStringBuilder#reflectionToString
    *
    **/
-  public String toString() {
-	return ToStringBuilder.reflectionToString(this);
 
+  
+  /**
+   * Indicates the maximum number of treads ;that may call {@link #doPipe(Object, PipeLineSession)} simultaneously in case
+   *  A value of 0 indicates an unlimited number of threads.
+   */
+  public void setMaxThreads(int newMaxThreads) {
+	maxThreads = newMaxThreads;
   }
+  public int getMaxThreads() {
+	  return maxThreads;
+  }
+    /**
+     * The functional name of this pipe
+     */
+	public void setName(String name) {
+	  	this.name=name;
+	}
+	public String getName() {
+	  return this.name;
+	}
+
+    public String toString() {
+		return ToStringBuilder.reflectionToString(this);
+    }
 }

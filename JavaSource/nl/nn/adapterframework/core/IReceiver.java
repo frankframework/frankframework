@@ -1,6 +1,9 @@
-/**
+/*
  * $Log: IReceiver.java,v $
- * Revision 1.3  2004-03-26 10:42:50  NNVZNL01#L180564
+ * Revision 1.4  2004-03-30 07:29:54  L190409
+ * updated javadoc
+ *
+ * Revision 1.3  2004/03/26 10:42:50  Johan Verrips <johan.verrips@ibissource.org>
  * added @version tag in javadoc
  *
  */
@@ -29,7 +32,6 @@ import nl.nn.adapterframework.util.RunStateEnum;
  * requests.
  * 
  *  @version Id
- *
  *  @author Johan Verrips
  *  @see IAdapter
  *  @see IAdapter#processMessage(String, String)
@@ -38,7 +40,7 @@ import nl.nn.adapterframework.util.RunStateEnum;
  *
  */
 public interface IReceiver extends IManagable {
-	public static final String version="$Id: IReceiver.java,v 1.3 2004-03-26 10:42:50 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: IReceiver.java,v 1.4 2004-03-30 07:29:54 L190409 Exp $";
 
  	/**
  	 * This method is called by the <code>IAdapter</code> to let the
@@ -48,10 +50,12 @@ public interface IReceiver extends IManagable {
  	 * @throws ConfigurationException when initialization did not succeed.
  	 */ 
 	public void configure() throws ConfigurationException;
+	
 	/**
 	 * get the number of messages received by this receiver
 	 */
 	public long getMessagesReceived();
+	
     /**
      * The processing of messages must be delegated to the <code>Adapter</code>
      * object. The adapter also provides a MessageKeeper, which the receiver
@@ -59,9 +63,11 @@ public interface IReceiver extends IManagable {
      * @see nl.nn.adapterframework.core.IAdapter
      */
     public void setAdapter(IAdapter adapter);
+    
  	/**
  	 * set the functional name of this receiver
  	 */ 
 	public void setName(String name);
+	
 void waitForRunState(RunStateEnum requestedRunState) throws InterruptedException;
 }

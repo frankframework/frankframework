@@ -1,3 +1,9 @@
+/*
+ * $Log: PipeRunResult.java,v $
+ * Revision 1.4  2004-03-30 07:29:53  L190409
+ * updated javadoc
+ *
+ */
 package nl.nn.adapterframework.core;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -12,14 +18,15 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * </ul><br/>
  * <code>Pipe</code>s return a <code>PipeRunResult</code> with the information
  * as above.
+ * 
  * @version Id
+ * @author Johan Verrips
  * @see PipeForward
  * @see nl.nn.adapterframework.pipes.AbstractPipe#doPipe
  * @see nl.nn.adapterframework.pipes.AbstractPipe#findForward
- * @author Johan Verrips
  */
 public class PipeRunResult {
-	public static final String version="$Id: PipeRunResult.java,v 1.3 2004-03-26 10:42:50 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: PipeRunResult.java,v 1.4 2004-03-30 07:29:53 L190409 Exp $";
 
     private PipeForward pipeForward;
     private Object result;
