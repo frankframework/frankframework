@@ -1,6 +1,9 @@
 /*
  * $Log: RekenBoxCaller.java,v $
- * Revision 1.5  2004-08-17 15:48:58  L190409
+ * Revision 1.6  2004-09-01 08:18:00  L190409
+ * create output file in advance
+ *
+ * Revision 1.5  2004/08/17 15:48:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added 'redirected' commandlinetype
  * added precreation of outputfile, required for L76HB000
  *
@@ -75,7 +78,7 @@ import nl.nn.adapterframework.util.Misc;
  * @version Id
  */
 public class RekenBoxCaller extends FixedForwardPipe {
-	public static final String version="$Id: RekenBoxCaller.java,v 1.5 2004-08-17 15:48:58 L190409 Exp $";
+	public static final String version="$Id: RekenBoxCaller.java,v 1.6 2004-09-01 08:18:00 L190409 Exp $";
 	
 	private String runPath="";
 	private String executableExtension="exe"; //bat, com or exe
@@ -84,6 +87,8 @@ public class RekenBoxCaller extends FixedForwardPipe {
 	private String rekenBoxName; // can be set for fixed rekenbox
 	private boolean cleanup=true;
 	private String commandLineType="straight";
+	
+	private File inputOutputDir;
 	/**
 	 * output-property to communicate the name of the rekenbox to adios2Xml converter
 	 */
@@ -95,8 +100,15 @@ public class RekenBoxCaller extends FixedForwardPipe {
 			!(getCommandLineType().equals("straight") || 
 			  getCommandLineType().equals("switches") || 
 			  getCommandLineType().equals("redirected"))) {
-			  	throw new ConfigurationException(getLogPrefix(null)+"commandLineType ["+getCommandLineType()+"]must be one of 'straigth', 'switches' or 'redirected'");
+			  	throw new ConfigurationException(getLogPrefix(null)+"commandLineType ["+getCommandLineType()+"] must be one of 'straigth', 'switches' or 'redirected'");
 			  }
+		inputOutputDir= new File(getInputOutputDirectory());
+		if (!inputOutputDir.exists()) {
+			throw new ConfigurationException(getLogPrefix(null)+"inputOutputDirectory ["+getInputOutputDirectory()+"] does not exist");
+		}
+		if (!inputOutputDir.isDirectory()) {
+			throw new ConfigurationException(getLogPrefix(null)+"inputOutputDirectory ["+getInputOutputDirectory()+"] is not a directory");
+		}
 	}
 
 	/**
@@ -138,7 +150,13 @@ public class RekenBoxCaller extends FixedForwardPipe {
 		if (getRekenboxSessionKey() != null) {
 	        session.put(getRekenboxSessionKey(),rekenboxName);
 	    }
-	
+	    
+		try {
+			File outfile = File.createTempFile("rbc",".UIT",inputOutputDir);
+			
+		} catch (Exception e) {
+			throw new PipeRunException(this, getLogPrefix(session)+"got Exception creating tempfile", e);
+		}	
 	    String baseFileName=Misc.createSimpleUUID();
 	    String inputFileName=inputOutputDirectory+baseFileName+".INV";
 	    String outputFileName=inputOutputDirectory+baseFileName+".UIT";
@@ -176,9 +194,7 @@ public class RekenBoxCaller extends FixedForwardPipe {
 			String result;
 			
 			if (callType.equals("redirected"))  {
-				InputStream progoutput=child.getInputStream();
-				
-				result=Misc.readerToString(new BufferedReader(new InputStreamReader(progoutput)),"\n", true);
+				result=Misc.streamToString(child.getInputStream(),"\n", true);
 				
 			} else {
 				child.waitFor();
