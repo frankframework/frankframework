@@ -1,6 +1,9 @@
 /*
  * $Log: MessageSendingPipe.java,v $
- * Revision 1.6  2004-04-15 15:07:57  NNVZNL01#L180564
+ * Revision 1.7  2004-05-21 07:59:30  a1909356#db2admin
+ * Add (modifications) due to the postbox sender implementation
+ *
+ * Revision 1.6  2004/04/15 15:07:57  Johan Verrips <johan.verrips@ibissource.org>
  * when a timeout occured, the receiver was not closed. Fixed it.
  *
  * Revision 1.5  2004/03/30 07:30:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -56,7 +59,7 @@ import java.util.HashMap;
  */
 
 public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
-	public static final String version = "$Id: MessageSendingPipe.java,v 1.6 2004-04-15 15:07:57 NNVZNL01#L180564 Exp $";
+	public static final String version = "$Id: MessageSendingPipe.java,v 1.7 2004-05-21 07:59:30 a1909356#db2admin Exp $";
 
 	private ISender sender = null;
 	private ICorrelatedPullingListener listener = null;
@@ -116,8 +119,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 
 			String messageID = null;
 			// sendResult has a messageID for async senders, the result for sync senders
-			String sendResult =
-				getSender().sendMessage(correlationID, (String) input);
+			String sendResult = sendMessage(input, session, correlationID, getSender(), threadContext);
 
 			if (getSender().isSynchronous()) {
 				if (log.isInfoEnabled())
@@ -146,7 +148,6 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 							+ getLinkMethod()
 							+ "]");
 			}
-
 			
 			if (replyListener != null) {
 				if (log.isDebugEnabled())
@@ -186,6 +187,11 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 					log.error(getLogPrefix(session)+"got error closing listener");
 				}
 		}
+	}
+
+	protected String sendMessage(Object input, PipeLineSession session, String correlationID, ISender sender, HashMap threadContext) throws SenderException, TimeOutException {
+		// sendResult has a messageID for async senders, the result for sync senders
+		return sender.sendMessage(correlationID, (String) input);
 	}
 
 	public void start() throws PipeStartException {

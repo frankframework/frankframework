@@ -1,6 +1,9 @@
 /*
  * $Log: JmsSender.java,v $
- * Revision 1.6  2004-03-31 12:04:19  L190409
+ * Revision 1.7  2004-05-21 07:59:30  a1909356#db2admin
+ * Add (modifications) due to the postbox sender implementation
+ *
+ * Revision 1.6  2004/03/31 12:04:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fixed javadoc
  *
  * Revision 1.5  2004/03/26 10:42:55  Johan Verrips <johan.verrips@ibissource.org>
@@ -15,11 +18,18 @@
  */
 package nl.nn.adapterframework.jms;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IPostboxSender;
 import nl.nn.adapterframework.core.ISender;
+import nl.nn.adapterframework.core.ParameterValue;
+import nl.nn.adapterframework.core.ParameterValueResolver;
 import nl.nn.adapterframework.core.SenderException;
 import org.apache.commons.lang.builder.ToStringBuilder;
 
+import javax.jms.JMSException;
 import javax.jms.Session;
 import javax.jms.MessageProducer;
 import javax.jms.Message;
@@ -46,129 +56,147 @@ import javax.jms.Message;
  * @author Gerrit van Brakel
  */
 
-public class JmsSender extends JMSFacade implements ISender {
-	public static final String version="$Id: JmsSender.java,v 1.6 2004-03-31 12:04:19 L190409 Exp $";
+public class JmsSender extends JMSFacade implements ISender, IPostboxSender {
+	public static final String version = "$Id: JmsSender.java,v 1.7 2004-05-21 07:59:30 a1909356#db2admin Exp $";
+	private String replyToName = null;
 
-  private String replyToName=null;
-
-  private Session session;
-  private MessageProducer messageProducer;
 	public JmsSender() {
 		super();
 	}
 
-
+	/**
+	 * Starts the sender 
+	 */
 	public void open() throws SenderException {
 		try {
 			super.open();
-			/*
-			if (!isTransacted()) {
-				session = createSession();
-				messageProducer = getMessageProducer(session, getDestination());
-			}
-			*/
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			throw new SenderException(e);
 		}
 	}
-	
-/**
- * Stops the sender and resets all dynamic data.
- */
-public void close() throws SenderException {
-    String prefix = "JmsMessageSender [" + getName() + "] ";
-    try {
-        if (messageProducer != null) {
-            messageProducer.close();
-        }
-        if (session != null) {
-            session.close();
-        }
-        super.close();
-    } catch (Throwable e) {
-        throw new SenderException(prefix + "got error occured stopping sender", e);
-    } finally {
-        messageProducer = null;
-        session = null;
-    }
-}
-public void configure() throws ConfigurationException {
 
-}
-    public String getReplyTo(){
-        return replyToName;
-    }
-    public boolean isSynchronous() {
-	    return false;
-    }
-/*
-public synchronized String sendMessage(String correlationID, String message) throws SenderException {
-	return sendMessage(correlationID, message, session, messageProducer);
-}
-*/
-public String sendMessage(String correlationID, String message) throws SenderException{
-	//if (isTransacted()) {
+	/**
+	 * Stops the sender 
+	 */
+	public void close() throws SenderException {
 		try {
-			Session s = createSession();
-			MessageProducer mp = getMessageProducer(s, getDestination());
-
-			String result = sendMessage(correlationID, message, s, mp);
-			
-			mp.close();
-			s.close();
-			return result; 
-//		} else {
-//			String result = sendMessage(correlationID, message, session, messageProducer);
-//		}
-	} catch (Exception e) {
-		throw new SenderException("JmsSender ["+ getName()+ "] got exception sending message", e);
+			super.close();
+		}
+		catch (Throwable e) {
+			throw new SenderException("JmsMessageSender [" + getName() + "] " + "got error occured stopping sender", e);
+		}
 	}
-}
-/**
- * Sends the message
- * @return the messageId of the message
- */
-public String sendMessage(String correlationID, String message, Session s, MessageProducer mp)
-    throws SenderException {
 
-    try {
-        Message msg = createTextMessage(s, correlationID, message);
-        if (null != replyToName) {
-            msg.setJMSReplyTo(getDestination(replyToName));
-            log.debug("replyTo set to [" + msg.getJMSReplyTo().toString() + "]");
-        }
-        send(mp, msg);
-        log.info(
-            "[" + getName() + "] " +
-            "sent Message: [" + message + "] " +
-            "to [" + getDestinationName() + "] " +
-            "msgID ["+ msg.getJMSMessageID() + "] " +
-            "correlationID ["+ msg.getJMSCorrelationID() + "] " +
-            "using "+ (getPersistent() ? "persistent" : "non-persistent") + " mode " +
-            ((replyToName != null) ? "replyTo:" + replyToName : ""));
-        return msg.getJMSMessageID();
-    } catch (Throwable e) {
-        log.error(
-            "JmsSender ["
-                + getName()
-                + "] got exception: "
-                + ToStringBuilder.reflectionToString(e),
-            e);
-        throw new SenderException(e);
-    }
+	/**
+	 * Configures the sender
+	 */
+	public void configure() throws ConfigurationException {
+	}
 
-}
-    public void setReplyToName(String replyTo){
-        this.replyToName=replyTo;
-    }
+	public boolean isSynchronous() {
+		return false;
+	}
+
+	/**
+	 * @see nl.nn.adapterframework.core.ISender#sendMessage(java.lang.String, java.lang.String)
+	*/
+	public String sendMessage(String correlationID, String message) throws SenderException {
+		return sendMessage(correlationID, message, null);
+	}
+
+	/** 
+	 * @see nl.nn.adapterframework.core.IPostboxSender#sendMessage(java.lang.String, java.lang.String, java.util.ArrayList)
+	 */
+	public String sendMessage(String correlationID, String message, ArrayList msgProperties) throws SenderException {
+		Session s = null;
+		MessageProducer mp = null;
+
+		try {
+			s = createSession();
+			mp = getMessageProducer(s, getDestination());
+
+			// create message
+			Message msg = createTextMessage(s, correlationID, message);
+
+			// set properties
+			if (null != msgProperties)
+				setProperties(msg, msgProperties);
+			if (null != replyToName) {
+				msg.setJMSReplyTo(getDestination(replyToName));
+				log.debug("replyTo set to [" + msg.getJMSReplyTo().toString() + "]");
+			}
+
+			// send message	
+			send(mp, msg);
+			if (log.isInfoEnabled()) {
+				log.info(
+					"[" + getName() + "] " + "sent Message: [" + message + "] " + "to [" + getDestinationName()
+						+ "] " + "msgID [" + msg.getJMSMessageID() + "] " + "correlationID [" + msg.getJMSCorrelationID()
+						+ "] " + "using " + (getPersistent() ? "persistent" : "non-persistent") + " mode "
+						+ ((replyToName != null) ? "replyTo:" + replyToName : ""));
+			}
+			return msg.getJMSMessageID();
+		}
+		catch (Throwable e) {
+			log.error("JmsSender [" + getName() + "] got exception: " + ToStringBuilder.reflectionToString(e), e);
+			throw new SenderException(e);
+		}
+		finally {
+			if (mp != null) try { mp.close(); } catch (JMSException e) { }
+			if (s != null) try { s.close(); } catch (JMSException e) { }
+		}
+	}
+
+	/**
+	 * sets the JMS message properties as descriped in the msgProperties arraylist
+	 * @param msg
+	 * @param msgProperties
+	 * @throws JMSException
+	 */
+	private void setProperties(final Message msg, ArrayList msgProperties) throws JMSException {
+		for (Iterator it = msgProperties.iterator(); it.hasNext();) {
+			ParameterValue property = (ParameterValue) it.next();
+			String type = property.getType().getType();
+			String name = property.getType().getName();
+
+			if ("boolean".equalsIgnoreCase(type))
+				msg.setBooleanProperty(name, property.asBooleanValue(false));
+			else if ("byte".equalsIgnoreCase(type))
+				msg.setByteProperty(name, property.asByteValue((byte) 0));
+			else if ("double".equalsIgnoreCase(type))
+				msg.setDoubleProperty(name, property.asDoubleValue(0));
+			else if ("float".equalsIgnoreCase(type))
+				msg.setFloatProperty(name, property.asFloatValue(0));
+			else if ("int".equalsIgnoreCase(type))
+				msg.setIntProperty(name, property.asIntegerValue(0));
+			else if ("long".equalsIgnoreCase(type))
+				msg.setLongProperty(name, property.asLongValue(0L));
+			else if ("short".equalsIgnoreCase(type))
+				msg.setShortProperty(name, property.asShortValue((short) 0));
+			else if ("string".equalsIgnoreCase(type))
+				msg.setStringProperty(name, property.asStringValue(""));
+			else // if ("object".equalsIgnoreCase(type))
+				msg.setObjectProperty(name, property.getValue());
+		}
+	}
+	
+	public String getReplyTo() {
+		return replyToName;
+	}
+
+	public void setReplyToName(String replyTo) {
+		this.replyToName = replyTo;
+	}
+	
 	public String toString() {
-		String result  = super.toString();
-        ToStringBuilder ts=new ToStringBuilder(this);
-        ts.append("name", getName() );
-        ts.append("version", version);
-        ts.append("replyToName", replyToName);
-        result += ts.toString();
-        return result;
+		String result = super.toString();
+		ToStringBuilder ts = new ToStringBuilder(this);
+		ts.append("name", getName());
+		ts.append("version", version);
+		ts.append("replyToName", replyToName);
+		result += ts.toString();
+		return result;
 
 	}
 }
