@@ -1,6 +1,9 @@
 /*
  * $Log: ConfigurationDigester.java,v $
- * Revision 1.7  2004-06-16 13:04:28  NNVZNL01#L180564
+ * Revision 1.8  2004-10-14 15:32:30  L190409
+ * improved logging
+ *
+ * Revision 1.7  2004/06/16 13:04:28  Johan Verrips <johan.verrips@ibissource.org>
  * improved  the ClassPathEntityResolver functionality in combination with
  * resolving variables
  *
@@ -27,7 +30,6 @@ import nl.nn.adapterframework.util.XmlUtils;
 import org.apache.commons.digester.Digester;
 import org.apache.commons.digester.xmlrules.FromXmlRuleSet;
 import org.apache.log4j.Logger;
-import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.SystemUtils;
 import nl.nn.adapterframework.util.ClassPathEntityResolver;
 
@@ -67,7 +69,7 @@ import java.net.URL;
  * @see Configuration
  */
 public class ConfigurationDigester {
-	public static final String version="$Id: ConfigurationDigester.java,v 1.7 2004-06-16 13:04:28 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: ConfigurationDigester.java,v 1.8 2004-10-14 15:32:30 L190409 Exp $";
     protected Logger log = Logger.getLogger(this.getClass());
 	private static final String CONFIGURATION_FILE_DEFAULT  = "Configuration.xml";
 	private static final String DIGESTER_RULES_DEFAULT      = "digester-rules.xml";
@@ -143,8 +145,10 @@ public static void main(String args[]) {
             digester.parse(is);
 
         } catch (Throwable e) {
-            log.error("error during unmarshalling configuration from file: "+configurationFileURL +
-	            " with digester-rules-file:"+digesterRulesURL+ToStringBuilder.reflectionToString(e), e);
+        	// wrap exception to be sure it gets rendered via the IbisException-renderer
+        	e = new ConfigurationException("error during unmarshalling configuration from file ["+configurationFileURL +
+			"] with digester-rules-file ["+digesterRulesURL+"]", e);
+            log.error(e);
             return null;
         }
         log.info("************** Configuration completed **************");
