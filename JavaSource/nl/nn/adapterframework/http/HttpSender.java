@@ -1,6 +1,9 @@
 /*
  * $Log: HttpSender.java,v $
- * Revision 1.5  2004-09-01 12:24:16  L190409
+ * Revision 1.6  2004-09-08 14:18:34  L190409
+ * early initialization of SocketFactory
+ *
+ * Revision 1.5  2004/09/01 12:24:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved fault handling
  *
  * Revision 1.4  2004/08/31 15:51:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -84,7 +87,7 @@ import nl.nn.adapterframework.util.ClassUtils;
  * @since 4.2c
  */
 public class HttpSender implements ISender, HasPhysicalDestination {
-	public static final String version = "$Id: HttpSender.java,v 1.5 2004-09-01 12:24:16 L190409 Exp $";
+	public static final String version = "$Id: HttpSender.java,v 1.6 2004-09-08 14:18:34 L190409 Exp $";
 	protected Logger log = Logger.getLogger(this.getClass());;
 
 	private String name;
@@ -165,11 +168,16 @@ public class HttpSender implements ISender, HasPhysicalDestination {
 			HostConfiguration hostconfiguration = httpclient.getHostConfiguration();		           
 			
 			if (certificateUrl!=null || truststoreUrl!=null) {
-				Protocol authhttps = new Protocol(uri.getScheme(),  
-									 new AuthSSLProtocolSocketFactory(
-									 certificateUrl, getCertificatePassword(), getKeystoreType(),
-									 truststoreUrl, getTruststorePassword()),
-									 uri.getPort());
+				AuthSSLProtocolSocketFactory socketfactory ;
+				try {
+					socketfactory = new AuthSSLProtocolSocketFactory(
+						certificateUrl, getCertificatePassword(), getKeystoreType(),
+						truststoreUrl, getTruststorePassword());
+					socketfactory.init();	
+				} catch (Throwable t) {
+					throw new ConfigurationException("cannot create or initialize SocketFactory",t);
+				}
+				Protocol authhttps = new Protocol(uri.getScheme(), socketfactory, uri.getPort());
 				hostconfiguration.setHost(uri.getHost(),uri.getPort(),authhttps);
 			} else {
 				hostconfiguration.setHost(uri.getHost(),uri.getPort(),uri.getScheme());
@@ -236,7 +244,7 @@ public class HttpSender implements ISender, HasPhysicalDestination {
 	public String extractResult(HttpMethod httpmethod) throws SenderException {
 		int statusCode = httpmethod.getStatusCode();
 		if (statusCode!=200) {
-			throw new SenderException(statusCode+": "+httpmethod.getStatusText());
+			throw new SenderException("httpstatus "+statusCode+": "+httpmethod.getStatusText());
 		}
 		return httpmethod.getResponseBodyAsString();
 	}

@@ -1,6 +1,9 @@
 /*
  * $Log: AuthSSLProtocolSocketFactory.java,v $
- * Revision 1.1  2004-08-31 10:12:42  L190409
+ * Revision 1.2  2004-09-08 14:18:34  L190409
+ * early initialization of SocketFactory
+ *
+ * Revision 1.1  2004/08/31 10:12:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * first version, based on code from Apache HttpClient contributions
  *
  */
@@ -21,17 +24,14 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Enumeration;
 
-import nl.nn.adapterframework.core.SenderException;
-
 import org.apache.commons.httpclient.protocol.SecureProtocolSocketFactory;
 import org.apache.log4j.Logger;
 
-import com.sun.net.ssl.KeyManager;
-import com.sun.net.ssl.KeyManagerFactory;
-import com.sun.net.ssl.SSLContext;
-import com.sun.net.ssl.TrustManager;
-import com.sun.net.ssl.TrustManagerFactory;
-import com.sun.net.ssl.X509TrustManager;
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
 
 /**
  * <p>
@@ -221,8 +221,12 @@ public class AuthSSLProtocolSocketFactory implements SecureProtocolSocketFactory
         return trustmanagers; 
     }
 
-    private SSLContext createSSLContext() {
-        try {
+
+	public void init() throws NoSuchAlgorithmException, KeyStoreException, GeneralSecurityException, IOException {
+		this.sslcontext = createSSLContext();
+	}
+
+    private SSLContext createSSLContext() throws NoSuchAlgorithmException, KeyStoreException, GeneralSecurityException, IOException {
             KeyManager[] keymanagers = null;
             TrustManager[] trustmanagers = null;
             if (this.keystoreUrl != null) {
@@ -274,24 +278,25 @@ public class AuthSSLProtocolSocketFactory implements SecureProtocolSocketFactory
             sslcontext.init(keymanagers, trustmanagers, null);
             return sslcontext;
 
-		} catch (NoSuchAlgorithmException e) {
-			log.error("Unsupported algorithm exception", e);
-			throw new Error("Unsupported algorithm exception: " + e.getMessage());
-		} catch (KeyStoreException e) {
-			log.error("Keystore exception", e);
-			throw new Error("Keystore exception: " + e.getMessage());
-		} catch (GeneralSecurityException e) {
-			log.error("Key management exception", e);
-			throw new Error("Key management exception: " + e.getMessage());
-		} catch (IOException e) {
-			log.error("I/O error reading keystore/truststore file", e);
-			throw new Error("I/O error reading keystore/truststore file: " + e.getMessage());
-		}
     }
 
     private SSLContext getSSLContext() {
         if (this.sslcontext == null) {
-            this.sslcontext = createSSLContext();
+			try {
+				init();
+			} catch (NoSuchAlgorithmException e) {
+				log.error("Unsupported algorithm exception", e);
+				throw new Error("Unsupported algorithm exception: " + e.getMessage());
+			} catch (KeyStoreException e) {
+				log.error("Keystore exception", e);
+				throw new Error("Keystore exception: " + e.getMessage());
+			} catch (GeneralSecurityException e) {
+				log.error("Key management exception", e);
+				throw new Error("Key management exception: " + e.getMessage());
+			} catch (IOException e) {
+				log.error("I/O error reading keystore/truststore file", e);
+				throw new Error("I/O error reading keystore/truststore file: " + e.getMessage());
+			}
         }
         return this.sslcontext;
     }
