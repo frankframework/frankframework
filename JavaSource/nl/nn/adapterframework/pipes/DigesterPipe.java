@@ -27,7 +27,7 @@ import org.apache.commons.digester.xmlrules.DigesterLoader;
  * <tr><th>state</th><th>condition</th></tr>
  * <tr><td>"success"</td><td>default</td></tr>
  * </table></p>
- * <p> $Id: DigesterPipe.java,v 1.5 2004-02-09 11:40:36 a1909356#db2admin Exp $ </p>
+ * <p> $Id: DigesterPipe.java,v 1.6 2004-02-09 11:41:14 a1909356#db2admin Exp $ </p>
  * @author Richard Punt
  * @since 4.0.1 : adjustments to support multi-threading
  */
