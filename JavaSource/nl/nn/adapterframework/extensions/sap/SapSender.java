@@ -1,6 +1,9 @@
 /*
  * $Log: SapSender.java,v $
- * Revision 1.1  2004-07-06 07:09:05  L190409
+ * Revision 1.2  2004-07-15 07:36:24  L190409
+ * updated javadoc
+ *
+ * Revision 1.1  2004/07/06 07:09:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * moved SAP functionality to extensions
  *
  * Revision 1.2  2004/07/05 10:50:18  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -42,7 +45,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
  * @since 4.2
  */
 public class SapSender extends SapFunctionFacade implements ISender {
-	public static final String version="$Id: SapSender.java,v 1.1 2004-07-06 07:09:05 L190409 Exp $";
+	public static final String version="$Id: SapSender.java,v 1.2 2004-07-15 07:36:24 L190409 Exp $";
 	
 	//TODO: allow functionName to be set dynamically from a parameter or from the message
 	private String functionName=null;
@@ -83,7 +86,9 @@ public class SapSender extends SapFunctionFacade implements ISender {
 		}
 	}
 
-	
+	/**
+	 * allways returns true.
+	 */
 	public boolean isSynchronous() {
 		return true;
 	}
