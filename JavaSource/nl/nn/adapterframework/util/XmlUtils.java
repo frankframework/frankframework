@@ -1,6 +1,9 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.5  2004-04-27 10:52:50  a1909356#db2admin
+ * Revision 1.6  2004-05-25 08:41:31  L190409
+ * added createXPathEvaluator()
+ *
+ * Revision 1.5  2004/04/27 10:52:50  unknown <unknown@ibissource.org>
  * Make thread-safety a little more efficient
  *
  * Revision 1.4  2004/03/26 10:42:37  Johan Verrips <johan.verrips@ibissource.org>
@@ -12,6 +15,7 @@
  */
 package nl.nn.adapterframework.util;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.NestableException;
 import org.apache.log4j.Logger;
 
@@ -64,7 +68,7 @@ import java.util.LinkedList;
  * @author Johan Verrips IOS
  */
 public class XmlUtils {
-	public static final String version="$Id: XmlUtils.java,v 1.5 2004-04-27 10:52:50 a1909356#db2admin Exp $";
+	public static final String version="$Id: XmlUtils.java,v 1.6 2004-05-25 08:41:31 L190409 Exp $";
 	
     static final String W3C_XML_SCHEMA       = "http://www.w3.org/2001/XMLSchema";
     static final String JAXP_SCHEMA_LANGUAGE = "http://java.sun.com/xml/jaxp/properties/schemaLanguage";
@@ -198,7 +202,25 @@ public static Element buildElement(String s) throws DomBuilderException {
 
 		return buildDomDocument(s).getDocumentElement();
 	}
-public static synchronized Transformer createTransformer(String xsltString) throws javax.xml.transform.TransformerConfigurationException{
+	
+public static Transformer createXPathEvaluator(String XPathExpression) throws TransformerConfigurationException {
+	if (StringUtils.isEmpty(XPathExpression))
+		throw new TransformerConfigurationException("XPathExpression must be filled");
+			
+	String xsl = 
+		"<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"1.0\" xmlns:xalan=\"http://xml.apache.org/xslt\">" +
+		"<xsl:output method=\"text\"/>" +
+		"<xsl:strip-space elements=\"*\"/>" +
+		"<xsl:template match=\"/\">" +
+		"<xsl:value-of select=\"" + XPathExpression + "\"/>" +
+		"</xsl:template>" +
+		"</xsl:stylesheet>";
+	
+	return  createTransformer(xsl);
+}
+	
+public static synchronized Transformer createTransformer(String xsltString) throws TransformerConfigurationException{
 
     StringReader sr = new StringReader(xsltString);
 
