@@ -1,6 +1,9 @@
 /*
  * $Log: Parameter.java,v $
- * Revision 1.4  2004-10-19 08:09:31  L190409
+ * Revision 1.5  2004-10-19 13:50:04  L190409
+ * dual action parameters: allows to use session-variable as transformer-input
+ *
+ * Revision 1.4  2004/10/19 08:09:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * omit xml declaration
  *
  * Revision 1.3  2004/10/14 16:04:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -42,12 +45,13 @@ import nl.nn.adapterframework.util.XmlUtils;
  * A parameter resembles an attribute. However, while attributes get their value at configuration-time,
  * parameters get their value at the time of processing the message. Value can be retrieved from the message itself,
  * or from the pipelineSession. If this does not result in a value (or if neither of these is specified), a default value 
- * can be specified.
+ * can be specified. If an XPathExpression or stylesheet is specified, it will be applied to the message or the value retrieved
+ * from the pipelineSession
  * 
  * @author Richard Punt / Gerrit van Brakel
  */
 public class Parameter implements INamedObject {
-	public static final String version="$Id: Parameter.java,v 1.4 2004-10-19 08:09:31 L190409 Exp $";
+	public static final String version="$Id: Parameter.java,v 1.5 2004-10-19 13:50:04 L190409 Exp $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	private String name = null;
@@ -61,37 +65,31 @@ public class Parameter implements INamedObject {
 	private boolean configured = false;
 
 	public void configure() throws ConfigurationException {
-		if (!StringUtils.isEmpty(getSessionKey())) {
-			if (!StringUtils.isEmpty(getXpathExpression()) || !StringUtils.isEmpty(styleSheetName)) {
-				throw new ConfigurationException("Parameter ["+getName()+"] can have only one of sessionKey ["+getSessionKey()+"], xpathExpression ["+getXpathExpression()+"] and styleSheetName ["+styleSheetName+"]");
-			}
-		} else {
-			if (!StringUtils.isEmpty(getXpathExpression())) {
-				if (!StringUtils.isEmpty(styleSheetName)) {
-					throw new ConfigurationException("Parameter ["+getName()+"] cannot have both an xpathExpression and a styleSheetName specified");
-				}
-				try {
-					String xsltSource;
-					if ("xml".equalsIgnoreCase(getType())) {
-						xsltSource = XmlUtils.createXPathEvaluatorSource("",getXpathExpression(),"xml", false); 
-					} else {
-						xsltSource = XmlUtils.createXPathEvaluatorSource(getXpathExpression(),"text"); 
-					}
-					transformerPool = new TransformerPool(xsltSource);
-				} 
-				catch (TransformerConfigurationException te) {
-					throw new ConfigurationException("Parameter ["+getName()+"] got error creating transformer from xpathExpression [" + getXpathExpression() + "]", te);
-				}
-			} 
+		if (!StringUtils.isEmpty(getXpathExpression())) {
 			if (!StringUtils.isEmpty(styleSheetName)) {
-				URL styleSheetUrl = ClassUtils.getResourceURL(this, styleSheetName); 
-				try {
-					transformerPool = new TransformerPool(styleSheetUrl);
-				} catch (IOException e) {
-					throw new ConfigurationException("Parameter ["+getName()+"] cannot retrieve ["+ styleSheetName + "]", e);
-				} catch (TransformerConfigurationException te) {
-					throw new ConfigurationException("Parameter ["+getName()+"] got error creating transformer from [" + styleSheetUrl.toString() + "]", te);
+				throw new ConfigurationException("Parameter ["+getName()+"] cannot have both an xpathExpression and a styleSheetName specified");
+			}
+			try {
+				String xsltSource;
+				if ("xml".equalsIgnoreCase(getType())) {
+					xsltSource = XmlUtils.createXPathEvaluatorSource("",getXpathExpression(),"xml", false); 
+				} else {
+					xsltSource = XmlUtils.createXPathEvaluatorSource(getXpathExpression(),"text"); 
 				}
+				transformerPool = new TransformerPool(xsltSource);
+			} 
+			catch (TransformerConfigurationException te) {
+				throw new ConfigurationException("Parameter ["+getName()+"] got error creating transformer from xpathExpression [" + getXpathExpression() + "]", te);
+			}
+		} 
+		if (!StringUtils.isEmpty(styleSheetName)) {
+			URL styleSheetUrl = ClassUtils.getResourceURL(this, styleSheetName); 
+			try {
+				transformerPool = new TransformerPool(styleSheetUrl);
+			} catch (IOException e) {
+				throw new ConfigurationException("Parameter ["+getName()+"] cannot retrieve ["+ styleSheetName + "]", e);
+			} catch (TransformerConfigurationException te) {
+				throw new ConfigurationException("Parameter ["+getName()+"] got error creating transformer from [" + styleSheetUrl.toString() + "]", te);
 			}
 		}
 		configured = true;
@@ -109,30 +107,39 @@ public class Parameter implements INamedObject {
 		if (!configured) {
 			throw new ParameterException("Parameter ["+getName()+"] not configured");
 		}
-		if (StringUtils.isNotEmpty(getSessionKey())) {
-			result=r.getSession().get(getSessionKey());
-		}
-		else {
-			TransformerPool pool = getTransformerPool();
-			if (pool != null) {
-				Transformer t;
+		TransformerPool pool = getTransformerPool();
+		if (pool != null) {
+			Transformer t;
+			try {
+				t = pool.getTransformer();
 				try {
-					t = pool.getTransformer();
-					try {
-						result = XmlUtils.transformXml(t, r.getInputSource());
-					} catch (Exception e) {
-						try {
-							pool.invalidateTransformer(t);
-						} catch (Exception ee) {
-							// ignore silently...
+					if (StringUtils.isNotEmpty(getSessionKey())) {
+						String source = (String)(r.getSession().get(getSessionKey()));
+						if (StringUtils.isNotEmpty(source)) {
+							log.debug("Parameter ["+getName()+"] using sessionvariable ["+getSessionKey()+"] as source for transformation");
+							result = XmlUtils.transformXml(t,source);
+						} else {
+							log.debug("Parameter ["+getName()+"] sessionvariable ["+getSessionKey()+"] empty, no transformation will be performed");
 						}
-						throw new ParameterException("Parameter ["+getName()+"] exception on transformation to get parametervalue", e);
-					} finally {
-						pool.releaseTransformer(t);
+					} else {
+						result = XmlUtils.transformXml(t,r.getInputSource());
 					}
-				} catch (TransformerConfigurationException e) {
-					throw new ParameterException("Parameter ["+getName()+"] caught exception while obtaining transformer to extract parameter value", e);
+				} catch (Exception e) {
+					try {
+						pool.invalidateTransformer(t);
+					} catch (Exception ee) {
+						log.warn("Parameter ["+getName()+"] got exception invalidating transformer",ee);
+					}
+					throw new ParameterException("Parameter ["+getName()+"] exception on transformation to get parametervalue", e);
+				} finally {
+					pool.releaseTransformer(t);
 				}
+			} catch (TransformerConfigurationException e) {
+				throw new ParameterException("Parameter ["+getName()+"] caught exception while obtaining transformer to extract parameter value", e);
+			}
+		} else {
+			if (StringUtils.isNotEmpty(getSessionKey())) {
+				result=r.getSession().get(getSessionKey());
 			}
 		}
 		if (result != null) {
