@@ -1,6 +1,9 @@
 /*
  * $Log: ParameterResolutionContext.java,v $
- * Revision 1.4  2005-02-10 08:15:24  L190409
+ * Revision 1.5  2005-02-24 10:49:56  NNVZNL01#L180564
+ * 4.2.e dd 24-02-2005
+ *
+ * Revision 1.4  2005/02/10 08:15:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fixed bug in map-generation
  *
  * Revision 1.3  2005/01/13 08:08:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -37,7 +40,10 @@ import org.w3c.dom.Document;
 
 /*
  * $Log: ParameterResolutionContext.java,v $
- * Revision 1.4  2005-02-10 08:15:24  L190409
+ * Revision 1.5  2005-02-24 10:49:56  NNVZNL01#L180564
+ * 4.2.e dd 24-02-2005
+ *
+ * Revision 1.4  2005/02/10 08:15:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fixed bug in map-generation
  *
  * Revision 1.3  2005/01/13 08:08:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -68,7 +74,7 @@ import org.w3c.dom.Document;
  * @version Id
  */
 public class ParameterResolutionContext {
-	public static final String version="$Id: ParameterResolutionContext.java,v 1.4 2005-02-10 08:15:24 L190409 Exp $";
+	public static final String version="$Id: ParameterResolutionContext.java,v 1.5 2005-02-24 10:49:56 NNVZNL01#L180564 Exp $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	private String input;
@@ -139,23 +145,7 @@ public class ParameterResolutionContext {
 		void handle(Parameter pType, Object value, Object callbackObject);	
 	}
 
-	/**
-	 * Iterator through all parameters and call the handler for each parameter
-	 * @param parameters
-	 * @param handler
-	 * @param callbackObject
-	 * @throws IbisException
-	 */		
-	public void forAllParameterValues(ArrayList parameters, ValueHandler handler, Object callbackObject) throws IbisException {
-		if (parameters != null) {
-			for (Iterator it= parameters.iterator(); it.hasNext(); ) {
-				Parameter p = (Parameter)it.next();
-				Object val = p.getValue(this);
-				handler.handle(p, val, callbackObject);
-			}			
-		}
-	}
-	
+		
 	/**
 	 * @return the DOM document parsed from the (xml formatted) input
 	 * @throws ParserConfigurationException
