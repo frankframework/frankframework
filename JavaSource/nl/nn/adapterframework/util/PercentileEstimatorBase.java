@@ -1,0 +1,108 @@
+/*
+ * $Log: PercentileEstimatorBase.java,v $
+ * Revision 1.1  2005-02-02 16:32:52  L190409
+ * modular percentile estimation
+ *
+ */
+package nl.nn.adapterframework.util;
+
+import java.util.ArrayList;
+import java.util.StringTokenizer;
+
+/**
+ * Basic interpolating percentile estimator
+ * 
+ * @author Gerrit van Brakel
+ * @version Id
+ */
+public class PercentileEstimatorBase implements PercentileEstimator {
+
+	protected long values[];
+
+	private int p[];
+
+	public PercentileEstimatorBase(String configKey, String defaultPList, int valueArraySize) {
+		ArrayList pListBuffer = new ArrayList();
+		StringTokenizer tok = AppConstants.getInstance().getTokenizer(configKey,defaultPList);
+		
+		while (tok.hasMoreTokens()) {
+			pListBuffer.add(new Integer(Integer.parseInt(tok.nextToken())));
+		}
+		p = new int[pListBuffer.size()];
+		values = new long[valueArraySize];
+		for (int i = 0; i < pListBuffer.size(); i++) {
+			p[i] = ((Integer) pListBuffer.get(i)).intValue();
+		}
+	}
+ 
+	
+	public void addValue(long value, long count, long min, long max) {
+		if (count <= values.length) {
+			storeFirstValue(value, count);
+		}
+	}
+	
+	protected void storeFirstValue(long value, long count) {
+		// insert value in ordered array of first_values
+		int i;
+		for (i = (int) count - 1;
+			i > 0 && values[i - 1] > value;
+			i--) {
+			values[i] = values[i - 1];
+		}
+		values[i] = value;		
+	}
+	
+	protected int getVicinityCount(double target, double range, long count) {
+		int result=0;
+		for (int i=0; i<count; i++) {
+			if (Math.abs(target-values[i])<= range) {
+				result++;
+			}
+		}
+		if (result==0) {
+			return 1;
+		}
+		return result;
+	}
+
+	protected double getInterpolatedPercentile(int p, long count) {
+		if (count==0) {
+			return Double.NaN;
+		}
+			
+		int pos=((int)count*p)/50;
+			
+		if ((pos & 1)==0) {
+			pos--;
+		}
+			
+		if (pos<=0) {
+			return values[0]; 
+		}
+		if (pos>=count*2-1) {
+			return values[(int)count-1]; 
+		}
+		
+		double fraction = (count*p-pos*50)/100.0;
+		double result = values[(pos-1)/2]+(values[(pos+1)/2]-values[(pos-1)/2])*fraction;
+	//	System.out.println("Interpolated p"+p+"="+result); 
+		return result; 
+	}
+
+	public double getPercentileEstimate(int index,long count) {
+		if (count<=values.length) { 
+			return getInterpolatedPercentile(p[index],count);
+		}
+		return getInterpolatedPercentile(p[index],values.length);
+	}
+
+	public int getNumPercentiles() {
+		return p.length;
+	}
+
+	public int getPercentage(int index) {
+		return p[index];
+	}
+
+}

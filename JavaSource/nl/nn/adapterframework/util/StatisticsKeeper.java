@@ -1,6 +1,9 @@
 /*
  * $Log: StatisticsKeeper.java,v $
- * Revision 1.5  2005-01-13 09:05:53  L190409
+ * Revision 1.6  2005-02-02 16:37:16  L190409
+ * modular percentile estimation
+ *
+ * Revision 1.5  2005/01/13 09:05:53  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added percentile estimations
  *
  */
@@ -13,10 +16,12 @@ import java.util.StringTokenizer;
  * Keeps statistics (min, max, count etc).
  * <p>Creation date: (19-02-2003 11:34:14)</p>
  * @version Id
- * @author Johan Verrips
+ * @author Johan Verrips / Gerrit van Brakel
  */
 public class StatisticsKeeper {
-	public static final String version="$Id: StatisticsKeeper.java,v 1.5 2005-01-13 09:05:53 L190409 Exp $";
+	public static final String version="$Id: StatisticsKeeper.java,v 1.6 2005-02-02 16:37:16 L190409 Exp $";
+	
+	private static final boolean calculatePercentiles=false;
 	
 	private String name = null;
 	private long min = Integer.MAX_VALUE;
@@ -39,15 +44,11 @@ public class StatisticsKeeper {
     public static final int ITEM_TYPE_FRACTION=3;
     public static final String DEFAULT_BOUNDARY_LIST="100,500,1000,5000";
 
-	public static final String ewsaConfigKey="Statistics.percentiles";
-	public static final String EWSA_DEFAULT_P_LIST="25,50,75,90,95";
-	private static double EWSA_w=0.05;
-	private int EWSA_p[];
-	private double EWSA_S[];
-	private double EWSA_f[];
-	private int EWSA_S25=-1;
-	private int EWSA_S75=-1;
-	
+	public static final String percentileConfigKey="Statistics.percentiles";
+	public static final String DEFAULT_P_LIST="25,50,75,90,95";
+
+	protected PercentileEstimator pest;	
+
 	/**
 	 * Constructor for StatisticsKeeper.
 	 *
@@ -71,29 +72,11 @@ public class StatisticsKeeper {
 	        classBoundaries[i] = ((Long) classBoundariesBuffer.get(i)).longValue();
 	    }
 
-		ArrayList ewsaPListBuffer = new ArrayList();
-		tok = AppConstants.getInstance().getTokenizer(ewsaConfigKey,EWSA_DEFAULT_P_LIST);
-	
-		while (tok.hasMoreTokens()) {
-			ewsaPListBuffer.add(new Integer(Integer.parseInt(tok.nextToken())));
+		if (calculatePercentiles) {
+			pest = new PercentileEstimatorBase(percentileConfigKey,DEFAULT_P_LIST,30);
 		}
-		EWSA_p = new int[ewsaPListBuffer.size()];
-		EWSA_S = new double[ewsaPListBuffer.size()];
-		EWSA_f = new double[ewsaPListBuffer.size()];
-		for (int i = 0; i < ewsaPListBuffer.size(); i++) {
-			int p = ((Integer) ewsaPListBuffer.get(i)).intValue();
-			EWSA_p[i] = p;
-			EWSA_S[i] = Double.NaN;
-			if (p==25) {
-				EWSA_S25=i;
-			}
-			if (p==75) {
-				EWSA_S75=i;
-			}
-		}
-	
 	}
-	
+/*	
 	public StatisticsKeeper(StatisticsKeeper stat) {
 		name = stat.name;
 	    min = stat.min;
@@ -104,14 +87,10 @@ public class StatisticsKeeper {
 	
 	    classBoundaries = stat.getClassBoundaries();
 	    classCounts = new long[classBoundaries.length];
-	    
-		EWSA_p=stat.EWSA_p;
-		EWSA_S=stat.EWSA_S;
-		EWSA_f=stat.EWSA_f;
-		EWSA_S25=stat.EWSA_S25;
-		EWSA_S75=stat.EWSA_S75;
+
+		pest = stat.pest;
 	}
-	
+*/	
 	public void addValue(long value) {
 		if (count==0) { 
 			first=value;
@@ -132,59 +111,20 @@ public class StatisticsKeeper {
 	            classCounts[i]++;
 	        }
 	    }
-		update_EWSA(value);
-	}
-	
-	
-	
-	public void update_EWSA(long value) {
-		if (count>2) {
-			double c=1/Math.sqrt(count);
-			double rn=EWSA_S[EWSA_S75]-EWSA_S[EWSA_S25];
-			double cn=rn*c;
-			for (int i = 0; i < EWSA_p.length; i++) {
-				EWSA_S[i] = EWSA_S[i] + (EWSA_w/EWSA_f[i]) * (0.01*EWSA_p[i]-((value <=EWSA_S[i]? 1.0 : 0)));
-				if (EWSA_S[i] < min) {
-					EWSA_S[i] = min;
-				}
-				if (EWSA_S[i] > max) {
-					EWSA_S[i] = max;
-				}
-				EWSA_f[i] = (1-EWSA_w)*EWSA_f[i];
-					 
-				if (Math.abs(value-EWSA_S[i])<= cn) {
-					EWSA_f[i] += EWSA_w/(2*cn);
-				}
-			}
-		} else
-			if (count==2) {
-				// initial guesses
-				float r0;
-				if (min==max) {
-					r0=1;
-				} else {
-					r0=(max-min)/2;
-				}
-				double c0 = r0 *((1/2)*(1+1/Math.sqrt(2)));
-				double f0 = 1/c0;	
-				for (int i = 0; i < EWSA_p.length; i++) {
-					EWSA_S[i] = min + EWSA_p[i] * 0.01 * (max-min);
-					EWSA_f[i] = f0;
-				}
-			} else {
-				for (int i = 0; i < EWSA_p.length; i++) {
-					EWSA_S[i] = value;
-				}				
+		if (calculatePercentiles) {
+			pest.addValue(value,count,min,max);
 		}
 	}
 	
-    public long getAvg()
+
+
+    public double getAvg()
     {
         if (count == 0)
         {
             return 0;
         }
-        return (long)(total / count);
+        return (total / (double)count);
     }
 	public long[] getClassBoundaries() {
 		return classBoundaries;
@@ -198,7 +138,10 @@ public class StatisticsKeeper {
     }
     public int getItemCount()
     {
-        return NUM_STATIC_ITEMS+classBoundaries.length+EWSA_p.length;
+		if (calculatePercentiles) {
+	        return NUM_STATIC_ITEMS+classBoundaries.length+pest.getNumPercentiles();
+		}
+		return NUM_STATIC_ITEMS+classBoundaries.length;
     }
     public String getItemName(int index)
     {
@@ -214,9 +157,28 @@ public class StatisticsKeeper {
 		    default : if ((index-NUM_STATIC_ITEMS) < classBoundaries.length) { 
 				return "< "+classBoundaries[index-NUM_STATIC_ITEMS]+"ms";
 		    }
-			return "p"+EWSA_p[index-NUM_STATIC_ITEMS-classBoundaries.length];
+		    if (calculatePercentiles) {
+				return "p"+pest.getPercentage(index-NUM_STATIC_ITEMS-classBoundaries.length);
+		    }
+			return null;
 	    }
     }
+    
+	public int getItemIndex(String name) {
+		int top=NUM_STATIC_ITEMS+classBoundaries.length;
+		if (calculatePercentiles) {
+			top+=pest.getNumPercentiles();
+		}
+			
+		for (int i=0; i<top; i++) {
+			if (getItemName(i).equals(name)) {
+				return i;
+			}
+		}
+		return -1;
+	}
+
+    
     public int getItemType(int index)
     {
 	    switch (index) {
@@ -250,7 +212,10 @@ public class StatisticsKeeper {
 				if ((index-NUM_STATIC_ITEMS) < classBoundaries.length) { 
 					return new Double(new Double(classCounts[index-NUM_STATIC_ITEMS]).doubleValue()/getCount());
 				}
-				return new Double(EWSA_S[index-NUM_STATIC_ITEMS-classBoundaries.length]);
+				if (calculatePercentiles) {
+					return new Double(pest.getPercentileEstimate(index-NUM_STATIC_ITEMS-classBoundaries.length,count));
+				}
+				throw new ArrayIndexOutOfBoundsException("StatisticsKeeper.getItemValue()");
 	    }
     }
     public long getFirst() {
