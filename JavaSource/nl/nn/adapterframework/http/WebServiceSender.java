@@ -1,6 +1,9 @@
 /*
  * $Log: WebServiceSender.java,v $
- * Revision 1.6  2004-09-02 13:25:39  L190409
+ * Revision 1.7  2004-09-08 14:17:28  L190409
+ * better handling of SOAP faults
+ *
+ * Revision 1.6  2004/09/02 13:25:39  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved fault-handling
  * added handling of encodingStyleUri
  *
@@ -98,7 +101,7 @@ import javax.xml.transform.TransformerException;
  */
 
 public class WebServiceSender extends HttpSender {
-	public static final String version="$Id: WebServiceSender.java,v 1.6 2004-09-02 13:25:39 L190409 Exp $";
+	public static final String version="$Id: WebServiceSender.java,v 1.7 2004-09-08 14:17:28 L190409 Exp $";
 	
 
 	private String soapActionURI = "";
@@ -106,10 +109,14 @@ public class WebServiceSender extends HttpSender {
 //	private String methodName = "";
 	
 	private Transformer extractBody;
-	private Transformer extractFault;
+	private Transformer extractFaultCount;
+	private Transformer extractFaultCode;
+	private Transformer extractFaultString;
 	private final static String extractNamespaces="xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\"";
 	private final static String extractBodyXPath="/soapenv:Envelope/soapenv:Body/*";
-	private final static String extractFaultXPath="/soapenv:Envelope/soapenv:Body/soapenv:Fault/*";
+	private final static String extractFaultCountXPath="count(/soapenv:Envelope/soapenv:Body/soapenv:Fault)";
+	private final static String extractFaultCodeXPath="/soapenv:Envelope/soapenv:Body/soapenv:Fault/faultcode";
+	private final static String extractFaultStringXPath="/soapenv:Envelope/soapenv:Body/soapenv:Fault/faultstring";
 	
 //	private MessageFactory soapMessageFactory;
 	
@@ -127,9 +134,11 @@ public class WebServiceSender extends HttpSender {
 		super.configure();
 		try {
 			extractBody = XmlUtils.createXPathEvaluator(extractNamespaces,extractBodyXPath,"xml");
-			extractFault = XmlUtils.createXPathEvaluator(extractNamespaces,extractFaultXPath,"xml");
+			extractFaultCount = XmlUtils.createXPathEvaluator(extractNamespaces,extractFaultCountXPath,"text");
+			extractFaultCode = XmlUtils.createXPathEvaluator(extractNamespaces,extractFaultCodeXPath,"text");
+			extractFaultString = XmlUtils.createXPathEvaluator(extractNamespaces,extractFaultStringXPath,"text");
 		} catch (TransformerConfigurationException e) {
-			throw new ConfigurationException("cannot create transformer from expression ["+extractBodyXPath+"] or ["+extractFaultXPath+"]",e);
+			throw new ConfigurationException("cannot create transformer from expression ["+extractBodyXPath+"] or ["+extractFaultStringXPath+"]",e);
 		}
 /*		
 		try {
@@ -160,35 +169,48 @@ public class WebServiceSender extends HttpSender {
 		return method;
 	}
 
+	protected void checkForSoapFault(String responseBody, Throwable nested) throws SenderException {
+		String faultString=null;
+		String faultCode=null;
+		int faultCount=0;
+		try {
+			String faultCountString = XmlUtils.transformXml(extractFaultCount, responseBody);
+			faultCount = Integer.parseInt(faultCountString);
+			log.debug("fault count="+faultCount);
+			if (faultCount > 0) {
+				faultCode = XmlUtils.transformXml(extractFaultCode, responseBody);
+				faultString = XmlUtils.transformXml(extractFaultString, responseBody);
+				log.debug("faultCode="+faultCode);
+				log.debug("faultString="+faultString);
+			}
+		} catch (IOException e) {
+			log.debug("IOException extracting fault message",e);
+		} catch (TransformerException e) {
+			log.debug("TransformerException extracting fault message:"+e.getMessageAndLocation());
+		}
+		if (faultCount > 0) {
+			String msg = "WebServiceSender ["+getName()+"] caught SOAP fault ["+faultCode+"]: "+faultString;
+			log.info(msg);
+			throw new SenderException(msg, nested);
+		}
+	}
+
 	public String extractResult(HttpMethod httpmethod) throws SenderException {
 		String httpResult;
 		try {
 			httpResult = super.extractResult(httpmethod);
 		} catch (SenderException e) {
-			String fault=null;
-			try {
-				fault = XmlUtils.transformXml(extractFault, httpmethod.getResponseBodyAsString());
-			} catch (Exception ee) {
-				log.debug("exception extracting fault message",ee);
-			}
-			if (!StringUtils.isEmpty(fault) && !fault.equals("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")) {
-				throw new SenderException("SOAP Fault caught ["+fault+"]",e);
-			}
+			checkForSoapFault(httpmethod.getResponseBodyAsString(), e);
 			throw e;
 		}
 		
-		String fault;
-		String result;
+		checkForSoapFault(httpmethod.getResponseBodyAsString(), null);
 		try {
-			fault = XmlUtils.transformXml(extractFault, httpResult);
-			result = XmlUtils.transformXml(extractBody, httpResult);
+			String result = XmlUtils.transformXml(extractBody, httpResult);
+			return (result);
 		} catch (Exception e) {
 			throw new SenderException("cannot retrieve result message",e);
 		}
-		if (!StringUtils.isEmpty(fault) && !fault.equals("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")) {
-			throw new SenderException("SOAP Fault caught ["+fault+"]");
-		}
-		return (result);
 	}
 
 	public String sendMessage(String correlationID, String message) throws SenderException, TimeOutException {
