@@ -1,6 +1,9 @@
 /*
  * $Log: SapFunctionFacade.java,v $
- * Revision 1.1  2004-06-22 06:56:44  L190409
+ * Revision 1.2  2004-06-22 12:14:42  L190409
+ * made Logger protected instead of private
+ *
+ * Revision 1.1  2004/06/22 06:56:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * First version of SAP package
  *
  */
@@ -40,8 +43,8 @@ import com.sap.mw.jco.*;
  * @since 4.1.1
  */
 public class SapFunctionFacade {
-	public static final String version="$Id: SapFunctionFacade.java,v 1.1 2004-06-22 06:56:44 L190409 Exp $";
-	private Logger log = Logger.getLogger(this.getClass());
+	public static final String version="$Id: SapFunctionFacade.java,v 1.2 2004-06-22 12:14:42 L190409 Exp $";
+	protected Logger log = Logger.getLogger(this.getClass());
 
 	private String name;
 	private String sapSystemName;
