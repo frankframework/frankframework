@@ -1,6 +1,9 @@
 /*
  * $Log: TransformerPool.java,v $
- * Revision 1.8  2005-03-04 07:52:45  NNVZNL01#L180564
+ * Revision 1.9  2005-03-31 08:16:27  L190409
+ * generalized Source
+ *
+ * Revision 1.8  2005/03/04 07:52:45  Johan Verrips <johan.verrips@ibissource.org>
  * Multi-threading caused problems with closed streams on creating transfomers.
  * Transformers are now instantiated by a Templates object, which solves this problem
  * and increases perfomance
@@ -58,7 +61,7 @@ import org.w3c.dom.Document;
  * @author Gerrit van Brakel
  */
 public class TransformerPool {
-	public static final String version = "$Id: TransformerPool.java,v 1.8 2005-03-04 07:52:45 NNVZNL01#L180564 Exp $";
+	public static final String version = "$Id: TransformerPool.java,v 1.9 2005-03-31 08:16:27 L190409 Exp $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	private TransformerFactory tFactory = TransformerFactory.newInstance();
@@ -72,14 +75,13 @@ public class TransformerPool {
 		}
 	}); 
 
-	public TransformerPool(StreamSource source, String sysId) throws TransformerConfigurationException {
+	public TransformerPool(Source source, String sysId) throws TransformerConfigurationException {
 		super();
-		StreamSource theSource=source;
 		if (StringUtils.isNotEmpty(sysId)) {
-			theSource.setSystemId(sysId);
+			source.setSystemId(sysId);
 			log.debug("setting systemId to ["+sysId+"]");
 		}
-		templates=tFactory.newTemplates(theSource);
+		templates=tFactory.newTemplates(source);
 
 		// check if a transformer can be initiated
 		Transformer t = getTransformer();
@@ -87,7 +89,7 @@ public class TransformerPool {
 		releaseTransformer(t);
 	}	
 	
-	public TransformerPool(StreamSource source) throws TransformerConfigurationException {
+	public TransformerPool(Source source) throws TransformerConfigurationException {
 		this(source,null);
 	}	
 

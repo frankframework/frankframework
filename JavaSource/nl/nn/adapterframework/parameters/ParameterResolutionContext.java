@@ -1,6 +1,9 @@
 /*
  * $Log: ParameterResolutionContext.java,v $
- * Revision 1.5  2005-02-24 10:49:56  NNVZNL01#L180564
+ * Revision 1.6  2005-03-31 08:15:48  L190409
+ * generalized Source
+ *
+ * Revision 1.5  2005/02/24 10:49:56  Johan Verrips <johan.verrips@ibissource.org>
  * 4.2.e dd 24-02-2005
  *
  * Revision 1.4  2005/02/10 08:15:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -20,17 +23,15 @@
 package nl.nn.adapterframework.parameters;
 
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 
+import javax.xml.transform.Source;
 import javax.xml.transform.dom.DOMSource;
 
-import nl.nn.adapterframework.core.IbisException;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.util.DomBuilderException;
-
 import nl.nn.adapterframework.util.XmlUtils;
 
 
@@ -40,7 +41,10 @@ import org.w3c.dom.Document;
 
 /*
  * $Log: ParameterResolutionContext.java,v $
- * Revision 1.5  2005-02-24 10:49:56  NNVZNL01#L180564
+ * Revision 1.6  2005-03-31 08:15:48  L190409
+ * generalized Source
+ *
+ * Revision 1.5  2005/02/24 10:49:56  Johan Verrips <johan.verrips@ibissource.org>
  * 4.2.e dd 24-02-2005
  *
  * Revision 1.4  2005/02/10 08:15:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -74,12 +78,12 @@ import org.w3c.dom.Document;
  * @version Id
  */
 public class ParameterResolutionContext {
-	public static final String version="$Id: ParameterResolutionContext.java,v 1.5 2005-02-24 10:49:56 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: ParameterResolutionContext.java,v 1.6 2005-03-31 08:15:48 L190409 Exp $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	private String input;
 	private PipeLineSession session;
-	private DOMSource inputSource;
+	private Source inputSource;
 
 	/**
 	 * constructor
@@ -152,12 +156,14 @@ public class ParameterResolutionContext {
 	 * @throws SAXException
 	 * @throws IOException
 	 */
-	public DOMSource getInputSource() throws DomBuilderException {
+	public Source getInputSource() throws DomBuilderException {
 		if (inputSource == null) {
-			// TODO try SaxInputSource
-			log.debug("Constructing DomInputSource for ParameterResolutionContext");
+			log.debug("Constructing InputSource for ParameterResolutionContext");
+//			StringReader sr = new StringReader(input);
+//			inputSource = new StreamSource(sr);
 			Document doc = XmlUtils.buildDomDocument(input);
 			inputSource = new DOMSource(doc); 
+
 		}
 		return inputSource;
 	}
