@@ -1,6 +1,9 @@
 /*
  * $Log: TransformerPool.java,v $
- * Revision 1.5  2004-10-26 16:26:03  L190409
+ * Revision 1.6  2004-12-20 15:11:56  NNVZNL01#L180564
+ * Bugfix: systemID now properly handled. Transformer was created before system id was set.
+ *
+ * Revision 1.5  2004/10/26 16:26:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * set UTF-8 as default inputstream encoding
  *
  * Revision 1.4  2004/10/19 15:27:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -34,6 +37,7 @@ import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.pool.BasePoolableObjectFactory;
 import org.apache.commons.pool.ObjectPool;
 import org.apache.commons.pool.impl.GenericObjectPool;
@@ -46,7 +50,7 @@ import org.w3c.dom.Document;
  * @author Gerrit van Brakel
  */
 public class TransformerPool {
-	public static final String version = "$Id: TransformerPool.java,v 1.5 2004-10-26 16:26:03 L190409 Exp $";
+	public static final String version = "$Id: TransformerPool.java,v 1.6 2004-12-20 15:11:56 NNVZNL01#L180564 Exp $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	private TransformerFactory tFactory = TransformerFactory.newInstance();
@@ -57,24 +61,37 @@ public class TransformerPool {
 			return createTransformer();
 		}
 	}); 
-	
-	public TransformerPool(Source source) throws TransformerConfigurationException {
+
+	public TransformerPool(StreamSource source, String sysId) throws TransformerConfigurationException {
 		super();
 		this.source=source;
+		if (StringUtils.isNotEmpty(sysId)) {
+			this.source.setSystemId(sysId);
+			log.debug("setting systemId to ["+sysId+"]");
+		}
 		
 		// check if a transformer can be initiated
 		Transformer t = getTransformer();
+		
 		releaseTransformer(t);
+	}	
+	
+	public TransformerPool(StreamSource source) throws TransformerConfigurationException {
+		this(source,null);
 	}	
 
 	public TransformerPool(URL url) throws TransformerConfigurationException, IOException {
-		this(new StreamSource(url.openStream(),Misc.DEFAULT_INPUT_STREAM_ENCODING));
-		source.setSystemId(url.toString());
+		this(new StreamSource(url.openStream(),Misc.DEFAULT_INPUT_STREAM_ENCODING),url.toString());
 	}
 	
 	public TransformerPool(String xsltString) throws TransformerConfigurationException {
 		this(new StreamSource(new StringReader(xsltString)));
 	}
+
+	public TransformerPool(String xsltString, String sysId) throws TransformerConfigurationException {
+		this(new StreamSource(new StringReader(xsltString)), sysId);
+	}
+
 	
 	public void open() throws Exception {
 	}
@@ -120,6 +137,8 @@ public class TransformerPool {
 
     protected synchronized Transformer createTransformer() throws TransformerConfigurationException {
 		Transformer t = tFactory.newTransformer(source);
+
+
 		if (t==null) {
 			throw new TransformerConfigurationException("cannot instantiate transformer from Source ["+source.getSystemId()+"]");
 		}
