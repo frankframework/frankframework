@@ -1,6 +1,10 @@
 /*
  * $Log: MessageSendingPipe.java,v $
- * Revision 1.10  2004-07-19 13:23:51  L190409
+ * Revision 1.11  2004-08-09 13:52:34  L190409
+ * introduction of function propagateName()
+ * catches more exceptions in start()
+ *
+ * Revision 1.10  2004/07/19 13:23:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved logging + no exception but only warning on timeout if no timeoutforward exists
  *
  * Revision 1.9  2004/07/07 13:49:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -38,6 +42,8 @@ import nl.nn.adapterframework.core.TimeOutException;
 
 import java.util.HashMap;
 
+import org.apache.commons.lang.StringUtils;
+
 /**
  * Sends a message using a {@link ISender} and optionally receives a reply from the same sender, or from a {@link ICorrelatedPullingListener listener}.
  *
@@ -70,7 +76,7 @@ import java.util.HashMap;
  */
 
 public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
-	public static final String version = "$Id: MessageSendingPipe.java,v 1.10 2004-07-19 13:23:51 L190409 Exp $";
+	public static final String version = "$Id: MessageSendingPipe.java,v 1.11 2004-08-09 13:52:34 L190409 Exp $";
 	private final static String TIMEOUTFORWARD = "timeout";
 
 	private String resultOnTimeOut = "receiver timed out";
@@ -80,8 +86,20 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 	private ICorrelatedPullingListener listener = null;
 
 	
-	public MessageSendingPipe() {
-		super();
+	protected void propagateName() {
+		ISender sender=getSender();
+		if (sender!=null && StringUtils.isEmpty(sender.getName())) {
+			sender.setName(getName() + "-sender");
+		}
+		ICorrelatedPullingListener listener=getListener();
+		if (listener!=null && StringUtils.isEmpty(listener.getName())) {
+			listener.setName(getName() + "-replylistener");
+		}
+	}
+
+	public void setName(String name) {
+		super.setName(name);
+		propagateName();
 	}
 
 	/**
@@ -89,14 +107,10 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 	 */
 	public void configure() throws ConfigurationException {
 		super.configure();
+		propagateName();
 		if (getSender() == null) {
 			throw new ConfigurationException(
 				getLogPrefix(null) + "no sender defined ");
-		}
-		String senderName = getSender().getName();
-
-		if (senderName == null || senderName.equals("")) {
-			getSender().setName(getName() + "-sender");
 		}
 
 		getSender().configure();
@@ -224,8 +238,8 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 				getListener().open();
 			}
 
-		} catch (Exception e) {
-			PipeStartException pse = new PipeStartException(getLogPrefix(null)+"could not start",e);
+		} catch (Throwable t) {
+			PipeStartException pse = new PipeStartException(getLogPrefix(null)+"could not start", t);
 			pse.setPipeNameInError(getName());
 			throw pse;
 		}
