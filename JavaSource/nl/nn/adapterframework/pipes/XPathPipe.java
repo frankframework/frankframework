@@ -1,6 +1,9 @@
 /*
  * $Log: XPathPipe.java,v $
- * Revision 1.6  2004-10-05 10:57:21  L190409
+ * Revision 1.7  2004-10-19 13:53:03  L190409
+ * replaced by XsltPipe
+ *
+ * Revision 1.6  2004/10/05 10:57:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * deprecated,
  * all functionality now in XsltPipe
  *
@@ -21,19 +24,6 @@
  * 
  */
 package nl.nn.adapterframework.pipes;
-
-import javax.xml.transform.Transformer;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.pool.BasePoolableObjectFactory;
-import org.apache.commons.pool.ObjectPool;
-import org.apache.commons.pool.impl.GenericObjectPool;
-
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.core.PipeRunException;
-import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * <p><b>Configuration:</b>
@@ -58,87 +48,5 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @version Id
  * @deprecated Please use XsltPipe, that has the same functionality
  */
-public class XPathPipe extends FixedForwardPipe {
-	private String xpathExpression;
-	private ObjectPool transformerPool;
-	private String sessionKey=null;
-	
-	/* 
-	 * @see nl.nn.adapterframework.core.IPipe#configure()
-	 */
-	public void configure() throws ConfigurationException {
-		super.configure();
-
-		if (StringUtils.isEmpty(xpathExpression))
-			throw new ConfigurationException(getLogPrefix(null)+"xpathExpression must be filled");
-						
-		try {
-			transformerPool = new GenericObjectPool(new BasePoolableObjectFactory() {
-				public Object makeObject() throws Exception {
-					return XmlUtils.createXPathEvaluator(getXpathExpression());
-				}
-			}); 
-		}
-		catch(Exception e) {
-			throw new ConfigurationException(getLogPrefix(null)+"cannot create XPath-evaluator from ["+getXpathExpression()+"]",e);
-		}
-	}
-
-	/** 
-	 * @see nl.nn.adapterframework.core.IPipe#doPipe(Object, PipeLineSession)
-	 */
-	public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRunException {
-		String in = (String)input;
-		String out = null; 
-		
-		if (! StringUtils.isEmpty(in)) {
-			Transformer t = null;
-			try {
-				t = (Transformer)transformerPool.borrowObject();
-				out = XmlUtils.transformXml(t, in);
-			} 
-			catch (Exception e) {
-				throw new PipeRunException(this, getLogPrefix(session)+"error during xsl transformation", e);
-			}
-			finally {
-				try { transformerPool.returnObject(t); } catch(Exception e) {}
-			}
-		}
-		if (StringUtils.isEmpty(getSessionKey())){
-			return new PipeRunResult(getForward(), out);
-		} else {
-			session.put(getSessionKey(), out);
-			return new PipeRunResult(getForward(), input);
-		}
-	}
-	
-	/**
-	 * @return the xpath expression to evaluate
-	 */
-	public String getXpathExpression() {
-		return xpathExpression;
-	}
-
-	/**
-	 * @param xpathExpression the xpath expression to evaluate
-	 */
-	public void setXpathExpression(String xpathExpression) {
-		this.xpathExpression = xpathExpression;
-	}
-	
-	/**
-	 * The name of the key in the <code>PipeLineSession</code> to store the input in
-	 * @see nl.nn.adapterframework.core.PipeLineSession
-	 */
-	public String getSessionKey() {
-		return sessionKey;
-	}
-	/**
-	 * The name of the key in the <code>PipeLineSession</code> to store the input in
-	 * @see nl.nn.adapterframework.core.PipeLineSession
-	 */
-	public void setSessionKey(String newSessionKey) {
-		sessionKey = newSessionKey;
-	}
-
+public class XPathPipe extends XsltPipe {
 }
