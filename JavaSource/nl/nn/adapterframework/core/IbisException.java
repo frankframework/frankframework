@@ -1,6 +1,9 @@
 /*
  * $Log: IbisException.java,v $
- * Revision 1.12  2004-07-20 13:56:31  L190409
+ * Revision 1.13  2005-02-10 08:14:23  L190409
+ * added exception type in message
+ *
+ * Revision 1.12  2004/07/20 13:56:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved message parsing
  *
  * Revision 1.11  2004/07/20 13:50:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -42,7 +45,7 @@ import org.apache.commons.lang.exception.NestableException;
  * @author Gerrit van Brakel
  */
 public class IbisException extends NestableException {
-		public static final String version="$Id: IbisException.java,v 1.12 2004-07-20 13:56:31 L190409 Exp $";
+		public static final String version="$Id: IbisException.java,v 1.13 2005-02-10 08:14:23 L190409 Exp $";
 
 	static {
 		// add methodname to find cause of JMS-Exceptions
@@ -62,8 +65,19 @@ public class IbisException extends NestableException {
 		super(cause);
 	}
 	
+	public String getExceptionType(Throwable t) {
+		String name = t.getClass().getName();
+		int dotpos=name.lastIndexOf(".");
+		name=name.substring(dotpos+1);
+		if ( name.endsWith("Exception") ) {
+			name=name.substring(0,name.length()-9);
+		}
+		return name;
+	}
+	
     public String getMessage() {
 	    String messages[]=getMessages(); 
+	    Throwable throwables[]=getThrowables();
 	    String last_message=null;
 		String result=null;
 	    
@@ -73,7 +87,11 @@ public class IbisException extends NestableException {
 			    if (result==null) {
 				    result=last_message;
 			    } else {
-				    result=result+": "+last_message;
+			    	if (throwables[i] instanceof IbisException) { 
+						result=result+": "+last_message;
+			    	} else {
+						result=result+": ("+getExceptionType(throwables[i])+") "+last_message;
+			    	}
 			    }
 		    }
 	    }
