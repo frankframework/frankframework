@@ -1,0 +1,132 @@
+package nl.nn.adapterframework.util;
+
+
+import javax.management.ObjectName;
+import javax.management.modelmbean.RequiredModelMBean;
+import javax.management.MBeanServer;
+import javax.management.MBeanServerFactory;
+import javax.management.Descriptor;
+import javax.management.modelmbean.DescriptorSupport;
+import javax.management.modelmbean.ModelMBeanOperationInfo;
+import javax.management.modelmbean.ModelMBeanAttributeInfo;
+
+
+import java.util.ArrayList;
+import org.apache.log4j.Logger;
+/**
+ *
+ * Utility classes for JMX
+ * @version Id
+ * @author Johan Verrips
+ */
+public class JmxUtils {
+	static Logger log=Logger.getLogger("JmxUtils");
+	public static final String version="$Id: JmxUtils.java,v 1.1 2004-04-23 14:35:37 NNVZNL01#L180564 Exp $";
+
+	/**
+	 * 
+	 */
+	public JmxUtils() {
+		super();
+	}
+
+	/**
+	 * Registers an mBean at an MBeanServer. If there is already an mbean registered 
+	 * under the specified name, it is first de-registered.
+	 * @param name	the objectName
+	 * @param mbean	the modelMbean to register
+	 * @throws ConfigurationException
+	 */
+	public static void registerMBean(ObjectName name, RequiredModelMBean mbean) throws Exception {
+
+		ArrayList servers = MBeanServerFactory.findMBeanServer(null);
+		if (servers == null) {
+			throw new Exception("no Mbean servers found");
+		}
+		MBeanServer server = (MBeanServer) servers.get(0);
+		log.debug("got an MBean server");
+		if (server.isRegistered(name)) {
+				log.debug("unregistering ["+name.getCanonicalName()+"] as it already exists");
+				server.unregisterMBean(name);
+		}
+		server.registerMBean(mbean, name);
+	
+		log.debug("MBean [" + name.getCanonicalName() + "] registered");
+		return;		
+	}
+
+
+	
+
+	/**
+	 * Builds a default Descriptor object for getter operations
+	 * @param name the name of the getter
+	 * @param klass
+	 * @return the descriptor
+	 */
+	private static Descriptor buildGetterDescriptor(
+		String name,
+		String klass) {
+		Descriptor resultDesc = new DescriptorSupport();
+		resultDesc.setField("name", name);
+		resultDesc.setField("descriptorType", "operation");
+		resultDesc.setField("class", klass);
+		resultDesc.setField("role", "getter");
+		return resultDesc;
+	}
+	
+	/**
+	 * Builds an operationInfor for getter purposes.
+	 * @param name
+	 * @param klass 
+	 * @param description
+	 * @param signature
+	 * @return
+	 */
+	public static ModelMBeanOperationInfo buildGetterModelMBeanOperationInfo(
+		String name,
+		String klass,
+		String description,
+		String signature) {
+			
+		Descriptor theDescriptor = buildGetterDescriptor(name, klass);
+		return new ModelMBeanOperationInfo(
+			name,
+			description,
+			null,
+			signature,
+			ModelMBeanOperationInfo.INFO,
+			theDescriptor);
+
+	}
+	/**
+	 * Builds an AttributeInfo in a default way
+	 * @param name
+	 * @param displayName
+	 * @param description
+	 * @param deflt
+	 * @param operName
+	 * @param signature
+	 * @return the default modelMBeanAttributeInfo object
+	 */
+	public static ModelMBeanAttributeInfo buildAttributeInfo(String name, String displayName, String description, String deflt, String operName, String signature){
+		Descriptor attrDesc = new DescriptorSupport();
+		attrDesc.setField("name", name);
+		attrDesc.setField("descriptorType", "attribute");
+		attrDesc.setField("default", deflt);
+		attrDesc.setField("displayName", displayName);
+		attrDesc.setField(
+			"getMethod",
+			operName);
+
+		ModelMBeanAttributeInfo result=new ModelMBeanAttributeInfo(name,
+		signature,
+		description,
+		true,
+		false,
+		false,
+		attrDesc);
+		return result;
+	}
+
+}
