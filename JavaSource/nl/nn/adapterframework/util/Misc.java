@@ -10,7 +10,7 @@ import java.rmi.server.UID;
  * @version Id
  */
 public class Misc {
-	public static final String version = "$Id: Misc.java,v 1.6 2004-08-23 13:41:15 a1909356#db2admin Exp $";
+	public static final String version = "$Id: Misc.java,v 1.7 2004-08-24 05:54:58 a1909356#db2admin Exp $";
 
 	public static String createSimpleUUID_old() {
 		StringBuffer sb = new StringBuffer();
@@ -91,7 +91,7 @@ public class Misc {
 		StringBuffer sb = new StringBuffer();
 		int curChar = -1;
 		int prevChar = -1;
-		while ((curChar = reader.read()) != -1) {
+		while ((curChar = reader.read()) != -1 || prevChar == '\r') {
 			if (prevChar == '\r' || curChar == '\n') {
 				if (endOfLineString == null) {
 					if (prevChar == '\r')
@@ -103,7 +103,7 @@ public class Misc {
 					sb.append(endOfLineString);
 				}
 			}
-			if (curChar != '\r' && curChar != '\n') {
+			if (curChar != '\r' && curChar != '\n' && curChar != -1) {
 				sb.append((char) curChar);
 			}
 			prevChar = curChar;
