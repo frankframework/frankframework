@@ -1,6 +1,9 @@
 /*
  * $Log: IbisException.java,v $
- * Revision 1.11  2004-07-20 13:50:32  L190409
+ * Revision 1.12  2004-07-20 13:56:31  L190409
+ * improved message parsing
+ *
+ * Revision 1.11  2004/07/20 13:50:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved message parsing
  *
  * Revision 1.10  2004/07/08 08:55:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -39,7 +42,7 @@ import org.apache.commons.lang.exception.NestableException;
  * @author Gerrit van Brakel
  */
 public class IbisException extends NestableException {
-		public static final String version="$Id: IbisException.java,v 1.11 2004-07-20 13:50:32 L190409 Exp $";
+		public static final String version="$Id: IbisException.java,v 1.12 2004-07-20 13:56:31 L190409 Exp $";
 
 	static {
 		// add methodname to find cause of JMS-Exceptions
@@ -65,7 +68,7 @@ public class IbisException extends NestableException {
 		String result=null;
 	    
 	    for(int i=0; i<messages.length; i++) {
-		    if (messages[i]!=null && !messages[i].equals(last_message)) {
+		    if (messages[i]!=null && (last_message==null || !last_message.endsWith(messages[i]))) {
 			    last_message = messages[i];
 			    if (result==null) {
 				    result=last_message;
