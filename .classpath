@@ -21,10 +21,12 @@
     <classpathentry kind="lib" path="H:/Ios/1_OO_straat/Technologie/libraries/SAP jco/sapjco-ntintel-2.0.10/sapjco.jar"/>
     <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/commons-httpclient-2.0.1.jar"/>
-    <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/commons-pool.jar"/>
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/ifsajms-2.0-1.2.jar"/>
-    <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/jsse.jar"/>
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/commons-cli-1.0.jar"/>
+    <classpathentry exported="true" kind="var" path="SERVERJDK_50_PLUGINDIR/jre/lib/security.jar"/>
+    <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/jsse.jar"/>
+    <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/jnet.jar"/>
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/jcert.jar"/>
+    <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/commons-pool-1.2.jar"/>
     <classpathentry kind="output" path="bin"/>
 </classpath>
