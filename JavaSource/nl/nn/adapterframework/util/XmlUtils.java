@@ -1,6 +1,9 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.4  2004-03-26 10:42:37  NNVZNL01#L180564
+ * Revision 1.5  2004-04-27 10:52:50  a1909356#db2admin
+ * Make thread-safety a little more efficient
+ *
+ * Revision 1.4  2004/03/26 10:42:37  Johan Verrips <johan.verrips@ibissource.org>
  * added @version tag in javadoc
  *
  * Revision 1.3  2004/03/23 17:09:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -61,7 +64,7 @@ import java.util.LinkedList;
  * @author Johan Verrips IOS
  */
 public class XmlUtils {
-	public static final String version="$Id: XmlUtils.java,v 1.4 2004-03-26 10:42:37 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: XmlUtils.java,v 1.5 2004-04-27 10:52:50 a1909356#db2admin Exp $";
 	
     static final String W3C_XML_SCHEMA       = "http://www.w3.org/2001/XMLSchema";
     static final String JAXP_SCHEMA_LANGUAGE = "http://java.sun.com/xml/jaxp/properties/schemaLanguage";
@@ -513,7 +516,7 @@ public static synchronized Transformer createTransformer(Source source) throws T
         return str;
         
     }
-public static synchronized String transformXml(Transformer t, String s) 
+public static String transformXml(Transformer t, String s) 
 	throws TransformerException,IOException {
 	
 	Variant inputVar = new Variant(s);
@@ -521,14 +524,16 @@ public static synchronized String transformXml(Transformer t, String s)
  
 	return transformXml( t,in);	
 }
-public static synchronized String transformXml(Transformer t, Source s)
+public static String transformXml(Transformer t, Source s)
     throws TransformerException,IOException 
 {
 	    
     StringWriter out = new StringWriter(64 * 1024);
     Result result = new StreamResult(out);
 
-    t.transform(s, result); 
+	synchronized(t) {
+    	t.transform(s, result);
+	} 
 
     out = (StringWriter) ((StreamResult) result).getWriter();
     out.close();
