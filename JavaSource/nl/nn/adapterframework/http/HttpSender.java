@@ -1,6 +1,9 @@
 /*
  * $Log: HttpSender.java,v $
- * Revision 1.6  2004-09-08 14:18:34  L190409
+ * Revision 1.7  2004-09-09 14:50:07  L190409
+ * added JDK1.3.x compatibility
+ *
+ * Revision 1.6  2004/09/08 14:18:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * early initialization of SocketFactory
  *
  * Revision 1.5  2004/09/01 12:24:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -22,19 +25,12 @@
 package nl.nn.adapterframework.http;
 
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.Socket;
 import java.net.URL;
-import java.net.UnknownHostException;
-import java.security.KeyStore;
 
-import javax.net.ssl.SSLSocket;
-import javax.net.ssl.SSLSocketFactory;
 
 import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.HostConfiguration;
 import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpConnection;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
@@ -44,9 +40,7 @@ import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.protocol.Protocol;
-import org.apache.commons.httpclient.protocol.SecureProtocolSocketFactory;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -57,7 +51,7 @@ import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.util.ClassUtils;
 
 /**
- * Sender that gets information via a HTTP post or get
+ * Sender that gets information via a HTTP using POST or GET.
  * 
  * <p><b>Configuration:</b>
  * <table border="1">
@@ -80,14 +74,17 @@ import nl.nn.adapterframework.util.ClassUtils;
  * <tr><td>{@link #setCertificatePassword(String) certificatePassword}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setTruststore(String) truststore}</td><td>resource URL to truststore to be used for authentication</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setTruststorePassword(String) truststorePassword}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setAddSecurityProviders(boolean) addSecurityProviders}</td><td>if true, basic SUN security providers are added to the list of providers</td><td>false</td></tr>
+ * <tr><td>{@link #setJdk13Compatibility(boolean) jdk13Compatibility}</td><td>enables the use of certificates on JDK 1.3.x. The SUN reference implementation JSSE 1.0.3 is included for convenience</td><td>false</td></tr>
  * </table>
  * </p>
+ * Note:
+ * Some certificates require the &lt;java_home&gt;/jre/lib/security/xxx_policy.jar files to be upgraded to unlimited strength. Typically, in such a case, an error message like 
+ * <code>Error in loading the keystore: Private key decryption error: (java.lang.SecurityException: Unsupported keysize or algorithm parameters</code> is observed.
  * @author Gerrit van Brakel
  * @since 4.2c
  */
 public class HttpSender implements ISender, HasPhysicalDestination {
-	public static final String version = "$Id: HttpSender.java,v 1.6 2004-09-08 14:18:34 L190409 Exp $";
+	public static final String version = "$Id: HttpSender.java,v 1.7 2004-09-09 14:50:07 L190409 Exp $";
 	protected Logger log = Logger.getLogger(this.getClass());;
 
 	private String name;
@@ -113,7 +110,7 @@ public class HttpSender implements ISender, HasPhysicalDestination {
 	private String truststore=null;
 	private String truststorePassword=null;
 	
-	private boolean addSecurityProviders=false;
+	private boolean jdk13Compatibility=false;
 
 	protected URI uri;
 	private MultiThreadedHttpConnectionManager connectionManager;
@@ -136,11 +133,6 @@ public class HttpSender implements ISender, HasPhysicalDestination {
 		
 		if (StringUtils.isEmpty(getUrl())) {
 			throw new ConfigurationException("Url must be specified");
-		}
-		if (isAddSecurityProviders()) {
-			addProvider("sun.security.provider.Sun");
-			addProvider("com.sun.net.ssl.internal.ssl.Provider");
-			System.setProperty("java.protocol.handler.pkgs","com.sun.net.ssl.internal.www.protocol");
 		}
 		try {
 			uri = new URI(getUrl());
@@ -170,9 +162,18 @@ public class HttpSender implements ISender, HasPhysicalDestination {
 			if (certificateUrl!=null || truststoreUrl!=null) {
 				AuthSSLProtocolSocketFactory socketfactory ;
 				try {
-					socketfactory = new AuthSSLProtocolSocketFactory(
-						certificateUrl, getCertificatePassword(), getKeystoreType(),
-						truststoreUrl, getTruststorePassword());
+					if (isJdk13Compatibility()) {
+						addProvider("sun.security.provider.Sun");
+						addProvider("com.sun.net.ssl.internal.ssl.Provider");
+						System.setProperty("java.protocol.handler.pkgs","com.sun.net.ssl.internal.www.protocol");
+						socketfactory = new AuthSSLProtocolSocketFactoryForJsse10x(
+							certificateUrl, getCertificatePassword(), getKeystoreType(),
+							truststoreUrl, getTruststorePassword());
+					} else {
+						socketfactory = new AuthSSLProtocolSocketFactory(
+							certificateUrl, getCertificatePassword(), getKeystoreType(),
+							truststoreUrl, getTruststorePassword());
+					}
 					socketfactory.init();	
 				} catch (Throwable t) {
 					throw new ConfigurationException("cannot create or initialize SocketFactory",t);
@@ -375,14 +376,6 @@ public class HttpSender implements ISender, HasPhysicalDestination {
 		keystoreType = string;
 	}
 
-	public boolean isAddSecurityProviders() {
-		return addSecurityProviders;
-	}
-
-	public void setAddSecurityProviders(boolean b) {
-		addSecurityProviders = b;
-	}
-
 	public String getTruststore() {
 		return truststore;
 	}
@@ -413,6 +406,14 @@ public class HttpSender implements ISender, HasPhysicalDestination {
 
 	public void setMaxConnections(int i) {
 		maxConnections = i;
+	}
+
+	public boolean isJdk13Compatibility() {
+		return jdk13Compatibility;
+	}
+
+	public void setJdk13Compatibility(boolean b) {
+		jdk13Compatibility = b;
 	}
 
 }
