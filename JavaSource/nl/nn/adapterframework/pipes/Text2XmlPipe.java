@@ -1,6 +1,9 @@
 /*
  * $Log: Text2XmlPipe.java,v $
- * Revision 1.1  2004-04-27 10:51:34  a1909356#db2admin
+ * Revision 1.2  2004-04-27 11:42:40  a1909356#db2admin
+ * Access properties via getters
+ *
+ * Revision 1.1  2004/04/27 10:51:34  unknown <unknown@ibissource.org>
  * Allows the conversion from a non-xml formatted text to a simple xml
  *
  */
@@ -42,7 +45,7 @@ public class Text2XmlPipe extends FixedForwardPipe {
 	public void configure() throws ConfigurationException {
 		super.configure();
 
-		if (StringUtils.isEmpty(xmlTag)) {
+		if (StringUtils.isEmpty(getXmlTag())) {
 			throw new ConfigurationException("You have not defined xmlTag");
 		}
 	}
@@ -51,7 +54,7 @@ public class Text2XmlPipe extends FixedForwardPipe {
 	 * @see nl.nn.adapterframework.core.IPipe#doPipe(Object, PipeLineSession)
 	 */
 	public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRunException {
-		String resultString = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><" + xmlTag + "><![CDATA[" + input + "]]></" + xmlTag + ">";	
+		String resultString = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><" + getXmlTag() + "><![CDATA[" + input + "]]></" + xmlTag + ">";	
 		return new PipeRunResult(getForward(), resultString);
 	}
 

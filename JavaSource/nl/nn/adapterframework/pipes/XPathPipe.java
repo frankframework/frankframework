@@ -1,6 +1,9 @@
 /*
  * $Log: XPathPipe.java,v $
- * Revision 1.1  2004-04-27 10:52:17  a1909356#db2admin
+ * Revision 1.2  2004-04-27 11:42:40  a1909356#db2admin
+ * Access properties via getters
+ *
+ * Revision 1.1  2004/04/27 10:52:17  unknown <unknown@ibissource.org>
  * Pipe that evaluates an xpath expression on the inpup
  * 
  */
@@ -57,7 +60,7 @@ public class XPathPipe extends FixedForwardPipe {
 			"<xsl:output method=\"text\"/>" +
 			"<xsl:strip-space elements=\"*\"/>" +
    			"<xsl:template match=\"/\">" +
-			"<xsl:value-of select=\"" + xpathExpression + "\"/>" +
+			"<xsl:value-of select=\"" + getXpathExpression() + "\"/>" +
 			"</xsl:template>" +
 			"</xsl:stylesheet>";
 			
