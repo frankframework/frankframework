@@ -1,6 +1,9 @@
 /*
  * $Log: MessageSendingPipe.java,v $
- * Revision 1.12  2004-08-23 13:10:09  L190409
+ * Revision 1.13  2004-09-01 11:28:14  L190409
+ * added exception-forward
+ *
+ * Revision 1.12  2004/08/23 13:10:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated JavaDoc
  *
  * Revision 1.11  2004/08/09 13:52:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -41,6 +44,7 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.errormessageformatters.ErrorMessageFormatter;
 
 
 import java.util.HashMap;
@@ -72,6 +76,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>"success"</td><td>default when a good message was retrieved (synchronous sender), or the message was successfully sent and no listener was specified and the sender was not synchronous</td></tr>
  * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified, and otherwise under same condition as "success"</td></tr>
  * <tr><td>"timeout"</td><td>no data was received (timeout on listening), if the sender was synchronous or a listener was specified.</td></tr>
+ * <tr><td>"exception"</td><td>an exception was thrown by the Sender or its reply-Listener. The result passed to the next pipe is the exception that was caught.</td></tr>
  * </table>
  * </p>
  * @version Id</p>
@@ -79,8 +84,9 @@ import org.apache.commons.lang.StringUtils;
  */
 
 public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
-	public static final String version = "$Id: MessageSendingPipe.java,v 1.12 2004-08-23 13:10:09 L190409 Exp $";
+	public static final String version = "$Id: MessageSendingPipe.java,v 1.13 2004-09-01 11:28:14 L190409 Exp $";
 	private final static String TIMEOUTFORWARD = "timeout";
+	private final static String EXCEPTIONFORWARD = "exception";
 
 	private String resultOnTimeOut = "receiver timed out";
 	private String linkMethod = "CORRELATIONID";
@@ -214,10 +220,13 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 			return new PipeRunResult(timeoutForward,getResultOnTimeOut());
 
 		} catch (Exception e) {
-			throw new PipeRunException(
-				this,
-				getLogPrefix(session) + "caught exception",
-				e);
+			PipeForward exceptionForward = findForward(EXCEPTIONFORWARD);
+			if (exceptionForward!=null) {
+				log.warn(getLogPrefix(session) + "exception occured, forwarded to ["+exceptionForward.getPath()+"]", e);
+				String resultmsg=new ErrorMessageFormatter().format(getLogPrefix(session),e,this,(String)input,session.getMessageId(),0);
+				return new PipeRunResult(exceptionForward,resultmsg);
+			}
+			throw new PipeRunException(this, getLogPrefix(session) + "caught exception", e);
 		} finally {
 			if (getListener()!=null)
 				try {
