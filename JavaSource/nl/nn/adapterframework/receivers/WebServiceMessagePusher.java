@@ -1,6 +1,9 @@
 /*
  * $Log: WebServiceMessagePusher.java,v $
- * Revision 1.1  2004-06-22 12:12:52  L190409
+ * Revision 1.2  2004-06-30 12:34:13  L190409
+ * added (dummy) setter for exceptionlistener
+ *
+ * Revision 1.1  2004/06/22 12:12:52  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * introduction of MessagePushers and PushingReceivers
  *
  */
@@ -8,6 +11,8 @@ package nl.nn.adapterframework.receivers;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessagePusher;
+import nl.nn.adapterframework.core.IbisExceptionListener;
+
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.log4j.Logger;
 
@@ -26,7 +31,7 @@ import java.io.Serializable;
  * @author Gerrit van Brakel 
  */
 public class WebServiceMessagePusher  implements IMessagePusher, ServiceClient, Serializable {
-	public static final String version="$Id: WebServiceMessagePusher.java,v 1.1 2004-06-22 12:12:52 L190409 Exp $";
+	public static final String version="$Id: WebServiceMessagePusher.java,v 1.2 2004-06-30 12:34:13 L190409 Exp $";
 	protected Logger log = Logger.getLogger(this.getClass());;
 
 	private ServiceClient handler;        	
@@ -85,6 +90,10 @@ public class WebServiceMessagePusher  implements IMessagePusher, ServiceClient, 
 
 	public void setHandler(ServiceClient handler) {
 		this.handler=handler;
+	}
+
+	public void setExceptionListener(IbisExceptionListener listener) {
+		// do nothing, no exceptions known
 	}
 
 
