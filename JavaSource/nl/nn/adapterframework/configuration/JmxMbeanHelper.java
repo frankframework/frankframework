@@ -30,7 +30,7 @@ import nl.nn.adapterframework.util.JmxUtils;
 
  */
 public class JmxMbeanHelper {
-	public static final String version="$Id: JmxMbeanHelper.java,v 1.3 2004-04-26 08:45:54 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: JmxMbeanHelper.java,v 1.4 2004-05-03 07:13:33 NNVZNL01#L180564 Exp $";
  	private static Logger log = Logger.getLogger("AdapterMBean");
 		public JmxMbeanHelper() {
 		super();
@@ -103,8 +103,8 @@ public class JmxMbeanHelper {
 					"RunState",
 					"RunState",
 					"-",
-					"getRunState",
-					"nl.nn.adapterframework.util.RunStateEnum"),
+					"getRunStateAsString",
+					"java.lang.String"),
 			
 				JmxUtils.buildAttributeInfo("NumMessagesProcessed", 
 					"NumMessagesProcessed",
@@ -212,10 +212,10 @@ public class JmxMbeanHelper {
 					"java.lang.String"),
 				
 				JmxUtils.buildGetterModelMBeanOperationInfo(
-					"getRunState",
+					"getRunStateAsString",
 					adapter.getClass().getName(),
 					"RunState",
-					"nl.nn.adapterframework.util.RunStateEnum"),
+					"java.lang.String"),
 
 				JmxUtils.buildGetterModelMBeanOperationInfo(
 					"configurationSucceeded",
