@@ -1,6 +1,9 @@
 /*
  * $Log: ParameterValue.java,v $
- * Revision 1.2  2004-10-12 15:08:07  L190409
+ * Revision 1.3  2004-10-14 16:08:30  L190409
+ * introduced logging
+ *
+ * Revision 1.2  2004/10/12 15:08:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added asCollection() method
  *
  * Revision 1.1  2004/10/05 09:52:25  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -14,6 +17,7 @@ package nl.nn.adapterframework.parameters;
 
 import java.util.Collection;
 
+import org.apache.log4j.Logger;
 import org.w3c.dom.Element;
 
 import nl.nn.adapterframework.core.ParameterException;
@@ -27,6 +31,9 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @version Id
  */
 public class ParameterValue {
+	public static final String version="$Id: ParameterValue.java,v 1.3 2004-10-14 16:08:30 L190409 Exp $";
+	protected Logger log = Logger.getLogger(this.getClass());
+
 	private Object value;
 	private Parameter definition;
 	
@@ -129,6 +136,7 @@ public class ParameterValue {
 			return null;
 		}
 		try {
+			log.debug("rendering Parameter ["+getDefinition().getName()+"] value ["+value+"] as Collection");
 			Element holder = XmlUtils.buildElement("<root>"+value+"</root>");
 			return XmlUtils.getChildTags(holder, "*");
 		} catch (DomBuilderException e) {
