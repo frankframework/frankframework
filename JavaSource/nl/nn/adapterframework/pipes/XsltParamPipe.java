@@ -13,13 +13,12 @@ import javax.xml.transform.TransformerException;
 import java.io.IOException;
 
 /**
- * {@link XsltPipe XsltPipe} aware of parameters. Beware: this parameter aware implementation for xslt processing is NOT 
- * thread-safe. Therefore, <code>maxThreads</code> should be set to 1.
+ * {@link XsltPipe XsltPipe} aware of parameters. 
  * @author Johan Verrips
  * @version Id
  */
 public class XsltParamPipe extends XsltPipe {
-	public static final String version = "$Id: XsltParamPipe.java,v 1.5 2004-08-31 12:54:31 a1909356#db2admin Exp $";
+	public static final String version = "$Id: XsltParamPipe.java,v 1.6 2004-08-31 13:47:25 a1909356#db2admin Exp $";
 
 	public void configure() throws ConfigurationException {
 		super.configure();
