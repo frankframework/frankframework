@@ -1,6 +1,9 @@
 /*
- * $Log: JavaPusher.java,v $
- * Revision 1.4  2004-08-16 14:10:32  a1909356#db2admin
+ * $Log: JavaListener.java,v $
+ * Revision 1.1  2004-08-23 07:38:20  L190409
+ * renamed JavaPusher to JavaListener
+ *
+ * Revision 1.4  2004/08/16 14:10:32  unknown <unknown@ibissource.org>
  * Remove warnings
  *
  * Revision 1.3  2004/08/16 14:09:58  unknown <unknown@ibissource.org>
@@ -38,55 +41,22 @@ import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.jms.JNDIBase;
 import nl.nn.adapterframework.jms.JmsRealm;
 
-/**
+/** * 
+ * The JavaListener listens to java requests.
+ *  
  * @author JDekker
  * @version Id
- * 
- * The java receiver listens to java requests. 
  */
-public class JavaPusher implements IPushingListener {
-	private static Map registeredJavaPushers; 
-	public static final String version="$Id: JavaPusher.java,v 1.4 2004-08-16 14:10:32 a1909356#db2admin Exp $";
+public class JavaListener implements IPushingListener {
+	private static Map registeredListeners; 
+	public static final String version="$Id: JavaListener.java,v 1.1 2004-08-23 07:38:20 L190409 Exp $";
 	protected Logger log = Logger.getLogger(this.getClass());;
 	private String name;
 	private String jndiName;
 	private IMessageHandler handler;
-	private JNDIBase jndiBase;        	
+	private JNDIBase jndiBase = new JNDIBase();        	
 	
-	/** 
-	 * default constructor
-	 */
-	public JavaPusher() {
-		this.jndiBase = new JNDIBase();
-	}
 	
-	/**
-	 * @return the name under which the java receiver registers the java proxy in JNDI
-	 */
-	public String getJndiName() {
-		return jndiName;
-	}
-
-	/**
-	 * @param jndiName
-	 */
-	public void setJndiName(String jndiName) {
-		this.jndiName = jndiName;
-	}
-
-	/**
-	 * @return
-	 */
-	public String getName() {
-		return name;
-	}
-
-	/**
-	 * @param string
-	 */
-	public void setName(String string) {
-		name = string;
-	}
 
 	/**
 	 * @return
@@ -100,35 +70,35 @@ public class JavaPusher implements IPushingListener {
 	 * @param name
 	 * @param receiver
 	 */
-	private static void registerJavaPusher(String name, JavaPusher receiver) {
-		getJavaPushers().put(name, receiver);
+	private static void registerListener(String name, JavaListener listener) {
+		getListeners().put(name, listener);
 	}
 
 	/**
 	 * Unregister recevier, so that it can't be used by proxies
 	 * @param name
 	 */
-//	private static void unregisterJavaPusher(String name) {
-//		getJavaPushers().remove(name);
+//	private static void unregisterJavaListener(String name) {
+//		getListeners().remove(name);
 //	}
 
 	/**
 	 * @param name
 	 * @return JavaReiver registered under name
 	 */
-	public static JavaPusher getJavaPusher(String name) {
-		return (JavaPusher)getJavaPushers().get(name);
+	public static JavaListener getListener(String name) {
+		return (JavaListener)getListeners().get(name);
 	}
 
 	/**
-	 * Get all registered JavaReceivers
+	 * Get all registered JavaListeners
 	 * @return
 	 */
-	private synchronized static Map getJavaPushers() {
-		if (registeredJavaPushers == null) {
-			registeredJavaPushers = Collections.synchronizedMap(new HashMap());
+	private synchronized static Map getListeners() {
+		if (registeredListeners == null) {
+			registeredListeners = Collections.synchronizedMap(new HashMap());
 		}
-		return registeredJavaPushers;
+		return registeredListeners;
 	}
 	
 	/* (non-Javadoc)
@@ -169,9 +139,6 @@ public class JavaPusher implements IPushingListener {
 		// unregisterJavaPusher(getName());		
 	}
 
-	/* (non-Javadoc)
-	 * @see nl.nn.adapterframework.core.IListener#configure()
-	 */
 	public void configure() throws ConfigurationException {
 		try {
 			if (handler==null) {
@@ -186,27 +153,18 @@ public class JavaPusher implements IPushingListener {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see nl.nn.adapterframework.core.IListener#getIdFromRawMessage(java.lang.Object, java.util.HashMap)
-	 */
 	public String getIdFromRawMessage(Object rawMessage, HashMap context) throws ListenerException {
 		// do nothing
 		return null;
 	}
 
-	/* (non-Javadoc)
-	 * @see nl.nn.adapterframework.core.IListener#getStringFromRawMessage(java.lang.Object, java.util.HashMap)
-	 */
 	public String getStringFromRawMessage(Object rawMessage, HashMap context) throws ListenerException {
 		return (String)rawMessage;
 	}
 
-	/* (non-Javadoc)
-	 * @see nl.nn.adapterframework.core.IListener#open()
-	 */
 	public void open() throws ListenerException {
 		// add myself to list so that proxy can find me
-		registerJavaPusher(getName(), this);
+		registerListener(getName(), this);
 		try {
 			if (getJndiName() != null)
 				getContext().rebind(jndiName, new JavaProxy(this));
@@ -278,4 +236,32 @@ public class JavaPusher implements IPushingListener {
 	public void setJmsRealm(String jmsRealmName){
 		JmsRealm.copyRealm(jndiBase, jmsRealmName);
 	}
+	/**
+	 * @return the name under which the java receiver registers the java proxy in JNDI
+	 */
+	public String getJndiName() {
+		return jndiName;
+	}
+
+	/**
+	 * @param jndiName
+	 */
+	public void setJndiName(String jndiName) {
+		this.jndiName = jndiName;
+	}
+
+	/**
+	 * @return
+	 */
+	public String getName() {
+		return name;
+	}
+
+	/**
+	 * @param string
+	 */
+	public void setName(String name) {
+		this.name = name;
+	}
+
 }

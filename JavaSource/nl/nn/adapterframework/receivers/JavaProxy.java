@@ -1,6 +1,9 @@
 /*
  * $Log: JavaProxy.java,v $
- * Revision 1.3  2004-08-13 06:47:26  a1909356#db2admin
+ * Revision 1.4  2004-08-23 07:38:20  L190409
+ * renamed JavaPusher to JavaListener
+ *
+ * Revision 1.3  2004/08/13 06:47:26  unknown <unknown@ibissource.org>
  * Allow usage of JavaPusher without JNDI
  *
  * Revision 1.2  2004/08/12 10:58:43  unknown <unknown@ibissource.org>
@@ -16,20 +19,22 @@ import java.io.Serializable;
 
 
 /**
- * @author J. Dekker
- * @version Id
  *
- * The java proxy enables the usage of Ibis directly from java. The serviceName
- * property must equal the name of the JavaReceiver in the Ibis configuration file.
+ * The JavaProxy enables the usage of Ibis directly from java. The serviceName
+ * property must equal the name of the JavaListener in the Ibis configuration file.
  * 
  * If you package the ibis.jar in the .ear and not in your .war then you must
  * set the WAR class loader policy of the server in which the .ear is deployed to
  * application.
+ *
+ * @author J. Dekker
+ * @version Id
+ * @since 4.2
  */
 public class JavaProxy implements ServiceClient, Serializable {
-	public static final String version="$Id: JavaProxy.java,v 1.3 2004-08-13 06:47:26 a1909356#db2admin Exp $";
+	public static final String version="$Id: JavaProxy.java,v 1.4 2004-08-23 07:38:20 L190409 Exp $";
 	private String serviceName;
-	private boolean isPusher;
+	private boolean usesListener;
 	
 	/**
 	 * @param serviceName
@@ -37,23 +42,23 @@ public class JavaProxy implements ServiceClient, Serializable {
 	 */
 	public JavaProxy(String serviceName) {
 		this.serviceName = serviceName;
-		this.isPusher = false;
+		this.usesListener = false;
 	}
 
 	/**
 	 * @param pusher
 	 */
-	public JavaProxy(JavaPusher pusher) {
-		this.serviceName = pusher.getName();
-		this.isPusher = true;
+	public JavaProxy(JavaListener listener) {
+		this.serviceName = listener.getName();
+		this.usesListener = true;
 	}
 	
 	/* 
 	 * @see nl.nn.adapterframework.receivers.ServiceClient#processRequest(java.lang.String, java.lang.String)
 	 */
 	public String processRequest(String correlationId, String message) {
-		if (isPusher)
-			return JavaPusher.getJavaPusher(getServiceName()).processRequest(correlationId, message);
+		if (usesListener)
+			return JavaListener.getListener(getServiceName()).processRequest(correlationId, message);
 		return ServiceDispatcher.getInstance().dispatchRequest(serviceName, correlationId, message);
 	}
 
@@ -61,8 +66,8 @@ public class JavaProxy implements ServiceClient, Serializable {
 	 * @see nl.nn.adapterframework.receivers.ServiceClient#processRequest(java.lang.String)
 	 */
 	public String processRequest(String message) {
-		if (isPusher)
-			return JavaPusher.getJavaPusher(getServiceName()).processRequest(message);
+		if (usesListener)
+			return JavaListener.getListener(getServiceName()).processRequest(message);
 		return ServiceDispatcher.getInstance().dispatchRequest(serviceName, message);
 	}
 
@@ -85,7 +90,7 @@ public class JavaProxy implements ServiceClient, Serializable {
 	 * @return JavaProxy for a JavaPusher if registered under name or null
 	 */
 	public static JavaProxy getProxy(String serviceName) {
-		JavaPusher pusher = JavaPusher.getJavaPusher(serviceName);
+		JavaListener pusher = JavaListener.getListener(serviceName);
 		if (pusher == null)
 			return null;
 		return new JavaProxy(pusher);
