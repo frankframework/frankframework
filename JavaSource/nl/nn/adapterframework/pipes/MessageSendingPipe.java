@@ -1,6 +1,9 @@
 /*
  * $Log: MessageSendingPipe.java,v $
- * Revision 1.8  2004-06-21 09:58:54  L190409
+ * Revision 1.9  2004-07-07 13:49:12  L190409
+ * improved handling of timeout when no timeout-forward exists
+ *
+ * Revision 1.8  2004/06/21 09:58:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Changed exception handling for starting pipe; Exception thrown now contains pipename
  *
  * Revision 1.7  2004/05/21 07:59:30  unknown <unknown@ibissource.org>
@@ -16,9 +19,11 @@
 package nl.nn.adapterframework.pipes;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.HasSender;
 import nl.nn.adapterframework.core.ICorrelatedPullingListener;
+import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
@@ -62,12 +67,14 @@ import java.util.HashMap;
  */
 
 public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
-	public static final String version = "$Id: MessageSendingPipe.java,v 1.8 2004-06-21 09:58:54 L190409 Exp $";
+	public static final String version = "$Id: MessageSendingPipe.java,v 1.9 2004-07-07 13:49:12 L190409 Exp $";
+	private final static String TIMEOUTFORWARD = "timeout";
+
+	private String resultOnTimeOut = "receiver timed out";
+	private String linkMethod = "CORRELATIONID";
 
 	private ISender sender = null;
 	private ICorrelatedPullingListener listener = null;
-	private String resultOnTimeOut = "receiver timed out";
-	private String linkMethod = "CORRELATIONID";
 
 	
 	public MessageSendingPipe() {
@@ -90,6 +97,9 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 		}
 
 		getSender().configure();
+		if (getSender() instanceof HasPhysicalDestination) {
+			log.info(getLogPrefix(null)+"has sender on "+((HasPhysicalDestination)getSender()).getPhysicalDestinationName());
+		}
 		if (getListener() != null) {
 			if (getSender().isSynchronous()) {
 				throw new ConfigurationException(
@@ -97,6 +107,9 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 						+ "cannot have listener with synchronous sender");
 			}
 			getListener().configure();
+			if (getListener() instanceof HasPhysicalDestination) {
+				log.info(getLogPrefix(null)+"has listener on "+((HasPhysicalDestination)getListener()).getPhysicalDestinationName());
+			}
 		}
 		if (!(getLinkMethod().equalsIgnoreCase("MESSAGEID"))
 			&& (!(getLinkMethod().equalsIgnoreCase("CORRELATIONID"))))
@@ -171,10 +184,12 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 			}
 			return new PipeRunResult(getForward(), result);
 		} catch (TimeOutException toe) {
-			log.warn(getLogPrefix(session) + "timeout occured");
-			return new PipeRunResult(
-				findForward("timeout"),
-				getResultOnTimeOut());
+			log.warn(getLogPrefix(session) + "timeout occured", toe);
+			PipeForward timeoutForward = findForward(TIMEOUTFORWARD);
+			if (timeoutForward==null) {
+				throw new PipeRunException(this, getLogPrefix(session)+"timeout, but no timeout-forward defined",toe);
+			}
+			return new PipeRunResult(timeoutForward,getResultOnTimeOut());
 
 		} catch (Exception e) {
 			throw new PipeRunException(
@@ -187,7 +202,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 					log.debug(getLogPrefix(session)+" is closing listener");
 					replyListener.closeThread(threadContext);
 				} catch (ListenerException le) {
-					log.error(getLogPrefix(session)+"got error closing listener");
+					log.error(getLogPrefix(session)+"got error closing listener", le);
 				}
 		}
 	}
