@@ -1,6 +1,9 @@
 /*
  * $Log: PercentileEstimator.java,v $
- * Revision 1.1  2005-02-02 16:30:07  L190409
+ * Revision 1.2  2005-03-10 09:52:16  L190409
+ * reworked percentile estimation
+ *
+ * Revision 1.1  2005/02/02 16:30:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * modular percentile estimation
  *
  */
@@ -17,6 +20,6 @@ public interface PercentileEstimator {
 	int getNumPercentiles();
 	int getPercentage(int index);
 	void addValue(long value, long count, long min, long max);
-	double getPercentileEstimate(int index, long count);
+	double getPercentileEstimate(int index, long count, long min, long max);
 	
 }

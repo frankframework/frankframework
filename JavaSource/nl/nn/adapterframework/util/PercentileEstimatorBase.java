@@ -1,6 +1,9 @@
 /*
  * $Log: PercentileEstimatorBase.java,v $
- * Revision 1.2  2005-02-17 09:52:18  L190409
+ * Revision 1.3  2005-03-10 09:52:16  L190409
+ * reworked percentile estimation
+ *
+ * Revision 1.2  2005/02/17 09:52:18  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * javadoc update
  *
  * Revision 1.1  2005/02/02 16:32:52  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -14,6 +17,7 @@ import java.util.StringTokenizer;
 
 /**
  * Basic interpolating percentile estimator.
+ * After the array has been filled with samples, the estimates do not change anymore.
  * 
  * Interpolated values do not change anymore once the array gets filled completely.
  * 
@@ -58,6 +62,7 @@ public class PercentileEstimatorBase implements PercentileEstimator {
 		values[i] = value;		
 	}
 	
+/*	
 	protected int getVicinityCount(double target, double range, long count) {
 		int result=0;
 		for (int i=0; i<count; i++) {
@@ -70,7 +75,7 @@ public class PercentileEstimatorBase implements PercentileEstimator {
 		}
 		return result;
 	}
-
+*/
 	protected double getInterpolatedPercentile(int p, long count) {
 		if (count==0) {
 			return Double.NaN;
@@ -95,7 +100,7 @@ public class PercentileEstimatorBase implements PercentileEstimator {
 		return result; 
 	}
 
-	public double getPercentileEstimate(int index,long count) {
+	public double getPercentileEstimate(int index, long count, long min, long max) {
 		if (count<=values.length) { 
 			return getInterpolatedPercentile(p[index],count);
 		}

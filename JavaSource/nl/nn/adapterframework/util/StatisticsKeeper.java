@@ -1,6 +1,9 @@
 /*
  * $Log: StatisticsKeeper.java,v $
- * Revision 1.7  2005-02-17 09:55:42  L190409
+ * Revision 1.8  2005-03-10 09:52:16  L190409
+ * reworked percentile estimation
+ *
+ * Revision 1.7  2005/02/17 09:55:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed percentile estimator to basic
  *
  * Revision 1.6  2005/02/02 16:37:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -22,7 +25,7 @@ import java.util.StringTokenizer;
  * @author Johan Verrips / Gerrit van Brakel
  */
 public class StatisticsKeeper {
-	public static final String version="$Id: StatisticsKeeper.java,v 1.7 2005-02-17 09:55:42 L190409 Exp $";
+	public static final String version="$Id: StatisticsKeeper.java,v 1.8 2005-03-10 09:52:16 L190409 Exp $";
 	
 	private static final boolean calculatePercentiles=true;
 	
@@ -76,7 +79,8 @@ public class StatisticsKeeper {
 	    }
 
 		if (calculatePercentiles) {
-			pest = new PercentileEstimatorBase(percentileConfigKey,DEFAULT_P_LIST,1000);
+//			pest = new PercentileEstimatorBase(percentileConfigKey,DEFAULT_P_LIST,1000);
+			pest = new PercentileEstimatorRanked(percentileConfigKey,DEFAULT_P_LIST,100);
 		}
 	}
 /*	
@@ -99,6 +103,9 @@ public class StatisticsKeeper {
 			first=value;
 		}
 	    ++count;
+		if (calculatePercentiles) {
+			pest.addValue(value,count,min,max);
+		}
 	    total += value;
 	    if (value > max) {
 	        max = value;
@@ -114,9 +121,6 @@ public class StatisticsKeeper {
 	            classCounts[i]++;
 	        }
 	    }
-		if (calculatePercentiles) {
-			pest.addValue(value,count,min,max);
-		}
 	}
 	
 
@@ -211,14 +215,17 @@ public class StatisticsKeeper {
 		    case 5: if (getCount() == 0) return null; else return new Long(getFirst());
 		    case 6: if (getCount() == 0) return null; else return new Long(getLast());
 			case 7: if (getCount() == 0) return null; else return new Long(getTotal());
-		    default : if (getCount() == 0) return null;
+		    default : if ((getCount() == 0)) return null;
+		    	if (index<0) {
+					throw new ArrayIndexOutOfBoundsException("StatisticsKeeper.getItemValue() item index negative: "+index);
+		    	}
 				if ((index-NUM_STATIC_ITEMS) < classBoundaries.length) { 
 					return new Double(new Double(classCounts[index-NUM_STATIC_ITEMS]).doubleValue()/getCount());
 				}
 				if (calculatePercentiles) {
-					return new Double(pest.getPercentileEstimate(index-NUM_STATIC_ITEMS-classBoundaries.length,count));
+					return new Double(pest.getPercentileEstimate(index-NUM_STATIC_ITEMS-classBoundaries.length,getCount(),getMin(),getMax()));
 				}
-				throw new ArrayIndexOutOfBoundsException("StatisticsKeeper.getItemValue()");
+				throw new ArrayIndexOutOfBoundsException("StatisticsKeeper.getItemValue() item index too high: "+index);
 	    }
     }
     public long getFirst() {
