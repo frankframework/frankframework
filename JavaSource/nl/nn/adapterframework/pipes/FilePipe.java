@@ -1,6 +1,9 @@
 /*
  * $Log: FilePipe.java,v $
- * Revision 1.2  2004-04-26 13:04:50  a1909356#db2admin
+ * Revision 1.3  2004-04-26 13:06:53  a1909356#db2admin
+ * Support for file en- and decoding
+ *
+ * Revision 1.2  2004/04/26 13:04:50  unknown <unknown@ibissource.org>
  * Support for file en- and decoding
  *
  * Revision 1.1  2004/04/26 11:51:34  unknown <unknown@ibissource.org>
@@ -57,7 +60,7 @@ import sun.misc.BASE64Encoder;
  *
  */
 public class FilePipe extends FixedForwardPipe {
-	public static final String version="$Id: FilePipe.java,v 1.2 2004-04-26 13:04:50 a1909356#db2admin Exp $";
+	public static final String version="$Id: FilePipe.java,v 1.3 2004-04-26 13:06:53 a1909356#db2admin Exp $";
 	private List transformers;
 	protected String actions;
 	protected String directory;
@@ -262,6 +265,9 @@ public class FilePipe extends FixedForwardPipe {
 
 	/**
 	 * @param actions all the actions the pipe has to do
+	 * 
+	 * Possible actions are "read", "write", "encode", "decode", "delete" and "read_delete"
+	 * You can also define combinations, like "read encode write".
 	 */
 	public void setActions(String actions) {
 		this.actions = actions;
