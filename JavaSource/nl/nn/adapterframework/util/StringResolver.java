@@ -1,6 +1,9 @@
 /*
  * $Log: StringResolver.java,v $
- * Revision 1.4  2004-03-26 10:42:37  NNVZNL01#L180564
+ * Revision 1.5  2004-08-30 06:37:19  NNVZNL01#L180564
+ * Accepts map as parameter instead of Properties
+ *
+ * Revision 1.4  2004/03/26 10:42:37  Johan Verrips <johan.verrips@ibissource.org>
  * added @version tag in javadoc
  *
  * Revision 1.3  2004/03/23 17:05:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -11,6 +14,7 @@ package nl.nn.adapterframework.util;
 
 import org.apache.log4j.Logger;
 
+import java.util.Map;
 import java.util.Properties;
 /**
  * Provide functionality to resolve ${property.key} to the value of the property key, recursively.
@@ -20,7 +24,7 @@ import java.util.Properties;
  * @author Johan Verrips 
  */
 public class StringResolver {
-	public static final String version="$Id: StringResolver.java,v 1.4 2004-03-26 10:42:37 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: StringResolver.java,v 1.5 2004-08-30 06:37:19 NNVZNL01#L180564 Exp $";
 	
     static String DELIM_START = "${";
     static char DELIM_STOP = '}';
@@ -77,7 +81,7 @@ public static void main(java.lang.String[] args) {
   * <p> First it looks in the System properties, if none is found and a <code>Properties</code>
   * object is specified, it looks in the specified <code>Properties</code> object.
   */ 
- public static String substVars(String val, Properties props)
+ public static String substVars(String val, Map props)
         throws IllegalArgumentException {
 
         StringBuffer sbuf = new StringBuffer();
@@ -108,7 +112,13 @@ public static void main(java.lang.String[] args) {
                     String replacement = getSystemProperty(key, null);
                     // then try props parameter
                     if (replacement == null && props != null) {
-                        replacement = props.getProperty(key);
+                    	if (props instanceof Properties){
+                    		replacement=((Properties)props).getProperty(key);
+                    	} else {
+                    	
+	                        replacement = props.get(key).toString();
+						}
+
                     }
 
                     if (replacement != null) {
