@@ -1,6 +1,9 @@
 /*
  * $Log: JmxMbeanHelper.java,v $
- * Revision 1.5  2004-08-23 13:07:26  L190409
+ * Revision 1.6  2004-10-25 08:30:49  L190409
+ * corrected DisplayName
+ *
+ * Revision 1.5  2004/08/23 13:07:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated JavaDoc
  *
  */
@@ -27,10 +30,9 @@ import nl.nn.adapterframework.util.JmxUtils;
  * @author Johan Verrips
  * @version Id
  * @since 4.1.1
-
  */
 public class JmxMbeanHelper {
-	public static final String version="$Id: JmxMbeanHelper.java,v 1.5 2004-08-23 13:07:26 L190409 Exp $";
+	public static final String version="$Id: JmxMbeanHelper.java,v 1.6 2004-10-25 08:30:49 L190409 Exp $";
  	private static Logger log = Logger.getLogger("AdapterMBean");
  	
 
@@ -142,7 +144,7 @@ public class JmxMbeanHelper {
 	
 				JmxUtils.buildAttributeInfo("AdapterDescription", 
 					"AdapterDescription",
-					"Number of messages that went wrong",
+					"Description of Adapter",
 					"none",
 					"getDescription",
 					"java.lang.String"),
