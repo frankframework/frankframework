@@ -1,7 +1,7 @@
 /*
  * $Log: FilePipe.java,v $
- * Revision 1.6  2004-08-23 13:10:09  L190409
- * updated JavaDoc
+ * Revision 1.7  2004-08-23 13:44:13  a1909356#db2admin
+ * Add config checks
  *
  * Revision 1.5  2004/04/27 11:03:35  unknown <unknown@ibissource.org>
  * Renamed internal Transformer interface to prevent naming confusions
@@ -66,7 +66,7 @@ import sun.misc.BASE64Encoder;
  *
  */
 public class FilePipe extends FixedForwardPipe {
-	public static final String version="$Id: FilePipe.java,v 1.6 2004-08-23 13:10:09 L190409 Exp $";
+	public static final String version="$Id: FilePipe.java,v 1.7 2004-08-23 13:44:13 a1909356#db2admin Exp $";
 	private List transformers;
 	protected String actions;
 	protected String directory;
@@ -102,6 +102,9 @@ public class FilePipe extends FixedForwardPipe {
 			else
 				throw new ConfigurationException("Action " + token + " is not supported");
 		}
+		
+		if (transformers.size() == 0)
+			throw new ConfigurationException("should at least define one action");
 		
 		// configure the transformers
 		for (Iterator it = transformers.iterator(); it.hasNext(); ) {
@@ -179,6 +182,9 @@ public class FilePipe extends FixedForwardPipe {
 					throw new ConfigurationException(directory + " is not a directory, or no write permission");
 				}
 			}
+			else {
+				throw new ConfigurationException("directory is not specified");
+			}
 		}
 		public byte[] go(byte[] in, PipeLineSession session) throws Exception {
 			File dirFile = new File(getDirectory());
@@ -216,6 +222,9 @@ public class FilePipe extends FixedForwardPipe {
 					throw new ConfigurationException(directory + " is not a directory, or no read permission");
 				}
 			}
+			else {
+				throw new ConfigurationException("directory is not specified");
+			}
 		}
 		public byte[] go(byte[] in, PipeLineSession session) throws Exception {
 			File file = new File(getDirectory(), new String(in));
@@ -245,6 +254,9 @@ public class FilePipe extends FixedForwardPipe {
 				if (! (file.exists() && file.isDirectory())) {
 					throw new ConfigurationException(directory + " is not a directory");
 				}
+			}
+			else {
+				throw new ConfigurationException("directory is not specified");
 			}
 		}
 		public byte[] go(byte[] in, PipeLineSession session) throws Exception {
