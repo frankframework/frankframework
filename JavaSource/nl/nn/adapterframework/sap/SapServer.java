@@ -1,6 +1,9 @@
 /*
  * $Log: SapServer.java,v $
- * Revision 1.2  2004-06-23 11:40:17  L190409
+ * Revision 1.3  2004-06-30 12:38:57  L190409
+ * removed self from exceptionlisteners
+ *
+ * Revision 1.2  2004/06/23 11:40:17  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * included error-logging and added transaction-related function-stubs
  *
  * Revision 1.1  2004/06/22 06:56:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -19,10 +22,10 @@ import com.sap.mw.jco.JCO;
 /**
  * Object that acts as a SAP-server. Currently used to receive RFC-function calls from SAP.
  * @author Gerrit van Brakel
- * @since 4.1.1
+ * @since 4.2
  */
 public class SapServer extends JCO.Server implements JCO.ServerExceptionListener, JCO.ServerErrorListener , JCO.ServerStateChangedListener {
-	public static final String version="$Id: SapServer.java,v 1.2 2004-06-23 11:40:17 L190409 Exp $";
+	public static final String version="$Id: SapServer.java,v 1.3 2004-06-30 12:38:57 L190409 Exp $";
 	protected Logger log = Logger.getLogger(this.getClass());
 	
 	private SapFunctionHandler handler = null;
@@ -32,8 +35,8 @@ public class SapServer extends JCO.Server implements JCO.ServerExceptionListener
 		this.handler = handler;
 		log.info("SapServer connected to ["+system.getGwhost()+":"+system.getGwserv()+"] using progid ["+progid+"]");
 
-		JCO.addServerExceptionListener(this);
-		JCO.addServerErrorListener(this);
+//		JCO.addServerExceptionListener(this);
+//		JCO.addServerErrorListener(this);
 		JCO.addServerStateChangedListener(this);
   	}
 
