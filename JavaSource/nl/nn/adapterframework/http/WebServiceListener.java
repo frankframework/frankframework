@@ -1,6 +1,9 @@
 /*
  * $Log: WebServiceListener.java,v $
- * Revision 1.2  2004-08-23 13:08:14  L190409
+ * Revision 1.3  2004-09-09 14:49:19  L190409
+ * removed unused variable declarations
+ *
+ * Revision 1.2  2004/08/23 13:08:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated JavaDoc
  *
  * Revision 1.1  2004/08/23 07:13:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -49,7 +52,7 @@ import java.util.HashMap;
  * @author Gerrit van Brakel 
  */
 public class WebServiceListener  implements IPushingListener, ServiceClient, Serializable {
-	public static final String version="$Id: WebServiceListener.java,v 1.2 2004-08-23 13:08:14 L190409 Exp $";
+	public static final String version="$Id: WebServiceListener.java,v 1.3 2004-09-09 14:49:19 L190409 Exp $";
 	protected Logger log = Logger.getLogger(this.getClass());;
 
 	private IMessageHandler handler;        	
@@ -90,8 +93,6 @@ public class WebServiceListener  implements IPushingListener, ServiceClient, Ser
 
 
 	public String processRequest(String message) {
-		
-		String result;
 		try {
 			return handler.processRequest(this, message);
 		} catch (ListenerException e) {
@@ -100,9 +101,8 @@ public class WebServiceListener  implements IPushingListener, ServiceClient, Ser
 	}
 
 	public String processRequest(String correlationId, String message) {
-		String result;
 		try {
-			log.debug("wspusher processing ["+correlationId+"]");
+			log.debug("WebServiceListener processing ["+correlationId+"]");
 			return handler.processRequest(this, correlationId, message);
 		} catch (ListenerException e) {
 			return handler.formatException(null,correlationId, message,e);
