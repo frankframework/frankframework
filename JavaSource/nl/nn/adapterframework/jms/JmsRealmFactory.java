@@ -1,20 +1,30 @@
+/*
+ * $Log: JmsRealmFactory.java,v $
+ * Revision 1.3  2004-03-23 18:09:05  L190409
+ * cosmetic changes
+ *
+ */
 package nl.nn.adapterframework.jms;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.log4j.Logger;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 /**
  * Singleton that has the different jmsRealms.   <br/>
  * Typical use: JmsRealmFactory.getInstance().&lt;method to execute&gt;
  * <br/>
- * <p>$Id: JmsRealmFactory.java,v 1.2 2004-02-04 10:02:07 a1909356#db2admin Exp $</p>
+ * <p>$Id: JmsRealmFactory.java,v 1.3 2004-03-23 18:09:05 L190409 Exp $</p>
  * @author Johan Verrips IOS
  * @see JmsRealm
  */
 public class JmsRealmFactory {
-	public static final String version="$Id: JmsRealmFactory.java,v 1.2 2004-02-04 10:02:07 a1909356#db2admin Exp $";
+	public static final String version="$Id: JmsRealmFactory.java,v 1.3 2004-03-23 18:09:05 L190409 Exp $";
 
 
     private static JmsRealmFactory self = null;
@@ -49,13 +59,11 @@ public class JmsRealmFactory {
         try {
             jmsRealm = (JmsRealm) jmsRealms.get(jmsRealmName);
             if (jmsRealm==null) {
-                log.warn("no jms realm found under name ["+jmsRealmName+"]");
-                log.warn(this.toString());
+                log.error("no JmsRealm found under name ["+jmsRealmName+"], factory contents ["+toString()+"]");
             }
 
         } catch (NullPointerException ignore) {
-            log.warn("no jms realm found under name ["+jmsRealmName+"]");
-            log.warn(this.toString());
+            log.error("no JmsRealm found under name ["+jmsRealmName+"], factory contents ["+toString()+"]");
         }
         return jmsRealm;
     }
