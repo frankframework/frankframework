@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaFacade.java,v $
- * Revision 1.9  2004-07-08 12:55:57  L190409
+ * Revision 1.10  2004-07-15 07:35:44  L190409
+ * cosmetic changes
+ *
+ * Revision 1.9  2004/07/08 12:55:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * logging refinements
  *
  * Revision 1.8  2004/07/08 08:56:46  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -42,19 +45,19 @@ import javax.jms.*;
  * <tr><td>classname</td><td>nl.nn.adapterframework.extensions.ifsa.IfsaFacade</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the object</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setApplicationId(String) applicationId}</td><td>the ApplicationID, in the form of "IFSA://<i>AppId</i>"</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setServiceId(String) serviceId}</td><td></td><td>only for Requesters: the ServiceID, in the form of "IFSA://<i>ServiceID</i>"</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setServiceId(String) serviceId}</td><td>only for Requesters: the ServiceID, in the form of "IFSA://<i>ServiceID</i>"</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMessageProtocol(String) messageProtocol}</td><td>protocol of IFSA-Service to be called. Possible values 
  * <ul>
  *   <li>"FF": Fire & Forget protocol</li>
  *   <li>"RR": Request-Reply protocol</li>
- * </ul></td><td><td>&nbsp;</td></td></tr>
+ * </ul></td><td>&nbsp;</td></tr>
  * </table>
  * 
  * @author Johan Verrips / Gerrit van Brakel
  * @since 4.2
  */
 public class IfsaFacade implements INamedObject, HasPhysicalDestination {
-	public static final String version="$Id: IfsaFacade.java,v 1.9 2004-07-08 12:55:57 L190409 Exp $";
+	public static final String version="$Id: IfsaFacade.java,v 1.10 2004-07-15 07:35:44 L190409 Exp $";
     protected Logger log = Logger.getLogger(this.getClass());
     
 	private final static String IFSA_INITIAL_CONTEXT_FACTORY="com.ing.ifsa.IFSAContextFactory";
@@ -85,12 +88,29 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 			requestor=true;
 	}
 	
-	public String getLogPrefix() {
-		return this.getClass().getName() + "["+ getName()+ "] of application ["+getApplicationId()+"] service ["+getPhysicalDestinationName()+"]";
+	protected String getLogPrefix() {
+		
+		String objectType;
+		String serviceInfo="";
+		try {
+			if (isRequestor()) {
+				objectType = "IfsaRequester";
+				serviceInfo = "of Application ["+getApplicationId()+"] requesting for Service ["+getPhysicalDestinationName()+"]"; 
+			} else {
+				objectType = "IfsaProvider";				
+				serviceInfo = "for Application ["+getApplicationId()+"]"; 
+			} 
+		} catch (IfsaException e) {
+			log.debug("Exception determining objectType in getLogPrefix",e);
+			objectType="Object";
+			serviceInfo = "of Application ["+getApplicationId()+"]"; 
+		}
+		
+		return objectType + "["+ getName()+ "] " + serviceInfo;  
 	}
 
 	/**
-	 * This method performs some basic checks.
+	 * Checks if messageProtocol and serviceId (only for Requestors) are specified
 	 */
 	public void configure() throws ConfigurationException {
 		// perform some basic checks
@@ -108,11 +128,19 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 		}
 	}
 
+	/** 
+	 * Prepares object for communication on the IFSA bus.
+	 * Obtains a connection and a serviceQueue.
+	 */
 	public void openService() throws IfsaException {
 		getConnection();   // obtain and cache connection, then start it.
 		getServiceQueue(); // obtain and cache service queue
 	}
 
+	/** 
+	 * Stops communication on the IFSA bus.
+	 * Releases references to serviceQueue and connection.
+	 */
 	public void closeService() throws IfsaException {
 	    try {
 	        if (connection != null) {
