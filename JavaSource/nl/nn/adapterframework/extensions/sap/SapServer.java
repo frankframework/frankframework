@@ -1,6 +1,9 @@
-/*
+/* 
  * $Log: SapServer.java,v $
- * Revision 1.2  2004-10-05 10:41:24  L190409
+ * Revision 1.3  2005-03-14 17:27:05  L190409
+ * increased logging
+ *
+ * Revision 1.2  2004/10/05 10:41:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed unused imports
  *
  * Revision 1.1  2004/07/06 07:09:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -28,7 +31,7 @@ import com.sap.mw.jco.JCO;
  * @since 4.2
  */
 public class SapServer extends JCO.Server implements JCO.ServerExceptionListener, JCO.ServerErrorListener , JCO.ServerStateChangedListener {
-	public static final String version="$Id: SapServer.java,v 1.2 2004-10-05 10:41:24 L190409 Exp $";
+	public static final String version="$Id: SapServer.java,v 1.3 2005-03-14 17:27:05 L190409 Exp $";
 	protected Logger log = Logger.getLogger(this.getClass());
 	
 	private SapFunctionHandler handler = null;
@@ -67,10 +70,11 @@ public class SapServer extends JCO.Server implements JCO.ServerExceptionListener
 	protected void handleRequest(JCO.Function function)
 	{
 		try {
-			log.info("sap function called:"+function.getName());
+			log.info("sap function called: "+function.getName());
 			handler.processFunctionCall(function);
-		} catch (SapException e) {
-			throw new JCO.AbapException("IbisException", e.getMessage());
+		} catch (Throwable t) {
+			log.warn("Exception caught and handed to SAP",t);
+			throw new JCO.AbapException("IbisException", t.getMessage());
 		}
 	}
 	

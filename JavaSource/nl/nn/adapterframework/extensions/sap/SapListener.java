@@ -1,6 +1,9 @@
 /*
  * $Log: SapListener.java,v $
- * Revision 1.4  2005-03-10 14:48:42  L190409
+ * Revision 1.5  2005-03-14 17:27:54  L190409
+ * increased logging
+ *
+ * Revision 1.4  2005/03/10 14:48:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed trace setting
  *
  * Revision 1.3  2004/10/05 10:41:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -70,7 +73,7 @@ import com.sap.mw.jco.*;
  * @since 4.2
  */
 public class SapListener extends SapFunctionFacade implements IPushingListener, SapFunctionHandler, JCO.ServerExceptionListener, JCO.ServerErrorListener {
-	public static final String version="$Id: SapListener.java,v 1.4 2005-03-10 14:48:42 L190409 Exp $";
+	public static final String version="$Id: SapListener.java,v 1.5 2005-03-14 17:27:54 L190409 Exp $";
 
 	private String progid;	 // progid of the RFC-destination
         	
@@ -113,15 +116,18 @@ public class SapListener extends SapFunctionFacade implements IPushingListener, 
 
 
 	public String getIdFromRawMessage(Object rawMessage, HashMap threadContext) throws ListenerException {
+		log.debug("SapListener.getCorrelationIdFromField");
 		return getCorrelationIdFromField((JCO.Function) rawMessage);
 	}
 
 	public String getStringFromRawMessage(Object rawMessage, HashMap threadContext) throws ListenerException {
+		log.debug("SapListener.getStringFromRawMessage");
 		return functionCall2message((JCO.Function) rawMessage);
 	}
 
 	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessage, HashMap threadContext) throws ListenerException {
 		try {
+			log.debug("SapListener.afterMessageProcessed");
 			message2FunctionResult((JCO.Function) rawMessage, processResult.getResult());
 		} catch (SapException e) {
 			throw new ListenerException(e);
@@ -138,6 +144,7 @@ public class SapListener extends SapFunctionFacade implements IPushingListener, 
 */
 	public void processFunctionCall(JCO.Function function) throws SapException {
 		try {
+			log.debug("SapListener.procesFunctionCall()");
 			handler.processRawMessage(this, function, null);
 		} catch (ListenerException e) {
 			throw new SapException(e);
