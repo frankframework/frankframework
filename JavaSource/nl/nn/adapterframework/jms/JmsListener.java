@@ -60,12 +60,12 @@ import java.util.HashMap;
  * <p><b>Notice:</b> the JmsListener is ONLY capable of processing
  * <code>javax.jms.TextMessage</code>s <br/><br/>
  * </p>
- * <p>$Id: JmsListener.java,v 1.2 2004-02-04 10:02:07 a1909356#db2admin Exp $</p>
+ * <p>$Id: JmsListener.java,v 1.3 2004-03-11 08:29:46 NNVZNL01#L180564 Exp $</p>
  * @author Gerrit van Brakel
  * @since 4.0.1
  */
 public class JmsListener extends JMSFacade implements ICorrelatedPullingListener, HasSender {
-	public static final String version="$Id: JmsListener.java,v 1.2 2004-02-04 10:02:07 a1909356#db2admin Exp $";
+	public static final String version="$Id: JmsListener.java,v 1.3 2004-03-11 08:29:46 NNVZNL01#L180564 Exp $";
 
 
   private long timeOut = 3000;
@@ -123,7 +123,7 @@ public void afterMessageProcessed(PipeLineResult plr, Object rawMessage, HashMap
            		// session.rollback();
        		}
     	} else {
-       		if (getAckMode() == session.CLIENT_ACKNOWLEDGE) {
+       		if (getAckMode() == Session.CLIENT_ACKNOWLEDGE) {
 	       		if (successState!=null && successState.equals(plr.getState())) {
         	  		((TextMessage)rawMessage).acknowledge();
 	       		}

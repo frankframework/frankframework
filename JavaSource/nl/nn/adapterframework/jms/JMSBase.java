@@ -15,7 +15,7 @@ import javax.naming.NamingException;
  * The <code>destinationType</code> field specifies which
  * type should be used.<br/>
  *
- * <p>$Id: JMSBase.java,v 1.2 2004-02-04 10:02:07 a1909356#db2admin Exp $</p>
+ * <p>$Id: JMSBase.java,v 1.3 2004-03-11 08:29:46 NNVZNL01#L180564 Exp $</p>
  * 
  * @deprecated This class remembers too much: It stores jms-receivers and jms-senders
  *             as object-members. Please use {@link JMSFacade} instead.
@@ -23,7 +23,7 @@ import javax.naming.NamingException;
  * @author     Johan Verrips
  */
 public class JMSBase extends JNDIBase {
-	public static final String version="$Id: JMSBase.java,v 1.2 2004-02-04 10:02:07 a1909356#db2admin Exp $";
+	public static final String version="$Id: JMSBase.java,v 1.3 2004-03-11 08:29:46 NNVZNL01#L180564 Exp $";
 
 
     private int ackMode;
@@ -253,13 +253,13 @@ public class JMSBase extends JNDIBase {
         Session session = null;
 
         String ackString;
-        if (session.AUTO_ACKNOWLEDGE == ackMode) {
+        if (Session.AUTO_ACKNOWLEDGE == ackMode) {
             ackString = "Auto";
         } else
-            if (session.CLIENT_ACKNOWLEDGE == ackMode) {
+            if (Session.CLIENT_ACKNOWLEDGE == ackMode) {
                 ackString = "Client";
             } else
-                if (session.DUPS_OK_ACKNOWLEDGE == ackMode) {
+                if (Session.DUPS_OK_ACKNOWLEDGE == ackMode) {
                     ackString = "Dups";
                 } else {
                     ackString = "none";
