@@ -1,6 +1,9 @@
 /*
  * $Log: Adapter.java,v $
- * Revision 1.8  2004-04-28 08:31:41  NNVZNL01#L180564
+ * Revision 1.9  2004-06-16 12:34:46  NNVZNL01#L180564
+ * Added AutoStart functionality on Adapter
+ *
+ * Revision 1.8  2004/04/28 08:31:41  Johan Verrips <johan.verrips@ibissource.org>
  * Added getRunStateAsString function
  *
  * Revision 1.7  2004/04/13 11:37:13  Johan Verrips <johan.verrips@ibissource.org>
@@ -70,7 +73,7 @@ import javax.transaction.UserTransaction;
  */
 
 public class Adapter extends JNDIBase implements Runnable, IAdapter{
-	public static final String version="$Id: Adapter.java,v 1.8 2004-04-28 08:31:41 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: Adapter.java,v 1.9 2004-06-16 12:34:46 NNVZNL01#L180564 Exp $";
 	private Vector receivers=new Vector();
 	private long lastMessageDate =0;
     private PipeLine pipeline;
@@ -89,7 +92,25 @@ public class Adapter extends JNDIBase implements Runnable, IAdapter{
     private String description;
     private MessageKeeper messageKeeper; //instantiated in configure()
     private int messageKeeperSize=10;    //default length
-
+	private boolean autoStart=true;
+	
+	/**
+	 * AutoStart indicates that the adapter should be started when the configuration
+	 * is started. 
+	 * @param autoStart defaults to TRUE
+	 * @since 4.1.1
+	 */
+	public void setAutoStart(boolean autoStart) {
+		this.autoStart=autoStart; 
+	}
+	/**
+	 * AutoStart indicates that the adapter should be started when the configuration
+	 * is started. AutoStart defaults to TRUE
+	 * @since 4.1.1
+	 */ 
+	public boolean isAutoStart(){
+		return autoStart;
+	}
 	// state to put in PipeLineResult when a PipeRunException occurs;
 	private String errorState = "ERROR";
 

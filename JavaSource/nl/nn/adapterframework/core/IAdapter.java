@@ -1,6 +1,9 @@
 /*
  * $Log: IAdapter.java,v $
- * Revision 1.4  2004-03-26 10:42:50  NNVZNL01#L180564
+ * Revision 1.5  2004-06-16 12:34:46  NNVZNL01#L180564
+ * Added AutoStart functionality on Adapter
+ *
+ * Revision 1.4  2004/03/26 10:42:50  Johan Verrips <johan.verrips@ibissource.org>
  * added @version tag in javadoc
  *
  * Revision 1.3  2004/03/23 17:36:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -24,7 +27,7 @@ import javax.transaction.UserTransaction;
  * @version Id
  **/
 public interface IAdapter extends IManagable {
-	public static final String version="$Id: IAdapter.java,v 1.4 2004-03-26 10:42:50 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: IAdapter.java,v 1.5 2004-06-16 12:34:46 NNVZNL01#L180564 Exp $";
   /**
    * Instruct the adapter to configure itself. The adapter will call the
    * pipeline to configure itself, the pipeline will call the individual
@@ -43,6 +46,7 @@ public interface IAdapter extends IManagable {
 	public PipeLineResult processMessage(String correlationID, String message);
   	public void registerPipeLine (PipeLine pipeline) throws ConfigurationException;
   	public void setName(String name);
+  	public boolean isAutoStart();
 	public String toString();
 	
 	/**

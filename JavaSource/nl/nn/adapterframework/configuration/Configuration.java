@@ -1,6 +1,9 @@
 /*
  * $Log: Configuration.java,v $
- * Revision 1.9  2004-04-23 14:45:36  NNVZNL01#L180564
+ * Revision 1.10  2004-06-16 12:34:46  NNVZNL01#L180564
+ * Added AutoStart functionality on Adapter
+ *
+ * Revision 1.9  2004/04/23 14:45:36  Johan Verrips <johan.verrips@ibissource.org>
  * added JMX support
  *
  * Revision 1.8  2004/03/30 07:30:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -48,7 +51,7 @@ import java.util.Enumeration;
  */
 public class Configuration {
     protected Logger log; 
-    public static final String version="$Id: Configuration.java,v 1.9 2004-04-23 14:45:36 NNVZNL01#L180564 Exp $";
+    public static final String version="$Id: Configuration.java,v 1.10 2004-06-16 12:34:46 NNVZNL01#L180564 Exp $";
      
     private Hashtable adapterTable = new Hashtable();
 
@@ -298,8 +301,10 @@ public class Configuration {
         while (keys.hasMoreElements()) {
             String name = (String) keys.nextElement();
             IAdapter adapter = getRegisteredAdapter(name);
-            log.info("Starting adapter " + name);
-            adapter.startRunning();
+            if (adapter.isAutoStart()) {
+	            log.info("Starting adapter " + name);
+	            adapter.startRunning();
+            }
         }
 
     }
