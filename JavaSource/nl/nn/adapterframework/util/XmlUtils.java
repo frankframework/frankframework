@@ -1,6 +1,9 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.15  2004-11-10 13:01:45  L190409
+ * Revision 1.16  2005-01-10 08:56:10  L190409
+ * Xslt parameter handling by Maps instead of by Ibis parameter system
+ *
+ * Revision 1.15  2004/11/10 13:01:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added dynamic setting of copy-method in createXpathEvaluatorSource
  *
  * Revision 1.14  2004/10/26 16:18:08  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -44,10 +47,6 @@
  */
 package nl.nn.adapterframework.util;
 
-import nl.nn.adapterframework.core.ParameterException;
-import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.parameters.ParameterValue;
-import nl.nn.adapterframework.parameters.ParameterValueList;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.NestableException;
@@ -92,7 +91,9 @@ import java.io.FileNotFoundException;
 
 import java.net.URL;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.Map;
 
 /**
  * Some utilities for working with XML. As soon as the Apache XML Commons project
@@ -103,7 +104,7 @@ import java.util.LinkedList;
  */
 public class XmlUtils {
 	public static final String version =
-		"$Id: XmlUtils.java,v 1.15 2004-11-10 13:01:45 L190409 Exp $";
+		"$Id: XmlUtils.java,v 1.16 2005-01-10 08:56:10 L190409 Exp $";
 
 	static final String W3C_XML_SCHEMA = "http://www.w3.org/2001/XMLSchema";
 	static final String JAXP_SCHEMA_LANGUAGE =
@@ -608,24 +609,23 @@ public class XmlUtils {
 	}
 	
 	/**
-	 * sets all the parameters of the transformer using the parameterList and the resolutionContext. 
+	 * sets all the parameters of the transformer using a HashMap with parameter values. 
 	 */
-	public static void setTransformerParameters(Transformer t, ParameterValueList values) throws ParameterException {
+	public static void setTransformerParameters(Transformer t, Map parameters) {
 		t.clearParameters();
-		if (values == null) {
+		if (parameters == null) {
 			return;
 		}
-		for (int i=0; i<values.size(); i++) {
-			ParameterValue pv = values.getParameterValue(i);
-			Parameter p = pv.getDefinition();
-			Object value = pv.getValue(); 
+		for (Iterator it=parameters.keySet().iterator(); it.hasNext();) {
+			String name=(String)it.next();
+			Object value = parameters.get(name); 
 					
 			if (value != null) {
-				t.setParameter(p.getName(), value);
-				log.debug("setting parameter [" + p.getName()+ "] on transformer");
+				t.setParameter(name, value);
+				log.debug("setting parameter [" + name+ "] on transformer");
 			} 
 			else {
-				log.warn("omitting setting of parameter ["+p.getName()+"] on transformer, as it has a null-value");
+				log.warn("omitting setting of parameter ["+name+"] on transformer, as it has a null-value");
 			}
 		}
 	}

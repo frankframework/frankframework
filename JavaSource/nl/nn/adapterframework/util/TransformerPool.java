@@ -1,6 +1,9 @@
 /*
  * $Log: TransformerPool.java,v $
- * Revision 1.6  2004-12-20 15:11:56  NNVZNL01#L180564
+ * Revision 1.7  2005-01-10 08:56:10  L190409
+ * Xslt parameter handling by Maps instead of by Ibis parameter system
+ *
+ * Revision 1.6  2004/12/20 15:11:56  Johan Verrips <johan.verrips@ibissource.org>
  * Bugfix: systemID now properly handled. Transformer was created before system id was set.
  *
  * Revision 1.5  2004/10/26 16:26:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -24,6 +27,7 @@ package nl.nn.adapterframework.util;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.URL;
+import java.util.Map;
 
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
@@ -33,9 +37,6 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamSource;
 
-import nl.nn.adapterframework.core.ParameterException;
-import nl.nn.adapterframework.parameters.ParameterList;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.pool.BasePoolableObjectFactory;
@@ -50,7 +51,7 @@ import org.w3c.dom.Document;
  * @author Gerrit van Brakel
  */
 public class TransformerPool {
-	public static final String version = "$Id: TransformerPool.java,v 1.6 2004-12-20 15:11:56 NNVZNL01#L180564 Exp $";
+	public static final String version = "$Id: TransformerPool.java,v 1.7 2005-01-10 08:56:10 L190409 Exp $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	private TransformerFactory tFactory = TransformerFactory.newInstance();
@@ -145,33 +146,26 @@ public class TransformerPool {
     	return t;
     }
 
-	public String transform(Document d, ParameterList parameterList, ParameterResolutionContext prc)
-		throws ParameterException, TransformerException, IOException {
-
-		return transform(new DOMSource(d),parameterList,prc);
+	public String transform(Document d, Map parameters)	throws TransformerException, IOException {
+		return transform(new DOMSource(d),parameters);
 	}
 
-	public String transform(String s, ParameterList parameterList, ParameterResolutionContext prc)
-		throws ParameterException, TransformerException, IOException {
+	public String transform(String s, Map parameters) throws TransformerException, IOException {
 
 		Variant inputVar = new Variant(s);
 		Source in = inputVar.asXmlSource();
 
-		return transform(in,parameterList,prc);
+		return transform(in,parameters);
 	}
 	
-	public String transform(Source s, ParameterList parameterList, ParameterResolutionContext prc) throws ParameterException, TransformerException, IOException {
+	public String transform(Source s, Map parameters) throws TransformerException, IOException {
 		Transformer transformer = getTransformer();
 
 		try {	
-			if (parameterList!=null && prc!=null) {
-				XmlUtils.setTransformerParameters(transformer, prc.getValues(parameterList));
+			if (parameters!=null) {
+				XmlUtils.setTransformerParameters(transformer, parameters);
 			}
 			return XmlUtils.transformXml(transformer, s);
-		} 
-		catch (ParameterException pe) {
-			invalidateTransformerNoThrow(transformer);
-			throw pe;
 		} 
 		catch (TransformerException te) {
 			invalidateTransformerNoThrow(transformer);

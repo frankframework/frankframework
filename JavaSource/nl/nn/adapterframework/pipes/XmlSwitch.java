@@ -18,6 +18,7 @@ import org.apache.commons.lang.StringUtils;
 
 
 import java.io.IOException;
+import java.util.Map;
 
 
 /**
@@ -43,7 +44,7 @@ import java.io.IOException;
  * @author Johan Verrips
  */
 public class XmlSwitch extends AbstractPipe {
-	public static final String version="$Id: XmlSwitch.java,v 1.11 2004-10-25 08:33:55 L190409 Exp $";
+	public static final String version="$Id: XmlSwitch.java,v 1.12 2005-01-10 08:56:10 L190409 Exp $";
 	
     private static final String DEFAULT_SERVICESELECTION_XPATH = XmlUtils.XPATH_GETROOTNODENAME;
 	private TransformerPool transformerPool;
@@ -128,11 +129,13 @@ public class XmlSwitch extends AbstractPipe {
 		ParameterList parameterList = null;
 		ParameterResolutionContext prc = null;	
 		try {
+			Map parametervalues = null;
 			if (getParameterList()!=null) {
 				parameterList =  getParameterList();
 				prc = new ParameterResolutionContext((String)input, session); 
+				parametervalues = prc.getValueMap(parameterList);
 			}
-            forward = transformerPool.transform(sInput, parameterList, prc);
+            forward = transformerPool.transform(sInput, parametervalues);
             log.debug(getLogPrefix(session)+ "determined forward ["+forward+"]");
 
 			if (findForward(forward) != null) 

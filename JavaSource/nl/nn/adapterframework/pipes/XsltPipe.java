@@ -1,6 +1,9 @@
 /*
  * $Log: XsltPipe.java,v $
- * Revision 1.13  2004-10-19 15:27:19  L190409
+ * Revision 1.14  2005-01-10 08:56:10  L190409
+ * Xslt parameter handling by Maps instead of by Ibis parameter system
+ *
+ * Revision 1.13  2004/10/19 15:27:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * moved transformation to pool
  *
  * Revision 1.12  2004/10/14 16:11:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -19,6 +22,7 @@
 package nl.nn.adapterframework.pipes;
 
 import java.io.IOException;
+import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -68,7 +72,7 @@ import org.apache.commons.lang.StringUtils;
  */
 
 public class XsltPipe extends FixedForwardPipe {
-	public static final String version="$Id: XsltPipe.java,v 1.13 2004-10-19 15:27:19 L190409 Exp $";
+	public static final String version="$Id: XsltPipe.java,v 1.14 2005-01-10 08:56:10 L190409 Exp $";
 
 	private TransformerPool transformerPool;
 	private String xpathExpression=null;
@@ -146,12 +150,14 @@ public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRu
 	ParameterList parameterList = null;
 	ParameterResolutionContext prc=null;   
     try {
+		Map parametervalues = null;
 		if (getParameterList()!=null) {
-			parameterList = getParameterList();
-			prc=new ParameterResolutionContext((String)input, session);
+			parameterList =  getParameterList();
+			prc = new ParameterResolutionContext((String)input, session); 
+			parametervalues = prc.getValueMap(parameterList);
 		}
 		
-        String stringResult = transformerPool.transform((String) input, parameterList, prc); 
+        String stringResult = transformerPool.transform((String) input, parametervalues); 
 		if (StringUtils.isEmpty(getSessionKey())){
 			return new PipeRunResult(getForward(), stringResult);
 		} else {
