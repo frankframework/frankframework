@@ -1,6 +1,9 @@
 /*
  * $Log: JavaProxy.java,v $
- * Revision 1.2  2004-08-12 10:58:43  a1909356#db2admin
+ * Revision 1.3  2004-08-13 06:47:26  a1909356#db2admin
+ * Allow usage of JavaPusher without JNDI
+ *
+ * Revision 1.2  2004/08/12 10:58:43  unknown <unknown@ibissource.org>
  * Replaced JavaReceiver by the JavaPusher that is to be used in a GenericPushingReceiver
  *
  * Revision 1.1  2004/04/26 06:21:38  unknown <unknown@ibissource.org>
@@ -24,7 +27,7 @@ import java.io.Serializable;
  * application.
  */
 public class JavaProxy implements ServiceClient, Serializable {
-	public static final String version="$Id: JavaProxy.java,v 1.2 2004-08-12 10:58:43 a1909356#db2admin Exp $";
+	public static final String version="$Id: JavaProxy.java,v 1.3 2004-08-13 06:47:26 a1909356#db2admin Exp $";
 	private String serviceName;
 	private boolean isPusher;
 	
@@ -77,4 +80,14 @@ public class JavaProxy implements ServiceClient, Serializable {
 		this.serviceName = serviceName;
 	}
 
+	/**
+	 * @param serviceName
+	 * @return JavaProxy for a JavaPusher if registered under name or null
+	 */
+	public static JavaProxy getProxy(String serviceName) {
+		JavaPusher pusher = JavaPusher.getJavaPusher(serviceName);
+		if (pusher == null)
+			return null;
+		return new JavaProxy(pusher);
+	}
 }

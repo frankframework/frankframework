@@ -1,6 +1,9 @@
 /*
  * $Log: JavaPusher.java,v $
- * Revision 1.1  2004-08-12 10:58:43  a1909356#db2admin
+ * Revision 1.2  2004-08-13 06:47:26  a1909356#db2admin
+ * Allow usage of JavaPusher without JNDI
+ *
+ * Revision 1.1  2004/08/12 10:58:43  unknown <unknown@ibissource.org>
  * Replaced JavaReceiver by the JavaPusher that is to be used in a GenericPushingReceiver
  *
  * Revision 1.1  2004/04/26 06:21:38  unknown <unknown@ibissource.org>
@@ -16,6 +19,7 @@ import java.util.Map;
 import javax.naming.Context;
 import javax.naming.NamingException;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.log4j.Logger;
 
@@ -36,7 +40,7 @@ import nl.nn.adapterframework.jms.JmsRealm;
  */
 public class JavaPusher implements IPushingListener {
 	private static Map registeredJavaPushers; 
-	public static final String version="$Id: JavaPusher.java,v 1.1 2004-08-12 10:58:43 a1909356#db2admin Exp $";
+	public static final String version="$Id: JavaPusher.java,v 1.2 2004-08-13 06:47:26 a1909356#db2admin Exp $";
 	protected Logger log = Logger.getLogger(this.getClass());;
 	private String name;
 	private String jndiName;
@@ -146,13 +150,15 @@ public class JavaPusher implements IPushingListener {
 	 * @see nl.nn.adapterframework.core.IListener#close()
 	 */
 	public void close() throws ListenerException {
-		try {
-			getContext().unbind(jndiName);
-			closeContext();
+		if (getJndiName() != null) {
+			try {
+					getContext().unbind(jndiName);
+					closeContext();
+				}
+			catch (NamingException e) {
+				log.error("error occured while stopping listener [" + getName() + "]", e);
+			}
 		} 
-		catch (NamingException e) {
-			log.error("error occured while stopping listener [" + getName() + "]", e);
-		}
 		unregisterJavaPusher(getName());		
 	}
 
@@ -163,6 +169,9 @@ public class JavaPusher implements IPushingListener {
 		try {
 			if (handler==null) {
 				throw new ConfigurationException("handler has not been set");
+			}
+			if (StringUtils.isEmpty(getName())) {
+				throw new ConfigurationException("name has not been set");
 			}
 		} 
 		catch (Exception e){
@@ -189,10 +198,11 @@ public class JavaPusher implements IPushingListener {
 	 * @see nl.nn.adapterframework.core.IListener#open()
 	 */
 	public void open() throws ListenerException {
+		// add myself to list so that proxy can find me
+		registerJavaPusher(getName(), this);
 		try {
-			// add myself to list so that proxy can find me
-			registerJavaPusher(getName(), this);
-			getContext().rebind(jndiName, new JavaProxy(this));
+			if (getJndiName() != null)
+				getContext().rebind(jndiName, new JavaProxy(this));
 		} 
 		catch (NamingException e) {
 			log.error("error occured while starting listener [" + getName() + "]", e);
