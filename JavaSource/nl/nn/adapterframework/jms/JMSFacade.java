@@ -1,6 +1,9 @@
 /*
  * $Log: JMSFacade.java,v $
- * Revision 1.8  2004-03-30 07:30:03  L190409
+ * Revision 1.9  2004-03-31 12:04:19  L190409
+ * fixed javadoc
+ *
+ * Revision 1.8  2004/03/30 07:30:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.7  2004/03/26 10:42:51  Johan Verrips <johan.verrips@ibissource.org>
@@ -38,7 +41,7 @@ import javax.naming.NamingException;
  * @author    Gerrit van Brakel
  */
 public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version="$Id: JMSFacade.java,v 1.8 2004-03-30 07:30:03 L190409 Exp $";
+	public static final String version="$Id: JMSFacade.java,v 1.9 2004-03-31 12:04:19 L190409 Exp $";
 
 	private String name;
 
@@ -470,7 +473,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	}
 
 	/**
-	 * Convencience function to convert the numeric value of an (@link setAckMode(int) acknowledgeMode} to a human-readable string.
+	 * Convencience function to convert the numeric value of an (@link #setAckMode(int) acknowledgeMode} to a human-readable string.
 	 */
 	public static String getAcknowledgeModeAsString(int ackMode) {
 		String ackString;
@@ -490,7 +493,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	}
 	
 	/**
-	 * String-version of {@link setAckMode(int)}
+	 * String-version of {@link #setAckMode(int)}
 	 */
 	public void setAcknowledgeMode(String acknowledgeMode) {
 
@@ -510,7 +513,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 
 	}
 	/**
-	 * String-version of {@link getAckMode()}
+	 * String-version of {@link #getAckMode()}
 	 */
 	public String getAcknowledgeMode() {
 		return getAcknowledgeModeAsString(getAckMode());
@@ -568,7 +571,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 
 
 	/**
-	 * The JNDI-name of the connection factory to use to connect to a <i>queue</i> if {@link isTransacted()} returns <code>false</code>.
+	 * The JNDI-name of the connection factory to use to connect to a <i>queue</i> if {@link #isTransacted()} returns <code>false</code>.
 	 * The corresponding connection factory should be configured not to support XA transactions. 
 	 */
 	public void setQueueConnectionFactoryName(String name) {
@@ -579,7 +582,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	}
 
 	/**
-	 * The JNDI-name of the connection factory to use to connect to a <i>queue</i> if {@link isTransacted()} returns <code>true</code>.
+	 * The JNDI-name of the connection factory to use to connect to a <i>queue</i> if {@link #isTransacted()} returns <code>true</code>.
 	 * The corresponding connection factory should support XA transactions. 
 	 */
 	public void setQueueConnectionFactoryNameXA(String queueConnectionFactoryNameXA) {
@@ -591,7 +594,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 
 
 	/**
-	 * The JNDI-name of the connection factory to use to connect to a <i>topic</i> if {@link isTransacted()} returns <code>false</code>.
+	 * The JNDI-name of the connection factory to use to connect to a <i>topic</i> if {@link #isTransacted()} returns <code>false</code>.
 	 * The corresponding connection factory should be configured not to support XA transactions. 
 	 */
 	public void setTopicConnectionFactoryNameX(String topicConnectionFactoryName) {
@@ -602,7 +605,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	}
 
 	/**
-	 * The JNDI-name of the connection factory to use to connect to a <i>topic</i> if {@link isTransacted()} returns <code>true</code>.
+	 * The JNDI-name of the connection factory to use to connect to a <i>topic</i> if {@link #isTransacted()} returns <code>true</code>.
 	 * The corresponding connection factory should support XA transactions. 
 	 */
 	public void setTopicConnectionFactoryNameXA(String topicConnectionFactoryNameXA) {
@@ -614,7 +617,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 
 	/**
 	 * Controls the use of JMS transacted session.
-	 * In versions prior to 4.1, this attribute was called plainly 'transacted'. The {@link setTransacted(String) transacted} 
+	 * In versions prior to 4.1, this attribute was called plainly 'transacted'. The {@link #setTransacted(boolean) transacted} 
 	 * attribute, however, is now in uses to indicate the use of XA-transactions. XA transactions can be used 
 	 * in a pipeline to simultaneously (in one transaction) commit or rollback messages send to a number of queues, or
 	 * even together with database actions.
@@ -641,7 +644,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	}
 	/**
 	 * Indicates whether messages are send under transaction control.
-	 * @see setTransacted(boolean)
+	 * @see #setTransacted(boolean)
 	 */
 	public boolean isTransacted() {
 		return transacted;

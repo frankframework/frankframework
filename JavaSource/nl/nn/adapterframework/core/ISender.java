@@ -1,6 +1,9 @@
 /*
  * $Log: ISender.java,v $
- * Revision 1.4  2004-03-30 07:29:59  L190409
+ * Revision 1.5  2004-03-31 12:04:21  L190409
+ * fixed javadoc
+ *
+ * Revision 1.4  2004/03/30 07:29:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.3  2004/03/26 10:42:45  Johan Verrips <johan.verrips@ibissource.org>
@@ -19,7 +22,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
  * @author  Gerrit van Brakel
  */
 public interface ISender extends INamedObject {
-		public static final String version="$Id: ISender.java,v 1.4 2004-03-30 07:29:59 L190409 Exp $";
+		public static final String version="$Id: ISender.java,v 1.5 2004-03-31 12:04:21 L190409 Exp $";
 
 /**
  * <code>configure()</code> is called once at startup of the framework in the configure method of the owner of this sender. 
@@ -50,12 +53,12 @@ boolean isSynchronous();
  * object). This method may only be called after the <code>configure() </code>
  * method is called.
  * <p>
- * For synchronous senders ({@link isSynchronous()} returns <code>true</code>:
+ * For synchronous senders ({@link #isSynchronous()} returns <code>true</code>:
  * 
  * The following table shows the difference between synchronous and a-synchronous senders:
  * <table border="1">
  * <tr><th>@nbsp;</th><th>synchronous</th><th>a-synchronous</th></tr>
- * <tr><td>{@link isSynchronous()} returns</td><td><code>true</code></td><td><code>false</code></td></tr>
+ * <tr><td>{@link #isSynchronous()} returns</td><td><code>true</code></td><td><code>false</code></td></tr>
  * <tr><td>return value of <code>sendMessage()</code> is</td><td>the reply-message</td><td>the messageId of the message sent</td></tr>
  * <tr><td>the correlationID specified with <code>sendMessage()</code></td><td>may be ignored</td><td>is sent with the message</td></tr>
  * <tr><td>a {link TimeOutException}</td><td>may be thrown if a timeout occurs waiting for a reply</td><td>should not be expected</td></tr>

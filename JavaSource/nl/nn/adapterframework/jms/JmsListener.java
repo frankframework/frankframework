@@ -1,6 +1,9 @@
 /*
  * $Log: JmsListener.java,v $
- * Revision 1.8  2004-03-30 07:30:00  L190409
+ * Revision 1.9  2004-03-31 12:04:20  L190409
+ * fixed javadoc
+ *
+ * Revision 1.8  2004/03/30 07:30:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.7  2004/03/26 11:01:43  Johan Verrips <johan.verrips@ibissource.org>
@@ -49,12 +52,12 @@ import java.util.HashMap;
  * <tr><td>{@link #setJmsTransacted(boolean) listener.jmsTransacted}</td><td>when true, sessions are explicitly committed (exit-state equals commitOnState) or rolled-back (other exit-states) </td><td>false</td></tr>
  * <tr><td>{@link #setCommitOnState(String) listener.commitOnState}</td><td>&nbsp;</td><td>"success"</td></tr>
  * <tr><td>{@link #setAcknowledgeMode(String) listener.acknowledgeMode}</td><td>"auto", "dups" or "client"</td><td>"auto"</td></tr>
- * <tr><td>{@link #setPersistent(String) listener.persistent}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setPersistent(boolean) listener.persistent}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setTimeOut(long) listener.timeOut}</td><td>receiver timeout, in milliseconds</td><td>3000 [ms]</td></tr>
  * <tr><td>{@link #setUseReplyTo(boolean) listener.useReplyTo}</td><td>&nbsp;</td><td>true</td></tr>
  * <tr><td>{@link #setJmsRealm(String) listener.jmsRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setForceMQCompliancy(boolean) forceMQCompliancy}</td><td>Possible values: 'MQ' or 'JMS'. Setting to 'MQ' informs the MQ-server that the replyto queue is not JMS compliant.</td><td>JMS</td></tr>
- * <tr><td>{@link #setForceMessageIdAsCorrelationId(boolean) forceMessageIdAsCorrelationId}</td><td>forces that not the Correlation ID of the received message is used in a reply, but the Message ID. Through the logging you also see the messageID instead of the correlationID.</td><td>false</td></tr>
+ * <tr><td>{@link #setForceMQCompliancy(String) forceMQCompliancy}</td><td>Possible values: 'MQ' or 'JMS'. Setting to 'MQ' informs the MQ-server that the replyto queue is not JMS compliant.</td><td>JMS</td></tr>
+ * <tr><td>{@link #setForceMessageIdAsCorrelationId(String) forceMessageIdAsCorrelationId}</td><td>forces that not the Correlation ID of the received message is used in a reply, but the Message ID. Through the logging you also see the messageID instead of the correlationID.</td><td>false</td></tr>
  * </table>
  *</p><p><b>Using transactions</b><br/>
  * Since version 4.1, Ibis supports distributed transactions using the XA-protocol. This feature is controlled by the 
@@ -97,7 +100,7 @@ import java.util.HashMap;
  * @since 4.0.1
  */
 public class JmsListener extends JMSFacade implements ICorrelatedPullingListener, HasSender {
-	public static final String version="$Id: JmsListener.java,v 1.8 2004-03-30 07:30:00 L190409 Exp $";
+	public static final String version="$Id: JmsListener.java,v 1.9 2004-03-31 12:04:20 L190409 Exp $";
 
 
   private long timeOut = 3000;
@@ -163,11 +166,6 @@ public void afterMessageProcessed(PipeLineResult plr, Object rawMessage, HashMap
 		                "["+getName()+"] no replyTo address found or not configured to use replyTo, using default destination" 
 		                + "sending message with correlationID[" + cid + "] [" + plr.getResult() + "]");
 				}
-				/*
-				if (isTransacted() && sender instanceof IXASender && tx!=null) {
-					((IXASender)sender).sendMessage(cid, plr.getResult(),tx);
-				} else 
-				*/
 				sender.sendMessage(cid, plr.getResult());
 			}
         }

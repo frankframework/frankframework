@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcQuerySenderBase.java,v $
- * Revision 1.3  2004-03-26 10:43:07  NNVZNL01#L180564
+ * Revision 1.4  2004-03-31 12:04:19  L190409
+ * fixed javadoc
+ *
+ * Revision 1.3  2004/03/26 10:43:07  Johan Verrips <johan.verrips@ibissource.org>
  * added @version tag in javadoc
  *
  * Revision 1.2  2004/03/26 09:50:52  Johan Verrips <johan.verrips@ibissource.org>
@@ -41,7 +44,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setQueryType(String) queryType}</td><td>either "select" for queries that return data, or anything else for queries that return no data</td><td>"other"</td></tr>
  * <tr><td>{@link #setMaxRows(int) maxRows}</td><td>maximum number of rows returned</td><td>0 (unlimited)</td></tr>
- * <tr><td>{@link #setStartRows(int) startRow}</td><td>the number of the first row returned from the output</td><td>1</td></tr>
+ * <tr><td>{@link #setStartRow(int) startRow}</td><td>the number of the first row returned from the output</td><td>1</td></tr>
  * </table>
  * </p>
  * 
@@ -50,7 +53,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * @since 	4.1
  */
 public abstract class JdbcQuerySenderBase extends JdbcFacade implements ISender {
-	public static final String version="$Id: JdbcQuerySenderBase.java,v 1.3 2004-03-26 10:43:07 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: JdbcQuerySenderBase.java,v 1.4 2004-03-31 12:04:19 L190409 Exp $";
 
 	private String queryType = "other";
 	private int startRow=1;

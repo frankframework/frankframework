@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.6  2004-03-30 07:29:54  L190409
+ * Revision 1.7  2004-03-31 12:04:20  L190409
+ * fixed javadoc
+ *
+ * Revision 1.6  2004/03/30 07:29:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.5  2004/03/26 10:42:50  Johan Verrips <johan.verrips@ibissource.org>
@@ -46,7 +49,7 @@ import javax.transaction.UserTransaction;
  * </p>
  * <table border="1">
  * <tr><th>nested elements</th><th>description</th></tr>
- * <tr><td>&lt;exits&gt;one or more {@link nl.nn.adapterframework.core.PipeLineExits exit}&lt;/exits&gt;</td><td>specifications of exit-paths, in the form &lt;exit path="<i>forwardname</i>" state="<i>statename</i>"/&gt;</td></tr>
+ * <tr><td>&lt;exits&gt;one or more {@link nl.nn.adapterframework.core.PipeLineExit exits}&lt;/exits&gt;</td><td>specifications of exit-paths, in the form &lt;exit path="<i>forwardname</i>" state="<i>statename</i>"/&gt;</td></tr>
  * </table>
  * </p>
  *
@@ -77,7 +80,7 @@ import javax.transaction.UserTransaction;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version="$Id: PipeLine.java,v 1.6 2004-03-30 07:29:54 L190409 Exp $";
+	public static final String version="$Id: PipeLine.java,v 1.7 2004-03-31 12:04:20 L190409 Exp $";
     private Logger log = Logger.getLogger(this.getClass());
 	private Adapter adapter; // for logging purposes, and for transaction managing
 	private boolean transacted=false;
@@ -382,7 +385,7 @@ public class PipeLine {
     }
    /**
     * The indicator for the end of the processing, with default state "undefined".
-    * @deprecated since v 3.2 this functionality is superseded by the use of PipeLineExits.
+    * @deprecated since v 3.2 this functionality is superseded by the use of {@link nl.nn.adapterframework.core.PipeLineExit PipeLineExits}.
     * @see PipeLineExit
     */
     public void setEndPath(String endPath){

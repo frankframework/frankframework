@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcTransactionalStorage.java,v $
- * Revision 1.3  2004-03-26 10:43:08  NNVZNL01#L180564
+ * Revision 1.4  2004-03-31 12:04:19  L190409
+ * fixed javadoc
+ *
+ * Revision 1.3  2004/03/26 10:43:08  Johan Verrips <johan.verrips@ibissource.org>
  * added @version tag in javadoc
  *
  * Revision 1.2  2004/03/25 13:48:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -46,13 +49,14 @@ import nl.nn.adapterframework.util.JdbcUtil;
  * @since 	4.1
  */
 public class JdbcTransactionalStorage extends DirectQuerySender implements ITransactionalStorage {
-	public static final String version="$Id: JdbcTransactionalStorage.java,v 1.3 2004-03-26 10:43:08 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: JdbcTransactionalStorage.java,v 1.4 2004-03-31 12:04:19 L190409 Exp $";
 	
     private String tableName="inprocstore";
     private String idField="messageid";
     private String messageField="message";
     
     // these values are only used when the table is created. 
+    // TODO: handle sizes of messages and ids more intelligently
 	protected static final int MAXIDLEN=100;		
 	protected static final int MAXMESSAGELEN=3000;
 	
@@ -83,6 +87,9 @@ public class JdbcTransactionalStorage extends DirectQuerySender implements ITran
 		}
 	}	
 	
+	/**
+	 * Creates a connection, checks if the table is existing and creates it when necessary
+	 */
 	public void configure() throws ConfigurationException {
 		super.configure();
 		try {

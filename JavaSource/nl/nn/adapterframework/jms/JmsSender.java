@@ -1,6 +1,9 @@
 /*
  * $Log: JmsSender.java,v $
- * Revision 1.5  2004-03-26 10:42:55  NNVZNL01#L180564
+ * Revision 1.6  2004-03-31 12:04:19  L190409
+ * fixed javadoc
+ *
+ * Revision 1.5  2004/03/26 10:42:55  Johan Verrips <johan.verrips@ibissource.org>
  * added @version tag in javadoc
  *
  * Revision 1.4  2004/03/26 09:50:51  Johan Verrips <johan.verrips@ibissource.org>
@@ -31,10 +34,9 @@ import javax.jms.Message;
  * <tr><td>{@link #setName(String) name}</td>  <td>name of the listener</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDestinationName(String) listener.destinationName}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDestinationType(String) listener.destinationType}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setPersistent(String) listener.persistent}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setPersistent(boolean) listener.persistent}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setAcknowledgeMode(String) listener.acknowledgeMode}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setTransacted(boolean) listener.transacted}</td><td>&nbsp;</td><td>false</td></tr>
- * <tr><td>{@link #setCommitOnState(String) listener.commitOnState}</td><td>&nbsp;</td><td>"success"</td></tr>
  * <tr><td>{@link #setReplyToName(String) listener.ReplyToName}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setJmsRealm(String) listener.jmsRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * </table>
@@ -45,7 +47,7 @@ import javax.jms.Message;
  */
 
 public class JmsSender extends JMSFacade implements ISender {
-	public static final String version="$Id: JmsSender.java,v 1.5 2004-03-26 10:42:55 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: JmsSender.java,v 1.6 2004-03-31 12:04:19 L190409 Exp $";
 
   private String replyToName=null;
 

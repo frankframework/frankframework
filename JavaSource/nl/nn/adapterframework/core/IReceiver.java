@@ -1,6 +1,9 @@
 /*
  * $Log: IReceiver.java,v $
- * Revision 1.4  2004-03-30 07:29:54  L190409
+ * Revision 1.5  2004-03-31 12:04:20  L190409
+ * fixed javadoc
+ *
+ * Revision 1.4  2004/03/30 07:29:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.3  2004/03/26 10:42:50  Johan Verrips <johan.verrips@ibissource.org>
@@ -40,7 +43,7 @@ import nl.nn.adapterframework.util.RunStateEnum;
  *
  */
 public interface IReceiver extends IManagable {
-	public static final String version="$Id: IReceiver.java,v 1.4 2004-03-30 07:29:54 L190409 Exp $";
+	public static final String version="$Id: IReceiver.java,v 1.5 2004-03-31 12:04:20 L190409 Exp $";
 
  	/**
  	 * This method is called by the <code>IAdapter</code> to let the
@@ -64,10 +67,5 @@ public interface IReceiver extends IManagable {
      */
     public void setAdapter(IAdapter adapter);
     
- 	/**
- 	 * set the functional name of this receiver
- 	 */ 
-	public void setName(String name);
-	
 void waitForRunState(RunStateEnum requestedRunState) throws InterruptedException;
 }

@@ -26,7 +26,7 @@ import nl.nn.adapterframework.jms.JmsSender;
  * <tr><td>{@link JmsSender#setDestinationName(String) sender.destinationName}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link JmsSender#setDestinationType(String) sender.destinationType}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link JmsSender#setAcknowledgeMode(String) sender.acknowledgeMode}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link JmsSender#setPersistent(String) sender.persistent}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link JmsSender#setPersistent(boolean) sender.persistent}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link JmsSender#setJmsRealm(String) sender.jmsRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * </table>
  * <table border="1">
@@ -47,7 +47,7 @@ import nl.nn.adapterframework.jms.JmsSender;
  */
 
 public class JmsCommunicator extends MessageSendingPipe {
-	public static final String version="$Id: JmsCommunicator.java,v 1.3 2004-03-26 10:42:34 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: JmsCommunicator.java,v 1.4 2004-03-31 12:04:21 L190409 Exp $";
 
 public JmsCommunicator() {
 	super();

@@ -1,6 +1,9 @@
 /*
  * $Log: CoolGenWrapperPipe.java,v $
- * Revision 1.3  2004-03-24 15:26:31  L190409
+ * Revision 1.4  2004-03-31 12:04:21  L190409
+ * fixed javadoc
+ *
+ * Revision 1.3  2004/03/24 15:26:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * cosmetic changes
  *
  */
@@ -59,7 +62,7 @@ import nl.nn.adapterframework.util.ClassUtils;
  * @version Id
  */
 public class CoolGenWrapperPipe extends FixedForwardPipe {
-	public static final String version="$Id: CoolGenWrapperPipe.java,v 1.3 2004-03-24 15:26:31 L190409 Exp $";
+	public static final String version="$Id: CoolGenWrapperPipe.java,v 1.4 2004-03-31 12:04:21 L190409 Exp $";
 
     private String clientId;
     private String clientPassword;
@@ -114,7 +117,7 @@ public class CoolGenWrapperPipe extends FixedForwardPipe {
  * <ul>
  * <li>{@link #setPreProcStylesheetName(String) preProcStylesheetName}</li>
  * <li>{@link #setPostProcStylesheetName(String) postProcStylesheetName}</li>
- * <li>{@link #setProxyInputSchemag(String) proxyInputSchema}</li>
+ * <li>{@link #setProxyInputSchema(String) proxyInputSchema}</li>
  * <ul>
  * For the proxyInputSchema a transformer is created to check the conformance to the schema
  * the URI supplieds points to.

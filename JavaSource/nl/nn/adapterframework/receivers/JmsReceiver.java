@@ -21,7 +21,7 @@ import java.util.HashMap;
  * <tr><td>{@link PullingReceiverBase#setOnError(String) onError}</td><td>one of 'continue' or 'close'. Controls the behaviour of the receiver when it encounters an error sending a reply</td><td>continue</td></tr>
  * <tr><td>{@link nl.nn.adapterframework.jms.JmsListener#setDestinationName(String) listener.destinationName}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link nl.nn.adapterframework.jms.JmsListener#setDestinationType(String) listener.destinationType}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link nl.nn.adapterframework.jms.JmsListener#setPersistent(String) listener.persistent}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link nl.nn.adapterframework.jms.JmsListener#setPersistent(boolean) listener.persistent}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link nl.nn.adapterframework.jms.JmsListener#setAcknowledgeMode(String) listener.acknowledgeMode}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link nl.nn.adapterframework.jms.JmsListener#setTransacted(boolean) listener.transacted}</td><td>&nbsp;</td><td>false</td></tr>
  * <tr><td>{@link nl.nn.adapterframework.jms.JmsListener#setCommitOnState(String) listener.commitOnState}</td><td>&nbsp;</td><td>"success"</td></tr>
@@ -61,7 +61,7 @@ import java.util.HashMap;
  * @author     Gerrit van Brakel
  */
 public class JmsReceiver extends PullingReceiverBase {
-	public static final String version="$Id: JmsReceiver.java,v 1.3 2004-03-26 10:43:00 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: JmsReceiver.java,v 1.4 2004-03-31 12:04:21 L190409 Exp $";
 	
 public JmsReceiver() {
 	super();

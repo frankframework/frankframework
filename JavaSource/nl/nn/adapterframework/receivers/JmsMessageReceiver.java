@@ -21,7 +21,7 @@ import java.util.HashMap;
  * <tr><td>{@link PullingReceiverBase#setOnError(String) onError}</td><td>one of 'continue' or 'close'. Controls the behaviour of the receiver when it encounters an error sending a reply</td><td>continue</td></tr>
  * <tr><td>{@link JmsMessageListener#setDestinationName(String) listener.destinationName}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link JmsMessageListener#setDestinationType(String) listener.destinationType}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link JmsMessageListener#setPersistent(String) listener.persistent}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link JmsMessageListener#setPersistent(boolean) listener.persistent}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link JmsMessageListener#setAcknowledgeMode(String) listener.acknowledgeMode}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link JmsMessageListener#setJmsRealm(String) listener.jmsRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * </table>
@@ -32,14 +32,14 @@ import java.util.HashMap;
  * </table>
  * </p>
  * </p>
- * <p>$Id: JmsMessageReceiver.java,v 1.2 2004-02-04 10:02:11 a1909356#db2admin Exp $</p>
+ * <p>$Id: JmsMessageReceiver.java,v 1.3 2004-03-31 12:04:21 L190409 Exp $</p>
  * @deprecated This class is deprecated, as it uses the deprecated class {@link JmsMessageListener}. Please use 
  *             {@link JmsReceiver} instead.
  *
  * @author     Gerrit van Brakel
  */
 public class JmsMessageReceiver extends PullingReceiverBase {
-	public static final String version="$Id: JmsMessageReceiver.java,v 1.2 2004-02-04 10:02:11 a1909356#db2admin Exp $";
+	public static final String version="$Id: JmsMessageReceiver.java,v 1.3 2004-03-31 12:04:21 L190409 Exp $";
 	
 public JmsMessageReceiver() {
 	super();

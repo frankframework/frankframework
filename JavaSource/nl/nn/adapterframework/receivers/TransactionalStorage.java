@@ -1,6 +1,9 @@
 /*
  * $Log: TransactionalStorage.java,v $
- * Revision 1.3  2004-03-26 10:43:03  NNVZNL01#L180564
+ * Revision 1.4  2004-03-31 12:04:21  L190409
+ * fixed javadoc
+ *
+ * Revision 1.3  2004/03/26 10:43:03  Johan Verrips <johan.verrips@ibissource.org>
  * added @version tag in javadoc
  *
  * Revision 1.2  2004/03/26 09:50:52  Johan Verrips <johan.verrips@ibissource.org>
@@ -25,14 +28,14 @@ import nl.nn.adapterframework.core.TimeOutException;
 import org.apache.log4j.Logger;
 
 /**
- * Stores a message using a {@link IXASender} and retrieves is back from a {@link IXACorrelatedPullingListener listener}.
+ * Stores a message using a {@link ISender} and retrieves is back from a {@link ICorrelatedPullingListener listener}.
  *
  * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setForwardName(String) forwardName}</td>  <td>name of forward returned upon completion</td><td>"success"</td></tr>
  * <tr><td><code>sender.*</td><td>any attribute of the sender instantiated by descendant classes</td><td>&nbsp;</td></tr>
+ * <tr><td><code>listener.*</td><td>any attribute of the listener instantiated by descendant classes</td><td>&nbsp;</td></tr>
  * </table>
  * <table border="1">
  * <tr><th>nested elements</th><th>description</th></tr>
@@ -46,7 +49,7 @@ import org.apache.log4j.Logger;
  */
 
 public class TransactionalStorage implements ITransactionalStorage {
-	public static final String version="$Id: TransactionalStorage.java,v 1.3 2004-03-26 10:43:03 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: TransactionalStorage.java,v 1.4 2004-03-31 12:04:21 L190409 Exp $";
     protected Logger log = Logger.getLogger(this.getClass());
 	
     private ISender sender=null;

@@ -1,6 +1,9 @@
 /*
  * $Log: XslErrorMessageFormatter.java,v $
- * Revision 1.4  2004-03-30 07:30:00  L190409
+ * Revision 1.5  2004-03-31 12:04:19  L190409
+ * fixed javadoc
+ *
+ * Revision 1.4  2004/03/30 07:30:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  */
@@ -24,7 +27,7 @@ import java.io.IOException;
  * @author Johan Verrips IOS
  */
 public class XslErrorMessageFormatter extends ErrorMessageFormatter {
-	public static final String version="$Id: XslErrorMessageFormatter.java,v 1.4 2004-03-30 07:30:00 L190409 Exp $";
+	public static final String version="$Id: XslErrorMessageFormatter.java,v 1.5 2004-03-31 12:04:19 L190409 Exp $";
 
     private String styleSheet;
     
@@ -61,7 +64,7 @@ public class XslErrorMessageFormatter extends ErrorMessageFormatter {
 	}
 	
 	/**
-	 * URL to the stylesheet used to transform the output of the {@link ErrorMessagFormatter} 
+	 * URL to the stylesheet used to transform the output of the standard {@link ErrorMessageFormatter} 
 	 */
 	public String getStyleSheet() {
 		return styleSheet;
