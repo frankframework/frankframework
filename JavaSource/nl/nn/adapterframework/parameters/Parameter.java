@@ -1,6 +1,9 @@
 /*
  * $Log: Parameter.java,v $
- * Revision 1.7  2004-10-25 08:32:56  L190409
+ * Revision 1.8  2005-01-13 08:08:33  L190409
+ * Xslt parameter handling by Maps instead of by Ibis parameter system
+ *
+ * Revision 1.7  2004/10/25 08:32:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * parameters for parameters
  *
  * Revision 1.6  2004/10/19 15:27:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -57,7 +60,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author Richard Punt / Gerrit van Brakel
  */
 public class Parameter implements INamedObject, IWithParameters {
-	public static final String version="$Id: Parameter.java,v 1.7 2004-10-25 08:32:56 L190409 Exp $";
+	public static final String version="$Id: Parameter.java,v 1.8 2005-01-13 08:08:33 L190409 Exp $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	private String name = null;
@@ -135,12 +138,12 @@ public class Parameter implements INamedObject, IWithParameters {
 					String source = (String)(prc.getSession().get(getSessionKey()));
 					if (StringUtils.isNotEmpty(source)) {
 						log.debug("Parameter ["+getName()+"] using sessionvariable ["+getSessionKey()+"] as source for transformation");
-						result = pool.transform(source,null,null);
+						result = pool.transform(source,null);
 					} else {
 						log.debug("Parameter ["+getName()+"] sessionvariable ["+getSessionKey()+"] empty, no transformation will be performed");
 					}
 				} else {
-					result = pool.transform(prc.getInputSource(),paramList,prc);
+					result = pool.transform(prc.getInputSource(),prc.getValueMap(paramList));
 				}
 			} catch (Exception e) {
 				throw new ParameterException("Parameter ["+getName()+"] exception on transformation to get parametervalue", e);

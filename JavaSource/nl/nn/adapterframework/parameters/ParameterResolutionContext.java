@@ -1,6 +1,9 @@
 /*
  * $Log: ParameterResolutionContext.java,v $
- * Revision 1.2  2004-10-14 16:07:34  L190409
+ * Revision 1.3  2005-01-13 08:08:33  L190409
+ * Xslt parameter handling by Maps instead of by Ibis parameter system
+ *
+ * Revision 1.2  2004/10/14 16:07:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed from Object,Hashtable to String, PipelineSession
  *
  * Revision 1.1  2004/10/05 09:51:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -12,6 +15,7 @@ package nl.nn.adapterframework.parameters;
 
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 
 import javax.xml.transform.dom.DOMSource;
@@ -30,7 +34,10 @@ import org.w3c.dom.Document;
 
 /*
  * $Log: ParameterResolutionContext.java,v $
- * Revision 1.2  2004-10-14 16:07:34  L190409
+ * Revision 1.3  2005-01-13 08:08:33  L190409
+ * Xslt parameter handling by Maps instead of by Ibis parameter system
+ *
+ * Revision 1.2  2004/10/14 16:07:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed from Object,Hashtable to String, PipelineSession
  *
  * Revision 1.1  2004/10/05 09:51:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -55,7 +62,7 @@ import org.w3c.dom.Document;
  * @version Id
  */
 public class ParameterResolutionContext {
-	public static final String version="$Id: ParameterResolutionContext.java,v 1.2 2004-10-14 16:07:34 L190409 Exp $";
+	public static final String version="$Id: ParameterResolutionContext.java,v 1.3 2005-01-13 08:08:33 L190409 Exp $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	private String input;
@@ -92,6 +99,23 @@ public class ParameterResolutionContext {
 		ParameterValueList result = new ParameterValueList(parameters.size());
 		for (Iterator it= parameters.iterator(); it.hasNext(); ) {
 			result.add(getValue((Parameter)it.next()));
+		}
+		return result;
+	}
+
+	/**
+	 * @param parameters
+	 * @return arraylist of <link>ParameterValue<link> objects
+	 */
+	public HashMap getValueMap(ParameterList parameters) throws ParameterException {
+		if (parameters == null)
+			return null;
+		
+		HashMap result = new HashMap(parameters.size());
+		for (Iterator it= parameters.iterator(); it.hasNext(); ) {
+			Parameter p=(Parameter)it.next();
+			
+			result.put(p.getName(),getValue(p));
 		}
 		return result;
 	}
