@@ -1,6 +1,9 @@
 /*
  * $Log: SapMessagePusher.java,v $
- * Revision 1.1  2004-06-22 12:19:08  L190409
+ * Revision 1.2  2004-06-30 12:38:06  L190409
+ * included exceptionlistener
+ *
+ * Revision 1.1  2004/06/22 12:19:08  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * first version of SAP message pusher
  *
  */
@@ -8,6 +11,7 @@ package nl.nn.adapterframework.sap;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessagePusher;
+import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.receivers.ServiceClient;
 
@@ -18,6 +22,7 @@ import org.apache.log4j.Logger;
 import java.util.Iterator;
 
 import com.sap.mw.jco.*;
+import com.sap.mw.jco.JCO.Server;
 
 /**
  * Implementation of a {@link nl.nn.adapterframework.core.IMessagePusher pushing listener},
@@ -40,15 +45,16 @@ import com.sap.mw.jco.*;
  * If no replyFieldIndex or replyFieldName is specified, output is converted from xml. 
  * </p>
  * @author Gerrit van Brakel
- * @since 4.1.1
+ * @since 4.2
  */
-public class SapMessagePusher extends SapFunctionFacade implements IMessagePusher, SapFunctionHandler {
-	public static final String version="$Id: SapMessagePusher.java,v 1.1 2004-06-22 12:19:08 L190409 Exp $";
+public class SapMessagePusher extends SapFunctionFacade implements IMessagePusher, SapFunctionHandler, JCO.ServerExceptionListener, JCO.ServerErrorListener {
+	public static final String version="$Id: SapMessagePusher.java,v 1.2 2004-06-30 12:38:06 L190409 Exp $";
 
 	private String progid;	 // progid of the RFC-destination
         	
 	private SapServer sapServer;
 	private ServiceClient handler;
+	private IbisExceptionListener exceptionListener;
 
 	/**
 	 * initialize listener and register <code>this</code> to the JNDI
@@ -119,6 +125,30 @@ public class SapMessagePusher extends SapFunctionFacade implements IMessagePushe
 
 	public void setHandler(ServiceClient handler) {
 		this.handler=handler;
+	}
+
+	public void setExceptionListener(IbisExceptionListener listener) {
+		exceptionListener = listener;
+		JCO.addServerExceptionListener(this);
+		JCO.addServerErrorListener(this);
+	}
+
+	/* (non-Javadoc)
+	 * @see com.sap.mw.jco.JCO.ServerExceptionListener#serverExceptionOccurred(com.sap.mw.jco.JCO.Server, java.lang.Exception)
+	 */
+	public void serverExceptionOccurred(JCO.Server server, Exception e) {
+		if (exceptionListener!=null) {
+			exceptionListener.exceptionThrown(this, new SapException("exception in SapServer ["+server.getProgID()+"]",e));
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see com.sap.mw.jco.JCO.ServerErrorListener#serverErrorOccurred(com.sap.mw.jco.JCO.Server, java.lang.Error)
+	 */
+	public void serverErrorOccurred(JCO.Server server, Error e) {
+		if (exceptionListener!=null) {
+			exceptionListener.exceptionThrown(this, new SapException("error in SapServer ["+server.getProgID()+"]",e));
+		}
 	}
 
 }
