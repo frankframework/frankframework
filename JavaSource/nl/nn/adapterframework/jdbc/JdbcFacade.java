@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcFacade.java,v $
- * Revision 1.3  2004-03-26 10:43:09  NNVZNL01#L180564
+ * Revision 1.4  2005-03-31 08:11:28  L190409
+ * corrected typo in logging
+ *
+ * Revision 1.3  2004/03/26 10:43:09  Johan Verrips <johan.verrips@ibissource.org>
  * added @version tag in javadoc
  *
  * Revision 1.2  2004/03/26 09:50:52  Johan Verrips <johan.verrips@ibissource.org>
@@ -35,7 +38,7 @@ import org.apache.log4j.Logger;
  * 
  */
 public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version="$Id: JdbcFacade.java,v 1.3 2004-03-26 10:43:09 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: JdbcFacade.java,v 1.4 2005-03-31 08:11:28 L190409 Exp $";
     protected Logger log = Logger.getLogger(this.getClass());
 	
 	private String name;
@@ -64,7 +67,7 @@ protected String getLogPrefix() {
 			// try the alternative...
 			result = isTransacted() ? getDatasourceName() : getDatasourceNameXA();
 			if (result==null || result.equals("")) {
-				throw new JdbcException(getLogPrefix()+"neiter datasourceName nor datasourceNameXA are specified");
+				throw new JdbcException(getLogPrefix()+"neither datasourceName nor datasourceNameXA are specified");
 			}
 			log.warn(getLogPrefix()+"correct datasourceName attribute not specified, will use ["+result+"]");
 		}
