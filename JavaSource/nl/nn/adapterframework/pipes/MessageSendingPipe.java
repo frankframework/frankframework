@@ -1,6 +1,9 @@
 /*
  * $Log: MessageSendingPipe.java,v $
- * Revision 1.15  2004-10-05 10:53:20  L190409
+ * Revision 1.16  2004-10-14 16:11:12  L190409
+ * changed ParameterResolutionContext from Object,Hashtable to String, PipelineSession
+ *
+ * Revision 1.15  2004/10/05 10:53:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added support for parameterized senders
  *
  * Revision 1.14  2004/09/08 14:16:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -94,7 +97,7 @@ import org.apache.commons.lang.StringUtils;
  */
 
 public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
-	public static final String version = "$Id: MessageSendingPipe.java,v 1.15 2004-10-05 10:53:20 L190409 Exp $";
+	public static final String version = "$Id: MessageSendingPipe.java,v 1.16 2004-10-14 16:11:12 L190409 Exp $";
 	private final static String TIMEOUTFORWARD = "timeout";
 	private final static String EXCEPTIONFORWARD = "exception";
 
@@ -257,7 +260,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 		if (getSender() instanceof IParameterizedSender && getParameterList()!=null) {
 			IParameterizedSender psender = (IParameterizedSender) getSender();
 			try {
-				return psender.sendMessage(correlationID, (String) input, new ParameterResolutionContext(input, session).getValues(getParameterList()));
+				return psender.sendMessage(correlationID, (String) input, new ParameterResolutionContext((String)input, session).getValues(getParameterList()));
 			} catch (ParameterException e) { 
 				throw new SenderException(e);
 			}

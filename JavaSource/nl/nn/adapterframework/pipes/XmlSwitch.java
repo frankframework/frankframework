@@ -43,7 +43,7 @@ import java.io.IOException;
  * @author Johan Verrips
  */
 public class XmlSwitch extends AbstractPipe {
-	public static final String version="$Id: XmlSwitch.java,v 1.8 2004-10-05 10:58:22 L190409 Exp $";
+	public static final String version="$Id: XmlSwitch.java,v 1.9 2004-10-14 16:11:12 L190409 Exp $";
 	
     private static final String DEFAULT_SERVICESELECTION_XPATH = XmlUtils.XPATH_GETROOTNODENAME;
 	private TransformerPool transformerPool;
@@ -128,7 +128,7 @@ public class XmlSwitch extends AbstractPipe {
 		try {
 	 		t = transformerPool.getTransformer();
 			if (getParameterList()!=null) {
-				XmlUtils.setTransformerParameters(t, new ParameterResolutionContext(input, session).getValues(getParameterList()));
+				XmlUtils.setTransformerParameters(t, new ParameterResolutionContext((String)input, session).getValues(getParameterList()));
 			}
             forward = XmlUtils.transformXml(t, sInput);
             log.debug(getLogPrefix(session)+ "determined forward ["+forward+"]");

@@ -1,6 +1,9 @@
 /*
  * $Log: XsltPipe.java,v $
- * Revision 1.11  2004-10-12 15:13:43  L190409
+ * Revision 1.12  2004-10-14 16:11:12  L190409
+ * changed ParameterResolutionContext from Object,Hashtable to String, PipelineSession
+ *
+ * Revision 1.11  2004/10/12 15:13:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed handling of output of  XmlDeclaration
  *
  * Revision 1.10  2004/10/05 10:55:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -63,7 +66,7 @@ import org.apache.commons.lang.StringUtils;
  */
 
 public class XsltPipe extends FixedForwardPipe {
-	public static final String version="$Id: XsltPipe.java,v 1.11 2004-10-12 15:13:43 L190409 Exp $";
+	public static final String version="$Id: XsltPipe.java,v 1.12 2004-10-14 16:11:12 L190409 Exp $";
 
 	private TransformerPool transformerPool;
 	private String xpathExpression=null;
@@ -142,7 +145,7 @@ public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRu
     try {
 		transformer = transformerPool.getTransformer();
 		if (getParameterList()!=null) {
-			XmlUtils.setTransformerParameters(transformer, new ParameterResolutionContext(input, session).getValues(getParameterList()));
+			XmlUtils.setTransformerParameters(transformer, new ParameterResolutionContext((String)input, session).getValues(getParameterList()));
 		}
         String stringResult = XmlUtils.transformXml(transformer, (String) input);
 		if (StringUtils.isEmpty(getSessionKey())){
