@@ -1,3 +1,9 @@
+/*
+ * $Log: XmlUtils.java,v $
+ * Revision 1.3  2004-03-23 17:09:33  L190409
+ * cosmetic changes
+ *
+ */
 package nl.nn.adapterframework.util;
 
 import org.apache.commons.lang.exception.NestableException;
@@ -48,11 +54,11 @@ import java.util.LinkedList;
  * Some utilities for working with XML. As soon as the Apache XML Commons project
  * delivers something usefull, this class will possibly be removed.
  * <p>Creation date: (20-02-2003 8:05:19)</p>
- * <p>$Id: XmlUtils.java,v 1.2 2004-02-04 10:02:00 a1909356#db2admin Exp $</p>
+ * <p>$Id: XmlUtils.java,v 1.3 2004-03-23 17:09:33 L190409 Exp $</p>
  * @author Johan Verrips IOS
  */
 public class XmlUtils {
-	public static final String version="$Id: XmlUtils.java,v 1.2 2004-02-04 10:02:00 a1909356#db2admin Exp $";
+	public static final String version="$Id: XmlUtils.java,v 1.3 2004-03-23 17:09:33 L190409 Exp $";
 	
     static final String W3C_XML_SCHEMA       = "http://www.w3.org/2001/XMLSchema";
     static final String JAXP_SCHEMA_LANGUAGE = "http://java.sun.com/xml/jaxp/properties/schemaLanguage";
@@ -71,9 +77,6 @@ public class XmlUtils {
             + "<xsl:template match=\"/\"><xsl:value-of select=\"name(/node()[position()=last()])\"/></xsl:template>"
             + "</xsl:stylesheet>";
 
-/**
- * XmlUtils constructor comment.
- */
 public XmlUtils() {
 	super();
 }
@@ -202,7 +205,7 @@ public static synchronized Transformer createTransformer(URL url) throws Transfo
     stylesource.setSystemId(url.toString());
     return createTransformer(stylesource);
 }
-public static synchronized Transformer createTransformer(Source source) throws javax.xml.transform.TransformerConfigurationException {
+public static synchronized Transformer createTransformer(Source source) throws TransformerConfigurationException {
 
    
     TransformerFactory tFactory = TransformerFactory.newInstance();

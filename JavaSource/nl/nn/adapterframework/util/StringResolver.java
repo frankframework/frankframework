@@ -1,3 +1,9 @@
+/*
+ * $Log: StringResolver.java,v $
+ * Revision 1.3  2004-03-23 17:05:26  L190409
+ * cosmetic changes
+ *
+ */
 package nl.nn.adapterframework.util;
 
 import org.apache.log4j.Logger;
@@ -5,13 +11,13 @@ import org.apache.log4j.Logger;
 import java.util.Properties;
 /**
  * Provide functionality to resolve ${property.key} to the value of the property key, recursively.
- * <p>$Id: StringResolver.java,v 1.2 2004-02-04 10:02:00 a1909356#db2admin Exp $</p>
+ * <p>$Id: StringResolver.java,v 1.3 2004-03-23 17:05:26 L190409 Exp $</p>
  * 
  * <p>Creation date: (15-08-2003 13:47:20)</p>
  * @author Johan Verrips 
  */
 public class StringResolver {
-	public static final String version="$Id: StringResolver.java,v 1.2 2004-02-04 10:02:00 a1909356#db2admin Exp $";
+	public static final String version="$Id: StringResolver.java,v 1.3 2004-03-23 17:05:26 L190409 Exp $";
 	
     static String DELIM_START = "${";
     static char DELIM_STOP = '}';
@@ -48,12 +54,12 @@ public StringResolver() {
  */
 public static void main(java.lang.String[] args) {
 	// Insert code to start the application here.
-	StringResolver sr=new StringResolver();
+//	StringResolver sr=new StringResolver();
 	Properties prop=new Properties();
 	prop.put("test.name", "dit is de naam met ${test.xx}");
 	prop.put("test.xx", "hier nog eens");
 	System.out.println(prop.get("test.name"));
-	System.out.println(sr.substVars("dit is ${test.name}", prop));
+	System.out.println(StringResolver.substVars("dit is ${test.name}", prop));
 
 }
      /**
