@@ -1,6 +1,9 @@
 /*
  * $Log: Parameter.java,v $
- * Revision 1.5  2004-10-19 13:50:04  L190409
+ * Revision 1.6  2004-10-19 15:27:19  L190409
+ * moved transformation to pool
+ *
+ * Revision 1.5  2004/10/19 13:50:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * dual action parameters: allows to use session-variable as transformer-input
  *
  * Revision 1.4  2004/10/19 08:09:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -26,7 +29,6 @@ package nl.nn.adapterframework.parameters;
 import java.io.IOException;
 import java.net.URL;
 
-import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 
 import org.apache.commons.lang.StringUtils;
@@ -51,7 +53,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author Richard Punt / Gerrit van Brakel
  */
 public class Parameter implements INamedObject {
-	public static final String version="$Id: Parameter.java,v 1.5 2004-10-19 13:50:04 L190409 Exp $";
+	public static final String version="$Id: Parameter.java,v 1.6 2004-10-19 15:27:19 L190409 Exp $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	private String name = null;
@@ -109,33 +111,20 @@ public class Parameter implements INamedObject {
 		}
 		TransformerPool pool = getTransformerPool();
 		if (pool != null) {
-			Transformer t;
 			try {
-				t = pool.getTransformer();
-				try {
-					if (StringUtils.isNotEmpty(getSessionKey())) {
-						String source = (String)(r.getSession().get(getSessionKey()));
-						if (StringUtils.isNotEmpty(source)) {
-							log.debug("Parameter ["+getName()+"] using sessionvariable ["+getSessionKey()+"] as source for transformation");
-							result = XmlUtils.transformXml(t,source);
-						} else {
-							log.debug("Parameter ["+getName()+"] sessionvariable ["+getSessionKey()+"] empty, no transformation will be performed");
-						}
+				if (StringUtils.isNotEmpty(getSessionKey())) {
+					String source = (String)(r.getSession().get(getSessionKey()));
+					if (StringUtils.isNotEmpty(source)) {
+						log.debug("Parameter ["+getName()+"] using sessionvariable ["+getSessionKey()+"] as source for transformation");
+						result = pool.transform(source,null,null);
 					} else {
-						result = XmlUtils.transformXml(t,r.getInputSource());
+						log.debug("Parameter ["+getName()+"] sessionvariable ["+getSessionKey()+"] empty, no transformation will be performed");
 					}
-				} catch (Exception e) {
-					try {
-						pool.invalidateTransformer(t);
-					} catch (Exception ee) {
-						log.warn("Parameter ["+getName()+"] got exception invalidating transformer",ee);
-					}
-					throw new ParameterException("Parameter ["+getName()+"] exception on transformation to get parametervalue", e);
-				} finally {
-					pool.releaseTransformer(t);
+				} else {
+					result = pool.transform(r.getInputSource(),null,null);
 				}
-			} catch (TransformerConfigurationException e) {
-				throw new ParameterException("Parameter ["+getName()+"] caught exception while obtaining transformer to extract parameter value", e);
+			} catch (Exception e) {
+				throw new ParameterException("Parameter ["+getName()+"] exception on transformation to get parametervalue", e);
 			}
 		} else {
 			if (StringUtils.isNotEmpty(getSessionKey())) {

@@ -1,6 +1,9 @@
 /*
  * $Log: XsltPipe.java,v $
- * Revision 1.12  2004-10-14 16:11:12  L190409
+ * Revision 1.13  2004-10-19 15:27:19  L190409
+ * moved transformation to pool
+ *
+ * Revision 1.12  2004/10/14 16:11:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed ParameterResolutionContext from Object,Hashtable to String, PipelineSession
  *
  * Revision 1.11  2004/10/12 15:13:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -22,14 +25,13 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
+import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
-import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -66,7 +68,7 @@ import org.apache.commons.lang.StringUtils;
  */
 
 public class XsltPipe extends FixedForwardPipe {
-	public static final String version="$Id: XsltPipe.java,v 1.12 2004-10-14 16:11:12 L190409 Exp $";
+	public static final String version="$Id: XsltPipe.java,v 1.13 2004-10-19 15:27:19 L190409 Exp $";
 
 	private TransformerPool transformerPool;
 	private String xpathExpression=null;
@@ -141,13 +143,15 @@ public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRu
                 + input.getClass().getName());
     }
     
-    Transformer transformer = null;
+	ParameterList parameterList = null;
+	ParameterResolutionContext prc=null;   
     try {
-		transformer = transformerPool.getTransformer();
 		if (getParameterList()!=null) {
-			XmlUtils.setTransformerParameters(transformer, new ParameterResolutionContext((String)input, session).getValues(getParameterList()));
+			parameterList = getParameterList();
+			prc=new ParameterResolutionContext((String)input, session);
 		}
-        String stringResult = XmlUtils.transformXml(transformer, (String) input);
+		
+        String stringResult = transformerPool.transform((String) input, parameterList, prc); 
 		if (StringUtils.isEmpty(getSessionKey())){
 			return new PipeRunResult(getForward(), stringResult);
 		} else {
@@ -155,28 +159,9 @@ public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRu
 			return new PipeRunResult(getForward(), input);
 		}
     } 
-    catch (TransformerException te) {
-        PipeRunException pre = new PipeRunException(this, getLogPrefix(session)+" cannot transform input", te);
-        try {
-        	transformerPool.invalidateTransformer(transformer);
-            log.debug(getLogPrefix(session)+ " transformer was removed from pool as an error occured on the last transformation");
-        } catch (Throwable e2) {
-            log.error(getLogPrefix(session)+ "got error on removing transformer from pool", e2);
-        }
-        throw pre;
+    catch (Exception e) {
+        throw new PipeRunException(this, getLogPrefix(session)+" Exception on transforming input", e);
     } 
-    catch (Exception ie) {
-		throw new PipeRunException(this, getLogPrefix(session)+ "Exception on transforming input", ie);
-    }
-    finally {
-    	if (transformer != null) {
-    		try {
-    			transformerPool.releaseTransformer(transformer);
-    		} catch(Exception e) {
-    			log.warn(getLogPrefix(session)+"exception returning transformer to pool",e);
-    		};
-    	}
-    }
 }
 	/**
 	 * Specify the stylesheet to use

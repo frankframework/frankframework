@@ -6,12 +6,12 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
+import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
-import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 
 import org.apache.commons.lang.StringUtils;
@@ -43,7 +43,7 @@ import java.io.IOException;
  * @author Johan Verrips
  */
 public class XmlSwitch extends AbstractPipe {
-	public static final String version="$Id: XmlSwitch.java,v 1.9 2004-10-14 16:11:12 L190409 Exp $";
+	public static final String version="$Id: XmlSwitch.java,v 1.10 2004-10-19 15:27:19 L190409 Exp $";
 	
     private static final String DEFAULT_SERVICESELECTION_XPATH = XmlUtils.XPATH_GETROOTNODENAME;
 	private TransformerPool transformerPool;
@@ -123,14 +123,15 @@ public class XmlSwitch extends AbstractPipe {
 		String forward="";
 	    String sInput=(String) input;
 	    PipeForward pipeForward=null;
-	
-		Transformer t = null;
+
+		ParameterList parameterList = null;
+		ParameterResolutionContext prc = null;	
 		try {
-	 		t = transformerPool.getTransformer();
 			if (getParameterList()!=null) {
-				XmlUtils.setTransformerParameters(t, new ParameterResolutionContext((String)input, session).getValues(getParameterList()));
+				parameterList =  getParameterList();
+				prc = new ParameterResolutionContext((String)input, session); 
 			}
-            forward = XmlUtils.transformXml(t, sInput);
+            forward = transformerPool.transform(sInput, parameterList, prc);
             log.debug(getLogPrefix(session)+ "determined forward ["+forward+"]");
 
 			if (findForward(forward) != null) 
@@ -141,22 +142,8 @@ public class XmlSwitch extends AbstractPipe {
 			}
 		}
 	    catch (Throwable e) {
-		    try {
-		    	transformerPool.invalidateTransformer(t);
-			    log.info(getLogPrefix(session)+ ": transformer was removed from pool, as an error occured on the last transformation");
-		    } 
-		    catch (Throwable e2) {
-			    log.error("Pipe [" + getName() + "] got error on removing transformer from pool", e2);
-		    }
 	   	    throw new PipeRunException(this, getLogPrefix(null)+"got exception on transformation", e);
 	    }
-		finally {
-			try { 
-				transformerPool.releaseTransformer(t);
-			} catch (Exception e) {
-				log.warn(getLogPrefix(null)+"got exception releasing transformer",e);
-			}
-		}
 		
 		if (pipeForward==null) {
 			  throw new PipeRunException (this, getLogPrefix(null)+"cannot find forward or pipe named ["+forward+"]");

@@ -1,6 +1,9 @@
 /*
  * $Log: TransformerPool.java,v $
- * Revision 1.3  2004-10-14 16:12:00  L190409
+ * Revision 1.4  2004-10-19 15:27:19  L190409
+ * moved transformation to pool
+ *
+ * Revision 1.3  2004/10/14 16:12:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * made creation of Transformes synchronized
  *
  * Revision 1.2  2004/10/12 15:15:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -19,13 +22,20 @@ import java.net.URL;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamSource;
+
+import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.parameters.ParameterList;
+import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 
 import org.apache.commons.pool.BasePoolableObjectFactory;
 import org.apache.commons.pool.ObjectPool;
 import org.apache.commons.pool.impl.GenericObjectPool;
 import org.apache.log4j.Logger;
+import org.w3c.dom.Document;
 
 /**
  * Pool of transformers. 
@@ -33,7 +43,7 @@ import org.apache.log4j.Logger;
  * @author Gerrit van Brakel
  */
 public class TransformerPool {
-	public static final String version = "$Id: TransformerPool.java,v 1.3 2004-10-14 16:12:00 L190409 Exp $";
+	public static final String version = "$Id: TransformerPool.java,v 1.4 2004-10-19 15:27:19 L190409 Exp $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	private TransformerFactory tFactory = TransformerFactory.newInstance();
@@ -75,7 +85,7 @@ public class TransformerPool {
 	}
 	
 	
-	public Transformer getTransformer() throws TransformerConfigurationException {
+	protected Transformer getTransformer() throws TransformerConfigurationException {
 		try {
 			return (Transformer)pool.borrowObject();
 		} catch (Exception e) {
@@ -83,7 +93,7 @@ public class TransformerPool {
 		}
 	}
 	
-	public void releaseTransformer(Transformer t) throws TransformerConfigurationException {
+	protected void releaseTransformer(Transformer t) throws TransformerConfigurationException {
 		try {
 			pool.returnObject(t);
 		} catch (Exception e) {
@@ -91,9 +101,19 @@ public class TransformerPool {
 		}
 	}
 
-	public void invalidateTransformer(Transformer t) throws Exception {
+	protected void invalidateTransformer(Transformer t) throws Exception {
 		pool.invalidateObject(t);
 	}
+
+	protected void invalidateTransformerNoThrow(Transformer transformer) {
+		try {
+			invalidateTransformer(transformer);
+			log.debug("Transformer was removed from pool as an error occured on the last transformation");
+		} catch (Throwable t) {
+			log.error("Error on removing transformer from pool", t);
+		}
+	}
+
 
     protected synchronized Transformer createTransformer() throws TransformerConfigurationException {
 		Transformer t = tFactory.newTransformer(source);
@@ -102,5 +122,54 @@ public class TransformerPool {
 		}
     	return t;
     }
+
+	public String transform(Document d, ParameterList parameterList, ParameterResolutionContext prc)
+		throws ParameterException, TransformerException, IOException {
+
+		return transform(new DOMSource(d),parameterList,prc);
+	}
+
+	public String transform(String s, ParameterList parameterList, ParameterResolutionContext prc)
+		throws ParameterException, TransformerException, IOException {
+
+		Variant inputVar = new Variant(s);
+		Source in = inputVar.asXmlSource();
+
+		return transform(in,parameterList,prc);
+	}
+	
+	public String transform(Source s, ParameterList parameterList, ParameterResolutionContext prc) throws ParameterException, TransformerException, IOException {
+		Transformer transformer = getTransformer();
+
+		try {	
+			if (parameterList!=null && prc!=null) {
+				XmlUtils.setTransformerParameters(transformer, prc.getValues(parameterList));
+			}
+			return XmlUtils.transformXml(transformer, s);
+		} 
+		catch (ParameterException pe) {
+			invalidateTransformerNoThrow(transformer);
+			throw pe;
+		} 
+		catch (TransformerException te) {
+			invalidateTransformerNoThrow(transformer);
+			throw te;
+		} 
+		catch (IOException ioe) {
+			invalidateTransformerNoThrow(transformer);
+			throw ioe;
+		} 
+		finally {
+			if (transformer != null) {
+				try {
+					releaseTransformer(transformer);
+				} catch(Exception e) {
+					log.warn("Exception returning transformer to pool",e);
+				};
+			}
+		}
+	}
+
+
 
 }
