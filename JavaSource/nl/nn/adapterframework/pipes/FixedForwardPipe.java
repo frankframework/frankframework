@@ -1,3 +1,9 @@
+/*
+ * $Log: FixedForwardPipe.java,v $
+ * Revision 1.3  2004-03-24 14:04:26  L190409
+ * getLogPrefix in thrown exceptions
+ *
+ */
 package nl.nn.adapterframework.pipes;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -22,11 +28,11 @@ import nl.nn.adapterframework.core.PipeForward;
  * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>
  * </table>
  * </p>
- * <p>$Id: FixedForwardPipe.java,v 1.2 2004-02-04 10:01:56 a1909356#db2admin Exp $</p>
+ * <p>$Id: FixedForwardPipe.java,v 1.3 2004-03-24 14:04:26 L190409 Exp $</p>
  * @author Gerrit van Brakel
  */
 public class FixedForwardPipe extends AbstractPipe {
- 	public static final String version="$Id: FixedForwardPipe.java,v 1.2 2004-02-04 10:01:56 a1909356#db2admin Exp $";
+ 	public static final String version="$Id: FixedForwardPipe.java,v 1.3 2004-03-24 14:04:26 L190409 Exp $";
 
     private String forwardName = "success";
     private PipeForward forward;
@@ -36,15 +42,11 @@ public class FixedForwardPipe extends AbstractPipe {
     public void configure() throws ConfigurationException {
         forward = findForward(forwardName);
         if (forward == null)
-            throw new ConfigurationException("Pipe [" + getName() + "]"
-                    + " has no forward with name [" + forwardName + "]");
+            throw new ConfigurationException(getLogPrefix(null) + "has no forward with name [" + forwardName + "]");
     }
-protected PipeForward getForward() {
-	return forward;
-}
-    public String getForwardName() {
-        return forwardName;
-    }
+	protected PipeForward getForward() {
+		return forward;
+	}
  	/**
  	 * Sets the name of the <code>forward</code> that is looked up
  	 * upon completion.
@@ -52,4 +54,7 @@ protected PipeForward getForward() {
 	public void setForwardName(String forwardName) {
         this.forwardName = forwardName;
     }
+	public String getForwardName() {
+		return forwardName;
+	}
 }
