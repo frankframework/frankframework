@@ -1,6 +1,9 @@
 /*
  * $Log: Adapter.java,v $
- * Revision 1.5  2004-03-30 07:29:53  L190409
+ * Revision 1.6  2004-04-06 14:52:52  NNVZNL01#L180564
+ * Updated handling of errors in receiver.configure()
+ *
+ * Revision 1.5  2004/03/30 07:29:53  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.4  2004/03/26 10:42:45  Johan Verrips <johan.verrips@ibissource.org>
@@ -61,7 +64,7 @@ import javax.transaction.UserTransaction;
  */
 
 public class Adapter extends JNDIBase implements Runnable, IAdapter{
-	public static final String version="$Id: Adapter.java,v 1.5 2004-03-30 07:29:53 L190409 Exp $";
+	public static final String version="$Id: Adapter.java,v 1.6 2004-04-06 14:52:52 NNVZNL01#L180564 Exp $";
 	private Vector receivers=new Vector();
 	private long lastMessageDate =0;
     private PipeLine pipeline;
@@ -532,8 +535,11 @@ public void run() {
                 Iterator it = receivers.iterator();
                 while (it.hasNext()) {
                     IReceiver receiver = (IReceiver) it.next();
+                    if (receiver.getRunState()!=RunStateEnum.ERROR){
+                    
                     log.info("Adapter [" + getName() + "] is starting receiver [" + receiver.getName() + "]");
                     receiver.startRunning();
+                    } else log.warn("Adapter [" + getName() + "] will NOT start receiver ["+receiver.getName()+"] as it is in state ERROR");
                 } //while
 
 		        messageKeeper.add("Adapter up and running");

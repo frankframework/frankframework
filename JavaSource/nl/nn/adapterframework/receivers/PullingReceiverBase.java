@@ -90,7 +90,7 @@ import javax.transaction.UserTransaction;
  */
 public class PullingReceiverBase
     implements IReceiver, IReceiverStatistics, Runnable, HasSender {
-	public static final String version="$Id: PullingReceiverBase.java,v 1.7 2004-04-06 12:58:13 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: PullingReceiverBase.java,v 1.8 2004-04-06 14:52:52 NNVZNL01#L180564 Exp $";
     	
 
 	public static final String ONERROR_CONTINUE = "continue";
@@ -166,7 +166,8 @@ public void info(String msg) {
 }
 
 public void configure() throws ConfigurationException {
-
+ try {
+ 
 	if (getListener()==null) {
 		throw new ConfigurationException("Receiver ["+getName()+"] has no listener");
 	}
@@ -219,6 +220,11 @@ public void configure() throws ConfigurationException {
 	if (adapter != null) {
 		adapter.getMessageKeeper().add("Receiver ["+getName()+"] initialization complete");
 	}
+ } catch(ConfigurationException e){
+ 	log.debug("Errors occured during configuration, setting runstate to ERROR");
+	runState.setRunState(RunStateEnum.ERROR);
+	throw e;
+ }
 }
 protected void finishProcessingMessage(long processingDuration) {
 	synchronized (threadsProcessing) {
