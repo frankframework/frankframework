@@ -1,6 +1,9 @@
 /*
  * $Log: JmsSender.java,v $
- * Revision 1.11  2004-10-05 10:43:58  L190409
+ * Revision 1.12  2004-10-12 15:12:34  L190409
+ * reworked handling of  ParameterValueList
+ *
+ * Revision 1.11  2004/10/05 10:43:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * made into parameterized sender
  *
  * Revision 1.10  2004/09/01 07:30:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -29,9 +32,6 @@
  *
  */
 package nl.nn.adapterframework.jms;
-
-import java.util.ArrayList;
-import java.util.Iterator;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPostboxSender;
@@ -72,7 +72,7 @@ import javax.jms.Message;
  */
 
 public class JmsSender extends JMSFacade implements ISender, IPostboxSender {
-	public static final String version = "$Id: JmsSender.java,v 1.11 2004-10-05 10:43:58 L190409 Exp $";
+	public static final String version = "$Id: JmsSender.java,v 1.12 2004-10-12 15:12:34 L190409 Exp $";
 	private String replyToName = null;
 
 	public JmsSender() {
@@ -113,6 +113,7 @@ public class JmsSender extends JMSFacade implements ISender, IPostboxSender {
 	 * Configures the sender
 	 */
 	public void configure(ParameterList parameters) throws ConfigurationException {
+		parameters.configure();
 		configure();
 	}
 
@@ -176,9 +177,9 @@ public class JmsSender extends JMSFacade implements ISender, IPostboxSender {
 	 * @param msgProperties
 	 * @throws JMSException
 	 */
-	private void setProperties(final Message msg, ArrayList msgProperties) throws JMSException {
-		for (Iterator it = msgProperties.iterator(); it.hasNext();) {
-			ParameterValue property = (ParameterValue) it.next();
+	private void setProperties(final Message msg, ParameterValueList msgProperties) throws JMSException {
+		for (int i=0; i<msgProperties.size(); i++) {
+			ParameterValue property = msgProperties.getParameterValue(i);
 			String type = property.getDefinition().getType();
 			String name = property.getDefinition().getName();
 
