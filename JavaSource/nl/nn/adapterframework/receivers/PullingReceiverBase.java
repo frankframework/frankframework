@@ -2,10 +2,13 @@ package nl.nn.adapterframework.receivers;
 
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.IReceiverStatistics;
 import nl.nn.adapterframework.core.IPullingListener;
+import nl.nn.adapterframework.core.ITransactionalStorage;
+import nl.nn.adapterframework.core.IXAEnabled;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.HasSender;
@@ -23,6 +26,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 
+import javax.transaction.UserTransaction;
+
 /**
  * This {@link IReceiver Receiver} may be used as a base-class for developing 'pulling' receivers.
  *
@@ -36,13 +41,13 @@ import java.util.Iterator;
  * </table>
  * </p>
  * </p>
- * <p>$Id: PullingReceiverBase.java,v 1.3 2004-03-11 09:23:50 NNVZNL01#L180564 Exp $</p>
+ * <p>$Id: PullingReceiverBase.java,v 1.4 2004-03-23 17:34:41 L190409 Exp $</p>
  * @author     Gerrit van Brakel
  * @since 4.0
  */
 public class PullingReceiverBase
     implements IReceiver, IReceiverStatistics, Runnable, HasSender {
-	public static final String version="$Id: PullingReceiverBase.java,v 1.3 2004-03-11 09:23:50 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: PullingReceiverBase.java,v 1.4 2004-03-23 17:34:41 L190409 Exp $";
     	
 
 	public static final String ONERROR_CONTINUE = "continue";
@@ -53,6 +58,7 @@ public class PullingReceiverBase
   	private String name;
   	private String onError = ONERROR_CONTINUE; 
     private RunStateManager runState = new RunStateManager();
+    
 	    
 	// the number of threads that listen in parallel to the queue
 	private int numThreads = 1;
@@ -68,12 +74,12 @@ public class PullingReceiverBase
     private IAdapter adapter;
 
     private IPullingListener listener;
-    /**
-     *Constructor for the jms.QueueMessageReceiver object
-     */
-    public PullingReceiverBase() {
-        super();
-    }
+    private ITransactionalStorage inProcessStorage=null;
+    private ISender errorSender=null;
+    
+    private boolean transacted=false;
+	private String commitOnState="success"; // exit state on which receiver will commit XA transactions
+
 /**
 * this method is called from the run method after the last thread has exited !!<br/>
 * The receiver and connection is closed and reset. If a sender
@@ -97,9 +103,67 @@ private void closeAllResources() {
     }
 
 }
+
+/** 
+ * sends a warning to the log and to the messagekeeper of the adapter
+ */
+public void warn(String msg) {
+	log.warn(msg);
+	if (adapter != null)
+		adapter.getMessageKeeper().add("WARNING: " + msg);
+}
+
+/** 
+ * sends an informational message to the log and to the messagekeeper of the adapter
+ */
+public void info(String msg) {
+	log.info(msg);
+	if (adapter != null)
+		adapter.getMessageKeeper().add(msg);
+}
+
 public void configure() throws ConfigurationException {
 
+	if (getListener()==null) {
+		throw new ConfigurationException("Receiver ["+getName()+"] has no listener");
+	}
 	getListener().configure();
+	if (getListener() instanceof HasPhysicalDestination) {
+		info("Receiver ["+getName()+"] has listener on "+((HasPhysicalDestination)getListener()).getPhysicalDestinationName());
+	}
+	if (getListener() instanceof HasSender) {
+		ISender sender = ((HasSender)getListener()).getSender();
+		if (sender instanceof HasPhysicalDestination) {
+			info("Listener of receiver ["+getName()+"] has sender on "+((HasPhysicalDestination)sender).getPhysicalDestinationName());
+		}
+	}
+	if (isTransacted()) {
+		if (!(getListener() instanceof IXAEnabled && ((IXAEnabled)getListener()).isTransacted())) {
+			warn("Receiver ["+getName()+"] sets transacted=true, but listener not. Transactional integrity is not guaranteed"); 
+		}
+		if (getInProcessStorage()==null) {
+			throw new ConfigurationException("Receiver ["+getName()+"] sets transacted=true, but has no inProcessStorage.");
+		}
+		if (!(getInProcessStorage() instanceof IXAEnabled && ((IXAEnabled)getInProcessStorage()).isTransacted())) {
+			warn("Receiver ["+getName()+"] sets transacted=true, but inProcessStorage not. Transactional integrity is not guaranteed"); 
+		}
+		getInProcessStorage().configure();
+		if (getInProcessStorage() instanceof HasPhysicalDestination) {
+			info("Receiver ["+getName()+"] has inProcessStorage in "+((HasPhysicalDestination)getInProcessStorage()).getPhysicalDestinationName());
+		}
+		if (getErrorSender()==null) {
+			warn("Receiver ["+getName()+"] sets transacted=true, but has no error sender. Messages processed with errors will get lost");
+		}
+		else {
+			getErrorSender().configure();
+			if (getErrorSender() instanceof HasPhysicalDestination) {
+				info("Receiver ["+getName()+"] has errorSender to "+((HasPhysicalDestination)getErrorSender()).getPhysicalDestinationName());
+			}
+			if (!(getErrorSender() instanceof IXAEnabled && ((IXAEnabled)getErrorSender()).isTransacted())) {
+				warn("Receiver ["+getName()+"] sets transacted=true, but errorSender is not. Transactional integrity is not guaranteed"); 
+			}
+		}
+	}
 		
 	processStatistics.ensureCapacity(getNumThreads());
 	idleStatistics.ensureCapacity(getNumThreads());
@@ -126,13 +190,7 @@ protected void finishProcessingMessage(long processingDuration) {
 public Iterator getIdleStatisticsIterator() {
 	return idleStatistics.iterator();
 }
-/**
- * Returns the listener
- * @return IPullingListener
- */
-public IPullingListener getListener() {
-	return listener;
-}
+
 /**
  * Get the number of messages received.
   * @return long
@@ -144,7 +202,7 @@ public IPullingListener getListener() {
  * Get the name of this receiver
  * @return java.lang.String
  */
-public java.lang.String getName() {
+public String getName() {
 	return name;
 }
 /**
@@ -155,35 +213,94 @@ public java.lang.String getName() {
 public int getNumThreads() {
 	return numThreads;
 }
-/**
- * Insert the method's description here.
- * Creation date: (17-11-2003 15:49:10)
- * @return java.lang.String
- */
-public java.lang.String getOnError() {
+public String getOnError() {
 	return onError;
 }
 public Iterator getProcessStatisticsIterator() {
 	return processStatistics.iterator();
 }
-public Object getRawMessage(HashMap threadContext) throws ListenerException {
-    return getListener().getRawMessage(threadContext);
-}
-    /**
-     * Get the {@link RunStateEnum runstate} of this receiver.
-     */
-public RunStateEnum getRunState() {
-	return runState.getRunState();
-}
-public ISender getSender() {
-	IPullingListener listener = getListener();
 
-	if (listener instanceof HasSender) {		
-    	return ((HasSender)listener).getSender();
-	} else {
-		return null;
+
+protected void moveInProcessToError(String message, String messageId) {
+	UserTransaction utx;
+
+	log.info("receiver ["+getName()+"] moves message ["+messageId+"] to errorSender");
+	ISender sender = getErrorSender();
+	if (sender==null) {
+		log.warn("["+getName()+"] has no errorSender, message with id ["+messageId+"] will remain in inProcessStorage");
+		return;
+	}
+	
+	try {
+		utx = adapter.getUserTransaction();
+		utx.begin();
+	} catch (Exception e) {
+		log.error("["+getName()+"] Exception preparing to move input message to error sender", e);
+		// no use trying again to send message on errorSender, will cause same exception!
+		return;
+	}
+	try {
+		getInProcessStorage().deleteMessage(messageId);
+		sender.sendMessage(messageId, message);
+		utx.commit();
+	} catch (Exception e) {
+		log.error("["+getName()+"] Exception moving message with id ["+messageId+"] to error sender, original message: ["+message+"]",e);
+		try {
+			utx.rollback();
+		} catch (Exception rbe) {
+			log.error("["+getName()+"] Exception while rolling back transaction for message  with id ["+messageId+"], original message: ["+message+"]", rbe);
+		}
 	}
 }
+
+public Object getRawMessage(HashMap threadContext) throws ListenerException {
+	if (isTransacted()) {
+		String message;
+		String messageId;
+		Object rawMessage;
+		IPullingListener listener = getListener();
+		
+		UserTransaction utx = null;
+
+		try {
+			utx = adapter.getUserTransaction();
+			utx.begin();
+		
+		} catch (Exception e) {
+			throw new ListenerException("["+getName()+"] Exception preparing to read input message", e);
+			// no need to send message on errorSender, did not even try to read message
+		}
+		try {
+			rawMessage = listener.getRawMessage(threadContext);
+			if (rawMessage==null) {
+				try {
+					utx.rollback();
+				} catch (Exception e) {
+					log.warn("["+getName()+"] Exception while rolling back transaction after timeout on retrieving message", e);
+				}
+				return null;
+			}
+			message = listener.getStringFromRawMessage(rawMessage,threadContext);
+			messageId = listener.getIdFromRawMessage(rawMessage,threadContext);
+			getInProcessStorage().storeMessage(messageId,message);
+			log.debug("["+getName()+"] commiting transfer of message to inProcessStorage");
+			utx.commit();
+		} catch (Exception e) {
+			try {
+				utx.rollback();
+			} catch (Exception rbe) {
+				log.error("["+getName()+"] Exception while rolling back transaction after catching exception", rbe);
+			}
+			throw new ListenerException("["+getName()+"] Exception retrieving/storing message under transaction control",e);
+			// no need to send message on errorSender, message will remain on input channel due to rollback
+		}
+		return rawMessage;
+	} else {
+	    return getListener().getRawMessage(threadContext);
+	}
+}
+
+
     /**
      * All messages that for this receiver are pumped down to this method, so it actually
      * callst he {@link nl.nn.adapterframework.core.Adapter adapter} to process the message.<br/>
@@ -192,67 +309,84 @@ public ISender getSender() {
      * @see javax.jms.Message
      * @param  message  message that was received.
      */
-    protected PipeLineResult onMessage(String message, String id, HashMap threadContext) {
+    private PipeLineResult onMessage(String message, String id, HashMap threadContext) {
 
 	    PipeLineResult result = null;
-	    
 	    String state = "";
 
-        try {
-	        if (null!=adapter) {
-	          // notify the adapter and send the result to the sender
-	          result = adapter.processMessage(id, message);
-	          state = result.getState();
-	          log.debug("["+getName()+"] proccessed request with exit-state ["+state+"]");
-	        }
+		if (null!=adapter) {
+			if (isTransacted()) {
+				UserTransaction utx = null;
 
+				try {
+					log.debug("["+getName()+"] starting transaction for processing of message");
+					utx = adapter.getUserTransaction();
+					utx.begin();
+					log.debug("["+getName()+"] deleting message from inProcessStorage as part of message processing transaction");
+					getInProcessStorage().deleteMessage(id);
+					result = adapter.processMessage(id, message);
+					state = result.getState();
+					if (state!=null && state.equals(getCommitOnState())) {
+						try {
+							log.info("receiver [" + getName() + "] got exitState ["+state+"] from pipeline, committing transaction ["+utx+"] for messageid ["+id+"]");
+							utx.commit();
+						} catch (Exception e) {
+							log.error("receiver [" + getName() + "] exception committing transaction", e);
+							moveInProcessToError(message,id);
+							if (ONERROR_CLOSE.equalsIgnoreCase(getOnError())) {
+								log.info("receiver [" + getName() + "] closing after exception in committing transaction");
+								stopRunning();
+							}
+						}
+					} else {
+						log.warn("receiver [" + getName() + "] got exitState ["+state+"] from pipeline, rolling back transaction ["+utx+"] for messageid ["+id+"]");
+						try {
+							utx.rollback();
+						} catch (Exception e) {
+							log.error("receiver [" + getName() + "] exception rolling back transaction", e);
+						}
+						moveInProcessToError(message,id);
+					}
 
-/*	        
-	        if (null != sender) {
-		        try{
-			        
-			        if ((sender instanceof JmsMessageSender) && (useReplyTo)) {
-				        
-				        Destination replyTo = (Destination)threadContext.get("replyTo");
-				        String cid = (String)threadContext.get("cid");
-			        	if (replyTo !=null) {
-				        	log.debug("sending message to JmsMessageSender with correlationID["+cid+"], replyTo ["+replyTo.toString()+"]");
-			            	((JmsMessageSender)sender).sendMessage(replyTo, cid, answer);
-			        	} else {
-					        log.info("no replyTo address found, using default destination");
-					        log.debug("sending message with sender ["+sender.getName()+"] correlationID["+id+"] ["+answer+"]");
-					        sender.sendMessage(id, answer);
-			        	}
-			        } else {
-				        log.debug("sending message with sender ["+sender.getName()+"] correlationID["+id+"] ["+answer+"]");
-				        sender.sendMessage(id, answer);
-			        }
-	            	
-		        } catch (SendException se) {
-			        log.error("Receiver ["+getName()+"] Error occured on sendMessage. closing down adapter "+ToStringBuilder.reflectionToString(se), se);
-			        adapter.getMessageKeeper().add("Error occured while sending message. Closing adapter:"+se.getMessage());
-			        if (adapter!=null){
-			        	try {
-				        	adapter.stopRunning();
-			        	} catch (Exception e){
-				        	log.error("Receiver ["+getName()+"] failed to close adapter ["+adapter.getName()+"] after errors occured on sender.");
-				        	this.stopRunning();
-				        }
-			        }
-		        	log.error("Receiver ["+getName()+"] closing down, cause errors occured on sender");
-		        	this.stopRunning();
-			        
-			        
-		        }
-		        
-	        }
-*/	        
-	        
-        } catch (Throwable e) {
-	        log.error("Receiver [" + getName() + "]:"+ToStringBuilder.reflectionToString(e,ToStringStyle.MULTI_LINE_STYLE), e);
-        }
+				} catch (Exception e) {
+					log.error("["+getName()+"] Exception processing message under transaction control",e);
+					try {
+						utx.rollback();
+					} catch (Exception rbe) {
+						log.error("["+getName()+"] Exception while rolling back transaction after catching exception", rbe);
+					}
+				}
+			} else {
+				try {
+					result = adapter.processMessage(id, message);
+					state = result.getState();
+					log.debug("["+getName()+"] proccessed request with exitState ["+state+"]");	        
+        		} catch (Throwable e) {
+	        		log.error("Receiver [" + getName() + "]:"+ToStringBuilder.reflectionToString(e,ToStringStyle.MULTI_LINE_STYLE), e);
+        		}
+			}
+		} else {
+			log.warn("["+getName()+"] has no adapter to process message");
+		}
         return result;
     }
+    
+	private void afterMessageProcessed(PipeLineResult pipeLineResult, Object rawMessage, String id, HashMap threadContext) {
+		try {
+			getListener().afterMessageProcessed(pipeLineResult, rawMessage,threadContext);
+		} catch (ListenerException e) {
+			String msg = "receiver [" + getName() + "] caught exception in message post processing ["+e.toString()+"]";
+			log.error(msg, e);
+			if (null != adapter) {
+				adapter.getMessageKeeper().add(msg+":" + e.getMessage());
+			}
+			if (ONERROR_CLOSE.equalsIgnoreCase(getOnError())) {
+				log.info("receiver [" + getName() + "] closing after exception in post processing");
+				stopRunning();
+			}
+		}
+	}   
+    
     /**
      * Starts the receiver. This method is called by the startRunning method.<br/>
      * Basically:
@@ -286,19 +420,8 @@ public void run() {
 		        String message = getListener().getStringFromRawMessage(rawMessage, threadContext);
 		        String id = getListener().getIdFromRawMessage(rawMessage, threadContext);
 		        PipeLineResult pipeLineResult = onMessage(message, id, threadContext);
-		        try {
-	    			getListener().afterMessageProcessed(pipeLineResult,rawMessage,threadContext);
-		        } catch (ListenerException e) {
-			        String msg = "receiver [" + getName() + "] caught exception in message post processing ["+e.toString()+"]";
-			        log.error(msg, e);
-			        if (null != adapter) {
-			            adapter.getMessageKeeper().add(msg+":" + e.getMessage());
-			        }
-			        if (ONERROR_CLOSE.equalsIgnoreCase(getOnError())) {
-				        log.info("receiver [" + getName() + "] closing after exception in post processing");
-				        stopRunning();
-			        }
-		        }
+		        
+				afterMessageProcessed(pipeLineResult,rawMessage, id, threadContext);
 
 		        finishProcessingTimestamp = System.currentTimeMillis();
 		        finishProcessingMessage(finishProcessingTimestamp-startProcessingTimestamp);
@@ -331,30 +454,14 @@ public void run() {
     public void setAdapter(IAdapter adapter) {
         this.adapter = adapter;
     }
-/**
- * Sets the listener. If the listener implements the {@link nl.nn.adapterframework.core.INamedObject name} interface and no <code>getName()</code>
- * of the listener is empty, the name of this object is given to the listener.
- * Creation date: (04-11-2003 12:04:05)
- * @param newListener IPullingListener
- */
-protected void setListener(IPullingListener newListener) {
-	listener = newListener;
-	
-	if (listener instanceof INamedObject)  {
-		
-		if (StringUtils.isEmpty(((INamedObject)listener).getName())) {
-			((INamedObject) listener).setName(this.getName());
-		}
-	}
-	
-}
+
+
 /**
  * Sets the name of the Receiver. .If the listener implements the {@link nl.nn.adapterframework.core.INamedObject name} interface and no <code>getName()</code>
  * of the listener is empty, the name of this object is given to the listener.
  * Creation date: (04-11-2003 12:06:29)
- * @param newName java.lang.String
  */
-public void setName(java.lang.String newName) {
+public void setName(String newName) {
 	name = newName;
 	IPullingListener listener=getListener();
 	if (listener instanceof INamedObject)  {
@@ -362,21 +469,21 @@ public void setName(java.lang.String newName) {
 				((INamedObject) listener).setName(newName);
 			}
 	} 
+	ITransactionalStorage inProcess = getInProcessStorage();
+	if (inProcess != null) {
+		inProcess.setName("inProcessStorage of ["+name+"]");
+	}
+	ISender errorSender = getErrorSender();
+	if (errorSender != null) {
+		errorSender.setName("errorSender of ["+name+"]");
+	}
 }
-/**
- * Insert the method's description here.
- * Creation date: (28-10-2003 14:51:19)
- * @param newNumThreads int
- */
+
 public void setNumThreads(int newNumThreads) {
 	numThreads = newNumThreads;
 }
-/**
- * Insert the method's description here.
- * Creation date: (17-11-2003 15:49:10)
- * @param newOnError java.lang.String
- */
-public void setOnError(java.lang.String newOnError) {
+
+public void setOnError(String newOnError) {
 	onError = newOnError;
 }
 protected void startProcessingMessage(long waitingDuration) {
@@ -457,14 +564,110 @@ public void stopRunning() {
      */
     public String toString() {
         String result = super.toString();
-        ToStringBuilder ts=new ToStringBuilder(this);
-        ts.setDefaultStyle(ToStringStyle.MULTI_LINE_STYLE);
+        ToStringBuilder ts=new ToStringBuilder(this, ToStringStyle.MULTI_LINE_STYLE);
         ts.append("name", getName() );
         result += ts.toString();
-        result+=" listener ["+listener.toString()+"]";
+        result+=" listener ["+(listener==null ? "-none-" : listener.toString())+"]";
         return result;
     }
 public void waitForRunState(RunStateEnum requestedRunState) throws InterruptedException {
 	runState.waitForRunState(requestedRunState);
 }
+	/**
+	 * Get the {@link RunStateEnum runstate} of this receiver.
+	 */
+public RunStateEnum getRunState() {
+	return runState.getRunState();
+}
+public ISender getSender() {
+	IPullingListener listener = getListener();
+
+	if (listener instanceof HasSender) {		
+		return ((HasSender)listener).getSender();
+	} else {
+		return null;
+	}
+}
+	/**
+	 * Returns the transacted.
+	 * @return boolean
+	 */
+	public boolean isTransacted() {
+		return transacted;
+	}
+
+	/**
+	 * Sets the transacted.
+	 * @param transacted The transacted to set
+	 */
+	public void setTransacted(boolean transacted) {
+		this.transacted = transacted;
+	}
+/**
+ * Returns the listener
+ * @return IPullingListener
+ */
+public IPullingListener getListener() {
+	return listener;
+}/**
+ * Sets the listener. If the listener implements the {@link nl.nn.adapterframework.core.INamedObject name} interface and no <code>getName()</code>
+ * of the listener is empty, the name of this object is given to the listener.
+ * Creation date: (04-11-2003 12:04:05)
+ * @param newListener IPullingListener
+ */
+protected void setListener(IPullingListener newListener) {
+	listener = newListener;
+	if (listener instanceof INamedObject)  {
+		
+		if (StringUtils.isEmpty(((INamedObject)listener).getName())) {
+			((INamedObject) listener).setName("listener of ["+getName()+"]");
+		}
+	}
+	
+}
+	/**
+	 * Returns the inProcessStorage.
+	 * @return ITransactionalStorage
+	 */
+	public ITransactionalStorage getInProcessStorage() {
+		return inProcessStorage;
+	}
+
+	/**
+	 * Sets the inProcessStorage.
+	 * @param inProcessStorage The inProcessStorage to set
+	 */
+	public void setInProcessStorage(ITransactionalStorage inProcessStorage) {
+		this.inProcessStorage = inProcessStorage;
+		inProcessStorage.setName("inProcessStorage of ["+getName()+"]");
+	}
+
+	/**
+	 * Returns the errorSender.
+	 * @return ISender
+	 */
+	public ISender getErrorSender() {
+		return errorSender;
+	}
+
+	/**
+	 * Sets the errorSender.
+	 * @param errorSender The errorSender to set
+	 */
+	protected void setErrorSender(ISender errorSender) {
+		this.errorSender = errorSender;
+		errorSender.setName("errorSender of ["+getName()+"]");
+	}
+
+	public String getCommitOnState() {
+		return commitOnState;
+	}
+
+	/**
+	 * the state on which the receiver will commit the transaction
+	 */
+	public void setCommitOnState(String string) {
+		commitOnState = string;
+	}
+
 }
