@@ -16,13 +16,15 @@
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/commons-beanutils.jar"/>
     <classpathentry kind="var" path="WAS_PLUGINDIR/lib/j2ee.jar"/>
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/commons-digester.jar"/>
-    <classpathentry kind="lib" path="H:/Ios/1_OO_straat/Technologie/libraries/Apache commons/cli/cli-1.0/commons-cli-1.0.jar"/>
     <classpathentry kind="var" path="WAS_50_PLUGINDIR/mqjms/Java/lib/com.ibm.mqjms.jar"/>
     <classpathentry kind="var" path="WAS_50_PLUGINDIR/lib/jmxc.jar"/>
-    <classpathentry kind="lib" path="H:/Ios/1_OO_straat/Technologie/libraries/ifsa/v2.0/ifsajms-2.0-1.2.jar"/>
     <classpathentry kind="lib" path="H:/Ios/1_OO_straat/Technologie/libraries/SAP jco/sapjco-ntintel-2.0.10/sapjco.jar"/>
     <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/commons-httpclient-2.0.1.jar"/>
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/commons-pool.jar"/>
+    <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/ifsajms-2.0-1.2.jar"/>
+    <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/jsse.jar"/>
+    <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/commons-cli-1.0.jar"/>
+    <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/jcert.jar"/>
     <classpathentry kind="output" path="bin"/>
 </classpath>
