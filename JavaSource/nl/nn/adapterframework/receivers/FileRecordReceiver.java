@@ -1,3 +1,9 @@
+/*
+ * $Log: FileRecordReceiver.java,v $
+ * Revision 1.4  2004-08-26 13:32:09  L190409
+ * added @deprecated tag to javadoc
+ *
+ */
 package nl.nn.adapterframework.receivers;
 
 /**
@@ -17,9 +23,10 @@ package nl.nn.adapterframework.receivers;
  * <p>Creation date: (17-12-2003 10:24:13)</p>
  * @version Id
  * @author Johan Verrips IOS
+ * @deprecated please use use {@link  nl.nn.adapterframework.receivers.GenericReceiver GenericReceiver} in combination with {@link  nl.nn.adapterframework.receivers.FileRecordListener FileRecordListener} instead
  */
 public class FileRecordReceiver extends PullingReceiverBase {
-	public static final String version="$Id: FileRecordReceiver.java,v 1.3 2004-03-26 10:43:03 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: FileRecordReceiver.java,v 1.4 2004-08-26 13:32:09 L190409 Exp $";
 
 /**
  * FileRecordReceiver constructor comment.

@@ -1,6 +1,9 @@
 /*
  * $Log: JavaReceiver.java,v $
- * Revision 1.3  2004-08-25 09:11:33  a1909356#db2admin
+ * Revision 1.4  2004-08-26 13:32:09  L190409
+ * added @deprecated tag to javadoc
+ *
+ * Revision 1.3  2004/08/25 09:11:33  unknown <unknown@ibissource.org>
  * Add waitForRunstate with timeout
  *
  * Revision 1.2  2004/08/12 10:58:43  unknown <unknown@ibissource.org>
@@ -21,13 +24,13 @@ import nl.nn.adapterframework.jms.JNDIBase;
 import nl.nn.adapterframework.util.RunStateEnum;
 
 /**
+ * The java receiver listens to java requests.
+ *  
  * @author JDekker
- * @version Id
- * @deprecated Replaced by GenericPushingReceiver and JavaPusher 
- * The java receiver listens to java requests. 
+ * @deprecated please use use {@link  nl.nn.adapterframework.receivers.GenericReceiver GenericReceiver} in combination with {@link  nl.nn.adapterframework.receivers.JavaListener JavaListener} instead
  */
 public class JavaReceiver extends JNDIBase implements IReceiver, ServiceClient {
-	public static final String version="$Id: JavaReceiver.java,v 1.3 2004-08-25 09:11:33 a1909356#db2admin Exp $";
+	public static final String version="$Id: JavaReceiver.java,v 1.4 2004-08-26 13:32:09 L190409 Exp $";
 	private ServiceListener serviceListener;
 	private String jndiName;
 	

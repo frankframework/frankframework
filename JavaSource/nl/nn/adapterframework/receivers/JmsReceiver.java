@@ -59,9 +59,10 @@ import java.util.HashMap;
  * whatever it is configured to.</p>
  * @version Id
  * @author     Gerrit van Brakel
+ * @deprecated please use use {@link  nl.nn.adapterframework.receivers.GenericReceiver GenericReceiver} in combination with {@link  nl.nn.adapterframework.jms.JmsListener JmsListener} instead
  */
 public class JmsReceiver extends PullingReceiverBase {
-	public static final String version="$Id: JmsReceiver.java,v 1.4 2004-03-31 12:04:21 L190409 Exp $";
+	public static final String version="$Id: JmsReceiver.java,v 1.5 2004-08-26 13:32:09 L190409 Exp $";
 	
 public JmsReceiver() {
 	super();

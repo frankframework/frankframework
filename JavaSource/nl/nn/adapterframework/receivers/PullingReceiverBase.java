@@ -87,10 +87,11 @@ import javax.transaction.UserTransaction;
  * @version Id
  * @author     Gerrit van Brakel
  * @since 4.0
+ * @deprecated Please use {@link nl.nn.adapterframework.receivers.ReceiverBase ReceiverBase} instead
  */
 public class PullingReceiverBase
     implements IReceiver, IReceiverStatistics, Runnable, HasSender {
-	public static final String version="$Id: PullingReceiverBase.java,v 1.14 2004-08-25 09:11:33 a1909356#db2admin Exp $";
+	public static final String version="$Id: PullingReceiverBase.java,v 1.15 2004-08-26 13:32:09 L190409 Exp $";
     	
 
 	public static final String ONERROR_CONTINUE = "continue";
