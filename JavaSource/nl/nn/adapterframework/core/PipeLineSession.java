@@ -1,6 +1,13 @@
+/*
+ * $Log: PipeLineSession.java,v $
+ * Revision 1.3  2004-03-23 17:51:15  L190409
+ * added methods for Transaction control
+ *
+ */
 package nl.nn.adapterframework.core;
 
 import java.util.Hashtable;
+
 /**
  * The <code>PipeLineSession</code> is an object similar to
  * a <code>session</code> object in a web-application. It stores
@@ -11,41 +18,27 @@ import java.util.Hashtable;
  * is stored in the key identified by <code>originalMessageKey</code>.
  * The messageId is stored under the key identified by <code>messageId</code>.
  * </p>
- * <p>$Id: PipeLineSession.java,v 1.2 2004-02-04 10:02:00 a1909356#db2admin Exp $</p>
+ * <p>$Id: PipeLineSession.java,v 1.3 2004-03-23 17:51:15 L190409 Exp $</p>
  *
  * @author Johan Verrips IOS
  * @since version 3.2.2
  */
-public class PipeLineSession extends Hashtable {
-	public static final String version="$Id: PipeLineSession.java,v 1.2 2004-02-04 10:02:00 a1909356#db2admin Exp $";
+public class PipeLineSession extends Hashtable implements IXAEnabled {
+	public static final String version="$Id: PipeLineSession.java,v 1.3 2004-03-23 17:51:15 L190409 Exp $";
 
 	public static final String originalMessageKey="originalMessage";
 	public static final String messageIdKey="messageId";
-/**
- * PipeLineSession constructor comment.
- */
+	private boolean transacted=false;
+
 public PipeLineSession() {
 	super();
 }
-/**
- * PipeLineSession constructor comment.
- * @param initialCapacity int
- */
 public PipeLineSession(int initialCapacity) {
 	super(initialCapacity);
 }
-/**
- * PipeLineSession constructor comment.
- * @param initialCapacity int
- * @param loadFactor float
- */
 public PipeLineSession(int initialCapacity, float loadFactor) {
 	super(initialCapacity, loadFactor);
 }
-/**
- * PipeLineSession constructor comment.
- * @param t java.util.Map
- */
 public PipeLineSession(java.util.Map t) {
 	super(t);
 }
@@ -71,5 +64,17 @@ public PipeLineSession(java.util.Map t) {
 		clear();
 		put(originalMessageKey, message);
 	    put(messageIdKey, messageId);
+	}
+	
+	/**
+	 * Indicates the processing of this pipeline is either commited in one transactions, or 
+	 * rolled back to the situation prior to starting the pipeline.
+	 */
+	public boolean isTransacted() {
+		return transacted;
+	}
+
+	public void setTransacted(boolean transacted) {
+		this.transacted = transacted;
 	}
 }
