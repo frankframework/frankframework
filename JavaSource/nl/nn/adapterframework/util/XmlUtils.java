@@ -1,6 +1,9 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.10  2004-09-01 07:15:24  L190409
+ * Revision 1.11  2004-10-05 09:56:59  L190409
+ * introduction of TransformerPool
+ *
+ * Revision 1.10  2004/09/01 07:15:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added namespaced xpath evaluator
  *
  * Revision 1.9  2004/06/21 10:04:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -28,6 +31,11 @@
  *
  */
 package nl.nn.adapterframework.util;
+
+import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.ParameterValue;
+import nl.nn.adapterframework.parameters.ParameterValueList;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.NestableException;
@@ -83,7 +91,7 @@ import java.util.LinkedList;
  */
 public class XmlUtils {
 	public static final String version =
-		"$Id: XmlUtils.java,v 1.10 2004-09-01 07:15:24 L190409 Exp $";
+		"$Id: XmlUtils.java,v 1.11 2004-10-05 09:56:59 L190409 Exp $";
 
 	static final String W3C_XML_SCHEMA = "http://www.w3.org/2001/XMLSchema";
 	static final String JAXP_SCHEMA_LANGUAGE =
@@ -103,6 +111,8 @@ public class XmlUtils {
 			+ "<xsl:output omit-xml-declaration=\"yes\" media-type=\"text\"/>"
 			+ "<xsl:template match=\"/\"><xsl:value-of select=\"name(/node()[position()=last()])\"/></xsl:template>"
 			+ "</xsl:stylesheet>";
+
+	public static final String XPATH_GETROOTNODENAME = "name(/node()[position()=last()])";
 
 	static String IDENTITY_TRANSFORM =
 		"<?xml version=\"1.0\"?><xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"1.0\">"
@@ -203,7 +213,7 @@ public class XmlUtils {
 	}
 
 
-	public static Transformer createXPathEvaluator(String XPathExpression)
+	public static String createXPathEvaluatorSource(String XPathExpression)
 		throws TransformerConfigurationException {
 		if (StringUtils.isEmpty(XPathExpression))
 			throw new TransformerConfigurationException("XPathExpression must be filled");
@@ -220,13 +230,13 @@ public class XmlUtils {
 				+ "</xsl:template>"
 				+ "</xsl:stylesheet>";
 
-		return createTransformer(xsl);
+		return xsl;
 	}
-	
+
 	/*
 	 * version of createXPathEvaluator that allows to set outputMethod, and uses copy-of instead of value-of
 	 */
-	public static Transformer createXPathEvaluator(String namespaceDefs, String XPathExpression, String outputMethod) throws TransformerConfigurationException {
+	public static String createXPathEvaluatorSource(String namespaceDefs, String XPathExpression, String outputMethod) throws TransformerConfigurationException {
 		if (StringUtils.isEmpty(XPathExpression))
 			throw new TransformerConfigurationException("XPathExpression must be filled");
 		
@@ -244,11 +254,26 @@ public class XmlUtils {
 			"</xsl:template>" +
 			"</xsl:stylesheet>";
 	
-		return  createTransformer(xsl);
+		return xsl;
 	}
 
+	public static String createXPathEvaluatorSource(String XPathExpression, String outputMethod) throws TransformerConfigurationException {
+		return createXPathEvaluatorSource(null, XPathExpression, outputMethod);
+	}
+
+
+	public static Transformer createXPathEvaluator(String XPathExpression)
+		throws TransformerConfigurationException {
+		return createTransformer(createXPathEvaluatorSource(XPathExpression));
+	}
+	
+	public static Transformer createXPathEvaluator(String namespaceDefs, String XPathExpression, String outputMethod)
+		throws TransformerConfigurationException {
+		return createTransformer(createXPathEvaluatorSource(namespaceDefs, XPathExpression, outputMethod));
+	}
+	
 	public static Transformer createXPathEvaluator(String XPathExpression, String outputMethod) throws TransformerConfigurationException {
-		return createXPathEvaluator(null, XPathExpression, outputMethod);
+		return createXPathEvaluator(XPathExpression, outputMethod);
 	}
 
 
@@ -274,7 +299,6 @@ public class XmlUtils {
 		Transformer result;
 		result = tFactory.newTransformer(source);
 
-		//TODO: Read the parameters
 		return result;
 	}
 	/**
@@ -556,6 +580,30 @@ public class XmlUtils {
 		return str;
 
 	}
+	
+	/**
+	 * sets all the parameters of the transformer using the parameterList and the resolutionContext. 
+	 */
+	public static void setTransformerParameters(Transformer t, ParameterValueList values) throws ParameterException {
+		t.clearParameters();
+		if (values == null) {
+			return;
+		}
+		for (int i=0; i<values.size(); i++) {
+			ParameterValue pv = values.getParameterValue(i);
+			Parameter p = pv.getDefinition();
+			Object value = pv.getValue(); 
+					
+			if (value != null) {
+				t.setParameter(p.getName(), value);
+				log.debug("setting parameter [" + p.toString()+ "] on transformer");
+			} 
+			else {
+				log.warn("omitting setting of parameter ["+p.getName()+"] on transformer, as it has a null-value");
+			}
+		}
+	}
+	
 	public static String transformXml(Transformer t, Document d)
 		throws TransformerException, IOException {
 
