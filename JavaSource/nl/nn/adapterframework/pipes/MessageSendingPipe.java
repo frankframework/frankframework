@@ -1,6 +1,9 @@
 /*
  * $Log: MessageSendingPipe.java,v $
- * Revision 1.7  2004-05-21 07:59:30  a1909356#db2admin
+ * Revision 1.8  2004-06-21 09:58:54  L190409
+ * Changed exception handling for starting pipe; Exception thrown now contains pipename
+ *
+ * Revision 1.7  2004/05/21 07:59:30  unknown <unknown@ibissource.org>
  * Add (modifications) due to the postbox sender implementation
  *
  * Revision 1.6  2004/04/15 15:07:57  Johan Verrips <johan.verrips@ibissource.org>
@@ -59,7 +62,7 @@ import java.util.HashMap;
  */
 
 public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
-	public static final String version = "$Id: MessageSendingPipe.java,v 1.7 2004-05-21 07:59:30 a1909356#db2admin Exp $";
+	public static final String version = "$Id: MessageSendingPipe.java,v 1.8 2004-06-21 09:58:54 L190409 Exp $";
 
 	private ISender sender = null;
 	private ICorrelatedPullingListener listener = null;
@@ -202,7 +205,9 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 			}
 
 		} catch (Exception e) {
-			throw new PipeStartException(e);
+			PipeStartException pse = new PipeStartException(getLogPrefix(null)+"could not start",e);
+			pse.setPipeNameInError(getName());
+			throw pse;
 		}
 	}
 	public void stop() {
