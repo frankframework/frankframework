@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.2  2004-08-09 13:46:52  L190409
+ * Revision 1.3  2004-08-16 14:09:58  a1909356#db2admin
+ * Return returnIfStopped value in case adapter is stopped
+ *
+ * Revision 1.2  2004/08/09 13:46:52  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * various changes
  *
  * Revision 1.1  2004/08/03 13:04:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -109,7 +112,7 @@ import javax.transaction.UserTransaction;
  */
 public class ReceiverBase
     implements IReceiver, IReceiverStatistics, Runnable, IMessageHandler, IbisExceptionListener, HasSender {
-	public static final String version="$Id: ReceiverBase.java,v 1.2 2004-08-09 13:46:52 L190409 Exp $";
+	public static final String version="$Id: ReceiverBase.java,v 1.3 2004-08-16 14:09:58 a1909356#db2admin Exp $";
 	protected Logger log = Logger.getLogger(this.getClass());
  
 	private String returnIfStopped="";
@@ -602,6 +605,9 @@ public class ReceiverBase
 	}
 
 	public String processRequest(IListener origin, String correlationId, String message)  throws ListenerException{
+		if (getRunState() == RunStateEnum.STOPPED || getRunState() == RunStateEnum.STOPPING)
+			return getReturnIfStopped();
+			
 		UserTransaction utx = null;
 		if (isTransacted()) {
 			try {
