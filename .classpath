@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
     <classpathentry kind="src" path="Java Source"/>
-    <classpathentry kind="var" path="JRE_LIB" rootpath="JRE_SRCROOT" sourcepath="JRE_SRC"/>
+    <classpathentry kind="var" path="JRE_LIB" sourcepath="JRE_SRC"/>
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/NNCoolgenJavaProxies.jar"/>
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/activation.jar"/>
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/commons-lang-2.0.jar"/>
@@ -19,5 +19,6 @@
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/commons-digester.jar"/>
     <classpathentry kind="lib" path="H:/Ios/1_OO_straat/Technologie/libraries/Apache commons/cli/cli-1.0/commons-cli-1.0.jar"/>
     <classpathentry kind="var" path="WAS_50_PLUGINDIR/mqjms/Java/lib/com.ibm.mqjms.jar"/>
+    <classpathentry kind="lib" path="H:/Ios/1_OO_straat/Technologie/libraries/IFSAPackageNT110/java/lib/ifsajms.jar"/>
     <classpathentry kind="output" path="bin"/>
 </classpath>
