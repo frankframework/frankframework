@@ -1,6 +1,9 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.6  2004-05-25 08:41:31  L190409
+ * Revision 1.7  2004-05-25 09:11:57  L190409
+ * added transformXml from Document
+ *
+ * Revision 1.6  2004/05/25 08:41:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added createXPathEvaluator()
  *
  * Revision 1.5  2004/04/27 10:52:50  unknown <unknown@ibissource.org>
@@ -43,6 +46,7 @@ import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.Source;
 import javax.xml.transform.Result;
+import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.transform.stream.StreamResult;
 
@@ -68,7 +72,7 @@ import java.util.LinkedList;
  * @author Johan Verrips IOS
  */
 public class XmlUtils {
-	public static final String version="$Id: XmlUtils.java,v 1.6 2004-05-25 08:41:31 L190409 Exp $";
+	public static final String version="$Id: XmlUtils.java,v 1.7 2004-05-25 09:11:57 L190409 Exp $";
 	
     static final String W3C_XML_SCHEMA       = "http://www.w3.org/2001/XMLSchema";
     static final String JAXP_SCHEMA_LANGUAGE = "http://java.sun.com/xml/jaxp/properties/schemaLanguage";
@@ -538,11 +542,17 @@ public static synchronized Transformer createTransformer(Source source) throws T
         return str;
         
     }
+public static String transformXml(Transformer t, Document d) 
+	throws TransformerException,IOException {
+	
+	return transformXml( t,new DOMSource(d));	
+}
+
 public static String transformXml(Transformer t, String s) 
 	throws TransformerException,IOException {
 	
 	Variant inputVar = new Variant(s);
-    Source in = inputVar.asXmlSource();
+	Source in = inputVar.asXmlSource();
  
 	return transformXml( t,in);	
 }
