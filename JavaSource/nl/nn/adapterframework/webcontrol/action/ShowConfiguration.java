@@ -1,8 +1,15 @@
+/*
+ * $Log: ShowConfiguration.java,v $
+ * Revision 1.3  2004-03-23 17:02:52  L190409
+ * corrected some typos and solved some warnings
+ *
+ */
 package nl.nn.adapterframework.webcontrol.action;
 
 import nl.nn.adapterframework.util.StringResolver;
 import nl.nn.adapterframework.util.AppConstants;
 import org.apache.commons.lang.SystemUtils;
+import org.apache.log4j.Logger;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
@@ -24,13 +31,13 @@ import java.net.URL;
  * the variables (${variable}) in the configuration.xml are resolved. </p>
  * <p>For security-reasons you might set this value to <code>false</code>, so that passwords
  * configured in the <code>environment entries</code> of the application server are not revealed.</p>
- * <p>$Id: ShowConfiguration.java,v 1.2 2004-02-04 10:02:09 a1909356#db2admin Exp $</p>
+ * <p>$Id: ShowConfiguration.java,v 1.3 2004-03-23 17:02:52 L190409 Exp $</p>
  * @author  Johan Verrips
  * @see nl.nn.adapterframework.configuration.Configuration
  */
 
 public final class ShowConfiguration extends ActionBase {
-	public static final String version="$Id: ShowConfiguration.java,v 1.2 2004-02-04 10:02:09 a1909356#db2admin Exp $";
+	public static final String version="$Id: ShowConfiguration.java,v 1.3 2004-03-23 17:02:52 L190409 Exp $";
 	
 
 
@@ -45,7 +52,7 @@ public ActionForward execute(
     initAction(request);
 	 
     DynaActionForm configurationPropertiesForm = getPersistentForm(mapping, form, request);
-	configurationPropertiesForm.set("logLevel", log.getRootLogger().getLevel().toString());
+	configurationPropertiesForm.set("logLevel", Logger.getRootLogger().getLevel().toString());
 	configurationPropertiesForm.set("logIntermediaryResults", new Boolean(false));
 	if (AppConstants.getInstance().getResolvedProperty("log.logIntermediaryResults")!=null) {
 		if (AppConstants.getInstance().getResolvedProperty("log.logIntermediaryResults").equalsIgnoreCase("true")) {
@@ -61,11 +68,11 @@ public ActionForward execute(
         BufferedReader in =
             new BufferedReader(new InputStreamReader(configURL.openStream()));
         String str;
-        String lineSeperator=SystemUtils.LINE_SEPARATOR;
-        if (null==lineSeperator) lineSeperator="\n";
+        String lineSeparator=SystemUtils.LINE_SEPARATOR;
+        if (null==lineSeparator) lineSeparator="\n";
         while ((str = in.readLine()) != null) {
             // str is one line of text; readLine() strips the newline character(s)
-            result += str+lineSeperator;
+            result += str+lineSeparator;
         }
         
         in.close();
