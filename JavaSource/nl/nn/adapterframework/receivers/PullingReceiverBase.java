@@ -90,7 +90,7 @@ import javax.transaction.UserTransaction;
  */
 public class PullingReceiverBase
     implements IReceiver, IReceiverStatistics, Runnable, HasSender {
-	public static final String version="$Id: PullingReceiverBase.java,v 1.9 2004-07-08 12:55:57 L190409 Exp $";
+	public static final String version="$Id: PullingReceiverBase.java,v 1.10 2004-07-22 11:05:32 L190409 Exp $";
     	
 
 	public static final String ONERROR_CONTINUE = "continue";
@@ -231,6 +231,7 @@ protected void finishProcessingMessage(long processingDuration) {
 		int threadCount = (int) threadsProcessing.decrease();
 		((StatisticsKeeper)processStatistics.get(threadCount)).addValue(processingDuration);
 	}
+	log.debug("receiver ["+getName()+"] finishes processing message");
 }
 /**
  * Returns an iterator over the idle-statistics
@@ -495,6 +496,7 @@ protected void startProcessingMessage(long waitingDuration) {
 		((StatisticsKeeper)idleStatistics.get(threadCount)).addValue(waitingDuration);
 		threadsProcessing.increase();
 	}
+	log.debug("receiver ["+getName()+"] starts processing message");
 }
 /**
  * Start the adapter. The thread-name will be set tot the adapter's name
