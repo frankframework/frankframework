@@ -1,6 +1,9 @@
 /*
  * $Log: AuthSSLProtocolSocketFactory.java,v $
- * Revision 1.5  2005-02-02 16:36:26  L190409
+ * Revision 1.6  2005-02-24 12:13:14  L190409
+ * added follow redirects and truststoretype
+ *
+ * Revision 1.5  2005/02/02 16:36:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added hostname verification, default=false
  *
  * Revision 1.4  2004/10/14 15:35:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -164,9 +167,9 @@ public class AuthSSLProtocolSocketFactory extends AuthSSLProtocolSocketFactoryBa
      */
 	public AuthSSLProtocolSocketFactory(
 		final URL keystoreUrl, final String keystorePassword, final String keystoreType, 
-		final URL truststoreUrl, final String truststorePassword, final boolean verifyHostname)
+		final URL truststoreUrl, final String truststorePassword, final String truststoreType, final boolean verifyHostname)
 	{
-		super(keystoreUrl, keystorePassword, keystoreType, truststoreUrl, truststorePassword, verifyHostname);
+		super(keystoreUrl, keystorePassword, keystoreType, truststoreUrl, truststorePassword, truststoreType, verifyHostname);
 	}
     
     private static KeyManager[] createKeyManagers(final KeyStore keystore, final String password)
@@ -205,7 +208,7 @@ public class AuthSSLProtocolSocketFactory extends AuthSSLProtocolSocketFactoryBa
 				keymanagers = createKeyManagers(keystore, this.keystorePassword);
 			}
 			if (this.truststoreUrl != null) {
-				KeyStore keystore = createKeyStore(this.truststoreUrl, this.truststorePassword, this.keystoreType, "Trusted Certificate");
+				KeyStore keystore = createKeyStore(this.truststoreUrl, this.truststorePassword, this.truststoreType, "Trusted Certificate");
 				trustmanagers = createTrustManagers(keystore);
 			}
 			SSLContext sslcontext = SSLContext.getInstance("SSL");

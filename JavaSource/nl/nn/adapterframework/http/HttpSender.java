@@ -1,6 +1,9 @@
 /*
  * $Log: HttpSender.java,v $
- * Revision 1.13  2005-02-02 16:36:26  L190409
+ * Revision 1.14  2005-02-24 12:13:14  L190409
+ * added follow redirects and truststoretype
+ *
+ * Revision 1.13  2005/02/02 16:36:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added hostname verification, default=false
  *
  * Revision 1.12  2004/12/23 16:11:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -101,6 +104,8 @@ import nl.nn.adapterframework.util.ClassUtils;
  * <tr><td>{@link #setCertificatePassword(String) certificatePassword}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setTruststore(String) truststore}</td><td>resource URL to truststore to be used for authentication</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setTruststorePassword(String) truststorePassword}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setTruststoreType(String) truststoreType}</td><td>&nbsp;</td><td>jks</td></tr>
+ * <tr><td>{@link #setFollowRedirects(boolean) followRedirects}</td><td>when true, a redirect request will be honoured, e.g. to switch to https</td><td>true</td></tr>
  * <tr><td>{@link #setVerifyHostname(boolean) verifyHostname}</td><td>when true, the hostname in the certificate will be checked against the actual hostname</td><td>true</td></tr>
  * <tr><td>{@link #setJdk13Compatibility(boolean) jdk13Compatibility}</td><td>enables the use of certificates on JDK 1.3.x. The SUN reference implementation JSSE 1.0.3 is included for convenience</td><td>false</td></tr>
  * <tr><td>{@link #setSetStaleChecking(boolean) staleChecking}</td><td>controls whether connections checked to be stale, i.e. appear open, but are not.</td><td>true</td></tr>
@@ -114,7 +119,7 @@ import nl.nn.adapterframework.util.ClassUtils;
  * @since 4.2c
  */
 public class HttpSender implements ISenderWithParameters, HasPhysicalDestination {
-	public static final String version = "$Id: HttpSender.java,v 1.13 2005-02-02 16:36:26 L190409 Exp $";
+	public static final String version = "$Id: HttpSender.java,v 1.14 2005-02-24 12:13:14 L190409 Exp $";
 	protected Logger log = Logger.getLogger(this.getClass());;
 
 	private String name;
@@ -126,7 +131,7 @@ public class HttpSender implements ISenderWithParameters, HasPhysicalDestination
 	private int maxConnections=2;
 
 	private String userName;
-	private String Password;
+	private String password;
 
 	private String proxyHost;
 	private int proxyPort=80;
@@ -139,8 +144,10 @@ public class HttpSender implements ISenderWithParameters, HasPhysicalDestination
 	private String certificatePassword;
 	private String truststore=null;
 	private String truststorePassword=null;
+	private String truststoreType="jks";
 	
 	private boolean verifyHostname=true;
+	private boolean followRedirects=true;
 	private boolean jdk13Compatibility=false;
 	private boolean staleChecking=true;
 	private boolean encodeMessages=false;
@@ -260,11 +267,11 @@ public class HttpSender implements ISenderWithParameters, HasPhysicalDestination
 						System.setProperty("java.protocol.handler.pkgs","com.sun.net.ssl.internal.www.protocol");
 						socketfactory = new AuthSSLProtocolSocketFactoryForJsse10x(
 							certificateUrl, getCertificatePassword(), getKeystoreType(),
-							truststoreUrl, getTruststorePassword(),isVerifyHostname());
+							truststoreUrl, getTruststorePassword(), getTruststoreType(), isVerifyHostname());
 					} else {
 						socketfactory = new AuthSSLProtocolSocketFactory(
 							certificateUrl, getCertificatePassword(), getKeystoreType(),
-							truststoreUrl, getTruststorePassword(),isVerifyHostname());
+							truststoreUrl, getTruststorePassword(), getTruststoreType(),isVerifyHostname());
 					}
 					socketfactory.initSSLContext();	
 				} catch (Throwable t) {
@@ -389,6 +396,7 @@ public class HttpSender implements ISenderWithParameters, HasPhysicalDestination
 			throw new SenderException("Sender ["+getName()+"] caught exception evaluating parameters",e);
 		}
 		HttpMethod httpmethod=getMethod(message, pvl);
+		httpmethod.setFollowRedirects(isFollowRedirects());
 		
 		try {
 			httpclient.executeMethod(httpmethod);
@@ -472,7 +480,7 @@ public class HttpSender implements ISenderWithParameters, HasPhysicalDestination
 	}
 
 	public String getPassword() {
-		return Password;
+		return password;
 	}
 
 	public String getUserName() {
@@ -480,7 +488,7 @@ public class HttpSender implements ISenderWithParameters, HasPhysicalDestination
 	}
 
 	public void setPassword(String string) {
-		Password = string;
+		password = string;
 	}
 
 	public void setUserName(String string) {
@@ -580,6 +588,21 @@ public class HttpSender implements ISenderWithParameters, HasPhysicalDestination
 
 	public void setVerifyHostname(boolean b) {
 		verifyHostname = b;
+	}
+
+	public boolean isFollowRedirects() {
+		return followRedirects;
+	}
+
+	public void setFollowRedirects(boolean b) {
+		followRedirects = b;
+	}
+
+	public String getTruststoreType() {
+		return truststoreType;
+	}
+	public void setTruststoreType(String string) {
+		truststoreType = string;
 	}
 
 }

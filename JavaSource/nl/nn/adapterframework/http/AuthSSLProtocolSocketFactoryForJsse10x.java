@@ -1,6 +1,9 @@
 /*
  * $Log: AuthSSLProtocolSocketFactoryForJsse10x.java,v $
- * Revision 1.4  2005-02-02 16:36:26  L190409
+ * Revision 1.5  2005-02-24 12:13:14  L190409
+ * added follow redirects and truststoretype
+ *
+ * Revision 1.4  2005/02/02 16:36:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added hostname verification, default=false
  *
  * Revision 1.3  2004/12/23 12:06:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -70,9 +73,9 @@ public class AuthSSLProtocolSocketFactoryForJsse10x extends AuthSSLProtocolSocke
      */
     public AuthSSLProtocolSocketFactoryForJsse10x(
         final URL keystoreUrl, final String keystorePassword, final String keystoreType, 
-        final URL truststoreUrl, final String truststorePassword, final boolean verifyHostname)
+        final URL truststoreUrl, final String truststorePassword, final String truststoreType, final boolean verifyHostname)
     {
-        super(keystoreUrl, keystorePassword, keystoreType, truststoreUrl, truststorePassword, verifyHostname);
+        super(keystoreUrl, keystorePassword, keystoreType, truststoreUrl, truststorePassword, truststoreType, verifyHostname);
     }
     
     private static KeyManager[] createKeyManagers(final KeyStore keystore, final String password)
@@ -111,7 +114,7 @@ public class AuthSSLProtocolSocketFactoryForJsse10x extends AuthSSLProtocolSocke
                 keymanagers = createKeyManagers(keystore, this.keystorePassword);
             }
             if (this.truststoreUrl != null) {
-                KeyStore keystore = createKeyStore(this.truststoreUrl, this.truststorePassword, this.keystoreType, "Trusted Certificate");
+                KeyStore keystore = createKeyStore(this.truststoreUrl, this.truststorePassword, this.truststoreType, "Trusted Certificate");
                 trustmanagers = createTrustManagers(keystore);
             }
             SSLContext sslcontext = SSLContext.getInstance("SSL",new com.sun.net.ssl.internal.ssl.Provider());

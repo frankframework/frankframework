@@ -1,6 +1,9 @@
 /*
  * $Log: AuthSSLProtocolSocketFactoryBase.java,v $
- * Revision 1.2  2005-02-02 16:36:26  L190409
+ * Revision 1.3  2005-02-24 12:13:14  L190409
+ * added follow redirects and truststoretype
+ *
+ * Revision 1.2  2005/02/02 16:36:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added hostname verification, default=false
  *
  * Revision 1.1  2004/10/14 15:35:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -153,6 +156,7 @@ public abstract class AuthSSLProtocolSocketFactoryBase implements SecureProtocol
 	protected String keystoreType = "null";
 	protected URL truststoreUrl = null;
 	protected String truststorePassword = null;
+	protected String truststoreType = "null";
 	protected Object sslContext = null;
 	protected boolean verifyHostname=true;
 
@@ -178,7 +182,7 @@ public abstract class AuthSSLProtocolSocketFactoryBase implements SecureProtocol
      */
     public AuthSSLProtocolSocketFactoryBase (
         final URL keystoreUrl, final String keystorePassword, final String keystoreType, 
-        final URL truststoreUrl, final String truststorePassword, final boolean verifyHostname)
+        final URL truststoreUrl, final String truststorePassword, final String truststoreType, final boolean verifyHostname)
     {
         super();
         this.keystoreUrl = keystoreUrl;
@@ -186,6 +190,7 @@ public abstract class AuthSSLProtocolSocketFactoryBase implements SecureProtocol
 		this.keystoreType = keystoreType;
         this.truststoreUrl = truststoreUrl;
         this.truststorePassword = truststorePassword;
+		this.truststoreType = truststoreType;
         this.verifyHostname = verifyHostname;
     }
 
