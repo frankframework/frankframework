@@ -2,6 +2,7 @@ package nl.nn.adapterframework.configuration;
 
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IReceiver;
+import nl.nn.adapterframework.extensions.coolgen.CoolGenWrapperPipe;
 import nl.nn.adapterframework.receivers.PullingReceiverBase;
 import nl.nn.adapterframework.scheduler.AdapterJob;
 import nl.nn.adapterframework.scheduler.JobDef;
@@ -31,7 +32,7 @@ import java.util.Enumeration;
  */
 public class Configuration {
     Logger log; 
-    public static final String version="$Id: Configuration.java,v 1.2 2004-02-04 10:02:08 a1909356#db2admin Exp $";
+    public static final String version="$Id: Configuration.java,v 1.3 2004-03-11 08:20:39 NNVZNL01#L180564 Exp $";
      
     private Hashtable adapterTable = new Hashtable();
 
@@ -215,15 +216,15 @@ public class Configuration {
                 }
             }
             // if the job already exists, remove it.
-            if ((sched.getJobDetail(jobdef.getName(), sched.DEFAULT_GROUP)) != null) {
+            if ((sched.getJobDetail(jobdef.getName(), Scheduler.DEFAULT_GROUP)) != null) {
                 try {
-                    sched.deleteJob(jobdef.getName(), sched.DEFAULT_GROUP);
+                    sched.deleteJob(jobdef.getName(), Scheduler.DEFAULT_GROUP);
                 } catch (SchedulerException e) {
                     log.error("error removing job ["+jobdef.getName()+"] from the scheduler", e);
                 }
             }
             JobDetail jobDetail = new JobDetail(jobdef.getName(), // job name
-                    sched.DEFAULT_GROUP, // job group
+                    Scheduler.DEFAULT_GROUP, // job group
                     AdapterJob.class);        // the java class to execute
 
             jobDetail.getJobDataMap().put("adapterName", jobdef.getAdapterName());
@@ -232,7 +233,7 @@ public class Configuration {
             jobDetail.getJobDataMap().put("receiverName", jobdef.getReceiverName());
             if (StringUtils.isNotEmpty(jobdef.getDescription()))  jobDetail.setDescription(jobdef.getDescription());
 
-            CronTrigger cronTrigger = new CronTrigger(jobdef.getName(), sched.DEFAULT_GROUP);
+            CronTrigger cronTrigger = new CronTrigger(jobdef.getName(), Scheduler.DEFAULT_GROUP);
             cronTrigger.setCronExpression(jobdef.getCronExpression());
             sched.scheduleJob(jobDetail, cronTrigger);
             log.info("job scheduled with properties :" + jobdef.toString());
@@ -292,7 +293,12 @@ public class Configuration {
     	sb.append(nl.nn.adapterframework.webcontrol.action.ShowConfiguration.version+SystemUtils.LINE_SEPARATOR);
     	sb.append(nl.nn.adapterframework.webcontrol.action.ShowConfigurationStatus.version+SystemUtils.LINE_SEPARATOR);
     	sb.append(nl.nn.adapterframework.scheduler.SchedulerAdapter.version +SystemUtils.LINE_SEPARATOR);
-    	sb.append(nl.nn.adapterframework.scheduler.AdapterJob.version +SystemUtils.LINE_SEPARATOR);
+    	sb.append(nl.nn.adapterframework.extensions.coolgen.CoolGenWrapperPipe.version +SystemUtils.LINE_SEPARATOR);
+		sb.append(nl.nn.adapterframework.extensions.ifsa.IfsaClient.version +SystemUtils.LINE_SEPARATOR);
+		sb.append(nl.nn.adapterframework.extensions.ifsa.IfsaFacade.version +SystemUtils.LINE_SEPARATOR);
+		sb.append(nl.nn.adapterframework.extensions.ifsa.IfsaServiceListener.version +SystemUtils.LINE_SEPARATOR);
+		sb.append(nl.nn.adapterframework.extensions.rekenbox.RekenBoxCaller.version +SystemUtils.LINE_SEPARATOR);
+		sb.append(nl.nn.adapterframework.extensions.rekenbox.Adios2XmlPipe.version +SystemUtils.LINE_SEPARATOR);
     	return sb.toString();
     	
     }
