@@ -1,6 +1,9 @@
 /*
  * $Log: JMSFacade.java,v $
- * Revision 1.18  2004-10-05 10:41:59  L190409
+ * Revision 1.19  2005-03-31 08:14:29  L190409
+ * added todo for setting delivery mode
+ *
+ * Revision 1.18  2004/10/05 10:41:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed unused imports
  *
  * Revision 1.17  2004/08/23 13:08:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -85,7 +88,7 @@ import javax.naming.NamingException;
  * @author    Gerrit van Brakel
  */
 public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version="$Id: JMSFacade.java,v 1.18 2004-10-05 10:41:59 L190409 Exp $";
+	public static final String version="$Id: JMSFacade.java,v 1.19 2005-03-31 08:14:29 L190409 Exp $";
 
 	private String name;
 
@@ -246,6 +249,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	        textMessage.setJMSCorrelationID(correlationID);
 	    }
 	    textMessage.setText(message);
+	    // TODO: delivery mode zetten op wel of niet persistent, of attribute 'deliveryMode' opnemen.	   
 	    return textMessage;
 	}
 
