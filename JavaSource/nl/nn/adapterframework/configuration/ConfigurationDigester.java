@@ -1,6 +1,9 @@
 /*
  * $Log: ConfigurationDigester.java,v $
- * Revision 1.5  2004-03-30 07:30:05  L190409
+ * Revision 1.6  2004-06-16 06:57:00  NNVZNL01#L180564
+ * Added the ClassPathEntityResolver to resolve entities within the classpath
+ *
+ * Revision 1.5  2004/03/30 07:30:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.4  2004/03/26 10:42:50  Johan Verrips <johan.verrips@ibissource.org>
@@ -20,6 +23,7 @@ import org.apache.commons.digester.xmlrules.FromXmlRuleSet;
 import org.apache.log4j.Logger;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.SystemUtils;
+import nl.nn.adapterframework.util.ClassPathEntityResolver;
 
 import java.net.URL;
 
@@ -35,14 +39,29 @@ import java.net.URL;
  * <p>Since 4.0.1, the configuration.xml is first resolved using the {@link nl.nn.adapterframework.util.StringResolver resolver},
  * with tries to resolve ${variable} with the {@link nl.nn.adapterframework.util.AppConstants AppConstants}, so that
  * both the values from the property files as the environment setting are available.<p>
- * 
+ * <p>Since 4.1.1 the configuration.xml is parsed with a entityresolver that uses the classpath, which
+ * means that you may specify entities that will be resolved during parsing.
+ * </p>
+ * Example:
+ * <code><pre>
+ * &lt;?xml version="1.0"?&gt;
+&lt;!DOCTYPE IOS-Adaptering
+[
+&lt;!ENTITY Y04 SYSTEM "./ConfigurationY04.xml"&gt;
+]&gt;
+
+&lt;IOS-Adaptering configurationName="AdapterFramework (v4.0) configuratie voor GIJuice"&gt;
+	
+&Y04;
+
+&lt;/IOS-Adaptering&gt;	
+</pre></code>
  * @version Id
  * @author Johan Verrips
  * @see Configuration
  */
 public class ConfigurationDigester {
-	public static final String version="$Id: ConfigurationDigester.java,v 1.5 2004-03-30 07:30:05 L190409 Exp $";
-    static Digester digester;
+	public static final String version="$Id: ConfigurationDigester.java,v 1.6 2004-06-16 06:57:00 NNVZNL01#L180564 Exp $";
     protected Logger log = Logger.getLogger(this.getClass());
 	private static final String CONFIGURATION_FILE_DEFAULT  = "Configuration.xml";
 	private static final String DIGESTER_RULES_DEFAULT      = "digester-rules.xml";
@@ -80,8 +99,7 @@ public static void main(String args[]) {
     {
         Configuration config = new Configuration();
 
-        digester = new Digester();
-
+   	
   		config = unmarshalConfiguration(ClassUtils.getResourceURL(this, digesterRulesFile), ClassUtils.getResourceURL(this, configurationFile));
  
 		return config;
@@ -89,8 +107,11 @@ public static void main(String args[]) {
     public Configuration unmarshalConfiguration(URL digesterRulesURL, URL configurationFileURL){
         Configuration config = new Configuration(digesterRulesURL, configurationFileURL);
 
-        digester = new Digester();
+        Digester digester = new Digester();
 		digester.setUseContextClassLoader(true);
+
+		//	set the entity resolver to load entity references from the classpath
+		digester.setEntityResolver(new ClassPathEntityResolver());
 		
         // push config on the stack
         digester.push(config);
