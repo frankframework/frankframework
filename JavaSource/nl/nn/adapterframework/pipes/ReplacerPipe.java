@@ -1,6 +1,9 @@
 /*
  * $Log: ReplacerPipe.java,v $
- * Revision 1.2  2004-08-24 06:47:53  a1909356#db2admin
+ * Revision 1.3  2004-08-24 06:48:50  a1909356#db2admin
+ * Remove warnings
+ *
+ * Revision 1.2  2004/08/24 06:47:53  unknown <unknown@ibissource.org>
  * Addition checks in config
  *
  * Revision 1.1  2004/08/03 11:28:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -8,9 +11,6 @@
  * 
  */
 package nl.nn.adapterframework.pipes;
-
-import java.io.PrintWriter;
-import java.io.StringWriter;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -46,7 +46,7 @@ import nl.nn.adapterframework.util.Variant;
  * @since 4.2
  */
 public class ReplacerPipe extends FixedForwardPipe {
-	public static final String version="$Id: ReplacerPipe.java,v 1.2 2004-08-24 06:47:53 a1909356#db2admin Exp $";
+	public static final String version="$Id: ReplacerPipe.java,v 1.3 2004-08-24 06:48:50 a1909356#db2admin Exp $";
 
 	private String find;
 	private String replace;
