@@ -1,6 +1,9 @@
 /*
  * $Log: SapFunctionFacade.java,v $
- * Revision 1.2  2004-07-15 07:44:30  L190409
+ * Revision 1.3  2004-07-19 09:45:03  L190409
+ * added getLogPrefix()
+ *
+ * Revision 1.2  2004/07/15 07:44:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.1  2004/07/06 07:09:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -53,7 +56,7 @@ import com.sap.mw.jco.*;
  * @since 4.2
  */
 public class SapFunctionFacade implements INamedObject{
-	public static final String version="$Id: SapFunctionFacade.java,v 1.2 2004-07-15 07:44:30 L190409 Exp $";
+	public static final String version="$Id: SapFunctionFacade.java,v 1.3 2004-07-19 09:45:03 L190409 Exp $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	private String name;
@@ -71,10 +74,14 @@ public class SapFunctionFacade implements INamedObject{
 
 	static HashMap extractors = new HashMap();
 
+	protected String getLogPrefix() {
+		return this.getClass().getName()+" ["+getName()+"] ";
+	}
+
 	public void configure() throws ConfigurationException {
 		sapSystem=SapSystem.getSystem(getSapSystemName());
 		if (sapSystem==null) {
-			throw new ConfigurationException("["+this.getClass().getName()+"] ["+getName()+"] cannot find SapSystem ["+getSapSystemName()+"]");
+			throw new ConfigurationException(getLogPrefix()+"cannot find SapSystem ["+getSapSystemName()+"]");
 		}
 	}
 
@@ -83,15 +90,15 @@ public class SapFunctionFacade implements INamedObject{
 			try {
 				ftemplate = sapSystem.getRepository().getFunctionTemplate(getFunctionName());
 			} catch (Exception e) {
-				throw new SapException("exception obtaining template for function ["+getFunctionName()+"]", e);
+				throw new SapException(getLogPrefix()+"exception obtaining template for function ["+getFunctionName()+"]", e);
 			}
 			if (ftemplate == null) {
-				throw new SapException("could not obtain template for function ["+getFunctionName()+"]");
+				throw new SapException(getLogPrefix()+"could not obtain template for function ["+getFunctionName()+"]");
 			}
 			try {
 				calculateStaticFieldIndices(ftemplate);
 			} catch (Exception e) {
-				throw new SapException("Exception calculation field-indices ["+getFunctionName()+"]", e);
+				throw new SapException(getLogPrefix()+"Exception calculation field-indices ["+getFunctionName()+"]", e);
 			}
 		}
 	}

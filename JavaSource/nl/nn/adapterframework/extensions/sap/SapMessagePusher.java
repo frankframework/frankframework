@@ -1,6 +1,9 @@
 /*
  * $Log: SapMessagePusher.java,v $
- * Revision 1.2  2004-07-15 07:47:12  L190409
+ * Revision 1.3  2004-07-19 09:45:03  L190409
+ * added getLogPrefix()
+ *
+ * Revision 1.2  2004/07/15 07:47:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed IMessagePusher to IPushingListener
  *
  * Revision 1.1  2004/07/06 07:09:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -56,7 +59,7 @@ import com.sap.mw.jco.JCO.Server;
  * @since 4.2
  */
 public class SapMessagePusher extends SapFunctionFacade implements IPushingListener, SapFunctionHandler, JCO.ServerExceptionListener, JCO.ServerErrorListener {
-	public static final String version="$Id: SapMessagePusher.java,v 1.2 2004-07-15 07:47:12 L190409 Exp $";
+	public static final String version="$Id: SapMessagePusher.java,v 1.3 2004-07-19 09:45:03 L190409 Exp $";
 
 	private String progid;	 // progid of the RFC-destination
         	
@@ -84,7 +87,7 @@ public class SapMessagePusher extends SapFunctionFacade implements IPushingListe
 			sapServer.setTrace(true);
 			sapServer.start();
 		} catch (Exception e) {
-			throw new ListenerException("["+getName()+"] could not start", e);
+			throw new ListenerException(getLogPrefix()+"could not start", e);
 		}
 	}
 	
@@ -93,7 +96,7 @@ public class SapMessagePusher extends SapFunctionFacade implements IPushingListe
 			sapServer.suspend();
 			closeFacade();
 		} catch (Exception e) {
-			throw new ListenerException("["+getName()+"] could not stop", e);
+			throw new ListenerException(getLogPrefix()+"could not stop", e);
 		}
 	}
 
@@ -137,13 +140,13 @@ public class SapMessagePusher extends SapFunctionFacade implements IPushingListe
 
 	public void serverExceptionOccurred(JCO.Server server, Exception e) {
 		if (exceptionListener!=null) {
-			exceptionListener.exceptionThrown(this, new SapException("exception in SapServer ["+server.getProgID()+"]",e));
+			exceptionListener.exceptionThrown(this, new SapException(getLogPrefix()+"exception in SapServer ["+server.getProgID()+"]",e));
 		}
 	}
 
 	public void serverErrorOccurred(JCO.Server server, Error e) {
 		if (exceptionListener!=null) {
-			exceptionListener.exceptionThrown(this, new SapException("error in SapServer ["+server.getProgID()+"]",e));
+			exceptionListener.exceptionThrown(this, new SapException(getLogPrefix()+"error in SapServer ["+server.getProgID()+"]",e));
 		}
 	}
 
