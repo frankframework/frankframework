@@ -1,6 +1,9 @@
 /*
  * $Log: JtaUtil.java,v $
- * Revision 1.3  2004-03-26 10:42:38  NNVZNL01#L180564
+ * Revision 1.4  2004-03-31 15:03:26  L190409
+ * fixed javadoc
+ *
+ * Revision 1.3  2004/03/26 10:42:38  Johan Verrips <johan.verrips@ibissource.org>
  * added @version tag in javadoc
  *
  * Revision 1.2  2004/03/26 09:50:52  Johan Verrips <johan.verrips@ibissource.org>
@@ -27,13 +30,11 @@ import javax.transaction.UserTransaction;
  * @since  4.1
  */
 public class JtaUtil {
-	private static final String version="$Id: JtaUtil.java,v 1.3 2004-03-26 10:42:38 NNVZNL01#L180564 Exp $";
+	private static final String version="$Id: JtaUtil.java,v 1.4 2004-03-31 15:03:26 L190409 Exp $";
     private static UserTransaction utx;
 
 	/**
-	 * returns a meaningfull string describing the transaction status.
-	 * @param status
-	 * @return
+	 * returns a meaningful string describing the transaction status.
 	 */
 	public static String displayTransactionStatus(int status) {
 		switch (status) {
@@ -92,10 +93,6 @@ public class JtaUtil {
 
 	/**
 	 * Returns a UserTransaction object, that is used by Receivers and PipeLines to demarcate transactions. 
-	 * @param ctx
-	 * @param UserTransactionUrl
-	 * @return UserTransaction
-	 * @throws NamingException
 	 */
 	public static UserTransaction getUserTransaction(Context ctx, String UserTransactionUrl) throws NamingException {
 	
