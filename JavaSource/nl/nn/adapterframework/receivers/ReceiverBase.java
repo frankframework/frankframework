@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.1  2004-08-03 13:04:30  L190409
+ * Revision 1.2  2004-08-09 13:46:52  L190409
+ * various changes
+ *
+ * Revision 1.1  2004/08/03 13:04:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * introduction of GenericReceiver
  *
  */
@@ -10,6 +13,7 @@ import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.core.IErrorMessageFormatter;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IMessageHandler;
 import nl.nn.adapterframework.core.IPullingListener;
@@ -23,6 +27,7 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.HasSender;
 import nl.nn.adapterframework.core.PipeLineResult;
+import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.util.Counter;
 import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.Misc;
@@ -104,7 +109,7 @@ import javax.transaction.UserTransaction;
  */
 public class ReceiverBase
     implements IReceiver, IReceiverStatistics, Runnable, IMessageHandler, IbisExceptionListener, HasSender {
-	public static final String version="$Id: ReceiverBase.java,v 1.1 2004-08-03 13:04:30 L190409 Exp $";
+	public static final String version="$Id: ReceiverBase.java,v 1.2 2004-08-09 13:46:52 L190409 Exp $";
 	protected Logger log = Logger.getLogger(this.getClass());
  
 	private String returnIfStopped="";
@@ -172,6 +177,19 @@ public class ReceiverBase
 
 	protected void openAllResources() throws ListenerException {	
 		// on exit resouces must be in a state that runstate is or can be set to 'STARTED'
+		try {
+			if (getSender()!=null) {
+				getSender().open();
+			}
+			if (getErrorSender()!=null) {
+				getErrorSender().open();
+			}
+			if (getInProcessStorage()!=null) {
+				getInProcessStorage().open();
+			}
+		} catch (SenderException e) {
+			throw new ListenerException(e);
+		}
 		getListener().open();
 		if (getListener() instanceof IPullingListener){
 			// start all threads
@@ -187,7 +205,7 @@ public class ReceiverBase
 
 	private void addThread(String nameSuffix) {
 		if (getListener() instanceof IPullingListener){
-			Thread t = new Thread(this, getName() + nameSuffix==null ? "" : nameSuffix);
+			Thread t = new Thread(this, getName() + (nameSuffix==null ? "" : nameSuffix));
 			t.start();
 		}
 	}
@@ -204,9 +222,18 @@ public class ReceiverBase
 		try {
 			log.debug("closing Receiver ["+ getName()+ "]");
 			getListener().close();
+			if (getSender()!=null) {
+				getSender().close();
+			}
+			if (getErrorSender()!=null) {
+				getErrorSender().close();
+			}
+			if (getInProcessStorage()!=null) {
+				getInProcessStorage().close();
+			}
 	
 			log.info("closed Receiver ["+ getName()+ "]");
-		} catch (ListenerException e) {
+		} catch (Exception e) {
 			log.error(
 				"Receiver [" + getName()+ "]: error closing connection", e);
 		}
@@ -214,10 +241,24 @@ public class ReceiverBase
 		info("Receiver [" + getName() + "] stopped");
 	}
 	 
+	protected void propagateName() {
+		IListener listener=getListener();
+		if (listener!=null && StringUtils.isEmpty(listener.getName())) {
+			listener.setName("listener of ["+getName()+"]");
+		}
+		ITransactionalStorage inProcess = getInProcessStorage();
+		if (inProcess != null) {
+			inProcess.setName("inProcessStorage of ["+getName()+"]");
+		}
+		ISender errorSender = getErrorSender();
+		if (errorSender != null) {
+			errorSender.setName("errorSender of ["+getName()+"]");
+		}
+	}
 
-	public void configure() throws ConfigurationException {
+	public void configure() throws ConfigurationException {		
  		try {
- 			
+ 			propagateName();
 			if (getListener()==null) {
 				throw new ConfigurationException("Receiver ["+getName()+"] has no listener");
 			}
@@ -231,9 +272,23 @@ public class ReceiverBase
 				info("Receiver ["+getName()+"] has listener on "+((HasPhysicalDestination)getListener()).getPhysicalDestinationName());
 			}
 			if (getListener() instanceof HasSender) {
+				// only informational
 				ISender sender = ((HasSender)getListener()).getSender();
 				if (sender instanceof HasPhysicalDestination) {
-					info("Listener of receiver ["+getName()+"] has sender on "+((HasPhysicalDestination)sender).getPhysicalDestinationName());
+					info("Listener of receiver ["+getName()+"] has answer-sender on "+((HasPhysicalDestination)sender).getPhysicalDestinationName());
+				}
+			}
+			ISender sender = getSender();
+			if (sender!=null) {
+				sender.configure();
+				if (sender instanceof HasPhysicalDestination) {
+					info("receiver ["+getName()+"] has answer-sender on "+((HasPhysicalDestination)sender).getPhysicalDestinationName());
+				}
+			}
+			if (getErrorSender()!=null) {
+				getErrorSender().configure();
+				if (getErrorSender() instanceof HasPhysicalDestination) {
+					info("Receiver ["+getName()+"] has errorSender to "+((HasPhysicalDestination)getErrorSender()).getPhysicalDestinationName());
 				}
 			}
 			if (isTransacted()) {
@@ -252,17 +307,12 @@ public class ReceiverBase
 				}
 				if (getErrorSender()==null) {
 					warn("Receiver ["+getName()+"] sets transacted=true, but has no error sender. Messages processed with errors will get lost");
-				}
-				else {
-					getErrorSender().configure();
-					if (getErrorSender() instanceof HasPhysicalDestination) {
-						info("Receiver ["+getName()+"] has errorSender to "+((HasPhysicalDestination)getErrorSender()).getPhysicalDestinationName());
-					}
+				} else {
 					if (!(getErrorSender() instanceof IXAEnabled && ((IXAEnabled)getErrorSender()).isTransacted())) {
 						warn("Receiver ["+getName()+"] sets transacted=true, but errorSender is not. Transactional integrity is not guaranteed"); 
 					}
 				}
-			}
+			} 
 	
 			if (adapter != null) {
 				adapter.getMessageKeeper().add("Receiver ["+getName()+"] initialization complete");
@@ -331,49 +381,6 @@ public class ReceiverBase
 	}
 
 	
-	public Object getRawMessage(HashMap threadContext) throws ListenerException {
-		IPullingListener listener = (IPullingListener)getListener();
-
-		if (isTransacted()) {
-			String message;
-			String messageId;
-			Object rawMessage;
-			
-			UserTransaction utx = null;
-	
-			try {
-				utx = getAdapter().getUserTransaction();
-				utx.begin();
-			
-			} catch (Exception e) {
-				throw new ListenerException("["+getName()+"] Exception preparing to read input message", e);
-				// no need to send message on errorSender, did not even try to read message
-			}
-			try {
-				rawMessage = listener.getRawMessage(threadContext);
-				if (rawMessage==null) {
-					try {
-						utx.rollback();
-					} catch (Exception e) {
-						log.warn("["+getName()+"] Exception while rolling back transaction after timeout on retrieving message", e);
-					}
-					return null;
-				}
-			} catch (Exception e) {
-				try {
-					utx.rollback();
-				} catch (Exception rbe) {
-					log.error("["+getName()+"] Exception while rolling back transaction after catching exception", rbe);
-				}
-				throw new ListenerException("["+getName()+"] Exception retrieving message under transaction control",e);
-				// no need to send message on errorSender, message will remain on input channel due to rollback
-			}
-			return rawMessage;
-		} else {
-			return listener.getRawMessage(threadContext);
-		}
-	}
-
 
 	/**
 	 * Starts the receiver. This method is called by the startRunning method.<br/>
@@ -429,7 +436,9 @@ public class ReceiverBase
 		synchronized (threadsProcessing) {
 			int threadCount = (int) threadsProcessing.getValue();
 			
-			getIdleStatistics(threadCount).addValue(waitingDuration);
+			if (waitingDuration>=0) {
+				getIdleStatistics(threadCount).addValue(waitingDuration);
+			}
 			threadsProcessing.increase();
 		}
 		log.debug("receiver ["+getName()+"] starts processing message");
@@ -441,6 +450,49 @@ public class ReceiverBase
 			getProcessStatistics(threadCount).addValue(processingDuration);
 		}
 		log.debug("receiver ["+getName()+"] finishes processing message");
+	}
+
+	public Object getRawMessage(HashMap threadContext) throws ListenerException {
+		IPullingListener listener = (IPullingListener)getListener();
+
+		if (isTransacted()) {
+			String message;
+			String messageId;
+			Object rawMessage;
+			
+			UserTransaction utx = null;
+	
+			try {
+				utx = getAdapter().getUserTransaction();
+				utx.begin();
+			
+			} catch (Exception e) {
+				throw new ListenerException("["+getName()+"] Exception preparing to read input message", e);
+				// no need to send message on errorSender, did not even try to read message
+			}
+			try {
+				rawMessage = listener.getRawMessage(threadContext);
+				if (rawMessage==null) {
+					try {
+						utx.rollback();
+					} catch (Exception e) {
+						log.warn("["+getName()+"] Exception while rolling back transaction after timeout on retrieving message", e);
+					}
+					return null;
+				}
+			} catch (Exception e) {
+				try {
+					utx.rollback();
+				} catch (Exception rbe) {
+					log.error("["+getName()+"] Exception while rolling back transaction after catching exception", rbe);
+				}
+				throw new ListenerException("["+getName()+"] Exception retrieving message under transaction control",e);
+				// no need to send message on errorSender, message will remain on input channel due to rollback
+			}
+			return rawMessage;
+		} else {
+			return listener.getRawMessage(threadContext);
+		}
 	}
 
 
@@ -545,23 +597,26 @@ public class ReceiverBase
 	 * Process the received message with {@link #processRequest(String, String)}.
 	 * A messageId is generated that is unique and consists of the name of this listener and a GUID
 	 */
-	public String processRequest(String message) {
-		String correlationId=getName()+"-"+Misc.createSimpleUUID();
-			if (log.isDebugEnabled()) 
-				log.debug(getLogPrefix()+"generating correlationId ["+correlationId+"]");
-		return processRequest(correlationId,message);
+	public String processRequest(IListener origin, String message) throws ListenerException {
+		return processRequest(origin, null,message);
 	}
 
-	public String processRequest(String correlationId, String message) {
-		PipeLineResult pipeLineResult = adapter.processMessage(correlationId, message);
-		return pipeLineResult.getResult();
+	public String processRequest(IListener origin, String correlationId, String message)  throws ListenerException{
+		UserTransaction utx = null;
+		if (isTransacted()) {
+			try {
+				utx = adapter.getUserTransaction();
+			} catch (Exception e) {
+				throw new ListenerException("["+getName()+"] Exception obtaining usertransaction", e);
+			}
+		}
+		return processMessageInAdapter(utx, origin, message, message, correlationId, null, -1);
 	}
 
 
 	public void processRawMessage(IListener origin, Object message) throws ListenerException {
 		processRawMessage(origin, message, null, -1);
 	}
-
 	public void processRawMessage(IListener origin, Object message, HashMap context) throws ListenerException {
 		processRawMessage(origin, message, context, -1);
 	}
@@ -597,35 +652,58 @@ public class ReceiverBase
 		if (threadContext==null) {
 			threadContext = new HashMap();
 		}
-		long startProcessingTimestamp = System.currentTimeMillis();
-		startProcessingMessage(waitingDuration);
-
-		numReceived.increase();
-
-		long finishProcessingTimestamp = System.currentTimeMillis();
-		finishProcessingMessage(finishProcessingTimestamp-startProcessingTimestamp);
 		
 		String message = origin.getStringFromRawMessage(rawMessage, threadContext);
 		String id = origin.getIdFromRawMessage(rawMessage, threadContext);
-		if (isTransacted()) {
-			prepareToProcessMessageTransacted(utx,id,message);
-		}
-		PipeLineResult pipeLineResult = adapter.processMessage(id, message);
-		try {
-			origin.afterMessageProcessed(pipeLineResult,rawMessage, threadContext);
-		} catch (ListenerException e) {
-			String msg = "receiver [" + getName() + "] caught exception in message post processing";
-			error(msg, e);
-			if (ONERROR_CLOSE.equalsIgnoreCase(getOnError())) {
-				log.info("receiver [" + getName() + "] closing after exception in post processing");
-				stopRunning();
-			}
-		}
-		if (isTransacted()) {
-			finishTransactedProcessingOfMessage(utx,id,message);
-		}
+		processMessageInAdapter(utx, origin, rawMessage, message, id, threadContext, waitingDuration);
 	}
 
+	/*
+	 * assumes message is read, and when transacted, transation is still open to be able to store it in InProcessStore
+	 */
+	protected String processMessageInAdapter(UserTransaction utx, IListener origin, Object rawMessage, String message, String id, HashMap threadContext, long waitingDuration) throws ListenerException {
+		String result=null;
+		long startProcessingTimestamp = System.currentTimeMillis();
+		log.debug(getLogPrefix()+"received message correlationId ["+id+"]");
+
+		startProcessingMessage(waitingDuration);
+		numReceived.increase();
+
+		try {
+			if (StringUtils.isEmpty(id)) {
+				id=getName()+"-"+Misc.createSimpleUUID();
+				if (log.isDebugEnabled()) 
+					log.debug(getLogPrefix()+"generating correlationId ["+id+"]");
+			}
+			if (isTransacted()) {
+				prepareToProcessMessageTransacted(utx,id,message);
+			}
+			PipeLineResult pipeLineResult = adapter.processMessage(id, message);
+			result=pipeLineResult.getResult();
+			
+			try {
+				if (getSender()!=null) {
+					getSender().sendMessage(id,result);
+				}
+				origin.afterMessageProcessed(pipeLineResult,rawMessage, threadContext);
+			} catch (Exception e) {
+				String msg = "receiver [" + getName() + "] caught exception in message post processing";
+				error(msg, e);
+				if (ONERROR_CLOSE.equalsIgnoreCase(getOnError())) {
+					log.info("receiver [" + getName() + "] closing after exception in post processing");
+					stopRunning();
+				}
+			}
+			if (isTransacted()) {
+				finishTransactedProcessingOfMessage(utx,id,message);
+			}
+		} finally {
+			long finishProcessingTimestamp = System.currentTimeMillis();
+			finishProcessingMessage(finishProcessingTimestamp-startProcessingTimestamp);
+		}
+		log.debug(getLogPrefix()+"returning result ["+result+"] for message correlationId ["+id+"]");
+		return result;
+	}
 
 /*
     private PipeLineResult onMessage(String message, String id, HashMap threadContext) {
@@ -840,7 +918,12 @@ public class ReceiverBase
 	
 	
 	protected synchronized StatisticsKeeper getProcessStatistics(int threadsProcessing) {
-		StatisticsKeeper result = ((StatisticsKeeper)processStatistics.get(threadsProcessing));
+		StatisticsKeeper result;
+		try {
+			result = ((StatisticsKeeper)processStatistics.get(threadsProcessing));
+		} catch (IndexOutOfBoundsException e) {
+			result = null;
+		}
 	
 		if (result==null) {
 			result = new StatisticsKeeper(threadsProcessing+1+" threads processing");
@@ -850,8 +933,13 @@ public class ReceiverBase
 	}
 	
 	protected synchronized StatisticsKeeper getIdleStatistics(int threadsProcessing) {
-		StatisticsKeeper result = ((StatisticsKeeper)idleStatistics.get(threadsProcessing));
-	
+		StatisticsKeeper result;
+		try {
+			result = ((StatisticsKeeper)idleStatistics.get(threadsProcessing));
+		} catch (IndexOutOfBoundsException e) {
+			result = null;
+		}
+
 		if (result==null) {
 			result = new StatisticsKeeper(threadsProcessing+" threads processing");
 			idleStatistics.add(threadsProcessing, result);
@@ -877,16 +965,7 @@ public class ReceiverBase
 	
 	
 	public ISender getSender() {
-		if (sender!=null) {
-			return sender;
-		}
-		IListener listener = getListener();
-	
-		if (listener instanceof HasSender) {		
-			return ((HasSender)listener).getSender();
-		} else {
-			return null;
-		}
+		return sender;
 	}
 	
 	protected void setSender(ISender sender) {
@@ -969,7 +1048,6 @@ public class ReceiverBase
 	
 
 
-
 	/**
 	 * Sets the name of the Receiver. 
 	 * If the listener implements the {@link nl.nn.adapterframework.core.INamedObject name} interface and <code>getName()</code>
@@ -977,18 +1055,7 @@ public class ReceiverBase
 	 */
 	public void setName(String newName) {
 		name = newName;
-		IListener listener=getListener();
-		if (StringUtils.isEmpty(listener.getName())) {
-			listener.setName("listner of ["+newName+"]");
-		}
-		ITransactionalStorage inProcess = getInProcessStorage();
-		if (inProcess != null) {
-			inProcess.setName("inProcessStorage of ["+newName+"]");
-		}
-		ISender errorSender = getErrorSender();
-		if (errorSender != null) {
-			errorSender.setName("errorSender of ["+newName+"]");
-		}
+		propagateName();
 	}
 
 
@@ -1056,7 +1123,9 @@ public class ReceiverBase
 		return numThreads;
 	}
 
-
+	public String formatException(String extrainfo, String correlationId, String message, Throwable t) {
+		return getAdapter().formatErrorMessage(extrainfo,t,message,correlationId,null,0);
+	}
 
 
 }
