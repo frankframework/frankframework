@@ -1,6 +1,9 @@
 /*
  * $Log: Adapter.java,v $
- * Revision 1.9  2004-06-16 12:34:46  NNVZNL01#L180564
+ * Revision 1.10  2004-06-16 13:08:11  NNVZNL01#L180564
+ * Added configuration error when no pipeline was configured
+ *
+ * Revision 1.9  2004/06/16 12:34:46  Johan Verrips <johan.verrips@ibissource.org>
  * Added AutoStart functionality on Adapter
  *
  * Revision 1.8  2004/04/28 08:31:41  Johan Verrips <johan.verrips@ibissource.org>
@@ -73,7 +76,7 @@ import javax.transaction.UserTransaction;
  */
 
 public class Adapter extends JNDIBase implements Runnable, IAdapter{
-	public static final String version="$Id: Adapter.java,v 1.9 2004-06-16 12:34:46 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: Adapter.java,v 1.10 2004-06-16 13:08:11 NNVZNL01#L180564 Exp $";
 	private Vector receivers=new Vector();
 	private long lastMessageDate =0;
     private PipeLine pipeline;
@@ -142,6 +145,12 @@ public void configure() throws ConfigurationException {
     log.debug("configuring adapter [" + getName() + "]");
     messageKeeper = new MessageKeeper(messageKeeperSize);
     statsMessageProcessingDuration = new StatisticsKeeper(getName());
+    if (pipeline==null) {
+    	String msg="No pipeline configured for adapter ["+getName()+"]";
+    	messageKeeper.add(msg);
+    	throw new ConfigurationException(msg);
+    }
+    	 
     pipeline.setAdapter(this);
     pipeline.configurePipes();
 
