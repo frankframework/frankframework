@@ -1,6 +1,9 @@
 /*
  * $Log: PushingReceiverBase.java,v $
- * Revision 1.1  2004-06-22 12:12:52  L190409
+ * Revision 1.2  2004-06-30 10:51:41  L190409
+ * included exception listening mechanism
+ *
+ * Revision 1.1  2004/06/22 12:12:52  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * introduction of MessagePushers and PushingReceivers
  *
  */
@@ -9,10 +12,12 @@ package nl.nn.adapterframework.receivers;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IMessagePusher;
+import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.IReceiverStatistics;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.HasSender;
+import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.util.Counter;
 import nl.nn.adapterframework.util.Misc;
@@ -46,13 +51,11 @@ import java.util.Iterator;
  * </p>
  * @version Id
  * @author Gerrit van Brakel
- * @see nl.nn.adapterframework.core.IAdapter
- * @see nl.nn.adapterframework.core.IReceiver
- * @see nl.nn.adapterframework.core.PipeLineResult
+ * @since 4.2
  */
-public class PushingReceiverBase  implements IReceiver, IReceiverStatistics, HasSender,
+public class PushingReceiverBase  implements IReceiver, IReceiverStatistics, HasSender, IbisExceptionListener,
         ServiceClient, Serializable {
-	public static final String version="$Id: PushingReceiverBase.java,v 1.1 2004-06-22 12:12:52 L190409 Exp $";
+	public static final String version="$Id: PushingReceiverBase.java,v 1.2 2004-06-30 10:51:41 L190409 Exp $";
 	protected Logger log = Logger.getLogger(this.getClass());;
         	
 	private String name;
@@ -77,6 +80,7 @@ public class PushingReceiverBase  implements IReceiver, IReceiverStatistics, Has
 			throw new ConfigurationException(getLogPrefix()+"has no listener");
 		}
 		listener.setHandler(this);
+		listener.setExceptionListener(this);
 		listener.configure();
 		
 		ISender sender = getSender();
@@ -167,7 +171,6 @@ public class PushingReceiverBase  implements IReceiver, IReceiverStatistics, Has
 	
 	/**
 	 * Process the received message.
-	 * @since 4.0
 	 */	
 	public String processRequest(String correlationId, String request) {
 		String answer = "";
@@ -190,11 +193,10 @@ public class PushingReceiverBase  implements IReceiver, IReceiverStatistics, Has
 			try {
 				getSender().sendMessage(correlationId, answer);
 			} catch (Exception se) {
-				log.error(
-					getLogPrefix()+"Error occured on sendMessage. closing down adapter",se);
-				adapter.getMessageKeeper().add(
-					"Error occured while sending message. Closing adapter.");
+				String msg = getLogPrefix()+"Error occured while sending message. Closing adapter.";
+				log.error(msg,se);
 				if (adapter != null) {
+				adapter.getMessageKeeper().add(msg+": "+se.getMessage());
 					try {
 						adapter.stopRunning();
 					} catch (Exception e) {
@@ -321,6 +323,15 @@ public class PushingReceiverBase  implements IReceiver, IReceiverStatistics, Has
 	 */
 	public void setReturnIfStopped (String returnIfStopped){
 		this.returnIfStopped=returnIfStopped;
+	}
+
+	public void exceptionThrown(INamedObject object, Throwable t) {
+		String msg = getLogPrefix()+"received exception ["+t.getClass().getName()+"] from ["+object.getName()+"], stopping receiver";
+		if (adapter != null) {
+			 adapter.getMessageKeeper().add(msg+": "+t.getMessage());
+		}
+		log.error(msg,t);
+		stopRunning();
 	}
 
 }
