@@ -1,3 +1,9 @@
+/*
+ * $Log: JmsSender.java,v $
+ * Revision 1.3  2004-03-23 18:22:39  L190409
+ * enabled Transaction control
+ *
+ */
 package nl.nn.adapterframework.jms;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -27,13 +33,13 @@ import javax.jms.Message;
  * <tr><td>{@link #setJmsRealm(String) listener.jmsRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
- * <p>$Id: JmsSender.java,v 1.2 2004-02-04 10:02:07 a1909356#db2admin Exp $</p>
+ * <p>$Id: JmsSender.java,v 1.3 2004-03-23 18:22:39 L190409 Exp $</p>
  *
  * @author Gerrit van Brakel
  */
 
 public class JmsSender extends JMSFacade implements ISender {
-	public static final String version="$Id: JmsSender.java,v 1.2 2004-02-04 10:02:07 a1909356#db2admin Exp $";
+	public static final String version="$Id: JmsSender.java,v 1.3 2004-03-23 18:22:39 L190409 Exp $";
 
   private String replyToName=null;
 
@@ -42,6 +48,22 @@ public class JmsSender extends JMSFacade implements ISender {
 	public JmsSender() {
 		super();
 	}
+
+
+	public void open() throws SenderException {
+		try {
+			super.open();
+			/*
+			if (!isTransacted()) {
+				session = createSession();
+				messageProducer = getMessageProducer(session, getDestination());
+			}
+			*/
+		} catch (Exception e) {
+			throw new SenderException(e);
+		}
+	}
+	
 /**
  * Stops the sender and resets all dynamic data.
  */
@@ -71,45 +93,55 @@ public void configure() throws ConfigurationException {
     public boolean isSynchronous() {
 	    return false;
     }
-public void open() throws SenderException {
-    try {
-	    super.open();
-        session = createSession();
-        messageProducer = getMessageProducer(session, getDestination());
-
-    } catch (Exception e) {
-        throw new SenderException(e);
-    }
+/*
+public synchronized String sendMessage(String correlationID, String message) throws SenderException {
+	return sendMessage(correlationID, message, session, messageProducer);
 }
-public synchronized String sendMessage(String correlationID, String message)
+*/
+public String sendMessage(String correlationID, String message) throws SenderException{
+	//if (isTransacted()) {
+		try {
+			Session s = createSession();
+			MessageProducer mp = getMessageProducer(s, getDestination());
+
+			String result = sendMessage(correlationID, message, s, mp);
+			
+			mp.close();
+			s.close();
+			return result; 
+//		} else {
+//			String result = sendMessage(correlationID, message, session, messageProducer);
+//		}
+	} catch (Exception e) {
+		throw new SenderException("JmsSender ["+ getName()+ "] got exception sending message", e);
+	}
+}
+/**
+ * Sends the message
+ * @returns the messageId of the message
+ */
+public String sendMessage(String correlationID, String message, Session s, MessageProducer mp)
     throws SenderException {
 
     try {
-
-        Message msg = createTextMessage(session, correlationID, message);
+        Message msg = createTextMessage(s, correlationID, message);
         if (null != replyToName) {
             msg.setJMSReplyTo(getDestination(replyToName));
             log.debug("replyTo set to [" + msg.getJMSReplyTo().toString() + "]");
         }
-        send(messageProducer, msg);
+        send(mp, msg);
         log.info(
-            "["
-                + getName()
-                + "] sent Message: ["
-                + message
-                + "] to ["
-                + this.getDestinationName()
-                + "] correlationID["
-                + correlationID
-                + "] using "
-                + (getPersistent() ? "persistent" : "non-persistent")
-                + " mode"
-                + ((replyToName != null) ? "replyTo:" + replyToName : "")
-                + "");
-        return null;
+            "[" + getName() + "] " +
+            "sent Message: [" + message + "] " +
+            "to [" + getDestinationName() + "] " +
+            "msgID ["+ msg.getJMSMessageID() + "] " +
+            "correlationID ["+ msg.getJMSCorrelationID() + "] " +
+            "using "+ (getPersistent() ? "persistent" : "non-persistent") + " mode " +
+            ((replyToName != null) ? "replyTo:" + replyToName : ""));
+        return msg.getJMSMessageID();
     } catch (Throwable e) {
         log.error(
-            "JmsMessageSender ["
+            "JmsSender ["
                 + getName()
                 + "] got exception: "
                 + ToStringBuilder.reflectionToString(e),
