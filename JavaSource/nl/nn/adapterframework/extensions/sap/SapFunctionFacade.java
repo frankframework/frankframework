@@ -1,6 +1,9 @@
 /*
  * $Log: SapFunctionFacade.java,v $
- * Revision 1.5  2004-10-05 10:40:54  L190409
+ * Revision 1.6  2005-03-14 17:26:21  L190409
+ * bugfix: removed setting of return table parameters, as this caused the process to lock
+ *
+ * Revision 1.5  2004/10/05 10:40:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed unused code and imports
  *
  * Revision 1.4  2004/08/20 12:29:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -60,7 +63,7 @@ import com.sap.mw.jco.*;
  * @since 4.2
  */
 public class SapFunctionFacade implements INamedObject{
-	public static final String version="$Id: SapFunctionFacade.java,v 1.5 2004-10-05 10:40:54 L190409 Exp $";
+	public static final String version="$Id: SapFunctionFacade.java,v 1.6 2005-03-14 17:26:21 L190409 Exp $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	private String name;
@@ -274,9 +277,13 @@ public class SapFunctionFacade implements INamedObject{
 		JCO.ParameterList output = function.getExportParameterList();
 		int replyFieldIndex = findFieldIndex(output, getReplyFieldIndex(), getReplyFieldName());
 		setParameters(function.getExportParameterList(),result, replyFieldIndex);
+		log.warn("SapFunctionFacade.message2FunctionResult, skipped setting of return table parameters");
+/*		
 		if (replyFieldIndex<=0) {
+			log.debug("SapFunctionFacade.message2FunctionResult, setting table parameters");
 			setParameters(function.getTableParameterList(), result, 0);
 		}
+*/		
 	}
 	
 
