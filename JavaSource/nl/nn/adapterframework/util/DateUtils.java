@@ -10,11 +10,11 @@ import java.util.Date;
  * @author Johan Verrips IOS
  */
 public class DateUtils {
-	public static final String version="$Id: DateUtils.java,v 1.3 2004-03-26 10:42:39 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: DateUtils.java,v 1.4 2004-11-10 12:59:27 L190409 Exp $";
 	
 
-	private static final String fullIsoFormat          = "yyyy-MM-dd'T'hh:mm:sszzz";
-    private static final String shortIsoFormat         = "yyyy-MM-dd";
+	public static final String fullIsoFormat          = "yyyy-MM-dd'T'hh:mm:sszzz";
+    public static final String shortIsoFormat         = "yyyy-MM-dd";
 
     /**
      * Format for "######.###"
