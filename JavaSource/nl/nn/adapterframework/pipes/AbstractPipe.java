@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractPipe.java,v $
- * Revision 1.6  2004-05-21 07:37:08  a1909356#db2admin
+ * Revision 1.7  2004-10-05 10:47:03  L190409
+ * retyped ParameterList
+ *
+ * Revision 1.6  2004/05/21 07:37:08  unknown <unknown@ibissource.org>
  * Moved PipeParameter to core
  *
  * Revision 1.5  2004/04/06 10:16:16  Johan Verrips <johan.verrips@ibissource.org>
@@ -13,15 +16,15 @@
 package nl.nn.adapterframework.pipes;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.*;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeLineSession;
-import java.util.ArrayList;
-import java.util.Iterator;
+import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.ParameterList;
+
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.log4j.Logger;
 
@@ -63,12 +66,12 @@ import java.util.Hashtable;
  * @see nl.nn.adapterframework.core.PipeLineSession
  */
 public abstract class AbstractPipe implements IPipe {
-  public static final String version="$Id: AbstractPipe.java,v 1.6 2004-05-21 07:37:08 a1909356#db2admin Exp $";
+  public static final String version="$Id: AbstractPipe.java,v 1.7 2004-10-05 10:47:03 L190409 Exp $";
   private String name;
   protected Logger log = Logger.getLogger(this.getClass());
   private Hashtable pipeForwards=new Hashtable();
   private int maxThreads = 0;
-  private ArrayList parameterList = new ArrayList();
+  private ParameterList parameterList = new ParameterList();
   
 /**
  * <code>configure()</code> is called after the {@link nl.nn.adapterframework.core.PipeLine Pipeline} is registered
@@ -208,7 +211,7 @@ public void configure() throws ConfigurationException{
 	/**
 	 * return the Parameters
 	 */
-	public ArrayList getParameterList() {
+	public ParameterList getParameterList() {
 		return parameterList;
 	}
 
