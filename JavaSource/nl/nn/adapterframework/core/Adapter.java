@@ -1,6 +1,9 @@
 /*
  * $Log: Adapter.java,v $
- * Revision 1.13  2004-08-19 07:16:21  a1909356#db2admin
+ * Revision 1.14  2004-09-08 14:14:41  L190409
+ * adjusted error logging
+ *
+ * Revision 1.13  2004/08/19 07:16:21  unknown <unknown@ibissource.org>
  * Resolved problem of hanging adapter if stopRunning was called just after the 
  * adapter was set to started
  *
@@ -86,7 +89,7 @@ import javax.transaction.UserTransaction;
  */
 
 public class Adapter extends JNDIBase implements Runnable, IAdapter {
-	public static final String version = "$Id: Adapter.java,v 1.13 2004-08-19 07:16:21 a1909356#db2admin Exp $";
+	public static final String version = "$Id: Adapter.java,v 1.14 2004-09-08 14:14:41 L190409 Exp $";
 	private Vector receivers = new Vector();
 	private long lastMessageDate = 0;
 	private PipeLine pipeline;
@@ -510,22 +513,16 @@ public class Adapter extends JNDIBase implements Runnable, IAdapter {
 		}
 		catch (Throwable undefError) {
 			incNumOfMessagesInError();
-
-			getMessageKeeper().add(
-				"illegal exception thrown ["
-					+ undefError.getClass().getName()
-					+ "] with message ["
-					+ undefError.getMessage()
-					+ "] on message ["
-					+ message
-					+ "] messageId ["
+			String msg = "Illegal exception ["+undefError.getClass().getName()+"] in processMessage of adapter [" + name + "] for messageId ["
 					+ messageId
-					+ "]");
-			log.error("Illegal exception found in processMessage of adapter [" + name + "]", undefError);
+					+ "]";
+
+			getMessageKeeper().add(msg+": "+undefError.getMessage());
+			log.error(msg, undefError);
 
 			result.setResult(
 				formatErrorMessage(
-					"Illegal exception found in processMessage of adapter [" + name + "]",
+					"Illegal exception ["+undefError.getClass().getName()+"] in processMessage of adapter [" + name + "]",
 					undefError,
 					message,
 					messageId,
