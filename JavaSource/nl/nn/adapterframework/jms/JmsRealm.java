@@ -1,6 +1,9 @@
 /*
  * $Log: JmsRealm.java,v $
- * Revision 1.6  2004-08-23 13:08:36  L190409
+ * Revision 1.7  2004-10-05 10:42:28  L190409
+ * removed unused code
+ *
+ * Revision 1.6  2004/08/23 13:08:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated JavaDoc
  *
  * Revision 1.5  2004/03/30 07:30:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -34,7 +37,7 @@ import org.apache.log4j.Logger;
  */
 public class JmsRealm {
 	//TODO: change to J2eeRealm
-	public static final String version="$Id: JmsRealm.java,v 1.6 2004-08-23 13:08:36 L190409 Exp $";
+	public static final String version="$Id: JmsRealm.java,v 1.7 2004-10-05 10:42:28 L190409 Exp $";
 	private String realmName;
 	private Logger log = Logger.getLogger(this.getClass());
 
@@ -52,8 +55,6 @@ public class JmsRealm {
 
 	private String datasourceName;
 	private String datasourceNameXA;
-	private String username;
-	private String password;
     
 	private String userTransactionUrl;
 
