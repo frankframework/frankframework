@@ -1,13 +1,15 @@
 /*
  * $Log: EchoPipe.java,v $
- * Revision 1.1  2004-08-10 09:19:56  L190409
+ * Revision 1.2  2004-10-05 10:50:25  L190409
+ * removed unused imports
+ *
+ * Revision 1.1  2004/08/10 09:19:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * first version
  *
  */
 package nl.nn.adapterframework.pipes;
 
 import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 
 /**
@@ -29,11 +31,11 @@ import nl.nn.adapterframework.core.PipeRunResult;
  * </table>
  * </p>
  * @version Id
- * @author Gerrit van Brakel
- * @since 4.2
+ * @author  Gerrit van Brakel
+ * @since   4.2
  */
 public class EchoPipe extends FixedForwardPipe {
-	public static final String version="$Id: EchoPipe.java,v 1.1 2004-08-10 09:19:56 L190409 Exp $";
+	public static final String version="$Id: EchoPipe.java,v 1.2 2004-10-05 10:50:25 L190409 Exp $";
 	
 	public PipeRunResult doPipe (Object input, PipeLineSession session) {
 		return new PipeRunResult(getForward(),input);

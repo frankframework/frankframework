@@ -1,6 +1,9 @@
 /*
  * $Log: FixedResult.java,v $
- * Revision 1.7  2004-09-01 07:21:11  L190409
+ * Revision 1.8  2004-10-05 10:50:55  L190409
+ * removed unused imports
+ *
+ * Revision 1.7  2004/09/01 07:21:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * correction in documentation
  *
  */
@@ -10,16 +13,12 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StringResolver;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
-
-import java.io.IOException;
-import java.util.Properties;
 
 /**
  * Provides an example of a pipe. It may return the contents of a file
@@ -48,7 +47,7 @@ import java.util.Properties;
  * @author Johan Verrips
  */
 public class FixedResult extends FixedForwardPipe {
-	public static final String version="$Id: FixedResult.java,v 1.7 2004-09-01 07:21:11 L190409 Exp $";
+	public static final String version="$Id: FixedResult.java,v 1.8 2004-10-05 10:50:55 L190409 Exp $";
     private String fileName;
     private String returnString;
     private boolean substituteVars=false;
