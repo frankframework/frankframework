@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.9  2004-04-28 14:32:42  NNVZNL01#L180564
+ * Revision 1.10  2004-07-05 09:54:44  NNVZNL01#L180564
+ * Improved errorhandling mechanism: when a PipeRunException occured, transactions where still committed
+ *
+ * Revision 1.9  2004/04/28 14:32:42  Johan Verrips <johan.verrips@ibissource.org>
  * Corrected erroneous pipe run statistics
  *
  * Revision 1.8  2004/04/06 12:43:14  Johan Verrips <johan.verrips@ibissource.org>
@@ -87,7 +90,7 @@ import javax.transaction.UserTransaction;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version="$Id: PipeLine.java,v 1.9 2004-04-28 14:32:42 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: PipeLine.java,v 1.10 2004-07-05 09:54:44 NNVZNL01#L180564 Exp $";
     private Logger log = Logger.getLogger(this.getClass());
 	private Adapter adapter; // for logging purposes, and for transaction managing
 	private boolean transacted=false;
@@ -276,6 +279,16 @@ public class PipeLine {
 					utx.rollback();
 				} catch (Exception txe) {
 					log.error("Pipeline of adapter ["+ adapter.getName()+"], msgid ["+messageId+"] got error rolling back transaction", txe);
+				}
+			}	else {
+				if (isTransacted())  {
+					log.warn("Pipeline of adapter ["+ adapter.getName()+"], msgid ["+messageId+"]  setting transaction to ROLL BACK ONLY");
+					try {
+					utx = adapter.getUserTransaction();
+					utx.setRollbackOnly();
+					} catch(Exception et) {
+						log.error("Pipeline of adapter["+ adapter.getName()+"], msgid ["+messageId+"]  got error setting transaction to ROLLBACK ONLY", et);
+					}
 				}
 			}
 			if (e instanceof PipeRunException)
