@@ -1,6 +1,9 @@
 /*
  * $Log: JmsSender.java,v $
- * Revision 1.4  2004-03-26 09:50:51  NNVZNL01#L180564
+ * Revision 1.5  2004-03-26 10:42:55  NNVZNL01#L180564
+ * added @version tag in javadoc
+ *
+ * Revision 1.4  2004/03/26 09:50:51  Johan Verrips <johan.verrips@ibissource.org>
  * Updated javadoc
  *
  * Revision 1.3  2004/03/23 18:22:39  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -36,13 +39,13 @@ import javax.jms.Message;
  * <tr><td>{@link #setJmsRealm(String) listener.jmsRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
- * <p>$Id: JmsSender.java,v 1.4 2004-03-26 09:50:51 NNVZNL01#L180564 Exp $</p>
+ * @version Id
  *
  * @author Gerrit van Brakel
  */
 
 public class JmsSender extends JMSFacade implements ISender {
-	public static final String version="$Id: JmsSender.java,v 1.4 2004-03-26 09:50:51 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: JmsSender.java,v 1.5 2004-03-26 10:42:55 NNVZNL01#L180564 Exp $";
 
   private String replyToName=null;
 

@@ -1,3 +1,9 @@
+/**
+ * $Log: ISender.java,v $
+ * Revision 1.3  2004-03-26 10:42:45  NNVZNL01#L180564
+ * added @version tag in javadoc
+ *
+ */
 package nl.nn.adapterframework.core;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -6,10 +12,10 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
  * The <code>ISender</code> is responsible for sending a message to
  * some destination.
  * 
- * <p>$Id: ISender.java,v 1.2 2004-02-04 10:01:58 a1909356#db2admin Exp $</p>
+ * @version Id
  */
 public interface ISender extends INamedObject {
-		public static final String version="$Id: ISender.java,v 1.2 2004-02-04 10:01:58 a1909356#db2admin Exp $";
+		public static final String version="$Id: ISender.java,v 1.3 2004-03-26 10:42:45 NNVZNL01#L180564 Exp $";
 
 /**
  * Stop/close the sender and deallocate resources.

@@ -1,6 +1,9 @@
 /*
  * $Log: JmsListener.java,v $
- * Revision 1.5  2004-03-24 08:26:20  L190409
+ * Revision 1.6  2004-03-26 10:42:55  NNVZNL01#L180564
+ * added @version tag in javadoc
+ *
+ * Revision 1.5  2004/03/24 08:26:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * enabled XA transactions
  *
  */
@@ -69,12 +72,12 @@ import java.util.HashMap;
  * <p><b>Notice:</b> the JmsListener is ONLY capable of processing
  * <code>javax.jms.TextMessage</code>s <br/><br/>
  * </p>
- * <p>$Id: JmsListener.java,v 1.5 2004-03-24 08:26:20 L190409 Exp $</p>
+ * @version Id
  * @author Gerrit van Brakel
  * @since 4.0.1
  */
 public class JmsListener extends JMSFacade implements ICorrelatedPullingListener, HasSender {
-	public static final String version="$Id: JmsListener.java,v 1.5 2004-03-24 08:26:20 L190409 Exp $";
+	public static final String version="$Id: JmsListener.java,v 1.6 2004-03-26 10:42:55 NNVZNL01#L180564 Exp $";
 
 
   private long timeOut = 3000;

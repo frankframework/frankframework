@@ -42,13 +42,13 @@ import java.util.HashMap;
  * <tr><td>"timeout"</td><td>no data was received (timeout on listening), if the sender was synchronous or a listener was specified.</td></tr>
  * </table>
  * </p>
- * <p>$Id: MessageSendingPipe.java,v 1.3 2004-03-26 09:50:39 NNVZNL01#L180564 Exp $</p>
+ * @version Id</p>
  * @author Gerrit van Brakel
  */
 
 public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 	public static final String version =
-		"$Id: MessageSendingPipe.java,v 1.3 2004-03-26 09:50:39 NNVZNL01#L180564 Exp $";
+		"$Id: MessageSendingPipe.java,v 1.4 2004-03-26 10:42:34 NNVZNL01#L180564 Exp $";
 
 	private ISender sender = null;
 	private ICorrelatedPullingListener listener = null;

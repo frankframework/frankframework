@@ -1,6 +1,9 @@
 /*
  * $Log: JmsTransactionalStorage.java,v $
- * Revision 1.1  2004-03-23 18:02:25  L190409
+ * Revision 1.2  2004-03-26 10:42:54  NNVZNL01#L180564
+ * added @version tag in javadoc
+ *
+ * Revision 1.1  2004/03/23 18:02:25  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * initial version
  *
  */
@@ -12,12 +15,12 @@ import nl.nn.adapterframework.receivers.TransactionalStorage;
 /**
  * JMS implementation of <code>ITransactionalStorage</code>.
  * 
- * <p>$Id: JmsTransactionalStorage.java,v 1.1 2004-03-23 18:02:25 L190409 Exp $</p>
+ * @version Id
  * @author Gerrit van Brakel
  * @since  4.1
  */
 public class JmsTransactionalStorage extends TransactionalStorage implements HasPhysicalDestination{
-	public static final String version="$Id: JmsTransactionalStorage.java,v 1.1 2004-03-23 18:02:25 L190409 Exp $";
+	public static final String version="$Id: JmsTransactionalStorage.java,v 1.2 2004-03-26 10:42:54 NNVZNL01#L180564 Exp $";
 
 public JmsTransactionalStorage() {
 	super();

@@ -17,13 +17,13 @@ import java.util.Locale;
 /**
  * Implementation of <strong>Action</strong><br/>
  * This action is ment to be extended by individual actions in the project.
- * <p>$Id: ActionBase.java,v 1.2 2004-02-04 10:02:08 a1909356#db2admin Exp $</p>
+ * @version Id
  * @author  Johan Verrips
  * @see     org.apache.struts.action.Action
  */
 
 public abstract class ActionBase extends Action {
-	public static final String version="$Id: ActionBase.java,v 1.2 2004-02-04 10:02:08 a1909356#db2admin Exp $";
+	public static final String version="$Id: ActionBase.java,v 1.3 2004-03-26 10:42:57 NNVZNL01#L180564 Exp $";
 	
     /**
      * log category; set to the current classname

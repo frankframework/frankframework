@@ -1,3 +1,9 @@
+/**
+ * $Log: ConfigurationDigester.java,v $
+ * Revision 1.4  2004-03-26 10:42:50  NNVZNL01#L180564
+ * added @version tag in javadoc
+ *
+ */
 package nl.nn.adapterframework.configuration;
 
 import nl.nn.adapterframework.util.StringResolver;
@@ -27,13 +33,13 @@ import java.net.URL;
  * with tries to resolve ${variable} with the {@link nl.nn.adapterframework.util.AppConstants AppConstants}, so that
  * both the values from the property files as the environment setting are available.<p>
  * 
- * <p>$Id: ConfigurationDigester.java,v 1.3 2004-02-04 10:02:07 a1909356#db2admin Exp $</p>
+ * @version Id
  * @author Johan Verrips
  * @see Configuration
  *
  */
 public class ConfigurationDigester {
-	public static final String version="$Id: ConfigurationDigester.java,v 1.3 2004-02-04 10:02:07 a1909356#db2admin Exp $";
+	public static final String version="$Id: ConfigurationDigester.java,v 1.4 2004-03-26 10:42:50 NNVZNL01#L180564 Exp $";
     static Digester digester;
     protected Logger log = Logger.getLogger(this.getClass());
 	private static final String CONFIGURATION_FILE_DEFAULT  = "Configuration.xml";

@@ -19,7 +19,7 @@ import java.util.Iterator;
 /**
  *
  * Test the Pipeline of an adapter
- * <p>$Id: TestPipeLine.java,v 1.2 2004-02-04 10:02:09 a1909356#db2admin Exp $</p>
+ * @version Id
  * @author  Johan Verrips
  * @see nl.nn.adapterframework.configuration.Configuration
  * @see nl.nn.adapterframework.core.Adapter
@@ -27,7 +27,7 @@ import java.util.Iterator;
  */
 
 public final class TestPipeLine extends ActionBase {
-	public static final String version="$Id: TestPipeLine.java,v 1.2 2004-02-04 10:02:09 a1909356#db2admin Exp $";
+	public static final String version="$Id: TestPipeLine.java,v 1.3 2004-03-26 10:42:58 NNVZNL01#L180564 Exp $";
 	
 
 

@@ -1,6 +1,9 @@
 /*
  * $Log: FixedQuerySender.java,v $
- * Revision 1.1  2004-03-24 13:28:20  L190409
+ * Revision 1.2  2004-03-26 10:43:08  NNVZNL01#L180564
+ * added @version tag in javadoc
+ *
+ * Revision 1.1  2004/03/24 13:28:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * initial version
  *
  */
@@ -23,12 +26,12 @@ import java.sql.SQLException;
  * for further configuration options, see {@link JdbcQuerySenderBase}
  * </p>
  * 
- * <p>$Id: FixedQuerySender.java,v 1.1 2004-03-24 13:28:20 L190409 Exp $</p>
+ * @version Id
  * @author  Gerrit van Brakel
  * @since 	4.1
  */
 public class FixedQuerySender extends JdbcQuerySenderBase {
-	public static final String version="$Id: FixedQuerySender.java,v 1.1 2004-03-24 13:28:20 L190409 Exp $";
+	public static final String version="$Id: FixedQuerySender.java,v 1.2 2004-03-26 10:43:08 NNVZNL01#L180564 Exp $";
 
 	private String query=null;
 		

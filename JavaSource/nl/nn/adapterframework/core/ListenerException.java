@@ -1,13 +1,19 @@
+/**
+ * $Log: ListenerException.java,v $
+ * Revision 1.3  2004-03-26 10:42:45  NNVZNL01#L180564
+ * added @version tag in javadoc
+ *
+ */
 package nl.nn.adapterframework.core;
 
 /**
  * Exception thrown by implementations of methods of listeners.
  * 
- * <p>$Id: ListenerException.java,v 1.2 2004-02-04 10:01:58 a1909356#db2admin Exp $</p>
+ * @version Id
  * @author Gerrit van Brakel
  */
 public class ListenerException extends IbisException {
-		public static final String version="$Id: ListenerException.java,v 1.2 2004-02-04 10:01:58 a1909356#db2admin Exp $";
+		public static final String version="$Id: ListenerException.java,v 1.3 2004-03-26 10:42:45 NNVZNL01#L180564 Exp $";
 
 /**
  * SendException constructor comment.

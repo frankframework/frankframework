@@ -1,3 +1,9 @@
+/**
+ * $Log: IReceiver.java,v $
+ * Revision 1.3  2004-03-26 10:42:50  NNVZNL01#L180564
+ * added @version tag in javadoc
+ *
+ */
 package nl.nn.adapterframework.core;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -22,7 +28,7 @@ import nl.nn.adapterframework.util.RunStateEnum;
  * may observe the status in the <code>{@link PipeLineResult}</code> to perfom committing
  * requests.
  * 
- * <p>$Id: IReceiver.java,v 1.2 2004-02-04 10:02:00 a1909356#db2admin Exp $</p>
+ *  @version Id
  *
  *  @author Johan Verrips
  *  @see IAdapter
@@ -32,7 +38,7 @@ import nl.nn.adapterframework.util.RunStateEnum;
  *
  */
 public interface IReceiver extends IManagable {
-	public static final String version="$Id: IReceiver.java,v 1.2 2004-02-04 10:02:00 a1909356#db2admin Exp $";
+	public static final String version="$Id: IReceiver.java,v 1.3 2004-03-26 10:42:50 NNVZNL01#L180564 Exp $";
 
  	/**
  	 * This method is called by the <code>IAdapter</code> to let the

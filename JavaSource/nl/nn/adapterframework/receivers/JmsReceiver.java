@@ -57,11 +57,11 @@ import java.util.HashMap;
  * in the pipeline to this destination. Otherwise the result is sent using the (optionally)
  * specified {@link  #setSender(ISender) Sender}, that in turn sends the message to
  * whatever it is configured to.</p>
- * <p>$Id: JmsReceiver.java,v 1.2 2004-02-04 10:02:10 a1909356#db2admin Exp $</p>
+ * @version Id
  * @author     Gerrit van Brakel
  */
 public class JmsReceiver extends PullingReceiverBase {
-	public static final String version="$Id: JmsReceiver.java,v 1.2 2004-02-04 10:02:10 a1909356#db2admin Exp $";
+	public static final String version="$Id: JmsReceiver.java,v 1.3 2004-03-26 10:43:00 NNVZNL01#L180564 Exp $";
 	
 public JmsReceiver() {
 	super();

@@ -8,12 +8,12 @@ import java.io.Reader;
 import java.io.StringReader;
 /**
  * Class to handle all kinds of conversions.
- * <p>$Id: Variant.java,v 1.2 2004-02-04 10:02:02 a1909356#db2admin Exp $</p>
+ * @version Id
  *
  * @author Gerrit van Brakel IOS
  */
 public class Variant {
-	public static final String version="$Id: Variant.java,v 1.2 2004-02-04 10:02:02 a1909356#db2admin Exp $";
+	public static final String version="$Id: Variant.java,v 1.3 2004-03-26 10:42:39 NNVZNL01#L180564 Exp $";
 	
 	private String data=null;
 public Variant(Object obj) {

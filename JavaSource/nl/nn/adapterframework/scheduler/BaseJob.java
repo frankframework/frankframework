@@ -5,7 +5,8 @@ import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 /**
  * Base class for jobs
- * * <p>$Id: BaseJob.java,v 1.2 2004-02-04 10:02:12 a1909356#db2admin Exp $</p>
+ * *
+ * @version Id
  
  * @author  Johan Verrips
  * @since 4.0
@@ -14,7 +15,7 @@ import org.quartz.JobExecutionContext;
  * 
  */
 public abstract class BaseJob implements Job {
-	public static final String version="$Id: BaseJob.java,v 1.2 2004-02-04 10:02:12 a1909356#db2admin Exp $";
+	public static final String version="$Id: BaseJob.java,v 1.3 2004-03-26 10:43:06 NNVZNL01#L180564 Exp $";
 	
     Logger log=Logger.getLogger(this.getClass());
 

@@ -11,7 +11,7 @@ import javax.servlet.http.HttpServletRequest;
  *
  * Extends the DynaActionForm to implement the Struts 1.1b behaviour, which was that on a {@link #reset(ActionMapping, HttpServletRequest) reset}
  * the defaults of the formvalue's are restored.
- * <p>$Id: IniDynaActionForm.java,v 1.2 2004-02-04 10:02:13 a1909356#db2admin Exp $</p>
+ * @version Id
  * @author  Johan Verrips
  * @since 4.0
  * <p>Date: Nov 15, 2003
@@ -19,7 +19,7 @@ import javax.servlet.http.HttpServletRequest;
  * 
  */
 public class IniDynaActionForm extends DynaActionForm {
-	public static final String version="$Id: IniDynaActionForm.java,v 1.2 2004-02-04 10:02:13 a1909356#db2admin Exp $";
+	public static final String version="$Id: IniDynaActionForm.java,v 1.3 2004-03-26 10:43:09 NNVZNL01#L180564 Exp $";
 	
     public IniDynaActionForm() {
         super();

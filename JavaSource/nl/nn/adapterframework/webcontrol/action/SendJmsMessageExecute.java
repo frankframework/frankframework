@@ -1,6 +1,9 @@
 /*
  * $Log: SendJmsMessageExecute.java,v $
- * Revision 1.3  2004-03-23 16:58:47  L190409
+ * Revision 1.4  2004-03-26 10:42:58  NNVZNL01#L180564
+ * added @version tag in javadoc
+ *
+ * Revision 1.3  2004/03/23 16:58:47  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * now uses unique ID for sending test-messages
  *
  */
@@ -26,13 +29,13 @@ import java.util.ArrayList;
 
 /**
  * Executes the sending of a message with JMS
- * <p>$Id: SendJmsMessageExecute.java,v 1.3 2004-03-23 16:58:47 L190409 Exp $</p>
+ * @version Id
  * @author  Johan Verrips
  * @see nl.nn.adapterframework.configuration.Configuration
  */
 
 public final class SendJmsMessageExecute extends ActionBase {
-	public static final String version="$Id: SendJmsMessageExecute.java,v 1.3 2004-03-23 16:58:47 L190409 Exp $";
+	public static final String version="$Id: SendJmsMessageExecute.java,v 1.4 2004-03-26 10:42:58 NNVZNL01#L180564 Exp $";
 	
 public ActionForward execute(
     ActionMapping mapping,

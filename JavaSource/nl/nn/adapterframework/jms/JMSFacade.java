@@ -1,6 +1,9 @@
 /*
  * $Log: JMSFacade.java,v $
- * Revision 1.6  2004-03-26 09:50:51  NNVZNL01#L180564
+ * Revision 1.7  2004-03-26 10:42:51  NNVZNL01#L180564
+ * added @version tag in javadoc
+ *
+ * Revision 1.6  2004/03/26 09:50:51  Johan Verrips <johan.verrips@ibissource.org>
  * Updated javadoc
  *
  * Revision 1.5  2004/03/24 08:24:46  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -28,11 +31,11 @@ import javax.naming.NamingException;
  * <br/>
  * The <code>destinationType</code> field specifies which
  * type should be used.<br/>
- * <p>$Id: JMSFacade.java,v 1.6 2004-03-26 09:50:51 NNVZNL01#L180564 Exp $</p>
+ * @version Id
  * @author    Gerrit van Brakel
  */
 public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version="$Id: JMSFacade.java,v 1.6 2004-03-26 09:50:51 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: JMSFacade.java,v 1.7 2004-03-26 10:42:51 NNVZNL01#L180564 Exp $";
 
 	private String name;
 

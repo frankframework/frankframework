@@ -40,11 +40,11 @@ import java.util.StringTokenizer;
  	FileViewerServlet.signal.css=IE4.css
  	</pre></code>
  	The last item specifies which stylesheet to use.
- * <p>$Id: FileViewerServlet.java,v 1.2 2004-02-04 10:02:13 a1909356#db2admin Exp $</p>
+ * @version Id
  * @author Johan Verrips 
  */
 public class FileViewerServlet extends HttpServlet  {
-	public static final String version="$Id: FileViewerServlet.java,v 1.2 2004-02-04 10:02:13 a1909356#db2admin Exp $";
+	public static final String version="$Id: FileViewerServlet.java,v 1.3 2004-03-26 10:43:09 NNVZNL01#L180564 Exp $";
 	
 	protected Logger log = Logger.getLogger(this.getClass());	
 

@@ -1,6 +1,9 @@
 /*
  * $Log: TransactionalStorage.java,v $
- * Revision 1.2  2004-03-26 09:50:52  NNVZNL01#L180564
+ * Revision 1.3  2004-03-26 10:43:03  NNVZNL01#L180564
+ * added @version tag in javadoc
+ *
+ * Revision 1.2  2004/03/26 09:50:52  Johan Verrips <johan.verrips@ibissource.org>
  * Updated javadoc
  *
  * Revision 1.1  2004/03/23 17:26:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -37,13 +40,13 @@ import org.apache.log4j.Logger;
  * <tr><td>{@link ICorrelatedPullingListener listener}</td><td>specification of listener to listen to for replies</td></tr>
  * </table>
  * </p>
- * <p>$Id: TransactionalStorage.java,v 1.2 2004-03-26 09:50:52 NNVZNL01#L180564 Exp $</p>
+ * @version Id
  * @author Gerrit van Brakel
  * @since 4.1
  */
 
 public class TransactionalStorage implements ITransactionalStorage {
-	public static final String version="$Id: TransactionalStorage.java,v 1.2 2004-03-26 09:50:52 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: TransactionalStorage.java,v 1.3 2004-03-26 10:43:03 NNVZNL01#L180564 Exp $";
     protected Logger log = Logger.getLogger(this.getClass());
 	
     private ISender sender=null;

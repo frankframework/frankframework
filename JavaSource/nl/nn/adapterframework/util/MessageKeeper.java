@@ -5,12 +5,12 @@ import java.util.Date;
 /**
  * Keeps a list of <code>MessageKeeperMessage</code>s.
  * <br/>
- * <p>$Id: MessageKeeper.java,v 1.2 2004-02-04 10:02:04 a1909356#db2admin Exp $</p>
+ * @version Id
  * @author  Johan Verrips IOS
  * @see MessageKeeperMessage
  */
 public class MessageKeeper extends SizeLimitedVector {
-	public static final String version="$Id: MessageKeeper.java,v 1.2 2004-02-04 10:02:04 a1909356#db2admin Exp $";
+	public static final String version="$Id: MessageKeeper.java,v 1.3 2004-03-26 10:42:41 NNVZNL01#L180564 Exp $";
 	
 
 /**

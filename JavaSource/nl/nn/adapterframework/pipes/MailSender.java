@@ -1,6 +1,9 @@
 /*
  * $Log: MailSender.java,v $
- * Revision 1.3  2004-03-24 13:58:36  L190409
+ * Revision 1.4  2004-03-26 10:42:34  NNVZNL01#L180564
+ * added @version tag in javadoc
+ *
+ * Revision 1.3  2004/03/24 13:58:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed TimeOutException
  *
  */
@@ -56,12 +59,12 @@ import java.util.Vector;
  * <tr><td>{@link #setDefaultSubject(String) defaultSubject}</td><td>value of the Subject: header if not specified in message itself</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
- * <p>$Id: MailSender.java,v 1.3 2004-03-24 13:58:36 L190409 Exp $</p>
+ * @version Id
  * @author Johan Verrips
  */
 
 public class MailSender implements ISender {
-	public static final String version="$Id: MailSender.java,v 1.3 2004-03-24 13:58:36 L190409 Exp $";
+	public static final String version="$Id: MailSender.java,v 1.4 2004-03-26 10:42:34 NNVZNL01#L180564 Exp $";
 
     protected Logger log = Logger.getLogger(this.getClass());;
     private String smtpHost;

@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcTransactionalStorage.java,v $
- * Revision 1.2  2004-03-25 13:48:57  L190409
+ * Revision 1.3  2004-03-26 10:43:08  NNVZNL01#L180564
+ * added @version tag in javadoc
+ *
+ * Revision 1.2  2004/03/25 13:48:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * enhanced creation of table
  *
  * Revision 1.1  2004/03/24 13:28:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -38,12 +41,12 @@ import nl.nn.adapterframework.util.JdbcUtil;
  * </table>
  * </p>
  * 
- * <p>$Id: JdbcTransactionalStorage.java,v 1.2 2004-03-25 13:48:57 L190409 Exp $</p>
+ * @version Id
  * @author  Gerrit van Brakel
  * @since 	4.1
  */
 public class JdbcTransactionalStorage extends DirectQuerySender implements ITransactionalStorage {
-	public static final String version="$Id: JdbcTransactionalStorage.java,v 1.2 2004-03-25 13:48:57 L190409 Exp $";
+	public static final String version="$Id: JdbcTransactionalStorage.java,v 1.3 2004-03-26 10:43:08 NNVZNL01#L180564 Exp $";
 	
     private String tableName="inprocstore";
     private String idField="messageid";

@@ -5,7 +5,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 
 /**
  * Definition / configuration of  scheduler jobs.
- * <p>$Id: JobDef.java,v 1.2 2004-02-04 10:02:13 a1909356#db2admin Exp $</p>
+ * @version Id
  * @author  Johan  Verrips
  * Date: Nov 23, 2003
  * Time: 9:44:53 AM
@@ -243,7 +243,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 
  */
 public class JobDef {
-	public static final String version="$Id: JobDef.java,v 1.2 2004-02-04 10:02:13 a1909356#db2admin Exp $";
+	public static final String version="$Id: JobDef.java,v 1.3 2004-03-26 10:43:06 NNVZNL01#L180564 Exp $";
 	
     private String name;
     private String cronExpression;

@@ -1,6 +1,9 @@
 /*
  * $Log: JNDIBase.java,v $
- * Revision 1.3  2004-03-23 17:59:02  L190409
+ * Revision 1.4  2004-03-26 10:42:55  NNVZNL01#L180564
+ * added @version tag in javadoc
+ *
+ * Revision 1.3  2004/03/23 17:59:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * cosmetic changes
  * added setJmsRealm
  *
@@ -17,11 +20,11 @@ import java.util.Hashtable;
 /**
  * Provides all JNDI functions and is meant to act as a base class.
  * <br/>
- * <p>$Id: JNDIBase.java,v 1.3 2004-03-23 17:59:02 L190409 Exp $</p>
+ * @version Id
  * @author Johan Verrips IOS
  */
 public class JNDIBase {
-	public static final String version="$Id: JNDIBase.java,v 1.3 2004-03-23 17:59:02 L190409 Exp $";
+	public static final String version="$Id: JNDIBase.java,v 1.4 2004-03-26 10:42:55 NNVZNL01#L180564 Exp $";
 
     // JNDI
     private String providerURL = null;

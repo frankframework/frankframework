@@ -1,6 +1,9 @@
 /*
  * $Log: IAdapter.java,v $
- * Revision 1.3  2004-03-23 17:36:58  L190409
+ * Revision 1.4  2004-03-26 10:42:50  NNVZNL01#L180564
+ * added @version tag in javadoc
+ *
+ * Revision 1.3  2004/03/23 17:36:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added methods for Transaction control
  *
  */
@@ -18,10 +21,10 @@ import javax.transaction.UserTransaction;
  * The Adapter is the class that is responsible for configuring, initializing and
  * accessing/activating IReceivers, Pipelines, statistics etc.
  * 
- * <p>$Id: IAdapter.java,v 1.3 2004-03-23 17:36:58 L190409 Exp $</p>
+ * @version Id
  **/
 public interface IAdapter extends IManagable {
-	public static final String version="$Id: IAdapter.java,v 1.3 2004-03-23 17:36:58 L190409 Exp $";
+	public static final String version="$Id: IAdapter.java,v 1.4 2004-03-26 10:42:50 NNVZNL01#L180564 Exp $";
   /**
    * Instruct the adapter to configure itself. The adapter will call the
    * pipeline to configure itself, the pipeline will call the individual

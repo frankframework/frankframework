@@ -1,3 +1,9 @@
+/**
+ * $Log: IReceiverStatistics.java,v $
+ * Revision 1.3  2004-03-26 10:42:50  NNVZNL01#L180564
+ * added @version tag in javadoc
+ *
+ */
 package nl.nn.adapterframework.core;
 
 import java.util.Iterator;
@@ -6,12 +12,12 @@ import java.util.Iterator;
  * by implementing this interface that process- and idle statistics may be available for 
  * displaying.
  * 
- * <p>$Id: IReceiverStatistics.java,v 1.2 2004-02-04 10:02:00 a1909356#db2admin Exp $</p>
+ * @version Id
  *  
  *  @author Gerrit van Brakel
  */
 public interface IReceiverStatistics  {
-		public static final String version="$Id: IReceiverStatistics.java,v 1.2 2004-02-04 10:02:00 a1909356#db2admin Exp $";
+		public static final String version="$Id: IReceiverStatistics.java,v 1.3 2004-03-26 10:42:50 NNVZNL01#L180564 Exp $";
 
 /**
  * @return an iterator of {@link nl.nn.adapterframework.util.StatisticsKeeper}s describing the durations of time that

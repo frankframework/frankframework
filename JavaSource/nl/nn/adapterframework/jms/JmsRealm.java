@@ -1,6 +1,9 @@
 /*
  * $Log: JmsRealm.java,v $
- * Revision 1.3  2004-03-23 18:06:05  L190409
+ * Revision 1.4  2004-03-26 10:42:55  NNVZNL01#L180564
+ * added @version tag in javadoc
+ *
+ * Revision 1.3  2004/03/23 18:06:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added properties for Transaction control
  *
  */
@@ -19,13 +22,13 @@ import org.apache.log4j.Logger;
  * This class is not an extension of JNDIBase, which would be logical, because
  * in the JMSBase class the function PropertyUtils.copyProperties is used, which cannot
  * handle this.
- * <p>$Id: JmsRealm.java,v 1.3 2004-03-23 18:06:05 L190409 Exp $</p>
+ * @version Id
  * @see JMSBase#setJmsRealm
  * @author Johan Verrips IOS
  */
 public class JmsRealm {
 	//TODO: change to J2eeRealm
-	public static final String version="$Id: JmsRealm.java,v 1.3 2004-03-23 18:06:05 L190409 Exp $";
+	public static final String version="$Id: JmsRealm.java,v 1.4 2004-03-26 10:42:55 NNVZNL01#L180564 Exp $";
 	private String realmName;
 	private Logger log = Logger.getLogger(this.getClass());
 

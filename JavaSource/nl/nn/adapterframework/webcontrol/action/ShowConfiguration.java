@@ -1,6 +1,9 @@
 /*
  * $Log: ShowConfiguration.java,v $
- * Revision 1.3  2004-03-23 17:02:52  L190409
+ * Revision 1.4  2004-03-26 10:42:58  NNVZNL01#L180564
+ * added @version tag in javadoc
+ *
+ * Revision 1.3  2004/03/23 17:02:52  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected some typos and solved some warnings
  *
  */
@@ -31,13 +34,13 @@ import java.net.URL;
  * the variables (${variable}) in the configuration.xml are resolved. </p>
  * <p>For security-reasons you might set this value to <code>false</code>, so that passwords
  * configured in the <code>environment entries</code> of the application server are not revealed.</p>
- * <p>$Id: ShowConfiguration.java,v 1.3 2004-03-23 17:02:52 L190409 Exp $</p>
+ * @version Id
  * @author  Johan Verrips
  * @see nl.nn.adapterframework.configuration.Configuration
  */
 
 public final class ShowConfiguration extends ActionBase {
-	public static final String version="$Id: ShowConfiguration.java,v 1.3 2004-03-23 17:02:52 L190409 Exp $";
+	public static final String version="$Id: ShowConfiguration.java,v 1.4 2004-03-26 10:42:58 NNVZNL01#L180564 Exp $";
 	
 
 

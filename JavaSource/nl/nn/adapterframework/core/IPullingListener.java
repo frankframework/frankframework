@@ -1,3 +1,9 @@
+/**
+ * $Log: IPullingListener.java,v $
+ * Revision 1.3  2004-03-26 10:42:45  NNVZNL01#L180564
+ * added @version tag in javadoc
+ *
+ */
 package nl.nn.adapterframework.core;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -8,12 +14,12 @@ import java.util.HashMap;
  * Pulling receivers are receivers that poll for a message, as opposed to pushing receivers
  * that are 'message driven'
  * 
- * <p>$Id: IPullingListener.java,v 1.2 2004-02-04 10:01:58 a1909356#db2admin Exp $</p>
+ * @version Id
  * 
  * @author Gerrit van Brakel
  */
 public interface IPullingListener {
-		public static final String version="$Id: IPullingListener.java,v 1.2 2004-02-04 10:01:58 a1909356#db2admin Exp $";
+		public static final String version="$Id: IPullingListener.java,v 1.3 2004-03-26 10:42:45 NNVZNL01#L180564 Exp $";
 
 /**
  * Called to perform actions (like committing or sending a reply) after a message has been processed by the Pipeline. 

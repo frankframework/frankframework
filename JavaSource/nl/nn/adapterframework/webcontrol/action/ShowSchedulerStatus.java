@@ -13,12 +13,12 @@ import java.io.IOException;
 /**
  * Retrieves the Scheduler metadata and the jobgroups with there jobs
  * from the Scheduler.
- * <p>$Id: ShowSchedulerStatus.java,v 1.2 2004-02-04 10:02:08 a1909356#db2admin Exp $</p>
+ * @version Id
  * @author  Johan Verrips
  */
 
 public final class ShowSchedulerStatus extends ActionBase {
-	public static final String version="$Id: ShowSchedulerStatus.java,v 1.2 2004-02-04 10:02:08 a1909356#db2admin Exp $";
+	public static final String version="$Id: ShowSchedulerStatus.java,v 1.3 2004-03-26 10:42:57 NNVZNL01#L180564 Exp $";
 	
 
 

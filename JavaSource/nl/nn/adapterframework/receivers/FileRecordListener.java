@@ -1,6 +1,9 @@
 /*
  * $Log: FileRecordListener.java,v $
- * Revision 1.4  2004-03-23 18:16:26  L190409
+ * Revision 1.5  2004-03-26 10:43:03  NNVZNL01#L180564
+ * added @version tag in javadoc
+ *
+ * Revision 1.4  2004/03/23 18:16:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * cosmetic changes
  *
  */
@@ -33,11 +36,11 @@ import org.apache.commons.lang.builder.ToStringStyle;
  * found, it is read in a String object and parsed to records. When used in a receiver like 
  * {@link FileRecordReceiver } these records are to be processed by the adapter.
  * After reading the file, the file is renamed and moved to a directory.
- * <p>$Id: FileRecordListener.java,v 1.4 2004-03-23 18:16:26 L190409 Exp $</p>
+ * @version Id
  * @author  Johan Verrips
  */
 public class FileRecordListener implements IPullingListener, INamedObject {
-	public static final String version="$Id: FileRecordListener.java,v 1.4 2004-03-23 18:16:26 L190409 Exp $";
+	public static final String version="$Id: FileRecordListener.java,v 1.5 2004-03-26 10:43:03 NNVZNL01#L180564 Exp $";
 
 	private String inputDirectory;
 	private String wildcard;

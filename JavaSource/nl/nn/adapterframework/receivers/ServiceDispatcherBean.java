@@ -4,11 +4,11 @@ package nl.nn.adapterframework.receivers;
  * Wrapper around the {@link ServiceDispatcher} to work around
  * the problem that the <code>ServiceDispatcher</code> is a singleton
  * and cannot be instantiated.
- * <p>$Id: ServiceDispatcherBean.java,v 1.3 2004-03-10 11:46:08 a1909356#db2admin Exp $</p>
+ * @version Id
  * @author Johan Verrips IOS
  */
 public class ServiceDispatcherBean {
-	public static final String version="$Id: ServiceDispatcherBean.java,v 1.3 2004-03-10 11:46:08 a1909356#db2admin Exp $";
+	public static final String version="$Id: ServiceDispatcherBean.java,v 1.4 2004-03-26 10:43:03 NNVZNL01#L180564 Exp $";
 	
 /**
  * ServiceDispatcherBean constructor comment.

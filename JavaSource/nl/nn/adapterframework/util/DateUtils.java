@@ -5,12 +5,12 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 /**
  * Utilities for formatting and parsing dates.
- * <p>$Id: DateUtils.java,v 1.2 2004-02-04 10:02:02 a1909356#db2admin Exp $</p>
+ * @version Id
  *
  * @author Johan Verrips IOS
  */
 public class DateUtils {
-	public static final String version="$Id: DateUtils.java,v 1.2 2004-02-04 10:02:02 a1909356#db2admin Exp $";
+	public static final String version="$Id: DateUtils.java,v 1.3 2004-03-26 10:42:39 NNVZNL01#L180564 Exp $";
 	
 
 	private static final String fullIsoFormat          = "yyyy-MM-dd'T'hh:mm:sszzz";

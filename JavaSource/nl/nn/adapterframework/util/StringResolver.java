@@ -1,6 +1,9 @@
 /*
  * $Log: StringResolver.java,v $
- * Revision 1.3  2004-03-23 17:05:26  L190409
+ * Revision 1.4  2004-03-26 10:42:37  NNVZNL01#L180564
+ * added @version tag in javadoc
+ *
+ * Revision 1.3  2004/03/23 17:05:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * cosmetic changes
  *
  */
@@ -11,13 +14,13 @@ import org.apache.log4j.Logger;
 import java.util.Properties;
 /**
  * Provide functionality to resolve ${property.key} to the value of the property key, recursively.
- * <p>$Id: StringResolver.java,v 1.3 2004-03-23 17:05:26 L190409 Exp $</p>
+ * @version Id
  * 
  * <p>Creation date: (15-08-2003 13:47:20)</p>
  * @author Johan Verrips 
  */
 public class StringResolver {
-	public static final String version="$Id: StringResolver.java,v 1.3 2004-03-23 17:05:26 L190409 Exp $";
+	public static final String version="$Id: StringResolver.java,v 1.4 2004-03-26 10:42:37 NNVZNL01#L180564 Exp $";
 	
     static String DELIM_START = "${";
     static char DELIM_STOP = '}';

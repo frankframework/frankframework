@@ -18,13 +18,13 @@ import java.util.ArrayList;
 
 /**
  * Send a message with JMS
- * <p>$Id: SendJmsMessage.java,v 1.2 2004-02-04 10:02:08 a1909356#db2admin Exp $</p>
+ * @version Id
  * @author  Johan Verrips
  * @see nl.nn.adapterframework.configuration.Configuration
  */
 
 public final class SendJmsMessage extends ActionBase {
-	public static final String version="$Id: SendJmsMessage.java,v 1.2 2004-02-04 10:02:08 a1909356#db2admin Exp $";
+	public static final String version="$Id: SendJmsMessage.java,v 1.3 2004-03-26 10:42:57 NNVZNL01#L180564 Exp $";
 	
 
 

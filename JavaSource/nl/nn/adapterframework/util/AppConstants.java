@@ -77,13 +77,13 @@ import org.apache.commons.lang.StringUtils;
 	</tr>	
 	</table>
 <p></p>
- * <p>$Id: AppConstants.java,v 1.2 2004-02-04 10:02:05 a1909356#db2admin Exp $</p>
+ * @version Id
 
  * @author Johan Verrips
  * 
  */
 public final class AppConstants extends Properties implements Serializable{
-	public static final String version="$Id: AppConstants.java,v 1.2 2004-02-04 10:02:05 a1909356#db2admin Exp $";
+	public static final String version="$Id: AppConstants.java,v 1.3 2004-03-26 10:42:43 NNVZNL01#L180564 Exp $";
 	
 	public final static String propertiesFileName="AppConstants.properties";
 	private static AppConstants self=null;

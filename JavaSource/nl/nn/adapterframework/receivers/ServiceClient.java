@@ -3,11 +3,11 @@ package nl.nn.adapterframework.receivers;
 /**
  * The interface clients (users) of a service may use.
  *
- * <p>$Id: ServiceClient.java,v 1.2 2004-02-04 10:02:12 a1909356#db2admin Exp $</p>
+ * @version Id
  * @author Johan Verrips IOS
  */
 public interface ServiceClient {
-	public static final String version="$Id: ServiceClient.java,v 1.2 2004-02-04 10:02:12 a1909356#db2admin Exp $";
+	public static final String version="$Id: ServiceClient.java,v 1.3 2004-03-26 10:43:03 NNVZNL01#L180564 Exp $";
 	
 	public String processRequest(String message);
 /**

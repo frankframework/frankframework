@@ -8,11 +8,11 @@ package nl.nn.adapterframework.core;
  * so that the receiver knows whether or not the request was successfully
  * processed, and might -for instance- not commit a received message.
  * <br/>
- * <p>$Id: PipeLineResult.java,v 1.2 2004-02-04 10:02:00 a1909356#db2admin Exp $</p>
+ * @version Id
  * @author Johan Verrips
  */
 public class PipeLineResult {
-	public static final String version="$Id: PipeLineResult.java,v 1.2 2004-02-04 10:02:00 a1909356#db2admin Exp $";
+	public static final String version="$Id: PipeLineResult.java,v 1.3 2004-03-26 10:42:50 NNVZNL01#L180564 Exp $";
 
 	private String result;
 	private String state;

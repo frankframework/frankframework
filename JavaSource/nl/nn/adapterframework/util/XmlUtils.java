@@ -1,6 +1,9 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.3  2004-03-23 17:09:33  L190409
+ * Revision 1.4  2004-03-26 10:42:37  NNVZNL01#L180564
+ * added @version tag in javadoc
+ *
+ * Revision 1.3  2004/03/23 17:09:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * cosmetic changes
  *
  */
@@ -54,11 +57,11 @@ import java.util.LinkedList;
  * Some utilities for working with XML. As soon as the Apache XML Commons project
  * delivers something usefull, this class will possibly be removed.
  * <p>Creation date: (20-02-2003 8:05:19)</p>
- * <p>$Id: XmlUtils.java,v 1.3 2004-03-23 17:09:33 L190409 Exp $</p>
+ * @version Id
  * @author Johan Verrips IOS
  */
 public class XmlUtils {
-	public static final String version="$Id: XmlUtils.java,v 1.3 2004-03-23 17:09:33 L190409 Exp $";
+	public static final String version="$Id: XmlUtils.java,v 1.4 2004-03-26 10:42:37 NNVZNL01#L180564 Exp $";
 	
     static final String W3C_XML_SCHEMA       = "http://www.w3.org/2001/XMLSchema";
     static final String JAXP_SCHEMA_LANGUAGE = "http://java.sun.com/xml/jaxp/properties/schemaLanguage";

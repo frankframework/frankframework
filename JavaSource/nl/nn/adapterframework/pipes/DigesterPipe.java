@@ -1,6 +1,9 @@
 /*
  * $Log: DigesterPipe.java,v $
- * Revision 1.7  2004-03-24 13:53:36  L190409
+ * Revision 1.8  2004-03-26 10:42:34  NNVZNL01#L180564
+ * added @version tag in javadoc
+ *
+ * Revision 1.7  2004/03/24 13:53:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * cosmetic changes
  *
  */
@@ -36,13 +39,13 @@ import org.apache.commons.digester.xmlrules.DigesterLoader;
  * <tr><th>state</th><th>condition</th></tr>
  * <tr><td>"success"</td><td>default</td></tr>
  * </table></p>
- * <p> $Id: DigesterPipe.java,v 1.7 2004-03-24 13:53:36 L190409 Exp $ </p>
+ * @version Id 
  * @author Richard Punt
  * @since 4.0.1 : adjustments to support multi-threading
  */
 
 public class DigesterPipe extends FixedForwardPipe {
-	public static final String version="$Id: DigesterPipe.java,v 1.7 2004-03-24 13:53:36 L190409 Exp $";
+	public static final String version="$Id: DigesterPipe.java,v 1.8 2004-03-26 10:42:34 NNVZNL01#L180564 Exp $";
 
 	private PipeRunResult pipeRunResult;
 	private String digesterRulesFile;

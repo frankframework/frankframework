@@ -1,6 +1,9 @@
 /*
  * $Log: ITransactionalStorage.java,v $
- * Revision 1.1  2004-03-23 16:50:49  L190409
+ * Revision 1.2  2004-03-26 10:42:44  NNVZNL01#L180564
+ * added @version tag in javadoc
+ *
+ * Revision 1.1  2004/03/23 16:50:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * initial version
  *
  */
@@ -12,12 +15,12 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
  * The <code>ITransactionalStorage</code> is responsible for storing and 
  * retrieving-back messages under transaction control.
  * @see nl.nn.adapterframework.receivers.PullingReceiverBase
- * <p>$Id: ITransactionalStorage.java,v 1.1 2004-03-23 16:50:49 L190409 Exp $</p>
+ * @version Id
  * @author Gerrit van Brakel
  * @since  4.1
  */
 public interface ITransactionalStorage extends INamedObject, IXAEnabled {
-	public static final String version="$Id: ITransactionalStorage.java,v 1.1 2004-03-23 16:50:49 L190409 Exp $";
+	public static final String version="$Id: ITransactionalStorage.java,v 1.2 2004-03-26 10:42:44 NNVZNL01#L180564 Exp $";
 
 /**
  * Prepares the object for operation. After this

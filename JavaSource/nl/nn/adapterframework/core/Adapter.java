@@ -1,3 +1,9 @@
+/**
+ * $Log: Adapter.java,v $
+ * Revision 1.4  2004-03-26 10:42:45  NNVZNL01#L180564
+ * added @version tag in javadoc
+ *
+ */
 package nl.nn.adapterframework.core;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -40,7 +46,7 @@ import javax.transaction.UserTransaction;
  * the pipeline execution, the state in the <code>PipeLineResult</code> is set
  * to the state specified by <code>setErrorState</code>, which defaults to "ERROR".
  * 
- * <p>$Id: Adapter.java,v 1.3 2004-03-23 16:41:40 L190409 Exp $</p>
+ * @version Id
  *
  * @author Johan Verrips
  * @see    nl.nn.adapterframework.core.IReceiver
@@ -53,7 +59,7 @@ import javax.transaction.UserTransaction;
  */
 
 public class Adapter extends JNDIBase implements Runnable, IAdapter{
-	public static final String version="$Id: Adapter.java,v 1.3 2004-03-23 16:41:40 L190409 Exp $";
+	public static final String version="$Id: Adapter.java,v 1.4 2004-03-26 10:42:45 NNVZNL01#L180564 Exp $";
 	private Vector receivers=new Vector();
 	private long lastMessageDate =0;
     private PipeLine pipeline;

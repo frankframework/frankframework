@@ -41,13 +41,13 @@ import javax.transaction.UserTransaction;
  * </table>
  * </p>
  * </p>
- * <p>$Id: PullingReceiverBase.java,v 1.4 2004-03-23 17:34:41 L190409 Exp $</p>
+ * @version Id
  * @author     Gerrit van Brakel
  * @since 4.0
  */
 public class PullingReceiverBase
     implements IReceiver, IReceiverStatistics, Runnable, HasSender {
-	public static final String version="$Id: PullingReceiverBase.java,v 1.4 2004-03-23 17:34:41 L190409 Exp $";
+	public static final String version="$Id: PullingReceiverBase.java,v 1.5 2004-03-26 10:43:01 NNVZNL01#L180564 Exp $";
     	
 
 	public static final String ONERROR_CONTINUE = "continue";

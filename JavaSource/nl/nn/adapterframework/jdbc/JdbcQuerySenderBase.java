@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcQuerySenderBase.java,v $
- * Revision 1.2  2004-03-26 09:50:52  NNVZNL01#L180564
+ * Revision 1.3  2004-03-26 10:43:07  NNVZNL01#L180564
+ * added @version tag in javadoc
+ *
+ * Revision 1.2  2004/03/26 09:50:52  Johan Verrips <johan.verrips@ibissource.org>
  * Updated javadoc
  *
  * Revision 1.1  2004/03/24 13:28:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -42,12 +45,12 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * </table>
  * </p>
  * 
- * <p>$Id: JdbcQuerySenderBase.java,v 1.2 2004-03-26 09:50:52 NNVZNL01#L180564 Exp $</p>
+ * @version Id
  * @author  Gerrit van Brakel
  * @since 	4.1
  */
 public abstract class JdbcQuerySenderBase extends JdbcFacade implements ISender {
-	public static final String version="$Id: JdbcQuerySenderBase.java,v 1.2 2004-03-26 09:50:52 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: JdbcQuerySenderBase.java,v 1.3 2004-03-26 10:43:07 NNVZNL01#L180564 Exp $";
 
 	private String queryType = "other";
 	private int startRow=1;

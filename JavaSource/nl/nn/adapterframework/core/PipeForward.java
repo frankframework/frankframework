@@ -1,3 +1,9 @@
+/**
+ * $Log: PipeForward.java,v $
+ * Revision 1.3  2004-03-26 10:42:44  NNVZNL01#L180564
+ * added @version tag in javadoc
+ *
+ */
 package nl.nn.adapterframework.core;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -13,13 +19,13 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * In this manner it is possible to influence the flow through the pipeline
  * without affecting the Java-code. Simply change the forwarding-XML.<br/>
  * 
- * <p>$Id: PipeForward.java,v 1.2 2004-02-04 10:01:57 a1909356#db2admin Exp $</p>
+ * @version Id
  * @see PipeLine
  * @see nl.nn.adapterframework.pipes.AbstractPipe#findForward
  * @author Johan Verrips
  */
 public class PipeForward {
-		public static final String version="$Id: PipeForward.java,v 1.2 2004-02-04 10:01:57 a1909356#db2admin Exp $";
+		public static final String version="$Id: PipeForward.java,v 1.3 2004-03-26 10:42:44 NNVZNL01#L180564 Exp $";
 
     private String name;
     private String path;

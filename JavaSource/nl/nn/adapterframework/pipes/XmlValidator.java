@@ -49,11 +49,11 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified, the value for "success"</td></tr>
  * <tr><td>"failure"</td><td>if a validation error occurred</td></tr>
  * </table>
- * <p>$Id: XmlValidator.java,v 1.2 2004-02-04 10:01:57 a1909356#db2admin Exp $</p>
+ * @version Id
  * @author Johan Verrips IOS
  */
 public class XmlValidator extends FixedForwardPipe {
-	public static final String version="$Id: XmlValidator.java,v 1.2 2004-02-04 10:01:57 a1909356#db2admin Exp $";
+	public static final String version="$Id: XmlValidator.java,v 1.3 2004-03-26 10:42:36 NNVZNL01#L180564 Exp $";
 
     private String schema;
     private String schemaURL;

@@ -1,3 +1,9 @@
+/**
+ * $Log: HasPhysicalDestination.java,v $
+ * Revision 1.2  2004-03-26 10:42:50  NNVZNL01#L180564
+ * added @version tag in javadoc
+ *
+ */
 package nl.nn.adapterframework.core;
 
 /**
@@ -5,12 +11,12 @@ package nl.nn.adapterframework.core;
  * This is used for instance in ShowConfiguration, to show the physical destination of receivers
  * that have one.
  * 
- * <p>$Id: HasPhysicalDestination.java,v 1.1 2004-03-23 15:58:02 L190409 Exp $</p>
+ * @version Id
  *
  * @author Gerrit van Brakel
  */
 public interface HasPhysicalDestination extends INamedObject {
-	public static final String version="$Id: HasPhysicalDestination.java,v 1.1 2004-03-23 15:58:02 L190409 Exp $";
+	public static final String version="$Id: HasPhysicalDestination.java,v 1.2 2004-03-26 10:42:50 NNVZNL01#L180564 Exp $";
 
 	public String getPhysicalDestinationName();
 }

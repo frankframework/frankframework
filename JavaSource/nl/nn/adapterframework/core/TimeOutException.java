@@ -2,10 +2,10 @@ package nl.nn.adapterframework.core;
 
 /**
  * Exception thrown to signal that a timeout occurred.
- * <p>$Id: TimeOutException.java,v 1.2 2004-02-04 10:01:57 a1909356#db2admin Exp $</p>
+ * @version Id
  */
 public class TimeOutException extends IbisException {
-	public static final String version="$Id: TimeOutException.java,v 1.2 2004-02-04 10:01:57 a1909356#db2admin Exp $";
+	public static final String version="$Id: TimeOutException.java,v 1.3 2004-03-26 10:42:44 NNVZNL01#L180564 Exp $";
 	
 /**
  * SendException constructor comment.

@@ -15,11 +15,11 @@ package nl.nn.adapterframework.receivers;
  * <tr><td>{@link FileRecordListener#setResponseTime(long) listener.setResponseTime}</td><td>set the time to delay when no records are to be processed and this class has to look for the arrival of a new file</td><td>1000 milliseconds</td></tr>
  * </table>
  * <p>Creation date: (17-12-2003 10:24:13)</p>
- * <p>$Id: FileRecordReceiver.java,v 1.2 2004-02-04 10:02:12 a1909356#db2admin Exp $</p>
+ * @version Id
  * @author Johan Verrips IOS
  */
 public class FileRecordReceiver extends PullingReceiverBase {
-	public static final String version="$Id: FileRecordReceiver.java,v 1.2 2004-02-04 10:02:12 a1909356#db2admin Exp $";
+	public static final String version="$Id: FileRecordReceiver.java,v 1.3 2004-03-26 10:43:03 NNVZNL01#L180564 Exp $";
 
 /**
  * FileRecordReceiver constructor comment.

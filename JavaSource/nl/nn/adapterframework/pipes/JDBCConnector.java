@@ -56,12 +56,12 @@ import java.sql.SQLException;
  * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified</td></tr>
  * </table>
  * </p>
- * <p>$Id: JDBCConnector.java,v 1.2 2004-02-04 10:01:56 a1909356#db2admin Exp $</p>
+ * @version Id
  * @author Dennis van Loon IOS
  */
 
 public class JDBCConnector extends FixedForwardPipe {
-	public static final String version="$Id: JDBCConnector.java,v 1.2 2004-02-04 10:01:56 a1909356#db2admin Exp $";
+	public static final String version="$Id: JDBCConnector.java,v 1.3 2004-03-26 10:42:35 NNVZNL01#L180564 Exp $";
 
 	private final static String QUERYTAG = "sqlquery";
 	private final static String STARTINDEXTAG = "startindex";

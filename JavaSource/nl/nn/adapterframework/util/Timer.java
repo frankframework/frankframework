@@ -1,6 +1,9 @@
 /*
  * $Log: Timer.java,v $
- * Revision 1.3  2004-03-23 17:08:02  L190409
+ * Revision 1.4  2004-03-26 10:42:37  NNVZNL01#L180564
+ * added @version tag in javadoc
+ *
+ * Revision 1.3  2004/03/23 17:08:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * cosmetic changes
  *
  */
@@ -11,11 +14,11 @@ package nl.nn.adapterframework.util;
  *
  * Calls a {@link TimerListener#onTimeout() onTimeOut()}-event handler when
  * a certain time has passed. 
- * <p>$Id: Timer.java,v 1.3 2004-03-23 17:08:02 L190409 Exp $</p>
+ * @version Id
  * 
  */
 public class Timer {        
-	public static final String version="$Id: Timer.java,v 1.3 2004-03-23 17:08:02 L190409 Exp $";
+	public static final String version="$Id: Timer.java,v 1.4 2004-03-26 10:42:37 NNVZNL01#L180564 Exp $";
 	
     private TimerListener listener_;
     private long millisecs_;

@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcFacade.java,v $
- * Revision 1.2  2004-03-26 09:50:52  NNVZNL01#L180564
+ * Revision 1.3  2004-03-26 10:43:09  NNVZNL01#L180564
+ * added @version tag in javadoc
+ *
+ * Revision 1.2  2004/03/26 09:50:52  Johan Verrips <johan.verrips@ibissource.org>
  * Updated javadoc
  *
  * Revision 1.1  2004/03/24 13:28:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -26,12 +29,13 @@ import org.apache.log4j.Logger;
 /**
  * Provides functions for JDBC connections.
  * 
- * <p>$Id: JdbcFacade.java,v 1.2 2004-03-26 09:50:52 NNVZNL01#L180564 Exp $</p>
+ * @version Id
  * @author  Gerrit van Brakel
  * @since 	4.1
+ * 
  */
 public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version="$Id: JdbcFacade.java,v 1.2 2004-03-26 09:50:52 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: JdbcFacade.java,v 1.3 2004-03-26 10:43:09 NNVZNL01#L180564 Exp $";
     protected Logger log = Logger.getLogger(this.getClass());
 	
 	private String name;

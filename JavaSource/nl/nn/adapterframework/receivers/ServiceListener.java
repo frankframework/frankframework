@@ -31,7 +31,7 @@ import java.util.Iterator;
  * <tr><td>{@link #setName(String) name}</td>  <td>name of the receiver as known to the adapter</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setReturnIfStopped(String) returnIfStopped}</td><td>message to be returned in case the listener is closed</td><td>continue</td></tr>
  * </table>
- * <p>$Id: ServiceListener.java,v 1.2 2004-02-04 10:02:11 a1909356#db2admin Exp $</p>
+ * @version Id
  * @author Johan Verrips IOS
  * @see nl.nn.adapterframework.core.IAdapter
  * @see nl.nn.adapterframework.core.IReceiver
@@ -40,7 +40,7 @@ import java.util.Iterator;
 public class ServiceListener  implements IReceiver, IReceiverStatistics, HasSender,
         ServiceClient,
         Serializable {
-	public static final String version="$Id: ServiceListener.java,v 1.2 2004-02-04 10:02:11 a1909356#db2admin Exp $";
+	public static final String version="$Id: ServiceListener.java,v 1.3 2004-03-26 10:43:03 NNVZNL01#L180564 Exp $";
         	
 	private IAdapter adapter;
 	private RunStateManager runState = new RunStateManager();

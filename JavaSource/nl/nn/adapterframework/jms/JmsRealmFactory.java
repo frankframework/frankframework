@@ -1,6 +1,9 @@
 /*
  * $Log: JmsRealmFactory.java,v $
- * Revision 1.3  2004-03-23 18:09:05  L190409
+ * Revision 1.4  2004-03-26 10:42:55  NNVZNL01#L180564
+ * added @version tag in javadoc
+ *
+ * Revision 1.3  2004/03/23 18:09:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * cosmetic changes
  *
  */
@@ -19,12 +22,12 @@ import java.util.TreeSet;
  * Singleton that has the different jmsRealms.   <br/>
  * Typical use: JmsRealmFactory.getInstance().&lt;method to execute&gt;
  * <br/>
- * <p>$Id: JmsRealmFactory.java,v 1.3 2004-03-23 18:09:05 L190409 Exp $</p>
+ * @version Id
  * @author Johan Verrips IOS
  * @see JmsRealm
  */
 public class JmsRealmFactory {
-	public static final String version="$Id: JmsRealmFactory.java,v 1.3 2004-03-23 18:09:05 L190409 Exp $";
+	public static final String version="$Id: JmsRealmFactory.java,v 1.4 2004-03-26 10:42:55 NNVZNL01#L180564 Exp $";
 
 
     private static JmsRealmFactory self = null;

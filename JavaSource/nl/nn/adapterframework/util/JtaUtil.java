@@ -1,6 +1,9 @@
 /*
  * $Log: JtaUtil.java,v $
- * Revision 1.2  2004-03-26 09:50:52  NNVZNL01#L180564
+ * Revision 1.3  2004-03-26 10:42:38  NNVZNL01#L180564
+ * added @version tag in javadoc
+ *
+ * Revision 1.2  2004/03/26 09:50:52  Johan Verrips <johan.verrips@ibissource.org>
  * Updated javadoc
  *
  * Revision 1.1  2004/03/23 17:14:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -19,12 +22,12 @@ import javax.transaction.UserTransaction;
 
 /**
  * Utility functions for JTA 
- * <p>$Id: JtaUtil.java,v 1.2 2004-03-26 09:50:52 NNVZNL01#L180564 Exp $</p>
+ * @version Id
  * @author Gerrit van Brakel
  * @since  4.1
  */
 public class JtaUtil {
-	private static final String version="$Id: JtaUtil.java,v 1.2 2004-03-26 09:50:52 NNVZNL01#L180564 Exp $";
+	private static final String version="$Id: JtaUtil.java,v 1.3 2004-03-26 10:42:38 NNVZNL01#L180564 Exp $";
     private static UserTransaction utx;
 
 	/**

@@ -9,12 +9,12 @@ import java.lang.reflect.Constructor;
 import java.net.URL;
 /**
  * A collection of class management utility methods.
- * <p>$Id: ClassUtils.java,v 1.2 2004-02-04 10:02:03 a1909356#db2admin Exp $</p>
+ * @version Id
  * @author Johan Verrips
  *
  */
 public class ClassUtils {
-	public static final String version="$Id: ClassUtils.java,v 1.2 2004-02-04 10:02:03 a1909356#db2admin Exp $";
+	public static final String version="$Id: ClassUtils.java,v 1.3 2004-03-26 10:42:39 NNVZNL01#L180564 Exp $";
 	
 	private static Logger log = Logger.getLogger("ClassUtils");
     /**

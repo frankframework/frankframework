@@ -12,11 +12,11 @@ import java.util.ArrayList;
 import java.util.Iterator;
 /**
  * Execute a service test
- * <p>$Id: TestServiceExecute.java,v 1.2 2004-02-04 10:02:09 a1909356#db2admin Exp $</p>
+ * @version Id
  * @author Johan Verrips
  */
 public class TestServiceExecute extends ActionBase {
-	public static final String version="$Id: TestServiceExecute.java,v 1.2 2004-02-04 10:02:09 a1909356#db2admin Exp $";
+	public static final String version="$Id: TestServiceExecute.java,v 1.3 2004-03-26 10:42:57 NNVZNL01#L180564 Exp $";
 	
 
     public ActionForward execute(

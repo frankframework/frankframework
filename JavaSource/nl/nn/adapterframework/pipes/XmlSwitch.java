@@ -29,11 +29,11 @@ import java.io.IOException;
  * <tr><td>&lt;result of transformation&gt</td><td>when {@link #setServiceSelectionStylesheetFilename(String) serviceSelectionStylesheetFilename} is specified</td></tr>
  * </table>
  * </p>
- * <p>$Id: XmlSwitch.java,v 1.2 2004-02-04 10:01:56 a1909356#db2admin Exp $</p>
+ * @version Id
  * @author Johan Verrips
  */
 public class XmlSwitch extends AbstractPipe {
-	public static final String version="$Id: XmlSwitch.java,v 1.2 2004-02-04 10:01:56 a1909356#db2admin Exp $";
+	public static final String version="$Id: XmlSwitch.java,v 1.3 2004-03-26 10:42:34 NNVZNL01#L180564 Exp $";
 	
 	    private static final String DEFAULT_SERVICESELECTION_XSLT = XmlUtils.XSLT_GETROOTNODENAME;
 	    private Transformer serviceSelectionTransformer;

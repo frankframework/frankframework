@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.4  2004-03-24 08:29:17  L190409
+ * Revision 1.5  2004-03-26 10:42:50  NNVZNL01#L180564
+ * added @version tag in javadoc
+ *
+ * Revision 1.4  2004/03/24 08:29:17  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed String 'adapterName' to Adapter 'adapter'
  * enabled XA transactions
  *
@@ -29,12 +32,12 @@ import javax.transaction.UserTransaction;
  * <br/>
  * In the AppConstants there may be a property named "log.logIntermediaryResults" (true/false)
  * which indicates wether the intermediary results (between calling pipes) have to be logged.
- * <p>$Id: PipeLine.java,v 1.4 2004-03-24 08:29:17 L190409 Exp $</p>
+ * @version Id
  * 
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version="$Id: PipeLine.java,v 1.4 2004-03-24 08:29:17 L190409 Exp $";
+	public static final String version="$Id: PipeLine.java,v 1.5 2004-03-26 10:42:50 NNVZNL01#L180564 Exp $";
     private Logger log = Logger.getLogger(this.getClass());
 	private Adapter adapter; // for logging purposes, and for transaction managing
 	private boolean transacted=false;

@@ -6,11 +6,11 @@ import java.util.StringTokenizer;
 /**
  * Keeps statistics (min, max, count etc).
  * <p>Creation date: (19-02-2003 11:34:14)</p>
- * <p>$Id: StatisticsKeeper.java,v 1.2 2004-02-04 10:02:04 a1909356#db2admin Exp $</p>
+ * @version Id
  * @author Johan Verrips
  */
 public class StatisticsKeeper {
-	public static final String version="$Id: StatisticsKeeper.java,v 1.2 2004-02-04 10:02:04 a1909356#db2admin Exp $";
+	public static final String version="$Id: StatisticsKeeper.java,v 1.3 2004-03-26 10:42:42 NNVZNL01#L180564 Exp $";
 	
 	private String name = null;
 	private long min = Integer.MAX_VALUE;
