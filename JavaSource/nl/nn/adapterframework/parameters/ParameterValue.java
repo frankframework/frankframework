@@ -1,0 +1,115 @@
+/*
+ * $Log: ParameterValue.java,v $
+ * Revision 1.1  2004-10-05 09:52:25  L190409
+ * moved parameter code  to package parameters
+ *
+ * Revision 1.1  2004/05/21 07:58:47  unknown <unknown@ibissource.org>
+ * Moved PipeParameter to core
+ *
+ */
+package nl.nn.adapterframework.parameters;
+
+/**
+ * 
+ * 
+ * @author John Dekker
+ * @version Id
+ */
+public class ParameterValue {
+	private Object value;
+	private Parameter definition;
+	
+	ParameterValue(Parameter type, Object value) {
+		this.definition = type;
+		this.value = value;
+	}
+	
+	/**
+	 * @return the type description of the parameter
+	 */
+	public Parameter getDefinition() {
+		return definition;
+	}
+
+	/**
+	 * @return the value
+	 */
+	public Object getValue() {
+		return value;
+	}
+
+	public void setDefinition(Parameter parameterDef) {
+		this.definition = parameterDef;
+	}
+
+	/**
+	 * @param object
+	 */
+	public void setValue(Object value) {
+		this.value = value;
+	}
+
+	/**
+	 * @param defaultValue returned if value is null
+	 * @return convert the value to a boolean
+	 */
+	public boolean asBooleanValue(boolean defaultValue) {
+		return value != null ? Boolean.valueOf(value.toString()).booleanValue() : defaultValue;
+	}
+
+	/**
+	 * @param defaultValue returned if value is null
+	 * @return convert the value to a byte
+	 */
+	public byte asByteValue(byte defaultValue) {
+		return value != null ? Byte.valueOf(value.toString()).byteValue() : defaultValue;
+	}
+
+	/**
+	 * @param defaultValue returned if value is null
+	 * @return convert the value to a double
+	 */
+	public double asDoubleValue(double defaultValue) {
+		return value != null ? Double.valueOf(value.toString()).doubleValue() : defaultValue;
+	}
+
+	/**
+	 * @param defaultValue returned if value is null
+	 * @return convert the value to an int
+	 */
+	public int asIntegerValue(int defaultValue) {
+		return value != null ? Integer.valueOf(value.toString()).intValue() : defaultValue;
+	}
+	
+	/**
+	 * @param defaultValue returned if value is null
+	 * @return convert the value to a long
+	 */
+	public long asLongValue(long defaultValue) {
+		return value != null ? Long.valueOf(value.toString()).longValue() : defaultValue;
+	}
+	
+	/**
+	 * @param defaultValue returned if value is null
+	 * @return convert the value to a float
+	 */
+	public float asFloatValue(float defaultValue) {
+		return value != null ? Float.valueOf(value.toString()).floatValue() : defaultValue;
+	}
+
+	/**
+	 * @param defaultValue returned if value is null
+	 * @return convert the value to a short
+	 */
+	public short asShortValue(short defaultValue) {
+		return value != null ? Short.valueOf(value.toString()).shortValue() : defaultValue;
+	}
+
+	/**
+	 * @param defaultValue returned if value is null
+	 * @return convert the value to a string
+	 */
+	public String asStringValue(String defaultValue) {
+		return value != null ? value.toString() : defaultValue;
+	}
+}
