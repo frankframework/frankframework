@@ -1,12 +1,14 @@
 /*
  * $Log: JavaReceiver.java,v $
- * Revision 1.1  2004-04-26 06:21:38  a1909356#db2admin
+ * Revision 1.2  2004-08-12 10:58:43  a1909356#db2admin
+ * Replaced JavaReceiver by the JavaPusher that is to be used in a GenericPushingReceiver
+ *
+ * Revision 1.1  2004/04/26 06:21:38  unknown <unknown@ibissource.org>
  * Add java receiver
  *
  */
 package nl.nn.adapterframework.receivers;
 
-import javax.naming.Context;
 import javax.naming.NamingException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -18,11 +20,11 @@ import nl.nn.adapterframework.util.RunStateEnum;
 /**
  * @author JDekker
  * @version Id
- * 
+ * @deprecated Replaced by GenericPushingReceiver and JavaPusher 
  * The java receiver listens to java requests. 
  */
 public class JavaReceiver extends JNDIBase implements IReceiver, ServiceClient {
-	public static final String version="$Id: JavaReceiver.java,v 1.1 2004-04-26 06:21:38 a1909356#db2admin Exp $";
+	public static final String version="$Id: JavaReceiver.java,v 1.2 2004-08-12 10:58:43 a1909356#db2admin Exp $";
 	private ServiceListener serviceListener;
 	private String jndiName;
 	
