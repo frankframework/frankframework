@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaFacade.java,v $
- * Revision 1.7  2004-07-06 14:50:06  L190409
+ * Revision 1.8  2004-07-08 08:56:46  L190409
+ * show physical destination after configure
+ *
+ * Revision 1.7  2004/07/06 14:50:06  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * included PhysicalDestination
  *
  * Revision 1.6  2004/07/05 14:29:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -48,7 +51,7 @@ import javax.jms.*;
  * @since 4.2
  */
 public class IfsaFacade implements INamedObject, HasPhysicalDestination {
-	public static final String version="$Id: IfsaFacade.java,v 1.7 2004-07-06 14:50:06 L190409 Exp $";
+	public static final String version="$Id: IfsaFacade.java,v 1.8 2004-07-08 08:56:46 L190409 Exp $";
     protected Logger log = Logger.getLogger(this.getClass());
     
 	private final static String IFSA_INITIAL_CONTEXT_FACTORY="com.ing.ifsa.IFSAContextFactory";
@@ -103,22 +106,15 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 	}
 
 	public void openService() throws IfsaException {
-		try {
-			connection = getConnection();
-			connection.start();
-			queue = getServiceQueue();
-		} catch (Exception e) {
-			throw new IfsaException(e);
-		}
+		getConnection();   // obtain and cache connection, then start it.
+		getServiceQueue(); // obtain and cache service queue
 	}
 
 	public void closeService() throws IfsaException {
 	    try {
 	        if (connection != null) {
 	            connection.close();
-	            if (log.isDebugEnabled()) {
-	                log.debug(getLogPrefix()+"closed connection for service");
-	            }
+                log.debug(getLogPrefix()+"closed connection for service");
 	        }
 	    } catch (JMSException e) {
 	        throw new IfsaException(e);
@@ -157,17 +153,17 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 				if (isRequestor()) {
 					queue = (Queue) getContext().lookupService(getServiceId());
 					if (log.isDebugEnabled()) {
-						log.debug(getLogPrefix()+ "got Queue to send messages on");
+						log.debug(getLogPrefix()+ "got Queue ["+getPhysicalDestinationName()+"] to send messages on");
 					}
 				} else {
 					queue = (Queue) getContext().lookupProviderInput();
 					if (log.isDebugEnabled()) {
-						log.debug(getLogPrefix()+ "got Queue to receive messages from");
+						log.debug(getLogPrefix()+ "got Queue ["+getPhysicalDestinationName()+" to receive messages from]");
 					}
 				}
 	
 			} catch (NamingException e) {
-				throw new IfsaException(e);
+				throw new IfsaException(getLogPrefix()+"could not obtain serviceQueue", e);
 			}
 		}
 		return queue;
@@ -180,10 +176,11 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 		try {
 			if (connection == null) {
 				connection = getIfsaQueueConnectionFactory().createQueueConnection();
+				connection.start();
 			}
 			return connection;
 		} catch (Exception e) {
-			throw new IfsaException(e);
+			throw new IfsaException(getLogPrefix()+"could not obtain connection", e);
 		}
 	}
 
@@ -424,7 +421,7 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 	        if (messageProtocol.equals(IfsaMessageProtocolEnum.REQUEST_REPLY)) {
 	            // set reply-to address
 	            Queue replyTo=getClientReplyQueue(session);
-	            msg.setJMSReplyTo((Destination)replyTo);
+	            msg.setJMSReplyTo(replyTo);
 	            replyToQueueName=replyTo.getQueueName();
 	        }
 	        if (messageProtocol.equals(IfsaMessageProtocolEnum.FIRE_AND_FORGET)) {
@@ -534,7 +531,7 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 			} else {
 				result = getApplicationId();
 			}
-			if (getServiceQueue() != null) {
+			if (getConnection()!=null && getServiceQueue() != null) {
 				result += " ["+ getServiceQueue().getQueueName()+"]";
 			}
 		} catch (Exception je) {
