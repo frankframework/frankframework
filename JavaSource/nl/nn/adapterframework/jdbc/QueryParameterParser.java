@@ -1,6 +1,10 @@
 /*
  * $Log: QueryParameterParser.java,v $
- * Revision 1.2  2004-03-26 10:43:08  NNVZNL01#L180564
+ * Revision 1.3  2004-04-08 16:08:44  nnvznl01#l181303
+ * parse method uses input String as a String
+ * parse method returns a PreparedStatement
+ *
+ * Revision 1.2  2004/03/26 10:43:08  Johan Verrips <johan.verrips@ibissource.org>
  * added @version tag in javadoc
  *
  * Revision 1.1  2004/03/24 13:28:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -9,6 +13,7 @@
  */
 package nl.nn.adapterframework.jdbc;
 
+import java.io.StringReader;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
@@ -17,6 +22,7 @@ import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.log4j.Logger;
 import org.xml.sax.Attributes;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
@@ -69,7 +75,7 @@ public class QueryParameterParser extends DefaultHandler implements IQueryParame
 			}
 	}
 
-public void parse(PreparedStatement stmt, String correlationID, String message) throws JdbcException{
+public PreparedStatement parse(PreparedStatement stmt, String correlationID, String message) throws JdbcException{
     SAXParserFactory factory = SAXParserFactory.newInstance();
 	factory.setNamespaceAware(true);
 	factory.setValidating(true);
@@ -79,10 +85,11 @@ public void parse(PreparedStatement stmt, String correlationID, String message) 
 	SAXParser saxParser;
 	try {
 		saxParser = factory.newSAXParser();
-		saxParser.parse(message, this);
+		saxParser.parse(new InputSource( new StringReader(message)), this);
 	} catch (Exception e) {
 		throw new JdbcException("exception parsing query parameters from msg, ID["+correlationID+"]",e);
 	}
+	return stmt;
 }
 	
 }
