@@ -1,6 +1,9 @@
 /*
  * $Log: LdapSender.java,v $
- * Revision 1.3  2005-03-24 12:24:05  L190409
+ * Revision 1.4  2005-03-29 14:47:15  L190409
+ * added version using parameters
+ *
+ * Revision 1.3  2005/03/24 12:24:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * first working version
  *
  *
@@ -14,13 +17,17 @@ import javax.naming.directory.Attributes;
 import javax.naming.directory.DirContext;
 import javax.naming.directory.InitialDirContext;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.ISender;
+import nl.nn.adapterframework.core.ISenderWithParameters;
+import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.jms.JNDIBase;
+import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.ParameterList;
+import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
@@ -58,14 +65,16 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>sets jndi parameters from defined realm</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
+ * Instead of via a message, the input to the LDAP search can be specified by parameters, too. In that case the message itself is not interpreted as input.
  * @author Gerrit van Brakel
  * @version Id
  */
-public class LdapSender extends JNDIBase implements ISender {
+public class LdapSender extends JNDIBase implements ISenderWithParameters {
 	protected Logger log=Logger.getLogger(this.getClass());
-	public static final String version="$Id: LdapSender.java,v 1.3 2005-03-24 12:24:05 L190409 Exp $";
+	public static final String version="$Id: LdapSender.java,v 1.4 2005-03-29 14:47:15 L190409 Exp $";
 	
 	private static final String INITIAL_CONTEXT_FACTORY="com.sun.jndi.ldap.LdapCtxFactory";
+	protected ParameterList paramList = null;
 	
 	private String name;
 	
@@ -77,6 +86,9 @@ public class LdapSender extends JNDIBase implements ISender {
 	}
 	
 	public void configure() throws ConfigurationException {
+		if (paramList!=null) {
+			paramList.configure();
+		}
 	}
 
 	public void open() throws SenderException {
@@ -91,13 +103,43 @@ public class LdapSender extends JNDIBase implements ISender {
 		return true;
 	}
 
-	public String sendMessage(String correlationID, String message) throws SenderException, TimeOutException {
+	public String sendMessage(String correlationID, String message) throws SenderException {
 		try {
 			Attributes resultSet = getDirContext().getAttributes(message);
 			return attributesToXml(resultSet);
 		} catch (NamingException e) {
 			throw new SenderException("cannot obtain attributes for ["+message+"]",e);
 		}					
+	}
+
+	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException {
+		if (prc==null || paramList==null) {
+			return sendMessage(correlationID, message);
+		}
+		try {
+			String queryString = applyParameters(message,prc);
+			return sendMessage(correlationID, queryString);
+		} catch (ParameterException e) {
+			throw new SenderException(e);
+		}
+	}
+	
+	protected String applyParameters(String message, ParameterResolutionContext prc) throws ParameterException {
+		// message is not used in default implementation
+		String result=null;
+		for (int i=0; i<paramList.size(); i++) {
+			Parameter p = paramList.getParameter(i);
+			if (StringUtils.isNotEmpty(p.getName())) {
+				String clause=p.getName()+"="+ p.getValue(prc);
+				if (result==null) {
+					result = clause;
+				} else {
+					result = clause +", "+ result;
+				}
+			}
+		}
+		log.debug("collected LDAP query-clause from parameters ["+result+"]");
+		return result;
 	}
 	
 	protected synchronized DirContext loopkupDirContext() throws NamingException {
@@ -143,6 +185,13 @@ public class LdapSender extends JNDIBase implements ISender {
 			attributesElem.addSubElement(attributeElem);
 		}
 		return attributesElem.toXML();
+	}
+
+	public void addParameter(Parameter p) { 
+		if (paramList==null) {
+			paramList=new ParameterList();
+		}
+		paramList.add(p);
 	}
 
 
