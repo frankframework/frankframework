@@ -21,7 +21,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.apache.log4j.Logger;
-
+import javax.transaction.Status;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -90,7 +90,7 @@ import javax.transaction.UserTransaction;
  */
 public class PullingReceiverBase
     implements IReceiver, IReceiverStatistics, Runnable, HasSender {
-	public static final String version="$Id: PullingReceiverBase.java,v 1.6 2004-03-30 07:30:04 L190409 Exp $";
+	public static final String version="$Id: PullingReceiverBase.java,v 1.7 2004-04-06 12:58:13 NNVZNL01#L180564 Exp $";
     	
 
 	public static final String ONERROR_CONTINUE = "continue";
@@ -122,8 +122,6 @@ public class PullingReceiverBase
     
     private boolean transacted=false;
     
-    //TODO: move commitOnState to PipeLine, to enable correct behaviour for transacted pipelines with non-transacted receivers. The Pipeline should use it to decide to call setRollBackOnly() or not. 
-	private String commitOnState="success"; // exit state on which receiver will commit XA transactions
 
 /**
 * this method is called from the run method after the last thread has exited !!<br/>
@@ -353,9 +351,10 @@ public Object getRawMessage(HashMap threadContext) throws ListenerException {
 					getInProcessStorage().deleteMessage(id);
 					result = adapter.processMessage(id, message);
 					state = result.getState();
-					if (state!=null && state.equals(getCommitOnState())) {
+					if (utx.getStatus()==Status.STATUS_ACTIVE){
 						try {
 							log.info("receiver [" + getName() + "] got exitState ["+state+"] from pipeline, committing transaction ["+utx+"] for messageid ["+id+"]");
+							
 							utx.commit();
 						} catch (Exception e) {
 							log.error("receiver [" + getName() + "] exception committing transaction", e);
@@ -652,15 +651,7 @@ protected void setListener(IPullingListener newListener) {
 		return transacted;
 	}
 
-	/**
-	 * the exit state of the pipeline on which the receiver will commit the transaction.
-	 */
-	public void setCommitOnState(String string) {
-		commitOnState = string;
-	}
-	public String getCommitOnState() {
-		return commitOnState;
-	}
+	
 	
 	/**
 	 * Sets the name of the Receiver. 
