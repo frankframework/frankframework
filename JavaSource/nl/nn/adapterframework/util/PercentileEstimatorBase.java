@@ -1,6 +1,9 @@
 /*
  * $Log: PercentileEstimatorBase.java,v $
- * Revision 1.1  2005-02-02 16:32:52  L190409
+ * Revision 1.2  2005-02-17 09:52:18  L190409
+ * javadoc update
+ *
+ * Revision 1.1  2005/02/02 16:32:52  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * modular percentile estimation
  *
  */
@@ -10,7 +13,9 @@ import java.util.ArrayList;
 import java.util.StringTokenizer;
 
 /**
- * Basic interpolating percentile estimator
+ * Basic interpolating percentile estimator.
+ * 
+ * Interpolated values do not change anymore once the array gets filled completely.
  * 
  * @author Gerrit van Brakel
  * @version Id
