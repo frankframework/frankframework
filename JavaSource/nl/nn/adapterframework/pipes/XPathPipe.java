@@ -1,6 +1,10 @@
 /*
  * $Log: XPathPipe.java,v $
- * Revision 1.5  2004-08-31 13:19:58  a1909356#db2admin
+ * Revision 1.6  2004-10-05 10:57:21  L190409
+ * deprecated,
+ * all functionality now in XsltPipe
+ *
+ * Revision 1.5  2004/08/31 13:19:58  unknown <unknown@ibissource.org>
  * Allow multithreading
  *
  * Revision 1.4  2004/08/03 12:28:46  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -18,11 +22,7 @@
  */
 package nl.nn.adapterframework.pipes;
 
-import java.io.ByteArrayInputStream;
-
 import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.stream.StreamSource;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.pool.BasePoolableObjectFactory;
@@ -56,6 +56,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * 
  * @author J. Dekker
  * @version Id
+ * @deprecated Please use XsltPipe, that has the same functionality
  */
 public class XPathPipe extends FixedForwardPipe {
 	private String xpathExpression;
