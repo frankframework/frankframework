@@ -2,6 +2,8 @@ package nl.nn.adapterframework.extensions.ifsa;
 
 import com.ing.ifsa.*;
 
+import nl.nn.adapterframework.core.INamedObject;
+
 import org.apache.commons.lang.StringUtils;
 
 import org.apache.log4j.Logger;
@@ -14,16 +16,29 @@ import javax.naming.*;
 import javax.jms.*;
 
 /**
- * Base class for IFSA 1.1 functions.
+ * Base class for IFSA 1.1/2.0 functions.
  * <br/>
  * <p>When clientName is filled, a client connection is assumed, when serverName
  * is used a server connection is assumed.</p>
  * <p>messageProtocol indicates wether to use Fire &amp; Forget or Request/Reply</p>
+ * <p><b>Configuration:</b>
+ * <table border="1">
+ * <tr><th>attributes</th><th>description</th><th>default</th></tr>
+ * <tr><td>classname</td><td>nl.nn.adapterframework.extensions.ifsa.IfsaFacade</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setName(String) name}</td><td>name of the object</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setClientName(String) clientName}</td><td>only for Requestors: the ApplicationID, in the form of "IFSA://<i>AppId</i>"</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setServerName(String) serverName}</td><td>only for Providers: the ApplicationID, in the form of "IFSA://<i>AppId</i>"</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setServiceName(String) serviceName}</td><td></td><td><ul><li>for Requestors: the ServiceID, in the form of "IFSA://<i>ServiceID</i>"</li>
+ * 													                        <li>for IFSA 1.0 Providers: the ServiceID, in the form of "IFSA://<i>ServiceID</i>"</li>
+ * 													                        <li>for IFSA 2.0 Providers: the ApplicationID, in the form of "IFSA://<i>AppId</i>"</li></ul></td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setMessageProtocl(String) messageProtocol}</td><td>Either 'RR' (Request/Reply) or 'FF' (Fire&Forget)</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setJndiPath(String) jndiPath}</td><td>only for IFSA 1.0: the path to the jndi-bindings file</td><td>&nbsp;</td></tr>
+ * </table>
  * 
  * @author Johan Verrips / Gerrit van Brakel
  * @version Id
  */
-public class IfsaFacade {
+public class IfsaFacade implements INamedObject {
     protected Logger log = Logger.getLogger(this.getClass());;
     private boolean transacted;
     private String jndiPath;
@@ -33,7 +48,7 @@ public class IfsaFacade {
 
     private String name;
 	private int ackMode = 1;
-	public static final String version="$Id: IfsaFacade.java,v 1.4 2004-06-30 08:31:00 L190409 Exp $";
+	public static final String version="$Id: IfsaFacade.java,v 1.5 2004-06-30 12:32:42 L190409 Exp $";
  
  	private final static String DEFAULT_PROVIDER_URL="IFSA APPLICATION BUS";
  	
@@ -307,6 +322,7 @@ public class IfsaFacade {
 	                            + "]");
 	                }
 	            } else {
+	            	// TODO: replace by lookupProviderInput(), for IFSA 2.0
 	                queue = (Queue) getContext().lookupServerInput(serviceName);
 	                if (log.isDebugEnabled()) {
 	                    log.debug(
