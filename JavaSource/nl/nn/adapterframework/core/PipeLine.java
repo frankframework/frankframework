@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.7  2004-03-31 12:04:20  L190409
+ * Revision 1.8  2004-04-06 12:43:14  NNVZNL01#L180564
+ * added CommitOnState
+ *
+ * Revision 1.7  2004/03/31 12:04:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fixed javadoc
  *
  * Revision 1.6  2004/03/30 07:29:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -45,6 +48,7 @@ import javax.transaction.UserTransaction;
  * <tr><td>classname</td><td>name of the class, mostly a class that extends this class</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setFirstPipe(String) firstPipe}</td><td>name of the receiver as known to the adapter</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setTransacted(boolean) transacted}</td><td>if set to <code>true, messages will be processed under transaction control. (see below)</code></td><td><code>false</code></td></tr>
+ * <tr><td>{@link #setCommitOnState(String) commitOnState}</td><td>If the pipelineResult.getState() equals this value, the transaction is committed.</td><td><code>success</code></td></tr>
  * </table>
  * </p>
  * <table border="1">
@@ -71,16 +75,16 @@ import javax.transaction.UserTransaction;
  * is made as follows:
  * 
  * If the processing of the message concluded without exceptions and the status of the transaction is
- * STATUS_ACTIVE (i.e. normal) the transaction will be committed. Otherwise it will be (marked to be) 
+ * STATUS_ACTIVE (i.e. normal) the transaction will be committed. Otherwise it will be (marked for) 
  * rolled back.
- * In later versions, a commitOnState attribute might be taken into account.
+ 
  * </p>
  * 
  * @version Id
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version="$Id: PipeLine.java,v 1.7 2004-03-31 12:04:20 L190409 Exp $";
+	public static final String version="$Id: PipeLine.java,v 1.8 2004-04-06 12:43:14 NNVZNL01#L180564 Exp $";
     private Logger log = Logger.getLogger(this.getClass());
 	private Adapter adapter; // for logging purposes, and for transaction managing
 	private boolean transacted=false;
@@ -93,6 +97,9 @@ public class PipeLine {
     // set of exits paths with their state
     private Hashtable pipeLineExits=new Hashtable();
 	private Hashtable pipeThreadCounts=new Hashtable();
+	
+	private String commitOnState="success"; // exit state on which receiver will commit XA transactions
+
 
 	/**
 	 * Register an Pipe at this pipeline.
@@ -234,15 +241,28 @@ public class PipeLine {
 	
 		try {
 			result = processPipeLine(messageId, message, pipeLineSession);
+			// commit or rollback the transaction
+			// utx identifies wether the PipeLine instantiated the Transaction. If it did, commit or rollback.
+			// If it did not, set the transaction to rollback only.
 			if (utx!=null) {
 				int txStatus = utx.getStatus();
-				if (txStatus == Status.STATUS_ACTIVE) {
-					log.debug("Pipeline of adapter ["+ adapter.getName()+"], msgid ["+messageId+"] transaction has status ACTIVE, performing commit");
+			
+				if  ((txStatus == Status.STATUS_ACTIVE)&&(commitOnState.equals(result.getState()))) {
+	
+					log.debug("Pipeline of adapter ["+ adapter.getName()+"], msgid ["+messageId+"] transaction has status ACTIVE, exitState=["+result.getState()+"], performing commit");
 					utx.commit();
 				}
 				else {
-					log.warn("Pipeline of adapter ["+ adapter.getName()+"], msgid ["+messageId+"] transaction has status "+JtaUtil.displayTransactionStatus(txStatus)+", performing ROLL BACK");
+					log.warn("Pipeline of adapter ["+ adapter.getName()+"], msgid ["+messageId+"] transaction has status "+JtaUtil.displayTransactionStatus(txStatus)+"exitState=["+result.getState()+"], performing ROLL BACK");
 					utx.rollback();
+				}
+			} else {
+				// if the Pipeline did not instantiate the transaction, someone else did, notify that
+				// rollback is the only possibility.
+				if (isTransacted() && (!(commitOnState.equals(result.getState())))) {
+					log.warn("Pipeline of adapter ["+ adapter.getName()+"], msgid ["+messageId+"] exitState=["+result.getState()+"], setting transaction to ROLL BACK ONLY");
+					utx = adapter.getUserTransaction();
+					utx.setRollbackOnly();
 				}
 			}
 			return result;
@@ -470,5 +490,13 @@ public void stop() {
 	public void setTransacted(boolean transacted) {
 		this.transacted = transacted;
 	}
-
+	/**
+		 * the exit state of the pipeline on which the receiver will commit the transaction.
+		 */
+		public void setCommitOnState(String string) {
+			commitOnState = string;
+		}
+		public String getCommitOnState() {
+			return commitOnState;
+		}
 }
