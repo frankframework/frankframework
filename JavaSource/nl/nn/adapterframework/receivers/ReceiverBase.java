@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.10  2005-03-07 11:04:36  NNVZNL01#L180564
+ * Revision 1.11  2005-03-31 08:22:49  L190409
+ * fixed bug in getIdleStatistics
+ *
+ * Revision 1.10  2005/03/07 11:04:36  Johan Verrips <johan.verrips@ibissource.org>
  * PipeLineSession became a extension of HashMap, using other iterator
  *
  * Revision 1.9  2005/03/04 08:53:29  Johan Verrips <johan.verrips@ibissource.org>
@@ -132,7 +135,7 @@ import javax.transaction.UserTransaction;
  */
 public class ReceiverBase
     implements IReceiver, IReceiverStatistics, Runnable, IMessageHandler, IbisExceptionListener, HasSender {
-	public static final String version="$Id: ReceiverBase.java,v 1.10 2005-03-07 11:04:36 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: ReceiverBase.java,v 1.11 2005-03-31 08:22:49 L190409 Exp $";
 	protected Logger log = Logger.getLogger(this.getClass());
  
 	private String returnIfStopped="";
@@ -989,8 +992,8 @@ public class ReceiverBase
 
 		if (result==null) {
 			while (idleStatistics.size()<threadsProcessing+1){
-			result = new StatisticsKeeper((threadsProcessing+1)+" threads processing");
-				idleStatistics.add(threadsProcessing, result);
+			result = new StatisticsKeeper((idleStatistics.size())+" threads processing");
+				idleStatistics.add(idleStatistics.size(), result);
 			}
 		}
 		return (StatisticsKeeper) idleStatistics.get(threadsProcessing);
