@@ -1,6 +1,9 @@
 /*
  * $Log: DigesterPipe.java,v $
- * Revision 1.8  2004-03-26 10:42:34  NNVZNL01#L180564
+ * Revision 1.9  2004-10-05 10:49:32  L190409
+ * removed unused code
+ *
+ * Revision 1.8  2004/03/26 10:42:34  Johan Verrips <johan.verrips@ibissource.org>
  * added @version tag in javadoc
  *
  * Revision 1.7  2004/03/24 13:53:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -45,9 +48,8 @@ import org.apache.commons.digester.xmlrules.DigesterLoader;
  */
 
 public class DigesterPipe extends FixedForwardPipe {
-	public static final String version="$Id: DigesterPipe.java,v 1.8 2004-03-26 10:42:34 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: DigesterPipe.java,v 1.9 2004-10-05 10:49:32 L190409 Exp $";
 
-	private PipeRunResult pipeRunResult;
 	private String digesterRulesFile;
 	private URL rulesURL;
 
@@ -66,7 +68,8 @@ public class DigesterPipe extends FixedForwardPipe {
 	public PipeRunResult doPipe(Object input, PipeLineSession session)
 		throws PipeRunException {
 
-		//Multi threading: instantiate digester for each request as the digester is NOT thread-safe.		
+		//Multi threading: instantiate digester for each request as the digester is NOT thread-safe.
+		//TODO: make a pool of digesters		
 		Digester digester = DigesterLoader.createDigester(rulesURL);
 			
 		try {
