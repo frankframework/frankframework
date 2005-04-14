@@ -1,6 +1,9 @@
 /*
  * $Log: TestIfsaServiceExecute.java,v $
- * Revision 1.1  2005-04-14 08:07:57  L190409
+ * Revision 1.2  2005-04-14 09:12:32  L190409
+ * exchanged message and result
+ *
+ * Revision 1.1  2005/04/14 08:07:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * introduction of TestIfsaService-functionality
  *
  *
@@ -30,7 +33,7 @@ import java.io.IOException;
  */
 
 public final class TestIfsaServiceExecute extends ActionBase {
-	public static final String version="$Id: TestIfsaServiceExecute.java,v 1.1 2005-04-14 08:07:57 L190409 Exp $";
+	public static final String version="$Id: TestIfsaServiceExecute.java,v 1.2 2005-04-14 09:12:32 L190409 Exp $";
 	
 	public ActionForward execute(
 	    ActionMapping mapping,
@@ -71,7 +74,7 @@ public final class TestIfsaServiceExecute extends ActionBase {
 		}
 	
 		IfsaRequesterSender sender;
-		String result="<none>";
+		String result="";
 	    try {
 			// initiate MessageSender
 			sender = new IfsaRequesterSender();
@@ -135,7 +138,7 @@ public final class TestIfsaServiceExecute extends ActionBase {
 	    return (mapping.findForward("success"));
 	}
 	
-	public void StoreFormData(String result, String message,  DynaActionForm form){
+	public void StoreFormData(String message, String result, DynaActionForm form){
 		if (null!=message) form.set("message", message);
 		if (null != result) {
 			form.set("result", result);
