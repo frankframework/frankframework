@@ -1,6 +1,9 @@
 /*
  * $Log: TestIfsaServiceExecute.java,v $
- * Revision 1.2  2005-04-14 09:12:32  L190409
+ * Revision 1.3  2005-04-14 09:28:12  L190409
+ * saved message protocols to form
+ *
+ * Revision 1.2  2005/04/14 09:12:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * exchanged message and result
  *
  * Revision 1.1  2005/04/14 08:07:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -23,6 +26,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.ArrayList;
 
 
 /**
@@ -33,7 +37,7 @@ import java.io.IOException;
  */
 
 public final class TestIfsaServiceExecute extends ActionBase {
-	public static final String version="$Id: TestIfsaServiceExecute.java,v 1.2 2005-04-14 09:12:32 L190409 Exp $";
+	public static final String version="$Id: TestIfsaServiceExecute.java,v 1.3 2005-04-14 09:28:12 L190409 Exp $";
 	
 	public ActionForward execute(
 	    ActionMapping mapping,
@@ -143,6 +147,10 @@ public final class TestIfsaServiceExecute extends ActionBase {
 		if (null != result) {
 			form.set("result", result);
 		}
+		ArrayList protocols=new ArrayList();
+		protocols.add("RR");
+		protocols.add("FF");
+		form.set("messageProtocols", protocols);
 	}
 	
 }
