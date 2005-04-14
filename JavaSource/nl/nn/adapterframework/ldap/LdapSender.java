@@ -1,6 +1,9 @@
 /*
  * $Log: LdapSender.java,v $
- * Revision 1.4  2005-03-29 14:47:15  L190409
+ * Revision 1.5  2005-04-14 08:00:29  L190409
+ * preparations for multi-object result
+ *
+ * Revision 1.4  2005/03/29 14:47:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added version using parameters
  *
  * Revision 1.3  2005/03/24 12:24:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -16,6 +19,7 @@ import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.DirContext;
 import javax.naming.directory.InitialDirContext;
+import javax.naming.directory.SearchResult;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -71,7 +75,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
  */
 public class LdapSender extends JNDIBase implements ISenderWithParameters {
 	protected Logger log=Logger.getLogger(this.getClass());
-	public static final String version="$Id: LdapSender.java,v 1.4 2005-03-29 14:47:15 L190409 Exp $";
+	public static final String version="$Id: LdapSender.java,v 1.5 2005-04-14 08:00:29 L190409 Exp $";
 	
 	private static final String INITIAL_CONTEXT_FACTORY="com.sun.jndi.ldap.LdapCtxFactory";
 	protected ParameterList paramList = null;
@@ -105,19 +109,24 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 
 	public String sendMessage(String correlationID, String message) throws SenderException {
 		try {
-			Attributes resultSet = getDirContext().getAttributes(message);
-			return attributesToXml(resultSet);
+			/*
+			NamingEnumeration resultSet = getDirContext().list(message);
+			log.info("results for ["+message+"]:"+ resultSet.toString());
+			return SearchResultsToXml(resultSet);
+			*/
+			return attributesToXml(getDirContext().getAttributes(message)).toXML();
 		} catch (NamingException e) {
-			throw new SenderException("cannot obtain attributes for ["+message+"]",e);
+			throw new SenderException("cannot obtain resultset for ["+message+"]",e);
 		}					
 	}
 
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException {
+		
 		if (prc==null || paramList==null) {
 			return sendMessage(correlationID, message);
 		}
 		try {
-			String queryString = applyParameters(message,prc);
+			String queryString = applyParameters(message,null);
 			return sendMessage(correlationID, queryString);
 		} catch (ParameterException e) {
 			throw new SenderException(e);
@@ -162,7 +171,33 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 		}
 	}
 
-	protected String attributesToXml(Attributes atts) throws NamingException {
+	protected String SearchResultsToXml(NamingEnumeration searchresults) {
+		XmlBuilder searchresultsElem = new XmlBuilder("searchresults");
+		if (searchresults!=null) {
+			try {
+				while (searchresults.hasMore()) {
+					SearchResult sr = (SearchResult)searchresults.next();
+					log.info("result:"+ sr.toString());
+
+					XmlBuilder itemElem = new XmlBuilder("item");
+					itemElem.addAttribute("name",sr.getName());
+					try {
+						itemElem.addSubElement(attributesToXml(sr.getAttributes()));
+					} catch (NamingException e) {
+						itemElem.addAttribute("exceptionType",e.getClass().getName());
+						itemElem.addAttribute("exceptionExplanation",e.getExplanation());
+					}
+					searchresultsElem.addSubElement(itemElem);
+				}
+			} catch (NamingException e) {
+				searchresultsElem.addAttribute("exceptionType",e.getClass().getName());
+				searchresultsElem.addAttribute("exceptionExplanation",e.getExplanation());
+			}
+		}
+		return searchresultsElem.toXML();
+	}
+
+	protected XmlBuilder attributesToXml(Attributes atts) throws NamingException {
 		XmlBuilder attributesElem = new XmlBuilder("attributes");
 //		attributesElem.addAttribute("size",atts.size()+"");
 		NamingEnumeration all = atts.getAll();
@@ -184,7 +219,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 			}
 			attributesElem.addSubElement(attributeElem);
 		}
-		return attributesElem.toXML();
+		return attributesElem;
 	}
 
 	public void addParameter(Parameter p) { 
