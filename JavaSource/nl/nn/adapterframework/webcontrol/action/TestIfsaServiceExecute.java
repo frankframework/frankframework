@@ -1,6 +1,9 @@
 /*
  * $Log: TestIfsaServiceExecute.java,v $
- * Revision 1.3  2005-04-14 09:28:12  L190409
+ * Revision 1.4  2005-04-14 09:54:35  L190409
+ * saved results
+ *
+ * Revision 1.3  2005/04/14 09:28:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * saved message protocols to form
  *
  * Revision 1.2  2005/04/14 09:12:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -37,7 +40,7 @@ import java.util.ArrayList;
  */
 
 public final class TestIfsaServiceExecute extends ActionBase {
-	public static final String version="$Id: TestIfsaServiceExecute.java,v 1.3 2005-04-14 09:28:12 L190409 Exp $";
+	public static final String version="$Id: TestIfsaServiceExecute.java,v 1.4 2005-04-14 09:54:35 L190409 Exp $";
 	
 	public ActionForward execute(
 	    ActionMapping mapping,
@@ -108,10 +111,10 @@ public final class TestIfsaServiceExecute extends ActionBase {
 	                "errors.generic",
 	                "error occured on creating object or closing connection:" +  XmlUtils.encodeChars(e.getMessage())));
 	    }
+		StoreFormData(form_message, result, sendIfsaMessageForm);
 	
 	    // Report any errors we have discovered back to the original form
 	    if (!errors.isEmpty()) {
-		    StoreFormData(form_message, result, sendIfsaMessageForm);
 		    saveErrors(request, errors);
 	        return (new ActionForward(mapping.getInput()));
 	    }
