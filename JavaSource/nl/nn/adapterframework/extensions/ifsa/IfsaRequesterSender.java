@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaRequesterSender.java,v $
- * Revision 1.9  2004-08-26 11:12:00  NNVZNL01#L180564
+ * Revision 1.10  2005-04-20 14:21:53  L190409
+ * removed rather useless warning
+ *
+ * Revision 1.9  2004/08/26 11:12:00  Johan Verrips <johan.verrips@ibissource.org>
  * Aangepast dat wanneer niet synchroon het messageid wordt teruggeven
  *
  * Revision 1.8  2004/07/22 11:03:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -43,7 +46,6 @@ import javax.jms.TextMessage;
 
 
 import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.StringUtils;
 
 import com.ing.ifsa.IFSATimeOutMessage;
 
@@ -71,7 +73,7 @@ import com.ing.ifsa.IFSATimeOutMessage;
  * @since 4.2
  */
 public class IfsaRequesterSender extends IfsaFacade implements ISender {
-	public static final String version="$Id: IfsaRequesterSender.java,v 1.9 2004-08-26 11:12:00 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: IfsaRequesterSender.java,v 1.10 2005-04-20 14:21:53 L190409 Exp $";
   
 	public IfsaRequesterSender() {
   		super(false); // instantiate IfsaFacade as a requestor	
@@ -209,9 +211,10 @@ public class IfsaRequesterSender extends IfsaFacade implements ISender {
 	 * @return in Request/Reply, the retrieved message or TIMEOUT, otherwise null
 	 */
 	public String sendMessage(String dummyCorrelationId, String message) throws SenderException, TimeOutException {
-	    if (StringUtils.isNotEmpty(dummyCorrelationId)) {
-		    log.warn(getLogPrefix()+"sendMessage() ignoring correlationId ["+dummyCorrelationId+"]");
-	    }
+	
+	    // if (StringUtils.isNotEmpty(dummyCorrelationId)) {
+		//     log.warn(getLogPrefix()+"sendMessage() ignoring correlationId ["+dummyCorrelationId+"]");
+	    // }
 	    return sendMessage(message);
 	}
 	
