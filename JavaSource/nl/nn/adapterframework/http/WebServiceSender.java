@@ -1,6 +1,9 @@
 /*
  * $Log: WebServiceSender.java,v $
- * Revision 1.11  2005-02-24 12:15:15  L190409
+ * Revision 1.12  2005-04-26 09:25:12  L190409
+ * renamed soapConverter to soapWrapper
+ *
+ * Revision 1.11  2005/02/24 12:15:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * moved SOAP conversion coding to SOAP-wrapper
  *
  * Revision 1.10  2004/10/14 15:34:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -79,14 +82,14 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  */
 
 public class WebServiceSender extends HttpSender {
-	public static final String version="$Id: WebServiceSender.java,v 1.11 2005-02-24 12:15:15 L190409 Exp $";
+	public static final String version="$Id: WebServiceSender.java,v 1.12 2005-04-26 09:25:12 L190409 Exp $";
 	
 
 	private String soapActionURI = "";
 	private String encodingStyleURI=null;
 //	private String methodName = "";
 	private boolean throwApplicationFaults=true;
-	private SoapWrapper soapConverter;
+	private SoapWrapper soapWrapper;
 	
 //	private MessageFactory soapMessageFactory;
 	
@@ -102,7 +105,7 @@ public class WebServiceSender extends HttpSender {
 
 	public void configure() throws ConfigurationException {
 		super.configure();
-		soapConverter=SoapWrapper.getInstance();
+		soapWrapper=SoapWrapper.getInstance();
 /*		
 		try {
 			soapMessageFactory = MessageFactory.newInstance();
@@ -114,7 +117,7 @@ public class WebServiceSender extends HttpSender {
 
 	protected HttpMethod getMethod(String message, ParameterValueList parameters) throws SenderException {
 		
-		String soapmsg= soapConverter.putInEnvelope(message, getEncodingStyleURI());
+		String soapmsg= soapWrapper.putInEnvelope(message, getEncodingStyleURI());
 		HttpMethod method = super.getMethod(soapmsg,parameters);
 		log.debug("setting SOAPAction header ["+getSoapActionURI()+"]");
 		method.addRequestHeader("Content-Type","text/xml");
@@ -128,15 +131,15 @@ public class WebServiceSender extends HttpSender {
 		try {
 			httpResult = super.extractResult(httpmethod);
 		} catch (SenderException e) {
-			soapConverter.checkForSoapFault(httpmethod.getResponseBodyAsString(), e);
+			soapWrapper.checkForSoapFault(httpmethod.getResponseBodyAsString(), e);
 			throw e;
 		}
 		
 		if (isThrowApplicationFaults()) {
-			soapConverter.checkForSoapFault(httpmethod.getResponseBodyAsString(), null);
+			soapWrapper.checkForSoapFault(httpmethod.getResponseBodyAsString(), null);
 		}
 		try {
-			String result = soapConverter.getBody(httpResult);
+			String result = soapWrapper.getBody(httpResult);
 			return (result);
 		} catch (Exception e) {
 			throw new SenderException("cannot retrieve result message",e);
