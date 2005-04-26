@@ -1,3 +1,9 @@
+/*
+ * $Log: XmlSwitch.java,v $
+ * Revision 1.13  2005-04-26 09:22:56  L190409
+ * added SessionVariable facility (by Peter Leeuwenburgh)
+ *
+ */
 package nl.nn.adapterframework.pipes;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -22,14 +28,15 @@ import java.util.Map;
 
 
 /**
- * Selects an exitState, based on either the contents of the input message, by means
- * of a XSLT-stylesheet, or, by default, by returning the name of the root-element.
+ * Selects an exitState, based on either the content of the input message, by means
+ * of a XSLT-stylesheet, the content of a session variable or, by default, by returning the name of the root-element.
  * 
  * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setServiceSelectionStylesheetFilename(String) serviceSelectionStylesheetFilename}</td><td>stylesheet may return a String representing the forward to look up</td><td><i>a stylesheet that returns the name of the root-element</i></td></tr>
  * <tr><td>{@link #setXpathExpression(String) xpathExpression}</td><td>XPath-expression that returns a String representing the forward to look up</td><td></td></tr>
+ * <tr><td>{@link #setSessionKey(String) sessionKey}</td><td>name of the key in the <code>PipeLineSession</code> to retrieve the input message from</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setNotFoundForwardName(String) setNotFoundForwardName(String)}</td><td>Forward returned when the pipename derived from the stylesheet could not be found.</i></td></tr>
  * </table>
  * </p>
@@ -44,12 +51,13 @@ import java.util.Map;
  * @author Johan Verrips
  */
 public class XmlSwitch extends AbstractPipe {
-	public static final String version="$Id: XmlSwitch.java,v 1.12 2005-01-10 08:56:10 L190409 Exp $";
+	public static final String version="$Id: XmlSwitch.java,v 1.13 2005-04-26 09:22:56 L190409 Exp $";
 	
     private static final String DEFAULT_SERVICESELECTION_XPATH = XmlUtils.XPATH_GETROOTNODENAME;
-	private TransformerPool transformerPool;
+	private TransformerPool transformerPool=null;
 	private String xpathExpression=null;
     private String serviceSelectionStylesheetFilename=null;
+	private String sessionKey=null;
     private String notFoundForwardName=null;
 
 	/**
@@ -85,11 +93,13 @@ public class XmlSwitch extends AbstractPipe {
 					throw new ConfigurationException(getLogPrefix(null) + "got error creating transformer from file [" + serviceSelectionStylesheetFilename + "]", te);
 				}
 			} else {
-				try {
-					// create a transformer that looks to the root node 
-					transformerPool = new TransformerPool(XmlUtils.createXPathEvaluatorSource(DEFAULT_SERVICESELECTION_XPATH, "text"));
-				} catch (TransformerConfigurationException te) {
-					throw new ConfigurationException(getLogPrefix(null) + "got error creating XPathEvaluator from string [" + DEFAULT_SERVICESELECTION_XPATH + "]", te);
+				if (StringUtils.isEmpty(getSessionKey())) {
+					try {
+						// create a transformer that looks to the root node 
+						transformerPool = new TransformerPool(XmlUtils.createXPathEvaluatorSource(DEFAULT_SERVICESELECTION_XPATH, "text"));
+					} catch (TransformerConfigurationException te) {
+						throw new ConfigurationException(getLogPrefix(null) + "got error creating XPathEvaluator from string [" + DEFAULT_SERVICESELECTION_XPATH + "]", te);
+					}
 				}
 			}
 		}
@@ -126,31 +136,39 @@ public class XmlSwitch extends AbstractPipe {
 	    String sInput=(String) input;
 	    PipeForward pipeForward=null;
 
-		ParameterList parameterList = null;
-		ParameterResolutionContext prc = null;	
-		try {
-			Map parametervalues = null;
-			if (getParameterList()!=null) {
-				parameterList =  getParameterList();
-				prc = new ParameterResolutionContext((String)input, session); 
-				parametervalues = prc.getValueMap(parameterList);
-			}
-            forward = transformerPool.transform(sInput, parametervalues);
-            log.debug(getLogPrefix(session)+ "determined forward ["+forward+"]");
-
-			if (findForward(forward) != null) 
-				pipeForward=findForward(forward);
-			else {
-				log.info(getLogPrefix(session)+"determined forward ["+forward+"], which is not defined. Will use ["+getNotFoundForwardName()+"] instead");
-				pipeForward=findForward(getNotFoundForwardName());
-			}
+		if (StringUtils.isNotEmpty(getSessionKey())) {
+			sInput = (String) session.get(sessionKey);
 		}
-	    catch (Throwable e) {
-	   	    throw new PipeRunException(this, getLogPrefix(null)+"got exception on transformation", e);
-	    }
+		if (transformerPool!=null) {
+			ParameterList parameterList = null;
+			ParameterResolutionContext prc = null;	
+			try {
+				Map parametervalues = null;
+				if (getParameterList()!=null) {
+					parameterList =  getParameterList();
+					prc = new ParameterResolutionContext(sInput, session); 
+					parametervalues = prc.getValueMap(parameterList);
+				}
+	           	forward = transformerPool.transform(sInput, parametervalues);
+			}
+		    catch (Throwable e) {
+		   	    throw new PipeRunException(this, getLogPrefix(session)+"got exception on transformation", e);
+		    }
+		} else {
+			forward=sInput;
+		}
+
+		log.debug(getLogPrefix(session)+ "determined forward ["+forward+"]");
+
+		if (findForward(forward) != null) 
+			pipeForward=findForward(forward);
+		else {
+			log.info(getLogPrefix(session)+"determined forward ["+forward+"], which is not defined. Will use ["+getNotFoundForwardName()+"] instead");
+			pipeForward=findForward(getNotFoundForwardName());
+		}
 		
 		if (pipeForward==null) {
-			  throw new PipeRunException (this, getLogPrefix(null)+"cannot find forward or pipe named ["+forward+"]");
+			  throw new PipeRunException (this, getLogPrefix(session)+"cannot find forward or pipe named ["+forward+"]");
 		}
 		return new PipeRunResult(pipeForward, input);
 	}
@@ -185,4 +203,11 @@ public class XmlSwitch extends AbstractPipe {
 		this.xpathExpression = xpathExpression;
 	}
 
+	public void setSessionKey(String sessionKey){
+		this.sessionKey = sessionKey;
+	}
+
+	public String getSessionKey(){
+		return sessionKey;
+	}
 }
