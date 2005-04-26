@@ -1,6 +1,9 @@
 /*
  * $Log: FixedResult.java,v $
- * Revision 1.8  2004-10-05 10:50:55  L190409
+ * Revision 1.9  2005-04-26 09:19:24  L190409
+ * added replace facilty (by Peter Leeuwenburgh)
+ *
+ * Revision 1.8  2004/10/05 10:50:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed unused imports
  *
  * Revision 1.7  2004/09/01 07:21:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -34,6 +37,8 @@ import org.apache.commons.lang.SystemUtils;
  * <tr><td>{@link #setFileName(String) fileName}</td>        <td>name of the file containing the resultmessage</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setReturnString(String) returnString}</td><td>returned message</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSubstituteVars(boolean) substituteVars}</td><td>Should values between ${ and } be resolved from the PipeLineSession</td><td>False</td></tr>
+ * <tr><td>{@link #setReplaceFrom(String) replaceFrom}</td><td>string to search for in the returned message</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setReplaceTo(String) replaceTo}</td><td>string that will replace each of the strings found in the returned message</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * <p><b>Exits:</b>
@@ -47,10 +52,12 @@ import org.apache.commons.lang.SystemUtils;
  * @author Johan Verrips
  */
 public class FixedResult extends FixedForwardPipe {
-	public static final String version="$Id: FixedResult.java,v 1.8 2004-10-05 10:50:55 L190409 Exp $";
+	public static final String version="$Id: FixedResult.java,v 1.9 2005-04-26 09:19:24 L190409 Exp $";
     private String fileName;
     private String returnString;
     private boolean substituteVars=false;
+	private String replaceFrom = null;
+	private String replaceTo = null;
 
 	public void setSubstituteVars(boolean substitute){
 		this.substituteVars=substitute;
@@ -81,6 +88,9 @@ public class FixedResult extends FixedForwardPipe {
         if ((StringUtils.isEmpty(fileName)) && (StringUtils.isEmpty(returnString))) {
             throw new ConfigurationException("Pipe [" + getName() + "] has neither fileName nor returnString specified");
         }
+		if (StringUtils.isNotEmpty(replaceFrom)) {
+			returnString = replace(returnString, replaceFrom, replaceTo );
+		}
     }
 	public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRunException {
 		String result=returnString;
@@ -91,6 +101,27 @@ public class FixedResult extends FixedForwardPipe {
 	
 	    return new PipeRunResult(getForward(), result);
 	}
+
+	public static String replace (String target, String from, String to) {   
+		// target is the original string
+		// from   is the string to be replaced
+		// to     is the string which will used to replace
+		int start = target.indexOf (from);
+		if (start==-1) return target;
+		int lf = from.length();
+		char [] targetChars = target.toCharArray();
+		StringBuffer buffer = new StringBuffer();
+		int copyFrom=0;
+		while (start != -1) {
+			buffer.append (targetChars, copyFrom, start-copyFrom);
+			buffer.append (to);
+			copyFrom=start+lf;
+			start = target.indexOf (from, copyFrom);
+		}
+		buffer.append (targetChars, copyFrom, targetChars.length-copyFrom);
+		return buffer.toString();
+	}
+
     public String getFileName() {
         return fileName;
     }
@@ -109,4 +140,20 @@ public class FixedResult extends FixedForwardPipe {
     public void setReturnString(String returnString) {
         this.returnString = returnString;
     }
+
+	public String getReplaceFrom() {
+		return replaceFrom;
+	}
+
+	public void setReplaceFrom (String replaceFrom){
+		this.replaceFrom=replaceFrom;
+	}
+
+	public String getReplaceTo() {
+		return replaceTo;
+	}
+
+	public void setReplaceTo (String replaceTo){
+		this.replaceTo=replaceTo;
+	}
 }
