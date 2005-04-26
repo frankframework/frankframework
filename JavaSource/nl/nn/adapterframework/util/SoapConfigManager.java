@@ -1,5 +1,6 @@
 package nl.nn.adapterframework.util;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.soap.Constants;
 import org.apache.soap.SOAPException;
@@ -26,54 +27,90 @@ import java.util.Hashtable;
  * @author Gerrit van Brakel IOS
  */
 public class SoapConfigManager extends XMLConfigManager {
-	public static final String version="$Id: SoapConfigManager.java,v 1.3 2004-03-26 10:42:42 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: SoapConfigManager.java,v 1.4 2005-04-26 09:35:33 L190409 Exp $";
+    protected Logger log = Logger.getLogger(this.getClass());
+
+	private String defaultProvider="nl.nn.adapterframework.http.SoapGenericProvider";    
+	DeploymentDescriptor defaultDD = null; 
+    
+	public void loadRegistry() throws SOAPException {
+	    URL servicesRegistry;
+	    String message;
+	    try {
+	        servicesRegistry = context.getResource(filename);
+	    } catch (MalformedURLException e) {
+		    message = "cannot find URL for registry from resource-name '" + filename + "'";
+		    log.error(message,e);
+	        throw new SOAPException(Constants.FAULT_CODE_SERVER, message, e);
+	    }
 	
-    private Logger log = Logger.getLogger(this.getClass());
-public void loadRegistry() throws SOAPException {
-    URL servicesRegistry;
-    String message;
-    try {
-        servicesRegistry = context.getResource(filename);
-    } catch (MalformedURLException e) {
-	    message = "cannot find URL for registry from resource-name '" + filename + "'";
-	    log.error(message,e);
-        throw new SOAPException(Constants.FAULT_CODE_SERVER, message, e);
-    }
-
-    if (servicesRegistry == null) {
-		message = "cannot find registry from resource-name '" + filename + "'";
-		log.error(message);
-        throw new SOAPException(Constants.FAULT_CODE_SERVER, message);
-    }
-
-    Element element = null;
-    try {
-        Document document = xdb.parse(servicesRegistry.openStream());
-        element = document.getDocumentElement();
-    } catch (Exception e) {
-	    message = "exception while reading servicesRegistry from "+servicesRegistry;
-		log.error(message,e);
-        throw new SOAPException(Constants.FAULT_CODE_SERVER, message, e);
-    }
-    log.info("loading servicesRegistry from "+servicesRegistry);;
-    NodeList nodelist =
-        element.getElementsByTagNameNS(
-            "http://xml.apache.org/xml-soap/deployment",
-            "service");
-    int i = nodelist.getLength();
-    dds = new Hashtable();
-    for (int j = 0; j < i; j++) {
-        Element element1 = (Element) nodelist.item(j);
-        DeploymentDescriptor deploymentdescriptor =
-            DeploymentDescriptor.fromXML(element1);
-        String s = deploymentdescriptor.getID();
-        log.info("deploying service "+s);
-        dds.put(s, deploymentdescriptor);
-    }
-}
+	    if (servicesRegistry == null) {
+			message = "cannot find registry from resource-name '" + filename + "'";
+			log.error(message);
+	        throw new SOAPException(Constants.FAULT_CODE_SERVER, message);
+	    }
+	
+	    Element element = null;
+	    try {
+	        Document document = xdb.parse(servicesRegistry.openStream());
+	        element = document.getDocumentElement();
+	    } catch (Exception e) {
+		    message = "exception while reading servicesRegistry from "+servicesRegistry;
+			log.error(message,e);
+	        throw new SOAPException(Constants.FAULT_CODE_SERVER, message, e);
+	    }
+	    log.info("loading servicesRegistry from "+servicesRegistry);;
+	    NodeList nodelist =
+	        element.getElementsByTagNameNS(
+	            "http://xml.apache.org/xml-soap/deployment",
+	            "service");
+	    int i = nodelist.getLength();
+	    dds = new Hashtable();
+	    for (int j = 0; j < i; j++) {
+	        Element element1 = (Element) nodelist.item(j);
+	        DeploymentDescriptor deploymentdescriptor =
+	            DeploymentDescriptor.fromXML(element1);
+	        String s = deploymentdescriptor.getID();
+	        log.info("deploying service "+s);
+	        dds.put(s, deploymentdescriptor);
+	    }
+	}
+	
+	public DeploymentDescriptor query(String id) throws SOAPException {
+		DeploymentDescriptor dd = super.query(id);
+		if (dd==null) {
+			if (defaultDD==null) {
+				synchronized (this) {
+					if (defaultDD==null && StringUtils.isNotEmpty(getDefaultProvider())) {
+						defaultDD = new DeploymentDescriptor();
+						defaultDD.setID("urn:default");
+						defaultDD.setScope(DeploymentDescriptor.SCOPE_REQUEST);
+						defaultDD.setServiceClass(getDefaultProvider());
+						defaultDD.setProviderType(DeploymentDescriptor.PROVIDER_USER_DEFINED);
+						defaultDD.setIsStatic(true);
+						defaultDD.setMethods(new String[]{"dummy"});
+						defaultDD.setFaultListener(new String[]{"org.apache.soap.server.DOMFaultListener"});
+						defaultDD.setDefaultSMRClass(SoapMappingRegistryWithDefault.class.getName());
+					}
+				}
+			}
+			dd=defaultDD;
+		}
+		log.info("SoapConfigManager.query["+id+"] returned DeploymentDescriptor ["+dd+"]");
+		return (dd);
+	}
+	
     public void saveRegistry()
         throws SOAPException
     {
         throw new SOAPException(Constants.FAULT_CODE_SERVER, "Will not save services-registry: this is a read-only ConfigManager ");
     }
+
+	public String getDefaultProvider() {
+		return defaultProvider;
+	}
+	public void setDefaultProvider(String defaultProvider) {
+		this.defaultProvider = defaultProvider;
+	}
+
 }
