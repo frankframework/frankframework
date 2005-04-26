@@ -1,6 +1,9 @@
 /*
  * $Log: Parameter.java,v $
- * Revision 1.9  2005-03-07 11:10:05  NNVZNL01#L180564
+ * Revision 1.10  2005-04-26 09:33:45  L190409
+ * different handling of empy transform-result, so that it is null instead of an empty string
+ *
+ * Revision 1.9  2005/03/07 11:10:05  Johan Verrips <johan.verrips@ibissource.org>
  * Javadoc geupdate
  *
  * Revision 1.8  2005/01/13 08:08:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -94,7 +97,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author Richard Punt / Gerrit van Brakel
  */
 public class Parameter implements INamedObject, IWithParameters {
-	public static final String version="$Id: Parameter.java,v 1.9 2005-03-07 11:10:05 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: Parameter.java,v 1.10 2005-04-26 09:33:45 L190409 Exp $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	private String name = null;
@@ -177,7 +180,10 @@ public class Parameter implements INamedObject, IWithParameters {
 						log.debug("Parameter ["+getName()+"] sessionvariable ["+getSessionKey()+"] empty, no transformation will be performed");
 					}
 				} else {
-					result = pool.transform(prc.getInputSource(),prc.getValueMap(paramList));
+					String transformResult = pool.transform(prc.getInputSource(),prc.getValueMap(paramList));
+					if (StringUtils.isNotEmpty(transformResult)) {
+						result = transformResult;
+					}
 				}
 			} catch (Exception e) {
 				throw new ParameterException("Parameter ["+getName()+"] exception on transformation to get parametervalue", e);
