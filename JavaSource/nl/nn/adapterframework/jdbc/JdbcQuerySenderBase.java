@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcQuerySenderBase.java,v $
- * Revision 1.7  2004-11-10 12:56:55  L190409
+ * Revision 1.8  2005-04-26 15:20:34  L190409
+ * introduced JdbcSenderBase, with non-sql oriented basics
+ *
+ * Revision 1.7  2004/11/10 12:56:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected parameter setting routine
  *
  * Revision 1.6  2004/10/19 06:41:08  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -29,22 +32,18 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.util.DB2XMLWriter;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
-
 /**
  * This executes the query that is obtained from the (here still abstract) method getStatement.
  * Descendent classes can override getStatement to provide meaningful statements.
- * If used with parameters, the values of the parameters will be applied to the statement.
+ * If used with parameters, the values of the parameters will be applied to the statement. 
+ * Each occurrence of a questionmark ('?') will be replaced by a parameter value. Parameters are applied
+ * in order: The n-th questionmark is replaced by the value of the n-th parameter.
  *
  * <p><b>Configuration:</b>
  * <table border="1">
@@ -69,68 +68,13 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * @author  Gerrit van Brakel
  * @since 	4.1
  */
-public abstract class JdbcQuerySenderBase extends JdbcFacade implements ISenderWithParameters {
-	public static final String version="$Id: JdbcQuerySenderBase.java,v 1.7 2004-11-10 12:56:55 L190409 Exp $";
+public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
+	public static final String version="$Id: JdbcQuerySenderBase.java,v 1.8 2005-04-26 15:20:34 L190409 Exp $";
 
 	private String queryType = "other";
 	private int startRow=1;
 	private int maxRows=-1; // return all rows
-	private Connection connection=null;
 
-	protected ParameterList paramList = null;
-
-	public JdbcQuerySenderBase() {
-		super();
-	}
-
-
-	public void addParameter(Parameter p) { 
-		if (paramList==null) {
-			paramList=new ParameterList();
-		}
-		paramList.add(p);
-	}
-
-	public void configure(ParameterList parameterList) throws ConfigurationException {
-		configure();		
-	}
-
-	public void configure() throws ConfigurationException {
-		try {
-			if (getDatasource()==null) {
-				throw new ConfigurationException(getLogPrefix()+"has no datasource");
-			}
-		} catch (JdbcException e) {
-			throw new ConfigurationException(e);
-		}
-		if (paramList!=null) {
-			paramList.configure();
-		}
-	}
-
-	public void open() throws SenderException {
-		if (!isTransacted()) {
-			try {
-				connection = getConnection();
-			} catch (JdbcException e) {
-				throw new SenderException(e);
-			}
-		}
-	}	
-	
-	public void close() throws SenderException {
-	    try {
-	        if (connection != null) {
-				connection.close();
-	        }
-	    } catch (SQLException e) {
-	        throw new SenderException(getLogPrefix() + "caught exception stopping sender", e);
-	    } finally {
-			connection = null;
-	    }
-	}
-
-	
 	/**
 	 * returns <code>true</code> if the {@link #setQueryType(String) queryType} is set to "select".
 	 * @see nl.nn.adapterframework.core.ISender#isSynchronous()
@@ -144,46 +88,25 @@ public abstract class JdbcQuerySenderBase extends JdbcFacade implements ISenderW
 	 * Method-stub to be overridden in descender-classes.
 	 */
 	protected abstract PreparedStatement getStatement(Connection con, String correlationID, String message) throws JdbcException, SQLException;
-	
 
 
-	public String sendMessage(String correlationID, String message) throws SenderException {
-		return sendMessage(correlationID, message, null);
-	}
 
-	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException {
-		if (isTransacted()) {
-			try {
-				Connection c = getConnection();
-				String result = sendMessage(c, correlationID, message, prc);
-				c.close();
-				return result;
-			} catch (SQLException e) {
-				throw new SenderException(getLogPrefix() + "caught exception sender message, ID=["+correlationID+"]", e);
-			} catch (JdbcException e) {
-				throw new SenderException(e);
-			}
-		} else {
-			synchronized (connection) {
-				return sendMessage(connection, correlationID, message, prc);
-			}
-		}
-	}
-
-	protected void applyParamteters(PreparedStatement statement, ParameterValueList parameters) throws SQLException {
+	protected void applyParameters(PreparedStatement statement, ParameterValueList parameters) throws SQLException {
 		// statement.clearParameters();
 		for (int i=0; i< parameters.size(); i++) {
-			statement.setString(i+1, parameters.getParameterValue(i).asStringValue(""));
+			String parameterValue = (String)parameters.getParameterValue(i).getValue();
+//			log.debug("applying parameter ["+(i+1)+","+parameters.getParameterValue(i).getDefinition().getName()+"], value["+parameterValue+"]");
+			statement.setString(i+1, parameterValue);
 		}
 	}
 	
-	private String sendMessage(Connection connection, String correlationID, String message, ParameterResolutionContext prc) throws SenderException{
+	protected String sendMessage(Connection connection, String correlationID, String message, ParameterResolutionContext prc) throws SenderException{
 		PreparedStatement statement;
 		
 		try {
 			statement = getStatement(connection, correlationID, message);
 			if (prc != null && paramList != null) {
-				applyParamteters(statement, prc.getValues(paramList));
+				applyParameters(statement, prc.getValues(paramList));
 			}
 			if ("select".equalsIgnoreCase(getQueryType())) {
 				return executeSelectQuery(statement);
@@ -221,15 +144,6 @@ public abstract class JdbcQuerySenderBase extends JdbcFacade implements ISenderW
 		}
 	}
 	
-	public String toString() {
-		String result  = super.toString();
-        ToStringBuilder ts=new ToStringBuilder(this);
-        ts.append("name", getName() );
-        ts.append("version", version);
-        result += ts.toString();
-        return result;
-
-	}
 	
 	/**
 	 * Controls wheter output is expected from the query. 
