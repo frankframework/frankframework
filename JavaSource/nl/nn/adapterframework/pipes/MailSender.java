@@ -1,6 +1,12 @@
 /*
  * $Log: MailSender.java,v $
- * Revision 1.9  2004-10-26 07:45:20  L190409
+ * Revision 1.10  2005-04-26 09:21:22  L190409
+ * added parameters messageType, messageBase64 and attachment[@base64] (by Peter Leeuwenburgh)
+ *
+ * Revision 1.1  2005/04/21 13:37:15  NNVZNL01#L168309
+ * added parameters messageType, messageBase64 and attachment[@base64]
+ *
+ * Revision 1.9  2004/10/26 07:45:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * check if any recipients are found
  *
  * Revision 1.8  2004/10/19 16:12:29  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -39,6 +45,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.apache.soap.util.mime.ByteArrayDataSource;
 import org.w3c.dom.Element;
 
 import javax.activation.DataHandler;
@@ -67,15 +74,15 @@ import java.util.Properties;
  * Sample email.xml:<br/><code><pre>
  *	&lt;email&gt;
  *	    &lt;recipients&gt;
- *	        &lt;recipient&gt;***@natned&lt;/recipient&gt;
- *	        &lt;recipient&gt;***@nn.nl&lt;/recipient&gt;
+ *		&lt;recipient type="to"&gt;***@natned&lt;/recipient&gt;
+ *	        &lt;recipient type="cc"&gt;***@nn.nl&lt;/recipient&gt;
  *	    &lt;/recipients&gt;
  *	    &lt;from&gt;***@nn.nl&lt;/from&gt;
  *	    &lt;subject&gt;this is the subject&lt;/subject&gt;
  *	    &lt;message&gt;dit is de message&lt;/message&gt;
  *	    &lt;attachments&gt;
- *	        &lt;attachment name="filename1.txt" type="text" &gt;<i>contents of first attachment</i>&lt;/attachment&gt;
- *	        &lt;attachment name="filename2.txt" type="text" &gt;<i>this is an attachment with a resource</i>&lt;/attachment&gt;
+ *	        &lt;attachment name="filename1.txt" type="text"&gt;<i>contents of first attachment</i>&lt;/attachment&gt;
+ *	        &lt;attachment name="filename2.txt" type="text" url="url-to-resource" base64="false"&gt;<i>this is an attachment with a resource</i>&lt;/attachment&gt;
  *	    &lt;/attachments&gt;
  *	&lt;/email&gt;
  * </pre></code> <br/>
@@ -102,13 +109,15 @@ import java.util.Properties;
  * <tr><td>from</td><td>string</td><td>email address of the sender</td></tr>
  * <tr><td>subject</td><td>string</td><td>subject field of the message</td></tr>
  * <tr><td>message</td><td>string</td><td>message itself. If absent, the complete input message is assumed to be the message</td></tr>
+ * <tr><td>messageType</td><td>string</td><td>message MIME type (at this moment only available are text/plain and text/html - default: text/plain)</td></tr>
+ * <tr><td>messageBase64</td><td>boolean</td><td>indicates whether the message content is base64 encoded (default: false)</td></tr>
  * <tr><td>recipients</td><td>xml</td><td>recipients of the message. must result in a structure like: <code><pre>
- *	        &lt;recipient&gt;***@natned&lt;/recipient&gt;
- *	        &lt;recipient&gt;***@nn.nl&lt;/recipient&gt;
- * </pre></code></td></tr>
+ *	        &lt;recipient type="to"&gt;***@natned&lt;/recipient&gt;
+ *	        &lt;recipient type="cc"&gt;***@nn.nl&lt;/recipient&gt;
+* </pre></code></td></tr>
  * <tr><td>attachments</td><td>xml</td><td>attachments to the message. must result in a structure like: <code><pre>
- *	        &lt;attachment name="filename1.txt" type="text" &gt;<i>contents of first attachment</i>&lt;/attachment&gt;
- *	        &lt;attachment name="filename2.txt" type="text" url="url-to-resource" &gt;<i>this is an attachment with a resource</i>&lt;/attachment&gt;
+ *	        &lt;attachment name="filename1.txt" type="text"&gt;<i>contents of first attachment</i>&lt;/attachment&gt;
+ *	        &lt;attachment name="filename2.txt" type="text" url="url-to-resource" base64="false"&gt;<i>this is an attachment with a resource</i>&lt;/attachment&gt;
  * </pre></code></td></tr>
  * </table>
  * </p>
@@ -121,7 +130,7 @@ import java.util.Properties;
  */
 
 public class MailSender implements ISenderWithParameters {
-	public static final String version = "$Id: MailSender.java,v 1.9 2004-10-26 07:45:20 L190409 Exp $";
+	public static final String version = "$Id: MailSender.java,v 1.10 2005-04-26 09:21:22 L190409 Exp $";
 
 	protected Logger log = Logger.getLogger(this.getClass());
 	private String name;
@@ -130,6 +139,10 @@ public class MailSender implements ISenderWithParameters {
 	private String smtpPassword;
 	private String defaultAttachmentType = "text";
 	private String defaultAttachmentName = "attachment";
+	private String defaultMessageType = "text/plain";
+	private String defaultMessageBase64 = "false";
+	private String messageType = null;
+	private String messageBase64 = null;
 
 	// defaults
 	private String defaultSubject;
@@ -232,6 +245,16 @@ public class MailSender implements ISenderWithParameters {
 				message = pv.asStringValue(message);  
 				log.debug("MailSender ["+getName()+"] retrieved message-parameter ["+message+"]");
 			}
+			pv = pvl.getParameterValue("messageType");
+			if (pv != null) {
+				messageType = pv.asStringValue(null);  
+				log.debug("MailSender ["+getName()+"] retrieved messageType-parameter ["+messageType+"]");
+			}
+			pv = pvl.getParameterValue("messageBase64");
+			if (pv != null) {
+				messageBase64 = pv.asStringValue(null);  
+				log.debug("MailSender ["+getName()+"] retrieved messageBase64-parameter ["+messageBase64+"]");
+			}
 			pv = pvl.getParameterValue("recipients");
 			if (pv != null) {
 				recipients = pv.asCollection();  
@@ -266,6 +289,8 @@ public class MailSender implements ISenderWithParameters {
 			from = XmlUtils.getChildTagAsString(emailElement, "from");
 			subject = XmlUtils.getChildTagAsString(emailElement, "subject");
 			message = XmlUtils.getChildTagAsString(emailElement, "message");
+			messageType = XmlUtils.getChildTagAsString(emailElement, "messageType");
+			messageBase64 = XmlUtils.getChildTagAsString(emailElement, "messageBase64");
 
 			Element recipientsElement = XmlUtils.getFirstChildTag(emailElement, "recipients");
 			recipients = XmlUtils.getChildTags(recipientsElement, "recipient");
@@ -297,6 +322,14 @@ public class MailSender implements ISenderWithParameters {
 			subject = defaultSubject;
 		}
 		log.debug("MailSender ["+getName()+"] requested to send message from ["+from+"] subject ["+subject+"] to #recipients ["+recipients.size()+"]");
+
+		if (StringUtils.isEmpty(messageType)) {
+			messageType = defaultMessageType;
+		}
+
+		if (StringUtils.isEmpty(messageBase64)) {
+			messageBase64 = defaultMessageBase64;
+		}
 		
 		try {
 			if (log.isDebugEnabled()) {
@@ -305,6 +338,12 @@ public class MailSender implements ISenderWithParameters {
 				sb.append("[from=" + from + "]");
 				sb.append("[subject=" + subject + "]");
 				sb.append("[text=" + message + "]");
+				sb.append("[type=" + messageType + "]");
+				sb.append("[base64=" + messageBase64 + "]");
+			}
+
+			if ("true".equalsIgnoreCase(messageBase64)) {
+				message=decodeBase64ToString(message);
 			}
 
 			// construct a message  
@@ -339,11 +378,11 @@ public class MailSender implements ISenderWithParameters {
 			}
 
 			if (attachments==null || attachments.size()==0) {
-				msg.setText(message);
+				msg.setContent(message, messageType);
 			} else {
 				Multipart multipart = new MimeMultipart();
 				BodyPart messageBodyPart = new MimeBodyPart();
-				messageBodyPart.setText(message);
+				messageBodyPart.setContent(message, messageType);
 				multipart.addBodyPart(messageBodyPart);
 				
 				iter = attachments.iterator();
@@ -353,6 +392,7 @@ public class MailSender implements ISenderWithParameters {
 					String attachmentName = attachmentElement.getAttribute("name");
 					String attachmentUrl = attachmentElement.getAttribute("url");
 					String attachmentType = attachmentElement.getAttribute("type");
+					String attachmentBase64 = attachmentElement.getAttribute("base64");
 					if (StringUtils.isEmpty(attachmentType)) {
 						attachmentType = getDefaultAttachmentType();
 					}
@@ -370,7 +410,14 @@ public class MailSender implements ISenderWithParameters {
 					}
 				    
 					messageBodyPart.setFileName(attachmentName);
-					messageBodyPart.setText(attachmentText);
+
+					if ("true".equalsIgnoreCase(attachmentBase64)) {
+						messageBodyPart.setDataHandler(decodeBase64(attachmentText));
+					}
+					else {
+						messageBodyPart.setText(attachmentText);
+					}					
+
 					multipart.addBodyPart(messageBodyPart);
 				}
 				msg.setContent(multipart);	
@@ -386,6 +433,20 @@ public class MailSender implements ISenderWithParameters {
 		} catch (Exception e) {
 			throw new SenderException("MailSender got error", e);
 		}
+	}
+
+	private DataHandler decodeBase64 (String str) {
+			byte[] bytesEncoded = str.getBytes();
+			byte[] bytesDecoded = org.apache.xerces.utils.Base64.decode(bytesEncoded);
+			String encodingType = "application/octet-stream";
+			DataSource ads = new ByteArrayDataSource(bytesDecoded, encodingType);
+			return new DataHandler(ads);
+	}
+
+	private String decodeBase64ToString (String str) {
+			byte[] bytesEncoded = str.getBytes();
+			byte[] bytesDecoded = org.apache.xerces.utils.Base64.decode(bytesEncoded);
+			return new String(bytesDecoded);
 	}
 
 	protected void putOnTransport(Message msg) throws SenderException {
