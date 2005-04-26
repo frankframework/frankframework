@@ -1,6 +1,9 @@
 /*
  * $Log: LdapSender.java,v $
- * Revision 1.5  2005-04-14 08:00:29  L190409
+ * Revision 1.6  2005-04-26 09:31:15  L190409
+ * multiple response object support
+ *
+ * Revision 1.5  2005/04/14 08:00:29  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * preparations for multi-object result
  *
  * Revision 1.4  2005/03/29 14:47:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -17,6 +20,8 @@ import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
+import javax.naming.directory.BasicAttribute;
+import javax.naming.directory.BasicAttributes;
 import javax.naming.directory.DirContext;
 import javax.naming.directory.InitialDirContext;
 import javax.naming.directory.SearchResult;
@@ -75,7 +80,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
  */
 public class LdapSender extends JNDIBase implements ISenderWithParameters {
 	protected Logger log=Logger.getLogger(this.getClass());
-	public static final String version="$Id: LdapSender.java,v 1.5 2005-04-14 08:00:29 L190409 Exp $";
+	public static final String version="$Id: LdapSender.java,v 1.6 2005-04-26 09:31:15 L190409 Exp $";
 	
 	private static final String INITIAL_CONTEXT_FACTORY="com.sun.jndi.ldap.LdapCtxFactory";
 	protected ParameterList paramList = null;
@@ -107,6 +112,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 		return true;
 	}
 
+
 	public String sendMessage(String correlationID, String message) throws SenderException {
 		try {
 			/*
@@ -126,31 +132,27 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 			return sendMessage(correlationID, message);
 		}
 		try {
-			String queryString = applyParameters(message,null);
-			return sendMessage(correlationID, queryString);
-		} catch (ParameterException e) {
+			Attributes matchAttrs = applyParameters(message,prc);
+			NamingEnumeration searchresults=getDirContext().search("",matchAttrs);
+			return SearchResultsToXml(searchresults);
+		} catch (Exception e) {
 			throw new SenderException(e);
 		}
 	}
 	
-	protected String applyParameters(String message, ParameterResolutionContext prc) throws ParameterException {
+	protected Attributes applyParameters(String message, ParameterResolutionContext prc) throws ParameterException {
 		// message is not used in default implementation
-		String result=null;
+		Attributes result = new BasicAttributes(true); // ignore attribute name case
 		for (int i=0; i<paramList.size(); i++) {
 			Parameter p = paramList.getParameter(i);
 			if (StringUtils.isNotEmpty(p.getName())) {
-				String clause=p.getName()+"="+ p.getValue(prc);
-				if (result==null) {
-					result = clause;
-				} else {
-					result = clause +", "+ result;
-				}
+				result.put(new BasicAttribute(p.getName(), p.getValue(prc)));
 			}
 		}
-		log.debug("collected LDAP query-clause from parameters ["+result+"]");
+		log.debug("collected LDAP Attributes from parameters ["+result.toString()+"]");
 		return result;
 	}
-	
+
 	protected synchronized DirContext loopkupDirContext() throws NamingException {
 		if (null == dirContext) {
 			if (getInitialContextFactoryName() != null) {
@@ -172,12 +174,13 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 	}
 
 	protected String SearchResultsToXml(NamingEnumeration searchresults) {
+		// log.debug("SearchResultsToXml for class ["+searchresults.getClass().getName()+"]:"+ToStringBuilder.reflectionToString(searchresults));
 		XmlBuilder searchresultsElem = new XmlBuilder("searchresults");
 		if (searchresults!=null) {
 			try {
 				while (searchresults.hasMore()) {
 					SearchResult sr = (SearchResult)searchresults.next();
-					log.info("result:"+ sr.toString());
+					// log.info("result:"+ sr.toString());
 
 					XmlBuilder itemElem = new XmlBuilder("item");
 					itemElem.addAttribute("name",sr.getName());
@@ -186,6 +189,10 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 					} catch (NamingException e) {
 						itemElem.addAttribute("exceptionType",e.getClass().getName());
 						itemElem.addAttribute("exceptionExplanation",e.getExplanation());
+					} catch (Throwable t) {
+						itemElem.addAttribute("exceptionType",t.getClass().getName());
+						itemElem.addAttribute("exceptionExplanation",t.getMessage());
+						itemElem.addAttribute("itemclass",sr.getClass().getName());
 					}
 					searchresultsElem.addSubElement(itemElem);
 				}
