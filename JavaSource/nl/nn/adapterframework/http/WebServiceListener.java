@@ -1,6 +1,9 @@
 /*
  * $Log: WebServiceListener.java,v $
- * Revision 1.3  2004-09-09 14:49:19  L190409
+ * Revision 1.4  2005-04-26 09:26:52  L190409
+ * added serviceNamespaceURI attribute
+ *
+ * Revision 1.3  2004/09/09 14:49:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed unused variable declarations
  *
  * Revision 1.2  2004/08/23 13:08:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -33,6 +36,7 @@ import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.receivers.ServiceClient;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.log4j.Logger;
 
@@ -47,16 +51,18 @@ import java.util.HashMap;
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>classname</td><td>nl.nn.adapterframework.http.WebServiceListener</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the listener as known to the adapter</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setServiceNamespaceURI(String) serviceNamespaceURI}</td><td>namespace of the service that is provided by the adapter of this listener</td><td>&nbsp;</td></tr>
  * </table>
  * @version Id
  * @author Gerrit van Brakel 
  */
 public class WebServiceListener  implements IPushingListener, ServiceClient, Serializable {
-	public static final String version="$Id: WebServiceListener.java,v 1.3 2004-09-09 14:49:19 L190409 Exp $";
+	public static final String version="$Id: WebServiceListener.java,v 1.4 2005-04-26 09:26:52 L190409 Exp $";
 	protected Logger log = Logger.getLogger(this.getClass());;
 
 	private IMessageHandler handler;        	
 	private String name;
+	private String serviceNamespaceURI;
 
 	/**
 	 * initialize listener and register <code>this</code> to the JNDI
@@ -66,8 +72,13 @@ public class WebServiceListener  implements IPushingListener, ServiceClient, Ser
 			if (handler==null) {
 				throw new ConfigurationException("handler has not been set");
 			}
-		    log.debug("registering listener ["+name+"] with ServiceDispatcher");
-	        ServiceDispatcher.getInstance().registerServiceClient(name, this);
+			if (StringUtils.isEmpty(getServiceNamespaceURI())) {
+				log.debug("registering listener ["+name+"] with ServiceDispatcher");
+				ServiceDispatcher.getInstance().registerServiceClient(name, this);
+			} else {
+				log.debug("registering listener ["+name+"] with ServiceDispatcher by serviceNamespaceURI ["+getServiceNamespaceURI()+"]");
+				ServiceDispatcher.getInstance().registerServiceClient(getServiceNamespaceURI(), this);
+			}
 		} catch (Exception e){
 			throw new ConfigurationException(e);
 		}
@@ -140,4 +151,12 @@ public class WebServiceListener  implements IPushingListener, ServiceClient, Ser
 	public void setExceptionListener(IbisExceptionListener listener) {
 		// do nothing, no exceptions known
 	}
+
+	public String getServiceNamespaceURI() {
+		return serviceNamespaceURI;
+	}
+	public void setServiceNamespaceURI(String string) {
+		serviceNamespaceURI = string;
+	}
+
 }
