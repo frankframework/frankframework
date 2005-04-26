@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaRequesterSender.java,v $
- * Revision 1.10  2005-04-20 14:21:53  L190409
+ * Revision 1.11  2005-04-26 09:24:20  L190409
+ * put closings in finally clause
+ *
+ * Revision 1.10  2005/04/20 14:21:53  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed rather useless warning
  *
  * Revision 1.9  2004/08/26 11:12:00  Johan Verrips <johan.verrips@ibissource.org>
@@ -73,7 +76,7 @@ import com.ing.ifsa.IFSATimeOutMessage;
  * @since 4.2
  */
 public class IfsaRequesterSender extends IfsaFacade implements ISender {
-	public static final String version="$Id: IfsaRequesterSender.java,v 1.10 2005-04-20 14:21:53 L190409 Exp $";
+	public static final String version="$Id: IfsaRequesterSender.java,v 1.11 2005-04-26 09:24:20 L190409 Exp $";
   
 	public IfsaRequesterSender() {
   		super(false); // instantiate IfsaFacade as a requestor	
@@ -117,9 +120,9 @@ public class IfsaRequesterSender extends IfsaFacade implements ISender {
 	
 		String correlationID;
 	    Object msg = null;
-		QueueSession replySession;
-		QueueReceiver replyReceiver;
-	    try {
+		QueueSession replySession=null;
+		QueueReceiver replyReceiver=null;
+		try {
 			correlationID = sentMessage.getJMSMessageID();
 		    replySession = createSession();
 		    replyReceiver = getReplyReceiver(replySession, sentMessage);
@@ -129,13 +132,22 @@ public class IfsaRequesterSender extends IfsaFacade implements ISender {
 		    msg = replyReceiver.receive(timeout);
 	    } catch (Exception e) {
 	        throw new SenderException(getLogPrefix()+"got exception retrieving reply", e);
-	    }
-		try {
-	        replyReceiver.close();
-	        replySession.close();
-	    } catch (JMSException e) {
-	        log.error(getLogPrefix()+"error closing replyreceiver or replysession", e);
-	    }
+	    } finally {
+			if (replyReceiver!=null) {
+				try {
+		        	replyReceiver.close();
+				} catch (JMSException e) {
+					log.error(getLogPrefix()+"error closing replyreceiver", e);
+		        } 
+			}
+			if (replySession!=null) {
+				try {
+			        replySession.close();
+			    } catch (JMSException e) {
+			        log.error(getLogPrefix()+"error closing replysession", e);
+				}
+		    }
+		}
 	    if (msg == null) {
 	        throw new TimeOutException(getLogPrefix()+" timed out waiting for reply with correlationID [" + correlationID + "]");
 	    }
