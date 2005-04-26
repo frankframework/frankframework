@@ -1,8 +1,10 @@
 /*
  * $Log: IfsaApplicationConnection.java,v $
- * Revision 1.1  2005-04-26 09:36:16  L190409
- * introduction of IfsaApplicationConnection
+ * Revision 1.2  2005-04-26 15:16:07  L190409
+ * removed most bugs
  *
+ * Revision 1.1  2005/04/26 09:36:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * introduction of IfsaApplicationConnection
  */
 package nl.nn.adapterframework.extensions.ifsa;
 
@@ -25,14 +27,18 @@ import org.apache.log4j.Logger;
 import com.ing.ifsa.IFSAContext;
 import com.ing.ifsa.IFSAQueue;
 import com.ing.ifsa.IFSAQueueConnectionFactory;
+
 /**
+ * Wrapper around Application oriented IFSA connection objects.
  * 
+ * IFSA related IBIS objects can obtain an connection from this class. The physical connection is shared
+ * between all IBIS objects that have the same ApplicationID.
  * 
  * @author Gerrit van Brakel
  * @version Id
  */
 public class IfsaApplicationConnection  {
-	public static final String version="$Id: IfsaApplicationConnection.java,v 1.1 2005-04-26 09:36:16 L190409 Exp $";
+	public static final String version="$Id: IfsaApplicationConnection.java,v 1.2 2005-04-26 15:16:07 L190409 Exp $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	private final static String IFSA_INITIAL_CONTEXT_FACTORY="com.ing.ifsa.IFSAContextFactory";
@@ -55,9 +61,11 @@ public class IfsaApplicationConnection  {
 
 	public static synchronized IfsaApplicationConnection getConnection(String applicationId) throws IfsaException {
 		IfsaApplicationConnection result = (IfsaApplicationConnection)connectionMap.get(applicationId);
-		if (result != null) {
+		if (result == null) {
 			result = new IfsaApplicationConnection(applicationId);
 			connectionMap.put(applicationId, result);
+			result.getIfsaQueueConnectionFactory();
+			result.log.debug(result.getLogPrefix()+" creating new IfsaApplicationConnection-object");
 		}
 		result.referenceCount++;
 		return result;
@@ -67,7 +75,7 @@ public class IfsaApplicationConnection  {
 	{
 		if (--referenceCount<=0) {
 			log.debug(getLogPrefix()+" reference count ["+referenceCount+"], closing connection");
-			connectionMap.remove(this);
+			connectionMap.remove(getApplicationId());
 			try {
 				if (queueConnection != null) { 
 					queueConnection.close();
@@ -76,7 +84,7 @@ public class IfsaApplicationConnection  {
 					context.close(); 
 				}
 			} catch (Exception e) {
-				throw new IfsaException(getLogPrefix()+"exception closing connection", e);
+				throw new IfsaException("exception closing connection", e);
 			} finally {
 				ifsaQueueConnectionFactory = null;
 				queueConnection=null;
@@ -99,7 +107,7 @@ public class IfsaApplicationConnection  {
 			}
 			return context;
 		} catch (NamingException e) {
-			throw new IfsaException(getLogPrefix()+"could not obtain context", e);
+			throw new IfsaException("could not obtain context", e);
 		}
 	}
 
@@ -125,7 +133,7 @@ public class IfsaApplicationConnection  {
 		}
 		return ifsaQueueConnectionFactory;
 		} catch (NamingException e) {
-			throw new IfsaException(getLogPrefix(),e);
+			throw new IfsaException(e);
 		}
 	}
 
@@ -135,7 +143,7 @@ public class IfsaApplicationConnection  {
 				queueConnection = getIfsaQueueConnectionFactory().createQueueConnection();
 				queueConnection.start();
 			} catch (JMSException e) {
-				throw new IfsaException(getLogPrefix(),e); 
+				throw new IfsaException(e); 
 			}
 		}
 		return queueConnection;
@@ -179,7 +187,7 @@ public class IfsaApplicationConnection  {
 			}
 			return replyQueue;
 		} catch (Exception e) {
-			throw new IfsaException(getLogPrefix(),e);
+			throw new IfsaException(e);
 		}
 	}
 	/**
@@ -200,7 +208,7 @@ public class IfsaApplicationConnection  {
 			correlationId=sentMessage.getJMSCorrelationID();
 			replyQueue=(Queue)sentMessage.getJMSReplyTo();
 		} catch (JMSException e) {
-			throw new IfsaException(getLogPrefix(),e);
+			throw new IfsaException(e);
 		}
 		
 		try {
@@ -214,7 +222,7 @@ public class IfsaApplicationConnection  {
 				log.debug("** non-transactional client" );
 			}	
 		} catch (JMSException e) {
-			throw new IfsaException(getLogPrefix(),e);
+			throw new IfsaException(e);
 		}
 		return queueReceiver;
 	}
@@ -223,7 +231,7 @@ public class IfsaApplicationConnection  {
 		try {
 			return (IFSAQueue) getContext().lookupService(serviceId);
 		} catch (NamingException e) {
-			throw new IfsaException(getLogPrefix()+"cannot lookup queue for service ["+serviceId+"]");
+			throw new IfsaException("cannot lookup queue for service ["+serviceId+"]",e);
 		}
   	}
   	
@@ -231,7 +239,7 @@ public class IfsaApplicationConnection  {
 		try {
 			return (IFSAQueue) getContext().lookupProviderInput();
 		} catch (NamingException e) {
-			throw new IfsaException(getLogPrefix()+"cannot lookup provider queue");
+			throw new IfsaException("cannot lookup provider queue",e);
 		}
 	}
 	
