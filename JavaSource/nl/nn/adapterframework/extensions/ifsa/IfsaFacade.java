@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaFacade.java,v $
- * Revision 1.20  2005-04-26 15:17:28  L190409
+ * Revision 1.21  2005-05-03 15:58:49  L190409
+ * rework of shared connection code
+ *
+ * Revision 1.20  2005/04/26 15:17:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * rework, using IfsaApplicationConnection resulting in shared usage of connection objects
  *
  * Revision 1.19  2005/01/13 08:15:08  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -52,6 +55,7 @@ import com.ing.ifsa.*;
 
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.core.IbisException;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 
 import org.apache.commons.lang.StringUtils;
@@ -86,7 +90,7 @@ import javax.jms.*;
  * @since 4.2
  */
 public class IfsaFacade implements INamedObject, HasPhysicalDestination {
-	public static final String version="$Id: IfsaFacade.java,v 1.20 2005-04-26 15:17:28 L190409 Exp $";
+	public static final String version="$Id: IfsaFacade.java,v 1.21 2005-05-03 15:58:49 L190409 Exp $";
     protected Logger log = Logger.getLogger(this.getClass());
     
 	//private final static String IFSA_INITIAL_CONTEXT_FACTORY="com.ing.ifsa.IFSAContextFactory";
@@ -105,7 +109,7 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 //    private QueueConnection connection = null;
     private IFSAQueue queue;
 
-	private IfsaApplicationConnection connection=null;
+	private IfsaConnection connection=null;
 	
 	private boolean requestor=false;
 	private boolean provider=false;
@@ -191,7 +195,14 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 	public void closeService() throws IfsaException {
 	    try {
 	        if (connection != null) {
-	            connection.close();
+	            try {
+					connection.close();
+				} catch (IbisException e) {
+					if (e instanceof IfsaException) {
+						throw (IfsaException)e;
+					}
+					throw new IfsaException(e);
+	            }
                 log.debug(getLogPrefix()+"closed connection for service");
 	        }
 /*			if (context != null) {
@@ -268,11 +279,21 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 		}
 	}
 */
-	protected IfsaApplicationConnection getConnection() throws IfsaException {
+	protected IfsaConnection getConnection() throws IfsaException {
 		if (connection == null) {
 			synchronized (this) {
 				if (connection == null) {
-					connection = IfsaApplicationConnection.getConnection(getApplicationId());
+					log.debug("instantiating IfsaConnectionFactory");
+					IfsaConnectionFactory ifsaConnectionFactory = new IfsaConnectionFactory();
+					try {
+						log.debug("creating IfsaConnection");
+						connection = (IfsaConnection)ifsaConnectionFactory.getConnection(getApplicationId());
+					} catch (IbisException e) {
+						if (e instanceof IfsaException) {
+							throw (IfsaException)e;
+						}
+						throw new IfsaException(e);
+					}
 				}
 			}
 		}
@@ -288,8 +309,11 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 			if (isRequestor()) {
 				mode += IFSAConstants.QueueSession.IFSA_MODE; // let requestor receive IFSATimeOutMessages
 			}
-			return connection.createQueueSession(isTransacted(), mode);
-		} catch (JMSException e) {
+			return (QueueSession) connection.createSession(isTransacted(), mode);
+		} catch (IbisException e) {
+			if (e instanceof IfsaException) {
+				throw (IfsaException)e;
+			}
 			throw new IfsaException(e);
 		}
 	}
@@ -572,6 +596,7 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 			} else {
 				result = getApplicationId();
 			}
+			log.debug("obtaining connection and servicequeue for "+result);
 			if (getConnection()!=null && getServiceQueue() != null) {
 				result += " ["+ getServiceQueue().getQueueName()+"]";
 			}
