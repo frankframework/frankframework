@@ -1,6 +1,9 @@
 /*
  * $Log: XmlSwitch.java,v $
- * Revision 1.13  2005-04-26 09:22:56  L190409
+ * Revision 1.14  2005-05-03 16:00:51  L190409
+ * corrected typo
+ *
+ * Revision 1.13  2005/04/26 09:22:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added SessionVariable facility (by Peter Leeuwenburgh)
  *
  */
@@ -37,7 +40,7 @@ import java.util.Map;
  * <tr><td>{@link #setServiceSelectionStylesheetFilename(String) serviceSelectionStylesheetFilename}</td><td>stylesheet may return a String representing the forward to look up</td><td><i>a stylesheet that returns the name of the root-element</i></td></tr>
  * <tr><td>{@link #setXpathExpression(String) xpathExpression}</td><td>XPath-expression that returns a String representing the forward to look up</td><td></td></tr>
  * <tr><td>{@link #setSessionKey(String) sessionKey}</td><td>name of the key in the <code>PipeLineSession</code> to retrieve the input message from</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setNotFoundForwardName(String) setNotFoundForwardName(String)}</td><td>Forward returned when the pipename derived from the stylesheet could not be found.</i></td></tr>
+ * <tr><td>{@link #setNotFoundForwardName(String) notFoundForwardName}</td><td>Forward returned when the pipename derived from the stylesheet could not be found.</i></td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * <p><b>Exits:</b>
@@ -51,7 +54,7 @@ import java.util.Map;
  * @author Johan Verrips
  */
 public class XmlSwitch extends AbstractPipe {
-	public static final String version="$Id: XmlSwitch.java,v 1.13 2005-04-26 09:22:56 L190409 Exp $";
+	public static final String version="$Id: XmlSwitch.java,v 1.14 2005-05-03 16:00:51 L190409 Exp $";
 	
     private static final String DEFAULT_SERVICESELECTION_XPATH = XmlUtils.XPATH_GETROOTNODENAME;
 	private TransformerPool transformerPool=null;
