@@ -1,3 +1,9 @@
+/*
+ * $Log: ServiceDispatcher_ServiceProxy.java,v $
+ * Revision 1.7  2005-05-19 12:30:18  europe\l180564
+ * Updated VersionID
+ *
+ */
 package nl.nn.adapterframework.receivers;
 
 import org.apache.soap.Constants;
@@ -16,12 +22,12 @@ import java.util.Vector;
  * WebService proxy class that can be used in applications that need to communciate with
  * the IBIS Adapterframework via a webservice.
  * @version Id
- *  @Author Johan Verrips
+ * @Author Johan Verrips
  */
 
 public class ServiceDispatcher_ServiceProxy
 {
-		public static final String version="$Id: ServiceDispatcher_ServiceProxy.java,v 1.6 2005-05-19 11:39:51 europe\l180564 Exp $";
+ public static final String version="$Revision: 1.7 $ $Date: 2005-05-19 12:30:18 $";
 
   private URL url = null;
 
