@@ -1,6 +1,9 @@
 /*
  * $Log: DelayPipe.java,v $
- * Revision 1.1  2005-05-19 12:22:40  europe\l180564
+ * Revision 1.2  2005-05-19 12:33:22  europe\l180564
+ * Updated VersionID
+ *
+ * Revision 1.1  2005/05/19 12:22:40  Johan Verrips <johan.verrips@ibissource.org>
  * Initial Version
  *
  */
@@ -16,7 +19,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
  * Usefull for testing purposes
  */
 public class DelayPipe extends FixedForwardPipe {
-	public static final String version="$Id: DelayPipe.java,v 1.1 2005-05-19 12:22:40 europe\l180564 Exp $";
+	public static final String version="$RCSfile: DelayPipe.java,v $  $Revision: 1.2 $ $Date: 2005-05-19 12:33:22 $";
 
 	private long delayTime=5000;
 	public PipeRunResult doPipe (Object input, PipeLineSession session) {

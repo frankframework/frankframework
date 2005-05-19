@@ -1,6 +1,9 @@
 /*
  * $Log: ServiceDispatcher_ServiceProxy.java,v $
- * Revision 1.8  2005-05-19 12:31:24  europe\l180564
+ * Revision 1.9  2005-05-19 12:32:09  europe\l180564
+ * Updated VersionID
+ *
+ * Revision 1.8  2005/05/19 12:31:24  Johan Verrips <johan.verrips@ibissource.org>
  * Updated VersionID
  *
  * Revision 1.7  2005/05/19 12:30:18  Johan Verrips <johan.verrips@ibissource.org>
@@ -30,7 +33,7 @@ import java.util.Vector;
 
 public class ServiceDispatcher_ServiceProxy
 {
- public static final String version="$Source: /tmp/Ibis/Ibis/JavaSource/nl/nn/adapterframework/receivers/ServiceDispatcher_ServiceProxy.java,v $ $Revision: 1.8 $ $Date: 2005-05-19 12:31:24 $";
+ public static final String version="$RCSfile: ServiceDispatcher_ServiceProxy.java,v $  $Revision: 1.9 $ $Date: 2005-05-19 12:32:09 $";
 
   private URL url = null;
 
