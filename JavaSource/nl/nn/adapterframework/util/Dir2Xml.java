@@ -1,8 +1,15 @@
+/*
+ * $Log: Dir2Xml.java,v $
+ * Revision 1.4  2005-05-31 09:20:37  europe\L190409
+ * added sort for files
+ *
+ */
 package nl.nn.adapterframework.util;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
+import java.util.Arrays;
 /**
  * List the contents of a directory as XML.
  * @version Id
@@ -10,7 +17,7 @@ import java.util.Date;
  * @author Johan Verrips IOS
  */
 public class Dir2Xml  {
-	public static final String version="$Id: Dir2Xml.java,v 1.3 2004-03-26 10:42:39 NNVZNL01#L180564 Exp $";
+	public static final String version="$RCSfile: Dir2Xml.java,v $ $Revision: 1.4 $ $Date: 2005-05-31 09:20:37 $";
 	
   String path;
   String wildcard="*.*";
@@ -21,6 +28,7 @@ public class Dir2Xml  {
     WildCardFilter filter = new WildCardFilter(wildcard);
     File dir = new File(path);
     File files[] = dir.listFiles(filter);
+    Arrays.sort(files);
     int count=(files==null ? 0 : files.length);
     XmlBuilder dirXml=new XmlBuilder("directory");
     dirXml.addAttribute("name", path);
