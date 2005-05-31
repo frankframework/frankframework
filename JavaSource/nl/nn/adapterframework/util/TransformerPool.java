@@ -1,6 +1,9 @@
 /*
  * $Log: TransformerPool.java,v $
- * Revision 1.9  2005-03-31 08:16:27  L190409
+ * Revision 1.10  2005-05-31 09:48:22  europe\L190409
+ * using stringToSource() and always clearing parameters
+ *
+ * Revision 1.9  2005/03/31 08:16:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * generalized Source
  *
  * Revision 1.8  2005/03/04 07:52:45  Johan Verrips <johan.verrips@ibissource.org>
@@ -61,7 +64,7 @@ import org.w3c.dom.Document;
  * @author Gerrit van Brakel
  */
 public class TransformerPool {
-	public static final String version = "$Id: TransformerPool.java,v 1.9 2005-03-31 08:16:27 L190409 Exp $";
+	public static final String version = "$RCSfile: TransformerPool.java,v $ $Revision: 1.10 $ $Date: 2005-05-31 09:48:22 $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	private TransformerFactory tFactory = TransformerFactory.newInstance();
@@ -166,21 +169,15 @@ public class TransformerPool {
 		return transform(new DOMSource(d),parameters);
 	}
 
-	public String transform(String s, Map parameters) throws TransformerException, IOException {
-
-		Variant inputVar = new Variant(s);
-		Source in = inputVar.asXmlSource();
-
-		return transform(in,parameters);
+	public String transform(String s, Map parameters) throws TransformerException, IOException, DomBuilderException {
+		return transform(XmlUtils.stringToSource(s),parameters);
 	}
-	
+
 	public String transform(Source s, Map parameters) throws TransformerException, IOException {
 		Transformer transformer = getTransformer();
 
 		try {	
-			if (parameters!=null) {
-				XmlUtils.setTransformerParameters(transformer, parameters);
-			}
+			XmlUtils.setTransformerParameters(transformer, parameters);
 			return XmlUtils.transformXml(transformer, s);
 		} 
 		catch (TransformerException te) {
