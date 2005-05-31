@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcFacade.java,v $
- * Revision 1.4  2005-03-31 08:11:28  L190409
+ * Revision 1.5  2005-05-31 09:53:00  europe\L190409
+ * introduction of attribute 'connectionsArePooled'
+ *
+ * Revision 1.4  2005/03/31 08:11:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected typo in logging
  *
  * Revision 1.3  2004/03/26 10:43:09  Johan Verrips <johan.verrips@ibissource.org>
@@ -38,7 +41,7 @@ import org.apache.log4j.Logger;
  * 
  */
 public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version="$Id: JdbcFacade.java,v 1.4 2005-03-31 08:11:28 L190409 Exp $";
+	public static final String version="$Id: JdbcFacade.java,v 1.5 2005-05-31 09:53:00 europe\L190409 Exp $";
     protected Logger log = Logger.getLogger(this.getClass());
 	
 	private String name;
@@ -50,6 +53,7 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 	private String datasourceNameXA = null;
 
 	private boolean transacted = false;
+	private boolean connectionsArePooled=true;
 
 
 protected String getLogPrefix() {
@@ -185,6 +189,13 @@ protected String getLogPrefix() {
 	}
 	public boolean isTransacted() {
 		return transacted;
+	}
+
+	public boolean isConnectionsArePooled() {
+		return connectionsArePooled || isTransacted();
+	}
+	public void setConnectionsArePooled(boolean b) {
+		connectionsArePooled = b;
 	}
 
 }
