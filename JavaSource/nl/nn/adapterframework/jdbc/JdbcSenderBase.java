@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcSenderBase.java,v $
- * Revision 1.1  2005-04-26 15:20:34  L190409
+ * Revision 1.2  2005-05-31 09:55:01  europe\L190409
+ * implemented attribute 'connectionsArePooled'
+ *
+ * Revision 1.1  2005/04/26 15:20:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * introduced JdbcSenderBase, with non-sql oriented basics
  *
  */
@@ -26,7 +29,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * @since 	4.2.h
  */
 public abstract class JdbcSenderBase extends JdbcFacade implements ISenderWithParameters {
-	public static final String version="$Id: JdbcSenderBase.java,v 1.1 2005-04-26 15:20:34 L190409 Exp $";
+	public static final String version="$RCSfile: JdbcSenderBase.java,v $ $Revision: 1.2 $ $Date: 2005-05-31 09:55:01 $";
 
 	protected Connection connection=null;
 	protected ParameterList paramList = null;
@@ -61,7 +64,7 @@ public abstract class JdbcSenderBase extends JdbcFacade implements ISenderWithPa
 	}
 
 	public void open() throws SenderException {
-		if (!isTransacted()) {
+		if (!isConnectionsArePooled()) {
 			try {
 				connection = getConnection();
 			} catch (JdbcException e) {
@@ -87,7 +90,7 @@ public abstract class JdbcSenderBase extends JdbcFacade implements ISenderWithPa
 	}
 
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException {
-		if (isTransacted()) {
+		if (isConnectionsArePooled()) {
 			try {
 				Connection c = getConnection();
 				String result = sendMessage(c, correlationID, message, prc);
