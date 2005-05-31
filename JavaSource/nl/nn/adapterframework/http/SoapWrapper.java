@@ -1,6 +1,9 @@
 /*
  * $Log: SoapWrapper.java,v $
- * Revision 1.1  2005-02-24 12:15:15  L190409
+ * Revision 1.2  2005-05-31 09:15:46  europe\L190409
+ * added catch for DomBuilderException
+ *
+ * Revision 1.1  2005/02/24 12:15:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * moved SOAP conversion coding to SOAP-wrapper
  *
  */
@@ -18,6 +21,7 @@ import org.apache.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -28,7 +32,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @version Id
  */
 public class SoapWrapper {
-	public static final String version="$Id: SoapWrapper.java,v 1.1 2005-02-24 12:15:15 L190409 Exp $";
+	public static final String version="$Id: SoapWrapper.java,v 1.2 2005-05-31 09:15:46 europe\L190409 Exp $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	private TransformerPool extractBody;
@@ -78,6 +82,8 @@ public class SoapWrapper {
 				faultString = getFaultString(responseBody);
 				log.debug("faultCode="+faultCode+", faultString="+faultString);
 			}
+		} catch (DomBuilderException e) {
+			log.debug("IOException extracting fault message",e);
 		} catch (IOException e) {
 			log.debug("IOException extracting fault message",e);
 		} catch (TransformerException e) {
@@ -91,20 +97,20 @@ public class SoapWrapper {
 	}
 
 	
-	public String getBody(String message) throws TransformerException, IOException {
+	public String getBody(String message) throws DomBuilderException, TransformerException, IOException {
 		return extractBody.transform(message,null);
 	}
 	public String getBody(InputStream request) throws TransformerException, IOException {
 		return extractBody.transform(new StreamSource(request),null);
 	}
 
-	public int getFaultCount(String message) throws TransformerException, IOException {
+	public int getFaultCount(String message) throws NumberFormatException, DomBuilderException, TransformerException, IOException {
 		return Integer.parseInt(extractFaultCount.transform(message,null));
 	}
-	public String getFaultCode(String message) throws TransformerException, IOException {
+	public String getFaultCode(String message) throws DomBuilderException, TransformerException, IOException {
 		return extractFaultCode.transform(message,null);
 	}
-	public String getFaultString(String message) throws TransformerException, IOException {
+	public String getFaultString(String message) throws DomBuilderException, TransformerException, IOException {
 		return extractFaultString.transform(message,null);
 	}
 	

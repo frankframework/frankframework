@@ -1,6 +1,9 @@
 /*
  * $Log: CoolGenWrapperPipe.java,v $
- * Revision 1.4  2004-03-31 12:04:21  L190409
+ * Revision 1.5  2005-05-31 09:13:45  europe\L190409
+ * added catch for DomBuilderException
+ *
+ * Revision 1.4  2004/03/31 12:04:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fixed javadoc
  *
  * Revision 1.3  2004/03/24 15:26:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -32,6 +35,7 @@ import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.Variant;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -62,7 +66,7 @@ import nl.nn.adapterframework.util.ClassUtils;
  * @version Id
  */
 public class CoolGenWrapperPipe extends FixedForwardPipe {
-	public static final String version="$Id: CoolGenWrapperPipe.java,v 1.4 2004-03-31 12:04:21 L190409 Exp $";
+	public static final String version="$RCSfile: CoolGenWrapperPipe.java,v $ $Revision: 1.5 $ $Date: 2005-05-31 09:13:45 $";
 
     private String clientId;
     private String clientPassword;
@@ -332,6 +336,8 @@ public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRu
             wrapperResult = XmlUtils.transformXml(postProcTransformer, proxyResult.toString());
         } else
             wrapperResult = proxyResult.toString();
+	} catch (DomBuilderException e) {
+		throw new PipeRunException(this, getLogPrefix(session)+"DomBuilderException excecuting proxy", e);
     } catch (IOException e) {
         throw new PipeRunException(this, getLogPrefix(session)+"IOException excecuting proxy", e);
     } catch (TransformerException e) {
