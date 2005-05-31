@@ -1,6 +1,9 @@
 /*
  * $Log: SoapWrapper.java,v $
- * Revision 1.2  2005-05-31 09:15:46  europe\L190409
+ * Revision 1.3  2005-05-31 09:16:23  europe\L190409
+ * cosmetic changes
+ *
+ * Revision 1.2  2005/05/31 09:15:46  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added catch for DomBuilderException
  *
  * Revision 1.1  2005/02/24 12:15:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -32,7 +35,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @version Id
  */
 public class SoapWrapper {
-	public static final String version="$Id: SoapWrapper.java,v 1.2 2005-05-31 09:15:46 europe\L190409 Exp $";
+	public static final String version="$RCSfile: SoapWrapper.java,v $ $Revision: 1.3 $ $Date: 2005-05-31 09:16:23 $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	private TransformerPool extractBody;
