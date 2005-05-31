@@ -1,6 +1,9 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.16  2005-01-10 08:56:10  L190409
+ * Revision 1.17  2005-05-31 09:38:18  europe\L190409
+ * added versionInfo() and stringToSource()
+ *
+ * Revision 1.16  2005/01/10 08:56:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Xslt parameter handling by Maps instead of by Ibis parameter system
  *
  * Revision 1.15  2004/11/10 13:01:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -49,6 +52,7 @@ package nl.nn.adapterframework.util;
 
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.SystemUtils;
 import org.apache.commons.lang.exception.NestableException;
 import org.apache.log4j.Logger;
 
@@ -103,27 +107,17 @@ import java.util.Map;
  * @author Johan Verrips IOS
  */
 public class XmlUtils {
-	public static final String version =
-		"$Id: XmlUtils.java,v 1.16 2005-01-10 08:56:10 L190409 Exp $";
+	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.17 $ $Date: 2005-05-31 09:38:18 $";
+	static Logger log = Logger.getLogger(XmlUtils.class);
 
-	static final String W3C_XML_SCHEMA = "http://www.w3.org/2001/XMLSchema";
-	static final String JAXP_SCHEMA_LANGUAGE =
-		"http://java.sun.com/xml/jaxp/properties/schemaLanguage";
-	static final String JAXP_SCHEMA_SOURCE =
-		"http://java.sun.com/xml/jaxp/properties/schemaSource";
+	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
+	static final String JAXP_SCHEMA_LANGUAGE = "http://java.sun.com/xml/jaxp/properties/schemaLanguage";
+	static final String JAXP_SCHEMA_SOURCE =   "http://java.sun.com/xml/jaxp/properties/schemaSource";
 
 	public final static String OPEN_FROM_FILE = "file";
 	public final static String OPEN_FROM_URL = "url";
 	public final static String OPEN_FROM_RESOURCE = "resource";
 	public final static String OPEN_FROM_XML = "xml";
-	static Logger log = Logger.getLogger("XmlUtils");
-
-	public static final String XSLT_GETROOTNODENAME =
-		"<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-			+ "<xsl:stylesheet version=\"1.0\" xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\">"
-			+ "<xsl:output omit-xml-declaration=\"yes\" media-type=\"text\"/>"
-			+ "<xsl:template match=\"/\"><xsl:value-of select=\"name(/node()[position()=last()])\"/></xsl:template>"
-			+ "</xsl:stylesheet>";
 
 	public static final String XPATH_GETROOTNODENAME = "name(/node()[position()=last()])";
 
@@ -136,6 +130,8 @@ public class XmlUtils {
 	public XmlUtils() {
 		super();
 	}
+
+
 	static public Document buildDomDocument(File file)
 		throws DomBuilderException {
 		Reader in;
@@ -303,6 +299,26 @@ public class XmlUtils {
 		return createXPathEvaluator(XPathExpression, outputMethod);
 	}
 
+	/**
+	 * Converts a string containing xml-markup to a Source-object, that can be used as the input of a XSLT-transformer.
+	 * If xmlMayContainNamespaces is <code>false</code>, it is assumed that a single pass through the XML is sufficient. In that
+	 * case a StreamSource based on a StringReader can be used. 
+	 * If xmlMayContainNamespaces is <code>true</code>, then multiple passes might be nessecary. That cannot be done using a 
+	 * StreamSource or SAXSource. In this case a DOMSource must be used. 
+	 */
+	public static Source stringToSource(String xmlString, boolean xmlMayContainNamespaces) throws DomBuilderException {
+		if (xmlMayContainNamespaces) {
+			Document doc = XmlUtils.buildDomDocument(xmlString);
+			return new DOMSource(doc); 
+		} else {
+			StringReader sr = new StringReader(xmlString);
+			return new StreamSource(sr);
+		}
+	}
+
+	public static Source stringToSource(String xmlString) throws DomBuilderException {
+		return stringToSource(xmlString,true);
+	}
 
 	public static synchronized Transformer createTransformer(String xsltString)
 		throws TransformerConfigurationException {
@@ -630,20 +646,20 @@ public class XmlUtils {
 		}
 	}
 	
-	public static String transformXml(Transformer t, Document d)
-		throws TransformerException, IOException {
-
+	public static String transformXml(Transformer t, Document d) throws TransformerException, IOException {
 		return transformXml(t, new DOMSource(d));
 	}
 
-	public static String transformXml(Transformer t, String s)
-		throws TransformerException, IOException {
-
-		Variant inputVar = new Variant(s);
-		Source in = inputVar.asXmlSource();
-
-		return transformXml(t, in);
+	public static String transformXml(Transformer t, String s, boolean xmlMayContainNamespaces) throws TransformerException, IOException, DomBuilderException {
+		return transformXml(t, stringToSource(s, xmlMayContainNamespaces));
 	}
+
+	public static String transformXml(Transformer t, String s) throws TransformerException, IOException, DomBuilderException {
+//		log.debug("transforming under the assumption that source document may contain namespaces (therefore using DOMSource)");
+		return transformXml(t, stringToSource(s));
+	}
+
+	
 	public static String transformXml(Transformer t, Source s)
 		throws TransformerException, IOException {
 
@@ -719,4 +735,41 @@ public class XmlUtils {
 
 		return result;
 	}
+	
+	public static String getVersionInfo() {
+		StringBuffer sb=new StringBuffer();
+		sb.append(version+SystemUtils.LINE_SEPARATOR);
+		sb.append("XML tool version info:"+SystemUtils.LINE_SEPARATOR);
+		
+		SAXParserFactory spFactory = SAXParserFactory.newInstance();
+		sb.append("SAXParserFactory-class ="+spFactory.getClass().getName()+SystemUtils.LINE_SEPARATOR);
+		DocumentBuilderFactory domFactory = DocumentBuilderFactory.newInstance();
+		sb.append("DocumentBuilderFactory-class ="+domFactory.getClass().getName()+SystemUtils.LINE_SEPARATOR);
+
+		TransformerFactory tFactory = TransformerFactory.newInstance();
+		sb.append("TransformerFactory-class ="+tFactory.getClass().getName()+SystemUtils.LINE_SEPARATOR);
+
+		sb.append("Apache-XML tool version info:"+SystemUtils.LINE_SEPARATOR);
+
+		try {
+			sb.append("Xerces-Version="+org.apache.xerces.framework.Version.fVersion+SystemUtils.LINE_SEPARATOR);
+		}  catch (Throwable t) {
+			sb.append("Xerces-Version not found ("+t.getClass().getName()+": "+t.getMessage()+")"+SystemUtils.LINE_SEPARATOR);
+		}
+			
+		try {
+			sb.append("Xalan-version="+org.apache.xalan.Version.getVersion()+SystemUtils.LINE_SEPARATOR);
+		}  catch (Throwable t) {
+			sb.append("Xalan-Version not found ("+t.getClass().getName()+": "+t.getMessage()+")"+SystemUtils.LINE_SEPARATOR);
+		}
+
+		try {
+//			sb.append("XmlCommons-Version="+org.apache.xmlcommons.Version.getVersion()+SystemUtils.LINE_SEPARATOR);
+		}  catch (Throwable t) {
+			sb.append("XmlCommons-Version not found ("+t.getClass().getName()+": "+t.getMessage()+")"+SystemUtils.LINE_SEPARATOR);
+		}
+
+		return sb.toString();
+	}
+
 }
