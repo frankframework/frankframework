@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLineSession.java,v $
- * Revision 1.6  2005-03-07 11:06:26  NNVZNL01#L180564
+ * Revision 1.7  2005-05-31 09:10:10  europe\L190409
+ * cosmetic changes
+ *
+ * Revision 1.6  2005/03/07 11:06:26  Johan Verrips <johan.verrips@ibissource.org>
  * PipeLineSession became a extension of HashMap
  *
  * Revision 1.5  2005/02/10 07:49:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -16,6 +19,7 @@
 package nl.nn.adapterframework.core;
 
 import java.util.HashMap;
+import java.util.Map;
 
 
 /**
@@ -34,7 +38,7 @@ import java.util.HashMap;
  * @since   version 3.2.2
  */
 public class PipeLineSession extends HashMap implements IXAEnabled {
-	public static final String version="$Id: PipeLineSession.java,v 1.6 2005-03-07 11:06:26 NNVZNL01#L180564 Exp $";
+	public static final String version="$RCSfile: PipeLineSession.java,v $ $Revision: 1.7 $ $Date: 2005-05-31 09:10:10 $";
 
 	public static final String originalMessageKey="originalMessage";
 	public static final String messageIdKey="messageId";
@@ -49,7 +53,7 @@ public class PipeLineSession extends HashMap implements IXAEnabled {
 	public PipeLineSession(int initialCapacity, float loadFactor) {
 		super(initialCapacity, loadFactor);
 	}
-	public PipeLineSession(java.util.Map t) {
+	public PipeLineSession(Map t) {
 		super(t);
 	}
 
