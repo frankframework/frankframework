@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcFacade.java,v $
- * Revision 1.5  2005-05-31 09:53:00  europe\L190409
+ * Revision 1.6  2005-05-31 09:53:35  europe\L190409
+ * corrected version
+ *
+ * Revision 1.5  2005/05/31 09:53:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * introduction of attribute 'connectionsArePooled'
  *
  * Revision 1.4  2005/03/31 08:11:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -41,7 +44,7 @@ import org.apache.log4j.Logger;
  * 
  */
 public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version="$Id: JdbcFacade.java,v 1.5 2005-05-31 09:53:00 europe\L190409 Exp $";
+	public static final String version="$RCSfile: JdbcFacade.java,v $ $Revision: 1.6 $ $Date: 2005-05-31 09:53:35 $";
     protected Logger log = Logger.getLogger(this.getClass());
 	
 	private String name;
