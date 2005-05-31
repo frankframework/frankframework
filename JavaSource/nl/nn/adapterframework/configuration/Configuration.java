@@ -1,6 +1,9 @@
 /*
  * $Log: Configuration.java,v $
- * Revision 1.14  2004-08-23 07:41:40  L190409
+ * Revision 1.15  2005-05-31 09:11:24  europe\L190409
+ * detailed version info for XML parsers and transformers
+ *
+ * Revision 1.14  2004/08/23 07:41:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * renamed Pushers to Listeners
  *
  * Revision 1.13  2004/08/09 08:43:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -63,7 +66,7 @@ import java.util.Enumeration;
  */
 public class Configuration {
     protected Logger log; 
-    public static final String version="$Id: Configuration.java,v 1.14 2004-08-23 07:41:40 L190409 Exp $";
+    public static final String version="$RCSfile: Configuration.java,v $ $Revision: 1.15 $ $Date: 2005-05-31 09:11:24 $";
      
     private Hashtable adapterTable = new Hashtable();
 
@@ -330,14 +333,11 @@ public class Configuration {
     	sb.append(nl.nn.adapterframework.core.Adapter.version+SystemUtils.LINE_SEPARATOR);
     	sb.append(nl.nn.adapterframework.core.IPipe.version+SystemUtils.LINE_SEPARATOR);
     	sb.append(nl.nn.adapterframework.core.PipeLine.version+SystemUtils.LINE_SEPARATOR);
-    	sb.append(nl.nn.adapterframework.receivers.JmsReceiver.version+SystemUtils.LINE_SEPARATOR);
     	sb.append(nl.nn.adapterframework.receivers.ServiceDispatcher.version+SystemUtils.LINE_SEPARATOR);
     	sb.append(nl.nn.adapterframework.receivers.ServiceListener.version+SystemUtils.LINE_SEPARATOR);
-    	sb.append(nl.nn.adapterframework.receivers.PullingReceiverBase.version+SystemUtils.LINE_SEPARATOR);
 		sb.append(nl.nn.adapterframework.receivers.ReceiverBase.version+SystemUtils.LINE_SEPARATOR);
     	sb.append(nl.nn.adapterframework.util.AppConstants.version+SystemUtils.LINE_SEPARATOR);
     	sb.append(nl.nn.adapterframework.util.Variant.version+SystemUtils.LINE_SEPARATOR);
-    	sb.append(nl.nn.adapterframework.util.XmlUtils.version+SystemUtils.LINE_SEPARATOR);
     	sb.append(nl.nn.adapterframework.pipes.AbstractPipe.version+SystemUtils.LINE_SEPARATOR);
     	sb.append(nl.nn.adapterframework.pipes.MessageSendingPipe.version+SystemUtils.LINE_SEPARATOR);
     	sb.append(nl.nn.adapterframework.pipes.XmlValidator.version+SystemUtils.LINE_SEPARATOR);
@@ -364,6 +364,7 @@ public class Configuration {
 		sb.append(nl.nn.adapterframework.extensions.sap.SapSender.version +SystemUtils.LINE_SEPARATOR);
 		sb.append(nl.nn.adapterframework.extensions.sap.SapFunctionHandler.version +SystemUtils.LINE_SEPARATOR);
 		sb.append(nl.nn.adapterframework.extensions.sap.SapSystem.version +SystemUtils.LINE_SEPARATOR);
+		sb.append(nl.nn.adapterframework.util.XmlUtils.getVersionInfo());
     	return sb.toString();
     	
     }
