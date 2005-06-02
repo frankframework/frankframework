@@ -1,6 +1,9 @@
 /*
  * $Log: Parameter.java,v $
- * Revision 1.10  2005-04-26 09:33:45  L190409
+ * Revision 1.11  2005-06-02 11:44:48  europe\L190409
+ * return current input value if no xslt, xpath or sessionkey are specified
+ *
+ * Revision 1.10  2005/04/26 09:33:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * different handling of empy transform-result, so that it is null instead of an empty string
  *
  * Revision 1.9  2005/03/07 11:10:05  Johan Verrips <johan.verrips@ibissource.org>
@@ -69,7 +72,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <tr><td>classname</td><td>name of the class, mostly a class that extends this class</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td>  <td>name of the receiver as known to the adapter</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setType(String) type}</td><td>"string" or "xml". "xml" renders a xml-nodeset as an xml-string; "string" renders the contents of the first node</td><td>string</td></tr>
- * <tr><td>{@link #setSessionKey(String) sessionKey}</td><td>&nbsp;</td><td>Key of the PipeLineSession. Is specified, the value of the PipeLineSession variable is used as input for the XpathExpression or Stylesheet. If no xpathExpression or Stylesheet are specified, the value is returned.</td></tr>
+ * <tr><td>{@link #setSessionKey(String) sessionKey}</td><td>&nbsp;</td><td>Key of a PipeLineSession-variable. Is specified, the value of the PipeLineSession variable is used as input for the XpathExpression or Stylesheet, instead of the current input message. If no xpathExpression or Stylesheet are specified, the value itself is returned.</td></tr>
  * <tr><td>{@link #setXpathExpression(String) xpathExpression}</td><td>The xpath expression. </td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setStyleSheetName(String) styleSheetName}</td><td>Reference to a respirce with the stylesheet</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDefaultValue(String) defaultValue}</td><td>If the result of sessionKey, XpathExpressen and/or Stylesheet returns null or an empty String, this value is returned</td><td>&nbsp;</td></tr>
@@ -93,11 +96,13 @@ import nl.nn.adapterframework.util.XmlUtils;
  * Result:
  *   &lt;to&gt;***@zonnet.nl&lt;/to&gt;
  *   &lt;to&gt;***@zonnet.nl&lt;/to&gt;
-  * </pre>
+ * </pre>
+ * 
+ * N.B. to obtain a fixed value: use a non-existing 'dummy' <code>sessionKey</code> in combination with the fixed value in <code>DefaultValue</code>.  
  * @author Richard Punt / Gerrit van Brakel
  */
 public class Parameter implements INamedObject, IWithParameters {
-	public static final String version="$Id: Parameter.java,v 1.10 2005-04-26 09:33:45 L190409 Exp $";
+	public static final String version="$Id: Parameter.java,v 1.11 2005-06-02 11:44:48 europe\L190409 Exp $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	private String name = null;
@@ -119,8 +124,8 @@ public class Parameter implements INamedObject, IWithParameters {
 	}
 
 	public void configure() throws ConfigurationException {
-		if (!StringUtils.isEmpty(getXpathExpression())) {
-			if (!StringUtils.isEmpty(styleSheetName)) {
+		if (StringUtils.isNotEmpty(getXpathExpression())) {
+			if (StringUtils.isNotEmpty(styleSheetName)) {
 				throw new ConfigurationException("Parameter ["+getName()+"] cannot have both an xpathExpression and a styleSheetName specified");
 			}
 			try {
@@ -136,7 +141,7 @@ public class Parameter implements INamedObject, IWithParameters {
 				throw new ConfigurationException("Parameter ["+getName()+"] got error creating transformer from xpathExpression [" + getXpathExpression() + "]", te);
 			}
 		} 
-		if (!StringUtils.isEmpty(styleSheetName)) {
+		if (StringUtils.isNotEmpty(styleSheetName)) {
 			URL styleSheetUrl = ClassUtils.getResourceURL(this, styleSheetName); 
 			try {
 				transformerPool = new TransformerPool(styleSheetUrl);
@@ -168,6 +173,7 @@ public class Parameter implements INamedObject, IWithParameters {
 		if (!configured) {
 			throw new ParameterException("Parameter ["+getName()+"] not configured");
 		}
+		
 		TransformerPool pool = getTransformerPool();
 		if (pool != null) {
 			try {
@@ -191,6 +197,8 @@ public class Parameter implements INamedObject, IWithParameters {
 		} else {
 			if (StringUtils.isNotEmpty(getSessionKey())) {
 				result=prc.getSession().get(getSessionKey());
+			} else {
+				result=prc.getInput();
 			}
 		}
 		if (result != null) {
