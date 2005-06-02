@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcQuerySenderBase.java,v $
- * Revision 1.8  2005-04-26 15:20:34  L190409
+ * Revision 1.9  2005-06-02 13:48:16  europe\L190409
+ * added 'scalar' attribute, to return a single value
+ *
+ * Revision 1.8  2005/04/26 15:20:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * introduced JdbcSenderBase, with non-sql oriented basics
  *
  * Revision 1.7  2004/11/10 12:56:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -54,11 +57,13 @@ import nl.nn.adapterframework.util.DB2XMLWriter;
  * <tr><td>{@link #setDatasourceNameXA(String) datasourceNameXA}</td><td>can be configured from JmsRealm, too</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setUsername(String) username}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setPassword(String) password}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setConnectionsArePooled(boolean) connectionsArePooled}</td><td>when true, it is assumed that an connectionpooling mechanism is present. Before a message is sent, a new connection is obtained, that is closed after the message is sent. When transacted is true, connectionsArePooled is true, too</td><td>true</td></tr>
  * <tr><td>{@link #setTransacted(boolean) transacted}</td><td>&nbsp;</td><td>false</td></tr>
  * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setQueryType(String) queryType}</td><td>either "select" for queries that return data, or anything else for queries that return no data.</td><td>"other"</td></tr>
  * <tr><td>{@link #setMaxRows(int) maxRows}</td><td>maximum number of rows returned</td><td>0 (unlimited)</td></tr>
  * <tr><td>{@link #setStartRow(int) startRow}</td><td>the number of the first row returned from the output</td><td>1</td></tr>
+ * <tr><td>{@link #setScalar(boolean) scalar}</td><td>when true, the value of the first column of the first row (or the StartRow) is returned as the only result</td><td>false</td></tr>
  * </table>
  * </p>
  * 
@@ -69,11 +74,12 @@ import nl.nn.adapterframework.util.DB2XMLWriter;
  * @since 	4.1
  */
 public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
-	public static final String version="$Id: JdbcQuerySenderBase.java,v 1.8 2005-04-26 15:20:34 L190409 Exp $";
+	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.9 $ $Date: 2005-06-02 13:48:16 $";
 
 	private String queryType = "other";
 	private int startRow=1;
 	private int maxRows=-1; // return all rows
+	private boolean scalar=false;
 
 	/**
 	 * returns <code>true</code> if the {@link #setQueryType(String) queryType} is set to "select".
@@ -112,6 +118,9 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 				return executeSelectQuery(statement);
 			} else {
 				int numRowsAffected = statement.executeUpdate();
+				if (isScalar()) {
+					return numRowsAffected+"";
+				}
 				return "<result><rowsupdated>" + numRowsAffected + "</rowsupdated></result>";
 			}
 		} catch (ParameterException e) {
@@ -125,6 +134,8 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 
 	private String executeSelectQuery(PreparedStatement statement) throws SenderException{
 		try {
+			String result=null;
+			
 			if (getMaxRows()>0) {
 				statement.setMaxRows(getMaxRows()+ ( getStartRow()>1 ? getStartRow()-1 : 0));
 			}
@@ -135,12 +146,28 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 				resultset.absolute(getStartRow()-1);
 				log.debug(getLogPrefix() + "Index set at position: " +  resultset.getRow() );
 			}
-					
-			// Create XML and give the maxlength as a parameter
-			DB2XMLWriter transformer = new DB2XMLWriter();
-			return transformer.getXML(resultset, getMaxRows());
+				
+			if (isScalar()) {
+				if (resultset.next()) {
+					result = resultset.getString(1);
+					if (resultset.wasNull()) {
+						result = null;
+					}
+				}
+			} else {
+				// Create XML and give the maxlength as a parameter
+				DB2XMLWriter transformer = new DB2XMLWriter();
+				result = transformer.getXML(resultset, getMaxRows());
+			}
+			return result;
 		} catch (SQLException sqle) {
 			throw new SenderException(getLogPrefix() + "got exception executing a SELECT SQL command",sqle );
+		} finally {
+			try {
+				statement.close();
+			} catch (SQLException e) {
+				throw new SenderException(getLogPrefix() + "got exception closing a SELECT SQL command",e );
+			}
 		}
 	}
 	
@@ -182,5 +209,13 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		return startRow;
 	}
 
+
+	public boolean isScalar() {
+		return scalar;
+	}
+
+	public void setScalar(boolean b) {
+		scalar = b;
+	}
 
 }
