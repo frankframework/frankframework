@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.12  2005-04-13 12:53:09  L190409
+ * Revision 1.13  2005-06-02 11:52:24  europe\L190409
+ * limited number of actively polling threads to value of attriubte numThreadsPolling
+ *
+ * Revision 1.12  2005/04/13 12:53:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed unused imports
  *
  * Revision 1.11  2005/03/31 08:22:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -64,6 +67,7 @@ import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.RunStateManager;
+import nl.nn.adapterframework.util.Semaphore;
 import nl.nn.adapterframework.util.StatisticsKeeper;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -84,7 +88,8 @@ import javax.transaction.UserTransaction;
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>classname</td><td>name of the class, mostly a class that extends this class</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td>  <td>name of the receiver as known to the adapter</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setNumThreads(int) numThreads}</td><td>the number of threads listening in parallel for messages</td><td>1</td></tr>
+ * <tr><td>{@link #setNumThreads(int) numThreads}</td><td>the number of threads that may execute a pipeline concurrently (only for pulling listeners)</td><td>1</td></tr>
+ * <tr><td>{@link #setNumThreadsPolling(int) numThreadsPolling}</td><td>the number of threads that are activily polling for messages concurrently. '0' means 'limited only by <code>numThreads</code>' (only for pulling listeners)</td><td>1</td></tr>
  * <tr><td>{@link #setOnError(String) onError}</td><td>one of 'continue' or 'close'. Controls the behaviour of the receiver when it encounters an error sending a reply</td><td>continue</td></tr>
  * <tr><td>{@link #setTransacted(boolean) transacted}</td><td>if set to <code>true, messages will be received and processed under transaction control. If processing fails, messages will be sent to the error-sender. (see below)</code></td><td><code>false</code></td></tr>
  * </table>
@@ -137,7 +142,7 @@ import javax.transaction.UserTransaction;
  */
 public class ReceiverBase
     implements IReceiver, IReceiverStatistics, Runnable, IMessageHandler, IbisExceptionListener, HasSender {
-	public static final String version="$Id: ReceiverBase.java,v 1.12 2005-04-13 12:53:09 L190409 Exp $";
+	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.13 $ $Date: 2005-06-02 11:52:24 $";
 	protected Logger log = Logger.getLogger(this.getClass());
  
 	private String returnIfStopped="";
@@ -150,11 +155,14 @@ public class ReceiverBase
   	private String onError = ONERROR_CONTINUE; 
     protected RunStateManager runState = new RunStateManager();
 
-	// the number of threads that listen in parallel to the listener, only for pulling listeners
+	// the number of threads that may execute a pipeline concurrently (only for pulling listeners)
 	private int numThreads = 1;
-    
+	// the number of threads that are activily polling for messages (concurrently, only for pulling listeners)
+	private int numThreadsPolling = 1;
+   
 	private Counter threadsProcessing = new Counter(0);
 	private Counter threadsRunning = new Counter(0);
+	private Semaphore pollToken = null;
 	        
 	// number of messages received
     private Counter numReceived = new Counter(0);
@@ -294,6 +302,11 @@ public class ReceiverBase
 				IPushingListener pl = (IPushingListener)getListener();
 				pl.setHandler(this);
 				pl.setExceptionListener(this);
+			}
+			if (getListener() instanceof IPullingListener) {
+				if (getNumThreadsPolling()>0 && getNumThreadsPolling()<getNumThreads()) {
+					pollToken = new Semaphore(getNumThreadsPolling());
+				}
 			}
 			getListener().configure();
 			if (getListener() instanceof HasPhysicalDestination) {
@@ -435,7 +448,19 @@ public class ReceiverBase
 	
 			runState.setRunState(RunStateEnum.STARTED);
 			while (getRunState().equals(RunStateEnum.STARTED)) {
-				Object rawMessage = getRawMessage(threadContext);
+				if (pollToken!=null) {
+					pollToken.acquire();
+				}
+				Object rawMessage=null;
+				try {
+					if (getRunState().equals(RunStateEnum.STARTED)) {
+						rawMessage = getRawMessage(threadContext);
+					}
+				} finally {
+					if (pollToken!=null) {
+						pollToken.release();
+					}
+				}
 				if (rawMessage!=null) {
 
 					startProcessingTimestamp = System.currentTimeMillis();
@@ -1181,5 +1206,13 @@ public class ReceiverBase
 		return getAdapter().formatErrorMessage(extrainfo,t,message,correlationId,null,0);
 	}
 
+
+	public int getNumThreadsPolling() {
+		return numThreadsPolling;
+	}
+
+	public void setNumThreadsPolling(int i) {
+		numThreadsPolling = i;
+	}
 
 }
