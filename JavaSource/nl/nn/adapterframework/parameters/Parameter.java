@@ -1,6 +1,9 @@
 /*
  * $Log: Parameter.java,v $
- * Revision 1.11  2005-06-02 11:44:48  europe\L190409
+ * Revision 1.12  2005-06-02 11:45:56  europe\L190409
+ * fixed version string
+ *
+ * Revision 1.11  2005/06/02 11:44:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * return current input value if no xslt, xpath or sessionkey are specified
  *
  * Revision 1.10  2005/04/26 09:33:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -102,7 +105,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author Richard Punt / Gerrit van Brakel
  */
 public class Parameter implements INamedObject, IWithParameters {
-	public static final String version="$Id: Parameter.java,v 1.11 2005-06-02 11:44:48 europe\L190409 Exp $";
+	public static final String version="$RCSfile: Parameter.java,v $ $Revision: 1.12 $ $Date: 2005-06-02 11:45:56 $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	private String name = null;
