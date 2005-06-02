@@ -1,6 +1,9 @@
 /*
  * $Log: ParameterResolutionContext.java,v $
- * Revision 1.6  2005-03-31 08:15:48  L190409
+ * Revision 1.7  2005-06-02 11:47:07  europe\L190409
+ * obtain source from XmlUtils
+ *
+ * Revision 1.6  2005/03/31 08:15:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * generalized Source
  *
  * Revision 1.5  2005/02/24 10:49:56  Johan Verrips <johan.verrips@ibissource.org>
@@ -27,7 +30,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 import javax.xml.transform.Source;
-import javax.xml.transform.dom.DOMSource;
 
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -36,12 +38,13 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 
 import org.apache.log4j.Logger;
-import org.w3c.dom.Document;
-
 
 /*
  * $Log: ParameterResolutionContext.java,v $
- * Revision 1.6  2005-03-31 08:15:48  L190409
+ * Revision 1.7  2005-06-02 11:47:07  europe\L190409
+ * obtain source from XmlUtils
+ *
+ * Revision 1.6  2005/03/31 08:15:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * generalized Source
  *
  * Revision 1.5  2005/02/24 10:49:56  Johan Verrips <johan.verrips@ibissource.org>
@@ -78,7 +81,7 @@ import org.w3c.dom.Document;
  * @version Id
  */
 public class ParameterResolutionContext {
-	public static final String version="$Id: ParameterResolutionContext.java,v 1.6 2005-03-31 08:15:48 L190409 Exp $";
+	public static final String version="$RCSfile: ParameterResolutionContext.java,v $ $Revision: 1.7 $ $Date: 2005-06-02 11:47:07 $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	private String input;
@@ -159,10 +162,7 @@ public class ParameterResolutionContext {
 	public Source getInputSource() throws DomBuilderException {
 		if (inputSource == null) {
 			log.debug("Constructing InputSource for ParameterResolutionContext");
-//			StringReader sr = new StringReader(input);
-//			inputSource = new StreamSource(sr);
-			Document doc = XmlUtils.buildDomDocument(input);
-			inputSource = new DOMSource(doc); 
+			inputSource = XmlUtils.stringToSource(input); 
 
 		}
 		return inputSource;
