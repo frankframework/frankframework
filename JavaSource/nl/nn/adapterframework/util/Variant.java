@@ -1,6 +1,9 @@
 /*
  * $Log: Variant.java,v $
- * Revision 1.5  2005-06-13 10:10:15  europe\L190409
+ * Revision 1.6  2005-06-13 11:49:22  europe\L190409
+ * use separate version of stringToSource, optimized for single use
+ *
+ * Revision 1.5  2005/06/13 10:10:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * optimized transformation to XmlSource
  *
  * Revision 1.4  2005/05/31 09:39:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -22,7 +25,7 @@ import java.io.StringReader;
  * @author Gerrit van Brakel IOS
  */
 public class Variant {
-	public static final String version = "$RCSfile: Variant.java,v $ $Revision: 1.5 $ $Date: 2005-06-13 10:10:15 $";
+	public static final String version = "$RCSfile: Variant.java,v $ $Revision: 1.6 $ $Date: 2005-06-13 11:49:22 $";
 
 	private String data = null;
 	private Source dataAsXmlSource = null;
@@ -62,7 +65,7 @@ public class Variant {
 
 	public Source asXmlSource(boolean forMultipleUse) throws DomBuilderException {
 		if (!forMultipleUse && dataAsXmlSource==null) {
-			return XmlUtils.stringToSource(data,false);
+			return XmlUtils.stringToSourceForSingleUse(data);
 		}
 		if (dataAsXmlSource==null) {
 			dataAsXmlSource = XmlUtils.stringToSource(data);
