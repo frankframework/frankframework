@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.14  2005-02-10 07:49:00  L190409
+ * Revision 1.15  2005-06-13 12:52:22  europe\L190409
+ * prepare for nested pipelines
+ *
+ * Revision 1.14  2005/02/10 07:49:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed clearing of pipelinesession a start of pipeline
  *
  * Revision 1.13  2005/01/13 08:55:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -102,9 +105,11 @@ import javax.transaction.UserTransaction;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version="$Id: PipeLine.java,v 1.14 2005-02-10 07:49:00 L190409 Exp $";
+	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.15 $ $Date: 2005-06-13 12:52:22 $";
     private Logger log = Logger.getLogger(this.getClass());
-	private Adapter adapter; // for logging purposes, and for transaction managing
+    
+	private Adapter adapter;    // for transaction managing
+	private INamedObject owner; // for logging purposes
 	private boolean transacted=false;
     private Hashtable pipeStatistics = new Hashtable();
     private Hashtable pipeWaitingStatistics = new Hashtable();
@@ -154,7 +159,7 @@ public class PipeLine {
 	    Enumeration pipeNames=pipelineTable.keys();
 	    while (pipeNames.hasMoreElements()) {
 			String pipeName=(String)pipeNames.nextElement();
-	        log.debug("Pipeline of ["+adapter.getName()+"] configuring "+pipelineTable.get(pipeName).toString());
+	        log.debug("Pipeline of ["+owner.getName()+"] configuring "+pipelineTable.get(pipeName).toString());
 			IPipe pipe=(IPipe) pipelineTable.get(pipeName);
 	
 			// register the global forwards at the Pipes
@@ -167,7 +172,7 @@ public class PipeLine {
 				pipe.registerForward(pipeForward);
 			}
 			pipe.configure();
-			log.debug("Pipeline of ["+adapter.getName()+"]: Pipe ["+pipeName+"] successfully configured");
+			log.debug("Pipeline of ["+owner.getName()+"]: Pipe ["+pipeName+"] successfully configured");
 		}
 	    if (pipeLineExits.size()<1) {
 		    throw new ConfigurationException("no PipeLine Exits specified");
@@ -178,7 +183,7 @@ public class PipeLine {
 	    if (pipelineTable.get(firstPipe)==null) {
 		    throw new ConfigurationException("no pipe found for firstPipe ["+firstPipe+"]");
 	    }
-		log.debug("Pipeline of ["+adapter.getName()+"] successfully configured");
+		log.debug("Pipeline of ["+owner.getName()+"] successfully configured");
 	}
     /**
      * @return the number of pipes in the pipeline
@@ -245,7 +250,7 @@ public class PipeLine {
 	
 		}
 		if (message == null) {
-			throw new PipeRunException(null, "Pipeline of adapter ["+ adapter.getName()+"] received null message");
+			throw new PipeRunException(null, "Pipeline of adapter ["+ owner.getName()+"] received null message");
 		}
 		pipeLineSession.set(message, messageId);
 		pipeLineSession.setTransacted(isTransacted());
@@ -253,13 +258,13 @@ public class PipeLine {
 		PipeLineResult result;
 	
 		try {
-			if (isTransacted() && !adapter.inTransaction()) {
+			if (adapter !=null && isTransacted() && !adapter.inTransaction()) {
 				log.debug("Pipeline of adapter ["+ adapter.getName()+"], starting transaction for msgid ["+messageId+"]");
 				utx = adapter.getUserTransaction();
 				utx.begin();
 			}
 		} catch (Exception e) {
-			throw new PipeRunException(null, "Pipeline of adapter ["+ adapter.getName()+"] got exception starting transaction for msgid ["+messageId+"]");
+			throw new PipeRunException(null, "Pipeline of adapter ["+ owner.getName()+"] got exception starting transaction for msgid ["+messageId+"]");
 		}
 	
 		try {
@@ -272,18 +277,18 @@ public class PipeLine {
 			
 				if  ((txStatus == Status.STATUS_ACTIVE)&&(commitOnState.equals(result.getState()))) {
 	
-					log.debug("Pipeline of adapter ["+ adapter.getName()+"], msgid ["+messageId+"] transaction has status ACTIVE, exitState=["+result.getState()+"], performing commit");
+					log.debug("Pipeline of adapter ["+ owner.getName()+"], msgid ["+messageId+"] transaction has status ACTIVE, exitState=["+result.getState()+"], performing commit");
 					utx.commit();
 				}
 				else {
-					log.warn("Pipeline of adapter ["+ adapter.getName()+"], msgid ["+messageId+"] transaction has status "+JtaUtil.displayTransactionStatus(txStatus)+"exitState=["+result.getState()+"], performing ROLL BACK");
+					log.warn("Pipeline of adapter ["+ owner.getName()+"], msgid ["+messageId+"] transaction has status "+JtaUtil.displayTransactionStatus(txStatus)+"exitState=["+result.getState()+"], performing ROLL BACK");
 					utx.rollback();
 				}
 			} else {
 				// if the Pipeline did not instantiate the transaction, someone else did, notify that
 				// rollback is the only possibility.
-				if (isTransacted() && (!(commitOnState.equals(result.getState())))) {
-					log.warn("Pipeline of adapter ["+ adapter.getName()+"], msgid ["+messageId+"] exitState=["+result.getState()+"], setting transaction to ROLL BACK ONLY");
+				if (adapter!=null && isTransacted() && (!(commitOnState.equals(result.getState())))) {
+					log.warn("Pipeline of adapter ["+ owner.getName()+"], msgid ["+messageId+"] exitState=["+result.getState()+"], setting transaction to ROLL BACK ONLY");
 					utx = adapter.getUserTransaction();
 					utx.setRollbackOnly();
 				}
@@ -291,27 +296,27 @@ public class PipeLine {
 			return result;
 		} catch (Exception e) {
 			if (utx!=null) {
-				log.info("Pipeline of adapter ["+ adapter.getName()+"], msgid ["+messageId+"] caught exception, will now perform rollback, (exception will be rethrown, exception message ["+ e.getMessage()+"])");
+				log.info("Pipeline of adapter ["+ owner.getName()+"], msgid ["+messageId+"] caught exception, will now perform rollback, (exception will be rethrown, exception message ["+ e.getMessage()+"])");
 				try {
 					utx.rollback();
 				} catch (Exception txe) {
-					log.error("Pipeline of adapter ["+ adapter.getName()+"], msgid ["+messageId+"] got error rolling back transaction", txe);
+					log.error("Pipeline of adapter ["+ owner.getName()+"], msgid ["+messageId+"] got error rolling back transaction", txe);
 				}
 			}	else {
-				if (isTransacted())  {
-					log.warn("Pipeline of adapter ["+ adapter.getName()+"], msgid ["+messageId+"]  setting transaction to ROLL BACK ONLY");
+				if (adapter!=null && isTransacted())  {
+					log.warn("Pipeline of adapter ["+ owner.getName()+"], msgid ["+messageId+"]  setting transaction to ROLL BACK ONLY");
 					try {
 					utx = adapter.getUserTransaction();
 					utx.setRollbackOnly();
 					} catch(Exception et) {
-						log.error("Pipeline of adapter["+ adapter.getName()+"], msgid ["+messageId+"]  got error setting transaction to ROLLBACK ONLY", et);
+						log.error("Pipeline of adapter["+ owner.getName()+"], msgid ["+messageId+"]  got error setting transaction to ROLLBACK ONLY", et);
 					}
 				}
 			}
 			if (e instanceof PipeRunException)
 				throw (PipeRunException)e;
 			else
-				throw new PipeRunException(null, "Pipeline of adapter ["+ adapter.getName()+"] got error handling transaction", e);
+				throw new PipeRunException(null, "Pipeline of adapter ["+ owner.getName()+"] got error handling transaction", e);
 		}
 	
 	}
@@ -337,7 +342,7 @@ public class PipeLine {
 			
 			if (log.isDebugEnabled()){  // for performance reasons
 				StringBuffer sb=new StringBuffer();
-				sb.append("Pipeline of adapter ["+adapter.getName()+"] messageId ["+messageId+"] is about to call pipe ["+ pipeToRun.getName()+"]");
+				sb.append("Pipeline of adapter ["+owner.getName()+"] messageId ["+messageId+"] is about to call pipe ["+ pipeToRun.getName()+"]");
 	
 				if (AppConstants.getInstance().getProperty("log.logIntermediaryResults")!=null) {
 					if (AppConstants.getInstance().getProperty("log.logIntermediaryResults").equalsIgnoreCase("true")) {
@@ -393,12 +398,12 @@ public class PipeLine {
 	
 	                
 	        if (pipeForward==null){
-	            throw new PipeRunException(pipeToRun, "Pipeline of ["+adapter.getName()+"] received result from pipe ["+pipeToRun.getName()+"] without a pipeForward");
+	            throw new PipeRunException(pipeToRun, "Pipeline of ["+owner.getName()+"] received result from pipe ["+pipeToRun.getName()+"] without a pipeForward");
 	        }
 	        // get the next pipe to run
 	        String nextPath=pipeForward.getPath();
 	        if ((null==nextPath) || (nextPath.length()==0)){
-	            throw new PipeRunException(pipeToRun, "Pipeline of ["+adapter.getName()+"] got an path that equals null or has a zero-length value from pipe ["+pipeToRun.getName()+"]. Check the configuration, probably forwards are not defined for this pipe.");
+	            throw new PipeRunException(pipeToRun, "Pipeline of ["+owner.getName()+"] got an path that equals null or has a zero-length value from pipe ["+pipeToRun.getName()+"]. Check the configuration, probably forwards are not defined for this pipe.");
 	        }
 	
 	        if (null!=pipeLineExits.get(nextPath)){
@@ -408,14 +413,14 @@ public class PipeLine {
 	            ready=true;
 				if (log.isDebugEnabled()){  // for performance reasons
 		        log.debug(
-		            "Pipeline of adapter ["+ adapter.getName()+ "] finished processing messageId ["+messageId+"] result: ["+ object.toString()+ "] with exit-state ["+state+"]");
+		            "Pipeline of adapter ["+ owner.getName()+ "] finished processing messageId ["+messageId+"] result: ["+ object.toString()+ "] with exit-state ["+state+"]");
 				}
 	        } else {
 		        pipeToRun=(IPipe)pipelineTable.get(pipeForward.getPath());
 	        }
 	
 			if (pipeToRun==null) {
-				throw new PipeRunException(null, "Pipeline of adapter ["+ adapter.getName()+"] got an erroneous definition. Pipe to execute. ["+pipeForward.getPath()+ "] is not defined.");
+				throw new PipeRunException(null, "Pipeline of adapter ["+ owner.getName()+"] got an erroneous definition. Pipe to execute. ["+pipeForward.getPath()+ "] is not defined.");
 			}
 			
 	    }
@@ -437,7 +442,12 @@ public class PipeLine {
      */
     public void setAdapter(Adapter adapter) {
         this.adapter = adapter;
+        setOwner(adapter);
     }
+
+	public void setOwner(INamedObject owner) {
+		this.owner = owner;
+	}
    /**
     * The indicator for the end of the processing, with default state "undefined".
     * @deprecated since v 3.2 this functionality is superseded by the use of {@link nl.nn.adapterframework.core.PipeLineExit PipeLineExits}.
@@ -459,18 +469,18 @@ public class PipeLine {
         firstPipe=pipeName;
     }
 public void start() throws PipeStartException {
-    log.info("Pipeline of ["+adapter.getName()+"] is starting pipeline");
+    log.info("Pipeline of ["+owner.getName()+"] is starting pipeline");
 
     Enumeration pipeNames = pipelineTable.keys();
     while (pipeNames.hasMoreElements()) {
         String pipeName = (String) pipeNames.nextElement();
 
         IPipe pipe = (IPipe) pipelineTable.get(pipeName);
-        log.debug("Pipeline of ["+adapter.getName()+"] starting " + pipe.getName());
+        log.debug("Pipeline of ["+owner.getName()+"] starting " + pipe.getName());
         pipe.start();
-        log.debug("Pipeline of ["+adapter.getName()+"] successfully started pipe [" + pipe.getName() + "]");
+        log.debug("Pipeline of ["+owner.getName()+"] successfully started pipe [" + pipe.getName() + "]");
     }
-    log.info("Pipeline of ["+adapter.getName()+"] is successfully started pipeline");
+    log.info("Pipeline of ["+owner.getName()+"] is successfully started pipeline");
 
 }
 /**
@@ -479,17 +489,17 @@ public void start() throws PipeStartException {
  * @see IPipe#stop
  */
 public void stop() {
-    log.info("Pipeline of ["+adapter.getName()+"] is closing pipeline");
+    log.info("Pipeline of ["+owner.getName()+"] is closing pipeline");
     Enumeration pipeNames = pipelineTable.keys();
     while (pipeNames.hasMoreElements()) {
         String pipeName = (String) pipeNames.nextElement();
 
         IPipe pipe = (IPipe) pipelineTable.get(pipeName);
-        log.debug("Pipeline of ["+adapter.getName()+"] is stopping [" + pipe.getName()+"]");
+        log.debug("Pipeline of ["+owner.getName()+"] is stopping [" + pipe.getName()+"]");
         pipe.stop();
-        log.debug("Pipeline of ["+adapter.getName()+"] successfully stopped pipe [" + pipe.getName() + "]");
+        log.debug("Pipeline of ["+owner.getName()+"] successfully stopped pipe [" + pipe.getName() + "]");
     }
-    log.debug("Pipeline of ["+adapter.getName()+"] successfully closed pipeline");
+    log.debug("Pipeline of ["+owner.getName()+"] successfully closed pipeline");
 
 }
     /**
@@ -501,6 +511,7 @@ public void stop() {
      */
     public String toString(){
         String result="";
+		result+="[ownerName="+(owner==null ? "-none-" : owner.getName())+"]";
         result+="[adapterName="+(adapter==null ? "-none-" : adapter.getName())+"]";
         result+="[startPipe="+firstPipe+"]";
         result+="[transacted="+transacted+"]";
