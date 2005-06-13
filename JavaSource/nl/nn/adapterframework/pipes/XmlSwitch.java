@@ -1,6 +1,9 @@
 /*
  * $Log: XmlSwitch.java,v $
- * Revision 1.15  2005-06-13 11:45:02  europe\L190409
+ * Revision 1.16  2005-06-13 11:46:26  europe\L190409
+ * corrected version-string
+ *
+ * Revision 1.15  2005/06/13 11:45:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added attribute 'namespaceAware'
  *
  * Revision 1.14  2005/05/03 16:00:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -58,7 +61,7 @@ import java.util.Map;
  * @author Johan Verrips
  */
 public class XmlSwitch extends AbstractPipe {
-	public static final String version="$Id: XmlSwitch.java,v 1.15 2005-06-13 11:45:02 europe\L190409 Exp $";
+	public static final String version="$RCSfile: XmlSwitch.java,v $ $Revision: 1.16 $ $Date: 2005-06-13 11:46:26 $";
 	
     private static final String DEFAULT_SERVICESELECTION_XPATH = XmlUtils.XPATH_GETROOTNODENAME;
 	private TransformerPool transformerPool=null;

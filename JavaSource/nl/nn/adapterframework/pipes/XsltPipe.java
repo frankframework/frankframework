@@ -1,6 +1,9 @@
 /*
  * $Log: XsltPipe.java,v $
- * Revision 1.15  2005-06-13 11:45:02  europe\L190409
+ * Revision 1.16  2005-06-13 11:46:26  europe\L190409
+ * corrected version-string
+ *
+ * Revision 1.15  2005/06/13 11:45:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added attribute 'namespaceAware'
  *
  * Revision 1.14  2005/01/10 08:56:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -76,7 +79,7 @@ import org.apache.commons.lang.StringUtils;
  */
 
 public class XsltPipe extends FixedForwardPipe {
-	public static final String version="$Id: XsltPipe.java,v 1.15 2005-06-13 11:45:02 europe\L190409 Exp $";
+	public static final String version="$RCSfile: XsltPipe.java,v $ $Revision: 1.16 $ $Date: 2005-06-13 11:46:26 $";
 
 	private TransformerPool transformerPool;
 	private String xpathExpression=null;
