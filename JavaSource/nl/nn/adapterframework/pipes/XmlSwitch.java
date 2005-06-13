@@ -1,6 +1,9 @@
 /*
  * $Log: XmlSwitch.java,v $
- * Revision 1.14  2005-05-03 16:00:51  L190409
+ * Revision 1.15  2005-06-13 11:45:02  europe\L190409
+ * added attribute 'namespaceAware'
+ *
+ * Revision 1.14  2005/05/03 16:00:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected typo
  *
  * Revision 1.13  2005/04/26 09:22:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -39,6 +42,7 @@ import java.util.Map;
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setServiceSelectionStylesheetFilename(String) serviceSelectionStylesheetFilename}</td><td>stylesheet may return a String representing the forward to look up</td><td><i>a stylesheet that returns the name of the root-element</i></td></tr>
  * <tr><td>{@link #setXpathExpression(String) xpathExpression}</td><td>XPath-expression that returns a String representing the forward to look up</td><td></td></tr>
+ * <tr><td>{@link #setNamespaceAware(boolean) namespaceAware}</td><td>controls namespace-awareness of transformation</td><td>true</td></tr>
  * <tr><td>{@link #setSessionKey(String) sessionKey}</td><td>name of the key in the <code>PipeLineSession</code> to retrieve the input message from</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setNotFoundForwardName(String) notFoundForwardName}</td><td>Forward returned when the pipename derived from the stylesheet could not be found.</i></td><td>&nbsp;</td></tr>
  * </table>
@@ -54,7 +58,7 @@ import java.util.Map;
  * @author Johan Verrips
  */
 public class XmlSwitch extends AbstractPipe {
-	public static final String version="$Id: XmlSwitch.java,v 1.14 2005-05-03 16:00:51 L190409 Exp $";
+	public static final String version="$Id: XmlSwitch.java,v 1.15 2005-06-13 11:45:02 europe\L190409 Exp $";
 	
     private static final String DEFAULT_SERVICESELECTION_XPATH = XmlUtils.XPATH_GETROOTNODENAME;
 	private TransformerPool transformerPool=null;
@@ -62,6 +66,7 @@ public class XmlSwitch extends AbstractPipe {
     private String serviceSelectionStylesheetFilename=null;
 	private String sessionKey=null;
     private String notFoundForwardName=null;
+	private boolean namespaceAware=true;
 
 	/**
 	 * If no {@link #setServiceSelectionStylesheetFilename(String) serviceSelectionStylesheetFilename} is specified, the
@@ -144,15 +149,14 @@ public class XmlSwitch extends AbstractPipe {
 		}
 		if (transformerPool!=null) {
 			ParameterList parameterList = null;
-			ParameterResolutionContext prc = null;	
+			ParameterResolutionContext prc = new ParameterResolutionContext(sInput, session, isNamespaceAware()); ;	
 			try {
 				Map parametervalues = null;
 				if (getParameterList()!=null) {
 					parameterList =  getParameterList();
-					prc = new ParameterResolutionContext(sInput, session); 
 					parametervalues = prc.getValueMap(parameterList);
 				}
-	           	forward = transformerPool.transform(sInput, parametervalues);
+	           	forward = transformerPool.transform(prc.getInputSource(), parametervalues);
 			}
 		    catch (Throwable e) {
 		   	    throw new PipeRunException(this, getLogPrefix(session)+"got exception on transformation", e);
@@ -213,4 +217,12 @@ public class XmlSwitch extends AbstractPipe {
 	public String getSessionKey(){
 		return sessionKey;
 	}
+
+	public boolean isNamespaceAware() {
+		return namespaceAware;
+	}
+	public void setNamespaceAware(boolean b) {
+		namespaceAware = b;
+	}
+
 }
