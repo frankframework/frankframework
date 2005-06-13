@@ -1,6 +1,9 @@
 /*
  * $Log: JmsSender.java,v $
- * Revision 1.13  2004-10-19 06:39:21  L190409
+ * Revision 1.14  2005-06-13 09:58:59  europe\L190409
+ * cosmetic changes
+ *
+ * Revision 1.13  2004/10/19 06:39:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * modified parameter handling, introduced IWithParameters
  *
  * Revision 1.12  2004/10/12 15:12:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -38,7 +41,7 @@ package nl.nn.adapterframework.jms;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPostboxSender;
-import nl.nn.adapterframework.core.ISender;
+import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
@@ -76,8 +79,8 @@ import javax.jms.Message;
  * @author Gerrit van Brakel
  */
 
-public class JmsSender extends JMSFacade implements ISender, IPostboxSender {
-	public static final String version = "$Id: JmsSender.java,v 1.13 2004-10-19 06:39:21 L190409 Exp $";
+public class JmsSender extends JMSFacade implements ISenderWithParameters, IPostboxSender {
+	public static final String version="$RCSfile: JmsSender.java,v $ $Revision: 1.14 $ $Date: 2005-06-13 09:58:59 $";
 	private String replyToName = null;
 	
 	protected ParameterList paramList = null;

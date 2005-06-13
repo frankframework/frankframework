@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcFacade.java,v $
- * Revision 1.6  2005-05-31 09:53:35  europe\L190409
+ * Revision 1.7  2005-06-13 09:57:03  europe\L190409
+ * cosmetic changes
+ *
+ * Revision 1.6  2005/05/31 09:53:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected version
  *
  * Revision 1.5  2005/05/31 09:53:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -44,7 +47,7 @@ import org.apache.log4j.Logger;
  * 
  */
 public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version="$RCSfile: JdbcFacade.java,v $ $Revision: 1.6 $ $Date: 2005-05-31 09:53:35 $";
+	public static final String version="$RCSfile: JdbcFacade.java,v $ $Revision: 1.7 $ $Date: 2005-06-13 09:57:03 $";
     protected Logger log = Logger.getLogger(this.getClass());
 	
 	private String name;
@@ -59,9 +62,9 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 	private boolean connectionsArePooled=true;
 
 
-protected String getLogPrefix() {
-	return "["+this.getClass().getName()+"] ["+getName()+"] ";
-}
+	protected String getLogPrefix() {
+		return "["+this.getClass().getName()+"] ["+getName()+"] ";
+	}
 
 	/**
 	 * Returns either {@link #getDatasourceName() datasourceName} or {@link #getDatasourceNameXA() datasourceNameXA},
