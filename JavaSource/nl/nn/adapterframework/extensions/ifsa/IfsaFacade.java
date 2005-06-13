@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaFacade.java,v $
- * Revision 1.22  2005-06-13 11:57:44  europe\L190409
+ * Revision 1.23  2005-06-13 11:59:00  europe\L190409
+ * corrected version-string
+ *
+ * Revision 1.22  2005/06/13 11:57:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added support for pooled sessions and for XA-support
  *
  * Revision 1.21  2005/05/03 15:58:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -93,7 +96,7 @@ import javax.jms.*;
  * @since 4.2
  */
 public class IfsaFacade implements INamedObject, HasPhysicalDestination {
-	public static final String version="$Id: IfsaFacade.java,v 1.22 2005-06-13 11:57:44 europe\L190409 Exp $";
+	public static final String version = "$RCSfile: IfsaFacade.java,v $ $Revision: 1.23 $ $Date: 2005-06-13 11:59:00 $";
     protected Logger log = Logger.getLogger(this.getClass());
     
 	private String name;
