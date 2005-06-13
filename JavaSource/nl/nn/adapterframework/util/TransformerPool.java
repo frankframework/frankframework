@@ -1,6 +1,9 @@
 /*
  * $Log: TransformerPool.java,v $
- * Revision 1.10  2005-05-31 09:48:22  europe\L190409
+ * Revision 1.11  2005-06-13 10:01:55  europe\L190409
+ * optimized for single transformation of strings
+ *
+ * Revision 1.10  2005/05/31 09:48:22  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * using stringToSource() and always clearing parameters
  *
  * Revision 1.9  2005/03/31 08:16:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -64,7 +67,7 @@ import org.w3c.dom.Document;
  * @author Gerrit van Brakel
  */
 public class TransformerPool {
-	public static final String version = "$RCSfile: TransformerPool.java,v $ $Revision: 1.10 $ $Date: 2005-05-31 09:48:22 $";
+	public static final String version = "$RCSfile: TransformerPool.java,v $ $Revision: 1.11 $ $Date: 2005-06-13 10:01:55 $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	private TransformerFactory tFactory = TransformerFactory.newInstance();
@@ -170,7 +173,7 @@ public class TransformerPool {
 	}
 
 	public String transform(String s, Map parameters) throws TransformerException, IOException, DomBuilderException {
-		return transform(XmlUtils.stringToSource(s),parameters);
+		return transform(XmlUtils.stringToSource(s,false),parameters);
 	}
 
 	public String transform(Source s, Map parameters) throws TransformerException, IOException {
