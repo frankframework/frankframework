@@ -1,6 +1,9 @@
 /*
  * $Log: Variant.java,v $
- * Revision 1.4  2005-05-31 09:39:09  europe\L190409
+ * Revision 1.5  2005-06-13 10:10:15  europe\L190409
+ * optimized transformation to XmlSource
+ *
+ * Revision 1.4  2005/05/31 09:39:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * using stringToSource to obtain a source for XSLT; cached this source
  *
  */
@@ -9,7 +12,6 @@ package nl.nn.adapterframework.util;
 import org.xml.sax.InputSource;
 
 import javax.xml.transform.Source;
-import javax.xml.transform.dom.DOMSource;
 import java.io.Reader;
 import java.io.StringReader;
 
@@ -20,10 +22,10 @@ import java.io.StringReader;
  * @author Gerrit van Brakel IOS
  */
 public class Variant {
-	public static final String version = "$RCSfile: Variant.java,v $ $Revision: 1.4 $ $Date: 2005-05-31 09:39:09 $";
+	public static final String version = "$RCSfile: Variant.java,v $ $Revision: 1.5 $ $Date: 2005-06-13 10:10:15 $";
 
 	private String data = null;
-	private DOMSource dataAsDOMSource = null;
+	private Source dataAsXmlSource = null;
 	
 	public Variant(Object obj) {
 		this(obj.toString());
@@ -55,9 +57,16 @@ public class Variant {
 	 * Renders a Source for XSLT-transformation
 	 */
 	public Source asXmlSource() throws DomBuilderException {
-		if (dataAsDOMSource==null) {
-			dataAsDOMSource = (DOMSource)XmlUtils.stringToSource(data,true);
+		return asXmlSource(true);
+	}
+
+	public Source asXmlSource(boolean forMultipleUse) throws DomBuilderException {
+		if (!forMultipleUse && dataAsXmlSource==null) {
+			return XmlUtils.stringToSource(data,false);
 		}
-		return dataAsDOMSource;
+		if (dataAsXmlSource==null) {
+			dataAsXmlSource = XmlUtils.stringToSource(data);
+		}
+		return dataAsXmlSource;
 	}
 }
