@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaProviderListener.java,v $
- * Revision 1.8  2005-02-17 09:45:30  L190409
+ * Revision 1.9  2005-06-13 12:43:03  europe\L190409
+ * added support for pooled sessions and for XA-support
+ *
+ * Revision 1.8  2005/02/17 09:45:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * increased logging
  *
  * Revision 1.7  2005/01/13 08:55:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -35,14 +38,12 @@ package nl.nn.adapterframework.extensions.ifsa;
 
 import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.INamedObject;
 
 import com.ing.ifsa.IFSAMessage;
 import com.ing.ifsa.IFSAPoisonMessage;
 import com.ing.ifsa.IFSAHeader;
-import com.ing.ifsa.IFSAService;
 import com.ing.ifsa.IFSAServiceName;
 import com.ing.ifsa.IFSAServicesProvided;
 
@@ -82,7 +83,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * @since 4.2
  */
 public class IfsaProviderListener extends IfsaFacade implements IPullingListener, INamedObject {
-	public static final String version="$Id: IfsaProviderListener.java,v 1.8 2005-02-17 09:45:30 L190409 Exp $";
+	public static final String version = "$RCSfile: IfsaProviderListener.java,v $ $Revision: 1.9 $ $Date: 2005-06-13 12:43:03 $";
 
     private final static String THREAD_CONTEXT_SESSION_KEY = "session";
     private final static String THREAD_CONTEXT_RECEIVER_KEY = "receiver";
@@ -111,18 +112,67 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 		}
 	}
 	
+	protected QueueSession getSession(HashMap threadContext) throws ListenerException {
+		if (isSessionsArePooled()) {
+			try {
+				return createSession();
+			} catch (IfsaException e) {
+				throw new ListenerException(getLogPrefix()+"exception creating QueueSession", e);
+			}
+		} else {
+			return (QueueSession) threadContext.get(THREAD_CONTEXT_SESSION_KEY);
+		}
+	}
+	
+	protected void releaseSession(QueueSession session) throws ListenerException {
+		if (isSessionsArePooled() && session != null) {
+			try {
+				session.close();
+				log.debug("closed session for receiver ["+getName()+"]");
+			} catch (Exception e) {
+				throw new ListenerException(getLogPrefix()+"exception closing QueueSession", e);
+			}
+		}
+	}
+
+	protected QueueReceiver getReceiver(HashMap threadContext, QueueSession session) throws ListenerException {
+		if (isSessionsArePooled()) {
+			try {
+				return getServiceReceiver(session);
+			} catch (IfsaException e) {
+				throw new ListenerException(getLogPrefix()+"exception creating QueueReceiver", e);
+			}
+		} else {
+			return (QueueReceiver) threadContext.get(THREAD_CONTEXT_RECEIVER_KEY);
+		}
+	}
+	
+	protected void releaseReceiver(QueueReceiver receiver) throws ListenerException {
+		if (isSessionsArePooled() && receiver != null) {
+			try {
+				receiver.close();
+				log.debug("closed QueueReceiver ["+getName()+"]");
+			} catch (Exception e) {
+				throw new ListenerException(getLogPrefix()+"exception closing QueueReceiver", e);
+			}
+		}
+	}
+	
+	
+	
 	public HashMap openThread() throws ListenerException {
 		HashMap threadContext = new HashMap();
 	
 		try {
-		QueueSession session = createSession();
-		threadContext.put(THREAD_CONTEXT_SESSION_KEY, session);
+			if (!isSessionsArePooled()) {
+				QueueSession session = createSession();
+				threadContext.put(THREAD_CONTEXT_SESSION_KEY, session);
 	
-		QueueReceiver receiver;
-		receiver = getServiceReceiver(session);
-		threadContext.put(THREAD_CONTEXT_RECEIVER_KEY, receiver);
-	
-		return threadContext;
+				QueueReceiver receiver;
+				receiver = getServiceReceiver(session);
+				threadContext.put(THREAD_CONTEXT_RECEIVER_KEY, receiver);
+			}
+			return threadContext;
 		} catch (IfsaException e) {
 			throw new ListenerException(getLogPrefix()+"exception in openThread()", e);
 		}
@@ -135,23 +185,15 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 			throw new ListenerException(getLogPrefix(),e);
 		}
 	}
+	
 	public void closeThread(HashMap threadContext) throws ListenerException {
 	
-		try {
-	
+		if (!isSessionsArePooled()) {
 			QueueReceiver receiver = (QueueReceiver) threadContext.remove(THREAD_CONTEXT_RECEIVER_KEY);
-			if (receiver != null) {
-				receiver.close();
-				log.debug("closed receiver ["+getName()+"]");
-			}
+			releaseReceiver(receiver);
 	
 			QueueSession session = (QueueSession) threadContext.remove(THREAD_CONTEXT_SESSION_KEY);
-			if (session != null) {
-				session.close();
-				log.debug("closed session for receiver ["+getName()+"]");
-						}
-		} catch (Exception e) {
-			throw new ListenerException(getLogPrefix()+"exception closing thread", e);
+			releaseSession(session);
 		}
 	}
 
@@ -160,13 +202,15 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
     throws ListenerException {
 	
 	    String cid = (String) threadContext.get("cid");
-	    QueueSession session = (QueueSession) threadContext.get(THREAD_CONTEXT_SESSION_KEY);
 	    
-	    /* 
-	     * Message are only committed in the Fire & Forget scenario when the outcome
-	     * of the adapter equals the getCommitOnResult value
-	     */
-	    if (getMessageProtocolEnum().equals(IfsaMessageProtocolEnum.FIRE_AND_FORGET)) {
+		    
+		if (isJmsTransacted()) {
+			QueueSession session = (QueueSession) threadContext.get(THREAD_CONTEXT_SESSION_KEY);
+	    
+		    /* 
+		     * Message are only committed in the Fire & Forget scenario when the outcome
+		     * of the adapter equals the getCommitOnResult value
+		     */
 	    	log.debug("PipeLineResult : "+plr.toString());
 	    	log.debug(getCommitOnState());
 	    	
@@ -187,11 +231,15 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 	                    + "] while the state for committing is set to ["
 	                    + getCommitOnState()
 	                    + "]");
-	
+	        }
+	        if (isSessionsArePooled()) {
+				threadContext.remove(THREAD_CONTEXT_SESSION_KEY);
+				releaseSession(session);
 	        }
 	    }
-	    // on request-reply send the reply. On error: halt the listener
+	    // on request-reply send the reply. 
 	    if (getMessageProtocolEnum().equals(IfsaMessageProtocolEnum.REQUEST_REPLY)) {
+			QueueSession session = getSession(threadContext);
 	        try {
 	            sendReply(session, (Message) rawMessage, plr.getResult());
 	        } catch (IfsaException e) {
@@ -201,6 +249,8 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 	        		log.warn(getLogPrefix()+"exception sending errormessage as reply",e2);
 	        	}
 	            throw new ListenerException(getLogPrefix()+"Exception on sending result", e);
+	        } finally {
+				releaseSession(session);
 	        }
 	    }
 	}
@@ -335,17 +385,38 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 	    threadContext.put("ifsaVersion", ifsaVersion);
 	    return id;
 	}
+	
+	private boolean sessionNeedsToBeSavedForAfterProcessMessage(Object result)
+	{
+		return isJmsTransacted() &&
+				result != null && 
+				!(result instanceof IFSAPoisonMessage) && 
+				isSessionsArePooled();
+	}
+	
 	/**
 	 * Retrieves messages to be processed by the server, implementing an IFSA-service, but does no processing on it.
 	 */
 	public Object getRawMessage(HashMap threadContext) throws ListenerException {
-		Object result;
-	    try {
-		    QueueReceiver receiver = (QueueReceiver)threadContext.get(THREAD_CONTEXT_RECEIVER_KEY);
-	
-	        result = receiver.receive(getTimeOut());
-	    } catch (JMSException e) {
-	        throw new ListenerException(getLogPrefix(),e);
+		Object result=null;
+		QueueSession session=null;
+		QueueReceiver receiver=null;
+	    try {	
+			session = getSession(threadContext);
+			try {	
+				receiver = getReceiver(threadContext, session);
+		        result = receiver.receive(getTimeOut());
+			} catch (JMSException e) {
+				throw new ListenerException(getLogPrefix(),e);
+		    } finally {
+		    	releaseReceiver(receiver);
+			}
+		} finally {
+			if (sessionNeedsToBeSavedForAfterProcessMessage(result)) {
+				threadContext.put(THREAD_CONTEXT_SESSION_KEY, session);
+			} else {
+				releaseSession(session);
+			}
 	    }
 	    
 	    if (result instanceof IFSAPoisonMessage) {
