@@ -1,6 +1,10 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.18  2005-06-13 10:12:12  europe\L190409
+ * Revision 1.19  2005-06-13 11:48:32  europe\L190409
+ * made namespaceAware option for stringToSource
+ * made separate version of stringToSource, optimized for single use
+ *
+ * Revision 1.18  2005/06/13 10:12:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected handling of namespaces in DomDocumentBuilder;
  * namespaceAware is now an optional parameter (default=true)
  *
@@ -111,7 +115,7 @@ import java.util.Map;
  * @author Johan Verrips IOS
  */
 public class XmlUtils {
-	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.18 $ $Date: 2005-06-13 10:12:12 $";
+	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.19 $ $Date: 2005-06-13 11:48:32 $";
 	static Logger log = Logger.getLogger(XmlUtils.class);
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
@@ -190,11 +194,14 @@ public class XmlUtils {
 	 * @return org.w3c.dom.Document
 	 * @exception nl.nn.adapterframework.util.DomBuilderException The exception description.
 	 */
-	public static Document buildDomDocument(String s)
-		throws DomBuilderException {
-
+	public static Document buildDomDocument(String s) throws DomBuilderException {
 		StringReader sr = new StringReader(s);
 		return (buildDomDocument(sr));
+	}
+
+	public static Document buildDomDocument(String s, boolean namespaceAware) throws DomBuilderException {
+		StringReader sr = new StringReader(s);
+		return (buildDomDocument(sr,namespaceAware));
 	}
 	/**
 	 * Build a Document from a URL
@@ -311,24 +318,22 @@ public class XmlUtils {
 
 	/**
 	 * Converts a string containing xml-markup to a Source-object, that can be used as the input of a XSLT-transformer.
-	 * If forMultipleTimes is <code>false</code>, it is assumed that a single pass through the XML is sufficient. In that
-	 * case a StreamSource based on a StringReader can be used. 
-	 * If forMultipleTimes is <code>true</code>, then multiple passes might be necessary. That cannot be done using a 
-	 * StreamSource or SAXSource. In this case a DOMSource must be used. 
+	 * The source may be used multiple times.
 	 */
-	public static Source stringToSource(String xmlString, boolean forMultipleTimes) throws DomBuilderException {
-		if (forMultipleTimes) {
-			Document doc = XmlUtils.buildDomDocument(xmlString);
-			return new DOMSource(doc); 
-		} else {
-			StringReader sr = new StringReader(xmlString);
-			return new StreamSource(sr);
-		}
+	public static Source stringToSource(String xmlString, boolean namespaceAware) throws DomBuilderException {
+		Document doc = XmlUtils.buildDomDocument(xmlString,namespaceAware);
+		return new DOMSource(doc); 
 	}
 
 	public static Source stringToSource(String xmlString) throws DomBuilderException {
 		return stringToSource(xmlString,true);
 	}
+
+	public static Source stringToSourceForSingleUse(String xmlString) throws DomBuilderException {
+		StringReader sr = new StringReader(xmlString);
+		return new StreamSource(sr);
+	}
+
 
 	public static synchronized Transformer createTransformer(String xsltString)
 		throws TransformerConfigurationException {
@@ -662,7 +667,7 @@ public class XmlUtils {
 
 	public static String transformXml(Transformer t, String s) throws TransformerException, IOException, DomBuilderException {
 //		log.debug("transforming under the assumption that source document may contain namespaces (therefore using DOMSource)");
-		return transformXml(t, stringToSource(s,false));
+		return transformXml(t, stringToSourceForSingleUse(s));
 	}
 
 	
