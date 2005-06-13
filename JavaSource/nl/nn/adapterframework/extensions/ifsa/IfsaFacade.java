@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaFacade.java,v $
- * Revision 1.23  2005-06-13 11:59:00  europe\L190409
+ * Revision 1.24  2005-06-13 15:07:58  europe\L190409
+ * avoid excessive logging in debug mode
+ *
+ * Revision 1.23  2005/06/13 11:59:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected version-string
  *
  * Revision 1.22  2005/06/13 11:57:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -96,7 +99,7 @@ import javax.jms.*;
  * @since 4.2
  */
 public class IfsaFacade implements INamedObject, HasPhysicalDestination {
-	public static final String version = "$RCSfile: IfsaFacade.java,v $ $Revision: 1.23 $ $Date: 2005-06-13 11:59:00 $";
+	public static final String version = "$RCSfile: IfsaFacade.java,v $ $Revision: 1.24 $ $Date: 2005-06-13 15:07:58 $";
     protected Logger log = Logger.getLogger(this.getClass());
     
 	private String name;
@@ -361,12 +364,11 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 		} else {
 			throw new IfsaException("cannot obtain ServiceReceiver: Requestor cannot act as Provider");
 		}
-		if (log.isDebugEnabled()) {
+		if (log.isDebugEnabled() && !isSessionsArePooled()) {
 			log.debug(getLogPrefix()+ "got receiver for queue ["
 					+ queueReceiver.getQueue().getQueueName()
 					+ "] "+ ToStringBuilder.reflectionToString(queueReceiver));
 		}
-	
 		return queueReceiver;
 		} catch (JMSException e) {
 			throw new IfsaException(e);
