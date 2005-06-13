@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaFacade.java,v $
- * Revision 1.21  2005-05-03 15:58:49  L190409
+ * Revision 1.22  2005-06-13 11:57:44  europe\L190409
+ * added support for pooled sessions and for XA-support
+ *
+ * Revision 1.21  2005/05/03 15:58:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * rework of shared connection code
  *
  * Revision 1.20  2005/04/26 15:17:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -90,12 +93,9 @@ import javax.jms.*;
  * @since 4.2
  */
 public class IfsaFacade implements INamedObject, HasPhysicalDestination {
-	public static final String version="$Id: IfsaFacade.java,v 1.21 2005-05-03 15:58:49 L190409 Exp $";
+	public static final String version="$Id: IfsaFacade.java,v 1.22 2005-06-13 11:57:44 europe\L190409 Exp $";
     protected Logger log = Logger.getLogger(this.getClass());
     
-	//private final static String IFSA_INITIAL_CONTEXT_FACTORY="com.ing.ifsa.IFSAContextFactory";
-	//private final static String IFSA_PROVIDER_URL="IFSA APPLICATION BUS";
-
 	private String name;
 	private String applicationId;
 	private String serviceId;
@@ -103,16 +103,17 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 
 	private long timeOut = -1; // when set (>=0), overrides IFSA-expiry
 
-
-//    private IFSAQueueConnectionFactory ifsaQueueConnectionFactory = null;
-//    private IFSAContext context = null;
-//    private QueueConnection connection = null;
     private IFSAQueue queue;
 
 	private IfsaConnection connection=null;
 	
 	private boolean requestor=false;
 	private boolean provider=false;
+	
+	private boolean sessionsArePooled=true;
+	
+	private boolean xaSupported=true;
+
 
 	public IfsaFacade(boolean asProvider) {
 		super();
@@ -148,6 +149,9 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 	 * Checks if messageProtocol and serviceId (only for Requestors) are specified
 	 */
 	public void configure() throws ConfigurationException {
+
+		log.info("IFSA API version ["+IFSAConstants.getVersionInfo()+"]");	
+		
 		// perform some basic checks
 		try {
 			if (StringUtils.isEmpty(getApplicationId()))
@@ -309,7 +313,7 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 			if (isRequestor()) {
 				mode += IFSAConstants.QueueSession.IFSA_MODE; // let requestor receive IFSATimeOutMessages
 			}
-			return (QueueSession) connection.createSession(isTransacted(), mode);
+			return (QueueSession) connection.createSession(isJmsTransacted(), mode);
 		} catch (IbisException e) {
 			if (e instanceof IfsaException) {
 				throw (IfsaException)e;
@@ -504,7 +508,7 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 	        sender.send(msg);
 	
 	        // perform commit
-	        if (isTransacted()) {
+	        if (isJmsTransacted()) {
 	            session.commit();
 	            log.debug(getLogPrefix()+ "committing (send) transaction");
 	        }
@@ -563,8 +567,8 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
         log.debug(getLogPrefix()+"message protocol set to "+messageProtocol.getName());
     }
     
-    public boolean isTransacted() {
-    	return getMessageProtocolEnum().equals(IfsaMessageProtocolEnum.FIRE_AND_FORGET);
+    public boolean isJmsTransacted() {
+    	return !isXaSupported() && getMessageProtocolEnum().equals(IfsaMessageProtocolEnum.FIRE_AND_FORGET);
     }
     
 	public String toString() {
@@ -576,7 +580,8 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 	    ts.append("serviceId", serviceId);
 	    if (messageProtocol != null) {
 			ts.append("messageProtocol", messageProtocol.getName());
-			ts.append("transacted", isTransacted());
+			ts.append("XASupported", xaSupported);
+			ts.append("jmsTransacted", isJmsTransacted());
 	    }
 	    else
 	        ts.append("messageProtocol", "null!");
@@ -640,6 +645,22 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 	}
 	public void setTimeOut(long timeOut) {
 		this.timeOut = timeOut;
+	}
+
+	public boolean isSessionsArePooled() {
+		return sessionsArePooled;
+	}
+
+	public void setSessionsArePooled(boolean b) {
+		sessionsArePooled = b;
+	}
+
+	public boolean isXaSupported() {
+		return xaSupported;
+	}
+
+	public void setXaSupported(boolean b) {
+		xaSupported = b;
 	}
 
 }
