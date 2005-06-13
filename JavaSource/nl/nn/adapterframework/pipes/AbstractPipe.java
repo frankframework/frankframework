@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractPipe.java,v $
- * Revision 1.8  2004-10-19 13:51:58  L190409
+ * Revision 1.9  2005-06-13 10:00:15  europe\L190409
+ * modified handling of empty forwards
+ *
+ * Revision 1.8  2004/10/19 13:51:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * parameter-configure in configure()
  *
  * Revision 1.7  2004/10/05 10:47:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -28,6 +31,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.log4j.Logger;
 
@@ -69,7 +73,7 @@ import java.util.Hashtable;
  * @see nl.nn.adapterframework.core.PipeLineSession
  */
 public abstract class AbstractPipe implements IPipe {
-  public static final String version="$Id: AbstractPipe.java,v 1.8 2004-10-19 13:51:58 L190409 Exp $";
+  public static final String version="$RCSfile: AbstractPipe.java,v $ $Revision: 1.9 $ $Date: 2005-06-13 10:00:15 $";
   private String name;
   protected Logger log = Logger.getLogger(this.getClass());
   private Hashtable pipeForwards=new Hashtable();
@@ -122,6 +126,9 @@ public abstract class AbstractPipe implements IPipe {
      * @return PipeForward
      */
     public final PipeForward findForward(String forward){
+    	if (StringUtils.isEmpty(forward)) {
+    		return null;
+    	}
         return (PipeForward)pipeForwards.get(forward);
     }
     
