@@ -1,6 +1,9 @@
 /*
  * $Log: ParameterResolutionContext.java,v $
- * Revision 1.7  2005-06-02 11:47:07  europe\L190409
+ * Revision 1.8  2005-06-13 11:55:21  europe\L190409
+ * made namespaceAware
+ *
+ * Revision 1.7  2005/06/02 11:47:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * obtain source from XmlUtils
  *
  * Revision 1.6  2005/03/31 08:15:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -41,7 +44,10 @@ import org.apache.log4j.Logger;
 
 /*
  * $Log: ParameterResolutionContext.java,v $
- * Revision 1.7  2005-06-02 11:47:07  europe\L190409
+ * Revision 1.8  2005-06-13 11:55:21  europe\L190409
+ * made namespaceAware
+ *
+ * Revision 1.7  2005/06/02 11:47:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * obtain source from XmlUtils
  *
  * Revision 1.6  2005/03/31 08:15:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -77,25 +83,31 @@ import org.apache.log4j.Logger;
 /**
  * Determines the parameter values of the specified parameter during runtime
  * 
- * @author John Dekker
+ * @author Gerrit van Brakel
  * @version Id
  */
 public class ParameterResolutionContext {
-	public static final String version="$RCSfile: ParameterResolutionContext.java,v $ $Revision: 1.7 $ $Date: 2005-06-02 11:47:07 $";
+	public static final String version="$RCSfile: ParameterResolutionContext.java,v $ $Revision: 1.8 $ $Date: 2005-06-13 11:55:21 $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	private String input;
 	private PipeLineSession session;
-	private Source inputSource;
+	private Source xmlSource;
+	private boolean namespaceAware;
 
 	/**
 	 * constructor
 	 * @param input contains the input (xml formatted) message
 	 * @param session 
 	 */		
-	public ParameterResolutionContext(String input, PipeLineSession session) {
+	public ParameterResolutionContext(String input, PipeLineSession session, boolean namespaceAware) {
 		this.input = input;
 		this.session = session;
+		this.namespaceAware = namespaceAware;
+	}
+
+	public ParameterResolutionContext(String input, PipeLineSession session) {
+		this(input,session,true);
 	}
 			
 	/**
@@ -139,18 +151,6 @@ public class ParameterResolutionContext {
 		return result;
 	}
 	
-	/**
-	 * @author John Dekker
-	 * interface to be used as callback handler in the forAllParameterValues methode
-	 */
-	public interface ValueHandler {
-		/**
-		 * @param pType the parameter type
-		 * @param value the raw value 
-		 * @param callbackObject  
-		 */
-		void handle(Parameter pType, Object value, Object callbackObject);	
-	}
 
 		
 	/**
@@ -160,12 +160,12 @@ public class ParameterResolutionContext {
 	 * @throws IOException
 	 */
 	public Source getInputSource() throws DomBuilderException {
-		if (inputSource == null) {
+		if (xmlSource == null) {
 			log.debug("Constructing InputSource for ParameterResolutionContext");
-			inputSource = XmlUtils.stringToSource(input); 
+			xmlSource = XmlUtils.stringToSource(input,isNamespaceAware()); 
 
 		}
-		return inputSource;
+		return xmlSource;
 	}
 
 	/**
@@ -187,7 +187,7 @@ public class ParameterResolutionContext {
 	 */
 	public void setInput(String input) {
 		this.input = input;
-		this.inputSource = null;
+		this.xmlSource = null;
 	}
 
 	/**
@@ -195,6 +195,20 @@ public class ParameterResolutionContext {
 	 */
 	public void setSession(PipeLineSession session) {
 		this.session = session;
+	}
+
+	/**
+	 * @return
+	 */
+	public boolean isNamespaceAware() {
+		return namespaceAware;
+	}
+
+	/**
+	 * @param b
+	 */
+	public void setNamespaceAware(boolean b) {
+		namespaceAware = b;
 	}
 
 }
