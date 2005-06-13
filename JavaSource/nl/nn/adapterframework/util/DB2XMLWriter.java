@@ -1,3 +1,9 @@
+/*
+ * $Log: DB2XMLWriter.java,v $
+ * Revision 1.6  2005-06-13 11:52:12  europe\L190409
+ * cosmetic changes
+ *
+ */
 package nl.nn.adapterframework.util;
 
 import org.apache.log4j.Logger;
@@ -33,15 +39,14 @@ import java.sql.Types;
 	&lt;/rowset&gt;
 &lt;/result&gt;
 </pre></code>
- * @version Id
+ *
  * @author Johan Verrips
+ * @version Id
  **/
 
-public class DB2XMLWriter
-{
-	public static final String version="$Id: DB2XMLWriter.java,v 1.5 2004-04-08 16:01:30 nnvznl01#l181303 Exp $";
-	
-   protected Logger log = Logger.getLogger(this.getClass());
+public class DB2XMLWriter {
+	protected Logger log = Logger.getLogger(this.getClass());
+	public static final String version="$RCSfile: DB2XMLWriter.java,v $ $Revision: 1.6 $ $Date: 2005-06-13 11:52:12 $";
 
    private String docname = new String("result");
    private String recordname = new String("rowset");
@@ -146,7 +151,7 @@ public class DB2XMLWriter
        int nfields = rsmeta.getColumnCount();
 
        XmlBuilder fields=new XmlBuilder("fielddefinition");
-       for (int j=1; j<nfields+1; j++) {
+       for (int j=1; j<=nfields; j++) {
           XmlBuilder field=new XmlBuilder("field");
 
 
@@ -191,7 +196,7 @@ public class DB2XMLWriter
          XmlBuilder row = new XmlBuilder("row");
          row.addAttribute("number", ""+rowCounter);
 
-         for (int i = 1; i < nfields + 1; i++) {
+         for (int i = 1; i <= nfields; i++) {
            XmlBuilder resultField=new XmlBuilder("field");
 
 			resultField.addAttribute("name",""+rsmeta.getColumnName(i));
