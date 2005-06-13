@@ -1,6 +1,10 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.17  2005-05-31 09:38:18  europe\L190409
+ * Revision 1.18  2005-06-13 10:12:12  europe\L190409
+ * corrected handling of namespaces in DomDocumentBuilder;
+ * namespaceAware is now an optional parameter (default=true)
+ *
+ * Revision 1.17  2005/05/31 09:38:18  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added versionInfo() and stringToSource()
  *
  * Revision 1.16  2005/01/10 08:56:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -107,7 +111,7 @@ import java.util.Map;
  * @author Johan Verrips IOS
  */
 public class XmlUtils {
-	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.17 $ $Date: 2005-05-31 09:38:18 $";
+	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.18 $ $Date: 2005-06-13 10:12:12 $";
 	static Logger log = Logger.getLogger(XmlUtils.class);
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
@@ -150,12 +154,18 @@ public class XmlUtils {
 		}
 		return output;
 	}
-	static public Document buildDomDocument(Reader in)
+	
+	static public Document buildDomDocument(Reader in) throws DomBuilderException {
+		return buildDomDocument(in,true);
+	}
+	
+	static public Document buildDomDocument(Reader in, boolean namespaceAware)
 		throws DomBuilderException {
 		Document document;
 		InputSource src;
 
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		factory.setNamespaceAware(namespaceAware);
 		try {
 			DocumentBuilder builder = factory.newDocumentBuilder();
 			src = new InputSource(in);
@@ -301,13 +311,13 @@ public class XmlUtils {
 
 	/**
 	 * Converts a string containing xml-markup to a Source-object, that can be used as the input of a XSLT-transformer.
-	 * If xmlMayContainNamespaces is <code>false</code>, it is assumed that a single pass through the XML is sufficient. In that
+	 * If forMultipleTimes is <code>false</code>, it is assumed that a single pass through the XML is sufficient. In that
 	 * case a StreamSource based on a StringReader can be used. 
-	 * If xmlMayContainNamespaces is <code>true</code>, then multiple passes might be nessecary. That cannot be done using a 
+	 * If forMultipleTimes is <code>true</code>, then multiple passes might be necessary. That cannot be done using a 
 	 * StreamSource or SAXSource. In this case a DOMSource must be used. 
 	 */
-	public static Source stringToSource(String xmlString, boolean xmlMayContainNamespaces) throws DomBuilderException {
-		if (xmlMayContainNamespaces) {
+	public static Source stringToSource(String xmlString, boolean forMultipleTimes) throws DomBuilderException {
+		if (forMultipleTimes) {
 			Document doc = XmlUtils.buildDomDocument(xmlString);
 			return new DOMSource(doc); 
 		} else {
@@ -650,13 +660,9 @@ public class XmlUtils {
 		return transformXml(t, new DOMSource(d));
 	}
 
-	public static String transformXml(Transformer t, String s, boolean xmlMayContainNamespaces) throws TransformerException, IOException, DomBuilderException {
-		return transformXml(t, stringToSource(s, xmlMayContainNamespaces));
-	}
-
 	public static String transformXml(Transformer t, String s) throws TransformerException, IOException, DomBuilderException {
 //		log.debug("transforming under the assumption that source document may contain namespaces (therefore using DOMSource)");
-		return transformXml(t, stringToSource(s));
+		return transformXml(t, stringToSource(s,false));
 	}
 
 	
