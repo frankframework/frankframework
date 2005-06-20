@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaConnectionFactory.java,v $
- * Revision 1.2  2005-06-13 12:30:45  europe\L190409
+ * Revision 1.3  2005-06-20 09:13:40  europe\L190409
+ * dynamic determination of provider URL
+ *
+ * Revision 1.2  2005/06/13 12:30:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * ifsa 2.2 compatibilty connection
  *
  * Revision 1.1  2005/05/03 15:58:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -14,6 +17,7 @@
  */
 package nl.nn.adapterframework.extensions.ifsa;
 
+import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Hashtable;
 
@@ -43,7 +47,7 @@ import com.ing.ifsa.IFSAQueueConnectionFactory;
  * @version Id
  */
 public class IfsaConnectionFactory extends ConnectionFactoryBase {
-	public static final String version="$RCSfile: IfsaConnectionFactory.java,v $ $Revision: 1.2 $ $Date: 2005-06-13 12:30:45 $";
+	public static final String version="$RCSfile: IfsaConnectionFactory.java,v $ $Revision: 1.3 $ $Date: 2005-06-20 09:13:40 $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	private final static String IFSA_INITIAL_CONTEXT_FACTORY="com.ing.ifsa.IFSAContextFactory";
@@ -61,19 +65,34 @@ public class IfsaConnectionFactory extends ConnectionFactoryBase {
 		return new IfsaConnection(id, context, connectionFactory, getConnectionMap());
 	}
 
+	protected String getProviderUrl() {
+		String purl = IFSAConstants.IFSA_BAICNF;
+		log.info("IFSA ProviderURL at time of compilation ["+purl+"]");
+		try {
+			Class clazz = Class.forName("com.ing.ifsa.IFSAConstants");
+			Field baicnfField;
+			try {
+				baicnfField = clazz.getField("IFSA_BAICNF");
+				Object baicnfFieldValue = baicnfField.get(null);
+				log.info("IFSA ProviderURL specified by installed API ["+baicnfFieldValue+"]");
+				purl = baicnfFieldValue.toString();
+			} catch (NoSuchFieldException e1) {
+				log.info("field [com.ing.ifsa.IFSAConstants.IFSA_BAICNF] not found, assuming IFSA Version 2.0");
+				purl = IFSA_PROVIDER_URL_V2_0;
+			}
+		} catch (Exception e) {
+			log.warn("exception determining IFSA ProviderURL",e);
+		}
+		log.info("IFSA ProviderURL used to connect ["+purl+"]");
+		return purl;
+	}
+
 	protected Context createContext() throws NamingException {
+		log.info("IFSA API installed version ["+IFSAConstants.getVersionInfo()+"]");	
 		Hashtable env = new Hashtable(11);
 		env.put(Context.INITIAL_CONTEXT_FACTORY, IFSA_INITIAL_CONTEXT_FACTORY);
-		String providerUrl=null;
-		try {
-			providerUrl=IFSAConstants.IFSA_BAICNF;
-		} catch (Throwable t) {
-			log.info("Caught Throwable of type ["+t.getClass().getName()+"], assuming Constant IFSAConstants.IFSA_BAICNF cannot not be found, assuming IFSA version 2.0");
-			providerUrl=IFSA_PROVIDER_URL_V2_0;
-		}
-		log.info("using ifsa provider URL ["+providerUrl+"]");
-		env.put(Context.PROVIDER_URL, providerUrl);
-		// Create context as required by IFSA 2.0. Ignore the deprecation....
+		env.put(Context.PROVIDER_URL, getProviderUrl());
+		// Create context as required by IFSA 2.0. Ignore the possible deprecation....
 		return new IFSAContext((Context) new InitialContext(env));
 	}
 
