@@ -1,6 +1,9 @@
 /*
  * $Log: XsltPipe.java,v $
- * Revision 1.16  2005-06-13 11:46:26  europe\L190409
+ * Revision 1.17  2005-06-20 09:03:05  europe\L190409
+ * added outputType attribute (for xpath-expressions)
+ *
+ * Revision 1.16  2005/06/13 11:46:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected version-string
  *
  * Revision 1.15  2005/06/13 11:45:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -55,6 +58,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setForwardName(String) forwardName}</td><td>name of forward returned upon completion</td><td>"success"</td></tr>
  * <tr><td>{@link #setStyleSheetName(String) styleSheetName}</td><td>stylesheet to apply to the input message</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setXpathExpression(String) xpathExpression}</td><td>alternatively: XPath-expression to create stylesheet from</td><td></td></tr>
+ * <tr><td>{@link #setOutputType(String) outputType}</td><td>either 'text' or 'xml'. Only valid for xpathExpression</td><td>text</td></tr>
  * <tr><td>{@link #setOmitXmlDeclaration(boolean) omitXmlDeclaration}</td><td>force the transformer generated from the XPath-expression to omit the xml declaration</td><td>true</td></tr>
  * <tr><td>{@link #setNamespaceAware(boolean) namespaceAware}</td><td>controls namespace-awareness of transformation</td><td>true</td></tr>
  * <tr><td>{@link #setSessionKey(String) sessionKey}</td><td>If specified, the result is put 
@@ -79,10 +83,11 @@ import org.apache.commons.lang.StringUtils;
  */
 
 public class XsltPipe extends FixedForwardPipe {
-	public static final String version="$RCSfile: XsltPipe.java,v $ $Revision: 1.16 $ $Date: 2005-06-13 11:46:26 $";
+	public static final String version="$RCSfile: XsltPipe.java,v $ $Revision: 1.17 $ $Date: 2005-06-20 09:03:05 $";
 
 	private TransformerPool transformerPool;
 	private String xpathExpression=null;
+	private String outputType="text";
 	private String styleSheetName;
 	private boolean omitXmlDeclaration=true;
 	private String sessionKey=null;
@@ -103,7 +108,7 @@ public class XsltPipe extends FixedForwardPipe {
 				throw new ConfigurationException(getLogPrefix(null) + "cannot have both an xpathExpression and a styleSheetName specified");
 			}
 			try {
-				transformerPool = new TransformerPool(XmlUtils.createXPathEvaluatorSource("",getXpathExpression(), "text", !isOmitXmlDeclaration()));
+				transformerPool = new TransformerPool(XmlUtils.createXPathEvaluatorSource("",getXpathExpression(), getOutputType(), !isOmitXmlDeclaration()));
 			} 
 			catch (TransformerConfigurationException te) {
 				throw new ConfigurationException(getLogPrefix(null) + "got error creating transformer from xpathExpression [" + getXpathExpression() + "]", te);
@@ -223,6 +228,14 @@ public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRu
 
 	public void setNamespaceAware(boolean b) {
 		namespaceAware = b;
+	}
+
+	public String getOutputType() {
+		return outputType;
+	}
+
+	public void setOutputType(String string) {
+		outputType = string;
 	}
 
 }
