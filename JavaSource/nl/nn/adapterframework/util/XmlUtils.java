@@ -1,6 +1,9 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.19  2005-06-13 11:48:32  europe\L190409
+ * Revision 1.20  2005-06-20 09:01:44  europe\L190409
+ * made identity_transform public
+ *
+ * Revision 1.19  2005/06/13 11:48:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * made namespaceAware option for stringToSource
  * made separate version of stringToSource, optimized for single use
  *
@@ -115,7 +118,7 @@ import java.util.Map;
  * @author Johan Verrips IOS
  */
 public class XmlUtils {
-	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.19 $ $Date: 2005-06-13 11:48:32 $";
+	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.20 $ $Date: 2005-06-20 09:01:44 $";
 	static Logger log = Logger.getLogger(XmlUtils.class);
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
@@ -129,7 +132,7 @@ public class XmlUtils {
 
 	public static final String XPATH_GETROOTNODENAME = "name(/node()[position()=last()])";
 
-	static String IDENTITY_TRANSFORM =
+	public static String IDENTITY_TRANSFORM =
 		"<?xml version=\"1.0\"?><xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"1.0\">"
 			+ "<xsl:template match=\"@*|*|processing-instruction()|comment()\">"
 			+ "<xsl:copy><xsl:apply-templates select=\"*|@*|text()|processing-instruction()|comment()\" />"
