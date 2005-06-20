@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaProviderListener.java,v $
- * Revision 1.10  2005-06-13 15:08:37  europe\L190409
+ * Revision 1.11  2005-06-20 09:14:17  europe\L190409
+ * avoid excessive logging
+ *
+ * Revision 1.10  2005/06/13 15:08:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * avoid excessive logging in debug mode
  *
  * Revision 1.9  2005/06/13 12:43:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -86,7 +89,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * @since 4.2
  */
 public class IfsaProviderListener extends IfsaFacade implements IPullingListener, INamedObject {
-	public static final String version = "$RCSfile: IfsaProviderListener.java,v $ $Revision: 1.10 $ $Date: 2005-06-13 15:08:37 $";
+	public static final String version = "$RCSfile: IfsaProviderListener.java,v $ $Revision: 1.11 $ $Date: 2005-06-20 09:14:17 $";
 
     private final static String THREAD_CONTEXT_SESSION_KEY = "session";
     private final static String THREAD_CONTEXT_RECEIVER_KEY = "receiver";
@@ -131,9 +134,7 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 		if (isSessionsArePooled() && session != null) {
 			try {
 				session.close();
-				if (log.isDebugEnabled() && !isSessionsArePooled()) {
-					log.debug("closed session for receiver ["+getName()+"]");
-				}
+				// do not write to log, this occurs too often
 			} catch (Exception e) {
 				throw new ListenerException(getLogPrefix()+"exception closing QueueSession", e);
 			}
@@ -156,9 +157,7 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 		if (isSessionsArePooled() && receiver != null) {
 			try {
 				receiver.close();
-				if (log.isDebugEnabled() && !isSessionsArePooled()) {
-					log.debug("closed QueueReceiver ["+getName()+"]");
-				}
+				// do not write to log, this occurs too often
 			} catch (Exception e) {
 				throw new ListenerException(getLogPrefix()+"exception closing QueueReceiver", e);
 			}
