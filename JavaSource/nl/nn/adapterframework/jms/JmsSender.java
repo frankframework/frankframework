@@ -1,6 +1,10 @@
 /*
  * $Log: JmsSender.java,v $
- * Revision 1.14  2005-06-13 09:58:59  europe\L190409
+ * Revision 1.15  2005-06-20 09:10:34  europe\L190409
+ * added outputType attribute
+ * added deliveryMode attribute
+ *
+ * Revision 1.14  2005/06/13 09:58:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * cosmetic changes
  *
  * Revision 1.13  2004/10/19 06:39:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -51,6 +55,7 @@ import nl.nn.adapterframework.parameters.ParameterValueList;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 
+import javax.jms.DeliveryMode;
 import javax.jms.JMSException;
 import javax.jms.Session;
 import javax.jms.MessageProducer;
@@ -67,6 +72,8 @@ import javax.jms.Message;
  * <tr><td>{@link #setDestinationName(String) destinationName}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDestinationType(String) destinationType}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMessageTimeToLive(long) messageTimeToLive}</td><td>&nbsp;</td><td>0</td></tr>
+ * <tr><td>{@link #setMessageType(boolean) messageType}</td><td>value of the JMSType field</td><td>not set by application</td></tr>
+ * <tr><td>{@link #setDeliveryMode(boolean) deliveryMode}</td><td>controls mode that messages are sent with: either 'persistent' or 'non_persistent'</td><td>not set by application</td></tr>
  * <tr><td>{@link #setPersistent(boolean) persistent}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setAcknowledgeMode(String) acknowledgeMode}</td><td>&nbsp;</td><td>AUTO_ACKNOWLEDGE</td></tr>
  * <tr><td>{@link #setTransacted(boolean) transacted}</td><td>&nbsp;</td><td>false</td></tr>
@@ -80,8 +87,11 @@ import javax.jms.Message;
  */
 
 public class JmsSender extends JMSFacade implements ISenderWithParameters, IPostboxSender {
-	public static final String version="$RCSfile: JmsSender.java,v $ $Revision: 1.14 $ $Date: 2005-06-13 09:58:59 $";
+	public static final String version="$RCSfile: JmsSender.java,v $ $Revision: 1.15 $ $Date: 2005-06-20 09:10:34 $";
 	private String replyToName = null;
+	private int deliveryMode = 0;
+	private String messageType = null;
+	
 	
 	protected ParameterList paramList = null;
 
@@ -154,6 +164,12 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 			// create message
 			Message msg = createTextMessage(s, correlationID, message);
 
+			if (getMessageType()!=null) {
+				msg.setJMSType(getMessageType());
+			}
+			if (getDeliveryModeInt()>0) {
+				msg.setJMSDeliveryMode(getDeliveryModeInt());
+			}
 
 			// set properties
 			if (prc != null && paramList != null) {
@@ -236,4 +252,40 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 		return result;
 
 	}
+
+
+	public void setMessageType(String string) {
+		messageType = string;
+	}
+	public String getMessageType() {
+		return messageType;
+	}
+
+	public void setDeliveryMode(String deliveryMode) {
+		if (deliveryMode.equalsIgnoreCase("persistent")) {
+			this.deliveryMode = DeliveryMode.PERSISTENT;
+		} else if (deliveryMode.equalsIgnoreCase("non_persistent")) {
+			this.deliveryMode = DeliveryMode.NON_PERSISTENT;
+		} else
+			log.warn("unknown delivery mode ["+deliveryMode+"], delivery mode not changed");
+	}
+
+	public int getDeliveryModeInt() {
+		return deliveryMode;
+	}
+	
+	public String getDeliveryMode() {
+		if (deliveryMode==0) {
+			return "not set by application";
+		}
+		if (deliveryMode==DeliveryMode.PERSISTENT) {
+			return "PERSISTENT";
+		}
+		if (deliveryMode==DeliveryMode.NON_PERSISTENT) {
+			return "NON-PERSISTENT";
+		}
+		return "unknown delivery mode: "+deliveryMode;
+	}
+
+
 }
