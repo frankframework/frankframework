@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaFacade.java,v $
- * Revision 1.24  2005-06-13 15:07:58  europe\L190409
+ * Revision 1.25  2005-06-20 09:12:47  europe\L190409
+ * set sessionsArePooled false by default
+ *
+ * Revision 1.24  2005/06/13 15:07:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * avoid excessive logging in debug mode
  *
  * Revision 1.23  2005/06/13 11:59:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -99,7 +102,7 @@ import javax.jms.*;
  * @since 4.2
  */
 public class IfsaFacade implements INamedObject, HasPhysicalDestination {
-	public static final String version = "$RCSfile: IfsaFacade.java,v $ $Revision: 1.24 $ $Date: 2005-06-13 15:07:58 $";
+	public static final String version = "$RCSfile: IfsaFacade.java,v $ $Revision: 1.25 $ $Date: 2005-06-20 09:12:47 $";
     protected Logger log = Logger.getLogger(this.getClass());
     
 	private String name;
@@ -116,7 +119,7 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 	private boolean requestor=false;
 	private boolean provider=false;
 	
-	private boolean sessionsArePooled=true;
+	private boolean sessionsArePooled=false;
 	
 	private boolean xaSupported=true;
 
@@ -156,8 +159,6 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 	 */
 	public void configure() throws ConfigurationException {
 
-		log.info("IFSA API version ["+IFSAConstants.getVersionInfo()+"]");	
-		
 		// perform some basic checks
 		try {
 			if (StringUtils.isEmpty(getApplicationId()))
