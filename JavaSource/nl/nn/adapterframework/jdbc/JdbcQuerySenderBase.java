@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcQuerySenderBase.java,v $
- * Revision 1.9  2005-06-02 13:48:16  europe\L190409
+ * Revision 1.10  2005-06-28 09:05:47  europe\L190409
+ * explicit closing of resultset
+ *
+ * Revision 1.9  2005/06/02 13:48:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added 'scalar' attribute, to return a single value
  *
  * Revision 1.8  2005/04/26 15:20:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -74,7 +77,7 @@ import nl.nn.adapterframework.util.DB2XMLWriter;
  * @since 	4.1
  */
 public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
-	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.9 $ $Date: 2005-06-02 13:48:16 $";
+	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.10 $ $Date: 2005-06-28 09:05:47 $";
 
 	private String queryType = "other";
 	private int startRow=1;
@@ -133,6 +136,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 	}
 
 	private String executeSelectQuery(PreparedStatement statement) throws SenderException{
+		ResultSet resultset=null;
 		try {
 			String result=null;
 			
@@ -140,8 +144,8 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 				statement.setMaxRows(getMaxRows()+ ( getStartRow()>1 ? getStartRow()-1 : 0));
 			}
 
-			ResultSet resultset = statement.executeQuery();
-			
+			resultset = statement.executeQuery();
+
 			if (getStartRow()>1) {
 				resultset.absolute(getStartRow()-1);
 				log.debug(getLogPrefix() + "Index set at position: " +  resultset.getRow() );
@@ -164,6 +168,9 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 			throw new SenderException(getLogPrefix() + "got exception executing a SELECT SQL command",sqle );
 		} finally {
 			try {
+				if (resultset!=null) {
+					resultset.close();
+				}
 				statement.close();
 			} catch (SQLException e) {
 				throw new SenderException(getLogPrefix() + "got exception closing a SELECT SQL command",e );
