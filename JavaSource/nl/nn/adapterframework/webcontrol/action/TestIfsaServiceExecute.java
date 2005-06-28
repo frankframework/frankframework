@@ -1,6 +1,9 @@
 /*
  * $Log: TestIfsaServiceExecute.java,v $
- * Revision 1.4  2005-04-14 09:54:35  L190409
+ * Revision 1.5  2005-06-28 09:03:20  europe\L190409
+ * close in finally-clause
+ *
+ * Revision 1.4  2005/04/14 09:54:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * saved results
  *
  * Revision 1.3  2005/04/14 09:28:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -37,10 +40,11 @@ import java.util.ArrayList;
  * 
  * @version Id
  * @author  Gerrit van Brakel / Johan Verrips
+ * @since   4.3
  */
 
 public final class TestIfsaServiceExecute extends ActionBase {
-	public static final String version="$Id: TestIfsaServiceExecute.java,v 1.4 2005-04-14 09:54:35 L190409 Exp $";
+	public static final String version = "$RCSfile: TestIfsaServiceExecute.java,v $ $Revision: 1.5 $ $Date: 2005-06-28 09:03:20 $";
 	
 	public ActionForward execute(
 	    ActionMapping mapping,
@@ -101,8 +105,9 @@ public final class TestIfsaServiceExecute extends ActionBase {
 		            new ActionError(
 		                "errors.generic",
 		                "error occured sending message:" + XmlUtils.encodeChars(t.getMessage())));
+		    } finally {
+				sender.close();
 		    }
-		    sender.close();
 	    } catch (Exception e) {
 	        log.error(e);
 	        errors.add(
@@ -136,9 +141,6 @@ public final class TestIfsaServiceExecute extends ActionBase {
 	          } catch (Throwable e) {
 		          log.warn("unable to add cookie to request. cookie value ["+sendIfsaCookie.getValue()+"]");
 	          }
-	    
-	   
-		
 	    
 	    // Forward control to the specified success URI
 	    log.debug("forward to success");
