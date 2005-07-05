@@ -1,6 +1,9 @@
 /*
  * $Log: JmsSender.java,v $
- * Revision 1.15  2005-06-20 09:10:34  europe\L190409
+ * Revision 1.16  2005-07-05 11:54:03  europe\L190409
+ * corrected deliveryMode handling; added priority-attribute
+ *
+ * Revision 1.15  2005/06/20 09:10:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added outputType attribute
  * added deliveryMode attribute
  *
@@ -75,6 +78,7 @@ import javax.jms.Message;
  * <tr><td>{@link #setMessageType(boolean) messageType}</td><td>value of the JMSType field</td><td>not set by application</td></tr>
  * <tr><td>{@link #setDeliveryMode(boolean) deliveryMode}</td><td>controls mode that messages are sent with: either 'persistent' or 'non_persistent'</td><td>not set by application</td></tr>
  * <tr><td>{@link #setPersistent(boolean) persistent}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setPriority(int) priority}</td><td>sets the priority that is used to deliver the message. ranges from 0 to 9. Defaults to -1, meaning not set. Effectively the default priority is set by Jms to 4</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setAcknowledgeMode(String) acknowledgeMode}</td><td>&nbsp;</td><td>AUTO_ACKNOWLEDGE</td></tr>
  * <tr><td>{@link #setTransacted(boolean) transacted}</td><td>&nbsp;</td><td>false</td></tr>
  * <tr><td>{@link #setReplyToName(String) ReplyToName}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
@@ -87,10 +91,11 @@ import javax.jms.Message;
  */
 
 public class JmsSender extends JMSFacade implements ISenderWithParameters, IPostboxSender {
-	public static final String version="$RCSfile: JmsSender.java,v $ $Revision: 1.15 $ $Date: 2005-06-20 09:10:34 $";
+	public static final String version="$RCSfile: JmsSender.java,v $ $Revision: 1.16 $ $Date: 2005-07-05 11:54:03 $";
 	private String replyToName = null;
 	private int deliveryMode = 0;
 	private String messageType = null;
+	private int priority=-1;
 	
 	
 	protected ParameterList paramList = null;
@@ -169,6 +174,11 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 			}
 			if (getDeliveryModeInt()>0) {
 				msg.setJMSDeliveryMode(getDeliveryModeInt());
+				mp.setDeliveryMode(getDeliveryModeInt());
+			}
+			if (getPriority()>=0) {
+				msg.setJMSPriority(getPriority());
+				mp.setPriority(getPriority());
 			}
 
 			// set properties
@@ -287,5 +297,13 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 		return "unknown delivery mode: "+deliveryMode;
 	}
 
+
+	public int getPriority() {
+		return priority;
+	}
+
+	public void setPriority(int i) {
+		priority = i;
+	}
 
 }
