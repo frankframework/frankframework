@@ -1,6 +1,9 @@
 /*
  * $Log: ConfigurationDigester.java,v $
- * Revision 1.10  2005-06-13 12:47:15  europe\L190409
+ * Revision 1.11  2005-07-05 10:54:29  europe\L190409
+ * created 'include' facility
+ *
+ * Revision 1.10  2005/06/13 12:47:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * rework to prepare for 'include'-feature
  *
  * Revision 1.9  2005/02/24 10:48:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -75,11 +78,14 @@ import java.net.URL;
  * @see Configuration
  */
 public class ConfigurationDigester {
-	public static final String version = "$RCSfile: ConfigurationDigester.java,v $ $Revision: 1.10 $ $Date: 2005-06-13 12:47:15 $";
+	public static final String version = "$RCSfile: ConfigurationDigester.java,v $ $Revision: 1.11 $ $Date: 2005-07-05 10:54:29 $";
     protected static Logger log = Logger.getLogger(ConfigurationDigester.class);
 
 	private static final String CONFIGURATION_FILE_DEFAULT  = "Configuration.xml";
 	private static final String DIGESTER_RULES_DEFAULT      = "digester-rules.xml";
+
+	private String configurationFile=null;
+	private String digesterRulesFile=DIGESTER_RULES_DEFAULT;
 
 	public static void main(String args[]) {
 	    String configuration_file = CONFIGURATION_FILE_DEFAULT;
@@ -157,12 +163,19 @@ public class ConfigurationDigester {
 			throw (e);
 		}
 	}
+
+	public void include(Object stackTop) throws ConfigurationException {
+		digestConfiguration(stackTop,ClassUtils.getResourceURL(this, getDigesterRules()), ClassUtils.getResourceURL(this, getConfiguration()));
+	}
+	
+	public Configuration unmarshalConfiguration() throws ConfigurationException
+	{
+		return unmarshalConfiguration(getDigesterRules(), getConfiguration());
+	}
 	
     public Configuration unmarshalConfiguration(String digesterRulesFile, String configurationFile) throws ConfigurationException
     {
-        Configuration config = unmarshalConfiguration(ClassUtils.getResourceURL(this, digesterRulesFile), ClassUtils.getResourceURL(this, configurationFile));
- 
-		return config;
+		return unmarshalConfiguration(ClassUtils.getResourceURL(this, digesterRulesFile), ClassUtils.getResourceURL(this, configurationFile));
     }
     
     public Configuration unmarshalConfiguration(URL digesterRulesURL, URL configurationFileURL) throws ConfigurationException{
@@ -173,4 +186,22 @@ public class ConfigurationDigester {
         log.info("************** Configuration completed **************");
 		return config;
     }
+    
+    
+	public String getConfiguration() {
+		return configurationFile;
+	}
+
+	public String getDigesterRules() {
+		return digesterRulesFile;
+	}
+
+	public void setConfiguration(String string) {
+		configurationFile = string;
+	}
+
+	public void setDigesterRules(String string) {
+		digesterRulesFile = string;
+	}
+
 }
