@@ -1,6 +1,9 @@
 /*
  * $Log: JavaProxy.java,v $
- * Revision 1.4  2004-08-23 07:38:20  L190409
+ * Revision 1.5  2005-07-05 13:18:28  europe\L190409
+ * allow for ServiceClient2 extensions
+ *
+ * Revision 1.4  2004/08/23 07:38:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * renamed JavaPusher to JavaListener
  *
  * Revision 1.3  2004/08/13 06:47:26  unknown <unknown@ibissource.org>
@@ -16,6 +19,9 @@
 package nl.nn.adapterframework.receivers;
 
 import java.io.Serializable;
+import java.util.HashMap;
+
+import nl.nn.adapterframework.core.ListenerException;
 
 
 /**
@@ -31,8 +37,8 @@ import java.io.Serializable;
  * @version Id
  * @since 4.2
  */
-public class JavaProxy implements ServiceClient, Serializable {
-	public static final String version="$Id: JavaProxy.java,v 1.4 2004-08-23 07:38:20 L190409 Exp $";
+public class JavaProxy implements ServiceClient2, Serializable {
+	public static final String version="$RCSfile: JavaProxy.java,v $ $Revision: 1.5 $ $Date: 2005-07-05 13:18:28 $";
 	private String serviceName;
 	private boolean usesListener;
 	
@@ -71,6 +77,13 @@ public class JavaProxy implements ServiceClient, Serializable {
 		return ServiceDispatcher.getInstance().dispatchRequest(serviceName, message);
 	}
 
+	public String processRequestWithExceptions(String correlationId, String message, HashMap requestContext) throws ListenerException {
+		if (usesListener)
+			return JavaListener.getListener(getServiceName()).processRequest(message);
+		return ServiceDispatcher.getInstance().dispatchRequestWithExceptions(serviceName, correlationId, message, requestContext);
+	}
+
+
 	/**
 	 * @return name of the service under which the JavaReceiver is registered
 	 */
@@ -95,4 +108,5 @@ public class JavaProxy implements ServiceClient, Serializable {
 			return null;
 		return new JavaProxy(pusher);
 	}
+
 }
