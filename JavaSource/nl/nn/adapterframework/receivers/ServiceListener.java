@@ -1,3 +1,9 @@
+/*
+ * $Log: ServiceListener.java,v $
+ * Revision 1.5  2005-07-05 11:15:38  europe\L190409
+ * added deprecation message
+ *
+ */
 package nl.nn.adapterframework.receivers;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -36,11 +42,12 @@ import java.util.Iterator;
  * @see nl.nn.adapterframework.core.IAdapter
  * @see nl.nn.adapterframework.core.IReceiver
  * @see nl.nn.adapterframework.core.PipeLineResult
+ * @deprecated Please use GenericReceiver with nested WebServiceListener instead.
  */
 public class ServiceListener  implements IReceiver, IReceiverStatistics, HasSender,
         ServiceClient,
         Serializable {
-	public static final String version="$Id: ServiceListener.java,v 1.4 2004-08-25 09:11:33 a1909356#db2admin Exp $";
+	public static final String version="$Id: ServiceListener.java,v 1.5 2005-07-05 11:15:38 europe\L190409 Exp $";
         	
 	private IAdapter adapter;
 	private RunStateManager runState = new RunStateManager();
@@ -64,6 +71,8 @@ public ServiceListener() {
 public void configure() throws ConfigurationException {
 	try {
 	    log.debug("registering listener ["+name+"] with ServiceDispatcher");
+		adapter.getMessageKeeper().add("WARNING: the class nl.nn.adapterframework.receivers.ServiceListener is deprecated. "+
+										"Please use GenericReceiver with nested WebServiceListener instead.");
  
         ServiceDispatcher.getInstance().registerServiceListener(this);
     
