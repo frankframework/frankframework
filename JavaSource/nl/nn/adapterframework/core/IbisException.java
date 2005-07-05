@@ -1,6 +1,9 @@
 /*
  * $Log: IbisException.java,v $
- * Revision 1.14  2005-04-26 15:14:51  L190409
+ * Revision 1.15  2005-07-05 11:01:10  europe\L190409
+ * improved rendering of errormessage
+ *
+ * Revision 1.14  2005/04/26 15:14:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved rendering of errormessage
  *
  * Revision 1.13  2005/02/10 08:14:23  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -45,13 +48,13 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang.exception.NestableException;
 
 /**
- * Base Exception with exhaustive toString() and compact getMessage()
+ * Base Exception with exhaustive toString() and compact but informative getMessage().
  * 
  * @version Id
  * @author Gerrit van Brakel
  */
 public class IbisException extends NestableException {
-		public static final String version="$Id: IbisException.java,v 1.14 2005-04-26 15:14:51 L190409 Exp $";
+	public static final String version = "$RCSfile: IbisException.java,v $ $Revision: 1.15 $ $Date: 2005-07-05 11:01:10 $";
 
 	static {
 		// add methodname to find cause of JMS-Exceptions
@@ -119,12 +122,12 @@ public class IbisException extends NestableException {
 			
 			// prefix the result with the message of this exception.
 			// if the new message ends with the previous, remove the part that is already known
-			if (messages[i]!=null) {
+			if (StringUtils.isNotEmpty(messages[i])) {
 				newPart = addPart(messages[i], " ", newPart);
-				if (prev_message!=null && newPart.endsWith(prev_message)) {
+				if (StringUtils.isNotEmpty(newPart) && StringUtils.isNotEmpty(prev_message) && newPart.endsWith(prev_message)) {
 					newPart=newPart.substring(0,newPart.length()-prev_message.length());
 				}
-				if (newPart.endsWith(": ")) {
+				if (StringUtils.isNotEmpty(newPart) && newPart.endsWith(": ")) {
 					newPart=newPart.substring(0,newPart.length()-2);
 				}
 				prev_message=messages[i];
