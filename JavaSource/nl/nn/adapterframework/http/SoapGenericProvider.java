@@ -1,12 +1,21 @@
 /*
  * $Log: SoapGenericProvider.java,v $
- * Revision 1.1  2005-04-26 09:28:25  L190409
+ * Revision 1.2  2005-07-05 13:29:49  europe\L190409
+ * introduction of SecurityHandlers
+ *
+ * Revision 1.1  2005/04/26 09:28:25  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * introduction of SoapGenericProvider
  *
  */
 package nl.nn.adapterframework.http;
 
+import java.util.HashMap;
+
+import javax.servlet.http.HttpServletRequest;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.ISecurityHandler;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
 
 import org.apache.log4j.Logger;
@@ -25,7 +34,7 @@ import org.apache.soap.util.Provider;
  * @author Gerrit van Brakel
  */
 public class SoapGenericProvider implements Provider {
-	public static final String version = "$Id: SoapGenericProvider.java,v 1.1 2005-04-26 09:28:25 L190409 Exp $";
+	public static final String version = "$RCSfile: SoapGenericProvider.java,v $ $Revision: 1.2 $ $Date: 2005-07-05 13:29:49 $";
 	protected Logger log=Logger.getLogger(this.getClass());
 	
 	private final String TARGET_OBJECT_URI_KEY = "TargetObjectNamespaceURI";
@@ -36,7 +45,8 @@ public class SoapGenericProvider implements Provider {
 	public void locate(DeploymentDescriptor dd, Envelope env, Call call, String methodName, String targetObjectURI, SOAPContext reqContext)
 		throws SOAPException {
 		if (log.isDebugEnabled()){
-			log.debug("Locate: dd=["+dd+"]+ targetObjectURI=[" +targetObjectURI+"]");		}
+			log.debug("Locate: dd=["+dd+"]+ targetObjectURI=[" +targetObjectURI+"]");
+		}
 		if (sd==null) {
 			sd= ServiceDispatcher.getInstance();
 		}
@@ -62,7 +72,11 @@ public class SoapGenericProvider implements Provider {
 				log.debug("Invoking service for targetObjectURI=[" +targetObjectURI+"]");
 			}
 			String message=soapWrapper.getBody(reqContext.getBodyPart(0).getContent().toString());
-			String result=sd.dispatchRequest(targetObjectURI, message);
+			HttpServletRequest httpRequest=(HttpServletRequest) reqContext.getProperty(Constants.BAG_HTTPSERVLETREQUEST);
+			ISecurityHandler securityHandler = new HttpSecurityHandler(httpRequest);
+			HashMap messageContext= new HashMap();
+			messageContext.put(PipeLineSession.securityHandlerKey, securityHandler);
+			String result=sd.dispatchRequestWithExceptions(targetObjectURI, null, message, messageContext);
 			resContext.setRootPart( soapWrapper.putInEnvelope(result,null), Constants.HEADERVAL_CONTENT_TYPE_UTF8);
 				
 		 }
