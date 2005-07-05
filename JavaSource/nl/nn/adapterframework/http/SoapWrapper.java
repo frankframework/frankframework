@@ -1,6 +1,9 @@
 /*
  * $Log: SoapWrapper.java,v $
- * Revision 1.3  2005-05-31 09:16:23  europe\L190409
+ * Revision 1.4  2005-07-05 12:55:51  europe\L190409
+ * allow to set targetObjectNamespace for putInEnvelope
+ *
+ * Revision 1.3  2005/05/31 09:16:23  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * cosmetic changes
  *
  * Revision 1.2  2005/05/31 09:15:46  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -35,7 +38,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @version Id
  */
 public class SoapWrapper {
-	public static final String version="$RCSfile: SoapWrapper.java,v $ $Revision: 1.3 $ $Date: 2005-05-31 09:16:23 $";
+	public static final String version="$RCSfile: SoapWrapper.java,v $ $Revision: 1.4 $ $Date: 2005-07-05 12:55:51 $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	private TransformerPool extractBody;
@@ -117,20 +120,30 @@ public class SoapWrapper {
 		return extractFaultString.transform(message,null);
 	}
 	
-	public String putInEnvelope(String message, String encodingStyleUri) {
+	public String putInEnvelope(String message, String encodingStyleUri, String targetObjectNamespace) {
+		
 		String encodingStyle="";
+		String targetObjectNamespaceClause="";
 		if (!StringUtils.isEmpty(encodingStyleUri)) {
 			encodingStyle="soapenv:encodingStyle=\""+ encodingStyleUri+"\" ";
+		}
+		if (!StringUtils.isEmpty(targetObjectNamespace)) {
+			targetObjectNamespaceClause=" xmlns=\""+ targetObjectNamespace+"\" ";
 		}
 		String soapmsg= 
 		"<soapenv:Envelope " + 
 			"xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" "+encodingStyle +
+			targetObjectNamespaceClause +
 			"xmlns:xsi=\"http://www.w3.org/1999/XMLSchema-instance\" >" + 
-			"<soapenv:Body>" +	
+			"<soapenv:Body>" + 	
 				message +
 			"</soapenv:Body>"+
 		"</soapenv:Envelope>";
 		return soapmsg;
+	}
+
+	public String putInEnvelope(String message, String encodingStyleUri) {
+		return putInEnvelope(message, encodingStyleUri, null);
 	}
 
 }
