@@ -1,6 +1,9 @@
 /*
  * $Log: MessageSendingPipe.java,v $
- * Revision 1.17  2004-10-19 06:39:20  L190409
+ * Revision 1.18  2005-07-05 11:51:54  europe\L190409
+ * improved logging of receiving result
+ *
+ * Revision 1.17  2004/10/19 06:39:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * modified parameter handling, introduced IWithParameters
  *
  * Revision 1.16  2004/10/14 16:11:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -100,7 +103,7 @@ import org.apache.commons.lang.StringUtils;
  */
 
 public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
-	public static final String version = "$Id: MessageSendingPipe.java,v 1.17 2004-10-19 06:39:20 L190409 Exp $";
+	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.18 $ $Date: 2005-07-05 11:51:54 $";
 	private final static String TIMEOUTFORWARD = "timeout";
 	private final static String EXCEPTIONFORWARD = "exception";
 
@@ -224,6 +227,11 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 				threadContext = replyListener.openThread();
 				Object msg =
 					replyListener.getRawMessage(correlationID, threadContext);
+				if (msg==null) {	
+					log.info(getLogPrefix(session)+"received null reply message");
+				} else {
+					log.info(getLogPrefix(session)+"received reply message");
+				}
 				result =
 					replyListener.getStringFromRawMessage(msg, threadContext);
 				
@@ -263,11 +271,11 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 
 	protected String sendMessage(Object input, PipeLineSession session, String correlationID, ISender sender, HashMap threadContext) throws SenderException, TimeOutException {
 		// sendResult has a messageID for async senders, the result for sync senders
-		if (getSender() instanceof ISenderWithParameters && getParameterList()!=null) {
-			ISenderWithParameters psender = (ISenderWithParameters) getSender();
+		if (sender instanceof ISenderWithParameters && getParameterList()!=null) {
+			ISenderWithParameters psender = (ISenderWithParameters) sender;
 			return psender.sendMessage(correlationID, (String) input, new ParameterResolutionContext((String)input, session));
 		} 
-		return getSender().sendMessage(correlationID, (String) input);
+		return sender.sendMessage(correlationID, (String) input);
 	}
 
 	public void start() throws PipeStartException {
