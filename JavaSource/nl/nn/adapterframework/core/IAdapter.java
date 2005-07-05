@@ -1,6 +1,9 @@
 /*
  * $Log: IAdapter.java,v $
- * Revision 1.7  2005-01-13 08:55:15  L190409
+ * Revision 1.8  2005-07-05 12:28:56  europe\L190409
+ * added possibility to end processing with an exception
+ *
+ * Revision 1.7  2005/01/13 08:55:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Make threadContext-attributes available in PipeLineSession
  *
  * Revision 1.6  2004/08/09 08:43:46  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -33,24 +36,27 @@ import javax.transaction.UserTransaction;
  * @version Id
  **/
 public interface IAdapter extends IManagable {
-	public static final String version="$Id: IAdapter.java,v 1.7 2005-01-13 08:55:15 L190409 Exp $";
-  /**
-   * Instruct the adapter to configure itself. The adapter will call the
-   * pipeline to configure itself, the pipeline will call the individual
-   * pipes to configure themselves.
-   * @see nl.nn.adapterframework.pipes.AbstractPipe#configure()
-   * @see PipeLine#configurePipes()
-   */
-  public void configure() throws ConfigurationException;
- /**
-  * The messagekeeper is used to keep the last x messages, relevant to
-  * display in the web-functions.
-  */ 
+	public static final String version = "$RCSfile: IAdapter.java,v $ $Revision: 1.8 $ $Date: 2005-07-05 12:28:56 $";
+
+    /**
+  	 * Instruct the adapter to configure itself. The adapter will call the
+  	 * pipeline to configure itself, the pipeline will call the individual
+  	 * pipes to configure themselves.
+  	 * @see nl.nn.adapterframework.pipes.AbstractPipe#configure()
+  	 * @see PipeLine#configurePipes()
+  	 */
+  	public void configure() throws ConfigurationException;
+  	
+ 	/**
+ 	 * The messagekeeper is used to keep the last x messages, relevant to
+ 	 * display in the web-functions.
+ 	 */ 
 	public MessageKeeper getMessageKeeper();
 	public IReceiver getReceiverByName(String receiverName);
 	public Iterator getReceiverIterator();
 	public PipeLineResult processMessage(String correlationID, String message);
 	public PipeLineResult processMessage(String correlationID, String message, PipeLineSession pipeLineSession);
+	public PipeLineResult processMessageWithExceptions(String messageId, String message, PipeLineSession pipeLineSession) throws ListenerException;
 
   	public void registerPipeLine (PipeLine pipeline) throws ConfigurationException;
   	public void setName(String name);
@@ -61,6 +67,7 @@ public interface IAdapter extends IManagable {
 	 *  return the userTransaction object that can be used to demarcate (begin/commit/rollback) transactions
 	 */
 	public UserTransaction getUserTransaction() throws TransactionException;
+	
 	/**
 	 *  return true when the current thread is running under a transaction.
 	 */

@@ -1,6 +1,9 @@
 /*
  * $Log: Adapter.java,v $
- * Revision 1.15  2005-01-13 08:55:15  L190409
+ * Revision 1.16  2005-07-05 12:27:52  europe\L190409
+ * added possibility to end processing with an exception
+ *
+ * Revision 1.15  2005/01/13 08:55:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Make threadContext-attributes available in PipeLineSession
  *
  * Revision 1.14  2004/09/08 14:14:41  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -92,7 +95,7 @@ import javax.transaction.UserTransaction;
  */
 
 public class Adapter extends JNDIBase implements Runnable, IAdapter {
-	public static final String version = "$Id: Adapter.java,v 1.15 2005-01-13 08:55:15 L190409 Exp $";
+	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.16 $ $Date: 2005-07-05 12:27:52 $";
 	private Vector receivers = new Vector();
 	private long lastMessageDate = 0;
 	private PipeLine pipeline;
@@ -448,8 +451,33 @@ public class Adapter extends JNDIBase implements Runnable, IAdapter {
 	public PipeLineResult processMessage(String messageId, String message) {
 		return processMessage(messageId, message, null);
 	}
-	
+
 	public PipeLineResult processMessage(String messageId, String message, PipeLineSession pipeLineSession) {
+		long startTime = System.currentTimeMillis();
+		try {
+			return processMessageWithExceptions(messageId, message, pipeLineSession);
+		} catch (Throwable t) {
+			PipeLineResult result = new PipeLineResult();
+			result.setState(getErrorState());
+			String msg = "Illegal exception ["+t.getClass().getName()+"]";
+			INamedObject objectInError = null;
+			if (t instanceof ListenerException) {
+				Throwable cause = ((ListenerException) t).getCause();
+				if  (cause instanceof PipeRunException) {
+					PipeRunException pre = (PipeRunException) cause;
+					msg = "error during pipeline processing";
+					objectInError = pre.getPipeInError();
+				} else if (cause instanceof ManagedStateException) {
+					msg = "illegal state";
+					objectInError = this;
+				}
+			}
+			result.setResult(formatErrorMessage(msg, t, message, messageId, objectInError, startTime));
+			return result;
+		}
+	}
+	
+	public PipeLineResult processMessageWithExceptions(String messageId, String message, PipeLineSession pipeLineSession) throws ListenerException {
 
 		PipeLineResult result = new PipeLineResult();
 
@@ -461,114 +489,52 @@ public class Adapter extends JNDIBase implements Runnable, IAdapter {
 
 			String msgAdapterNotOpen =
 				"Adapter [" + getName() + "] in state [" + currentRunState + "], cannot process message";
-			ManagedStateException e = new ManagedStateException(msgAdapterNotOpen);
-
-			result.setResult(formatErrorMessage(null, e, message, messageId, this, startTime));
-			result.setState(getErrorState());
-			return result;
+			throw new ListenerException(new ManagedStateException(msgAdapterNotOpen));
 		}
 
 		incNumOfMessagesInProcess(startTime);
 
 		if (log.isDebugEnabled()) { // for performance reasons
 			log.debug("Adapter [" + name + "] received message [" + message + "] with messageId [" + messageId + "]");
-		}
-		else {
+		} else {
 			log.info("Adapter [" + name + "] received message with messageId [" + messageId + "]");
 		}
 
 		try {
 			result = pipeline.process(messageId, message,pipeLineSession);
 			if (log.isDebugEnabled()) {
-				log.debug(
-					"Adapter ["
-						+ getName()
-						+ "] messageId["
-						+ messageId
-						+ "] got exit-state ["
-						+ result.getState()
-						+ "] and result ["
-						+ result.toString()
-						+ "] from PipeLine");
+				log.debug("Adapter [" + getName() + "] messageId[" + messageId + "] got exit-state [" + result.getState() + "] and result [" + result.toString() + "] from PipeLine");
 			}
-
-		}
-		catch (PipeRunException pre) {
+			return result;
+	
+		} catch (Throwable t) {
+			ListenerException e;
+			if (t instanceof ListenerException) {
+				e = (ListenerException) t;
+			} else {
+				e = new ListenerException(t);
+			}
 			incNumOfMessagesInError();
-			// fill the PipeRunException with the name of the last pipe
-			//        if (pre.getPipeInError() == null)
-			//            pre.setPipeInError(pipeline.getLastExecutedPipe());
-			result.setResult(
-				formatErrorMessage(
-					"error during pipeline processing",
-					pre,
-					message,
-					messageId,
-					pre.getPipeInError(),
-					startTime));
-			result.setState(getErrorState());
-			log.error(
-				"Adapter ["
-					+ name
-					+ "] got error during pipeline processing messageId["
-					+ messageId
-					+ "]: ["
-					+ pre.toString()
-					+ "]",
-				pre);
-			//notify messageKeeper        
-			getMessageKeeper().add("error during pipeline processing: " + pre.getMessage());
+			getMessageKeeper().add("error processing message with messageId [" + messageId+"]: " + e.getMessage());
+			log.error("Adapter: [" + getName() + "] caught exception message with messageId [" + messageId+"]",e);
+			throw e;
+		} finally {
+			long endTime = System.currentTimeMillis();
+			long duration = endTime - startTime;
+			//reset the InProcess fields, and increase processedMessagesCount
+			decNumOfMessagesInProcess(duration);
+	
+			if (log.isDebugEnabled()) { // for performance reasons
+				log.debug("Adapter: [" + getName()
+						+ "] STAT: Finished processing message with messageId [" + messageId
+						+ "] exit-state [" + result.getState()
+						+ "] started " + DateUtils.format(new Date(startTime), DateUtils.FORMAT_GENERICDATETIME)
+						+ " finished " + DateUtils.format(new Date(endTime), DateUtils.FORMAT_GENERICDATETIME)
+						+ " total duration: " + duration + " msecs");
+			} else {
+				log.info("Adapter completed message with messageId [" + messageId + "] with exit-state [" + result.getState() + "]");
+			}
 		}
-		catch (Throwable undefError) {
-			incNumOfMessagesInError();
-			String msg = "Illegal exception ["+undefError.getClass().getName()+"] in processMessage of adapter [" + name + "] for messageId ["
-					+ messageId
-					+ "]";
-
-			getMessageKeeper().add(msg+": "+undefError.getMessage());
-			log.error(msg, undefError);
-
-			result.setResult(
-				formatErrorMessage(
-					"Illegal exception ["+undefError.getClass().getName()+"] in processMessage of adapter [" + name + "]",
-					undefError,
-					message,
-					messageId,
-					this,
-					startTime));
-			result.setState(getErrorState());
-
-		}
-		long endTime = System.currentTimeMillis();
-		long duration = endTime - startTime;
-
-		if (log.isDebugEnabled()) { // for performance reasons
-			log.debug(
-				"Adapter: ["
-					+ getName()
-					+ "] STAT: Finished processing message with messageId ["
-					+ messageId
-					+ "] exit-state ["
-					+ result.getState()
-					+ "] started "
-					+ DateUtils.format(new Date(startTime), DateUtils.FORMAT_GENERICDATETIME)
-					+ " finished "
-					+ DateUtils.format(new Date(endTime), DateUtils.FORMAT_GENERICDATETIME)
-					+ " total duration: "
-					+ (endTime - startTime)
-					+ " msecs");
-		}
-		else
-			log.info(
-				"Adapter completed message with messageId ["
-					+ messageId
-					+ "] with exit-state ["
-					+ result.getState()
-					+ "]");
-
-		//reset the InProcess fields, and increase processedMessagesCount
-		decNumOfMessagesInProcess(duration);
-		return result;
 	}
 	/**
 	 * Register a PipeLine at this adapter. On registering, the adapter performs
