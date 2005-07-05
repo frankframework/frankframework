@@ -1,6 +1,9 @@
 /*
  * $Log: WebServiceSender.java,v $
- * Revision 1.12  2005-04-26 09:25:12  L190409
+ * Revision 1.13  2005-07-05 12:57:04  europe\L190409
+ * added serviceNamespaceURI-attribute
+ *
+ * Revision 1.12  2005/04/26 09:25:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * renamed soapConverter to soapWrapper
  *
  * Revision 1.11  2005/02/24 12:15:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -58,6 +61,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * <tr><td>{@link #setName(String) name}</td><td>name of the sender</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setUrl(String) url}</td><td>URL or base of URL to be used </td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSoapActionURI(String) soapActionURI}</td><td>the SOAPActionUri to be set in the requestheader</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setServiceNamespaceURI(String) serviceNamespaceURI}</td><td>the namespace of the message sent. Identifies the service to be called. May be overriden by an actual namespace setting in the message to be sent</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setTimeout(int) Timeout}</td><td>timeout ih ms of obtaining a connection/result. 0 means no timeout</td><td>60000</td></tr>
  * <tr><td>{@link #setMaxConnections(int) maxConnections}</td><td>the maximum number of concurrent connections</td><td>2</td></tr>
  * <tr><td>{@link #setUserName(String) userName}</td><td>username used in authentication to host</td><td>&nbsp;</td></tr>
@@ -82,11 +86,12 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  */
 
 public class WebServiceSender extends HttpSender {
-	public static final String version="$Id: WebServiceSender.java,v 1.12 2005-04-26 09:25:12 L190409 Exp $";
+	public static final String version = "$RCSfile: WebServiceSender.java,v $ $Revision: 1.13 $ $Date: 2005-07-05 12:57:04 $";
 	
 
 	private String soapActionURI = "";
 	private String encodingStyleURI=null;
+	private String serviceNamespaceURI=null;
 //	private String methodName = "";
 	private boolean throwApplicationFaults=true;
 	private SoapWrapper soapWrapper;
@@ -117,7 +122,7 @@ public class WebServiceSender extends HttpSender {
 
 	protected HttpMethod getMethod(String message, ParameterValueList parameters) throws SenderException {
 		
-		String soapmsg= soapWrapper.putInEnvelope(message, getEncodingStyleURI());
+		String soapmsg= soapWrapper.putInEnvelope(message, getEncodingStyleURI(),getServiceNamespaceURI());
 		HttpMethod method = super.getMethod(soapmsg,parameters);
 		log.debug("setting SOAPAction header ["+getSoapActionURI()+"]");
 		method.addRequestHeader("Content-Type","text/xml");
@@ -207,6 +212,14 @@ public class WebServiceSender extends HttpSender {
 	
 	public void setThrowApplicationFaults(boolean b) {
 		throwApplicationFaults = b;
+	}
+
+	public String getServiceNamespaceURI() {
+		return serviceNamespaceURI;
+	}
+
+	public void setServiceNamespaceURI(String string) {
+		serviceNamespaceURI = string;
 	}
 
 }
