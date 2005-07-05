@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLineSession.java,v $
- * Revision 1.7  2005-05-31 09:10:10  europe\L190409
+ * Revision 1.8  2005-07-05 10:45:24  europe\L190409
+ * added entry for securityhandler
+ *
+ * Revision 1.7  2005/05/31 09:10:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * cosmetic changes
  *
  * Revision 1.6  2005/03/07 11:06:26  Johan Verrips <johan.verrips@ibissource.org>
@@ -18,8 +21,11 @@
  */
 package nl.nn.adapterframework.core;
 
+import java.security.Principal;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.apache.commons.lang.NotImplementedException;
 
 
 /**
@@ -38,11 +44,13 @@ import java.util.Map;
  * @since   version 3.2.2
  */
 public class PipeLineSession extends HashMap implements IXAEnabled {
-	public static final String version="$RCSfile: PipeLineSession.java,v $ $Revision: 1.7 $ $Date: 2005-05-31 09:10:10 $";
+	public static final String version="$RCSfile: PipeLineSession.java,v $ $Revision: 1.8 $ $Date: 2005-07-05 10:45:24 $";
 
 	public static final String originalMessageKey="originalMessage";
 	public static final String messageIdKey="messageId";
+	public static final String securityHandlerKey="securityHandler";
 	private boolean transacted=false;
+	private ISecurityHandler securityHandler = null;
 
 	public PipeLineSession() {
 		super();
@@ -83,7 +91,26 @@ public class PipeLineSession extends HashMap implements IXAEnabled {
 	    put(messageIdKey, messageId);
 	}
 
+	public ISecurityHandler getSecurityHandler() throws NotImplementedException {
+		if (securityHandler==null) {
+			securityHandler=(ISecurityHandler)get(securityHandlerKey);
+			if (securityHandler==null) {
+				throw new NotImplementedException("no securityhandler found in PipeLineSession");
+			}
+		}
+		return securityHandler;
+	}
+
+	public boolean isUserInRole(String role) throws NotImplementedException {
+		ISecurityHandler handler = getSecurityHandler();
+		return handler.isUserInRole(role,this);
+	}
 	
+	public Principal getPrincipal() throws NotImplementedException {
+		ISecurityHandler handler = getSecurityHandler();
+		return handler.getPrincipal(this);
+	}
+
 	/**
 	 * Indicates the processing of this pipeline is either commited in one transaction, or 
 	 * rolled back to the situation prior to starting the pipeline, using XA-transactions.
