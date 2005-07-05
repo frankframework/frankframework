@@ -1,6 +1,9 @@
 /*
  * $Log: ServiceListener.java,v $
- * Revision 1.5  2005-07-05 11:15:38  europe\L190409
+ * Revision 1.6  2005-07-05 11:17:18  europe\L190409
+ * corrected version-string
+ *
+ * Revision 1.5  2005/07/05 11:15:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added deprecation message
  *
  */
@@ -44,10 +47,8 @@ import java.util.Iterator;
  * @see nl.nn.adapterframework.core.PipeLineResult
  * @deprecated Please use GenericReceiver with nested WebServiceListener instead.
  */
-public class ServiceListener  implements IReceiver, IReceiverStatistics, HasSender,
-        ServiceClient,
-        Serializable {
-	public static final String version="$Id: ServiceListener.java,v 1.5 2005-07-05 11:15:38 europe\L190409 Exp $";
+public class ServiceListener  implements IReceiver, IReceiverStatistics, HasSender, ServiceClient, Serializable {
+	public static final String version = "$RCSfile: ServiceListener.java,v $ $Revision: 1.6 $ $Date: 2005-07-05 11:17:18 $";
         	
 	private IAdapter adapter;
 	private RunStateManager runState = new RunStateManager();
