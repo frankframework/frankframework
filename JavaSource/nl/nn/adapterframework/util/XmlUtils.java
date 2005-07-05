@@ -1,6 +1,9 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.20  2005-06-20 09:01:44  europe\L190409
+ * Revision 1.21  2005-07-05 11:12:08  europe\L190409
+ * added non-namespace aware optionfor buildElement
+ *
+ * Revision 1.20  2005/06/20 09:01:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * made identity_transform public
  *
  * Revision 1.19  2005/06/13 11:48:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -118,7 +121,7 @@ import java.util.Map;
  * @author Johan Verrips IOS
  */
 public class XmlUtils {
-	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.20 $ $Date: 2005-06-20 09:01:44 $";
+	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.21 $ $Date: 2005-07-05 11:12:08 $";
 	static Logger log = Logger.getLogger(XmlUtils.class);
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
@@ -231,10 +234,15 @@ public class XmlUtils {
 		return output;
 	}
 	/**
-	 * Convert an XML string to a Document
-	 * Creation date: (20-02-2003 8:12:52)
-	 * @return org.w3c.dom.Document
-	 * @exception nl.nn.adapterframework.util.DomBuilderException The exception description.
+	 * Convert an XML string to a Document, then return the root-element
+	 */
+	public static Element buildElement(String s, boolean namespaceAware) throws DomBuilderException {
+		return buildDomDocument(s,namespaceAware).getDocumentElement();
+	}
+
+	/**
+	 * Convert an XML string to a Document, then return the root-element.
+	 * (namespace aware)
 	 */
 	public static Element buildElement(String s) throws DomBuilderException {
 
