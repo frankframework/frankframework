@@ -1,6 +1,9 @@
 /*
  * $Log: IMessageHandler.java,v $
- * Revision 1.3  2004-08-23 13:07:26  L190409
+ * Revision 1.4  2005-07-05 12:54:15  europe\L190409
+ * allow to set parameters from context for processRequest() methods
+ *
+ * Revision 1.3  2004/08/23 13:07:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated JavaDoc
  *
  * Revision 1.2  2004/08/09 14:00:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -24,7 +27,7 @@ import java.util.HashMap;
  * @since 4.2
  */
 public interface IMessageHandler {
-	public static final String version="$Id: IMessageHandler.java,v 1.3 2004-08-23 13:07:26 L190409 Exp $";
+	public static final String version = "$RCSfile: IMessageHandler.java,v $ $Revision: 1.4 $ $Date: 2005-07-05 12:54:15 $";
 	
 	/**
 	 * Will use listener to perform getIdFromRawMessage(), getStringFromRawMessage and afterMessageProcessed 
@@ -51,6 +54,8 @@ public interface IMessageHandler {
 	 * as the correlationId is logged also.
 	 */	
 	public String processRequest(IListener origin, String correlationId, String message) throws ListenerException;
+	public String processRequest(IListener origin, String correlationId, String message, HashMap context) throws ListenerException;
+	public String processRequest(IListener origin, String correlationId, String message, HashMap context, long waitingTime) throws ListenerException;
 
 	/**
 	 *	Formats any exception thrown by any of the above methods to a message that can be returned.

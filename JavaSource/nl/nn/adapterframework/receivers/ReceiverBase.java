@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.13  2005-06-02 11:52:24  europe\L190409
+ * Revision 1.14  2005-07-05 12:54:38  europe\L190409
+ * allow to set parameters from context for processRequest() methods
+ *
+ * Revision 1.13  2005/06/02 11:52:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * limited number of actively polling threads to value of attriubte numThreadsPolling
  *
  * Revision 1.12  2005/04/13 12:53:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -140,9 +143,8 @@ import javax.transaction.UserTransaction;
  * @author     Gerrit van Brakel
  * @since 4.2
  */
-public class ReceiverBase
-    implements IReceiver, IReceiverStatistics, Runnable, IMessageHandler, IbisExceptionListener, HasSender {
-	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.13 $ $Date: 2005-06-02 11:52:24 $";
+public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, IMessageHandler, IbisExceptionListener, HasSender {
+	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.14 $ $Date: 2005-07-05 12:54:38 $";
 	protected Logger log = Logger.getLogger(this.getClass());
  
 	private String returnIfStopped="";
@@ -649,10 +651,18 @@ public class ReceiverBase
 	 * A messageId is generated that is unique and consists of the name of this listener and a GUID
 	 */
 	public String processRequest(IListener origin, String message) throws ListenerException {
-		return processRequest(origin, null,message);
+		return processRequest(origin, null, message, null, -1);
 	}
 
 	public String processRequest(IListener origin, String correlationId, String message)  throws ListenerException{
+		return processRequest(origin, correlationId, message, null, -1);
+	}
+
+	public String processRequest(IListener origin, String correlationId, String message, HashMap context) throws ListenerException {
+		return processRequest(origin, correlationId, message, context, -1);
+	}
+
+	public String processRequest(IListener origin, String correlationId, String message, HashMap context, long waitingTime) throws ListenerException {
 		if (getRunState() == RunStateEnum.STOPPED || getRunState() == RunStateEnum.STOPPING)
 			return getReturnIfStopped();
 			
@@ -664,8 +674,9 @@ public class ReceiverBase
 				throw new ListenerException("["+getName()+"] Exception obtaining usertransaction", e);
 			}
 		}
-		return processMessageInAdapter(utx, origin, message, message, correlationId, null, -1);
+		return processMessageInAdapter(utx, origin, message, message, correlationId, context, waitingTime);
 	}
+
 
 
 	public void processRawMessage(IListener origin, Object message) throws ListenerException {
