@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.15  2005-06-13 12:52:22  europe\L190409
+ * Revision 1.16  2005-07-05 10:49:59  europe\L190409
+ * improved exception handling obtaining usertransaction
+ *
+ * Revision 1.15  2005/06/13 12:52:22  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * prepare for nested pipelines
  *
  * Revision 1.14  2005/02/10 07:49:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -105,7 +108,7 @@ import javax.transaction.UserTransaction;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.15 $ $Date: 2005-06-13 12:52:22 $";
+	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.16 $ $Date: 2005-07-05 10:49:59 $";
     private Logger log = Logger.getLogger(this.getClass());
     
 	private Adapter adapter;    // for transaction managing
@@ -264,7 +267,7 @@ public class PipeLine {
 				utx.begin();
 			}
 		} catch (Exception e) {
-			throw new PipeRunException(null, "Pipeline of adapter ["+ owner.getName()+"] got exception starting transaction for msgid ["+messageId+"]");
+			throw new PipeRunException(null, "Pipeline of adapter ["+ owner.getName()+"] got exception starting transaction for msgid ["+messageId+"]", e);
 		}
 	
 		try {
@@ -426,16 +429,19 @@ public class PipeLine {
 	    }
 	    return pipeLineResult;
 	}
+	
    /**
     * Register global forwards.
     */
    public void registerForward(PipeForward forward){
       globalForwards.put(forward.getName(), forward);
       log.debug("registered global PipeForward "+forward.toString());
-  }
+    }
+    
     public void registerPipeLineExit(PipeLineExit exit) {
 	    pipeLineExits.put(exit.getPath(), exit);
     }
+    
     /**
      * Register the adapterName of this Pipelineprocessor. 
      * @param adapterName
@@ -468,40 +474,42 @@ public class PipeLine {
     public void setFirstPipe(String pipeName){
         firstPipe=pipeName;
     }
-public void start() throws PipeStartException {
-    log.info("Pipeline of ["+owner.getName()+"] is starting pipeline");
-
-    Enumeration pipeNames = pipelineTable.keys();
-    while (pipeNames.hasMoreElements()) {
-        String pipeName = (String) pipeNames.nextElement();
-
-        IPipe pipe = (IPipe) pipelineTable.get(pipeName);
-        log.debug("Pipeline of ["+owner.getName()+"] starting " + pipe.getName());
-        pipe.start();
-        log.debug("Pipeline of ["+owner.getName()+"] successfully started pipe [" + pipe.getName() + "]");
-    }
-    log.info("Pipeline of ["+owner.getName()+"] is successfully started pipeline");
-
-}
-/**
- * Close the pipeline. This will call the <code>stop()</code> method
- * of all registered <code>Pipes</code>
- * @see IPipe#stop
- */
-public void stop() {
-    log.info("Pipeline of ["+owner.getName()+"] is closing pipeline");
-    Enumeration pipeNames = pipelineTable.keys();
-    while (pipeNames.hasMoreElements()) {
-        String pipeName = (String) pipeNames.nextElement();
-
-        IPipe pipe = (IPipe) pipelineTable.get(pipeName);
-        log.debug("Pipeline of ["+owner.getName()+"] is stopping [" + pipe.getName()+"]");
-        pipe.stop();
-        log.debug("Pipeline of ["+owner.getName()+"] successfully stopped pipe [" + pipe.getName() + "]");
-    }
-    log.debug("Pipeline of ["+owner.getName()+"] successfully closed pipeline");
-
-}
+	public void start() throws PipeStartException {
+	    log.info("Pipeline of ["+owner.getName()+"] is starting pipeline");
+	
+	    Enumeration pipeNames = pipelineTable.keys();
+	    while (pipeNames.hasMoreElements()) {
+	        String pipeName = (String) pipeNames.nextElement();
+	
+	        IPipe pipe = (IPipe) pipelineTable.get(pipeName);
+	        log.debug("Pipeline of ["+owner.getName()+"] starting " + pipe.getName());
+	        pipe.start();
+	        log.debug("Pipeline of ["+owner.getName()+"] successfully started pipe [" + pipe.getName() + "]");
+	    }
+	    log.info("Pipeline of ["+owner.getName()+"] is successfully started pipeline");
+	
+	}
+	
+	/**
+	 * Close the pipeline. This will call the <code>stop()</code> method
+	 * of all registered <code>Pipes</code>
+	 * @see IPipe#stop
+	 */
+	public void stop() {
+	    log.info("Pipeline of ["+owner.getName()+"] is closing pipeline");
+	    Enumeration pipeNames = pipelineTable.keys();
+	    while (pipeNames.hasMoreElements()) {
+	        String pipeName = (String) pipeNames.nextElement();
+	
+	        IPipe pipe = (IPipe) pipelineTable.get(pipeName);
+	        log.debug("Pipeline of ["+owner.getName()+"] is stopping [" + pipe.getName()+"]");
+	        pipe.stop();
+	        log.debug("Pipeline of ["+owner.getName()+"] successfully stopped pipe [" + pipe.getName() + "]");
+	    }
+	    log.debug("Pipeline of ["+owner.getName()+"] successfully closed pipeline");
+	
+	}
+	
     /**
      *
      * @return an enumeration of all pipenames in the pipeline and the
