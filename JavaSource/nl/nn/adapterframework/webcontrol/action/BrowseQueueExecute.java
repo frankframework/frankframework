@@ -1,6 +1,9 @@
 /*
  * $Log: BrowseQueueExecute.java,v $
- * Revision 1.4  2005-07-19 15:32:17  europe\L190409
+ * Revision 1.5  2005-07-19 15:33:33  europe\L190409
+ * corrected version-string
+ *
+ * Revision 1.4  2005/07/19 15:32:17  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * rework using IMessageBrowsingIterator
  *
  * Revision 1.3  2004/10/12 15:15:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -18,7 +21,6 @@ package nl.nn.adapterframework.webcontrol.action;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.List;
 
 import javax.servlet.ServletException;
@@ -29,7 +31,6 @@ import javax.servlet.http.HttpServletResponse;
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.core.MessageBrowseException;
 import nl.nn.adapterframework.jms.JmsMessageBrowser;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.util.AppConstants;
@@ -47,8 +48,8 @@ import org.apache.struts.action.ActionMapping;
  * @author Johan Verrips
  */
 public class BrowseQueueExecute extends ActionBase {
+	public static final String version="$RCSfile: BrowseQueueExecute.java,v $ $Revision: 1.5 $ $Date: 2005-07-19 15:33:33 $";
 
-	public static final String version = "$Id: BrowseQueueExecute.java,v 1.4 2005-07-19 15:32:17 europe\L190409 Exp $";
 	public ActionForward execute(
 		ActionMapping mapping,
 		ActionForm form,
