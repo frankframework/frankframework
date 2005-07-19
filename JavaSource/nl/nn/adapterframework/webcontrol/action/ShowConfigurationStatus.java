@@ -1,9 +1,16 @@
+/*
+ * $Log: ShowConfigurationStatus.java,v $
+ * Revision 1.5  2005-07-19 12:09:21  europe\L190409
+ * added indication of inProcessStorage and errorStorage
+ *
+ */
 package nl.nn.adapterframework.webcontrol.action;
 
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.HasSender;
+import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.XmlBuilder;
@@ -18,14 +25,14 @@ import java.io.IOException;
 import java.util.Iterator;
 
 /**
+ * Prepare the main screen of the IbisConsole.
+ * 
  * @version Id
  * @author  Johan Verrips
  */
 
 public final class ShowConfigurationStatus extends ActionBase {
-	public static final String version="$Id: ShowConfigurationStatus.java,v 1.4 2004-05-26 07:32:10 NNVZNL01#L180564 Exp $";
-	
-
+	public static final String version = "$RCSfile: ShowConfigurationStatus.java,v $ $Revision: 1.5 $ $Date: 2005-07-19 12:09:21 $";
 
     public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response)
         throws IOException, ServletException {
@@ -74,14 +81,18 @@ public final class ShowConfigurationStatus extends ActionBase {
 		          receiverXML.addAttribute("name",receiver.getName());
 			      receiverXML.addAttribute("class", receiver.getClass().toString());
 				  receiverXML.addAttribute("messagesReceived", ""+receiver.getMessagesReceived());
+				  if (receiver instanceof ReceiverBase ) {
+					ReceiverBase rb = (ReceiverBase) receiver;
+					receiverXML.addAttribute("hasInprocessStorage", ""+(rb.getInProcessStorage()!=null));
+					receiverXML.addAttribute("hasErrorStorage", ""+(rb.getErrorStorage()!=null));
+				  }
 
 				  if (receiver instanceof HasSender) {
 					  ISender sender = ((HasSender) receiver).getSender();
 			          if (sender != null) 
 				          	receiverXML.addAttribute("senderName", sender.getName());
 		          }
-
-}
+	          }
 	         adapterXML.addSubElement(receiversXML); 
           }
 	          
