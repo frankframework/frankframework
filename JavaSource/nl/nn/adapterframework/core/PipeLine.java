@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.16  2005-07-05 10:49:59  europe\L190409
+ * Revision 1.17  2005-07-19 12:23:11  europe\L190409
+ * cosmetic changes
+ *
+ * Revision 1.16  2005/07/05 10:49:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved exception handling obtaining usertransaction
  *
  * Revision 1.15  2005/06/13 12:52:22  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -108,7 +111,7 @@ import javax.transaction.UserTransaction;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.16 $ $Date: 2005-07-05 10:49:59 $";
+	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.17 $ $Date: 2005-07-19 12:23:11 $";
     private Logger log = Logger.getLogger(this.getClass());
     
 	private Adapter adapter;    // for transaction managing
@@ -284,14 +287,14 @@ public class PipeLine {
 					utx.commit();
 				}
 				else {
-					log.warn("Pipeline of adapter ["+ owner.getName()+"], msgid ["+messageId+"] transaction has status "+JtaUtil.displayTransactionStatus(txStatus)+"exitState=["+result.getState()+"], performing ROLL BACK");
+					log.warn("Pipeline of adapter ["+ owner.getName()+"], msgid ["+messageId+"] transaction has status "+JtaUtil.displayTransactionStatus(txStatus)+", exitState=["+result.getState()+"], performing ROLL BACK");
 					utx.rollback();
 				}
 			} else {
 				// if the Pipeline did not instantiate the transaction, someone else did, notify that
 				// rollback is the only possibility.
 				if (adapter!=null && isTransacted() && (!(commitOnState.equals(result.getState())))) {
-					log.warn("Pipeline of adapter ["+ owner.getName()+"], msgid ["+messageId+"] exitState=["+result.getState()+"], setting transaction to ROLL BACK ONLY");
+					log.warn("Pipeline of adapter ["+ owner.getName()+"], msgid ["+messageId+"], exitState=["+result.getState()+"], setting transaction to ROLL BACK ONLY");
 					utx = adapter.getUserTransaction();
 					utx.setRollbackOnly();
 				}
