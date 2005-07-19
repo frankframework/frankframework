@@ -1,6 +1,9 @@
 /*
  * $Log: Misc.java,v $
- * Revision 1.9  2004-10-26 15:36:36  L190409
+ * Revision 1.10  2005-07-19 11:37:40  europe\L190409
+ * added stream copying functions
+ *
+ * Revision 1.9  2004/10/26 15:36:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * set UTF-8 as default inputstream encoding
  *
  */
@@ -11,12 +14,14 @@ import java.net.InetAddress;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.rmi.server.UID;
+
 /**
  * Miscellanous conversion functions.
  * @version Id
  */
 public class Misc {
-	public static final String version = "$Id: Misc.java,v 1.9 2004-10-26 15:36:36 L190409 Exp $";
+	public static final String version="$RCSfile: Misc.java,v $ $Revision: 1.10 $ $Date: 2005-07-19 11:37:40 $";
+	public static final int BUFFERSIZE=20000;
 	public static final String DEFAULT_INPUT_STREAM_ENCODING="UTF-8";
 
 	public static String createSimpleUUID_old() {
@@ -69,6 +74,38 @@ public class Misc {
 		return s.toString();
 	}
 
+	public static void fileToWriter(String filename, Writer writer) throws IOException {
+		readerToWriter(new FileReader(filename), writer);
+	}
+	
+	public static void fileToStream(String filename, OutputStream output) throws IOException {
+		streamToStream(new FileInputStream(filename), output);
+	}
+	
+	public static void streamToStream(InputStream input, OutputStream output) throws IOException {
+		if (input!=null) {
+			byte buffer[]=new byte[BUFFERSIZE]; 
+				
+			int bytesRead;
+			while ((bytesRead=input.read(buffer,0,BUFFERSIZE))>0) {
+				output.write(buffer,0,bytesRead);
+			}
+			input.close();
+		}
+	}
+
+	public static void readerToWriter(Reader reader, Writer writer) throws IOException {
+		if (reader!=null) {
+			char buffer[]=new char[BUFFERSIZE]; 
+				
+			int charsRead;
+			while ((charsRead=reader.read(buffer,0,BUFFERSIZE))>0) {
+				writer.write(buffer,0,charsRead);
+			}
+			reader.close();
+		}
+	}
+
 	/**
 	 * Please consider using resourceToString() instead of relying on files.
 	 */
@@ -93,6 +130,7 @@ public class Misc {
 			reader.close();
 		}
 	}
+	
 
 	public static String readerToString(Reader reader, String endOfLineString, boolean xmlEncode) throws IOException {
 		StringBuffer sb = new StringBuffer();
