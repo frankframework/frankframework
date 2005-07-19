@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcFacade.java,v $
- * Revision 1.7  2005-06-13 09:57:03  europe\L190409
+ * Revision 1.8  2005-07-19 12:36:32  europe\L190409
+ * moved applyParameters to JdbcFacade
+ *
+ * Revision 1.7  2005/06/13 09:57:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * cosmetic changes
  *
  * Revision 1.6  2005/05/31 09:53:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -26,12 +29,14 @@ package nl.nn.adapterframework.jdbc;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IXAEnabled;
 import nl.nn.adapterframework.jms.JNDIBase;
+import nl.nn.adapterframework.parameters.ParameterValueList;
 
 import javax.naming.NamingException;
 import javax.sql.DataSource;
@@ -47,7 +52,7 @@ import org.apache.log4j.Logger;
  * 
  */
 public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version="$RCSfile: JdbcFacade.java,v $ $Revision: 1.7 $ $Date: 2005-06-13 09:57:03 $";
+	public static final String version="$RCSfile: JdbcFacade.java,v $ $Revision: 1.8 $ $Date: 2005-07-19 12:36:32 $";
     protected Logger log = Logger.getLogger(this.getClass());
 	
 	private String name;
@@ -134,6 +139,17 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 		}
 		return result;
 	}
+
+	protected void applyParameters(PreparedStatement statement, ParameterValueList parameters) throws SQLException {
+		// statement.clearParameters();
+		for (int i=0; i< parameters.size(); i++) {
+			String parameterValue = (String)parameters.getParameterValue(i).getValue();
+//			log.debug("applying parameter ["+(i+1)+","+parameters.getParameterValue(i).getDefinition().getName()+"], value["+parameterValue+"]");
+			statement.setString(i+1, parameterValue);
+		}
+	}
+	
+
 
 	/**
 	 * Sets the name of the object.

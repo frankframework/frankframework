@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcQuerySenderBase.java,v $
- * Revision 1.10  2005-06-28 09:05:47  europe\L190409
+ * Revision 1.11  2005-07-19 12:36:32  europe\L190409
+ * moved applyParameters to JdbcFacade
+ *
+ * Revision 1.10  2005/06/28 09:05:47  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * explicit closing of resultset
  *
  * Revision 1.9  2005/06/02 13:48:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -41,7 +44,6 @@ import java.sql.SQLException;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.util.DB2XMLWriter;
 
 /**
@@ -77,7 +79,7 @@ import nl.nn.adapterframework.util.DB2XMLWriter;
  * @since 	4.1
  */
 public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
-	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.10 $ $Date: 2005-06-28 09:05:47 $";
+	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.11 $ $Date: 2005-07-19 12:36:32 $";
 
 	private String queryType = "other";
 	private int startRow=1;
@@ -100,15 +102,6 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 
 
 
-	protected void applyParameters(PreparedStatement statement, ParameterValueList parameters) throws SQLException {
-		// statement.clearParameters();
-		for (int i=0; i< parameters.size(); i++) {
-			String parameterValue = (String)parameters.getParameterValue(i).getValue();
-//			log.debug("applying parameter ["+(i+1)+","+parameters.getParameterValue(i).getDefinition().getName()+"], value["+parameterValue+"]");
-			statement.setString(i+1, parameterValue);
-		}
-	}
-	
 	protected String sendMessage(Connection connection, String correlationID, String message, ParameterResolutionContext prc) throws SenderException{
 		PreparedStatement statement;
 		
