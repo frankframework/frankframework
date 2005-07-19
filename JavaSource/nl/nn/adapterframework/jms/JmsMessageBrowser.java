@@ -1,6 +1,9 @@
 /*
  * $Log: JmsMessageBrowser.java,v $
- * Revision 1.2  2004-10-05 10:41:59  L190409
+ * Revision 1.3  2005-07-19 15:12:40  europe\L190409
+ * adapted to an implementation extending IMessageBrowser
+ *
+ * Revision 1.2  2004/10/05 10:41:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed unused imports
  *
  * Revision 1.1  2004/06/16 12:25:52  Johan Verrips <johan.verrips@ibissource.org>
@@ -10,71 +13,185 @@
  */
 package nl.nn.adapterframework.jms;
 
+import java.util.Date;
 import java.util.Enumeration;
 
 import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
 import javax.jms.Queue;
 import javax.jms.QueueBrowser;
 import javax.jms.QueueSession;
-
-import javax.naming.NamingException;
+import javax.jms.Session;
 
 import nl.nn.adapterframework.core.IMessageBrowser;
-import nl.nn.adapterframework.core.MessageBrowseException;
+import nl.nn.adapterframework.core.IMessageBrowsingIterator;
+import nl.nn.adapterframework.core.ListenerException;
 
 /**
  * Get the messages on a queue without deleting them
  * @version Id
- * @author Johan Verrips
+ * @author  Johan Verrips / Gerrit van Brakel
  * @see nl.nn.adapterframework.webcontrol.action.BrowseQueue
  */
-public class JmsMessageBrowser extends JMSFacade implements  IMessageBrowser{
-	public static final String version = "$Id: JmsMessageBrowser.java,v 1.2 2004-10-05 10:41:59 L190409 Exp $";
-	QueueSession session;
+public class JmsMessageBrowser extends JMSFacade implements IMessageBrowser {
+	public static final String version = "$RCSfile: JmsMessageBrowser.java,v $ $Revision: 1.3 $ $Date: 2005-07-19 15:12:40 $";
+
+	private long timeOut = 3000;
+
 	
 	public JmsMessageBrowser() {
 		super();
+		setTransacted(true);
 	}
-	/**
-	 * Implement the IMessageBrowser 
-	 * @see nl.nn.adapterframework.core.IMessageBrowser#getMessageEnumeration()
-	 * @since 4.1.1
-	 */
-	public Enumeration getMessageEnumeration() throws MessageBrowseException {
-		Enumeration result = null;
-		if (getDestinationType().equalsIgnoreCase("TOPIC"))
-			throw new MessageBrowseException("Topics are currently not supported for browsing");
+	
+	public IMessageBrowsingIterator getIterator() throws ListenerException {
+		QueueSession session;
 		try {
-			session=getQueueBrowserSession();
-			 
-			QueueBrowser queueBrowser = session.createBrowser((Queue) getDestination());
-			
-			result = queueBrowser.getEnumeration();
+			session = (QueueSession) createSession();
+			return new JmsQueueBrowserIterator(session,(Queue)getDestination());
+		} catch (Exception e) {
+			throw new ListenerException(e);
 		}
-		catch (JMSException ex) {
-			throw new MessageBrowseException(ex);
-		}
-		catch (NamingException ne) {
-			throw new MessageBrowseException(ne);
-		} 
-		catch (Exception exe){
-			throw new MessageBrowseException(exe);
-		}
-		return result; 
 	}
-	public void close(){
+	
+	public String getId(Object iteratorItem) throws ListenerException {
+		Message msg = (Message)iteratorItem;
 		try {
-			log.debug("closing browser");
-			session.close();
-			super.close();
-			log.debug("closed browser");
-		} catch(Exception e){
-			log.error("Ignoring error on closing browser:", e);
+			return msg.getJMSMessageID();
+		} catch (JMSException e) {
+			throw new ListenerException(e);
 		}
-
-		
 	}
 
+	public String getOriginalId(Object iteratorItem) throws ListenerException {
+		return getId(iteratorItem);
+	}
+
+	public String getCorrelationId(Object iteratorItem) throws ListenerException {
+		Message msg = (Message)iteratorItem;
+		try {
+			return msg.getJMSCorrelationID();
+		} catch (JMSException e) {
+			throw new ListenerException(e);
+		}
+	}
+
+	
+	public Date getInsertDate(Object iteratorItem) throws ListenerException {
+		Message msg = (Message)iteratorItem;
+		try {
+			return new Date(msg.getJMSTimestamp());
+		} catch (JMSException e) {
+			throw new ListenerException(e);
+		}
+	}
+	
+	public String getCommentString(Object iteratorItem) throws ListenerException {
+		Message msg = (Message)iteratorItem;
+		try {
+			return "correlationId="+msg.getJMSCorrelationID();
+		} catch (JMSException e) {
+			throw new ListenerException(e);
+		}
+	}
+	
+	public Object getMessage(String messageId) throws ListenerException {
+		Session session=null;
+		Object msg = null;
+		MessageConsumer mc = null;
+		try {
+			session = createSession();
+			mc = getMessageConsumer(session, getDestination(), "JMSMessageID='" + messageId + "'");
+			msg = mc.receive(getTimeOut());
+			return msg;
+		} catch (Exception e) {
+			throw new ListenerException(e);
+		} finally {
+			try {
+				if (mc != null) {
+					mc.close();
+				}
+			} catch (JMSException e1) {
+				throw new ListenerException("exception closing message consumer",e1);
+			}
+			try {
+				if (session != null) {
+					session.close();
+				}
+			} catch (JMSException e1) {
+				throw new ListenerException("exception closing session",e1);
+			}
+		}
+	}
+
+	public Object browseMessage(String messageId) throws ListenerException {
+		QueueSession session=null;
+		Object msg = null;
+		QueueBrowser queueBrowser=null;
+		try {
+			session = (QueueSession)createSession();
+			queueBrowser = session.createBrowser((Queue)getDestination(),"JMSMessageID='" + messageId + "'");
+			Enumeration msgenum = queueBrowser.getEnumeration();
+			if (msgenum.hasMoreElements()) {
+				msg=msgenum.nextElement();
+			}
+			return msg;
+		} catch (Exception e) {
+			throw new ListenerException(e);
+		} finally {
+			try {
+				if (queueBrowser != null) {
+					queueBrowser.close();
+				}
+			} catch (JMSException e1) {
+				throw new ListenerException("exception closing queueBrowser",e1);
+			}
+			try {
+				if (session != null) {
+					session.close();
+				}
+			} catch (JMSException e1) {
+				throw new ListenerException("exception closing session",e1);
+			}
+		}
+	}
+
+	
+	public void deleteMessage(String messageId) throws ListenerException {
+		Session session=null;
+		MessageConsumer mc = null;
+		try {
+			session = createSession();
+			log.debug("retrieving message ["+messageId+"] in order to delete it");
+			mc = getMessageConsumer(session, getDestination(), "JMSMessageID='" + messageId + "'");
+			mc.receive(getTimeOut());
+		} catch (Exception e) {
+			throw new ListenerException(e);
+		} finally {
+			try {
+				if (mc != null) {
+					mc.close();
+				}
+			} catch (JMSException e1) {
+				throw new ListenerException("exception closing message consumer",e1);
+			}
+			try {
+				if (session != null) {
+					session.close();
+				}
+			} catch (JMSException e1) {
+				throw new ListenerException("exception closing session",e1);
+			}
+		}
+	}
+
+	public void setTimeOut(long newTimeOut) {
+		timeOut = newTimeOut;
+	}
+	public long getTimeOut() {
+		return timeOut;
+	}
 
 
 }
