@@ -23,7 +23,10 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.apache.log4j.Logger;
 import javax.transaction.Status;
+
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -91,7 +94,7 @@ import javax.transaction.UserTransaction;
  */
 public class PullingReceiverBase
     implements IReceiver, IReceiverStatistics, Runnable, HasSender {
-	public static final String version="$Id: PullingReceiverBase.java,v 1.16 2005-02-10 08:16:58 L190409 Exp $";
+	public static final String version="$Id: PullingReceiverBase.java,v 1.17 2005-07-19 13:02:45 europe\L190409 Exp $";
     	
 
 	public static final String ONERROR_CONTINUE = "continue";
@@ -337,7 +340,8 @@ public Object getRawMessage(HashMap threadContext) throws ListenerException {
 			}
 			message = listener.getStringFromRawMessage(rawMessage,threadContext);
 			messageId = listener.getIdFromRawMessage(rawMessage,threadContext);
-			getInProcessStorage().storeMessage(messageId,message);
+			//TODO: received date preciezer doen
+			getInProcessStorage().storeMessage(messageId,messageId,new Date(),"in process",(Serializable)rawMessage);
 			log.debug("["+getName()+"] commiting transfer of message to inProcessStorage");
 			utx.commit();
 		} catch (Exception e) {
