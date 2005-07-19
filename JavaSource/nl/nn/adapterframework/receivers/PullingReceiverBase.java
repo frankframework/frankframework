@@ -92,9 +92,8 @@ import javax.transaction.UserTransaction;
  * @since 4.0
  * @deprecated Please use {@link nl.nn.adapterframework.receivers.ReceiverBase ReceiverBase} instead
  */
-public class PullingReceiverBase
-    implements IReceiver, IReceiverStatistics, Runnable, HasSender {
-	public static final String version="$Id: PullingReceiverBase.java,v 1.17 2005-07-19 13:02:45 europe\L190409 Exp $";
+public class PullingReceiverBase implements IReceiver, IReceiverStatistics, Runnable, HasSender {
+	public static final String version="$RCSfile: PullingReceiverBase.java,v $ $Revision: 1.18 $ $Date: 2005-07-19 13:03:49 $";
     	
 
 	public static final String ONERROR_CONTINUE = "continue";
