@@ -1,6 +1,9 @@
 /*
  * $Log: Dir2Xml.java,v $
- * Revision 1.4  2005-05-31 09:20:37  europe\L190409
+ * Revision 1.5  2005-07-19 11:04:09  europe\L190409
+ * use explicit FileNameComparator
+ *
+ * Revision 1.4  2005/05/31 09:20:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added sort for files
  *
  */
@@ -17,18 +20,20 @@ import java.util.Arrays;
  * @author Johan Verrips IOS
  */
 public class Dir2Xml  {
-	public static final String version="$RCSfile: Dir2Xml.java,v $ $Revision: 1.4 $ $Date: 2005-05-31 09:20:37 $";
+	public static final String version="$RCSfile: Dir2Xml.java,v $ $Revision: 1.5 $ $Date: 2005-07-19 11:04:09 $";
 	
-  String path;
-  String wildcard="*.*";
-  public Dir2Xml() {
-	  super();
-  }
+  	private String path;
+  	private String wildcard="*.*";
+  	
+	public Dir2Xml() {
+		super();
+	}
+	  
   public String getDirList() {
     WildCardFilter filter = new WildCardFilter(wildcard);
     File dir = new File(path);
     File files[] = dir.listFiles(filter);
-    Arrays.sort(files);
+    Arrays.sort(files, new FileNameComparator());
     int count=(files==null ? 0 : files.length);
     XmlBuilder dirXml=new XmlBuilder("directory");
     dirXml.addAttribute("name", path);
@@ -41,6 +46,7 @@ public class Dir2Xml  {
     }
     return dirXml.toXML();
   }
+  
   private XmlBuilder getFileAsXmlBuilder(File file){
 	  
 	  XmlBuilder fileXml=new XmlBuilder("file");
@@ -59,18 +65,13 @@ public class Dir2Xml  {
       String time=DateUtils.format(modificationDate, DateUtils.FORMAT_TIME_HMS);
       fileXml.addAttribute("modificationTime", time);
       
-
 	  return fileXml;
   }
-  public static void main(String[] argv) {
-    Dir2Xml dx=new Dir2Xml();
-    dx.setPath("c:/temp");
-    dx.setWildCard("log*.txt*");
-    System.out.println(dx.getDirList());
-  }
+
   public void setPath(String path) {
     this.path=path;
   }
+  
   /**
    * Set a Wildcard
    * @see WildCardFilter
