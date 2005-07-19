@@ -1,6 +1,10 @@
 /*
  * $Log: IfsaConnection.java,v $
- * Revision 1.1  2005-05-03 15:58:49  L190409
+ * Revision 1.2  2005-07-19 12:33:56  europe\L190409
+ * implements IXAEnabled 
+ * polishing of serviceIds, to work around problems with ':' and '/'
+ *
+ * Revision 1.1  2005/05/03 15:58:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * rework of shared connection code
  *
  * Revision 1.2  2005/04/26 15:16:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -36,10 +40,13 @@ import com.ing.ifsa.IFSAQueueConnectionFactory;
  * @version Id
  */
 public class IfsaConnection extends JmsConnection {
-	public static final String version="$Id: IfsaConnection.java,v 1.1 2005-05-03 15:58:49 L190409 Exp $";
+	public static final String version="$Id: IfsaConnection.java,v 1.2 2005-07-19 12:33:56 europe\L190409 Exp $";
 
-	public IfsaConnection(String applicationId, IFSAContext context, IFSAQueueConnectionFactory connectionFactory, HashMap connectionMap) {
+	protected boolean preJms22Api=false;
+
+	public IfsaConnection(String applicationId, IFSAContext context, IFSAQueueConnectionFactory connectionFactory, HashMap connectionMap, boolean preJms22Api) {
 		super(applicationId,context,connectionFactory,connectionMap);
+		this.preJms22Api=preJms22Api;
 		log.debug("created new IfsaConnection for ["+applicationId+"] context ["+context+"] connectionfactory ["+connectionFactory+"]");
 	}
 
@@ -133,6 +140,25 @@ public class IfsaConnection extends JmsConnection {
 		}
 	}
 	
+	protected String replaceLast(String string, char from, char to) {
+		int lastTo=string.lastIndexOf(to);
+		int lastFrom=string.lastIndexOf(from);
+		
+		if (lastFrom>0 && lastTo<lastFrom) {
+			String result = string.substring(0,lastFrom);
+			log.info("replacing for Ifsa-compatibility ["+string+"] by ["+result+"]");
+			return result;
+		}
+		return string;
+	}
+
+	public String polishServiceId(String serviceId) {
+		if (preJms22Api) {
+			return replaceLast(serviceId, '/',':');
+		} else {
+			return replaceLast(serviceId, ':','/');
+		}
+	}
 
 
 }

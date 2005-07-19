@@ -1,6 +1,10 @@
 /*
  * $Log: IfsaFacade.java,v $
- * Revision 1.25  2005-06-20 09:12:47  europe\L190409
+ * Revision 1.26  2005-07-19 12:33:56  europe\L190409
+ * implements IXAEnabled 
+ * polishing of serviceIds, to work around problems with ':' and '/'
+ *
+ * Revision 1.25  2005/06/20 09:12:47  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * set sessionsArePooled false by default
  *
  * Revision 1.24  2005/06/13 15:07:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -67,6 +71,7 @@ import com.ing.ifsa.*;
 
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.core.IXAEnabled;
 import nl.nn.adapterframework.core.IbisException;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 
@@ -101,13 +106,14 @@ import javax.jms.*;
  * @author Johan Verrips / Gerrit van Brakel
  * @since 4.2
  */
-public class IfsaFacade implements INamedObject, HasPhysicalDestination {
-	public static final String version = "$RCSfile: IfsaFacade.java,v $ $Revision: 1.25 $ $Date: 2005-06-20 09:12:47 $";
+public class IfsaFacade implements INamedObject, HasPhysicalDestination, IXAEnabled {
+	public static final String version = "$RCSfile: IfsaFacade.java,v $ $Revision: 1.26 $ $Date: 2005-07-19 12:33:56 $";
     protected Logger log = Logger.getLogger(this.getClass());
     
 	private String name;
 	private String applicationId;
 	private String serviceId;
+	private String polishedServiceId=null;;
 	private IfsaMessageProtocolEnum messageProtocol;
 
 	private long timeOut = -1; // when set (>=0), overrides IFSA-expiry
@@ -121,7 +127,7 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 	
 	private boolean sessionsArePooled=false;
 	
-	private boolean xaSupported=true;
+	private boolean transacted=true;
 
 
 	public IfsaFacade(boolean asProvider) {
@@ -290,6 +296,8 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 		}
 	}
 */
+
+
 	protected IfsaConnection getConnection() throws IfsaException {
 		if (connection == null) {
 			synchronized (this) {
@@ -574,7 +582,7 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
     }
     
     public boolean isJmsTransacted() {
-    	return !isXaSupported() && getMessageProtocolEnum().equals(IfsaMessageProtocolEnum.FIRE_AND_FORGET);
+    	return !isTransacted() && getMessageProtocolEnum().equals(IfsaMessageProtocolEnum.FIRE_AND_FORGET);
     }
     
 	public String toString() {
@@ -586,7 +594,7 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 	    ts.append("serviceId", serviceId);
 	    if (messageProtocol != null) {
 			ts.append("messageProtocol", messageProtocol.getName());
-			ts.append("XASupported", xaSupported);
+			ts.append("transacted", transacted);
 			ts.append("jmsTransacted", isJmsTransacted());
 	    }
 	    else
@@ -627,7 +635,16 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 	}
 
 	public String getServiceId() {
-		return serviceId;
+		if (polishedServiceId==null) {
+			try {
+				IfsaConnection conn = getConnection();
+				polishedServiceId = conn.polishServiceId(serviceId);
+			} catch (IfsaException e) {
+				log.warn("could not obtain connection, no polishing of serviceId",e);
+				polishedServiceId = serviceId;
+			}
+		}
+		return polishedServiceId;
 	}
 
 
@@ -661,12 +678,12 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 		sessionsArePooled = b;
 	}
 
-	public boolean isXaSupported() {
-		return xaSupported;
+	public boolean isTransacted() {
+		return transacted;
 	}
 
-	public void setXaSupported(boolean b) {
-		xaSupported = b;
+	public void setTransacted(boolean b) {
+		transacted = b;
 	}
 
 }

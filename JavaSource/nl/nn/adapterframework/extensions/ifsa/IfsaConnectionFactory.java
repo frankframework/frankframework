@@ -1,6 +1,10 @@
 /*
  * $Log: IfsaConnectionFactory.java,v $
- * Revision 1.3  2005-06-20 09:13:40  europe\L190409
+ * Revision 1.4  2005-07-19 12:33:58  europe\L190409
+ * implements IXAEnabled 
+ * polishing of serviceIds, to work around problems with ':' and '/'
+ *
+ * Revision 1.3  2005/06/20 09:13:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * dynamic determination of provider URL
  *
  * Revision 1.2  2005/06/13 12:30:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -47,7 +51,7 @@ import com.ing.ifsa.IFSAQueueConnectionFactory;
  * @version Id
  */
 public class IfsaConnectionFactory extends ConnectionFactoryBase {
-	public static final String version="$RCSfile: IfsaConnectionFactory.java,v $ $Revision: 1.3 $ $Date: 2005-06-20 09:13:40 $";
+	public static final String version="$RCSfile: IfsaConnectionFactory.java,v $ $Revision: 1.4 $ $Date: 2005-07-19 12:33:58 $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	private final static String IFSA_INITIAL_CONTEXT_FACTORY="com.ing.ifsa.IFSAContextFactory";
@@ -59,10 +63,12 @@ public class IfsaConnectionFactory extends ConnectionFactoryBase {
 		return connectionMap;
 	}
 
+	private boolean preJms22Api=false;
+
 	protected JmsConnection createJmsConnection(String id) throws IbisException {
 		IFSAContext context = (IFSAContext)getContext();
 		IFSAQueueConnectionFactory connectionFactory = (IFSAQueueConnectionFactory)getConnectionFactory(context, id); 
-		return new IfsaConnection(id, context, connectionFactory, getConnectionMap());
+		return new IfsaConnection(id, context, connectionFactory, getConnectionMap(),preJms22Api);
 	}
 
 	protected String getProviderUrl() {
@@ -78,6 +84,7 @@ public class IfsaConnectionFactory extends ConnectionFactoryBase {
 				purl = baicnfFieldValue.toString();
 			} catch (NoSuchFieldException e1) {
 				log.info("field [com.ing.ifsa.IFSAConstants.IFSA_BAICNF] not found, assuming IFSA Version 2.0");
+				preJms22Api=true;
 				purl = IFSA_PROVIDER_URL_V2_0;
 			}
 		} catch (Exception e) {
