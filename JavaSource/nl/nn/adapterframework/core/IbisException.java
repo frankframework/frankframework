@@ -1,6 +1,9 @@
 /*
  * $Log: IbisException.java,v $
- * Revision 1.15  2005-07-05 11:01:10  europe\L190409
+ * Revision 1.16  2005-07-19 12:12:18  europe\L190409
+ * improved rendering of SaxParseException
+ *
+ * Revision 1.15  2005/07/05 11:01:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved rendering of errormessage
  *
  * Revision 1.14  2005/04/26 15:14:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -46,6 +49,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang.exception.NestableException;
+import org.xml.sax.SAXParseException;
 
 /**
  * Base Exception with exhaustive toString() and compact but informative getMessage().
@@ -54,7 +58,7 @@ import org.apache.commons.lang.exception.NestableException;
  * @author Gerrit van Brakel
  */
 public class IbisException extends NestableException {
-	public static final String version = "$RCSfile: IbisException.java,v $ $Revision: 1.15 $ $Date: 2005-07-05 11:01:10 $";
+	public static final String version = "$RCSfile: IbisException.java,v $ $Revision: 1.16 $ $Date: 2005-07-19 12:12:18 $";
 
 	static {
 		// add methodname to find cause of JMS-Exceptions
@@ -106,6 +110,22 @@ public class IbisException extends NestableException {
 				currentResult = addPart(currentResult, " ", "at column ["+column+"]");
 			}
 		}
+		if (t instanceof SAXParseException) {
+			SAXParseException spe = (SAXParseException)t;
+			int line = spe.getLineNumber();
+			int col = spe.getColumnNumber();
+			String sysid = spe.getSystemId();
+			
+			if (line>=0) {
+				currentResult =  addPart(currentResult, " ", "Line ["+line+"]");
+			}
+			if (col>=0) {
+				currentResult =  addPart(currentResult, " ", "Column ["+col+"]");
+			}
+			if (StringUtils.isNotEmpty(sysid)) {
+				currentResult =  addPart(currentResult, " ", "SystemId ["+sysid+"]");
+			}
+		} 
 		return currentResult;
 	}
 	
@@ -118,7 +138,7 @@ public class IbisException extends NestableException {
 		for(int i=messages.length-1; i>=0; i--) {
 			String newPart=null;
 			
-			addExceptionSpecificDetails(throwables[i], newPart);
+			newPart = addExceptionSpecificDetails(throwables[i], newPart);
 			
 			// prefix the result with the message of this exception.
 			// if the new message ends with the previous, remove the part that is already known
