@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaConnection.java,v $
- * Revision 1.2  2005-07-19 12:33:56  europe\L190409
+ * Revision 1.3  2005-07-19 12:34:50  europe\L190409
+ * corrected version-string
+ *
+ * Revision 1.2  2005/07/19 12:33:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * implements IXAEnabled 
  * polishing of serviceIds, to work around problems with ':' and '/'
  *
@@ -40,7 +43,7 @@ import com.ing.ifsa.IFSAQueueConnectionFactory;
  * @version Id
  */
 public class IfsaConnection extends JmsConnection {
-	public static final String version="$Id: IfsaConnection.java,v 1.2 2005-07-19 12:33:56 europe\L190409 Exp $";
+	public static final String version="$RCSfile: IfsaConnection.java,v $ $Revision: 1.3 $ $Date: 2005-07-19 12:34:50 $";
 
 	protected boolean preJms22Api=false;
 
