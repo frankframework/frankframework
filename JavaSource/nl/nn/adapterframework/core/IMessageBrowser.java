@@ -1,28 +1,51 @@
 /*
  * $Log: IMessageBrowser.java,v $
- * Revision 1.1  2004-06-16 12:25:52  NNVZNL01#L180564
+ * Revision 1.2  2005-07-19 12:14:30  europe\L190409
+ * introduction of IMessageBrowsingIterator
+ *
+ * Revision 1.1  2004/06/16 12:25:52  Johan Verrips <johan.verrips@ibissource.org>
  * Initial version of Queue browsing functionality
  *
  *
  */
 package nl.nn.adapterframework.core;
 
-import java.util.Enumeration;
-import nl.nn.adapterframework.core.MessageBrowseException;
+import java.util.Date;
 
 /**
+ * @author  Gerrit van Brakel
+ * @since   4.3
  * @version Id
- * @author Johan Verrips
  */
-public interface IMessageBrowser{
-	public static final String version = "$Id: IMessageBrowser.java,v 1.1 2004-06-16 12:25:52 NNVZNL01#L180564 Exp $";
+public interface IMessageBrowser extends IXAEnabled {
+	public static final String version = "$RCSfile: IMessageBrowser.java,v $ $Revision: 1.2 $ $Date: 2005-07-19 12:14:30 $";
+
 	/**
 	 * Gets an enumeration of messages. This includes setting up connections, sessions etc.
-	 * @return Enumeration
+	 * 
+	 * @return Iterator
 	 * @throws MessageBrowseException
 	 */
-	public Enumeration getMessageEnumeration() throws MessageBrowseException;
-	public void close();
+	public IMessageBrowsingIterator getIterator() throws ListenerException;
+	
+	public String getId(Object iteratorItem) throws ListenerException;
+	public String getOriginalId(Object iteratorItem) throws ListenerException;
+	public String getCorrelationId(Object iteratorItem) throws ListenerException;
+	public Date   getInsertDate(Object iteratorItem) throws ListenerException;
+	public String getCommentString(Object iteratorItem) throws ListenerException;
+	
+	/**
+	 * Retrieves the message, but does not delete. 
+	 */
+	public Object browseMessage(String messageId) throws ListenerException;
+	/**
+	 * Retrieves and deletes the message.
+	 */
+	public Object getMessage(String messageId) throws ListenerException;
+	/**
+	 * Deletes the message.
+	 */
+	public void   deleteMessage(String messageId) throws ListenerException;
 
 }
 
