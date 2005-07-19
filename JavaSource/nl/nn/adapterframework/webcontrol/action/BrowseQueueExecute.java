@@ -1,6 +1,9 @@
 /*
  * $Log: BrowseQueueExecute.java,v $
- * Revision 1.3  2004-10-12 15:15:54  L190409
+ * Revision 1.4  2005-07-19 15:32:17  europe\L190409
+ * rework using IMessageBrowsingIterator
+ *
+ * Revision 1.3  2004/10/12 15:15:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed unused imports
  *
  * Revision 1.2  2004/08/20 12:57:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -24,6 +27,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import nl.nn.adapterframework.core.IMessageBrowser;
+import nl.nn.adapterframework.core.IMessageBrowsingIterator;
+import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.MessageBrowseException;
 import nl.nn.adapterframework.jms.JmsMessageBrowser;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
@@ -43,7 +48,7 @@ import org.apache.struts.action.ActionMapping;
  */
 public class BrowseQueueExecute extends ActionBase {
 
-	public static final String version = "$Id: BrowseQueueExecute.java,v 1.3 2004-10-12 15:15:54 L190409 Exp $";
+	public static final String version = "$Id: BrowseQueueExecute.java,v 1.4 2005-07-19 15:32:17 europe\L190409 Exp $";
 	public ActionForward execute(
 		ActionMapping mapping,
 		ActionForm form,
@@ -90,17 +95,16 @@ public class BrowseQueueExecute extends ActionBase {
 		jmsBrowser.setJmsRealm(form_jmsRealm);
 		jmsBrowser.setDestinationName(form_destinationName);
 		jmsBrowser.setDestinationType(form_destinationType);
-		IMessageBrowser browser = (IMessageBrowser) jmsBrowser;
+		IMessageBrowser browser = jmsBrowser;
+		IMessageBrowsingIterator it=null;
 		try {
-			Enumeration messageEnum = browser.getMessageEnumeration();
+			it = browser.getIterator();
 			List messages = new ArrayList();
-			for (; messageEnum.hasMoreElements();) {
-				messages.add(messageEnum.nextElement());
+			while (it.hasNext()) {
+				messages.add(it.next());
 			}
 			log.debug("Browser returned " + messages.size() + " messages");
-			browseQueueForm.set(
-				"numberOfMessages",
-				Integer.toString(messages.size()));
+			browseQueueForm.set("numberOfMessages", Integer.toString(messages.size()));
 			if (!form_numberOfMessagesOnly) {
 /*				
 				try {
@@ -124,7 +128,7 @@ public class BrowseQueueExecute extends ActionBase {
 				browseQueueForm.set("messages", messages);
 			} else
 				browseQueueForm.set("messages", new ArrayList());
-		} catch (MessageBrowseException e) {
+		} catch (ListenerException e) {
 			log.error("Error occured browsing the queue", e);
 			String errorString = e.getMessage();
 			errorString = XmlUtils.encodeChars(errorString);
@@ -133,9 +137,15 @@ public class BrowseQueueExecute extends ActionBase {
 				new ActionError(
 					"errors.generic",
 					"error occured browsing messages:" + errorString));
+		} finally {
+			try {
+				if (it!=null) {
+					it.close();
+				}
+			} catch (ListenerException e1) {
+				log.error(e1);
+			}
 		}
-
-		browser.close();
 
 		// Report any errors we have discovered back to the original form
 		if (!errors.isEmpty()) {
