@@ -1,6 +1,9 @@
 /*
  * $Log: JmsTransactionalStorage.java,v $
- * Revision 1.3  2005-07-19 15:12:40  europe\L190409
+ * Revision 1.4  2005-07-28 07:38:10  europe\L190409
+ * added slotId attribute
+ *
+ * Revision 1.3  2005/07/19 15:12:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * adapted to an implementation extending IMessageBrowser
  *
  * Revision 1.2  2004/03/26 10:42:54  Johan Verrips <johan.verrips@ibissource.org>
@@ -19,6 +22,8 @@ import javax.jms.JMSException;
 import javax.jms.ObjectMessage;
 import javax.jms.Session;
 
+import org.apache.commons.lang.StringUtils;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.ListenerException;
@@ -27,13 +32,24 @@ import nl.nn.adapterframework.core.SenderException;
 /**
  * JMS implementation of <code>ITransactionalStorage</code>.
  * 
+ * <p><b>Configuration:</b>
+ * <table border="1">
+ * <tr><th>attributes</th><th>description</th><th>default</th></tr>
+ * <tr><td>classname</td><td>nl.nn.adapterframework.jms.JmsTransactionalStorage</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setSlotId(String) slotId}</td><td>optional identifier for this storage, to be able to share the physical storage between a number of receivers</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setTimeOut(long) timeOut}</td><td>timeout for receiving messages from queue</td><td>3000 [ms]</td></tr>
+ * <tr><td>{@link #setDestinationName(String) destinationName}</td><td>JNDI name of the queue to store messages on</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ * </table>
+ * </p>
  * @version Id
- * @author Gerrit van Brakel
- * @since  4.1
+ * @author  Gerrit van Brakel
+ * @since   4.1
  */
 public class JmsTransactionalStorage extends JmsMessageBrowser implements ITransactionalStorage {
-	public static final String version = "$RCSfile: JmsTransactionalStorage.java,v $ $Revision: 1.3 $ $Date: 2005-07-19 15:12:40 $";
+	public static final String version = "$RCSfile: JmsTransactionalStorage.java,v $ $Revision: 1.4 $ $Date: 2005-07-28 07:38:10 $";
 
+	private String slotId=null;
 
 	public JmsTransactionalStorage() {
 		super();
@@ -43,7 +59,6 @@ public class JmsTransactionalStorage extends JmsMessageBrowser implements ITrans
 	}
 
 	public void configure() throws ConfigurationException {
-		// TODO Auto-generated method stub
 	}
 	
 	public void open() throws ListenerException {
@@ -132,5 +147,19 @@ public class JmsTransactionalStorage extends JmsMessageBrowser implements ITrans
 		}
 	}
 
+	public String getSelector() {
+		if (StringUtils.isEmpty(getSlotId())) {
+			return null; 
+		}
+		return "SlotId='"+getSelector()+"'";
+	}
+
+	public String getSlotId() {
+		return slotId;
+	}
+
+	public void setSlotId(String string) {
+		slotId = string;
+	}
 	
 }

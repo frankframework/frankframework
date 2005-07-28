@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcTransactionalStorage.java,v $
- * Revision 1.5  2005-07-19 14:59:02  europe\L190409
+ * Revision 1.6  2005-07-28 07:36:17  europe\L190409
+ * added slotId attribute
+ *
+ * Revision 1.5  2005/07/19 14:59:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * adapted to an implementation extending IMessageBrowser
  *
  * Revision 1.4  2004/03/31 12:04:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -32,6 +35,8 @@ import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.Date;
 
+import org.apache.commons.lang.StringUtils;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
 import nl.nn.adapterframework.core.ITransactionalStorage;
@@ -45,13 +50,11 @@ import nl.nn.adapterframework.util.JdbcUtil;
  * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>classname</td><td>nl.nn.adapterframework.jdbc.JdbcQuerySenderBase</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setName(String) name}</td>  <td>name of the listener</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setDatasourceName(String) datasourceName}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ * <tr><td>classname</td><td>nl.nn.adapterframework.jdbc.JdbcTransactionalStorage</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setSlotId(String) slotId}</td><td>optional identifier for this storage, to be able to share the physical table between a number of receivers</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDatasourceNameXA(String) datasourceNameXA}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setUsername(String) username}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setPassword(String) password}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setTransacted(boolean) transacted}</td><td>&nbsp;</td><td>true</td></tr>
  * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setTableName(String) tableName}</td><td>the name of the table messages are stored in</td><td>inprocstore</td></tr>
  * <tr><td>{@link #setKeyField(String) keyField}</td><td>the name of the column that contains the primary key of the table</td><td>messageKey</td></tr>
@@ -59,6 +62,7 @@ import nl.nn.adapterframework.util.JdbcUtil;
  * <tr><td>{@link #setCorrelationIdField(String) correlationIdField}</td><td>the name of the column correlation-ids are stored in</td><td>correlationId</td></tr>
  * <tr><td>{@link #setDateField(String) dateField}</td><td>the name of the column the timestamp is stored in</td><td>messageDate</td></tr>
  * <tr><td>{@link #setMessageField(String) messageField}</td><td>the name of the column message themselves are stored in</td><td>message</td></tr>
+ * <tr><td>{@link #setSlotIdField(String) slotIdField}</td><td>the name of the column slotIds are stored in</td><td>slotId</td></tr>
  * <tr><td>{@link #setKeyFieldType(String) keyFieldType}</td><td>the type of the column that contains the primary key of the table</td><td>INT DEFAULT AUTOINCREMENT</td></tr>
  * <tr><td>{@link #setDataFieldType(String) dateFieldType}</td><td>the type of the column the timestamp is stored in</td><td>TIMESTAMP</td></tr>
  * <tr><td>{@link #setMessageFieldType(String) messageFieldType}</td><td>the type of the column message themselves are stored in</td><td>LONG BINARY</td></tr>
@@ -70,7 +74,7 @@ import nl.nn.adapterframework.util.JdbcUtil;
  * @since 	4.1
  */
 public class JdbcTransactionalStorage extends JdbcFacade implements ITransactionalStorage {
-	public static final String version = "$RCSfile: JdbcTransactionalStorage.java,v $ $Revision: 1.5 $ $Date: 2005-07-19 14:59:02 $";
+	public static final String version = "$RCSfile: JdbcTransactionalStorage.java,v $ $Revision: 1.6 $ $Date: 2005-07-28 07:36:17 $";
 	
     private String tableName="ibisstore";
 	private String keyField="messageKey";
@@ -79,11 +83,12 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	private String dateField="messageDate";
 	private String commentField="comment";
 	private String messageField="message";
-    
+	private String slotIdField="slotId";
+	private String slotId=null;
+   
 	protected static final int MAXIDLEN=100;		
 	protected static final int MAXCOMMENTLEN=1000;		
     // the following values are only used when the table is created. 
-    // TODO: handle sizes of messages and ids more intelligently
 	private String keyFieldType="INT DEFAULT AUTOINCREMENT";
 	private String dateFieldType="TIMESTAMP";
 	private String messageFieldType="LONG BINARY";
@@ -118,37 +123,68 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		} catch (SQLException e) {
 			throw new JdbcException(getLogPrefix()+" creating statement to create table:", e);
 		}
-		String query="CREATE TABLE "+getTableName()+" ("+
+		String query=null;
+		try {
+			query="CREATE TABLE "+getTableName()+" ("+
 						getKeyField()+" "+getKeyFieldType()+" PRIMARY KEY, "+
+						(StringUtils.isNotEmpty(getSlotId())? getSlotIdField()+" VARCHAR("+MAXIDLEN+"), ":"")+
 						getIdField()+" VARCHAR("+MAXIDLEN+"), "+
 						getCorrelationIdField()+" VARCHAR("+MAXIDLEN+"), "+
 						getDateField()+" "+getDateFieldType()+", "+
 						getCommentField()+" VARCHAR("+MAXCOMMENTLEN+"), "+
 						getMessageField()+" "+getMessageFieldType()+
 					  ")";
-		try {
+					  
 			log.debug(getLogPrefix()+"creating table ["+getTableName()+"] using query ["+query+"]");
 			stmt.execute(query);
+			query = "CREATE INDEX "+getTableName()+"_idx ON "+getTableName()+"("+(StringUtils.isNotEmpty(getSlotId())?getSlotIdField()+",":"")+getDateField()+")";				
+			log.debug(getLogPrefix()+"creating index ["+getTableName()+"_idx] using query ["+query+"]");
+			stmt.execute(query);
+			query="-close-";
 			stmt.close();
 		} catch (SQLException e) {
 			throw new JdbcException(getLogPrefix()+" executing query ["+query+"]", e);
 		}
 	}	
 	
+	protected String getSelector() {
+		if (StringUtils.isEmpty(getSlotId())) {
+			return null;
+		}
+		return getSlotIdField()+"='"+getSlotId()+"'";
+	}
+	
+	protected String getWhereClause(String clause) {
+		if (StringUtils.isEmpty(getSlotId())) {
+			if (StringUtils.isEmpty(clause)) {
+				return "";
+			} else {
+				return " WHERE "+clause; 
+			}
+		} else {
+			String result = " WHERE "+getSelector();
+			if (StringUtils.isNotEmpty(clause)) {
+				result += " AND "+clause;
+			}
+			return result;
+		}
+	}
+	
 	protected void createQueryTexts() {
 		insertQuery = "INSERT INTO "+getTableName()+" ("+
+						(StringUtils.isNotEmpty(getSlotId())?getSlotIdField()+",":"")+
 						getIdField()+","+getCorrelationIdField()+","+getDateField()+","+getCommentField()+","+getMessageField()+
-						") VALUES (?,?,?,?,?)";
-		deleteQuery = "DELETE FROM "+getTableName()+ " WHERE "+getKeyField()+"=?";
+						") VALUES ("+(StringUtils.isNotEmpty(getSlotId())?getSlotId()+",":"")+"?,?,?,?,?)";
+		deleteQuery = "DELETE FROM "+getTableName()+ getWhereClause(getKeyField()+"=?");
 		selectKeyQuery = "SELECT max("+getKeyField()+") FROM "+getTableName()+ 
-						" WHERE "+getIdField()+"=?"+
-						" AND " +getCorrelationIdField()+"=?"+
-						" AND "+getDateField()+"=?";
+						getWhereClause(getIdField()+"=?"+
+									" AND " +getCorrelationIdField()+"=?"+
+									" AND "+getDateField()+"=?");
 		selectListQuery = "SELECT "+getKeyField()+","+getIdField()+","+getCorrelationIdField()+","+getDateField()+","+getCommentField()+
-						  " FROM "+getTableName()+
+						  " FROM "+getTableName()+ getWhereClause(null)+
 						  " ORDER BY "+getDateField();
 		selectDataQuery = "SELECT "+getMessageField()+
-						  " FROM "+getTableName()+ " WHERE "+getKeyField()+"=?";
+						  " FROM "+getTableName()+ getWhereClause(getKeyField()+"=?");
 	}
 
 
@@ -515,6 +551,22 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 
 	public void setDateFieldType(String string) {
 		dateFieldType = string;
+	}
+
+	public String getSlotId() {
+		return slotId;
+	}
+
+	public void setSlotId(String string) {
+		slotId = string;
+	}
+
+	public String getSlotIdField() {
+		return slotIdField;
+	}
+
+	public void setSlotIdField(String string) {
+		slotIdField = string;
 	}
 
 }
