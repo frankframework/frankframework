@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcQuerySenderBase.java,v $
- * Revision 1.11  2005-07-19 12:36:32  europe\L190409
+ * Revision 1.12  2005-07-28 07:33:20  europe\L190409
+ * close statement also for update-statements
+ *
+ * Revision 1.11  2005/07/19 12:36:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * moved applyParameters to JdbcFacade
  *
  * Revision 1.10  2005/06/28 09:05:47  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -79,7 +82,7 @@ import nl.nn.adapterframework.util.DB2XMLWriter;
  * @since 	4.1
  */
 public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
-	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.11 $ $Date: 2005-07-19 12:36:32 $";
+	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.12 $ $Date: 2005-07-28 07:33:20 $";
 
 	private String queryType = "other";
 	private int startRow=1;
@@ -103,7 +106,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 
 
 	protected String sendMessage(Connection connection, String correlationID, String message, ParameterResolutionContext prc) throws SenderException{
-		PreparedStatement statement;
+		PreparedStatement statement=null;
 		
 		try {
 			statement = getStatement(connection, correlationID, message);
@@ -113,11 +116,19 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 			if ("select".equalsIgnoreCase(getQueryType())) {
 				return executeSelectQuery(statement);
 			} else {
-				int numRowsAffected = statement.executeUpdate();
-				if (isScalar()) {
-					return numRowsAffected+"";
+				try {
+					int numRowsAffected = statement.executeUpdate();
+					if (isScalar()) {
+						return numRowsAffected+"";
+					}
+					return "<result><rowsupdated>" + numRowsAffected + "</rowsupdated></result>";
+				} finally {
+					try {
+						statement.close();
+					} catch (SQLException e) {
+						log.warn("",new SenderException(getLogPrefix() + "got exception closing SQL statement",e ));
+					}
 				}
-				return "<result><rowsupdated>" + numRowsAffected + "</rowsupdated></result>";
 			}
 		} catch (ParameterException e) {
 			throw new SenderException(getLogPrefix() + "got exception evaluating parameters", e);
