@@ -1,6 +1,9 @@
 /*
  * $Log: JmsMessageBrowser.java,v $
- * Revision 1.3  2005-07-19 15:12:40  europe\L190409
+ * Revision 1.4  2005-07-28 07:36:57  europe\L190409
+ * added selector
+ *
+ * Revision 1.3  2005/07/19 15:12:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * adapted to an implementation extending IMessageBrowser
  *
  * Revision 1.2  2004/10/05 10:41:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -24,6 +27,8 @@ import javax.jms.QueueBrowser;
 import javax.jms.QueueSession;
 import javax.jms.Session;
 
+import org.apache.commons.lang.StringUtils;
+
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
 import nl.nn.adapterframework.core.ListenerException;
@@ -35,21 +40,26 @@ import nl.nn.adapterframework.core.ListenerException;
  * @see nl.nn.adapterframework.webcontrol.action.BrowseQueue
  */
 public class JmsMessageBrowser extends JMSFacade implements IMessageBrowser {
-	public static final String version = "$RCSfile: JmsMessageBrowser.java,v $ $Revision: 1.3 $ $Date: 2005-07-19 15:12:40 $";
+	public static final String version = "$RCSfile: JmsMessageBrowser.java,v $ $Revision: 1.4 $ $Date: 2005-07-28 07:36:57 $";
 
 	private long timeOut = 3000;
-
+	private String selector=null;
 	
 	public JmsMessageBrowser() {
 		super();
 		setTransacted(true);
+	}
+
+	public JmsMessageBrowser(String selector) {
+		this();
+		this.selector=selector;
 	}
 	
 	public IMessageBrowsingIterator getIterator() throws ListenerException {
 		QueueSession session;
 		try {
 			session = (QueueSession) createSession();
-			return new JmsQueueBrowserIterator(session,(Queue)getDestination());
+			return new JmsQueueBrowserIterator(session,(Queue)getDestination(),getSelector());
 		} catch (Exception e) {
 			throw new ListenerException(e);
 		}
@@ -102,7 +112,7 @@ public class JmsMessageBrowser extends JMSFacade implements IMessageBrowser {
 		MessageConsumer mc = null;
 		try {
 			session = createSession();
-			mc = getMessageConsumer(session, getDestination(), "JMSMessageID='" + messageId + "'");
+			mc = getMessageConsumer(session, getDestination(), getCombinedSelector(messageId));
 			msg = mc.receive(getTimeOut());
 			return msg;
 		} catch (Exception e) {
@@ -131,7 +141,7 @@ public class JmsMessageBrowser extends JMSFacade implements IMessageBrowser {
 		QueueBrowser queueBrowser=null;
 		try {
 			session = (QueueSession)createSession();
-			queueBrowser = session.createBrowser((Queue)getDestination(),"JMSMessageID='" + messageId + "'");
+			queueBrowser = session.createBrowser((Queue)getDestination(),getCombinedSelector(messageId));
 			Enumeration msgenum = queueBrowser.getEnumeration();
 			if (msgenum.hasMoreElements()) {
 				msg=msgenum.nextElement();
@@ -164,7 +174,7 @@ public class JmsMessageBrowser extends JMSFacade implements IMessageBrowser {
 		try {
 			session = createSession();
 			log.debug("retrieving message ["+messageId+"] in order to delete it");
-			mc = getMessageConsumer(session, getDestination(), "JMSMessageID='" + messageId + "'");
+			mc = getMessageConsumer(session, getDestination(), getCombinedSelector(messageId));
 			mc.receive(getTimeOut());
 		} catch (Exception e) {
 			throw new ListenerException(e);
@@ -186,6 +196,14 @@ public class JmsMessageBrowser extends JMSFacade implements IMessageBrowser {
 		}
 	}
 
+	protected String getCombinedSelector(String messageId) {
+		String result = "JMSMessageID='" + messageId + "'";
+		if (StringUtils.isNotEmpty(getSelector())) {
+			result += " AND "+getSelector();
+		}
+		return result;
+	}
+
 	public void setTimeOut(long newTimeOut) {
 		timeOut = newTimeOut;
 	}
@@ -193,6 +211,10 @@ public class JmsMessageBrowser extends JMSFacade implements IMessageBrowser {
 		return timeOut;
 	}
 
+
+	public String getSelector() {
+		return selector;
+	}
 
 }
 
