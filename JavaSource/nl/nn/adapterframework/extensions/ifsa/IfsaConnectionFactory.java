@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaConnectionFactory.java,v $
- * Revision 1.4  2005-07-19 12:33:58  europe\L190409
+ * Revision 1.5  2005-07-28 07:30:25  europe\L190409
+ * show XA status in log
+ *
+ * Revision 1.4  2005/07/19 12:33:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * implements IXAEnabled 
  * polishing of serviceIds, to work around problems with ':' and '/'
  *
@@ -39,6 +42,7 @@ import org.apache.log4j.Logger;
 
 import com.ing.ifsa.IFSAConstants;
 import com.ing.ifsa.IFSAContext;
+import com.ing.ifsa.IFSAGate;
 import com.ing.ifsa.IFSAQueueConnectionFactory;
 
 /**
@@ -51,7 +55,7 @@ import com.ing.ifsa.IFSAQueueConnectionFactory;
  * @version Id
  */
 public class IfsaConnectionFactory extends ConnectionFactoryBase {
-	public static final String version="$RCSfile: IfsaConnectionFactory.java,v $ $Revision: 1.4 $ $Date: 2005-07-19 12:33:58 $";
+	public static final String version="$RCSfile: IfsaConnectionFactory.java,v $ $Revision: 1.5 $ $Date: 2005-07-28 07:30:25 $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	private final static String IFSA_INITIAL_CONTEXT_FACTORY="com.ing.ifsa.IFSAContextFactory";
@@ -113,7 +117,15 @@ public class IfsaConnectionFactory extends ConnectionFactoryBase {
 				+ " isClientTransactional:" +ifsaQueueConnectionFactory.IsClientTransactional()+"\n" 
 				+ " isClientServerNonTransactional:" +ifsaQueueConnectionFactory.IsClientServerNonTransactional()+"\n" 
 			+ " isServerTransactional:" +ifsaQueueConnectionFactory.IsClientServerTransactional()+"\n" );
-		}        
+		}
+		if (!preJms22Api) {
+			try {
+				IFSAGate gate = IFSAGate.getInstance();
+				log.info("IFSA JMS XA enabled ["+gate.isXA()+"]");        
+			} catch (Throwable t) {
+				log.info("caught exception determining XA-status of IFSA JMS",t);
+			}
+		}
 		return ifsaQueueConnectionFactory;
 	}
 
