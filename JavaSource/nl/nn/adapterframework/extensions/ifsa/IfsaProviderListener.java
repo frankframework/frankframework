@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaProviderListener.java,v $
- * Revision 1.11  2005-06-20 09:14:17  europe\L190409
+ * Revision 1.12  2005-07-28 07:31:54  europe\L190409
+ * change default acknowledge mode to CLIENT
+ *
+ * Revision 1.11  2005/06/20 09:14:17  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * avoid excessive logging
  *
  * Revision 1.10  2005/06/13 15:08:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -89,7 +92,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * @since 4.2
  */
 public class IfsaProviderListener extends IfsaFacade implements IPullingListener, INamedObject {
-	public static final String version = "$RCSfile: IfsaProviderListener.java,v $ $Revision: 1.11 $ $Date: 2005-06-20 09:14:17 $";
+	public static final String version = "$RCSfile: IfsaProviderListener.java,v $ $Revision: 1.12 $ $Date: 2005-07-28 07:31:54 $";
 
     private final static String THREAD_CONTEXT_SESSION_KEY = "session";
     private final static String THREAD_CONTEXT_RECEIVER_KEY = "receiver";
@@ -365,6 +368,18 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 	    } catch (JMSException e) {
 	        log.error(getLogPrefix() + "got error getting serviceparameter", e);
 	    }
+
+
+		// acknowledge the message when necessary
+		try {
+			if (!isTransacted() && !isJmsTransacted()) {
+				message.acknowledge();
+				log.debug(getLogPrefix()+"acknowledged received message");
+			}
+		} catch (JMSException e) {
+			log.error(getLogPrefix()+"exception in ack ", e);
+		}
+
 	
 	    log.info(getLogPrefix()+ "got message for [" + fullIfsaServiceName
 	    		+ "] with JMSDeliveryMode=[" + mode

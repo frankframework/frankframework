@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaFacade.java,v $
- * Revision 1.26  2005-07-19 12:33:56  europe\L190409
+ * Revision 1.27  2005-07-28 07:31:25  europe\L190409
+ * change default acknowledge mode to CLIENT
+ *
+ * Revision 1.26  2005/07/19 12:33:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * implements IXAEnabled 
  * polishing of serviceIds, to work around problems with ':' and '/'
  *
@@ -107,8 +110,10 @@ import javax.jms.*;
  * @since 4.2
  */
 public class IfsaFacade implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version = "$RCSfile: IfsaFacade.java,v $ $Revision: 1.26 $ $Date: 2005-07-19 12:33:56 $";
+	public static final String version = "$RCSfile: IfsaFacade.java,v $ $Revision: 1.27 $ $Date: 2005-07-28 07:31:25 $";
     protected Logger log = Logger.getLogger(this.getClass());
+    
+    private static int BASIC_ACK_MODE = Session.CLIENT_ACKNOWLEDGE;
     
 	private String name;
 	private String applicationId;
@@ -324,7 +329,7 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination, IXAEnab
 	 */
 	public QueueSession createSession() throws IfsaException {
 		try {
-			int mode = Session.AUTO_ACKNOWLEDGE; 
+			int mode = BASIC_ACK_MODE; 
 			if (isRequestor()) {
 				mode += IFSAConstants.QueueSession.IFSA_MODE; // let requestor receive IFSATimeOutMessages
 			}
