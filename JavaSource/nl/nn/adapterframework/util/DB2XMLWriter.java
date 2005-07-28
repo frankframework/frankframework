@@ -1,6 +1,10 @@
 /*
  * $Log: DB2XMLWriter.java,v $
- * Revision 1.6  2005-06-13 11:52:12  europe\L190409
+ * Revision 1.7  2005-07-28 07:42:59  europe\L190409
+ * return a value for CLOBs too;
+ * catch numberFormatException for precision
+ *
+ * Revision 1.6  2005/06/13 11:52:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * cosmetic changes
  *
  */
@@ -45,8 +49,8 @@ import java.sql.Types;
  **/
 
 public class DB2XMLWriter {
+	public static final String version="$RCSfile: DB2XMLWriter.java,v $ $Revision: 1.7 $ $Date: 2005-07-28 07:42:59 $";
 	protected Logger log = Logger.getLogger(this.getClass());
-	public static final String version="$RCSfile: DB2XMLWriter.java,v $ $Revision: 1.6 $ $Date: 2005-06-13 11:52:12 $";
 
    private String docname = new String("result");
    private String recordname = new String("rowset");
@@ -106,9 +110,9 @@ public class DB2XMLWriter {
     {
         switch(type)
         {
+        	// return "undefined" for types that cannot be rendered to strings easily
             case Types.ARRAY :
             case Types.BLOB :
-            case Types.CLOB :
             case Types.DISTINCT :
             case Types.LONGVARBINARY :
             case Types.VARBINARY :
@@ -166,7 +170,8 @@ public class DB2XMLWriter {
           } catch (SQLException e) { log.debug(e); };
    		  try{
 		      field.addAttribute("precision", ""+rsmeta.getPrecision(j));
-          } catch (SQLException e) { log.debug(e); };
+          } catch (SQLException e) { log.debug(e);           
+          } catch (NumberFormatException e2) { log.debug(e2); };
 		  try{
 	          field.addAttribute("scale", ""+rsmeta.getScale(j));
           } catch (SQLException e) { log.debug(e); };
