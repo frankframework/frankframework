@@ -1,6 +1,9 @@
 /*
  * $Log: PutSystemDateInSession.java,v $
- * Revision 1.2  2004-11-10 12:58:17  L190409
+ * Revision 1.3  2005-07-28 07:40:28  europe\L190409
+ * improved logging
+ *
+ * Revision 1.2  2004/11/10 12:58:17  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added default values for attributes + cosmetic changes
  *
  * Revision 1.1  2004/09/01 11:05:06  Johan Verrips <johan.verrips@ibissource.org>
@@ -8,6 +11,7 @@
  *
  */
 package nl.nn.adapterframework.pipes;
+
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -31,11 +35,12 @@ import java.text.SimpleDateFormat;
  * </table>
  * </p>
  * @version Id
- * @author Johan Verrips
- * @since 4.2c
+ * @author  Johan Verrips
+ * @since   4.2c
  */
 public class PutSystemDateInSession extends FixedForwardPipe {
-	public static final String version = "$Id: PutSystemDateInSession.java,v 1.2 2004-11-10 12:58:17 L190409 Exp $";
+	public static final String version="$RCSfile: PutSystemDateInSession.java,v $  $Revision: 1.3 $ $Date: 2005-07-28 07:40:28 $";
+
 	private String sessionKey="systemDate";
 	private String dateFormat=DateUtils.fullIsoFormat;
 
@@ -71,41 +76,41 @@ public class PutSystemDateInSession extends FixedForwardPipe {
 
 		Date currentDate = new Date();
 		SimpleDateFormat formatter = new SimpleDateFormat(getDateFormat());
-		session.put(this.getSessionKey(), formatter.format(currentDate));		
+		String formattedDate = formatter.format(currentDate);
+		session.put(this.getSessionKey(), formattedDate);		
+		
+		if (log.isDebugEnabled()) {
+			log.debug(getLogPrefix(session) + "stored ["+ formattedDate	+ "] in pipeLineSession under key [" + getSessionKey() + "]");
+		}
+
 		return new PipeRunResult(getForward(), input);
 	}
 	
 	/**
-	 * The name of the key in the <code>PipeLineSession</code> to store the input in
+	 * The name of the key in the <code>PipeLineSession</code> to store the systemdate in
 	 * @see nl.nn.adapterframework.core.PipeLineSession
 	 */
 	public String getSessionKey() {
 		return sessionKey;
 	}
 	/**
-	 * The name of the key in the <code>PipeLineSession</code> to store the input in
+	 * The name of the key in the <code>PipeLineSession</code> to store the systemdate in
 	 * @see nl.nn.adapterframework.core.PipeLineSession
 	 */
 	public void setSessionKey(String newSessionKey) {
 		sessionKey = newSessionKey;
 	}
 
-	/**
-	 * The String for the DateFormat
-	 * @see java.text.SimpleDateFormat
-	 * @return
-	 */
-	public String getDateFormat() {
-		return dateFormat;
-	}
 	
 	/**
-	 * The String for the DateFormat
+	 * The String for the DateFormat.
 	 * @see java.text.SimpleDateFormat
-	 * @return
 	 */
 	public void setDateFormat(String rhs) {
 		dateFormat = rhs;
+	}
+	public String getDateFormat() {
+		return dateFormat;
 	}
 	
 
