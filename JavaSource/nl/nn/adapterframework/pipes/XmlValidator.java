@@ -1,3 +1,9 @@
+/*
+ * $Log: XmlValidator.java,v $
+ * Revision 1.4  2005-07-28 07:41:06  europe\L190409
+ * added log-keyword
+ *
+ */
 package nl.nn.adapterframework.pipes;
 
 import nl.nn.adapterframework.util.Variant;
@@ -53,7 +59,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * @author Johan Verrips IOS
  */
 public class XmlValidator extends FixedForwardPipe {
-	public static final String version="$Id: XmlValidator.java,v 1.3 2004-03-26 10:42:36 NNVZNL01#L180564 Exp $";
+	public static final String version="$RCSfile: XmlValidator.java,v $ $Revision: 1.4 $ $Date: 2005-07-28 07:41:06 $";
 
     private String schema;
     private String schemaURL;

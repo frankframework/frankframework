@@ -1,3 +1,9 @@
+/*
+ * $Log: AppConstants.java,v $
+ * Revision 1.5  2005-07-28 07:41:47  europe\L190409
+ * added log-keyword
+ *
+ */
 package nl.nn.adapterframework.util;
 
 import java.util.Hashtable;
@@ -83,7 +89,7 @@ import org.apache.commons.lang.StringUtils;
  * 
  */
 public final class AppConstants extends Properties implements Serializable{
-	public static final String version="$Id: AppConstants.java,v 1.4 2005-02-17 09:48:04 L190409 Exp $";
+	public static final String version="$RCSfile: AppConstants.java,v $  $Revision: 1.5 $ $Date: 2005-07-28 07:41:47 $";
 	
 	public final static String propertiesFileName="AppConstants.properties";
 	private static AppConstants self=null;
