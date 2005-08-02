@@ -1,6 +1,9 @@
 /*
  * $Log: JmsSender.java,v $
- * Revision 1.16  2005-07-05 11:54:03  europe\L190409
+ * Revision 1.17  2005-08-02 07:13:05  europe\L190409
+ * deliveryMode to String and vv
+ *
+ * Revision 1.16  2005/07/05 11:54:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected deliveryMode handling; added priority-attribute
  *
  * Revision 1.15  2005/06/20 09:10:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -58,7 +61,6 @@ import nl.nn.adapterframework.parameters.ParameterValueList;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 
-import javax.jms.DeliveryMode;
 import javax.jms.JMSException;
 import javax.jms.Session;
 import javax.jms.MessageProducer;
@@ -77,11 +79,11 @@ import javax.jms.Message;
  * <tr><td>{@link #setMessageTimeToLive(long) messageTimeToLive}</td><td>&nbsp;</td><td>0</td></tr>
  * <tr><td>{@link #setMessageType(boolean) messageType}</td><td>value of the JMSType field</td><td>not set by application</td></tr>
  * <tr><td>{@link #setDeliveryMode(boolean) deliveryMode}</td><td>controls mode that messages are sent with: either 'persistent' or 'non_persistent'</td><td>not set by application</td></tr>
- * <tr><td>{@link #setPersistent(boolean) persistent}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setPriority(int) priority}</td><td>sets the priority that is used to deliver the message. ranges from 0 to 9. Defaults to -1, meaning not set. Effectively the default priority is set by Jms to 4</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setAcknowledgeMode(String) acknowledgeMode}</td><td>&nbsp;</td><td>AUTO_ACKNOWLEDGE</td></tr>
  * <tr><td>{@link #setTransacted(boolean) transacted}</td><td>&nbsp;</td><td>false</td></tr>
- * <tr><td>{@link #setReplyToName(String) ReplyToName}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setReplyToName(String) replyToName}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setPersistent(boolean) persistent}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
@@ -91,7 +93,7 @@ import javax.jms.Message;
  */
 
 public class JmsSender extends JMSFacade implements ISenderWithParameters, IPostboxSender {
-	public static final String version="$RCSfile: JmsSender.java,v $ $Revision: 1.16 $ $Date: 2005-07-05 11:54:03 $";
+	public static final String version="$RCSfile: JmsSender.java,v $ $Revision: 1.17 $ $Date: 2005-08-02 07:13:05 $";
 	private String replyToName = null;
 	private int deliveryMode = 0;
 	private String messageType = null;
@@ -244,14 +246,6 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 		}
 	}
 	
-	public String getReplyTo() {
-		return replyToName;
-	}
-
-	public void setReplyToName(String replyTo) {
-		this.replyToName = replyTo;
-	}
-	
 	public String toString() {
 		String result = super.toString();
 		ToStringBuilder ts = new ToStringBuilder(this);
@@ -263,7 +257,13 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 
 	}
 
-
+	public String getReplyTo() {
+		return replyToName;
+	}
+	public void setReplyToName(String replyTo) {
+		this.replyToName = replyTo;
+	}
+	
 	public void setMessageType(String string) {
 		messageType = string;
 	}
@@ -272,36 +272,24 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 	}
 
 	public void setDeliveryMode(String deliveryMode) {
-		if (deliveryMode.equalsIgnoreCase("persistent")) {
-			this.deliveryMode = DeliveryMode.PERSISTENT;
-		} else if (deliveryMode.equalsIgnoreCase("non_persistent")) {
-			this.deliveryMode = DeliveryMode.NON_PERSISTENT;
-		} else
+		int newMode = stringToDeliveryMode(deliveryMode);
+		if (newMode==0) {
 			log.warn("unknown delivery mode ["+deliveryMode+"], delivery mode not changed");
+		} else
+			this.deliveryMode=newMode;
 	}
-
+	public String getDeliveryMode() {
+		return deliveryModeToString(deliveryMode);
+	}
 	public int getDeliveryModeInt() {
 		return deliveryMode;
 	}
 	
-	public String getDeliveryMode() {
-		if (deliveryMode==0) {
-			return "not set by application";
-		}
-		if (deliveryMode==DeliveryMode.PERSISTENT) {
-			return "PERSISTENT";
-		}
-		if (deliveryMode==DeliveryMode.NON_PERSISTENT) {
-			return "NON-PERSISTENT";
-		}
-		return "unknown delivery mode: "+deliveryMode;
-	}
 
 
 	public int getPriority() {
 		return priority;
 	}
-
 	public void setPriority(int i) {
 		priority = i;
 	}
