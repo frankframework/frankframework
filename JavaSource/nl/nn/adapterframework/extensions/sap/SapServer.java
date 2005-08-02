@@ -1,6 +1,9 @@
 /* 
  * $Log: SapServer.java,v $
- * Revision 1.3  2005-03-14 17:27:05  L190409
+ * Revision 1.4  2005-08-02 13:01:09  europe\L190409
+ * included logging in transaction handling functions
+ *
+ * Revision 1.3  2005/03/14 17:27:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * increased logging
  *
  * Revision 1.2  2004/10/05 10:41:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -31,7 +34,7 @@ import com.sap.mw.jco.JCO;
  * @since 4.2
  */
 public class SapServer extends JCO.Server implements JCO.ServerExceptionListener, JCO.ServerErrorListener , JCO.ServerStateChangedListener {
-	public static final String version="$Id: SapServer.java,v 1.3 2005-03-14 17:27:05 L190409 Exp $";
+	public static final String version="$Id: SapServer.java,v 1.4 2005-08-02 13:01:09 europe\L190409 Exp $";
 	protected Logger log = Logger.getLogger(this.getClass());
 	
 	private SapFunctionHandler handler = null;
@@ -93,6 +96,9 @@ public class SapServer extends JCO.Server implements JCO.ServerExceptionListener
 	 */
 	protected boolean onCheckTID(String tid)
 	{
+		if (log.isDebugEnabled()) {
+			log.debug("SapServer [" + getProgID() + "] is requested to check TID ["+tid+"]; (currently ignored)");
+		}
 		return true;
 	}
 
@@ -105,6 +111,9 @@ public class SapServer extends JCO.Server implements JCO.ServerExceptionListener
 	 */
 	protected void onConfirmTID(String tid)
 	{
+		if (log.isDebugEnabled()) {
+			log.debug("SapServer [" + getProgID() + "] is requested to confirm TID ["+tid+"]; (currently ignored)");
+		}
 	}
 
 	/**
@@ -116,6 +125,9 @@ public class SapServer extends JCO.Server implements JCO.ServerExceptionListener
 	 */
 	protected void onCommit(String tid)
 	{
+		if (log.isDebugEnabled()) {
+			log.debug("SapServer [" + getProgID() + "] is requested to commit TID ["+tid+"]; (currently ignored)");
+		}
 	}
 
 	/**
@@ -127,6 +139,9 @@ public class SapServer extends JCO.Server implements JCO.ServerExceptionListener
 	 */
 	protected void onRollback(String tid)
 	{
+		if (log.isDebugEnabled()) {
+			log.debug("SapServer [" + getProgID() + "] is requested to rollback TID ["+tid+"]; (currently ignored)");
+		}
 	}
 
 	
