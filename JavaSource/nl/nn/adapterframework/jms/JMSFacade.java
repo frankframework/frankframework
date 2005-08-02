@@ -1,6 +1,10 @@
 /*
  * $Log: JMSFacade.java,v $
- * Revision 1.19  2005-03-31 08:14:29  L190409
+ * Revision 1.20  2005-08-02 06:49:17  europe\L190409
+ * deliveryMode to String and vv
+ * method to send to (reply) destination with msgtype, priority and timetolive
+ *
+ * Revision 1.19  2005/03/31 08:14:29  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added todo for setting delivery mode
  *
  * Revision 1.18  2004/10/05 10:41:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -52,6 +56,7 @@ package nl.nn.adapterframework.jms;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IXAEnabled;
 import nl.nn.adapterframework.core.IbisException;
+import nl.nn.adapterframework.core.SenderException;
 
 import com.ibm.mq.jms.JMSC;
 import com.ibm.mq.jms.MQQueue;
@@ -88,7 +93,10 @@ import javax.naming.NamingException;
  * @author    Gerrit van Brakel
  */
 public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version="$Id: JMSFacade.java,v 1.19 2005-03-31 08:14:29 L190409 Exp $";
+	public static final String version="$RCSfile: JMSFacade.java,v $ $Revision: 1.20 $ $Date: 2005-08-02 06:49:17 $";
+
+	public static final String MODE_PERSISTENT="PERSISTENT";
+	public static final String MODE_NON_PERSISTENT="NON_PERSISTENT";
 
 	private String name;
 
@@ -140,6 +148,31 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
     	this.messageSelector=newMessageSelector;
     }
     
+ 
+	public static int stringToDeliveryMode(String mode) {
+		if (MODE_PERSISTENT.equalsIgnoreCase(mode)) {
+			return DeliveryMode.PERSISTENT;
+		} 
+		if (MODE_NON_PERSISTENT.equalsIgnoreCase(mode)) {
+			return DeliveryMode.NON_PERSISTENT;
+		}
+		return 0; 
+   }
+
+   public static String deliveryModeToString(int mode) {
+	   if (mode==0) {
+		   return "not set by application";
+	   }
+	   if (mode==DeliveryMode.PERSISTENT) {
+		   return MODE_PERSISTENT;
+	   }
+	   if (mode==DeliveryMode.NON_PERSISTENT) {
+		   return MODE_NON_PERSISTENT;
+	   }
+	   return "unknown delivery mode ["+mode+"]";
+   }
+    
+
     
 	/**
 	 *  Gets the queueConnectionFactory 
@@ -249,7 +282,6 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	        textMessage.setJMSCorrelationID(correlationID);
 	    }
 	    textMessage.setText(message);
-	    // TODO: delivery mode zetten op wel of niet persistent, of attribute 'deliveryMode' opnemen.	   
 	    return textMessage;
 	}
 
@@ -450,6 +482,42 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	
 	    return topicSubscriber;
 	}
+
+
+
+	public String send(Session session, Destination dest, String correlationId, String message, String messageType, long timeToLive, int deliveryMode, int priority) throws NamingException, JMSException, SenderException {
+		TextMessage msg = createTextMessage(session, correlationId, message);
+		MessageProducer mp;
+
+		if ((session instanceof TopicSession) && (dest instanceof Topic)) {
+			mp = ((TopicSession)session).createPublisher((Topic)dest);
+		} else {
+			if ((session instanceof QueueSession) && (dest instanceof Queue)) {
+				mp = ((QueueSession)session).createSender((Queue)dest);
+			} else {
+				throw new SenderException("classes of Session ["+session.getClass().getName()+"] and Destination ["+dest.getClass().getName()+"] do not match (Queue vs Topic)");
+			}
+		}
+		if (messageType!=null) {
+			msg.setJMSType(messageType); 
+		}
+		if (deliveryMode>0) {
+			msg.setJMSDeliveryMode(deliveryMode);
+			mp.setDeliveryMode(deliveryMode);
+		}
+		if (priority>=0) {
+			msg.setJMSPriority(priority);
+			mp.setPriority(priority);
+		}
+		if (timeToLive>0) {
+			mp.setTimeToLive(timeToLive);
+		}
+		String result = send(mp, msg);
+		mp.close();
+		return result;
+	}
+
+
 	    
 	/**
 	 * Send a message
