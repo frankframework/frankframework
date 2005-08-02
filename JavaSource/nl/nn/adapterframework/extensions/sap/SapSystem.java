@@ -1,6 +1,9 @@
 /*
  * $Log: SapSystem.java,v $
- * Revision 1.4  2004-10-05 10:41:24  L190409
+ * Revision 1.5  2005-08-02 13:04:18  europe\L190409
+ * added configurable trace facility
+ *
+ * Revision 1.4  2004/10/05 10:41:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed unused imports
  *
  * Revision 1.3  2004/08/23 13:11:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -21,6 +24,7 @@ package nl.nn.adapterframework.extensions.sap;
 
 import com.sap.mw.jco.*;
 
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.GlobalListItem;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -44,7 +48,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * @since 4.1.1
  */
 public class SapSystem extends GlobalListItem {
-	public static final String version="$Id: SapSystem.java,v 1.4 2004-10-05 10:41:24 L190409 Exp $";
+	public static final String version="$RCSfile: SapSystem.java,v $  $Revision: 1.5 $ $Date: 2005-08-02 13:04:18 $";
 
 	private int maxConnections = 10;
 
@@ -55,6 +59,7 @@ public class SapSystem extends GlobalListItem {
 	private String passwd   = null;
 	private String language = "NL";
 	private String systemnr = "00";
+	private int    traceLevel = 10;
 
 	private int serviceOffset = 3300;
 
@@ -69,6 +74,13 @@ public class SapSystem extends GlobalListItem {
 
 	public void configure() {
 		try {
+			String logPath=AppConstants.getInstance().getResolvedProperty("logging.path");
+			JCO.setTracePath(logPath);
+			if (log.isDebugEnabled()) {
+				JCO.setTraceLevel(getTraceLevel());
+			} else {
+				JCO.setTraceLevel(0);
+			}
 			log.debug("creating client pool for SapSystem ["+getName()+"]");
 			// Add a connection pool to the specified system
 			//    The pool will be saved in the pool list to be used
@@ -194,6 +206,14 @@ public class SapSystem extends GlobalListItem {
 
 	public void setServiceOffset(int i) {
 		serviceOffset = i;
+	}
+
+	public int getTraceLevel() {
+		return traceLevel;
+	}
+
+	public void setTraceLevel(int i) {
+		traceLevel = i;
 	}
 
 }
