@@ -1,6 +1,9 @@
 /*
  * $Log: JmsTransactionalStorage.java,v $
- * Revision 1.4  2005-07-28 07:38:10  europe\L190409
+ * Revision 1.5  2005-08-04 15:40:30  europe\L190409
+ * fixed slotId code
+ *
+ * Revision 1.4  2005/07/28 07:38:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added slotId attribute
  *
  * Revision 1.3  2005/07/19 15:12:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -47,7 +50,7 @@ import nl.nn.adapterframework.core.SenderException;
  * @since   4.1
  */
 public class JmsTransactionalStorage extends JmsMessageBrowser implements ITransactionalStorage {
-	public static final String version = "$RCSfile: JmsTransactionalStorage.java,v $ $Revision: 1.4 $ $Date: 2005-07-28 07:38:10 $";
+	public static final String version = "$RCSfile: JmsTransactionalStorage.java,v $ $Revision: 1.5 $ $Date: 2005-08-04 15:40:30 $";
 
 	private String slotId=null;
 
@@ -88,6 +91,9 @@ public class JmsTransactionalStorage extends JmsMessageBrowser implements ITrans
 			msg.setJMSCorrelationID(correlationId);
 			msg.setLongProperty("receivedDate",receivedDate.getTime());
 			msg.setStringProperty("comments",comments);
+			if (StringUtils.isNotEmpty(getSlotId())) {
+				msg.setStringProperty("SlotId",getSlotId());
+			}
 			return send(session,getDestination(),msg);
 		} catch (Exception e) {
 			throw new SenderException(e);
@@ -151,7 +157,7 @@ public class JmsTransactionalStorage extends JmsMessageBrowser implements ITrans
 		if (StringUtils.isEmpty(getSlotId())) {
 			return null; 
 		}
-		return "SlotId='"+getSelector()+"'";
+		return "SlotId='"+getSlotId()+"'";
 	}
 
 	public String getSlotId() {
