@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcTransactionalStorage.java,v $
- * Revision 1.6  2005-07-28 07:36:17  europe\L190409
+ * Revision 1.7  2005-08-04 15:39:25  europe\L190409
+ * quotes around slotId at insert
+ *
+ * Revision 1.6  2005/07/28 07:36:17  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added slotId attribute
  *
  * Revision 1.5  2005/07/19 14:59:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -74,7 +77,7 @@ import nl.nn.adapterframework.util.JdbcUtil;
  * @since 	4.1
  */
 public class JdbcTransactionalStorage extends JdbcFacade implements ITransactionalStorage {
-	public static final String version = "$RCSfile: JdbcTransactionalStorage.java,v $ $Revision: 1.6 $ $Date: 2005-07-28 07:36:17 $";
+	public static final String version = "$RCSfile: JdbcTransactionalStorage.java,v $ $Revision: 1.7 $ $Date: 2005-08-04 15:39:25 $";
 	
     private String tableName="ibisstore";
 	private String keyField="messageKey";
@@ -174,7 +177,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		insertQuery = "INSERT INTO "+getTableName()+" ("+
 						(StringUtils.isNotEmpty(getSlotId())?getSlotIdField()+",":"")+
 						getIdField()+","+getCorrelationIdField()+","+getDateField()+","+getCommentField()+","+getMessageField()+
-						") VALUES ("+(StringUtils.isNotEmpty(getSlotId())?getSlotId()+",":"")+"?,?,?,?,?)";
+						") VALUES ("+(StringUtils.isNotEmpty(getSlotId())?"'"+getSlotId()+"',":"")+"?,?,?,?,?)";
 		deleteQuery = "DELETE FROM "+getTableName()+ getWhereClause(getKeyField()+"=?");
 		selectKeyQuery = "SELECT max("+getKeyField()+") FROM "+getTableName()+ 
 						getWhereClause(getIdField()+"=?"+
