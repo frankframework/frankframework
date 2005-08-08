@@ -1,6 +1,9 @@
 /* 
  * $Log: SapServer.java,v $
- * Revision 1.5  2005-08-02 13:03:35  europe\L190409
+ * Revision 1.6  2005-08-08 09:42:28  europe\L190409
+ * reworked SAP classes to provide better refresh of repository when needed
+ *
+ * Revision 1.5  2005/08/02 13:03:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected version string
  *
  * Revision 1.4  2005/08/02 13:01:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -36,8 +39,8 @@ import com.sap.mw.jco.JCO;
  * @author Gerrit van Brakel
  * @since 4.2
  */
-public class SapServer extends JCO.Server implements JCO.ServerExceptionListener, JCO.ServerErrorListener , JCO.ServerStateChangedListener {
-	public static final String version="$RCSfile: SapServer.java,v $  $Revision: 1.5 $ $Date: 2005-08-02 13:03:35 $";
+public class SapServer extends JCO.Server implements JCO.ServerExceptionListener, JCO.ServerErrorListener {
+	public static final String version="$RCSfile: SapServer.java,v $  $Revision: 1.6 $ $Date: 2005-08-08 09:42:28 $";
 	protected Logger log = Logger.getLogger(this.getClass());
 	
 	private SapFunctionHandler handler = null;
@@ -49,7 +52,11 @@ public class SapServer extends JCO.Server implements JCO.ServerExceptionListener
 
 //		JCO.addServerExceptionListener(this);
 //		JCO.addServerErrorListener(this);
-		JCO.addServerStateChangedListener(this);
+  	}
+  	
+  	public void stop() {
+  		abort("Ibis disconnects");
+  		super.stop();
   	}
 
 	/*
@@ -159,23 +166,4 @@ public class SapServer extends JCO.Server implements JCO.ServerExceptionListener
 	}
 
 
-	public String stateToString(int state) {
-		String result="";
-		if ((state & JCO.STATE_STOPPED    ) != 0) result += " STOPPED ";
-		if ((state & JCO.STATE_STARTED    ) != 0) result += " STARTED ";
-		if ((state & JCO.STATE_LISTENING  ) != 0) result += " LISTENING ";
-		if ((state & JCO.STATE_TRANSACTION) != 0) result += " TRANSACTION ";
-		if ((state & JCO.STATE_BUSY       ) != 0) result += " BUSY ";
-		return result;
-		
-	}
-	/* (non-Javadoc)
-	 * @see com.sap.mw.jco.JCO.ServerStateChangedListener#serverStateChangeOccurred(com.sap.mw.jco.JCO.Server, int, int)
-	 */
-	public void serverStateChangeOccurred(JCO.Server server, int old_state, int new_state) {
-		log.debug("Server [" + server.getProgID() + "] changed state from ["
-				+stateToString(old_state)+"] to ["+stateToString(new_state)+"]");
-		
-	}
- 
 }

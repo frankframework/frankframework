@@ -1,6 +1,9 @@
 /*
  * $Log: SapSystem.java,v $
- * Revision 1.5  2005-08-02 13:04:18  europe\L190409
+ * Revision 1.6  2005-08-08 09:42:28  europe\L190409
+ * reworked SAP classes to provide better refresh of repository when needed
+ *
+ * Revision 1.5  2005/08/02 13:04:18  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added configurable trace facility
  *
  * Revision 1.4  2004/10/05 10:41:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -17,7 +20,6 @@
  *
  * Revision 1.1  2004/06/22 06:56:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * First version of SAP package
- *
  *
  */
 package nl.nn.adapterframework.extensions.sap;
@@ -41,29 +43,33 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * <tr><td>{@link #setPasswd(String) passwd}</td><td>passwd used in the connection</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setLanguage(String) language}</td><td>Language indicator</td><td>NL</td></tr>
  * <tr><td>{@link #setSystemnr(String) systemnr}</td><td>SAP system nr</td><td>00</td></tr>
+ * <tr><td>{@link #setTraceLevel(int) traceLevel}</td><td>trace level (effective only when logging level is debug). 0=none, 10= maximum</td><td>0</td></tr>
  * <tr><td>{@link #setServiceOffset(int) serviceOffset}</td><td>number added to systemNr to find corresponding RFC service number</td><td>3300</td></tr>
  * </table>
  * </p>
  * @author Gerrit van Brakel
  * @since 4.1.1
  */
-public class SapSystem extends GlobalListItem {
-	public static final String version="$RCSfile: SapSystem.java,v $  $Revision: 1.5 $ $Date: 2005-08-02 13:04:18 $";
+public class SapSystem extends GlobalListItem  implements JCO.ServerStateChangedListener  {
+	public static final String version="$RCSfile: SapSystem.java,v $  $Revision: 1.6 $ $Date: 2005-08-08 09:42:28 $";
 
 	private int maxConnections = 10;
 
-	private String gwhost = "10.241.14.4";	// The application server where the RFC-destination is registerd
+	private String gwhost;	// The application server where the RFC-destination is registerd
 
 	private String mandant	= "100";	 	// mandant
 	private String userid   = null;
 	private String passwd   = null;
 	private String language = "NL";
 	private String systemnr = "00";
-	private int    traceLevel = 10;
+	private int    traceLevel = 0;
 
 	private int serviceOffset = 3300;
 
 	private IRepository repository = null;
+
+	private int referenceCount=0;
+
 
 	/**
 	 * Retrieve a SapSystem from the list of systems.
@@ -72,25 +78,28 @@ public class SapSystem extends GlobalListItem {
 		return (SapSystem)getItem(name);
 	}
 
-	public void configure() {
+	private void clearSystem() {
 		try {
-			String logPath=AppConstants.getInstance().getResolvedProperty("logging.path");
-			JCO.setTracePath(logPath);
-			if (log.isDebugEnabled()) {
+			log.debug(getLogPrefix()+"removing possible existing ClientPool");
+			JCO.removeClientPool(getName());
+		} catch (Exception e) {
+			log.debug(getLogPrefix()+"exception removing ClientPool, probably because it didn't exist",e);
+		}
+	}
+
+	private void initSystem() {
+		try {
+			if (log.isDebugEnabled() && getTraceLevel()>0) {
+				String logPath=AppConstants.getInstance().getResolvedProperty("logging.path");
+				JCO.setTracePath(logPath);
 				JCO.setTraceLevel(getTraceLevel());
-			} else {
-				JCO.setTraceLevel(0);
 			}
-			log.debug("creating client pool for SapSystem ["+getName()+"]");
+			clearSystem();
+			log.debug(getLogPrefix()+"creating ClientPool");
 			// Add a connection pool to the specified system
 			//    The pool will be saved in the pool list to be used
 			//    from other threads by JCO.getClient(SID).
 			//    The pool must be explicitely removed by JCO.removeClientPool(SID)
-			try {
-				JCO.removeClientPool(getName());
-			} catch (Exception e) {
-				log.debug("exception removing ClientPool for SapSystem ["+getName()+"], probably because it didn't exist",e);
-			}
 			JCO.addClientPool( getName(),         // Alias for this pool
 							   getMaxConnections(),          // Max. number of connections
 								getMandant(),
@@ -103,18 +112,43 @@ public class SapSystem extends GlobalListItem {
 			//    The repository caches the function and structure definitions
 			//    to be used for all calls to the system SID. The creation of
 			//    redundant instances cause performance and memory waste.
-			log.debug("creating repository for SapSystem ["+getName()+"]");
+			log.debug(getLogPrefix()+"creating repository");
 			repository = JCO.createRepository(getName()+"-repository", getName());
 		} catch (Throwable t) {
-			log.error("exception configuring SapSystem ["+getName()+"]", t);
+			log.error(getLogPrefix()+"exception initializing", t);
 		}
 		if (repository == null) {
-			log.error("SapSystem ["+getName()+"] could not create repository");
+			log.error(getLogPrefix()+"could not create repository");
 		}
-		
+	}
+
+	public void configure() {
+		if (log.isDebugEnabled()) {
+			JCO.removeServerStateChangedListener(this); // to avoid double logging when restarted
+			JCO.addServerStateChangedListener(this);
+		}
+		log.info(getLogPrefix()+"JCo version ["+JCO.getVersion()+"] on middleware ["+JCO.getMiddlewareLayer()+"] version ["+JCO.getMiddlewareVersion()+"]");
 	}
   
+  	public synchronized void openSystem() {
+  		if (referenceCount++==0) {
+			log.debug(getLogPrefix()+"opening system");
+			initSystem(); 
+			log.debug(getLogPrefix()+"opened system");
+  		}
+  	}
   
+	public synchronized void closeSystem() {
+		if (--referenceCount<=0) {
+			log.debug(getLogPrefix()+"reference count ["+referenceCount+"], closing system");
+			clearSystem();
+			repository=null;
+			log.debug(getLogPrefix()+"closed system");
+		} else {
+			log.debug(getLogPrefix()+"reference count ["+referenceCount+"], waiting for other references to close");
+		}
+	}
+
   	public JCO.Client getClient() {
 		// Get a client from the pool
 		return JCO.getClient(getName());
@@ -126,9 +160,28 @@ public class SapSystem extends GlobalListItem {
 		JCO.releaseClient(client);
 	}
 
+	public String stateToString(int state) {
+		String result="";
+		if ((state & JCO.STATE_STOPPED    ) != 0) result += " STOPPED ";
+		if ((state & JCO.STATE_STARTED    ) != 0) result += " STARTED ";
+		if ((state & JCO.STATE_LISTENING  ) != 0) result += " LISTENING ";
+		if ((state & JCO.STATE_TRANSACTION) != 0) result += " TRANSACTION ";
+		if ((state & JCO.STATE_BUSY       ) != 0) result += " BUSY ";
+		return result;
+	}
+
+	public void serverStateChangeOccurred(JCO.Server server, int old_state, int new_state) {
+		log.debug("Server [" + server.getProgID() + "] changed state from ["
+				+stateToString(old_state)+"] to ["+stateToString(new_state)+"]");
+	}
+
 
 	public IRepository getRepository() {
 		return repository;
+	}
+
+	protected String getLogPrefix() {
+		return "SapSystem ["+getName()+"] "; 
 	}
   
   	/**

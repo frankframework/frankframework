@@ -1,6 +1,9 @@
 /*
  * $Log: SapListener.java,v $
- * Revision 1.5  2005-03-14 17:27:54  L190409
+ * Revision 1.6  2005-08-08 09:42:29  europe\L190409
+ * reworked SAP classes to provide better refresh of repository when needed
+ *
+ * Revision 1.5  2005/03/14 17:27:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * increased logging
  *
  * Revision 1.4  2005/03/10 14:48:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -73,7 +76,7 @@ import com.sap.mw.jco.*;
  * @since 4.2
  */
 public class SapListener extends SapFunctionFacade implements IPushingListener, SapFunctionHandler, JCO.ServerExceptionListener, JCO.ServerErrorListener {
-	public static final String version="$Id: SapListener.java,v 1.5 2005-03-14 17:27:54 L190409 Exp $";
+	public static final String version="$RCSfile: SapListener.java,v $  $Revision: 1.6 $ $Date: 2005-08-08 09:42:29 $";
 
 	private String progid;	 // progid of the RFC-destination
         	
@@ -81,24 +84,11 @@ public class SapListener extends SapFunctionFacade implements IPushingListener, 
 	private IMessageHandler handler;
 	private IbisExceptionListener exceptionListener;
 
-	/**
-	 * initialize listener and register <code>this</code> to the JNDI
-	 */
-	public void configure() throws ConfigurationException {
-		try {
-			super.configure();
-			sapServer = new SapServer(getSapSystem(), getProgid(), this);
-	
-	 	} catch (Exception e){
-			throw new ConfigurationException(e);
-		
-		}
-	}
 
 	public void open() throws ListenerException {
 		try {
 			openFacade();
-//			sapServer.setTrace(true);
+			sapServer = new SapServer(getSapSystem(), getProgid(), this);
 			sapServer.start();
 		} catch (Exception e) {
 			throw new ListenerException(getLogPrefix()+"could not start", e);
@@ -107,7 +97,8 @@ public class SapListener extends SapFunctionFacade implements IPushingListener, 
 	
 	public void close() throws ListenerException {
 		try {
-			sapServer.suspend();
+			sapServer.stop();
+			sapServer = null;
 			closeFacade();
 		} catch (Exception e) {
 			throw new ListenerException(getLogPrefix()+"could not stop", e);

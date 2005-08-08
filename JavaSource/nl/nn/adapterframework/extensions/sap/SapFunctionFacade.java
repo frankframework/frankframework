@@ -1,6 +1,9 @@
 /*
  * $Log: SapFunctionFacade.java,v $
- * Revision 1.6  2005-03-14 17:26:21  L190409
+ * Revision 1.7  2005-08-08 09:42:28  europe\L190409
+ * reworked SAP classes to provide better refresh of repository when needed
+ *
+ * Revision 1.6  2005/03/14 17:26:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * bugfix: removed setting of return table parameters, as this caused the process to lock
  *
  * Revision 1.5  2004/10/05 10:40:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -63,7 +66,7 @@ import com.sap.mw.jco.*;
  * @since 4.2
  */
 public class SapFunctionFacade implements INamedObject{
-	public static final String version="$Id: SapFunctionFacade.java,v 1.6 2005-03-14 17:26:21 L190409 Exp $";
+	public static final String version="$RCSfile: SapFunctionFacade.java,v $  $Revision: 1.7 $ $Date: 2005-08-08 09:42:28 $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	private String name;
@@ -93,6 +96,7 @@ public class SapFunctionFacade implements INamedObject{
 	}
 
 	public void openFacade() throws SapException {
+		sapSystem.openSystem();
 		if (!StringUtils.isEmpty(getFunctionName())) {
 			try {
 				ftemplate = sapSystem.getRepository().getFunctionTemplate(getFunctionName());
@@ -111,6 +115,7 @@ public class SapFunctionFacade implements INamedObject{
 	}
 	
 	public void closeFacade() {
+		sapSystem.closeSystem();
 		ftemplate = null;
 	}
 
@@ -256,7 +261,6 @@ public class SapFunctionFacade implements INamedObject{
 			}
 			result+="</response>";
 		}
-		
 		return result;
 	}
 
