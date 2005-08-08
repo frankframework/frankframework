@@ -1,6 +1,9 @@
 /*
  * $Log: IbisException.java,v $
- * Revision 1.17  2005-07-28 07:28:57  europe\L190409
+ * Revision 1.18  2005-08-08 09:40:15  europe\L190409
+ * removed dedicated toString()
+ *
+ * Revision 1.17  2005/07/28 07:28:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * reduced extensive toString, as it was too much, recursively
  *
  * Revision 1.16  2005/07/19 12:12:18  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -55,13 +58,13 @@ import org.apache.commons.lang.exception.NestableException;
 import org.xml.sax.SAXParseException;
 
 /**
- * Base Exception with exhaustive toString() and compact but informative getMessage().
+ * Base Exception with compact but informative getMessage().
  * 
  * @version Id
  * @author Gerrit van Brakel
  */
 public class IbisException extends NestableException {
-	public static final String version = "$RCSfile: IbisException.java,v $ $Revision: 1.17 $ $Date: 2005-07-28 07:28:57 $";
+	public static final String version = "$RCSfile: IbisException.java,v $ $Revision: 1.18 $ $Date: 2005-08-08 09:40:15 $";
 
 	static {
 		// add methodname to find cause of JMS-Exceptions
@@ -173,22 +176,6 @@ public class IbisException extends NestableException {
 
 /*
 	public String toString() {
-		String result="";
-		Throwable t;
-
-		result = "message: "+getMessage()+"\ncause-trace:\n"; 
-		for (t=this; t!=null; t=ExceptionUtils.getCause(t)) {
-			result += "\nclass: "+t.getClass().getName()+"\nmessage:"+t.getMessage()+"\n";
-		}
-		t=ExceptionUtils.getRootCause(this);
-		if (t!=null) {
-			result += "\nroot cause:\n"+ToStringBuilder.reflectionToString(t,ToStringStyle.MULTI_LINE_STYLE)+"\n";
-		}
-		return result;
-	}
-*/	
-
-	public String toString() {
 		String result = super.toString();
 		Throwable t = getCause();
 		if (t != null && !(t instanceof IbisException)) {
@@ -197,4 +184,5 @@ public class IbisException extends NestableException {
 		}
 		return result;
 	}
+	*/
 }
