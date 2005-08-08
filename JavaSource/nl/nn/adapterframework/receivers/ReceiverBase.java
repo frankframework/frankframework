@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.15  2005-07-19 15:27:14  europe\L190409
+ * Revision 1.16  2005-08-08 09:44:11  europe\L190409
+ * start transactions if needed and not already started
+ *
+ * Revision 1.15  2005/07/19 15:27:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * modified closing procedure
  * added errorStorage
  * modified implementation of transactionalStorage
@@ -156,7 +159,7 @@ import javax.transaction.UserTransaction;
  * @since 4.2
  */
 public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, IMessageHandler, IbisExceptionListener, HasSender {
-	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.15 $ $Date: 2005-07-19 15:27:14 $";
+	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.16 $ $Date: 2005-08-08 09:44:11 $";
 	protected Logger log = Logger.getLogger(this.getClass());
  
 	private String returnIfStopped="";
@@ -729,6 +732,10 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 		if (isTransacted()) {
 			try {
 				utx = adapter.getUserTransaction();
+				if (!adapter.inTransaction()) {
+					log.debug("Receiver ["+getName()+"] starts transaction as no one is yet present");
+					utx.begin();
+				}
 			} catch (Exception e) {
 				throw new ListenerException("["+getName()+"] Exception obtaining usertransaction", e);
 			}
@@ -758,6 +765,10 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 		if (isTransacted()) {
 			try {
 				utx = adapter.getUserTransaction();
+				if (!adapter.inTransaction()) {
+					log.debug("Receiver ["+getName()+"] starts transaction as no one is yet present");
+					utx.begin();
+				}
 			} catch (Exception e) {
 				throw new ListenerException("["+getName()+"] Exception obtaining usertransaction", e);
 			}
