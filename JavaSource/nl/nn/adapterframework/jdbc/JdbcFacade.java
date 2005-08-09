@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcFacade.java,v $
- * Revision 1.8  2005-07-19 12:36:32  europe\L190409
+ * Revision 1.9  2005-08-09 15:53:11  europe\L190409
+ * improved exception construction
+ *
+ * Revision 1.8  2005/07/19 12:36:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * moved applyParameters to JdbcFacade
  *
  * Revision 1.7  2005/06/13 09:57:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -52,7 +55,7 @@ import org.apache.log4j.Logger;
  * 
  */
 public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version="$RCSfile: JdbcFacade.java,v $ $Revision: 1.8 $ $Date: 2005-07-19 12:36:32 $";
+	public static final String version="$RCSfile: JdbcFacade.java,v $ $Revision: 1.9 $ $Date: 2005-08-09 15:53:11 $";
     protected Logger log = Logger.getLogger(this.getClass());
 	
 	private String name;
@@ -97,7 +100,7 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 					datasource =(DataSource) getContext().lookup( dsName );
 					log.debug(getLogPrefix()+"looked up Datasource ["+dsName+"]: ["+datasource+"]");
 				} catch (NamingException e) {
-					throw new JdbcException(getLogPrefix()+"cannot find Datasource ["+dsName+"]");
+					throw new JdbcException(getLogPrefix()+"cannot find Datasource ["+dsName+"]", e);
 				}
 		}
 		return datasource;
@@ -114,7 +117,7 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 				return getDatasource().getConnection();
 			}
 		} catch (SQLException e) {
-			throw new JdbcException(getLogPrefix()+"cannot open connection on datasource ["+getDataSourceNameToUse()+"]");
+			throw new JdbcException(getLogPrefix()+"cannot open connection on datasource ["+getDataSourceNameToUse()+"]", e);
 		}
 	}
 
