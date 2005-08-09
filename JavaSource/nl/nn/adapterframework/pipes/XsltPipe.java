@@ -1,6 +1,9 @@
 /*
  * $Log: XsltPipe.java,v $
- * Revision 1.17  2005-06-20 09:03:05  europe\L190409
+ * Revision 1.18  2005-08-09 15:55:32  europe\L190409
+ * avoid nullpointer in configure when stylesheet does not exist
+ *
+ * Revision 1.17  2005/06/20 09:03:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added outputType attribute (for xpath-expressions)
  *
  * Revision 1.16  2005/06/13 11:46:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -31,6 +34,7 @@
 package nl.nn.adapterframework.pipes;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -83,7 +87,7 @@ import org.apache.commons.lang.StringUtils;
  */
 
 public class XsltPipe extends FixedForwardPipe {
-	public static final String version="$RCSfile: XsltPipe.java,v $ $Revision: 1.17 $ $Date: 2005-06-20 09:03:05 $";
+	public static final String version="$RCSfile: XsltPipe.java,v $ $Revision: 1.18 $ $Date: 2005-08-09 15:55:32 $";
 
 	private TransformerPool transformerPool;
 	private String xpathExpression=null;
@@ -116,10 +120,14 @@ public class XsltPipe extends FixedForwardPipe {
 		} 
 		else {
 			if (!StringUtils.isEmpty(styleSheetName)) {
+				URL resource = ClassUtils.getResourceURL(this, styleSheetName);
+				if (resource==null) {
+					throw new ConfigurationException(getLogPrefix(null) + "cannot find ["+ styleSheetName + "]"); 
+				}
 				try {
-					transformerPool = new TransformerPool(ClassUtils.getResourceURL(this, styleSheetName));
+					transformerPool = new TransformerPool(resource);
 				} catch (IOException e) {
-					throw new ConfigurationException(getLogPrefix(null) + "cannot retrieve ["+ styleSheetName + "]", e);
+					throw new ConfigurationException(getLogPrefix(null) + "cannot retrieve ["+ styleSheetName + "], resource ["+resource.toString()+"]", e);
 				} catch (TransformerConfigurationException te) {
 					throw new ConfigurationException(getLogPrefix(null) + "got error creating transformer from file [" + styleSheetName + "]", te);
 				}
