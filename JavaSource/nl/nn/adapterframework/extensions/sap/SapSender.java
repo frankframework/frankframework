@@ -1,6 +1,9 @@
 /*
  * $Log: SapSender.java,v $
- * Revision 1.4  2005-08-10 12:44:20  europe\L190409
+ * Revision 1.5  2005-08-10 12:45:48  europe\L190409
+ * corrected version-string
+ *
+ * Revision 1.4  2005/08/10 12:44:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * do close() if open() fails
  *
  * Revision 1.3  2004/07/19 09:45:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -51,7 +54,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
  * @since 4.2
  */
 public class SapSender extends SapFunctionFacade implements ISender {
-	public static final String version="$Id: SapSender.java,v 1.4 2005-08-10 12:44:20 europe\L190409 Exp $";
+	public static final String version="$RCSfile: SapSender.java,v $  $Revision: 1.5 $ $Date: 2005-08-10 12:45:48 $";
 	
 	//TODO: allow functionName to be set dynamically from a parameter or from the message
 	private String functionName=null;
