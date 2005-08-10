@@ -1,6 +1,9 @@
 /*
  * $Log: SapListener.java,v $
- * Revision 1.6  2005-08-08 09:42:29  europe\L190409
+ * Revision 1.7  2005-08-10 12:44:20  europe\L190409
+ * do close() if open() fails
+ *
+ * Revision 1.6  2005/08/08 09:42:29  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * reworked SAP classes to provide better refresh of repository when needed
  *
  * Revision 1.5  2005/03/14 17:27:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -76,7 +79,7 @@ import com.sap.mw.jco.*;
  * @since 4.2
  */
 public class SapListener extends SapFunctionFacade implements IPushingListener, SapFunctionHandler, JCO.ServerExceptionListener, JCO.ServerErrorListener {
-	public static final String version="$RCSfile: SapListener.java,v $  $Revision: 1.6 $ $Date: 2005-08-08 09:42:29 $";
+	public static final String version="$RCSfile: SapListener.java,v $  $Revision: 1.7 $ $Date: 2005-08-10 12:44:20 $";
 
 	private String progid;	 // progid of the RFC-destination
         	
@@ -91,17 +94,25 @@ public class SapListener extends SapFunctionFacade implements IPushingListener, 
 			sapServer = new SapServer(getSapSystem(), getProgid(), this);
 			sapServer.start();
 		} catch (Exception e) {
+			try {
+				close();
+			} catch (Exception e2) {
+				log.warn("exception closing SapListener after exception opening listener",e2);
+			}
 			throw new ListenerException(getLogPrefix()+"could not start", e);
 		}
 	}
 	
 	public void close() throws ListenerException {
 		try {
-			sapServer.stop();
-			sapServer = null;
-			closeFacade();
+			if (sapServer!=null) {
+				sapServer.stop();
+				sapServer = null;
+			}
 		} catch (Exception e) {
 			throw new ListenerException(getLogPrefix()+"could not stop", e);
+		} finally {
+			closeFacade();
 		}
 	}
 

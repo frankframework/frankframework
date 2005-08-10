@@ -1,6 +1,9 @@
 /*
  * $Log: SapSender.java,v $
- * Revision 1.3  2004-07-19 09:45:03  L190409
+ * Revision 1.4  2005-08-10 12:44:20  europe\L190409
+ * do close() if open() fails
+ *
+ * Revision 1.3  2004/07/19 09:45:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added getLogPrefix()
  *
  * Revision 1.2  2004/07/15 07:36:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -48,7 +51,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
  * @since 4.2
  */
 public class SapSender extends SapFunctionFacade implements ISender {
-	public static final String version="$Id: SapSender.java,v 1.3 2004-07-19 09:45:03 L190409 Exp $";
+	public static final String version="$Id: SapSender.java,v 1.4 2005-08-10 12:44:20 europe\L190409 Exp $";
 	
 	//TODO: allow functionName to be set dynamically from a parameter or from the message
 	private String functionName=null;
@@ -65,6 +68,7 @@ public class SapSender extends SapFunctionFacade implements ISender {
 		try {
 			openFacade();
 		} catch (SapException e) {
+			close();
 			throw new SenderException(getLogPrefix()+"exception starting SapSender", e);
 		}
 	}
