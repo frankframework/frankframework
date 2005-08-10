@@ -1,6 +1,9 @@
 /* 
  * $Log: SapServer.java,v $
- * Revision 1.6  2005-08-08 09:42:28  europe\L190409
+ * Revision 1.7  2005-08-10 11:31:28  europe\L190409
+ * no abort() before stopping server
+ *
+ * Revision 1.6  2005/08/08 09:42:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * reworked SAP classes to provide better refresh of repository when needed
  *
  * Revision 1.5  2005/08/02 13:03:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -40,7 +43,7 @@ import com.sap.mw.jco.JCO;
  * @since 4.2
  */
 public class SapServer extends JCO.Server implements JCO.ServerExceptionListener, JCO.ServerErrorListener {
-	public static final String version="$RCSfile: SapServer.java,v $  $Revision: 1.6 $ $Date: 2005-08-08 09:42:28 $";
+	public static final String version="$RCSfile: SapServer.java,v $  $Revision: 1.7 $ $Date: 2005-08-10 11:31:28 $";
 	protected Logger log = Logger.getLogger(this.getClass());
 	
 	private SapFunctionHandler handler = null;
@@ -55,7 +58,7 @@ public class SapServer extends JCO.Server implements JCO.ServerExceptionListener
   	}
   	
   	public void stop() {
-  		abort("Ibis disconnects");
+  		//abort("Ibis disconnects");
   		super.stop();
   	}
 
