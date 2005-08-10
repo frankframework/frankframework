@@ -1,6 +1,9 @@
 /*
  * $Log: SapSystem.java,v $
- * Revision 1.6  2005-08-08 09:42:28  europe\L190409
+ * Revision 1.7  2005-08-10 12:46:27  europe\L190409
+ * underflow-correction of reference count
+ *
+ * Revision 1.6  2005/08/08 09:42:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * reworked SAP classes to provide better refresh of repository when needed
  *
  * Revision 1.5  2005/08/02 13:04:18  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -51,7 +54,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * @since 4.1.1
  */
 public class SapSystem extends GlobalListItem  implements JCO.ServerStateChangedListener  {
-	public static final String version="$RCSfile: SapSystem.java,v $  $Revision: 1.6 $ $Date: 2005-08-08 09:42:28 $";
+	public static final String version="$RCSfile: SapSystem.java,v $  $Revision: 1.7 $ $Date: 2005-08-10 12:46:27 $";
 
 	private int maxConnections = 10;
 
@@ -131,7 +134,8 @@ public class SapSystem extends GlobalListItem  implements JCO.ServerStateChanged
 	}
   
   	public synchronized void openSystem() {
-  		if (referenceCount++==0) {
+  		if (referenceCount++<=0) {
+			referenceCount=1;
 			log.debug(getLogPrefix()+"opening system");
 			initSystem(); 
 			log.debug(getLogPrefix()+"opened system");
@@ -141,6 +145,7 @@ public class SapSystem extends GlobalListItem  implements JCO.ServerStateChanged
 	public synchronized void closeSystem() {
 		if (--referenceCount<=0) {
 			log.debug(getLogPrefix()+"reference count ["+referenceCount+"], closing system");
+			referenceCount=0;
 			clearSystem();
 			repository=null;
 			log.debug(getLogPrefix()+"closed system");
