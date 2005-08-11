@@ -1,6 +1,9 @@
 /*
  * $Log: FixedResult.java,v $
- * Revision 1.9  2005-04-26 09:19:24  L190409
+ * Revision 1.10  2005-08-11 15:00:40  europe\L190409
+ * parameters can now be used to replace ${...} constructs
+ *
+ * Revision 1.9  2005/04/26 09:19:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added replace facilty (by Peter Leeuwenburgh)
  *
  * Revision 1.8  2004/10/05 10:50:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -13,9 +16,13 @@
 package nl.nn.adapterframework.pipes;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.parameters.ParameterValue;
+import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StringResolver;
@@ -52,20 +59,13 @@ import org.apache.commons.lang.SystemUtils;
  * @author Johan Verrips
  */
 public class FixedResult extends FixedForwardPipe {
-	public static final String version="$Id: FixedResult.java,v 1.9 2005-04-26 09:19:24 L190409 Exp $";
+	public static final String version="$RCSfile: FixedResult.java,v $ $Revision: 1.10 $ $Date: 2005-08-11 15:00:40 $";
+	
     private String fileName;
     private String returnString;
     private boolean substituteVars=false;
 	private String replaceFrom = null;
 	private String replaceTo = null;
-
-	public void setSubstituteVars(boolean substitute){
-		this.substituteVars=substitute;
-	}
-
-	public boolean getSubstituteVars(){
-		return this.substituteVars;
-	}
 
     /**
      * checks for correct configuration, and translates the fileName to
@@ -92,8 +92,24 @@ public class FixedResult extends FixedForwardPipe {
 			returnString = replace(returnString, replaceFrom, replaceTo );
 		}
     }
+    
 	public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRunException {
 		String result=returnString;
+
+		if (getParameterList()!=null) {
+			ParameterResolutionContext prc = new ParameterResolutionContext((String)input, session);
+			ParameterValueList pvl;
+			try {
+				pvl = prc.getValues(getParameterList());
+			} catch (ParameterException e) {
+				throw new PipeRunException(this,getLogPrefix(session)+"exception extracting parameters",e);
+			}
+			for (int i=0; i<pvl.size(); i++) {
+				ParameterValue pv = pvl.getParameterValue(i);
+				result=replace(result,"${"+pv.getDefinition().getName()+"}",pv.getValue().toString());
+			}
+		}
+
 		if (getSubstituteVars()){
 			result=StringResolver.substVars(returnString, session);
 		}
@@ -122,12 +138,13 @@ public class FixedResult extends FixedForwardPipe {
 		return buffer.toString();
 	}
 
-    public String getFileName() {
-        return fileName;
-    }
-    public String getReturnString() {
-        return returnString;
-    }
+	public void setSubstituteVars(boolean substitute){
+		this.substituteVars=substitute;
+	}
+	public boolean getSubstituteVars(){
+		return this.substituteVars;
+	}
+
     /**
      * Sets the name of the filename. The fileName should not be specified
      * as an absolute path, but as a resource in the classpath.
@@ -137,14 +154,20 @@ public class FixedResult extends FixedForwardPipe {
     public void setFileName(String fileName) {
         this.fileName = fileName;
     }
+	public String getFileName() {
+		return fileName;
+	}
+
     public void setReturnString(String returnString) {
         this.returnString = returnString;
     }
+	public String getReturnString() {
+		return returnString;
+	}
 
 	public String getReplaceFrom() {
 		return replaceFrom;
 	}
-
 	public void setReplaceFrom (String replaceFrom){
 		this.replaceFrom=replaceFrom;
 	}
@@ -152,7 +175,6 @@ public class FixedResult extends FixedForwardPipe {
 	public String getReplaceTo() {
 		return replaceTo;
 	}
-
 	public void setReplaceTo (String replaceTo){
 		this.replaceTo=replaceTo;
 	}
