@@ -1,6 +1,9 @@
 /*
  * $Log: Parameter.java,v $
- * Revision 1.12  2005-06-02 11:45:56  europe\L190409
+ * Revision 1.13  2005-08-11 14:57:00  europe\L190409
+ * improved handling of default values for empty transformation results
+ *
+ * Revision 1.12  2005/06/02 11:45:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fixed version string
  *
  * Revision 1.11  2005/06/02 11:44:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -105,7 +108,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author Richard Punt / Gerrit van Brakel
  */
 public class Parameter implements INamedObject, IWithParameters {
-	public static final String version="$RCSfile: Parameter.java,v $ $Revision: 1.12 $ $Date: 2005-06-02 11:45:56 $";
+	public static final String version="$RCSfile: Parameter.java,v $ $Revision: 1.13 $ $Date: 2005-08-11 14:57:00 $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	private String name = null;
@@ -180,19 +183,20 @@ public class Parameter implements INamedObject, IWithParameters {
 		TransformerPool pool = getTransformerPool();
 		if (pool != null) {
 			try {
+				String transformResult=null;
 				if (StringUtils.isNotEmpty(getSessionKey())) {
 					String source = (String)(prc.getSession().get(getSessionKey()));
 					if (StringUtils.isNotEmpty(source)) {
 						log.debug("Parameter ["+getName()+"] using sessionvariable ["+getSessionKey()+"] as source for transformation");
-						result = pool.transform(source,null);
+						transformResult = pool.transform(source,null);
 					} else {
 						log.debug("Parameter ["+getName()+"] sessionvariable ["+getSessionKey()+"] empty, no transformation will be performed");
 					}
 				} else {
-					String transformResult = pool.transform(prc.getInputSource(),prc.getValueMap(paramList));
-					if (StringUtils.isNotEmpty(transformResult)) {
-						result = transformResult;
-					}
+					transformResult = pool.transform(prc.getInputSource(),prc.getValueMap(paramList));
+				}
+				if (StringUtils.isNotEmpty(transformResult)) {
+					result = transformResult;
 				}
 			} catch (Exception e) {
 				throw new ParameterException("Parameter ["+getName()+"] exception on transformation to get parametervalue", e);
