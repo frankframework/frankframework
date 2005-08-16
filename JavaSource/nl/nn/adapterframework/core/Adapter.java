@@ -1,6 +1,9 @@
 /*
  * $Log: Adapter.java,v $
- * Revision 1.16  2005-07-05 12:27:52  europe\L190409
+ * Revision 1.17  2005-08-16 12:33:30  europe\L190409
+ * added NDC with correlationId
+ *
+ * Revision 1.16  2005/07/05 12:27:52  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added possibility to end processing with an exception
  *
  * Revision 1.15  2005/01/13 08:55:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -56,6 +59,7 @@ import nl.nn.adapterframework.util.StatisticsKeeper;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.log4j.Logger;
+import org.apache.log4j.NDC;
 
 import java.util.Date;
 import java.util.Hashtable;
@@ -95,7 +99,7 @@ import javax.transaction.UserTransaction;
  */
 
 public class Adapter extends JNDIBase implements Runnable, IAdapter {
-	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.16 $ $Date: 2005-07-05 12:27:52 $";
+	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.17 $ $Date: 2005-08-16 12:33:30 $";
 	private Vector receivers = new Vector();
 	private long lastMessageDate = 0;
 	private PipeLine pipeline;
@@ -493,7 +497,8 @@ public class Adapter extends JNDIBase implements Runnable, IAdapter {
 		}
 
 		incNumOfMessagesInProcess(startTime);
-
+		NDC.push(messageId);
+		
 		if (log.isDebugEnabled()) { // for performance reasons
 			log.debug("Adapter [" + name + "] received message [" + message + "] with messageId [" + messageId + "]");
 		} else {
@@ -534,6 +539,7 @@ public class Adapter extends JNDIBase implements Runnable, IAdapter {
 			} else {
 				log.info("Adapter completed message with messageId [" + messageId + "] with exit-state [" + result.getState() + "]");
 			}
+			NDC.pop();
 		}
 	}
 	/**
