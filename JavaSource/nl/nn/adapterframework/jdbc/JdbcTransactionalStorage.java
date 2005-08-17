@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcTransactionalStorage.java,v $
- * Revision 1.7  2005-08-04 15:39:25  europe\L190409
+ * Revision 1.8  2005-08-17 16:15:25  europe\L190409
+ * Oracle compatiblity, attribuut dbms, (oracle or cloudscape)
+ *
+ * Revision 1.7  2005/08/04 15:39:25  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * quotes around slotId at insert
  *
  * Revision 1.6  2005/07/28 07:36:17  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -77,14 +80,32 @@ import nl.nn.adapterframework.util.JdbcUtil;
  * @since 	4.1
  */
 public class JdbcTransactionalStorage extends JdbcFacade implements ITransactionalStorage {
-	public static final String version = "$RCSfile: JdbcTransactionalStorage.java,v $ $Revision: 1.7 $ $Date: 2005-08-04 15:39:25 $";
+	public static final String version = "$RCSfile: JdbcTransactionalStorage.java,v $ $Revision: 1.8 $ $Date: 2005-08-17 16:15:25 $";
+	
+	private static final String CLOUDSCAPE_DEFAULT_SERIAL_KEY_TYPE="INT DEFAULT AUTOINCREMENT";
+	private static final String CLOUDSCAPE_DEFAULT_TIMESTAMP_TYPE="TIMESTAMP";
+	private static final String CLOUDSCAPE_DEFAULT_MESSAGE_TYPE="LONG BINARY";
+	private static final String CLOUDSCAPE_DEFAULT_TEXT_TYPE="VARCHAR";
+
+	private static final String ORACLE_DEFAULT_SERIAL_KEY_TYPE="NUMBER(10)";
+	private static final String ORACLE_DEFAULT_TIMESTAMP_TYPE="TIMESTAMP";
+	private static final String ORACLE_DEFAULT_MESSAGE_TYPE="BLOB";
+	private static final String ORACLE_DEFAULT_TEXT_TYPE="VARCHAR2";
+
+	// the following currently only for debug.... 
+	boolean checkIfTableExists=true;
+	boolean neverCreateTable=false;
+	boolean forceCreateTable=false;
+
+	private String dbms="Oracle";
 	
     private String tableName="ibisstore";
+	private String sequenceName="ibisstore_seq";
 	private String keyField="messageKey";
     private String idField="messageId";
 	private String correlationIdField="correlationId";
 	private String dateField="messageDate";
-	private String commentField="comment";
+	private String commentField="comments";
 	private String messageField="message";
 	private String slotIdField="slotId";
 	private String slotId=null;
@@ -92,9 +113,10 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	protected static final int MAXIDLEN=100;		
 	protected static final int MAXCOMMENTLEN=1000;		
     // the following values are only used when the table is created. 
-	private String keyFieldType="INT DEFAULT AUTOINCREMENT";
-	private String dateFieldType="TIMESTAMP";
-	private String messageFieldType="LONG BINARY";
+	private String keyFieldType=null;
+	private String dateFieldType=null;
+	private String messageFieldType=null;
+	private String textFieldType=null;
 	
 	private String insertQuery;
 	private String deleteQuery;
@@ -111,30 +133,75 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		return "JdbcTransactionalStorage ["+getName()+"] ";
 	}
 	
+	/**
+	 * Creates a connection, checks if the table is existing and creates it when necessary
+	 */
+	public void configure() throws ConfigurationException {
+//		super.configure();
+		createQueryTexts();
+	}
+
+
 	
-	public void open() {
+	public void open() throws SenderException {
+		try {
+			initialize();
+		} catch (JdbcException e) {
+			throw new SenderException(e);
+		} catch (SQLException e) {
+			throw new SenderException(getLogPrefix()+"exception creating table ["+getTableName()+"]",e);
+		} 
 	}
 
 	public void close() {
 	}
-	
+
+	public void initialize() throws JdbcException, SQLException {
+
+		Connection conn = getConnection();
+		try {
+			boolean tableMustBeCreated;
+
+			if (checkIfTableExists) {
+				try {
+					 tableMustBeCreated = !JdbcUtil.tableExists(conn, getTableName());
+					 log.info("table ["+getTableName()+"] does "+(tableMustBeCreated?"NOT ":"")+"exist");
+				} catch (SQLException e) {
+					log.warn(getLogPrefix()+"exception determining existence of table ["+getTableName()+"] for transactional storage, trying to create anyway."+ e.getMessage());
+					tableMustBeCreated=true;
+				}
+			} else {
+				log.info("did not check for existence of table ["+getTableName()+"]");
+				tableMustBeCreated = false;
+			}
+
+			if (!neverCreateTable && tableMustBeCreated || forceCreateTable) {
+				log.info(getLogPrefix()+"creating table ["+getTableName()+"] for transactional storage");
+				createTable(conn);
+			}
+		} finally {
+			conn.close();
+		}
+	}
 	
 	public void createTable(Connection conn) throws JdbcException {
 		Statement stmt;
+		String query=null;
+
 		try {
 			stmt = conn.createStatement();
 		} catch (SQLException e) {
-			throw new JdbcException(getLogPrefix()+" creating statement to create table:", e);
+			throw new JdbcException(getLogPrefix()+" creating statement to create table", e);
 		}
-		String query=null;
+
 		try {
 			query="CREATE TABLE "+getTableName()+" ("+
-						getKeyField()+" "+getKeyFieldType()+" PRIMARY KEY, "+
-						(StringUtils.isNotEmpty(getSlotId())? getSlotIdField()+" VARCHAR("+MAXIDLEN+"), ":"")+
-						getIdField()+" VARCHAR("+MAXIDLEN+"), "+
-						getCorrelationIdField()+" VARCHAR("+MAXIDLEN+"), "+
+						getKeyField()+" "+getKeyFieldType()+" CONSTRAINT " +getTableName()+ "_pk PRIMARY KEY, "+
+						(StringUtils.isNotEmpty(getSlotId())? getSlotIdField()+" "+getTextFieldType()+"("+MAXIDLEN+"), ":"")+
+						getIdField()+" "+getTextFieldType()+"("+MAXIDLEN+"), "+
+						getCorrelationIdField()+" "+getTextFieldType()+"("+MAXIDLEN+"), "+
 						getDateField()+" "+getDateFieldType()+", "+
-						getCommentField()+" VARCHAR("+MAXCOMMENTLEN+"), "+
+						getCommentField()+" "+getTextFieldType()+"("+MAXCOMMENTLEN+"), "+
 						getMessageField()+" "+getMessageFieldType()+
 					  ")";
 					  
@@ -143,8 +210,14 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 			query = "CREATE INDEX "+getTableName()+"_idx ON "+getTableName()+"("+(StringUtils.isNotEmpty(getSlotId())?getSlotIdField()+",":"")+getDateField()+")";				
 			log.debug(getLogPrefix()+"creating index ["+getTableName()+"_idx] using query ["+query+"]");
 			stmt.execute(query);
+			if ("oracle".equalsIgnoreCase(getDbms())) {
+				query="CREATE SEQUENCE "+getSequenceName()+" START WITH 1 INCREMENT BY 1";
+				log.debug(getLogPrefix()+"creating sequence for table ["+getTableName()+"] using query ["+query+"]");
+				stmt.execute(query);
+			}
 			query="-close-";
 			stmt.close();
+			conn.commit();
 		} catch (SQLException e) {
 			throw new JdbcException(getLogPrefix()+" executing query ["+query+"]", e);
 		}
@@ -175,9 +248,13 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	
 	protected void createQueryTexts() {
 		insertQuery = "INSERT INTO "+getTableName()+" ("+
+						("oracle".equalsIgnoreCase(getDbms())?getKeyField()+",":"")+
 						(StringUtils.isNotEmpty(getSlotId())?getSlotIdField()+",":"")+
 						getIdField()+","+getCorrelationIdField()+","+getDateField()+","+getCommentField()+","+getMessageField()+
-						") VALUES ("+(StringUtils.isNotEmpty(getSlotId())?"'"+getSlotId()+"',":"")+"?,?,?,?,?)";
+						") VALUES ("+
+						("oracle".equalsIgnoreCase(getDbms())?getSequenceName()+".NEXTVAL,":"")+
+						(StringUtils.isNotEmpty(getSlotId())?"'"+
+						getSlotId()+"',":"")+"?,?,?,?,?)";
 		deleteQuery = "DELETE FROM "+getTableName()+ getWhereClause(getKeyField()+"=?");
 		selectKeyQuery = "SELECT max("+getKeyField()+") FROM "+getTableName()+ 
 						getWhereClause(getIdField()+"=?"+
@@ -192,33 +269,6 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 
 
 	
-	/**
-	 * Creates a connection, checks if the table is existing and creates it when necessary
-	 */
-	public void configure() throws ConfigurationException {
-//		super.configure();
-		try {
-			createQueryTexts();
-			Connection conn = getConnection();
-			boolean tableMustBeCreated;
-			try {
-				tableMustBeCreated = !JdbcUtil.tableExists(conn, getTableName());
-			} catch (SQLException e) {
-				log.warn(getLogPrefix()+"exception determining existence of table ["+getTableName()+"] for transactional storage, trying to create anyway."+ e.getMessage());
-				tableMustBeCreated=true;
-			}
-			if (tableMustBeCreated) {
-				log.info(getLogPrefix()+"creating table ["+getTableName()+"] for transactional storage");
-				createTable(conn);
-			}
-			conn.close();
-		} catch (JdbcException e) {
-			throw new ConfigurationException(e);
-		} catch (SQLException e) {
-			throw new ConfigurationException(getLogPrefix()+"exception creating table ["+getTableName()+"]",e);
-		} 
-	}
-
 
 	public String getPhysicalDestinationName() {
 		return super.getPhysicalDestinationName()+" in table ["+getTableName()+"]";
@@ -524,20 +574,64 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		correlationIdField = string;
 	}
 
-	public String getMessageFieldType() {
-		return messageFieldType;
-	}
-
-	public String getKeyFieldType() {
-		return keyFieldType;
-	}
-
 	public void setMessageFieldType(String string) {
 		messageFieldType = string;
+	}
+	public String getMessageFieldType() {
+		if (StringUtils.isEmpty(messageFieldType)) {
+			if ("oracle".equalsIgnoreCase(getDbms())) {
+				return ORACLE_DEFAULT_MESSAGE_TYPE;
+			}
+			if ("cloudscape".equalsIgnoreCase(getDbms())) {
+				return CLOUDSCAPE_DEFAULT_MESSAGE_TYPE;
+			}
+		}
+		return messageFieldType;
 	}
 
 	public void setKeyFieldType(String string) {
 		keyFieldType = string;
+	}
+	public String getKeyFieldType() {
+		if (StringUtils.isEmpty(keyFieldType)) {
+			if ("oracle".equalsIgnoreCase(getDbms())) {
+				return ORACLE_DEFAULT_SERIAL_KEY_TYPE;
+			}
+			if ("cloudscape".equalsIgnoreCase(getDbms())) {
+				return CLOUDSCAPE_DEFAULT_SERIAL_KEY_TYPE;
+			}
+		}
+		return keyFieldType;
+	}
+
+	public void setDateFieldType(String string) {
+		dateFieldType = string;
+	}
+	public String getDateFieldType() {
+		if (StringUtils.isEmpty(dateFieldType)) {
+			if ("oracle".equalsIgnoreCase(getDbms())) {
+				return ORACLE_DEFAULT_TIMESTAMP_TYPE;
+			}
+			if ("cloudscape".equalsIgnoreCase(getDbms())) {
+				return CLOUDSCAPE_DEFAULT_TIMESTAMP_TYPE;
+			}
+		}
+		return dateFieldType;
+	}
+
+	public void setTextFieldType(String string) {
+		textFieldType = string;
+	}
+	public String getTextFieldType() {
+		if (StringUtils.isEmpty(textFieldType)) {
+			if ("oracle".equalsIgnoreCase(getDbms())) {
+				return ORACLE_DEFAULT_TEXT_TYPE;
+			}
+			if ("cloudscape".equalsIgnoreCase(getDbms())) {
+				return CLOUDSCAPE_DEFAULT_TEXT_TYPE;
+			}
+		}
+		return textFieldType;
 	}
 
 	public String getKeyField() {
@@ -546,14 +640,6 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 
 	public void setKeyField(String string) {
 		keyField = string;
-	}
-
-	public String getDateFieldType() {
-		return dateFieldType;
-	}
-
-	public void setDateFieldType(String string) {
-		dateFieldType = string;
 	}
 
 	public String getSlotId() {
@@ -570,6 +656,22 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 
 	public void setSlotIdField(String string) {
 		slotIdField = string;
+	}
+
+	public String getDbms() {
+		return dbms;
+	}
+
+	public void setDbms(String string) {
+		dbms = string;
+	}
+
+	public String getSequenceName() {
+		return sequenceName;
+	}
+
+	public void setSequenceName(String string) {
+		sequenceName = string;
 	}
 
 }
