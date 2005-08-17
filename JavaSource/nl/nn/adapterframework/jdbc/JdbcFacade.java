@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcFacade.java,v $
- * Revision 1.9  2005-08-09 15:53:11  europe\L190409
+ * Revision 1.10  2005-08-17 16:10:56  europe\L190409
+ * test for empty strings using StringUtils.isEmpty()
+ *
+ * Revision 1.9  2005/08/09 15:53:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved exception construction
  *
  * Revision 1.8  2005/07/19 12:36:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -44,6 +47,7 @@ import nl.nn.adapterframework.parameters.ParameterValueList;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 /**
@@ -55,7 +59,7 @@ import org.apache.log4j.Logger;
  * 
  */
 public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version="$RCSfile: JdbcFacade.java,v $ $Revision: 1.9 $ $Date: 2005-08-09 15:53:11 $";
+	public static final String version="$RCSfile: JdbcFacade.java,v $ $Revision: 1.10 $ $Date: 2005-08-17 16:10:56 $";
     protected Logger log = Logger.getLogger(this.getClass());
 	
 	private String name;
@@ -69,7 +73,6 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 	private boolean transacted = false;
 	private boolean connectionsArePooled=true;
 
-
 	protected String getLogPrefix() {
 		return "["+this.getClass().getName()+"] ["+getName()+"] ";
 	}
@@ -81,10 +84,10 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 	 */
 	public String getDataSourceNameToUse() throws JdbcException {
 		String result = isTransacted() ? getDatasourceNameXA() : getDatasourceName();
-		if (result==null || result.equals("")) {
+		if (StringUtils.isEmpty(result)) {
 			// try the alternative...
 			result = isTransacted() ? getDatasourceName() : getDatasourceNameXA();
-			if (result==null || result.equals("")) {
+			if (StringUtils.isEmpty(result)) {
 				throw new JdbcException(getLogPrefix()+"neither datasourceName nor datasourceNameXA are specified");
 			}
 			log.warn(getLogPrefix()+"correct datasourceName attribute not specified, will use ["+result+"]");
@@ -111,7 +114,7 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 	 */
 	public Connection getConnection() throws JdbcException {
 		try {
-			if (getUsername()!=null) {
+			if (StringUtils.isNotEmpty(getUsername())) {
 				return getDatasource().getConnection(getUsername(),getPassword());
 			} else {
 				return getDatasource().getConnection();
@@ -147,7 +150,7 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 		// statement.clearParameters();
 		for (int i=0; i< parameters.size(); i++) {
 			String parameterValue = (String)parameters.getParameterValue(i).getValue();
-//			log.debug("applying parameter ["+(i+1)+","+parameters.getParameterValue(i).getDefinition().getName()+"], value["+parameterValue+"]");
+	//		log.debug("applying parameter ["+(i+1)+","+parameters.getParameterValue(i).getDefinition().getName()+"], value["+parameterValue+"]");
 			statement.setString(i+1, parameterValue);
 		}
 	}
@@ -222,5 +225,5 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 	public void setConnectionsArePooled(boolean b) {
 		connectionsArePooled = b;
 	}
-
+	
 }
