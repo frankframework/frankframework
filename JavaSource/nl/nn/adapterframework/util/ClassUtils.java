@@ -1,6 +1,9 @@
 /*
  * $Log: ClassUtils.java,v $
- * Revision 1.4  2004-11-08 08:31:17  L190409
+ * Revision 1.5  2005-08-18 13:34:19  europe\L190409
+ * try to prefix resource with 'java:comp/env/', for TomCat compatibility
+ *
+ * Revision 1.4  2004/11/08 08:31:17  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added log-keyword in comments
  *
  */
@@ -13,6 +16,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.net.URL;
+
 /**
  * A collection of class management utility methods.
  * @version Id
@@ -20,7 +24,7 @@ import java.net.URL;
  *
  */
 public class ClassUtils {
-	public static final String version="$Id: ClassUtils.java,v 1.4 2004-11-08 08:31:17 L190409 Exp $";
+	public static final String version = "$RCSfile: ClassUtils.java,v $ $Revision: 1.5 $ $Date: 2005-08-18 13:34:19 $";
 	
 	private static Logger log = Logger.getLogger("ClassUtils");
     /**
@@ -79,16 +83,22 @@ public class ClassUtils {
     {
         URL url = null;
         
-        if (klass == null)
-        {
-            klass = ClassUtils.class;
-        }
+		if (klass == null) {
+			klass = ClassUtils.class;
+		}
         
         url = klass.getResource(resource);
-        if (url == null)
-        {
-            url = klass.getClassLoader().getResource(resource);
-        }
+		if (url == null) {
+			url = klass.getClassLoader().getResource(resource);
+		}
+		if (url == null && resource!=null && !resource.startsWith("java:comp/env/")) {
+			log.warn("cannot find URL for resource ["+resource+"], now trying [java:comp/env/"+resource+"] (e.g. for TomCat)");
+			resource = "java:comp/env/"+resource;
+			url = klass.getResource(resource); // to make things work under tomcat
+			if (url == null) {
+				url = klass.getClassLoader().getResource(resource);
+			}
+		}
         if (url==null)
           log.warn("cannot find URL for resource ["+resource+"]");
         else
@@ -197,23 +207,25 @@ public class ClassUtils {
      return theObject;
 
   }
-/**
- * Creates a new instance from a class, while it looks for a constructor
- * that matches the parameters, and initializes the object (by calling the constructor)
- * Notice: this does not work when the instantiated object uses an interface class
- * as a parameter, as the class names are, in that case, not the same..
- *
- * @param className a class Name
- * @param parameterObjects the parameters for the constructor
- * @return A new Instance
- *
- **/
-public static Object newInstance(String className, Object[] parameterObjects) {
-    Class parameterClasses[] = new Class[parameterObjects.length];
-    for (int i = 0; i < parameterObjects.length; i++)
-        parameterClasses[i] = parameterObjects[i].getClass();
-    return newInstance(className, parameterClasses, parameterObjects);
-}
+  
+	/**
+	 * Creates a new instance from a class, while it looks for a constructor
+	 * that matches the parameters, and initializes the object (by calling the constructor)
+	 * Notice: this does not work when the instantiated object uses an interface class
+	 * as a parameter, as the class names are, in that case, not the same..
+	 *
+	 * @param className a class Name
+	 * @param parameterObjects the parameters for the constructor
+	 * @return A new Instance
+	 *
+	 **/
+	public static Object newInstance(String className, Object[] parameterObjects) {
+	    Class parameterClasses[] = new Class[parameterObjects.length];
+	    for (int i = 0; i < parameterObjects.length; i++)
+	        parameterClasses[i] = parameterObjects[i].getClass();
+	    return newInstance(className, parameterClasses, parameterObjects);
+	}
+	
     /**
      * Gets the absolute pathname of the class file
      * containing the specified class name, as prescribed
