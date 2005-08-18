@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcTransactionalStorage.java,v $
- * Revision 1.8  2005-08-17 16:15:25  europe\L190409
+ * Revision 1.9  2005-08-18 13:30:15  europe\L190409
+ * made descender-class for Oracle
+ *
+ * Revision 1.8  2005/08/17 16:15:25  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Oracle compatiblity, attribuut dbms, (oracle or cloudscape)
  *
  * Revision 1.7  2005/08/04 15:39:25  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -32,6 +35,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.OptionalDataException;
 import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -53,6 +57,8 @@ import nl.nn.adapterframework.util.JdbcUtil;
 /**
  * JDBC implementation of {@link ITransactionalStorage}.
  * 
+ * The default implementation works for Cloudscape databases.
+ * 
  * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
@@ -70,37 +76,40 @@ import nl.nn.adapterframework.util.JdbcUtil;
  * <tr><td>{@link #setMessageField(String) messageField}</td><td>the name of the column message themselves are stored in</td><td>message</td></tr>
  * <tr><td>{@link #setSlotIdField(String) slotIdField}</td><td>the name of the column slotIds are stored in</td><td>slotId</td></tr>
  * <tr><td>{@link #setKeyFieldType(String) keyFieldType}</td><td>the type of the column that contains the primary key of the table</td><td>INT DEFAULT AUTOINCREMENT</td></tr>
- * <tr><td>{@link #setDataFieldType(String) dateFieldType}</td><td>the type of the column the timestamp is stored in</td><td>TIMESTAMP</td></tr>
+ * <tr><td>{@link #setDateFieldType(String) dateFieldType}</td><td>the type of the column the timestamp is stored in</td><td>TIMESTAMP</td></tr>
+ * <tr><td>{@link #setTextFieldType(String) textFieldType}</td><td>the type of the columns messageId and correlationId, slotId and comments are stored in. N.B. (100) is appended for id's, (1000) is appended for comments.</td><td>VARCHAR</td></tr>
  * <tr><td>{@link #setMessageFieldType(String) messageFieldType}</td><td>the type of the column message themselves are stored in</td><td>LONG BINARY</td></tr>
  * </table>
  * </p>
+ * 
+ * The default uses the following objects:
+ * 
+	CREATE TABLE ibisstore (
+	  messageKey INT DEFAULT AUTOINCREMENT CONSTRAINT ibisstore_pk PRIMARY KEY,
+	  slotId VARCHAR(100), 
+	  messageId VARCHAR(100), 
+	  correlationId VARCHAR(100), 
+	  messageDate TIMESTAMP, 
+	  comments VARCHAR(1000), 
+	  message LONG BINARY);
+
+	CREATE INDEX ibisstore_idx ON ibisstore (slotId, messageDate);
+
+ * If these objects do not exist, Ibis tries to create them.
  * 
  * @version Id
  * @author  Gerrit van Brakel
  * @since 	4.1
  */
 public class JdbcTransactionalStorage extends JdbcFacade implements ITransactionalStorage {
-	public static final String version = "$RCSfile: JdbcTransactionalStorage.java,v $ $Revision: 1.8 $ $Date: 2005-08-17 16:15:25 $";
+	public static final String version = "$RCSfile: JdbcTransactionalStorage.java,v $ $Revision: 1.9 $ $Date: 2005-08-18 13:30:15 $";
 	
-	private static final String CLOUDSCAPE_DEFAULT_SERIAL_KEY_TYPE="INT DEFAULT AUTOINCREMENT";
-	private static final String CLOUDSCAPE_DEFAULT_TIMESTAMP_TYPE="TIMESTAMP";
-	private static final String CLOUDSCAPE_DEFAULT_MESSAGE_TYPE="LONG BINARY";
-	private static final String CLOUDSCAPE_DEFAULT_TEXT_TYPE="VARCHAR";
-
-	private static final String ORACLE_DEFAULT_SERIAL_KEY_TYPE="NUMBER(10)";
-	private static final String ORACLE_DEFAULT_TIMESTAMP_TYPE="TIMESTAMP";
-	private static final String ORACLE_DEFAULT_MESSAGE_TYPE="BLOB";
-	private static final String ORACLE_DEFAULT_TEXT_TYPE="VARCHAR2";
-
 	// the following currently only for debug.... 
 	boolean checkIfTableExists=true;
 	boolean neverCreateTable=false;
 	boolean forceCreateTable=false;
 
-	private String dbms="Oracle";
-	
     private String tableName="ibisstore";
-	private String sequenceName="ibisstore_seq";
 	private String keyField="messageKey";
     private String idField="messageId";
 	private String correlationIdField="correlationId";
@@ -113,16 +122,16 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	protected static final int MAXIDLEN=100;		
 	protected static final int MAXCOMMENTLEN=1000;		
     // the following values are only used when the table is created. 
-	private String keyFieldType=null;
-	private String dateFieldType=null;
-	private String messageFieldType=null;
-	private String textFieldType=null;
+	private String keyFieldType="INT DEFAULT AUTOINCREMENT";
+	private String dateFieldType="TIMESTAMP";
+	private String messageFieldType="LONG BINARY";
+	private String textFieldType="VARCHAR";
 	
-	private String insertQuery;
-	private String deleteQuery;
-	private String selectKeyQuery;
-	private String selectListQuery;
-	private String selectDataQuery;
+	protected String insertQuery;
+	protected String deleteQuery;
+	protected String selectKeyQuery;
+	protected String selectListQuery;
+	protected String selectDataQuery;
 	
 	public JdbcTransactionalStorage() {
 		super();
@@ -156,6 +165,9 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	public void close() {
 	}
 
+	/**
+	 *	Checks if table exists, and creates when necessary. 
+	 */
 	public void initialize() throws JdbcException, SQLException {
 
 		Connection conn = getConnection();
@@ -177,23 +189,45 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 
 			if (!neverCreateTable && tableMustBeCreated || forceCreateTable) {
 				log.info(getLogPrefix()+"creating table ["+getTableName()+"] for transactional storage");
-				createTable(conn);
+				Statement stmt = conn.createStatement();
+				try {
+					createStorage(conn, stmt);
+				} finally {
+					stmt.close();
+					conn.commit();
+				}
 			}
 		} finally {
 			conn.close();
 		}
 	}
+
 	
-	public void createTable(Connection conn) throws JdbcException {
-		Statement stmt;
+	protected void createQueryTexts() {
+		insertQuery = "INSERT INTO "+getTableName()+" ("+
+						(StringUtils.isNotEmpty(getSlotId())?getSlotIdField()+",":"")+
+						getIdField()+","+getCorrelationIdField()+","+getDateField()+","+getCommentField()+","+getMessageField()+
+						") VALUES ("+
+						(StringUtils.isNotEmpty(getSlotId())?"'"+
+						getSlotId()+"',":"")+"?,?,?,?,?)";
+		deleteQuery = "DELETE FROM "+getTableName()+ getWhereClause(getKeyField()+"=?");
+		selectKeyQuery = "SELECT max("+getKeyField()+") FROM "+getTableName()+ 
+						getWhereClause(getIdField()+"=?"+
+									" AND " +getCorrelationIdField()+"=?"+
+									" AND "+getDateField()+"=?");
+		selectListQuery = "SELECT "+getKeyField()+","+getIdField()+","+getCorrelationIdField()+","+getDateField()+","+getCommentField()+
+						  " FROM "+getTableName()+ getWhereClause(null)+
+						  " ORDER BY "+getDateField();
+		selectDataQuery = "SELECT "+getMessageField()+
+						  " FROM "+getTableName()+ getWhereClause(getKeyField()+"=?");
+	}
+
+	
+	/**
+	 *	Acutaly creates storage. Can be overridden in descender classes 
+	 */
+	protected void createStorage(Connection conn, Statement stmt) throws JdbcException {
 		String query=null;
-
-		try {
-			stmt = conn.createStatement();
-		} catch (SQLException e) {
-			throw new JdbcException(getLogPrefix()+" creating statement to create table", e);
-		}
-
 		try {
 			query="CREATE TABLE "+getTableName()+" ("+
 						getKeyField()+" "+getKeyFieldType()+" CONSTRAINT " +getTableName()+ "_pk PRIMARY KEY, "+
@@ -210,25 +244,10 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 			query = "CREATE INDEX "+getTableName()+"_idx ON "+getTableName()+"("+(StringUtils.isNotEmpty(getSlotId())?getSlotIdField()+",":"")+getDateField()+")";				
 			log.debug(getLogPrefix()+"creating index ["+getTableName()+"_idx] using query ["+query+"]");
 			stmt.execute(query);
-			if ("oracle".equalsIgnoreCase(getDbms())) {
-				query="CREATE SEQUENCE "+getSequenceName()+" START WITH 1 INCREMENT BY 1";
-				log.debug(getLogPrefix()+"creating sequence for table ["+getTableName()+"] using query ["+query+"]");
-				stmt.execute(query);
-			}
-			query="-close-";
-			stmt.close();
-			conn.commit();
 		} catch (SQLException e) {
 			throw new JdbcException(getLogPrefix()+" executing query ["+query+"]", e);
 		}
 	}	
-	
-	protected String getSelector() {
-		if (StringUtils.isEmpty(getSlotId())) {
-			return null;
-		}
-		return getSlotIdField()+"='"+getSlotId()+"'";
-	}
 	
 	protected String getWhereClause(String clause) {
 		if (StringUtils.isEmpty(getSlotId())) {
@@ -245,39 +264,69 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 			return result;
 		}
 	}
+
+
+	/**
+	 * Retrieves the value of the primary key for the record just inserted. 
+	 */
+	protected String retrieveKey(Connection conn, String messageId, String correlationId, Timestamp receivedDateTime) throws SQLException, SenderException {
+		PreparedStatement stmt=null;
+		
+		try {			
+			stmt = conn.prepareStatement(selectKeyQuery);			
+			stmt.clearParameters();
+			stmt.setString(1,messageId);
+			stmt.setString(2,correlationId);
+			stmt.setTimestamp(3, receivedDateTime);
 	
-	protected void createQueryTexts() {
-		insertQuery = "INSERT INTO "+getTableName()+" ("+
-						("oracle".equalsIgnoreCase(getDbms())?getKeyField()+",":"")+
-						(StringUtils.isNotEmpty(getSlotId())?getSlotIdField()+",":"")+
-						getIdField()+","+getCorrelationIdField()+","+getDateField()+","+getCommentField()+","+getMessageField()+
-						") VALUES ("+
-						("oracle".equalsIgnoreCase(getDbms())?getSequenceName()+".NEXTVAL,":"")+
-						(StringUtils.isNotEmpty(getSlotId())?"'"+
-						getSlotId()+"',":"")+"?,?,?,?,?)";
-		deleteQuery = "DELETE FROM "+getTableName()+ getWhereClause(getKeyField()+"=?");
-		selectKeyQuery = "SELECT max("+getKeyField()+") FROM "+getTableName()+ 
-						getWhereClause(getIdField()+"=?"+
-									" AND " +getCorrelationIdField()+"=?"+
-									" AND "+getDateField()+"=?");
-		selectListQuery = "SELECT "+getKeyField()+","+getIdField()+","+getCorrelationIdField()+","+getDateField()+","+getCommentField()+
-						  " FROM "+getTableName()+ getWhereClause(null)+
-						  " ORDER BY "+getDateField();
-		selectDataQuery = "SELECT "+getMessageField()+
-						  " FROM "+getTableName()+ getWhereClause(getKeyField()+"=?");
+			ResultSet rs = null;
+			try {
+				rs = stmt.executeQuery();
+				if (!rs.next()) {
+					throw new SenderException("could not retrieve key for stored message ["+ messageId+"]");
+				}
+				return rs.getString(1);
+			} finally {
+				if (rs!=null) {
+					rs.close();
+				}
+			}
+		} finally {
+			if (stmt!=null) {
+				stmt.close();
+			}
+		}
 	}
 
-
+	protected String storeMessageInDatabase(Connection conn, String messageId, String correlationId, Timestamp receivedDateTime, String comments, Serializable message) throws IOException, SQLException, SenderException {
+		PreparedStatement stmt = null;
+		try { 
+			log.debug("preparing insert statement ["+insertQuery+"]");
+			stmt = conn.prepareStatement(insertQuery);			
+			stmt.clearParameters();
+			stmt.setString(1,messageId);
+			stmt.setString(2,correlationId);
+			stmt.setTimestamp(3, receivedDateTime);
+			stmt.setString(4, comments);
 	
-
-	public String getPhysicalDestinationName() {
-		return super.getPhysicalDestinationName()+" in table ["+getTableName()+"]";
+			ByteArrayOutputStream out = new ByteArrayOutputStream();
+			ObjectOutputStream oos = new ObjectOutputStream(out);
+			oos.writeObject(message);
+			stmt.setBytes(5, out.toByteArray());
+	
+			stmt.execute();
+			return null;
+		} finally {
+			if (stmt!=null) {
+				stmt.close();
+			}
+		}
 	}
-
 
 
 	public String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, Serializable message) throws SenderException {
 		Connection conn;
+		String result;
 		try {
 			conn = getConnection();
 		} catch (JdbcException e) {
@@ -285,43 +334,20 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		}
 		try {
 			Timestamp receivedDateTime = new Timestamp(receivedDate.getTime());
-			log.debug("preparing insert statement ["+insertQuery+"]");
-			PreparedStatement stmt = conn.prepareStatement(insertQuery);			
-			stmt.clearParameters();
 			if (messageId.length()>MAXIDLEN) {
 				messageId=messageId.substring(0,MAXIDLEN);
 			}
-			stmt.setString(1,messageId);
 			if (correlationId.length()>MAXIDLEN) {
 				correlationId=correlationId.substring(0,MAXIDLEN);
 			}
-			stmt.setString(2,correlationId);
-			stmt.setTimestamp(3, receivedDateTime);
 			if (comments.length()>MAXCOMMENTLEN) {
 				comments=comments.substring(0,MAXCOMMENTLEN);
 			}
-			stmt.setString(4, comments);
-		
-			ByteArrayOutputStream out = new ByteArrayOutputStream();
-			ObjectOutputStream oos = new ObjectOutputStream(out);
-			oos.writeObject(message);
-			stmt.setBytes(5, out.toByteArray());
-
-			stmt.execute();
-
-			stmt = conn.prepareStatement(selectKeyQuery);			
-			stmt.clearParameters();
-			stmt.setString(1,messageId);
-			stmt.setString(2,correlationId);
-			stmt.setTimestamp(3, receivedDateTime);
-
-			ResultSet rs = stmt.executeQuery();
-			
-			if (!rs.next()) {
-				throw new SenderException("did not retrieve key for stored message ["+ messageId+"]");
+			result = storeMessageInDatabase(conn, messageId, correlationId, receivedDateTime, comments, message);
+			if (result==null) {
+				result=retrieveKey(conn,messageId,correlationId,receivedDateTime);
 			}
-
-			return rs.getString(1);
+			return result;
 			
 		} catch (SQLException e) {
 			throw new SenderException(e);
@@ -405,6 +431,13 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		}
 	}
 
+	protected String getSelector() {
+		if (StringUtils.isEmpty(getSlotId())) {
+			return null;
+		}
+		return getSlotIdField()+"='"+getSlotId()+"'";
+	}
+	
 
 
 	public void deleteMessage(String messageId) throws ListenerException {
@@ -432,6 +465,13 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	}
 
 
+	protected Object retrieveObject(ResultSet rs, int columnIndex) throws SQLException, OptionalDataException, ClassNotFoundException, IOException {
+		ByteArrayInputStream in = new ByteArrayInputStream(rs.getBytes(columnIndex));
+		ObjectInputStream ois = new ObjectInputStream(in);
+		Object result = ois.readObject();
+		return result;
+	}
+
 	public Object browseMessage(String messageId) throws ListenerException {
 		Connection conn;
 		try {
@@ -448,11 +488,8 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 			if (!rs.next()) {
 				throw new ListenerException("could not retrieve message for messageid ["+ messageId+"]");
 			}
-
-			ByteArrayInputStream in = new ByteArrayInputStream(rs.getBytes(1));
-			ObjectInputStream ois = new ObjectInputStream(in);
 			
-			Object result = ois.readObject();
+			Object result = retrieveObject(rs,1);
 			return result;
 			
 		} catch (Exception e) {
@@ -519,6 +556,12 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		}
 	}
 
+	public String getPhysicalDestinationName() {
+		return super.getPhysicalDestinationName()+" in table ["+getTableName()+"]";
+	}
+
+
+
 	/**
 	 * Sets the name of the table messages are stored in.
 	 */
@@ -578,14 +621,6 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		messageFieldType = string;
 	}
 	public String getMessageFieldType() {
-		if (StringUtils.isEmpty(messageFieldType)) {
-			if ("oracle".equalsIgnoreCase(getDbms())) {
-				return ORACLE_DEFAULT_MESSAGE_TYPE;
-			}
-			if ("cloudscape".equalsIgnoreCase(getDbms())) {
-				return CLOUDSCAPE_DEFAULT_MESSAGE_TYPE;
-			}
-		}
 		return messageFieldType;
 	}
 
@@ -593,14 +628,6 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		keyFieldType = string;
 	}
 	public String getKeyFieldType() {
-		if (StringUtils.isEmpty(keyFieldType)) {
-			if ("oracle".equalsIgnoreCase(getDbms())) {
-				return ORACLE_DEFAULT_SERIAL_KEY_TYPE;
-			}
-			if ("cloudscape".equalsIgnoreCase(getDbms())) {
-				return CLOUDSCAPE_DEFAULT_SERIAL_KEY_TYPE;
-			}
-		}
 		return keyFieldType;
 	}
 
@@ -608,14 +635,6 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		dateFieldType = string;
 	}
 	public String getDateFieldType() {
-		if (StringUtils.isEmpty(dateFieldType)) {
-			if ("oracle".equalsIgnoreCase(getDbms())) {
-				return ORACLE_DEFAULT_TIMESTAMP_TYPE;
-			}
-			if ("cloudscape".equalsIgnoreCase(getDbms())) {
-				return CLOUDSCAPE_DEFAULT_TIMESTAMP_TYPE;
-			}
-		}
 		return dateFieldType;
 	}
 
@@ -623,14 +642,6 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		textFieldType = string;
 	}
 	public String getTextFieldType() {
-		if (StringUtils.isEmpty(textFieldType)) {
-			if ("oracle".equalsIgnoreCase(getDbms())) {
-				return ORACLE_DEFAULT_TEXT_TYPE;
-			}
-			if ("cloudscape".equalsIgnoreCase(getDbms())) {
-				return CLOUDSCAPE_DEFAULT_TEXT_TYPE;
-			}
-		}
 		return textFieldType;
 	}
 
@@ -658,20 +669,5 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		slotIdField = string;
 	}
 
-	public String getDbms() {
-		return dbms;
-	}
-
-	public void setDbms(String string) {
-		dbms = string;
-	}
-
-	public String getSequenceName() {
-		return sequenceName;
-	}
-
-	public void setSequenceName(String string) {
-		sequenceName = string;
-	}
 
 }
