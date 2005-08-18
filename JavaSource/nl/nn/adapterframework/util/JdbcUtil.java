@@ -1,6 +1,10 @@
 /*
  * $Log: JdbcUtil.java,v $
- * Revision 1.3  2004-03-26 10:42:42  NNVZNL01#L180564
+ * Revision 1.4  2005-08-18 13:36:09  europe\L190409
+ * rework using prepared statement
+ * close() finally
+ *
+ * Revision 1.3  2004/03/26 10:42:42  Johan Verrips <johan.verrips@ibissource.org>
  * added @version tag in javadoc
  *
  * Revision 1.2  2004/03/25 13:36:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -14,8 +18,11 @@ package nl.nn.adapterframework.util;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+
+import org.apache.log4j.Logger;
 
 /**
  * Database-oriented utility functions
@@ -24,7 +31,8 @@ import java.sql.SQLException;
  * @since  4.1
  */
 public class JdbcUtil {
-	public static final String version="$Id: JdbcUtil.java,v 1.3 2004-03-26 10:42:42 NNVZNL01#L180564 Exp $";
+	protected static Logger log = Logger.getLogger(JdbcUtil.class);
+	public static final String version="$Id: JdbcUtil.java,v 1.4 2005-08-18 13:36:09 europe\L190409 Exp $";
 	
 	private static final boolean useMetaData=false;
 	/**
@@ -32,6 +40,7 @@ public class JdbcUtil {
 	 */
 	public static boolean tableExists(Connection conn, String tableName ) throws SQLException {
 		
+		PreparedStatement stmt = null;
 		if (useMetaData) {
 			DatabaseMetaData dbmeta = conn.getMetaData();
 			ResultSet tableset = dbmeta.getTables(null, null, tableName, null);
@@ -39,10 +48,19 @@ public class JdbcUtil {
 		} else {
 			try {
 				String query="select count(*) from "+tableName;
-				conn.createStatement().executeQuery(query);
+				log.debug("create statement to check for existence of ["+tableName+"] using query ["+query+"]");
+				stmt = conn.prepareStatement(query);
+				log.debug("execute statement");
+				ResultSet rs = stmt.executeQuery();
+				log.debug("statement executed");
+				rs.close();
 				return true;
 			} catch (SQLException e) {
 				return false;
+			} finally {
+				if (stmt!=null) {
+					stmt.close();
+				}
 			}
 		}
 	}
