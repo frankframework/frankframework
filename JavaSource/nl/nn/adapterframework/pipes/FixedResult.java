@@ -1,6 +1,9 @@
 /*
  * $Log: FixedResult.java,v $
- * Revision 1.10  2005-08-11 15:00:40  europe\L190409
+ * Revision 1.11  2005-08-18 13:40:12  europe\L190409
+ * updated javadoc
+ *
+ * Revision 1.10  2005/08/11 15:00:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * parameters can now be used to replace ${...} constructs
  *
  * Revision 1.9  2005/04/26 09:19:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -48,6 +51,11 @@ import org.apache.commons.lang.SystemUtils;
  * <tr><td>{@link #setReplaceTo(String) replaceTo}</td><td>string that will replace each of the strings found in the returned message</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
+ * <p><table border="1">
+ * <tr><th>nested elements</th><th>description</th></tr>
+ * <tr><td>{@link nl.nn.adapterframework.parameters.Parameter param}</td><td>any parameters defined on the pipe will be used for replacements. Any <code>${name-of-parameter}</code> will be replaced by <i>value-of-parameter</i> </td></tr>
+ * </table>
+ * </p>
  * <p><b>Exits:</b>
  * <table border="1">
  * <tr><th>state</th><th>condition</th></tr>
@@ -59,7 +67,7 @@ import org.apache.commons.lang.SystemUtils;
  * @author Johan Verrips
  */
 public class FixedResult extends FixedForwardPipe {
-	public static final String version="$RCSfile: FixedResult.java,v $ $Revision: 1.10 $ $Date: 2005-08-11 15:00:40 $";
+	public static final String version="$RCSfile: FixedResult.java,v $ $Revision: 1.11 $ $Date: 2005-08-18 13:40:12 $";
 	
     private String fileName;
     private String returnString;
