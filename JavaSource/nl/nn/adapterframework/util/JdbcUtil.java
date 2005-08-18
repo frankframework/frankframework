@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcUtil.java,v $
- * Revision 1.4  2005-08-18 13:36:09  europe\L190409
+ * Revision 1.5  2005-08-18 13:37:22  europe\L190409
+ * corrected version String
+ *
+ * Revision 1.4  2005/08/18 13:36:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * rework using prepared statement
  * close() finally
  *
@@ -25,14 +28,15 @@ import java.sql.SQLException;
 import org.apache.log4j.Logger;
 
 /**
- * Database-oriented utility functions
+ * Database-oriented utility functions.
+ * 
  * @version Id
- * @author Gerrit van Brakel
- * @since  4.1
+ * @author  Gerrit van Brakel
+ * @since   4.1
  */
 public class JdbcUtil {
+	public static final String version = "$RCSfile: JdbcUtil.java,v $ $Revision: 1.5 $ $Date: 2005-08-18 13:37:22 $";
 	protected static Logger log = Logger.getLogger(JdbcUtil.class);
-	public static final String version="$Id: JdbcUtil.java,v 1.4 2005-08-18 13:36:09 europe\L190409 Exp $";
 	
 	private static final boolean useMetaData=false;
 	/**
