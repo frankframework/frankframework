@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractPipe.java,v $
- * Revision 1.9  2005-06-13 10:00:15  europe\L190409
+ * Revision 1.10  2005-08-24 15:52:16  europe\L190409
+ * improved error message for configuration exception
+ *
+ * Revision 1.9  2005/06/13 10:00:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * modified handling of empty forwards
  *
  * Revision 1.8  2004/10/19 13:51:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -73,7 +76,7 @@ import java.util.Hashtable;
  * @see nl.nn.adapterframework.core.PipeLineSession
  */
 public abstract class AbstractPipe implements IPipe {
-  public static final String version="$RCSfile: AbstractPipe.java,v $ $Revision: 1.9 $ $Date: 2005-06-13 10:00:15 $";
+  public static final String version="$RCSfile: AbstractPipe.java,v $ $Revision: 1.10 $ $Date: 2005-08-24 15:52:16 $";
   private String name;
   protected Logger log = Logger.getLogger(this.getClass());
   private Hashtable pipeForwards=new Hashtable();
@@ -87,27 +90,33 @@ public abstract class AbstractPipe implements IPipe {
 	 * As much as possible class-instantiating should take place in the
 	 * <code>configure()</code> method, to improve performance.
 	 */ 
-	public void configure() throws ConfigurationException{
+	public void configure() throws ConfigurationException {
 		ParameterList params = getParameterList();
 		if (params!=null) {
-			params.configure();
+			try {
+				params.configure();
+			} catch (ConfigurationException e) {
+				throw new ConfigurationException(getLogPrefix(null)+"while configuring parameters",e);
+			}
 		}
 	}
-/**
- * This is where the action takes place. Pipes may only throw a PipeRunException,
- * to be handled by the caller of this object.
- * @deprecated use {@link #doPipe(Object,PipeLineSession)} instead
- */
-  public PipeRunResult doPipe (Object input) throws PipeRunException {
-	  throw new PipeRunException(this, "Pipe should implement method doPipe()");
-  }
-/**
- * This is where the action takes place. Pipes may only throw a PipeRunException,
- * to be handled by the caller of this object.
- */
-  public PipeRunResult doPipe (Object input, PipeLineSession session) throws PipeRunException {
-	  return doPipe(input);
-  }
+	/**
+	 * This is where the action takes place. Pipes may only throw a PipeRunException,
+	 * to be handled by the caller of this object.
+	 * @deprecated use {@link #doPipe(Object,PipeLineSession)} instead
+	 */
+	public PipeRunResult doPipe (Object input) throws PipeRunException {
+		throw new PipeRunException(this, "Pipe should implement method doPipe()");
+	}
+	 
+	/**
+	 * This is where the action takes place. Pipes may only throw a PipeRunException,
+	 * to be handled by the caller of this object.
+	 */
+	public PipeRunResult doPipe (Object input, PipeLineSession session) throws PipeRunException {
+		return doPipe(input);
+	}
+	
     /**
      * looks up a key in the pipeForward hashtable. <br/>
      * A typical use would be on return from a Pipe: <br/>

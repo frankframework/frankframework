@@ -1,6 +1,9 @@
 /*
  * $Log: MessageSendingPipe.java,v $
- * Revision 1.18  2005-07-05 11:51:54  europe\L190409
+ * Revision 1.19  2005-08-24 15:53:57  europe\L190409
+ * improved error message for configuration exception
+ *
+ * Revision 1.18  2005/07/05 11:51:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved logging of receiving result
  *
  * Revision 1.17  2004/10/19 06:39:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -103,7 +106,7 @@ import org.apache.commons.lang.StringUtils;
  */
 
 public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
-	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.18 $ $Date: 2005-07-05 11:51:54 $";
+	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.19 $ $Date: 2005-08-24 15:53:57 $";
 	private final static String TIMEOUTFORWARD = "timeout";
 	private final static String EXCEPTIONFORWARD = "exception";
 
@@ -148,7 +151,11 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 				getLogPrefix(null) + "no sender defined ");
 		}
 
-		getSender().configure();
+		try {
+			getSender().configure();
+		} catch (ConfigurationException e) {
+			throw new ConfigurationException(getLogPrefix(null)+"while configuring sender",e);
+		}
 		if (getSender() instanceof HasPhysicalDestination) {
 			log.info(getLogPrefix(null)+"has sender on "+((HasPhysicalDestination)getSender()).getPhysicalDestinationName());
 		}
@@ -158,7 +165,11 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 					getLogPrefix(null)
 						+ "cannot have listener with synchronous sender");
 			}
-			getListener().configure();
+			try {
+				getListener().configure();
+			} catch (ConfigurationException e) {
+				throw new ConfigurationException(getLogPrefix(null)+"while configuring listener",e);
+			}
 			if (getListener() instanceof HasPhysicalDestination) {
 				log.info(getLogPrefix(null)+"has listener on "+((HasPhysicalDestination)getListener()).getPhysicalDestinationName());
 			}
