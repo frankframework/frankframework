@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcTransactionalStorage.java,v $
- * Revision 1.9  2005-08-18 13:30:15  europe\L190409
+ * Revision 1.10  2005-08-24 15:48:35  europe\L190409
+ * retrieve object using generic getBlobInputStream()
+ *
+ * Revision 1.9  2005/08/18 13:30:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * made descender-class for Oracle
  *
  * Revision 1.8  2005/08/17 16:15:25  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -30,7 +33,6 @@
  */
 package nl.nn.adapterframework.jdbc;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -102,7 +104,7 @@ import nl.nn.adapterframework.util.JdbcUtil;
  * @since 	4.1
  */
 public class JdbcTransactionalStorage extends JdbcFacade implements ITransactionalStorage {
-	public static final String version = "$RCSfile: JdbcTransactionalStorage.java,v $ $Revision: 1.9 $ $Date: 2005-08-18 13:30:15 $";
+	public static final String version = "$RCSfile: JdbcTransactionalStorage.java,v $ $Revision: 1.10 $ $Date: 2005-08-24 15:48:35 $";
 	
 	// the following currently only for debug.... 
 	boolean checkIfTableExists=true;
@@ -466,9 +468,9 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 
 
 	protected Object retrieveObject(ResultSet rs, int columnIndex) throws SQLException, OptionalDataException, ClassNotFoundException, IOException {
-		ByteArrayInputStream in = new ByteArrayInputStream(rs.getBytes(columnIndex));
-		ObjectInputStream ois = new ObjectInputStream(in);
+		ObjectInputStream ois = new ObjectInputStream(JdbcUtil.getBlobInputStream(rs, columnIndex));
 		Object result = ois.readObject();
+		ois.close();
 		return result;
 	}
 
