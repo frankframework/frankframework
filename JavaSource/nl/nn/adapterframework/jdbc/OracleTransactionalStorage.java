@@ -1,15 +1,16 @@
 /*
  * $Log: OracleTransactionalStorage.java,v $
- * Revision 1.1  2005-08-18 13:31:19  europe\L190409
+ * Revision 1.2  2005-08-24 15:49:27  europe\L190409
+ * use getObject from superclass
+ *
+ * Revision 1.1  2005/08/18 13:31:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * JdbcTransactionalStorate descender-class for Oracle
  *
  */
 package nl.nn.adapterframework.jdbc;
 
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.OptionalDataException;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.sql.Connection;
@@ -74,7 +75,7 @@ import org.apache.commons.lang.StringUtils;
  * @since 	4.3
  */
 public class OracleTransactionalStorage extends JdbcTransactionalStorage {
-	public static final String version = "$RCSfile: OracleTransactionalStorage.java,v $ $Revision: 1.1 $ $Date: 2005-08-18 13:31:19 $";
+	public static final String version = "$RCSfile: OracleTransactionalStorage.java,v $ $Revision: 1.2 $ $Date: 2005-08-24 15:49:27 $";
 
 	private String sequenceName="ibisstore_seq";
 		
@@ -168,14 +169,6 @@ public class OracleTransactionalStorage extends JdbcTransactionalStorage {
 				stmt.close();
 			}
 		}
-	}
-
-
-	protected Object retrieveObject(ResultSet rs, int columnIndex) throws SQLException, OptionalDataException, ClassNotFoundException, IOException {
-		BLOB blob = (BLOB)rs.getBlob(columnIndex);
-		ObjectInputStream ois = new ObjectInputStream(blob.getBinaryStream());
-		Object result = ois.readObject();
-		return result;
 	}
 
 
