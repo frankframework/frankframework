@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcFacade.java,v $
- * Revision 1.10  2005-08-17 16:10:56  europe\L190409
+ * Revision 1.11  2005-08-24 15:47:25  europe\L190409
+ * try to prefix with java:comp/env/ to find datasource (Tomcat compatibility)
+ *
+ * Revision 1.10  2005/08/17 16:10:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * test for empty strings using StringUtils.isEmpty()
  *
  * Revision 1.9  2005/08/09 15:53:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -59,7 +62,7 @@ import org.apache.log4j.Logger;
  * 
  */
 public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version="$RCSfile: JdbcFacade.java,v $ $Revision: 1.10 $ $Date: 2005-08-17 16:10:56 $";
+	public static final String version="$RCSfile: JdbcFacade.java,v $ $Revision: 1.11 $ $Date: 2005-08-24 15:47:25 $";
     protected Logger log = Logger.getLogger(this.getClass());
 	
 	private String name;
@@ -103,7 +106,14 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 					datasource =(DataSource) getContext().lookup( dsName );
 					log.debug(getLogPrefix()+"looked up Datasource ["+dsName+"]: ["+datasource+"]");
 				} catch (NamingException e) {
-					throw new JdbcException(getLogPrefix()+"cannot find Datasource ["+dsName+"]", e);
+					try {
+						String tomcatDsName="java:comp/env/"+dsName;
+						log.debug(getLogPrefix()+"could not find ["+dsName+"], now trying ["+tomcatDsName+"]");
+						datasource =(DataSource) getContext().lookup( tomcatDsName );
+						log.debug(getLogPrefix()+"looked up Datasource ["+tomcatDsName+"]: ["+datasource+"]");
+					} catch (NamingException e2) {
+						throw new JdbcException(getLogPrefix()+"cannot find Datasource ["+dsName+"]", e);
+					}
 				}
 		}
 		return datasource;
