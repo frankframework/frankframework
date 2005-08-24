@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaRequesterSender.java,v $
- * Revision 1.11  2005-04-26 09:24:20  L190409
+ * Revision 1.12  2005-08-24 15:45:47  europe\L190409
+ * acknowledge receipt of reply-message
+ *
+ * Revision 1.11  2005/04/26 09:24:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * put closings in finally clause
  *
  * Revision 1.10  2005/04/20 14:21:53  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -42,6 +45,7 @@ import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 
 import javax.jms.JMSException;
+import javax.jms.Message;
 import javax.jms.QueueReceiver;
 import javax.jms.QueueSender;
 import javax.jms.QueueSession;
@@ -73,10 +77,10 @@ import com.ing.ifsa.IFSATimeOutMessage;
  * </table>
  *
  * @author Johan Verrips / Gerrit van Brakel
- * @since 4.2
+ * @since  4.2
  */
 public class IfsaRequesterSender extends IfsaFacade implements ISender {
-	public static final String version="$Id: IfsaRequesterSender.java,v 1.11 2005-04-26 09:24:20 L190409 Exp $";
+	public static final String version="$RCSfile: IfsaRequesterSender.java,v $ $Revision: 1.12 $ $Date: 2005-08-24 15:45:47 $";
   
 	public IfsaRequesterSender() {
   		super(false); // instantiate IfsaFacade as a requestor	
@@ -119,7 +123,7 @@ public class IfsaRequesterSender extends IfsaFacade implements ISender {
 	private TextMessage getRawReplyMessage(TextMessage sentMessage) throws SenderException, TimeOutException {
 	
 		String correlationID;
-	    Object msg = null;
+	    Message msg = null;
 		QueueSession replySession=null;
 		QueueReceiver replyReceiver=null;
 		try {
@@ -130,6 +134,15 @@ public class IfsaRequesterSender extends IfsaFacade implements ISender {
 			long timeout = getExpiry();
 			log.debug(getLogPrefix()+"start waiting at most ["+timeout+"] ms for reply on message with correlation ID ["+correlationID+"]");
 		    msg = replyReceiver.receive(timeout);
+			try {
+				if (!isTransacted() && !isJmsTransacted()) {
+					msg.acknowledge();
+					log.debug(getLogPrefix()+"acknowledged received message");
+				}
+			} catch (JMSException e) {
+				log.error(getLogPrefix()+"exception in ack ", e);
+			}
+
 	    } catch (Exception e) {
 	        throw new SenderException(getLogPrefix()+"got exception retrieving reply", e);
 	    } finally {
