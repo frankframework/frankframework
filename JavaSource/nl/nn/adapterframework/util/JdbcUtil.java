@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcUtil.java,v $
- * Revision 1.5  2005-08-18 13:37:22  europe\L190409
+ * Revision 1.6  2005-08-24 15:55:57  europe\L190409
+ * added getBlobInputStream()
+ *
+ * Revision 1.5  2005/08/18 13:37:22  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected version String
  *
  * Revision 1.4  2005/08/18 13:36:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -19,11 +22,14 @@
  */
 package nl.nn.adapterframework.util;
 
+import java.io.InputStream;
+import java.sql.Blob;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+
 
 import org.apache.log4j.Logger;
 
@@ -35,7 +41,7 @@ import org.apache.log4j.Logger;
  * @since   4.1
  */
 public class JdbcUtil {
-	public static final String version = "$RCSfile: JdbcUtil.java,v $ $Revision: 1.5 $ $Date: 2005-08-18 13:37:22 $";
+	public static final String version = "$RCSfile: JdbcUtil.java,v $ $Revision: 1.6 $ $Date: 2005-08-24 15:55:57 $";
 	protected static Logger log = Logger.getLogger(JdbcUtil.class);
 	
 	private static final boolean useMetaData=false;
@@ -68,4 +74,10 @@ public class JdbcUtil {
 			}
 		}
 	}
+	
+	public static InputStream getBlobInputStream(ResultSet rs, int columnIndex) throws SQLException {
+		Blob blob = rs.getBlob(columnIndex);
+		return blob.getBinaryStream();
+	}
+
 }
