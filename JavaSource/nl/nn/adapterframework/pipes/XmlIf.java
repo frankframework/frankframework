@@ -1,6 +1,9 @@
 /*
  * $Log: XmlIf.java,v $
- * Revision 1.1  2005-08-24 15:54:41  europe\L190409
+ * Revision 1.2  2005-08-25 15:49:49  europe\L190409
+ * improved logging
+ *
+ * Revision 1.1  2005/08/24 15:54:41  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * introduction of XmlIf
  *
  */
@@ -38,7 +41,7 @@ import nl.nn.adapterframework.util.TransformerPool;
  */
 
 public class XmlIf extends AbstractPipe {
-	public static final String version="$RCSfile: XmlIf.java,v $ $Revision: 1.1 $ $Date: 2005-08-24 15:54:41 $";
+	public static final String version="$RCSfile: XmlIf.java,v $ $Revision: 1.2 $ $Date: 2005-08-25 15:49:49 $";
 
 	private String sessionKey = null;
 	private String xpathExpression = null;
@@ -88,7 +91,8 @@ public class XmlIf extends AbstractPipe {
 		if (StringUtils.isEmpty(getSessionKey())) {
 			sInput = input.toString();
 		} else {
-			sInput=(String) session.get(sessionKey);
+			log.debug(getLogPrefix(session)+"taking input from sessionKey ["+getSessionKey()+"]");
+			sInput=(String) session.get(getSessionKey());
 		}
 
 		log.debug(getLogPrefix(session) + "input value is [" + sInput + "]");
@@ -97,7 +101,7 @@ public class XmlIf extends AbstractPipe {
 			try {
 				forward = tp.transform(sInput,null);
 			} catch (Exception e) {
-				throw new PipeRunException(this,"cannot determine forward",e);
+				throw new PipeRunException(this,getLogPrefix(session)+"cannot evaluate expression",e);
 			}
 		} else {
 			if (sInput.equals(expressionValue)) {
@@ -115,6 +119,7 @@ public class XmlIf extends AbstractPipe {
 		if (pipeForward == null) {
 			  throw new PipeRunException (this, getLogPrefix(null)+"cannot find forward or pipe named [" + forward + "]");
 		}
+		log.debug(getLogPrefix(session)+ "resolved forward [" + forward + "] to path ["+pipeForward.getPath()+"]");
 		return new PipeRunResult(pipeForward, input);
 	}
 	
