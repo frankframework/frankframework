@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.17  2005-07-19 12:23:11  europe\L190409
+ * Revision 1.18  2005-08-25 15:42:26  europe\L190409
+ * prohibit defining pipes with the same name
+ *
+ * Revision 1.17  2005/07/19 12:23:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * cosmetic changes
  *
  * Revision 1.16  2005/07/05 10:49:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -111,7 +114,7 @@ import javax.transaction.UserTransaction;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.17 $ $Date: 2005-07-19 12:23:11 $";
+	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.18 $ $Date: 2005-08-25 15:42:26 $";
     private Logger log = Logger.getLogger(this.getClass());
     
 	private Adapter adapter;    // for transaction managing
@@ -139,7 +142,11 @@ public class PipeLine {
 	 * to prevail.
 	 * @see nl.nn.adapterframework.pipes.AbstractPipe
 	 **/
-	public void addPipe(IPipe pipe) {
+	public void addPipe(IPipe pipe) throws ConfigurationException {
+		IPipe current=(IPipe)pipelineTable.get(pipe.getName());
+		if (current!=null) {
+			throw new ConfigurationException("pipe ["+pipe.getName()+"] defined more then once");
+		}
 	    pipelineTable.put(pipe.getName(), pipe);
 	    pipeStatistics.put(pipe.getName(), new StatisticsKeeper(pipe.getName()));
 	    if (pipe.getMaxThreads() > 0) {
