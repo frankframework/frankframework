@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcQuerySenderBase.java,v $
- * Revision 1.12  2005-07-28 07:33:20  europe\L190409
+ * Revision 1.13  2005-08-25 15:48:37  europe\L190409
+ * close all jdbc-objects in finally clause
+ *
+ * Revision 1.12  2005/07/28 07:33:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * close statement also for update-statements
  *
  * Revision 1.11  2005/07/19 12:36:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -82,7 +85,7 @@ import nl.nn.adapterframework.util.DB2XMLWriter;
  * @since 	4.1
  */
 public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
-	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.12 $ $Date: 2005-07-28 07:33:20 $";
+	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.13 $ $Date: 2005-08-25 15:48:37 $";
 
 	private String queryType = "other";
 	private int startRow=1;
@@ -116,19 +119,11 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 			if ("select".equalsIgnoreCase(getQueryType())) {
 				return executeSelectQuery(statement);
 			} else {
-				try {
-					int numRowsAffected = statement.executeUpdate();
-					if (isScalar()) {
-						return numRowsAffected+"";
-					}
-					return "<result><rowsupdated>" + numRowsAffected + "</rowsupdated></result>";
-				} finally {
-					try {
-						statement.close();
-					} catch (SQLException e) {
-						log.warn("",new SenderException(getLogPrefix() + "got exception closing SQL statement",e ));
-					}
+				int numRowsAffected = statement.executeUpdate();
+				if (isScalar()) {
+					return numRowsAffected+"";
 				}
+				return "<result><rowsupdated>" + numRowsAffected + "</rowsupdated></result>";
 			}
 		} catch (ParameterException e) {
 			throw new SenderException(getLogPrefix() + "got exception evaluating parameters", e);
@@ -136,6 +131,14 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 			throw new SenderException(getLogPrefix() + "got exception sending message", e);
 		} catch (JdbcException e) {
 			throw new SenderException(e);
+		} finally {
+			try {
+				if (statement!=null) {
+					statement.close();
+				}
+			} catch (SQLException e) {
+				log.warn(new SenderException(getLogPrefix() + "got exception closing SQL statement",e ));
+			}
 		}
 	}
 
@@ -175,9 +178,8 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 				if (resultset!=null) {
 					resultset.close();
 				}
-				statement.close();
 			} catch (SQLException e) {
-				throw new SenderException(getLogPrefix() + "got exception closing a SELECT SQL command",e );
+				log.warn(new SenderException(getLogPrefix() + "got exception closing resultset",e));
 			}
 		}
 	}
