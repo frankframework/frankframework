@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcSenderBase.java,v $
- * Revision 1.2  2005-05-31 09:55:01  europe\L190409
+ * Revision 1.3  2005-08-25 15:45:47  europe\L190409
+ * close connection in a finally clause
+ *
+ * Revision 1.2  2005/05/31 09:55:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * implemented attribute 'connectionsArePooled'
  *
  * Revision 1.1  2005/04/26 15:20:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -29,7 +32,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * @since 	4.2.h
  */
 public abstract class JdbcSenderBase extends JdbcFacade implements ISenderWithParameters {
-	public static final String version="$RCSfile: JdbcSenderBase.java,v $ $Revision: 1.2 $ $Date: 2005-05-31 09:55:01 $";
+	public static final String version="$RCSfile: JdbcSenderBase.java,v $ $Revision: 1.3 $ $Date: 2005-08-25 15:45:47 $";
 
 	protected Connection connection=null;
 	protected ParameterList paramList = null;
@@ -91,16 +94,23 @@ public abstract class JdbcSenderBase extends JdbcFacade implements ISenderWithPa
 
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException {
 		if (isConnectionsArePooled()) {
+			Connection c = null;
 			try {
-				Connection c = getConnection();
+				c = getConnection();
 				String result = sendMessage(c, correlationID, message, prc);
-				c.close();
 				return result;
-			} catch (SQLException e) {
-				throw new SenderException(getLogPrefix() + "caught exception sender message, ID=["+correlationID+"]", e);
 			} catch (JdbcException e) {
 				throw new SenderException(e);
+			} finally {
+				if (c!=null) {
+					try {
+						c.close();
+					} catch (SQLException e) {
+						log.warn(new SenderException(getLogPrefix() + "caught exception closing sender after sending message, ID=["+correlationID+"]", e));
+					}
+				}
 			}
+			
 		} else {
 			synchronized (connection) {
 				return sendMessage(connection, correlationID, message, prc);
