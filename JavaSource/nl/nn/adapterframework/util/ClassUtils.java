@@ -1,6 +1,9 @@
 /*
  * $Log: ClassUtils.java,v $
- * Revision 1.5  2005-08-18 13:34:19  europe\L190409
+ * Revision 1.6  2005-08-30 16:06:27  europe\L190409
+ * escape spaces in URL using %20
+ *
+ * Revision 1.5  2005/08/18 13:34:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * try to prefix resource with 'java:comp/env/', for TomCat compatibility
  *
  * Revision 1.4  2004/11/08 08:31:17  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -15,6 +18,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
+import java.net.MalformedURLException;
 import java.net.URL;
 
 /**
@@ -24,7 +28,7 @@ import java.net.URL;
  *
  */
 public class ClassUtils {
-	public static final String version = "$RCSfile: ClassUtils.java,v $ $Revision: 1.5 $ $Date: 2005-08-18 13:34:19 $";
+	public static final String version = "$RCSfile: ClassUtils.java,v $ $Revision: 1.6 $ $Date: 2005-08-30 16:06:27 $";
 	
 	private static Logger log = Logger.getLogger("ClassUtils");
     /**
@@ -101,8 +105,34 @@ public class ClassUtils {
 		}
         if (url==null)
           log.warn("cannot find URL for resource ["+resource+"]");
-        else
-       	  log.debug("resolved resource-string ["+resource+"] to URL ["+url.toString()+"]");
+        else {
+
+			// Spaces must be escaped to %20. But ClassLoader.getResource(String)
+			// has a bug in Java 1.3 and 1.4 and doesn't do this escaping.
+			// See also:
+			//
+			// http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4778185
+			// http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4785848
+			// http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4273532
+			// http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4496398
+			//
+			// Escaping spaces to %20 if spaces are found.
+			String urlString = url.toString();
+			int i = urlString.indexOf(' ');
+			if (i != -1) {
+				while (i != -1) {
+					urlString = urlString.substring(0, i) + "%20" + urlString.substring(i + 1);
+					i = urlString.indexOf(' ');
+				}
+				try {
+					URL escapedURL = new URL(urlString);
+					log.debug("resolved resource-string ["+resource+"] to URL ["+escapedURL.toString()+"]");
+					return escapedURL;
+				} catch(MalformedURLException e) {
+					log.warn("Could not find URL from space-escaped url ["+urlString+"], will use unescaped original version ["+url.toString()+"] ");
+				}
+			}
+        }
         return url;
     }
   /**
