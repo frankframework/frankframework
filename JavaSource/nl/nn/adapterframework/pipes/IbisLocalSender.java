@@ -1,6 +1,9 @@
 /*
  * $Log: IbisLocalSender.java,v $
- * Revision 1.2  2005-08-24 15:53:28  europe\L190409
+ * Revision 1.3  2005-08-30 16:02:28  europe\L190409
+ * made parameterized version
+ *
+ * Revision 1.2  2005/08/24 15:53:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved error message for configuration exception
  *
  * Revision 1.1  2004/08/09 13:50:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -9,11 +12,19 @@
  */
 package nl.nn.adapterframework.pipes;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderWithParametersBase;
+import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.receivers.ServiceDispatcher;
+
 import org.apache.commons.lang.StringUtils;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.ISender;
-import nl.nn.adapterframework.receivers.ServiceDispatcher;
+import java.util.HashMap;
+
 
 /**
  * Posts a message to another IBIS-adapter in the same JVM.
@@ -26,19 +37,20 @@ import nl.nn.adapterframework.receivers.ServiceDispatcher;
  * <tr><td>{@link #setServiceName(String) serviceName}</td><td>Name of the WebServiceListener or JavaListener that should be called</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
+ * Any parameters are copied to the PipeLineSession of the service called.
  *
  * @author Gerrit van Brakel
  * @since  4.2
  */
-public class IbisLocalSender implements ISender {
-	public static final String version="$RCSfile: IbisLocalSender.java,v $ $Revision: 1.2 $ $Date: 2005-08-24 15:53:28 $";
+public class IbisLocalSender extends SenderWithParametersBase {
+	public static final String version="$RCSfile: IbisLocalSender.java,v $ $Revision: 1.3 $ $Date: 2005-08-30 16:02:28 $";
 	
 	private String name;
 	private String serviceName;
 
 	public void configure() throws ConfigurationException {
 		if (StringUtils.isEmpty(getServiceName())) {
-			throw new ConfigurationException("IbisLocalSender ["+getName()+"] has no serviceName specified");
+			throw new ConfigurationException(getLogPrefix()+"has no serviceName specified");
 		}
 	}
 
@@ -52,8 +64,20 @@ public class IbisLocalSender implements ISender {
 		return true;
 	}
 
-	public String sendMessage(String correlationID, String message) {
-		return ServiceDispatcher.getInstance().dispatchRequest(getServiceName(), correlationID, message);
+	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+		HashMap context = null;
+		if (paramList!=null) {
+			try {
+				context = prc.getValueMap(paramList);
+			} catch (ParameterException e) {
+				throw new SenderException(getLogPrefix()+"exception evaluating parameters",e);
+			}
+		}
+		try {
+			return ServiceDispatcher.getInstance().dispatchRequestWithExceptions(getServiceName(), correlationID, message, context);
+		} catch (ListenerException e) {
+			throw new SenderException(getLogPrefix()+"exception calling service ["+getServiceName()+"]",e);
+		}
 	}
 
 
@@ -73,5 +97,6 @@ public class IbisLocalSender implements ISender {
 	public String getServiceName() {
 		return serviceName;
 	}
+
 
 }
