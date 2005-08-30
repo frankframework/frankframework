@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.18  2005-08-25 15:42:26  europe\L190409
+ * Revision 1.19  2005-08-30 15:54:44  europe\L190409
+ * corrected typos in logging-statements
+ *
+ * Revision 1.18  2005/08/25 15:42:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * prohibit defining pipes with the same name
  *
  * Revision 1.17  2005/07/19 12:23:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -114,7 +117,7 @@ import javax.transaction.UserTransaction;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.18 $ $Date: 2005-08-25 15:42:26 $";
+	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.19 $ $Date: 2005-08-30 15:54:44 $";
     private Logger log = Logger.getLogger(this.getClass());
     
 	private Adapter adapter;    // for transaction managing
@@ -317,12 +320,12 @@ public class PipeLine {
 				}
 			}	else {
 				if (adapter!=null && isTransacted())  {
-					log.warn("Pipeline of adapter ["+ owner.getName()+"], msgid ["+messageId+"]  setting transaction to ROLL BACK ONLY");
+					log.warn("Pipeline of adapter ["+ owner.getName()+"], msgid ["+messageId+"] setting transaction to ROLL BACK ONLY");
 					try {
 					utx = adapter.getUserTransaction();
 					utx.setRollbackOnly();
 					} catch(Exception et) {
-						log.error("Pipeline of adapter["+ owner.getName()+"], msgid ["+messageId+"]  got error setting transaction to ROLLBACK ONLY", et);
+						log.error("Pipeline of adapter["+ owner.getName()+"], msgid ["+messageId+"] got error setting transaction to ROLLBACK ONLY", et);
 					}
 				}
 			}
@@ -433,7 +436,7 @@ public class PipeLine {
 	        }
 	
 			if (pipeToRun==null) {
-				throw new PipeRunException(null, "Pipeline of adapter ["+ owner.getName()+"] got an erroneous definition. Pipe to execute. ["+pipeForward.getPath()+ "] is not defined.");
+				throw new PipeRunException(null, "Pipeline of adapter ["+ owner.getName()+"] got an erroneous definition. Pipe to execute ["+pipeForward.getPath()+ "] is not defined.");
 			}
 			
 	    }
