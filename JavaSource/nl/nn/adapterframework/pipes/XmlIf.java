@@ -1,6 +1,9 @@
 /*
  * $Log: XmlIf.java,v $
- * Revision 1.2  2005-08-25 15:49:49  europe\L190409
+ * Revision 1.3  2005-08-30 16:03:20  europe\L190409
+ * decreased amount of logging
+ *
+ * Revision 1.2  2005/08/25 15:49:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved logging
  *
  * Revision 1.1  2005/08/24 15:54:41  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -41,7 +44,7 @@ import nl.nn.adapterframework.util.TransformerPool;
  */
 
 public class XmlIf extends AbstractPipe {
-	public static final String version="$RCSfile: XmlIf.java,v $ $Revision: 1.2 $ $Date: 2005-08-25 15:49:49 $";
+	public static final String version="$RCSfile: XmlIf.java,v $ $Revision: 1.3 $ $Date: 2005-08-30 16:03:20 $";
 
 	private String sessionKey = null;
 	private String xpathExpression = null;
@@ -95,7 +98,7 @@ public class XmlIf extends AbstractPipe {
 			sInput=(String) session.get(getSessionKey());
 		}
 
-		log.debug(getLogPrefix(session) + "input value is [" + sInput + "]");
+		// log.debug(getLogPrefix(session) + "input value is [" + sInput + "]");
 		
 		if (tp!=null) {
 			try {
