@@ -1,16 +1,18 @@
 /*
  * $Log: SenderWithParametersBase.java,v $
- * Revision 1.1  2005-06-20 08:58:13  europe\L190409
+ * Revision 1.2  2005-08-30 15:55:43  europe\L190409
+ * added log and getLogPrefix()
+ *
+ * Revision 1.1  2005/06/20 08:58:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * introduction of SenderWithParametersBase
  *
  *
  */
 package nl.nn.adapterframework.core;
 
+import org.apache.log4j.Logger;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.ISenderWithParameters;
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 
@@ -22,7 +24,8 @@ import nl.nn.adapterframework.parameters.ParameterList;
  * @version Id
  */
 public abstract class SenderWithParametersBase implements ISenderWithParameters {
-	public static final String version="$RCSfile: SenderWithParametersBase.java,v $ $Revision: 1.1 $ $Date: 2005-06-20 08:58:13 $";
+	public static final String version="$RCSfile: SenderWithParametersBase.java,v $ $Revision: 1.2 $ $Date: 2005-08-30 15:55:43 $";
+	protected Logger log = Logger.getLogger(this.getClass());
 	
 	private String name;
 	protected ParameterList paramList = null;
@@ -58,6 +61,10 @@ public abstract class SenderWithParametersBase implements ISenderWithParameters 
 			paramList=new ParameterList();
 		}
 		paramList.add(p);
+	}
+
+	protected String getLogPrefix() {
+		return "["+this.getClass().getName()+"] ["+getName()+"] ";
 	}
 
 }
