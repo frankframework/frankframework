@@ -1,6 +1,9 @@
 /*
  * $Log: FixedQuerySender.java,v $
- * Revision 1.4  2005-08-30 15:57:23  europe\L190409
+ * Revision 1.5  2005-08-30 15:58:01  europe\L190409
+ * corrected version-string
+ *
+ * Revision 1.4  2005/08/30 15:57:23  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added test-preparation in open(), but commented it out, as it didn't work
  *
  * Revision 1.3  2004/10/19 08:11:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -47,7 +50,7 @@ import nl.nn.adapterframework.core.SenderException;
  * @since 	4.1
  */
 public class FixedQuerySender extends JdbcQuerySenderBase {
-	public static final String version="$Id: FixedQuerySender.java,v 1.4 2005-08-30 15:57:23 europe\L190409 Exp $";
+	public static final String version = "$RCSfile: FixedQuerySender.java,v $ $Revision: 1.5 $ $Date: 2005-08-30 15:58:01 $";
 
 	private String query=null;
 		
