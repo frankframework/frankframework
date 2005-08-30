@@ -1,6 +1,9 @@
 /*
  * $Log: ForEachChildElementPipe.java,v $
- * Revision 1.1  2005-06-20 09:08:40  europe\L190409
+ * Revision 1.2  2005-08-30 15:59:33  europe\L190409
+ * added configuration hint
+ *
+ * Revision 1.1  2005/06/20 09:08:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * introduction of ForEachChildElementPipe
  *
  */
@@ -33,13 +36,17 @@ import nl.nn.adapterframework.util.XmlUtils;
  *
  * For configuration options, see {@link MessageSendingPipe}.
  * 
+ * use parameters like:
+ *	<param name="element-name-of-current-item"  xpathExpression="name(/*)" />
+ *	<param name="value-of-current-item"      	xpathExpression="/*" />
+ * 
  * @author Gerrit van Brakel
  * @since 4.3
  * 
- * $Id: ForEachChildElementPipe.java,v 1.1 2005-06-20 09:08:40 europe\L190409 Exp $
+ * $Id: ForEachChildElementPipe.java,v 1.2 2005-08-30 15:59:33 europe\L190409 Exp $
  */
 public class ForEachChildElementPipe extends MessageSendingPipe {
-	public static final String version="$RCSfile: ForEachChildElementPipe.java,v $ $Revision: 1.1 $ $Date: 2005-06-20 09:08:40 $";
+	public static final String version="$RCSfile: ForEachChildElementPipe.java,v $ $Revision: 1.2 $ $Date: 2005-08-30 15:59:33 $";
 
 	private boolean elementsOnly=true;
 
