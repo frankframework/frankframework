@@ -1,6 +1,9 @@
 /*
  * $Log: FixedQuerySender.java,v $
- * Revision 1.3  2004-10-19 08:11:56  L190409
+ * Revision 1.4  2005-08-30 15:57:23  europe\L190409
+ * added test-preparation in open(), but commented it out, as it didn't work
+ *
+ * Revision 1.3  2004/10/19 08:11:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * modified JavaDoc
  *
  * Revision 1.2  2004/03/26 10:43:08  Johan Verrips <johan.verrips@ibissource.org>
@@ -15,6 +18,8 @@ package nl.nn.adapterframework.jdbc;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+
+import nl.nn.adapterframework.core.SenderException;
 
 /**
  * QuerySender that assumes a fixed query, possibly with attributes.
@@ -42,13 +47,48 @@ import java.sql.SQLException;
  * @since 	4.1
  */
 public class FixedQuerySender extends JdbcQuerySenderBase {
-	public static final String version="$Id: FixedQuerySender.java,v 1.3 2004-10-19 08:11:56 L190409 Exp $";
+	public static final String version="$Id: FixedQuerySender.java,v 1.4 2005-08-30 15:57:23 europe\L190409 Exp $";
 
 	private String query=null;
 		
 	protected PreparedStatement getStatement(Connection con, String correlationID, String message) throws JdbcException, SQLException {
 		return con.prepareStatement(getQuery());
 	}
+
+/*
+	public void open() throws SenderException {
+		super.open();
+		if (log.isDebugEnabled()) {
+			log.debug(getLogPrefix() +"test preparing statement for query ["+getQuery()+"]");
+			Connection c = null;
+			try {
+				c = getConnection();
+				PreparedStatement stmt = null;
+				try {
+					stmt = getStatement(c, null, null);
+				} finally {
+					if (stmt != null) {
+						try {
+							stmt.close();
+						} catch (SQLException e) {
+							log.warn(new SenderException(getLogPrefix() + "caught exception closing statement after test-preparing statement", e));
+						}
+					}
+				}
+			} catch (Exception e) {
+				throw new SenderException(getLogPrefix()+"caught exception test-preparing query",e);
+			} finally {
+				if (c!=null) {
+					try {
+						c.close();
+					} catch (SQLException e) {
+						log.warn(new SenderException(getLogPrefix() + "caught exception closing connection after test-preparing statement", e));
+					}
+				}
+			}
+		}
+	}
+*/
 
 	/**
 	 * Sets the SQL-query text to be executed each time sendMessage() is called.
