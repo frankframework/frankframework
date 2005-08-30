@@ -1,6 +1,9 @@
 /*
  * $Log: ServiceDispatcher.java,v $
- * Revision 1.6  2005-07-05 13:17:52  europe\L190409
+ * Revision 1.7  2005-08-30 16:05:35  europe\L190409
+ * throw exception if requested service does not exist
+ *
+ * Revision 1.6  2005/07/05 13:17:52  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * allow for ServiceClient2 extensions
  *
  */
@@ -30,7 +33,7 @@ import java.util.TreeSet;
  * @see ServiceDispatcherBean
  */
 public class ServiceDispatcher  {
-	public static final String version = "$RCSfile: ServiceDispatcher.java,v $ $Revision: 1.6 $ $Date: 2005-07-05 13:17:52 $";
+	public static final String version = "$RCSfile: ServiceDispatcher.java,v $ $Revision: 1.7 $ $Date: 2005-08-30 16:05:35 $";
 	protected Logger log = Logger.getLogger(this.getClass());
 	
 	private Hashtable registeredListeners=new Hashtable();
@@ -75,15 +78,13 @@ public class ServiceDispatcher  {
      * Dispatch a request.
      * @since 4.3
      */
-	public String dispatchRequestWithExceptions(String serviceName, String correlationId, String request, HashMap requestContext) throws ListenerException{
+	public String dispatchRequestWithExceptions(String serviceName, String correlationId, String request, HashMap requestContext) throws ListenerException {
 		if (log.isDebugEnabled()) {
-			log.debug("dispatchRequest for service ["+serviceName+"] request ["+request+"]");
+			log.debug("dispatchRequest for service ["+serviceName+"] correlationId ["+correlationId+"]");
 		}
 		ServiceClient client=(ServiceClient)registeredListeners.get(serviceName);
 		if (client==null) {
-            String msg="service request for service ["+serviceName+"] is not registered";
-			log.error(msg);
-			return msg;
+            throw new ListenerException("service ["+serviceName+"] is not registered");
 		}
 		String result;
 		if (client instanceof ServiceClient2) {
