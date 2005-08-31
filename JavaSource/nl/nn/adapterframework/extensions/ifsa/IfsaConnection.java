@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaConnection.java,v $
- * Revision 1.3  2005-07-19 12:34:50  europe\L190409
+ * Revision 1.4  2005-08-31 16:29:50  europe\L190409
+ * corrected code for static reply queues
+ *
+ * Revision 1.3  2005/07/19 12:34:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected version-string
  *
  * Revision 1.2  2005/07/19 12:33:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -43,7 +46,7 @@ import com.ing.ifsa.IFSAQueueConnectionFactory;
  * @version Id
  */
 public class IfsaConnection extends JmsConnection {
-	public static final String version="$RCSfile: IfsaConnection.java,v $ $Revision: 1.3 $ $Date: 2005-07-19 12:34:50 $";
+	public static final String version="$RCSfile: IfsaConnection.java,v $ $Revision: 1.4 $ $Date: 2005-08-31 16:29:50 $";
 
 	protected boolean preJms22Api=false;
 
@@ -53,15 +56,19 @@ public class IfsaConnection extends JmsConnection {
 		log.debug("created new IfsaConnection for ["+applicationId+"] context ["+context+"] connectionfactory ["+connectionFactory+"]");
 	}
 
-	private boolean hasStaticReplyQueue() throws IfsaException {
-		/*
-		 * if we don't know if we're using a dynamic reply queue, we can
-		 * check this using the function IsClientTransactional
-		 * Yes -> we're using a static reply queue
-		 * No -> dynamic reply queue
-		 */
-		return ((IFSAQueueConnectionFactory)getConnectionFactory()).IsClientTransactional();  // Static
+	public boolean hasDynamicReplyQueue() throws IfsaException {
+		try {
+			if (preJms22Api) {
+				return !((IFSAQueueConnectionFactory) getConnectionFactory()).IsClientTransactional();
+			} else {
+				return ((IFSAContext) getContext()).hasDynamicReplyQueue();
+			}
+		} catch (NamingException e) {
+			throw new IfsaException("could not find IfsaContext",e);
+		}
 	}
+	
+	
 	
 	/**
 	 * Retrieves the reply queue for a <b>client</b> connection. If the
@@ -78,12 +85,12 @@ public class IfsaConnection extends JmsConnection {
 			 * Yes -> we're using a static reply queue
 			 * No -> dynamic reply queue
 			 */
-			if (hasStaticReplyQueue()) { // Static
-				replyQueue = (Queue) ((IFSAContext)getContext()).lookupReply(getId());
-				log.debug("got static reply queue [" +replyQueue.getQueueName()+"]");            
-			} else { // Temporary Dynamic
+			if (hasDynamicReplyQueue()) { // Temporary Dynamic
 				replyQueue =  session.createTemporaryQueue();
 				log.debug("got dynamic reply queue [" +replyQueue.getQueueName()+"]");
+			} else { // Static
+				replyQueue = (Queue) ((IFSAContext)getContext()).lookupReply(getId());
+				log.debug("got static reply queue [" +replyQueue.getQueueName()+"]");            
 			}
 			return replyQueue;
 		} catch (Exception e) {
@@ -105,7 +112,7 @@ public class IfsaConnection extends JmsConnection {
 		String correlationId;
 		Queue replyQueue;
 		try {
-			correlationId=sentMessage.getJMSCorrelationID();
+			correlationId = sentMessage.getJMSMessageID(); // IFSA uses the messageId as correlationId
 			replyQueue=(Queue)sentMessage.getJMSReplyTo();
 		} catch (JMSException e) {
 			throw new IfsaException(e);
@@ -113,13 +120,13 @@ public class IfsaConnection extends JmsConnection {
 		
 		try {
 	
-			if (hasStaticReplyQueue()) {
+			if (hasDynamicReplyQueue()) {
+				queueReceiver = session.createReceiver(replyQueue);
+				log.debug("using dynamic reply queue" );
+			} else {
 				String selector="JMSCorrelationID='" + correlationId + "'";
 				queueReceiver = session.createReceiver(replyQueue, selector);
-				log.debug("** transactional client - selector ["+selector+"]");
-			} else {
-				queueReceiver = session.createReceiver(replyQueue);
-				log.debug("** non-transactional client" );
+				log.debug("Using static reply queue - selector ["+selector+"]");
 			}	
 		} catch (JMSException e) {
 			throw new IfsaException(e);

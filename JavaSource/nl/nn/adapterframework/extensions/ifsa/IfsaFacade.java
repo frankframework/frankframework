@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaFacade.java,v $
- * Revision 1.27  2005-07-28 07:31:25  europe\L190409
+ * Revision 1.28  2005-08-31 16:32:16  europe\L190409
+ * corrected code for static reply queues
+ *
+ * Revision 1.27  2005/07/28 07:31:25  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * change default acknowledge mode to CLIENT
  *
  * Revision 1.26  2005/07/19 12:33:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -110,7 +113,7 @@ import javax.jms.*;
  * @since 4.2
  */
 public class IfsaFacade implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version = "$RCSfile: IfsaFacade.java,v $ $Revision: 1.27 $ $Date: 2005-07-28 07:31:25 $";
+	public static final String version = "$RCSfile: IfsaFacade.java,v $ $Revision: 1.28 $ $Date: 2005-08-31 16:32:16 $";
     protected Logger log = Logger.getLogger(this.getClass());
     
     private static int BASIC_ACK_MODE = Session.CLIENT_ACKNOWLEDGE;
@@ -227,40 +230,14 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination, IXAEnab
 	            }
                 log.debug(getLogPrefix()+"closed connection for service");
 	        }
-/*			if (context != null) {
-				try {
-					context.close();
-					log.debug(getLogPrefix()+"closed context for service");
-				} catch (NamingException e) {
-					throw new IfsaException("exception closing context of service",e);
-				}
-			}
-*/			
 	    } finally {
 	    	// make sure all objects are reset, to be able to restart after IFSA parameters have changed (e.g. at iterative installation time)
 	        queue = null;
 	        connection = null;
-//			ifsaQueueConnectionFactory = null;
-//			context = null;
 	    }
 	}
 	
-/*	
-	private IFSAContext getContext() throws IfsaException {
-		try {
-			if (context == null) {
-				Hashtable env = new Hashtable(11);
-				env.put(Context.INITIAL_CONTEXT_FACTORY, IFSA_INITIAL_CONTEXT_FACTORY);
-				env.put(Context.PROVIDER_URL, IFSA_PROVIDER_URL);
-				// Create context as required by IFSA 2.0. Ignore the deprecation....
-				context = new IFSAContext((Context) new InitialContext(env));
-			}
-			return context;
-		} catch (NamingException e) {
-			throw new IfsaException("could not obtain context", e);
-		}
-	}
-*/
+
 	/**
 	 * Looks up the <code>serviceId</code> in the <code>IFSAContext</code>.<br/>
 	 * <p>The method is knowledgable of Provider versus Requester processing.
@@ -284,24 +261,6 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination, IXAEnab
 		}
 		return queue;
 	}
-
-	/**
-	 * Returns a connection for the queue corresponding to the service
-	 */
-/*	
-	protected QueueConnection getConnection() throws IfsaException {
-		try {
-			if (connection == null) {
-				connection = getIfsaQueueConnectionFactory().createQueueConnection();
-				connection.start();
-			}
-			return connection;
-		} catch (Exception e) {
-			throw new IfsaException("could not obtain connection", e);
-		}
-	}
-*/
-
 
 	protected IfsaConnection getConnection() throws IfsaException {
 		if (connection == null) {
@@ -330,7 +289,7 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination, IXAEnab
 	public QueueSession createSession() throws IfsaException {
 		try {
 			int mode = BASIC_ACK_MODE; 
-			if (isRequestor()) {
+			if (isRequestor() && connection.hasDynamicReplyQueue()) {
 				mode += IFSAConstants.QueueSession.IFSA_MODE; // let requestor receive IFSATimeOutMessages
 			}
 			return (QueueSession) connection.createSession(isJmsTransacted(), mode);
@@ -401,43 +360,14 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination, IXAEnab
 	        throw new IfsaException("error retrieving timeOut value", e);
 	    }
 	}
-	/**
-	 * Depending on wether <code>serverName</code> or <code>clientName</code> is used the busConnection is looked up.
-	 */
-/*	
-	private IFSAQueueConnectionFactory getIfsaQueueConnectionFactory()
-	    throws IfsaException {
-	
-		try {	     
-	    if (ifsaQueueConnectionFactory == null) {
-	
-            ifsaQueueConnectionFactory =
-                (IFSAQueueConnectionFactory) getContext().lookupBusConnection(getApplicationId());
-	
-		    if (log.isDebugEnabled()) {
-			    log.debug(getLogPrefix()+"got ifsaQueueConnectionFactory with properties:" 
-		            + ToStringBuilder.reflectionToString(ifsaQueueConnectionFactory) +"\n" 
-		        	+ " isServer: " +ifsaQueueConnectionFactory.IsServer()+"\n"  
-		        	+ " isClientNonTransactional:" +ifsaQueueConnectionFactory.IsClientNonTransactional()+"\n" 
-		          	+ " isClientTransactional:" +ifsaQueueConnectionFactory.IsClientTransactional()+"\n" 
-		          	+ " isClientServerNonTransactional:" +ifsaQueueConnectionFactory.IsClientServerNonTransactional()+"\n" 
-		          	+ " isServerTransactional:" +ifsaQueueConnectionFactory.IsClientServerTransactional()+"\n" 
-			        
-		        );        
-	        }
-	    }
-	    return ifsaQueueConnectionFactory;
-	    } catch (NamingException e) {
-	        throw new IfsaException(e);
-	    }
-	}
-*/	
+
     public String getMessageProtocol() {
         return messageProtocol.getName();
     }
     public IfsaMessageProtocolEnum getMessageProtocolEnum() {
         return messageProtocol;
     }
+    
 	/**
 	 * Gets the queueReceiver, by utilizing the <code>getInputQueue()</code> method.<br/>
 	 * For serverside getQueueReceiver() the creating of the QueueReceiver is done
@@ -593,8 +523,6 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination, IXAEnab
 	public String toString() {
 	    String result = super.toString();
 	    ToStringBuilder ts = new ToStringBuilder(this);
-//		ts.append("IFSA_INITIAL_CONTEXT_FACTORY", IFSA_INITIAL_CONTEXT_FACTORY);
-//		ts.append("IFSA_PROVIDER_URL", IFSA_PROVIDER_URL);
 		ts.append("applicationId", applicationId);
 	    ts.append("serviceId", serviceId);
 	    if (messageProtocol != null) {
