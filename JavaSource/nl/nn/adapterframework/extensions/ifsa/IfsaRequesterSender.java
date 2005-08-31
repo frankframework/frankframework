@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaRequesterSender.java,v $
- * Revision 1.12  2005-08-24 15:45:47  europe\L190409
+ * Revision 1.13  2005-08-31 16:33:36  europe\L190409
+ * use same session for sending and receiving of reply
+ *
+ * Revision 1.12  2005/08/24 15:45:47  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * acknowledge receipt of reply-message
  *
  * Revision 1.11  2005/04/26 09:24:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -80,7 +83,7 @@ import com.ing.ifsa.IFSATimeOutMessage;
  * @since  4.2
  */
 public class IfsaRequesterSender extends IfsaFacade implements ISender {
-	public static final String version="$RCSfile: IfsaRequesterSender.java,v $ $Revision: 1.12 $ $Date: 2005-08-24 15:45:47 $";
+	public static final String version="$RCSfile: IfsaRequesterSender.java,v $ $Revision: 1.13 $ $Date: 2005-08-31 16:33:36 $";
   
 	public IfsaRequesterSender() {
   		super(false); // instantiate IfsaFacade as a requestor	
@@ -120,19 +123,17 @@ public class IfsaRequesterSender extends IfsaFacade implements ISender {
 	/**
 	 * Retrieves a message with the specified correlationId from queue or other channel, but does no processing on it.
 	 */
-	private TextMessage getRawReplyMessage(TextMessage sentMessage) throws SenderException, TimeOutException {
+	private TextMessage getRawReplyMessage(QueueSession session, TextMessage sentMessage) throws SenderException, TimeOutException {
 	
-		String correlationID;
+		String selector=null;
 	    Message msg = null;
-		QueueSession replySession=null;
 		QueueReceiver replyReceiver=null;
 		try {
-			correlationID = sentMessage.getJMSMessageID();
-		    replySession = createSession();
-		    replyReceiver = getReplyReceiver(replySession, sentMessage);
-	
+		    replyReceiver = getReplyReceiver(session, sentMessage);
+			selector=replyReceiver.getMessageSelector();
+			
 			long timeout = getExpiry();
-			log.debug(getLogPrefix()+"start waiting at most ["+timeout+"] ms for reply on message with correlation ID ["+correlationID+"]");
+			log.debug(getLogPrefix()+"start waiting at most ["+timeout+"] ms for reply on message using selector ["+selector+"]");
 		    msg = replyReceiver.receive(timeout);
 			try {
 				if (!isTransacted() && !isJmsTransacted()) {
@@ -153,28 +154,21 @@ public class IfsaRequesterSender extends IfsaFacade implements ISender {
 					log.error(getLogPrefix()+"error closing replyreceiver", e);
 		        } 
 			}
-			if (replySession!=null) {
-				try {
-			        replySession.close();
-			    } catch (JMSException e) {
-			        log.error(getLogPrefix()+"error closing replysession", e);
-				}
-		    }
 		}
 	    if (msg == null) {
-	        throw new TimeOutException(getLogPrefix()+" timed out waiting for reply with correlationID [" + correlationID + "]");
+	        throw new TimeOutException(getLogPrefix()+" timed out waiting for reply using selector ["+selector+"]");
 	    }
 		if (msg instanceof IFSATimeOutMessage) {
-			throw new TimeOutException(getLogPrefix()+"received IFSATimeOutMessage waiting for reply with correlationID [" + correlationID + "]");
+			throw new TimeOutException(getLogPrefix()+"received IFSATimeOutMessage waiting for reply using selector ["+selector+"]");
 		}
 		try {
 			TextMessage result = (TextMessage)msg;
 			return result;
 		} catch (Exception e) {
-			throw new SenderException(getLogPrefix()+"reply received for message with correlationId [" + correlationID + "] cannot be cast to TextMessage ["+msg.getClass().getName()+"]",e);
+			throw new SenderException(getLogPrefix()+"reply received for message using selector ["+selector+"] cannot be cast to TextMessage ["+msg.getClass().getName()+"]",e);
 		}
-	
 	}
+	
 	/**
 	 * Execute a request to the IFSA service.
 	 * @return in Request/Reply, the retrieved message or TIMEOUT, otherwise null
@@ -200,7 +194,7 @@ public class IfsaRequesterSender extends IfsaFacade implements ISender {
 		
 				log.debug(getLogPrefix()+"waiting for reply");
 				TextMessage msg=null;
-			    msg=getRawReplyMessage(sentMessage);
+			    msg=getRawReplyMessage(session, sentMessage);
 				result=msg.getText();
 				log.debug(getLogPrefix()+"reply received");
 					
