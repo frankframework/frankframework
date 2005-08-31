@@ -1,6 +1,10 @@
 /*
  * $Log: XmlValidator.java,v $
- * Revision 1.5  2005-08-30 16:04:28  europe\L190409
+ * Revision 1.6  2005-08-31 16:36:43  europe\L190409
+ * reduced logging
+ * added usage note about JDK 1.3 vs JDK 1.4
+ *
+ * Revision 1.5  2005/08/30 16:04:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * rework based on code of Jaco de Groot
  *
  */
@@ -13,8 +17,6 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.util.Variant;
 import nl.nn.adapterframework.util.ClassUtils;
-
-import org.apache.log4j.Priority;
 
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXNotSupportedException;
@@ -44,7 +46,8 @@ import java.io.IOException;
  * Xerses on your container may not be able to set the necessary properties, or
  * accept the properties but not do the actual validation! This functionality should
  * work (it does! with Xerces-J-2.6.0 anyway), but testing is necessary!</p>
- *<p><i>Careful: test this on your deployment environment</i></p>
+ * <p><i>Careful 1: test this on your deployment environment</i></p>
+ * <p><i>Careful 2: beware of behaviour differences between different JDKs: JDK 1.4 works much better than JDK 1.3</i></p>
  * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
@@ -67,7 +70,7 @@ import java.io.IOException;
 
  */
 public class XmlValidator extends FixedForwardPipe {
-	public static final String version="$RCSfile: XmlValidator.java,v $ $Revision: 1.5 $ $Date: 2005-08-30 16:04:28 $";
+	public static final String version="$RCSfile: XmlValidator.java,v $ $Revision: 1.6 $ $Date: 2005-08-31 16:36:43 $";
 
 	private String schema = null;
     private String schemaLocation = null;
@@ -83,9 +86,8 @@ public class XmlValidator extends FixedForwardPipe {
         private boolean errorOccured = false;
         private String reasons;
 
-		protected void addReason(SAXParseException exception, Priority level) {
+		protected void addReason(SAXParseException exception) {
 			String msg = " at ("+exception.getLineNumber()+ ","+exception.getColumnNumber()+"): "+exception.getMessage();
-			log.log(level, msg);
 			errorOccured = true;
 			if (reasons == null) {
 				 reasons = msg;
@@ -95,13 +97,13 @@ public class XmlValidator extends FixedForwardPipe {
 		}
 
 		public void warning(SAXParseException exception) {
-			addReason(exception, Priority.WARN);
+			addReason(exception);
 		}
         public void error(SAXParseException exception) {
-        	addReason(exception, Priority.ERROR);
+        	addReason(exception);
         }
         public void fatalError(SAXParseException exception) {
-			addReason(exception, Priority.FATAL);
+			addReason(exception);
         }
 
         public boolean hasErrorOccured() {
