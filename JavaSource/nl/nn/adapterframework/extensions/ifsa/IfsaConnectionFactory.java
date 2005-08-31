@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaConnectionFactory.java,v $
- * Revision 1.5  2005-07-28 07:30:25  europe\L190409
+ * Revision 1.6  2005-08-31 16:28:38  europe\L190409
+ * report use of dynamic reply queues
+ *
+ * Revision 1.5  2005/07/28 07:30:25  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * show XA status in log
  *
  * Revision 1.4  2005/07/19 12:33:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -55,7 +58,7 @@ import com.ing.ifsa.IFSAQueueConnectionFactory;
  * @version Id
  */
 public class IfsaConnectionFactory extends ConnectionFactoryBase {
-	public static final String version="$RCSfile: IfsaConnectionFactory.java,v $ $Revision: 1.5 $ $Date: 2005-07-28 07:30:25 $";
+	public static final String version="$RCSfile: IfsaConnectionFactory.java,v $ $Revision: 1.6 $ $Date: 2005-08-31 16:28:38 $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	private final static String IFSA_INITIAL_CONTEXT_FACTORY="com.ing.ifsa.IFSAContextFactory";
@@ -122,8 +125,9 @@ public class IfsaConnectionFactory extends ConnectionFactoryBase {
 			try {
 				IFSAGate gate = IFSAGate.getInstance();
 				log.info("IFSA JMS XA enabled ["+gate.isXA()+"]");        
+				log.info("IFSA JMS hasDynamicReplyQueue: " +((IFSAContext)context).hasDynamicReplyQueue()); 
 			} catch (Throwable t) {
-				log.info("caught exception determining XA-status of IFSA JMS",t);
+				log.info("caught exception determining IfsaJms v2.2+ features:",t);
 			}
 		}
 		return ifsaQueueConnectionFactory;
