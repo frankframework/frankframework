@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.19  2005-08-30 15:54:44  europe\L190409
+ * Revision 1.20  2005-09-01 08:53:16  europe\L190409
+ * added logging of messages for which processing exceeds maxDuration
+ *
+ * Revision 1.19  2005/08/30 15:54:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected typos in logging-statements
  *
  * Revision 1.18  2005/08/25 15:42:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -53,6 +56,7 @@
 package nl.nn.adapterframework.core;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.pipes.AbstractPipe;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.Misc;
@@ -117,7 +121,7 @@ import javax.transaction.UserTransaction;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.19 $ $Date: 2005-08-30 15:54:44 $";
+	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.20 $ $Date: 2005-09-01 08:53:16 $";
     private Logger log = Logger.getLogger(this.getClass());
     
 	private Adapter adapter;    // for transaction managing
@@ -370,44 +374,54 @@ public class PipeLine {
 	
 	        // start it
 			long waitingDuration = 0;
+			long pipeDuration = -1;
+			
+			try {
+				Semaphore s = getSemaphore(pipeToRun);
+				if (s != null) {
+					try {
+						// keep waiting statistics for thread-limited pipes
+						long startWaiting = System.currentTimeMillis();
+						s.acquire();
+						waitingDuration = System.currentTimeMillis() - startWaiting;
 	
-			Semaphore s = getSemaphore(pipeToRun);
-	        if (s != null) {
-		        try {
-			        // keep waiting statistics for thread-limited pipes
-			        long startWaiting = System.currentTimeMillis();
-			        s.acquire();
-			        waitingDuration = System.currentTimeMillis() - startWaiting;
+						StatisticsKeeper sk = (StatisticsKeeper) pipeWaitingStatistics.get(pipeToRun.getName());
+						sk.addValue(waitingDuration);
 	
-			        StatisticsKeeper sk = (StatisticsKeeper) pipeWaitingStatistics.get(pipeToRun.getName());
-	  			    sk.addValue(waitingDuration);
-	
-	  			    try { 
-				        pipeRunResult = pipeToRun.doPipe(object, pipeLineSession);
-	  			    } finally {
-				        long pipeEndTime = System.currentTimeMillis();
-				        long pipeDuration = pipeEndTime - pipeStartTime - waitingDuration;
+						try { 
+							pipeRunResult = pipeToRun.doPipe(object, pipeLineSession);
+						} finally {
+							long pipeEndTime = System.currentTimeMillis();
+							pipeDuration = pipeEndTime - pipeStartTime - waitingDuration;
 		
-				        sk = (StatisticsKeeper) pipeStatistics.get(pipeToRun.getName());
-				        sk.addValue(pipeDuration);
-	  			    }
-		        } catch (InterruptedException e) {
-			        throw new PipeRunException(pipeToRun, "Interrupted waiting for pipe", e);
-		        } finally { 
-			        s.release();
-		        }
-	        } else { //no restrictions on the maximum number of threads (s==null)
-		        try {
+							sk = (StatisticsKeeper) pipeStatistics.get(pipeToRun.getName());
+							sk.addValue(pipeDuration);
+						}
+					} catch (InterruptedException e) {
+						throw new PipeRunException(pipeToRun, "Interrupted waiting for pipe", e);
+					} finally { 
+						s.release();
+					}
+				} else { //no restrictions on the maximum number of threads (s==null)
+					try {
 		        	
-			        pipeRunResult = pipeToRun.doPipe(object, pipeLineSession);
-	 		    } finally {
-				        long pipeEndTime = System.currentTimeMillis();
-				        long pipeDuration = pipeEndTime - pipeStartTime - waitingDuration;
+						pipeRunResult = pipeToRun.doPipe(object, pipeLineSession);
+					} finally {
+							long pipeEndTime = System.currentTimeMillis();
+							pipeDuration = pipeEndTime - pipeStartTime - waitingDuration;
 		
-				        StatisticsKeeper sk = (StatisticsKeeper) pipeStatistics.get(pipeToRun.getName());
-				        sk.addValue(pipeDuration);
-	  			    }
-		       }
+							StatisticsKeeper sk = (StatisticsKeeper) pipeStatistics.get(pipeToRun.getName());
+							sk.addValue(pipeDuration);
+						}
+				   }
+			} finally {
+				if (pipeToRun instanceof AbstractPipe) {
+					AbstractPipe ap = (AbstractPipe)pipeToRun;
+					if (ap.getMaxDuration() >= 0 && pipeDuration > ap.getMaxDuration()) {
+						log.info("Pipe ["+ap.getName()+"] of ["+owner.getName()+"] duration ["+pipeDuration+"] ms exceeds max ["+ ap.getMaxDuration()+ "], message ["+object+"]");
+					}
+				}
+			}
 	        	        
 	        object=pipeRunResult.getResult();
 	        PipeForward pipeForward=pipeRunResult.getPipeForward();
