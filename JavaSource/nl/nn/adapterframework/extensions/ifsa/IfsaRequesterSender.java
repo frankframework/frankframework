@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaRequesterSender.java,v $
- * Revision 1.13  2005-08-31 16:33:36  europe\L190409
+ * Revision 1.14  2005-09-01 11:19:53  europe\L190409
+ * no ack in case of timeout
+ *
+ * Revision 1.13  2005/08/31 16:33:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * use same session for sending and receiving of reply
  *
  * Revision 1.12  2005/08/24 15:45:47  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -83,7 +86,7 @@ import com.ing.ifsa.IFSATimeOutMessage;
  * @since  4.2
  */
 public class IfsaRequesterSender extends IfsaFacade implements ISender {
-	public static final String version="$RCSfile: IfsaRequesterSender.java,v $ $Revision: 1.13 $ $Date: 2005-08-31 16:33:36 $";
+	public static final String version="$RCSfile: IfsaRequesterSender.java,v $ $Revision: 1.14 $ $Date: 2005-09-01 11:19:53 $";
   
 	public IfsaRequesterSender() {
   		super(false); // instantiate IfsaFacade as a requestor	
@@ -135,20 +138,24 @@ public class IfsaRequesterSender extends IfsaFacade implements ISender {
 			long timeout = getExpiry();
 			log.debug(getLogPrefix()+"start waiting at most ["+timeout+"] ms for reply on message using selector ["+selector+"]");
 		    msg = replyReceiver.receive(timeout);
-			try {
-				if (!isTransacted() && !isJmsTransacted()) {
-					msg.acknowledge();
-					log.debug(getLogPrefix()+"acknowledged received message");
+		    if (msg!=null) {
+		    	log.debug(getLogPrefix()+"received reply");
+				try {
+					if (!isTransacted() && !isJmsTransacted()) {
+						msg.acknowledge();
+						log.debug(getLogPrefix()+"acknowledged received message");
+					}
+				} catch (JMSException e) {
+					log.error(getLogPrefix()+"exception in ack ", e);
 				}
-			} catch (JMSException e) {
-				log.error(getLogPrefix()+"exception in ack ", e);
-			}
+		    }
 
 	    } catch (Exception e) {
 	        throw new SenderException(getLogPrefix()+"got exception retrieving reply", e);
 	    } finally {
 			if (replyReceiver!=null) {
 				try {
+					log.debug(getLogPrefix()+"closing replyreceiver");
 		        	replyReceiver.close();
 				} catch (JMSException e) {
 					log.error(getLogPrefix()+"error closing replyreceiver", e);
@@ -208,6 +215,7 @@ public class IfsaRequesterSender extends IfsaFacade implements ISender {
 		} finally {
 			if (sender != null) {
 				try {
+					log.debug(getLogPrefix()+"closing sender");
 					sender.close();
 				} catch (JMSException e) {
 					log.debug(getLogPrefix()+"Exception closing sender", e);
@@ -215,6 +223,7 @@ public class IfsaRequesterSender extends IfsaFacade implements ISender {
 			}
 			if (session != null) {
 				try {
+					log.debug(getLogPrefix()+"closing session");
 					session.close();
 				} catch (JMSException e) {
 					log.debug(getLogPrefix()+"Exception closing session", e);
