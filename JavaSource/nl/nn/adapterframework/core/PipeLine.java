@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.20  2005-09-01 08:53:16  europe\L190409
+ * Revision 1.21  2005-09-05 07:06:02  europe\L190409
+ * separate logger for durationThreshold
+ *
+ * Revision 1.20  2005/09/01 08:53:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added logging of messages for which processing exceeds maxDuration
  *
  * Revision 1.19  2005/08/30 15:54:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -121,8 +124,9 @@ import javax.transaction.UserTransaction;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.20 $ $Date: 2005-09-01 08:53:16 $";
+	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.21 $ $Date: 2005-09-05 07:06:02 $";
     private Logger log = Logger.getLogger(this.getClass());
+	private Logger durationLog = Logger.getLogger("LongDurationMessages");
     
 	private Adapter adapter;    // for transaction managing
 	private INamedObject owner; // for logging purposes
@@ -417,8 +421,8 @@ public class PipeLine {
 			} finally {
 				if (pipeToRun instanceof AbstractPipe) {
 					AbstractPipe ap = (AbstractPipe)pipeToRun;
-					if (ap.getMaxDuration() >= 0 && pipeDuration > ap.getMaxDuration()) {
-						log.info("Pipe ["+ap.getName()+"] of ["+owner.getName()+"] duration ["+pipeDuration+"] ms exceeds max ["+ ap.getMaxDuration()+ "], message ["+object+"]");
+					if (ap.getDurationThreshold() >= 0 && pipeDuration > ap.getDurationThreshold()) {
+						durationLog.info("Pipe ["+ap.getName()+"] of ["+owner.getName()+"] duration ["+pipeDuration+"] ms exceeds max ["+ ap.getDurationThreshold()+ "], message ["+object+"]");
 					}
 				}
 			}
