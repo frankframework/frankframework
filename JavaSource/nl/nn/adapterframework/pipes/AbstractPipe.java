@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractPipe.java,v $
- * Revision 1.11  2005-09-01 08:51:10  europe\L190409
+ * Revision 1.12  2005-09-05 07:00:06  europe\L190409
+ * changed maxDuration into durationThreshold
+ *
+ * Revision 1.11  2005/09/01 08:51:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added maxDuration attribute, to be used to log messages that take long time
  *
  * Revision 1.10  2005/08/24 15:52:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -71,7 +74,7 @@ import java.util.Hashtable;
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMaxThreads(int) maxThreads}</td><td>maximum number of threads that may call {@link #doPipe(Object, PipeLineSession)} simultaneously</td><td>0 (unlimited)</td></tr>
- * <tr><td>{@link #setMaxDuration(long) maxDuration}</td><td>if maxDuration >=0 and the duration (in milliseconds) of the message processing exceeded the value specified the message is logged informatory</td><td>-1</td></tr>
+ * <tr><td>{@link #setDurationThreshold(long) durationThreshold}</td><td>if durationThreshold >=0 and the duration (in milliseconds) of the message processing exceeded the value specified the message is logged informatory</td><td>-1</td></tr>
  * </table>
  * </p>
  * @version Id
@@ -80,13 +83,13 @@ import java.util.Hashtable;
  * @see nl.nn.adapterframework.core.PipeLineSession
  */
 public abstract class AbstractPipe implements IPipe {
-	public static final String version="$RCSfile: AbstractPipe.java,v $ $Revision: 1.11 $ $Date: 2005-09-01 08:51:10 $";
+	public static final String version="$RCSfile: AbstractPipe.java,v $ $Revision: 1.12 $ $Date: 2005-09-05 07:00:06 $";
 	private String name;
 	protected Logger log = Logger.getLogger(this.getClass());
 	private Hashtable pipeForwards=new Hashtable();
 	private int maxThreads = 0;
 	private ParameterList parameterList = new ParameterList();
-	private long maxDuration = -1;
+	private long durationThreshold = -1;
   
 	/**
 	 * <code>configure()</code> is called after the {@link nl.nn.adapterframework.core.PipeLine Pipeline} is registered
@@ -244,14 +247,14 @@ public abstract class AbstractPipe implements IPipe {
 	}
 
 	/**
-	 * Indicates the maximum allowed duration of the pipe; 
-	 * This is NOT a timeout value, only informative logging is done that the maxduration is exceeded.
+	 * Sets a threshold for the duration of message execution; 
+	 * If the threshold is exceeded, the message is logged to be analyzed.
 	 */
-	public void setMaxDuration(long maxDuration) {
-		this.maxDuration = maxDuration;
+	public void setDurationThreshold(long maxDuration) {
+		this.durationThreshold = maxDuration;
 	}
-	public long getMaxDuration() {
-		return maxDuration;
+	public long getDurationThreshold() {
+		return durationThreshold;
 	}
 
 
