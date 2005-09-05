@@ -1,6 +1,9 @@
 /*
  * $Log: XmlValidator.java,v $
- * Revision 1.7  2005-09-05 07:01:09  europe\L190409
+ * Revision 1.8  2005-09-05 09:33:21  europe\L190409
+ * fixed typo in methodname setReasonSessionKey()
+ *
+ * Revision 1.7  2005/09/05 07:01:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added attribute reasonSessionKey
  *
  * Revision 1.6  2005/08/31 16:36:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -75,7 +78,7 @@ import java.io.IOException;
 
  */
 public class XmlValidator extends FixedForwardPipe {
-	public static final String version="$RCSfile: XmlValidator.java,v $ $Revision: 1.7 $ $Date: 2005-09-05 07:01:09 $";
+	public static final String version="$RCSfile: XmlValidator.java,v $ $Revision: 1.8 $ $Date: 2005-09-05 09:33:21 $";
 
 	private String schema = null;
     private String schemaLocation = null;
@@ -151,7 +154,8 @@ public class XmlValidator extends FixedForwardPipe {
         Variant in = new Variant(input);
 
 		if (StringUtils.isNotEmpty(getReasonSessionKey())) {
-			session.put(getReasonSessionKey(),"");
+			log.debug(getLogPrefix(session)+ "removing contents of sessionKey ["+getReasonSessionKey()+ "]");
+			session.remove(getReasonSessionKey());
 		}
 
         // Do filename to URL translation if schemaLocation and
@@ -213,6 +217,7 @@ public class XmlValidator extends FixedForwardPipe {
 			} else {
 				log.warn(reasons);
 				if (StringUtils.isNotEmpty(getReasonSessionKey())) {
+					log.debug(getLogPrefix(session) + "storing reasons under sessionKey ["+getReasonSessionKey()+"]");
 					session.put(getReasonSessionKey(),reasons);
 				}
 				return new PipeRunResult(findForward("failure"), input);
@@ -361,7 +366,7 @@ public class XmlValidator extends FixedForwardPipe {
 	/**
 	 * The sessionkey to store the reasons of misvalidation in.
 	 */
-	public void setRreasonSessionKey(String reasonSessionKey) {
+	public void setReasonSessionKey(String reasonSessionKey) {
 		this.reasonSessionKey = reasonSessionKey;
 	}
 	public String getReasonSessionKey() {
