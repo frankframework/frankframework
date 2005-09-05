@@ -1,6 +1,9 @@
 /*
  * $Log: XmlValidator.java,v $
- * Revision 1.6  2005-08-31 16:36:43  europe\L190409
+ * Revision 1.7  2005-09-05 07:01:09  europe\L190409
+ * added attribute reasonSessionKey
+ *
+ * Revision 1.6  2005/08/31 16:36:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * reduced logging
  * added usage note about JDK 1.3 vs JDK 1.4
  *
@@ -18,6 +21,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.util.Variant;
 import nl.nn.adapterframework.util.ClassUtils;
 
+import org.apache.commons.lang.StringUtils;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.SAXNotRecognizedException;
@@ -57,6 +61,7 @@ import java.io.IOException;
  * <tr><td>{@link #setSchemaSessionKey(String) schemaSessionKey}</td><td></td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setFullSchemaChecking(boolean) fullSchemaChecking}</td><td>Perform addional memory intensive checks</td><td><code>false</code></td></tr>
  * <tr><td>{@link #setThrowException(boolean) throwException}</td><td>Should the XmlValidator throw a PipeRunException on a validation error (if not, a forward with name "failure" should be defined.</td><td><code>false</code></td></tr>
+ * <tr><td>{@link #setReasonSessionKey(String) reasonSessionKey}</td><td>if set: key of session variable to store reasons of mis-validation in</td><td>none</td></tr>
  * </table>
  * <p><b>Exits:</b>
  * <table border="1">
@@ -70,14 +75,15 @@ import java.io.IOException;
 
  */
 public class XmlValidator extends FixedForwardPipe {
-	public static final String version="$RCSfile: XmlValidator.java,v $ $Revision: 1.6 $ $Date: 2005-08-31 16:36:43 $";
+	public static final String version="$RCSfile: XmlValidator.java,v $ $Revision: 1.7 $ $Date: 2005-09-05 07:01:09 $";
 
 	private String schema = null;
     private String schemaLocation = null;
     private String noNamespaceSchemaLocation = null;
-	private String schemaSessionKey;
+	private String schemaSessionKey = null;
     private boolean throwException = false;
     private boolean fullSchemaChecking = false;
+	private String reasonSessionKey = null;
 
 	private String schemaURL;
 
@@ -87,12 +93,12 @@ public class XmlValidator extends FixedForwardPipe {
         private String reasons;
 
 		protected void addReason(SAXParseException exception) {
-			String msg = " at ("+exception.getLineNumber()+ ","+exception.getColumnNumber()+"): "+exception.getMessage();
+			String msg = "at ("+exception.getLineNumber()+ ","+exception.getColumnNumber()+"): "+exception.getMessage();
 			errorOccured = true;
 			if (reasons == null) {
 				 reasons = msg;
 			 } else {
-				 reasons = reasons + ",\n" + msg;
+				 reasons = reasons + "\n" + msg;
 			 }
 		}
 
@@ -144,7 +150,9 @@ public class XmlValidator extends FixedForwardPipe {
 
         Variant in = new Variant(input);
 
-		session.put("error","");
+		if (StringUtils.isNotEmpty(getReasonSessionKey())) {
+			session.put(getReasonSessionKey(),"");
+		}
 
         // Do filename to URL translation if schemaLocation and
         // noNamespaceSchemaLocation are not set. 
@@ -199,13 +207,14 @@ public class XmlValidator extends FixedForwardPipe {
 		boolean isValid = !(xeh.hasErrorOccured());
 		
 		if (!isValid) { 
-			log.error(getLogPrefix(session) + "got error validating:" + xeh.getReasons());
+			String reasons = getLogPrefix(session) + "got invalid xml according to schema [" + getSchema() + "]:\n" + xeh.getReasons(); 
             if (isThrowException()) {
-                throw new PipeRunException(
-                        this,
-                        getLogPrefix(session) + "got invalid xml according to schema [" + getSchema() + "]:" + xeh.getReasons());
+                throw new PipeRunException(this, reasons);
 			} else {
-				session.put("error", getLogPrefix(session) + "got invalid xml according to schema [" + getSchema() + "]:" + xeh.getReasons());
+				log.warn(reasons);
+				if (StringUtils.isNotEmpty(getReasonSessionKey())) {
+					session.put(getReasonSessionKey(),reasons);
+				}
 				return new PipeRunResult(findForward("failure"), input);
 			}
         }
@@ -348,4 +357,15 @@ public class XmlValidator extends FixedForwardPipe {
 	public boolean isThrowException() {
 		return throwException;
 	}
+	
+	/**
+	 * The sessionkey to store the reasons of misvalidation in.
+	 */
+	public void setRreasonSessionKey(String reasonSessionKey) {
+		this.reasonSessionKey = reasonSessionKey;
+	}
+	public String getReasonSessionKey() {
+		return reasonSessionKey;
+	}
+
 }
