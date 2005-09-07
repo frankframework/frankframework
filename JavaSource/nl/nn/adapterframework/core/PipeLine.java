@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.21  2005-09-05 07:06:02  europe\L190409
+ * Revision 1.22  2005-09-07 15:27:32  europe\L190409
+ * implemented processing for getInputFromSessionKey and storeResultInSessionKey
+ *
+ * Revision 1.21  2005/09/05 07:06:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * separate logger for durationThreshold
  *
  * Revision 1.20  2005/09/01 08:53:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -65,6 +68,8 @@ import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.Semaphore;
 import nl.nn.adapterframework.util.StatisticsKeeper;
+
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import java.util.Enumeration;
@@ -124,7 +129,7 @@ import javax.transaction.UserTransaction;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.21 $ $Date: 2005-09-05 07:06:02 $";
+	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.22 $ $Date: 2005-09-07 15:27:32 $";
     private Logger log = Logger.getLogger(this.getClass());
 	private Logger durationLog = Logger.getLogger("LongDurationMessages");
     
@@ -361,6 +366,10 @@ public class PipeLine {
 	    IPipe pipeToRun = (IPipe) pipelineTable.get(firstPipe);
 	    
 	    while (!ready){
+			AbstractPipe ap=null;
+			if (pipeToRun instanceof AbstractPipe) {
+				ap = (AbstractPipe)pipeToRun;
+			}
 	    	
 			long pipeStartTime= System.currentTimeMillis();
 			
@@ -379,6 +388,11 @@ public class PipeLine {
 	        // start it
 			long waitingDuration = 0;
 			long pipeDuration = -1;
+			
+			if (ap!=null && StringUtils.isNotEmpty(ap.getGetInputFromSessionKey())) {
+				log.debug("Pipeline of adapter ["+owner.getName()+"] replacing input for pipe ["+ap.getName()+" with contents of sessionKey ["+ap.getGetInputFromSessionKey()+"]");
+				object=pipeLineSession.get(ap.getGetInputFromSessionKey());
+			}
 			
 			try {
 				Semaphore s = getSemaphore(pipeToRun);
@@ -417,10 +431,13 @@ public class PipeLine {
 							StatisticsKeeper sk = (StatisticsKeeper) pipeStatistics.get(pipeToRun.getName());
 							sk.addValue(pipeDuration);
 						}
-				   }
+				}
+				if (ap !=null && pipeRunResult!=null && StringUtils.isNotEmpty(ap.getStoreResultInSessionKey())) {
+					log.debug("Pipeline of adapter ["+owner.getName()+"] storing result for pipe ["+ap.getName()+" under sessionKey ["+ap.getStoreResultInSessionKey()+"]");
+					pipeLineSession.put(ap.getStoreResultInSessionKey(),pipeRunResult.getResult());
+				}
 			} finally {
-				if (pipeToRun instanceof AbstractPipe) {
-					AbstractPipe ap = (AbstractPipe)pipeToRun;
+				if (ap!=null) {
 					if (ap.getDurationThreshold() >= 0 && pipeDuration > ap.getDurationThreshold()) {
 						durationLog.info("Pipe ["+ap.getName()+"] of ["+owner.getName()+"] duration ["+pipeDuration+"] ms exceeds max ["+ ap.getDurationThreshold()+ "], message ["+object+"]");
 					}
