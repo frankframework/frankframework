@@ -1,6 +1,9 @@
 /*
  * $Log: FixedQuerySender.java,v $
- * Revision 1.5  2005-08-30 15:58:01  europe\L190409
+ * Revision 1.6  2005-09-07 15:37:07  europe\L190409
+ * updated javadoc
+ *
+ * Revision 1.5  2005/08/30 15:58:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected version-string
  *
  * Revision 1.4  2005/08/30 15:57:23  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -22,8 +25,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-import nl.nn.adapterframework.core.SenderException;
-
 /**
  * QuerySender that assumes a fixed query, possibly with attributes.
  * 
@@ -42,6 +43,7 @@ import nl.nn.adapterframework.core.SenderException;
  * <tr><td>{@link #setQueryType(String) queryType}</td><td>either "select" for queries that return data, or anything else for queries that return no data.</td><td>"other"</td></tr>
  * <tr><td>{@link #setMaxRows(int) maxRows}</td><td>maximum number of rows returned</td><td>0 (unlimited)</td></tr>
  * <tr><td>{@link #setStartRow(int) startRow}</td><td>the number of the first row returned from the output</td><td>1</td></tr>
+ * <tr><td>{@link #setScalar(boolean) scalar}</td><td>when true, the value of the first column of the first row (or the StartRow) is returned as the only result</td><td>false</td></tr>
  * </table>
  * </p>
  * 
@@ -50,7 +52,7 @@ import nl.nn.adapterframework.core.SenderException;
  * @since 	4.1
  */
 public class FixedQuerySender extends JdbcQuerySenderBase {
-	public static final String version = "$RCSfile: FixedQuerySender.java,v $ $Revision: 1.5 $ $Date: 2005-08-30 15:58:01 $";
+	public static final String version = "$RCSfile: FixedQuerySender.java,v $ $Revision: 1.6 $ $Date: 2005-09-07 15:37:07 $";
 
 	private String query=null;
 		

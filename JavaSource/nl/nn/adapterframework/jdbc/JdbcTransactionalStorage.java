@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcTransactionalStorage.java,v $
- * Revision 1.10  2005-08-24 15:48:35  europe\L190409
+ * Revision 1.11  2005-09-07 15:37:07  europe\L190409
+ * updated javadoc
+ *
+ * Revision 1.10  2005/08/24 15:48:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * retrieve object using generic getBlobInputStream()
  *
  * Revision 1.9  2005/08/18 13:30:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -85,7 +88,7 @@ import nl.nn.adapterframework.util.JdbcUtil;
  * </p>
  * 
  * The default uses the following objects:
- * 
+ *  <pre>
 	CREATE TABLE ibisstore (
 	  messageKey INT DEFAULT AUTOINCREMENT CONSTRAINT ibisstore_pk PRIMARY KEY,
 	  slotId VARCHAR(100), 
@@ -96,7 +99,7 @@ import nl.nn.adapterframework.util.JdbcUtil;
 	  message LONG BINARY);
 
 	CREATE INDEX ibisstore_idx ON ibisstore (slotId, messageDate);
-
+ *  </pre>
  * If these objects do not exist, Ibis tries to create them.
  * 
  * @version Id
@@ -104,7 +107,7 @@ import nl.nn.adapterframework.util.JdbcUtil;
  * @since 	4.1
  */
 public class JdbcTransactionalStorage extends JdbcFacade implements ITransactionalStorage {
-	public static final String version = "$RCSfile: JdbcTransactionalStorage.java,v $ $Revision: 1.10 $ $Date: 2005-08-24 15:48:35 $";
+	public static final String version = "$RCSfile: JdbcTransactionalStorage.java,v $ $Revision: 1.11 $ $Date: 2005-09-07 15:37:07 $";
 	
 	// the following currently only for debug.... 
 	boolean checkIfTableExists=true;

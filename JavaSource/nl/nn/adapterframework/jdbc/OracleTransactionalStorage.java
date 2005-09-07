@@ -1,6 +1,9 @@
 /*
  * $Log: OracleTransactionalStorage.java,v $
- * Revision 1.2  2005-08-24 15:49:27  europe\L190409
+ * Revision 1.3  2005-09-07 15:37:07  europe\L190409
+ * updated javadoc
+ *
+ * Revision 1.2  2005/08/24 15:49:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * use getObject from superclass
  *
  * Revision 1.1  2005/08/18 13:31:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -54,8 +57,8 @@ import org.apache.commons.lang.StringUtils;
  * </p>
  * 
  * The default uses the following objects:
- * 
-	CREATE TABLE ibisstore (
+ *  <pre>
+ 	CREATE TABLE ibisstore (
 	  messageKey NUMBER(10) CONSTRAINT ibisstore_pk PRIMARY KEY,
 	  slotId VARCHAR2(100), 
 	  messageId VARCHAR2(100), 
@@ -67,7 +70,7 @@ import org.apache.commons.lang.StringUtils;
 	CREATE INDEX ibisstore_idx ON ibisstore (slotId, messageDate);
 
 	CREATE SEQUENCE ibisstore_seq START WITH 1 INCREMENT BY 1;
-
+ *  </pre>
  * If these objects do not exist, Ibis tries to create them.
  * 
  * @version Id
@@ -75,7 +78,7 @@ import org.apache.commons.lang.StringUtils;
  * @since 	4.3
  */
 public class OracleTransactionalStorage extends JdbcTransactionalStorage {
-	public static final String version = "$RCSfile: OracleTransactionalStorage.java,v $ $Revision: 1.2 $ $Date: 2005-08-24 15:49:27 $";
+	public static final String version = "$RCSfile: OracleTransactionalStorage.java,v $ $Revision: 1.3 $ $Date: 2005-09-07 15:37:07 $";
 
 	private String sequenceName="ibisstore_seq";
 		
