@@ -1,6 +1,9 @@
 /*
  * $Log: IbisLocalSender.java,v $
- * Revision 1.3  2005-08-30 16:02:28  europe\L190409
+ * Revision 1.4  2005-09-07 15:36:00  europe\L190409
+ * added attribute "isolated", to enable sub-transactions
+ *
+ * Revision 1.3  2005/08/30 16:02:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * made parameterized version
  *
  * Revision 1.2  2005/08/24 15:53:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -35,6 +38,7 @@ import java.util.HashMap;
  * <tr><td>classname</td><td>nl.nn.adapterframework.pipes.IbisLocalSender</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td>  <td>name of the sender</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setServiceName(String) serviceName}</td><td>Name of the WebServiceListener or JavaListener that should be called</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setIsolated(String) isolated}</td><td>when <code>true</code>, the call is made in a separate thread, possibly using separate transaction</td><td>false</td></tr>
  * </table>
  * </p>
  * Any parameters are copied to the PipeLineSession of the service called.
@@ -43,10 +47,13 @@ import java.util.HashMap;
  * @since  4.2
  */
 public class IbisLocalSender extends SenderWithParametersBase {
-	public static final String version="$RCSfile: IbisLocalSender.java,v $ $Revision: 1.3 $ $Date: 2005-08-30 16:02:28 $";
+	public static final String version="$RCSfile: IbisLocalSender.java,v $ $Revision: 1.4 $ $Date: 2005-09-07 15:36:00 $";
 	
 	private String name;
 	private String serviceName;
+	private boolean isolated=false;
+
+
 
 	public void configure() throws ConfigurationException {
 		if (StringUtils.isEmpty(getServiceName())) {
@@ -54,11 +61,7 @@ public class IbisLocalSender extends SenderWithParametersBase {
 		}
 	}
 
-	public void open() {
-	}
 
-	public void close() {
-	}
 
 	public boolean isSynchronous() {
 		return true;
@@ -74,7 +77,13 @@ public class IbisLocalSender extends SenderWithParametersBase {
 			}
 		}
 		try {
-			return ServiceDispatcher.getInstance().dispatchRequestWithExceptions(getServiceName(), correlationID, message, context);
+			if (isIsolated()) {
+				log.debug(getLogPrefix()+"calling service ["+getServiceName()+"] in separate Thread");
+				return IsolatedServiceCaller.callServiceIsolated(getServiceName(), correlationID, message, context);
+			} else {
+				log.debug(getLogPrefix()+"calling service ["+getServiceName()+"] in same Thread");
+				return ServiceDispatcher.getInstance().dispatchRequestWithExceptions(getServiceName(), correlationID, message, context);
+			}
 		} catch (ListenerException e) {
 			throw new SenderException(getLogPrefix()+"exception calling service ["+getServiceName()+"]",e);
 		}
@@ -89,13 +98,24 @@ public class IbisLocalSender extends SenderWithParametersBase {
 	}
 
 	/**
-	 * @param serviceName under which the JavaListener or WebServiceListener is registered
+	 * serviceName under which the JavaListener or WebServiceListener is registered.
 	 */
 	public void setServiceName(String serviceName) {
 		this.serviceName = serviceName;
 	}
 	public String getServiceName() {
 		return serviceName;
+	}
+
+
+	/**
+	 * when <code>true</code>, the call is made in a separate thread, possibly using separate transaction. 
+	 */
+	public void setIsolated(boolean b) {
+		isolated = b;
+	}
+	public boolean isIsolated() {
+		return isolated;
 	}
 
 
