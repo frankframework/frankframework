@@ -35,7 +35,7 @@ import java.util.Iterator;
  * @author    Johan Verrips
  */
 public class ConfigurationServlet extends HttpServlet {
-	public static final String version="$Id: ConfigurationServlet.java,v 1.5 2005-09-07 15:32:17 europe\L190409 Exp $";
+	public static final String version = "$RCSfile: ConfigurationServlet.java,v $ $Revision: 1.6 $ $Date: 2005-09-07 15:33:21 $";
 	
     // logging category for this class
     protected Logger log = Logger.getLogger(this.getClass());
