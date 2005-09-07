@@ -17,6 +17,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Date;
 import java.util.Iterator;
 
 
@@ -34,7 +35,7 @@ import java.util.Iterator;
  * @author    Johan Verrips
  */
 public class ConfigurationServlet extends HttpServlet {
-	public static final String version="$Id: ConfigurationServlet.java,v 1.4 2005-02-24 10:47:40 L190409 Exp $";
+	public static final String version="$Id: ConfigurationServlet.java,v 1.5 2005-09-07 15:32:17 europe\L190409 Exp $";
 	
     // logging category for this class
     protected Logger log = Logger.getLogger(this.getClass());
@@ -110,6 +111,10 @@ public class ConfigurationServlet extends HttpServlet {
         String autoStart = request.getParameter("autoStart");
 
         log.warn("ConfigurationServlet initiated by " + commandIssuedBy);
+		response.setDateHeader("Expires",1);
+		response.setDateHeader("Last-Modified",new Date().getTime());
+        response.setHeader("Cache-Control","no-store, no-cache, must-revalidate");
+		response.setHeader("Pragma","no-cache");
         PrintWriter out = response.getWriter();
         out.println("<html>");
         out.println("<body>");
