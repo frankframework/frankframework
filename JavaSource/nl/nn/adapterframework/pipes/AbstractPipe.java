@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractPipe.java,v $
- * Revision 1.12  2005-09-05 07:00:06  europe\L190409
+ * Revision 1.13  2005-09-07 15:26:16  europe\L190409
+ * added attributes getInputFromSessionKey and storeResultInSessionKey
+ *
+ * Revision 1.12  2005/09/05 07:00:06  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed maxDuration into durationThreshold
  *
  * Revision 1.11  2005/09/01 08:51:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -75,6 +78,8 @@ import java.util.Hashtable;
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMaxThreads(int) maxThreads}</td><td>maximum number of threads that may call {@link #doPipe(Object, PipeLineSession)} simultaneously</td><td>0 (unlimited)</td></tr>
  * <tr><td>{@link #setDurationThreshold(long) durationThreshold}</td><td>if durationThreshold >=0 and the duration (in milliseconds) of the message processing exceeded the value specified the message is logged informatory</td><td>-1</td></tr>
+ * <tr><td>{@link #setGetInputFromSessionKey(String) getInputFromSessionKey}</td><td>when set, input is taken from this session key, instead of regular input</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setStoreResultInSessionKey(String) storeResultInSessionKey}</td><td>when set, the result is stored under this session key</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * @version Id
@@ -83,13 +88,15 @@ import java.util.Hashtable;
  * @see nl.nn.adapterframework.core.PipeLineSession
  */
 public abstract class AbstractPipe implements IPipe {
-	public static final String version="$RCSfile: AbstractPipe.java,v $ $Revision: 1.12 $ $Date: 2005-09-05 07:00:06 $";
+	public static final String version="$RCSfile: AbstractPipe.java,v $ $Revision: 1.13 $ $Date: 2005-09-07 15:26:16 $";
 	private String name;
 	protected Logger log = Logger.getLogger(this.getClass());
 	private Hashtable pipeForwards=new Hashtable();
 	private int maxThreads = 0;
 	private ParameterList parameterList = new ParameterList();
 	private long durationThreshold = -1;
+	private String getInputFromSessionKey=null;
+	private String storeResultInSessionKey=null;
   
 	/**
 	 * <code>configure()</code> is called after the {@link nl.nn.adapterframework.core.PipeLine Pipeline} is registered
@@ -258,5 +265,21 @@ public abstract class AbstractPipe implements IPipe {
 	}
 
 
+
+
+
+	public void setGetInputFromSessionKey(String string) {
+		getInputFromSessionKey = string;
+	}
+	public String getGetInputFromSessionKey() {
+		return getInputFromSessionKey;
+	}
+
+	public void setStoreResultInSessionKey(String string) {
+		storeResultInSessionKey = string;
+	}
+	public String getStoreResultInSessionKey() {
+		return storeResultInSessionKey;
+	}
 
 }
