@@ -1,6 +1,9 @@
 /*
  * $Log: MessageSendingPipe.java,v $
- * Revision 1.19  2005-08-24 15:53:57  europe\L190409
+ * Revision 1.20  2005-09-08 15:59:14  europe\L190409
+ * return something when asynchronous sender has no listener
+ *
+ * Revision 1.19  2005/08/24 15:53:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved error message for configuration exception
  *
  * Revision 1.18  2005/07/05 11:51:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -106,7 +109,7 @@ import org.apache.commons.lang.StringUtils;
  */
 
 public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
-	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.19 $ $Date: 2005-08-24 15:53:57 $";
+	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.20 $ $Date: 2005-09-08 15:59:14 $";
 	private final static String TIMEOUTFORWARD = "timeout";
 	private final static String EXCEPTIONFORWARD = "exception";
 
@@ -201,43 +204,28 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 			String sendResult = sendMessage(input, session, correlationID, getSender(), threadContext);
 
 			if (getSender().isSynchronous()) {
-				if (log.isInfoEnabled())
-					log.info(
-						getLogPrefix(session)
-							+ "sent message to ["
-							+ getSender().getName()
-							+ "] synchronously");
+				if (log.isInfoEnabled()) {
+					log.info(getLogPrefix(session)+ "sent message to ["+ getSender().getName()+ "] synchronously");
+				}
 				result = sendResult;
 			} else {
 				messageID = sendResult;
 				// if linkMethod is MESSAGEID overwrite correlationID with the messageID
 				// as this will be used with the listener
-				if (getLinkMethod().equalsIgnoreCase("MESSAGEID"))
+				if (getLinkMethod().equalsIgnoreCase("MESSAGEID")) {
 					correlationID = sendResult;
-				if (log.isInfoEnabled())
-					log.info(
-						getLogPrefix(session)
-							+ "sent message to ["
-							+ getSender().getName()
-							+ "] messageID ["
-							+ messageID
-							+ "] correlationID ["
-							+ correlationID
-							+ "] linkMethod ["
-							+ getLinkMethod()
-							+ "]");
+				}
+				if (log.isInfoEnabled()) {
+					log.info(getLogPrefix(session) + "sent message to [" + getSender().getName()+ "] messageID ["+ messageID+ "] correlationID ["+ correlationID+ "] linkMethod ["+ getLinkMethod()	+ "]");
+				}
 			}
 			
 			if (replyListener != null) {
-				if (log.isDebugEnabled())
-					log.debug(
-						getLogPrefix(session)
-							+ "starts listening for return message with correlationID ["
-							+ correlationID
-							+ "]");
+				if (log.isDebugEnabled()) {
+					log.debug(getLogPrefix(session)	+ "starts listening for return message with correlationID ["+ correlationID	+ "]");
+				}
 				threadContext = replyListener.openThread();
-				Object msg =
-					replyListener.getRawMessage(correlationID, threadContext);
+				Object msg = replyListener.getRawMessage(correlationID, threadContext);
 				if (msg==null) {	
 					log.info(getLogPrefix(session)+"received null reply message");
 				} else {
@@ -245,7 +233,8 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 				}
 				result =
 					replyListener.getStringFromRawMessage(msg, threadContext);
-				
+			} else {
+				result = sendResult;
 			}
 			if (result == null) {
 				result = "";
