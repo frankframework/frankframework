@@ -1,6 +1,9 @@
 /*
  * $Log: JtaUtil.java,v $
- * Revision 1.5  2004-10-05 09:57:38  L190409
+ * Revision 1.6  2005-09-08 15:58:15  europe\L190409
+ * added logging
+ *
+ * Revision 1.5  2004/10/05 09:57:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * made version public
  *
  * Revision 1.4  2004/03/31 15:03:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -26,6 +29,8 @@ import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 import javax.transaction.UserTransaction;
 
+import org.apache.log4j.Logger;
+
 /**
  * Utility functions for JTA 
  * @version Id
@@ -33,7 +38,9 @@ import javax.transaction.UserTransaction;
  * @since  4.1
  */
 public class JtaUtil {
-	public static final String version="$Id: JtaUtil.java,v 1.5 2004-10-05 09:57:38 L190409 Exp $";
+	public static final String version="$RCSfile: JtaUtil.java,v $ $Revision: 1.6 $ $Date: 2005-09-08 15:58:15 $";
+	private static Logger log = Logger.getLogger(JtaUtil.class);
+
     private static UserTransaction utx;
 
 	/**
@@ -97,10 +104,11 @@ public class JtaUtil {
 	/**
 	 * Returns a UserTransaction object, that is used by Receivers and PipeLines to demarcate transactions. 
 	 */
-	public static UserTransaction getUserTransaction(Context ctx, String UserTransactionUrl) throws NamingException {
+	public static UserTransaction getUserTransaction(Context ctx, String userTransactionUrl) throws NamingException {
 	
 		if (utx == null) {
-			utx = (UserTransaction)ctx.lookup(UserTransactionUrl);
+			log.debug("looking up UserTransaction ["+userTransactionUrl+"] in context ["+ctx.toString()+"]");
+			utx = (UserTransaction)ctx.lookup(userTransactionUrl);
 		}
 		return utx;
 	}
