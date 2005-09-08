@@ -1,6 +1,9 @@
 /*
  * $Log: ForEachChildElementPipe.java,v $
- * Revision 1.4  2005-09-08 07:09:46  europe\L190409
+ * Revision 1.5  2005-09-08 07:18:38  europe\L190409
+ * embedded partial result in XML before evaluating stopcondition
+ *
+ * Revision 1.4  2005/09/08 07:09:46  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fixed end-tags of results
  * debug stopcondition
  *
@@ -79,10 +82,10 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author Gerrit van Brakel
  * @since 4.3
  * 
- * $Id: ForEachChildElementPipe.java,v 1.4 2005-09-08 07:09:46 europe\L190409 Exp $
+ * $Id: ForEachChildElementPipe.java,v 1.5 2005-09-08 07:18:38 europe\L190409 Exp $
  */
 public class ForEachChildElementPipe extends MessageSendingPipe {
-	public static final String version="$RCSfile: ForEachChildElementPipe.java,v $ $Revision: 1.4 $ $Date: 2005-09-08 07:09:46 $";
+	public static final String version="$RCSfile: ForEachChildElementPipe.java,v $ $Revision: 1.5 $ $Date: 2005-09-08 07:18:38 $";
 
 	private boolean elementsOnly=true;
 	private String stopConditionXPathExpression=null;
@@ -174,7 +177,9 @@ public class ForEachChildElementPipe extends MessageSendingPipe {
 					} else {
 						result = sender.sendMessage(correlationID, item);
 					}
-					resultsXml += "<result item=\""+count+"\">\n"+result+"\n</result>\n";
+					result = "<result item=\""+count+"\">\n"+result+"\n</result>";
+					log.debug(getLogPrefix(session)+"partial result ["+result+"]");
+					resultsXml += result+"\n";
 					node=node.getNextSibling();
 				}
 				if (stopConditionTp!=null) {
