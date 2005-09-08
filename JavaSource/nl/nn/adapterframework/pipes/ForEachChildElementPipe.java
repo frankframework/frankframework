@@ -1,6 +1,9 @@
 /*
  * $Log: ForEachChildElementPipe.java,v $
- * Revision 1.5  2005-09-08 07:18:38  europe\L190409
+ * Revision 1.6  2005-09-08 08:29:56  europe\L190409
+ * debugged stopCondition
+ *
+ * Revision 1.5  2005/09/08 07:18:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * embedded partial result in XML before evaluating stopcondition
  *
  * Revision 1.4  2005/09/08 07:09:46  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -60,7 +63,14 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setStopConditionXPathExpression(String) stopConditionXPathExpression}</td><td>expression evaluated on each result if set. Iteration stops if condition returns an empty result</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setStopConditionXPathExpression(String) stopConditionXPathExpression}</td><td>expression evaluated on each result if set. 
+ * 		Iteration stops if condition returns anything other than <code>false</code> or an empty result.
+ * For example, to stop after the second child element has been processed, one of the following expressions could be used:
+ * <table> 
+ * <tr><td><li><code>result[@item='2']</code></td><td>returns result element after second child element has been processed</td></tr>
+ * <tr><td><li><code>result/@item='2'</code></td><td>returns <code>false</code> after second child element has been processed, <code>true</code> for others</td></tr>
+ * </table> 
+ * </td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setElementXPathExpression(String) elementXPathExpression}</td><td>expression used to determine the set of elements iterated over, i.e. the set of child elements</td><td>&nbsp;</td></tr>
  * </table>
  * <table border="1">
@@ -82,10 +92,10 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author Gerrit van Brakel
  * @since 4.3
  * 
- * $Id: ForEachChildElementPipe.java,v 1.5 2005-09-08 07:18:38 europe\L190409 Exp $
+ * $Id: ForEachChildElementPipe.java,v 1.6 2005-09-08 08:29:56 europe\L190409 Exp $
  */
 public class ForEachChildElementPipe extends MessageSendingPipe {
-	public static final String version="$RCSfile: ForEachChildElementPipe.java,v $ $Revision: 1.5 $ $Date: 2005-09-08 07:18:38 $";
+	public static final String version="$RCSfile: ForEachChildElementPipe.java,v $ $Revision: 1.6 $ $Date: 2005-09-08 08:29:56 $";
 
 	private boolean elementsOnly=true;
 	private String stopConditionXPathExpression=null;
@@ -113,7 +123,7 @@ public class ForEachChildElementPipe extends MessageSendingPipe {
 		try {
 			identityTp=new TransformerPool(XmlUtils.IDENTITY_TRANSFORM);
 			if (StringUtils.isNotEmpty(getStopConditionXPathExpression())) {
-				stopConditionTp=new TransformerPool(XmlUtils.createXPathEvaluatorSource(getStopConditionXPathExpression()));
+				stopConditionTp=new TransformerPool(XmlUtils.createXPathEvaluatorSource(null,getStopConditionXPathExpression(),"xml",false));
 			}
 			if (StringUtils.isNotEmpty(getElementXPathExpression())) {
 				extractElementsTp=new TransformerPool(makeElementExtractionXslt(getElementXPathExpression()));
@@ -184,9 +194,11 @@ public class ForEachChildElementPipe extends MessageSendingPipe {
 				}
 				if (stopConditionTp!=null) {
 					String stopConditionResult = stopConditionTp.transform(result,null);
-					log.debug(getLogPrefix(session)+"stopcondition result ["+stopConditionResult+"]");
-					if (StringUtils.isEmpty(stopConditionResult)) {
+					if (StringUtils.isNotEmpty(stopConditionResult) && !stopConditionResult.equalsIgnoreCase("false")) {
+						log.debug(getLogPrefix(session)+"stopcondition result ["+stopConditionResult+"], stopping loop");
 						keepGoing=false;
+					} else {
+						log.debug(getLogPrefix(session)+"stopcondition result ["+stopConditionResult+"], continueing loop");
 					}
 				}
 			}
