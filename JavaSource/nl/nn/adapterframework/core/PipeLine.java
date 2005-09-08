@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.22  2005-09-07 15:27:32  europe\L190409
+ * Revision 1.23  2005-09-08 15:52:19  europe\L190409
+ * moved extra functionality to IExtendedPipe
+ *
+ * Revision 1.22  2005/09/07 15:27:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * implemented processing for getInputFromSessionKey and storeResultInSessionKey
  *
  * Revision 1.21  2005/09/05 07:06:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -129,7 +132,7 @@ import javax.transaction.UserTransaction;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.22 $ $Date: 2005-09-07 15:27:32 $";
+	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.23 $ $Date: 2005-09-08 15:52:19 $";
     private Logger log = Logger.getLogger(this.getClass());
 	private Logger durationLog = Logger.getLogger("LongDurationMessages");
     
@@ -366,9 +369,9 @@ public class PipeLine {
 	    IPipe pipeToRun = (IPipe) pipelineTable.get(firstPipe);
 	    
 	    while (!ready){
-			AbstractPipe ap=null;
+			IExtendedPipe pe=null;
 			if (pipeToRun instanceof AbstractPipe) {
-				ap = (AbstractPipe)pipeToRun;
+				pe = (IExtendedPipe)pipeToRun;
 			}
 	    	
 			long pipeStartTime= System.currentTimeMillis();
@@ -389,9 +392,9 @@ public class PipeLine {
 			long waitingDuration = 0;
 			long pipeDuration = -1;
 			
-			if (ap!=null && StringUtils.isNotEmpty(ap.getGetInputFromSessionKey())) {
-				log.debug("Pipeline of adapter ["+owner.getName()+"] replacing input for pipe ["+ap.getName()+" with contents of sessionKey ["+ap.getGetInputFromSessionKey()+"]");
-				object=pipeLineSession.get(ap.getGetInputFromSessionKey());
+			if (pe!=null && StringUtils.isNotEmpty(pe.getGetInputFromSessionKey())) {
+				log.debug("Pipeline of adapter ["+owner.getName()+"] replacing input for pipe ["+pe.getName()+" with contents of sessionKey ["+pe.getGetInputFromSessionKey()+"]");
+				object=pipeLineSession.get(pe.getGetInputFromSessionKey());
 			}
 			
 			try {
@@ -432,14 +435,14 @@ public class PipeLine {
 							sk.addValue(pipeDuration);
 						}
 				}
-				if (ap !=null && pipeRunResult!=null && StringUtils.isNotEmpty(ap.getStoreResultInSessionKey())) {
-					log.debug("Pipeline of adapter ["+owner.getName()+"] storing result for pipe ["+ap.getName()+" under sessionKey ["+ap.getStoreResultInSessionKey()+"]");
-					pipeLineSession.put(ap.getStoreResultInSessionKey(),pipeRunResult.getResult());
+				if (pe !=null && pipeRunResult!=null && StringUtils.isNotEmpty(pe.getStoreResultInSessionKey())) {
+					log.debug("Pipeline of adapter ["+owner.getName()+"] storing result for pipe ["+pe.getName()+" under sessionKey ["+pe.getStoreResultInSessionKey()+"]");
+					pipeLineSession.put(pe.getStoreResultInSessionKey(),pipeRunResult.getResult());
 				}
 			} finally {
-				if (ap!=null) {
-					if (ap.getDurationThreshold() >= 0 && pipeDuration > ap.getDurationThreshold()) {
-						durationLog.info("Pipe ["+ap.getName()+"] of ["+owner.getName()+"] duration ["+pipeDuration+"] ms exceeds max ["+ ap.getDurationThreshold()+ "], message ["+object+"]");
+				if (pe!=null) {
+					if (pe.getDurationThreshold() >= 0 && pipeDuration > pe.getDurationThreshold()) {
+						durationLog.info("Pipe ["+pe.getName()+"] of ["+owner.getName()+"] duration ["+pipeDuration+"] ms exceeds max ["+ pe.getDurationThreshold()+ "], message ["+object+"]");
 					}
 				}
 			}

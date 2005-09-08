@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractPipe.java,v $
- * Revision 1.13  2005-09-07 15:26:16  europe\L190409
+ * Revision 1.14  2005-09-08 15:53:01  europe\L190409
+ * moved extra functionality to IExtendedPipe
+ *
+ * Revision 1.13  2005/09/07 15:26:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added attributes getInputFromSessionKey and storeResultInSessionKey
  *
  * Revision 1.12  2005/09/05 07:00:06  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -35,6 +38,7 @@ package nl.nn.adapterframework.pipes;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPipe;
+import nl.nn.adapterframework.core.IExtendedPipe;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
@@ -87,8 +91,8 @@ import java.util.Hashtable;
  *
  * @see nl.nn.adapterframework.core.PipeLineSession
  */
-public abstract class AbstractPipe implements IPipe {
-	public static final String version="$RCSfile: AbstractPipe.java,v $ $Revision: 1.13 $ $Date: 2005-09-07 15:26:16 $";
+public abstract class AbstractPipe implements IExtendedPipe {
+	public static final String version="$RCSfile: AbstractPipe.java,v $ $Revision: 1.14 $ $Date: 2005-09-08 15:53:01 $";
 	private String name;
 	protected Logger log = Logger.getLogger(this.getClass());
 	private Hashtable pipeForwards=new Hashtable();
