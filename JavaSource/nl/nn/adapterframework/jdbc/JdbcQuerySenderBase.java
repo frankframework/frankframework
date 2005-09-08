@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcQuerySenderBase.java,v $
- * Revision 1.13  2005-08-25 15:48:37  europe\L190409
+ * Revision 1.14  2005-09-08 16:00:52  europe\L190409
+ * make synchronous an attribute, default="true"
+ *
+ * Revision 1.13  2005/08/25 15:48:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * close all jdbc-objects in finally clause
  *
  * Revision 1.12  2005/07/28 07:33:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -75,6 +78,7 @@ import nl.nn.adapterframework.util.DB2XMLWriter;
  * <tr><td>{@link #setMaxRows(int) maxRows}</td><td>maximum number of rows returned</td><td>0 (unlimited)</td></tr>
  * <tr><td>{@link #setStartRow(int) startRow}</td><td>the number of the first row returned from the output</td><td>1</td></tr>
  * <tr><td>{@link #setScalar(boolean) scalar}</td><td>when true, the value of the first column of the first row (or the StartRow) is returned as the only result</td><td>false</td></tr>
+ * <tr><td>{@link #setSynchronous(boolean) synchronous}</td><td>&nbsp;</td><td>true</td></tr>
  * </table>
  * </p>
  * 
@@ -85,20 +89,14 @@ import nl.nn.adapterframework.util.DB2XMLWriter;
  * @since 	4.1
  */
 public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
-	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.13 $ $Date: 2005-08-25 15:48:37 $";
+	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.14 $ $Date: 2005-09-08 16:00:52 $";
 
 	private String queryType = "other";
 	private int startRow=1;
 	private int maxRows=-1; // return all rows
 	private boolean scalar=false;
+	private boolean synchronous=true;
 
-	/**
-	 * returns <code>true</code> if the {@link #setQueryType(String) queryType} is set to "select".
-	 * @see nl.nn.adapterframework.core.ISender#isSynchronous()
-	 */
-	public boolean isSynchronous() {
-	   return getQueryType().equalsIgnoreCase("select");
-	}
 	
 	/**
 	 * Obtain a prepared statement to be executed.
@@ -229,6 +227,14 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 
 	public void setScalar(boolean b) {
 		scalar = b;
+	}
+
+
+	public void setSynchronous(boolean synchronous) {
+	   this.synchronous=synchronous;
+	}
+	public boolean isSynchronous() {
+	   return synchronous;
 	}
 
 }
