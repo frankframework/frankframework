@@ -1,6 +1,9 @@
 /*
  * $Log: AppConstants.java,v $
- * Revision 1.5  2005-07-28 07:41:47  europe\L190409
+ * Revision 1.6  2005-09-13 15:44:49  europe\L190409
+ * added code to determine and set baseResourceURL
+ *
+ * Revision 1.5  2005/07/28 07:41:47  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added log-keyword
  *
  */
@@ -89,7 +92,7 @@ import org.apache.commons.lang.StringUtils;
  * 
  */
 public final class AppConstants extends Properties implements Serializable{
-	public static final String version="$RCSfile: AppConstants.java,v $  $Revision: 1.5 $ $Date: 2005-07-28 07:41:47 $";
+	public static final String version="$RCSfile: AppConstants.java,v $  $Revision: 1.6 $ $Date: 2005-09-13 15:44:49 $";
 	
 	public final static String propertiesFileName="AppConstants.properties";
 	private static AppConstants self=null;
@@ -205,111 +208,122 @@ public final class AppConstants extends Properties implements Serializable{
         return ob;
 
     }
-/**
- * Creates a tokenizer from the values of this key.  As a sepearator the "," is used.
- * Uses the {@link #getResolvedProperty(String)} method.
- * Can be used to process lists of values.
- */
-public StringTokenizer getTokenizer(String key) {
-    return new StringTokenizer(getResolvedProperty(key), ",");
-}
-/**
- * Creates a tokenizer from the values of this key.
- * Uses the {@link #getResolvedProperty(String)} method.
- * Can be used to process lists of values.
- */
-public StringTokenizer getTokenizer(String key, String defaults) {
-	String list = getResolvedProperty(key);
-	if (list==null)
-	  list = defaults;
-    return new StringTokenizer(list, ",");
-}
-/**
- * Load loads first the properties from the file specified by propertiesFileName and any propertiesfile specified
- * there-in. After that (if the property environment.entries.load is TRUE), it reads the environment entries in het
- * jndi.  Each new property load overrides existing properties, so the first file may contain application defaults,
- * then per deployment and at last environment entries in the JNDI.
- */
-public void load() {
-    load(propertiesFileName);
-    if (getBoolean("environment.entries.load", true)) {
-        try {
-            String factory = getString("environment.entries.factory.initial", null);
-            String providerUrl = getString("environment.entries.provider.url", null);
-            String principal = getString("environment.entries.security.principal", null);
-            String credentials =   getString("environment.entries.security.credentials", null);
-            String urlPkgPrefixes =   getString("environment.entries.factory.url.pkgs", null);
-
-            InitialContext context;
-
-            Hashtable env = new Hashtable();
-            if (StringUtils.isNotEmpty(factory))
-                env.put(Context.INITIAL_CONTEXT_FACTORY, factory);
-            if (StringUtils.isNotEmpty(urlPkgPrefixes))
-                env.put(Context.URL_PKG_PREFIXES, urlPkgPrefixes);
-            if (StringUtils.isNotEmpty(providerUrl))
-                env.put(Context.PROVIDER_URL, providerUrl);
-            if (StringUtils.isNotEmpty(principal))
-                env.put(Context.SECURITY_PRINCIPAL, principal);
-            if (StringUtils.isNotEmpty(credentials))
-                env.put(Context.SECURITY_CREDENTIALS, credentials);
-                
-            if (env.size() > 0)
-                context = new InitialContext(env);
-            else
-                context = new InitialContext();
- 
-             NamingEnumeration nEnumeration =
-                context.listBindings(
-                    getString("environment.entries.bindingname", "java:comp/env"));
-            while (nEnumeration.hasMore()) {
-                Binding binding = (Binding) nEnumeration.next();
-                this.put(binding.getName(), binding.getObject());
-            }
-            nEnumeration.close();
-            context.close();
-        } catch (NamingException ne) {
-            log.error("Error occured retrieving environment entries ", ne);
-        }
-    }
-}
-/**
- * Load the contents of a propertiesfile. 
- * <p>Optionally, this may be a comma-seperated list of files to load, e.g. 
- * <code><pre>log4j.properties,deploymentspecifics.properties</pre></code>
- * which will cause both files to be loaded. Trimming of the filename will take place,
- * so you may also specify <code><pre>log4j.properties, deploymentspecifics.properties</pre></code>
- * </p>
- */
-public synchronized void load(String filename) {
-
-    StringTokenizer tokenizer = new StringTokenizer(filename, ",");
-    
-     
-     
-    while (tokenizer.hasMoreTokens()) {
-        String theFilename=((String) (tokenizer.nextToken())).trim();
-        try {
-            URL url = ClassUtils.getResourceURL(this, theFilename);
-
-			if (url==null) {
-				log.warn("cannot find resource ["+theFilename+"] to load additional properties from, ignoring");
-			} else {
-	            InputStream is = url.openStream();
-	            load(is);
-	            log.info("Application constants loaded from [" + url.toString() + "]");
-	            if (getProperty(additionalPropertiesFileKey) != null) {
-	                // prevent reloading of the same file over and over again
-	                String loadFile = getProperty(additionalPropertiesFileKey);
-	                this.remove(additionalPropertiesFileKey);
-	                load(loadFile);
-	            }
+	/**
+	 * Creates a tokenizer from the values of this key.  As a sepearator the "," is used.
+	 * Uses the {@link #getResolvedProperty(String)} method.
+	 * Can be used to process lists of values.
+	 */
+	public StringTokenizer getTokenizer(String key) {
+	    return new StringTokenizer(getResolvedProperty(key), ",");
+	}
+	/**
+	 * Creates a tokenizer from the values of this key.
+	 * Uses the {@link #getResolvedProperty(String)} method.
+	 * Can be used to process lists of values.
+	 */
+	public StringTokenizer getTokenizer(String key, String defaults) {
+		String list = getResolvedProperty(key);
+		if (list==null)
+		  list = defaults;
+	    return new StringTokenizer(list, ",");
+	}
+	/**
+	 * Load loads first the properties from the file specified by propertiesFileName and any propertiesfile specified
+	 * there-in. After that (if the property environment.entries.load is TRUE), it reads the environment entries in het
+	 * jndi.  Each new property load overrides existing properties, so the first file may contain application defaults,
+	 * then per deployment and at last environment entries in the JNDI.
+	 */
+	public void load() {
+		// Set the baseResourceURL property first.
+		URL urlToThisPackage = ClassUtils.getResourceURL(this, "");
+		if (urlToThisPackage != null) {
+			String urlToThisPackageString = urlToThisPackage.toString();
+			String suffix = "nl/nn/adapterframework/util/";
+			if (urlToThisPackageString.length() >= suffix.length()) {
+				String baseResourceURL = urlToThisPackageString.substring(0, urlToThisPackageString.length() - suffix.length()); 
+				log.info("determined baseResourceURL to be ["+baseResourceURL+"]");
+				this.put("baseResourceURL", baseResourceURL);
 			}
-        } catch (IOException e) {
-            log.error("error reading [" + propertiesFileName + "]", e);
-        }
-    }
-}
+		}
+	    load(propertiesFileName);
+	    if (getBoolean("environment.entries.load", true)) {
+	        try {
+	            String factory = getString("environment.entries.factory.initial", null);
+	            String providerUrl = getString("environment.entries.provider.url", null);
+	            String principal = getString("environment.entries.security.principal", null);
+	            String credentials =   getString("environment.entries.security.credentials", null);
+	            String urlPkgPrefixes =   getString("environment.entries.factory.url.pkgs", null);
+	
+	            InitialContext context;
+	
+	            Hashtable env = new Hashtable();
+	            if (StringUtils.isNotEmpty(factory))
+	                env.put(Context.INITIAL_CONTEXT_FACTORY, factory);
+	            if (StringUtils.isNotEmpty(urlPkgPrefixes))
+	                env.put(Context.URL_PKG_PREFIXES, urlPkgPrefixes);
+	            if (StringUtils.isNotEmpty(providerUrl))
+	                env.put(Context.PROVIDER_URL, providerUrl);
+	            if (StringUtils.isNotEmpty(principal))
+	                env.put(Context.SECURITY_PRINCIPAL, principal);
+	            if (StringUtils.isNotEmpty(credentials))
+	                env.put(Context.SECURITY_CREDENTIALS, credentials);
+	                
+	            if (env.size() > 0)
+	                context = new InitialContext(env);
+	            else
+	                context = new InitialContext();
+	 
+	             NamingEnumeration nEnumeration =
+	                context.listBindings(
+	                    getString("environment.entries.bindingname", "java:comp/env"));
+	            while (nEnumeration.hasMore()) {
+	                Binding binding = (Binding) nEnumeration.next();
+	                this.put(binding.getName(), binding.getObject());
+	            }
+	            nEnumeration.close();
+	            context.close();
+	        } catch (NamingException ne) {
+	            log.error("Error occured retrieving environment entries ", ne);
+	        }
+	    }
+	}
+	/**
+	 * Load the contents of a propertiesfile. 
+	 * <p>Optionally, this may be a comma-seperated list of files to load, e.g. 
+	 * <code><pre>log4j.properties,deploymentspecifics.properties</pre></code>
+	 * which will cause both files to be loaded. Trimming of the filename will take place,
+	 * so you may also specify <code><pre>log4j.properties, deploymentspecifics.properties</pre></code>
+	 * </p>
+	 */
+	public synchronized void load(String filename) {
+	
+	    StringTokenizer tokenizer = new StringTokenizer(filename, ",");
+	    
+	     
+	     
+	    while (tokenizer.hasMoreTokens()) {
+	        String theFilename=((String) (tokenizer.nextToken())).trim();
+	        try {
+	            URL url = ClassUtils.getResourceURL(this, theFilename);
+	
+				if (url==null) {
+					log.warn("cannot find resource ["+theFilename+"] to load additional properties from, ignoring");
+				} else {
+		            InputStream is = url.openStream();
+		            load(is);
+		            log.info("Application constants loaded from [" + url.toString() + "]");
+		            if (getProperty(additionalPropertiesFileKey) != null) {
+		                // prevent reloading of the same file over and over again
+		                String loadFile = getProperty(additionalPropertiesFileKey);
+		                this.remove(additionalPropertiesFileKey);
+		                load(loadFile);
+		            }
+				}
+	        } catch (IOException e) {
+	            log.error("error reading [" + propertiesFileName + "]", e);
+	        }
+	    }
+	}
 	public void setDefaults(Properties defaults) {
 		super.putAll(defaults);
 	}
