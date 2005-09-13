@@ -1,6 +1,10 @@
 /*
  * $Log: IfsaRequesterSender.java,v $
- * Revision 1.14  2005-09-01 11:19:53  europe\L190409
+ * Revision 1.15  2005-09-13 15:56:40  europe\L190409
+ * changed acknowledge mode back to AutoAcknowledge
+ * provided option to set serviceId dynamically from a parameter
+ *
+ * Revision 1.14  2005/09/01 11:19:53  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * no ack in case of timeout
  *
  * Revision 1.13  2005/08/31 16:33:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -45,10 +49,14 @@
  */
 package nl.nn.adapterframework.extensions.ifsa;
 
-import nl.nn.adapterframework.core.ISender;
+import nl.nn.adapterframework.core.ISenderWithParameters;
+import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.ParameterList;
+import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -60,6 +68,7 @@ import javax.jms.TextMessage;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 
+import com.ing.ifsa.IFSAQueue;
 import com.ing.ifsa.IFSATimeOutMessage;
 
 
@@ -81,12 +90,20 @@ import com.ing.ifsa.IFSATimeOutMessage;
  *   <li>"RR": Request-Reply protocol</li>
  * </ul></td><td><td>&nbsp;</td></td></tr>
  * </table>
+ * <table border="1">
+ * <p><b>Parameters:</b>
+ * <tr><th>name</th><th>type</th><th>remarks</th></tr>
+ * <tr><td>serviceId (or any other name)</td><td>string</td>
+ * <td>When a parameter is present, it is used to determine the serviceId to be called. However, a serviceId must still be specified as an attribute, for compatibility reasons</td></tr>
+ * </table>
  *
  * @author Johan Verrips / Gerrit van Brakel
  * @since  4.2
  */
-public class IfsaRequesterSender extends IfsaFacade implements ISender {
-	public static final String version="$RCSfile: IfsaRequesterSender.java,v $ $Revision: 1.14 $ $Date: 2005-09-01 11:19:53 $";
+public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParameters {
+	public static final String version="$RCSfile: IfsaRequesterSender.java,v $ $Revision: 1.15 $ $Date: 2005-09-13 15:56:40 $";
+ 
+	protected ParameterList paramList = null;
   
 	public IfsaRequesterSender() {
   		super(false); // instantiate IfsaFacade as a requestor	
@@ -94,6 +111,9 @@ public class IfsaRequesterSender extends IfsaFacade implements ISender {
 
 	public void configure() throws ConfigurationException {
 		super.configure();
+		if (paramList!=null) {
+			paramList.configure();
+		}
 		log.info(getLogPrefix()+" configured sender on "+getPhysicalDestinationName());
 	}
 	
@@ -140,6 +160,7 @@ public class IfsaRequesterSender extends IfsaFacade implements ISender {
 		    msg = replyReceiver.receive(timeout);
 		    if (msg!=null) {
 		    	log.debug(getLogPrefix()+"received reply");
+/*		    	
 				try {
 					if (!isTransacted() && !isJmsTransacted()) {
 						msg.acknowledge();
@@ -148,6 +169,7 @@ public class IfsaRequesterSender extends IfsaFacade implements ISender {
 				} catch (JMSException e) {
 					log.error(getLogPrefix()+"exception in ack ", e);
 				}
+*/				
 		    }
 
 	    } catch (Exception e) {
@@ -175,13 +197,20 @@ public class IfsaRequesterSender extends IfsaFacade implements ISender {
 			throw new SenderException(getLogPrefix()+"reply received for message using selector ["+selector+"] cannot be cast to TextMessage ["+msg.getClass().getName()+"]",e);
 		}
 	}
+
+	public String sendMessage(String message) throws SenderException, TimeOutException {
+		return sendMessage(null, message, null);
+	}
+
+	public String sendMessage(String dummyCorrelationId, String message) throws SenderException, TimeOutException {
+		return sendMessage(dummyCorrelationId, message, null);
+	}
 	
 	/**
 	 * Execute a request to the IFSA service.
 	 * @return in Request/Reply, the retrieved message or TIMEOUT, otherwise null
 	 */
-	public String sendMessage(String message)
-	    throws SenderException, TimeOutException {
+	public String sendMessage(String dummyCorrelationId, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 	    String result = null;
 		QueueSession session = null;
 		QueueSender sender = null;
@@ -190,7 +219,20 @@ public class IfsaRequesterSender extends IfsaFacade implements ISender {
 		try {
 			log.debug(getLogPrefix()+"creating session and sender");
 			session = createSession();
-			sender = createSender(session, getServiceQueue());
+			IFSAQueue queue;
+			if (prc != null && paramList != null) {
+				String serviceId = paramList.getParameter(0).getValue(prc).toString();
+				queue = getConnection().lookupService(getConnection().polishServiceId(serviceId));
+				if (queue==null) {
+					throw new SenderException(getLogPrefix()+"got null as queue for serviceId ["+serviceId+"]");
+				}
+				if (log.isDebugEnabled()) {
+					log.info(getLogPrefix()+ "got Queue to send messages on ["+queue.getQueueName()+"]");
+				}
+			} else {
+				queue = getServiceQueue();
+			}
+			sender = createSender(session, queue);
 
 			// TODO: handle UDZs
 			log.debug(getLogPrefix()+"sending message");
@@ -212,6 +254,8 @@ public class IfsaRequesterSender extends IfsaFacade implements ISender {
 			throw new SenderException(getLogPrefix()+"caught JMSException in sendMessage()",e);
 		} catch (IfsaException e) {
 			throw new SenderException(getLogPrefix()+"caught IfsaException in sendMessage()",e);
+		} catch (ParameterException e) {
+			throw new SenderException(getLogPrefix()+"caught ParameterException in sendMessage() determining serviceId",e);
 		} finally {
 			if (sender != null) {
 				try {
@@ -233,18 +277,8 @@ public class IfsaRequesterSender extends IfsaFacade implements ISender {
 	    return result;
 	
 	}
-	/**
-	 * Execute a request to the IFSA service.
-	 * <p>As IFSA does not allow setting the correlationID, the value supplied is not used</p>
-	 * @return in Request/Reply, the retrieved message or TIMEOUT, otherwise null
-	 */
-	public String sendMessage(String dummyCorrelationId, String message) throws SenderException, TimeOutException {
-	
-	    // if (StringUtils.isNotEmpty(dummyCorrelationId)) {
-		//     log.warn(getLogPrefix()+"sendMessage() ignoring correlationId ["+dummyCorrelationId+"]");
-	    // }
-	    return sendMessage(message);
-	}
+
+
 	
 	public String toString() {
 		String result  = super.toString();
@@ -252,5 +286,12 @@ public class IfsaRequesterSender extends IfsaFacade implements ISender {
         result += ts.toString();
         return result;
 
+	}
+
+	public void addParameter(Parameter p) {
+		if (paramList==null) {
+			paramList=new ParameterList();
+		}
+		paramList.add(p);
 	}
 }
