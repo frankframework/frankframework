@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.16  2005-08-08 09:44:11  europe\L190409
+ * Revision 1.17  2005-09-13 15:42:14  europe\L190409
+ * improved handling of non-serializable messages like Poison-messages
+ *
+ * Revision 1.16  2005/08/08 09:44:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * start transactions if needed and not already started
  *
  * Revision 1.15  2005/07/19 15:27:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -159,7 +162,7 @@ import javax.transaction.UserTransaction;
  * @since 4.2
  */
 public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, IMessageHandler, IbisExceptionListener, HasSender {
-	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.16 $ $Date: 2005-08-08 09:44:11 $";
+	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.17 $ $Date: 2005-09-13 15:42:14 $";
 	protected Logger log = Logger.getLogger(this.getClass());
  
 	private String returnIfStopped="";
@@ -563,7 +566,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 		IPullingListener listener = (IPullingListener)getListener();
 
 		if (isTransacted()) {
-			Serializable rawMessage;
+			Object rawMessage;
 			
 			UserTransaction utx = null;
 	
@@ -576,7 +579,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 				// no need to send message on errorSender, did not even try to read message
 			}
 			try {
-				rawMessage = (Serializable)listener.getRawMessage(threadContext);
+				rawMessage = listener.getRawMessage(threadContext);
 				if (rawMessage==null) {
 					try {
 						utx.rollback();
@@ -605,10 +608,16 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 		log.info("receiver ["+getName()+"] moves message with originalMessageId ["+originalMessageId+"] correlationId ["+correlationId+"] to inProcess");
 		String newMessageId=null;
 		try {
-			//TODO: received date preciezer doen
-			newMessageId = getInProcessStorage().storeMessage(originalMessageId,correlationId,new Date(),"in process",(Serializable)rawMessage);
-			log.debug("["+getName()+"] committing transfer of message with messageId ["+originalMessageId+"] to inProcessStorage, newMessageId ["+newMessageId+"]");
-			utx.commit();
+			if (rawMessage instanceof Serializable) {
+				//TODO: received date preciezer doen
+				newMessageId = getInProcessStorage().storeMessage(originalMessageId,correlationId,new Date(),"in process",(Serializable)rawMessage);
+				log.debug("["+getName()+"] committing transfer of message with messageId ["+originalMessageId+"] to inProcessStorage, newMessageId ["+newMessageId+"]");
+				utx.commit();
+			} else {
+				log.warn("["+getName()+"] received message of type ["+rawMessage.getClass().getName()+"] is not serializable, cannot be stored in inProcessStorage; will only commit its reception");
+				utx.commit();
+				throw new ListenerException("["+getName()+"] received non serializable message of type ["+rawMessage.getClass().getName()+"], contents ["+rawMessage.toString()+"]");
+			}
 		} catch (Exception e) {
 			log.error("["+getName()+"] Exception transfering message with messageId ["+originalMessageId+"] to inProcessStorage, original message: ["+rawMessage+"]",e);
 			try {
@@ -884,7 +893,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 				}
 			}
 		} finally {
-			if (isTransacted()) {
+			if (isTransacted() && inProcessMessageId!=null) {
 				finishTransactedProcessingOfMessage(utx,inProcessMessageId,messageId,correlationId,message, new Date(startProcessingTimestamp), errorMessage, (Serializable)rawMessage);
 			}
 			long finishProcessingTimestamp = System.currentTimeMillis();
