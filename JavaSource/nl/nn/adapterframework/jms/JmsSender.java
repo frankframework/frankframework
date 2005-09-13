@@ -1,6 +1,9 @@
 /*
  * $Log: JmsSender.java,v $
- * Revision 1.17  2005-08-02 07:13:05  europe\L190409
+ * Revision 1.18  2005-09-13 15:40:34  europe\L190409
+ * log exceptions on closing the sender
+ *
+ * Revision 1.17  2005/08/02 07:13:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * deliveryMode to String and vv
  *
  * Revision 1.16  2005/07/05 11:54:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -93,7 +96,7 @@ import javax.jms.Message;
  */
 
 public class JmsSender extends JMSFacade implements ISenderWithParameters, IPostboxSender {
-	public static final String version="$RCSfile: JmsSender.java,v $ $Revision: 1.17 $ $Date: 2005-08-02 07:13:05 $";
+	public static final String version="$RCSfile: JmsSender.java,v $ $Revision: 1.18 $ $Date: 2005-09-13 15:40:34 $";
 	private String replyToName = null;
 	private int deliveryMode = 0;
 	private String messageType = null;
@@ -208,8 +211,20 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 			throw new SenderException(e);
 		}
 		finally {
-			if (mp != null) try { mp.close(); } catch (JMSException e) { }
-			if (s != null) try { s.close(); } catch (JMSException e) { }
+			if (mp != null) { 
+				try { 
+					mp.close(); 
+				} catch (JMSException e) { 
+					log.warn("JmsSender [" + getName() + "] got exception closing message producer",e); 
+				}
+			}
+			if (s != null) {
+				 try { 
+				 	s.close(); 
+				 } catch (JMSException e) { 
+					log.warn("JmsSender [" + getName() + "] got exception closing session",e); 
+				 }
+			}
 		}
 	}
 
