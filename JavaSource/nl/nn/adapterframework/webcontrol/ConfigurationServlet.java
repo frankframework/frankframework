@@ -35,7 +35,7 @@ import java.util.Iterator;
  * @author    Johan Verrips
  */
 public class ConfigurationServlet extends HttpServlet {
-	public static final String version = "$RCSfile: ConfigurationServlet.java,v $ $Revision: 1.6 $ $Date: 2005-09-07 15:33:21 $";
+	public static final String version = "$RCSfile: ConfigurationServlet.java,v $ $Revision: 1.7 $ $Date: 2005-09-13 15:45:57 $";
 	
     // logging category for this class
     protected Logger log = Logger.getLogger(this.getClass());
@@ -88,6 +88,14 @@ public class ConfigurationServlet extends HttpServlet {
         }
         log.info("************** Configuration shut down successfully **************");
     }
+    
+    public static void noCache(HttpServletResponse response) {
+		response.setDateHeader("Expires",1);
+		response.setDateHeader("Last-Modified",new Date().getTime());
+		response.setHeader("Cache-Control","no-store, no-cache, must-revalidate");
+		response.setHeader("Pragma","no-cache");
+    }
+    
     /**
      * Initializes the configuration. Request parameters are used.
      * Request parameters:
@@ -111,10 +119,7 @@ public class ConfigurationServlet extends HttpServlet {
         String autoStart = request.getParameter("autoStart");
 
         log.warn("ConfigurationServlet initiated by " + commandIssuedBy);
-		response.setDateHeader("Expires",1);
-		response.setDateHeader("Last-Modified",new Date().getTime());
-        response.setHeader("Cache-Control","no-store, no-cache, must-revalidate");
-		response.setHeader("Pragma","no-cache");
+		noCache(response);
         PrintWriter out = response.getWriter();
         out.println("<html>");
         out.println("<body>");
