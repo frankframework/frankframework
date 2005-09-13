@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaFacade.java,v $
- * Revision 1.28  2005-08-31 16:32:16  europe\L190409
+ * Revision 1.29  2005-09-13 15:48:00  europe\L190409
+ * changed acknowledge mode back to AutoAcknowledge
+ *
+ * Revision 1.28  2005/08/31 16:32:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected code for static reply queues
  *
  * Revision 1.27  2005/07/28 07:31:25  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -91,7 +94,7 @@ import java.util.Map;
 import javax.jms.*;
 
 /**
- * Base class for IFSA 2.0 functions.
+ * Base class for IFSA 2.0/2.2 functions.
  * <br/>
  * <p>Descenderclasses must set either Requester or Provider behaviour in their constructor.</p>
  * <p><b>Configuration:</b>
@@ -113,10 +116,10 @@ import javax.jms.*;
  * @since 4.2
  */
 public class IfsaFacade implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version = "$RCSfile: IfsaFacade.java,v $ $Revision: 1.28 $ $Date: 2005-08-31 16:32:16 $";
+	public static final String version = "$RCSfile: IfsaFacade.java,v $ $Revision: 1.29 $ $Date: 2005-09-13 15:48:00 $";
     protected Logger log = Logger.getLogger(this.getClass());
     
-    private static int BASIC_ACK_MODE = Session.CLIENT_ACKNOWLEDGE;
+    private static int BASIC_ACK_MODE = Session.AUTO_ACKNOWLEDGE;
     
 	private String name;
 	private String applicationId;
@@ -135,7 +138,7 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination, IXAEnab
 	
 	private boolean sessionsArePooled=false;
 	
-	private boolean transacted=true;
+	private boolean transacted=false; // attribute is currently not used
 
 
 	public IfsaFacade(boolean asProvider) {
@@ -517,7 +520,7 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination, IXAEnab
     }
     
     public boolean isJmsTransacted() {
-    	return !isTransacted() && getMessageProtocolEnum().equals(IfsaMessageProtocolEnum.FIRE_AND_FORGET);
+    	return getMessageProtocolEnum().equals(IfsaMessageProtocolEnum.FIRE_AND_FORGET);
     }
     
 	public String toString() {
@@ -527,7 +530,7 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination, IXAEnab
 	    ts.append("serviceId", serviceId);
 	    if (messageProtocol != null) {
 			ts.append("messageProtocol", messageProtocol.getName());
-			ts.append("transacted", transacted);
+//			ts.append("transacted", isTransacted());
 			ts.append("jmsTransacted", isJmsTransacted());
 	    }
 	    else
