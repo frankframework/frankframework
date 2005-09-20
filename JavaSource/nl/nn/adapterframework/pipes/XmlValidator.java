@@ -1,6 +1,9 @@
 /*
  * $Log: XmlValidator.java,v $
- * Revision 1.8  2005-09-05 09:33:21  europe\L190409
+ * Revision 1.9  2005-09-20 13:26:57  europe\L190409
+ * removed need for baseResourceURL
+ *
+ * Revision 1.8  2005/09/05 09:33:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fixed typo in methodname setReasonSessionKey()
  *
  * Revision 1.7  2005/09/05 07:01:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -23,6 +26,7 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.util.Variant;
 import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
 import org.xml.sax.ErrorHandler;
@@ -78,7 +82,7 @@ import java.io.IOException;
 
  */
 public class XmlValidator extends FixedForwardPipe {
-	public static final String version="$RCSfile: XmlValidator.java,v $ $Revision: 1.8 $ $Date: 2005-09-05 09:33:21 $";
+	public static final String version="$RCSfile: XmlValidator.java,v $ $Revision: 1.9 $ $Date: 2005-09-20 13:26:57 $";
 
 	private String schema = null;
     private String schemaLocation = null;
@@ -140,6 +144,19 @@ public class XmlValidator extends FixedForwardPipe {
             if (findForward("failure")==null) throw new ConfigurationException(
             getLogPrefix(null)+ "has no forward with name [failure]");
         }
+        if (StringUtils.isNotEmpty(getSchemaLocation())) {
+        	String resolvedLocations = XmlUtils.resolveSchemaLocations(getSchemaLocation());
+        	log.info(getLogPrefix(null)+"resolved schemaLocation to ["+resolvedLocations+"]");
+        	setSchemaLocation(resolvedLocations);
+        }
+		if (StringUtils.isNotEmpty(getNoNamespaceSchemaLocation())) {
+			URL url = ClassUtils.getResourceURL(this, getNoNamespaceSchemaLocation());
+			if (url!=null) {
+				String resolvedLocation =url.toExternalForm();
+				log.info(getLogPrefix(null)+"resolved noNamespaceSchemaLocation to ["+resolvedLocation+"]");
+				setNoNamespaceSchemaLocation(resolvedLocation);
+			}
+		}
     }
 
      /**
@@ -226,6 +243,7 @@ public class XmlValidator extends FixedForwardPipe {
         return new PipeRunResult(getForward(), input);
     }
 
+
     /**
      * Get a configured parser.
      * @return XMLReader
@@ -293,17 +311,14 @@ public class XmlValidator extends FixedForwardPipe {
      * hint as to the location of a schema document defining names for that
      * namespace name).</p>
      * <p> The syntax is the same as for schemaLocation attributes
-     * in instance documents: e.g,
-     * "http://www.example.com ${baseResourceURL}file%20name.xsd" (where
-     * ${baseResourceURL} is translated to the classes directory of the
-     * webapplication when the configuration file is read).</p>
+     * in instance documents: e.g, "http://www.example.com file%20name.xsd".</p>
      * <p>The user can specify more than one XML Schema in the list.</p>
      * <p><b>Note</b> that this method takes URI's as input. This means that,
      * for example, spaces in filenames should be escaped to %20 and references
-     * to filenames should begin with file:/ to specify the protocol. The
-     * variable baseResourceURL, pointing to the classes directory of the
-     * webapplication, can be used to prevent system specific file locations in
-     * the configuration.</p>
+     * to filenames should begin with file:/ to specify the protocol if the path does
+     * not have it root in the classes-directory</p>
+     * 
+     * N.B. since 4.3 RC7 schema locations are resolved automatically, without the need for ${baseResourceURL}
      */
     public void setSchemaLocation(String schemaLocation) {
         this.schemaLocation = schemaLocation;
@@ -315,16 +330,6 @@ public class XmlValidator extends FixedForwardPipe {
     /**
      * <p>A URI reference as a hint as to the location of a schema document with
      * no target namespace.</p>
-     * <p> The syntax is the same as for noNamespaceSchemaLocation attributes
-     *  in instance documents: e.g, "${baseResourceURL}file_name.xsd" (where
-     * ${baseResourceURL} is translated to the classes directory of the
-     * webapplication when the configuration file is read).</p>
-     * <p><b>Note</b> that this method takes a URI as input. This means that,
-     * for example, spaces in filenames should be escaped to %20 and references
-     * to filenames should begin with file:/ to specify the protocol. The
-     * variable baseResourceURL, pointing to the classes directory of the
-     * webapplication, can be used to prevent system specific file locations in
-     * the configuration.</p>
      */
     public void setNoNamespaceSchemaLocation(String noNamespaceSchemaLocation) {
         this.noNamespaceSchemaLocation = noNamespaceSchemaLocation;
