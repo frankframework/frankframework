@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.23  2005-09-08 15:52:19  europe\L190409
+ * Revision 1.24  2005-09-20 13:32:18  europe\L190409
+ * added check for emtpy-named pipes
+ *
+ * Revision 1.23  2005/09/08 15:52:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * moved extra functionality to IExtendedPipe
  *
  * Revision 1.22  2005/09/07 15:27:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -132,7 +135,7 @@ import javax.transaction.UserTransaction;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.23 $ $Date: 2005-09-08 15:52:19 $";
+	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.24 $ $Date: 2005-09-20 13:32:18 $";
     private Logger log = Logger.getLogger(this.getClass());
 	private Logger durationLog = Logger.getLogger("LongDurationMessages");
     
@@ -162,23 +165,30 @@ public class PipeLine {
 	 * @see nl.nn.adapterframework.pipes.AbstractPipe
 	 **/
 	public void addPipe(IPipe pipe) throws ConfigurationException {
-		IPipe current=(IPipe)pipelineTable.get(pipe.getName());
-		if (current!=null) {
-			throw new ConfigurationException("pipe ["+pipe.getName()+"] defined more then once");
+		if (pipe==null) {
+			throw new ConfigurationException("pipe to be added is null, pipelineTable size ["+pipelineTable.size()+"]");
 		}
-	    pipelineTable.put(pipe.getName(), pipe);
-	    pipeStatistics.put(pipe.getName(), new StatisticsKeeper(pipe.getName()));
+		String name= pipe.getName();
+		if (StringUtils.isEmpty(name)) {
+			throw new ConfigurationException("pipe ["+pipe.getClass().getName()+"] to be added has no name, pipelineTable size ["+pipelineTable.size()+"]");
+		}
+		IPipe current=(IPipe)pipelineTable.get(name);
+		if (current!=null) {
+			throw new ConfigurationException("pipe ["+name+"] defined more then once");
+		}
+	    pipelineTable.put(name, pipe);
+	    pipeStatistics.put(name, new StatisticsKeeper(name));
 	    if (pipe.getMaxThreads() > 0) {
-	        pipeWaitingStatistics.put(pipe.getName(), new StatisticsKeeper(pipe.getName()));
+	        pipeWaitingStatistics.put(name, new StatisticsKeeper(name));
 	    }
 	    log.debug("added pipe [" + pipe.toString() + "]");
-	    if (globalForwards.get(pipe.getName()) == null) {
+	    if (globalForwards.get(name) == null) {
 	        PipeForward pw = new PipeForward();
-	        pw.setName(pipe.getName());
-	        pw.setPath(pipe.getName());
+	        pw.setName(name);
+	        pw.setPath(name);
 	        registerForward(pw);
 	    } else {
-	        log.info("already had a pipeForward with name ["+ pipe.getName()+ "] skipping this one ["+ pipe.toString()+ "]");
+	        log.info("already had a pipeForward with name ["+ name+ "] skipping this one ["+ pipe.toString()+ "]");
 	    }
 	}
 	
