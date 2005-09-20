@@ -1,6 +1,9 @@
 /*
  * $Log: FixedQuerySender.java,v $
- * Revision 1.6  2005-09-07 15:37:07  europe\L190409
+ * Revision 1.7  2005-09-20 13:24:00  europe\L190409
+ * improved logging
+ *
+ * Revision 1.6  2005/09/07 15:37:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.5  2005/08/30 15:58:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -52,11 +55,14 @@ import java.sql.SQLException;
  * @since 	4.1
  */
 public class FixedQuerySender extends JdbcQuerySenderBase {
-	public static final String version = "$RCSfile: FixedQuerySender.java,v $ $Revision: 1.6 $ $Date: 2005-09-07 15:37:07 $";
+	public static final String version = "$RCSfile: FixedQuerySender.java,v $ $Revision: 1.7 $ $Date: 2005-09-20 13:24:00 $";
 
 	private String query=null;
 		
 	protected PreparedStatement getStatement(Connection con, String correlationID, String message) throws JdbcException, SQLException {
+		if (log.isDebugEnabled()) {
+			log.debug(getLogPrefix() +"preparing statement for query ["+getQuery()+"]");
+		}
 		return con.prepareStatement(getQuery());
 	}
 
