@@ -1,6 +1,9 @@
 /*
  * $Log: ServiceDispatcher.java,v $
- * Revision 1.7  2005-08-30 16:05:35  europe\L190409
+ * Revision 1.8  2005-09-20 13:28:52  europe\L190409
+ * added warning for double registered listeners
+ *
+ * Revision 1.7  2005/08/30 16:05:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * throw exception if requested service does not exist
  *
  * Revision 1.6  2005/07/05 13:17:52  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -33,7 +36,7 @@ import java.util.TreeSet;
  * @see ServiceDispatcherBean
  */
 public class ServiceDispatcher  {
-	public static final String version = "$RCSfile: ServiceDispatcher.java,v $ $Revision: 1.7 $ $Date: 2005-08-30 16:05:35 $";
+	public static final String version = "$RCSfile: ServiceDispatcher.java,v $ $Revision: 1.8 $ $Date: 2005-09-20 13:28:52 $";
 	protected Logger log = Logger.getLogger(this.getClass());
 	
 	private Hashtable registeredListeners=new Hashtable();
@@ -129,11 +132,14 @@ public class ServiceDispatcher  {
      * Registers a ServiceListener implementation
      * @param listener a ServiceListener implementation
      */
-	public  void registerServiceListener(ServiceListener listener){
+	public  void registerServiceListener(ServiceListener listener) throws ListenerException{
 		registerServiceClient(listener.getName(), listener);
 	}
 
-	public  void registerServiceClient(String name, ServiceClient listener){
+	public  void registerServiceClient(String name, ServiceClient listener) throws ListenerException{
+		if (isRegisteredServiceListener(name)) {
+			log.warn("listener ["+name+"] already registered with ServiceDispatcher");
+		}
 		registeredListeners.put(name, listener);
 		log.info("Listener ["+name+"] registered at ServiceDispatcher");
 	}
