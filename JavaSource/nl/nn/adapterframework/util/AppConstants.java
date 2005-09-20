@@ -1,6 +1,9 @@
 /*
  * $Log: AppConstants.java,v $
- * Revision 1.6  2005-09-13 15:44:49  europe\L190409
+ * Revision 1.7  2005-09-20 13:29:42  europe\L190409
+ * removed setting of baseResourceURL
+ *
+ * Revision 1.6  2005/09/13 15:44:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added code to determine and set baseResourceURL
  *
  * Revision 1.5  2005/07/28 07:41:47  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -92,7 +95,7 @@ import org.apache.commons.lang.StringUtils;
  * 
  */
 public final class AppConstants extends Properties implements Serializable{
-	public static final String version="$RCSfile: AppConstants.java,v $  $Revision: 1.6 $ $Date: 2005-09-13 15:44:49 $";
+	public static final String version="$RCSfile: AppConstants.java,v $  $Revision: 1.7 $ $Date: 2005-09-20 13:29:42 $";
 	
 	public final static String propertiesFileName="AppConstants.properties";
 	private static AppConstants self=null;
@@ -234,17 +237,6 @@ public final class AppConstants extends Properties implements Serializable{
 	 * then per deployment and at last environment entries in the JNDI.
 	 */
 	public void load() {
-		// Set the baseResourceURL property first.
-		URL urlToThisPackage = ClassUtils.getResourceURL(this, "");
-		if (urlToThisPackage != null) {
-			String urlToThisPackageString = urlToThisPackage.toString();
-			String suffix = "nl/nn/adapterframework/util/";
-			if (urlToThisPackageString.length() >= suffix.length()) {
-				String baseResourceURL = urlToThisPackageString.substring(0, urlToThisPackageString.length() - suffix.length()); 
-				log.info("determined baseResourceURL to be ["+baseResourceURL+"]");
-				this.put("baseResourceURL", baseResourceURL);
-			}
-		}
 	    load(propertiesFileName);
 	    if (getBoolean("environment.entries.load", true)) {
 	        try {
