@@ -1,6 +1,9 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.21  2005-07-05 11:12:08  europe\L190409
+ * Revision 1.22  2005-09-20 13:31:01  europe\L190409
+ * added schemaLocation-resolver
+ *
+ * Revision 1.21  2005/07/05 11:12:08  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added non-namespace aware optionfor buildElement
  *
  * Revision 1.20  2005/06/20 09:01:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -112,6 +115,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.StringTokenizer;
 
 /**
  * Some utilities for working with XML. As soon as the Apache XML Commons project
@@ -121,7 +125,7 @@ import java.util.Map;
  * @author Johan Verrips IOS
  */
 public class XmlUtils {
-	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.21 $ $Date: 2005-07-05 11:12:08 $";
+	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.22 $ $Date: 2005-09-20 13:31:01 $";
 	static Logger log = Logger.getLogger(XmlUtils.class);
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
@@ -698,6 +702,36 @@ public class XmlUtils {
 		return (out.getBuffer().toString());
 
 	}
+
+	
+	static public String resolveSchemaLocations(String locationAttribute) {
+		String result=null;
+		StringTokenizer st = new StringTokenizer(locationAttribute);
+		while (st.hasMoreTokens()) {
+			if (result==null) {
+				result="";
+			} else {
+				result+=" ";
+			}
+			String namespace=st.nextToken();
+			result += namespace+" ";
+			if (st.hasMoreTokens()) {
+				String location=st.nextToken();
+				URL url = ClassUtils.getResourceURL(XmlUtils.class, location);
+				if (url!=null) {
+					result+=url.toExternalForm();
+				} else {
+					log.warn("could not resolve location ["+location+"] for namespace ["+namespace+"] to URL");
+					result+=location;
+				}
+			} else {
+				log.warn("no location for namespace ["+namespace+"]");
+			}
+		}
+		return result;
+	}
+
+	
 	/*
 	 *This function does not operate with Xerces 1.4.1
 	 */
