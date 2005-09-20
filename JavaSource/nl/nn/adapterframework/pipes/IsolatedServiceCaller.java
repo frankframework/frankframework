@@ -1,6 +1,9 @@
 /*
  * $Log: IsolatedServiceCaller.java,v $
- * Revision 1.1  2005-09-07 15:35:10  europe\L190409
+ * Revision 1.2  2005-09-20 13:27:57  europe\L190409
+ * added asynchronous call-facility
+ *
+ * Revision 1.1  2005/09/07 15:35:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * introduction of IsolatedServiceCaller
  *
  */
@@ -21,7 +24,7 @@ import nl.nn.adapterframework.receivers.ServiceDispatcher;
  * @version Id
  */
 public class IsolatedServiceCaller extends Thread {
-	public static final String version="$RCSfile: IsolatedServiceCaller.java,v $ $Revision: 1.1 $ $Date: 2005-09-07 15:35:10 $";
+	public static final String version="$RCSfile: IsolatedServiceCaller.java,v $ $Revision: 1.2 $ $Date: 2005-09-20 13:27:57 $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	String serviceName;
@@ -38,6 +41,11 @@ public class IsolatedServiceCaller extends Thread {
 		this.correlationID=correlationID;
 		this.message=message;
 		this.context=context;
+	}
+
+	public static void callServiceAsynchronous(String serviceName, String correlationID, String message, HashMap context) throws ListenerException {
+		IsolatedServiceCaller call = new IsolatedServiceCaller(serviceName, correlationID,  message,  context);
+		call.start();
 	}
 	
 	public static String callServiceIsolated(String serviceName, String correlationID, String message, HashMap context) throws ListenerException {
@@ -64,6 +72,7 @@ public class IsolatedServiceCaller extends Thread {
 		try {
 			result = ServiceDispatcher.getInstance().dispatchRequestWithExceptions(serviceName, correlationID, message, context);
 		} catch (Throwable t) {
+			log.warn("IsolatedServiceCaller caught exception",t);
 			this.t=t;
 		}
 	}
