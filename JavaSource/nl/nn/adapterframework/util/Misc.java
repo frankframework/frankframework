@@ -1,6 +1,9 @@
 /*
  * $Log: Misc.java,v $
- * Revision 1.10  2005-07-19 11:37:40  europe\L190409
+ * Revision 1.11  2005-09-22 15:54:17  europe\L190409
+ * added replace function
+ *
+ * Revision 1.10  2005/07/19 11:37:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added stream copying functions
  *
  * Revision 1.9  2004/10/26 15:36:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -20,7 +23,7 @@ import java.rmi.server.UID;
  * @version Id
  */
 public class Misc {
-	public static final String version="$RCSfile: Misc.java,v $ $Revision: 1.10 $ $Date: 2005-07-19 11:37:40 $";
+	public static final String version="$RCSfile: Misc.java,v $ $Revision: 1.11 $ $Date: 2005-09-22 15:54:17 $";
 	public static final int BUFFERSIZE=20000;
 	public static final String DEFAULT_INPUT_STREAM_ENCODING="UTF-8";
 
@@ -195,4 +198,34 @@ public class Misc {
 			fw.close();
 		}
 	}
+
+	/**
+	 * String replacer.
+	 * 
+	 * @param target	is the original string
+	 * @param from		is the string to be replaced
+	 * @param to		is the string which will used to replace
+	 * @return
+	 */
+	public static String replace (String source, String from, String to) {   
+		int start = source.indexOf(from);
+		if (start==-1) { 
+			return source;
+		} 
+		int fromLength = from.length();
+		char [] sourceArray = source.toCharArray();
+		
+		StringBuffer buffer = new StringBuffer();
+		int srcPos=0;
+		
+		while (start != -1) {
+			buffer.append (sourceArray, srcPos, start-srcPos);
+			buffer.append (to);
+			srcPos=start+fromLength;
+			start = source.indexOf (from, srcPos);
+		}
+		buffer.append (sourceArray, srcPos, sourceArray.length-srcPos);
+		return buffer.toString();
+	 }
+
 }
