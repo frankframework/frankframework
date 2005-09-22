@@ -1,6 +1,10 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.22  2005-09-20 13:31:01  europe\L190409
+ * Revision 1.23  2005-09-22 15:55:23  europe\L190409
+ * added streaming transform-function
+ * added &apos; to escape-chars
+ *
+ * Revision 1.22  2005/09/20 13:31:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added schemaLocation-resolver
  *
  * Revision 1.21  2005/07/05 11:12:08  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -102,6 +106,7 @@ import javax.xml.transform.stream.StreamSource;
 import javax.xml.transform.stream.StreamResult;
 
 import java.io.File;
+import java.io.OutputStream;
 import java.io.Reader;
 import java.io.FileReader;
 import java.io.StringReader;
@@ -109,6 +114,7 @@ import java.io.StringWriter;
 import java.io.InputStreamReader;
 import java.io.IOException;
 import java.io.FileNotFoundException;
+import java.io.Writer;
 
 import java.net.URL;
 import java.util.Collection;
@@ -125,7 +131,7 @@ import java.util.StringTokenizer;
  * @author Johan Verrips IOS
  */
 public class XmlUtils {
-	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.22 $ $Date: 2005-09-20 13:31:01 $";
+	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.23 $ $Date: 2005-09-22 15:55:23 $";
 	static Logger log = Logger.getLogger(XmlUtils.class);
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
@@ -407,6 +413,8 @@ public class XmlUtils {
 				return "&amp;";
 			case ('\"') :
 				return "&quot;";
+			case ('\'') :
+				return "&apos;";
 		}
 		return null;
 	}
@@ -690,17 +698,20 @@ public class XmlUtils {
 		throws TransformerException, IOException {
 
 		StringWriter out = new StringWriter(64 * 1024);
-		Result result = new StreamResult(out);
-
-		synchronized (t) {
-			t.transform(s, result);
-		}
-
-		out = (StringWriter) ((StreamResult) result).getWriter();
+		transformXml(t,s,out);
 		out.close();
 
 		return (out.getBuffer().toString());
 
+	}
+
+	public static void transformXml(Transformer t, Source s, Writer out)
+		throws TransformerException, IOException {
+
+		Result result = new StreamResult(out);
+		synchronized (t) {
+			t.transform(s, result);
+		}
 	}
 
 	
