@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcTransactionalStorage.java,v $
- * Revision 1.11  2005-09-07 15:37:07  europe\L190409
+ * Revision 1.12  2005-09-22 16:06:59  europe\L190409
+ * added createTable attribute, to create table only when desired
+ *
+ * Revision 1.11  2005/09/07 15:37:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.10  2005/08/24 15:48:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -74,6 +77,7 @@ import nl.nn.adapterframework.util.JdbcUtil;
  * <tr><td>{@link #setPassword(String) password}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setTableName(String) tableName}</td><td>the name of the table messages are stored in</td><td>inprocstore</td></tr>
+ * <tr><td>{@link #setCreateTable(String) createTable}</td><td>when set to <code>true</code>, the table is created if it does not exist</td><td>false</td></tr>
  * <tr><td>{@link #setKeyField(String) keyField}</td><td>the name of the column that contains the primary key of the table</td><td>messageKey</td></tr>
  * <tr><td>{@link #setIdField(String) idField}</td><td>the name of the column messageids are stored in</td><td>messageId</td></tr>
  * <tr><td>{@link #setCorrelationIdField(String) correlationIdField}</td><td>the name of the column correlation-ids are stored in</td><td>correlationId</td></tr>
@@ -107,13 +111,13 @@ import nl.nn.adapterframework.util.JdbcUtil;
  * @since 	4.1
  */
 public class JdbcTransactionalStorage extends JdbcFacade implements ITransactionalStorage {
-	public static final String version = "$RCSfile: JdbcTransactionalStorage.java,v $ $Revision: 1.11 $ $Date: 2005-09-07 15:37:07 $";
+	public static final String version = "$RCSfile: JdbcTransactionalStorage.java,v $ $Revision: 1.12 $ $Date: 2005-09-22 16:06:59 $";
 	
 	// the following currently only for debug.... 
 	boolean checkIfTableExists=true;
-	boolean neverCreateTable=false;
 	boolean forceCreateTable=false;
 
+	boolean createTable=false;
     private String tableName="ibisstore";
 	private String keyField="messageKey";
     private String idField="messageId";
@@ -173,7 +177,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	/**
 	 *	Checks if table exists, and creates when necessary. 
 	 */
-	public void initialize() throws JdbcException, SQLException {
+	public void initialize() throws JdbcException, SQLException, SenderException {
 
 		Connection conn = getConnection();
 		try {
@@ -181,7 +185,10 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 
 			if (checkIfTableExists) {
 				try {
-					 tableMustBeCreated = !JdbcUtil.tableExists(conn, getTableName());
+					tableMustBeCreated = !JdbcUtil.tableExists(conn, getTableName());
+					if (!isCreateTable() && tableMustBeCreated) {
+						throw new SenderException("table ["+getTableName()+"] does not exist");
+					}
 					 log.info("table ["+getTableName()+"] does "+(tableMustBeCreated?"NOT ":"")+"exist");
 				} catch (SQLException e) {
 					log.warn(getLogPrefix()+"exception determining existence of table ["+getTableName()+"] for transactional storage, trying to create anyway."+ e.getMessage());
@@ -192,7 +199,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 				tableMustBeCreated = false;
 			}
 
-			if (!neverCreateTable && tableMustBeCreated || forceCreateTable) {
+			if (isCreateTable() && tableMustBeCreated || forceCreateTable) {
 				log.info(getLogPrefix()+"creating table ["+getTableName()+"] for transactional storage");
 				Statement stmt = conn.createStatement();
 				try {
@@ -674,5 +681,13 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		slotIdField = string;
 	}
 
+
+
+	public void setCreateTable(boolean b) {
+		createTable = b;
+	}
+	public boolean isCreateTable() {
+		return createTable;
+	}
 
 }
