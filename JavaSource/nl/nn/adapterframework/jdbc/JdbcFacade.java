@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcFacade.java,v $
- * Revision 1.11  2005-08-24 15:47:25  europe\L190409
+ * Revision 1.12  2005-09-22 15:58:05  europe\L190409
+ * added warning in comment for getParameterMetadata
+ *
+ * Revision 1.11  2005/08/24 15:47:25  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * try to prefix with java:comp/env/ to find datasource (Tomcat compatibility)
  *
  * Revision 1.10  2005/08/17 16:10:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -44,6 +47,7 @@ import java.sql.SQLException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IXAEnabled;
+import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.jms.JNDIBase;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 
@@ -62,7 +66,7 @@ import org.apache.log4j.Logger;
  * 
  */
 public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version="$RCSfile: JdbcFacade.java,v $ $Revision: 1.11 $ $Date: 2005-08-24 15:47:25 $";
+	public static final String version="$RCSfile: JdbcFacade.java,v $ $Revision: 1.12 $ $Date: 2005-09-22 15:58:05 $";
     protected Logger log = Logger.getLogger(this.getClass());
 	
 	private String name;
@@ -156,8 +160,18 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 		return result;
 	}
 
-	protected void applyParameters(PreparedStatement statement, ParameterValueList parameters) throws SQLException {
+	protected void applyParameters(PreparedStatement statement, ParameterValueList parameters) throws SQLException, SenderException {
 		// statement.clearParameters();
+	
+/*
+		// getParameterMetaData() is not supported on the WebSphere java.sql.PreparedStatement implementation.
+		int senderParameterCount = parameters.size();
+		int statementParameterCount = statement.getParameterMetaData().getParameterCount();
+		if (statementParameterCount<senderParameterCount) {
+			throw new SenderException(getLogPrefix()+"statement has more ["+statementParameterCount+"] parameters defined than sender ["+senderParameterCount+"]");
+		}
+*/		
+		
 		for (int i=0; i< parameters.size(); i++) {
 			String parameterValue = (String)parameters.getParameterValue(i).getValue();
 	//		log.debug("applying parameter ["+(i+1)+","+parameters.getParameterValue(i).getDefinition().getName()+"], value["+parameterValue+"]");
