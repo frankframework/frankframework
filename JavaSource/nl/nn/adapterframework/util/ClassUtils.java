@@ -1,6 +1,9 @@
 /*
  * $Log: ClassUtils.java,v $
- * Revision 1.6  2005-08-30 16:06:27  europe\L190409
+ * Revision 1.7  2005-09-26 15:29:33  europe\L190409
+ * change %20 to space and back
+ *
+ * Revision 1.6  2005/08/30 16:06:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * escape spaces in URL using %20
  *
  * Revision 1.5  2005/08/18 13:34:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -28,7 +31,7 @@ import java.net.URL;
  *
  */
 public class ClassUtils {
-	public static final String version = "$RCSfile: ClassUtils.java,v $ $Revision: 1.6 $ $Date: 2005-08-30 16:06:27 $";
+	public static final String version = "$RCSfile: ClassUtils.java,v $ $Revision: 1.7 $ $Date: 2005-09-26 15:29:33 $";
 	
 	private static Logger log = Logger.getLogger("ClassUtils");
     /**
@@ -85,6 +88,7 @@ public class ClassUtils {
      */
     static public URL getResourceURL(Class klass, String resource)
     {
+    	resource=Misc.replace(resource,"%20"," ");
         URL url = null;
         
 		if (klass == null) {
@@ -118,12 +122,8 @@ public class ClassUtils {
 			//
 			// Escaping spaces to %20 if spaces are found.
 			String urlString = url.toString();
-			int i = urlString.indexOf(' ');
-			if (i != -1) {
-				while (i != -1) {
-					urlString = urlString.substring(0, i) + "%20" + urlString.substring(i + 1);
-					i = urlString.indexOf(' ');
-				}
+			if (urlString.indexOf(' ')>=0) {
+				urlString=Misc.replace(urlString," ","%20");
 				try {
 					URL escapedURL = new URL(urlString);
 					log.debug("resolved resource-string ["+resource+"] to URL ["+escapedURL.toString()+"]");
