@@ -1,6 +1,10 @@
 /*
  * $Log: IfsaProviderListener.java,v $
- * Revision 1.13  2005-09-13 15:48:27  europe\L190409
+ * Revision 1.14  2005-09-26 11:47:26  europe\L190409
+ * Jms-commit only if not XA-transacted
+ * ifsa-messageWrapper for (non-serializable) ifsa-messages
+ *
+ * Revision 1.13  2005/09/13 15:48:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed acknowledge mode back to AutoAcknowledge
  *
  * Revision 1.12  2005/07/28 07:31:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -58,9 +62,11 @@ import com.ing.ifsa.IFSAPoisonMessage;
 import com.ing.ifsa.IFSAHeader;
 import com.ing.ifsa.IFSAServiceName;
 import com.ing.ifsa.IFSAServicesProvided;
+import com.ing.ifsa.IFSATextMessage;
 
 import java.util.HashMap;
 import java.util.Date;
+import java.util.Iterator;
 
 import javax.jms.Message;
 import javax.jms.QueueSession;
@@ -95,7 +101,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * @since 4.2
  */
 public class IfsaProviderListener extends IfsaFacade implements IPullingListener, INamedObject {
-	public static final String version = "$RCSfile: IfsaProviderListener.java,v $ $Revision: 1.13 $ $Date: 2005-09-13 15:48:27 $";
+	public static final String version = "$RCSfile: IfsaProviderListener.java,v $ $Revision: 1.14 $ $Date: 2005-09-26 11:47:26 $";
 
     private final static String THREAD_CONTEXT_SESSION_KEY = "session";
     private final static String THREAD_CONTEXT_RECEIVER_KEY = "receiver";
@@ -216,7 +222,7 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 	    String cid = (String) threadContext.get("cid");
 	    
 		    
-		if (isJmsTransacted()) {
+		if (isJmsTransacted() && !isTransacted()) {
 			QueueSession session = (QueueSession) threadContext.get(THREAD_CONTEXT_SESSION_KEY);
 	    
 		    /* 
@@ -227,11 +233,11 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 	    	log.debug(getCommitOnState());
 	    	
 	        if (getCommitOnState().equals(plr.getState())) {
-	            try {
-	                session.commit();
-	            } catch (JMSException e) {
-	                log.error(getLogPrefix()+"got error committing the received message", e);
-	            }
+				try {
+					session.commit();
+				} catch (JMSException e) {
+					log.error(getLogPrefix()+"got error committing the received message", e);
+				}
 	        } else {
 	            log.warn(getLogPrefix()+"message with correlationID ["
 	                    + cid
@@ -268,6 +274,21 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 	}
 	
 
+	protected String getIdFromWrapper(IfsaMessageWrapper wrapper, HashMap threadContext)  {
+		for (Iterator it=wrapper.getContext().keySet().iterator(); it.hasNext();) {
+			String key = (String)it.next();
+			Object value = wrapper.getContext().get(key);
+			log.debug(getLogPrefix()+"setting variable ["+key+"] to ["+value+"]");
+			threadContext.put(key, value);
+		}
+		return wrapper.getId();
+	}
+	protected String getStringFromWrapper(IfsaMessageWrapper wrapper, HashMap threadContext)  {
+		return wrapper.getText();
+	}
+
+	
+
 	
 	/**
 	 * Extracts ID-string from message obtained from {@link #getRawMessage(HashMap)}. 
@@ -285,6 +306,10 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 	public String getIdFromRawMessage(Object rawMessage, HashMap threadContext) throws ListenerException {
 	
 		TextMessage message = null;
+	 
+	 	if (rawMessage instanceof IfsaMessageWrapper) {
+	 		return getIdFromWrapper((IfsaMessageWrapper)rawMessage,threadContext);
+	 	}
 	 
 	    try {
 	        message = (TextMessage) rawMessage;
@@ -383,19 +408,20 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 			log.error(getLogPrefix()+"exception in ack ", e);
 		}
 */
-	
-	    log.info(getLogPrefix()+ "got message for [" + fullIfsaServiceName
-	    		+ "] with JMSDeliveryMode=[" + mode
-	            + "] \n  JMSMessageID=[" + id
-	            + "] \n  JMSCorrelationID=["+ cid
-				+ "] \n  ifsaServiceName=["+ ifsaServiceName
-				+ "] \n  ifsaGroup=["+ ifsaGroup
-				+ "] \n  ifsaOccurrence=["+ ifsaOccurrence
-				+ "] \n  ifsaVersion=["+ ifsaVersion
-	            + "] \n  Timestamp=[" + dTimeStamp.toString()
-	            + "] \n  ReplyTo=[" + ((replyTo == null) ? "none" : replyTo.toString())
-	            + "] \n  Message=[" + message.toString()
-	            + "]");
+		if (log.isDebugEnabled()) {
+			log.debug(getLogPrefix()+ "got message for [" + fullIfsaServiceName
+					+ "] with JMSDeliveryMode=[" + mode
+					+ "] \n  JMSMessageID=[" + id
+					+ "] \n  JMSCorrelationID=["+ cid
+					+ "] \n  ifsaServiceName=["+ ifsaServiceName
+					+ "] \n  ifsaGroup=["+ ifsaGroup
+					+ "] \n  ifsaOccurrence=["+ ifsaOccurrence
+					+ "] \n  ifsaVersion=["+ ifsaVersion
+					+ "] \n  Timestamp=[" + dTimeStamp.toString()
+					+ "] \n  ReplyTo=[" + ((replyTo == null) ? "none" : replyTo.toString())
+					+ "] \n  Message=[" + message.toString()
+					+ "]");
+		}
 	
 	    threadContext.put("id", id);
 	    threadContext.put("cid", cid);
@@ -413,9 +439,10 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 	private boolean sessionNeedsToBeSavedForAfterProcessMessage(Object result)
 	{
 		return isJmsTransacted() &&
+			   	!isTransacted() && 
+				isSessionsArePooled()&&
 				result != null && 
-				!(result instanceof IFSAPoisonMessage) && 
-				isSessionsArePooled();
+				!(result instanceof IFSAPoisonMessage) ;
 	}
 	
 	/**
@@ -459,6 +486,9 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 	                + ToStringBuilder.reflectionToString((IFSAPoisonMessage) result)
 	                + "]");
 	    }
+	    if (isTransacted() && result instanceof IFSATextMessage) {
+	    	result = new IfsaMessageWrapper(result, this);
+	    }
 	    return result;
 	}
 	/**
@@ -467,6 +497,10 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 	 * @return input message for adapter.
 	 */
 	public String getStringFromRawMessage(Object rawMessage, HashMap threadContext) throws ListenerException {
+		if (rawMessage instanceof IfsaMessageWrapper) {
+			return getStringFromWrapper((IfsaMessageWrapper)rawMessage,threadContext);
+		}
+
 	    TextMessage message = null;
 	    try {
 	        message = (TextMessage) rawMessage;
