@@ -1,6 +1,9 @@
 /*
  * $Log: JavaListener.java,v $
- * Revision 1.4  2005-09-26 11:54:05  europe\L190409
+ * Revision 1.5  2005-09-26 11:55:04  europe\L190409
+ * corrected version string
+ *
+ * Revision 1.4  2005/09/26 11:54:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * enabeld isolated calls from IbisLocalSender to JavaListener as well as to WebServiceListener
  *
  * Revision 1.3  2004/10/05 09:59:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -53,11 +56,11 @@ import nl.nn.adapterframework.jms.JmsRealm;
 /** * 
  * The JavaListener listens to java requests.
  *  
- * @author JDekker
+ * @author  JDekker
  * @version Id
  */
 public class JavaListener implements IPushingListener {
-	public static final String version="$Id: JavaListener.java,v 1.4 2005-09-26 11:54:05 europe\L190409 Exp $";
+	public static final String version="$RCSfile: JavaListener.java,v $ $Revision: 1.5 $ $Date: 2005-09-26 11:55:04 $";
 	protected Logger log = Logger.getLogger(this.getClass());
 	
 	private String name;
