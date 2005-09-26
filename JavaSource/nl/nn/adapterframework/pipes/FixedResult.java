@@ -1,6 +1,9 @@
 /*
  * $Log: FixedResult.java,v $
- * Revision 1.11  2005-08-18 13:40:12  europe\L190409
+ * Revision 1.12  2005-09-26 11:07:06  europe\L190409
+ * better handling of null-parameter values
+ *
+ * Revision 1.11  2005/08/18 13:40:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.10  2005/08/11 15:00:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -67,7 +70,7 @@ import org.apache.commons.lang.SystemUtils;
  * @author Johan Verrips
  */
 public class FixedResult extends FixedForwardPipe {
-	public static final String version="$RCSfile: FixedResult.java,v $ $Revision: 1.11 $ $Date: 2005-08-18 13:40:12 $";
+	public static final String version="$RCSfile: FixedResult.java,v $ $Revision: 1.12 $ $Date: 2005-09-26 11:07:06 $";
 	
     private String fileName;
     private String returnString;
@@ -114,7 +117,7 @@ public class FixedResult extends FixedForwardPipe {
 			}
 			for (int i=0; i<pvl.size(); i++) {
 				ParameterValue pv = pvl.getParameterValue(i);
-				result=replace(result,"${"+pv.getDefinition().getName()+"}",pv.getValue().toString());
+				result=replace(result,"${"+pv.getDefinition().getName()+"}",pv.asStringValue(""));
 			}
 		}
 
