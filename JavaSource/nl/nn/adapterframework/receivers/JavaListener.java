@@ -1,6 +1,9 @@
 /*
  * $Log: JavaListener.java,v $
- * Revision 1.3  2004-10-05 09:59:24  L190409
+ * Revision 1.4  2005-09-26 11:54:05  europe\L190409
+ * enabeld isolated calls from IbisLocalSender to JavaListener as well as to WebServiceListener
+ *
+ * Revision 1.3  2004/10/05 09:59:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed unused code
  *
  * Revision 1.2  2004/08/23 13:10:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -54,7 +57,7 @@ import nl.nn.adapterframework.jms.JmsRealm;
  * @version Id
  */
 public class JavaListener implements IPushingListener {
-	public static final String version="$Id: JavaListener.java,v 1.3 2004-10-05 09:59:24 L190409 Exp $";
+	public static final String version="$Id: JavaListener.java,v 1.4 2005-09-26 11:54:05 europe\L190409 Exp $";
 	protected Logger log = Logger.getLogger(this.getClass());
 	
 	private String name;
@@ -65,10 +68,46 @@ public class JavaListener implements IPushingListener {
 	private JNDIBase jndiBase = new JNDIBase();        	
 	
 	
-
-	public IMessageHandler getHandler() {
-		return handler;
+	public void configure() throws ConfigurationException {
+		try {
+			if (handler==null) {
+				throw new ConfigurationException("handler has not been set");
+			}
+			if (StringUtils.isEmpty(getName())) {
+				throw new ConfigurationException("name has not been set");
+			}
+		} 
+		catch (Exception e){
+			throw new ConfigurationException(e);
+		}
 	}
+
+	public void open() throws ListenerException {
+		// add myself to list so that proxy can find me
+		registerListener(getName(), this);
+		try {
+			if (getJndiName() != null)
+				getContext().rebind(jndiName, new JavaProxy(this));
+		} 
+		catch (NamingException e) {
+			log.error("error occured while starting listener [" + getName() + "]", e);
+		}		
+	}
+
+	public void close() throws ListenerException {
+		if (getJndiName() != null) {
+			try {
+					getContext().unbind(jndiName);
+					closeContext();
+				}
+			catch (NamingException e) {
+				log.error("error occured while stopping listener [" + getName() + "]", e);
+			}
+		} 
+		// do not unregister, leave it to handler to handle this
+		// unregisterJavaPusher(getName());		
+	}
+
 
 	/**
 	 * Register receiver so that it can be used by a proxy
@@ -109,41 +148,12 @@ public class JavaListener implements IPushingListener {
 		// do nothing, no exceptions known
 	}
 
-	public void setHandler(IMessageHandler handler) {
-		this.handler = handler;
-	}
 
 	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessage, HashMap context) throws ListenerException {
 		// do nothing
 	}
 
-	public void close() throws ListenerException {
-		if (getJndiName() != null) {
-			try {
-					getContext().unbind(jndiName);
-					closeContext();
-				}
-			catch (NamingException e) {
-				log.error("error occured while stopping listener [" + getName() + "]", e);
-			}
-		} 
-		// do not unregister, leave it to handler to handle this
-		// unregisterJavaPusher(getName());		
-	}
 
-	public void configure() throws ConfigurationException {
-		try {
-			if (handler==null) {
-				throw new ConfigurationException("handler has not been set");
-			}
-			if (StringUtils.isEmpty(getName())) {
-				throw new ConfigurationException("name has not been set");
-			}
-		} 
-		catch (Exception e){
-			throw new ConfigurationException(e);
-		}
-	}
 
 	public String getIdFromRawMessage(Object rawMessage, HashMap context) throws ListenerException {
 		// do nothing
@@ -152,18 +162,6 @@ public class JavaListener implements IPushingListener {
 
 	public String getStringFromRawMessage(Object rawMessage, HashMap context) throws ListenerException {
 		return (String)rawMessage;
-	}
-
-	public void open() throws ListenerException {
-		// add myself to list so that proxy can find me
-		registerListener(getName(), this);
-		try {
-			if (getJndiName() != null)
-				getContext().rebind(jndiName, new JavaProxy(this));
-		} 
-		catch (NamingException e) {
-			log.error("error occured while starting listener [" + getName() + "]", e);
-		}		
 	}
 
 	/**
@@ -187,12 +185,19 @@ public class JavaListener implements IPushingListener {
 	public String processRequest(String correlationId, String message) {
 		try {
 			if (log.isDebugEnabled())
-				log.debug("javareceiver " + getName() + " processing [" + correlationId + "]");
+				log.debug("javareceiver [" + getName() + "] processing [" + correlationId + "]");
 			return handler.processRequest(this, correlationId, message);
 		} 
 		catch (ListenerException e) {
 			return handler.formatException(null,correlationId, message,e);
 		}
+	}
+
+	public String processRequest(String correlationId, String message, HashMap context) throws ListenerException {
+		if (log.isDebugEnabled()) {
+			log.debug("javareceiver [" + getName() + "] processing [" + correlationId + "]");
+		}
+		return handler.processRequest(this, correlationId, message, context);
 	}
 	
 	/**
@@ -212,6 +217,15 @@ public class JavaListener implements IPushingListener {
 	private void closeContext() throws NamingException {
 		jndiBase.closeContext();
 	}
+
+
+	public void setHandler(IMessageHandler handler) {
+		this.handler = handler;
+	}
+	public IMessageHandler getHandler() {
+		return handler;
+	}
+
 
 	public void setJmsRealm(String jmsRealmName){
 		JmsRealm.copyRealm(jndiBase, jmsRealmName);
@@ -234,5 +248,6 @@ public class JavaListener implements IPushingListener {
 	public void setName(String name) {
 		this.name = name;
 	}
+
 
 }
