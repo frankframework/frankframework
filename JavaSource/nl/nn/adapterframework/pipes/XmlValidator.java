@@ -1,6 +1,9 @@
 /*
  * $Log: XmlValidator.java,v $
- * Revision 1.9  2005-09-20 13:26:57  europe\L190409
+ * Revision 1.10  2005-09-26 11:33:43  europe\L190409
+ * added parserError forward
+ *
+ * Revision 1.9  2005/09/20 13:26:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed need for baseResourceURL
  *
  * Revision 1.8  2005/09/05 09:33:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -21,6 +24,7 @@ package nl.nn.adapterframework.pipes;
 
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -75,6 +79,7 @@ import java.io.IOException;
  * <tr><th>state</th><th>condition</th></tr>
  * <tr><td>"success"</td><td>default</td></tr>
  * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified, the value for "success"</td></tr>
+ * <tr><td>"parserError"</td><td>a parser exception occurred, probably caused by non-well-formed XML</td></tr>
  * <tr><td>"failure"</td><td>if a validation error occurred</td></tr>
  * </table>
  * @version Id
@@ -82,7 +87,7 @@ import java.io.IOException;
 
  */
 public class XmlValidator extends FixedForwardPipe {
-	public static final String version="$RCSfile: XmlValidator.java,v $ $Revision: 1.9 $ $Date: 2005-09-20 13:26:57 $";
+	public static final String version="$RCSfile: XmlValidator.java,v $ $Revision: 1.10 $ $Date: 2005-09-26 11:33:43 $";
 
 	private String schema = null;
     private String schemaLocation = null;
@@ -222,7 +227,14 @@ public class XmlValidator extends FixedForwardPipe {
         } catch (IOException e) {
             throw new PipeRunException(this, getLogPrefix(session)+ "IoException occured on parsing the document", e);
         } catch (SAXException e) {
-            throw new PipeRunException(this, getLogPrefix(session)+ "SAXException occured on parsing the document", e);
+        	PipeForward error = findForward("parserError");
+        	String msg=getLogPrefix(session)+ "SAXException occured on parsing the document";
+        	if (error!=null) {
+        		log.warn(msg,e);
+				return new PipeRunResult(error, input);
+        	} else {
+				throw new PipeRunException(this, msg, e);
+        	}
         }
 
 		boolean isValid = !(xeh.hasErrorOccured());
