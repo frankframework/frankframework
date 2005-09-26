@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaFacade.java,v $
- * Revision 1.29  2005-09-13 15:48:00  europe\L190409
+ * Revision 1.30  2005-09-26 11:44:30  europe\L190409
+ * Jms-commit only if not XA-transacted
+ *
+ * Revision 1.29  2005/09/13 15:48:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed acknowledge mode back to AutoAcknowledge
  *
  * Revision 1.28  2005/08/31 16:32:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -116,7 +119,7 @@ import javax.jms.*;
  * @since 4.2
  */
 public class IfsaFacade implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version = "$RCSfile: IfsaFacade.java,v $ $Revision: 1.29 $ $Date: 2005-09-13 15:48:00 $";
+	public static final String version = "$RCSfile: IfsaFacade.java,v $ $Revision: 1.30 $ $Date: 2005-09-26 11:44:30 $";
     protected Logger log = Logger.getLogger(this.getClass());
     
     private static int BASIC_ACK_MODE = Session.AUTO_ACKNOWLEDGE;
@@ -460,7 +463,7 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination, IXAEnab
 	        sender.send(msg);
 	
 	        // perform commit
-	        if (isJmsTransacted()) {
+	        if (isJmsTransacted() && !isTransacted()) {
 	            session.commit();
 	            log.debug(getLogPrefix()+ "committing (send) transaction");
 	        }
