@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.17  2005-09-13 15:42:14  europe\L190409
+ * Revision 1.18  2005-09-26 11:42:10  europe\L190409
+ * added fileNameIfStopped attribute and replace from/to processing when stopped
+ *
+ * Revision 1.17  2005/09/13 15:42:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved handling of non-serializable messages like Poison-messages
  *
  * Revision 1.16  2005/08/08 09:44:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -79,6 +82,7 @@ import nl.nn.adapterframework.core.HasSender;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Counter;
 import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.Misc;
@@ -87,6 +91,7 @@ import nl.nn.adapterframework.util.RunStateManager;
 import nl.nn.adapterframework.util.Semaphore;
 import nl.nn.adapterframework.util.StatisticsKeeper;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.SystemUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.apache.log4j.Logger;
@@ -162,10 +167,13 @@ import javax.transaction.UserTransaction;
  * @since 4.2
  */
 public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, IMessageHandler, IbisExceptionListener, HasSender {
-	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.17 $ $Date: 2005-09-13 15:42:14 $";
+	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.18 $ $Date: 2005-09-26 11:42:10 $";
 	protected Logger log = Logger.getLogger(this.getClass());
  
 	private String returnIfStopped="";
+	private String fileNameIfStopped = null;
+	private String replaceFrom = null;
+	private String replaceTo = null;
 
 	public static final String ONERROR_CONTINUE = "continue";
 	public static final String ONERROR_CLOSE = "close";
@@ -402,6 +410,19 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 					}
 				}
 			} 
+
+			if (StringUtils.isNotEmpty(getFileNameIfStopped())) {
+				try {
+					setReturnIfStopped(Misc.resourceToString(ClassUtils.getResourceURL(this,fileNameIfStopped), SystemUtils.LINE_SEPARATOR));
+				} catch (Throwable e) {
+					throw new ConfigurationException("Receiver ["+getName()+"] got exception loading ["+getFileNameIfStopped()+"]", e);
+				}
+			}
+
+			if (StringUtils.isNotEmpty(getReplaceFrom())) {
+				setReturnIfStopped(Misc.replace(getReturnIfStopped(), getReplaceFrom(), getReplaceTo()));
+			}
+
 	
 			if (adapter != null) {
 				adapter.getMessageKeeper().add("Receiver ["+getName()+"] initialization complete");
@@ -1177,5 +1198,30 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 	public void setIbis42compatibility(boolean b) {
 		ibis42compatibility = b;
 	}
+	
+
+	public void setFileNameIfStopped(String fileNameIfStopped) {
+		this.fileNameIfStopped = fileNameIfStopped;
+	}
+	public String getFileNameIfStopped() {
+		return fileNameIfStopped;
+	}
+
+
+	public void setReplaceFrom (String replaceFrom){
+		this.replaceFrom=replaceFrom;
+	}
+	public String getReplaceFrom() {
+		return replaceFrom;
+	}
+
+
+	public void setReplaceTo (String replaceTo){
+		this.replaceTo=replaceTo;
+	}
+	public String getReplaceTo() {
+		return replaceTo;
+	}
+
 
 }
