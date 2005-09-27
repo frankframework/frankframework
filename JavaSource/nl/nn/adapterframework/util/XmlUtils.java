@@ -1,6 +1,9 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.23  2005-09-22 15:55:23  europe\L190409
+ * Revision 1.24  2005-09-27 08:59:30  europe\L190409
+ * removed unused imports
+ *
+ * Revision 1.23  2005/09/22 15:55:23  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added streaming transform-function
  * added &apos; to escape-chars
  *
@@ -106,7 +109,6 @@ import javax.xml.transform.stream.StreamSource;
 import javax.xml.transform.stream.StreamResult;
 
 import java.io.File;
-import java.io.OutputStream;
 import java.io.Reader;
 import java.io.FileReader;
 import java.io.StringReader;
@@ -131,7 +133,7 @@ import java.util.StringTokenizer;
  * @author Johan Verrips IOS
  */
 public class XmlUtils {
-	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.23 $ $Date: 2005-09-22 15:55:23 $";
+	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.24 $ $Date: 2005-09-27 08:59:30 $";
 	static Logger log = Logger.getLogger(XmlUtils.class);
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
