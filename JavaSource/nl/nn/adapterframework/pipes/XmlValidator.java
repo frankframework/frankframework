@@ -1,6 +1,9 @@
 /*
  * $Log: XmlValidator.java,v $
- * Revision 1.10  2005-09-26 11:33:43  europe\L190409
+ * Revision 1.11  2005-09-27 11:06:32  europe\L190409
+ * updated javadoc
+ *
+ * Revision 1.10  2005/09/26 11:33:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added parserError forward
  *
  * Revision 1.9  2005/09/20 13:26:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -87,7 +90,7 @@ import java.io.IOException;
 
  */
 public class XmlValidator extends FixedForwardPipe {
-	public static final String version="$RCSfile: XmlValidator.java,v $ $Revision: 1.10 $ $Date: 2005-09-26 11:33:43 $";
+	public static final String version="$RCSfile: XmlValidator.java,v $ $Revision: 1.11 $ $Date: 2005-09-27 11:06:32 $";
 
 	private String schema = null;
     private String schemaLocation = null;
@@ -258,10 +261,6 @@ public class XmlValidator extends FixedForwardPipe {
 
     /**
      * Get a configured parser.
-     * @return XMLReader
-     * @throws SAXNotRecognizedException
-     * @throws SAXNotSupportedException
-     * @throws SAXException
      */
     private XMLReader getParser() throws SAXNotRecognizedException, SAXNotSupportedException, SAXException {
         XMLReader parser = null;
@@ -325,12 +324,11 @@ public class XmlValidator extends FixedForwardPipe {
      * <p> The syntax is the same as for schemaLocation attributes
      * in instance documents: e.g, "http://www.example.com file%20name.xsd".</p>
      * <p>The user can specify more than one XML Schema in the list.</p>
-     * <p><b>Note</b> that this method takes URI's as input. This means that,
-     * for example, spaces in filenames should be escaped to %20 and references
-     * to filenames should begin with file:/ to specify the protocol if the path does
-     * not have it root in the classes-directory</p>
+     * <p><b>Note</b> that spaces are considered separators for this attributed. 
+     * This means that, for example, spaces in filenames should be escaped to %20.
+     * </p>
      * 
-     * N.B. since 4.3 RC7 schema locations are resolved automatically, without the need for ${baseResourceURL}
+     * N.B. since 4.3.0 schema locations are resolved automatically, without the need for ${baseResourceURL}
      */
     public void setSchemaLocation(String schemaLocation) {
         this.schemaLocation = schemaLocation;
