@@ -1,6 +1,9 @@
 /*
  * $Log: IbisLocalSender.java,v $
- * Revision 1.5  2005-09-26 11:54:05  europe\L190409
+ * Revision 1.6  2005-09-28 14:15:56  europe\L190409
+ * added super.configure()
+ *
+ * Revision 1.5  2005/09/26 11:54:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * enabeld isolated calls from IbisLocalSender to JavaListener as well as to WebServiceListener
  *
  * Revision 1.4  2005/09/07 15:36:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -52,7 +55,7 @@ import java.util.HashMap;
  * @since  4.2
  */
 public class IbisLocalSender extends SenderWithParametersBase {
-	public static final String version="$RCSfile: IbisLocalSender.java,v $ $Revision: 1.5 $ $Date: 2005-09-26 11:54:05 $";
+	public static final String version="$RCSfile: IbisLocalSender.java,v $ $Revision: 1.6 $ $Date: 2005-09-28 14:15:56 $";
 	
 	private String name;
 	private String serviceName;
@@ -62,6 +65,7 @@ public class IbisLocalSender extends SenderWithParametersBase {
 
 
 	public void configure() throws ConfigurationException {
+		super.configure();
 		if (StringUtils.isEmpty(getServiceName()) && StringUtils.isEmpty(getJavaListener())) {
 			throw new ConfigurationException(getLogPrefix()+"has no serviceName or javaListener specified");
 		}
