@@ -1,6 +1,9 @@
 /*
  * $Log: DirectQuerySender.java,v $
- * Revision 1.4  2005-09-07 15:37:07  europe\L190409
+ * Revision 1.5  2005-09-29 13:59:49  europe\L190409
+ * provided attributes and handling for nullValue,columnsReturned and resultQuery
+ *
+ * Revision 1.4  2005/09/07 15:37:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.3  2004/10/19 08:11:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -47,8 +50,15 @@ import java.sql.SQLException;
  * @since 	4.1
  */
 public class DirectQuerySender extends JdbcQuerySenderBase {
-	public static final String version="$RCSfile: DirectQuerySender.java,v $ $Revision: 1.4 $ $Date: 2005-09-07 15:37:07 $";
+	public static final String version="$RCSfile: DirectQuerySender.java,v $ $Revision: 1.5 $ $Date: 2005-09-29 13:59:49 $";
 	protected PreparedStatement getStatement(Connection con, String correlationID, String message) throws SQLException {
+		String[] columnsReturned = getColumnsReturnedList();
+		if (log.isDebugEnabled()) {
+			log.debug(getLogPrefix() +"preparing statement for query ["+message+"]");
+		}
+		if (columnsReturned!=null) {
+			return con.prepareStatement(message,columnsReturned);
+		}
 		return con.prepareStatement(message);
 	}
 }

@@ -1,6 +1,9 @@
 /*
  * $Log: FixedQuerySender.java,v $
- * Revision 1.7  2005-09-20 13:24:00  europe\L190409
+ * Revision 1.8  2005-09-29 13:59:49  europe\L190409
+ * provided attributes and handling for nullValue,columnsReturned and resultQuery
+ *
+ * Revision 1.7  2005/09/20 13:24:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved logging
  *
  * Revision 1.6  2005/09/07 15:37:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -55,13 +58,17 @@ import java.sql.SQLException;
  * @since 	4.1
  */
 public class FixedQuerySender extends JdbcQuerySenderBase {
-	public static final String version = "$RCSfile: FixedQuerySender.java,v $ $Revision: 1.7 $ $Date: 2005-09-20 13:24:00 $";
+	public static final String version = "$RCSfile: FixedQuerySender.java,v $ $Revision: 1.8 $ $Date: 2005-09-29 13:59:49 $";
 
 	private String query=null;
 		
 	protected PreparedStatement getStatement(Connection con, String correlationID, String message) throws JdbcException, SQLException {
+		String[] columnsReturned = getColumnsReturnedList();
 		if (log.isDebugEnabled()) {
 			log.debug(getLogPrefix() +"preparing statement for query ["+getQuery()+"]");
+		}
+		if (columnsReturned!=null) {
+			return con.prepareStatement(getQuery(),columnsReturned);
 		}
 		return con.prepareStatement(getQuery());
 	}

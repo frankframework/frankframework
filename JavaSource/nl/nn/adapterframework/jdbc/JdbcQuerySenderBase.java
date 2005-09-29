@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcQuerySenderBase.java,v $
- * Revision 1.14  2005-09-08 16:00:52  europe\L190409
+ * Revision 1.15  2005-09-29 13:59:49  europe\L190409
+ * provided attributes and handling for nullValue,columnsReturned and resultQuery
+ *
+ * Revision 1.14  2005/09/08 16:00:52  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * make synchronous an attribute, default="true"
  *
  * Revision 1.13  2005/08/25 15:48:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -45,11 +48,19 @@
  */
 package nl.nn.adapterframework.jdbc;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.sql.Blob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.StringTokenizer;
 
+import org.apache.commons.lang.StringUtils;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
@@ -89,13 +100,38 @@ import nl.nn.adapterframework.util.DB2XMLWriter;
  * @since 	4.1
  */
 public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
-	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.14 $ $Date: 2005-09-08 16:00:52 $";
+	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.15 $ $Date: 2005-09-29 13:59:49 $";
 
 	private String queryType = "other";
 	private int startRow=1;
 	private int maxRows=-1; // return all rows
 	private boolean scalar=false;
 	private boolean synchronous=true;
+	private int selectForUpdateResultColumn=1;
+	private int blobColumn=2;
+	private String nullValue="";
+	private String columnsReturned=null;
+	private String resultQuery=null;
+	
+	protected String[] columnsReturnedList=null;
+
+
+
+	public void configure() throws ConfigurationException {
+		super.configure();
+		if (StringUtils.isNotEmpty(getColumnsReturned())) {
+			ArrayList tempList = new ArrayList();
+			StringTokenizer st = new StringTokenizer(getColumnsReturned(),",");
+			while (st.hasMoreTokens()) {
+				String column = st.nextToken();
+				tempList.add(column);
+			}
+			columnsReturnedList = new String[tempList.size()];
+			for (int i=0; i<tempList.size(); i++) {
+				columnsReturnedList[i]=(String)tempList.get(i);
+			}
+		}
+	}
 
 	
 	/**
@@ -106,9 +142,8 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 
 
 
-	protected String sendMessage(Connection connection, String correlationID, String message, ParameterResolutionContext prc) throws SenderException{
+	protected String sendMessage(Connection connection, String correlationID, String message, ParameterResolutionContext prc) throws SenderException {
 		PreparedStatement statement=null;
-		
 		try {
 			statement = getStatement(connection, correlationID, message);
 			if (prc != null && paramList != null) {
@@ -117,11 +152,23 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 			if ("select".equalsIgnoreCase(getQueryType())) {
 				return executeSelectQuery(statement);
 			} else {
-				int numRowsAffected = statement.executeUpdate();
-				if (isScalar()) {
-					return numRowsAffected+"";
+				if ("updateBlob".equalsIgnoreCase(getQueryType())) {
+					return executeUpdateBlobQuery(statement,message);
+				} else {
+					int numRowsAffected = statement.executeUpdate();
+					if (StringUtils.isNotEmpty(getResultQuery())) {
+						ResultSet rs = statement.executeQuery(getResultQuery());
+						return getResult(rs);
+					}
+					if (columnsReturnedList!=null) {
+						ResultSet rs = statement.getGeneratedKeys();
+						return getResult(rs);
+					}
+					if (isScalar()) {
+						return numRowsAffected+"";
+					}
+					return "<result><rowsupdated>" + numRowsAffected + "</rowsupdated></result>";
 				}
-				return "<result><rowsupdated>" + numRowsAffected + "</rowsupdated></result>";
 			}
 		} catch (ParameterException e) {
 			throw new SenderException(getLogPrefix() + "got exception evaluating parameters", e);
@@ -140,11 +187,58 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		}
 	}
 
-	private String executeSelectQuery(PreparedStatement statement) throws SenderException{
+	protected String getResult(ResultSet resultset) throws SQLException {
+		String result=null;
+		if (isScalar()) {
+			if (resultset.next()) {
+				result = resultset.getString(1);
+				if (resultset.wasNull()) {
+					result = null;
+				}
+			}
+		} else {
+			// Create XML and give the maxlength as a parameter
+			DB2XMLWriter db2xml = new DB2XMLWriter();
+			db2xml.setNullValue(getNullValue());
+			result = db2xml.getXML(resultset, getMaxRows());
+		}
+		return result;
+	}
+	
+
+
+	protected String executeUpdateBlobQuery(PreparedStatement statement, String message) throws SenderException{
 		ResultSet resultset=null;
 		try {
-			String result=null;
+			resultset = statement.executeQuery();
+			String result = resultset.getString(selectForUpdateResultColumn);
+			if (resultset.wasNull()) {
+				result = null;
+			}
+			Blob blob = resultset.getBlob(blobColumn);
 			
+			OutputStream outstream = blob.setBinaryStream(1L);
+			outstream.write(message.getBytes());
+			outstream.close();
+			return result;
+		} catch (SQLException sqle) {
+			throw new SenderException(getLogPrefix() + "got exception executing a SELECT SQL command",sqle );
+		} catch (IOException e) {
+			throw new SenderException(getLogPrefix() + "got exception executing a updating BLOB",e );
+		} finally {
+			try {
+				if (resultset!=null) {
+					resultset.close();
+				}
+			} catch (SQLException e) {
+				log.warn(new SenderException(getLogPrefix() + "got exception closing resultset",e));
+			}
+		}
+	}
+	
+	protected String executeSelectQuery(PreparedStatement statement) throws SenderException{
+		ResultSet resultset=null;
+		try {
 			if (getMaxRows()>0) {
 				statement.setMaxRows(getMaxRows()+ ( getStartRow()>1 ? getStartRow()-1 : 0));
 			}
@@ -154,21 +248,8 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 			if (getStartRow()>1) {
 				resultset.absolute(getStartRow()-1);
 				log.debug(getLogPrefix() + "Index set at position: " +  resultset.getRow() );
-			}
-				
-			if (isScalar()) {
-				if (resultset.next()) {
-					result = resultset.getString(1);
-					if (resultset.wasNull()) {
-						result = null;
-					}
-				}
-			} else {
-				// Create XML and give the maxlength as a parameter
-				DB2XMLWriter transformer = new DB2XMLWriter();
-				result = transformer.getXML(resultset, getMaxRows());
-			}
-			return result;
+			}				
+			return getResult(resultset);
 		} catch (SQLException sqle) {
 			throw new SenderException(getLogPrefix() + "got exception executing a SELECT SQL command",sqle );
 		} finally {
@@ -236,5 +317,32 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 	public boolean isSynchronous() {
 	   return synchronous;
 	}
+
+	public void setNullValue(String string) {
+		nullValue = string;
+	}
+	public String getNullValue() {
+		return nullValue;
+	}
+
+
+	public void setColumnsReturned(String string) {
+		columnsReturned = string;
+	}
+	public String getColumnsReturned() {
+		return columnsReturned;
+	}
+	public String[] getColumnsReturnedList() {
+		return columnsReturnedList;
+	}
+
+
+	public void setResultQuery(String string) {
+		resultQuery = string;
+	}
+	public String getResultQuery() {
+		return resultQuery;
+	}
+
 
 }
