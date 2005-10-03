@@ -1,6 +1,9 @@
 /*
  * $Log: DB2XMLWriter.java,v $
- * Revision 1.8  2005-09-29 13:57:54  europe\L190409
+ * Revision 1.9  2005-10-03 13:17:40  europe\L190409
+ * added attribute trimSpaces, default=true
+ *
+ * Revision 1.8  2005/09/29 13:57:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * made null an attribute of each field, where applicable
  *
  * Revision 1.7  2005/07/28 07:42:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -52,12 +55,13 @@ import java.sql.Types;
  **/
 
 public class DB2XMLWriter {
-	public static final String version="$RCSfile: DB2XMLWriter.java,v $ $Revision: 1.8 $ $Date: 2005-09-29 13:57:54 $";
+	public static final String version="$RCSfile: DB2XMLWriter.java,v $ $Revision: 1.9 $ $Date: 2005-10-03 13:17:40 $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	private String docname = new String("result");
 	private String recordname = new String("rowset");
 	private String nullValue = "";
+	private boolean trimSpaces=true;
 
    
     public static String getFieldType (int type) {
@@ -90,7 +94,7 @@ public class DB2XMLWriter {
     /**
      * This method gets the value of the specified column
      */
-    private static String getValue(final ResultSet rs, int colNum, int type, String nullValue) throws SQLException
+    private String getValue(final ResultSet rs, int colNum, int type) throws SQLException
     {
         switch(type)
         {
@@ -108,9 +112,12 @@ public class DB2XMLWriter {
             {
                 String value = rs.getString(colNum);
                 if(value == null)
-                    return nullValue;
+                    return getNullValue();
                 else
-                    return value;
+                	if (isTrimSpaces()) {
+						value.trim();
+                	}
+					return value;
 
             }
         }
@@ -202,7 +209,7 @@ public class DB2XMLWriter {
 					resultField.addAttribute("name", "" + rsmeta.getColumnName(i));
 	
 					try {
-						String value = getValue(rs, i, rsmeta.getColumnType(i), nullValue);
+						String value = getValue(rs, i, rsmeta.getColumnType(i));
 						if (rs.wasNull()) {
 							resultField.addAttribute("null","true");
 						}
@@ -244,5 +251,13 @@ public class DB2XMLWriter {
    public String getNullValue () {
 	 return nullValue;
    }
+
+	public void setTrimSpaces(boolean b) {
+		trimSpaces = b;
+	}
+	public boolean isTrimSpaces() {
+		return trimSpaces;
+	}
+
 
 }
