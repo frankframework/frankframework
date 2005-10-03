@@ -1,6 +1,9 @@
 /*
  * $Log: Adapter.java,v $
- * Revision 1.18  2005-08-17 08:12:45  europe\m168309
+ * Revision 1.18.2.1  2005-10-03 07:27:54  europe\L190409
+ * catch more exceptions
+ *
+ * Revision 1.18  2005/08/17 08:12:45  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * NDC updated
  *
  * Revision 1.17  2005/08/16 12:33:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -102,7 +105,7 @@ import javax.transaction.UserTransaction;
  */
 
 public class Adapter extends JNDIBase implements Runnable, IAdapter {
-	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.18 $ $Date: 2005-08-17 08:12:45 $";
+	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.18.2.1 $ $Date: 2005-10-03 07:27:54 $";
 	private Vector receivers = new Vector();
 	private long lastMessageDate = 0;
 	private PipeLine pipeline;
@@ -192,7 +195,7 @@ public class Adapter extends JNDIBase implements Runnable, IAdapter {
 					receiver.configure();
 					messageKeeper.add("receiver [" + receiver.getName() + "] successfully configured");
 				}
-				catch (ConfigurationException e) {
+				catch (Throwable e) {
 					String msg =
 						"Adapter [" + getName() + "] got error initializing receiver [" + receiver.getName() + "]";
 					log.error(msg, e);
@@ -201,7 +204,7 @@ public class Adapter extends JNDIBase implements Runnable, IAdapter {
 			}
 			configurationSucceeded = true;
 		}
-		catch (ConfigurationException e) {
+		catch (Throwable e) {
 			String msg = "Adapter [" + getName() + "] got error initializing pipeline";
 			messageKeeper.add(msg + ": " + e.getMessage());
 			log.error(msg, e);
