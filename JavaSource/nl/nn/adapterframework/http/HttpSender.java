@@ -1,6 +1,9 @@
 /*
  * $Log: HttpSender.java,v $
- * Revision 1.14.2.1  2005-10-03 07:26:10  europe\L190409
+ * Revision 1.14.2.2  2005-10-03 07:26:52  europe\L190409
+ * corrected version-string
+ *
+ * Revision 1.14.2.1  2005/10/03 07:26:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * replaced IbisMultiThreadedConnectionManager with original MultiThreadedConnectionMananger
  *
  * Revision 1.14  2005/02/24 12:13:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -122,7 +125,7 @@ import nl.nn.adapterframework.util.ClassUtils;
  * @since 4.2c
  */
 public class HttpSender implements ISenderWithParameters, HasPhysicalDestination {
-	public static final String version = "$Id: HttpSender.java,v 1.14.2.1 2005-10-03 07:26:10 europe\L190409 Exp $";
+	public static final String version="$RCSfile: HttpSender.java,v $ $Revision: 1.14.2.2 $ $Date: 2005-10-03 07:26:52 $";
 	protected Logger log = Logger.getLogger(this.getClass());;
 
 	private String name;
