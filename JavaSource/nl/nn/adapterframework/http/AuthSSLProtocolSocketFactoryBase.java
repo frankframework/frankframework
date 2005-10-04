@@ -1,6 +1,10 @@
 /*
  * $Log: AuthSSLProtocolSocketFactoryBase.java,v $
- * Revision 1.3  2005-02-24 12:13:14  L190409
+ * Revision 1.4  2005-10-04 11:25:03  europe\L190409
+ * Added two additional createSocket methods to comply with the 
+ * SocketFactory createSocket methods
+ *
+ * Revision 1.3  2005/02/24 12:13:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added follow redirects and truststoretype
  *
  * Revision 1.2  2005/02/02 16:36:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -23,6 +27,7 @@ package nl.nn.adapterframework.http;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.Socket;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.security.GeneralSecurityException;
@@ -329,5 +334,15 @@ public abstract class AuthSSLProtocolSocketFactoryBase implements SecureProtocol
 		return dn.substring(0, i);
 	}
 
+	/**
+	 * Added to completely implement the SocketFactory interface 
+	 * @param adress
+	 * @param port
+	 * @return
+	 * @throws IOException
+	 */
+	public abstract Socket createSocket(InetAddress adress, int port) throws IOException;
+
+	public abstract Socket createSocket(InetAddress adress, int port, InetAddress localAdress, int localPort) throws IOException;
 }
 

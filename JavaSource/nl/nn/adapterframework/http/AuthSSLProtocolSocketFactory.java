@@ -1,6 +1,10 @@
 /*
  * $Log: AuthSSLProtocolSocketFactory.java,v $
- * Revision 1.7  2005-10-04 11:25:03  europe\L190409
+ * Revision 1.8  2005-10-04 11:25:54  europe\L190409
+ * Added two additional createSocket methods to comply with the 
+ * SocketFactory createSocket methods
+ *
+ * Revision 1.7  2005/10/04 11:25:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Added two additional createSocket methods to comply with the 
  * SocketFactory createSocket methods
  *
@@ -277,7 +281,7 @@ public class AuthSSLProtocolSocketFactory extends AuthSSLProtocolSocketFactoryBa
 	/**
 	 * @see AuthSSLProtocolSocketFactoryBase#createSocket(InetAddress, int)
 	 */
-	protected Socket createSocket(InetAddress adress, int port) throws IOException {
+	public Socket createSocket(InetAddress adress, int port) throws IOException {
 		SSLSocket sslSocket = (SSLSocket) getSSLContext().getSocketFactory().createSocket(adress, port);
 		verifyHostname(sslSocket);
 		return sslSocket;
@@ -286,7 +290,7 @@ public class AuthSSLProtocolSocketFactory extends AuthSSLProtocolSocketFactoryBa
 	/**
 	 * @see AuthSSLProtocolSocketFactoryBase#createSocket(InetAddress, int, InetAddress, int)
 	 */
-	protected Socket createSocket(InetAddress adress, int port, InetAddress localAdress, int localPort) throws IOException {
+	public Socket createSocket(InetAddress adress, int port, InetAddress localAdress, int localPort) throws IOException {
 		SSLSocket sslSocket = (SSLSocket) getSSLContext().getSocketFactory().createSocket(adress, port, localAdress, localPort);
 		verifyHostname(sslSocket);
 		return sslSocket;
