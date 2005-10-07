@@ -1,6 +1,9 @@
 /*
  * $Log: AuthSSLProtocolSocketFactoryForJsse10x.java,v $
- * Revision 1.7  2005-10-04 11:25:54  europe\L190409
+ * Revision 1.8  2005-10-07 14:12:34  europe\L190409
+ * Add a protocol propery, to support TLS besides SSL
+ *
+ * Revision 1.7  2005/10/04 11:25:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Added two additional createSocket methods to comply with the 
  * SocketFactory createSocket methods
  *
@@ -125,7 +128,7 @@ public class AuthSSLProtocolSocketFactoryForJsse10x extends AuthSSLProtocolSocke
                 KeyStore keystore = createKeyStore(this.truststoreUrl, this.truststorePassword, this.truststoreType, "Trusted Certificate");
                 trustmanagers = createTrustManagers(keystore);
             }
-            SSLContext sslcontext = SSLContext.getInstance("SSL",new com.sun.net.ssl.internal.ssl.Provider());
+            SSLContext sslcontext = SSLContext.getInstance(getProtocol(), new com.sun.net.ssl.internal.ssl.Provider());
             sslcontext.init(keymanagers, trustmanagers, null);
             return sslcontext;
     }

@@ -1,6 +1,9 @@
 /*
  * $Log: AuthSSLProtocolSocketFactoryBase.java,v $
- * Revision 1.4  2005-10-04 11:25:03  europe\L190409
+ * Revision 1.5  2005-10-07 14:12:34  europe\L190409
+ * Add a protocol propery, to support TLS besides SSL
+ *
+ * Revision 1.4  2005/10/04 11:25:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Added two additional createSocket methods to comply with the 
  * SocketFactory createSocket methods
  *
@@ -156,6 +159,7 @@ public abstract class AuthSSLProtocolSocketFactoryBase implements SecureProtocol
     /** Log object for this class. */
 	protected static Logger log = Logger.getLogger(AuthSSLProtocolSocketFactoryBase.class);;
 
+	protected String protocol = "SSL";
 	protected URL keystoreUrl = null;
 	protected String keystorePassword = null;
 	protected String keystoreType = "null";
@@ -344,5 +348,14 @@ public abstract class AuthSSLProtocolSocketFactoryBase implements SecureProtocol
 	public abstract Socket createSocket(InetAddress adress, int port) throws IOException;
 
 	public abstract Socket createSocket(InetAddress adress, int port, InetAddress localAdress, int localPort) throws IOException;
+	
+	public String getProtocol() {
+		return protocol;
+	}
+
+	public void setProtocol(String string) {
+		protocol = string;
+	}
+
 }
 

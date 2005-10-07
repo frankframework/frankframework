@@ -1,6 +1,9 @@
 /*
  * $Log: AuthSSLProtocolSocketFactory.java,v $
- * Revision 1.8  2005-10-04 11:25:54  europe\L190409
+ * Revision 1.9  2005-10-07 14:12:34  europe\L190409
+ * Add a protocol propery, to support TLS besides SSL
+ *
+ * Revision 1.8  2005/10/04 11:25:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Added two additional createSocket methods to comply with the 
  * SocketFactory createSocket methods
  *
@@ -209,19 +212,21 @@ public class AuthSSLProtocolSocketFactory extends AuthSSLProtocolSocketFactoryBa
 
 
 	private SSLContext createSSLContext() throws NoSuchAlgorithmException, KeyStoreException, GeneralSecurityException, IOException {
-			KeyManager[] keymanagers = null;
-			TrustManager[] trustmanagers = null;
-			if (this.keystoreUrl != null) {
-				KeyStore keystore = createKeyStore(this.keystoreUrl, this.keystorePassword, this.keystoreType, "Certificate chain");
-				keymanagers = createKeyManagers(keystore, this.keystorePassword);
-			}
-			if (this.truststoreUrl != null) {
-				KeyStore keystore = createKeyStore(this.truststoreUrl, this.truststorePassword, this.truststoreType, "Trusted Certificate");
-				trustmanagers = createTrustManagers(keystore);
-			}
-			SSLContext sslcontext = SSLContext.getInstance("SSL");
-			sslcontext.init(keymanagers, trustmanagers, null);
-			return sslcontext;
+		SSLContext sslcontext = SSLContext.getInstance(getProtocol());
+
+		KeyManager[] keymanagers = null;
+		TrustManager[] trustmanagers = null;
+		if (this.keystoreUrl != null) {
+			KeyStore keystore = createKeyStore(this.keystoreUrl, this.keystorePassword, this.keystoreType, "Certificate chain");
+			keymanagers = createKeyManagers(keystore, this.keystorePassword);
+		}
+		if (this.truststoreUrl != null) {
+			KeyStore keystore = createKeyStore(this.truststoreUrl, this.truststorePassword, this.truststoreType, "Trusted Certificate");
+			trustmanagers = createTrustManagers(keystore);
+		}
+			
+		sslcontext.init(keymanagers, trustmanagers, null);
+		return sslcontext;
 	}
 
 	public void initSSLContext() throws NoSuchAlgorithmException, KeyStoreException, GeneralSecurityException, IOException {
