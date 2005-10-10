@@ -1,6 +1,9 @@
 /*
  * $Log: AuthSSLProtocolSocketFactoryBase.java,v $
- * Revision 1.5  2005-10-07 14:12:34  europe\L190409
+ * Revision 1.6  2005-10-10 14:07:48  europe\L190409
+ * Add allowSelfSignedCertificates, to easy up testing
+ *
+ * Revision 1.5  2005/10/07 14:12:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Add a protocol propery, to support TLS besides SSL
  *
  * Revision 1.4  2005/10/04 11:25:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -160,6 +163,8 @@ public abstract class AuthSSLProtocolSocketFactoryBase implements SecureProtocol
 	protected static Logger log = Logger.getLogger(AuthSSLProtocolSocketFactoryBase.class);;
 
 	protected String protocol = "SSL";
+	protected boolean allowSelfSignedCertificates = false;
+
 	protected URL keystoreUrl = null;
 	protected String keystorePassword = null;
 	protected String keystoreType = "null";
@@ -348,13 +353,24 @@ public abstract class AuthSSLProtocolSocketFactoryBase implements SecureProtocol
 	public abstract Socket createSocket(InetAddress adress, int port) throws IOException;
 
 	public abstract Socket createSocket(InetAddress adress, int port, InetAddress localAdress, int localPort) throws IOException;
-	
+
+	/**
+	 * Properties
+	 */	
 	public String getProtocol() {
 		return protocol;
 	}
 
 	public void setProtocol(String string) {
 		protocol = string;
+	}
+	
+	public boolean isAllowSelfSignedCertificates() {
+		return allowSelfSignedCertificates;
+	}
+
+	public void setAllowSelfSignedCertificates(boolean b) {
+		allowSelfSignedCertificates = b;
 	}
 
 }

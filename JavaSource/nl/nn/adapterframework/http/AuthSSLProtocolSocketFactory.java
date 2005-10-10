@@ -1,6 +1,9 @@
 /*
  * $Log: AuthSSLProtocolSocketFactory.java,v $
- * Revision 1.9  2005-10-07 14:12:34  europe\L190409
+ * Revision 1.10  2005-10-10 14:07:48  europe\L190409
+ * Add allowSelfSignedCertificates, to easy up testing
+ *
+ * Revision 1.9  2005/10/07 14:12:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Add a protocol propery, to support TLS besides SSL
  *
  * Revision 1.8  2005/10/04 11:25:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -42,6 +45,8 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 
 //import com.sun.net.ssl.KeyManager;
 //import com.sun.net.ssl.KeyManagerFactory;
@@ -56,6 +61,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.X509TrustManager;
 
 /**
  * <p>
@@ -223,6 +229,12 @@ public class AuthSSLProtocolSocketFactory extends AuthSSLProtocolSocketFactoryBa
 		if (this.truststoreUrl != null) {
 			KeyStore keystore = createKeyStore(this.truststoreUrl, this.truststorePassword, this.truststoreType, "Trusted Certificate");
 			trustmanagers = createTrustManagers(keystore);
+
+			if (allowSelfSignedCertificates) {
+				trustmanagers = new TrustManager[] {
+					new AuthSslTrustManager(keystore, trustmanagers)			
+				};
+			}
 		}
 			
 		sslcontext.init(keymanagers, trustmanagers, null);
@@ -301,5 +313,43 @@ public class AuthSSLProtocolSocketFactory extends AuthSSLProtocolSocketFactoryBa
 		return sslSocket;
 	}
 
+	/**
+	 * Helper class for testing certificates that are not verified by an 
+	 * authorized organisation
+	 * 
+	 * @author John Dekker
+	 */
+	class AuthSslTrustManager implements X509TrustManager {
+		private X509TrustManager trustManager = null;
+
+		AuthSslTrustManager(KeyStore keystore, TrustManager[] trustmanagers) throws NoSuchAlgorithmException, KeyStoreException {
+			if (trustmanagers == null || trustmanagers.length == 0) {
+				TrustManagerFactory factory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+				factory.init(keystore);
+				trustmanagers = factory.getTrustManagers();
+			}
+			if (trustmanagers.length != 1) {
+				throw new NoSuchAlgorithmException("Only works with X509 trustmanagers");
+			}
+			this.trustManager = (X509TrustManager)trustmanagers[0];
+		}
+
+		public void checkClientTrusted(X509Certificate[] certificates, String authType) throws CertificateException {
+			this.trustManager.checkClientTrusted(certificates, authType);
+		}
+
+		public void checkServerTrusted(X509Certificate[] certificates, String authType) throws CertificateException {
+			if (certificates != null) {
+				for (int i = 0; i < certificates.length; i++) {
+					X509Certificate certificate = certificates[i];
+					certificate.checkValidity();
+				}
+			}
+		}
+
+		public X509Certificate[] getAcceptedIssuers() {
+			return this.trustManager.getAcceptedIssuers();
+		}
+	}
 }
 
