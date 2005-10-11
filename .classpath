@@ -28,5 +28,7 @@
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/xerces.jar"/>
     <classpathentry kind="lib" path="ifsajmsXA-v2.2.jar"/>
     <classpathentry kind="lib" path="jsse.jar"/>
+    <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/commons-net-1.4.0.jar"/>
+    <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/j2ssh.jar"/>
     <classpathentry kind="output" path="bin"/>
 </classpath>
