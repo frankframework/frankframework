@@ -1,6 +1,10 @@
 /*
  * $Log: FileUtils.java,v $
- * Revision 1.5  2005-10-11 12:38:11  europe\m00f531
+ * Revision 1.6  2005-10-11 12:52:57  europe\m00f531
+ * Change version string to not include $id: $, since username contains a 
+ * backslash
+ *
+ * Revision 1.5  2005/10/11 12:38:11  John Dekker <john.dekker@ibissource.org>
  * *** empty log message ***
  *
  * Revision 1.4  2005/10/11 12:15:06  John Dekker <john.dekker@ibissource.org>
@@ -32,7 +36,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class FileUtils {
-	public static final String version="$RCSfile: FileUtils.java,v $";
+	public static final String version = "$RCSfile: FileUtils.java,v $  $Revision: 1.6 $ $Date: 2005-10-11 12:52:57 $";
 
 	public static String getFilename(String originalFilename, String filenamePattern, boolean uidParam) {
 		// no pattern defined, outputname = inputname
