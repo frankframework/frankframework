@@ -1,6 +1,9 @@
 /*
  * $Log: FileUtils.java,v $
- * Revision 1.3  2005-10-11 12:00:19  europe\m00f531
+ * Revision 1.4  2005-10-11 12:15:06  europe\m00f531
+ * *** empty log message ***
+ *
+ * Revision 1.3  2005/10/11 12:00:19  John Dekker <john.dekker@ibissource.org>
  * Add utility class with methods for dynamically creating filenames, 
  * with alignment (padding) methods and list-2-string and string-2-list functions
  *
@@ -26,7 +29,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class FileUtils {
-	public static final String version="$Id: FileUtils.java,v 1.3 2005-10-11 12:00:19 europe\m00f531 Exp $";
+	public static final String version="$Id: FileUtils.java,v 1.4 2005-10-11 12:15:06 europe\m00f531 Exp $";
 
 	public static String getFilename(String originalFilename, String filenamePattern, boolean uidParam) {
 		// no pattern defined, outputname = inputname
