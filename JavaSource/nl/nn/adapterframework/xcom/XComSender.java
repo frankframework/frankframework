@@ -1,0 +1,400 @@
+/*
+ * $Log: XComSender.java,v $
+ * Revision 1.1  2005-10-11 13:04:24  europe\m00f531
+ * Support for sending files via the XComSender
+ *
+ */
+package nl.nn.adapterframework.xcom;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.StringTokenizer;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.ISender;
+import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.util.*;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+
+/**
+ * XCom client voor het versturen van files via XCom
+
+ * <p><b>Configuration:</b>
+ * <table border="1">
+ * <tr><th>attributes</th><th>description</th><th>default</th></tr>
+ * <tr><td>classname</td><td>nl.nn.ibis4fundation.XComSender</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setName(String) name}</td><td>name of the sender</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setWorkingDirName(String) name}</td><td>directory in which to run the xcomtcp command</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setXcomtcp(String) cmd}</td><td>Path to xcomtcp command</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setFileOption(String) option}</td><td>One of CREATE, APPEND or REPLACE</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setQueue(boolean) queue}</td><td>Set queue off or on</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setTruncation(boolean) truncation}</td><td>Set truncation off or on</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setTracelevel(int) tracelevel}</td><td>Set between 0 (no trace) and 10</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setCodeflag(String) codeflag}</td><td>Characterset conversion, one of ASCII or EBCDIC</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setCarriageflag(String) carriageflag}</td><td>One of YES, NO, VRL, VRL2, MPACK or XPACK</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setCompress(String) carriageflag}</td><td>One of YES, NO, RLE, COMPACT, LZLARGE, LZMEDIUM or LZSMALL</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setLogfile(String) logfile}</td><td>Name of logfile for xcomtcp to be used</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setRemoteSystem(String) remoteSystem}</td><td>Hostname or tcpip adres of remote host</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setPort(String) port}</td><td>Port of remote host</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setRemoteDir(String) remoteDir}</td><td>Remote directory is prefixed witht the remote file</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setRemoteFilePattern(String) remoteFile}</td><td>Remote file to create. If empty, the name is equal to the local file</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setUserid(String) userid}</td><td>Loginname of user on remote system</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setPassword(String) password}</td><td>Password of user on remote system</td><td>&nbsp;</td></tr>
+ * </table>
+ * </p>
+ *  
+ * @author: John Dekker
+ */
+public class XComSender implements ISender {
+	public static final String version="$Id: XComSender.java,v 1.1 2005-10-11 13:04:24 europe\m00f531 Exp $";
+	protected Logger logger = Logger.getLogger(this.getClass());
+	private File workingDir;
+	private String name;
+	private String fileOption = "CREATE";
+	private Boolean queue = null;
+	private Boolean truncation = null;
+	private Integer tracelevel = null;
+	private String logfile;
+	private String codeflag = "EBCDIC";
+	private String cariageflag = "YES";
+	private String port;
+	private String userid;
+	private String password = "";
+	private String compress = "YES";
+	private String remoteSystem;
+	private String remoteDirectory;
+	private String remoteFilePattern;
+	private String workingDirName = ".";
+	private String xcomtcp = "xcomtcp";
+	
+	/* (non-Javadoc)
+	 * @see nl.nn.adapterframework.core.ISender#configure()
+	 */
+	public void configure() throws ConfigurationException {
+		if (StringUtils.isEmpty(fileOption)) {
+			throw new ConfigurationException("Attribute [fileOption] is not set");
+		}
+		else if (
+				! "CREATE".equals(fileOption) && ! "APPEND".equals(fileOption) && 
+				! "REPLACE".equals(fileOption)
+		) {
+			throw new ConfigurationException("Attribute [fileOption] has incorrect value " + fileOption + ", should be one of CREATE | APPEND or REPLACE");
+		}
+		if (! StringUtils.isEmpty(compress) &&
+				! "YES".equals(compress) && ! "COMPACT".equals(compress) && 
+				! "LZLARGE".equals(compress) && ! "LZMEDIUM".equals(compress) && 
+				! "LZSMALL".equals(compress) && ! "RLE".equals(compress) && 
+				! "NO".equals(compress)  
+		) {
+			throw new ConfigurationException("Attribute [compress] has incorrect value " + compress + ", should be one of YES | NO | RLE | COMPACT | LZLARGE | LZMEDIUM | LZSMALL");
+		}
+		if (! StringUtils.isEmpty(codeflag) &&
+				! "EBCDIC".equals(codeflag) && ! "ASCII".equals(codeflag)  
+		) {
+			throw new ConfigurationException("Attribute [codeflag] has incorrect value " + fileOption + ", should be ASCII or EBCDIC");
+		}
+		if (! StringUtils.isEmpty(cariageflag) &&
+				! "YES".equals(cariageflag) && ! "VLR".equals(cariageflag) && 
+				! "VLR2".equals(cariageflag) && ! "MPACK".equals(cariageflag) && 
+				! "XPACK".equals(cariageflag) && ! "NO".equals(cariageflag)  
+		) {
+			throw new ConfigurationException("Attribute [cariageflag] has incorrect value " + compress + ", should be one of YES | NO | VRL | VRL2 | MPACK | XPACK");
+		}
+		if (StringUtils.isEmpty(remoteSystem)) {
+			throw new ConfigurationException("Attribute [host] is not set");
+		}
+		if (! StringUtils.isEmpty(port)) {
+			try {
+				Integer.parseInt(port);
+			}
+			catch(NumberFormatException e) {
+				throw new ConfigurationException("Attribute [port] is not a number");
+			}
+		}
+		if (tracelevel != null && (tracelevel.intValue() < 0 || tracelevel.intValue() > 10)) {
+			throw new ConfigurationException("Attribute [tracelevel] should be between 0 (no trace) and 10, not " + tracelevel.intValue());
+		}
+		if (StringUtils.isEmpty(workingDirName)) {
+			throw new ConfigurationException("Attribute [workingDirName] is not set");
+		}
+		else {
+			workingDir = new File(workingDirName);
+			if (! workingDir.isDirectory()) {
+				throw new ConfigurationException("Working directory [workingDirName=" + workingDirName + "] is not a directory");
+			}
+			SecurityManager sm  = System.getSecurityManager();
+			if (sm != null) {
+				try {
+					sm.checkExec(getCommand(null, false));
+				}
+				catch(SecurityException e) {
+					throw new ConfigurationException(e);
+				}
+			}
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see nl.nn.adapterframework.core.ISender#open()
+	 */
+	public void open() throws SenderException {
+	}
+
+	/* (non-Javadoc)
+	 * @see nl.nn.adapterframework.core.ISender#close()
+	 */
+	public void close() throws SenderException {
+	}
+
+	/* (non-Javadoc)
+	 * @see nl.nn.adapterframework.core.ISender#isSynchronous()
+	 */
+	public boolean isSynchronous() {
+		return true;
+	}
+
+	/* (non-Javadoc)
+	 * @see nl.nn.adapterframework.core.ISender#sendMessage(java.lang.String, java.lang.String)
+	 */
+	public String sendMessage(String correlationID, String message) throws SenderException, TimeOutException {
+		for (Iterator filenameIt = getFileList(message).iterator(); filenameIt.hasNext(); ) {
+			String filename = (String)filenameIt.next();
+			logger.debug("Start sending " + filename);
+		
+			// get file to send
+			File localFile = new File(filename);
+			
+			// execute command in a new operating process
+			try {
+				String cmd = getCommand(localFile, true);
+				
+				Process p = Runtime.getRuntime().exec(cmd + password, null, workingDir);
+	
+				// read the output of the process
+				BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
+				StringBuffer output = new StringBuffer();
+				String line = null;
+				while ((line = br.readLine()) != null) {
+					output.append(line);
+				}
+	
+				// wait until the process is completely finished
+				try {
+					p.waitFor();
+				}
+				catch(InterruptedException e) {
+				}
+	
+				logger.debug("output for " + localFile.getName() + " = " + output.toString());
+				logger.debug(localFile.getName() + " exits with " + p.exitValue());
+				
+				// throw an exception if the command returns an error exit value
+				if (p.exitValue() != 0) {
+					throw new SenderException("XComSender failed for file " + localFile.getAbsolutePath() + " " + output.toString());
+				}
+			}
+			catch(IOException e) {
+				throw new SenderException("Error while executing command " + getCommand(localFile, false), e);
+			}
+		}
+		return message;
+	}
+	
+	private String getCommand(File localFile, boolean inclPasswd) {
+		StringBuffer sb = new StringBuffer();
+		
+		sb.append(xcomtcp). append(" -c1");
+		sb.append(" REMOTE_SYSTEM=").append(remoteSystem);
+			
+		if (localFile != null) {			
+			sb.append(" LOCAL_FILE=").append(localFile.getAbsolutePath());
+
+			sb.append(" REMOTE_FILE=");
+			if (! StringUtils.isEmpty(remoteDirectory)) 
+				sb.append(remoteDirectory);
+			if (StringUtils.isEmpty(remoteFilePattern))
+				sb.append(localFile.getName());
+			else 
+				sb.append(FileUtils.getFilename(localFile, remoteFilePattern, true));
+		}
+					
+		// optional parameters 
+		if (queue != null)
+			sb.append(" QUEUE=").append(queue.booleanValue() ? "YES" : "NO");
+		if (tracelevel != null)
+			sb.append(" TRACE=").append(tracelevel.intValue());
+		if (truncation != null)
+			sb.append(" TRUNCATION=").append(truncation.booleanValue() ? "YES" : "NO");
+		if (! StringUtils.isEmpty(port))
+			sb.append(" PORT=" + port);
+		if (! StringUtils.isEmpty(logfile)) 
+			sb.append(" XLOGFILE=" + logfile);
+		if (! StringUtils.isEmpty(compress)) 
+			sb.append(" COMPRESS=").append(compress);
+		if (! StringUtils.isEmpty(codeflag)) 
+			sb.append(" CODE_FLAG=").append(codeflag);
+		if (! StringUtils.isEmpty(cariageflag)) 
+			sb.append(" CARRIAGE_FLAG=").append(cariageflag);
+		if (! StringUtils.isEmpty(userid)) 
+			sb.append(" USERID=").append(userid);
+		if (inclPasswd && ! StringUtils.isEmpty(password)) 
+			sb.append(" PASSWORD=").append(password);
+			
+		return sb.toString();
+	}
+	
+	public String getXcomtcp() {
+		return xcomtcp;
+	}
+
+	private List getFileList(String message) {
+		StringTokenizer st = new StringTokenizer(message, ";");
+		LinkedList list = new LinkedList();
+		while (st.hasMoreTokens()) {
+			list.add(st.nextToken());
+		}
+		return list;
+	}
+
+	/* (non-Javadoc)
+	 * @see nl.nn.adapterframework.core.INamedObject#getName()
+	 */
+	public String getName() {
+		return name;
+	}
+
+	/* (non-Javadoc)
+	 * @see nl.nn.adapterframework.core.INamedObject#setName(java.lang.String)
+	 */
+	public void setName(String name) {
+		this.name = name;
+	}
+	
+	public String getFileOption() {
+		return fileOption;
+	}
+
+	public void setFileOption(String newVal) {
+		fileOption = newVal;
+	}
+
+	public String getRemoteDirectory() {
+		return remoteDirectory;
+	}
+
+	public void setRemoteDirectory(String string) {
+		remoteDirectory = string;
+	}
+
+	public String getCariageflag() {
+		return cariageflag;
+	}
+
+	public String getCodeflag() {
+		return codeflag;
+	}
+
+	public String getCompress() {
+		return compress;
+	}
+
+	public String getLogfile() {
+		return logfile;
+	}
+
+	public String getPort() {
+		return port;
+	}
+
+	public Boolean isQueue() {
+		return queue;
+	}
+
+	public String getRemoteSystem() {
+		return remoteSystem;
+	}
+
+	public Integer getTracelevel() {
+		return tracelevel;
+	}
+
+	public Boolean isTruncation() {
+		return truncation;
+	}
+
+	public String getUserid() {
+		return userid;
+	}
+
+	public void setCariageflag(String string) {
+		cariageflag = string;
+	}
+
+	public void setCodeflag(String string) {
+		codeflag = string;
+	}
+
+	public void setCompress(String string) {
+		compress = string;
+	}
+
+	public void setLogfile(String string) {
+		logfile = string;
+	}
+
+	public void setPassword(String string) {
+		password = string;
+	}
+
+	public void setPort(String string) {
+		port = string;
+	}
+
+	public void setQueue(Boolean b) {
+		queue = b;
+	}
+
+	public void setRemoteSystem(String string) {
+		remoteSystem = string;
+	}
+
+	public void setTracelevel(Integer i) {
+		tracelevel = i;
+	}
+
+	public void setTruncation(Boolean b) {
+		truncation = b;
+	}
+
+	public void setUserid(String string) {
+		userid = string;
+	}
+
+	public String getRemoteFilePattern() {
+		return remoteFilePattern;
+	}
+
+	public void setRemoteFilePattern(String string) {
+		remoteFilePattern = string;
+	}
+	public String getWorkingDirName() {
+		return workingDirName;
+	}
+
+	public void setWorkingDirName(String string) {
+		workingDirName = string;
+	}
+
+	public void setXcomtcp(String string) {
+		xcomtcp = string;
+	}
+
+}
