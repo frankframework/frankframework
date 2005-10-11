@@ -1,6 +1,9 @@
 /*
  * $Log: XComSender.java,v $
- * Revision 1.1  2005-10-11 13:04:24  europe\m00f531
+ * Revision 1.2  2005-10-11 13:04:50  europe\m00f531
+ * *** empty log message ***
+ *
+ * Revision 1.1  2005/10/11 13:04:24  John Dekker <john.dekker@ibissource.org>
  * Support for sending files via the XComSender
  *
  */
@@ -54,7 +57,7 @@ import org.apache.log4j.Logger;
  * @author: John Dekker
  */
 public class XComSender implements ISender {
-	public static final String version="$Id: XComSender.java,v 1.1 2005-10-11 13:04:24 europe\m00f531 Exp $";
+	public static final String version = "$RCSfile: XComSender.java,v $  $Revision: 1.2 $ $Date: 2005-10-11 13:04:50 $";
 	protected Logger logger = Logger.getLogger(this.getClass());
 	private File workingDir;
 	private String name;
