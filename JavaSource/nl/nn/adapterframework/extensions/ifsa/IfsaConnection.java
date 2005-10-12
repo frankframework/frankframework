@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaConnection.java,v $
- * Revision 1.4  2005-08-31 16:29:50  europe\L190409
+ * Revision 1.4.2.1  2005-10-12 08:32:27  europe\L190409
+ * fixed bug in polishing of service-ids
+ *
+ * Revision 1.4  2005/08/31 16:29:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected code for static reply queues
  *
  * Revision 1.3  2005/07/19 12:34:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -46,7 +49,7 @@ import com.ing.ifsa.IFSAQueueConnectionFactory;
  * @version Id
  */
 public class IfsaConnection extends JmsConnection {
-	public static final String version="$RCSfile: IfsaConnection.java,v $ $Revision: 1.4 $ $Date: 2005-08-31 16:29:50 $";
+	public static final String version="$RCSfile: IfsaConnection.java,v $ $Revision: 1.4.2.1 $ $Date: 2005-10-12 08:32:27 $";
 
 	protected boolean preJms22Api=false;
 
@@ -155,7 +158,7 @@ public class IfsaConnection extends JmsConnection {
 		int lastFrom=string.lastIndexOf(from);
 		
 		if (lastFrom>0 && lastTo<lastFrom) {
-			String result = string.substring(0,lastFrom);
+			String result = string.substring(0,lastFrom)+to+string.substring(lastFrom+1);
 			log.info("replacing for Ifsa-compatibility ["+string+"] by ["+result+"]");
 			return result;
 		}
