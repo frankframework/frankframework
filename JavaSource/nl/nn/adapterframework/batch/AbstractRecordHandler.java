@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractRecordHandler.java,v $
- * Revision 1.1  2005-10-11 13:00:21  europe\m00f531
+ * Revision 1.2  2005-10-13 14:09:41  europe\m00f531
+ * StringTokenizer did not return token if two delimeters follow eachother directly.
+ *
+ * Revision 1.1  2005/10/11 13:00:21  John Dekker <john.dekker@ibissource.org>
  * New ibis file related elements, such as DirectoryListener, MoveFilePie and 
  * BatchFileTransformerPipe
  *
@@ -124,10 +127,19 @@ public abstract class AbstractRecordHandler implements IRecordHandler {
 	private ArrayList parseUsingSeperator(String record) {
 		ArrayList result = new ArrayList();
 		
-		StringTokenizer tok = new StringTokenizer(record, inputSeperator);
-		while (tok.hasMoreTokens()) {
-			result.add(tok.nextToken());
+		int endNdx = -1;
+		do {
+			int startNdx = endNdx + 1;
+			endNdx = record.indexOf(inputSeperator, startNdx);
+			if (endNdx == -1) {
+				result.add(record.substring(startNdx));
+			}
+			else {
+				result.add(record.substring(startNdx, endNdx));
+			}
 		}
+		while(endNdx != -1);
+		
 		return result;
 	}
 
