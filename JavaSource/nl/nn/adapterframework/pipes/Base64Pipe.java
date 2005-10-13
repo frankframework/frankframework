@@ -1,6 +1,9 @@
 /*
  * $Log: Base64Pipe.java,v $
- * Revision 1.1  2005-10-05 07:38:15  europe\L190409
+ * Revision 1.2  2005-10-13 11:44:53  europe\L190409
+ * switched encode and decode code
+ *
+ * Revision 1.1  2005/10/05 07:38:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * introduction of Base64Pipe
  *
  */
@@ -34,7 +37,7 @@ import sun.misc.BASE64Encoder;
  * @version Id
  */
 public class Base64Pipe extends FixedForwardPipe {
-	public static final String version="$RCSfile: Base64Pipe.java,v $ $Revision: 1.1 $ $Date: 2005-10-05 07:38:15 $";
+	public static final String version="$RCSfile: Base64Pipe.java,v $ $Revision: 1.2 $ $Date: 2005-10-13 11:44:53 $";
 
 	private String direction="encode";
 
@@ -45,7 +48,7 @@ public class Base64Pipe extends FixedForwardPipe {
 			throw new ConfigurationException(getLogPrefix(null)+"direction must be set");
 		}
 		if (!dir.equalsIgnoreCase("encode") && !dir.equalsIgnoreCase("decode")) {
-			throw new ConfigurationException(getLogPrefix(null)+"direction must be set");
+			throw new ConfigurationException(getLogPrefix(null)+"illegal value for direction ["+dir+"], must be 'encode' or 'decode'");
 		}
 	}
 
@@ -54,7 +57,7 @@ public class Base64Pipe extends FixedForwardPipe {
 		String result=null;
 		
 		if (in!=null) {
-			if (!"encode".equalsIgnoreCase(getDirection())) {
+			if ("encode".equalsIgnoreCase(getDirection())) {
 				BASE64Encoder encoder = new BASE64Encoder();
 				result=encoder.encode(in.getBytes());
 			} else {
