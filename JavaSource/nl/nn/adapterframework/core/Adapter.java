@@ -1,6 +1,9 @@
 /*
  * $Log: Adapter.java,v $
- * Revision 1.18  2005-08-17 08:12:45  europe\m168309
+ * Revision 1.19  2005-10-17 08:51:23  europe\L190409
+ * made getMessageKeeper synchronized
+ *
+ * Revision 1.18  2005/08/17 08:12:45  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * NDC updated
  *
  * Revision 1.17  2005/08/16 12:33:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -102,7 +105,7 @@ import javax.transaction.UserTransaction;
  */
 
 public class Adapter extends JNDIBase implements Runnable, IAdapter {
-	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.18 $ $Date: 2005-08-17 08:12:45 $";
+	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.19 $ $Date: 2005-10-17 08:51:23 $";
 	private Vector receivers = new Vector();
 	private long lastMessageDate = 0;
 	private PipeLine pipeline;
@@ -276,7 +279,7 @@ public class Adapter extends JNDIBase implements Runnable, IAdapter {
 	 * messages available, for instance for displaying it in the webcontrol
 	* @see nl.nn.adapterframework.util.MessageKeeper
 	 */
-	public MessageKeeper getMessageKeeper() {
+	public synchronized MessageKeeper getMessageKeeper() {
 		if (messageKeeper == null)
 			messageKeeper = new MessageKeeper(messageKeeperSize < 1 ? 1 : messageKeeperSize);
 		return messageKeeper;
