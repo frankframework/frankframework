@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcUtil.java,v $
- * Revision 1.6  2005-08-24 15:55:57  europe\L190409
+ * Revision 1.7  2005-10-17 11:25:35  europe\L190409
+ * added code to handel blobs and warnings
+ *
+ * Revision 1.6  2005/08/24 15:55:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added getBlobInputStream()
  *
  * Revision 1.5  2005/08/18 13:37:22  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -22,14 +25,20 @@
  */
 package nl.nn.adapterframework.util;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.sql.Blob;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLWarning;
+import java.util.zip.DeflaterOutputStream;
+import java.util.zip.InflaterInputStream;
 
+import nl.nn.adapterframework.jdbc.JdbcException;
 
 import org.apache.log4j.Logger;
 
@@ -41,7 +50,7 @@ import org.apache.log4j.Logger;
  * @since   4.1
  */
 public class JdbcUtil {
-	public static final String version = "$RCSfile: JdbcUtil.java,v $ $Revision: 1.6 $ $Date: 2005-08-24 15:55:57 $";
+	public static final String version = "$RCSfile: JdbcUtil.java,v $ $Revision: 1.7 $ $Date: 2005-10-17 11:25:35 $";
 	protected static Logger log = Logger.getLogger(JdbcUtil.class);
 	
 	private static final boolean useMetaData=false;
@@ -74,10 +83,90 @@ public class JdbcUtil {
 			}
 		}
 	}
+
+	public static String warningsToString(SQLWarning warnings) {
+		XmlBuilder warningsElem = warningsToXmlBuilder(warnings);
+		if (warningsElem!=null) {
+			return warningsElem.toXML();
+		}
+		return null;
+	}
+
+	public static void warningsToXml(SQLWarning warnings, XmlBuilder parent) {
+		XmlBuilder warningsElem=warningsToXmlBuilder(warnings);
+		if (warningsElem!=null) {
+			parent.addSubElement(warningsElem);	
+		}
+	}
+			
+	public static XmlBuilder warningsToXmlBuilder(SQLWarning warnings) {	
+		if (warnings!=null) {
+			XmlBuilder warningsElem = new XmlBuilder("warnings");
+			while (warnings!=null) {
+				XmlBuilder warningElem = new XmlBuilder("warning"); 
+				warningElem.addAttribute("errorCode",""+warnings.getErrorCode());
+				warningElem.addAttribute("sqlState",""+warnings.getSQLState());
+				String message=warnings.getMessage();
+				Throwable cause=warnings.getCause();
+				if (cause!=null) {
+					warningElem.addAttribute("cause",cause.getClass().getName());
+					if (message==null) {
+						message=cause.getMessage();
+					} else {
+						message=message+": "+cause.getMessage();
+					}
+				}
+				warningElem.addAttribute("message",message);
+				warningsElem.addSubElement(warningElem);
+				warnings=warnings.getNextWarning();
+			}
+			return warningsElem;
+		}
+		return null;
+	}
+
 	
-	public static InputStream getBlobInputStream(ResultSet rs, int columnIndex) throws SQLException {
+	public static InputStream getBlobInputStream(ResultSet rs, int columnIndex) throws SQLException, JdbcException {
 		Blob blob = rs.getBlob(columnIndex);
+		if (blob==null) {
+			throw new JdbcException("no blob found in column ["+columnIndex+"]");
+		}
 		return blob.getBinaryStream();
 	}
+
+	/**
+	 * retrieves an outputstream to a blob column from an updatable resultset.
+	 */
+	public static OutputStream getBlobUpdateOutputStream(ResultSet rs, int columnIndex) throws SQLException, JdbcException {
+		Blob blob = rs.getBlob(columnIndex);
+		if (blob==null) {
+			throw new JdbcException("no blob found in column ["+columnIndex+"]");
+		}
+		return blob.setBinaryStream(1L);
+	}
+
+	public static String getBlobAsString(final ResultSet rs, int columnIndex, boolean xmlEncode, boolean blobIsCompressed) throws IOException, JdbcException, SQLException {
+		InputStream input = getBlobInputStream(rs,columnIndex);
+		String result;
+		if (blobIsCompressed) {
+			result = Misc.streamToString(new InflaterInputStream(input), null, xmlEncode);
+		} else {
+			result = Misc.streamToString(input, null, xmlEncode);
+		}
+		return result;
+	}
+
+	public static void putStringAsBlob(final ResultSet rs, int columnIndex, String content, boolean compressBlob) throws IOException, JdbcException, SQLException {
+		OutputStream out = getBlobUpdateOutputStream(rs, columnIndex);
+		if (compressBlob) {
+			DeflaterOutputStream dos = new DeflaterOutputStream(out);
+			dos.write(content.getBytes(Misc.DEFAULT_INPUT_STREAM_ENCODING));
+			dos.close();
+		} else {
+			out.write(content.getBytes());
+		}
+		out.close();
+	}
+
 
 }
