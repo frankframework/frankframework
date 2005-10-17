@@ -1,6 +1,10 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.24  2005-09-27 08:59:30  europe\L190409
+ * Revision 1.25  2005-10-17 09:21:55  europe\L190409
+ * made namspaceAwareByDefault configurable in AppConstants
+ * added encodeCdataString
+ *
+ * Revision 1.24  2005/09/27 08:59:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed unused imports
  *
  * Revision 1.23  2005/09/22 15:55:23  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -133,17 +137,21 @@ import java.util.StringTokenizer;
  * @author Johan Verrips IOS
  */
 public class XmlUtils {
-	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.24 $ $Date: 2005-09-27 08:59:30 $";
+	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.25 $ $Date: 2005-10-17 09:21:55 $";
 	static Logger log = Logger.getLogger(XmlUtils.class);
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
 	static final String JAXP_SCHEMA_LANGUAGE = "http://java.sun.com/xml/jaxp/properties/schemaLanguage";
 	static final String JAXP_SCHEMA_SOURCE =   "http://java.sun.com/xml/jaxp/properties/schemaSource";
 
+	public static final String NAMESPACE_AWARE_BY_DEFAULT_KEY = "XML.NamespaceAware.default";
+
 	public final static String OPEN_FROM_FILE = "file";
 	public final static String OPEN_FROM_URL = "url";
 	public final static String OPEN_FROM_RESOURCE = "resource";
 	public final static String OPEN_FROM_XML = "xml";
+	
+	private static Boolean namespaceAwareByDefault = null;
 
 	public static final String XPATH_GETROOTNODENAME = "name(/node()[position()=last()])";
 
@@ -155,6 +163,14 @@ public class XmlUtils {
 
 	public XmlUtils() {
 		super();
+	}
+
+	public static synchronized boolean isNamespaceAwareByDefault() {
+		if (namespaceAwareByDefault==null) {
+			boolean aware=AppConstants.getInstance().getBoolean(NAMESPACE_AWARE_BY_DEFAULT_KEY, false);
+			namespaceAwareByDefault = new Boolean(aware);
+		}
+		return namespaceAwareByDefault.booleanValue();
 	}
 
 
@@ -178,7 +194,7 @@ public class XmlUtils {
 	}
 	
 	static public Document buildDomDocument(Reader in) throws DomBuilderException {
-		return buildDomDocument(in,true);
+		return buildDomDocument(in,isNamespaceAwareByDefault());
 	}
 	
 	static public Document buildDomDocument(Reader in, boolean namespaceAware)
@@ -349,7 +365,7 @@ public class XmlUtils {
 	}
 
 	public static Source stringToSource(String xmlString) throws DomBuilderException {
-		return stringToSource(xmlString,true);
+		return stringToSource(xmlString,isNamespaceAwareByDefault());
 	}
 
 	public static Source stringToSourceForSingleUse(String xmlString) throws DomBuilderException {
@@ -663,6 +679,35 @@ public class XmlUtils {
 		return str;
 
 	}
+
+	/**
+	 * Replaces non-unicode-characters by '0x00BF'.
+	 */
+	public static String encodeCdataString(String string) {
+		int length = string.length();
+		char[] characters = new char[length];
+
+		string.getChars(0, length, characters, 0);
+		StringBuffer encoded = new StringBuffer();
+		for (int i = 0; i < length; i++) {
+			if (isPrintableUnicodeChar(characters[i]))
+				encoded.append(characters[i]);
+			else
+				encoded.append((char) 0x00BF);
+		}
+		return encoded.toString();
+	}
+
+	private static boolean isPrintableUnicodeChar(char c) {
+		return (c == 0x0009)
+			|| (c == 0x000A)
+			|| (c == 0x000D)
+			|| (c >= 0x0020 && c <= 0xD7FF)
+			|| (c >= 0xE000 && c <= 0xFFFD)
+			|| (c >= 0x0010000 && c <= 0x0010FFFF);
+	}
+
+
 	
 	/**
 	 * sets all the parameters of the transformer using a HashMap with parameter values. 
