@@ -1,6 +1,9 @@
 /*
  * $Log: Result2Filewriter.java,v $
- * Revision 1.1  2005-10-11 13:00:20  europe\m00f531
+ * Revision 1.2  2005-10-17 11:46:35  europe\m00f531
+ * *** empty log message ***
+ *
+ * Revision 1.1  2005/10/11 13:00:20  John Dekker <john.dekker@ibissource.org>
  * New ibis file related elements, such as DirectoryListener, MoveFilePie and 
  * BatchFileTransformerPipe
  *
@@ -19,6 +22,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.util.FileUtils;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 
 /**
  * Resulthandler that writes the transformed record to a file
@@ -37,7 +41,8 @@ import org.apache.commons.lang.StringUtils;
  * @author: John Dekker
  */
 public class Result2Filewriter extends AbstractResultHandler {
-	public static final String version = "$RCSfile: Result2Filewriter.java,v $  $Revision: 1.1 $ $Date: 2005-10-11 13:00:20 $";
+	public static final String version = "$RCSfile: Result2Filewriter.java,v $  $Revision: 1.2 $ $Date: 2005-10-17 11:46:35 $";
+	private static Logger log = Logger.getLogger(Result2Filewriter.class);
 	
 	private String outputDirectory;
 	private String move2dirAfterFinalize;
@@ -90,6 +95,10 @@ public class Result2Filewriter extends AbstractResultHandler {
 		else {
 			if (! StringUtils.isEmpty(move2dirAfterFinalize)) {
 				File movedFile = new File(move2dirAfterFinalize, file.getName());
+				if (movedFile.exists()) {
+					log.warn("File " + movedFile.getAbsolutePath() + " exists, file gets overwritten");
+					movedFile.delete();
+				}
 				file.renameTo(movedFile);
 				return movedFile.getAbsolutePath();
 			}
@@ -122,8 +131,12 @@ public class Result2Filewriter extends AbstractResultHandler {
 			return null ;
 		}
 		
-		String outputFile = FileUtils.getFilename(new File(inputFilename), filenamePattern, false);
-		bw = new BufferedWriter(new FileWriter(new File(outputDirectory, outputFile), true));
+		String outputFilename = FileUtils.getFilename(new File(inputFilename), filenamePattern, true);
+		File outputFile = new File(outputDirectory, outputFilename);
+		if (outputFile.exists() && outputFile.isFile()) {
+			log.warn("Outputfile " + outputFilename + " exists in " + outputDirectory);
+		}
+		bw = new BufferedWriter(new FileWriter(outputFile, false));
 		openWriters.put(inputFilename, bw);
 		return bw;		
 	}

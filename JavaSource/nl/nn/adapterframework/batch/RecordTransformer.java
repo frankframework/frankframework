@@ -1,6 +1,9 @@
 /*
  * $Log: RecordTransformer.java,v $
- * Revision 1.1  2005-10-11 13:00:21  europe\m00f531
+ * Revision 1.2  2005-10-17 11:46:35  europe\m00f531
+ * *** empty log message ***
+ *
+ * Revision 1.1  2005/10/11 13:00:21  John Dekker <john.dekker@ibissource.org>
  * New ibis file related elements, such as DirectoryListener, MoveFilePie and 
  * BatchFileTransformerPipe
  *
@@ -55,7 +58,7 @@ import org.apache.commons.lang.StringUtils;
  * @author: John Dekker
  */
 public class RecordTransformer extends AbstractRecordHandler {
-	public static final String version = "$RCSfile: RecordTransformer.java,v $  $Revision: 1.1 $ $Date: 2005-10-11 13:00:21 $";
+	public static final String version = "$RCSfile: RecordTransformer.java,v $  $Revision: 1.2 $ $Date: 2005-10-17 11:46:35 $";
 
 	private List outputFields;
 	private String outputSeperator;
@@ -300,7 +303,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 				throw new ConfigurationException("Function refers to a non-existing inputfield [" + inputFieldIndex + "]");				
 			}
 			String val = (String)inputFields.get(inputFieldIndex);
-			if (StringUtils.isEmpty(outputSeperator) && val != null) {
+			if ((! StringUtils.isEmpty(outputSeperator)) && (val != null)) {
 				return val.trim();
 			}
 			return val;
