@@ -1,12 +1,18 @@
 /*
  * $Log: FileViewerServlet.java,v $
- * Revision 1.4  2005-07-19 11:42:09  europe\L190409
+ * Revision 1.5  2005-10-17 09:34:05  europe\L190409
+ * added log4j xml view facility
+ *
+ * Revision 1.4  2005/07/19 11:42:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * performance improvements
  *
  */
 package nl.nn.adapterframework.webcontrol;
 
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.DomBuilderException;
+import nl.nn.adapterframework.util.EncapsulatingReader;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -17,12 +23,16 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.stream.StreamSource;
 
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.LineNumberReader;
 import java.io.PrintWriter;
 import java.io.Reader;
+import java.net.URL;
 import java.util.StringTokenizer;
 
 /**
@@ -55,12 +65,16 @@ import java.util.StringTokenizer;
  * @author Johan Verrips 
  */
 public class FileViewerServlet extends HttpServlet  {
-	public static final String version = "$RCSfile: FileViewerServlet.java,v $ $Revision: 1.4 $ $Date: 2005-07-19 11:42:09 $";
+	public static final String version = "$RCSfile: FileViewerServlet.java,v $ $Revision: 1.5 $ $Date: 2005-10-17 09:34:05 $";
 	protected Logger log = Logger.getLogger(this.getClass());	
 
 	// key that is looked up to retrieve texts to be signalled
 	private static String fvConfigKey="FileViewerServlet.signal";
 
+	private static String log4j_html_xslt = "/xml/xsl/log4j_html.xsl";
+	private static String log4j_text_xslt = "/xml/xsl/log4j_text.xsl";
+	private static String log4j_prefix    = "<log4j:log4j xmlns:log4j=\"http://jakarta.apache.org/log4\">\n\n";
+	private static String log4j_postfix	  = "</log4j:log4j>";
 
 	public static String makeConfiguredReplacements(String input) {
 		StringTokenizer tok=AppConstants.getInstance().getTokenizer(fvConfigKey);
@@ -73,14 +87,28 @@ public class FileViewerServlet extends HttpServlet  {
 		return StringUtils.replace(input, "\t", "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
 	}
 
-	public static void showReaderContents(Reader reader, String type, HttpServletResponse response) throws IOException {
+
+	public static void transformReader(Reader reader, HttpServletResponse response, String input_prefix, String input_postfix, String stylesheetUrl) throws DomBuilderException, TransformerException, IOException { 
+		PrintWriter out = response.getWriter();
+		Reader fileReader = new EncapsulatingReader(reader, input_prefix, input_postfix);
+		URL xsltSource = ClassUtils.getResourceURL( FileViewerServlet.class, stylesheetUrl);
+		if (xsltSource!=null) {
+			Transformer transformer = XmlUtils.createTransformer(xsltSource);
+			XmlUtils.transformXml(transformer, new StreamSource(fileReader),out);
+			out.close();
+		} else {
+			showReaderContents(fileReader,"text",response);
+		}
+	}
+
+	public static void showReaderContents(Reader reader, String type, HttpServletResponse response) throws DomBuilderException, TransformerException, IOException {
 		PrintWriter out = response.getWriter();
 		if (type==null) {
 			response.setContentType("text/html");
 			out.println("resultType not specified");
 			return;
 		}
-	
+			
 		if (type.equalsIgnoreCase("html")){
 			response.setContentType("text/html");
 	
@@ -108,19 +136,32 @@ public class FileViewerServlet extends HttpServlet  {
 
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 	    try {
-	        PrintWriter out = response.getWriter();
 	
 	        String type=(String)request.getAttribute("resultType");
-	        if (type==null) type=request.getParameter("resultType");
+	        if (type==null) { type=request.getParameter("resultType"); }  
 	        String fileName=(String)request.getAttribute("fileName");
-	        if (fileName==null) fileName=request.getParameter("fileName");
+	        if (fileName==null) { fileName=request.getParameter("fileName"); } 
+			String log4j = (String) request.getAttribute("log4j");
+			if (log4j == null) { log4j = request.getParameter("log4j"); }
 	
 	        if (fileName==null) {
+				PrintWriter out = response.getWriter();
 	            response.setContentType("text/html");
 	            out.println("fileName not specified");
 	            return;
 	        }
-	        showReaderContents(new FileReader(fileName),type,response);
+	        boolean log4jFlag = "xml".equalsIgnoreCase(log4j) || "true".equalsIgnoreCase(log4j);
+	        if (log4jFlag) {
+	        	String stylesheetUrl;
+	        	if ("html".equalsIgnoreCase(type)) {
+					stylesheetUrl=log4j_html_xslt;
+	        	} else {
+					stylesheetUrl=log4j_text_xslt;
+	        	}
+				transformReader(new FileReader(fileName), response, log4j_prefix, log4j_postfix, stylesheetUrl);
+	        } else {
+				showReaderContents(new FileReader(fileName),type, response);
+	        }
 	    } catch (IOException e) {
 		    log.error("FileViewerServlet caught IOException" , e);
 		    throw e;
