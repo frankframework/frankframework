@@ -1,3 +1,9 @@
+/*
+ * $Log: DateUtils.java,v $
+ * Revision 1.5  2005-10-17 07:35:32  europe\L190409
+ * added format(long)
+ *
+ */
 package nl.nn.adapterframework.util;
 
 import java.text.ParsePosition;
@@ -5,12 +11,12 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 /**
  * Utilities for formatting and parsing dates.
- * @version Id
- *
+ * 
  * @author Johan Verrips IOS
+ * @version Id
  */
 public class DateUtils {
-	public static final String version="$Id: DateUtils.java,v 1.4 2004-11-10 12:59:27 L190409 Exp $";
+	public static final String version = "$RCSfile: DateUtils.java,v $ $Revision: 1.5 $ $Date: 2005-10-17 07:35:32 $";
 	
 
 	public static final String fullIsoFormat          = "yyyy-MM-dd'T'hh:mm:sszzz";
@@ -41,11 +47,17 @@ public class DateUtils {
      */
 	public final static String FORMAT_DATETIME_MILLISECONDS  ="dd-MM-yy HH:mm,SSS";
 	
-	static public String format(Date obj, String dateFormat) {
-        SimpleDateFormat formatter = new SimpleDateFormat(dateFormat);
-        ParsePosition pos = new ParsePosition(0);
-        return formatter.format((Date) obj);
-    }
+	public static String format(Date date, String dateFormat) {
+		SimpleDateFormat formatter = new SimpleDateFormat(dateFormat);
+		return formatter.format(date);
+	}
+
+	public static String format(long date, String dateFormat) {
+		return format(new Date(date),dateFormat);
+	}
+
+
+
     /**
      * Method getIsoTimeStamp.
      * 
@@ -64,4 +76,5 @@ public class DateUtils {
         Date result = df.parse(s, p);
         return result;
     }
+
 }
