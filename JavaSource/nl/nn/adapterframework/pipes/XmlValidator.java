@@ -1,6 +1,9 @@
 /*
  * $Log: XmlValidator.java,v $
- * Revision 1.11  2005-09-27 11:06:32  europe\L190409
+ * Revision 1.12  2005-10-17 11:37:34  europe\L190409
+ * made thread-safe
+ *
+ * Revision 1.11  2005/09/27 11:06:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.10  2005/09/26 11:33:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -31,6 +34,7 @@ import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.Variant;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -90,18 +94,14 @@ import java.io.IOException;
 
  */
 public class XmlValidator extends FixedForwardPipe {
-	public static final String version="$RCSfile: XmlValidator.java,v $ $Revision: 1.11 $ $Date: 2005-09-27 11:06:32 $";
+	public static final String version="$RCSfile: XmlValidator.java,v $ $Revision: 1.12 $ $Date: 2005-10-17 11:37:34 $";
 
-	private String schema = null;
     private String schemaLocation = null;
     private String noNamespaceSchemaLocation = null;
 	private String schemaSessionKey = null;
     private boolean throwException = false;
     private boolean fullSchemaChecking = false;
 	private String reasonSessionKey = null;
-
-	private String schemaURL;
-
 
     public class XmlErrorHandler implements ErrorHandler {
         private boolean errorOccured = false;
@@ -152,6 +152,11 @@ public class XmlValidator extends FixedForwardPipe {
             if (findForward("failure")==null) throw new ConfigurationException(
             getLogPrefix(null)+ "has no forward with name [failure]");
         }
+		if ((StringUtils.isNotEmpty(getNoNamespaceSchemaLocation()) ||
+			 StringUtils.isNotEmpty(getSchemaLocation())) &&
+			StringUtils.isNotEmpty(getSchemaSessionKey())) {
+				throw new ConfigurationException(getLogPrefix(null)+"cannot have schemaSessionKey together with schemaLocation or noNamespaceSchemaLocation");
+		}
         if (StringUtils.isNotEmpty(getSchemaLocation())) {
         	String resolvedLocations = XmlUtils.resolveSchemaLocations(getSchemaLocation());
         	log.info(getLogPrefix(null)+"resolved schemaLocation to ["+resolvedLocations+"]");
@@ -159,11 +164,17 @@ public class XmlValidator extends FixedForwardPipe {
         }
 		if (StringUtils.isNotEmpty(getNoNamespaceSchemaLocation())) {
 			URL url = ClassUtils.getResourceURL(this, getNoNamespaceSchemaLocation());
-			if (url!=null) {
-				String resolvedLocation =url.toExternalForm();
-				log.info(getLogPrefix(null)+"resolved noNamespaceSchemaLocation to ["+resolvedLocation+"]");
-				setNoNamespaceSchemaLocation(resolvedLocation);
+			if (url==null) {
+				throw new ConfigurationException(getLogPrefix(null)+"could not find schema at ["+getNoNamespaceSchemaLocation()+"]");
 			}
+			String resolvedLocation =url.toExternalForm();
+			log.info(getLogPrefix(null)+"resolved noNamespaceSchemaLocation to ["+resolvedLocation+"]");
+			setNoNamespaceSchemaLocation(resolvedLocation);
+		}
+		if (StringUtils.isEmpty(getNoNamespaceSchemaLocation()) &&
+			StringUtils.isEmpty(getSchemaLocation()) &&
+			StringUtils.isEmpty(getSchemaSessionKey())) {
+				throw new ConfigurationException(getLogPrefix(null)+"must have either schemaSessionKey, schemaLocation or noNamespaceSchemaLocation");
 		}
     }
 
@@ -183,34 +194,32 @@ public class XmlValidator extends FixedForwardPipe {
 			session.remove(getReasonSessionKey());
 		}
 
+		String schemaLocation = getSchemaLocation();
+		String noNamespaceSchemaLocation = getNoNamespaceSchemaLocation();
+
         // Do filename to URL translation if schemaLocation and
         // noNamespaceSchemaLocation are not set. 
         if (schemaLocation == null && noNamespaceSchemaLocation == null) {
-    		// first try to read the old fashioned way
-    		String schemaToBeUsed = getSchema();
-    		if (schemaToBeUsed == null)
-    		{
-    			// now look for the new session way
-    			schemaToBeUsed = getSchemaSessionKey();
-    			if (session.containsKey(schemaToBeUsed)) {
-    				setSchema(session.get(schemaToBeUsed).toString());
-    			} else {
-    				throw new PipeRunException(this, getLogPrefix(session)+ "cannot retrieve [" + getSchema() + "] or session variable [" + getSchemaSessionKey() + "]");
-    			}
+   			// now look for the new session way
+   			String schemaToBeUsed = getSchemaSessionKey();
+   			if (session.containsKey(schemaToBeUsed)) {
+				noNamespaceSchemaLocation = session.get(schemaToBeUsed).toString();
+   			} else {
+   				throw new PipeRunException(this, getLogPrefix(session)+ "cannot retrieve xsd from session variable [" + getSchemaSessionKey() + "]");
     		}
     
-    		URL url = ClassUtils.getResourceURL(this, getSchema());
+    		URL url = ClassUtils.getResourceURL(this, noNamespaceSchemaLocation);
     		if (url == null) {
-    			throw new PipeRunException(this, getLogPrefix(session)+ "cannot retrieve [" + getSchema() + "]");
+    			throw new PipeRunException(this, getLogPrefix(session)+ "cannot retrieve [" + noNamespaceSchemaLocation + "]");
     		}
     
-    		schemaURL = url.toExternalForm();
+			noNamespaceSchemaLocation = url.toExternalForm();
         }
 
 		XmlErrorHandler xeh = new XmlErrorHandler();
 		XMLReader parser=null;
 		try {
-			parser=getParser();
+			parser=getParser(schemaLocation,noNamespaceSchemaLocation);
 			if (parser==null) {
 				throw new PipeRunException(this, getLogPrefix(session)+ "could not obtain parser");
 			}
@@ -243,7 +252,7 @@ public class XmlValidator extends FixedForwardPipe {
 		boolean isValid = !(xeh.hasErrorOccured());
 		
 		if (!isValid) { 
-			String reasons = getLogPrefix(session) + "got invalid xml according to schema [" + getSchema() + "]:\n" + xeh.getReasons(); 
+			String reasons = getLogPrefix(session) + "got invalid xml according to schema [" + Misc.concatStrings(schemaLocation," ",noNamespaceSchemaLocation) + "]:\n" + xeh.getReasons(); 
             if (isThrowException()) {
                 throw new PipeRunException(this, reasons);
 			} else {
@@ -262,7 +271,7 @@ public class XmlValidator extends FixedForwardPipe {
     /**
      * Get a configured parser.
      */
-    private XMLReader getParser() throws SAXNotRecognizedException, SAXNotSupportedException, SAXException {
+    private XMLReader getParser(String schemaLocation, String noNamespaceSchemaLocation) throws SAXNotRecognizedException, SAXNotSupportedException, SAXException {
         XMLReader parser = null;
         parser = XMLReaderFactory.createXMLReader("org.apache.xerces.parsers.SAXParser");
         parser.setFeature("http://xml.org/sax/features/validation", true);
@@ -275,10 +284,6 @@ public class XmlValidator extends FixedForwardPipe {
         if (noNamespaceSchemaLocation != null) {
             log.debug("Give noNamespaceSchemaLocation to parser: " + noNamespaceSchemaLocation);
             parser.setProperty("http://apache.org/xml/properties/schema/external-noNamespaceSchemaLocation", noNamespaceSchemaLocation);
-        }
-        if (schemaLocation == null && noNamespaceSchemaLocation == null) {
-            log.debug("Give schemaURL to parser: " + schemaURL);
-            parser.setProperty("http://apache.org/xml/properties/schema/external-noNamespaceSchemaLocation", schemaURL);
         }
         if (isFullSchemaChecking())
             parser.setFeature("http://apache.org/xml/features/validation/schema-full-checking", true);
@@ -311,10 +316,10 @@ public class XmlValidator extends FixedForwardPipe {
      * @see ClassUtils.getResource(Object,String)
      */
     public void setSchema(String schema) {
-        this.schema = schema;
+        setNoNamespaceSchemaLocation(schema);
     }
 	public String getSchema() {
-		return schema;
+		return getNoNamespaceSchemaLocation();
 	}
 
     /**
