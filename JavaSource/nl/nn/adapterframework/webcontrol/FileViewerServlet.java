@@ -1,6 +1,9 @@
 /*
  * $Log: FileViewerServlet.java,v $
- * Revision 1.5  2005-10-17 09:34:05  europe\L190409
+ * Revision 1.6  2005-10-17 11:05:14  europe\L190409
+ * replace non-printable characters from log4j.xml
+ *
+ * Revision 1.5  2005/10/17 09:34:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added log4j xml view facility
  *
  * Revision 1.4  2005/07/19 11:42:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -65,7 +68,7 @@ import java.util.StringTokenizer;
  * @author Johan Verrips 
  */
 public class FileViewerServlet extends HttpServlet  {
-	public static final String version = "$RCSfile: FileViewerServlet.java,v $ $Revision: 1.5 $ $Date: 2005-10-17 09:34:05 $";
+	public static final String version = "$RCSfile: FileViewerServlet.java,v $ $Revision: 1.6 $ $Date: 2005-10-17 11:05:14 $";
 	protected Logger log = Logger.getLogger(this.getClass());	
 
 	// key that is looked up to retrieve texts to be signalled
@@ -90,7 +93,7 @@ public class FileViewerServlet extends HttpServlet  {
 
 	public static void transformReader(Reader reader, HttpServletResponse response, String input_prefix, String input_postfix, String stylesheetUrl) throws DomBuilderException, TransformerException, IOException { 
 		PrintWriter out = response.getWriter();
-		Reader fileReader = new EncapsulatingReader(reader, input_prefix, input_postfix);
+		Reader fileReader = new EncapsulatingReader(reader, input_prefix, input_postfix, true);
 		URL xsltSource = ClassUtils.getResourceURL( FileViewerServlet.class, stylesheetUrl);
 		if (xsltSource!=null) {
 			Transformer transformer = XmlUtils.createTransformer(xsltSource);
