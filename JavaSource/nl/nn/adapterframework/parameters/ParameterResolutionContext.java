@@ -1,6 +1,9 @@
 /*
  * $Log: ParameterResolutionContext.java,v $
- * Revision 1.8  2005-06-13 11:55:21  europe\L190409
+ * Revision 1.9  2005-10-17 11:43:34  europe\L190409
+ * namespace-awareness configurable
+ *
+ * Revision 1.8  2005/06/13 11:55:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * made namespaceAware
  *
  * Revision 1.7  2005/06/02 11:47:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -44,7 +47,10 @@ import org.apache.log4j.Logger;
 
 /*
  * $Log: ParameterResolutionContext.java,v $
- * Revision 1.8  2005-06-13 11:55:21  europe\L190409
+ * Revision 1.9  2005-10-17 11:43:34  europe\L190409
+ * namespace-awareness configurable
+ *
+ * Revision 1.8  2005/06/13 11:55:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * made namespaceAware
  *
  * Revision 1.7  2005/06/02 11:47:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -87,7 +93,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class ParameterResolutionContext {
-	public static final String version="$RCSfile: ParameterResolutionContext.java,v $ $Revision: 1.8 $ $Date: 2005-06-13 11:55:21 $";
+	public static final String version="$RCSfile: ParameterResolutionContext.java,v $ $Revision: 1.9 $ $Date: 2005-10-17 11:43:34 $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	private String input;
@@ -107,7 +113,16 @@ public class ParameterResolutionContext {
 	}
 
 	public ParameterResolutionContext(String input, PipeLineSession session) {
-		this(input,session,true);
+		this(input, session, XmlUtils.isNamespaceAwareByDefault());
+	}
+
+	public ParameterResolutionContext(Source xmlSource, PipeLineSession session, boolean namespaceAware) {
+		this("", session, namespaceAware);
+		this.xmlSource=xmlSource;
+	}
+
+	public ParameterResolutionContext(Source xmlSource, PipeLineSession session) {
+		this(xmlSource, session, XmlUtils.isNamespaceAwareByDefault());
 	}
 			
 	/**

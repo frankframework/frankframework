@@ -1,6 +1,9 @@
 /*
  * $Log: Parameter.java,v $
- * Revision 1.13  2005-08-11 14:57:00  europe\L190409
+ * Revision 1.14  2005-10-17 11:43:34  europe\L190409
+ * namespace-awareness configurable
+ *
+ * Revision 1.13  2005/08/11 14:57:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved handling of default values for empty transformation results
  *
  * Revision 1.12  2005/06/02 11:45:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -50,6 +53,7 @@ package nl.nn.adapterframework.parameters;
 import java.io.IOException;
 import java.net.URL;
 
+import javax.xml.transform.Source;
 import javax.xml.transform.TransformerConfigurationException;
 
 import org.apache.commons.lang.StringUtils;
@@ -108,7 +112,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author Richard Punt / Gerrit van Brakel
  */
 public class Parameter implements INamedObject, IWithParameters {
-	public static final String version="$RCSfile: Parameter.java,v $ $Revision: 1.13 $ $Date: 2005-08-11 14:57:00 $";
+	public static final String version="$RCSfile: Parameter.java,v $ $Revision: 1.14 $ $Date: 2005-10-17 11:43:34 $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	private String name = null;
@@ -188,7 +192,8 @@ public class Parameter implements INamedObject, IWithParameters {
 					String source = (String)(prc.getSession().get(getSessionKey()));
 					if (StringUtils.isNotEmpty(source)) {
 						log.debug("Parameter ["+getName()+"] using sessionvariable ["+getSessionKey()+"] as source for transformation");
-						transformResult = pool.transform(source,null);
+						Source xmlSource = XmlUtils.stringToSource(source,prc.isNamespaceAware());
+						transformResult = pool.transform(xmlSource,null);
 					} else {
 						log.debug("Parameter ["+getName()+"] sessionvariable ["+getSessionKey()+"] empty, no transformation will be performed");
 					}
