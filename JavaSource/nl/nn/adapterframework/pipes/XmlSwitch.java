@@ -1,6 +1,9 @@
 /*
  * $Log: XmlSwitch.java,v $
- * Revision 1.16  2005-06-13 11:46:26  europe\L190409
+ * Revision 1.17  2005-10-17 11:35:10  europe\L190409
+ * throw ConfigurationException when stylesheet not found
+ *
+ * Revision 1.16  2005/06/13 11:46:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected version-string
  *
  * Revision 1.15  2005/06/13 11:45:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -33,6 +36,7 @@ import org.apache.commons.lang.StringUtils;
 
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.Map;
 
 
@@ -61,7 +65,7 @@ import java.util.Map;
  * @author Johan Verrips
  */
 public class XmlSwitch extends AbstractPipe {
-	public static final String version="$RCSfile: XmlSwitch.java,v $ $Revision: 1.16 $ $Date: 2005-06-13 11:46:26 $";
+	public static final String version="$RCSfile: XmlSwitch.java,v $ $Revision: 1.17 $ $Date: 2005-10-17 11:35:10 $";
 	
     private static final String DEFAULT_SERVICESELECTION_XPATH = XmlUtils.XPATH_GETROOTNODENAME;
 	private TransformerPool transformerPool=null;
@@ -97,7 +101,11 @@ public class XmlSwitch extends AbstractPipe {
 		else {
 			if (!StringUtils.isEmpty(getServiceSelectionStylesheetFilename())) {
 				try {
-					transformerPool = new TransformerPool(ClassUtils.getResourceURL(this, getServiceSelectionStylesheetFilename()));
+					URL stylesheetURL = ClassUtils.getResourceURL(this, getServiceSelectionStylesheetFilename());
+					if (stylesheetURL==null) {
+						throw new ConfigurationException(getLogPrefix(null) + "cannot find stylesheet ["+getServiceSelectionStylesheetFilename()+"]");
+					}
+					transformerPool = new TransformerPool(stylesheetURL);
 				} catch (IOException e) {
 					throw new ConfigurationException(getLogPrefix(null) + "cannot retrieve ["+ serviceSelectionStylesheetFilename + "]", e);
 				} catch (TransformerConfigurationException te) {
