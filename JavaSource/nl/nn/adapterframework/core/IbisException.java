@@ -1,6 +1,9 @@
 /*
  * $Log: IbisException.java,v $
- * Revision 1.18  2005-08-08 09:40:15  europe\L190409
+ * Revision 1.19  2005-10-17 08:52:04  europe\L190409
+ * included location info for TransformerExceptions
+ *
+ * Revision 1.18  2005/08/08 09:40:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed dedicated toString()
  *
  * Revision 1.17  2005/07/28 07:28:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -49,6 +52,8 @@
 package nl.nn.adapterframework.core;
 
 import javax.mail.internet.AddressException;
+import javax.xml.transform.SourceLocator;
+import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -64,7 +69,7 @@ import org.xml.sax.SAXParseException;
  * @author Gerrit van Brakel
  */
 public class IbisException extends NestableException {
-	public static final String version = "$RCSfile: IbisException.java,v $ $Revision: 1.18 $ $Date: 2005-08-08 09:40:15 $";
+	public static final String version = "$RCSfile: IbisException.java,v $ $Revision: 1.19 $ $Date: 2005-10-17 08:52:04 $";
 
 	static {
 		// add methodname to find cause of JMS-Exceptions
@@ -122,14 +127,33 @@ public class IbisException extends NestableException {
 			int col = spe.getColumnNumber();
 			String sysid = spe.getSystemId();
 			
-			if (line>=0) {
-				currentResult =  addPart(currentResult, " ", "Line ["+line+"]");
-			}
-			if (col>=0) {
-				currentResult =  addPart(currentResult, " ", "Column ["+col+"]");
-			}
 			if (StringUtils.isNotEmpty(sysid)) {
 				currentResult =  addPart(currentResult, " ", "SystemId ["+sysid+"]");
+			}
+			if (line>=0) {
+				currentResult =  addPart(currentResult, " ", "line ["+line+"]");
+			}
+			if (col>=0) {
+				currentResult =  addPart(currentResult, " ", "column ["+col+"]");
+			}
+		} 
+		if (t instanceof TransformerException) {
+			TransformerException te = (TransformerException)t;
+			SourceLocator locator = te.getLocator();
+			if (locator!=null) {
+				int line = locator.getLineNumber();
+				int col = locator.getColumnNumber();
+				String sysid = locator.getSystemId();
+				
+				if (StringUtils.isNotEmpty(sysid)) {
+					currentResult =  addPart(currentResult, " ", "SystemId ["+sysid+"]");
+				}
+				if (line>=0) {
+					currentResult =  addPart(currentResult, " ", "line ["+line+"]");
+				}
+				if (col>=0) {
+					currentResult =  addPart(currentResult, " ", "column ["+col+"]");
+				}
 			}
 		} 
 		return currentResult;
