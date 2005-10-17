@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.18  2005-09-26 11:42:10  europe\L190409
+ * Revision 1.19  2005-10-17 11:29:24  europe\L190409
+ * fixed nullpointerexception in startRunning
+ *
+ * Revision 1.18  2005/09/26 11:42:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added fileNameIfStopped attribute and replace from/to processing when stopped
  *
  * Revision 1.17  2005/09/13 15:42:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -167,7 +170,7 @@ import javax.transaction.UserTransaction;
  * @since 4.2
  */
 public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, IMessageHandler, IbisExceptionListener, HasSender {
-	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.18 $ $Date: 2005-09-26 11:42:10 $";
+	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.19 $ $Date: 2005-10-17 11:29:24 $";
 	protected Logger log = Logger.getLogger(this.getClass());
  
 	private String returnIfStopped="";
@@ -455,7 +458,9 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 		try {
 			String msg=("Receiver [" + getName()  + "] starts listening.");
 			log.info(msg);
-			adapter.getMessageKeeper().add(msg);
+			if (adapter != null) { 
+				adapter.getMessageKeeper().add(msg);
+			}
 			runState.setRunState(RunStateEnum.STARTING);
 			openAllResources();
 			runState.setRunState(RunStateEnum.STARTED);
