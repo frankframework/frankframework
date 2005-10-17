@@ -1,16 +1,23 @@
 /*
  * $Log: FtpSession.java,v $
- * Revision 1.1  2005-10-11 13:03:31  europe\m00f531
+ * Revision 1.2  2005-10-17 12:21:23  europe\m00f531
+ * *** empty log message ***
+ *
+ * Revision 1.1  2005/10/11 13:03:31  John Dekker <john.dekker@ibissource.org>
  * Supports retrieving files (FtpFileRetrieverPipe) and sending files (FtpSender)
  * via one of the FTP protocols (ftp, sftp, ftps both implicit as explicit).
  *
  */
 package nl.nn.adapterframework.ftp;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.security.GeneralSecurityException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -39,7 +46,7 @@ import com.sshtools.j2ssh.transport.IgnoreHostKeyVerification;
  * @author John Dekker
  */
 public class FtpSession {
-	public static final String version = "$RCSfile: FtpSession.java,v $  $Revision: 1.1 $ $Date: 2005-10-11 13:03:31 $";
+	public static final String version = "$RCSfile: FtpSession.java,v $  $Revision: 1.2 $ $Date: 2005-10-17 12:21:23 $";
 	protected Logger logger = Logger.getLogger(this.getClass());
 	
 	// configuration parameters, global for all types
@@ -53,6 +60,7 @@ public class FtpSession {
 	private String proxyPassword;
 	private String ftpTypeDescription = "FTP";
 	private String transferMode = null;
+	private boolean messageIsContent;
 	
 	// configuration property for sftp
 	private int proxyTransportType = SshConnectionProperties.USE_SOCKS5_PROXY;
@@ -278,12 +286,61 @@ public class FtpSession {
 		}
 	}
 	
-	public String put(String filenames, String remoteDirectory, String remoteFilenamePattern, boolean closeAfterSend) throws Exception {
-		List remoteFilenames = put(FileUtils.getListFromNames(filenames, ';'), remoteDirectory, remoteFilenamePattern, closeAfterSend);
-		return FileUtils.getNamesFromList(remoteFilenames, ';');	
+	public String put(String message, String remoteDirectory, String remoteFilenamePattern, boolean closeAfterSend) throws Exception {
+		if (messageIsContent) {
+			return _put(message, remoteDirectory, remoteFilenamePattern, closeAfterSend);
+		}
+		else {
+			List remoteFilenames = _put(FileUtils.getListFromNames(message, ';'), remoteDirectory, remoteFilenamePattern, closeAfterSend);
+			return FileUtils.getNamesFromList(remoteFilenames, ';');	
+		}
 	}
 	
-	public List put(List filenames, String remoteDirectory, String remoteFilenamePattern, boolean closeAfterSend) throws Exception {
+	/**
+	 * @param contents
+	 * @param remoteDirectory
+	 * @param remoteFilenamePattern
+	 * @param closeAfterSend
+	 * @return name of the create remote file
+	 * @throws Exception
+	 */
+	private String _put(String contents, String remoteDirectory, String remoteFilenamePattern, boolean closeAfterSend) throws Exception {
+		openClient(remoteDirectory);
+		
+		// get remote name
+		String remoteFilename = FileUtils.getFilename("", remoteFilenamePattern, true);
+		
+		// open local file
+		InputStream is = new ByteArrayInputStream(contents.getBytes());
+		try {  
+			if (ftpType == SFTP) {
+				sftpClient.put(is, remoteFilename);
+			}
+			else {
+				if (! ftpClient.storeFile(remoteFilename, is)) {
+					throw new IOException(ftpClient.getReplyString());
+				}
+			}
+		}
+		finally {
+			is.close();
+
+			if (closeAfterSend) {
+				closeClient();
+			}
+		}
+		return remoteFilename;
+	}
+	
+	/**
+	 * @param filenames
+	 * @param remoteDirectory
+	 * @param remoteFilenamePattern
+	 * @param closeAfterSend
+	 * @return list of remotely created files
+	 * @throws Exception
+	 */
+	private List _put(List filenames, String remoteDirectory, String remoteFilenamePattern, boolean closeAfterSend) throws Exception {
 		openClient(remoteDirectory);
 		
 		try {
@@ -326,8 +383,8 @@ public class FtpSession {
 			}
 		}
 	}
-	
-	public List ls(String remoteDirectory, boolean closeAfterSend) throws Exception {
+
+	private List _ls(String remoteDirectory, boolean closeAfterSend) throws Exception {
 		openClient(remoteDirectory);
 
 		try {
@@ -352,47 +409,106 @@ public class FtpSession {
 	}
 	
 	public String lsAsString(String remoteDirectory, boolean closeAfterSend) throws Exception {
-		List result = ls(remoteDirectory, closeAfterSend);
+		List result = _ls(remoteDirectory, closeAfterSend);
 		return FileUtils.getNamesFromList(result, ';');
 	}
 	
 	public String get(String localDirectory, String remoteDirectory, String filenames, String localFilenamePattern, boolean closeAfterGet) throws Exception {
-		List result = get(localDirectory, remoteDirectory, FileUtils.getListFromNames(filenames, ';'), localFilenamePattern, closeAfterGet);
-		return FileUtils.getNamesFromList(result, ';');	
+		if (messageIsContent) {
+			return _get(remoteDirectory, FileUtils.getListFromNames(filenames, ';'), closeAfterGet);
+		}
+		else {
+			List result = _get(localDirectory, remoteDirectory, FileUtils.getListFromNames(filenames, ';'), localFilenamePattern, closeAfterGet);
+			return FileUtils.getNamesFromList(result, ';');	
+		}
 	}
 
-	public List get(String localDirectory, String remoteDirectory, List filenames, String localFilenamePattern, boolean closeAfterGet) throws Exception {
+	/**
+	 * @param remoteDirectory
+	 * @param filenames
+	 * @param closeAfterGet
+	 * @return concatenation of the contents of all received files
+	 * @throws Exception
+	 */
+	private String _get(String remoteDirectory, List filenames, boolean closeAfterGet) throws Exception {
+		openClient(remoteDirectory);
+		
+		try {
+			StringBuffer result = new StringBuffer();
+			for (Iterator filenameIt = filenames.iterator(); filenameIt.hasNext(); ) {
+				String remoteFilename = (String)filenameIt.next();
+				OutputStream os = null;
+
+				os = new ByteArrayOutputStream();
+
+				try {
+					if (ftpType == SFTP) {
+						sftpClient.get(remoteFilename, os);
+					}
+					else {
+						if (! ftpClient.retrieveFile(remoteFilename, os)) {
+							throw new IOException(ftpClient.getReplyString());
+						}
+					}
+				}
+				finally {
+					os.close();
+				}
+				
+				result.append(((ByteArrayOutputStream)os).toString());
+			}
+			return result.toString();
+		}
+		finally {
+			if (closeAfterGet) {
+				closeClient();
+			}
+		}
+	}
+	
+	/**
+	 * @param remoteDirectory
+	 * @param filenames
+	 * @param closeAfterGet
+	 * @return ; seperated string with filenames of locally created files 
+	 * @throws Exception
+	 */
+	private List _get(String localDirectory, String remoteDirectory, List filenames, String localFilenamePattern, boolean closeAfterGet) throws Exception {
 		openClient(remoteDirectory);
 		
 		try {
 			LinkedList remoteFilenames = new LinkedList();
 			for (Iterator filenameIt = filenames.iterator(); filenameIt.hasNext(); ) {
-				String filename = (String)filenameIt.next();
-				String localFilename = filename;
+				String remoteFilename = (String)filenameIt.next();
+
+				String localFilename = remoteFilename;
 				if (! StringUtils.isEmpty(localFilenamePattern)) {
-					localFilename = FileUtils.getFilename(filename, localFilenamePattern, true);
+					localFilename = FileUtils.getFilename(remoteFilename, localFilenamePattern, true);
 				}
 				
 				File localFile = new File(localDirectory, localFilename);
-				FileOutputStream fos = new FileOutputStream(localFile);
+				OutputStream os = new FileOutputStream(localFile);
 				try {
 					if (ftpType == SFTP) {
-						sftpClient.get(filename, fos);
+						sftpClient.get(remoteFilename, os);
 					}
 					else {
-						if (! ftpClient.retrieveFile(filename, fos)) {
+						if (! ftpClient.retrieveFile(remoteFilename, os)) {
 							throw new IOException(ftpClient.getReplyString());
 						}
 					}
 				}
 				catch(IOException e) {
-					fos.close();
+					os.close();
+					os = null;
 					localFile.delete();
 					throw e;
 				}
 				finally {
-					fos.close();
+					if (os != null)
+						os.close();
 				}
+				
 				remoteFilenames.add(localFile.getAbsolutePath());
 			}
 			return remoteFilenames;
@@ -570,6 +686,14 @@ public class FtpSession {
 
 	public void setProtP(boolean b) {
 		protP = b;
+	}
+
+	public boolean isMessageIsContent() {
+		return messageIsContent;
+	}
+
+	public void setMessageIsContent(boolean b) {
+		messageIsContent = b;
 	}
 
 }

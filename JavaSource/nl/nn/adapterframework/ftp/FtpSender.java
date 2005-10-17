@@ -1,6 +1,9 @@
 /*
  * $Log: FtpSender.java,v $
- * Revision 1.1  2005-10-11 13:03:29  europe\m00f531
+ * Revision 1.2  2005-10-17 12:21:21  europe\m00f531
+ * *** empty log message ***
+ *
+ * Revision 1.1  2005/10/11 13:03:29  John Dekker <john.dekker@ibissource.org>
  * Supports retrieving files (FtpFileRetrieverPipe) and sending files (FtpSender)
  * via one of the FTP protocols (ftp, sftp, ftps both implicit as explicit).
  *
@@ -37,13 +40,14 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setTransferMode(string) mode}</td><td>transfermode, one of ASCII, BINARY, EBCDIC, STREAM, COMPRESSED</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setAllowSelfSignedCertificates(boolean) allowSelfSignedCertificates}</td><td>if true, the server certificate can be self signed</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setProtP(boolean) protP}</td><td>if true, the server returns data via another socket</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setMessageIsContent(boolean) messageIsContent}</td><td>if true, the contents of the message is send, otherwise it message contains the local filenames of the files to be send</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  *  
  * @author: John Dekker
  */
 public class FtpSender implements ISender {
-	public static final String version = "$RCSfile: FtpSender.java,v $  $Revision: 1.1 $ $Date: 2005-10-11 13:03:29 $";
+	public static final String version = "$RCSfile: FtpSender.java,v $  $Revision: 1.2 $ $Date: 2005-10-17 12:21:21 $";
 	private String name;
 	private String remoteFilenamePattern;
 	private String remoteDirectory;
@@ -203,4 +207,9 @@ public class FtpSender implements ISender {
 	public void setProtP(boolean protP) {
 		ftpSession.setProtP(protP);
 	}
+
+	public void setMessageIsContent(boolean messageIsContent) {
+		ftpSession.setMessageIsContent(messageIsContent);
+	}
+
 }
