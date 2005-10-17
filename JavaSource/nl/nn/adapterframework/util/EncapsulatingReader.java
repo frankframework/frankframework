@@ -1,6 +1,9 @@
 /*
  * $Log: EncapsulatingReader.java,v $
- * Revision 1.1  2005-09-22 15:53:31  europe\L190409
+ * Revision 1.2  2005-10-17 11:04:20  europe\L190409
+ * added encodePrintable-feature
+ *
+ * Revision 1.1  2005/09/22 15:53:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * introduction of encapsulating reader
  *
  */
@@ -21,14 +24,29 @@ public class EncapsulatingReader extends FilterReader {
 
 	String prefix;
 	String postfix;
+	boolean encodePrintable;
+
 	boolean readPrefix=false;
 	boolean readReader=false;
 	int position=0;
 
-	public EncapsulatingReader(Reader in, String prefix, String postfix) {
+	public EncapsulatingReader(Reader in, String prefix, String postfix, boolean encodePrintable) {
 		super(in);
 		this.prefix=prefix;
 		this.postfix=postfix;
+		this.encodePrintable = encodePrintable;
+	}
+
+	public EncapsulatingReader(Reader in, String prefix, String postfix) {
+		this(in, prefix, postfix, false);
+	}		
+
+	private char charPrintable(char c) {
+		if (!encodePrintable || XmlUtils.isPrintableUnicodeChar(c)) {
+			return c;
+		} else {
+			return 0x00BF;
+		}
 	}
 
 	public int read() throws IOException {
@@ -42,7 +60,7 @@ public class EncapsulatingReader extends FilterReader {
 		if (!readReader) {
 			int result = in.read();
 			if (result>=0) {
-				return result;
+				return charPrintable((char)result);
 			}
 			readReader=true;
 		}
@@ -67,6 +85,11 @@ public class EncapsulatingReader extends FilterReader {
 		if (!readReader) {
 			charsRead = in.read(cbuf, off, len);
 			if (charsRead>0) {
+				if (encodePrintable) {
+					for (int i=off; i<off+charsRead; i++) {
+						cbuf[i]=charPrintable(cbuf[i]);
+					}
+				}
 				return charsRead;
 			} 
 			readReader=true;
