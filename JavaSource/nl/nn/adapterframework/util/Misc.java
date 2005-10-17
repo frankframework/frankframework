@@ -1,6 +1,9 @@
 /*
  * $Log: Misc.java,v $
- * Revision 1.11  2005-09-22 15:54:17  europe\L190409
+ * Revision 1.12  2005-10-17 11:26:58  europe\L190409
+ * addded concatString and compression-functions
+ *
+ * Revision 1.11  2005/09/22 15:54:17  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added replace function
  *
  * Revision 1.10  2005/07/19 11:37:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -17,13 +20,20 @@ import java.net.InetAddress;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.rmi.server.UID;
+import java.util.zip.DataFormatException;
+import java.util.zip.Deflater;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
+import java.util.zip.Inflater;
+
+import org.apache.commons.lang.StringUtils;
 
 /**
  * Miscellanous conversion functions.
  * @version Id
  */
 public class Misc {
-	public static final String version="$RCSfile: Misc.java,v $ $Revision: 1.11 $ $Date: 2005-09-22 15:54:17 $";
+	public static final String version="$RCSfile: Misc.java,v $ $Revision: 1.12 $ $Date: 2005-10-17 11:26:58 $";
 	public static final int BUFFERSIZE=20000;
 	public static final String DEFAULT_INPUT_STREAM_ENCODING="UTF-8";
 
@@ -227,5 +237,125 @@ public class Misc {
 		buffer.append (sourceArray, srcPos, sourceArray.length-srcPos);
 		return buffer.toString();
 	 }
+
+	public static String concatStrings(String part1, String separator, String part2) {
+		if (StringUtils.isEmpty(part1)) {
+			return part2;
+		}
+		if (StringUtils.isEmpty(part2)) {
+			return part1;
+		}
+		return part1+separator+part2;
+	}
+
+
+	public static String byteArrayToString(byte[] input, String endOfLineString, boolean xmlEncode) throws IOException{
+		ByteArrayInputStream bis = new ByteArrayInputStream(input);
+		return streamToString(bis, endOfLineString, xmlEncode);
+	}
+
+
+	public static byte[] gzip(String input) throws IOException {
+		return gzip(input.getBytes(DEFAULT_INPUT_STREAM_ENCODING));
+	}
+
+	public static byte[] gzip(byte[] input) throws IOException {
+		
+		// Create an expandable byte array to hold the compressed data.
+		// You cannot use an array that's the same size as the orginal because
+		// there is no guarantee that the compressed data will be smaller than
+		// the uncompressed data.
+		ByteArrayOutputStream bos = new ByteArrayOutputStream(input.length);
+		GZIPOutputStream gz = new GZIPOutputStream(bos);
+		gz.write(input);
+		gz.close();
+		bos.close();
+
+		// Get the compressed data
+		return bos.toByteArray();
+	}
+
+
+	public static String gunzipToString(byte[] input) throws DataFormatException, IOException {
+		return byteArrayToString(gunzip(input),"\n",false);
+	}
+
+	public static byte[] gunzip(byte[] input) throws DataFormatException, IOException {
+    
+		// Create an expandable byte array to hold the decompressed data
+		ByteArrayInputStream bis = new ByteArrayInputStream(input);
+		GZIPInputStream gz = new GZIPInputStream(bis);
+		ByteArrayOutputStream bos = new ByteArrayOutputStream(input.length);
+   
+		// Decompress the data
+		byte[] buf = new byte[1024];
+		while (gz.available()>0) {
+			 int count = gz.read(buf,0,1024);
+			 if (count>0) {
+				bos.write(buf, 0, count);
+			 }
+		}
+		bos.close();
+    
+		// Get the decompressed data
+		return bos.toByteArray();
+	}
+
+
+	public static byte[] compress(String input) throws IOException {
+		return compress(input.getBytes(DEFAULT_INPUT_STREAM_ENCODING));
+	}
+	public static byte[] compress(byte[] input) throws IOException {
+		
+		// Create the compressor with highest level of compression
+		Deflater compressor = new Deflater();
+		compressor.setLevel(Deflater.BEST_COMPRESSION);
+
+		// Give the compressor the data to compress
+		compressor.setInput(input);
+		compressor.finish();
+
+		// Create an expandable byte array to hold the compressed data.
+		// You cannot use an array that's the same size as the orginal because
+		// there is no guarantee that the compressed data will be smaller than
+		// the uncompressed data.
+		ByteArrayOutputStream bos = new ByteArrayOutputStream(input.length);
+
+		// Compress the data
+		byte[] buf = new byte[1024];
+		while (!compressor.finished()) {
+			int count = compressor.deflate(buf);
+			bos.write(buf, 0, count);
+		}
+		bos.close();
+
+		// Get the compressed data
+		return bos.toByteArray();
+	}
+	
+	public static String decompressToString(byte[] input) throws DataFormatException, IOException {
+		return byteArrayToString(decompress(input),"\n",false);
+	}
+
+	public static byte[] decompress(byte[] input) throws DataFormatException, IOException {
+		// Create the decompressor and give it the data to compress
+		Inflater decompressor = new Inflater();
+		decompressor.setInput(input);
+    
+		// Create an expandable byte array to hold the decompressed data
+		ByteArrayOutputStream bos = new ByteArrayOutputStream(input.length);
+    
+		// Decompress the data
+		byte[] buf = new byte[1024];
+		while (!decompressor.finished()) {
+			 int count = decompressor.inflate(buf);
+			 bos.write(buf, 0, count);
+		}
+			 bos.close();
+    
+		// Get the decompressed data
+		return bos.toByteArray();
+	}
+
 
 }
