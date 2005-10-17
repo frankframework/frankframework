@@ -1,6 +1,9 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.25  2005-10-17 09:21:55  europe\L190409
+ * Revision 1.26  2005-10-17 11:02:30  europe\L190409
+ * isPrintableUnicodeChar made public
+ *
+ * Revision 1.25  2005/10/17 09:21:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * made namspaceAwareByDefault configurable in AppConstants
  * added encodeCdataString
  *
@@ -137,7 +140,7 @@ import java.util.StringTokenizer;
  * @author Johan Verrips IOS
  */
 public class XmlUtils {
-	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.25 $ $Date: 2005-10-17 09:21:55 $";
+	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.26 $ $Date: 2005-10-17 11:02:30 $";
 	static Logger log = Logger.getLogger(XmlUtils.class);
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
@@ -698,7 +701,7 @@ public class XmlUtils {
 		return encoded.toString();
 	}
 
-	private static boolean isPrintableUnicodeChar(char c) {
+	public static boolean isPrintableUnicodeChar(char c) {
 		return (c == 0x0009)
 			|| (c == 0x000A)
 			|| (c == 0x000D)
