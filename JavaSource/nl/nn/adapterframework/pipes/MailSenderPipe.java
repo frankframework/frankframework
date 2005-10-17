@@ -1,10 +1,14 @@
+/*
+ * $Log: MailSenderPipe.java,v $
+ * Revision 1.5  2005-10-17 11:31:43  europe\L190409
+ * simplified code
+ * 
+ */
 package nl.nn.adapterframework.pipes;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-
 /**
- * Pipe that sends a mail-message using a {@link MailSender} as its sender<br/>
- *
+ * Pipe that sends a mail-message using a {@link MailSender} as its sender.
+ * <br/>
  * Sample email.xml:<br/><code><pre>
  *	&lt;email&gt;
  *	    &lt;recipients&gt;
@@ -51,13 +55,10 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
  */
 
 public class MailSenderPipe extends MessageSendingPipe {
-public static final String version="$Id: MailSenderPipe.java,v 1.4 2004-08-23 13:10:09 L190409 Exp $";
-	
-public MailSenderPipe() {
-	super();
-	setSender(new MailSender());
-}
-public void configure() throws ConfigurationException {
-    super.configure();
-}
+	public static final String version = "$RCSfile: MailSenderPipe.java,v $ $Revision: 1.5 $ $Date: 2005-10-17 11:31:43 $";
+		
+	public MailSenderPipe() {
+		super();
+		setSender(new MailSender());
+	}
 }
