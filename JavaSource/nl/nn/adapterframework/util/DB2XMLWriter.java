@@ -1,6 +1,9 @@
 /*
  * $Log: DB2XMLWriter.java,v $
- * Revision 1.9  2005-10-03 13:17:40  europe\L190409
+ * Revision 1.10  2005-10-17 11:24:28  europe\L190409
+ * added blobs and warnings
+ *
+ * Revision 1.9  2005/10/03 13:17:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added attribute trimSpaces, default=true
  *
  * Revision 1.8  2005/09/29 13:57:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -16,11 +19,15 @@
  */
 package nl.nn.adapterframework.util;
 
+import nl.nn.adapterframework.jdbc.JdbcException;
+
 import org.apache.log4j.Logger;
 
+import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Types;
 
 /**
@@ -55,13 +62,14 @@ import java.sql.Types;
  **/
 
 public class DB2XMLWriter {
-	public static final String version="$RCSfile: DB2XMLWriter.java,v $ $Revision: 1.9 $ $Date: 2005-10-03 13:17:40 $";
+	public static final String version="$RCSfile: DB2XMLWriter.java,v $ $Revision: 1.10 $ $Date: 2005-10-17 11:24:28 $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	private String docname = new String("result");
 	private String recordname = new String("rowset");
 	private String nullValue = "";
 	private boolean trimSpaces=true;
+	private boolean decompressBlobs=false;
 
    
     public static String getFieldType (int type) {
@@ -90,17 +98,18 @@ public class DB2XMLWriter {
 		}
      	return ("Unknown");
     }
-    
+       
     /**
      * This method gets the value of the specified column
      */
-    private String getValue(final ResultSet rs, int colNum, int type) throws SQLException
+    private String getValue(final ResultSet rs, int colNum, int type) throws JdbcException, IOException, SQLException
     {
         switch(type)
         {
         	// return "undefined" for types that cannot be rendered to strings easily
+			case Types.BLOB :
+					return JdbcUtil.getBlobAsString(rs,colNum,false,isDecompressBlobs());
             case Types.ARRAY :
-            case Types.BLOB :
             case Types.DISTINCT :
             case Types.LONGVARBINARY :
             case Types.VARBINARY :
@@ -141,6 +150,15 @@ public class DB2XMLWriter {
 			maxlength = Integer.MAX_VALUE;
 	
 		XmlBuilder mainElement = new XmlBuilder(docname);
+		Statement stmt=null;
+		try {
+			stmt = rs.getStatement();
+			if (stmt!=null) {
+				JdbcUtil.warningsToXml(stmt.getWarnings(),mainElement);
+			}
+		} catch (SQLException e1) {
+			log.warn("exception obtaining statement warnings", e1);
+		}
 		int rowCounter=0;
 		try {
 			ResultSetMetaData rsmeta = rs.getMetaData();
@@ -220,6 +238,7 @@ public class DB2XMLWriter {
 					}
 					row.addSubElement(resultField);
 				}
+				JdbcUtil.warningsToXml(rs.getWarnings(),row);
 				queryresult.addSubElement(row);
 				rowCounter++;
 			}
@@ -259,5 +278,11 @@ public class DB2XMLWriter {
 		return trimSpaces;
 	}
 
+	public void setDecompressBlobs(boolean b) {
+		decompressBlobs = b;
+	}
+	public boolean isDecompressBlobs() {
+		return decompressBlobs;
+	}
 
 }
