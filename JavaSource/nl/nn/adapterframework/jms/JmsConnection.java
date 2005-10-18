@@ -1,6 +1,9 @@
 /*
  * $Log: JmsConnection.java,v $
- * Revision 1.2  2005-10-18 06:57:55  europe\L190409
+ * Revision 1.3  2005-10-18 06:58:46  europe\L190409
+ * corrected version string
+ *
+ * Revision 1.2  2005/10/18 06:57:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * close returns true when underlying connection is acually closed
  *
  * Revision 1.1  2005/05/03 15:59:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -32,7 +35,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class JmsConnection  {
-	public static final String version="$Id: JmsConnection.java,v 1.2 2005-10-18 06:57:55 europe\L190409 Exp $";
+	public static final String version="$RCSfile: JmsConnection.java,v $ $Revision: 1.3 $ $Date: 2005-10-18 06:58:46 $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	private int referenceCount;
