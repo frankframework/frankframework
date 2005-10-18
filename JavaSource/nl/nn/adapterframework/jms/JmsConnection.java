@@ -1,6 +1,9 @@
 /*
  * $Log: JmsConnection.java,v $
- * Revision 1.1  2005-05-03 15:59:55  L190409
+ * Revision 1.2  2005-10-18 06:57:55  europe\L190409
+ * close returns true when underlying connection is acually closed
+ *
+ * Revision 1.1  2005/05/03 15:59:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * rework of shared connection code
  *
  */
@@ -29,7 +32,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class JmsConnection  {
-	public static final String version="$Id: JmsConnection.java,v 1.1 2005-05-03 15:59:55 L190409 Exp $";
+	public static final String version="$Id: JmsConnection.java,v 1.2 2005-10-18 06:57:55 europe\L190409 Exp $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	private int referenceCount;
@@ -53,7 +56,7 @@ public class JmsConnection  {
 		log.debug("set id ["+id+"] context ["+context+"] connectionFactory ["+connectionFactory+"] ");
 	}
 		
-	public synchronized void close() throws IbisException
+	public synchronized boolean close() throws IbisException
 	{
 		if (--referenceCount<=0) {
 			log.debug(getLogPrefix()+" reference count ["+referenceCount+"], closing connection");
@@ -71,9 +74,11 @@ public class JmsConnection  {
 				connectionFactory = null;
 				connection=null;
 				context = null;
+				return true;
 			}
 		} else {
 			log.debug(getLogPrefix()+" not closing, reference count ["+referenceCount+"]");
+			return false;
 		}
 	}
 
