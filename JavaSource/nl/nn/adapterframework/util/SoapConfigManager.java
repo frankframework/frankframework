@@ -1,3 +1,9 @@
+/*
+ * $Log: SoapConfigManager.java,v $
+ * Revision 1.6  2005-10-18 08:18:49  europe\L190409
+ * corrected version string
+ *
+ */
 package nl.nn.adapterframework.util;
 
 import org.apache.commons.lang.StringUtils;
@@ -13,6 +19,7 @@ import org.w3c.dom.NodeList;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Hashtable;
+
 /**
  * Read-only implementation of org.apache.soap.server.XMLConfigManager.
  *
@@ -27,7 +34,7 @@ import java.util.Hashtable;
  * @author Gerrit van Brakel IOS
  */
 public class SoapConfigManager extends XMLConfigManager {
-	public static final String version="$Id: SoapConfigManager.java,v 1.5 2005-10-18 08:14:48 europe\L190409 Exp $";
+	public static final String version="$RCSfile: SoapConfigManager.java,v $ $Revision: 1.6 $ $Date: 2005-10-18 08:18:49 $";
     protected Logger log = Logger.getLogger(this.getClass());
 
 	private String defaultProvider="nl.nn.adapterframework.soap.SoapGenericProvider";    
