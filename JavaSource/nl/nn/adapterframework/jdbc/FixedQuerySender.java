@@ -1,6 +1,9 @@
 /*
  * $Log: FixedQuerySender.java,v $
- * Revision 1.8  2005-09-29 13:59:49  europe\L190409
+ * Revision 1.9  2005-10-18 07:10:12  europe\L190409
+ * update javadoc
+ *
+ * Revision 1.8  2005/09/29 13:59:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * provided attributes and handling for nullValue,columnsReturned and resultQuery
  *
  * Revision 1.7  2005/09/20 13:24:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -50,6 +53,11 @@ import java.sql.SQLException;
  * <tr><td>{@link #setMaxRows(int) maxRows}</td><td>maximum number of rows returned</td><td>0 (unlimited)</td></tr>
  * <tr><td>{@link #setStartRow(int) startRow}</td><td>the number of the first row returned from the output</td><td>1</td></tr>
  * <tr><td>{@link #setScalar(boolean) scalar}</td><td>when true, the value of the first column of the first row (or the StartRow) is returned as the only result</td><td>false</td></tr>
+ * <tr><td>{@link #setSynchronous(boolean) synchronous}</td><td>&nbsp;</td><td>true</td></tr>
+ * <tr><td>{@link #setTrimSpaces(boolean) trimSpaces}</td><td>&nbsp;</td><td>true</td></tr>
+ * <tr><td>{@link #setBlobsCompressed(boolean) blobsCompressed}</td><td>controls whether blobdata is stored compressed in the database</td><td>true</td></tr>
+ * <tr><td>{@link #setResultQuery(String) resultQuery}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setColumnsReturned(String) columnsReturned}</td>comma separated list of columns whose values are to be returned. Works only if the driver implements JDBC 3.0 getGeneratedKeys()<td>&nbsp;</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * 
@@ -58,7 +66,7 @@ import java.sql.SQLException;
  * @since 	4.1
  */
 public class FixedQuerySender extends JdbcQuerySenderBase {
-	public static final String version = "$RCSfile: FixedQuerySender.java,v $ $Revision: 1.8 $ $Date: 2005-09-29 13:59:49 $";
+	public static final String version = "$RCSfile: FixedQuerySender.java,v $ $Revision: 1.9 $ $Date: 2005-10-18 07:10:12 $";
 
 	private String query=null;
 		
