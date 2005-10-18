@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcTransactionalStorage.java,v $
- * Revision 1.12  2005-09-22 16:06:59  europe\L190409
+ * Revision 1.13  2005-10-18 07:15:05  europe\L190409
+ * reduced number of exceptions thrown
+ *
+ * Revision 1.12  2005/09/22 16:06:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added createTable attribute, to create table only when desired
  *
  * Revision 1.11  2005/09/07 15:37:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -111,7 +114,7 @@ import nl.nn.adapterframework.util.JdbcUtil;
  * @since 	4.1
  */
 public class JdbcTransactionalStorage extends JdbcFacade implements ITransactionalStorage {
-	public static final String version = "$RCSfile: JdbcTransactionalStorage.java,v $ $Revision: 1.12 $ $Date: 2005-09-22 16:06:59 $";
+	public static final String version = "$RCSfile: JdbcTransactionalStorage.java,v $ $Revision: 1.13 $ $Date: 2005-10-18 07:15:05 $";
 	
 	// the following currently only for debug.... 
 	boolean checkIfTableExists=true;
@@ -310,7 +313,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		}
 	}
 
-	protected String storeMessageInDatabase(Connection conn, String messageId, String correlationId, Timestamp receivedDateTime, String comments, Serializable message) throws IOException, SQLException, SenderException {
+	protected String storeMessageInDatabase(Connection conn, String messageId, String correlationId, Timestamp receivedDateTime, String comments, Serializable message) throws IOException, SQLException, JdbcException, SenderException {
 		PreparedStatement stmt = null;
 		try { 
 			log.debug("preparing insert statement ["+insertQuery+"]");
@@ -361,9 +364,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 			}
 			return result;
 			
-		} catch (SQLException e) {
-			throw new SenderException(e);
-		} catch (IOException e) {
+		} catch (Exception e) {
 			throw new SenderException("cannot serialize message",e);
 		} finally {
 			try {
@@ -477,7 +478,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	}
 
 
-	protected Object retrieveObject(ResultSet rs, int columnIndex) throws SQLException, OptionalDataException, ClassNotFoundException, IOException {
+	protected Object retrieveObject(ResultSet rs, int columnIndex) throws ClassNotFoundException, JdbcException, IOException, SQLException {
 		ObjectInputStream ois = new ObjectInputStream(JdbcUtil.getBlobInputStream(rs, columnIndex));
 		Object result = ois.readObject();
 		ois.close();
