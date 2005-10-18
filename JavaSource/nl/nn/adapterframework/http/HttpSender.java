@@ -1,6 +1,9 @@
 /*
  * $Log: HttpSender.java,v $
- * Revision 1.15  2005-10-03 13:19:07  europe\L190409
+ * Revision 1.16  2005-10-18 07:06:48  europe\L190409
+ * improved logging config, based now on ISenderWithParametersBase
+ *
+ * Revision 1.15  2005/10/03 13:19:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * replaced IbisMultiThreadedConnectionManager with original MultiThreadedConnectionMananger
  *
  * Revision 1.14  2005/02/24 12:13:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -68,16 +71,13 @@ import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.protocol.Protocol;
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
-import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -121,11 +121,8 @@ import nl.nn.adapterframework.util.ClassUtils;
  * @author Gerrit van Brakel
  * @since 4.2c
  */
-public class HttpSender implements ISenderWithParameters, HasPhysicalDestination {
-	public static final String version = "$RCSfile: HttpSender.java,v $ $Revision: 1.15 $ $Date: 2005-10-03 13:19:07 $";
-	protected Logger log = Logger.getLogger(this.getClass());;
-
-	private String name;
+public class HttpSender extends SenderWithParametersBase implements HasPhysicalDestination {
+	public static final String version = "$RCSfile: HttpSender.java,v $ $Revision: 1.16 $ $Date: 2005-10-18 07:06:48 $";
 
 	private String url;
 	private String methodType="GET"; // GET or POST
@@ -159,22 +156,20 @@ public class HttpSender implements ISenderWithParameters, HasPhysicalDestination
 	private MultiThreadedHttpConnectionManager connectionManager;
 	protected HttpClient httpclient;
 
-	protected ParameterList paramList = null;
-
 	private class IbisMultiThreadedHttpConnectionManager extends MultiThreadedHttpConnectionManager {
 		
 		protected boolean checkConnection(HttpConnection connection)  {
 			boolean status = connection.isOpen();
-			log.debug("IbisMultiThreadedHttpConnectionManager["+name+"] connection open ["+status+"]");
+			log.debug(getLogPrefix()+"IbisMultiThreadedHttpConnectionManager connection open ["+status+"]");
 			if (status) {
 				try {
 					connection.setSoTimeout(connection.getSoTimeout());
 				} catch (SocketException e) {
-					log.warn("IbisMultiThreadedHttpConnectionManager["+name+"] SocketException while checking", e);
+					log.warn(getLogPrefix()+"IbisMultiThreadedHttpConnectionManager SocketException while checking", e);
 					connection.close();
 					return false;
 				} catch (IllegalStateException e) {
-					log.warn("IbisMultiThreadedHttpConnectionManager["+name+"] IllegalStateException while checking", e);
+					log.warn(getLogPrefix()+"IbisMultiThreadedHttpConnectionManager IllegalStateException while checking", e);
 					connection.close();
 					return false;
 				}
@@ -189,13 +184,13 @@ public class HttpSender implements ISenderWithParameters, HasPhysicalDestination
 //		}
 		
 		public HttpConnection getConnection(HostConfiguration hostConfiguration) {
-			log.debug("IbisMultiThreadedHttpConnectionManager["+name+"] getConnection(HostConfiguration)");
+			log.debug(getLogPrefix()+"IbisMultiThreadedHttpConnectionManager getConnection(HostConfiguration)");
 			HttpConnection result = super.getConnection(hostConfiguration);			
 			checkConnection(result);
 			return result;
 		}
 		public HttpConnection getConnection(HostConfiguration hostConfiguration, long timeout) throws HttpException {
-			log.debug("IbisMultiThreadedHttpConnectionManager["+name+"] getConnection(HostConfiguration, timeout["+timeout+"])");
+			log.debug(getLogPrefix()+"IbisMultiThreadedHttpConnectionManager getConnection(HostConfiguration, timeout["+timeout+"])");
 			HttpConnection result = super.getConnection(hostConfiguration, timeout);
 			int count=10;
 			while (count-->0 && !checkConnection(result)) {
@@ -211,21 +206,17 @@ public class HttpSender implements ISenderWithParameters, HasPhysicalDestination
 			Class clazz = Class.forName(name);
 			java.security.Security.addProvider((java.security.Provider)clazz.newInstance());
 		} catch (Throwable t) {
-			log.error("cannot add provider ["+name+"], "+t.getClass().getName()+": "+t.getMessage());
+			log.error(getLogPrefix()+"cannot add provider ["+name+"], "+t.getClass().getName()+": "+t.getMessage());
 		}
 	}
 
 
-	public void addParameter(Parameter p) { 
-		if (paramList==null) {
-			paramList=new ParameterList();
-		}
-		paramList.add(p);
-	}
 
 	
 	public void configure() throws ConfigurationException {
-//		System.setProperty("javax.net.debug","all");
+		super.configure();
+//		System.setProperty("javax.net.debug","all"); // normaal Java
+//		System.setProperty("javax.net.debug","true"); // IBM java
 		httpclient = new HttpClient();
 		httpclient.setTimeout(getTimeout());
 		httpclient.setConnectionTimeout(getTimeout());
@@ -234,12 +225,12 @@ public class HttpSender implements ISenderWithParameters, HasPhysicalDestination
 			paramList.configure();
 		}
 		if (StringUtils.isEmpty(getUrl())) {
-			throw new ConfigurationException("Url must be specified");
+			throw new ConfigurationException(getLogPrefix()+"Url must be specified");
 		}
 		try {
 			uri = new URI(getUrl());
 
-			log.debug("created uri: scheme=["+uri.getScheme()+"] host=["+uri.getHost()+"] port=["+uri.getPort()+"] path=["+uri.getPath()+"]");
+			log.debug(getLogPrefix()+"created uri: scheme=["+uri.getScheme()+"] host=["+uri.getHost()+"] port=["+uri.getPort()+"] path=["+uri.getPath()+"]");
 
 			URL certificateUrl=null;
 			URL truststoreUrl=null;
@@ -247,16 +238,16 @@ public class HttpSender implements ISenderWithParameters, HasPhysicalDestination
 			if (!StringUtils.isEmpty(getCertificate())) {
 				certificateUrl = ClassUtils.getResourceURL(this, getCertificate());
 				if (certificateUrl==null) {
-					throw new ConfigurationException("cannot find URL for certificate resource ["+getCertificate()+"]");
+					throw new ConfigurationException(getLogPrefix()+"cannot find URL for certificate resource ["+getCertificate()+"]");
 				}
-				log.debug("resolved certificate-URL to ["+certificateUrl.toString()+"]");
+				log.debug(getLogPrefix()+"resolved certificate-URL to ["+certificateUrl.toString()+"]");
 			}
 			if (!StringUtils.isEmpty(getTruststore())) {
 				truststoreUrl = ClassUtils.getResourceURL(this, getTruststore());
 				if (truststoreUrl==null) {
-					throw new ConfigurationException("cannot find URL for truststore resource ["+getTruststore()+"]");
+					throw new ConfigurationException(getLogPrefix()+"cannot find URL for truststore resource ["+getTruststore()+"]");
 				}
-				log.debug("resolved truststore-URL to ["+certificateUrl.toString()+"]");
+				log.debug(getLogPrefix()+"resolved truststore-URL to ["+certificateUrl.toString()+"]");
 			}
 
 			HostConfiguration hostconfiguration = httpclient.getHostConfiguration();		           
@@ -278,14 +269,14 @@ public class HttpSender implements ISenderWithParameters, HasPhysicalDestination
 					}
 					socketfactory.initSSLContext();	
 				} catch (Throwable t) {
-					throw new ConfigurationException("cannot create or initialize SocketFactory",t);
+					throw new ConfigurationException(getLogPrefix()+"cannot create or initialize SocketFactory",t);
 				}
 				Protocol authhttps = new Protocol(uri.getScheme(), socketfactory, uri.getPort());
 				hostconfiguration.setHost(uri.getHost(),uri.getPort(),authhttps);
 			} else {
 				hostconfiguration.setHost(uri.getHost(),uri.getPort(),uri.getScheme());
 			}
-			log.debug("configured httpclient for host ["+hostconfiguration.getHostURL()+"]");
+			log.debug(getLogPrefix()+"configured httpclient for host ["+hostconfiguration.getHostURL()+"]");
 			
 			if (!StringUtils.isEmpty(getUserName())) {
 				httpclient.getState().setAuthenticationPreemptive(true);
@@ -300,24 +291,24 @@ public class HttpSender implements ISenderWithParameters, HasPhysicalDestination
 	
 
 		} catch (URIException e) {
-			throw new ConfigurationException("cannot interprete uri ["+getUrl()+"]");
+			throw new ConfigurationException(getLogPrefix()+"cannot interprete uri ["+getUrl()+"]");
 		}
 
 	}
 
-	public void open() throws SenderException {
+	public void open() {
 //		connectionManager = new IbisMultiThreadedHttpConnectionManager();
 		connectionManager = new MultiThreadedHttpConnectionManager();
 		connectionManager.setMaxConnectionsPerHost(getMaxConnections());
-		log.debug("set up connectionManager, stale checking ["+connectionManager.isConnectionStaleCheckingEnabled()+"]");
+		log.debug(getLogPrefix()+"set up connectionManager, stale checking ["+connectionManager.isConnectionStaleCheckingEnabled()+"]");
 		if (connectionManager.isConnectionStaleCheckingEnabled() != isStaleChecking()) {
-			log.info("set up connectionManager, setting stale checking ["+isStaleChecking()+"]");
+			log.info(getLogPrefix()+"set up connectionManager, setting stale checking ["+isStaleChecking()+"]");
 			connectionManager.setConnectionStaleCheckingEnabled(isStaleChecking());
 		}
 		httpclient.setHttpConnectionManager(connectionManager);
 	}
 
-	public void close() throws SenderException {
+	public void close() {
 		connectionManager.shutdown();
 		connectionManager=null;
 	}
@@ -328,7 +319,7 @@ public class HttpSender implements ISenderWithParameters, HasPhysicalDestination
 
 	protected boolean appendParameters(boolean parametersAppended, StringBuffer path, ParameterValueList parameters) {
 		if (parameters!=null) {
-			log.debug("appending ["+parameters.size()+"] parameters");
+			log.debug(getLogPrefix()+"appending ["+parameters.size()+"] parameters");
 		}
 		for(int i=0; i<parameters.size(); i++) {
 			if (parametersAppended) {
@@ -339,7 +330,7 @@ public class HttpSender implements ISenderWithParameters, HasPhysicalDestination
 			}
 			ParameterValue pv = parameters.getParameterValue(i);
 			String parameterToAppend=pv.getDefinition().getName()+"="+URLEncoder.encode(pv.asStringValue(""));
-			log.debug("appending parameter ["+parameterToAppend+"]");
+			log.debug(getLogPrefix()+"appending parameter ["+parameterToAppend+"]");
 			path.append(parameterToAppend);
 		}
 		return parametersAppended;
@@ -358,12 +349,12 @@ public class HttpSender implements ISenderWithParameters, HasPhysicalDestination
 			}
 			if (parameters!=null) {
 				parametersAppended = appendParameters(parametersAppended,path,parameters);
-				log.debug("path after appending of parameters ["+path.toString()+"]");
+				log.debug(getLogPrefix()+"path after appending of parameters ["+path.toString()+"]");
 			}
 			
 			if (getMethodType().equals("GET")) {
 				GetMethod result = new GetMethod(path+(parameters==null? message:""));
-				log.debug("HttpSender constructed GET-method ["+result.getQueryString()+"]");
+				log.debug(getLogPrefix()+"HttpSender constructed GET-method ["+result.getQueryString()+"]");
 				return result;
 			} else {
 				if (getMethodType().equals("POST")) {
@@ -376,7 +367,7 @@ public class HttpSender implements ISenderWithParameters, HasPhysicalDestination
 				}
 			}
 		} catch (URIException e) {
-			throw new SenderException("cannot find path from url ["+getUrl()+"]", e);
+			throw new SenderException(getLogPrefix()+"cannot find path from url ["+getUrl()+"]", e);
 		}
 
 	}
@@ -384,7 +375,7 @@ public class HttpSender implements ISenderWithParameters, HasPhysicalDestination
 	public String extractResult(HttpMethod httpmethod) throws SenderException {
 		int statusCode = httpmethod.getStatusCode();
 		if (statusCode!=200) {
-			throw new SenderException("httpstatus "+statusCode+": "+httpmethod.getStatusText());
+			throw new SenderException(getLogPrefix()+"httpstatus "+statusCode+": "+httpmethod.getStatusText());
 		}
 		return httpmethod.getResponseBodyAsString();
 	}
@@ -396,14 +387,14 @@ public class HttpSender implements ISenderWithParameters, HasPhysicalDestination
 				pvl=prc.getValues(paramList);
 			}
 		} catch (ParameterException e) {
-			throw new SenderException("Sender ["+getName()+"] caught exception evaluating parameters",e);
+			throw new SenderException(getLogPrefix()+"Sender ["+getName()+"] caught exception evaluating parameters",e);
 		}
 		HttpMethod httpmethod=getMethod(message, pvl);
 		httpmethod.setFollowRedirects(isFollowRedirects());
 		
 		try {
 			httpclient.executeMethod(httpmethod);
-			log.debug("status:"+httpmethod.getStatusLine().toString());	
+			log.debug(getLogPrefix()+"status:"+httpmethod.getStatusLine().toString());	
 			return extractResult(httpmethod);	
 		} catch (HttpException e) {
 			throw new SenderException(e);
@@ -418,14 +409,6 @@ public class HttpSender implements ISenderWithParameters, HasPhysicalDestination
 		return sendMessage(correlationID, message, null);
 	}
 
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name=name;
-	}
 
 
 	public String getPhysicalDestinationName() {
