@@ -27,10 +27,10 @@ import java.util.Hashtable;
  * @author Gerrit van Brakel IOS
  */
 public class SoapConfigManager extends XMLConfigManager {
-	public static final String version="$Id: SoapConfigManager.java,v 1.4 2005-04-26 09:35:33 L190409 Exp $";
+	public static final String version="$Id: SoapConfigManager.java,v 1.5 2005-10-18 08:14:48 europe\L190409 Exp $";
     protected Logger log = Logger.getLogger(this.getClass());
 
-	private String defaultProvider="nl.nn.adapterframework.http.SoapGenericProvider";    
+	private String defaultProvider="nl.nn.adapterframework.soap.SoapGenericProvider";    
 	DeploymentDescriptor defaultDD = null; 
     
 	public void loadRegistry() throws SOAPException {

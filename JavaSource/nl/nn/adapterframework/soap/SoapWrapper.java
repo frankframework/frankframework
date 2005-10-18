@@ -1,6 +1,9 @@
 /*
  * $Log: SoapWrapper.java,v $
- * Revision 1.4  2005-07-05 12:55:51  europe\L190409
+ * Revision 1.1  2005-10-18 08:14:48  europe\L190409
+ * created separate soap-package
+ *
+ * Revision 1.4  2005/07/05 12:55:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * allow to set targetObjectNamespace for putInEnvelope
  *
  * Revision 1.3  2005/05/31 09:16:23  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -13,7 +16,7 @@
  * moved SOAP conversion coding to SOAP-wrapper
  *
  */
-package nl.nn.adapterframework.http;
+package nl.nn.adapterframework.soap;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -38,7 +41,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @version Id
  */
 public class SoapWrapper {
-	public static final String version="$RCSfile: SoapWrapper.java,v $ $Revision: 1.4 $ $Date: 2005-07-05 12:55:51 $";
+	public static final String version="$RCSfile: SoapWrapper.java,v $ $Revision: 1.1 $ $Date: 2005-10-18 08:14:48 $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	private TransformerPool extractBody;
@@ -76,7 +79,7 @@ public class SoapWrapper {
 		return self;
 	}
 
-	protected void checkForSoapFault(String responseBody, Throwable nested) throws SenderException {
+	public void checkForSoapFault(String responseBody, Throwable nested) throws SenderException {
 		String faultString=null;
 		String faultCode=null;
 		int faultCount=0;
