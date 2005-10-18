@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaRequesterSender.java,v $
- * Revision 1.15  2005-09-13 15:56:40  europe\L190409
+ * Revision 1.16  2005-10-18 07:04:47  europe\L190409
+ * better handling of dynamic reply queues
+ *
+ * Revision 1.15  2005/09/13 15:56:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed acknowledge mode back to AutoAcknowledge
  * provided option to set serviceId dynamically from a parameter
  *
@@ -101,7 +104,7 @@ import com.ing.ifsa.IFSATimeOutMessage;
  * @since  4.2
  */
 public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParameters {
-	public static final String version="$RCSfile: IfsaRequesterSender.java,v $ $Revision: 1.15 $ $Date: 2005-09-13 15:56:40 $";
+	public static final String version="$RCSfile: IfsaRequesterSender.java,v $ $Revision: 1.16 $ $Date: 2005-10-18 07:04:47 $";
  
 	protected ParameterList paramList = null;
   
@@ -178,8 +181,8 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 			if (replyReceiver!=null) {
 				try {
 					log.debug(getLogPrefix()+"closing replyreceiver");
-		        	replyReceiver.close();
-				} catch (JMSException e) {
+					closeReplyReceiver(replyReceiver);
+				} catch (IfsaException e) {
 					log.error(getLogPrefix()+"error closing replyreceiver", e);
 		        } 
 			}

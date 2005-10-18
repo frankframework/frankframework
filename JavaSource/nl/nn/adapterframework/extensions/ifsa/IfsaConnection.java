@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaConnection.java,v $
- * Revision 1.4  2005-08-31 16:29:50  europe\L190409
+ * Revision 1.5  2005-10-18 07:04:47  europe\L190409
+ * better handling of dynamic reply queues
+ *
+ * Revision 1.4  2005/08/31 16:29:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected code for static reply queues
  *
  * Revision 1.3  2005/07/19 12:34:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -28,8 +31,10 @@ import javax.jms.Message;
 import javax.jms.Queue;
 import javax.jms.QueueReceiver;
 import javax.jms.QueueSession;
+import javax.jms.TemporaryQueue;
 import javax.naming.NamingException;
 
+import nl.nn.adapterframework.core.IbisException;
 import nl.nn.adapterframework.jms.JmsConnection;
 
 import com.ing.ifsa.IFSAContext;
@@ -46,15 +51,26 @@ import com.ing.ifsa.IFSAQueueConnectionFactory;
  * @version Id
  */
 public class IfsaConnection extends JmsConnection {
-	public static final String version="$RCSfile: IfsaConnection.java,v $ $Revision: 1.4 $ $Date: 2005-08-31 16:29:50 $";
+	public static final String version="$RCSfile: IfsaConnection.java,v $ $Revision: 1.5 $ $Date: 2005-10-18 07:04:47 $";
 
 	protected boolean preJms22Api=false;
+	protected boolean useSingleDynamicReplyQueue=false;
+	private Queue replyQueue=null;
 
 	public IfsaConnection(String applicationId, IFSAContext context, IFSAQueueConnectionFactory connectionFactory, HashMap connectionMap, boolean preJms22Api) {
 		super(applicationId,context,connectionFactory,connectionMap);
 		this.preJms22Api=preJms22Api;
 		log.debug("created new IfsaConnection for ["+applicationId+"] context ["+context+"] connectionfactory ["+connectionFactory+"]");
 	}
+
+	public boolean close() throws IbisException {
+		boolean didClose = super.close();
+		if (didClose) {
+			replyQueue=null;
+		}
+		return didClose;
+	}
+
 
 	public boolean hasDynamicReplyQueue() throws IfsaException {
 		try {
@@ -68,6 +84,39 @@ public class IfsaConnection extends JmsConnection {
 		}
 	}
 	
+	protected Queue getDynamicReplyQueue(QueueSession session) throws JMSException {
+		Queue result;
+		if (useSingleDynamicReplyQueue) {
+			if (replyQueue==null) {
+				synchronized (this) {
+					if (replyQueue==null) {
+						replyQueue=session.createTemporaryQueue();
+						log.info("created dynamic replyQueue ["+replyQueue.getQueueName()+"]");
+					}
+				}
+			}
+			result = replyQueue;
+		} else {
+			result = session.createTemporaryQueue();
+		}
+		return result;
+	}
+
+	protected void releaseDynamicReplyQueue(Queue replyQueue) throws IfsaException {
+		if (replyQueue!=null) {
+			try {
+				if (!useSingleDynamicReplyQueue) {
+					if (!(replyQueue instanceof TemporaryQueue)) {
+						throw new IfsaException("DynamicReplyQueue ["+replyQueue.getQueueName()+"] is not a TemporaryQueue");
+					}
+					TemporaryQueue queue = (TemporaryQueue)replyQueue;
+					queue.delete();
+				}
+			} catch (JMSException e) {
+				throw new IfsaException("cannot close dynamic reply queue",e);
+			}
+		}
+	}
 	
 	
 	/**
@@ -86,7 +135,7 @@ public class IfsaConnection extends JmsConnection {
 			 * No -> dynamic reply queue
 			 */
 			if (hasDynamicReplyQueue()) { // Temporary Dynamic
-				replyQueue =  session.createTemporaryQueue();
+				replyQueue =  getDynamicReplyQueue(session);
 				log.debug("got dynamic reply queue [" +replyQueue.getQueueName()+"]");
 			} else { // Static
 				replyQueue = (Queue) ((IFSAContext)getContext()).lookupReply(getId());
@@ -97,6 +146,13 @@ public class IfsaConnection extends JmsConnection {
 			throw new IfsaException(e);
 		}
 	}
+	
+	protected void releaseClientReplyQueue(Queue replyQueue) throws IfsaException {
+		if (hasDynamicReplyQueue()) { // Temporary Dynamic
+			releaseDynamicReplyQueue(replyQueue);		
+		}
+	}
+
 	/**
 	 * Gets the queueReceiver, by utilizing the <code>getInputQueue()</code> method.<br/>
 	 * For serverside getQueueReceiver() the creating of the QueueReceiver is done
@@ -119,7 +175,6 @@ public class IfsaConnection extends JmsConnection {
 		}
 		
 		try {
-	
 			if (hasDynamicReplyQueue()) {
 				queueReceiver = session.createReceiver(replyQueue);
 				log.debug("using dynamic reply queue" );
@@ -132,6 +187,20 @@ public class IfsaConnection extends JmsConnection {
 			throw new IfsaException(e);
 		}
 		return queueReceiver;
+	}
+
+	public void closeReplyReceiver(QueueReceiver receiver) throws IfsaException {
+		try { 
+			if (receiver!=null) {
+				Queue replyQueue = receiver.getQueue();
+				receiver.close();
+				if (replyQueue!=null) {
+					releaseClientReplyQueue(replyQueue);
+				}
+			}
+		} catch (JMSException e) {
+			throw new IfsaException(e);
+		}
 	}
 
   	public IFSAQueue lookupService(String serviceId) throws IfsaException {
@@ -155,7 +224,7 @@ public class IfsaConnection extends JmsConnection {
 		int lastFrom=string.lastIndexOf(from);
 		
 		if (lastFrom>0 && lastTo<lastFrom) {
-			String result = string.substring(0,lastFrom);
+			String result = string.substring(0,lastFrom)+to+string.substring(lastFrom+1);
 			log.info("replacing for Ifsa-compatibility ["+string+"] by ["+result+"]");
 			return result;
 		}
@@ -169,6 +238,5 @@ public class IfsaConnection extends JmsConnection {
 			return replaceLast(serviceId, ':','/');
 		}
 	}
-
 
 }

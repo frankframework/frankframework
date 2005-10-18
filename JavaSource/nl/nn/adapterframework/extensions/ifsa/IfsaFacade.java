@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaFacade.java,v $
- * Revision 1.30  2005-09-26 11:44:30  europe\L190409
+ * Revision 1.31  2005-10-18 07:04:46  europe\L190409
+ * better handling of dynamic reply queues
+ *
+ * Revision 1.30  2005/09/26 11:44:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Jms-commit only if not XA-transacted
  *
  * Revision 1.29  2005/09/13 15:48:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -119,7 +122,7 @@ import javax.jms.*;
  * @since 4.2
  */
 public class IfsaFacade implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version = "$RCSfile: IfsaFacade.java,v $ $Revision: 1.30 $ $Date: 2005-09-26 11:44:30 $";
+	public static final String version = "$RCSfile: IfsaFacade.java,v $ $Revision: 1.31 $ $Date: 2005-10-18 07:04:46 $";
     protected Logger log = Logger.getLogger(this.getClass());
     
     private static int BASIC_ACK_MODE = Session.AUTO_ACKNOWLEDGE;
@@ -389,6 +392,10 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination, IXAEnab
 	    } 
 	
 		return getConnection().getReplyReceiver(session, sentMessage);
+	}
+
+	public void closeReplyReceiver(QueueReceiver receiver) throws IfsaException {
+		getConnection().closeReplyReceiver(receiver);
 	}
 	
 	/**
