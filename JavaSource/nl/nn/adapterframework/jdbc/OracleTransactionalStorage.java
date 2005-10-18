@@ -1,6 +1,9 @@
 /*
  * $Log: OracleTransactionalStorage.java,v $
- * Revision 1.3  2005-09-07 15:37:07  europe\L190409
+ * Revision 1.4  2005-10-18 07:18:07  europe\L190409
+ * use generic blob functions
+ *
+ * Revision 1.3  2005/09/07 15:37:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.2  2005/08/24 15:49:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -24,8 +27,9 @@ import java.sql.Statement;
 import java.sql.Timestamp;
 
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.util.JdbcUtil;
 
-import oracle.sql.BLOB;
+//import oracle.sql.BLOB;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -78,7 +82,7 @@ import org.apache.commons.lang.StringUtils;
  * @since 	4.3
  */
 public class OracleTransactionalStorage extends JdbcTransactionalStorage {
-	public static final String version = "$RCSfile: OracleTransactionalStorage.java,v $ $Revision: 1.3 $ $Date: 2005-09-07 15:37:07 $";
+	public static final String version = "$RCSfile: OracleTransactionalStorage.java,v $ $Revision: 1.4 $ $Date: 2005-10-18 07:18:07 $";
 
 	private String sequenceName="ibisstore_seq";
 		
@@ -127,7 +131,7 @@ public class OracleTransactionalStorage extends JdbcTransactionalStorage {
 						  " FOR UPDATE";
 	}
 
-	protected String storeMessageInDatabase(Connection conn, String messageId, String correlationId, Timestamp receivedDateTime, String comments, Serializable message) throws IOException, SQLException, SenderException {
+	protected String storeMessageInDatabase(Connection conn, String messageId, String correlationId, Timestamp receivedDateTime, String comments, Serializable message) throws IOException, SenderException, JdbcException, SQLException {
 		PreparedStatement stmt = null;
 		try { 
 			log.debug("preparing insert statement ["+insertQuery+"]");
@@ -154,8 +158,8 @@ public class OracleTransactionalStorage extends JdbcTransactionalStorage {
 					throw new SenderException("could not retrieve row for stored message ["+ messageId+"]");
 				}
 				String newKey = rs.getString(1);
-				BLOB blob = (BLOB)rs.getBlob(2);
-				OutputStream outstream = blob.setBinaryStream(1L);
+//				BLOB blob = (BLOB)rs.getBlob(2);
+				OutputStream outstream = JdbcUtil.getBlobUpdateOutputStream(rs,2);
 				ObjectOutputStream oos = new ObjectOutputStream(outstream);
 				oos.writeObject(message);
 				oos.close();
