@@ -1,6 +1,9 @@
 /*
  * $Log: IbisLocalSender.java,v $
- * Revision 1.6  2005-09-28 14:15:56  europe\L190409
+ * Revision 1.7  2005-10-18 07:02:55  europe\L190409
+ * better exception handling
+ *
+ * Revision 1.6  2005/09/28 14:15:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added super.configure()
  *
  * Revision 1.5  2005/09/26 11:54:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -55,7 +58,7 @@ import java.util.HashMap;
  * @since  4.2
  */
 public class IbisLocalSender extends SenderWithParametersBase {
-	public static final String version="$RCSfile: IbisLocalSender.java,v $ $Revision: 1.6 $ $Date: 2005-09-28 14:15:56 $";
+	public static final String version="$RCSfile: IbisLocalSender.java,v $ $Revision: 1.7 $ $Date: 2005-10-18 07:02:55 $";
 	
 	private String name;
 	private String serviceName;
@@ -103,12 +106,16 @@ public class IbisLocalSender extends SenderWithParametersBase {
 			}
 		}  else {
 			try {
+				JavaListener listener= JavaListener.getListener(getJavaListener());
+				if (listener==null) {
+					throw new SenderException("could not find JavaListener ["+getJavaListener()+"]");
+				}
 				if (isIsolated()) {
 					log.debug(getLogPrefix()+"calling JavaListener ["+getJavaListener()+"] in separate Thread");
 					return IsolatedServiceCaller.callServiceIsolated(getJavaListener(), correlationID, message, context, true);
 				} else {
 					log.debug(getLogPrefix()+"calling JavaListener ["+getJavaListener()+"] in same Thread");
-					return JavaListener.getListener(getJavaListener()).processRequest(correlationID,message,context);
+					return listener.processRequest(correlationID,message,context);
 				}
 			} catch (ListenerException e) {
 				throw new SenderException(getLogPrefix()+"exception calling JavaListener ["+getJavaListener()+"]",e);
