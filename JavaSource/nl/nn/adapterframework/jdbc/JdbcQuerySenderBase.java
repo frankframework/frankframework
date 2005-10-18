@@ -1,6 +1,10 @@
 /*
  * $Log: JdbcQuerySenderBase.java,v $
- * Revision 1.15  2005-09-29 13:59:49  europe\L190409
+ * Revision 1.16  2005-10-18 07:09:32  europe\L190409
+ * added updateBlob functionality
+ * added trimSpaces feature
+ *
+ * Revision 1.15  2005/09/29 13:59:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * provided attributes and handling for nullValue,columnsReturned and resultQuery
  *
  * Revision 1.14  2005/09/08 16:00:52  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -49,8 +53,6 @@
 package nl.nn.adapterframework.jdbc;
 
 import java.io.IOException;
-import java.io.OutputStream;
-import java.sql.Blob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -65,6 +67,8 @@ import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.DB2XMLWriter;
+import nl.nn.adapterframework.util.JdbcUtil;
+import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
  * This executes the query that is obtained from the (here still abstract) method getStatement.
@@ -85,11 +89,19 @@ import nl.nn.adapterframework.util.DB2XMLWriter;
  * <tr><td>{@link #setConnectionsArePooled(boolean) connectionsArePooled}</td><td>when true, it is assumed that an connectionpooling mechanism is present. Before a message is sent, a new connection is obtained, that is closed after the message is sent. When transacted is true, connectionsArePooled is true, too</td><td>true</td></tr>
  * <tr><td>{@link #setTransacted(boolean) transacted}</td><td>&nbsp;</td><td>false</td></tr>
  * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setQueryType(String) queryType}</td><td>either "select" for queries that return data, or anything else for queries that return no data.</td><td>"other"</td></tr>
+ * <tr><td>{@link #setQueryType(String) queryType}</td><td>one of:
+ * <ul><li>"select" for queries that return data</li>
+ *     <li>"updateBlob" for queries that update a BLOB</li>
+ *     <li>anything else for queries that return no data.</li>
+ * </ul></td><td>"other"</td></tr>
  * <tr><td>{@link #setMaxRows(int) maxRows}</td><td>maximum number of rows returned</td><td>0 (unlimited)</td></tr>
  * <tr><td>{@link #setStartRow(int) startRow}</td><td>the number of the first row returned from the output</td><td>1</td></tr>
  * <tr><td>{@link #setScalar(boolean) scalar}</td><td>when true, the value of the first column of the first row (or the StartRow) is returned as the only result</td><td>false</td></tr>
  * <tr><td>{@link #setSynchronous(boolean) synchronous}</td><td>&nbsp;</td><td>true</td></tr>
+ * <tr><td>{@link #setTrimSpaces(boolean) trimSpaces}</td><td>&nbsp;</td><td>true</td></tr>
+ * <tr><td>{@link #setBlobsCompressed(boolean) blobsCompressed}</td><td>controls whether blobdata is stored compressed in the database</td><td>true</td></tr>
+ * <tr><td>{@link #setResultQuery(String) resultQuery}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setColumnsReturned(String) columnsReturned}</td>comma separated list of columns whose values are to be returned. Works only if the driver implements JDBC 3.0 getGeneratedKeys()<td>&nbsp;</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * 
@@ -100,18 +112,19 @@ import nl.nn.adapterframework.util.DB2XMLWriter;
  * @since 	4.1
  */
 public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
-	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.15 $ $Date: 2005-09-29 13:59:49 $";
+	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.16 $ $Date: 2005-10-18 07:09:32 $";
 
 	private String queryType = "other";
 	private int startRow=1;
 	private int maxRows=-1; // return all rows
 	private boolean scalar=false;
 	private boolean synchronous=true;
-	private int selectForUpdateResultColumn=1;
-	private int blobColumn=2;
+	private int blobColumn=1;
 	private String nullValue="";
 	private String columnsReturned=null;
 	private String resultQuery=null;
+	private boolean trimSpaces=true;
+	private boolean blobsCompressed=true;
 	
 	protected String[] columnsReturnedList=null;
 
@@ -119,6 +132,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 
 	public void configure() throws ConfigurationException {
 		super.configure();
+		
 		if (StringUtils.isNotEmpty(getColumnsReturned())) {
 			ArrayList tempList = new ArrayList();
 			StringTokenizer st = new StringTokenizer(getColumnsReturned(),",");
@@ -131,6 +145,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 				columnsReturnedList[i]=(String)tempList.get(i);
 			}
 		}
+		
 	}
 
 	
@@ -160,7 +175,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 						ResultSet rs = statement.executeQuery(getResultQuery());
 						return getResult(rs);
 					}
-					if (columnsReturnedList!=null) {
+					if (getColumnsReturnedList()!=null) {
 						ResultSet rs = statement.getGeneratedKeys();
 						return getResult(rs);
 					}
@@ -200,6 +215,8 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 			// Create XML and give the maxlength as a parameter
 			DB2XMLWriter db2xml = new DB2XMLWriter();
 			db2xml.setNullValue(getNullValue());
+			db2xml.setTrimSpaces(isTrimSpaces());
+			db2xml.setDecompressBlobs(isBlobsCompressed());
 			result = db2xml.getXML(resultset, getMaxRows());
 		}
 		return result;
@@ -208,27 +225,25 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 
 
 	protected String executeUpdateBlobQuery(PreparedStatement statement, String message) throws SenderException{
-		ResultSet resultset=null;
+		ResultSet rs=null;
 		try {
-			resultset = statement.executeQuery();
-			String result = resultset.getString(selectForUpdateResultColumn);
-			if (resultset.wasNull()) {
-				result = null;
-			}
-			Blob blob = resultset.getBlob(blobColumn);
-			
-			OutputStream outstream = blob.setBinaryStream(1L);
-			outstream.write(message.getBytes());
-			outstream.close();
-			return result;
+			rs = statement.executeQuery();
+			XmlBuilder result=new XmlBuilder("result");
+			JdbcUtil.warningsToXml(statement.getWarnings(),result);
+			rs.next();
+			JdbcUtil.putStringAsBlob(rs, blobColumn, message,isBlobsCompressed());
+			JdbcUtil.warningsToXml(rs.getWarnings(),result);
+			return result.toXML();
 		} catch (SQLException sqle) {
 			throw new SenderException(getLogPrefix() + "got exception executing a SELECT SQL command",sqle );
+		} catch (JdbcException e) {
+			throw new SenderException(getLogPrefix() + "got exception executing a updating BLOB",e );
 		} catch (IOException e) {
 			throw new SenderException(getLogPrefix() + "got exception executing a updating BLOB",e );
 		} finally {
 			try {
-				if (resultset!=null) {
-					resultset.close();
+				if (rs!=null) {
+					rs.close();
 				}
 			} catch (SQLException e) {
 				log.warn(new SenderException(getLogPrefix() + "got exception closing resultset",e));
@@ -326,6 +341,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 	}
 
 
+
 	public void setColumnsReturned(String string) {
 		columnsReturned = string;
 	}
@@ -344,5 +360,20 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		return resultQuery;
 	}
 
+
+	public void setTrimSpaces(boolean b) {
+		trimSpaces = b;
+	}
+	public boolean isTrimSpaces() {
+		return trimSpaces;
+	}
+
+
+	public void setBlobsCompressed(boolean b) {
+		blobsCompressed = b;
+	}
+	public boolean isBlobsCompressed() {
+		return blobsCompressed;
+	}
 
 }
