@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcUtil.java,v $
- * Revision 1.7  2005-10-17 11:25:35  europe\L190409
+ * Revision 1.8  2005-10-19 11:37:48  europe\L190409
+ * removed cause from warning, due to ' unresolved compilation problems'
+ *
+ * Revision 1.7  2005/10/17 11:25:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added code to handel blobs and warnings
  *
  * Revision 1.6  2005/08/24 15:55:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -50,7 +53,7 @@ import org.apache.log4j.Logger;
  * @since   4.1
  */
 public class JdbcUtil {
-	public static final String version = "$RCSfile: JdbcUtil.java,v $ $Revision: 1.7 $ $Date: 2005-10-17 11:25:35 $";
+	public static final String version = "$RCSfile: JdbcUtil.java,v $ $Revision: 1.8 $ $Date: 2005-10-19 11:37:48 $";
 	protected static Logger log = Logger.getLogger(JdbcUtil.class);
 	
 	private static final boolean useMetaData=false;
@@ -98,7 +101,7 @@ public class JdbcUtil {
 			parent.addSubElement(warningsElem);	
 		}
 	}
-			
+				
 	public static XmlBuilder warningsToXmlBuilder(SQLWarning warnings) {	
 		if (warnings!=null) {
 			XmlBuilder warningsElem = new XmlBuilder("warnings");
@@ -107,7 +110,9 @@ public class JdbcUtil {
 				warningElem.addAttribute("errorCode",""+warnings.getErrorCode());
 				warningElem.addAttribute("sqlState",""+warnings.getSQLState());
 				String message=warnings.getMessage();
-				Throwable cause=warnings.getCause();
+/*				
+				// getCause() geeft unresolvedCompilationProblem (bij Peter Leeuwenburgh?)
+ 				Throwable cause=warnings.getCause();
 				if (cause!=null) {
 					warningElem.addAttribute("cause",cause.getClass().getName());
 					if (message==null) {
@@ -116,6 +121,7 @@ public class JdbcUtil {
 						message=message+": "+cause.getMessage();
 					}
 				}
+*/				
 				warningElem.addAttribute("message",message);
 				warningsElem.addSubElement(warningElem);
 				warnings=warnings.getNextWarning();
