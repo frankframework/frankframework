@@ -1,6 +1,10 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.26  2005-10-17 11:02:30  europe\L190409
+ * Revision 1.27  2005-10-19 09:06:59  europe\L190409
+ * added namespaceAware-parameter for stringToSourceForSingleUse
+ * added decode/unescape functions
+ *
+ * Revision 1.26  2005/10/17 11:02:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * isPrintableUnicodeChar made public
  *
  * Revision 1.25  2005/10/17 09:21:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -140,7 +144,7 @@ import java.util.StringTokenizer;
  * @author Johan Verrips IOS
  */
 public class XmlUtils {
-	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.26 $ $Date: 2005-10-17 11:02:30 $";
+	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.27 $ $Date: 2005-10-19 09:06:59 $";
 	static Logger log = Logger.getLogger(XmlUtils.class);
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
@@ -371,9 +375,17 @@ public class XmlUtils {
 		return stringToSource(xmlString,isNamespaceAwareByDefault());
 	}
 
+	public static Source stringToSourceForSingleUse(String xmlString, boolean namespaceAware) throws DomBuilderException {
+		if (namespaceAware) {
+			StringReader sr = new StringReader(xmlString);
+			return new StreamSource(sr);
+		} else {
+			return stringToSource(xmlString, false);
+		}
+	}
+
 	public static Source stringToSourceForSingleUse(String xmlString) throws DomBuilderException {
-		StringReader sr = new StringReader(xmlString);
-		return new StreamSource(sr);
+		return stringToSourceForSingleUse(xmlString,isNamespaceAwareByDefault());
 	}
 
 
@@ -421,6 +433,46 @@ public class XmlUtils {
 		}
 		return encoded.toString();
 	}
+	
+	/**
+	 * Translates the five reserved XML characters (&lt; &gt; &amp; &quot; &apos;) to their normal selves
+	 */
+	public static String decodeChars(String string) {
+		StringBuffer decoded = new StringBuffer();
+		
+		boolean inEscape=false;
+		int escapeStartPos=0;
+		
+		for (int i = 0; i < string.length(); i++) {
+			char cur=string.charAt(i);
+			if (inEscape) {
+				if ( cur == ';') {
+					inEscape=false;
+					String escapedString=string.substring(escapeStartPos,i+1);
+					char unEscape = unEscapeString(escapedString);
+					if (unEscape == 0x0) {
+						decoded.append(escapedString);
+					}
+					else {
+						decoded.append(unEscape);
+					}
+				}
+			} else {
+				if (cur == '&') {
+					inEscape=true;
+					escapeStartPos=i;
+				} else {
+					decoded.append(cur);
+				}
+			}
+		}
+		if (inEscape) {
+			decoded.append(string.substring(escapeStartPos));
+		}
+		return decoded.toString();
+	}
+
+	
 	/**
 	   * Conversion of special xml signs
 	   **/
@@ -435,10 +487,29 @@ public class XmlUtils {
 			case ('\"') :
 				return "&quot;";
 			case ('\'') :
-				return "&apos;";
+				// return "&apos;"; // apos does not work in Internet Explorer
+				return "&#39;"; 
 		}
 		return null;
 	}
+
+	private static char unEscapeString(String str) {
+		if (str.equalsIgnoreCase("&lt;"))
+			return '<';
+		else if (str.equalsIgnoreCase("&gt;"))
+			return '>';
+		else if (str.equalsIgnoreCase("&amp;"))
+			return '&';
+		else if (str.equalsIgnoreCase("&quot;"))
+			return '\"';
+		else if (str.equalsIgnoreCase("&apos;") || str.equalsIgnoreCase("&#39;"))
+			return '\'';
+		else
+			return 0x0;
+	}
+
+	
+	
 	/**
 	 * Method getChildTagAsBoolean.
 	 * Return the boolean-value of the first element with tag
