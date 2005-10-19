@@ -1,6 +1,10 @@
 /*
  * $Log: JdbcQuerySenderBase.java,v $
- * Revision 1.16  2005-10-18 07:09:32  europe\L190409
+ * Revision 1.17  2005-10-19 09:34:13  europe\L190409
+ * moved getGeneratedKeys to separate method, 
+ * to avoid compilation problems when non JDBC 3.0 drivers are used
+ *
+ * Revision 1.16  2005/10/18 07:09:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added updateBlob functionality
  * added trimSpaces feature
  *
@@ -112,7 +116,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * @since 	4.1
  */
 public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
-	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.16 $ $Date: 2005-10-18 07:09:32 $";
+	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.17 $ $Date: 2005-10-19 09:34:13 $";
 
 	private String queryType = "other";
 	private int startRow=1;
@@ -155,7 +159,9 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 	 */
 	protected abstract PreparedStatement getStatement(Connection con, String correlationID, String message) throws JdbcException, SQLException;
 
-
+	protected ResultSet getReturnedColumns(String[] columns, PreparedStatement st) throws SQLException {
+		return st.getGeneratedKeys();
+	}
 
 	protected String sendMessage(Connection connection, String correlationID, String message, ParameterResolutionContext prc) throws SenderException {
 		PreparedStatement statement=null;
@@ -176,8 +182,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 						return getResult(rs);
 					}
 					if (getColumnsReturnedList()!=null) {
-						ResultSet rs = statement.getGeneratedKeys();
-						return getResult(rs);
+						return getResult(getReturnedColumns(getColumnsReturnedList(),statement));
 					}
 					if (isScalar()) {
 						return numRowsAffected+"";
