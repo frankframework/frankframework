@@ -1,6 +1,9 @@
 /*
  * $Log: FileNameComparator.java,v $
- * Revision 1.2  2005-08-22 09:05:51  europe\L190409
+ * Revision 1.3  2005-10-20 15:21:24  europe\L190409
+ * corrected sort order of directories vs files
+ *
+ * Revision 1.2  2005/08/22 09:05:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added natural-order comparison
  *
  * Revision 1.1  2005/07/19 11:01:17  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -93,9 +96,9 @@ public class FileNameComparator implements Comparator {
 		int result;
 		if (f0.isDirectory()!=f1.isDirectory()) {
 			if (f0.isDirectory()) {
-				return 1;
+				return -1;
 			}
-			return -1;
+			return 1;
 		}
 		result = compareStringsNaturalOrder(f0.getName(),f1.getName(),false);
 		if (result!=0) {
