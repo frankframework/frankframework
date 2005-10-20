@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaConnection.java,v $
- * Revision 1.5  2005-10-18 07:04:47  europe\L190409
+ * Revision 1.6  2005-10-20 15:34:09  europe\L190409
+ * renamed JmsConnection into ConnectionBase
+ *
+ * Revision 1.5  2005/10/18 07:04:47  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * better handling of dynamic reply queues
  *
  * Revision 1.4  2005/08/31 16:29:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -35,7 +38,7 @@ import javax.jms.TemporaryQueue;
 import javax.naming.NamingException;
 
 import nl.nn.adapterframework.core.IbisException;
-import nl.nn.adapterframework.jms.JmsConnection;
+import nl.nn.adapterframework.jms.ConnectionBase;
 
 import com.ing.ifsa.IFSAContext;
 import com.ing.ifsa.IFSAQueue;
@@ -50,8 +53,8 @@ import com.ing.ifsa.IFSAQueueConnectionFactory;
  * @author Gerrit van Brakel
  * @version Id
  */
-public class IfsaConnection extends JmsConnection {
-	public static final String version="$RCSfile: IfsaConnection.java,v $ $Revision: 1.5 $ $Date: 2005-10-18 07:04:47 $";
+public class IfsaConnection extends ConnectionBase {
+	public static final String version="$RCSfile: IfsaConnection.java,v $ $Revision: 1.6 $ $Date: 2005-10-20 15:34:09 $";
 
 	protected boolean preJms22Api=false;
 	protected boolean useSingleDynamicReplyQueue=false;

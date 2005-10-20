@@ -1,6 +1,9 @@
 /*
  * $Log: ConnectionFactoryBase.java,v $
- * Revision 1.1  2005-05-03 15:59:55  L190409
+ * Revision 1.2  2005-10-20 15:34:09  europe\L190409
+ * renamed JmsConnection into ConnectionBase
+ *
+ * Revision 1.1  2005/05/03 15:59:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * rework of shared connection code
  *
  */
@@ -23,25 +26,25 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public abstract class ConnectionFactoryBase  {
-	public static final String version="$Id: ConnectionFactoryBase.java,v 1.1 2005-05-03 15:59:55 L190409 Exp $";
+	public static final String version="$Id: ConnectionFactoryBase.java,v 1.2 2005-10-20 15:34:09 europe\L190409 Exp $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	protected abstract HashMap getConnectionMap();
 	protected abstract Context createContext() throws NamingException;
 	protected abstract ConnectionFactory createConnectionFactory(Context context, String id) throws IbisException, NamingException;
 	
-	protected JmsConnection createJmsConnection(String id) throws IbisException {
+	protected ConnectionBase createJmsConnection(String id) throws IbisException {
 		Context context = getContext();
 		ConnectionFactory connectionFactory = getConnectionFactory(context, id); 
-		return new JmsConnection(id, context, connectionFactory, getConnectionMap());
+		return new ConnectionBase(id, context, connectionFactory, getConnectionMap());
 	}
 	
-	public JmsConnection getConnection(String id) throws IbisException {
+	public ConnectionBase getConnection(String id) throws IbisException {
 		HashMap connectionMap = getConnectionMap();
-		JmsConnection result = (JmsConnection)connectionMap.get(id);
+		ConnectionBase result = (ConnectionBase)connectionMap.get(id);
 		if (result == null) {
 			synchronized (this) {
-				result = (JmsConnection)connectionMap.get(id);
+				result = (ConnectionBase)connectionMap.get(id);
 				if (result == null) {
 					result = createJmsConnection(id);
 					log.debug("created new Connection-object for ["+id+"]");
