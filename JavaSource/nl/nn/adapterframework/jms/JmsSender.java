@@ -1,6 +1,10 @@
 /*
  * $Log: JmsSender.java,v $
- * Revision 1.18  2005-09-13 15:40:34  europe\L190409
+ * Revision 1.19  2005-10-20 15:44:50  europe\L190409
+ * modified JMS-classes to use shared connections
+ * open()/close() became openFacade()/closeFacade()
+ *
+ * Revision 1.18  2005/09/13 15:40:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * log exceptions on closing the sender
  *
  * Revision 1.17  2005/08/02 07:13:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -90,13 +94,13 @@ import javax.jms.Message;
  * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
- * @version Id
- *
+ * 
  * @author Gerrit van Brakel
+ * @version Id
  */
 
 public class JmsSender extends JMSFacade implements ISenderWithParameters, IPostboxSender {
-	public static final String version="$RCSfile: JmsSender.java,v $ $Revision: 1.18 $ $Date: 2005-09-13 15:40:34 $";
+	public static final String version="$RCSfile: JmsSender.java,v $ $Revision: 1.19 $ $Date: 2005-10-20 15:44:50 $";
 	private String replyToName = null;
 	private int deliveryMode = 0;
 	private String messageType = null;
@@ -105,8 +109,14 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 	
 	protected ParameterList paramList = null;
 
-	public JmsSender() {
-		super();
+	/**
+	 * Configures the sender
+	 */
+	public void configure() throws ConfigurationException {
+		if (paramList!=null) {
+			paramList.configure();
+		}
+		super.configure();
 	}
 
 	/**
@@ -114,7 +124,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 	 */
 	public void open() throws SenderException {
 		try {
-			super.open();
+			openFacade();
 		}
 		catch (Exception e) {
 			throw new SenderException(e);
@@ -126,7 +136,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 	 */
 	public void close() throws SenderException {
 		try {
-			super.close();
+			closeFacade();
 		}
 		catch (Throwable e) {
 			throw new SenderException("JmsMessageSender [" + getName() + "] " + "got error occured stopping sender", e);
@@ -140,14 +150,6 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 		paramList.add(p);
 	}
 
-	/**
-	 * Configures the sender
-	 */
-	public void configure() throws ConfigurationException {
-		if (paramList!=null) {
-			paramList.configure();
-		}
-	}
 
 	public boolean isSynchronous() {
 		return false;

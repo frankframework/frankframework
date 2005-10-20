@@ -1,6 +1,10 @@
 /*
  * $Log: JmsTransactionalStorage.java,v $
- * Revision 1.5  2005-08-04 15:40:30  europe\L190409
+ * Revision 1.6  2005-10-20 15:44:51  europe\L190409
+ * modified JMS-classes to use shared connections
+ * open()/close() became openFacade()/closeFacade()
+ *
+ * Revision 1.5  2005/08/04 15:40:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fixed slotId code
  *
  * Revision 1.4  2005/07/28 07:38:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -50,7 +54,7 @@ import nl.nn.adapterframework.core.SenderException;
  * @since   4.1
  */
 public class JmsTransactionalStorage extends JmsMessageBrowser implements ITransactionalStorage {
-	public static final String version = "$RCSfile: JmsTransactionalStorage.java,v $ $Revision: 1.5 $ $Date: 2005-08-04 15:40:30 $";
+	public static final String version = "$RCSfile: JmsTransactionalStorage.java,v $ $Revision: 1.6 $ $Date: 2005-10-20 15:44:51 $";
 
 	private String slotId=null;
 
@@ -66,7 +70,7 @@ public class JmsTransactionalStorage extends JmsMessageBrowser implements ITrans
 	
 	public void open() throws ListenerException {
 		try {
-			super.open();
+			super.openFacade();
 		} catch (Exception e) {
 			throw new ListenerException(e);
 		}
@@ -74,7 +78,7 @@ public class JmsTransactionalStorage extends JmsMessageBrowser implements ITrans
 	
 	public void close() throws ListenerException {
 		try {
-			super.close();
+			closeFacade();
 		} catch (Exception e) {
 			throw new ListenerException(e);
 		}

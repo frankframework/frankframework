@@ -1,6 +1,10 @@
 /*
  * $Log: JMSFacade.java,v $
- * Revision 1.20  2005-08-02 06:49:17  europe\L190409
+ * Revision 1.21  2005-10-20 15:44:49  europe\L190409
+ * modified JMS-classes to use shared connections
+ * open()/close() became openFacade()/closeFacade()
+ *
+ * Revision 1.20  2005/08/02 06:49:17  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * deliveryMode to String and vv
  * method to send to (reply) destination with msgtype, priority and timetolive
  *
@@ -53,6 +57,7 @@
  */
 package nl.nn.adapterframework.jms;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IXAEnabled;
 import nl.nn.adapterframework.core.IbisException;
@@ -63,6 +68,8 @@ import com.ibm.mq.jms.MQQueue;
 import nl.nn.adapterframework.core.INamedObject;
 import javax.jms.*;
 import javax.naming.NamingException;
+
+import org.apache.commons.lang.StringUtils;
 
 
 /**
@@ -88,12 +95,11 @@ import javax.naming.NamingException;
  * </table>
  * </p>
  *
- * @author Gerrit van Brakel
+ * @author 	Gerrit van Brakel
  * @version Id
- * @author    Gerrit van Brakel
  */
 public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version="$RCSfile: JMSFacade.java,v $ $Revision: 1.20 $ $Date: 2005-08-02 06:49:17 $";
+	public static final String version="$RCSfile: JMSFacade.java,v $ $Revision: 1.21 $ $Date: 2005-10-20 15:44:49 $";
 
 	public static final String MODE_PERSISTENT="PERSISTENT";
 	public static final String MODE_NON_PERSISTENT="NON_PERSISTENT";
@@ -112,7 +118,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 
     private String destinationType="QUEUE"; // QUEUE or TOPIC
 
-    private Connection connection;
+    private JmsConnection connection;
     private Destination destination;
 
 
@@ -129,13 +135,13 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
     //---------------------------------------------------------------------
     private String queueConnectionFactoryName;
 	private String queueConnectionFactoryNameXA;
-    private QueueConnectionFactory queueConnectionFactory = null;
+//    private QueueConnectionFactory queueConnectionFactory = null;
     //---------------------------------------------------------------------
     // Topic fields
     //---------------------------------------------------------------------
     private String topicConnectionFactoryName;
 	private String topicConnectionFactoryNameXA;
-    private TopicConnectionFactory topicConnectionFactory = null;
+//    private TopicConnectionFactory topicConnectionFactory = null;
 
 	//the MessageSelector will provide filter functionality, as specified
 	//javax.jms.Message.
@@ -180,13 +186,21 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	 * @return                                   The queueConnectionFactory value
 	 * @exception  javax.naming.NamingException  Description of the Exception
 	 */
+	
+	
+/*	
 	private QueueConnectionFactory getQueueConnectionFactory()
 		throws NamingException {
 		if (null == queueConnectionFactory) {
 			String qcfName = isTransacted() ? getQueueConnectionFactoryNameXA() : getQueueConnectionFactoryName();
+			if (StringUtils.isEmpty(qcfName)) {
+				throw new NamingException("no queueConnectionFactoryName specified");
+			}
 			log.debug("["+name+"] searching for queueConnectionFactory [" + qcfName + "]");
-			queueConnectionFactory =
-				(QueueConnectionFactory) getContext().lookup(qcfName);
+			queueConnectionFactory = (QueueConnectionFactory) getContext().lookup(qcfName);
+			if (queueConnectionFactory==null) {
+				throw new NamingException("cannot get queueConnectionFactory from ["+qcfName+"]");
+			}
 			log.info("["+name+"] queueConnectionFactory [" + qcfName + "] found: [" + queueConnectionFactory + "]");
 		}
 		return queueConnectionFactory;
@@ -195,17 +209,23 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 		throws NamingException, JMSException {
 		if (null == topicConnectionFactory) {
 			String tcfName = isTransacted() ? getTopicConnectionFactoryNameXA() : getTopicConnectionFactoryName();
+			if (StringUtils.isEmpty(tcfName)) {
+				throw new NamingException("no topicConnectionFactoryName specified");
+			}
 			log.debug("["+name+"] searching for topicConnectionFactory [" + tcfName + "]");
-			topicConnectionFactory =
-				(TopicConnectionFactory) getContext().lookup(tcfName);
+			topicConnectionFactory = (TopicConnectionFactory) getContext().lookup(tcfName);
+			if (topicConnectionFactory==null) {
+				throw new NamingException("cannot get TopicConnectionFactory from ["+tcfName+"]");
+			}
 			log.info("["+name+"] topicConnectionFactory [" + tcfName + "] found: [" + topicConnectionFactory + "]");
 		}
 		return topicConnectionFactory;
 	}
-
+*/
 	/**
 	 * Returns a connection for a topic or a queue
 	 */
+/*	
 	protected Connection getConnection() throws NamingException, JMSException {
 		boolean initialized = false;
 		synchronized(this) {
@@ -223,7 +243,42 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 			connection.start();
 		return connection;
 	}
-    
+*/
+	private String getConnectionFactoryName() {
+		String result;
+		if (useTopicFunctions) {
+			result = isTransacted() ? getTopicConnectionFactoryNameXA() : getTopicConnectionFactoryName();
+		}
+		else {
+			result = isTransacted() ? getQueueConnectionFactoryNameXA() : getQueueConnectionFactoryName();
+		}
+		log.debug("["+name+"] returning ConnectionFactoryName ["+result+"]");
+		return result;
+	}
+	
+	protected JmsConnection getConnection() throws JmsException {
+		if (connection == null) {
+			synchronized (this) {
+				if (connection == null) {
+					log.debug("instantiating JmsConnectionFactory");
+					JmsConnectionFactory jmsConnectionFactory = new JmsConnectionFactory();
+					try {
+						String connectionFactoryName = getConnectionFactoryName();
+						log.debug("creating JmsConnection");
+						connection = (JmsConnection)jmsConnectionFactory.getConnection(connectionFactoryName);
+					} catch (IbisException e) {
+						if (e instanceof JmsException) {
+							throw (JmsException)e;
+						}
+						throw new JmsException(e);
+					}
+				}
+			}
+		}
+		return connection;
+	}
+
+   
 	/**
 	 *  Gets the queueSession 
 	 *
@@ -232,6 +287,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	 * @exception  javax.naming.NamingException
 	 * @exception  javax.jms.JMSException
 	 */
+/*
 	private QueueSession createQueueSession(QueueConnection connection)
 		throws NamingException, JMSException {
 		return connection.createQueueSession(isJmsTransacted(), getAckMode());
@@ -240,39 +296,81 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 		throws NamingException, JMSException {
 		return connection.createTopicSession(isJmsTransacted(), getAckMode());
 	}
+*/	
 	/**
 	 * Returns a session on the connection for a topic or a queue
 	 */
-	public Session createSession() throws NamingException, JMSException {
-		if (useTopicFunctions)
+	public Session createSession() throws JmsException {
+		try {
+			return getConnection().createSession(isJmsTransacted(), getAckMode());
+		} catch (IbisException e) {
+			if (e instanceof JmsException) {
+				throw (JmsException)e;
+			}
+			throw new JmsException(e);
+		}		
+/*		if (useTopicFunctions)
 			return createTopicSession((TopicConnection)getConnection());
 		else
 			return createQueueSession((QueueConnection)getConnection());
+*/			
 	}
 
-	public void open() throws IbisException {
-		try {
-			connection = getConnection();
-			destination = getDestination();
-		} catch (Exception e) {
-			throw new IbisException(e);
+	public void configure() throws ConfigurationException {
+		if (StringUtils.isEmpty(getDestinationName())) {
+			throw new ConfigurationException("destinationName must be specified");
+		}
+		if (StringUtils.isEmpty(getDestinationType())) {
+			throw new ConfigurationException("destinationType must be specified");
 		}
 	}
-	   
-	public synchronized void close() throws IbisException {
+
+	protected void cleanUpAfterException() {
+		try {
+			closeFacade();
+		} catch (JmsException e) {
+			log.warn("exception closing ifsaConnection after previous exception, current:",e);
+		}
+	}
+
+	/** 
+	 * Prepares object for communication on the IFSA bus.
+	 * Obtains a connection and a serviceQueue.
+	 */
+	public void openFacade() throws JmsException {
+		try {
+			getConnection();   // obtain and cache connection, then start it.
+			destination = getDestination();
+		} catch (Exception e) {
+			cleanUpAfterException();
+			throw new JmsException(e);
+		}
+	}
+	/** 
+	 * Stops communication on the IFSA bus.
+	 * Releases references to serviceQueue and connection.
+	 */
+	public void closeFacade() throws JmsException {
 		try {
 			if (connection != null) {
-				log.debug("closing connection " + connection);
-				connection.close();
+				try {
+					connection.close();
+				} catch (IbisException e) {
+					if (e instanceof JmsException) {
+						throw (JmsException)e;
+					}
+					throw new JmsException(e);
+				}
+				log.debug("closed connection");
 			}
-		} catch (JMSException e) {
-			throw new IbisException(e);
 		} finally {
+			// make sure all objects are reset, to be able to restart after IFSA parameters have changed (e.g. at iterative installation time)
 			destination = null;
 			connection = null;
 		}
 	}
-	
+
+	   	
 	
 	public TextMessage createTextMessage(Session session, String correlationID, String message)
 	   throws javax.naming.NamingException, JMSException {
@@ -304,14 +402,22 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
  
     }
 
-	public Destination getDestination() throws NamingException, JMSException {
+	public Destination getDestination() throws NamingException, JMSException, JmsException, IbisException  {
 	
 	    if (destination == null) {
+	    	String destinationName = getDestinationName();
+	    	if (StringUtils.isEmpty(destinationName)) {
+	    		throw new NamingException("no destinationName specified");
+	    	}
 		    if (!useTopicFunctions || getPersistent()) {
-		        destination = getDestination(getDestinationName());
+		        destination = getDestination(destinationName);
 		    } else {
-		        destination = createTopicSession((TopicConnection) getConnection()).createTopic(
-		            getDestinationName());
+		    	TopicSession session = (TopicSession)createSession();
+		        destination = session.createTopic(destinationName);
+		        session.close();
+		    }
+		    if (destination==null) {
+		    	throw new NamingException("cannot get Destination from ["+destinationName+"]");
 		    }
 	    }
 	    return destination;
@@ -322,10 +428,9 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
      * @return javax.jms.Destination
      * @throws javax.naming.NamingException
      */
-    public Destination getDestination(String destinationName) throws javax.naming.NamingException {
-        Destination dest=null;
-        dest=(Destination) getContext().lookup(destinationName);
-        return dest;
+    
+    public Destination getDestination(String destinationName) throws JmsException, NamingException {
+    	return getConnection().lookupDestination(destinationName);
     }
 
 	/**
@@ -844,6 +949,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	/**
 	 * Create a browser session
 	 */
+/*	
 	public QueueSession getQueueBrowserSession()
 		   throws javax.naming.NamingException, JMSException {
 		   	QueueSession browserSession=null;
@@ -854,6 +960,6 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 				   "["+name+"] got browserSession");
 		   return browserSession;
    }
-
+*/
 
 }

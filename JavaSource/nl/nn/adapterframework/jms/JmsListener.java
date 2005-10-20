@@ -1,6 +1,10 @@
 /*
  * $Log: JmsListener.java,v $
- * Revision 1.15  2005-08-02 07:13:37  europe\L190409
+ * Revision 1.16  2005-10-20 15:44:50  europe\L190409
+ * modified JMS-classes to use shared connections
+ * open()/close() became openFacade()/closeFacade()
+ *
+ * Revision 1.15  2005/08/02 07:13:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.14  2005/08/02 06:51:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -125,7 +129,7 @@ import java.util.HashMap;
  * @since 4.0.1
  */
 public class JmsListener extends JMSFacade implements IPostboxListener, ICorrelatedPullingListener, HasSender {
-	public static final String version="$RCSfile: JmsListener.java,v $ $Revision: 1.15 $ $Date: 2005-08-02 07:13:37 $";
+	public static final String version="$RCSfile: JmsListener.java,v $ $Revision: 1.16 $ $Date: 2005-10-20 15:44:50 $";
 
 	private final static String THREAD_CONTEXT_SESSION_KEY="session";
 	private final static String THREAD_CONTEXT_MESSAGECONSUMER_KEY="messageConsumer";
@@ -226,10 +230,18 @@ public class JmsListener extends JMSFacade implements IPostboxListener, ICorrela
 	        throw new ListenerException(e);
 	    }
 	}
+
+	public void configure() throws ConfigurationException {
+		super.configure();
+		ISender sender = getSender();
+		if (sender != null) {
+			sender.configure();
+		}
+	}
 	
 	public void open() throws ListenerException {
 		try {
-			super.open();
+			openFacade();
 		} catch (Exception e) {
 			throw new ListenerException("error opening listener [" + getName() + "]", e);
 		}
@@ -263,7 +275,7 @@ public class JmsListener extends JMSFacade implements IPostboxListener, ICorrela
 	
 	public void close() throws ListenerException {
 	    try {
-		    super.close();
+		    closeFacade();
 	
 	        if (sender != null) {
 	            sender.close();
@@ -288,13 +300,6 @@ public class JmsListener extends JMSFacade implements IPostboxListener, ICorrela
 			}
 	    } catch (Exception e) {
 	        throw new ListenerException("exception in [" + getName() + "]", e);
-	    }
-	}
-	
-	public void configure() throws ConfigurationException {
-	    ISender sender = getSender();
-	    if (sender != null) {
-	        sender.configure();
 	    }
 	}
 	
