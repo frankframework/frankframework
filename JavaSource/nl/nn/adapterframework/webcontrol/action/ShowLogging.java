@@ -1,7 +1,15 @@
+/*
+ * $Log: ShowLogging.java,v $
+ * Revision 1.4  2005-10-20 15:28:07  europe\L190409
+ * added option to show directories
+ *
+ */
 package nl.nn.adapterframework.webcontrol.action;
 
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.Dir2Xml;
+
+import org.apache.commons.lang.StringUtils;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
@@ -10,6 +18,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+
 /**
  * Shows the logging files.
  * <p>Retrieves the values <code>logging.path</code>
@@ -27,41 +36,46 @@ import java.io.IOException;
  * @author Johan Verrips IOS
  */
 public class ShowLogging extends ActionBase {
-	public static final String version="$Id: ShowLogging.java,v 1.3 2004-03-26 10:42:57 NNVZNL01#L180564 Exp $";
+	public static final String version="$RCSfile: ShowLogging.java,v $ $Revision: 1.4 $ $Date: 2005-10-20 15:28:07 $";
 	
-public ActionForward execute(
-    ActionMapping mapping,
-    ActionForm form,
-    HttpServletRequest request,
-    HttpServletResponse response)
-    throws IOException, ServletException {
-
-    // Initialize action
-    initAction(request);
-    // Retrieve logging directory for browsing
-	String path=AppConstants.getInstance().getResolvedProperty("logging.path");
-	String wildcard=AppConstants.getInstance().getProperty("logging.wildcard");
-    Dir2Xml dx=new Dir2Xml();
-    dx.setPath(path);
-    if (wildcard!=null) dx.setWildCard(wildcard);
-    String listresult;
-    try {
-	    listresult=dx.getDirList();
-    } catch (Exception e) {
-	    log.error("probably a misdefinition in property logging.path", e);
-	    log.warn("returning empty result for directory listing");
-	    listresult="<directory/>";
-    }
-    request.setAttribute("Dir2Xml", listresult);
-
-
-  // Report any errors we have discovered back to the original form
-    if (!errors.isEmpty()) {
-        saveErrors(request, errors);
-    }
-    // Forward control to the specified success URI
-    log.debug("forward to success");
-    return (mapping.findForward("success"));
-
-}
+	boolean showDirectories = AppConstants.getInstance().getBoolean("logging.showdirectories", false);
+	
+	public ActionForward execute(
+	    ActionMapping mapping,
+	    ActionForm form,
+	    HttpServletRequest request,
+	    HttpServletResponse response)
+	    throws IOException, ServletException {
+	
+	    // Initialize action
+	    initAction(request);
+	    // Retrieve logging directory for browsing
+	    String path=request.getParameter("directory");
+	    if (StringUtils.isEmpty(path)) {
+			path=AppConstants.getInstance().getResolvedProperty("logging.path");
+	    }
+		String wildcard=AppConstants.getInstance().getProperty("logging.wildcard");
+	    Dir2Xml dx=new Dir2Xml();
+	    dx.setPath(path);
+	    if (wildcard!=null) dx.setWildCard(wildcard);
+	    String listresult;
+	    try {
+		    listresult=dx.getDirList(showDirectories);
+	    } catch (Exception e) {
+		    log.error("probably a misdefinition in property logging.path", e);
+		    log.warn("returning empty result for directory listing");
+		    listresult="<directory/>";
+	    }
+	    request.setAttribute("Dir2Xml", listresult);
+	
+	
+	  // Report any errors we have discovered back to the original form
+	    if (!errors.isEmpty()) {
+	        saveErrors(request, errors);
+	    }
+	    // Forward control to the specified success URI
+	    log.debug("forward to success");
+	    return (mapping.findForward("success"));
+	
+	}
 }
