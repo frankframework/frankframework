@@ -1,6 +1,9 @@
 /*
  * $Log: ConnectionFactoryBase.java,v $
- * Revision 1.2  2005-10-20 15:34:09  europe\L190409
+ * Revision 1.3  2005-10-20 15:35:25  europe\L190409
+ * corrected version String
+ *
+ * Revision 1.2  2005/10/20 15:34:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * renamed JmsConnection into ConnectionBase
  *
  * Revision 1.1  2005/05/03 15:59:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -26,7 +29,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public abstract class ConnectionFactoryBase  {
-	public static final String version="$Id: ConnectionFactoryBase.java,v 1.2 2005-10-20 15:34:09 europe\L190409 Exp $";
+	public static final String version="$RCSfile: ConnectionFactoryBase.java,v $ $Revision: 1.3 $ $Date: 2005-10-20 15:35:25 $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	protected abstract HashMap getConnectionMap();
