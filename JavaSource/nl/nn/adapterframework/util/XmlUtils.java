@@ -1,6 +1,9 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.27  2005-10-19 09:06:59  europe\L190409
+ * Revision 1.28  2005-10-24 09:26:12  europe\L190409
+ * uncapped xml.namespaceAware.default
+ *
+ * Revision 1.27  2005/10/19 09:06:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added namespaceAware-parameter for stringToSourceForSingleUse
  * added decode/unescape functions
  *
@@ -144,14 +147,14 @@ import java.util.StringTokenizer;
  * @author Johan Verrips IOS
  */
 public class XmlUtils {
-	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.27 $ $Date: 2005-10-19 09:06:59 $";
+	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.28 $ $Date: 2005-10-24 09:26:12 $";
 	static Logger log = Logger.getLogger(XmlUtils.class);
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
 	static final String JAXP_SCHEMA_LANGUAGE = "http://java.sun.com/xml/jaxp/properties/schemaLanguage";
 	static final String JAXP_SCHEMA_SOURCE =   "http://java.sun.com/xml/jaxp/properties/schemaSource";
 
-	public static final String NAMESPACE_AWARE_BY_DEFAULT_KEY = "XML.NamespaceAware.default";
+	public static final String NAMESPACE_AWARE_BY_DEFAULT_KEY = "xml.namespaceAware.default";
 
 	public final static String OPEN_FROM_FILE = "file";
 	public final static String OPEN_FROM_URL = "url";
