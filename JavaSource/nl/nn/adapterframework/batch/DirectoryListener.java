@@ -1,6 +1,10 @@
 /*
  * $Log: DirectoryListener.java,v $
- * Revision 1.1  2005-10-11 13:00:21  europe\m00f531
+ * Revision 1.2  2005-10-24 09:59:22  europe\m00f531
+ * Add support for pattern parameters, and include them into several listeners,
+ * senders and pipes that are file related
+ *
+ * Revision 1.1  2005/10/11 13:00:21  John Dekker <john.dekker@ibissource.org>
  * New ibis file related elements, such as DirectoryListener, MoveFilePie and 
  * BatchFileTransformerPipe
  *
@@ -16,6 +20,7 @@ import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.util.FileUtils;
 
 import org.apache.commons.lang.StringUtils;
@@ -47,7 +52,7 @@ import org.apache.log4j.Logger;
  * @author  John Dekker
  */
 public class DirectoryListener implements IPullingListener, INamedObject {
-	public static final String version = "$RCSfile: DirectoryListener.java,v $  $Revision: 1.1 $ $Date: 2005-10-11 13:00:21 $";
+	public static final String version = "$RCSfile: DirectoryListener.java,v $  $Revision: 1.2 $ $Date: 2005-10-24 09:59:22 $";
 
 	protected Logger log = Logger.getLogger(this.getClass());
 	private String name;
@@ -68,12 +73,12 @@ public class DirectoryListener implements IPullingListener, INamedObject {
 	 * @return String with the name of the (renamed and moved) file
 	 * 
 	 */
-	protected String archiveFile(File file) throws ListenerException {
+	protected String archiveFile(PipeLineSession session, File file) throws ListenerException {
 		// Move file to new directory
 		String newFilename = null;
 		
 		try {
-			File rename2 = new File(getOutputDirectory(), FileUtils.getFilename(file, outputFilenamePattern, true));
+			File rename2 = new File(getOutputDirectory(), FileUtils.getFilename(null, session, file, outputFilenamePattern));
 			newFilename = FileUtils.moveFile(file, rename2, numberOfAttempts, waitBeforeRetry);
 
 			if (newFilename == null) {
@@ -155,11 +160,18 @@ public class DirectoryListener implements IPullingListener, INamedObject {
 		catch (IOException e) {
 			throw new ListenerException("Error while gettin canonical path", e);
 		}
-		String inprocessFile = archiveFile(inputFile);
+		String inprocessFile = archiveFile(getSession(threadContext), inputFile);
 		if (inprocessFile == null) { // moving was unsuccessful, probably becausing writing was not finished
 			return waitAWhile();
 		}
 		return inprocessFile;
+	}
+	
+	private PipeLineSession getSession(HashMap threadContext) {
+		PipeLineSession session = new PipeLineSession();
+		if(threadContext != null)
+			session.putAll(threadContext);
+		return session;
 	}
 
 	private Object waitAWhile() throws ListenerException {

@@ -1,6 +1,10 @@
 /*
  * $Log: Parameter.java,v $
- * Revision 1.14  2005-10-17 11:43:34  europe\L190409
+ * Revision 1.15  2005-10-24 09:59:24  europe\m00f531
+ * Add support for pattern parameters, and include them into several listeners,
+ * senders and pipes that are file related
+ *
+ * Revision 1.14  2005/10/17 11:43:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * namespace-awareness configurable
  *
  * Revision 1.13  2005/08/11 14:57:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -52,20 +56,25 @@ package nl.nn.adapterframework.parameters;
 
 import java.io.IOException;
 import java.net.URL;
+import java.text.MessageFormat;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Date;
 
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerConfigurationException;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IWithParameters;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 
 /**
  * Generic parameter definition.
@@ -86,6 +95,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <tr><td>{@link #setXpathExpression(String) xpathExpression}</td><td>The xpath expression. </td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setStyleSheetName(String) styleSheetName}</td><td>Reference to a respirce with the stylesheet</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDefaultValue(String) defaultValue}</td><td>If the result of sessionKey, XpathExpressen and/or Stylesheet returns null or an empty String, this value is returned</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setPattern(String) pattern}</td><td>Value of parameter is determined using substitution and formating. If fname is a parameter or session variable that resolves to Eric, then the pattern 'Hi {fname}, hoe gaat het?' resolves to 'Hi Eric, hoe gaat het?' </td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * Examples:
@@ -112,14 +122,15 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author Richard Punt / Gerrit van Brakel
  */
 public class Parameter implements INamedObject, IWithParameters {
-	public static final String version="$RCSfile: Parameter.java,v $ $Revision: 1.14 $ $Date: 2005-10-17 11:43:34 $";
+	public static final String version="$RCSfile: Parameter.java,v $ $Revision: 1.15 $ $Date: 2005-10-24 09:59:24 $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	private String name = null;
 	private String type = null;
 	private String sessionKey = null;
 	private String xpathExpression = null; 
-	private String styleSheetName = null; 
+	private String styleSheetName = null;
+	private String pattern = null; 
 	private String defaultValue = null;
 
 	private TransformerPool transformerPool = null;
@@ -177,7 +188,7 @@ public class Parameter implements INamedObject, IWithParameters {
 	 * @return the raw value as object
 	 * @throws IbisException
 	 */
-	public Object getValue(ParameterResolutionContext prc) throws ParameterException {
+	Object getValue(ParameterValueList alreadyResolvedParameters, ParameterResolutionContext prc) throws ParameterException {
 		Object result = null;
 		log.debug("Calculating value for Parameter ["+getName()+"]");
 		if (!configured) {
@@ -197,6 +208,14 @@ public class Parameter implements INamedObject, IWithParameters {
 					} else {
 						log.debug("Parameter ["+getName()+"] sessionvariable ["+getSessionKey()+"] empty, no transformation will be performed");
 					}
+				} else if (StringUtils.isNotEmpty(getPattern())) {
+					String source = format(alreadyResolvedParameters, prc);
+					if (StringUtils.isNotEmpty(source)) {
+						log.debug("Parameter ["+getName()+"] using pattern ["+getPattern()+"] as source for transformation");
+						transformResult = pool.transform(source,null);
+					} else {
+						log.debug("Parameter ["+getName()+"] pattern ["+getPattern()+"] empty, no transformation will be performed");
+					}
 				} else {
 					transformResult = pool.transform(prc.getInputSource(),prc.getValueMap(paramList));
 				}
@@ -209,6 +228,8 @@ public class Parameter implements INamedObject, IWithParameters {
 		} else {
 			if (StringUtils.isNotEmpty(getSessionKey())) {
 				result=prc.getSession().get(getSessionKey());
+			} else if (StringUtils.isNotEmpty(getPattern())) {
+				result=format(alreadyResolvedParameters, prc); 								
 			} else {
 				result=prc.getInput();
 			}
@@ -222,6 +243,63 @@ public class Parameter implements INamedObject, IWithParameters {
 		return getDefaultValue(); 
 	}
 
+	private String format(ParameterValueList alreadyResolvedParameters, ParameterResolutionContext prc) throws ParameterException {
+		int startNdx = -1;
+		int endNdx = 0;
+
+		// replace the named parameter with numbered parameters
+		StringBuffer formatPattern = new StringBuffer();
+		ArrayList params = new ArrayList();
+		int paramPosition = 0;
+		while(endNdx != -1) {
+			// get name of parameter in pattern to be substituted 
+			startNdx = pattern.indexOf("{", endNdx);
+			if (startNdx == -1) {
+				formatPattern.append(pattern.substring(endNdx));
+				break;
+			}
+			else if (endNdx != -1) {
+				formatPattern.append(pattern.substring(endNdx, startNdx));
+			}
+			int tmpEndNdx = pattern.indexOf("}", startNdx);
+			endNdx = pattern.indexOf(",", startNdx);
+			if (endNdx == -1 || endNdx > tmpEndNdx) {
+				endNdx = tmpEndNdx;
+			}
+			if (endNdx == -1) {
+				throw new ParameterException(new ParseException("Bracket is not closed", startNdx));
+			}
+			String substitutionName = pattern.substring(startNdx + 1, endNdx);
+			
+			// get value
+			Object substitutionValue = getValueForFormatting(alreadyResolvedParameters, prc, substitutionName);
+			params.add(substitutionValue);
+			formatPattern.append('{').append(paramPosition++);
+		}
+		
+		return MessageFormat.format(formatPattern.toString(), params.toArray());
+	}
+	
+	private Object getValueForFormatting(ParameterValueList alreadyResolvedParameters, ParameterResolutionContext prc, String name) throws ParameterException {
+		ParameterValue paramValue = alreadyResolvedParameters.getParameterValue(name);
+		Object substitutionValue = paramValue == null ? null : paramValue.getValue();
+		  
+		if (substitutionValue == null) {
+			substitutionValue = prc.getSession().get(name);
+		}
+		if (substitutionValue == null) {
+			if ("now".equals(name.toLowerCase())) {
+				substitutionValue = new Date();
+			}
+			else if ("uid".equals(name.toLowerCase())) {
+				substitutionValue = Misc.createSimpleUUID();
+			}
+		}
+		if (substitutionValue == null) {
+			throw new ParameterException("Parameter with name [" + name + "] in pattern" + pattern + " can not be resolved");
+		}
+		return substitutionValue;		
+	}
 
 	public void setName(String parameterName) {
 		name = parameterName;
@@ -289,6 +367,20 @@ public class Parameter implements INamedObject, IWithParameters {
 	 */
 	public void setStyleSheetName(String stylesheetName){
 		this.styleSheetName=stylesheetName;
+	}
+
+	/**
+	 * @return
+	 */
+	public String getPattern() {
+		return pattern;
+	}
+
+	/**
+	 * @param string with pattern to be used, follows MessageFormat syntax with named parameters
+	 */
+	public void setPattern(String string) {
+		pattern = string;
 	}
 
 }

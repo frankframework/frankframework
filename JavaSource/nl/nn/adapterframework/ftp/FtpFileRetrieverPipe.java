@@ -1,6 +1,10 @@
 /*
  * $Log: FtpFileRetrieverPipe.java,v $
- * Revision 1.2  2005-10-17 12:21:21  europe\m00f531
+ * Revision 1.3  2005-10-24 09:59:18  europe\m00f531
+ * Add support for pattern parameters, and include them into several listeners,
+ * senders and pipes that are file related
+ *
+ * Revision 1.2  2005/10/17 12:21:21  John Dekker <john.dekker@ibissource.org>
  * *** empty log message ***
  *
  * Revision 1.1  2005/10/11 13:03:29  John Dekker <john.dekker@ibissource.org>
@@ -45,19 +49,21 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setAllowSelfSignedCertificates(boolean) allowSelfSignedCertificates}</td><td>if true, the server certificate can be self signed</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setProtP(boolean) protP}</td><td>if true, the server returns data via another socket</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMessageIsContent(boolean) messageIsContent}</td><td>if true, the received ftp contents is put in the message, otherwise it is put in locally created files</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #deleteAfterGet(boolean) deleteAfterGet}</td><td>if true, the remote file is deleted after it is retrieved</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * 
  * @author: John Dekker
  */
 public class FtpFileRetrieverPipe extends FixedForwardPipe {
-	public static final String version = "$RCSfile: FtpFileRetrieverPipe.java,v $  $Revision: 1.2 $ $Date: 2005-10-17 12:21:21 $";
+	public static final String version = "$RCSfile: FtpFileRetrieverPipe.java,v $  $Revision: 1.3 $ $Date: 2005-10-24 09:59:18 $";
 
 	private String name;
 	private String failureForward;
 	private String localFilenamePattern;
 	private String localDirectory;
 	private String remoteDirectory;
+	private boolean deleteAfterGet;
 	private FtpSession ftpSession;
 	
 	public FtpFileRetrieverPipe() {
@@ -93,7 +99,9 @@ public class FtpFileRetrieverPipe extends FixedForwardPipe {
 	public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRunException {
 		String orgFilename = (String)input;
 		try {
-			String localFilename = ftpSession.get(localDirectory, remoteDirectory, orgFilename, localFilenamePattern, true);
+			boolean close = ! deleteAfterGet;
+			String localFilename = ftpSession.get(getParameterList(), session, localDirectory, remoteDirectory, orgFilename, localFilenamePattern, close);
+			ftpSession.deleteRemote(remoteDirectory, orgFilename, true);
 			return new PipeRunResult(getForward(), localFilename);
 		}
 		catch(IOException e) {
@@ -234,6 +242,14 @@ public class FtpFileRetrieverPipe extends FixedForwardPipe {
 
 	public void setMessageIsContent(boolean messageIsContent) {
 		ftpSession.setMessageIsContent(messageIsContent);
+	}
+
+	public boolean isDeleteAfterGet() {
+		return deleteAfterGet;
+	}
+
+	public void setDeleteAfterGet(boolean b) {
+		deleteAfterGet = b;
 	}
 
 }

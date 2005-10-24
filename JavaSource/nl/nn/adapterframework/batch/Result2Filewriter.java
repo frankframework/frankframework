@@ -1,6 +1,10 @@
 /*
  * $Log: Result2Filewriter.java,v $
- * Revision 1.2  2005-10-17 11:46:35  europe\m00f531
+ * Revision 1.3  2005-10-24 09:59:23  europe\m00f531
+ * Add support for pattern parameters, and include them into several listeners,
+ * senders and pipes that are file related
+ *
+ * Revision 1.2  2005/10/17 11:46:35  John Dekker <john.dekker@ibissource.org>
  * *** empty log message ***
  *
  * Revision 1.1  2005/10/11 13:00:20  John Dekker <john.dekker@ibissource.org>
@@ -18,6 +22,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.util.FileUtils;
 
@@ -41,7 +46,7 @@ import org.apache.log4j.Logger;
  * @author: John Dekker
  */
 public class Result2Filewriter extends AbstractResultHandler {
-	public static final String version = "$RCSfile: Result2Filewriter.java,v $  $Revision: 1.2 $ $Date: 2005-10-17 11:46:35 $";
+	public static final String version = "$RCSfile: Result2Filewriter.java,v $  $Revision: 1.3 $ $Date: 2005-10-24 09:59:23 $";
 	private static Logger log = Logger.getLogger(Result2Filewriter.class);
 	
 	private String outputDirectory;
@@ -54,23 +59,23 @@ public class Result2Filewriter extends AbstractResultHandler {
 		openWriters = Collections.synchronizedMap(new HashMap());
 	}
 	
-	public void handleResult(PipeLineSession session, String inputFilename, String recordKey, Object result) throws IOException {
+	public void handleResult(PipeLineSession session, String inputFilename, String recordKey, Object result) throws Exception {
 		if (result instanceof String) {
-			write(inputFilename, (String)result);
+			write(session, inputFilename, (String)result);
 		}
 		else if (result instanceof String[]) {
-			write(inputFilename, (String[])result);
+			write(session, inputFilename, (String[])result);
 		}
 	}
 	
-	private void write(String inputFilename, String line) throws IOException {
-		BufferedWriter bw = getBufferedWriter(inputFilename, true);
+	private void write(PipeLineSession session, String inputFilename, String line) throws Exception {
+		BufferedWriter bw = getBufferedWriter(session, inputFilename, true);
 		bw.write(line);
 		bw.newLine();
 	}
 
-	private void write(String inputFilename, String[] lines) throws IOException {
-		BufferedWriter bw = getBufferedWriter(inputFilename, true);
+	private void write(PipeLineSession session, String inputFilename, String[] lines) throws Exception {
+		BufferedWriter bw = getBufferedWriter(session, inputFilename, true);
 		for (int i = 0; i < lines.length; i++) {
 			bw.write(lines[i]);
 			bw.newLine();
@@ -78,16 +83,16 @@ public class Result2Filewriter extends AbstractResultHandler {
 	}
 	
 	public Object finalizeResult(PipeLineSession session, String inputFilename, boolean error) throws IOException {
-		BufferedWriter bw = (BufferedWriter)openWriters.remove(inputFilename);
-		if (bw != null) {
+		FileOutput fo = (FileOutput)openWriters.remove(inputFilename);
+		if (fo != null) {
+			BufferedWriter bw = fo.writer;
 			bw.close();
 		}
 		else {
 			return null;
 		}
 		
-		String outputFile = FileUtils.getFilename(new File(inputFilename), filenamePattern, false);
-		File file = new File(outputDirectory, outputFile);
+		File file = fo.file;
 		if (error) {
 			file.delete();
 			return null;
@@ -106,38 +111,37 @@ public class Result2Filewriter extends AbstractResultHandler {
 		}
 	}
 	
-	public void writePrefix(PipeLineSession session, String inputFilename, boolean mustPrefix, boolean hasPreviousRecord) throws IOException {
+	public void writePrefix(PipeLineSession session, String inputFilename, boolean mustPrefix, boolean hasPreviousRecord) throws Exception {
 		String[] prefix = prefix(mustPrefix, hasPreviousRecord);
 		if (prefix != null) {
-			write(inputFilename, prefix);
+			write(session, inputFilename, prefix);
 		}
 	}
 
 	public void writeSuffix(PipeLineSession session, String inputFilename) throws Exception {
-		BufferedWriter bw = getBufferedWriter(inputFilename, false);
+		BufferedWriter bw = getBufferedWriter(session, inputFilename, false);
 		if (bw != null && ! StringUtils.isEmpty(getSuffix())) {
-			write(inputFilename, getSuffix());
+			write(session, inputFilename, getSuffix());
 		}
 	}
 
-	private BufferedWriter getBufferedWriter(String inputFilename, boolean openIfNotOpen) throws IOException {
-		BufferedWriter bw = null;
-		bw = (BufferedWriter)openWriters.get(inputFilename);
-		if (bw != null) {
-			return bw;
+	private BufferedWriter getBufferedWriter(PipeLineSession session, String inputFilename, boolean openIfNotOpen) throws IOException, ParameterException {
+		FileOutput fo = (FileOutput)openWriters.get(inputFilename);
+		if (fo != null) {
+			return fo.writer;
 		}
 		
 		if (! openIfNotOpen) {
 			return null ;
 		}
 		
-		String outputFilename = FileUtils.getFilename(new File(inputFilename), filenamePattern, true);
+		String outputFilename = FileUtils.getFilename(null, session, new File(inputFilename), filenamePattern);
 		File outputFile = new File(outputDirectory, outputFilename);
 		if (outputFile.exists() && outputFile.isFile()) {
 			log.warn("Outputfile " + outputFilename + " exists in " + outputDirectory);
 		}
-		bw = new BufferedWriter(new FileWriter(outputFile, false));
-		openWriters.put(inputFilename, bw);
+		BufferedWriter bw = new BufferedWriter(new FileWriter(outputFile, false));
+		openWriters.put(inputFilename, new FileOutput(bw, outputFile));
 		return bw;		
 	}
 	
@@ -173,4 +177,12 @@ public class Result2Filewriter extends AbstractResultHandler {
 		move2dirAfterFinalize = string;
 	}
 
+	private class FileOutput {
+		private BufferedWriter writer;
+		private File file;
+		private FileOutput(BufferedWriter writer, File file) {
+			this.writer = writer;
+			this.file = file;
+		}
+	}
 }

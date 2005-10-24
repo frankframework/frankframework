@@ -1,6 +1,10 @@
 /*
  * $Log: ParameterResolutionContext.java,v $
- * Revision 1.9  2005-10-17 11:43:34  europe\L190409
+ * Revision 1.10  2005-10-24 09:59:24  europe\m00f531
+ * Add support for pattern parameters, and include them into several listeners,
+ * senders and pipes that are file related
+ *
+ * Revision 1.9  2005/10/17 11:43:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * namespace-awareness configurable
  *
  * Revision 1.8  2005/06/13 11:55:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -47,7 +51,11 @@ import org.apache.log4j.Logger;
 
 /*
  * $Log: ParameterResolutionContext.java,v $
- * Revision 1.9  2005-10-17 11:43:34  europe\L190409
+ * Revision 1.10  2005-10-24 09:59:24  europe\m00f531
+ * Add support for pattern parameters, and include them into several listeners,
+ * senders and pipes that are file related
+ *
+ * Revision 1.9  2005/10/17 11:43:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * namespace-awareness configurable
  *
  * Revision 1.8  2005/06/13 11:55:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -93,7 +101,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class ParameterResolutionContext {
-	public static final String version="$RCSfile: ParameterResolutionContext.java,v $ $Revision: 1.9 $ $Date: 2005-10-17 11:43:34 $";
+	public static final String version="$RCSfile: ParameterResolutionContext.java,v $ $Revision: 1.10 $ $Date: 2005-10-24 09:59:24 $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	private String input;
@@ -130,8 +138,8 @@ public class ParameterResolutionContext {
 	 * @return value as a <link>ParameterValue<link> object
 	 * @throws IbisException
 	 */
-	public ParameterValue getValue(Parameter p) throws ParameterException {
-		return new ParameterValue(p, p.getValue(this));
+	private ParameterValue getValue(ParameterValueList alreadyResolvedParameters, Parameter p) throws ParameterException {
+		return new ParameterValue(p, p.getValue(alreadyResolvedParameters, this));
 	}
 	
 	/**
@@ -144,29 +152,35 @@ public class ParameterResolutionContext {
 		
 		ParameterValueList result = new ParameterValueList(parameters.size());
 		for (Iterator it= parameters.iterator(); it.hasNext(); ) {
-			result.add(getValue((Parameter)it.next()));
+			result.add(getValue(result, (Parameter)it.next()));
 		}
 		return result;
 	}
 
 	/**
 	 * @param parameters
-	 * @return arraylist of <link>ParameterValue<link> objects
+	 * @return map of value objects
 	 */
 	public HashMap getValueMap(ParameterList parameters) throws ParameterException {
-		if (parameters == null)
-			return null;
-		
-		HashMap result = new HashMap(parameters.size());
-		for (Iterator it= parameters.iterator(); it.hasNext(); ) {
-			Parameter p=(Parameter)it.next();
-			
-			result.put(p.getName(),getValue(p).getValue());
+		HashMap paramValuesMap = getValues(parameters).getParameterValueMap();
+
+		// convert map with parameterValue to map with value		
+		HashMap result = new HashMap(paramValuesMap.size());
+		for (Iterator it= paramValuesMap.values().iterator(); it.hasNext(); ) {
+			ParameterValue p = (ParameterValue)it.next();
+			result.put(p.getDefinition().getName(), p.getValue());
 		}
 		return result;
 	}
 	
 
+	public ParameterValueList forAllParameters(ParameterList parameters, IParameterHandler handler) throws ParameterException {
+		ParameterValueList values = getValues(parameters);
+		if (values != null) {
+			values.forAllParameters(handler);
+		}
+		return values;
+	}
 		
 	/**
 	 * @return the DOM document parsed from the (xml formatted) input

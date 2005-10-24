@@ -1,6 +1,10 @@
 /*
  * $Log: XComSender.java,v $
- * Revision 1.2  2005-10-11 13:04:50  europe\m00f531
+ * Revision 1.3  2005-10-24 09:59:24  europe\m00f531
+ * Add support for pattern parameters, and include them into several listeners,
+ * senders and pipes that are file related
+ *
+ * Revision 1.2  2005/10/11 13:04:50  John Dekker <john.dekker@ibissource.org>
  * *** empty log message ***
  *
  * Revision 1.1  2005/10/11 13:04:24  John Dekker <john.dekker@ibissource.org>
@@ -19,10 +23,13 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.ISender;
+import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.util.*;
+import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.util.FileUtils;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -56,8 +63,8 @@ import org.apache.log4j.Logger;
  *  
  * @author: John Dekker
  */
-public class XComSender implements ISender {
-	public static final String version = "$RCSfile: XComSender.java,v $  $Revision: 1.2 $ $Date: 2005-10-11 13:04:50 $";
+public class XComSender extends SenderWithParametersBase {
+	public static final String version = "$RCSfile: XComSender.java,v $  $Revision: 1.3 $ $Date: 2005-10-24 09:59:24 $";
 	protected Logger logger = Logger.getLogger(this.getClass());
 	private File workingDir;
 	private String name;
@@ -133,28 +140,7 @@ public class XComSender implements ISender {
 			if (! workingDir.isDirectory()) {
 				throw new ConfigurationException("Working directory [workingDirName=" + workingDirName + "] is not a directory");
 			}
-			SecurityManager sm  = System.getSecurityManager();
-			if (sm != null) {
-				try {
-					sm.checkExec(getCommand(null, false));
-				}
-				catch(SecurityException e) {
-					throw new ConfigurationException(e);
-				}
-			}
 		}
-	}
-
-	/* (non-Javadoc)
-	 * @see nl.nn.adapterframework.core.ISender#open()
-	 */
-	public void open() throws SenderException {
-	}
-
-	/* (non-Javadoc)
-	 * @see nl.nn.adapterframework.core.ISender#close()
-	 */
-	public void close() throws SenderException {
 	}
 
 	/* (non-Javadoc)
@@ -167,7 +153,7 @@ public class XComSender implements ISender {
 	/* (non-Javadoc)
 	 * @see nl.nn.adapterframework.core.ISender#sendMessage(java.lang.String, java.lang.String)
 	 */
-	public String sendMessage(String correlationID, String message) throws SenderException, TimeOutException {
+	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		for (Iterator filenameIt = getFileList(message).iterator(); filenameIt.hasNext(); ) {
 			String filename = (String)filenameIt.next();
 			logger.debug("Start sending " + filename);
@@ -177,7 +163,7 @@ public class XComSender implements ISender {
 			
 			// execute command in a new operating process
 			try {
-				String cmd = getCommand(localFile, true);
+				String cmd = getCommand(prc.getSession(), localFile, true);
 				
 				Process p = Runtime.getRuntime().exec(cmd + password, null, workingDir);
 	
@@ -205,53 +191,58 @@ public class XComSender implements ISender {
 				}
 			}
 			catch(IOException e) {
-				throw new SenderException("Error while executing command " + getCommand(localFile, false), e);
+				throw new SenderException("Error while executing command " + getCommand(prc.getSession(), localFile, false), e);
 			}
 		}
 		return message;
 	}
 	
-	private String getCommand(File localFile, boolean inclPasswd) {
-		StringBuffer sb = new StringBuffer();
-		
-		sb.append(xcomtcp). append(" -c1");
-		sb.append(" REMOTE_SYSTEM=").append(remoteSystem);
+	private String getCommand(PipeLineSession session, File localFile, boolean inclPasswd) throws SenderException {
+		try {
+			StringBuffer sb = new StringBuffer();
 			
-		if (localFile != null) {			
-			sb.append(" LOCAL_FILE=").append(localFile.getAbsolutePath());
-
-			sb.append(" REMOTE_FILE=");
-			if (! StringUtils.isEmpty(remoteDirectory)) 
-				sb.append(remoteDirectory);
-			if (StringUtils.isEmpty(remoteFilePattern))
-				sb.append(localFile.getName());
-			else 
-				sb.append(FileUtils.getFilename(localFile, remoteFilePattern, true));
+			sb.append(xcomtcp). append(" -c1");
+			sb.append(" REMOTE_SYSTEM=").append(remoteSystem);
+				
+			if (localFile != null) {			
+				sb.append(" LOCAL_FILE=").append(localFile.getAbsolutePath());
+	
+				sb.append(" REMOTE_FILE=");
+				if (! StringUtils.isEmpty(remoteDirectory)) 
+					sb.append(remoteDirectory);
+				if (StringUtils.isEmpty(remoteFilePattern))
+					sb.append(localFile.getName());
+				else 
+					sb.append(FileUtils.getFilename(paramList, session, localFile, remoteFilePattern));
+			}
+						
+			// optional parameters 
+			if (queue != null)
+				sb.append(" QUEUE=").append(queue.booleanValue() ? "YES" : "NO");
+			if (tracelevel != null)
+				sb.append(" TRACE=").append(tracelevel.intValue());
+			if (truncation != null)
+				sb.append(" TRUNCATION=").append(truncation.booleanValue() ? "YES" : "NO");
+			if (! StringUtils.isEmpty(port))
+				sb.append(" PORT=" + port);
+			if (! StringUtils.isEmpty(logfile)) 
+				sb.append(" XLOGFILE=" + logfile);
+			if (! StringUtils.isEmpty(compress)) 
+				sb.append(" COMPRESS=").append(compress);
+			if (! StringUtils.isEmpty(codeflag)) 
+				sb.append(" CODE_FLAG=").append(codeflag);
+			if (! StringUtils.isEmpty(cariageflag)) 
+				sb.append(" CARRIAGE_FLAG=").append(cariageflag);
+			if (! StringUtils.isEmpty(userid)) 
+				sb.append(" USERID=").append(userid);
+			if (inclPasswd && ! StringUtils.isEmpty(password)) 
+				sb.append(" PASSWORD=").append(password);
+				
+			return sb.toString();
 		}
-					
-		// optional parameters 
-		if (queue != null)
-			sb.append(" QUEUE=").append(queue.booleanValue() ? "YES" : "NO");
-		if (tracelevel != null)
-			sb.append(" TRACE=").append(tracelevel.intValue());
-		if (truncation != null)
-			sb.append(" TRUNCATION=").append(truncation.booleanValue() ? "YES" : "NO");
-		if (! StringUtils.isEmpty(port))
-			sb.append(" PORT=" + port);
-		if (! StringUtils.isEmpty(logfile)) 
-			sb.append(" XLOGFILE=" + logfile);
-		if (! StringUtils.isEmpty(compress)) 
-			sb.append(" COMPRESS=").append(compress);
-		if (! StringUtils.isEmpty(codeflag)) 
-			sb.append(" CODE_FLAG=").append(codeflag);
-		if (! StringUtils.isEmpty(cariageflag)) 
-			sb.append(" CARRIAGE_FLAG=").append(cariageflag);
-		if (! StringUtils.isEmpty(userid)) 
-			sb.append(" USERID=").append(userid);
-		if (inclPasswd && ! StringUtils.isEmpty(password)) 
-			sb.append(" PASSWORD=").append(password);
-			
-		return sb.toString();
+		catch(ParameterException e) {
+			throw new SenderException(e);
+		}
 	}
 	
 	public String getXcomtcp() {

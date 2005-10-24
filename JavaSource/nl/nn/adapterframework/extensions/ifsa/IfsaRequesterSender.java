@@ -1,6 +1,10 @@
 /*
  * $Log: IfsaRequesterSender.java,v $
- * Revision 1.16  2005-10-18 07:04:47  europe\L190409
+ * Revision 1.17  2005-10-24 09:59:23  europe\m00f531
+ * Add support for pattern parameters, and include them into several listeners,
+ * senders and pipes that are file related
+ *
+ * Revision 1.16  2005/10/18 07:04:47  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * better handling of dynamic reply queues
  *
  * Revision 1.15  2005/09/13 15:56:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -60,6 +64,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.parameters.ParameterValueList;
 
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -104,7 +109,7 @@ import com.ing.ifsa.IFSATimeOutMessage;
  * @since  4.2
  */
 public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParameters {
-	public static final String version="$RCSfile: IfsaRequesterSender.java,v $ $Revision: 1.16 $ $Date: 2005-10-18 07:04:47 $";
+	public static final String version="$RCSfile: IfsaRequesterSender.java,v $ $Revision: 1.17 $ $Date: 2005-10-24 09:59:23 $";
  
 	protected ParameterList paramList = null;
   
@@ -224,7 +229,8 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 			session = createSession();
 			IFSAQueue queue;
 			if (prc != null && paramList != null) {
-				String serviceId = paramList.getParameter(0).getValue(prc).toString();
+				ParameterValueList paramValues = prc.getValues(paramList);
+				String serviceId = paramValues.getParameterValue(0).getValue().toString();
 				queue = getConnection().lookupService(getConnection().polishServiceId(serviceId));
 				if (queue==null) {
 					throw new SenderException(getLogPrefix()+"got null as queue for serviceId ["+serviceId+"]");

@@ -1,24 +1,26 @@
 /*
  * $Log: LogSender.java,v $
- * Revision 1.1  2005-06-20 09:05:38  europe\L190409
+ * Revision 1.2  2005-10-24 09:59:24  europe\m00f531
+ * Add support for pattern parameters, and include them into several listeners,
+ * senders and pipes that are file related
+ *
+ * Revision 1.1  2005/06/20 09:05:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * introduction of LogSender
  *
  */
 package nl.nn.adapterframework.pipes;
-
-import java.util.Iterator;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.IParameterHandler;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 
 /**
  * Sender that just logs its message.
@@ -34,8 +36,8 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
  * @since  4.3
  * @version Id
  */
-public class LogSender extends SenderWithParametersBase {
-	public static final String version="$RCSfile: LogSender.java,v $ $Revision: 1.1 $ $Date: 2005-06-20 09:05:38 $";
+public class LogSender extends SenderWithParametersBase implements IParameterHandler {
+	public static final String version="$RCSfile: LogSender.java,v $ $Revision: 1.2 $ $Date: 2005-10-24 09:59:24 $";
 	
 	private String logLevel="info";
 	private String logCategory=null;
@@ -55,20 +57,19 @@ public class LogSender extends SenderWithParametersBase {
 
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		log.log(level,message);
-		if (paramList!=null) {
-			for (Iterator it=paramList.iterator(); it.hasNext(); ) {
-				Parameter p = (Parameter)it.next();
-				try {
-					log.log(level,"parameter ["+p.getName()+"] value ["+p.getValue(prc)+"]");
-				} catch (ParameterException e) {
-					throw new SenderException("exception determining value of parameter ["+p.getName()+"]");
-				}
-			}
+
+		try {
+			prc.forAllParameters(paramList, this);
+		} catch (ParameterException e) {
+			throw new SenderException("exception determining value of parameters", e);
 		}
-		
+
 		return correlationID;
 	}
 
+	public void handleParam(String paramName, Object value) {
+		log.log(level,"parameter [" + paramName + "] value [" + value + "]");
+	}
 
 	public String getLogCategory() {
 		if (StringUtils.isNotEmpty(logCategory)) {

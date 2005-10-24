@@ -1,6 +1,10 @@
 /*
  * $Log: LdapSender.java,v $
- * Revision 1.6  2005-04-26 09:31:15  L190409
+ * Revision 1.7  2005-10-24 09:59:24  europe\m00f531
+ * Add support for pattern parameters, and include them into several listeners,
+ * senders and pipes that are file related
+ *
+ * Revision 1.6  2005/04/26 09:31:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * multiple response object support
  *
  * Revision 1.5  2005/04/14 08:00:29  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -26,18 +30,18 @@ import javax.naming.directory.DirContext;
 import javax.naming.directory.InitialDirContext;
 import javax.naming.directory.SearchResult;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.jms.JNDIBase;
+import nl.nn.adapterframework.parameters.IParameterHandler;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.XmlBuilder;
+
+import org.apache.log4j.Logger;
 
 /**
  * Sender to obtain information from an LDAP Directory.
@@ -80,7 +84,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
  */
 public class LdapSender extends JNDIBase implements ISenderWithParameters {
 	protected Logger log=Logger.getLogger(this.getClass());
-	public static final String version="$Id: LdapSender.java,v 1.6 2005-04-26 09:31:15 L190409 Exp $";
+	public static final String version="$Id: LdapSender.java,v 1.7 2005-10-24 09:59:24 europe\m00f531 Exp $";
 	
 	private static final String INITIAL_CONTEXT_FACTORY="com.sun.jndi.ldap.LdapCtxFactory";
 	protected ParameterList paramList = null;
@@ -127,12 +131,11 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 	}
 
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException {
-		
 		if (prc==null || paramList==null) {
 			return sendMessage(correlationID, message);
 		}
 		try {
-			Attributes matchAttrs = applyParameters(message,prc);
+			Attributes matchAttrs = applyParameters(message, prc);
 			NamingEnumeration searchresults=getDirContext().search("",matchAttrs);
 			return SearchResultsToXml(searchresults);
 		} catch (Exception e) {
@@ -141,16 +144,20 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 	}
 	
 	protected Attributes applyParameters(String message, ParameterResolutionContext prc) throws ParameterException {
-		// message is not used in default implementation
-		Attributes result = new BasicAttributes(true); // ignore attribute name case
-		for (int i=0; i<paramList.size(); i++) {
-			Parameter p = paramList.getParameter(i);
-			if (StringUtils.isNotEmpty(p.getName())) {
-				result.put(new BasicAttribute(p.getName(), p.getValue(prc)));
-			}
-		}
+		Parameter2AttributeHelper helper = new Parameter2AttributeHelper();
+		prc.forAllParameters(paramList, helper);
+		Attributes result = helper.result; 
+
 		log.debug("collected LDAP Attributes from parameters ["+result.toString()+"]");
 		return result;
+	}
+	
+	private class Parameter2AttributeHelper implements IParameterHandler {
+		private Attributes result = new BasicAttributes(true); // ignore attribute name case
+
+		public void handleParam(String paramName, Object value) throws ParameterException {
+			result.put(new BasicAttribute(paramName, value));
+		}
 	}
 
 	protected synchronized DirContext loopkupDirContext() throws NamingException {

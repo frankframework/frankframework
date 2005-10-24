@@ -1,6 +1,10 @@
 /*
  * $Log: ParameterValueList.java,v $
- * Revision 1.2  2004-10-12 15:09:13  L190409
+ * Revision 1.3  2005-10-24 09:59:23  europe\m00f531
+ * Add support for pattern parameters, and include them into several listeners,
+ * senders and pipes that are file related
+ *
+ * Revision 1.2  2004/10/12 15:09:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * only nested map and list
  *
  * Revision 1.1  2004/10/05 09:52:25  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -14,6 +18,9 @@ package nl.nn.adapterframework.parameters;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+
+import nl.nn.adapterframework.core.ParameterException;
 
 /**
  * List of parametervalues.
@@ -58,5 +65,19 @@ public class ParameterValueList {
 	public int size() {
 		return list.size();
 	}
+	
+	HashMap getParameterValueMap() {
+		return map;
+	}
 
+	/*
+	 * Helper routine for quickly iterating through the resolved parameters
+	 * in the order in which they are defined 
+	 */
+	public void forAllParameters(IParameterHandler handler) throws ParameterException {
+		for (Iterator param = list.iterator(); param.hasNext();) {
+			ParameterValue paramValue = (ParameterValue)param.next();
+			handler.handleParam(paramValue.getDefinition().getName(), paramValue.getValue());
+		}
+	}
 }

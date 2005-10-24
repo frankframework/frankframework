@@ -1,6 +1,10 @@
 /*
  * $Log: MoveFilePipe.java,v $
- * Revision 1.1  2005-10-11 13:00:22  europe\m00f531
+ * Revision 1.2  2005-10-24 09:59:22  europe\m00f531
+ * Add support for pattern parameters, and include them into several listeners,
+ * senders and pipes that are file related
+ *
+ * Revision 1.1  2005/10/11 13:00:22  John Dekker <john.dekker@ibissource.org>
  * New ibis file related elements, such as DirectoryListener, MoveFilePie and 
  * BatchFileTransformerPipe
  *
@@ -9,14 +13,14 @@ package nl.nn.adapterframework.batch;
 
 import java.io.File;
 
-import org.apache.commons.lang.StringUtils;
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.util.FileUtils;
+
+import org.apache.commons.lang.StringUtils;
 
 /**
  * Pipe for moving files to another directory
@@ -35,7 +39,7 @@ import nl.nn.adapterframework.util.FileUtils;
  * @author: John Dekker
  */
 public class MoveFilePipe extends FixedForwardPipe {
-	public static final String version = "$RCSfile: MoveFilePipe.java,v $  $Revision: 1.1 $ $Date: 2005-10-11 13:00:22 $";
+	public static final String version = "$RCSfile: MoveFilePipe.java,v $  $Revision: 1.2 $ $Date: 2005-10-24 09:59:22 $";
 
 	private String move2dir;
 	private long waitBeforeRetry = 1000;

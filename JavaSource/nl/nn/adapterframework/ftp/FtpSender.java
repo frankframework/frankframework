@@ -1,6 +1,10 @@
 /*
  * $Log: FtpSender.java,v $
- * Revision 1.2  2005-10-17 12:21:21  europe\m00f531
+ * Revision 1.3  2005-10-24 09:59:22  europe\m00f531
+ * Add support for pattern parameters, and include them into several listeners,
+ * senders and pipes that are file related
+ *
+ * Revision 1.2  2005/10/17 12:21:21  John Dekker <john.dekker@ibissource.org>
  * *** empty log message ***
  *
  * Revision 1.1  2005/10/11 13:03:29  John Dekker <john.dekker@ibissource.org>
@@ -11,9 +15,10 @@
 package nl.nn.adapterframework.ftp;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -46,8 +51,8 @@ import org.apache.commons.lang.StringUtils;
  *  
  * @author: John Dekker
  */
-public class FtpSender implements ISender {
-	public static final String version = "$RCSfile: FtpSender.java,v $  $Revision: 1.2 $ $Date: 2005-10-17 12:21:21 $";
+public class FtpSender extends SenderWithParametersBase {
+	public static final String version = "$RCSfile: FtpSender.java,v $  $Revision: 1.3 $ $Date: 2005-10-24 09:59:22 $";
 	private String name;
 	private String remoteFilenamePattern;
 	private String remoteDirectory;
@@ -69,19 +74,6 @@ public class FtpSender implements ISender {
 	}
 
 	/* (non-Javadoc)
-	 * @see nl.nn.adapterframework.core.ISender#open()
-	 */
-	public void open() throws SenderException {
-	}
-	
-	/* (non-Javadoc)
-	 * @see nl.nn.adapterframework.core.ISender#close()
-	 */
-	public void close() throws SenderException {
-		ftpSession.closeClient();
-	}
-
-	/* (non-Javadoc)
 	 * @see nl.nn.adapterframework.core.ISender#isSynchronous()
 	 */
 	public boolean isSynchronous() {
@@ -91,9 +83,9 @@ public class FtpSender implements ISender {
 	/* (non-Javadoc)
 	 * @see nl.nn.adapterframework.core.ISender#sendMessage(java.lang.String, java.lang.String)
 	 */
-	public String sendMessage(String correlationID, String message) throws SenderException, TimeOutException {
+	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		try {
-			ftpSession.put(message, remoteDirectory, remoteFilenamePattern, true);
+			ftpSession.put(paramList, prc.getSession(), message, remoteDirectory, remoteFilenamePattern, true);
 		}
 		catch(SenderException e) {
 			throw e;

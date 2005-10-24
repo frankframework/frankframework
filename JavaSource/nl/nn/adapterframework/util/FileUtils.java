@@ -1,6 +1,10 @@
 /*
  * $Log: FileUtils.java,v $
- * Revision 1.6  2005-10-11 12:52:57  europe\m00f531
+ * Revision 1.7  2005-10-24 09:59:23  europe\m00f531
+ * Add support for pattern parameters, and include them into several listeners,
+ * senders and pipes that are file related
+ *
+ * Revision 1.6  2005/10/11 12:52:57  John Dekker <john.dekker@ibissource.org>
  * Change version string to not include $id: $, since username contains a 
  * backslash
  *
@@ -19,14 +23,20 @@ package nl.nn.adapterframework.util;
 
 import java.io.File;
 import java.io.FilenameFilter;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.ParameterList;
+import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.parameters.ParameterValueList;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -36,9 +46,9 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class FileUtils {
-	public static final String version = "$RCSfile: FileUtils.java,v $  $Revision: 1.6 $ $Date: 2005-10-11 12:52:57 $";
+	public static final String version = "$RCSfile: FileUtils.java,v $  $Revision: 1.7 $ $Date: 2005-10-24 09:59:23 $";
 
-	public static String getFilename(String originalFilename, String filenamePattern, boolean uidParam) {
+	public static String getFilename(ParameterList definedParameters, PipeLineSession session, String originalFilename, String filenamePattern) throws ParameterException {
 		// no pattern defined, outputname = inputname
 		if (StringUtils.isEmpty(filenamePattern)) {
 			return originalFilename; 
@@ -53,18 +63,42 @@ public class FileUtils {
 			name = originalFilename.substring(0, ndx);
 			extension = originalFilename.substring(ndx + 1);
 		}
-		Object[] params;
-		if (uidParam) {
-			params = new Object[] { name, extension, new Date(), Misc.createSimpleUUID()};
+		
+		// construct the parameterlist
+		ParameterList pl = new ParameterList();
+		try {
+			if (definedParameters != null)
+				pl.addAll(definedParameters);
+			Parameter p = new Parameter();
+			p.setName("file");
+			p.setDefaultValue(name);
+			p.configure();
+			pl.add(p);
+			p = new Parameter();
+			p.setName("ext");
+			p.setDefaultValue(extension);
+			p.configure();
+			pl.add(p);
+			p = new Parameter();
+			p.setName("__filename");
+			p.setPattern(filenamePattern);
+			p.configure();
+			pl.add(p);
 		}
-		else {
-			params = new Object[] { name, extension, new Date()};
+		catch(ConfigurationException e) {
+			throw new ParameterException(e);		
 		}
-		return MessageFormat.format(filenamePattern, params).toString();
+		
+		// resolve the parameters
+		ParameterResolutionContext prc = new ParameterResolutionContext((String)null, session);
+		ParameterValueList pvl = prc.getValues(pl);
+		String filename = pvl.getParameterValue("__filename").getValue().toString(); 
+		
+		return filename;
 	}
 	
-	public static String getFilename(File originalFile, String filenamePattern, boolean uidParam) {
-		return getFilename(originalFile.getName(), filenamePattern, uidParam);
+	public static String getFilename(ParameterList definedParameters, PipeLineSession session, File originalFile, String filenamePattern) throws ParameterException {
+		return getFilename(definedParameters, session, originalFile.getName(), filenamePattern);
 	}
 	
 	public static String moveFile(File orgFile, File rename2File, int nrRetries, long waitTime) throws InterruptedException {

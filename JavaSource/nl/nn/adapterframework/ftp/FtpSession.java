@@ -1,6 +1,10 @@
 /*
  * $Log: FtpSession.java,v $
- * Revision 1.2  2005-10-17 12:21:23  europe\m00f531
+ * Revision 1.3  2005-10-24 09:59:19  europe\m00f531
+ * Add support for pattern parameters, and include them into several listeners,
+ * senders and pipes that are file related
+ *
+ * Revision 1.2  2005/10/17 12:21:23  John Dekker <john.dekker@ibissource.org>
  * *** empty log message ***
  *
  * Revision 1.1  2005/10/11 13:03:31  John Dekker <john.dekker@ibissource.org>
@@ -26,6 +30,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.util.FileUtils;
 
 import org.apache.commons.lang.StringUtils;
@@ -46,7 +52,7 @@ import com.sshtools.j2ssh.transport.IgnoreHostKeyVerification;
  * @author John Dekker
  */
 public class FtpSession {
-	public static final String version = "$RCSfile: FtpSession.java,v $  $Revision: 1.2 $ $Date: 2005-10-17 12:21:23 $";
+	public static final String version = "$RCSfile: FtpSession.java,v $  $Revision: 1.3 $ $Date: 2005-10-24 09:59:19 $";
 	protected Logger logger = Logger.getLogger(this.getClass());
 	
 	// configuration parameters, global for all types
@@ -286,12 +292,12 @@ public class FtpSession {
 		}
 	}
 	
-	public String put(String message, String remoteDirectory, String remoteFilenamePattern, boolean closeAfterSend) throws Exception {
+	public String put(ParameterList params, PipeLineSession session, String message, String remoteDirectory, String remoteFilenamePattern, boolean closeAfterSend) throws Exception {
 		if (messageIsContent) {
-			return _put(message, remoteDirectory, remoteFilenamePattern, closeAfterSend);
+			return _put(params, session, message, remoteDirectory, remoteFilenamePattern, closeAfterSend);
 		}
 		else {
-			List remoteFilenames = _put(FileUtils.getListFromNames(message, ';'), remoteDirectory, remoteFilenamePattern, closeAfterSend);
+			List remoteFilenames = _put(params, session, FileUtils.getListFromNames(message, ';'), remoteDirectory, remoteFilenamePattern, closeAfterSend);
 			return FileUtils.getNamesFromList(remoteFilenames, ';');	
 		}
 	}
@@ -304,11 +310,11 @@ public class FtpSession {
 	 * @return name of the create remote file
 	 * @throws Exception
 	 */
-	private String _put(String contents, String remoteDirectory, String remoteFilenamePattern, boolean closeAfterSend) throws Exception {
+	private String _put(ParameterList params, PipeLineSession session, String contents, String remoteDirectory, String remoteFilenamePattern, boolean closeAfterSend) throws Exception {
 		openClient(remoteDirectory);
 		
 		// get remote name
-		String remoteFilename = FileUtils.getFilename("", remoteFilenamePattern, true);
+		String remoteFilename = FileUtils.getFilename(params, session, "", remoteFilenamePattern);
 		
 		// open local file
 		InputStream is = new ByteArrayInputStream(contents.getBytes());
@@ -340,7 +346,7 @@ public class FtpSession {
 	 * @return list of remotely created files
 	 * @throws Exception
 	 */
-	private List _put(List filenames, String remoteDirectory, String remoteFilenamePattern, boolean closeAfterSend) throws Exception {
+	private List _put(ParameterList params, PipeLineSession session, List filenames, String remoteDirectory, String remoteFilenamePattern, boolean closeAfterSend) throws Exception {
 		openClient(remoteDirectory);
 		
 		try {
@@ -352,7 +358,7 @@ public class FtpSession {
 				// get remote name
 				String remoteFilename = null;
 				if (! StringUtils.isEmpty(remoteFilenamePattern)) {
-					remoteFilename = FileUtils.getFilename(localFile, remoteFilenamePattern, true);
+					remoteFilename = FileUtils.getFilename(params, session, localFile, remoteFilenamePattern);
 				}
 				else {
 					remoteFilename = localFile.getName();
@@ -384,7 +390,7 @@ public class FtpSession {
 		}
 	}
 
-	private List _ls(String remoteDirectory, boolean closeAfterSend) throws Exception {
+	public List ls(String remoteDirectory, boolean closeAfterSend) throws Exception {
 		openClient(remoteDirectory);
 
 		try {
@@ -393,7 +399,10 @@ public class FtpSession {
 				List listOfSftpFiles = sftpClient.ls();
 				for (Iterator sftpFileIt = listOfSftpFiles.iterator(); sftpFileIt.hasNext();) {
 					SftpFile file = (SftpFile)sftpFileIt.next();
-					result.add(file.getAbsolutePath());
+					String filename = file.getFilename();
+					if (! filename.startsWith(".")) { 
+						result.add(filename);
+					}
 				}
 				return result;
 			}
@@ -409,17 +418,35 @@ public class FtpSession {
 	}
 	
 	public String lsAsString(String remoteDirectory, boolean closeAfterSend) throws Exception {
-		List result = _ls(remoteDirectory, closeAfterSend);
+		List result = ls(remoteDirectory, closeAfterSend);
 		return FileUtils.getNamesFromList(result, ';');
 	}
 	
-	public String get(String localDirectory, String remoteDirectory, String filenames, String localFilenamePattern, boolean closeAfterGet) throws Exception {
+	public String get(ParameterList params, PipeLineSession session, String localDirectory, String remoteDirectory, String filenames, String localFilenamePattern, boolean closeAfterGet) throws Exception {
 		if (messageIsContent) {
 			return _get(remoteDirectory, FileUtils.getListFromNames(filenames, ';'), closeAfterGet);
 		}
 		else {
-			List result = _get(localDirectory, remoteDirectory, FileUtils.getListFromNames(filenames, ';'), localFilenamePattern, closeAfterGet);
+			List result = _get(params, session, localDirectory, remoteDirectory, FileUtils.getListFromNames(filenames, ';'), localFilenamePattern, closeAfterGet);
 			return FileUtils.getNamesFromList(result, ';');	
+		}
+	}
+	
+	public void deleteRemote(String remoteDirectory, String filename, boolean closeAfterDelete) throws Exception {
+		openClient(remoteDirectory);
+
+		try {
+			if (ftpType == SFTP) {
+				sftpClient.rm(filename);
+			}
+			else {
+				ftpClient.deleteFile(filename);
+			}
+		}
+		finally {
+			if (closeAfterDelete) {
+				closeClient();
+			}
 		}
 	}
 
@@ -473,7 +500,7 @@ public class FtpSession {
 	 * @return ; seperated string with filenames of locally created files 
 	 * @throws Exception
 	 */
-	private List _get(String localDirectory, String remoteDirectory, List filenames, String localFilenamePattern, boolean closeAfterGet) throws Exception {
+	private List _get(ParameterList params, PipeLineSession session, String localDirectory, String remoteDirectory, List filenames, String localFilenamePattern, boolean closeAfterGet) throws Exception {
 		openClient(remoteDirectory);
 		
 		try {
@@ -483,11 +510,11 @@ public class FtpSession {
 
 				String localFilename = remoteFilename;
 				if (! StringUtils.isEmpty(localFilenamePattern)) {
-					localFilename = FileUtils.getFilename(remoteFilename, localFilenamePattern, true);
+					localFilename = FileUtils.getFilename(params, session, remoteFilename, localFilenamePattern);
 				}
 				
 				File localFile = new File(localDirectory, localFilename);
-				OutputStream os = new FileOutputStream(localFile);
+				OutputStream os = new FileOutputStream(localFile,false);
 				try {
 					if (ftpType == SFTP) {
 						sftpClient.get(remoteFilename, os);
