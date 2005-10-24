@@ -1,6 +1,9 @@
 /*
  * $Log: JmsListener.java,v $
- * Revision 1.16  2005-10-20 15:44:50  europe\L190409
+ * Revision 1.17  2005-10-24 15:16:05  europe\L190409
+ * implemented session pooling
+ *
+ * Revision 1.16  2005/10/20 15:44:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * modified JMS-classes to use shared connections
  * open()/close() became openFacade()/closeFacade()
  *
@@ -58,6 +61,8 @@ import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
+
+import org.apache.commons.lang.StringUtils;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -129,7 +134,7 @@ import java.util.HashMap;
  * @since 4.0.1
  */
 public class JmsListener extends JMSFacade implements IPostboxListener, ICorrelatedPullingListener, HasSender {
-	public static final String version="$RCSfile: JmsListener.java,v $ $Revision: 1.16 $ $Date: 2005-10-20 15:44:50 $";
+	public static final String version="$RCSfile: JmsListener.java,v $ $Revision: 1.17 $ $Date: 2005-10-24 15:16:05 $";
 
 	private final static String THREAD_CONTEXT_SESSION_KEY="session";
 	private final static String THREAD_CONTEXT_MESSAGECONSUMER_KEY="messageConsumer";
@@ -148,6 +153,121 @@ public class JmsListener extends JMSFacade implements IPostboxListener, ICorrela
   
   
 
+	protected Session getSession(HashMap threadContext) throws ListenerException {
+		if (isSessionsArePooled()) {
+			try {
+				return createSession();
+			} catch (JmsException e) {
+				throw new ListenerException("exception creating QueueSession", e);
+			}
+		} else {
+			return (Session) threadContext.get(THREAD_CONTEXT_SESSION_KEY);
+		}
+	}
+	
+	protected void releaseSession(Session session) throws ListenerException {
+		if (isSessionsArePooled() && session != null) {
+			try {
+				session.close();
+				// do not write to log, this occurs too often
+			} catch (Exception e) {
+				throw new ListenerException("exception closing QueueSession", e);
+			}
+		}
+	}
+
+	protected MessageConsumer getReceiver(HashMap threadContext, Session session, String correlationId) throws ListenerException {
+		if (isSessionsArePooled() || StringUtils.isNotEmpty(correlationId)) {
+			try {
+				return getMessageConsumerForCorrelationId(session, getDestination(), correlationId);
+			} catch (Exception e) {
+				throw new ListenerException(getLogPrefix()+"exception creating QueueReceiver", e);
+			}
+		} else {
+			return (MessageConsumer) threadContext.get(THREAD_CONTEXT_MESSAGECONSUMER_KEY);
+		}
+	}
+	
+	protected void releaseReceiver(MessageConsumer receiver, String correlationId) throws ListenerException {
+		if ((isSessionsArePooled() || StringUtils.isNotEmpty(correlationId)) && receiver != null) {
+			try {
+				receiver.close();
+				// do not write to log, this occurs too often
+			} catch (Exception e) {
+				throw new ListenerException(getLogPrefix()+"exception closing QueueReceiver", e);
+			}
+		}
+	}
+
+	public void configure() throws ConfigurationException {
+		super.configure();
+		ISender sender = getSender();
+		if (sender != null) {
+			sender.configure();
+		}
+	}
+
+	public void open() throws ListenerException {
+		try {
+			openFacade();
+		} catch (Exception e) {
+			throw new ListenerException("error opening listener [" + getName() + "]", e);
+		}
+	
+		try {
+			if (sender != null)
+				sender.open();
+		} catch (SenderException e) {
+			throw new ListenerException("error opening sender [" + sender.getName() + "]", e);
+		}
+	}
+	
+	public HashMap openThread() throws ListenerException {
+		HashMap threadContext = new HashMap();
+	
+		try {
+			if (!isSessionsArePooled()) { 
+				Session session = createSession();
+				threadContext.put(THREAD_CONTEXT_SESSION_KEY, session);
+			
+				MessageConsumer mc = getMessageConsumer(session, getDestination());
+				threadContext.put(THREAD_CONTEXT_MESSAGECONSUMER_KEY, mc);
+			}
+			return threadContext;
+		} catch (Exception e) {
+			throw new ListenerException("exception in ["+getName()+"]", e);
+		}
+	}
+	
+	
+	
+	public void close() throws ListenerException {
+		try {
+			closeFacade();
+	
+			if (sender != null) {
+				sender.close();
+			}
+		} catch (Exception e) {
+			throw new ListenerException(e);
+		}
+	}
+	public void closeThread(HashMap threadContext) throws ListenerException {
+		try {
+			if (!isSessionsArePooled()) {
+				MessageConsumer mc = (MessageConsumer) threadContext.remove(THREAD_CONTEXT_MESSAGECONSUMER_KEY);
+				releaseReceiver(mc,null);
+		
+				Session session = (Session) threadContext.remove(THREAD_CONTEXT_SESSION_KEY);
+				releaseSession(session);
+			}
+		} catch (Exception e) {
+			throw new ListenerException("exception in [" + getName() + "]", e);
+		}
+	}
+
+
+
 
 	public void afterMessageProcessed(PipeLineResult plr, Object rawMessage, HashMap threadContext) throws ListenerException {
 	    String cid = (String) threadContext.get("cid");
@@ -160,15 +280,7 @@ public class JmsListener extends JMSFacade implements IPostboxListener, ICorrela
 				Session session=null;
 				
 	
-				log.debug(
-	                "sending reply message with correlationID["
-	                    + cid
-	                    + "], replyTo ["
-	                    + replyTo.toString()
-	                    + "]");
-	            if (threadContext!=null) {
-					session = (Session)threadContext.get(THREAD_CONTEXT_SESSION_KEY);
-	            }
+				log.debug("sending reply message with correlationID[" + cid + "], replyTo [" + replyTo.toString()+ "]");
 	            long timeToLive = getReplyMessageTimeToLive();
 	            if (timeToLive == 0) {
 					Message messageSent=(Message)rawMessage;
@@ -181,10 +293,16 @@ public class JmsListener extends JMSFacade implements IPostboxListener, ICorrela
 						}
 					}
 	            }
+				if (threadContext!=null) {
+					session = (Session)threadContext.get(THREAD_CONTEXT_SESSION_KEY);
+				}
 	            if (session==null) { 
-	            	session=createSession();
-					send(session, replyTo, cid, plr.getResult(), getReplyMessageType(), timeToLive, stringToDeliveryMode(getReplyDeliveryMode()), getReplyPriority()); 
-					session.close();            	
+	            	try {
+						session=getSession(threadContext);
+						send(session, replyTo, cid, plr.getResult(), getReplyMessageType(), timeToLive, stringToDeliveryMode(getReplyDeliveryMode()), getReplyPriority());
+	            	} finally {
+						releaseSession(session);					 
+	            	}
 	            }  else {
 					send(session, replyTo, cid, plr.getResult(), getReplyMessageType(), timeToLive, stringToDeliveryMode(getReplyDeliveryMode()), getReplyPriority()); 
 	            }
@@ -217,6 +335,10 @@ public class JmsListener extends JMSFacade implements IPostboxListener, ICorrela
 				       		//TODO: enable rollback, or remove support for JmsTransacted altogether (XA-transactions should do it all)
 			           		// session.rollback();
 			       		}
+						if (isSessionsArePooled()) {
+							threadContext.remove(THREAD_CONTEXT_SESSION_KEY);
+							releaseSession(session);
+						}
 					}
 		    	} else {
 		    		// TODO: dit weghalen. Het hoort hier niet, en zit ook al in getIdFromRawMessage. Daar hoort het ook niet, overigens...
@@ -231,78 +353,6 @@ public class JmsListener extends JMSFacade implements IPostboxListener, ICorrela
 	    }
 	}
 
-	public void configure() throws ConfigurationException {
-		super.configure();
-		ISender sender = getSender();
-		if (sender != null) {
-			sender.configure();
-		}
-	}
-	
-	public void open() throws ListenerException {
-		try {
-			openFacade();
-		} catch (Exception e) {
-			throw new ListenerException("error opening listener [" + getName() + "]", e);
-		}
-	
-		try {
-			if (sender != null)
-				sender.open();
-		} catch (SenderException e) {
-			throw new ListenerException("error opening sender [" + sender.getName() + "]", e);
-		}
-	}
-	
-	public HashMap openThread() throws ListenerException {
-		HashMap threadContext = new HashMap();
-	
-		try {
-			if (!isTransacted()) { 
-				Session session = createSession();
-				threadContext.put(THREAD_CONTEXT_SESSION_KEY, session);
-			
-				MessageConsumer mc = getMessageConsumer(session, getDestination());
-				threadContext.put(THREAD_CONTEXT_MESSAGECONSUMER_KEY, mc);
-			}
-			return threadContext;
-		} catch (Exception e) {
-			throw new ListenerException("exception in ["+getName()+"]", e);
-		}
-	}
-	
-	
-	
-	public void close() throws ListenerException {
-	    try {
-		    closeFacade();
-	
-	        if (sender != null) {
-	            sender.close();
-	        }
-	    } catch (Exception e) {
-	        throw new ListenerException(e);
-	    }
-	}
-	public void closeThread(HashMap threadContext) throws ListenerException {
-	
-	    try {
-			if (!isTransacted()) {
-		        MessageConsumer mc = (MessageConsumer) threadContext.remove(THREAD_CONTEXT_MESSAGECONSUMER_KEY);
-		        if (mc != null) {
-		            mc.close();
-		        }
-		
-		        Session session = (Session) threadContext.remove(THREAD_CONTEXT_SESSION_KEY);
-		        if (session != null) {
-		            session.close();
-		        }
-			}
-	    } catch (Exception e) {
-	        throw new ListenerException("exception in [" + getName() + "]", e);
-	    }
-	}
-	
 	/**
 	 * Extracts ID-string from message obtained from {@link #getRawMessage(HashMap)}. May also extract
 	 * other parameters from the message and put those in the threadContext.
@@ -424,41 +474,69 @@ public class JmsListener extends JMSFacade implements IPostboxListener, ICorrela
 		}
 		return msg;
 	}
-	
+
+
+	private boolean sessionNeedsToBeSavedForAfterProcessMessage(Object result)
+	{
+		return isJmsTransacted() &&
+				!isTransacted() && 
+				isSessionsArePooled()&&
+				result != null;
+	}
+
 	/**
 	 * Retrieves messages from queue or other channel under transaction control, but does no processing on it.
 	 */
 	private Object getRawMessageFromDestination(String correlationId, HashMap threadContext) throws ListenerException {
-		Session session;
-		MessageConsumer mc;
-		try {
-			if (!isTransacted() && threadContext!=null ) {
-				session = (Session)threadContext.get(THREAD_CONTEXT_SESSION_KEY); 		
-				if (threadContext!=null && correlationId==null) {
-					mc = (MessageConsumer)threadContext.get(THREAD_CONTEXT_MESSAGECONSUMER_KEY);
-				} else {
-					mc = getMessageConsumerForCorrelationId(session, getDestination(), correlationId);
-				}
-			} else {
-				session = createSession();
-				mc = getMessageConsumerForCorrelationId(session, getDestination(), correlationId);
-			}
-		} catch (Exception e) {
-			throw new ListenerException("["+getName()+"] exception preparing to retrieve message", e);
-		}
+		Session session=null;
 		Object msg = null;
 		try {
-			msg = mc.receive(getTimeOut());
-			if (isTransacted() || threadContext==null || correlationId!=null) {
-				mc.close();
-				if (isTransacted() || threadContext==null ) {
-					session.close();
-				}
+			session = getSession(threadContext);
+			MessageConsumer mc=null;
+			try {
+				mc = getReceiver(threadContext,session,correlationId);
+				msg = mc.receive(getTimeOut());
+			} catch (JMSException e) {
+				throw new ListenerException(getLogPrefix()+"exception retrieving message",e);
+			} finally {
+				releaseReceiver(mc,correlationId);
+			}
+		} finally {
+			if (sessionNeedsToBeSavedForAfterProcessMessage(msg)) {
+				threadContext.put(THREAD_CONTEXT_SESSION_KEY, session);
+			} else {
+				releaseSession(session);
+			}
+		}		
+		return msg;
+	}
+
+	/** 
+	 * @see nl.nn.adapterframework.core.IPostboxListener#retrieveRawMessage(java.lang.String, java.util.HashMap)
+	 */
+	public Object retrieveRawMessage(String messageSelector, HashMap threadContext) throws ListenerException {
+		Session session=null;
+		try {
+			session = getSession(threadContext);
+			MessageConsumer mc=null;
+			try {
+				mc = getMessageConsumer(session, getDestination(), messageSelector);
+				Object result = (timeOut<0) ? mc.receiveNoWait() : mc.receive(timeOut);
+				return result;
+			} finally {
+				if (mc != null) { 
+					try { 
+						mc.close(); 
+					} catch(JMSException e) {
+						log.warn(getLogPrefix()+"exception closing messageConsumer",e); 
+					}
+				} 
 			}
 		} catch (Exception e) {
-			throw new ListenerException("["+getName()+"] exception in retrieving message", e);
+			throw new ListenerException(getLogPrefix()+"exception preparing to retrieve message", e);
+		} finally {
+			releaseSession(session);
 		}
-		return msg;
 	}
 	
 	
@@ -486,32 +564,6 @@ public class JmsListener extends JMSFacade implements IPostboxListener, ICorrela
 
 
 
-	/** 
-	 * @see nl.nn.adapterframework.core.IPostboxListener#retrieveRawMessage(java.lang.String, java.util.HashMap)
-	 */
-	public Object retrieveRawMessage(String messageSelector, HashMap threadContext) throws ListenerException {
-		Session newSession = null, session = null;
-		MessageConsumer mc = null;
-		try {
-			// check to see if session in threadcontext can be reused, otherwise create new
-			if (!isTransacted() && threadContext!=null ) {
-				session = (Session)threadContext.get(THREAD_CONTEXT_SESSION_KEY); 		
-			} 
-			else {
-				newSession = session = createSession();
-			}
-			mc = getMessageConsumer(session, getDestination(), messageSelector);
-			Object result = (timeOut<0) ? mc.receiveNoWait() : mc.receive(timeOut);
-			return result;
-		} 
-		catch (Exception e) {
-			throw new ListenerException("["+getName()+"] exception preparing to retrieve message", e);
-		}
-		finally {
-			if (mc != null) try { mc.close(); } catch(JMSException e) { }
-			if (newSession != null) try { newSession.close(); } catch(JMSException e) { }
-		}
-	}
 
 	public void setSender(ISender newSender) {
 		sender = newSender;
