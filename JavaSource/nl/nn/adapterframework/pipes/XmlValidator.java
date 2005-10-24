@@ -1,6 +1,9 @@
 /*
  * $Log: XmlValidator.java,v $
- * Revision 1.12  2005-10-17 11:37:34  europe\L190409
+ * Revision 1.13  2005-10-24 09:21:55  europe\L190409
+ * inmproved logging
+ *
+ * Revision 1.12  2005/10/17 11:37:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * made thread-safe
  *
  * Revision 1.11  2005/09/27 11:06:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -94,7 +97,7 @@ import java.io.IOException;
 
  */
 public class XmlValidator extends FixedForwardPipe {
-	public static final String version="$RCSfile: XmlValidator.java,v $ $Revision: 1.12 $ $Date: 2005-10-17 11:37:34 $";
+	public static final String version="$RCSfile: XmlValidator.java,v $ $Revision: 1.13 $ $Date: 2005-10-24 09:21:55 $";
 
     private String schemaLocation = null;
     private String noNamespaceSchemaLocation = null;
@@ -159,7 +162,7 @@ public class XmlValidator extends FixedForwardPipe {
 		}
         if (StringUtils.isNotEmpty(getSchemaLocation())) {
         	String resolvedLocations = XmlUtils.resolveSchemaLocations(getSchemaLocation());
-        	log.info(getLogPrefix(null)+"resolved schemaLocation to ["+resolvedLocations+"]");
+        	log.info(getLogPrefix(null)+"resolved schemaLocation ["+getSchemaLocation()+"] to ["+resolvedLocations+"]");
         	setSchemaLocation(resolvedLocations);
         }
 		if (StringUtils.isNotEmpty(getNoNamespaceSchemaLocation())) {
