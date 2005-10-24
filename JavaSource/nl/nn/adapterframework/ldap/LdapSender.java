@@ -1,6 +1,9 @@
 /*
  * $Log: LdapSender.java,v $
- * Revision 1.7  2005-10-24 09:59:24  europe\m00f531
+ * Revision 1.8  2005-10-24 10:00:21  europe\m00f531
+ * *** empty log message ***
+ *
+ * Revision 1.7  2005/10/24 09:59:24  John Dekker <john.dekker@ibissource.org>
  * Add support for pattern parameters, and include them into several listeners,
  * senders and pipes that are file related
  *
@@ -84,7 +87,7 @@ import org.apache.log4j.Logger;
  */
 public class LdapSender extends JNDIBase implements ISenderWithParameters {
 	protected Logger log=Logger.getLogger(this.getClass());
-	public static final String version="$Id: LdapSender.java,v 1.7 2005-10-24 09:59:24 europe\m00f531 Exp $";
+	public static final String version="$RCSfile: LdapSender.java,v $  $Revision: 1.8 $ $Date: 2005-10-24 10:00:21 $";
 	
 	private static final String INITIAL_CONTEXT_FACTORY="com.sun.jndi.ldap.LdapCtxFactory";
 	protected ParameterList paramList = null;
