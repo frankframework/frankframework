@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaFacade.java,v $
- * Revision 1.31  2005-10-18 07:04:46  europe\L190409
+ * Revision 1.32  2005-10-24 15:10:13  europe\L190409
+ * made sessionsArePooled configurable via appConstant 'jms.sessionsArePooled'
+ *
+ * Revision 1.31  2005/10/18 07:04:46  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * better handling of dynamic reply queues
  *
  * Revision 1.30  2005/09/26 11:44:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -122,7 +125,7 @@ import javax.jms.*;
  * @since 4.2
  */
 public class IfsaFacade implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version = "$RCSfile: IfsaFacade.java,v $ $Revision: 1.31 $ $Date: 2005-10-18 07:04:46 $";
+	public static final String version = "$RCSfile: IfsaFacade.java,v $ $Revision: 1.32 $ $Date: 2005-10-24 15:10:13 $";
     protected Logger log = Logger.getLogger(this.getClass());
     
     private static int BASIC_ACK_MODE = Session.AUTO_ACKNOWLEDGE;
@@ -141,9 +144,7 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination, IXAEnab
 	
 	private boolean requestor=false;
 	private boolean provider=false;
-	
-	private boolean sessionsArePooled=false;
-	
+		
 	private boolean transacted=false; // attribute is currently not used
 
 
@@ -528,6 +529,15 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination, IXAEnab
         messageProtocol = IfsaMessageProtocolEnum.getEnum(newMessageProtocol);
         log.debug(getLogPrefix()+"message protocol set to "+messageProtocol.getName());
     }
+ 
+	public boolean isSessionsArePooled() {
+		try {
+			return getConnection().sessionsArePooled();
+		} catch (IfsaException e) {
+			log.error(getLogPrefix()+"could not get session",e);
+			return false;
+		}
+	}
     
     public boolean isJmsTransacted() {
     	return getMessageProtocolEnum().equals(IfsaMessageProtocolEnum.FIRE_AND_FORGET);
@@ -614,14 +624,6 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination, IXAEnab
 	}
 	public void setTimeOut(long timeOut) {
 		this.timeOut = timeOut;
-	}
-
-	public boolean isSessionsArePooled() {
-		return sessionsArePooled;
-	}
-
-	public void setSessionsArePooled(boolean b) {
-		sessionsArePooled = b;
 	}
 
 	public boolean isTransacted() {

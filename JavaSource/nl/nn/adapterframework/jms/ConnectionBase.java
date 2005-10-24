@@ -1,6 +1,9 @@
 /*
  * $Log: ConnectionBase.java,v $
- * Revision 1.1  2005-10-20 15:34:11  europe\L190409
+ * Revision 1.2  2005-10-24 15:11:17  europe\L190409
+ * made sessionsArePooled configurable via appConstant 'jms.sessionsArePooled'
+ *
+ * Revision 1.1  2005/10/20 15:34:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * renamed JmsConnection into ConnectionBase
  *
  * Revision 1.3  2005/10/18 06:58:46  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -28,6 +31,7 @@ import javax.jms.TopicConnectionFactory;
 import javax.naming.Context;
 
 import nl.nn.adapterframework.core.IbisException;
+import nl.nn.adapterframework.util.AppConstants;
 
 import org.apache.log4j.Logger;
 
@@ -38,10 +42,12 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class ConnectionBase  {
-	public static final String version="$RCSfile: ConnectionBase.java,v $ $Revision: 1.1 $ $Date: 2005-10-20 15:34:11 $";
+	public static final String version="$RCSfile: ConnectionBase.java,v $ $Revision: 1.2 $ $Date: 2005-10-24 15:11:17 $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	private int referenceCount;
+	private final static String SESSIONS_ARE_POOLED_KEY="jms.sessionsArePooled";
+	private static Boolean sessionsArePooledStore=null; 
 	
 	private String id;
 	
@@ -142,6 +148,15 @@ public class ConnectionBase  {
 			throw new IbisException("could not create Session", e);
 		}
 	}
+
+	public synchronized boolean sessionsArePooled() {
+		if (sessionsArePooledStore==null) {
+			boolean pooled=AppConstants.getInstance().getBoolean(SESSIONS_ARE_POOLED_KEY, false);
+			sessionsArePooledStore = new Boolean(pooled);
+		}
+		return sessionsArePooledStore.booleanValue();
+	}
+
 
 	protected String getLogPrefix() {
 		return "["+getId()+"] "; 
