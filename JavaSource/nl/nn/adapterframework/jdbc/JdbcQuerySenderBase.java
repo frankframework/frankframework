@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcQuerySenderBase.java,v $
- * Revision 1.18  2005-10-19 10:45:18  europe\L190409
+ * Revision 1.19  2005-10-24 09:17:29  europe\L190409
+ * separate statement for result query
+ *
+ * Revision 1.18  2005/10/19 10:45:18  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * moved prepareStatement-met-columnlist to separate method, 
  * to avoid compilation problems when non JDBC 3.0 drivers are used
  *
@@ -65,6 +68,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 
@@ -120,7 +124,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * @since 	4.1
  */
 public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
-	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.18 $ $Date: 2005-10-19 10:45:18 $";
+	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.19 $ $Date: 2005-10-24 09:17:29 $";
 
 	private String queryType = "other";
 	private int startRow=1;
@@ -198,8 +202,17 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 				} else {
 					int numRowsAffected = statement.executeUpdate();
 					if (StringUtils.isNotEmpty(getResultQuery())) {
-						ResultSet rs = statement.executeQuery(getResultQuery());
-						return getResult(rs);
+						Statement resStmt = null;
+						try { 
+							resStmt = connection.createStatement();
+							log.debug("obtaining result from ["+getResultQuery()+"]");
+							ResultSet rs = resStmt.executeQuery(getResultQuery());
+							return getResult(rs);
+						} finally {
+							if (resStmt!=null) {
+								resStmt.close();
+							}
+						}
 					}
 					if (getColumnsReturnedList()!=null) {
 						return getResult(getReturnedColumns(getColumnsReturnedList(),statement));
