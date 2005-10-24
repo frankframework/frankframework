@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaProviderListener.java,v $
- * Revision 1.14  2005-09-26 11:47:26  europe\L190409
+ * Revision 1.15  2005-10-24 15:14:02  europe\L190409
+ * shuffled positions of methods
+ *
+ * Revision 1.14  2005/09/26 11:47:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Jms-commit only if not XA-transacted
  * ifsa-messageWrapper for (non-serializable) ifsa-messages
  *
@@ -101,7 +104,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * @since 4.2
  */
 public class IfsaProviderListener extends IfsaFacade implements IPullingListener, INamedObject {
-	public static final String version = "$RCSfile: IfsaProviderListener.java,v $ $Revision: 1.14 $ $Date: 2005-09-26 11:47:26 $";
+	public static final String version = "$RCSfile: IfsaProviderListener.java,v $ $Revision: 1.15 $ $Date: 2005-10-24 15:14:02 $";
 
     private final static String THREAD_CONTEXT_SESSION_KEY = "session";
     private final static String THREAD_CONTEXT_RECEIVER_KEY = "receiver";
@@ -113,23 +116,7 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 		super(true); //instantiate as a provider
 	}
 
-	public void open() throws ListenerException {
-		try {
-			openService();
-			
-			IFSAServicesProvided services = getServiceQueue().getIFSAServicesProvided();
 
-			for (int i = 0; i < services.getNumberOfServices(); i++) {
-				IFSAServiceName service = services.getService(i);
-				
-				String protocol=(service.IsFireAndForgetService() ? "Fire and Forget" : "Request/Reply");
-				log.info(getLogPrefix()+"providing ServiceName ["+service.getServiceName()+"] ServiceGroup [" + service.getServiceGroup()+"] protocol [" + protocol+"] ServiceVersion [" + service.getServiceVersion()+"]");				
-			}
-		} catch (Exception e) {
-			throw new ListenerException(getLogPrefix(),e);
-		}
-	}
-	
 	protected QueueSession getSession(HashMap threadContext) throws ListenerException {
 		if (isSessionsArePooled()) {
 			try {
@@ -177,6 +164,25 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 	}
 	
 	
+
+
+
+	public void open() throws ListenerException {
+		try {
+			openService();
+			
+			IFSAServicesProvided services = getServiceQueue().getIFSAServicesProvided();
+
+			for (int i = 0; i < services.getNumberOfServices(); i++) {
+				IFSAServiceName service = services.getService(i);
+				
+				String protocol=(service.IsFireAndForgetService() ? "Fire and Forget" : "Request/Reply");
+				log.info(getLogPrefix()+"providing ServiceName ["+service.getServiceName()+"] ServiceGroup [" + service.getServiceGroup()+"] protocol [" + protocol+"] ServiceVersion [" + service.getServiceVersion()+"]");				
+			}
+		} catch (Exception e) {
+			throw new ListenerException(getLogPrefix(),e);
+		}
+	}
 	
 	public HashMap openThread() throws ListenerException {
 		HashMap threadContext = new HashMap();
@@ -216,12 +222,9 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 	}
 
 
-	public void afterMessageProcessed(PipeLineResult plr, Object rawMessage, HashMap threadContext)
-    throws ListenerException {
-	
+	public void afterMessageProcessed(PipeLineResult plr, Object rawMessage, HashMap threadContext) throws ListenerException {	
 	    String cid = (String) threadContext.get("cid");
-	    
-		    
+	    		    
 		if (isJmsTransacted() && !isTransacted()) {
 			QueueSession session = (QueueSession) threadContext.get(THREAD_CONTEXT_SESSION_KEY);
 	    
@@ -239,16 +242,8 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 					log.error(getLogPrefix()+"got error committing the received message", e);
 				}
 	        } else {
-	            log.warn(getLogPrefix()+"message with correlationID ["
-	                    + cid
-	                    + " message ["
-	                    + getStringFromRawMessage(rawMessage, threadContext)
-	                    + "]"
-	                    + " is NOT committed. The result-state of the adapter is ["
-	                    + plr.getState()
-	                    + "] while the state for committing is set to ["
-	                    + getCommitOnState()
-	                    + "]");
+	            log.warn(getLogPrefix()+"message with correlationID ["+ cid+ " message ["+ getStringFromRawMessage(rawMessage, threadContext)+ "]"
+	                    + " is NOT committed. The result-state of the adapter is ["+ plr.getState()+ "] while the state for committing is set to ["+ getCommitOnState()+ "]");
 	        }
 	        if (isSessionsArePooled()) {
 				threadContext.remove(THREAD_CONTEXT_SESSION_KEY);
