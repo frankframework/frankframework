@@ -1,6 +1,9 @@
 /*
  * $Log: FtpListener.java,v $
- * Revision 1.1  2005-10-24 09:59:19  europe\m00f531
+ * Revision 1.2  2005-10-24 11:41:27  europe\m00f531
+ * *** empty log message ***
+ *
+ * Revision 1.1  2005/10/24 09:59:19  John Dekker <john.dekker@ibissource.org>
  * Add support for pattern parameters, and include them into several listeners,
  * senders and pipes that are file related
  *
@@ -58,7 +61,7 @@ import org.apache.log4j.Logger;
  * @author  John Dekker
  */
 public class FtpListener implements IPullingListener, INamedObject {
-	public static final String version = "$RCSfile: FtpListener.java,v $  $Revision: 1.1 $ $Date: 2005-10-24 09:59:19 $";
+	public static final String version = "$RCSfile: FtpListener.java,v $  $Revision: 1.2 $ $Date: 2005-10-24 11:41:27 $";
 
 	protected Logger log = Logger.getLogger(this.getClass());
 	private FtpSession ftpSession;
@@ -118,7 +121,7 @@ public class FtpListener implements IPullingListener, INamedObject {
 		if (remoteFilenames.isEmpty()) {
 			try {
 				ftpSession.openClient(remoteDirectory);
-				remoteFilenames.addAll(ftpSession.ls(remoteDirectory, true));
+				remoteFilenames.addAll(ftpSession.ls(remoteDirectory, true, true));
 			}
 			catch(Exception e) {
 				throw new ListenerException(e); 
