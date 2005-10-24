@@ -1,6 +1,10 @@
 /*
  * $Log: JMSFacade.java,v $
- * Revision 1.21  2005-10-20 15:44:49  europe\L190409
+ * Revision 1.22  2005-10-24 15:15:15  europe\L190409
+ * made sessionsArePooled configurable via appConstant 'jms.sessionsArePooled'
+ * added getLogPrefix()
+ *
+ * Revision 1.21  2005/10/20 15:44:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * modified JMS-classes to use shared connections
  * open()/close() became openFacade()/closeFacade()
  *
@@ -99,7 +103,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version="$RCSfile: JMSFacade.java,v $ $Revision: 1.21 $ $Date: 2005-10-20 15:44:49 $";
+	public static final String version="$RCSfile: JMSFacade.java,v $ $Revision: 1.22 $ $Date: 2005-10-24 15:15:15 $";
 
 	public static final String MODE_PERSISTENT="PERSISTENT";
 	public static final String MODE_NON_PERSISTENT="NON_PERSISTENT";
@@ -178,6 +182,9 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	   return "unknown delivery mode ["+mode+"]";
    }
     
+	protected String getLogPrefix() {
+		return "["+getName()+"] ";
+	}
 
     
 	/**
@@ -683,6 +690,17 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 		return message.getJMSMessageID();
 	
 	}
+
+	public boolean isSessionsArePooled() {
+		try {
+			return isTransacted() || getConnection().sessionsArePooled();
+		} catch (JmsException e) {
+			log.error("could not get session",e);
+			return false;
+		}
+	}
+    
+
 
 
     
