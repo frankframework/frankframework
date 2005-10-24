@@ -1,6 +1,9 @@
 /*
  * $Log: XmlSwitch.java,v $
- * Revision 1.17  2005-10-17 11:35:10  europe\L190409
+ * Revision 1.18  2005-10-24 09:20:20  europe\L190409
+ * made namespaceAware an attribute of AbstractPipe
+ *
+ * Revision 1.17  2005/10/17 11:35:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * throw ConfigurationException when stylesheet not found
  *
  * Revision 1.16  2005/06/13 11:46:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -65,7 +68,7 @@ import java.util.Map;
  * @author Johan Verrips
  */
 public class XmlSwitch extends AbstractPipe {
-	public static final String version="$RCSfile: XmlSwitch.java,v $ $Revision: 1.17 $ $Date: 2005-10-17 11:35:10 $";
+	public static final String version="$RCSfile: XmlSwitch.java,v $ $Revision: 1.18 $ $Date: 2005-10-24 09:20:20 $";
 	
     private static final String DEFAULT_SERVICESELECTION_XPATH = XmlUtils.XPATH_GETROOTNODENAME;
 	private TransformerPool transformerPool=null;
@@ -73,7 +76,6 @@ public class XmlSwitch extends AbstractPipe {
     private String serviceSelectionStylesheetFilename=null;
 	private String sessionKey=null;
     private String notFoundForwardName=null;
-	private boolean namespaceAware=true;
 
 	/**
 	 * If no {@link #setServiceSelectionStylesheetFilename(String) serviceSelectionStylesheetFilename} is specified, the
@@ -227,13 +229,6 @@ public class XmlSwitch extends AbstractPipe {
 
 	public String getSessionKey(){
 		return sessionKey;
-	}
-
-	public boolean isNamespaceAware() {
-		return namespaceAware;
-	}
-	public void setNamespaceAware(boolean b) {
-		namespaceAware = b;
 	}
 
 }

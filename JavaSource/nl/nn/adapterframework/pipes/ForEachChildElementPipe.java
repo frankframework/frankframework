@@ -1,6 +1,9 @@
 /*
  * $Log: ForEachChildElementPipe.java,v $
- * Revision 1.6  2005-09-08 08:29:56  europe\L190409
+ * Revision 1.7  2005-10-24 09:21:10  europe\L190409
+ * made namespaceAware an attribute of AbstractPipe
+ *
+ * Revision 1.6  2005/09/08 08:29:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * debugged stopCondition
  *
  * Revision 1.5  2005/09/08 07:18:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -92,10 +95,10 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author Gerrit van Brakel
  * @since 4.3
  * 
- * $Id: ForEachChildElementPipe.java,v 1.6 2005-09-08 08:29:56 europe\L190409 Exp $
+ * $Id: ForEachChildElementPipe.java,v 1.7 2005-10-24 09:21:10 europe\L190409 Exp $
  */
 public class ForEachChildElementPipe extends MessageSendingPipe {
-	public static final String version="$RCSfile: ForEachChildElementPipe.java,v $ $Revision: 1.6 $ $Date: 2005-09-08 08:29:56 $";
+	public static final String version="$RCSfile: ForEachChildElementPipe.java,v $ $Revision: 1.7 $ $Date: 2005-10-24 09:21:10 $";
 
 	private boolean elementsOnly=true;
 	private String stopConditionXPathExpression=null;
@@ -162,9 +165,9 @@ public class ForEachChildElementPipe extends MessageSendingPipe {
 			String inputString=(String)input;
 			if (extractElementsTp!=null) {
 				log.debug("transforming input to obtain list of elements using xpath ["+getElementXPathExpression()+"]");
-				inputString=extractElementsTp.transform((String)input,null);
+				inputString=extractElementsTp.transform((String)input,null, isNamespaceAware());
 			}
-			Element fullMessage = XmlUtils.buildElement(inputString);
+			Element fullMessage = XmlUtils.buildElement(inputString, isNamespaceAware());
 			Node node=fullMessage.getFirstChild();
 			while (keepGoing && node!=null) { 
 				if (elementsOnly) {
@@ -183,7 +186,8 @@ public class ForEachChildElementPipe extends MessageSendingPipe {
 					if (psender!=null) {
 						//result = psender.sendMessage(correlationID, item, new ParameterResolutionContext(src, session));
 						//TODO find out why ParameterResolutionContext cannot be constructed using dom-source
-						result = psender.sendMessage(correlationID, item, new ParameterResolutionContext(item, session));
+						ParameterResolutionContext prc = new ParameterResolutionContext(item, session, isNamespaceAware());
+						result = psender.sendMessage(correlationID, item, prc);
 					} else {
 						result = sender.sendMessage(correlationID, item);
 					}

@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractPipe.java,v $
- * Revision 1.14  2005-09-08 15:53:01  europe\L190409
+ * Revision 1.15  2005-10-24 09:20:18  europe\L190409
+ * made namespaceAware an attribute of AbstractPipe
+ *
+ * Revision 1.14  2005/09/08 15:53:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * moved extra functionality to IExtendedPipe
  *
  * Revision 1.13  2005/09/07 15:26:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -37,7 +40,6 @@
 package nl.nn.adapterframework.pipes;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.IExtendedPipe;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -46,6 +48,7 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
+import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -84,6 +87,7 @@ import java.util.Hashtable;
  * <tr><td>{@link #setDurationThreshold(long) durationThreshold}</td><td>if durationThreshold >=0 and the duration (in milliseconds) of the message processing exceeded the value specified the message is logged informatory</td><td>-1</td></tr>
  * <tr><td>{@link #setGetInputFromSessionKey(String) getInputFromSessionKey}</td><td>when set, input is taken from this session key, instead of regular input</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setStoreResultInSessionKey(String) storeResultInSessionKey}</td><td>when set, the result is stored under this session key</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setNamespaceAware(boolean) namespaceAware}</td><td>controls namespace-awareness of possible XML parsing in descender-classes</td><td>application default</td></tr>
  * </table>
  * </p>
  * @version Id
@@ -92,7 +96,7 @@ import java.util.Hashtable;
  * @see nl.nn.adapterframework.core.PipeLineSession
  */
 public abstract class AbstractPipe implements IExtendedPipe {
-	public static final String version="$RCSfile: AbstractPipe.java,v $ $Revision: 1.14 $ $Date: 2005-09-08 15:53:01 $";
+	public static final String version="$RCSfile: AbstractPipe.java,v $ $Revision: 1.15 $ $Date: 2005-10-24 09:20:18 $";
 	private String name;
 	protected Logger log = Logger.getLogger(this.getClass());
 	private Hashtable pipeForwards=new Hashtable();
@@ -101,6 +105,7 @@ public abstract class AbstractPipe implements IExtendedPipe {
 	private long durationThreshold = -1;
 	private String getInputFromSessionKey=null;
 	private String storeResultInSessionKey=null;
+	private boolean namespaceAware=XmlUtils.isNamespaceAwareByDefault();
   
 	/**
 	 * <code>configure()</code> is called after the {@link nl.nn.adapterframework.core.PipeLine Pipeline} is registered
@@ -284,6 +289,14 @@ public abstract class AbstractPipe implements IExtendedPipe {
 	}
 	public String getStoreResultInSessionKey() {
 		return storeResultInSessionKey;
+	}
+
+	
+	public void setNamespaceAware(boolean b) {
+		namespaceAware = b;
+	}
+	public boolean isNamespaceAware() {
+		return namespaceAware;
 	}
 
 }

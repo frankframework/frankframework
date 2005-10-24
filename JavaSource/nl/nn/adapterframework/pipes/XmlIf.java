@@ -1,6 +1,9 @@
 /*
  * $Log: XmlIf.java,v $
- * Revision 1.3  2005-08-30 16:03:20  europe\L190409
+ * Revision 1.4  2005-10-24 09:20:20  europe\L190409
+ * made namespaceAware an attribute of AbstractPipe
+ *
+ * Revision 1.3  2005/08/30 16:03:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * decreased amount of logging
  *
  * Revision 1.2  2005/08/25 15:49:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -44,7 +47,7 @@ import nl.nn.adapterframework.util.TransformerPool;
  */
 
 public class XmlIf extends AbstractPipe {
-	public static final String version="$RCSfile: XmlIf.java,v $ $Revision: 1.3 $ $Date: 2005-08-30 16:03:20 $";
+	public static final String version="$RCSfile: XmlIf.java,v $ $Revision: 1.4 $ $Date: 2005-10-24 09:20:20 $";
 
 	private String sessionKey = null;
 	private String xpathExpression = null;
@@ -102,7 +105,7 @@ public class XmlIf extends AbstractPipe {
 		
 		if (tp!=null) {
 			try {
-				forward = tp.transform(sInput,null);
+				forward = tp.transform(sInput,null, isNamespaceAware());
 			} catch (Exception e) {
 				throw new PipeRunException(this,getLogPrefix(session)+"cannot evaluate expression",e);
 			}
