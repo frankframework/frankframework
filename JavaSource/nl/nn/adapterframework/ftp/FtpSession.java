@@ -1,6 +1,9 @@
 /*
  * $Log: FtpSession.java,v $
- * Revision 1.4  2005-10-24 11:41:27  europe\m00f531
+ * Revision 1.5  2005-10-24 12:12:33  europe\m00f531
+ * *** empty log message ***
+ *
+ * Revision 1.4  2005/10/24 11:41:27  John Dekker <john.dekker@ibissource.org>
  * *** empty log message ***
  *
  * Revision 1.3  2005/10/24 09:59:19  John Dekker <john.dekker@ibissource.org>
@@ -55,7 +58,7 @@ import com.sshtools.j2ssh.transport.IgnoreHostKeyVerification;
  * @author John Dekker
  */
 public class FtpSession {
-	public static final String version = "$RCSfile: FtpSession.java,v $  $Revision: 1.4 $ $Date: 2005-10-24 11:41:27 $";
+	public static final String version = "$RCSfile: FtpSession.java,v $  $Revision: 1.5 $ $Date: 2005-10-24 12:12:33 $";
 	protected Logger logger = Logger.getLogger(this.getClass());
 	
 	// configuration parameters, global for all types
@@ -403,8 +406,10 @@ public class FtpSession {
 				for (Iterator sftpFileIt = listOfSftpFiles.iterator(); sftpFileIt.hasNext();) {
 					SftpFile file = (SftpFile)sftpFileIt.next();
 					String filename = file.getFilename();
-					if (filesOnly || file.isFile()) {
-						result.add(filename);
+					if (filesOnly || (! file.isDirectory())) {
+						if (! filename.startsWith(".")) {
+							result.add(filename);
+						}
 					}
 				}
 				return result;
