@@ -1,6 +1,9 @@
 /*
  * $Log: JmsListener.java,v $
- * Revision 1.17  2005-10-24 15:16:05  europe\L190409
+ * Revision 1.18  2005-10-26 08:23:11  europe\L190409
+ * make use of isSessionsArePooled
+ *
+ * Revision 1.17  2005/10/24 15:16:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * implemented session pooling
  *
  * Revision 1.16  2005/10/20 15:44:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -134,7 +137,7 @@ import java.util.HashMap;
  * @since 4.0.1
  */
 public class JmsListener extends JMSFacade implements IPostboxListener, ICorrelatedPullingListener, HasSender {
-	public static final String version="$RCSfile: JmsListener.java,v $ $Revision: 1.17 $ $Date: 2005-10-24 15:16:05 $";
+	public static final String version="$RCSfile: JmsListener.java,v $ $Revision: 1.18 $ $Date: 2005-10-26 08:23:11 $";
 
 	private final static String THREAD_CONTEXT_SESSION_KEY="session";
 	private final static String THREAD_CONTEXT_MESSAGECONSUMER_KEY="messageConsumer";
@@ -177,14 +180,18 @@ public class JmsListener extends JMSFacade implements IPostboxListener, ICorrela
 	}
 
 	protected MessageConsumer getReceiver(HashMap threadContext, Session session, String correlationId) throws ListenerException {
-		if (isSessionsArePooled() || StringUtils.isNotEmpty(correlationId)) {
-			try {
+		try {
+			if (StringUtils.isNotEmpty(correlationId)) {
 				return getMessageConsumerForCorrelationId(session, getDestination(), correlationId);
-			} catch (Exception e) {
-				throw new ListenerException(getLogPrefix()+"exception creating QueueReceiver", e);
+			} else {
+				if (isSessionsArePooled()) {
+					return getMessageConsumer(session, getDestination());
+				} else {
+					return (MessageConsumer) threadContext.get(THREAD_CONTEXT_MESSAGECONSUMER_KEY);
+				}
 			}
-		} else {
-			return (MessageConsumer) threadContext.get(THREAD_CONTEXT_MESSAGECONSUMER_KEY);
+		} catch (Exception e) {
+			throw new ListenerException(getLogPrefix()+"exception creating QueueReceiver", e);
 		}
 	}
 	
