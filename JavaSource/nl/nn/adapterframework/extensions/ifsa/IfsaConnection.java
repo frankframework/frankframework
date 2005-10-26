@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaConnection.java,v $
- * Revision 1.6  2005-10-20 15:34:09  europe\L190409
+ * Revision 1.7  2005-10-26 08:24:54  europe\L190409
+ * pulled dynamic reply code out of IfsaConnection to ConnectionBase
+ *
+ * Revision 1.6  2005/10/20 15:34:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * renamed JmsConnection into ConnectionBase
  *
  * Revision 1.5  2005/10/18 07:04:47  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -54,24 +57,13 @@ import com.ing.ifsa.IFSAQueueConnectionFactory;
  * @version Id
  */
 public class IfsaConnection extends ConnectionBase {
-	public static final String version="$RCSfile: IfsaConnection.java,v $ $Revision: 1.6 $ $Date: 2005-10-20 15:34:09 $";
+	public static final String version="$RCSfile: IfsaConnection.java,v $ $Revision: 1.7 $ $Date: 2005-10-26 08:24:54 $";
 
 	protected boolean preJms22Api=false;
-	protected boolean useSingleDynamicReplyQueue=false;
-	private Queue replyQueue=null;
-
 	public IfsaConnection(String applicationId, IFSAContext context, IFSAQueueConnectionFactory connectionFactory, HashMap connectionMap, boolean preJms22Api) {
 		super(applicationId,context,connectionFactory,connectionMap);
 		this.preJms22Api=preJms22Api;
 		log.debug("created new IfsaConnection for ["+applicationId+"] context ["+context+"] connectionfactory ["+connectionFactory+"]");
-	}
-
-	public boolean close() throws IbisException {
-		boolean didClose = super.close();
-		if (didClose) {
-			replyQueue=null;
-		}
-		return didClose;
 	}
 
 
@@ -86,41 +78,6 @@ public class IfsaConnection extends ConnectionBase {
 			throw new IfsaException("could not find IfsaContext",e);
 		}
 	}
-	
-	protected Queue getDynamicReplyQueue(QueueSession session) throws JMSException {
-		Queue result;
-		if (useSingleDynamicReplyQueue) {
-			if (replyQueue==null) {
-				synchronized (this) {
-					if (replyQueue==null) {
-						replyQueue=session.createTemporaryQueue();
-						log.info("created dynamic replyQueue ["+replyQueue.getQueueName()+"]");
-					}
-				}
-			}
-			result = replyQueue;
-		} else {
-			result = session.createTemporaryQueue();
-		}
-		return result;
-	}
-
-	protected void releaseDynamicReplyQueue(Queue replyQueue) throws IfsaException {
-		if (replyQueue!=null) {
-			try {
-				if (!useSingleDynamicReplyQueue) {
-					if (!(replyQueue instanceof TemporaryQueue)) {
-						throw new IfsaException("DynamicReplyQueue ["+replyQueue.getQueueName()+"] is not a TemporaryQueue");
-					}
-					TemporaryQueue queue = (TemporaryQueue)replyQueue;
-					queue.delete();
-				}
-			} catch (JMSException e) {
-				throw new IfsaException("cannot close dynamic reply queue",e);
-			}
-		}
-	}
-	
 	
 	/**
 	 * Retrieves the reply queue for a <b>client</b> connection. If the
@@ -178,13 +135,13 @@ public class IfsaConnection extends ConnectionBase {
 		}
 		
 		try {
-			if (hasDynamicReplyQueue()) {
+			if (hasDynamicReplyQueue() && !useSingleDynamicReplyQueue) {
 				queueReceiver = session.createReceiver(replyQueue);
-				log.debug("using dynamic reply queue" );
+				log.debug("created receiver on individual dynamic reply queue" );
 			} else {
 				String selector="JMSCorrelationID='" + correlationId + "'";
 				queueReceiver = session.createReceiver(replyQueue, selector);
-				log.debug("Using static reply queue - selector ["+selector+"]");
+				log.debug("created receiver on static or shared-dynamic reply queue - selector ["+selector+"]");
 			}	
 		} catch (JMSException e) {
 			throw new IfsaException(e);
@@ -197,9 +154,7 @@ public class IfsaConnection extends ConnectionBase {
 			if (receiver!=null) {
 				Queue replyQueue = receiver.getQueue();
 				receiver.close();
-				if (replyQueue!=null) {
-					releaseClientReplyQueue(replyQueue);
-				}
+				releaseClientReplyQueue(replyQueue);
 			}
 		} catch (JMSException e) {
 			throw new IfsaException(e);
