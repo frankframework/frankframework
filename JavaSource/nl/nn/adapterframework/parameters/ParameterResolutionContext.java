@@ -1,6 +1,9 @@
 /*
  * $Log: ParameterResolutionContext.java,v $
- * Revision 1.10  2005-10-24 09:59:24  europe\m00f531
+ * Revision 1.11  2005-10-26 08:49:57  europe\L190409
+ * reintroduced check for empty parameterlist in getValueMap
+ *
+ * Revision 1.10  2005/10/24 09:59:24  John Dekker <john.dekker@ibissource.org>
  * Add support for pattern parameters, and include them into several listeners,
  * senders and pipes that are file related
  *
@@ -48,51 +51,6 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 
 import org.apache.log4j.Logger;
-
-/*
- * $Log: ParameterResolutionContext.java,v $
- * Revision 1.10  2005-10-24 09:59:24  europe\m00f531
- * Add support for pattern parameters, and include them into several listeners,
- * senders and pipes that are file related
- *
- * Revision 1.9  2005/10/17 11:43:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * namespace-awareness configurable
- *
- * Revision 1.8  2005/06/13 11:55:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * made namespaceAware
- *
- * Revision 1.7  2005/06/02 11:47:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * obtain source from XmlUtils
- *
- * Revision 1.6  2005/03/31 08:15:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * generalized Source
- *
- * Revision 1.5  2005/02/24 10:49:56  Johan Verrips <johan.verrips@ibissource.org>
- * 4.2.e dd 24-02-2005
- *
- * Revision 1.4  2005/02/10 08:15:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * fixed bug in map-generation
- *
- * Revision 1.3  2005/01/13 08:08:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * Xslt parameter handling by Maps instead of by Ibis parameter system
- *
- * Revision 1.2  2004/10/14 16:07:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * changed from Object,Hashtable to String, PipelineSession
- *
- * Revision 1.1  2004/10/05 09:51:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * changed from ParameterResolver to ParameterResolutionContext
- * moved to package parameters
- *
- * Revision 1.3  2004/06/16 13:08:20  Johan Verrips <johan.verrips@ibissource.org>
- * removed unused imports
- *
- * Revision 1.2  2004/05/25 09:27:56  unknown <unknown@ibissource.org>
- * Optimize performance by caching the transformer
- *
- * Revision 1.1  2004/05/21 07:58:47  unknown <unknown@ibissource.org>
- * Moved PipeParameter to core
- *
- */
  
 /**
  * Determines the parameter values of the specified parameter during runtime
@@ -101,7 +59,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class ParameterResolutionContext {
-	public static final String version="$RCSfile: ParameterResolutionContext.java,v $ $Revision: 1.10 $ $Date: 2005-10-24 09:59:24 $";
+	public static final String version="$RCSfile: ParameterResolutionContext.java,v $ $Revision: 1.11 $ $Date: 2005-10-26 08:49:57 $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	private String input;
@@ -162,13 +120,16 @@ public class ParameterResolutionContext {
 	 * @return map of value objects
 	 */
 	public HashMap getValueMap(ParameterList parameters) throws ParameterException {
+		if (parameters==null) {
+			return null;
+		}
 		HashMap paramValuesMap = getValues(parameters).getParameterValueMap();
 
 		// convert map with parameterValue to map with value		
 		HashMap result = new HashMap(paramValuesMap.size());
 		for (Iterator it= paramValuesMap.values().iterator(); it.hasNext(); ) {
-			ParameterValue p = (ParameterValue)it.next();
-			result.put(p.getDefinition().getName(), p.getValue());
+			ParameterValue pv = (ParameterValue)it.next();
+			result.put(pv.getDefinition().getName(), pv.getValue());
 		}
 		return result;
 	}
