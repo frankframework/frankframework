@@ -1,6 +1,9 @@
 /*
  * $Log: ConnectionBase.java,v $
- * Revision 1.2  2005-10-24 15:11:17  europe\L190409
+ * Revision 1.3  2005-10-26 08:18:59  europe\L190409
+ * pulled dynamic reply code out of IfsaConnection up to here
+ *
+ * Revision 1.2  2005/10/24 15:11:17  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * made sessionsArePooled configurable via appConstant 'jms.sessionsArePooled'
  *
  * Revision 1.1  2005/10/20 15:34:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -23,14 +26,18 @@ import java.util.HashMap;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
+import javax.jms.Queue;
 import javax.jms.QueueConnection;
 import javax.jms.QueueConnectionFactory;
+import javax.jms.QueueSession;
 import javax.jms.Session;
+import javax.jms.TemporaryQueue;
 import javax.jms.TopicConnection;
 import javax.jms.TopicConnectionFactory;
 import javax.naming.Context;
 
 import nl.nn.adapterframework.core.IbisException;
+import nl.nn.adapterframework.extensions.ifsa.IfsaException;
 import nl.nn.adapterframework.util.AppConstants;
 
 import org.apache.log4j.Logger;
@@ -42,7 +49,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class ConnectionBase  {
-	public static final String version="$RCSfile: ConnectionBase.java,v $ $Revision: 1.2 $ $Date: 2005-10-24 15:11:17 $";
+	public static final String version="$RCSfile: ConnectionBase.java,v $ $Revision: 1.3 $ $Date: 2005-10-26 08:18:59 $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	private int referenceCount;
@@ -56,6 +63,9 @@ public class ConnectionBase  {
 	private Connection connection=null;
 	
 	private HashMap connectionMap;
+
+	protected boolean useSingleDynamicReplyQueue = true;
+	private Queue globalDynamicReplyQueue = null;
 	
 	protected ConnectionBase(String id, Context context, ConnectionFactory connectionFactory, HashMap connectionMap) {
 		super();
@@ -74,6 +84,7 @@ public class ConnectionBase  {
 			log.debug(getLogPrefix()+" reference count ["+referenceCount+"], closing connection");
 			connectionMap.remove(getId());
 			try {
+				deleteDynamicQueue(globalDynamicReplyQueue);
 				if (connection != null) { 
 					connection.close();
 				}
@@ -83,6 +94,7 @@ public class ConnectionBase  {
 			} catch (Exception e) {
 				throw new IbisException("exception closing connection", e);
 			} finally {
+				globalDynamicReplyQueue=null;
 				connectionFactory = null;
 				connection=null;
 				context = null;
@@ -119,17 +131,13 @@ public class ConnectionBase  {
 		}
 	}
 
-	protected Connection getConnection() throws IbisException {
+	protected synchronized Connection getConnection() throws IbisException {
 		if (connection == null) {
-			synchronized (this) {
-				if (connection == null) {
-					try {
-						connection = createConnection();
-						connection.start();
-					} catch (JMSException e) {
-						throw new IbisException("could not obtain Connection", e);
-					}
-				}
+			try {
+				connection = createConnection();
+				connection.start();
+			} catch (JMSException e) {
+				throw new IbisException("could not obtain Connection", e);
 			}
 		}
 		return connection;
@@ -155,6 +163,43 @@ public class ConnectionBase  {
 			sessionsArePooledStore = new Boolean(pooled);
 		}
 		return sessionsArePooledStore.booleanValue();
+	}
+
+
+	private void deleteDynamicQueue(Queue queue) throws IfsaException {
+		if (queue!=null) {
+			try {
+				if (!(queue instanceof TemporaryQueue)) {
+					throw new IfsaException("Queue ["+queue.getQueueName()+"] is not a TemporaryQueue");
+				}
+				TemporaryQueue tqueue = (TemporaryQueue)queue;
+				tqueue.delete();
+			} catch (JMSException e) {
+				throw new IfsaException("cannot delete temporary queue",e);
+			}
+		}
+	}
+
+	public Queue getDynamicReplyQueue(QueueSession session) throws JMSException {
+		Queue result;
+		if (useSingleDynamicReplyQueue) {
+			synchronized (this) {
+				if (globalDynamicReplyQueue==null) {
+					globalDynamicReplyQueue=session.createTemporaryQueue();
+					log.info("created dynamic replyQueue ["+globalDynamicReplyQueue.getQueueName()+"]");
+				}
+			}
+			result = globalDynamicReplyQueue;
+		} else {
+			result = session.createTemporaryQueue();
+		}
+		return result;
+	}
+	
+	public void releaseDynamicReplyQueue(Queue replyQueue) throws IfsaException {
+		if (!useSingleDynamicReplyQueue) {
+			deleteDynamicQueue(replyQueue);
+		}
 	}
 
 
