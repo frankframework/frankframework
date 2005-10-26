@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.19  2005-10-17 11:29:24  europe\L190409
+ * Revision 1.20  2005-10-26 08:52:31  europe\L190409
+ * allow for transacted="true" without inProcessStorage, (ohne Gewähr!)
+ *
+ * Revision 1.19  2005/10/17 11:29:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fixed nullpointerexception in startRunning
  *
  * Revision 1.18  2005/09/26 11:42:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -170,7 +173,7 @@ import javax.transaction.UserTransaction;
  * @since 4.2
  */
 public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, IMessageHandler, IbisExceptionListener, HasSender {
-	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.19 $ $Date: 2005-10-17 11:29:24 $";
+	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.20 $ $Date: 2005-10-26 08:52:31 $";
 	protected Logger log = Logger.getLogger(this.getClass());
  
 	private String returnIfStopped="";
@@ -389,14 +392,16 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 					warn("Receiver ["+getName()+"] sets transacted=true, but listener not. Transactional integrity is not guaranteed"); 
 				}
 				if (getInProcessStorage()==null) {
-					throw new ConfigurationException("Receiver ["+getName()+"] sets transacted=true, but has no inProcessStorage.");
-				}
-				if (!(getInProcessStorage() instanceof IXAEnabled && ((IXAEnabled)getInProcessStorage()).isTransacted())) {
-					warn("Receiver ["+getName()+"] sets transacted=true, but inProcessStorage not. Transactional integrity is not guaranteed"); 
-				}
-				getInProcessStorage().configure();
-				if (getInProcessStorage() instanceof HasPhysicalDestination) {
-					info("Receiver ["+getName()+"] has inProcessStorage in "+((HasPhysicalDestination)getInProcessStorage()).getPhysicalDestinationName());
+//					throw new ConfigurationException("Receiver ["+getName()+"] sets transacted=true, but has no inProcessStorage.");
+					warn("Receiver ["+getName()+"] sets transacted=true, but has no inProcessStorage. Transactional integrity is not guaranteed");
+				} else {
+					if (!(getInProcessStorage() instanceof IXAEnabled && ((IXAEnabled)getInProcessStorage()).isTransacted())) {
+						warn("Receiver ["+getName()+"] sets transacted=true, but inProcessStorage not. Transactional integrity is not guaranteed"); 
+					}
+					getInProcessStorage().configure();
+					if (getInProcessStorage() instanceof HasPhysicalDestination) {
+						info("Receiver ["+getName()+"] has inProcessStorage in "+((HasPhysicalDestination)getInProcessStorage()).getPhysicalDestinationName());
+					}
 				}
 				
 				if (errorSender==null && errorStorage==null) {
@@ -634,6 +639,12 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 		log.info("receiver ["+getName()+"] moves message with originalMessageId ["+originalMessageId+"] correlationId ["+correlationId+"] to inProcess");
 		String newMessageId=null;
 		try {
+			if (getInProcessStorage() == null) {
+				log.warn(getLogPrefix()+"has no inProcessStorage, cannot store message before processing. Will commit read of message, and start a new transaction");
+				utx.commit();
+				utx.begin();
+				return null;
+			}
 			if (rawMessage instanceof Serializable) {
 				//TODO: received date preciezer doen
 				newMessageId = getInProcessStorage().storeMessage(originalMessageId,correlationId,new Date(),"in process",(Serializable)rawMessage);
@@ -919,7 +930,8 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 				}
 			}
 		} finally {
-			if (isTransacted() && inProcessMessageId!=null) {
+//			if (isTransacted() && inProcessMessageId!=null) {
+			if (isTransacted()) {
 				finishTransactedProcessingOfMessage(utx,inProcessMessageId,messageId,correlationId,message, new Date(startProcessingTimestamp), errorMessage, (Serializable)rawMessage);
 			}
 			long finishProcessingTimestamp = System.currentTimeMillis();
