@@ -1,6 +1,9 @@
 /*
  * $Log: Adapter.java,v $
- * Revision 1.19  2005-10-17 08:51:23  europe\L190409
+ * Revision 1.20  2005-10-26 13:16:14  europe\L190409
+ * added second default for UserTransactionUrl
+ *
+ * Revision 1.19  2005/10/17 08:51:23  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * made getMessageKeeper synchronized
  *
  * Revision 1.18  2005/08/17 08:12:45  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -105,7 +108,7 @@ import javax.transaction.UserTransaction;
  */
 
 public class Adapter extends JNDIBase implements Runnable, IAdapter {
-	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.19 $ $Date: 2005-10-17 08:51:23 $";
+	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.20 $ $Date: 2005-10-26 13:16:14 $";
 	private Vector receivers = new Vector();
 	private long lastMessageDate = 0;
 	private PipeLine pipeline;
@@ -147,6 +150,7 @@ public class Adapter extends JNDIBase implements Runnable, IAdapter {
 	private String errorState = "ERROR";
 
 	private String userTransactionUrl = "java:comp/UserTransaction";
+	private String userTransactionUrlAlternative = "jta/usertransaction";
 
 	/**
 	 * The nummer of message currently in process
@@ -296,11 +300,15 @@ public class Adapter extends JNDIBase implements Runnable, IAdapter {
 
 		try {
 			return JtaUtil.getUserTransaction(getContext(), getUserTransactionUrl());
-		}
-		catch (Exception e) {
-			throw new TransactionException(
-				"[" + name + "] could not obtain UserTransaction from URL [" + getUserTransactionUrl() + "]",
-				e);
+		} catch (Exception e1) {
+			try {
+				return JtaUtil.getUserTransaction(getContext(), userTransactionUrlAlternative);
+			} catch (Exception e2) {
+				log.warn("could not obtain UserTransaction from alternative  [" + userTransactionUrlAlternative + "]", e2);
+				throw new TransactionException(
+					"[" + name + "] could not obtain UserTransaction from URL [" + getUserTransactionUrl() + "] or URL [" + userTransactionUrlAlternative + "]",
+					e1);
+			}
 		}
 	}
 
