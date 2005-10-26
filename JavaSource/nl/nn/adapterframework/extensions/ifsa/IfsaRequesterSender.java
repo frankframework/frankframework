@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaRequesterSender.java,v $
- * Revision 1.17  2005-10-24 09:59:23  europe\m00f531
+ * Revision 1.18  2005-10-26 08:48:28  europe\L190409
+ * improved logging
+ *
+ * Revision 1.17  2005/10/24 09:59:23  John Dekker <john.dekker@ibissource.org>
  * Add support for pattern parameters, and include them into several listeners,
  * senders and pipes that are file related
  *
@@ -109,7 +112,7 @@ import com.ing.ifsa.IFSATimeOutMessage;
  * @since  4.2
  */
 public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParameters {
-	public static final String version="$RCSfile: IfsaRequesterSender.java,v $ $Revision: 1.17 $ $Date: 2005-10-24 09:59:23 $";
+	public static final String version="$RCSfile: IfsaRequesterSender.java,v $ $Revision: 1.18 $ $Date: 2005-10-26 08:48:28 $";
  
 	protected ParameterList paramList = null;
   
@@ -183,14 +186,11 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 	    } catch (Exception e) {
 	        throw new SenderException(getLogPrefix()+"got exception retrieving reply", e);
 	    } finally {
-			if (replyReceiver!=null) {
-				try {
-					log.debug(getLogPrefix()+"closing replyreceiver");
-					closeReplyReceiver(replyReceiver);
-				} catch (IfsaException e) {
-					log.error(getLogPrefix()+"error closing replyreceiver", e);
-		        } 
-			}
+			try {
+				closeReplyReceiver(replyReceiver);
+			} catch (IfsaException e) {
+				log.error(getLogPrefix()+"error closing replyreceiver", e);
+	        } 
 		}
 	    if (msg == null) {
 	        throw new TimeOutException(getLogPrefix()+" timed out waiting for reply using selector ["+selector+"]");
