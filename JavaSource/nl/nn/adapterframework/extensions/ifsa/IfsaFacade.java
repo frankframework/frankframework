@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaFacade.java,v $
- * Revision 1.32  2005-10-24 15:10:13  europe\L190409
+ * Revision 1.33  2005-10-26 08:23:57  europe\L190409
+ * improved logging
+ *
+ * Revision 1.32  2005/10/24 15:10:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * made sessionsArePooled configurable via appConstant 'jms.sessionsArePooled'
  *
  * Revision 1.31  2005/10/18 07:04:46  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -125,7 +128,7 @@ import javax.jms.*;
  * @since 4.2
  */
 public class IfsaFacade implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version = "$RCSfile: IfsaFacade.java,v $ $Revision: 1.32 $ $Date: 2005-10-24 15:10:13 $";
+	public static final String version = "$RCSfile: IfsaFacade.java,v $ $Revision: 1.33 $ $Date: 2005-10-26 08:23:57 $";
     protected Logger log = Logger.getLogger(this.getClass());
     
     private static int BASIC_ACK_MODE = Session.AUTO_ACKNOWLEDGE;
@@ -396,6 +399,7 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination, IXAEnab
 	}
 
 	public void closeReplyReceiver(QueueReceiver receiver) throws IfsaException {
+		log.debug(getLogPrefix()+"closing replyreceiver");
 		getConnection().closeReplyReceiver(receiver);
 	}
 	
@@ -498,10 +502,7 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination, IXAEnab
 			}
 	        QueueSender tqs = session.createSender(replyQueue );
 	        if (log.isDebugEnabled()) {
-	            log.debug(getLogPrefix()
-	            		+ "] sending reply to ["
-	                    + received_message.getJMSReplyTo()
-	                    + "]");
+	            log.debug(getLogPrefix()+ "sending reply to ["+ received_message.getJMSReplyTo()+ "]");
 	        }
 	        ((IFSAServerQueueSender) tqs).sendReply(received_message, answer);
 	        tqs.close();
