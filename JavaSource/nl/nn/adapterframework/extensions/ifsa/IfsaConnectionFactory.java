@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaConnectionFactory.java,v $
- * Revision 1.7  2005-10-20 15:34:09  europe\L190409
+ * Revision 1.8  2005-10-26 08:21:42  europe\L190409
+ * renamed createJmsConnection() into createConnection()
+ *
+ * Revision 1.7  2005/10/20 15:34:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * renamed JmsConnection into ConnectionBase
  *
  * Revision 1.6  2005/08/31 16:28:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -61,7 +64,7 @@ import com.ing.ifsa.IFSAQueueConnectionFactory;
  * @version Id
  */
 public class IfsaConnectionFactory extends ConnectionFactoryBase {
-	public static final String version="$RCSfile: IfsaConnectionFactory.java,v $ $Revision: 1.7 $ $Date: 2005-10-20 15:34:09 $";
+	public static final String version="$RCSfile: IfsaConnectionFactory.java,v $ $Revision: 1.8 $ $Date: 2005-10-26 08:21:42 $";
 
 	private final static String IFSA_INITIAL_CONTEXT_FACTORY="com.ing.ifsa.IFSAContextFactory";
 	private final static String IFSA_PROVIDER_URL_V2_0="IFSA APPLICATION BUS";
@@ -74,7 +77,7 @@ public class IfsaConnectionFactory extends ConnectionFactoryBase {
 
 	private boolean preJms22Api=false;
 
-	protected ConnectionBase createJmsConnection(String id) throws IbisException {
+	protected ConnectionBase createConnection(String id) throws IbisException {
 		IFSAContext context = (IFSAContext)getContext();
 		IFSAQueueConnectionFactory connectionFactory = (IFSAQueueConnectionFactory)getConnectionFactory(context, id); 
 		return new IfsaConnection(id, context, connectionFactory, getConnectionMap(),preJms22Api);

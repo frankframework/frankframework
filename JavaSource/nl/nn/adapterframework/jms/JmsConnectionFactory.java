@@ -1,6 +1,9 @@
 /*
  * $Log: JmsConnectionFactory.java,v $
- * Revision 1.1  2005-10-20 15:43:10  europe\L190409
+ * Revision 1.2  2005-10-26 08:21:42  europe\L190409
+ * renamed createJmsConnection() into createConnection()
+ *
+ * Revision 1.1  2005/10/20 15:43:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * introduced JmsConnectionFactory special for real Jms connections
  *
  */
@@ -29,7 +32,7 @@ import nl.nn.adapterframework.jms.ConnectionBase;
  * @since   4.4
  */
 public class JmsConnectionFactory extends ConnectionFactoryBase {
-	public static final String version="$RCSfile: JmsConnectionFactory.java,v $ $Revision: 1.1 $ $Date: 2005-10-20 15:43:10 $";
+	public static final String version="$RCSfile: JmsConnectionFactory.java,v $ $Revision: 1.2 $ $Date: 2005-10-26 08:21:42 $";
 
 	static private HashMap connectionMap = new HashMap();
 	
@@ -37,7 +40,7 @@ public class JmsConnectionFactory extends ConnectionFactoryBase {
 		return connectionMap;
 	}
 
-	protected ConnectionBase createJmsConnection(String jmsConnectionFactoryName) throws IbisException {
+	protected ConnectionBase createConnection(String jmsConnectionFactoryName) throws IbisException {
 		Context context = getContext();
 		ConnectionFactory connectionFactory = getConnectionFactory(context, jmsConnectionFactoryName); 
 		return new JmsConnection(jmsConnectionFactoryName, context, connectionFactory, getConnectionMap());

@@ -1,6 +1,9 @@
 /*
  * $Log: ConnectionFactoryBase.java,v $
- * Revision 1.3  2005-10-20 15:35:25  europe\L190409
+ * Revision 1.4  2005-10-26 08:21:42  europe\L190409
+ * renamed createJmsConnection() into createConnection()
+ *
+ * Revision 1.3  2005/10/20 15:35:25  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected version String
  *
  * Revision 1.2  2005/10/20 15:34:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -29,30 +32,25 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public abstract class ConnectionFactoryBase  {
-	public static final String version="$RCSfile: ConnectionFactoryBase.java,v $ $Revision: 1.3 $ $Date: 2005-10-20 15:35:25 $";
+	public static final String version="$RCSfile: ConnectionFactoryBase.java,v $ $Revision: 1.4 $ $Date: 2005-10-26 08:21:42 $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	protected abstract HashMap getConnectionMap();
 	protected abstract Context createContext() throws NamingException;
 	protected abstract ConnectionFactory createConnectionFactory(Context context, String id) throws IbisException, NamingException;
 	
-	protected ConnectionBase createJmsConnection(String id) throws IbisException {
+	protected ConnectionBase createConnection(String id) throws IbisException {
 		Context context = getContext();
 		ConnectionFactory connectionFactory = getConnectionFactory(context, id); 
 		return new ConnectionBase(id, context, connectionFactory, getConnectionMap());
 	}
 	
-	public ConnectionBase getConnection(String id) throws IbisException {
+	public synchronized ConnectionBase getConnection(String id) throws IbisException {
 		HashMap connectionMap = getConnectionMap();
 		ConnectionBase result = (ConnectionBase)connectionMap.get(id);
 		if (result == null) {
-			synchronized (this) {
-				result = (ConnectionBase)connectionMap.get(id);
-				if (result == null) {
-					result = createJmsConnection(id);
-					log.debug("created new Connection-object for ["+id+"]");
-				}
-			}
+			result = createConnection(id);
+			log.debug("created new Connection-object for ["+id+"]");
 		}
 		result.increaseReferences();
 		return result;
