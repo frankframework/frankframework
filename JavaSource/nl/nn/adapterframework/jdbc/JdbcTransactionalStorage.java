@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcTransactionalStorage.java,v $
- * Revision 1.13  2005-10-18 07:15:05  europe\L190409
+ * Revision 1.14  2005-10-26 13:34:20  europe\L190409
+ * updated JavaDoc
+ *
+ * Revision 1.13  2005/10/18 07:15:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * reduced number of exceptions thrown
  *
  * Revision 1.12  2005/09/22 16:06:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -79,7 +82,7 @@ import nl.nn.adapterframework.util.JdbcUtil;
  * <tr><td>{@link #setUsername(String) username}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setPassword(String) password}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setTableName(String) tableName}</td><td>the name of the table messages are stored in</td><td>inprocstore</td></tr>
+ * <tr><td>{@link #setTableName(String) tableName}</td><td>the name of the table messages are stored in</td><td>ibisstore</td></tr>
  * <tr><td>{@link #setCreateTable(String) createTable}</td><td>when set to <code>true</code>, the table is created if it does not exist</td><td>false</td></tr>
  * <tr><td>{@link #setKeyField(String) keyField}</td><td>the name of the column that contains the primary key of the table</td><td>messageKey</td></tr>
  * <tr><td>{@link #setIdField(String) idField}</td><td>the name of the column messageids are stored in</td><td>messageId</td></tr>
@@ -107,14 +110,14 @@ import nl.nn.adapterframework.util.JdbcUtil;
 
 	CREATE INDEX ibisstore_idx ON ibisstore (slotId, messageDate);
  *  </pre>
- * If these objects do not exist, Ibis tries to create them.
+ * If these objects do not exist, Ibis will try to create them if the attribute createTable="true".
  * 
  * @version Id
  * @author  Gerrit van Brakel
  * @since 	4.1
  */
 public class JdbcTransactionalStorage extends JdbcFacade implements ITransactionalStorage {
-	public static final String version = "$RCSfile: JdbcTransactionalStorage.java,v $ $Revision: 1.13 $ $Date: 2005-10-18 07:15:05 $";
+	public static final String version = "$RCSfile: JdbcTransactionalStorage.java,v $ $Revision: 1.14 $ $Date: 2005-10-26 13:34:20 $";
 	
 	// the following currently only for debug.... 
 	boolean checkIfTableExists=true;
