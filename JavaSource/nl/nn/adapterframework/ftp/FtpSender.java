@@ -1,6 +1,9 @@
 /*
  * $Log: FtpSender.java,v $
- * Revision 1.3  2005-10-24 09:59:22  europe\m00f531
+ * Revision 1.4  2005-10-27 07:57:41  europe\m00f531
+ * add setRemoteDirectory method
+ *
+ * Revision 1.3  2005/10/24 09:59:22  John Dekker <john.dekker@ibissource.org>
  * Add support for pattern parameters, and include them into several listeners,
  * senders and pipes that are file related
  *
@@ -52,7 +55,7 @@ import org.apache.commons.lang.StringUtils;
  * @author: John Dekker
  */
 public class FtpSender extends SenderWithParametersBase {
-	public static final String version = "$RCSfile: FtpSender.java,v $  $Revision: 1.3 $ $Date: 2005-10-24 09:59:22 $";
+	public static final String version = "$RCSfile: FtpSender.java,v $  $Revision: 1.4 $ $Date: 2005-10-27 07:57:41 $";
 	private String name;
 	private String remoteFilenamePattern;
 	private String remoteDirectory;
@@ -202,6 +205,10 @@ public class FtpSender extends SenderWithParametersBase {
 
 	public void setMessageIsContent(boolean messageIsContent) {
 		ftpSession.setMessageIsContent(messageIsContent);
+	}
+
+	public void setRemoteDirectory(String remoteDirectory) {
+		this.remoteDirectory = remoteDirectory;
 	}
 
 }
