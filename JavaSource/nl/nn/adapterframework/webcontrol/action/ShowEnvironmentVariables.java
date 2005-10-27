@@ -1,6 +1,9 @@
 /*
  * $Log: ShowEnvironmentVariables.java,v $
- * Revision 1.1  2005-10-26 12:52:31  europe\L190409
+ * Revision 1.2  2005-10-27 08:44:07  europe\L190409
+ * moved getEnvironmentVariables to Misc
+ *
+ * Revision 1.1  2005/10/26 12:52:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added ShowEnvironmentVariables to console
  *
  */
@@ -20,6 +23,7 @@ import java.io.InputStreamReader;
 import java.util.Enumeration;
 import java.util.Properties;
 
+import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -33,7 +37,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  */
 
 public class ShowEnvironmentVariables extends ActionBase {
-	public static final String version = "$RCSfile: ShowEnvironmentVariables.java,v $ $Revision: 1.1 $ $Date: 2005-10-26 12:52:31 $";
+	public static final String version = "$RCSfile: ShowEnvironmentVariables.java,v $ $Revision: 1.2 $ $Date: 2005-10-27 08:44:07 $";
 
 	public void addPropertiesToXmlBuilder(XmlBuilder container, Properties props, String setName) {
 		Enumeration enum = props.keys();
@@ -52,39 +56,6 @@ public class ShowEnvironmentVariables extends ActionBase {
 
 	}
 	
-	public Properties getEnvironmentVariables() {
-		BufferedReader br = null;
-		try {
-			Process p = null;
-			Runtime r = Runtime.getRuntime();
-			String OS = System.getProperty("os.name").toLowerCase();
-			if (OS.indexOf("windows 9") > -1) {
-				p = r.exec("command.com /c set");
-			} else if (
-				(OS.indexOf("nt") > -1)
-					|| (OS.indexOf("windows 20") > -1)
-					|| (OS.indexOf("windows xp") > -1)) {
-				p = r.exec("cmd.exe /c set");
-			} else {
-				//assume Unix
-				p = r.exec("env");
-			}
-			Properties props=new Properties();
-//			props.load(p.getInputStream()); // this does not work, due to potential malformed escape sequences
-			br = new BufferedReader(new InputStreamReader(p.getInputStream()));
-			String line;
-			while ((line = br.readLine()) != null) {
-				int idx = line.indexOf('=');
-				String key = line.substring(0, idx);
-				String value = line.substring(idx + 1);
-				props.setProperty(key,value);
-			}
-			return props;
-		} catch (Exception e) {
-			log.warn("Error while retrieving environment variables: ", e);
-			return null;
-		}
-	}
 
 	public ActionForward execute(
 		ActionMapping mapping,
@@ -101,12 +72,15 @@ public class ShowEnvironmentVariables extends ActionBase {
 		addPropertiesToXmlBuilder(envVars,AppConstants.getInstance(),"Application Constants");
 		addPropertiesToXmlBuilder(envVars,System.getProperties(),"System Properties");
 		
-		Properties envVarProps=getEnvironmentVariables();
-		if (envVars!=null) {
-			addPropertiesToXmlBuilder(envVars,envVarProps,"Environment Variables");
+		try {
+			addPropertiesToXmlBuilder(envVars,Misc.getEnvironmentVariables(),"Environment Variables");
+		} catch (Throwable t) {
+			log.warn("caught Throwable while getting EnvironmentVariables",t);
 		}
-
-		log.debug("envVars: [" + envVars.toXML() + "]");
+		
+		if (log.isDebugEnabled()) {
+			log.debug("envVars: [" + envVars.toXML() + "]");
+		}
 		request.setAttribute("envVars", envVars.toXML());
 
 		// Forward control to the specified success URI

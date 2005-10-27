@@ -1,6 +1,9 @@
 /*
  * $Log: Misc.java,v $
- * Revision 1.12  2005-10-17 11:26:58  europe\L190409
+ * Revision 1.13  2005-10-27 08:43:36  europe\L190409
+ * moved getEnvironmentVariables to Misc
+ *
+ * Revision 1.12  2005/10/17 11:26:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * addded concatString and compression-functions
  *
  * Revision 1.11  2005/09/22 15:54:17  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -20,6 +23,7 @@ import java.net.InetAddress;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.rmi.server.UID;
+import java.util.Properties;
 import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
 import java.util.zip.GZIPInputStream;
@@ -33,7 +37,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class Misc {
-	public static final String version="$RCSfile: Misc.java,v $ $Revision: 1.12 $ $Date: 2005-10-17 11:26:58 $";
+	public static final String version="$RCSfile: Misc.java,v $ $Revision: 1.13 $ $Date: 2005-10-27 08:43:36 $";
 	public static final int BUFFERSIZE=20000;
 	public static final String DEFAULT_INPUT_STREAM_ENCODING="UTF-8";
 
@@ -355,6 +359,35 @@ public class Misc {
     
 		// Get the decompressed data
 		return bos.toByteArray();
+	}
+	
+	public static Properties getEnvironmentVariables() throws IOException {
+		BufferedReader br = null;
+		Process p = null;
+		Runtime r = Runtime.getRuntime();
+		String OS = System.getProperty("os.name").toLowerCase();
+		if (OS.indexOf("windows 9") > -1) {
+			p = r.exec("command.com /c set");
+		} else if (
+			(OS.indexOf("nt") > -1)
+				|| (OS.indexOf("windows 20") > -1)
+				|| (OS.indexOf("windows xp") > -1)) {
+			p = r.exec("cmd.exe /c set");
+		} else {
+			//assume Unix
+			p = r.exec("env");
+		}
+		Properties props=new Properties();
+//		props.load(p.getInputStream()); // this does not work, due to potential malformed escape sequences
+		br = new BufferedReader(new InputStreamReader(p.getInputStream()));
+		String line;
+		while ((line = br.readLine()) != null) {
+			int idx = line.indexOf('=');
+			String key = line.substring(0, idx);
+			String value = line.substring(idx + 1);
+			props.setProperty(key,value);
+		}
+		return props;
 	}
 
 
