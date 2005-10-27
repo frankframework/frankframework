@@ -1,3 +1,9 @@
+/*
+ * $Log: PutInSession.java,v $
+ * Revision 1.4  2005-10-27 09:47:15  europe\L190409
+ * added value attribute
+ *
+ */
 package nl.nn.adapterframework.pipes;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -14,6 +20,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setForwardName(String) forwardName}</td><td>name of forward returned upon completion</td><td>"success"</td></tr>
  * <tr><td>{@link #setSessionKey(String) sessionKey}</td><td>name of the key in the <code>PipeLineSession</code> to store the input in</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setValue(String) value}</td><td>The value to store the in the <code>PipeLineSession</code>. If not set, the input of the pipe is stored</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * <p><b>Exits:</b>
@@ -29,9 +36,11 @@ import nl.nn.adapterframework.core.PipeRunResult;
  * @see PipeLineSession
  */
 public class PutInSession extends FixedForwardPipe {
-	public static final String version="$Id: PutInSession.java,v 1.3 2004-03-26 10:42:35 NNVZNL01#L180564 Exp $";
+	public static final String version = "$RCSfile: PutInSession.java,v $ $Revision: 1.4 $ $Date: 2005-10-27 09:47:15 $";
 	
     private String sessionKey;
+	private String value;
+	
 	/**
      * checks wether the proper forward is defined.
      * @throws ConfigurationException
@@ -44,25 +53,41 @@ public class PutInSession extends FixedForwardPipe {
                     + " has a null value for sessionKey");
         }
     }
-public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRunException {
-	session.put(getSessionKey(), input);
-	
-	log.debug(getLogPrefix(session)+"stored ["+input.toString()+"] in pipeLineSession under key ["+getSessionKey()+"]");
+	public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRunException {
+		Object v; 
+		if (getValue() == null) {
+			v = input;
+		} else {
+			v = value;
+		}
+		session.put(getSessionKey(), v);
+		log.debug(getLogPrefix(session)+"stored ["+v.toString()+"] in pipeLineSession under key ["+getSessionKey()+"]");
+		return new PipeRunResult(getForward(), input);
+	}
+	/**
+	 * The name of the key in the <code>PipeLineSession</code> to store the input in
+	 * @see nl.nn.adapterframework.core.PipeLineSession
+	 */
+	public String getSessionKey() {
+		return sessionKey;
+	}
+	/**
+	 * The name of the key in the <code>PipeLineSession</code> to store the input in
+	 * @see nl.nn.adapterframework.core.PipeLineSession
+	 */
+	public void setSessionKey(String newSessionKey) {
+		sessionKey = newSessionKey;
+	}
 
-	return new PipeRunResult(getForward(), input);
-}
-/**
- * The name of the key in the <code>PipeLineSession</code> to store the input in
- * @see nl.nn.adapterframework.core.PipeLineSession
- */
-public String getSessionKey() {
-	return sessionKey;
-}
-/**
- * The name of the key in the <code>PipeLineSession</code> to store the input in
- * @see nl.nn.adapterframework.core.PipeLineSession
- */
-public void setSessionKey(String newSessionKey) {
-	sessionKey = newSessionKey;
-}
+	/**
+	 * The value to store the in the <code>PipeLineSession</code>
+	 * @see nl.nn.adapterframework.core.PipeLineSession
+	 */
+	public void setValue(String value) {
+		this.value = value;
+	}
+	public String getValue() {
+		return value;
+	}	
+	
 }
