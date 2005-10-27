@@ -1,6 +1,9 @@
 /*
  * $Log: RecordTransformer.java,v $
- * Revision 1.2  2005-10-17 11:46:35  europe\m00f531
+ * Revision 1.3  2005-10-27 07:57:00  europe\m00f531
+ * Resolved bug that caused an IndexOutOfBoundsException
+ *
+ * Revision 1.2  2005/10/17 11:46:35  John Dekker <john.dekker@ibissource.org>
  * *** empty log message ***
  *
  * Revision 1.1  2005/10/11 13:00:21  John Dekker <john.dekker@ibissource.org>
@@ -58,7 +61,7 @@ import org.apache.commons.lang.StringUtils;
  * @author: John Dekker
  */
 public class RecordTransformer extends AbstractRecordHandler {
-	public static final String version = "$RCSfile: RecordTransformer.java,v $  $Revision: 1.2 $ $Date: 2005-10-17 11:46:35 $";
+	public static final String version = "$RCSfile: RecordTransformer.java,v $  $Revision: 1.3 $ $Date: 2005-10-27 07:57:00 $";
 
 	private List outputFields;
 	private String outputSeperator;
@@ -299,7 +302,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 		}
 
 		protected String toValue(ArrayList inputFields) throws ConfigurationException {
-			if (inputFieldIndex < 0 && inputFieldIndex >= inputFields.size()) {
+			if (inputFieldIndex < 0 || inputFieldIndex >= inputFields.size()) {
 				throw new ConfigurationException("Function refers to a non-existing inputfield [" + inputFieldIndex + "]");				
 			}
 			String val = (String)inputFields.get(inputFieldIndex);
