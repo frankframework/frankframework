@@ -1,6 +1,9 @@
 /*
  * $Log: XComSender.java,v $
- * Revision 1.4  2005-10-27 07:58:57  europe\m00f531
+ * Revision 1.5  2005-10-27 13:29:26  europe\m00f531
+ * Add optional configFile property
+ *
+ * Revision 1.4  2005/10/27 07:58:57  John Dekker <john.dekker@ibissource.org>
  * Host is not longer a required property, since it could be set in a config file
  *
  * Revision 1.3  2005/10/24 09:59:24  John Dekker <john.dekker@ibissource.org>
@@ -67,24 +70,25 @@ import org.apache.log4j.Logger;
  * @author: John Dekker
  */
 public class XComSender extends SenderWithParametersBase {
-	public static final String version = "$RCSfile: XComSender.java,v $  $Revision: 1.4 $ $Date: 2005-10-27 07:58:57 $";
+	public static final String version = "$RCSfile: XComSender.java,v $  $Revision: 1.5 $ $Date: 2005-10-27 13:29:26 $";
 	protected Logger logger = Logger.getLogger(this.getClass());
 	private File workingDir;
 	private String name;
-	private String fileOption = "CREATE";
+	private String fileOption = null;
 	private Boolean queue = null;
 	private Boolean truncation = null;
 	private Integer tracelevel = null;
-	private String logfile;
-	private String codeflag = "EBCDIC";
-	private String cariageflag = "YES";
-	private String port;
-	private String userid;
-	private String password = "";
-	private String compress = "YES";
-	private String remoteSystem;
-	private String remoteDirectory;
-	private String remoteFilePattern;
+	private String logfile = null;
+	private String codeflag = null;
+	private String cariageflag = null;
+	private String port = null;
+	private String userid = null;
+	private String password = null;
+	private String compress = null;
+	private String remoteSystem = null;
+	private String remoteDirectory = null;
+	private String remoteFilePattern = null;
+	private String configFile = null;
 	private String workingDirName = ".";
 	private String xcomtcp = "xcomtcp";
 	
@@ -92,10 +96,7 @@ public class XComSender extends SenderWithParametersBase {
 	 * @see nl.nn.adapterframework.core.ISender#configure()
 	 */
 	public void configure() throws ConfigurationException {
-		if (StringUtils.isEmpty(fileOption)) {
-			throw new ConfigurationException("Attribute [fileOption] is not set");
-		}
-		else if (
+		if (StringUtils.isNotEmpty(fileOption) &&
 				! "CREATE".equals(fileOption) && ! "APPEND".equals(fileOption) && 
 				! "REPLACE".equals(fileOption)
 		) {
@@ -202,7 +203,14 @@ public class XComSender extends SenderWithParametersBase {
 			StringBuffer sb = new StringBuffer();
 			
 			sb.append(xcomtcp). append(" -c1");
-			sb.append(" REMOTE_SYSTEM=").append(remoteSystem);
+
+			if (StringUtils.isNotEmpty(configFile)) {
+				sb.append(" -f ").append(configFile);
+			}
+
+			if (StringUtils.isNotEmpty(remoteSystem)) {
+				sb.append(" REMOTE_SYSTEM=").append(remoteSystem);
+			}
 				
 			if (localFile != null) {			
 				sb.append(" LOCAL_FILE=").append(localFile.getAbsolutePath());
@@ -216,7 +224,9 @@ public class XComSender extends SenderWithParametersBase {
 					sb.append(FileUtils.getFilename(paramList, session, localFile, remoteFilePattern));
 			}
 						
-			// optional parameters 
+			// optional parameters
+			if (StringUtils.isNotEmpty(fileOption)) 
+				sb.append(" FILE_OPTION=").append(fileOption);	 
 			if (queue != null)
 				sb.append(" QUEUE=").append(queue.booleanValue() ? "YES" : "NO");
 			if (tracelevel != null)
@@ -389,6 +399,14 @@ public class XComSender extends SenderWithParametersBase {
 
 	public void setXcomtcp(String string) {
 		xcomtcp = string;
+	}
+
+	public String getConfigFile() {
+		return configFile;
+	}
+
+	public void setConfigFile(String string) {
+		configFile = string;
 	}
 
 }
