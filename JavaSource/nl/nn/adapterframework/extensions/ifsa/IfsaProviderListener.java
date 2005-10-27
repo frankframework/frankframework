@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaProviderListener.java,v $
- * Revision 1.15  2005-10-24 15:14:02  europe\L190409
+ * Revision 1.16  2005-10-27 08:48:31  europe\L190409
+ * introduced RunStateEnquiries
+ *
+ * Revision 1.15  2005/10/24 15:14:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * shuffled positions of methods
  *
  * Revision 1.14  2005/09/26 11:47:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -59,6 +62,9 @@ import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.util.RunStateEnquirer;
+import nl.nn.adapterframework.util.RunStateEnquiring;
+import nl.nn.adapterframework.util.RunStateEnum;
 
 import com.ing.ifsa.IFSAMessage;
 import com.ing.ifsa.IFSAPoisonMessage;
@@ -103,11 +109,12 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * @author Gerrit van Brakel
  * @since 4.2
  */
-public class IfsaProviderListener extends IfsaFacade implements IPullingListener, INamedObject {
-	public static final String version = "$RCSfile: IfsaProviderListener.java,v $ $Revision: 1.15 $ $Date: 2005-10-24 15:14:02 $";
+public class IfsaProviderListener extends IfsaFacade implements IPullingListener, INamedObject, RunStateEnquiring {
+	public static final String version = "$RCSfile: IfsaProviderListener.java,v $ $Revision: 1.16 $ $Date: 2005-10-27 08:48:31 $";
 
     private final static String THREAD_CONTEXT_SESSION_KEY = "session";
     private final static String THREAD_CONTEXT_RECEIVER_KEY = "receiver";
+	private RunStateEnquirer runStateEnquirer=null;
 
     private String commitOnState;
     private long timeOut = 3000;
@@ -452,6 +459,9 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 			try {	
 				receiver = getReceiver(threadContext, session);
 		        result = receiver.receive(getTimeOut());
+				while (result==null && canGoOn()) {
+					result = receiver.receive(getTimeOut());
+				}
 			} catch (JMSException e) {
 				throw new ListenerException(getLogPrefix(),e);
 		    } finally {
@@ -509,6 +519,15 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 		    throw new ListenerException(getLogPrefix(),e);
 	    }
 	}
+
+	protected boolean canGoOn() {
+		return runStateEnquirer!=null && runStateEnquirer.isInState(RunStateEnum.STARTED);
+	}
+
+	public void SetRunStateEnquirer(RunStateEnquirer enquirer) {
+		runStateEnquirer=enquirer;
+	}
+
 	
 	public String getCommitOnState() {
 		return commitOnState;

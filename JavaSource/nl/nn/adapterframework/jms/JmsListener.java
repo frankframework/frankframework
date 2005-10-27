@@ -1,6 +1,9 @@
 /*
  * $Log: JmsListener.java,v $
- * Revision 1.18  2005-10-26 08:23:11  europe\L190409
+ * Revision 1.19  2005-10-27 08:47:24  europe\L190409
+ * introduced RunStateEnquiries
+ *
+ * Revision 1.18  2005/10/26 08:23:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * make use of isSessionsArePooled
  *
  * Revision 1.17  2005/10/24 15:16:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -57,6 +60,9 @@ import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.util.RunStateEnquirer;
+import nl.nn.adapterframework.util.RunStateEnquiring;
+import nl.nn.adapterframework.util.RunStateEnum;
 
 import javax.jms.Destination;
 import javax.jms.JMSException;
@@ -136,12 +142,13 @@ import java.util.HashMap;
  * @author Gerrit van Brakel
  * @since 4.0.1
  */
-public class JmsListener extends JMSFacade implements IPostboxListener, ICorrelatedPullingListener, HasSender {
-	public static final String version="$RCSfile: JmsListener.java,v $ $Revision: 1.18 $ $Date: 2005-10-26 08:23:11 $";
+public class JmsListener extends JMSFacade implements IPostboxListener, ICorrelatedPullingListener, HasSender, RunStateEnquiring {
+	public static final String version="$RCSfile: JmsListener.java,v $ $Revision: 1.19 $ $Date: 2005-10-27 08:47:24 $";
 
 	private final static String THREAD_CONTEXT_SESSION_KEY="session";
 	private final static String THREAD_CONTEXT_MESSAGECONSUMER_KEY="messageConsumer";
-
+	private RunStateEnquirer runStateEnquirer=null;
+	
 	private long timeOut = 3000;
 	private boolean useReplyTo=true;
 	private String replyMessageType=null;
@@ -503,6 +510,9 @@ public class JmsListener extends JMSFacade implements IPostboxListener, ICorrela
 			try {
 				mc = getReceiver(threadContext,session,correlationId);
 				msg = mc.receive(getTimeOut());
+				while (msg==null && correlationId==null && canGoOn()) {
+					msg = mc.receive(getTimeOut());
+				}
 			} catch (JMSException e) {
 				throw new ListenerException(getLogPrefix()+"exception retrieving message",e);
 			} finally {
@@ -568,6 +578,14 @@ public class JmsListener extends JMSFacade implements IPostboxListener, ICorrela
 	    }
 	}
 
+
+	protected boolean canGoOn() {
+		return runStateEnquirer!=null && runStateEnquirer.isInState(RunStateEnum.STARTED);
+	}
+
+	public void SetRunStateEnquirer(RunStateEnquirer enquirer) {
+		runStateEnquirer=enquirer;
+	}
 
 
 
@@ -653,5 +671,6 @@ public class JmsListener extends JMSFacade implements IPostboxListener, ICorrela
 	public long getReplyMessageTimeToLive() {
 		return replyMessageTimeToLive;
 	}
+
 
 }

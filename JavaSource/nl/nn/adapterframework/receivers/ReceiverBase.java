@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.20  2005-10-26 08:52:31  europe\L190409
+ * Revision 1.21  2005-10-27 08:46:45  europe\L190409
+ * introduced RunStateEnquiries
+ *
+ * Revision 1.20  2005/10/26 08:52:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * allow for transacted="true" without inProcessStorage, (ohne Gewähr!)
  *
  * Revision 1.19  2005/10/17 11:29:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -92,6 +95,7 @@ import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Counter;
 import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.RunStateEnquiring;
 import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.RunStateManager;
 import nl.nn.adapterframework.util.Semaphore;
@@ -173,7 +177,7 @@ import javax.transaction.UserTransaction;
  * @since 4.2
  */
 public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, IMessageHandler, IbisExceptionListener, HasSender {
-	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.20 $ $Date: 2005-10-26 08:52:31 $";
+	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.21 $ $Date: 2005-10-27 08:46:45 $";
 	protected Logger log = Logger.getLogger(this.getClass());
  
 	private String returnIfStopped="";
@@ -1052,12 +1056,13 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 	protected void setListener(IListener newListener) {
 		listener = newListener;
 		if (listener instanceof INamedObject)  {
-			
 			if (StringUtils.isEmpty(((INamedObject)listener).getName())) {
 				((INamedObject) listener).setName("listener of ["+getName()+"]");
 			}
 		}
-		
+		if (listener instanceof RunStateEnquiring)  {
+			((RunStateEnquiring) listener).SetRunStateEnquirer(runState);
+		}
 	}
 	/**
 	 * Returns the inProcessStorage.
