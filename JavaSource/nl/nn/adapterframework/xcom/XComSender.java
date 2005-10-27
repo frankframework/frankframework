@@ -1,6 +1,9 @@
 /*
  * $Log: XComSender.java,v $
- * Revision 1.3  2005-10-24 09:59:24  europe\m00f531
+ * Revision 1.4  2005-10-27 07:58:57  europe\m00f531
+ * Host is not longer a required property, since it could be set in a config file
+ *
+ * Revision 1.3  2005/10/24 09:59:24  John Dekker <john.dekker@ibissource.org>
  * Add support for pattern parameters, and include them into several listeners,
  * senders and pipes that are file related
  *
@@ -64,7 +67,7 @@ import org.apache.log4j.Logger;
  * @author: John Dekker
  */
 public class XComSender extends SenderWithParametersBase {
-	public static final String version = "$RCSfile: XComSender.java,v $  $Revision: 1.3 $ $Date: 2005-10-24 09:59:24 $";
+	public static final String version = "$RCSfile: XComSender.java,v $  $Revision: 1.4 $ $Date: 2005-10-27 07:58:57 $";
 	protected Logger logger = Logger.getLogger(this.getClass());
 	private File workingDir;
 	private String name;
@@ -117,9 +120,6 @@ public class XComSender extends SenderWithParametersBase {
 				! "XPACK".equals(cariageflag) && ! "NO".equals(cariageflag)  
 		) {
 			throw new ConfigurationException("Attribute [cariageflag] has incorrect value " + compress + ", should be one of YES | NO | VRL | VRL2 | MPACK | XPACK");
-		}
-		if (StringUtils.isEmpty(remoteSystem)) {
-			throw new ConfigurationException("Attribute [host] is not set");
 		}
 		if (! StringUtils.isEmpty(port)) {
 			try {
