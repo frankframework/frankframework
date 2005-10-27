@@ -1,6 +1,9 @@
 /*
  * $Log: RecordTransformer.java,v $
- * Revision 1.3  2005-10-27 07:57:00  europe\m00f531
+ * Revision 1.4  2005-10-27 12:32:18  europe\m00f531
+ * *** empty log message ***
+ *
+ * Revision 1.3  2005/10/27 07:57:00  John Dekker <john.dekker@ibissource.org>
  * Resolved bug that caused an IndexOutOfBoundsException
  *
  * Revision 1.2  2005/10/17 11:46:35  John Dekker <john.dekker@ibissource.org>
@@ -61,7 +64,7 @@ import org.apache.commons.lang.StringUtils;
  * @author: John Dekker
  */
 public class RecordTransformer extends AbstractRecordHandler {
-	public static final String version = "$RCSfile: RecordTransformer.java,v $  $Revision: 1.3 $ $Date: 2005-10-27 07:57:00 $";
+	public static final String version = "$RCSfile: RecordTransformer.java,v $  $Revision: 1.4 $ $Date: 2005-10-27 12:32:18 $";
 
 	private List outputFields;
 	private String outputSeperator;
@@ -112,6 +115,10 @@ public class RecordTransformer extends AbstractRecordHandler {
 	 */
 	private void addOutputField(IOutputField field) {
 		outputFields.add(field);
+	}
+	
+	public void clearOutputFields() {
+		outputFields.clear();
 	}
 	
 	public void addOutputInput(int inputFieldIndex) throws ConfigurationException {
@@ -330,6 +337,10 @@ public class RecordTransformer extends AbstractRecordHandler {
 			super(inputFieldIndex);
 			this.startIndex = startIndex;
 			this.endIndex = endIndex;
+			
+			if (startIndex < 0 || endIndex <= startIndex) {
+				throw new ConfigurationException("Incorrect indexes");
+			}
 		}
 		
 		public IOutputField appendValue(IOutputField curFunction, StringBuffer result, ArrayList inputFields) throws ConfigurationException {

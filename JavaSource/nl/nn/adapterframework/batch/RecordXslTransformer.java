@@ -1,6 +1,9 @@
 /*
  * $Log: RecordXslTransformer.java,v $
- * Revision 1.1  2005-10-11 13:00:21  europe\m00f531
+ * Revision 1.2  2005-10-27 12:32:18  europe\m00f531
+ * *** empty log message ***
+ *
+ * Revision 1.1  2005/10/11 13:00:21  John Dekker <john.dekker@ibissource.org>
  * New ibis file related elements, such as DirectoryListener, MoveFilePie and 
  * BatchFileTransformerPipe
  *
@@ -11,6 +14,7 @@ import java.net.URL;
 import java.util.ArrayList;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.TransformerPool;
 
@@ -30,14 +34,14 @@ import nl.nn.adapterframework.util.TransformerPool;
  * @author: John Dekker
  */
 public class RecordXslTransformer extends RecordXmlTransformer {
-	public static final String version = "$RCSfile: RecordXslTransformer.java,v $  $Revision: 1.1 $ $Date: 2005-10-11 13:00:21 $";
+	public static final String version = "$RCSfile: RecordXslTransformer.java,v $  $Revision: 1.2 $ $Date: 2005-10-27 12:32:18 $";
 
 	private TransformerPool transformer; 
 
 	public RecordXslTransformer() {
 	}
 
-	public Object handleRecord(ArrayList parsedRecord) throws Exception {
+	public Object handleRecord(PipeLineSession session, ArrayList parsedRecord) throws Exception {
 		String xml = getXml(parsedRecord);
 		return transformer.transform(xml, null);
 	}
