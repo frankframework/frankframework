@@ -1,6 +1,9 @@
 /*
  * $Log: XComSender.java,v $
- * Revision 1.5  2005-10-27 13:29:26  europe\m00f531
+ * Revision 1.6  2005-10-28 12:31:05  europe\m00f531
+ * Corrected bug with password added twice to command
+ *
+ * Revision 1.5  2005/10/27 13:29:26  John Dekker <john.dekker@ibissource.org>
  * Add optional configFile property
  *
  * Revision 1.4  2005/10/27 07:58:57  John Dekker <john.dekker@ibissource.org>
@@ -70,7 +73,7 @@ import org.apache.log4j.Logger;
  * @author: John Dekker
  */
 public class XComSender extends SenderWithParametersBase {
-	public static final String version = "$RCSfile: XComSender.java,v $  $Revision: 1.5 $ $Date: 2005-10-27 13:29:26 $";
+	public static final String version = "$RCSfile: XComSender.java,v $  $Revision: 1.6 $ $Date: 2005-10-28 12:31:05 $";
 	protected Logger logger = Logger.getLogger(this.getClass());
 	private File workingDir;
 	private String name;
@@ -166,7 +169,7 @@ public class XComSender extends SenderWithParametersBase {
 			try {
 				String cmd = getCommand(prc.getSession(), localFile, true);
 				
-				Process p = Runtime.getRuntime().exec(cmd + password, null, workingDir);
+				Process p = Runtime.getRuntime().exec(cmd, null, workingDir);
 	
 				// read the output of the process
 				BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
@@ -188,7 +191,7 @@ public class XComSender extends SenderWithParametersBase {
 				
 				// throw an exception if the command returns an error exit value
 				if (p.exitValue() != 0) {
-					throw new SenderException("XComSender failed for file " + localFile.getAbsolutePath() + " " + output.toString());
+					throw new SenderException("XComSender failed for file " + localFile.getAbsolutePath() + "\r\n" + output.toString());
 				}
 			}
 			catch(IOException e) {
