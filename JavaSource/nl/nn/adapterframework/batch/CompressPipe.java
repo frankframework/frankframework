@@ -1,6 +1,9 @@
 /*
  * $Log: CompressPipe.java,v $
- * Revision 1.1  2005-10-28 09:12:23  europe\m00f531
+ * Revision 1.2  2005-10-28 09:36:12  europe\m00f531
+ * Add possibility to convert result to a string or a bytearray
+ *
+ * Revision 1.1  2005/10/28 09:12:23  John Dekker <john.dekker@ibissource.org>
  * Pipe for compression (Zip or GZip)
  *
  */
@@ -40,6 +43,7 @@ import nl.nn.adapterframework.util.FileUtils;
  * <tr><td>{@link #setOutputFilenamePattern(String) outputFilenamePattern}</td><td>Required if result is a file, the pattern for the result filename</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setZipEntryPattern(String) zipEntryPattern}</td><td>The pattern for the zipentry name in case a zipfile is read or written</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setCompress(boolean) directory}</td><td>If true the pipe compress, otherwise it decompress</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setConvert2String(boolean) convert2String}</td><td>If true result is returned as a string, otherwise as a byte array</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * 
@@ -53,6 +57,7 @@ public class CompressPipe extends FixedForwardPipe {
 	private String zipEntryPattern;
 	private boolean compress;
 	private Object result;
+	private boolean convert2String;
 	
 	public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRunException {
 		try {
@@ -70,7 +75,7 @@ public class CompressPipe extends FixedForwardPipe {
 				out.close();
 				in.close();
 			}
-			return new PipeRunResult(getForward(), result.toString());
+			return new PipeRunResult(getForward(), getResultMsg());
 		}
 		catch(Exception e) {
 			throw new PipeRunException(this, "Unexpected exception during compression", e);
@@ -81,7 +86,12 @@ public class CompressPipe extends FixedForwardPipe {
 		InputStream in = null;
 		
 		if (messageIsContent) {
-			in = new ByteArrayInputStream(((String)input).getBytes()); 
+			if (input instanceof byte[]) {
+				in = new ByteArrayInputStream((byte[])input); 
+			}
+			else {
+				in = new ByteArrayInputStream(input.toString().getBytes()); 
+			}
 			if (! compress) {
 				in = new GZIPInputStream(in);
 			}
@@ -123,6 +133,15 @@ public class CompressPipe extends FixedForwardPipe {
 			}
 		}
 		return out;
+	}
+	
+	private Object getResultMsg() {
+		if (resultIsContent) {
+			if (convert2String)
+				return ((ByteArrayOutputStream)result).toString();
+			return ((ByteArrayOutputStream)result).toByteArray();
+		}
+		return result;
 	}
 	
 	private String getZipEntryName(Object input, PipeLineSession session) throws ParameterException {
@@ -177,6 +196,14 @@ public class CompressPipe extends FixedForwardPipe {
 
 	public void setZipEntryPattern(String string) {
 		zipEntryPattern = string;
+	}
+
+	public boolean isConvert2String() {
+		return convert2String;
+	}
+
+	public void setConvert2String(boolean b) {
+		convert2String = b;
 	}
 
 }
