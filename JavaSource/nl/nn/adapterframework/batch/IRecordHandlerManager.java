@@ -1,6 +1,9 @@
 /*
  * $Log: IRecordHandlerManager.java,v $
- * Revision 1.1  2005-10-11 13:00:22  europe\m00f531
+ * Revision 1.2  2005-10-31 14:38:03  europe\m00f531
+ * Add . in javadoc
+ *
+ * Revision 1.1  2005/10/11 13:00:22  John Dekker <john.dekker@ibissource.org>
  * New ibis file related elements, such as DirectoryListener, MoveFilePie and 
  * BatchFileTransformerPipe
  *
@@ -13,7 +16,7 @@ import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.PipeLineSession;
 
 /**
- * Interface for handling a transformed record 
+ * Interface for handling a transformed record.
  * 
  * @author John Dekker
  */

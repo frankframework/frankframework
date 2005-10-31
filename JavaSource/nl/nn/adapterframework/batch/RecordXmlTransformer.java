@@ -1,6 +1,9 @@
 /*
  * $Log: RecordXmlTransformer.java,v $
- * Revision 1.1  2005-10-11 13:00:20  europe\m00f531
+ * Revision 1.2  2005-10-31 14:38:02  europe\m00f531
+ * Add . in javadoc
+ *
+ * Revision 1.1  2005/10/11 13:00:20  John Dekker <john.dekker@ibissource.org>
  * New ibis file related elements, such as DirectoryListener, MoveFilePie and 
  * BatchFileTransformerPipe
  *
@@ -18,7 +21,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import org.apache.commons.lang.StringUtils;
 
 /**
- * Translate a record using XSL
+ * Translate a record using XSL.
  * 
  * <p><b>Configuration:</b>
  * <table border="1">
@@ -32,7 +35,7 @@ import org.apache.commons.lang.StringUtils;
  * @author: John Dekker
  */
 public class RecordXmlTransformer extends AbstractRecordHandler {
-	public static final String version = "$RCSfile: RecordXmlTransformer.java,v $  $Revision: 1.1 $ $Date: 2005-10-11 13:00:20 $";
+	public static final String version = "$RCSfile: RecordXmlTransformer.java,v $  $Revision: 1.2 $ $Date: 2005-10-31 14:38:02 $";
 
 	private String rootTag;
 	private List outputFields; 

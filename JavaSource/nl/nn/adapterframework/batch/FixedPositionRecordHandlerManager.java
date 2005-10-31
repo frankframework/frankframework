@@ -1,6 +1,9 @@
 /*
  * $Log: FixedPositionRecordHandlerManager.java,v $
- * Revision 1.1  2005-10-11 13:00:21  europe\m00f531
+ * Revision 1.2  2005-10-31 14:38:03  europe\m00f531
+ * Add . in javadoc
+ *
+ * Revision 1.1  2005/10/11 13:00:21  John Dekker <john.dekker@ibissource.org>
  * New ibis file related elements, such as DirectoryListener, MoveFilePie and 
  * BatchFileTransformerPipe
  *
@@ -11,7 +14,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 
 /**
  * Manager that decides the handlers based on the content of a field in the specified 
- * position in a record. The fields in the record are of a fixed length
+ * position in a record. The fields in the record are of a fixed length.
  * 
  * <p><b>Configuration:</b>
  * <table border="1">
@@ -25,7 +28,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
  * @author John Dekker
  */
 public class FixedPositionRecordHandlerManager extends RecordHandlerManager {
-	public static final String version = "$RCSfile: FixedPositionRecordHandlerManager.java,v $  $Revision: 1.1 $ $Date: 2005-10-11 13:00:21 $";
+	public static final String version = "$RCSfile: FixedPositionRecordHandlerManager.java,v $  $Revision: 1.2 $ $Date: 2005-10-31 14:38:03 $";
 
 	private int startPosition;
 	private int endPosition;

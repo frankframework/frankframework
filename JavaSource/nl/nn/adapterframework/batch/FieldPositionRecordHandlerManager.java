@@ -1,6 +1,9 @@
 /*
  * $Log: FieldPositionRecordHandlerManager.java,v $
- * Revision 1.1  2005-10-11 13:00:20  europe\m00f531
+ * Revision 1.2  2005-10-31 14:38:02  europe\m00f531
+ * Add . in javadoc
+ *
+ * Revision 1.1  2005/10/11 13:00:20  John Dekker <john.dekker@ibissource.org>
  * New ibis file related elements, such as DirectoryListener, MoveFilePie and 
  * BatchFileTransformerPipe
  *
@@ -11,7 +14,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 
 /**
  * Manager that decides the handlers based on the content of a field in the specified 
- * position in a record. The fields in the ercord are seperated by a seperator
+ * position in a record. The fields in the ercord are seperated by a seperator.
  * 
  * <p><b>Configuration:</b>
  * <table border="1">
@@ -25,7 +28,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
  * @author John Dekker
  */
 public class FieldPositionRecordHandlerManager extends RecordHandlerManager {
-	public static final String version = "$RCSfile: FieldPositionRecordHandlerManager.java,v $  $Revision: 1.1 $ $Date: 2005-10-11 13:00:20 $";
+	public static final String version = "$RCSfile: FieldPositionRecordHandlerManager.java,v $  $Revision: 1.2 $ $Date: 2005-10-31 14:38:02 $";
 
 	private int fieldNr;
 	private String seperator;

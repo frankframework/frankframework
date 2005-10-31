@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractResultHandler.java,v $
- * Revision 1.2  2005-10-31 07:27:58  europe\m00f531
+ * Revision 1.3  2005-10-31 14:38:02  europe\m00f531
+ * Add . in javadoc
+ *
+ * Revision 1.2  2005/10/31 07:27:58  John Dekker <john.dekker@ibissource.org>
  * Resolves bug for writing suffix
  *
  * Revision 1.1  2005/10/11 13:00:21  John Dekker <john.dekker@ibissource.org>
@@ -14,7 +17,7 @@ import org.apache.commons.lang.StringUtils;
 
 
 /**
- * Abstract class for resulthandlers (handler that handles the transformed record)
+ * Abstract class for resulthandlers (handler that handles the transformed record).
  * 
  * <p><b>Configuration:</b>
  * <table border="1">

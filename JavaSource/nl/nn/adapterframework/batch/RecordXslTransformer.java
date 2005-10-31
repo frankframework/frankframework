@@ -1,6 +1,9 @@
 /*
  * $Log: RecordXslTransformer.java,v $
- * Revision 1.2  2005-10-27 12:32:18  europe\m00f531
+ * Revision 1.3  2005-10-31 14:38:02  europe\m00f531
+ * Add . in javadoc
+ *
+ * Revision 1.2  2005/10/27 12:32:18  John Dekker <john.dekker@ibissource.org>
  * *** empty log message ***
  *
  * Revision 1.1  2005/10/11 13:00:21  John Dekker <john.dekker@ibissource.org>
@@ -19,7 +22,7 @@ import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.TransformerPool;
 
 /**
- * Translate a record using XSL
+ * Translate a record using XSL.
  * 
  * <p><b>Configuration:</b>
  * <table border="1">
@@ -34,7 +37,7 @@ import nl.nn.adapterframework.util.TransformerPool;
  * @author: John Dekker
  */
 public class RecordXslTransformer extends RecordXmlTransformer {
-	public static final String version = "$RCSfile: RecordXslTransformer.java,v $  $Revision: 1.2 $ $Date: 2005-10-27 12:32:18 $";
+	public static final String version = "$RCSfile: RecordXslTransformer.java,v $  $Revision: 1.3 $ $Date: 2005-10-31 14:38:02 $";
 
 	private TransformerPool transformer; 
 

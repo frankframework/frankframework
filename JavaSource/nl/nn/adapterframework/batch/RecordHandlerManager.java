@@ -1,6 +1,9 @@
 /*
  * $Log: RecordHandlerManager.java,v $
- * Revision 1.1  2005-10-11 13:00:20  europe\m00f531
+ * Revision 1.2  2005-10-31 14:38:02  europe\m00f531
+ * Add . in javadoc
+ *
+ * Revision 1.1  2005/10/11 13:00:20  John Dekker <john.dekker@ibissource.org>
  * New ibis file related elements, such as DirectoryListener, MoveFilePie and 
  * BatchFileTransformerPipe
  *
@@ -13,7 +16,7 @@ import java.util.HashMap;
 import nl.nn.adapterframework.core.PipeLineSession;
 
 /**
- * The manager decides which handlers to be used for a specific record
+ * The manager decides which handlers to be used for a specific record.
  * 
  * <p><b>Configuration:</b>
  * <table border="1">
@@ -27,7 +30,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
  * @author John Dekker
  */
 public class RecordHandlerManager implements IRecordHandlerManager {
-	public static final String version = "$RCSfile: RecordHandlerManager.java,v $  $Revision: 1.1 $ $Date: 2005-10-11 13:00:20 $";
+	public static final String version = "$RCSfile: RecordHandlerManager.java,v $  $Revision: 1.2 $ $Date: 2005-10-31 14:38:02 $";
 
 	private HashMap valueHandlersMap;
 	private String name;

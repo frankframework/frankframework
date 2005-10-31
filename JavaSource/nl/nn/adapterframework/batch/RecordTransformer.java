@@ -1,6 +1,9 @@
 /*
  * $Log: RecordTransformer.java,v $
- * Revision 1.4  2005-10-27 12:32:18  europe\m00f531
+ * Revision 1.5  2005-10-31 14:38:02  europe\m00f531
+ * Add . in javadoc
+ *
+ * Revision 1.4  2005/10/27 12:32:18  John Dekker <john.dekker@ibissource.org>
  * *** empty log message ***
  *
  * Revision 1.3  2005/10/27 07:57:00  John Dekker <john.dekker@ibissource.org>
@@ -36,7 +39,8 @@ import org.apache.commons.lang.StringUtils;
 
 /**
  * Translate a record using an outputFields description. The description can contain
- * the following functions:
+ * the following functions.
+ * 
  * <table>
  * <tr><td>string(value)</td><td>inserts the value between the braces</td><td>string( Dit wordt geinsert inclusief spaties ervoor en erna. )</td></tr>
  * <tr><td>align(value,size,align,fillchar)</td><td>inserts the value aligned</td><td>align(test~10~left~ )</td></tr>
@@ -64,7 +68,7 @@ import org.apache.commons.lang.StringUtils;
  * @author: John Dekker
  */
 public class RecordTransformer extends AbstractRecordHandler {
-	public static final String version = "$RCSfile: RecordTransformer.java,v $  $Revision: 1.4 $ $Date: 2005-10-27 12:32:18 $";
+	public static final String version = "$RCSfile: RecordTransformer.java,v $  $Revision: 1.5 $ $Date: 2005-10-31 14:38:02 $";
 
 	private List outputFields;
 	private String outputSeperator;

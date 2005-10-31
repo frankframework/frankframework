@@ -1,6 +1,9 @@
 /*
  * $Log: Result2Filewriter.java,v $
- * Revision 1.3  2005-10-24 09:59:23  europe\m00f531
+ * Revision 1.4  2005-10-31 14:38:02  europe\m00f531
+ * Add . in javadoc
+ *
+ * Revision 1.3  2005/10/24 09:59:23  John Dekker <john.dekker@ibissource.org>
  * Add support for pattern parameters, and include them into several listeners,
  * senders and pipes that are file related
  *
@@ -30,7 +33,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 /**
- * Resulthandler that writes the transformed record to a file
+ * Resulthandler that writes the transformed record to a file.
  * 
  * <p><b>Configuration:</b>
  * <table border="1">
@@ -46,7 +49,7 @@ import org.apache.log4j.Logger;
  * @author: John Dekker
  */
 public class Result2Filewriter extends AbstractResultHandler {
-	public static final String version = "$RCSfile: Result2Filewriter.java,v $  $Revision: 1.3 $ $Date: 2005-10-24 09:59:23 $";
+	public static final String version = "$RCSfile: Result2Filewriter.java,v $  $Revision: 1.4 $ $Date: 2005-10-31 14:38:02 $";
 	private static Logger log = Logger.getLogger(Result2Filewriter.class);
 	
 	private String outputDirectory;

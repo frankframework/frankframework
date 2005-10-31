@@ -1,6 +1,9 @@
 /*
  * $Log: MoveFilePipe.java,v $
- * Revision 1.2  2005-10-24 09:59:22  europe\m00f531
+ * Revision 1.3  2005-10-31 14:38:02  europe\m00f531
+ * Add . in javadoc
+ *
+ * Revision 1.2  2005/10/24 09:59:22  John Dekker <john.dekker@ibissource.org>
  * Add support for pattern parameters, and include them into several listeners,
  * senders and pipes that are file related
  *
@@ -23,7 +26,7 @@ import nl.nn.adapterframework.util.FileUtils;
 import org.apache.commons.lang.StringUtils;
 
 /**
- * Pipe for moving files to another directory
+ * Pipe for moving files to another directory.
  *
  * <p><b>Configuration:</b>
  * <table border="1">
@@ -39,7 +42,7 @@ import org.apache.commons.lang.StringUtils;
  * @author: John Dekker
  */
 public class MoveFilePipe extends FixedForwardPipe {
-	public static final String version = "$RCSfile: MoveFilePipe.java,v $  $Revision: 1.2 $ $Date: 2005-10-24 09:59:22 $";
+	public static final String version = "$RCSfile: MoveFilePipe.java,v $  $Revision: 1.3 $ $Date: 2005-10-31 14:38:02 $";
 
 	private String move2dir;
 	private long waitBeforeRetry = 1000;
