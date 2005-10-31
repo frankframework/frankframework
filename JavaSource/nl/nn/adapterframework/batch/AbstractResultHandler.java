@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractResultHandler.java,v $
- * Revision 1.1  2005-10-11 13:00:21  europe\m00f531
+ * Revision 1.2  2005-10-31 07:27:58  europe\m00f531
+ * Resolves bug for writing suffix
+ *
+ * Revision 1.1  2005/10/11 13:00:21  John Dekker <john.dekker@ibissource.org>
  * New ibis file related elements, such as DirectoryListener, MoveFilePie and 
  * BatchFileTransformerPipe
  *
@@ -61,7 +64,7 @@ public abstract class AbstractResultHandler implements IResultHandler {
 		if (! mustPrefix || StringUtils.isEmpty(prefix)) {
 			return null;
 		}
-		if (hasPreviousRecord) {
+		if (! hasPreviousRecord) {
 			return new String[] { prefix }; 
 		}
 		else {

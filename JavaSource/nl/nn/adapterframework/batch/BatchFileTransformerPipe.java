@@ -1,6 +1,9 @@
 /*
  * $Log: BatchFileTransformerPipe.java,v $
- * Revision 1.1  2005-10-11 13:00:22  europe\m00f531
+ * Revision 1.2  2005-10-31 07:27:58  europe\m00f531
+ * Resolves bug for writing suffix
+ *
+ * Revision 1.1  2005/10/11 13:00:22  John Dekker <john.dekker@ibissource.org>
  * New ibis file related elements, such as DirectoryListener, MoveFilePie and 
  * BatchFileTransformerPipe
  *
@@ -47,7 +50,7 @@ import org.apache.commons.lang.StringUtils;
  * @author: John Dekker
  */
 public class BatchFileTransformerPipe extends FixedForwardPipe {
-	public static final String version = "$RCSfile: BatchFileTransformerPipe.java,v $  $Revision: 1.1 $ $Date: 2005-10-11 13:00:22 $";
+	public static final String version = "$RCSfile: BatchFileTransformerPipe.java,v $  $Revision: 1.2 $ $Date: 2005-10-31 07:27:58 $";
 
 	private IRecordHandlerManager initialFactory;
 	private IResultHandler defaultHandler;
@@ -240,7 +243,7 @@ public class BatchFileTransformerPipe extends FixedForwardPipe {
 					IResultHandler resultHandler = handlers.getResultHandler();
 					if (result != null && resultHandler != null) {
 						boolean mustPrefix = curHandler.mustPrefix(session, curHandler.equals(prevHandler), prevParsedRecord, parsedRecord); 
-						resultHandler.writePrefix(session, inputFilename, mustPrefix, prevHandler == null);
+						resultHandler.writePrefix(session, inputFilename, mustPrefix, prevHandler != null);
 						resultHandler.handleResult(session, inputFilename, handlers.getRecordKey(), result);
 					}
 					prevParsedRecord = parsedRecord;
