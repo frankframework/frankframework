@@ -1,6 +1,9 @@
 /*
  * $Log: XComSender.java,v $
- * Revision 1.6  2005-10-28 12:31:05  europe\m00f531
+ * Revision 1.7  2005-10-31 14:42:40  europe\L190409
+ * updated javadoc
+ *
+ * Revision 1.6  2005/10/28 12:31:05  John Dekker <john.dekker@ibissource.org>
  * Corrected bug with password added twice to command
  *
  * Revision 1.5  2005/10/27 13:29:26  John Dekker <john.dekker@ibissource.org>
@@ -44,7 +47,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 /**
- * XCom client voor het versturen van files via XCom
+ * XCom client voor het versturen van files via XCom.
 
  * <p><b>Configuration:</b>
  * <table border="1">
@@ -73,7 +76,7 @@ import org.apache.log4j.Logger;
  * @author: John Dekker
  */
 public class XComSender extends SenderWithParametersBase {
-	public static final String version = "$RCSfile: XComSender.java,v $  $Revision: 1.6 $ $Date: 2005-10-28 12:31:05 $";
+	public static final String version = "$RCSfile: XComSender.java,v $  $Revision: 1.7 $ $Date: 2005-10-31 14:42:40 $";
 	protected Logger logger = Logger.getLogger(this.getClass());
 	private File workingDir;
 	private String name;

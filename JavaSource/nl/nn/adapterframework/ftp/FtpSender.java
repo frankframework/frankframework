@@ -1,6 +1,9 @@
 /*
  * $Log: FtpSender.java,v $
- * Revision 1.4  2005-10-27 07:57:41  europe\m00f531
+ * Revision 1.5  2005-10-31 14:42:24  europe\L190409
+ * updated javadoc
+ *
+ * Revision 1.4  2005/10/27 07:57:41  John Dekker <john.dekker@ibissource.org>
  * add setRemoteDirectory method
  *
  * Revision 1.3  2005/10/24 09:59:22  John Dekker <john.dekker@ibissource.org>
@@ -26,7 +29,7 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import org.apache.commons.lang.StringUtils;
 
 /**
- * FTP client voor het versturen van files via FTP
+ * FTP client voor het versturen van files via FTP.
  *
  * <p><b>Configuration:</b>
  * <table border="1">
@@ -55,7 +58,7 @@ import org.apache.commons.lang.StringUtils;
  * @author: John Dekker
  */
 public class FtpSender extends SenderWithParametersBase {
-	public static final String version = "$RCSfile: FtpSender.java,v $  $Revision: 1.4 $ $Date: 2005-10-27 07:57:41 $";
+	public static final String version = "$RCSfile: FtpSender.java,v $  $Revision: 1.5 $ $Date: 2005-10-31 14:42:24 $";
 	private String name;
 	private String remoteFilenamePattern;
 	private String remoteDirectory;
