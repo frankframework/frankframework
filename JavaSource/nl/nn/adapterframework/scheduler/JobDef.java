@@ -243,7 +243,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 
  */
 public class JobDef {
-	public static final String version="$Id: JobDef.java,v 1.3 2004-03-26 10:43:06 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: JobDef.java,v 1.4 2005-11-01 08:51:58 europe\m00f531 Exp $";
 	
     private String name;
     private String cronExpression;
@@ -251,7 +251,7 @@ public class JobDef {
     private String adapterName;
     private String description;
     private String receiverName;
-    private String jobGroup=AppConstants.getInstance().getString("scheduler.defaultJobGroup", "DEFAULT");;
+    private String jobGroup=AppConstants.getInstance().getString("scheduler.defaultJobGroup", "DEFAULT");
 
     public String getAdapterName() {
         return adapterName;
