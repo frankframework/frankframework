@@ -243,7 +243,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 
  */
 public class JobDef {
-	public static final String version="$Id: JobDef.java,v 1.4 2005-11-01 08:51:58 europe\m00f531 Exp $";
+	public static final String version = "$RCSfile: JobDef.java,v $  $Revision: 1.5 $ $Date: 2005-11-01 08:52:43 $";
 	
     private String name;
     private String cronExpression;
