@@ -1,6 +1,9 @@
 /*
  * $Log: Configuration.java,v $
- * Revision 1.15  2005-05-31 09:11:24  europe\L190409
+ * Revision 1.16  2005-11-01 08:53:35  europe\m00f531
+ * Moved quartz scheduling knowledge to the SchedulerHelper class
+ *
+ * Revision 1.15  2005/05/31 09:11:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * detailed version info for XML parsers and transformers
  *
  * Revision 1.14  2004/08/23 07:41:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -30,30 +33,23 @@
  */
 package nl.nn.adapterframework.configuration;
 
-import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.core.IReceiver;
-
-import nl.nn.adapterframework.scheduler.AdapterJob;
-import nl.nn.adapterframework.scheduler.JobDef;
-
-import nl.nn.adapterframework.util.AppConstants;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.SystemUtils;
-import org.apache.log4j.Logger;
-import org.quartz.CronTrigger;
-import org.quartz.JobDetail;
-import org.quartz.Scheduler;
-import org.quartz.SchedulerException;
-import org.quartz.SchedulerFactory;
-import org.quartz.impl.StdSchedulerFactory;
-
 import java.net.URL;
-
+import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.Enumeration;
+
+import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.core.IReceiver;
+import nl.nn.adapterframework.pipes.IbisLocalSender;
+import nl.nn.adapterframework.scheduler.JobDef;
+import nl.nn.adapterframework.scheduler.SchedulerHelper;
+import nl.nn.adapterframework.util.AppConstants;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.SystemUtils;
+import org.apache.log4j.Logger;
 
 /**
  * The Configuration is placeholder of all configuration objects. Besides that, it provides
@@ -66,7 +62,7 @@ import java.util.Enumeration;
  */
 public class Configuration {
     protected Logger log; 
-    public static final String version="$RCSfile: Configuration.java,v $ $Revision: 1.15 $ $Date: 2005-05-31 09:11:24 $";
+    public static final String version="$RCSfile: Configuration.java,v $ $Revision: 1.16 $ $Date: 2005-11-01 08:53:35 $";
      
     private Hashtable adapterTable = new Hashtable();
 
@@ -141,58 +137,79 @@ public class Configuration {
      */
 
     public void handleAdapter(String action, String adapterName, String receiverName, String commandIssuedBy) {
-        if ((action.equalsIgnoreCase("STOPADAPTER")) && (adapterName.equals("**ALL**"))) {
-            log.info("Stopping all adapters on request of" + commandIssuedBy);
-            this.stopAdapters();
+        if (action.equalsIgnoreCase("STOPADAPTER")) {
+        	if (adapterName.equals("**ALL**")) {
+	            log.info("Stopping all adapters on request of" + commandIssuedBy);
+	            this.stopAdapters();
+        	}
+        	else {
+				log.info("Stopping adapter [" + adapterName + "], on request of" + commandIssuedBy);
+				this.getRegisteredAdapter(adapterName).stopRunning();
+        	}
         }
-        if ((action.equalsIgnoreCase("STOPADAPTER")) && (!(adapterName.equals("**ALL**")))) {
-            log.info("Stopping adapter [" + adapterName + "], on request of" + commandIssuedBy);
-            this.getRegisteredAdapter(adapterName).stopRunning();
-        }
-        if ((action.equalsIgnoreCase("STARTADAPTER")) && (adapterName.equals("**ALL**"))) {
-            // for the start option we 'd like to catch the errors
-            // therefore the config.startAdapters() is not used
-            Iterator keys = this.getRegisteredAdapterNames();
-            while (keys.hasNext()) {
-                String name = (String) keys.next();
-                IAdapter adapter = this.getRegisteredAdapter(name);
-                log.info("Starting adapter [" + name + "] on request of" + commandIssuedBy);
-                adapter.startRunning();
-            }
+        else if (action.equalsIgnoreCase("STARTADAPTER")) {
+        	if (adapterName.equals("**ALL**")) {
+	            // for the start option we 'd like to catch the errors
+	            // therefore the config.startAdapters() is not used
+	            Iterator keys = this.getRegisteredAdapterNames();
+	            while (keys.hasNext()) {
+	                String name = (String) keys.next();
+	                IAdapter adapter = this.getRegisteredAdapter(name);
+	                log.info("Starting adapter [" + name + "] on request of" + commandIssuedBy);
+	                adapter.startRunning();
+	            }
+        	}
+        	else {
+				try {
+					log.info("Starting adapter [" + adapterName + "] on request of" + commandIssuedBy);
+					this.getRegisteredAdapter(adapterName).startRunning();
+				} catch (Exception e) {
+					log.error(
+						"error in execution of command ["
+						+ action
+						+ "] for adapter ["
+						+ adapterName
+						+ "]",
+						e);
 
-
+					//errors.add("", new ActionError("errors.generic", e.toString()));
+				}
+        	}
         }
-        if ((action.equalsIgnoreCase("STARTADAPTER")) && (!(adapterName.equals("**ALL**")))) {
-            try {
-                log.info("Starting adapter [" + adapterName + "] on request of" + commandIssuedBy);
-                this.getRegisteredAdapter(adapterName).startRunning();
-            } catch (Exception e) {
-                log.error(
-                        "error in execution of command ["
-                        + action
-                        + "] for adapter ["
-                        + adapterName
-                        + "]",
-                        e);
-
-                //errors.add("", new ActionError("errors.generic", e.toString()));
-            }
-        }
-        if (action.equalsIgnoreCase("STOPRECEIVER")) {
+        else if (action.equalsIgnoreCase("STOPRECEIVER")) {
             IAdapter adapter = (IAdapter) this.getRegisteredAdapter(adapterName);
             IReceiver receiver = adapter.getReceiverByName(receiverName);
             receiver.stopRunning();
             log.info("receiver [" + receiverName + "] stopped by webcontrol on request of " + commandIssuedBy);
-
         }
-        if (action.equalsIgnoreCase("STARTRECEIVER")) {
+        else if (action.equalsIgnoreCase("STARTRECEIVER")) {
             IAdapter adapter = (IAdapter) this.getRegisteredAdapter(adapterName);
             IReceiver receiver = adapter.getReceiverByName(receiverName);
             receiver.startRunning();
             log.info("receiver [" + receiverName + "] started by " + commandIssuedBy);
-
         }
-
+		else if (action.equalsIgnoreCase("SENDMESSAGE")) {
+			try {
+				// send job
+				IbisLocalSender localSender = new IbisLocalSender();
+				localSender.setJavaListener(receiverName);
+				localSender.setIsolated(false);
+				localSender.setName("AdapterJob");
+				localSender.configure();
+			
+				localSender.open();
+				try {
+					localSender.sendMessage(null, "");
+				}
+				finally {
+					localSender.close();
+				}
+			}
+			catch(Exception e) {
+				log.error("Error while sending message (as part of scheduled job execution)", e);
+			}
+//			ServiceDispatcher.getInstance().dispatchRequest(receiverName, "");
+		}
     }
     /**
      * returns wether an adapter is known at the configuration.
@@ -209,9 +226,10 @@ public class Configuration {
      */
     public boolean isRegisteredReceiver(String adapterName, String receiverName){
         IAdapter adapter=getRegisteredAdapter(adapterName);
-        if (null==adapter) return false;
-        adapter.getReceiverByName(receiverName);
-        return adapter.getReceiverByName(receiverName)==null;
+        if (null==adapter) {
+        	return false;
+		}
+        return adapter.getReceiverByName(receiverName) != null;
     }
     public void listObjects() {
 
@@ -257,10 +275,7 @@ public class Configuration {
      * @since 4.0
      */
     public void registerScheduledJob(JobDef jobdef) {
-        SchedulerFactory schedFact = new StdSchedulerFactory();
         try {
-            Scheduler sched = schedFact.getScheduler();
-
             // if there's no such adapter, log an error
             if (this.getRegisteredAdapter(jobdef.getAdapterName()) == null) {
                 log.error("Jobdef [" + jobdef.getName() + "] got error: adapter [" + jobdef.getAdapterName() + "] not registered.");
@@ -271,27 +286,8 @@ public class Configuration {
                     log.error("Jobdef [" + jobdef.getName() + "] got error: adapter [" + jobdef.getAdapterName() + "] receiver ["+jobdef.getReceiverName()+"] not registered.");
                 }
             }
-            // if the job already exists, remove it.
-            if ((sched.getJobDetail(jobdef.getName(), Scheduler.DEFAULT_GROUP)) != null) {
-                try {
-                    sched.deleteJob(jobdef.getName(), Scheduler.DEFAULT_GROUP);
-                } catch (SchedulerException e) {
-                    log.error("error removing job ["+jobdef.getName()+"] from the scheduler", e);
-                }
-            }
-            JobDetail jobDetail = new JobDetail(jobdef.getName(), // job name
-                    Scheduler.DEFAULT_GROUP, // job group
-                    AdapterJob.class);        // the java class to execute
-
-            jobDetail.getJobDataMap().put("adapterName", jobdef.getAdapterName());
-            jobDetail.getJobDataMap().put("config", this);
-            jobDetail.getJobDataMap().put("function", jobdef.getFunction());
-            jobDetail.getJobDataMap().put("receiverName", jobdef.getReceiverName());
-            if (StringUtils.isNotEmpty(jobdef.getDescription()))  jobDetail.setDescription(jobdef.getDescription());
-
-            CronTrigger cronTrigger = new CronTrigger(jobdef.getName(), Scheduler.DEFAULT_GROUP);
-            cronTrigger.setCronExpression(jobdef.getCronExpression());
-            sched.scheduleJob(jobDetail, cronTrigger);
+            
+			SchedulerHelper.scheduleJob(this, jobdef);
             log.info("job scheduled with properties :" + jobdef.toString());
         } catch (Exception e) {
             log.error("error occured on registerScheduledJob", e);
