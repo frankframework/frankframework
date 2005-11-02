@@ -1,6 +1,9 @@
 /*
  * $Log: ConnectionBase.java,v $
- * Revision 1.3  2005-10-26 08:18:59  europe\L190409
+ * Revision 1.4  2005-11-02 09:40:52  europe\L190409
+ * made useSingleDynamicReplyQueue configurable from appConstants
+ *
+ * Revision 1.3  2005/10/26 08:18:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * pulled dynamic reply code out of IfsaConnection up to here
  *
  * Revision 1.2  2005/10/24 15:11:17  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -49,12 +52,15 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class ConnectionBase  {
-	public static final String version="$RCSfile: ConnectionBase.java,v $ $Revision: 1.3 $ $Date: 2005-10-26 08:18:59 $";
+	public static final String version="$RCSfile: ConnectionBase.java,v $ $Revision: 1.4 $ $Date: 2005-11-02 09:40:52 $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	private int referenceCount;
 	private final static String SESSIONS_ARE_POOLED_KEY="jms.sessionsArePooled";
 	private static Boolean sessionsArePooledStore=null; 
+	private final static String USE_SINGLE_DYNAMIC_REPLY_QUEUE_KEY="jms.useSingleDynamicReplyQueue";
+	private static Boolean useSingleDynamicReplyQueueStore=null; 
+
 	
 	private String id;
 	
@@ -64,7 +70,6 @@ public class ConnectionBase  {
 	
 	private HashMap connectionMap;
 
-	protected boolean useSingleDynamicReplyQueue = true;
 	private Queue globalDynamicReplyQueue = null;
 	
 	protected ConnectionBase(String id, Context context, ConnectionFactory connectionFactory, HashMap connectionMap) {
@@ -165,6 +170,14 @@ public class ConnectionBase  {
 		return sessionsArePooledStore.booleanValue();
 	}
 
+	protected synchronized boolean useSingleDynamicReplyQueue() {
+		if (useSingleDynamicReplyQueueStore==null) {
+			boolean useSingleQueue=AppConstants.getInstance().getBoolean(USE_SINGLE_DYNAMIC_REPLY_QUEUE_KEY, true);
+			useSingleDynamicReplyQueueStore = new Boolean(useSingleQueue);
+		}
+		return useSingleDynamicReplyQueueStore.booleanValue();
+	}
+
 
 	private void deleteDynamicQueue(Queue queue) throws IfsaException {
 		if (queue!=null) {
@@ -182,7 +195,7 @@ public class ConnectionBase  {
 
 	public Queue getDynamicReplyQueue(QueueSession session) throws JMSException {
 		Queue result;
-		if (useSingleDynamicReplyQueue) {
+		if (useSingleDynamicReplyQueue()) {
 			synchronized (this) {
 				if (globalDynamicReplyQueue==null) {
 					globalDynamicReplyQueue=session.createTemporaryQueue();
@@ -197,7 +210,7 @@ public class ConnectionBase  {
 	}
 	
 	public void releaseDynamicReplyQueue(Queue replyQueue) throws IfsaException {
-		if (!useSingleDynamicReplyQueue) {
+		if (!useSingleDynamicReplyQueue()) {
 			deleteDynamicQueue(replyQueue);
 		}
 	}

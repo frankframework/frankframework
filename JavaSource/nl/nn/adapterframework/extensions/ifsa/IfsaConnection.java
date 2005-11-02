@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaConnection.java,v $
- * Revision 1.8  2005-11-02 09:08:06  europe\L190409
+ * Revision 1.9  2005-11-02 09:40:52  europe\L190409
+ * made useSingleDynamicReplyQueue configurable from appConstants
+ *
+ * Revision 1.8  2005/11/02 09:08:06  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * ifsa-mode connection not for single dynamic reply queue
  *
  * Revision 1.7  2005/10/26 08:24:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -40,10 +43,8 @@ import javax.jms.Message;
 import javax.jms.Queue;
 import javax.jms.QueueReceiver;
 import javax.jms.QueueSession;
-import javax.jms.TemporaryQueue;
 import javax.naming.NamingException;
 
-import nl.nn.adapterframework.core.IbisException;
 import nl.nn.adapterframework.jms.ConnectionBase;
 
 import com.ing.ifsa.IFSAContext;
@@ -60,7 +61,7 @@ import com.ing.ifsa.IFSAQueueConnectionFactory;
  * @version Id
  */
 public class IfsaConnection extends ConnectionBase {
-	public static final String version="$RCSfile: IfsaConnection.java,v $ $Revision: 1.8 $ $Date: 2005-11-02 09:08:06 $";
+	public static final String version="$RCSfile: IfsaConnection.java,v $ $Revision: 1.9 $ $Date: 2005-11-02 09:40:52 $";
 
 	protected boolean preJms22Api=false;
 	public IfsaConnection(String applicationId, IFSAContext context, IFSAQueueConnectionFactory connectionFactory, HashMap connectionMap, boolean preJms22Api) {
@@ -83,7 +84,7 @@ public class IfsaConnection extends ConnectionBase {
 	}
 
 	public boolean canUseIfsaModeSessions() throws IfsaException {
-		return hasDynamicReplyQueue() && !useSingleDynamicReplyQueue;
+		return hasDynamicReplyQueue() && !useSingleDynamicReplyQueue();
 	}
 	
 	/**
@@ -142,7 +143,7 @@ public class IfsaConnection extends ConnectionBase {
 		}
 		
 		try {
-			if (hasDynamicReplyQueue() && !useSingleDynamicReplyQueue) {
+			if (hasDynamicReplyQueue() && !useSingleDynamicReplyQueue()) {
 				queueReceiver = session.createReceiver(replyQueue);
 				log.debug("created receiver on individual dynamic reply queue" );
 			} else {
