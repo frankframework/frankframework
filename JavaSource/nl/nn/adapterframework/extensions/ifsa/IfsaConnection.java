@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaConnection.java,v $
- * Revision 1.7  2005-10-26 08:24:54  europe\L190409
+ * Revision 1.8  2005-11-02 09:08:06  europe\L190409
+ * ifsa-mode connection not for single dynamic reply queue
+ *
+ * Revision 1.7  2005/10/26 08:24:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * pulled dynamic reply code out of IfsaConnection to ConnectionBase
  *
  * Revision 1.6  2005/10/20 15:34:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -57,7 +60,7 @@ import com.ing.ifsa.IFSAQueueConnectionFactory;
  * @version Id
  */
 public class IfsaConnection extends ConnectionBase {
-	public static final String version="$RCSfile: IfsaConnection.java,v $ $Revision: 1.7 $ $Date: 2005-10-26 08:24:54 $";
+	public static final String version="$RCSfile: IfsaConnection.java,v $ $Revision: 1.8 $ $Date: 2005-11-02 09:08:06 $";
 
 	protected boolean preJms22Api=false;
 	public IfsaConnection(String applicationId, IFSAContext context, IFSAQueueConnectionFactory connectionFactory, HashMap connectionMap, boolean preJms22Api) {
@@ -77,6 +80,10 @@ public class IfsaConnection extends ConnectionBase {
 		} catch (NamingException e) {
 			throw new IfsaException("could not find IfsaContext",e);
 		}
+	}
+
+	public boolean canUseIfsaModeSessions() throws IfsaException {
+		return hasDynamicReplyQueue() && !useSingleDynamicReplyQueue;
 	}
 	
 	/**
