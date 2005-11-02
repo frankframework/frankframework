@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.24  2005-09-20 13:32:18  europe\L190409
+ * Revision 1.25  2005-11-02 09:06:59  europe\L190409
+ * corrected logging
+ *
+ * Revision 1.24  2005/09/20 13:32:18  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added check for emtpy-named pipes
  *
  * Revision 1.23  2005/09/08 15:52:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -135,7 +138,7 @@ import javax.transaction.UserTransaction;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.24 $ $Date: 2005-09-20 13:32:18 $";
+	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.25 $ $Date: 2005-11-02 09:06:59 $";
     private Logger log = Logger.getLogger(this.getClass());
 	private Logger durationLog = Logger.getLogger("LongDurationMessages");
     
@@ -403,7 +406,7 @@ public class PipeLine {
 			long pipeDuration = -1;
 			
 			if (pe!=null && StringUtils.isNotEmpty(pe.getGetInputFromSessionKey())) {
-				log.debug("Pipeline of adapter ["+owner.getName()+"] replacing input for pipe ["+pe.getName()+" with contents of sessionKey ["+pe.getGetInputFromSessionKey()+"]");
+				log.debug("Pipeline of adapter ["+owner.getName()+"] replacing input for pipe ["+pe.getName()+"] with contents of sessionKey ["+pe.getGetInputFromSessionKey()+"]");
 				object=pipeLineSession.get(pe.getGetInputFromSessionKey());
 			}
 			
