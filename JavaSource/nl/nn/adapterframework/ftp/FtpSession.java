@@ -1,6 +1,9 @@
 /*
  * $Log: FtpSession.java,v $
- * Revision 1.6  2005-11-07 08:21:36  europe\m00f531
+ * Revision 1.7  2005-11-07 09:41:25  europe\m00f531
+ * *** empty log message ***
+ *
+ * Revision 1.6  2005/11/07 08:21:36  John Dekker <john.dekker@ibissource.org>
  * Enable sftp public/private key authentication
  *
  * Revision 1.5  2005/10/24 12:12:33  John Dekker <john.dekker@ibissource.org>
@@ -55,6 +58,8 @@ import com.sshtools.j2ssh.authentication.PublicKeyAuthenticationClient;
 import com.sshtools.j2ssh.authentication.SshAuthenticationClient;
 import com.sshtools.j2ssh.configuration.SshConnectionProperties;
 import com.sshtools.j2ssh.sftp.SftpFile;
+import com.sshtools.j2ssh.transport.AbstractKnownHostsKeyVerification;
+import com.sshtools.j2ssh.transport.ConsoleKnownHostsKeyVerification;
 import com.sshtools.j2ssh.transport.IgnoreHostKeyVerification;
 import com.sshtools.j2ssh.transport.publickey.SshPrivateKeyFile;
 
@@ -64,7 +69,7 @@ import com.sshtools.j2ssh.transport.publickey.SshPrivateKeyFile;
  * @author John Dekker
  */
 public class FtpSession {
-	public static final String version = "$RCSfile: FtpSession.java,v $  $Revision: 1.6 $ $Date: 2005-11-07 08:21:36 $";
+	public static final String version = "$RCSfile: FtpSession.java,v $  $Revision: 1.7 $ $Date: 2005-11-07 09:41:25 $";
 	protected Logger logger = Logger.getLogger(this.getClass());
 	
 	// configuration parameters, global for all types
@@ -87,6 +92,7 @@ public class FtpSession {
 	private String privateKeyFilePath = null;
 	private String passphrase = null;
 	private String knownHostsPath = null;
+	private boolean consoleKnownHostsVerifier = false;
 	
 	// configuration parameters for ftps
 	private boolean jdk13Compatibility = false;
@@ -194,8 +200,14 @@ public class FtpSession {
 			// make a secure connection with the remote host 
 			sshClient = new SshClient();
 			if (StringUtils.isNotEmpty(knownHostsPath)) {
-				SftpHostVerification shv = new SftpHostVerification(knownHostsPath);
-				sshClient.connect(sshProp, shv);
+				AbstractKnownHostsKeyVerification hv = null;
+				if (consoleKnownHostsVerifier) { 
+					hv = new ConsoleKnownHostsKeyVerification(knownHostsPath); 
+				}
+				else {
+					hv = new SftpHostVerification(knownHostsPath);
+				}
+				sshClient.connect(sshProp, hv);
 			}
 			else {
 				sshClient.connect(sshProp, new IgnoreHostKeyVerification());
@@ -803,6 +815,14 @@ public class FtpSession {
 
 	public void setKnownHostsPath(String string) {
 		knownHostsPath = string;
+	}
+
+	public boolean isConsoleKnownHostsVerifier() {
+		return consoleKnownHostsVerifier;
+	}
+
+	public void setConsoleKnownHostsVerifier(boolean b) {
+		consoleKnownHostsVerifier = b;
 	}
 
 }
