@@ -1,6 +1,9 @@
 /*
  * $Log: FtpListener.java,v $
- * Revision 1.2  2005-10-24 11:41:27  europe\m00f531
+ * Revision 1.3  2005-11-07 08:21:35  europe\m00f531
+ * Enable sftp public/private key authentication
+ *
+ * Revision 1.2  2005/10/24 11:41:27  John Dekker <john.dekker@ibissource.org>
  * *** empty log message ***
  *
  * Revision 1.1  2005/10/24 09:59:19  John Dekker <john.dekker@ibissource.org>
@@ -54,6 +57,11 @@ import org.apache.log4j.Logger;
  * <tr><td>{@link #setTransferMode(string) mode}</td><td>transfermode, one of ASCII, BINARY, EBCDIC, STREAM, COMPRESSED</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setAllowSelfSignedCertificates(boolean) allowSelfSignedCertificates}</td><td>if true, the server certificate can be self signed</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setProtP(boolean) protP}</td><td>if true, the server returns data via another socket</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setPrivateKeyFile(String) privateKeyFile}</td><td>Path to private key file for SFTP authentication</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setPassphrase(String) passphrase}</td><td>Passphrase of private key file</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setKnownHostsPath(String) knownHostsPath}</td><td>path to file with knownhosts</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setPrefCSEncryption(String) prefCSEncryption}</td><td>Optional preferred encryption from client to server for sftp protocol</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setPrefSCEncryption(String) prefSCEncryption}</td><td>Optional preferred encryption from server to client for sftp protocol</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  *
@@ -61,7 +69,7 @@ import org.apache.log4j.Logger;
  * @author  John Dekker
  */
 public class FtpListener implements IPullingListener, INamedObject {
-	public static final String version = "$RCSfile: FtpListener.java,v $  $Revision: 1.2 $ $Date: 2005-10-24 11:41:27 $";
+	public static final String version = "$RCSfile: FtpListener.java,v $  $Revision: 1.3 $ $Date: 2005-11-07 08:21:35 $";
 
 	protected Logger log = Logger.getLogger(this.getClass());
 	private FtpSession ftpSession;
@@ -269,5 +277,25 @@ public class FtpListener implements IPullingListener, INamedObject {
 
 	public void setProtP(boolean protP) {
 		ftpSession.setProtP(protP);
+	}
+
+	public void setPrefCSEncryption(String prefCSEncryption) {
+		ftpSession.setPrefCSEncryption(prefCSEncryption);
+	}
+
+	public void setPrefSCEncryption(String prefSCEncryption) {
+		ftpSession.setPrefSCEncryption(prefSCEncryption);
+	}
+
+	public void setPrivateKeyFilePath(String privateKeyFilePath) {
+		ftpSession.setPrivateKeyFilePath(privateKeyFilePath);
+	}
+
+	public void setPassphrase(String passPhrase) {
+		ftpSession.setPassphrase(passPhrase);
+	}
+
+	public void setKnownHostsPath(String knownHostsPath) {
+		ftpSession.setKnownHostsPath(knownHostsPath);
 	}
 }

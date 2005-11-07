@@ -1,6 +1,9 @@
 /*
  * $Log: FtpSession.java,v $
- * Revision 1.5  2005-10-24 12:12:33  europe\m00f531
+ * Revision 1.6  2005-11-07 08:21:36  europe\m00f531
+ * Enable sftp public/private key authentication
+ *
+ * Revision 1.5  2005/10/24 12:12:33  John Dekker <john.dekker@ibissource.org>
  * *** empty log message ***
  *
  * Revision 1.4  2005/10/24 11:41:27  John Dekker <john.dekker@ibissource.org>
@@ -48,9 +51,12 @@ import com.sshtools.j2ssh.SftpClient;
 import com.sshtools.j2ssh.SshClient;
 import com.sshtools.j2ssh.authentication.AuthenticationProtocolState;
 import com.sshtools.j2ssh.authentication.PasswordAuthenticationClient;
+import com.sshtools.j2ssh.authentication.PublicKeyAuthenticationClient;
+import com.sshtools.j2ssh.authentication.SshAuthenticationClient;
 import com.sshtools.j2ssh.configuration.SshConnectionProperties;
 import com.sshtools.j2ssh.sftp.SftpFile;
 import com.sshtools.j2ssh.transport.IgnoreHostKeyVerification;
+import com.sshtools.j2ssh.transport.publickey.SshPrivateKeyFile;
 
 /**
  * Helper class for sftp and ftp
@@ -58,7 +64,7 @@ import com.sshtools.j2ssh.transport.IgnoreHostKeyVerification;
  * @author John Dekker
  */
 public class FtpSession {
-	public static final String version = "$RCSfile: FtpSession.java,v $  $Revision: 1.5 $ $Date: 2005-10-24 12:12:33 $";
+	public static final String version = "$RCSfile: FtpSession.java,v $  $Revision: 1.6 $ $Date: 2005-11-07 08:21:36 $";
 	protected Logger logger = Logger.getLogger(this.getClass());
 	
 	// configuration parameters, global for all types
@@ -76,6 +82,11 @@ public class FtpSession {
 	
 	// configuration property for sftp
 	private int proxyTransportType = SshConnectionProperties.USE_SOCKS5_PROXY;
+	private String prefCSEncryption = null;
+	private String prefSCEncryption = null;
+	private String privateKeyFilePath = null;
+	private String passphrase = null;
+	private String knownHostsPath = null;
 	
 	// configuration parameters for ftps
 	private boolean jdk13Compatibility = false;
@@ -165,8 +176,10 @@ public class FtpSession {
 			SshConnectionProperties sshProp = new SshConnectionProperties();
 			sshProp.setHost(host);
 			sshProp.setPort(port);
-//			sshProp.setPrefCSEncryption("blowfish-cbc");
-//			sshProp.setPrefPublicKey("ssh-rsa");
+			if (StringUtils.isNotEmpty(prefCSEncryption))
+				sshProp.setPrefCSEncryption(prefCSEncryption);
+			if (StringUtils.isNotEmpty(prefSCEncryption))
+				sshProp.setPrefCSEncryption(prefSCEncryption);
 			
 			if (! StringUtils.isEmpty(proxyHost)) {
 				sshProp.setTransportProvider(proxyTransportType);
@@ -180,14 +193,18 @@ public class FtpSession {
 
 			// make a secure connection with the remote host 
 			sshClient = new SshClient();
-			sshClient.connect(sshProp, new IgnoreHostKeyVerification());
+			if (StringUtils.isNotEmpty(knownHostsPath)) {
+				SftpHostVerification shv = new SftpHostVerification(knownHostsPath);
+				sshClient.connect(sshProp, shv);
+			}
+			else {
+				sshClient.connect(sshProp, new IgnoreHostKeyVerification());
+			}
 			
 			// pass the authentication information
-			PasswordAuthenticationClient pac = new PasswordAuthenticationClient();
-			pac.setUsername(username);
-			pac.setPassword(password);
+			SshAuthenticationClient sac = getSshAuthentication();
 			
-			int result = sshClient.authenticate(pac);
+			int result = sshClient.authenticate(sac);
 			if (result != AuthenticationProtocolState.COMPLETE) {
 				closeSftpClient();
 				throw new IOException("Could not authenticate to sftp server " + result);
@@ -200,10 +217,27 @@ public class FtpSession {
 				sftpClient.cd(remoteDirectory);
 			}
 		}
-		catch(IOException e) {
+		catch(Exception e) {
 			closeSftpClient();
 			throw new FtpConnectException(e);
 		}
+	}
+
+	private SshAuthenticationClient getSshAuthentication() throws Exception {
+		if (StringUtils.isNotEmpty(privateKeyFilePath)) {
+			PublicKeyAuthenticationClient pk = new PublicKeyAuthenticationClient();
+			pk.setUsername(username);
+			SshPrivateKeyFile pkFile = SshPrivateKeyFile.parse(new File(privateKeyFilePath));
+			pk.setKey(pkFile.toPrivateKey(passphrase));
+			return pk; 
+		}
+		if (StringUtils.isNotEmpty(password)) {
+			PasswordAuthenticationClient pac = new PasswordAuthenticationClient();
+			pac.setUsername(username);
+			pac.setPassword(password);
+			return pac;
+		}
+		throw new Exception("Unknown authentication type, either the password or the privateKeyFile must be filled");
 	}
 
 	private void openFtpClient(String remoteDirectory) throws FtpConnectException {
@@ -627,7 +661,7 @@ public class FtpSession {
 		username = string;
 	}
 
-	public String getFtpTypeDescription() {
+	String getFtpTypeDescription() {
 		return ftpTypeDescription;
 	}
 
@@ -639,19 +673,19 @@ public class FtpSession {
 		return ftpType;
 	}
 
-	public String getCertificate() {
+	String getCertificate() {
 		return certificate;
 	}
 
-	public String getCertificatePassword() {
+	String getCertificatePassword() {
 		return certificatePassword;
 	}
 
-	public String getTruststore() {
+	String getTruststore() {
 		return truststore;
 	}
 
-	public String getTruststorePassword() {
+	String getTruststorePassword() {
 		return truststorePassword;
 	}
 
@@ -671,7 +705,7 @@ public class FtpSession {
 		truststorePassword = string;
 	}
 
-	public boolean isJdk13Compatibility() {
+	boolean isJdk13Compatibility() {
 		return jdk13Compatibility;
 	}
 
@@ -679,7 +713,7 @@ public class FtpSession {
 		jdk13Compatibility = b;
 	}
 
-	public String getKeystoreType() {
+	String getKeystoreType() {
 		return keystoreType;
 	}
 
@@ -687,7 +721,7 @@ public class FtpSession {
 		keystoreType = string;
 	}
 
-	public String getTruststoreType() {
+	String getTruststoreType() {
 		return truststoreType;
 	}
 
@@ -695,7 +729,7 @@ public class FtpSession {
 		truststoreType = string;
 	}
 
-	public boolean isVerifyHostname() {
+	boolean isVerifyHostname() {
 		return verifyHostname;
 	}
 
@@ -703,7 +737,7 @@ public class FtpSession {
 		verifyHostname = b;
 	}
 	
-	public boolean isAllowSelfSignedCertificates() {
+	boolean isAllowSelfSignedCertificates() {
 		return allowSelfSignedCertificates;
 	}
 
@@ -715,7 +749,7 @@ public class FtpSession {
 		transferMode = string;
 	}
 
-	public boolean isProtp() {
+	boolean isProtp() {
 		return protP;
 	}
 
@@ -723,12 +757,52 @@ public class FtpSession {
 		protP = b;
 	}
 
-	public boolean isMessageIsContent() {
+	boolean isMessageIsContent() {
 		return messageIsContent;
 	}
 
 	public void setMessageIsContent(boolean b) {
 		messageIsContent = b;
+	}
+
+	String getPrefCSEncryption() {
+		return prefCSEncryption;
+	}
+
+	String getPrefSCEncryption() {
+		return prefSCEncryption;
+	}
+
+	String getPrivateKeyFilePath() {
+		return privateKeyFilePath;
+	}
+
+	public void setPrefCSEncryption(String string) {
+		prefCSEncryption = string;
+	}
+
+	public void setPrefSCEncryption(String string) {
+		prefSCEncryption = string;
+	}
+
+	public void setPrivateKeyFilePath(String string) {
+		privateKeyFilePath = string;
+	}
+
+	String getPassphrase() {
+		return passphrase;
+	}
+
+	public void setPassphrase(String string) {
+		passphrase = string;
+	}
+
+	String getKnownHostsPath() {
+		return knownHostsPath;
+	}
+
+	public void setKnownHostsPath(String string) {
+		knownHostsPath = string;
 	}
 
 }

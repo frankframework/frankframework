@@ -1,6 +1,9 @@
 /*
  * $Log: FtpFileRetrieverPipe.java,v $
- * Revision 1.3  2005-10-24 09:59:18  europe\m00f531
+ * Revision 1.4  2005-11-07 08:21:35  europe\m00f531
+ * Enable sftp public/private key authentication
+ *
+ * Revision 1.3  2005/10/24 09:59:18  John Dekker <john.dekker@ibissource.org>
  * Add support for pattern parameters, and include them into several listeners,
  * senders and pipes that are file related
  *
@@ -48,6 +51,11 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setTransferMode(string) mode}</td><td>transfermode, one of ASCII, BINARY, EBCDIC, STREAM, COMPRESSED</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setAllowSelfSignedCertificates(boolean) allowSelfSignedCertificates}</td><td>if true, the server certificate can be self signed</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setProtP(boolean) protP}</td><td>if true, the server returns data via another socket</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setPrivateKeyFile(String) privateKeyFile}</td><td>Path to private key file for SFTP authentication</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setPassphrase(String) passphrase}</td><td>Passphrase of private key file</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setKnownHostsPath(String) knownHostsPath}</td><td>path to file with knownhosts</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setPrefCSEncryption(String) prefCSEncryption}</td><td>Optional preferred encryption from client to server for sftp protocol</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setPrefSCEncryption(String) prefSCEncryption}</td><td>Optional preferred encryption from server to client for sftp protocol</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMessageIsContent(boolean) messageIsContent}</td><td>if true, the received ftp contents is put in the message, otherwise it is put in locally created files</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #deleteAfterGet(boolean) deleteAfterGet}</td><td>if true, the remote file is deleted after it is retrieved</td><td>&nbsp;</td></tr>
  * </table>
@@ -56,7 +64,7 @@ import org.apache.commons.lang.StringUtils;
  * @author: John Dekker
  */
 public class FtpFileRetrieverPipe extends FixedForwardPipe {
-	public static final String version = "$RCSfile: FtpFileRetrieverPipe.java,v $  $Revision: 1.3 $ $Date: 2005-10-24 09:59:18 $";
+	public static final String version = "$RCSfile: FtpFileRetrieverPipe.java,v $  $Revision: 1.4 $ $Date: 2005-11-07 08:21:35 $";
 
 	private String name;
 	private String failureForward;
@@ -236,6 +244,18 @@ public class FtpFileRetrieverPipe extends FixedForwardPipe {
 		ftpSession.setAllowSelfSignedCertificates(testModeNoCertificatorCheck);
 	}
 
+	public void setPrefCSEncryption(String prefCSEncryption) {
+		ftpSession.setPrefCSEncryption(prefCSEncryption);
+	}
+
+	public void setPrefSCEncryption(String prefSCEncryption) {
+		ftpSession.setPrefSCEncryption(prefSCEncryption);
+	}
+
+	public void setPrivateKeyFilePath(String privateKeyFilePath) {
+		ftpSession.setPrivateKeyFilePath(privateKeyFilePath);
+	}
+
 	public void setProtP(boolean protP) {
 		ftpSession.setProtP(protP);
 	}
@@ -252,4 +272,11 @@ public class FtpFileRetrieverPipe extends FixedForwardPipe {
 		deleteAfterGet = b;
 	}
 
+	public void setPassphrase(String passPhrase) {
+		ftpSession.setPassphrase(passPhrase);
+	}
+
+	public void setKnownHostsPath(String knownHostsPath) {
+		ftpSession.setKnownHostsPath(knownHostsPath);
+	}
 }

@@ -1,6 +1,9 @@
 /*
  * $Log: FtpSender.java,v $
- * Revision 1.5  2005-10-31 14:42:24  europe\L190409
+ * Revision 1.6  2005-11-07 08:21:35  europe\m00f531
+ * Enable sftp public/private key authentication
+ *
+ * Revision 1.5  2005/10/31 14:42:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.4  2005/10/27 07:57:41  John Dekker <john.dekker@ibissource.org>
@@ -52,13 +55,18 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setAllowSelfSignedCertificates(boolean) allowSelfSignedCertificates}</td><td>if true, the server certificate can be self signed</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setProtP(boolean) protP}</td><td>if true, the server returns data via another socket</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMessageIsContent(boolean) messageIsContent}</td><td>if true, the contents of the message is send, otherwise it message contains the local filenames of the files to be send</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setPrivateKeyFile(String) privateKeyFile}</td><td>Path to private key file for SFTP authentication</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setPassphrase(String) passphrase}</td><td>Passphrase of private key file</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setKnownHostsPath(String) knownHostsPath}</td><td>path to file with knownhosts</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setPrefCSEncryption(String) prefCSEncryption}</td><td>Optional preferred encryption from client to server for sftp protocol</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setPrefSCEncryption(String) prefSCEncryption}</td><td>Optional preferred encryption from server to client for sftp protocol</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  *  
  * @author: John Dekker
  */
 public class FtpSender extends SenderWithParametersBase {
-	public static final String version = "$RCSfile: FtpSender.java,v $  $Revision: 1.5 $ $Date: 2005-10-31 14:42:24 $";
+	public static final String version = "$RCSfile: FtpSender.java,v $  $Revision: 1.6 $ $Date: 2005-11-07 08:21:35 $";
 	private String name;
 	private String remoteFilenamePattern;
 	private String remoteDirectory;
@@ -202,6 +210,18 @@ public class FtpSender extends SenderWithParametersBase {
 		ftpSession.setAllowSelfSignedCertificates(testModeNoCertificatorCheck);
 	}
 
+	public void setPrefCSEncryption(String prefCSEncryption) {
+		ftpSession.setPrefCSEncryption(prefCSEncryption);
+	}
+
+	public void setPrefSCEncryption(String prefSCEncryption) {
+		ftpSession.setPrefSCEncryption(prefSCEncryption);
+	}
+
+	public void setPrivateKeyFilePath(String privateKeyFilePath) {
+		ftpSession.setPrivateKeyFilePath(privateKeyFilePath);
+	}
+
 	public void setProtP(boolean protP) {
 		ftpSession.setProtP(protP);
 	}
@@ -214,4 +234,11 @@ public class FtpSender extends SenderWithParametersBase {
 		this.remoteDirectory = remoteDirectory;
 	}
 
+	public void setPassphrase(String passPhrase) {
+		ftpSession.setPassphrase(passPhrase);
+	}
+
+	public void setKnownHostsPath(String knownHostsPath) {
+		ftpSession.setKnownHostsPath(knownHostsPath);
+	}
 }
