@@ -1,6 +1,9 @@
 /*
  * $Log: FileUtils.java,v $
- * Revision 1.7  2005-10-24 09:59:23  europe\m00f531
+ * Revision 1.8  2005-11-08 09:31:08  europe\m00f531
+ * Bug concerning filenames resolved
+ *
+ * Revision 1.7  2005/10/24 09:59:23  John Dekker <john.dekker@ibissource.org>
  * Add support for pattern parameters, and include them into several listeners,
  * senders and pipes that are file related
  *
@@ -46,7 +49,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class FileUtils {
-	public static final String version = "$RCSfile: FileUtils.java,v $  $Revision: 1.7 $ $Date: 2005-10-24 09:59:23 $";
+	public static final String version = "$RCSfile: FileUtils.java,v $  $Revision: 1.8 $ $Date: 2005-11-08 09:31:08 $";
 
 	public static String getFilename(ParameterList definedParameters, PipeLineSession session, String originalFilename, String filenamePattern) throws ParameterException {
 		// no pattern defined, outputname = inputname
@@ -98,6 +101,8 @@ public class FileUtils {
 	}
 	
 	public static String getFilename(ParameterList definedParameters, PipeLineSession session, File originalFile, String filenamePattern) throws ParameterException {
+		if (originalFile == null)
+			return getFilename(definedParameters, session, "", filenamePattern);
 		return getFilename(definedParameters, session, originalFile.getName(), filenamePattern);
 	}
 	

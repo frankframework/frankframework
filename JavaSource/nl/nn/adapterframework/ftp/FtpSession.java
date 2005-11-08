@@ -1,6 +1,9 @@
 /*
  * $Log: FtpSession.java,v $
- * Revision 1.7  2005-11-07 09:41:25  europe\m00f531
+ * Revision 1.8  2005-11-08 09:31:09  europe\m00f531
+ * Bug concerning filenames resolved
+ *
+ * Revision 1.7  2005/11/07 09:41:25  John Dekker <john.dekker@ibissource.org>
  * *** empty log message ***
  *
  * Revision 1.6  2005/11/07 08:21:36  John Dekker <john.dekker@ibissource.org>
@@ -69,7 +72,7 @@ import com.sshtools.j2ssh.transport.publickey.SshPrivateKeyFile;
  * @author John Dekker
  */
 public class FtpSession {
-	public static final String version = "$RCSfile: FtpSession.java,v $  $Revision: 1.7 $ $Date: 2005-11-07 09:41:25 $";
+	public static final String version = "$RCSfile: FtpSession.java,v $  $Revision: 1.8 $ $Date: 2005-11-08 09:31:09 $";
 	protected Logger logger = Logger.getLogger(this.getClass());
 	
 	// configuration parameters, global for all types
@@ -366,7 +369,7 @@ public class FtpSession {
 		openClient(remoteDirectory);
 		
 		// get remote name
-		String remoteFilename = FileUtils.getFilename(params, session, "", remoteFilenamePattern);
+		String remoteFilename = FileUtils.getFilename(params, session, (File)null, remoteFilenamePattern);
 		
 		// open local file
 		InputStream is = new ByteArrayInputStream(contents.getBytes());

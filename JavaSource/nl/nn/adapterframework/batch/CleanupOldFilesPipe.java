@@ -1,6 +1,9 @@
 /*
  * $Log: CleanupOldFilesPipe.java,v $
- * Revision 1.1  2005-11-01 08:54:00  europe\m00f531
+ * Revision 1.2  2005-11-08 09:31:08  europe\m00f531
+ * Bug concerning filenames resolved
+ *
+ * Revision 1.1  2005/11/01 08:54:00  John Dekker <john.dekker@ibissource.org>
  * Initial version
  *
  * Revision 1.3  2005/10/31 14:38:02  John Dekker <john.dekker@ibissource.org>
@@ -45,7 +48,7 @@ import org.apache.commons.lang.StringUtils;
  * @author: John Dekker
  */
 public class CleanupOldFilesPipe extends FixedForwardPipe {
-	public static final String version = "$RCSfile: CleanupOldFilesPipe.java,v $  $Revision: 1.1 $ $Date: 2005-11-01 08:54:00 $";
+	public static final String version = "$RCSfile: CleanupOldFilesPipe.java,v $  $Revision: 1.2 $ $Date: 2005-11-08 09:31:08 $";
 	private String filePattern;
 	private boolean subdirectories;
 	private long lastModifiedDelta;
@@ -68,7 +71,7 @@ public class CleanupOldFilesPipe extends FixedForwardPipe {
 	 */
 	public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRunException {
 		try {
-			String in = (input == null) ? "" : input.toString();
+			File in = (input == null) ? null : new File(input.toString());
 			String filename = FileUtils.getFilename(null, session, in, filePattern);
 			ArrayList delFiles = getFilesForDeletion(filename);
 			if (delFiles != null && delFiles.size() > 0) {

@@ -1,6 +1,9 @@
 /*
  * $Log: CompressPipe.java,v $
- * Revision 1.3  2005-11-08 09:18:54  europe\m00f531
+ * Revision 1.4  2005-11-08 09:31:08  europe\m00f531
+ * Bug concerning filenames resolved
+ *
+ * Revision 1.3  2005/11/08 09:18:54  John Dekker <john.dekker@ibissource.org>
  * Bug concerning filenames resolved
  *
  * Revision 1.2  2005/10/28 09:36:12  John Dekker <john.dekker@ibissource.org>
@@ -124,7 +127,7 @@ public class CompressPipe extends FixedForwardPipe {
 		else {
 			String outFilename = null;
 			if (messageIsContent) {
-				outFilename = FileUtils.getFilename(getParameterList(), session, "", filenamePattern);
+				outFilename = FileUtils.getFilename(getParameterList(), session, (File)null, filenamePattern);
 			}
 			else {
 				outFilename = FileUtils.getFilename(getParameterList(), session, new File((String)input), filenamePattern);
@@ -154,7 +157,7 @@ public class CompressPipe extends FixedForwardPipe {
 	
 	private String getZipEntryName(Object input, PipeLineSession session) throws ParameterException {
 		if (messageIsContent) {
-			return FileUtils.getFilename(getParameterList(), session, "", zipEntryPattern);
+			return FileUtils.getFilename(getParameterList(), session, (File)null, zipEntryPattern);
 		}
 		return FileUtils.getFilename(getParameterList(), session, new File((String)input), zipEntryPattern);
 	}
