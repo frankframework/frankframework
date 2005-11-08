@@ -1,6 +1,9 @@
 /*
  * $Log: CompressPipe.java,v $
- * Revision 1.2  2005-10-28 09:36:12  europe\m00f531
+ * Revision 1.3  2005-11-08 09:18:54  europe\m00f531
+ * Bug concerning filenames resolved
+ *
+ * Revision 1.2  2005/10/28 09:36:12  John Dekker <john.dekker@ibissource.org>
  * Add possibility to convert result to a string or a bytearray
  *
  * Revision 1.1  2005/10/28 09:12:23  John Dekker <john.dekker@ibissource.org>
@@ -40,7 +43,7 @@ import nl.nn.adapterframework.util.FileUtils;
  * <tr><td>{@link #setMessageIsContent(boolean) messageIsContent}</td><td>Flag indicates whether the message is the content or the path to a file with the contents</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setResultIsContent(boolean) resultIsContent}</td><td>Flag indicates whether the result must be written to the message or to a file (filename = message)</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setOutputDirectory(String) outputDirectory}</td><td>Required if result is a file, the firectory in which to store the result file</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setOutputFilenamePattern(String) outputFilenamePattern}</td><td>Required if result is a file, the pattern for the result filename</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setfilenamePattern(String) filenamePattern}</td><td>Required if result is a file, the pattern for the result filename</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setZipEntryPattern(String) zipEntryPattern}</td><td>The pattern for the zipentry name in case a zipfile is read or written</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setCompress(boolean) directory}</td><td>If true the pipe compress, otherwise it decompress</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setConvert2String(boolean) convert2String}</td><td>If true result is returned as a string, otherwise as a byte array</td><td>&nbsp;</td></tr>
@@ -53,7 +56,7 @@ public class CompressPipe extends FixedForwardPipe {
 	private boolean messageIsContent;
 	private boolean resultIsContent;
 	private String outputDirectory;
-	private String outputFilenamePattern;
+	private String filenamePattern;
 	private String zipEntryPattern;
 	private boolean compress;
 	private Object result;
@@ -119,8 +122,13 @@ public class CompressPipe extends FixedForwardPipe {
 			}
 		}
 		else {
-			String orgFilename = (messageIsContent) ? "" : (String)input;
-			String outFilename = FileUtils.getFilename(getParameterList(), session, orgFilename, outputFilenamePattern);
+			String outFilename = null;
+			if (messageIsContent) {
+				outFilename = FileUtils.getFilename(getParameterList(), session, "", filenamePattern);
+			}
+			else {
+				outFilename = FileUtils.getFilename(getParameterList(), session, new File((String)input), filenamePattern);
+			}
 			File outFile = new File(outputDirectory, outFilename);
 			result = outFile.getAbsolutePath();
 			out =  new FileOutputStream(outFile);
@@ -145,9 +153,10 @@ public class CompressPipe extends FixedForwardPipe {
 	}
 	
 	private String getZipEntryName(Object input, PipeLineSession session) throws ParameterException {
-		String orgFilename = (messageIsContent) ? "" : (String)input;
-		String entryName = FileUtils.getFilename(getParameterList(), session, orgFilename, zipEntryPattern);
-		return entryName;
+		if (messageIsContent) {
+			return FileUtils.getFilename(getParameterList(), session, "", zipEntryPattern);
+		}
+		return FileUtils.getFilename(getParameterList(), session, new File((String)input), zipEntryPattern);
 	}
 
 	public boolean isCompress() {
@@ -155,7 +164,7 @@ public class CompressPipe extends FixedForwardPipe {
 	}
 
 	public String getFilenamePattern() {
-		return outputFilenamePattern;
+		return filenamePattern;
 	}
 
 	public boolean isMessageIsContent() {
@@ -175,7 +184,7 @@ public class CompressPipe extends FixedForwardPipe {
 	}
 
 	public void setFilenamePattern(String string) {
-		outputFilenamePattern = string;
+		filenamePattern = string;
 	}
 
 	public void setMessageIsContent(boolean b) {
