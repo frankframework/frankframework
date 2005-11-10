@@ -1,6 +1,9 @@
 /*
  * $Log: RecordTransformer.java,v $
- * Revision 1.5  2005-10-31 14:38:02  europe\m00f531
+ * Revision 1.6  2005-11-10 09:34:19  europe\m00f531
+ * Trim before lookup value
+ *
+ * Revision 1.5  2005/10/31 14:38:02  John Dekker <john.dekker@ibissource.org>
  * Add . in javadoc
  *
  * Revision 1.4  2005/10/27 12:32:18  John Dekker <john.dekker@ibissource.org>
@@ -68,7 +71,7 @@ import org.apache.commons.lang.StringUtils;
  * @author: John Dekker
  */
 public class RecordTransformer extends AbstractRecordHandler {
-	public static final String version = "$RCSfile: RecordTransformer.java,v $  $Revision: 1.5 $ $Date: 2005-10-31 14:38:02 $";
+	public static final String version = "$RCSfile: RecordTransformer.java,v $  $Revision: 1.6 $ $Date: 2005-11-10 09:34:19 $";
 
 	private List outputFields;
 	private String outputSeperator;
@@ -445,7 +448,10 @@ public class RecordTransformer extends AbstractRecordHandler {
 		
 		public IOutputField appendValue(IOutputField curFunction, StringBuffer result, ArrayList inputFields) throws ConfigurationException {
 			String inVal = super.toValue(inputFields);
-			String outVal = (String)lookupValues.get(inVal);
+			String outVal = null;
+			if (inVal != null) {
+				outVal = (String)lookupValues.get(inVal.trim());
+			}
 			if (outVal == null) {
 				outVal = (String)lookupValues.get("*");
 				if (outVal == null) {
