@@ -1,6 +1,9 @@
 /*
  * $Log: FTPsClient.java,v $
- * Revision 1.1  2005-10-11 13:03:31  europe\m00f531
+ * Revision 1.2  2005-11-11 12:30:40  europe\l166817
+ * Aanpassingen door John Dekker
+ *
+ * Revision 1.1  2005/10/11 13:03:31  John Dekker <john.dekker@ibissource.org>
  * Supports retrieving files (FtpFileRetrieverPipe) and sending files (FtpSender)
  * via one of the FTP protocols (ftp, sftp, ftps both implicit as explicit).
  *
@@ -45,7 +48,7 @@ import org.apache.log4j.Logger;
  * @author John Dekker
  */
 class FTPsClient extends FTPClient implements SocketFactory {
-	public static final String version = "$RCSfile: FTPsClient.java,v $  $Revision: 1.1 $ $Date: 2005-10-11 13:03:31 $";
+	public static final String version = "$RCSfile: FTPsClient.java,v $  $Revision: 1.2 $ $Date: 2005-11-11 12:30:40 $";
 	protected Logger log = Logger.getLogger(this.getClass());;
 	private FtpSession session;
 	private AuthSSLProtocolSocketFactoryBase socketFactory;

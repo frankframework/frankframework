@@ -1,6 +1,9 @@
 /*
  * $Log: FtpSender.java,v $
- * Revision 1.6  2005-11-07 08:21:35  europe\m00f531
+ * Revision 1.7  2005-11-11 12:30:39  europe\l166817
+ * Aanpassingen door John Dekker
+ *
+ * Revision 1.6  2005/11/07 08:21:35  John Dekker <john.dekker@ibissource.org>
  * Enable sftp public/private key authentication
  *
  * Revision 1.5  2005/10/31 14:42:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -51,7 +54,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setFtpTypeDescription(String) ftpTypeDescription}</td><td>One of FTP, SFTP, FTPS(I) or FTPSI, FTPSX(SSL), FTPSX(TLS)</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setRemoteFilenamePattern(string) filenamePattern}</td><td>remote directory in which files have to be uploaded</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setRemoteDirectory(string) directory}</td><td>remote directory in which files have to be uploaded</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setTransferMode(string) mode}</td><td>transfermode, one of ASCII, BINARY, EBCDIC, STREAM, COMPRESSED</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setFileType(string) fileType}</td><td>File type, one of ASCII, BINARY</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setAllowSelfSignedCertificates(boolean) allowSelfSignedCertificates}</td><td>if true, the server certificate can be self signed</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setProtP(boolean) protP}</td><td>if true, the server returns data via another socket</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMessageIsContent(boolean) messageIsContent}</td><td>if true, the contents of the message is send, otherwise it message contains the local filenames of the files to be send</td><td>&nbsp;</td></tr>
@@ -66,7 +69,7 @@ import org.apache.commons.lang.StringUtils;
  * @author: John Dekker
  */
 public class FtpSender extends SenderWithParametersBase {
-	public static final String version = "$RCSfile: FtpSender.java,v $  $Revision: 1.6 $ $Date: 2005-11-07 08:21:35 $";
+	public static final String version = "$RCSfile: FtpSender.java,v $  $Revision: 1.7 $ $Date: 2005-11-11 12:30:39 $";
 	private String name;
 	private String remoteFilenamePattern;
 	private String remoteDirectory;
@@ -202,8 +205,8 @@ public class FtpSender extends SenderWithParametersBase {
 		ftpSession.setVerifyHostname(verifyHostname);
 	}
 
-	public void setTransferMode(String transferMode) {
-		ftpSession.setTransferMode(transferMode);
+	public void setFileType(String fileType) {
+		ftpSession.setFileType(fileType);
 	}
 
 	public void setAllowSelfSignedCertificates(boolean testModeNoCertificatorCheck) {

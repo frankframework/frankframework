@@ -1,6 +1,9 @@
 /*
  * $Log: FtpFileRetrieverPipe.java,v $
- * Revision 1.4  2005-11-07 08:21:35  europe\m00f531
+ * Revision 1.5  2005-11-11 12:30:38  europe\l166817
+ * Aanpassingen door John Dekker
+ *
+ * Revision 1.4  2005/11/07 08:21:35  John Dekker <john.dekker@ibissource.org>
  * Enable sftp public/private key authentication
  *
  * Revision 1.3  2005/10/24 09:59:18  John Dekker <john.dekker@ibissource.org>
@@ -48,7 +51,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setLocalFilenamePattern(string) filenamePattern}</td><td>pattern (in MessageFormat) of the local filename</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setLocalDirectory(string) directory}</td><td>local directory in which files have to be downloaded</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setRemoteDirectory(string) directory}</td><td>remote directory</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setTransferMode(string) mode}</td><td>transfermode, one of ASCII, BINARY, EBCDIC, STREAM, COMPRESSED</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setFileType(string) fileType}</td><td>File type, one of ASCII, BINARY</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setAllowSelfSignedCertificates(boolean) allowSelfSignedCertificates}</td><td>if true, the server certificate can be self signed</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setProtP(boolean) protP}</td><td>if true, the server returns data via another socket</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setPrivateKeyFile(String) privateKeyFile}</td><td>Path to private key file for SFTP authentication</td><td>&nbsp;</td></tr>
@@ -64,7 +67,7 @@ import org.apache.commons.lang.StringUtils;
  * @author: John Dekker
  */
 public class FtpFileRetrieverPipe extends FixedForwardPipe {
-	public static final String version = "$RCSfile: FtpFileRetrieverPipe.java,v $  $Revision: 1.4 $ $Date: 2005-11-07 08:21:35 $";
+	public static final String version = "$RCSfile: FtpFileRetrieverPipe.java,v $  $Revision: 1.5 $ $Date: 2005-11-11 12:30:38 $";
 
 	private String name;
 	private String failureForward;
@@ -236,8 +239,8 @@ public class FtpFileRetrieverPipe extends FixedForwardPipe {
 		ftpSession.setVerifyHostname(verifyHostname);
 	}
 
-	public void setTransferMode(String transferMode) {
-		ftpSession.setTransferMode(transferMode);
+	public void setFileType(String fileType) {
+		ftpSession.setFileType(fileType);
 	}
 
 	public void setAllowSelfSignedCertificates(boolean testModeNoCertificatorCheck) {

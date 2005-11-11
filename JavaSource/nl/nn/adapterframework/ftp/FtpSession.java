@@ -1,6 +1,9 @@
 /*
  * $Log: FtpSession.java,v $
- * Revision 1.8  2005-11-08 09:31:09  europe\m00f531
+ * Revision 1.9  2005-11-11 12:30:40  europe\l166817
+ * Aanpassingen door John Dekker
+ *
+ * Revision 1.8  2005/11/08 09:31:09  John Dekker <john.dekker@ibissource.org>
  * Bug concerning filenames resolved
  *
  * Revision 1.7  2005/11/07 09:41:25  John Dekker <john.dekker@ibissource.org>
@@ -50,6 +53,7 @@ import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.util.FileUtils;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.log4j.Logger;
 
@@ -72,7 +76,7 @@ import com.sshtools.j2ssh.transport.publickey.SshPrivateKeyFile;
  * @author John Dekker
  */
 public class FtpSession {
-	public static final String version = "$RCSfile: FtpSession.java,v $  $Revision: 1.8 $ $Date: 2005-11-08 09:31:09 $";
+	public static final String version = "$RCSfile: FtpSession.java,v $  $Revision: 1.9 $ $Date: 2005-11-11 12:30:40 $";
 	protected Logger logger = Logger.getLogger(this.getClass());
 	
 	// configuration parameters, global for all types
@@ -85,7 +89,7 @@ public class FtpSession {
 	private String proxyUsername;
 	private String proxyPassword;
 	private String ftpTypeDescription = "FTP";
-	private String transferMode = null;
+	private String fileType = null;
 	private boolean messageIsContent;
 	
 	// configuration property for sftp
@@ -159,7 +163,7 @@ public class FtpSession {
 		}
 		
 		try {
-			getTransferModeIntValue();
+			getFileTypeIntValue();
 		}
 		catch(IOException e) {
 			throw new ConfigurationException(e.getMessage());
@@ -275,10 +279,9 @@ public class FtpSession {
 				}
 			}
 			
-			if (! StringUtils.isEmpty(transferMode)) {
-				ftpClient.setFileTransferMode(getTransferModeIntValue());
-				if (ftpClient.getReply() < 200 || ftpClient.getReply() >= 300) {
-					logger.warn("SendCommand(mode, " + transferMode + ") returned " + ftpClient.getReplyString());
+			if (StringUtils.isNotEmpty(fileType)) {
+				if (! ftpClient.setFileType(getFileTypeIntValue())) {
+					throw new IOException(ftpClient.getReplyString());
 				}
 			}
 		}
@@ -288,23 +291,15 @@ public class FtpSession {
 		}
 	}
 
-	private int getTransferModeIntValue() throws IOException {
-		if (StringUtils.isEmpty(transferMode))
-			return FTPClient.ASCII_FILE_TYPE;
-		else if ("ASCII".equals(transferMode))
-			return FTPClient.ASCII_FILE_TYPE;
-		else if ("BINARY".equals(transferMode))
-			return FTPClient.BINARY_FILE_TYPE;
-		else if ("EBCDIC".equals(transferMode))
-			return FTPClient.EBCDIC_FILE_TYPE;
-		else if ("LOCAL".equals(transferMode))
-			return FTPClient.LOCAL_FILE_TYPE;
-		else if ("STREAM".equals(transferMode))
-			return FTPClient.STREAM_TRANSFER_MODE;
-		else if ("COMPRESSED".equals(transferMode))
-			return FTPClient.COMPRESSED_TRANSFER_MODE;
+	private int getFileTypeIntValue() throws IOException {
+		if (StringUtils.isEmpty(fileType))
+			return org.apache.commons.net.ftp.FTP.ASCII_FILE_TYPE;
+		else if ("ASCII".equals(fileType))
+		return org.apache.commons.net.ftp.FTP.ASCII_FILE_TYPE;
+		else if ("BINARY".equals(fileType))
+		return org.apache.commons.net.ftp.FTP.BINARY_FILE_TYPE;
 		else 
-			throw new IOException("Unknown transfermode [" + transferMode + "] specified, use one of ASCII, BINARY, EBCDIC, LOCAL, STREAM, COMPRESSED");
+			throw new IOException("Unknown Type [" + fileType + "] specified, use one of ASCII, BINARY");
 	}
 
 	private FTPClient createFTPClient() throws NoSuchAlgorithmException, KeyStoreException, GeneralSecurityException, IOException {
@@ -760,8 +755,8 @@ public class FtpSession {
 		allowSelfSignedCertificates = b;
 	}
 
-	public void setTransferMode(String string) {
-		transferMode = string;
+	public void setFileType(String string) {
+		fileType = string;
 	}
 
 	boolean isProtp() {

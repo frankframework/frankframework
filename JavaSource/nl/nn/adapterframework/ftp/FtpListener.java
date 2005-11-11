@@ -1,6 +1,9 @@
 /*
  * $Log: FtpListener.java,v $
- * Revision 1.3  2005-11-07 08:21:35  europe\m00f531
+ * Revision 1.4  2005-11-11 12:30:38  europe\l166817
+ * Aanpassingen door John Dekker
+ *
+ * Revision 1.3  2005/11/07 08:21:35  John Dekker <john.dekker@ibissource.org>
  * Enable sftp public/private key authentication
  *
  * Revision 1.2  2005/10/24 11:41:27  John Dekker <john.dekker@ibissource.org>
@@ -54,7 +57,7 @@ import org.apache.log4j.Logger;
  * <tr><td>{@link #setFtpTypeDescription(String) ftpTypeDescription}</td><td>One of FTP, SFTP, FTPS(I) or FTPSI, FTPSX(SSL), FTPSX(TLS)</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setRemoteFilenamePattern(string) filenamePattern}</td><td>remote directory in which files have to be uploaded</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setRemoteDirectory(string) directory}</td><td>remote directory in which files have to be uploaded</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setTransferMode(string) mode}</td><td>transfermode, one of ASCII, BINARY, EBCDIC, STREAM, COMPRESSED</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setFileType(string) fileType}</td><td>File type, one of ASCII, BINARY</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setAllowSelfSignedCertificates(boolean) allowSelfSignedCertificates}</td><td>if true, the server certificate can be self signed</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setProtP(boolean) protP}</td><td>if true, the server returns data via another socket</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setPrivateKeyFile(String) privateKeyFile}</td><td>Path to private key file for SFTP authentication</td><td>&nbsp;</td></tr>
@@ -69,7 +72,7 @@ import org.apache.log4j.Logger;
  * @author  John Dekker
  */
 public class FtpListener implements IPullingListener, INamedObject {
-	public static final String version = "$RCSfile: FtpListener.java,v $  $Revision: 1.3 $ $Date: 2005-11-07 08:21:35 $";
+	public static final String version = "$RCSfile: FtpListener.java,v $  $Revision: 1.4 $ $Date: 2005-11-11 12:30:38 $";
 
 	protected Logger log = Logger.getLogger(this.getClass());
 	private FtpSession ftpSession;
@@ -267,8 +270,8 @@ public class FtpListener implements IPullingListener, INamedObject {
 		ftpSession.setVerifyHostname(verifyHostname);
 	}
 
-	public void setTransferMode(String transferMode) {
-		ftpSession.setTransferMode(transferMode);
+	public void setFileType(String fileType) {
+		ftpSession.setFileType(fileType);
 	}
 
 	public void setAllowSelfSignedCertificates(boolean testModeNoCertificatorCheck) {
