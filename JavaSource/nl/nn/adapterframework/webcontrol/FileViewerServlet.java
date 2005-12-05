@@ -1,6 +1,9 @@
 /*
  * $Log: FileViewerServlet.java,v $
- * Revision 1.6  2005-10-17 11:05:14  europe\L190409
+ * Revision 1.7  2005-12-05 08:36:52  europe\L190409
+ * modified handling of log4j-xml files
+ *
+ * Revision 1.6  2005/10/17 11:05:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * replace non-printable characters from log4j.xml
  *
  * Revision 1.5  2005/10/17 09:34:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -68,7 +71,7 @@ import java.util.StringTokenizer;
  * @author Johan Verrips 
  */
 public class FileViewerServlet extends HttpServlet  {
-	public static final String version = "$RCSfile: FileViewerServlet.java,v $ $Revision: 1.6 $ $Date: 2005-10-17 11:05:14 $";
+	public static final String version = "$RCSfile: FileViewerServlet.java,v $ $Revision: 1.7 $ $Date: 2005-12-05 08:36:52 $";
 	protected Logger log = Logger.getLogger(this.getClass());	
 
 	// key that is looked up to retrieve texts to be signalled
@@ -134,6 +137,15 @@ public class FileViewerServlet extends HttpServlet  {
 			response.setContentType("text/plain");
 			Misc.readerToWriter(reader, out);
 		}
+		if (type.equalsIgnoreCase("xml")){
+			response.setContentType("application/xml");
+			Reader fileReader = new EncapsulatingReader(reader, log4j_prefix, log4j_postfix, true);
+			LineNumberReader lnr = new LineNumberReader(fileReader);
+			String line;
+			while ((line=lnr.readLine())!=null) {
+				out.println(line+"\n");
+			}
+		}
 		out.close();
 	}
 
@@ -157,8 +169,10 @@ public class FileViewerServlet extends HttpServlet  {
 	        if (log4jFlag) {
 	        	String stylesheetUrl;
 	        	if ("html".equalsIgnoreCase(type)) {
+					response.setContentType("text/html");
 					stylesheetUrl=log4j_html_xslt;
 	        	} else {
+					response.setContentType("text/plain");
 					stylesheetUrl=log4j_text_xslt;
 	        	}
 				transformReader(new FileReader(fileName), response, log4j_prefix, log4j_postfix, stylesheetUrl);
