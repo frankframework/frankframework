@@ -1,6 +1,9 @@
 /*
  * $Log: RecordTransformer.java,v $
- * Revision 1.6  2005-11-10 09:34:19  europe\m00f531
+ * Revision 1.7  2005-12-06 10:05:06  europe\m00f531
+ * Added support for exteneral functions
+ *
+ * Revision 1.6  2005/11/10 09:34:19  John Dekker <john.dekker@ibissource.org>
  * Trim before lookup value
  *
  * Revision 1.5  2005/10/31 14:38:02  John Dekker <john.dekker@ibissource.org>
@@ -22,6 +25,7 @@
  */
 package nl.nn.adapterframework.batch;
 
+import java.lang.reflect.Constructor;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -71,7 +75,7 @@ import org.apache.commons.lang.StringUtils;
  * @author: John Dekker
  */
 public class RecordTransformer extends AbstractRecordHandler {
-	public static final String version = "$RCSfile: RecordTransformer.java,v $  $Revision: 1.6 $ $Date: 2005-11-10 09:34:19 $";
+	public static final String version = "$RCSfile: RecordTransformer.java,v $  $Revision: 1.7 $ $Date: 2005-12-06 10:05:06 $";
 
 	private List outputFields;
 	private String outputSeperator;
@@ -164,6 +168,10 @@ public class RecordTransformer extends AbstractRecordHandler {
 		addOutputField(new Substring(inputFieldIndex-1, startIndex, endIndex));
 	}
 
+	public void addExternal(int inputFieldIndex, String delegateName, String params) throws ConfigurationException {
+		addOutputField(new DelegateOutput(inputFieldIndex-1, delegateName, params));
+	}
+
 	public void addIf(int inputFieldIndex, String comparator, String compareValue) throws ConfigurationException {
 		addOutputField(new IfCondition(inputFieldIndex-1, comparator, compareValue));
 	}
@@ -220,11 +228,17 @@ public class RecordTransformer extends AbstractRecordHandler {
 			addAlignedOutput(fixedValue, length, leftAlign, fillChar);
 		}
 		else if ("INALIGN".equals(def)) {
-			int field = Integer.parseInt(nextToken(st, "Inalign function expects a fieldnummer"));
+			int field = Integer.parseInt(nextToken(st, "Inalign function expects a fieldnumber"));
 			int length = Integer.parseInt(nextToken(st, "Inalign function expects a fieldlength"));
 			boolean leftAlign= "LEFT".equals(nextToken(st, "Inalign function expects alignment left").toUpperCase());
 			char fillChar = nextToken(st, "Inalign function expects a fillcharacter").charAt(0);
 			addAlignedInput(field, length, leftAlign, fillChar);
+		}
+		else if ("EXTERNAL".equals(def)) {
+			int field = Integer.parseInt(nextToken(st, "External function expects a fieldnumber"));
+			String delegateName = nextToken(st, "External function expects a type name for the delegate");
+			String params = nextToken(st, "External function expects a parameter string");
+			addExternal(field, delegateName, params);
 		}
 		else if ("IF".equals(def)) {
 			int field = Integer.parseInt(nextToken(st, "If function expects a fieldnummer"));
@@ -300,7 +314,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 	 * Each function must implement this interface 
 	 * @author John Dekker
 	 */
-	interface IOutputField {
+	public interface IOutputField {
 		IOutputField appendValue(IOutputField curFunction, StringBuffer result, ArrayList inputFields) throws Exception;
 	}
 	
@@ -595,4 +609,40 @@ public class RecordTransformer extends AbstractRecordHandler {
 			throw new Exception("Endif function has no corresponding if");
 		}
 	}
+	
+	
+	/**
+	 * Sends a fixed value to the output  
+	 * @author John Dekker
+	 */
+	public interface IOutputDelegate {
+		String transform(int fieldNr, ArrayList inputFields, String params); 
+	}
+	
+
+	class DelegateOutput extends OutputInput {
+		private IOutputDelegate delegate;
+		private String params;
+		
+		DelegateOutput(int inputFieldIndex, String delegateName, String params) throws ConfigurationException {
+			super(inputFieldIndex);
+			
+			this.params = params;
+			try {
+				Class delegateClass = Class.forName(delegateName);
+				Constructor constructor = delegateClass.getConstructor(new Class[0]);
+				delegate = (IOutputDelegate)constructor.newInstance(new Object[0]);
+			}
+			catch(Exception e) {
+				throw new ConfigurationException(e);
+			}
+		}
+
+		public IOutputField appendValue(IOutputField curFunction, StringBuffer result, ArrayList inputFields) {
+			String transform = delegate.transform(super.inputFieldIndex, inputFields, params);
+			result.append(transform);
+			return null;
+		}
+	}
+	
 }
