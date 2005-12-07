@@ -1,7 +1,7 @@
 /*
  * $Log: FtpListener.java,v $
- * Revision 1.4  2005-11-11 12:30:38  europe\l166817
- * Aanpassingen door John Dekker
+ * Revision 1.5  2005-12-07 15:54:42  europe\L190409
+ * improved response to stopping of adapter
  *
  * Revision 1.3  2005/11/07 08:21:35  John Dekker <john.dekker@ibissource.org>
  * Enable sftp public/private key authentication
@@ -22,12 +22,16 @@ package nl.nn.adapterframework.ftp;
 
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
+import nl.nn.adapterframework.util.RunStateEnquirer;
+import nl.nn.adapterframework.util.RunStateEnquiring;
+import nl.nn.adapterframework.util.RunStateEnum;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
@@ -44,7 +48,7 @@ import org.apache.log4j.Logger;
  * <tr><td>classname</td><td>nl.nn.ibis4fundation.DirectoryListener</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the listener</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setRemoteDirectory(String) inputDirectory}</td><td>Directory to look for files</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setResponseTime(long) responseTime}</td><td>Waittime to wait between polling</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setResponseTime(long) responseTime}</td><td>Waittime to wait between polling</td><td>3600000 (=one hour)</td></tr>
  * <tr><td>{@link #setHost(String) host}</td><td>name or ip adres of remote host</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setPort(int) port}</td><td>portnumber of remote host</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setUsername(string) username}</td><td>name of the user to authenticatie on remote server</td><td>&nbsp;</td></tr>
@@ -71,15 +75,18 @@ import org.apache.log4j.Logger;
  * @version Id
  * @author  John Dekker
  */
-public class FtpListener implements IPullingListener, INamedObject {
-	public static final String version = "$RCSfile: FtpListener.java,v $  $Revision: 1.4 $ $Date: 2005-11-11 12:30:38 $";
-
+public class FtpListener implements IPullingListener, INamedObject, RunStateEnquiring {
+	public static final String version = "$RCSfile: FtpListener.java,v $  $Revision: 1.5 $ $Date: 2005-12-07 15:54:42 $";
 	protected Logger log = Logger.getLogger(this.getClass());
+
 	private FtpSession ftpSession;
+	private LinkedList remoteFilenames;
+	private RunStateEnquirer runStateEnquirer=null;
+
 	private String name;
 	private String remoteDirectory;
 	private long responseTime = 3600000; // one hour
-	private LinkedList remoteFilenames;
+	private long localResponseTime =  1000; // time between checks if adapter still state 'started'
 
 	public FtpListener() {
 		this.ftpSession = new FtpSession();
@@ -129,10 +136,15 @@ public class FtpListener implements IPullingListener, INamedObject {
 	 * is a new file to process and returns the first record.
 	 */
 	public synchronized Object getRawMessage(HashMap threadContext) throws ListenerException {
+		log.debug("FtpListener " + getName() + " in getRawMessage");
 		if (remoteFilenames.isEmpty()) {
 			try {
 				ftpSession.openClient(remoteDirectory);
-				remoteFilenames.addAll(ftpSession.ls(remoteDirectory, true, true));
+				List names = ftpSession.ls(remoteDirectory, true, true);
+				log.debug("FtpListener " + getName() + " received ls result");
+				if (names != null && names.size() > 0) {
+					remoteFilenames.addAll(names);
+				}
 			}
 			catch(Exception e) {
 				throw new ListenerException(e); 
@@ -142,20 +154,28 @@ public class FtpListener implements IPullingListener, INamedObject {
 			}
 		}
 		if (! remoteFilenames.isEmpty()) {
-			return remoteFilenames.removeFirst();
+			Object result = remoteFilenames.removeFirst();
+			log.debug("FtpListener " + getName() + " returns " + result.toString());
+			return result;
 		}
-		return waitAWhile();
+		waitAWhile();
+		return null;
 	}
 	
-	private Object waitAWhile() throws ListenerException {
+	private void waitAWhile() throws ListenerException {
 		try {
-			Thread.sleep(responseTime);
-			return null;
+			log.debug("FtpListener " + getName() + " starts waiting ["+responseTime+"] ms in chunks of ["+localResponseTime+"] ms");
+			long timeWaited;
+			for (timeWaited=0; canGoOn() && timeWaited+localResponseTime<responseTime; timeWaited+=localResponseTime) {
+				Thread.sleep(localResponseTime);
+			}
+			if (canGoOn() && responseTime-timeWaited>0) {
+				Thread.sleep(responseTime-timeWaited);
+			}
 		}
 		catch(InterruptedException e) {		
 			throw new ListenerException("Interrupted while listening", e);
 		}
-		
 	}
 
 	public String toString() {
@@ -173,6 +193,15 @@ public class FtpListener implements IPullingListener, INamedObject {
 	public String getStringFromRawMessage(Object rawMessage, HashMap threadContext) throws ListenerException {
 		return rawMessage.toString();
 	}
+
+	protected boolean canGoOn() {
+		return runStateEnquirer!=null && runStateEnquirer.isInState(RunStateEnum.STARTED);
+	}
+
+	public void SetRunStateEnquirer(RunStateEnquirer enquirer) {
+		runStateEnquirer=enquirer;
+	}
+
 
 	public String getName() {
 		return name;
@@ -301,4 +330,5 @@ public class FtpListener implements IPullingListener, INamedObject {
 	public void setKnownHostsPath(String knownHostsPath) {
 		ftpSession.setKnownHostsPath(knownHostsPath);
 	}
+
 }
