@@ -1,7 +1,7 @@
 /*
  * $Log: FtpFileRetrieverPipe.java,v $
- * Revision 1.5  2005-11-11 12:30:38  europe\l166817
- * Aanpassingen door John Dekker
+ * Revision 1.6  2005-12-07 15:55:46  europe\L190409
+ * increased usage of superclass
  *
  * Revision 1.4  2005/11/07 08:21:35  John Dekker <john.dekker@ibissource.org>
  * Enable sftp public/private key authentication
@@ -60,23 +60,24 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setPrefCSEncryption(String) prefCSEncryption}</td><td>Optional preferred encryption from client to server for sftp protocol</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setPrefSCEncryption(String) prefSCEncryption}</td><td>Optional preferred encryption from server to client for sftp protocol</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMessageIsContent(boolean) messageIsContent}</td><td>if true, the received ftp contents is put in the message, otherwise it is put in locally created files</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #deleteAfterGet(boolean) deleteAfterGet}</td><td>if true, the remote file is deleted after it is retrieved</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #deleteAfterGet(boolean) deleteAfterGet}</td><td>if true, the remote file is deleted after it is retrieved</td><td>false</td></tr>
  * </table>
  * </p>
  * 
  * @author: John Dekker
  */
 public class FtpFileRetrieverPipe extends FixedForwardPipe {
-	public static final String version = "$RCSfile: FtpFileRetrieverPipe.java,v $  $Revision: 1.5 $ $Date: 2005-11-11 12:30:38 $";
+	public static final String version = "$RCSfile: FtpFileRetrieverPipe.java,v $  $Revision: 1.6 $ $Date: 2005-12-07 15:55:46 $";
 
-	private String name;
-	private String failureForward;
-	private String localFilenamePattern;
-	private String localDirectory;
-	private String remoteDirectory;
-	private boolean deleteAfterGet;
 	private FtpSession ftpSession;
+
+	private String failureForward=null;
+	private String localFilenamePattern=null;
+	private String localDirectory=null;;
+	private String remoteDirectory=null;
+	private boolean deleteAfterGet=false;
 	
+
 	public FtpFileRetrieverPipe() {
 		ftpSession = new FtpSession();
 	}
@@ -86,9 +87,6 @@ public class FtpFileRetrieverPipe extends FixedForwardPipe {
 		
 		ftpSession.configure();
 		
-		if (StringUtils.isEmpty(name)) {
-			throw new ConfigurationException("Attribute [name] is not set");
-		}
 		if (! StringUtils.isEmpty(failureForward) && findForward(failureForward) == null) {
 			throw new ConfigurationException("Attribute [failureForward] refers to a non-existing path " + failureForward);
 		}
@@ -99,8 +97,8 @@ public class FtpFileRetrieverPipe extends FixedForwardPipe {
 
 		try {		
 			ftpSession.closeClient();
-		}
-		catch(Exception e) {
+		} catch(Exception e) {
+			log.warn(getLogPrefix(null)+"exception closing ftpSession",e);
 		}
 	}
  
@@ -112,7 +110,9 @@ public class FtpFileRetrieverPipe extends FixedForwardPipe {
 		try {
 			boolean close = ! deleteAfterGet;
 			String localFilename = ftpSession.get(getParameterList(), session, localDirectory, remoteDirectory, orgFilename, localFilenamePattern, close);
-			ftpSession.deleteRemote(remoteDirectory, orgFilename, true);
+			if (deleteAfterGet) {
+				ftpSession.deleteRemote(remoteDirectory, orgFilename, true);
+			} 
 			return new PipeRunResult(getForward(), localFilename);
 		}
 		catch(IOException e) {
@@ -135,9 +135,6 @@ public class FtpFileRetrieverPipe extends FixedForwardPipe {
 		return localFilenamePattern;
 	}
 
-	public String getName() {
-		return name;
-	}
 
 	public String getRemoteDirectory() {
 		return remoteDirectory;
@@ -151,9 +148,6 @@ public class FtpFileRetrieverPipe extends FixedForwardPipe {
 		localFilenamePattern = string;
 	}
 
-	public void setName(String string) {
-		name = string;
-	}
 
 	public void setRemoteDirectory(String string) {
 		remoteDirectory = string;

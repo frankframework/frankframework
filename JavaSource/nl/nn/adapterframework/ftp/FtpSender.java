@@ -1,7 +1,7 @@
 /*
  * $Log: FtpSender.java,v $
- * Revision 1.7  2005-11-11 12:30:39  europe\l166817
- * Aanpassingen door John Dekker
+ * Revision 1.8  2005-12-07 15:53:36  europe\L190409
+ * increased usage of superclass
  *
  * Revision 1.6  2005/11/07 08:21:35  John Dekker <john.dekker@ibissource.org>
  * Enable sftp public/private key authentication
@@ -27,6 +27,7 @@
 package nl.nn.adapterframework.ftp;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
@@ -69,57 +70,43 @@ import org.apache.commons.lang.StringUtils;
  * @author: John Dekker
  */
 public class FtpSender extends SenderWithParametersBase {
-	public static final String version = "$RCSfile: FtpSender.java,v $  $Revision: 1.7 $ $Date: 2005-11-11 12:30:39 $";
-	private String name;
-	private String remoteFilenamePattern;
-	private String remoteDirectory;
+	public static final String version = "$RCSfile: FtpSender.java,v $  $Revision: 1.8 $ $Date: 2005-12-07 15:53:36 $";
+
 	private FtpSession ftpSession;
+	
+	private String remoteFilenamePattern=null;
+	private String remoteDirectory;
 	
 	public FtpSender() {
 		this.ftpSession = new FtpSession();
 	}
 	
-	/* (non-Javadoc)
-	 * @see nl.nn.adapterframework.core.ISender#configure()
-	 */
 	public void configure() throws ConfigurationException {
+		super.configure();
 		ftpSession.configure();
-		
-		if (StringUtils.isEmpty(name)) {
-			throw new ConfigurationException("Attribute [name] is not set");
-		}
 	}
 
-	/* (non-Javadoc)
-	 * @see nl.nn.adapterframework.core.ISender#isSynchronous()
-	 */
 	public boolean isSynchronous() {
 		return true;
 	}
 
-	/* (non-Javadoc)
-	 * @see nl.nn.adapterframework.core.ISender#sendMessage(java.lang.String, java.lang.String)
-	 */
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		try {
-			ftpSession.put(paramList, prc.getSession(), message, remoteDirectory, remoteFilenamePattern, true);
-		}
-		catch(SenderException e) {
+			PipeLineSession session=null;
+			if (prc!=null) {
+				session=prc.getSession();
+			}
+			ftpSession.put(paramList, session, message, remoteDirectory, remoteFilenamePattern, true);
+		} catch(SenderException e) {
 			throw e;
-		}
-		catch(Exception e) {
+		} catch(Exception e) {
 			throw new SenderException("Error during ftp-ing " + message, e);
 		}
 		return message;
 	}
 	
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
+	
+	
 
 	public void setHost(String host) {
 		ftpSession.setHost(host);
