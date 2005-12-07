@@ -1,7 +1,7 @@
 /*
  * $Log: FtpSession.java,v $
- * Revision 1.9  2005-11-11 12:30:40  europe\l166817
- * Aanpassingen door John Dekker
+ * Revision 1.10  2005-12-07 15:52:15  europe\L190409
+ * improved logging & checking for reply-code
  *
  * Revision 1.8  2005/11/08 09:31:09  John Dekker <john.dekker@ibissource.org>
  * Bug concerning filenames resolved
@@ -53,7 +53,6 @@ import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.util.FileUtils;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.log4j.Logger;
 
@@ -76,8 +75,8 @@ import com.sshtools.j2ssh.transport.publickey.SshPrivateKeyFile;
  * @author John Dekker
  */
 public class FtpSession {
-	public static final String version = "$RCSfile: FtpSession.java,v $  $Revision: 1.9 $ $Date: 2005-11-11 12:30:40 $";
-	protected Logger logger = Logger.getLogger(this.getClass());
+	public static final String version = "$RCSfile: FtpSession.java,v $  $Revision: 1.10 $ $Date: 2005-12-07 15:52:15 $";
+	protected Logger log = Logger.getLogger(this.getClass());
 	
 	// configuration parameters, global for all types
 	private String host;
@@ -171,6 +170,7 @@ public class FtpSession {
 	}
 
 	public void openClient(String remoteDirectory) throws FtpConnectException {
+		log.debug("Open ftp client");
 		if (ftpType == SFTP) {
 			if (sftpClient == null || sftpClient.isClosed()) {
 				openSftpClient(remoteDirectory);
@@ -259,6 +259,22 @@ public class FtpSession {
 		throw new Exception("Unknown authentication type, either the password or the privateKeyFile must be filled");
 	}
 
+
+	protected boolean replyCodeIsOK(int replyCode) {
+		log.debug("FTP replyCode ["+replyCode+"]");
+		return replyCode>= 200 && replyCode < 300 || replyCode==125;
+	}
+	
+	protected void checkReply(int replyCode, String cmd) throws IOException  {
+		if (!replyCodeIsOK(replyCode)) {
+			throw new IOException("Command [" + cmd + "] returned error [" + replyCode + "]: " + ftpClient.getReplyString());
+		} else {
+			log.debug("Command [" + cmd + "] returned " + ftpClient.getReplyString());
+		}
+	}
+	
+
+
 	private void openFtpClient(String remoteDirectory) throws FtpConnectException {
 		try {
 			// set proxy properties
@@ -274,15 +290,13 @@ public class FtpSession {
 			ftpClient.login(username, password);
 	
 			if (! StringUtils.isEmpty(remoteDirectory)) {
-				if (! ftpClient.changeWorkingDirectory(remoteDirectory)) {
-					throw new IOException(ftpClient.getReplyString());
-				}
+				ftpClient.changeWorkingDirectory(remoteDirectory);
+				checkReply(ftpClient.getReplyCode(),"changeWorkingDirectory "+remoteDirectory);
 			}
 			
 			if (StringUtils.isNotEmpty(fileType)) {
-				if (! ftpClient.setFileType(getFileTypeIntValue())) {
-					throw new IOException(ftpClient.getReplyString());
-				}
+				ftpClient.setFileType(getFileTypeIntValue());
+				checkReply(ftpClient.getReplyCode(),"setFileType "+remoteDirectory);
 			}
 		}
 		catch(Exception e) {
@@ -295,11 +309,12 @@ public class FtpSession {
 		if (StringUtils.isEmpty(fileType))
 			return org.apache.commons.net.ftp.FTP.ASCII_FILE_TYPE;
 		else if ("ASCII".equals(fileType))
-		return org.apache.commons.net.ftp.FTP.ASCII_FILE_TYPE;
+			return org.apache.commons.net.ftp.FTP.ASCII_FILE_TYPE;
 		else if ("BINARY".equals(fileType))
-		return org.apache.commons.net.ftp.FTP.BINARY_FILE_TYPE;
-		else 
+			return org.apache.commons.net.ftp.FTP.BINARY_FILE_TYPE;
+		else {
 			throw new IOException("Unknown Type [" + fileType + "] specified, use one of ASCII, BINARY");
+		}
 	}
 
 	private FTPClient createFTPClient() throws NoSuchAlgorithmException, KeyStoreException, GeneralSecurityException, IOException {
@@ -310,6 +325,7 @@ public class FtpSession {
 	}
 
 	public void closeClient() {
+		log.debug("Close ftp client");
 		if (ftpType == SFTP) {
 			closeSftpClient();
 		}
@@ -335,7 +351,7 @@ public class FtpSession {
 					ftpClient.disconnect();
 				}
 				catch(Exception e) {
-					logger.error("Error while closeing FtpClient", e);
+					log.error("Error while closeing FtpClient", e);
 				}
 			}
 			ftpClient = null;
@@ -373,9 +389,8 @@ public class FtpSession {
 				sftpClient.put(is, remoteFilename);
 			}
 			else {
-				if (! ftpClient.storeFile(remoteFilename, is)) {
-					throw new IOException(ftpClient.getReplyString());
-				}
+				ftpClient.storeFile(remoteFilename, is);
+				checkReply(ftpClient.getReplyCode(),"storeFile "+remoteFilename);
 			}
 		}
 		finally {
@@ -421,9 +436,8 @@ public class FtpSession {
 						sftpClient.put(fis, remoteFilename);
 					}
 					else {
-						if (! ftpClient.storeFile(remoteFilename, fis)) {
-							throw new IOException(ftpClient.getReplyString());
-						}
+						ftpClient.storeFile(remoteFilename, fis);
+						checkReply(ftpClient.getReplyCode(),"storeFile "+remoteFilename);
 					}
 				}
 				finally {
@@ -525,9 +539,9 @@ public class FtpSession {
 						sftpClient.get(remoteFilename, os);
 					}
 					else {
-						if (! ftpClient.retrieveFile(remoteFilename, os)) {
-							throw new IOException(ftpClient.getReplyString());
-						}
+						ftpClient.retrieveFile(remoteFilename, os);
+						int replyCode = ftpClient.getReplyCode();
+						checkReply(replyCode,"retrieve "+remoteFilename);
 					}
 				}
 				finally {
@@ -572,9 +586,9 @@ public class FtpSession {
 						sftpClient.get(remoteFilename, os);
 					}
 					else {
-						if (! ftpClient.retrieveFile(remoteFilename, os)) {
-							throw new IOException(ftpClient.getReplyString());
-						}
+						ftpClient.retrieveFile(remoteFilename, os);
+						int replyCode = ftpClient.getReplyCode();
+						checkReply(replyCode,"retrieve "+remoteFilename);
 					}
 				}
 				catch(IOException e) {
