@@ -1,7 +1,7 @@
 /*
  * $Log: FtpConnectException.java,v $
- * Revision 1.2  2005-11-11 12:30:38  europe\l166817
- * Aanpassingen door John Dekker
+ * Revision 1.3  2005-12-07 15:43:14  europe\L190409
+ * made to exend IbisException
  *
  * Revision 1.1  2005/10/11 13:03:28  John Dekker <john.dekker@ibissource.org>
  * Supports retrieving files (FtpFileRetrieverPipe) and sending files (FtpSender)
@@ -10,12 +10,14 @@
  */
 package nl.nn.adapterframework.ftp;
 
+import nl.nn.adapterframework.core.IbisException;
+
 /**
  * @author John Dekker
  * @version Id
  */
-public class FtpConnectException extends Exception {
-	public static final String version = "$RCSfile: FtpConnectException.java,v $  $Revision: 1.2 $ $Date: 2005-11-11 12:30:38 $";
+public class FtpConnectException extends IbisException {
+	public static final String version = "$RCSfile: FtpConnectException.java,v $  $Revision: 1.3 $ $Date: 2005-12-07 15:43:14 $";
 
 	public FtpConnectException() {
 		super();
