@@ -1,6 +1,9 @@
 /*
  * $Log: FilePipe.java,v $
- * Revision 1.7  2004-08-23 13:44:13  a1909356#db2admin
+ * Revision 1.8  2005-12-07 16:09:25  europe\L190409
+ * modified handling for filename
+ *
+ * Revision 1.7  2004/08/23 13:44:13  unknown <unknown@ibissource.org>
  * Add config checks
  *
  * Revision 1.5  2004/04/27 11:03:35  unknown <unknown@ibissource.org>
@@ -66,11 +69,12 @@ import sun.misc.BASE64Encoder;
  *
  */
 public class FilePipe extends FixedForwardPipe {
-	public static final String version="$Id: FilePipe.java,v 1.7 2004-08-23 13:44:13 a1909356#db2admin Exp $";
+	public static final String version="$Id: FilePipe.java,v 1.8 2005-12-07 16:09:25 europe\L190409 Exp $";
 	private List transformers;
 	protected String actions;
 	protected String directory;
 	protected String writeSuffix;
+	protected String fileName;
 
 	/** 
 	 * @see nl.nn.adapterframework.core.IPipe#configure()
@@ -187,8 +191,16 @@ public class FilePipe extends FixedForwardPipe {
 			}
 		}
 		public byte[] go(byte[] in, PipeLineSession session) throws Exception {
+			File tmpFile;
 			File dirFile = new File(getDirectory());
-			File tmpFile = File.createTempFile((String)session.getMessageId(), writeSuffix, dirFile);
+			
+			if (StringUtils.isEmpty(fileName)) {
+				tmpFile = File.createTempFile("ibis", writeSuffix, dirFile);
+			} else {
+				tmpFile = new File(getDirectory()+File.separator+fileName);
+				tmpFile.delete();
+				tmpFile.createNewFile();
+			}
 			FileOutputStream fos = new FileOutputStream(tmpFile);
 			
 			try {
@@ -309,6 +321,20 @@ public class FilePipe extends FixedForwardPipe {
 	 */
 	public void setWriteSuffix(String suffix) {
 		this.writeSuffix = suffix;
+	}
+
+	/**
+	 * @return suffix of the file that is written
+	 */
+	public String getFileName() {
+		return fileName;
+	}
+
+	/**
+	 * @param suffix of the file that is written
+	 */
+	public void setFileName(String filename) {
+		this.fileName = filename;
 	}
 
 }
