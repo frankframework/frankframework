@@ -1,6 +1,9 @@
 /*
  * $Log: FilePipe.java,v $
- * Revision 1.8  2005-12-07 16:09:25  europe\L190409
+ * Revision 1.9  2005-12-08 08:00:26  europe\L190409
+ * corrected version string
+ *
+ * Revision 1.8  2005/12/07 16:09:25  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * modified handling for filename
  *
  * Revision 1.7  2004/08/23 13:44:13  unknown <unknown@ibissource.org>
@@ -69,7 +72,7 @@ import sun.misc.BASE64Encoder;
  *
  */
 public class FilePipe extends FixedForwardPipe {
-	public static final String version="$Id: FilePipe.java,v 1.8 2005-12-07 16:09:25 europe\L190409 Exp $";
+	public static final String version="$RCSfile: FilePipe.java,v $ $Revision: 1.9 $ $Date: 2005-12-08 08:00:26 $";
 	private List transformers;
 	protected String actions;
 	protected String directory;
