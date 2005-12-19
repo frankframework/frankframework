@@ -1,6 +1,9 @@
 /*
  * $Log: MailSender.java,v $
- * Revision 1.10  2005-04-26 09:21:22  L190409
+ * Revision 1.11  2005-12-19 16:36:09  europe\L190409
+ * added authentication using authentication-alias
+ *
+ * Revision 1.10  2005/04/26 09:21:22  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added parameters messageType, messageBase64 and attachment[@base64] (by Peter Leeuwenburgh)
  *
  * Revision 1.1  2005/04/21 13:37:15  NNVZNL01#L168309
@@ -40,12 +43,15 @@ import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.soap.util.mime.ByteArrayDataSource;
+//TODO: replace this by implementation from apache commons Codec
+import org.apache.xerces.utils.Base64;
 import org.w3c.dom.Element;
 
 import javax.activation.DataHandler;
@@ -96,6 +102,7 @@ import java.util.Properties;
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setSmtpHost(String) smtpHost}</td><td>name of the host by which the messages are to be send</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setSmtpAuthAlias(String) smtpAuthAlias}</td><td>alias used to obtain credentials for authentication to smtpHost</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSmtpUserid(String) smtpUserid}</td><td>userid on the smtpHost</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSmtpPassword(String) smtpPassword}</td><td>password of userid on the smtpHost</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDefaultFrom(String) defaultFrom}</td><td>value of the From: header if not specified in message itself</td><td>&nbsp;</td></tr>
@@ -130,11 +137,12 @@ import java.util.Properties;
  */
 
 public class MailSender implements ISenderWithParameters {
-	public static final String version = "$Id: MailSender.java,v 1.10 2005-04-26 09:21:22 L190409 Exp $";
+	public static final String version = "$Id: MailSender.java,v 1.11 2005-12-19 16:36:09 europe\L190409 Exp $";
 
 	protected Logger log = Logger.getLogger(this.getClass());
 	private String name;
 	private String smtpHost;
+	private String smtpAuthAlias;
 	private String smtpUserid;
 	private String smtpPassword;
 	private String defaultAttachmentType = "text";
@@ -194,14 +202,15 @@ public class MailSender implements ISenderWithParameters {
 	 * Close the <code>transport</code> layer.
 	 */
 	public void close() throws SenderException {
-/*		try {
+		/*
+		try {
 			if (transport!=null) {
 				transport.close();
 			}
 		} catch (Exception e) {
 			throw new SenderException("error closing transport", e);
 		}
-*/
+		*/
 	}
 
 	public boolean isSynchronous() {
@@ -437,7 +446,7 @@ public class MailSender implements ISenderWithParameters {
 
 	private DataHandler decodeBase64 (String str) {
 			byte[] bytesEncoded = str.getBytes();
-			byte[] bytesDecoded = org.apache.xerces.utils.Base64.decode(bytesEncoded);
+			byte[] bytesDecoded = Base64.decode(bytesEncoded);
 			String encodingType = "application/octet-stream";
 			DataSource ads = new ByteArrayDataSource(bytesDecoded, encodingType);
 			return new DataHandler(ads);
@@ -445,7 +454,7 @@ public class MailSender implements ISenderWithParameters {
 
 	private String decodeBase64ToString (String str) {
 			byte[] bytesEncoded = str.getBytes();
-			byte[] bytesDecoded = org.apache.xerces.utils.Base64.decode(bytesEncoded);
+			byte[] bytesDecoded = Base64.decode(bytesEncoded);
 			return new String(bytesDecoded);
 	}
 
@@ -453,8 +462,9 @@ public class MailSender implements ISenderWithParameters {
 		// connect to the transport 
 		Transport transport=null;
 		try {
+			CredentialFactory cf = new CredentialFactory(getSmtpAuthAlias(), getSmtpUserid(), getSmtpPassword());
 			transport = session.getTransport("smtp");
-			transport.connect(smtpHost, smtpUserid, smtpPassword);
+			transport.connect(getSmtpHost(), cf.getUsername(), cf.getPassword());
 			transport.sendMessage(msg, msg.getAllRecipients());
 			transport.close();
 		} catch (Exception e) {
@@ -494,6 +504,12 @@ public class MailSender implements ISenderWithParameters {
 		return smtpHost;
 	}
 
+	public void setSmtpAuthAlias(String string) {
+		smtpAuthAlias = string;
+	}
+	public String getSmtpAuthAlias() {
+		return smtpAuthAlias;
+	}
 	/**
 	 * The userid of the SMTP Host
 	 */
@@ -539,5 +555,7 @@ public class MailSender implements ISenderWithParameters {
 	public void setDefaultAttachmentType(String string) {
 		defaultAttachmentType = string;
 	}
+
+
 
 }
