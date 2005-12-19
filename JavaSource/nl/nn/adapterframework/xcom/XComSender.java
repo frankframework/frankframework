@@ -1,6 +1,9 @@
 /*
  * $Log: XComSender.java,v $
- * Revision 1.10  2005-12-19 17:14:42  europe\L190409
+ * Revision 1.11  2005-12-19 17:18:55  europe\L190409
+ * corrected typos in javadoc
+ *
+ * Revision 1.10  2005/12/19 17:14:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.9  2005/12/19 16:59:39  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -63,20 +66,20 @@ import org.apache.commons.lang.StringUtils;
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>classname</td><td>nl.nn.ibis4fundation.XComSender</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the sender</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setWorkingDirName(String) name}</td><td>directory in which to run the xcomtcp command</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setXcomtcp(String) cmd}</td><td>Path to xcomtcp command</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setFileOption(String) option}</td><td>One of CREATE, APPEND or REPLACE</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setWorkingDirName(String) workingDirName}</td><td>directory in which to run the xcomtcp command</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setXcomtcp(String) xcomtcp}</td><td>Path to xcomtcp command</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setFileOption(String) fileOption}</td><td>One of CREATE, APPEND or REPLACE</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setQueue(Boolean) queue}</td><td>Set queue off or on</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setTruncation(Boolean) truncation}</td><td>Set truncation off or on</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setTracelevel(Integer) tracelevel}</td><td>Set between 0 (no trace) and 10</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setCodeflag(String) codeflag}</td><td>Characterset conversion, one of ASCII or EBCDIC</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setCarriageflag(String) carriageflag}</td><td>One of YES, NO, VRL, VRL2, MPACK or XPACK</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setCompress(String) carriageflag}</td><td>One of YES, NO, RLE, COMPACT, LZLARGE, LZMEDIUM or LZSMALL</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setCompress(String) compress}</td><td>One of YES, NO, RLE, COMPACT, LZLARGE, LZMEDIUM or LZSMALL</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setLogfile(String) logfile}</td><td>Name of logfile for xcomtcp to be used</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setRemoteSystem(String) remoteSystem}</td><td>Hostname or tcpip adres of remote host</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setPort(String) port}</td><td>Port of remote host</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setRemoteDirectory(String) remoteDirectory}</td><td>Remote directory is prefixed witht the remote file</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setRemoteFilePattern(String) remoteFile}</td><td>Remote file to create. If empty, the name is equal to the local file</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setRemoteFilePattern(String) remoteFilePattern}</td><td>Remote file to create. If empty, the name is equal to the local file</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setAuthAlias(String) authAlias}</td><td>name of the alias to obtain credentials to authenticatie on remote server</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setUserid(String) userid}</td><td>Loginname of user on remote system</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setPassword(String) password}</td><td>Password of user on remote system</td><td>&nbsp;</td></tr>
@@ -86,7 +89,7 @@ import org.apache.commons.lang.StringUtils;
  * @author: John Dekker
  */
 public class XComSender extends SenderWithParametersBase {
-	public static final String version = "$RCSfile: XComSender.java,v $  $Revision: 1.10 $ $Date: 2005-12-19 17:14:42 $";
+	public static final String version = "$RCSfile: XComSender.java,v $  $Revision: 1.11 $ $Date: 2005-12-19 17:18:55 $";
 
 	private File workingDir;
 	private String name;
