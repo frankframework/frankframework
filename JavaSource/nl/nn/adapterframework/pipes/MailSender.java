@@ -1,6 +1,9 @@
 /*
  * $Log: MailSender.java,v $
- * Revision 1.11  2005-12-19 16:36:09  europe\L190409
+ * Revision 1.12  2005-12-19 16:37:13  europe\L190409
+ * corrected version string
+ *
+ * Revision 1.11  2005/12/19 16:36:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added authentication using authentication-alias
  *
  * Revision 1.10  2005/04/26 09:21:22  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -137,7 +140,7 @@ import java.util.Properties;
  */
 
 public class MailSender implements ISenderWithParameters {
-	public static final String version = "$Id: MailSender.java,v 1.11 2005-12-19 16:36:09 europe\L190409 Exp $";
+	public static final String version = "$RCSfile: MailSender.java,v $  $Revision: 1.12 $ $Date: 2005-12-19 16:37:13 $";
 
 	protected Logger log = Logger.getLogger(this.getClass());
 	private String name;
