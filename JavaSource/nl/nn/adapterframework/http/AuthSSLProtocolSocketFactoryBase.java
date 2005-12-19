@@ -1,6 +1,10 @@
 /*
  * $Log: AuthSSLProtocolSocketFactoryBase.java,v $
- * Revision 1.6  2005-10-10 14:07:48  europe\L190409
+ * Revision 1.7  2005-12-19 16:43:50  europe\L190409
+ * added static method createSocketFactory
+ * added createServerSocket-methods
+ *
+ * Revision 1.6  2005/10/10 14:07:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Add allowSelfSignedCertificates, to easy up testing
  *
  * Revision 1.5  2005/10/07 14:12:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -33,6 +37,7 @@ package nl.nn.adapterframework.http;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URL;
 import java.net.UnknownHostException;
@@ -49,7 +54,11 @@ import javax.net.ssl.SSLPeerUnverifiedException;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocket;
 
+import nl.nn.adapterframework.util.CredentialFactory;
+
 import org.apache.commons.httpclient.protocol.SecureProtocolSocketFactory;
+import org.apache.commons.net.SocketFactory;
+
 import org.apache.log4j.Logger;
 
 /**
@@ -157,7 +166,7 @@ import org.apache.log4j.Logger;
  * </p>
  */
 
-public abstract class AuthSSLProtocolSocketFactoryBase implements SecureProtocolSocketFactory {
+public abstract class AuthSSLProtocolSocketFactoryBase implements SocketFactory, SecureProtocolSocketFactory {
 
     /** Log object for this class. */
 	protected static Logger log = Logger.getLogger(AuthSSLProtocolSocketFactoryBase.class);;
@@ -207,6 +216,56 @@ public abstract class AuthSSLProtocolSocketFactoryBase implements SecureProtocol
 		this.truststoreType = truststoreType;
         this.verifyHostname = verifyHostname;
     }
+
+	public static AuthSSLProtocolSocketFactoryBase createSocketFactory(
+		final URL certificateUrl, final String certificateAuthAlias, final String certificatePassword, final String certificateType, 
+		final URL truststoreUrl, final String truststoreAuthAlias, final String truststorePassword, final String truststoreType, 
+		final boolean verifyHostname, boolean jdk13Compatible)
+ 			throws NoSuchAlgorithmException, KeyStoreException, GeneralSecurityException, IOException 
+ 	{
+
+		CredentialFactory certificateCf = new CredentialFactory(certificateAuthAlias, null, certificatePassword);
+		CredentialFactory truststoreCf  = new CredentialFactory(truststoreAuthAlias,  null, truststorePassword);
+
+		AuthSSLProtocolSocketFactoryBase factory;
+		if (jdk13Compatible) {
+			addProvider("sun.security.provider.Sun");
+			addProvider("com.sun.net.ssl.internal.ssl.Provider");
+			System.setProperty("java.protocol.handler.pkgs", "com.sun.net.ssl.internal.www.protocol");
+			factory =
+				new AuthSSLProtocolSocketFactoryForJsse10x(
+					certificateUrl,
+					certificatePassword,
+					certificateType,
+					truststoreUrl,
+					certificateCf.getPassword(),
+					truststoreType,
+					verifyHostname);
+		}
+		else {
+			factory =
+				new AuthSSLProtocolSocketFactory(
+					certificateUrl,
+					certificatePassword,
+					certificateType,
+					truststoreUrl,
+					truststoreCf.getPassword(),
+					truststoreType,
+					verifyHostname);
+		}
+
+		return factory;
+	}
+
+	protected static void addProvider(String name) {
+		try {
+			Class clazz = Class.forName(name);
+			java.security.Security.addProvider((java.security.Provider)clazz.newInstance());
+		} catch (Throwable t) {
+			log.error("cannot add provider ["+name+"], "+t.getClass().getName()+": "+t.getMessage());
+		}
+	}
+
 
 	public abstract void initSSLContext() throws NoSuchAlgorithmException, KeyStoreException, GeneralSecurityException, IOException;
 
@@ -353,6 +412,25 @@ public abstract class AuthSSLProtocolSocketFactoryBase implements SecureProtocol
 	public abstract Socket createSocket(InetAddress adress, int port) throws IOException;
 
 	public abstract Socket createSocket(InetAddress adress, int port, InetAddress localAdress, int localPort) throws IOException;
+
+	/* (non-Javadoc)
+	 * These three methods are included to provide compatibility with org.apache.commons.net.SocketFactory.
+	 * The created sockets are probably not secured
+	 * //TODO: find out if these serversockets need to be secured.
+	 * @see org.apache.commons.net.SocketFactory#createServerSocket(int)
+	 * @see org.apache.commons.net.SocketFactory#createServerSocket(int, int)
+	 * @see org.apache.commons.net.SocketFactory#createServerSocket(int, int, java.net.InetAddress)
+	 */
+	public ServerSocket createServerSocket(int port) throws IOException {
+		return new ServerSocket(port);
+	}
+	public ServerSocket createServerSocket(int port, int backlog) throws IOException {
+		return new ServerSocket(port, backlog);
+	}
+	public ServerSocket createServerSocket(int port, int backlog, InetAddress bindAddr) throws IOException {
+		return new ServerSocket(port, backlog, bindAddr);
+	}
+
 
 	/**
 	 * Properties
