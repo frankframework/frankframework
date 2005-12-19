@@ -1,6 +1,9 @@
 /*
  * $Log: FtpSession.java,v $
- * Revision 1.10  2005-12-07 15:52:15  europe\L190409
+ * Revision 1.11  2005-12-19 16:46:36  europe\L190409
+ * rework, lots of changes
+ *
+ * Revision 1.10  2005/12/07 15:52:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved logging & checking for reply-code
  *
  * Revision 1.8  2005/11/08 09:31:09  John Dekker <john.dekker@ibissource.org>
@@ -50,10 +53,12 @@ import java.util.List;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.parameters.ParameterList;
+import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.FileUtils;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.net.ftp.FTPClient;
+import org.apache.commons.net.ftp.FTPReply;
 import org.apache.log4j.Logger;
 
 import com.sshtools.j2ssh.SftpClient;
@@ -75,49 +80,9 @@ import com.sshtools.j2ssh.transport.publickey.SshPrivateKeyFile;
  * @author John Dekker
  */
 public class FtpSession {
-	public static final String version = "$RCSfile: FtpSession.java,v $  $Revision: 1.10 $ $Date: 2005-12-07 15:52:15 $";
+	public static final String version = "$RCSfile: FtpSession.java,v $  $Revision: 1.11 $ $Date: 2005-12-19 16:46:36 $";
 	protected Logger log = Logger.getLogger(this.getClass());
-	
-	// configuration parameters, global for all types
-	private String host;
-	private int port = 22;
-	private String username;
-	private String password;
-	private String proxyHost;
-	private int proxyPort = 1080;
-	private String proxyUsername;
-	private String proxyPassword;
-	private String ftpTypeDescription = "FTP";
-	private String fileType = null;
-	private boolean messageIsContent;
-	
-	// configuration property for sftp
-	private int proxyTransportType = SshConnectionProperties.USE_SOCKS5_PROXY;
-	private String prefCSEncryption = null;
-	private String prefSCEncryption = null;
-	private String privateKeyFilePath = null;
-	private String passphrase = null;
-	private String knownHostsPath = null;
-	private boolean consoleKnownHostsVerifier = false;
-	
-	// configuration parameters for ftps
-	private boolean jdk13Compatibility = false;
-	private boolean verifyHostname = true;
-	private String certificate;
-	private String certificatePassword;
-	private String truststore = null;
-	private String truststorePassword = null;
-	private String keystoreType="pkcs12";
-	private String truststoreType="jks";
-	private boolean allowSelfSignedCertificates = false;
-	private boolean protP = false;
-	
-	// private members
-	private int ftpType;
-	private SshClient sshClient;
-	private SftpClient sftpClient;
-	private FTPClient ftpClient;
-	
+
 	// types of ftp transports
 	static final int FTP = 1;
 	static final int SFTP = 2;
@@ -125,13 +90,64 @@ public class FtpSession {
 	static final int FTPS_EXPLICIT_SSL = 4;
 	static final int FTPS_EXPLICIT_TLS = 5;
 
+	// indication of ftp-subtype, defines which client
+	private int ftpType;
+	
+	// configuration parameters, global for all types
+	private String host;
+	private int port = 22;
+	private String authAlias;
+	private String username;
+	private String password;
+	private String proxyHost;
+	private int proxyPort = 1080;
+	private String proxyAuthAlias;
+	private String proxyUsername;
+	private String proxyPassword;
+	private String ftpTypeDescription = "FTP";
+	private String fileType = null;
+	private boolean messageIsContent;
+	private boolean passive=true;
+	
+	// configuration property for sftp
+	private int proxyTransportType = SshConnectionProperties.USE_SOCKS5_PROXY;
+	private String prefCSEncryption = null;
+	private String prefSCEncryption = null;
+	private String privateKeyFilePath = null;
+	private String privateKeyAuthAlias;
+	private String privateKeyPassword = null;
+	private String knownHostsPath = null;
+	private boolean consoleKnownHostsVerifier = false;
+	
+	// configuration parameters for ftps
+	private String certificate;
+	private String certificateType="pkcs12";
+	private String certificateAuthAlias;
+	private String certificatePassword;
+	private String truststore = null;
+	private String truststoreType="jks";
+	private String truststoreAuthAlias;
+	private String truststorePassword = null;
+	private boolean jdk13Compatibility = false;
+	private boolean verifyHostname = true;
+	private boolean allowSelfSignedCertificates = false;
+	private boolean protP = false;
+	
+	
+	
+	// private members
+	private SshClient sshClient;
+	private SftpClient sftpClient;
+	public FTPClient ftpClient;
+	
+
 	// configure
 	public void configure() throws ConfigurationException {
 		if (StringUtils.isEmpty(host)) {
 			throw new ConfigurationException("Attribute [host] is not set");
 		}
-		if (StringUtils.isEmpty(username)) {
-			throw new ConfigurationException("Attribute [username] is not set");
+		if (StringUtils.isEmpty(username) && StringUtils.isEmpty(getAuthAlias())) {
+			throw new ConfigurationException("Neither attribute 'username' nor 'authAlias' is set");
 		}
 		if (proxyTransportType < 1 && proxyTransportType > 4) {
 			throw new ConfigurationException("Incorrect value for [proxyTransportType]");
@@ -167,6 +183,7 @@ public class FtpSession {
 		catch(IOException e) {
 			throw new ConfigurationException(e.getMessage());
 		}
+		
 	}
 
 	public void openClient(String remoteDirectory) throws FtpConnectException {
@@ -198,9 +215,11 @@ public class FtpSession {
 				sshProp.setTransportProvider(proxyTransportType);
 				sshProp.setProxyHost(proxyHost);
 				sshProp.setProxyPort(proxyPort);
-				if (! StringUtils.isEmpty(proxyUsername)) {
-					sshProp.setProxyUsername(proxyUsername);
-					sshProp.setProxyPassword(proxyPassword);
+				CredentialFactory pcf = new CredentialFactory(getProxyAuthAlias(), proxyUsername, proxyPassword);
+	
+				if (! StringUtils.isEmpty(pcf.getUsername())) {
+					sshProp.setProxyUsername(pcf.getUsername());
+					sshProp.setProxyPassword(pcf.getPassword());
 				}
 			}
 
@@ -245,35 +264,32 @@ public class FtpSession {
 	private SshAuthenticationClient getSshAuthentication() throws Exception {
 		if (StringUtils.isNotEmpty(privateKeyFilePath)) {
 			PublicKeyAuthenticationClient pk = new PublicKeyAuthenticationClient();
-			pk.setUsername(username);
+			CredentialFactory pkcf = new CredentialFactory(getPrivateKeyAuthAlias(), getUsername(), getPrivateKeyPassword());
+			pk.setUsername(pkcf.getUsername());
 			SshPrivateKeyFile pkFile = SshPrivateKeyFile.parse(new File(privateKeyFilePath));
-			pk.setKey(pkFile.toPrivateKey(passphrase));
+			pk.setKey(pkFile.toPrivateKey(pkcf.getPassword()));
 			return pk; 
 		}
-		if (StringUtils.isNotEmpty(password)) {
+			CredentialFactory usercf = new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
+			if (StringUtils.isNotEmpty(usercf.getPassword())) {
 			PasswordAuthenticationClient pac = new PasswordAuthenticationClient();
-			pac.setUsername(username);
-			pac.setPassword(password);
+			pac.setUsername(usercf.getUsername());
+			pac.setPassword(usercf.getPassword());
 			return pac;
 		}
 		throw new Exception("Unknown authentication type, either the password or the privateKeyFile must be filled");
 	}
 
 
-	protected boolean replyCodeIsOK(int replyCode) {
-		log.debug("FTP replyCode ["+replyCode+"]");
-		return replyCode>= 200 && replyCode < 300 || replyCode==125;
-	}
 	
-	protected void checkReply(int replyCode, String cmd) throws IOException  {
-		if (!replyCodeIsOK(replyCode)) {
-			throw new IOException("Command [" + cmd + "] returned error [" + replyCode + "]: " + ftpClient.getReplyString());
+	protected void checkReply(String cmd) throws IOException  {
+		if (!FTPReply.isPositiveCompletion(ftpClient.getReplyCode())) {
+			throw new IOException("Command [" + cmd + "] returned error [" + ftpClient.getReplyCode() + "]: " + ftpClient.getReplyString());
 		} else {
 			log.debug("Command [" + cmd + "] returned " + ftpClient.getReplyString());
 		}
 	}
 	
-
 
 	private void openFtpClient(String remoteDirectory) throws FtpConnectException {
 		try {
@@ -287,16 +303,20 @@ public class FtpSession {
 			// connect and logic using normal, non-secure ftp 
 			ftpClient = createFTPClient();
 			ftpClient.connect(host, port);
-			ftpClient.login(username, password);
+			if (isPassive()) {
+				ftpClient.enterLocalPassiveMode();
+			}
+			CredentialFactory usercf = new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
+			ftpClient.login(usercf.getUsername(), usercf.getPassword());
 	
 			if (! StringUtils.isEmpty(remoteDirectory)) {
 				ftpClient.changeWorkingDirectory(remoteDirectory);
-				checkReply(ftpClient.getReplyCode(),"changeWorkingDirectory "+remoteDirectory);
+				checkReply("changeWorkingDirectory "+remoteDirectory);
 			}
 			
 			if (StringUtils.isNotEmpty(fileType)) {
 				ftpClient.setFileType(getFileTypeIntValue());
-				checkReply(ftpClient.getReplyCode(),"setFileType "+remoteDirectory);
+				checkReply("setFileType "+remoteDirectory);
 			}
 		}
 		catch(Exception e) {
@@ -348,6 +368,8 @@ public class FtpSession {
 		if (ftpClient != null) {
 			if (ftpClient.isConnected()) {
 				try {
+					ftpClient.quit();
+					log.debug(ftpClient.getReplyString());
 					ftpClient.disconnect();
 				}
 				catch(Exception e) {
@@ -369,6 +391,8 @@ public class FtpSession {
 	}
 	
 	/**
+	 * Transfers the contents of a stream to a file on the server.
+	 * 
 	 * @param contents
 	 * @param remoteDirectory
 	 * @param remoteFilenamePattern
@@ -390,7 +414,7 @@ public class FtpSession {
 			}
 			else {
 				ftpClient.storeFile(remoteFilename, is);
-				checkReply(ftpClient.getReplyCode(),"storeFile "+remoteFilename);
+				checkReply("storeFile "+remoteFilename);
 			}
 		}
 		finally {
@@ -437,7 +461,7 @@ public class FtpSession {
 					}
 					else {
 						ftpClient.storeFile(remoteFilename, fis);
-						checkReply(ftpClient.getReplyCode(),"storeFile "+remoteFilename);
+						checkReply("storeFile "+remoteFilename);
 					}
 				}
 				finally {
@@ -540,8 +564,7 @@ public class FtpSession {
 					}
 					else {
 						ftpClient.retrieveFile(remoteFilename, os);
-						int replyCode = ftpClient.getReplyCode();
-						checkReply(replyCode,"retrieve "+remoteFilename);
+						checkReply("retrieve "+remoteFilename);
 					}
 				}
 				finally {
@@ -587,8 +610,7 @@ public class FtpSession {
 					}
 					else {
 						ftpClient.retrieveFile(remoteFilename, os);
-						int replyCode = ftpClient.getReplyCode();
-						checkReply(replyCode,"retrieve "+remoteFilename);
+						checkReply("retrieve "+remoteFilename);
 					}
 				}
 				catch(IOException e) {
@@ -612,229 +634,263 @@ public class FtpSession {
 			}
 		}
 	}
-	
-	String getHost() {
-		return host;
-	}
 
-	String getPassword() {
-		return password;
-	}
-
-	int getPort() {
-		return port;
-	}
-
-	String getProxyHost() {
-		return proxyHost;
-	}
-
-	String getProxyPassword() {
-		return proxyPassword;
-	}
-
-	int getProxyPort() {
-		return proxyPort;
-	}
-
-	int getProxyTransportType() {
-		return proxyTransportType;
-	}
-
-	String getProxyUsername() {
-		return proxyUsername;
-	}
-
-	String getUsername() {
-		return username;
-	}
 
 	public void setHost(String string) {
 		host = string;
 	}
-
-	public void setPassword(String string) {
-		password = string;
+	String getHost() {
+		return host;
 	}
-
+	
 	public void setPort(int i) {
 		port = i;
 	}
-
-	public void setProxyHost(String string) {
-		proxyHost = string;
+	int getPort() {
+		return port;
 	}
 
-	public void setProxyPassword(String string) {
-		proxyPassword = string;
-	}
 
-	public void setProxyPort(int i) {
-		proxyPort = i;
-	}
 
-	public void setProxyTransportType(int i) {
-		proxyTransportType = i;
+	public void setAuthAlias(String string) {
+		authAlias = string;
 	}
-
-	public void setProxyUsername(String string) {
-		proxyUsername = string;
+	public String getAuthAlias() {
+		return authAlias;
 	}
 
 	public void setUsername(String string) {
 		username = string;
 	}
-
-	String getFtpTypeDescription() {
-		return ftpTypeDescription;
+	String getUsername() {
+		return username;
 	}
 
-	public void setFtpTypeDescription(String string) {
-		ftpTypeDescription = string;
+	public void setPassword(String string) {
+		password = string;
 	}
+	String getPassword() {
+		return password;
+	}
+	
+
+	
+	public void setProxyHost(String string) {
+		proxyHost = string;
+	}
+	String getProxyHost() {
+		return proxyHost;
+	}
+
+	public void setProxyPort(int i) {
+		proxyPort = i;
+	}
+	int getProxyPort() {
+		return proxyPort;
+	}
+
+	public void setProxyAuthAlias(String string) {
+		proxyAuthAlias = string;
+	}
+	public String getProxyAuthAlias() {
+		return proxyAuthAlias;
+	}
+
+	public void setProxyUsername(String string) {
+		proxyUsername = string;
+	}
+	String getProxyUsername() {
+		return proxyUsername;
+	}
+
+	public void setProxyPassword(String string) {
+		proxyPassword = string;
+	}
+	String getProxyPassword() {
+		return proxyPassword;
+	}
+
 
 	int getFtpType() {
 		return ftpType;
 	}
-
-	String getCertificate() {
-		return certificate;
+	public void setFtpTypeDescription(String string) {
+		ftpTypeDescription = string;
+	}
+	String getFtpTypeDescription() {
+		return ftpTypeDescription;
 	}
 
-	String getCertificatePassword() {
-		return certificatePassword;
-	}
-
-	String getTruststore() {
-		return truststore;
-	}
-
-	String getTruststorePassword() {
-		return truststorePassword;
-	}
-
-	public void setCertificate(String string) {
-		certificate = string;
-	}
-
-	public void setCertificatePassword(String string) {
-		certificatePassword = string;
-	}
-
-	public void setTruststore(String string) {
-		truststore = string;
-	}
-
-	public void setTruststorePassword(String string) {
-		truststorePassword = string;
-	}
-
-	boolean isJdk13Compatibility() {
-		return jdk13Compatibility;
-	}
-
-	public void setJdk13Compatibility(boolean b) {
-		jdk13Compatibility = b;
-	}
-
-	String getKeystoreType() {
-		return keystoreType;
-	}
-
-	public void setKeystoreType(String string) {
-		keystoreType = string;
-	}
-
-	String getTruststoreType() {
-		return truststoreType;
-	}
-
-	public void setTruststoreType(String string) {
-		truststoreType = string;
-	}
-
-	boolean isVerifyHostname() {
-		return verifyHostname;
-	}
-
-	public void setVerifyHostname(boolean b) {
-		verifyHostname = b;
-	}
-	
-	boolean isAllowSelfSignedCertificates() {
-		return allowSelfSignedCertificates;
-	}
-
-	public void setAllowSelfSignedCertificates(boolean b) {
-		allowSelfSignedCertificates = b;
-	}
 
 	public void setFileType(String string) {
 		fileType = string;
 	}
 
-	boolean isProtp() {
-		return protP;
+	public void setMessageIsContent(boolean b) {
+		messageIsContent = b;
 	}
-
-	public void setProtP(boolean b) {
-		protP = b;
-	}
-
 	boolean isMessageIsContent() {
 		return messageIsContent;
 	}
 
-	public void setMessageIsContent(boolean b) {
-		messageIsContent = b;
+	public void setPassive(boolean b) {
+		passive = b;
+	}
+	public boolean isPassive() {
+		return passive;
 	}
 
-	String getPrefCSEncryption() {
-		return prefCSEncryption;
+
+
+	public void setProxyTransportType(int i) {
+		proxyTransportType = i;
+	}
+	int getProxyTransportType() {
+		return proxyTransportType;
 	}
 
-	String getPrefSCEncryption() {
-		return prefSCEncryption;
-	}
-
-	String getPrivateKeyFilePath() {
-		return privateKeyFilePath;
-	}
 
 	public void setPrefCSEncryption(String string) {
 		prefCSEncryption = string;
+	}
+	String getPrefCSEncryption() {
+		return prefCSEncryption;
 	}
 
 	public void setPrefSCEncryption(String string) {
 		prefSCEncryption = string;
 	}
+	String getPrefSCEncryption() {
+		return prefSCEncryption;
+	}
+
 
 	public void setPrivateKeyFilePath(String string) {
 		privateKeyFilePath = string;
 	}
-
-	String getPassphrase() {
-		return passphrase;
+	String getPrivateKeyFilePath() {
+		return privateKeyFilePath;
+	}
+	
+	public void setPrivateKeyAuthAlias(String string) {
+		privateKeyAuthAlias = string;
+	}
+	public String getPrivateKeyAuthAlias() {
+		return privateKeyAuthAlias;
 	}
 
-	public void setPassphrase(String string) {
-		passphrase = string;
+	public void setPrivateKeyPassword(String password) {
+		privateKeyPassword = password;
+	}
+	String getPrivateKeyPassword() {
+		return privateKeyPassword;
 	}
 
-	String getKnownHostsPath() {
-		return knownHostsPath;
-	}
 
 	public void setKnownHostsPath(String string) {
 		knownHostsPath = string;
 	}
-
-	public boolean isConsoleKnownHostsVerifier() {
-		return consoleKnownHostsVerifier;
+	String getKnownHostsPath() {
+		return knownHostsPath;
 	}
 
 	public void setConsoleKnownHostsVerifier(boolean b) {
 		consoleKnownHostsVerifier = b;
+	}
+	public boolean isConsoleKnownHostsVerifier() {
+		return consoleKnownHostsVerifier;
+	}
+
+
+
+
+
+	public void setCertificate(String string) {
+		certificate = string;
+	}
+	String getCertificate() {
+		return certificate;
+	}
+
+	public void setCertificateType(String string) {
+		certificateType = string;
+	}
+	String getCertificateType() {
+		return certificateType;
+	}
+
+	public void setCertificateAuthAlias(String string) {
+		certificateAuthAlias = string;
+	}
+	public String getCertificateAuthAlias() {
+		return certificateAuthAlias;
+	}
+
+	public void setCertificatePassword(String string) {
+		certificatePassword = string;
+	}
+	String getCertificatePassword() {
+		return certificatePassword;
+	}
+
+
+	public void setTruststore(String string) {
+		truststore = string;
+	}
+	String getTruststore() {
+		return truststore;
+	}
+
+	public void setTruststoreType(String string) {
+		truststoreType = string;
+	}
+	String getTruststoreType() {
+		return truststoreType;
+	}
+
+	public void setTruststoreAuthAlias(String string) {
+		truststoreAuthAlias = string;
+	}
+	public String getTruststoreAuthAlias() {
+		return truststoreAuthAlias;
+	}
+
+	public void setTruststorePassword(String string) {
+		truststorePassword = string;
+	}
+	String getTruststorePassword() {
+		return truststorePassword;
+	}
+
+
+
+	public void setJdk13Compatibility(boolean b) {
+		jdk13Compatibility = b;
+	}
+	boolean isJdk13Compatibility() {
+		return jdk13Compatibility;
+	}
+
+	public void setVerifyHostname(boolean b) {
+		verifyHostname = b;
+	}
+	boolean isVerifyHostname() {
+		return verifyHostname;
+	}
+
+	public void setAllowSelfSignedCertificates(boolean b) {
+		allowSelfSignedCertificates = b;
+	}
+	boolean isAllowSelfSignedCertificates() {
+		return allowSelfSignedCertificates;
+	}
+
+
+	public void setProtP(boolean b) {
+		protP = b;
+	}
+	boolean isProtp() {
+		return protP;
 	}
 
 }

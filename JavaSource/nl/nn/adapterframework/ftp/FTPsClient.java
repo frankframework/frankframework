@@ -1,6 +1,9 @@
 /*
  * $Log: FTPsClient.java,v $
- * Revision 1.3  2005-12-07 15:47:48  europe\L190409
+ * Revision 1.4  2005-12-19 16:46:37  europe\L190409
+ * rework, lots of changes
+ *
+ * Revision 1.3  2005/12/07 15:47:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * modifications to make protp working
  *
  * Revision 1.1  2005/10/11 13:03:31  John Dekker <john.dekker@ibissource.org>
@@ -17,29 +20,19 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URL;
-import java.net.UnknownHostException;
 import java.security.GeneralSecurityException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 
-//import javax.net.ssl.HandshakeCompletedEvent;
-//import javax.net.ssl.HandshakeCompletedListener;
-
-//import nl.nn.adapterframework.core.IbisException;
-import nl.nn.adapterframework.http.AuthSSLProtocolSocketFactory;
 import nl.nn.adapterframework.http.AuthSSLProtocolSocketFactoryBase;
-import nl.nn.adapterframework.http.AuthSSLProtocolSocketFactoryForJsse10x;
 import nl.nn.adapterframework.util.ClassUtils;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.net.MalformedServerReplyException;
-import org.apache.commons.net.SocketFactory;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPCommand;
 import org.apache.commons.net.ftp.FTPConnectionClosedException;
@@ -52,9 +45,10 @@ import org.apache.log4j.Logger;
  * 
  * @author John Dekker
  */
-class FTPsClient extends FTPClient implements SocketFactory {
-	public static final String version = "$RCSfile: FTPsClient.java,v $  $Revision: 1.3 $ $Date: 2005-12-07 15:47:48 $";
-	protected Logger log = Logger.getLogger(this.getClass());;
+class FTPsClient extends FTPClient {
+	public static final String version = "$RCSfile: FTPsClient.java,v $  $Revision: 1.4 $ $Date: 2005-12-19 16:46:37 $";
+	protected Logger log = Logger.getLogger(this.getClass());
+	
 	private FtpSession session;
 	private AuthSSLProtocolSocketFactoryBase socketFactory;
 	private Socket orgSocket = null;
@@ -71,31 +65,18 @@ class FTPsClient extends FTPClient implements SocketFactory {
 		if (this.session.getFtpType() == FtpSession.FTPS_IMPLICIT) {
 			// instruct the FTPClient to use this SSLSocketFactory
 			socketFactory.initSSLContext();
-			setSocketFactory(this);
+			setSocketFactory(socketFactory);
 		}
 	}
-
-	protected boolean replyCodeIsOK(int replyCode) {
-		log.debug("FTP replyCode ["+replyCode+"]");
-		return replyCode>= 200 && replyCode < 300 || replyCode==125;
-	}
 	
-	protected void checkReply(int replyCode, String cmd) {
-		if (!replyCodeIsOK(replyCode)) {
-			log.debug("Command [" + cmd + "] returned error [" + replyCode + "]: " + getReplyString());
+	protected void checkReply(String cmd) throws IOException  {
+		if (!FTPReply.isPositiveCompletion(getReplyCode())) {
+			throw new IOException("Command [" + cmd + "] returned error [" + getReplyString() + "]");
 		} else {
 			log.debug("Command [" + cmd + "] returned " + getReplyString());
 		}
 	}
-	
-	private void checkReplyAndThrow(String cmd) throws IOException {
-		int replyCode=getReplyCode();
-		if (!replyCodeIsOK(replyCode)) {
-			throw new IOException("Command [" + cmd + "] returned error [" + replyCode + "]: " + getReplyString());
-		}
-	}
-	
-	
+		
 	
 	protected void _connectAction_() throws IOException {
 		// if explicit FTPS, the socket connection is establisch unsecure
@@ -118,12 +99,9 @@ class FTPsClient extends FTPClient implements SocketFactory {
 				socketFactory.initSSLContext();
 				_socket_ = socketFactory.createSocket(orgSocket, orgSocket.getInetAddress().getHostAddress(), orgSocket.getPort(), true);
 
-				setSocketProperties(_socket_);
-
 				// send a dummy command over the secure connection without reading 
 				// the reply
 				// this allows us to call super._connectAction_()
-// TODO deze leest volgens mij wel de reply!!				
 				_sendCommand("FEAT", _socket_.getOutputStream(), null);
 				super._connectAction_();
 			}
@@ -146,125 +124,52 @@ class FTPsClient extends FTPClient implements SocketFactory {
 			if (session.isProtp()) {
 				// With Prot P the result is returned over a different port
 				// .. send protp commands  
-				sendCommand("PBSZ", "0");
-				checkReplyAndThrow("PBSZ 0");
+ 
+ 				sendCommand("PBSZ", "0");
+				checkReply("PBSZ 0");
 				sendCommand("PROT", "P");
-				checkReplyAndThrow("PROT P");
+				checkReply("PROT P");
+				sendCommand("TYPE", "I");
+				checkReply("TYPE I");
 				sendCommand("PASV");
-				checkReplyAndThrow("PASV");
+				checkReply("PASV");
 		
 				// Parse the host and port name to which the result is send
 				String reply = getReplyString(); 
 				String line = reply.substring(reply.indexOf('(')+1, reply.lastIndexOf(')'));
-				String[] host = line.split(",");
-				InetSocketAddress address = new InetSocketAddress(host[0] + "." + host[1] + "." + host[2] + "." + host[3],(Integer.parseInt(host[4]) << 8) + Integer.parseInt(host[5]));
+				String[] hostinfo = line.split(",");
+				String host=hostinfo[0] + "." + hostinfo[1] + "." + hostinfo[2] + "." + hostinfo[3];
+				int port=(Integer.parseInt(hostinfo[4]) << 8) + Integer.parseInt(hostinfo[5]);
+				log.debug("channel from pasv reply="+host+":"+port);
+				InetSocketAddress address = new InetSocketAddress(host,port);
 
 				// connect to the result address
 				Socket socket = new Socket();
 				socket.connect(address);
 				socket.setSoTimeout(1000);
-				socket = socketFactory.createSocket(socket, socket.getInetAddress().getHostAddress(), socket.getPort(), true);
+				host=socket.getInetAddress().getHostAddress();
+				port=socket.getPort();
+				log.debug("channel from socket="+host+":"+port);
+				socket = socketFactory.createSocket(socket, host, port, true);
 
 				String cmdLine=FTPCommand.getCommand(cmdNr);
 				if (param!=null) {
 					cmdLine+=' ' + param;
 				}
-				// send the requested command (over the original socket)
-				_sendCommand(cmdLine, _socket_.getOutputStream(), null);			
-//				sendCommand(cmdNr, param);
+				// send the requested command (over the original socket)  <-- toch maar niet! GvB
+//				_sendCommand(cmdLine, _socket_.getOutputStream(), null);			
+				sendCommand(cmdNr, param);
 				
 				// return the new socket for the reply 
-				
 				return socket;
+				
 			}
 		}
 		return super._openDataConnection_(cmdNr, param);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.apache.commons.net.ftp.FTP#sendCommand(java.lang.String)
-	 */
-	public int sendCommand(String arg0) throws IOException {
-		int replyCode = super.sendCommand(arg0);
-		checkReply(replyCode, arg0);
-		return replyCode;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.apache.commons.net.ftp.FTP#sendCommand(int, java.lang.String)
-	 */
-	public int sendCommand(int arg0, String arg1) throws IOException {
-		int replyCode = super.sendCommand(arg0, arg1);
-		checkReply(replyCode, arg0 + ", " + arg1);
-		return replyCode;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.apache.commons.net.ftp.FTP#sendCommand(int)
-	 */
-	public int sendCommand(int arg0) throws IOException {
-		int replyCode = super.sendCommand(arg0);
-		checkReply(replyCode, ""+arg0);
-		return replyCode;
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.apache.commons.net.ftp.FTP#sendCommand(java.lang.String, java.lang.String)
-	 */
-	public int sendCommand(String arg0, String arg1) throws IOException {
-		int replyCode = super.sendCommand(arg0, arg1);
-		checkReply(replyCode, arg0 + ", " + arg1);
-		return replyCode;
-	}
 
 
-	private void setSocketProperties(Socket socket) throws IOException {
-//		if (session.isJdk13Compatibility()) {	
-//		}
-//		else {
-//			javax.net.ssl.SSLSocket sslSocket = (javax.net.ssl.SSLSocket)socket; 
-			
-//			String[] supported = sslSocket.getSupportedCipherSuites();
-//			for (int i = 0; i < supported.length; i++) {
-//				log.debug("Cipher " + i + " = " + supported[i]);
-//			}
-			
-//			sslSocket.setEnableSessionCreation(false);
-//			sslSocket.setUseClientMode(true);
-//			sslSocket.setNeedClientAuth(true);
-//
-//			sslSocket.getSession().invalidate();
-//
-//			Listener listener = new Listener();
-//			sslSocket.addHandshakeCompletedListener(listener);
-//
-//			byte[] b = new byte[0];
-//			InputStream in = sslSocket.getInputStream();
-//			sslSocket.startHandshake();
-//			
-//			int maxTries = 50;
-//			// 50 * 100 = example 5 second rehandshake timeout
-//			for (int i = 0; i < maxTries; i++) {
-//				try {
-//					int x = in.read(b);
-//				} catch (SocketTimeoutException e) {
-//					// ignore
-//				}
-//				if (listener.completed) {
-//					break;
-//				}
-//			}
-//			sslSocket.removeHandshakeCompletedListener(listener);
-//		}
-	}
-
-//	private static class Listener implements HandshakeCompletedListener {
-//		volatile boolean completed = false;
-//		public void handshakeCompleted(HandshakeCompletedEvent event) {
-//			completed = true;
-//		}
-//	}
-	
 
 	private String getProtocol() {
 		if (this.session.getFtpType() == FtpSession.FTPS_IMPLICIT) {
@@ -299,101 +204,32 @@ class FTPsClient extends FTPClient implements SocketFactory {
 			log.debug("resolved truststore-URL to [" + truststoreUrl.toString() + "]");
 		}
 
-		AuthSSLProtocolSocketFactoryBase factory;
-		if (session.isJdk13Compatibility()) {
-			addProvider("sun.security.provider.Sun");
-			addProvider("com.sun.net.ssl.internal.ssl.Provider");
-			System.setProperty("java.protocol.handler.pkgs", "com.sun.net.ssl.internal.www.protocol");
-			factory =
-				new AuthSSLProtocolSocketFactoryForJsse10x(
-					certificateUrl,
-					session.getCertificatePassword(),
-					session.getKeystoreType(),
-					truststoreUrl,
-					session.getTruststorePassword(),
-					session.getTruststoreType(),
-					session.isVerifyHostname());
-		}
-		else {
-			factory =
-				new AuthSSLProtocolSocketFactory(
-					certificateUrl,
-					session.getCertificatePassword(),
-					session.getKeystoreType(),
-					truststoreUrl,
-					session.getTruststorePassword(),
-					session.getTruststoreType(),
-					session.isVerifyHostname());
-		}
+		AuthSSLProtocolSocketFactoryBase factory = AuthSSLProtocolSocketFactoryBase.createSocketFactory(
+			certificateUrl,
+			session.getCertificateAuthAlias(),
+			session.getCertificatePassword(),
+			session.getCertificateType(),
+			truststoreUrl,
+			session.getTruststoreAuthAlias(),
+			session.getTruststorePassword(),
+			session.getTruststoreType(),
+			session.isVerifyHostname(),
+			session.isJdk13Compatibility());
+			
 		factory.setProtocol(getProtocol());
 		factory.setAllowSelfSignedCertificates(session.isAllowSelfSignedCertificates());
 
 		return factory;
 	}
 
-	protected void addProvider(String name) {
-		try {
-			Class clazz = Class.forName(name);
-			java.security.Security.addProvider((java.security.Provider)clazz.newInstance());
-		} catch (Throwable t) {
-			log.error("cannot add provider ["+name+"], "+t.getClass().getName()+": "+t.getMessage());
-		}
-	}
 
-	/* (non-Javadoc)
-	 * @see org.apache.commons.net.SocketFactory#createSocket(java.lang.String, int)
-	 */
-	public Socket createSocket(String host, int port) throws UnknownHostException, IOException {
-		return socketFactory.createSocket(host, port);
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.apache.commons.net.SocketFactory#createSocket(java.lang.String, int, java.net.InetAddress, int)
-	 */
-	public Socket createSocket(String host, int port, InetAddress localhost, int localport) throws UnknownHostException, IOException {
-		return socketFactory.createSocket(host, port, localhost, localport);
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.apache.commons.net.SocketFactory#createSocket(java.net.InetAddress, int)
-	 */
-	public Socket createSocket(InetAddress address, int port) throws IOException {
-		return socketFactory.createSocket(address, port);
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.apache.commons.net.SocketFactory#createSocket(java.net.InetAddress, int, java.net.InetAddress, int)
-	 */
-	public Socket createSocket(InetAddress address, int port, InetAddress localAddress, int localPort) throws IOException {
-		return socketFactory.createSocket(address, port, localAddress, localPort);
-	}
-
-	/* (non-Javadoc)
-	 * @see org.apache.commons.net.SocketFactory#createServerSocket(int)
-	 */
-	public ServerSocket createServerSocket(int port) throws IOException {
-		return new ServerSocket(port);
-	}
-
-	/* (non-Javadoc)
-	 * @see org.apache.commons.net.SocketFactory#createServerSocket(int, int)
-	 */
-	public ServerSocket createServerSocket(int port, int backlog) throws IOException {
-		return new ServerSocket(port, backlog);
-	}
-
-	/* (non-Javadoc)
-	 * @see org.apache.commons.net.SocketFactory#createServerSocket(int, int, java.net.InetAddress)
-	 */
-	public ServerSocket createServerSocket(int port, int backlog, InetAddress bindAddr) throws IOException {
-		return new ServerSocket(port, backlog, bindAddr);
-	}
 
 	/*
 	 * send the comand and read the reply
 	 */
 	private String _sendCommand(String cmd, OutputStream out, InputStream in) throws IOException {
-		// send the command 
+		// send the command
+		log.debug("_sendCommand ["+cmd+"]"); 
 		BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(out, "ISO-8859-1"));
 		writer.write(cmd + "\r\n");
 		writer.flush();
@@ -450,8 +286,10 @@ class FTPsClient extends FTPClient implements SocketFactory {
 		if (replyCode == FTPReply.SERVICE_NOT_AVAILABLE)
 			throw new FTPConnectionClosedException("FTP response 421 received. Server closed connection.");
 			
-		if (replyCode < 200 || replyCode >= 300) 
+		if (!FTPReply.isPositiveCompletion(replyCode)) 
 			throw new IOException("Exception while sending command \n" + reply.toString());
+	
+		log.debug("_readReply ["+reply.toString()+"]");
 	
 		if (concatenateLines)
 			return reply.toString();
