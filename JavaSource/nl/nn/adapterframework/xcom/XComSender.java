@@ -1,6 +1,9 @@
 /*
  * $Log: XComSender.java,v $
- * Revision 1.9  2005-12-19 16:59:39  europe\L190409
+ * Revision 1.10  2005-12-19 17:14:42  europe\L190409
+ * updated javadoc
+ *
+ * Revision 1.9  2005/12/19 16:59:39  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected typo: had only single r in carriageflag
  *
  * Revision 1.8  2005/12/19 16:40:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -72,7 +75,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setLogfile(String) logfile}</td><td>Name of logfile for xcomtcp to be used</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setRemoteSystem(String) remoteSystem}</td><td>Hostname or tcpip adres of remote host</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setPort(String) port}</td><td>Port of remote host</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setRemoteDir(String) remoteDir}</td><td>Remote directory is prefixed witht the remote file</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setRemoteDirectory(String) remoteDirectory}</td><td>Remote directory is prefixed witht the remote file</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setRemoteFilePattern(String) remoteFile}</td><td>Remote file to create. If empty, the name is equal to the local file</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setAuthAlias(String) authAlias}</td><td>name of the alias to obtain credentials to authenticatie on remote server</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setUserid(String) userid}</td><td>Loginname of user on remote system</td><td>&nbsp;</td></tr>
@@ -83,7 +86,7 @@ import org.apache.commons.lang.StringUtils;
  * @author: John Dekker
  */
 public class XComSender extends SenderWithParametersBase {
-	public static final String version = "$RCSfile: XComSender.java,v $  $Revision: 1.9 $ $Date: 2005-12-19 16:59:39 $";
+	public static final String version = "$RCSfile: XComSender.java,v $  $Revision: 1.10 $ $Date: 2005-12-19 17:14:42 $";
 
 	private File workingDir;
 	private String name;
