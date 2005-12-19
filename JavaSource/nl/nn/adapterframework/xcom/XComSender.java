@@ -1,6 +1,9 @@
 /*
  * $Log: XComSender.java,v $
- * Revision 1.8  2005-12-19 16:40:15  europe\L190409
+ * Revision 1.9  2005-12-19 16:59:39  europe\L190409
+ * corrected typo: had only single r in carriageflag
+ *
+ * Revision 1.8  2005/12/19 16:40:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added authentication using authentication-alias
  *
  * Revision 1.7  2005/10/31 14:42:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -60,9 +63,9 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setWorkingDirName(String) name}</td><td>directory in which to run the xcomtcp command</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setXcomtcp(String) cmd}</td><td>Path to xcomtcp command</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setFileOption(String) option}</td><td>One of CREATE, APPEND or REPLACE</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setQueue(boolean) queue}</td><td>Set queue off or on</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setTruncation(boolean) truncation}</td><td>Set truncation off or on</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setTracelevel(int) tracelevel}</td><td>Set between 0 (no trace) and 10</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setQueue(Boolean) queue}</td><td>Set queue off or on</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setTruncation(Boolean) truncation}</td><td>Set truncation off or on</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setTracelevel(Integer) tracelevel}</td><td>Set between 0 (no trace) and 10</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setCodeflag(String) codeflag}</td><td>Characterset conversion, one of ASCII or EBCDIC</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setCarriageflag(String) carriageflag}</td><td>One of YES, NO, VRL, VRL2, MPACK or XPACK</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setCompress(String) carriageflag}</td><td>One of YES, NO, RLE, COMPACT, LZLARGE, LZMEDIUM or LZSMALL</td><td>&nbsp;</td></tr>
@@ -71,7 +74,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setPort(String) port}</td><td>Port of remote host</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setRemoteDir(String) remoteDir}</td><td>Remote directory is prefixed witht the remote file</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setRemoteFilePattern(String) remoteFile}</td><td>Remote file to create. If empty, the name is equal to the local file</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setAuthAlias(string) authAlias}</td><td>name of the alias to obtain credentials to authenticatie on remote server</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setAuthAlias(String) authAlias}</td><td>name of the alias to obtain credentials to authenticatie on remote server</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setUserid(String) userid}</td><td>Loginname of user on remote system</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setPassword(String) password}</td><td>Password of user on remote system</td><td>&nbsp;</td></tr>
  * </table>
@@ -80,7 +83,7 @@ import org.apache.commons.lang.StringUtils;
  * @author: John Dekker
  */
 public class XComSender extends SenderWithParametersBase {
-	public static final String version = "$RCSfile: XComSender.java,v $  $Revision: 1.8 $ $Date: 2005-12-19 16:40:15 $";
+	public static final String version = "$RCSfile: XComSender.java,v $  $Revision: 1.9 $ $Date: 2005-12-19 16:59:39 $";
 
 	private File workingDir;
 	private String name;
@@ -90,7 +93,7 @@ public class XComSender extends SenderWithParametersBase {
 	private Integer tracelevel = null;
 	private String logfile = null;
 	private String codeflag = null;
-	private String cariageflag = null;
+	private String carriageflag = null;
 	private String port = null;
 	private String authAlias = null;
 	private String userid = null;
@@ -126,10 +129,10 @@ public class XComSender extends SenderWithParametersBase {
 		) {
 			throw new ConfigurationException("Attribute [codeflag] has incorrect value " + fileOption + ", should be ASCII or EBCDIC");
 		}
-		if (! StringUtils.isEmpty(cariageflag) &&
-				! "YES".equals(cariageflag) && ! "VLR".equals(cariageflag) && 
-				! "VLR2".equals(cariageflag) && ! "MPACK".equals(cariageflag) && 
-				! "XPACK".equals(cariageflag) && ! "NO".equals(cariageflag)  
+		if (! StringUtils.isEmpty(carriageflag) &&
+				! "YES".equals(carriageflag) && ! "VLR".equals(carriageflag) && 
+				! "VLR2".equals(carriageflag) && ! "MPACK".equals(carriageflag) && 
+				! "XPACK".equals(carriageflag) && ! "NO".equals(carriageflag)  
 		) {
 			throw new ConfigurationException("Attribute [cariageflag] has incorrect value " + compress + ", should be one of YES | NO | VRL | VRL2 | MPACK | XPACK");
 		}
@@ -255,8 +258,8 @@ public class XComSender extends SenderWithParametersBase {
 				sb.append(" COMPRESS=").append(compress);
 			if (! StringUtils.isEmpty(codeflag)) 
 				sb.append(" CODE_FLAG=").append(codeflag);
-			if (! StringUtils.isEmpty(cariageflag)) 
-				sb.append(" CARRIAGE_FLAG=").append(cariageflag);
+			if (! StringUtils.isEmpty(carriageflag)) 
+				sb.append(" CARRIAGE_FLAG=").append(carriageflag);
 			if (! StringUtils.isEmpty(cf.getUsername())) 
 				sb.append(" USERID=").append(cf.getUsername());
 			if (inclPasswd && ! StringUtils.isEmpty(cf.getPassword())) 
@@ -313,7 +316,7 @@ public class XComSender extends SenderWithParametersBase {
 	}
 
 	public String getCariageflag() {
-		return cariageflag;
+		return carriageflag;
 	}
 
 	public String getCodeflag() {
@@ -352,8 +355,8 @@ public class XComSender extends SenderWithParametersBase {
 		return userid;
 	}
 
-	public void setCariageflag(String string) {
-		cariageflag = string;
+	public void setCarriageflag(String string) {
+		carriageflag = string;
 	}
 
 	public void setCodeflag(String string) {
