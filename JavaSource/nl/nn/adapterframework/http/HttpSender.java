@@ -1,6 +1,9 @@
 /*
  * $Log: HttpSender.java,v $
- * Revision 1.16  2005-10-18 07:06:48  europe\L190409
+ * Revision 1.17  2005-12-19 16:42:11  europe\L190409
+ * added authentication using authentication-alias
+ *
+ * Revision 1.16  2005/10/18 07:06:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved logging config, based now on ISenderWithParametersBase
  *
  * Revision 1.15  2005/10/03 13:19:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -52,15 +55,14 @@
 package nl.nn.adapterframework.http;
 
 import java.io.IOException;
-import java.net.SocketException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.security.Security;
 
 
 import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.HostConfiguration;
 import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpConnection;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
@@ -82,6 +84,7 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.CredentialFactory;
 
 /**
  * Sender that gets information via a HTTP using POST or GET.
@@ -95,18 +98,22 @@ import nl.nn.adapterframework.util.ClassUtils;
  * <tr><td>{@link #setMethodType(String) methodType}</td><td>type of method to be executed, either 'GET' or 'POST'</td><td>GET</td></tr>
  * <tr><td>{@link #setTimeout(int) Timeout}</td><td>timeout ih ms of obtaining a connection/result. 0 means no timeout</td><td>60000</td></tr>
  * <tr><td>{@link #setMaxConnections(int) maxConnections}</td><td>the maximum number of concurrent connections</td><td>2</td></tr>
+ * <tr><td>{@link #setAuthAlias(String) authAlias}</td><td>alias used to obtain credentials for authentication to host</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setUserName(String) userName}</td><td>username used in authentication to host</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setPassword(String) password}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setProxyHost(String) proxyHost}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setProxyPort(int) proxyPort}</td><td>&nbsp;</td><td>80</td></tr>
+ * <tr><td>{@link #setProxyAuthAlias(String) proxyAuthAlias}</td><td>alias used to obtain credentials for authentication to proxy</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setProxyUserName(String) proxyUserName}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setProxyPassword(String) proxyPassword}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setProxyRealm(String) proxyRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setKeystoreType(String) keystoreType}</td><td>&nbsp;</td><td>pkcs12</td></tr>
  * <tr><td>{@link #setCertificate(String) certificate}</td><td>resource URL to certificate to be used for authentication</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setCertificatePassword(String) certificatePassword}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setCertificateAuthAlias(String) certificateAuthAlias}</td><td>alias used to obtain certificate password</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setTruststore(String) truststore}</td><td>resource URL to truststore to be used for authentication</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setTruststorePassword(String) truststorePassword}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setTruststoreAuthAlias(String) truststoreAuthAlias}</td><td>alias used to obtain truststore password</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setTruststoreType(String) truststoreType}</td><td>&nbsp;</td><td>jks</td></tr>
  * <tr><td>{@link #setFollowRedirects(boolean) followRedirects}</td><td>when true, a redirect request will be honoured, e.g. to switch to https</td><td>true</td></tr>
  * <tr><td>{@link #setVerifyHostname(boolean) verifyHostname}</td><td>when true, the hostname in the certificate will be checked against the actual hostname</td><td>true</td></tr>
@@ -122,7 +129,7 @@ import nl.nn.adapterframework.util.ClassUtils;
  * @since 4.2c
  */
 public class HttpSender extends SenderWithParametersBase implements HasPhysicalDestination {
-	public static final String version = "$RCSfile: HttpSender.java,v $ $Revision: 1.16 $ $Date: 2005-10-18 07:06:48 $";
+	public static final String version = "$RCSfile: HttpSender.java,v $ $Revision: 1.17 $ $Date: 2005-12-19 16:42:11 $";
 
 	private String url;
 	private String methodType="GET"; // GET or POST
@@ -130,20 +137,24 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 	private int timeout=60000;
 	private int maxConnections=2;
 
+	private String authAlias;
 	private String userName;
 	private String password;
 
 	private String proxyHost;
-	private int proxyPort=80;
+	private int    proxyPort=80;
+	private String proxyAuthAlias;
 	private String proxyUserName;
 	private String proxyPassword;
 	private String proxyRealm=null;
 
 	private String keystoreType="pkcs12";
 	private String certificate;
+	private String certificateAuthAlias;
 	private String certificatePassword;
 	private String truststore=null;
 	private String truststorePassword=null;
+	private String truststoreAuthAlias;
 	private String truststoreType="jks";
 	
 	private boolean verifyHostname=true;
@@ -156,61 +167,15 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 	private MultiThreadedHttpConnectionManager connectionManager;
 	protected HttpClient httpclient;
 
-	private class IbisMultiThreadedHttpConnectionManager extends MultiThreadedHttpConnectionManager {
-		
-		protected boolean checkConnection(HttpConnection connection)  {
-			boolean status = connection.isOpen();
-			log.debug(getLogPrefix()+"IbisMultiThreadedHttpConnectionManager connection open ["+status+"]");
-			if (status) {
-				try {
-					connection.setSoTimeout(connection.getSoTimeout());
-				} catch (SocketException e) {
-					log.warn(getLogPrefix()+"IbisMultiThreadedHttpConnectionManager SocketException while checking", e);
-					connection.close();
-					return false;
-				} catch (IllegalStateException e) {
-					log.warn(getLogPrefix()+"IbisMultiThreadedHttpConnectionManager IllegalStateException while checking", e);
-					connection.close();
-					return false;
-				}
-			}
-			return true;
-		}
-		
-//		public void releaseConnection(HttpConnection connection) {
-//			log.debug("IbisMultiThreadedHttpConnectionManager["+name+"] closing connection before release");
-//			connection.close();
-//			super.releaseConnection(connection);
-//		}
-		
-		public HttpConnection getConnection(HostConfiguration hostConfiguration) {
-			log.debug(getLogPrefix()+"IbisMultiThreadedHttpConnectionManager getConnection(HostConfiguration)");
-			HttpConnection result = super.getConnection(hostConfiguration);			
-			checkConnection(result);
-			return result;
-		}
-		public HttpConnection getConnection(HostConfiguration hostConfiguration, long timeout) throws HttpException {
-			log.debug(getLogPrefix()+"IbisMultiThreadedHttpConnectionManager getConnection(HostConfiguration, timeout["+timeout+"])");
-			HttpConnection result = super.getConnection(hostConfiguration, timeout);
-			int count=10;
-			while (count-->0 && !checkConnection(result)) {
-				releaseConnection(result);
-				result= super.getConnection(hostConfiguration, timeout);
-			} 
-			return result;
-		}
-	}
 
 	protected void addProvider(String name) {
 		try {
 			Class clazz = Class.forName(name);
-			java.security.Security.addProvider((java.security.Provider)clazz.newInstance());
+			Security.addProvider((java.security.Provider)clazz.newInstance());
 		} catch (Throwable t) {
 			log.error(getLogPrefix()+"cannot add provider ["+name+"], "+t.getClass().getName()+": "+t.getMessage());
 		}
 	}
-
-
 
 	
 	public void configure() throws ConfigurationException {
@@ -255,17 +220,19 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 			if (certificateUrl!=null || truststoreUrl!=null) {
 				AuthSSLProtocolSocketFactoryBase socketfactory ;
 				try {
+					CredentialFactory certificateCf = new CredentialFactory(getCertificateAuthAlias(), null, getCertificatePassword());
+					CredentialFactory truststoreCf  = new CredentialFactory(getTruststoreAuthAlias(),  null, getTruststorePassword());
 					if (isJdk13Compatibility()) {
 						addProvider("sun.security.provider.Sun");
 						addProvider("com.sun.net.ssl.internal.ssl.Provider");
 						System.setProperty("java.protocol.handler.pkgs","com.sun.net.ssl.internal.www.protocol");
 						socketfactory = new AuthSSLProtocolSocketFactoryForJsse10x(
-							certificateUrl, getCertificatePassword(), getKeystoreType(),
-							truststoreUrl, getTruststorePassword(), getTruststoreType(), isVerifyHostname());
+							certificateUrl, certificateCf.getPassword(), getKeystoreType(),
+							truststoreUrl,  truststoreCf.getPassword(),  getTruststoreType(), isVerifyHostname());
 					} else {
 						socketfactory = new AuthSSLProtocolSocketFactory(
-							certificateUrl, getCertificatePassword(), getKeystoreType(),
-							truststoreUrl, getTruststorePassword(), getTruststoreType(),isVerifyHostname());
+							certificateUrl, certificateCf.getPassword(), getKeystoreType(),
+							truststoreUrl,  truststoreCf.getPassword(),  getTruststoreType(),isVerifyHostname());
 					}
 					socketfactory.initSSLContext();	
 				} catch (Throwable t) {
@@ -278,15 +245,17 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 			}
 			log.debug(getLogPrefix()+"configured httpclient for host ["+hostconfiguration.getHostURL()+"]");
 			
-			if (!StringUtils.isEmpty(getUserName())) {
+			CredentialFactory cf = new CredentialFactory(getAuthAlias(), getUserName(), getPassword());
+			if (!StringUtils.isEmpty(cf.getUsername())) {
 				httpclient.getState().setAuthenticationPreemptive(true);
-				Credentials defaultcreds = new UsernamePasswordCredentials(getUserName(), getPassword());
+				Credentials defaultcreds = new UsernamePasswordCredentials(cf.getUsername(), cf.getPassword());
 				httpclient.getState().setCredentials(null, uri.getHost(), defaultcreds);
 			}
 			if (!StringUtils.isEmpty(getProxyHost())) {
+				CredentialFactory pcf = new CredentialFactory(getProxyAuthAlias(), getProxyUserName(), getProxyPassword());
 				httpclient.getHostConfiguration().setProxy(getProxyHost(), getProxyPort());
 				httpclient.getState().setProxyCredentials(getProxyRealm(), getProxyHost(),
-				new UsernamePasswordCredentials(getProxyUserName(), getProxyPassword()));
+				new UsernamePasswordCredentials(pcf.getUsername(), pcf.getPassword()));
 			}
 	
 
@@ -297,7 +266,6 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 	}
 
 	public void open() {
-//		connectionManager = new IbisMultiThreadedHttpConnectionManager();
 		connectionManager = new MultiThreadedHttpConnectionManager();
 		connectionManager.setMaxConnectionsPerHost(getMaxConnections());
 		log.debug(getLogPrefix()+"set up connectionManager, stale checking ["+connectionManager.isConnectionStaleCheckingEnabled()+"]");
@@ -589,6 +557,38 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 	}
 	public void setTruststoreType(String string) {
 		truststoreType = string;
+	}
+
+	public String getAuthAlias() {
+		return authAlias;
+	}
+
+	public String getCertificateAuthAlias() {
+		return certificateAuthAlias;
+	}
+
+	public String getProxyAuthAlias() {
+		return proxyAuthAlias;
+	}
+
+	public String getTruststoreAuthAlias() {
+		return truststoreAuthAlias;
+	}
+
+	public void setAuthAlias(String string) {
+		authAlias = string;
+	}
+
+	public void setCertificateAuthAlias(String string) {
+		certificateAuthAlias = string;
+	}
+
+	public void setProxyAuthAlias(String string) {
+		proxyAuthAlias = string;
+	}
+
+	public void setTruststoreAuthAlias(String string) {
+		truststoreAuthAlias = string;
 	}
 
 }

@@ -1,6 +1,9 @@
 /*
  * $Log: SapSystem.java,v $
- * Revision 1.7  2005-08-10 12:46:27  europe\L190409
+ * Revision 1.8  2005-12-19 16:44:44  europe\L190409
+ * added authentication using authentication-alias
+ *
+ * Revision 1.7  2005/08/10 12:46:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * underflow-correction of reference count
  *
  * Revision 1.6  2005/08/08 09:42:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -30,6 +33,7 @@ package nl.nn.adapterframework.extensions.sap;
 import com.sap.mw.jco.*;
 
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.GlobalListItem;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -42,6 +46,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * <tr><td>{@link #setMaxConnections(int) maxConnections}</td><td>maximum number of connections that may connect simultaneously to the SAP system</td><td>10</td></tr>
  * <tr><td>{@link #setGwhost(String) gwhost}</td><td>name of the SAP-application server to connect to</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMandant(String) mandant}</td><td>Mandant i.e. 'client'</td><td>100</td></tr>
+ * <tr><td>{@link #setAuthAlias(String) authAlias}</td><td>alias to obtain userid and password</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setUserid(String) userid}</td><td>userid used in the connection</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setPasswd(String) passwd}</td><td>passwd used in the connection</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setLanguage(String) language}</td><td>Language indicator</td><td>NL</td></tr>
@@ -54,12 +59,13 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * @since 4.1.1
  */
 public class SapSystem extends GlobalListItem  implements JCO.ServerStateChangedListener  {
-	public static final String version="$RCSfile: SapSystem.java,v $  $Revision: 1.7 $ $Date: 2005-08-10 12:46:27 $";
+	public static final String version="$RCSfile: SapSystem.java,v $  $Revision: 1.8 $ $Date: 2005-12-19 16:44:44 $";
 
 	private int maxConnections = 10;
 
 	private String gwhost;	// The application server where the RFC-destination is registerd
 
+ 	private String authAlias= null;
 	private String mandant	= "100";	 	// mandant
 	private String userid   = null;
 	private String passwd   = null;
@@ -99,6 +105,9 @@ public class SapSystem extends GlobalListItem  implements JCO.ServerStateChanged
 			}
 			clearSystem();
 			log.debug(getLogPrefix()+"creating ClientPool");
+			
+			CredentialFactory cf = new CredentialFactory(getAuthAlias(), getUserid(), getPasswd());
+			
 			// Add a connection pool to the specified system
 			//    The pool will be saved in the pool list to be used
 			//    from other threads by JCO.getClient(SID).
@@ -106,8 +115,8 @@ public class SapSystem extends GlobalListItem  implements JCO.ServerStateChanged
 			JCO.addClientPool( getName(),         // Alias for this pool
 							   getMaxConnections(),          // Max. number of connections
 								getMandant(),
-								getUserid(),
-								getPasswd(),
+								cf.getUsername(),
+								cf.getPassword(),
 								getLanguage(),
 								getGwhost(),
 								getSystemnr());
@@ -213,16 +222,28 @@ public class SapSystem extends GlobalListItem  implements JCO.ServerStateChanged
 		return mandant;
 	}
 
-	public String getPasswd() {
-		return passwd;
-	}
 
 	public String getSystemnr() {
 		return systemnr;
 	}
 
+	public void setAuthAlias(String string) {
+		authAlias = string;
+	}
+	public String getAuthAlias() {
+		return authAlias;
+	}
+	public void setUserid(String string) {
+		userid = string;
+	}
 	public String getUserid() {
 		return userid;
+	}
+	public void setPasswd(String string) {
+		passwd = string;
+	}
+	public String getPasswd() {
+		return passwd;
 	}
 
 	public void setGwhost(String string) {
@@ -238,17 +259,11 @@ public class SapSystem extends GlobalListItem  implements JCO.ServerStateChanged
 	}
 
 
-	public void setPasswd(String string) {
-		passwd = string;
-	}
 
 	public void setSystemnr(String string) {
 		systemnr = string;
 	}
 
-	public void setUserid(String string) {
-		userid = string;
-	}
 
 	public int getMaxConnections() {
 		return maxConnections;
@@ -273,5 +288,7 @@ public class SapSystem extends GlobalListItem  implements JCO.ServerStateChanged
 	public void setTraceLevel(int i) {
 		traceLevel = i;
 	}
+
+
 
 }

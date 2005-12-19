@@ -1,6 +1,9 @@
 /*
  * $Log: XComSender.java,v $
- * Revision 1.7  2005-10-31 14:42:40  europe\L190409
+ * Revision 1.8  2005-12-19 16:40:15  europe\L190409
+ * added authentication using authentication-alias
+ *
+ * Revision 1.7  2005/10/31 14:42:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.6  2005/10/28 12:31:05  John Dekker <john.dekker@ibissource.org>
@@ -41,10 +44,10 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.FileUtils;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
 
 /**
  * XCom client voor het versturen van files via XCom.
@@ -68,6 +71,7 @@ import org.apache.log4j.Logger;
  * <tr><td>{@link #setPort(String) port}</td><td>Port of remote host</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setRemoteDir(String) remoteDir}</td><td>Remote directory is prefixed witht the remote file</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setRemoteFilePattern(String) remoteFile}</td><td>Remote file to create. If empty, the name is equal to the local file</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setAuthAlias(string) authAlias}</td><td>name of the alias to obtain credentials to authenticatie on remote server</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setUserid(String) userid}</td><td>Loginname of user on remote system</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setPassword(String) password}</td><td>Password of user on remote system</td><td>&nbsp;</td></tr>
  * </table>
@@ -76,8 +80,8 @@ import org.apache.log4j.Logger;
  * @author: John Dekker
  */
 public class XComSender extends SenderWithParametersBase {
-	public static final String version = "$RCSfile: XComSender.java,v $  $Revision: 1.7 $ $Date: 2005-10-31 14:42:40 $";
-	protected Logger logger = Logger.getLogger(this.getClass());
+	public static final String version = "$RCSfile: XComSender.java,v $  $Revision: 1.8 $ $Date: 2005-12-19 16:40:15 $";
+
 	private File workingDir;
 	private String name;
 	private String fileOption = null;
@@ -88,6 +92,7 @@ public class XComSender extends SenderWithParametersBase {
 	private String codeflag = null;
 	private String cariageflag = null;
 	private String port = null;
+	private String authAlias = null;
 	private String userid = null;
 	private String password = null;
 	private String compress = null;
@@ -163,7 +168,7 @@ public class XComSender extends SenderWithParametersBase {
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		for (Iterator filenameIt = getFileList(message).iterator(); filenameIt.hasNext(); ) {
 			String filename = (String)filenameIt.next();
-			logger.debug("Start sending " + filename);
+			log.debug("Start sending " + filename);
 		
 			// get file to send
 			File localFile = new File(filename);
@@ -189,8 +194,8 @@ public class XComSender extends SenderWithParametersBase {
 				catch(InterruptedException e) {
 				}
 	
-				logger.debug("output for " + localFile.getName() + " = " + output.toString());
-				logger.debug(localFile.getName() + " exits with " + p.exitValue());
+				log.debug("output for " + localFile.getName() + " = " + output.toString());
+				log.debug(localFile.getName() + " exits with " + p.exitValue());
 				
 				// throw an exception if the command returns an error exit value
 				if (p.exitValue() != 0) {
@@ -229,6 +234,9 @@ public class XComSender extends SenderWithParametersBase {
 				else 
 					sb.append(FileUtils.getFilename(paramList, session, localFile, remoteFilePattern));
 			}
+				
+			CredentialFactory cf = new CredentialFactory(getAuthAlias(), getUserid(), password);
+	
 						
 			// optional parameters
 			if (StringUtils.isNotEmpty(fileOption)) 
@@ -249,10 +257,10 @@ public class XComSender extends SenderWithParametersBase {
 				sb.append(" CODE_FLAG=").append(codeflag);
 			if (! StringUtils.isEmpty(cariageflag)) 
 				sb.append(" CARRIAGE_FLAG=").append(cariageflag);
-			if (! StringUtils.isEmpty(userid)) 
-				sb.append(" USERID=").append(userid);
-			if (inclPasswd && ! StringUtils.isEmpty(password)) 
-				sb.append(" PASSWORD=").append(password);
+			if (! StringUtils.isEmpty(cf.getUsername())) 
+				sb.append(" USERID=").append(cf.getUsername());
+			if (inclPasswd && ! StringUtils.isEmpty(cf.getPassword())) 
+				sb.append(" PASSWORD=").append(cf.getPassword());
 				
 			return sb.toString();
 		}
@@ -414,5 +422,13 @@ public class XComSender extends SenderWithParametersBase {
 	public void setConfigFile(String string) {
 		configFile = string;
 	}
+
+	public void setAuthAlias(String string) {
+		authAlias = string;
+	}
+	public String getAuthAlias() {
+		return authAlias;
+	}
+
 
 }
