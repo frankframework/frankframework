@@ -1,6 +1,9 @@
 /*
  * $Log: FTPsClient.java,v $
- * Revision 1.4  2005-12-19 16:46:37  europe\L190409
+ * Revision 1.5  2005-12-20 09:33:21  europe\L190409
+ * remove TYPE I from prot_p code
+ *
+ * Revision 1.4  2005/12/19 16:46:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * rework, lots of changes
  *
  * Revision 1.3  2005/12/07 15:47:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -46,7 +49,7 @@ import org.apache.log4j.Logger;
  * @author John Dekker
  */
 class FTPsClient extends FTPClient {
-	public static final String version = "$RCSfile: FTPsClient.java,v $  $Revision: 1.4 $ $Date: 2005-12-19 16:46:37 $";
+	public static final String version = "$RCSfile: FTPsClient.java,v $  $Revision: 1.5 $ $Date: 2005-12-20 09:33:21 $";
 	protected Logger log = Logger.getLogger(this.getClass());
 	
 	private FtpSession session;
@@ -129,8 +132,6 @@ class FTPsClient extends FTPClient {
 				checkReply("PBSZ 0");
 				sendCommand("PROT", "P");
 				checkReply("PROT P");
-				sendCommand("TYPE", "I");
-				checkReply("TYPE I");
 				sendCommand("PASV");
 				checkReply("PASV");
 		
