@@ -1,21 +1,13 @@
 /*
  * $Log: CleanupOldFilesPipe.java,v $
- * Revision 1.2  2005-11-08 09:31:08  europe\m00f531
+ * Revision 1.3  2005-12-20 09:57:20  europe\L190409
+ * updated javadoc
+ *
+ * Revision 1.2  2005/11/08 09:31:08  John Dekker <john.dekker@ibissource.org>
  * Bug concerning filenames resolved
  *
  * Revision 1.1  2005/11/01 08:54:00  John Dekker <john.dekker@ibissource.org>
  * Initial version
- *
- * Revision 1.3  2005/10/31 14:38:02  John Dekker <john.dekker@ibissource.org>
- * Add . in javadoc
- *
- * Revision 1.2  2005/10/24 09:59:22  John Dekker <john.dekker@ibissource.org>
- * Add support for pattern parameters, and include them into several listeners,
- * senders and pipes that are file related
- *
- * Revision 1.1  2005/10/11 13:00:22  John Dekker <john.dekker@ibissource.org>
- * New ibis file related elements, such as DirectoryListener, MoveFilePie and 
- * BatchFileTransformerPipe
  *
  */
 package nl.nn.adapterframework.batch;
@@ -35,23 +27,30 @@ import nl.nn.adapterframework.util.FileUtils;
 import org.apache.commons.lang.StringUtils;
 
 /**
- * Pipe for deleting files
+ * Pipe for deleting files.
  *
  * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>classname</td><td>nl.nn.ibis4fundation.FtpSender</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the sender</td><td>&nbsp;</td></tr>
+ * <tr><td>classname</td><td>nl.nn.adapterframework.batch.CleanupOldFilesPipe</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setMaxThreads(int) maxThreads}</td><td>maximum number of threads that may call {@link #doPipe(Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously</td><td>0 (unlimited)</td></tr>
+ * <tr><td>{@link #setFilePattern(String) filePattern}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setSubdirectories(boolean) subdirectories}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setLastModifiedDelta(long) lastModifiedDelta}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * 
  * @author: John Dekker
+ * @since:  4.2
  */
 public class CleanupOldFilesPipe extends FixedForwardPipe {
-	public static final String version = "$RCSfile: CleanupOldFilesPipe.java,v $  $Revision: 1.2 $ $Date: 2005-11-08 09:31:08 $";
+	public static final String version = "$RCSfile: CleanupOldFilesPipe.java,v $  $Revision: 1.3 $ $Date: 2005-12-20 09:57:20 $";
+	
 	private String filePattern;
 	private boolean subdirectories;
 	private long lastModifiedDelta;
+
 	private _FileFilter fileFilter = new _FileFilter();
 	private _DirFilter dirFilter = new _DirFilter();
 		

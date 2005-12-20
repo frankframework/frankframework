@@ -1,6 +1,9 @@
 /*
  * $Log: CompressPipe.java,v $
- * Revision 1.4  2005-11-08 09:31:08  europe\m00f531
+ * Revision 1.5  2005-12-20 09:57:20  europe\L190409
+ * updated javadoc
+ *
+ * Revision 1.4  2005/11/08 09:31:08  John Dekker <john.dekker@ibissource.org>
  * Bug concerning filenames resolved
  *
  * Revision 1.3  2005/11/08 09:18:54  John Dekker <john.dekker@ibissource.org>
@@ -46,7 +49,7 @@ import nl.nn.adapterframework.util.FileUtils;
  * <tr><td>{@link #setMessageIsContent(boolean) messageIsContent}</td><td>Flag indicates whether the message is the content or the path to a file with the contents</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setResultIsContent(boolean) resultIsContent}</td><td>Flag indicates whether the result must be written to the message or to a file (filename = message)</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setOutputDirectory(String) outputDirectory}</td><td>Required if result is a file, the firectory in which to store the result file</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setfilenamePattern(String) filenamePattern}</td><td>Required if result is a file, the pattern for the result filename</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setFilenamePattern(String) filenamePattern}</td><td>Required if result is a file, the pattern for the result filename</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setZipEntryPattern(String) zipEntryPattern}</td><td>The pattern for the zipentry name in case a zipfile is read or written</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setCompress(boolean) directory}</td><td>If true the pipe compress, otherwise it decompress</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setConvert2String(boolean) convert2String}</td><td>If true result is returned as a string, otherwise as a byte array</td><td>&nbsp;</td></tr>
