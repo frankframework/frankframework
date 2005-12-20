@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaFacade.java,v $
- * Revision 1.34  2005-11-02 09:08:05  europe\L190409
+ * Revision 1.35  2005-12-20 16:59:27  europe\L190409
+ * implemented support for connection-pooling
+ *
+ * Revision 1.34  2005/11/02 09:08:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * ifsa-mode connection not for single dynamic reply queue
  *
  * Revision 1.33  2005/10/26 08:23:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -131,7 +134,7 @@ import javax.jms.*;
  * @since 4.2
  */
 public class IfsaFacade implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version = "$RCSfile: IfsaFacade.java,v $ $Revision: 1.34 $ $Date: 2005-11-02 09:08:05 $";
+	public static final String version = "$RCSfile: IfsaFacade.java,v $ $Revision: 1.35 $ $Date: 2005-12-20 16:59:27 $";
     protected Logger log = Logger.getLogger(this.getClass());
     
     private static int BASIC_ACK_MODE = Session.AUTO_ACKNOWLEDGE;
@@ -302,7 +305,7 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination, IXAEnab
 	/**
 	 *  Create a session on the connection to the service
 	 */
-	public QueueSession createSession() throws IfsaException {
+	protected QueueSession createSession() throws IfsaException {
 		try {
 			int mode = BASIC_ACK_MODE; 
 			if (isRequestor() && connection.canUseIfsaModeSessions()) {
@@ -314,6 +317,14 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination, IXAEnab
 				throw (IfsaException)e;
 			}
 			throw new IfsaException(e);
+		}
+	}
+
+	protected void closeSession(Session session) {
+		try {
+			getConnection().releaseSession(session);
+		} catch (IfsaException e) {
+			log.warn("Exception releasing session", e);
 		}
 	}
 

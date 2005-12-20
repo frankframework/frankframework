@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaRequesterSender.java,v $
- * Revision 1.18  2005-10-26 08:48:28  europe\L190409
+ * Revision 1.19  2005-12-20 16:59:27  europe\L190409
+ * implemented support for connection-pooling
+ *
+ * Revision 1.18  2005/10/26 08:48:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved logging
  *
  * Revision 1.17  2005/10/24 09:59:23  John Dekker <john.dekker@ibissource.org>
@@ -112,7 +115,7 @@ import com.ing.ifsa.IFSATimeOutMessage;
  * @since  4.2
  */
 public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParameters {
-	public static final String version="$RCSfile: IfsaRequesterSender.java,v $ $Revision: 1.18 $ $Date: 2005-10-26 08:48:28 $";
+	public static final String version="$RCSfile: IfsaRequesterSender.java,v $ $Revision: 1.19 $ $Date: 2005-12-20 16:59:27 $";
  
 	protected ParameterList paramList = null;
   
@@ -274,17 +277,9 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 					log.debug(getLogPrefix()+"Exception closing sender", e);
 				}
 			}
-			if (session != null) {
-				try {
-					log.debug(getLogPrefix()+"closing session");
-					session.close();
-				} catch (JMSException e) {
-					log.debug(getLogPrefix()+"Exception closing session", e);
-				}
-			}
+			closeSession(session);
 		}
-	    return result;
-	
+	    return result;	
 	}
 
 

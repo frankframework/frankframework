@@ -1,6 +1,9 @@
 /*
  * $Log: JmsSender.java,v $
- * Revision 1.19  2005-10-20 15:44:50  europe\L190409
+ * Revision 1.20  2005-12-20 16:59:25  europe\L190409
+ * implemented support for connection-pooling
+ *
+ * Revision 1.19  2005/10/20 15:44:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * modified JMS-classes to use shared connections
  * open()/close() became openFacade()/closeFacade()
  *
@@ -100,7 +103,7 @@ import javax.jms.Message;
  */
 
 public class JmsSender extends JMSFacade implements ISenderWithParameters, IPostboxSender {
-	public static final String version="$RCSfile: JmsSender.java,v $ $Revision: 1.19 $ $Date: 2005-10-20 15:44:50 $";
+	public static final String version="$RCSfile: JmsSender.java,v $ $Revision: 1.20 $ $Date: 2005-12-20 16:59:25 $";
 	private String replyToName = null;
 	private int deliveryMode = 0;
 	private String messageType = null;
@@ -207,12 +210,10 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 						+ ((replyToName != null) ? "replyTo:" + replyToName : ""));
 			}
 			return msg.getJMSMessageID();
-		}
-		catch (Throwable e) {
+		} catch (Throwable e) {
 			log.error("JmsSender [" + getName() + "] got exception: " + ToStringBuilder.reflectionToString(e), e);
 			throw new SenderException(e);
-		}
-		finally {
+		} finally {
 			if (mp != null) { 
 				try { 
 					mp.close(); 
@@ -220,13 +221,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 					log.warn("JmsSender [" + getName() + "] got exception closing message producer",e); 
 				}
 			}
-			if (s != null) {
-				 try { 
-				 	s.close(); 
-				 } catch (JMSException e) { 
-					log.warn("JmsSender [" + getName() + "] got exception closing session",e); 
-				 }
-			}
+			closeSession(s);
 		}
 	}
 

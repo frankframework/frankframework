@@ -1,6 +1,9 @@
 /*
  * $Log: ConnectionBase.java,v $
- * Revision 1.4  2005-11-02 09:40:52  europe\L190409
+ * Revision 1.5  2005-12-20 16:58:32  europe\L190409
+ * implemented support for connection-pooling
+ *
+ * Revision 1.4  2005/11/02 09:40:52  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * made useSingleDynamicReplyQueue configurable from appConstants
  *
  * Revision 1.3  2005/10/26 08:18:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -25,6 +28,7 @@
 package nl.nn.adapterframework.jms;
 
 import java.util.HashMap;
+import java.util.Hashtable;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -52,10 +56,12 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class ConnectionBase  {
-	public static final String version="$RCSfile: ConnectionBase.java,v $ $Revision: 1.4 $ $Date: 2005-11-02 09:40:52 $";
+	public static final String version="$RCSfile: ConnectionBase.java,v $ $Revision: 1.5 $ $Date: 2005-12-20 16:58:32 $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	private int referenceCount;
+	private final static String CONNECTIONS_ARE_POOLED_KEY="jms.connectionsArePooled";
+	private static Boolean connectionsArePooledStore=null; 
 	private final static String SESSIONS_ARE_POOLED_KEY="jms.sessionsArePooled";
 	private static Boolean sessionsArePooledStore=null; 
 	private final static String USE_SINGLE_DYNAMIC_REPLY_QUEUE_KEY="jms.useSingleDynamicReplyQueue";
@@ -66,20 +72,24 @@ public class ConnectionBase  {
 	
 	private Context context = null;
 	private ConnectionFactory connectionFactory = null;
-	private Connection connection=null;
+	private Connection globalConnection=null; // only used when connections are not pooled
 	
-	private HashMap connectionMap;
+	private HashMap siblingMap;
+	private Hashtable connectionTable; // hashtable is synchronized and does not permit nulls
 
 	private Queue globalDynamicReplyQueue = null;
 	
-	protected ConnectionBase(String id, Context context, ConnectionFactory connectionFactory, HashMap connectionMap) {
+	protected ConnectionBase(String id, Context context, ConnectionFactory connectionFactory, HashMap siblingMap) {
 		super();
 		referenceCount=0;
 		this.id=id;
 		this.context=context;
 		this.connectionFactory=connectionFactory;
-		this.connectionMap=connectionMap;
-		connectionMap.put(id, this);
+		this.siblingMap=siblingMap;
+		siblingMap.put(id, this);
+		if (connectionsArePooled()) {
+			connectionTable = new Hashtable();
+		}
 		log.debug("set id ["+id+"] context ["+context+"] connectionFactory ["+connectionFactory+"] ");
 	}
 		
@@ -87,11 +97,11 @@ public class ConnectionBase  {
 	{
 		if (--referenceCount<=0) {
 			log.debug(getLogPrefix()+" reference count ["+referenceCount+"], closing connection");
-			connectionMap.remove(getId());
+			siblingMap.remove(getId());
 			try {
 				deleteDynamicQueue(globalDynamicReplyQueue);
-				if (connection != null) { 
-					connection.close();
+				if (globalConnection != null) { 
+					globalConnection.close();
 				}
 				if (context != null) {
 					context.close(); 
@@ -101,7 +111,7 @@ public class ConnectionBase  {
 			} finally {
 				globalDynamicReplyQueue=null;
 				connectionFactory = null;
-				connection=null;
+				globalConnection=null;
 				context = null;
 				return true;
 			}
@@ -123,7 +133,7 @@ public class ConnectionBase  {
 		return context;
 	}
 
-	public ConnectionFactory getConnectionFactory() {
+	protected ConnectionFactory getConnectionFactory() {
 		return connectionFactory;
 	}
 
@@ -135,31 +145,87 @@ public class ConnectionBase  {
 			return ((TopicConnectionFactory)connectionFactory).createTopicConnection();
 		}
 	}
-
-	protected synchronized Connection getConnection() throws IbisException {
-		if (connection == null) {
-			try {
-				connection = createConnection();
-				connection.start();
-			} catch (JMSException e) {
-				throw new IbisException("could not obtain Connection", e);
-			}
+	
+	private Connection createAndStartConnection() throws IbisException {
+		Connection connection;
+		try {
+			connection = createConnection();
+			connection.start();
+			return connection;
+		} catch (JMSException e) {
+			throw new IbisException("could not obtain Connection", e);
 		}
-		return connection;
 	}
 
+	private synchronized Connection getConnection() throws IbisException {
+		if (connectionsArePooled()) {
+			return createAndStartConnection();
+		} else {
+			synchronized (this) {
+				if (globalConnection == null) {
+					globalConnection = createAndStartConnection();
+				}
+			}
+			return globalConnection;
+		}
+	}
+
+	private void releaseConnection(Connection connection) {
+		if (connectionsArePooled() && connection != null) {
+			try {
+				connection.close();
+			} catch (JMSException e) {
+				log.error("Exception closing connection", e);
+			}
+		}
+	}
 
 	public Session createSession(boolean transacted, int acknowledgeMode) throws IbisException {
 		Connection connection = getConnection();
+		Session session;
 		try {
 			if (connection instanceof QueueConnection) {
-				return ((QueueConnection)connection).createQueueSession(transacted, acknowledgeMode);
+				session = ((QueueConnection)connection).createQueueSession(transacted, acknowledgeMode);
 			} else {
-				return ((TopicConnection)connection).createTopicSession(transacted, acknowledgeMode);
+				session = ((TopicConnection)connection).createTopicSession(transacted, acknowledgeMode);
 			}
+			if (connectionsArePooled()) {
+				connectionTable.put(session,connection);
+			}
+			return session;
 		} catch (JMSException e) {
+			releaseConnection(connection);
 			throw new IbisException("could not create Session", e);
 		}
+	}
+	
+	public void releaseSession(Session session) { 
+		if (session != null) {
+			if (connectionsArePooled()) {
+				Connection connection = (Connection)connectionTable.remove(session);
+				try {
+					session.close();
+				} catch (JMSException e) {
+					log.error("Exception closing session", e);
+				} finally {
+					releaseConnection(connection);
+				}
+			} else {
+				try {
+					session.close();
+				} catch (JMSException e) {
+					log.error("Exception closing session", e);
+				}
+			}
+		}
+	}
+
+	public synchronized boolean connectionsArePooled() {
+		if (connectionsArePooledStore==null) {
+			boolean pooled=AppConstants.getInstance().getBoolean(CONNECTIONS_ARE_POOLED_KEY, false);
+			connectionsArePooledStore = new Boolean(pooled);
+		}
+		return connectionsArePooledStore.booleanValue();
 	}
 
 	public synchronized boolean sessionsArePooled() {
@@ -171,6 +237,9 @@ public class ConnectionBase  {
 	}
 
 	protected synchronized boolean useSingleDynamicReplyQueue() {
+		if (connectionsArePooled()) {
+			return false; // dynamic reply queues are connection-based.
+		}
 		if (useSingleDynamicReplyQueueStore==null) {
 			boolean useSingleQueue=AppConstants.getInstance().getBoolean(USE_SINGLE_DYNAMIC_REPLY_QUEUE_KEY, true);
 			useSingleDynamicReplyQueueStore = new Boolean(useSingleQueue);

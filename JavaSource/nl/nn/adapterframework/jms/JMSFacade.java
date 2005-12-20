@@ -1,6 +1,9 @@
 /*
  * $Log: JMSFacade.java,v $
- * Revision 1.22  2005-10-24 15:15:15  europe\L190409
+ * Revision 1.23  2005-12-20 16:59:26  europe\L190409
+ * implemented support for connection-pooling
+ *
+ * Revision 1.22  2005/10/24 15:15:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * made sessionsArePooled configurable via appConstant 'jms.sessionsArePooled'
  * added getLogPrefix()
  *
@@ -103,7 +106,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version="$RCSfile: JMSFacade.java,v $ $Revision: 1.22 $ $Date: 2005-10-24 15:15:15 $";
+	public static final String version="$RCSfile: JMSFacade.java,v $ $Revision: 1.23 $ $Date: 2005-12-20 16:59:26 $";
 
 	public static final String MODE_PERSISTENT="PERSISTENT";
 	public static final String MODE_NON_PERSISTENT="NON_PERSISTENT";
@@ -307,7 +310,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	/**
 	 * Returns a session on the connection for a topic or a queue
 	 */
-	public Session createSession() throws JmsException {
+	protected Session createSession() throws JmsException {
 		try {
 			return getConnection().createSession(isJmsTransacted(), getAckMode());
 		} catch (IbisException e) {
@@ -321,6 +324,14 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 		else
 			return createQueueSession((QueueConnection)getConnection());
 */			
+	}
+
+	protected void closeSession(Session session) {
+		try {
+			getConnection().releaseSession(session);
+		} catch (JmsException e) {
+			log.warn("Exception releasing session", e);
+		}
 	}
 
 	public void configure() throws ConfigurationException {
@@ -419,9 +430,13 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 		    if (!useTopicFunctions || getPersistent()) {
 		        destination = getDestination(destinationName);
 		    } else {
-		    	TopicSession session = (TopicSession)createSession();
-		        destination = session.createTopic(destinationName);
-		        session.close();
+				TopicSession session = null;
+		    	try {
+					session = (TopicSession)createSession();
+					destination = session.createTopic(destinationName);
+		    	} finally {
+					closeSession(session);
+		    	}
 		    }
 		    if (destination==null) {
 		    	throw new NamingException("cannot get Destination from ["+destinationName+"]");

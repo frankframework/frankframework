@@ -1,6 +1,9 @@
 /*
  * $Log: JmsMessageBrowser.java,v $
- * Revision 1.4  2005-07-28 07:36:57  europe\L190409
+ * Revision 1.5  2005-12-20 16:59:26  europe\L190409
+ * implemented support for connection-pooling
+ *
+ * Revision 1.4  2005/07/28 07:36:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added selector
  *
  * Revision 1.3  2005/07/19 15:12:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -40,7 +43,7 @@ import nl.nn.adapterframework.core.ListenerException;
  * @see nl.nn.adapterframework.webcontrol.action.BrowseQueue
  */
 public class JmsMessageBrowser extends JMSFacade implements IMessageBrowser {
-	public static final String version = "$RCSfile: JmsMessageBrowser.java,v $ $Revision: 1.4 $ $Date: 2005-07-28 07:36:57 $";
+	public static final String version = "$RCSfile: JmsMessageBrowser.java,v $ $Revision: 1.5 $ $Date: 2005-12-20 16:59:26 $";
 
 	private long timeOut = 3000;
 	private String selector=null;
@@ -56,10 +59,8 @@ public class JmsMessageBrowser extends JMSFacade implements IMessageBrowser {
 	}
 	
 	public IMessageBrowsingIterator getIterator() throws ListenerException {
-		QueueSession session;
 		try {
-			session = (QueueSession) createSession();
-			return new JmsQueueBrowserIterator(session,(Queue)getDestination(),getSelector());
+			return new JmsQueueBrowserIterator(this,(Queue)getDestination(),getSelector());
 		} catch (Exception e) {
 			throw new ListenerException(e);
 		}
@@ -125,13 +126,7 @@ public class JmsMessageBrowser extends JMSFacade implements IMessageBrowser {
 			} catch (JMSException e1) {
 				throw new ListenerException("exception closing message consumer",e1);
 			}
-			try {
-				if (session != null) {
-					session.close();
-				}
-			} catch (JMSException e1) {
-				throw new ListenerException("exception closing session",e1);
-			}
+			closeSession(session);
 		}
 	}
 
@@ -157,13 +152,7 @@ public class JmsMessageBrowser extends JMSFacade implements IMessageBrowser {
 			} catch (JMSException e1) {
 				throw new ListenerException("exception closing queueBrowser",e1);
 			}
-			try {
-				if (session != null) {
-					session.close();
-				}
-			} catch (JMSException e1) {
-				throw new ListenerException("exception closing session",e1);
-			}
+			closeSession(session);
 		}
 	}
 
@@ -186,13 +175,7 @@ public class JmsMessageBrowser extends JMSFacade implements IMessageBrowser {
 			} catch (JMSException e1) {
 				throw new ListenerException("exception closing message consumer",e1);
 			}
-			try {
-				if (session != null) {
-					session.close();
-				}
-			} catch (JMSException e1) {
-				throw new ListenerException("exception closing session",e1);
-			}
+			closeSession(session);
 		}
 	}
 

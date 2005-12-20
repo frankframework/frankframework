@@ -1,6 +1,9 @@
 /*
  * $Log: JmsTransactionalStorage.java,v $
- * Revision 1.6  2005-10-20 15:44:51  europe\L190409
+ * Revision 1.7  2005-12-20 16:59:26  europe\L190409
+ * implemented support for connection-pooling
+ *
+ * Revision 1.6  2005/10/20 15:44:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * modified JMS-classes to use shared connections
  * open()/close() became openFacade()/closeFacade()
  *
@@ -54,7 +57,7 @@ import nl.nn.adapterframework.core.SenderException;
  * @since   4.1
  */
 public class JmsTransactionalStorage extends JmsMessageBrowser implements ITransactionalStorage {
-	public static final String version = "$RCSfile: JmsTransactionalStorage.java,v $ $Revision: 1.6 $ $Date: 2005-10-20 15:44:51 $";
+	public static final String version = "$RCSfile: JmsTransactionalStorage.java,v $ $Revision: 1.7 $ $Date: 2005-12-20 16:59:26 $";
 
 	private String slotId=null;
 
@@ -102,13 +105,7 @@ public class JmsTransactionalStorage extends JmsMessageBrowser implements ITrans
 		} catch (Exception e) {
 			throw new SenderException(e);
 		} finally {
-			try {
-				if (session != null) {
-					session.close();
-				}
-			} catch (JMSException e1) {
-				log.error("exception closing after storing message",e1);
-			}
+			closeSession(session);
 		}
 	}
 

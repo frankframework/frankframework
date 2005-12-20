@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaProviderListener.java,v $
- * Revision 1.16  2005-10-27 08:48:31  europe\L190409
+ * Revision 1.17  2005-12-20 16:59:27  europe\L190409
+ * implemented support for connection-pooling
+ *
+ * Revision 1.16  2005/10/27 08:48:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * introduced RunStateEnquiries
  *
  * Revision 1.15  2005/10/24 15:14:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -82,6 +85,7 @@ import javax.jms.QueueSession;
 import javax.jms.QueueReceiver;
 import javax.jms.DeliveryMode;
 import javax.jms.Destination;
+import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.JMSException;
 
@@ -110,7 +114,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * @since 4.2
  */
 public class IfsaProviderListener extends IfsaFacade implements IPullingListener, INamedObject, RunStateEnquiring {
-	public static final String version = "$RCSfile: IfsaProviderListener.java,v $ $Revision: 1.16 $ $Date: 2005-10-27 08:48:31 $";
+	public static final String version = "$RCSfile: IfsaProviderListener.java,v $ $Revision: 1.17 $ $Date: 2005-12-20 16:59:27 $";
 
     private final static String THREAD_CONTEXT_SESSION_KEY = "session";
     private final static String THREAD_CONTEXT_RECEIVER_KEY = "receiver";
@@ -136,14 +140,9 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 		}
 	}
 	
-	protected void releaseSession(QueueSession session) throws ListenerException {
-		if (isSessionsArePooled() && session != null) {
-			try {
-				session.close();
-				// do not write to log, this occurs too often
-			} catch (Exception e) {
-				throw new ListenerException(getLogPrefix()+"exception closing QueueSession", e);
-			}
+	protected void releaseSession(Session session) throws ListenerException {
+		if (isSessionsArePooled()) {
+			closeSession(session);
 		}
 	}
 
@@ -224,7 +223,7 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 			releaseReceiver(receiver);
 	
 			QueueSession session = (QueueSession) threadContext.remove(THREAD_CONTEXT_SESSION_KEY);
-			releaseSession(session);
+			closeSession(session);
 		}
 	}
 

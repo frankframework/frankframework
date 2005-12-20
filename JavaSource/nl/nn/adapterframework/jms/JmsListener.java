@@ -1,6 +1,9 @@
 /*
  * $Log: JmsListener.java,v $
- * Revision 1.19  2005-10-27 08:47:24  europe\L190409
+ * Revision 1.20  2005-12-20 16:59:26  europe\L190409
+ * implemented support for connection-pooling
+ *
+ * Revision 1.19  2005/10/27 08:47:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * introduced RunStateEnquiries
  *
  * Revision 1.18  2005/10/26 08:23:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -143,7 +146,7 @@ import java.util.HashMap;
  * @since 4.0.1
  */
 public class JmsListener extends JMSFacade implements IPostboxListener, ICorrelatedPullingListener, HasSender, RunStateEnquiring {
-	public static final String version="$RCSfile: JmsListener.java,v $ $Revision: 1.19 $ $Date: 2005-10-27 08:47:24 $";
+	public static final String version="$RCSfile: JmsListener.java,v $ $Revision: 1.20 $ $Date: 2005-12-20 16:59:26 $";
 
 	private final static String THREAD_CONTEXT_SESSION_KEY="session";
 	private final static String THREAD_CONTEXT_MESSAGECONSUMER_KEY="messageConsumer";
@@ -176,13 +179,8 @@ public class JmsListener extends JMSFacade implements IPostboxListener, ICorrela
 	}
 	
 	protected void releaseSession(Session session) throws ListenerException {
-		if (isSessionsArePooled() && session != null) {
-			try {
-				session.close();
-				// do not write to log, this occurs too often
-			} catch (Exception e) {
-				throw new ListenerException("exception closing QueueSession", e);
-			}
+		if (isSessionsArePooled()) {
+			closeSession(session);
 		}
 	}
 
@@ -273,7 +271,7 @@ public class JmsListener extends JMSFacade implements IPostboxListener, ICorrela
 				releaseReceiver(mc,null);
 		
 				Session session = (Session) threadContext.remove(THREAD_CONTEXT_SESSION_KEY);
-				releaseSession(session);
+				closeSession(session);
 			}
 		} catch (Exception e) {
 			throw new ListenerException("exception in [" + getName() + "]", e);
