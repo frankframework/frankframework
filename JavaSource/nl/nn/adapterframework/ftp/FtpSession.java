@@ -1,6 +1,9 @@
 /*
  * $Log: FtpSession.java,v $
- * Revision 1.11  2005-12-19 16:46:36  europe\L190409
+ * Revision 1.12  2005-12-20 09:34:04  europe\L190409
+ * corrected attribute checking for SFTP
+ *
+ * Revision 1.11  2005/12/19 16:46:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * rework, lots of changes
  *
  * Revision 1.10  2005/12/07 15:52:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -80,7 +83,7 @@ import com.sshtools.j2ssh.transport.publickey.SshPrivateKeyFile;
  * @author John Dekker
  */
 public class FtpSession {
-	public static final String version = "$RCSfile: FtpSession.java,v $  $Revision: 1.11 $ $Date: 2005-12-19 16:46:36 $";
+	public static final String version = "$RCSfile: FtpSession.java,v $  $Revision: 1.12 $ $Date: 2005-12-20 09:34:04 $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	// types of ftp transports
@@ -143,38 +146,42 @@ public class FtpSession {
 
 	// configure
 	public void configure() throws ConfigurationException {
+		if (StringUtils.isEmpty(ftpTypeDescription)) {
+			throw new ConfigurationException("Attribute [ftpTypeDescription] is not set");
+		}
+		ftpTypeDescription = ftpTypeDescription.toUpperCase();
+		if (ftpTypeDescription.equals("FTP")) {
+			ftpType = FTP;
+		}
+		else if (ftpTypeDescription.equals("SFTP")) {
+			ftpType = SFTP;
+		}
+		else if (ftpTypeDescription.equals("FTPSI")) {
+			ftpType = FTPS_IMPLICIT;
+		}
+		else if (ftpTypeDescription.equals("FTPSX(SSL)")) {
+			ftpType = FTPS_EXPLICIT_SSL;
+		}
+		else if (ftpTypeDescription.equals("FTPSX(TLS)")) {
+			ftpType = FTPS_EXPLICIT_TLS;
+		}
+		else {
+			throw new ConfigurationException("Attribute [ftpTypeDescription] has incorrect value [" + ftpTypeDescription + "]. Should be one of FTP, SFTP, FTPSI, FTPSX(SSL) or FTPSX(TLS)");
+		}
+
 		if (StringUtils.isEmpty(host)) {
 			throw new ConfigurationException("Attribute [host] is not set");
 		}
 		if (StringUtils.isEmpty(username) && StringUtils.isEmpty(getAuthAlias())) {
-			throw new ConfigurationException("Neither attribute 'username' nor 'authAlias' is set");
+			if (ftpType!=SFTP) {
+				throw new ConfigurationException("Neither attribute 'username' nor 'authAlias' is set");
+			}
+			else if (StringUtils.isEmpty(privateKeyAuthAlias)) {
+				throw new ConfigurationException("Neither attribute 'username' nor 'authAlias' nor 'privateKeyAuthAlias' is set");
+			}
 		}
 		if (proxyTransportType < 1 && proxyTransportType > 4) {
 			throw new ConfigurationException("Incorrect value for [proxyTransportType]");
-		}
-		if (StringUtils.isEmpty(ftpTypeDescription)) {
-			throw new ConfigurationException("Attribute [ftpTypeDescription] is not set");
-		}
-		else {
-			ftpTypeDescription = ftpTypeDescription.toUpperCase();
-			if (ftpTypeDescription.equals("FTP")) {
-				ftpType = FTP;
-			}
-			else if (ftpTypeDescription.equals("SFTP")) {
-				ftpType = SFTP;
-			}
-			else if (ftpTypeDescription.equals("FTPSI")) {
-				ftpType = FTPS_IMPLICIT;
-			}
-			else if (ftpTypeDescription.equals("FTPSX(SSL)")) {
-				ftpType = FTPS_EXPLICIT_SSL;
-			}
-			else if (ftpTypeDescription.equals("FTPSX(TLS)")) {
-				ftpType = FTPS_EXPLICIT_TLS;
-			}
-			else {
-				throw new ConfigurationException("Attribute [ftpTypeDescription] has incorrect value [" + ftpTypeDescription + "]. Should be one of FTP, SFTP, FTPSI, FTPSX(SSL) or FTPSX(TLS)");
-			}
 		}
 		
 		try {
