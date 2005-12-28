@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaFacade.java,v $
- * Revision 1.35  2005-12-20 16:59:27  europe\L190409
+ * Revision 1.36  2005-12-28 08:47:34  europe\L190409
+ * improved logging
+ *
+ * Revision 1.35  2005/12/20 16:59:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * implemented support for connection-pooling
  *
  * Revision 1.34  2005/11/02 09:08:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -134,7 +137,7 @@ import javax.jms.*;
  * @since 4.2
  */
 public class IfsaFacade implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version = "$RCSfile: IfsaFacade.java,v $ $Revision: 1.35 $ $Date: 2005-12-20 16:59:27 $";
+	public static final String version = "$RCSfile: IfsaFacade.java,v $ $Revision: 1.36 $ $Date: 2005-12-28 08:47:34 $";
     protected Logger log = Logger.getLogger(this.getClass());
     
     private static int BASIC_ACK_MODE = Session.AUTO_ACKNOWLEDGE;
@@ -224,6 +227,7 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination, IXAEnab
 	 */
 	public void openService() throws IfsaException {
 		try {
+			log.debug(getLogPrefix()+"opening connection for service");
 			getConnection();   // obtain and cache connection, then start it.
 			getServiceQueue(); // obtain and cache service queue
 		} catch (IfsaException e) {
@@ -285,10 +289,10 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination, IXAEnab
 		if (connection == null) {
 			synchronized (this) {
 				if (connection == null) {
-					log.debug("instantiating IfsaConnectionFactory");
+					log.debug(getLogPrefix()+"instantiating IfsaConnectionFactory");
 					IfsaConnectionFactory ifsaConnectionFactory = new IfsaConnectionFactory();
 					try {
-						log.debug("creating IfsaConnection");
+						log.debug(getLogPrefix()+"creating IfsaConnection");
 						connection = (IfsaConnection)ifsaConnectionFactory.getConnection(getApplicationId());
 					} catch (IbisException e) {
 						if (e instanceof IfsaException) {
