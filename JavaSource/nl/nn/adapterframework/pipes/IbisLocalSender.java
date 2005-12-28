@@ -1,6 +1,9 @@
 /*
  * $Log: IbisLocalSender.java,v $
- * Revision 1.7  2005-10-18 07:02:55  europe\L190409
+ * Revision 1.8  2005-12-28 08:37:11  europe\L190409
+ * corrected javadoc
+ *
+ * Revision 1.7  2005/10/18 07:02:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * better exception handling
  *
  * Revision 1.6  2005/09/28 14:15:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -49,7 +52,7 @@ import java.util.HashMap;
  * <tr><td>{@link #setName(String) name}</td>  <td>name of the sender</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setServiceName(String) serviceName}</td><td>Name of the WebServiceListener that should be called</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setJavaListener(String) javaListener}</td><td>Name of the JavaListener that should be called</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setIsolated(String) isolated}</td><td>when <code>true</code>, the call is made in a separate thread, possibly using separate transaction</td><td>false</td></tr>
+ * <tr><td>{@link #setIsolated(boolean) isolated}</td><td>when <code>true</code>, the call is made in a separate thread, possibly using separate transaction</td><td>false</td></tr>
  * </table>
  * </p>
  * Any parameters are copied to the PipeLineSession of the service called.
@@ -58,7 +61,7 @@ import java.util.HashMap;
  * @since  4.2
  */
 public class IbisLocalSender extends SenderWithParametersBase {
-	public static final String version="$RCSfile: IbisLocalSender.java,v $ $Revision: 1.7 $ $Date: 2005-10-18 07:02:55 $";
+	public static final String version="$RCSfile: IbisLocalSender.java,v $ $Revision: 1.8 $ $Date: 2005-12-28 08:37:11 $";
 	
 	private String name;
 	private String serviceName;

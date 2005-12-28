@@ -1,6 +1,9 @@
 /*
  * $Log: IMessageBrowser.java,v $
- * Revision 1.2  2005-07-19 12:14:30  europe\L190409
+ * Revision 1.3  2005-12-28 08:33:22  europe\L190409
+ * corrected javadoc
+ *
+ * Revision 1.2  2005/07/19 12:14:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * introduction of IMessageBrowsingIterator
  *
  * Revision 1.1  2004/06/16 12:25:52  Johan Verrips <johan.verrips@ibissource.org>
@@ -18,13 +21,10 @@ import java.util.Date;
  * @version Id
  */
 public interface IMessageBrowser extends IXAEnabled {
-	public static final String version = "$RCSfile: IMessageBrowser.java,v $ $Revision: 1.2 $ $Date: 2005-07-19 12:14:30 $";
+	public static final String version = "$RCSfile: IMessageBrowser.java,v $ $Revision: 1.3 $ $Date: 2005-12-28 08:33:22 $";
 
 	/**
 	 * Gets an enumeration of messages. This includes setting up connections, sessions etc.
-	 * 
-	 * @return Iterator
-	 * @throws MessageBrowseException
 	 */
 	public IMessageBrowsingIterator getIterator() throws ListenerException;
 	

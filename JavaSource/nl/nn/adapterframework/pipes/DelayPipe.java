@@ -1,6 +1,9 @@
 /*
  * $Log: DelayPipe.java,v $
- * Revision 1.3  2005-07-28 07:39:29  europe\L190409
+ * Revision 1.4  2005-12-28 08:36:33  europe\L190409
+ * corrected javadoc
+ *
+ * Revision 1.3  2005/07/28 07:39:29  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * cosmetic changes
  *
  * Revision 1.2  2005/05/19 12:33:22  Johan Verrips <johan.verrips@ibissource.org>
@@ -24,13 +27,13 @@ import nl.nn.adapterframework.core.PipeRunResult;
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setDelayTime(int) delayTime}</td><td>the time the thread will be put to sleep</td><td>5000 [ms]</td></tr>
+ * <tr><td>{@link #setDelayTime(long) delayTime}</td><td>the time the thread will be put to sleep</td><td>5000 [ms]</td></tr>
  * </table>
  * 
  * @author L180564 - Johan Verrips
  */
 public class DelayPipe extends FixedForwardPipe {
-	public static final String version="$RCSfile: DelayPipe.java,v $  $Revision: 1.3 $ $Date: 2005-07-28 07:39:29 $";
+	public static final String version="$RCSfile: DelayPipe.java,v $  $Revision: 1.4 $ $Date: 2005-12-28 08:36:33 $";
 
 	private long delayTime=5000;
 	
