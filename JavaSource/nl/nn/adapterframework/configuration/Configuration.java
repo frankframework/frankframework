@@ -1,6 +1,9 @@
 /*
  * $Log: Configuration.java,v $
- * Revision 1.17  2005-12-28 08:35:40  europe\L190409
+ * Revision 1.18  2005-12-28 08:59:15  europe\L190409
+ * replaced application-name by instance-name
+ *
+ * Revision 1.17  2005/12/28 08:35:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * introduced StatisticsKeeper-iteration
  *
  * Revision 1.16  2005/11/01 08:53:35  John Dekker <john.dekker@ibissource.org>
@@ -67,7 +70,7 @@ import org.apache.log4j.Logger;
  */
 public class Configuration {
     protected Logger log; 
-    public static final String version="$RCSfile: Configuration.java,v $ $Revision: 1.17 $ $Date: 2005-12-28 08:35:40 $";
+    public static final String version="$RCSfile: Configuration.java,v $ $Revision: 1.18 $ $Date: 2005-12-28 08:59:15 $";
      
     private Hashtable adapterTable = new Hashtable();
 
@@ -97,7 +100,7 @@ public class Configuration {
 
 	public void forEachStatisticsKeeper(StatisticsKeeperIterationHandler hski) {
 		Object root=hski.start();
-		Object groupData=hski.openGroup(root,AppConstants.getInstance().getString("application.name",""),"application");
+		Object groupData=hski.openGroup(root,AppConstants.getInstance().getString("instance.name",""),"instance");
 		Enumeration keys = adapterTable.keys();
 		while (keys.hasMoreElements()) {
 			String name = (String) keys.nextElement();
