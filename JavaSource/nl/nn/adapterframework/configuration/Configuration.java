@@ -1,6 +1,9 @@
 /*
  * $Log: Configuration.java,v $
- * Revision 1.16  2005-11-01 08:53:35  europe\m00f531
+ * Revision 1.17  2005-12-28 08:35:40  europe\L190409
+ * introduced StatisticsKeeper-iteration
+ *
+ * Revision 1.16  2005/11/01 08:53:35  John Dekker <john.dekker@ibissource.org>
  * Moved quartz scheduling knowledge to the SchedulerHelper class
  *
  * Revision 1.15  2005/05/31 09:11:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -46,6 +49,8 @@ import nl.nn.adapterframework.pipes.IbisLocalSender;
 import nl.nn.adapterframework.scheduler.JobDef;
 import nl.nn.adapterframework.scheduler.SchedulerHelper;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.StatisticsKeeperIterationHandler;
+import nl.nn.adapterframework.util.StatisticsKeeperLogger;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
@@ -62,7 +67,7 @@ import org.apache.log4j.Logger;
  */
 public class Configuration {
     protected Logger log; 
-    public static final String version="$RCSfile: Configuration.java,v $ $Revision: 1.16 $ $Date: 2005-11-01 08:53:35 $";
+    public static final String version="$RCSfile: Configuration.java,v $ $Revision: 1.17 $ $Date: 2005-12-28 08:35:40 $";
      
     private Hashtable adapterTable = new Hashtable();
 
@@ -89,6 +94,19 @@ public class Configuration {
     public boolean isEnableJMX(){
     	return enableJMX;
     }
+
+	public void forEachStatisticsKeeper(StatisticsKeeperIterationHandler hski) {
+		Object root=hski.start();
+		Object groupData=hski.openGroup(root,AppConstants.getInstance().getString("application.name",""),"application");
+		Enumeration keys = adapterTable.keys();
+		while (keys.hasMoreElements()) {
+			String name = (String) keys.nextElement();
+			IAdapter adapter = getRegisteredAdapter(name);
+			adapter.forEachStatisticsKeeperBody(hski,groupData);
+		}
+		hski.closeGroup(groupData);
+		hski.end(root);
+	}
 
     /**
      *	initializes the log and the AppConstants
@@ -297,6 +315,7 @@ public class Configuration {
         configurationName = name;
         log.debug("configuration name set to [" + name + "]");
     }
+    
     public void startAdapters() {
         Enumeration keys = adapterTable.keys();
         while (keys.hasMoreElements()) {
@@ -318,8 +337,9 @@ public class Configuration {
 
             adapter.stopRunning();
         }
-
+        forEachStatisticsKeeper(new StatisticsKeeperLogger());
     }
+    
     public String VersionInfo() {
     	StringBuffer sb=new StringBuffer();
     	sb.append(version+SystemUtils.LINE_SEPARATOR);
@@ -330,7 +350,6 @@ public class Configuration {
     	sb.append(nl.nn.adapterframework.core.IPipe.version+SystemUtils.LINE_SEPARATOR);
     	sb.append(nl.nn.adapterframework.core.PipeLine.version+SystemUtils.LINE_SEPARATOR);
     	sb.append(nl.nn.adapterframework.receivers.ServiceDispatcher.version+SystemUtils.LINE_SEPARATOR);
-    	sb.append(nl.nn.adapterframework.receivers.ServiceListener.version+SystemUtils.LINE_SEPARATOR);
 		sb.append(nl.nn.adapterframework.receivers.ReceiverBase.version+SystemUtils.LINE_SEPARATOR);
     	sb.append(nl.nn.adapterframework.util.AppConstants.version+SystemUtils.LINE_SEPARATOR);
     	sb.append(nl.nn.adapterframework.util.Variant.version+SystemUtils.LINE_SEPARATOR);

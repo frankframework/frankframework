@@ -1,6 +1,9 @@
 /*
  * $Log: Adapter.java,v $
- * Revision 1.20  2005-10-26 13:16:14  europe\L190409
+ * Revision 1.21  2005-12-28 08:34:46  europe\L190409
+ * introduced StatisticsKeeper-iteration
+ *
+ * Revision 1.20  2005/10/26 13:16:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added second default for UserTransactionUrl
  *
  * Revision 1.19  2005/10/17 08:51:23  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -65,6 +68,7 @@ import nl.nn.adapterframework.util.MessageKeeper;
 import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.RunStateManager;
 import nl.nn.adapterframework.util.StatisticsKeeper;
+import nl.nn.adapterframework.util.StatisticsKeeperIterationHandler;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.log4j.Logger;
@@ -73,6 +77,8 @@ import org.apache.log4j.NDC;
 import java.util.Date;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.Vector;
 
 import javax.transaction.SystemException;
@@ -108,7 +114,7 @@ import javax.transaction.UserTransaction;
  */
 
 public class Adapter extends JNDIBase implements Runnable, IAdapter {
-	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.20 $ $Date: 2005-10-26 13:16:14 $";
+	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.21 $ $Date: 2005-12-28 08:34:46 $";
 	private Vector receivers = new Vector();
 	private long lastMessageDate = 0;
 	private PipeLine pipeline;
@@ -288,6 +294,93 @@ public class Adapter extends JNDIBase implements Runnable, IAdapter {
 			messageKeeper = new MessageKeeper(messageKeeperSize < 1 ? 1 : messageKeeperSize);
 		return messageKeeper;
 	}
+	
+	public void forEachStatisticsKeeper(StatisticsKeeperIterationHandler hski) {
+		Object root=hski.start();
+		forEachStatisticsKeeperBody(hski,root);
+		hski.end(root);
+	}
+	
+	public void forEachStatisticsKeeperBody(StatisticsKeeperIterationHandler hski, Object data) {
+		Object adapterData=hski.openGroup(data,getName(),"adapter");
+		hski.handleScalarIteration(adapterData,"messagesInProcess", getNumOfMessagesInProcess());
+		hski.handleScalarIteration(adapterData,"messagesProcessed", getNumOfMessagesProcessed());
+		hski.handleScalarIteration(adapterData,"messagesInError", getNumOfMessagesInError());
+		hski.handleStatisticsKeeperIteration(adapterData, statsMessageProcessingDuration);
+		Object recsData=hski.openGroup(adapterData,getName(),"receivers");
+		Iterator recIt=getReceiverIterator();
+		if (recIt.hasNext()) {
+			while (recIt.hasNext()) {
+				IReceiver receiver=(IReceiver) recIt.next();
+				Object recData=hski.openGroup(recsData,receiver.getName(),"receiver");
+				hski.handleScalarIteration(recData,"messagesReceived", receiver.getMessagesReceived());
+				if (receiver instanceof IReceiverStatistics) {
+
+					IReceiverStatistics statReceiver = (IReceiverStatistics)receiver;
+					Iterator statsIter;
+
+					statsIter = statReceiver.getProcessStatisticsIterator();
+					Object pstatData=hski.openGroup(recData,receiver.getName(),"procStats");
+					if (statsIter != null) {
+						while(statsIter.hasNext()) {				    
+							StatisticsKeeper pstat = (StatisticsKeeper) statsIter.next();
+							hski.handleStatisticsKeeperIteration(pstatData,pstat);
+						}
+					}
+					hski.closeGroup(pstatData);
+
+					statsIter = statReceiver.getIdleStatisticsIterator();
+					Object istatData=hski.openGroup(recData,receiver.getName(),"idleStats");
+					if (statsIter != null) {
+						while(statsIter.hasNext()) {				    
+							StatisticsKeeper pstat = (StatisticsKeeper) statsIter.next();
+							hski.handleStatisticsKeeperIteration(istatData,pstat);
+						}
+					}
+					hski.closeGroup(istatData);
+
+
+				}
+				hski.closeGroup(recData);
+			}
+		}
+		hski.closeGroup(recsData);
+
+		Object pipelineData=hski.openGroup(adapterData,getName(),"pipeline");
+
+		Hashtable pipelineStatistics = getPipeLineStatistics();
+		// sort the Hashtable
+		SortedSet sortedKeys = new TreeSet(pipelineStatistics.keySet());
+		Iterator pipelineStatisticsIter = sortedKeys.iterator();
+		Object pipestatData=hski.openGroup(pipelineData,getName(),"pipeStats");
+
+		while (pipelineStatisticsIter.hasNext()) {
+			String pipeName = (String) pipelineStatisticsIter.next();
+			StatisticsKeeper pstat = (StatisticsKeeper) pipelineStatistics.get(pipeName);
+			hski.handleStatisticsKeeperIteration(pipestatData,pstat);
+		}
+		hski.closeGroup(pipestatData);
+
+
+		pipestatData=hski.openGroup(pipelineData,getName(),"idleStats");
+		pipelineStatistics = getWaitingStatistics();
+		if (pipelineStatistics.size()>0) {
+			// sort the Hashtable
+			sortedKeys = new TreeSet(pipelineStatistics.keySet());
+			pipelineStatisticsIter = sortedKeys.iterator();
+
+			while (pipelineStatisticsIter.hasNext()) {
+				String pipeName = (String) pipelineStatisticsIter.next();
+				StatisticsKeeper pstat = (StatisticsKeeper) pipelineStatistics.get(pipeName);
+				hski.handleStatisticsKeeperIteration(pipestatData,pstat);
+			}
+		}
+		hski.closeGroup(pipestatData);
+		hski.closeGroup(pipelineData);
+		hski.closeGroup(adapterData);
+				
+	}
+
 	/**
 	 * the functional name of this adapter
 	 * @return  the name of the adapter

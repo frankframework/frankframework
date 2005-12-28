@@ -1,6 +1,9 @@
 /*
  * $Log: IAdapter.java,v $
- * Revision 1.8  2005-07-05 12:28:56  europe\L190409
+ * Revision 1.9  2005-12-28 08:34:45  europe\L190409
+ * introduced StatisticsKeeper-iteration
+ *
+ * Revision 1.8  2005/07/05 12:28:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added possibility to end processing with an exception
  *
  * Revision 1.7  2005/01/13 08:55:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -23,6 +26,7 @@ package nl.nn.adapterframework.core;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.util.MessageKeeper;
+import nl.nn.adapterframework.util.StatisticsKeeperIterationHandler;
 
 import java.util.Iterator;
 
@@ -36,7 +40,7 @@ import javax.transaction.UserTransaction;
  * @version Id
  **/
 public interface IAdapter extends IManagable {
-	public static final String version = "$RCSfile: IAdapter.java,v $ $Revision: 1.8 $ $Date: 2005-07-05 12:28:56 $";
+	public static final String version = "$RCSfile: IAdapter.java,v $ $Revision: 1.9 $ $Date: 2005-12-28 08:34:45 $";
 
     /**
   	 * Instruct the adapter to configure itself. The adapter will call the
@@ -80,5 +84,6 @@ public interface IAdapter extends IManagable {
 		String messageID,
 		INamedObject objectInError,
 		long receivedTime);
-
+		
+	public void forEachStatisticsKeeperBody(StatisticsKeeperIterationHandler hski, Object data); 
 }
