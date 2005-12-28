@@ -1,6 +1,9 @@
 /*
  * $Log: SapFunctionFacade.java,v $
- * Revision 1.7  2005-08-08 09:42:28  europe\L190409
+ * Revision 1.8  2005-12-28 08:42:39  europe\L190409
+ * corrected handling of input parameters
+ *
+ * Revision 1.7  2005/08/08 09:42:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * reworked SAP classes to provide better refresh of repository when needed
  *
  * Revision 1.6  2005/03/14 17:26:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -35,13 +38,12 @@ package nl.nn.adapterframework.extensions.sap;
 
 import java.util.HashMap;
 
-import javax.xml.transform.Transformer;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
 import com.sap.mw.jco.*;
@@ -66,7 +68,7 @@ import com.sap.mw.jco.*;
  * @since 4.2
  */
 public class SapFunctionFacade implements INamedObject{
-	public static final String version="$RCSfile: SapFunctionFacade.java,v $  $Revision: 1.7 $ $Date: 2005-08-08 09:42:28 $";
+	public static final String version="$RCSfile: SapFunctionFacade.java,v $  $Revision: 1.8 $ $Date: 2005-12-28 08:42:39 $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	private String name;
@@ -123,27 +125,29 @@ public class SapFunctionFacade implements INamedObject{
 
 
 	static protected void setParameters(JCO.ParameterList params, String message, int fieldIndex) throws SapException {
-		if (params !=null) {
+		if (params != null && StringUtils.isNotEmpty(message)) {
 			if (fieldIndex>0) {
 				params.setValue(message,fieldIndex-1);
 			} else {
-				Transformer t = (Transformer)extractors.get(params.getName());
-				if (t==null) {
+				String paramName=params.getName();
+				TransformerPool tp = (TransformerPool)extractors.get(paramName);
+				if (tp==null) {
 					try {
-						t = XmlUtils.createXPathEvaluator("/*/"+params.getName(),"xml");
-						extractors.put(params.getName(),t);
+//						log.debug("creating evaluator for parameter ["+paramName+"]");
+						tp = new TransformerPool(XmlUtils.createXPathEvaluatorSource("/*/"+paramName,"xml"));
+						extractors.put(paramName,tp);
 					} catch (Exception e) {
-						throw new SapException("exception creating Extractor for  ["+params.getName()+"]", e);
+						throw new SapException("exception creating Extractor for  ["+paramName+"]", e);
 					}
 				}
 				try {
-					String paramsXml = XmlUtils.transformXml(t, message);
-					if (StringUtils.isEmpty(paramsXml)) {
+					String paramsXml = tp.transform(message,null);
+					if (StringUtils.isNotEmpty(paramsXml)) {
 						//log.debug("parameters ["+params.getName()+"] Xml ["+paramsXml+"]");
 						params.fromXML(paramsXml);
 					}
 				} catch (Exception e) {
-					throw new SapException("exception extracting ["+params.getName()+"]", e);
+					throw new SapException("exception extracting ["+paramName+"]", e);
 				}
 			}
 		}
