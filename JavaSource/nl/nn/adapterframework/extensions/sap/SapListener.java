@@ -1,6 +1,9 @@
 /*
  * $Log: SapListener.java,v $
- * Revision 1.7  2005-08-10 12:44:20  europe\L190409
+ * Revision 1.8  2005-12-28 08:42:17  europe\L190409
+ * removed unused imports
+ *
+ * Revision 1.7  2005/08/10 12:44:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * do close() if open() fails
  *
  * Revision 1.6  2005/08/08 09:42:29  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -42,7 +45,6 @@
  */
 package nl.nn.adapterframework.extensions.sap;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessageHandler;
 import nl.nn.adapterframework.core.IPushingListener;
 import nl.nn.adapterframework.core.IbisExceptionListener;
@@ -79,7 +81,7 @@ import com.sap.mw.jco.*;
  * @since 4.2
  */
 public class SapListener extends SapFunctionFacade implements IPushingListener, SapFunctionHandler, JCO.ServerExceptionListener, JCO.ServerErrorListener {
-	public static final String version="$RCSfile: SapListener.java,v $  $Revision: 1.7 $ $Date: 2005-08-10 12:44:20 $";
+	public static final String version="$RCSfile: SapListener.java,v $  $Revision: 1.8 $ $Date: 2005-12-28 08:42:17 $";
 
 	private String progid;	 // progid of the RFC-destination
         	
