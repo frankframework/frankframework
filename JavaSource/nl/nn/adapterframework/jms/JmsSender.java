@@ -1,6 +1,9 @@
 /*
  * $Log: JmsSender.java,v $
- * Revision 1.20  2005-12-20 16:59:25  europe\L190409
+ * Revision 1.21  2005-12-28 08:46:30  europe\L190409
+ * corrected javadoc
+ *
+ * Revision 1.20  2005/12/20 16:59:25  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * implemented support for connection-pooling
  *
  * Revision 1.19  2005/10/20 15:44:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -87,8 +90,8 @@ import javax.jms.Message;
  * <tr><td>{@link #setDestinationName(String) destinationName}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDestinationType(String) destinationType}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMessageTimeToLive(long) messageTimeToLive}</td><td>&nbsp;</td><td>0</td></tr>
- * <tr><td>{@link #setMessageType(boolean) messageType}</td><td>value of the JMSType field</td><td>not set by application</td></tr>
- * <tr><td>{@link #setDeliveryMode(boolean) deliveryMode}</td><td>controls mode that messages are sent with: either 'persistent' or 'non_persistent'</td><td>not set by application</td></tr>
+ * <tr><td>{@link #setMessageType(String) messageType}</td><td>value of the JMSType field</td><td>not set by application</td></tr>
+ * <tr><td>{@link #setDeliveryMode(String) deliveryMode}</td><td>controls mode that messages are sent with: either 'persistent' or 'non_persistent'</td><td>not set by application</td></tr>
  * <tr><td>{@link #setPriority(int) priority}</td><td>sets the priority that is used to deliver the message. ranges from 0 to 9. Defaults to -1, meaning not set. Effectively the default priority is set by Jms to 4</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setAcknowledgeMode(String) acknowledgeMode}</td><td>&nbsp;</td><td>AUTO_ACKNOWLEDGE</td></tr>
  * <tr><td>{@link #setTransacted(boolean) transacted}</td><td>&nbsp;</td><td>false</td></tr>
@@ -103,7 +106,7 @@ import javax.jms.Message;
  */
 
 public class JmsSender extends JMSFacade implements ISenderWithParameters, IPostboxSender {
-	public static final String version="$RCSfile: JmsSender.java,v $ $Revision: 1.20 $ $Date: 2005-12-20 16:59:25 $";
+	public static final String version="$RCSfile: JmsSender.java,v $ $Revision: 1.21 $ $Date: 2005-12-28 08:46:30 $";
 	private String replyToName = null;
 	private int deliveryMode = 0;
 	private String messageType = null;

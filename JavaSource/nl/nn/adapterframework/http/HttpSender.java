@@ -1,6 +1,9 @@
 /*
  * $Log: HttpSender.java,v $
- * Revision 1.17  2005-12-19 16:42:11  europe\L190409
+ * Revision 1.18  2005-12-28 08:40:12  europe\L190409
+ * corrected javadoc
+ *
+ * Revision 1.17  2005/12/19 16:42:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added authentication using authentication-alias
  *
  * Revision 1.16  2005/10/18 07:06:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -118,7 +121,7 @@ import nl.nn.adapterframework.util.CredentialFactory;
  * <tr><td>{@link #setFollowRedirects(boolean) followRedirects}</td><td>when true, a redirect request will be honoured, e.g. to switch to https</td><td>true</td></tr>
  * <tr><td>{@link #setVerifyHostname(boolean) verifyHostname}</td><td>when true, the hostname in the certificate will be checked against the actual hostname</td><td>true</td></tr>
  * <tr><td>{@link #setJdk13Compatibility(boolean) jdk13Compatibility}</td><td>enables the use of certificates on JDK 1.3.x. The SUN reference implementation JSSE 1.0.3 is included for convenience</td><td>false</td></tr>
- * <tr><td>{@link #setSetStaleChecking(boolean) staleChecking}</td><td>controls whether connections checked to be stale, i.e. appear open, but are not.</td><td>true</td></tr>
+ * <tr><td>{@link #setStaleChecking(boolean) staleChecking}</td><td>controls whether connections checked to be stale, i.e. appear open, but are not.</td><td>true</td></tr>
  * <tr><td>{@link #setEncodeMessages(boolean) encodeMessages}</td><td>specifies whether messages will encoded, e.g. spaces will be replaced by '+' etc.</td><td>false</td></tr>
  * </table>
  * </p>
@@ -129,7 +132,7 @@ import nl.nn.adapterframework.util.CredentialFactory;
  * @since 4.2c
  */
 public class HttpSender extends SenderWithParametersBase implements HasPhysicalDestination {
-	public static final String version = "$RCSfile: HttpSender.java,v $ $Revision: 1.17 $ $Date: 2005-12-19 16:42:11 $";
+	public static final String version = "$RCSfile: HttpSender.java,v $ $Revision: 1.18 $ $Date: 2005-12-28 08:40:12 $";
 
 	private String url;
 	private String methodType="GET"; // GET or POST
