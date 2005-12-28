@@ -1,6 +1,9 @@
 /*
  * $Log: LogSender.java,v $
- * Revision 1.2  2005-10-24 09:59:24  europe\m00f531
+ * Revision 1.3  2005-12-28 08:38:15  europe\L190409
+ * corrected typo in attributename
+ *
+ * Revision 1.2  2005/10/24 09:59:24  John Dekker <john.dekker@ibissource.org>
  * Add support for pattern parameters, and include them into several listeners,
  * senders and pipes that are file related
  *
@@ -37,7 +40,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class LogSender extends SenderWithParametersBase implements IParameterHandler {
-	public static final String version="$RCSfile: LogSender.java,v $ $Revision: 1.2 $ $Date: 2005-10-24 09:59:24 $";
+	public static final String version="$RCSfile: LogSender.java,v $ $Revision: 1.3 $ $Date: 2005-12-28 08:38:15 $";
 	
 	private String logLevel="info";
 	private String logCategory=null;
@@ -89,7 +92,7 @@ public class LogSender extends SenderWithParametersBase implements IParameterHan
 		return logLevel;
 	}
 
-	public void setLogLlevel(String string) {
+	public void setLogLevel(String string) {
 		logLevel = string;
 	}
 
