@@ -1,6 +1,9 @@
 /*
  * $Log: ConnectionBase.java,v $
- * Revision 1.5  2005-12-20 16:58:32  europe\L190409
+ * Revision 1.6  2005-12-28 08:51:03  europe\L190409
+ * changed some IbisExceptions to JmsExceptions
+ *
+ * Revision 1.5  2005/12/20 16:58:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * implemented support for connection-pooling
  *
  * Revision 1.4  2005/11/02 09:40:52  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -56,7 +59,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class ConnectionBase  {
-	public static final String version="$RCSfile: ConnectionBase.java,v $ $Revision: 1.5 $ $Date: 2005-12-20 16:58:32 $";
+	public static final String version="$RCSfile: ConnectionBase.java,v $ $Revision: 1.6 $ $Date: 2005-12-28 08:51:03 $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	private int referenceCount;
@@ -146,18 +149,14 @@ public class ConnectionBase  {
 		}
 	}
 	
-	private Connection createAndStartConnection() throws IbisException {
+	private Connection createAndStartConnection() throws JMSException {
 		Connection connection;
-		try {
-			connection = createConnection();
-			connection.start();
-			return connection;
-		} catch (JMSException e) {
-			throw new IbisException("could not obtain Connection", e);
-		}
+		connection = createConnection();
+		connection.start();
+		return connection;
 	}
 
-	private synchronized Connection getConnection() throws IbisException {
+	private synchronized Connection getConnection() throws JMSException {
 		if (connectionsArePooled()) {
 			return createAndStartConnection();
 		} else {
@@ -171,7 +170,7 @@ public class ConnectionBase  {
 	}
 
 	private void releaseConnection(Connection connection) {
-		if (connectionsArePooled() && connection != null) {
+		if (connection != null && connectionsArePooled()) {
 			try {
 				connection.close();
 			} catch (JMSException e) {
@@ -181,8 +180,13 @@ public class ConnectionBase  {
 	}
 
 	public Session createSession(boolean transacted, int acknowledgeMode) throws IbisException {
-		Connection connection = getConnection();
+		Connection connection=null;;
 		Session session;
+		try {
+			connection = getConnection();
+		} catch (JMSException e) {
+			throw new JmsException("could not obtain Connection", e);
+		}
 		try {
 			if (connection instanceof QueueConnection) {
 				session = ((QueueConnection)connection).createQueueSession(transacted, acknowledgeMode);
@@ -195,7 +199,7 @@ public class ConnectionBase  {
 			return session;
 		} catch (JMSException e) {
 			releaseConnection(connection);
-			throw new IbisException("could not create Session", e);
+			throw new JmsException("could not create Session", e);
 		}
 	}
 	
@@ -220,7 +224,7 @@ public class ConnectionBase  {
 		}
 	}
 
-	public synchronized boolean connectionsArePooled() {
+	protected synchronized boolean connectionsArePooled() {
 		if (connectionsArePooledStore==null) {
 			boolean pooled=AppConstants.getInstance().getBoolean(CONNECTIONS_ARE_POOLED_KEY, false);
 			connectionsArePooledStore = new Boolean(pooled);
