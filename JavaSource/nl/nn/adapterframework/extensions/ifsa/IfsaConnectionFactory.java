@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaConnectionFactory.java,v $
- * Revision 1.8  2005-10-26 08:21:42  europe\L190409
+ * Revision 1.9  2005-12-28 08:48:06  europe\L190409
+ * removed unused imports
+ *
+ * Revision 1.8  2005/10/26 08:21:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * renamed createJmsConnection() into createConnection()
  *
  * Revision 1.7  2005/10/20 15:34:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -47,7 +50,6 @@ import nl.nn.adapterframework.jms.ConnectionFactoryBase;
 import nl.nn.adapterframework.jms.ConnectionBase;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.log4j.Logger;
 
 import com.ing.ifsa.IFSAConstants;
 import com.ing.ifsa.IFSAContext;
@@ -64,7 +66,7 @@ import com.ing.ifsa.IFSAQueueConnectionFactory;
  * @version Id
  */
 public class IfsaConnectionFactory extends ConnectionFactoryBase {
-	public static final String version="$RCSfile: IfsaConnectionFactory.java,v $ $Revision: 1.8 $ $Date: 2005-10-26 08:21:42 $";
+	public static final String version="$RCSfile: IfsaConnectionFactory.java,v $ $Revision: 1.9 $ $Date: 2005-12-28 08:48:06 $";
 
 	private final static String IFSA_INITIAL_CONTEXT_FACTORY="com.ing.ifsa.IFSAContextFactory";
 	private final static String IFSA_PROVIDER_URL_V2_0="IFSA APPLICATION BUS";
