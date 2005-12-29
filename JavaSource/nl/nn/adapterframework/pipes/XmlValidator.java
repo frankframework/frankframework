@@ -1,6 +1,9 @@
 /*
  * $Log: XmlValidator.java,v $
- * Revision 1.14  2005-12-28 08:39:07  europe\L190409
+ * Revision 1.15  2005-12-29 15:19:59  europe\L190409
+ * corrected javadoc
+ *
+ * Revision 1.14  2005/12/28 08:39:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected javadoc
  *
  * Revision 1.13  2005/10/24 09:21:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -100,7 +103,7 @@ import java.io.IOException;
 
  */
 public class XmlValidator extends FixedForwardPipe {
-	public static final String version="$RCSfile: XmlValidator.java,v $ $Revision: 1.14 $ $Date: 2005-12-28 08:39:07 $";
+	public static final String version="$RCSfile: XmlValidator.java,v $ $Revision: 1.15 $ $Date: 2005-12-29 15:19:59 $";
 
     private String schemaLocation = null;
     private String noNamespaceSchemaLocation = null;
@@ -370,10 +373,10 @@ public class XmlValidator extends FixedForwardPipe {
 	}
 
 	/**
-	 * @deprecated name changed to {@link setSchemaSessionKey(String)}
+	 * @deprecated attribute name changed to {@link #setSchemaSessionKey(String) schemaSessionKey}
 	 */
 	public void setSchemaSession(String schemaSessionKey) {
-		log.warn(getLogPrefix(null)+"attribute 'setSchemaSession' is deprecated. Please use 'schemaSessionKey' instead.");
+		log.warn(getLogPrefix(null)+"attribute 'schemaSession' is deprecated. Please use 'schemaSessionKey' instead.");
 		this.schemaSessionKey = schemaSessionKey;
 	}
 

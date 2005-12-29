@@ -1,6 +1,9 @@
 /*
  * $Log: JmsSender.java,v $
- * Revision 1.21  2005-12-28 08:46:30  europe\L190409
+ * Revision 1.22  2005-12-29 15:15:39  europe\L190409
+ * corrected javadoc
+ *
+ * Revision 1.21  2005/12/28 08:46:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected javadoc
  *
  * Revision 1.20  2005/12/20 16:59:25  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -106,7 +109,7 @@ import javax.jms.Message;
  */
 
 public class JmsSender extends JMSFacade implements ISenderWithParameters, IPostboxSender {
-	public static final String version="$RCSfile: JmsSender.java,v $ $Revision: 1.21 $ $Date: 2005-12-28 08:46:30 $";
+	public static final String version="$RCSfile: JmsSender.java,v $ $Revision: 1.22 $ $Date: 2005-12-29 15:15:39 $";
 	private String replyToName = null;
 	private int deliveryMode = 0;
 	private String messageType = null;
@@ -161,16 +164,10 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 		return false;
 	}
 
-	/**
-	 * @see nl.nn.adapterframework.core.ISender#sendMessage(java.lang.String, java.lang.String)
-	*/
 	public String sendMessage(String correlationID, String message) throws SenderException {
 		return sendMessage(correlationID, message, null);
 	}
 
-	/** 
-	 * @see nl.nn.adapterframework.core.IPostboxSender#sendMessage(java.lang.String, java.lang.String, java.util.ArrayList)
-	 */
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException {
 		Session s = null;
 		MessageProducer mp = null;

@@ -1,6 +1,9 @@
 /*
  * $Log: XmlSwitch.java,v $
- * Revision 1.18  2005-10-24 09:20:20  europe\L190409
+ * Revision 1.19  2005-12-29 15:19:12  europe\L190409
+ * corrected javadoc
+ *
+ * Revision 1.18  2005/10/24 09:20:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * made namespaceAware an attribute of AbstractPipe
  *
  * Revision 1.17  2005/10/17 11:35:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -51,8 +54,8 @@ import java.util.Map;
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setServiceSelectionStylesheetFilename(String) serviceSelectionStylesheetFilename}</td><td>stylesheet may return a String representing the forward to look up</td><td><i>a stylesheet that returns the name of the root-element</i></td></tr>
- * <tr><td>{@link #setXpathExpression(String) xpathExpression}</td><td>XPath-expression that returns a String representing the forward to look up</td><td></td></tr>
- * <tr><td>{@link #setNamespaceAware(boolean) namespaceAware}</td><td>controls namespace-awareness of transformation</td><td>true</td></tr>
+ * <tr><td>{@link #setXpathExpression(String) xpathExpression}</td><td>XPath-expression that returns a String representing the forward to look up</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setNamespaceAware(boolean) namespaceAware}</td><td>controls namespace-awareness of transformation</td><td>application default</td></tr>
  * <tr><td>{@link #setSessionKey(String) sessionKey}</td><td>name of the key in the <code>PipeLineSession</code> to retrieve the input message from</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setNotFoundForwardName(String) notFoundForwardName}</td><td>Forward returned when the pipename derived from the stylesheet could not be found.</i></td><td>&nbsp;</td></tr>
  * </table>
@@ -61,14 +64,14 @@ import java.util.Map;
  * <table border="1">
  * <tr><th>state</th><th>condition</th></tr>
  * <tr><td>&lt;name of the root-element&gt;</td><td>default</td></tr>
- * <tr><td>&lt;result of transformation&gt</td><td>when {@link #setServiceSelectionStylesheetFilename(String) serviceSelectionStylesheetFilename} is specified</td></tr>
+ * <tr><td>&lt;result of transformation&gt</td><td>when {@link #setServiceSelectionStylesheetFilename(String) serviceSelectionStylesheetFilename} or {@link #setXpathExpression(String) xpathExpression} is specified</td></tr>
  * </table>
  * </p>
  * @version Id
  * @author Johan Verrips
  */
 public class XmlSwitch extends AbstractPipe {
-	public static final String version="$RCSfile: XmlSwitch.java,v $ $Revision: 1.18 $ $Date: 2005-10-24 09:20:20 $";
+	public static final String version="$RCSfile: XmlSwitch.java,v $ $Revision: 1.19 $ $Date: 2005-12-29 15:19:12 $";
 	
     private static final String DEFAULT_SERVICESELECTION_XPATH = XmlUtils.XPATH_GETROOTNODENAME;
 	private TransformerPool transformerPool=null;

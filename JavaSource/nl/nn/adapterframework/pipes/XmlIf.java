@@ -1,6 +1,9 @@
 /*
  * $Log: XmlIf.java,v $
- * Revision 1.4  2005-10-24 09:20:20  europe\L190409
+ * Revision 1.5  2005-12-29 15:18:08  europe\L190409
+ * corrected javadoc
+ *
+ * Revision 1.4  2005/10/24 09:20:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * made namespaceAware an attribute of AbstractPipe
  *
  * Revision 1.3  2005/08/30 16:03:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -36,8 +39,8 @@ import nl.nn.adapterframework.util.TransformerPool;
  * <tr><td>{@link #setSessionKey(String) sessionKey}</td><td>name of the key in the <code>PipeLineSession</code> to retrieve the input-message from. If not set, the current input message of the Pipe is taken</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setXpathExpression(String) xpathExpression}</td><td>XPath expression to be applied to the input-message. If not set, no transformation is done</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setExpressionValue(String) expressionValue}</td><td>a string to compare the result of the xpathExpression (or the input-message itself) to. If not specified, a non-empty result leads to the 'then'-forward, an empty result to 'else'-forward</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setThenForwardName(String) thenForwardName(String)}</td><td>forward returned when 'true'</code></td><td>then</td></tr>
- * <tr><td>{@link #setElseForwardName(String) elseForwardName(String)}</td><td>forward returned when 'false'</td><td>else</td></tr>
+ * <tr><td>{@link #setThenForwardName(String) thenForwardName}</td><td>forward returned when 'true'</code></td><td>then</td></tr>
+ * <tr><td>{@link #setElseForwardName(String) elseForwardName}</td><td>forward returned when 'false'</td><td>else</td></tr>
  * </table>
  * </p>
  *
@@ -47,7 +50,7 @@ import nl.nn.adapterframework.util.TransformerPool;
  */
 
 public class XmlIf extends AbstractPipe {
-	public static final String version="$RCSfile: XmlIf.java,v $ $Revision: 1.4 $ $Date: 2005-10-24 09:20:20 $";
+	public static final String version="$RCSfile: XmlIf.java,v $ $Revision: 1.5 $ $Date: 2005-12-29 15:18:08 $";
 
 	private String sessionKey = null;
 	private String xpathExpression = null;

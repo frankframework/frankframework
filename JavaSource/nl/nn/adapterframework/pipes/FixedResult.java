@@ -1,6 +1,9 @@
 /*
  * $Log: FixedResult.java,v $
- * Revision 1.12  2005-09-26 11:07:06  europe\L190409
+ * Revision 1.13  2005-12-29 15:17:45  europe\L190409
+ * corrected javadoc
+ *
+ * Revision 1.12  2005/09/26 11:07:06  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * better handling of null-parameter values
  *
  * Revision 1.11  2005/08/18 13:40:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -38,8 +41,8 @@ import org.apache.commons.lang.SystemUtils;
 
 /**
  * Provides an example of a pipe. It may return the contents of a file
- * (in the classpath) when <code>setFileName</code> is specified, otherwise the
- * input of <code>setReturnString</code> is returned.
+ * (in the classpath) when <code>fileName</code> is specified, otherwise the
+ * input of <code>returnString</code> is returned.
  *
  * <p><b>Configuration:</b>
  * <table border="1">
@@ -56,7 +59,7 @@ import org.apache.commons.lang.SystemUtils;
  * </p>
  * <p><table border="1">
  * <tr><th>nested elements</th><th>description</th></tr>
- * <tr><td>{@link nl.nn.adapterframework.parameters.Parameter param}</td><td>any parameters defined on the pipe will be used for replacements. Any <code>${name-of-parameter}</code> will be replaced by <i>value-of-parameter</i> </td></tr>
+ * <tr><td>{@link nl.nn.adapterframework.parameters.Parameter param}</td><td>Any parameters defined on the pipe will be used for replacements. Each <code>${name-of-parameter}</code> will be replaced by its corresponding <i>value-of-parameter</i> </td></tr>
  * </table>
  * </p>
  * <p><b>Exits:</b>
@@ -70,7 +73,7 @@ import org.apache.commons.lang.SystemUtils;
  * @author Johan Verrips
  */
 public class FixedResult extends FixedForwardPipe {
-	public static final String version="$RCSfile: FixedResult.java,v $ $Revision: 1.12 $ $Date: 2005-09-26 11:07:06 $";
+	public static final String version="$RCSfile: FixedResult.java,v $ $Revision: 1.13 $ $Date: 2005-12-29 15:17:45 $";
 	
     private String fileName;
     private String returnString;

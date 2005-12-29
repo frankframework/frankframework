@@ -1,6 +1,9 @@
 /*
  * $Log: RekenBoxCaller.java,v $
- * Revision 1.8  2004-10-05 10:40:20  L190409
+ * Revision 1.9  2005-12-29 15:15:03  europe\L190409
+ * corrected javadoc
+ *
+ * Revision 1.8  2004/10/05 10:40:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved filename generation
  *
  * Revision 1.7  2004/09/01 11:17:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -63,7 +66,7 @@ import nl.nn.adapterframework.util.Misc;
  * <tr><td>{@link #setCleanup(boolean) cleanup}</td><td>if true, input and output files are removed after the call to the rekenbox is finished</td><td>true</td></tr>
  * <tr><td>{@link #setRekenboxSessionKey(String) rekenboxSessionKey}</td><td>key in {@link nl.nn.adapterframework.core.PipeLineSession pipeLineSession} to store rekenbox name in</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDataFilenamePrefix(String) dataFilenamePrefix}</td><td>first part of filenames that communicate requests and replies to rekenbox</td><td>rb</td></tr>
- * <tr><td>{@link #setMaxRequestNumber(String) maxRequestNumber}</td><td>maximal number that will be concatenated to dataFilenamePrefix</td><td>1000</td></tr>
+ * <tr><td>{@link #setMaxRequestNumber(long) maxRequestNumber}</td><td>maximal number that will be concatenated to dataFilenamePrefix</td><td>1000</td></tr>
  * </table>
  * </p>
  * <p><b>Exits:</b>
@@ -85,7 +88,7 @@ import nl.nn.adapterframework.util.Misc;
  * @version Id
  */
 public class RekenBoxCaller extends FixedForwardPipe {
-	public static final String version="$Id: RekenBoxCaller.java,v 1.8 2004-10-05 10:40:20 L190409 Exp $";
+	public static final String version="$RCSfile: RekenBoxCaller.java,v $ $Revision: 1.9 $ $Date: 2005-12-29 15:15:03 $";
 	
 	private String runPath="";
 	private String executableExtension="exe"; //bat, com or exe
@@ -250,69 +253,76 @@ public class RekenBoxCaller extends FixedForwardPipe {
 	    }
 	    
 	}
-	public String getCommandLineType() {
-		return commandLineType;
-	}
-	public String getExecutableExtension() {
-		return executableExtension;
-	}
-	public String getInputOutputDirectory() {
-		return inputOutputDirectory;
-	}
-	public String getRekenboxSessionKey() {
-		return rekenboxSessionKey;
-	}
-	public String getRunPath() {
-		return runPath;
-	}
-	public String getTemplateDir() {
-		return templateDir;
-	}
-	public boolean isCleanup() {
-		return cleanup;
-	}
-	public void setCleanup(boolean newCleanup) {
-		cleanup = newCleanup;
-	}
-	public void setCommandLineType(String newCommandLineType) {
-		commandLineType = newCommandLineType;
-	}
-	public void setExecutableExtension(String newExecutableExtension) {
-		executableExtension = newExecutableExtension;
-	}
-	public void setInputOutputDirectory(String newInputOutputDirectory) {
-		inputOutputDirectory = newInputOutputDirectory;
-	}
-	public void setRekenboxSessionKey(String newRekenboxSessionKey) {
-		rekenboxSessionKey = newRekenboxSessionKey;
-	}
-	public void setRunPath(String newRunPath) {
-		runPath = newRunPath;
-	}
-	public void setTemplateDir(String newTemplateDir) {
-		templateDir = newTemplateDir;
+
+	public void setRekenBoxName(String string) {
+		rekenBoxName = string;
 	}
 	public String getRekenBoxName() {
 		return rekenBoxName;
 	}
-	public void setRekenBoxName(String string) {
-		rekenBoxName = string;
+
+	public void setRunPath(String newRunPath) {
+		runPath = newRunPath;
+	}
+	public String getRunPath() {
+		return runPath;
 	}
 
-	public String getDataFilenamePrefix() {
-		return dataFilenamePrefix;
+	public void setTemplateDir(String newTemplateDir) {
+		templateDir = newTemplateDir;
+	}
+	public String getTemplateDir() {
+		return templateDir;
 	}
 
-	public long getMaxRequestNumber() {
-		return maxRequestNumber;
+	public void setInputOutputDirectory(String newInputOutputDirectory) {
+		inputOutputDirectory = newInputOutputDirectory;
+	}
+	public String getInputOutputDirectory() {
+		return inputOutputDirectory;
+	}
+
+	public void setCommandLineType(String newCommandLineType) {
+		commandLineType = newCommandLineType;
+	}
+	public String getCommandLineType() {
+		return commandLineType;
+	}
+	
+	public void setExecutableExtension(String newExecutableExtension) {
+		executableExtension = newExecutableExtension;
+	}
+	public String getExecutableExtension() {
+		return executableExtension;
+	}
+
+	public void setCleanup(boolean newCleanup) {
+		cleanup = newCleanup;
+	}
+	public boolean isCleanup() {
+		return cleanup;
+	}
+	
+	public void setRekenboxSessionKey(String newRekenboxSessionKey) {
+		rekenboxSessionKey = newRekenboxSessionKey;
+	}
+	public String getRekenboxSessionKey() {
+		return rekenboxSessionKey;
 	}
 
 	public void setDataFilenamePrefix(String string) {
 		dataFilenamePrefix = string;
 	}
+	public String getDataFilenamePrefix() {
+		return dataFilenamePrefix;
+	}
 
 	public void setMaxRequestNumber(long l) {
 		maxRequestNumber = l;
 	}
+	public long getMaxRequestNumber() {
+		return maxRequestNumber;
+	}
+
 
 }
