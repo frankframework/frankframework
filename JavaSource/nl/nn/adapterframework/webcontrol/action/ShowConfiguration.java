@@ -1,6 +1,9 @@
 /*
  * $Log: ShowConfiguration.java,v $
- * Revision 1.6  2005-10-17 09:37:31  europe\L190409
+ * Revision 1.7  2005-12-29 15:35:45  europe\L190409
+ * made some steps to following links to included configuration files
+ *
+ * Revision 1.6  2005/10/17 09:37:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added ToDo
  *
  * Revision 1.5  2004/06/16 13:07:41  Johan Verrips <johan.verrips@ibissource.org>
@@ -35,6 +38,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Shows the configuration (with resolved variables).
@@ -50,7 +55,31 @@ import java.net.URL;
  */
 
 public final class ShowConfiguration extends ActionBase {
-	public static final String version = "$RCSfile: ShowConfiguration.java,v $ $Revision: 1.6 $ $Date: 2005-10-17 09:37:31 $";
+	public static final String version = "$RCSfile: ShowConfiguration.java,v $ $Revision: 1.7 $ $Date: 2005-12-29 15:35:45 $";
+	
+	private static final String KEYWORD_INCLUDE="<include";
+	private static final String KEYWORD_CONFIG="configuration=\"";
+	private static final String KEYWORD_QUOTE="\"";
+	
+	private void checkForInclude(String line, List linklist) {
+		if (line==null) {
+			return;
+		}
+		int includePos=line.indexOf(KEYWORD_INCLUDE);
+		if (includePos<0) {
+			return;
+		}
+		int configurationStartPos=line.indexOf(KEYWORD_CONFIG,includePos+KEYWORD_INCLUDE.length());
+		if (configurationStartPos<0) {
+			return;
+		}
+		configurationStartPos+=KEYWORD_CONFIG.length();
+		int configurationEndPos=line.indexOf(KEYWORD_QUOTE,configurationStartPos);
+
+		String configuration=line.substring(configurationStartPos,configurationEndPos);	
+		log.debug("configuration found ["+configuration+"]");
+		linklist.add(configuration);
+	}
 	
 	public ActionForward execute(
 	    ActionMapping mapping,
@@ -71,8 +100,10 @@ public final class ShowConfiguration extends ActionBase {
 			}
 		}
 	     
+	     
 	    URL configURL = config.getConfigurationURL();
 	    String result = "";
+	    List linklist = new ArrayList();
 	    try {
 	
 	        // Read all the text returned by the server
@@ -83,8 +114,8 @@ public final class ShowConfiguration extends ActionBase {
 	        if (null==lineSeparator) lineSeparator="\n";
 	        while ((str = in.readLine()) != null) {
 	            // str is one line of text; readLine() strips the newline character(s)
+//				checkForInclude(str,linklist);
 	            result += str+lineSeparator;
-	            //TODO replace include statements with links to the acutal resource
 	        }
 	        
 	        in.close();
