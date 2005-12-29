@@ -1,6 +1,9 @@
 /*
  * $Log: DB2XMLWriter.java,v $
- * Revision 1.10  2005-10-17 11:24:28  europe\L190409
+ * Revision 1.11  2005-12-29 15:34:00  europe\L190409
+ * added support for clobs
+ *
+ * Revision 1.10  2005/10/17 11:24:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added blobs and warnings
  *
  * Revision 1.9  2005/10/03 13:17:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -62,7 +65,7 @@ import java.sql.Types;
  **/
 
 public class DB2XMLWriter {
-	public static final String version="$RCSfile: DB2XMLWriter.java,v $ $Revision: 1.10 $ $Date: 2005-10-17 11:24:28 $";
+	public static final String version="$RCSfile: DB2XMLWriter.java,v $ $Revision: 1.11 $ $Date: 2005-12-29 15:34:00 $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	private String docname = new String("result");
@@ -109,6 +112,8 @@ public class DB2XMLWriter {
         	// return "undefined" for types that cannot be rendered to strings easily
 			case Types.BLOB :
 					return JdbcUtil.getBlobAsString(rs,colNum,false,isDecompressBlobs());
+			case Types.CLOB :
+					return JdbcUtil.getClobAsString(rs,colNum,false);
             case Types.ARRAY :
             case Types.DISTINCT :
             case Types.LONGVARBINARY :

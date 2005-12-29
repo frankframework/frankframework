@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcUtil.java,v $
- * Revision 1.8  2005-10-19 11:37:48  europe\L190409
+ * Revision 1.9  2005-12-29 15:34:00  europe\L190409
+ * added support for clobs
+ *
+ * Revision 1.8  2005/10/19 11:37:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed cause from warning, due to ' unresolved compilation problems'
  *
  * Revision 1.7  2005/10/17 11:25:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -32,6 +35,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.sql.Blob;
+import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
@@ -53,7 +57,7 @@ import org.apache.log4j.Logger;
  * @since   4.1
  */
 public class JdbcUtil {
-	public static final String version = "$RCSfile: JdbcUtil.java,v $ $Revision: 1.8 $ $Date: 2005-10-19 11:37:48 $";
+	public static final String version = "$RCSfile: JdbcUtil.java,v $ $Revision: 1.9 $ $Date: 2005-12-29 15:34:00 $";
 	protected static Logger log = Logger.getLogger(JdbcUtil.class);
 	
 	private static final boolean useMetaData=false;
@@ -174,5 +178,35 @@ public class JdbcUtil {
 		out.close();
 	}
 
+	public static InputStream getClobInputStream(ResultSet rs, int columnIndex) throws SQLException, JdbcException {
+		Clob clob = rs.getClob(columnIndex);
+		if (clob==null) {
+			throw new JdbcException("no clob found in column ["+columnIndex+"]");
+		}
+		return clob.getAsciiStream();
+	}
+
+	/**
+	 * retrieves an outputstream to a clob column from an updatable resultset.
+	 */
+	public static OutputStream getClobUpdateOutputStream(ResultSet rs, int columnIndex) throws SQLException, JdbcException {
+		Clob clob = rs.getClob(columnIndex);
+		if (clob==null) {
+			throw new JdbcException("no clob found in column ["+columnIndex+"]");
+		}
+		return clob.setAsciiStream(1L);
+	}
+
+	public static String getClobAsString(final ResultSet rs, int columnIndex, boolean xmlEncode) throws IOException, JdbcException, SQLException {
+		InputStream input = getClobInputStream(rs,columnIndex);
+		return Misc.streamToString(input, null, xmlEncode);
+	}
+
+	public static void putStringAsClob(final ResultSet rs, int columnIndex, String content) throws IOException, JdbcException, SQLException {
+		OutputStream out = getClobUpdateOutputStream(rs, columnIndex);
+		out.write(content.getBytes());
+		out.close();
+	}
+        
 
 }
