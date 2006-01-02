@@ -1,6 +1,9 @@
 /*
  * $Log: ConnectionBase.java,v $
- * Revision 1.6  2005-12-28 08:51:03  europe\L190409
+ * Revision 1.7  2006-01-02 12:04:22  europe\L190409
+ * improved logging
+ *
+ * Revision 1.6  2005/12/28 08:51:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed some IbisExceptions to JmsExceptions
  *
  * Revision 1.5  2005/12/20 16:58:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -59,7 +62,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class ConnectionBase  {
-	public static final String version="$RCSfile: ConnectionBase.java,v $ $Revision: 1.6 $ $Date: 2005-12-28 08:51:03 $";
+	public static final String version="$RCSfile: ConnectionBase.java,v $ $Revision: 1.7 $ $Date: 2006-01-02 12:04:22 $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	private int referenceCount;
@@ -93,7 +96,7 @@ public class ConnectionBase  {
 		if (connectionsArePooled()) {
 			connectionTable = new Hashtable();
 		}
-		log.debug("set id ["+id+"] context ["+context+"] connectionFactory ["+connectionFactory+"] ");
+		log.debug(getLogPrefix()+"set id ["+id+"] context ["+context+"] connectionFactory ["+connectionFactory+"] ");
 	}
 		
 	public synchronized boolean close() throws IbisException
@@ -104,6 +107,7 @@ public class ConnectionBase  {
 			try {
 				deleteDynamicQueue(globalDynamicReplyQueue);
 				if (globalConnection != null) { 
+					log.debug(getLogPrefix()+" closing global Connection");
 					globalConnection.close();
 				}
 				if (context != null) {
@@ -151,6 +155,7 @@ public class ConnectionBase  {
 	
 	private Connection createAndStartConnection() throws JMSException {
 		Connection connection;
+		log.debug(getLogPrefix()+"creating Connection");
 		connection = createConnection();
 		connection.start();
 		return connection;
@@ -172,9 +177,10 @@ public class ConnectionBase  {
 	private void releaseConnection(Connection connection) {
 		if (connection != null && connectionsArePooled()) {
 			try {
+				log.debug(getLogPrefix()+"closing Connection");
 				connection.close();
 			} catch (JMSException e) {
-				log.error("Exception closing connection", e);
+				log.error(getLogPrefix()+"Exception closing Connection", e);
 			}
 		}
 	}
@@ -188,6 +194,7 @@ public class ConnectionBase  {
 			throw new JmsException("could not obtain Connection", e);
 		}
 		try {
+			log.debug(getLogPrefix()+"creating Session");
 			if (connection instanceof QueueConnection) {
 				session = ((QueueConnection)connection).createQueueSession(transacted, acknowledgeMode);
 			} else {
@@ -208,17 +215,19 @@ public class ConnectionBase  {
 			if (connectionsArePooled()) {
 				Connection connection = (Connection)connectionTable.remove(session);
 				try {
+					log.debug(getLogPrefix()+"closing Session");
 					session.close();
 				} catch (JMSException e) {
-					log.error("Exception closing session", e);
+					log.error(getLogPrefix()+"Exception closing Session", e);
 				} finally {
 					releaseConnection(connection);
 				}
 			} else {
 				try {
+					log.debug(getLogPrefix()+"closing Session");
 					session.close();
 				} catch (JMSException e) {
-					log.error("Exception closing session", e);
+					log.error(getLogPrefix()+"Exception closing Session", e);
 				}
 			}
 		}
@@ -272,7 +281,7 @@ public class ConnectionBase  {
 			synchronized (this) {
 				if (globalDynamicReplyQueue==null) {
 					globalDynamicReplyQueue=session.createTemporaryQueue();
-					log.info("created dynamic replyQueue ["+globalDynamicReplyQueue.getQueueName()+"]");
+					log.info(getLogPrefix()+"created dynamic replyQueue ["+globalDynamicReplyQueue.getQueueName()+"]");
 				}
 			}
 			result = globalDynamicReplyQueue;
