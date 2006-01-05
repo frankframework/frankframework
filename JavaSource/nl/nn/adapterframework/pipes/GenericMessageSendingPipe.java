@@ -1,6 +1,9 @@
 /*
  * $Log: GenericMessageSendingPipe.java,v $
- * Revision 1.2  2005-12-19 14:27:22  europe\L190409
+ * Revision 1.3  2006-01-05 14:36:31  europe\L190409
+ * updated javadoc
+ *
+ * Revision 1.2  2005/12/19 14:27:22  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.1  2004/04/08 15:58:59  Dennis van Loon <dennis.van.loon@ibissource.org>
@@ -19,6 +22,7 @@ import nl.nn.adapterframework.core.ISender;
  * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
+ * <tr><td>className</td><td>nl.nn.adapterframework.pipes.GenericMessageSendingPipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMaxThreads(int) maxThreads}</td><td>maximum number of threads that may call {@link #doPipe(Object, PipeLineSession)} simultaneously</td><td>0 (unlimited)</td></tr>
  * <tr><td>{@link #setForwardName(String) forwardName}</td>  <td>name of forward returned upon completion</td><td>"success"</td></tr>
@@ -50,7 +54,7 @@ import nl.nn.adapterframework.core.ISender;
  */
 
 public class GenericMessageSendingPipe extends MessageSendingPipe {
-	public static final String version="$RCSfile: GenericMessageSendingPipe.java,v $ $Revision: 1.2 $ $Date: 2005-12-19 14:27:22 $";
+	public static final String version="$RCSfile: GenericMessageSendingPipe.java,v $ $Revision: 1.3 $ $Date: 2006-01-05 14:36:31 $";
 
 	public void setListener(ICorrelatedPullingListener listener) {
 		super.setListener(listener);

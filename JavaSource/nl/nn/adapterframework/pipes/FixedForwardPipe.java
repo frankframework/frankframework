@@ -1,6 +1,9 @@
 /*
  * $Log: FixedForwardPipe.java,v $
- * Revision 1.5  2004-10-19 13:52:31  L190409
+ * Revision 1.6  2006-01-05 14:34:48  europe\L190409
+ * updated javadoc
+ *
+ * Revision 1.5  2004/10/19 13:52:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * super.configure in configure()
  *
  * Revision 1.4  2004/03/26 10:42:34  Johan Verrips <johan.verrips@ibissource.org>
@@ -22,8 +25,13 @@ import nl.nn.adapterframework.core.PipeForward;
  * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
+ * <tr><td>className</td><td>nl.nn.adapterframework.pipes.FixedForwardPipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMaxThreads(int) maxThreads}</td><td>maximum number of threads that may call {@link #doPipe(Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously</td><td>0 (unlimited)</td></tr>
+ * <tr><td>{@link #setDurationThreshold(long) durationThreshold}</td><td>if durationThreshold >=0 and the duration (in milliseconds) of the message processing exceeded the value specified the message is logged informatory</td><td>-1</td></tr>
+ * <tr><td>{@link #setGetInputFromSessionKey(String) getInputFromSessionKey}</td><td>when set, input is taken from this session key, instead of regular input</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setStoreResultInSessionKey(String) storeResultInSessionKey}</td><td>when set, the result is stored under this session key</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setNamespaceAware(boolean) namespaceAware}</td><td>controls namespace-awareness of possible XML parsing in descender-classes</td><td>application default</td></tr>
  * <tr><td>{@link #setForwardName(String) forwardName}</td>  <td>name of forward returned upon completion</td><td>"success"</td></tr>
  * </table>
  * </p>
@@ -38,7 +46,7 @@ import nl.nn.adapterframework.core.PipeForward;
  * @author Gerrit van Brakel
  */
 public class FixedForwardPipe extends AbstractPipe {
- 	public static final String version="$Id: FixedForwardPipe.java,v 1.5 2004-10-19 13:52:31 L190409 Exp $";
+	public static final String version="$RCSfile: FixedForwardPipe.java,v $ $Revision: 1.6 $ $Date: 2006-01-05 14:34:48 $";
 
     private String forwardName = "success";
     private PipeForward forward;

@@ -1,6 +1,9 @@
 /*
  * $Log: XmlIf.java,v $
- * Revision 1.5  2005-12-29 15:18:08  europe\L190409
+ * Revision 1.6  2006-01-05 14:36:31  europe\L190409
+ * updated javadoc
+ *
+ * Revision 1.5  2005/12/29 15:18:08  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected javadoc
  *
  * Revision 1.4  2005/10/24 09:20:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -36,7 +39,14 @@ import nl.nn.adapterframework.util.TransformerPool;
  * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setSessionKey(String) sessionKey}</td><td>name of the key in the <code>PipeLineSession</code> to retrieve the input-message from. If not set, the current input message of the Pipe is taken</td><td>&nbsp;</td></tr>
+ * <tr><td>className</td><td>nl.nn.adapterframework.pipes.XmlIf</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setMaxThreads(int) maxThreads}</td><td>maximum number of threads that may call {@link #doPipe(Object, PipeLineSession)} simultaneously</td><td>0 (unlimited)</td></tr>
+ * <tr><td>{@link #setDurationThreshold(long) durationThreshold}</td><td>if durationThreshold >=0 and the duration (in milliseconds) of the message processing exceeded the value specified the message is logged informatory</td><td>-1</td></tr>
+ * <tr><td>{@link #setGetInputFromSessionKey(String) getInputFromSessionKey}</td><td>when set, input is taken from this session key, instead of regular input</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setStoreResultInSessionKey(String) storeResultInSessionKey}</td><td>when set, the result is stored under this session key</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setNamespaceAware(boolean) namespaceAware}</td><td>controls namespace-awareness of transformation</td><td>application default</td></tr>
+ * <tr><td>{@link #setSessionKey(String) sessionKey}</td><td>name of the key in the <code>PipeLineSession</code> to retrieve the input-message from. If not set, the current input message of the Pipe is taken. N.B. same as <code>getInputFromSessionKey</code>)</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setXpathExpression(String) xpathExpression}</td><td>XPath expression to be applied to the input-message. If not set, no transformation is done</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setExpressionValue(String) expressionValue}</td><td>a string to compare the result of the xpathExpression (or the input-message itself) to. If not specified, a non-empty result leads to the 'then'-forward, an empty result to 'else'-forward</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setThenForwardName(String) thenForwardName}</td><td>forward returned when 'true'</code></td><td>then</td></tr>
@@ -50,7 +60,7 @@ import nl.nn.adapterframework.util.TransformerPool;
  */
 
 public class XmlIf extends AbstractPipe {
-	public static final String version="$RCSfile: XmlIf.java,v $ $Revision: 1.5 $ $Date: 2005-12-29 15:18:08 $";
+	public static final String version="$RCSfile: XmlIf.java,v $ $Revision: 1.6 $ $Date: 2006-01-05 14:36:31 $";
 
 	private String sessionKey = null;
 	private String xpathExpression = null;

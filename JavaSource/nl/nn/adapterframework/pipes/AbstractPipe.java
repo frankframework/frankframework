@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractPipe.java,v $
- * Revision 1.15  2005-10-24 09:20:18  europe\L190409
+ * Revision 1.16  2006-01-05 14:34:48  europe\L190409
+ * updated javadoc
+ *
+ * Revision 1.15  2005/10/24 09:20:18  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * made namespaceAware an attribute of AbstractPipe
  *
  * Revision 1.14  2005/09/08 15:53:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -82,6 +85,7 @@ import java.util.Hashtable;
  * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
+ * <tr><td>className</td><td>nl.nn.adapterframework.pipes.AbstractPipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMaxThreads(int) maxThreads}</td><td>maximum number of threads that may call {@link #doPipe(Object, PipeLineSession)} simultaneously</td><td>0 (unlimited)</td></tr>
  * <tr><td>{@link #setDurationThreshold(long) durationThreshold}</td><td>if durationThreshold >=0 and the duration (in milliseconds) of the message processing exceeded the value specified the message is logged informatory</td><td>-1</td></tr>
@@ -96,7 +100,7 @@ import java.util.Hashtable;
  * @see nl.nn.adapterframework.core.PipeLineSession
  */
 public abstract class AbstractPipe implements IExtendedPipe {
-	public static final String version="$RCSfile: AbstractPipe.java,v $ $Revision: 1.15 $ $Date: 2005-10-24 09:20:18 $";
+	public static final String version="$RCSfile: AbstractPipe.java,v $ $Revision: 1.16 $ $Date: 2006-01-05 14:34:48 $";
 	private String name;
 	protected Logger log = Logger.getLogger(this.getClass());
 	private Hashtable pipeForwards=new Hashtable();

@@ -1,6 +1,9 @@
 /*
  * $Log: JmsSender.java,v $
- * Revision 1.22  2005-12-29 15:15:39  europe\L190409
+ * Revision 1.23  2006-01-05 14:30:15  europe\L190409
+ * updated javadoc
+ *
+ * Revision 1.22  2005/12/29 15:15:39  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected javadoc
  *
  * Revision 1.21  2005/12/28 08:46:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -103,13 +106,19 @@ import javax.jms.Message;
  * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
+ * <table border="1">
+ * <p><b>Parameters:</b>
+ * <tr><th>name</th><th>type</th><th>remarks</th></tr>
+ * <tr><td><i>any</i></td><td><i>any</i></td><td>all parameters present are set as messageproperties</td></tr>
+ * </table>
+ * </p>
  * 
  * @author Gerrit van Brakel
  * @version Id
  */
 
 public class JmsSender extends JMSFacade implements ISenderWithParameters, IPostboxSender {
-	public static final String version="$RCSfile: JmsSender.java,v $ $Revision: 1.22 $ $Date: 2005-12-29 15:15:39 $";
+	public static final String version="$RCSfile: JmsSender.java,v $ $Revision: 1.23 $ $Date: 2006-01-05 14:30:15 $";
 	private String replyToName = null;
 	private int deliveryMode = 0;
 	private String messageType = null;

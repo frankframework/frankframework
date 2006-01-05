@@ -1,6 +1,9 @@
 /*
  * $Log: ForEachChildElementPipe.java,v $
- * Revision 1.7  2005-10-24 09:21:10  europe\L190409
+ * Revision 1.8  2006-01-05 14:36:31  europe\L190409
+ * updated javadoc
+ *
+ * Revision 1.7  2005/10/24 09:21:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * made namespaceAware an attribute of AbstractPipe
  *
  * Revision 1.6  2005/09/08 08:29:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -66,6 +69,16 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
+ * <tr><td>className</td><td>nl.nn.adapterframework.pipes.ForEachChildElementPipe</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setMaxThreads(int) maxThreads}</td><td>maximum number of threads that may call {@link #doPipe(Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously</td><td>0 (unlimited)</td></tr>
+ * <tr><td>{@link #setDurationThreshold(long) durationThreshold}</td><td>if durationThreshold >=0 and the duration (in milliseconds) of the message processing exceeded the value specified the message is logged informatory</td><td>-1</td></tr>
+ * <tr><td>{@link #setGetInputFromSessionKey(String) getInputFromSessionKey}</td><td>when set, input is taken from this session key, instead of regular input</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setStoreResultInSessionKey(String) storeResultInSessionKey}</td><td>when set, the result is stored under this session key</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setNamespaceAware(boolean) namespaceAware}</td><td>controls namespace-awareness of possible XML parsing in descender-classes</td><td>application default</td></tr>
+ * <tr><td>{@link #setForwardName(String) forwardName}</td>  <td>name of forward returned upon completion</td><td>"success"</td></tr>
+ * <tr><td>{@link #setResultOnTimeOut(String) resultOnTimeOut}</td><td>result returned when no return-message was received within the timeout limit</td><td>"receiver timed out"</td></tr>
+ * <tr><td>{@link #setLinkMethod(String) linkMethod}</td><td>Indicates wether the server uses the correlationID or the messageID in the correlationID field of the reply</td><td>CORRELATIONID</td></tr>
  * <tr><td>{@link #setStopConditionXPathExpression(String) stopConditionXPathExpression}</td><td>expression evaluated on each result if set. 
  * 		Iteration stops if condition returns anything other than <code>false</code> or an empty result.
  * For example, to stop after the second child element has been processed, one of the following expressions could be used:
@@ -95,10 +108,10 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author Gerrit van Brakel
  * @since 4.3
  * 
- * $Id: ForEachChildElementPipe.java,v 1.7 2005-10-24 09:21:10 europe\L190409 Exp $
+ * $Id: ForEachChildElementPipe.java,v 1.8 2006-01-05 14:36:31 europe\L190409 Exp $
  */
 public class ForEachChildElementPipe extends MessageSendingPipe {
-	public static final String version="$RCSfile: ForEachChildElementPipe.java,v $ $Revision: 1.7 $ $Date: 2005-10-24 09:21:10 $";
+	public static final String version="$RCSfile: ForEachChildElementPipe.java,v $ $Revision: 1.8 $ $Date: 2006-01-05 14:36:31 $";
 
 	private boolean elementsOnly=true;
 	private String stopConditionXPathExpression=null;
