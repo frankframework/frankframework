@@ -1,6 +1,9 @@
 /*
  * $Log: SapListener.java,v $
- * Revision 1.8  2005-12-28 08:42:17  europe\L190409
+ * Revision 1.9  2006-01-05 13:59:07  europe\L190409
+ * updated javadoc
+ *
+ * Revision 1.8  2005/12/28 08:42:17  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed unused imports
  *
  * Revision 1.7  2005/08/10 12:44:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -64,15 +67,16 @@ import com.sap.mw.jco.*;
  * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setName(String) name}</td><td>Name of the Sender</td><td>&nbsp;</td></tr>
+ * <tr><td>className</td><td>nl.nn.adapterframework.extensions.sap.SapListener</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setName(String) name}</td><td>Name of the Listener</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setProgid(String) progid}</td><td>Name of the RFC-destination to be registered in the SAP system</td><td>&nbsp;</td></tr>
- * <tr><td>{@link SapFunctionFacade#setName(String) sapSystemName}</td><td>name of the SapSystem used by this object</td><td>&nbsp;</td></tr>
- * <tr><td>{@link SapFunctionFacade#setCorrelationIdFieldIndex(int) correlationIdFieldIndex}</td><td>Index of the field in the ImportParameterList of the RFC function that contains the correlationId</td><td>0</td></tr>
- * <tr><td>{@link SapFunctionFacade#setCorrelationIdFieldName(String) correlationIdFieldName}</td><td>Name of the field in the ImportParameterList of the RFC function that contains the correlationId</td><td>&nbsp;</td></tr>
- * <tr><td>{@link SapFunctionFacade#setRequestFieldIndex(int) requestFieldIndex}</td><td>Index of the field in the ImportParameterList of the RFC function that contains the whole request message contents</td><td>0</td></tr>
- * <tr><td>{@link SapFunctionFacade#setRequestFieldName(String) requestFieldName}</td><td>Name of the field in the ImportParameterList of the RFC function that contains the whole request message contents</td><td>&nbsp;</td></tr>
- * <tr><td>{@link SapFunctionFacade#setReplyFieldIndex(int) replyFieldIndex}</td><td>Index of the field in the ExportParameterList of the RFC function that contains the whole reply message contents</td><td>0</td></tr>
- * <tr><td>{@link SapFunctionFacade#setReplyFieldName(String) replyFieldName}</td><td>Name of the field in the ExportParameterList of the RFC function that contains the whole reply message contents</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setSapSystemName(String) sapSystemName}</td><td>name of the SapSystem used by this object</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setCorrelationIdFieldIndex(int) correlationIdFieldIndex}</td><td>Index of the field in the ImportParameterList of the RFC function that contains the correlationId</td><td>0</td></tr>
+ * <tr><td>{@link #setCorrelationIdFieldName(String) correlationIdFieldName}</td><td>Name of the field in the ImportParameterList of the RFC function that contains the correlationId</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setRequestFieldIndex(int) requestFieldIndex}</td><td>Index of the field in the ImportParameterList of the RFC function that contains the whole request message contents</td><td>0</td></tr>
+ * <tr><td>{@link #setRequestFieldName(String) requestFieldName}</td><td>Name of the field in the ImportParameterList of the RFC function that contains the whole request message contents</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setReplyFieldIndex(int) replyFieldIndex}</td><td>Index of the field in the ExportParameterList of the RFC function that contains the whole reply message contents</td><td>0</td></tr>
+ * <tr><td>{@link #setReplyFieldName(String) replyFieldName}</td><td>Name of the field in the ExportParameterList of the RFC function that contains the whole reply message contents</td><td>&nbsp;</td></tr>
  * </table>
  * N.B. If no requestFieldIndex or requestFieldName is specified, input is converted to xml;
  * If no replyFieldIndex or replyFieldName is specified, output is converted from xml. 
@@ -81,7 +85,7 @@ import com.sap.mw.jco.*;
  * @since 4.2
  */
 public class SapListener extends SapFunctionFacade implements IPushingListener, SapFunctionHandler, JCO.ServerExceptionListener, JCO.ServerErrorListener {
-	public static final String version="$RCSfile: SapListener.java,v $  $Revision: 1.8 $ $Date: 2005-12-28 08:42:17 $";
+	public static final String version="$RCSfile: SapListener.java,v $  $Revision: 1.9 $ $Date: 2006-01-05 13:59:07 $";
 
 	private String progid;	 // progid of the RFC-destination
         	

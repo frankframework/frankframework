@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaProviderListener.java,v $
- * Revision 1.17  2005-12-20 16:59:27  europe\L190409
+ * Revision 1.18  2006-01-05 13:55:27  europe\L190409
+ * updated javadoc
+ *
+ * Revision 1.17  2005/12/20 16:59:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * implemented support for connection-pooling
  *
  * Revision 1.16  2005/10/27 08:48:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -101,7 +104,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>classname</td><td>nl.nn.adapterframework.extensions.ifsa.IfsaProviderListener</td><td>&nbsp;</td></tr>
+ * <tr><td>className</td><td>nl.nn.adapterframework.extensions.ifsa.IfsaProviderListener</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the object</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setApplicationId(String) applicationId}</td><td>the ApplicationID, in the form of "IFSA://<i>AppId</i>"</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMessageProtocol(String) messageProtocol}</td><td>protocol of IFSA-Service to be called. Possible values 
@@ -114,7 +117,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * @since 4.2
  */
 public class IfsaProviderListener extends IfsaFacade implements IPullingListener, INamedObject, RunStateEnquiring {
-	public static final String version = "$RCSfile: IfsaProviderListener.java,v $ $Revision: 1.17 $ $Date: 2005-12-20 16:59:27 $";
+	public static final String version = "$RCSfile: IfsaProviderListener.java,v $ $Revision: 1.18 $ $Date: 2006-01-05 13:55:27 $";
 
     private final static String THREAD_CONTEXT_SESSION_KEY = "session";
     private final static String THREAD_CONTEXT_RECEIVER_KEY = "receiver";

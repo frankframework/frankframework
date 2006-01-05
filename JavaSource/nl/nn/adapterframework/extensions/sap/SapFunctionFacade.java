@@ -1,6 +1,9 @@
 /*
  * $Log: SapFunctionFacade.java,v $
- * Revision 1.8  2005-12-28 08:42:39  europe\L190409
+ * Revision 1.9  2006-01-05 13:59:07  europe\L190409
+ * updated javadoc
+ *
+ * Revision 1.8  2005/12/28 08:42:39  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected handling of input parameters
  *
  * Revision 1.7  2005/08/08 09:42:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -53,7 +56,7 @@ import com.sap.mw.jco.*;
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setName(String) name}</td><td>Name of the Ibis-object</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setName(String) sapSystemName}</td><td>name of the SapSystem used by this object</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setSapSystemName(String) sapSystemName}</td><td>name of the SapSystem used by this object</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setCorrelationIdFieldIndex(int) correlationIdFieldIndex}</td><td>Index of the field in the ImportParameterList of the RFC function that contains the correlationId</td><td>0</td></tr>
  * <tr><td>{@link #setCorrelationIdFieldName(String) correlationIdFieldName}</td><td>Name of the field in the ImportParameterList of the RFC function that contains the correlationId</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setRequestFieldIndex(int) requestFieldIndex}</td><td>Index of the field in the ImportParameterList of the RFC function that contains the whole request message contents</td><td>0</td></tr>
@@ -68,7 +71,7 @@ import com.sap.mw.jco.*;
  * @since 4.2
  */
 public class SapFunctionFacade implements INamedObject{
-	public static final String version="$RCSfile: SapFunctionFacade.java,v $  $Revision: 1.8 $ $Date: 2005-12-28 08:42:39 $";
+	public static final String version="$RCSfile: SapFunctionFacade.java,v $  $Revision: 1.9 $ $Date: 2006-01-05 13:59:07 $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	private String name;

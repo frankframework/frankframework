@@ -1,6 +1,9 @@
 /*
  * $Log: DirectoryListener.java,v $
- * Revision 1.2  2005-10-24 09:59:22  europe\m00f531
+ * Revision 1.3  2006-01-05 13:51:28  europe\L190409
+ * updated javadoc
+ *
+ * Revision 1.2  2005/10/24 09:59:22  John Dekker <john.dekker@ibissource.org>
  * Add support for pattern parameters, and include them into several listeners,
  * senders and pipes that are file related
  *
@@ -36,15 +39,15 @@ import org.apache.log4j.Logger;
  * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>classname</td><td>nl.nn.ibis4fundation.DirectoryListener</td><td>&nbsp;</td></tr>
+ * <tr><td>className</td><td>nl.nn.adapterframework.batch.DirectoryListener</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the listener</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setInputDirectory(String) inputDirectory}</td><td>Directory to look for files</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setWildcard(String) wildcard}</td><td>Filter of files to look for in inputDirectory</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setOutputDirectory(String) outputDirectory}</td><td>Directory where to move the files to</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setOutputFilenamePattern(String) outputFilenamePattern}</td><td>Pattern for the name using the MessageFormat.format method. Params: 0=inputfilename, 1=inputfile extension, 2=unique uuid, 3=current date</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setResponseTime(long) responseTime}</td><td>Waittime to wait between polling</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setNumberOfAttempts(int) numberOfAttempts}</td><td>maximum number of move attempts before throwing an exception</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setWaitBeforeRetry(long) waitBeforeRetry}</td><td>Number of move attempts</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setResponseTime(long) responseTime}</td><td>Waittime to wait between polling</td><td>10000 [ms]</td></tr>
+ * <tr><td>{@link #setNumberOfAttempts(int) numberOfAttempts}</td><td>maximum number of move attempts before throwing an exception</td><td>10</td></tr>
+ * <tr><td>{@link #setWaitBeforeRetry(long) waitBeforeRetry}</td><td>time waited after unsuccesful try</td><td>1000</td></tr>
  * </table>
  * </p>
  *
@@ -52,18 +55,18 @@ import org.apache.log4j.Logger;
  * @author  John Dekker
  */
 public class DirectoryListener implements IPullingListener, INamedObject {
-	public static final String version = "$RCSfile: DirectoryListener.java,v $  $Revision: 1.2 $ $Date: 2005-10-24 09:59:22 $";
+	public static final String version = "$RCSfile: DirectoryListener.java,v $  $Revision: 1.3 $ $Date: 2006-01-05 13:51:28 $";
 
 	protected Logger log = Logger.getLogger(this.getClass());
 	private String name;
 	private String inputDirectory;
 	private String inputFileName;
+	private String wildcard;
 	private String outputFilenamePattern;
 	private String outputDirectory;
-	private String wildcard;
 	private long responseTime = 10000;
-	private long waitBeforeRetry = 1000;
 	private int numberOfAttempts = 10;
+	private long waitBeforeRetry = 1000;
 
 	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessage, HashMap context) throws ListenerException {
 	}

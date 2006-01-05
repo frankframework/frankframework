@@ -1,6 +1,9 @@
 /*
  * $Log: SapSender.java,v $
- * Revision 1.5  2005-08-10 12:45:48  europe\L190409
+ * Revision 1.6  2006-01-05 13:59:07  europe\L190409
+ * updated javadoc
+ *
+ * Revision 1.5  2005/08/10 12:45:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected version-string
  *
  * Revision 1.4  2005/08/10 12:44:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -37,9 +40,10 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
  * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
+ * <tr><td>className</td><td>nl.nn.adapterframework.extensions.sap.SapListener</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>Name of the Sender</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setFunctionName(String) functionName}</td><td>Name of the RFC-function to be called in the SAP system</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setName(String) sapSystemName}</td><td>name of the SapSystem used by this object</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setSapSystemName(String) sapSystemName}</td><td>name of the SapSystem used by this object</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setCorrelationIdFieldIndex(int) correlationIdFieldIndex}</td><td>Index of the field in the ImportParameterList of the RFC function that contains the correlationId</td><td>0</td></tr>
  * <tr><td>{@link #setCorrelationIdFieldName(String) correlationIdFieldName}</td><td>Name of the field in the ImportParameterList of the RFC function that contains the correlationId</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setRequestFieldIndex(int) requestFieldIndex}</td><td>Index of the field in the ImportParameterList of the RFC function that contains the whole request message contents</td><td>0</td></tr>
@@ -54,7 +58,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
  * @since 4.2
  */
 public class SapSender extends SapFunctionFacade implements ISender {
-	public static final String version="$RCSfile: SapSender.java,v $  $Revision: 1.5 $ $Date: 2005-08-10 12:45:48 $";
+	public static final String version="$RCSfile: SapSender.java,v $  $Revision: 1.6 $ $Date: 2006-01-05 13:59:07 $";
 	
 	//TODO: allow functionName to be set dynamically from a parameter or from the message
 	private String functionName=null;

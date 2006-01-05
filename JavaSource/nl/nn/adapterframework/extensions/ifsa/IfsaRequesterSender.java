@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaRequesterSender.java,v $
- * Revision 1.19  2005-12-20 16:59:27  europe\L190409
+ * Revision 1.20  2006-01-05 13:55:27  europe\L190409
+ * updated javadoc
+ *
+ * Revision 1.19  2005/12/20 16:59:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * implemented support for connection-pooling
  *
  * Revision 1.18  2005/10/26 08:48:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -94,7 +97,7 @@ import com.ing.ifsa.IFSATimeOutMessage;
  * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>classname</td><td>nl.nn.adapterframework.extensions.ifsa.IfsaRequesterSender</td><td>&nbsp;</td></tr>
+ * <tr><td>className</td><td>nl.nn.adapterframework.extensions.ifsa.IfsaRequesterSender</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the object</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setApplicationId(String) applicationId}</td><td>the ApplicationID, in the form of "IFSA://<i>AppId</i>"</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setServiceId(String) serviceId}</td><td>the ServiceID of the service to be called, in the form of "IFSA://<i>ServiceID</i>"</td><td>&nbsp;</td></tr>
@@ -115,7 +118,7 @@ import com.ing.ifsa.IFSATimeOutMessage;
  * @since  4.2
  */
 public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParameters {
-	public static final String version="$RCSfile: IfsaRequesterSender.java,v $ $Revision: 1.19 $ $Date: 2005-12-20 16:59:27 $";
+	public static final String version="$RCSfile: IfsaRequesterSender.java,v $ $Revision: 1.20 $ $Date: 2006-01-05 13:55:27 $";
  
 	protected ParameterList paramList = null;
   
