@@ -1,6 +1,9 @@
 /*
  * $Log: Dir2Xml.java,v $
- * Revision 1.6  2005-10-20 15:20:27  europe\L190409
+ * Revision 1.7  2006-01-05 14:52:02  europe\L190409
+ * improve error handling
+ *
+ * Revision 1.6  2005/10/20 15:20:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added feature to include directories
  *
  * Revision 1.5  2005/07/19 11:04:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -17,6 +20,8 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.Arrays;
 
+import org.apache.log4j.Logger;
+
 /**
  * List the contents of a directory as XML.
  * 
@@ -24,7 +29,8 @@ import java.util.Arrays;
  * @version Id
  */
 public class Dir2Xml  {
-	public static final String version="$RCSfile: Dir2Xml.java,v $ $Revision: 1.6 $ $Date: 2005-10-20 15:20:27 $";
+	public static final String version="$RCSfile: Dir2Xml.java,v $ $Revision: 1.7 $ $Date: 2006-01-05 14:52:02 $";
+	protected Logger log = Logger.getLogger(this.getClass());
 	
   	private String path;
   	private String wildcard="*.*";
@@ -63,6 +69,8 @@ public class Dir2Xml  {
 		try {
 			fileXml.addAttribute("canonicalName", file.getCanonicalPath());
 		} catch (IOException e) {
+			log.warn("cannot get canonicalName for file ["+nameShown+"]",e);
+			fileXml.addAttribute("canonicalName", nameShown);
 		}
 		// Get the modification date of the file
 		Date modificationDate = new Date(file.lastModified());
