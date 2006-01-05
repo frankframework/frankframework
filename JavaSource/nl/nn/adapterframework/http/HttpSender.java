@@ -1,6 +1,9 @@
 /*
  * $Log: HttpSender.java,v $
- * Revision 1.18  2005-12-28 08:40:12  europe\L190409
+ * Revision 1.19  2006-01-05 14:22:57  europe\L190409
+ * POST method now appends parameters to body instead of header
+ *
+ * Revision 1.18  2005/12/28 08:40:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected javadoc
  *
  * Revision 1.17  2005/12/19 16:42:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -125,6 +128,20 @@ import nl.nn.adapterframework.util.CredentialFactory;
  * <tr><td>{@link #setEncodeMessages(boolean) encodeMessages}</td><td>specifies whether messages will encoded, e.g. spaces will be replaced by '+' etc.</td><td>false</td></tr>
  * </table>
  * </p>
+ * <p><b>Parameters:</b></p>
+ * <p>Any parameters present are appended to the request as request-parameters</p>
+ * 
+ * <p><b>Expected message format:</b></p>
+ * <p>GET methods expect a message looking like this</p>
+ * <pre>
+ *   param_name=param_value&another_param_name=another_param_value
+ * </pre>
+ * <p>POST methods expect a message similar as GET, or looking like this</p>
+ * <pre>
+ *   param_name=param_value
+ *   another_param_name=another_param_value
+ * </pre>
+ *
  * Note:
  * Some certificates require the &lt;java_home&gt;/jre/lib/security/xxx_policy.jar files to be upgraded to unlimited strength. Typically, in such a case, an error message like 
  * <code>Error in loading the keystore: Private key decryption error: (java.lang.SecurityException: Unsupported keysize or algorithm parameters</code> is observed.
@@ -132,7 +149,7 @@ import nl.nn.adapterframework.util.CredentialFactory;
  * @since 4.2c
  */
 public class HttpSender extends SenderWithParametersBase implements HasPhysicalDestination {
-	public static final String version = "$RCSfile: HttpSender.java,v $ $Revision: 1.18 $ $Date: 2005-12-28 08:40:12 $";
+	public static final String version = "$RCSfile: HttpSender.java,v $ $Revision: 1.19 $ $Date: 2006-01-05 14:22:57 $";
 
 	private String url;
 	private String methodType="GET"; // GET or POST
@@ -309,27 +326,36 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 
 	protected HttpMethod getMethod(String message, ParameterValueList parameters) throws SenderException {
 		try { 
-			boolean parametersAppended = false;
+			boolean queryParametersAppended = false;
 			if (isEncodeMessages()) {
 				message = URLEncoder.encode(message);
 			}
 			StringBuffer path = new StringBuffer(uri.getPath());
 			if (!StringUtils.isEmpty(uri.getQuery())) {
 				path.append("?"+uri.getQuery());
-				parametersAppended = true;
-			}
-			if (parameters!=null) {
-				parametersAppended = appendParameters(parametersAppended,path,parameters);
-				log.debug(getLogPrefix()+"path after appending of parameters ["+path.toString()+"]");
+				queryParametersAppended = true;
 			}
 			
 			if (getMethodType().equals("GET")) {
+				if (parameters!=null) {
+					queryParametersAppended = appendParameters(queryParametersAppended,path,parameters);
+					log.debug(getLogPrefix()+"path after appending of parameters ["+path.toString()+"]");
+				}
 				GetMethod result = new GetMethod(path+(parameters==null? message:""));
 				log.debug(getLogPrefix()+"HttpSender constructed GET-method ["+result.getQueryString()+"]");
 				return result;
 			} else {
 				if (getMethodType().equals("POST")) {
 					PostMethod postMethod = new PostMethod(path.toString());
+					if (parameters!=null) {
+						StringBuffer msg = new StringBuffer(message);
+						appendParameters(true,msg,parameters);
+						if (StringUtils.isEmpty(message) && msg.length()>1) {
+							message=msg.substring(1);
+						} else {
+							message=msg.toString();
+						}
+					}
 					postMethod.setRequestBody(message);
 				
 					return postMethod;
