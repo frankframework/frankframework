@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcQuerySenderBase.java,v $
- * Revision 1.19  2005-10-24 09:17:29  europe\L190409
+ * Revision 1.20  2006-01-05 14:21:21  europe\L190409
+ * updated javadoc
+ *
+ * Revision 1.19  2005/10/24 09:17:29  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * separate statement for result query
  *
  * Revision 1.18  2005/10/19 10:45:18  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -94,27 +97,37 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>classname</td><td>nl.nn.adapterframework.jdbc.JdbcQuerySenderBase</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td>  <td>name of the sender</td><td>&nbsp;</td></tr>
+
  * <tr><td>{@link #setDatasourceName(String) datasourceName}</td><td>can be configured from JmsRealm, too</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDatasourceNameXA(String) datasourceNameXA}</td><td>can be configured from JmsRealm, too</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setUsername(String) username}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setPassword(String) password}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setUsername(String) username}</td><td>username used to connect to datasource</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setPassword(String) password}</td><td>password used to connect to datasource</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setConnectionsArePooled(boolean) connectionsArePooled}</td><td>when true, it is assumed that an connectionpooling mechanism is present. Before a message is sent, a new connection is obtained, that is closed after the message is sent. When transacted is true, connectionsArePooled is true, too</td><td>true</td></tr>
  * <tr><td>{@link #setTransacted(boolean) transacted}</td><td>&nbsp;</td><td>false</td></tr>
  * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+
  * <tr><td>{@link #setQueryType(String) queryType}</td><td>one of:
  * <ul><li>"select" for queries that return data</li>
  *     <li>"updateBlob" for queries that update a BLOB</li>
  *     <li>anything else for queries that return no data.</li>
  * </ul></td><td>"other"</td></tr>
- * <tr><td>{@link #setMaxRows(int) maxRows}</td><td>maximum number of rows returned</td><td>0 (unlimited)</td></tr>
+ * <tr><td>{@link #setMaxRows(int) maxRows}</td><td>maximum number of rows returned</td><td>-1 (unlimited)</td></tr>
  * <tr><td>{@link #setStartRow(int) startRow}</td><td>the number of the first row returned from the output</td><td>1</td></tr>
- * <tr><td>{@link #setScalar(boolean) scalar}</td><td>when true, the value of the first column of the first row (or the StartRow) is returned as the only result</td><td>false</td></tr>
+ * <tr><td>{@link #setScalar(boolean) scalar}</td><td>when true, the value of the first column of the first row (or the StartRow) is returned as the only result, as a simple non-XML value</td><td>false</td></tr>
+ * <tr><td>{@link #setNullValue(String) nullValue}</td><td>value used in result as contents of fields that contain no value (SQL-NULL)</td><td><i>empty string</></td></tr>
+ * <tr><td>{@link #setResultQuery(String) resultQuery}</td><td>query that can be used to obtain result of side-effecto of update-query, like generated value of sequence. Example: SELECT mysequence.currval FROM DUAL</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSynchronous(boolean) synchronous}</td><td>&nbsp;</td><td>true</td></tr>
- * <tr><td>{@link #setTrimSpaces(boolean) trimSpaces}</td><td>&nbsp;</td><td>true</td></tr>
+ * <tr><td>{@link #setTrimSpaces(boolean) trimSpaces}</td><td>remove trailing blanks from all values.</td><td>true</td></tr>
  * <tr><td>{@link #setBlobsCompressed(boolean) blobsCompressed}</td><td>controls whether blobdata is stored compressed in the database</td><td>true</td></tr>
- * <tr><td>{@link #setResultQuery(String) resultQuery}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setColumnsReturned(String) columnsReturned}</td>comma separated list of columns whose values are to be returned. Works only if the driver implements JDBC 3.0 getGeneratedKeys()<td>&nbsp;</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setColumnsReturned(String) columnsReturned}</td><td>comma separated list of columns whose values are to be returned. Works only if the driver implements JDBC 3.0 getGeneratedKeys()</td><td>&nbsp;</td></tr>
  * </table>
+ * </p>
+ * <table border="1">
+ * <p><b>Parameters:</b>
+ * <tr><th>name</th><th>type</th><th>remarks</th></tr>
+ * <tr><td>&nbsp;</td><td>all parameters present are applied to the statement to be executed</td></tr>
+ * </table>
+
  * </p>
  * 
  * Queries that return no data (queryType 'other') return a message indicating the number of rows processed
@@ -124,11 +137,11 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * @since 	4.1
  */
 public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
-	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.19 $ $Date: 2005-10-24 09:17:29 $";
+	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.20 $ $Date: 2006-01-05 14:21:21 $";
 
 	private String queryType = "other";
-	private int startRow=1;
 	private int maxRows=-1; // return all rows
+	private int startRow=1;
 	private boolean scalar=false;
 	private boolean synchronous=true;
 	private int blobColumn=1;
