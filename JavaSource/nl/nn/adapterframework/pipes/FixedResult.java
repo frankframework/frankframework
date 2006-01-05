@@ -1,6 +1,9 @@
 /*
  * $Log: FixedResult.java,v $
- * Revision 1.13  2005-12-29 15:17:45  europe\L190409
+ * Revision 1.14  2006-01-05 14:34:19  europe\L190409
+ * allow an empty resultstring to be specified
+ *
+ * Revision 1.13  2005/12/29 15:17:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected javadoc
  *
  * Revision 1.12  2005/09/26 11:07:06  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -47,6 +50,7 @@ import org.apache.commons.lang.SystemUtils;
  * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
+ * <tr><td>className</td><td>nl.nn.adapterframework.pipes.FixedResult</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMaxThreads(int) maxThreads}</td><td>maximum number of threads that may call {@link #doPipe(Object, PipeLineSession)} simultaneously</td><td>0 (unlimited)</td></tr>
  * <tr><td>{@link #setForwardName(String) forwardName}</td>  <td>name of forward returned upon completion</td><td>"success"</td></tr>
@@ -73,7 +77,7 @@ import org.apache.commons.lang.SystemUtils;
  * @author Johan Verrips
  */
 public class FixedResult extends FixedForwardPipe {
-	public static final String version="$RCSfile: FixedResult.java,v $ $Revision: 1.13 $ $Date: 2005-12-29 15:17:45 $";
+	public static final String version="$RCSfile: FixedResult.java,v $ $Revision: 1.14 $ $Date: 2006-01-05 14:34:19 $";
 	
     private String fileName;
     private String returnString;
@@ -99,7 +103,7 @@ public class FixedResult extends FixedForwardPipe {
                 throw new ConfigurationException("Pipe [" + getName() + "] got exception loading ["+fileName+"]", e);
             }
         }
-        if ((StringUtils.isEmpty(fileName)) && (StringUtils.isEmpty(returnString))) {
+        if ((StringUtils.isEmpty(fileName)) && returnString==null) {  // allow an empty returnString to be specified
             throw new ConfigurationException("Pipe [" + getName() + "] has neither fileName nor returnString specified");
         }
 		if (StringUtils.isNotEmpty(replaceFrom)) {
