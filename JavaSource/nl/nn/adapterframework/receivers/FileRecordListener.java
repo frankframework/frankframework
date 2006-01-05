@@ -1,6 +1,9 @@
 /*
  * $Log: FileRecordListener.java,v $
- * Revision 1.6  2004-08-23 13:10:48  L190409
+ * Revision 1.7  2006-01-05 14:42:25  europe\L190409
+ * updated javadoc and reordered code
+ *
+ * Revision 1.6  2004/08/23 13:10:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated JavaDoc
  *
  * Revision 1.5  2004/03/26 10:43:03  Johan Verrips <johan.verrips@ibissource.org>
@@ -39,22 +42,35 @@ import org.apache.commons.lang.builder.ToStringStyle;
  * found, it is read in a String object and parsed to records. When used in a receiver like 
  * {@link FileRecordReceiver } these records are to be processed by the adapter.
  * After reading the file, the file is renamed and moved to a directory.
+ * 
+ * <p><b>Configuration:</b>
+ * <table border="1">
+ * <tr><th>attributes</th><th>description</th><th>default</th></tr>
+ * <tr><td>className</td><td>nl.nn.adapterframework.receivers.FileRecordListener</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setName(String) name}</td><td>name of the listener as known to the adapter.</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setInputDirectory(String) inputDirectory}</td><td>set the directory name to look in for files.</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setWildcard(String) wildcard}</td><td>the {@link nl.nn.adapterframework.util.WildCardFilter wildcard} to look for files in the specified directory, e.g. "*.inp"</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setResponseTime(long) responseTime}</td><td>set the time to delay when no records are to be processed and this class has to look for the arrival of a new file</td><td>1000 [ms]</td></tr>
+ * <tr><td>{@link #setDirectoryProcessedFiles(String) directoryProcessedFiles}</td><td>the directory to store processed files in</td><td>&nbsp;</td></tr>
+ * </table>
+ * 
  * @version Id
  * @author  Johan Verrips
  */
 public class FileRecordListener implements IPullingListener, INamedObject {
-	public static final String version="$Id: FileRecordListener.java,v 1.6 2004-08-23 13:10:48 L190409 Exp $";
+	public static final String version="$RCSfile: FileRecordListener.java,v $ $Revision: 1.7 $ $Date: 2006-01-05 14:42:25 $";
+	protected Logger log = Logger.getLogger(this.getClass());
 
+	private String name;
 	private String inputDirectory;
 	private String wildcard;
 	private long responseTime = 1000;
 	private String directoryProcessedFiles;
-	private String name;
-	private ISender sender;
-	protected Logger log = Logger.getLogger(this.getClass());
+
 	private long recordNo = 0; // the current record number;
-	private Iterator recordIterator = null;
 	private String inputFileName; // the name of the file currently in process
+	private ISender sender;
+	private Iterator recordIterator = null;
 
 	public void afterMessageProcessed(
 		PipeLineResult processResult,
@@ -161,6 +177,7 @@ public class FileRecordListener implements IPullingListener, INamedObject {
 		return result;
 
 	}
+	
 	public void close() throws ListenerException {
 		try {
 			if (sender != null)
@@ -172,8 +189,9 @@ public class FileRecordListener implements IPullingListener, INamedObject {
 		}
 	}
 	public void closeThread(HashMap threadContext) throws ListenerException {
-
+		// nothing special
 	}
+	
 	/**
 	 * Configure does some basic checks (directoryProcessedFiles is a directory,  inputDirectory is a directory, wildcard is filled etc.);
 	 *
@@ -211,13 +229,6 @@ public class FileRecordListener implements IPullingListener, INamedObject {
 
 	}
 	/**
-	 * Returns the directory in whiche processed files are stored.
-	 * @return String
-	 */
-	public String getDirectoryProcessedFiles() {
-		return directoryProcessedFiles;
-	}
-	/**
 	 * Gets a file to process.
 	 */
 	protected File getFileToProcess() {
@@ -246,12 +257,6 @@ public class FileRecordListener implements IPullingListener, INamedObject {
 		String correlationId = inputFileName + "-" + recordNo;
 		threadContext.put("cid", correlationId);
 		return correlationId;
-	}
-	public String getInputDirectory() {
-		return inputDirectory;
-	}
-	public String getName() {
-		return name;
 	}
 	/**
 	 * Retrieves a single record from a file. If the file is empty or fully processed, it looks wether there
@@ -304,27 +309,14 @@ public class FileRecordListener implements IPullingListener, INamedObject {
 
 		return null;
 	}
-	public long getResponseTime() {
-		return responseTime;
-	}
-	public ISender getSender() {
-		return sender;
-	}
+	
 	/**
 	 * Returns a string of the rawMessage
 	 */
-	public String getStringFromRawMessage(
-		Object rawMessage,
-		HashMap threadContext)
-		throws ListenerException {
+	public String getStringFromRawMessage(Object rawMessage, HashMap threadContext) throws ListenerException {
 		return rawMessage.toString();
 	}
-	/**
-	* get the {@link nl.nn.adapterframework.util.WildCardFilter wildcard}  to look for files in the specifiek directory, e.g. "*.inp"
-	*/
-	public String getWildcard() {
-		return wildcard;
-	}
+
 	public void open() throws ListenerException {
 		try {
 			if (sender != null)
@@ -336,8 +328,8 @@ public class FileRecordListener implements IPullingListener, INamedObject {
 		}
 		return;
 	}
-	public HashMap openThread() throws ListenerException {
 
+	public HashMap openThread() throws ListenerException {
 		return null;
 	}
 	/**
@@ -353,38 +345,14 @@ public class FileRecordListener implements IPullingListener, INamedObject {
 		}
 		return array.iterator();
 	}
-	/**
-	 * Sets the directory to store processed files in
-	 * @param directoryProcessedFiles The directoryProcessedFiles to set
-	 */
-	public void setDirectoryProcessedFiles(String directoryProcessedFiles) {
-		this.directoryProcessedFiles = directoryProcessedFiles;
-	}
-	/**
-	 * set the directory name to look for files in.
-	 * @see #setWildcard(String)
-	 */
-	public void setInputDirectory(String inputDirectory) {
-		this.inputDirectory = inputDirectory;
-	}
-	public void setName(String name) {
-		this.name = name;
-	}
-	/**
-	 * set the time to delay when no records are to be processed and this class has to look for the arrival of a new file
-	 */
-	public void setResponseTime(long responseTime) {
-		this.responseTime = responseTime;
-	}
+
 	public void setSender(ISender sender) {
 		this.sender = sender;
 	}
-	/**
-	 * set the {@link nl.nn.adapterframework.util.WildCardFilter wildcard}  to look for files in the specifiek directory, e.g. "*.inp"
-	 */
-	public void setWildcard(String wildcard) {
-		this.wildcard = wildcard;
+	public ISender getSender() {
+		return sender;
 	}
+	
 	public String toString() {
 		String result = super.toString();
 		ToStringBuilder ts = new ToStringBuilder(this, ToStringStyle.MULTI_LINE_STYLE);
@@ -395,4 +363,54 @@ public class FileRecordListener implements IPullingListener, INamedObject {
 		return result;
 
 	}
+	
+	public void setName(String name) {
+		this.name = name;
+	}
+	public String getName() {
+		return name;
+	}
+	
+	/**
+	 * set the directory name to look in for files.
+	 * @see #setWildcard(String)
+	 */
+	public void setInputDirectory(String inputDirectory) {
+		this.inputDirectory = inputDirectory;
+	}
+	public String getInputDirectory() {
+		return inputDirectory;
+	}
+
+	/**
+	 * set the {@link nl.nn.adapterframework.util.WildCardFilter wildcard} to look for files in the specified directory, e.g. "*.inp"
+	 */
+	public void setWildcard(String wildcard) {
+		this.wildcard = wildcard;
+	}
+	public String getWildcard() {
+		return wildcard;
+	}
+
+	/**
+	 * Sets the directory to store processed files in
+	 * @param directoryProcessedFiles The directoryProcessedFiles to set
+	 */
+	public void setDirectoryProcessedFiles(String directoryProcessedFiles) {
+		this.directoryProcessedFiles = directoryProcessedFiles;
+	}
+	public String getDirectoryProcessedFiles() {
+		return directoryProcessedFiles;
+	}
+
+	/**
+	 * set the time to delay when no records are to be processed and this class has to look for the arrival of a new file
+	 */
+	public void setResponseTime(long responseTime) {
+		this.responseTime = responseTime;
+	}
+	public long getResponseTime() {
+		return responseTime;
+	}
+
 }

@@ -1,6 +1,9 @@
 /*
  * $Log: JavaListener.java,v $
- * Revision 1.5  2005-09-26 11:55:04  europe\L190409
+ * Revision 1.6  2006-01-05 14:42:25  europe\L190409
+ * updated javadoc and reordered code
+ *
+ * Revision 1.5  2005/09/26 11:55:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected version string
  *
  * Revision 1.4  2005/09/26 11:54:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -56,11 +59,18 @@ import nl.nn.adapterframework.jms.JmsRealm;
 /** * 
  * The JavaListener listens to java requests.
  *  
+ * <p><b>Configuration:</b>
+ * <table border="1">
+ * <tr><th>attributes</th><th>description</th><th>default</th></tr>
+ * <tr><td>className</td><td>nl.nn.adapterframework.receivers.JavaListener</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setName(String) name}</td><td>name of the listener as known to the adapter. An {@link nl.nn.adapterframework.pipes.IbisLocalSender IbisLocalSender} refers to this name in its <code>javaListener</code>-attribute.</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setJndiName(String) jndiName}</td><td>(optional) name under which the java receiver registers the java proxy in JNDI</td><td>&nbsp;</td></tr>
+ * </table>
  * @author  JDekker
  * @version Id
  */
 public class JavaListener implements IPushingListener {
-	public static final String version="$RCSfile: JavaListener.java,v $ $Revision: 1.5 $ $Date: 2005-09-26 11:55:04 $";
+	public static final String version="$RCSfile: JavaListener.java,v $ $Revision: 1.6 $ $Date: 2006-01-05 14:42:25 $";
 	protected Logger log = Logger.getLogger(this.getClass());
 	
 	private String name;
@@ -113,7 +123,7 @@ public class JavaListener implements IPushingListener {
 
 
 	/**
-	 * Register receiver so that it can be used by a proxy
+	 * Register listener so that it can be used by a proxy
 	 * @param name
 	 * @param receiver
 	 */
@@ -121,13 +131,6 @@ public class JavaListener implements IPushingListener {
 		getListeners().put(name, listener);
 	}
 
-	/**
-	 * Unregister recevier, so that it can't be used by proxies
-	 * @param name
-	 */
-//	private static void unregisterJavaListener(String name) {
-//		getListeners().remove(name);
-//	}
 
 	/**
 	 * @param name
@@ -188,7 +191,7 @@ public class JavaListener implements IPushingListener {
 	public String processRequest(String correlationId, String message) {
 		try {
 			if (log.isDebugEnabled())
-				log.debug("javareceiver [" + getName() + "] processing [" + correlationId + "]");
+				log.debug("JavaListener [" + getName() + "] processing [" + correlationId + "]");
 			return handler.processRequest(this, correlationId, message);
 		} 
 		catch (ListenerException e) {
@@ -198,7 +201,7 @@ public class JavaListener implements IPushingListener {
 
 	public String processRequest(String correlationId, String message, HashMap context) throws ListenerException {
 		if (log.isDebugEnabled()) {
-			log.debug("javareceiver [" + getName() + "] processing [" + correlationId + "]");
+			log.debug("JavaListener [" + getName() + "] processing [" + correlationId + "]");
 		}
 		return handler.processRequest(this, correlationId, message, context);
 	}
@@ -233,23 +236,24 @@ public class JavaListener implements IPushingListener {
 	public void setJmsRealm(String jmsRealmName){
 		JmsRealm.copyRealm(jndiBase, jmsRealmName);
 	}
+
 	/**
 	 * @return the name under which the java receiver registers the java proxy in JNDI
 	 */
-	public String getJndiName() {
-		return jndiName;
-	}
 
 	public void setJndiName(String jndiName) {
 		this.jndiName = jndiName;
 	}
-
-	public String getName() {
-		return name;
+	public String getJndiName() {
+		return jndiName;
 	}
+
 
 	public void setName(String name) {
 		this.name = name;
+	}
+	public String getName() {
+		return name;
 	}
 
 
