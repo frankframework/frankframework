@@ -1,6 +1,9 @@
 /*
  * $Log: ConfigurationDigester.java,v $
- * Revision 1.11  2005-07-05 10:54:29  europe\L190409
+ * Revision 1.12  2006-01-05 13:52:49  europe\L190409
+ * improved error-handling
+ *
+ * Revision 1.11  2005/07/05 10:54:29  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * created 'include' facility
  *
  * Revision 1.10  2005/06/13 12:47:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -78,7 +81,7 @@ import java.net.URL;
  * @see Configuration
  */
 public class ConfigurationDigester {
-	public static final String version = "$RCSfile: ConfigurationDigester.java,v $ $Revision: 1.11 $ $Date: 2005-07-05 10:54:29 $";
+	public static final String version = "$RCSfile: ConfigurationDigester.java,v $ $Revision: 1.12 $ $Date: 2006-01-05 13:52:49 $";
     protected static Logger log = Logger.getLogger(ConfigurationDigester.class);
 
 	private static final String CONFIGURATION_FILE_DEFAULT  = "Configuration.xml";
@@ -165,7 +168,15 @@ public class ConfigurationDigester {
 	}
 
 	public void include(Object stackTop) throws ConfigurationException {
-		digestConfiguration(stackTop,ClassUtils.getResourceURL(this, getDigesterRules()), ClassUtils.getResourceURL(this, getConfiguration()));
+		URL configuration = ClassUtils.getResourceURL(this, getConfiguration());
+		if (configuration == null) {
+			throw new ConfigurationException("cannot find resource ["+getConfiguration()+"] to include");
+		}
+		URL digesterRules = ClassUtils.getResourceURL(this, getDigesterRules());
+		if (digesterRules == null) {
+			throw new ConfigurationException("cannot find resource ["+getDigesterRules()+"] use as digesterrules to include");
+		}
+		digestConfiguration(stackTop, digesterRules, configuration);
 	}
 	
 	public Configuration unmarshalConfiguration() throws ConfigurationException
