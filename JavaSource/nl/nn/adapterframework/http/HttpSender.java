@@ -1,6 +1,9 @@
 /*
  * $Log: HttpSender.java,v $
- * Revision 1.19  2006-01-05 14:22:57  europe\L190409
+ * Revision 1.20  2006-01-19 12:14:41  europe\L190409
+ * corrected logging output, improved javadoc
+ *
+ * Revision 1.19  2006/01/05 14:22:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * POST method now appends parameters to body instead of header
  *
  * Revision 1.18  2005/12/28 08:40:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -142,14 +145,50 @@ import nl.nn.adapterframework.util.CredentialFactory;
  *   another_param_name=another_param_value
  * </pre>
  *
- * Note:
+ * <p>
+ * Note 1:
  * Some certificates require the &lt;java_home&gt;/jre/lib/security/xxx_policy.jar files to be upgraded to unlimited strength. Typically, in such a case, an error message like 
  * <code>Error in loading the keystore: Private key decryption error: (java.lang.SecurityException: Unsupported keysize or algorithm parameters</code> is observed.
+ * </p>
+ * <p>
+ * Note 2:
+ * To debug ssl-related problems, set the following system property:
+ * <ul>
+ * <li>IBM / WebSphere: <code>-Djavax.net.debug=true</code></li>
+ * <li>SUN: <code>-Djavax.net.debug=all</code></li>
+ * </ul>
+ * </p>
+ * <p>
+ * Note 3:
+ * In case <code>javax.net.ssl.SSLHandshakeException: unknown certificate</code>-exceptions are thrown, 
+ * probably the certificate of the other party is not trusted. Try to use one of the certificates in the path as your truststore by doing the following:
+ * <ul>
+ *   <li>open the URL you are trying to reach in InternetExplorer</li>
+ *   <li>click on the yellow padlock on the right in the bottom-bar. This opens the certificate information window</li>
+ *   <li>click on tab 'Certificeringspad'</li>
+ *   <li>double click on root certificate in the tree displayed. This opens the certificate information window for the root certificate</li>
+ *   <li>click on tab 'Details'</li>
+ *   <li>click on 'Kopieren naar bestand'</li>
+ *   <li>click 'next', choose 'DER Encoded Binary X.509 (.CER)'</li>
+ *   <li>click 'next', choose a filename</li>
+ *   <li>click 'next' and 'finish'</li>
+ * 	 <li>Start IBM key management tool ikeyman.bat, located in Program Files/IBM/WebSphere Studio/Application Developer/v5.1.2/runtimes/base_v51/bin (or similar)</li>
+ *   <li>create a new key-database (Sleuteldatabase -> Nieuw...), or open the default key.jks (default password="changeit")</li>
+ *   <li>add the generated certificate (Toevoegen...)</li>
+ *   <li>store the key-database in JKS format</li>
+ *   <li>if you didn't use the standard keydatabase, then reference the file in the truststore-attribute in Configuration.xml (include the file as a resource)</li>
+ *   <li>use jks for the truststoreType-attribute</li>
+ *   <li>restart your application</li>
+ *   <li>instead of IBM ikeyman you can use the standard java tool <code>keytool</code> as follows: 
+ *      <code>keytool -import -alias <i>yourAlias</i> -file <i>pathToSavedCertificate</i></code></li>
+ * </ul>
+ *  
+ * </p>
  * @author Gerrit van Brakel
  * @since 4.2c
  */
 public class HttpSender extends SenderWithParametersBase implements HasPhysicalDestination {
-	public static final String version = "$RCSfile: HttpSender.java,v $ $Revision: 1.19 $ $Date: 2006-01-05 14:22:57 $";
+	public static final String version = "$RCSfile: HttpSender.java,v $ $Revision: 1.20 $ $Date: 2006-01-19 12:14:41 $";
 
 	private String url;
 	private String methodType="GET"; // GET or POST
@@ -232,7 +271,7 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 				if (truststoreUrl==null) {
 					throw new ConfigurationException(getLogPrefix()+"cannot find URL for truststore resource ["+getTruststore()+"]");
 				}
-				log.debug(getLogPrefix()+"resolved truststore-URL to ["+certificateUrl.toString()+"]");
+				log.debug(getLogPrefix()+"resolved truststore-URL to ["+truststoreUrl.toString()+"]");
 			}
 
 			HostConfiguration hostconfiguration = httpclient.getHostConfiguration();		           
