@@ -1,6 +1,9 @@
 /*
  * $Log: FTPsClient.java,v $
- * Revision 1.5  2005-12-20 09:33:21  europe\L190409
+ * Revision 1.6  2006-01-19 10:34:19  europe\L190409
+ * overided isPositiveCompletion to avoid hanging ls (belastingdienst)
+ *
+ * Revision 1.5  2005/12/20 09:33:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * remove TYPE I from prot_p code
  *
  * Revision 1.4  2005/12/19 16:46:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -49,7 +52,7 @@ import org.apache.log4j.Logger;
  * @author John Dekker
  */
 class FTPsClient extends FTPClient {
-	public static final String version = "$RCSfile: FTPsClient.java,v $  $Revision: 1.5 $ $Date: 2005-12-20 09:33:21 $";
+	public static final String version = "$RCSfile: FTPsClient.java,v $  $Revision: 1.6 $ $Date: 2006-01-19 10:34:19 $";
 	protected Logger log = Logger.getLogger(this.getClass());
 	
 	private FtpSession session;
@@ -79,6 +82,18 @@ class FTPsClient extends FTPClient {
 			log.debug("Command [" + cmd + "] returned " + getReplyString());
 		}
 	}
+
+	// FTPsClient did hang when positive completion was send without 
+	// preliminary positive. Therefore completePendingCommand is 
+	// overriden. 2006-01-18 GvB
+	public boolean completePendingCommand() throws IOException
+	{
+		if (FTPReply.isPositiveCompletion(getReplyCode())) {
+			return true;
+		}
+		return super.completePendingCommand();
+	}
+
 		
 	
 	protected void _connectAction_() throws IOException {
