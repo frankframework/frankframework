@@ -1,6 +1,9 @@
 /*
  * $Log: AppConstants.java,v $
- * Revision 1.7  2005-09-20 13:29:42  europe\L190409
+ * Revision 1.8  2006-01-19 12:17:26  europe\L190409
+ * changed warning for non found file to debug
+ *
+ * Revision 1.7  2005/09/20 13:29:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed setting of baseResourceURL
  *
  * Revision 1.6  2005/09/13 15:44:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -95,7 +98,7 @@ import org.apache.commons.lang.StringUtils;
  * 
  */
 public final class AppConstants extends Properties implements Serializable{
-	public static final String version="$RCSfile: AppConstants.java,v $  $Revision: 1.7 $ $Date: 2005-09-20 13:29:42 $";
+	public static final String version="$RCSfile: AppConstants.java,v $  $Revision: 1.8 $ $Date: 2006-01-19 12:17:26 $";
 	
 	public final static String propertiesFileName="AppConstants.properties";
 	private static AppConstants self=null;
@@ -299,7 +302,7 @@ public final class AppConstants extends Properties implements Serializable{
 	            URL url = ClassUtils.getResourceURL(this, theFilename);
 	
 				if (url==null) {
-					log.warn("cannot find resource ["+theFilename+"] to load additional properties from, ignoring");
+					log.debug("cannot find resource ["+theFilename+"] to load additional properties from, ignoring");
 				} else {
 		            InputStream is = url.openStream();
 		            load(is);
