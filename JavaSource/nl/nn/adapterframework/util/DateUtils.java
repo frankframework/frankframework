@@ -1,6 +1,9 @@
 /*
  * $Log: DateUtils.java,v $
- * Revision 1.5  2005-10-17 07:35:32  europe\L190409
+ * Revision 1.6  2006-01-19 12:18:38  europe\L190409
+ * corrected fullIsoFormat
+ *
+ * Revision 1.5  2005/10/17 07:35:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added format(long)
  *
  */
@@ -16,10 +19,10 @@ import java.util.Date;
  * @version Id
  */
 public class DateUtils {
-	public static final String version = "$RCSfile: DateUtils.java,v $ $Revision: 1.5 $ $Date: 2005-10-17 07:35:32 $";
+	public static final String version = "$RCSfile: DateUtils.java,v $ $Revision: 1.6 $ $Date: 2006-01-19 12:18:38 $";
 	
 
-	public static final String fullIsoFormat          = "yyyy-MM-dd'T'hh:mm:sszzz";
+	public static final String fullIsoFormat          = "yyyy-MM-dd'T'HH:mm:sszzz";
     public static final String shortIsoFormat         = "yyyy-MM-dd";
 
     /**
