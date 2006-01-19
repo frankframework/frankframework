@@ -1,6 +1,10 @@
 /*
  * $Log: CredentialFactory.java,v $
- * Revision 1.1  2005-12-19 16:38:07  europe\L190409
+ * Revision 1.2  2006-01-19 12:23:27  europe\L190409
+ * improved logging and javadoc
+ * added fallback to resolving userid and password from appConstants
+ *
+ * Revision 1.1  2005/12/19 16:38:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * introduction for credential factory, to enable authentication using authentication-alias
  *
  */
@@ -24,6 +28,11 @@ import org.apache.log4j.Logger;
 /**
  * Provides user-id and password from the WebSphere authentication-alias repository.
  * A default username and password can be set, too.
+ * 
+ * Note:
+ * In WSAD the aliases are named just as you type them.
+ * In WebSphere 5 aliases are prefixed with the name of the server.
+ * It is therefore sensible to use a environment setting to find the name of the alias.
  * 
  * @author  Gerrit van Brakel
  * @since   4.4.2
@@ -89,11 +98,12 @@ public class CredentialFactory implements CallbackHandler {
 				} catch (Exception e) {
 					log.warn("exception setting alias ["+getAlias()+"]", e);
 				}
-			}
-			if (cb instanceof NameCallback) {
+			} else if (cb instanceof NameCallback) {
 				NameCallback ncb = (NameCallback) cb;
 				log.info("setting name of NameCallback to alias ["+getAlias()+"]");
 				ncb.setName(getAlias());
+			} else {
+				log.debug("ignoring callback of type ["+cb.getClass().getName()+"] for alias ["+getAlias()+"]");
 			}
 //			if (cb instanceof ChoiceCallback) {
 //				ChoiceCallback ccb = (ChoiceCallback) cb;
@@ -101,6 +111,7 @@ public class CredentialFactory implements CallbackHandler {
 //			}
 				
 		}
+		log.info("Handled callbacks for alias ["+getAlias()+"]");
 	}
 
 	protected void getCredentialsFromAlias() {
@@ -122,7 +133,13 @@ public class CredentialFactory implements CallbackHandler {
 				setPassword(invokeCharArrayGetter(pwcred,"getPassword"));
 				gotCredentials=true;
 			} catch (Exception e) {
-				log.error("exception obtaining credentials",e);
+				log.error("exception obtaining credentials for alias ["+getAlias()+"]",e);
+
+				String usernameProp="alias."+getAlias()+".username";
+				String passwordProp="alias."+getAlias()+".password";
+				log.info("trying to solve Authentication Alias from application properties ["+usernameProp+"] and ["+passwordProp+"]");
+				setUsername(AppConstants.getInstance().getProperty(usernameProp,username));
+				setPassword(AppConstants.getInstance().getProperty(passwordProp,password));
 			}
 		}
 	}
