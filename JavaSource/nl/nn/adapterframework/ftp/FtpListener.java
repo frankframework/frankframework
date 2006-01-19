@@ -1,6 +1,9 @@
 /*
  * $Log: FtpListener.java,v $
- * Revision 1.8  2006-01-05 14:17:44  europe\L190409
+ * Revision 1.9  2006-01-19 12:15:49  europe\L190409
+ * improved logging
+ *
+ * Revision 1.8  2006/01/05 14:17:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.7  2005/12/19 17:22:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -99,7 +102,7 @@ import org.apache.commons.lang.builder.ToStringStyle;
  * @author  John Dekker
  */
 public class FtpListener extends FtpSession implements IPullingListener, INamedObject, RunStateEnquiring {
-	public static final String version = "$RCSfile: FtpListener.java,v $  $Revision: 1.8 $ $Date: 2006-01-05 14:17:44 $";
+	public static final String version = "$RCSfile: FtpListener.java,v $  $Revision: 1.9 $ $Date: 2006-01-19 12:15:49 $";
 
 	private LinkedList remoteFilenames;
 	private RunStateEnquirer runStateEnquirer=null;
@@ -154,18 +157,18 @@ public class FtpListener extends FtpSession implements IPullingListener, INamedO
 	 * is a new file to process and returns the first record.
 	 */
 	public synchronized Object getRawMessage(HashMap threadContext) throws ListenerException {
-		log.debug("FtpListener " + getName() + " in getRawMessage");
+		log.debug("FtpListener [" + getName() + "] in getRawMessage, retrieving contents of directory [" +remoteDirectory+ "]");
 		if (remoteFilenames.isEmpty()) {
 			try {
 				openClient(remoteDirectory);
 				List names = ls(remoteDirectory, true, true);
-				log.debug("FtpListener " + getName() + " received ls result");
+				log.debug("FtpListener [" + getName() + "] received ls result of ["+names.size()+"] files");
 				if (names != null && names.size() > 0) {
 					remoteFilenames.addAll(names);
 				}
 			}
 			catch(Exception e) {
-				throw new ListenerException(e); 
+				throw new ListenerException("Exception retrieving contents of directory [" +remoteDirectory+ "]", e); 
 			}
 			finally {
 				closeClient();
