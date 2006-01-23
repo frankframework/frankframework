@@ -1,6 +1,9 @@
 /*
  * $Log: HttpSender.java,v $
- * Revision 1.20  2006-01-19 12:14:41  europe\L190409
+ * Revision 1.21  2006-01-23 12:57:06  europe\L190409
+ * determine port-default if not found from uri
+ *
+ * Revision 1.20  2006/01/19 12:14:41  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected logging output, improved javadoc
  *
  * Revision 1.19  2006/01/05 14:22:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -188,7 +191,7 @@ import nl.nn.adapterframework.util.CredentialFactory;
  * @since 4.2c
  */
 public class HttpSender extends SenderWithParametersBase implements HasPhysicalDestination {
-	public static final String version = "$RCSfile: HttpSender.java,v $ $Revision: 1.20 $ $Date: 2006-01-19 12:14:41 $";
+	public static final String version = "$RCSfile: HttpSender.java,v $ $Revision: 1.21 $ $Date: 2006-01-23 12:57:06 $";
 
 	private String url;
 	private String methodType="GET"; // GET or POST
@@ -254,7 +257,18 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 		try {
 			uri = new URI(getUrl());
 
-			log.debug(getLogPrefix()+"created uri: scheme=["+uri.getScheme()+"] host=["+uri.getHost()+"] port=["+uri.getPort()+"] path=["+uri.getPath()+"]");
+			int port = uri.getPort();
+			if (port<1) {
+				try {
+					log.debug(getLogPrefix()+"looking up protocol for scheme ["+uri.getScheme()+"]");
+					port = Protocol.getProtocol(uri.getScheme()).getDefaultPort();
+				} catch (IllegalStateException e) {
+					log.debug(getLogPrefix()+"protocol for scheme ["+uri.getScheme()+"] not found, setting port to 80",e);
+					port=80; 
+				}
+			}
+
+			log.debug(getLogPrefix()+"created uri: scheme=["+uri.getScheme()+"] host=["+uri.getHost()+"] port=["+port+"] path=["+uri.getPath()+"]");
 
 			URL certificateUrl=null;
 			URL truststoreUrl=null;
@@ -297,10 +311,10 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 				} catch (Throwable t) {
 					throw new ConfigurationException(getLogPrefix()+"cannot create or initialize SocketFactory",t);
 				}
-				Protocol authhttps = new Protocol(uri.getScheme(), socketfactory, uri.getPort());
-				hostconfiguration.setHost(uri.getHost(),uri.getPort(),authhttps);
+				Protocol authhttps = new Protocol(uri.getScheme(), socketfactory, port);
+				hostconfiguration.setHost(uri.getHost(),port,authhttps);
 			} else {
-				hostconfiguration.setHost(uri.getHost(),uri.getPort(),uri.getScheme());
+				hostconfiguration.setHost(uri.getHost(),port,uri.getScheme());
 			}
 			log.debug(getLogPrefix()+"configured httpclient for host ["+hostconfiguration.getHostURL()+"]");
 			
