@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaFacade.java,v $
- * Revision 1.36  2005-12-28 08:47:34  europe\L190409
+ * Revision 1.37  2006-01-23 08:55:45  europe\L190409
+ * use providerSelector (when available in ifsajms)
+ *
+ * Revision 1.36  2005/12/28 08:47:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved logging
  *
  * Revision 1.35  2005/12/20 16:59:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -126,18 +129,18 @@ import javax.jms.*;
  * <tr><td>{@link #setApplicationId(String) applicationId}</td><td>the ApplicationID, in the form of "IFSA://<i>AppId</i>"</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setServiceId(String) serviceId}</td><td>only for Requesters: the ServiceID, in the form of "IFSA://<i>ServiceID</i>"</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMessageProtocol(String) messageProtocol}</td><td>protocol of IFSA-Service to be called. Possible values 
- * <tr><td>{@link #setTimeOut(long) listener.timeOut}</td><td>receiver timeout, in milliseconds</td><td>defined by IFSA expiry</td></tr>
  * <ul>
  *   <li>"FF": Fire & Forget protocol</li>
  *   <li>"RR": Request-Reply protocol</li>
  * </ul></td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setTimeOut(long) listener.timeOut}</td><td>receiver timeout, in milliseconds</td><td>defined by IFSA expiry</td></tr>
  * </table>
  * 
  * @author Johan Verrips / Gerrit van Brakel
  * @since 4.2
  */
 public class IfsaFacade implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version = "$RCSfile: IfsaFacade.java,v $ $Revision: 1.36 $ $Date: 2005-12-28 08:47:34 $";
+	public static final String version = "$RCSfile: IfsaFacade.java,v $ $Revision: 1.37 $ $Date: 2006-01-23 08:55:45 $";
     protected Logger log = Logger.getLogger(this.getClass());
     
     private static int BASIC_ACK_MODE = Session.AUTO_ACKNOWLEDGE;
@@ -159,6 +162,7 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination, IXAEnab
 		
 	private boolean transacted=false; // attribute is currently not used
 
+	private String providerSelector=null;
 
 	public IfsaFacade(boolean asProvider) {
 		super();
@@ -339,13 +343,30 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination, IXAEnab
 	    try {
 	        QueueSender queueSender = session.createSender(queue);
 	        if (log.isDebugEnabled()) {
-	            log.debug(getLogPrefix()+ " got queueSender ["
+	            log.debug(getLogPrefix()+ "got queueSender ["
 	                            + ToStringBuilder.reflectionToString((IFSAQueueSender) queueSender)+ "]");
 	        }
 	        return queueSender;
 	    } catch (Exception e) {
 	        throw new IfsaException(e);
 	    }
+	}
+
+	protected synchronized String getProviderSelector() {
+		if (providerSelector==null) {
+			try {
+				providerSelector=""; // set default, also to avoid re-evaluation time and time again for lower ifsa-versions.
+				if (messageProtocol.equals(IfsaMessageProtocolEnum.REQUEST_REPLY)) {
+					providerSelector=IFSAConstants.QueueReceiver.SELECTOR_RR;
+				}
+				if (messageProtocol.equals(IfsaMessageProtocolEnum.FIRE_AND_FORGET)) {
+					providerSelector=IFSAConstants.QueueReceiver.SELECTOR_FF;
+				}
+			} catch (Throwable t) {
+				log.debug(getLogPrefix()+"exception determining selector, probably lower ifsa version, ignoring");
+			}
+		}
+		return providerSelector;
 	}
 
 	/**
@@ -364,7 +385,13 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination, IXAEnab
 		QueueReceiver queueReceiver;
 		    
 		if (isProvider()) {
-			queueReceiver = session.createReceiver(getServiceQueue());
+			String selector = getProviderSelector();			
+			if (StringUtils.isEmpty(selector)) {
+				queueReceiver = session.createReceiver(getServiceQueue());
+			} else {
+				log.debug(getLogPrefix()+"using selector ["+selector+"]");
+				queueReceiver = session.createReceiver(getServiceQueue(), selector);
+			}
 		} else {
 			throw new IfsaException("cannot obtain ServiceReceiver: Requestor cannot act as Provider");
 		}
