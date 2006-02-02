@@ -1,6 +1,9 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.29  2005-12-28 08:30:44  europe\L190409
+ * Revision 1.30  2006-02-02 13:53:24  europe\L190409
+ * added encodeURL-function
+ *
+ * Revision 1.29  2005/12/28 08:30:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fixed endless recursion in createXpathEvaluator
  *
  * Revision 1.28  2005/10/24 09:26:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -105,6 +108,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.DefaultHandler;
+import org.xml.sax.XMLReader;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -150,7 +154,7 @@ import java.util.StringTokenizer;
  * @author Johan Verrips IOS
  */
 public class XmlUtils {
-	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.29 $ $Date: 2005-12-28 08:30:44 $";
+	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.30 $ $Date: 2006-02-02 13:53:24 $";
 	static Logger log = Logger.getLogger(XmlUtils.class);
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
@@ -477,7 +481,6 @@ public class XmlUtils {
 		}
 		return decoded.toString();
 	}
-
 	
 	/**
 	   * Conversion of special xml signs
@@ -514,7 +517,40 @@ public class XmlUtils {
 			return 0x0;
 	}
 
-	
+	/**
+	 * encodes a url
+	 */
+
+	static public String encodeURL(String url) {
+		String mark = "-_.!~*'()\"";
+		StringBuffer encodedUrl = new StringBuffer();
+		int len = url.length();
+		for (int i = 0; i < len; i++) {
+			char c = url.charAt(i);
+			if ((c >= '0' && c <= '9')
+				|| (c >= 'a' && c <= 'z')
+				|| (c >= 'A' && c <= 'Z'))
+				encodedUrl.append(c);
+			else {
+				int imark = mark.indexOf(c);
+				if (imark >= 0) {
+					encodedUrl.append(c);
+				} else {
+					encodedUrl.append('%');
+					encodedUrl.append(toHexChar((c & 0xF0) >> 4));
+					encodedUrl.append(toHexChar(c & 0x0F));
+				}
+			}
+		}
+		return encodedUrl.toString();
+	}
+
+	static private char toHexChar(int digitValue) {
+		if (digitValue < 10)
+			return (char) ('0' + digitValue);
+		else
+			return (char) ('A' + (digitValue - 10));
+	}
 	
 	/**
 	 * Method getChildTagAsBoolean.
@@ -868,7 +904,6 @@ public class XmlUtils {
 		}
 		return result;
 	}
-
 	
 	/*
 	 *This function does not operate with Xerces 1.4.1
