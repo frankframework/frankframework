@@ -1,7 +1,7 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.30  2006-02-02 13:53:24  europe\L190409
- * added encodeURL-function
+ * Revision 1.31  2006-02-06 11:50:54  europe\L190409
+ * added isWellFormed() (by Peter Leeuwenburgh)
  *
  * Revision 1.29  2005/12/28 08:30:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fixed endless recursion in createXpathEvaluator
@@ -104,11 +104,11 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.DefaultHandler;
-import org.xml.sax.XMLReader;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -154,7 +154,7 @@ import java.util.StringTokenizer;
  * @author Johan Verrips IOS
  */
 public class XmlUtils {
-	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.30 $ $Date: 2006-02-02 13:53:24 $";
+	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.31 $ $Date: 2006-02-06 11:50:54 $";
 	static Logger log = Logger.getLogger(XmlUtils.class);
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
@@ -903,6 +903,50 @@ public class XmlUtils {
 			}
 		}
 		return result;
+	}
+
+
+	static public boolean isWellFormed(String input) {
+		return isWellFormed(input, null);
+	}
+
+	static public boolean isWellFormed(String input, String root) {
+		Variant in = new Variant(input);
+		InputSource is = in.asXmlInputSource();
+
+		DefaultHandler xmlHandler = new DefaultHandler() {
+			private boolean firstElement = true;
+			public String firstElementName = null;
+
+			public void startElement(String namespaceURI, String lName, String qName, Attributes attrs)
+				throws SAXException {
+				if (firstElement) {
+					firstElementName = lName;
+					firstElement = false;
+				}
+			}
+
+			public String toString() {
+				return firstElementName;
+			}
+		};
+		
+		SAXParserFactory factory = SAXParserFactory.newInstance();
+		factory.setNamespaceAware(true);
+		try {
+			SAXParser saxParser = factory.newSAXParser();
+			saxParser.parse(is, xmlHandler);
+		} catch (Exception e) {
+			return false;
+		}
+
+		if (root != null) {
+			String tagRoot = xmlHandler.toString();
+			if (!tagRoot.equals(root))
+				return false;
+		}
+
+		return true;
 	}
 	
 	/*
