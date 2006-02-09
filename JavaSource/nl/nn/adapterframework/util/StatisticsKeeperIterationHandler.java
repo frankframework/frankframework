@@ -1,6 +1,9 @@
 /*
  * $Log: StatisticsKeeperIterationHandler.java,v $
- * Revision 1.1  2005-12-28 08:31:33  europe\L190409
+ * Revision 1.2  2006-02-09 08:02:46  europe\L190409
+ * iterate over string scalars too
+ *
+ * Revision 1.1  2005/12/28 08:31:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * introduced StatisticsKeeper-iteration
  *
  */
@@ -19,6 +22,7 @@ public interface StatisticsKeeperIterationHandler {
 	public void end(Object data);
 	public void handleStatisticsKeeperIteration(Object data, StatisticsKeeper sk);
 	public void handleScalarIteration(Object data, String scalarName, long value);
+	public void handleScalarIteration(Object data, String scalarName, String value);
 	public Object openGroup(Object parentData, String name, String type);
 	public void  closeGroup(Object data);
 }
