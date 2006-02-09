@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractPipe.java,v $
- * Revision 1.16  2006-01-05 14:34:48  europe\L190409
+ * Revision 1.17  2006-02-09 08:01:48  europe\L190409
+ * METT tracing support
+ *
+ * Revision 1.16  2006/01/05 14:34:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.15  2005/10/24 09:20:18  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -44,6 +47,7 @@ package nl.nn.adapterframework.pipes;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IExtendedPipe;
+import nl.nn.adapterframework.core.MettHook;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
@@ -99,8 +103,8 @@ import java.util.Hashtable;
  *
  * @see nl.nn.adapterframework.core.PipeLineSession
  */
-public abstract class AbstractPipe implements IExtendedPipe {
-	public static final String version="$RCSfile: AbstractPipe.java,v $ $Revision: 1.16 $ $Date: 2006-01-05 14:34:48 $";
+public abstract class AbstractPipe implements IExtendedPipe, MettHook {
+	public static final String version="$RCSfile: AbstractPipe.java,v $ $Revision: 1.17 $ $Date: 2006-02-09 08:01:48 $";
 	private String name;
 	protected Logger log = Logger.getLogger(this.getClass());
 	private Hashtable pipeForwards=new Hashtable();
@@ -110,7 +114,13 @@ public abstract class AbstractPipe implements IExtendedPipe {
 	private String getInputFromSessionKey=null;
 	private String storeResultInSessionKey=null;
 	private boolean namespaceAware=XmlUtils.isNamespaceAwareByDefault();
-  
+ 
+	// METT event numbers
+	private int beforeEvent=-1;
+	private int afterEvent=-1;
+	private int exceptionEvent=-1;
+
+ 
 	/**
 	 * <code>configure()</code> is called after the {@link nl.nn.adapterframework.core.PipeLine Pipeline} is registered
 	 * at the {@link nl.nn.adapterframework.core.Adapter Adapter}. Purpose of this method is to reduce
@@ -302,5 +312,33 @@ public abstract class AbstractPipe implements IExtendedPipe {
 	public boolean isNamespaceAware() {
 		return namespaceAware;
 	}
+
+
+	// METT events
+
+	public int getAfterEvent() {
+		return afterEvent;
+	}
+
+	public int getBeforeEvent() {
+		return beforeEvent;
+	}
+
+	public int getExceptionEvent() {
+		return exceptionEvent;
+	}
+
+	public void setAfterEvent(int i) {
+		afterEvent = i;
+	}
+
+	public void setBeforeEvent(int i) {
+		beforeEvent = i;
+	}
+
+	public void setExceptionEvent(int i) {
+		exceptionEvent = i;
+	}
+
 
 }
