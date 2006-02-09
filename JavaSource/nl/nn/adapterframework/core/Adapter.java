@@ -1,6 +1,9 @@
 /*
  * $Log: Adapter.java,v $
- * Revision 1.21  2005-12-28 08:34:46  europe\L190409
+ * Revision 1.22  2006-02-09 07:55:15  europe\L190409
+ * name, upSince and lastMessageDate in statistics-summary
+ *
+ * Revision 1.21  2005/12/28 08:34:46  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * introduced StatisticsKeeper-iteration
  *
  * Revision 1.20  2005/10/26 13:16:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -114,7 +117,7 @@ import javax.transaction.UserTransaction;
  */
 
 public class Adapter extends JNDIBase implements Runnable, IAdapter {
-	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.21 $ $Date: 2005-12-28 08:34:46 $";
+	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.22 $ $Date: 2006-02-09 07:55:15 $";
 	private Vector receivers = new Vector();
 	private long lastMessageDate = 0;
 	private PipeLine pipeline;
@@ -303,6 +306,10 @@ public class Adapter extends JNDIBase implements Runnable, IAdapter {
 	
 	public void forEachStatisticsKeeperBody(StatisticsKeeperIterationHandler hski, Object data) {
 		Object adapterData=hski.openGroup(data,getName(),"adapter");
+		hski.handleScalarIteration(adapterData,"name", getName());
+		hski.handleScalarIteration(adapterData,"upSince", getStatsUpSince());
+		hski.handleScalarIteration(adapterData,"lastMessageDate", getLastMessageDate());
+
 		hski.handleScalarIteration(adapterData,"messagesInProcess", getNumOfMessagesInProcess());
 		hski.handleScalarIteration(adapterData,"messagesProcessed", getNumOfMessagesProcessed());
 		hski.handleScalarIteration(adapterData,"messagesInError", getNumOfMessagesInError());
