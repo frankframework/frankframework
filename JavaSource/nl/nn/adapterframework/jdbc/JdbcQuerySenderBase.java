@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcQuerySenderBase.java,v $
- * Revision 1.20  2006-01-05 14:21:21  europe\L190409
+ * Revision 1.21  2006-02-09 10:42:56  europe\L190409
+ * added clob-support (PL)
+ *
+ * Revision 1.20  2006/01/05 14:21:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.19  2005/10/24 09:17:29  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -109,6 +112,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * <tr><td>{@link #setQueryType(String) queryType}</td><td>one of:
  * <ul><li>"select" for queries that return data</li>
  *     <li>"updateBlob" for queries that update a BLOB</li>
+ *     <li>"updateClob" for queries that update a CLOB</li>
  *     <li>anything else for queries that return no data.</li>
  * </ul></td><td>"other"</td></tr>
  * <tr><td>{@link #setMaxRows(int) maxRows}</td><td>maximum number of rows returned</td><td>-1 (unlimited)</td></tr>
@@ -137,7 +141,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * @since 	4.1
  */
 public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
-	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.20 $ $Date: 2006-01-05 14:21:21 $";
+	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.21 $ $Date: 2006-02-09 10:42:56 $";
 
 	private String queryType = "other";
 	private int maxRows=-1; // return all rows
@@ -145,6 +149,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 	private boolean scalar=false;
 	private boolean synchronous=true;
 	private int blobColumn=1;
+	private int clobColumn=1;
 	private String nullValue="";
 	private String columnsReturned=null;
 	private String resultQuery=null;
@@ -213,27 +218,31 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 				if ("updateBlob".equalsIgnoreCase(getQueryType())) {
 					return executeUpdateBlobQuery(statement,message);
 				} else {
-					int numRowsAffected = statement.executeUpdate();
-					if (StringUtils.isNotEmpty(getResultQuery())) {
-						Statement resStmt = null;
-						try { 
-							resStmt = connection.createStatement();
-							log.debug("obtaining result from ["+getResultQuery()+"]");
-							ResultSet rs = resStmt.executeQuery(getResultQuery());
-							return getResult(rs);
-						} finally {
-							if (resStmt!=null) {
-								resStmt.close();
+					if ("updateClob".equalsIgnoreCase(getQueryType())) {
+						return executeUpdateClobQuery(statement,message);
+					} else {
+						int numRowsAffected = statement.executeUpdate();
+						if (StringUtils.isNotEmpty(getResultQuery())) {
+							Statement resStmt = null;
+							try { 
+								resStmt = connection.createStatement();
+								log.debug("obtaining result from ["+getResultQuery()+"]");
+								ResultSet rs = resStmt.executeQuery(getResultQuery());
+								return getResult(rs);
+							} finally {
+								if (resStmt!=null) {
+									resStmt.close();
+								}
 							}
 						}
+						if (getColumnsReturnedList()!=null) {
+							return getResult(getReturnedColumns(getColumnsReturnedList(),statement));
+						}
+						if (isScalar()) {
+							return numRowsAffected+"";
+						}
+						return "<result><rowsupdated>" + numRowsAffected + "</rowsupdated></result>";
 					}
-					if (getColumnsReturnedList()!=null) {
-						return getResult(getReturnedColumns(getColumnsReturnedList(),statement));
-					}
-					if (isScalar()) {
-						return numRowsAffected+"";
-					}
-					return "<result><rowsupdated>" + numRowsAffected + "</rowsupdated></result>";
 				}
 			}
 		} catch (ParameterException e) {
@@ -291,6 +300,33 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 			throw new SenderException(getLogPrefix() + "got exception executing a updating BLOB",e );
 		} catch (IOException e) {
 			throw new SenderException(getLogPrefix() + "got exception executing a updating BLOB",e );
+		} finally {
+			try {
+				if (rs!=null) {
+					rs.close();
+				}
+			} catch (SQLException e) {
+				log.warn(new SenderException(getLogPrefix() + "got exception closing resultset",e));
+			}
+		}
+	}
+	
+	protected String executeUpdateClobQuery(PreparedStatement statement, String message) throws SenderException{
+		ResultSet rs=null;
+		try {
+			rs = statement.executeQuery();
+			XmlBuilder result=new XmlBuilder("result");
+			JdbcUtil.warningsToXml(statement.getWarnings(),result);
+			rs.next();
+			JdbcUtil.putStringAsClob(rs, clobColumn, message);
+			JdbcUtil.warningsToXml(rs.getWarnings(),result);
+			return result.toXML();
+		} catch (SQLException sqle) {
+			throw new SenderException(getLogPrefix() + "got exception executing a SELECT SQL command",sqle );
+		} catch (JdbcException e) {
+			throw new SenderException(getLogPrefix() + "got exception executing a updating CLOB",e );
+		} catch (IOException e) {
+			throw new SenderException(getLogPrefix() + "got exception executing a updating CLOB",e );
 		} finally {
 			try {
 				if (rs!=null) {
