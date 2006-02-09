@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaFacade.java,v $
- * Revision 1.37  2006-01-23 08:55:45  europe\L190409
+ * Revision 1.38  2006-02-09 07:59:40  europe\L190409
+ * restored compatibility with IFSA releases without provider selection mechanism
+ *
+ * Revision 1.37  2006/01/23 08:55:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * use providerSelector (when available in ifsajms)
  *
  * Revision 1.36  2005/12/28 08:47:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -107,6 +110,7 @@ import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IXAEnabled;
 import nl.nn.adapterframework.core.IbisException;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.util.AppConstants;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -140,10 +144,14 @@ import javax.jms.*;
  * @since 4.2
  */
 public class IfsaFacade implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version = "$RCSfile: IfsaFacade.java,v $ $Revision: 1.37 $ $Date: 2006-01-23 08:55:45 $";
+	public static final String version = "$RCSfile: IfsaFacade.java,v $ $Revision: 1.38 $ $Date: 2006-02-09 07:59:40 $";
     protected Logger log = Logger.getLogger(this.getClass());
     
     private static int BASIC_ACK_MODE = Session.AUTO_ACKNOWLEDGE;
+ 
+	private final static String USE_SELECTOR_FOR_PROVIDER_KEY="ifsa.provider.useSelectors";
+	private static Boolean useSelectorsStore=null; 
+
     
 	private String name;
 	private String applicationId;
@@ -353,7 +361,7 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination, IXAEnab
 	}
 
 	protected synchronized String getProviderSelector() {
-		if (providerSelector==null) {
+		if (providerSelector==null && useSelectorsForProviders()) {
 			try {
 				providerSelector=""; // set default, also to avoid re-evaluation time and time again for lower ifsa-versions.
 				if (messageProtocol.equals(IfsaMessageProtocolEnum.REQUEST_REPLY)) {
@@ -382,25 +390,30 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination, IXAEnab
 		throws IfsaException {
 	
 		try {
-		QueueReceiver queueReceiver;
-		    
-		if (isProvider()) {
-			String selector = getProviderSelector();			
-			if (StringUtils.isEmpty(selector)) {
-				queueReceiver = session.createReceiver(getServiceQueue());
+			QueueReceiver queueReceiver;
+			    
+			if (isProvider()) {
+				String selector = getProviderSelector();			
+				if (StringUtils.isEmpty(selector)) {
+					queueReceiver = session.createReceiver(getServiceQueue());
+				} else {
+					log.debug(getLogPrefix()+"using selector ["+selector+"]");
+					try {
+						queueReceiver = session.createReceiver(getServiceQueue(), selector);
+					} catch (JMSException e) {
+						log.warn("caught exception, probably due to use of selector ["+selector+"], falling back to non-selected mode",e);
+						queueReceiver = session.createReceiver(getServiceQueue());
+					}
+				}
 			} else {
-				log.debug(getLogPrefix()+"using selector ["+selector+"]");
-				queueReceiver = session.createReceiver(getServiceQueue(), selector);
+				throw new IfsaException("cannot obtain ServiceReceiver: Requestor cannot act as Provider");
 			}
-		} else {
-			throw new IfsaException("cannot obtain ServiceReceiver: Requestor cannot act as Provider");
-		}
-		if (log.isDebugEnabled() && !isSessionsArePooled()) {
-			log.debug(getLogPrefix()+ "got receiver for queue ["
-					+ queueReceiver.getQueue().getQueueName()
-					+ "] "+ ToStringBuilder.reflectionToString(queueReceiver));
-		}
-		return queueReceiver;
+			if (log.isDebugEnabled() && !isSessionsArePooled()) {
+				log.debug(getLogPrefix()+ "got receiver for queue ["
+						+ queueReceiver.getQueue().getQueueName()
+						+ "] "+ ToStringBuilder.reflectionToString(queueReceiver));
+			}
+			return queueReceiver;
 		} catch (JMSException e) {
 			throw new IfsaException(e);
 		}
@@ -655,6 +668,14 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination, IXAEnab
 	}
 	public String getApplicationId() {
 		return applicationId;
+	}
+
+	protected synchronized boolean useSelectorsForProviders() {
+		if (useSelectorsStore==null) {
+			boolean pooled=AppConstants.getInstance().getBoolean(USE_SELECTOR_FOR_PROVIDER_KEY, true);
+			useSelectorsStore = new Boolean(pooled);
+		}
+		return useSelectorsStore.booleanValue();
 	}
 
 
