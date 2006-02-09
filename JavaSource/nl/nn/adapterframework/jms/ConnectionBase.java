@@ -1,6 +1,9 @@
 /*
  * $Log: ConnectionBase.java,v $
- * Revision 1.7  2006-01-02 12:04:22  europe\L190409
+ * Revision 1.8  2006-02-09 08:01:07  europe\L190409
+ * keep counts of open connections and sessions
+ *
+ * Revision 1.7  2006/01/02 12:04:22  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved logging
  *
  * Revision 1.6  2005/12/28 08:51:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -52,6 +55,7 @@ import javax.naming.Context;
 import nl.nn.adapterframework.core.IbisException;
 import nl.nn.adapterframework.extensions.ifsa.IfsaException;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.Counter;
 
 import org.apache.log4j.Logger;
 
@@ -62,7 +66,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class ConnectionBase  {
-	public static final String version="$RCSfile: ConnectionBase.java,v $ $Revision: 1.7 $ $Date: 2006-01-02 12:04:22 $";
+	public static final String version="$RCSfile: ConnectionBase.java,v $ $Revision: 1.8 $ $Date: 2006-02-09 08:01:07 $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	private int referenceCount;
@@ -73,6 +77,9 @@ public class ConnectionBase  {
 	private final static String USE_SINGLE_DYNAMIC_REPLY_QUEUE_KEY="jms.useSingleDynamicReplyQueue";
 	private static Boolean useSingleDynamicReplyQueueStore=null; 
 
+
+	private Counter openConnectionCount = new Counter(0);
+	private Counter openSessionCount = new Counter(0);
 	
 	private String id;
 	
@@ -109,6 +116,13 @@ public class ConnectionBase  {
 				if (globalConnection != null) { 
 					log.debug(getLogPrefix()+" closing global Connection");
 					globalConnection.close();
+					openConnectionCount.decrease();
+				}
+				if (openSessionCount.getValue()!=0) {
+					log.warn(getLogPrefix()+"open session count after closing ["+openSessionCount.getValue()+"]");
+				}
+				if (openConnectionCount.getValue()!=0) {
+					log.warn(getLogPrefix()+"open connection count after closing ["+openConnectionCount.getValue()+"]");
 				}
 				if (context != null) {
 					context.close(); 
@@ -155,8 +169,9 @@ public class ConnectionBase  {
 	
 	private Connection createAndStartConnection() throws JMSException {
 		Connection connection;
-		log.debug(getLogPrefix()+"creating Connection");
+		log.debug(getLogPrefix()+"creating Connection, openConnectionCount before ["+openConnectionCount.getValue()+"]");
 		connection = createConnection();
+		openConnectionCount.increase();
 		connection.start();
 		return connection;
 	}
@@ -177,8 +192,9 @@ public class ConnectionBase  {
 	private void releaseConnection(Connection connection) {
 		if (connection != null && connectionsArePooled()) {
 			try {
-				log.debug(getLogPrefix()+"closing Connection");
+				log.debug(getLogPrefix()+"closing Connection, openConnectionCount will become ["+(openConnectionCount.getValue()-1)+"]");
 				connection.close();
+				openConnectionCount.decrease();
 			} catch (JMSException e) {
 				log.error(getLogPrefix()+"Exception closing Connection", e);
 			}
@@ -194,12 +210,13 @@ public class ConnectionBase  {
 			throw new JmsException("could not obtain Connection", e);
 		}
 		try {
-			log.debug(getLogPrefix()+"creating Session");
+			log.debug(getLogPrefix()+"creating Session, openSessionCount before ["+openSessionCount.getValue()+"]");
 			if (connection instanceof QueueConnection) {
 				session = ((QueueConnection)connection).createQueueSession(transacted, acknowledgeMode);
 			} else {
 				session = ((TopicConnection)connection).createTopicSession(transacted, acknowledgeMode);
 			}
+			openSessionCount.increase();
 			if (connectionsArePooled()) {
 				connectionTable.put(session,connection);
 			}
@@ -215,8 +232,9 @@ public class ConnectionBase  {
 			if (connectionsArePooled()) {
 				Connection connection = (Connection)connectionTable.remove(session);
 				try {
-					log.debug(getLogPrefix()+"closing Session");
+					log.debug(getLogPrefix()+"closing Session, openSessionCount will become ["+(openSessionCount.getValue()-1)+"]");
 					session.close();
+					openSessionCount.decrease();
 				} catch (JMSException e) {
 					log.error(getLogPrefix()+"Exception closing Session", e);
 				} finally {
