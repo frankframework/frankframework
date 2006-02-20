@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaProviderListener.java,v $
- * Revision 1.18  2006-01-05 13:55:27  europe\L190409
+ * Revision 1.19  2006-02-20 15:49:54  europe\L190409
+ * improved handling of PoisonMessages, should now work under transactions control
+ *
+ * Revision 1.18  2006/01/05 13:55:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.17  2005/12/20 16:59:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -117,7 +120,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * @since 4.2
  */
 public class IfsaProviderListener extends IfsaFacade implements IPullingListener, INamedObject, RunStateEnquiring {
-	public static final String version = "$RCSfile: IfsaProviderListener.java,v $ $Revision: 1.18 $ $Date: 2006-01-05 13:55:27 $";
+	public static final String version = "$RCSfile: IfsaProviderListener.java,v $ $Revision: 1.19 $ $Date: 2006-02-20 15:49:54 $";
 
     private final static String THREAD_CONTEXT_SESSION_KEY = "session";
     private final static String THREAD_CONTEXT_RECEIVER_KEY = "receiver";
@@ -309,20 +312,17 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 	 */
 	public String getIdFromRawMessage(Object rawMessage, HashMap threadContext) throws ListenerException {
 	
-		TextMessage message = null;
+		IFSAMessage message = null;
 	 
 	 	if (rawMessage instanceof IfsaMessageWrapper) {
 	 		return getIdFromWrapper((IfsaMessageWrapper)rawMessage,threadContext);
 	 	}
 	 
 	    try {
-	        message = (TextMessage) rawMessage;
+	        message = (IFSAMessage) rawMessage;
 	    } catch (ClassCastException e) {
 	        log.error(getLogPrefix()+
-	            "message received was not of type TextMessage, but ["
-	                + rawMessage.getClass().getName()
-	                + "]",
-	            e);
+	            "message received was not of type IFSAMessage, but [" + rawMessage.getClass().getName() + "]", e);
 	        return null;
 	    }
 	    String mode = "unknown";
@@ -382,15 +382,15 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 	    // retrieve message text
 	    // --------------------------
 	    try {
-	        messageText = message.getText();
-	    } catch (JMSException ignore) {
+	        messageText = ((TextMessage)message).getText();
+	    } catch (Throwable ignore) {
 	    }
 	    // --------------------------
 	    // retrieve ifsaServiceDestination
 	    // --------------------------
 	    try {
-			fullIfsaServiceName = ((IFSAMessage) message).getServiceString();
-			requestedService = ((IFSAMessage) message).getService();
+			fullIfsaServiceName = message.getServiceString();
+			requestedService = message.getService();
 			
 			ifsaServiceName = requestedService.getServiceName();
 			ifsaGroup = requestedService.getServiceGroup();
@@ -485,15 +485,13 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 	        } catch (Exception e) {
 	        	source = "unknown due to exeption:"+e.getMessage();
 	        }
-	        log.error(getLogPrefix()+ "received IFSAPoisonMessage "
-	                + "source ["
-	                + source
-	                + "]"
-	                + "content ["
-	                + ToStringBuilder.reflectionToString((IFSAPoisonMessage) result)
-	                + "]");
+	        String msg=getLogPrefix()+ "received IFSAPoisonMessage "
+	                	+ "source [" + source + "]"
+		                + "content [" + ToStringBuilder.reflectionToString((IFSAPoisonMessage) result) + "]";
+		    log.warn(msg);
 	    }
-	    if (isTransacted() && result instanceof IFSATextMessage) {
+	    if (isTransacted() && 
+	    	(result instanceof IFSATextMessage || result instanceof IFSAPoisonMessage)) {
 	    	result = new IfsaMessageWrapper(result, this);
 	    }
 	    return result;
@@ -507,12 +505,26 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 		if (rawMessage instanceof IfsaMessageWrapper) {
 			return getStringFromWrapper((IfsaMessageWrapper)rawMessage,threadContext);
 		}
+		if (rawMessage instanceof IFSAPoisonMessage) {
+			IFSAPoisonMessage pm = (IFSAPoisonMessage)rawMessage;
+			IFSAHeader header = pm.getIFSAHeader();
+			String source;
+			try {
+				source = header.getIFSA_Source();
+			} catch (Exception e) {
+				source = "unknown due to exeption:"+e.getMessage();
+			}
+			return  "<poisonmessage>"+
+					"  <source>"+source+"</source>"+
+					"  <contents>"+ToStringBuilder.reflectionToString(pm)+"</contents>"+
+					"</poisonmessage>";
+		}
 
 	    TextMessage message = null;
 	    try {
 	        message = (TextMessage) rawMessage;
 	    } catch (ClassCastException e) {
-	        log.warn(getLogPrefix()+ "message received  was not of type TextMessage, but ["+rawMessage.getClass().getName()+"]", e);
+	        log.warn(getLogPrefix()+ "message received was not of type TextMessage, but ["+rawMessage.getClass().getName()+"]", e);
 	        return null;
 	    }
 	    try {
