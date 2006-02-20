@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractPipe.java,v $
- * Revision 1.17  2006-02-09 08:01:48  europe\L190409
+ * Revision 1.18  2006-02-20 15:42:41  europe\L190409
+ * moved METT-support to single entry point for tracing
+ *
+ * Revision 1.17  2006/02/09 08:01:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * METT tracing support
  *
  * Revision 1.16  2006/01/05 14:34:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -47,7 +50,6 @@ package nl.nn.adapterframework.pipes;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IExtendedPipe;
-import nl.nn.adapterframework.core.MettHook;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
@@ -55,6 +57,7 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
+import nl.nn.adapterframework.util.TracingEventNumbers;
 import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
@@ -103,8 +106,8 @@ import java.util.Hashtable;
  *
  * @see nl.nn.adapterframework.core.PipeLineSession
  */
-public abstract class AbstractPipe implements IExtendedPipe, MettHook {
-	public static final String version="$RCSfile: AbstractPipe.java,v $ $Revision: 1.17 $ $Date: 2006-02-09 08:01:48 $";
+public abstract class AbstractPipe implements IExtendedPipe, TracingEventNumbers {
+	public static final String version="$RCSfile: AbstractPipe.java,v $ $Revision: 1.18 $ $Date: 2006-02-20 15:42:41 $";
 	private String name;
 	protected Logger log = Logger.getLogger(this.getClass());
 	private Hashtable pipeForwards=new Hashtable();
@@ -314,7 +317,7 @@ public abstract class AbstractPipe implements IExtendedPipe, MettHook {
 	}
 
 
-	// METT events
+	// event numbers for tracing
 
 	public int getAfterEvent() {
 		return afterEvent;

@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.22  2006-02-09 07:57:47  europe\L190409
+ * Revision 1.23  2006-02-20 15:42:41  europe\L190409
+ * moved METT-support to single entry point for tracing
+ *
+ * Revision 1.22  2006/02/09 07:57:47  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * METT tracing support
  *
  * Revision 1.21  2005/10/27 08:46:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -91,7 +94,6 @@ import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.HasSender;
-import nl.nn.adapterframework.core.MettHook;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
@@ -104,13 +106,14 @@ import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.RunStateManager;
 import nl.nn.adapterframework.util.Semaphore;
 import nl.nn.adapterframework.util.StatisticsKeeper;
+import nl.nn.adapterframework.util.TracingEventNumbers;
+import nl.nn.adapterframework.util.TracingUtil;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.apache.log4j.Logger;
-
-import com.ing.coins.mett.application.MonitorAccessor;
 
 import javax.transaction.Status;
 
@@ -183,8 +186,8 @@ import javax.transaction.UserTransaction;
  * @author     Gerrit van Brakel
  * @since 4.2
  */
-public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, IMessageHandler, IbisExceptionListener, HasSender, MettHook {
-	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.22 $ $Date: 2006-02-09 07:57:47 $";
+public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, IMessageHandler, IbisExceptionListener, HasSender, TracingEventNumbers {
+	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.23 $ $Date: 2006-02-20 15:42:41 $";
 	protected Logger log = Logger.getLogger(this.getClass());
  
 	private String returnIfStopped="";
@@ -561,13 +564,13 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 				if (rawMessage!=null) {
 
 					try {
-						eventOccurred(getBeforeEvent());
+						TracingUtil.beforeEvent(this);
 
 						startProcessingTimestamp = System.currentTimeMillis();
 						try {
 							processRawMessage(listener,rawMessage,threadContext,finishProcessingTimestamp-startProcessingTimestamp);
 						} catch (ListenerException e) {
-							eventOccurred(getExceptionEvent());
+							TracingUtil.exceptionEvent(this);
 							if ("continue".equalsIgnoreCase(getOnError())) {
 								error("caught Exception processing message, will continue processing next message", e);
 							} else {
@@ -577,7 +580,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 						}
 						finishProcessingTimestamp = System.currentTimeMillis();
 					} finally {
-						eventOccurred(getAfterEvent());
+						TracingUtil.afterEvent(this);
 					}
 				} 
 			}
@@ -1266,18 +1269,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 		return replaceTo;
 	}
 
-
-	// METT events
-	
-	public void eventOccurred(int eventNr) {
-		if (eventNr>=0) {
-			try {
-				MonitorAccessor.eventOccurred(eventNr);
-			} catch (Throwable t) {
-				log.warn("Exception occured posting METT event",t);
-			}
-		}
-	}
+	// event numbers for tracing
 
 	public int getAfterEvent() {
 		return afterEvent;

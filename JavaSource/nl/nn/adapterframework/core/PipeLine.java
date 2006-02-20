@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.26  2006-02-09 07:57:22  europe\L190409
+ * Revision 1.27  2006-02-20 15:42:40  europe\L190409
+ * moved METT-support to single entry point for tracing
+ *
+ * Revision 1.26  2006/02/09 07:57:22  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * METT tracing support
  *
  * Revision 1.25  2005/11/02 09:06:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -80,11 +83,10 @@ import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.Semaphore;
 import nl.nn.adapterframework.util.StatisticsKeeper;
+import nl.nn.adapterframework.util.TracingUtil;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-
-import com.ing.coins.mett.application.MonitorAccessor;
 
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -143,7 +145,7 @@ import javax.transaction.UserTransaction;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.26 $ $Date: 2006-02-09 07:57:22 $";
+	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.27 $ $Date: 2006-02-20 15:42:40 $";
     private Logger log = Logger.getLogger(this.getClass());
 	private Logger durationLog = Logger.getLogger("LongDurationMessages");
     
@@ -388,21 +390,12 @@ public class PipeLine {
 	    
 	    while (!ready){
 			IExtendedPipe pe=null;
-			int beforeEvent=-1;
-			int afterEvent=-1;
-			int exceptionEvent=-1;
 			
 			if (pipeToRun instanceof AbstractPipe) {
 				pe = (IExtendedPipe)pipeToRun;
 			}
-			if (pipeToRun instanceof MettHook) {
-				MettHook mh = (MettHook)pipeToRun;
-				beforeEvent=mh.getBeforeEvent();
-				afterEvent=mh.getAfterEvent();
-				exceptionEvent=mh.getExceptionEvent();
-			}
 	    	
-	    	eventOccurred(beforeEvent);
+	    	TracingUtil.beforeEvent(pipeToRun);
 			long pipeStartTime= System.currentTimeMillis();
 			
 			if (log.isDebugEnabled()){  // for performance reasons
@@ -469,10 +462,10 @@ public class PipeLine {
 					pipeLineSession.put(pe.getStoreResultInSessionKey(),pipeRunResult.getResult());
 				}
 			} catch (PipeRunException pre) {
-				eventOccurred(exceptionEvent);
+				TracingUtil.exceptionEvent(pipeToRun);
 				throw pre;
 			} finally {
-				eventOccurred(afterEvent);
+				TracingUtil.afterEvent(pipeToRun);
 				if (pe!=null) {
 					if (pe.getDurationThreshold() >= 0 && pipeDuration > pe.getDurationThreshold()) {
 						durationLog.info("Pipe ["+pe.getName()+"] of ["+owner.getName()+"] duration ["+pipeDuration+"] ms exceeds max ["+ pe.getDurationThreshold()+ "], message ["+object+"]");
@@ -638,14 +631,5 @@ public class PipeLine {
 			return commitOnState;
 		}
 		
-	public void eventOccurred(int eventNr) {
-		if (eventNr>=0) {
-			try {
-				MonitorAccessor.eventOccurred(eventNr);
-			} catch (Throwable t) {
-				log.warn("Exception occured posting METT event",t);
-			}
-		}
-	}
 		
 }
