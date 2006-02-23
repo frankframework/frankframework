@@ -1,6 +1,9 @@
 /*
  * $Log: JMSFacade.java,v $
- * Revision 1.23  2005-12-20 16:59:26  europe\L190409
+ * Revision 1.24  2006-02-23 10:48:51  europe\L190409
+ * fixed typo in name of setTopicConnectionFactoryName
+ *
+ * Revision 1.23  2005/12/20 16:59:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * implemented support for connection-pooling
  *
  * Revision 1.22  2005/10/24 15:15:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -106,7 +109,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version="$RCSfile: JMSFacade.java,v $ $Revision: 1.23 $ $Date: 2005-12-20 16:59:26 $";
+	public static final String version="$RCSfile: JMSFacade.java,v $ $Revision: 1.24 $ $Date: 2006-02-23 10:48:51 $";
 
 	public static final String MODE_PERSISTENT="PERSISTENT";
 	public static final String MODE_NON_PERSISTENT="NON_PERSISTENT";
@@ -912,7 +915,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	 * The JNDI-name of the connection factory to use to connect to a <i>topic</i> if {@link #isTransacted()} returns <code>false</code>.
 	 * The corresponding connection factory should be configured not to support XA transactions. 
 	 */
-	public void setTopicConnectionFactoryNameX(String topicConnectionFactoryName) {
+	public void setTopicConnectionFactoryName(String topicConnectionFactoryName) {
 		this.topicConnectionFactoryName = topicConnectionFactoryName;
 	}
 	public String getTopicConnectionFactoryName() {
