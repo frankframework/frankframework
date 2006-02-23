@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaRequesterSender.java,v $
- * Revision 1.20  2006-01-05 13:55:27  europe\L190409
+ * Revision 1.21  2006-02-23 11:39:15  europe\L190409
+ * correct handling of IfsaReport reply messages
+ *
+ * Revision 1.20  2006/01/05 13:55:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.19  2005/12/20 16:59:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -86,6 +89,7 @@ import javax.jms.TextMessage;
 import org.apache.commons.lang.builder.ToStringBuilder;
 
 import com.ing.ifsa.IFSAQueue;
+import com.ing.ifsa.IFSAReportMessage;
 import com.ing.ifsa.IFSATimeOutMessage;
 
 
@@ -118,7 +122,7 @@ import com.ing.ifsa.IFSATimeOutMessage;
  * @since  4.2
  */
 public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParameters {
-	public static final String version="$RCSfile: IfsaRequesterSender.java,v $ $Revision: 1.20 $ $Date: 2006-01-05 13:55:27 $";
+	public static final String version="$RCSfile: IfsaRequesterSender.java,v $ $Revision: 1.21 $ $Date: 2006-02-23 11:39:15 $";
  
 	protected ParameterList paramList = null;
   
@@ -163,7 +167,7 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 	/**
 	 * Retrieves a message with the specified correlationId from queue or other channel, but does no processing on it.
 	 */
-	private TextMessage getRawReplyMessage(QueueSession session, TextMessage sentMessage) throws SenderException, TimeOutException {
+	private Message getRawReplyMessage(QueueSession session, TextMessage sentMessage) throws SenderException, TimeOutException {
 	
 		String selector=null;
 	    Message msg = null;
@@ -204,12 +208,13 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 		if (msg instanceof IFSATimeOutMessage) {
 			throw new TimeOutException(getLogPrefix()+"received IFSATimeOutMessage waiting for reply using selector ["+selector+"]");
 		}
-		try {
-			TextMessage result = (TextMessage)msg;
-			return result;
-		} catch (Exception e) {
-			throw new SenderException(getLogPrefix()+"reply received for message using selector ["+selector+"] cannot be cast to TextMessage ["+msg.getClass().getName()+"]",e);
-		}
+		return msg;
+//		try {
+//			TextMessage result = (TextMessage)msg;
+//			return result;
+//		} catch (Exception e) {
+//			throw new SenderException(getLogPrefix()+"reply received for message using selector ["+selector+"] cannot be cast to TextMessage ["+msg.getClass().getName()+"]",e);
+//		}
 	}
 
 	public String sendMessage(String message) throws SenderException, TimeOutException {
@@ -257,9 +262,23 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 			if (isSynchronous()){
 		
 				log.debug(getLogPrefix()+"waiting for reply");
-				TextMessage msg=null;
-			    msg=getRawReplyMessage(session, sentMessage);
-				result=msg.getText();
+				Message msg=getRawReplyMessage(session, sentMessage);
+				if (msg instanceof TextMessage) {
+					result = ((TextMessage)msg).getText();
+				} else {
+					if (msg.getClass().getName().endsWith("IFSAReportMessage")) {
+						if (msg instanceof IFSAReportMessage) {
+							IFSAReportMessage irm = (IFSAReportMessage)msg;
+							log.warn(getLogPrefix()+"received IFSAReportMessage ["+irm.toString()+"]");
+							result = "<IFSAReport>"+
+										"<NoReplyReason>"+irm.getNoReplyReason()+"</NoReplyReason>"+
+									 "</IFSAReport>";
+						 }
+					} else {
+						log.warn(getLogPrefix()+"received neither TextMessage nor IFSAReportMessage but ["+msg.getClass().getName()+"]");
+						result = msg.toString();
+					}
+				}
 				log.debug(getLogPrefix()+"reply received");
 					
 		    } else{
