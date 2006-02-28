@@ -1,6 +1,9 @@
 /*
  * $Log: ConnectionBase.java,v $
- * Revision 1.8  2006-02-09 08:01:07  europe\L190409
+ * Revision 1.9  2006-02-28 08:44:16  europe\L190409
+ * cleanUp on close configurable
+ *
+ * Revision 1.8  2006/02/09 08:01:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * keep counts of open connections and sessions
  *
  * Revision 1.7  2006/01/02 12:04:22  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -66,7 +69,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class ConnectionBase  {
-	public static final String version="$RCSfile: ConnectionBase.java,v $ $Revision: 1.8 $ $Date: 2006-02-09 08:01:07 $";
+	public static final String version="$RCSfile: ConnectionBase.java,v $ $Revision: 1.9 $ $Date: 2006-02-28 08:44:16 $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	private int referenceCount;
@@ -76,6 +79,9 @@ public class ConnectionBase  {
 	private static Boolean sessionsArePooledStore=null; 
 	private final static String USE_SINGLE_DYNAMIC_REPLY_QUEUE_KEY="jms.useSingleDynamicReplyQueue";
 	private static Boolean useSingleDynamicReplyQueueStore=null; 
+	private final static String CLEANUP_ON_CLOSE_KEY="jms.cleanUpOnClose";
+	private static Boolean cleanUpOnClose=null; 
+
 
 
 	private Counter openConnectionCount = new Counter(0);
@@ -108,13 +114,13 @@ public class ConnectionBase  {
 		
 	public synchronized boolean close() throws IbisException
 	{
-		if (--referenceCount<=0) {
-			log.debug(getLogPrefix()+" reference count ["+referenceCount+"], closing connection");
+		if (--referenceCount<=0 && cleanUpOnClose()) {
+			log.debug(getLogPrefix()+"reference count ["+referenceCount+"], cleaning up global objects");
 			siblingMap.remove(getId());
 			try {
 				deleteDynamicQueue(globalDynamicReplyQueue);
 				if (globalConnection != null) { 
-					log.debug(getLogPrefix()+" closing global Connection");
+					log.debug(getLogPrefix()+"closing global Connection");
 					globalConnection.close();
 					openConnectionCount.decrease();
 				}
@@ -137,7 +143,7 @@ public class ConnectionBase  {
 				return true;
 			}
 		} else {
-			log.debug(getLogPrefix()+" not closing, reference count ["+referenceCount+"]");
+			log.debug(getLogPrefix()+"reference count ["+referenceCount+"], no cleanup");
 			return false;
 		}
 	}
@@ -276,6 +282,15 @@ public class ConnectionBase  {
 			useSingleDynamicReplyQueueStore = new Boolean(useSingleQueue);
 		}
 		return useSingleDynamicReplyQueueStore.booleanValue();
+	}
+
+
+	public synchronized boolean cleanUpOnClose() {
+		if (cleanUpOnClose==null) {
+			boolean cleanup=AppConstants.getInstance().getBoolean(CLEANUP_ON_CLOSE_KEY, true);
+			cleanUpOnClose = new Boolean(cleanup);
+		}
+		return cleanUpOnClose.booleanValue();
 	}
 
 

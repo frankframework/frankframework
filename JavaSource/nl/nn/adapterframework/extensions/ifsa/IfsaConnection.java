@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaConnection.java,v $
- * Revision 1.9  2005-11-02 09:40:52  europe\L190409
+ * Revision 1.10  2006-02-28 08:44:16  europe\L190409
+ * cleanUp on close configurable
+ *
+ * Revision 1.9  2005/11/02 09:40:52  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * made useSingleDynamicReplyQueue configurable from appConstants
  *
  * Revision 1.8  2005/11/02 09:08:06  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -46,6 +49,7 @@ import javax.jms.QueueSession;
 import javax.naming.NamingException;
 
 import nl.nn.adapterframework.jms.ConnectionBase;
+import nl.nn.adapterframework.util.AppConstants;
 
 import com.ing.ifsa.IFSAContext;
 import com.ing.ifsa.IFSAQueue;
@@ -61,7 +65,11 @@ import com.ing.ifsa.IFSAQueueConnectionFactory;
  * @version Id
  */
 public class IfsaConnection extends ConnectionBase {
-	public static final String version="$RCSfile: IfsaConnection.java,v $ $Revision: 1.9 $ $Date: 2005-11-02 09:40:52 $";
+	public static final String version="$RCSfile: IfsaConnection.java,v $ $Revision: 1.10 $ $Date: 2006-02-28 08:44:16 $";
+
+	private final static String CLEANUP_ON_CLOSE_KEY="ifsa.cleanUpOnClose";
+	private static Boolean cleanUpOnClose=null; 
+
 
 	protected boolean preJms22Api=false;
 	public IfsaConnection(String applicationId, IFSAContext context, IFSAQueueConnectionFactory connectionFactory, HashMap connectionMap, boolean preJms22Api) {
@@ -203,6 +211,14 @@ public class IfsaConnection extends ConnectionBase {
 		} else {
 			return replaceLast(serviceId, ':','/');
 		}
+	}
+
+	public synchronized boolean cleanUpOnClose() {
+		if (cleanUpOnClose==null) {
+			boolean cleanup=AppConstants.getInstance().getBoolean(CLEANUP_ON_CLOSE_KEY, true);
+			cleanUpOnClose = new Boolean(cleanup);
+		}
+		return cleanUpOnClose.booleanValue();
 	}
 
 }
