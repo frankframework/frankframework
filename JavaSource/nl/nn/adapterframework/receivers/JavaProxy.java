@@ -1,6 +1,9 @@
 /*
  * $Log: JavaProxy.java,v $
- * Revision 1.5  2005-07-05 13:18:28  europe\L190409
+ * Revision 1.6  2006-02-28 08:49:32  europe\L190409
+ * added static lookupProxy method
+ *
+ * Revision 1.5  2005/07/05 13:18:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * allow for ServiceClient2 extensions
  *
  * Revision 1.4  2004/08/23 07:38:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -21,7 +24,10 @@ package nl.nn.adapterframework.receivers;
 import java.io.Serializable;
 import java.util.HashMap;
 
+import javax.naming.NamingException;
+
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.jms.JNDIBase;
 
 
 /**
@@ -33,12 +39,12 @@ import nl.nn.adapterframework.core.ListenerException;
  * set the WAR class loader policy of the server in which the .ear is deployed to
  * application.
  *
- * @author J. Dekker
+ * @author  J. Dekker
  * @version Id
- * @since 4.2
+ * @since   4.2
  */
 public class JavaProxy implements ServiceClient2, Serializable {
-	public static final String version="$RCSfile: JavaProxy.java,v $ $Revision: 1.5 $ $Date: 2005-07-05 13:18:28 $";
+	public static final String version="$RCSfile: JavaProxy.java,v $ $Revision: 1.6 $ $Date: 2006-02-28 08:49:32 $";
 	private String serviceName;
 	private boolean usesListener;
 	
@@ -108,5 +114,66 @@ public class JavaProxy implements ServiceClient2, Serializable {
 			return null;
 		return new JavaProxy(pusher);
 	}
+
+	/**
+	 * @param jndiName
+	 * @return JavaProxy for a JavaPusher if registered in JNDI under name or null
+	 */
+	public static ServiceClient2 lookupProxy(String jndiName) throws NamingException {
+		JNDIBase jndiBase = new JNDIBase();
+		try {
+			return (ServiceClient2)jndiBase.getContext().lookup(jndiName);
+		} finally {
+			jndiBase.closeContext();
+		}
+	}
+
+//	{
+//		// initialize
+//		ServiceClient2 persistValues=null;
+//		ServiceClient2 retrieveValues=null;
+//		ServiceClient2 transformInitialValues=null;
+//		try {
+//			persistValues = JavaProxy.lookupProxy("ibis/persistValues");
+//			retrieveValues = JavaProxy.lookupProxy("ibis/retrieveValues");
+//			transformInitialValues = JavaProxy.lookupProxy("ibis/transformInitialValues");
+//		} catch (NamingException e) {
+//			e.printStackTrace(); // handel de fout af
+//		}
+//
+//		// persist values		
+//		String bericht1="...";
+//		String procesId1="...";
+//		HashMap requestContext1=new HashMap();
+//		requestContext1.put("procesId",procesId1);
+//		try {
+//			persistValues.processRequestWithExceptions(null,bericht1,requestContext1);
+//		} catch (ListenerException e) {
+//			e.printStackTrace(); // handel de fout af
+//		}
+//		
+//		
+//		// retrieve values		
+//		String procesId2="...";
+//		String bericht2;
+//		try {
+//			bericht2 = retrieveValues.processRequestWithExceptions(null,procesId2,null);
+//		} catch (ListenerException e) {
+//			e.printStackTrace(); // handel de fout af
+//		}
+//
+//		// verwerk bericht
+//		String bericht3="....";
+//		String dialect3="GIM";
+//		String profileXml3=null;
+//		HashMap requestContext3=new HashMap();
+//		requestContext3.put("dialect",dialect3);
+//		try {
+//			profileXml3 = transformInitialValues.processRequestWithExceptions(null,bericht3,requestContext3);
+//		} catch (ListenerException e) {
+//			e.printStackTrace(); // handel de fout af
+//		}
+//		
+//	}
 
 }
