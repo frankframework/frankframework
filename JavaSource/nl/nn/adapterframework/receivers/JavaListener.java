@@ -1,6 +1,9 @@
 /*
  * $Log: JavaListener.java,v $
- * Revision 1.7  2006-02-28 08:46:23  europe\L190409
+ * Revision 1.8  2006-03-08 13:56:58  europe\L190409
+ * reduced logging fuzz
+ *
+ * Revision 1.7  2006/02/28 08:46:23  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved logging
  *
  * Revision 1.6  2006/01/05 14:42:25  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -73,7 +76,7 @@ import nl.nn.adapterframework.jms.JmsRealm;
  * @version Id
  */
 public class JavaListener implements IPushingListener {
-	public static final String version="$RCSfile: JavaListener.java,v $ $Revision: 1.7 $ $Date: 2006-02-28 08:46:23 $";
+	public static final String version="$RCSfile: JavaListener.java,v $ $Revision: 1.8 $ $Date: 2006-03-08 13:56:58 $";
 	protected Logger log = Logger.getLogger(this.getClass());
 	
 	private String name;
@@ -106,9 +109,9 @@ public class JavaListener implements IPushingListener {
 				Context context = getContext();
 				Object currentJndiObject=null;
 				try {
-					currentJndiObject = context.lookup(jndiName);
+					currentJndiObject = context.lookup(getJndiName());
 				} catch (NamingException e) {
-					log.debug("error occured while retrieving currentJndiObject", e);
+					log.debug("error occured while retrieving currentJndiObject to check for current binding of jndiName [" + getJndiName() + "]: "+ e.getMessage());
 				}		
 				if (currentJndiObject!=null) {
 					log.info("rebinding proxy under ["+getJndiName()+"], previous object was a ["+currentJndiObject.getClass().getName()+"]");
