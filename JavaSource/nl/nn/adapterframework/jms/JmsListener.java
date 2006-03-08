@@ -1,6 +1,10 @@
 /*
  * $Log: JmsListener.java,v $
- * Revision 1.22  2006-01-05 14:30:15  europe\L190409
+ * Revision 1.23  2006-03-08 13:56:14  europe\L190409
+ * getRawMessage now returns null again if no message received if transacted, 
+ * to avoid transaction time out
+ *
+ * Revision 1.22  2006/01/05 14:30:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.21  2005/12/28 08:46:29  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -152,7 +156,7 @@ import java.util.HashMap;
  * @since 4.0.1
  */
 public class JmsListener extends JMSFacade implements IPostboxListener, ICorrelatedPullingListener, HasSender, RunStateEnquiring {
-	public static final String version="$RCSfile: JmsListener.java,v $ $Revision: 1.22 $ $Date: 2006-01-05 14:30:15 $";
+	public static final String version="$RCSfile: JmsListener.java,v $ $Revision: 1.23 $ $Date: 2006-03-08 13:56:14 $";
 
 	private final static String THREAD_CONTEXT_SESSION_KEY="session";
 	private final static String THREAD_CONTEXT_MESSAGECONSUMER_KEY="messageConsumer";
@@ -514,7 +518,7 @@ public class JmsListener extends JMSFacade implements IPostboxListener, ICorrela
 			try {
 				mc = getReceiver(threadContext,session,correlationId);
 				msg = mc.receive(getTimeOut());
-				while (msg==null && correlationId==null && canGoOn()) {
+				while (msg==null && correlationId==null && canGoOn() && !isTransacted()) {
 					msg = mc.receive(getTimeOut());
 				}
 			} catch (JMSException e) {

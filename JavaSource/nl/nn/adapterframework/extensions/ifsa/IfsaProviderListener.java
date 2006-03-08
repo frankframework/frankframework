@@ -1,6 +1,10 @@
 /*
  * $Log: IfsaProviderListener.java,v $
- * Revision 1.19  2006-02-20 15:49:54  europe\L190409
+ * Revision 1.20  2006-03-08 13:55:49  europe\L190409
+ * getRawMessage now returns null again if no message received if transacted, 
+ * to avoid transaction time out
+ *
+ * Revision 1.19  2006/02/20 15:49:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved handling of PoisonMessages, should now work under transactions control
  *
  * Revision 1.18  2006/01/05 13:55:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -120,7 +124,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * @since 4.2
  */
 public class IfsaProviderListener extends IfsaFacade implements IPullingListener, INamedObject, RunStateEnquiring {
-	public static final String version = "$RCSfile: IfsaProviderListener.java,v $ $Revision: 1.19 $ $Date: 2006-02-20 15:49:54 $";
+	public static final String version = "$RCSfile: IfsaProviderListener.java,v $ $Revision: 1.20 $ $Date: 2006-03-08 13:55:49 $";
 
     private final static String THREAD_CONTEXT_SESSION_KEY = "session";
     private final static String THREAD_CONTEXT_RECEIVER_KEY = "receiver";
@@ -461,7 +465,7 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 			try {	
 				receiver = getReceiver(threadContext, session);
 		        result = receiver.receive(getTimeOut());
-				while (result==null && canGoOn()) {
+				while (result==null && canGoOn() && !isTransacted()) {
 					result = receiver.receive(getTimeOut());
 				}
 			} catch (JMSException e) {
