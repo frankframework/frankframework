@@ -1,7 +1,7 @@
 /*
  * $Log: AppConstants.java,v $
- * Revision 1.9  2006-02-28 08:22:24  europe\L190409
- * resolvedProperties in XML
+ * Revision 1.10  2006-03-08 13:57:48  europe\L190409
+ * removed resolving of properties in XML
  *
  * Revision 1.8  2006/01/19 12:17:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed warning for non found file to debug
@@ -101,7 +101,7 @@ import org.apache.commons.lang.StringUtils;
  * 
  */
 public final class AppConstants extends Properties implements Serializable{
-	public static final String version="$RCSfile: AppConstants.java,v $  $Revision: 1.9 $ $Date: 2006-02-28 08:22:24 $";
+	public static final String version="$RCSfile: AppConstants.java,v $  $Revision: 1.10 $ $Date: 2006-03-08 13:57:48 $";
 	
 	public final static String propertiesFileName="AppConstants.properties";
 	private static AppConstants self=null;
@@ -336,7 +336,7 @@ public final class AppConstants extends Properties implements Serializable{
 			
 			XmlBuilder p=new XmlBuilder("property");
 			p.addAttribute("name", propName);
-			p.setValue(this.getResolvedProperty(propName));
+			p.setValue(this.getProperty(propName));
 			xml.addSubElement(p);
 		}
 		return xmlh.toXML();
