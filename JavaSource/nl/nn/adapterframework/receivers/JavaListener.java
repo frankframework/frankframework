@@ -1,6 +1,9 @@
 /*
  * $Log: JavaListener.java,v $
- * Revision 1.9  2006-03-15 14:16:38  europe\L190409
+ * Revision 1.10  2006-03-15 14:21:07  europe\L190409
+ * updated JavaDoc
+ *
+ * Revision 1.9  2006/03/15 14:16:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added authentication possibility used for rebinding proxy to JNDI
  *
  * Revision 1.8  2006/03/08 13:56:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -82,12 +85,13 @@ import com.ibm.websphere.security.auth.WSSubject;
  * <tr><td>className</td><td>nl.nn.adapterframework.receivers.JavaListener</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the listener as known to the adapter. An {@link nl.nn.adapterframework.pipes.IbisLocalSender IbisLocalSender} refers to this name in its <code>javaListener</code>-attribute.</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setJndiName(String) jndiName}</td><td>(optional) name under which the java receiver registers the java proxy in JNDI</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setAuthAlias(String) authAlias}</td><td>alias used to obtain credentials to authenticate when binding proxy in JNDI</td><td>&nbsp;</td></tr>
  * </table>
  * @author  JDekker
  * @version Id
  */
 public class JavaListener implements IPushingListener {
-	public static final String version="$RCSfile: JavaListener.java,v $ $Revision: 1.9 $ $Date: 2006-03-15 14:16:38 $";
+	public static final String version="$RCSfile: JavaListener.java,v $ $Revision: 1.10 $ $Date: 2006-03-15 14:21:07 $";
 	protected Logger log = Logger.getLogger(this.getClass());
 	
 	private String name;
