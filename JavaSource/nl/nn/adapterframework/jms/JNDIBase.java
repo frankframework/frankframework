@@ -1,6 +1,9 @@
 /*
  * $Log: JNDIBase.java,v $
- * Revision 1.6  2006-03-15 10:33:24  europe\L190409
+ * Revision 1.7  2006-03-15 10:34:56  europe\L190409
+ * corrected version-string
+ *
+ * Revision 1.6  2006/03/15 10:33:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added principal-attribute
  * corrected environment handling
  *
@@ -24,7 +27,6 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-import java.util.HashMap;
 import java.util.Hashtable;
 
 /**
@@ -35,7 +37,7 @@ import java.util.Hashtable;
  */
 public class JNDIBase {
 	protected Logger log = Logger.getLogger(this.getClass());
-	public static final String version="$Id: JNDIBase.java,v 1.6 2006-03-15 10:33:24 europe\L190409 Exp $";
+	public static final String version = "$RCSfile: JNDIBase.java,v $ $Revision: 1.7 $ $Date: 2006-03-15 10:34:56 $";
 
     // JNDI
     private String providerURL = null;
