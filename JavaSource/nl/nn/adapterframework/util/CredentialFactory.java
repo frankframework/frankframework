@@ -1,6 +1,9 @@
 /*
  * $Log: CredentialFactory.java,v $
- * Revision 1.2  2006-01-19 12:23:27  europe\L190409
+ * Revision 1.3  2006-03-15 14:04:24  europe\L190409
+ * added getLoginContext(), that performs actual login
+ *
+ * Revision 1.2  2006/01/19 12:23:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved logging and javadoc
  * added fallback to resolving userid and password from appConstants
  *
@@ -19,10 +22,13 @@ import javax.security.auth.Subject;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.NameCallback;
+import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.auth.login.LoginContext;
+import javax.security.auth.login.LoginException;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.log4j.Logger;
 
 /**
@@ -114,6 +120,43 @@ public class CredentialFactory implements CallbackHandler {
 		log.info("Handled callbacks for alias ["+getAlias()+"]");
 	}
 
+	private class loginCallbackHandler implements CallbackHandler {
+
+		public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
+			log.info("callback: "+ToStringBuilder.reflectionToString(callbacks));
+			for (int i=0; i<callbacks.length; i++) {
+				Callback cb=callbacks[i];
+				if (cb instanceof NameCallback) {
+					NameCallback ncb = (NameCallback) cb;
+					log.info("setting name of NameCallback to ["+getUsername()+"]");
+					ncb.setName(getUsername());
+				} else if (cb instanceof PasswordCallback) {
+					PasswordCallback pcb = (PasswordCallback) cb;
+					log.info("setting password of PasswordCallback");
+					pcb.setPassword(getPassword().toCharArray());
+				} else {
+					log.debug("ignoring callback of type ["+cb.getClass().getName()+"] contents ["+ToStringBuilder.reflectionToString(cb)+"]");
+				}
+//				if (cb instanceof ChoiceCallback) {
+//					ChoiceCallback ccb = (ChoiceCallback) cb;
+//					log.info("ChoiceCallback: "+ccb.getPrompt());
+//				}
+				
+			}
+		}
+	}
+
+
+	public LoginContext getLoginContext() throws LoginException {
+		String loginConfig="ClientContainer";
+		getCredentialsFromAlias();
+		log.debug("logging in using context["+loginConfig+"]");
+		LoginContext lc = new LoginContext(loginConfig,new loginCallbackHandler());
+		lc.login();
+		return lc;
+	}
+
+
 	protected void getCredentialsFromAlias() {
 		if (!gotCredentials && StringUtils.isNotEmpty(getAlias())) {
 			try {
@@ -143,8 +186,6 @@ public class CredentialFactory implements CallbackHandler {
 			}
 		}
 	}
-
-
 
 	public String toString() {
 		return getClass().getName()+": alias="+getAlias()+"; username="+username;
