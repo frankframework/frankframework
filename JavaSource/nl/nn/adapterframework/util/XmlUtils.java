@@ -1,6 +1,9 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.31  2006-02-06 11:50:54  europe\L190409
+ * Revision 1.32  2006-03-15 14:06:59  europe\L190409
+ * fixed NullPointerException in encodeChars()
+ *
+ * Revision 1.31  2006/02/06 11:50:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added isWellFormed() (by Peter Leeuwenburgh)
  *
  * Revision 1.29  2005/12/28 08:30:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -154,7 +157,7 @@ import java.util.StringTokenizer;
  * @author Johan Verrips IOS
  */
 public class XmlUtils {
-	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.31 $ $Date: 2006-02-06 11:50:54 $";
+	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.32 $ $Date: 2006-03-15 14:06:59 $";
 	static Logger log = Logger.getLogger(XmlUtils.class);
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
@@ -429,6 +432,9 @@ public class XmlUtils {
 	 */
 	public static String encodeChars(String string) {
 
+		if (string==null) {
+			return null;
+		}
 		int length = string.length();
 		char[] characters = new char[length];
 		string.getChars(0, length, characters, 0);
