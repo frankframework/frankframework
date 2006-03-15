@@ -1,6 +1,9 @@
 /*
  * $Log: SoapWrapper.java,v $
- * Revision 1.1  2005-10-18 08:14:48  europe\L190409
+ * Revision 1.2  2006-03-15 13:59:57  europe\L190409
+ * force to be namespaceAware
+ *
+ * Revision 1.1  2005/10/18 08:14:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * created separate soap-package
  *
  * Revision 1.4  2005/07/05 12:55:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -41,7 +44,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @version Id
  */
 public class SoapWrapper {
-	public static final String version="$RCSfile: SoapWrapper.java,v $ $Revision: 1.1 $ $Date: 2005-10-18 08:14:48 $";
+	public static final String version="$RCSfile: SoapWrapper.java,v $ $Revision: 1.2 $ $Date: 2006-03-15 13:59:57 $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	private TransformerPool extractBody;
@@ -107,7 +110,7 @@ public class SoapWrapper {
 
 	
 	public String getBody(String message) throws DomBuilderException, TransformerException, IOException {
-		return extractBody.transform(message,null);
+		return extractBody.transform(message,null,true);
 	}
 	public String getBody(InputStream request) throws TransformerException, IOException {
 		return extractBody.transform(new StreamSource(request),null);
@@ -117,10 +120,10 @@ public class SoapWrapper {
 		return Integer.parseInt(extractFaultCount.transform(message,null));
 	}
 	public String getFaultCode(String message) throws DomBuilderException, TransformerException, IOException {
-		return extractFaultCode.transform(message,null);
+		return extractFaultCode.transform(message,null,true);
 	}
 	public String getFaultString(String message) throws DomBuilderException, TransformerException, IOException {
-		return extractFaultString.transform(message,null);
+		return extractFaultString.transform(message,null,true);
 	}
 	
 	public String putInEnvelope(String message, String encodingStyleUri, String targetObjectNamespace) {
