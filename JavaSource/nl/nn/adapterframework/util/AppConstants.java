@@ -1,6 +1,9 @@
 /*
  * $Log: AppConstants.java,v $
- * Revision 1.10  2006-03-08 13:57:48  europe\L190409
+ * Revision 1.11  2006-03-15 14:01:20  europe\L190409
+ * resolving in toXml parameterized
+ *
+ * Revision 1.10  2006/03/08 13:57:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed resolving of properties in XML
  *
  * Revision 1.8  2006/01/19 12:17:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -101,7 +104,7 @@ import org.apache.commons.lang.StringUtils;
  * 
  */
 public final class AppConstants extends Properties implements Serializable{
-	public static final String version="$RCSfile: AppConstants.java,v $  $Revision: 1.10 $ $Date: 2006-03-08 13:57:48 $";
+	public static final String version="$RCSfile: AppConstants.java,v $  $Revision: 1.11 $ $Date: 2006-03-15 14:01:20 $";
 	
 	public final static String propertiesFileName="AppConstants.properties";
 	private static AppConstants self=null;
@@ -325,7 +328,12 @@ public final class AppConstants extends Properties implements Serializable{
 	public void setDefaults(Properties defaults) {
 		super.putAll(defaults);
 	}
+
 	public String toXml() {
+		return toXml(false);
+	}
+
+	public String toXml(boolean resolve) {
 		Enumeration enum=this.keys();
 		XmlBuilder xmlh=new XmlBuilder("applicationConstants");
 		XmlBuilder xml=new XmlBuilder("properties");
@@ -336,7 +344,11 @@ public final class AppConstants extends Properties implements Serializable{
 			
 			XmlBuilder p=new XmlBuilder("property");
 			p.addAttribute("name", propName);
-			p.setValue(this.getProperty(propName));
+			if (resolve) {
+				p.setValue(this.getResolvedProperty(propName));
+			} else {
+				p.setValue(this.getProperty(propName));
+			}
 			xml.addSubElement(p);
 		}
 		return xmlh.toXML();
