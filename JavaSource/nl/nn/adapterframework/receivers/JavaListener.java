@@ -1,6 +1,9 @@
 /*
  * $Log: JavaListener.java,v $
- * Revision 1.8  2006-03-08 13:56:58  europe\L190409
+ * Revision 1.9  2006-03-15 14:16:38  europe\L190409
+ * added authentication possibility used for rebinding proxy to JNDI
+ *
+ * Revision 1.8  2006/03/08 13:56:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * reduced logging fuzz
  *
  * Revision 1.7  2006/02/28 08:46:23  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -42,16 +45,17 @@
  */
 package nl.nn.adapterframework.receivers;
 
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.naming.Context;
 import javax.naming.NamingException;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.log4j.Logger;
+import javax.security.auth.Subject;
+import javax.security.auth.login.LoginContext;
+import javax.security.auth.login.LoginException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessageHandler;
@@ -61,6 +65,13 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.jms.JNDIBase;
 import nl.nn.adapterframework.jms.JmsRealm;
+import nl.nn.adapterframework.util.CredentialFactory;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.log4j.Logger;
+
+import com.ibm.websphere.security.auth.WSSubject;
 
 /** * 
  * The JavaListener listens to java requests.
@@ -76,11 +87,12 @@ import nl.nn.adapterframework.jms.JmsRealm;
  * @version Id
  */
 public class JavaListener implements IPushingListener {
-	public static final String version="$RCSfile: JavaListener.java,v $ $Revision: 1.8 $ $Date: 2006-03-08 13:56:58 $";
+	public static final String version="$RCSfile: JavaListener.java,v $ $Revision: 1.9 $ $Date: 2006-03-15 14:16:38 $";
 	protected Logger log = Logger.getLogger(this.getClass());
 	
 	private String name;
 	private String jndiName;
+	private String authAlias;
 
 	private static Map registeredListeners; 
 	private IMessageHandler handler;
@@ -101,12 +113,18 @@ public class JavaListener implements IPushingListener {
 		}
 	}
 
-	public void open() throws ListenerException {
-		// add myself to list so that proxy can find me
-		registerListener(getName(), this);
-		try {
-			if (getJndiName() != null) {
-				Context context = getContext();
+	private class rebindProxyAction implements PrivilegedExceptionAction {
+
+		JavaListener listener;
+		
+		rebindProxyAction(JavaListener listener) {
+			super();
+			this.listener=listener;
+		}
+		
+		public Object run() throws NamingException  {
+			Context context = getContext();
+			try {
 				Object currentJndiObject=null;
 				try {
 					currentJndiObject = context.lookup(getJndiName());
@@ -114,28 +132,63 @@ public class JavaListener implements IPushingListener {
 					log.debug("error occured while retrieving currentJndiObject to check for current binding of jndiName [" + getJndiName() + "]: "+ e.getMessage());
 				}		
 				if (currentJndiObject!=null) {
-					log.info("rebinding proxy under ["+getJndiName()+"], previous object was a ["+currentJndiObject.getClass().getName()+"]");
-				} else {
-					log.info("binding proxy under ["+getJndiName()+"]");
+					log.info("previous proxy object under ["+getJndiName()+"], was a ["+currentJndiObject.getClass().getName()+"]");
 				}
-				context.rebind(getJndiName(), new JavaProxy(this));
+				if (listener!=null) {
+					log.info("binding proxy under ["+getJndiName()+"]");
+					context.rebind(getJndiName(), new JavaProxy(listener));
+				} else {
+					log.info("unbinding proxy under ["+getJndiName()+"]");
+					context.unbind(getJndiName());
+				}
+			} finally {
+				closeContext();
 			}
-				
+			return null;
 		} 
-		catch (NamingException e) {
-			log.error("error occured while starting listener [" + getName() + "]", e);
+	}
+	
+
+	protected void rebind(JavaListener listener) throws LoginException, PrivilegedActionException, NamingException {
+		if (StringUtils.isNotEmpty(getJndiName())) {
+			if (StringUtils.isNotEmpty(getAuthAlias())) {
+				log.debug("logging in using autentication alias ["+getAuthAlias()+"]");
+				CredentialFactory cf = new CredentialFactory(getAuthAlias(),null,null);
+				LoginContext lc = cf.getLoginContext();
+				log.debug("retrieved LoginContext ["+lc.getClass().getName()+"] contents ["+lc.toString()+"]");
+				Subject s=lc.getSubject();
+				log.debug("retrieved Subject ["+s.getClass().getName()+"] contents ["+s.toString()+"]");
+				try {
+					log.info("performing rebind using WebSphere WSSubject.doAs()");
+					WSSubject.doAs(s,new rebindProxyAction(listener));
+				} catch (Throwable t) {
+					log.warn("caught exception, retrying rebind using standard JAAS API",t);
+					Subject.doAs(s,new rebindProxyAction(listener));
+				}
+				lc.logout();
+			} else {
+				new rebindProxyAction(listener).run(); 
+			}
+		}
+	}
+
+	public void open() throws ListenerException {
+		// add myself to list so that proxy can find me
+		registerListener(getName(), this);
+		try {
+			rebind(this);
+		} 
+		catch (Exception e) {
+			throw new ListenerException("error occured while starting listener [" + getName() + "]", e);
 		}		
 	}
 
 	public void close() throws ListenerException {
-		if (getJndiName() != null) {
-			try {
-					getContext().unbind(jndiName);
-					closeContext();
-				}
-			catch (NamingException e) {
-				log.error("error occured while stopping listener [" + getName() + "]", e);
-			}
+		try {
+			rebind(null);
+		}
+		catch (Exception e) {
+			throw new ListenerException("error occured while stopping listener [" + getName() + "]", e);
 		} 
 		// do not unregister, leave it to handler to handle this
 		// unregisterJavaPusher(getName());		
@@ -276,5 +329,13 @@ public class JavaListener implements IPushingListener {
 		return name;
 	}
 
+
+	public String getAuthAlias() {
+		return authAlias;
+	}
+
+	public void setAuthAlias(String string) {
+		authAlias = string;
+	}
 
 }
