@@ -1,6 +1,10 @@
 /*
  * $Log: JNDIBase.java,v $
- * Revision 1.5  2005-01-13 08:09:31  L190409
+ * Revision 1.6  2006-03-15 10:33:24  europe\L190409
+ * added principal-attribute
+ * corrected environment handling
+ *
+ * Revision 1.5  2005/01/13 08:09:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * modifications for LDAP-pipe
  *
  * Revision 1.4  2004/03/26 10:42:55  Johan Verrips <johan.verrips@ibissource.org>
@@ -20,6 +24,7 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
+import java.util.HashMap;
 import java.util.Hashtable;
 
 /**
@@ -30,13 +35,14 @@ import java.util.Hashtable;
  */
 public class JNDIBase {
 	protected Logger log = Logger.getLogger(this.getClass());
-	public static final String version="$Id: JNDIBase.java,v 1.5 2005-01-13 08:09:31 L190409 Exp $";
+	public static final String version="$Id: JNDIBase.java,v 1.6 2006-03-15 10:33:24 europe\L190409 Exp $";
 
     // JNDI
     private String providerURL = null;
     private String initialContextFactoryName = null;
     private Context context = null;
     private String authentication = null;
+	private String principal = null;
     private String credentials = null;
     private String urlPkgPrefixes = null;
     private String securityProtocol = null;
@@ -54,16 +60,19 @@ public class JNDIBase {
 	protected Hashtable getJndiEnv() {
 		Hashtable jndiEnv = new Hashtable();
 
-		jndiEnv.put(Context.INITIAL_CONTEXT_FACTORY, getInitialContextFactoryName());
-		if (providerURL != null)
+		if (getInitialContextFactoryName() != null)
+			jndiEnv.put(Context.INITIAL_CONTEXT_FACTORY, getInitialContextFactoryName());
+		if (getProviderURL() != null)
 			jndiEnv.put(Context.PROVIDER_URL, getProviderURL());
-		if (authentication != null)
+		if (getAuthentication() != null)
 			jndiEnv.put(Context.SECURITY_AUTHENTICATION, getAuthentication());
-		if (credentials != null)
+		if (getPrincipal() != null)
+			jndiEnv.put(Context.SECURITY_PRINCIPAL, getPrincipal());
+		if (getCredentials() != null)
 			jndiEnv.put(Context.SECURITY_CREDENTIALS, getCredentials());
-		if (urlPkgPrefixes != null)
+		if (getUrlPkgPrefixes() != null)
 			jndiEnv.put(Context.URL_PKG_PREFIXES, getUrlPkgPrefixes());
-		if (securityProtocol != null)
+		if (getSecurityProtocol() != null)
 			jndiEnv.put(Context.SECURITY_PROTOCOL, getSecurityProtocol());
 		return jndiEnv;
 	}
@@ -83,8 +92,9 @@ public class JNDIBase {
     public Context getContext() throws NamingException {
 
         if (null == context) {
-            if (getInitialContextFactoryName() != null) {
-                context = (Context) new InitialContext(getJndiEnv());
+        	Hashtable jndiEnv = getJndiEnv();
+        	if (jndiEnv.size()>0) {
+                 context = (Context) new InitialContext(jndiEnv);
             } else {
                 context = (Context) new InitialContext();
             }
@@ -174,6 +184,14 @@ public class JNDIBase {
 
 	public String getAuthentication() {
 		return authentication;
+	}
+
+	public String getPrincipal() {
+		return principal;
+	}
+
+	public void setPrincipal(String string) {
+		principal = string;
 	}
 
 }
