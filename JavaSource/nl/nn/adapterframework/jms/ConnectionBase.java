@@ -1,6 +1,9 @@
 /*
  * $Log: ConnectionBase.java,v $
- * Revision 1.9  2006-02-28 08:44:16  europe\L190409
+ * Revision 1.10  2006-03-15 14:12:44  europe\L190409
+ * removed logging in create/release Session/Connection, as this happens to often
+ *
+ * Revision 1.9  2006/02/28 08:44:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * cleanUp on close configurable
  *
  * Revision 1.8  2006/02/09 08:01:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -69,7 +72,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class ConnectionBase  {
-	public static final String version="$RCSfile: ConnectionBase.java,v $ $Revision: 1.9 $ $Date: 2006-02-28 08:44:16 $";
+	public static final String version="$RCSfile: ConnectionBase.java,v $ $Revision: 1.10 $ $Date: 2006-03-15 14:12:44 $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	private int referenceCount;
@@ -175,7 +178,8 @@ public class ConnectionBase  {
 	
 	private Connection createAndStartConnection() throws JMSException {
 		Connection connection;
-		log.debug(getLogPrefix()+"creating Connection, openConnectionCount before ["+openConnectionCount.getValue()+"]");
+		// do not log, as this may happen very often
+//		log.debug(getLogPrefix()+"creating Connection, openConnectionCount before ["+openConnectionCount.getValue()+"]");
 		connection = createConnection();
 		openConnectionCount.increase();
 		connection.start();
@@ -198,7 +202,8 @@ public class ConnectionBase  {
 	private void releaseConnection(Connection connection) {
 		if (connection != null && connectionsArePooled()) {
 			try {
-				log.debug(getLogPrefix()+"closing Connection, openConnectionCount will become ["+(openConnectionCount.getValue()-1)+"]");
+				// do not log, as this may happen very often
+//				log.debug(getLogPrefix()+"closing Connection, openConnectionCount will become ["+(openConnectionCount.getValue()-1)+"]");
 				connection.close();
 				openConnectionCount.decrease();
 			} catch (JMSException e) {
@@ -216,7 +221,8 @@ public class ConnectionBase  {
 			throw new JmsException("could not obtain Connection", e);
 		}
 		try {
-			log.debug(getLogPrefix()+"creating Session, openSessionCount before ["+openSessionCount.getValue()+"]");
+			// do not log, as this may happen very often
+//			log.debug(getLogPrefix()+"creating Session, openSessionCount before ["+openSessionCount.getValue()+"]");
 			if (connection instanceof QueueConnection) {
 				session = ((QueueConnection)connection).createQueueSession(transacted, acknowledgeMode);
 			} else {
@@ -238,7 +244,8 @@ public class ConnectionBase  {
 			if (connectionsArePooled()) {
 				Connection connection = (Connection)connectionTable.remove(session);
 				try {
-					log.debug(getLogPrefix()+"closing Session, openSessionCount will become ["+(openSessionCount.getValue()-1)+"]");
+					// do not log, as this may happen very often
+//					log.debug(getLogPrefix()+"closing Session, openSessionCount will become ["+(openSessionCount.getValue()-1)+"]");
 					session.close();
 					openSessionCount.decrease();
 				} catch (JMSException e) {
