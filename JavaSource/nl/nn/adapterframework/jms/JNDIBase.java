@@ -1,6 +1,9 @@
 /*
  * $Log: JNDIBase.java,v $
- * Revision 1.7  2006-03-15 10:34:56  europe\L190409
+ * Revision 1.8  2006-03-15 14:08:59  europe\L190409
+ * improved logging
+ *
+ * Revision 1.7  2006/03/15 10:34:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected version-string
  *
  * Revision 1.6  2006/03/15 10:33:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -37,7 +40,7 @@ import java.util.Hashtable;
  */
 public class JNDIBase {
 	protected Logger log = Logger.getLogger(this.getClass());
-	public static final String version = "$RCSfile: JNDIBase.java,v $ $Revision: 1.7 $ $Date: 2006-03-15 10:34:56 $";
+	public static final String version = "$RCSfile: JNDIBase.java,v $ $Revision: 1.8 $ $Date: 2006-03-15 14:08:59 $";
 
     // JNDI
     private String providerURL = null;
@@ -54,6 +57,7 @@ public class JNDIBase {
 
     public void closeContext() throws javax.naming.NamingException {
         if (null != context) {
+        	log.debug("closing JNDI-context");
             context.close();
             context = null;
         }
@@ -96,8 +100,10 @@ public class JNDIBase {
         if (null == context) {
         	Hashtable jndiEnv = getJndiEnv();
         	if (jndiEnv.size()>0) {
-                 context = (Context) new InitialContext(jndiEnv);
+				log.debug("creating initial JNDI-context using specified environment");
+                context = (Context) new InitialContext(jndiEnv);
             } else {
+				log.debug("creating initial JNDI-context");
                 context = (Context) new InitialContext();
             }
         }
