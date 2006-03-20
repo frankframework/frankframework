@@ -1,6 +1,9 @@
 /*
  * $Log: CredentialFactory.java,v $
- * Revision 1.3  2006-03-15 14:04:24  europe\L190409
+ * Revision 1.4  2006-03-20 13:51:31  europe\L190409
+ * allow null-password
+ *
+ * Revision 1.3  2006/03/15 14:04:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added getLoginContext(), that performs actual login
  *
  * Revision 1.2  2006/01/19 12:23:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -133,7 +136,12 @@ public class CredentialFactory implements CallbackHandler {
 				} else if (cb instanceof PasswordCallback) {
 					PasswordCallback pcb = (PasswordCallback) cb;
 					log.info("setting password of PasswordCallback");
-					pcb.setPassword(getPassword().toCharArray());
+					String password=getPassword();
+					if (password==null) {
+						pcb.setPassword(null);
+					} else {
+						pcb.setPassword(password.toCharArray());
+					}
 				} else {
 					log.debug("ignoring callback of type ["+cb.getClass().getName()+"] contents ["+ToStringBuilder.reflectionToString(cb)+"]");
 				}
