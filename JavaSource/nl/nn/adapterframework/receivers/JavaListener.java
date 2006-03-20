@@ -1,6 +1,9 @@
 /*
  * $Log: JavaListener.java,v $
- * Revision 1.10  2006-03-15 14:21:07  europe\L190409
+ * Revision 1.11  2006-03-20 13:52:59  europe\L190409
+ * AbsoluteSingleton instead of JNDI
+ *
+ * Revision 1.10  2006/03/15 14:21:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated JavaDoc
  *
  * Revision 1.9  2006/03/15 14:16:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -48,6 +51,7 @@
  */
 package nl.nn.adapterframework.receivers;
 
+import java.lang.reflect.InvocationTargetException;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.Collections;
@@ -68,6 +72,9 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.jms.JNDIBase;
 import nl.nn.adapterframework.jms.JmsRealm;
+import nl.nn.adapterframework.dispatcher.DispatcherException;
+import nl.nn.adapterframework.dispatcher.DispatcherManager;
+import nl.nn.adapterframework.dispatcher.DispatcherManagerFactory;
 import nl.nn.adapterframework.util.CredentialFactory;
 
 import org.apache.commons.lang.StringUtils;
@@ -91,7 +98,7 @@ import com.ibm.websphere.security.auth.WSSubject;
  * @version Id
  */
 public class JavaListener implements IPushingListener {
-	public static final String version="$RCSfile: JavaListener.java,v $ $Revision: 1.10 $ $Date: 2006-03-15 14:21:07 $";
+	public static final String version="$RCSfile: JavaListener.java,v $ $Revision: 1.11 $ $Date: 2006-03-20 13:52:59 $";
 	protected Logger log = Logger.getLogger(this.getClass());
 	
 	private String name;
@@ -102,6 +109,7 @@ public class JavaListener implements IPushingListener {
 	private IMessageHandler handler;
 	private JNDIBase jndiBase = new JNDIBase();        	
 	
+	private DispatcherManager as=null;;
 	
 	public void configure() throws ConfigurationException {
 		try {
@@ -126,7 +134,7 @@ public class JavaListener implements IPushingListener {
 			this.listener=listener;
 		}
 		
-		public Object run() throws NamingException  {
+		public Object run_old() throws NamingException  {
 			Context context = getContext();
 			try {
 				Object currentJndiObject=null;
@@ -150,10 +158,17 @@ public class JavaListener implements IPushingListener {
 			}
 			return null;
 		} 
+
+		public Object run() throws SecurityException, IllegalArgumentException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, DispatcherException  {
+			as = DispatcherManagerFactory.getDispatcherManager();
+			as.register(getJndiName(),new JavaProxy(listener)); 
+			return as;
+		} 
+
 	}
 	
 
-	protected void rebind(JavaListener listener) throws LoginException, PrivilegedActionException, NamingException {
+	protected void rebind(JavaListener listener) throws LoginException, PrivilegedActionException, NamingException, SecurityException, IllegalArgumentException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, DispatcherException {
 		if (StringUtils.isNotEmpty(getJndiName())) {
 			if (StringUtils.isNotEmpty(getAuthAlias())) {
 				log.debug("logging in using autentication alias ["+getAuthAlias()+"]");
@@ -175,6 +190,7 @@ public class JavaListener implements IPushingListener {
 			}
 		}
 	}
+
 
 	public void open() throws ListenerException {
 		// add myself to list so that proxy can find me

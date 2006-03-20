@@ -1,6 +1,9 @@
 /*
  * $Log: JavaProxy.java,v $
- * Revision 1.6  2006-02-28 08:49:32  europe\L190409
+ * Revision 1.7  2006-03-20 13:52:59  europe\L190409
+ * AbsoluteSingleton instead of JNDI
+ *
+ * Revision 1.6  2006/02/28 08:49:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added static lookupProxy method
  *
  * Revision 1.5  2005/07/05 13:18:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -28,6 +31,9 @@ import javax.naming.NamingException;
 
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.jms.JNDIBase;
+import nl.nn.adapterframework.dispatcher.DispatcherManagerFactory;
+import nl.nn.adapterframework.dispatcher.RequestProcessor;
+import nl.nn.adapterframework.dispatcher.DispatcherManager;
 
 
 /**
@@ -43,8 +49,8 @@ import nl.nn.adapterframework.jms.JNDIBase;
  * @version Id
  * @since   4.2
  */
-public class JavaProxy implements ServiceClient2, Serializable {
-	public static final String version="$RCSfile: JavaProxy.java,v $ $Revision: 1.6 $ $Date: 2006-02-28 08:49:32 $";
+public class JavaProxy implements ServiceClient2, Serializable, RequestProcessor {
+	public static final String version="$RCSfile: JavaProxy.java,v $ $Revision: 1.7 $ $Date: 2006-03-20 13:52:59 $";
 	private String serviceName;
 	private boolean usesListener;
 	
@@ -127,6 +133,18 @@ public class JavaProxy implements ServiceClient2, Serializable {
 			jndiBase.closeContext();
 		}
 	}
+
+	public String processRequest(String correlationId, String message, HashMap requestContext) throws Exception {
+		return processRequestWithExceptions(correlationId, message, requestContext);
+	}
+
+
+	public static String processRequest(String clientName, String correlationId, String message, HashMap requestContext) throws Exception {
+		DispatcherManager as = DispatcherManagerFactory.getDispatcherManager();
+		return as.processRequest(clientName, correlationId, message, requestContext);
+	}
+
+
 
 //	{
 //		// initialize
