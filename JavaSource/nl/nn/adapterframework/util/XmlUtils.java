@@ -1,6 +1,9 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.33  2006-03-20 15:10:04  europe\L190409
+ * Revision 1.34  2006-03-21 07:36:54  europe\L190409
+ * buildNode with cast to Node
+ *
+ * Revision 1.33  2006/03/20 15:10:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added buildNode()
  *
  * Revision 1.32  2006/03/15 14:06:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -160,7 +163,7 @@ import java.util.StringTokenizer;
  * @author Johan Verrips IOS
  */
 public class XmlUtils {
-	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.33 $ $Date: 2006-03-20 15:10:04 $";
+	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.34 $ $Date: 2006-03-21 07:36:54 $";
 	static Logger log = Logger.getLogger(XmlUtils.class);
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
@@ -295,7 +298,7 @@ public class XmlUtils {
 	 * Convert an XML string to a Document, then return the root-element as a Node
 	 */
 	public static Node buildNode(String s, boolean namespaceAware) throws DomBuilderException {
-		return buildElement(s,namespaceAware);
+		return (Node) buildElement(s,namespaceAware);
 	}
 
 
