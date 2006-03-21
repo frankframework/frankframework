@@ -1,6 +1,9 @@
 /*
  * $Log: JavaListener.java,v $
- * Revision 1.11  2006-03-20 13:52:59  europe\L190409
+ * Revision 1.12  2006-03-21 10:20:56  europe\L190409
+ * changed jndiName to serviceName
+ *
+ * Revision 1.11  2006/03/20 13:52:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * AbsoluteSingleton instead of JNDI
  *
  * Revision 1.10  2006/03/15 14:21:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -51,18 +54,9 @@
  */
 package nl.nn.adapterframework.receivers;
 
-import java.lang.reflect.InvocationTargetException;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-
-import javax.naming.Context;
-import javax.naming.NamingException;
-import javax.security.auth.Subject;
-import javax.security.auth.login.LoginContext;
-import javax.security.auth.login.LoginException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessageHandler;
@@ -70,18 +64,16 @@ import nl.nn.adapterframework.core.IPushingListener;
 import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
-import nl.nn.adapterframework.jms.JNDIBase;
-import nl.nn.adapterframework.jms.JmsRealm;
 import nl.nn.adapterframework.dispatcher.DispatcherException;
 import nl.nn.adapterframework.dispatcher.DispatcherManager;
 import nl.nn.adapterframework.dispatcher.DispatcherManagerFactory;
-import nl.nn.adapterframework.util.CredentialFactory;
+import nl.nn.adapterframework.dispatcher.RequestProcessor;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.log4j.Logger;
 
-import com.ibm.websphere.security.auth.WSSubject;
+//import com.ibm.websphere.security.auth.WSSubject;
 
 /** * 
  * The JavaListener listens to java requests.
@@ -91,25 +83,21 @@ import com.ibm.websphere.security.auth.WSSubject;
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.receivers.JavaListener</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the listener as known to the adapter. An {@link nl.nn.adapterframework.pipes.IbisLocalSender IbisLocalSender} refers to this name in its <code>javaListener</code>-attribute.</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setJndiName(String) jndiName}</td><td>(optional) name under which the java receiver registers the java proxy in JNDI</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setAuthAlias(String) authAlias}</td><td>alias used to obtain credentials to authenticate when binding proxy in JNDI</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setServiceName(String) serviceName}</td><td>(optional) name under which the JavaListener registers itself with the RequestDispatcherManager</td><td>&nbsp;</td></tr>
  * </table>
  * @author  JDekker
  * @version Id
  */
-public class JavaListener implements IPushingListener {
-	public static final String version="$RCSfile: JavaListener.java,v $ $Revision: 1.11 $ $Date: 2006-03-20 13:52:59 $";
+public class JavaListener implements IPushingListener, RequestProcessor {
+	public static final String version="$RCSfile: JavaListener.java,v $ $Revision: 1.12 $ $Date: 2006-03-21 10:20:56 $";
 	protected Logger log = Logger.getLogger(this.getClass());
 	
 	private String name;
-	private String jndiName;
-	private String authAlias;
+	private String serviceName;
+//	private String authAlias;
 
 	private static Map registeredListeners; 
 	private IMessageHandler handler;
-	private JNDIBase jndiBase = new JNDIBase();        	
-	
-	private DispatcherManager as=null;;
 	
 	public void configure() throws ConfigurationException {
 		try {
@@ -125,69 +113,11 @@ public class JavaListener implements IPushingListener {
 		}
 	}
 
-	private class rebindProxyAction implements PrivilegedExceptionAction {
 
-		JavaListener listener;
-		
-		rebindProxyAction(JavaListener listener) {
-			super();
-			this.listener=listener;
-		}
-		
-		public Object run_old() throws NamingException  {
-			Context context = getContext();
-			try {
-				Object currentJndiObject=null;
-				try {
-					currentJndiObject = context.lookup(getJndiName());
-				} catch (NamingException e) {
-					log.debug("error occured while retrieving currentJndiObject to check for current binding of jndiName [" + getJndiName() + "]: "+ e.getMessage());
-				}		
-				if (currentJndiObject!=null) {
-					log.info("previous proxy object under ["+getJndiName()+"], was a ["+currentJndiObject.getClass().getName()+"]");
-				}
-				if (listener!=null) {
-					log.info("binding proxy under ["+getJndiName()+"]");
-					context.rebind(getJndiName(), new JavaProxy(listener));
-				} else {
-					log.info("unbinding proxy under ["+getJndiName()+"]");
-					context.unbind(getJndiName());
-				}
-			} finally {
-				closeContext();
-			}
-			return null;
-		} 
-
-		public Object run() throws SecurityException, IllegalArgumentException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, DispatcherException  {
-			as = DispatcherManagerFactory.getDispatcherManager();
-			as.register(getJndiName(),new JavaProxy(listener)); 
-			return as;
-		} 
-
-	}
-	
-
-	protected void rebind(JavaListener listener) throws LoginException, PrivilegedActionException, NamingException, SecurityException, IllegalArgumentException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, DispatcherException {
-		if (StringUtils.isNotEmpty(getJndiName())) {
-			if (StringUtils.isNotEmpty(getAuthAlias())) {
-				log.debug("logging in using autentication alias ["+getAuthAlias()+"]");
-				CredentialFactory cf = new CredentialFactory(getAuthAlias(),null,null);
-				LoginContext lc = cf.getLoginContext();
-				log.debug("retrieved LoginContext ["+lc.getClass().getName()+"] contents ["+lc.toString()+"]");
-				Subject s=lc.getSubject();
-				log.debug("retrieved Subject ["+s.getClass().getName()+"] contents ["+s.toString()+"]");
-				try {
-					log.info("performing rebind using WebSphere WSSubject.doAs()");
-					WSSubject.doAs(s,new rebindProxyAction(listener));
-				} catch (Throwable t) {
-					log.warn("caught exception, retrying rebind using standard JAAS API",t);
-					Subject.doAs(s,new rebindProxyAction(listener));
-				}
-				lc.logout();
-			} else {
-				new rebindProxyAction(listener).run(); 
-			}
+	protected void rebind(JavaListener listener) throws DispatcherException {
+		if (StringUtils.isNotEmpty(getServiceName())) {
+			DispatcherManager as = DispatcherManagerFactory.getDispatcherManager();
+			as.register(getServiceName(), listener); 
 		}
 	}
 
@@ -309,14 +239,6 @@ public class JavaListener implements IPushingListener {
 		return ToStringBuilder.reflectionToString(this);
 	}
 	
-	private Context getContext() throws NamingException {
-		return jndiBase.getContext();
-	}
-	
-	private void closeContext() throws NamingException {
-		jndiBase.closeContext();
-	}
-
 
 	public void setHandler(IMessageHandler handler) {
 		this.handler = handler;
@@ -326,19 +248,15 @@ public class JavaListener implements IPushingListener {
 	}
 
 
-	public void setJmsRealm(String jmsRealmName){
-		JmsRealm.copyRealm(jndiBase, jmsRealmName);
-	}
-
 	/**
 	 * @return the name under which the java receiver registers the java proxy in JNDI
 	 */
 
-	public void setJndiName(String jndiName) {
-		this.jndiName = jndiName;
+	public void setServiceName(String jndiName) {
+		this.serviceName = jndiName;
 	}
-	public String getJndiName() {
-		return jndiName;
+	public String getServiceName() {
+		return serviceName;
 	}
 
 
@@ -350,12 +268,12 @@ public class JavaListener implements IPushingListener {
 	}
 
 
-	public String getAuthAlias() {
-		return authAlias;
-	}
-
-	public void setAuthAlias(String string) {
-		authAlias = string;
-	}
+//	public String getAuthAlias() {
+//		return authAlias;
+//	}
+//
+//	public void setAuthAlias(String string) {
+//		authAlias = string;
+//	}
 
 }

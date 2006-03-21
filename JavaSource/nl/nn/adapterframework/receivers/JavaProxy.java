@@ -1,6 +1,9 @@
 /*
  * $Log: JavaProxy.java,v $
- * Revision 1.7  2006-03-20 13:52:59  europe\L190409
+ * Revision 1.8  2006-03-21 10:20:56  europe\L190409
+ * changed jndiName to serviceName
+ *
+ * Revision 1.7  2006/03/20 13:52:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * AbsoluteSingleton instead of JNDI
  *
  * Revision 1.6  2006/02/28 08:49:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -24,15 +27,10 @@
  */
 package nl.nn.adapterframework.receivers;
 
-import java.io.Serializable;
 import java.util.HashMap;
 
-import javax.naming.NamingException;
-
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.jms.JNDIBase;
 import nl.nn.adapterframework.dispatcher.DispatcherManagerFactory;
-import nl.nn.adapterframework.dispatcher.RequestProcessor;
 import nl.nn.adapterframework.dispatcher.DispatcherManager;
 
 
@@ -49,8 +47,8 @@ import nl.nn.adapterframework.dispatcher.DispatcherManager;
  * @version Id
  * @since   4.2
  */
-public class JavaProxy implements ServiceClient2, Serializable, RequestProcessor {
-	public static final String version="$RCSfile: JavaProxy.java,v $ $Revision: 1.7 $ $Date: 2006-03-20 13:52:59 $";
+public class JavaProxy implements ServiceClient2 {
+	public static final String version="$RCSfile: JavaProxy.java,v $ $Revision: 1.8 $ $Date: 2006-03-21 10:20:56 $";
 	private String serviceName;
 	private boolean usesListener;
 	
@@ -115,83 +113,21 @@ public class JavaProxy implements ServiceClient2, Serializable, RequestProcessor
 	 * @return JavaProxy for a JavaPusher if registered under name or null
 	 */
 	public static JavaProxy getProxy(String serviceName) {
-		JavaListener pusher = JavaListener.getListener(serviceName);
-		if (pusher == null)
+		JavaListener listener = JavaListener.getListener(serviceName);
+		if (listener == null)
 			return null;
-		return new JavaProxy(pusher);
+		return new JavaProxy(listener);
 	}
 
-	/**
-	 * @param jndiName
-	 * @return JavaProxy for a JavaPusher if registered in JNDI under name or null
-	 */
-	public static ServiceClient2 lookupProxy(String jndiName) throws NamingException {
-		JNDIBase jndiBase = new JNDIBase();
-		try {
-			return (ServiceClient2)jndiBase.getContext().lookup(jndiName);
-		} finally {
-			jndiBase.closeContext();
-		}
-	}
 
 	public String processRequest(String correlationId, String message, HashMap requestContext) throws Exception {
 		return processRequestWithExceptions(correlationId, message, requestContext);
 	}
 
 
-	public static String processRequest(String clientName, String correlationId, String message, HashMap requestContext) throws Exception {
+	public static String processRequest(String serviceName, String correlationId, String message, HashMap requestContext) throws Exception {
 		DispatcherManager as = DispatcherManagerFactory.getDispatcherManager();
-		return as.processRequest(clientName, correlationId, message, requestContext);
+		return as.processRequest(serviceName, correlationId, message, requestContext);
 	}
-
-
-
-//	{
-//		// initialize
-//		ServiceClient2 persistValues=null;
-//		ServiceClient2 retrieveValues=null;
-//		ServiceClient2 transformInitialValues=null;
-//		try {
-//			persistValues = JavaProxy.lookupProxy("ibis/persistValues");
-//			retrieveValues = JavaProxy.lookupProxy("ibis/retrieveValues");
-//			transformInitialValues = JavaProxy.lookupProxy("ibis/transformInitialValues");
-//		} catch (NamingException e) {
-//			e.printStackTrace(); // handel de fout af
-//		}
-//
-//		// persist values		
-//		String bericht1="...";
-//		String procesId1="...";
-//		HashMap requestContext1=new HashMap();
-//		requestContext1.put("procesId",procesId1);
-//		try {
-//			persistValues.processRequestWithExceptions(null,bericht1,requestContext1);
-//		} catch (ListenerException e) {
-//			e.printStackTrace(); // handel de fout af
-//		}
-//		
-//		
-//		// retrieve values		
-//		String procesId2="...";
-//		String bericht2;
-//		try {
-//			bericht2 = retrieveValues.processRequestWithExceptions(null,procesId2,null);
-//		} catch (ListenerException e) {
-//			e.printStackTrace(); // handel de fout af
-//		}
-//
-//		// verwerk bericht
-//		String bericht3="....";
-//		String dialect3="GIM";
-//		String profileXml3=null;
-//		HashMap requestContext3=new HashMap();
-//		requestContext3.put("dialect",dialect3);
-//		try {
-//			profileXml3 = transformInitialValues.processRequestWithExceptions(null,bericht3,requestContext3);
-//		} catch (ListenerException e) {
-//			e.printStackTrace(); // handel de fout af
-//		}
-//		
-//	}
 
 }
