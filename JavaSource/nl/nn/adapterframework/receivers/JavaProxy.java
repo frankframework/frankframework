@@ -1,6 +1,9 @@
 /*
  * $Log: JavaProxy.java,v $
- * Revision 1.8  2006-03-21 10:20:56  europe\L190409
+ * Revision 1.9  2006-03-23 08:17:46  europe\L190409
+ * last commit before delete
+ *
+ * Revision 1.8  2006/03/21 10:20:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed jndiName to serviceName
  *
  * Revision 1.7  2006/03/20 13:52:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -48,7 +51,7 @@ import nl.nn.adapterframework.dispatcher.DispatcherManager;
  * @since   4.2
  */
 public class JavaProxy implements ServiceClient2 {
-	public static final String version="$RCSfile: JavaProxy.java,v $ $Revision: 1.8 $ $Date: 2006-03-21 10:20:56 $";
+	public static final String version="$RCSfile: JavaProxy.java,v $ $Revision: 1.9 $ $Date: 2006-03-23 08:17:46 $";
 	private String serviceName;
 	private boolean usesListener;
 	
@@ -74,7 +77,7 @@ public class JavaProxy implements ServiceClient2 {
 	 */
 	public String processRequest(String correlationId, String message) {
 		if (usesListener)
-			return JavaListener.getListener(getServiceName()).processRequest(correlationId, message);
+			return JavaListener.getListener(getServiceName()).processRequestNoException(correlationId, message);
 		return ServiceDispatcher.getInstance().dispatchRequest(serviceName, correlationId, message);
 	}
 
