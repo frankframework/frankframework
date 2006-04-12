@@ -1,6 +1,9 @@
 /*
  * $Log: JavaListener.java,v $
- * Revision 1.12  2006-03-21 10:20:56  europe\L190409
+ * Revision 1.13  2006-04-12 16:06:21  europe\L190409
+ * added 'isolated' attribute
+ *
+ * Revision 1.12  2006/03/21 10:20:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed jndiName to serviceName
  *
  * Revision 1.11  2006/03/20 13:52:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -68,6 +71,7 @@ import nl.nn.adapterframework.dispatcher.DispatcherException;
 import nl.nn.adapterframework.dispatcher.DispatcherManager;
 import nl.nn.adapterframework.dispatcher.DispatcherManagerFactory;
 import nl.nn.adapterframework.dispatcher.RequestProcessor;
+import nl.nn.adapterframework.pipes.IsolatedServiceCaller;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -84,17 +88,18 @@ import org.apache.log4j.Logger;
  * <tr><td>className</td><td>nl.nn.adapterframework.receivers.JavaListener</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the listener as known to the adapter. An {@link nl.nn.adapterframework.pipes.IbisLocalSender IbisLocalSender} refers to this name in its <code>javaListener</code>-attribute.</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setServiceName(String) serviceName}</td><td>(optional) name under which the JavaListener registers itself with the RequestDispatcherManager</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setIsolated(boolean) isolated}</td><td>when <code>true</code>, the call is made in a separate thread, possibly using separate transaction</td><td>false</td></tr>
  * </table>
  * @author  JDekker
  * @version Id
  */
 public class JavaListener implements IPushingListener, RequestProcessor {
-	public static final String version="$RCSfile: JavaListener.java,v $ $Revision: 1.12 $ $Date: 2006-03-21 10:20:56 $";
+	public static final String version="$RCSfile: JavaListener.java,v $ $Revision: 1.13 $ $Date: 2006-04-12 16:06:21 $";
 	protected Logger log = Logger.getLogger(this.getClass());
 	
 	private String name;
 	private String serviceName;
-//	private String authAlias;
+	private boolean isolated=false;
 
 	private static Map registeredListeners; 
 	private IMessageHandler handler;
@@ -113,11 +118,28 @@ public class JavaListener implements IPushingListener, RequestProcessor {
 		}
 	}
 
+	private class isolatedCaller implements RequestProcessor {
+
+		JavaListener listener;
+		
+		isolatedCaller(JavaListener listener) {
+			this.listener=listener;
+		}
+
+		public String processRequest(String correlationId, String message, HashMap requestContext) throws Exception {
+			return IsolatedServiceCaller.callServiceIsolated(listener.getName(), correlationId, message, requestContext, true);
+		}
+	}
+
 
 	protected void rebind(JavaListener listener) throws DispatcherException {
 		if (StringUtils.isNotEmpty(getServiceName())) {
 			DispatcherManager as = DispatcherManagerFactory.getDispatcherManager();
-			as.register(getServiceName(), listener); 
+			RequestProcessor processor = listener;
+			if (isIsolated()) {
+				processor = new isolatedCaller(listener);
+			}
+			as.register(getServiceName(), processor); 
 		}
 	}
 
@@ -211,7 +233,7 @@ public class JavaListener implements IPushingListener, RequestProcessor {
 	 * @param message
 	 * @return result of processing
 	 */
-	public String processRequest(String correlationId, String message) {
+	public String processRequestNoException(String correlationId, String message) {
 		try {
 			if (log.isDebugEnabled())
 				log.debug("JavaListener [" + getName() + "] processing [" + correlationId + "]");
@@ -268,12 +290,12 @@ public class JavaListener implements IPushingListener, RequestProcessor {
 	}
 
 
-//	public String getAuthAlias() {
-//		return authAlias;
-//	}
-//
-//	public void setAuthAlias(String string) {
-//		authAlias = string;
-//	}
+	public boolean isIsolated() {
+		return isolated;
+	}
+	
+	public void setIsolated(boolean b) {
+		isolated = b;
+	}
 
 }
