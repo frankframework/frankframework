@@ -1,7 +1,7 @@
 /*
  * $Log: CompressPipe.java,v $
- * Revision 1.6  2006-04-12 15:37:46  europe\L190409
- * corrected javadoc
+ * Revision 1.7  2006-04-12 16:03:02  europe\L190409
+ * support for gzip
  *
  * Revision 1.5  2005/12/20 09:57:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
@@ -35,12 +35,15 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.util.FileUtils;
+
+import org.apache.commons.lang.StringUtils;
 
 /**
  * Pipe to zip or unzip a message or file.  
@@ -53,8 +56,8 @@ import nl.nn.adapterframework.util.FileUtils;
  * <tr><td>{@link #setResultIsContent(boolean) resultIsContent}</td><td>Flag indicates whether the result must be written to the message or to a file (filename = message)</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setOutputDirectory(String) outputDirectory}</td><td>Required if result is a file, the firectory in which to store the result file</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setFilenamePattern(String) filenamePattern}</td><td>Required if result is a file, the pattern for the result filename</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setZipEntryPattern(String) zipEntryPattern}</td><td>The pattern for the zipentry name in case a zipfile is read or written</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setCompress(boolean) compress}</td><td>If true the pipe compress, otherwise it decompress</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setZipEntryPattern(String) zipEntryPattern}</td><td>The pattern for the zipentry name in case a zipfile is read or written. If set, this option implicitly forces the use of zip instead of gzip</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setCompress(boolean) directory}</td><td>If true the pipe compress, otherwise it decompress</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setConvert2String(boolean) convert2String}</td><td>If true result is returned as a string, otherwise as a byte array</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
@@ -105,7 +108,15 @@ public class CompressPipe extends FixedForwardPipe {
 				in = new ByteArrayInputStream(input.toString().getBytes()); 
 			}
 			if (! compress) {
-				in = new GZIPInputStream(in);
+				if (StringUtils.isEmpty(zipEntryPattern)) {												
+					in = new GZIPInputStream(in);
+				}
+				else {
+					ZipInputStream zipper = new ZipInputStream(in);
+					String zipEntryName = getZipEntryName(input, session);
+					while (! zipper.getNextEntry().getName().equals(zipEntryName));
+					in = zipper;
+				}
 			}
 		}
 		else {
@@ -127,7 +138,15 @@ public class CompressPipe extends FixedForwardPipe {
 			result = out; 
 
 			if (compress) {
-				out = new GZIPOutputStream(out);
+				if (StringUtils.isEmpty(zipEntryPattern)) {
+					out = new GZIPOutputStream(out);
+				}
+				else {					
+					ZipOutputStream zipper = new ZipOutputStream(out); 
+					String zipEntryName = getZipEntryName(input, session);
+					zipper.putNextEntry(new ZipEntry(zipEntryName));
+					out = zipper;
+				}
 			}
 		}
 		else {
@@ -223,5 +242,6 @@ public class CompressPipe extends FixedForwardPipe {
 	public void setConvert2String(boolean b) {
 		convert2String = b;
 	}
+
 
 }
