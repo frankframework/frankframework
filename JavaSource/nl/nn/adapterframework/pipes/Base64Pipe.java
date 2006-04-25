@@ -1,6 +1,9 @@
 /*
  * $Log: Base64Pipe.java,v $
- * Revision 1.2  2005-10-13 11:44:53  europe\L190409
+ * Revision 1.3  2006-04-25 06:56:00  europe\L190409
+ * added attribute convert2String
+ *
+ * Revision 1.2  2005/10/13 11:44:53  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * switched encode and decode code
  *
  * Revision 1.1  2005/10/05 07:38:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -29,17 +32,19 @@ import sun.misc.BASE64Encoder;
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDirection(String) direction}</td><td>either <code>encode</code> or <code>decode</code></td><td>"encode"</td></tr>
+ * <tr><td>{@link #setConvert2String(boolean) convert2String}</td><td>If true and decoding, result is returned as a string, otherwise as a byte array. If true and encoding, input is read as a string, otherwise as a byte array.</td><td>true</td></tr>
  * </table>
  * </p>
  * 
- * @author  Gerrit van Brakel
+ * @author  Gerrit van Brakel / Jaco de Groot (***@dynasol.nl)
  * @since   4.4
  * @version Id
  */
 public class Base64Pipe extends FixedForwardPipe {
-	public static final String version="$RCSfile: Base64Pipe.java,v $ $Revision: 1.2 $ $Date: 2005-10-13 11:44:53 $";
+	public static final String version="$RCSfile: Base64Pipe.java,v $ $Revision: 1.3 $ $Date: 2006-04-25 06:56:00 $";
 
 	private String direction="encode";
+	private boolean convert2String=true;
 
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -53,17 +58,24 @@ public class Base64Pipe extends FixedForwardPipe {
 	}
 
 	public PipeRunResult doPipe(Object invoer, PipeLineSession session) throws PipeRunException {
-		String in=invoer.toString();
-		String result=null;
-		
-		if (in!=null) {
+		Object result=null;
+		if (invoer!=null) {
 			if ("encode".equalsIgnoreCase(getDirection())) {
 				BASE64Encoder encoder = new BASE64Encoder();
-				result=encoder.encode(in.getBytes());
+				if (convert2String) {
+					result=encoder.encode(invoer.toString().getBytes());
+				} else {
+					result=encoder.encode((byte[])invoer);
+				}
 			} else {
 				BASE64Decoder decoder = new BASE64Decoder();
+				String in=invoer.toString();
 				try {
-					result=new String(decoder.decodeBuffer(in));
+					if (convert2String) {
+						result=new String(decoder.decodeBuffer(in));
+					} else {
+						result=decoder.decodeBuffer(in);
+					}
 				} catch (IOException e) {
 					throw new PipeRunException(this, getLogPrefix(session)+"cannot decode base64", e);
 				}
@@ -73,13 +85,17 @@ public class Base64Pipe extends FixedForwardPipe {
 		}
 		return new PipeRunResult(getForward(), result);
 	}
-	
 
 	public void setDirection(String string) {
 		direction = string;
 	}
+
 	public String getDirection() {
 		return direction;
+	}
+
+	public void setConvert2String(boolean b) {
+		convert2String = b;
 	}
 
 }
