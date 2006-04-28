@@ -1,6 +1,9 @@
 /*
  * $Log: Text2XmlPipe.java,v $
- * Revision 1.4  2006-04-26 11:29:20  europe\L190409
+ * Revision 1.5  2006-04-28 06:19:37  europe\m00f070
+ * fixed exception text
+ *
+ * Revision 1.4  2006/04/26 11:29:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added splitLines attribute
  *
  * Revision 1.3  2004/10/14 15:36:25  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -83,7 +86,7 @@ public class Text2XmlPipe extends FixedForwardPipe {
 				br.close();
 			}
 			catch (IOException e) {
-				throw new PipeRunException(this, "Unexpected exception during appending header", e); 
+				throw new PipeRunException(this, "Unexpected exception during splitting", e); 
 			}
 			
 						
