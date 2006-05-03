@@ -1,6 +1,9 @@
 /*
  * $Log: HttpSender.java,v $
- * Revision 1.21  2006-01-23 12:57:06  europe\L190409
+ * Revision 1.22  2006-05-03 07:09:38  europe\L190409
+ * fixed null pointer exception that occured when no statusline was found
+ *
+ * Revision 1.21  2006/01/23 12:57:06  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * determine port-default if not found from uri
  *
  * Revision 1.20  2006/01/19 12:14:41  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -78,6 +81,7 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
+import org.apache.commons.httpclient.StatusLine;
 import org.apache.commons.httpclient.URI;
 import org.apache.commons.httpclient.URIException;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
@@ -191,7 +195,7 @@ import nl.nn.adapterframework.util.CredentialFactory;
  * @since 4.2c
  */
 public class HttpSender extends SenderWithParametersBase implements HasPhysicalDestination {
-	public static final String version = "$RCSfile: HttpSender.java,v $ $Revision: 1.21 $ $Date: 2006-01-23 12:57:06 $";
+	public static final String version = "$RCSfile: HttpSender.java,v $ $Revision: 1.22 $ $Date: 2006-05-03 07:09:38 $";
 
 	private String url;
 	private String methodType="GET"; // GET or POST
@@ -444,7 +448,14 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 		
 		try {
 			httpclient.executeMethod(httpmethod);
-			log.debug(getLogPrefix()+"status:"+httpmethod.getStatusLine().toString());	
+			if (log.isDebugEnabled()) {
+				StatusLine statusline = httpmethod.getStatusLine();
+				if (statusline!=null) { 
+					log.debug(getLogPrefix()+"status:"+statusline.toString());
+				} else {
+					log.debug(getLogPrefix()+"no statusline found");
+				}
+			}
 			return extractResult(httpmethod);	
 		} catch (HttpException e) {
 			throw new SenderException(e);
