@@ -1,6 +1,9 @@
 /*
  * $Log: FilePipe.java,v $
- * Revision 1.9  2005-12-08 08:00:26  europe\L190409
+ * Revision 1.10  2006-05-04 06:47:55  europe\L190409
+ * handles correctly incoming byte[]
+ *
+ * Revision 1.9  2005/12/08 08:00:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected version string
  *
  * Revision 1.8  2005/12/07 16:09:25  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -72,7 +75,7 @@ import sun.misc.BASE64Encoder;
  *
  */
 public class FilePipe extends FixedForwardPipe {
-	public static final String version="$RCSfile: FilePipe.java,v $ $Revision: 1.9 $ $Date: 2005-12-08 08:00:26 $";
+	public static final String version="$RCSfile: FilePipe.java,v $ $Revision: 1.10 $ $Date: 2006-05-04 06:47:55 $";
 	private List transformers;
 	protected String actions;
 	protected String directory;
@@ -124,7 +127,14 @@ public class FilePipe extends FixedForwardPipe {
 	 */
 	public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRunException {
 		try {
-			byte[] inValue = (input == null) ? null : input.toString().getBytes();
+			byte[] inValue = null;
+			if (input instanceof byte[]) {
+				inValue = (byte [])input;
+			}
+			else {
+				inValue = (input == null) ? null : input.toString().getBytes();
+			}
+				
 			for (Iterator it = transformers.iterator(); it.hasNext(); ) {
 				inValue = ((TransformerAction)it.next()).go(inValue, session);
 			}
