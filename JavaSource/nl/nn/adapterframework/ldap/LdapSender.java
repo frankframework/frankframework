@@ -1,6 +1,9 @@
 /*
  * $Log: LdapSender.java,v $
- * Revision 1.8  2005-10-24 10:00:21  europe\m00f531
+ * Revision 1.9  2006-05-08 14:58:29  europe\L190409
+ * start of 'multiple operation support'
+ *
+ * Revision 1.8  2005/10/24 10:00:21  John Dekker <john.dekker@ibissource.org>
  * *** empty log message ***
  *
  * Revision 1.7  2005/10/24 09:59:24  John Dekker <john.dekker@ibissource.org>
@@ -23,6 +26,11 @@
  */
 package nl.nn.adapterframework.ldap;
 
+import java.util.Properties;
+
+import javax.naming.CompositeName;
+import javax.naming.InvalidNameException;
+import javax.naming.Name;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
@@ -42,8 +50,11 @@ import nl.nn.adapterframework.parameters.IParameterHandler;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.parameters.ParameterValue;
+import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.util.XmlBuilder;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 /**
@@ -79,22 +90,35 @@ import org.apache.log4j.Logger;
  * <tr><td>{@link #setAuthentication(String) authentication}</td><td>JNDI authentication parameter</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setCredentials(String) credentials}</td><td>JNDI credential parameter</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>sets jndi parameters from defined realm</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setOperation(String) operation}</td><td>specifies operation to perform. Must be one of 'read', 'create', 'update', 'delete'</td><td>read</td></tr>
+ * <tr><td>{@link #setNameAttribute(String) nameAttribute}</td><td>parameter used to specifiy name of LDAP object in context to perform operation on</td><td>uid</td></tr>
  * </table>
  * </p>
  * Instead of via a message, the input to the LDAP search can be specified by parameters, too. In that case the message itself is not interpreted as input.
+ * The name of the parameter specifies an attribute-name in LDAP, the value specifies the LDAP value to be matched.
  * @author Gerrit van Brakel
  * @version Id
  */
 public class LdapSender extends JNDIBase implements ISenderWithParameters {
 	protected Logger log=Logger.getLogger(this.getClass());
-	public static final String version="$RCSfile: LdapSender.java,v $  $Revision: 1.8 $ $Date: 2005-10-24 10:00:21 $";
+	public static final String version="$RCSfile: LdapSender.java,v $  $Revision: 1.9 $ $Date: 2006-05-08 14:58:29 $";
 	
 	private static final String INITIAL_CONTEXT_FACTORY="com.sun.jndi.ldap.LdapCtxFactory";
+	
+	public static final String OPERATION_READ="read";
+	public static final String OPERATION_CREATE="create";
+	public static final String OPERATION_UPDATE="update";
+	public static final String OPERATION_DELETE="delete";
+	
 	protected ParameterList paramList = null;
 	
 	private String name;
+	private String operation=OPERATION_READ;
+	private String nameAttribute="uid";
 	
 	private DirContext dirContext=null;
+	
+	private Properties namingSyntax=new Properties();
 	
 	public LdapSender() {
 		super();
@@ -105,6 +129,18 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 		if (paramList!=null) {
 			paramList.configure();
 		}
+		if (getOperation()==null || 
+			!(getOperation().equals(OPERATION_READ)  || 
+			  getOperation().equals(OPERATION_CREATE)|| 
+			  getOperation().equals(OPERATION_UPDATE)|| 
+			  getOperation().equals(OPERATION_DELETE))) {
+			throw new ConfigurationException("attribute opereration ["+getOperation()+
+						"] must be one of ("+OPERATION_READ+","+OPERATION_CREATE+","+OPERATION_UPDATE+","+OPERATION_DELETE+")");
+  		}
+  		if (getOperation().equals(OPERATION_UPDATE) && StringUtils.isEmpty(getNameAttribute())) {
+  			throw new ConfigurationException("for opereration ["+getOperation()+" attriubte 'nameAttribute' must be specified");
+  		}
+		fillSyntax();
 	}
 
 	public void open() throws SenderException {
@@ -117,6 +153,76 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 
 	public boolean isSynchronous() {
 		return true;
+	}
+
+	protected void fillSyntax() {
+		Properties syntax = getNamingSyntax();
+		syntax.clear();
+		syntax.put("jndi.syntax.direction","right_to_left");
+		syntax.put("jndi.syntax.separator",",");
+		syntax.put("jndi.syntax.ignorecase ","true");
+		syntax.put("jndi.syntax.trimblanks","true");
+	}
+
+	protected Name getNameFromAttrs(ParameterResolutionContext prc) throws ParameterException, InvalidNameException {
+		ParameterValueList pvl = prc.getValues(paramList);
+		ParameterValue namePv = pvl.getParameterValue(getNameAttribute());
+		return new CompositeName(getNameAttribute()+"='"+namePv.getValue()+"'");
+//		Parameters2NameHelper helper = new Parameters2NameHelper(new CompositeName());
+//		prc.forAllParameters(paramList, helper);
+//		Name name = helper.result; 
+//
+//		log.debug("constructed LDAP Names from parameters ["+name+"]");
+//		return name;
+	}
+	
+	private class Parameters2NameHelper implements IParameterHandler {
+		private Name result; 
+
+		Parameters2NameHelper(Name base) {
+			super();
+			result = base;
+		}
+
+		public void handleParam(String paramName, Object value) throws ParameterException {
+			try {
+				result.add(paramName+"='"+value+"'");
+			} catch (InvalidNameException e) {
+				throw new ParameterException("cannot make name from parameter ["+paramName+"] value ["+value+"]",e);
+			}
+		}
+	}
+	
+	public String performOperation(Attributes matchAttrs, ParameterResolutionContext prc) throws SenderException, ParameterException {
+		String result=null;
+		try {
+			if (getOperation().equals(OPERATION_READ)) {
+				NamingEnumeration searchresults=getDirContext().search("",matchAttrs);
+				return SearchResultsToXml(searchresults);
+			} else {
+				if (getOperation().equals(OPERATION_UPDATE)) {
+					Name name=getNameFromAttrs(prc);
+					Attributes attrs=applyParameters(null,prc);
+					getDirContext().modifyAttributes(name,DirContext.ADD_ATTRIBUTE+DirContext.REPLACE_ATTRIBUTE, attrs);
+				} else {
+					if (getOperation().equals(OPERATION_CREATE)) {
+						Name name=getNameFromAttrs(prc);
+						Attributes attrs=applyParameters(null,prc);
+						getDirContext().bind(name, null, attrs);
+					} else {
+						if (getOperation().equals(OPERATION_DELETE)) {
+							Name name=getNameFromAttrs(prc);
+							getDirContext().unbind(name);
+						} else {
+							throw new SenderException("unknown operation ["+getOperation()+"]");
+						}
+					}
+				}
+			}
+		} catch (NamingException e) {
+			throw new SenderException("during operation ["+getOperation()+"]", e);
+		}
+		return result;
 	}
 
 
@@ -177,7 +283,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 	
 	protected DirContext getDirContext() throws SenderException {
 		try {
-			return loopkupDirContext(); // return copy to be thread-safe
+			return loopkupDirContext();
 		} catch (NamingException e) {
 			throw new SenderException("cannot create InitialDirContext for providerURL ["+getProviderURL()+"]");
 		}
@@ -252,6 +358,27 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 	}
 	public String getName() {
 		return name;
+	}
+
+	public void setOperation(String string) {
+		operation = string;
+	}
+	public String getOperation() {
+		return operation;
+	}
+
+	public void setNameAttribute(String string) {
+		nameAttribute = string;
+	}
+	public String getNameAttribute() {
+		return nameAttribute;
+	}
+
+	public void setNamingSyntax(Properties properties) {
+		namingSyntax = properties;
+	}
+	public Properties getNamingSyntax() {
+		return namingSyntax;
 	}
 
 }
