@@ -1,6 +1,9 @@
 /*
  * $Log: LogSender.java,v $
- * Revision 1.3  2005-12-28 08:38:15  europe\L190409
+ * Revision 1.4  2006-06-14 09:50:25  europe\L190409
+ * avoid null pointer exception when prc==null
+ *
+ * Revision 1.3  2005/12/28 08:38:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected typo in attributename
  *
  * Revision 1.2  2005/10/24 09:59:24  John Dekker <john.dekker@ibissource.org>
@@ -40,7 +43,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class LogSender extends SenderWithParametersBase implements IParameterHandler {
-	public static final String version="$RCSfile: LogSender.java,v $ $Revision: 1.3 $ $Date: 2005-12-28 08:38:15 $";
+	public static final String version="$RCSfile: LogSender.java,v $ $Revision: 1.4 $ $Date: 2006-06-14 09:50:25 $";
 	
 	private String logLevel="info";
 	private String logCategory=null;
@@ -60,13 +63,15 @@ public class LogSender extends SenderWithParametersBase implements IParameterHan
 
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		log.log(level,message);
-
-		try {
-			prc.forAllParameters(paramList, this);
-		} catch (ParameterException e) {
-			throw new SenderException("exception determining value of parameters", e);
+		
+		if (prc != null) {
+			try {
+				prc.forAllParameters(paramList, this);
+			} catch (ParameterException e) {
+				throw new SenderException("exception determining value of parameters", e);
+			}
 		}
-
+		
 		return correlationID;
 	}
 
