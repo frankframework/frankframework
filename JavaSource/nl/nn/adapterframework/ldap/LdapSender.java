@@ -1,6 +1,9 @@
 /*
  * $Log: LdapSender.java,v $
- * Revision 1.9  2006-05-08 14:58:29  europe\L190409
+ * Revision 1.10  2006-06-14 09:51:26  europe\L190409
+ * improved logging
+ *
+ * Revision 1.9  2006/05/08 14:58:29  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * start of 'multiple operation support'
  *
  * Revision 1.8  2005/10/24 10:00:21  John Dekker <john.dekker@ibissource.org>
@@ -101,7 +104,7 @@ import org.apache.log4j.Logger;
  */
 public class LdapSender extends JNDIBase implements ISenderWithParameters {
 	protected Logger log=Logger.getLogger(this.getClass());
-	public static final String version="$RCSfile: LdapSender.java,v $  $Revision: 1.9 $ $Date: 2006-05-08 14:58:29 $";
+	public static final String version="$RCSfile: LdapSender.java,v $  $Revision: 1.10 $ $Date: 2006-06-14 09:51:26 $";
 	
 	private static final String INITIAL_CONTEXT_FACTORY="com.sun.jndi.ldap.LdapCtxFactory";
 	
@@ -272,8 +275,10 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 	protected synchronized DirContext loopkupDirContext() throws NamingException {
 		if (null == dirContext) {
 			if (getInitialContextFactoryName() != null) {
+				log.debug("creating initial JNDI-DirContext using specified environment");
 				dirContext = (DirContext) new InitialDirContext(getJndiEnv());
 			} else {
+				log.debug("creating initial JNDI-DirContext");
 				dirContext = (DirContext) new InitialDirContext();
 			}
 			log.debug("obtained InitialDirContext for providerURL ["+getProviderURL()+"]");
