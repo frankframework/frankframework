@@ -1,6 +1,9 @@
 /*
  * $Log: WebServiceSender.java,v $
- * Revision 1.15  2005-12-28 08:40:51  europe\L190409
+ * Revision 1.16  2006-06-14 09:41:41  europe\L190409
+ * improved logging
+ *
+ * Revision 1.15  2005/12/28 08:40:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected javadoc
  *
  * Revision 1.14  2005/10/18 08:23:52  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -101,7 +104,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  */
 
 public class WebServiceSender extends HttpSender {
-	public static final String version = "$RCSfile: WebServiceSender.java,v $ $Revision: 1.15 $ $Date: 2005-12-28 08:40:51 $";
+	public static final String version = "$RCSfile: WebServiceSender.java,v $ $Revision: 1.16 $ $Date: 2006-06-14 09:41:41 $";
 	
 	private String soapActionURI = "";
 	private String encodingStyleURI=null;
@@ -150,6 +153,9 @@ public class WebServiceSender extends HttpSender {
 		}
 		try {
 			String result = soapWrapper.getBody(httpResult);
+			if (log.isDebugEnabled()) {
+				log.debug(getLogPrefix()+"retrieved result ["+result+"]");
+			}
 			return (result);
 		} catch (Exception e) {
 			throw new SenderException("cannot retrieve result message",e);

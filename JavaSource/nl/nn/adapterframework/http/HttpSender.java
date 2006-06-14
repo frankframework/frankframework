@@ -1,6 +1,9 @@
 /*
  * $Log: HttpSender.java,v $
- * Revision 1.22  2006-05-03 07:09:38  europe\L190409
+ * Revision 1.23  2006-06-14 09:40:35  europe\L190409
+ * improved logging
+ *
+ * Revision 1.22  2006/05/03 07:09:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fixed null pointer exception that occured when no statusline was found
  *
  * Revision 1.21  2006/01/23 12:57:06  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -195,7 +198,7 @@ import nl.nn.adapterframework.util.CredentialFactory;
  * @since 4.2c
  */
 public class HttpSender extends SenderWithParametersBase implements HasPhysicalDestination {
-	public static final String version = "$RCSfile: HttpSender.java,v $ $Revision: 1.22 $ $Date: 2006-05-03 07:09:38 $";
+	public static final String version = "$RCSfile: HttpSender.java,v $ $Revision: 1.23 $ $Date: 2006-06-14 09:40:35 $";
 
 	private String url;
 	private String methodType="GET"; // GET or POST
@@ -447,7 +450,9 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 		httpmethod.setFollowRedirects(isFollowRedirects());
 		
 		try {
+			log.debug(getLogPrefix()+"executing method");
 			httpclient.executeMethod(httpmethod);
+			log.debug(getLogPrefix()+"executed method");
 			if (log.isDebugEnabled()) {
 				StatusLine statusline = httpmethod.getStatusLine();
 				if (statusline!=null) { 
@@ -456,7 +461,11 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 					log.debug(getLogPrefix()+"no statusline found");
 				}
 			}
-			return extractResult(httpmethod);	
+			String result=extractResult(httpmethod);	
+			if (log.isDebugEnabled()) {
+				log.debug(getLogPrefix()+"retrieved result ["+result+"]");
+			}
+			return result;
 		} catch (HttpException e) {
 			throw new SenderException(e);
 		} catch (IOException e) {
