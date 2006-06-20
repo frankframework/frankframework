@@ -1,6 +1,9 @@
 /*
  * $Log: JavaListener.java,v $
- * Revision 1.13  2006-04-12 16:06:21  europe\L190409
+ * Revision 1.14  2006-06-20 14:22:04  europe\L190409
+ * added 'local' attribute
+ *
+ * Revision 1.13  2006/04/12 16:06:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added 'isolated' attribute
  *
  * Revision 1.12  2006/03/21 10:20:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -89,17 +92,19 @@ import org.apache.log4j.Logger;
  * <tr><td>{@link #setName(String) name}</td><td>name of the listener as known to the adapter. An {@link nl.nn.adapterframework.pipes.IbisLocalSender IbisLocalSender} refers to this name in its <code>javaListener</code>-attribute.</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setServiceName(String) serviceName}</td><td>(optional) name under which the JavaListener registers itself with the RequestDispatcherManager</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setIsolated(boolean) isolated}</td><td>when <code>true</code>, the call is made in a separate thread, possibly using separate transaction</td><td>false</td></tr>
+ * <tr><td>{@link #setLocal(boolean) local}</td><td>when <code>true</code>, calls can only be made using IbisLocalSender from this Ibis. Otherwise calls from other applications in the same JVM can be made, too, using the IbisDispatcher</td><td>false</td></tr>
  * </table>
  * @author  JDekker
  * @version Id
  */
 public class JavaListener implements IPushingListener, RequestProcessor {
-	public static final String version="$RCSfile: JavaListener.java,v $ $Revision: 1.13 $ $Date: 2006-04-12 16:06:21 $";
+	public static final String version="$RCSfile: JavaListener.java,v $ $Revision: 1.14 $ $Date: 2006-06-20 14:22:04 $";
 	protected Logger log = Logger.getLogger(this.getClass());
 	
 	private String name;
 	private String serviceName;
 	private boolean isolated=false;
+	private boolean local=false;
 
 	private static Map registeredListeners; 
 	private IMessageHandler handler;
@@ -145,25 +150,31 @@ public class JavaListener implements IPushingListener, RequestProcessor {
 
 
 	public void open() throws ListenerException {
-		// add myself to list so that proxy can find me
-		registerListener(getName(), this);
 		try {
-			rebind(this);
-		} 
-		catch (Exception e) {
+			// add myself to local list so that IbisLocalSenders can find me 
+			registerListener(getName(), this);
+			
+			if (!isLocal()) {
+				// add myself to global list so that other applications in this JVM (like Everest Portal) can find me
+				rebind(this);
+			}
+		} catch (Exception e) {
 			throw new ListenerException("error occured while starting listener [" + getName() + "]", e);
-		}		
+		}
 	}
 
 	public void close() throws ListenerException {
 		try {
-			rebind(null);
+			if (!isLocal()) {
+				// unregister from global list
+				rebind(null);
+			}
+			// do not unregister from local list, leave it to handler to handle this
+			// unregisterJavaPusher(getName());		
 		}
 		catch (Exception e) {
 			throw new ListenerException("error occured while stopping listener [" + getName() + "]", e);
 		} 
-		// do not unregister, leave it to handler to handle this
-		// unregisterJavaPusher(getName());		
 	}
 
 
@@ -289,13 +300,21 @@ public class JavaListener implements IPushingListener, RequestProcessor {
 		return name;
 	}
 
-
-	public boolean isIsolated() {
-		return isolated;
-	}
 	
 	public void setIsolated(boolean b) {
 		isolated = b;
 	}
+	public boolean isIsolated() {
+		return isolated;
+	}
+	
+	
+	public void setLocal(boolean b) {
+		local = b;
+	}
+	public boolean isLocal() {
+		return local;
+	}
+
 
 }
