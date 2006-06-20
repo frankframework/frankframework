@@ -1,14 +1,22 @@
 /*
  * $Log: FixedErrorMessage.java,v $
- * Revision 1.1  2005-09-27 09:33:23  europe\L190409
+ * Revision 1.2  2006-06-20 14:09:51  europe\L190409
+ * added stylesheet attribute
+ *
+ * Revision 1.1  2005/09/27 09:33:23  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * introduction of FixedErrorMessage
  *
  */
 package nl.nn.adapterframework.errormessageformatters;
 
+import java.net.URL;
+
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.XmlUtils;
+
+import javax.xml.transform.Transformer;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
@@ -23,6 +31,7 @@ import org.apache.commons.lang.SystemUtils;
  * <tr><td>{@link #setReturnString(String) returnString}</td><td>returned message</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setReplaceFrom(String) replaceFrom}</td><td>string to search for in the returned message</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setReplaceTo(String) replaceTo}</td><td>string that will replace each of the strings found in the returned message</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setStyleSheetName(String) styleSheetName}</td><td>stylesheet to apply to the output message</td><td>&nbsp;</td></tr>
  * </table>
  * 
  * @author  Peter Leeuwenburgh
@@ -34,6 +43,7 @@ public class FixedErrorMessage extends ErrorMessageFormatter {
 	private String returnString = null;
 	private String replaceFrom = null;
 	private String replaceTo = null;
+	private String styleSheetName = null;
 
 	public String format(
 		String message,
@@ -60,6 +70,20 @@ public class FixedErrorMessage extends ErrorMessageFormatter {
 
 		if (StringUtils.isNotEmpty(getReplaceFrom())) {
 			stringToReturn = Misc.replace(stringToReturn, getReplaceFrom(), getReplaceTo() );
+		}
+
+		if (StringUtils.isNotEmpty(styleSheetName)) {
+			URL xsltSource = ClassUtils.getResourceURL(this, styleSheetName);
+			if (xsltSource!=null) {
+				try{
+					String xsltResult = null;
+					Transformer transformer = XmlUtils.createTransformer(xsltSource);
+					xsltResult = XmlUtils.transformXml(transformer, stringToReturn);
+					stringToReturn = xsltResult;
+				} catch (Throwable e) {
+					log.error("got error transforming resource [" + xsltSource.toString() + "] from [" + styleSheetName + "]", e);
+				}
+			}
 		}
 	
 		return stringToReturn;
@@ -97,4 +121,10 @@ public class FixedErrorMessage extends ErrorMessageFormatter {
 		return replaceTo;
 	}
 
+	public String getStyleSheetName() {
+		return styleSheetName;
+	}
+	public void setStyleSheetName (String styleSheetName){
+		this.styleSheetName=styleSheetName;
+	}
 }

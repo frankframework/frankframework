@@ -1,6 +1,9 @@
 /*
  * $Log: FixedResult.java,v $
- * Revision 1.14  2006-01-05 14:34:19  europe\L190409
+ * Revision 1.15  2006-06-20 14:10:22  europe\L190409
+ * added stylesheet attribute
+ *
+ * Revision 1.14  2006/01/05 14:34:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * allow an empty resultstring to be specified
  *
  * Revision 1.13  2005/12/29 15:17:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -27,6 +30,9 @@
  */
 package nl.nn.adapterframework.pipes;
 
+import java.io.IOException;
+import java.net.URL;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -36,8 +42,14 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StringResolver;
+import nl.nn.adapterframework.util.XmlUtils;
+
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
@@ -59,6 +71,7 @@ import org.apache.commons.lang.SystemUtils;
  * <tr><td>{@link #setSubstituteVars(boolean) substituteVars}</td><td>Should values between ${ and } be resolved from the PipeLineSession</td><td>False</td></tr>
  * <tr><td>{@link #setReplaceFrom(String) replaceFrom}</td><td>string to search for in the returned message</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setReplaceTo(String) replaceTo}</td><td>string that will replace each of the strings found in the returned message</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setStyleSheetName(String) styleSheetName}</td><td>stylesheet to apply to the output message</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * <p><table border="1">
@@ -77,14 +90,15 @@ import org.apache.commons.lang.SystemUtils;
  * @author Johan Verrips
  */
 public class FixedResult extends FixedForwardPipe {
-	public static final String version="$RCSfile: FixedResult.java,v $ $Revision: 1.14 $ $Date: 2006-01-05 14:34:19 $";
+	public static final String version="$RCSfile: FixedResult.java,v $ $Revision: 1.15 $ $Date: 2006-06-20 14:10:22 $";
 	
     private String fileName;
     private String returnString;
     private boolean substituteVars=false;
 	private String replaceFrom = null;
 	private String replaceTo = null;
-
+	private String styleSheetName = null;
+	
     /**
      * checks for correct configuration, and translates the fileName to
      * a file, to check existence. 
@@ -131,6 +145,27 @@ public class FixedResult extends FixedForwardPipe {
 		if (getSubstituteVars()){
 			result=StringResolver.substVars(returnString, session);
 		}
+
+		if (StringUtils.isNotEmpty(styleSheetName)) {
+			URL xsltSource = ClassUtils.getResourceURL(this, styleSheetName);
+			if (xsltSource!=null) {
+				try{
+					String xsltResult = null;
+					Transformer transformer = XmlUtils.createTransformer(xsltSource);
+					xsltResult = XmlUtils.transformXml(transformer, result);
+					result = xsltResult;
+				} catch (IOException e) {
+					throw new PipeRunException(this,getLogPrefix(session)+"cannot retrieve ["+ styleSheetName + "], resource [" + xsltSource.toString() + "]", e);
+				} catch (TransformerConfigurationException te) {
+					throw new PipeRunException(this,getLogPrefix(session)+"got error creating transformer from file [" + styleSheetName + "]", te);
+				} catch (TransformerException te) {
+					throw new PipeRunException(this,getLogPrefix(session)+"got error transforming resource [" + xsltSource.toString() + "] from [" + styleSheetName + "]", te);
+				} catch (DomBuilderException te) {
+					throw new PipeRunException(this,getLogPrefix(session)+"caught DomBuilderException", te);
+				}
+			}
+		}
+
 	    log.debug(getLogPrefix(session)+ " returning fixed result [" + result + "]");
 	
 	    return new PipeRunResult(getForward(), result);
@@ -195,5 +230,12 @@ public class FixedResult extends FixedForwardPipe {
 	}
 	public void setReplaceTo (String replaceTo){
 		this.replaceTo=replaceTo;
+	}
+
+	public String getStyleSheetName() {
+		return styleSheetName;
+	}
+	public void setStyleSheetName (String styleSheetName){
+		this.styleSheetName=styleSheetName;
 	}
 }

@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.24  2006-04-12 16:17:43  europe\L190409
+ * Revision 1.25  2006-06-20 14:10:43  europe\L190409
+ * added stylesheet attribute
+ *
+ * Revision 1.24  2006/04/12 16:17:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * retry after failed storing of message in inProcessStorage
  *
  * Revision 1.23  2006/02/20 15:42:41  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -103,6 +106,7 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TransactionException;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Counter;
+import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.RunStateEnquiring;
@@ -112,7 +116,7 @@ import nl.nn.adapterframework.util.Semaphore;
 import nl.nn.adapterframework.util.StatisticsKeeper;
 import nl.nn.adapterframework.util.TracingEventNumbers;
 import nl.nn.adapterframework.util.TracingUtil;
-
+import nl.nn.adapterframework.util.XmlUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -121,12 +125,17 @@ import org.apache.log4j.Logger;
 
 import javax.transaction.Status;
 
+import java.io.IOException;
 import java.io.Serializable;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
 import javax.transaction.UserTransaction;
 
 /**
@@ -139,6 +148,7 @@ import javax.transaction.UserTransaction;
  * <tr><td>{@link #setName(String) name}</td>  <td>name of the receiver as known to the adapter</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setNumThreads(int) numThreads}</td><td>the number of threads that may execute a pipeline concurrently (only for pulling listeners)</td><td>1</td></tr>
  * <tr><td>{@link #setNumThreadsPolling(int) numThreadsPolling}</td><td>the number of threads that are activily polling for messages concurrently. '0' means 'limited only by <code>numThreads</code>' (only for pulling listeners)</td><td>1</td></tr>
+ * <tr><td>{@link #setStyleSheetName(String) styleSheetName}</td>  <td></td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setOnError(String) onError}</td><td>one of 'continue' or 'close'. Controls the behaviour of the receiver when it encounters an error sending a reply</td><td>continue</td></tr>
  * <tr><td>{@link #setTransacted(boolean) transacted}</td><td>if set to <code>true, messages will be received and processed under transaction control. If processing fails, messages will be sent to the error-sender. (see below)</code></td><td><code>false</code></td></tr>
  * <tr><td>{@link #setIbis42compatibility(boolean) ibis42compatibility}</td><td>if set to <code>true, the result of a failed processing of a message is a formatted errormessage. Otherwise a listener specific error handling is performed</code></td><td><code>false</code></td></tr>
@@ -191,13 +201,14 @@ import javax.transaction.UserTransaction;
  * @since 4.2
  */
 public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, IMessageHandler, IbisExceptionListener, HasSender, TracingEventNumbers {
-	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.24 $ $Date: 2006-04-12 16:17:43 $";
+	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.25 $ $Date: 2006-06-20 14:10:43 $";
 	protected Logger log = Logger.getLogger(this.getClass());
  
 	private String returnIfStopped="";
 	private String fileNameIfStopped = null;
 	private String replaceFrom = null;
 	private String replaceTo = null;
+	private String styleSheetName = null;
 
 	public static final String ONERROR_CONTINUE = "continue";
 	public static final String ONERROR_CLOSE = "close";
@@ -464,6 +475,25 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 				setReturnIfStopped(Misc.replace(getReturnIfStopped(), getReplaceFrom(), getReplaceTo()));
 			}
 
+			if (StringUtils.isNotEmpty(styleSheetName)) {
+				URL xsltSource = ClassUtils.getResourceURL(this, styleSheetName);
+				if (xsltSource!=null) {
+					try{
+						String xsltResult = null;
+						Transformer transformer = XmlUtils.createTransformer(xsltSource);
+						xsltResult = XmlUtils.transformXml(transformer, getReturnIfStopped());
+						setReturnIfStopped(xsltResult);
+					} catch (IOException e) {
+						throw new ConfigurationException("Receiver cannot retrieve ["+ styleSheetName + "], resource [" + xsltSource.toString() + "]", e);
+					} catch (TransformerConfigurationException te) {
+						throw new ConfigurationException("Receiver got error creating transformer from file [" + styleSheetName + "]", te);
+					} catch (TransformerException te) {
+						throw new ConfigurationException("Receiver got error transforming resource [" + xsltSource.toString() + "] from [" + styleSheetName + "]", te);
+					} catch (DomBuilderException te) {
+						throw new ConfigurationException("Receiver caught DomBuilderException", te);
+					}
+				}
+			}
 	
 			if (adapter != null) {
 				adapter.getMessageKeeper().add("Receiver ["+getName()+"] initialization complete");
@@ -1345,5 +1375,12 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 	public void setMaxRetries(int i) {
 		maxRetries = i;
 	}
+	
+	public String getStyleSheetName() {
+		return styleSheetName;
+	}
 
+	public void setStyleSheetName (String styleSheetName){
+		this.styleSheetName=styleSheetName;
+	}
 }
