@@ -1,6 +1,9 @@
 /*
  * $Log: SoapWrapper.java,v $
- * Revision 1.2  2006-03-15 13:59:57  europe\L190409
+ * Revision 1.3  2006-06-21 08:54:52  europe\L190409
+ * added xsd namespace
+ *
+ * Revision 1.2  2006/03/15 13:59:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * force to be namespaceAware
  *
  * Revision 1.1  2005/10/18 08:14:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -44,7 +47,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @version Id
  */
 public class SoapWrapper {
-	public static final String version="$RCSfile: SoapWrapper.java,v $ $Revision: 1.2 $ $Date: 2006-03-15 13:59:57 $";
+	public static final String version="$RCSfile: SoapWrapper.java,v $ $Revision: 1.3 $ $Date: 2006-06-21 08:54:52 $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	private TransformerPool extractBody;
@@ -140,7 +143,8 @@ public class SoapWrapper {
 		"<soapenv:Envelope " + 
 			"xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" "+encodingStyle +
 			targetObjectNamespaceClause +
-			"xmlns:xsi=\"http://www.w3.org/1999/XMLSchema-instance\" >" + 
+			"xmlns:xsi=\"http://www.w3.org/1999/XMLSchema-instance\" " + 
+			"xmlns:xsd=\"http://www.w3.org/1999/XMLSchema\" >" + 
 			"<soapenv:Body>" + 	
 				message +
 			"</soapenv:Body>"+
