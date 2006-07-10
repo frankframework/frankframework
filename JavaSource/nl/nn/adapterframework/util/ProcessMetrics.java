@@ -1,10 +1,15 @@
 /*
  * $Log: ProcessMetrics.java,v $
- * Revision 1.1  2004-07-20 13:27:29  L190409
+ * Revision 1.2  2006-07-10 14:36:29  europe\L190409
+ * added currentTime, separate function normalizedNotation()
+ *
+ * Revision 1.1  2004/07/20 13:27:29  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * first version
  *
  *  */
 package nl.nn.adapterframework.util;
+
+import java.util.Date;
 
 /**
  * Utility class to report process parameters like memory usage as an xml-element.
@@ -16,8 +21,9 @@ public class ProcessMetrics {
 	private final static long K_LIMIT=10*1024;
 	private final static long M_LIMIT=K_LIMIT*1024;
 	private final static long G_LIMIT=M_LIMIT*1024;
+	private final static long T_LIMIT=G_LIMIT*1024;
 	
-	public static void addNumberProperty(XmlBuilder list, String name, long value) {
+	public static String normalizedNotation(long value) {
 		String valueString;
 		
 		if (value < K_LIMIT) {
@@ -29,11 +35,19 @@ public class ProcessMetrics {
 				if (value < G_LIMIT) {
 					valueString = Long.toString(value/(1024*1024))+"M";
 				} else { 
+					if (value < T_LIMIT) {
 						valueString = Long.toString(value/(1024*1024*1024))+"G";
+					} else { 
+						valueString = Long.toString(value/(1024*1024*1024*1024))+"T";
+					}
 				}
 			}
 		}
-		addProperty(list,name,valueString);
+		return valueString;
+	}
+	
+	public static void addNumberProperty(XmlBuilder list, String name, long value) {
+		addProperty(list,name,normalizedNotation(value));
 	}
 	
 	public static void addProperty(XmlBuilder list, String name, String value) {
@@ -54,6 +68,8 @@ public class ProcessMetrics {
 		addNumberProperty(props, "freeMemory", freeMem);
 		addNumberProperty(props, "totalMemory", totalMem);
 		addNumberProperty(props, "heapSize", totalMem-freeMem);
+		Date d = new Date();
+		addProperty(props, "currentTime", (Long.toString(d.getTime())));
 		return xmlh.toXML();
 	}
 
