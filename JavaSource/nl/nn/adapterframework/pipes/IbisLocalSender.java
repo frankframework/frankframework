@@ -1,6 +1,9 @@
 /*
  * $Log: IbisLocalSender.java,v $
- * Revision 1.8  2005-12-28 08:37:11  europe\L190409
+ * Revision 1.9  2006-07-14 10:04:45  europe\L190409
+ * added asynchronous-option, by setting synchronous=false
+ *
+ * Revision 1.8  2005/12/28 08:37:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected javadoc
  *
  * Revision 1.7  2005/10/18 07:02:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -53,6 +56,7 @@ import java.util.HashMap;
  * <tr><td>{@link #setServiceName(String) serviceName}</td><td>Name of the WebServiceListener that should be called</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setJavaListener(String) javaListener}</td><td>Name of the JavaListener that should be called</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setIsolated(boolean) isolated}</td><td>when <code>true</code>, the call is made in a separate thread, possibly using separate transaction</td><td>false</td></tr>
+ * <tr><td>{@link #setSynchronous(boolean) synchronous}</td><td>only if <code>isolated=true</code>: when set <code>false</code>, the call is made asynchronously</td><td>true</td></tr>
  * </table>
  * </p>
  * Any parameters are copied to the PipeLineSession of the service called.
@@ -61,12 +65,13 @@ import java.util.HashMap;
  * @since  4.2
  */
 public class IbisLocalSender extends SenderWithParametersBase {
-	public static final String version="$RCSfile: IbisLocalSender.java,v $ $Revision: 1.8 $ $Date: 2005-12-28 08:37:11 $";
+	public static final String version="$RCSfile: IbisLocalSender.java,v $ $Revision: 1.9 $ $Date: 2006-07-14 10:04:45 $";
 	
 	private String name;
 	private String serviceName;
 	private String javaListener;
 	private boolean isolated=false;
+	private boolean synchronous=true;
 
 
 
@@ -82,9 +87,6 @@ public class IbisLocalSender extends SenderWithParametersBase {
 
 
 
-	public boolean isSynchronous() {
-		return true;
-	}
 
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		HashMap context = null;
@@ -98,8 +100,14 @@ public class IbisLocalSender extends SenderWithParametersBase {
 		if (StringUtils.isNotEmpty(getServiceName())) {
 			try {
 				if (isIsolated()) {
-					log.debug(getLogPrefix()+"calling service ["+getServiceName()+"] in separate Thread");
-					return IsolatedServiceCaller.callServiceIsolated(getServiceName(), correlationID, message, context, false);
+					if (isSynchronous()) {
+						log.debug(getLogPrefix()+"calling service ["+getServiceName()+"] in separate Thread");
+						return IsolatedServiceCaller.callServiceIsolated(getServiceName(), correlationID, message, context, false);
+					} else {
+						log.debug(getLogPrefix()+"calling service ["+getServiceName()+"] in asynchronously");
+						IsolatedServiceCaller.callServiceAsynchronous(getServiceName(), correlationID, message, context, false);
+						return message;
+					}
 				} else {
 					log.debug(getLogPrefix()+"calling service ["+getServiceName()+"] in same Thread");
 					return ServiceDispatcher.getInstance().dispatchRequestWithExceptions(getServiceName(), correlationID, message, context);
@@ -114,8 +122,14 @@ public class IbisLocalSender extends SenderWithParametersBase {
 					throw new SenderException("could not find JavaListener ["+getJavaListener()+"]");
 				}
 				if (isIsolated()) {
-					log.debug(getLogPrefix()+"calling JavaListener ["+getJavaListener()+"] in separate Thread");
-					return IsolatedServiceCaller.callServiceIsolated(getJavaListener(), correlationID, message, context, true);
+					if (isSynchronous()) {
+						log.debug(getLogPrefix()+"calling JavaListener ["+getJavaListener()+"] in separate Thread");
+						return IsolatedServiceCaller.callServiceIsolated(getJavaListener(), correlationID, message, context, true);
+					} else {
+						log.debug(getLogPrefix()+"calling JavaListener ["+getJavaListener()+"] in asynchronously");
+						IsolatedServiceCaller.callServiceAsynchronous(getJavaListener(), correlationID, message, context, true);
+						return message;
+					}
 				} else {
 					log.debug(getLogPrefix()+"calling JavaListener ["+getJavaListener()+"] in same Thread");
 					return listener.processRequest(correlationID,message,context);
@@ -163,5 +177,12 @@ public class IbisLocalSender extends SenderWithParametersBase {
 		return javaListener;
 	}
 
+
+	public void setSynchronous(boolean b) {
+		synchronous = b;
+	}
+	public boolean isSynchronous() {
+		return synchronous;
+	}
 
 }
