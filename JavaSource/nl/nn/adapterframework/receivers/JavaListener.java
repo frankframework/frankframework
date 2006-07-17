@@ -1,6 +1,9 @@
 /*
  * $Log: JavaListener.java,v $
- * Revision 1.14  2006-06-20 14:22:04  europe\L190409
+ * Revision 1.15  2006-07-17 09:08:03  europe\L190409
+ * added asynchronous-option
+ *
+ * Revision 1.14  2006/06/20 14:22:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added 'local' attribute
  *
  * Revision 1.13  2006/04/12 16:06:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -91,25 +94,30 @@ import org.apache.log4j.Logger;
  * <tr><td>className</td><td>nl.nn.adapterframework.receivers.JavaListener</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the listener as known to the adapter. An {@link nl.nn.adapterframework.pipes.IbisLocalSender IbisLocalSender} refers to this name in its <code>javaListener</code>-attribute.</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setServiceName(String) serviceName}</td><td>(optional) name under which the JavaListener registers itself with the RequestDispatcherManager</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setIsolated(boolean) isolated}</td><td>when <code>true</code>, the call is made in a separate thread, possibly using separate transaction</td><td>false</td></tr>
+ * <tr><td>{@link #setIsolated(boolean) isolated}</td><td>when <code>true</code>, the call is made in a separate thread, possibly using a separate transaction</td><td>false</td></tr>
+ * <tr><td>{@link #setSynchronous(boolean) synchronous}</td><td> when set <code>false</code>, the request is executed asynchronously. This implies <code>isolated=true</code>. N.B. Be aware that there is no limit on the number of threads generated</td><td>true</td></tr>
  * <tr><td>{@link #setLocal(boolean) local}</td><td>when <code>true</code>, calls can only be made using IbisLocalSender from this Ibis. Otherwise calls from other applications in the same JVM can be made, too, using the IbisDispatcher</td><td>false</td></tr>
  * </table>
- * @author  JDekker
+ * @author  JDekker / Gerrit van Brakel
  * @version Id
  */
 public class JavaListener implements IPushingListener, RequestProcessor {
-	public static final String version="$RCSfile: JavaListener.java,v $ $Revision: 1.14 $ $Date: 2006-06-20 14:22:04 $";
+	public static final String version="$RCSfile: JavaListener.java,v $ $Revision: 1.15 $ $Date: 2006-07-17 09:08:03 $";
 	protected Logger log = Logger.getLogger(this.getClass());
 	
 	private String name;
 	private String serviceName;
 	private boolean isolated=false;
+	private boolean synchronous=true;
 	private boolean local=false;
 
 	private static Map registeredListeners; 
 	private IMessageHandler handler;
 	
 	public void configure() throws ConfigurationException {
+		if (!isSynchronous()) {
+			setIsolated(true);
+		}
 		try {
 			if (handler==null) {
 				throw new ConfigurationException("handler has not been set");
@@ -132,7 +140,12 @@ public class JavaListener implements IPushingListener, RequestProcessor {
 		}
 
 		public String processRequest(String correlationId, String message, HashMap requestContext) throws Exception {
-			return IsolatedServiceCaller.callServiceIsolated(listener.getName(), correlationId, message, requestContext, true);
+			if (synchronous) {
+				return IsolatedServiceCaller.callServiceIsolated(listener.getName(), correlationId, message, requestContext, true);
+			} else {
+				IsolatedServiceCaller.callServiceAsynchronous(listener.getName(), correlationId, message, requestContext, true);
+				return message;
+			}
 		}
 	}
 
@@ -308,6 +321,13 @@ public class JavaListener implements IPushingListener, RequestProcessor {
 		return isolated;
 	}
 	
+	public void setSynchronous(boolean b) {
+		synchronous = b;
+	}
+	public boolean isSynchronous() {
+		return synchronous;
+	}
+
 	
 	public void setLocal(boolean b) {
 		local = b;
