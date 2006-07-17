@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaFacade.java,v $
- * Revision 1.38  2006-02-09 07:59:40  europe\L190409
+ * Revision 1.39  2006-07-17 08:54:18  europe\L190409
+ * documented custom property ifsa.provider.useSelectors
+ *
+ * Revision 1.38  2006/02/09 07:59:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * restored compatibility with IFSA releases without provider selection mechanism
  *
  * Revision 1.37  2006/01/23 08:55:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -140,16 +143,24 @@ import javax.jms.*;
  * <tr><td>{@link #setTimeOut(long) listener.timeOut}</td><td>receiver timeout, in milliseconds</td><td>defined by IFSA expiry</td></tr>
  * </table>
  * 
+ * N.B. 
+ * Starting from IFSA-jms version 2.2.10.055(beta) a feature was created to have separate service-queues for Request/Reply
+ * and for Fire & Forget services. This allows applications to provide both types of services, each in its own transaction
+ * mode. This options is not compatible with earlier versions of IFSA-jms. If an earlier version of IFSA-jms is deployed on 
+ * the server, this behaviour must be disabled by the following setting in DeploymentSpecifics.properties:
+ * 
+ * <code>    ifsa.provider.useSelectors=false</code>
+ * 
  * @author Johan Verrips / Gerrit van Brakel
  * @since 4.2
  */
 public class IfsaFacade implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version = "$RCSfile: IfsaFacade.java,v $ $Revision: 1.38 $ $Date: 2006-02-09 07:59:40 $";
+	public static final String version = "$RCSfile: IfsaFacade.java,v $ $Revision: 1.39 $ $Date: 2006-07-17 08:54:18 $";
     protected Logger log = Logger.getLogger(this.getClass());
     
     private static int BASIC_ACK_MODE = Session.AUTO_ACKNOWLEDGE;
  
-	private final static String USE_SELECTOR_FOR_PROVIDER_KEY="ifsa.provider.useSelectors";
+ 	private final static String USE_SELECTOR_FOR_PROVIDER_KEY="ifsa.provider.useSelectors";
 	private static Boolean useSelectorsStore=null; 
 
     

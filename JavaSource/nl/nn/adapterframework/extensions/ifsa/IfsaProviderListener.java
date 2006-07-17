@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaProviderListener.java,v $
- * Revision 1.20  2006-03-08 13:55:49  europe\L190409
+ * Revision 1.21  2006-07-17 08:54:18  europe\L190409
+ * documented custom property ifsa.provider.useSelectors
+ *
+ * Revision 1.20  2006/03/08 13:55:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * getRawMessage now returns null again if no message received if transacted, 
  * to avoid transaction time out
  *
@@ -120,11 +123,19 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  *   <li>"RR": Request-Reply protocol</li>
  * </ul></td><td>&nbsp;</td></tr>
  * </table>
+ * N.B. 
+ * Starting from IFSA-jms version 2.2.10.055(beta) a feature was created to have separate service-queues for Request/Reply
+ * and for Fire & Forget services. This allows applications to provide both types of services, each in its own transaction
+ * mode. This options is not compatible with earlier versions of IFSA-jms. If an earlier version of IFSA-jms is deployed on 
+ * the server, this behaviour must be disabled by the following setting in DeploymentSpecifics.properties:
+ * 
+ * <code>    ifsa.provider.useSelectors=false</code>
+ * 
  * @author Gerrit van Brakel
  * @since 4.2
  */
 public class IfsaProviderListener extends IfsaFacade implements IPullingListener, INamedObject, RunStateEnquiring {
-	public static final String version = "$RCSfile: IfsaProviderListener.java,v $ $Revision: 1.20 $ $Date: 2006-03-08 13:55:49 $";
+	public static final String version = "$RCSfile: IfsaProviderListener.java,v $ $Revision: 1.21 $ $Date: 2006-07-17 08:54:18 $";
 
     private final static String THREAD_CONTEXT_SESSION_KEY = "session";
     private final static String THREAD_CONTEXT_RECEIVER_KEY = "receiver";
