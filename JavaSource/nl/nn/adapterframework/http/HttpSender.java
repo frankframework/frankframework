@@ -1,6 +1,9 @@
 /*
  * $Log: HttpSender.java,v $
- * Revision 1.23  2006-06-14 09:40:35  europe\L190409
+ * Revision 1.24  2006-07-17 09:02:46  europe\L190409
+ * corrected typos in documentation
+ *
+ * Revision 1.23  2006/06/14 09:40:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved logging
  *
  * Revision 1.22  2006/05/03 07:09:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -115,7 +118,7 @@ import nl.nn.adapterframework.util.CredentialFactory;
  * <tr><td>{@link #setName(String) name}</td><td>name of the sender</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setUrl(String) url}</td><td>URL or base of URL to be used </td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMethodType(String) methodType}</td><td>type of method to be executed, either 'GET' or 'POST'</td><td>GET</td></tr>
- * <tr><td>{@link #setTimeout(int) Timeout}</td><td>timeout ih ms of obtaining a connection/result. 0 means no timeout</td><td>60000</td></tr>
+ * <tr><td>{@link #setTimeout(int) timeout}</td><td>timeout in ms of obtaining a connection/result. 0 means no timeout</td><td>60000</td></tr>
  * <tr><td>{@link #setMaxConnections(int) maxConnections}</td><td>the maximum number of concurrent connections</td><td>2</td></tr>
  * <tr><td>{@link #setAuthAlias(String) authAlias}</td><td>alias used to obtain credentials for authentication to host</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setUserName(String) userName}</td><td>username used in authentication to host</td><td>&nbsp;</td></tr>
@@ -198,7 +201,7 @@ import nl.nn.adapterframework.util.CredentialFactory;
  * @since 4.2c
  */
 public class HttpSender extends SenderWithParametersBase implements HasPhysicalDestination {
-	public static final String version = "$RCSfile: HttpSender.java,v $ $Revision: 1.23 $ $Date: 2006-06-14 09:40:35 $";
+	public static final String version = "$RCSfile: HttpSender.java,v $ $Revision: 1.24 $ $Date: 2006-07-17 09:02:46 $";
 
 	private String url;
 	private String methodType="GET"; // GET or POST
