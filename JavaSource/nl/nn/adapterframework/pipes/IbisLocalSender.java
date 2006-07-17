@@ -1,6 +1,9 @@
 /*
  * $Log: IbisLocalSender.java,v $
- * Revision 1.9  2006-07-14 10:04:45  europe\L190409
+ * Revision 1.10  2006-07-17 09:03:55  europe\L190409
+ * force isolated=true if synchronous=false
+ *
+ * Revision 1.9  2006/07/14 10:04:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added asynchronous-option, by setting synchronous=false
  *
  * Revision 1.8  2005/12/28 08:37:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -56,7 +59,7 @@ import java.util.HashMap;
  * <tr><td>{@link #setServiceName(String) serviceName}</td><td>Name of the WebServiceListener that should be called</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setJavaListener(String) javaListener}</td><td>Name of the JavaListener that should be called</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setIsolated(boolean) isolated}</td><td>when <code>true</code>, the call is made in a separate thread, possibly using separate transaction</td><td>false</td></tr>
- * <tr><td>{@link #setSynchronous(boolean) synchronous}</td><td>only if <code>isolated=true</code>: when set <code>false</code>, the call is made asynchronously</td><td>true</td></tr>
+ * <tr><td>{@link #setSynchronous(boolean) synchronous}</td><td> when set <code>false</code>, the call is made asynchronously. This implies <code>isolated=true</code></td><td>true</td></tr>
  * </table>
  * </p>
  * Any parameters are copied to the PipeLineSession of the service called.
@@ -65,7 +68,7 @@ import java.util.HashMap;
  * @since  4.2
  */
 public class IbisLocalSender extends SenderWithParametersBase {
-	public static final String version="$RCSfile: IbisLocalSender.java,v $ $Revision: 1.9 $ $Date: 2006-07-14 10:04:45 $";
+	public static final String version="$RCSfile: IbisLocalSender.java,v $ $Revision: 1.10 $ $Date: 2006-07-17 09:03:55 $";
 	
 	private String name;
 	private String serviceName;
@@ -77,6 +80,9 @@ public class IbisLocalSender extends SenderWithParametersBase {
 
 	public void configure() throws ConfigurationException {
 		super.configure();
+		if (!isSynchronous()) {
+			setIsolated(true);
+		}
 		if (StringUtils.isEmpty(getServiceName()) && StringUtils.isEmpty(getJavaListener())) {
 			throw new ConfigurationException(getLogPrefix()+"has no serviceName or javaListener specified");
 		}
