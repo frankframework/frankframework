@@ -1,6 +1,9 @@
 /*
  * $Log: HttpSender.java,v $
- * Revision 1.24  2006-07-17 09:02:46  europe\L190409
+ * Revision 1.25  2006-08-21 07:56:41  europe\L190409
+ * return of the IbisMultiThreadedConnectionManager
+ *
+ * Revision 1.24  2006/07/17 09:02:46  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected typos in documentation
  *
  * Revision 1.23  2006/06/14 09:40:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -76,6 +79,7 @@
 package nl.nn.adapterframework.http;
 
 import java.io.IOException;
+import java.net.SocketException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.security.Security;
@@ -84,6 +88,7 @@ import java.security.Security;
 import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.HostConfiguration;
 import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpConnection;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
@@ -201,7 +206,7 @@ import nl.nn.adapterframework.util.CredentialFactory;
  * @since 4.2c
  */
 public class HttpSender extends SenderWithParametersBase implements HasPhysicalDestination {
-	public static final String version = "$RCSfile: HttpSender.java,v $ $Revision: 1.24 $ $Date: 2006-07-17 09:02:46 $";
+	public static final String version = "$RCSfile: HttpSender.java,v $ $Revision: 1.25 $ $Date: 2006-08-21 07:56:41 $";
 
 	private String url;
 	private String methodType="GET"; // GET or POST
@@ -239,6 +244,55 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 	private MultiThreadedHttpConnectionManager connectionManager;
 	protected HttpClient httpclient;
 
+	/*
+	 * connection manager that checks connections to be open before handing them to HttpMethod.
+	 * Use of this connection manager prevents SocketExceptions to occur.
+	 * 
+	 */
+	private class IbisMultiThreadedHttpConnectionManager extends MultiThreadedHttpConnectionManager {
+		
+		protected boolean checkConnection(HttpConnection connection)  {
+			boolean status = connection.isOpen();
+			log.debug(getLogPrefix()+"IbisMultiThreadedHttpConnectionManager connection open ["+status+"]");
+			if (status) {
+				try {
+					connection.setSoTimeout(connection.getSoTimeout());
+				} catch (SocketException e) {
+					log.warn(getLogPrefix()+"IbisMultiThreadedHttpConnectionManager SocketException while checking: "+ e.getMessage());
+					connection.close();
+					return false;
+				} catch (IllegalStateException e) {
+					log.warn(getLogPrefix()+"IbisMultiThreadedHttpConnectionManager IllegalStateException while checking: "+ e.getMessage());
+					connection.close();
+					return false;
+				}
+			}
+			return true;
+		}
+				
+		public HttpConnection getConnection(HostConfiguration hostConfiguration) {
+			log.debug(getLogPrefix()+"IbisMultiThreadedHttpConnectionManager getConnection(HostConfiguration)");
+			HttpConnection result = super.getConnection(hostConfiguration);			
+			int count=10;
+			while (count-->0 && !checkConnection(result)) {
+				log.info("releasing failed connection, retries left ["+count+"]");
+				releaseConnection(result);
+				result= super.getConnection(hostConfiguration);
+			} 
+			return result;
+		}
+		public HttpConnection getConnection(HostConfiguration hostConfiguration, long timeout) throws HttpException {
+			log.debug(getLogPrefix()+"IbisMultiThreadedHttpConnectionManager getConnection(HostConfiguration, timeout["+timeout+"])");
+			HttpConnection result = super.getConnection(hostConfiguration, timeout);
+			int count=10;
+			while (count-->0 && !checkConnection(result)) {
+				log.info("releasing failed connection, retries left ["+count+"]");
+				releaseConnection(result);
+				result= super.getConnection(hostConfiguration, timeout);
+			} 
+			return result;
+		}
+	}
 
 	protected void addProvider(String name) {
 		try {
@@ -349,7 +403,7 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 	}
 
 	public void open() {
-		connectionManager = new MultiThreadedHttpConnectionManager();
+		connectionManager = new IbisMultiThreadedHttpConnectionManager();
 		connectionManager.setMaxConnectionsPerHost(getMaxConnections());
 		log.debug(getLogPrefix()+"set up connectionManager, stale checking ["+connectionManager.isConnectionStaleCheckingEnabled()+"]");
 		if (connectionManager.isConnectionStaleCheckingEnabled() != isStaleChecking()) {
