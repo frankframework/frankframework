@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaFacade.java,v $
- * Revision 1.39  2006-07-17 08:54:18  europe\L190409
+ * Revision 1.40  2006-08-21 15:08:03  europe\L190409
+ * corrected javadoc
+ *
+ * Revision 1.39  2006/07/17 08:54:18  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * documented custom property ifsa.provider.useSelectors
  *
  * Revision 1.38  2006/02/09 07:59:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -140,7 +143,7 @@ import javax.jms.*;
  *   <li>"FF": Fire & Forget protocol</li>
  *   <li>"RR": Request-Reply protocol</li>
  * </ul></td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setTimeOut(long) listener.timeOut}</td><td>receiver timeout, in milliseconds</td><td>defined by IFSA expiry</td></tr>
+ * <tr><td>{@link #setTimeOut(long) timeOut}</td><td>receiver timeout, in milliseconds</td><td>defined by IFSA expiry</td></tr>
  * </table>
  * 
  * N.B. 
@@ -155,7 +158,7 @@ import javax.jms.*;
  * @since 4.2
  */
 public class IfsaFacade implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version = "$RCSfile: IfsaFacade.java,v $ $Revision: 1.39 $ $Date: 2006-07-17 08:54:18 $";
+	public static final String version = "$RCSfile: IfsaFacade.java,v $ $Revision: 1.40 $ $Date: 2006-08-21 15:08:03 $";
     protected Logger log = Logger.getLogger(this.getClass());
     
     private static int BASIC_ACK_MODE = Session.AUTO_ACKNOWLEDGE;

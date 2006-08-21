@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaProviderListener.java,v $
- * Revision 1.21  2006-07-17 08:54:18  europe\L190409
+ * Revision 1.22  2006-08-21 15:08:35  europe\L190409
+ * corrected javadoc
+ *
+ * Revision 1.21  2006/07/17 08:54:18  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * documented custom property ifsa.provider.useSelectors
  *
  * Revision 1.20  2006/03/08 13:55:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -122,6 +125,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  *   <li>"FF": Fire & Forget protocol</li>
  *   <li>"RR": Request-Reply protocol</li>
  * </ul></td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setTimeOut(long) timeOut}</td><td>receiver timeout, in milliseconds</td><td>defined by IFSA expiry</td></tr>
  * </table>
  * N.B. 
  * Starting from IFSA-jms version 2.2.10.055(beta) a feature was created to have separate service-queues for Request/Reply
@@ -135,14 +139,13 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * @since 4.2
  */
 public class IfsaProviderListener extends IfsaFacade implements IPullingListener, INamedObject, RunStateEnquiring {
-	public static final String version = "$RCSfile: IfsaProviderListener.java,v $ $Revision: 1.21 $ $Date: 2006-07-17 08:54:18 $";
+	public static final String version = "$RCSfile: IfsaProviderListener.java,v $ $Revision: 1.22 $ $Date: 2006-08-21 15:08:35 $";
 
     private final static String THREAD_CONTEXT_SESSION_KEY = "session";
     private final static String THREAD_CONTEXT_RECEIVER_KEY = "receiver";
 	private RunStateEnquirer runStateEnquirer=null;
 
     private String commitOnState;
-    private long timeOut = 3000;
 
 	public IfsaProviderListener() {
 		super(true); //instantiate as a provider
@@ -563,12 +566,5 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 	}
 	public void setCommitOnState(String newCommitOnState) {
 		commitOnState = newCommitOnState;
-	}
-
-	public long getTimeOut() {
-		return timeOut;
-	}
-	public void setTimeOut(long newTimeOut) {
-		timeOut = newTimeOut;
 	}
 }
