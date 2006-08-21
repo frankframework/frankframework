@@ -1,6 +1,10 @@
 /*
  * $Log: JtaUtil.java,v $
- * Revision 1.6  2005-09-08 15:58:15  europe\L190409
+ * Revision 1.7  2006-08-21 15:14:49  europe\L190409
+ * introduction of transaction attribute handling
+ * configuration of user transaction url in appconstants.properties
+ *
+ * Revision 1.6  2005/09/08 15:58:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added logging
  *
  * Revision 1.5  2004/10/05 09:57:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -22,12 +26,16 @@
 package nl.nn.adapterframework.util;
 
 import javax.naming.Context;
+import javax.naming.InitialContext;
 import javax.naming.NamingException;
+import javax.transaction.NotSupportedException;
 import javax.transaction.Status;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 import javax.transaction.UserTransaction;
+
+import nl.nn.adapterframework.core.TransactionException;
 
 import org.apache.log4j.Logger;
 
@@ -38,8 +46,37 @@ import org.apache.log4j.Logger;
  * @since  4.1
  */
 public class JtaUtil {
-	public static final String version="$RCSfile: JtaUtil.java,v $ $Revision: 1.6 $ $Date: 2005-09-08 15:58:15 $";
+	public static final String version="$RCSfile: JtaUtil.java,v $ $Revision: 1.7 $ $Date: 2006-08-21 15:14:49 $";
 	private static Logger log = Logger.getLogger(JtaUtil.class);
+	
+	private static final String USERTRANSACTION_URL1_KEY="jta.userTransactionUrl1";
+	private static final String USERTRANSACTION_URL2_KEY="jta.userTransactionUrl2";
+	
+	public static final int TRANSACTION_ATTRIBUTE_REQUIRED=0;
+	public static final int TRANSACTION_ATTRIBUTE_REQUIRES_NEW=1;
+	public static final int TRANSACTION_ATTRIBUTE_MANDATORY=2;
+	public static final int TRANSACTION_ATTRIBUTE_NOT_SUPPORTED=3;
+	public static final int TRANSACTION_ATTRIBUTE_SUPPORTS=4;
+	public static final int TRANSACTION_ATTRIBUTE_NEVER=5;
+
+	public static final int TRANSACTION_ATTRIBUTE_DEFAULT=TRANSACTION_ATTRIBUTE_SUPPORTS;
+
+	public static final String TRANSACTION_ATTRIBUTE_REQUIRED_STR="Required";
+	public static final String TRANSACTION_ATTRIBUTE_REQUIRES_NEW_STR="RequiresNew";
+	public static final String TRANSACTION_ATTRIBUTE_MANDATORY_STR="Mandatory";
+	public static final String TRANSACTION_ATTRIBUTE_NOT_SUPPORTED_STR="NotSupported";
+	public static final String TRANSACTION_ATTRIBUTE_SUPPORTS_STR="Supports";
+	public static final String TRANSACTION_ATTRIBUTE_NEVER_STR="Never";
+
+	public static final String transactionAttributes[]=
+		{ 
+			TRANSACTION_ATTRIBUTE_REQUIRED_STR,
+			TRANSACTION_ATTRIBUTE_REQUIRES_NEW_STR,
+			TRANSACTION_ATTRIBUTE_MANDATORY_STR,
+			TRANSACTION_ATTRIBUTE_NOT_SUPPORTED_STR, 
+			TRANSACTION_ATTRIBUTE_SUPPORTS_STR,
+			TRANSACTION_ATTRIBUTE_NEVER_STR
+		};
 
     private static UserTransaction utx;
 
@@ -94,6 +131,20 @@ public class JtaUtil {
 		}
 	}
 
+	/**
+	 * Convenience function for {@link #displayTransactionStatus(int status)}
+	 */
+	public static String displayTransactionStatus() {
+		UserTransaction utx;
+		try {
+			utx = getUserTransaction();
+		} catch (Exception e) {
+			return "exception obtaining user transaction: "+e.getMessage();
+		}
+		return displayTransactionStatus(utx);
+	}
+
+
 	/** 
 	 * returns true if the current thread is associated with a transaction
 	 */
@@ -111,5 +162,102 @@ public class JtaUtil {
 			utx = (UserTransaction)ctx.lookup(userTransactionUrl);
 		}
 		return utx;
+	}
+
+	/**
+	 * Returns a UserTransaction object, that is used by Receivers and PipeLines to demarcate transactions. 
+	 */
+	public static UserTransaction getUserTransaction() throws NamingException {
+		if (utx == null) {
+			Context ctx= (Context) new InitialContext();
+			String url = AppConstants.getInstance().getProperty(USERTRANSACTION_URL1_KEY,null);
+			log.debug("looking up UserTransaction ["+url+"] in context ["+ctx.toString()+"]");
+			try {
+				utx = (UserTransaction)ctx.lookup(url);
+			} catch (Exception e) {
+				url = AppConstants.getInstance().getProperty(USERTRANSACTION_URL2_KEY,null);
+				log.debug("looking up UserTransaction ["+url+"] in context ["+ctx.toString()+"]");
+				utx = (UserTransaction)ctx.lookup(url);
+			}
+		}
+		return utx;
+	}
+
+	
+	public static int getTransactionAttributeNum(String transactionAttribute) {
+		int i=transactionAttributes.length-1;
+		while (i>=0 && !transactionAttributes[i].equalsIgnoreCase(transactionAttribute))
+			i--; // try next
+		return i; 
+	}
+
+	public static String getTransactionAttributeString(int transactionAttribute) {
+		if (transactionAttribute<0 || transactionAttribute>=transactionAttributes.length) {
+			return "UnknownTransactionAttribute:"+transactionAttribute;
+		}
+		return transactionAttributes[transactionAttribute];
+	}
+	
+	public static boolean transactionStateCompatible(int transactionAttribute) throws SystemException, NamingException {
+		if (inTransaction(getUserTransaction())) {
+			return transactionAttribute!=TRANSACTION_ATTRIBUTE_NEVER;
+		} else {
+			return transactionAttribute!=TRANSACTION_ATTRIBUTE_MANDATORY;
+		}
+	}
+
+	public static boolean isolationRequired(int transactionAttribute) throws SystemException, TransactionException, NamingException {
+		UserTransaction utx = getUserTransaction();
+		if (!transactionStateCompatible(transactionAttribute)) {
+			throw new TransactionException("transaction attribute ["+getTransactionAttributeString(transactionAttribute)+"] not compatible with state ["+displayTransactionStatus(utx)+"]");
+		}
+		return inTransaction(utx) &&
+				(transactionAttribute==TRANSACTION_ATTRIBUTE_REQUIRES_NEW ||
+				 transactionAttribute==TRANSACTION_ATTRIBUTE_NOT_SUPPORTED);
+	}
+
+	public static boolean newTransactionRequired(int transactionAttribute) throws SystemException, TransactionException, NamingException {
+		UserTransaction utx = getUserTransaction();
+		if (!transactionStateCompatible(transactionAttribute)) {
+			throw new TransactionException("transaction attribute ["+getTransactionAttributeString(transactionAttribute)+"] not compatible with state ["+displayTransactionStatus(utx)+"]");
+		}
+		return transactionAttribute==TRANSACTION_ATTRIBUTE_REQUIRES_NEW ||
+				(!inTransaction(utx) &&	transactionAttribute==TRANSACTION_ATTRIBUTE_REQUIRED);
+	}
+
+	public static boolean stateEvaluationRequired(int transactionAttribute) {
+		return transactionAttribute>=0 && 
+			   transactionAttribute!=TRANSACTION_ATTRIBUTE_REQUIRES_NEW &&
+			   transactionAttribute!=TRANSACTION_ATTRIBUTE_SUPPORTS;
+	}
+	
+	public static void startTransaction() throws NamingException, NotSupportedException, SystemException {
+		log.debug("starting new transaction");
+		utx=getUserTransaction();
+		utx.begin();
+	}
+
+	public static void finishTransaction() throws NamingException, IllegalStateException, SecurityException, SystemException {
+		finishTransaction(false);
+	}
+	
+	public static void finishTransaction(boolean rollbackonly) throws NamingException, IllegalStateException, SecurityException, SystemException {
+		utx=getUserTransaction();
+		try {
+			if (inTransaction(utx) && !rollbackonly) {
+				log.debug("committing transaction");
+				utx.commit();
+			} else {
+				log.debug("rolling back transaction");
+				utx.rollback();
+			}
+		} catch (Throwable t1) {
+			try {
+				log.warn("trying to roll back transaction after exception",t1);
+				utx.rollback();
+			} catch (Throwable t2) {
+				log.warn("exception rolling back transaction",t2);
+			}
+		}		
 	}
 }
