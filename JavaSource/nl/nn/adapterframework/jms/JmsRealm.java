@@ -1,6 +1,9 @@
 /*
  * $Log: JmsRealm.java,v $
- * Revision 1.7  2004-10-05 10:42:28  L190409
+ * Revision 1.8  2006-08-21 15:11:10  europe\L190409
+ * cosmetic changes
+ *
+ * Revision 1.7  2004/10/05 10:42:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed unused code
  *
  * Revision 1.6  2004/08/23 13:08:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -37,7 +40,7 @@ import org.apache.log4j.Logger;
  */
 public class JmsRealm {
 	//TODO: change to J2eeRealm
-	public static final String version="$Id: JmsRealm.java,v 1.7 2004-10-05 10:42:28 L190409 Exp $";
+	public static final String version="$RCSfile: JmsRealm.java,v $ $Revision: 1.8 $ $Date: 2006-08-21 15:11:10 $";
 	private String realmName;
 	private Logger log = Logger.getLogger(this.getClass());
 
@@ -115,33 +118,27 @@ public class JmsRealm {
     public String getProviderURL() {
         return providerURL;
     }
-/**
- * The name of the QueueConnectionFactory <br/>
- * Creation date: (27-03-2003 8:40:28)
- * @return java.lang.String
- */
-public java.lang.String getQueueConnectionFactoryName() {
-	return queueConnectionFactoryName;
-}
-/**
- * The name of this realm<br/>
- * Creation date: (27-03-2003 8:40:28)
- * @return java.lang.String
- */
-public java.lang.String getRealmName() {
-	return realmName;
-}
+	/**
+	 * The name of the QueueConnectionFactory <br/>
+	 */
+	public java.lang.String getQueueConnectionFactoryName() {
+		return queueConnectionFactoryName;
+	}
+	/**
+	 * The name of this realm<br/>
+	 */
+	public java.lang.String getRealmName() {
+		return realmName;
+	}
     public String getSecurityProtocol() {
         return securityProtocol;
     }
-/**
- * The name of the TopicConnectionFactory <br/>
- * Creation date: (27-03-2003 8:40:28)
- * @return java.lang.String
- */
-public java.lang.String getTopicConnectionFactoryName() {
-	return topicConnectionFactoryName;
-}
+	/**
+	 * The name of the TopicConnectionFactory <br/>
+	 */
+	public java.lang.String getTopicConnectionFactoryName() {
+		return topicConnectionFactoryName;
+	}
     public String getUrlPkgPrefixes() {
         return urlPkgPrefixes;
     }
@@ -157,39 +154,36 @@ public java.lang.String getTopicConnectionFactoryName() {
     public void setProviderURL(String providerURL) {
         this.providerURL = providerURL;
     }
-/**
- * Set the name of the QueueConnectionFactory<br/>
- * Creation date: (27-03-2003 8:40:28)
- * @param newQueueConnectionFactoryName java.lang.String
- */
-public void setQueueConnectionFactoryName(java.lang.String newQueueConnectionFactoryName) {
-	queueConnectionFactoryName = newQueueConnectionFactoryName;
-}
-/**
- * Set the name of this realm<br/>.
- * Creation date: (27-03-2003 8:40:28)
- * @param newName java.lang.String
- */
-public void setRealmName(java.lang.String newName) {
-	realmName = newName;
-}
-    public void setSecurityProtocol(String securityProtocol) {
-        this.securityProtocol = securityProtocol;
-    }
-/**
- * Set the name of the TopicConnectionFactory<br/>
- * Creation date: (27-03-2003 8:40:28)
- * @param newTopicConnectionFactoryName java.lang.String
- */
-public void setTopicConnectionFactoryName(java.lang.String newTopicConnectionFactoryName) {
-	topicConnectionFactoryName = newTopicConnectionFactoryName;
-}
+	/**
+	 * Set the name of the QueueConnectionFactory<br/>
+	 * @param newQueueConnectionFactoryName java.lang.String
+	 */
+	public void setQueueConnectionFactoryName(java.lang.String newQueueConnectionFactoryName) {
+		queueConnectionFactoryName = newQueueConnectionFactoryName;
+	}
+	/**
+	 * Set the name of this realm<br/>.
+	 * @param newName java.lang.String
+	 */
+	public void setRealmName(java.lang.String newName) {
+		realmName = newName;
+	}
+	    public void setSecurityProtocol(String securityProtocol) {
+	        this.securityProtocol = securityProtocol;
+	    }
+	/**
+	 * Set the name of the TopicConnectionFactory<br/>
+	 * @param newTopicConnectionFactoryName java.lang.String
+	 */
+	public void setTopicConnectionFactoryName(java.lang.String newTopicConnectionFactoryName) {
+		topicConnectionFactoryName = newTopicConnectionFactoryName;
+	}
     public void setUrlPkgPrefixes(String urlPkgPrefixes) {
         this.urlPkgPrefixes = urlPkgPrefixes;
     }
   /**
    * The <code>toString()</code> method retrieves its value
-   * by reflection
+   * by reflection.
    * @see org.apache.commons.lang.builder.ToStringBuilder#reflectionToString
    *
    **/
@@ -199,7 +193,6 @@ public void setTopicConnectionFactoryName(java.lang.String newTopicConnectionFac
   }
 	/**
 	 * Returns the queueConnectionFactoryNameXA.
-	 * @return String
 	 */
 	public String getQueueConnectionFactoryNameXA() {
 		return queueConnectionFactoryNameXA;
@@ -207,7 +200,6 @@ public void setTopicConnectionFactoryName(java.lang.String newTopicConnectionFac
 
 	/**
 	 * Returns the topicConnectionFactoryNameXA.
-	 * @return String
 	 */
 	public String getTopicConnectionFactoryNameXA() {
 		return topicConnectionFactoryNameXA;
