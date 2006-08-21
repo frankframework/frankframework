@@ -1,6 +1,9 @@
 /*
  * $Log: ProcessMetrics.java,v $
- * Revision 1.2  2006-07-10 14:36:29  europe\L190409
+ * Revision 1.3  2006-08-21 15:15:43  europe\L190409
+ * correctly formatted current time
+ *
+ * Revision 1.2  2006/07/10 14:36:29  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added currentTime, separate function normalizedNotation()
  *
  * Revision 1.1  2004/07/20 13:27:29  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -68,8 +71,7 @@ public class ProcessMetrics {
 		addNumberProperty(props, "freeMemory", freeMem);
 		addNumberProperty(props, "totalMemory", totalMem);
 		addNumberProperty(props, "heapSize", totalMem-freeMem);
-		Date d = new Date();
-		addProperty(props, "currentTime", (Long.toString(d.getTime())));
+		addProperty(props, "currentTime", DateUtils.format(new Date(),DateUtils.FORMAT_FULL_GENERIC));
 		return xmlh.toXML();
 	}
 
