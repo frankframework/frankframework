@@ -1,6 +1,9 @@
 /*
  * $Log: HasTransactionAttribute.java,v $
- * Revision 1.1  2006-08-21 15:05:23  europe\L190409
+ * Revision 1.2  2006-08-21 15:06:51  europe\L190409
+ * corrected version string
+ *
+ * Revision 1.1  2006/08/21 15:05:23  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * introduction of transaction attribute handling
  *
  */
@@ -32,7 +35,7 @@ package nl.nn.adapterframework.core;
  * @since   4.5
  */
 public interface HasTransactionAttribute {
-	public static final String version="$Id: HasTransactionAttribute.java,v 1.1 2006-08-21 15:05:23 europe\L190409 Exp $";
+	public static final String version = "$RCSfile: HasTransactionAttribute.java,v $ $Revision: 1.2 $ $Date: 2006-08-21 15:06:51 $";
 
 	public String getTransactionAttribute();
 	public int getTransactionAttributeNum();
