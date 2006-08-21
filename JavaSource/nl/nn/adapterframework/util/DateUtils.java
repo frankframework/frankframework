@@ -1,6 +1,9 @@
 /*
  * $Log: DateUtils.java,v $
- * Revision 1.6  2006-01-19 12:18:38  europe\L190409
+ * Revision 1.7  2006-08-21 15:13:37  europe\L190409
+ * added full-generic format
+ *
+ * Revision 1.6  2006/01/19 12:18:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected fullIsoFormat
  *
  * Revision 1.5  2005/10/17 07:35:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -19,11 +22,16 @@ import java.util.Date;
  * @version Id
  */
 public class DateUtils {
-	public static final String version = "$RCSfile: DateUtils.java,v $ $Revision: 1.6 $ $Date: 2006-01-19 12:18:38 $";
+	public static final String version = "$RCSfile: DateUtils.java,v $ $Revision: 1.7 $ $Date: 2006-08-21 15:13:37 $";
 	
 
 	public static final String fullIsoFormat          = "yyyy-MM-dd'T'HH:mm:sszzz";
     public static final String shortIsoFormat         = "yyyy-MM-dd";
+
+	/**
+	 * Format for "yyyy-MM-dd HH:mm:ss.SSS"
+	 */
+	public static final String FORMAT_FULL_GENERIC      = "yyyy-MM-dd HH:mm:ss.SSS";
 
     /**
      * Format for "######.###"
@@ -34,6 +42,7 @@ public class DateUtils {
      * Format for "dd-MM-yy HH:mm"
      */
 	public final static String FORMAT_GENERICDATETIME  ="dd-MM-yy HH:mm";
+
 
     /**
      * Format for "dd-MM-yy"
@@ -49,6 +58,7 @@ public class DateUtils {
      * Format for "dd-MM-yy HH:mm,SSS"
      */
 	public final static String FORMAT_DATETIME_MILLISECONDS  ="dd-MM-yy HH:mm,SSS";
+
 	
 	public static String format(Date date, String dateFormat) {
 		SimpleDateFormat formatter = new SimpleDateFormat(dateFormat);
