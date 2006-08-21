@@ -1,6 +1,9 @@
 /*
  * $Log: CompressPipe.java,v $
- * Revision 1.10  2006-05-19 09:28:37  europe\m00i745
+ * Revision 1.11  2006-08-21 15:03:36  europe\L190409
+ * correct javadoc
+ *
+ * Revision 1.10  2006/05/19 09:28:37  Peter Eijgermans <peter.eijgermans@ibissource.org>
  * Restore java files from batch package after unwanted deletion.
  *
  * Revision 1.8  2006/04/25 07:07:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -57,7 +60,7 @@ import nl.nn.adapterframework.util.FileUtils;
  * <tr><td>{@link #setOutputDirectory(String) outputDirectory}</td><td>Required if result is a file, the directory in which to store the result file</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setFilenamePattern(String) filenamePattern}</td><td>Required if result is a file, the pattern for the result filename</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setZipEntryPattern(String) zipEntryPattern}</td><td>The pattern for the zipentry name in case a zipfile is read or written</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setCompress(boolean) directory}</td><td>If true the pipe compress, otherwise it decompress</td><td>false</td></tr>
+ * <tr><td>{@link #setCompress(boolean) compress}</td><td>If true the pipe compresses, otherwise it decompress</td><td>false</td></tr>
  * <tr><td>{@link #setConvert2String(boolean) convert2String}</td><td>If true result is returned as a string, otherwise as a byte array</td><td>false</td></tr>
  * <tr><td>{@link #setFileFormat(String) fileFormat}</td><td>When set to gz, the GZIP format is used. When set to another value, the ZIP format is used. If not set and direction is compress, the resultIsContent specifies the output format used (resultIsContent="true" -> GZIP format, resultIsContent="false" -> ZIP format) If not set and direction is decompress, the messageIsContent specifies the output format used (messageIsContent="true" -> GZIP format, messageIsContent="false" -> ZIP format)</td><td>&nbsp;</td></tr>
  * </table>
