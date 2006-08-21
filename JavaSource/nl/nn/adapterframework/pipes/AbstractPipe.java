@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractPipe.java,v $
- * Revision 1.18  2006-02-20 15:42:41  europe\L190409
+ * Revision 1.19  2006-08-21 15:21:23  europe\L190409
+ * introduction of transaction attribute handling
+ *
+ * Revision 1.18  2006/02/20 15:42:41  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * moved METT-support to single entry point for tracing
  *
  * Revision 1.17  2006/02/09 08:01:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -49,6 +52,7 @@
 package nl.nn.adapterframework.pipes;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.HasTransactionAttribute;
 import nl.nn.adapterframework.core.IExtendedPipe;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -57,6 +61,7 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
+import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.TracingEventNumbers;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -99,15 +104,31 @@ import java.util.Hashtable;
  * <tr><td>{@link #setGetInputFromSessionKey(String) getInputFromSessionKey}</td><td>when set, input is taken from this session key, instead of regular input</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setStoreResultInSessionKey(String) storeResultInSessionKey}</td><td>when set, the result is stored under this session key</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setNamespaceAware(boolean) namespaceAware}</td><td>controls namespace-awareness of possible XML parsing in descender-classes</td><td>application default</td></tr>
+ * <tr><td>{@link #setTransactionAttribute(String) transactionAttribute}</td><td>Defines transaction and isolation behaviour. Equal to <A href="http://java.sun.com/j2ee/sdk_1.2.1/techdocs/guides/ejb/html/Transaction2.html#10494">EJB transaction attribute</a>. Possible values are: 
+ *   <table border="1">
+ *   <tr><th>transactionAttribute</th><th>callers Transaction</th><th>Pipeline excecuted in Transaction</th></tr>
+ *   <tr><td colspan="1" rowspan="2">Required</td>    <td>none</td><td>T2</td></tr>
+ * 											      <tr><td>T1</td>  <td>T1</td></tr>
+ *   <tr><td colspan="1" rowspan="2">RequiresNew</td> <td>none</td><td>T2</td></tr>
+ * 											      <tr><td>T1</td>  <td>T2</td></tr>
+ *   <tr><td colspan="1" rowspan="2">Mandatory</td>   <td>none</td><td>error</td></tr>
+ * 											      <tr><td>T1</td>  <td>T1</td></tr>
+ *   <tr><td colspan="1" rowspan="2">NotSupported</td><td>none</td><td>none</td></tr>
+ * 											      <tr><td>T1</td>  <td>none</td></tr>
+ *   <tr><td colspan="1" rowspan="2">Supports</td>    <td>none</td><td>none</td></tr>
+ * 											      <tr><td>T1</td>  <td>T1</td></tr>
+ *   <tr><td colspan="1" rowspan="2">Never</td>       <td>none</td><td>none</td></tr>
+ * 											      <tr><td>T1</td>  <td>error</td></tr>
+ *  </table></td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * @version Id
- * @author     Johan Verrips
+ * @author     Johan Verrips / Gerrit van Brakel
  *
  * @see nl.nn.adapterframework.core.PipeLineSession
  */
-public abstract class AbstractPipe implements IExtendedPipe, TracingEventNumbers {
-	public static final String version="$RCSfile: AbstractPipe.java,v $ $Revision: 1.18 $ $Date: 2006-02-20 15:42:41 $";
+public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttribute, TracingEventNumbers {
+	public static final String version="$RCSfile: AbstractPipe.java,v $ $Revision: 1.19 $ $Date: 2006-08-21 15:21:23 $";
 	private String name;
 	protected Logger log = Logger.getLogger(this.getClass());
 	private Hashtable pipeForwards=new Hashtable();
@@ -117,6 +138,7 @@ public abstract class AbstractPipe implements IExtendedPipe, TracingEventNumbers
 	private String getInputFromSessionKey=null;
 	private String storeResultInSessionKey=null;
 	private boolean namespaceAware=XmlUtils.isNamespaceAwareByDefault();
+	private int transactionAttribute=-1;
  
 	// METT event numbers
 	private int beforeEvent=-1;
@@ -342,6 +364,25 @@ public abstract class AbstractPipe implements IExtendedPipe, TracingEventNumbers
 	public void setExceptionEvent(int i) {
 		exceptionEvent = i;
 	}
+
+
+	public void setTransactionAttribute(String attribute) throws ConfigurationException {
+		transactionAttribute = JtaUtil.getTransactionAttributeNum(attribute);
+		if (transactionAttribute<0) {
+			throw new ConfigurationException("illegal value for transactionAttribute ["+attribute+"]");
+		}
+	}
+	public String getTransactionAttribute() {
+		return JtaUtil.getTransactionAttributeString(transactionAttribute);
+	}
+
+	public void setTransactionAttributeNum(int i) {
+		transactionAttribute = i;
+	}
+	public int getTransactionAttributeNum() {
+		return transactionAttribute;
+	}
+
 
 
 }
