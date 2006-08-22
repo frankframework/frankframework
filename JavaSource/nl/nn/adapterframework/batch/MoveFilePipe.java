@@ -1,6 +1,9 @@
 /*
  * $Log: MoveFilePipe.java,v $
- * Revision 1.5  2006-05-19 09:28:38  europe\m00i745
+ * Revision 1.6  2006-08-22 12:48:57  europe\L190409
+ * added filename-attribute
+ *
+ * Revision 1.5  2006/05/19 09:28:38  Peter Eijgermans <peter.eijgermans@ibissource.org>
  * Restore java files from batch package after unwanted deletion.
  *
  * Revision 1.3  2005/10/31 14:38:02  John Dekker <john.dekker@ibissource.org>
@@ -36,17 +39,20 @@ import org.apache.commons.lang.StringUtils;
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>classname</td><td>nl.nn.ibis4fundation.FtpSender</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the sender</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setMove2dir(String) dir}</td><td>destination directory</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setFilename(String) filename}</td><td>The name of the file to move (if not specified, the input for this pipe is assumed to be the name of the file</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setMove2dir(String) move2dir}</td><td>destination directory</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setNumberOfAttempts(int) numberOfAttempts}</td><td>maximum number of attempts before throwing an exception</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setWaitBeforeRetry(long) waitBeforeRetry}</td><td>Number of attempts</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * 
  * @author: John Dekker
+ * @author: Jaco de Groot (***@dynasol.nl)
  */
 public class MoveFilePipe extends FixedForwardPipe {
-	public static final String version = "$RCSfile: MoveFilePipe.java,v $  $Revision: 1.5 $ $Date: 2006-05-19 09:28:38 $";
+	public static final String version = "$RCSfile: MoveFilePipe.java,v $  $Revision: 1.6 $ $Date: 2006-08-22 12:48:57 $";
 
+	private String filename;
 	private String move2dir;
 	private long waitBeforeRetry = 1000;
 	private int numberOfAttempts = 10;
@@ -66,7 +72,12 @@ public class MoveFilePipe extends FixedForwardPipe {
 	 * @see nl.nn.adapterframework.core.IPipe#doPipe(Object, PipeLineSession)
 	 */
 	public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRunException {
-		String orgFilename = input.toString();
+		String orgFilename;
+		if (StringUtils.isEmpty(filename)) {
+			orgFilename = input.toString();
+		} else {
+			orgFilename = filename;
+		}
 		try {
 			File srcFile = new File(orgFilename);
 			File dstFile = new File(move2dir, srcFile.getName());
@@ -85,28 +96,36 @@ public class MoveFilePipe extends FixedForwardPipe {
 		}
 	}
 
-	public String getMove2dir() {
-		return move2dir;
+
+	public void setFilename(String filename) {
+		this.filename = filename;
+	}
+	public String getFilename() {
+		return filename;
 	}
 
 	public void setMove2dir(String string) {
 		move2dir = string;
 	}
-
-	public int getNumberOfAttempts() {
-		return numberOfAttempts;
+	public String getMove2dir() {
+		return move2dir;
 	}
 
-	public long getWaitBeforeRetry() {
-		return waitBeforeRetry;
-	}
+
+
 
 	public void setNumberOfAttempts(int i) {
 		numberOfAttempts = i;
 	}
+	public int getNumberOfAttempts() {
+		return numberOfAttempts;
+	}
 
 	public void setWaitBeforeRetry(long l) {
 		waitBeforeRetry = l;
+	}
+	public long getWaitBeforeRetry() {
+		return waitBeforeRetry;
 	}
 
 }
