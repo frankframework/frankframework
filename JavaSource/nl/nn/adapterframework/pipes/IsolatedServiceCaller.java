@@ -1,6 +1,9 @@
 /*
  * $Log: IsolatedServiceCaller.java,v $
- * Revision 1.3  2005-09-26 11:54:05  europe\L190409
+ * Revision 1.4  2006-08-22 06:50:09  europe\L190409
+ * added asynchronous and transactional features
+ *
+ * Revision 1.3  2005/09/26 11:54:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * enabeld isolated calls from IbisLocalSender to JavaListener as well as to WebServiceListener
  *
  * Revision 1.2  2005/09/20 13:27:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -14,11 +17,14 @@ package nl.nn.adapterframework.pipes;
 
 import java.util.HashMap;
 
+import javax.transaction.UserTransaction;
+
 import org.apache.log4j.Logger;
 
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
+import nl.nn.adapterframework.util.JtaUtil;
 
 /**
  * Helper class for IbisLocalSender that wraps around {@link ServiceDispatcher} to make calls to a local Ibis adapter in a separate thread.
@@ -28,7 +34,7 @@ import nl.nn.adapterframework.receivers.ServiceDispatcher;
  * @version Id
  */
 public class IsolatedServiceCaller extends Thread {
-	public static final String version="$RCSfile: IsolatedServiceCaller.java,v $ $Revision: 1.3 $ $Date: 2005-09-26 11:54:05 $";
+	public static final String version="$RCSfile: IsolatedServiceCaller.java,v $ $Revision: 1.4 $ $Date: 2006-08-22 06:50:09 $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	String serviceName;
@@ -36,26 +42,28 @@ public class IsolatedServiceCaller extends Thread {
 	String message;
 	HashMap context;
 	boolean targetIsJavaListener;
+	boolean doTransaction;
 	String result = null;
 	Throwable t = null;
 	
 	
-	private IsolatedServiceCaller(String serviceName, String correlationID, String message, HashMap context, boolean targetIsJavaListener) {
+	private IsolatedServiceCaller(String serviceName, String correlationID, String message, HashMap context, boolean targetIsJavaListener, boolean doTransaction) {
 		super();
 		this.serviceName= serviceName;
 		this.correlationID=correlationID;
 		this.message=message;
 		this.context=context;
-		this.targetIsJavaListener=targetIsJavaListener; 
+		this.targetIsJavaListener=targetIsJavaListener;
+		this.doTransaction=doTransaction;
 	}
 
-	public static void callServiceAsynchronous(String serviceName, String correlationID, String message, HashMap context, boolean targetIsJavaListener) throws ListenerException {
-		IsolatedServiceCaller call = new IsolatedServiceCaller(serviceName, correlationID,  message,  context, targetIsJavaListener);
+	public static void callServiceAsynchronous(String serviceName, String correlationID, String message, HashMap context, boolean targetIsJavaListener, boolean doTransaction) throws ListenerException {
+		IsolatedServiceCaller call = new IsolatedServiceCaller(serviceName, correlationID,  message,  context, targetIsJavaListener, doTransaction);
 		call.start();
 	}
 	
-	public static String callServiceIsolated(String serviceName, String correlationID, String message, HashMap context, boolean targetIsJavaListener) throws ListenerException {
-		IsolatedServiceCaller call = new IsolatedServiceCaller(serviceName, correlationID,  message,  context, targetIsJavaListener);
+	public static String callServiceIsolated(String serviceName, String correlationID, String message, HashMap context, boolean targetIsJavaListener, boolean doTransaction) throws ListenerException {
+		IsolatedServiceCaller call = new IsolatedServiceCaller(serviceName, correlationID,  message,  context, targetIsJavaListener, doTransaction);
 		call.start();
 		try {
 			call.join();
@@ -75,15 +83,38 @@ public class IsolatedServiceCaller extends Thread {
 	}
 	
 	public void run() {
+		UserTransaction utx=null;
 		try {
+			if (doTransaction) {
+				log.debug("starting new transaction for correlation id ["+correlationID+"]");
+				utx=JtaUtil.getUserTransaction();
+				utx.begin();
+			}
 			if (targetIsJavaListener) {
 				result = JavaListener.getListener(serviceName).processRequest(correlationID, message, context); 
 			} else {
 				result = ServiceDispatcher.getInstance().dispatchRequestWithExceptions(serviceName, correlationID, message, context); 
 			}
+			if (doTransaction) {
+				if (JtaUtil.inTransaction(utx)) {
+					log.debug("committing transaction for correlation id ["+correlationID+"]");
+					utx.commit();
+				} else {
+					log.debug("rolling back transaction for correlation id ["+correlationID+"]");
+					utx.rollback();
+				}
+			}
 		} catch (Throwable t) {
 			log.warn("IsolatedServiceCaller caught exception",t);
 			this.t=t;
+			if (doTransaction && utx!=null) {
+				try {
+					log.debug("trying to roll back transaction for correlation id ["+correlationID+"] after exception");
+					utx.rollback();
+				} catch (Throwable t2) {
+					log.warn("exception rolling back transaction for correlation id ["+correlationID+"]",t2);
+				}
+			}
 		}
 	}
 
