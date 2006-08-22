@@ -1,6 +1,10 @@
 /*
  * $Log: IbisLocalSender.java,v $
- * Revision 1.10  2006-07-17 09:03:55  europe\L190409
+ * Revision 1.11  2006-08-22 06:51:23  europe\L190409
+ * corrected javadoc
+ * adapted code calling IsolatedServiceCaller
+ *
+ * Revision 1.10  2006/07/17 09:03:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * force isolated=true if synchronous=false
  *
  * Revision 1.9  2006/07/14 10:04:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -49,7 +53,7 @@ import java.util.HashMap;
 
 
 /**
- * Posts a message to another IBIS-adapter in the same JVM.
+ * Posts a message to another IBIS-adapter in the same IBIS instance.
  *
  * <p><b>Configuration:</b>
  * <table border="1">
@@ -68,7 +72,7 @@ import java.util.HashMap;
  * @since  4.2
  */
 public class IbisLocalSender extends SenderWithParametersBase {
-	public static final String version="$RCSfile: IbisLocalSender.java,v $ $Revision: 1.10 $ $Date: 2006-07-17 09:03:55 $";
+	public static final String version="$RCSfile: IbisLocalSender.java,v $ $Revision: 1.11 $ $Date: 2006-08-22 06:51:23 $";
 	
 	private String name;
 	private String serviceName;
@@ -108,10 +112,10 @@ public class IbisLocalSender extends SenderWithParametersBase {
 				if (isIsolated()) {
 					if (isSynchronous()) {
 						log.debug(getLogPrefix()+"calling service ["+getServiceName()+"] in separate Thread");
-						return IsolatedServiceCaller.callServiceIsolated(getServiceName(), correlationID, message, context, false);
+						return IsolatedServiceCaller.callServiceIsolated(getServiceName(), correlationID, message, context, false, false);
 					} else {
 						log.debug(getLogPrefix()+"calling service ["+getServiceName()+"] in asynchronously");
-						IsolatedServiceCaller.callServiceAsynchronous(getServiceName(), correlationID, message, context, false);
+						IsolatedServiceCaller.callServiceAsynchronous(getServiceName(), correlationID, message, context, false, false);
 						return message;
 					}
 				} else {
@@ -130,10 +134,10 @@ public class IbisLocalSender extends SenderWithParametersBase {
 				if (isIsolated()) {
 					if (isSynchronous()) {
 						log.debug(getLogPrefix()+"calling JavaListener ["+getJavaListener()+"] in separate Thread");
-						return IsolatedServiceCaller.callServiceIsolated(getJavaListener(), correlationID, message, context, true);
+						return IsolatedServiceCaller.callServiceIsolated(getJavaListener(), correlationID, message, context, true, false);
 					} else {
 						log.debug(getLogPrefix()+"calling JavaListener ["+getJavaListener()+"] in asynchronously");
-						IsolatedServiceCaller.callServiceAsynchronous(getJavaListener(), correlationID, message, context, true);
+						IsolatedServiceCaller.callServiceAsynchronous(getJavaListener(), correlationID, message, context, true, false);
 						return message;
 					}
 				} else {
