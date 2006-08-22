@@ -1,6 +1,9 @@
 /*
  * $Log: DumpIbisConsole.java,v $
- * Revision 1.1  2006-08-22 07:51:42  europe\L190409
+ * Revision 1.2  2006-08-22 11:57:57  europe\L190409
+ * removed call tot response sink
+ *
+ * Revision 1.1  2006/08/22 07:51:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * first version
  *
  */
@@ -81,7 +84,7 @@ public class DumpIbisConsole extends HttpServlet {
 			InputStream inputStream = new ByteArrayInputStream(htmlString.getBytes());
 
 			zipOutputStream.putNextEntry(new ZipEntry(destinationFileName));
-			HttpServletResponseSink sink = new HttpServletResponseSink(response,zipOutputStream);
+			// HttpServletResponseSink sink = new HttpServletResponseSink(response,zipOutputStream);
 			
 			for (int c = inputStream.read(); c != -1; c = inputStream.read()) {
 				zipOutputStream.write(c);
