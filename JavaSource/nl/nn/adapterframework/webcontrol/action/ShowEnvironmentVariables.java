@@ -1,6 +1,9 @@
 /*
  * $Log: ShowEnvironmentVariables.java,v $
- * Revision 1.3  2005-12-28 09:18:48  europe\L190409
+ * Revision 1.4  2006-08-22 06:56:00  europe\L190409
+ * removed unused imports
+ *
+ * Revision 1.3  2005/12/28 09:18:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * support unicode names for environment-variables
  *
  * Revision 1.2  2005/10/27 08:44:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -21,8 +24,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.util.Enumeration;
 import java.util.Properties;
 
@@ -40,7 +41,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  */
 
 public class ShowEnvironmentVariables extends ActionBase {
-	public static final String version = "$RCSfile: ShowEnvironmentVariables.java,v $ $Revision: 1.3 $ $Date: 2005-12-28 09:18:48 $";
+	public static final String version = "$RCSfile: ShowEnvironmentVariables.java,v $ $Revision: 1.4 $ $Date: 2006-08-22 06:56:00 $";
 
 	public void addPropertiesToXmlBuilder(XmlBuilder container, Properties props, String setName) {
 		Enumeration enum = props.keys();
