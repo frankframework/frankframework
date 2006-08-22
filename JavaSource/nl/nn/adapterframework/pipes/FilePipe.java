@@ -1,6 +1,9 @@
 /*
  * $Log: FilePipe.java,v $
- * Revision 1.10  2006-05-04 06:47:55  europe\L190409
+ * Revision 1.11  2006-08-22 12:53:45  europe\L190409
+ * added fileName and fileNameSessionKey attributes
+ *
+ * Revision 1.10  2006/05/04 06:47:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * handles correctly incoming byte[]
  *
  * Revision 1.9  2005/12/08 08:00:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -58,8 +61,10 @@ import sun.misc.BASE64Encoder;
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDirectory(String) directory}</td><td>base directory where files are stored in or read from</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setFileName(String) fileName}</td><td>The name of the file to use</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setFileNameSessionKey(String) fileNameSessionKey}</td><td>The session key that contains the name of the file to use (only used if fileName is not set)</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setActions(String) actions}</td><td>name of forward returned upon completion</td><td>"success"</td></tr>
- * <tr><td>{@link #setWriteSuffix(String) writeSuffix}</td><td>suffix of the file to be created</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setWriteSuffix(String) writeSuffix}</td><td>suffix of the file to be created (only used if fileName and fileNameSession are not set)</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * <p><b>Exits:</b>
@@ -75,12 +80,13 @@ import sun.misc.BASE64Encoder;
  *
  */
 public class FilePipe extends FixedForwardPipe {
-	public static final String version="$RCSfile: FilePipe.java,v $ $Revision: 1.10 $ $Date: 2006-05-04 06:47:55 $";
+	public static final String version="$RCSfile: FilePipe.java,v $ $Revision: 1.11 $ $Date: 2006-08-22 12:53:45 $";
 	private List transformers;
 	protected String actions;
 	protected String directory;
 	protected String writeSuffix;
 	protected String fileName;
+	protected String fileNameSessionKey;
 
 	/** 
 	 * @see nl.nn.adapterframework.core.IPipe#configure()
@@ -98,7 +104,9 @@ public class FilePipe extends FixedForwardPipe {
 			String token = tok.nextToken();
 			
 			if ("write".equalsIgnoreCase(token))
-				transformers.add(new FileWriter());
+				transformers.add(new FileWriter(false));
+			else if ("write_append".equalsIgnoreCase(token))
+				transformers.add(new FileWriter(true));
 			else if ("read".equalsIgnoreCase(token))
 				transformers.add(new FileReader());
 			else if ("delete".equalsIgnoreCase(token))
@@ -187,6 +195,10 @@ public class FilePipe extends FixedForwardPipe {
 	 * Write the input to a file in the specified directory.
 	 */
 	private class FileWriter implements TransformerAction {
+		private boolean append = false;
+		public FileWriter(boolean append) {
+			this.append = append;
+		}
 		// create the directory structure if not exists and
 		// check the permissions
 		public void configure() throws ConfigurationException {
@@ -208,13 +220,16 @@ public class FilePipe extends FixedForwardPipe {
 			File dirFile = new File(getDirectory());
 			
 			if (StringUtils.isEmpty(fileName)) {
+				if (StringUtils.isEmpty(fileNameSessionKey)) {
 				tmpFile = File.createTempFile("ibis", writeSuffix, dirFile);
 			} else {
+					tmpFile = new File(getDirectory()+File.separator+session.get(fileNameSessionKey));
+				}
+			} else {
 				tmpFile = new File(getDirectory()+File.separator+fileName);
-				tmpFile.delete();
-				tmpFile.createNewFile();
 			}
-			FileOutputStream fos = new FileOutputStream(tmpFile);
+			// Use tmpFile.getPath() instead of tmpFile to be WAS 5.0 / Java 1.3 compatible
+			FileOutputStream fos = new FileOutputStream(tmpFile.getPath(), append);
 			
 			try {
 				fos.write(in);
@@ -285,7 +300,12 @@ public class FilePipe extends FixedForwardPipe {
 			}
 		}
 		public byte[] go(byte[] in, PipeLineSession session) throws Exception {
-			File file = new File(getDirectory(), new String(in));
+			File file;
+			if (getFileName() == null) {
+				file = new File(getDirectory(), new String(in));
+			} else {
+				file = new File(getDirectory(), getFileName());
+			}
 			file.delete();
 			return in;
 		}
@@ -308,7 +328,7 @@ public class FilePipe extends FixedForwardPipe {
 	/**
 	 * @param actions all the actions the pipe has to do
 	 * 
-	 * Possible actions are "read", "write", "encode", "decode", "delete" and "read_delete"
+	 * Possible actions are "read", "write", "write_append", "encode", "decode", "delete" and "read_delete"
 	 * You can also define combinations, like "read encode write".
 	 */
 	public void setActions(String actions) {
@@ -350,4 +370,17 @@ public class FilePipe extends FixedForwardPipe {
 		this.fileName = filename;
 	}
 
+	/**
+	 * @return the session key that contains the name of the file to be created
+	 */
+	public String getFileNameSessionKey() {
+		return fileNameSessionKey;
+	}
+
+	/**
+	 * @param the session key that contains the name of the file to be created
+	 */
+	public void setFileNameSessionKey(String filenameSessionKey) {
+		this.fileNameSessionKey = filenameSessionKey;
+	}
 }
