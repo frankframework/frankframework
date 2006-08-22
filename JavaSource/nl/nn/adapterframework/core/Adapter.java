@@ -1,6 +1,9 @@
 /*
  * $Log: Adapter.java,v $
- * Revision 1.22  2006-02-09 07:55:15  europe\L190409
+ * Revision 1.23  2006-08-22 12:50:17  europe\L190409
+ * moved code for userTransaction to JtaUtil
+ *
+ * Revision 1.22  2006/02/09 07:55:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * name, upSince and lastMessageDate in statistics-summary
  *
  * Revision 1.21  2005/12/28 08:34:46  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -63,8 +66,6 @@ package nl.nn.adapterframework.core;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.errormessageformatters.ErrorMessageFormatter;
-import nl.nn.adapterframework.jms.JNDIBase;
-import nl.nn.adapterframework.jms.JmsRealm;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.MessageKeeper;
@@ -84,6 +85,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.Vector;
 
+import javax.naming.NamingException;
 import javax.transaction.SystemException;
 import javax.transaction.UserTransaction;
 /**
@@ -104,6 +106,19 @@ import javax.transaction.UserTransaction;
  * object, which returns a {@link PipeLineResult}. If an error occurs during
  * the pipeline execution, the state in the <code>PipeLineResult</code> is set
  * to the state specified by <code>setErrorState</code>, which defaults to "ERROR".
+ * <p><b>Configuration:</b>
+ * <table border="1">
+ * <tr><th>attributes</th><th>description</th><th>default</th></tr>
+ * <tr><td>className</td><td>nl.nn.adapterframework.pipes.AbstractPipe</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setName(String) name}</td><td>name of the Adapter</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setDescription(String) description}</td><td>description of the Adapter</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setAutoStart(boolean) autoStart}</td><td>controls whether Adapters starts when configuration loads</td><td>true</td></tr>
+ * <tr><td>{@link #setErrorMessageFormatter(String) errorMessageFormatter}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setErrorState(String) errorState}</td><td>If an error occurs during
+ * the pipeline execution, the state in the <code>PipeLineResult</code> is set to this state</td><td>ERROR</td></tr>
+ * <tr><td>{@link #setMessageKeeperSize(int) messageKeeperSize}</td><td>number of message displayed in IbisConsole</td><td>10</td></tr>
+ *  </table></td><td>&nbsp;</td></tr>
+ * </table>
  * 
  * @version Id
  * @author Johan Verrips
@@ -116,8 +131,8 @@ import javax.transaction.UserTransaction;
  * 
  */
 
-public class Adapter extends JNDIBase implements Runnable, IAdapter {
-	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.22 $ $Date: 2006-02-09 07:55:15 $";
+public class Adapter implements Runnable, IAdapter {
+	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.23 $ $Date: 2006-08-22 12:50:17 $";
 	private Vector receivers = new Vector();
 	private long lastMessageDate = 0;
 	private PipeLine pipeline;
@@ -138,28 +153,9 @@ public class Adapter extends JNDIBase implements Runnable, IAdapter {
 	private int messageKeeperSize = 10; //default length
 	private boolean autoStart = true;
 
-	/**
-	 * AutoStart indicates that the adapter should be started when the configuration
-	 * is started. 
-	 * @param autoStart defaults to TRUE
-	 * @since 4.1.1
-	 */
-	public void setAutoStart(boolean autoStart) {
-		this.autoStart = autoStart;
-	}
-	/**
-	 * AutoStart indicates that the adapter should be started when the configuration
-	 * is started. AutoStart defaults to TRUE
-	 * @since 4.1.1
-	 */
-	public boolean isAutoStart() {
-		return autoStart;
-	}
 	// state to put in PipeLineResult when a PipeRunException occurs;
 	private String errorState = "ERROR";
 
-	private String userTransactionUrl = "java:comp/UserTransaction";
-	private String userTransactionUrlAlternative = "jta/usertransaction";
 
 	/**
 	 * The nummer of message currently in process
@@ -168,12 +164,12 @@ public class Adapter extends JNDIBase implements Runnable, IAdapter {
 
 	/**
 	 * Indicates wether the configuration succeeded.
-	 * Creation date: (24-02-2003 8:48:49)
 	 * @return boolean
 	 */
 	public boolean configurationSucceeded() {
 		return configurationSucceeded;
 	}
+	
 	/*
 	 * This function is called by Configuration.registerAdapter,
 	 * to make configuration information available to the Adapter. <br/><br/>
@@ -181,7 +177,6 @@ public class Adapter extends JNDIBase implements Runnable, IAdapter {
 	 * a <code>Pipeline.configurePipes()</code>, as to configure the individual pipes.
 	 * @see nl.nn.adapterframework.core.Pipeline#configurePipes
 	 */
-
 	public void configure() throws ConfigurationException {
 		configurationSucceeded = false;
 		log.debug("configuring adapter [" + getName() + "]");
@@ -223,6 +218,16 @@ public class Adapter extends JNDIBase implements Runnable, IAdapter {
 			log.error(msg, e);
 		}
 	}
+	
+	/**
+	 * Increase the number of messages in process
+	 */
+	private void incNumOfMessagesInProcess(long startTime) {
+		synchronized (statsMessageProcessingDuration) {
+			numOfMessagesInProcess++;
+			lastMessageDate = startTime;
+		}
+	}
 	/**
 	 * Decrease the number of messages in process
 	 */
@@ -234,6 +239,15 @@ public class Adapter extends JNDIBase implements Runnable, IAdapter {
 			notifyAll();
 		}
 	}
+	/**
+	 * The number of messages for which processing ended unsuccessfully.
+	 */
+	private void incNumOfMessagesInError() {
+		synchronized (statsMessageProcessingDuration) {
+			numOfMessagesInError++;
+		}
+	}
+
 	public synchronized String formatErrorMessage(
 		String errorMessage,
 		Throwable t,
@@ -263,21 +277,7 @@ public class Adapter extends JNDIBase implements Runnable, IAdapter {
 		}
 	}
 	/**
-	 * @return some functional description of the <code>Adapter</code>
-	 */
-	public String getDescription() {
-		return this.description;
-	}
-	/**
-	* state to put in PipeLineResult when a PipeRunException occurs
-	* Creation date: (06-06-2003 8:31:57)
-	* @return java.lang.String
-	*/
-	public java.lang.String getErrorState() {
-		return errorState;
-	}
-	/**
-	 * retrieve the date and time of the last message
+	 * retrieve the date and time of the last message.
 	 */
 	public String getLastMessageDate() {
 		String result = "";
@@ -399,33 +399,24 @@ public class Adapter extends JNDIBase implements Runnable, IAdapter {
 	public UserTransaction getUserTransaction() throws TransactionException {
 
 		try {
-			return JtaUtil.getUserTransaction(getContext(), getUserTransactionUrl());
-		} catch (Exception e1) {
-			try {
-				return JtaUtil.getUserTransaction(getContext(), userTransactionUrlAlternative);
-			} catch (Exception e2) {
-				log.warn("could not obtain UserTransaction from alternative  [" + userTransactionUrlAlternative + "]", e2);
-				throw new TransactionException(
-					"[" + name + "] could not obtain UserTransaction from URL [" + getUserTransactionUrl() + "] or URL [" + userTransactionUrlAlternative + "]",
-					e1);
-			}
+			return JtaUtil.getUserTransaction();
+		} catch (NamingException e) {
+			throw new TransactionException(e);
 		}
+//		try {
+//			return JtaUtil.getUserTransaction(getContext(), getUserTransactionUrl());
+//		} catch (Exception e1) {
+//			try {
+//				return JtaUtil.getUserTransaction(getContext(), userTransactionUrlAlternative);
+//			} catch (Exception e2) {
+//				log.warn("could not obtain UserTransaction from alternative  [" + userTransactionUrlAlternative + "]", e2);
+//				throw new TransactionException(
+//					"[" + name + "] could not obtain UserTransaction from URL [" + getUserTransactionUrl() + "] or URL [" + userTransactionUrlAlternative + "]",
+//					e1);
+//			}
+//		}
 	}
 
-	/*
-	protected TransactionManager getTransactionManager() throws TransactionException {
-	
-		if (tm == null) {
-			try {
-		    Class c = Class.forName(getTransactionManagerFactoryClassName());
-		   	tm = (TransactionManager) c.getMethod(getTransactionManagerFactoryMethod(), null).invoke(null, null);
-			} catch (Exception e) {
-				throw new TransactionException("["+name+"] could not obtain TransactionManager",e);
-			}
-		}
-		return tm;
-	}
-	*/
 
 	public boolean inTransaction() throws TransactionException {
 		try {
@@ -436,42 +427,6 @@ public class Adapter extends JNDIBase implements Runnable, IAdapter {
 		}
 	}
 
-	/*
-	public boolean inTransaction() throws TransactionException {
-		try {
-			Transaction tx = getTransaction();
-			return tx != null && tx.getStatus() != Status.STATUS_NO_TRANSACTION;
-		} catch (SystemException e) {
-			throw new TransactionException("["+name+"] could not obtain transaction status",e);
-		}
-	}
-	*/
-
-	/*
-	public Transaction createTransaction() throws TransactionException {
-		TransactionManager tm = getTransactionManager();
-		try {
-			log.debug("starting transaction, status before="+JtaUtil.displayTransactionStatus(tm));
-			tm.begin();
-			log.debug("started transaction, status after="+JtaUtil.displayTransactionStatus(tm));
-		} catch (Exception e) {
-			log.debug("exception in starting transaction, status after="+JtaUtil.displayTransactionStatus(tm));
-			throw new TransactionException("["+name+"] could not start transaction",e);
-		}
-		return getTransaction();
-	}	
-	
-	public Transaction getTransaction() throws TransactionException {
-		TransactionManager tm = getTransactionManager();
-		try {
-			log.debug("getting transaction, status before="+JtaUtil.displayTransactionStatus(tm));
-			return tm.getTransaction();	
-		} catch (SystemException e) {
-			throw new TransactionException("["+name+"] could not obtain transaction",e);
-		}
-	}  
-	
-	*/
 
 	/**
 	 * The number of messages for which processing ended unsuccessfully.
@@ -488,7 +443,6 @@ public class Adapter extends JNDIBase implements Runnable, IAdapter {
 	}
 	/**
 	 * Total of messages processed
-	 * Creation date: (19-02-2003 12:16:53)
 	 * @return long total messages processed
 	 */
 	public long getNumOfMessagesProcessed() {
@@ -541,23 +495,6 @@ public class Adapter extends JNDIBase implements Runnable, IAdapter {
 	 */
 	public Hashtable getWaitingStatistics() {
 		return pipeline.getPipeWaitingStatistics();
-	}
-	/**
-	 * The number of messages for which processing ended unsuccessfully.
-	 */
-	private void incNumOfMessagesInError() {
-		synchronized (statsMessageProcessingDuration) {
-			numOfMessagesInError++;
-		}
-	}
-	/**
-	 * Increase the number of messages in process
-	 */
-	private void incNumOfMessagesInProcess(long startTime) {
-		synchronized (statsMessageProcessingDuration) {
-			numOfMessagesInProcess++;
-			lastMessageDate = startTime;
-		}
 	}
 	/**
 	 *
@@ -784,11 +721,15 @@ public class Adapter extends JNDIBase implements Runnable, IAdapter {
 		}
 
 	}
+
 	/**
-	 *  some functional description of the <code>Adapter</code>
+	 *  some functional description of the <code>Adapter</code>/
 	 */
 	public void setDescription(String description) {
 		this.description = description;
+	}
+	public String getDescription() {
+		return this.description;
 	}
 	/**
 	 * Register a <code>ErrorMessageFormatter</code> as the formatter
@@ -801,12 +742,17 @@ public class Adapter extends JNDIBase implements Runnable, IAdapter {
 	}
 	/**
 	 * state to put in PipeLineResult when a PipeRunException occurs
-	 * Creation date: (06-06-2003 8:31:57)
 	 * @param newErrorState java.lang.String
 	 * @see PipeLineResult
 	 */
 	public void setErrorState(java.lang.String newErrorState) {
 		errorState = newErrorState;
+	}
+	/**
+	* state to put in PipeLineResult when a PipeRunException occurs.
+	*/
+	public java.lang.String getErrorState() {
+		return errorState;
 	}
 	/**
 	 * Set the number of messages that are kept on the screen.
@@ -921,26 +867,17 @@ public class Adapter extends JNDIBase implements Runnable, IAdapter {
 	public boolean waitForRunState(RunStateEnum requestedRunState, long maxWait) throws InterruptedException {
 		return runState.waitForRunState(requestedRunState, maxWait);
 	}
-	/**
-	 * loads TransactionManager properties from a JmsRealm
-	 * @see JmsRealm
-	 */
-	public void setJmsRealm(String jmsRealmName) {
-		JmsRealm.copyRealm(this, jmsRealmName);
-	}
 
 	/**
-	 * The JNDI-key under which the UserTransaction can be retrieved
+	 * AutoStart indicates that the adapter should be started when the configuration
+	 * is started. AutoStart defaults to <code>true</code>
+	 * @since 4.1.1
 	 */
-	public String getUserTransactionUrl() {
-		return userTransactionUrl;
+	public void setAutoStart(boolean autoStart) {
+		this.autoStart = autoStart;
 	}
-
-	/**
-	 * The JNDI-key under which the UserTransaction can be retrieved
-	 */
-	public void setUserTransactionUrl(String userTransactionUrl) {
-		this.userTransactionUrl = userTransactionUrl;
+	public boolean isAutoStart() {
+		return autoStart;
 	}
 
 }
