@@ -1,6 +1,9 @@
 /*
  * $Log: CompressPipe.java,v $
- * Revision 1.11  2006-08-21 15:03:36  europe\L190409
+ * Revision 1.12  2006-08-22 12:47:12  europe\L190409
+ * added exceptionForward
+ *
+ * Revision 1.11  2006/08/21 15:03:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * correct javadoc
  *
  * Revision 1.10  2006/05/19 09:28:37  Peter Eijgermans <peter.eijgermans@ibissource.org>
@@ -42,9 +45,11 @@ import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.errormessageformatters.ErrorMessageFormatter;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.util.FileUtils;
 
@@ -65,10 +70,21 @@ import nl.nn.adapterframework.util.FileUtils;
  * <tr><td>{@link #setFileFormat(String) fileFormat}</td><td>When set to gz, the GZIP format is used. When set to another value, the ZIP format is used. If not set and direction is compress, the resultIsContent specifies the output format used (resultIsContent="true" -> GZIP format, resultIsContent="false" -> ZIP format) If not set and direction is decompress, the messageIsContent specifies the output format used (messageIsContent="true" -> GZIP format, messageIsContent="false" -> ZIP format)</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
+ * <p><b>Exits:</b>
+ * <table border="1">
+ * <tr><th>state</th><th>condition</th></tr>
+ * <tr><td>"success"</td><td>When no problems encountered</td></tr>
+ * <tr><td>"exception"</td><td>When problems encountered. The result passed to the next pipe is the exception that was caught formatted by the ErrorMessageFormatter class.</td></tr>
+ * </table>
+ * </p>
  * 
- * @author: John Dekker / Jaco de Groot (***@dynasol.nl)
+ * @author: John Dekker
+ * @author: Jaco de Groot (***@dynasol.nl)
  */
 public class CompressPipe extends FixedForwardPipe {
+
+	private final static String EXCEPTIONFORWARD = "exception";
+
 	private boolean messageIsContent;
 	private boolean resultIsContent;
 	private String outputDirectory;
@@ -146,6 +162,18 @@ public class CompressPipe extends FixedForwardPipe {
 			}
 			return new PipeRunResult(getForward(), getResultMsg(result));
 		} catch(Exception e) {
+			PipeForward exceptionForward = findForward(EXCEPTIONFORWARD);
+			if (exceptionForward!=null) {
+				log.warn(getLogPrefix(session) + "exception occured, forwarded to ["+exceptionForward.getPath()+"]", e);
+				String originalMessage;
+				if (input instanceof String) {
+					originalMessage = (String)input; 
+				} else {
+					originalMessage = "Object of type " + input.getClass().getName(); 
+				}
+				String resultmsg=new ErrorMessageFormatter().format(getLogPrefix(session),e,this,originalMessage,session.getMessageId(),0);
+				return new PipeRunResult(exceptionForward,resultmsg);
+			}
 			throw new PipeRunException(this, "Unexpected exception during compression", e);
 		}
 	}
