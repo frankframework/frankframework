@@ -1,6 +1,9 @@
 /*
  * $Log: XsltPipe.java,v $
- * Revision 1.20  2006-01-05 14:36:31  europe\L190409
+ * Revision 1.21  2006-08-22 12:56:04  europe\L190409
+ * allow use of parameters in xpathExpression
+ *
+ * Revision 1.20  2006/01/05 14:36:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.19  2005/10/24 09:20:18  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -41,6 +44,9 @@ package nl.nn.adapterframework.pipes;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -48,6 +54,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
+import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -98,7 +105,7 @@ import org.apache.commons.lang.StringUtils;
  */
 
 public class XsltPipe extends FixedForwardPipe {
-	public static final String version="$RCSfile: XsltPipe.java,v $ $Revision: 1.20 $ $Date: 2006-01-05 14:36:31 $";
+	public static final String version="$RCSfile: XsltPipe.java,v $ $Revision: 1.21 $ $Date: 2006-08-22 12:56:04 $";
 
 	private TransformerPool transformerPool;
 	private String xpathExpression=null;
@@ -122,7 +129,12 @@ public class XsltPipe extends FixedForwardPipe {
 				throw new ConfigurationException(getLogPrefix(null) + "cannot have both an xpathExpression and a styleSheetName specified");
 			}
 			try {
-				transformerPool = new TransformerPool(XmlUtils.createXPathEvaluatorSource("",getXpathExpression(), getOutputType(), !isOmitXmlDeclaration()));
+				List params = new ArrayList();
+				Iterator iterator = getParameterList().iterator();
+				while (iterator.hasNext()) {
+					params.add(((Parameter)iterator.next()).getName());
+				}
+				transformerPool = new TransformerPool(XmlUtils.createXPathEvaluatorSource("",getXpathExpression(), getOutputType(), !isOmitXmlDeclaration(), params));
 			} 
 			catch (TransformerConfigurationException te) {
 				throw new ConfigurationException(getLogPrefix(null) + "got error creating transformer from xpathExpression [" + getXpathExpression() + "]", te);

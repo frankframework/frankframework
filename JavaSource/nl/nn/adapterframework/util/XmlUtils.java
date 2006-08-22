@@ -1,6 +1,9 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.35  2006-07-17 07:51:14  europe\L190409
+ * Revision 1.36  2006-08-22 12:57:08  europe\L190409
+ * allow use of parameters in xpathExpression
+ *
+ * Revision 1.35  2006/07/17 07:51:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added buildNode() with default namespace-awareness
  *
  * Revision 1.34  2006/03/21 07:36:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -155,6 +158,7 @@ import java.net.URL;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
@@ -166,7 +170,7 @@ import java.util.StringTokenizer;
  * @author Johan Verrips IOS
  */
 public class XmlUtils {
-	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.35 $ $Date: 2006-07-17 07:51:14 $";
+	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.36 $ $Date: 2006-08-22 12:57:08 $";
 	static Logger log = Logger.getLogger(XmlUtils.class);
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
@@ -348,6 +352,13 @@ public class XmlUtils {
 	 * version of createXPathEvaluator that allows to set outputMethod, and uses copy-of instead of value-of
 	 */
 	public static String createXPathEvaluatorSource(String namespaceDefs, String XPathExpression, String outputMethod, boolean includeXmlDeclaration) throws TransformerConfigurationException {
+		return createXPathEvaluatorSource(namespaceDefs, XPathExpression, outputMethod, includeXmlDeclaration, null);
+	}
+
+	/*
+	 * version of createXPathEvaluator that allows to set outputMethod, and uses copy-of instead of value-of, and enables use of parameters.
+	 */
+	public static String createXPathEvaluatorSource(String namespaceDefs, String XPathExpression, String outputMethod, boolean includeXmlDeclaration, List params) throws TransformerConfigurationException {
 		if (StringUtils.isEmpty(XPathExpression))
 			throw new TransformerConfigurationException("XPathExpression must be filled");
 		
@@ -362,11 +373,18 @@ public class XmlUtils {
 			copyMethod="value-of";
 		}			
 			
+		String paramsString = "";
+		if (params != null) {
+			for (Iterator it = params.iterator(); it.hasNext();) {
+				paramsString = paramsString + "<xsl:param name=\"" + it.next() + "\"/>";
+			}
+		}
 		String xsl = 
 			// "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
 			"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"1.0\" xmlns:xalan=\"http://xml.apache.org/xslt\">" +
 			"<xsl:output method=\""+outputMethod+"\" omit-xml-declaration=\""+ (includeXmlDeclaration ? "no": "yes") +"\"/>" +
 			"<xsl:strip-space elements=\"*\"/>" +
+			paramsString +
 			"<xsl:template match=\"/\">" +
 			"<xsl:"+copyMethod+" "+namespaceDefs+" select=\"" + XPathExpression + "\"/>" +
 			"</xsl:template>" +
