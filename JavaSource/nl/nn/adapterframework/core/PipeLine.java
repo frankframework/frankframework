@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.28  2006-08-22 07:49:16  europe\L190409
+ * Revision 1.29  2006-08-22 12:51:43  europe\L190409
+ * handling of preserveInput attribute of Pipes
+ *
+ * Revision 1.28  2006/08/22 07:49:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * introduction of transaction attribute handling
  *
  * Revision 1.27  2006/02/20 15:42:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -163,7 +166,7 @@ import java.util.Hashtable;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.28 $ $Date: 2006-08-22 07:49:16 $";
+	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.29 $ $Date: 2006-08-22 12:51:43 $";
     private Logger log = Logger.getLogger(this.getClass());
 	private Logger durationLog = Logger.getLogger("LongDurationMessages");
     
@@ -568,6 +571,7 @@ public class PipeLine {
 	protected PipeLineResult processPipeLine(String messageId, String message, PipeLineSession pipeLineSession) throws PipeRunException {
 	    // Object is the object that is passed to and returned from Pipes
 	    Object object = (Object) message;
+	    Object preservedObject = object;
 	    PipeRunResult pipeRunResult;
 	    // the PipeLineResult 
 		PipeLineResult pipeLineResult=new PipeLineResult();   
@@ -677,9 +681,14 @@ public class PipeLine {
 							sk.addValue(pipeDuration);
 						}
 				}
-				if (pe !=null && pipeRunResult!=null && StringUtils.isNotEmpty(pe.getStoreResultInSessionKey())) {
+				if (pe !=null) {
+					if (pipeRunResult!=null && StringUtils.isNotEmpty(pe.getStoreResultInSessionKey())) {
 					log.debug("Pipeline of adapter ["+owner.getName()+"] storing result for pipe ["+pe.getName()+" under sessionKey ["+pe.getStoreResultInSessionKey()+"]");
 					pipeLineSession.put(pe.getStoreResultInSessionKey(),pipeRunResult.getResult());
+				}
+					if (pe.isPreserveInput()) {
+						pipeRunResult.setResult(preservedObject);
+					}
 				}
 			} catch (PipeRunException pre) {
 				TracingUtil.exceptionEvent(pipeToRun);
@@ -694,6 +703,7 @@ public class PipeLine {
 			}
 	        	        
 	        object=pipeRunResult.getResult();
+			preservedObject=object;
 	        PipeForward pipeForward=pipeRunResult.getPipeForward();
 	
 	                
