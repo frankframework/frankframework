@@ -1,6 +1,9 @@
 /*
  * $Log: DirectoryListener.java,v $
- * Revision 1.5  2006-05-19 09:28:37  europe\m00i745
+ * Revision 1.6  2006-08-22 12:48:21  europe\L190409
+ * added overwrite-attribute
+ *
+ * Revision 1.5  2006/05/19 09:28:37  Peter Eijgermans <peter.eijgermans@ibissource.org>
  * Restore java files from batch package after unwanted deletion.
  *
  * Revision 1.3  2006/01/05 13:51:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -51,6 +54,7 @@ import org.apache.log4j.Logger;
  * <tr><td>{@link #setResponseTime(long) responseTime}</td><td>Waittime to wait between polling</td><td>10000 [ms]</td></tr>
  * <tr><td>{@link #setNumberOfAttempts(int) numberOfAttempts}</td><td>maximum number of move attempts before throwing an exception</td><td>10</td></tr>
  * <tr><td>{@link #setWaitBeforeRetry(long) waitBeforeRetry}</td><td>time waited after unsuccesful try</td><td>1000</td></tr>
+ * <tr><td>{@link #setOverwrite(boolean) overwrite}</td><td>overwrite de file in the output directory if it already exist</td><td>false</td></tr>
  * </table>
  * </p>
  *
@@ -58,7 +62,7 @@ import org.apache.log4j.Logger;
  * @author  John Dekker
  */
 public class DirectoryListener implements IPullingListener, INamedObject {
-	public static final String version = "$RCSfile: DirectoryListener.java,v $  $Revision: 1.5 $ $Date: 2006-05-19 09:28:37 $";
+	public static final String version = "$RCSfile: DirectoryListener.java,v $  $Revision: 1.6 $ $Date: 2006-08-22 12:48:21 $";
 
 	protected Logger log = Logger.getLogger(this.getClass());
 	private String name;
@@ -70,6 +74,7 @@ public class DirectoryListener implements IPullingListener, INamedObject {
 	private long responseTime = 10000;
 	private int numberOfAttempts = 10;
 	private long waitBeforeRetry = 1000;
+	private boolean overwrite = false;
 
 	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessage, HashMap context) throws ListenerException {
 	}
@@ -85,6 +90,14 @@ public class DirectoryListener implements IPullingListener, INamedObject {
 		
 		try {
 			File rename2 = new File(getOutputDirectory(), FileUtils.getFilename(null, session, file, outputFilenamePattern));
+			if (overwrite) {
+				if (rename2.exists()) {
+					log.debug("File exist: " + rename2);
+					if (!rename2.delete()) {
+						log.error("Could not delete file: " + rename2);
+					}
+				}
+			}
 			newFilename = FileUtils.moveFile(file, rename2, numberOfAttempts, waitBeforeRetry);
 
 			if (newFilename == null) {
@@ -276,6 +289,10 @@ public class DirectoryListener implements IPullingListener, INamedObject {
 
 	public void setWaitBeforeRetry(long l) {
 		waitBeforeRetry = l;
+	}
+
+	public void setOverwrite(boolean overwrite) {
+		this.overwrite = overwrite;
 	}
 
 }
