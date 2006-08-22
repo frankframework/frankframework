@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLineSession.java,v $
- * Revision 1.8  2005-07-05 10:45:24  europe\L190409
+ * Revision 1.9  2006-08-22 06:47:35  europe\L190409
+ * removed IXAEnabled from PipeLineSession
+ *
+ * Revision 1.8  2005/07/05 10:45:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added entry for securityhandler
  *
  * Revision 1.7  2005/05/31 09:10:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -43,13 +46,13 @@ import org.apache.commons.lang.NotImplementedException;
  * @author  Johan Verrips IOS
  * @since   version 3.2.2
  */
-public class PipeLineSession extends HashMap implements IXAEnabled {
-	public static final String version="$RCSfile: PipeLineSession.java,v $ $Revision: 1.8 $ $Date: 2005-07-05 10:45:24 $";
+public class PipeLineSession extends HashMap {
+	public static final String version="$RCSfile: PipeLineSession.java,v $ $Revision: 1.9 $ $Date: 2006-08-22 06:47:35 $";
 
 	public static final String originalMessageKey="originalMessage";
 	public static final String messageIdKey="messageId";
 	public static final String securityHandlerKey="securityHandler";
-	private boolean transacted=false;
+//	private boolean transacted=false;
 	private ISecurityHandler securityHandler = null;
 
 	public PipeLineSession() {
@@ -111,14 +114,14 @@ public class PipeLineSession extends HashMap implements IXAEnabled {
 		return handler.getPrincipal(this);
 	}
 
-	/**
-	 * Indicates the processing of this pipeline is either commited in one transaction, or 
-	 * rolled back to the situation prior to starting the pipeline, using XA-transactions.
-	 */
-	public boolean isTransacted() {
-		return transacted;
-	}
-	public void setTransacted(boolean transacted) {
-		this.transacted = transacted;
-	}
+//	/**
+//	 * Indicates the processing of this pipeline is either commited in one transaction, or 
+//	 * rolled back to the situation prior to starting the pipeline, using XA-transactions.
+//	 */
+//	public boolean isTransacted() {
+//		return transacted;
+//	}
+//	public void setTransacted(boolean transacted) {
+//		this.transacted = transacted;
+//	}
 }
