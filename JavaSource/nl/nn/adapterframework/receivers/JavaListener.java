@@ -1,6 +1,9 @@
 /*
  * $Log: JavaListener.java,v $
- * Revision 1.15  2006-07-17 09:08:03  europe\L190409
+ * Revision 1.16  2006-08-22 06:55:12  europe\L190409
+ * simplified implementation
+ *
+ * Revision 1.15  2006/07/17 09:08:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added asynchronous-option
  *
  * Revision 1.14  2006/06/20 14:22:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -67,6 +70,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessageHandler;
 import nl.nn.adapterframework.core.IPushingListener;
@@ -77,7 +81,7 @@ import nl.nn.adapterframework.dispatcher.DispatcherException;
 import nl.nn.adapterframework.dispatcher.DispatcherManager;
 import nl.nn.adapterframework.dispatcher.DispatcherManagerFactory;
 import nl.nn.adapterframework.dispatcher.RequestProcessor;
-import nl.nn.adapterframework.pipes.IsolatedServiceCaller;
+import nl.nn.adapterframework.util.JtaUtil;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -93,30 +97,29 @@ import org.apache.log4j.Logger;
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.receivers.JavaListener</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the listener as known to the adapter. An {@link nl.nn.adapterframework.pipes.IbisLocalSender IbisLocalSender} refers to this name in its <code>javaListener</code>-attribute.</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setServiceName(String) serviceName}</td><td>(optional) name under which the JavaListener registers itself with the RequestDispatcherManager</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setIsolated(boolean) isolated}</td><td>when <code>true</code>, the call is made in a separate thread, possibly using a separate transaction</td><td>false</td></tr>
+ * <tr><td>{@link #setServiceName(String) serviceName}</td><td>(optional) name under which the JavaListener registers itself with the RequestDispatcherManager. N.B. If not empty, the IbisServiceDispatcher.jar must be on the classpath of the server.</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setIsolated(boolean) isolated}</td><td>when <code>true</code>, the call is made in a separate thread, possibly using a separate transaction. N.B. do not use this attribute, set an appropriate <code>transactionAttribute</code>, like <code>NotSupported</code> or <code>RequiresNew</code> instead</td><td>false</td></tr>
  * <tr><td>{@link #setSynchronous(boolean) synchronous}</td><td> when set <code>false</code>, the request is executed asynchronously. This implies <code>isolated=true</code>. N.B. Be aware that there is no limit on the number of threads generated</td><td>true</td></tr>
- * <tr><td>{@link #setLocal(boolean) local}</td><td>when <code>true</code>, calls can only be made using IbisLocalSender from this Ibis. Otherwise calls from other applications in the same JVM can be made, too, using the IbisDispatcher</td><td>false</td></tr>
  * </table>
+ * 
  * @author  JDekker / Gerrit van Brakel
  * @version Id
  */
 public class JavaListener implements IPushingListener, RequestProcessor {
-	public static final String version="$RCSfile: JavaListener.java,v $ $Revision: 1.15 $ $Date: 2006-07-17 09:08:03 $";
+	public static final String version="$RCSfile: JavaListener.java,v $ $Revision: 1.16 $ $Date: 2006-08-22 06:55:12 $";
 	protected Logger log = Logger.getLogger(this.getClass());
 	
 	private String name;
 	private String serviceName;
 	private boolean isolated=false;
 	private boolean synchronous=true;
-	private boolean local=false;
 
 	private static Map registeredListeners; 
 	private IMessageHandler handler;
 	
 	public void configure() throws ConfigurationException {
-		if (!isSynchronous()) {
-			setIsolated(true);
+		if (isIsolated()) {
+			throw new ConfigurationException("function of attribute 'isolated' is replaced by 'transactionAttribute' on PipeLine"); 
 		}
 		try {
 			if (handler==null) {
@@ -131,46 +134,14 @@ public class JavaListener implements IPushingListener, RequestProcessor {
 		}
 	}
 
-	private class isolatedCaller implements RequestProcessor {
-
-		JavaListener listener;
-		
-		isolatedCaller(JavaListener listener) {
-			this.listener=listener;
-		}
-
-		public String processRequest(String correlationId, String message, HashMap requestContext) throws Exception {
-			if (synchronous) {
-				return IsolatedServiceCaller.callServiceIsolated(listener.getName(), correlationId, message, requestContext, true);
-			} else {
-				IsolatedServiceCaller.callServiceAsynchronous(listener.getName(), correlationId, message, requestContext, true);
-				return message;
-			}
-		}
-	}
-
-
-	protected void rebind(JavaListener listener) throws DispatcherException {
-		if (StringUtils.isNotEmpty(getServiceName())) {
-			DispatcherManager as = DispatcherManagerFactory.getDispatcherManager();
-			RequestProcessor processor = listener;
-			if (isIsolated()) {
-				processor = new isolatedCaller(listener);
-			}
-			as.register(getServiceName(), processor); 
-		}
-	}
-
-
 	public void open() throws ListenerException {
 		try {
 			// add myself to local list so that IbisLocalSenders can find me 
-			registerListener(getName(), this);
+			registerListener();
 			
-			if (!isLocal()) {
-				// add myself to global list so that other applications in this JVM (like Everest Portal) can find me
-				rebind(this);
-			}
+			// add myself to global list so that other applications in this JVM (like Everest Portal) can find me.
+			// (performed only if serviceName is not empty
+			rebind(true);
 		} catch (Exception e) {
 			throw new ListenerException("error occured while starting listener [" + getName() + "]", e);
 		}
@@ -178,10 +149,8 @@ public class JavaListener implements IPushingListener, RequestProcessor {
 
 	public void close() throws ListenerException {
 		try {
-			if (!isLocal()) {
-				// unregister from global list
-				rebind(null);
-			}
+			// unregister from global list
+			rebind(false);
 			// do not unregister from local list, leave it to handler to handle this
 			// unregisterJavaPusher(getName());		
 		}
@@ -191,13 +160,53 @@ public class JavaListener implements IPushingListener, RequestProcessor {
 	}
 
 
+	protected void rebind(boolean add) throws DispatcherException {
+		if (StringUtils.isNotEmpty(getServiceName())) {
+			DispatcherManager dm = DispatcherManagerFactory.getDispatcherManager();
+			RequestProcessor processor = add ? this : null;
+			dm.register(getServiceName(), processor); 
+		}
+	}
+
+
+
+	public String processRequest(String correlationId, String message, HashMap context) throws ListenerException {
+
+		if (log.isDebugEnabled()) {
+			log.debug("JavaListener [" + getName() + "] processing [" + correlationId + "]");
+		}
+		return handler.processRequest(this, correlationId, message, context);
+	}
+
+	public String processRequest(String message) {
+		try {
+			return handler.processRequest(this, message);
+		} 
+		catch (ListenerException e) {
+			return handler.formatException(null,null, message,e);
+		}
+	}
+
+	public String processRequestNoException(String correlationId, String message) {
+		try {
+			if (log.isDebugEnabled())
+				log.debug("JavaListener [" + getName() + "] processing [" + correlationId + "]");
+			return handler.processRequest(this, correlationId, message);
+		} 
+		catch (ListenerException e) {
+			return handler.formatException(null,correlationId, message,e);
+		}
+	}
+
+
+
 	/**
 	 * Register listener so that it can be used by a proxy
 	 * @param name
 	 * @param receiver
 	 */
-	private static void registerListener(String name, JavaListener listener) {
-		getListeners().put(name, listener);
+	private void registerListener() {
+		getListeners().put(getName(), this);
 	}
 
 
@@ -239,41 +248,6 @@ public class JavaListener implements IPushingListener, RequestProcessor {
 		return (String)rawMessage;
 	}
 
-	/**
-	 * @param message
-	 * @return result of processing
-	 */
-	public String processRequest(String message) {
-		try {
-			return handler.processRequest(this, message);
-		} 
-		catch (ListenerException e) {
-			return handler.formatException(null,null, message,e);
-		}
-	}
-
-	/**
-	 * @param correlationId
-	 * @param message
-	 * @return result of processing
-	 */
-	public String processRequestNoException(String correlationId, String message) {
-		try {
-			if (log.isDebugEnabled())
-				log.debug("JavaListener [" + getName() + "] processing [" + correlationId + "]");
-			return handler.processRequest(this, correlationId, message);
-		} 
-		catch (ListenerException e) {
-			return handler.formatException(null,correlationId, message,e);
-		}
-	}
-
-	public String processRequest(String correlationId, String message, HashMap context) throws ListenerException {
-		if (log.isDebugEnabled()) {
-			log.debug("JavaListener [" + getName() + "] processing [" + correlationId + "]");
-		}
-		return handler.processRequest(this, correlationId, message, context);
-	}
 	
 	/**
 	 * The <code>toString()</code> method retrieves its value
@@ -313,6 +287,9 @@ public class JavaListener implements IPushingListener, RequestProcessor {
 		return name;
 	}
 
+	public void setLocal(String name) {
+		throw new RuntimeException("do not set attribute 'local=true', just leave serviceName empty!");
+	}
 	
 	public void setIsolated(boolean b) {
 		isolated = b;
@@ -329,12 +306,5 @@ public class JavaListener implements IPushingListener, RequestProcessor {
 	}
 
 	
-	public void setLocal(boolean b) {
-		local = b;
-	}
-	public boolean isLocal() {
-		return local;
-	}
-
 
 }
