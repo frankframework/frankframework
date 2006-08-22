@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractPipe.java,v $
- * Revision 1.19  2006-08-21 15:21:23  europe\L190409
+ * Revision 1.20  2006-08-22 12:52:36  europe\L190409
+ * added preserveInput attribute
+ *
+ * Revision 1.19  2006/08/21 15:21:23  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * introduction of transaction attribute handling
  *
  * Revision 1.18  2006/02/20 15:42:41  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -128,7 +131,7 @@ import java.util.Hashtable;
  * @see nl.nn.adapterframework.core.PipeLineSession
  */
 public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttribute, TracingEventNumbers {
-	public static final String version="$RCSfile: AbstractPipe.java,v $ $Revision: 1.19 $ $Date: 2006-08-21 15:21:23 $";
+	public static final String version="$RCSfile: AbstractPipe.java,v $ $Revision: 1.20 $ $Date: 2006-08-22 12:52:36 $";
 	private String name;
 	protected Logger log = Logger.getLogger(this.getClass());
 	private Hashtable pipeForwards=new Hashtable();
@@ -137,6 +140,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	private long durationThreshold = -1;
 	private String getInputFromSessionKey=null;
 	private String storeResultInSessionKey=null;
+	private boolean preserveInput=false;
 	private boolean namespaceAware=XmlUtils.isNamespaceAwareByDefault();
 	private int transactionAttribute=-1;
  
@@ -328,6 +332,13 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	}
 	public String getStoreResultInSessionKey() {
 		return storeResultInSessionKey;
+	}
+
+	public void setPreserveInput(boolean preserveInput) {
+		this.preserveInput = preserveInput;
+	}
+	public boolean isPreserveInput() {
+		return preserveInput;
 	}
 
 	

@@ -1,6 +1,9 @@
 /*
  * $Log: IExtendedPipe.java,v $
- * Revision 1.1  2005-09-08 15:52:18  europe\L190409
+ * Revision 1.2  2006-08-22 12:51:00  europe\L190409
+ * added preserveInput attribute
+ *
+ * Revision 1.1  2005/09/08 15:52:18  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * moved extra functionality to IExtendedPipe
  *
  */
@@ -38,5 +41,8 @@ public interface IExtendedPipe extends IPipe {
 
 	public void setStoreResultInSessionKey(String string);
 	public String getStoreResultInSessionKey();
+
+	public void setPreserveInput(boolean preserveInput);
+	public boolean isPreserveInput();
 
 }
