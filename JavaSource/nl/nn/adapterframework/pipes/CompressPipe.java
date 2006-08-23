@@ -1,6 +1,9 @@
 /*
  * $Log: CompressPipe.java,v $
- * Revision 1.12  2006-08-22 12:47:12  europe\L190409
+ * Revision 1.1  2006-08-23 11:35:16  europe\L190409
+ * moved batch-pipes to pipes-package
+ *
+ * Revision 1.12  2006/08/22 12:47:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added exceptionForward
  *
  * Revision 1.11  2006/08/21 15:03:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -29,7 +32,7 @@
  * Pipe for compression (Zip or GZip)
  *
  */
-package nl.nn.adapterframework.batch;
+package nl.nn.adapterframework.pipes;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -50,7 +53,6 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.errormessageformatters.ErrorMessageFormatter;
-import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.util.FileUtils;
 
 /**

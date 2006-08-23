@@ -1,6 +1,9 @@
 /*
  * $Log: MoveFilePipe.java,v $
- * Revision 1.6  2006-08-22 12:48:57  europe\L190409
+ * Revision 1.1  2006-08-23 11:35:16  europe\L190409
+ * moved batch-pipes to pipes-package
+ *
+ * Revision 1.6  2006/08/22 12:48:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added filename-attribute
  *
  * Revision 1.5  2006/05/19 09:28:38  Peter Eijgermans <peter.eijgermans@ibissource.org>
@@ -18,7 +21,7 @@
  * BatchFileTransformerPipe
  *
  */
-package nl.nn.adapterframework.batch;
+package nl.nn.adapterframework.pipes;
 
 import java.io.File;
 
@@ -26,7 +29,6 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.util.FileUtils;
 
 import org.apache.commons.lang.StringUtils;
@@ -50,7 +52,7 @@ import org.apache.commons.lang.StringUtils;
  * @author: Jaco de Groot (***@dynasol.nl)
  */
 public class MoveFilePipe extends FixedForwardPipe {
-	public static final String version = "$RCSfile: MoveFilePipe.java,v $  $Revision: 1.6 $ $Date: 2006-08-22 12:48:57 $";
+	public static final String version = "$RCSfile: MoveFilePipe.java,v $  $Revision: 1.1 $ $Date: 2006-08-23 11:35:16 $";
 
 	private String filename;
 	private String move2dir;
