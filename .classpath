@@ -31,5 +31,8 @@
     <classpathentry kind="lib" path="ifsajmsXA-22.10.055(beta).jar"/>
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/commons-net-1.4.1.jar"/>
     <classpathentry kind="lib" path="mett-server.jar"/>
+    <classpathentry kind="var" path="WAS_50_PLUGINDIR/lib/wssec.jar"/>
+    <classpathentry kind="var" path="WAS_50_PLUGINDIR/lib/j2ee.jar"/>
+    <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/IbisServiceDispatcher.jar"/>
     <classpathentry kind="output" path="bin"/>
 </classpath>
