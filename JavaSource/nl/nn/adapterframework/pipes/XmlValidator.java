@@ -1,6 +1,9 @@
 /*
  * $Log: XmlValidator.java,v $
- * Revision 1.16  2006-01-05 14:36:32  europe\L190409
+ * Revision 1.17  2006-08-23 14:01:40  europe\L190409
+ * added root-attribute
+ *
+ * Revision 1.16  2006/01/05 14:36:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.15  2005/12/29 15:19:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -47,6 +50,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.RootElementCheckingHandler;
 import nl.nn.adapterframework.util.Variant;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -98,6 +102,7 @@ import java.io.IOException;
  * <tr><td>{@link #setFullSchemaChecking(boolean) fullSchemaChecking}</td><td>Perform addional memory intensive checks</td><td><code>false</code></td></tr>
  * <tr><td>{@link #setThrowException(boolean) throwException}</td><td>Should the XmlValidator throw a PipeRunException on a validation error (if not, a forward with name "failure" should be defined.</td><td><code>false</code></td></tr>
  * <tr><td>{@link #setReasonSessionKey(String) reasonSessionKey}</td><td>if set: key of session variable to store reasons of mis-validation in</td><td>none</td></tr>
+ * <tr><td>{@link #setRoot(String) root}</td><td>name of the root element</td><td>&nbsp;</td></tr>
  * </table>
  * <p><b>Exits:</b>
  * <table border="1">
@@ -112,7 +117,7 @@ import java.io.IOException;
 
  */
 public class XmlValidator extends FixedForwardPipe {
-	public static final String version="$RCSfile: XmlValidator.java,v $ $Revision: 1.16 $ $Date: 2006-01-05 14:36:32 $";
+	public static final String version="$RCSfile: XmlValidator.java,v $ $Revision: 1.17 $ $Date: 2006-08-23 14:01:40 $";
 
     private String schemaLocation = null;
     private String noNamespaceSchemaLocation = null;
@@ -120,6 +125,7 @@ public class XmlValidator extends FixedForwardPipe {
     private boolean throwException = false;
     private boolean fullSchemaChecking = false;
 	private String reasonSessionKey = null;
+	private String root = null;
 
     public class XmlErrorHandler implements ErrorHandler {
         private boolean errorOccured = false;
@@ -303,8 +309,12 @@ public class XmlValidator extends FixedForwardPipe {
             log.debug("Give noNamespaceSchemaLocation to parser: " + noNamespaceSchemaLocation);
             parser.setProperty("http://apache.org/xml/properties/schema/external-noNamespaceSchemaLocation", noNamespaceSchemaLocation);
         }
-        if (isFullSchemaChecking())
+        if (isFullSchemaChecking()) {
             parser.setFeature("http://apache.org/xml/features/validation/schema-full-checking", true);
+        }
+        if (StringUtils.isNotEmpty(getRoot())) {    
+        	parser.setContentHandler(new RootElementCheckingHandler(getRoot()));
+        }
         return parser;
     }
     
@@ -409,6 +419,13 @@ public class XmlValidator extends FixedForwardPipe {
 	}
 	public String getReasonSessionKey() {
 		return reasonSessionKey;
+	}
+
+	public void setRoot(String root) {
+		this.root = root;
+	}
+	public String getRoot() {
+		return root;
 	}
 
 }
