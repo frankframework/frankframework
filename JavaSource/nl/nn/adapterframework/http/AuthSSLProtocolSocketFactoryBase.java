@@ -1,6 +1,9 @@
 /*
  * $Log: AuthSSLProtocolSocketFactoryBase.java,v $
- * Revision 1.7  2005-12-19 16:43:50  europe\L190409
+ * Revision 1.8  2006-08-23 11:23:52  europe\L190409
+ * more log-info
+ *
+ * Revision 1.7  2005/12/19 16:43:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added static method createSocketFactory
  * added createServerSocket-methods
  *
@@ -295,22 +298,22 @@ public abstract class AuthSSLProtocolSocketFactoryBase implements SocketFactory,
         if (url == null) {
             throw new IllegalArgumentException("Keystore url for "+prefix+" may not be null");
         }
-        log.debug("Initializing keystore for "+prefix+" from "+url.toString());
+        log.info("Initializing keystore for "+prefix+" from "+url.toString());
         KeyStore keystore  = KeyStore.getInstance(keyStoreType);
         keystore.load(url.openStream(), password != null ? password.toCharArray(): null);
-		if (log.isDebugEnabled()) {
+		if (log.isInfoEnabled()) {
 			Enumeration aliases = keystore.aliases();
 			while (aliases.hasMoreElements()) {
 				String alias = (String)aliases.nextElement();
-				log.debug(prefix+" '" + alias + "':");
+				log.info(prefix+" '" + alias + "':");
 				Certificate trustedcert = keystore.getCertificate(alias);
 				if (trustedcert != null && trustedcert instanceof X509Certificate) {
 					X509Certificate cert = (X509Certificate)trustedcert;
-					log.debug("  Subject DN: " + cert.getSubjectDN());
-					log.debug("  Signature Algorithm: " + cert.getSigAlgName());
-					log.debug("  Valid from: " + cert.getNotBefore() );
-					log.debug("  Valid until: " + cert.getNotAfter());
-					log.debug("  Issuer: " + cert.getIssuerDN());
+					log.info("  Subject DN: " + cert.getSubjectDN());
+					log.info("  Signature Algorithm: " + cert.getSigAlgName());
+					log.info("  Valid from: " + cert.getNotBefore() );
+					log.info("  Valid until: " + cert.getNotAfter());
+					log.info("  Issuer: " + cert.getIssuerDN());
 				}
 			}
 		}
@@ -356,17 +359,17 @@ public abstract class AuthSSLProtocolSocketFactoryBase implements SocketFactory,
 
 		//might be useful to print out all certificates we receive from the
 		//server, in case one has to debug a problem with the installed certs.
-		if (log.isDebugEnabled()) {
-			log.debug("Server certificate chain:");
+		if (log.isInfoEnabled()) {
+			log.info("Server certificate chain:");
 			for (int i = 0; i < certs.length; i++) {
-				log.debug("X509Certificate[" + i + "]=" + certs[i]);
+				log.info("X509Certificate[" + i + "]=" + certs[i]);
 			}
 		}
 		//get the common name from the first cert
 		String cn = getCN(dn);
 		if (hostname.equalsIgnoreCase(cn)) {
-			if (log.isDebugEnabled()) {
-				log.debug("Target hostname valid: " + cn);
+			if (log.isInfoEnabled()) {
+				log.info("Target hostname valid: " + cn);
 			}
 		} else {
 			throw new SSLPeerUnverifiedException(
