@@ -1,6 +1,9 @@
 /*
  * $Log: DirectoryListener.java,v $
- * Revision 1.6  2006-08-22 12:48:21  europe\L190409
+ * Revision 1.1  2006-08-23 11:35:56  europe\L190409
+ * moved DirectoryListener from batch to receivers package
+ *
+ * Revision 1.6  2006/08/22 12:48:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added overwrite-attribute
  *
  * Revision 1.5  2006/05/19 09:28:37  Peter Eijgermans <peter.eijgermans@ibissource.org>
@@ -18,7 +21,7 @@
  * BatchFileTransformerPipe
  *
  */
-package nl.nn.adapterframework.batch;
+package nl.nn.adapterframework.receivers;
 
 import java.io.File;
 import java.io.IOException;
@@ -62,7 +65,7 @@ import org.apache.log4j.Logger;
  * @author  John Dekker
  */
 public class DirectoryListener implements IPullingListener, INamedObject {
-	public static final String version = "$RCSfile: DirectoryListener.java,v $  $Revision: 1.6 $ $Date: 2006-08-22 12:48:21 $";
+	public static final String version = "$RCSfile: DirectoryListener.java,v $  $Revision: 1.1 $ $Date: 2006-08-23 11:35:56 $";
 
 	protected Logger log = Logger.getLogger(this.getClass());
 	private String name;
