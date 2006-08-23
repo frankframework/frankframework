@@ -1,6 +1,9 @@
 /*
  * $Log: HttpSender.java,v $
- * Revision 1.25  2006-08-21 07:56:41  europe\L190409
+ * Revision 1.26  2006-08-23 11:24:39  europe\L190409
+ * retry when method fails
+ *
+ * Revision 1.25  2006/08/21 07:56:41  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * return of the IbisMultiThreadedConnectionManager
  *
  * Revision 1.24  2006/07/17 09:02:46  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -206,7 +209,7 @@ import nl.nn.adapterframework.util.CredentialFactory;
  * @since 4.2c
  */
 public class HttpSender extends SenderWithParametersBase implements HasPhysicalDestination {
-	public static final String version = "$RCSfile: HttpSender.java,v $ $Revision: 1.25 $ $Date: 2006-08-21 07:56:41 $";
+	public static final String version = "$RCSfile: HttpSender.java,v $ $Revision: 1.26 $ $Date: 2006-08-23 11:24:39 $";
 
 	private String url;
 	private String methodType="GET"; // GET or POST
@@ -332,7 +335,7 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 				}
 			}
 
-			log.debug(getLogPrefix()+"created uri: scheme=["+uri.getScheme()+"] host=["+uri.getHost()+"] port=["+port+"] path=["+uri.getPath()+"]");
+			log.info(getLogPrefix()+"created uri: scheme=["+uri.getScheme()+"] host=["+uri.getHost()+"] port=["+port+"] path=["+uri.getPath()+"]");
 
 			URL certificateUrl=null;
 			URL truststoreUrl=null;
@@ -342,14 +345,14 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 				if (certificateUrl==null) {
 					throw new ConfigurationException(getLogPrefix()+"cannot find URL for certificate resource ["+getCertificate()+"]");
 				}
-				log.debug(getLogPrefix()+"resolved certificate-URL to ["+certificateUrl.toString()+"]");
+				log.info(getLogPrefix()+"resolved certificate-URL to ["+certificateUrl.toString()+"]");
 			}
 			if (!StringUtils.isEmpty(getTruststore())) {
 				truststoreUrl = ClassUtils.getResourceURL(this, getTruststore());
 				if (truststoreUrl==null) {
 					throw new ConfigurationException(getLogPrefix()+"cannot find URL for truststore resource ["+getTruststore()+"]");
 				}
-				log.debug(getLogPrefix()+"resolved truststore-URL to ["+truststoreUrl.toString()+"]");
+				log.info(getLogPrefix()+"resolved truststore-URL to ["+truststoreUrl.toString()+"]");
 			}
 
 			HostConfiguration hostconfiguration = httpclient.getHostConfiguration();		           
@@ -380,7 +383,7 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 			} else {
 				hostconfiguration.setHost(uri.getHost(),port,uri.getScheme());
 			}
-			log.debug(getLogPrefix()+"configured httpclient for host ["+hostconfiguration.getHostURL()+"]");
+			log.info(getLogPrefix()+"configured httpclient for host ["+hostconfiguration.getHostURL()+"]");
 			
 			CredentialFactory cf = new CredentialFactory(getAuthAlias(), getUserName(), getPassword());
 			if (!StringUtils.isEmpty(cf.getUsername())) {
@@ -506,9 +509,13 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 		HttpMethod httpmethod=getMethod(message, pvl);
 		httpmethod.setFollowRedirects(isFollowRedirects());
 		
+		String result = null;
+		int statusCode = -1;
+		try {
+			for(int attempt=0; statusCode==-1 && attempt<3; attempt++) {
 		try {
 			log.debug(getLogPrefix()+"executing method");
-			httpclient.executeMethod(httpmethod);
+					statusCode = httpclient.executeMethod(httpmethod);
 			log.debug(getLogPrefix()+"executed method");
 			if (log.isDebugEnabled()) {
 				StatusLine statusline = httpmethod.getStatusLine();
@@ -518,18 +525,34 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 					log.debug(getLogPrefix()+"no statusline found");
 				}
 			}
-			String result=extractResult(httpmethod);	
+					result = extractResult(httpmethod);	
 			if (log.isDebugEnabled()) {
 				log.debug(getLogPrefix()+"retrieved result ["+result+"]");
 			}
-			return result;
 		} catch (HttpException e) {
-			throw new SenderException(e);
+					Throwable throwable = e.getCause();
+					String cause = null;
+					if (throwable!=null) {
+						cause = throwable.toString();
+					}
+					String msg = null;
+					if (e!=null) {
+						msg = e.getMessage();
+					}
+					log.warn("httpException with message [" + msg + "] and cause [" + cause + "] occurred at attempt [" + attempt + "]");
 		} catch (IOException e) {
 			throw new SenderException(e);
+				}
+			}
 		} finally {
 			httpmethod.releaseConnection();
 		}
+
+		if (statusCode==-1){
+			throw new SenderException("Failed to recover from exception");
+		}
+
+		return result;	
 	}
 
 	public String sendMessage(String correlationID, String message) throws SenderException, TimeOutException {
