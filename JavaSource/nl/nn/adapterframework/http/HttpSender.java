@@ -1,6 +1,9 @@
 /*
  * $Log: HttpSender.java,v $
- * Revision 1.26  2006-08-23 11:24:39  europe\L190409
+ * Revision 1.27  2006-08-24 11:01:25  europe\L190409
+ * retries instead of attempts
+ *
+ * Revision 1.26  2006/08/23 11:24:39  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * retry when method fails
  *
  * Revision 1.25  2006/08/21 07:56:41  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -209,7 +212,7 @@ import nl.nn.adapterframework.util.CredentialFactory;
  * @since 4.2c
  */
 public class HttpSender extends SenderWithParametersBase implements HasPhysicalDestination {
-	public static final String version = "$RCSfile: HttpSender.java,v $ $Revision: 1.26 $ $Date: 2006-08-23 11:24:39 $";
+	public static final String version = "$RCSfile: HttpSender.java,v $ $Revision: 1.27 $ $Date: 2006-08-24 11:01:25 $";
 
 	private String url;
 	private String methodType="GET"; // GET or POST
@@ -511,8 +514,9 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 		
 		String result = null;
 		int statusCode = -1;
+		int count=5;
 		try {
-			for(int attempt=0; statusCode==-1 && attempt<3; attempt++) {
+			while (count-->0 && statusCode==-1) {
 		try {
 			log.debug(getLogPrefix()+"executing method");
 					statusCode = httpclient.executeMethod(httpmethod);
@@ -539,7 +543,7 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 					if (e!=null) {
 						msg = e.getMessage();
 					}
-					log.warn("httpException with message [" + msg + "] and cause [" + cause + "] occurred at attempt [" + attempt + "]");
+					log.warn("httpException with message [" + msg + "] and cause [" + cause + "], retries left [" + count + "]");
 		} catch (IOException e) {
 			throw new SenderException(e);
 				}
