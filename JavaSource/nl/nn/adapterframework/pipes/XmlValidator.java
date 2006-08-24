@@ -1,6 +1,10 @@
 /*
  * $Log: XmlValidator.java,v $
- * Revision 1.17  2006-08-23 14:01:40  europe\L190409
+ * Revision 1.18  2006-08-24 09:24:52  europe\L190409
+ * separated finding wrong root from non-wellformedness;
+ * used RootElementFindingHandler in XmlUtils.isWellFormed()
+ *
+ * Revision 1.17  2006/08/23 14:01:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added root-attribute
  *
  * Revision 1.16  2006/01/05 14:36:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -50,7 +54,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.util.RootElementCheckingHandler;
+import nl.nn.adapterframework.util.RootElementFindingHandler;
 import nl.nn.adapterframework.util.Variant;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -110,6 +114,7 @@ import java.io.IOException;
  * <tr><td>"success"</td><td>default</td></tr>
  * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified, the value for "success"</td></tr>
  * <tr><td>"parserError"</td><td>a parser exception occurred, probably caused by non-well-formed XML</td></tr>
+ * <tr><td>"illegalRoot"</td><td>if the required root element is not found. If not specified, "failure" is used in such a case</td></tr>
  * <tr><td>"failure"</td><td>if a validation error occurred</td></tr>
  * </table>
  * @version Id
@@ -117,7 +122,7 @@ import java.io.IOException;
 
  */
 public class XmlValidator extends FixedForwardPipe {
-	public static final String version="$RCSfile: XmlValidator.java,v $ $Revision: 1.17 $ $Date: 2006-08-23 14:01:40 $";
+	public static final String version="$RCSfile: XmlValidator.java,v $ $Revision: 1.18 $ $Date: 2006-08-24 09:24:52 $";
 
     private String schemaLocation = null;
     private String noNamespaceSchemaLocation = null;
@@ -260,7 +265,7 @@ public class XmlValidator extends FixedForwardPipe {
 
         try {
             parser.parse(is);
-        } catch (IOException e) {
+         } catch (IOException e) {
             throw new PipeRunException(this, getLogPrefix(session)+ "IoException occured on parsing the document", e);
         } catch (SAXException e) {
         	PipeForward error = findForward("parserError");
@@ -273,6 +278,26 @@ public class XmlValidator extends FixedForwardPipe {
         	}
         }
 
+		boolean illegalRoot = StringUtils.isNotEmpty(getRoot()) && 
+							!((RootElementFindingHandler)parser.getContentHandler()).getRootElementName().equals(getRoot());
+		if (illegalRoot) {
+			String reason = getLogPrefix(session) + "got xml with root element ["+((RootElementFindingHandler)parser.getContentHandler()).getRootElementName()+"] instead of ["+getRoot()+"]"; 
+			if (isThrowException()) {
+				throw new PipeRunException(this, reason);
+			} else {
+				log.warn(reason);
+				if (StringUtils.isNotEmpty(getReasonSessionKey())) {
+					log.debug(getLogPrefix(session) + "storing reasons under sessionKey ["+getReasonSessionKey()+"]");
+					session.put(getReasonSessionKey(),reason);
+				}
+				
+				PipeForward forward = findForward("illegalRoot");
+				if (forward==null) {
+					forward = findForward("failure");
+				}
+				return new PipeRunResult(forward, input);
+			}
+		} 
 		boolean isValid = !(xeh.hasErrorOccured());
 		
 		if (!isValid) { 
@@ -313,7 +338,7 @@ public class XmlValidator extends FixedForwardPipe {
             parser.setFeature("http://apache.org/xml/features/validation/schema-full-checking", true);
         }
         if (StringUtils.isNotEmpty(getRoot())) {    
-        	parser.setContentHandler(new RootElementCheckingHandler(getRoot()));
+        	parser.setContentHandler(new RootElementFindingHandler());
         }
         return parser;
     }

@@ -1,6 +1,10 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.36  2006-08-22 12:57:08  europe\L190409
+ * Revision 1.37  2006-08-24 09:24:50  europe\L190409
+ * separated finding wrong root from non-wellformedness;
+ * used RootElementFindingHandler in XmlUtils.isWellFormed()
+ *
+ * Revision 1.36  2006/08/22 12:57:08  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * allow use of parameters in xpathExpression
  *
  * Revision 1.35  2006/07/17 07:51:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -170,7 +174,7 @@ import java.util.StringTokenizer;
  * @author Johan Verrips IOS
  */
 public class XmlUtils {
-	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.36 $ $Date: 2006-08-22 12:57:08 $";
+	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.37 $ $Date: 2006-08-24 09:24:50 $";
 	static Logger log = Logger.getLogger(XmlUtils.class);
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
@@ -961,22 +965,7 @@ public class XmlUtils {
 		Variant in = new Variant(input);
 		InputSource is = in.asXmlInputSource();
 
-		DefaultHandler xmlHandler = new DefaultHandler() {
-			private boolean firstElement = true;
-			public String firstElementName = null;
-
-			public void startElement(String namespaceURI, String lName, String qName, Attributes attrs)
-				throws SAXException {
-				if (firstElement) {
-					firstElementName = lName;
-					firstElement = false;
-				}
-			}
-
-			public String toString() {
-				return firstElementName;
-			}
-		};
+		RootElementFindingHandler xmlHandler = new RootElementFindingHandler();
 		
 		SAXParserFactory factory = SAXParserFactory.newInstance();
 		factory.setNamespaceAware(true);
@@ -988,7 +977,7 @@ public class XmlUtils {
 		}
 
 		if (root != null) {
-			String tagRoot = xmlHandler.toString();
+			String tagRoot = xmlHandler.getRootElementName();
 			if (!tagRoot.equals(root))
 				return false;
 		}
