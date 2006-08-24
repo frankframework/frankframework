@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractPipe.java,v $
- * Revision 1.20  2006-08-22 12:52:36  europe\L190409
+ * Revision 1.21  2006-08-24 07:12:42  europe\L190409
+ * documented METT tracing event numbers
+ *
+ * Revision 1.20  2006/08/22 12:52:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added preserveInput attribute
  *
  * Revision 1.19  2006/08/21 15:21:23  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -123,6 +126,9 @@ import java.util.Hashtable;
  *   <tr><td colspan="1" rowspan="2">Never</td>       <td>none</td><td>none</td></tr>
  * 											      <tr><td>T1</td>  <td>error</td></tr>
  *  </table></td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setBeforeEvent(int) beforeEvent}</td>      <td>METT eventnumber, fired just before a message is processed by this Pipe</td><td>-1 (disabled)</td></tr>
+ * <tr><td>{@link #setAfterEvent(int) afterEvent}</td>        <td>METT eventnumber, fired just after message processing by this Pipe is finished</td><td>-1 (disabled)</td></tr>
+ * <tr><td>{@link #setExceptionEvent(int) exceptionEvent}</td><td>METT eventnumber, fired when message processing by this Pipe resulted in an exception</td><td>-1 (disabled)</td></tr>
  * </table>
  * </p>
  * @version Id
@@ -131,7 +137,7 @@ import java.util.Hashtable;
  * @see nl.nn.adapterframework.core.PipeLineSession
  */
 public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttribute, TracingEventNumbers {
-	public static final String version="$RCSfile: AbstractPipe.java,v $ $Revision: 1.20 $ $Date: 2006-08-22 12:52:36 $";
+	public static final String version="$RCSfile: AbstractPipe.java,v $ $Revision: 1.21 $ $Date: 2006-08-24 07:12:42 $";
 	private String name;
 	protected Logger log = Logger.getLogger(this.getClass());
 	private Hashtable pipeForwards=new Hashtable();
