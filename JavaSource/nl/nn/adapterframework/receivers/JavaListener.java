@@ -1,6 +1,9 @@
 /*
  * $Log: JavaListener.java,v $
- * Revision 1.16  2006-08-22 06:55:12  europe\L190409
+ * Revision 1.17  2006-08-24 12:23:13  europe\L190409
+ * call rebind() only if ServiceName not empty
+ *
+ * Revision 1.16  2006/08/22 06:55:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * simplified implementation
  *
  * Revision 1.15  2006/07/17 09:08:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -106,7 +109,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class JavaListener implements IPushingListener, RequestProcessor {
-	public static final String version="$RCSfile: JavaListener.java,v $ $Revision: 1.16 $ $Date: 2006-08-22 06:55:12 $";
+	public static final String version="$RCSfile: JavaListener.java,v $ $Revision: 1.17 $ $Date: 2006-08-24 12:23:13 $";
 	protected Logger log = Logger.getLogger(this.getClass());
 	
 	private String name;
@@ -141,7 +144,9 @@ public class JavaListener implements IPushingListener, RequestProcessor {
 			
 			// add myself to global list so that other applications in this JVM (like Everest Portal) can find me.
 			// (performed only if serviceName is not empty
-			rebind(true);
+			if (StringUtils.isNotEmpty(getServiceName())) {
+				rebind(true);
+			}
 		} catch (Exception e) {
 			throw new ListenerException("error occured while starting listener [" + getName() + "]", e);
 		}
@@ -150,7 +155,9 @@ public class JavaListener implements IPushingListener, RequestProcessor {
 	public void close() throws ListenerException {
 		try {
 			// unregister from global list
-			rebind(false);
+			if (StringUtils.isNotEmpty(getServiceName())) {
+				rebind(false);
+			}
 			// do not unregister from local list, leave it to handler to handle this
 			// unregisterJavaPusher(getName());		
 		}
