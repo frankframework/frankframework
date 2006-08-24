@@ -1,6 +1,9 @@
 /*
  * $Log: CleanupOldFilesPipe.java,v $
- * Revision 1.5  2006-05-19 09:28:36  europe\m00i745
+ * Revision 1.1  2006-08-24 07:10:36  europe\L190409
+ * moved CleanupOldFilesPipe to pipes-package
+ *
+ * Revision 1.5  2006/05/19 09:28:36  Peter Eijgermans <peter.eijgermans@ibissource.org>
  * Restore java files from batch package after unwanted deletion.
  *
  * Revision 1.3  2005/12/20 09:57:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -13,7 +16,7 @@
  * Initial version
  *
  */
-package nl.nn.adapterframework.batch;
+package nl.nn.adapterframework.pipes;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -24,7 +27,6 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.util.FileUtils;
 
 import org.apache.commons.lang.StringUtils;
@@ -48,7 +50,7 @@ import org.apache.commons.lang.StringUtils;
  * @since:  4.2
  */
 public class CleanupOldFilesPipe extends FixedForwardPipe {
-	public static final String version = "$RCSfile: CleanupOldFilesPipe.java,v $  $Revision: 1.5 $ $Date: 2006-05-19 09:28:36 $";
+	public static final String version = "$RCSfile: CleanupOldFilesPipe.java,v $  $Revision: 1.1 $ $Date: 2006-08-24 07:10:36 $";
 	
 	private String filePattern;
 	private boolean subdirectories;
