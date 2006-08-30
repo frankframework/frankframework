@@ -1,6 +1,9 @@
 /*
  * $Log: PutSystemDateInSession.java,v $
- * Revision 1.4  2006-08-22 12:55:06  europe\L190409
+ * Revision 1.5  2006-08-30 12:33:15  europe\L190409
+ * set timezone only when set
+ *
+ * Revision 1.4  2006/08/22 12:55:06  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added timeZone and sleepWhenEqualToPrevious attributes
  *
  * Revision 1.3  2005/07/28 07:40:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -46,13 +49,13 @@ import java.text.SimpleDateFormat;
  * @since   4.2c
  */
 public class PutSystemDateInSession extends FixedForwardPipe {
-	public static final String version="$RCSfile: PutSystemDateInSession.java,v $  $Revision: 1.4 $ $Date: 2006-08-22 12:55:06 $";
+	public static final String version="$RCSfile: PutSystemDateInSession.java,v $  $Revision: 1.5 $ $Date: 2006-08-30 12:33:15 $";
 
 	private String sessionKey="systemDate";
 	private String dateFormat=DateUtils.fullIsoFormat;
 	private SimpleDateFormat formatter;
 	private long sleepWhenEqualToPrevious = -1;
-	private TimeZone timeZone;
+	private TimeZone timeZone=null;
 	private String previousFormattedDate;
 
 	/**
@@ -81,7 +84,9 @@ public class PutSystemDateInSession extends FixedForwardPipe {
 		}
 
 		formatter = new SimpleDateFormat(getDateFormat());
-		formatter.setTimeZone(timeZone);
+		if (timeZone!=null) {
+			formatter.setTimeZone(timeZone);
+		}
 
 	}
 
