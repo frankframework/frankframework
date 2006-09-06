@@ -1,6 +1,9 @@
 /*
  * $Log: TracingUtil.java,v $
- * Revision 1.1  2006-02-20 15:42:40  europe\L190409
+ * Revision 1.2  2006-09-06 16:03:03  europe\L190409
+ * added startTracing() and stopTracing()
+ *
+ * Revision 1.1  2006/02/20 15:42:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * moved METT-support to single entry point for tracing
  *
  */
@@ -9,6 +12,7 @@ package nl.nn.adapterframework.util;
 import org.apache.log4j.Logger;
 
 import com.ing.coins.mett.application.MonitorAccessor;
+import com.ing.coins.mett.application.exceptions.MonitorStartFailedException;
 
 
 /**
@@ -20,6 +24,18 @@ import com.ing.coins.mett.application.MonitorAccessor;
  */
 public class TracingUtil {
 	private static Logger log = Logger.getLogger(TracingUtil.class);
+	
+	public static void startTracing(String serverConfigFile) throws TracingException {
+		try {
+			MonitorAccessor.start(serverConfigFile);
+		} catch (MonitorStartFailedException e) {
+			throw new TracingException("Could not start tracing from config file ["+serverConfigFile+"]", e);
+		}
+	}
+
+	public static void stopTracing() {
+		MonitorAccessor.stop();
+	}
 	
 	public static void beforeEvent(Object o) {
 		if (o instanceof TracingEventNumbers) {
