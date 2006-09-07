@@ -1,6 +1,9 @@
 /*
  * $Log: StatisticsKeeper.java,v $
- * Revision 1.9  2006-09-07 08:38:21  europe\L190409
+ * Revision 1.10  2006-09-07 08:39:12  europe\L190409
+ * corrected version String
+ *
+ * Revision 1.9  2006/09/07 08:38:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added dumpToXml()
  *
  * Revision 1.8  2005/03/10 09:52:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -29,7 +32,7 @@ import java.util.StringTokenizer;
  * @author Johan Verrips / Gerrit van Brakel
  */
 public class StatisticsKeeper {
-	public static final String version="$Id: StatisticsKeeper.java,v 1.9 2006-09-07 08:38:21 europe\L190409 Exp $";
+	public static final String version="$RCSfile: StatisticsKeeper.java,v $ $Revision: 1.10 $ $Date: 2006-09-07 08:39:12 $";
 	
 	private static final boolean calculatePercentiles=true;
 	
