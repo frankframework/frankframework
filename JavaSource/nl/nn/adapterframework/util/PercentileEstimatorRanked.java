@@ -1,6 +1,9 @@
 /*
  * $Log: PercentileEstimatorRanked.java,v $
- * Revision 1.2  2005-04-06 13:08:55  L190409
+ * Revision 1.3  2006-09-07 08:37:51  europe\L190409
+ * added sample return facility
+ *
+ * Revision 1.2  2005/04/06 13:08:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved by using extrapolation for extreme percentiles
  *
  * Revision 1.1  2005/03/10 09:52:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -173,5 +176,37 @@ public class PercentileEstimatorRanked extends PercentileEstimatorBase {
 		}
 		System.out.println(" max="+max);
     }	
+
+
+
+	public int getSampleCount(long count, long min, long max) {
+		return count<3 ? (int)count : local_count+2;
+	}
+
+	public XmlBuilder getSample(int index, long count, long min, long max) {
+		long value;
+		long rank;
+		
+		if (index<=0) {
+			value=min;
+			rank=1;			
+		} else {
+			if (index>=local_count+2) {
+				value=max;
+				rank=count;			
+			} else {
+				value=values[index-1];
+				rank=ranks[index-1];
+			}
+		}
+
+		XmlBuilder sample = new XmlBuilder("sample");
+		sample.addAttribute("value",""+value);
+		sample.addAttribute("rank",""+rank);
+		sample.addAttribute("percentile",""+((100*rank)-50)/count);
+		
+		return sample;
+	}
+
     	
 }
