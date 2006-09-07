@@ -1,6 +1,9 @@
 /*
  * $Log: StatisticsKeeper.java,v $
- * Revision 1.8  2005-03-10 09:52:16  L190409
+ * Revision 1.9  2006-09-07 08:38:21  europe\L190409
+ * added dumpToXml()
+ *
+ * Revision 1.8  2005/03/10 09:52:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * reworked percentile estimation
  *
  * Revision 1.7  2005/02/17 09:55:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -15,6 +18,7 @@
  */
 package nl.nn.adapterframework.util;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 
@@ -25,7 +29,7 @@ import java.util.StringTokenizer;
  * @author Johan Verrips / Gerrit van Brakel
  */
 public class StatisticsKeeper {
-	public static final String version="$Id: StatisticsKeeper.java,v 1.8 2005-03-10 09:52:16 L190409 Exp $";
+	public static final String version="$Id: StatisticsKeeper.java,v 1.9 2006-09-07 08:38:21 europe\L190409 Exp $";
 	
 	private static final boolean calculatePercentiles=true;
 	
@@ -204,8 +208,7 @@ public class StatisticsKeeper {
 				return ITEM_TYPE_TIME;
 	    }
     }
-    public Object getItemValue(int index)
-    {
+    public Object getItemValue(int index) {
 	    switch (index) {
 		    case 0: return new Long(getCount());
 		    case 1: if (getCount() == 0) return null; else return new Long(getMin());
@@ -228,6 +231,56 @@ public class StatisticsKeeper {
 				throw new ArrayIndexOutOfBoundsException("StatisticsKeeper.getItemValue() item index too high: "+index);
 	    }
     }
+
+	public String getItemValueFormated(int index) {
+		Object item = getItemValue(index);
+		if (item==null) {
+			return "-";
+		} else {
+			switch (getItemType(index)) {
+				case StatisticsKeeper.ITEM_TYPE_INTEGER: 
+					return ""+ (Long)item;
+				case StatisticsKeeper.ITEM_TYPE_TIME: 
+					DecimalFormat df=new DecimalFormat(DateUtils.FORMAT_MILLISECONDS);
+					return df.format(item);
+				case StatisticsKeeper.ITEM_TYPE_FRACTION:
+					DecimalFormat pf=new DecimalFormat("##0.0");
+					return ""+pf.format(((Double)item).doubleValue()*100);
+				default:
+					return item.toString();
+			}
+		}
+	}
+    
+    public XmlBuilder dumpToXml() {
+		XmlBuilder result = new XmlBuilder("StatisticsKeeper");
+		XmlBuilder items = new XmlBuilder("items");
+		result.addSubElement(items);
+		for (int i=0;i<getItemCount();i++) {
+			XmlBuilder item = new XmlBuilder("item");
+			items.addSubElement(item);
+			item.addAttribute("index",""+i);
+			item.addAttribute("name",XmlUtils.encodeChars(getItemName(i)));
+			item.addAttribute("type",""+getItemType(i));
+			item.addAttribute("value",getItemValueFormated(i));
+		}
+		XmlBuilder item = new XmlBuilder("item");
+		items.addSubElement(item);
+		item.addAttribute("index","-1");
+		item.addAttribute("name","sumofsquares");
+		item.addAttribute("value",""+totalSquare);
+
+		XmlBuilder samples = new XmlBuilder("samples");
+		result.addSubElement(samples);
+		for (int i=0;i<pest.getSampleCount(getCount(),getMin(),getMax());i++) {
+			XmlBuilder sample = pest.getSample(i,getCount(),getMin(),getMax());
+			samples.addSubElement(sample);
+		}
+    	return result;
+    }
+    
+    
+    
     public long getFirst() {
 	    return first;
     }
