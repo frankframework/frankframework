@@ -1,6 +1,9 @@
 /*
  * $Log: Adapter.java,v $
- * Revision 1.23  2006-08-22 12:50:17  europe\L190409
+ * Revision 1.24  2006-09-07 08:35:50  europe\L190409
+ * added requestReplyLogging
+ *
+ * Revision 1.23  2006/08/22 12:50:17  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * moved code for userTransaction to JtaUtil
  *
  * Revision 1.22  2006/02/09 07:55:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -117,6 +120,7 @@ import javax.transaction.UserTransaction;
  * <tr><td>{@link #setErrorState(String) errorState}</td><td>If an error occurs during
  * the pipeline execution, the state in the <code>PipeLineResult</code> is set to this state</td><td>ERROR</td></tr>
  * <tr><td>{@link #setMessageKeeperSize(int) messageKeeperSize}</td><td>number of message displayed in IbisConsole</td><td>10</td></tr>
+ * <tr><td>{@link #setRequestReplyLogging(boolean) requestReplyLogging}</td><td>when <code>true</code>, the request and reply messages will be logged for each request processed</td><td>false</td></tr>
  *  </table></td><td>&nbsp;</td></tr>
  * </table>
  * 
@@ -132,7 +136,7 @@ import javax.transaction.UserTransaction;
  */
 
 public class Adapter implements Runnable, IAdapter {
-	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.23 $ $Date: 2006-08-22 12:50:17 $";
+	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.24 $ $Date: 2006-09-07 08:35:50 $";
 	private Vector receivers = new Vector();
 	private long lastMessageDate = 0;
 	private PipeLine pipeline;
@@ -152,6 +156,7 @@ public class Adapter implements Runnable, IAdapter {
 	private MessageKeeper messageKeeper; //instantiated in configure()
 	private int messageKeeperSize = 10; //default length
 	private boolean autoStart = true;
+	private boolean requestReplyLogging = false;
 
 	// state to put in PipeLineResult when a PipeRunException occurs;
 	private String errorState = "ERROR";
@@ -550,16 +555,25 @@ public class Adapter implements Runnable, IAdapter {
 		incNumOfMessagesInProcess(startTime);
 		NDC.push("cid [" + messageId + "]");
 		
-		if (log.isDebugEnabled()) { // for performance reasons
-			log.debug("Adapter [" + name + "] received message [" + message + "] with messageId [" + messageId + "]");
+		if (isRequestReplyLogging()) {
+			if (log.isInfoEnabled()) log.info("Adapter [" + name + "] received message [" + message + "] with messageId [" + messageId + "]");
 		} else {
-			log.info("Adapter [" + name + "] received message with messageId [" + messageId + "]");
+			if (log.isDebugEnabled()) { 
+				log.debug("Adapter [" + name + "] received message [" + message + "] with messageId [" + messageId + "]");
+			} else {
+				log.info("Adapter [" + name + "] received message with messageId [" + messageId + "]");
+			}
 		}
+
 
 		try {
 			result = pipeline.process(messageId, message,pipeLineSession);
-			if (log.isDebugEnabled()) {
-				log.debug("Adapter [" + getName() + "] messageId[" + messageId + "] got exit-state [" + result.getState() + "] and result [" + result.toString() + "] from PipeLine");
+			if (isRequestReplyLogging()) {
+				log.info("Adapter [" + getName() + "] messageId[" + messageId + "] got exit-state [" + result.getState() + "] and result [" + result.toString() + "] from PipeLine");
+			} else {
+				if (log.isDebugEnabled()) {
+					log.debug("Adapter [" + getName() + "] messageId[" + messageId + "] got exit-state [" + result.getState() + "] and result [" + result.toString() + "] from PipeLine");
+				}
 			}
 			return result;
 	
@@ -879,5 +893,11 @@ public class Adapter implements Runnable, IAdapter {
 	public boolean isAutoStart() {
 		return autoStart;
 	}
-
+	
+	public void setRequestReplyLogging(boolean requestReplyLogging) {
+		this.requestReplyLogging = requestReplyLogging;
+	}
+	public boolean isRequestReplyLogging() {
+		return requestReplyLogging;
+	}
 }
