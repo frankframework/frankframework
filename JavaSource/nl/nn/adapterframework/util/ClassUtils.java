@@ -1,6 +1,9 @@
 /*
  * $Log: ClassUtils.java,v $
- * Revision 1.7  2005-09-26 15:29:33  europe\L190409
+ * Revision 1.8  2006-09-14 11:44:51  europe\L190409
+ * correctede logger definition
+ *
+ * Revision 1.7  2005/09/26 15:29:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * change %20 to space and back
  *
  * Revision 1.6  2005/08/30 16:06:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -31,9 +34,9 @@ import java.net.URL;
  *
  */
 public class ClassUtils {
-	public static final String version = "$RCSfile: ClassUtils.java,v $ $Revision: 1.7 $ $Date: 2005-09-26 15:29:33 $";
-	
-	private static Logger log = Logger.getLogger("ClassUtils");
+	public static final String version = "$RCSfile: ClassUtils.java,v $ $Revision: 1.8 $ $Date: 2006-09-14 11:44:51 $";
+	private static Logger log = Logger.getLogger(ClassUtils.class);
+
     /**
      * Return the context classloader.
      * BL: if this is command line operation, the classloading issues

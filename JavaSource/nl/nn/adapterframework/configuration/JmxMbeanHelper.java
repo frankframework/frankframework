@@ -1,6 +1,9 @@
 /*
  * $Log: JmxMbeanHelper.java,v $
- * Revision 1.6  2004-10-25 08:30:49  L190409
+ * Revision 1.7  2006-09-14 11:44:09  europe\L190409
+ * correctede logger definition
+ *
+ * Revision 1.6  2004/10/25 08:30:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected DisplayName
  *
  * Revision 1.5  2004/08/23 13:07:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -32,8 +35,8 @@ import nl.nn.adapterframework.util.JmxUtils;
  * @since 4.1.1
  */
 public class JmxMbeanHelper {
-	public static final String version="$Id: JmxMbeanHelper.java,v 1.6 2004-10-25 08:30:49 L190409 Exp $";
- 	private static Logger log = Logger.getLogger("AdapterMBean");
+	public static final String version = "$RCSfile: JmxMbeanHelper.java,v $ $Revision: 1.7 $ $Date: 2006-09-14 11:44:09 $";
+ 	private static Logger log = Logger.getLogger(JmxMbeanHelper.class);
  	
 
 	/**
