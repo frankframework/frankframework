@@ -1,6 +1,9 @@
 /*
  * $Log: JtaUtil.java,v $
- * Revision 1.7  2006-08-21 15:14:49  europe\L190409
+ * Revision 1.8  2006-09-14 11:47:10  europe\L190409
+ * optimized transactionStateCompatible()
+ *
+ * Revision 1.7  2006/08/21 15:14:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * introduction of transaction attribute handling
  * configuration of user transaction url in appconstants.properties
  *
@@ -46,7 +49,7 @@ import org.apache.log4j.Logger;
  * @since  4.1
  */
 public class JtaUtil {
-	public static final String version="$RCSfile: JtaUtil.java,v $ $Revision: 1.7 $ $Date: 2006-08-21 15:14:49 $";
+	public static final String version="$RCSfile: JtaUtil.java,v $ $Revision: 1.8 $ $Date: 2006-09-14 11:47:10 $";
 	private static Logger log = Logger.getLogger(JtaUtil.class);
 	
 	private static final String USERTRANSACTION_URL1_KEY="jta.userTransactionUrl1";
@@ -175,6 +178,7 @@ public class JtaUtil {
 			try {
 				utx = (UserTransaction)ctx.lookup(url);
 			} catch (Exception e) {
+				log.debug("Could not lookup UserTransaction from url ["+url+"], will try alternative uri",e);
 				url = AppConstants.getInstance().getProperty(USERTRANSACTION_URL2_KEY,null);
 				log.debug("looking up UserTransaction ["+url+"] in context ["+ctx.toString()+"]");
 				utx = (UserTransaction)ctx.lookup(url);
@@ -199,14 +203,19 @@ public class JtaUtil {
 	}
 	
 	public static boolean transactionStateCompatible(int transactionAttribute) throws SystemException, NamingException {
-		if (inTransaction(getUserTransaction())) {
-			return transactionAttribute!=TRANSACTION_ATTRIBUTE_NEVER;
-		} else {
-			return transactionAttribute!=TRANSACTION_ATTRIBUTE_MANDATORY;
+		if (transactionAttribute==TRANSACTION_ATTRIBUTE_NEVER) {
+			return !inTransaction(getUserTransaction());
+		} else if (transactionAttribute==TRANSACTION_ATTRIBUTE_MANDATORY) {
+			return inTransaction(getUserTransaction());
 		}
+		return true;
 	}
 
 	public static boolean isolationRequired(int transactionAttribute) throws SystemException, TransactionException, NamingException {
+		if (transactionAttribute!=TRANSACTION_ATTRIBUTE_REQUIRES_NEW &&
+		    transactionAttribute!=TRANSACTION_ATTRIBUTE_NOT_SUPPORTED) {
+		    	return false;
+		}
 		UserTransaction utx = getUserTransaction();
 		if (!transactionStateCompatible(transactionAttribute)) {
 			throw new TransactionException("transaction attribute ["+getTransactionAttributeString(transactionAttribute)+"] not compatible with state ["+displayTransactionStatus(utx)+"]");
@@ -225,7 +234,7 @@ public class JtaUtil {
 				(!inTransaction(utx) &&	transactionAttribute==TRANSACTION_ATTRIBUTE_REQUIRED);
 	}
 
-	public static boolean stateEvaluationRequired(int transactionAttribute) {
+	private static boolean stateEvaluationRequired(int transactionAttribute) {
 		return transactionAttribute>=0 && 
 			   transactionAttribute!=TRANSACTION_ATTRIBUTE_REQUIRES_NEW &&
 			   transactionAttribute!=TRANSACTION_ATTRIBUTE_SUPPORTS;
