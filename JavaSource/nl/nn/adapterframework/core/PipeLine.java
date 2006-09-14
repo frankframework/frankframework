@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.29  2006-08-22 12:51:43  europe\L190409
+ * Revision 1.30  2006-09-14 12:12:23  europe\L190409
+ * corrected javadoc
+ *
+ * Revision 1.29  2006/08/22 12:51:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * handling of preserveInput attribute of Pipes
  *
  * Revision 1.28  2006/08/22 07:49:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -140,12 +143,12 @@ import java.util.Hashtable;
  * <p><b>Transaction control</b><br>
  * THE FOLLOWING TO BE UPDATED, attribute 'transacted' replaced by 'transactionAttribute' 
  * 
- * If {@link #setTransacted(boolean) transacted} is set to <code>true, messages will be processed 
+ * If {@link #setTransacted(boolean) transacted} is set to <code>true</code>, messages will be processed 
  * under transaction control. Processing by XA-compliant pipes (i.e. Pipes that implement the 
  * IXAEnabled-interface, set their transacted-attribute to <code>true</code> and use XA-compliant 
  * resources) will then either be commited or rolled back in one transaction.
  * 
- * If {@link #setTransacted(boolean) transacted} is set to <code>true, either an existing transaction
+ * If {@link #setTransacted(boolean) transacted} is set to <code>true</code>, either an existing transaction
  * (started by a transactional receiver) is joined, or new one is created (if the messsage processing request
  * is not initated by a receiver under transaction control.  
  * Messages are only committed or rolled back by the Pipeline if it started the transaction itself. If
@@ -157,8 +160,8 @@ import java.util.Hashtable;
  * is made as follows:
  * 
  * If the processing of the message concluded without exceptions and the status of the transaction is
- * STATUS_ACTIVE (i.e. normal) the transaction will be committed. Otherwise it will be (marked for) 
- * rolled back.
+ * STATUS_ACTIVE (i.e. normal) the transaction will be committed. Otherwise it will be rolled back,
+ * or marked for roll back by the calling party.
  
  * </p>
  * 
@@ -166,7 +169,7 @@ import java.util.Hashtable;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.29 $ $Date: 2006-08-22 12:51:43 $";
+	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.30 $ $Date: 2006-09-14 12:12:23 $";
     private Logger log = Logger.getLogger(this.getClass());
 	private Logger durationLog = Logger.getLogger("LongDurationMessages");
     
