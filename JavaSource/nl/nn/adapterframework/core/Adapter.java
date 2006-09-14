@@ -1,6 +1,9 @@
 /*
  * $Log: Adapter.java,v $
- * Revision 1.24  2006-09-07 08:35:50  europe\L190409
+ * Revision 1.25  2006-09-14 14:58:00  europe\L190409
+ * added getPipeLine()
+ *
+ * Revision 1.24  2006/09/07 08:35:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added requestReplyLogging
  *
  * Revision 1.23  2006/08/22 12:50:17  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -136,7 +139,7 @@ import javax.transaction.UserTransaction;
  */
 
 public class Adapter implements Runnable, IAdapter {
-	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.24 $ $Date: 2006-09-07 08:35:50 $";
+	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.25 $ $Date: 2006-09-14 14:58:00 $";
 	private Vector receivers = new Vector();
 	private long lastMessageDate = 0;
 	private PipeLine pipeline;
@@ -472,6 +475,11 @@ public class Adapter implements Runnable, IAdapter {
 	public Iterator getReceiverIterator() {
 		return receivers.iterator();
 	}
+	
+	public PipeLine getPipeLine() {
+		return pipeline;
+	}
+	
 	public RunStateEnum getRunState() {
 		return runState.getRunState();
 	}
