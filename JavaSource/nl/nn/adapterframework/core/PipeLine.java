@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.30  2006-09-14 12:12:23  europe\L190409
+ * Revision 1.31  2006-09-14 15:06:09  europe\L190409
+ * added getPipe() and getPipes()
+ *
+ * Revision 1.30  2006/09/14 12:12:23  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected javadoc
  *
  * Revision 1.29  2006/08/22 12:51:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -169,7 +172,7 @@ import java.util.Hashtable;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.30 $ $Date: 2006-09-14 12:12:23 $";
+	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.31 $ $Date: 2006-09-14 15:06:09 $";
     private Logger log = Logger.getLogger(this.getClass());
 	private Logger durationLog = Logger.getLogger("LongDurationMessages");
     
@@ -207,7 +210,7 @@ public class PipeLine {
 		if (StringUtils.isEmpty(name)) {
 			throw new ConfigurationException("pipe ["+pipe.getClass().getName()+"] to be added has no name, pipelineTable size ["+pipelineTable.size()+"]");
 		}
-		IPipe current=(IPipe)pipelineTable.get(name);
+		IPipe current=getPipe(name);
 		if (current!=null) {
 			throw new ConfigurationException("pipe ["+name+"] defined more then once");
 		}
@@ -227,6 +230,14 @@ public class PipeLine {
 	    }
 	}
 	
+	public IPipe getPipe(String pipeName) {
+		return (IPipe)pipelineTable.get(pipeName);
+	}
+
+	public Hashtable getPipes() {
+		return pipelineTable;
+	}
+	
 	/**
 	 * Configures the pipes of this Pipeline and does some basic checks. It also
 	 * registers the <code>PipeLineSession</code> object at the pipes.
@@ -236,8 +247,8 @@ public class PipeLine {
 	    Enumeration pipeNames=pipelineTable.keys();
 	    while (pipeNames.hasMoreElements()) {
 			String pipeName=(String)pipeNames.nextElement();
-	        log.debug("Pipeline of ["+owner.getName()+"] configuring "+pipelineTable.get(pipeName).toString());
-			IPipe pipe=(IPipe) pipelineTable.get(pipeName);
+	        log.debug("Pipeline of ["+owner.getName()+"] configuring "+getPipe(pipeName).toString());
+			IPipe pipe=getPipe(pipeName);
 	
 			// register the global forwards at the Pipes
 			// the pipe will take care that if a local, pipe-specific
@@ -257,7 +268,7 @@ public class PipeLine {
 	    if (this.firstPipe==null) {
 		    throw new ConfigurationException("no firstPipe defined");
 	    }
-	    if (pipelineTable.get(firstPipe)==null) {
+	    if (getPipe(firstPipe)==null) {
 		    throw new ConfigurationException("no pipe found for firstPipe ["+firstPipe+"]");
 	    }
 		log.debug("Pipeline of ["+owner.getName()+"] successfully configured");
@@ -585,7 +596,7 @@ public class PipeLine {
 	    boolean ready=false;
 	    
 	    // get the first pipe to run
-	    IPipe pipeToRun = (IPipe) pipelineTable.get(firstPipe);
+	    IPipe pipeToRun = getPipe(firstPipe);
 	    
 	    while (!ready){
 			IExtendedPipe pe=null;
@@ -729,7 +740,7 @@ public class PipeLine {
 		            "Pipeline of adapter ["+ owner.getName()+ "] finished processing messageId ["+messageId+"] result: ["+ object.toString()+ "] with exit-state ["+state+"]");
 				}
 	        } else {
-		        pipeToRun=(IPipe)pipelineTable.get(pipeForward.getPath());
+		        pipeToRun=getPipe(pipeForward.getPath());
 	        }
 	
 			if (pipeToRun==null) {
@@ -791,7 +802,7 @@ public class PipeLine {
 	    while (pipeNames.hasMoreElements()) {
 	        String pipeName = (String) pipeNames.nextElement();
 	
-	        IPipe pipe = (IPipe) pipelineTable.get(pipeName);
+	        IPipe pipe = getPipe(pipeName);
 	        log.debug("Pipeline of ["+owner.getName()+"] starting " + pipe.getName());
 	        pipe.start();
 	        log.debug("Pipeline of ["+owner.getName()+"] successfully started pipe [" + pipe.getName() + "]");
@@ -811,7 +822,7 @@ public class PipeLine {
 	    while (pipeNames.hasMoreElements()) {
 	        String pipeName = (String) pipeNames.nextElement();
 	
-	        IPipe pipe = (IPipe) pipelineTable.get(pipeName);
+	        IPipe pipe = getPipe(pipeName);
 	        log.debug("Pipeline of ["+owner.getName()+"] is stopping [" + pipe.getName()+"]");
 	        pipe.stop();
 	        log.debug("Pipeline of ["+owner.getName()+"] successfully stopped pipe [" + pipe.getName() + "]");
@@ -837,7 +848,7 @@ public class PipeLine {
         Enumeration pipeNames=pipelineTable.keys();
         while (pipeNames.hasMoreElements()){
             String pipeName=(String)pipeNames.nextElement();
-            result+="["+((IPipe)pipelineTable.get(pipeName)).getName()+"]";
+            result+="["+getPipe(pipeName).getName()+"]";
         }
         Enumeration exitKeys=pipeLineExits.keys();
         while (exitKeys.hasMoreElements()){
