@@ -1,6 +1,9 @@
 /*
  * $Log: TracingUtil.java,v $
- * Revision 1.2  2006-09-06 16:03:03  europe\L190409
+ * Revision 1.3  2006-09-14 15:28:06  europe\L190409
+ * added configuration file generation
+ *
+ * Revision 1.2  2006/09/06 16:03:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added startTracing() and stopTracing()
  *
  * Revision 1.1  2006/02/20 15:42:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -8,6 +11,10 @@
  *
  */
 package nl.nn.adapterframework.util;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
 import org.apache.log4j.Logger;
 
@@ -24,17 +31,47 @@ import com.ing.coins.mett.application.exceptions.MonitorStartFailedException;
  */
 public class TracingUtil {
 	private static Logger log = Logger.getLogger(TracingUtil.class);
-	
+	private static String properties = "<mett-server>\n\t<start-on-boot>true</start-on-boot>\n\t<sleep-time-thread>50</sleep-time-thread>\n\t<log-events>true</log-events>\n\t<listener-pumps>\n\t\t<listener-pump>\n\t\t\t<className>com.ing.coins.mett.application.SocketPump</className>\n\t\t\t<unique-id>1</unique-id>\n\t\t\t<enabled>true</enabled>\n\t\t\t<attributes>\n\t\t\t\t<attribute>\n\t\t\t\t\t<name>port</name>\n\t\t\t\t\t<value>55555</value>\n\t\t\t\t</attribute>\n\t\t\t</attributes>\n\t\t</listener-pump>\n\t\t<listener-pump>\n\t\t\t<className>com.ing.coins.mett.application.FilePump</className>\n\t\t\t<unique-id>2</unique-id>\n\t\t\t<enabled>true</enabled>\n\t\t\t<attributes>\n\t\t\t\t<attribute>\n\t\t\t\t\t<name>loggerCategory</name>\n\t\t\t\t\t<value>MettLogger</value>\n\t\t\t\t</attribute>\n\t\t\t\t<attribute>\n\t\t\t\t\t<name>closeLogManagerOnDeregister</name>\n\t\t\t\t\t<value>false</value>\n\t\t\t\t</attribute>\n\t\t\t</attributes>\n\t\t</listener-pump>\n\t</listener-pumps>\n</mett-server>";	
+	private static File file = null;
+	private static boolean isStarted = false;
+
 	public static void startTracing(String serverConfigFile) throws TracingException {
+		if (isStarted) {
+			throw new TracingException("Monitor is already started");
+		}
 		try {
 			MonitorAccessor.start(serverConfigFile);
 		} catch (MonitorStartFailedException e) {
 			throw new TracingException("Could not start tracing from config file ["+serverConfigFile+"]", e);
 		}
+		isStarted = true;
 	}
 
-	public static void stopTracing() {
+	public static void startTracing() throws TracingException {
+		if (isStarted) {
+			throw new TracingException("Monitor is already started");
+		}
+		try {
+			file = File.createTempFile("mett-server", ".xml", new File(AppConstants.getInstance().getResolvedProperty("logging.path")));
+			FileOutputStream fos = new FileOutputStream(file.getPath());
+			fos.write(properties.getBytes());
+			fos.close();
+		} catch (IOException e) {
+			throw new TracingException("Error creating tracing configuration file", e);
+		}
+		file.deleteOnExit();
+		startTracing(file.getPath());
+	}
+
+	public static void stopTracing() throws TracingException {
+		if (!isStarted) {
+			throw new TracingException("Monitor is already stopped");
+		}
 		MonitorAccessor.stop();
+		isStarted = false;
+		if (file != null) {
+			file.delete();
+		}
 	}
 	
 	public static void beforeEvent(Object o) {
@@ -66,4 +103,18 @@ public class TracingUtil {
 		}
 	}
 
+	public static void setProperties(String props) throws TracingException {
+		if (isStarted) {
+			throw new TracingException("Altering properties only allowed when monitor is stopped");
+		}
+		properties = props;
+	}
+
+	public static String getProperties() throws IOException {
+		return properties;
+	}
+
+	public static boolean isStarted() {
+		return isStarted;
+	}
 }
