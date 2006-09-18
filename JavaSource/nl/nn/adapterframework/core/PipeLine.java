@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.31  2006-09-14 15:06:09  europe\L190409
+ * Revision 1.32  2006-09-18 11:55:38  europe\L190409
+ * difference in debug of transactionAttributes of PipeLine and Pipes
+ *
+ * Revision 1.31  2006/09/14 15:06:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added getPipe() and getPipes()
  *
  * Revision 1.30  2006/09/14 12:12:23  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -172,7 +175,7 @@ import java.util.Hashtable;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.31 $ $Date: 2006-09-14 15:06:09 $";
+	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.32 $ $Date: 2006-09-18 11:55:38 $";
     private Logger log = Logger.getLogger(this.getClass());
 	private Logger durationLog = Logger.getLogger("LongDurationMessages");
     
@@ -358,7 +361,7 @@ public class PipeLine {
 		if (!compatible) {
 			throw new PipeRunException(null,"transaction state ["+JtaUtil.displayTransactionStatus()+"] not compatible with transaction attribute ["+getTransactionAttribute()+"], messageId ["+messageId+"]");
 		}
-		log.debug("transactionAttribute ["+getTransactionAttribute()+"], isolationRequired ["+isolationRequired+"], doTransaction ["+doTransaction+"]");
+		log.debug("PipeLine transactionAttribute ["+getTransactionAttribute()+"], isolationRequired ["+isolationRequired+"], doTransaction ["+doTransaction+"]");
 
 		if (isolationRequired) {
 			PipeLineRunWrapper plrw = new PipeLineRunWrapper();
@@ -658,7 +661,7 @@ public class PipeLine {
 							if (!compatible) {
 								throw new PipeRunException(pipeToRun,"transaction state ["+JtaUtil.displayTransactionStatus()+"] not compatible with transaction attribute ["+taPipe.getTransactionAttribute()+"]");
 							}
-							log.debug("transactionAttribute ["+taPipe.getTransactionAttribute()+"], isolationRequired ["+isolationRequired+"], doTransaction ["+doTransaction+"]");
+							log.debug("Pipe ["+pipeToRun.getName()+"] transactionAttribute ["+taPipe.getTransactionAttribute()+"], isolationRequired ["+isolationRequired+"], doTransaction ["+doTransaction+"]");
 						}
 
 						if (isolationRequired) {
