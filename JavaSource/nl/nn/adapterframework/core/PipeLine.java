@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.32  2006-09-18 11:55:38  europe\L190409
+ * Revision 1.33  2006-09-18 14:05:17  europe\L190409
+ * corrected transactionAttribute handling for Pipes
+ *
+ * Revision 1.32  2006/09/18 11:55:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * difference in debug of transactionAttributes of PipeLine and Pipes
  *
  * Revision 1.31  2006/09/14 15:06:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -175,7 +178,7 @@ import java.util.Hashtable;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.32 $ $Date: 2006-09-18 11:55:38 $";
+	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.33 $ $Date: 2006-09-18 14:05:17 $";
     private Logger log = Logger.getLogger(this.getClass());
 	private Logger durationLog = Logger.getLogger("LongDurationMessages");
     
@@ -482,6 +485,35 @@ public class PipeLine {
 
 	}
 
+	protected PipeRunResult runPipeObeyingTransactionAttribute(IPipe pipe, Object message, PipeLineSession session) throws PipeRunException {
+		boolean compatible=true;
+		boolean isolationRequired=false;
+		boolean doTransaction=false;
+
+		if (pipe instanceof HasTransactionAttribute) {
+			HasTransactionAttribute taPipe = (HasTransactionAttribute) pipe;
+
+			try {
+				compatible=JtaUtil.transactionStateCompatible(taPipe.getTransactionAttributeNum());
+				isolationRequired=JtaUtil.isolationRequired(taPipe.getTransactionAttributeNum());
+				doTransaction=JtaUtil.newTransactionRequired(taPipe.getTransactionAttributeNum());
+			} catch (Exception t) {
+				throw new PipeRunException(pipe,"exception evaluating transaction status for pipe ["+pipe.getName()+"], transaction attribute ["+taPipe.getTransactionAttribute()+"]",t);
+			}
+			if (!compatible) {
+				throw new PipeRunException(pipe,"transaction state ["+JtaUtil.displayTransactionStatus()+"] not compatible with transaction attribute ["+taPipe.getTransactionAttribute()+"]");
+			}
+			log.debug("Pipe ["+pipe.getName()+"] transactionAttribute ["+taPipe.getTransactionAttribute()+"], isolationRequired ["+isolationRequired+"], doTransaction ["+doTransaction+"]");
+		}
+	
+		if (isolationRequired) {
+			PipeRunWrapper prw = new PipeRunWrapper();
+			return prw.runPipe(pipe, message, session, doTransaction);
+		} else { 
+			return runPipe(pipe, message, session, doTransaction);
+		}
+	}
+
 	protected PipeRunResult runPipe(IPipe pipe, Object message, PipeLineSession session, boolean doTransaction) throws PipeRunException {
 		try {
 			if (doTransaction) {
@@ -584,7 +616,7 @@ public class PipeLine {
 			}
 		}
 	}
-	
+		
 	protected PipeLineResult processPipeLine(String messageId, String message, PipeLineSession pipeLineSession) throws PipeRunException {
 	    // Object is the object that is passed to and returned from Pipes
 	    Object object = (Object) message;
@@ -644,36 +676,8 @@ public class PipeLine {
 						StatisticsKeeper sk = (StatisticsKeeper) pipeWaitingStatistics.get(pipeToRun.getName());
 						sk.addValue(waitingDuration);
 	
-						boolean compatible=true;
-						boolean isolationRequired=false;
-						boolean doTransaction=false;
-
-						if (pipeToRun instanceof HasTransactionAttribute) {
-							HasTransactionAttribute taPipe = (HasTransactionAttribute) pipeToRun;
-
-							try {
-								compatible=JtaUtil.transactionStateCompatible(taPipe.getTransactionAttributeNum());
-								isolationRequired=JtaUtil.isolationRequired(taPipe.getTransactionAttributeNum());
-								doTransaction=JtaUtil.newTransactionRequired(taPipe.getTransactionAttributeNum());
-							} catch (Exception t) {
-								throw new PipeRunException(pipeToRun,"exception evaluating transaction status for pipe ["+pipeToRun.getName()+"], transaction attribute ["+taPipe.getTransactionAttribute()+"]",t);
-							}
-							if (!compatible) {
-								throw new PipeRunException(pipeToRun,"transaction state ["+JtaUtil.displayTransactionStatus()+"] not compatible with transaction attribute ["+taPipe.getTransactionAttribute()+"]");
-							}
-							log.debug("Pipe ["+pipeToRun.getName()+"] transactionAttribute ["+taPipe.getTransactionAttribute()+"], isolationRequired ["+isolationRequired+"], doTransaction ["+doTransaction+"]");
-						}
-
-						if (isolationRequired) {
-							PipeRunWrapper prw = new PipeRunWrapper();
-							pipeRunResult =  prw.runPipe(pipeToRun,message,pipeLineSession,doTransaction);
-						} else { 
-							pipeRunResult = runPipe(pipeToRun,object, pipeLineSession, doTransaction);
-						}
-
-	
 						try { 
-							pipeRunResult = runPipe(pipeToRun,object, pipeLineSession, false);
+							pipeRunResult = runPipeObeyingTransactionAttribute(pipeToRun,object, pipeLineSession);
 						} finally {
 							long pipeEndTime = System.currentTimeMillis();
 							pipeDuration = pipeEndTime - pipeStartTime - waitingDuration;
@@ -688,8 +692,7 @@ public class PipeLine {
 					}
 				} else { //no restrictions on the maximum number of threads (s==null)
 					try {
-		        	
-						pipeRunResult = pipeToRun.doPipe(object, pipeLineSession);
+						pipeRunResult = runPipeObeyingTransactionAttribute(pipeToRun,object, pipeLineSession);
 					} finally {
 							long pipeEndTime = System.currentTimeMillis();
 							pipeDuration = pipeEndTime - pipeStartTime - waitingDuration;
