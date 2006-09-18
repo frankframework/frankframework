@@ -1,6 +1,9 @@
 /*
  * $Log: JtaUtil.java,v $
- * Revision 1.8  2006-09-14 11:47:10  europe\L190409
+ * Revision 1.9  2006-09-18 11:46:36  europe\L190409
+ * lookup UserTransaction only when necessary
+ *
+ * Revision 1.8  2006/09/14 11:47:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * optimized transactionStateCompatible()
  *
  * Revision 1.7  2006/08/21 15:14:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -49,7 +52,7 @@ import org.apache.log4j.Logger;
  * @since  4.1
  */
 public class JtaUtil {
-	public static final String version="$RCSfile: JtaUtil.java,v $ $Revision: 1.8 $ $Date: 2006-09-14 11:47:10 $";
+	public static final String version="$RCSfile: JtaUtil.java,v $ $Revision: 1.9 $ $Date: 2006-09-18 11:46:36 $";
 	private static Logger log = Logger.getLogger(JtaUtil.class);
 	
 	private static final String USERTRANSACTION_URL1_KEY="jta.userTransactionUrl1";
@@ -216,22 +219,24 @@ public class JtaUtil {
 		    transactionAttribute!=TRANSACTION_ATTRIBUTE_NOT_SUPPORTED) {
 		    	return false;
 		}
-		UserTransaction utx = getUserTransaction();
 		if (!transactionStateCompatible(transactionAttribute)) {
 			throw new TransactionException("transaction attribute ["+getTransactionAttributeString(transactionAttribute)+"] not compatible with state ["+displayTransactionStatus(utx)+"]");
 		}
+		UserTransaction utx = getUserTransaction();
 		return inTransaction(utx) &&
 				(transactionAttribute==TRANSACTION_ATTRIBUTE_REQUIRES_NEW ||
 				 transactionAttribute==TRANSACTION_ATTRIBUTE_NOT_SUPPORTED);
 	}
 
 	public static boolean newTransactionRequired(int transactionAttribute) throws SystemException, TransactionException, NamingException {
-		UserTransaction utx = getUserTransaction();
 		if (!transactionStateCompatible(transactionAttribute)) {
 			throw new TransactionException("transaction attribute ["+getTransactionAttributeString(transactionAttribute)+"] not compatible with state ["+displayTransactionStatus(utx)+"]");
 		}
-		return transactionAttribute==TRANSACTION_ATTRIBUTE_REQUIRES_NEW ||
-				(!inTransaction(utx) &&	transactionAttribute==TRANSACTION_ATTRIBUTE_REQUIRED);
+		if (transactionAttribute==TRANSACTION_ATTRIBUTE_REQUIRED) {
+			UserTransaction utx = getUserTransaction();
+			return !inTransaction(utx);
+		}
+		return transactionAttribute==TRANSACTION_ATTRIBUTE_REQUIRES_NEW;
 	}
 
 	private static boolean stateEvaluationRequired(int transactionAttribute) {
