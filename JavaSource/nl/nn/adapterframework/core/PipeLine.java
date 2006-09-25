@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.33  2006-09-18 14:05:17  europe\L190409
+ * Revision 1.34  2006-09-25 09:23:38  europe\L190409
+ * fixed bug in PipeRunWrapper
+ *
+ * Revision 1.33  2006/09/18 14:05:17  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected transactionAttribute handling for Pipes
  *
  * Revision 1.32  2006/09/18 11:55:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -178,7 +181,7 @@ import java.util.Hashtable;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.33 $ $Date: 2006-09-18 14:05:17 $";
+	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.34 $ $Date: 2006-09-25 09:23:38 $";
     private Logger log = Logger.getLogger(this.getClass());
 	private Logger durationLog = Logger.getLogger("LongDurationMessages");
     
@@ -475,7 +478,6 @@ public class PipeLine {
 		
 		public void run() {
 			try {
-				if (doTransaction) 
 				result = runPipe(pipe,message, session, doTransaction);
 			} catch (Throwable t) {
 				log.warn("exception executing request");
@@ -636,7 +638,7 @@ public class PipeLine {
 	    while (!ready){
 			IExtendedPipe pe=null;
 			
-			if (pipeToRun instanceof AbstractPipe) {
+			if (pipeToRun instanceof IExtendedPipe) {
 				pe = (IExtendedPipe)pipeToRun;
 			}
 	    	
@@ -656,7 +658,6 @@ public class PipeLine {
 			}
 	
 	        // start it
-			long waitingDuration = 0;
 			long pipeDuration = -1;
 			
 			if (pe!=null && StringUtils.isNotEmpty(pe.getGetInputFromSessionKey())) {
@@ -667,6 +668,7 @@ public class PipeLine {
 			try {
 				Semaphore s = getSemaphore(pipeToRun);
 				if (s != null) {
+					long waitingDuration = 0;
 					try {
 						// keep waiting statistics for thread-limited pipes
 						long startWaiting = System.currentTimeMillis();
@@ -694,21 +696,21 @@ public class PipeLine {
 					try {
 						pipeRunResult = runPipeObeyingTransactionAttribute(pipeToRun,object, pipeLineSession);
 					} finally {
-							long pipeEndTime = System.currentTimeMillis();
-							pipeDuration = pipeEndTime - pipeStartTime - waitingDuration;
-		
-							StatisticsKeeper sk = (StatisticsKeeper) pipeStatistics.get(pipeToRun.getName());
-							sk.addValue(pipeDuration);
-						}
+						long pipeEndTime = System.currentTimeMillis();
+						pipeDuration = pipeEndTime - pipeStartTime;
+	
+						StatisticsKeeper sk = (StatisticsKeeper) pipeStatistics.get(pipeToRun.getName());
+						sk.addValue(pipeDuration);
+					}
 				}
 				if (pe !=null) {
 					if (pipeRunResult!=null && StringUtils.isNotEmpty(pe.getStoreResultInSessionKey())) {
 					log.debug("Pipeline of adapter ["+owner.getName()+"] storing result for pipe ["+pe.getName()+" under sessionKey ["+pe.getStoreResultInSessionKey()+"]");
 					pipeLineSession.put(pe.getStoreResultInSessionKey(),pipeRunResult.getResult());
 				}
-					if (pe.isPreserveInput()) {
-						pipeRunResult.setResult(preservedObject);
-					}
+				if (pe.isPreserveInput()) {
+					pipeRunResult.setResult(preservedObject);
+				}
 				}
 			} catch (PipeRunException pre) {
 				TracingUtil.exceptionEvent(pipeToRun);
@@ -722,6 +724,9 @@ public class PipeLine {
 				}
 			}
 	        	        
+			if (pipeRunResult==null){
+				throw new PipeRunException(pipeToRun, "Pipeline of ["+owner.getName()+"] received null result from pipe ["+pipeToRun.getName()+"]d");
+			}
 	        object=pipeRunResult.getResult();
 			preservedObject=object;
 	        PipeForward pipeForward=pipeRunResult.getPipeForward();
