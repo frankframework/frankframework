@@ -1,6 +1,9 @@
 /*
  * $Log: DirectoryListener.java,v $
- * Revision 1.1  2006-08-23 11:35:56  europe\L190409
+ * Revision 1.2  2006-09-25 13:21:43  europe\L190409
+ * cosmetic reorganization of code
+ *
+ * Revision 1.1  2006/08/23 11:35:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * moved DirectoryListener from batch to receivers package
  *
  * Revision 1.6  2006/08/22 12:48:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -65,19 +68,58 @@ import org.apache.log4j.Logger;
  * @author  John Dekker
  */
 public class DirectoryListener implements IPullingListener, INamedObject {
-	public static final String version = "$RCSfile: DirectoryListener.java,v $  $Revision: 1.1 $ $Date: 2006-08-23 11:35:56 $";
+	public static final String version = "$RCSfile: DirectoryListener.java,v $  $Revision: 1.2 $ $Date: 2006-09-25 13:21:43 $";
 
 	protected Logger log = Logger.getLogger(this.getClass());
 	private String name;
 	private String inputDirectory;
-	private String inputFileName;
 	private String wildcard;
-	private String outputFilenamePattern;
 	private String outputDirectory;
+	private String outputFilenamePattern;
 	private long responseTime = 10000;
 	private int numberOfAttempts = 10;
 	private long waitBeforeRetry = 1000;
 	private boolean overwrite = false;
+
+	//TODO: check if this is thread-safe
+	private String inputFileName=null;
+	
+	/**
+	 * Configure does some basic checks (directoryProcessedFiles is a directory,  inputDirectory is a directory, wildcard is filled etc.);
+	 *
+	 */
+	public void configure() throws ConfigurationException {
+		if (StringUtils.isEmpty(getInputDirectory()))
+			throw new ConfigurationException("no value specified for [inputDirectory]");
+		if (StringUtils.isEmpty(getWildcard()))
+			throw new ConfigurationException("no value specified for [wildcard]");
+		if (StringUtils.isEmpty(getOutputDirectory()))
+			throw new ConfigurationException("no value specified for [inprocessDirectory]");
+		File dir = new File(getOutputDirectory());
+		if (!dir.isDirectory()) {
+			throw new ConfigurationException("The value for [directoryProcessedFiles] :[ " + getOutputDirectory() + "] is invalid. It is not a directory ");
+		}
+		File inp = new File(getInputDirectory());
+		if (!inp.isDirectory()) {
+			throw new ConfigurationException("The value for [inputDirectory] :[ " + getInputDirectory() + "] is invalid. It is not a directory ");
+
+		}
+	}
+
+	public void open() throws ListenerException {
+	}
+
+	public HashMap openThread() throws ListenerException {
+		return null;
+	}
+
+
+	public void close() throws ListenerException {
+	}
+
+	public void closeThread(HashMap threadContext) throws ListenerException {
+	}
+
 
 	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessage, HashMap context) throws ListenerException {
 	}
@@ -113,39 +155,11 @@ public class DirectoryListener implements IPullingListener, INamedObject {
 		}
 	}
 
-	public void close() throws ListenerException {
-	}
-
-	public void closeThread(HashMap threadContext) throws ListenerException {
-
-	}
 	/**
-	 * Configure does some basic checks (directoryProcessedFiles is a directory,  inputDirectory is a directory, wildcard is filled etc.);
-	 *
+	 * Returns a string of the rawMessage
 	 */
-	public void configure() throws ConfigurationException {
-		if (StringUtils.isEmpty(getInputDirectory()))
-			throw new ConfigurationException("no value specified for [inputDirectory]");
-		if (StringUtils.isEmpty(getWildcard()))
-			throw new ConfigurationException("no value specified for [wildcard]");
-		if (StringUtils.isEmpty(getOutputDirectory()))
-			throw new ConfigurationException("no value specified for [inprocessDirectory]");
-		File dir = new File(getOutputDirectory());
-		if (!dir.isDirectory()) {
-			throw new ConfigurationException("The value for [directoryProcessedFiles] :[ " + getOutputDirectory() + "] is invalid. It is not a directory ");
-		}
-		File inp = new File(getInputDirectory());
-		if (!inp.isDirectory()) {
-			throw new ConfigurationException("The value for [inputDirectory] :[ " + getInputDirectory() + "] is invalid. It is not a directory ");
-
-		}
-	}
-	/**
-	 * Returns the directory in whiche processed files are stored.
-	 * @return String
-	 */
-	public String getOutputDirectory() {
-		return outputDirectory;
+	public String getStringFromRawMessage(Object rawMessage, HashMap threadContext) throws ListenerException {
+		return rawMessage.toString();
 	}
 
 	/**
@@ -159,12 +173,6 @@ public class DirectoryListener implements IPullingListener, INamedObject {
 		String correlationId = inputFileName;
 		threadContext.put("cid", correlationId);
 		return correlationId;
-	}
-	public String getInputDirectory() {
-		return inputDirectory;
-	}
-	public String getName() {
-		return name;
 	}
 	/**
 	 * Retrieves a single record from a file. If the file is empty or fully processed, it looks wether there
@@ -207,59 +215,8 @@ public class DirectoryListener implements IPullingListener, INamedObject {
 		
 	}
 
-	public long getResponseTime() {
-		return responseTime;
-	}
 	
-	/**
-	 * Returns a string of the rawMessage
-	 */
-	public String getStringFromRawMessage(Object rawMessage, HashMap threadContext) throws ListenerException {
-		return rawMessage.toString();
-	}
-	/**
-	* get the {@link nl.nn.adapterframework.util.WildCardFilter wildcard}  to look for files in the specifiek directory, e.g. "*.inp"
-	*/
-	public String getWildcard() {
-		return wildcard;
-	}
-
-	public void open() throws ListenerException {
-	}
-
-	public HashMap openThread() throws ListenerException {
-
-		return null;
-	}
-	/**
-	 * Sets the directory to store processed files in
-	 * @param directoryProcessedFiles The directoryProcessedFiles to set
-	 */
-	public void setOutputDirectory(String inprocessDirectory) {
-		this.outputDirectory = inprocessDirectory;
-	}
-	/**
-	 * set the directory name to look for files in.
-	 * @see #setWildcard(String)
-	 */
-	public void setInputDirectory(String inputDirectory) {
-		this.inputDirectory = inputDirectory;
-	}
-	public void setName(String name) {
-		this.name = name;
-	}
-	/**
-	 * set the time to delay when no records are to be processed and this class has to look for the arrival of a new file
-	 */
-	public void setResponseTime(long responseTime) {
-		this.responseTime = responseTime;
-	}
-	/**
-	 * set the {@link nl.nn.adapterframework.util.WildCardFilter wildcard}  to look for files in the specifiek directory, e.g. "*.inp"
-	 */
-	public void setWildcard(String wildcard) {
-		this.wildcard = wildcard;
-	}
+	
 	public String toString() {
 		String result = super.toString();
 		ToStringBuilder ts = new ToStringBuilder(this, ToStringStyle.MULTI_LINE_STYLE);
@@ -270,29 +227,92 @@ public class DirectoryListener implements IPullingListener, INamedObject {
 		return result;
 
 	}
-	public String getOutputFilenamePattern() {
-		return outputFilenamePattern;
+
+
+	public void setName(String name) {
+		this.name = name;
 	}
+	public String getName() {
+		return name;
+	}
+
+
+	/**
+	 * set the directory name to look for files in.
+	 * @see #setWildcard(String)
+	 */
+	public void setInputDirectory(String inputDirectory) {
+		this.inputDirectory = inputDirectory;
+	}
+	public String getInputDirectory() {
+		return inputDirectory;
+	}
+
+
+	/**
+	 * set the {@link nl.nn.adapterframework.util.WildCardFilter wildcard}  to look for files in the specifiek directory, e.g. "*.inp"
+	 */
+	public void setWildcard(String wildcard) {
+		this.wildcard = wildcard;
+	}
+	/**
+	* get the {@link nl.nn.adapterframework.util.WildCardFilter wildcard}  to look for files in the specifiek directory, e.g. "*.inp"
+	*/
+	public String getWildcard() {
+		return wildcard;
+	}
+
+
+	/**
+	 * Sets the directory to store processed files in
+	 * @param directoryProcessedFiles The directoryProcessedFiles to set
+	 */
+	public void setOutputDirectory(String inprocessDirectory) {
+		this.outputDirectory = inprocessDirectory;
+	}
+	/**
+	 * Returns the directory in whiche processed files are stored.
+	 * @return String
+	 */
+	public String getOutputDirectory() {
+		return outputDirectory;
+	}
+
 
 	public void setOutputFilenamePattern(String string) {
 		outputFilenamePattern = string;
 	}
-
-	public int getNumberOfAttempts() {
-		return numberOfAttempts;
+	public String getOutputFilenamePattern() {
+		return outputFilenamePattern;
 	}
 
-	public long getWaitBeforeRetry() {
-		return waitBeforeRetry;
+
+	/**
+	 * set the time to delay when no records are to be processed and this class has to look for the arrival of a new file
+	 */
+	public void setResponseTime(long responseTime) {
+		this.responseTime = responseTime;
 	}
+	public long getResponseTime() {
+		return responseTime;
+	}
+
 
 	public void setNumberOfAttempts(int i) {
 		numberOfAttempts = i;
 	}
+	public int getNumberOfAttempts() {
+		return numberOfAttempts;
+	}
+
 
 	public void setWaitBeforeRetry(long l) {
 		waitBeforeRetry = l;
 	}
+	public long getWaitBeforeRetry() {
+		return waitBeforeRetry;
+	}
+
 
 	public void setOverwrite(boolean overwrite) {
 		this.overwrite = overwrite;
