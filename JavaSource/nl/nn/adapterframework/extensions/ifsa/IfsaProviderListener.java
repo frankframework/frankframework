@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaProviderListener.java,v $
- * Revision 1.22  2006-08-21 15:08:35  europe\L190409
+ * Revision 1.23  2006-10-13 08:11:30  europe\L190409
+ * copy UDZ to session-variables
+ *
+ * Revision 1.22  2006/08/21 15:08:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected javadoc
  *
  * Revision 1.21  2006/07/17 08:54:18  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -95,6 +98,7 @@ import com.ing.ifsa.IFSATextMessage;
 import java.util.HashMap;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.Map;
 
 import javax.jms.Message;
 import javax.jms.QueueSession;
@@ -125,6 +129,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  *   <li>"FF": Fire & Forget protocol</li>
  *   <li>"RR": Request-Reply protocol</li>
  * </ul></td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setTransacted(boolean) transacted}</td><td>must be set <code>true</true> for FF listeners in transacted mode</td><td>false</td></tr>
  * <tr><td>{@link #setTimeOut(long) timeOut}</td><td>receiver timeout, in milliseconds</td><td>defined by IFSA expiry</td></tr>
  * </table>
  * N.B. 
@@ -139,7 +144,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * @since 4.2
  */
 public class IfsaProviderListener extends IfsaFacade implements IPullingListener, INamedObject, RunStateEnquiring {
-	public static final String version = "$RCSfile: IfsaProviderListener.java,v $ $Revision: 1.22 $ $Date: 2006-08-21 15:08:35 $";
+	public static final String version = "$RCSfile: IfsaProviderListener.java,v $ $Revision: 1.23 $ $Date: 2006-10-13 08:11:30 $";
 
     private final static String THREAD_CONTEXT_SESSION_KEY = "session";
     private final static String THREAD_CONTEXT_RECEIVER_KEY = "receiver";
@@ -455,6 +460,19 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 	    threadContext.put("ifsaGroup", ifsaGroup);
 	    threadContext.put("ifsaOccurrence", ifsaOccurrence);
 	    threadContext.put("ifsaVersion", ifsaVersion);
+
+		String contextDump = "ifsaUDZ:";
+		Map udz = (Map)message.getIncomingUDZObject();
+		for (Iterator it = udz.keySet().iterator(); it.hasNext();) {
+			String key = (String)it.next();
+			String value = (String)udz.get(key);
+			contextDump = contextDump + "\n " + key + "=[" + value + "]";
+			threadContext.put(key, value);
+		}
+		if (log.isDebugEnabled()) {
+			log.debug(getLogPrefix()+ contextDump);
+		}
+
 	    return id;
 	}
 	
