@@ -1,6 +1,9 @@
 /*
  * $Log: ParameterList.java,v $
- * Revision 1.2  2004-10-12 15:07:26  L190409
+ * Revision 1.3  2006-10-13 08:15:57  europe\L190409
+ * added findParameter()
+ *
+ * Revision 1.2  2004/10/12 15:07:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added configure()-method
  *
  * Revision 1.1  2004/10/05 09:52:25  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -13,6 +16,7 @@
 package nl.nn.adapterframework.parameters;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 
@@ -41,5 +45,15 @@ public class ParameterList extends ArrayList {
 	
 	public Parameter getParameter(int i) {
 		return (Parameter)get(i);
+	}
+	
+	public Parameter findParameter(String name) {
+		for (Iterator it=iterator();it.hasNext();) {
+			Parameter p = (Parameter)it.next();
+			if (p!=null && p.getName().equals(name)) {
+				return p;
+			}
+		}
+		return null;
 	}
 }
