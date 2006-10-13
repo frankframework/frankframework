@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaProviderListener.java,v $
- * Revision 1.23  2006-10-13 08:11:30  europe\L190409
+ * Revision 1.24  2006-10-13 08:23:59  europe\L190409
+ * do not process null UDZ
+ *
+ * Revision 1.23  2006/10/13 08:11:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * copy UDZ to session-variables
  *
  * Revision 1.22  2006/08/21 15:08:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -144,7 +147,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * @since 4.2
  */
 public class IfsaProviderListener extends IfsaFacade implements IPullingListener, INamedObject, RunStateEnquiring {
-	public static final String version = "$RCSfile: IfsaProviderListener.java,v $ $Revision: 1.23 $ $Date: 2006-10-13 08:11:30 $";
+	public static final String version = "$RCSfile: IfsaProviderListener.java,v $ $Revision: 1.24 $ $Date: 2006-10-13 08:23:59 $";
 
     private final static String THREAD_CONTEXT_SESSION_KEY = "session";
     private final static String THREAD_CONTEXT_RECEIVER_KEY = "receiver";
@@ -461,16 +464,18 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 	    threadContext.put("ifsaOccurrence", ifsaOccurrence);
 	    threadContext.put("ifsaVersion", ifsaVersion);
 
-		String contextDump = "ifsaUDZ:";
 		Map udz = (Map)message.getIncomingUDZObject();
-		for (Iterator it = udz.keySet().iterator(); it.hasNext();) {
-			String key = (String)it.next();
-			String value = (String)udz.get(key);
-			contextDump = contextDump + "\n " + key + "=[" + value + "]";
-			threadContext.put(key, value);
-		}
-		if (log.isDebugEnabled()) {
-			log.debug(getLogPrefix()+ contextDump);
+		if (udz!=null) {
+			String contextDump = "ifsaUDZ:";
+			for (Iterator it = udz.keySet().iterator(); it.hasNext();) {
+				String key = (String)it.next();
+				String value = (String)udz.get(key);
+				contextDump = contextDump + "\n " + key + "=[" + value + "]";
+				threadContext.put(key, value);
+			}
+			if (log.isDebugEnabled()) {
+				log.debug(getLogPrefix()+ contextDump);
+			}
 		}
 
 	    return id;
