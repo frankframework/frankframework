@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractPipe.java,v $
- * Revision 1.22  2006-09-14 11:59:09  europe\L190409
+ * Revision 1.23  2006-10-13 08:17:24  europe\L190409
+ * cache UserTransaction at startup
+ *
+ * Revision 1.22  2006/09/14 11:59:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected javadoc
  *
  * Revision 1.21  2006/08/24 07:12:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -80,6 +83,8 @@ import org.apache.log4j.Logger;
 
 import java.util.Hashtable;
 
+import javax.naming.NamingException;
+
 /**
  * Base class for {@link nl.nn.adapterframework.core.IPipe Pipe}.
  * A Pipe represents an action to take in a {@link nl.nn.adapterframework.core.PipeLine Pipeline}. This class is ment to be extended
@@ -140,7 +145,7 @@ import java.util.Hashtable;
  * @see nl.nn.adapterframework.core.PipeLineSession
  */
 public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttribute, TracingEventNumbers {
-	public static final String version="$RCSfile: AbstractPipe.java,v $ $Revision: 1.22 $ $Date: 2006-09-14 11:59:09 $";
+	public static final String version="$RCSfile: AbstractPipe.java,v $ $Revision: 1.23 $ $Date: 2006-10-13 08:17:24 $";
 	private String name;
 	protected Logger log = Logger.getLogger(this.getClass());
 	private Hashtable pipeForwards=new Hashtable();
@@ -255,8 +260,16 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	  * after the {@link #configure()} method, for eacht start and stop command of the
 	  * adapter.
 	  */
-	 public void start() throws PipeStartException{
-	   }
+	public void start() throws PipeStartException{
+		if (getTransactionAttributeNum()>0 && getTransactionAttributeNum()!=JtaUtil.TRANSACTION_ATTRIBUTE_SUPPORTS) {
+			try {
+				// getUserTransaction, to make sure its available
+				JtaUtil.getUserTransaction();
+			} catch (NamingException e) {
+				throw new PipeStartException(getLogPrefix(null)+"cannot obtain UserTransaction",e);
+			}
+		}
+	}
 	 /**
 	  * Perform necessary actions to stop the <code>Pipe</code>.<br/>
 	  * For instance, closing JMS connections, dbms connections etc.

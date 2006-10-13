@@ -1,6 +1,9 @@
 /*
  * $Log: JavaListener.java,v $
- * Revision 1.17  2006-08-24 12:23:13  europe\L190409
+ * Revision 1.18  2006-10-13 08:18:43  europe\L190409
+ * cache UserTransaction at startup
+ *
+ * Revision 1.17  2006/08/24 12:23:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * call rebind() only if ServiceName not empty
  *
  * Revision 1.16  2006/08/22 06:55:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -109,7 +112,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class JavaListener implements IPushingListener, RequestProcessor {
-	public static final String version="$RCSfile: JavaListener.java,v $ $Revision: 1.17 $ $Date: 2006-08-24 12:23:13 $";
+	public static final String version="$RCSfile: JavaListener.java,v $ $Revision: 1.18 $ $Date: 2006-10-13 08:18:43 $";
 	protected Logger log = Logger.getLogger(this.getClass());
 	
 	private String name;
@@ -141,6 +144,15 @@ public class JavaListener implements IPushingListener, RequestProcessor {
 		try {
 			// add myself to local list so that IbisLocalSenders can find me 
 			registerListener();
+			
+			// display transaction status, to force caching of UserTransaction.
+			// UserTransaction is not found in context if looked up from javalistener.
+			try {
+				String transactionStatus = JtaUtil.displayTransactionStatus();
+				log.debug("transaction status at startup ["+transactionStatus+"]");
+			} catch (Exception e) {
+				log.warn("could not get transaction status at startup",e);
+			}
 			
 			// add myself to global list so that other applications in this JVM (like Everest Portal) can find me.
 			// (performed only if serviceName is not empty
