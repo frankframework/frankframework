@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaRequesterSender.java,v $
- * Revision 1.21  2006-02-23 11:39:15  europe\L190409
+ * Revision 1.22  2006-10-13 08:13:36  europe\L190409
+ * modify comments
+ *
+ * Revision 1.21  2006/02/23 11:39:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * correct handling of IfsaReport reply messages
  *
  * Revision 1.20  2006/01/05 13:55:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -110,6 +113,7 @@ import com.ing.ifsa.IFSATimeOutMessage;
  *   <li>"FF": Fire & Forget protocol</li>
  *   <li>"RR": Request-Reply protocol</li>
  * </ul></td><td><td>&nbsp;</td></td></tr>
+ * <tr><td>{@link #setTransacted(boolean) transacted}</td><td>must be set <code>true</true> for FF senders in transacted mode</td><td>false</td></tr>
  * </table>
  * <table border="1">
  * <p><b>Parameters:</b>
@@ -122,7 +126,7 @@ import com.ing.ifsa.IFSATimeOutMessage;
  * @since  4.2
  */
 public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParameters {
-	public static final String version="$RCSfile: IfsaRequesterSender.java,v $ $Revision: 1.21 $ $Date: 2006-02-23 11:39:15 $";
+	public static final String version="$RCSfile: IfsaRequesterSender.java,v $ $Revision: 1.22 $ $Date: 2006-10-13 08:13:36 $";
  
 	protected ParameterList paramList = null;
   
@@ -254,7 +258,7 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 			}
 			sender = createSender(session, queue);
 
-			// TODO: handle UDZs
+			// TODO: handle outgoing UDZs
 			log.debug(getLogPrefix()+"sending message");
 		    TextMessage sentMessage=sendMessage(session, sender, message, null);
 			log.debug(getLogPrefix()+"message sent");

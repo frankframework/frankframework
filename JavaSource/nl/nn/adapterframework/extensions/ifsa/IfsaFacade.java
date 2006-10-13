@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaFacade.java,v $
- * Revision 1.40  2006-08-21 15:08:03  europe\L190409
+ * Revision 1.41  2006-10-13 08:08:45  europe\L190409
+ * modify comments
+ *
+ * Revision 1.40  2006/08/21 15:08:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected javadoc
  *
  * Revision 1.39  2006/07/17 08:54:18  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -143,6 +146,7 @@ import javax.jms.*;
  *   <li>"FF": Fire & Forget protocol</li>
  *   <li>"RR": Request-Reply protocol</li>
  * </ul></td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setTransacted(boolean) transacted}</td><td>must be set <code>true</true> for FF senders/listeners in transacted mode</td><td>false</td></tr>
  * <tr><td>{@link #setTimeOut(long) timeOut}</td><td>receiver timeout, in milliseconds</td><td>defined by IFSA expiry</td></tr>
  * </table>
  * 
@@ -158,7 +162,7 @@ import javax.jms.*;
  * @since 4.2
  */
 public class IfsaFacade implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version = "$RCSfile: IfsaFacade.java,v $ $Revision: 1.40 $ $Date: 2006-08-21 15:08:03 $";
+	public static final String version = "$RCSfile: IfsaFacade.java,v $ $Revision: 1.41 $ $Date: 2006-10-13 08:08:45 $";
     protected Logger log = Logger.getLogger(this.getClass());
     
     private static int BASIC_ACK_MODE = Session.AUTO_ACKNOWLEDGE;
@@ -182,7 +186,7 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination, IXAEnab
 	private boolean requestor=false;
 	private boolean provider=false;
 		
-	private boolean transacted=false; // attribute is currently not used
+	private boolean transacted=false; 
 
 	private String providerSelector=null;
 
