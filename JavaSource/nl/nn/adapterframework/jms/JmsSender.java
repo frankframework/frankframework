@@ -1,6 +1,9 @@
 /*
  * $Log: JmsSender.java,v $
- * Revision 1.23  2006-01-05 14:30:15  europe\L190409
+ * Revision 1.24  2006-10-13 08:15:18  europe\L190409
+ * update javadoc
+ *
+ * Revision 1.23  2006/01/05 14:30:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.22  2005/12/29 15:15:39  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -93,16 +96,16 @@ import javax.jms.Message;
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>classname</td><td>nl.nn.adapterframework.jms.JmsSender</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the sender</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setDestinationName(String) destinationName}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setDestinationType(String) destinationType}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setMessageTimeToLive(long) messageTimeToLive}</td><td>&nbsp;</td><td>0</td></tr>
+ * <tr><td>{@link #setDestinationName(String) destinationName}</td><td>name of the JMS destination (queue or topic) to use</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setDestinationType(String) destinationType}</td><td>either <code>QUEUE</code> or <code>TOPIC</code></td><td><code>QUEUE</code></td></tr>
+ * <tr><td>{@link #setMessageTimeToLive(long) messageTimeToLive}</td><td>the time it takes for the message to expire. If the message is not consumed before, it will be lost. Make sure to set it to a positive value for request/repy type of messages.</td><td>0 (unlimited)</td></tr>
  * <tr><td>{@link #setMessageType(String) messageType}</td><td>value of the JMSType field</td><td>not set by application</td></tr>
  * <tr><td>{@link #setDeliveryMode(String) deliveryMode}</td><td>controls mode that messages are sent with: either 'persistent' or 'non_persistent'</td><td>not set by application</td></tr>
  * <tr><td>{@link #setPriority(int) priority}</td><td>sets the priority that is used to deliver the message. ranges from 0 to 9. Defaults to -1, meaning not set. Effectively the default priority is set by Jms to 4</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setAcknowledgeMode(String) acknowledgeMode}</td><td>&nbsp;</td><td>AUTO_ACKNOWLEDGE</td></tr>
  * <tr><td>{@link #setTransacted(boolean) transacted}</td><td>&nbsp;</td><td>false</td></tr>
  * <tr><td>{@link #setReplyToName(String) replyToName}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setPersistent(boolean) persistent}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setPersistent(boolean) persistent}</td><td>rather useless attribute, and not the same as delivery mode. You probably want to use that.</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
@@ -118,7 +121,7 @@ import javax.jms.Message;
  */
 
 public class JmsSender extends JMSFacade implements ISenderWithParameters, IPostboxSender {
-	public static final String version="$RCSfile: JmsSender.java,v $ $Revision: 1.23 $ $Date: 2006-01-05 14:30:15 $";
+	public static final String version="$RCSfile: JmsSender.java,v $ $Revision: 1.24 $ $Date: 2006-10-13 08:15:18 $";
 	private String replyToName = null;
 	private int deliveryMode = 0;
 	private String messageType = null;
@@ -215,7 +218,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 				log.info(
 					"[" + getName() + "] " + "sent Message: [" + message + "] " + "to [" + getDestinationName()
 						+ "] " + "msgID [" + msg.getJMSMessageID() + "] " + "correlationID [" + msg.getJMSCorrelationID()
-						+ "] " + "using " + (getPersistent() ? "persistent" : "non-persistent") + " mode "
+						+ "] " + "using deliveryMode [" + getDeliveryMode() + "] "
 						+ ((replyToName != null) ? "replyTo:" + replyToName : ""));
 			}
 			return msg.getJMSMessageID();
@@ -273,6 +276,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 		ts.append("name", getName());
 		ts.append("version", version);
 		ts.append("replyToName", replyToName);
+		ts.append("deliveryMode", getDeliveryMode());
 		result += ts.toString();
 		return result;
 

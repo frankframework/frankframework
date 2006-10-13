@@ -1,6 +1,9 @@
 /*
  * $Log: JmsListener.java,v $
- * Revision 1.23  2006-03-08 13:56:14  europe\L190409
+ * Revision 1.24  2006-10-13 08:15:17  europe\L190409
+ * update javadoc
+ *
+ * Revision 1.23  2006/03/08 13:56:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * getRawMessage now returns null again if no message received if transacted, 
  * to avoid transaction time out
  *
@@ -98,8 +101,8 @@ import java.util.HashMap;
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.jms.JmsListener</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td>  <td>name of the listener</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setDestinationName(String) destinationName}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setDestinationType(String) destinationType}</td><td>"QUEUE" or "TOPIC"</td><td>"QUEUE"</td></tr>
+ * <tr><td>{@link #setDestinationName(String) destinationName}</td><td>name of the JMS destination (queue or topic) to use</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setDestinationType(String) destinationType}</td><td>either <code>QUEUE</code> or <code>TOPIC</code></td><td><code>QUEUE</code></td></tr>
  * <tr><td>{@link #setTransacted(boolean) transacted}</td><td>when true, the processing joins a transaction set up by the Pipeline or Receiver</td><td>false</td></tr>
  * <tr><td>{@link #setJmsTransacted(boolean) jmsTransacted}</td><td>when true, sessions are explicitly committed (exit-state equals commitOnState) or rolled-back (other exit-states) </td><td>false</td></tr>
  * <tr><td>{@link #setCommitOnState(String) commitOnState}</td><td>&nbsp;</td><td>"success"</td></tr>
@@ -156,7 +159,7 @@ import java.util.HashMap;
  * @since 4.0.1
  */
 public class JmsListener extends JMSFacade implements IPostboxListener, ICorrelatedPullingListener, HasSender, RunStateEnquiring {
-	public static final String version="$RCSfile: JmsListener.java,v $ $Revision: 1.23 $ $Date: 2006-03-08 13:56:14 $";
+	public static final String version="$RCSfile: JmsListener.java,v $ $Revision: 1.24 $ $Date: 2006-10-13 08:15:17 $";
 
 	private final static String THREAD_CONTEXT_SESSION_KEY="session";
 	private final static String THREAD_CONTEXT_MESSAGECONSUMER_KEY="messageConsumer";

@@ -1,6 +1,9 @@
 /*
  * $Log: JMSFacade.java,v $
- * Revision 1.24  2006-02-23 10:48:51  europe\L190409
+ * Revision 1.25  2006-10-13 08:14:27  europe\L190409
+ * update javadoc
+ *
+ * Revision 1.24  2006/02/23 10:48:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fixed typo in name of setTopicConnectionFactoryName
  *
  * Revision 1.23  2005/12/20 16:59:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -95,10 +98,10 @@ import org.apache.commons.lang.StringUtils;
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>classname</td><td>nl.nn.adapterframework.jms.JMSFacade</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td>  <td>name of the listener</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setDestinationName(String) destinationName}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setDestinationType(String) destinationType}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setMessageTimeToLive(long) messageTimeToLive}</td><td>&nbsp;</td><td>0</td></tr>
- * <tr><td>{@link #setPersistent(boolean) persistent}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setDestinationName(String) destinationName}</td><td>name of the JMS destination (queue or topic) to use</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setDestinationType(String) destinationType}</td><td>either <code>QUEUE</code> or <code>TOPIC</code></td><td><code>QUEUE</code></td></tr>
+ * <tr><td>{@link #setMessageTimeToLive(long) messageTimeToLive}</td><td>the time it takes for the message to expire. If the message is not consumed before, it will be lost. Make sure to set it to a positive value for request/repy type of messages.</td><td>0 (unlimited)</td></tr>
+ * <tr><td>{@link #setPersistent(boolean) persistent}</td><td>rather useless attribute, and not the same as <code>deliveryMode</code>. You probably want to use that.</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setAcknowledgeMode(String) acknowledgeMode}</td><td>&nbsp;</td><td>AUTO_ACKNOWLEDGE</td></tr>
  * <tr><td>{@link #setTransacted(boolean) transacted}</td><td>&nbsp;</td><td>false</td></tr>
  * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
@@ -109,7 +112,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version="$RCSfile: JMSFacade.java,v $ $Revision: 1.24 $ $Date: 2006-02-23 10:48:51 $";
+	public static final String version="$RCSfile: JMSFacade.java,v $ $Revision: 1.25 $ $Date: 2006-10-13 08:14:27 $";
 
 	public static final String MODE_PERSISTENT="PERSISTENT";
 	public static final String MODE_NON_PERSISTENT="NON_PERSISTENT";
