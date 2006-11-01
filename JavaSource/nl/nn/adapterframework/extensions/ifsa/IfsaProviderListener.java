@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaProviderListener.java,v $
- * Revision 1.24  2006-10-13 08:23:59  europe\L190409
+ * Revision 1.25  2006-11-01 14:22:42  europe\L190409
+ * avoid NPE for null commitOnState
+ *
+ * Revision 1.24  2006/10/13 08:23:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * do not process null UDZ
  *
  * Revision 1.23  2006/10/13 08:11:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -147,7 +150,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * @since 4.2
  */
 public class IfsaProviderListener extends IfsaFacade implements IPullingListener, INamedObject, RunStateEnquiring {
-	public static final String version = "$RCSfile: IfsaProviderListener.java,v $ $Revision: 1.24 $ $Date: 2006-10-13 08:23:59 $";
+	public static final String version = "$RCSfile: IfsaProviderListener.java,v $ $Revision: 1.25 $ $Date: 2006-11-01 14:22:42 $";
 
     private final static String THREAD_CONTEXT_SESSION_KEY = "session";
     private final static String THREAD_CONTEXT_RECEIVER_KEY = "receiver";
@@ -270,10 +273,14 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 		     * Message are only committed in the Fire & Forget scenario when the outcome
 		     * of the adapter equals the getCommitOnResult value
 		     */
-	    	log.debug("PipeLineResult : "+plr.toString());
-	    	log.debug(getCommitOnState());
-	    	
-	        if (getCommitOnState().equals(plr.getState())) {
+		    
+		    String cos=getCommitOnState(); 
+		     
+		    if (log.isDebugEnabled()) {
+				log.debug("PipeLineResult ["+plr.toString()+"] commitOnState="+cos);
+		    }
+
+	        if (cos==null || cos.equals(plr.getState())) {
 				try {
 					session.commit();
 				} catch (JMSException e) {
@@ -281,7 +288,7 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 				}
 	        } else {
 	            log.warn(getLogPrefix()+"message with correlationID ["+ cid+ " message ["+ getStringFromRawMessage(rawMessage, threadContext)+ "]"
-	                    + " is NOT committed. The result-state of the adapter is ["+ plr.getState()+ "] while the state for committing is set to ["+ getCommitOnState()+ "]");
+	                    + " is NOT committed. The result-state of the adapter is ["+ plr.getState()+ "] while the state for committing is set to ["+ cos+ "]");
 	        }
 	        if (isSessionsArePooled()) {
 				threadContext.remove(THREAD_CONTEXT_SESSION_KEY);
