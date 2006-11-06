@@ -1,6 +1,9 @@
 /*
  * $Log: ParameterResolutionContext.java,v $
- * Revision 1.11  2005-10-26 08:49:57  europe\L190409
+ * Revision 1.12  2006-11-06 08:19:52  europe\L190409
+ * added default constructor
+ *
+ * Revision 1.11  2005/10/26 08:49:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * reintroduced check for empty parameterlist in getValueMap
  *
  * Revision 1.10  2005/10/24 09:59:24  John Dekker <john.dekker@ibissource.org>
@@ -59,7 +62,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class ParameterResolutionContext {
-	public static final String version="$RCSfile: ParameterResolutionContext.java,v $ $Revision: 1.11 $ $Date: 2005-10-26 08:49:57 $";
+	public static final String version="$RCSfile: ParameterResolutionContext.java,v $ $Revision: 1.12 $ $Date: 2006-11-06 08:19:52 $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	private String input;
@@ -89,6 +92,9 @@ public class ParameterResolutionContext {
 
 	public ParameterResolutionContext(Source xmlSource, PipeLineSession session) {
 		this(xmlSource, session, XmlUtils.isNamespaceAwareByDefault());
+	}
+
+	public ParameterResolutionContext() {
 	}
 			
 	/**
