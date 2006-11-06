@@ -1,6 +1,9 @@
 /*
  * $Log: Parameter.java,v $
- * Revision 1.15  2005-10-24 09:59:24  europe\m00f531
+ * Revision 1.16  2006-11-06 08:19:13  europe\L190409
+ * added value-attribute as fixed-value
+ *
+ * Revision 1.15  2005/10/24 09:59:24  John Dekker <john.dekker@ibissource.org>
  * Add support for pattern parameters, and include them into several listeners,
  * senders and pipes that are file related
  *
@@ -96,6 +99,7 @@ import org.apache.log4j.Logger;
  * <tr><td>{@link #setStyleSheetName(String) styleSheetName}</td><td>Reference to a respirce with the stylesheet</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDefaultValue(String) defaultValue}</td><td>If the result of sessionKey, XpathExpressen and/or Stylesheet returns null or an empty String, this value is returned</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setPattern(String) pattern}</td><td>Value of parameter is determined using substitution and formating. If fname is a parameter or session variable that resolves to Eric, then the pattern 'Hi {fname}, hoe gaat het?' resolves to 'Hi Eric, hoe gaat het?' </td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setValue(String) value}</td><td>A fixed value</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * Examples:
@@ -122,7 +126,7 @@ import org.apache.log4j.Logger;
  * @author Richard Punt / Gerrit van Brakel
  */
 public class Parameter implements INamedObject, IWithParameters {
-	public static final String version="$RCSfile: Parameter.java,v $ $Revision: 1.15 $ $Date: 2005-10-24 09:59:24 $";
+	public static final String version="$RCSfile: Parameter.java,v $ $Revision: 1.16 $ $Date: 2006-11-06 08:19:13 $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	private String name = null;
@@ -132,6 +136,7 @@ public class Parameter implements INamedObject, IWithParameters {
 	private String styleSheetName = null;
 	private String pattern = null; 
 	private String defaultValue = null;
+	private String value = null;
 
 	private TransformerPool transformerPool = null;
 	protected ParameterList paramList = null;
@@ -230,6 +235,8 @@ public class Parameter implements INamedObject, IWithParameters {
 				result=prc.getSession().get(getSessionKey());
 			} else if (StringUtils.isNotEmpty(getPattern())) {
 				result=format(alreadyResolvedParameters, prc); 								
+			} else if (StringUtils.isNotEmpty(getValue())) {
+				result = getValue();
 			} else {
 				result=prc.getInput();
 			}
@@ -329,8 +336,16 @@ public class Parameter implements INamedObject, IWithParameters {
 		return sessionKey;
 	}
 
+	public void setValue(String value) {
+		this.value = value;
+	}
+
+	public String getValue() {
+		return value;
+	}
+
 	public String toString() {
-		return "name=["+name+"] defaultValue=["+defaultValue+"] sessionKey=["+sessionKey+"]" + "xpathExpression=["+xpathExpression+ "]"  + "type=["+type+ "]";
+		return "name=["+name+"] defaultValue=["+defaultValue+"] sessionKey=["+sessionKey+"]" + "xpathExpression=["+xpathExpression+ "]" + "type=["+type+ "]" + "value=["+value+ "]";
 
 	}
 
