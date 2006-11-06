@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcQuerySenderBase.java,v $
- * Revision 1.21  2006-02-09 10:42:56  europe\L190409
+ * Revision 1.22  2006-11-06 13:02:31  europe\L190409
+ * added attribute scalarExtended
+ *
+ * Revision 1.21  2006/02/09 10:42:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added clob-support (PL)
  *
  * Revision 1.20  2006/01/05 14:21:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -118,6 +121,11 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * <tr><td>{@link #setMaxRows(int) maxRows}</td><td>maximum number of rows returned</td><td>-1 (unlimited)</td></tr>
  * <tr><td>{@link #setStartRow(int) startRow}</td><td>the number of the first row returned from the output</td><td>1</td></tr>
  * <tr><td>{@link #setScalar(boolean) scalar}</td><td>when true, the value of the first column of the first row (or the StartRow) is returned as the only result, as a simple non-XML value</td><td>false</td></tr>
+ * <tr><td>{@link #setScalarExtended(boolean) scalarExtended}</td><td>when true and <code>scalar</code> is also true, but returns no value, one of the following is returned:
+ * <ul><li>"[absent]" no row is found</li>
+ *     <li>"[null]" a row is found, but the value is a SQL-NULL</li>
+ *     <li>"[empty]" a row is found, but the value is a empty string</li>
+ * </ul></td><td>false</td></tr>
  * <tr><td>{@link #setNullValue(String) nullValue}</td><td>value used in result as contents of fields that contain no value (SQL-NULL)</td><td><i>empty string</></td></tr>
  * <tr><td>{@link #setResultQuery(String) resultQuery}</td><td>query that can be used to obtain result of side-effecto of update-query, like generated value of sequence. Example: SELECT mysequence.currval FROM DUAL</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSynchronous(boolean) synchronous}</td><td>&nbsp;</td><td>true</td></tr>
@@ -141,12 +149,13 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * @since 	4.1
  */
 public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
-	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.21 $ $Date: 2006-02-09 10:42:56 $";
+	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.22 $ $Date: 2006-11-06 13:02:31 $";
 
 	private String queryType = "other";
 	private int maxRows=-1; // return all rows
 	private int startRow=1;
 	private boolean scalar=false;
+	private boolean scalarExtended=false;
 	private boolean synchronous=true;
 	private int blobColumn=1;
 	private int clobColumn=1;
@@ -268,7 +277,21 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 			if (resultset.next()) {
 				result = resultset.getString(1);
 				if (resultset.wasNull()) {
-					result = null;
+					if (isScalarExtended()) {
+						result = "[null]";
+					} else {
+						result = null;
+					}
+				} else {
+					if (result.length()==0) {
+						if (isScalarExtended()) {
+							result="[empty]";
+						}
+					}
+				}
+			} else {
+				if (isScalarExtended()) {
+					result="[absent]";
 				}
 			}
 		} else {
@@ -410,6 +433,14 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 
 	public void setScalar(boolean b) {
 		scalar = b;
+	}
+
+	public boolean isScalarExtended() {
+		return scalarExtended;
+	}
+
+	public void setScalarExtended(boolean b) {
+		scalarExtended = b;
 	}
 
 
