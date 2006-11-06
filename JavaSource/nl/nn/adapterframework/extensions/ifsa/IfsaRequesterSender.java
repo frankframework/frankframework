@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaRequesterSender.java,v $
- * Revision 1.22  2006-10-13 08:13:36  europe\L190409
+ * Revision 1.23  2006-11-06 08:18:02  europe\L190409
+ * modifications for dynamic serviceId and occurrence
+ *
+ * Revision 1.22  2006/10/13 08:13:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * modify comments
  *
  * Revision 1.21  2006/02/23 11:39:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -95,6 +98,9 @@ import com.ing.ifsa.IFSAQueue;
 import com.ing.ifsa.IFSAReportMessage;
 import com.ing.ifsa.IFSATimeOutMessage;
 
+import java.util.HashMap;
+import java.util.Map;
+
 
 /**
  * {@link ISender} that sends a message to an IFSA service and, in case the messageprotocol is RR (Request-Reply)
@@ -118,15 +124,16 @@ import com.ing.ifsa.IFSATimeOutMessage;
  * <table border="1">
  * <p><b>Parameters:</b>
  * <tr><th>name</th><th>type</th><th>remarks</th></tr>
- * <tr><td>serviceId (or any other name)</td><td>string</td>
- * <td>When a parameter is present, it is used to determine the serviceId to be called. However, a serviceId must still be specified as an attribute, for compatibility reasons</td></tr>
+ * <tr><td>serviceId</td><td>string</td><td>When a parameter with name serviceId is present, it is used at runtime instead of the serviceId specified by the attribute. A lookup of the service for this serviceId will be done at runtime, while the service for the serviceId specified as an attribute will be done at configuration time. Hence, IFSA configuration problems will be detected at runtime for the serviceId specified as a param and at configuration time for the serviceId specified with an attribute</td></tr>
+ * <tr><td>occurrence</td><td>string</td><td>The occurrence part of the serviceId (the part between the fourth and the fifth slash). The occurence part of the specified serviceId (either specified by a parameter or an attribute) will be replaced with the value of this parameter at runtime. From "IFSA - Naming Standards.doc": IFSA://SERVICE/&lt;group&gt;/&lt;occurrence&gt;/&lt;service&gt;/&lt;version&gt;[?&lt;parameter=value&gt;]</td></tr>
+ * <tr><td>all other parameters</td><td>string</td><td>All parameters (names and values) (except serviceId and occurrence) are passed to the outgoing UDZ (User Defined Zone) object</td></tr>
  * </table>
  *
  * @author Johan Verrips / Gerrit van Brakel
  * @since  4.2
  */
 public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParameters {
-	public static final String version="$RCSfile: IfsaRequesterSender.java,v $ $Revision: 1.22 $ $Date: 2006-10-13 08:13:36 $";
+	public static final String version="$RCSfile: IfsaRequesterSender.java,v $ $Revision: 1.23 $ $Date: 2006-11-06 08:18:02 $";
  
 	protected ParameterList paramList = null;
   
@@ -166,12 +173,11 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 	public boolean isSynchronous() {
 		return getMessageProtocolEnum().equals(IfsaMessageProtocolEnum.REQUEST_REPLY);
 	}
-
 	
 	/**
 	 * Retrieves a message with the specified correlationId from queue or other channel, but does no processing on it.
 	 */
-	private Message getRawReplyMessage(QueueSession session, TextMessage sentMessage) throws SenderException, TimeOutException {
+	private Message getRawReplyMessage(QueueSession session, IFSAQueue queue, TextMessage sentMessage) throws SenderException, TimeOutException {
 	
 		String selector=null;
 	    Message msg = null;
@@ -180,7 +186,7 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 		    replyReceiver = getReplyReceiver(session, sentMessage);
 			selector=replyReceiver.getMessageSelector();
 			
-			long timeout = getExpiry();
+			long timeout = getExpiry(queue);
 			log.debug(getLogPrefix()+"start waiting at most ["+timeout+"] ms for reply on message using selector ["+selector+"]");
 		    msg = replyReceiver.receive(timeout);
 		    if (msg!=null) {
@@ -222,30 +228,58 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 	}
 
 	public String sendMessage(String message) throws SenderException, TimeOutException {
-		return sendMessage(null, message, null);
+		return sendMessage(null, message, (Map)null);
 	}
 
 	public String sendMessage(String dummyCorrelationId, String message) throws SenderException, TimeOutException {
-		return sendMessage(dummyCorrelationId, message, null);
+		return sendMessage(dummyCorrelationId, message, (Map)null);
 	}
-	
+
+	public String sendMessage(String dummyCorrelationId, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+		ParameterValueList paramValueList;
+		try {
+			paramValueList = prc.getValues(paramList);
+		} catch (ParameterException e) {
+			throw new SenderException(getLogPrefix()+"caught ParameterException in sendMessage() determining serviceId",e);
+		}
+		Map params = new HashMap();
+		if (paramValueList != null && paramList != null) {
+			for (int i = 0; i < paramList.size(); i++) {
+				String key = paramList.getParameter(i).getName();
+				String value = paramValueList.getParameterValue(i).asStringValue(null);
+				params.put(key, value);
+			}
+		}
+		return sendMessage(dummyCorrelationId, message, params);
+	}
+
 	/**
 	 * Execute a request to the IFSA service.
 	 * @return in Request/Reply, the retrieved message or TIMEOUT, otherwise null
 	 */
-	public String sendMessage(String dummyCorrelationId, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+	public String sendMessage(String dummyCorrelationId, String message, Map params) throws SenderException, TimeOutException {
 	    String result = null;
 		QueueSession session = null;
 		QueueSender sender = null;
+		Map udzMap = null;
 		    
 		
 		try {
 			log.debug(getLogPrefix()+"creating session and sender");
 			session = createSession();
 			IFSAQueue queue;
-			if (prc != null && paramList != null) {
-				ParameterValueList paramValues = prc.getValues(paramList);
-				String serviceId = paramValues.getParameterValue(0).getValue().toString();
+			if (params != null && params.size() > 0) {
+				// Use first param as serviceId
+				String serviceId = (String)params.get("serviceId");
+				if (serviceId == null) {
+					serviceId = getServiceId();
+				}
+				String occurrence = (String)params.get("occurrence");
+				if (occurrence != null) {
+					int i = serviceId.indexOf('/', serviceId.indexOf('/', serviceId.indexOf('/', serviceId.indexOf('/') + 1) + 1) + 1);
+					int j = serviceId.indexOf('/', i + 1);
+					serviceId = serviceId.substring(0, i + 1) + occurrence + serviceId.substring(j);
+				}
 				queue = getConnection().lookupService(getConnection().polishServiceId(serviceId));
 				if (queue==null) {
 					throw new SenderException(getLogPrefix()+"got null as queue for serviceId ["+serviceId+"]");
@@ -253,20 +287,25 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 				if (log.isDebugEnabled()) {
 					log.info(getLogPrefix()+ "got Queue to send messages on ["+queue.getQueueName()+"]");
 				}
+				// Use remaining params as outgoing UDZs
+				udzMap = new HashMap();
+				udzMap.putAll(params);
+				udzMap.remove("serviceId");
+				udzMap.remove("occurrence");
 			} else {
 				queue = getServiceQueue();
 			}
 			sender = createSender(session, queue);
 
-			// TODO: handle outgoing UDZs
 			log.debug(getLogPrefix()+"sending message");
-		    TextMessage sentMessage=sendMessage(session, sender, message, null);
+
+		    TextMessage sentMessage=sendMessage(session, sender, message, udzMap);
 			log.debug(getLogPrefix()+"message sent");
 
 			if (isSynchronous()){
 		
 				log.debug(getLogPrefix()+"waiting for reply");
-				Message msg=getRawReplyMessage(session, sentMessage);
+				Message msg=getRawReplyMessage(session, queue, sentMessage);
 				if (msg instanceof TextMessage) {
 					result = ((TextMessage)msg).getText();
 				} else {
@@ -292,8 +331,6 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 			throw new SenderException(getLogPrefix()+"caught JMSException in sendMessage()",e);
 		} catch (IfsaException e) {
 			throw new SenderException(getLogPrefix()+"caught IfsaException in sendMessage()",e);
-		} catch (ParameterException e) {
-			throw new SenderException(getLogPrefix()+"caught ParameterException in sendMessage() determining serviceId",e);
 		} finally {
 			if (sender != null) {
 				try {
