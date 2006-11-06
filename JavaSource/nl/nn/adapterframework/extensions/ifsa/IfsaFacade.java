@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaFacade.java,v $
- * Revision 1.41  2006-10-13 08:08:45  europe\L190409
+ * Revision 1.42  2006-11-06 08:15:30  europe\L190409
+ * modifications for dynamic serviceId
+ *
+ * Revision 1.41  2006/10/13 08:08:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * modify comments
  *
  * Revision 1.40  2006/08/21 15:08:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -112,23 +115,34 @@
  */
 package nl.nn.adapterframework.extensions.ifsa;
 
-import com.ing.ifsa.*;
 
+import java.util.Map;
+
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.Queue;
+import javax.jms.QueueReceiver;
+import javax.jms.QueueSender;
+import javax.jms.QueueSession;
+import javax.jms.Session;
+import javax.jms.TextMessage;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IXAEnabled;
 import nl.nn.adapterframework.core.IbisException;
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.util.AppConstants;
 
 import org.apache.commons.lang.StringUtils;
-
-import org.apache.log4j.Logger;
 import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.log4j.Logger;
 
-import java.util.Map;
-
-import javax.jms.*;
+import com.ing.ifsa.IFSAConstants;
+import com.ing.ifsa.IFSAMessage;
+import com.ing.ifsa.IFSAQueue;
+import com.ing.ifsa.IFSAQueueSender;
+import com.ing.ifsa.IFSAServerQueueSender;
 
 /**
  * Base class for IFSA 2.0/2.2 functions.
@@ -162,7 +176,7 @@ import javax.jms.*;
  * @since 4.2
  */
 public class IfsaFacade implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version = "$RCSfile: IfsaFacade.java,v $ $Revision: 1.41 $ $Date: 2006-10-13 08:08:45 $";
+	public static final String version = "$RCSfile: IfsaFacade.java,v $ $Revision: 1.42 $ $Date: 2006-11-06 08:15:30 $";
     protected Logger log = Logger.getLogger(this.getClass());
     
     private static int BASIC_ACK_MODE = Session.AUTO_ACKNOWLEDGE;
@@ -226,21 +240,15 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination, IXAEnab
 	public void configure() throws ConfigurationException {
 
 		// perform some basic checks
-		try {
-			if (StringUtils.isEmpty(getApplicationId()))
-				throw new ConfigurationException(getLogPrefix()+"applicationId is not specified");
-			if (isRequestor() && StringUtils.isEmpty(getServiceId()))
-				throw new ConfigurationException(getLogPrefix()+"serviceId is not specified");
-			if (getMessageProtocolEnum() == null)
-				throw new ConfigurationException(getLogPrefix()+
-					"invalid messageProtocol specified ["
-						+ getMessageProtocolEnum()
-						+ "], should be one of the following "
-						+ IfsaMessageProtocolEnum.getNames());
-		} catch (IfsaException e) {
-			cleanUpAfterException();
-			throw new ConfigurationException("exception checking configuration",e);
-		}
+		if (StringUtils.isEmpty(getApplicationId()))
+			throw new ConfigurationException(getLogPrefix()+"applicationId is not specified");
+		if (getMessageProtocolEnum() == null)
+			throw new ConfigurationException(getLogPrefix()+
+				"invalid messageProtocol specified ["
+					+ getMessageProtocolEnum()
+					+ "], should be one of the following "
+					+ IfsaMessageProtocolEnum.getNames());
+		// TODO: check if serviceId is specified, either as attribute or as parameter
 	}
 
 	protected void cleanUpAfterException() {
@@ -301,9 +309,11 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination, IXAEnab
 	protected IFSAQueue getServiceQueue() throws IfsaException {
 		if (queue == null) {
 			if (isRequestor()) {
-				queue = getConnection().lookupService(getServiceId());
-				if (log.isDebugEnabled()) {
-					log.info(getLogPrefix()+ "got Queue to send messages on "+getPhysicalDestinationName());
+				if (getServiceId() != null) {
+					queue = getConnection().lookupService(getServiceId());
+					if (log.isDebugEnabled()) {
+						log.info(getLogPrefix()+ "got Queue to send messages on "+getPhysicalDestinationName());
+					}
 				}
 			} else {
 				queue = getConnection().lookupProviderInput();
@@ -437,17 +447,20 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination, IXAEnab
 		}
 	}
 	
-	
 	public long getExpiry() throws IfsaException {
+		return getExpiry((IFSAQueue) getServiceQueue());
+	}
+	
+	public long getExpiry(IFSAQueue queue) throws IfsaException {
 		long expiry = getTimeOut();
 		if (expiry>=0) {
 			return expiry;
 		}
-	    try {
-	        return ((IFSAQueue) getServiceQueue()).getExpiry();
-	    } catch (JMSException e) {
-	        throw new IfsaException("error retrieving timeOut value", e);
-	    }
+		try {
+			return queue.getExpiry();
+		} catch (JMSException e) {
+			throw new IfsaException("error retrieving timeOut value", e);
+		}
 	}
 
     public String getMessageProtocol() {
@@ -517,14 +530,12 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination, IXAEnab
 			}
 	        TextMessage msg = session.createTextMessage();
 	        msg.setText(message);
-			if (udzMap != null) {
-				// TODO: Handle UDZs
-				log.warn(getLogPrefix()+"IfsaClient: processing of UDZ maps not yet implemented");
-				/*
+			if (udzMap != null && msg instanceof IFSAMessage) {
+				// Handle UDZs
+				log.debug(getLogPrefix()+"add UDZ map to IFSAMessage");
 				// process the udzMap
-				IFSAUDZ udzObject = ((IFSAMessage) msg).getOutgoingUDZObject();
-				udzObject.putAll(udzMap)			;
-				*/
+				Map udzObject = (Map)((IFSAMessage) msg).getOutgoingUDZObject();
+				udzObject.putAll(udzMap);
 			}
 			String replyToQueueName="-"; 
 	        //Client side
@@ -668,7 +679,7 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination, IXAEnab
 	}
 
 	public String getServiceId() {
-		if (polishedServiceId==null) {
+		if (polishedServiceId==null && serviceId!=null) {
 			try {
 				IfsaConnection conn = getConnection();
 				polishedServiceId = conn.polishServiceId(serviceId);
