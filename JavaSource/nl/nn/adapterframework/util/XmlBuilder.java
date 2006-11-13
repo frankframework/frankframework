@@ -1,3 +1,9 @@
+/*
+ * $Log: XmlBuilder.java,v $
+ * Revision 1.7  2006-11-13 15:43:15  europe\L190409
+ * corrected version string
+ *
+ */
 package nl.nn.adapterframework.util;
 
 import java.util.ArrayList;
@@ -9,12 +15,12 @@ import java.util.Vector;
  * In fact it represents an XML element. Attributes can be added
  * with the addAttribute method, the content can be set with the setValue method.
  * Subelements can be added with the addSubElement method.
- * the toXML function returns the node and subnodes as an indenten xml string.
+ * the toXML function returns the node and subnodes as an indented xml string.
  * @version Id
  * @author Johan Verrips
  **/
 public class XmlBuilder {
-	public static final String version="$Id: XmlBuilder.java,v 1.6 2006-11-13 15:39:58 europe\L190409 Exp $";
+	public static final String version = "$RCSfile: XmlBuilder.java,v $ $Revision: 1.7 $ $Date: 2006-11-13 15:43:15 $";
 	
   private ArrayList attributeNames = new ArrayList();;
   private Hashtable attributes = new Hashtable();;
