@@ -14,7 +14,7 @@ import java.util.Vector;
  * @author Johan Verrips
  **/
 public class XmlBuilder {
-	public static final String version="$Id: XmlBuilder.java,v 1.5 2005-01-07 09:27:23 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: XmlBuilder.java,v 1.6 2006-11-13 15:39:58 europe\L190409 Exp $";
 	
   private ArrayList attributeNames = new ArrayList();;
   private Hashtable attributes = new Hashtable();;
@@ -121,8 +121,11 @@ public void addSubElement(XmlBuilder newElement) {
    * sets the content of the element
    **/
   public void setValue (String value) {
-	if (value!=null)
-	    this.value=XmlUtils.encodeChars(value);
+		setValue(value, true);
+  }
+  public void setValue (String value, boolean encode) {
+	if (value!=null && encode)
+		this.value=XmlUtils.encodeChars(value);
 	else this.value=value;
   }
   /**
