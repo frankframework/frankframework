@@ -1,6 +1,9 @@
 /*
  * $Log: StringResolver.java,v $
- * Revision 1.5  2004-08-30 06:37:19  NNVZNL01#L180564
+ * Revision 1.6  2006-11-14 16:39:34  europe\L190409
+ * cosmetic changes
+ *
+ * Revision 1.5  2004/08/30 06:37:19  Johan Verrips <johan.verrips@ibissource.org>
  * Accepts map as parameter instead of Properties
  *
  * Revision 1.4  2004/03/26 10:42:37  Johan Verrips <johan.verrips@ibissource.org>
@@ -20,23 +23,20 @@ import java.util.Properties;
  * Provide functionality to resolve ${property.key} to the value of the property key, recursively.
  * @version Id
  * 
- * <p>Creation date: (15-08-2003 13:47:20)</p>
  * @author Johan Verrips 
  */
 public class StringResolver {
-	public static final String version="$Id: StringResolver.java,v 1.5 2004-08-30 06:37:19 NNVZNL01#L180564 Exp $";
+	public static final String version="$RCSfile: StringResolver.java,v $ $Revision: 1.6 $ $Date: 2006-11-14 16:39:34 $";
 	
     static String DELIM_START = "${";
     static char DELIM_STOP = '}';
     static int DELIM_START_LEN = 2;
     static int DELIM_STOP_LEN = 1;
     static Logger log = Logger.getLogger("StringResolver");
-/**
- * StringResolver constructor comment.
- */
-public StringResolver() {
-	super();
-}
+
+	public StringResolver() {
+		super();
+	}
     /**
        Very similar to <code>System.getProperty</code> except
        that the {@link SecurityException} is hidden.
@@ -55,33 +55,20 @@ public StringResolver() {
             return def;
         }
     }
-    /**
- * Starts the application.
- * @param args an array of command-line arguments
- */
-public static void main(java.lang.String[] args) {
-	// Insert code to start the application here.
-//	StringResolver sr=new StringResolver();
-	Properties prop=new Properties();
-	prop.put("test.name", "dit is de naam met ${test.xx}");
-	prop.put("test.xx", "hier nog eens");
-	System.out.println(prop.get("test.name"));
-	System.out.println(StringResolver.substVars("dit is ${test.name}", prop));
-
-}
+    
      /**
-  * Do variable substitution on a string to resolve ${x2} to the value of the property x2.
-  * This is done recursive, so that <br><code><pre>
-  * Properties prop = new Properties();
-  * prop.put("test.name", "this is a name with ${test.xx}");
-  * prop.put("test.xx", "again");
-  * System.out.println(prop.get("test.name"));
-  * </pre></code>
-  * will print <code>this is a name with again</code>
-  * <p> First it looks in the System properties, if none is found and a <code>Properties</code>
-  * object is specified, it looks in the specified <code>Properties</code> object.
-  */ 
- public static String substVars(String val, Map props)
+	  * Do variable substitution on a string to resolve ${x2} to the value of the property x2.
+	  * This is done recursive, so that <br><code><pre>
+	  * Properties prop = new Properties();
+	  * prop.put("test.name", "this is a name with ${test.xx}");
+	  * prop.put("test.xx", "again");
+	  * System.out.println(prop.get("test.name"));
+	  * </pre></code>
+	  * will print <code>this is a name with again</code>
+	  * <p> First it looks in the System properties, if none is found and a <code>Properties</code>
+	  * object is specified, it looks in the specified <code>Properties</code> object.
+	  */ 
+	public static String substVars(String val, Map props)
         throws IllegalArgumentException {
 
         StringBuffer sbuf = new StringBuffer();
@@ -135,4 +122,21 @@ public static void main(java.lang.String[] args) {
             }
         }
     }
+ 
+    
+	/**
+	 * Starts the application.
+	 * @param args an array of command-line arguments
+	 */
+	public static void main(java.lang.String[] args) {
+		// Insert code to start the application here.
+	//	StringResolver sr=new StringResolver();
+		Properties prop=new Properties();
+		prop.put("test.name", "dit is de naam met ${test.xx}");
+		prop.put("test.xx", "hier nog eens");
+		System.out.println(prop.get("test.name"));
+		System.out.println(StringResolver.substVars("dit is ${test.name}", prop));
+	
+	}
+    
 }
