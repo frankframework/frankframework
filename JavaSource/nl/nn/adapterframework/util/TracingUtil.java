@@ -1,6 +1,9 @@
 /*
  * $Log: TracingUtil.java,v $
- * Revision 1.3  2006-09-14 15:28:06  europe\L190409
+ * Revision 1.4  2006-11-21 09:50:43  europe\L190409
+ * try to avoid class not found exceptions for METT
+ *
+ * Revision 1.3  2006/09/14 15:28:06  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added configuration file generation
  *
  * Revision 1.2  2006/09/06 16:03:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -95,11 +98,15 @@ public class TracingUtil {
 	
 	protected static void eventOccurred(int eventNr) {
 		if (eventNr>=0) {
-			try {
-				MonitorAccessor.eventOccurred(eventNr);
-			} catch (Throwable t) {
-				log.warn("Exception occured posting METT event",t);
-			}
+			postEventToMett(eventNr);
+		}
+	}
+
+	private static void postEventToMett(int eventNr) {
+		try {
+			MonitorAccessor.eventOccurred(eventNr);
+		} catch (Throwable t) {
+			log.warn("Exception occured posting METT event",t);
 		}
 	}
 
