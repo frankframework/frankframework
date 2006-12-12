@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcException.java,v $
- * Revision 1.4  2006-12-12 09:57:35  europe\L190409
+ * Revision 1.5  2006-12-12 09:58:41  europe\L190409
+ * fix version string
+ *
+ * Revision 1.4  2006/12/12 09:57:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * restore jdbc package
  *
  * Revision 1.2  2004/03/26 10:43:07  Johan Verrips <johan.verrips@ibissource.org>
@@ -22,7 +25,7 @@ import nl.nn.adapterframework.core.IbisException;
  * @since  4.1
  */
 public class JdbcException extends IbisException {
-	public static final String version="$Id: JdbcException.java,v 1.4 2006-12-12 09:57:35 europe\L190409 Exp $";
+	public static final String version = "$RCSfile: JdbcException.java,v $ $Revision: 1.5 $ $Date: 2006-12-12 09:58:41 $";
 
 	public JdbcException() {
 		super();
