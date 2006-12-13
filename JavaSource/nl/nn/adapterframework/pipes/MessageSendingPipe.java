@@ -1,6 +1,9 @@
 /*
  * $Log: MessageSendingPipe.java,v $
- * Revision 1.22  2006-01-05 14:36:30  europe\L190409
+ * Revision 1.23  2006-12-13 16:29:20  europe\L190409
+ * catch null input
+ *
+ * Revision 1.22  2006/01/05 14:36:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.21  2005/10/24 09:20:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -120,7 +123,7 @@ import org.apache.commons.lang.StringUtils;
  */
 
 public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
-	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.22 $ $Date: 2006-01-05 14:36:30 $";
+	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.23 $ $Date: 2006-12-13 16:29:20 $";
 	private final static String TIMEOUTFORWARD = "timeout";
 	private final static String EXCEPTIONFORWARD = "exception";
 
@@ -199,6 +202,11 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 
 	public PipeRunResult doPipe(Object input, PipeLineSession session)
 		throws PipeRunException {
+		if (input==null) {
+			throw new PipeRunException(
+				this,
+				"received null as input");
+		}
 		if (!(input instanceof String)) {
 			throw new PipeRunException(
 				this,
