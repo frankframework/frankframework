@@ -1,6 +1,9 @@
 /*
  * $Log: ConnectionFactoryBase.java,v $
- * Revision 1.4  2005-10-26 08:21:42  europe\L190409
+ * Revision 1.5  2006-12-13 16:28:05  europe\L190409
+ * catch more exceptions
+ *
+ * Revision 1.4  2005/10/26 08:21:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * renamed createJmsConnection() into createConnection()
  *
  * Revision 1.3  2005/10/20 15:35:25  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -32,7 +35,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public abstract class ConnectionFactoryBase  {
-	public static final String version="$RCSfile: ConnectionFactoryBase.java,v $ $Revision: 1.4 $ $Date: 2005-10-26 08:21:42 $";
+	public static final String version="$RCSfile: ConnectionFactoryBase.java,v $ $Revision: 1.5 $ $Date: 2006-12-13 16:28:05 $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	protected abstract HashMap getConnectionMap();
@@ -59,16 +62,16 @@ public abstract class ConnectionFactoryBase  {
 	protected Context getContext() throws IbisException {
 		try {
 			return createContext();
-		} catch (NamingException e) {
-			throw new IbisException("could not obtain context", e);
+		} catch (Throwable t) {
+			throw new IbisException("could not obtain context", t);
 		}
 	}
 
 	protected ConnectionFactory getConnectionFactory(Context context, String id) throws IbisException {
 		try {
 			return createConnectionFactory(context, id);
-		} catch (NamingException e) {
-			throw new IbisException("could not obtain connectionFactory", e);
+		} catch (Throwable t) {
+			throw new IbisException("could not obtain connectionFactory", t);
 		}
 	}
 	
