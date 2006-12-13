@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcQuerySenderBase.java,v $
- * Revision 1.24  2006-12-12 09:57:38  europe\L190409
+ * Revision 1.25  2006-12-13 16:25:56  europe\L190409
+ * added attribute blobCharset
+ *
+ * Revision 1.24  2006/12/12 09:57:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * restore jdbc package
  *
  * Revision 1.22  2006/11/06 13:02:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -92,6 +95,7 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.DB2XMLWriter;
 import nl.nn.adapterframework.util.JdbcUtil;
+import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
@@ -133,6 +137,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * <tr><td>{@link #setResultQuery(String) resultQuery}</td><td>query that can be used to obtain result of side-effecto of update-query, like generated value of sequence. Example: SELECT mysequence.currval FROM DUAL</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSynchronous(boolean) synchronous}</td><td>&nbsp;</td><td>true</td></tr>
  * <tr><td>{@link #setTrimSpaces(boolean) trimSpaces}</td><td>remove trailing blanks from all values.</td><td>true</td></tr>
+ * <tr><td>{@link #setBlobCharset(String) blobCharset}</td><td>charset used to read and write BLOBs</td><td>UTF-8</td></tr>
  * <tr><td>{@link #setBlobsCompressed(boolean) blobsCompressed}</td><td>controls whether blobdata is stored compressed in the database</td><td>true</td></tr>
  * <tr><td>{@link #setColumnsReturned(String) columnsReturned}</td><td>comma separated list of columns whose values are to be returned. Works only if the driver implements JDBC 3.0 getGeneratedKeys()</td><td>&nbsp;</td></tr>
  * </table>
@@ -152,7 +157,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * @since 	4.1
  */
 public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
-	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.24 $ $Date: 2006-12-12 09:57:38 $";
+	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.25 $ $Date: 2006-12-13 16:25:56 $";
 
 	private String queryType = "other";
 	private int maxRows=-1; // return all rows
@@ -166,6 +171,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 	private String columnsReturned=null;
 	private String resultQuery=null;
 	private boolean trimSpaces=true;
+	private String blobCharset = Misc.DEFAULT_INPUT_STREAM_ENCODING;
 	private boolean blobsCompressed=true;
 	
 	protected String[] columnsReturnedList=null;
@@ -302,6 +308,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 			DB2XMLWriter db2xml = new DB2XMLWriter();
 			db2xml.setNullValue(getNullValue());
 			db2xml.setTrimSpaces(isTrimSpaces());
+			db2xml.setBlobCharset(getBlobCharset());
 			db2xml.setDecompressBlobs(isBlobsCompressed());
 			result = db2xml.getXML(resultset, getMaxRows());
 		}
@@ -317,7 +324,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 			XmlBuilder result=new XmlBuilder("result");
 			JdbcUtil.warningsToXml(statement.getWarnings(),result);
 			rs.next();
-			JdbcUtil.putStringAsBlob(rs, blobColumn, message,isBlobsCompressed());
+			JdbcUtil.putStringAsBlob(rs, blobColumn, message, getBlobCharset(), isBlobsCompressed());
 			JdbcUtil.warningsToXml(rs.getWarnings(),result);
 			return result.toXML();
 		} catch (SQLException sqle) {
@@ -495,6 +502,14 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 	}
 	public boolean isBlobsCompressed() {
 		return blobsCompressed;
+	}
+
+	public String getBlobCharset() {
+		return blobCharset;
+	}
+
+	public void setBlobCharset(String string) {
+		blobCharset = string;
 	}
 
 }

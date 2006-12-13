@@ -1,6 +1,9 @@
 /*
  * $Log: DirectQuerySender.java,v $
- * Revision 1.10  2006-12-12 09:57:35  europe\L190409
+ * Revision 1.11  2006-12-13 16:27:13  europe\L190409
+ * added attribute blobCharset
+ *
+ * Revision 1.10  2006/12/12 09:57:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * restore jdbc package
  *
  * Revision 1.8  2006/01/05 14:21:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -66,6 +69,7 @@ import java.sql.SQLException;
  * <tr><td>{@link #setResultQuery(String) resultQuery}</td><td>query that can be used to obtain result of side-effecto of update-query, like generated value of sequence. Example: SELECT mysequence.currval FROM DUAL</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSynchronous(boolean) synchronous}</td><td>&nbsp;</td><td>true</td></tr>
  * <tr><td>{@link #setTrimSpaces(boolean) trimSpaces}</td><td>remove trailing blanks from all values.</td><td>true</td></tr>
+ * <tr><td>{@link #setBlobCharset(String) blobCharset}</td><td>charset used to read and write BLOBs</td><td>UTF-8</td></tr>
  * <tr><td>{@link #setBlobsCompressed(boolean) blobsCompressed}</td><td>controls whether blobdata is stored compressed in the database</td><td>true</td></tr>
  * <tr><td>{@link #setColumnsReturned(String) columnsReturned}</td><td>comma separated list of columns whose values are to be returned. Works only if the driver implements JDBC 3.0 getGeneratedKeys()</td><td>&nbsp;</td></tr>
  * </table>
@@ -82,7 +86,7 @@ import java.sql.SQLException;
  * @since 	4.1
  */
 public class DirectQuerySender extends JdbcQuerySenderBase {
-	public static final String version="$RCSfile: DirectQuerySender.java,v $ $Revision: 1.10 $ $Date: 2006-12-12 09:57:35 $";
+	public static final String version="$RCSfile: DirectQuerySender.java,v $ $Revision: 1.11 $ $Date: 2006-12-13 16:27:13 $";
 
 	protected PreparedStatement getStatement(Connection con, String correlationID, String message) throws SQLException {
 		return prepareQuery(con, message);
