@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.34  2006-09-25 09:23:38  europe\L190409
+ * Revision 1.35  2006-12-13 16:23:11  europe\L190409
+ * removed NPE
+ *
+ * Revision 1.34  2006/09/25 09:23:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fixed bug in PipeRunWrapper
  *
  * Revision 1.33  2006/09/18 14:05:17  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -98,7 +101,6 @@
 package nl.nn.adapterframework.core;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.pipes.AbstractPipe;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.Misc;
@@ -181,7 +183,7 @@ import java.util.Hashtable;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.34 $ $Date: 2006-09-25 09:23:38 $";
+	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.35 $ $Date: 2006-12-13 16:23:11 $";
     private Logger log = Logger.getLogger(this.getClass());
 	private Logger durationLog = Logger.getLogger("LongDurationMessages");
     
@@ -651,7 +653,7 @@ public class PipeLine {
 	
 				if (AppConstants.getInstance().getProperty("log.logIntermediaryResults")!=null) {
 					if (AppConstants.getInstance().getProperty("log.logIntermediaryResults").equalsIgnoreCase("true")) {
-						sb.append(" current result ["+ object.toString()+ "] ");
+						sb.append(" current result ["+ object +"] ");
 					}
 				}
 				log.debug(sb.toString());
@@ -705,7 +707,7 @@ public class PipeLine {
 				}
 				if (pe !=null) {
 					if (pipeRunResult!=null && StringUtils.isNotEmpty(pe.getStoreResultInSessionKey())) {
-					log.debug("Pipeline of adapter ["+owner.getName()+"] storing result for pipe ["+pe.getName()+" under sessionKey ["+pe.getStoreResultInSessionKey()+"]");
+					log.debug("Pipeline of adapter ["+owner.getName()+"] storing result for pipe ["+pe.getName()+"] under sessionKey ["+pe.getStoreResultInSessionKey()+"]");
 					pipeLineSession.put(pe.getStoreResultInSessionKey(),pipeRunResult.getResult());
 				}
 				if (pe.isPreserveInput()) {
@@ -747,8 +749,7 @@ public class PipeLine {
 		        pipeLineResult.setResult(object.toString());
 	            ready=true;
 				if (log.isDebugEnabled()){  // for performance reasons
-		        log.debug(
-		            "Pipeline of adapter ["+ owner.getName()+ "] finished processing messageId ["+messageId+"] result: ["+ object.toString()+ "] with exit-state ["+state+"]");
+		        	log.debug("Pipeline of adapter ["+ owner.getName()+ "] finished processing messageId ["+messageId+"] result: ["+ object.toString()+ "] with exit-state ["+state+"]");
 				}
 	        } else {
 		        pipeToRun=getPipe(pipeForward.getPath());
