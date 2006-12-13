@@ -1,6 +1,9 @@
 /*
  * $Log: XslErrorMessageFormatter.java,v $
- * Revision 1.5  2004-03-31 12:04:19  L190409
+ * Revision 1.6  2006-12-13 16:24:55  europe\L190409
+ * updated javadoc
+ *
+ * Revision 1.5  2004/03/31 12:04:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fixed javadoc
  *
  * Revision 1.4  2004/03/30 07:30:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -22,12 +25,18 @@ import java.io.IOException;
  * {@link ErrorMessageFormatter}.
  * <p>If the transformation does not succeed, this standard error message
  * is returned and an exception is logged.
- * 
+ * <p><b>Configuration:</b>
+ * <table border="1">
+ * <tr><th>attributes</th><th>description</th><th>default</th></tr>
+ * <tr><td>className</td><td>nl.nn.adapterframework.errormessageformatters.XslErrorMessageFormatter</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setStyleSheet(String) styleSheet}</td><td>stylesheet to use for transformation</td><td>&nbsp;</td></tr>
+ * </table>
+* 
  * @version Id
  * @author Johan Verrips IOS
  */
 public class XslErrorMessageFormatter extends ErrorMessageFormatter {
-	public static final String version="$Id: XslErrorMessageFormatter.java,v 1.5 2004-03-31 12:04:19 L190409 Exp $";
+	public static final String version = "$RCSfile: XslErrorMessageFormatter.java,v $ $Revision: 1.6 $ $Date: 2006-12-13 16:24:55 $";
 
     private String styleSheet;
     
