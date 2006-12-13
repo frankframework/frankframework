@@ -1,6 +1,9 @@
 /*
  * $Log: DB2XMLWriter.java,v $
- * Revision 1.11  2005-12-29 15:34:00  europe\L190409
+ * Revision 1.12  2006-12-13 16:31:28  europe\L190409
+ * added blobCharset attribute
+ *
+ * Revision 1.11  2005/12/29 15:34:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added support for clobs
  *
  * Revision 1.10  2005/10/17 11:24:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -65,7 +68,7 @@ import java.sql.Types;
  **/
 
 public class DB2XMLWriter {
-	public static final String version="$RCSfile: DB2XMLWriter.java,v $ $Revision: 1.11 $ $Date: 2005-12-29 15:34:00 $";
+	public static final String version="$RCSfile: DB2XMLWriter.java,v $ $Revision: 1.12 $ $Date: 2006-12-13 16:31:28 $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	private String docname = new String("result");
@@ -73,6 +76,7 @@ public class DB2XMLWriter {
 	private String nullValue = "";
 	private boolean trimSpaces=true;
 	private boolean decompressBlobs=false;
+	private String blobCharset = Misc.DEFAULT_INPUT_STREAM_ENCODING;
 
    
     public static String getFieldType (int type) {
@@ -111,7 +115,7 @@ public class DB2XMLWriter {
         {
         	// return "undefined" for types that cannot be rendered to strings easily
 			case Types.BLOB :
-					return JdbcUtil.getBlobAsString(rs,colNum,false,isDecompressBlobs());
+					return JdbcUtil.getBlobAsString(rs,colNum,getBlobCharset(),false,isDecompressBlobs());
 			case Types.CLOB :
 					return JdbcUtil.getClobAsString(rs,colNum,false);
             case Types.ARRAY :
@@ -288,6 +292,14 @@ public class DB2XMLWriter {
 	}
 	public boolean isDecompressBlobs() {
 		return decompressBlobs;
+	}
+
+	public String getBlobCharset() {
+		return blobCharset;
+	}
+
+	public void setBlobCharset(String string) {
+		blobCharset = string;
 	}
 
 }
