@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.35  2006-12-13 16:23:11  europe\L190409
+ * Revision 1.36  2006-12-21 12:55:38  europe\L190409
+ * fix bug in isolated call of Pipe
+ *
+ * Revision 1.35  2006/12/13 16:23:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed NPE
  *
  * Revision 1.34  2006/09/25 09:23:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -183,7 +186,7 @@ import java.util.Hashtable;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.35 $ $Date: 2006-12-13 16:23:11 $";
+	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.36 $ $Date: 2006-12-21 12:55:38 $";
     private Logger log = Logger.getLogger(this.getClass());
 	private Logger durationLog = Logger.getLogger("LongDurationMessages");
     
@@ -455,7 +458,7 @@ public class PipeLine {
 		private PipeRunWrapper() {
 		}
 		
-		public PipeRunResult runPipe(IPipe pipe, Object message, PipeLineSession session, boolean doTransaction) throws PipeRunException {
+		public PipeRunResult runPipeWrapped(IPipe pipe, Object message, PipeLineSession session, boolean doTransaction) throws PipeRunException {
 			this.pipe=pipe;
 			this.message=message;
 			this.session=session;
@@ -512,7 +515,7 @@ public class PipeLine {
 	
 		if (isolationRequired) {
 			PipeRunWrapper prw = new PipeRunWrapper();
-			return prw.runPipe(pipe, message, session, doTransaction);
+			return prw.runPipeWrapped(pipe, message, session, doTransaction);
 		} else { 
 			return runPipe(pipe, message, session, doTransaction);
 		}
