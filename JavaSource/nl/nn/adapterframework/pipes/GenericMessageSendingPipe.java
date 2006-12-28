@@ -1,6 +1,9 @@
 /*
  * $Log: GenericMessageSendingPipe.java,v $
- * Revision 1.3  2006-01-05 14:36:31  europe\L190409
+ * Revision 1.4  2006-12-28 14:21:23  europe\L190409
+ * updated javadoc
+ *
+ * Revision 1.3  2006/01/05 14:36:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.2  2005/12/19 14:27:22  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -25,6 +28,11 @@ import nl.nn.adapterframework.core.ISender;
  * <tr><td>className</td><td>nl.nn.adapterframework.pipes.GenericMessageSendingPipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMaxThreads(int) maxThreads}</td><td>maximum number of threads that may call {@link #doPipe(Object, PipeLineSession)} simultaneously</td><td>0 (unlimited)</td></tr>
+ * <tr><td>{@link #setDurationThreshold(long) durationThreshold}</td><td>if durationThreshold >=0 and the duration (in milliseconds) of the message processing exceeded the value specified the message is logged informatory</td><td>-1</td></tr>
+ * <tr><td>{@link #setGetInputFromSessionKey(String) getInputFromSessionKey}</td><td>when set, input is taken from this session key, instead of regular input</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setStoreResultInSessionKey(String) storeResultInSessionKey}</td><td>when set, the result is stored under this session key</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setPreserveInput(boolean) preserveInput}</td><td>when set <code>true</code>, the input of a pipe is restored before processing the next one</td><td>false</td></tr>
+ * <tr><td>{@link #setNamespaceAware(boolean) namespaceAware}</td><td>controls namespace-awareness of possible XML parsing in descender-classes</td><td>application default</td></tr>
  * <tr><td>{@link #setForwardName(String) forwardName}</td>  <td>name of forward returned upon completion</td><td>"success"</td></tr>
  * <tr><td>{@link #setResultOnTimeOut(String) resultOnTimeOut}</td><td>result returned when no return-message was received within the timeout limit</td><td>"receiver timed out"</td></tr>
  * <tr><td>{@link #setLinkMethod(String) linkMethod}</td><td>Indicates wether the server uses the correlationID or the messageID in the correlationID field of the reply</td><td>CORRELATIONID</td></tr>
@@ -54,7 +62,7 @@ import nl.nn.adapterframework.core.ISender;
  */
 
 public class GenericMessageSendingPipe extends MessageSendingPipe {
-	public static final String version="$RCSfile: GenericMessageSendingPipe.java,v $ $Revision: 1.3 $ $Date: 2006-01-05 14:36:31 $";
+	public static final String version="$RCSfile: GenericMessageSendingPipe.java,v $ $Revision: 1.4 $ $Date: 2006-12-28 14:21:23 $";
 
 	public void setListener(ICorrelatedPullingListener listener) {
 		super.setListener(listener);

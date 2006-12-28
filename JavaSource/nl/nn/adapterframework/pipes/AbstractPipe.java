@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractPipe.java,v $
- * Revision 1.23  2006-10-13 08:17:24  europe\L190409
+ * Revision 1.24  2006-12-28 14:21:23  europe\L190409
+ * updated javadoc
+ *
+ * Revision 1.23  2006/10/13 08:17:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * cache UserTransaction at startup
  *
  * Revision 1.22  2006/09/14 11:59:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -117,6 +120,7 @@ import javax.naming.NamingException;
  * <tr><td>{@link #setDurationThreshold(long) durationThreshold}</td><td>if durationThreshold >=0 and the duration (in milliseconds) of the message processing exceeded the value specified, then the message is logged informatory</td><td>-1</td></tr>
  * <tr><td>{@link #setGetInputFromSessionKey(String) getInputFromSessionKey}</td><td>when set, input is taken from this session key, instead of regular input</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setStoreResultInSessionKey(String) storeResultInSessionKey}</td><td>when set, the result is stored under this session key</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setPreserveInput(boolean) preserveInput}</td><td>when set <code>true</code>, the input of a pipe is restored before processing the next one</td><td>false</td></tr>
  * <tr><td>{@link #setNamespaceAware(boolean) namespaceAware}</td><td>controls namespace-awareness of possible XML parsing in descender-classes</td><td>application default</td></tr>
  * <tr><td>{@link #setTransactionAttribute(String) transactionAttribute}</td><td>Defines transaction and isolation behaviour. Equal to <A href="http://java.sun.com/j2ee/sdk_1.2.1/techdocs/guides/ejb/html/Transaction2.html#10494">EJB transaction attribute</a>. Possible values are: 
  *   <table border="1">
@@ -145,7 +149,7 @@ import javax.naming.NamingException;
  * @see nl.nn.adapterframework.core.PipeLineSession
  */
 public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttribute, TracingEventNumbers {
-	public static final String version="$RCSfile: AbstractPipe.java,v $ $Revision: 1.23 $ $Date: 2006-10-13 08:17:24 $";
+	public static final String version="$RCSfile: AbstractPipe.java,v $ $Revision: 1.24 $ $Date: 2006-12-28 14:21:23 $";
 	private String name;
 	protected Logger log = Logger.getLogger(this.getClass());
 	private Hashtable pipeForwards=new Hashtable();
