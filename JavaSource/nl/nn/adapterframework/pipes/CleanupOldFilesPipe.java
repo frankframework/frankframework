@@ -1,6 +1,9 @@
 /*
  * $Log: CleanupOldFilesPipe.java,v $
- * Revision 1.1  2006-08-24 07:10:36  europe\L190409
+ * Revision 1.2  2007-01-02 09:56:59  europe\L190409
+ * updated javadoc
+ *
+ * Revision 1.1  2006/08/24 07:10:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * moved CleanupOldFilesPipe to pipes-package
  *
  * Revision 1.5  2006/05/19 09:28:36  Peter Eijgermans <peter.eijgermans@ibissource.org>
@@ -40,9 +43,9 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>classname</td><td>nl.nn.adapterframework.batch.CleanupOldFilesPipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMaxThreads(int) maxThreads}</td><td>maximum number of threads that may call {@link #doPipe(Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously</td><td>0 (unlimited)</td></tr>
- * <tr><td>{@link #setFilePattern(String) filePattern}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSubdirectories(boolean) subdirectories}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setLastModifiedDelta(long) lastModifiedDelta}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setFilePattern(String) filePattern}</td><td>files that match this pattern will be deleted. Parameters of the pipe are applied to this pattern</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setSubdirectories(boolean) subdirectories}</td><td>when <code>true</code>, files  in subdirectories will be deleted, too</td><td>false</td></tr>
+ * <tr><td>{@link #setLastModifiedDelta(long) lastModifiedDelta}</td><td>time in milliseconds that must have passed at least before a file will be deleted</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * 
@@ -50,7 +53,7 @@ import org.apache.commons.lang.StringUtils;
  * @since:  4.2
  */
 public class CleanupOldFilesPipe extends FixedForwardPipe {
-	public static final String version = "$RCSfile: CleanupOldFilesPipe.java,v $  $Revision: 1.1 $ $Date: 2006-08-24 07:10:36 $";
+	public static final String version = "$RCSfile: CleanupOldFilesPipe.java,v $  $Revision: 1.2 $ $Date: 2007-01-02 09:56:59 $";
 	
 	private String filePattern;
 	private boolean subdirectories;
@@ -66,7 +69,7 @@ public class CleanupOldFilesPipe extends FixedForwardPipe {
 		super.configure();
 		
 		if (StringUtils.isEmpty(filePattern)) {
-			throw new ConfigurationException("Property [move2dir] is not set");
+			throw new ConfigurationException("Property [filePattern] is not set");
 		}
 	}
 	
