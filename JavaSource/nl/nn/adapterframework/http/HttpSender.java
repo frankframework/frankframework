@@ -1,6 +1,9 @@
 /*
  * $Log: HttpSender.java,v $
- * Revision 1.27  2006-08-24 11:01:25  europe\L190409
+ * Revision 1.28  2007-02-05 15:16:53  europe\L190409
+ * made number of connection- and execution retries configurable
+ *
+ * Revision 1.27  2006/08/24 11:01:25  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * retries instead of attempts
  *
  * Revision 1.26  2006/08/23 11:24:39  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -131,6 +134,8 @@ import nl.nn.adapterframework.util.CredentialFactory;
  * <tr><td>{@link #setMethodType(String) methodType}</td><td>type of method to be executed, either 'GET' or 'POST'</td><td>GET</td></tr>
  * <tr><td>{@link #setTimeout(int) timeout}</td><td>timeout in ms of obtaining a connection/result. 0 means no timeout</td><td>60000</td></tr>
  * <tr><td>{@link #setMaxConnections(int) maxConnections}</td><td>the maximum number of concurrent connections</td><td>2</td></tr>
+ * <tr><td>{@link #setMaxConnectionRetries(int) maxConnectionRetries}</td><td>the maximum number of times it is retried to obtain a connection</td><td>10</td></tr>
+ * <tr><td>{@link #setMaxExecuteRetries(int) maxExecuteRetries}</td><td>the maximum number of times it the execution is retried</td><td>5</td></tr>
  * <tr><td>{@link #setAuthAlias(String) authAlias}</td><td>alias used to obtain credentials for authentication to host</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setUserName(String) userName}</td><td>username used in authentication to host</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setPassword(String) password}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
@@ -212,13 +217,16 @@ import nl.nn.adapterframework.util.CredentialFactory;
  * @since 4.2c
  */
 public class HttpSender extends SenderWithParametersBase implements HasPhysicalDestination {
-	public static final String version = "$RCSfile: HttpSender.java,v $ $Revision: 1.27 $ $Date: 2006-08-24 11:01:25 $";
+	public static final String version = "$RCSfile: HttpSender.java,v $ $Revision: 1.28 $ $Date: 2007-02-05 15:16:53 $";
 
 	private String url;
 	private String methodType="GET"; // GET or POST
 
 	private int timeout=60000;
 	private int maxConnections=2;
+	
+	private int maxConnectionRetries=10;
+	private int maxExecuteRetries=5;
 
 	private String authAlias;
 	private String userName;
@@ -279,9 +287,9 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 		public HttpConnection getConnection(HostConfiguration hostConfiguration) {
 			log.debug(getLogPrefix()+"IbisMultiThreadedHttpConnectionManager getConnection(HostConfiguration)");
 			HttpConnection result = super.getConnection(hostConfiguration);			
-			int count=10;
+			int count=getMaxConnectionRetries();
 			while (count-->0 && !checkConnection(result)) {
-				log.info("releasing failed connection, retries left ["+count+"]");
+				log.info("releasing failed connection, connectionRetries left ["+count+"]");
 				releaseConnection(result);
 				result= super.getConnection(hostConfiguration);
 			} 
@@ -290,9 +298,9 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 		public HttpConnection getConnection(HostConfiguration hostConfiguration, long timeout) throws HttpException {
 			log.debug(getLogPrefix()+"IbisMultiThreadedHttpConnectionManager getConnection(HostConfiguration, timeout["+timeout+"])");
 			HttpConnection result = super.getConnection(hostConfiguration, timeout);
-			int count=10;
+			int count=getMaxConnectionRetries();
 			while (count-->0 && !checkConnection(result)) {
-				log.info("releasing failed connection, retries left ["+count+"]");
+				log.info("releasing failed connection, connectionRetries left ["+count+"]");
 				releaseConnection(result);
 				result= super.getConnection(hostConfiguration, timeout);
 			} 
@@ -514,26 +522,26 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 		
 		String result = null;
 		int statusCode = -1;
-		int count=5;
+		int count=getMaxExecuteRetries();
 		try {
 			while (count-->0 && statusCode==-1) {
-		try {
-			log.debug(getLogPrefix()+"executing method");
+				try {
+					log.debug(getLogPrefix()+"executing method");
 					statusCode = httpclient.executeMethod(httpmethod);
-			log.debug(getLogPrefix()+"executed method");
-			if (log.isDebugEnabled()) {
-				StatusLine statusline = httpmethod.getStatusLine();
-				if (statusline!=null) { 
-					log.debug(getLogPrefix()+"status:"+statusline.toString());
-				} else {
-					log.debug(getLogPrefix()+"no statusline found");
-				}
-			}
+					log.debug(getLogPrefix()+"executed method");
+					if (log.isDebugEnabled()) {
+						StatusLine statusline = httpmethod.getStatusLine();
+						if (statusline!=null) { 
+							log.debug(getLogPrefix()+"status:"+statusline.toString());
+						} else {
+							log.debug(getLogPrefix()+"no statusline found");
+						}
+					}
 					result = extractResult(httpmethod);	
-			if (log.isDebugEnabled()) {
-				log.debug(getLogPrefix()+"retrieved result ["+result+"]");
-			}
-		} catch (HttpException e) {
+					if (log.isDebugEnabled()) {
+						log.debug(getLogPrefix()+"retrieved result ["+result+"]");
+					}
+				} catch (HttpException e) {
 					Throwable throwable = e.getCause();
 					String cause = null;
 					if (throwable!=null) {
@@ -543,9 +551,9 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 					if (e!=null) {
 						msg = e.getMessage();
 					}
-					log.warn("httpException with message [" + msg + "] and cause [" + cause + "], retries left [" + count + "]");
-		} catch (IOException e) {
-			throw new SenderException(e);
+					log.warn("httpException with message [" + msg + "] and cause [" + cause + "], executeRetries left [" + count + "]");
+				} catch (IOException e) {
+					throw new SenderException(e);
 				}
 			}
 		} finally {
@@ -775,6 +783,20 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 
 	public void setTruststoreAuthAlias(String string) {
 		truststoreAuthAlias = string;
+	}
+
+	public void setMaxConnectionRetries(int i) {
+		maxConnectionRetries = i;
+	}
+	public int getMaxConnectionRetries() {
+		return maxConnectionRetries;
+	}
+
+	public void setMaxExecuteRetries(int i) {
+		maxExecuteRetries = i;
+	}
+	public int getMaxExecuteRetries() {
+		return maxExecuteRetries;
 	}
 
 }
