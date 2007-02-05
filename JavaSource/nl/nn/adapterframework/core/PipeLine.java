@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.36  2006-12-21 12:55:38  europe\L190409
+ * Revision 1.37  2007-02-05 14:54:33  europe\L190409
+ * fix bug in starting isolated thread
+ *
+ * Revision 1.36  2006/12/21 12:55:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fix bug in isolated call of Pipe
  *
  * Revision 1.35  2006/12/13 16:23:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -186,7 +189,7 @@ import java.util.Hashtable;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.36 $ $Date: 2006-12-21 12:55:38 $";
+	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.37 $ $Date: 2007-02-05 14:54:33 $";
     private Logger log = Logger.getLogger(this.getClass());
 	private Logger durationLog = Logger.getLogger("LongDurationMessages");
     
@@ -463,7 +466,7 @@ public class PipeLine {
 			this.message=message;
 			this.session=session;
 			this.doTransaction=doTransaction;
-			start();
+			this.start();
 			try {
 				join();
 			} catch (InterruptedException e) {
@@ -567,7 +570,7 @@ public class PipeLine {
 			this.message=message;
 			this.pipeLineSession=pipeLineSession;
 			this.doTransaction=doTransaction;
-			start();
+			this.start();
 			try {
 				join();
 			} catch (InterruptedException e) {
