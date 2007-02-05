@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaFacade.java,v $
- * Revision 1.42  2006-11-06 08:15:30  europe\L190409
+ * Revision 1.43  2007-02-05 14:56:29  europe\L190409
+ * make isJmsTransacted() protected
+ *
+ * Revision 1.42  2006/11/06 08:15:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * modifications for dynamic serviceId
  *
  * Revision 1.41  2006/10/13 08:08:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -176,7 +179,7 @@ import com.ing.ifsa.IFSAServerQueueSender;
  * @since 4.2
  */
 public class IfsaFacade implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version = "$RCSfile: IfsaFacade.java,v $ $Revision: 1.42 $ $Date: 2006-11-06 08:15:30 $";
+	public static final String version = "$RCSfile: IfsaFacade.java,v $ $Revision: 1.43 $ $Date: 2007-02-05 14:56:29 $";
     protected Logger log = Logger.getLogger(this.getClass());
     
     private static int BASIC_ACK_MODE = Session.AUTO_ACKNOWLEDGE;
@@ -627,7 +630,7 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination, IXAEnab
 		}
 	}
     
-    public boolean isJmsTransacted() {
+    protected boolean isJmsTransacted() {
     	return getMessageProtocolEnum().equals(IfsaMessageProtocolEnum.FIRE_AND_FORGET);
     }
     
