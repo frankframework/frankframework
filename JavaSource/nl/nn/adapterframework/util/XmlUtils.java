@@ -1,6 +1,9 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.37  2006-08-24 09:24:50  europe\L190409
+ * Revision 1.38  2007-02-05 15:07:27  europe\L190409
+ * change RootElementFindingHandler to XmlFindingHandler
+ *
+ * Revision 1.37  2006/08/24 09:24:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * separated finding wrong root from non-wellformedness;
  * used RootElementFindingHandler in XmlUtils.isWellFormed()
  *
@@ -174,7 +177,7 @@ import java.util.StringTokenizer;
  * @author Johan Verrips IOS
  */
 public class XmlUtils {
-	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.37 $ $Date: 2006-08-24 09:24:50 $";
+	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.38 $ $Date: 2007-02-05 15:07:27 $";
 	static Logger log = Logger.getLogger(XmlUtils.class);
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
@@ -965,7 +968,7 @@ public class XmlUtils {
 		Variant in = new Variant(input);
 		InputSource is = in.asXmlInputSource();
 
-		RootElementFindingHandler xmlHandler = new RootElementFindingHandler();
+		XmlFindingHandler xmlHandler = new XmlFindingHandler();
 		
 		SAXParserFactory factory = SAXParserFactory.newInstance();
 		factory.setNamespaceAware(true);
