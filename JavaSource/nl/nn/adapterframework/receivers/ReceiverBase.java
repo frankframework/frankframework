@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.27  2006-12-13 16:30:41  europe\L190409
+ * Revision 1.28  2007-02-05 15:01:44  europe\L190409
+ * configure inProcessStorage when it is present, not only when transacted
+ *
+ * Revision 1.27  2006/12/13 16:30:41  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added maxRetries to configuration javadoc
  *
  * Revision 1.26  2006/08/24 07:12:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -211,7 +214,7 @@ import javax.transaction.UserTransaction;
  * @since 4.2
  */
 public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, IMessageHandler, IbisExceptionListener, HasSender, TracingEventNumbers {
-	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.27 $ $Date: 2006-12-13 16:30:41 $";
+	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.28 $ $Date: 2007-02-05 15:01:44 $";
 	protected Logger log = Logger.getLogger(this.getClass());
  
 	private String returnIfStopped="";
@@ -427,14 +430,21 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 					info("receiver ["+getName()+"] has answer-sender on "+((HasPhysicalDestination)sender).getPhysicalDestinationName());
 				}
 			}
+			ITransactionalStorage inProcessStorage = getInProcessStorage();
+			if (inProcessStorage!=null) {
+				inProcessStorage.configure();
+				if (inProcessStorage instanceof HasPhysicalDestination) {
+					info("Receiver ["+getName()+"] has inProcessStorage in "+((HasPhysicalDestination)inProcessStorage).getPhysicalDestinationName());
+				}
+			}
 			ISender errorSender = getErrorSender();
-			ITransactionalStorage errorStorage = getErrorStorage();
 			if (errorSender!=null) {
 				errorSender.configure();
 				if (errorSender instanceof HasPhysicalDestination) {
 					info("Receiver ["+getName()+"] has errorSender to "+((HasPhysicalDestination)errorSender).getPhysicalDestinationName());
 				}
 			}
+			ITransactionalStorage errorStorage = getErrorStorage();
 			if (errorStorage!=null && errorStorage != getInProcessStorage()) {
 				errorStorage.configure();
 				if (errorStorage instanceof HasPhysicalDestination) {
@@ -445,16 +455,12 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 				if (!(getListener() instanceof IXAEnabled && ((IXAEnabled)getListener()).isTransacted())) {
 					warn("Receiver ["+getName()+"] sets transacted=true, but listener not. Transactional integrity is not guaranteed"); 
 				}
-				if (getInProcessStorage()==null) {
+				if (inProcessStorage==null) {
 //					throw new ConfigurationException("Receiver ["+getName()+"] sets transacted=true, but has no inProcessStorage.");
 					warn("Receiver ["+getName()+"] sets transacted=true, but has no inProcessStorage. Transactional integrity is not guaranteed");
 				} else {
-					if (!(getInProcessStorage() instanceof IXAEnabled && ((IXAEnabled)getInProcessStorage()).isTransacted())) {
+					if (!(inProcessStorage instanceof IXAEnabled && ((IXAEnabled)inProcessStorage).isTransacted())) {
 						warn("Receiver ["+getName()+"] sets transacted=true, but inProcessStorage not. Transactional integrity is not guaranteed"); 
-					}
-					getInProcessStorage().configure();
-					if (getInProcessStorage() instanceof HasPhysicalDestination) {
-						info("Receiver ["+getName()+"] has inProcessStorage in "+((HasPhysicalDestination)getInProcessStorage()).getPhysicalDestinationName());
 					}
 				}
 				
