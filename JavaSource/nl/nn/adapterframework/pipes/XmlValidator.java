@@ -1,6 +1,9 @@
 /*
  * $Log: XmlValidator.java,v $
- * Revision 1.18  2006-08-24 09:24:52  europe\L190409
+ * Revision 1.19  2007-02-05 15:00:47  europe\L190409
+ * extended diagnostic information
+ *
+ * Revision 1.18  2006/08/24 09:24:52  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * separated finding wrong root from non-wellformedness;
  * used RootElementFindingHandler in XmlUtils.isWellFormed()
  *
@@ -54,10 +57,11 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.util.RootElementFindingHandler;
+import nl.nn.adapterframework.util.XmlFindingHandler;
 import nl.nn.adapterframework.util.Variant;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.util.XmlBuilder;
 
 import org.apache.commons.lang.StringUtils;
 import org.xml.sax.ErrorHandler;
@@ -71,8 +75,8 @@ import org.xml.sax.helpers.XMLReaderFactory;
 
 import java.net.URL;
 import java.io.IOException;
-
-
+import java.util.Iterator;
+import java.util.Vector;
 
 /**
  *<code>Pipe</code> that validates the input message against a XML-Schema.
@@ -106,6 +110,7 @@ import java.io.IOException;
  * <tr><td>{@link #setFullSchemaChecking(boolean) fullSchemaChecking}</td><td>Perform addional memory intensive checks</td><td><code>false</code></td></tr>
  * <tr><td>{@link #setThrowException(boolean) throwException}</td><td>Should the XmlValidator throw a PipeRunException on a validation error (if not, a forward with name "failure" should be defined.</td><td><code>false</code></td></tr>
  * <tr><td>{@link #setReasonSessionKey(String) reasonSessionKey}</td><td>if set: key of session variable to store reasons of mis-validation in</td><td>none</td></tr>
+ * <tr><td>{@link #setXmlReasonSessionKey(String) xmlReasonSessionKey}</td><td>like <code>reasonSessionKey</code> but stores reasons in xml format and more extensive</td><td>none</td></tr>
  * <tr><td>{@link #setRoot(String) root}</td><td>name of the root element</td><td>&nbsp;</td></tr>
  * </table>
  * <p><b>Exits:</b>
@@ -122,7 +127,7 @@ import java.io.IOException;
 
  */
 public class XmlValidator extends FixedForwardPipe {
-	public static final String version="$RCSfile: XmlValidator.java,v $ $Revision: 1.18 $ $Date: 2006-08-24 09:24:52 $";
+	public static final String version="$RCSfile: XmlValidator.java,v $ $Revision: 1.19 $ $Date: 2007-02-05 15:00:47 $";
 
     private String schemaLocation = null;
     private String noNamespaceSchemaLocation = null;
@@ -130,13 +135,26 @@ public class XmlValidator extends FixedForwardPipe {
     private boolean throwException = false;
     private boolean fullSchemaChecking = false;
 	private String reasonSessionKey = null;
+	private String xmlReasonSessionKey = null;
 	private String root = null;
 
     public class XmlErrorHandler implements ErrorHandler {
         private boolean errorOccured = false;
         private String reasons;
+		private XMLReader parser;
+		private Vector errors = new Vector();
+
+		public XmlErrorHandler(XMLReader parser) {
+			this.parser = parser;
+		}
 
 		protected void addReason(SAXParseException exception) {
+			Vector error = new Vector();
+			error.add(exception.getMessage());
+			error.add(((XmlFindingHandler)parser.getContentHandler()).getElementName());
+			error.add(((XmlFindingHandler)parser.getContentHandler()).getXpath());
+			errors.add(error);
+
 			String msg = "at ("+exception.getLineNumber()+ ","+exception.getColumnNumber()+"): "+exception.getMessage();
 			errorOccured = true;
 			if (reasons == null) {
@@ -163,6 +181,35 @@ public class XmlValidator extends FixedForwardPipe {
          public String getReasons() {
             return reasons;
         }
+
+		public String getXmlReasons() {
+			XmlBuilder xb0 = new XmlBuilder("reasons");
+			XmlBuilder xb1;
+			XmlBuilder xb2;
+			Iterator it1 = errors.iterator();
+			while (it1.hasNext()) {
+				xb1 = new XmlBuilder("reason");
+				Vector error = (Vector)it1.next();
+				Iterator it2 = error.iterator();
+				String message = (String)error.elementAt(0);
+				String elementName = (String)error.elementAt(1);
+				String xpath = (String)error.elementAt(2);
+
+				xb2 = new XmlBuilder("message");
+				xb2.setCdataValue(message);
+				xb1.addSubElement(xb2);
+				xb2 = new XmlBuilder("elementName");
+				xb2.setValue(elementName);
+				xb1.addSubElement(xb2);
+				xb2 = new XmlBuilder("xpath");
+				xb2.setValue(xpath);
+				xb1.addSubElement(xb2);
+
+				xb0.addSubElement(xb1);	
+			}
+
+		   return xb0.toXML();
+	   }
     }
 
     /**
@@ -223,6 +270,11 @@ public class XmlValidator extends FixedForwardPipe {
 			session.remove(getReasonSessionKey());
 		}
 
+		if (StringUtils.isNotEmpty(getXmlReasonSessionKey())) {
+			log.debug(getLogPrefix(session)+ "removing contents of sessionKey ["+getXmlReasonSessionKey()+ "]");
+			session.remove(getXmlReasonSessionKey());
+		}
+
 		String schemaLocation = getSchemaLocation();
 		String noNamespaceSchemaLocation = getNoNamespaceSchemaLocation();
 
@@ -245,13 +297,14 @@ public class XmlValidator extends FixedForwardPipe {
 			noNamespaceSchemaLocation = url.toExternalForm();
         }
 
-		XmlErrorHandler xeh = new XmlErrorHandler();
+		XmlErrorHandler xeh;
 		XMLReader parser=null;
 		try {
 			parser=getParser(schemaLocation,noNamespaceSchemaLocation);
 			if (parser==null) {
 				throw new PipeRunException(this, getLogPrefix(session)+ "could not obtain parser");
 			}
+			xeh = new XmlErrorHandler(parser);
 			parser.setErrorHandler(xeh);
 		} catch (SAXNotRecognizedException e) {
 			throw new PipeRunException(this, getLogPrefix(session)+ "parser does not recognize necessary feature", e);
@@ -279,9 +332,19 @@ public class XmlValidator extends FixedForwardPipe {
         }
 
 		boolean illegalRoot = StringUtils.isNotEmpty(getRoot()) && 
-							!((RootElementFindingHandler)parser.getContentHandler()).getRootElementName().equals(getRoot());
+							!((XmlFindingHandler)parser.getContentHandler()).getRootElementName().equals(getRoot());
 		if (illegalRoot) {
-			String reason = getLogPrefix(session) + "got xml with root element ["+((RootElementFindingHandler)parser.getContentHandler()).getRootElementName()+"] instead of ["+getRoot()+"]"; 
+			String str = "got xml with root element ["+((XmlFindingHandler)parser.getContentHandler()).getRootElementName()+"] instead of ["+getRoot()+"]"; 
+			String reason = getLogPrefix(session) + str; 
+
+			XmlBuilder xb0 = new XmlBuilder("reasons");
+			XmlBuilder xb1 = new XmlBuilder("reason");
+			XmlBuilder xb2 = new XmlBuilder("message");
+			xb2.setCdataValue(str);
+			xb1.addSubElement(xb2);
+			xb0.addSubElement(xb1);	
+			String xmlReason =  xb0.toXML();
+
 			if (isThrowException()) {
 				throw new PipeRunException(this, reason);
 			} else {
@@ -289,6 +352,10 @@ public class XmlValidator extends FixedForwardPipe {
 				if (StringUtils.isNotEmpty(getReasonSessionKey())) {
 					log.debug(getLogPrefix(session) + "storing reasons under sessionKey ["+getReasonSessionKey()+"]");
 					session.put(getReasonSessionKey(),reason);
+				}
+				if (StringUtils.isNotEmpty(getXmlReasonSessionKey())) {
+					log.debug(getLogPrefix(session) + "storing reasons (in xml format) under sessionKey ["+getXmlReasonSessionKey()+"]");
+					session.put(getXmlReasonSessionKey(),xmlReason);
 				}
 				
 				PipeForward forward = findForward("illegalRoot");
@@ -302,6 +369,7 @@ public class XmlValidator extends FixedForwardPipe {
 		
 		if (!isValid) { 
 			String reasons = getLogPrefix(session) + "got invalid xml according to schema [" + Misc.concatStrings(schemaLocation," ",noNamespaceSchemaLocation) + "]:\n" + xeh.getReasons(); 
+			String xmlReasons = xeh.getXmlReasons(); 
             if (isThrowException()) {
                 throw new PipeRunException(this, reasons);
 			} else {
@@ -309,6 +377,10 @@ public class XmlValidator extends FixedForwardPipe {
 				if (StringUtils.isNotEmpty(getReasonSessionKey())) {
 					log.debug(getLogPrefix(session) + "storing reasons under sessionKey ["+getReasonSessionKey()+"]");
 					session.put(getReasonSessionKey(),reasons);
+				}
+				if (StringUtils.isNotEmpty(getXmlReasonSessionKey())) {
+					log.debug(getLogPrefix(session) + "storing reasons (in xml format) under sessionKey ["+getXmlReasonSessionKey()+"]");
+					session.put(getXmlReasonSessionKey(),xmlReasons);
 				}
 				return new PipeRunResult(findForward("failure"), input);
 			}
@@ -338,7 +410,7 @@ public class XmlValidator extends FixedForwardPipe {
             parser.setFeature("http://apache.org/xml/features/validation/schema-full-checking", true);
         }
         if (StringUtils.isNotEmpty(getRoot())) {    
-        	parser.setContentHandler(new RootElementFindingHandler());
+        	parser.setContentHandler(new XmlFindingHandler());
         }
         return parser;
     }
@@ -444,6 +516,13 @@ public class XmlValidator extends FixedForwardPipe {
 	}
 	public String getReasonSessionKey() {
 		return reasonSessionKey;
+	}
+
+	public void setXmlReasonSessionKey(String xmlReasonSessionKey) {
+		this.xmlReasonSessionKey = xmlReasonSessionKey;
+	}
+	public String getXmlReasonSessionKey() {
+		return xmlReasonSessionKey;
 	}
 
 	public void setRoot(String root) {
