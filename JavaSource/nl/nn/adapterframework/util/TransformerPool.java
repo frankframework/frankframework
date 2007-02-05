@@ -1,6 +1,9 @@
 /*
  * $Log: TransformerPool.java,v $
- * Revision 1.13  2005-10-20 15:22:44  europe\L190409
+ * Revision 1.14  2007-02-05 15:05:03  europe\L190409
+ * use SoftReferencePool
+ *
+ * Revision 1.13  2005/10/20 15:22:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added explicit namespaceAware-setting for direct-string transformation
  *
  * Revision 1.12  2005/06/13 11:49:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -62,7 +65,7 @@ import javax.xml.transform.stream.StreamSource;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.pool.BasePoolableObjectFactory;
 import org.apache.commons.pool.ObjectPool;
-import org.apache.commons.pool.impl.GenericObjectPool;
+import org.apache.commons.pool.impl.SoftReferenceObjectPool;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 
@@ -73,17 +76,16 @@ import org.w3c.dom.Document;
  * @author Gerrit van Brakel
  */
 public class TransformerPool {
-	public static final String version = "$RCSfile: TransformerPool.java,v $ $Revision: 1.13 $ $Date: 2005-10-20 15:22:44 $";
+	public static final String version = "$RCSfile: TransformerPool.java,v $ $Revision: 1.14 $ $Date: 2007-02-05 15:05:03 $";
 	protected Logger log = Logger.getLogger(this.getClass());
 
 	private TransformerFactory tFactory = TransformerFactory.newInstance();
 
 	private Templates templates;
 	
-	private ObjectPool pool = new GenericObjectPool(new BasePoolableObjectFactory() {
+	private ObjectPool pool = new SoftReferenceObjectPool(new BasePoolableObjectFactory() {
 		public Object makeObject() throws Exception {
-			return createTransformer();
-			
+			return createTransformer();			
 		}
 	}); 
 
@@ -119,14 +121,11 @@ public class TransformerPool {
 
 	
 	public void open() throws Exception {
-			
-
 	}
 	
 	public void close() {
 		try {
-			pool.clear();
-			
+			pool.clear();			
 		} catch (Exception e) {
 			log.warn("exception clearing transformerPool",e);
 		}
@@ -166,7 +165,6 @@ public class TransformerPool {
     protected synchronized Transformer createTransformer() throws TransformerConfigurationException {
     	
 		Transformer t = templates.newTransformer();
-
 
 		if (t==null) {
 			throw new TransformerConfigurationException("cannot instantiate transformer");
@@ -211,7 +209,5 @@ public class TransformerPool {
 			}
 		}
 	}
-
-
 
 }
