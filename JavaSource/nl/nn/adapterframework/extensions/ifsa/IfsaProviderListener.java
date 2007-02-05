@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaProviderListener.java,v $
- * Revision 1.25  2006-11-01 14:22:42  europe\L190409
+ * Revision 1.26  2007-02-05 14:57:00  europe\L190409
+ * set default timeout to 3000
+ *
+ * Revision 1.25  2006/11/01 14:22:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * avoid NPE for null commitOnState
  *
  * Revision 1.24  2006/10/13 08:23:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -136,7 +139,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  *   <li>"RR": Request-Reply protocol</li>
  * </ul></td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setTransacted(boolean) transacted}</td><td>must be set <code>true</true> for FF listeners in transacted mode</td><td>false</td></tr>
- * <tr><td>{@link #setTimeOut(long) timeOut}</td><td>receiver timeout, in milliseconds</td><td>defined by IFSA expiry</td></tr>
+ * <tr><td>{@link #setTimeOut(long) timeOut}</td><td>receiver timeout, in milliseconds</td><td>3000</td></tr>
  * </table>
  * N.B. 
  * Starting from IFSA-jms version 2.2.10.055(beta) a feature was created to have separate service-queues for Request/Reply
@@ -150,7 +153,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * @since 4.2
  */
 public class IfsaProviderListener extends IfsaFacade implements IPullingListener, INamedObject, RunStateEnquiring {
-	public static final String version = "$RCSfile: IfsaProviderListener.java,v $ $Revision: 1.25 $ $Date: 2006-11-01 14:22:42 $";
+	public static final String version = "$RCSfile: IfsaProviderListener.java,v $ $Revision: 1.26 $ $Date: 2007-02-05 14:57:00 $";
 
     private final static String THREAD_CONTEXT_SESSION_KEY = "session";
     private final static String THREAD_CONTEXT_RECEIVER_KEY = "receiver";
@@ -160,6 +163,7 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 
 	public IfsaProviderListener() {
 		super(true); //instantiate as a provider
+		setTimeOut(3000); // set default timeout, to be able to stop adapter!
 	}
 
 
