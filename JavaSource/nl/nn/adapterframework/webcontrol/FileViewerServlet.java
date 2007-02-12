@@ -1,6 +1,9 @@
 /*
  * $Log: FileViewerServlet.java,v $
- * Revision 1.7  2005-12-05 08:36:52  europe\L190409
+ * Revision 1.8  2007-02-12 14:41:47  europe\L190409
+ * Logger from LogUtil
+ *
+ * Revision 1.7  2005/12/05 08:36:52  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * modified handling of log4j-xml files
  *
  * Revision 1.6  2005/10/17 11:05:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -15,15 +18,13 @@
  */
 package nl.nn.adapterframework.webcontrol;
 
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.DomBuilderException;
-import nl.nn.adapterframework.util.EncapsulatingReader;
-import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.util.XmlUtils;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.LineNumberReader;
+import java.io.PrintWriter;
+import java.io.Reader;
+import java.net.URL;
+import java.util.StringTokenizer;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -33,13 +34,16 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.stream.StreamSource;
 
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.LineNumberReader;
-import java.io.PrintWriter;
-import java.io.Reader;
-import java.net.URL;
-import java.util.StringTokenizer;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.DomBuilderException;
+import nl.nn.adapterframework.util.EncapsulatingReader;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.XmlUtils;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 
 /**
  * Shows a textfile either as HTML or as Text.
@@ -71,8 +75,8 @@ import java.util.StringTokenizer;
  * @author Johan Verrips 
  */
 public class FileViewerServlet extends HttpServlet  {
-	public static final String version = "$RCSfile: FileViewerServlet.java,v $ $Revision: 1.7 $ $Date: 2005-12-05 08:36:52 $";
-	protected Logger log = Logger.getLogger(this.getClass());	
+	public static final String version = "$RCSfile: FileViewerServlet.java,v $ $Revision: 1.8 $ $Date: 2007-02-12 14:41:47 $";
+	protected Logger log = LogUtil.getLogger(this);	
 
 	// key that is looked up to retrieve texts to be signalled
 	private static String fvConfigKey="FileViewerServlet.signal";

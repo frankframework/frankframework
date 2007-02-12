@@ -1,6 +1,9 @@
 /*
  * $Log: DumpIbisConsole.java,v $
- * Revision 1.2  2006-08-22 11:57:57  europe\L190409
+ * Revision 1.3  2007-02-12 14:41:14  europe\L190409
+ * Logger from LogUtil
+ *
+ * Revision 1.2  2006/08/22 11:57:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed call tot response sink
  *
  * Revision 1.1  2006/08/22 07:51:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -10,27 +13,30 @@
 
 package nl.nn.adapterframework.webcontrol;
 
-import nl.nn.adapterframework.util.AppConstants;
-import javax.servlet.ServletContext;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+
+import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.RequestDispatcher;
-import java.io.File;
-import java.io.InputStream;
-import java.io.IOException;
-import java.io.ByteArrayInputStream;
-import java.io.FileOutputStream;
-import java.io.FileInputStream;
-import java.io.OutputStream;
-import org.apache.log4j.Logger;
 
-import java.util.Set;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.zip.ZipOutputStream;
-import java.util.zip.ZipEntry;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.LogUtil;
+
+import org.apache.log4j.Logger;
 
 /**
  * Dumps the entire Ibis Console to a zip-file which can be saved.
@@ -42,8 +48,9 @@ import java.util.zip.ZipEntry;
  */
 
 public class DumpIbisConsole extends HttpServlet {
+	private static Logger log = LogUtil.getLogger(DumpIbisConsole.class);
+
 	private static String directoryName = "dump";
-	private static Logger log = Logger.getLogger(DumpIbisConsole.class);
 	private static ServletContext servletContext;
 	private static Set set = new HashSet();
 	private static Set setFileViewer = new HashSet();

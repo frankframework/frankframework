@@ -1,24 +1,32 @@
+/*
+ * $Log: ConfigurationServlet.java,v $
+ * Revision 1.8  2007-02-12 14:40:46  europe\L190409
+ * Logger from LogUtil
+ *
+ */
 package nl.nn.adapterframework.webcontrol;
 
-import nl.nn.adapterframework.configuration.Configuration;
-import nl.nn.adapterframework.configuration.ConfigurationDigester;
-import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.util.RunStateEnum;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.ClassUtils;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.Date;
+import java.util.Iterator;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.Date;
-import java.util.Iterator;
+
+import nl.nn.adapterframework.configuration.Configuration;
+import nl.nn.adapterframework.configuration.ConfigurationDigester;
+import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.RunStateEnum;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 
 
 /**
@@ -35,10 +43,8 @@ import java.util.Iterator;
  * @author    Johan Verrips
  */
 public class ConfigurationServlet extends HttpServlet {
-	public static final String version = "$RCSfile: ConfigurationServlet.java,v $ $Revision: 1.7 $ $Date: 2005-09-13 15:45:57 $";
-	
-    // logging category for this class
-    protected Logger log = Logger.getLogger(this.getClass());
+	public static final String version = "$RCSfile: ConfigurationServlet.java,v $ $Revision: 1.8 $ $Date: 2007-02-12 14:40:46 $";
+    protected Logger log = LogUtil.getLogger(this);
 
     static final String DFLT_DIGESTER_RULES = "digester-rules.xml";
     static final String DFLT_CONFIGURATION = "Configuration.xml";
@@ -51,7 +57,7 @@ public class ConfigurationServlet extends HttpServlet {
 
         if (null != config) {
 
-//check for adapters that are started
+			//check for adapters that are started
             boolean startedAdaptersPresent = false;
             Iterator registeredAdapters = config.getRegisteredAdapterNames();
             while (registeredAdapters.hasNext()) {
@@ -73,6 +79,7 @@ public class ConfigurationServlet extends HttpServlet {
         }
         return true;
     }
+    
     /**
      * Shuts down the configuration, meaning that all adapters are stopped.
      * @since 4.0
@@ -144,12 +151,14 @@ public class ConfigurationServlet extends HttpServlet {
         out.println("</html>");
 
     }
+    
     public Configuration getConfiguration() {
         ServletContext ctx = getServletContext();
         Configuration config = null;
         config = (Configuration) ctx.getAttribute(AppConstants.getInstance().getProperty("KEY_CONFIGURATION"));
         return config;
     }
+    
     /**
      *  Initialize Servlet.
      *
@@ -169,6 +178,7 @@ public class ConfigurationServlet extends HttpServlet {
             log.warn("Not all adapters are stopped, cancelling ConfigurationServlet");
 
     }
+    
     /**
      * Does the actual confguration work. <br/>
      * For parameters that are null, the default values are used.
@@ -188,26 +198,10 @@ public class ConfigurationServlet extends HttpServlet {
         if (null == autoStart)
             autoStart = DFLT_AUTOSTART;
 
-        log.info(
-                "ConfigurationServlet starting with configurationFile ["
-                + configurationFile
-                + "] digesterRulesFile ["
-                + digesterRulesFile
-                + "] autoStart["
-                + autoStart
-                + "]");
+		String msg="ConfigurationServlet starting with configurationFile ["+ configurationFile+ "] digesterRulesFile ["+ digesterRulesFile+ "] autoStart["+ autoStart+ "]"; 
+        log.info(msg);
+		System.out.println(msg);
         ConfigurationDigester cd = new ConfigurationDigester();
-
-        System.out.println(
-                "servlet starting with configurationfile ["
-                + configurationFile
-                + "]"
-                + " digesterRulesFile ["
-                + digesterRulesFile
-                + "]"
-                + " autoStart ["
-                + autoStart
-                + "]");
 
         try {
             config =
