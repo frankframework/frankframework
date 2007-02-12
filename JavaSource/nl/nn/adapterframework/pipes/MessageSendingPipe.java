@@ -1,6 +1,9 @@
 /*
  * $Log: MessageSendingPipe.java,v $
- * Revision 1.25  2007-02-05 14:59:40  europe\L190409
+ * Revision 1.26  2007-02-12 10:38:00  europe\L190409
+ * added attribute stubFileName (by PL)
+ *
+ * Revision 1.25  2007/02/05 14:59:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * update javadoc
  *
  * Revision 1.24  2006/12/28 14:21:22  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -67,28 +70,34 @@
  */
 package nl.nn.adapterframework.pipes;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
-import nl.nn.adapterframework.core.ISenderWithParameters;
-import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.HasSender;
 import nl.nn.adapterframework.core.ICorrelatedPullingListener;
+import nl.nn.adapterframework.core.ISender;
+import nl.nn.adapterframework.core.ISenderWithParameters;
+import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
-import nl.nn.adapterframework.core.PipeRunException;
-import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.errormessageformatters.ErrorMessageFormatter;
 import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-
-
-import java.util.HashMap;
+import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.Misc;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.SystemUtils;
 
 /**
  * Sends a message using a {@link ISender} and optionally receives a reply from the same sender, or from a {@link nl.nn.adapterframework.core.ICorrelatedPullingListener listener}.
@@ -99,6 +108,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>className</td><td>nl.nn.adapterframework.pipes.MessageSendingPipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMaxThreads(int) maxThreads}</td><td>maximum number of threads that may call {@link #doPipe(Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously</td><td>0 (unlimited)</td></tr>
+ * <tr><td>{@link #setStubFileName(String) stubFileName}</td><td>when set, the Pipe returns a message from a file, instead of doing the regular process</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDurationThreshold(long) durationThreshold}</td><td>if durationThreshold >=0 and the duration (in milliseconds) of the message processing exceeded the value specified the message is logged informatory</td><td>-1</td></tr>
  * <tr><td>{@link #setGetInputFromSessionKey(String) getInputFromSessionKey}</td><td>when set, input is taken from this session key, instead of regular input</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setStoreResultInSessionKey(String) storeResultInSessionKey}</td><td>when set, the result is stored under this session key</td><td>&nbsp;</td></tr>
@@ -132,7 +142,12 @@ import org.apache.commons.lang.StringUtils;
  * <tr><th>nested elements</th><th>description</th></tr>
  * <tr><td>{@link nl.nn.adapterframework.core.ISender sender}</td><td>specification of sender to send messages with</td></tr>
  * <tr><td>{@link nl.nn.adapterframework.core.ICorrelatedPullingListener listener}</td><td>specification of listener to listen to for replies</td></tr>
- * <tr><td>{@link nl.nn.adapterframework.parameters.Parameter param}</td><td>any parameters defined on the pipe will be handed to the sender, if this is a {@link nl.nn.adapterframework.core.ISenderWithParameters ISenderWithParameters}</td></tr>
+ * <tr><td>{@link nl.nn.adapterframework.parameters.Parameter param}</td><td>any parameters defined on the pipe will be handed to the sender, 
+ * if this is a {@link nl.nn.adapterframework.core.ISenderWithParameters ISenderWithParameters}. 
+ * When a parameter with the name stubFileName is present, it will <u>not</u> be handed to the sender 
+ * and it is used at runtime instead of the stubFileName specified by the attribute. A lookup of the 
+ * file for this stubFileName will be done at runtime, while the file for the stubFileName specified 
+ * as an attribute will be done at configuration time.</td></tr>
  * </table>
  * </p>
  * <p><b>Exits:</b>
@@ -149,16 +164,18 @@ import org.apache.commons.lang.StringUtils;
  */
 
 public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
-	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.25 $ $Date: 2007-02-05 14:59:40 $";
+	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.26 $ $Date: 2007-02-12 10:38:00 $";
 	private final static String TIMEOUTFORWARD = "timeout";
 	private final static String EXCEPTIONFORWARD = "exception";
+	private final static String STUBFILENAME = "stubFileName";
 
 	private String resultOnTimeOut = "receiver timed out";
 	private String linkMethod = "CORRELATIONID";
 
 	private ISender sender = null;
 	private ICorrelatedPullingListener listener = null;
-
+	private String stubFileName;
+	private String returnString;
 	
 	protected void propagateName() {
 		ISender sender=getSender();
@@ -178,52 +195,63 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 
 	public void addParameter(Parameter p){
 		if (getSender() instanceof ISenderWithParameters && getParameterList()!=null) {
-			((ISenderWithParameters)getSender()).addParameter(p);
+			if (p.getName().equals(STUBFILENAME)) {
+				super.addParameter(p);
+			} else {
+				((ISenderWithParameters)getSender()).addParameter(p);
+			}
 		}
 	}
-
 
 	/**
 	 * Checks whether a sender is defined for this pipe.
 	 */
 	public void configure() throws ConfigurationException {
 		super.configure();
-		propagateName();
-		if (getSender() == null) {
-			throw new ConfigurationException(
-				getLogPrefix(null) + "no sender defined ");
-		}
-
-		try {
-			getSender().configure();
-		} catch (ConfigurationException e) {
-			throw new ConfigurationException(getLogPrefix(null)+"while configuring sender",e);
-		}
-		if (getSender() instanceof HasPhysicalDestination) {
-			log.info(getLogPrefix(null)+"has sender on "+((HasPhysicalDestination)getSender()).getPhysicalDestinationName());
-		}
-		if (getListener() != null) {
-			if (getSender().isSynchronous()) {
-				throw new ConfigurationException(
-					getLogPrefix(null)
-						+ "cannot have listener with synchronous sender");
-			}
+		if (StringUtils.isNotEmpty(getStubFileName())) {
 			try {
-				getListener().configure();
+				returnString = Misc.resourceToString(ClassUtils.getResourceURL(this,getStubFileName()), SystemUtils.LINE_SEPARATOR);
+			} catch (Throwable e) {
+				throw new ConfigurationException("Pipe [" + getName() + "] got exception loading ["+getStubFileName()+"]", e);
+			}
+		} else {
+			propagateName();
+			if (getSender() == null) {
+				throw new ConfigurationException(
+					getLogPrefix(null) + "no sender defined ");
+			}
+	
+			try {
+				getSender().configure();
 			} catch (ConfigurationException e) {
-				throw new ConfigurationException(getLogPrefix(null)+"while configuring listener",e);
+				throw new ConfigurationException(getLogPrefix(null)+"while configuring sender",e);
 			}
-			if (getListener() instanceof HasPhysicalDestination) {
-				log.info(getLogPrefix(null)+"has listener on "+((HasPhysicalDestination)getListener()).getPhysicalDestinationName());
+			if (getSender() instanceof HasPhysicalDestination) {
+				log.info(getLogPrefix(null)+"has sender on "+((HasPhysicalDestination)getSender()).getPhysicalDestinationName());
 			}
+			if (getListener() != null) {
+				if (getSender().isSynchronous()) {
+					throw new ConfigurationException(
+						getLogPrefix(null)
+							+ "cannot have listener with synchronous sender");
+				}
+				try {
+					getListener().configure();
+				} catch (ConfigurationException e) {
+					throw new ConfigurationException(getLogPrefix(null)+"while configuring listener",e);
+				}
+				if (getListener() instanceof HasPhysicalDestination) {
+					log.info(getLogPrefix(null)+"has listener on "+((HasPhysicalDestination)getListener()).getPhysicalDestinationName());
+				}
+			}
+			if (!(getLinkMethod().equalsIgnoreCase("MESSAGEID"))
+				&& (!(getLinkMethod().equalsIgnoreCase("CORRELATIONID")))) {
+				throw new ConfigurationException(
+					"Invalid argument for property LinkMethod ["
+						+ getLinkMethod()
+						+ "]. it should be either MESSAGEID or CORRELATIONID");
+			}	
 		}
-		if (!(getLinkMethod().equalsIgnoreCase("MESSAGEID"))
-			&& (!(getLinkMethod().equalsIgnoreCase("CORRELATIONID"))))
-			throw new ConfigurationException(
-				"Invalid argument for property LinkMethod ["
-					+ getLinkMethod()
-					+ "]. it should be either MESSAGEID or CORRELATIONID");
-
 	}
 
 	public PipeRunResult doPipe(Object input, PipeLineSession session)
@@ -238,79 +266,118 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 				this,
 				"String expected, got a [" + input.getClass().getName() + "]");
 		}
-		String result = null;
-		ICorrelatedPullingListener replyListener = getListener();
-		HashMap threadContext=new HashMap();
-		try {
-			String correlationID = session.getMessageId();
 
-			String messageID = null;
-			// sendResult has a messageID for async senders, the result for sync senders
-			String sendResult = sendMessage(input, session, correlationID, getSender(), threadContext);
-
-			if (getSender().isSynchronous()) {
-				if (log.isInfoEnabled()) {
-					log.info(getLogPrefix(session)+ "sent message to ["+ getSender().getName()+ "] synchronously");
-				}
-				result = sendResult;
-			} else {
-				messageID = sendResult;
-				// if linkMethod is MESSAGEID overwrite correlationID with the messageID
-				// as this will be used with the listener
-				if (getLinkMethod().equalsIgnoreCase("MESSAGEID")) {
-					correlationID = sendResult;
-				}
-				if (log.isInfoEnabled()) {
-					log.info(getLogPrefix(session) + "sent message to [" + getSender().getName()+ "] messageID ["+ messageID+ "] correlationID ["+ correlationID+ "] linkMethod ["+ getLinkMethod()	+ "]");
-				}
-			}
-			
-			if (replyListener != null) {
-				if (log.isDebugEnabled()) {
-					log.debug(getLogPrefix(session)	+ "starts listening for return message with correlationID ["+ correlationID	+ "]");
-				}
-				threadContext = replyListener.openThread();
-				Object msg = replyListener.getRawMessage(correlationID, threadContext);
-				if (msg==null) {	
-					log.info(getLogPrefix(session)+"received null reply message");
-				} else {
-					log.info(getLogPrefix(session)+"received reply message");
-				}
-				result =
-					replyListener.getStringFromRawMessage(msg, threadContext);
-			} else {
-				result = sendResult;
-			}
-			if (result == null) {
-				result = "";
-			}
-			return new PipeRunResult(getForward(), result);
-		} catch (TimeOutException toe) {
-			PipeForward timeoutForward = findForward(TIMEOUTFORWARD);
-			if (timeoutForward==null) {
-				log.warn(getLogPrefix(session) + "timeout occured, but no timeout-forward defined", toe);
-				timeoutForward=getForward();
-			} else {
-				log.warn(getLogPrefix(session) + "timeout occured", toe);
-			}
-			return new PipeRunResult(timeoutForward,getResultOnTimeOut());
-
-		} catch (Throwable t) {
-			PipeForward exceptionForward = findForward(EXCEPTIONFORWARD);
-			if (exceptionForward!=null) {
-				log.warn(getLogPrefix(session) + "exception occured, forwarded to ["+exceptionForward.getPath()+"]", t);
-				String resultmsg=new ErrorMessageFormatter().format(getLogPrefix(session),t,this,(String)input,session.getMessageId(),0);
-				return new PipeRunResult(exceptionForward,resultmsg);
-			}
-			throw new PipeRunException(this, getLogPrefix(session) + "caught exception", t);
-		} finally {
-			if (getListener()!=null)
+		if (StringUtils.isNotEmpty(getStubFileName())) {
+			ParameterList pl = getParameterList();
+			if (pl != null) {
+				ParameterResolutionContext prc = new ParameterResolutionContext((String)input, session);
+				ParameterValueList pvl;
 				try {
-					log.debug(getLogPrefix(session)+"is closing listener");
-					replyListener.closeThread(threadContext);
-				} catch (ListenerException le) {
-					log.error(getLogPrefix(session)+"got error closing listener", le);
+					pvl = prc.getValues(pl);
+				} catch (ParameterException e) {
+					throw new PipeRunException(this,getLogPrefix(session)+"exception extracting parameters",e);
 				}
+				Map params = new HashMap();
+				if (pvl != null) {
+					for (int i = 0; i < pl.size(); i++) {
+						String key = pl.getParameter(i).getName();
+						String value = pvl.getParameterValue(i).asStringValue(null);
+						params.put(key, value);
+					}
+				}
+				String sfn = null;
+				if (params != null && params.size() > 0) {
+					sfn = (String)params.get(STUBFILENAME);
+				}
+				if (sfn != null) {
+					try {
+						returnString = Misc.resourceToString(ClassUtils.getResourceURL(this,sfn), SystemUtils.LINE_SEPARATOR);
+					} catch (Throwable e) {
+						throw new PipeRunException(this,getLogPrefix(session)+"got exception loading [" + sfn + "]",e);
+					}
+				}
+				// Use remaining params as outgoing UDZs
+				Map udzMap = new HashMap();
+				udzMap.putAll(params);
+				udzMap.remove(STUBFILENAME);
+			}
+
+			return new PipeRunResult(getForward(), returnString);
+		} else {
+			String result = null;
+			ICorrelatedPullingListener replyListener = getListener();
+			HashMap threadContext=new HashMap();
+			try {
+				String correlationID = session.getMessageId();
+	
+				String messageID = null;
+				// sendResult has a messageID for async senders, the result for sync senders
+				String sendResult = sendMessage(input, session, correlationID, getSender(), threadContext);
+	
+				if (getSender().isSynchronous()) {
+					if (log.isInfoEnabled()) {
+						log.info(getLogPrefix(session)+ "sent message to ["+ getSender().getName()+ "] synchronously");
+					}
+					result = sendResult;
+				} else {
+					messageID = sendResult;
+					// if linkMethod is MESSAGEID overwrite correlationID with the messageID
+					// as this will be used with the listener
+					if (getLinkMethod().equalsIgnoreCase("MESSAGEID")) {
+						correlationID = sendResult;
+					}
+					if (log.isInfoEnabled()) {
+						log.info(getLogPrefix(session) + "sent message to [" + getSender().getName()+ "] messageID ["+ messageID+ "] correlationID ["+ correlationID+ "] linkMethod ["+ getLinkMethod()	+ "]");
+					}
+				}
+				
+				if (replyListener != null) {
+					if (log.isDebugEnabled()) {
+						log.debug(getLogPrefix(session)	+ "starts listening for return message with correlationID ["+ correlationID	+ "]");
+					}
+					threadContext = replyListener.openThread();
+					Object msg = replyListener.getRawMessage(correlationID, threadContext);
+					if (msg==null) {	
+						log.info(getLogPrefix(session)+"received null reply message");
+					} else {
+						log.info(getLogPrefix(session)+"received reply message");
+					}
+					result =
+						replyListener.getStringFromRawMessage(msg, threadContext);
+				} else {
+					result = sendResult;
+				}
+				if (result == null) {
+					result = "";
+				}
+				return new PipeRunResult(getForward(), result);
+			} catch (TimeOutException toe) {
+				PipeForward timeoutForward = findForward(TIMEOUTFORWARD);
+				if (timeoutForward==null) {
+					log.warn(getLogPrefix(session) + "timeout occured, but no timeout-forward defined", toe);
+					timeoutForward=getForward();
+				} else {
+					log.warn(getLogPrefix(session) + "timeout occured", toe);
+				}
+				return new PipeRunResult(timeoutForward,getResultOnTimeOut());
+	
+			} catch (Throwable t) {
+				PipeForward exceptionForward = findForward(EXCEPTIONFORWARD);
+				if (exceptionForward!=null) {
+					log.warn(getLogPrefix(session) + "exception occured, forwarded to ["+exceptionForward.getPath()+"]", t);
+					String resultmsg=new ErrorMessageFormatter().format(getLogPrefix(session),t,this,(String)input,session.getMessageId(),0);
+					return new PipeRunResult(exceptionForward,resultmsg);
+				}
+				throw new PipeRunException(this, getLogPrefix(session) + "caught exception", t);
+			} finally {
+				if (getListener()!=null)
+					try {
+						log.debug(getLogPrefix(session)+"is closing listener");
+						replyListener.closeThread(threadContext);
+					} catch (ListenerException le) {
+						log.error(getLogPrefix(session)+"got error closing listener", le);
+					}
+			}
 		}
 	}
 
@@ -325,31 +392,35 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 	}
 
 	public void start() throws PipeStartException {
-		try {
-			getSender().open();
-			if (getListener() != null) {
-				getListener().open();
+		if (StringUtils.isEmpty(getStubFileName())) {
+			try {
+				getSender().open();
+				if (getListener() != null) {
+					getListener().open();
+				}
+	
+			} catch (Throwable t) {
+				PipeStartException pse = new PipeStartException(getLogPrefix(null)+"could not start", t);
+				pse.setPipeNameInError(getName());
+				throw pse;
 			}
-
-		} catch (Throwable t) {
-			PipeStartException pse = new PipeStartException(getLogPrefix(null)+"could not start", t);
-			pse.setPipeNameInError(getName());
-			throw pse;
 		}
 	}
 	public void stop() {
-		log.info(getLogPrefix(null) + "is closing");
-		try {
-			getSender().close();
-		} catch (SenderException e) {
-			log.warn(getLogPrefix(null) + "exception closing sender", e);
-		}
-		if (getListener() != null) {
+		if (StringUtils.isEmpty(getStubFileName())) {
+			log.info(getLogPrefix(null) + "is closing");
 			try {
-				log.info(getLogPrefix(null) + "is closing; closing listener");
-				getListener().close();
-			} catch (ListenerException e) {
-				log.warn(getLogPrefix(null) + "Exception closing listener", e);
+				getSender().close();
+			} catch (SenderException e) {
+				log.warn(getLogPrefix(null) + "exception closing sender", e);
+			}
+			if (getListener() != null) {
+				try {
+					log.info(getLogPrefix(null) + "is closing; closing listener");
+					getListener().close();
+				} catch (ListenerException e) {
+					log.warn(getLogPrefix(null) + "Exception closing listener", e);
+				}
 			}
 		}
 	}
@@ -423,4 +494,10 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 		return linkMethod;
 	}
 
+	public void setStubFileName(String fileName) {
+		stubFileName = fileName;
+	}
+	public String getStubFileName() {
+		return stubFileName;
+	}
 }
