@@ -1,49 +1,58 @@
+/*
+ * $Log: ActionBase.java,v $
+ * Revision 1.4  2007-02-12 14:34:16  europe\L190409
+ * Logger from LogUtil
+ *
+ */
 package nl.nn.adapterframework.webcontrol.action;
 
-import nl.nn.adapterframework.configuration.Configuration;
-import nl.nn.adapterframework.util.AppConstants;
-import org.apache.log4j.Logger;
-import org.apache.struts.action.*;
-import org.apache.struts.util.MessageResources;
+import java.io.IOException;
+import java.util.Locale;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import java.io.IOException;
-import java.util.Locale;
+
+import nl.nn.adapterframework.configuration.Configuration;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.LogUtil;
+
+import org.apache.log4j.Logger;
+import org.apache.struts.action.Action;
+import org.apache.struts.action.ActionErrors;
+import org.apache.struts.action.ActionForm;
+import org.apache.struts.action.ActionForward;
+import org.apache.struts.action.ActionMapping;
+import org.apache.struts.action.ActionMessages;
+import org.apache.struts.action.DynaActionForm;
+import org.apache.struts.util.MessageResources;
 
 
 /**
- * Implementation of <strong>Action</strong><br/>
+ * Implementation of <strong>Action</strong><br/>.
+ * 
  * This action is ment to be extended by individual actions in the project.
+ * 
  * @version Id
  * @author  Johan Verrips
  * @see     org.apache.struts.action.Action
  */
-
 public abstract class ActionBase extends Action {
-	public static final String version="$Id: ActionBase.java,v 1.3 2004-03-26 10:42:57 NNVZNL01#L180564 Exp $";
-	
-    /**
-     * log category; set to the current classname
-     */
-    protected Logger log ; // logging category for this class
+	public static final String version="$RCSfile: ActionBase.java,v $ $Revision: 1.4 $ $Date: 2007-02-12 14:34:16 $";
+	protected Logger log = LogUtil.getLogger(this);
 
-    Locale locale;
-
-    MessageResources messageResources;
-
-    ActionErrors errors;
-
-    HttpSession session;
+    protected Locale locale;
+	protected MessageResources messageResources;
+	protected ActionErrors errors;
+	protected HttpSession session;
 
     /**
      *the <code>Configuration</code> object
      * @see nl.nn.adapterframework.configuration.Configuration
      */
-    Configuration config;
-    ActionMessages messages;
+	protected Configuration config;
+	protected ActionMessages messages;
 
     /**
      * This proc should start with <code>initAction(request)</code>
@@ -57,12 +66,14 @@ public abstract class ActionBase extends Action {
         return (mapping.findForward("success"));
 
     }
+
 	public String getCommandIssuedBy(HttpServletRequest request){
-    String commandIssuedBy= " remoteHost ["+request.getRemoteHost()+"]";
-	commandIssuedBy+=" remoteAddress ["+request.getRemoteAddr()+"]";
-	commandIssuedBy+=" remoteUser ["+request.getRemoteUser()+"]";
-	return commandIssuedBy;
+	    String commandIssuedBy= " remoteHost ["+request.getRemoteHost()+"]";
+		commandIssuedBy+=" remoteAddress ["+request.getRemoteAddr()+"]";
+		commandIssuedBy+=" remoteUser ["+request.getRemoteUser()+"]";
+		return commandIssuedBy;
 	}
+
     /**
      * looks under the session for an attribute named forward. Returns it as an ActionForward
      */
@@ -72,6 +83,7 @@ public abstract class ActionBase extends Action {
 
         return definedForward;
     }
+
     /**
      * Gets the full request Uri, that is, the reference suitable for ActionForwards.<br/>
      * Queryparameters of the request are added to it.
@@ -88,21 +100,23 @@ public abstract class ActionBase extends Action {
             }
             return reqUri;
           }
-protected DynaActionForm getPersistentForm(ActionMapping mapping, ActionForm form, HttpServletRequest request) {
-    if (form == null) {
-        log.debug(
-            " Creating new FormBean under key " + mapping.getAttribute());
 
-        form = new DynaActionForm();
-
-        if ("request".equals(mapping.getScope())) {
-            request.setAttribute(mapping.getAttribute(), form);
-        } else {
-            session.setAttribute(mapping.getAttribute(), form);
-        }
-    }
-    return (DynaActionForm) form;
-}
+	protected DynaActionForm getPersistentForm(ActionMapping mapping, ActionForm form, HttpServletRequest request) {
+	    if (form == null) {
+	        log.debug(
+	            " Creating new FormBean under key " + mapping.getAttribute());
+	
+	        form = new DynaActionForm();
+	
+	        if ("request".equals(mapping.getScope())) {
+	            request.setAttribute(mapping.getAttribute(), form);
+	        } else {
+	            session.setAttribute(mapping.getAttribute(), form);
+	        }
+	    }
+	    return (DynaActionForm) form;
+	}
+ 
  	/**
  	 * Initializes the fields in the <code>Action</code> for this specific
  	 * application. Most important: it retrieves the Configuration object
@@ -118,15 +132,13 @@ protected DynaActionForm getPersistentForm(ActionMapping mapping, ActionForm for
         session = request.getSession();
         config = (Configuration) getServlet().getServletContext().getAttribute(AppConstants.getInstance().getProperty("KEY_CONFIGURATION"));
 
-        log = Logger.getLogger(this.getClass()); // logging category for this class
+        log = LogUtil.getLogger(this); // logging category for this class
  
         if (null == config) {
             log.info("configuration not present in context. Configuration probably add errors. see log");
         }
-
-
-
     }
+
     /**
      * removes formbean <br/>
      * removes what is defined under the Attribute of a mapping from either the
@@ -142,6 +154,7 @@ protected DynaActionForm getPersistentForm(ActionMapping mapping, ActionForm for
                 session.removeAttribute(mapping.getAttribute());
         }
     }
+
     /**
      * Sets under the session an attribute named forward with an ActionForward to the current
      * request.
