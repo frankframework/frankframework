@@ -1,6 +1,9 @@
 /*
  * $Log: MessageSendingPipe.java,v $
- * Revision 1.26  2007-02-12 10:38:00  europe\L190409
+ * Revision 1.27  2007-02-12 14:50:07  europe\L190409
+ * added result checking facilities (by PL)
+ *
+ * Revision 1.26  2007/02/12 10:38:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added attribute stubFileName (by PL)
  *
  * Revision 1.25  2007/02/05 14:59:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -95,6 +98,7 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
@@ -112,6 +116,8 @@ import org.apache.commons.lang.SystemUtils;
  * <tr><td>{@link #setDurationThreshold(long) durationThreshold}</td><td>if durationThreshold >=0 and the duration (in milliseconds) of the message processing exceeded the value specified the message is logged informatory</td><td>-1</td></tr>
  * <tr><td>{@link #setGetInputFromSessionKey(String) getInputFromSessionKey}</td><td>when set, input is taken from this session key, instead of regular input</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setStoreResultInSessionKey(String) storeResultInSessionKey}</td><td>when set, the result is stored under this session key</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setCheckResultXmlWellFormed(boolean) checkResultXmlWellFormed}</td><td>when set <code>true</code>, the XML well-formedness of the result is checked</td><td>false</td></tr>
+ * <tr><td>{@link #setCheckResultRootTag(String) checkResultRootTag}</td><td>when set, besides the XML well-formedness the root element of the result is checked</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setPreserveInput(boolean) preserveInput}</td><td>when set <code>true</code>, the input of a pipe is restored before processing the next one</td><td>false</td></tr>
  * <tr><td>{@link #setNamespaceAware(boolean) namespaceAware}</td><td>controls namespace-awareness of possible XML parsing in descender-classes</td><td>application default</td></tr>
  * <tr><td>{@link #setTransactionAttribute(String) transactionAttribute}</td><td>Defines transaction and isolation behaviour. Equal to <A href="http://java.sun.com/j2ee/sdk_1.2.1/techdocs/guides/ejb/html/Transaction2.html#10494">EJB transaction attribute</a>. Possible values are: 
@@ -164,9 +170,10 @@ import org.apache.commons.lang.SystemUtils;
  */
 
 public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
-	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.26 $ $Date: 2007-02-12 10:38:00 $";
+	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.27 $ $Date: 2007-02-12 14:50:07 $";
 	private final static String TIMEOUTFORWARD = "timeout";
 	private final static String EXCEPTIONFORWARD = "exception";
+	private final static String ILLEGALRESULTFORWARD = "illegalResult";
 	private final static String STUBFILENAME = "stubFileName";
 
 	private String resultOnTimeOut = "receiver timed out";
@@ -176,6 +183,8 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 	private ICorrelatedPullingListener listener = null;
 	private String stubFileName;
 	private String returnString;
+	private boolean checkXmlWellFormed = false;
+	private String checkRootTag;
 	
 	protected void propagateName() {
 		ISender sender=getSender();
@@ -251,6 +260,11 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 						+ getLinkMethod()
 						+ "]. it should be either MESSAGEID or CORRELATIONID");
 			}	
+
+			if (checkXmlWellFormed || StringUtils.isNotEmpty(checkRootTag)) {
+				if (findForward(ILLEGALRESULTFORWARD) == null)
+					throw new ConfigurationException(getLogPrefix(null) + "has no forward with name [illegalResult]");
+			}
 		}
 	}
 
@@ -302,6 +316,11 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 				udzMap.remove(STUBFILENAME);
 			}
 
+			if (!validResult(returnString)) {
+				PipeForward illegalResultForward = findForward(ILLEGALRESULTFORWARD);
+				return new PipeRunResult(illegalResultForward, returnString);
+			}
+
 			return new PipeRunResult(getForward(), returnString);
 		} else {
 			String result = null;
@@ -350,6 +369,12 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 				if (result == null) {
 					result = "";
 				}
+
+				if (!validResult(result)) {
+					PipeForward illegalResultForward = findForward(ILLEGALRESULTFORWARD);
+					return new PipeRunResult(illegalResultForward, result);
+				}
+
 				return new PipeRunResult(getForward(), result);
 			} catch (TimeOutException toe) {
 				PipeForward timeoutForward = findForward(TIMEOUTFORWARD);
@@ -379,6 +404,16 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 					}
 			}
 		}
+	}
+
+	private boolean validResult(String result) {
+		boolean validResult = true;
+		if (checkXmlWellFormed || StringUtils.isNotEmpty(checkRootTag)) {
+			if (!XmlUtils.isWellFormed(result, getCheckRootTag())) {
+				validResult = false;
+			}
+		}
+		return validResult;
 	}
 
 	protected String sendMessage(Object input, PipeLineSession session, String correlationID, ISender sender, HashMap threadContext) throws SenderException, TimeOutException {
@@ -499,5 +534,19 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 	}
 	public String getStubFileName() {
 		return stubFileName;
+	}
+
+	public void setCheckXmlWellFormed(boolean b) {
+		checkXmlWellFormed = b;
+	}
+	public boolean getCheckXmlWellFormed() {
+		return checkXmlWellFormed;
+	}
+
+	public void setCheckRootTag(String s) {
+		checkRootTag = s;
+	}
+	public String getCheckRootTag() {
+		return checkRootTag;
 	}
 }
