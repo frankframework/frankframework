@@ -1,6 +1,9 @@
 /*
  * $Log: Adapter.java,v $
- * Revision 1.25  2006-09-14 14:58:00  europe\L190409
+ * Revision 1.26  2007-02-12 13:44:09  europe\L190409
+ * Logger from LogUtil
+ *
+ * Revision 1.25  2006/09/14 14:58:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added getPipeLine()
  *
  * Revision 1.24  2006/09/07 08:35:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -70,20 +73,6 @@
  */
 package nl.nn.adapterframework.core;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.errormessageformatters.ErrorMessageFormatter;
-import nl.nn.adapterframework.util.DateUtils;
-import nl.nn.adapterframework.util.JtaUtil;
-import nl.nn.adapterframework.util.MessageKeeper;
-import nl.nn.adapterframework.util.RunStateEnum;
-import nl.nn.adapterframework.util.RunStateManager;
-import nl.nn.adapterframework.util.StatisticsKeeper;
-import nl.nn.adapterframework.util.StatisticsKeeperIterationHandler;
-
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.log4j.Logger;
-import org.apache.log4j.NDC;
-
 import java.util.Date;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -94,6 +83,21 @@ import java.util.Vector;
 import javax.naming.NamingException;
 import javax.transaction.SystemException;
 import javax.transaction.UserTransaction;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.errormessageformatters.ErrorMessageFormatter;
+import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.JtaUtil;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.MessageKeeper;
+import nl.nn.adapterframework.util.RunStateEnum;
+import nl.nn.adapterframework.util.RunStateManager;
+import nl.nn.adapterframework.util.StatisticsKeeper;
+import nl.nn.adapterframework.util.StatisticsKeeperIterationHandler;
+
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.log4j.Logger;
+import org.apache.log4j.NDC;
 /**
  * The Adapter is the central manager in the IBIS Adapterframework, that has knowledge
  * and uses {@link IReceiver IReceivers} and a {@link PipeLine}.
@@ -139,12 +143,14 @@ import javax.transaction.UserTransaction;
  */
 
 public class Adapter implements Runnable, IAdapter {
-	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.25 $ $Date: 2006-09-14 14:58:00 $";
+	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.26 $ $Date: 2007-02-12 13:44:09 $";
+	private Logger log = LogUtil.getLogger(this);
+
+	private String name;
+
 	private Vector receivers = new Vector();
 	private long lastMessageDate = 0;
 	private PipeLine pipeline;
-	private String name;
-	private Logger log = Logger.getLogger(this.getClass());
 
 	private long numOfMessagesProcessed = 0;
 	private long numOfMessagesInError = 0;

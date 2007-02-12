@@ -1,6 +1,9 @@
 /*
  * $Log: FtpSession.java,v $
- * Revision 1.13  2006-01-05 14:17:46  europe\L190409
+ * Revision 1.14  2007-02-12 13:50:50  europe\L190409
+ * Logger from LogUtil
+ *
+ * Revision 1.13  2006/01/05 14:17:46  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.12  2005/12/20 09:34:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -61,6 +64,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.FileUtils;
+import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.net.ftp.FTPClient;
@@ -128,8 +132,8 @@ import com.sshtools.j2ssh.transport.publickey.SshPrivateKeyFile;
  * @author John Dekker
  */
 public class FtpSession {
-	public static final String version = "$RCSfile: FtpSession.java,v $  $Revision: 1.13 $ $Date: 2006-01-05 14:17:46 $";
-	protected Logger log = Logger.getLogger(this.getClass());
+	public static final String version = "$RCSfile: FtpSession.java,v $  $Revision: 1.14 $ $Date: 2007-02-12 13:50:50 $";
+	protected Logger log = LogUtil.getLogger(this);
 
 	// types of ftp transports
 	static final int FTP = 1;

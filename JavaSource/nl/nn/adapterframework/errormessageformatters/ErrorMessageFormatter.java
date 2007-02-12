@@ -1,6 +1,9 @@
 /*
  * $Log: ErrorMessageFormatter.java,v $
- * Revision 1.5  2004-09-01 11:26:14  L190409
+ * Revision 1.6  2007-02-12 13:44:29  europe\L190409
+ * Logger from LogUtil
+ *
+ * Revision 1.5  2004/09/01 11:26:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * made receivedTime optional (only used if non-zero)
  *
  * Revision 1.4  2004/03/30 07:30:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -9,14 +12,16 @@
  */
 package nl.nn.adapterframework.errormessageformatters;
 
+import java.util.Date;
+
 import nl.nn.adapterframework.core.IErrorMessageFormatter;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
+
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
-
-import java.util.Date;
 /**
  * This <code>ErrorMessageFormatter</code> wraps an error in an XML string.
  *
@@ -40,9 +45,8 @@ import java.util.Date;
  * @author  Gerrit van Brakel
  */
 public class ErrorMessageFormatter implements IErrorMessageFormatter {
-	public static final String version="$Id: ErrorMessageFormatter.java,v 1.5 2004-09-01 11:26:14 L190409 Exp $";
-
-    protected Logger log = Logger.getLogger(this.getClass());
+	public static final String version="$Id: ErrorMessageFormatter.java,v 1.6 2007-02-12 13:44:29 europe\L190409 Exp $";
+    protected Logger log = LogUtil.getLogger(this);
 	
 	/**
 	 * Format the available parameters into a XML-message.

@@ -1,6 +1,9 @@
 /*
  * $Log: FTPsClient.java,v $
- * Revision 1.6  2006-01-19 10:34:19  europe\L190409
+ * Revision 1.7  2007-02-12 13:50:50  europe\L190409
+ * Logger from LogUtil
+ *
+ * Revision 1.6  2006/01/19 10:34:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * overided isPositiveCompletion to avoid hanging ls (belastingdienst)
  *
  * Revision 1.5  2005/12/20 09:33:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -36,6 +39,7 @@ import java.util.ArrayList;
 
 import nl.nn.adapterframework.http.AuthSSLProtocolSocketFactoryBase;
 import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.net.MalformedServerReplyException;
@@ -52,8 +56,8 @@ import org.apache.log4j.Logger;
  * @author John Dekker
  */
 class FTPsClient extends FTPClient {
-	public static final String version = "$RCSfile: FTPsClient.java,v $  $Revision: 1.6 $ $Date: 2006-01-19 10:34:19 $";
-	protected Logger log = Logger.getLogger(this.getClass());
+	public static final String version = "$RCSfile: FTPsClient.java,v $  $Revision: 1.7 $ $Date: 2007-02-12 13:50:50 $";
+	protected Logger log = LogUtil.getLogger(this);
 	
 	private FtpSession session;
 	private AuthSSLProtocolSocketFactoryBase socketFactory;

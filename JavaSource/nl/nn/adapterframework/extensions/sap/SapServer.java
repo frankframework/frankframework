@@ -1,6 +1,9 @@
 /* 
  * $Log: SapServer.java,v $
- * Revision 1.7  2005-08-10 11:31:28  europe\L190409
+ * Revision 1.8  2007-02-12 13:47:54  europe\L190409
+ * Logger from LogUtil
+ *
+ * Revision 1.7  2005/08/10 11:31:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * no abort() before stopping server
  *
  * Revision 1.6  2005/08/08 09:42:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -33,6 +36,8 @@
  */
 package nl.nn.adapterframework.extensions.sap;
 
+import nl.nn.adapterframework.util.LogUtil;
+
 import org.apache.log4j.Logger;
 
 import com.sap.mw.jco.JCO;
@@ -43,8 +48,8 @@ import com.sap.mw.jco.JCO;
  * @since 4.2
  */
 public class SapServer extends JCO.Server implements JCO.ServerExceptionListener, JCO.ServerErrorListener {
-	public static final String version="$RCSfile: SapServer.java,v $  $Revision: 1.7 $ $Date: 2005-08-10 11:31:28 $";
-	protected Logger log = Logger.getLogger(this.getClass());
+	public static final String version="$RCSfile: SapServer.java,v $  $Revision: 1.8 $ $Date: 2007-02-12 13:47:54 $";
+	protected Logger log = LogUtil.getLogger(this);
 	
 	private SapFunctionHandler handler = null;
 	

@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.37  2007-02-05 14:54:33  europe\L190409
+ * Revision 1.38  2007-02-12 13:44:09  europe\L190409
+ * Logger from LogUtil
+ *
+ * Revision 1.37  2007/02/05 14:54:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fix bug in starting isolated thread
  *
  * Revision 1.36  2006/12/21 12:55:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -106,9 +109,13 @@
  */
 package nl.nn.adapterframework.core;
 
+import java.util.Enumeration;
+import java.util.Hashtable;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.JtaUtil;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.Semaphore;
 import nl.nn.adapterframework.util.StatisticsKeeper;
@@ -116,9 +123,6 @@ import nl.nn.adapterframework.util.TracingUtil;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-
-import java.util.Enumeration;
-import java.util.Hashtable;
 
 /**
  * Processor and keeper of a line of {@link IPipe Pipes}.
@@ -189,9 +193,9 @@ import java.util.Hashtable;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.37 $ $Date: 2007-02-05 14:54:33 $";
-    private Logger log = Logger.getLogger(this.getClass());
-	private Logger durationLog = Logger.getLogger("LongDurationMessages");
+	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.38 $ $Date: 2007-02-12 13:44:09 $";
+    private Logger log = LogUtil.getLogger(this);
+	private Logger durationLog = LogUtil.getLogger("LongDurationMessages");
     
 	private Adapter adapter;    // for transaction managing
 	private INamedObject owner; // for logging purposes

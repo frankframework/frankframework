@@ -1,6 +1,9 @@
 /*
  * $Log: Adios2XmlPipe.java,v $
- * Revision 1.9  2005-01-05 12:31:50  L190409
+ * Revision 1.10  2007-02-12 13:47:55  europe\L190409
+ * Logger from LogUtil
+ *
+ * Revision 1.9  2005/01/05 12:31:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * allow for colons in 'waarde'
  *
  * Revision 1.8  2005/01/04 12:55:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -101,7 +104,7 @@ import java.net.URL;
  * @version Id
  */
 public class Adios2XmlPipe extends FixedForwardPipe {
-	public static final String version="$Id: Adios2XmlPipe.java,v 1.9 2005-01-05 12:31:50 L190409 Exp $";
+	public static final String version="$Id: Adios2XmlPipe.java,v 1.10 2007-02-12 13:47:55 europe\L190409 Exp $";
 
 	private Hashtable rubriek2nummer;	 
 	private Hashtable record2nummer;
@@ -125,8 +128,7 @@ public class Adios2XmlPipe extends FixedForwardPipe {
 
  	    class Xml2AdiosHandler extends DefaultHandler {
         private StringBuffer result = new StringBuffer(10000);
-        //private Logger log = Logger.getLogger(this.getClass());
-
+ 
         public String getResult() {
             return result.toString();
         }

@@ -1,6 +1,9 @@
 /*
  * $Log: Afm2EdiFactSender.java,v $
- * Revision 1.2  2005-02-24 12:20:02  L190409
+ * Revision 1.3  2007-02-12 13:47:04  europe\L190409
+ * Logger from LogUtil
+ *
+ * Revision 1.2  2005/02/24 12:20:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed unused imports
  *
  * Revision 1.1  2005/02/02 16:37:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -13,16 +16,16 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
-import org.apache.log4j.Logger;
-
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.util.DomBuilderException;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
+
+import org.apache.log4j.Logger;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
  * Domparser om AFM-XML berichten om te zetten in edifactberichten (voor de backoffice).
@@ -41,8 +44,8 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author: Erik van de Wetering, fine tuned and wrapped for Ibis by Gerrit van Brakel
  */
 public class Afm2EdiFactSender implements ISender {
-	protected Logger logger = Logger.getLogger(this.getClass());
-	public static final String version = "$Id: Afm2EdiFactSender.java,v 1.2 2005-02-24 12:20:02 L190409 Exp $";
+	public static final String version="$RCSfile: Afm2EdiFactSender.java,v $ $Revision: 1.3 $ $Date: 2007-02-12 13:47:04 $";
+	protected Logger logger = LogUtil.getLogger(this);
 
 	public final static String VERWERKTAG = "VRWRKCD";
 	public final static String TPNRTAG = "AL_RECCRT";

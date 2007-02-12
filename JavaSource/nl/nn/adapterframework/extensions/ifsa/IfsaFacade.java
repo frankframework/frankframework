@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaFacade.java,v $
- * Revision 1.43  2007-02-05 14:56:29  europe\L190409
+ * Revision 1.44  2007-02-12 13:47:55  europe\L190409
+ * Logger from LogUtil
+ *
+ * Revision 1.43  2007/02/05 14:56:29  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * make isJmsTransacted() protected
  *
  * Revision 1.42  2006/11/06 08:15:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -136,6 +139,7 @@ import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IXAEnabled;
 import nl.nn.adapterframework.core.IbisException;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -179,8 +183,8 @@ import com.ing.ifsa.IFSAServerQueueSender;
  * @since 4.2
  */
 public class IfsaFacade implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version = "$RCSfile: IfsaFacade.java,v $ $Revision: 1.43 $ $Date: 2007-02-05 14:56:29 $";
-    protected Logger log = Logger.getLogger(this.getClass());
+	public static final String version = "$RCSfile: IfsaFacade.java,v $ $Revision: 1.44 $ $Date: 2007-02-12 13:47:55 $";
+    protected Logger log = LogUtil.getLogger(this);
     
     private static int BASIC_ACK_MODE = Session.AUTO_ACKNOWLEDGE;
  

@@ -1,6 +1,9 @@
 /*
  * $Log: SapFunctionFacade.java,v $
- * Revision 1.9  2006-01-05 13:59:07  europe\L190409
+ * Revision 1.10  2007-02-12 13:47:54  europe\L190409
+ * Logger from LogUtil
+ *
+ * Revision 1.9  2006/01/05 13:59:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.8  2005/12/28 08:42:39  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -41,15 +44,17 @@ package nl.nn.adapterframework.extensions.sap;
 
 import java.util.HashMap;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
-import com.sap.mw.jco.*;
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+
+import com.sap.mw.jco.IFunctionTemplate;
+import com.sap.mw.jco.JCO;
 /**
  * Wrapper round SAP-functions, either SAP calling Ibis, or Ibis calling SAP.
  * <p><b>Configuration:</b>
@@ -71,8 +76,8 @@ import com.sap.mw.jco.*;
  * @since 4.2
  */
 public class SapFunctionFacade implements INamedObject{
-	public static final String version="$RCSfile: SapFunctionFacade.java,v $  $Revision: 1.9 $ $Date: 2006-01-05 13:59:07 $";
-	protected Logger log = Logger.getLogger(this.getClass());
+	public static final String version="$RCSfile: SapFunctionFacade.java,v $  $Revision: 1.10 $ $Date: 2007-02-12 13:47:54 $";
+	protected Logger log = LogUtil.getLogger(this);
 
 	private String name;
 	private String sapSystemName;

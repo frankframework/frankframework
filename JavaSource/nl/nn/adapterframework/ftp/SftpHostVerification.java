@@ -1,6 +1,9 @@
 /*
  * $Log: SftpHostVerification.java,v $
- * Revision 1.2  2005-12-07 15:44:07  europe\L190409
+ * Revision 1.3  2007-02-12 13:50:50  europe\L190409
+ * Logger from LogUtil
+ *
+ * Revision 1.2  2005/12/07 15:44:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * logging to log4j instead of System.out
  *
  * Revision 1.1  2005/11/07 08:21:36  John Dekker <john.dekker@ibissource.org>
@@ -8,6 +11,8 @@
  *
  */
 package nl.nn.adapterframework.ftp;
+
+import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.log4j.Logger;
 
@@ -22,7 +27,7 @@ import com.sshtools.j2ssh.transport.publickey.SshPublicKey;
  * @version Id
  */
 public class SftpHostVerification extends AbstractKnownHostsKeyVerification {
-	private Logger log = Logger.getLogger(this.getClass());
+	private Logger log = LogUtil.getLogger(this);
 	/**
 	 * Constructs the verification instance with the specified known_hosts
 	 * file.
