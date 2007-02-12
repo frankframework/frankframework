@@ -1,6 +1,9 @@
 /*
  * $Log: ShowConfiguration.java,v $
- * Revision 1.7  2005-12-29 15:35:45  europe\L190409
+ * Revision 1.8  2007-02-12 14:35:11  europe\L190409
+ * cosmetic changes
+ *
+ * Revision 1.7  2005/12/29 15:35:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * made some steps to following links to included configuration files
  *
  * Revision 1.6  2005/10/17 09:37:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -18,9 +21,21 @@
  */
 package nl.nn.adapterframework.webcontrol.action;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.StringResolver;
-import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.SystemUtils;
@@ -29,17 +44,6 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.DynaActionForm;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Shows the configuration (with resolved variables).
@@ -55,7 +59,7 @@ import java.util.List;
  */
 
 public final class ShowConfiguration extends ActionBase {
-	public static final String version = "$RCSfile: ShowConfiguration.java,v $ $Revision: 1.7 $ $Date: 2005-12-29 15:35:45 $";
+	public static final String version = "$RCSfile: ShowConfiguration.java,v $ $Revision: 1.8 $ $Date: 2007-02-12 14:35:11 $";
 	
 	private static final String KEYWORD_INCLUDE="<include";
 	private static final String KEYWORD_CONFIG="configuration=\"";
