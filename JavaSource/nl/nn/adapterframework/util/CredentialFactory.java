@@ -1,6 +1,9 @@
 /*
  * $Log: CredentialFactory.java,v $
- * Revision 1.4  2006-03-20 13:51:31  europe\L190409
+ * Revision 1.5  2007-02-12 14:09:04  europe\L190409
+ * Logger from LogUtil
+ *
+ * Revision 1.4  2006/03/20 13:51:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * allow null-password
  *
  * Revision 1.3  2006/03/15 14:04:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -48,7 +51,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class CredentialFactory implements CallbackHandler {
-	protected Logger log = Logger.getLogger(this.getClass());
+	protected Logger log = LogUtil.getLogger(this);
 	
 	private String alias;
 	private String username;

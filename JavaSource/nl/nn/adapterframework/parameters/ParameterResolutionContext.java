@@ -1,6 +1,9 @@
 /*
  * $Log: ParameterResolutionContext.java,v $
- * Revision 1.12  2006-11-06 08:19:52  europe\L190409
+ * Revision 1.13  2007-02-12 13:59:42  europe\L190409
+ * Logger from LogUtil
+ *
+ * Revision 1.12  2006/11/06 08:19:52  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added default constructor
  *
  * Revision 1.11  2005/10/26 08:49:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -50,8 +53,8 @@ import javax.xml.transform.Source;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.util.DomBuilderException;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
-
 
 import org.apache.log4j.Logger;
  
@@ -62,8 +65,8 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class ParameterResolutionContext {
-	public static final String version="$RCSfile: ParameterResolutionContext.java,v $ $Revision: 1.12 $ $Date: 2006-11-06 08:19:52 $";
-	protected Logger log = Logger.getLogger(this.getClass());
+	public static final String version="$RCSfile: ParameterResolutionContext.java,v $ $Revision: 1.13 $ $Date: 2007-02-12 13:59:42 $";
+	protected Logger log = LogUtil.getLogger(this);
 
 	private String input;
 	private PipeLineSession session;

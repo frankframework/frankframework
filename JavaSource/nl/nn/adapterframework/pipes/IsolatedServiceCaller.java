@@ -1,6 +1,9 @@
 /*
  * $Log: IsolatedServiceCaller.java,v $
- * Revision 1.4  2006-08-22 06:50:09  europe\L190409
+ * Revision 1.5  2007-02-12 14:02:19  europe\L190409
+ * Logger from LogUtil
+ *
+ * Revision 1.4  2006/08/22 06:50:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added asynchronous and transactional features
  *
  * Revision 1.3  2005/09/26 11:54:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -19,12 +22,13 @@ import java.util.HashMap;
 
 import javax.transaction.UserTransaction;
 
-import org.apache.log4j.Logger;
-
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
 import nl.nn.adapterframework.util.JtaUtil;
+import nl.nn.adapterframework.util.LogUtil;
+
+import org.apache.log4j.Logger;
 
 /**
  * Helper class for IbisLocalSender that wraps around {@link ServiceDispatcher} to make calls to a local Ibis adapter in a separate thread.
@@ -34,8 +38,8 @@ import nl.nn.adapterframework.util.JtaUtil;
  * @version Id
  */
 public class IsolatedServiceCaller extends Thread {
-	public static final String version="$RCSfile: IsolatedServiceCaller.java,v $ $Revision: 1.4 $ $Date: 2006-08-22 06:50:09 $";
-	protected Logger log = Logger.getLogger(this.getClass());
+	public static final String version="$RCSfile: IsolatedServiceCaller.java,v $ $Revision: 1.5 $ $Date: 2007-02-12 14:02:19 $";
+	protected Logger log = LogUtil.getLogger(this);
 
 	String serviceName;
 	String correlationID;

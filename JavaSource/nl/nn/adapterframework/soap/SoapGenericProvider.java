@@ -1,6 +1,9 @@
 /*
  * $Log: SoapGenericProvider.java,v $
- * Revision 1.1  2005-10-18 08:14:48  europe\L190409
+ * Revision 1.2  2007-02-12 14:06:28  europe\L190409
+ * Logger from LogUtil
+ *
+ * Revision 1.1  2005/10/18 08:14:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * created separate soap-package
  *
  * Revision 1.2  2005/07/05 13:29:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -21,6 +24,7 @@ import nl.nn.adapterframework.core.ISecurityHandler;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.http.HttpSecurityHandler;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
+import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.log4j.Logger;
 import org.apache.soap.Constants;
@@ -38,8 +42,8 @@ import org.apache.soap.util.Provider;
  * @author Gerrit van Brakel
  */
 public class SoapGenericProvider implements Provider {
-	public static final String version = "$RCSfile: SoapGenericProvider.java,v $ $Revision: 1.1 $ $Date: 2005-10-18 08:14:48 $";
-	protected Logger log=Logger.getLogger(this.getClass());
+	public static final String version = "$RCSfile: SoapGenericProvider.java,v $ $Revision: 1.2 $ $Date: 2007-02-12 14:06:28 $";
+	protected Logger log=LogUtil.getLogger(this);
 	
 	private final String TARGET_OBJECT_URI_KEY = "TargetObjectNamespaceURI";
 

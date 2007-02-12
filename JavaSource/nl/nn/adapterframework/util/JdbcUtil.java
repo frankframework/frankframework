@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcUtil.java,v $
- * Revision 1.10  2006-12-13 16:33:03  europe\L190409
+ * Revision 1.11  2007-02-12 14:12:03  europe\L190409
+ * Logger from LogUtil
+ *
+ * Revision 1.10  2006/12/13 16:33:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added blobCharset attribute
  *
  * Revision 1.9  2005/12/29 15:34:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -60,8 +63,8 @@ import org.apache.log4j.Logger;
  * @since   4.1
  */
 public class JdbcUtil {
-	public static final String version = "$RCSfile: JdbcUtil.java,v $ $Revision: 1.10 $ $Date: 2006-12-13 16:33:03 $";
-	protected static Logger log = Logger.getLogger(JdbcUtil.class);
+	public static final String version = "$RCSfile: JdbcUtil.java,v $ $Revision: 1.11 $ $Date: 2007-02-12 14:12:03 $";
+	protected static Logger log = LogUtil.getLogger(JdbcUtil.class);
 	
 	private static final boolean useMetaData=false;
 	/**

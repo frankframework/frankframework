@@ -1,6 +1,9 @@
 /*
  * $Log: LogSender.java,v $
- * Revision 1.4  2006-06-14 09:50:25  europe\L190409
+ * Revision 1.5  2007-02-12 14:02:19  europe\L190409
+ * Logger from LogUtil
+ *
+ * Revision 1.4  2006/06/14 09:50:25  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * avoid null pointer exception when prc==null
  *
  * Revision 1.3  2005/12/28 08:38:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -23,6 +26,7 @@ import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.IParameterHandler;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Level;
@@ -43,7 +47,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class LogSender extends SenderWithParametersBase implements IParameterHandler {
-	public static final String version="$RCSfile: LogSender.java,v $ $Revision: 1.4 $ $Date: 2006-06-14 09:50:25 $";
+	public static final String version="$RCSfile: LogSender.java,v $ $Revision: 1.5 $ $Date: 2007-02-12 14:02:19 $";
 	
 	private String logLevel="info";
 	private String logCategory=null;
@@ -53,7 +57,7 @@ public class LogSender extends SenderWithParametersBase implements IParameterHan
 
 	public void configure() throws ConfigurationException {
 		super.configure();
-		log=Logger.getLogger(getLogCategory());
+		log=LogUtil.getLogger(getLogCategory());
 		level=Level.toLevel(getLogLevel());
 	}
 

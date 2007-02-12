@@ -1,6 +1,9 @@
 /*
  * $Log: RunStateManager.java,v $
- * Revision 1.5  2005-10-27 08:42:54  europe\L190409
+ * Revision 1.6  2007-02-12 14:12:03  europe\L190409
+ * Logger from LogUtil
+ *
+ * Revision 1.5  2005/10/27 08:42:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * *** empty log message ***
  *
  */
@@ -15,9 +18,9 @@ import org.apache.log4j.Logger;
  * @author Gerrit van Brakel
  */
 public class RunStateManager implements RunStateEnquirer {
-	public static final String version="$RCSfile: RunStateManager.java,v $ $Revision: 1.5 $ $Date: 2005-10-27 08:42:54 $";
-	
-	private Logger log = Logger.getLogger(RunStateManager.class);
+	public static final String version="$RCSfile: RunStateManager.java,v $ $Revision: 1.6 $ $Date: 2007-02-12 14:12:03 $";
+	protected Logger log = LogUtil.getLogger(this);
+
 	private RunStateEnum runState = RunStateEnum.STOPPED;
 
 	public synchronized RunStateEnum getRunState() {

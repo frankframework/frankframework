@@ -1,6 +1,9 @@
 /*
  * $Log: TracingUtil.java,v $
- * Revision 1.4  2006-11-21 09:50:43  europe\L190409
+ * Revision 1.5  2007-02-12 14:12:03  europe\L190409
+ * Logger from LogUtil
+ *
+ * Revision 1.4  2006/11/21 09:50:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * try to avoid class not found exceptions for METT
  *
  * Revision 1.3  2006/09/14 15:28:06  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -20,6 +23,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 import org.apache.log4j.Logger;
+import nl.nn.adapterframework.util.LogUtil;
 
 import com.ing.coins.mett.application.MonitorAccessor;
 import com.ing.coins.mett.application.exceptions.MonitorStartFailedException;
@@ -33,7 +37,7 @@ import com.ing.coins.mett.application.exceptions.MonitorStartFailedException;
  * @version Id
  */
 public class TracingUtil {
-	private static Logger log = Logger.getLogger(TracingUtil.class);
+	private static Logger log = LogUtil.getLogger(TracingUtil.class);
 	private static String properties = "<mett-server>\n\t<start-on-boot>true</start-on-boot>\n\t<sleep-time-thread>50</sleep-time-thread>\n\t<log-events>true</log-events>\n\t<listener-pumps>\n\t\t<listener-pump>\n\t\t\t<className>com.ing.coins.mett.application.SocketPump</className>\n\t\t\t<unique-id>1</unique-id>\n\t\t\t<enabled>true</enabled>\n\t\t\t<attributes>\n\t\t\t\t<attribute>\n\t\t\t\t\t<name>port</name>\n\t\t\t\t\t<value>55555</value>\n\t\t\t\t</attribute>\n\t\t\t</attributes>\n\t\t</listener-pump>\n\t\t<listener-pump>\n\t\t\t<className>com.ing.coins.mett.application.FilePump</className>\n\t\t\t<unique-id>2</unique-id>\n\t\t\t<enabled>true</enabled>\n\t\t\t<attributes>\n\t\t\t\t<attribute>\n\t\t\t\t\t<name>loggerCategory</name>\n\t\t\t\t\t<value>MettLogger</value>\n\t\t\t\t</attribute>\n\t\t\t\t<attribute>\n\t\t\t\t\t<name>closeLogManagerOnDeregister</name>\n\t\t\t\t\t<value>false</value>\n\t\t\t\t</attribute>\n\t\t\t</attributes>\n\t\t</listener-pump>\n\t</listener-pumps>\n</mett-server>";	
 	private static File file = null;
 	private static boolean isStarted = false;

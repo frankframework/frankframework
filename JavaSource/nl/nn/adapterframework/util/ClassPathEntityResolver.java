@@ -1,6 +1,9 @@
 /*
  * $Log: ClassPathEntityResolver.java,v $
- * Revision 1.2  2005-12-28 08:28:45  europe\L190409
+ * Revision 1.3  2007-02-12 14:09:05  europe\L190409
+ * Logger from LogUtil
+ *
+ * Revision 1.2  2005/12/28 08:28:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved handling of malformed URLs
  *
  * Revision 1.1  2004/06/16 06:57:44  Johan Verrips <johan.verrips@ibissource.org>
@@ -27,8 +30,8 @@ import org.xml.sax.SAXException;
  */
 
 public class ClassPathEntityResolver implements EntityResolver {
-	public static final String version="$RCSfile: ClassPathEntityResolver.java,v $ $Revision: 1.2 $ $Date: 2005-12-28 08:28:45 $";
-	protected Logger log = Logger.getLogger(this.getClass());
+	public static final String version="$RCSfile: ClassPathEntityResolver.java,v $ $Revision: 1.3 $ $Date: 2007-02-12 14:09:05 $";
+	protected Logger log = LogUtil.getLogger(this);
 
 
 

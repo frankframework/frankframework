@@ -1,6 +1,9 @@
 /*
  * $Log: ConnectionBase.java,v $
- * Revision 1.10  2006-03-15 14:12:44  europe\L190409
+ * Revision 1.11  2007-02-12 13:58:11  europe\L190409
+ * Logger from LogUtil
+ *
+ * Revision 1.10  2006/03/15 14:12:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed logging in create/release Session/Connection, as this happens to often
  *
  * Revision 1.9  2006/02/28 08:44:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -62,6 +65,7 @@ import nl.nn.adapterframework.core.IbisException;
 import nl.nn.adapterframework.extensions.ifsa.IfsaException;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.Counter;
+import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.log4j.Logger;
 
@@ -72,8 +76,8 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class ConnectionBase  {
-	public static final String version="$RCSfile: ConnectionBase.java,v $ $Revision: 1.10 $ $Date: 2006-03-15 14:12:44 $";
-	protected Logger log = Logger.getLogger(this.getClass());
+	public static final String version="$RCSfile: ConnectionBase.java,v $ $Revision: 1.11 $ $Date: 2007-02-12 13:58:11 $";
+	protected Logger log = LogUtil.getLogger(this);
 
 	private int referenceCount;
 	private final static String CONNECTIONS_ARE_POOLED_KEY="jms.connectionsArePooled";

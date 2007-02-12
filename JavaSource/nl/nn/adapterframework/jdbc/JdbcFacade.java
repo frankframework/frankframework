@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcFacade.java,v $
- * Revision 1.14  2006-12-12 09:57:37  europe\L190409
+ * Revision 1.15  2007-02-12 13:56:18  europe\L190409
+ * Logger from LogUtil
+ *
+ * Revision 1.14  2006/12/12 09:57:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * restore jdbc package
  *
  * Revision 1.12  2005/09/22 15:58:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -47,15 +50,16 @@ import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
+import javax.naming.NamingException;
+import javax.sql.DataSource;
+
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IXAEnabled;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.jms.JNDIBase;
 import nl.nn.adapterframework.parameters.ParameterValueList;
-
-import javax.naming.NamingException;
-import javax.sql.DataSource;
+import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -69,8 +73,8 @@ import org.apache.log4j.Logger;
  * 
  */
 public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version="$RCSfile: JdbcFacade.java,v $ $Revision: 1.14 $ $Date: 2006-12-12 09:57:37 $";
-    protected Logger log = Logger.getLogger(this.getClass());
+	public static final String version="$RCSfile: JdbcFacade.java,v $ $Revision: 1.15 $ $Date: 2007-02-12 13:56:18 $";
+    protected Logger log = LogUtil.getLogger(this);
 	
 	private String name;
     private String username=null;

@@ -1,6 +1,9 @@
 /*
  * $Log: ParameterValue.java,v $
- * Revision 1.3  2004-10-14 16:08:30  L190409
+ * Revision 1.4  2007-02-12 13:59:42  europe\L190409
+ * Logger from LogUtil
+ *
+ * Revision 1.3  2004/10/14 16:08:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * introduced logging
  *
  * Revision 1.2  2004/10/12 15:08:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -17,12 +20,13 @@ package nl.nn.adapterframework.parameters;
 
 import java.util.Collection;
 
-import org.apache.log4j.Logger;
-import org.w3c.dom.Element;
-
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.util.DomBuilderException;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
+
+import org.apache.log4j.Logger;
+import org.w3c.dom.Element;
 
 /**
  * 
@@ -31,8 +35,8 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @version Id
  */
 public class ParameterValue {
-	public static final String version="$Id: ParameterValue.java,v 1.3 2004-10-14 16:08:30 L190409 Exp $";
-	protected Logger log = Logger.getLogger(this.getClass());
+	public static final String version="$RCSfile: ParameterValue.java,v $ $Revision: 1.4 $ $Date: 2007-02-12 13:59:42 $";
+	protected Logger log = LogUtil.getLogger(this);
 
 	private Object value;
 	private Parameter definition;

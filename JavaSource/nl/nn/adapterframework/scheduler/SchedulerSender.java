@@ -1,6 +1,9 @@
 /*
  * $Log: SchedulerSender.java,v $
- * Revision 1.1  2005-11-01 08:51:13  europe\m00f531
+ * Revision 1.2  2007-02-12 14:08:01  europe\L190409
+ * Logger from LogUtil
+ *
+ * Revision 1.1  2005/11/01 08:51:13  John Dekker <john.dekker@ibissource.org>
  * Add support for dynamic scheduling, i.e. add a job to the scheduler using 
  * a sender
  *
@@ -13,6 +16,7 @@ import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -38,7 +42,7 @@ import org.quartz.Scheduler;
  * @author John Dekker
  */
 public class SchedulerSender extends SenderWithParametersBase {
-	protected Logger log = Logger.getLogger(this.getClass());
+	protected Logger log = LogUtil.getLogger(this);
 	
 	public static final String JAVALISTENER = "javaListener";
 	public static final String CORRELATIONID = "correlationId";
@@ -49,9 +53,6 @@ public class SchedulerSender extends SenderWithParametersBase {
 	private String jobGroup;
 	private String jobNamePattern;
 	
-	/* (non-Javadoc)
-	 * @see nl.nn.adapterframework.core.ISender#configure()
-	 */
 	public void configure() throws ConfigurationException {
 		if (StringUtils.isEmpty(javaListener)) {
 			throw new ConfigurationException("Property [serviceName] is empty");
@@ -75,16 +76,10 @@ public class SchedulerSender extends SenderWithParametersBase {
 		super.configure();
 	}
 
-	/* (non-Javadoc)
-	 * @see nl.nn.adapterframework.core.ISender#isSynchronous()
-	 */
 	public boolean isSynchronous() {
 		return true;
 	}
 
-	/* (non-Javadoc)
-	 * @see nl.nn.adapterframework.core.ISender#sendMessage(java.lang.String, java.lang.String)
-	 */
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException {
 		try {
 			ParameterValueList values = prc.getValues(paramList);

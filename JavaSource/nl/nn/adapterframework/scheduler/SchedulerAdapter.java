@@ -1,13 +1,28 @@
+/*
+ * $Log: SchedulerAdapter.java,v $
+ * Revision 1.4  2007-02-12 14:08:01  europe\L190409
+ * Logger from LogUtil
+ *
+ */
 package nl.nn.adapterframework.scheduler;
 
+import java.util.Date;
+
 import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.quartz.*;
+import org.quartz.CronTrigger;
+import org.quartz.JobDataMap;
+import org.quartz.JobDetail;
+import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
+import org.quartz.SchedulerMetaData;
+import org.quartz.SimpleTrigger;
+import org.quartz.Trigger;
 import org.quartz.impl.StdSchedulerFactory;
-
-import java.util.Date;
 /**
  * The SchedulerAdapter is an adapter for the <a href="http://quartz.sourceforge.net">Quartz scheduler</a> <br/>
  * It transforms the information from the scheduler to XML.
@@ -16,16 +31,16 @@ import java.util.Date;
  * @since 4.0
   */
 public class SchedulerAdapter {
-	public static final String version="$Id: SchedulerAdapter.java,v 1.3 2004-03-26 10:43:03 NNVZNL01#L180564 Exp $";
+	public static final String version = "$RCSfile: SchedulerAdapter.java,v $ $Revision: 1.4 $ $Date: 2007-02-12 14:08:01 $";
+	protected Logger log=LogUtil.getLogger(this);
 	
     private Scheduler theScheduler;
-    protected Logger log=Logger.getLogger(this.getClass());
 
     /**
      * The constructor gets a scheduler instance from the StdSchedulerFactory.
      */
     public SchedulerAdapter(){
-        log=Logger.getLogger(this.getClass());
+        log=LogUtil.getLogger(this);
          try {
             setTheScheduler(new StdSchedulerFactory().getScheduler());
         } catch (Exception e) {

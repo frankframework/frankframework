@@ -1,10 +1,15 @@
 /*
  * $Log: HttpListener.java,v $
- * Revision 1.1  2006-02-09 07:54:05  europe\L190409
+ * Revision 1.2  2007-02-12 13:55:57  europe\L190409
+ * Logger from LogUtil
+ *
+ * Revision 1.1  2006/02/09 07:54:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * initial versions
  *
  */
 package nl.nn.adapterframework.http;
+
+import java.util.HashMap;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessageHandler;
@@ -14,12 +19,11 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.receivers.ServiceClient2;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
+import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.log4j.Logger;
-
-import java.util.HashMap;
 
 /**
  * Implementation of a {@link IPushingListener} that enables a {@link nl.nn.adapterframework.receivers.GenericReceiver}
@@ -42,8 +46,8 @@ import java.util.HashMap;
  * @author  Gerrit van Brakel 
  */
 public class HttpListener  implements IPushingListener, ServiceClient2 {
-	public static final String version="$RCSfile: HttpListener.java,v $ $Revision: 1.1 $ $Date: 2006-02-09 07:54:05 $";
-	protected Logger log = Logger.getLogger(this.getClass());
+	public static final String version="$RCSfile: HttpListener.java,v $ $Revision: 1.2 $ $Date: 2007-02-12 13:55:57 $";
+	protected Logger log = LogUtil.getLogger(this);
 
 	private IMessageHandler handler;        	
 	private String name;

@@ -1,6 +1,9 @@
 /*
  * $Log: JmsRealmFactory.java,v $
- * Revision 1.4  2004-03-26 10:42:55  NNVZNL01#L180564
+ * Revision 1.5  2007-02-12 13:58:11  europe\L190409
+ * Logger from LogUtil
+ *
+ * Revision 1.4  2004/03/26 10:42:55  Johan Verrips <johan.verrips@ibissource.org>
  * added @version tag in javadoc
  *
  * Revision 1.3  2004/03/23 18:09:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -9,14 +12,16 @@
  */
 package nl.nn.adapterframework.jms;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.log4j.Logger;
-
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.SortedSet;
 import java.util.TreeSet;
+
+import nl.nn.adapterframework.util.LogUtil;
+
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.log4j.Logger;
 
 /**
  * Singleton that has the different jmsRealms.   <br/>
@@ -27,19 +32,19 @@ import java.util.TreeSet;
  * @see JmsRealm
  */
 public class JmsRealmFactory {
-	public static final String version="$Id: JmsRealmFactory.java,v 1.4 2004-03-26 10:42:55 NNVZNL01#L180564 Exp $";
+	public static final String version="$RCSfile: JmsRealmFactory.java,v $ $Revision: 1.5 $ $Date: 2007-02-12 13:58:11 $";
+	private Logger log;
 
 
     private static JmsRealmFactory self = null;
     private Hashtable jmsRealms = new Hashtable();
-    private Logger log;
 
     /**
      * Private constructor to prevent breaking of the singleton pattern
      */
     private JmsRealmFactory() {
         super();
-        log = Logger.getLogger(this.getClass());
+        log = LogUtil.getLogger(this);
 
     }
     /**

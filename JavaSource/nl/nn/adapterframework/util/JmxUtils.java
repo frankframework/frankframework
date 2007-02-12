@@ -1,17 +1,17 @@
 package nl.nn.adapterframework.util;
 
 
-import javax.management.ObjectName;
-import javax.management.modelmbean.RequiredModelMBean;
+import java.util.ArrayList;
+
+import javax.management.Descriptor;
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
-import javax.management.Descriptor;
+import javax.management.ObjectName;
 import javax.management.modelmbean.DescriptorSupport;
-import javax.management.modelmbean.ModelMBeanOperationInfo;
 import javax.management.modelmbean.ModelMBeanAttributeInfo;
+import javax.management.modelmbean.ModelMBeanOperationInfo;
+import javax.management.modelmbean.RequiredModelMBean;
 
-
-import java.util.ArrayList;
 import org.apache.log4j.Logger;
 /**
  *
@@ -20,8 +20,8 @@ import org.apache.log4j.Logger;
  * @author Johan Verrips
  */
 public class JmxUtils {
-	static Logger log=Logger.getLogger("JmxUtils");
-	public static final String version="$Id: JmxUtils.java,v 1.2 2004-08-23 13:11:09 L190409 Exp $";
+	public static final String version = "$RCSfile: JmxUtils.java,v $ $Revision: 1.3 $ $Date: 2007-02-12 14:12:04 $";
+	protected static Logger log = LogUtil.getLogger(JmxUtils.class);
 
 
 	/**

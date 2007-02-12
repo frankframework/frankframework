@@ -1,6 +1,9 @@
 /*
  * $Log: HttpListenerServlet.java,v $
- * Revision 1.1  2006-02-09 07:54:04  europe\L190409
+ * Revision 1.2  2007-02-12 13:55:57  europe\L190409
+ * Logger from LogUtil
+ *
+ * Revision 1.1  2006/02/09 07:54:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * initial versions
  *
  */
@@ -15,13 +18,14 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.log4j.Logger;
-
 import nl.nn.adapterframework.core.ISecurityHandler;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
+
+import org.apache.log4j.Logger;
 
 /**
  * Servlet that listens for HTTP GET or POSTS, and handles them over to the ServiceDispatcher
@@ -31,8 +35,8 @@ import nl.nn.adapterframework.util.Misc;
  * @version Id
  */
 public class HttpListenerServlet extends HttpServlet {
-	public static final String version = "$RCSfile: HttpListenerServlet.java,v $ $Revision: 1.1 $ $Date: 2006-02-09 07:54:04 $";
-	protected Logger log=Logger.getLogger(this.getClass());
+	public static final String version = "$RCSfile: HttpListenerServlet.java,v $ $Revision: 1.2 $ $Date: 2007-02-12 13:55:57 $";
+	protected Logger log=LogUtil.getLogger(this);
 	
 	public final String SERVICE_ID_PARAM = "service";
 	public final String MESSAGE_PARAM = "message";

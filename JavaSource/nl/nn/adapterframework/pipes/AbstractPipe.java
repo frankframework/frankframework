@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractPipe.java,v $
- * Revision 1.24  2006-12-28 14:21:23  europe\L190409
+ * Revision 1.25  2007-02-12 14:02:19  europe\L190409
+ * Logger from LogUtil
+ *
+ * Revision 1.24  2006/12/28 14:21:23  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.23  2006/10/13 08:17:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -66,27 +69,28 @@
  */
 package nl.nn.adapterframework.pipes;
 
+import java.util.Hashtable;
+
+import javax.naming.NamingException;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasTransactionAttribute;
 import nl.nn.adapterframework.core.IExtendedPipe;
 import nl.nn.adapterframework.core.PipeForward;
+import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
-import nl.nn.adapterframework.core.PipeRunException;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.util.JtaUtil;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.TracingEventNumbers;
 import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.log4j.Logger;
-
-import java.util.Hashtable;
-
-import javax.naming.NamingException;
 
 /**
  * Base class for {@link nl.nn.adapterframework.core.IPipe Pipe}.
@@ -149,9 +153,11 @@ import javax.naming.NamingException;
  * @see nl.nn.adapterframework.core.PipeLineSession
  */
 public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttribute, TracingEventNumbers {
-	public static final String version="$RCSfile: AbstractPipe.java,v $ $Revision: 1.24 $ $Date: 2006-12-28 14:21:23 $";
+	public static final String version="$RCSfile: AbstractPipe.java,v $ $Revision: 1.25 $ $Date: 2007-02-12 14:02:19 $";
+	protected Logger log = LogUtil.getLogger(this);
+
 	private String name;
-	protected Logger log = Logger.getLogger(this.getClass());
+	
 	private Hashtable pipeForwards=new Hashtable();
 	private int maxThreads = 0;
 	private ParameterList parameterList = new ParameterList();

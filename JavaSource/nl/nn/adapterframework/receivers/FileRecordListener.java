@@ -1,6 +1,9 @@
 /*
  * $Log: FileRecordListener.java,v $
- * Revision 1.7  2006-01-05 14:42:25  europe\L190409
+ * Revision 1.8  2007-02-12 14:03:44  europe\L190409
+ * Logger from LogUtil
+ *
+ * Revision 1.7  2006/01/05 14:42:25  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc and reordered code
  *
  * Revision 1.6  2004/08/23 13:10:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -15,27 +18,28 @@
  */
 package nl.nn.adapterframework.receivers;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.StringTokenizer;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.PipeLineResult;
-import nl.nn.adapterframework.core.INamedObject;
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.util.WildCardFilter;
+import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.WildCardFilter;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.StringTokenizer;
-import java.util.Iterator;
-import java.util.ArrayList;
-import java.util.HashMap;
-
-import org.apache.log4j.Logger;
-import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
+import org.apache.log4j.Logger;
 
 /**
  * File {@link nl.nn.adapterframework.core.IPullingListener listener} that looks in a directory for files according to a wildcard. When a file is
@@ -58,8 +62,8 @@ import org.apache.commons.lang.builder.ToStringStyle;
  * @author  Johan Verrips
  */
 public class FileRecordListener implements IPullingListener, INamedObject {
-	public static final String version="$RCSfile: FileRecordListener.java,v $ $Revision: 1.7 $ $Date: 2006-01-05 14:42:25 $";
-	protected Logger log = Logger.getLogger(this.getClass());
+	public static final String version="$RCSfile: FileRecordListener.java,v $ $Revision: 1.8 $ $Date: 2007-02-12 14:03:44 $";
+	protected Logger log = LogUtil.getLogger(this);
 
 	private String name;
 	private String inputDirectory;

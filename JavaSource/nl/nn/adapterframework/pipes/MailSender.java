@@ -1,6 +1,9 @@
 /*
  * $Log: MailSender.java,v $
- * Revision 1.12  2005-12-19 16:37:13  europe\L190409
+ * Revision 1.13  2007-02-12 14:02:19  europe\L190409
+ * Logger from LogUtil
+ *
+ * Revision 1.12  2005/12/19 16:37:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected version string
  *
  * Revision 1.11  2005/12/19 16:36:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -36,26 +39,11 @@
  */
 package nl.nn.adapterframework.pipes;
 
-import nl.nn.adapterframework.core.ISenderWithParameters;
-import nl.nn.adapterframework.core.ParameterException;
-import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.parameters.ParameterList;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-import nl.nn.adapterframework.parameters.ParameterValue;
-import nl.nn.adapterframework.parameters.ParameterValueList;
-import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.DomBuilderException;
-import nl.nn.adapterframework.util.XmlUtils;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-import org.apache.soap.util.mime.ByteArrayDataSource;
-//TODO: replace this by implementation from apache commons Codec
-import org.apache.xerces.utils.Base64;
-import org.w3c.dom.Element;
+import java.net.URL;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.Properties;
 
 import javax.activation.DataHandler;
 import javax.activation.DataSource;
@@ -71,11 +59,26 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 
-import java.net.URL;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.Properties;
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.ISenderWithParameters;
+import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.ParameterList;
+import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.parameters.ParameterValue;
+import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.util.CredentialFactory;
+import nl.nn.adapterframework.util.DomBuilderException;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.XmlUtils;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+import org.apache.soap.util.mime.ByteArrayDataSource;
+import org.apache.xerces.utils.Base64;
+import org.w3c.dom.Element;
 
 /**
  * {@link ISender} that sends a mail specified by an XML message. <br/>
@@ -140,10 +143,11 @@ import java.util.Properties;
  */
 
 public class MailSender implements ISenderWithParameters {
-	public static final String version = "$RCSfile: MailSender.java,v $  $Revision: 1.12 $ $Date: 2005-12-19 16:37:13 $";
+	public static final String version = "$RCSfile: MailSender.java,v $  $Revision: 1.13 $ $Date: 2007-02-12 14:02:19 $";
+	protected Logger log = LogUtil.getLogger(this);
 
-	protected Logger log = Logger.getLogger(this.getClass());
 	private String name;
+
 	private String smtpHost;
 	private String smtpAuthAlias;
 	private String smtpUserid;

@@ -1,6 +1,9 @@
 /*
  * $Log: DirectoryListener.java,v $
- * Revision 1.2  2006-09-25 13:21:43  europe\L190409
+ * Revision 1.3  2007-02-12 14:03:44  europe\L190409
+ * Logger from LogUtil
+ *
+ * Revision 1.2  2006/09/25 13:21:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * cosmetic reorganization of code
  *
  * Revision 1.1  2006/08/23 11:35:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -42,6 +45,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.apache.log4j.Logger;
+import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * File {@link nl.nn.adapterframework.core.IPullingListener listener} that looks in a directory for files according to a wildcard. 
@@ -68,9 +72,9 @@ import org.apache.log4j.Logger;
  * @author  John Dekker
  */
 public class DirectoryListener implements IPullingListener, INamedObject {
-	public static final String version = "$RCSfile: DirectoryListener.java,v $  $Revision: 1.2 $ $Date: 2006-09-25 13:21:43 $";
+	public static final String version = "$RCSfile: DirectoryListener.java,v $  $Revision: 1.3 $ $Date: 2007-02-12 14:03:44 $";
+	protected Logger log = LogUtil.getLogger(this);
 
-	protected Logger log = Logger.getLogger(this.getClass());
 	private String name;
 	private String inputDirectory;
 	private String wildcard;

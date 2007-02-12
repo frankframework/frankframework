@@ -1,6 +1,9 @@
 /*
  * $Log: StatisticsKeeperLogger.java,v $
- * Revision 1.2  2006-02-09 08:02:46  europe\L190409
+ * Revision 1.3  2007-02-12 14:12:03  europe\L190409
+ * Logger from LogUtil
+ *
+ * Revision 1.2  2006/02/09 08:02:46  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * iterate over string scalars too
  *
  * Revision 1.1  2005/12/28 08:31:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -20,8 +23,8 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class StatisticsKeeperLogger implements StatisticsKeeperIterationHandler {
-	public static final String version="$RCSfile: StatisticsKeeperLogger.java,v $ $Revision: 1.2 $ $Date: 2006-02-09 08:02:46 $";
-	protected Logger log = Logger.getLogger("nl.nn.adapterframework.statistics");
+	public static final String version="$RCSfile: StatisticsKeeperLogger.java,v $ $Revision: 1.3 $ $Date: 2007-02-12 14:12:03 $";
+	protected Logger log = LogUtil.getLogger("nl.nn.adapterframework.statistics");
 
 	public Object start() {
 		log.info("********** start statistics dump **********");

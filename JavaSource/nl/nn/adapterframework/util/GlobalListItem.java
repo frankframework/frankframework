@@ -1,6 +1,9 @@
 /*
  * $Log: GlobalListItem.java,v $
- * Revision 1.3  2004-06-23 11:31:02  L190409
+ * Revision 1.4  2007-02-12 14:12:03  europe\L190409
+ * Logger from LogUtil
+ *
+ * Revision 1.3  2004/06/23 11:31:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * configure() removed for aliases
  *
  * Revision 1.2  2004/06/22 11:51:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -34,8 +37,8 @@ import org.apache.log4j.Logger;
  * @author Gerrit van Brakel
  */
 public class GlobalListItem implements INamedObject {
-	public static final String version="$Id: GlobalListItem.java,v 1.3 2004-06-23 11:31:02 L190409 Exp $";
-	protected Logger log = Logger.getLogger(this.getClass());
+	public static final String version = "$RCSfile: GlobalListItem.java,v $ $Revision: 1.4 $ $Date: 2007-02-12 14:12:03 $";
+	protected Logger log = LogUtil.getLogger(this);
 
     private static Hashtable items = new Hashtable();
     private String name;

@@ -1,6 +1,9 @@
 /*
  * $Log: ServiceDispatcher.java,v $
- * Revision 1.8  2005-09-20 13:28:52  europe\L190409
+ * Revision 1.9  2007-02-12 14:03:44  europe\L190409
+ * Logger from LogUtil
+ *
+ * Revision 1.8  2005/09/20 13:28:52  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added warning for double registered listeners
  *
  * Revision 1.7  2005/08/30 16:05:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -12,15 +15,16 @@
  */
 package nl.nn.adapterframework.receivers;
 
-import nl.nn.adapterframework.core.ListenerException;
-
-import org.apache.log4j.Logger;
-
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.SortedSet;
 import java.util.TreeSet;
+
+import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.util.LogUtil;
+
+import org.apache.log4j.Logger;
 /**
  * Singleton class that knows about the ServiceListeners that are active.
  * <br/>
@@ -36,8 +40,8 @@ import java.util.TreeSet;
  * @see ServiceDispatcherBean
  */
 public class ServiceDispatcher  {
-	public static final String version = "$RCSfile: ServiceDispatcher.java,v $ $Revision: 1.8 $ $Date: 2005-09-20 13:28:52 $";
-	protected Logger log = Logger.getLogger(this.getClass());
+	public static final String version = "$RCSfile: ServiceDispatcher.java,v $ $Revision: 1.9 $ $Date: 2007-02-12 14:03:44 $";
+	protected Logger log = LogUtil.getLogger(this);
 	
 	private Hashtable registeredListeners=new Hashtable();
 	private static ServiceDispatcher self=null;

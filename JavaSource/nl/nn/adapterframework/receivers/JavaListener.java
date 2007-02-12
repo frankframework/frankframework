@@ -1,6 +1,9 @@
 /*
  * $Log: JavaListener.java,v $
- * Revision 1.18  2006-10-13 08:18:43  europe\L190409
+ * Revision 1.19  2007-02-12 14:03:44  europe\L190409
+ * Logger from LogUtil
+ *
+ * Revision 1.18  2006/10/13 08:18:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * cache UserTransaction at startup
  *
  * Revision 1.17  2006/08/24 12:23:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -76,7 +79,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessageHandler;
 import nl.nn.adapterframework.core.IPushingListener;
@@ -88,6 +90,7 @@ import nl.nn.adapterframework.dispatcher.DispatcherManager;
 import nl.nn.adapterframework.dispatcher.DispatcherManagerFactory;
 import nl.nn.adapterframework.dispatcher.RequestProcessor;
 import nl.nn.adapterframework.util.JtaUtil;
+import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -112,8 +115,8 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class JavaListener implements IPushingListener, RequestProcessor {
-	public static final String version="$RCSfile: JavaListener.java,v $ $Revision: 1.18 $ $Date: 2006-10-13 08:18:43 $";
-	protected Logger log = Logger.getLogger(this.getClass());
+	public static final String version="$RCSfile: JavaListener.java,v $ $Revision: 1.19 $ $Date: 2007-02-12 14:03:44 $";
+	protected Logger log = LogUtil.getLogger(this);
 	
 	private String name;
 	private String serviceName;

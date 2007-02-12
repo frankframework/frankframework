@@ -1,23 +1,26 @@
+/*
+ * $Log: BaseJob.java,v $
+ * Revision 1.4  2007-02-12 14:08:01  europe\L190409
+ * Logger from LogUtil
+ *
+ */
 package nl.nn.adapterframework.scheduler;
+
+import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.log4j.Logger;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 /**
- * Base class for jobs
- * *
- * @version Id
- 
- * @author  Johan Verrips
- * @since 4.0
- * Date: Nov 22, 2003
- * Time: 11:34:01 AM
+ * Base class for jobs.
  * 
+ * @author  Johan Verrips
+ * @since   4.0
+ * @version Id
  */
 public abstract class BaseJob implements Job {
-	public static final String version="$Id: BaseJob.java,v 1.3 2004-03-26 10:43:06 NNVZNL01#L180564 Exp $";
-	
-    Logger log=Logger.getLogger(this.getClass());
+	public static final String version = "$RCSfile: BaseJob.java,v $ $Revision: 1.4 $ $Date: 2007-02-12 14:08:01 $";
+    protected Logger log=LogUtil.getLogger(this);
 
     public String getLogPrefix(JobExecutionContext context) {
         String instName = context.getJobDetail().getName();

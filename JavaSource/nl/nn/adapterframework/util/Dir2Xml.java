@@ -1,6 +1,9 @@
 /*
  * $Log: Dir2Xml.java,v $
- * Revision 1.7  2006-01-05 14:52:02  europe\L190409
+ * Revision 1.8  2007-02-12 14:09:31  europe\L190409
+ * Logger from LogUtil
+ *
+ * Revision 1.7  2006/01/05 14:52:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improve error handling
  *
  * Revision 1.6  2005/10/20 15:20:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -17,8 +20,8 @@ package nl.nn.adapterframework.util;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Date;
 import java.util.Arrays;
+import java.util.Date;
 
 import org.apache.log4j.Logger;
 
@@ -29,8 +32,8 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class Dir2Xml  {
-	public static final String version="$RCSfile: Dir2Xml.java,v $ $Revision: 1.7 $ $Date: 2006-01-05 14:52:02 $";
-	protected Logger log = Logger.getLogger(this.getClass());
+	public static final String version="$RCSfile: Dir2Xml.java,v $ $Revision: 1.8 $ $Date: 2007-02-12 14:09:31 $";
+	protected Logger log = LogUtil.getLogger(this);
 	
   	private String path;
   	private String wildcard="*.*";

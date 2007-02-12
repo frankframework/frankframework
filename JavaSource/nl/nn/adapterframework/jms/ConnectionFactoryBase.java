@@ -1,6 +1,9 @@
 /*
  * $Log: ConnectionFactoryBase.java,v $
- * Revision 1.5  2006-12-13 16:28:05  europe\L190409
+ * Revision 1.6  2007-02-12 13:58:11  europe\L190409
+ * Logger from LogUtil
+ *
+ * Revision 1.5  2006/12/13 16:28:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * catch more exceptions
  *
  * Revision 1.4  2005/10/26 08:21:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -25,6 +28,7 @@ import javax.naming.Context;
 import javax.naming.NamingException;
 
 import nl.nn.adapterframework.core.IbisException;
+import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.log4j.Logger;
 
@@ -35,8 +39,8 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public abstract class ConnectionFactoryBase  {
-	public static final String version="$RCSfile: ConnectionFactoryBase.java,v $ $Revision: 1.5 $ $Date: 2006-12-13 16:28:05 $";
-	protected Logger log = Logger.getLogger(this.getClass());
+	public static final String version="$RCSfile: ConnectionFactoryBase.java,v $ $Revision: 1.6 $ $Date: 2007-02-12 13:58:11 $";
+	protected Logger log = LogUtil.getLogger(this);
 
 	protected abstract HashMap getConnectionMap();
 	protected abstract Context createContext() throws NamingException;

@@ -1,6 +1,9 @@
 /*
  * $Log: Parameter.java,v $
- * Revision 1.16  2006-11-06 08:19:13  europe\L190409
+ * Revision 1.17  2007-02-12 13:59:42  europe\L190409
+ * Logger from LogUtil
+ *
+ * Revision 1.16  2006/11/06 08:19:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added value-attribute as fixed-value
  *
  * Revision 1.15  2005/10/24 09:59:24  John Dekker <john.dekker@ibissource.org>
@@ -72,6 +75,7 @@ import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IWithParameters;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -126,8 +130,8 @@ import org.apache.log4j.Logger;
  * @author Richard Punt / Gerrit van Brakel
  */
 public class Parameter implements INamedObject, IWithParameters {
-	public static final String version="$RCSfile: Parameter.java,v $ $Revision: 1.16 $ $Date: 2006-11-06 08:19:13 $";
-	protected Logger log = Logger.getLogger(this.getClass());
+	public static final String version="$RCSfile: Parameter.java,v $ $Revision: 1.17 $ $Date: 2007-02-12 13:59:42 $";
+	protected Logger log = LogUtil.getLogger(this);
 
 	private String name = null;
 	private String type = null;

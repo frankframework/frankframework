@@ -1,6 +1,9 @@
 /*
  * $Log: TransformerPool.java,v $
- * Revision 1.14  2007-02-05 15:05:03  europe\L190409
+ * Revision 1.15  2007-02-12 14:12:03  europe\L190409
+ * Logger from LogUtil
+ *
+ * Revision 1.14  2007/02/05 15:05:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * use SoftReferencePool
  *
  * Revision 1.13  2005/10/20 15:22:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -61,7 +64,6 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamSource;
 
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.pool.BasePoolableObjectFactory;
 import org.apache.commons.pool.ObjectPool;
@@ -76,8 +78,8 @@ import org.w3c.dom.Document;
  * @author Gerrit van Brakel
  */
 public class TransformerPool {
-	public static final String version = "$RCSfile: TransformerPool.java,v $ $Revision: 1.14 $ $Date: 2007-02-05 15:05:03 $";
-	protected Logger log = Logger.getLogger(this.getClass());
+	public static final String version = "$RCSfile: TransformerPool.java,v $ $Revision: 1.15 $ $Date: 2007-02-12 14:12:03 $";
+	protected Logger log = LogUtil.getLogger(this);
 
 	private TransformerFactory tFactory = TransformerFactory.newInstance();
 

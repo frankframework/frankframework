@@ -1,6 +1,9 @@
 /*
  * $Log: JtaUtil.java,v $
- * Revision 1.9  2006-09-18 11:46:36  europe\L190409
+ * Revision 1.10  2007-02-12 14:12:03  europe\L190409
+ * Logger from LogUtil
+ *
+ * Revision 1.9  2006/09/18 11:46:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * lookup UserTransaction only when necessary
  *
  * Revision 1.8  2006/09/14 11:47:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -52,8 +55,8 @@ import org.apache.log4j.Logger;
  * @since  4.1
  */
 public class JtaUtil {
-	public static final String version="$RCSfile: JtaUtil.java,v $ $Revision: 1.9 $ $Date: 2006-09-18 11:46:36 $";
-	private static Logger log = Logger.getLogger(JtaUtil.class);
+	public static final String version="$RCSfile: JtaUtil.java,v $ $Revision: 1.10 $ $Date: 2007-02-12 14:12:03 $";
+	private static Logger log = LogUtil.getLogger(JtaUtil.class);
 	
 	private static final String USERTRANSACTION_URL1_KEY="jta.userTransactionUrl1";
 	private static final String USERTRANSACTION_URL2_KEY="jta.userTransactionUrl2";

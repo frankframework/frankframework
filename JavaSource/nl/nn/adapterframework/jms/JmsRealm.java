@@ -1,6 +1,9 @@
 /*
  * $Log: JmsRealm.java,v $
- * Revision 1.8  2006-08-21 15:11:10  europe\L190409
+ * Revision 1.9  2007-02-12 13:58:11  europe\L190409
+ * Logger from LogUtil
+ *
+ * Revision 1.8  2006/08/21 15:11:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * cosmetic changes
  *
  * Revision 1.7  2004/10/05 10:42:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -22,6 +25,7 @@
 package nl.nn.adapterframework.jms;
 
 import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -40,9 +44,10 @@ import org.apache.log4j.Logger;
  */
 public class JmsRealm {
 	//TODO: change to J2eeRealm
-	public static final String version="$RCSfile: JmsRealm.java,v $ $Revision: 1.8 $ $Date: 2006-08-21 15:11:10 $";
+	public static final String version="$RCSfile: JmsRealm.java,v $ $Revision: 1.9 $ $Date: 2007-02-12 13:58:11 $";
+	private Logger log = LogUtil.getLogger(this);
+
 	private String realmName;
-	private Logger log = Logger.getLogger(this.getClass());
 
     private String providerURL = null;
     private String initialContextFactoryName = null;

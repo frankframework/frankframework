@@ -1,6 +1,9 @@
 /*
  * $Log: LdapSender.java,v $
- * Revision 1.12  2006-12-21 12:59:22  europe\L190409
+ * Revision 1.13  2007-02-12 13:58:58  europe\L190409
+ * Logger from LogUtil
+ *
+ * Revision 1.12  2006/12/21 12:59:22  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * restore LDAP sender
  *
  * Revision 1.10  2006/06/14 09:51:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -58,6 +61,7 @@ import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 import org.apache.commons.lang.StringUtils;
@@ -106,8 +110,8 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class LdapSender extends JNDIBase implements ISenderWithParameters {
-	protected Logger log=Logger.getLogger(this.getClass());
-	public static final String version="$RCSfile: LdapSender.java,v $  $Revision: 1.12 $ $Date: 2006-12-21 12:59:22 $";
+	public static final String version="$RCSfile: LdapSender.java,v $  $Revision: 1.13 $ $Date: 2007-02-12 13:58:58 $";
+	protected Logger log=LogUtil.getLogger(this);
 	
 	private static final String INITIAL_CONTEXT_FACTORY="com.sun.jndi.ldap.LdapCtxFactory";
 	

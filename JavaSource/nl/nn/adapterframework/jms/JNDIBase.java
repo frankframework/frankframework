@@ -1,6 +1,9 @@
 /*
  * $Log: JNDIBase.java,v $
- * Revision 1.8  2006-03-15 14:08:59  europe\L190409
+ * Revision 1.9  2007-02-12 13:58:11  europe\L190409
+ * Logger from LogUtil
+ *
+ * Revision 1.8  2006/03/15 14:08:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved logging
  *
  * Revision 1.7  2006/03/15 10:34:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -23,14 +26,16 @@
  */
 package nl.nn.adapterframework.jms;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.log4j.Logger;
+import java.util.Hashtable;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-import java.util.Hashtable;
+import nl.nn.adapterframework.util.LogUtil;
+
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.log4j.Logger;
 
 /**
  * Provides all JNDI functions and is meant to act as a base class.
@@ -39,8 +44,8 @@ import java.util.Hashtable;
  * @author Johan Verrips IOS
  */
 public class JNDIBase {
-	protected Logger log = Logger.getLogger(this.getClass());
-	public static final String version = "$RCSfile: JNDIBase.java,v $ $Revision: 1.8 $ $Date: 2006-03-15 14:08:59 $";
+	public static final String version = "$RCSfile: JNDIBase.java,v $ $Revision: 1.9 $ $Date: 2007-02-12 13:58:11 $";
+	protected Logger log = LogUtil.getLogger(this);
 
     // JNDI
     private String providerURL = null;

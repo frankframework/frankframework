@@ -1,6 +1,9 @@
 /*
  * $Log: AuthSSLProtocolSocketFactoryBase.java,v $
- * Revision 1.8  2006-08-23 11:23:52  europe\L190409
+ * Revision 1.9  2007-02-12 13:55:57  europe\L190409
+ * Logger from LogUtil
+ *
+ * Revision 1.8  2006/08/23 11:23:52  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * more log-info
  *
  * Revision 1.7  2005/12/19 16:43:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -48,8 +51,8 @@ import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Enumeration;
 
@@ -58,10 +61,10 @@ import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocket;
 
 import nl.nn.adapterframework.util.CredentialFactory;
+import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.commons.httpclient.protocol.SecureProtocolSocketFactory;
 import org.apache.commons.net.SocketFactory;
-
 import org.apache.log4j.Logger;
 
 /**
@@ -170,9 +173,7 @@ import org.apache.log4j.Logger;
  */
 
 public abstract class AuthSSLProtocolSocketFactoryBase implements SocketFactory, SecureProtocolSocketFactory {
-
-    /** Log object for this class. */
-	protected static Logger log = Logger.getLogger(AuthSSLProtocolSocketFactoryBase.class);;
+	protected static Logger log = LogUtil.getLogger(AuthSSLProtocolSocketFactoryBase.class);;
 
 	protected String protocol = "SSL";
 	protected boolean allowSelfSignedCertificates = false;

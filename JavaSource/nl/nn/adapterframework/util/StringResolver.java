@@ -1,6 +1,9 @@
 /*
  * $Log: StringResolver.java,v $
- * Revision 1.6  2006-11-14 16:39:34  europe\L190409
+ * Revision 1.7  2007-02-12 14:12:03  europe\L190409
+ * Logger from LogUtil
+ *
+ * Revision 1.6  2006/11/14 16:39:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * cosmetic changes
  *
  * Revision 1.5  2004/08/30 06:37:19  Johan Verrips <johan.verrips@ibissource.org>
@@ -15,10 +18,10 @@
  */
 package nl.nn.adapterframework.util;
 
-import org.apache.log4j.Logger;
-
 import java.util.Map;
 import java.util.Properties;
+
+import org.apache.log4j.Logger;
 /**
  * Provide functionality to resolve ${property.key} to the value of the property key, recursively.
  * @version Id
@@ -26,13 +29,13 @@ import java.util.Properties;
  * @author Johan Verrips 
  */
 public class StringResolver {
-	public static final String version="$RCSfile: StringResolver.java,v $ $Revision: 1.6 $ $Date: 2006-11-14 16:39:34 $";
+	public static final String version="$RCSfile: StringResolver.java,v $ $Revision: 1.7 $ $Date: 2007-02-12 14:12:03 $";
+	protected static Logger log = LogUtil.getLogger(StringResolver.class);
 	
     static String DELIM_START = "${";
     static char DELIM_STOP = '}';
     static int DELIM_START_LEN = 2;
     static int DELIM_STOP_LEN = 1;
-    static Logger log = Logger.getLogger("StringResolver");
 
 	public StringResolver() {
 		super();

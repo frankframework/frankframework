@@ -1,6 +1,9 @@
 /*
  * $Log: ClassUtils.java,v $
- * Revision 1.8  2006-09-14 11:44:51  europe\L190409
+ * Revision 1.9  2007-02-12 14:09:05  europe\L190409
+ * Logger from LogUtil
+ *
+ * Revision 1.8  2006/09/14 11:44:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * correctede logger definition
  *
  * Revision 1.7  2005/09/26 15:29:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -18,14 +21,14 @@
  */
 package nl.nn.adapterframework.util;
 
-import org.apache.log4j.Logger;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.net.MalformedURLException;
 import java.net.URL;
+
+import org.apache.log4j.Logger;
 
 /**
  * A collection of class management utility methods.
@@ -34,8 +37,8 @@ import java.net.URL;
  *
  */
 public class ClassUtils {
-	public static final String version = "$RCSfile: ClassUtils.java,v $ $Revision: 1.8 $ $Date: 2006-09-14 11:44:51 $";
-	private static Logger log = Logger.getLogger(ClassUtils.class);
+	public static final String version = "$RCSfile: ClassUtils.java,v $ $Revision: 1.9 $ $Date: 2007-02-12 14:09:05 $";
+	private static Logger log = LogUtil.getLogger(ClassUtils.class);
 
     /**
      * Return the context classloader.

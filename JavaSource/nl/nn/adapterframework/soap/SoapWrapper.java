@@ -1,6 +1,9 @@
 /*
  * $Log: SoapWrapper.java,v $
- * Revision 1.3  2006-06-21 08:54:52  europe\L190409
+ * Revision 1.4  2007-02-12 14:06:28  europe\L190409
+ * Logger from LogUtil
+ *
+ * Revision 1.3  2006/06/21 08:54:52  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added xsd namespace
  *
  * Revision 1.2  2006/03/15 13:59:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -31,14 +34,15 @@ import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.stream.StreamSource;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.util.DomBuilderException;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 
 /**
  * Utility class that wraps and unwraps messages from (and into) a SOAP Envelope.
@@ -47,8 +51,8 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @version Id
  */
 public class SoapWrapper {
-	public static final String version="$RCSfile: SoapWrapper.java,v $ $Revision: 1.3 $ $Date: 2006-06-21 08:54:52 $";
-	protected Logger log = Logger.getLogger(this.getClass());
+	public static final String version="$RCSfile: SoapWrapper.java,v $ $Revision: 1.4 $ $Date: 2007-02-12 14:06:28 $";
+	protected Logger log = LogUtil.getLogger(this);
 
 	private TransformerPool extractBody;
 	private TransformerPool extractFaultCount;

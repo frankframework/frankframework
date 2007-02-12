@@ -1,6 +1,9 @@
 /*
  * $Log: DB2XMLWriter.java,v $
- * Revision 1.12  2006-12-13 16:31:28  europe\L190409
+ * Revision 1.13  2007-02-12 14:09:31  europe\L190409
+ * Logger from LogUtil
+ *
+ * Revision 1.12  2006/12/13 16:31:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added blobCharset attribute
  *
  * Revision 1.11  2005/12/29 15:34:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -25,16 +28,16 @@
  */
 package nl.nn.adapterframework.util;
 
-import nl.nn.adapterframework.jdbc.JdbcException;
-
-import org.apache.log4j.Logger;
-
 import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
+
+import nl.nn.adapterframework.jdbc.JdbcException;
+
+import org.apache.log4j.Logger;
 
 /**
  * Transforms a java.sql.Resultset to a XML stream.
@@ -68,8 +71,8 @@ import java.sql.Types;
  **/
 
 public class DB2XMLWriter {
-	public static final String version="$RCSfile: DB2XMLWriter.java,v $ $Revision: 1.12 $ $Date: 2006-12-13 16:31:28 $";
-	protected Logger log = Logger.getLogger(this.getClass());
+	public static final String version="$RCSfile: DB2XMLWriter.java,v $ $Revision: 1.13 $ $Date: 2007-02-12 14:09:31 $";
+	protected Logger log = LogUtil.getLogger(this);
 
 	private String docname = new String("result");
 	private String recordname = new String("rowset");

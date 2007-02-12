@@ -1,10 +1,17 @@
 /*
  * $Log: SoapConfigManager.java,v $
- * Revision 1.6  2005-10-18 08:18:49  europe\L190409
+ * Revision 1.7  2007-02-12 14:12:03  europe\L190409
+ * Logger from LogUtil
+ *
+ * Revision 1.6  2005/10/18 08:18:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected version string
  *
  */
 package nl.nn.adapterframework.util;
+
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Hashtable;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -15,10 +22,6 @@ import org.apache.soap.server.XMLConfigManager;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
-
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Hashtable;
 
 /**
  * Read-only implementation of org.apache.soap.server.XMLConfigManager.
@@ -34,8 +37,8 @@ import java.util.Hashtable;
  * @author Gerrit van Brakel IOS
  */
 public class SoapConfigManager extends XMLConfigManager {
-	public static final String version="$RCSfile: SoapConfigManager.java,v $ $Revision: 1.6 $ $Date: 2005-10-18 08:18:49 $";
-    protected Logger log = Logger.getLogger(this.getClass());
+	public static final String version="$RCSfile: SoapConfigManager.java,v $ $Revision: 1.7 $ $Date: 2007-02-12 14:12:03 $";
+    protected Logger log = LogUtil.getLogger(this);
 
 	private String defaultProvider="nl.nn.adapterframework.soap.SoapGenericProvider";    
 	DeploymentDescriptor defaultDD = null; 

@@ -1,6 +1,9 @@
 /*
  * $Log: WebServiceListener.java,v $
- * Revision 1.6  2006-01-05 14:18:57  europe\L190409
+ * Revision 1.7  2007-02-12 13:55:57  europe\L190409
+ * Logger from LogUtil
+ *
+ * Revision 1.6  2006/01/05 14:18:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.5  2005/07/19 14:49:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -34,6 +37,9 @@
  */
 package nl.nn.adapterframework.http;
 
+import java.io.Serializable;
+import java.util.HashMap;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessageHandler;
 import nl.nn.adapterframework.core.IPushingListener;
@@ -42,13 +48,11 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.receivers.ServiceClient2;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
+import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.log4j.Logger;
-
-import java.io.Serializable;
-import java.util.HashMap;
 
 /**
  * Implementation of a {@link IPushingListener} that enables a {@link nl.nn.adapterframework.receivers.GenericReceiver}
@@ -70,8 +74,8 @@ import java.util.HashMap;
  * @author Gerrit van Brakel 
  */
 public class WebServiceListener  implements IPushingListener, ServiceClient2, Serializable {
-	public static final String version="$RCSfile: WebServiceListener.java,v $ $Revision: 1.6 $ $Date: 2006-01-05 14:18:57 $";
-	protected Logger log = Logger.getLogger(this.getClass());
+	public static final String version="$RCSfile: WebServiceListener.java,v $ $Revision: 1.7 $ $Date: 2007-02-12 13:55:57 $";
+	protected Logger log = LogUtil.getLogger(this);
 
 	private IMessageHandler handler;        	
 	private String name;

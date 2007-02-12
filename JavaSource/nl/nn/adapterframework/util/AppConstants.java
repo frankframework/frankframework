@@ -1,6 +1,9 @@
 /*
  * $Log: AppConstants.java,v $
- * Revision 1.11  2006-03-15 14:01:20  europe\L190409
+ * Revision 1.12  2007-02-12 14:09:04  europe\L190409
+ * Logger from LogUtil
+ *
+ * Revision 1.11  2006/03/15 14:01:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * resolving in toXml parameterized
  *
  * Revision 1.10  2006/03/08 13:57:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -21,22 +24,23 @@
  */
 package nl.nn.adapterframework.util;
 
-import java.util.Hashtable;
-import javax.naming.NamingException;
-import javax.naming.NamingEnumeration;
-import javax.naming.InitialContext;
-import javax.naming.Context;
-import javax.naming.Binding;
-import org.apache.log4j.Logger;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.net.URL;
 import java.util.Enumeration;
+import java.util.Hashtable;
 import java.util.Properties;
 import java.util.StringTokenizer;
+
+import javax.naming.Binding;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingEnumeration;
+import javax.naming.NamingException;
+
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 /**
  * Singleton class that has the constant values for this application. <br/>
  * <p>When an instance is created, it tries to load the properties file specified
@@ -104,11 +108,11 @@ import org.apache.commons.lang.StringUtils;
  * 
  */
 public final class AppConstants extends Properties implements Serializable{
-	public static final String version="$RCSfile: AppConstants.java,v $  $Revision: 1.11 $ $Date: 2006-03-15 14:01:20 $";
+	public static final String version = "$RCSfile: AppConstants.java,v $ $Revision: 1.12 $ $Date: 2007-02-12 14:09:04 $";
+	private Logger log = LogUtil.getLogger(this);
 	
 	public final static String propertiesFileName="AppConstants.properties";
 	private static AppConstants self=null;
-	private Logger log = Logger.getLogger(this.getClass());
 	private String additionalPropertiesFileKey="ADDITIONAL.PROPERTIES.FILE";
 	
 	private AppConstants() {
