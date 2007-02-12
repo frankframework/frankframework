@@ -1,6 +1,9 @@
 /*
  * $Log: ErrorMessageFormatter.java,v $
- * Revision 1.6  2007-02-12 13:44:29  europe\L190409
+ * Revision 1.7  2007-02-12 14:30:56  europe\L190409
+ * corrected version string
+ *
+ * Revision 1.6  2007/02/12 13:44:29  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Logger from LogUtil
  *
  * Revision 1.5  2004/09/01 11:26:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -45,7 +48,7 @@ import org.apache.log4j.Logger;
  * @author  Gerrit van Brakel
  */
 public class ErrorMessageFormatter implements IErrorMessageFormatter {
-	public static final String version="$Id: ErrorMessageFormatter.java,v 1.6 2007-02-12 13:44:29 europe\L190409 Exp $";
+	public static final String version = "$RCSfile: ErrorMessageFormatter.java,v $ $Revision: 1.7 $ $Date: 2007-02-12 14:30:56 $";
     protected Logger log = LogUtil.getLogger(this);
 	
 	/**

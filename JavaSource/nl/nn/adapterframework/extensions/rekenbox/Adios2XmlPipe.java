@@ -1,6 +1,9 @@
 /*
  * $Log: Adios2XmlPipe.java,v $
- * Revision 1.10  2007-02-12 13:47:55  europe\L190409
+ * Revision 1.11  2007-02-12 14:31:03  europe\L190409
+ * corrected version string
+ *
+ * Revision 1.10  2007/02/12 13:47:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Logger from LogUtil
  *
  * Revision 1.9  2005/01/05 12:31:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -104,7 +107,7 @@ import java.net.URL;
  * @version Id
  */
 public class Adios2XmlPipe extends FixedForwardPipe {
-	public static final String version="$Id: Adios2XmlPipe.java,v 1.10 2007-02-12 13:47:55 europe\L190409 Exp $";
+	public static final String version = "$RCSfile: Adios2XmlPipe.java,v $ $Revision: 1.11 $ $Date: 2007-02-12 14:31:03 $";
 
 	private Hashtable rubriek2nummer;	 
 	private Hashtable record2nummer;
