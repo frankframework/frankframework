@@ -1,6 +1,9 @@
 /*
  * $Log: Configuration.java,v $
- * Revision 1.18  2005-12-28 08:59:15  europe\L190409
+ * Revision 1.19  2007-02-12 13:38:58  europe\L190409
+ * Logger from LogUtil
+ *
+ * Revision 1.18  2005/12/28 08:59:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * replaced application-name by instance-name
  *
  * Revision 1.17  2005/12/28 08:35:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -58,6 +61,7 @@ import nl.nn.adapterframework.util.StatisticsKeeperLogger;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
 import org.apache.log4j.Logger;
+import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * The Configuration is placeholder of all configuration objects. Besides that, it provides
@@ -69,8 +73,8 @@ import org.apache.log4j.Logger;
  * @see    nl.nn.adapterframework.core.IAdapter
  */
 public class Configuration {
-    protected Logger log; 
-    public static final String version="$RCSfile: Configuration.java,v $ $Revision: 1.18 $ $Date: 2005-12-28 08:59:15 $";
+	public static final String version="$RCSfile: Configuration.java,v $ $Revision: 1.19 $ $Date: 2007-02-12 13:38:58 $";
+    protected Logger log=LogUtil.getLogger(this); 
      
     private Hashtable adapterTable = new Hashtable();
 
@@ -116,9 +120,7 @@ public class Configuration {
      * @see nl.nn.adapterframework.util.AppConstants
      */
     public Configuration() {
-        log = Logger.getLogger(this.getClass().getName());
-        
-
+ 
         //initialize Application Constants
         AppConstants.getInstance();
         

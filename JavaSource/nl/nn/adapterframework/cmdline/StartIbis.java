@@ -6,13 +6,16 @@
  */
 package nl.nn.adapterframework.cmdline;
 
+import javax.management.MBeanServer;
+import javax.management.MBeanServerFactory;
+import javax.management.ObjectInstance;
+
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationDigester;
 import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.LogUtil;
+
 import org.apache.log4j.Logger;
-import javax.management.ObjectInstance;
-import javax.management.MBeanServer;
-import javax.management.MBeanServerFactory;
 
 /**
  *  
@@ -21,12 +24,12 @@ import javax.management.MBeanServerFactory;
  * created    14 februari 2003
  */
 public class StartIbis {
-	public static final String version =
-		"$Id: StartIbis.java,v 1.4 2005-01-04 12:53:12 L190409 Exp $";
+	public static final String version="$RCSfile: StartIbis.java,v $ $Revision: 1.5 $ $Date: 2007-02-12 13:37:59 $";
+	private  Logger log = LogUtil.getLogger(this);
+
 	static final String DFLT_DIGESTER_RULES = "digester-rules.xml";
 	static final String DFLT_CONFIGURATION = "Configuration.xml";
 	static final String DFLT_AUTOSTART = "TRUE";
-	private  Logger log = Logger.getLogger(this.getClass());
 
 	/**
 	 * 

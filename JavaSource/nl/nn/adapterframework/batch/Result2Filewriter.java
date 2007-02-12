@@ -1,6 +1,9 @@
 /*
  * $Log: Result2Filewriter.java,v $
- * Revision 1.6  2006-05-19 09:28:36  europe\m00i745
+ * Revision 1.7  2007-02-12 13:37:13  europe\L190409
+ * Logger from LogUtil
+ *
+ * Revision 1.6  2006/05/19 09:28:36  Peter Eijgermans <peter.eijgermans@ibissource.org>
  * Restore java files from batch package after unwanted deletion.
  *
  * Revision 1.4  2005/10/31 14:38:02  John Dekker <john.dekker@ibissource.org>
@@ -31,9 +34,11 @@ import java.util.Map;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.util.FileUtils;
+import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+
 
 /**
  * Resulthandler that writes the transformed record to a file.
@@ -52,8 +57,8 @@ import org.apache.log4j.Logger;
  * @author: John Dekker
  */
 public class Result2Filewriter extends AbstractResultHandler {
-	public static final String version = "$RCSfile: Result2Filewriter.java,v $  $Revision: 1.6 $ $Date: 2006-05-19 09:28:36 $";
-	private static Logger log = Logger.getLogger(Result2Filewriter.class);
+	public static final String version = "$RCSfile: Result2Filewriter.java,v $  $Revision: 1.7 $ $Date: 2007-02-12 13:37:13 $";
+	private static Logger log = LogUtil.getLogger(Result2Filewriter.class);
 	
 	private String outputDirectory;
 	private String move2dirAfterFinalize;

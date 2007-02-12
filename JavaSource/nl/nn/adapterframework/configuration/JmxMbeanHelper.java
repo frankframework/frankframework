@@ -1,6 +1,9 @@
 /*
  * $Log: JmxMbeanHelper.java,v $
- * Revision 1.7  2006-09-14 11:44:09  europe\L190409
+ * Revision 1.8  2007-02-12 13:38:58  europe\L190409
+ * Logger from LogUtil
+ *
+ * Revision 1.7  2006/09/14 11:44:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * correctede logger definition
  *
  * Revision 1.6  2004/10/25 08:30:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -12,21 +15,23 @@
  */
 package nl.nn.adapterframework.configuration;
 
-import javax.management.ObjectName;
-import javax.management.modelmbean.RequiredModelMBean;
+import java.util.ArrayList;
+
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
-
-import javax.management.modelmbean.ModelMBeanOperationInfo;
+import javax.management.ObjectName;
 import javax.management.modelmbean.ModelMBeanAttributeInfo;
-import javax.management.modelmbean.ModelMBeanInfoSupport;
 import javax.management.modelmbean.ModelMBeanInfo;
+import javax.management.modelmbean.ModelMBeanInfoSupport;
+import javax.management.modelmbean.ModelMBeanOperationInfo;
+import javax.management.modelmbean.RequiredModelMBean;
 
 import nl.nn.adapterframework.core.Adapter;
-import org.apache.log4j.Logger;
-import java.util.ArrayList;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.JmxUtils;
+import nl.nn.adapterframework.util.LogUtil;
+
+import org.apache.log4j.Logger;
 
 /**
  * Jmx helper class, to make JMX MBeans from {@link nl.nn.adapterframework.core.Adapter Adapters}. 
@@ -35,8 +40,8 @@ import nl.nn.adapterframework.util.JmxUtils;
  * @since 4.1.1
  */
 public class JmxMbeanHelper {
-	public static final String version = "$RCSfile: JmxMbeanHelper.java,v $ $Revision: 1.7 $ $Date: 2006-09-14 11:44:09 $";
- 	private static Logger log = Logger.getLogger(JmxMbeanHelper.class);
+	public static final String version = "$RCSfile: JmxMbeanHelper.java,v $ $Revision: 1.8 $ $Date: 2007-02-12 13:38:58 $";
+ 	private static Logger log = LogUtil.getLogger(JmxMbeanHelper.class);
  	
 
 	/**

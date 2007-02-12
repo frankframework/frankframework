@@ -1,6 +1,9 @@
 /*
  * $Log: ConfigurationDigester.java,v $
- * Revision 1.12  2006-01-05 13:52:49  europe\L190409
+ * Revision 1.13  2007-02-12 13:38:58  europe\L190409
+ * Logger from LogUtil
+ *
+ * Revision 1.12  2006/01/05 13:52:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved error-handling
  *
  * Revision 1.11  2005/07/05 10:54:29  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -42,6 +45,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 import org.apache.commons.digester.Digester;
 import org.apache.commons.digester.xmlrules.FromXmlRuleSet;
 import org.apache.log4j.Logger;
+import nl.nn.adapterframework.util.LogUtil;
 import org.apache.commons.lang.SystemUtils;
 import nl.nn.adapterframework.util.ClassPathEntityResolver;
 
@@ -81,8 +85,8 @@ import java.net.URL;
  * @see Configuration
  */
 public class ConfigurationDigester {
-	public static final String version = "$RCSfile: ConfigurationDigester.java,v $ $Revision: 1.12 $ $Date: 2006-01-05 13:52:49 $";
-    protected static Logger log = Logger.getLogger(ConfigurationDigester.class);
+	public static final String version = "$RCSfile: ConfigurationDigester.java,v $ $Revision: 1.13 $ $Date: 2007-02-12 13:38:58 $";
+    protected static Logger log = LogUtil.getLogger(ConfigurationDigester.class);
 
 	private static final String CONFIGURATION_FILE_DEFAULT  = "Configuration.xml";
 	private static final String DIGESTER_RULES_DEFAULT      = "digester-rules.xml";
