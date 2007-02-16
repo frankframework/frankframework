@@ -1,6 +1,9 @@
 /*
  * $Log: DumpIbisConsole.java,v $
- * Revision 1.3  2007-02-12 14:41:14  europe\L190409
+ * Revision 1.4  2007-02-16 14:22:03  europe\L190409
+ * retrieve logfiles automatically
+ *
+ * Revision 1.3  2007/02/12 14:41:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Logger from LogUtil
  *
  * Revision 1.2  2006/08/22 11:57:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -20,6 +23,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Date;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -37,6 +42,7 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.log4j.Logger;
+import org.apache.log4j.FileAppender;
 
 /**
  * Dumps the entire Ibis Console to a zip-file which can be saved.
@@ -83,6 +89,7 @@ public class DumpIbisConsole extends HttpServlet {
 	}
 
 	public static void copyServletResponse(HttpServletRequest request, HttpServletResponse response, String resource, String destinationFileName) {
+		long timeStart = new Date().getTime();
 		try {
 			RequestDispatcher requestDispatcher = servletContext.getRequestDispatcher(resource);
 			IbisHttpServletResponseWrapper ibisHttpServletResponseWrapper = new IbisHttpServletResponseWrapper(response);
@@ -110,6 +117,8 @@ public class DumpIbisConsole extends HttpServlet {
 		} catch (Exception e) {
 			log.error("Error copying servletResponse", e);
 		}
+		long timeEnd = new Date().getTime();
+		log.debug("dumped file [" + destinationFileName + "] in " + (timeEnd - timeStart) + " msec.");
 	}
 
 	public static void extractLogging(String htmlString) {
@@ -229,14 +238,21 @@ public class DumpIbisConsole extends HttpServlet {
 
 			copyServletResponse(request, response, "/showLogging.do", directoryName + "/showLogging.html");
 
+			FileAppender fa = (FileAppender)LogUtil.getHierarchy().getRootLogger().getAppender("file");
+			File logFile = new File(fa.getFile());
+			String logFileName = logFile.getName();
+
 			for (Iterator iterator = setFileViewer.iterator();iterator.hasNext();) {
 				String s = (String) iterator.next();
-				if (s.indexOf("resultType=text") >= 0 && s.indexOf("log4j=true") < 0) {
+				if (s.indexOf("resultType=text") >= 0) {
 					int p1 = s.length();
 					int p2 = s.indexOf("fileName=");
 					String fileName = s.substring(p2 + 9, p1);
 					File file = new File(fileName);
-					copyServletResponse(request, response, "/" + s, directoryName + "/log/" + file.getName());
+					String fn = file.getName();
+					if (fn.startsWith(logFileName)) {
+						copyServletResponse(request, response, "/" + s, directoryName + "/log/" + fn);
+					}
 				}
 			}
 
