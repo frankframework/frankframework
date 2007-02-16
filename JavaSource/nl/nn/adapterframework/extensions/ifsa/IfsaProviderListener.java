@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaProviderListener.java,v $
- * Revision 1.26  2007-02-05 14:57:00  europe\L190409
+ * Revision 1.27  2007-02-16 14:19:08  europe\L190409
+ * updated javadoc
+ *
+ * Revision 1.26  2007/02/05 14:57:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * set default timeout to 3000
  *
  * Revision 1.25  2006/11/01 14:22:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -118,7 +121,6 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.JMSException;
 
-
 import org.apache.commons.lang.builder.ToStringBuilder;
 
 /**
@@ -141,6 +143,19 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * <tr><td>{@link #setTransacted(boolean) transacted}</td><td>must be set <code>true</true> for FF listeners in transacted mode</td><td>false</td></tr>
  * <tr><td>{@link #setTimeOut(long) timeOut}</td><td>receiver timeout, in milliseconds</td><td>3000</td></tr>
  * </table>
+ * The following session keys are set for each message:
+ * <ul>
+ *   <li>id (the message id)</li>
+ *   <li>cid (the correlation id)</li>
+ *   <li>timestamp</li>
+ *   <li>replyTo</li>
+ *   <li>messageText</li>
+ *   <li>fullIfsaServiceName</li>
+ *   <li>ifsaServiceName</li>
+ *   <li>ifsaGroup</li>
+ *   <li>ifsaOccurrence</li>
+ *   <li>ifsaVersion</li>
+ * </ul>
  * N.B. 
  * Starting from IFSA-jms version 2.2.10.055(beta) a feature was created to have separate service-queues for Request/Reply
  * and for Fire & Forget services. This allows applications to provide both types of services, each in its own transaction
@@ -153,7 +168,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * @since 4.2
  */
 public class IfsaProviderListener extends IfsaFacade implements IPullingListener, INamedObject, RunStateEnquiring {
-	public static final String version = "$RCSfile: IfsaProviderListener.java,v $ $Revision: 1.26 $ $Date: 2007-02-05 14:57:00 $";
+	public static final String version = "$RCSfile: IfsaProviderListener.java,v $ $Revision: 1.27 $ $Date: 2007-02-16 14:19:08 $";
 
     private final static String THREAD_CONTEXT_SESSION_KEY = "session";
     private final static String THREAD_CONTEXT_RECEIVER_KEY = "receiver";
@@ -338,12 +353,16 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 	 * Extracts ID-string from message obtained from {@link #getRawMessage(HashMap)}. 
 	 * Puts also the following parameters  in the threadContext:
 	 * <ul>
-	 * <li>id</li>
-	 * <li>cid</li>
-	 * <li>timestamp</li>
-	 * <li>replyTo</li>
-	 * <li>messageText</li>
-	 * <li>serviceDestination</li>
+	 *   <li>id</li>
+	 *   <li>cid</li>
+	 *   <li>timestamp</li>
+	 *   <li>replyTo</li>
+	 *   <li>messageText</li>
+	 *   <li>fullIfsaServiceName</li>
+	 *   <li>ifsaServiceName</li>
+	 *   <li>ifsaGroup</li>
+	 *   <li>ifsaOccurrence</li>
+	 *   <li>ifsaVersion</li>
 	 * </ul>
 	 * @return ID-string of message for adapter.
 	 */
