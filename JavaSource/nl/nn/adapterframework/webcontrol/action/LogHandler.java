@@ -1,9 +1,20 @@
+/*
+ * $Log: LogHandler.java,v $
+ * Revision 1.5  2007-02-16 14:24:45  europe\L190409
+ * corrected version string
+ *
+ */
 package nl.nn.adapterframework.webcontrol.action;
+
+import java.io.IOException;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 
-import org.apache.log4j.Hierarchy;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.struts.action.ActionForm;
@@ -11,19 +22,14 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.DynaActionForm;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-
 /**
  * This handler updates the root log level and the value in the AppConstants named "log.logIntermediaryResults".
- * <p>Creation date: (03-11-2003 11:22:42)</p>
+ *
+ * @author  Johan Verrips IOS
  * @version Id
- * @author Johan Verrips IOS
  */
 public class LogHandler extends ActionBase {
-	public static final String version="$Id: LogHandler.java,v 1.4 2007-02-16 14:22:54 europe\L190409 Exp $";
+	public static final String version = "$RCSfile: LogHandler.java,v $ $Revision: 1.5 $ $Date: 2007-02-16 14:24:45 $";
 	
 	 public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response)
         throws IOException, ServletException {
