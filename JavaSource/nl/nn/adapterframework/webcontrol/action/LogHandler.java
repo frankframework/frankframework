@@ -1,6 +1,9 @@
 package nl.nn.adapterframework.webcontrol.action;
 
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.LogUtil;
+
+import org.apache.log4j.Hierarchy;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.struts.action.ActionForm;
@@ -20,7 +23,7 @@ import java.io.IOException;
  * @author Johan Verrips IOS
  */
 public class LogHandler extends ActionBase {
-	public static final String version="$Id: LogHandler.java,v 1.3 2004-03-26 10:42:57 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: LogHandler.java,v 1.4 2007-02-16 14:22:54 europe\L190409 Exp $";
 	
 	 public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response)
         throws IOException, ServletException {
@@ -33,7 +36,7 @@ public class LogHandler extends ActionBase {
 		commandIssuedBy+=" remoteAddress ["+request.getRemoteAddr()+"]";
 		commandIssuedBy+=" remoteUser ["+request.getRemoteUser()+"]";
 
-		Logger lg=Logger.getRootLogger();
+		Logger lg=LogUtil.getHierarchy().getRootLogger();
 
         DynaActionForm logForm = (DynaActionForm) form;
         String form_logLevel = (String) logForm.get("logLevel");

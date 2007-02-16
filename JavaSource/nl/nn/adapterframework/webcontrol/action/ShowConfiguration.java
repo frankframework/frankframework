@@ -1,6 +1,9 @@
 /*
  * $Log: ShowConfiguration.java,v $
- * Revision 1.8  2007-02-12 14:35:11  europe\L190409
+ * Revision 1.9  2007-02-16 14:22:54  europe\L190409
+ * fixed changing of log-level
+ *
+ * Revision 1.8  2007/02/12 14:35:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * cosmetic changes
  *
  * Revision 1.7  2005/12/29 15:35:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -35,6 +38,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DomBuilderException;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StringResolver;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -59,7 +63,7 @@ import org.apache.struts.action.DynaActionForm;
  */
 
 public final class ShowConfiguration extends ActionBase {
-	public static final String version = "$RCSfile: ShowConfiguration.java,v $ $Revision: 1.8 $ $Date: 2007-02-12 14:35:11 $";
+	public static final String version = "$RCSfile: ShowConfiguration.java,v $ $Revision: 1.9 $ $Date: 2007-02-16 14:22:54 $";
 	
 	private static final String KEYWORD_INCLUDE="<include";
 	private static final String KEYWORD_CONFIG="configuration=\"";
@@ -96,7 +100,7 @@ public final class ShowConfiguration extends ActionBase {
 	    initAction(request);
 		 
 	    DynaActionForm configurationPropertiesForm = getPersistentForm(mapping, form, request);
-		configurationPropertiesForm.set("logLevel", Logger.getRootLogger().getLevel().toString());
+		configurationPropertiesForm.set("logLevel", LogUtil.getHierarchy().getRootLogger().getLevel().toString());
 		configurationPropertiesForm.set("logIntermediaryResults", new Boolean(false));
 		if (AppConstants.getInstance().getResolvedProperty("log.logIntermediaryResults")!=null) {
 			if (AppConstants.getInstance().getResolvedProperty("log.logIntermediaryResults").equalsIgnoreCase("true")) {
