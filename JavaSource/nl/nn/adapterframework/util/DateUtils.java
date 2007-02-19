@@ -1,6 +1,9 @@
 /*
  * $Log: DateUtils.java,v $
- * Revision 1.8  2007-02-19 07:46:16  europe\L190409
+ * Revision 1.9  2007-02-19 08:17:29  europe\L190409
+ * add convertDate() function (by Sanne Hoekstra)
+ *
+ * Revision 1.8  2007/02/19 07:46:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * add changeDate() functions (by Sanne Hoekstra)
  *
  * Revision 1.7  2006/08/21 15:13:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -15,6 +18,7 @@
  */
 package nl.nn.adapterframework.util;
 
+import java.text.ParseException;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -29,7 +33,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class DateUtils {
-	public static final String version = "$RCSfile: DateUtils.java,v $ $Revision: 1.8 $ $Date: 2007-02-19 07:46:16 $";
+	public static final String version = "$RCSfile: DateUtils.java,v $ $Revision: 1.9 $ $Date: 2007-02-19 08:17:29 $";
 	protected static Logger log = LogUtil.getLogger(DateUtils.class);
 	
 
@@ -98,6 +102,40 @@ public class DateUtils {
         return result;
     }
 
+
+	/**
+	 * 
+	 * Deze functie maakt het mogelijk om een datum formaat te veranderen.
+	 * 
+	 * @param 	from	String	date format from.
+	 * @param 	to		String	date format to.
+	 * @param 	value	String	date to reformat.
+	 * @return
+	 */
+	public static String convertDate(String from, String to, String value) throws ParseException {
+		log.debug("convertDate from " + from + " to " + to + " value " + value);
+		String result = "";
+//		try {
+			SimpleDateFormat formatterFrom = new SimpleDateFormat(from);
+			SimpleDateFormat formatterTo = new SimpleDateFormat(to);
+			Date d = formatterFrom.parse(value);
+			String tempStr = formatterFrom.format(d);
+			
+			if (tempStr.equals(value)) {	
+				result = formatterTo.format(d);
+			} else {
+				log.warn("Error on validating input (" + value + ") with reverse check [" + tempStr+"]");
+				throw new ParseException("Error on validating input (" + value + ") with reverse check [" + tempStr+"]",0);
+			}
+//		}
+//		catch (Throwable t) {
+//			log.error("Could not finish convertDate", t);
+//		}
+		log.debug("convertDate result" + result);
+		return result;
+	}
+
+
 	/**
 	 * 
 	 * Add a number of years, months, days to a date specified in a shortIsoFormat, and return it in the same format.
@@ -110,7 +148,7 @@ public class DateUtils {
 	 * @param 	days
 	 * @return
 	 */
-	public static String changeDate(String date, int years, int months, int days) {
+	public static String changeDate(String date, int years, int months, int days) throws ParseException {
 		return changeDate(date, years, months, days, "yyyy-MM-dd");
 	}
 	
@@ -127,10 +165,10 @@ public class DateUtils {
 	 * @param 	dateFormat	A String representing the date format of date.
 	 * @return  
 	 */
-	public static String changeDate(String date, int years, int months, int days, String dateFormat) {
+	public static String changeDate(String date, int years, int months, int days, String dateFormat) throws ParseException {
 		if (log.isDebugEnabled()) log.debug("changeDate date " + date + " years " + years + " months " + months + " days " + days);
 		String result = "";
-		try {
+//try {
 			SimpleDateFormat df = new SimpleDateFormat(dateFormat);
 			Date d = df.parse(date);
 			Calendar cal = Calendar.getInstance();
@@ -139,10 +177,10 @@ public class DateUtils {
 			cal.add(Calendar.MONTH, months);
 			cal.add(Calendar.DAY_OF_MONTH, days);
 			result = df.format(cal.getTime());
-		}
-		catch (Throwable t) {
-			log.error("Could not finish changeDate", t);
-		}
+//		}
+//		catch (Throwable t) {
+//			log.error("Could not finish changeDate", t);
+//		}
 		log.debug("changeDate result" + result);
 		return result;
 	}
