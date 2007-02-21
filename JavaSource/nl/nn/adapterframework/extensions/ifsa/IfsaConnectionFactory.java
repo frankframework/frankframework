@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaConnectionFactory.java,v $
- * Revision 1.9  2005-12-28 08:48:06  europe\L190409
+ * Revision 1.10  2007-02-21 15:58:03  europe\L190409
+ * add message for XA under v2.0
+ *
+ * Revision 1.9  2005/12/28 08:48:06  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed unused imports
  *
  * Revision 1.8  2005/10/26 08:21:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -66,7 +69,7 @@ import com.ing.ifsa.IFSAQueueConnectionFactory;
  * @version Id
  */
 public class IfsaConnectionFactory extends ConnectionFactoryBase {
-	public static final String version="$RCSfile: IfsaConnectionFactory.java,v $ $Revision: 1.9 $ $Date: 2005-12-28 08:48:06 $";
+	public static final String version="$RCSfile: IfsaConnectionFactory.java,v $ $Revision: 1.10 $ $Date: 2007-02-21 15:58:03 $";
 
 	private final static String IFSA_INITIAL_CONTEXT_FACTORY="com.ing.ifsa.IFSAContextFactory";
 	private final static String IFSA_PROVIDER_URL_V2_0="IFSA APPLICATION BUS";
@@ -136,6 +139,8 @@ public class IfsaConnectionFactory extends ConnectionFactoryBase {
 			} catch (Throwable t) {
 				log.info("caught exception determining IfsaJms v2.2+ features:",t);
 			}
+		} else {
+			log.info("for IFSA JMS versions prior to 2.2 capability of XA support cannot be determined");
 		}
 		return ifsaQueueConnectionFactory;
 	}
