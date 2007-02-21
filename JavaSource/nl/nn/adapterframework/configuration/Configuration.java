@@ -1,6 +1,9 @@
 /*
  * $Log: Configuration.java,v $
- * Revision 1.19  2007-02-12 13:38:58  europe\L190409
+ * Revision 1.20  2007-02-21 15:57:18  europe\L190409
+ * throw exception if scheduled job not OK
+ *
+ * Revision 1.19  2007/02/12 13:38:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Logger from LogUtil
  *
  * Revision 1.18  2005/12/28 08:59:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -73,7 +76,7 @@ import nl.nn.adapterframework.util.LogUtil;
  * @see    nl.nn.adapterframework.core.IAdapter
  */
 public class Configuration {
-	public static final String version="$RCSfile: Configuration.java,v $ $Revision: 1.19 $ $Date: 2007-02-12 13:38:58 $";
+	public static final String version="$RCSfile: Configuration.java,v $ $Revision: 1.20 $ $Date: 2007-02-21 15:57:18 $";
     protected Logger log=LogUtil.getLogger(this); 
      
     private Hashtable adapterTable = new Hashtable();
@@ -297,25 +300,27 @@ public class Configuration {
      * @see nl.nn.adapterframework.scheduler.JobDef for a description of Cron triggers
      * @since 4.0
      */
-    public void registerScheduledJob(JobDef jobdef) {
-        try {
-            // if there's no such adapter, log an error
-            if (this.getRegisteredAdapter(jobdef.getAdapterName()) == null) {
-                log.error("Jobdef [" + jobdef.getName() + "] got error: adapter [" + jobdef.getAdapterName() + "] not registered.");
-                return;
-            }
-            if (StringUtils.isNotEmpty(jobdef.getReceiverName())){
-                if (! isRegisteredReceiver(jobdef.getAdapterName(), jobdef.getReceiverName())){
-                    log.error("Jobdef [" + jobdef.getName() + "] got error: adapter [" + jobdef.getAdapterName() + "] receiver ["+jobdef.getReceiverName()+"] not registered.");
-                }
-            }
-            
-			SchedulerHelper.scheduleJob(this, jobdef);
-            log.info("job scheduled with properties :" + jobdef.toString());
-        } catch (Exception e) {
-            log.error("error occured on registerScheduledJob", e);
+    public void registerScheduledJob(JobDef jobdef) throws ConfigurationException {
+        if (this.getRegisteredAdapter(jobdef.getAdapterName()) == null) {
+        	String msg="Jobdef [" + jobdef.getName() + "] got error: adapter [" + jobdef.getAdapterName() + "] not registered.";
+            log.error(msg);
+            throw new ConfigurationException(msg);
         }
+        if (StringUtils.isNotEmpty(jobdef.getReceiverName())){
+            if (! isRegisteredReceiver(jobdef.getAdapterName(), jobdef.getReceiverName())) {
+				String msg="Jobdef [" + jobdef.getName() + "] got error: adapter [" + jobdef.getAdapterName() + "] receiver ["+jobdef.getReceiverName()+"] not registered.";
+                log.error(msg);
+				throw new ConfigurationException(msg);
+            }
+        }
+		try {
+			SchedulerHelper.scheduleJob(this, jobdef);
+			log.info("job scheduled with properties :" + jobdef.toString());
+		} catch (Exception e) {
+			throw new ConfigurationException("Could not schedule job ["+jobdef.getName()+"]",e);
+		}
     }
+    
     public void setConfigurationName(String name) {
         configurationName = name;
         log.debug("configuration name set to [" + name + "]");
