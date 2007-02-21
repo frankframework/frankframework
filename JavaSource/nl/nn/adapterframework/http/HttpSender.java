@@ -1,6 +1,9 @@
 /*
  * $Log: HttpSender.java,v $
- * Revision 1.28  2007-02-05 15:16:53  europe\L190409
+ * Revision 1.29  2007-02-21 15:59:02  europe\L190409
+ * remove debug message
+ *
+ * Revision 1.28  2007/02/05 15:16:53  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * made number of connection- and execution retries configurable
  *
  * Revision 1.27  2006/08/24 11:01:25  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -217,7 +220,7 @@ import nl.nn.adapterframework.util.CredentialFactory;
  * @since 4.2c
  */
 public class HttpSender extends SenderWithParametersBase implements HasPhysicalDestination {
-	public static final String version = "$RCSfile: HttpSender.java,v $ $Revision: 1.28 $ $Date: 2007-02-05 15:16:53 $";
+	public static final String version = "$RCSfile: HttpSender.java,v $ $Revision: 1.29 $ $Date: 2007-02-21 15:59:02 $";
 
 	private String url;
 	private String methodType="GET"; // GET or POST
@@ -267,7 +270,7 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 		
 		protected boolean checkConnection(HttpConnection connection)  {
 			boolean status = connection.isOpen();
-			log.debug(getLogPrefix()+"IbisMultiThreadedHttpConnectionManager connection open ["+status+"]");
+			//log.debug(getLogPrefix()+"IbisMultiThreadedHttpConnectionManager connection open ["+status+"]");
 			if (status) {
 				try {
 					connection.setSoTimeout(connection.getSoTimeout());
@@ -285,7 +288,7 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 		}
 				
 		public HttpConnection getConnection(HostConfiguration hostConfiguration) {
-			log.debug(getLogPrefix()+"IbisMultiThreadedHttpConnectionManager getConnection(HostConfiguration)");
+			//log.debug(getLogPrefix()+"IbisMultiThreadedHttpConnectionManager getConnection(HostConfiguration)");
 			HttpConnection result = super.getConnection(hostConfiguration);			
 			int count=getMaxConnectionRetries();
 			while (count-->0 && !checkConnection(result)) {
@@ -296,7 +299,7 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 			return result;
 		}
 		public HttpConnection getConnection(HostConfiguration hostConfiguration, long timeout) throws HttpException {
-			log.debug(getLogPrefix()+"IbisMultiThreadedHttpConnectionManager getConnection(HostConfiguration, timeout["+timeout+"])");
+			//log.debug(getLogPrefix()+"IbisMultiThreadedHttpConnectionManager getConnection(HostConfiguration, timeout["+timeout+"])");
 			HttpConnection result = super.getConnection(hostConfiguration, timeout);
 			int count=getMaxConnectionRetries();
 			while (count-->0 && !checkConnection(result)) {
