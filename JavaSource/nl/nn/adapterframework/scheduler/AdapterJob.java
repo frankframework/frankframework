@@ -1,3 +1,9 @@
+/*
+ * $Log: AdapterJob.java,v $
+ * Revision 1.4  2007-02-21 16:02:46  europe\L190409
+ * updated javadoc
+ *
+ */
 package nl.nn.adapterframework.scheduler;
 
 import nl.nn.adapterframework.configuration.Configuration;
@@ -9,7 +15,7 @@ import org.quartz.JobExecutionException;
 
 
 /**
- * Job for executing things to do with an adapter, like starting or stopping it.
+ * Job, specified in Configuration.xml, for executing things to do with an adapter, like starting or stopping it.
  * The <a href="http://quartz.sourceforge.net">Quartz scheduler</a> is used for scheduling.
  * <p>
  * Expects a JobDetail with a datamap with the following fields:
@@ -31,7 +37,7 @@ import org.quartz.JobExecutionException;
  * @see nl.nn.adapterframework.configuration.Configuration
   */
 public class AdapterJob extends BaseJob implements Job  {
-	public static final String version="$Id: AdapterJob.java,v 1.3 2004-03-26 10:43:06 NNVZNL01#L180564 Exp $";
+	public static final String version="$RCSfile: AdapterJob.java,v $ $Revision: 1.4 $ $Date: 2007-02-21 16:02:46 $";
 	
     public AdapterJob() {
             super();

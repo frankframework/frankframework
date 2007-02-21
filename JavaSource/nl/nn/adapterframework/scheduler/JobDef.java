@@ -1,14 +1,54 @@
+/*
+ * $Log: JobDef.java,v $
+ * Revision 1.6  2007-02-21 16:04:24  europe\L190409
+ * updated javadoc
+ *
+ */
 package nl.nn.adapterframework.scheduler;
 
 import nl.nn.adapterframework.util.AppConstants;
+
 import org.apache.commons.lang.builder.ToStringBuilder;
 
 /**
- * Definition / configuration of  scheduler jobs.
+ * Definition / configuration of scheduler jobs.
+ * 
+ * Specified in the Configuration.xml by a &lt;job&gt; inside a &lt;scheduler&gt;. The scheduler element must
+ * be a direct child of configuration, not of adapter.
+ * <p><b>Configuration:</b>
+ * <table border="1">
+ * <tr><th>attributes</th><th>description</th><th>default</th></tr>
+ * <tr><td>{@link #setName(String) name}</td><td>name of the Job</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setDescription(String) description}</td><td>optional description of the job</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setCronExpression(String) cronExpression}</td><td>cron expression that determines the frequency of excution (see below)</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setFunction(String) function}</td><td>one of: StopAdapter, StartAdapter, StopReceiver, StartReceiver, SendMessage</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setAdapterName(String) adapterName}</td><td>Adapter on which job operates</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setReceiverName(String) receiverName}</td><td>Receiver on which job operates. If function is 'sendMessage' is used this name is also used as name of JavaListener</td><td>&nbsp;</td></tr>
+ * </table>
+
  * @version Id
  * @author  Johan  Verrips
- * Date: Nov 23, 2003
- * Time: 9:44:53 AM
+ * 
+ * Operation of scheduling:
+ * <ul>
+ *   <li>at configuration tim {@link nl.nn.adapterframework.configuration.Configuration#registerScheduledJob(JobDef) Configuration.registerScheduledJob()} is called; </li>
+ *   <li>this calls {@link nl.nn.adapterframework.scheduler.SchedulerHelper.scheduleJob() SchedulerHelper.scheduleJob(Object, JobDef);</li>
+ *   <li>this creates a Quartz JobDetail object, and copies adaptername, receivername, function and a reference to the configuration to jobdetail's datamap;
+ *   <li>it sets the class to execute to AdapterJob<li>
+ *   <li>this job is scheduled using the cron expression</li> 
+ * <ul>
+ * 
+ * Operation the job is triggered:
+ * <ul>
+ *   <li>AdapterJob.execute is called</li>
+ *   <li>AdapterJob.execute calls config.handleAdapter()</li>
+ *   <li>Depending on the value of <code>function</code> the Adapter or Receiver is stopped or started, or an empty message is sent</li>
+ *   <li>If function=sendMessage, an IbisLocalSender is used to call a JavaListener that has to have an attribute <code>name</code> that is equal to receiverName!!</li>
+ * </ul>
+ *
+ * All registered jobs are displayed in the IbisConsole under 'Show Scheduler Status'.
+ * <p>
+ * N.B.: Jobs can only be specified in the Configuration.xml <i>BELOW</i> the adapter called. It must be already defined!
  *
  * <b>CronExpressions</b>
  *  * <p>A "Cron-Expression" is a string comprised of 6 or 7 fields separated by
@@ -243,7 +283,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 
  */
 public class JobDef {
-	public static final String version = "$RCSfile: JobDef.java,v $  $Revision: 1.5 $ $Date: 2005-11-01 08:52:43 $";
+	public static final String version = "$RCSfile: JobDef.java,v $  $Revision: 1.6 $ $Date: 2007-02-21 16:04:24 $";
 	
     private String name;
     private String cronExpression;
