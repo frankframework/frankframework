@@ -1,6 +1,9 @@
 /*
  * $Log: SchedulerHelper.java,v $
- * Revision 1.1  2005-11-01 08:51:14  europe\m00f531
+ * Revision 1.2  2007-02-21 16:07:00  europe\L190409
+ * cosmetic changes
+ *
+ * Revision 1.1  2005/11/01 08:51:14  John Dekker <john.dekker@ibissource.org>
  * Add support for dynamic scheduling, i.e. add a job to the scheduler using 
  * a sender
  *
@@ -8,6 +11,8 @@
 package nl.nn.adapterframework.scheduler;
 
 import java.text.ParseException;
+
+import nl.nn.adapterframework.configuration.Configuration;
 
 import org.apache.commons.lang.StringUtils;
 import org.quartz.CronTrigger;
@@ -24,15 +29,16 @@ import org.quartz.impl.StdSchedulerFactory;
  * @author John Dekker
  */
 public class SchedulerHelper {
-	public static void scheduleJob(Object config, JobDef jobdef) throws Exception {
+	
+	public static void scheduleJob(Configuration config, JobDef jobdef) throws Exception {
 		JobDetail jobDetail = new JobDetail(jobdef.getName(), // job name
 			Scheduler.DEFAULT_GROUP, // job group
 			AdapterJob.class); // the java class to execute
 
+		jobDetail.getJobDataMap().put("config", config); // reference to configuration.
 		jobDetail.getJobDataMap().put("adapterName", jobdef.getAdapterName());
-		jobDetail.getJobDataMap().put("config", config);
-		jobDetail.getJobDataMap().put("function", jobdef.getFunction());
 		jobDetail.getJobDataMap().put("receiverName", jobdef.getReceiverName());
+		jobDetail.getJobDataMap().put("function", jobdef.getFunction());
 		
 		if (StringUtils.isNotEmpty(jobdef.getDescription()))
 			jobDetail.setDescription(jobdef.getDescription());
