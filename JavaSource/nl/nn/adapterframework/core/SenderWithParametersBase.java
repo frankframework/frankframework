@@ -1,6 +1,9 @@
 /*
  * $Log: SenderWithParametersBase.java,v $
- * Revision 1.3  2007-02-12 13:44:09  europe\L190409
+ * Revision 1.4  2007-02-26 16:53:38  europe\L190409
+ * add throws clause to open and close
+ *
+ * Revision 1.3  2007/02/12 13:44:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Logger from LogUtil
  *
  * Revision 1.2  2005/08/30 15:55:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -28,7 +31,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public abstract class SenderWithParametersBase implements ISenderWithParameters {
-	public static final String version="$RCSfile: SenderWithParametersBase.java,v $ $Revision: 1.3 $ $Date: 2007-02-12 13:44:09 $";
+	public static final String version="$RCSfile: SenderWithParametersBase.java,v $ $Revision: 1.4 $ $Date: 2007-02-26 16:53:38 $";
 	protected Logger log = LogUtil.getLogger(this);
 	
 	private String name;
@@ -41,10 +44,10 @@ public abstract class SenderWithParametersBase implements ISenderWithParameters 
 		}
 	}
 
-	public void open() {
+	public void open() throws SenderException {
 	}
 
-	public void close() {
+	public void close() throws SenderException {
 	}
 
 	public String sendMessage(String correlationID, String message) throws SenderException, TimeOutException  {
