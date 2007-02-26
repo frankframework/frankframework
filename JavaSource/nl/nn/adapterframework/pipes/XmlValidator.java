@@ -1,6 +1,9 @@
 /*
  * $Log: XmlValidator.java,v $
- * Revision 1.19  2007-02-05 15:00:47  europe\L190409
+ * Revision 1.20  2007-02-26 13:17:55  europe\L190409
+ * fixed non-xml reason setting
+ *
+ * Revision 1.19  2007/02/05 15:00:47  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * extended diagnostic information
  *
  * Revision 1.18  2006/08/24 09:24:52  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -51,32 +54,31 @@
 package nl.nn.adapterframework.pipes;
 
 
+import java.io.IOException;
+import java.net.URL;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.util.XmlFindingHandler;
-import nl.nn.adapterframework.util.Variant;
 import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.Variant;
 import nl.nn.adapterframework.util.XmlBuilder;
+import nl.nn.adapterframework.util.XmlFindingHandler;
+import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
+import org.xml.sax.ContentHandler;
 import org.xml.sax.ErrorHandler;
-import org.xml.sax.SAXNotSupportedException;
-import org.xml.sax.SAXNotRecognizedException;
-import org.xml.sax.SAXException;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLReaderFactory;
-
-import java.net.URL;
-import java.io.IOException;
-import java.util.Iterator;
-import java.util.Vector;
 
 /**
  *<code>Pipe</code> that validates the input message against a XML-Schema.
@@ -127,7 +129,7 @@ import java.util.Vector;
 
  */
 public class XmlValidator extends FixedForwardPipe {
-	public static final String version="$RCSfile: XmlValidator.java,v $ $Revision: 1.19 $ $Date: 2007-02-05 15:00:47 $";
+	public static final String version="$RCSfile: XmlValidator.java,v $ $Revision: 1.20 $ $Date: 2007-02-26 13:17:55 $";
 
     private String schemaLocation = null;
     private String noNamespaceSchemaLocation = null;
@@ -142,18 +144,48 @@ public class XmlValidator extends FixedForwardPipe {
         private boolean errorOccured = false;
         private String reasons;
 		private XMLReader parser;
-		private Vector errors = new Vector();
+		private XmlBuilder xmlReasons = new XmlBuilder("reasons");
+
 
 		public XmlErrorHandler(XMLReader parser) {
 			this.parser = parser;
 		}
 
 		protected void addReason(SAXParseException exception) {
-			Vector error = new Vector();
-			error.add(exception.getMessage());
-			error.add(((XmlFindingHandler)parser.getContentHandler()).getElementName());
-			error.add(((XmlFindingHandler)parser.getContentHandler()).getXpath());
-			errors.add(error);
+			try {
+				ContentHandler ch = parser.getContentHandler();
+				if (ch!=null && ch instanceof XmlFindingHandler) {
+					XmlFindingHandler xfh = (XmlFindingHandler)ch;
+
+					XmlBuilder reason = new XmlBuilder("reason");
+					XmlBuilder detail;
+					
+					detail = new XmlBuilder("message");;
+					detail.setCdataValue(exception.getMessage());
+					reason.addSubElement(detail);
+
+					detail = new XmlBuilder("elementName");;
+					detail.setValue(xfh.getElementName());
+					reason.addSubElement(detail);
+
+					detail = new XmlBuilder("xpath");;
+					detail.setValue(xfh.getXpath());
+					reason.addSubElement(detail);
+					
+					xmlReasons.addSubElement(reason);	
+				}
+			} catch (Throwable t) {
+				log.error("Exception handling errors",t);
+				
+				XmlBuilder reason = new XmlBuilder("reason");
+				XmlBuilder detail;
+					
+				detail = new XmlBuilder("message");;
+				detail.setCdataValue(t.getMessage());
+				reason.addSubElement(detail);
+
+				xmlReasons.addSubElement(reason);	
+			}
 
 			String msg = "at ("+exception.getLineNumber()+ ","+exception.getColumnNumber()+"): "+exception.getMessage();
 			errorOccured = true;
@@ -183,32 +215,7 @@ public class XmlValidator extends FixedForwardPipe {
         }
 
 		public String getXmlReasons() {
-			XmlBuilder xb0 = new XmlBuilder("reasons");
-			XmlBuilder xb1;
-			XmlBuilder xb2;
-			Iterator it1 = errors.iterator();
-			while (it1.hasNext()) {
-				xb1 = new XmlBuilder("reason");
-				Vector error = (Vector)it1.next();
-				Iterator it2 = error.iterator();
-				String message = (String)error.elementAt(0);
-				String elementName = (String)error.elementAt(1);
-				String xpath = (String)error.elementAt(2);
-
-				xb2 = new XmlBuilder("message");
-				xb2.setCdataValue(message);
-				xb1.addSubElement(xb2);
-				xb2 = new XmlBuilder("elementName");
-				xb2.setValue(elementName);
-				xb1.addSubElement(xb2);
-				xb2 = new XmlBuilder("xpath");
-				xb2.setValue(xpath);
-				xb1.addSubElement(xb2);
-
-				xb0.addSubElement(xb1);	
-			}
-
-		   return xb0.toXML();
+		   return xmlReasons.toXML();
 	   }
     }
 
@@ -409,7 +416,7 @@ public class XmlValidator extends FixedForwardPipe {
         if (isFullSchemaChecking()) {
             parser.setFeature("http://apache.org/xml/features/validation/schema-full-checking", true);
         }
-        if (StringUtils.isNotEmpty(getRoot())) {    
+        if (StringUtils.isNotEmpty(getRoot()) || StringUtils.isNotEmpty(getXmlReasonSessionKey())) {    
         	parser.setContentHandler(new XmlFindingHandler());
         }
         return parser;
