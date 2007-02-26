@@ -1,6 +1,9 @@
 /*
  * $Log: SchedulerSender.java,v $
- * Revision 1.2  2007-02-12 14:08:01  europe\L190409
+ * Revision 1.3  2007-02-26 16:52:21  europe\L190409
+ * startScheduler on open()
+ *
+ * Revision 1.2  2007/02/12 14:08:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Logger from LogUtil
  *
  * Revision 1.1  2005/11/01 08:51:13  John Dekker <john.dekker@ibissource.org>
@@ -16,12 +19,11 @@ import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
-import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
 import org.quartz.JobDetail;
 import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
 
 /**
  * Registers a trigger in the scheduler so that the message is send to a javalistener
@@ -42,7 +44,6 @@ import org.quartz.Scheduler;
  * @author John Dekker
  */
 public class SchedulerSender extends SenderWithParametersBase {
-	protected Logger log = LogUtil.getLogger(this);
 	
 	public static final String JAVALISTENER = "javaListener";
 	public static final String CORRELATIONID = "correlationId";
@@ -72,9 +73,18 @@ public class SchedulerSender extends SenderWithParametersBase {
 			p.setPattern(jobNamePattern);
 			addParameter(p);
 		}
-		
 		super.configure();
 	}
+
+	public void open() throws SenderException {
+		super.open();
+		try {
+			SchedulerHelper.startScheduler();
+		} catch (SchedulerException e) {
+			throw new SenderException("Could not start Scheduler", e);
+		}
+	}
+
 
 	public boolean isSynchronous() {
 		return true;
@@ -132,5 +142,6 @@ public class SchedulerSender extends SenderWithParametersBase {
 	public void setJavaListener(String string) {
 		javaListener = string;
 	}
+
 
 }
