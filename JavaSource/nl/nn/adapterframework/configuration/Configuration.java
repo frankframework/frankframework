@@ -1,6 +1,9 @@
 /*
  * $Log: Configuration.java,v $
- * Revision 1.20  2007-02-21 15:57:18  europe\L190409
+ * Revision 1.21  2007-02-26 16:55:05  europe\L190409
+ * start scheduler when a job is found in the configuration
+ *
+ * Revision 1.20  2007/02/21 15:57:18  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * throw exception if scheduled job not OK
  *
  * Revision 1.19  2007/02/12 13:38:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -76,7 +79,7 @@ import nl.nn.adapterframework.util.LogUtil;
  * @see    nl.nn.adapterframework.core.IAdapter
  */
 public class Configuration {
-	public static final String version="$RCSfile: Configuration.java,v $ $Revision: 1.20 $ $Date: 2007-02-21 15:57:18 $";
+	public static final String version="$RCSfile: Configuration.java,v $ $Revision: 1.21 $ $Date: 2007-02-26 16:55:05 $";
     protected Logger log=LogUtil.getLogger(this); 
      
     private Hashtable adapterTable = new Hashtable();
@@ -316,6 +319,7 @@ public class Configuration {
 		try {
 			SchedulerHelper.scheduleJob(this, jobdef);
 			log.info("job scheduled with properties :" + jobdef.toString());
+			SchedulerHelper.startScheduler();
 		} catch (Exception e) {
 			throw new ConfigurationException("Could not schedule job ["+jobdef.getName()+"]",e);
 		}
