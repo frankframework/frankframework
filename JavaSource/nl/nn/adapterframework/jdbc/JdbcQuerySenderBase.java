@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcQuerySenderBase.java,v $
- * Revision 1.25  2006-12-13 16:25:56  europe\L190409
+ * Revision 1.26  2007-02-27 12:37:43  europe\L190409
+ * corrected returned result for blob/clobs & do required trimming
+ *
+ * Revision 1.25  2006/12/13 16:25:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added attribute blobCharset
  *
  * Revision 1.24  2006/12/12 09:57:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -82,12 +85,12 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
-
-import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ParameterException;
@@ -97,6 +100,8 @@ import nl.nn.adapterframework.util.DB2XMLWriter;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
+
+import org.apache.commons.lang.StringUtils;
 
 /**
  * This executes the query that is obtained from the (here still abstract) method getStatement.
@@ -157,7 +162,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * @since 	4.1
  */
 public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
-	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.25 $ $Date: 2006-12-13 16:25:56 $";
+	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.26 $ $Date: 2007-02-27 12:37:43 $";
 
 	private String queryType = "other";
 	private int maxRows=-1; // return all rows
@@ -267,6 +272,8 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 			throw new SenderException(getLogPrefix() + "got exception evaluating parameters", e);
 		} catch (SQLException e) {
 			throw new SenderException(getLogPrefix() + "got exception sending message", e);
+		} catch (IOException e) {
+			throw new SenderException(getLogPrefix() + "got exception sending message", e);
 		} catch (JdbcException e) {
 			throw new SenderException(e);
 		} finally {
@@ -280,11 +287,13 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		}
 	}
 
-	protected String getResult(ResultSet resultset) throws SQLException {
+	protected String getResult(ResultSet resultset) throws JdbcException, SQLException, IOException {
 		String result=null;
 		if (isScalar()) {
 			if (resultset.next()) {
-				result = resultset.getString(1);
+				//result = resultset.getString(1);
+				ResultSetMetaData rsmeta = resultset.getMetaData();
+				result = getValue(resultset, 1, rsmeta.getColumnType(1));
 				if (resultset.wasNull()) {
 					if (isScalarExtended()) {
 						result = "[null]";
@@ -315,7 +324,36 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		return result;
 	}
 	
-
+	private String getValue(final ResultSet rs, int colNum, int type) throws JdbcException, IOException, SQLException
+	 {
+		 switch(type)
+		 {
+			 // return "undefined" for types that cannot be rendered to strings easily
+			 case Types.BLOB :
+					 return JdbcUtil.getBlobAsString(rs,colNum,getBlobCharset(),false,isBlobsCompressed());
+			 case Types.CLOB :
+					 return JdbcUtil.getClobAsString(rs,colNum,false);
+			 case Types.ARRAY :
+			 case Types.DISTINCT :
+			 case Types.LONGVARBINARY :
+			 case Types.VARBINARY :
+			 case Types.BINARY :
+			 case Types.REF :
+			 case Types.STRUCT :
+				 return "undefined";
+			 default : {
+				 String value = rs.getString(colNum);
+				 if(value == null) {
+					return getNullValue();
+				 } else {
+					if (isTrimSpaces()) {
+						value.trim();
+					}
+				 }
+				 return value;
+			 }
+		 }
+	 }
 
 	protected String executeUpdateBlobQuery(PreparedStatement statement, String message) throws SenderException{
 		ResultSet rs=null;
@@ -387,6 +425,10 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 			return getResult(resultset);
 		} catch (SQLException sqle) {
 			throw new SenderException(getLogPrefix() + "got exception executing a SELECT SQL command",sqle );
+		} catch (JdbcException e) {
+			throw new SenderException(getLogPrefix() + "got exception executing a SELECT SQL command",e );
+		} catch (IOException e) {
+			throw new SenderException(getLogPrefix() + "got exception executing a SELECT SQL command",e );
 		} finally {
 			try {
 				if (resultset!=null) {
