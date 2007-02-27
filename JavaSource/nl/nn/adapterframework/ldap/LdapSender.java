@@ -1,6 +1,11 @@
 /*
  * $Log: LdapSender.java,v $
- * Revision 1.14  2007-02-26 15:56:37  europe\L190409
+ * Revision 1.15  2007-02-27 12:44:55  europe\L190409
+ * corrected digesterrules
+ * pooling optional
+ * context.close() in finally in configure()
+ *
+ * Revision 1.14  2007/02/26 15:56:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * update of LDAP code, after a snapshot from Ibis4Toegang
  *
  */
@@ -150,6 +155,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setLdapProviderURL(String) ldapProviderURL}</td><td>URL to context to search in, e.g. 'ldap://edsnlm01.group.intranet/ou=People, o=ing' to search in te People group of ING CDS. Used to overwrite the providerURL specified in jmsRealm.</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>sets jndi parameters from defined realm (including authentication)</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setOperation(String) operation}</td><td>specifies operation to perform. Must be one of 'read', 'create', 'update', 'delete' or 'search'</td><td>read</td></tr>
+ * <tr><td>{@link #setUsePooling(boolean) usePooling}</td><td>specifies whether connection pooling is used or not</td><td>true</td></tr>
  * </table>
  * </p>
  * If there is only one parameter in the configaration of the pipe it will represent entryName (RDN) of interest.
@@ -166,7 +172,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class LdapSender extends JNDIBase implements ISenderWithParameters {
-	public static final String version = "$RCSfile: LdapSender.java,v $  $Revision: 1.14 $ $Date: 2007-02-26 15:56:37 $";
+	public static final String version = "$RCSfile: LdapSender.java,v $  $Revision: 1.15 $ $Date: 2007-02-27 12:44:55 $";
 
 	private String FILTER = "filterExpression";
 	private String ENTRYNAME = "entryName";
@@ -208,9 +214,11 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 	private String attributesToReturn;
 	private String filterExpression;
 
-	private DirContext dirContextTemplate = null;
+	private Hashtable jndiEnv=null;
 
 	private Properties namingSyntax = new Properties();
+	
+	private boolean usePooling=true;
 
 	public LdapSender() {
 		super();
@@ -224,11 +232,14 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 		if (paramList != null) {
 			if (paramList.size() >= 1)  //there can be only one - the entryName
 				if(!entryNameParameterPresent()) {
+					// TODO: checken waarom dit zou zijn
 					throw new ConfigurationException("[" + getName()+ "] Required parameter with the name [entryName] not found!");
 				}
 			paramList.configure();
 		} else {
-			throw new ConfigurationException("[" + getName() + "] No parameter found - required 1 for entryName!");
+			// TODO: checken waarom dit zou zijn
+			log.warn("There probably/maybe should be a parameter [entryName]. Check this!");
+//			throw new ConfigurationException("[" + getName() + "] No parameter found - required 1 for entryName!");
 		}
 
 		if (getOperation() == null
@@ -274,11 +285,17 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 
 //		fillSyntax();
 
-		try{
-			DirContext dirContext = getDirContext();
-			dirContext.close();
-		}catch (Exception e){
-			throw new ConfigurationException("["+ getClass().getName()	+ "] Context could not be found ", e);
+		DirContext dirContext=null;
+		try {
+			dirContext = getDirContext();
+		} catch (Exception e) {
+			throw new ConfigurationException("["+ getClass().getName() + "] Context could not be found ", e);
+		} finally {
+			try {
+				dirContext.close();
+			} catch (NamingException e) {
+				log.warn("["+ getClass().getName() + "] Context could not be closed", e);
+			}
 		}
 	}
 
@@ -782,7 +799,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 		digester.addObjectCreate("*/attributes",BasicAttributes.class);
 		digester.addFactoryCreate("*/attributes/attribute",BasicAttributeFactory.class);
 		digester.addSetNext("*/attributes/attribute","put");
-		digester.addCallMethod("*/attributes/attribute/value","add");
+		digester.addCallMethod("*/attributes/attribute/value","add",0);
 		
 		try {
 			ByteArrayInputStream xmlInputStream = new ByteArrayInputStream(message.getBytes());
@@ -861,22 +878,21 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 	 */
 	protected synchronized DirContext loopkupDirContext() throws NamingException {
 
-		Hashtable jndiEnv = getJndiEnv();
-		//jndiEnv.put("com.sun.jndi.ldap.trace.ber", System.err);//ldap response in log for debug purposes
-		if (getLdapProviderURL() != null)
-			jndiEnv.put("java.naming.provider.url", getLdapProviderURL());
-		//Overwriting the (realm)providerURL if specified in <pipe>
-
-		if (null == dirContextTemplate) {
-			if (getInitialContextFactoryName() != null) {
-				dirContextTemplate = (DirContext) new InitialDirContext(jndiEnv);
-			} else {
-				dirContextTemplate = (DirContext) new InitialDirContext();
+		if (jndiEnv==null) {
+			jndiEnv = getJndiEnv();
+			//jndiEnv.put("com.sun.jndi.ldap.trace.ber", System.err);//ldap response in log for debug purposes
+			if (getLdapProviderURL() != null) {
+				//Overwriting the (realm)providerURL if specified in configuration
+				jndiEnv.put("java.naming.provider.url", getLdapProviderURL());
 			}
-			log.debug("obtained InitialDirContext for providerURL ["+ jndiEnv.get("java.naming.provider.url")	+ "]");
+			// Enable connection pooling
+			jndiEnv.put("com.sun.jndi.ldap.connect.pool", isUsePooling()?"true":"false");
+			if (log.isDebugEnabled()) log.debug("created environment for LDAP provider URL [" + jndiEnv.get("java.naming.provider.url") + "]");
 		}
-		return (DirContext) dirContextTemplate.lookup("");
-		// return copy to be thread-safe
+			
+		DirContext dirContext = (DirContext) new InitialDirContext(jndiEnv);
+		return dirContext;
+//		return (DirContext) dirContextTemplate.lookup(""); 	// return copy to be thread-safe
 	}
 
 	protected DirContext getDirContext() throws SenderException {
@@ -1030,6 +1046,13 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 
 	public void setFilterExpression(String string) {
 		filterExpression = string;
+	}
+
+	public void setUsePooling(boolean b) {
+		usePooling = b;
+	}
+	public boolean isUsePooling() {
+		return usePooling;
 	}
 
 }
