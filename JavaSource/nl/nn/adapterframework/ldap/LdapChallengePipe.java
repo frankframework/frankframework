@@ -1,24 +1,14 @@
 /*
  * $Log: LdapChallengePipe.java,v $
- * Revision 1.1  2007-02-26 15:56:37  europe\L190409
+ * Revision 1.2  2007-02-27 12:48:50  europe\L190409
+ * set pooling off
+ *
+ * Revision 1.1  2007/02/26 15:56:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * update of LDAP code, after a snapshot from Ibis4Toegang
- *
- * Revision 1.3  2007/02/21 17:22:55  europe\m719590
- * cosmetic change
- *
- * Revision 1.2  2007/02/19 16:29:01  europe\m719590
- * ldapProviderURL in Ldapsender aangepast
- *
- * Revision 1.1  2006/06/20 09:32:03  Peter Eijgermans <peter.eijgermans@ibissource.org>
- * LdapChalengePipe
- *
- *
  */
 package nl.nn.adapterframework.ldap;
 
 import java.util.HashMap;
-
-import javax.naming.directory.DirContext;
 
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -32,13 +22,10 @@ import org.apache.commons.lang.StringUtils;
 /**
  * Pipe to check if a username and password are valid in LDAP.
  * 
- * @author  Milan Tomc
- * @version $RCSfile: LdapChallengePipe.java,v $  $Revision: 1.1 $ $Date: 2007-02-26 15:56:37 $"
- * 
  * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>classname</td><td>nl.nn.adapterframework.ldap.LdapChalengePipe</td><td>&nbsp;</td></tr>
+ * <tr><td>classname</td><td>nl.nn.adapterframework.ldap.LdapChallengePipe</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * <table border="1">
@@ -58,9 +45,12 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>error</td><td>Exception occured in the pipe</td></tr>
  * </table>
  * </p>
+ * 
+ * @author  Milan Tomc
+ * @version Id
  */
 public class LdapChallengePipe extends AbstractPipe {
-	public static final String version = "$RCSfile: LdapChallengePipe.java,v $  $Revision: 1.1 $ $Date: 2007-02-26 15:56:37 $";
+	public static String version = "$RCSfile: LdapChallengePipe.java,v $  $Revision: 1.2 $ $Date: 2007-02-27 12:48:50 $";
 
 	/** 
 	 * Checks to see if the supplied parameteres of the pipe can login to LDAP 
@@ -98,6 +88,8 @@ public class LdapChallengePipe extends AbstractPipe {
 			throw new PipeRunException(this, "One of the following required parameters isEmpty: " + paramfields);			
 		}
 			
+		ldapSender.setEntryName("dummy");
+		ldapSender.setUsePooling(false);
 		ldapSender.setLdapProviderURL(ldapProviderURL);
 		ldapSender.setInitialContextFactoryName(initialContextFactoryName);
 		ldapSender.setPrincipal(principal);
