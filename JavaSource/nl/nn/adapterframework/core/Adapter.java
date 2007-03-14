@@ -1,6 +1,9 @@
 /*
  * $Log: Adapter.java,v $
- * Revision 1.26  2007-02-12 13:44:09  europe\L190409
+ * Revision 1.27  2007-03-14 12:22:10  europe\L190409
+ * log results in case of exception, too
+ *
+ * Revision 1.26  2007/02/12 13:44:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Logger from LogUtil
  *
  * Revision 1.25  2006/09/14 14:58:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -143,7 +146,7 @@ import org.apache.log4j.NDC;
  */
 
 public class Adapter implements Runnable, IAdapter {
-	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.26 $ $Date: 2007-02-12 13:44:09 $";
+	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.27 $ $Date: 2007-03-14 12:22:10 $";
 	private Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -547,6 +550,13 @@ public class Adapter implements Runnable, IAdapter {
 				}
 			}
 			result.setResult(formatErrorMessage(msg, t, message, messageId, objectInError, startTime));
+			if (isRequestReplyLogging()) {
+				log.info("Adapter [" + getName() + "] messageId[" + messageId + "] got exit-state [" + result.getState() + "] and result [" + result.toString() + "] from PipeLine");
+			} else {
+				if (log.isDebugEnabled()) {
+					log.debug("Adapter [" + getName() + "] messageId[" + messageId + "] got exit-state [" + result.getState() + "] and result [" + result.toString() + "] from PipeLine");
+				}
+			}
 			return result;
 		}
 	}
