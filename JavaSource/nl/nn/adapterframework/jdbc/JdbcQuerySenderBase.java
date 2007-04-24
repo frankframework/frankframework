@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcQuerySenderBase.java,v $
- * Revision 1.26  2007-02-27 12:37:43  europe\L190409
+ * Revision 1.27  2007-04-24 11:37:12  europe\L190409
+ * added package execution feature
+ *
+ * Revision 1.26  2007/02/27 12:37:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected returned result for blob/clobs & do required trimming
  *
  * Revision 1.25  2006/12/13 16:25:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -82,13 +85,17 @@
 package nl.nn.adapterframework.jdbc;
 
 import java.io.IOException;
+import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.sql.Types;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 
@@ -162,7 +169,7 @@ import org.apache.commons.lang.StringUtils;
  * @since 	4.1
  */
 public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
-	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.26 $ $Date: 2007-02-27 12:37:43 $";
+	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.27 $ $Date: 2007-04-24 11:37:12 $";
 
 	private String queryType = "other";
 	private int maxRows=-1; // return all rows
@@ -178,6 +185,8 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 	private boolean trimSpaces=true;
 	private String blobCharset = Misc.DEFAULT_INPUT_STREAM_ENCODING;
 	private boolean blobsCompressed=true;
+
+	private String packageContent = "db2";
 	
 	protected String[] columnsReturnedList=null;
 
@@ -244,27 +253,31 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 					if ("updateClob".equalsIgnoreCase(getQueryType())) {
 						return executeUpdateClobQuery(statement,message);
 					} else {
-						int numRowsAffected = statement.executeUpdate();
-						if (StringUtils.isNotEmpty(getResultQuery())) {
-							Statement resStmt = null;
-							try { 
-								resStmt = connection.createStatement();
-								log.debug("obtaining result from ["+getResultQuery()+"]");
-								ResultSet rs = resStmt.executeQuery(getResultQuery());
-								return getResult(rs);
-							} finally {
-								if (resStmt!=null) {
-									resStmt.close();
+						if ("package".equalsIgnoreCase(getQueryType())) {
+							return executePackageQuery(connection, statement, message);
+						} else {
+							int numRowsAffected = statement.executeUpdate();
+							if (StringUtils.isNotEmpty(getResultQuery())) {
+								Statement resStmt = null;
+								try { 
+									resStmt = connection.createStatement();
+									log.debug("obtaining result from ["+getResultQuery()+"]");
+									ResultSet rs = resStmt.executeQuery(getResultQuery());
+									return getResult(rs);
+								} finally {
+									if (resStmt!=null) {
+										resStmt.close();
+									}
 								}
 							}
+							if (getColumnsReturnedList()!=null) {
+								return getResult(getReturnedColumns(getColumnsReturnedList(),statement));
+							}
+							if (isScalar()) {
+								return numRowsAffected+"";
+							}
+							return "<result><rowsupdated>" + numRowsAffected + "</rowsupdated></result>";
 						}
-						if (getColumnsReturnedList()!=null) {
-							return getResult(getReturnedColumns(getColumnsReturnedList(),statement));
-						}
-						if (isScalar()) {
-							return numRowsAffected+"";
-						}
-						return "<result><rowsupdated>" + numRowsAffected + "</rowsupdated></result>";
 					}
 				}
 			}
@@ -440,6 +453,205 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		}
 	}
 	
+	protected String executePackageQuery(Connection connection, PreparedStatement statement, String message) throws SenderException, JdbcException, IOException {
+		Object[] paramArray = new Object[10];
+		String callMessage = fillParamArray(paramArray, message);
+		ResultSet resultset = null;
+		try {
+			CallableStatement pstmt = connection.prepareCall(callMessage);
+			if (getMaxRows() > 0) {
+				pstmt.setMaxRows(
+					getMaxRows() + (getStartRow() > 1 ? getStartRow() - 1 : 0));
+			}
+			int var = 1;
+			for (int i=0;i<paramArray.length;i++) {
+				Object object = paramArray[i];
+				if (paramArray[i] instanceof Timestamp) {
+					pstmt.setTimestamp(var, (Timestamp) paramArray[i]);
+					var++;
+				}
+				if (paramArray[i] instanceof java.sql.Date) {
+					pstmt.setDate(var, (java.sql.Date) paramArray[i]);
+					var++;
+				}
+				if (paramArray[i] instanceof String) {
+					pstmt.setString(var, (String) paramArray[i]);
+					var++;
+				}
+				if (paramArray[i] instanceof Integer) {
+					int x = Integer.parseInt(paramArray[i].toString());
+					pstmt.setInt(var, x);
+					var++;
+				}
+				if (paramArray[i] instanceof Float) {
+					float x = Float.parseFloat(paramArray[i].toString());
+					pstmt.setFloat(var, x);
+					var++;
+				}
+			}
+			if (message.indexOf('?') != -1) {
+				pstmt.registerOutParameter(var, Types.VARCHAR);
+			}
+			if ("xml".equalsIgnoreCase(getPackageContent())) {
+				pstmt.executeUpdate();
+				String pUitvoer = pstmt.getString(var);
+				return pUitvoer;
+			} else {
+				int numRowsAffected = pstmt.executeUpdate();
+				if (StringUtils.isNotEmpty(getResultQuery())) {
+					Statement resStmt = null;
+					try {
+						resStmt = connection.createStatement();
+						log.debug(
+							"obtaining result from ["
+								+ getResultQuery()
+								+ "]");
+						ResultSet rs =
+							resStmt.executeQuery(getResultQuery());
+						return getResult(rs);
+					} finally {
+						if (resStmt != null) {
+							resStmt.close();
+						}
+					}
+				}
+				if (getColumnsReturnedList() != null) {
+					return getResult(getReturnedColumns(getColumnsReturnedList(),statement));
+				}
+				if (isScalar()) {
+					return numRowsAffected + "";
+				}
+				return "<result><rowsupdated>"+ numRowsAffected	+ "</rowsupdated></result>";
+			}
+		} catch (SQLException sqle) {
+			throw new SenderException(
+				getLogPrefix() + "got exception executing a package SQL command",
+				sqle);
+		} finally {
+			try {
+				if (resultset != null) {
+					resultset.close();
+				}
+			} catch (SQLException e) {
+				log.warn(
+					new SenderException(
+						getLogPrefix() + "got exception closing resultset",
+						e));
+			}
+		}
+	}
+
+	protected String fillParamArray(Object[] paramArray, String message) throws SenderException {		
+		int lengthMessage = message.length();
+		int startHaakje = message.indexOf('(');
+		int eindHaakje	= message.indexOf(')');
+		int beginOutput = message.indexOf('?');
+		if (startHaakje < 1) 
+			return message;
+		if (beginOutput < 0)
+			beginOutput = eindHaakje;
+		String packageCall = message.substring(startHaakje, eindHaakje + 1);
+		String packageInput = message.substring(startHaakje + 1, beginOutput);
+		int idx = 0;
+		if (message.indexOf(',') == -1) {
+			if (message.indexOf('?') == -1) {
+				idx = 1;
+			} else {
+				idx = 0;
+			}
+		}
+		int ix  = 1;
+		try {		
+			if (packageInput.lastIndexOf(',') > 0) {
+				while ((packageInput.charAt(packageInput.length() - ix) != ',')	& (ix < packageInput.length())) {
+					ix++;
+				}
+				int eindInputs = beginOutput - ix;
+				String packageInput2 = message.substring(startHaakje + 1, eindInputs);
+				packageInput = null;
+				packageInput = packageInput2;
+				StringTokenizer st2 = new StringTokenizer(packageInput, ",");		
+				if (idx != 1) {
+					while (st2.hasMoreTokens()) {
+						String element = st2.nextToken().trim();
+						if (element.startsWith("'")) {
+							int x = element.indexOf('\'');
+							int y = element.lastIndexOf('\'');
+							paramArray[idx] = (String) element.substring(x + 1, y);
+						} else {
+							if (element.indexOf('-') >= 0){
+								if (element.length() > 10) {
+									String pattern = "yyyy-MM-dd HH:mm:ss";
+									SimpleDateFormat sdf = new SimpleDateFormat(pattern);
+									java.util.Date nDate = (java.util.Date)sdf.parseObject(element.toString());
+									java.sql.Timestamp sqlTimestamp = new java.sql.Timestamp(nDate.getTime());
+									paramArray[idx] = (Timestamp) sqlTimestamp;
+									 
+								} else {
+									String pattern = "yyyy-MM-dd";
+									SimpleDateFormat sdf = new SimpleDateFormat(pattern);
+									java.util.Date nDate;
+									nDate = sdf.parse(element.toString());
+									java.sql.Date sDate = new java.sql.Date(nDate.getTime());
+									paramArray[idx] = (java.sql.Date) sDate;								
+								}	
+							} else {
+								if (element.indexOf('.') >= 0) {					
+									paramArray[idx] = new Float(element);
+								} else {
+									paramArray[idx] = new Integer(element);
+								}
+							}
+						}
+						idx++;
+					}
+				}
+			}
+			StringBuffer newMessage = new StringBuffer(message.substring(0, startHaakje + 1));
+			if (idx > 0) {
+				newMessage.append("?");
+			}
+			for (int i = 0;i<idx; i++) {
+				if (i<idx - 1) {
+					newMessage.append(",?");
+				}
+			}
+			if (idx>=0) {
+				//check if output parameter exists is expected in original message and append an ending ?(out-parameter)
+				if (message.indexOf('?') > 0) {
+					if (idx == 0) {
+						newMessage.append("?");
+					} else {
+						newMessage.append(",?");
+					}
+					newMessage.append(message.substring(eindHaakje, lengthMessage));
+				} else {
+					newMessage.append(message.substring(eindHaakje, lengthMessage));				
+				}
+			}
+			return newMessage.toString();
+		} catch (ParseException parse) {
+			throw new SenderException(
+				getLogPrefix() + "got exception parsing a date string !!",
+				parse);
+		}
+	}
+
+	/**
+		 * Controls wheter the returned package content is db2 format or xml format. 
+		 * Possible values: 
+		 * <ul>
+		 * <li>select:</li> xml content s expected
+		 * <li><i>anything else</i>:</li> db2 content is expected
+		 * </ul>
+		 */
+		public void setPackageContent(String packageContent) {
+			this.packageContent = packageContent;
+		}
+		public String getPackageContent() {
+			return packageContent;
+		}
+
 	
 	/**
 	 * Controls wheter output is expected from the query. 
