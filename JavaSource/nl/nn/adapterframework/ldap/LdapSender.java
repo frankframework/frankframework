@@ -1,6 +1,9 @@
 /*
  * $Log: LdapSender.java,v $
- * Revision 1.15  2007-02-27 12:44:55  europe\L190409
+ * Revision 1.16  2007-04-24 11:36:20  europe\L190409
+ * avoid NPE on close
+ *
+ * Revision 1.15  2007/02/27 12:44:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected digesterrules
  * pooling optional
  * context.close() in finally in configure()
@@ -172,7 +175,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class LdapSender extends JNDIBase implements ISenderWithParameters {
-	public static final String version = "$RCSfile: LdapSender.java,v $  $Revision: 1.15 $ $Date: 2007-02-27 12:44:55 $";
+	public static final String version = "$RCSfile: LdapSender.java,v $  $Revision: 1.16 $ $Date: 2007-04-24 11:36:20 $";
 
 	private String FILTER = "filterExpression";
 	private String ENTRYNAME = "entryName";
@@ -291,10 +294,12 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 		} catch (Exception e) {
 			throw new ConfigurationException("["+ getClass().getName() + "] Context could not be found ", e);
 		} finally {
-			try {
-				dirContext.close();
-			} catch (NamingException e) {
-				log.warn("["+ getClass().getName() + "] Context could not be closed", e);
+			if (dirContext!=null) {
+				try {
+					dirContext.close();
+				} catch (NamingException e) {
+					log.warn("["+ getClass().getName() + "] Context could not be closed", e);
+				}
 			}
 		}
 	}
@@ -885,8 +890,17 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 				//Overwriting the (realm)providerURL if specified in configuration
 				jndiEnv.put("java.naming.provider.url", getLdapProviderURL());
 			}
-			// Enable connection pooling
-			jndiEnv.put("com.sun.jndi.ldap.connect.pool", isUsePooling()?"true":"false");
+			if (isUsePooling()) {
+				// Enable connection pooling
+				jndiEnv.put("com.sun.jndi.ldap.connect.pool", "true");
+				//see http://java.sun.com/products/jndi/tutorial/ldap/connect/config.html 
+//				jndiEnv.put("com.sun.jndi.ldap.connect.pool.maxsize", "20" );
+//				jndiEnv.put("com.sun.jndi.ldap.connect.pool.prefsize", "10" );
+//				jndiEnv.put("com.sun.jndi.ldap.connect.pool.timeout", "300000" );
+			} else {
+				// Enable connection pooling
+				jndiEnv.put("com.sun.jndi.ldap.connect.pool", "false");
+			}
 			if (log.isDebugEnabled()) log.debug("created environment for LDAP provider URL [" + jndiEnv.get("java.naming.provider.url") + "]");
 		}
 			
