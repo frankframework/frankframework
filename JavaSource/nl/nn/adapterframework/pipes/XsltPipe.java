@@ -1,6 +1,9 @@
 /*
  * $Log: XsltPipe.java,v $
- * Revision 1.21  2006-08-22 12:56:04  europe\L190409
+ * Revision 1.22  2007-04-24 11:35:47  europe\L190409
+ * added skip empty tags feature
+ *
+ * Revision 1.21  2006/08/22 12:56:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * allow use of parameters in xpathExpression
  *
  * Revision 1.20  2006/01/05 14:36:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -87,6 +90,7 @@ import org.apache.commons.lang.StringUtils;
  * in the PipeLineSession under the specified key, and the result of this pipe will be 
  * the same as the input (the xml). If NOT specified, the result of the xpath expression 
  * will be the result of this pipe</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setSkipEmptyTags(boolean) skipEmptyTags}</td><td>when set <code>true</code> empty tags in the output are removed</td><td>false</td></tr>
  * </table>
  * <table border="1">
  * <tr><th>nested elements</th><th>description</th></tr>
@@ -105,7 +109,7 @@ import org.apache.commons.lang.StringUtils;
  */
 
 public class XsltPipe extends FixedForwardPipe {
-	public static final String version="$RCSfile: XsltPipe.java,v $ $Revision: 1.21 $ $Date: 2006-08-22 12:56:04 $";
+	public static final String version="$RCSfile: XsltPipe.java,v $ $Revision: 1.22 $ $Date: 2007-04-24 11:35:47 $";
 
 	private TransformerPool transformerPool;
 	private String xpathExpression=null;
@@ -113,7 +117,19 @@ public class XsltPipe extends FixedForwardPipe {
 	private String styleSheetName;
 	private boolean omitXmlDeclaration=true;
 	private String sessionKey=null;
+	private boolean skipEmptyTags=false;
 
+	private TransformerPool transformerPoolSkipEmptyTags;
+	private static String skipEmptyTags_xslt =
+		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"1.0\">"
+			+ "<xsl:output method=\"xml\" indent=\"yes\" omit-xml-declaration=\"yes\"/>"
+			+ "<xsl:strip-space elements=\"*\"/>"
+			+ "<xsl:template match=\"* [.//text()] | text()|@*|comment()|processing-instruction()\">"
+			+ "<xsl:copy>"
+			+ "<xsl:apply-templates select=\"*|@*|comment()|processing-instruction()|text()\"/>"
+			+ "</xsl:copy>"
+			+ "</xsl:template>"
+			+ "</xsl:stylesheet>";
 	
 	
 	/**
@@ -157,6 +173,14 @@ public class XsltPipe extends FixedForwardPipe {
 				throw new ConfigurationException(getLogPrefix(null) + "either xpathExpression or styleSheetName must be specified");
 			}
 		}
+		if (isSkipEmptyTags()) {
+			log.debug("test [" + skipEmptyTags_xslt + "]");
+			try {
+				transformerPoolSkipEmptyTags = new TransformerPool(skipEmptyTags_xslt);
+			} catch (TransformerConfigurationException te) {
+				throw new ConfigurationException(getLogPrefix(null) + "got error creating transformer from skipEmptyTags", te);
+			}
+		}
 	}
 
 	public void start() throws PipeStartException {
@@ -168,12 +192,22 @@ public class XsltPipe extends FixedForwardPipe {
 				throw new PipeStartException(getLogPrefix(null)+"cannot start TransformerPool", e);
 			}
 		}
+		if (transformerPoolSkipEmptyTags!=null) {
+			try {
+				transformerPoolSkipEmptyTags.open();
+			} catch (Exception e) {
+				throw new PipeStartException(getLogPrefix(null)+"cannot start TransformerPool SkipEmptyTags", e);
+			}
+		}
 	}
 	
 	public void stop() {
 		super.stop();
 		if (transformerPool!=null) {
 			transformerPool.close();
+		}
+		if (transformerPoolSkipEmptyTags!=null) {
+			transformerPoolSkipEmptyTags.close();
 		}
 	}
 	
@@ -199,6 +233,16 @@ public class XsltPipe extends FixedForwardPipe {
 			}
 			
 	        String stringResult = transformerPool.transform(prc.getInputSource(), parametervalues); 
+
+			if (isSkipEmptyTags()) {
+				log.debug(getLogPrefix(session)+ " skipping empty tags from result [" + stringResult + "]");
+				//URL xsltSource = ClassUtils.getResourceURL( this, skipEmptyTags_xslt);
+				//Transformer transformer = XmlUtils.createTransformer(xsltSource);
+				//stringResult = XmlUtils.transformXml(transformer, stringResult);
+				ParameterResolutionContext prc_SkipEmptyTags = new ParameterResolutionContext(stringResult, session, isNamespaceAware()); 
+				stringResult = transformerPoolSkipEmptyTags.transform(prc_SkipEmptyTags.getInputSource(), null); 
+			}
+
 			if (StringUtils.isEmpty(getSessionKey())){
 				return new PipeRunResult(getForward(), stringResult);
 			} else {
@@ -260,4 +304,11 @@ public class XsltPipe extends FixedForwardPipe {
 		outputType = string;
 	}
 
+	public boolean isSkipEmptyTags() {
+		return skipEmptyTags;
+	}
+
+	public void setSkipEmptyTags(boolean b) {
+		skipEmptyTags = b;
+	}
 }
