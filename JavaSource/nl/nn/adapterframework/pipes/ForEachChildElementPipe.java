@@ -1,6 +1,9 @@
 /*
  * $Log: ForEachChildElementPipe.java,v $
- * Revision 1.8  2006-01-05 14:36:31  europe\L190409
+ * Revision 1.9  2007-04-26 11:58:08  europe\L190409
+ * optional xml-version removal
+ *
+ * Revision 1.8  2006/01/05 14:36:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.7  2005/10/24 09:21:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -88,6 +91,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * </table> 
  * </td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setElementXPathExpression(String) elementXPathExpression}</td><td>expression used to determine the set of elements iterated over, i.e. the set of child elements</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setRemoveXmlDeclarationInResults(boolean) removeXmlDeclarationInResults}</td><td>postprocess each partial result, to remove the xml-declaration, as this is not allowed inside an xml-document</td><td>false</td></tr>
  * </table>
  * <table border="1">
  * <tr><th>nested elements</th><th>description</th></tr>
@@ -108,31 +112,34 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author Gerrit van Brakel
  * @since 4.3
  * 
- * $Id: ForEachChildElementPipe.java,v 1.8 2006-01-05 14:36:31 europe\L190409 Exp $
+ * $Id: ForEachChildElementPipe.java,v 1.9 2007-04-26 11:58:08 europe\L190409 Exp $
  */
 public class ForEachChildElementPipe extends MessageSendingPipe {
-	public static final String version="$RCSfile: ForEachChildElementPipe.java,v $ $Revision: 1.8 $ $Date: 2006-01-05 14:36:31 $";
+	public static final String version="$RCSfile: ForEachChildElementPipe.java,v $ $Revision: 1.9 $ $Date: 2007-04-26 11:58:08 $";
 
 	private boolean elementsOnly=true;
 	private String stopConditionXPathExpression=null;
 	private String elementXPathExpression=null;
+	private boolean removeXmlDeclarationInResults=false;
 
 	private TransformerPool identityTp;
 	private TransformerPool extractElementsTp=null;
 	private TransformerPool stopConditionTp=null;
+	private TransformerPool encapsulateResultsTp=null;
 
-	private String makeElementExtractionXslt(String xpathExpression) {
+	private String makeEncapsulatingXslt(String rootElementname,String xpathExpression) {
 		return 
 		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"1.0\" xmlns:xalan=\"http://xml.apache.org/xslt\">" +
 		"<xsl:output method=\"xml\" omit-xml-declaration=\"yes\"/>" +
 		"<xsl:strip-space elements=\"*\"/>" +
 		"<xsl:template match=\"/\">" +
-		"<xsl:element name=\"root\">" +
+		"<xsl:element name=\"" + rootElementname + "\">" +
 		"<xsl:copy-of select=\"" + xpathExpression + "\"/>" +
 		"</xsl:element>" +
 		"</xsl:template>" +
 		"</xsl:stylesheet>";
 	}
+
 
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -142,7 +149,10 @@ public class ForEachChildElementPipe extends MessageSendingPipe {
 				stopConditionTp=new TransformerPool(XmlUtils.createXPathEvaluatorSource(null,getStopConditionXPathExpression(),"xml",false));
 			}
 			if (StringUtils.isNotEmpty(getElementXPathExpression())) {
-				extractElementsTp=new TransformerPool(makeElementExtractionXslt(getElementXPathExpression()));
+				extractElementsTp=new TransformerPool(makeEncapsulatingXslt("root",getElementXPathExpression()));
+			}
+			if (isRemoveXmlDeclarationInResults()) {
+				encapsulateResultsTp=new TransformerPool( makeEncapsulatingXslt("result","*"));
 			}
 		} catch (TransformerConfigurationException e) {
 			throw new ConfigurationException(e);
@@ -204,8 +214,13 @@ public class ForEachChildElementPipe extends MessageSendingPipe {
 					} else {
 						result = sender.sendMessage(correlationID, item);
 					}
-					result = "<result item=\""+count+"\">\n"+result+"\n</result>";
-					log.debug(getLogPrefix(session)+"partial result ["+result+"]");
+					if (isRemoveXmlDeclarationInResults()) {
+						log.debug(getLogPrefix(session)+"post processing partial result ["+result+"]");
+						result = encapsulateResultsTp.transform(result,null);
+					} else {
+						log.debug(getLogPrefix(session)+"partial result ["+result+"]");
+						result = "<result>\n"+result+"\n</result>";
+					}
 					resultsXml += result+"\n";
 					node=node.getNextSibling();
 				}
@@ -251,4 +266,10 @@ public class ForEachChildElementPipe extends MessageSendingPipe {
 		return elementXPathExpression;
 	}
 
+	public void setRemoveXmlDeclarationInResults(boolean b) {
+		removeXmlDeclarationInResults = b;
+	}
+	public boolean isRemoveXmlDeclarationInResults() {
+		return removeXmlDeclarationInResults;
+	}
 }
