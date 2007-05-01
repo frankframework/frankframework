@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.38  2007-02-12 13:44:09  europe\L190409
+ * Revision 1.39  2007-05-01 14:08:45  europe\L190409
+ * introduction of PipeLine-exithandlers
+ *
+ * Revision 1.38  2007/02/12 13:44:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Logger from LogUtil
  *
  * Revision 1.37  2007/02/05 14:54:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -109,6 +112,7 @@
  */
 package nl.nn.adapterframework.core;
 
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
@@ -193,7 +197,7 @@ import org.apache.log4j.Logger;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.38 $ $Date: 2007-02-12 13:44:09 $";
+	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.39 $ $Date: 2007-05-01 14:08:45 $";
     private Logger log = LogUtil.getLogger(this);
 	private Logger durationLog = LogUtil.getLogger("LongDurationMessages");
     
@@ -213,6 +217,7 @@ public class PipeLine {
 	
 	private String commitOnState="success"; // exit state on which receiver will commit XA transactions
 
+	private ArrayList exitHandlers = new ArrayList();
 
 	/**
 	 * Register an Pipe at this pipeline.
@@ -258,6 +263,11 @@ public class PipeLine {
 	public Hashtable getPipes() {
 		return pipelineTable;
 	}
+
+	public void registerExitHandler(IPipeLineExitHandler exitHandler) {
+		exitHandlers.add(exitHandler);
+		log.info("registered exithandler ["+exitHandler.getName()+"]");
+	}
 	
 	/**
 	 * Configures the pipes of this Pipeline and does some basic checks. It also
@@ -280,7 +290,12 @@ public class PipeLine {
 				PipeForward pipeForward= (PipeForward) globalForwards.get(gfName);
 				pipe.registerForward(pipeForward);
 			}
-			pipe.configure();
+			if (pipe instanceof IExtendedPipe) {
+				IExtendedPipe epipe=(IExtendedPipe)pipe;
+				epipe.configure(this);
+			} else {
+				pipe.configure();
+			}
 			log.debug("Pipeline of ["+owner.getName()+"]: Pipe ["+pipeName+"] successfully configured");
 		}
 	    if (pipeLineExits.size()<1) {
@@ -604,6 +619,9 @@ public class PipeLine {
 	}
 
 
+	/*
+	 * process a message, encapsulated in a transaction if required.
+	 */
 	protected PipeLineResult processPipeLine(String messageId, String message, PipeLineSession pipeLineSession, boolean doTransaction) throws PipeRunException {
 		try {
 			if (doTransaction) {
@@ -646,130 +664,142 @@ public class PipeLine {
 	    
 	    // get the first pipe to run
 	    IPipe pipeToRun = getPipe(firstPipe);
-	    
-	    while (!ready){
-			IExtendedPipe pe=null;
-			
-			if (pipeToRun instanceof IExtendedPipe) {
-				pe = (IExtendedPipe)pipeToRun;
-			}
-	    	
-	    	TracingUtil.beforeEvent(pipeToRun);
-			long pipeStartTime= System.currentTimeMillis();
-			
-			if (log.isDebugEnabled()){  // for performance reasons
-				StringBuffer sb=new StringBuffer();
-				sb.append("Pipeline of adapter ["+owner.getName()+"] messageId ["+messageId+"] is about to call pipe ["+ pipeToRun.getName()+"]");
 	
-				if (AppConstants.getInstance().getProperty("log.logIntermediaryResults")!=null) {
-					if (AppConstants.getInstance().getProperty("log.logIntermediaryResults").equalsIgnoreCase("true")) {
-						sb.append(" current result ["+ object +"] ");
-					}
+		try {    
+			while (!ready){
+				IExtendedPipe pe=null;
+			
+				if (pipeToRun instanceof IExtendedPipe) {
+					pe = (IExtendedPipe)pipeToRun;
 				}
-				log.debug(sb.toString());
-			}
-	
-	        // start it
-			long pipeDuration = -1;
+	    	
+				TracingUtil.beforeEvent(pipeToRun);
+				long pipeStartTime= System.currentTimeMillis();
 			
-			if (pe!=null && StringUtils.isNotEmpty(pe.getGetInputFromSessionKey())) {
-				log.debug("Pipeline of adapter ["+owner.getName()+"] replacing input for pipe ["+pe.getName()+"] with contents of sessionKey ["+pe.getGetInputFromSessionKey()+"]");
-				object=pipeLineSession.get(pe.getGetInputFromSessionKey());
-			}
+				if (log.isDebugEnabled()){  // for performance reasons
+					StringBuffer sb=new StringBuffer();
+					sb.append("Pipeline of adapter ["+owner.getName()+"] messageId ["+messageId+"] is about to call pipe ["+ pipeToRun.getName()+"]");
+	
+					if (AppConstants.getInstance().getProperty("log.logIntermediaryResults")!=null) {
+						if (AppConstants.getInstance().getProperty("log.logIntermediaryResults").equalsIgnoreCase("true")) {
+							sb.append(" current result ["+ object +"] ");
+						}
+					}
+					log.debug(sb.toString());
+				}
+	
+				// start it
+				long pipeDuration = -1;
 			
-			try {
-				Semaphore s = getSemaphore(pipeToRun);
-				if (s != null) {
-					long waitingDuration = 0;
-					try {
-						// keep waiting statistics for thread-limited pipes
-						long startWaiting = System.currentTimeMillis();
-						s.acquire();
-						waitingDuration = System.currentTimeMillis() - startWaiting;
+				if (pe!=null && StringUtils.isNotEmpty(pe.getGetInputFromSessionKey())) {
+					log.debug("Pipeline of adapter ["+owner.getName()+"] replacing input for pipe ["+pe.getName()+"] with contents of sessionKey ["+pe.getGetInputFromSessionKey()+"]");
+					object=pipeLineSession.get(pe.getGetInputFromSessionKey());
+				}
+			
+				try {
+					Semaphore s = getSemaphore(pipeToRun);
+					if (s != null) {
+						long waitingDuration = 0;
+						try {
+							// keep waiting statistics for thread-limited pipes
+							long startWaiting = System.currentTimeMillis();
+							s.acquire();
+							waitingDuration = System.currentTimeMillis() - startWaiting;
 	
-						StatisticsKeeper sk = (StatisticsKeeper) pipeWaitingStatistics.get(pipeToRun.getName());
-						sk.addValue(waitingDuration);
+							StatisticsKeeper sk = (StatisticsKeeper) pipeWaitingStatistics.get(pipeToRun.getName());
+							sk.addValue(waitingDuration);
 	
-						try { 
+							try { 
+								pipeRunResult = runPipeObeyingTransactionAttribute(pipeToRun,object, pipeLineSession);
+							} finally {
+								long pipeEndTime = System.currentTimeMillis();
+								pipeDuration = pipeEndTime - pipeStartTime - waitingDuration;
+		
+								sk = (StatisticsKeeper) pipeStatistics.get(pipeToRun.getName());
+								sk.addValue(pipeDuration);
+							}
+						} catch (InterruptedException e) {
+							throw new PipeRunException(pipeToRun, "Interrupted waiting for pipe", e);
+						} finally { 
+							s.release();
+						}
+					} else { //no restrictions on the maximum number of threads (s==null)
+						try {
 							pipeRunResult = runPipeObeyingTransactionAttribute(pipeToRun,object, pipeLineSession);
 						} finally {
 							long pipeEndTime = System.currentTimeMillis();
-							pipeDuration = pipeEndTime - pipeStartTime - waitingDuration;
-		
-							sk = (StatisticsKeeper) pipeStatistics.get(pipeToRun.getName());
+							pipeDuration = pipeEndTime - pipeStartTime;
+	
+							StatisticsKeeper sk = (StatisticsKeeper) pipeStatistics.get(pipeToRun.getName());
 							sk.addValue(pipeDuration);
 						}
-					} catch (InterruptedException e) {
-						throw new PipeRunException(pipeToRun, "Interrupted waiting for pipe", e);
-					} finally { 
-						s.release();
 					}
-				} else { //no restrictions on the maximum number of threads (s==null)
-					try {
-						pipeRunResult = runPipeObeyingTransactionAttribute(pipeToRun,object, pipeLineSession);
-					} finally {
-						long pipeEndTime = System.currentTimeMillis();
-						pipeDuration = pipeEndTime - pipeStartTime;
-	
-						StatisticsKeeper sk = (StatisticsKeeper) pipeStatistics.get(pipeToRun.getName());
-						sk.addValue(pipeDuration);
+					if (pe !=null) {
+						if (pipeRunResult!=null && StringUtils.isNotEmpty(pe.getStoreResultInSessionKey())) {
+						log.debug("Pipeline of adapter ["+owner.getName()+"] storing result for pipe ["+pe.getName()+"] under sessionKey ["+pe.getStoreResultInSessionKey()+"]");
+						pipeLineSession.put(pe.getStoreResultInSessionKey(),pipeRunResult.getResult());
 					}
-				}
-				if (pe !=null) {
-					if (pipeRunResult!=null && StringUtils.isNotEmpty(pe.getStoreResultInSessionKey())) {
-					log.debug("Pipeline of adapter ["+owner.getName()+"] storing result for pipe ["+pe.getName()+"] under sessionKey ["+pe.getStoreResultInSessionKey()+"]");
-					pipeLineSession.put(pe.getStoreResultInSessionKey(),pipeRunResult.getResult());
-				}
-				if (pe.isPreserveInput()) {
-					pipeRunResult.setResult(preservedObject);
-				}
-				}
-			} catch (PipeRunException pre) {
-				TracingUtil.exceptionEvent(pipeToRun);
-				throw pre;
-			} finally {
-				TracingUtil.afterEvent(pipeToRun);
-				if (pe!=null) {
-					if (pe.getDurationThreshold() >= 0 && pipeDuration > pe.getDurationThreshold()) {
-						durationLog.info("Pipe ["+pe.getName()+"] of ["+owner.getName()+"] duration ["+pipeDuration+"] ms exceeds max ["+ pe.getDurationThreshold()+ "], message ["+object+"]");
+					if (pe.isPreserveInput()) {
+						pipeRunResult.setResult(preservedObject);
+					}
+					}
+				} catch (PipeRunException pre) {
+					TracingUtil.exceptionEvent(pipeToRun);
+					throw pre;
+				} finally {
+					TracingUtil.afterEvent(pipeToRun);
+					if (pe!=null) {
+						if (pe.getDurationThreshold() >= 0 && pipeDuration > pe.getDurationThreshold()) {
+							durationLog.info("Pipe ["+pe.getName()+"] of ["+owner.getName()+"] duration ["+pipeDuration+"] ms exceeds max ["+ pe.getDurationThreshold()+ "], message ["+object+"]");
+						}
 					}
 				}
-			}
 	        	        
-			if (pipeRunResult==null){
-				throw new PipeRunException(pipeToRun, "Pipeline of ["+owner.getName()+"] received null result from pipe ["+pipeToRun.getName()+"]d");
-			}
-	        object=pipeRunResult.getResult();
-			preservedObject=object;
-	        PipeForward pipeForward=pipeRunResult.getPipeForward();
+				if (pipeRunResult==null){
+					throw new PipeRunException(pipeToRun, "Pipeline of ["+owner.getName()+"] received null result from pipe ["+pipeToRun.getName()+"]d");
+				}
+				object=pipeRunResult.getResult();
+				preservedObject=object;
+				PipeForward pipeForward=pipeRunResult.getPipeForward();
 	
 	                
-	        if (pipeForward==null){
-	            throw new PipeRunException(pipeToRun, "Pipeline of ["+owner.getName()+"] received result from pipe ["+pipeToRun.getName()+"] without a pipeForward");
-	        }
-	        // get the next pipe to run
-	        String nextPath=pipeForward.getPath();
-	        if ((null==nextPath) || (nextPath.length()==0)){
-	            throw new PipeRunException(pipeToRun, "Pipeline of ["+owner.getName()+"] got an path that equals null or has a zero-length value from pipe ["+pipeToRun.getName()+"]. Check the configuration, probably forwards are not defined for this pipe.");
-	        }
-	
-	        if (null!=pipeLineExits.get(nextPath)){
-		        String state=((PipeLineExit)pipeLineExits.get(nextPath)).getState();
-		        pipeLineResult.setState(state);
-		        pipeLineResult.setResult(object.toString());
-	            ready=true;
-				if (log.isDebugEnabled()){  // for performance reasons
-		        	log.debug("Pipeline of adapter ["+ owner.getName()+ "] finished processing messageId ["+messageId+"] result: ["+ object.toString()+ "] with exit-state ["+state+"]");
+				if (pipeForward==null){
+					throw new PipeRunException(pipeToRun, "Pipeline of ["+owner.getName()+"] received result from pipe ["+pipeToRun.getName()+"] without a pipeForward");
 				}
-	        } else {
-		        pipeToRun=getPipe(pipeForward.getPath());
-	        }
+				// get the next pipe to run
+				String nextPath=pipeForward.getPath();
+				if ((null==nextPath) || (nextPath.length()==0)){
+					throw new PipeRunException(pipeToRun, "Pipeline of ["+owner.getName()+"] got an path that equals null or has a zero-length value from pipe ["+pipeToRun.getName()+"]. Check the configuration, probably forwards are not defined for this pipe.");
+				}
 	
-			if (pipeToRun==null) {
-				throw new PipeRunException(null, "Pipeline of adapter ["+ owner.getName()+"] got an erroneous definition. Pipe to execute ["+pipeForward.getPath()+ "] is not defined.");
-			}
+				if (null!=pipeLineExits.get(nextPath)){
+					String state=((PipeLineExit)pipeLineExits.get(nextPath)).getState();
+					pipeLineResult.setState(state);
+					pipeLineResult.setResult(object.toString());
+					ready=true;
+					if (log.isDebugEnabled()){  // for performance reasons
+						log.debug("Pipeline of adapter ["+ owner.getName()+ "] finished processing messageId ["+messageId+"] result: ["+ object.toString()+ "] with exit-state ["+state+"]");
+					}
+				} else {
+					pipeToRun=getPipe(pipeForward.getPath());
+				}
+	
+				if (pipeToRun==null) {
+					throw new PipeRunException(null, "Pipeline of adapter ["+ owner.getName()+"] got an erroneous definition. Pipe to execute ["+pipeForward.getPath()+ "] is not defined.");
+				}
 			
-	    }
+			}
+		} finally {
+			for (int i=0; i<exitHandlers.size(); i++) {
+				IPipeLineExitHandler exitHandler = (IPipeLineExitHandler)exitHandlers.get(i);
+				try {
+					log.debug("processing ExitHandler ["+exitHandler.getName()+"]");
+					exitHandler.atEndOfPipeLine(messageId,pipeLineResult,pipeLineSession);
+				} catch (Throwable t) {
+					log.warn("Caught Exception processing ExitHandler ["+exitHandler.getName()+"]",t);
+				}
+			}
+		}
 	    return pipeLineResult;
 	}
 	

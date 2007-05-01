@@ -1,6 +1,9 @@
 /*
  * $Log: IExtendedPipe.java,v $
- * Revision 1.3  2006-12-28 14:21:54  europe\L190409
+ * Revision 1.4  2007-05-01 14:08:10  europe\L190409
+ * introduction of PipeLine-exithandlers
+ *
+ * Revision 1.3  2006/12/28 14:21:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.2  2006/08/22 12:51:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -11,6 +14,8 @@
  *
  */
 package nl.nn.adapterframework.core;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
 
 /**
  * extra attributes to do logging and use sessionvariables.
@@ -30,6 +35,13 @@ package nl.nn.adapterframework.core;
  * @version Id
  */
 public interface IExtendedPipe extends IPipe {
+
+	/**
+	 * Extension, allowing Pipes to register things with the PipeLine at Configuration time.
+	 * For IExtendedPipes, PileLine will call this method rather then the no-args configure().
+	 */
+	void configure(PipeLine pipeline) throws ConfigurationException;
+
 
 	/**
 	 * Sets a threshold for the duration of message execution; 

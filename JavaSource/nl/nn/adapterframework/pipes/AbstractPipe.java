@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractPipe.java,v $
- * Revision 1.25  2007-02-12 14:02:19  europe\L190409
+ * Revision 1.26  2007-05-01 14:09:39  europe\L190409
+ * introduction of PipeLine-exithandlers
+ *
+ * Revision 1.25  2007/02/12 14:02:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Logger from LogUtil
  *
  * Revision 1.24  2006/12/28 14:21:23  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -77,6 +80,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasTransactionAttribute;
 import nl.nn.adapterframework.core.IExtendedPipe;
 import nl.nn.adapterframework.core.PipeForward;
+import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -153,7 +157,7 @@ import org.apache.log4j.Logger;
  * @see nl.nn.adapterframework.core.PipeLineSession
  */
 public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttribute, TracingEventNumbers {
-	public static final String version="$RCSfile: AbstractPipe.java,v $ $Revision: 1.25 $ $Date: 2007-02-12 14:02:19 $";
+	public static final String version="$RCSfile: AbstractPipe.java,v $ $Revision: 1.26 $ $Date: 2007-05-01 14:09:39 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -174,6 +178,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	private int exceptionEvent=-1;
 
  
+ 
 	/**
 	 * <code>configure()</code> is called after the {@link nl.nn.adapterframework.core.PipeLine Pipeline} is registered
 	 * at the {@link nl.nn.adapterframework.core.Adapter Adapter}. Purpose of this method is to reduce
@@ -191,6 +196,15 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 			}
 		}
 	}
+
+	/**
+	 * Extension for IExtendedPipe that calls configure(void) in its implementation. 
+	 */
+	public void configure(PipeLine pipeline) throws ConfigurationException {
+		configure();
+	}
+
+
 	/**
 	 * This is where the action takes place. Pipes may only throw a PipeRunException,
 	 * to be handled by the caller of this object.
