@@ -1,6 +1,9 @@
 /*
  * $Log: SapSystem.java,v $
- * Revision 1.8  2005-12-19 16:44:44  europe\L190409
+ * Revision 1.9  2007-05-01 14:20:36  europe\L190409
+ * improved exception handling
+ *
+ * Revision 1.8  2005/12/19 16:44:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added authentication using authentication-alias
  *
  * Revision 1.7  2005/08/10 12:46:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -59,7 +62,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * @since 4.1.1
  */
 public class SapSystem extends GlobalListItem  implements JCO.ServerStateChangedListener  {
-	public static final String version="$RCSfile: SapSystem.java,v $  $Revision: 1.8 $ $Date: 2005-12-19 16:44:44 $";
+	public static final String version="$RCSfile: SapSystem.java,v $  $Revision: 1.9 $ $Date: 2007-05-01 14:20:36 $";
 
 	private int maxConnections = 10;
 
@@ -96,7 +99,7 @@ public class SapSystem extends GlobalListItem  implements JCO.ServerStateChanged
 		}
 	}
 
-	private void initSystem() {
+	private void initSystem() throws SapException {
 		try {
 			if (log.isDebugEnabled() && getTraceLevel()>0) {
 				String logPath=AppConstants.getInstance().getResolvedProperty("logging.path");
@@ -127,10 +130,10 @@ public class SapSystem extends GlobalListItem  implements JCO.ServerStateChanged
 			log.debug(getLogPrefix()+"creating repository");
 			repository = JCO.createRepository(getName()+"-repository", getName());
 		} catch (Throwable t) {
-			log.error(getLogPrefix()+"exception initializing", t);
+			throw new SapException(getLogPrefix()+"exception initializing", t);
 		}
 		if (repository == null) {
-			log.error(getLogPrefix()+"could not create repository");
+			throw new SapException(getLogPrefix()+"could not create repository");
 		}
 	}
 
@@ -142,7 +145,7 @@ public class SapSystem extends GlobalListItem  implements JCO.ServerStateChanged
 		log.info(getLogPrefix()+"JCo version ["+JCO.getVersion()+"] on middleware ["+JCO.getMiddlewareLayer()+"] version ["+JCO.getMiddlewareVersion()+"]");
 	}
   
-  	public synchronized void openSystem() {
+  	public synchronized void openSystem() throws SapException {
   		if (referenceCount++<=0) {
 			referenceCount=1;
 			log.debug(getLogPrefix()+"opening system");
