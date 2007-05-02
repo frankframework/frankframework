@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.29  2007-02-12 14:03:45  europe\L190409
+ * Revision 1.30  2007-05-02 11:37:51  europe\L190409
+ * added attribute 'active'
+ *
+ * Revision 1.29  2007/02/12 14:03:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Logger from LogUtil
  *
  * Revision 1.28  2007/02/05 15:01:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -159,6 +162,7 @@ import org.apache.log4j.Logger;
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>classname</td><td>name of the class, mostly a class that extends this class</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td>  <td>name of the receiver as known to the adapter</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setActive(boolean) active}</td>  <td>when set <code>false</code> or set to something else as "true", (even set to the empty string), the receiver is not included in the configuration</td><td>true</td></tr>
  * <tr><td>{@link #setNumThreads(int) numThreads}</td><td>the number of threads that may execute a pipeline concurrently (only for pulling listeners)</td><td>1</td></tr>
  * <tr><td>{@link #setNumThreadsPolling(int) numThreadsPolling}</td><td>the number of threads that are activily polling for messages concurrently. '0' means 'limited only by <code>numThreads</code>' (only for pulling listeners)</td><td>1</td></tr>
  * <tr><td>{@link #setStyleSheetName(String) styleSheetName}</td>  <td></td><td>&nbsp;</td></tr>
@@ -218,7 +222,7 @@ import org.apache.log4j.Logger;
  * @since 4.2
  */
 public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, IMessageHandler, IbisExceptionListener, HasSender, TracingEventNumbers {
-	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.29 $ $Date: 2007-02-12 14:03:45 $";
+	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.30 $ $Date: 2007-05-02 11:37:51 $";
 	protected Logger log = LogUtil.getLogger(this);
  
 	private String returnIfStopped="";
@@ -230,6 +234,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 	public static final String ONERROR_CONTINUE = "continue";
 	public static final String ONERROR_CLOSE = "close";
 
+	private boolean active=true;
 
   	private String name;
   	private String onError = ONERROR_CONTINUE; 
@@ -1403,4 +1408,12 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 	public void setStyleSheetName (String styleSheetName){
 		this.styleSheetName=styleSheetName;
 	}
+
+	public void setActive(boolean b) {
+		active = b;
+	}
+	public boolean isActive() {
+		return active;
+	}
+
 }
