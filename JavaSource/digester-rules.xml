@@ -1,0 +1,125 @@
+<digester-rules>
+	<!-- $Id: digester-rules.xml,v 1.1 2007-05-02 11:43:50 europe\L190409 Exp $ -->
+    <pattern value="IOS-Adaptering">
+        <set-properties-rule/>
+    </pattern>
+
+    <pattern value="*/include">
+        <object-create-rule classname="nl.nn.adapterframework.configuration.ConfigurationDigester"/>
+        <set-properties-rule/>
+        <set-top-rule methodname="include"/>
+    </pattern>
+
+    <pattern value="*/jmsRealms">
+        <object-create-rule classname="nl.nn.adapterframework.jms.JmsRealmFactoryBean"/>
+        <set-properties-rule/>
+    </pattern>
+    <pattern value="*/jmsRealm">
+        <object-create-rule classname="nl.nn.adapterframework.jms.JmsRealm"/>
+        <set-properties-rule/>
+        <set-next-rule methodname="registerJmsRealm"/>
+    </pattern>
+
+    <pattern value="*/sapSystem">
+        <object-create-rule classname="nl.nn.adapterframework.extensions.sap.SapSystem"/>
+        <set-properties-rule/>
+        <set-top-rule methodname="registerItem"/>
+    </pattern>
+
+
+    <pattern value="*/adapter">
+        <object-create-rule classname="nl.nn.adapterframework.core.Adapter"/>
+        <set-properties-rule/>
+        <set-next-rule methodname="registerAdapter"/>
+    </pattern>
+    <pattern value="*/pipeline">
+        <object-create-rule classname="nl.nn.adapterframework.core.PipeLine"/>
+        <set-properties-rule/>
+        <set-next-rule methodname="registerPipeLine"/>
+    </pattern>
+    <pattern value="*/errorMessageFormatter">
+        <object-create-rule classname="nl.nn.adapterframework.errormessageformatters.XslErrorMessageFormatter" attrname="className"/> 
+        <set-properties-rule/>
+        <set-next-rule methodname="setErrorMessageFormatter"/>
+    </pattern>
+
+    <pattern value="*/receiver">
+        <object-create-rule classname="nl.nn.adapterframework.receivers.GenericReceiver" attrname="className"/> 
+        <set-properties-rule/>
+        <set-next-rule methodname="registerReceiver"/>
+    </pattern>
+    <pattern value="*/sender">
+        <object-create-rule classname="nl.nn.adapterframework.core.ISender" attrname="className"/> 
+        <set-properties-rule/>
+        <set-next-rule methodname="setSender"/>
+    </pattern>
+    <pattern value="*/postboxSender">
+        <object-create-rule classname="nl.nn.adapterframework.core.IPostboxSender" attrname="className"/> 
+        <set-properties-rule/>
+        <set-next-rule methodname="setSender"/>
+    </pattern>
+    <pattern value="*/listener">
+        <object-create-rule classname="nl.nn.adapterframework.core.ICorrelatedPullingListener" attrname="className"/> 
+        <set-properties-rule/>
+        <set-next-rule methodname="setListener"/>
+    </pattern>
+    <pattern value="*/postboxListener">
+        <object-create-rule classname="nl.nn.adapterframework.core.IPostboxListener" attrname="className"/> 
+        <set-properties-rule/>
+        <set-next-rule methodname="setListener"/>
+    </pattern>
+    <pattern value="*/errorSender">
+        <object-create-rule classname="nl.nn.adapterframework.core.ISender" attrname="className"/> 
+        <set-properties-rule/>
+        <set-next-rule methodname="setErrorSender"/>
+    </pattern>
+    <pattern value="*/inProcessStorage">
+        <object-create-rule classname="nl.nn.adapterframework.core.ITransactionalStorage" attrname="className"/> 
+        <set-properties-rule/>
+        <set-next-rule methodname="setInProcessStorage"/>
+    </pattern>
+    <pattern value="*/errorStorage">
+        <object-create-rule classname="nl.nn.adapterframework.core.ITransactionalStorage" attrname="className"/> 
+        <set-properties-rule/>
+        <set-next-rule methodname="setErrorStorage"/>
+    </pattern>
+
+    <pattern value="*/pipe">
+        <object-create-rule classname="nl.nn.adapterframework.pipes.GenericMessageSendingPipe" attrname="className"/> 
+        <set-properties-rule/>
+        <set-next-rule methodname="addPipe" paramtype="nl.nn.adapterframework.core.IPipe"/>
+    </pattern>
+    <!-- forward element is on the pipeline / global-forward as well as on the
+         pipe element -->
+    <pattern value="*/forward">
+        <object-create-rule classname="nl.nn.adapterframework.core.PipeForward"/> 
+        <set-properties-rule/>
+        <set-next-rule methodname="registerForward"/>
+    </pattern>
+
+    <pattern value="*/child">
+        <object-create-rule classname="java.Object" attrname="className"/> 
+        <set-properties-rule/>
+        <set-next-rule methodname="registerChild"/>
+    </pattern>
+
+    <pattern value="*/pipeline/exits/exit">
+        <object-create-rule classname="nl.nn.adapterframework.core.PipeLineExit"/> 
+        <set-properties-rule/>
+        <set-next-rule methodname="registerPipeLineExit"/>
+     </pattern>
+    
+    <pattern value="*/scheduler/job">
+         <object-create-rule classname="nl.nn.adapterframework.scheduler.JobDef"/> 
+         <set-properties-rule/>
+         <set-next-rule methodname="registerScheduledJob"/>
+    </pattern>
+   
+    <pattern value="*/param">
+		<object-create-rule classname="nl.nn.adapterframework.parameters.Parameter" />
+		<set-properties-rule/>
+		<set-next-rule methodname="addParameter" />
+	</pattern>
+
+    
+</digester-rules>
