@@ -1,6 +1,9 @@
 /*
  * $Log: SapSender.java,v $
- * Revision 1.7  2007-05-01 14:22:43  europe\L190409
+ * Revision 1.8  2007-05-02 11:33:49  europe\L190409
+ * support for handling parameters
+ *
+ * Revision 1.7  2007/05/01 14:22:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * introduction of SAP LUW management
  *
  * Revision 1.6  2006/01/05 13:59:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -37,6 +40,7 @@ import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.parameters.ParameterValueList;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -59,6 +63,14 @@ import com.sap.mw.jco.JCO;
  * <tr><td>{@link #setReplyFieldName(String) replyFieldName}</td><td>Name of the field in the ExportParameterList of the RFC function that contains the whole reply message contents</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setLuwHandleSessionKey(String) luwHandleSessionKey}</td><td>session key in which LUW information is stored. When set, the action will be executed transacted.</td><td>&nbsp;</td></tr>
  * </table>
+ * </p>
+ * <table border="1">
+ * <p><b>Parameters:</b>
+ * <tr><th>name</th><th>type</th><th>remarks</th></tr>
+ * <tr><td><i>inputfieldname</i></td><td><i>any</i></td><td>The value of the parameter is set to the (simple) input field</td></tr>
+ * <tr><td><i>structurename</i>/<i>inputfieldname</i></td><td><i>any</i></td><td>The value of the parameter is set to the named field of the named structure</td></tr>
+ * </table>
+ * </p>
  * N.B. If no requestFieldIndex or requestFieldName is specified, input is converted from xml;
  * If no replyFieldIndex or replyFieldName is specified, output is converted to xml. 
  * </p>
@@ -66,7 +78,7 @@ import com.sap.mw.jco.JCO;
  * @since 4.2
  */
 public class SapSender extends SapFunctionFacade implements ISenderWithParameters {
-	public static final String version="$RCSfile: SapSender.java,v $  $Revision: 1.7 $ $Date: 2007-05-01 14:22:43 $";
+	public static final String version="$RCSfile: SapSender.java,v $  $Revision: 1.8 $ $Date: 2007-05-02 11:33:49 $";
 	
 	//TODO: allow functionName to be set dynamically from a parameter or from the message
 	private String functionName=null;
@@ -77,6 +89,9 @@ public class SapSender extends SapFunctionFacade implements ISenderWithParameter
 	
 	public void configure() throws ConfigurationException {
 		super.configure();
+		if (paramList!=null) {
+			paramList.configure();
+		}
 		if (StringUtils.isEmpty(getFunctionName())) {
 			throw new ConfigurationException(getLogPrefix()+"Function name is mandatory");
 		}
@@ -103,7 +118,12 @@ public class SapSender extends SapFunctionFacade implements ISenderWithParameter
 		try {
 			JCO.Function function = getFunctionTemplate().getFunction();
 
-		    message2FunctionCall(function, message, correlationID);
+			ParameterValueList pvl = null;
+			if (prc!=null) {
+				pvl=prc.getValues(paramList);
+			}
+
+		    message2FunctionCall(function, message, correlationID, pvl);
 		    if (StringUtils.isNotEmpty(getLuwHandleSessionKey())) {
 				SapLUWHandle handle = SapLUWHandle.retrieveHandle(prc.getSession(),getLuwHandleSessionKey(),true,getSapSystem(),false);
 				if (handle==null) {

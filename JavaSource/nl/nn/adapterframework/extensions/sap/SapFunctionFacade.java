@@ -1,6 +1,9 @@
 /*
  * $Log: SapFunctionFacade.java,v $
- * Revision 1.10  2007-02-12 13:47:54  europe\L190409
+ * Revision 1.11  2007-05-02 11:33:49  europe\L190409
+ * support for handling parameters
+ *
+ * Revision 1.10  2007/02/12 13:47:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Logger from LogUtil
  *
  * Revision 1.9  2006/01/05 13:59:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -46,6 +49,8 @@ import java.util.HashMap;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.parameters.ParameterValue;
+import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -76,7 +81,7 @@ import com.sap.mw.jco.JCO;
  * @since 4.2
  */
 public class SapFunctionFacade implements INamedObject{
-	public static final String version="$RCSfile: SapFunctionFacade.java,v $  $Revision: 1.10 $ $Date: 2007-02-12 13:47:54 $";
+	public static final String version="$RCSfile: SapFunctionFacade.java,v $  $Revision: 1.11 $ $Date: 2007-05-02 11:33:49 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -276,12 +281,28 @@ public class SapFunctionFacade implements INamedObject{
 		return result;
 	}
 
-	public void message2FunctionCall(JCO.Function function, String request, String correlationId) throws SapException {
+	public void message2FunctionCall(JCO.Function function, String request, String correlationId, ParameterValueList pvl) throws SapException {
 		JCO.ParameterList input = function.getImportParameterList();
 		int requestFieldIndex = findFieldIndex(input, getRequestFieldIndex(), getRequestFieldName());
 		setParameters(input, request, requestFieldIndex);
 		if (requestFieldIndex<=0) {
 			setParameters(function.getTableParameterList(),  request, 0);
+		}
+		if (pvl!=null) {
+			for (int i=0; i<pvl.size(); i++) {
+				ParameterValue pv = pvl.getParameterValue(i);
+				String name = pv.getDefinition().getName();
+				String value = pv.asStringValue("");
+				int slashPos=name.indexOf('/');
+				if (slashPos<0) {
+					input.setValue(value,name);
+				} else {
+					String structName=name.substring(0,slashPos);
+					String elemName=name.substring(slashPos+1);
+					JCO.Structure struct=input.getStructure(structName);
+					struct.setValue(value,elemName);
+				}
+			}
 		}
 		int correlationIdFieldIndex = findFieldIndex(input, getCorrelationIdFieldIndex(), getCorrelationIdFieldName());
 		if (correlationIdFieldIndex>0 && input!=null) {
