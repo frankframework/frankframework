@@ -1,6 +1,9 @@
 /*
  * $Log: TracingUtil.java,v $
- * Revision 1.5  2007-02-12 14:12:03  europe\L190409
+ * Revision 1.6  2007-05-02 11:38:48  europe\L190409
+ * removed necesity of including mett-server.jar
+ *
+ * Revision 1.5  2007/02/12 14:12:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Logger from LogUtil
  *
  * Revision 1.4  2006/11/21 09:50:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -25,8 +28,9 @@ import java.io.IOException;
 import org.apache.log4j.Logger;
 import nl.nn.adapterframework.util.LogUtil;
 
-import com.ing.coins.mett.application.MonitorAccessor;
-import com.ing.coins.mett.application.exceptions.MonitorStartFailedException;
+//do not use these imports, they make inclusion of mett-server.jar required
+//import com.ing.coins.mett.application.MonitorAccessor;
+//import com.ing.coins.mett.application.exceptions.MonitorStartFailedException;
 
 
 /**
@@ -47,9 +51,10 @@ public class TracingUtil {
 			throw new TracingException("Monitor is already started");
 		}
 		try {
-			MonitorAccessor.start(serverConfigFile);
-		} catch (MonitorStartFailedException e) {
-			throw new TracingException("Could not start tracing from config file ["+serverConfigFile+"]", e);
+			// do not move package name to imports, that makes inclusion of mett-server.jar required
+			com.ing.coins.mett.application.MonitorAccessor.start(serverConfigFile);
+		} catch (Throwable t) {
+			throw new TracingException("Could not start tracing from config file ["+serverConfigFile+"]", t);
 		}
 		isStarted = true;
 	}
@@ -74,7 +79,7 @@ public class TracingUtil {
 		if (!isStarted) {
 			throw new TracingException("Monitor is already stopped");
 		}
-		MonitorAccessor.stop();
+		com.ing.coins.mett.application.MonitorAccessor.stop();
 		isStarted = false;
 		if (file != null) {
 			file.delete();
@@ -108,7 +113,8 @@ public class TracingUtil {
 
 	private static void postEventToMett(int eventNr) {
 		try {
-			MonitorAccessor.eventOccurred(eventNr);
+			// do not move package name to imports, that makes inclusion of mett-server.jar required
+			com.ing.coins.mett.application.MonitorAccessor.eventOccurred(eventNr);
 		} catch (Throwable t) {
 			log.warn("Exception occured posting METT event",t);
 		}
