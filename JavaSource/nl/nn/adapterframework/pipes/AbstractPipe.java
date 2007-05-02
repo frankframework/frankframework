@@ -1,6 +1,10 @@
 /*
  * $Log: AbstractPipe.java,v $
- * Revision 1.26  2007-05-01 14:09:39  europe\L190409
+ * Revision 1.27  2007-05-02 11:34:34  europe\L190409
+ * added attribute 'active'
+ * added attribute getInputFromFixedValue
+ *
+ * Revision 1.26  2007/05/01 14:09:39  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * introduction of PipeLine-exithandlers
  *
  * Revision 1.25  2007/02/12 14:02:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -125,8 +129,10 @@ import org.apache.log4j.Logger;
  * <tr><td>className</td><td>nl.nn.adapterframework.pipes.AbstractPipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMaxThreads(int) maxThreads}</td><td>maximum number of threads that may call {@link #doPipe(Object, PipeLineSession)} simultaneously</td><td>0 (unlimited)</td></tr>
+ * <tr><td>{@link #setActive(boolean) active}</td><td>controls whether Pipe is included in configuration. When set <code>false</code> or set to something else as "true", (even set to the empty string), the Pipe is not included in the configuration</td><td>true</td></tr>
  * <tr><td>{@link #setDurationThreshold(long) durationThreshold}</td><td>if durationThreshold >=0 and the duration (in milliseconds) of the message processing exceeded the value specified, then the message is logged informatory</td><td>-1</td></tr>
  * <tr><td>{@link #setGetInputFromSessionKey(String) getInputFromSessionKey}</td><td>when set, input is taken from this session key, instead of regular input</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setGetInputFromFixedValue(String) getInputFromFixedValue}</td><td>when set, this fixed value is taken as input, instead of regular input</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setStoreResultInSessionKey(String) storeResultInSessionKey}</td><td>when set, the result is stored under this session key</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setPreserveInput(boolean) preserveInput}</td><td>when set <code>true</code>, the input of a pipe is restored before processing the next one</td><td>false</td></tr>
  * <tr><td>{@link #setNamespaceAware(boolean) namespaceAware}</td><td>controls namespace-awareness of possible XML parsing in descender-classes</td><td>application default</td></tr>
@@ -157,7 +163,7 @@ import org.apache.log4j.Logger;
  * @see nl.nn.adapterframework.core.PipeLineSession
  */
 public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttribute, TracingEventNumbers {
-	public static final String version="$RCSfile: AbstractPipe.java,v $ $Revision: 1.26 $ $Date: 2007-05-01 14:09:39 $";
+	public static final String version="$RCSfile: AbstractPipe.java,v $ $Revision: 1.27 $ $Date: 2007-05-02 11:34:34 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -167,6 +173,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	private ParameterList parameterList = new ParameterList();
 	private long durationThreshold = -1;
 	private String getInputFromSessionKey=null;
+	private String getInputFromFixedValue=null;
 	private String storeResultInSessionKey=null;
 	private boolean preserveInput=false;
 	private boolean namespaceAware=XmlUtils.isNamespaceAwareByDefault();
@@ -177,6 +184,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	private int afterEvent=-1;
 	private int exceptionEvent=-1;
 
+	private boolean active=true;
  
  
 	/**
@@ -373,6 +381,13 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 		return getInputFromSessionKey;
 	}
 
+	public void setGetInputFromFixedValue(String string) {
+		getInputFromFixedValue = string;
+	}
+	public String getGetInputFromFixedValue() {
+		return getInputFromFixedValue;
+	}
+
 	public void setStoreResultInSessionKey(String string) {
 		storeResultInSessionKey = string;
 	}
@@ -440,6 +455,12 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 		return transactionAttribute;
 	}
 
+	public void setActive(boolean b) {
+		active = b;
+	}
+	public boolean isActive() {
+		return active;
+	}
 
 
 }
