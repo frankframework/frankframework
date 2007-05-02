@@ -1,6 +1,10 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.39  2007-05-01 14:08:45  europe\L190409
+ * Revision 1.40  2007-05-02 11:31:42  europe\L190409
+ * added support for attribute 'active'
+ * added support for attribute getInputFromFixedValue
+ *
+ * Revision 1.39  2007/05/01 14:08:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * introduction of PipeLine-exithandlers
  *
  * Revision 1.38  2007/02/12 13:44:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -197,7 +201,7 @@ import org.apache.log4j.Logger;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.39 $ $Date: 2007-05-01 14:08:45 $";
+	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.40 $ $Date: 2007-05-02 11:31:42 $";
     private Logger log = LogUtil.getLogger(this);
 	private Logger durationLog = LogUtil.getLogger("LongDurationMessages");
     
@@ -232,7 +236,11 @@ public class PipeLine {
 		if (pipe==null) {
 			throw new ConfigurationException("pipe to be added is null, pipelineTable size ["+pipelineTable.size()+"]");
 		}
-		String name= pipe.getName();
+		if (pipe instanceof IExtendedPipe && !((IExtendedPipe)pipe).isActive()) {
+			log.debug("Pipe [" + pipe.getName() + "] is not active, therefore not included in configuration");
+			return;
+		} 
+		String name=pipe.getName();
 		if (StringUtils.isEmpty(name)) {
 			throw new ConfigurationException("pipe ["+pipe.getClass().getName()+"] to be added has no name, pipelineTable size ["+pipelineTable.size()+"]");
 		}
@@ -691,9 +699,15 @@ public class PipeLine {
 				// start it
 				long pipeDuration = -1;
 			
-				if (pe!=null && StringUtils.isNotEmpty(pe.getGetInputFromSessionKey())) {
-					log.debug("Pipeline of adapter ["+owner.getName()+"] replacing input for pipe ["+pe.getName()+"] with contents of sessionKey ["+pe.getGetInputFromSessionKey()+"]");
-					object=pipeLineSession.get(pe.getGetInputFromSessionKey());
+				if (pe!=null) {
+					if (StringUtils.isNotEmpty(pe.getGetInputFromSessionKey())) {
+						if (log.isDebugEnabled()) log.debug("Pipeline of adapter ["+owner.getName()+"] replacing input for pipe ["+pe.getName()+"] with contents of sessionKey ["+pe.getGetInputFromSessionKey()+"]");
+						object=pipeLineSession.get(pe.getGetInputFromSessionKey());
+					}
+					if (StringUtils.isNotEmpty(pe.getGetInputFromFixedValue())) {
+						if (log.isDebugEnabled()) log.debug("Pipeline of adapter ["+owner.getName()+"] replacing input for pipe ["+pe.getName()+"] with fixed value ["+pe.getGetInputFromFixedValue()+"]");
+						object=pe.getGetInputFromFixedValue();
+					}
 				}
 			
 				try {
