@@ -1,6 +1,9 @@
 /*
  * $Log: FixedResult.java,v $
- * Revision 1.15  2006-06-20 14:10:22  europe\L190409
+ * Revision 1.16  2007-05-02 11:36:36  europe\L190409
+ * added attribute 'lookupAtRuntime'
+ *
+ * Revision 1.15  2006/06/20 14:10:22  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added stylesheet attribute
  *
  * Revision 1.14  2006/01/05 14:34:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -72,11 +75,18 @@ import org.apache.commons.lang.SystemUtils;
  * <tr><td>{@link #setReplaceFrom(String) replaceFrom}</td><td>string to search for in the returned message</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setReplaceTo(String) replaceTo}</td><td>string that will replace each of the strings found in the returned message</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setStyleSheetName(String) styleSheetName}</td><td>stylesheet to apply to the output message</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setLookupAtRuntime(boolean) lookupAtRuntime}</td><td>when set <code>true</code>, the lookup of the file will be done at runtime instead of at configuration time</td><td>false</td></tr>
  * </table>
  * </p>
- * <p><table border="1">
- * <tr><th>nested elements</th><th>description</th></tr>
- * <tr><td>{@link nl.nn.adapterframework.parameters.Parameter param}</td><td>Any parameters defined on the pipe will be used for replacements. Each <code>${name-of-parameter}</code> will be replaced by its corresponding <i>value-of-parameter</i> </td></tr>
+ * <table border="1">
+ * <p><b>Parameters:</b>
+ * <tr><th>name</th><th>type</th><th>remarks</th></tr>
+ * <tr>
+ *   <td><i>any</i></td><td><i>any</i></td>
+ * 	 <td>Any parameters defined on the pipe will be used for replacements. Each 
+ * 		 <code>${name-of-parameter}</code> will be replaced by its corresponding 
+ * 		 <i>value-of-parameter</i></td>
+ * </tr>
  * </table>
  * </p>
  * <p><b>Exits:</b>
@@ -90,7 +100,7 @@ import org.apache.commons.lang.SystemUtils;
  * @author Johan Verrips
  */
 public class FixedResult extends FixedForwardPipe {
-	public static final String version="$RCSfile: FixedResult.java,v $ $Revision: 1.15 $ $Date: 2006-06-20 14:10:22 $";
+	public static final String version="$RCSfile: FixedResult.java,v $ $Revision: 1.16 $ $Date: 2007-05-02 11:36:36 $";
 	
     private String fileName;
     private String returnString;
@@ -98,6 +108,7 @@ public class FixedResult extends FixedForwardPipe {
 	private String replaceFrom = null;
 	private String replaceTo = null;
 	private String styleSheetName = null;
+	private boolean lookupAtRuntime=false;
 	
     /**
      * checks for correct configuration, and translates the fileName to
@@ -110,15 +121,15 @@ public class FixedResult extends FixedForwardPipe {
     public void configure() throws ConfigurationException {
 	    super.configure();
 	    
-        if (StringUtils.isNotEmpty(fileName)) {
+		if (StringUtils.isNotEmpty(getFileName()) && !isLookupAtRuntime()) {
             try {
-				returnString = Misc.resourceToString(ClassUtils.getResourceURL(this,fileName), SystemUtils.LINE_SEPARATOR);
+				returnString = Misc.resourceToString(ClassUtils.getResourceURL(this,getFileName()), SystemUtils.LINE_SEPARATOR);
             } catch (Throwable e) {
-                throw new ConfigurationException("Pipe [" + getName() + "] got exception loading ["+fileName+"]", e);
+                throw new ConfigurationException(getLogPrefix(null)+"got exception loading ["+getFileName()+"]", e);
             }
         }
         if ((StringUtils.isEmpty(fileName)) && returnString==null) {  // allow an empty returnString to be specified
-            throw new ConfigurationException("Pipe [" + getName() + "] has neither fileName nor returnString specified");
+            throw new ConfigurationException(getLogPrefix(null)+"has neither fileName nor returnString specified");
         }
 		if (StringUtils.isNotEmpty(replaceFrom)) {
 			returnString = replace(returnString, replaceFrom, replaceTo );
@@ -127,6 +138,13 @@ public class FixedResult extends FixedForwardPipe {
     
 	public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRunException {
 		String result=returnString;
+		if (StringUtils.isNotEmpty(getFileName()) && isLookupAtRuntime()) {
+			try {
+				result = Misc.resourceToString(ClassUtils.getResourceURL(this,getFileName()), SystemUtils.LINE_SEPARATOR);
+			} catch (Throwable e) {
+				throw new PipeRunException(this,getLogPrefix(session)+"exception loading ["+getFileName()+"]",e);
+			}
+		}
 
 		if (getParameterList()!=null) {
 			ParameterResolutionContext prc = new ParameterResolutionContext((String)input, session);
@@ -237,5 +255,12 @@ public class FixedResult extends FixedForwardPipe {
 	}
 	public void setStyleSheetName (String styleSheetName){
 		this.styleSheetName=styleSheetName;
+	}
+
+	public void setLookupAtRuntime(boolean b){
+		lookupAtRuntime=b;
+	}
+	public boolean isLookupAtRuntime(){
+		return lookupAtRuntime;
 	}
 }
