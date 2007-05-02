@@ -1,6 +1,9 @@
 /*
  * $Log: Adapter.java,v $
- * Revision 1.27  2007-03-14 12:22:10  europe\L190409
+ * Revision 1.28  2007-05-02 11:23:52  europe\L190409
+ * added attribute 'active'
+ *
+ * Revision 1.27  2007/03/14 12:22:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * log results in case of exception, too
  *
  * Revision 1.26  2007/02/12 13:44:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -89,6 +92,7 @@ import javax.transaction.UserTransaction;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.errormessageformatters.ErrorMessageFormatter;
+import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.LogUtil;
@@ -126,6 +130,7 @@ import org.apache.log4j.NDC;
  * <tr><td>{@link #setName(String) name}</td><td>name of the Adapter</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDescription(String) description}</td><td>description of the Adapter</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setAutoStart(boolean) autoStart}</td><td>controls whether Adapters starts when configuration loads</td><td>true</td></tr>
+ * <tr><td>{@link #setActive(boolean) active}</td>  <td>controls whether Adapter is included in configuration. When set <code>false</code> or set to something else as "true", (even set to the empty string), the receiver is not included in the configuration</td><td>true</td></tr>
  * <tr><td>{@link #setErrorMessageFormatter(String) errorMessageFormatter}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setErrorState(String) errorState}</td><td>If an error occurs during
  * the pipeline execution, the state in the <code>PipeLineResult</code> is set to this state</td><td>ERROR</td></tr>
@@ -146,10 +151,11 @@ import org.apache.log4j.NDC;
  */
 
 public class Adapter implements Runnable, IAdapter {
-	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.27 $ $Date: 2007-03-14 12:22:10 $";
+	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.28 $ $Date: 2007-05-02 11:23:52 $";
 	private Logger log = LogUtil.getLogger(this);
 
 	private String name;
+	private boolean active=true;
 
 	private Vector receivers = new Vector();
 	private long lastMessageDate = 0;
@@ -213,19 +219,19 @@ public class Adapter implements Runnable, IAdapter {
 			Iterator it = receivers.iterator();
 			while (it.hasNext()) {
 				IReceiver receiver = (IReceiver) it.next();
-
+				
 				log.info("Adapter [" + name + "] is initializing receiver [" + receiver.getName() + "]");
 				receiver.setAdapter(this);
 				try {
 					receiver.configure();
 					messageKeeper.add("receiver [" + receiver.getName() + "] successfully configured");
-				}
-				catch (ConfigurationException e) {
+				} catch (ConfigurationException e) {
 					String msg =
 						"Adapter [" + getName() + "] got error initializing receiver [" + receiver.getName() + "]";
 					log.error(msg, e);
 					messageKeeper.add(msg + ": " + e.getMessage());
 				}
+
 			}
 			configurationSucceeded = true;
 		}
@@ -650,15 +656,16 @@ public class Adapter implements Runnable, IAdapter {
 	 * @see IReceiver
 	 */
 	public void registerReceiver(IReceiver receiver) {
-		receivers.add(receiver);
-		log.debug(
-			"Adapter ["
-				+ name
-				+ "] registered receiver ["
-				+ receiver.getName()
-				+ "] with properties ["
-				+ receiver.toString()
-				+ "]");
+		boolean receiverActive=true;
+		if (receiver instanceof ReceiverBase) {
+			receiverActive=((ReceiverBase)receiver).isActive();
+		}
+		if (receiverActive) {
+			receivers.add(receiver);
+			log.debug("Adapter ["	+ name 	+ "] registered receiver [" + receiver.getName() + "] with properties [" + receiver.toString() + "]");
+		} else {
+			log.debug("Adapter ["	+ name 	+ "] did not register inactive receiver [" + receiver.getName() + "] with properties [" + receiver.toString() + "]");
+		}
 	}
 	/**
 	 * do not call this method! start an adapter by the <code>start()</code>
@@ -923,5 +930,12 @@ public class Adapter implements Runnable, IAdapter {
 	}
 	public boolean isRequestReplyLogging() {
 		return requestReplyLogging;
+	}
+
+	public void setActive(boolean b) {
+		active = b;
+	}
+	public boolean isActive() {
+		return active;
 	}
 }

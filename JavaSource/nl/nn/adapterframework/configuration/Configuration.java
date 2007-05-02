@@ -1,6 +1,9 @@
 /*
  * $Log: Configuration.java,v $
- * Revision 1.21  2007-02-26 16:55:05  europe\L190409
+ * Revision 1.22  2007-05-02 11:22:27  europe\L190409
+ * added attribute 'active'
+ *
+ * Revision 1.21  2007/02/26 16:55:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * start scheduler when a job is found in the configuration
  *
  * Revision 1.20  2007/02/21 15:57:18  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -55,19 +58,20 @@ import java.util.Iterator;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.pipes.IbisLocalSender;
 import nl.nn.adapterframework.scheduler.JobDef;
 import nl.nn.adapterframework.scheduler.SchedulerHelper;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StatisticsKeeperIterationHandler;
 import nl.nn.adapterframework.util.StatisticsKeeperLogger;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
 import org.apache.log4j.Logger;
-import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * The Configuration is placeholder of all configuration objects. Besides that, it provides
@@ -79,7 +83,7 @@ import nl.nn.adapterframework.util.LogUtil;
  * @see    nl.nn.adapterframework.core.IAdapter
  */
 public class Configuration {
-	public static final String version="$RCSfile: Configuration.java,v $ $Revision: 1.21 $ $Date: 2007-02-26 16:55:05 $";
+	public static final String version="$RCSfile: Configuration.java,v $ $Revision: 1.22 $ $Date: 2007-05-02 11:22:27 $";
     protected Logger log=LogUtil.getLogger(this); 
      
     private Hashtable adapterTable = new Hashtable();
@@ -280,6 +284,10 @@ public class Configuration {
      * @throws ConfigurationException
      */
     public void registerAdapter(IAdapter adapter) throws ConfigurationException {
+    	if (adapter instanceof Adapter && !((Adapter)adapter).isActive()) {
+    		log.debug("adapter [" + adapter.getName() + "] is not active, therefore not included in configuration");
+    		return;
+    	} 
         if (null != adapterTable.get(adapter.getName())) {
             throw new ConfigurationException("Adapter [" + adapter.getName() + "] already registered.");
         }
