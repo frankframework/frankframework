@@ -1,6 +1,9 @@
 /*
  * $Log: JmsRealm.java,v $
- * Revision 1.9  2007-02-12 13:58:11  europe\L190409
+ * Revision 1.10  2007-05-03 11:40:43  europe\L190409
+ * add Principal
+ *
+ * Revision 1.9  2007/02/12 13:58:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Logger from LogUtil
  *
  * Revision 1.8  2006/08/21 15:11:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -44,7 +47,7 @@ import org.apache.log4j.Logger;
  */
 public class JmsRealm {
 	//TODO: change to J2eeRealm
-	public static final String version="$RCSfile: JmsRealm.java,v $ $Revision: 1.9 $ $Date: 2007-02-12 13:58:11 $";
+	public static final String version="$RCSfile: JmsRealm.java,v $ $Revision: 1.10 $ $Date: 2007-05-03 11:40:43 $";
 	private Logger log = LogUtil.getLogger(this);
 
 	private String realmName;
@@ -53,6 +56,7 @@ public class JmsRealm {
     private String initialContextFactoryName = null;
     private String authentication = null;
     private String credentials = null;
+	private String principal = null;
     private String urlPkgPrefixes = null;
     private String securityProtocol = null;
 
@@ -246,6 +250,13 @@ public class JmsRealm {
 	}
 	public void setUserTransactionUrl(String string) {
 		userTransactionUrl = string;
+	}
+
+	public void setPrincipal(String string) {
+		principal = string;
+	}
+	public String getPrincipal() {
+		return principal;
 	}
 
 }
