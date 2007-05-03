@@ -1,6 +1,9 @@
 /*
  * $Log: IRecordHandler.java,v $
- * Revision 1.4  2006-05-19 09:28:38  europe\m00i745
+ * Revision 1.5  2007-05-03 11:29:43  europe\L190409
+ * add methods configure(), open() and close()
+ *
+ * Revision 1.4  2006/05/19 09:28:38  Peter Eijgermans <peter.eijgermans@ibissource.org>
  * Restore java files from batch package after unwanted deletion.
  *
  * Revision 1.2  2005/10/31 14:38:03  John Dekker <john.dekker@ibissource.org>
@@ -15,8 +18,10 @@ package nl.nn.adapterframework.batch;
 
 import java.util.ArrayList;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.SenderException;
 
 /**
  * Interface for transforming a record (= structured ASCII line). 
@@ -24,6 +29,20 @@ import nl.nn.adapterframework.core.PipeLineSession;
  * @author John Dekker
  */
 public interface IRecordHandler extends INamedObject {
+
+	public void configure() throws ConfigurationException;
+
+	/**
+	 * This method will be called to start the sender. After this
+	 * method is called the sendMessage method may be called
+	 */ 
+	public void open() throws SenderException;
+
+	/**
+	 * Stop/close the sender and deallocate resources.
+	 */ 
+	public void close() throws SenderException;
+
 	/**
 	 * @param record to be transformed
 	 * @return ArrayList with String values for each inputfield

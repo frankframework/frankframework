@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractRecordHandler.java,v $
- * Revision 1.4  2006-05-19 09:01:49  europe\m00i745
+ * Revision 1.5  2007-05-03 11:29:43  europe\L190409
+ * add methods configure(), open() and close()
+ *
+ * Revision 1.4  2006/05/19 09:01:49  Peter Eijgermans <peter.eijgermans@ibissource.org>
  * Restore java files from batch package after unwanted deletion.
  *
  * Revision 1.2  2005/10/13 14:09:41  John Dekker <john.dekker@ibissource.org>
@@ -19,7 +22,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import org.apache.log4j.Logger;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Abstract class that contains functionality for parsing the field values from a 
@@ -29,7 +37,8 @@ import nl.nn.adapterframework.core.PipeLineSession;
  * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>classname</td><td>nl.nn.ibis4fundation.transformation.AbstractRecordHandler</td><td>&nbsp;</td></tr>
+ * <tr><td>classname</td><td>nl.nn.adapterframework.batch.AbstractRecordHandler</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setName(String) name}</td><td>name of the RecordHandler</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setInputFields(String) inputFields}</td><td>Comma seperated specification of fieldlengths</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setInputSeperator(String) inputSeperator}</td><td>Seperator that seperated the fields in the record</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setFieldsDifferConditionForPrefix(String) inputFields}</td><td>Comma seperated numbers of those fields that are compared with the previous record to determine if a prefix must be written</td><td>&nbsp;</td></tr>
@@ -39,14 +48,26 @@ import nl.nn.adapterframework.core.PipeLineSession;
  * @author: John Dekker
  */
 public abstract class AbstractRecordHandler implements IRecordHandler {
+	protected Logger log = LogUtil.getLogger(this);
+
+	private String name;
 	private List inputFields; 
 	private String inputSeperator;
-	private String name;
 	private List seperatorWhenFieldsDiffer;
 	
 	protected AbstractRecordHandler() {
 		this.inputFields = new LinkedList();
 		this.seperatorWhenFieldsDiffer = new LinkedList();
+	}
+
+	public void configure() throws ConfigurationException {
+		//nothing to do		
+	}
+	public void open() throws SenderException {
+		//nothing to do		
+	}
+	public void close() throws SenderException {
+		//nothing to do		
 	}
 
 	public void addInputField(int length) {
