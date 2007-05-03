@@ -1,6 +1,9 @@
 /*
  * $Log: RecordXmlTransformer.java,v $
- * Revision 1.4  2006-05-19 09:28:36  europe\m00i745
+ * Revision 1.5  2007-05-03 11:36:43  europe\L190409
+ * encode characters where required
+ *
+ * Revision 1.4  2006/05/19 09:28:36  Peter Eijgermans <peter.eijgermans@ibissource.org>
  * Restore java files from batch package after unwanted deletion.
  *
  * Revision 1.2  2005/10/31 14:38:02  John Dekker <john.dekker@ibissource.org>
@@ -20,6 +23,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -29,7 +33,8 @@ import org.apache.commons.lang.StringUtils;
  * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>classname</td><td>nl.nn.ibis4fundation.transformation.RecordXslTransformer</td><td>&nbsp;</td></tr>
+ * <tr><td>classname</td><td>nl.nn.adapterframework.batch.RecordXslTransformer</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setName(String) name}</td><td>name of the RecordHandler</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setRootTag(String) rootTag}</td><td>Roottag for the generated XML document</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setOutputFields(String) outputfields}</td><td>Comma seperated string with tagnames for the individual input fields (related using there positions). If you leave a tagname empty, the field is not xml-ized</td><td>&nbsp;</td></tr>
  * </table>
@@ -38,7 +43,7 @@ import org.apache.commons.lang.StringUtils;
  * @author: John Dekker
  */
 public class RecordXmlTransformer extends AbstractRecordHandler {
-	public static final String version = "$RCSfile: RecordXmlTransformer.java,v $  $Revision: 1.4 $ $Date: 2006-05-19 09:28:36 $";
+	public static final String version = "$RCSfile: RecordXmlTransformer.java,v $  $Revision: 1.5 $ $Date: 2007-05-03 11:36:43 $";
 
 	private String rootTag;
 	private List outputFields; 
@@ -71,7 +76,8 @@ public class RecordXmlTransformer extends AbstractRecordHandler {
 			// get value
 			String value = "";
 			if (ndx < parsedRecord.size()) {
-				value = (String)parsedRecord.get(ndx++);
+				//value = (String)parsedRecord.get(ndx++);
+				value = XmlUtils.encodeChars((String)parsedRecord.get(ndx++));
 			}
 			// if tagname is empty, then it is not added to the XML
 			if (! StringUtils.isEmpty(tagName)) {
