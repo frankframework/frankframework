@@ -1,6 +1,9 @@
 /*
  * $Log: BatchFileTransformerPipe.java,v $
- * Revision 1.4  2006-05-19 09:28:38  europe\m00i745
+ * Revision 1.5  2007-05-03 11:30:45  europe\L190409
+ * implement methods configure(), open() and close()
+ *
+ * Revision 1.4  2006/05/19 09:28:38  Peter Eijgermans <peter.eijgermans@ibissource.org>
  * Restore java files from batch package after unwanted deletion.
  *
  * Revision 1.2  2005/10/31 07:27:58  John Dekker <john.dekker@ibissource.org>
@@ -26,6 +29,8 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.core.PipeStartException;
+import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.util.FileUtils;
 
@@ -53,7 +58,7 @@ import org.apache.commons.lang.StringUtils;
  * @author: John Dekker
  */
 public class BatchFileTransformerPipe extends FixedForwardPipe {
-	public static final String version = "$RCSfile: BatchFileTransformerPipe.java,v $  $Revision: 1.4 $ $Date: 2006-05-19 09:28:38 $";
+	public static final String version = "$RCSfile: BatchFileTransformerPipe.java,v $  $Revision: 1.5 $ $Date: 2007-05-03 11:30:45 $";
 
 	private IRecordHandlerManager initialFactory;
 	private IResultHandler defaultHandler;
@@ -113,15 +118,36 @@ public class BatchFileTransformerPipe extends FixedForwardPipe {
 		registeredFlows.add(flowEl);
 	}
 	
-	/* (non-Javadoc)
-	 * @see nl.nn.adapterframework.core.IPipe#configure()
-	 */
 	public void configure() throws ConfigurationException {
+		super.configure();
 		for (Iterator flowIt = registeredFlows.iterator(); flowIt.hasNext();) {
 			RecordHandlingFlow flowEl = (RecordHandlingFlow) flowIt.next();
 			configure(flowEl);
 		}
-		super.configure();
+	}
+
+
+	public void start() throws PipeStartException {
+		super.start();
+		for (Iterator flowIt = registeredFlows.iterator(); flowIt.hasNext();) {
+			RecordHandlingFlow flowEl = (RecordHandlingFlow) flowIt.next();
+			try {
+				open(flowEl);
+			} catch (SenderException e) {
+				throw new PipeStartException(getLogPrefix(null)+"cannot start", e);
+			}
+		}
+	}
+	public void stop() {
+		super.stop();
+		for (Iterator flowIt = registeredFlows.iterator(); flowIt.hasNext();) {
+			RecordHandlingFlow flowEl = (RecordHandlingFlow) flowIt.next();
+			try {
+				close(flowEl);
+			} catch (SenderException e) {
+				log.error(getLogPrefix(null)+"exception on close", e);
+			}
+		}
 	}
 
 	private void configure(RecordHandlingFlow flow) throws ConfigurationException {
@@ -146,6 +172,7 @@ public class BatchFileTransformerPipe extends FixedForwardPipe {
 			
 		// obtain the recordhandler 
 		IRecordHandler recordHandler = (IRecordHandler)registeredRecordHandlers.get(flow.getRecordHandlerRef());
+		recordHandler.configure();
 		
 		// obtain the named resulthandler
 		IResultHandler resultHandler = (IResultHandler)registeredResultHandlers.get(flow.getResultHandlerRef());
@@ -164,6 +191,15 @@ public class BatchFileTransformerPipe extends FixedForwardPipe {
 		flow.setResultHandler(resultHandler);
 	}
 	
+	public void open(RecordHandlingFlow flow) throws SenderException {
+		IRecordHandler recordHandler = (IRecordHandler)registeredRecordHandlers.get(flow.getRecordHandlerRef());
+		recordHandler.open();
+	}
+	public void close(RecordHandlingFlow flow) throws SenderException {
+		IRecordHandler recordHandler = (IRecordHandler)registeredRecordHandlers.get(flow.getRecordHandlerRef());
+		recordHandler.close();
+	}
+
 	/**
 	 * Open a reader for the file named according the input messsage and 
 	 * transform it.
