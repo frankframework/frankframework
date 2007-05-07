@@ -1,6 +1,10 @@
 /*
  * $Log: JavaListener.java,v $
- * Revision 1.19  2007-02-12 14:03:44  europe\L190409
+ * Revision 1.20  2007-05-07 08:34:31  europe\L190409
+ * explicit comments on how to avoid dependency on 
+ * ibisservicedispatcher.jar on server classpath
+ *
+ * Revision 1.19  2007/02/12 14:03:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Logger from LogUtil
  *
  * Revision 1.18  2006/10/13 08:18:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -106,8 +110,11 @@ import org.apache.log4j.Logger;
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.receivers.JavaListener</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the listener as known to the adapter. An {@link nl.nn.adapterframework.pipes.IbisLocalSender IbisLocalSender} refers to this name in its <code>javaListener</code>-attribute.</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setServiceName(String) serviceName}</td><td>(optional) name under which the JavaListener registers itself with the RequestDispatcherManager. N.B. If not empty, the IbisServiceDispatcher.jar must be on the classpath of the server.</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setIsolated(boolean) isolated}</td><td>when <code>true</code>, the call is made in a separate thread, possibly using a separate transaction. N.B. do not use this attribute, set an appropriate <code>transactionAttribute</code>, like <code>NotSupported</code> or <code>RequiresNew</code> instead</td><td>false</td></tr>
+ * <tr><td>{@link #setServiceName(String) serviceName}</td><td>(optional) name under which the JavaListener registers itself with the RequestDispatcherManager. If not empty, the IbisServiceDispatcher.jar must be on the classpath of the server.
+ *     <br>N.B. If this java listener is to be only called locally (from within the same Ibis), please leave 
+ * 	   this attribute empty, to avoid dependency to an IbisServiceDispatcher.jar on the server classpath.</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setIsolated(boolean) isolated}</td><td>when <code>true</code>, the call is made in a separate thread, possibly using a separate transaction. 
+ * 		<br>N.B. do not use this attribute, set an appropriate <code>transactionAttribute</code>, like <code>NotSupported</code> or <code>RequiresNew</code> instead</td><td>false</td></tr>
  * <tr><td>{@link #setSynchronous(boolean) synchronous}</td><td> when set <code>false</code>, the request is executed asynchronously. This implies <code>isolated=true</code>. N.B. Be aware that there is no limit on the number of threads generated</td><td>true</td></tr>
  * </table>
  * 
@@ -115,7 +122,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class JavaListener implements IPushingListener, RequestProcessor {
-	public static final String version="$RCSfile: JavaListener.java,v $ $Revision: 1.19 $ $Date: 2007-02-12 14:03:44 $";
+	public static final String version="$RCSfile: JavaListener.java,v $ $Revision: 1.20 $ $Date: 2007-05-07 08:34:31 $";
 	protected Logger log = LogUtil.getLogger(this);
 	
 	private String name;
