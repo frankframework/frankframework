@@ -1,6 +1,9 @@
 /*
  * $Log: FtpSession.java,v $
- * Revision 1.14  2007-02-12 13:50:50  europe\L190409
+ * Revision 1.15  2007-05-07 08:35:55  europe\L190409
+ * cosmetic change
+ *
+ * Revision 1.14  2007/02/12 13:50:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Logger from LogUtil
  *
  * Revision 1.13  2006/01/05 14:17:46  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -85,7 +88,7 @@ import com.sshtools.j2ssh.transport.IgnoreHostKeyVerification;
 import com.sshtools.j2ssh.transport.publickey.SshPrivateKeyFile;
 
 /**
- * Helper class for sftp and ftp
+ * Helper class for sftp and ftp.
  * 
  *
  * <p><b>Configuration:</b>
@@ -132,7 +135,7 @@ import com.sshtools.j2ssh.transport.publickey.SshPrivateKeyFile;
  * @author John Dekker
  */
 public class FtpSession {
-	public static final String version = "$RCSfile: FtpSession.java,v $  $Revision: 1.14 $ $Date: 2007-02-12 13:50:50 $";
+	public static final String version = "$RCSfile: FtpSession.java,v $  $Revision: 1.15 $ $Date: 2007-05-07 08:35:55 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	// types of ftp transports
