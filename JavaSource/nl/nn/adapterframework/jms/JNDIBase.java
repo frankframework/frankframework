@@ -1,6 +1,9 @@
 /*
  * $Log: JNDIBase.java,v $
- * Revision 1.10  2007-05-08 16:07:49  europe\L190409
+ * Revision 1.11  2007-05-08 16:27:24  europe\L190409
+ * fix username/password
+ *
+ * Revision 1.10  2007/05/08 16:07:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * add jndiAuthAlias attribute
  *
  * Revision 1.9  2007/02/12 13:58:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -49,7 +52,7 @@ import org.apache.log4j.Logger;
  * @author Johan Verrips IOS
  */
 public class JNDIBase {
-	public static final String version = "$RCSfile: JNDIBase.java,v $ $Revision: 1.10 $ $Date: 2007-05-08 16:07:49 $";
+	public static final String version = "$RCSfile: JNDIBase.java,v $ $Revision: 1.11 $ $Date: 2007-05-08 16:27:24 $";
 	protected Logger log = LogUtil.getLogger(this);
 
     // JNDI
@@ -86,9 +89,9 @@ public class JNDIBase {
 		if (getPrincipal() != null || getCredentials() != null || getJndiAuthAlias()!=null) {
 			CredentialFactory jndiCf = new CredentialFactory(getJndiAuthAlias(), getPrincipal(), getCredentials());
 			if (StringUtils.isNotEmpty(jndiCf.getUsername()))
-				jndiEnv.put(Context.SECURITY_PRINCIPAL, getPrincipal());
+				jndiEnv.put(Context.SECURITY_PRINCIPAL, jndiCf.getUsername());
 			if (StringUtils.isNotEmpty(jndiCf.getPassword()))
-				jndiEnv.put(Context.SECURITY_CREDENTIALS, getCredentials());
+				jndiEnv.put(Context.SECURITY_CREDENTIALS, jndiCf.getPassword());
 		}
 		if (getUrlPkgPrefixes() != null)
 			jndiEnv.put(Context.URL_PKG_PREFIXES, getUrlPkgPrefixes());
