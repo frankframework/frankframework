@@ -1,6 +1,9 @@
 /*
  * $Log: JtaUtil.java,v $
- * Revision 1.10  2007-02-12 14:12:03  europe\L190409
+ * Revision 1.11  2007-05-08 16:01:21  europe\L190409
+ * removed stacktrace from debug-logging while obtaining user-transaction
+ *
+ * Revision 1.10  2007/02/12 14:12:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Logger from LogUtil
  *
  * Revision 1.9  2006/09/18 11:46:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -55,7 +58,7 @@ import org.apache.log4j.Logger;
  * @since  4.1
  */
 public class JtaUtil {
-	public static final String version="$RCSfile: JtaUtil.java,v $ $Revision: 1.10 $ $Date: 2007-02-12 14:12:03 $";
+	public static final String version="$RCSfile: JtaUtil.java,v $ $Revision: 1.11 $ $Date: 2007-05-08 16:01:21 $";
 	private static Logger log = LogUtil.getLogger(JtaUtil.class);
 	
 	private static final String USERTRANSACTION_URL1_KEY="jta.userTransactionUrl1";
@@ -184,7 +187,7 @@ public class JtaUtil {
 			try {
 				utx = (UserTransaction)ctx.lookup(url);
 			} catch (Exception e) {
-				log.debug("Could not lookup UserTransaction from url ["+url+"], will try alternative uri",e);
+				log.debug("Could not lookup UserTransaction from url ["+url+"], will try alternative uri: "+e.getMessage());
 				url = AppConstants.getInstance().getProperty(USERTRANSACTION_URL2_KEY,null);
 				log.debug("looking up UserTransaction ["+url+"] in context ["+ctx.toString()+"]");
 				utx = (UserTransaction)ctx.lookup(url);
