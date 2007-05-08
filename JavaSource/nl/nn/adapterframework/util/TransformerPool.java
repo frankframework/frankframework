@@ -1,6 +1,9 @@
 /*
  * $Log: TransformerPool.java,v $
- * Revision 1.15  2007-02-12 14:12:03  europe\L190409
+ * Revision 1.16  2007-05-08 16:02:19  europe\L190409
+ * added transform() with result as parameter
+ *
+ * Revision 1.15  2007/02/12 14:12:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Logger from LogUtil
  *
  * Revision 1.14  2007/02/05 15:05:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -55,6 +58,7 @@ import java.io.StringReader;
 import java.net.URL;
 import java.util.Map;
 
+import javax.xml.transform.Result;
 import javax.xml.transform.Source;
 import javax.xml.transform.Templates;
 import javax.xml.transform.Transformer;
@@ -78,7 +82,7 @@ import org.w3c.dom.Document;
  * @author Gerrit van Brakel
  */
 public class TransformerPool {
-	public static final String version = "$RCSfile: TransformerPool.java,v $ $Revision: 1.15 $ $Date: 2007-02-12 14:12:03 $";
+	public static final String version = "$RCSfile: TransformerPool.java,v $ $Revision: 1.16 $ $Date: 2007-05-08 16:02:19 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private TransformerFactory tFactory = TransformerFactory.newInstance();
@@ -211,5 +215,28 @@ public class TransformerPool {
 			}
 		}
 	}
+
+	public void transform(Source s, Result r, Map parameters) throws TransformerException {
+		Transformer transformer = getTransformer();
+
+		try {	
+			XmlUtils.setTransformerParameters(transformer, parameters);
+			transformer.transform(s,r);
+		} 
+		catch (TransformerException te) {
+			invalidateTransformerNoThrow(transformer);
+			throw te;
+		} 
+		finally {
+			if (transformer != null) {
+				try {
+					releaseTransformer(transformer);
+				} catch(Exception e) {
+					log.warn("Exception returning transformer to pool",e);
+				};
+			}
+		}
+	}
+
 
 }

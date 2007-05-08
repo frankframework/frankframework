@@ -1,6 +1,9 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.39  2007-02-12 14:12:03  europe\L190409
+ * Revision 1.40  2007-05-08 16:04:37  europe\L190409
+ * added transform() with result as parameter
+ *
+ * Revision 1.39  2007/02/12 14:12:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Logger from LogUtil
  *
  * Revision 1.38  2007/02/05 15:07:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -174,7 +177,7 @@ import org.xml.sax.helpers.DefaultHandler;
  * @author Johan Verrips IOS
  */
 public class XmlUtils {
-	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.39 $ $Date: 2007-02-12 14:12:03 $";
+	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.40 $ $Date: 2007-05-08 16:04:37 $";
 	static Logger log = LogUtil.getLogger(XmlUtils.class);
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
@@ -905,6 +908,12 @@ public class XmlUtils {
 	public static String transformXml(Transformer t, String s) throws TransformerException, IOException, DomBuilderException {
 //		log.debug("transforming under the assumption that source document may contain namespaces (therefore using DOMSource)");
 		return transformXml(t, stringToSourceForSingleUse(s));
+	}
+
+	public static void transformXml(Transformer t, String s, Result result) throws TransformerException, IOException, DomBuilderException {
+		synchronized (t) {
+			t.transform(stringToSourceForSingleUse(s), result);
+		}
 	}
 
 	
