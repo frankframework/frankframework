@@ -1,6 +1,9 @@
 /*
  * $Log: Parameter.java,v $
- * Revision 1.17  2007-02-12 13:59:42  europe\L190409
+ * Revision 1.18  2007-05-08 15:59:53  europe\L190409
+ * added type=node support
+ *
+ * Revision 1.17  2007/02/12 13:59:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Logger from LogUtil
  *
  * Revision 1.16  2006/11/06 08:19:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -69,12 +72,14 @@ import java.util.Date;
 
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IWithParameters;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.TransformerPool;
@@ -82,25 +87,26 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.w3c.dom.Node;
 
 /**
  * Generic parameter definition.
  * 
  * A parameter resembles an attribute. However, while attributes get their value at configuration-time,
  * parameters get their value at the time of processing the message. Value can be retrieved from the message itself,
- * or from the pipelineSession. If this does not result in a value (or if neither of these is specified), a default value 
- * can be specified. If an XPathExpression or stylesheet is specified, it will be applied to the message or the value retrieved
- * from the pipelineSession.
+ * a fixed value, or from the pipelineSession. If this does not result in a value (or if neither of these is specified), a default value 
+ * can be specified. If an XPathExpression or stylesheet is specified, it will be applied to the message, the value retrieved
+ * from the pipelineSession or the fixed value specified.
  * <br/>
  * * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>classname</td><td>name of the class, mostly a class that extends this class</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td>  <td>name of the receiver as known to the adapter</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setType(String) type}</td><td>"string" or "xml". "xml" renders a xml-nodeset as an xml-string; "string" renders the contents of the first node</td><td>string</td></tr>
+ * <tr><td>{@link #setType(String) type}</td><td><code>string</code> or <code>xml</code> or <code>node</code>.<br> <code>xml</code> renders a xml-nodeset as an xml-string; <br> <code>xml</code> renders a xml-nodeset as nodeset that can be used as a nodeset in xslt; <br>"string" renders the contents of the first node</td><td>string</td></tr>
  * <tr><td>{@link #setSessionKey(String) sessionKey}</td><td>&nbsp;</td><td>Key of a PipeLineSession-variable. Is specified, the value of the PipeLineSession variable is used as input for the XpathExpression or Stylesheet, instead of the current input message. If no xpathExpression or Stylesheet are specified, the value itself is returned.</td></tr>
  * <tr><td>{@link #setXpathExpression(String) xpathExpression}</td><td>The xpath expression. </td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setStyleSheetName(String) styleSheetName}</td><td>Reference to a respirce with the stylesheet</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setStyleSheetName(String) styleSheetName}</td><td>Reference to a resource with the stylesheet</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDefaultValue(String) defaultValue}</td><td>If the result of sessionKey, XpathExpressen and/or Stylesheet returns null or an empty String, this value is returned</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setPattern(String) pattern}</td><td>Value of parameter is determined using substitution and formating. If fname is a parameter or session variable that resolves to Eric, then the pattern 'Hi {fname}, hoe gaat het?' resolves to 'Hi Eric, hoe gaat het?' </td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setValue(String) value}</td><td>A fixed value</td><td>&nbsp;</td></tr>
@@ -130,8 +136,10 @@ import org.apache.log4j.Logger;
  * @author Richard Punt / Gerrit van Brakel
  */
 public class Parameter implements INamedObject, IWithParameters {
-	public static final String version="$RCSfile: Parameter.java,v $ $Revision: 1.17 $ $Date: 2007-02-12 13:59:42 $";
+	public static final String version="$RCSfile: Parameter.java,v $ $Revision: 1.18 $ $Date: 2007-05-08 15:59:53 $";
 	protected Logger log = LogUtil.getLogger(this);
+
+	public final static String TYPE_NODE="node";
 
 	private String name = null;
 	private String type = null;
@@ -160,7 +168,7 @@ public class Parameter implements INamedObject, IWithParameters {
 			}
 			try {
 				String xsltSource;
-				if ("xml".equalsIgnoreCase(getType())) {
+				if ("xml".equalsIgnoreCase(getType()) || TYPE_NODE.equalsIgnoreCase(getType())) {
 					xsltSource = XmlUtils.createXPathEvaluatorSource("",getXpathExpression(),"xml", false); 
 				} else {
 					xsltSource = XmlUtils.createXPathEvaluatorSource(getXpathExpression(),"text");
@@ -184,11 +192,35 @@ public class Parameter implements INamedObject, IWithParameters {
 				paramList.configure();
 			}
 		}  else {
-			if (paramList!=null) {
-				throw new ConfigurationException("Parameter ["+getName()+"] can only have parameters itself if a styleSheetName is specified");
+			if (paramList!=null && StringUtils.isEmpty(getXpathExpression())) {
+				throw new ConfigurationException("Parameter ["+getName()+"] can only have parameters itself if a styleSheetName or xpathExpression is specified");
 			}
 		}
 		configured = true;
+	}
+
+	private Object transform(Source xmlSource, ParameterResolutionContext prc) throws ParameterException, TransformerException, IOException {
+		TransformerPool pool = getTransformerPool();
+		if (TYPE_NODE.equals(getType())) {
+			
+//			DOMResult transformResult = new DOMResult();
+//			pool.transform(xmlSource,transformResult,prc.getValueMap(paramList));
+//			Node result=transformResult.getNode();
+//			if (log.isDebugEnabled()) log.debug("Returning Node result ["+result+"]: "+ ToStringBuilder.reflectionToString(result));
+//			return result;
+
+			String resultString=pool.transform(xmlSource,prc.getValueMap(paramList));
+			if (log.isDebugEnabled()) log.debug("intermediate result ["+resultString+"]");
+			try {
+				Node result=XmlUtils.buildNode(resultString,prc.isNamespaceAware());
+				//if (log.isDebugEnabled()) log.debug("final result ["+result.getClass().getName()+"]["+result+"]");
+				return result;
+			} catch (DomBuilderException e) {
+				throw new ParameterException(e);
+			}
+		} else {
+			return pool.transform(xmlSource,prc.getValueMap(paramList));
+		}
 	}
 
 	/**
@@ -207,29 +239,34 @@ public class Parameter implements INamedObject, IWithParameters {
 		TransformerPool pool = getTransformerPool();
 		if (pool != null) {
 			try {
-				String transformResult=null;
-				if (StringUtils.isNotEmpty(getSessionKey())) {
-					String source = (String)(prc.getSession().get(getSessionKey()));
-					if (StringUtils.isNotEmpty(source)) {
+				Object transformResult=null;
+				Source source=null;
+				if (StringUtils.isNotEmpty(getValue())) {
+					source = XmlUtils.stringToSourceForSingleUse(getValue(), prc.isNamespaceAware());
+				} else if (StringUtils.isNotEmpty(getSessionKey())) {
+					String sourceString = (String)(prc.getSession().get(getSessionKey()));
+					if (StringUtils.isNotEmpty(sourceString)) {
 						log.debug("Parameter ["+getName()+"] using sessionvariable ["+getSessionKey()+"] as source for transformation");
-						Source xmlSource = XmlUtils.stringToSource(source,prc.isNamespaceAware());
-						transformResult = pool.transform(xmlSource,null);
+						source = XmlUtils.stringToSourceForSingleUse(sourceString, prc.isNamespaceAware());
 					} else {
 						log.debug("Parameter ["+getName()+"] sessionvariable ["+getSessionKey()+"] empty, no transformation will be performed");
 					}
 				} else if (StringUtils.isNotEmpty(getPattern())) {
-					String source = format(alreadyResolvedParameters, prc);
-					if (StringUtils.isNotEmpty(source)) {
+					String sourceString = format(alreadyResolvedParameters, prc);
+					if (StringUtils.isNotEmpty(sourceString)) {
 						log.debug("Parameter ["+getName()+"] using pattern ["+getPattern()+"] as source for transformation");
-						transformResult = pool.transform(source,null);
+						source = XmlUtils.stringToSourceForSingleUse(sourceString, prc.isNamespaceAware());
 					} else {
 						log.debug("Parameter ["+getName()+"] pattern ["+getPattern()+"] empty, no transformation will be performed");
 					}
 				} else {
-					transformResult = pool.transform(prc.getInputSource(),prc.getValueMap(paramList));
+					source = prc.getInputSource();
 				}
-				if (StringUtils.isNotEmpty(transformResult)) {
-					result = transformResult;
+				if (source!=null) {
+					transformResult = transform(source,prc);
+				}
+				if (!(transformResult instanceof String) || StringUtils.isNotEmpty((String)transformResult)) {
+						result = transformResult;
 				}
 			} catch (Exception e) {
 				throw new ParameterException("Parameter ["+getName()+"] exception on transformation to get parametervalue", e);
