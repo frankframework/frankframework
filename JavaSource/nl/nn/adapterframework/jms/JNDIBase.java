@@ -1,6 +1,9 @@
 /*
  * $Log: JNDIBase.java,v $
- * Revision 1.9  2007-02-12 13:58:11  europe\L190409
+ * Revision 1.10  2007-05-08 16:07:49  europe\L190409
+ * add jndiAuthAlias attribute
+ *
+ * Revision 1.9  2007/02/12 13:58:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Logger from LogUtil
  *
  * Revision 1.8  2006/03/15 14:08:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -32,8 +35,10 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
+import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.log4j.Logger;
 
@@ -44,7 +49,7 @@ import org.apache.log4j.Logger;
  * @author Johan Verrips IOS
  */
 public class JNDIBase {
-	public static final String version = "$RCSfile: JNDIBase.java,v $ $Revision: 1.9 $ $Date: 2007-02-12 13:58:11 $";
+	public static final String version = "$RCSfile: JNDIBase.java,v $ $Revision: 1.10 $ $Date: 2007-05-08 16:07:49 $";
 	protected Logger log = LogUtil.getLogger(this);
 
     // JNDI
@@ -54,6 +59,7 @@ public class JNDIBase {
     private String authentication = null;
 	private String principal = null;
     private String credentials = null;
+	private String jndiAuthAlias = null;
     private String urlPkgPrefixes = null;
     private String securityProtocol = null;
 
@@ -77,10 +83,13 @@ public class JNDIBase {
 			jndiEnv.put(Context.PROVIDER_URL, getProviderURL());
 		if (getAuthentication() != null)
 			jndiEnv.put(Context.SECURITY_AUTHENTICATION, getAuthentication());
-		if (getPrincipal() != null)
-			jndiEnv.put(Context.SECURITY_PRINCIPAL, getPrincipal());
-		if (getCredentials() != null)
-			jndiEnv.put(Context.SECURITY_CREDENTIALS, getCredentials());
+		if (getPrincipal() != null || getCredentials() != null || getJndiAuthAlias()!=null) {
+			CredentialFactory jndiCf = new CredentialFactory(getJndiAuthAlias(), getPrincipal(), getCredentials());
+			if (StringUtils.isNotEmpty(jndiCf.getUsername()))
+				jndiEnv.put(Context.SECURITY_PRINCIPAL, getPrincipal());
+			if (StringUtils.isNotEmpty(jndiCf.getPassword()))
+				jndiEnv.put(Context.SECURITY_CREDENTIALS, getCredentials());
+		}
 		if (getUrlPkgPrefixes() != null)
 			jndiEnv.put(Context.URL_PKG_PREFIXES, getUrlPkgPrefixes());
 		if (getSecurityProtocol() != null)
@@ -205,6 +214,13 @@ public class JNDIBase {
 
 	public void setPrincipal(String string) {
 		principal = string;
+	}
+
+	public void setJndiAuthAlias(String string) {
+		jndiAuthAlias = string;
+	}
+	public String getJndiAuthAlias() {
+		return jndiAuthAlias;
 	}
 
 }

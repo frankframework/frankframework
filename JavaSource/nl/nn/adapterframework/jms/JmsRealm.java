@@ -1,6 +1,9 @@
 /*
  * $Log: JmsRealm.java,v $
- * Revision 1.10  2007-05-03 11:40:43  europe\L190409
+ * Revision 1.11  2007-05-08 16:07:49  europe\L190409
+ * add jndiAuthAlias attribute
+ *
+ * Revision 1.10  2007/05/03 11:40:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * add Principal
  *
  * Revision 1.9  2007/02/12 13:58:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -47,7 +50,7 @@ import org.apache.log4j.Logger;
  */
 public class JmsRealm {
 	//TODO: change to J2eeRealm
-	public static final String version="$RCSfile: JmsRealm.java,v $ $Revision: 1.10 $ $Date: 2007-05-03 11:40:43 $";
+	public static final String version="$RCSfile: JmsRealm.java,v $ $Revision: 1.11 $ $Date: 2007-05-08 16:07:49 $";
 	private Logger log = LogUtil.getLogger(this);
 
 	private String realmName;
@@ -57,6 +60,7 @@ public class JmsRealm {
     private String authentication = null;
     private String credentials = null;
 	private String principal = null;
+	private String jndiAuthAlias = null;
     private String urlPkgPrefixes = null;
     private String securityProtocol = null;
 
@@ -257,6 +261,13 @@ public class JmsRealm {
 	}
 	public String getPrincipal() {
 		return principal;
+	}
+
+	public void setJndiAuthAlias(String string) {
+		jndiAuthAlias = string;
+	}
+	public String getJndiAuthAlias() {
+		return jndiAuthAlias;
 	}
 
 }
