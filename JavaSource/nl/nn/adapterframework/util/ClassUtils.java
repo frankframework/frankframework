@@ -1,6 +1,9 @@
 /*
  * $Log: ClassUtils.java,v $
- * Revision 1.9  2007-02-12 14:09:05  europe\L190409
+ * Revision 1.10  2007-05-09 09:25:54  europe\L190409
+ * added nameOf()
+ *
+ * Revision 1.9  2007/02/12 14:09:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Logger from LogUtil
  *
  * Revision 1.8  2006/09/14 11:44:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -37,7 +40,7 @@ import org.apache.log4j.Logger;
  *
  */
 public class ClassUtils {
-	public static final String version = "$RCSfile: ClassUtils.java,v $ $Revision: 1.9 $ $Date: 2007-02-12 14:09:05 $";
+	public static final String version = "$RCSfile: ClassUtils.java,v $ $Revision: 1.10 $ $Date: 2007-05-09 09:25:54 $";
 	private static Logger log = LogUtil.getLogger(ClassUtils.class);
 
     /**
@@ -277,4 +280,18 @@ public class ClassUtils {
         }
         return path;
     }
+ 
+ 	/**
+ 	 * returns the classname of the object, without the pacakge name. 
+ 	 */   
+	public static String nameOf(Object o) {
+		String name=o.getClass().getName();
+		int pos=name.lastIndexOf('.');
+		if (pos<0) {
+			return name;
+		} else {
+			return name.substring(pos+1);
+		}
+	}
+
 }
