@@ -1,6 +1,9 @@
 /*
  * $Log: Parameter.java,v $
- * Revision 1.18  2007-05-08 15:59:53  europe\L190409
+ * Revision 1.19  2007-05-09 09:26:47  europe\L190409
+ * fixed node-support
+ *
+ * Revision 1.18  2007/05/08 15:59:53  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added type=node support
  *
  * Revision 1.17  2007/02/12 13:59:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -73,6 +76,7 @@ import java.util.Date;
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
+import javax.xml.transform.dom.DOMResult;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.INamedObject;
@@ -86,6 +90,7 @@ import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Node;
 
@@ -103,7 +108,7 @@ import org.w3c.dom.Node;
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>classname</td><td>name of the class, mostly a class that extends this class</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td>  <td>name of the receiver as known to the adapter</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setType(String) type}</td><td><code>string</code> or <code>xml</code> or <code>node</code>.<br> <code>xml</code> renders a xml-nodeset as an xml-string; <br> <code>xml</code> renders a xml-nodeset as nodeset that can be used as a nodeset in xslt; <br>"string" renders the contents of the first node</td><td>string</td></tr>
+ * <tr><td>{@link #setType(String) type}</td><td><code>string</code> or <code>xml</code> or <code>node</code>.<br> <code>xml</code> renders a xml-nodeset as an xml-string; <br> <code>node</code> renders a xml-nodeset as nodeset that can be used as a nodeset in xslt; <br>"string" renders the contents of the first node</td><td>string</td></tr>
  * <tr><td>{@link #setSessionKey(String) sessionKey}</td><td>&nbsp;</td><td>Key of a PipeLineSession-variable. Is specified, the value of the PipeLineSession variable is used as input for the XpathExpression or Stylesheet, instead of the current input message. If no xpathExpression or Stylesheet are specified, the value itself is returned.</td></tr>
  * <tr><td>{@link #setXpathExpression(String) xpathExpression}</td><td>The xpath expression. </td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setStyleSheetName(String) styleSheetName}</td><td>Reference to a resource with the stylesheet</td><td>&nbsp;</td></tr>
@@ -136,7 +141,7 @@ import org.w3c.dom.Node;
  * @author Richard Punt / Gerrit van Brakel
  */
 public class Parameter implements INamedObject, IWithParameters {
-	public static final String version="$RCSfile: Parameter.java,v $ $Revision: 1.18 $ $Date: 2007-05-08 15:59:53 $";
+	public static final String version="$RCSfile: Parameter.java,v $ $Revision: 1.19 $ $Date: 2007-05-09 09:26:47 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static String TYPE_NODE="node";
@@ -203,21 +208,15 @@ public class Parameter implements INamedObject, IWithParameters {
 		TransformerPool pool = getTransformerPool();
 		if (TYPE_NODE.equals(getType())) {
 			
-//			DOMResult transformResult = new DOMResult();
-//			pool.transform(xmlSource,transformResult,prc.getValueMap(paramList));
-//			Node result=transformResult.getNode();
-//			if (log.isDebugEnabled()) log.debug("Returning Node result ["+result+"]: "+ ToStringBuilder.reflectionToString(result));
-//			return result;
+			DOMResult transformResult = new DOMResult();
+			pool.transform(xmlSource,transformResult,prc.getValueMap(paramList));
+			Node result=transformResult.getNode();
+			if (result!=null) {
+				result=result.getFirstChild();
+			}			
+			if (log.isDebugEnabled()) { if (result!=null) log.debug("Returning Node result ["+result.getClass().getName()+"]["+result+"]: "+ ToStringBuilder.reflectionToString(result)); } 
+			return result;
 
-			String resultString=pool.transform(xmlSource,prc.getValueMap(paramList));
-			if (log.isDebugEnabled()) log.debug("intermediate result ["+resultString+"]");
-			try {
-				Node result=XmlUtils.buildNode(resultString,prc.isNamespaceAware());
-				//if (log.isDebugEnabled()) log.debug("final result ["+result.getClass().getName()+"]["+result+"]");
-				return result;
-			} catch (DomBuilderException e) {
-				throw new ParameterException(e);
-			}
 		} else {
 			return pool.transform(xmlSource,prc.getValueMap(paramList));
 		}
@@ -283,12 +282,21 @@ public class Parameter implements INamedObject, IWithParameters {
 			}
 		}
 		if (result != null) {
-			log.debug("Parameter ["+getName()+"] resolved to ["+result+"]");
-			return result;
+			if (log.isDebugEnabled()) log.debug("Parameter ["+getName()+"] resolved to ["+result+"]");
+		} else {
+			// if value is null then return specified default value
+			log.debug("Parameter ["+getName()+"] resolved to defaultvalue ["+getDefaultValue()+"]");
+			result=getDefaultValue();
 		}
-		log.debug("Parameter ["+getName()+"] resolved to defaultvalue ["+getDefaultValue()+"]");
-		// if value is null then return specified default value
-		return getDefaultValue(); 
+		if (result !=null && result instanceof String && TYPE_NODE.equals(getType())) {
+			try {
+				result=XmlUtils.buildNode((String)result,prc.isNamespaceAware());
+				if (log.isDebugEnabled()) log.debug("final result ["+result.getClass().getName()+"]["+result+"]");
+			} catch (DomBuilderException e) {
+				throw new ParameterException(e);
+			}
+		}
+		return result; 
 	}
 
 	private String format(ParameterValueList alreadyResolvedParameters, ParameterResolutionContext prc) throws ParameterException {
