@@ -1,6 +1,9 @@
 /*
  * $Log: ConfigurationDigester.java,v $
- * Revision 1.13  2007-02-12 13:38:58  europe\L190409
+ * Revision 1.14  2007-05-11 09:37:26  europe\L190409
+ * added attributeCheckingRule
+ *
+ * Revision 1.13  2007/02/12 13:38:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Logger from LogUtil
  *
  * Revision 1.12  2006/01/05 13:52:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -43,6 +46,7 @@ import nl.nn.adapterframework.util.Variant;
 import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.digester.Digester;
+import org.apache.commons.digester.Rule;
 import org.apache.commons.digester.xmlrules.FromXmlRuleSet;
 import org.apache.log4j.Logger;
 import nl.nn.adapterframework.util.LogUtil;
@@ -85,7 +89,7 @@ import java.net.URL;
  * @see Configuration
  */
 public class ConfigurationDigester {
-	public static final String version = "$RCSfile: ConfigurationDigester.java,v $ $Revision: 1.13 $ $Date: 2007-02-12 13:38:58 $";
+	public static final String version = "$RCSfile: ConfigurationDigester.java,v $ $Revision: 1.14 $ $Date: 2007-05-11 09:37:26 $";
     protected static Logger log = LogUtil.getLogger(ConfigurationDigester.class);
 
 	private static final String CONFIGURATION_FILE_DEFAULT  = "Configuration.xml";
@@ -148,6 +152,29 @@ public class ConfigurationDigester {
 			FromXmlRuleSet ruleSet = new FromXmlRuleSet(digesterRulesURL);
 
 			digester.addRuleSet(ruleSet);
+			
+			Rule attributeChecker=new AttributeCheckingRule(); 
+			
+			digester.addRule("*/jmsRealms", attributeChecker);
+			digester.addRule("*/jmsRealm", attributeChecker);
+			digester.addRule("*/sapSystem", attributeChecker);
+			digester.addRule("*/adapter", attributeChecker);
+			digester.addRule("*/pipeline", attributeChecker);
+			digester.addRule("*/errorMessageFormatter", attributeChecker);
+			digester.addRule("*/receiver", attributeChecker);
+			digester.addRule("*/sender", attributeChecker);
+			digester.addRule("*/listener", attributeChecker);
+			digester.addRule("*/postboxSender", attributeChecker);
+			digester.addRule("*/postboxListener", attributeChecker);
+			digester.addRule("*/errorSender", attributeChecker);
+			digester.addRule("*/inProcessStorage", attributeChecker);
+			digester.addRule("*/errorStorage", attributeChecker);
+			digester.addRule("*/pipe", attributeChecker);
+			digester.addRule("*/forward", attributeChecker);
+			digester.addRule("*/child", attributeChecker);
+			digester.addRule("*/param", attributeChecker);
+			digester.addRule("*/pipeline/exits/exit", attributeChecker);
+			digester.addRule("*/scheduler/job", attributeChecker);
 			// ensure that lines are seperated, usefulls when a parsing error occurs
 			String lineSeperator=SystemUtils.LINE_SEPARATOR;
 			if (null==lineSeperator) lineSeperator="\n";
