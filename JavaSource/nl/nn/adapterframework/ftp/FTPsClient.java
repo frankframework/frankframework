@@ -1,6 +1,9 @@
 /*
  * $Log: FTPsClient.java,v $
- * Revision 1.7  2007-02-12 13:50:50  europe\L190409
+ * Revision 1.8  2007-05-11 09:39:30  europe\L190409
+ * make class public
+ *
+ * Revision 1.7  2007/02/12 13:50:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Logger from LogUtil
  *
  * Revision 1.6  2006/01/19 10:34:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -55,8 +58,8 @@ import org.apache.log4j.Logger;
  * 
  * @author John Dekker
  */
-class FTPsClient extends FTPClient {
-	public static final String version = "$RCSfile: FTPsClient.java,v $  $Revision: 1.7 $ $Date: 2007-02-12 13:50:50 $";
+public class FTPsClient extends FTPClient {
+	public static final String version = "$RCSfile: FTPsClient.java,v $  $Revision: 1.8 $ $Date: 2007-05-11 09:39:30 $";
 	protected Logger log = LogUtil.getLogger(this);
 	
 	private FtpSession session;
