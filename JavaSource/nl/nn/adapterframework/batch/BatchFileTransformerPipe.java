@@ -1,6 +1,9 @@
 /*
  * $Log: BatchFileTransformerPipe.java,v $
- * Revision 1.5  2007-05-03 11:30:45  europe\L190409
+ * Revision 1.6  2007-05-11 09:38:37  europe\L190409
+ * only configure flow it is defined
+ *
+ * Revision 1.5  2007/05/03 11:30:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * implement methods configure(), open() and close()
  *
  * Revision 1.4  2006/05/19 09:28:38  Peter Eijgermans <peter.eijgermans@ibissource.org>
@@ -32,6 +35,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.FileUtils;
 
 import org.apache.commons.lang.StringUtils;
@@ -58,7 +62,7 @@ import org.apache.commons.lang.StringUtils;
  * @author: John Dekker
  */
 public class BatchFileTransformerPipe extends FixedForwardPipe {
-	public static final String version = "$RCSfile: BatchFileTransformerPipe.java,v $  $Revision: 1.5 $ $Date: 2007-05-03 11:30:45 $";
+	public static final String version = "$RCSfile: BatchFileTransformerPipe.java,v $  $Revision: 1.6 $ $Date: 2007-05-11 09:38:37 $";
 
 	private IRecordHandlerManager initialFactory;
 	private IResultHandler defaultHandler;
@@ -151,6 +155,7 @@ public class BatchFileTransformerPipe extends FixedForwardPipe {
 	}
 
 	private void configure(RecordHandlingFlow flow) throws ConfigurationException {
+		log.debug("configuring flow ["+ClassUtils.nameOf(flow)+"]");
 		// obtain the named manager  
 		IRecordHandlerManager manager = (IRecordHandlerManager)registeredManagers.get(flow.getRecordHandlerManagerRef());
 		if (manager == null) {
@@ -172,7 +177,12 @@ public class BatchFileTransformerPipe extends FixedForwardPipe {
 			
 		// obtain the recordhandler 
 		IRecordHandler recordHandler = (IRecordHandler)registeredRecordHandlers.get(flow.getRecordHandlerRef());
-		recordHandler.configure();
+		if (recordHandler!=null) {
+			recordHandler.configure();
+		} else {
+			log.debug("no recordhandler defined for ["+ClassUtils.nameOf(flow)+"]");
+//			throw new ConfigurationException("no recordhandler defined for ["+ClassUtils.nameOf(flow)+"]");
+		}
 		
 		// obtain the named resulthandler
 		IResultHandler resultHandler = (IResultHandler)registeredResultHandlers.get(flow.getResultHandlerRef());
