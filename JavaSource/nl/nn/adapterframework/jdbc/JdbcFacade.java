@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcFacade.java,v $
- * Revision 1.15  2007-02-12 13:56:18  europe\L190409
+ * Revision 1.16  2007-05-16 11:40:17  europe\L190409
+ * apply datetime parameters using corresponding methods
+ *
+ * Revision 1.15  2007/02/12 13:56:18  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Logger from LogUtil
  *
  * Revision 1.14  2006/12/12 09:57:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -49,6 +52,7 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.Date;
 
 import javax.naming.NamingException;
 import javax.sql.DataSource;
@@ -58,6 +62,8 @@ import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IXAEnabled;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.jms.JNDIBase;
+import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -70,10 +76,9 @@ import org.apache.log4j.Logger;
  * @version Id
  * @author  Gerrit van Brakel
  * @since 	4.1
- * 
  */
 public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version="$RCSfile: JdbcFacade.java,v $ $Revision: 1.15 $ $Date: 2007-02-12 13:56:18 $";
+	public static final String version="$RCSfile: JdbcFacade.java,v $ $Revision: 1.16 $ $Date: 2007-05-16 11:40:17 $";
     protected Logger log = LogUtil.getLogger(this);
 	
 	private String name;
@@ -181,9 +186,19 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 */		
 		
 		for (int i=0; i< parameters.size(); i++) {
-			String parameterValue = (String)parameters.getParameterValue(i).getValue();
+			ParameterValue pv = parameters.getParameterValue(i);
+			String paramType = pv.getDefinition().getType();
+			Object value = pv.getValue();
 	//		log.debug("applying parameter ["+(i+1)+","+parameters.getParameterValue(i).getDefinition().getName()+"], value["+parameterValue+"]");
-			statement.setString(i+1, parameterValue);
+
+			if (Parameter.TYPE_DATE.equals(paramType) || 
+				Parameter.TYPE_DATETIME.equals(paramType)) {
+				statement.setDate(i+1, new java.sql.Date(((Date)value).getTime()));
+			} else if (Parameter.TYPE_TIME.equals(paramType)) {
+				statement.setTime(i+1, new java.sql.Time(((Date)value).getTime()));
+			} else { 
+				statement.setString(i+1, (String)value);
+			}
 		}
 	}
 	
