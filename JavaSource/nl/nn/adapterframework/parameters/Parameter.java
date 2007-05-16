@@ -1,6 +1,9 @@
 /*
  * $Log: Parameter.java,v $
- * Revision 1.19  2007-05-09 09:26:47  europe\L190409
+ * Revision 1.20  2007-05-16 11:45:18  europe\L190409
+ * support for date & type types, (first use: jdbc)
+ *
+ * Revision 1.19  2007/05/09 09:26:47  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fixed node-support
  *
  * Revision 1.18  2007/05/08 15:59:53  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -68,8 +71,10 @@ package nl.nn.adapterframework.parameters;
 
 import java.io.IOException;
 import java.net.URL;
+import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -141,10 +146,13 @@ import org.w3c.dom.Node;
  * @author Richard Punt / Gerrit van Brakel
  */
 public class Parameter implements INamedObject, IWithParameters {
-	public static final String version="$RCSfile: Parameter.java,v $ $Revision: 1.19 $ $Date: 2007-05-09 09:26:47 $";
+	public static final String version="$RCSfile: Parameter.java,v $ $Revision: 1.20 $ $Date: 2007-05-16 11:45:18 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static String TYPE_NODE="node";
+	public final static String TYPE_DATE="date";
+	public final static String TYPE_TIME="time";
+	public final static String TYPE_DATETIME="datetime";
 
 	private String name = null;
 	private String type = null;
@@ -154,6 +162,7 @@ public class Parameter implements INamedObject, IWithParameters {
 	private String pattern = null; 
 	private String defaultValue = null;
 	private String value = null;
+	private String formatString = null;
 
 	private TransformerPool transformerPool = null;
 	protected ParameterList paramList = null;
@@ -200,6 +209,15 @@ public class Parameter implements INamedObject, IWithParameters {
 			if (paramList!=null && StringUtils.isEmpty(getXpathExpression())) {
 				throw new ConfigurationException("Parameter ["+getName()+"] can only have parameters itself if a styleSheetName or xpathExpression is specified");
 			}
+		}
+		if (TYPE_DATE.equals(getType()) & StringUtils.isEmpty(getFormatString())) {
+			setFormatString("yyyy-MM-dd");
+		}
+		if (TYPE_DATETIME.equals(getType()) & StringUtils.isEmpty(getFormatString())) {
+			setFormatString("yyyy-MM-ddTHH:mm:ss");
+		}
+		if (TYPE_TIME.equals(getType()) & StringUtils.isEmpty(getFormatString())) {
+			setFormatString("HH:mm:ss");
 		}
 		configured = true;
 	}
@@ -288,12 +306,21 @@ public class Parameter implements INamedObject, IWithParameters {
 			log.debug("Parameter ["+getName()+"] resolved to defaultvalue ["+getDefaultValue()+"]");
 			result=getDefaultValue();
 		}
-		if (result !=null && result instanceof String && TYPE_NODE.equals(getType())) {
+		if (result !=null && result instanceof String)
+			if (TYPE_NODE.equals(getType())) {
 			try {
 				result=XmlUtils.buildNode((String)result,prc.isNamespaceAware());
 				if (log.isDebugEnabled()) log.debug("final result ["+result.getClass().getName()+"]["+result+"]");
 			} catch (DomBuilderException e) {
 				throw new ParameterException(e);
+			}
+			if (TYPE_DATE.equals(getType()) || TYPE_DATETIME.equals(getType()) || TYPE_TIME.equals(getType())) {
+				DateFormat df = new SimpleDateFormat(getFormatString());
+				try {
+					result = df.parseObject((String)result);
+				} catch (ParseException e) {
+					throw new ParameterException(e);
+				}
 			}
 		}
 		return result; 
@@ -433,18 +460,22 @@ public class Parameter implements INamedObject, IWithParameters {
 		this.styleSheetName=stylesheetName;
 	}
 
-	/**
-	 * @return
-	 */
-	public String getPattern() {
-		return pattern;
-	}
 
 	/**
 	 * @param string with pattern to be used, follows MessageFormat syntax with named parameters
 	 */
 	public void setPattern(String string) {
 		pattern = string;
+	}
+	public String getPattern() {
+		return pattern;
+	}
+
+	public void setFormatString(String string) {
+		formatString = string;
+	}
+	public String getFormatString() {
+		return formatString;
 	}
 
 }
