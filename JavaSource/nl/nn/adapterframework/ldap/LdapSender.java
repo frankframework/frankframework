@@ -1,6 +1,9 @@
 /*
  * $Log: LdapSender.java,v $
- * Revision 1.16  2007-04-24 11:36:20  europe\L190409
+ * Revision 1.17  2007-05-16 11:42:14  europe\L190409
+ * cleanup code, remove threading problems, improve javadoc
+ *
+ * Revision 1.16  2007/04/24 11:36:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * avoid NPE on close
  *
  * Revision 1.15  2007/02/27 12:44:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -14,13 +17,10 @@
  */
 package nl.nn.adapterframework.ldap;
 
-import java.io.ByteArrayInputStream;
-import java.net.URL;
+import java.io.StringReader;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.Properties;
 import java.util.Vector;
 
 import javax.naming.CompositeName;
@@ -130,7 +130,7 @@ import org.apache.commons.lang.StringUtils;
  * </pre></code> <br/>
  * Sample result of a <code>search</code> operation:<br/><code><pre>
  *	&lt;entries&gt;
- *	 &lt;entrie name="uid=srp"&gt;
+ *	 &lt;entry name="uid=srp"&gt;
  *	   &lt;attributes&gt;
  *	    &lt;attribute&gt;
  *	    &lt;attribute name="employeeType" value="Extern"/&gt;
@@ -143,8 +143,8 @@ import org.apache.commons.lang.StringUtils;
  *	    &lt;/attribute>
  *	    &lt;attribute name="givenName" value="Gerrit"/>
  *	   &lt;/attributes&gt;
- *	  &lt;/entrie&gt;
- *   &lt;entrie&gt; .... &lt;/entrie&gt;
+ *	  &lt;/entry&gt;
+ *   &lt;entry&gt; .... &lt;/entry&gt;
  *   .....
  *	&lt;/entries&gt;
  * </pre></code> <br/>
@@ -158,24 +158,52 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setLdapProviderURL(String) ldapProviderURL}</td><td>URL to context to search in, e.g. 'ldap://edsnlm01.group.intranet/ou=People, o=ing' to search in te People group of ING CDS. Used to overwrite the providerURL specified in jmsRealm.</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>sets jndi parameters from defined realm (including authentication)</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setOperation(String) operation}</td><td>specifies operation to perform. Must be one of 'read', 'create', 'update', 'delete' or 'search'</td><td>read</td></tr>
+ * <tr><td>{@link #setManipulationSubject(String) manipulationSubject}</td><td>specifies subject to perform operation on . Must be one of 'enrty' or 'attribute'</td><td>attribute</td></tr>
  * <tr><td>{@link #setUsePooling(boolean) usePooling}</td><td>specifies whether connection pooling is used or not</td><td>true</td></tr>
+ * <tr><td>{@link #setInitialContextFactoryName(String) initialContextFactoryName}</td><td>class to use as initial context factory</td><td>com.sun.jndi.ldap.LdapCtxFactory</td></tr>
+ * <tr><td>{@link #setAttributesToReturn(String) attributesToReturn}</td>  <td>comma separated list of attributes to return</td><td><i>all attributes</i></td></tr>
  * </table>
  * </p>
  * If there is only one parameter in the configaration of the pipe it will represent entryName (RDN) of interest.
  * The name of the parameter is irrelevant.
- *
+ * <p> 
  * If there are more then one parameters then the names are compulsory, in the following manner:
- * - Object of interest must have the name [entryName] and must be present
- * - filter expression (handy with searching - see RFC2254) - must have the name [filterExpression]
+ * <ul>
+ * <li>Object of interest must have the name [entryName] and must be present</li>
+ * <li>filter expression (handy with searching - see RFC2254) - must have the name [filterExpression]</li>
+ * </ul>
  * Developers should use entryName as name also in situations with only one param for understandability :)
  * 
- *  
+ * <p>
+ * current requirements for input and configuration
+ * <table border="1">
+ * <tr><th>operation</th><th>requirements</th></tr>
+ * <tr><td>create</td><td>
+ * <ul>
+ * 	  <li>parameter 'entryName', resolving to RDN of entry to create<li>
+ * 	  <li>xml-inputmessage containing attributes to create<li>
+ * </ul>
+ * </td></tr>
+ * <tr><td>delete</td><td>
+ * <ul>
+ * 	  <li>parameter 'entryName', resolving to RDN of entry to delete<li>
+ * 	  <li>no specific inputmessage required<li>
+ * </ul>
+ * </td></tr>
+ * <tr><td>read</td><td>
+ * <ul>
+ * 	  <li>parameter 'entryName', resolving to RDN of entry to read<li>
+ * 	  <li>optional xml-inputmessage containing attributes to be returned<li>
+ * </ul>
+ * </td></tr>
+ * </table>
+ * </p>
  * @author Gerrit van Brakel
  * 
  * @version Id
  */
 public class LdapSender extends JNDIBase implements ISenderWithParameters {
-	public static final String version = "$RCSfile: LdapSender.java,v $  $Revision: 1.16 $ $Date: 2007-04-24 11:36:20 $";
+	public static final String version = "$RCSfile: LdapSender.java,v $  $Revision: 1.17 $ $Date: 2007-05-16 11:42:14 $";
 
 	private String FILTER = "filterExpression";
 	private String ENTRYNAME = "entryName";
@@ -204,31 +232,22 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 	private static final String DEFAULT_RESULT_UPDATE_NOK= "<LdapResult>Update FAILED</LdapResult>";
 		
 		
-	protected ParameterList paramList = null;
-
-	private String digesterRulesFile;
-	private URL rulesURL;
 
 	private String name;
-	private String operation;
-	private String manipulationSubject;
-	private String entryName;
+	private String operation = OPERATION_READ;
+	private String manipulationSubject = MANIPULATION_ATTRIBUTE;
 	private String ldapProviderURL;
 	private String attributesToReturn;
-	private String filterExpression;
-
-	private Hashtable jndiEnv=null;
-
-	private Properties namingSyntax = new Properties();
-	
 	private boolean usePooling=true;
+
+	protected ParameterList paramList = null;
+	private Hashtable jndiEnv=null;
+	
+//	private TransformerPool entryNameExtractor=null;
 
 	public LdapSender() {
 		super();
-//		setDigesterRulesFile(DIGESTER_RULES_DEFAULT);
-		setManipulationSubject(MANIPULATION_ATTRIBUTE);
-		setOperation(OPERATION_READ);
-		setFilterExpression("(objectClass=*)");
+		setInitialContextFactoryName("com.sun.jndi.ldap.LdapCtxFactory");
 	}
 
 	public void configure() throws ConfigurationException {
@@ -240,9 +259,14 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 				}
 			paramList.configure();
 		} else {
+//			try {
+//				entryNameExtractor = new TransformerPool(XmlUtils.createXPathEvaluatorSource("/ldap/entryName"));
+//			} catch (TransformerConfigurationException e) {
+//				throw new ConfigurationException(e);
+//			}
 			// TODO: checken waarom dit zou zijn
-			log.warn("There probably/maybe should be a parameter [entryName]. Check this!");
-//			throw new ConfigurationException("[" + getName() + "] No parameter found - required 1 for entryName!");
+//			log.warn("There probably/maybe should be a parameter [entryName]. Check this!");
+			throw new ConfigurationException("[" + getName() + "] No parameter found - required 1 for entryName!");
 		}
 
 		if (getOperation() == null
@@ -330,7 +354,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 	private String[] setAttribubtesParameter() {
 		//since 1.4: return attributesToReturn == null ? null : attributesToReturn.split(",");
 		//since 1.3 below:
-		return attributesToReturn == null ? null : splitCommaSeparatedString(attributesToReturn);
+		return getAttributesToReturn() == null ? null : splitCommaSeparatedString(getAttributesToReturn());
 	}
 
 	private String[] splitCommaSeparatedString(String toSeparate) {
@@ -442,38 +466,38 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 			result = (String) value;
 		}
 	}
-	/**
-	 * Uses <code>Parameters2MapHelper</code> to create a Map with from parameters.  
-	 * parameter entryName is mandatory as is it's name (entryName) 
-	 */
-	private HashMap getParametersMap(ParameterResolutionContext prc)
-		throws ParameterException {
-		HashMap result = null;
-		
-		if (prc != null && paramList != null) {
-			result = new HashMap();
-			Parameters2MapHelper helper = new Parameters2MapHelper();
-			prc.forAllParameters(paramList, helper);
-			result = helper.result;
-		}
-		log.debug("Got LDAP parameters map: " + result);
-		return result;
-	}
-	/**
-	 * Goes with getParametersMap()
-	 * see above 
-	 */
-	private class Parameters2MapHelper implements IParameterHandler {
-		private HashMap result;
-
-		public void handleParam(String paramName, Object value)
-			throws ParameterException {
-			if (result == null)
-				result = new HashMap();
-			
-			result.put(paramName, value);
-		}
-	}
+//	/**
+//	 * Uses <code>Parameters2MapHelper</code> to create a Map with from parameters.  
+//	 * parameter entryName is mandatory as is it's name (entryName) 
+//	 */
+//	private HashMap getParametersMap(ParameterResolutionContext prc)
+//		throws ParameterException {
+//		HashMap result = null;
+//		
+//		if (prc != null && paramList != null) {
+//			result = new HashMap();
+//			Parameters2MapHelper helper = new Parameters2MapHelper();
+//			prc.forAllParameters(paramList, helper);
+//			result = helper.result;
+//		}
+//		log.debug("Got LDAP parameters map: " + result);
+//		return result;
+//	}
+//	/**
+//	 * Goes with getParametersMap()
+//	 * see above 
+//	 */
+//	private class Parameters2MapHelper implements IParameterHandler {
+//		private HashMap result;
+//
+//		public void handleParam(String paramName, Object value)
+//			throws ParameterException {
+//			if (result == null)
+//				result = new HashMap();
+//			
+//			result.put(paramName, value);
+//		}
+//	}
 
 	/**
 	 * Performs the specified operation and returns the results.
@@ -487,10 +511,18 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 		Attributes attrs = null;
 		DirContext dirContext = getDirContext();
 		
-		if (paramList.size() == 1)
-			entryName = getParamsAsString(prc); // depricated - for compatibility only
-		else
-			entryName = (String) getParametersMap(prc).get("entryName");
+		String entryName=null;
+		
+		if (paramList!=null && prc!=null){
+			entryName = (String)prc.getValueMap(paramList).get("entryName");
+			log.debug("entryName=["+entryName+"]");
+		} else {
+//			try {
+//				entryName = entryNameExtractor.transform(message,null);
+//			} catch (Exception e) {
+//				throw new SenderException(e);
+//			}
+		}
 		
 		if (entryName == null || StringUtils.isEmpty(entryName))
 			throw new SenderException("entryName must be defined through params, operation ["+ getOperation()+ "]");
@@ -587,11 +619,11 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 						dirContext.bind(entryName, null, attrs);
 						result = DEFAULT_RESULT;
 					} catch (NamingException e) {
-						log.error("Exception in operation [" + getOperation()+ "] entryName ["+entryName+"]", e);
-						//result = DEFAULT_RESULT_CREATE_NOK;
-						result = "<LdapResult>Create FAILED - Entry with given name(" + entryName + ")already exists</LdapResult>";
-						if(!e.getMessage().startsWith("[LDAP: error code 68 - Entry Already Exists]"))
-						{
+						// log.debug("Exception in operation [" + getOperation()+ "] entryName ["+entryName+"]", e);
+						log.debug("Exception in operation [" + getOperation()+ "] entryName ["+entryName+"]: "+ e.getMessage());
+						if(e.getMessage().startsWith("[LDAP: error code 68 - Entry Already Exists]")) {
+							result = DEFAULT_RESULT_CREATE_OK;
+						} else {
 							throw new SenderException(e);
 						}
 					}
@@ -646,8 +678,8 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 				
 				SearchControls controls = new SearchControls(SearchControls.ONELEVEL_SCOPE, 0, 0, 
 															 setAttribubtesParameter(), false, false);
-				filterExpression = (String) getParametersMap(prc).get(FILTER); 
-				attrs = parseAttributesFromMessage(message);
+				String filterExpression = (String) prc.getValueMap(paramList).get(FILTER); 
+//				attrs = parseAttributesFromMessage(message);
 				result = searchResultsToXml( dirContext.search(entryName, filterExpression, controls) ).toXML();
 			
 										
@@ -672,7 +704,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 			
 			} else if (getOperation().equals(OPERATION_SUB_CONTEXTS)) {
 				String[] subs = getSubContextList(dirContext, entryName);
-				result = subContextsToXml(subs, dirContext).toXML();
+				result = subContextsToXml(entryName, subs, dirContext).toXML();
 			} 
 			//OPERATION_GET_TREE
 			else if (getOperation().equals(OPERATION_GET_TREE)) {
@@ -728,7 +760,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 		return contextElem;
 	}
 	
-	private XmlBuilder subContextsToXml(String[] subs, DirContext dirContext) throws NamingException {
+	private XmlBuilder subContextsToXml(String entryName, String[] subs, DirContext dirContext) throws NamingException {
 		
 		XmlBuilder contextElem = new XmlBuilder("Context");
 		XmlBuilder currentContextElem = new XmlBuilder("CurrentContext");
@@ -807,33 +839,21 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 		digester.addCallMethod("*/attributes/attribute/value","add",0);
 		
 		try {
-			ByteArrayInputStream xmlInputStream = new ByteArrayInputStream(message.getBytes());
-
-			return (Attributes) digester.parse(xmlInputStream);
-
+			return (Attributes) digester.parse(new StringReader(message));
 		} catch (Exception e) {
 			throw new SenderException("[" + this.getClass().getName() + "] exception in digesting",	e);
 		}
 	}
 
-	public String sendMessage(String correlationID, String message)
-		throws SenderException {
-		try {
-			return performOperation(message, null);
-		} catch (Exception e) {
-			throw new SenderException("cannot obtain resultset for [" + message + "]", e);
-		}
+	public String sendMessage(String correlationID, String message)	throws SenderException {
+		return sendMessage(correlationID, message, new ParameterResolutionContext(message,null));
 	}
 
-	public String sendMessage(
-		String correlationID,
-		String message,
-		ParameterResolutionContext prc)
-		throws SenderException {
+	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException {
 		try {
 			return performOperation(message, prc);
 		} catch (Exception e) {
-			throw new SenderException("cannot obtain resultset", e);
+			throw new SenderException("cannot obtain resultset for [" + message + "]", e);
 		}
 	}
 
@@ -1003,63 +1023,33 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 	public String getName() {
 		return name;
 	}
+
 	public void setOperation(String string) {
 		operation = string;
 	}
 	public String getOperation() {
 		return operation;
 	}
-	public void setEntryName(String string) {
-		entryName = string;
-	}
-	public String getEntryName() {
-		return entryName;
-	}
-	public void setNamingSyntax(Properties properties) {
-		namingSyntax = properties;
-	}
-	public Properties getNamingSyntax() {
-		return namingSyntax;
-	}
-	public String getDigesterRulesFile() {
-		return digesterRulesFile;
-	}
-	public URL getRulesURL() {
-		return rulesURL;
-	}
-	public void setDigesterRulesFile(String string) {
-		digesterRulesFile = string;
-	}
-	public void setRulesURL(URL url) {
-		rulesURL = url;
+
+	public void setLdapProviderURL(String string) {
+		ldapProviderURL = string;
 	}
 	public String getLdapProviderURL() {
 		return ldapProviderURL;
 	}
-	public void setLdapProviderURL(String string) {
-		ldapProviderURL = string;
-	}
-	public String getManipulationSubject() {
-		return manipulationSubject;
-	}
+
 	public void setManipulationSubject(String string) {
 		manipulationSubject = string;
 	}
-
-	public String getAttributesToReturn() {
-		return attributesToReturn;
+	public String getManipulationSubject() {
+		return manipulationSubject;
 	}
 
 	public void setAttributesToReturn(String string) {
 		attributesToReturn = string;
 	}
-
-	public String getFilterExpression() {
-		return filterExpression;
-	}
-
-	public void setFilterExpression(String string) {
-		filterExpression = string;
+	public String getAttributesToReturn() {
+		return attributesToReturn;
 	}
 
 	public void setUsePooling(boolean b) {

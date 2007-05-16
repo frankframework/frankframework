@@ -1,6 +1,9 @@
 /*
  * $Log: LdapChallengePipe.java,v $
- * Revision 1.2  2007-02-27 12:48:50  europe\L190409
+ * Revision 1.3  2007-05-16 11:42:14  europe\L190409
+ * cleanup code, remove threading problems, improve javadoc
+ *
+ * Revision 1.2  2007/02/27 12:48:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * set pooling off
  *
  * Revision 1.1  2007/02/26 15:56:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -50,7 +53,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class LdapChallengePipe extends AbstractPipe {
-	public static String version = "$RCSfile: LdapChallengePipe.java,v $  $Revision: 1.2 $ $Date: 2007-02-27 12:48:50 $";
+	public static String version = "$RCSfile: LdapChallengePipe.java,v $  $Revision: 1.3 $ $Date: 2007-05-16 11:42:14 $";
 
 	/** 
 	 * Checks to see if the supplied parameteres of the pipe can login to LDAP 
@@ -88,7 +91,7 @@ public class LdapChallengePipe extends AbstractPipe {
 			throw new PipeRunException(this, "One of the following required parameters isEmpty: " + paramfields);			
 		}
 			
-		ldapSender.setEntryName("dummy");
+//		ldapSender.setEntryName("dummy");
 		ldapSender.setUsePooling(false);
 		ldapSender.setLdapProviderURL(ldapProviderURL);
 		ldapSender.setInitialContextFactoryName(initialContextFactoryName);
