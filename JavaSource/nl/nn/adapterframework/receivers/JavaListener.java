@@ -1,6 +1,9 @@
 /*
  * $Log: JavaListener.java,v $
- * Revision 1.20  2007-05-07 08:34:31  europe\L190409
+ * Revision 1.21  2007-05-16 11:47:26  europe\L190409
+ * improved javadoc
+ *
+ * Revision 1.20  2007/05/07 08:34:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * explicit comments on how to avoid dependency on 
  * ibisservicedispatcher.jar on server classpath
  *
@@ -100,7 +103,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.log4j.Logger;
 
-//import com.ibm.websphere.security.auth.WSSubject;
 
 /** * 
  * The JavaListener listens to java requests.
@@ -110,7 +112,9 @@ import org.apache.log4j.Logger;
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.receivers.JavaListener</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the listener as known to the adapter. An {@link nl.nn.adapterframework.pipes.IbisLocalSender IbisLocalSender} refers to this name in its <code>javaListener</code>-attribute.</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setServiceName(String) serviceName}</td><td>(optional) name under which the JavaListener registers itself with the RequestDispatcherManager. If not empty, the IbisServiceDispatcher.jar must be on the classpath of the server.
+ * <tr><td>{@link #setServiceName(String) serviceName}</td><td>(optional) name under which the JavaListener registers itself with the RequestDispatcherManager. 
+ * An {@link nl.nn.adapterframework.pipes.IbisJavaSender IbisJavaSender} refers to this attribute in its <code>serviceName</code>-attribute.
+ * If not empty, the IbisServiceDispatcher.jar must be on the classpath of the server.
  *     <br>N.B. If this java listener is to be only called locally (from within the same Ibis), please leave 
  * 	   this attribute empty, to avoid dependency to an IbisServiceDispatcher.jar on the server classpath.</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setIsolated(boolean) isolated}</td><td>when <code>true</code>, the call is made in a separate thread, possibly using a separate transaction. 
@@ -118,11 +122,11 @@ import org.apache.log4j.Logger;
  * <tr><td>{@link #setSynchronous(boolean) synchronous}</td><td> when set <code>false</code>, the request is executed asynchronously. This implies <code>isolated=true</code>. N.B. Be aware that there is no limit on the number of threads generated</td><td>true</td></tr>
  * </table>
  * 
- * @author  JDekker / Gerrit van Brakel
+ * @author  Gerrit van Brakel
  * @version Id
  */
 public class JavaListener implements IPushingListener, RequestProcessor {
-	public static final String version="$RCSfile: JavaListener.java,v $ $Revision: 1.20 $ $Date: 2007-05-07 08:34:31 $";
+	public static final String version="$RCSfile: JavaListener.java,v $ $Revision: 1.21 $ $Date: 2007-05-16 11:47:26 $";
 	protected Logger log = LogUtil.getLogger(this);
 	
 	private String name;

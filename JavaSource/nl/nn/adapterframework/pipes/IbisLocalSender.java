@@ -1,6 +1,9 @@
 /*
  * $Log: IbisLocalSender.java,v $
- * Revision 1.11  2006-08-22 06:51:23  europe\L190409
+ * Revision 1.12  2007-05-16 11:46:09  europe\L190409
+ * improved javadoc
+ *
+ * Revision 1.11  2006/08/22 06:51:23  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected javadoc
  * adapted code calling IsolatedServiceCaller
  *
@@ -54,25 +57,60 @@ import java.util.HashMap;
 
 /**
  * Posts a message to another IBIS-adapter in the same IBIS instance.
+ * 
+ * An IbisLocalSender makes a call to a Receiver with either a {@link nl.nn.adapterframework.http.WebServiceListener WebServiceListener}
+ * or a {@link nl.nn.adapterframework.receivers.JavaListener JavaListener}. 
  *
  * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>classname</td><td>nl.nn.adapterframework.pipes.IbisLocalSender</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td>  <td>name of the sender</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setServiceName(String) serviceName}</td><td>Name of the WebServiceListener that should be called</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setJavaListener(String) javaListener}</td><td>Name of the JavaListener that should be called</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setServiceName(String) serviceName}</td><td>Name of the {@link nl.nn.adapterframework.http.WebServiceListener WebServiceListener} that should be called</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setJavaListener(String) javaListener}</td><td>Name of the {@link nl.nn.adapterframework.receivers.JavaListener JavaListener} that should be called</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setIsolated(boolean) isolated}</td><td>when <code>true</code>, the call is made in a separate thread, possibly using separate transaction</td><td>false</td></tr>
  * <tr><td>{@link #setSynchronous(boolean) synchronous}</td><td> when set <code>false</code>, the call is made asynchronously. This implies <code>isolated=true</code></td><td>true</td></tr>
  * </table>
  * </p>
  * Any parameters are copied to the PipeLineSession of the service called.
+ * 
+ * <h3>Configuration of the Adapter to be called</h3>
+ * A call to another Adapter in the same IBIS instance is preferably made using the combination
+ * of an IbisLocalSender and a {@link nl.nn.adapterframework.receivers.JavaListener JavaListener}. If, 
+ * however, a Receiver with a {@link nl.nn.adapterframework.http.WebServiceListener WebServiceListener} is already present, that can be used in some cases, too.
+ *  
+ * <h4>configuring IbisLocalSender and JavaListener</h4>
+ * <ul>
+ *   <li>Define a GenericMessageSendingPipe with an IbisLocalSender</li>
+ *   <li>Set the attribute <code>javaListener</code> to <i>yourServiceName</i></li>
+ *   <li>Do not set the attribute <code>serviceName</code></li>
+ * </ul>
+ * In the Adapter to be called:
+ * <ul>
+ *   <li>Define a Receiver with a JavaListener</li>
+ *   <li>Set the attribute <code>name</code> to <i>yourServiceName</i></li>
+ *   <li>Do not set the attribute <code>serviceName</code>, except if the service is to be called also
+ *       from applications other than this IBIS-instance</li>
+ * </ul>
+ * 
+ * <h4>configuring IbisLocalSender and WebServiceListener</h4>
+ * 
+ * <ul>
+ *   <li>Define a GenericMessageSendingPipe with an IbisLocalSender</li>
+ *   <li>Set the attribute <code>serviceName</code> to <i>yourIbisWebServiceName</i></li>
+ *   <li>Do not set the attribute <code>javaListener</code></li>
+ * </ul>
+ * In the Adapter to be called:
+ * <ul>
+ *   <li>Define a Receiver with a WebServiceListener</li>
+ *   <li>Set the attribute <code>name</code> to <i>yourIbisWebServiceName</i></li>
+ * </ul>
  *
  * @author Gerrit van Brakel
  * @since  4.2
  */
 public class IbisLocalSender extends SenderWithParametersBase {
-	public static final String version="$RCSfile: IbisLocalSender.java,v $ $Revision: 1.11 $ $Date: 2006-08-22 06:51:23 $";
+	public static final String version="$RCSfile: IbisLocalSender.java,v $ $Revision: 1.12 $ $Date: 2007-05-16 11:46:09 $";
 	
 	private String name;
 	private String serviceName;

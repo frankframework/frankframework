@@ -1,6 +1,9 @@
 /*
  * $Log: JobDef.java,v $
- * Revision 1.6  2007-02-21 16:04:24  europe\L190409
+ * Revision 1.7  2007-05-16 11:48:07  europe\L190409
+ * improved javadoc
+ *
+ * Revision 1.6  2007/02/21 16:04:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  */
@@ -25,18 +28,15 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * <tr><td>{@link #setAdapterName(String) adapterName}</td><td>Adapter on which job operates</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setReceiverName(String) receiverName}</td><td>Receiver on which job operates. If function is 'sendMessage' is used this name is also used as name of JavaListener</td><td>&nbsp;</td></tr>
  * </table>
-
- * @version Id
- * @author  Johan  Verrips
- * 
+ * <br>
  * Operation of scheduling:
  * <ul>
  *   <li>at configuration tim {@link nl.nn.adapterframework.configuration.Configuration#registerScheduledJob(JobDef) Configuration.registerScheduledJob()} is called; </li>
- *   <li>this calls {@link nl.nn.adapterframework.scheduler.SchedulerHelper.scheduleJob() SchedulerHelper.scheduleJob(Object, JobDef);</li>
- *   <li>this creates a Quartz JobDetail object, and copies adaptername, receivername, function and a reference to the configuration to jobdetail's datamap;
- *   <li>it sets the class to execute to AdapterJob<li>
+ *   <li>this calls {@link nl.nn.adapterframework.scheduler.SchedulerHelper.scheduleJob() SchedulerHelper.scheduleJob(Object, JobDef)};</li>
+ *   <li>this creates a Quartz JobDetail object, and copies adaptername, receivername, function and a reference to the configuration to jobdetail's datamap;</li>
+ *   <li>it sets the class to execute to AdapterJob</li>
  *   <li>this job is scheduled using the cron expression</li> 
- * <ul>
+ * </ul>
  * 
  * Operation the job is triggered:
  * <ul>
@@ -280,10 +280,12 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  *   </li>
  * </ul>
  * </p>
-
+ * @version Id
+ * @author  Johan  Verrips
+ * 
  */
 public class JobDef {
-	public static final String version = "$RCSfile: JobDef.java,v $  $Revision: 1.6 $ $Date: 2007-02-21 16:04:24 $";
+	public static final String version = "$RCSfile: JobDef.java,v $  $Revision: 1.7 $ $Date: 2007-05-16 11:48:07 $";
 	
     private String name;
     private String cronExpression;
