@@ -1,6 +1,9 @@
 /*
  * $Log: ConfigurationDigester.java,v $
- * Revision 1.14  2007-05-11 09:37:26  europe\L190409
+ * Revision 1.15  2007-05-21 12:18:44  europe\L190409
+ * add messageLog to attributeChecker-rules
+ *
+ * Revision 1.14  2007/05/11 09:37:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added attributeCheckingRule
  *
  * Revision 1.13  2007/02/12 13:38:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -89,7 +92,7 @@ import java.net.URL;
  * @see Configuration
  */
 public class ConfigurationDigester {
-	public static final String version = "$RCSfile: ConfigurationDigester.java,v $ $Revision: 1.14 $ $Date: 2007-05-11 09:37:26 $";
+	public static final String version = "$RCSfile: ConfigurationDigester.java,v $ $Revision: 1.15 $ $Date: 2007-05-21 12:18:44 $";
     protected static Logger log = LogUtil.getLogger(ConfigurationDigester.class);
 
 	private static final String CONFIGURATION_FILE_DEFAULT  = "Configuration.xml";
@@ -167,6 +170,7 @@ public class ConfigurationDigester {
 			digester.addRule("*/postboxSender", attributeChecker);
 			digester.addRule("*/postboxListener", attributeChecker);
 			digester.addRule("*/errorSender", attributeChecker);
+			digester.addRule("*/messageLog", attributeChecker);
 			digester.addRule("*/inProcessStorage", attributeChecker);
 			digester.addRule("*/errorStorage", attributeChecker);
 			digester.addRule("*/pipe", attributeChecker);
