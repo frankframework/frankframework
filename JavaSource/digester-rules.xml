@@ -1,5 +1,5 @@
 <digester-rules>
-	<!-- $Id: digester-rules.xml,v 1.1 2007-05-02 11:43:50 europe\L190409 Exp $ -->
+	<!-- $Id: digester-rules.xml,v 1.2 2007-05-21 12:26:24 europe\L190409 Exp $ -->
     <pattern value="IOS-Adaptering">
         <set-properties-rule/>
     </pattern>
@@ -72,6 +72,11 @@
         <object-create-rule classname="nl.nn.adapterframework.core.ISender" attrname="className"/> 
         <set-properties-rule/>
         <set-next-rule methodname="setErrorSender"/>
+    </pattern>
+    <pattern value="*/messageLog">
+        <object-create-rule classname="nl.nn.adapterframework.core.ITransactionalStorage" attrname="className"/> 
+        <set-properties-rule/>
+        <set-next-rule methodname="setMessageLog"/>
     </pattern>
     <pattern value="*/inProcessStorage">
         <object-create-rule classname="nl.nn.adapterframework.core.ITransactionalStorage" attrname="className"/> 
