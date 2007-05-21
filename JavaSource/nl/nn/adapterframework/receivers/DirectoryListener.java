@@ -1,7 +1,7 @@
 /*
  * $Log: DirectoryListener.java,v $
- * Revision 1.4  2007-05-21 09:26:35  europe\L190409
- * added passWithoutDirectory attribute (by PL)
+ * Revision 1.5  2007-05-21 12:21:36  europe\L190409
+ * added createInputDirectory attribute
  *
  * Revision 1.3  2007/02/12 14:03:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Logger from LogUtil
@@ -69,14 +69,15 @@ import nl.nn.adapterframework.util.LogUtil;
  * <tr><td>{@link #setWaitBeforeRetry(long) waitBeforeRetry}</td><td>time waited after unsuccesful try</td><td>1000</td></tr>
  * <tr><td>{@link #setOverwrite(boolean) overwrite}</td><td>overwrite the file in the output directory if it already exist</td><td>false</td></tr>
  * <tr><td>{@link #setPassWithoutDirectory(boolean) passWithoutDirectory}</td><td>pass the filename without the <code>outputDirectory</code> to the pipeline</td><td>false</td></tr>
- * </table>
+ * <tr><td>{@link #setCreateInputDirectory(boolean) createInputDirectory}</td><td>when set to <code>true</code>, the directory to look for files is created if it does not exist</td><td>false</td></tr>
+ *  * </table>
  * </p>
  *
  * @version Id
  * @author  John Dekker
  */
 public class DirectoryListener implements IPullingListener, INamedObject {
-	public static final String version = "$RCSfile: DirectoryListener.java,v $  $Revision: 1.4 $ $Date: 2007-05-21 09:26:35 $";
+	public static final String version = "$RCSfile: DirectoryListener.java,v $  $Revision: 1.5 $ $Date: 2007-05-21 12:21:36 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -89,6 +90,7 @@ public class DirectoryListener implements IPullingListener, INamedObject {
 	private long waitBeforeRetry = 1000;
 	private boolean overwrite = false;
 	private boolean passWithoutDirectory = false;
+	protected boolean createInputDirectory = false;
 
 	//TODO: check if this is thread-safe
 	private String inputFileName=null;
@@ -109,6 +111,11 @@ public class DirectoryListener implements IPullingListener, INamedObject {
 			throw new ConfigurationException("The value for [directoryProcessedFiles] :[ " + getOutputDirectory() + "] is invalid. It is not a directory ");
 		}
 		File inp = new File(getInputDirectory());
+		if (!inp.exists() && createInputDirectory) {
+			if (!inp.mkdirs()) {
+				throw new ConfigurationException(getInputDirectory() + " could not be created");
+			}
+		}
 		if (!inp.isDirectory()) {
 			throw new ConfigurationException("The value for [inputDirectory] :[ " + getInputDirectory() + "] is invalid. It is not a directory ");
 
@@ -337,5 +344,13 @@ public class DirectoryListener implements IPullingListener, INamedObject {
 
 	public boolean isPassWithoutDirectory() {
 		return passWithoutDirectory;
+	}
+
+	public void setCreateInputDirectory(boolean b) {
+		createInputDirectory = b;
+	}
+
+	public boolean isCreateInputDirectory() {
+		return createInputDirectory;
 	}
 }
