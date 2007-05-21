@@ -1,6 +1,9 @@
 /*
  * $Log: FilePipe.java,v $
- * Revision 1.11  2006-08-22 12:53:45  europe\L190409
+ * Revision 1.12  2007-05-21 12:20:27  europe\L190409
+ * added attribute createDirectory
+ *
+ * Revision 1.11  2006/08/22 12:53:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added fileName and fileNameSessionKey attributes
  *
  * Revision 1.10  2006/05/04 06:47:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -65,6 +68,7 @@ import sun.misc.BASE64Encoder;
  * <tr><td>{@link #setFileNameSessionKey(String) fileNameSessionKey}</td><td>The session key that contains the name of the file to use (only used if fileName is not set)</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setActions(String) actions}</td><td>name of forward returned upon completion</td><td>"success"</td></tr>
  * <tr><td>{@link #setWriteSuffix(String) writeSuffix}</td><td>suffix of the file to be created (only used if fileName and fileNameSession are not set)</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setCreateDirectory(boolean) createDirectory}</td><td>when set to <code>true</code>, the directory to read from is created if it does not exist</td><td>false</td></tr>
  * </table>
  * </p>
  * <p><b>Exits:</b>
@@ -80,13 +84,14 @@ import sun.misc.BASE64Encoder;
  *
  */
 public class FilePipe extends FixedForwardPipe {
-	public static final String version="$RCSfile: FilePipe.java,v $ $Revision: 1.11 $ $Date: 2006-08-22 12:53:45 $";
+	public static final String version="$RCSfile: FilePipe.java,v $ $Revision: 1.12 $ $Date: 2007-05-21 12:20:27 $";
 	private List transformers;
 	protected String actions;
 	protected String directory;
 	protected String writeSuffix;
 	protected String fileName;
 	protected String fileNameSessionKey;
+	protected boolean createDirectory = false;
 
 	/** 
 	 * @see nl.nn.adapterframework.core.IPipe#configure()
@@ -258,6 +263,11 @@ public class FilePipe extends FixedForwardPipe {
 		public void configure() throws ConfigurationException {
 			if (StringUtils.isNotEmpty(getDirectory())) {
 				File file = new File(getDirectory());
+				if (!file.exists() && createDirectory) {
+					if (!file.mkdirs()) {
+						throw new ConfigurationException(directory + " could not be created");
+					}
+				}
 				if (! (file.exists() && file.isDirectory() && file.canRead())) {
 					throw new ConfigurationException(directory + " is not a directory, or no read permission");
 				}
@@ -382,5 +392,13 @@ public class FilePipe extends FixedForwardPipe {
 	 */
 	public void setFileNameSessionKey(String filenameSessionKey) {
 		this.fileNameSessionKey = filenameSessionKey;
+	}
+
+	public void setCreateDirectory(boolean b) {
+		createDirectory = b;
+	}
+
+	public boolean isCreateDirectory() {
+		return createDirectory;
 	}
 }
