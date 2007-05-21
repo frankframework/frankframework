@@ -1,6 +1,9 @@
 /*
  * $Log: GenericReceiver.java,v $
- * Revision 1.3  2005-07-19 15:27:45  europe\L190409
+ * Revision 1.4  2007-05-21 12:24:20  europe\L190409
+ * added public setMessageLog()
+ *
+ * Revision 1.3  2005/07/19 15:27:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added errorStorage nested element
  *
  * Revision 1.2  2004/10/05 09:59:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -36,7 +39,7 @@ import nl.nn.adapterframework.core.ITransactionalStorage;
  * @since   4.1
  */
 public class GenericReceiver extends ReceiverBase {
-	public static final String version="$RCSfile: GenericReceiver.java,v $ $Revision: 1.3 $ $Date: 2005-07-19 15:27:45 $";
+	public static final String version="$RCSfile: GenericReceiver.java,v $ $Revision: 1.4 $ $Date: 2007-05-21 12:24:20 $";
 
 	public void setListener(IListener listener) {
 		super.setListener(listener);
@@ -50,8 +53,12 @@ public class GenericReceiver extends ReceiverBase {
 	public void setErrorStorage(ITransactionalStorage errorStorage) {
 		super.setErrorStorage(errorStorage);
 	}
+	public void setMessageLog(ITransactionalStorage messageLog) {
+		super.setMessageLog(messageLog);
+	}
 	
 	public void setSender(ISender sender) {
 		super.setSender(sender);
 	}
+
 }

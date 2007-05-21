@@ -1,6 +1,9 @@
 /*
  * $Log: GenericMessageSendingPipe.java,v $
- * Revision 1.6  2007-05-09 09:47:04  europe\L190409
+ * Revision 1.7  2007-05-21 12:28:15  europe\L190409
+ * added public setMessageLog()
+ *
+ * Revision 1.6  2007/05/09 09:47:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected javadoc
  *
  * Revision 1.5  2007/02/05 14:59:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -23,6 +26,7 @@ package nl.nn.adapterframework.pipes;
 
 import nl.nn.adapterframework.core.ICorrelatedPullingListener;
 import nl.nn.adapterframework.core.ISender;
+import nl.nn.adapterframework.core.ITransactionalStorage;
 
 /**
  * Plain extension to {@link MessageSendingPipe} that can be used directly in configurations.
@@ -90,7 +94,7 @@ import nl.nn.adapterframework.core.ISender;
  */
 
 public class GenericMessageSendingPipe extends MessageSendingPipe {
-	public static final String version="$RCSfile: GenericMessageSendingPipe.java,v $ $Revision: 1.6 $ $Date: 2007-05-09 09:47:04 $";
+	public static final String version="$RCSfile: GenericMessageSendingPipe.java,v $ $Revision: 1.7 $ $Date: 2007-05-21 12:28:15 $";
 
 	public void setListener(ICorrelatedPullingListener listener) {
 		super.setListener(listener);
@@ -98,6 +102,10 @@ public class GenericMessageSendingPipe extends MessageSendingPipe {
 
 	public void setSender(ISender sender) {
 		super.setSender(sender);
+	}
+
+	public void setMessageLog(ITransactionalStorage messageLog) {
+		super.setMessageLog(messageLog);
 	}
 	
 }
