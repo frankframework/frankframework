@@ -1,6 +1,9 @@
 /*
  * $Log: LdapSender.java,v $
- * Revision 1.17  2007-05-16 11:42:14  europe\L190409
+ * Revision 1.18  2007-05-21 12:19:52  europe\L190409
+ * corrected javadoc
+ *
+ * Revision 1.17  2007/05/16 11:42:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * cleanup code, remove threading problems, improve javadoc
  *
  * Revision 1.16  2007/04/24 11:36:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -180,20 +183,20 @@ import org.apache.commons.lang.StringUtils;
  * <tr><th>operation</th><th>requirements</th></tr>
  * <tr><td>create</td><td>
  * <ul>
- * 	  <li>parameter 'entryName', resolving to RDN of entry to create<li>
- * 	  <li>xml-inputmessage containing attributes to create<li>
+ * 	  <li>parameter 'entryName', resolving to RDN of entry to create</li>
+ * 	  <li>xml-inputmessage containing attributes to create</li>
  * </ul>
  * </td></tr>
  * <tr><td>delete</td><td>
  * <ul>
- * 	  <li>parameter 'entryName', resolving to RDN of entry to delete<li>
+ * 	  <li>parameter 'entryName', resolving to RDN of entry to delete</li>
  * 	  <li>no specific inputmessage required<li>
  * </ul>
  * </td></tr>
  * <tr><td>read</td><td>
  * <ul>
- * 	  <li>parameter 'entryName', resolving to RDN of entry to read<li>
- * 	  <li>optional xml-inputmessage containing attributes to be returned<li>
+ * 	  <li>parameter 'entryName', resolving to RDN of entry to read</li>
+ * 	  <li>optional xml-inputmessage containing attributes to be returned</li>
  * </ul>
  * </td></tr>
  * </table>
@@ -203,7 +206,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class LdapSender extends JNDIBase implements ISenderWithParameters {
-	public static final String version = "$RCSfile: LdapSender.java,v $  $Revision: 1.17 $ $Date: 2007-05-16 11:42:14 $";
+	public static final String version = "$RCSfile: LdapSender.java,v $  $Revision: 1.18 $ $Date: 2007-05-21 12:19:52 $";
 
 	private String FILTER = "filterExpression";
 	private String ENTRYNAME = "entryName";
