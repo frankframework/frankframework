@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.30  2007-05-02 11:37:51  europe\L190409
+ * Revision 1.31  2007-05-21 12:22:47  europe\L190409
+ * added setMessageLog()
+ *
+ * Revision 1.30  2007/05/02 11:37:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added attribute 'active'
  *
  * Revision 1.29  2007/02/12 14:03:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -222,7 +225,7 @@ import org.apache.log4j.Logger;
  * @since 4.2
  */
 public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, IMessageHandler, IbisExceptionListener, HasSender, TracingEventNumbers {
-	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.30 $ $Date: 2007-05-02 11:37:51 $";
+	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.31 $ $Date: 2007-05-21 12:22:47 $";
 	protected Logger log = LogUtil.getLogger(this);
  
 	private String returnIfStopped="";
@@ -264,6 +267,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
     private ISender errorSender=null;
 	private ITransactionalStorage errorStorage=null;
 	private ISender sender=null; // answer-sender
+	private ITransactionalStorage messageLog=null;
 	
 	private int maxRetries=3;
 	private Counter retryCount = new Counter(0);
@@ -321,6 +325,9 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 			if (getInProcessStorage()!=null) {
 				getInProcessStorage().open();
 			}
+			if (getMessageLog()!=null) {
+				getMessageLog().open();
+			}
 			if (isTransacted()) {
 				getAdapter().getUserTransaction();
 			}
@@ -375,6 +382,9 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 			}
 			if (getErrorStorage()!=null && getErrorStorage()!=getInProcessStorage()) {
 				getInProcessStorage().close();
+			}
+			if (getMessageLog()!=null) {
+				getMessageLog().close();
 			}
 	
 			log.info("closed Receiver ["+ getName()+ "]");
@@ -458,6 +468,13 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 				errorStorage.configure();
 				if (errorStorage instanceof HasPhysicalDestination) {
 					info("Receiver ["+getName()+"] has errorStorage to "+((HasPhysicalDestination)errorStorage).getPhysicalDestinationName());
+				}
+			}
+			ITransactionalStorage messageLog = getMessageLog();
+			if (messageLog!=null) {
+				messageLog.configure();
+				if (messageLog instanceof HasPhysicalDestination) {
+					info("Receiver ["+getName()+"] has messageLog in "+((HasPhysicalDestination)messageLog).getPhysicalDestinationName());
 				}
 			}
 			if (isTransacted()) {
@@ -1016,6 +1033,9 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 					errorMessage = result;
 				} else {
 					try {
+						if (getMessageLog()!=null) {
+							getMessageLog().storeMessage(messageId, correlationId, new Date(),"log",message);
+						}
 						pipeLineResult = adapter.processMessageWithExceptions(correlationId, message, pipelineSession);
 						result=pipeLineResult.getResult();
 						errorMessage = "exitState ["+pipeLineResult.getState()+"], result ["+result+"]";
@@ -1234,6 +1254,16 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 		errorStorage.setName("errorStorage of ["+getName()+"]");
 	}
 	
+	/**
+	 * Sets the messageLog.
+	 */
+	protected void setMessageLog(ITransactionalStorage messageLog) {
+		this.messageLog = messageLog;
+		messageLog.setName("messageLog of ["+getName()+"]");
+	}
+	public ITransactionalStorage getMessageLog() {
+		return messageLog;
+	}
 	
 
 	/**
