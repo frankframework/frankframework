@@ -1,6 +1,9 @@
 /*
  * $Log: DirectoryListener.java,v $
- * Revision 1.3  2007-02-12 14:03:44  europe\L190409
+ * Revision 1.4  2007-05-21 09:26:35  europe\L190409
+ * added passWithoutDirectory attribute (by PL)
+ *
+ * Revision 1.3  2007/02/12 14:03:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Logger from LogUtil
  *
  * Revision 1.2  2006/09/25 13:21:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -64,7 +67,8 @@ import nl.nn.adapterframework.util.LogUtil;
  * <tr><td>{@link #setResponseTime(long) responseTime}</td><td>Waittime to wait between polling</td><td>10000 [ms]</td></tr>
  * <tr><td>{@link #setNumberOfAttempts(int) numberOfAttempts}</td><td>maximum number of move attempts before throwing an exception</td><td>10</td></tr>
  * <tr><td>{@link #setWaitBeforeRetry(long) waitBeforeRetry}</td><td>time waited after unsuccesful try</td><td>1000</td></tr>
- * <tr><td>{@link #setOverwrite(boolean) overwrite}</td><td>overwrite de file in the output directory if it already exist</td><td>false</td></tr>
+ * <tr><td>{@link #setOverwrite(boolean) overwrite}</td><td>overwrite the file in the output directory if it already exist</td><td>false</td></tr>
+ * <tr><td>{@link #setPassWithoutDirectory(boolean) passWithoutDirectory}</td><td>pass the filename without the <code>outputDirectory</code> to the pipeline</td><td>false</td></tr>
  * </table>
  * </p>
  *
@@ -72,7 +76,7 @@ import nl.nn.adapterframework.util.LogUtil;
  * @author  John Dekker
  */
 public class DirectoryListener implements IPullingListener, INamedObject {
-	public static final String version = "$RCSfile: DirectoryListener.java,v $  $Revision: 1.3 $ $Date: 2007-02-12 14:03:44 $";
+	public static final String version = "$RCSfile: DirectoryListener.java,v $  $Revision: 1.4 $ $Date: 2007-05-21 09:26:35 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -84,6 +88,7 @@ public class DirectoryListener implements IPullingListener, INamedObject {
 	private int numberOfAttempts = 10;
 	private long waitBeforeRetry = 1000;
 	private boolean overwrite = false;
+	private boolean passWithoutDirectory = false;
 
 	//TODO: check if this is thread-safe
 	private String inputFileName=null;
@@ -151,6 +156,11 @@ public class DirectoryListener implements IPullingListener, INamedObject {
 
 			if (newFilename == null) {
 				throw new ListenerException(getName() + " was unable to rename file [" + file.getAbsolutePath() + "] to [" + outputDirectory + "]");
+			}
+
+			if (passWithoutDirectory) {
+				File newFile = new File(newFilename);
+				newFilename = newFile.getName();
 			}
 			return newFilename;
 		}
@@ -317,9 +327,15 @@ public class DirectoryListener implements IPullingListener, INamedObject {
 		return waitBeforeRetry;
 	}
 
-
 	public void setOverwrite(boolean overwrite) {
 		this.overwrite = overwrite;
 	}
 
+	public void setPassWithoutDirectory(boolean b) {
+		passWithoutDirectory = b;
+	}
+
+	public boolean isPassWithoutDirectory() {
+		return passWithoutDirectory;
+	}
 }
