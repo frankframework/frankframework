@@ -1,6 +1,9 @@
 /*
  * $Log: BrowseJdbcTable.java,v $
- * Revision 1.1  2007-05-21 12:24:57  europe\L190409
+ * Revision 1.2  2007-05-21 12:25:43  europe\L190409
+ * fixed version string
+ *
+ * Revision 1.1  2007/05/21 12:24:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added browseJdbcTable functions
  *
  *
@@ -25,7 +28,7 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 
 public class BrowseJdbcTable extends ActionBase {
-	public static final String version = "$Id: BrowseJdbcTable.java,v 1.1 2007-05-21 12:24:57 europe\L190409 Exp $";
+	public static final String version = "$RCSfile: BrowseJdbcTable.java,v $ $Revision: 1.2 $ $Date: 2007-05-21 12:25:43 $";
 
 	public ActionForward execute(
 		ActionMapping mapping,
