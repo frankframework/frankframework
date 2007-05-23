@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcFacade.java,v $
- * Revision 1.16  2007-05-16 11:40:17  europe\L190409
+ * Revision 1.17  2007-05-23 09:08:53  europe\L190409
+ * added productType detector
+ *
+ * Revision 1.16  2007/05/16 11:40:17  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * apply datetime parameters using corresponding methods
  *
  * Revision 1.15  2007/02/12 13:56:18  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -78,8 +81,11 @@ import org.apache.log4j.Logger;
  * @since 	4.1
  */
 public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version="$RCSfile: JdbcFacade.java,v $ $Revision: 1.16 $ $Date: 2007-05-16 11:40:17 $";
+	public static final String version="$RCSfile: JdbcFacade.java,v $ $Revision: 1.17 $ $Date: 2007-05-23 09:08:53 $";
     protected Logger log = LogUtil.getLogger(this);
+	
+	public final static int DATABASE_GENERIC=0;
+	public final static int DATABASE_ORACLE=1;
 	
 	private String name;
     private String username=null;
@@ -91,6 +97,8 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 
 	private boolean transacted = false;
 	private boolean connectionsArePooled=true;
+	
+	private int databaseType=-1;
 
 	protected String getLogPrefix() {
 		return "["+this.getClass().getName()+"] ["+getName()+"] ";
@@ -135,6 +143,31 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 		return datasource;
 	}
 	
+	public void setDatabaseType(int type) {
+		databaseType=type;
+	}
+
+	public int getDatabaseType() throws SQLException, JdbcException {
+		if (databaseType<0) {
+			Connection conn=getConnection();
+			try {
+				DatabaseMetaData md=conn.getMetaData();
+				String product=md.getDatabaseProductName();
+				String driver=md.getDriverName();
+				log.info("Database Metadata: product ["+product+"] driver ["+driver+"]");
+				if ("Oracle".equals(product)) {
+					log.debug("Setting databasetype to ORACLE");
+					databaseType=DATABASE_ORACLE;
+				} else {
+					log.debug("Setting databasetype to GENERIC");
+					databaseType=DATABASE_GENERIC;
+				}
+			} finally {
+				conn.close();
+			}
+		}
+		return databaseType;
+	}
 	/**
 	 * Obtains a connection to the datasource. 
 	 */
