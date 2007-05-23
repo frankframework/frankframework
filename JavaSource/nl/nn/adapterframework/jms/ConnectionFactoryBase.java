@@ -1,6 +1,9 @@
 /*
  * $Log: ConnectionFactoryBase.java,v $
- * Revision 1.6  2007-02-12 13:58:11  europe\L190409
+ * Revision 1.7  2007-05-23 09:13:51  europe\L190409
+ * improved logging
+ *
+ * Revision 1.6  2007/02/12 13:58:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Logger from LogUtil
  *
  * Revision 1.5  2006/12/13 16:28:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -39,7 +42,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public abstract class ConnectionFactoryBase  {
-	public static final String version="$RCSfile: ConnectionFactoryBase.java,v $ $Revision: 1.6 $ $Date: 2007-02-12 13:58:11 $";
+	public static final String version="$RCSfile: ConnectionFactoryBase.java,v $ $Revision: 1.7 $ $Date: 2007-05-23 09:13:51 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	protected abstract HashMap getConnectionMap();
@@ -75,7 +78,7 @@ public abstract class ConnectionFactoryBase  {
 		try {
 			return createConnectionFactory(context, id);
 		} catch (Throwable t) {
-			throw new IbisException("could not obtain connectionFactory", t);
+			throw new IbisException("could not obtain connectionFactory ["+id+"]", t);
 		}
 	}
 	
