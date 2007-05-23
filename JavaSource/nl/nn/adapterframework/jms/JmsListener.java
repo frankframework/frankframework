@@ -1,6 +1,9 @@
 /*
  * $Log: JmsListener.java,v $
- * Revision 1.24  2006-10-13 08:15:17  europe\L190409
+ * Revision 1.25  2007-05-23 09:15:44  europe\L190409
+ * improved error message
+ *
+ * Revision 1.24  2006/10/13 08:15:17  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * update javadoc
  *
  * Revision 1.23  2006/03/08 13:56:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -159,7 +162,7 @@ import java.util.HashMap;
  * @since 4.0.1
  */
 public class JmsListener extends JMSFacade implements IPostboxListener, ICorrelatedPullingListener, HasSender, RunStateEnquiring {
-	public static final String version="$RCSfile: JmsListener.java,v $ $Revision: 1.24 $ $Date: 2006-10-13 08:15:17 $";
+	public static final String version="$RCSfile: JmsListener.java,v $ $Revision: 1.25 $ $Date: 2007-05-23 09:15:44 $";
 
 	private final static String THREAD_CONTEXT_SESSION_KEY="session";
 	private final static String THREAD_CONTEXT_MESSAGECONSUMER_KEY="messageConsumer";
@@ -209,7 +212,7 @@ public class JmsListener extends JMSFacade implements IPostboxListener, ICorrela
 				}
 			}
 		} catch (Exception e) {
-			throw new ListenerException(getLogPrefix()+"exception creating QueueReceiver", e);
+			throw new ListenerException(getLogPrefix()+"exception creating QueueReceiver for "+getPhysicalDestinationName(), e);
 		}
 	}
 	
