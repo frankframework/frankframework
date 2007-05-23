@@ -1,6 +1,9 @@
 /*
  * $Log: JMSFacade.java,v $
- * Revision 1.25  2006-10-13 08:14:27  europe\L190409
+ * Revision 1.26  2007-05-23 09:14:49  europe\L190409
+ * use alternate connectionfactoryname, if appropriate one not set
+ *
+ * Revision 1.25  2006/10/13 08:14:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * update javadoc
  *
  * Revision 1.24  2006/02/23 10:48:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -112,7 +115,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version="$RCSfile: JMSFacade.java,v $ $Revision: 1.25 $ $Date: 2006-10-13 08:14:27 $";
+	public static final String version="$RCSfile: JMSFacade.java,v $ $Revision: 1.26 $ $Date: 2007-05-23 09:14:49 $";
 
 	public static final String MODE_PERSISTENT="PERSISTENT";
 	public static final String MODE_NON_PERSISTENT="NON_PERSISTENT";
@@ -260,13 +263,27 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 		return connection;
 	}
 */
-	private String getConnectionFactoryName() {
+	private String getConnectionFactoryName() throws JmsException {
 		String result;
 		if (useTopicFunctions) {
 			result = isTransacted() ? getTopicConnectionFactoryNameXA() : getTopicConnectionFactoryName();
+			if (StringUtils.isEmpty(result)) {
+				result = isTransacted() ? getTopicConnectionFactoryName() : getTopicConnectionFactoryNameXA();
+			}
+			if (StringUtils.isEmpty(result)) {
+				throw new JmsException(getLogPrefix()+"neither topicConnectionFactoryName nor topicConnectionFactoryNameXA are specified");
+			}
+			log.warn(getLogPrefix()+"correct topicConnectionFactoryName attribute not specified, will use ["+result+"]");
 		}
 		else {
 			result = isTransacted() ? getQueueConnectionFactoryNameXA() : getQueueConnectionFactoryName();
+			if (StringUtils.isEmpty(result)) {
+				result = isTransacted() ? getQueueConnectionFactoryName() : getQueueConnectionFactoryNameXA();
+			}
+			if (StringUtils.isEmpty(result)) {
+				throw new JmsException(getLogPrefix()+"neither queueConnectionFactoryName nor queueConnectionFactoryNameXA are specified");
+			}
+			log.warn(getLogPrefix()+"correct queueConnectionFactoryName attribute not specified, will use ["+result+"]");
 		}
 		log.debug("["+name+"] returning ConnectionFactoryName ["+result+"]");
 		return result;
