@@ -1,6 +1,9 @@
 /*
  * $Log: JmsTransactionalStorage.java,v $
- * Revision 1.7  2005-12-20 16:59:26  europe\L190409
+ * Revision 1.8  2007-05-23 09:16:08  europe\L190409
+ * added attribute 'active'
+ *
+ * Revision 1.7  2005/12/20 16:59:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * implemented support for connection-pooling
  *
  * Revision 1.6  2005/10/20 15:44:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -57,9 +60,10 @@ import nl.nn.adapterframework.core.SenderException;
  * @since   4.1
  */
 public class JmsTransactionalStorage extends JmsMessageBrowser implements ITransactionalStorage {
-	public static final String version = "$RCSfile: JmsTransactionalStorage.java,v $ $Revision: 1.7 $ $Date: 2005-12-20 16:59:26 $";
+	public static final String version = "$RCSfile: JmsTransactionalStorage.java,v $ $Revision: 1.8 $ $Date: 2007-05-23 09:16:08 $";
 
 	private String slotId=null;
+	private boolean active=true;   
 
 	public JmsTransactionalStorage() {
 		super();
@@ -167,6 +171,13 @@ public class JmsTransactionalStorage extends JmsMessageBrowser implements ITrans
 
 	public void setSlotId(String string) {
 		slotId = string;
+	}
+
+	public void setActive(boolean b) {
+		active = b;
+	}
+	public boolean isActive() {
+		return active;
 	}
 	
 }
