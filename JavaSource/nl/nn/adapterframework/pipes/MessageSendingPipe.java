@@ -1,6 +1,9 @@
 /*
  * $Log: MessageSendingPipe.java,v $
- * Revision 1.28  2007-05-09 09:46:22  europe\L190409
+ * Revision 1.29  2007-05-23 09:24:27  europe\L190409
+ * added messageLog functionality
+ *
+ * Revision 1.28  2007/05/09 09:46:22  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected javadoc
  * optimized stubFile code
  *
@@ -77,8 +80,11 @@
  */
 package nl.nn.adapterframework.pipes;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.xml.transform.TransformerConfigurationException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
@@ -86,6 +92,7 @@ import nl.nn.adapterframework.core.HasSender;
 import nl.nn.adapterframework.core.ICorrelatedPullingListener;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
+import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeForward;
@@ -101,6 +108,7 @@ import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
@@ -145,7 +153,7 @@ import org.apache.commons.lang.SystemUtils;
  * <tr><td>{@link #setForwardName(String) forwardName}</td>  <td>name of forward returned upon completion</td><td>"success"</td></tr>
  * <tr><td>{@link #setResultOnTimeOut(String) resultOnTimeOut}</td><td>result returned when no return-message was received within the timeout limit</td><td>"receiver timed out"</td></tr>
  * <tr><td>{@link #setLinkMethod(String) linkMethod}</td><td>Indicates wether the server uses the correlationID or the messageID in the correlationID field of the reply. This requirers the sender to have set the correlationId at the time of sending.</td><td>CORRELATIONID</td></tr>
- * <tr><td>{@link #setNamespaceAware(boolean) namespaceAware}</td><td>controls namespaceAwarenes for parameters</td><td>application default</td></tr>
+ * <tr><td>{@link #setAuditTrailXPath(String) auditTrailXPath}</td><td>xpath expression to extract audit trail from message</td><td>&nbsp;</td></tr>
  * <tr><td><code>sender.*</td><td>any attribute of the sender instantiated by descendant classes</td><td>&nbsp;</td></tr>
  * </table>
  * <table border="1">
@@ -174,7 +182,7 @@ import org.apache.commons.lang.SystemUtils;
  */
 
 public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
-	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.28 $ $Date: 2007-05-09 09:46:22 $";
+	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.29 $ $Date: 2007-05-23 09:24:27 $";
 	private final static String TIMEOUTFORWARD = "timeout";
 	private final static String EXCEPTIONFORWARD = "exception";
 	private final static String ILLEGALRESULTFORWARD = "illegalResult";
@@ -186,12 +194,15 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 	private String stubFileName;
 	private boolean checkXmlWellFormed = false;
 	private String checkRootTag;
+	private String auditTrailXPath;
 
 	private ISender sender = null;
 	private ICorrelatedPullingListener listener = null;
+	private ITransactionalStorage messageLog=null;
 
 	// private variables
 	private String returnString;
+	private TransformerPool auditTrailTp=null;
 	
 	protected void propagateName() {
 		ISender sender=getSender();
@@ -273,6 +284,17 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 					throw new ConfigurationException(getLogPrefix(null) + "has no forward with name [illegalResult]");
 			}
 		}
+		ITransactionalStorage messageLog = getMessageLog();
+		if (messageLog!=null) {
+			messageLog.configure();
+			if (StringUtils.isNotEmpty(getAuditTrailXPath())) {
+				try {
+					auditTrailTp = new TransformerPool(XmlUtils.createXPathEvaluatorSource(getAuditTrailXPath()));
+				} catch (TransformerConfigurationException e) {
+					throw new ConfigurationException(getLogPrefix(null) + "cannot create transformer for audittrail ["+getAuditTrailXPath()+"]",e);
+				}
+			}
+		}
 	}
 
 	public PipeRunResult doPipe(Object input, PipeLineSession session)
@@ -288,9 +310,11 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 				"String expected, got a [" + input.getClass().getName() + "]");
 		}
 
+		String result = null;
+		
 		if (StringUtils.isNotEmpty(getStubFileName())) {
 			ParameterList pl = getParameterList();
-			String result=returnString;
+			result=returnString;
 			if (pl != null) {
 				ParameterResolutionContext prc = new ParameterResolutionContext((String)input, session);
 				Map params;
@@ -315,15 +339,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 //				udzMap.putAll(params);
 //				udzMap.remove(STUBFILENAME);
 			}
-
-			if (!validResult(result)) {
-				PipeForward illegalResultForward = findForward(ILLEGALRESULTFORWARD);
-				return new PipeRunResult(illegalResultForward, result);
-			}
-
-			return new PipeRunResult(getForward(), result);
 		} else {
-			String result = null;
 			ICorrelatedPullingListener replyListener = getListener();
 			HashMap threadContext=new HashMap();
 			try {
@@ -349,6 +365,16 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 						log.info(getLogPrefix(session) + "sent message to [" + getSender().getName()+ "] messageID ["+ messageID+ "] correlationID ["+ correlationID+ "] linkMethod ["+ getLinkMethod()	+ "]");
 					}
 				}
+
+				ITransactionalStorage messageLog = getMessageLog();
+				if (messageLog!=null) {
+					String messageTrail="no audit trail";
+					if (auditTrailTp!=null) {
+						messageTrail=auditTrailTp.transform((String)input,null);
+					}
+					messageLog.storeMessage(messageID,correlationID,new Date(),messageTrail,(String)input);
+				}
+
 				
 				if (replyListener != null) {
 					if (log.isDebugEnabled()) {
@@ -370,12 +396,6 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 					result = "";
 				}
 
-				if (!validResult(result)) {
-					PipeForward illegalResultForward = findForward(ILLEGALRESULTFORWARD);
-					return new PipeRunResult(illegalResultForward, result);
-				}
-
-				return new PipeRunResult(getForward(), result);
 			} catch (TimeOutException toe) {
 				PipeForward timeoutForward = findForward(TIMEOUTFORWARD);
 				if (timeoutForward==null) {
@@ -404,6 +424,12 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 					}
 			}
 		}
+		if (!validResult(result)) {
+			PipeForward illegalResultForward = findForward(ILLEGALRESULTFORWARD);
+			return new PipeRunResult(illegalResultForward, result);
+		}
+
+		return new PipeRunResult(getForward(), result);
 	}
 
 	private boolean validResult(String result) {
@@ -440,6 +466,16 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 				throw pse;
 			}
 		}
+		ITransactionalStorage messageLog = getMessageLog();
+		if (messageLog!=null) {
+			try {
+				messageLog.open();
+			} catch (Exception e) {
+				PipeStartException pse = new PipeStartException(getLogPrefix(null)+"could not open messagelog", e);
+				pse.setPipeNameInError(getName());
+				throw pse;
+			}
+		}
 	}
 	public void stop() {
 		if (StringUtils.isEmpty(getStubFileName())) {
@@ -456,6 +492,14 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 				} catch (ListenerException e) {
 					log.warn(getLogPrefix(null) + "Exception closing listener", e);
 				}
+			}
+		}
+		ITransactionalStorage messageLog = getMessageLog();
+		if (messageLog!=null) {
+			try {
+				messageLog.close();
+			} catch (Exception e) {
+				log.warn(getLogPrefix(null) + "Exception closing messageLog", e);
 			}
 		}
 	}
@@ -475,6 +519,24 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 	public ICorrelatedPullingListener getListener() {
 		return listener;
 	}
+
+	/**
+	 * Sets the messageLog.
+	 */
+	protected void setMessageLog(ITransactionalStorage messageLog) {
+		if (messageLog.isActive()) {
+			this.messageLog = messageLog;
+			messageLog.setName("messageLog of ["+getName()+"]");
+			if (StringUtils.isEmpty(messageLog.getSlotId())) {
+				messageLog.setSlotId("log "+getName());
+			}
+		}
+	}
+	public ITransactionalStorage getMessageLog() {
+		return messageLog;
+	}
+
+ 
 
 	/**
 	 * Register a ISender at this Pipe
@@ -549,4 +611,12 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 	public String getCheckRootTag() {
 		return checkRootTag;
 	}
+
+	public void setAuditTrailXPath(String string) {
+		auditTrailXPath = string;
+	}
+	public String getAuditTrailXPath() {
+		return auditTrailXPath;
+	}
+
 }
