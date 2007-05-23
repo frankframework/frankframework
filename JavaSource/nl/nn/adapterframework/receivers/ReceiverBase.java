@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.31  2007-05-21 12:22:47  europe\L190409
+ * Revision 1.32  2007-05-23 09:25:17  europe\L190409
+ * added support for attribute 'active' on transactional storages
+ *
+ * Revision 1.31  2007/05/21 12:22:47  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added setMessageLog()
  *
  * Revision 1.30  2007/05/02 11:37:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -225,7 +228,7 @@ import org.apache.log4j.Logger;
  * @since 4.2
  */
 public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, IMessageHandler, IbisExceptionListener, HasSender, TracingEventNumbers {
-	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.31 $ $Date: 2007-05-21 12:22:47 $";
+	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.32 $ $Date: 2007-05-23 09:25:17 $";
 	protected Logger log = LogUtil.getLogger(this);
  
 	private String returnIfStopped="";
@@ -1218,8 +1221,13 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 	 * @param inProcessStorage The inProcessStorage to set
 	 */
 	protected void setInProcessStorage(ITransactionalStorage inProcessStorage) {
-		this.inProcessStorage = inProcessStorage;
-		inProcessStorage.setName("inProcessStorage of ["+getName()+"]");
+		if (inProcessStorage.isActive()) {
+			this.inProcessStorage = inProcessStorage;
+			inProcessStorage.setName("inProcessStorage of ["+getName()+"]");
+			if (StringUtils.isEmpty(inProcessStorage.getSlotId())) {
+				inProcessStorage.setSlotId("inp "+getName());
+			}
+		}
 	}
 
 	/**
@@ -1250,16 +1258,26 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 	}
 
 	protected void setErrorStorage(ITransactionalStorage errorStorage) {
-		this.errorStorage = errorStorage;
-		errorStorage.setName("errorStorage of ["+getName()+"]");
+		if (errorStorage.isActive()) {
+			this.errorStorage = errorStorage;
+			errorStorage.setName("errorStorage of ["+getName()+"]");
+			if (StringUtils.isEmpty(errorStorage.getSlotId())) {
+				errorStorage.setSlotId("err "+getName());
+			}
+		}
 	}
 	
 	/**
 	 * Sets the messageLog.
 	 */
 	protected void setMessageLog(ITransactionalStorage messageLog) {
-		this.messageLog = messageLog;
-		messageLog.setName("messageLog of ["+getName()+"]");
+		if (messageLog.isActive()) {
+			this.messageLog = messageLog;
+			messageLog.setName("messageLog of ["+getName()+"]");
+			if (StringUtils.isEmpty(messageLog.getSlotId())) {
+				messageLog.setSlotId("log "+getName());
+			}
+		}
 	}
 	public ITransactionalStorage getMessageLog() {
 		return messageLog;
