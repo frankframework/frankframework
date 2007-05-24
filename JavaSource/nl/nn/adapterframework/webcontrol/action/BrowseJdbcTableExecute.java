@@ -1,6 +1,9 @@
 /*
  * $Log: BrowseJdbcTableExecute.java,v $
- * Revision 1.1  2007-05-21 12:24:57  europe\L190409
+ * Revision 1.2  2007-05-24 09:54:47  europe\L190409
+ * made cloudscape compatible
+ *
+ * Revision 1.1  2007/05/21 12:24:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added browseJdbcTable functions
  *
  *
@@ -9,33 +12,28 @@ package nl.nn.adapterframework.webcontrol.action;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import nl.nn.adapterframework.core.IMessageBrowser;
-import nl.nn.adapterframework.core.IMessageBrowsingIterator;
-import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.jms.JmsMessageBrowser;
+import nl.nn.adapterframework.jdbc.DirectQuerySender;
+import nl.nn.adapterframework.jdbc.JdbcFacade;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.StringTagger;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.webcontrol.IniDynaActionForm;
-import nl.nn.adapterframework.jdbc.DirectQuerySender;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.struts.action.ActionError;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 
-import org.apache.commons.lang.StringUtils;
-
 public class BrowseJdbcTableExecute extends ActionBase {
-	public static final String version = "$RCSfile: BrowseJdbcTableExecute.java,v $ $Revision: 1.1 $ $Date: 2007-05-21 12:24:57 $";
+	public static final String version = "$RCSfile: BrowseJdbcTableExecute.java,v $ $Revision: 1.2 $ $Date: 2007-05-24 09:54:47 $";
 
 	public ActionForward execute(
 		ActionMapping mapping,
@@ -81,35 +79,47 @@ public class BrowseJdbcTableExecute extends ActionBase {
 				qs.setName("QuerySender");
 				qs.setJmsRealm(form_jmsRealm);
 
-				String subQuery = null;
 				if (form_numberOfRowsOnly) {
-					query = "SELECT COUNT(*) AS COUNT";
-					subQuery =
-						"SELECT ROWNUM AS ROWNUMBER FROM " + form_tableName;
+					query = "SELECT COUNT(*) AS rowcount FROM " + form_tableName;
 				} else {
-					query = "SELECT *";
-					subQuery =
-						"SELECT ROWNUM AS ROWNUMBER, "
-							+ form_tableName
-							+ ".* FROM "
-							+ form_tableName;
-				}
-				if (StringUtils.isNotEmpty(form_order)) {
-					subQuery = subQuery + " ORDER BY " + form_order;
-				}
-				query = query + " FROM (" + subQuery + ")";
-				if (StringUtils.isNotEmpty(form_rownumMin)
-					&& StringUtils.isNotEmpty(form_rownumMax)) {
-					query =
-						query
-							+ " WHERE ROWNUMBER BETWEEN "
-							+ form_rownumMin
-							+ " AND "
-							+ form_rownumMax;
-				} else if (StringUtils.isNotEmpty(form_rownumMin)) {
-					query = query + " WHERE ROWNUMBER >= " + form_rownumMin;
-				} else if (StringUtils.isNotEmpty(form_rownumMax)) {
-					query = query + " WHERE ROWNUMBER <= " + form_rownumMax;
+					if (qs.getDatabaseType()==JdbcFacade.DATABASE_ORACLE) {					
+						query = "SELECT ROWNUM AS ROWNUMBER, "+form_tableName+ ".* FROM " + form_tableName;
+					} else {
+						query = "SELECT * FROM " + form_tableName;
+					}
+					if (StringUtils.isNotEmpty(form_order)) {
+						query = query + " ORDER BY " + form_order;
+					}
+					if (qs.getDatabaseType()==JdbcFacade.DATABASE_ORACLE) {					
+						if (StringUtils.isNotEmpty(form_rownumMin)
+							|| StringUtils.isNotEmpty(form_rownumMax)) {
+								
+							query = "SELECT * FROM ("+query+") ";
+								
+							if (StringUtils.isNotEmpty(form_rownumMin)
+								&& StringUtils.isNotEmpty(form_rownumMax)) {
+								query =
+									query
+										+ " WHERE ROWNUMBER BETWEEN "
+										+ form_rownumMin
+										+ " AND "
+										+ form_rownumMax;
+							} else if (StringUtils.isNotEmpty(form_rownumMin)) {
+								query = query + " WHERE ROWNUMBER >= " + form_rownumMin;
+							} else if (StringUtils.isNotEmpty(form_rownumMax)) {
+								query = query + " WHERE ROWNUMBER <= " + form_rownumMax;
+							}
+						}		
+
+					}
+					
+//					String subQuery = null;
+//					subQuery =
+//						"SELECT ROWNUM AS ROWNUMBER, "
+//							+ form_tableName
+//							+ ".* FROM "
+//							+ form_tableName;
+//					query = query + " FROM (" + subQuery + ")";
 				}
 				qs.setQueryType("select");
 				qs.configure();
@@ -121,7 +131,7 @@ public class BrowseJdbcTableExecute extends ActionBase {
 					"",
 					new ActionError(
 						"errors.generic",
-						"error occured on executing jdbc query: "
+						"error occured on executing jdbc query ["+query+"]: "
 							+ XmlUtils.encodeChars(t.getMessage())));
 			} finally {
 				qs.close();
