@@ -1,6 +1,9 @@
 /*
  * $Log: Parameter.java,v $
- * Revision 1.20  2007-05-16 11:45:18  europe\L190409
+ * Revision 1.21  2007-05-24 09:54:00  europe\L190409
+ * fixed parsing of date-types
+ *
+ * Revision 1.20  2007/05/16 11:45:18  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * support for date & type types, (first use: jdbc)
  *
  * Revision 1.19  2007/05/09 09:26:47  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -113,7 +116,17 @@ import org.w3c.dom.Node;
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>classname</td><td>name of the class, mostly a class that extends this class</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td>  <td>name of the receiver as known to the adapter</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setType(String) type}</td><td><code>string</code> or <code>xml</code> or <code>node</code>.<br> <code>xml</code> renders a xml-nodeset as an xml-string; <br> <code>node</code> renders a xml-nodeset as nodeset that can be used as a nodeset in xslt; <br>"string" renders the contents of the first node</td><td>string</td></tr>
+ * <tr><td>{@link #setType(String) type}</td><td>
+ * <ul>
+ * 	<li><code>string</code>: renders the contents of the first node (in combination with xslt or xpath)</li>
+ * 	<li><code>xml</code>:  renders a xml-nodeset as an xml-string (in combination with xslt or xpath)</li>
+ * 	<li><code>node</code>: renders a xml-nodeset as nodeset that can be used as a nodeset when passed as xslt-parameter (in combination with xslt or xpath)</li>
+ * 	<li><code>date</code>: converts the result to a Date, using formatString <code>yyyy-MM-dd</code>. When applied as a JDBC parameter, the method setDate() is used</li>
+ * 	<li><code>time</code>: converts the result to a Date, using formatString <code>HH:mm:ss</code>. When applied as a JDBC parameter, the method setTime() is used</li>
+ * 	<li><code>datetime</code>: converts the result to a Date, using formatString <code>yyyy-MM-dd HH:mm:ss</code>. When applied as a JDBC parameter, the method setTimestamp() is used</li>
+ * </ul>
+ * </td><td>string</td></tr>
+ * <tr><td>{@link #setFormatString(String) formatString}</td><td>used in combination with types date, time & datetime</td><td>depends on type</td></tr>
  * <tr><td>{@link #setSessionKey(String) sessionKey}</td><td>&nbsp;</td><td>Key of a PipeLineSession-variable. Is specified, the value of the PipeLineSession variable is used as input for the XpathExpression or Stylesheet, instead of the current input message. If no xpathExpression or Stylesheet are specified, the value itself is returned.</td></tr>
  * <tr><td>{@link #setXpathExpression(String) xpathExpression}</td><td>The xpath expression. </td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setStyleSheetName(String) styleSheetName}</td><td>Reference to a resource with the stylesheet</td><td>&nbsp;</td></tr>
@@ -146,13 +159,17 @@ import org.w3c.dom.Node;
  * @author Richard Punt / Gerrit van Brakel
  */
 public class Parameter implements INamedObject, IWithParameters {
-	public static final String version="$RCSfile: Parameter.java,v $ $Revision: 1.20 $ $Date: 2007-05-16 11:45:18 $";
+	public static final String version="$RCSfile: Parameter.java,v $ $Revision: 1.21 $ $Date: 2007-05-24 09:54:00 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static String TYPE_NODE="node";
 	public final static String TYPE_DATE="date";
 	public final static String TYPE_TIME="time";
 	public final static String TYPE_DATETIME="datetime";
+
+	public final static String TYPE_DATE_PATTERN="yyyy-MM-dd";
+	public final static String TYPE_TIME_PATTERN="HH:mm:ss";
+	public final static String TYPE_DATETIME_PATTERN="yyyy-MM-dd HH:mm:ss";
 
 	private String name = null;
 	private String type = null;
@@ -211,13 +228,13 @@ public class Parameter implements INamedObject, IWithParameters {
 			}
 		}
 		if (TYPE_DATE.equals(getType()) & StringUtils.isEmpty(getFormatString())) {
-			setFormatString("yyyy-MM-dd");
+			setFormatString(TYPE_DATE_PATTERN);
 		}
 		if (TYPE_DATETIME.equals(getType()) & StringUtils.isEmpty(getFormatString())) {
-			setFormatString("yyyy-MM-ddTHH:mm:ss");
+			setFormatString(TYPE_DATETIME_PATTERN);
 		}
 		if (TYPE_TIME.equals(getType()) & StringUtils.isEmpty(getFormatString())) {
-			setFormatString("HH:mm:ss");
+			setFormatString(TYPE_TIME_PATTERN);
 		}
 		configured = true;
 	}
@@ -306,20 +323,22 @@ public class Parameter implements INamedObject, IWithParameters {
 			log.debug("Parameter ["+getName()+"] resolved to defaultvalue ["+getDefaultValue()+"]");
 			result=getDefaultValue();
 		}
-		if (result !=null && result instanceof String)
+		if (result !=null && result instanceof String) {
 			if (TYPE_NODE.equals(getType())) {
-			try {
-				result=XmlUtils.buildNode((String)result,prc.isNamespaceAware());
-				if (log.isDebugEnabled()) log.debug("final result ["+result.getClass().getName()+"]["+result+"]");
-			} catch (DomBuilderException e) {
-				throw new ParameterException(e);
+				try {
+					result=XmlUtils.buildNode((String)result,prc.isNamespaceAware());
+					if (log.isDebugEnabled()) log.debug("final result ["+result.getClass().getName()+"]["+result+"]");
+				} catch (DomBuilderException e) {
+					throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+result+"] to XML",e);
+				}
 			}
 			if (TYPE_DATE.equals(getType()) || TYPE_DATETIME.equals(getType()) || TYPE_TIME.equals(getType())) {
+				log.debug("Parameter ["+getName()+"] converting result ["+result+"] to date using formatString ["+getFormatString()+"]" );
 				DateFormat df = new SimpleDateFormat(getFormatString());
 				try {
 					result = df.parseObject((String)result);
 				} catch (ParseException e) {
-					throw new ParameterException(e);
+					throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+result+"] to Date using formatString ["+getFormatString()+"]",e);
 				}
 			}
 		}
