@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcFacade.java,v $
- * Revision 1.17  2007-05-23 09:08:53  europe\L190409
+ * Revision 1.18  2007-05-24 09:50:58  europe\L190409
+ * fixed applying of datetime parameters
+ *
+ * Revision 1.17  2007/05/23 09:08:53  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added productType detector
  *
  * Revision 1.16  2007/05/16 11:40:17  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -55,6 +58,7 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.Date;
 
 import javax.naming.NamingException;
@@ -81,7 +85,7 @@ import org.apache.log4j.Logger;
  * @since 	4.1
  */
 public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version="$RCSfile: JdbcFacade.java,v $ $Revision: 1.17 $ $Date: 2007-05-23 09:08:53 $";
+	public static final String version="$RCSfile: JdbcFacade.java,v $ $Revision: 1.18 $ $Date: 2007-05-24 09:50:58 $";
     protected Logger log = LogUtil.getLogger(this);
 	
 	public final static int DATABASE_GENERIC=0;
@@ -224,9 +228,10 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 			Object value = pv.getValue();
 	//		log.debug("applying parameter ["+(i+1)+","+parameters.getParameterValue(i).getDefinition().getName()+"], value["+parameterValue+"]");
 
-			if (Parameter.TYPE_DATE.equals(paramType) || 
-				Parameter.TYPE_DATETIME.equals(paramType)) {
+			if (Parameter.TYPE_DATE.equals(paramType)) {
 				statement.setDate(i+1, new java.sql.Date(((Date)value).getTime()));
+			} else if (Parameter.TYPE_DATETIME.equals(paramType)) {
+				statement.setTimestamp(i+1, new Timestamp(((Date)value).getTime()));
 			} else if (Parameter.TYPE_TIME.equals(paramType)) {
 				statement.setTime(i+1, new java.sql.Time(((Date)value).getTime()));
 			} else { 
