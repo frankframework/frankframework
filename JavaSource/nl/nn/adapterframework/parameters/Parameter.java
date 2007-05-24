@@ -1,6 +1,9 @@
 /*
  * $Log: Parameter.java,v $
- * Revision 1.21  2007-05-24 09:54:00  europe\L190409
+ * Revision 1.22  2007-05-24 11:52:46  europe\L190409
+ * updated javadoc
+ *
+ * Revision 1.21  2007/05/24 09:54:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fixed parsing of date-types
  *
  * Revision 1.20  2007/05/16 11:45:18  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -120,7 +123,7 @@ import org.w3c.dom.Node;
  * <ul>
  * 	<li><code>string</code>: renders the contents of the first node (in combination with xslt or xpath)</li>
  * 	<li><code>xml</code>:  renders a xml-nodeset as an xml-string (in combination with xslt or xpath)</li>
- * 	<li><code>node</code>: renders a xml-nodeset as nodeset that can be used as a nodeset when passed as xslt-parameter (in combination with xslt or xpath)</li>
+ * 	<li><code>node</code>: renders a xml-nodeset as nodeset that can be used as such when passed as xslt-parameter</li>
  * 	<li><code>date</code>: converts the result to a Date, using formatString <code>yyyy-MM-dd</code>. When applied as a JDBC parameter, the method setDate() is used</li>
  * 	<li><code>time</code>: converts the result to a Date, using formatString <code>HH:mm:ss</code>. When applied as a JDBC parameter, the method setTime() is used</li>
  * 	<li><code>datetime</code>: converts the result to a Date, using formatString <code>yyyy-MM-dd HH:mm:ss</code>. When applied as a JDBC parameter, the method setTimestamp() is used</li>
@@ -159,7 +162,7 @@ import org.w3c.dom.Node;
  * @author Richard Punt / Gerrit van Brakel
  */
 public class Parameter implements INamedObject, IWithParameters {
-	public static final String version="$RCSfile: Parameter.java,v $ $Revision: 1.21 $ $Date: 2007-05-24 09:54:00 $";
+	public static final String version="$RCSfile: Parameter.java,v $ $Revision: 1.22 $ $Date: 2007-05-24 11:52:46 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static String TYPE_NODE="node";
