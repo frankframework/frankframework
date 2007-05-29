@@ -1,6 +1,9 @@
 /*
  * $Log: IbisWebServiceSender.java,v $
- * Revision 1.3  2004-08-31 15:51:15  L190409
+ * Revision 1.4  2007-05-29 11:07:33  europe\L190409
+ * implementation of HasPhysicalDestination
+ *
+ * Revision 1.3  2004/08/31 15:51:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added ToDo
  *
  * Revision 1.2  2004/08/09 13:55:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -21,6 +24,7 @@ import java.net.URL;
 import org.apache.soap.SOAPException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
@@ -44,8 +48,8 @@ import nl.nn.adapterframework.util.AppConstants;
  * @author Gerrit van Brakel
  * @since 4.2
  */
-public class IbisWebServiceSender implements ISender {
-	public static final String version = "$Id: IbisWebServiceSender.java,v 1.3 2004-08-31 15:51:15 L190409 Exp $";
+public class IbisWebServiceSender implements ISender, HasPhysicalDestination {
+	public static final String version = "$Id: IbisWebServiceSender.java,v 1.4 2007-05-29 11:07:33 europe\L190409 Exp $";
 
 	private String name;
 	private String ibisHost = "localhost";
@@ -87,6 +91,10 @@ public class IbisWebServiceSender implements ISender {
 
 	protected String getEndPoint() {
 		return "http://"+getIbisHost()+"/"+getIbisInstance()+"/servlet/rpcrouter";
+	}
+
+	public String getPhysicalDestinationName() {
+		return getEndPoint()+" - "+getServiceName();
 	}
 
 	public String getName() {

@@ -1,6 +1,9 @@
 /*
  * $Log: IbisJavaSender.java,v $
- * Revision 1.2  2007-05-16 11:46:09  europe\L190409
+ * Revision 1.3  2007-05-29 11:10:38  europe\L190409
+ * implementation of HasPhysicalDestination
+ *
+ * Revision 1.2  2007/05/16 11:46:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved javadoc
  *
  * Revision 1.1  2006/03/21 10:18:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -10,6 +13,7 @@
 package nl.nn.adapterframework.pipes;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
@@ -55,8 +59,8 @@ import java.util.HashMap;
  * @since   4.4.5
  * @version Id
  */
-public class IbisJavaSender extends SenderWithParametersBase {
-	public static final String version="$RCSfile: IbisJavaSender.java,v $ $Revision: 1.2 $ $Date: 2007-05-16 11:46:09 $";
+public class IbisJavaSender extends SenderWithParametersBase implements HasPhysicalDestination {
+	public static final String version="$RCSfile: IbisJavaSender.java,v $ $Revision: 1.3 $ $Date: 2007-05-29 11:10:38 $";
 	
 	private String name;
 	private String serviceName;
@@ -71,6 +75,9 @@ public class IbisJavaSender extends SenderWithParametersBase {
 		}
 	}
 
+	public String getPhysicalDestinationName() {
+		return "JavaListener "+getServiceName();
+	}
 
 	public boolean isSynchronous() {
 		return true;

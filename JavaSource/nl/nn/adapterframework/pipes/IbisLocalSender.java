@@ -1,6 +1,9 @@
 /*
  * $Log: IbisLocalSender.java,v $
- * Revision 1.12  2007-05-16 11:46:09  europe\L190409
+ * Revision 1.13  2007-05-29 11:10:38  europe\L190409
+ * implementation of HasPhysicalDestination
+ *
+ * Revision 1.12  2007/05/16 11:46:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved javadoc
  *
  * Revision 1.11  2006/08/22 06:51:23  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -41,6 +44,7 @@
 package nl.nn.adapterframework.pipes;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
@@ -109,8 +113,8 @@ import java.util.HashMap;
  * @author Gerrit van Brakel
  * @since  4.2
  */
-public class IbisLocalSender extends SenderWithParametersBase {
-	public static final String version="$RCSfile: IbisLocalSender.java,v $ $Revision: 1.12 $ $Date: 2007-05-16 11:46:09 $";
+public class IbisLocalSender extends SenderWithParametersBase implements HasPhysicalDestination {
+	public static final String version="$RCSfile: IbisLocalSender.java,v $ $Revision: 1.13 $ $Date: 2007-05-29 11:10:38 $";
 	
 	private String name;
 	private String serviceName;
@@ -133,8 +137,13 @@ public class IbisLocalSender extends SenderWithParametersBase {
 		}
 	}
 
-
-
+	public String getPhysicalDestinationName() {
+		if (StringUtils.isNotEmpty(getServiceName())) {
+			return "WebServiceListener "+getServiceName();
+		} else {
+			return "JavaListener "+getJavaListener();
+		}
+	}
 
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		HashMap context = null;
