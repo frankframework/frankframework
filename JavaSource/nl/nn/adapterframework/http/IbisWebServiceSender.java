@@ -1,6 +1,9 @@
 /*
  * $Log: IbisWebServiceSender.java,v $
- * Revision 1.4  2007-05-29 11:07:33  europe\L190409
+ * Revision 1.5  2007-05-29 11:08:14  europe\L190409
+ * corrected version string
+ *
+ * Revision 1.4  2007/05/29 11:07:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * implementation of HasPhysicalDestination
  *
  * Revision 1.3  2004/08/31 15:51:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -49,7 +52,7 @@ import nl.nn.adapterframework.util.AppConstants;
  * @since 4.2
  */
 public class IbisWebServiceSender implements ISender, HasPhysicalDestination {
-	public static final String version = "$Id: IbisWebServiceSender.java,v 1.4 2007-05-29 11:07:33 europe\L190409 Exp $";
+	public static final String version="$RCSfile: IbisWebServiceSender.java,v $ $Revision: 1.5 $ $Date: 2007-05-29 11:08:14 $";
 
 	private String name;
 	private String ibisHost = "localhost";
