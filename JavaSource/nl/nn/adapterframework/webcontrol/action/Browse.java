@@ -1,6 +1,9 @@
 /*
  * $Log: Browse.java,v $
- * Revision 1.1  2005-09-29 14:57:11  europe\L190409
+ * Revision 1.2  2007-05-29 11:13:25  europe\L190409
+ * add message logs
+ *
+ * Revision 1.1  2005/09/29 14:57:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * split transactional storage browser in browse-only and processing-options
  *
  */
@@ -17,6 +20,7 @@ import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
+import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.XmlBuilder;
@@ -35,7 +39,7 @@ import org.apache.struts.action.ActionMapping;
  * @since   4.4
  */
 public class Browse extends ActionBase {
-	public static final String version="$RCSfile: Browse.java,v $ $Revision: 1.1 $ $Date: 2005-09-29 14:57:11 $";
+	public static final String version="$RCSfile: Browse.java,v $ $Revision: 1.2 $ $Date: 2007-05-29 11:13:25 $";
 
 	protected void performAction(Adapter adapter, ReceiverBase receiver, String action, IMessageBrowser mb, String messageId) {
 		// allow for extensions
@@ -50,42 +54,61 @@ public class Browse extends ActionBase {
 		}
 
 		String action = request.getParameter("action");
-		if (null == action)
+		if (null == action) {
 			action = mapping.getParameter();
+		}
         
-		String adapterName = request.getParameter("adapterName");
+		String storageType  = request.getParameter("storageType");
+		String adapterName  = request.getParameter("adapterName");
 		String receiverName = request.getParameter("receiverName");
-		String messageId = request.getParameter("messageId");
+		String pipeName     = request.getParameter("pipeName");
+		String messageId    = request.getParameter("messageId");
 
 		//commandIssuedBy containes information about the location the
 		// command is sent from
 		String commandIssuedBy= getCommandIssuedBy(request);
-		log.debug("action ["+action+"] adapterName ["+adapterName+"] receiverName ["+receiverName+"] issued by "+commandIssuedBy);
+		log.debug("storageType ["+storageType+"] action ["+action+"] adapterName ["+adapterName+"] receiverName ["+receiverName+"] pipeName ["+pipeName+"] issued by ["+commandIssuedBy+"]");
 
 		
 		Adapter adapter = (Adapter) config.getRegisteredAdapter(adapterName);
-		ReceiverBase receiver = (ReceiverBase) adapter.getReceiverByName(receiverName);
 
-		IMessageBrowser mb = receiver.getErrorStorage();
-		
-
-		performAction(adapter, receiver, action, mb, messageId);
-		
+		IMessageBrowser mb;
+		IListener listener=null;
+		if ("messagelog".equals(storageType)) {
+			MessageSendingPipe pipe=(MessageSendingPipe)adapter.getPipeLine().getPipe(pipeName);
+			mb=pipe.getMessageLog();	
+		} else {
+			ReceiverBase receiver = (ReceiverBase) adapter.getReceiverByName(receiverName);
+			mb = receiver.getErrorStorage();
+			performAction(adapter, receiver, action, mb, messageId);
+			listener = receiver.getListener();
+		}
 
 		try {
 			if ("showmessage".equalsIgnoreCase(action)) {
 				Object rawmsg = mb.browseMessage(messageId);
-				IListener listener = receiver.getListener();
-				String msg = listener.getStringFromRawMessage(rawmsg,null);
+				String msg=null;
+				if (listener!=null) {
+					msg = listener.getStringFromRawMessage(rawmsg,null);
+				} else {
+					msg=(String)rawmsg;
+				}
 				String type = request.getParameter("type");
 				FileViewerServlet.showReaderContents(new StringReader(msg),type,response);
 			} else {
 				IMessageBrowsingIterator mbi=mb.getIterator();
 				try {
 					XmlBuilder messages=new XmlBuilder("messages");
-					messages.addAttribute("adapterName",java.net.URLEncoder.encode(adapterName));
-					messages.addAttribute("receiverName",java.net.URLEncoder.encode(receiverName));
-					messages.addAttribute("title","Errorqueue of receiver ["+receiverName+"] of adapter ["+adapterName+"]");
+					messages.addAttribute("storageType",storageType);
+					messages.addAttribute("action",action);
+					messages.addAttribute("adapterName",XmlUtils.encodeChars(adapterName));
+					if ("messagelog".equals(storageType)) {
+						messages.addAttribute("object","pipe ["+XmlUtils.encodeChars(pipeName)+"] of adapter ["+XmlUtils.encodeChars(adapterName)+"]");
+						messages.addAttribute("pipeName",XmlUtils.encodeChars(pipeName));
+ 					} else {
+						messages.addAttribute("object","receiver ["+XmlUtils.encodeChars(receiverName)+"] of adapter ["+XmlUtils.encodeChars(adapterName)+"]");
+						messages.addAttribute("receiverName",XmlUtils.encodeChars(receiverName));
+ 					}
 					int messageCount;
 					for (messageCount=0; mbi.hasNext(); messageCount++) {
 						Object iterItem = mbi.next();
