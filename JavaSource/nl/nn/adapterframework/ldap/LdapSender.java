@@ -1,6 +1,9 @@
 /*
  * $Log: LdapSender.java,v $
- * Revision 1.19  2007-05-29 11:09:06  europe\L190409
+ * Revision 1.20  2007-05-31 06:59:58  europe\L190409
+ * fix check on parameter
+ *
+ * Revision 1.19  2007/05/29 11:09:06  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated some javadoc
  *
  * Revision 1.18  2007/05/21 12:19:52  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -163,22 +166,21 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setName(String) name}</td>  <td>name of the sender</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setLdapProviderURL(String) ldapProviderURL}</td><td>URL to context to search in, e.g. 'ldap://edsnlm01.group.intranet/ou=People, o=ing' to search in te People group of ING CDS. Used to overwrite the providerURL specified in jmsRealm.</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>sets jndi parameters from defined realm (including authentication)</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setOperation(String) operation}</td><td>specifies operation to perform. Must be one of 'read', 'create', 'update', 'delete' or 'search'</td><td>read</td></tr>
- * <tr><td>{@link #setManipulationSubject(String) manipulationSubject}</td><td>specifies subject to perform operation on . Must be one of 'enrty' or 'attribute'</td><td>attribute</td></tr>
+ * <tr><td>{@link #setOperation(String) operation}</td><td>specifies operation to perform. Must be one of 'read', 'create', 'update', 'delete', 'search', 'getSubContexts' or 'getTree'</td><td>read</td></tr>
+ * <tr><td>{@link #setManipulationSubject(String) manipulationSubject}</td><td>specifies subject to perform operation on. Must be one of 'enrty' or 'attribute'</td><td>attribute</td></tr>
  * <tr><td>{@link #setUsePooling(boolean) usePooling}</td><td>specifies whether connection pooling is used or not</td><td>true</td></tr>
  * <tr><td>{@link #setInitialContextFactoryName(String) initialContextFactoryName}</td><td>class to use as initial context factory</td><td>com.sun.jndi.ldap.LdapCtxFactory</td></tr>
  * <tr><td>{@link #setAttributesToReturn(String) attributesToReturn}</td>  <td>comma separated list of attributes to return</td><td><i>all attributes</i></td></tr>
  * </table>
  * </p>
  * If there is only one parameter in the configaration of the pipe it will represent entryName (RDN) of interest.
- * The name of the parameter is irrelevant.
+ * The name of the parameter MUST be entryName (since version 4.6.0).
  * <p> 
  * If there are more then one parameters then the names are compulsory, in the following manner:
  * <ul>
  * <li>Object of interest must have the name [entryName] and must be present</li>
  * <li>filter expression (handy with searching - see RFC2254) - must have the name [filterExpression]</li>
  * </ul>
- * Developers should use entryName as name also in situations with only one param for understandability :)
  * 
  * <p>
  * current requirements for input and configuration
@@ -215,26 +217,25 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class LdapSender extends JNDIBase implements ISenderWithParameters {
-	public static final String version = "$RCSfile: LdapSender.java,v $  $Revision: 1.19 $ $Date: 2007-05-29 11:09:06 $";
+	public static final String version = "$RCSfile: LdapSender.java,v $  $Revision: 1.20 $ $Date: 2007-05-31 06:59:58 $";
 
 	private String FILTER = "filterExpression";
 	private String ENTRYNAME = "entryName";
 
-//	private static final String INITIAL_CONTEXT_FACTORY ="com.sun.jndi.ldap.LdapCtxFactory";
-//	private static final String DIGESTER_RULES_DEFAULT ="/xml/LDAP-digester-rules.xml";
+	private static final String INITIAL_CONTEXT_FACTORY ="com.sun.jndi.ldap.LdapCtxFactory";
 
-	public static final String OPERATION_SEARCH = "search";
-	public static final String OPERATION_READ = "read";
+	public static final String OPERATION_READ   = "read";
 	public static final String OPERATION_CREATE = "create";
 	public static final String OPERATION_UPDATE = "update";
 	public static final String OPERATION_DELETE = "delete";
+	public static final String OPERATION_SEARCH = "search";
 	public static final String OPERATION_SUB_CONTEXTS = "getSubContexts";
 	public static final String OPERATION_GET_TREE = "getTree";
 
 	public static final String MANIPULATION_ENTRY = "entry";
 	public static final String MANIPULATION_ATTRIBUTE = "attribute";
 
-	//De result to return if the modifying operation succeeds (an XML, to make it "next pipe ready")  
+	//The results to return if the modifying operation succeeds (an XML, to make it "next pipe ready")  
 	private static final String DEFAULT_RESULT = "<LdapResult>Success</LdapResult>";
 	private static final String DEFAULT_RESULT_READ = "<LdapResult>No such object</LdapResult>";
 			
@@ -259,27 +260,14 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 
 	public LdapSender() {
 		super();
-		setInitialContextFactoryName("com.sun.jndi.ldap.LdapCtxFactory");
+		setInitialContextFactoryName(INITIAL_CONTEXT_FACTORY);
 	}
 
 	public void configure() throws ConfigurationException {
-		if (paramList != null) {
-			if (paramList.size() >= 1)  //there can be only one - the entryName
-				if(!entryNameParameterPresent()) {
-					// TODO: checken waarom dit zou zijn
-					throw new ConfigurationException("[" + getName()+ "] Required parameter with the name [entryName] not found!");
-				}
-			paramList.configure();
-		} else {
-//			try {
-//				entryNameExtractor = new TransformerPool(XmlUtils.createXPathEvaluatorSource("/ldap/entryName"));
-//			} catch (TransformerConfigurationException e) {
-//				throw new ConfigurationException(e);
-//			}
-			// TODO: checken waarom dit zou zijn
-//			log.warn("There probably/maybe should be a parameter [entryName]. Check this!");
-			throw new ConfigurationException("[" + getName() + "] No parameter found - required 1 for entryName!");
+		if (paramList == null || !entryNameParameterPresent()) {
+			throw new ConfigurationException("[" + getName()+ "] Required parameter with the name [entryName] not found!");
 		}
+		paramList.configure();
 
 		if (getOperation() == null
 			|| !(getOperation().equals(OPERATION_READ)
@@ -351,9 +339,10 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 		while (it.hasNext())
 		{
 			Parameter p = (Parameter)it.next();
-			p.getName().equals(ENTRYNAME);
-			result = true;
-			break;
+			if (p.getName().equals(ENTRYNAME)) {
+				result = true;
+				break;
+			}
 		}
 		return result;
 	}
@@ -450,34 +439,33 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 		}
 	}
 
-	/**
-	 * Uses <code>Parameters2StringHelper</code> to create a String from parameter. 
-	 * This is actually depricated and servers for compatibility purpose with older configurations 
-	 *  
-	 */
-	private String getParamsAsString(ParameterResolutionContext prc)
-		throws ParameterException {
-		String result = "";
-		if (prc != null && paramList != null) {
-			Parameters2StringHelper helper = new Parameters2StringHelper();
-			prc.forAllParameters(paramList, helper);
-			result = helper.result;
-		}
-		log.debug("Got LDAP string: " + result);
-		return result;
-	}
-	/**
-	 * Goes with getParamsAsString(), is also depricated and servers for compatibility purpose with older configurations
-	 * see above 
-	 */
-	private class Parameters2StringHelper implements IParameterHandler {
-		private String result = "";
-
-		public void handleParam(String paramName, Object value)
-			throws ParameterException {
-			result = (String) value;
-		}
-	}
+//	/**
+//	 * Uses <code>Parameters2StringHelper</code> to create a String from parameter. 
+//	 * This is actually depricated and servers for compatibility purpose with older configurations 
+//	 *  
+//	 */
+//	private String getParamsAsString(ParameterResolutionContext prc) throws ParameterException {
+//		String result = "";
+//		if (prc != null && paramList != null) {
+//			Parameters2StringHelper helper = new Parameters2StringHelper();
+//			prc.forAllParameters(paramList, helper);
+//			result = helper.result;
+//		}
+//		log.debug("Got LDAP string: " + result);
+//		return result;
+//	}
+//	/**
+//	 * Goes with getParamsAsString(), is also depricated and servers for compatibility purpose with older configurations
+//	 * see above 
+//	 */
+//	private class Parameters2StringHelper implements IParameterHandler {
+//		private String result = "";
+//
+//		public void handleParam(String paramName, Object value)
+//			throws ParameterException {
+//			result = (String) value;
+//		}
+//	}
 //	/**
 //	 * Uses <code>Parameters2MapHelper</code> to create a Map with from parameters.  
 //	 * parameter entryName is mandatory as is it's name (entryName) 
