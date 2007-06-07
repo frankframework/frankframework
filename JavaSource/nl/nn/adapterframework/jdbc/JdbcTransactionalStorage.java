@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcTransactionalStorage.java,v $
- * Revision 1.18  2007-05-23 09:13:17  europe\L190409
+ * Revision 1.19  2007-06-07 12:27:51  europe\L190409
+ * check on not-null for messageid and correlationid
+ *
+ * Revision 1.18  2007/05/23 09:13:17  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * incorporated functionality of OracleTransactionalStorage
  * in basic JdbcTransactionalStorage
  *
@@ -144,7 +147,7 @@ import org.apache.commons.lang.StringUtils;
  * @since 	4.1
  */
 public class JdbcTransactionalStorage extends JdbcFacade implements ITransactionalStorage {
-	public static final String version = "$RCSfile: JdbcTransactionalStorage.java,v $ $Revision: 1.18 $ $Date: 2007-05-23 09:13:17 $";
+	public static final String version = "$RCSfile: JdbcTransactionalStorage.java,v $ $Revision: 1.19 $ $Date: 2007-06-07 12:27:51 $";
 	
 	// the following currently only for debug.... 
 	boolean checkIfTableExists=true;
@@ -462,6 +465,12 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	public String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, Serializable message) throws SenderException {
 		Connection conn;
 		String result;
+		if (messageId==null) {
+			throw new SenderException("messageId cannot be null");
+		}
+		if (correlationId==null) {
+			throw new SenderException("correlationId cannot be null");
+		}
 		try {
 			conn = getConnection();
 		} catch (JdbcException e) {
@@ -475,7 +484,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 			if (correlationId.length()>MAXIDLEN) {
 				correlationId=correlationId.substring(0,MAXIDLEN);
 			}
-			if (comments.length()>MAXCOMMENTLEN) {
+			if (comments!=null && comments.length()>MAXCOMMENTLEN) {
 				comments=comments.substring(0,MAXCOMMENTLEN);
 			}
 			result = storeMessageInDatabase(conn, messageId, correlationId, receivedDateTime, comments, message);
