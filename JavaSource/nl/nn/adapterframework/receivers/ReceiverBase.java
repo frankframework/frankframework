@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.32  2007-05-23 09:25:17  europe\L190409
+ * Revision 1.33  2007-06-07 15:22:44  europe\L190409
+ * made stopping after receiving an exception configurable
+ *
+ * Revision 1.32  2007/05/23 09:25:17  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added support for attribute 'active' on transactional storages
  *
  * Revision 1.31  2007/05/21 12:22:47  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -172,7 +175,7 @@ import org.apache.log4j.Logger;
  * <tr><td>{@link #setNumThreads(int) numThreads}</td><td>the number of threads that may execute a pipeline concurrently (only for pulling listeners)</td><td>1</td></tr>
  * <tr><td>{@link #setNumThreadsPolling(int) numThreadsPolling}</td><td>the number of threads that are activily polling for messages concurrently. '0' means 'limited only by <code>numThreads</code>' (only for pulling listeners)</td><td>1</td></tr>
  * <tr><td>{@link #setStyleSheetName(String) styleSheetName}</td>  <td></td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setOnError(String) onError}</td><td>one of 'continue' or 'close'. Controls the behaviour of the receiver when it encounters an error sending a reply</td><td>continue</td></tr>
+ * <tr><td>{@link #setOnError(String) onError}</td><td>one of 'continue' or 'close'. Controls the behaviour of the receiver when it encounters an error sending a reply or receives an exception asynchronously</td><td>continue</td></tr>
  * <tr><td>{@link #setTransacted(boolean) transacted}</td><td>if set to <code>true, messages will be received and processed under transaction control. If processing fails, messages will be sent to the error-sender. (see below)</code></td><td><code>false</code></td></tr>
  * <tr><td>{@link #setMaxRetries(int) maxRetries}</td><td>The number of times a pulling listening attempt is retried after an exception is caught</td><td>3</td></tr>
  * <tr><td>{@link #setIbis42compatibility(boolean) ibis42compatibility}</td><td>if set to <code>true, the result of a failed processing of a message is a formatted errormessage. Otherwise a listener specific error handling is performed</code></td><td><code>false</code></td></tr>
@@ -228,7 +231,7 @@ import org.apache.log4j.Logger;
  * @since 4.2
  */
 public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, IMessageHandler, IbisExceptionListener, HasSender, TracingEventNumbers {
-	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.32 $ $Date: 2007-05-23 09:25:17 $";
+	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.33 $ $Date: 2007-06-07 15:22:44 $";
 	protected Logger log = LogUtil.getLogger(this);
  
 	private String returnIfStopped="";
@@ -658,7 +661,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 							processRawMessage(listener,rawMessage,threadContext,finishProcessingTimestamp-startProcessingTimestamp);
 						} catch (ListenerException e) {
 							TracingUtil.exceptionEvent(this);
-							if ("continue".equalsIgnoreCase(getOnError())) {
+							if (ONERROR_CONTINUE.equalsIgnoreCase(getOnError())) {
 								error("caught Exception processing message, will continue processing next message", e);
 							} else {
 								error("stopping receiver after exception in processing message",e);
@@ -1094,9 +1097,13 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
     
 	
 	public void exceptionThrown(INamedObject object, Throwable t) {
-		String msg = getLogPrefix()+"received exception ["+t.getClass().getName()+"] from ["+object.getName()+"], stopping receiver";
-		error(msg,t);
-		stopRunning();
+		String msg = getLogPrefix()+"received exception ["+t.getClass().getName()+"] from ["+object.getName()+"]";
+		if (ONERROR_CONTINUE.equalsIgnoreCase(getOnError())) {
+			error(msg+", will continue processing messages when they arrive", t);
+		} else {
+			error(msg+", stopping receiver", t);
+			stopRunning();
+		}
 	}
 
 
