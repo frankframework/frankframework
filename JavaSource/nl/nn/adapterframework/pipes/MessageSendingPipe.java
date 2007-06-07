@@ -1,6 +1,9 @@
 /*
  * $Log: MessageSendingPipe.java,v $
- * Revision 1.29  2007-05-23 09:24:27  europe\L190409
+ * Revision 1.30  2007-06-07 12:28:32  europe\L190409
+ * avoid messageid to be null
+ *
+ * Revision 1.29  2007/05/23 09:24:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added messageLog functionality
  *
  * Revision 1.28  2007/05/09 09:46:22  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -182,7 +185,7 @@ import org.apache.commons.lang.SystemUtils;
  */
 
 public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
-	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.29 $ $Date: 2007-05-23 09:24:27 $";
+	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.30 $ $Date: 2007-06-07 12:28:32 $";
 	private final static String TIMEOUTFORWARD = "timeout";
 	private final static String EXCEPTIONFORWARD = "exception";
 	private final static String ILLEGALRESULTFORWARD = "illegalResult";
@@ -372,7 +375,11 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 					if (auditTrailTp!=null) {
 						messageTrail=auditTrailTp.transform((String)input,null);
 					}
-					messageLog.storeMessage(messageID,correlationID,new Date(),messageTrail,(String)input);
+					String storedMessageID=messageID;
+					if (storedMessageID==null) {
+						storedMessageID="-";
+					}
+					messageLog.storeMessage(storedMessageID,correlationID,new Date(),messageTrail,(String)input);
 				}
 
 				
