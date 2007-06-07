@@ -1,6 +1,9 @@
 /*
  * $Log: JavaListener.java,v $
- * Revision 1.21  2007-05-16 11:47:26  europe\L190409
+ * Revision 1.22  2007-06-07 15:20:46  europe\L190409
+ * improved logging
+ *
+ * Revision 1.21  2007/05/16 11:47:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved javadoc
  *
  * Revision 1.20  2007/05/07 08:34:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -126,7 +129,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class JavaListener implements IPushingListener, RequestProcessor {
-	public static final String version="$RCSfile: JavaListener.java,v $ $Revision: 1.21 $ $Date: 2007-05-16 11:47:26 $";
+	public static final String version="$RCSfile: JavaListener.java,v $ $Revision: 1.22 $ $Date: 2007-06-07 15:20:46 $";
 	protected Logger log = LogUtil.getLogger(this);
 	
 	private String name;
@@ -206,7 +209,7 @@ public class JavaListener implements IPushingListener, RequestProcessor {
 	public String processRequest(String correlationId, String message, HashMap context) throws ListenerException {
 
 		if (log.isDebugEnabled()) {
-			log.debug("JavaListener [" + getName() + "] processing [" + correlationId + "]");
+			log.debug("JavaListener [" + getName() + "] processing correlationId [" + correlationId + "]");
 		}
 		return handler.processRequest(this, correlationId, message, context);
 	}
@@ -223,7 +226,7 @@ public class JavaListener implements IPushingListener, RequestProcessor {
 	public String processRequestNoException(String correlationId, String message) {
 		try {
 			if (log.isDebugEnabled())
-				log.debug("JavaListener [" + getName() + "] processing [" + correlationId + "]");
+				log.debug("JavaListener [" + getName() + "] processing correlationId [" + correlationId + "]");
 			return handler.processRequest(this, correlationId, message);
 		} 
 		catch (ListenerException e) {
