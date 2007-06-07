@@ -1,6 +1,9 @@
 /*
  * $Log: IsolatedServiceCaller.java,v $
- * Revision 1.5  2007-02-12 14:02:19  europe\L190409
+ * Revision 1.6  2007-06-07 15:19:39  europe\L190409
+ * set names of isolated threads
+ *
+ * Revision 1.5  2007/02/12 14:02:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Logger from LogUtil
  *
  * Revision 1.4  2006/08/22 06:50:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -38,7 +41,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class IsolatedServiceCaller extends Thread {
-	public static final String version="$RCSfile: IsolatedServiceCaller.java,v $ $Revision: 1.5 $ $Date: 2007-02-12 14:02:19 $";
+	public static final String version="$RCSfile: IsolatedServiceCaller.java,v $ $Revision: 1.6 $ $Date: 2007-06-07 15:19:39 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	String serviceName;
@@ -53,6 +56,7 @@ public class IsolatedServiceCaller extends Thread {
 	
 	private IsolatedServiceCaller(String serviceName, String correlationID, String message, HashMap context, boolean targetIsJavaListener, boolean doTransaction) {
 		super();
+		setName(serviceName);
 		this.serviceName= serviceName;
 		this.correlationID=correlationID;
 		this.message=message;

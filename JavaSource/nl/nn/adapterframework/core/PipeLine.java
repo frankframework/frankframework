@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.40  2007-05-02 11:31:42  europe\L190409
+ * Revision 1.41  2007-06-07 15:15:12  europe\L190409
+ * set names of isolated threads
+ *
+ * Revision 1.40  2007/05/02 11:31:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added support for attribute 'active'
  * added support for attribute getInputFromFixedValue
  *
@@ -201,7 +204,7 @@ import org.apache.log4j.Logger;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.40 $ $Date: 2007-05-02 11:31:42 $";
+	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.41 $ $Date: 2007-06-07 15:15:12 $";
     private Logger log = LogUtil.getLogger(this);
 	private Logger durationLog = LogUtil.getLogger("LongDurationMessages");
     
@@ -489,6 +492,7 @@ public class PipeLine {
 		}
 		
 		public PipeRunResult runPipeWrapped(IPipe pipe, Object message, PipeLineSession session, boolean doTransaction) throws PipeRunException {
+			setName(pipe.getName());
 			this.pipe=pipe;
 			this.message=message;
 			this.session=session;
@@ -593,6 +597,7 @@ public class PipeLine {
 		}
 		
 		public PipeLineResult runPipeLine(String messageId, String message, PipeLineSession pipeLineSession, boolean doTransaction) throws PipeRunException {
+			setName(getName()+"-sub");
 			this.messageId=messageId;
 			this.message=message;
 			this.pipeLineSession=pipeLineSession;
