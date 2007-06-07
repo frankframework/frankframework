@@ -1,6 +1,9 @@
 /*
  * $Log: SapListener.java,v $
- * Revision 1.9  2006-01-05 13:59:07  europe\L190409
+ * Revision 1.10  2007-06-07 15:18:01  europe\L190409
+ * now implements HasPhysicalDestination
+ *
+ * Revision 1.9  2006/01/05 13:59:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.8  2005/12/28 08:42:17  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -48,17 +51,19 @@
  */
 package nl.nn.adapterframework.extensions.sap;
 
+import java.util.HashMap;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessageHandler;
 import nl.nn.adapterframework.core.IPushingListener;
 import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 
-import java.util.HashMap;
-
-import com.sap.mw.jco.*;
+import com.sap.mw.jco.JCO;
 
 /**
  * Implementation of a {@link nl.nn.adapterframework.core.IPushingListener},
@@ -83,15 +88,24 @@ import com.sap.mw.jco.*;
  * </p>
  * @author Gerrit van Brakel
  * @since 4.2
+ * @see   http://help.sap.com/saphelp_nw04/helpdata/en/09/c88442a07b0e53e10000000a155106/frameset.htm
  */
 public class SapListener extends SapFunctionFacade implements IPushingListener, SapFunctionHandler, JCO.ServerExceptionListener, JCO.ServerErrorListener {
-	public static final String version="$RCSfile: SapListener.java,v $  $Revision: 1.9 $ $Date: 2006-01-05 13:59:07 $";
+	public static final String version="$RCSfile: SapListener.java,v $  $Revision: 1.10 $ $Date: 2007-06-07 15:18:01 $";
 
 	private String progid;	 // progid of the RFC-destination
         	
 	private SapServer sapServer;
 	private IMessageHandler handler;
 	private IbisExceptionListener exceptionListener;
+
+	public void configure() throws ConfigurationException {
+		if (StringUtils.isEmpty(getProgid())) {
+			throw new ConfigurationException("attribute progid must be specified");
+		}
+		super.configure();
+		
+	}
 
 
 	public void open() throws ListenerException {
@@ -120,6 +134,10 @@ public class SapListener extends SapFunctionFacade implements IPushingListener, 
 		} finally {
 			closeFacade();
 		}
+	}
+
+	public String getPhysicalDestinationName() {
+		return "progid ["+getProgid()+"] on "+super.getPhysicalDestinationName();
 	}
 
 
@@ -199,6 +217,7 @@ public class SapListener extends SapFunctionFacade implements IPushingListener, 
 			exceptionListener.exceptionThrown(this, new SapException(getLogPrefix()+"error in SapServer ["+server.getProgID()+"]",e));
 		}
 	}
+
 
 
 }

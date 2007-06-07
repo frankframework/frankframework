@@ -1,6 +1,9 @@
 /*
  * $Log: SapFunctionFacade.java,v $
- * Revision 1.11  2007-05-02 11:33:49  europe\L190409
+ * Revision 1.12  2007-06-07 15:16:56  europe\L190409
+ * now implements HasPhysicalDestination
+ *
+ * Revision 1.11  2007/05/02 11:33:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * support for handling parameters
  *
  * Revision 1.10  2007/02/12 13:47:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -48,6 +51,7 @@ package nl.nn.adapterframework.extensions.sap;
 import java.util.HashMap;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -80,8 +84,8 @@ import com.sap.mw.jco.JCO;
  * @author Gerrit van Brakel
  * @since 4.2
  */
-public class SapFunctionFacade implements INamedObject{
-	public static final String version="$RCSfile: SapFunctionFacade.java,v $  $Revision: 1.11 $ $Date: 2007-05-02 11:33:49 $";
+public class SapFunctionFacade implements INamedObject, HasPhysicalDestination {
+	public static final String version="$RCSfile: SapFunctionFacade.java,v $  $Revision: 1.12 $ $Date: 2007-06-07 15:16:56 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -104,6 +108,9 @@ public class SapFunctionFacade implements INamedObject{
 	}
 
 	public void configure() throws ConfigurationException {
+		if (StringUtils.isEmpty(getSapSystemName())) {
+			throw new ConfigurationException("attribute sapSystemName must be specified");
+		}
 		sapSystem=SapSystem.getSystem(getSapSystemName());
 		if (sapSystem==null) {
 			throw new ConfigurationException(getLogPrefix()+"cannot find SapSystem ["+getSapSystemName()+"]");
@@ -130,10 +137,18 @@ public class SapFunctionFacade implements INamedObject{
 	}
 	
 	public void closeFacade() {
-		sapSystem.closeSystem();
+		if (sapSystem!=null) {
+			sapSystem.closeSystem();
+		}
 		ftemplate = null;
 	}
 
+
+	public String getPhysicalDestinationName() {
+		String result;
+		result = "mandant ["+sapSystem.getMandant()+"] on gwhost ["+sapSystem.getGwhost()+"] system ["+sapSystem.getSystemnr()+"]";
+		return result;
+	}
 
 
 
@@ -403,5 +418,6 @@ public class SapFunctionFacade implements INamedObject{
 	protected String getFunctionName() {
 		return null;
 	}
+
 
 }
