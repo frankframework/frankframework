@@ -1,6 +1,9 @@
 /*
  * $Log: IbisJavaSender.java,v $
- * Revision 1.3  2007-05-29 11:10:38  europe\L190409
+ * Revision 1.4  2007-06-07 15:18:59  europe\L190409
+ * cosmetic changes
+ *
+ * Revision 1.3  2007/05/29 11:10:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * implementation of HasPhysicalDestination
  *
  * Revision 1.2  2007/05/16 11:46:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -11,6 +14,8 @@
  *
  */
 package nl.nn.adapterframework.pipes;
+
+import java.util.HashMap;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
@@ -23,8 +28,6 @@ import nl.nn.adapterframework.dispatcher.DispatcherManagerFactory;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 
 import org.apache.commons.lang.StringUtils;
-
-import java.util.HashMap;
 
 /**
  * Posts a message to another IBIS-adapter in the same JVM.
@@ -60,12 +63,10 @@ import java.util.HashMap;
  * @version Id
  */
 public class IbisJavaSender extends SenderWithParametersBase implements HasPhysicalDestination {
-	public static final String version="$RCSfile: IbisJavaSender.java,v $ $Revision: 1.3 $ $Date: 2007-05-29 11:10:38 $";
+	public static final String version="$RCSfile: IbisJavaSender.java,v $ $Revision: 1.4 $ $Date: 2007-06-07 15:18:59 $";
 	
 	private String name;
 	private String serviceName;
-//	private boolean isolated=false;
-
 
 
 	public void configure() throws ConfigurationException {
