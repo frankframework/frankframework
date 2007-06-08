@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.33  2007-06-07 15:22:44  europe\L190409
+ * Revision 1.34  2007-06-08 07:49:13  europe\L190409
+ * changed error to warning
+ *
+ * Revision 1.33  2007/06/07 15:22:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * made stopping after receiving an exception configurable
  *
  * Revision 1.32  2007/05/23 09:25:17  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -231,7 +234,7 @@ import org.apache.log4j.Logger;
  * @since 4.2
  */
 public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, IMessageHandler, IbisExceptionListener, HasSender, TracingEventNumbers {
-	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.33 $ $Date: 2007-06-07 15:22:44 $";
+	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.34 $ $Date: 2007-06-08 07:49:13 $";
 	protected Logger log = LogUtil.getLogger(this);
  
 	private String returnIfStopped="";
@@ -1099,7 +1102,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 	public void exceptionThrown(INamedObject object, Throwable t) {
 		String msg = getLogPrefix()+"received exception ["+t.getClass().getName()+"] from ["+object.getName()+"]";
 		if (ONERROR_CONTINUE.equalsIgnoreCase(getOnError())) {
-			error(msg+", will continue processing messages when they arrive", t);
+			warn(msg+", will continue processing messages when they arrive: "+ t.getMessage());
 		} else {
 			error(msg+", stopping receiver", t);
 			stopRunning();
