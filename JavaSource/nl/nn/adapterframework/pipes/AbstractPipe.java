@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractPipe.java,v $
- * Revision 1.27  2007-05-02 11:34:34  europe\L190409
+ * Revision 1.28  2007-06-08 07:58:14  europe\L190409
+ * set default transactionAttribute to Supports
+ *
+ * Revision 1.27  2007/05/02 11:34:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added attribute 'active'
  * added attribute getInputFromFixedValue
  *
@@ -151,7 +154,7 @@ import org.apache.log4j.Logger;
  * 											      <tr><td>T1</td>  <td>T1</td></tr>
  *   <tr><td colspan="1" rowspan="2">Never</td>       <td>none</td><td>none</td></tr>
  * 											      <tr><td>T1</td>  <td>error</td></tr>
- *  </table></td><td>&nbsp;</td></tr>
+ *  </table></td><td>Supports</td></tr>
  * <tr><td>{@link #setBeforeEvent(int) beforeEvent}</td>      <td>METT eventnumber, fired just before a message is processed by this Pipe</td><td>-1 (disabled)</td></tr>
  * <tr><td>{@link #setAfterEvent(int) afterEvent}</td>        <td>METT eventnumber, fired just after message processing by this Pipe is finished</td><td>-1 (disabled)</td></tr>
  * <tr><td>{@link #setExceptionEvent(int) exceptionEvent}</td><td>METT eventnumber, fired when message processing by this Pipe resulted in an exception</td><td>-1 (disabled)</td></tr>
@@ -163,7 +166,7 @@ import org.apache.log4j.Logger;
  * @see nl.nn.adapterframework.core.PipeLineSession
  */
 public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttribute, TracingEventNumbers {
-	public static final String version="$RCSfile: AbstractPipe.java,v $ $Revision: 1.27 $ $Date: 2007-05-02 11:34:34 $";
+	public static final String version="$RCSfile: AbstractPipe.java,v $ $Revision: 1.28 $ $Date: 2007-06-08 07:58:14 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -177,7 +180,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	private String storeResultInSessionKey=null;
 	private boolean preserveInput=false;
 	private boolean namespaceAware=XmlUtils.isNamespaceAwareByDefault();
-	private int transactionAttribute=-1;
+	private int transactionAttribute=JtaUtil.TRANSACTION_ATTRIBUTE_SUPPORTS;
  
 	// METT event numbers
 	private int beforeEvent=-1;
