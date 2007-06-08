@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.35  2007-06-08 12:17:40  europe\L190409
+ * Revision 1.36  2007-06-08 12:49:03  europe\L190409
+ * updated javadoc
+ *
+ * Revision 1.35  2007/06/08 12:17:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved error handling
  * introduced retry mechanisme with increasing wait interval
  *
@@ -196,6 +199,7 @@ import org.apache.log4j.Logger;
  * <tr><th>nested elements (accessible in descender-classes)</th><th>description</th></tr>
  * <tr><td>{@link nl.nn.adapterframework.core.IPullingListener listener}</td><td>the listener used to receive messages from</td></tr>
  * <tr><td>{@link nl.nn.adapterframework.core.ITransactionalStorage inProcessStorage}</td><td>mandatory for {@link #setTransacted(boolean) transacted} receivers: place to store messages during processing.</td></tr>
+ * <tr><td>{@link nl.nn.adapterframework.core.ITransactionalStorage errorStorage}</td><td>optional for {@link #setTransacted(boolean) transacted} receivers: place to store messages if message processing has gone wrong. If no errorStorage is specified, the inProcessStorage is used for errorStorage</td></tr>
  * <tr><td>{@link nl.nn.adapterframework.core.ISender errorSender}</td><td>optional for {@link #setTransacted(boolean) transacted} receviers: 
  * will be called to store messages that failed to process. If no errorSender is specified, failed messages will remain in inProcessStorage</td></tr>
  * </table>
@@ -224,7 +228,7 @@ import org.apache.log4j.Logger;
  * </p>
  *
  * <p><b>commit or rollback</b><br>
- * If {@link #setTransacted(boolean) transacted} is set to <code>true, messages will be either committed or rolled back.
+ * If {@link #setTransacted(boolean) transacted} is set to <code>true</code>, messages will be either committed or rolled back.
  * All message-processing transactions are committed, unless one or more of the following apply:
  * <ul>
  * <li>The PipeLine is transacted and the exitState of the pipeline is not equal to {@link nl.nn.adapterframework.core.PipeLine#setCommitOnState(String) commitOnState} (that defaults to 'success')</li>
@@ -238,7 +242,7 @@ import org.apache.log4j.Logger;
  * @since 4.2
  */
 public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, IMessageHandler, IbisExceptionListener, HasSender, TracingEventNumbers {
-	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.35 $ $Date: 2007-06-08 12:17:40 $";
+	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.36 $ $Date: 2007-06-08 12:49:03 $";
 	protected Logger log = LogUtil.getLogger(this);
  
 	private String returnIfStopped="";
