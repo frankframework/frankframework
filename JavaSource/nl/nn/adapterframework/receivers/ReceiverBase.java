@@ -1,6 +1,10 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.34  2007-06-08 07:49:13  europe\L190409
+ * Revision 1.35  2007-06-08 12:17:40  europe\L190409
+ * improved error handling
+ * introduced retry mechanisme with increasing wait interval
+ *
+ * Revision 1.34  2007/06/08 07:49:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed error to warning
  *
  * Revision 1.33  2007/06/07 15:22:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -234,7 +238,7 @@ import org.apache.log4j.Logger;
  * @since 4.2
  */
 public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, IMessageHandler, IbisExceptionListener, HasSender, TracingEventNumbers {
-	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.34 $ $Date: 2007-06-08 07:49:13 $";
+	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.35 $ $Date: 2007-06-08 12:17:40 $";
 	protected Logger log = LogUtil.getLogger(this);
  
 	private String returnIfStopped="";
@@ -629,9 +633,12 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 	 */
 	public void run() {
 		threadsRunning.increase();
+		IPullingListener listener=null;
+		HashMap threadContext=null;
+		int retryInterval=1;
 		try {
-			IPullingListener listener = (IPullingListener)getListener();		
-			HashMap threadContext = listener.openThread();
+			listener = (IPullingListener)getListener();		
+			threadContext = listener.openThread();
 			if (threadContext==null) {
 				threadContext = new HashMap();
 			}
@@ -641,13 +648,49 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 	
 			runState.setRunState(RunStateEnum.STARTED);
 			while (getRunState().equals(RunStateEnum.STARTED)) {
+				boolean permissionToGo=true;
 				if (pollToken!=null) {
-					pollToken.acquire();
+					try {
+						permissionToGo=false;
+						pollToken.acquire();
+						permissionToGo=true;
+					} catch (Exception e) {
+						error("acquisition of polltoken interupted" ,e);
+						stopRunning();
+					}
 				}
 				Object rawMessage=null;
 				try {
-					if (getRunState().equals(RunStateEnum.STARTED)) {
-						rawMessage = getRawMessage(threadContext);
+					if (permissionToGo && getRunState().equals(RunStateEnum.STARTED)) {
+						try {
+							rawMessage = getRawMessage(threadContext);
+							synchronized (this) {
+								retryInterval=1;
+							}
+						} catch (ListenerException e) {
+							if (ONERROR_CONTINUE.equalsIgnoreCase(getOnError())) {
+								long currentInterval;
+								synchronized (this) {
+									currentInterval=retryInterval;
+									retryInterval=retryInterval*2;
+									if (retryInterval>3600) {
+										retryInterval=3600;
+									}
+								}
+								error("caught Exception retrieving message, will continue retrieving messages in ["+currentInterval+"] seconds", e);
+								while (getRunState().equals(RunStateEnum.STARTED) && currentInterval-->0) {
+									try {
+										Thread.sleep(1000);
+									} catch (Exception e2) {
+										error("sleep interupted" ,e2);
+										stopRunning();
+									}
+								}
+							} else {
+								error("stopping receiver after exception in retrieving message",e);
+								stopRunning();
+							}
+						}
 					}
 				} finally {
 					if (pollToken!=null) {
@@ -677,11 +720,17 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 					}
 				} 
 			}
-			listener.closeThread(threadContext);
 	
 		} catch (Throwable e) {
 			error("error occured in receiver [" + getName() + "]",e);
 		} finally {
+			if (listener!=null) {
+				try {
+					listener.closeThread(threadContext);
+				} catch (ListenerException e) {
+					error("Exception closing listener of Receiver ["+getName()+"]", e);
+				}
+			}
 			long stillRunning=threadsRunning.decrease();
 	
 			if (stillRunning>0) {
