@@ -1,6 +1,9 @@
 /*
  * $Log: JtaUtil.java,v $
- * Revision 1.11  2007-05-08 16:01:21  europe\L190409
+ * Revision 1.12  2007-06-08 12:18:36  europe\L190409
+ * do not rollback after exception on commit if status is already final
+ *
+ * Revision 1.11  2007/05/08 16:01:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed stacktrace from debug-logging while obtaining user-transaction
  *
  * Revision 1.10  2007/02/12 14:12:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -58,7 +61,7 @@ import org.apache.log4j.Logger;
  * @since  4.1
  */
 public class JtaUtil {
-	public static final String version="$RCSfile: JtaUtil.java,v $ $Revision: 1.11 $ $Date: 2007-05-08 16:01:21 $";
+	public static final String version="$RCSfile: JtaUtil.java,v $ $Revision: 1.12 $ $Date: 2007-06-08 12:18:36 $";
 	private static Logger log = LogUtil.getLogger(JtaUtil.class);
 	
 	private static final String USERTRANSACTION_URL1_KEY="jta.userTransactionUrl1";
@@ -273,8 +276,21 @@ public class JtaUtil {
 			}
 		} catch (Throwable t1) {
 			try {
-				log.warn("trying to roll back transaction after exception",t1);
-				utx.rollback();
+				int currentStatus=-1;
+				try {
+					currentStatus=utx.getStatus();
+				} catch (Throwable t) {
+					log.debug("caught exception obtaining transaction status: "+ t.getMessage());
+				}
+				if (currentStatus != Status.STATUS_COMMITTED &&
+					currentStatus != Status.STATUS_NO_TRANSACTION &&
+					currentStatus != Status.STATUS_ROLLEDBACK &&
+					currentStatus != Status.STATUS_ROLLING_BACK) {
+						log.warn("current status ["+displayTransactionStatus(currentStatus)+"], trying to roll back transaction after exception ",t1);
+						utx.rollback();
+				} else {
+					log.info("current status ["+displayTransactionStatus(currentStatus)+"], will not issue rollback command");
+				}
 			} catch (Throwable t2) {
 				log.warn("exception rolling back transaction",t2);
 			}
