@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.41  2007-06-07 15:15:12  europe\L190409
+ * Revision 1.42  2007-06-08 12:16:31  europe\L190409
+ * restored operation of commitOnState
+ *
+ * Revision 1.41  2007/06/07 15:15:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * set names of isolated threads
  *
  * Revision 1.40  2007/05/02 11:31:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -150,7 +153,7 @@ import org.apache.log4j.Logger;
  * <tr><td>classname</td><td>name of the class, mostly a class that extends this class</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setFirstPipe(String) firstPipe}</td><td>name of the receiver as known to the adapter</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setTransacted(boolean) transacted} <i>deprecated</i></td><td>if set to <code>true, messages will be processed under transaction control. (see below)</code></td><td><code>false</code></td></tr>
- * <tr><td>{@link #setCommitOnState(String) commitOnState}</td><td>If the pipelineResult.getState() equals this value, the transaction is committed.</td><td><code>success</code></td></tr>
+ * <tr><td>{@link #setCommitOnState(String) commitOnState}</td><td>If the pipelineResult.getState() equals this value, the transaction is committed, otherwise it is rolled back.</td><td><code>success</code></td></tr>
  * <tr><td>{@link #setTransactionAttribute(String) transactionAttribute}</td><td>Defines transaction and isolation behaviour. Equal to <A href="http://java.sun.com/j2ee/sdk_1.2.1/techdocs/guides/ejb/html/Transaction2.html#10494">EJB transaction attribute</a>. Possible values are: 
  *   <table border="1">
  *   <tr><th>transactionAttribute</th><th>callers Transaction</th><th>Pipeline excecuted in Transaction</th></tr>
@@ -204,7 +207,7 @@ import org.apache.log4j.Logger;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.41 $ $Date: 2007-06-07 15:15:12 $";
+	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.42 $ $Date: 2007-06-08 12:16:31 $";
     private Logger log = LogUtil.getLogger(this);
 	private Logger durationLog = LogUtil.getLogger("LongDurationMessages");
     
@@ -642,7 +645,18 @@ public class PipeLine {
 			}
 			PipeLineResult result = processPipeLine(messageId, message, pipeLineSession);
 			if (doTransaction) {
-				JtaUtil.finishTransaction();
+				boolean mustRollback=false;
+				
+				if (result==null) {
+					mustRollback=true;
+					log.warn("received null result for messageId ["+messageId+"], will issue rollback");
+				} else {
+					if (StringUtils.isNotEmpty(getCommitOnState()) && !getCommitOnState().equalsIgnoreCase(result.getState())) {
+						mustRollback=true;
+						log.warn("result state ["+result.getState()+"] for messageId ["+messageId+"] is not equal to commitOnState ["+getCommitOnState()+"], will issue rollback");
+					}
+				}
+				JtaUtil.finishTransaction(mustRollback);
 			}
 			return result;
 		} catch (Throwable t) {
