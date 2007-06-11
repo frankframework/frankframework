@@ -1,6 +1,9 @@
 /*
  * $Log: MessageSendingPipe.java,v $
- * Revision 1.30  2007-06-07 12:28:32  europe\L190409
+ * Revision 1.31  2007-06-11 13:02:36  europe\L190409
+ * improved logging
+ *
+ * Revision 1.30  2007/06/07 12:28:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * avoid messageid to be null
  *
  * Revision 1.29  2007/05/23 09:24:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -185,7 +188,7 @@ import org.apache.commons.lang.SystemUtils;
  */
 
 public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
-	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.30 $ $Date: 2007-06-07 12:28:32 $";
+	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.31 $ $Date: 2007-06-11 13:02:36 $";
 	private final static String TIMEOUTFORWARD = "timeout";
 	private final static String EXCEPTIONFORWARD = "exception";
 	private final static String ILLEGALRESULTFORWARD = "illegalResult";
@@ -365,7 +368,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 						correlationID = sendResult;
 					}
 					if (log.isInfoEnabled()) {
-						log.info(getLogPrefix(session) + "sent message to [" + getSender().getName()+ "] messageID ["+ messageID+ "] correlationID ["+ correlationID+ "] linkMethod ["+ getLinkMethod()	+ "]");
+						log.info(getLogPrefix(session) + "sent message to [" + getSender().getName()+ "] asynchronously, resulting in messageID ["+ messageID+ "] correlationID ["+ correlationID+ "] linkMethod ["+ getLinkMethod()	+ "]");
 					}
 				}
 
