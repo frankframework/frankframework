@@ -1,6 +1,9 @@
 /*
  * $Log: ITransactionalStorage.java,v $
- * Revision 1.4  2007-05-23 09:07:57  europe\L190409
+ * Revision 1.5  2007-06-12 11:19:42  europe\L190409
+ * added set/getType
+ *
+ * Revision 1.4  2007/05/23 09:07:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added attributes slotId and active
  *
  * Revision 1.3  2005/07/19 12:20:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -29,7 +32,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
  * @version Id
 */
 public interface ITransactionalStorage extends IMessageBrowser, INamedObject {
-	public static final String version = "$RCSfile: ITransactionalStorage.java,v $ $Revision: 1.4 $ $Date: 2007-05-23 09:07:57 $";
+	public static final String version = "$RCSfile: ITransactionalStorage.java,v $ $Revision: 1.5 $ $Date: 2007-06-12 11:19:42 $";
 
 	/**
 	 * Prepares the object for operation. After this
@@ -54,6 +57,13 @@ public interface ITransactionalStorage extends IMessageBrowser, INamedObject {
 	 */	
 	public String getSlotId();
 	public void setSlotId(String string);
+
+
+	/**
+	 *  type is one character: E for error, I for inprocessStorage, L for logging.
+	 */	
+	public String getType();
+	public void setType(String string);
 	
 	public boolean isActive();
 
