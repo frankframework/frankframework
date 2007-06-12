@@ -1,6 +1,9 @@
 /*
  * $Log: Misc.java,v $
- * Revision 1.13  2005-10-27 08:43:36  europe\L190409
+ * Revision 1.14  2007-06-12 11:24:24  europe\L190409
+ * added getHostname()
+ *
+ * Revision 1.13  2005/10/27 08:43:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * moved getEnvironmentVariables to Misc
  *
  * Revision 1.12  2005/10/17 11:26:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -37,7 +40,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class Misc {
-	public static final String version="$RCSfile: Misc.java,v $ $Revision: 1.13 $ $Date: 2005-10-27 08:43:36 $";
+	public static final String version="$RCSfile: Misc.java,v $ $Revision: 1.14 $ $Date: 2007-06-12 11:24:24 $";
 	public static final int BUFFERSIZE=20000;
 	public static final String DEFAULT_INPUT_STREAM_ENCODING="UTF-8";
 
@@ -388,6 +391,21 @@ public class Misc {
 			props.setProperty(key,value);
 		}
 		return props;
+	}
+
+	public static String getHostname() {
+		String localHost=null;
+		// String localIP="";
+		try {
+			InetAddress localMachine = InetAddress.getLocalHost();	
+			//localIP = localMachine.getHostAddress();
+			localHost = localMachine.getHostName();
+		} catch(UnknownHostException uhe) {
+			if (localHost==null) {
+				localHost="unknown ("+uhe.getMessage()+")";
+			}
+		}
+		return localHost;
 	}
 
 
