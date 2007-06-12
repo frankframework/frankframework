@@ -1,6 +1,9 @@
 /*
  * $Log: OracleTransactionalStorage.java,v $
- * Revision 1.9  2007-05-23 09:13:17  europe\L190409
+ * Revision 1.10  2007-06-12 11:20:57  europe\L190409
+ * added depreciation warning
+ *
+ * Revision 1.9  2007/05/23 09:13:17  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * incorporated functionality of OracleTransactionalStorage
  * in basic JdbcTransactionalStorage
  *
@@ -27,6 +30,8 @@
  *
  */
 package nl.nn.adapterframework.jdbc;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
 
 
 /**
@@ -80,7 +85,14 @@ package nl.nn.adapterframework.jdbc;
  * @deprecated The functionality of the OracleTransactionalStorage has been incorporated in de JdbcTransactionalStorage.
  */
 public class OracleTransactionalStorage extends JdbcTransactionalStorage {
-	public static final String version = "$RCSfile: OracleTransactionalStorage.java,v $ $Revision: 1.9 $ $Date: 2007-05-23 09:13:17 $";
+	public static final String version = "$RCSfile: OracleTransactionalStorage.java,v $ $Revision: 1.10 $ $Date: 2007-06-12 11:20:57 $";
+
+	public void configure() throws ConfigurationException {
+		log.warn("Class OracleTransactionalStorage is no longer maintained. Please replace with JdbcTransactionalStorage");
+		super.configure();
+	}
+
+
 
 //	private String sequenceName="ibisstore_seq";
 //		
