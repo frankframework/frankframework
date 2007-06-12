@@ -1,6 +1,9 @@
 /*
  * $Log: JmsTransactionalStorage.java,v $
- * Revision 1.8  2007-05-23 09:16:08  europe\L190409
+ * Revision 1.9  2007-06-12 11:21:34  europe\L190409
+ * adapted to new functionality
+ *
+ * Revision 1.8  2007/05/23 09:16:08  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added attribute 'active'
  *
  * Revision 1.7  2005/12/20 16:59:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -60,9 +63,10 @@ import nl.nn.adapterframework.core.SenderException;
  * @since   4.1
  */
 public class JmsTransactionalStorage extends JmsMessageBrowser implements ITransactionalStorage {
-	public static final String version = "$RCSfile: JmsTransactionalStorage.java,v $ $Revision: 1.8 $ $Date: 2007-05-23 09:16:08 $";
+	public static final String version = "$RCSfile: JmsTransactionalStorage.java,v $ $Revision: 1.9 $ $Date: 2007-06-12 11:21:34 $";
 
 	private String slotId=null;
+	private String type=null;
 	private boolean active=true;   
 
 	public JmsTransactionalStorage() {
@@ -98,6 +102,7 @@ public class JmsTransactionalStorage extends JmsMessageBrowser implements ITrans
 		try {
 			session = createSession();
 			ObjectMessage msg = session.createObjectMessage(message);
+			msg.setStringProperty("type",getType());
 			msg.setStringProperty("originalId",messageId);
 			msg.setJMSCorrelationID(correlationId);
 			msg.setLongProperty("receivedDate",receivedDate.getTime());
@@ -165,12 +170,19 @@ public class JmsTransactionalStorage extends JmsMessageBrowser implements ITrans
 		return "SlotId='"+getSlotId()+"'";
 	}
 
+
+	public void setSlotId(String string) {
+		slotId = string;
+	}
 	public String getSlotId() {
 		return slotId;
 	}
 
-	public void setSlotId(String string) {
-		slotId = string;
+	public void setType(String string) {
+		type = string;
+	}
+	public String getType() {
+		return type;
 	}
 
 	public void setActive(boolean b) {
