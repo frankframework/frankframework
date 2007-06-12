@@ -1,6 +1,9 @@
 /*
  * $Log: ShowConfigurationStatus.java,v $
- * Revision 1.6  2007-05-29 11:11:59  europe\L190409
+ * Revision 1.7  2007-06-12 11:25:02  europe\L190409
+ * added receiver-listener info
+ *
+ * Revision 1.6  2007/05/29 11:11:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * add message logs
  *
  * Revision 1.5	2005/07/19 12:09:21	Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -42,7 +45,7 @@ import java.util.Iterator;
  */
 
 public final class ShowConfigurationStatus extends ActionBase {
-	public static final String version = "$RCSfile: ShowConfigurationStatus.java,v $ $Revision: 1.6 $ $Date: 2007-05-29 11:11:59 $";
+	public static final String version = "$RCSfile: ShowConfigurationStatus.java,v $ $Revision: 1.7 $ $Date: 2007-06-12 11:25:02 $";
 
 		public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response)
 				throws IOException, ServletException {
@@ -92,10 +95,11 @@ public final class ShowConfigurationStatus extends ActionBase {
 					receiverXML.addAttribute("isStarted", ""+(receiverRunState.equals(RunStateEnum.STARTED)));
 					receiverXML.addAttribute("state", receiverRunState.toString());
 					receiverXML.addAttribute("name",receiver.getName());
-					receiverXML.addAttribute("class", receiver.getClass().toString());
+					receiverXML.addAttribute("class", ClassUtils.nameOf(receiver));
 					receiverXML.addAttribute("messagesReceived", ""+receiver.getMessagesReceived());
 					if (receiver instanceof ReceiverBase ) {
 						ReceiverBase rb = (ReceiverBase) receiver;
+						receiverXML.addAttribute("listenerClass", ClassUtils.nameOf(rb.getListener()));
 						receiverXML.addAttribute("hasInprocessStorage", ""+(rb.getInProcessStorage()!=null));
 						receiverXML.addAttribute("hasErrorStorage", ""+(rb.getErrorStorage()!=null));
 						receiverXML.addAttribute("hasMessageLog", ""+(rb.getMessageLog()!=null));
