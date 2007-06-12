@@ -1,7 +1,7 @@
 /*
  * $Log: MessageSendingPipe.java,v $
- * Revision 1.31  2007-06-11 13:02:36  europe\L190409
- * improved logging
+ * Revision 1.32  2007-06-12 11:23:18  europe\L190409
+ * added correlationIdXPath (...)
  *
  * Revision 1.30  2007/06/07 12:28:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * avoid messageid to be null
@@ -158,8 +158,9 @@ import org.apache.commons.lang.SystemUtils;
  * <tr><td>{@link #setExceptionEvent(int) exceptionEvent}</td><td>METT eventnumber, fired when message processing by this Pipe resulted in an exception</td><td>-1 (disabled)</td></tr>
  * <tr><td>{@link #setForwardName(String) forwardName}</td>  <td>name of forward returned upon completion</td><td>"success"</td></tr>
  * <tr><td>{@link #setResultOnTimeOut(String) resultOnTimeOut}</td><td>result returned when no return-message was received within the timeout limit</td><td>"receiver timed out"</td></tr>
- * <tr><td>{@link #setLinkMethod(String) linkMethod}</td><td>Indicates wether the server uses the correlationID or the messageID in the correlationID field of the reply. This requirers the sender to have set the correlationId at the time of sending.</td><td>CORRELATIONID</td></tr>
+ * <tr><td>{@link #setLinkMethod(String) linkMethod}</td><td>Indicates wether the server uses the correlationID or the messageID in the correlationID field of the reply. This requirers the sender to have set the correlationID at the time of sending.</td><td>CORRELATIONID</td></tr>
  * <tr><td>{@link #setAuditTrailXPath(String) auditTrailXPath}</td><td>xpath expression to extract audit trail from message</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setCorrelationIDXPath(String) correationIdXPath}</td><td>xpath expression to extract correlationID from message</td><td>&nbsp;</td></tr>
  * <tr><td><code>sender.*</td><td>any attribute of the sender instantiated by descendant classes</td><td>&nbsp;</td></tr>
  * </table>
  * <table border="1">
@@ -188,7 +189,7 @@ import org.apache.commons.lang.SystemUtils;
  */
 
 public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
-	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.31 $ $Date: 2007-06-11 13:02:36 $";
+	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.32 $ $Date: 2007-06-12 11:23:18 $";
 	private final static String TIMEOUTFORWARD = "timeout";
 	private final static String EXCEPTIONFORWARD = "exception";
 	private final static String ILLEGALRESULTFORWARD = "illegalResult";
@@ -201,6 +202,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 	private boolean checkXmlWellFormed = false;
 	private String checkRootTag;
 	private String auditTrailXPath;
+	private String correlationIDXPath;
 
 	private ISender sender = null;
 	private ICorrelatedPullingListener listener = null;
@@ -209,6 +211,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 	// private variables
 	private String returnString;
 	private TransformerPool auditTrailTp=null;
+	private TransformerPool correlationIDTp=null;
 	
 	protected void propagateName() {
 		ISender sender=getSender();
@@ -300,6 +303,13 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 					throw new ConfigurationException(getLogPrefix(null) + "cannot create transformer for audittrail ["+getAuditTrailXPath()+"]",e);
 				}
 			}
+			if (StringUtils.isNotEmpty(getCorrelationIDXPath())) {
+				try {
+					correlationIDTp = new TransformerPool(XmlUtils.createXPathEvaluatorSource(getCorrelationIDXPath()));
+				} catch (TransformerConfigurationException e) {
+					throw new ConfigurationException(getLogPrefix(null) + "cannot create transformer for correlationID ["+getCorrelationIDXPath()+"]",e);
+				}
+			}
 		}
 	}
 
@@ -368,7 +378,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 						correlationID = sendResult;
 					}
 					if (log.isInfoEnabled()) {
-						log.info(getLogPrefix(session) + "sent message to [" + getSender().getName()+ "] asynchronously, resulting in messageID ["+ messageID+ "] correlationID ["+ correlationID+ "] linkMethod ["+ getLinkMethod()	+ "]");
+						log.info(getLogPrefix(session) + "sent message to [" + getSender().getName()+ "] messageID ["+ messageID+ "] correlationID ["+ correlationID+ "] linkMethod ["+ getLinkMethod()	+ "]");
 					}
 				}
 
@@ -381,6 +391,12 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 					String storedMessageID=messageID;
 					if (storedMessageID==null) {
 						storedMessageID="-";
+					}
+					if (correlationIDTp!=null) {
+						correlationID=correlationIDTp.transform((String)input,null);
+						if (StringUtils.isEmpty(correlationID)) {
+							correlationID="-";
+						}
 					}
 					messageLog.storeMessage(storedMessageID,correlationID,new Date(),messageTrail,(String)input);
 				}
@@ -538,8 +554,9 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 			this.messageLog = messageLog;
 			messageLog.setName("messageLog of ["+getName()+"]");
 			if (StringUtils.isEmpty(messageLog.getSlotId())) {
-				messageLog.setSlotId("log "+getName());
+				messageLog.setSlotId(getName());
 			}
+			messageLog.setType("L");
 		}
 	}
 	public ITransactionalStorage getMessageLog() {
@@ -629,4 +646,10 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 		return auditTrailXPath;
 	}
 
+	public void setCorrelationIDXPath(String string) {
+		correlationIDXPath = string;
+	}
+	public String getCorrelationIDXPath() {
+		return correlationIDXPath;
+	}
 }
