@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.36  2007-06-08 12:49:03  europe\L190409
+ * Revision 1.37  2007-06-12 11:24:04  europe\L190409
+ * corrected typeSettings of transactional storages
+ *
+ * Revision 1.36  2007/06/08 12:49:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.35  2007/06/08 12:17:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -242,7 +245,7 @@ import org.apache.log4j.Logger;
  * @since 4.2
  */
 public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, IMessageHandler, IbisExceptionListener, HasSender, TracingEventNumbers {
-	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.36 $ $Date: 2007-06-08 12:49:03 $";
+	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.37 $ $Date: 2007-06-12 11:24:04 $";
 	protected Logger log = LogUtil.getLogger(this);
  
 	private String returnIfStopped="";
@@ -1288,8 +1291,9 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 			this.inProcessStorage = inProcessStorage;
 			inProcessStorage.setName("inProcessStorage of ["+getName()+"]");
 			if (StringUtils.isEmpty(inProcessStorage.getSlotId())) {
-				inProcessStorage.setSlotId("inp "+getName());
+				inProcessStorage.setSlotId(getName());
 			}
+			inProcessStorage.setType("I");
 		}
 	}
 
@@ -1325,8 +1329,9 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 			this.errorStorage = errorStorage;
 			errorStorage.setName("errorStorage of ["+getName()+"]");
 			if (StringUtils.isEmpty(errorStorage.getSlotId())) {
-				errorStorage.setSlotId("err "+getName());
+				errorStorage.setSlotId(getName());
 			}
+			errorStorage.setType("E");
 		}
 	}
 	
@@ -1338,8 +1343,9 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 			this.messageLog = messageLog;
 			messageLog.setName("messageLog of ["+getName()+"]");
 			if (StringUtils.isEmpty(messageLog.getSlotId())) {
-				messageLog.setSlotId("log "+getName());
+				messageLog.setSlotId(getName());
 			}
+			messageLog.setType("L");
 		}
 	}
 	public ITransactionalStorage getMessageLog() {
