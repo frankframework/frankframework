@@ -1,6 +1,9 @@
 /*
  * $Log: FileViewerServlet.java,v $
- * Revision 1.8  2007-02-12 14:41:47  europe\L190409
+ * Revision 1.9  2007-06-14 09:45:10  europe\L190409
+ * strip slash from context path
+ *
+ * Revision 1.8  2007/02/12 14:41:47  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Logger from LogUtil
  *
  * Revision 1.7  2005/12/05 08:36:52  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -75,7 +78,7 @@ import org.apache.log4j.Logger;
  * @author Johan Verrips 
  */
 public class FileViewerServlet extends HttpServlet  {
-	public static final String version = "$RCSfile: FileViewerServlet.java,v $ $Revision: 1.8 $ $Date: 2007-02-12 14:41:47 $";
+	public static final String version = "$RCSfile: FileViewerServlet.java,v $ $Revision: 1.9 $ $Date: 2007-06-14 09:45:10 $";
 	protected Logger log = LogUtil.getLogger(this);	
 
 	// key that is looked up to retrieve texts to be signalled
@@ -98,7 +101,7 @@ public class FileViewerServlet extends HttpServlet  {
 	}
 
 
-	public static void transformReader(Reader reader, HttpServletResponse response, String input_prefix, String input_postfix, String stylesheetUrl) throws DomBuilderException, TransformerException, IOException { 
+	public static void transformReader(Reader reader, HttpServletResponse response, String input_prefix, String input_postfix, String stylesheetUrl, String instanceName, String title) throws DomBuilderException, TransformerException, IOException { 
 		PrintWriter out = response.getWriter();
 		Reader fileReader = new EncapsulatingReader(reader, input_prefix, input_postfix, true);
 		URL xsltSource = ClassUtils.getResourceURL( FileViewerServlet.class, stylesheetUrl);
@@ -107,11 +110,11 @@ public class FileViewerServlet extends HttpServlet  {
 			XmlUtils.transformXml(transformer, new StreamSource(fileReader),out);
 			out.close();
 		} else {
-			showReaderContents(fileReader,"text",response);
+			showReaderContents(fileReader,"text",response,instanceName,title);
 		}
 	}
 
-	public static void showReaderContents(Reader reader, String type, HttpServletResponse response) throws DomBuilderException, TransformerException, IOException {
+	public static void showReaderContents(Reader reader, String type, HttpServletResponse response, String instanceName, String title) throws DomBuilderException, TransformerException, IOException {
 		PrintWriter out = response.getWriter();
 		if (type==null) {
 			response.setContentType("text/html");
@@ -124,6 +127,7 @@ public class FileViewerServlet extends HttpServlet  {
 	
 			out.println("<html>");
 			out.println("<head>");
+			out.println("<title>"+instanceName+"@"+Misc.getHostname()+" - "+title+"</title>");
 			out.println("<link rel=\"stylesheet\" type=\"text/css\" href=\""+AppConstants.getInstance().getProperty(fvConfigKey+".css")+"\">");
 			out.println("</head>");
 			out.println("<body>");
@@ -179,9 +183,9 @@ public class FileViewerServlet extends HttpServlet  {
 					response.setContentType("text/plain");
 					stylesheetUrl=log4j_text_xslt;
 	        	}
-				transformReader(new FileReader(fileName), response, log4j_prefix, log4j_postfix, stylesheetUrl);
+				transformReader(new FileReader(fileName), response, log4j_prefix, log4j_postfix, stylesheetUrl, request.getContextPath().substring(1),fileName);
 	        } else {
-				showReaderContents(new FileReader(fileName),type, response);
+				showReaderContents(new FileReader(fileName),type, response, request.getContextPath().substring(1),fileName);
 	        }
 	    } catch (IOException e) {
 		    log.error("FileViewerServlet caught IOException" , e);
