@@ -1,6 +1,9 @@
 /*
  * $Log: Parameter.java,v $
- * Revision 1.22  2007-05-24 11:52:46  europe\L190409
+ * Revision 1.23  2007-06-14 08:49:04  europe\L190409
+ * support for parameter type=number
+ *
+ * Revision 1.22  2007/05/24 11:52:46  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.21  2007/05/24 09:54:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -78,6 +81,8 @@ package nl.nn.adapterframework.parameters;
 import java.io.IOException;
 import java.net.URL;
 import java.text.DateFormat;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.text.MessageFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -124,12 +129,15 @@ import org.w3c.dom.Node;
  * 	<li><code>string</code>: renders the contents of the first node (in combination with xslt or xpath)</li>
  * 	<li><code>xml</code>:  renders a xml-nodeset as an xml-string (in combination with xslt or xpath)</li>
  * 	<li><code>node</code>: renders a xml-nodeset as nodeset that can be used as such when passed as xslt-parameter</li>
- * 	<li><code>date</code>: converts the result to a Date, using formatString <code>yyyy-MM-dd</code>. When applied as a JDBC parameter, the method setDate() is used</li>
- * 	<li><code>time</code>: converts the result to a Date, using formatString <code>HH:mm:ss</code>. When applied as a JDBC parameter, the method setTime() is used</li>
- * 	<li><code>datetime</code>: converts the result to a Date, using formatString <code>yyyy-MM-dd HH:mm:ss</code>. When applied as a JDBC parameter, the method setTimestamp() is used</li>
+ * 	<li><code>date</code>: converts the result to a Date, by default using formatString <code>yyyy-MM-dd</code>. When applied as a JDBC parameter, the method setDate() is used</li>
+ * 	<li><code>time</code>: converts the result to a Date, by default using formatString <code>HH:mm:ss</code>. When applied as a JDBC parameter, the method setTime() is used</li>
+ * 	<li><code>datetime</code>: converts the result to a Date, by default using formatString <code>yyyy-MM-dd HH:mm:ss</code>. When applied as a JDBC parameter, the method setTimestamp() is used</li>
+ * 	<li><code>number</code>: converts the result to a Number, using decimalSeparator and groupingSeparator. When applied as a JDBC parameter, the method setDouble() is used</li>
  * </ul>
  * </td><td>string</td></tr>
- * <tr><td>{@link #setFormatString(String) formatString}</td><td>used in combination with types date, time & datetime</td><td>depends on type</td></tr>
+ * <tr><td>{@link #setFormatString(String) formatString}</td><td>used in combination with types <code>date</code>, <code>time</code> and <code>datetime</code></td><td>depends on type</td></tr>
+ * <tr><td>{@link #setDecimalSeparator(String) decimalSeparator}</td><td>used in combination with type <code>number</code></td><td>system default</td></tr>
+ * <tr><td>{@link #setGroupingSeparator(String) groupingSeparator}</td><td>used in combination with type <code>number</code></td><td>system default</td></tr>
  * <tr><td>{@link #setSessionKey(String) sessionKey}</td><td>&nbsp;</td><td>Key of a PipeLineSession-variable. Is specified, the value of the PipeLineSession variable is used as input for the XpathExpression or Stylesheet, instead of the current input message. If no xpathExpression or Stylesheet are specified, the value itself is returned.</td></tr>
  * <tr><td>{@link #setXpathExpression(String) xpathExpression}</td><td>The xpath expression. </td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setStyleSheetName(String) styleSheetName}</td><td>Reference to a resource with the stylesheet</td><td>&nbsp;</td></tr>
@@ -158,18 +166,20 @@ import org.w3c.dom.Node;
  *   &lt;to&gt;***@zonnet.nl&lt;/to&gt;
  * </pre>
  * 
- * N.B. to obtain a fixed value: use a non-existing 'dummy' <code>sessionKey</code> in combination with the fixed value in <code>DefaultValue</code>.  
- * @author Richard Punt / Gerrit van Brakel
+ * N.B. to obtain a fixed value: a non-existing 'dummy' <code>sessionKey</code> in combination with the fixed value in <code>DefaultValue</code> is used traditionally.
+ * The current version of parameter supports the 'value' attribute, that is sufficient to set a fixed value.    
+ * @author Gerrit van Brakel
  */
 public class Parameter implements INamedObject, IWithParameters {
-	public static final String version="$RCSfile: Parameter.java,v $ $Revision: 1.22 $ $Date: 2007-05-24 11:52:46 $";
+	public static final String version="$RCSfile: Parameter.java,v $ $Revision: 1.23 $ $Date: 2007-06-14 08:49:04 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static String TYPE_NODE="node";
 	public final static String TYPE_DATE="date";
 	public final static String TYPE_TIME="time";
 	public final static String TYPE_DATETIME="datetime";
-
+	public final static String TYPE_NUMBER="number";
+	
 	public final static String TYPE_DATE_PATTERN="yyyy-MM-dd";
 	public final static String TYPE_TIME_PATTERN="HH:mm:ss";
 	public final static String TYPE_DATETIME_PATTERN="yyyy-MM-dd HH:mm:ss";
@@ -183,7 +193,10 @@ public class Parameter implements INamedObject, IWithParameters {
 	private String defaultValue = null;
 	private String value = null;
 	private String formatString = null;
+	private String decimalSeparator = null;
+	private String groupingSeparator = null;
 
+	private DecimalFormatSymbols decimalFormatSymbols = null;
 	private TransformerPool transformerPool = null;
 	protected ParameterList paramList = null;
 	private boolean configured = false;
@@ -238,6 +251,15 @@ public class Parameter implements INamedObject, IWithParameters {
 		}
 		if (TYPE_TIME.equals(getType()) & StringUtils.isEmpty(getFormatString())) {
 			setFormatString(TYPE_TIME_PATTERN);
+		}
+		if (TYPE_NUMBER.equals(getType())) {
+			decimalFormatSymbols = new DecimalFormatSymbols();
+			if (StringUtils.isNotEmpty(getDecimalSeparator())) {
+				decimalFormatSymbols.setDecimalSeparator(getDecimalSeparator().charAt(0));
+			}
+			if (StringUtils.isNotEmpty(getGroupingSeparator())) {
+				decimalFormatSymbols.setGroupingSeparator(getGroupingSeparator().charAt(0));
+			}
 		}
 		configured = true;
 	}
@@ -342,6 +364,17 @@ public class Parameter implements INamedObject, IWithParameters {
 					result = df.parseObject((String)result);
 				} catch (ParseException e) {
 					throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+result+"] to Date using formatString ["+getFormatString()+"]",e);
+				}
+			}
+			if (TYPE_NUMBER.equals(getType())) {
+				log.debug("Parameter ["+getName()+"] converting result ["+result+"] to number decimalSeparator ["+decimalFormatSymbols.getDecimalSeparator()+"] groupingSeparator ["+decimalFormatSymbols.getGroupingSeparator()+"]" );
+				DecimalFormat df = new DecimalFormat();
+				df.setDecimalFormatSymbols(decimalFormatSymbols);
+				try {
+					Number n = df.parse((String)result);
+					result = n;
+				} catch (ParseException e) {
+					throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+result+"] to number decimalSeparator ["+decimalFormatSymbols.getDecimalSeparator()+"] groupingSeparator ["+decimalFormatSymbols.getGroupingSeparator()+"]",e);
 				}
 			}
 		}
@@ -500,4 +533,17 @@ public class Parameter implements INamedObject, IWithParameters {
 		return formatString;
 	}
 
+	public void setDecimalSeparator(String string) {
+		decimalSeparator = string;
+	}
+	public String getDecimalSeparator() {
+		return decimalSeparator;
+	}
+
+	public void setGroupingSeparator(String string) {
+		groupingSeparator = string;
+	}
+	public String getGroupingSeparator() {
+		return groupingSeparator;
+	}
 }

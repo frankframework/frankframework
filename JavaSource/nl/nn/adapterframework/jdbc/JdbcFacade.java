@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcFacade.java,v $
- * Revision 1.18  2007-05-24 09:50:58  europe\L190409
+ * Revision 1.19  2007-06-14 08:47:46  europe\L190409
+ * support for parameter type=number
+ *
+ * Revision 1.18  2007/05/24 09:50:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fixed applying of datetime parameters
  *
  * Revision 1.17  2007/05/23 09:08:53  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -85,7 +88,7 @@ import org.apache.log4j.Logger;
  * @since 	4.1
  */
 public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version="$RCSfile: JdbcFacade.java,v $ $Revision: 1.18 $ $Date: 2007-05-24 09:50:58 $";
+	public static final String version="$RCSfile: JdbcFacade.java,v $ $Revision: 1.19 $ $Date: 2007-06-14 08:47:46 $";
     protected Logger log = LogUtil.getLogger(this);
 	
 	public final static int DATABASE_GENERIC=0;
@@ -234,6 +237,8 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 				statement.setTimestamp(i+1, new Timestamp(((Date)value).getTime()));
 			} else if (Parameter.TYPE_TIME.equals(paramType)) {
 				statement.setTime(i+1, new java.sql.Time(((Date)value).getTime()));
+			} else if (Parameter.TYPE_NUMBER.equals(paramType)) {
+				statement.setDouble(i+1, ((Number)value).doubleValue());
 			} else { 
 				statement.setString(i+1, (String)value);
 			}
