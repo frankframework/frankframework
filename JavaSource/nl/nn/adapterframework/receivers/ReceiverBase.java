@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.37  2007-06-12 11:24:04  europe\L190409
+ * Revision 1.38  2007-06-14 08:49:35  europe\L190409
+ * catch less specific types of exception
+ *
+ * Revision 1.37  2007/06/12 11:24:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected typeSettings of transactional storages
  *
  * Revision 1.36  2007/06/08 12:49:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -245,7 +248,7 @@ import org.apache.log4j.Logger;
  * @since 4.2
  */
 public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, IMessageHandler, IbisExceptionListener, HasSender, TracingEventNumbers {
-	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.37 $ $Date: 2007-06-12 11:24:04 $";
+	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.38 $ $Date: 2007-06-14 08:49:35 $";
 	protected Logger log = LogUtil.getLogger(this);
  
 	private String returnIfStopped="";
@@ -674,7 +677,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 							synchronized (this) {
 								retryInterval=1;
 							}
-						} catch (ListenerException e) {
+						} catch (Exception e) {
 							if (ONERROR_CONTINUE.equalsIgnoreCase(getOnError())) {
 								long currentInterval;
 								synchronized (this) {
@@ -712,7 +715,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 						startProcessingTimestamp = System.currentTimeMillis();
 						try {
 							processRawMessage(listener,rawMessage,threadContext,finishProcessingTimestamp-startProcessingTimestamp);
-						} catch (ListenerException e) {
+						} catch (Exception e) {
 							TracingUtil.exceptionEvent(this);
 							if (ONERROR_CONTINUE.equalsIgnoreCase(getOnError())) {
 								error("caught Exception processing message, will continue processing next message", e);
