@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.42  2007-06-08 12:16:31  europe\L190409
+ * Revision 1.43  2007-06-19 12:10:05  europe\L190409
+ * remove superfluous exception loggings
+ *
+ * Revision 1.42  2007/06/08 12:16:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * restored operation of commitOnState
  *
  * Revision 1.41  2007/06/07 15:15:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -207,7 +210,7 @@ import org.apache.log4j.Logger;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.42 $ $Date: 2007-06-08 12:16:31 $";
+	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.43 $ $Date: 2007-06-19 12:10:05 $";
     private Logger log = LogUtil.getLogger(this);
 	private Logger durationLog = LogUtil.getLogger("LongDurationMessages");
     
@@ -569,7 +572,6 @@ public class PipeLine {
 			}
 			return result;
 		} catch (Throwable t) {
-			log.warn("caught exception",t);
 			if (doTransaction) {
 				try {
 					JtaUtil.finishTransaction(true);
@@ -660,7 +662,6 @@ public class PipeLine {
 			}
 			return result;
 		} catch (Throwable t) {
-			log.warn("caught exception",t);
 			if (doTransaction) {
 				try {
 					JtaUtil.finishTransaction(true);
