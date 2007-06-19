@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcSenderBase.java,v $
- * Revision 1.5  2006-12-12 09:57:37  europe\L190409
+ * Revision 1.6  2007-06-19 12:09:17  europe\L190409
+ * improve javadoc
+ *
+ * Revision 1.5  2006/12/12 09:57:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * restore jdbc package
  *
  * Revision 1.3  2005/08/25 15:45:47  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -30,12 +33,28 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 /**
  * Base class for building JDBC-senders.
  *
+ * <p><b>Configuration:</b>
+ * <table border="1">
+ * <tr><th>attributes</th><th>description</th><th>default</th></tr>
+ * <tr><td>classname</td><td>nl.nn.adapterframework.jdbc.JdbcSenderBase</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setName(String) name}</td>  <td>name of the sender</td><td>&nbsp;</td></tr>
+
+ * <tr><td>{@link #setDatasourceName(String) datasourceName}</td><td>can be configured from JmsRealm, too</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setDatasourceNameXA(String) datasourceNameXA}</td><td>can be configured from JmsRealm, too</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setUsername(String) username}</td><td>username used to connect to datasource</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setPassword(String) password}</td><td>password used to connect to datasource</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setConnectionsArePooled(boolean) connectionsArePooled}</td><td>when true, it is assumed that an connectionpooling mechanism is present. Before a message is sent, a new connection is obtained, that is closed after the message is sent. When transacted is true, connectionsArePooled is true, too</td><td>true</td></tr>
+ * <tr><td>{@link #setTransacted(boolean) transacted}</td><td>&nbsp;</td><td>false</td></tr>
+ * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ * </table>
+
+ *  * </p>
  * @version Id
  * @author  Gerrit van Brakel
  * @since 	4.2.h
  */
 public abstract class JdbcSenderBase extends JdbcFacade implements ISenderWithParameters {
-	public static final String version="$RCSfile: JdbcSenderBase.java,v $ $Revision: 1.5 $ $Date: 2006-12-12 09:57:37 $";
+	public static final String version="$RCSfile: JdbcSenderBase.java,v $ $Revision: 1.6 $ $Date: 2007-06-19 12:09:17 $";
 
 	protected Connection connection=null;
 	protected ParameterList paramList = null;
