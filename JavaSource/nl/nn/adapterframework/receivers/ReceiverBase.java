@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.38  2007-06-14 08:49:35  europe\L190409
+ * Revision 1.39  2007-06-19 12:07:32  europe\L190409
+ * modifiy retryinterval handling
+ *
+ * Revision 1.38  2007/06/14 08:49:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * catch less specific types of exception
  *
  * Revision 1.37  2007/06/12 11:24:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -248,7 +251,7 @@ import org.apache.log4j.Logger;
  * @since 4.2
  */
 public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, IMessageHandler, IbisExceptionListener, HasSender, TracingEventNumbers {
-	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.38 $ $Date: 2007-06-14 08:49:35 $";
+	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.39 $ $Date: 2007-06-19 12:07:32 $";
 	protected Logger log = LogUtil.getLogger(this);
  
 	private String returnIfStopped="";
@@ -302,7 +305,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 	private int afterEvent=-1;
 	private int exceptionEvent=-1;
 
-
+	int retryInterval=1;
     
 	protected String getLogPrefix() {
 		return "Receiver ["+getName()+"] "; 
@@ -645,7 +648,6 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 		threadsRunning.increase();
 		IPullingListener listener=null;
 		HashMap threadContext=null;
-		int retryInterval=1;
 		try {
 			listener = (IPullingListener)getListener();		
 			threadContext = listener.openThread();
@@ -674,13 +676,13 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 					if (permissionToGo && getRunState().equals(RunStateEnum.STARTED)) {
 						try {
 							rawMessage = getRawMessage(threadContext);
-							synchronized (this) {
+							synchronized (listener) {
 								retryInterval=1;
 							}
 						} catch (Exception e) {
 							if (ONERROR_CONTINUE.equalsIgnoreCase(getOnError())) {
 								long currentInterval;
-								synchronized (this) {
+								synchronized (listener) {
 									currentInterval=retryInterval;
 									retryInterval=retryInterval*2;
 									if (retryInterval>3600) {
