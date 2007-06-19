@@ -1,6 +1,9 @@
 /*
  * $Log: MessageSendingPipe.java,v $
- * Revision 1.32  2007-06-12 11:23:18  europe\L190409
+ * Revision 1.33  2007-06-19 12:08:31  europe\L190409
+ * log when using stub
+ *
+ * Revision 1.32  2007/06/12 11:23:18  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added correlationIdXPath (...)
  *
  * Revision 1.30  2007/06/07 12:28:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -189,7 +192,7 @@ import org.apache.commons.lang.SystemUtils;
  */
 
 public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
-	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.32 $ $Date: 2007-06-12 11:23:18 $";
+	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.33 $ $Date: 2007-06-19 12:08:31 $";
 	private final static String TIMEOUTFORWARD = "timeout";
 	private final static String EXCEPTIONFORWARD = "exception";
 	private final static String ILLEGALRESULTFORWARD = "illegalResult";
@@ -346,14 +349,19 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 				if (sfn != null) {
 					try {
 						result = Misc.resourceToString(ClassUtils.getResourceURL(this,sfn), SystemUtils.LINE_SEPARATOR);
+						log.info(getLogPrefix(session)+"returning result from dynamic stub ["+sfn+"]");
 					} catch (Throwable e) {
-						throw new PipeRunException(this,getLogPrefix(session)+"got exception loading [" + sfn + "]",e);
+						throw new PipeRunException(this,getLogPrefix(session)+"got exception loading result from stub [" + sfn + "]",e);
 					}
+				} else {
+					log.info(getLogPrefix(session)+"returning result from static stub ["+getStubFileName()+"]");
 				}
 //				// Use remaining params as outgoing UDZs
 //				Map udzMap = new HashMap();
 //				udzMap.putAll(params);
 //				udzMap.remove(STUBFILENAME);
+			} else {
+				log.info(getLogPrefix(session)+"returning result from static stub ["+getStubFileName()+"]");
 			}
 		} else {
 			ICorrelatedPullingListener replyListener = getListener();
@@ -435,7 +443,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 			} catch (Throwable t) {
 				PipeForward exceptionForward = findForward(EXCEPTIONFORWARD);
 				if (exceptionForward!=null) {
-					log.warn(getLogPrefix(session) + "exception occured, forwarded to ["+exceptionForward.getPath()+"]", t);
+					log.warn(getLogPrefix(session) + "exception occured, forwarding to exception-forward ["+exceptionForward.getPath()+"], exception/n:", t);
 					String resultmsg=new ErrorMessageFormatter().format(getLogPrefix(session),t,this,(String)input,session.getMessageId(),0);
 					return new PipeRunResult(exceptionForward,resultmsg);
 				}
