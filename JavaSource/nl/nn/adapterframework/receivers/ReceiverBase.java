@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.39  2007-06-19 12:07:32  europe\L190409
+ * Revision 1.40  2007-06-21 07:07:06  europe\L190409
+ * removed warnings about not transacted=true
+ *
+ * Revision 1.39  2007/06/19 12:07:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * modifiy retryinterval handling
  *
  * Revision 1.38  2007/06/14 08:49:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -251,7 +254,7 @@ import org.apache.log4j.Logger;
  * @since 4.2
  */
 public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, IMessageHandler, IbisExceptionListener, HasSender, TracingEventNumbers {
-	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.39 $ $Date: 2007-06-19 12:07:32 $";
+	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.40 $ $Date: 2007-06-21 07:07:06 $";
 	protected Logger log = LogUtil.getLogger(this);
  
 	private String returnIfStopped="";
@@ -504,27 +507,27 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 				}
 			}
 			if (isTransacted()) {
-				if (!(getListener() instanceof IXAEnabled && ((IXAEnabled)getListener()).isTransacted())) {
-					warn("Receiver ["+getName()+"] sets transacted=true, but listener not. Transactional integrity is not guaranteed"); 
-				}
-				if (inProcessStorage==null) {
+//				if (!(getListener() instanceof IXAEnabled && ((IXAEnabled)getListener()).isTransacted())) {
+//					warn("Receiver ["+getName()+"] sets transacted=true, but listener not. Transactional integrity is not guaranteed"); 
+//				}
+				if (inProcessStorage==null && getListener() instanceof IPullingListener) {
 //					throw new ConfigurationException("Receiver ["+getName()+"] sets transacted=true, but has no inProcessStorage.");
 					warn("Receiver ["+getName()+"] sets transacted=true, but has no inProcessStorage. Transactional integrity is not guaranteed");
-				} else {
-					if (!(inProcessStorage instanceof IXAEnabled && ((IXAEnabled)inProcessStorage).isTransacted())) {
-						warn("Receiver ["+getName()+"] sets transacted=true, but inProcessStorage not. Transactional integrity is not guaranteed"); 
-					}
+//				} else {
+//					if (!(inProcessStorage instanceof IXAEnabled && ((IXAEnabled)inProcessStorage).isTransacted())) {
+//						warn("Receiver ["+getName()+"] sets transacted=true, but inProcessStorage not. Transactional integrity is not guaranteed"); 
+//					}
 				}
 				
 				if (errorSender==null && errorStorage==null) {
 					warn("Receiver ["+getName()+"] sets transacted=true, but has no errorSender or errorStorage. Messages processed with errors will be lost");
 				} else {
-					if (errorSender!=null && !(errorSender instanceof IXAEnabled && ((IXAEnabled)errorSender).isTransacted())) {
-						warn("Receiver ["+getName()+"] sets transacted=true, but errorSender is not. Transactional integrity is not guaranteed"); 
-					}
-					if (errorStorage!=null && !(errorStorage instanceof IXAEnabled && ((IXAEnabled)errorStorage).isTransacted())) {
-						warn("Receiver ["+getName()+"] sets transacted=true, but errorStorage is not. Transactional integrity is not guaranteed"); 
-					}
+//					if (errorSender!=null && !(errorSender instanceof IXAEnabled && ((IXAEnabled)errorSender).isTransacted())) {
+//						warn("Receiver ["+getName()+"] sets transacted=true, but errorSender is not. Transactional integrity is not guaranteed"); 
+//					}
+//					if (errorStorage!=null && !(errorStorage instanceof IXAEnabled && ((IXAEnabled)errorStorage).isTransacted())) {
+//						warn("Receiver ["+getName()+"] sets transacted=true, but errorStorage is not. Transactional integrity is not guaranteed"); 
+//					}
 					if (errorStorage==inProcessStorage) {
 						info("Receiver ["+getName()+"] has errorStorage in inProcessStorage."); 
 					}
