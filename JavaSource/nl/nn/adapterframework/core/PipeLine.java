@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.43  2007-06-19 12:10:05  europe\L190409
+ * Revision 1.44  2007-06-21 07:05:24  europe\L190409
+ * optimized debug-logging
+ *
+ * Revision 1.43  2007/06/19 12:10:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * remove superfluous exception loggings
  *
  * Revision 1.42  2007/06/08 12:16:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -210,7 +213,7 @@ import org.apache.log4j.Logger;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.43 $ $Date: 2007-06-19 12:10:05 $";
+	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.44 $ $Date: 2007-06-21 07:05:24 $";
     private Logger log = LogUtil.getLogger(this);
 	private Logger durationLog = LogUtil.getLogger("LongDurationMessages");
     
@@ -400,7 +403,7 @@ public class PipeLine {
 		boolean compatible;
 		boolean isolationRequired;
 		boolean doTransaction;
-		log.debug("evaluating transaction status ["+JtaUtil.displayTransactionStatus()+"], transaction attribute ["+getTransactionAttribute()+"], messageId ["+messageId+"]");
+		if (log.isDebugEnabled()) log.debug("evaluating transaction status ["+JtaUtil.displayTransactionStatus()+"], transaction attribute ["+getTransactionAttribute()+"], messageId ["+messageId+"]");
 		try {
 			compatible=JtaUtil.transactionStateCompatible(getTransactionAttributeNum());
 			isolationRequired=JtaUtil.isolationRequired(getTransactionAttributeNum());
@@ -411,7 +414,7 @@ public class PipeLine {
 		if (!compatible) {
 			throw new PipeRunException(null,"transaction state ["+JtaUtil.displayTransactionStatus()+"] not compatible with transaction attribute ["+getTransactionAttribute()+"], messageId ["+messageId+"]");
 		}
-		log.debug("PipeLine transactionAttribute ["+getTransactionAttribute()+"], isolationRequired ["+isolationRequired+"], doTransaction ["+doTransaction+"]");
+		if (log.isDebugEnabled()) log.debug("PipeLine transactionAttribute ["+getTransactionAttribute()+"], isolationRequired ["+isolationRequired+"], doTransaction ["+doTransaction+"]");
 
 		if (isolationRequired) {
 			PipeLineRunWrapper plrw = new PipeLineRunWrapper();
@@ -550,7 +553,7 @@ public class PipeLine {
 			if (!compatible) {
 				throw new PipeRunException(pipe,"transaction state ["+JtaUtil.displayTransactionStatus()+"] not compatible with transaction attribute ["+taPipe.getTransactionAttribute()+"]");
 			}
-			log.debug("Pipe ["+pipe.getName()+"] transactionAttribute ["+taPipe.getTransactionAttribute()+"], isolationRequired ["+isolationRequired+"], doTransaction ["+doTransaction+"]");
+			if (log.isDebugEnabled()) log.debug("Pipe ["+pipe.getName()+"] transactionAttribute ["+taPipe.getTransactionAttribute()+"], isolationRequired ["+isolationRequired+"], doTransaction ["+doTransaction+"]");
 		}
 	
 		if (isolationRequired) {
@@ -770,7 +773,7 @@ public class PipeLine {
 					}
 					if (pe !=null) {
 						if (pipeRunResult!=null && StringUtils.isNotEmpty(pe.getStoreResultInSessionKey())) {
-						log.debug("Pipeline of adapter ["+owner.getName()+"] storing result for pipe ["+pe.getName()+"] under sessionKey ["+pe.getStoreResultInSessionKey()+"]");
+							if (log.isDebugEnabled()) log.debug("Pipeline of adapter ["+owner.getName()+"] storing result for pipe ["+pe.getName()+"] under sessionKey ["+pe.getStoreResultInSessionKey()+"]");
 						pipeLineSession.put(pe.getStoreResultInSessionKey(),pipeRunResult.getResult());
 					}
 					if (pe.isPreserveInput()) {
@@ -827,7 +830,7 @@ public class PipeLine {
 			for (int i=0; i<exitHandlers.size(); i++) {
 				IPipeLineExitHandler exitHandler = (IPipeLineExitHandler)exitHandlers.get(i);
 				try {
-					log.debug("processing ExitHandler ["+exitHandler.getName()+"]");
+					if (log.isDebugEnabled()) log.debug("processing ExitHandler ["+exitHandler.getName()+"]");
 					exitHandler.atEndOfPipeLine(messageId,pipeLineResult,pipeLineSession);
 				} catch (Throwable t) {
 					log.warn("Caught Exception processing ExitHandler ["+exitHandler.getName()+"]",t);
