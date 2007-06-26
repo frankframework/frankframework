@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaRequesterSender.java,v $
- * Revision 1.23  2006-11-06 08:18:02  europe\L190409
+ * Revision 1.24  2007-06-26 06:52:52  europe\L190409
+ * added warnings about incorrect setting of transacted
+ *
+ * Revision 1.23  2006/11/06 08:18:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * modifications for dynamic serviceId and occurrence
  *
  * Revision 1.22  2006/10/13 08:13:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -133,7 +136,7 @@ import java.util.Map;
  * @since  4.2
  */
 public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParameters {
-	public static final String version="$RCSfile: IfsaRequesterSender.java,v $ $Revision: 1.23 $ $Date: 2006-11-06 08:18:02 $";
+	public static final String version="$RCSfile: IfsaRequesterSender.java,v $ $Revision: 1.24 $ $Date: 2007-06-26 06:52:52 $";
  
 	protected ParameterList paramList = null;
   
@@ -147,6 +150,12 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 			paramList.configure();
 		}
 		log.info(getLogPrefix()+" configured sender on "+getPhysicalDestinationName());
+		if (IfsaMessageProtocolEnum.FIRE_AND_FORGET.equals(getMessageProtocolEnum()) && !isTransacted()) {
+			log.warn(getLogPrefix()+"transacted must be set to 'true' if messageProtocol=["+getMessageProtocolEnum()+"]");
+		}
+		if (IfsaMessageProtocolEnum.REQUEST_REPLY.equals(getMessageProtocolEnum()) && isTransacted()) {
+			log.warn(getLogPrefix()+"transacted should not be set to 'true' if messageProtocol=["+getMessageProtocolEnum()+"]");
+		}
 	}
 	
   	public void open() throws SenderException {
