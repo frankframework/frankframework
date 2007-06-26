@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.41  2007-06-26 06:56:59  europe\L190409
+ * Revision 1.42  2007-06-26 12:06:08  europe\L190409
+ * tuned logging
+ *
+ * Revision 1.41  2007/06/26 06:56:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * set inProcessStorage type to 'E' if combined with errorStorage
  *
  * Revision 1.40  2007/06/21 07:07:06  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -257,7 +260,7 @@ import org.apache.log4j.Logger;
  * @since 4.2
  */
 public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, IMessageHandler, IbisExceptionListener, HasSender, TracingEventNumbers {
-	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.41 $ $Date: 2007-06-26 06:56:59 $";
+	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.42 $ $Date: 2007-06-26 12:06:08 $";
 	protected Logger log = LogUtil.getLogger(this);
  
 	private String returnIfStopped="";
@@ -1130,8 +1133,9 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 						} else {
 							l = new ListenerException(t);
 						}
-						String msg = "receiver [" + getName() + "] caught exception in message processing";
-						error(msg, l);
+						// disabled the following logging, as it is already done in the Pipeline
+						//String msg = "receiver [" + getName() + "] caught exception in message processing";
+						//error(msg, l);
 						errorMessage = l.getMessage();
 						throw l;
 					}

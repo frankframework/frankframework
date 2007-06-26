@@ -1,6 +1,9 @@
 /*
  * $Log: Adapter.java,v $
- * Revision 1.28  2007-05-02 11:23:52  europe\L190409
+ * Revision 1.29  2007-06-26 12:05:34  europe\L190409
+ * tuned logging
+ *
+ * Revision 1.28  2007/05/02 11:23:52  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added attribute 'active'
  *
  * Revision 1.27  2007/03/14 12:22:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -151,7 +154,7 @@ import org.apache.log4j.NDC;
  */
 
 public class Adapter implements Runnable, IAdapter {
-	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.28 $ $Date: 2007-05-02 11:23:52 $";
+	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.29 $ $Date: 2007-06-26 12:05:34 $";
 	private Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -226,21 +229,33 @@ public class Adapter implements Runnable, IAdapter {
 					receiver.configure();
 					messageKeeper.add("receiver [" + receiver.getName() + "] successfully configured");
 				} catch (ConfigurationException e) {
-					String msg =
-						"Adapter [" + getName() + "] got error initializing receiver [" + receiver.getName() + "]";
-					log.error(msg, e);
-					messageKeeper.add(msg + ": " + e.getMessage());
+					error("Adapter [" + getName() + "] got error initializing receiver [" + receiver.getName() + "]",e);
 				}
 
 			}
 			configurationSucceeded = true;
 		}
 		catch (ConfigurationException e) {
-			String msg = "Adapter [" + getName() + "] got error initializing pipeline";
-			messageKeeper.add(msg + ": " + e.getMessage());
-			log.error(msg, e);
+			error("Adapter [" + getName() + "] got error initializing pipeline", e);
 		}
 	}
+
+	/** 
+	 * sends a warning to the log and to the messagekeeper of the adapter
+	 */
+	protected void warn(String msg) {
+		log.warn("Adapter [" + getName() + "] "+msg);
+		getMessageKeeper().add("WARNING: " + msg);
+	}
+
+	/** 
+	 * sends a warning to the log and to the messagekeeper of the adapter
+	 */
+	protected void error(String msg, Throwable t) {
+		log.error("Adapter [" + getName() + "] "+msg, t);
+		getMessageKeeper().add("ERROR: " + msg+": "+t.getMessage());
+	}
+
 	
 	/**
 	 * Increase the number of messages in process
@@ -294,8 +309,7 @@ public class Adapter implements Runnable, IAdapter {
 		catch (Exception e) {
 			String msg = "got error while formatting errormessage, original errorMessage [" + errorMessage + "]";
 			msg = msg + " from [" + (objectInError == null ? "unknown-null" : objectInError.getName()) + "]";
-			log.error(msg, e);
-			getMessageKeeper().add(msg + ": " + e.getMessage());
+			error(msg, e);
 			return errorMessage;
 		}
 	}
@@ -615,8 +629,7 @@ public class Adapter implements Runnable, IAdapter {
 				e = new ListenerException(t);
 			}
 			incNumOfMessagesInError();
-			getMessageKeeper().add("error processing message with messageId [" + messageId+"]: " + e.getMessage());
-			log.error("Adapter: [" + getName() + "] caught exception message with messageId [" + messageId+"]",e);
+			error("error processing message with messageId [" + messageId+"]: ",e);
 			throw e;
 		} finally {
 			long endTime = System.currentTimeMillis();
@@ -680,7 +693,7 @@ public class Adapter implements Runnable, IAdapter {
 					"configuration of adapter ["
 						+ getName()
 						+ "] did not succeed, therefore starting the adapter is not possible");
-				getMessageKeeper().add("configuration did not succeed. Starting the adapter is not possible");
+				warn("configuration did not succeed. Starting the adapter is not possible");
 				runState.setRunState(RunStateEnum.ERROR);
 				return;
 			}
@@ -694,8 +707,7 @@ public class Adapter implements Runnable, IAdapter {
 							+ "] is currently in state ["
 							+ currentRunState
 							+ "], ignoring start() command";
-					log.warn(msg);
-					getMessageKeeper().add(msg);
+					warn(msg);
 					return;
 				}
 				// start the pipeline
@@ -706,8 +718,7 @@ public class Adapter implements Runnable, IAdapter {
 				pipeline.start();
 			}
 			catch (PipeStartException pre) {
-				log.error(pre);
-				getMessageKeeper().add("Adapter [" + getName() + "] got error starting PipeLine: " + pre.getMessage());
+				error("got error starting PipeLine", pre);
 				runState.setRunState(RunStateEnum.ERROR);
 				return;
 			}
@@ -751,8 +762,7 @@ public class Adapter implements Runnable, IAdapter {
 						+ "] is being stopped while still processing "
 						+ currentNumOfMessagesInProcess
 						+ " messages, waiting for them to finish";
-				log.warn(msg);
-				getMessageKeeper().add(msg);
+				warn(msg);
 			}
 			waitForNoMessagesInProcess();
 			log.debug("Adapter [" + name + "] is stopping pipeline");
@@ -848,8 +858,7 @@ public class Adapter implements Runnable, IAdapter {
 						+ "] in state ["
 						+ currentRunState
 						+ "] while stopAdapter() command is issued, ignoring command";
-				log.warn(msg);
-				getMessageKeeper().add(msg);
+				warn(msg);
 				return;
 			}
 			if (currentRunState.equals(RunStateEnum.ERROR)) {
@@ -867,9 +876,7 @@ public class Adapter implements Runnable, IAdapter {
 
 				}
 				catch (Exception e) {
-					log.error("Adapter [" + name + "] received error while stopping, ignoring this, so watch out.", e);
-					getMessageKeeper().add(
-						"received error stopping receiver [" + receiver.getName() + "] : " + e.getMessage());
+					error("received error while stopping receiver [" + receiver.getName() + "], ignoring this, so watch out.", e);
 				}
 			}
 
