@@ -1,6 +1,9 @@
 /*
  * $Log: ConfigurationServlet.java,v $
- * Revision 1.8  2007-02-12 14:40:46  europe\L190409
+ * Revision 1.9  2007-06-26 06:58:51  europe\L190409
+ * improve logging
+ *
+ * Revision 1.8  2007/02/12 14:40:46  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Logger from LogUtil
  *
  */
@@ -43,7 +46,7 @@ import org.apache.log4j.Logger;
  * @author    Johan Verrips
  */
 public class ConfigurationServlet extends HttpServlet {
-	public static final String version = "$RCSfile: ConfigurationServlet.java,v $ $Revision: 1.8 $ $Date: 2007-02-12 14:40:46 $";
+	public static final String version = "$RCSfile: ConfigurationServlet.java,v $ $Revision: 1.9 $ $Date: 2007-06-26 06:58:51 $";
     protected Logger log = LogUtil.getLogger(this);
 
     static final String DFLT_DIGESTER_RULES = "digester-rules.xml";
@@ -88,9 +91,12 @@ public class ConfigurationServlet extends HttpServlet {
         log.info("************** Configuration shutting down **************");
         try {
             Configuration config = getConfiguration();
-            if (config != null)
-                config.stopAdapters();
-        } catch (Exception e) {
+            if (config != null) {
+				config.stopAdapters();
+            } else {
+            	log.error("Cannot find configuration to shutdown");
+            }
+         } catch (Exception e) {
             log("Error stopping adapters on closing", e);
         }
         log.info("************** Configuration shut down successfully **************");
