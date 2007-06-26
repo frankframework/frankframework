@@ -1,6 +1,9 @@
 /*
  * $Log: ExceptionPipe.java,v $
- * Revision 1.1  2007-05-02 11:20:32  europe\L190409
+ * Revision 1.2  2007-06-26 09:35:13  europe\L190409
+ * cleanup exception message
+ *
+ * Revision 1.1  2007/05/02 11:20:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * introduction of ExceptionPipe
  *
  */
@@ -42,9 +45,9 @@ public class ExceptionPipe extends FixedForwardPipe {
 		String message = (String)input;
 
 		if (isThrowException())
-			throw new PipeRunException(this, getLogPrefix(session) + message);
+			throw new PipeRunException(this, message);
 		else {
-			log.error(getLogPrefix(session)+message);
+			log.error(message);
 			return new PipeRunResult(getForward(), input);
 		}
 	}
