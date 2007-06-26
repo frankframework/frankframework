@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.40  2007-06-21 07:07:06  europe\L190409
+ * Revision 1.41  2007-06-26 06:56:59  europe\L190409
+ * set inProcessStorage type to 'E' if combined with errorStorage
+ *
+ * Revision 1.40  2007/06/21 07:07:06  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed warnings about not transacted=true
  *
  * Revision 1.39  2007/06/19 12:07:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -254,7 +257,7 @@ import org.apache.log4j.Logger;
  * @since 4.2
  */
 public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, IMessageHandler, IbisExceptionListener, HasSender, TracingEventNumbers {
-	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.40 $ $Date: 2007-06-21 07:07:06 $";
+	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.41 $ $Date: 2007-06-26 06:56:59 $";
 	protected Logger log = LogUtil.getLogger(this);
  
 	private String returnIfStopped="";
@@ -529,7 +532,8 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 //						warn("Receiver ["+getName()+"] sets transacted=true, but errorStorage is not. Transactional integrity is not guaranteed"); 
 //					}
 					if (errorStorage==inProcessStorage) {
-						info("Receiver ["+getName()+"] has errorStorage in inProcessStorage."); 
+						info("Receiver ["+getName()+"] has errorStorage in inProcessStorage, setting inProcessStorage's type to 'errorStorage'");
+						errorStorage.setType("E"); 
 					}
 				}
 			} 
