@@ -1,6 +1,9 @@
 /*
  * $Log: Configuration.java,v $
- * Revision 1.22  2007-05-02 11:22:27  europe\L190409
+ * Revision 1.23  2007-06-26 09:35:41  europe\L190409
+ * add instance name to log at startup
+ *
+ * Revision 1.22  2007/05/02 11:22:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added attribute 'active'
  *
  * Revision 1.21  2007/02/26 16:55:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -83,7 +86,7 @@ import org.apache.log4j.Logger;
  * @see    nl.nn.adapterframework.core.IAdapter
  */
 public class Configuration {
-	public static final String version="$RCSfile: Configuration.java,v $ $Revision: 1.22 $ $Date: 2007-05-02 11:22:27 $";
+	public static final String version="$RCSfile: Configuration.java,v $ $Revision: 1.23 $ $Date: 2007-06-26 09:35:41 $";
     protected Logger log=LogUtil.getLogger(this); 
      
     private Hashtable adapterTable = new Hashtable();
@@ -362,8 +365,22 @@ public class Configuration {
         forEachStatisticsKeeper(new StatisticsKeeperLogger());
     }
     
+    public String getInstanceInfo() {
+		AppConstants appConstants = AppConstants.getInstance();
+		String instanceInfo=appConstants.getProperty("application.name")+" "+
+							appConstants.getProperty("application.version")+" "+
+							appConstants.getProperty("instance.name")+" "+
+							appConstants.getProperty("instance.version")+" ";
+		String buildId=	appConstants.getProperty("instance.build_id");
+		if (StringUtils.isNotEmpty(buildId)) {
+			instanceInfo+=" build "+buildId;						
+		}
+		return instanceInfo;
+    }
+    
     public String VersionInfo() {
     	StringBuffer sb=new StringBuffer();
+    	sb.append(getInstanceInfo()+SystemUtils.LINE_SEPARATOR);
     	sb.append(version+SystemUtils.LINE_SEPARATOR);
     	sb.append(ConfigurationDigester.version+SystemUtils.LINE_SEPARATOR);
     	sb.append(nl.nn.adapterframework.core.IReceiver.version+SystemUtils.LINE_SEPARATOR);
