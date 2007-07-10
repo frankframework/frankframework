@@ -1,6 +1,9 @@
 /*
  * $Log: LdapSender.java,v $
- * Revision 1.20  2007-05-31 06:59:58  europe\L190409
+ * Revision 1.21  2007-07-10 07:20:56  europe\L190409
+ * improved javadoc
+ *
+ * Revision 1.20  2007/05/31 06:59:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fix check on parameter
  *
  * Revision 1.19  2007/05/29 11:09:06  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -171,6 +174,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setUsePooling(boolean) usePooling}</td><td>specifies whether connection pooling is used or not</td><td>true</td></tr>
  * <tr><td>{@link #setInitialContextFactoryName(String) initialContextFactoryName}</td><td>class to use as initial context factory</td><td>com.sun.jndi.ldap.LdapCtxFactory</td></tr>
  * <tr><td>{@link #setAttributesToReturn(String) attributesToReturn}</td>  <td>comma separated list of attributes to return</td><td><i>all attributes</i></td></tr>
+ * <tr><td>{@link #setJndiAuthAlias(String) jndiAuthAlias}</td><td>Authentication alias, may be used to override principal and credential-settings</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * If there is only one parameter in the configaration of the pipe it will represent entryName (RDN) of interest.
@@ -217,7 +221,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class LdapSender extends JNDIBase implements ISenderWithParameters {
-	public static final String version = "$RCSfile: LdapSender.java,v $  $Revision: 1.20 $ $Date: 2007-05-31 06:59:58 $";
+	public static final String version = "$RCSfile: LdapSender.java,v $  $Revision: 1.21 $ $Date: 2007-07-10 07:20:56 $";
 
 	private String FILTER = "filterExpression";
 	private String ENTRYNAME = "entryName";
