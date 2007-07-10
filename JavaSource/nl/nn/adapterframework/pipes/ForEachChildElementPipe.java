@@ -1,41 +1,76 @@
 /*
  * $Log: ForEachChildElementPipe.java,v $
- * Revision 1.10  2007-07-10 07:53:06  europe\L190409
- * new implementation based on IteratingPipe
+ * Revision 1.11  2007-07-10 10:06:28  europe\L190409
+ * switch back to original ForEachChildElementPipe
  *
+ * Revision 1.1  2007/07/10 07:53:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * original ForEachChildElementPipe
+ *
+ * Revision 1.9  2007/04/26 11:58:08  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * optional xml-version removal
+ *
+ * Revision 1.8  2006/01/05 14:36:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * updated javadoc
+ *
+ * Revision 1.7  2005/10/24 09:21:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * made namespaceAware an attribute of AbstractPipe
+ *
+ * Revision 1.6  2005/09/08 08:29:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * debugged stopCondition
+ *
+ * Revision 1.5  2005/09/08 07:18:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * embedded partial result in XML before evaluating stopcondition
+ *
+ * Revision 1.4  2005/09/08 07:09:46  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * fixed end-tags of results
+ * debug stopcondition
+ *
+ * Revision 1.3  2005/09/07 15:29:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * collected all results together
+ * added stopConditionXPathExpression attribute
+ * added elementXPathExpression attribute
+ *
+ * Revision 1.2  2005/08/30 15:59:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * added configuration hint
+ *
+ * Revision 1.1  2005/06/20 09:08:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * introduction of ForEachChildElementPipe
  *
  */
 package nl.nn.adapterframework.pipes;
 
+import java.io.IOException;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
 
 import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
 import javax.xml.transform.dom.DOMSource;
-
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.core.PipeStartException;
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.util.DomBuilderException;
-import nl.nn.adapterframework.util.TransformerPool;
-import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.ISender;
+import nl.nn.adapterframework.core.ISenderWithParameters;
+import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.PipeStartException;
+import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.util.DomBuilderException;
+import nl.nn.adapterframework.util.TransformerPool;
+import nl.nn.adapterframework.util.XmlUtils;
+
 /**
  * Sends a message to a Sender for each child element of the input XML.
- * Alternative implementation, based on IteratingPipe.
  * 
  * <br>
- * The output of each of the processing of each of the elements is returned in XML as follows:
+ * The output of each of the processing of each of the elements is returnen in XML as follows:
  * <pre>
  *  &lt;results count="num_of_elements"&gt;
- *    &lt;result&gt;result of processing of first item&lt;/result&gt;
- *    &lt;result&gt;result of processing of second item&lt;/result&gt;
+ *    &lt;result item="1"&gt;result of processing of first item&lt;/result&gt;
+ *    &lt;result item="2"&gt;result of processing of second item&lt;/result&gt;
  *       ...
  *  &lt;/results&gt;
  * </pre>
@@ -57,8 +92,8 @@ import org.w3c.dom.Node;
  * 		Iteration stops if condition returns anything other than <code>false</code> or an empty result.
  * For example, to stop after the second child element has been processed, one of the following expressions could be used:
  * <table> 
- * <tr><td><li><code>result[position()='2']</code></td><td>returns result element after second child element has been processed</td></tr>
- * <tr><td><li><code>position()='2'</code></td><td>returns <code>false</code> after second child element has been processed, <code>true</code> for others</td></tr>
+ * <tr><td><li><code>result[@item='2']</code></td><td>returns result element after second child element has been processed</td></tr>
+ * <tr><td><li><code>result/@item='2'</code></td><td>returns <code>false</code> after second child element has been processed, <code>true</code> for others</td></tr>
  * </table> 
  * </td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setElementXPathExpression(String) elementXPathExpression}</td><td>expression used to determine the set of elements iterated over, i.e. the set of child elements</td><td>&nbsp;</td></tr>
@@ -81,26 +116,49 @@ import org.w3c.dom.Node;
  * </pre>
  * 
  * @author Gerrit van Brakel
- * @since 4.6.1
+ * @since 4.3
  * 
- * $Id: ForEachChildElementPipe.java,v 1.10 2007-07-10 07:53:06 europe\L190409 Exp $
+ * $Id: ForEachChildElementPipe.java,v 1.11 2007-07-10 10:06:28 europe\L190409 Exp $
  */
-public class ForEachChildElementPipe extends IteratingPipe {
-	public static final String version="$RCSfile: ForEachChildElementPipe.java,v $ $Revision: 1.10 $ $Date: 2007-07-10 07:53:06 $";
+public class ForEachChildElementPipe extends MessageSendingPipe {
+	public static final String version="$RCSfile: ForEachChildElementPipe.java,v $ $Revision: 1.11 $ $Date: 2007-07-10 10:06:28 $";
 
+	private boolean elementsOnly=true;
+	private String stopConditionXPathExpression=null;
 	private String elementXPathExpression=null;
+	private boolean removeXmlDeclarationInResults=false;
 
 	private TransformerPool identityTp;
 	private TransformerPool extractElementsTp=null;
+	private TransformerPool stopConditionTp=null;
+	private TransformerPool encapsulateResultsTp=null;
 
+	private String makeEncapsulatingXslt(String rootElementname,String xpathExpression) {
+		return 
+		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"1.0\" xmlns:xalan=\"http://xml.apache.org/xslt\">" +
+		"<xsl:output method=\"xml\" omit-xml-declaration=\"yes\"/>" +
+		"<xsl:strip-space elements=\"*\"/>" +
+		"<xsl:template match=\"/\">" +
+		"<xsl:element name=\"" + rootElementname + "\">" +
+		"<xsl:copy-of select=\"" + xpathExpression + "\"/>" +
+		"</xsl:element>" +
+		"</xsl:template>" +
+		"</xsl:stylesheet>";
+	}
 
 
 	public void configure() throws ConfigurationException {
 		super.configure();
 		try {
 			identityTp=new TransformerPool(XmlUtils.IDENTITY_TRANSFORM);
+			if (StringUtils.isNotEmpty(getStopConditionXPathExpression())) {
+				stopConditionTp=new TransformerPool(XmlUtils.createXPathEvaluatorSource(null,getStopConditionXPathExpression(),"xml",false));
+			}
 			if (StringUtils.isNotEmpty(getElementXPathExpression())) {
 				extractElementsTp=new TransformerPool(makeEncapsulatingXslt("root",getElementXPathExpression()));
+			}
+			if (isRemoveXmlDeclarationInResults()) {
+				encapsulateResultsTp=new TransformerPool( makeEncapsulatingXslt("result","*"));
 			}
 		} catch (TransformerConfigurationException e) {
 			throw new ConfigurationException(e);
@@ -121,79 +179,90 @@ public class ForEachChildElementPipe extends IteratingPipe {
 		super.stop();
 	}
 	
-	public class ElementIterator implements Iterator {
-		private static final boolean elementsOnly=true;
 
-		Node node;
-		boolean nextElementReady;
-
-		public ElementIterator(String xmlString) throws SenderException {
-			super();
-			if (getExtractElementsTp()!=null) {
+	protected String sendMessage(Object input, PipeLineSession session, String correlationID, ISender sender, HashMap threadContext) throws SenderException, TimeOutException {
+		// sendResult has a messageID for async senders, the result for sync senders
+		String result=null;
+		ISenderWithParameters psender=null;
+		if (sender instanceof ISenderWithParameters && getParameterList()!=null) {
+			psender = (ISenderWithParameters) sender;
+		}		
+		String resultsXml = "";
+		boolean keepGoing = true;
+		try {
+			int count=0;
+			String inputString=(String)input;
+			if (extractElementsTp!=null) {
 				log.debug("transforming input to obtain list of elements using xpath ["+getElementXPathExpression()+"]");
-				try {
-					xmlString=getExtractElementsTp().transform(xmlString, null, isNamespaceAware());
-				} catch (Exception e) {
-					throw new SenderException("Could not extract list of elements using xpath ["+getElementXPathExpression()+"]");
+				inputString=extractElementsTp.transform((String)input,null, isNamespaceAware());
+			}
+			Element fullMessage = XmlUtils.buildElement(inputString, isNamespaceAware());
+			Node node=fullMessage.getFirstChild();
+			while (keepGoing && node!=null) { 
+				if (elementsOnly) {
+					while (node!=null && !(node instanceof Element)) { 
+						node=node.getNextSibling();
+					}
 				}
-			}
-			Element fullMessage;
-			try {
-				fullMessage = XmlUtils.buildElement(xmlString, isNamespaceAware());
-			} catch (DomBuilderException e) {
-				throw new SenderException("Could not build elements",e);
-			}
-			node=fullMessage.getFirstChild();
-			nextElementReady=false;
-		}
-
-		private void findNextElement() {
-			if (elementsOnly) {
-				while (node!=null && !(node instanceof Element)) { 
+				if (node!=null) {
+					count++;
+					DOMSource src = new DOMSource(node);
+					String item=identityTp.transform(src,null);
+					if (log.isDebugEnabled()) {
+						//log.debug(getLogPrefix(session)+"set current item to ["+item+"]");
+						log.debug(getLogPrefix(session)+"sending item no ["+count+"] element name ["+node.getNodeName()+"]");
+					} 
+					if (psender!=null) {
+						//result = psender.sendMessage(correlationID, item, new ParameterResolutionContext(src, session));
+						//TODO find out why ParameterResolutionContext cannot be constructed using dom-source
+						ParameterResolutionContext prc = new ParameterResolutionContext(item, session, isNamespaceAware());
+						result = psender.sendMessage(correlationID, item, prc);
+					} else {
+						result = sender.sendMessage(correlationID, item);
+					}
+					if (isRemoveXmlDeclarationInResults()) {
+						log.debug(getLogPrefix(session)+"post processing partial result ["+result+"]");
+						result = encapsulateResultsTp.transform(result,null);
+					} else {
+						log.debug(getLogPrefix(session)+"partial result ["+result+"]");
+						result = "<result>\n"+result+"\n</result>";
+					}
+					resultsXml += result+"\n";
 					node=node.getNextSibling();
 				}
+				if (stopConditionTp!=null) {
+					String stopConditionResult = stopConditionTp.transform(result,null);
+					if (StringUtils.isNotEmpty(stopConditionResult) && !stopConditionResult.equalsIgnoreCase("false")) {
+						log.debug(getLogPrefix(session)+"stopcondition result ["+stopConditionResult+"], stopping loop");
+						keepGoing=false;
+					} else {
+						log.debug(getLogPrefix(session)+"stopcondition result ["+stopConditionResult+"], continueing loop");
+					}
+				}
 			}
-		}
-
-		public boolean hasNext() {
-			findNextElement();
-			return node!=null;
-		}
-
-		public Object next() throws NoSuchElementException {
-			findNextElement();
-			if (node==null) {
-				return null;
-			}
-			DOMSource src = new DOMSource(node);
-			String result;
-			try {
-				result = getIdentityTp().transform(src, null);
-			} catch (Exception e) {
-				throw makeNoSuchElementException("could not extract element",e);
-			}
-			if (node!=null) {
-				node=node.getNextSibling();
-			} 
-			return result; 
-		}
-
-		public void remove() {
+			resultsXml = "<results count=\""+count+"\">\n"+resultsXml+"</results>";
+			return resultsXml;
+		} catch (DomBuilderException e) {
+			throw new SenderException(getLogPrefix(session)+"cannot parse input",e);
+		} catch (TransformerException e) {
+			throw new SenderException(getLogPrefix(session)+"cannot serialize item",e);
+		} catch (IOException e) {
+			throw new SenderException(getLogPrefix(session)+"cannot serialize item",e);
 		}
 	}
 
-	
-	protected Iterator getIterator(Object input, PipeLineSession session, String correlationID, HashMap threadContext) throws SenderException {
-		return new ElementIterator((String)input);
+
+	public void setSender(ISender sender) {
+		super.setSender(sender);
 	}
 
-	protected TransformerPool getExtractElementsTp() {
-		return extractElementsTp;
-	}
-	protected TransformerPool getIdentityTp() {
-		return identityTp;
-	}
 
+	public void setStopConditionXPathExpression(String string) {
+		stopConditionXPathExpression = string;
+	}
+	public String getStopConditionXPathExpression() {
+		return stopConditionXPathExpression;
+	}
 
 
 	public void setElementXPathExpression(String string) {
@@ -203,4 +272,10 @@ public class ForEachChildElementPipe extends IteratingPipe {
 		return elementXPathExpression;
 	}
 
+	public void setRemoveXmlDeclarationInResults(boolean b) {
+		removeXmlDeclarationInResults = b;
+	}
+	public boolean isRemoveXmlDeclarationInResults() {
+		return removeXmlDeclarationInResults;
+	}
 }
