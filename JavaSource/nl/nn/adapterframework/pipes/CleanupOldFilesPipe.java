@@ -1,6 +1,9 @@
 /*
  * $Log: CleanupOldFilesPipe.java,v $
- * Revision 1.3  2007-07-10 07:29:33  europe\L190409
+ * Revision 1.4  2007-07-10 15:17:01  europe\L190409
+ * fix switching between by input and by pattern
+ *
+ * Revision 1.3  2007/07/10 07:29:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved logging
  *
  * Revision 1.2  2007/01/02 09:56:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -33,6 +36,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.util.FileUtils;
 
 import org.apache.commons.lang.StringUtils;
@@ -46,9 +50,9 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>classname</td><td>nl.nn.adapterframework.batch.CleanupOldFilesPipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMaxThreads(int) maxThreads}</td><td>maximum number of threads that may call {@link #doPipe(Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously</td><td>0 (unlimited)</td></tr>
- * <tr><td>{@link #setFilePattern(String) filePattern}</td><td>files that match this pattern will be deleted. Parameters of the pipe are applied to this pattern</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setFilePattern(String) filePattern}</td><td>files that match this pattern will be deleted. Parameters of the pipe are applied to this pattern. If this attribute is not set, the input of the pipe is interpreted as the file to be removed</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSubdirectories(boolean) subdirectories}</td><td>when <code>true</code>, files  in subdirectories will be deleted, too</td><td>false</td></tr>
- * <tr><td>{@link #setLastModifiedDelta(long) lastModifiedDelta}</td><td>time in milliseconds that must have passed at least before a file will be deleted</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setLastModifiedDelta(long) lastModifiedDelta}</td><td>time in milliseconds that must have passed at least before a file will be deleted</td><td>0</td></tr>
  * </table>
  * </p>
  * 
@@ -56,40 +60,37 @@ import org.apache.commons.lang.StringUtils;
  * @since:  4.2
  */
 public class CleanupOldFilesPipe extends FixedForwardPipe {
-	public static final String version = "$RCSfile: CleanupOldFilesPipe.java,v $  $Revision: 1.3 $ $Date: 2007-07-10 07:29:33 $";
+	public static final String version = "$RCSfile: CleanupOldFilesPipe.java,v $  $Revision: 1.4 $ $Date: 2007-07-10 15:17:01 $";
 	
 	private String filePattern;
-	private boolean subdirectories;
-	private long lastModifiedDelta;
+	private boolean subdirectories=false;
+	private long lastModifiedDelta=0;
 
 	private _FileFilter fileFilter = new _FileFilter();
 	private _DirFilter dirFilter = new _DirFilter();
 		
-	public CleanupOldFilesPipe() {
-	}
-	
-	public void configure() throws ConfigurationException {
-		super.configure();
 		
-		if (StringUtils.isEmpty(getFilePattern())) {
-			throw new ConfigurationException("Property [filePattern] is not set");
-		}
-	}
-	
-	/** 
-	 * @see nl.nn.adapterframework.core.IPipe#doPipe(Object, PipeLineSession)
-	 */
 	public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRunException {
 		try {
-			File in = (input == null) ? null : new File(input.toString());
-			String filename = FileUtils.getFilename(null, session, in, getFilePattern());
+			String filename;
+			if (StringUtils.isNotEmpty(getFilePattern())) {
+				filename = FileUtils.getFilename(getParameterList(), session, "", getFilePattern());
+			} else {
+				if (StringUtils.isEmpty((String)input)) {
+					throw new PipeRunException(this, "input empty, but should contain filename to delete");
+				} else {
+					File in = new File(input.toString());
+					filename = in.getName();
+				}
+			}
+			
 			ArrayList delFiles = getFilesForDeletion(filename);
 			if (delFiles != null && delFiles.size() > 0) {
 				for (Iterator fileIt = delFiles.iterator(); fileIt.hasNext();) {
 					File file = (File)fileIt.next();
 					String curfilename=file.getName();
 					file.delete();
-					log.info(getLogPrefix(session)+"deleted file ["+curfilename+"]");
+					log.info(getLogPrefix(session)+"deleted file ["+file.getAbsolutePath()+"]");
 				}
 			} else {
 				log.info(getLogPrefix(session)+"no files match pattern ["+filename+"]");
