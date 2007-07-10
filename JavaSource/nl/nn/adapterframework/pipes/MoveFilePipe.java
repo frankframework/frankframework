@@ -1,6 +1,9 @@
 /*
  * $Log: MoveFilePipe.java,v $
- * Revision 1.1  2006-08-23 11:35:16  europe\L190409
+ * Revision 1.2  2007-07-10 15:17:54  europe\L190409
+ * improve logging
+ *
+ * Revision 1.1  2006/08/23 11:35:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * moved batch-pipes to pipes-package
  *
  * Revision 1.6  2006/08/22 12:48:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -52,20 +55,17 @@ import org.apache.commons.lang.StringUtils;
  * @author: Jaco de Groot (***@dynasol.nl)
  */
 public class MoveFilePipe extends FixedForwardPipe {
-	public static final String version = "$RCSfile: MoveFilePipe.java,v $  $Revision: 1.1 $ $Date: 2006-08-23 11:35:16 $";
+	public static final String version = "$RCSfile: MoveFilePipe.java,v $  $Revision: 1.2 $ $Date: 2007-07-10 15:17:54 $";
 
 	private String filename;
 	private String move2dir;
 	private long waitBeforeRetry = 1000;
 	private int numberOfAttempts = 10;
 	
-	public MoveFilePipe() {
-	}
-	
+		
 	public void configure() throws ConfigurationException {
 		super.configure();
-		
-		if (StringUtils.isEmpty(move2dir)) {
+		if (StringUtils.isEmpty(getMove2dir())) {
 			throw new ConfigurationException("Property [move2dir] is not set");
 		}
 	}
@@ -75,19 +75,20 @@ public class MoveFilePipe extends FixedForwardPipe {
 	 */
 	public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRunException {
 		String orgFilename;
-		if (StringUtils.isEmpty(filename)) {
+		if (StringUtils.isEmpty(getFilename())) {
 			orgFilename = input.toString();
 		} else {
-			orgFilename = filename;
+			orgFilename = getFilename();
 		}
 		try {
 			File srcFile = new File(orgFilename);
-			File dstFile = new File(move2dir, srcFile.getName());
+			File dstFile = new File(getMove2dir(), srcFile.getName());
 
-			if (FileUtils.moveFile(srcFile, dstFile, numberOfAttempts, waitBeforeRetry) == null) {
+			if (FileUtils.moveFile(srcFile, dstFile, getNumberOfAttempts(), getWaitBeforeRetry()) == null) {
 				throw new PipeRunException(this, "Error while moving file [" + orgFilename + "]"); 
-			}
-			 
+			} else {
+				log.info(getLogPrefix(session)+"moved ["+srcFile.getAbsolutePath()+"] to ["+dstFile.getAbsolutePath()+"]");
+			}			 
 			return new PipeRunResult(getForward(), dstFile.getAbsolutePath());
 		}
 		catch(PipeRunException e) {
@@ -106,6 +107,7 @@ public class MoveFilePipe extends FixedForwardPipe {
 		return filename;
 	}
 
+
 	public void setMove2dir(String string) {
 		move2dir = string;
 	}
@@ -114,14 +116,13 @@ public class MoveFilePipe extends FixedForwardPipe {
 	}
 
 
-
-
 	public void setNumberOfAttempts(int i) {
 		numberOfAttempts = i;
 	}
 	public int getNumberOfAttempts() {
 		return numberOfAttempts;
 	}
+
 
 	public void setWaitBeforeRetry(long l) {
 		waitBeforeRetry = l;
