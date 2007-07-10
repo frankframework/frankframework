@@ -1,6 +1,9 @@
 /*
  * $Log: CleanupOldFilesPipe.java,v $
- * Revision 1.2  2007-01-02 09:56:59  europe\L190409
+ * Revision 1.3  2007-07-10 07:29:33  europe\L190409
+ * improved logging
+ *
+ * Revision 1.2  2007/01/02 09:56:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.1  2006/08/24 07:10:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -53,7 +56,7 @@ import org.apache.commons.lang.StringUtils;
  * @since:  4.2
  */
 public class CleanupOldFilesPipe extends FixedForwardPipe {
-	public static final String version = "$RCSfile: CleanupOldFilesPipe.java,v $  $Revision: 1.2 $ $Date: 2007-01-02 09:56:59 $";
+	public static final String version = "$RCSfile: CleanupOldFilesPipe.java,v $  $Revision: 1.3 $ $Date: 2007-07-10 07:29:33 $";
 	
 	private String filePattern;
 	private boolean subdirectories;
@@ -68,7 +71,7 @@ public class CleanupOldFilesPipe extends FixedForwardPipe {
 	public void configure() throws ConfigurationException {
 		super.configure();
 		
-		if (StringUtils.isEmpty(filePattern)) {
+		if (StringUtils.isEmpty(getFilePattern())) {
 			throw new ConfigurationException("Property [filePattern] is not set");
 		}
 	}
@@ -79,13 +82,17 @@ public class CleanupOldFilesPipe extends FixedForwardPipe {
 	public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRunException {
 		try {
 			File in = (input == null) ? null : new File(input.toString());
-			String filename = FileUtils.getFilename(null, session, in, filePattern);
+			String filename = FileUtils.getFilename(null, session, in, getFilePattern());
 			ArrayList delFiles = getFilesForDeletion(filename);
 			if (delFiles != null && delFiles.size() > 0) {
 				for (Iterator fileIt = delFiles.iterator(); fileIt.hasNext();) {
 					File file = (File)fileIt.next();
+					String curfilename=file.getName();
 					file.delete();
+					log.info(getLogPrefix(session)+"deleted file ["+curfilename+"]");
 				}
+			} else {
+				log.info(getLogPrefix(session)+"no files match pattern ["+filename+"]");
 			}
 			return new PipeRunResult(getForward(), input);
 		}
@@ -116,7 +123,7 @@ public class CleanupOldFilesPipe extends FixedForwardPipe {
 			result.add(files[i]);
 		}
 		
-		if (subdirectories) {
+		if (isSubdirectories()) {
 			files = directory.listFiles(dirFilter);
 			for (int i = 0; i < files.length; i++) {
 				getFilesForDeletion(result, files[i]);
@@ -127,7 +134,7 @@ public class CleanupOldFilesPipe extends FixedForwardPipe {
 	private class _FileFilter implements FileFilter {
 		public boolean accept(File file) {
 			if (file.isFile()) {
-				if ((System.currentTimeMillis() - file.lastModified()) > lastModifiedDelta) {
+				if ((System.currentTimeMillis() - file.lastModified()) > getLastModifiedDelta()) {
 					return true;
 				}
 			}
@@ -145,13 +152,21 @@ public class CleanupOldFilesPipe extends FixedForwardPipe {
 	public void setFilePattern(String string) {
 		filePattern = string;
 	}
+	public String getFilePattern() {
+		return filePattern;
+	}
 
 	public void setLastModifiedDelta(long l) {
 		lastModifiedDelta = l;
+	}
+	public long getLastModifiedDelta() {
+		return lastModifiedDelta;
 	}
 
 	public void setSubdirectories(boolean b) {
 		subdirectories = b;
 	}
-
+	public boolean isSubdirectories() {
+		return subdirectories;
+	}
 }
