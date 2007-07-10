@@ -1,6 +1,9 @@
 /*
  * $Log: MessageSendingPipe.java,v $
- * Revision 1.33  2007-06-19 12:08:31  europe\L190409
+ * Revision 1.34  2007-07-10 08:03:04  europe\L190409
+ * move String check to calling of sender
+ *
+ * Revision 1.33  2007/06/19 12:08:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * log when using stub
  *
  * Revision 1.32  2007/06/12 11:23:18  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -192,7 +195,7 @@ import org.apache.commons.lang.SystemUtils;
  */
 
 public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
-	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.33 $ $Date: 2007-06-19 12:08:31 $";
+	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.34 $ $Date: 2007-07-10 08:03:04 $";
 	private final static String TIMEOUTFORWARD = "timeout";
 	private final static String EXCEPTIONFORWARD = "exception";
 	private final static String ILLEGALRESULTFORWARD = "illegalResult";
@@ -316,18 +319,10 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 		}
 	}
 
-	public PipeRunResult doPipe(Object input, PipeLineSession session)
-		throws PipeRunException {
-		if (input==null) {
-			throw new PipeRunException(
-				this,
-				"received null as input");
-		}
-		if (!(input instanceof String)) {
-			throw new PipeRunException(
-				this,
-				"String expected, got a [" + input.getClass().getName() + "]");
-		}
+	public PipeRunResult doPipe(Object input, PipeLineSession session)	throws PipeRunException {
+//		if (input==null) {
+//			throw new PipeRunException(this, "received null as input");
+//		}
 
 		String result = null;
 		
@@ -443,8 +438,16 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 			} catch (Throwable t) {
 				PipeForward exceptionForward = findForward(EXCEPTIONFORWARD);
 				if (exceptionForward!=null) {
-					log.warn(getLogPrefix(session) + "exception occured, forwarding to exception-forward ["+exceptionForward.getPath()+"], exception/n:", t);
-					String resultmsg=new ErrorMessageFormatter().format(getLogPrefix(session),t,this,(String)input,session.getMessageId(),0);
+					log.warn(getLogPrefix(session) + "exception occured, forwarding to exception-forward ["+exceptionForward.getPath()+"], exception:\n", t);
+					String resultmsg;
+					if (input instanceof String) {
+						resultmsg=new ErrorMessageFormatter().format(getLogPrefix(session),t,this,(String)input,session.getMessageId(),0);
+					} else {
+						if (input==null) {
+							input="null";
+						}
+						resultmsg=new ErrorMessageFormatter().format(getLogPrefix(session),t,this,input.toString(),session.getMessageId(),0);
+					}
 					return new PipeRunResult(exceptionForward,resultmsg);
 				}
 				throw new PipeRunException(this, getLogPrefix(session) + "caught exception", t);
@@ -477,6 +480,9 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 	}
 
 	protected String sendMessage(Object input, PipeLineSession session, String correlationID, ISender sender, HashMap threadContext) throws SenderException, TimeOutException {
+		if (!(input instanceof String)) {
+			throw new SenderException("String expected, got a [" + input.getClass().getName() + "]");
+		}
 		// sendResult has a messageID for async senders, the result for sync senders
 		if (sender instanceof ISenderWithParameters && getParameterList()!=null) {
 			ISenderWithParameters psender = (ISenderWithParameters) sender;
