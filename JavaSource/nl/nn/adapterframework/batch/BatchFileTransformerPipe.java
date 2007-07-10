@@ -1,6 +1,9 @@
 /*
  * $Log: BatchFileTransformerPipe.java,v $
- * Revision 1.6  2007-05-11 09:38:37  europe\L190409
+ * Revision 1.7  2007-07-10 07:11:04  europe\L190409
+ * corrected typo in javadoc
+ *
+ * Revision 1.6  2007/05/11 09:38:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * only configure flow it is defined
  *
  * Revision 1.5  2007/05/03 11:30:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -41,7 +44,7 @@ import nl.nn.adapterframework.util.FileUtils;
 import org.apache.commons.lang.StringUtils;
 
 /**
- * Pipe for transforming a (batch)file with records. Records in the file must be seperated
+ * Pipe for transforming a (batch)file with records. Records in the file must be separated
  * with new line characters.
  * You can use the <child> tag to register RecordHandlers, RecordHandlerManagers, ResultHandlers
  * and RecordHandlingFlow elements.
@@ -62,7 +65,7 @@ import org.apache.commons.lang.StringUtils;
  * @author: John Dekker
  */
 public class BatchFileTransformerPipe extends FixedForwardPipe {
-	public static final String version = "$RCSfile: BatchFileTransformerPipe.java,v $  $Revision: 1.6 $ $Date: 2007-05-11 09:38:37 $";
+	public static final String version = "$RCSfile: BatchFileTransformerPipe.java,v $  $Revision: 1.7 $ $Date: 2007-07-10 07:11:04 $";
 
 	private IRecordHandlerManager initialFactory;
 	private IResultHandler defaultHandler;
