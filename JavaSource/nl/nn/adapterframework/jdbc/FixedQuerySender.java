@@ -1,6 +1,9 @@
 /*
  * $Log: FixedQuerySender.java,v $
- * Revision 1.14  2006-12-13 16:27:13  europe\L190409
+ * Revision 1.15  2007-07-10 07:17:36  europe\L190409
+ * corrected typo in javadoc
+ *
+ * Revision 1.14  2006/12/13 16:27:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added attribute blobCharset
  *
  * Revision 1.13  2006/12/12 09:57:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -74,7 +77,7 @@ import java.sql.SQLException;
  * <tr><td>{@link #setStartRow(int) startRow}</td><td>the number of the first row returned from the output</td><td>1</td></tr>
  * <tr><td>{@link #setScalar(boolean) scalar}</td><td>when true, the value of the first column of the first row (or the StartRow) is returned as the only result, as a simple non-XML value</td><td>false</td></tr>
  * <tr><td>{@link #setNullValue(String) nullValue}</td><td>value used in result as contents of fields that contain no value (SQL-NULL)</td><td><i>empty string</></td></tr>
- * <tr><td>{@link #setResultQuery(String) resultQuery}</td><td>query that can be used to obtain result of side-effecto of update-query, like generated value of sequence. Example: SELECT mysequence.currval FROM DUAL</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setResultQuery(String) resultQuery}</td><td>query that can be used to obtain result of side-effect of update-query, like generated value of sequence. Example: SELECT mysequence.currval FROM DUAL</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSynchronous(boolean) synchronous}</td><td>&nbsp;</td><td>true</td></tr>
  * <tr><td>{@link #setTrimSpaces(boolean) trimSpaces}</td><td>remove trailing blanks from all values.</td><td>true</td></tr>
  * <tr><td>{@link #setBlobCharset(String) blobCharset}</td><td>charset used to read and write BLOBs</td><td>UTF-8</td></tr>
@@ -94,7 +97,7 @@ import java.sql.SQLException;
  * @since 	4.1
  */
 public class FixedQuerySender extends JdbcQuerySenderBase {
-	public static final String version = "$RCSfile: FixedQuerySender.java,v $ $Revision: 1.14 $ $Date: 2006-12-13 16:27:13 $";
+	public static final String version = "$RCSfile: FixedQuerySender.java,v $ $Revision: 1.15 $ $Date: 2007-07-10 07:17:36 $";
 
 	private String query=null;
 		
