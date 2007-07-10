@@ -1,6 +1,9 @@
 /*
  * $Log: XmlValidator.java,v $
- * Revision 1.20  2007-02-26 13:17:55  europe\L190409
+ * Revision 1.21  2007-07-10 08:06:56  europe\L190409
+ * improved javadoc
+ *
+ * Revision 1.20  2007/02/26 13:17:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fixed non-xml reason setting
  *
  * Revision 1.19  2007/02/05 15:00:47  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -86,7 +89,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * <p><b>Notice:</b> this implementation relies on Xerces and is rather
  * version-sensitive. It relies on the validation features of it. You should test the proper
  * working of this pipe extensively on your deployment platform.</p>
- * <p>The XmlValidaor relies on the properties for <code>external-schemaLocation</code> and
+ * <p>The XmlValidator relies on the properties for <code>external-schemaLocation</code> and
  * <code>external-noNamespaceSchemaLocation</code>. In
  * Xerces-J-2.4.0 there came a bug-fix for these features, so a previous version was erroneous.<br/>
  * Xerces-j-2.2.1 included a fix on this, so before this version there were problems too (the features did not work).<br/>
@@ -105,9 +108,9 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * <tr><td>{@link #setDurationThreshold(long) durationThreshold}</td><td>if durationThreshold >=0 and the duration (in milliseconds) of the message processing exceeded the value specified the message is logged informatory</td><td>-1</td></tr>
  * <tr><td>{@link #setGetInputFromSessionKey(String) getInputFromSessionKey}</td><td>when set, input is taken from this session key, instead of regular input</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setStoreResultInSessionKey(String) storeResultInSessionKey}</td><td>when set, the result is stored under this session key</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSchema(String) schema}</td><td>The filename of the schema on the classpath. See doc on the method.</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSchemaLocation(String) schemaLocation}</td><td>Pairs of URI references (one for the namespace name, and one for a hint as to the location of a schema document defining names for that namespace name). See doc on the method.</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setSchema(String) schema}</td><td>The filename of the schema on the classpath. See doc on the method. (effectively the same as noNamespaceSchemaLocation)</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setNoNamespaceSchemaLocation(String) noNamespaceSchemaLocation}</td><td>A URI reference as a hint as to the location of a schema document with no target namespace. See doc on the method.</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setSchemaLocation(String) schemaLocation}</td><td>Pairs of URI references (one for the namespace name, and one for a hint as to the location of a schema document defining names for that namespace name). See doc on the method.</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSchemaSessionKey(String) schemaSessionKey}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setFullSchemaChecking(boolean) fullSchemaChecking}</td><td>Perform addional memory intensive checks</td><td><code>false</code></td></tr>
  * <tr><td>{@link #setThrowException(boolean) throwException}</td><td>Should the XmlValidator throw a PipeRunException on a validation error (if not, a forward with name "failure" should be defined.</td><td><code>false</code></td></tr>
@@ -129,7 +132,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
 
  */
 public class XmlValidator extends FixedForwardPipe {
-	public static final String version="$RCSfile: XmlValidator.java,v $ $Revision: 1.20 $ $Date: 2007-02-26 13:17:55 $";
+	public static final String version="$RCSfile: XmlValidator.java,v $ $Revision: 1.21 $ $Date: 2007-07-10 08:06:56 $";
 
     private String schemaLocation = null;
     private String noNamespaceSchemaLocation = null;
