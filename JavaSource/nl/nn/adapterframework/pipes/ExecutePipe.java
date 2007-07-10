@@ -1,18 +1,23 @@
 /*
  * $Log: ExecutePipe.java,v $
- * Revision 1.1  2006-08-22 12:56:32  europe\L190409
+ * Revision 1.2  2007-07-10 07:52:29  europe\L190409
+ * cosmetic changes
+ *
+ * Revision 1.1  2006/08/22 12:56:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * first version
  *
  */
 package nl.nn.adapterframework.pipes;
 
 import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+
+import org.apache.commons.lang.StringUtils;
 
 /**
  * Executes a command.
@@ -29,7 +34,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
  * @author Jaco de Groot (***@dynasol.nl)
  */
 public class ExecutePipe extends FixedForwardPipe {
-	public static final String version = "$RCSfile: ExecutePipe.java,v $ $Revision: 1.1 $ $Date: 2006-08-22 12:56:32 $";
+	public static final String version = "$RCSfile: ExecutePipe.java,v $ $Revision: 1.2 $ $Date: 2007-07-10 07:52:29 $";
 	
 	private String command;
 	private String commandSessionKey;
@@ -37,10 +42,10 @@ public class ExecutePipe extends FixedForwardPipe {
 	public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRunException {
 		StringBuffer result = new StringBuffer();
 		String command;
-		if (this.command != null) {
-			command = this.command;
-		} else if (commandSessionKey != null) {
-			command = (String)session.get(commandSessionKey);
+		if (StringUtils.isNotEmpty(getCommand())) {
+			command = getCommand();
+		} else if (StringUtils.isNotEmpty(getCommandSessionKey())) {
+			command = (String)session.get(getCommandSessionKey());
 		} else {
 			command = (String)input;
 		}
@@ -60,7 +65,7 @@ public class ExecutePipe extends FixedForwardPipe {
 			try {
 				process.waitFor();
 			} catch(InterruptedException e) {
-				throw new PipeRunException(this, "Interrupted while waiting for process: " + e.getMessage());
+				throw new PipeRunException(this, "Interrupted while waiting for process",e);
 			}
 			// Throw an exception if the command returns an error exit value
 			int exitValue = process.exitValue();
@@ -68,7 +73,7 @@ public class ExecutePipe extends FixedForwardPipe {
 				throw new PipeRunException(this, "Error exit value '" + exitValue + "' (not 0) for command '" + command + "', process output was: " + result.toString());
 			}
 		} catch(IOException e) {
-			throw new PipeRunException(this, "Error executing command '" + command + "': " + e.getMessage(), e);
+			throw new PipeRunException(this, "Error executing command [" + command + "]", e);
 		}
 		// Return result
 		return new PipeRunResult(getForward(), result.toString());
@@ -77,9 +82,14 @@ public class ExecutePipe extends FixedForwardPipe {
 	public void setCommand(String command) {
 		this.command = command;
 	}
+	public String getCommand() {
+		return command;
+	}
 
 	public void setCommandSessionKey(String commandSessionKey) {
 		this.commandSessionKey = commandSessionKey;
 	}
-
+	public String getCommandSessionKey() {
+		return commandSessionKey;
+	}
 }
