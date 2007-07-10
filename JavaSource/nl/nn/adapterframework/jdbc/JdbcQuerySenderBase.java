@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcQuerySenderBase.java,v $
- * Revision 1.27  2007-04-24 11:37:12  europe\L190409
+ * Revision 1.28  2007-07-10 07:18:25  europe\L190409
+ * support for loading streams to blobs and clobs
+ *
+ * Revision 1.27  2007/04/24 11:37:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added package execution feature
  *
  * Revision 1.26  2007/02/27 12:37:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -85,6 +88,8 @@
 package nl.nn.adapterframework.jdbc;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -137,6 +142,10 @@ import org.apache.commons.lang.StringUtils;
  *     <li>"updateClob" for queries that update a CLOB</li>
  *     <li>anything else for queries that return no data.</li>
  * </ul></td><td>"other"</td></tr>
+ * <tr><td>{@link #setBlobColumn(int) blobColumn}</td><td>only for queryType 'updateBlob': column that contains the blob to be updated</td><td>1</td></tr>
+ * <tr><td>{@link #setClobColumn(int) clobColumn}</td><td>only for queryType 'updateClob': column that contains the clob to be updated</td><td>1</td></tr>
+ * <tr><td>{@link #setBlobSessionKey(String) blobSessionKey}</td><td>only for queryType 'updateBlob': key of session variable that contains the data (String or InputStream) to be loaded to the blob. When empty, the input of the pipe, which then must be a String, is used</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setClobSessionKey(String) clobSessionKey}</td><td>only for queryType 'updateClob': key of session variable that contains the clob (String or InputStream) to be loaded to the clob. When empty, the input of the pipe, which then must be a String, is used</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMaxRows(int) maxRows}</td><td>maximum number of rows returned</td><td>-1 (unlimited)</td></tr>
  * <tr><td>{@link #setStartRow(int) startRow}</td><td>the number of the first row returned from the output</td><td>1</td></tr>
  * <tr><td>{@link #setScalar(boolean) scalar}</td><td>when true, the value of the first column of the first row (or the StartRow) is returned as the only result, as a simple non-XML value</td><td>false</td></tr>
@@ -169,7 +178,7 @@ import org.apache.commons.lang.StringUtils;
  * @since 	4.1
  */
 public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
-	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.27 $ $Date: 2007-04-24 11:37:12 $";
+	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.28 $ $Date: 2007-07-10 07:18:25 $";
 
 	private String queryType = "other";
 	private int maxRows=-1; // return all rows
@@ -179,6 +188,8 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 	private boolean synchronous=true;
 	private int blobColumn=1;
 	private int clobColumn=1;
+	private String blobSessionKey=null;
+	private String clobSessionKey=null;
 	private String nullValue="";
 	private String columnsReturned=null;
 	private String resultQuery=null;
@@ -248,10 +259,18 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 				return executeSelectQuery(statement);
 			} else {
 				if ("updateBlob".equalsIgnoreCase(getQueryType())) {
-					return executeUpdateBlobQuery(statement,message);
+					if (StringUtils.isEmpty(getClobSessionKey())) {
+						return executeUpdateBlobQuery(statement,message);
+					} else {
+						return executeUpdateBlobQuery(statement,prc.getSession().get(getBlobSessionKey()));
+					}
 				} else {
 					if ("updateClob".equalsIgnoreCase(getQueryType())) {
-						return executeUpdateClobQuery(statement,message);
+						if (StringUtils.isEmpty(getClobSessionKey())) {
+							return executeUpdateClobQuery(statement,message);
+						} else {
+							return executeUpdateClobQuery(statement,prc.getSession().get(getClobSessionKey()));
+						}
 					} else {
 						if ("package".equalsIgnoreCase(getQueryType())) {
 							return executePackageQuery(connection, statement, message);
@@ -368,14 +387,21 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		 }
 	 }
 
-	protected String executeUpdateBlobQuery(PreparedStatement statement, String message) throws SenderException{
+	protected String executeUpdateBlobQuery(PreparedStatement statement, Object message) throws SenderException{
 		ResultSet rs=null;
 		try {
 			rs = statement.executeQuery();
 			XmlBuilder result=new XmlBuilder("result");
 			JdbcUtil.warningsToXml(statement.getWarnings(),result);
 			rs.next();
-			JdbcUtil.putStringAsBlob(rs, blobColumn, message, getBlobCharset(), isBlobsCompressed());
+			if (message instanceof InputStream) {
+				InputStream inStream = (InputStream)message;
+				OutputStream outStream = JdbcUtil.getBlobUpdateOutputStream(rs, blobColumn);
+				Misc.streamToStream(inStream,outStream);
+				outStream.close();
+			} else {
+				JdbcUtil.putStringAsBlob(rs, blobColumn, (String)message, getBlobCharset(), isBlobsCompressed());
+			}
 			JdbcUtil.warningsToXml(rs.getWarnings(),result);
 			return result.toXML();
 		} catch (SQLException sqle) {
@@ -395,14 +421,21 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		}
 	}
 	
-	protected String executeUpdateClobQuery(PreparedStatement statement, String message) throws SenderException{
+	protected String executeUpdateClobQuery(PreparedStatement statement, Object message) throws SenderException{
 		ResultSet rs=null;
 		try {
 			rs = statement.executeQuery();
 			XmlBuilder result=new XmlBuilder("result");
 			JdbcUtil.warningsToXml(statement.getWarnings(),result);
 			rs.next();
-			JdbcUtil.putStringAsClob(rs, clobColumn, message);
+			if (message instanceof InputStream) {
+				InputStream inStream = (InputStream)message;
+				OutputStream outStream = JdbcUtil.getClobUpdateOutputStream(rs, clobColumn);
+				Misc.streamToStream(inStream,outStream);
+				outStream.close();
+			} else {
+				JdbcUtil.putStringAsClob(rs, clobColumn, (String)message);
+			}
 			JdbcUtil.warningsToXml(rs.getWarnings(),result);
 			return result.toXML();
 		} catch (SQLException sqle) {
@@ -765,5 +798,34 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 	public void setBlobCharset(String string) {
 		blobCharset = string;
 	}
+
+	public void setBlobColumn(int i) {
+		blobColumn = i;
+	}
+	public int getBlobColumn() {
+		return blobColumn;
+	}
+
+	public void setBlobSessionKey(String string) {
+		blobSessionKey = string;
+	}
+	public String getBlobSessionKey() {
+		return blobSessionKey;
+	}
+
+	public void setClobColumn(int i) {
+		clobColumn = i;
+	}
+	public int getClobColumn() {
+		return clobColumn;
+	}
+
+	public void setClobSessionKey(String string) {
+		clobSessionKey = string;
+	}
+	public String getClobSessionKey() {
+		return clobSessionKey;
+	}
+
 
 }
