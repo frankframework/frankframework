@@ -1,6 +1,9 @@
 /*
  * $Log: SapLUWManager.java,v $
- * Revision 1.1  2007-05-01 14:21:31  europe\L190409
+ * Revision 1.2  2007-07-10 07:13:00  europe\L190409
+ * improved logging
+ *
+ * Revision 1.1  2007/05/01 14:21:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * introduction of SAP LUW management
  *
  */
@@ -20,7 +23,14 @@ import org.apache.commons.lang.StringUtils;
 
 /**
  * Manager for SAP Logical Units of Work (LUWs). 
- * Used to begin, commit or rollback LUWs.
+ * Used to begin, commit or rollback LUWs. A SapLUWManager can be placed before a number
+ * of SapSenders. The SapLUWManager and the SapSenders must each use the same value for
+ * luwHandleSessionKey. By doing so, they use the same connection to SAP. This allows to
+ * perform a commit on a number of actions.<br>
+ * The placement of the the first SapLUWManager is optionan: By specifying a new 
+ * luwHandleSessionKey a new handle is created implicitly.<br>
+ * To explicityly commit or rollback a set of actions, a SapLUWManager-pipe can be used, with 
+ * the action-attribute set apropriately.
  * 
  * <p><b>Configuration:</b>
  * <table border="1">
@@ -36,7 +46,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class SapLUWManager extends FixedForwardPipe implements IPipeLineExitHandler {
-	public static String version="$RCSfile: SapLUWManager.java,v $  $Revision: 1.1 $ $Date: 2007-05-01 14:21:31 $";
+	public static String version="$RCSfile: SapLUWManager.java,v $  $Revision: 1.2 $ $Date: 2007-07-10 07:13:00 $";
 
 	public static final String ACTION_BEGIN="begin";
 	public static final String ACTION_COMMIT="commit";
