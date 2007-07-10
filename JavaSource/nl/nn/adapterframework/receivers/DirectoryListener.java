@@ -1,6 +1,9 @@
 /*
  * $Log: DirectoryListener.java,v $
- * Revision 1.5  2007-05-21 12:21:36  europe\L190409
+ * Revision 1.6  2007-07-10 15:18:40  europe\L190409
+ * fixed typo
+ *
+ * Revision 1.5  2007/05/21 12:21:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added createInputDirectory attribute
  *
  * Revision 1.3  2007/02/12 14:03:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -77,7 +80,7 @@ import nl.nn.adapterframework.util.LogUtil;
  * @author  John Dekker
  */
 public class DirectoryListener implements IPullingListener, INamedObject {
-	public static final String version = "$RCSfile: DirectoryListener.java,v $  $Revision: 1.5 $ $Date: 2007-05-21 12:21:36 $";
+	public static final String version = "$RCSfile: DirectoryListener.java,v $  $Revision: 1.6 $ $Date: 2007-07-10 15:18:40 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -209,7 +212,7 @@ public class DirectoryListener implements IPullingListener, INamedObject {
 			inputFileName = inputFile.getCanonicalPath();
 		}
 		catch (IOException e) {
-			throw new ListenerException("Error while gettin canonical path", e);
+			throw new ListenerException("Error while getting canonical path", e);
 		}
 		String inprocessFile = archiveFile(getSession(threadContext), inputFile);
 		if (inprocessFile == null) { // moving was unsuccessful, probably becausing writing was not finished
