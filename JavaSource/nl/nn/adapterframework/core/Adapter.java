@@ -1,6 +1,9 @@
 /*
  * $Log: Adapter.java,v $
- * Revision 1.29  2007-06-26 12:05:34  europe\L190409
+ * Revision 1.30  2007-07-10 07:11:45  europe\L190409
+ * logging improvements
+ *
+ * Revision 1.29  2007/06/26 12:05:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * tuned logging
  *
  * Revision 1.28  2007/05/02 11:23:52  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -154,7 +157,7 @@ import org.apache.log4j.NDC;
  */
 
 public class Adapter implements Runnable, IAdapter {
-	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.29 $ $Date: 2007-06-26 12:05:34 $";
+	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.30 $ $Date: 2007-07-10 07:11:45 $";
 	private Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -571,10 +574,10 @@ public class Adapter implements Runnable, IAdapter {
 			}
 			result.setResult(formatErrorMessage(msg, t, message, messageId, objectInError, startTime));
 			if (isRequestReplyLogging()) {
-				log.info("Adapter [" + getName() + "] messageId[" + messageId + "] got exit-state [" + result.getState() + "] and result [" + result.toString() + "] from PipeLine");
+				log.info("Adapter [" + getName() + "] messageId [" + messageId + "] got exit-state [" + result.getState() + "] and result [" + result.toString() + "] from PipeLine");
 			} else {
 				if (log.isDebugEnabled()) {
-					log.debug("Adapter [" + getName() + "] messageId[" + messageId + "] got exit-state [" + result.getState() + "] and result [" + result.toString() + "] from PipeLine");
+					log.debug("Adapter [" + getName() + "] messageId [" + messageId + "] got exit-state [" + result.getState() + "] and result [" + result.toString() + "] from PipeLine");
 				}
 			}
 			return result;
@@ -645,7 +648,7 @@ public class Adapter implements Runnable, IAdapter {
 						+ " finished " + DateUtils.format(new Date(endTime), DateUtils.FORMAT_GENERICDATETIME)
 						+ " total duration: " + duration + " msecs");
 			} else {
-				log.info("Adapter completed message with messageId [" + messageId + "] with exit-state [" + result.getState() + "]");
+				log.info("Adapter [" + getName() + "] completed message with messageId [" + messageId + "] with exit-state [" + result.getState() + "]");
 			}
 			NDC.pop();
 		}
