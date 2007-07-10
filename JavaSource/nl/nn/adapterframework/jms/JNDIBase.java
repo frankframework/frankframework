@@ -1,6 +1,9 @@
 /*
  * $Log: JNDIBase.java,v $
- * Revision 1.11  2007-05-08 16:27:24  europe\L190409
+ * Revision 1.12  2007-07-10 07:20:02  europe\L190409
+ * add some checks
+ *
+ * Revision 1.11  2007/05/08 16:27:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fix username/password
  *
  * Revision 1.10  2007/05/08 16:07:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -38,6 +41,7 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -47,18 +51,32 @@ import org.apache.log4j.Logger;
 
 /**
  * Provides all JNDI functions and is meant to act as a base class.
+ * 
+ * <p><b>Configuration:</b>
+ * <table border="1">
+ * <tr><th>attributes</th><th>description</th><th>default</th></tr>
+ * <tr><td>classname</td><td>nl.nn.adapterframework.jms.JNDIBase</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setProviderURL(String) providerURL}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setInitialContextFactoryName(String) initialContextFactoryName}</td><td>class to use as initial context factory</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setAuthentication(String) authentication}</td><td>maps to the field Context.SECURITY_AUTHENTICATION</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setPrincipal(String) principal}</td><td>username to connect to context, maps to Context.SECURITY_PRINCIPAL</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setCredentials(String) credentials}</td><td>username to connect to context, maps to Context.SECURITY_CREDENTIALS</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setJndiAuthAlias(String) jndiAuthAlias}</td><td>Authentication alias, may be used to override principal and credential-settings</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setUrlPkgPrefixes(String) urlPkgPrefixes}</td><td>maps to the field Context.URL_PKG_PREFIXES</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setSecurityProtocol(String) securityProtocol}</td><td>maps to the field Context.SECURITY_PROTOCOL</td><td>&nbsp;</td></tr>
+ * </table>
+ * </p>
  * <br/>
  * @version Id
  * @author Johan Verrips IOS
  */
 public class JNDIBase {
-	public static final String version = "$RCSfile: JNDIBase.java,v $ $Revision: 1.11 $ $Date: 2007-05-08 16:27:24 $";
+	public static final String version = "$RCSfile: JNDIBase.java,v $ $Revision: 1.12 $ $Date: 2007-07-10 07:20:02 $";
 	protected Logger log = LogUtil.getLogger(this);
 
     // JNDI
     private String providerURL = null;
     private String initialContextFactoryName = null;
-    private Context context = null;
     private String authentication = null;
 	private String principal = null;
     private String credentials = null;
@@ -66,6 +84,7 @@ public class JNDIBase {
     private String urlPkgPrefixes = null;
     private String securityProtocol = null;
 
+	private Context context = null;
 
 
 
@@ -203,8 +222,12 @@ public class JNDIBase {
 	 * loads JNDI (and other) properties from a JmsRealm
 	 * @see JmsRealm
 	 */ 
-	public void setJmsRealm(String jmsRealmName){
-		JmsRealm.copyRealm(this,jmsRealmName);
+	public void setJmsRealm(String jmsRealmName) {
+		try {
+			JmsRealm.copyRealm(this,jmsRealmName);
+		} catch (ConfigurationException e) {
+			log.warn("cannot copy data from realm",e);
+		}
 	}
 
 	public String getAuthentication() {

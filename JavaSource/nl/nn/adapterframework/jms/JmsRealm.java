@@ -1,6 +1,9 @@
 /*
  * $Log: JmsRealm.java,v $
- * Revision 1.11  2007-05-08 16:07:49  europe\L190409
+ * Revision 1.12  2007-07-10 07:19:29  europe\L190409
+ * add some checks
+ *
+ * Revision 1.11  2007/05/08 16:07:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * add jndiAuthAlias attribute
  *
  * Revision 1.10  2007/05/03 11:40:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -30,6 +33,7 @@
  */
 package nl.nn.adapterframework.jms;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -50,7 +54,7 @@ import org.apache.log4j.Logger;
  */
 public class JmsRealm {
 	//TODO: change to J2eeRealm
-	public static final String version="$RCSfile: JmsRealm.java,v $ $Revision: 1.11 $ $Date: 2007-05-08 16:07:49 $";
+	public static final String version="$RCSfile: JmsRealm.java,v $ $Revision: 1.12 $ $Date: 2007-07-10 07:19:29 $";
 	private Logger log = LogUtil.getLogger(this);
 
 	private String realmName;
@@ -83,7 +87,11 @@ public class JmsRealm {
  	 */ 
 	public void setAliasForRealm(String jmsRealmName){
 		String myName=getRealmName(); // save name, as it will be overwritten by the copy
-		copyRealm(this,jmsRealmName);
+		try {
+			copyRealm(this,jmsRealmName);
+		} catch (ConfigurationException e) {
+			log.warn("cannot set aliasForRealm",e);
+		}
 		setRealmName(myName); // restore the original name
     }
 
@@ -111,12 +119,13 @@ public class JmsRealm {
  	 * copies matching properties from a JmsRealm to any other class
  	 * @see JmsRealm
  	 */ 
-	public static void copyRealm(Object destination, String jmsRealmName) {
+	public static void copyRealm(Object destination, String jmsRealmName) throws ConfigurationException {
 
 	    JmsRealm jmsRealm=JmsRealmFactory.getInstance().getJmsRealm(jmsRealmName);
-	    if (null!=jmsRealm) {
-		    jmsRealm.copyRealm(destination);
+	    if (jmsRealm==null) {
+	    	throw new ConfigurationException("Could not find jmsRealm ["+jmsRealmName+"]");
 	    }
+	    jmsRealm.copyRealm(destination);
     }
 
     public String getAuthentication() {
