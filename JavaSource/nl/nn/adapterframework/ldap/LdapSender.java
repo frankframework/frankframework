@@ -1,6 +1,9 @@
 /*
  * $Log: LdapSender.java,v $
- * Revision 1.21  2007-07-10 07:20:56  europe\L190409
+ * Revision 1.22  2007-07-16 09:40:33  europe\L190409
+ * added deepSearch
+ *
+ * Revision 1.21  2007/07/10 07:20:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved javadoc
  *
  * Revision 1.20  2007/05/31 06:59:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -35,9 +38,6 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Vector;
 
-import javax.naming.CompositeName;
-import javax.naming.InvalidNameException;
-import javax.naming.Name;
 import javax.naming.NameClassPair;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
@@ -55,7 +55,6 @@ import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.jms.JNDIBase;
-import nl.nn.adapterframework.parameters.IParameterHandler;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
@@ -169,7 +168,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setName(String) name}</td>  <td>name of the sender</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setLdapProviderURL(String) ldapProviderURL}</td><td>URL to context to search in, e.g. 'ldap://edsnlm01.group.intranet/ou=People, o=ing' to search in te People group of ING CDS. Used to overwrite the providerURL specified in jmsRealm.</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>sets jndi parameters from defined realm (including authentication)</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setOperation(String) operation}</td><td>specifies operation to perform. Must be one of 'read', 'create', 'update', 'delete', 'search', 'getSubContexts' or 'getTree'</td><td>read</td></tr>
+ * <tr><td>{@link #setOperation(String) operation}</td><td>specifies operation to perform. Must be one of 'read', 'create', 'update', 'delete', 'search', 'deepSearch', 'getSubContexts' or 'getTree'</td><td>read</td></tr>
  * <tr><td>{@link #setManipulationSubject(String) manipulationSubject}</td><td>specifies subject to perform operation on. Must be one of 'enrty' or 'attribute'</td><td>attribute</td></tr>
  * <tr><td>{@link #setUsePooling(boolean) usePooling}</td><td>specifies whether connection pooling is used or not</td><td>true</td></tr>
  * <tr><td>{@link #setInitialContextFactoryName(String) initialContextFactoryName}</td><td>class to use as initial context factory</td><td>com.sun.jndi.ldap.LdapCtxFactory</td></tr>
@@ -214,6 +213,20 @@ import org.apache.commons.lang.StringUtils;
  * 	  <li>no specific inputmessage required<li>
  * </ul>
  * </td></tr>
+ * <tr><td>search (=search all children of 'entryName')</td><td>
+ * <ul>
+ * 	  <li>parameter 'entryName', resolving to RDN of entry to read</li>
+ *    <li>parameter 'filterExpression', specifying the entries searched for</li>
+ * 	  <li>optional attribute 'attributesReturned' containing attributes to be returned</li>
+ * </ul>
+ * </td></tr>
+ * <tr><td>deepSearch (=search whole tree starting at 'entryName')</td><td>
+ * <ul>
+ * 	  <li>parameter 'entryName', resolving to RDN of entry to read</li>
+ *    <li>parameter 'filterExpression', specifying the entries searched for</li>
+ * 	  <li>optional attribute 'attributesReturned' containing attributes to be returned</li>
+ * </ul>
+ * </td></tr>
  * </table>
  * </p>
  * @author Gerrit van Brakel
@@ -221,10 +234,12 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class LdapSender extends JNDIBase implements ISenderWithParameters {
-	public static final String version = "$RCSfile: LdapSender.java,v $  $Revision: 1.21 $ $Date: 2007-07-10 07:20:56 $";
+	public static final String version = "$RCSfile: LdapSender.java,v $  $Revision: 1.22 $ $Date: 2007-07-16 09:40:33 $";
 
 	private String FILTER = "filterExpression";
 	private String ENTRYNAME = "entryName";
+
+	private int searchTimeout=20000;
 
 	private static final String INITIAL_CONTEXT_FACTORY ="com.sun.jndi.ldap.LdapCtxFactory";
 
@@ -233,6 +248,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 	public static final String OPERATION_UPDATE = "update";
 	public static final String OPERATION_DELETE = "delete";
 	public static final String OPERATION_SEARCH = "search";
+	public static final String OPERATION_DEEP_SEARCH = "deepSearch";
 	public static final String OPERATION_SUB_CONTEXTS = "getSubContexts";
 	public static final String OPERATION_GET_TREE = "getTree";
 
@@ -276,6 +292,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 		if (getOperation() == null
 			|| !(getOperation().equals(OPERATION_READ)
 				|| getOperation().equals(OPERATION_SEARCH)
+				|| getOperation().equals(OPERATION_DEEP_SEARCH)
 				|| getOperation().equals(OPERATION_CREATE)
 				|| getOperation().equals(OPERATION_UPDATE)
 				|| getOperation().equals(OPERATION_DELETE)
@@ -288,6 +305,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 												+ OPERATION_UPDATE+ ","
 												+ OPERATION_DELETE+ ","
 												+ OPERATION_SEARCH+ ","
+												+ OPERATION_DEEP_SEARCH+ ","
 												+ OPERATION_SUB_CONTEXTS+ ","
 												+ OPERATION_GET_TREE+ ")");
 		}
@@ -356,7 +374,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 	 * attrIds is used as an argument to the function getAttributes(context, attrIds) when only
 	 * specific attributes are required - 
 	 */
-	private String[] setAttribubtesParameter() {
+	private String[] getAttributesReturnedParameter() {
 		//since 1.4: return attributesToReturn == null ? null : attributesToReturn.split(",");
 		//since 1.3 below:
 		return getAttributesToReturn() == null ? null : splitCommaSeparatedString(getAttributesToReturn());
@@ -392,116 +410,241 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 
 
 	public void open() throws SenderException {
-		//getDirContext();
 	}
 
 	public void close() throws SenderException {
-		//dirContext = null;
 	}
 
 	public boolean isSynchronous() {
 		return true;
 	}
 
-//	protected void fillSyntax() {
-//		Properties syntax = getNamingSyntax();
-//		syntax.clear();
-//		syntax.put("jndi.syntax.direction", "right_to_left");
-//		syntax.put("jndi.syntax.separator", ",");
-//		syntax.put("jndi.syntax.ignorecase ", "true");
-//		syntax.put("jndi.syntax.trimblanks", "true");
-//	}
-
-	/**
+	/*
 	 * Uses <code>Parameters2NameHelper</code> to create a CompositeName from parameter 
 	 */
-	protected Name getNameFromParams(ParameterResolutionContext prc)
-		throws ParameterException, InvalidNameException {
-		Parameters2NameHelper helper = new Parameters2NameHelper(new CompositeName());
-		prc.forAllParameters(paramList, helper);
-		Name name = helper.result;
+//	protected Name getNameFromParams(ParameterResolutionContext prc)
+//		throws ParameterException, InvalidNameException {
+//		Parameters2NameHelper helper = new Parameters2NameHelper(new CompositeName());
+//		prc.forAllParameters(paramList, helper);
+//		Name name = helper.result;
+//
+//		log.debug("constructed LDAP Names from parameters [" + name + "]");
+//		return name;
+//	}
 
-		log.debug("constructed LDAP Names from parameters [" + name + "]");
-		return name;
-	}
+//	private class Parameters2NameHelper implements IParameterHandler {
+//		private Name result;
+//		Parameters2NameHelper(Name base) {
+//			super();
+//			result = base;
+//		}
+//
+//		public void handleParam(String paramName, Object value)
+//			throws ParameterException {
+//			try {
+//				//				result.add(paramName+"='"+value+"'");
+//				result.add((String) value);
+//			} catch (InvalidNameException e) {
+//				throw new ParameterException("cannot make name from parameter ["+ paramName	+ "] value ["+ value + "]",	e);
+//			}
+//		}
+//	}
 
-	private class Parameters2NameHelper implements IParameterHandler {
-		private Name result;
-		Parameters2NameHelper(Name base) {
-			super();
-			result = base;
-		}
-
-		public void handleParam(String paramName, Object value)
-			throws ParameterException {
-			try {
-				//				result.add(paramName+"='"+value+"'");
-				result.add((String) value);
-			} catch (InvalidNameException e) {
-				throw new ParameterException("cannot make name from parameter ["+ paramName	+ "] value ["+ value + "]",	e);
+	private String performOperationRead(DirContext dirContext, String entryName) throws SenderException {
+		try{
+			return attributesToXml(dirContext.getAttributes(entryName, getAttributesReturnedParameter())).toXML();				
+		} catch(NamingException e) {
+			if(	e.getMessage().startsWith("[LDAP: error code 32 - No Such Object") ) {
+				log.info("Operation [" + getOperation()+ "] found nothing - no such entryName: " + entryName);
+				return DEFAULT_RESULT_READ;	
+			} else {
+				throw new SenderException("Exception in operation [" + getOperation()+ "] entryName=["+entryName+"]", e);	
 			}
 		}
 	}
 
-//	/**
-//	 * Uses <code>Parameters2StringHelper</code> to create a String from parameter. 
-//	 * This is actually depricated and servers for compatibility purpose with older configurations 
-//	 *  
-//	 */
-//	private String getParamsAsString(ParameterResolutionContext prc) throws ParameterException {
-//		String result = "";
-//		if (prc != null && paramList != null) {
-//			Parameters2StringHelper helper = new Parameters2StringHelper();
-//			prc.forAllParameters(paramList, helper);
-//			result = helper.result;
-//		}
-//		log.debug("Got LDAP string: " + result);
-//		return result;
-//	}
-//	/**
-//	 * Goes with getParamsAsString(), is also depricated and servers for compatibility purpose with older configurations
-//	 * see above 
-//	 */
-//	private class Parameters2StringHelper implements IParameterHandler {
-//		private String result = "";
-//
-//		public void handleParam(String paramName, Object value)
-//			throws ParameterException {
-//			result = (String) value;
-//		}
-//	}
-//	/**
-//	 * Uses <code>Parameters2MapHelper</code> to create a Map with from parameters.  
-//	 * parameter entryName is mandatory as is it's name (entryName) 
-//	 */
-//	private HashMap getParametersMap(ParameterResolutionContext prc)
-//		throws ParameterException {
-//		HashMap result = null;
-//		
-//		if (prc != null && paramList != null) {
-//			result = new HashMap();
-//			Parameters2MapHelper helper = new Parameters2MapHelper();
-//			prc.forAllParameters(paramList, helper);
-//			result = helper.result;
-//		}
-//		log.debug("Got LDAP parameters map: " + result);
-//		return result;
-//	}
-//	/**
-//	 * Goes with getParametersMap()
-//	 * see above 
-//	 */
-//	private class Parameters2MapHelper implements IParameterHandler {
-//		private HashMap result;
-//
-//		public void handleParam(String paramName, Object value)
-//			throws ParameterException {
-//			if (result == null)
-//				result = new HashMap();
-//			
-//			result.put(paramName, value);
-//		}
-//	}
+	private String performOperationUpdate(DirContext dirContext, String entryName, Attributes attrs) throws SenderException {
+		if (manipulationSubject.equals(MANIPULATION_ATTRIBUTE)) {
+			NamingEnumeration na = attrs.getAll();
+			while(na.hasMoreElements()) {
+				Attribute a = (Attribute)na.nextElement();
+				NamingEnumeration values;
+				try {
+					values = a.getAll();
+				} catch (NamingException e1) {
+					throw new SenderException("cannot obtain values of Attribute ["+a.getID()+"]",e1);
+				}
+				while(values.hasMoreElements()) {
+					Attributes partialAttrs = new BasicAttributes();
+					Attribute singleValuedAttribute = new BasicAttribute(a.getID(),values.nextElement());
+					partialAttrs.put(singleValuedAttribute);
+					try {
+						dirContext.modifyAttributes(entryName,	DirContext.REPLACE_ATTRIBUTE, partialAttrs);
+					} catch(NamingException e) {
+						String msg;
+						if (e.getMessage().startsWith("[LDAP: error code 32 - No Such Object") ) {
+							msg="Operation [" + getOperation()+ "] failed - wrong entryName ["+ entryName+"]";	
+						} else {
+							msg="Exception in operation [" + getOperation()+ "] entryName ["+entryName+"]";									
+						}
+						//result = DEFAULT_RESULT_UPDATE_NOK;
+						throw new SenderException(msg,e);
+					}
+				}
+			}
+			return DEFAULT_RESULT;
+		} else {
+			try {
+				//dirContext.rename(newEntryName, oldEntryName);
+				//result = DEFAULT_RESULT;
+				dirContext.rename(entryName, entryName);
+				return "<LdapResult>Deze functionaliteit is nog niet beschikbaar - naam niet veranderd.</LdapResult>";
+			} catch (NamingException e) {
+				log.error("Exception in operation [" + getOperation()+ "] entryName ["+entryName+"]", e);
+				if(!e.getMessage().startsWith("[LDAP: error code 68 - Entry Already Exists]")) {
+					throw new SenderException(e);
+				}
+				return DEFAULT_RESULT_CREATE_NOK;
+			}
+		}
+	}
+
+	private String performOperationCreate(DirContext dirContext, String entryName, Attributes attrs) throws SenderException {
+		if (manipulationSubject.equals(MANIPULATION_ATTRIBUTE)) {
+			String result=null;
+			NamingEnumeration na = attrs.getAll();
+			while(na.hasMoreElements())
+			{
+				Attribute a = (Attribute)na.nextElement();
+				NamingEnumeration values;
+				try {
+					values = a.getAll();
+				} catch (NamingException e1) {
+					throw new SenderException("cannot obtain values of Attribute ["+a.getID()+"]",e1);
+				}
+				while(values.hasMoreElements())
+				{
+					Attributes partialAttrs = new BasicAttributes();
+					Attribute singleValuedAttribute = new BasicAttribute(a.getID(),values.nextElement());
+					partialAttrs.put(singleValuedAttribute);
+					try{
+						dirContext.modifyAttributes(entryName,	DirContext.ADD_ATTRIBUTE, partialAttrs);
+					}catch(NamingException e){
+						if(	e.getMessage().startsWith("[LDAP: error code 20 - Attribute Or Value Exists]") )
+						{
+							log.info("Operation [" + getOperation()+ "] successful: " + e.getMessage());	
+							result = DEFAULT_RESULT_CREATE_OK;
+						}
+						else{		
+							throw new SenderException("Exception in operation [" + getOperation()+ "] entryName ["+entryName+"]", e );
+						}
+					}
+				}
+			}
+			if (result!=null) {
+				return result;
+			} 
+			return DEFAULT_RESULT;		
+		} else {
+			try {
+				dirContext.bind(entryName, null, attrs);
+				return DEFAULT_RESULT;
+			} catch (NamingException e) {
+				// log.debug("Exception in operation [" + getOperation()+ "] entryName ["+entryName+"]", e);
+				log.debug("Exception in operation [" + getOperation()+ "] entryName ["+entryName+"]: "+ e.getMessage());
+				if(e.getMessage().startsWith("[LDAP: error code 68 - Entry Already Exists]")) {
+					return DEFAULT_RESULT_CREATE_OK;
+				} else {
+					throw new SenderException(e);
+				}
+			}
+		}
+		
+	}
+	
+	private String performOperationDeleteAttributes(DirContext dirContext, String entryName, Attributes attrs) throws SenderException {
+		NamingEnumeration na = attrs.getAll();
+		String result=null;
+		while(na.hasMoreElements()) {
+			Attribute a = (Attribute)na.nextElement();
+			NamingEnumeration values;
+			try {
+				values = a.getAll();
+			} catch (NamingException e1) {
+				throw new SenderException("cannot obtain values of Attribute ["+a.getID()+"]",e1);
+			}
+			while(values.hasMoreElements()) {
+				Attributes partialAttrs = new BasicAttributes();
+				Attribute singleValuedAttribute = new BasicAttribute(a.getID(),values.nextElement());
+				partialAttrs.put(singleValuedAttribute);
+				try {
+					dirContext.modifyAttributes(entryName,	DirContext.REMOVE_ATTRIBUTE, partialAttrs);
+				} catch(NamingException e) {
+					if(	e.getMessage().startsWith("[LDAP: error code 16 - No Such Attribute") ||
+						e.getMessage().startsWith("[LDAP: error code 32 - No Such Object")) 
+					{
+						log.info("Operation [" + getOperation()+ "] successful: " + e.getMessage());
+						result = DEFAULT_RESULT_DELETE;
+					} else {
+						throw new SenderException("Exception in operation [" + getOperation()+ "] entryName ["+entryName+"]", e);
+					}
+				}
+			}
+		}
+		if (result!=null) {
+			return result;
+		} 
+		return DEFAULT_RESULT;
+	}
+
+	private String performOperationDeleteEntry(DirContext dirContext, String entryName) throws SenderException {
+		try {
+			dirContext.unbind(entryName);
+			return DEFAULT_RESULT;
+		} catch (NamingException e) {
+			if(	e.getMessage().startsWith("[LDAP: error code 32 - No Such Object")) {
+				log.info("Operation [" + getOperation()+ "] successful: " + e.getMessage());
+				return DEFAULT_RESULT_DELETE;
+			} else {
+				throw new SenderException("Exception in operation [" + getOperation()+ "] entryName ["+entryName+"]", e);
+			}
+		}
+	}
+
+//	Constructs a search constraints using arguments.
+//	public SearchControls(int scope,long countlim,int timelim, String[] attrs, boolean retobj,boolean deref)
+//		Parameters:
+//		scope - The search scope. One of: OBJECT_SCOPE, ONELEVEL_SCOPE, SUBTREE_SCOPE.
+//		timelim - The number of milliseconds to wait before returning. If 0, wait indefinitely.
+//		deref - If true, dereference links during search.
+//		countlim - The maximum number of entries to return. If 0, return all entries that satisfy filter.
+//		retobj - If true, return the object bound to the name of the entry; if false, do not return object.
+//		attrs - The identifiers of the attributes to return along with the entry. If null, return all attributes. If empty return no attributes.
+
+	private String performOperationSearch(DirContext dirContext, String entryName, String filterExpression, int scope) throws SenderException {
+		int timeout=getSearchTimeout();
+		SearchControls controls = new SearchControls(scope, 0, timeout, 
+													 getAttributesReturnedParameter(), false, false);
+//		attrs = parseAttributesFromMessage(message);
+		try {
+			return searchResultsToXml( dirContext.search(entryName, filterExpression, controls) ).toXML();
+		} catch (NamingException e) {
+			throw new SenderException("exception searching using filter ["+filterExpression+"]", e);
+		}
+	}
+
+	private String performOperationGetSubContexts(DirContext dirContext, String entryName) throws SenderException {
+		String[] subs = getSubContextList(dirContext, entryName);
+		try {
+			return subContextsToXml(entryName, subs, dirContext).toXML();
+		} catch (NamingException e) {
+			throw new SenderException(e);
+		}
+	}
+		
+	private String performOperationGetTree(DirContext dirContext, String entryName) throws SenderException {
+		return getTree(dirContext, entryName).toXML();
+	}
 
 	/**
 	 * Performs the specified operation and returns the results.
@@ -510,10 +653,6 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 	 */
 	public String performOperation( String message,	ParameterResolutionContext prc)
 		throws SenderException, ParameterException {
-		
-		String result = null;
-		Attributes attrs = null;
-		DirContext dirContext = getDirContext();
 		
 		String entryName=null;
 		
@@ -528,197 +667,44 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 //			}
 		}
 		
-		if (entryName == null || StringUtils.isEmpty(entryName))
+		if (entryName == null || StringUtils.isEmpty(entryName)) {
 			throw new SenderException("entryName must be defined through params, operation ["+ getOperation()+ "]");
+		}
+
+		DirContext dirContext = getDirContext();
 
 		try {// **************** READ **************** 
 			if (getOperation().equals(OPERATION_READ)) {
-				try{
-					result = attributesToXml(dirContext.getAttributes(entryName, setAttribubtesParameter())).toXML();				
-				}catch(NamingException e)
-				{
-					if(	e.getMessage().startsWith("[LDAP: error code 32 - No Such Object") ) {
-						log.info("Operation [" + getOperation()+ "] found nothing - no such entryName: " + entryName);
-						result = DEFAULT_RESULT_READ;	
-					}
-					else {
-						throw new SenderException("Exception in operation [" + getOperation()+ "] entryName=["+entryName+"]", e);	
-					}
-				}
-				
-			}// **************** UPDATE ****************  
+				return performOperationRead(dirContext,entryName);
+			} // **************** UPDATE ****************  
 			else if (getOperation().equals(OPERATION_UPDATE)) {
-				attrs = parseAttributesFromMessage(message);
-				if (manipulationSubject.equals(MANIPULATION_ATTRIBUTE)) {
-					NamingEnumeration na = attrs.getAll();
-					while(na.hasMoreElements()) {
-						Attribute a = (Attribute)na.nextElement();
-						NamingEnumeration values = a.getAll();
-						while(values.hasMoreElements()) {
-							Attributes partialAttrs = new BasicAttributes();
-							Attribute singleValuedAttribute = new BasicAttribute(a.getID(),values.nextElement());
-							partialAttrs.put(singleValuedAttribute);
-							try {
-								dirContext.modifyAttributes(entryName,	DirContext.REPLACE_ATTRIBUTE, partialAttrs);
-								result = DEFAULT_RESULT;
-							} catch(NamingException e) {
-								String msg;
-								if (e.getMessage().startsWith("[LDAP: error code 32 - No Such Object") ) {
-									msg="Operation [" + getOperation()+ "] failed - wrong entryName ["+ entryName+"]";	
-								} else {
-									msg="Exception in operation [" + getOperation()+ "] entryName ["+entryName+"]";									
-								}
-								//result = DEFAULT_RESULT_UPDATE_NOK;
-								throw new SenderException(msg,e);
-							}
-						}
-					}
-				} else {
-					try {
-						//dirContext.rename(newEntryName, oldEntryName);
-						//result = DEFAULT_RESULT;
-						dirContext.rename(entryName, entryName);
-						result = "<LdapResult>Deze functionaliteit is nog niet beschikbaar - naam niet veranderd.</LdapResult>";
-					} catch (NamingException e) {
-						log.error("Exception in operation [" + getOperation()+ "] entryName ["+entryName+"]", e);
-						result = DEFAULT_RESULT_CREATE_NOK;
-						if(!e.getMessage().startsWith("[LDAP: error code 68 - Entry Already Exists]"))
-						{
-							throw new SenderException(e);
-						}
-					}
-				}
+				return performOperationUpdate(dirContext,entryName,parseAttributesFromMessage(message));
 			}// **************** CREATE **************** 
 			else if (getOperation().equals(OPERATION_CREATE)) {
-				attrs = parseAttributesFromMessage(message);
-				if (manipulationSubject.equals(MANIPULATION_ATTRIBUTE)) {
-					NamingEnumeration na = attrs.getAll();
-					while(na.hasMoreElements())
-					{
-						Attribute a = (Attribute)na.nextElement();
-						NamingEnumeration values = a.getAll();
-						while(values.hasMoreElements())
-						{
-							Attributes partialAttrs = new BasicAttributes();
-							Attribute singleValuedAttribute = new BasicAttribute(a.getID(),values.nextElement());
-							partialAttrs.put(singleValuedAttribute);
-							try{
-								dirContext.modifyAttributes(entryName,	DirContext.ADD_ATTRIBUTE, partialAttrs);
-								result = DEFAULT_RESULT;
-							}catch(NamingException e){
-								if(	e.getMessage().startsWith("[LDAP: error code 20 - Attribute Or Value Exists]") )
-								{
-									log.info("Operation [" + getOperation()+ "] successful: " + e.getMessage());	
-									result = DEFAULT_RESULT_CREATE_OK;
-								}
-								else{		
-									throw new SenderException("Exception in operation [" + getOperation()+ "] entryName ["+entryName+"]", e );
-								}
-							}
-						}
-					}
-					
-				} else {
-					try {
-						dirContext.bind(entryName, null, attrs);
-						result = DEFAULT_RESULT;
-					} catch (NamingException e) {
-						// log.debug("Exception in operation [" + getOperation()+ "] entryName ["+entryName+"]", e);
-						log.debug("Exception in operation [" + getOperation()+ "] entryName ["+entryName+"]: "+ e.getMessage());
-						if(e.getMessage().startsWith("[LDAP: error code 68 - Entry Already Exists]")) {
-							result = DEFAULT_RESULT_CREATE_OK;
-						} else {
-							throw new SenderException(e);
-						}
-					}
-				}
+				return performOperationCreate(dirContext,entryName,parseAttributesFromMessage(message));
 			}// **************** DELETE **************** 
 			else if (getOperation().equals(OPERATION_DELETE)) {
-				
-					if (manipulationSubject.equals(MANIPULATION_ATTRIBUTE)) {
-						attrs = parseAttributesFromMessage(message);
-						//attrs = removeValuesFromAttributes(attrs);
-						//removes all the attributes got from message
-						NamingEnumeration na = attrs.getAll();
-						while(na.hasMoreElements()) {
-							Attribute a = (Attribute)na.nextElement();
-							NamingEnumeration values = a.getAll();
-							while(values.hasMoreElements()) {
-								Attributes partialAttrs = new BasicAttributes();
-								Attribute singleValuedAttribute = new BasicAttribute(a.getID(),values.nextElement());
-								partialAttrs.put(singleValuedAttribute);
-								try {
-									dirContext.modifyAttributes(entryName,	DirContext.REMOVE_ATTRIBUTE, partialAttrs);
-									result = DEFAULT_RESULT;
-								} catch(NamingException e) {
-									if(	e.getMessage().startsWith("[LDAP: error code 16 - No Such Attribute") ||
-										e.getMessage().startsWith("[LDAP: error code 32 - No Such Object")) 
-									{
-										log.info("Operation [" + getOperation()+ "] successful: " + e.getMessage());
-										result = DEFAULT_RESULT_DELETE;
-									} else {
-										throw new SenderException("Exception in operation [" + getOperation()+ "] entryName ["+entryName+"]", e);
-									}
-								}
-							}
-						}
-					} else {
-						try {
-							dirContext.unbind(entryName);
-							result = DEFAULT_RESULT;
-						} catch (NamingException e) {
-							if(	e.getMessage().startsWith("[LDAP: error code 32 - No Such Object"))
-							{
-								log.info("Operation [" + getOperation()+ "] successful: " + e.getMessage());
-								result = DEFAULT_RESULT_DELETE;
-							}
-							else{
-								throw new SenderException("Exception in operation [" + getOperation()+ "] entryName ["+entryName+"]", e);
-							}
-						}
-					}
-			} //OPERATION_SEARCH			
+				if (manipulationSubject.equals(MANIPULATION_ATTRIBUTE)) {
+					return performOperationDeleteAttributes(dirContext,entryName,parseAttributesFromMessage(message));
+				} else {
+					return performOperationDeleteEntry(dirContext,entryName);
+				}
+			} // **************** SEARCH ****************			
 			else if (getOperation().equals(OPERATION_SEARCH)) {
-				
-				SearchControls controls = new SearchControls(SearchControls.ONELEVEL_SCOPE, 0, 0, 
-															 setAttribubtesParameter(), false, false);
-				String filterExpression = (String) prc.getValueMap(paramList).get(FILTER); 
-//				attrs = parseAttributesFromMessage(message);
-				result = searchResultsToXml( dirContext.search(entryName, filterExpression, controls) ).toXML();
-			
-										
-				
-				
-									  
-//			Constructs a search constraints using arguments.
-//			public SearchControls(int scope,long countlim,int timelim, String[] attrs, boolean retobj,boolean deref)
-//				Parameters:
-//				scope - The search scope. One of: OBJECT_SCOPE, ONELEVEL_SCOPE, SUBTREE_SCOPE.
-//				timelim - The number of milliseconds to wait before returning. If 0, wait indefinitely.
-//				deref - If true, dereference links during search.
-//				countlim - The maximum number of entries to return. If 0, return all entries that satisfy filter.
-//				retobj - If true, return the object bound to the name of the entry; if false, do not return object.
-//				attrs - The identifiers of the attributes to return along with the entry. If null, return all attributes. If empty return no attributes.
-
-			
-			
-			
-			
-			
-			
-			} else if (getOperation().equals(OPERATION_SUB_CONTEXTS)) {
-				String[] subs = getSubContextList(dirContext, entryName);
-				result = subContextsToXml(entryName, subs, dirContext).toXML();
-			} 
-			//OPERATION_GET_TREE
+				return performOperationSearch(dirContext,entryName,(String) prc.getValueMap(paramList).get(FILTER), SearchControls.ONELEVEL_SCOPE);
+			} // **************** DEEP_SEARCH ****************			
+			else if (getOperation().equals(OPERATION_DEEP_SEARCH)) {
+				return performOperationSearch(dirContext,entryName,(String) prc.getValueMap(paramList).get(FILTER), SearchControls.SUBTREE_SCOPE);
+			} // **************** SUB_CONTEXTS ****************
+			else if (getOperation().equals(OPERATION_SUB_CONTEXTS)) {
+				return performOperationGetSubContexts(dirContext,entryName);
+			} // **************** GET_TREE ****************
 			else if (getOperation().equals(OPERATION_GET_TREE)) {
-				result = getTree(dirContext, entryName).toXML();
+				return performOperationGetTree(dirContext,entryName);
 			}
 			else {
 				throw new SenderException("unknown operation [" + getOperation() + "]");
 			}
-		} catch (NamingException e) {
-			throw new SenderException("during operation [" + getOperation() + "]", e);
 		} finally {
 			if (dirContext!=null) {
 				try {
@@ -728,7 +714,6 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 				}
 			}
 		}
-		return result;
 	}
 	
 	
@@ -738,7 +723,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 	 * Return xml element containing all of the subcontexts of the parent context with their attributes. 
 	 * @return tree xml.
 	 */ 
-	public XmlBuilder getTree(DirContext parentContext, String context)
+	private XmlBuilder getTree(DirContext parentContext, String context)
 	{
 		XmlBuilder contextElem = new XmlBuilder("context");
 		contextElem.addAttribute("name", context);
@@ -746,7 +731,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 		String[] subCtxList = getSubContextList(parentContext, context);
 		try	{
 			if (subCtxList.length == 0) {
-				XmlBuilder attrs = attributesToXml(parentContext.getAttributes(context, setAttribubtesParameter()));
+				XmlBuilder attrs = attributesToXml(parentContext.getAttributes(context, getAttributesReturnedParameter()));
 				contextElem.addSubElement(attrs);
 			}
 			else {
@@ -754,7 +739,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 				{
 					contextElem.addSubElement( getTree((DirContext)parentContext.lookup(context), subCtxList[i]) );
 				}
-				contextElem.addSubElement( attributesToXml(parentContext.getAttributes(context, setAttribubtesParameter())));
+				contextElem.addSubElement( attributesToXml(parentContext.getAttributes(context, getAttributesReturnedParameter())));
 			}
 
 		} catch (NamingException e) {
@@ -835,7 +820,6 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 	 */
 	private Attributes parseAttributesFromMessage(String message) throws SenderException {
 
-//		Digester digester = DigesterLoader.createDigester(getRulesURL());
 		Digester digester = new Digester();
 		digester.addObjectCreate("*/attributes",BasicAttributes.class);
 		digester.addFactoryCreate("*/attributes/attribute",BasicAttributeFactory.class);
@@ -1062,5 +1046,13 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 	public boolean isUsePooling() {
 		return usePooling;
 	}
+
+	public void setSearchTimeout(int i) {
+		searchTimeout = i;
+	}
+	public int getSearchTimeout() {
+		return searchTimeout;
+	}
+
 
 }
