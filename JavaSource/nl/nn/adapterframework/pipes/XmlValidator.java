@@ -1,6 +1,9 @@
 /*
  * $Log: XmlValidator.java,v $
- * Revision 1.21  2007-07-10 08:06:56  europe\L190409
+ * Revision 1.22  2007-07-16 11:34:47  europe\L190409
+ * fill reason in case of parserError, too
+ *
+ * Revision 1.21  2007/07/10 08:06:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved javadoc
  *
  * Revision 1.20  2007/02/26 13:17:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -57,7 +60,6 @@
 package nl.nn.adapterframework.pipes;
 
 
-import java.io.IOException;
 import java.net.URL;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -123,7 +125,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * <tr><th>state</th><th>condition</th></tr>
  * <tr><td>"success"</td><td>default</td></tr>
  * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified, the value for "success"</td></tr>
- * <tr><td>"parserError"</td><td>a parser exception occurred, probably caused by non-well-formed XML</td></tr>
+ * <tr><td>"parserError"</td><td>a parser exception occurred, probably caused by non-well-formed XML. If not specified, "failure" is used in such a case</td></tr>
  * <tr><td>"illegalRoot"</td><td>if the required root element is not found. If not specified, "failure" is used in such a case</td></tr>
  * <tr><td>"failure"</td><td>if a validation error occurred</td></tr>
  * </table>
@@ -132,7 +134,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
 
  */
 public class XmlValidator extends FixedForwardPipe {
-	public static final String version="$RCSfile: XmlValidator.java,v $ $Revision: 1.21 $ $Date: 2007-07-10 08:06:56 $";
+	public static final String version="$RCSfile: XmlValidator.java,v $ $Revision: 1.22 $ $Date: 2007-07-16 11:34:47 $";
 
     private String schemaLocation = null;
     private String noNamespaceSchemaLocation = null;
@@ -154,7 +156,7 @@ public class XmlValidator extends FixedForwardPipe {
 			this.parser = parser;
 		}
 
-		protected void addReason(SAXParseException exception) {
+		public void addReason(String message, String location) {
 			try {
 				ContentHandler ch = parser.getContentHandler();
 				if (ch!=null && ch instanceof XmlFindingHandler) {
@@ -164,7 +166,7 @@ public class XmlValidator extends FixedForwardPipe {
 					XmlBuilder detail;
 					
 					detail = new XmlBuilder("message");;
-					detail.setCdataValue(exception.getMessage());
+					detail.setCdataValue(message);
 					reason.addSubElement(detail);
 
 					detail = new XmlBuilder("elementName");;
@@ -190,13 +192,24 @@ public class XmlValidator extends FixedForwardPipe {
 				xmlReasons.addSubElement(reason);	
 			}
 
-			String msg = "at ("+exception.getLineNumber()+ ","+exception.getColumnNumber()+"): "+exception.getMessage();
+			if (StringUtils.isNotEmpty(location)) {
+				message = location + ": " + message;
+			}
 			errorOccured = true;
 			if (reasons == null) {
-				 reasons = msg;
+				 reasons = message;
 			 } else {
-				 reasons = reasons + "\n" + msg;
+				 reasons = reasons + "\n" + message;
 			 }
+		}
+		
+		public void addReason(Throwable t) {
+			String location=null;
+			if (t instanceof SAXParseException) {
+				SAXParseException spe = (SAXParseException)t;
+				location = "at ("+spe.getLineNumber()+ ","+spe.getColumnNumber()+")";
+			}
+			addReason(t.getMessage(),location);
 		}
 
 		public void warning(SAXParseException exception) {
@@ -264,6 +277,40 @@ public class XmlValidator extends FixedForwardPipe {
 		}
     }
 
+	protected PipeRunResult handleFailures(XmlErrorHandler xeh, String input, PipeLineSession session, String mainReason, String forwardName, Throwable t) throws PipeRunException {
+		
+		String fullReasons=mainReason;
+		if (StringUtils.isNotEmpty(xeh.getReasons())) {
+			if (StringUtils.isNotEmpty(mainReason)) {
+				fullReasons+=":\n"+xeh.getReasons();
+			} else {
+				fullReasons=xeh.getReasons();
+			}
+		}
+		if (isThrowException()) {
+			throw new PipeRunException(this, fullReasons, t);
+		} else {
+			log.warn(fullReasons, t);
+			if (StringUtils.isNotEmpty(getReasonSessionKey())) {
+				log.debug(getLogPrefix(session) + "storing reasons under sessionKey ["+getReasonSessionKey()+"]");
+				session.put(getReasonSessionKey(),fullReasons);
+			}
+			if (StringUtils.isNotEmpty(getXmlReasonSessionKey())) {
+				log.debug(getLogPrefix(session) + "storing reasons (in xml format) under sessionKey ["+getXmlReasonSessionKey()+"]");
+				session.put(getXmlReasonSessionKey(),xeh.getXmlReasons());
+			}
+				
+			PipeForward forward = findForward(forwardName);
+			if (forward==null) {
+				forward = findForward("failure");
+			}
+			if (forward==null) {
+				throw new PipeRunException(this, fullReasons);
+			}
+			return new PipeRunResult(forward, input);
+		}
+	}
+
      /**
       * Validate the XML string
       * @param input a String
@@ -328,72 +375,22 @@ public class XmlValidator extends FixedForwardPipe {
 
         try {
             parser.parse(is);
-         } catch (IOException e) {
-            throw new PipeRunException(this, getLogPrefix(session)+ "IoException occured on parsing the document", e);
-        } catch (SAXException e) {
-        	PipeForward error = findForward("parserError");
-        	String msg=getLogPrefix(session)+ "SAXException occured on parsing the document";
-        	if (error!=null) {
-        		log.warn(msg,e);
-				return new PipeRunResult(error, input);
-        	} else {
-				throw new PipeRunException(this, msg, e);
-        	}
+         } catch (Exception e) {
+			return handleFailures(xeh,(String)input,session,"", "parserError",e);
         }
 
 		boolean illegalRoot = StringUtils.isNotEmpty(getRoot()) && 
 							!((XmlFindingHandler)parser.getContentHandler()).getRootElementName().equals(getRoot());
 		if (illegalRoot) {
-			String str = "got xml with root element ["+((XmlFindingHandler)parser.getContentHandler()).getRootElementName()+"] instead of ["+getRoot()+"]"; 
-			String reason = getLogPrefix(session) + str; 
-
-			XmlBuilder xb0 = new XmlBuilder("reasons");
-			XmlBuilder xb1 = new XmlBuilder("reason");
-			XmlBuilder xb2 = new XmlBuilder("message");
-			xb2.setCdataValue(str);
-			xb1.addSubElement(xb2);
-			xb0.addSubElement(xb1);	
-			String xmlReason =  xb0.toXML();
-
-			if (isThrowException()) {
-				throw new PipeRunException(this, reason);
-			} else {
-				log.warn(reason);
-				if (StringUtils.isNotEmpty(getReasonSessionKey())) {
-					log.debug(getLogPrefix(session) + "storing reasons under sessionKey ["+getReasonSessionKey()+"]");
-					session.put(getReasonSessionKey(),reason);
-				}
-				if (StringUtils.isNotEmpty(getXmlReasonSessionKey())) {
-					log.debug(getLogPrefix(session) + "storing reasons (in xml format) under sessionKey ["+getXmlReasonSessionKey()+"]");
-					session.put(getXmlReasonSessionKey(),xmlReason);
-				}
-				
-				PipeForward forward = findForward("illegalRoot");
-				if (forward==null) {
-					forward = findForward("failure");
-				}
-				return new PipeRunResult(forward, input);
-			}
+			String str = "got xml with root element '"+((XmlFindingHandler)parser.getContentHandler()).getRootElementName()+"' instead of '"+getRoot()+"'";
+			xeh.addReason(str,"");
+			return handleFailures(xeh,(String)input,session,"","illegalRoot",null);
 		} 
 		boolean isValid = !(xeh.hasErrorOccured());
 		
 		if (!isValid) { 
-			String reasons = getLogPrefix(session) + "got invalid xml according to schema [" + Misc.concatStrings(schemaLocation," ",noNamespaceSchemaLocation) + "]:\n" + xeh.getReasons(); 
-			String xmlReasons = xeh.getXmlReasons(); 
-            if (isThrowException()) {
-                throw new PipeRunException(this, reasons);
-			} else {
-				log.warn(reasons);
-				if (StringUtils.isNotEmpty(getReasonSessionKey())) {
-					log.debug(getLogPrefix(session) + "storing reasons under sessionKey ["+getReasonSessionKey()+"]");
-					session.put(getReasonSessionKey(),reasons);
-				}
-				if (StringUtils.isNotEmpty(getXmlReasonSessionKey())) {
-					log.debug(getLogPrefix(session) + "storing reasons (in xml format) under sessionKey ["+getXmlReasonSessionKey()+"]");
-					session.put(getXmlReasonSessionKey(),xmlReasons);
-				}
-				return new PipeRunResult(findForward("failure"), input);
-			}
+			String mainReason = getLogPrefix(session) + "got invalid xml according to schema [" + Misc.concatStrings(schemaLocation," ",noNamespaceSchemaLocation) + "]";
+			return handleFailures(xeh,(String)input,session,mainReason,"failure",null);
         }
         return new PipeRunResult(getForward(), input);
     }
