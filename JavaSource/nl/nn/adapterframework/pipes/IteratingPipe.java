@@ -1,6 +1,9 @@
 /*
  * $Log: IteratingPipe.java,v $
- * Revision 1.1  2007-07-10 08:01:46  europe\L190409
+ * Revision 1.2  2007-07-17 10:49:42  europe\L190409
+ * uses now IDataIterator
+ *
+ * Revision 1.1  2007/07/10 08:01:46  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * first version, lightly based on ForEachChildElementPipe
  *
  */
@@ -8,13 +11,13 @@ package nl.nn.adapterframework.pipes;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IDataIterator;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -80,13 +83,12 @@ import org.apache.commons.lang.StringUtils;
  *	&lt;param name="value-of-current-item"         xpathExpression="/*" /&gt;
  * </pre>
  * 
- * @author Gerrit van Brakel
- * @since 4.3
- * 
- * $Id: IteratingPipe.java,v 1.1 2007-07-10 08:01:46 europe\L190409 Exp $
+ * @author  Gerrit van Brakel
+ * @since   4.7
+ * @version Id
  */
-public class IteratingPipe extends MessageSendingPipe {
-	public static final String version="$RCSfile: IteratingPipe.java,v $ $Revision: 1.1 $ $Date: 2007-07-10 08:01:46 $";
+public abstract class IteratingPipe extends MessageSendingPipe {
+	public static final String version="$RCSfile: IteratingPipe.java,v $ $Revision: 1.2 $ $Date: 2007-07-17 10:49:42 $";
 
 	private String stopConditionXPathExpression=null;
 	private boolean removeXmlDeclarationInResults=false;
@@ -129,9 +131,7 @@ public class IteratingPipe extends MessageSendingPipe {
 		return nsee;
 	}
 	
-	protected Iterator getIterator(Object input, PipeLineSession session, String correlationID, HashMap threadContext) throws SenderException {
-		return null;
-	}
+	protected abstract IDataIterator getIterator(Object input, PipeLineSession session, String correlationID, HashMap threadContext) throws SenderException;
 
 	protected String sendMessage(Object input, PipeLineSession session, String correlationID, ISender sender, HashMap threadContext) throws SenderException, TimeOutException {
 		// sendResult has a messageID for async senders, the result for sync senders
@@ -142,9 +142,10 @@ public class IteratingPipe extends MessageSendingPipe {
 		}		
 		String resultsXml = "";
 		boolean keepGoing = true;
+		IDataIterator it=null;
 		try {
 			int count=0;
-			Iterator it = getIterator(input,session, correlationID,threadContext);
+			it = getIterator(input,session, correlationID,threadContext);
 			if (it==null) {
 				throw new SenderException("Could not obtain iterator");
 			}
@@ -196,6 +197,14 @@ public class IteratingPipe extends MessageSendingPipe {
 			throw new SenderException(getLogPrefix(session)+"cannot serialize item",e);
 		} catch (IOException e) {
 			throw new SenderException(getLogPrefix(session)+"cannot serialize item",e);
+		} finally {
+			if (it!=null) {
+				try {
+					it.close();
+				} catch (Exception e) {
+					log.warn("Exception closing iterator", e);
+				} 
+			}
 		}
 	}
 
