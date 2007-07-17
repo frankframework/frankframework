@@ -1,6 +1,9 @@
 /*
  * $Log: DB2XMLWriter.java,v $
- * Revision 1.13  2007-02-12 14:09:31  europe\L190409
+ * Revision 1.14  2007-07-17 11:00:35  europe\L190409
+ * separate function to get single row
+ *
+ * Revision 1.13  2007/02/12 14:09:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Logger from LogUtil
  *
  * Revision 1.12  2006/12/13 16:31:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -35,6 +38,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
 
+import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.jdbc.JdbcException;
 
 import org.apache.log4j.Logger;
@@ -71,7 +75,7 @@ import org.apache.log4j.Logger;
  **/
 
 public class DB2XMLWriter {
-	public static final String version="$RCSfile: DB2XMLWriter.java,v $ $Revision: 1.13 $ $Date: 2007-02-12 14:09:31 $";
+	public static final String version="$RCSfile: DB2XMLWriter.java,v $ $Revision: 1.14 $ $Date: 2007-07-17 11:00:35 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String docname = new String("result");
@@ -112,13 +116,13 @@ public class DB2XMLWriter {
     /**
      * This method gets the value of the specified column
      */
-    private String getValue(final ResultSet rs, int colNum, int type) throws JdbcException, IOException, SQLException
+    private static String getValue(final ResultSet rs, int colNum, int type, String blobCharset, boolean decompressBlobs, String nullValue, boolean trimSpaces) throws JdbcException, IOException, SQLException
     {
         switch(type)
         {
         	// return "undefined" for types that cannot be rendered to strings easily
 			case Types.BLOB :
-					return JdbcUtil.getBlobAsString(rs,colNum,getBlobCharset(),false,isDecompressBlobs());
+					return JdbcUtil.getBlobAsString(rs,colNum,blobCharset,false,decompressBlobs);
 			case Types.CLOB :
 					return JdbcUtil.getClobAsString(rs,colNum,false);
             case Types.ARRAY :
@@ -133,9 +137,9 @@ public class DB2XMLWriter {
             {
                 String value = rs.getString(colNum);
                 if(value == null)
-                    return getNullValue();
+                    return nullValue;
                 else
-                	if (isTrimSpaces()) {
+                	if (trimSpaces) {
 						value.trim();
                 	}
 					return value;
@@ -230,27 +234,7 @@ public class DB2XMLWriter {
 	
 			XmlBuilder queryresult = new XmlBuilder(recordname);
 			while (rs.next() & rowCounter < maxlength) {
-				XmlBuilder row = new XmlBuilder("row");
-				row.addAttribute("number", "" + rowCounter);
-	
-				for (int i = 1; i <= nfields; i++) {
-					XmlBuilder resultField = new XmlBuilder("field");
-	
-					resultField.addAttribute("name", "" + rsmeta.getColumnName(i));
-	
-					try {
-						String value = getValue(rs, i, rsmeta.getColumnType(i));
-						if (rs.wasNull()) {
-							resultField.addAttribute("null","true");
-						}
-						resultField.setValue(value);
-	
-					} catch (Exception e) {
-						log.error("error getting fieldvalue column ["+i+"] fieldType ["+getFieldType(rsmeta.getColumnType(i))+ "]", e);
-					}
-					row.addSubElement(resultField);
-				}
-				JdbcUtil.warningsToXml(rs.getWarnings(),row);
+				XmlBuilder row = getRowXml(rs,rowCounter,rsmeta,getBlobCharset(),decompressBlobs,nullValue,trimSpaces);
 				queryresult.addSubElement(row);
 				rowCounter++;
 			}
@@ -260,6 +244,31 @@ public class DB2XMLWriter {
 		}
 		String answer = mainElement.toXML();
 		return answer;
+	}
+	
+	public static XmlBuilder getRowXml(ResultSet rs, int rowNumber, ResultSetMetaData rsmeta, String blobCharset, boolean decompressBlobs, String nullValue, boolean trimSpaces) throws SenderException, SQLException {
+		XmlBuilder row = new XmlBuilder("row");
+		row.addAttribute("number", "" + rowNumber);
+	
+		for (int i = 1; i <= rsmeta.getColumnCount(); i++) {
+			XmlBuilder resultField = new XmlBuilder("field");
+	
+			resultField.addAttribute("name", "" + rsmeta.getColumnName(i));
+	
+			try {
+				String value = getValue(rs, i, rsmeta.getColumnType(i), blobCharset, decompressBlobs, nullValue, trimSpaces);
+				if (rs.wasNull()) {
+					resultField.addAttribute("null","true");
+				}
+				resultField.setValue(value);
+	
+			} catch (Exception e) {
+				throw new SenderException("error getting fieldvalue column ["+i+"] fieldType ["+getFieldType(rsmeta.getColumnType(i))+ "]", e);
+			}
+			row.addSubElement(resultField);
+		}
+		JdbcUtil.warningsToXml(rs.getWarnings(),row);
+		return row;
 	}
 
 
