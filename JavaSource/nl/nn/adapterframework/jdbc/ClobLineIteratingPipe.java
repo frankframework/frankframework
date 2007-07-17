@@ -1,6 +1,9 @@
 /*
  * $Log: ClobLineIteratingPipe.java,v $
- * Revision 1.1  2007-07-17 11:16:50  europe\L190409
+ * Revision 1.2  2007-07-17 15:09:41  europe\L190409
+ * improved error message
+ *
+ * Revision 1.1  2007/07/17 11:16:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added iterating classes
  *
  */
@@ -27,7 +30,7 @@ public class ClobLineIteratingPipe extends IteratingPipeBase {
 	protected IDataIterator getIterator(ResultSet rs) throws SenderException {
 		try {
 			if (!rs.next()) {
-				return null;
+				throw new SenderException("query has empty resultset");
 			}
 			Reader clobReader;
 			clobReader = rs.getCharacterStream(1);
