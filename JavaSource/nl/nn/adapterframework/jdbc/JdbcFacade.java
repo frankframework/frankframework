@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcFacade.java,v $
- * Revision 1.19  2007-06-14 08:47:46  europe\L190409
+ * Revision 1.20  2007-07-17 15:10:36  europe\L190409
+ * show database info in log
+ *
+ * Revision 1.19  2007/06/14 08:47:46  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * support for parameter type=number
  *
  * Revision 1.18  2007/05/24 09:50:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -88,7 +91,7 @@ import org.apache.log4j.Logger;
  * @since 	4.1
  */
 public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version="$RCSfile: JdbcFacade.java,v $ $Revision: 1.19 $ $Date: 2007-06-14 08:47:46 $";
+	public static final String version="$RCSfile: JdbcFacade.java,v $ $Revision: 1.20 $ $Date: 2007-07-17 15:10:36 $";
     protected Logger log = LogUtil.getLogger(this);
 	
 	public final static int DATABASE_GENERIC=0;
@@ -131,21 +134,44 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 
 	protected DataSource getDatasource() throws JdbcException {
 		if (datasource==null) {
-				String dsName = getDataSourceNameToUse();
+			String dsName = getDataSourceNameToUse();
+			try {
+				log.debug(getLogPrefix()+"looking up Datasource ["+dsName+"]");
+				datasource =(DataSource) getContext().lookup( dsName );
+				String dsinfo=datasource.toString();
+				Connection conn=null;
 				try {
-					log.debug(getLogPrefix()+"looking up Datasource ["+dsName+"]");
-					datasource =(DataSource) getContext().lookup( dsName );
-					log.debug(getLogPrefix()+"looked up Datasource ["+dsName+"]: ["+datasource+"]");
-				} catch (NamingException e) {
-					try {
-						String tomcatDsName="java:comp/env/"+dsName;
-						log.debug(getLogPrefix()+"could not find ["+dsName+"], now trying ["+tomcatDsName+"]");
-						datasource =(DataSource) getContext().lookup( tomcatDsName );
-						log.debug(getLogPrefix()+"looked up Datasource ["+tomcatDsName+"]: ["+datasource+"]");
-					} catch (NamingException e2) {
-						throw new JdbcException(getLogPrefix()+"cannot find Datasource ["+dsName+"]", e);
+					conn=getConnection();
+					DatabaseMetaData md=conn.getMetaData();
+					String product=md.getDatabaseProductName();
+					String productVersion=md.getDatabaseProductVersion();
+					String driver=md.getDriverName();
+					String driverVersion=md.getDriverVersion();
+					String url=md.getURL();
+					String user=md.getUserName();
+					dsinfo ="user ["+user+"] url ["+url+"] product ["+product+"] version ["+productVersion+"] driver ["+driver+"] version ["+driverVersion+"]";
+				} catch (SQLException e) {
+					log.warn("Exception determining databaseinfo",e);
+				} finally {
+					if (conn!=null) {
+						try {
+							conn.close();
+						} catch (SQLException e1) {
+							log.warn("exception closing connection for metadata",e1);
+						}
 					}
 				}
+				log.info(getLogPrefix()+"looked up Datasource ["+dsName+"]: ["+dsinfo+"]");
+			} catch (NamingException e) {
+				try {
+					String tomcatDsName="java:comp/env/"+dsName;
+					log.debug(getLogPrefix()+"could not find ["+dsName+"], now trying ["+tomcatDsName+"]");
+					datasource =(DataSource) getContext().lookup( tomcatDsName );
+					log.debug(getLogPrefix()+"looked up Datasource ["+tomcatDsName+"]: ["+datasource+"]");
+				} catch (NamingException e2) {
+					throw new JdbcException(getLogPrefix()+"cannot find Datasource ["+dsName+"]", e);
+				}
+			}
 		}
 		return datasource;
 	}
@@ -160,8 +186,6 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 			try {
 				DatabaseMetaData md=conn.getMetaData();
 				String product=md.getDatabaseProductName();
-				String driver=md.getDriverName();
-				log.info("Database Metadata: product ["+product+"] driver ["+driver+"]");
 				if ("Oracle".equals(product)) {
 					log.debug("Setting databasetype to ORACLE");
 					databaseType=DATABASE_ORACLE;
@@ -206,6 +230,7 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 			String catalog=null;
 			catalog=connection.getCatalog();
 			result += catalog!=null ? ("/"+catalog):"";
+			
 			connection.close();
 		} catch (Exception e) {
 			log.warn(getLogPrefix()+"exception retrieving PhysicalDestinationName", e);		
