@@ -1,6 +1,9 @@
 /*
  * $Log: LdapSender.java,v $
- * Revision 1.23  2007-07-17 09:36:30  europe\L190409
+ * Revision 1.24  2007-07-17 15:11:30  europe\L190409
+ * improve javadoc
+ *
+ * Revision 1.23  2007/07/17 09:36:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * reworked javadoc
  *
  * Revision 1.22  2007/07/16 09:40:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -134,14 +137,14 @@ import org.apache.commons.lang.StringUtils;
  * 	  <li>no specific inputmessage required</li>
  * </ul>
  * </td></tr>
- * <tr><td>search (=search all children of 'entryName')</td><td>
+ * <tr><td>search</td><td>
  * <ul>
  * 	  <li>parameter 'entryName', resolving to RDN of entry to read</li>
  *    <li>parameter 'filterExpression', specifying the entries searched for</li>
  * 	  <li>optional attribute 'attributesReturned' containing attributes to be returned</li>
  * </ul>
  * </td></tr>
- * <tr><td>deepSearch (=search whole tree starting at 'entryName')</td><td>
+ * <tr><td>deepSearch</td><td>
  * <ul>
  * 	  <li>parameter 'entryName', resolving to RDN of entry to read</li>
  *    <li>parameter 'filterExpression', specifying the entries searched for</li>
@@ -154,7 +157,7 @@ import org.apache.commons.lang.StringUtils;
  * 	  <li>optional attribute 'attributesReturned' containing attributes to be returned</li>
  * </ul>
  * </td></tr>
- * <tr><td>getTree (=search whole tree starting at 'entryName')</td><td>
+ * <tr><td>getTree</td><td>
  * <ul>
  * 	  <li>parameter 'entryName', resolving to RDN of entry to read</li>
  * 	  <li>optional attribute 'attributesReturned' containing attributes to be returned</li>
@@ -250,7 +253,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class LdapSender extends JNDIBase implements ISenderWithParameters {
-	public static final String version = "$RCSfile: LdapSender.java,v $  $Revision: 1.23 $ $Date: 2007-07-17 09:36:30 $";
+	public static final String version = "$RCSfile: LdapSender.java,v $  $Revision: 1.24 $ $Date: 2007-07-17 15:11:30 $";
 
 	private String FILTER = "filterExpression";
 	private String ENTRYNAME = "entryName";
