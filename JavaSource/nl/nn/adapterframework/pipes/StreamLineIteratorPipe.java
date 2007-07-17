@@ -1,22 +1,23 @@
 /*
  * $Log: StreamLineIteratorPipe.java,v $
- * Revision 1.1  2007-07-10 08:05:38  europe\L190409
- * first version
+ * Revision 1.2  2007-07-17 10:57:00  europe\L190409
+ * update javadoc
  *
+ * Revision 1.1  2007/07/10 08:05:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * first version
  *
  */
 package nl.nn.adapterframework.pipes;
 
-import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
 
+import nl.nn.adapterframework.core.IDataIterator;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.util.ReaderLineIterator;
 
 /**
  * Sends a message to a Sender for each line of its input, that must be an InputStream.
@@ -54,6 +55,7 @@ import nl.nn.adapterframework.core.SenderException;
  * </td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setElementXPathExpression(String) elementXPathExpression}</td><td>expression used to determine the set of elements iterated over, i.e. the set of child elements</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setRemoveXmlDeclarationInResults(boolean) removeXmlDeclarationInResults}</td><td>postprocess each partial result, to remove the xml-declaration, as this is not allowed inside an xml-document</td><td>false</td></tr>
+ * <tr><td>{@link #setCollectResults(boolean) collectResults}</td><td>controls whether all the results of each iteration will be collected in one result message. If set <code>false</code>, only a small summary is returned</td><td>true</td></tr>
  * </table>
  * <table border="1">
  * <tr><th>nested elements</th><th>description</th></tr>
@@ -71,62 +73,22 @@ import nl.nn.adapterframework.core.SenderException;
  *	&lt;param name="value-of-current-item"         xpathExpression="/*" /&gt;
  * </pre>
  * 
- * @author Gerrit van Brakel
- * @since 4.6.1
- * 
- * $Id: StreamLineIteratorPipe.java,v 1.1 2007-07-10 08:05:38 europe\L190409 Exp $
+ * @author  Gerrit van Brakel
+ * @since   4.7
+ * @version Id
  */
 public class StreamLineIteratorPipe extends IteratingPipe {
-	public static final String version="$RCSfile: StreamLineIteratorPipe.java,v $ $Revision: 1.1 $ $Date: 2007-07-10 08:05:38 $";
+	public static final String version="$RCSfile: StreamLineIteratorPipe.java,v $ $Revision: 1.2 $ $Date: 2007-07-17 10:57:00 $";
 
-	public class InputStreamLineIterator implements Iterator {
-
-		BufferedReader reader;
-		Exception caughtException=null;
-
-		String line;
-
-		public InputStreamLineIterator(InputStream inputStream) throws SenderException {
-			super();
-			reader = new BufferedReader(new InputStreamReader(inputStream));
-			try {
-				line=reader.readLine();
-			} catch (IOException e) {
-				throw new SenderException(e);
-			}
-		}
-
-		public boolean hasNext() {
-			return line!=null;
-		}
-
-		public Object next() throws NoSuchElementException {
-			if (caughtException!=null) {
-				throw makeNoSuchElementException(null,caughtException);
-			}
-			String result=line;
-			try {
-				line = reader.readLine();
-			} catch (IOException e) {
-				throw makeNoSuchElementException(null,e);
-			}
-			return result; 
-		}
-
-		public void remove() {
-		}
-	}
-
-	
-	protected Iterator getIterator(Object input, PipeLineSession session, String correlationID, HashMap threadContext) throws SenderException {
+	protected IDataIterator getIterator(Object input, PipeLineSession session, String correlationID, HashMap threadContext) throws SenderException {
 		if (input==null) {
 			throw new SenderException("input is null. Must supply stream as input");
 		}
 		if (!(input instanceof InputStream)) {
 			throw new SenderException("input must be of type InputStream");
 		}
-		InputStream stream=(InputStream)input;
-		return new InputStreamLineIterator(stream);
+		Reader reader=new InputStreamReader((InputStream)input);
+		return new ReaderLineIterator(reader);
 	}
 
 }
