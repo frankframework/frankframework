@@ -1,6 +1,9 @@
 /*
  * $Log: LdapSender.java,v $
- * Revision 1.22  2007-07-16 09:40:33  europe\L190409
+ * Revision 1.23  2007-07-17 09:36:30  europe\L190409
+ * reworked javadoc
+ *
+ * Revision 1.22  2007/07/16 09:40:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added deepSearch
  *
  * Revision 1.21  2007/07/10 07:20:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -67,35 +70,116 @@ import org.apache.commons.lang.StringUtils;
  * Sender to obtain information from and write to an LDAP Directory.
  * Returns the set of attributes in an XML format. Examples are shown below.
  * 
- * The message to send should validate against LDAPSenderInput.xsd schema. Sample input:
+ * 
+ * <p><b>Configuration:</b>
+ * <table border="1">
+ * <tr><th>attributes</th><th>description</th><th>default</th></tr>
+ * <tr><td>classname</td><td>nl.nn.adapterframework.ldap.LdapSender</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setName(String) name}</td>  <td>name of the sender</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setLdapProviderURL(String) ldapProviderURL}</td><td>URL to context to search in, e.g. 'ldap://edsnlm01.group.intranet/ou=People, o=ing' to search in te People group of ING CDS. Used to overwrite the providerURL specified in jmsRealm.</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>sets jndi parameters from defined realm (including authentication)</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setOperation(String) operation}</td><td>specifies operation to perform. Must be one of 
+ * <ul>
+ * <li><code>read</code>: read the contents of an entry</li>
+ * <li><code>create</code>: create an attribute or an entry</li>
+ * <li><code>update</code>: update an attribute or an entry</li>
+ * <li><code>delete</code>: delete an attribute or an entry</li>
+ * <li><code>search</code>: search for an entry in the direct children of the specified root</li>
+ * <li><code>deepSearch</code>: search for an entry in the complete tree below the specified root</li>
+ * <li><code>getSubContexts</code>: get a list of the direct children of the specifed root</li>
+ * <li><code>getTree</code>: get a copy of the complete tree below the specified root</li>
+ * </ul></td><td>read</td></tr>
+ * <tr><td>{@link #setManipulationSubject(String) manipulationSubject}</td><td>specifies subject to perform operation on. Must be one of 'enrty' or 'attribute'</td><td>attribute</td></tr>
+ * <tr><td>{@link #setSearchTimeout(int) searchTimeout}</td><td>specifies the time (in ms) that is spent searching for results for operation Search</td><td>20000 ms</td></tr>
+ * <tr><td>{@link #setUsePooling(boolean) usePooling}</td><td>specifies whether connection pooling is used or not</td><td>true</td></tr>
+ * <tr><td>{@link #setInitialContextFactoryName(String) initialContextFactoryName}</td><td>class to use as initial context factory</td><td>com.sun.jndi.ldap.LdapCtxFactory</td></tr>
+ * <tr><td>{@link #setAttributesToReturn(String) attributesToReturn}</td>  <td>comma separated list of attributes to return. when no are attributes specified, all the attributes from the object read are returned.</td><td><i>all attributes</i></td></tr>
+ * <tr><td>{@link #setJndiAuthAlias(String) jndiAuthAlias}</td><td>Authentication alias, may be used to override principal and credential-settings</td><td>&nbsp;</td></tr>
+ * </table>
+ * </p>
+ * If there is only one parameter in the configaration of the pipe it will represent entryName (RDN) of interest.
+ * The name of the parameter MUST be entryName (since version 4.6.0).
+ * <p> 
+ * If there are more then one parameter then the names are compulsory, in the following manner:
+ * <ul>
+ * <li>Object of interest must have the name [entryName] and must be present</li>
+ * <li>filter expression (handy with searching - see RFC2254) - must have the name [filterExpression]</li>
+ * </ul>
+ * 
+ * <p>
+ * current requirements for input and configuration
+ * <table border="1">
+ * <tr><th>operation</th><th>requirements</th></tr>
+ * <tr><td>read</td><td>
+ * <ul>
+ * 	  <li>parameter 'entryName', resolving to RDN of entry to read</li>
+ * 	  <li>optional xml-inputmessage containing attributes to be returned</li>
+ * </ul>
+ * </td></tr>
+ * <tr><td>create</td><td>
+ * <ul>
+ * 	  <li>parameter 'entryName', resolving to RDN of entry to create</li>
+ * 	  <li>xml-inputmessage containing attributes to create</li>
+ * </ul>
+ * </td></tr>
+ * <tr><td>delete</td><td>
+ * <ul>
+ * 	  <li>parameter 'entryName', resolving to RDN of entry to delete</li>
+ * 	  <li>no specific inputmessage required</li>
+ * </ul>
+ * </td></tr>
+ * <tr><td>getTree</td><td>
+ * <ul>
+ * 	  <li>parameter 'entryName', resolving to RDN of entry that is root of tree to read</li>
+ * 	  <li>no specific inputmessage required</li>
+ * </ul>
+ * </td></tr>
+ * <tr><td>search (=search all children of 'entryName')</td><td>
+ * <ul>
+ * 	  <li>parameter 'entryName', resolving to RDN of entry to read</li>
+ *    <li>parameter 'filterExpression', specifying the entries searched for</li>
+ * 	  <li>optional attribute 'attributesReturned' containing attributes to be returned</li>
+ * </ul>
+ * </td></tr>
+ * <tr><td>deepSearch (=search whole tree starting at 'entryName')</td><td>
+ * <ul>
+ * 	  <li>parameter 'entryName', resolving to RDN of entry to read</li>
+ *    <li>parameter 'filterExpression', specifying the entries searched for</li>
+ * 	  <li>optional attribute 'attributesReturned' containing attributes to be returned</li>
+ * </ul>
+ * </td></tr>
+ * <tr><td>getSubcontexts</td><td>
+ * <ul>
+ * 	  <li>parameter 'entryName', resolving to RDN of entry to read</li>
+ * 	  <li>optional attribute 'attributesReturned' containing attributes to be returned</li>
+ * </ul>
+ * </td></tr>
+ * <tr><td>getTree (=search whole tree starting at 'entryName')</td><td>
+ * <ul>
+ * 	  <li>parameter 'entryName', resolving to RDN of entry to read</li>
+ * 	  <li>optional attribute 'attributesReturned' containing attributes to be returned</li>
+ * </ul>
+ * </td></tr>
+ * </table>
+ * </p>
+ * 
+ * <h2>example</h2>
+ * Consider the following configuration example:
+ * <code>
  * <pre>
- * The following example will generate the following ldap syntax:
- * 
- * - the Relative Distinguished Name (RDN) of the object (entry) to read / modify
- * 	uid=srp,ou=people
- * 	
- * 	This name is relative to the providerURL, thus the combination of the providerURL and
- * 	RDN lights the path to the desired object (retrieving it's DN). 
- * 	
- * 	For example, the 2 combinations:
- * 
- * 	providerURL = ldap://servername:389/o=ing		RDN: uid=srp,ou=people
- * 	and
- * 	providerURL = ldap://servername:389/ou=people,o=ing	RDN: uid=srp
- * 
- * 	both lead to the same object (with DN: uid=srp,ou=people,o=ing)
- * 
- * - the attributes to read / modify 
- * 	givenName=Jan
- * 	telephoneNumber=010 5131123
- * 	telephoneNumber=06 23456064
- * 	sn=Jansen
- * 
- * - when reading with no attributes specified, all the attributes from the (by entryName) specified object are returned
- * - Operation is specified in de configuration element <code>&lt;pipe&gt;</code> by the attribute <code>operation</code>
+ *   &lt;sender
+ *        className="nl.nn.adapterframework.ldap.LdapSender"
+ *        ldapProviderURL="ldap://servername:389/o=ing"
+ *        operation="read"
+ *        attributesToReturn="givenName,sn,telephoneNumber" &gt;
+ *     <&ltparam name="entryName" xpathExpression="entryName" /&gt;
+ *   &lt;/sender&gt;
  * </pre>
+ * </code>
+ * <br/>
  * 
- * <br/><code><pre>
+ * This may result in the following output:
+ * <code><pre>
  * &lt;ldap&gt;
  *	&lt;entryName&gt;uid=srp,ou=people&lt;/entryName&gt;
  *
@@ -159,82 +243,14 @@ import org.apache.commons.lang.StringUtils;
  *   .....
  *	&lt;/entries&gt;
  * </pre></code> <br/>
- * 
- * 
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>classname</td><td>nl.nn.adapterframework.ldap.LdapSender</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setName(String) name}</td>  <td>name of the sender</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setLdapProviderURL(String) ldapProviderURL}</td><td>URL to context to search in, e.g. 'ldap://edsnlm01.group.intranet/ou=People, o=ing' to search in te People group of ING CDS. Used to overwrite the providerURL specified in jmsRealm.</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>sets jndi parameters from defined realm (including authentication)</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setOperation(String) operation}</td><td>specifies operation to perform. Must be one of 'read', 'create', 'update', 'delete', 'search', 'deepSearch', 'getSubContexts' or 'getTree'</td><td>read</td></tr>
- * <tr><td>{@link #setManipulationSubject(String) manipulationSubject}</td><td>specifies subject to perform operation on. Must be one of 'enrty' or 'attribute'</td><td>attribute</td></tr>
- * <tr><td>{@link #setUsePooling(boolean) usePooling}</td><td>specifies whether connection pooling is used or not</td><td>true</td></tr>
- * <tr><td>{@link #setInitialContextFactoryName(String) initialContextFactoryName}</td><td>class to use as initial context factory</td><td>com.sun.jndi.ldap.LdapCtxFactory</td></tr>
- * <tr><td>{@link #setAttributesToReturn(String) attributesToReturn}</td>  <td>comma separated list of attributes to return</td><td><i>all attributes</i></td></tr>
- * <tr><td>{@link #setJndiAuthAlias(String) jndiAuthAlias}</td><td>Authentication alias, may be used to override principal and credential-settings</td><td>&nbsp;</td></tr>
- * </table>
- * </p>
- * If there is only one parameter in the configaration of the pipe it will represent entryName (RDN) of interest.
- * The name of the parameter MUST be entryName (since version 4.6.0).
- * <p> 
- * If there are more then one parameters then the names are compulsory, in the following manner:
- * <ul>
- * <li>Object of interest must have the name [entryName] and must be present</li>
- * <li>filter expression (handy with searching - see RFC2254) - must have the name [filterExpression]</li>
- * </ul>
- * 
- * <p>
- * current requirements for input and configuration
- * <table border="1">
- * <tr><th>operation</th><th>requirements</th></tr>
- * <tr><td>create</td><td>
- * <ul>
- * 	  <li>parameter 'entryName', resolving to RDN of entry to create</li>
- * 	  <li>xml-inputmessage containing attributes to create</li>
- * </ul>
- * </td></tr>
- * <tr><td>delete</td><td>
- * <ul>
- * 	  <li>parameter 'entryName', resolving to RDN of entry to delete</li>
- * 	  <li>no specific inputmessage required<li>
- * </ul>
- * </td></tr>
- * <tr><td>read</td><td>
- * <ul>
- * 	  <li>parameter 'entryName', resolving to RDN of entry to read</li>
- * 	  <li>optional xml-inputmessage containing attributes to be returned</li>
- * </ul>
- * </td></tr>
- * <tr><td>getTree</td><td>
- * <ul>
- * 	  <li>parameter 'entryName', resolving to RDN of entry that is root of tree to read</li>
- * 	  <li>no specific inputmessage required<li>
- * </ul>
- * </td></tr>
- * <tr><td>search (=search all children of 'entryName')</td><td>
- * <ul>
- * 	  <li>parameter 'entryName', resolving to RDN of entry to read</li>
- *    <li>parameter 'filterExpression', specifying the entries searched for</li>
- * 	  <li>optional attribute 'attributesReturned' containing attributes to be returned</li>
- * </ul>
- * </td></tr>
- * <tr><td>deepSearch (=search whole tree starting at 'entryName')</td><td>
- * <ul>
- * 	  <li>parameter 'entryName', resolving to RDN of entry to read</li>
- *    <li>parameter 'filterExpression', specifying the entries searched for</li>
- * 	  <li>optional attribute 'attributesReturned' containing attributes to be returned</li>
- * </ul>
- * </td></tr>
- * </table>
- * </p>
+ *
+ *  
  * @author Gerrit van Brakel
  * 
  * @version Id
  */
 public class LdapSender extends JNDIBase implements ISenderWithParameters {
-	public static final String version = "$RCSfile: LdapSender.java,v $  $Revision: 1.22 $ $Date: 2007-07-16 09:40:33 $";
+	public static final String version = "$RCSfile: LdapSender.java,v $  $Revision: 1.23 $ $Date: 2007-07-17 09:36:30 $";
 
 	private String FILTER = "filterExpression";
 	private String ENTRYNAME = "entryName";
