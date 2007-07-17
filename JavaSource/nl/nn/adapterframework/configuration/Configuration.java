@@ -1,6 +1,9 @@
 /*
  * $Log: Configuration.java,v $
- * Revision 1.23  2007-06-26 09:35:41  europe\L190409
+ * Revision 1.24  2007-07-17 15:07:35  europe\L190409
+ * added list of adapters, to access them in order
+ *
+ * Revision 1.23  2007/06/26 09:35:41  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * add instance name to log at startup
  *
  * Revision 1.22  2007/05/02 11:22:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -55,9 +58,10 @@
 package nl.nn.adapterframework.configuration;
 
 import java.net.URL;
-import java.util.Enumeration;
+import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -86,11 +90,11 @@ import org.apache.log4j.Logger;
  * @see    nl.nn.adapterframework.core.IAdapter
  */
 public class Configuration {
-	public static final String version="$RCSfile: Configuration.java,v $ $Revision: 1.23 $ $Date: 2007-06-26 09:35:41 $";
+	public static final String version="$RCSfile: Configuration.java,v $ $Revision: 1.24 $ $Date: 2007-07-17 15:07:35 $";
     protected Logger log=LogUtil.getLogger(this); 
      
     private Hashtable adapterTable = new Hashtable();
-
+	private ArrayList adapters = new ArrayList();
 
     private URL configurationURL;
     private URL digesterRulesURL;
@@ -118,10 +122,8 @@ public class Configuration {
 	public void forEachStatisticsKeeper(StatisticsKeeperIterationHandler hski) {
 		Object root=hski.start();
 		Object groupData=hski.openGroup(root,AppConstants.getInstance().getString("instance.name",""),"instance");
-		Enumeration keys = adapterTable.keys();
-		while (keys.hasMoreElements()) {
-			String name = (String) keys.nextElement();
-			IAdapter adapter = getRegisteredAdapter(name);
+		for (int i=0; i<adapters.size(); i++) {
+			IAdapter adapter = getRegisteredAdapter(i);
 			adapter.forEachStatisticsKeeperBody(hski,groupData);
 		}
 		hski.closeGroup(groupData);
@@ -163,6 +165,14 @@ public class Configuration {
     public IAdapter getRegisteredAdapter(String name) {
         return (IAdapter) adapterTable.get(name);
     }
+	public IAdapter getRegisteredAdapter(int index) {
+		return (IAdapter) adapters.get(index);
+	}
+
+	public List getRegisteredAdapters() {
+		return adapters;
+	}
+
     //Returns a sorted list of registered adapter names as an <code>Iterator</code>
     public Iterator getRegisteredAdapterNames() {
         SortedSet sortedKeys = new TreeSet(adapterTable.keySet());
@@ -187,12 +197,10 @@ public class Configuration {
         	if (adapterName.equals("**ALL**")) {
 	            // for the start option we 'd like to catch the errors
 	            // therefore the config.startAdapters() is not used
-	            Iterator keys = this.getRegisteredAdapterNames();
-	            while (keys.hasNext()) {
-	                String name = (String) keys.next();
-	                IAdapter adapter = this.getRegisteredAdapter(name);
-	                log.info("Starting adapter [" + name + "] on request of" + commandIssuedBy);
-	                adapter.startRunning();
+	            for(int i=0; i<getRegisteredAdapters().size(); i++) {
+					IAdapter adapter = this.getRegisteredAdapter(i);
+					log.info("Starting adapter [" + adapter.getName() + "] on request of" + commandIssuedBy);
+					adapter.startRunning();
 	            }
         	}
         	else {
@@ -268,14 +276,10 @@ public class Configuration {
         return adapter.getReceiverByName(receiverName) != null;
     }
     public void listObjects() {
+		for (int i=0; i<adapters.size(); i++) {
+			IAdapter adapter = getRegisteredAdapter(i);
 
-        Enumeration keys = adapterTable.keys();
-        while (keys.hasMoreElements()) {
-            String name = (String) keys.nextElement();
-            log.info(
-                    name
-                    + ":"
-                    + ((IAdapter) adapterTable.get(name)).toString());
+			log.info(i+") "+ adapter.getName()+ ": "	+ adapter.toString());
         }
 
     }
@@ -295,6 +299,7 @@ public class Configuration {
             throw new ConfigurationException("Adapter [" + adapter.getName() + "] already registered.");
         }
         adapterTable.put(adapter.getName(), adapter);
+		adapters.add(adapter);
 		if (isEnableJMX()) {
 			log.debug("Registering adapter [" + adapter.getName() + "] to the JMX server");
 	        JmxMbeanHelper.hookupAdapter( (nl.nn.adapterframework.core.Adapter) adapter);
@@ -342,26 +347,23 @@ public class Configuration {
     }
     
     public void startAdapters() {
-        Enumeration keys = adapterTable.keys();
-        while (keys.hasMoreElements()) {
-            String name = (String) keys.nextElement();
-            IAdapter adapter = getRegisteredAdapter(name);
-            if (adapter.isAutoStart()) {
-	            log.info("Starting adapter " + name);
-	            adapter.startRunning();
-            }
-        }
+		for (int i=0; i<adapters.size(); i++) {
+			IAdapter adapter = getRegisteredAdapter(i);
 
+			if (adapter.isAutoStart()) {
+				log.info("Starting adapter [" + adapter.getName()+"]");
+				adapter.startRunning();
+			}
+		}
     }
+    
     public void stopAdapters() {
-        Enumeration keys = adapterTable.keys();
-        while (keys.hasMoreElements()) {
-            String name = (String) keys.nextElement();
-            IAdapter adapter = getRegisteredAdapter(name);
-            log.info("Stopping adapter [" + name + "]");
+		for (int i=0; i<adapters.size(); i++) {
+			IAdapter adapter = getRegisteredAdapter(i);
 
-            adapter.stopRunning();
-        }
+			log.info("Stopping adapter [" + adapter.getName() + "]");
+			adapter.stopRunning();
+		}
         forEachStatisticsKeeper(new StatisticsKeeperLogger());
     }
     
