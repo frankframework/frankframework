@@ -1,6 +1,9 @@
 /*
  * $Log: XsltPipe.java,v $
- * Revision 1.22  2007-04-24 11:35:47  europe\L190409
+ * Revision 1.23  2007-07-17 10:51:36  europe\L190409
+ * added check for null-input
+ *
+ * Revision 1.22  2007/04/24 11:35:47  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added skip empty tags feature
  *
  * Revision 1.21  2006/08/22 12:56:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -109,7 +112,7 @@ import org.apache.commons.lang.StringUtils;
  */
 
 public class XsltPipe extends FixedForwardPipe {
-	public static final String version="$RCSfile: XsltPipe.java,v $ $Revision: 1.22 $ $Date: 2007-04-24 11:35:47 $";
+	public static final String version="$RCSfile: XsltPipe.java,v $ $Revision: 1.23 $ $Date: 2007-07-17 10:51:36 $";
 
 	private TransformerPool transformerPool;
 	private String xpathExpression=null;
@@ -217,7 +220,11 @@ public class XsltPipe extends FixedForwardPipe {
 	 * via the configure() and start() methods.
 	 */
 	public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRunException {
-	    if (!(input instanceof String)) {
+		if (input==null) {
+			throw new PipeRunException(this,
+				getLogPrefix(session)+"got null input");
+		}
+ 	    if (!(input instanceof String)) {
 	        throw new PipeRunException(this,
 	            getLogPrefix(session)+"got an invalid type as input, expected String, got "
 	                + input.getClass().getName());
