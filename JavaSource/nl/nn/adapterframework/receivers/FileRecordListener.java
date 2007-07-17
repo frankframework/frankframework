@@ -1,6 +1,9 @@
 /*
  * $Log: FileRecordListener.java,v $
- * Revision 1.8  2007-02-12 14:03:44  europe\L190409
+ * Revision 1.9  2007-07-17 15:13:05  europe\L190409
+ * added attribute storeFileNameInSessionKey
+ *
+ * Revision 1.8  2007/02/12 14:03:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Logger from LogUtil
  *
  * Revision 1.7  2006/01/05 14:42:25  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -56,13 +59,14 @@ import org.apache.log4j.Logger;
  * <tr><td>{@link #setWildcard(String) wildcard}</td><td>the {@link nl.nn.adapterframework.util.WildCardFilter wildcard} to look for files in the specified directory, e.g. "*.inp"</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setResponseTime(long) responseTime}</td><td>set the time to delay when no records are to be processed and this class has to look for the arrival of a new file</td><td>1000 [ms]</td></tr>
  * <tr><td>{@link #setDirectoryProcessedFiles(String) directoryProcessedFiles}</td><td>the directory to store processed files in</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setStoreFileNameInSessionKey(String) storeFileNameInSessionKey}</td><td>when set, the name of the read file is stored under this session key</td><td>&nbsp;</td></tr>
  * </table>
  * 
  * @version Id
  * @author  Johan Verrips
  */
 public class FileRecordListener implements IPullingListener, INamedObject {
-	public static final String version="$RCSfile: FileRecordListener.java,v $ $Revision: 1.8 $ $Date: 2007-02-12 14:03:44 $";
+	public static final String version="$RCSfile: FileRecordListener.java,v $ $Revision: 1.9 $ $Date: 2007-07-17 15:13:05 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -70,6 +74,7 @@ public class FileRecordListener implements IPullingListener, INamedObject {
 	private String wildcard;
 	private long responseTime = 1000;
 	private String directoryProcessedFiles;
+	private String storeFileNameInSessionKey;
 
 	private long recordNo = 0; // the current record number;
 	private String inputFileName; // the name of the file currently in process
@@ -283,6 +288,11 @@ public class FileRecordListener implements IPullingListener, INamedObject {
 					+ "] size ["
 					+ inputFile.length()
 					+ "]");
+
+			if (StringUtils.isNotEmpty(getStoreFileNameInSessionKey())) {
+				threadContext.put(getStoreFileNameInSessionKey(),inputFile.getName());
+			}
+
 			String fileContent = "";
 			try {
 				fullInputFileName = inputFile.getCanonicalPath();
@@ -417,4 +427,10 @@ public class FileRecordListener implements IPullingListener, INamedObject {
 		return responseTime;
 	}
 
+	public void setStoreFileNameInSessionKey(String storeFileNameInSessionKey) {
+		this.storeFileNameInSessionKey = storeFileNameInSessionKey;
+	}
+	public String getStoreFileNameInSessionKey() {
+		return storeFileNameInSessionKey;
+	}
 }
