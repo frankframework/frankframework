@@ -1,6 +1,9 @@
 /*
  * $Log: IteratingPipe.java,v $
- * Revision 1.2  2007-07-17 10:49:42  europe\L190409
+ * Revision 1.3  2007-07-17 10:54:25  europe\L190409
+ * removed unused code
+ *
+ * Revision 1.2  2007/07/17 10:49:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * uses now IDataIterator
  *
  * Revision 1.1  2007/07/10 08:01:46  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -11,7 +14,6 @@ package nl.nn.adapterframework.pipes;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.NoSuchElementException;
 
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -88,7 +90,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public abstract class IteratingPipe extends MessageSendingPipe {
-	public static final String version="$RCSfile: IteratingPipe.java,v $ $Revision: 1.2 $ $Date: 2007-07-17 10:49:42 $";
+	public static final String version="$RCSfile: IteratingPipe.java,v $ $Revision: 1.3 $ $Date: 2007-07-17 10:54:25 $";
 
 	private String stopConditionXPathExpression=null;
 	private boolean removeXmlDeclarationInResults=false;
@@ -125,12 +127,6 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 		}
 	}
 
-	public NoSuchElementException makeNoSuchElementException(String msg, Throwable cause) {
-		NoSuchElementException nsee = new NoSuchElementException(msg);
-		nsee.initCause(cause);
-		return nsee;
-	}
-	
 	protected abstract IDataIterator getIterator(Object input, PipeLineSession session, String correlationID, HashMap threadContext) throws SenderException;
 
 	protected String sendMessage(Object input, PipeLineSession session, String correlationID, ISender sender, HashMap threadContext) throws SenderException, TimeOutException {
