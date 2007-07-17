@@ -1,6 +1,9 @@
 /*
  * $Log: IbisException.java,v $
- * Revision 1.20  2007-07-17 10:46:01  europe\L190409
+ * Revision 1.21  2007-07-17 15:08:15  europe\L190409
+ * tune SQL exception
+ *
+ * Revision 1.20  2007/07/17 10:46:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added SQLException specific fields
  *
  * Revision 1.19  2005/10/17 08:52:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -74,7 +77,7 @@ import org.xml.sax.SAXParseException;
  * @author Gerrit van Brakel
  */
 public class IbisException extends NestableException {
-	public static final String version = "$RCSfile: IbisException.java,v $ $Revision: 1.20 $ $Date: 2007-07-17 10:46:01 $";
+	public static final String version = "$RCSfile: IbisException.java,v $ $Revision: 1.21 $ $Date: 2007-07-17 15:08:15 $";
 
 	static {
 		// add methodname to find cause of JMS-Exceptions
@@ -165,7 +168,12 @@ public class IbisException extends NestableException {
 			SQLException sqle = (SQLException)t;
 			int errorCode = sqle.getErrorCode();
 			String sqlState = sqle.getSQLState();
-			currentResult =  addPart(currentResult, ", ", "errorCode ["+errorCode+"] SQLState ["+sqlState+"]");
+			if (errorCode!=0) {
+				currentResult =  addPart("errorCode ["+errorCode+"]", ", ", currentResult);
+			}
+			if (StringUtils.isNotEmpty(sqlState)) {
+				currentResult =  addPart("SQLState ["+sqlState+"]", ", ", currentResult);
+			}
 		} 
 		return currentResult;
 	}
