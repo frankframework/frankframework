@@ -1,6 +1,9 @@
 /*
  * $Log: FilePipe.java,v $
- * Revision 1.12  2007-05-21 12:20:27  europe\L190409
+ * Revision 1.13  2007-07-17 15:12:05  europe\L190409
+ * added writeLineSeparator
+ *
+ * Revision 1.12  2007/05/21 12:20:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added attribute createDirectory
  *
  * Revision 1.11  2006/08/22 12:53:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -69,6 +72,7 @@ import sun.misc.BASE64Encoder;
  * <tr><td>{@link #setActions(String) actions}</td><td>name of forward returned upon completion</td><td>"success"</td></tr>
  * <tr><td>{@link #setWriteSuffix(String) writeSuffix}</td><td>suffix of the file to be created (only used if fileName and fileNameSession are not set)</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setCreateDirectory(boolean) createDirectory}</td><td>when set to <code>true</code>, the directory to read from is created if it does not exist</td><td>false</td></tr>
+ * <tr><td>{@link #setWriteLineSeparator(boolean) writeLineSeparator}</td><td>when set to <code>true</code>, a line separator is written after the content is written</td><td>false</td></tr>
  * </table>
  * </p>
  * <p><b>Exits:</b>
@@ -84,15 +88,19 @@ import sun.misc.BASE64Encoder;
  *
  */
 public class FilePipe extends FixedForwardPipe {
-	public static final String version="$RCSfile: FilePipe.java,v $ $Revision: 1.12 $ $Date: 2007-05-21 12:20:27 $";
-	private List transformers;
+	public static final String version="$RCSfile: FilePipe.java,v $ $Revision: 1.13 $ $Date: 2007-07-17 15:12:05 $";
+
 	protected String actions;
 	protected String directory;
 	protected String writeSuffix;
 	protected String fileName;
 	protected String fileNameSessionKey;
 	protected boolean createDirectory = false;
+	protected boolean writeLineSeparator = false;
 
+	private List transformers;
+	protected byte[] eolArray=null;
+	
 	/** 
 	 * @see nl.nn.adapterframework.core.IPipe#configure()
 	 */
@@ -133,6 +141,7 @@ public class FilePipe extends FixedForwardPipe {
 		for (Iterator it = transformers.iterator(); it.hasNext(); ) {
 			((TransformerAction)it.next()).configure();
 		}
+		eolArray = System.getProperty("line.separator").getBytes();
 	}
 	
 	/** 
@@ -238,6 +247,9 @@ public class FilePipe extends FixedForwardPipe {
 			
 			try {
 				fos.write(in);
+				if (isWriteLineSeparator()) {
+					fos.write(eolArray);
+				}
 			}
 			finally {
 				fos.close();
@@ -322,20 +334,6 @@ public class FilePipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * @return all the actions the pipe has to do
-	 */
-	public String getActions() {
-		return actions;
-	}
-
-	/**
-	 * @return the directory in which the file resides or has to be created
-	 */
-	public String getDirectory() {
-		return directory;
-	}
-
-	/**
 	 * @param actions all the actions the pipe has to do
 	 * 
 	 * Possible actions are "read", "write", "write_append", "encode", "decode", "delete" and "read_delete"
@@ -344,6 +342,9 @@ public class FilePipe extends FixedForwardPipe {
 	public void setActions(String actions) {
 		this.actions = actions;
 	}
+	public String getActions() {
+		return actions;
+	}
 
 	/**
 	 * @param directory in which the file resides or has to be created
@@ -351,12 +352,8 @@ public class FilePipe extends FixedForwardPipe {
 	public void setDirectory(String directory) {
 		this.directory = directory;
 	}
-
-	/**
-	 * @return suffix of the file that is written
-	 */
-	public String getWriteSuffix() {
-		return writeSuffix;
+	public String getDirectory() {
+		return directory;
 	}
 
 	/**
@@ -365,12 +362,8 @@ public class FilePipe extends FixedForwardPipe {
 	public void setWriteSuffix(String suffix) {
 		this.writeSuffix = suffix;
 	}
-
-	/**
-	 * @return suffix of the file that is written
-	 */
-	public String getFileName() {
-		return fileName;
+	public String getWriteSuffix() {
+		return writeSuffix;
 	}
 
 	/**
@@ -379,12 +372,8 @@ public class FilePipe extends FixedForwardPipe {
 	public void setFileName(String filename) {
 		this.fileName = filename;
 	}
-
-	/**
-	 * @return the session key that contains the name of the file to be created
-	 */
-	public String getFileNameSessionKey() {
-		return fileNameSessionKey;
+	public String getFileName() {
+		return fileName;
 	}
 
 	/**
@@ -393,12 +382,21 @@ public class FilePipe extends FixedForwardPipe {
 	public void setFileNameSessionKey(String filenameSessionKey) {
 		this.fileNameSessionKey = filenameSessionKey;
 	}
+	public String getFileNameSessionKey() {
+		return fileNameSessionKey;
+	}
 
 	public void setCreateDirectory(boolean b) {
 		createDirectory = b;
 	}
-
 	public boolean isCreateDirectory() {
 		return createDirectory;
+	}
+
+	public void setWriteLineSeparator(boolean b) {
+		writeLineSeparator = b;
+	}
+	public boolean isWriteLineSeparator() {
+		return writeLineSeparator;
 	}
 }
