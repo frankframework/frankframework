@@ -1,6 +1,9 @@
 /*
  * $Log: IbisException.java,v $
- * Revision 1.19  2005-10-17 08:52:04  europe\L190409
+ * Revision 1.20  2007-07-17 10:46:01  europe\L190409
+ * added SQLException specific fields
+ *
+ * Revision 1.19  2005/10/17 08:52:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * included location info for TransformerExceptions
  *
  * Revision 1.18  2005/08/08 09:40:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -51,6 +54,8 @@
  */
 package nl.nn.adapterframework.core;
 
+import java.sql.SQLException;
+
 import javax.mail.internet.AddressException;
 import javax.xml.transform.SourceLocator;
 import javax.xml.transform.TransformerException;
@@ -69,7 +74,7 @@ import org.xml.sax.SAXParseException;
  * @author Gerrit van Brakel
  */
 public class IbisException extends NestableException {
-	public static final String version = "$RCSfile: IbisException.java,v $ $Revision: 1.19 $ $Date: 2005-10-17 08:52:04 $";
+	public static final String version = "$RCSfile: IbisException.java,v $ $Revision: 1.20 $ $Date: 2007-07-17 10:46:01 $";
 
 	static {
 		// add methodname to find cause of JMS-Exceptions
@@ -155,6 +160,12 @@ public class IbisException extends NestableException {
 					currentResult =  addPart(currentResult, " ", "column ["+col+"]");
 				}
 			}
+		} 
+		if (t instanceof SQLException) {
+			SQLException sqle = (SQLException)t;
+			int errorCode = sqle.getErrorCode();
+			String sqlState = sqle.getSQLState();
+			currentResult =  addPart(currentResult, ", ", "errorCode ["+errorCode+"] SQLState ["+sqlState+"]");
 		} 
 		return currentResult;
 	}
