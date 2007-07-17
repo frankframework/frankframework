@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcQuerySenderBase.java,v $
- * Revision 1.28  2007-07-10 07:18:25  europe\L190409
+ * Revision 1.29  2007-07-17 09:20:24  europe\L190409
+ * fix typo
+ *
+ * Revision 1.28  2007/07/10 07:18:25  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * support for loading streams to blobs and clobs
  *
  * Revision 1.27  2007/04/24 11:37:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -178,7 +181,7 @@ import org.apache.commons.lang.StringUtils;
  * @since 	4.1
  */
 public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
-	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.28 $ $Date: 2007-07-10 07:18:25 $";
+	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.29 $ $Date: 2007-07-17 09:20:24 $";
 
 	private String queryType = "other";
 	private int maxRows=-1; // return all rows
@@ -259,7 +262,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 				return executeSelectQuery(statement);
 			} else {
 				if ("updateBlob".equalsIgnoreCase(getQueryType())) {
-					if (StringUtils.isEmpty(getClobSessionKey())) {
+					if (StringUtils.isEmpty(getBlobSessionKey())) {
 						return executeUpdateBlobQuery(statement,message);
 					} else {
 						return executeUpdateBlobQuery(statement,prc.getSession().get(getBlobSessionKey()));
