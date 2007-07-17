@@ -1,6 +1,9 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.40  2007-05-08 16:04:37  europe\L190409
+ * Revision 1.41  2007-07-17 11:02:40  europe\L190409
+ * encodeChars for byteArray
+ *
+ * Revision 1.40  2007/05/08 16:04:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added transform() with result as parameter
  *
  * Revision 1.39  2007/02/12 14:12:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -170,14 +173,13 @@ import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.DefaultHandler;
 
 /**
- * Some utilities for working with XML. As soon as the Apache XML Commons project
- * delivers something usefull, this class will possibly be removed.
- * <p>Creation date: (20-02-2003 8:05:19)</p>
+ * Some utilities for working with XML. 
+ *
+ * @author  Johan Verrips
  * @version Id
- * @author Johan Verrips IOS
  */
 public class XmlUtils {
-	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.40 $ $Date: 2007-05-08 16:04:37 $";
+	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.41 $ $Date: 2007-07-17 11:02:40 $";
 	static Logger log = LogUtil.getLogger(XmlUtils.class);
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
@@ -474,24 +476,36 @@ public class XmlUtils {
 
 		return result;
 	}
+	
 	/**
 	 * translates special characters to xml equivalents
 	 * like <b>&gt;</b> and <b>&amp;</b>
 	 */
 	public static String encodeChars(String string) {
-
 		if (string==null) {
 			return null;
 		}
 		int length = string.length();
 		char[] characters = new char[length];
 		string.getChars(0, length, characters, 0);
-		StringBuffer encoded = new StringBuffer();
+		return encodeChars(characters,0,length);
+	}
+	/**
+	 * translates special characters to xml equivalents
+	 * like <b>&gt;</b> and <b>&amp;</b>
+	 */
+	public static String encodeChars(char[] chars, int offset, int length) {
+
+		if (length<=0) {
+			return "";
+		}
+		StringBuffer encoded = new StringBuffer(length);
 		String escape;
 		for (int i = 0; i < length; i++) {
-			escape = escapeChar(characters[i]);
+			char c=chars[offset+i];
+			escape = escapeChar(c);
 			if (escape == null)
-				encoded.append(characters[i]);
+				encoded.append(c);
 			else
 				encoded.append(escape);
 		}
