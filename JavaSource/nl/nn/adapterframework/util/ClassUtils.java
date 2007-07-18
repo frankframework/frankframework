@@ -1,6 +1,10 @@
 /*
  * $Log: ClassUtils.java,v $
- * Revision 1.10  2007-05-09 09:25:54  europe\L190409
+ * Revision 1.11  2007-07-18 13:35:30  europe\L190409
+ * try to get a resource as a URL
+ * no replacemen of space to %20 for jar-entries
+ *
+ * Revision 1.10  2007/05/09 09:25:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added nameOf()
  *
  * Revision 1.9  2007/02/12 14:09:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -40,7 +44,7 @@ import org.apache.log4j.Logger;
  *
  */
 public class ClassUtils {
-	public static final String version = "$RCSfile: ClassUtils.java,v $ $Revision: 1.10 $ $Date: 2007-05-09 09:25:54 $";
+	public static final String version = "$RCSfile: ClassUtils.java,v $ $Revision: 1.11 $ $Date: 2007-07-18 13:35:30 $";
 	private static Logger log = LogUtil.getLogger(ClassUtils.class);
 
     /**
@@ -104,10 +108,20 @@ public class ClassUtils {
 			klass = ClassUtils.class;
 		}
         
+        // first try to get the resoure as a resource
         url = klass.getResource(resource);
 		if (url == null) {
 			url = klass.getClassLoader().getResource(resource);
 		}
+		// then try to get it as a URL
+		if (url == null) {
+			try {
+				url = new URL(resource);
+			} catch(MalformedURLException e) {
+				log.debug("Could not find resource as URL ["+resource+"]: "+e.getMessage());
+			}
+		}		
+		// then try to get it in java:comp/env
 		if (url == null && resource!=null && !resource.startsWith("java:comp/env/")) {
 			log.warn("cannot find URL for resource ["+resource+"], now trying [java:comp/env/"+resource+"] (e.g. for TomCat)");
 			resource = "java:comp/env/"+resource;
@@ -116,6 +130,7 @@ public class ClassUtils {
 				url = klass.getClassLoader().getResource(resource);
 			}
 		}
+		
         if (url==null)
           log.warn("cannot find URL for resource ["+resource+"]");
         else {
@@ -131,7 +146,7 @@ public class ClassUtils {
 			//
 			// Escaping spaces to %20 if spaces are found.
 			String urlString = url.toString();
-			if (urlString.indexOf(' ')>=0) {
+			if (urlString.indexOf(' ')>=0 && !urlString.startsWith("jar:")) {
 				urlString=Misc.replace(urlString," ","%20");
 				try {
 					URL escapedURL = new URL(urlString);
