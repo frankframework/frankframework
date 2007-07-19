@@ -1,6 +1,9 @@
 /*
  * $Log: XmlValidator.java,v $
- * Revision 1.22  2007-07-16 11:34:47  europe\L190409
+ * Revision 1.23  2007-07-19 07:30:00  europe\L190409
+ * put remark about spaces in javadoc
+ *
+ * Revision 1.22  2007/07/16 11:34:47  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fill reason in case of parserError, too
  *
  * Revision 1.21  2007/07/10 08:06:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -129,12 +132,13 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * <tr><td>"illegalRoot"</td><td>if the required root element is not found. If not specified, "failure" is used in such a case</td></tr>
  * <tr><td>"failure"</td><td>if a validation error occurred</td></tr>
  * </table>
+ * <br>
+ * N.B. noNamespaceSchemaLocation may contain spaces, but not if the schema is stored in a .jar or .zip file on the class path.
  * @version Id
  * @author Johan Verrips IOS / Jaco de Groot (***@dynasol.nl)
-
  */
 public class XmlValidator extends FixedForwardPipe {
-	public static final String version="$RCSfile: XmlValidator.java,v $ $Revision: 1.22 $ $Date: 2007-07-16 11:34:47 $";
+	public static final String version="$RCSfile: XmlValidator.java,v $ $Revision: 1.23 $ $Date: 2007-07-19 07:30:00 $";
 
     private String schemaLocation = null;
     private String noNamespaceSchemaLocation = null;
@@ -410,7 +414,7 @@ public class XmlValidator extends FixedForwardPipe {
             parser.setProperty("http://apache.org/xml/properties/schema/external-schemaLocation", schemaLocation);
         }
         if (noNamespaceSchemaLocation != null) {
-            log.debug("Give noNamespaceSchemaLocation to parser: " + noNamespaceSchemaLocation);
+			log.debug("Give noNamespaceSchemaLocation to parser: " + noNamespaceSchemaLocation);
             parser.setProperty("http://apache.org/xml/properties/schema/external-noNamespaceSchemaLocation", noNamespaceSchemaLocation);
         }
         if (isFullSchemaChecking()) {
