@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcQuerySenderBase.java,v $
- * Revision 1.29  2007-07-17 09:20:24  europe\L190409
+ * Revision 1.30  2007-07-19 15:09:54  europe\L190409
+ * handle charsets of BLOB and CLOB streams correctly
+ *
+ * Revision 1.29  2007/07/17 09:20:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fix typo
  *
  * Revision 1.28  2007/07/10 07:18:25  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -92,7 +95,9 @@ package nl.nn.adapterframework.jdbc;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.Writer;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -162,6 +167,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setSynchronous(boolean) synchronous}</td><td>&nbsp;</td><td>true</td></tr>
  * <tr><td>{@link #setTrimSpaces(boolean) trimSpaces}</td><td>remove trailing blanks from all values.</td><td>true</td></tr>
  * <tr><td>{@link #setBlobCharset(String) blobCharset}</td><td>charset used to read and write BLOBs</td><td>UTF-8</td></tr>
+ * <tr><td>{@link #setStreamCharset(String) streamCharset}</td><td>charset used when reading a stream (that is e.g. going to be written to a BLOB or CLOB)</td><td>UTF-8</td></tr>
  * <tr><td>{@link #setBlobsCompressed(boolean) blobsCompressed}</td><td>controls whether blobdata is stored compressed in the database</td><td>true</td></tr>
  * <tr><td>{@link #setColumnsReturned(String) columnsReturned}</td><td>comma separated list of columns whose values are to be returned. Works only if the driver implements JDBC 3.0 getGeneratedKeys()</td><td>&nbsp;</td></tr>
  * </table>
@@ -181,7 +187,7 @@ import org.apache.commons.lang.StringUtils;
  * @since 	4.1
  */
 public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
-	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.29 $ $Date: 2007-07-17 09:20:24 $";
+	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.30 $ $Date: 2007-07-19 15:09:54 $";
 
 	private String queryType = "other";
 	private int maxRows=-1; // return all rows
@@ -198,6 +204,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 	private String resultQuery=null;
 	private boolean trimSpaces=true;
 	private String blobCharset = Misc.DEFAULT_INPUT_STREAM_ENCODING;
+	private String streamCharset = Misc.DEFAULT_INPUT_STREAM_ENCODING;
 	private boolean blobsCompressed=true;
 
 	private String packageContent = "db2";
@@ -399,9 +406,10 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 			rs.next();
 			if (message instanceof InputStream) {
 				InputStream inStream = (InputStream)message;
-				OutputStream outStream = JdbcUtil.getBlobUpdateOutputStream(rs, blobColumn);
-				Misc.streamToStream(inStream,outStream);
-				outStream.close();
+				Writer writer = JdbcUtil.getBlobWriter(rs, blobColumn, getBlobCharset(), isBlobsCompressed());
+				Reader reader = new InputStreamReader(inStream,getStreamCharset());
+				Misc.readerToWriter(reader,writer);
+				writer.close();
 			} else {
 				JdbcUtil.putStringAsBlob(rs, blobColumn, (String)message, getBlobCharset(), isBlobsCompressed());
 			}
@@ -433,9 +441,10 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 			rs.next();
 			if (message instanceof InputStream) {
 				InputStream inStream = (InputStream)message;
-				OutputStream outStream = JdbcUtil.getClobUpdateOutputStream(rs, clobColumn);
-				Misc.streamToStream(inStream,outStream);
-				outStream.close();
+				Writer writer = JdbcUtil.getClobWriter(rs, clobColumn);
+				Reader reader = new InputStreamReader(inStream,getStreamCharset());
+				Misc.readerToWriter(reader,writer);
+				writer.close();
 			} else {
 				JdbcUtil.putStringAsClob(rs, clobColumn, (String)message);
 			}
@@ -830,5 +839,12 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		return clobSessionKey;
 	}
 
+
+	public void setStreamCharset(String string) {
+		streamCharset = string;
+	}
+	public String getStreamCharset() {
+		return streamCharset;
+	}
 
 }

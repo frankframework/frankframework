@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcUtil.java,v $
- * Revision 1.11  2007-02-12 14:12:03  europe\L190409
+ * Revision 1.12  2007-07-19 15:14:11  europe\L190409
+ * handle charsets of BLOB and CLOB streams correctly
+ *
+ * Revision 1.11  2007/02/12 14:12:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Logger from LogUtil
  *
  * Revision 1.10  2006/12/13 16:33:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -37,9 +40,14 @@
  */
 package nl.nn.adapterframework.util;
 
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Reader;
+import java.io.Writer;
 import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.Connection;
@@ -58,12 +66,12 @@ import org.apache.log4j.Logger;
 /**
  * Database-oriented utility functions.
  * 
- * @version Id
  * @author  Gerrit van Brakel
  * @since   4.1
+ * @version Id
  */
 public class JdbcUtil {
-	public static final String version = "$RCSfile: JdbcUtil.java,v $ $Revision: 1.11 $ $Date: 2007-02-12 14:12:03 $";
+	public static final String version = "$RCSfile: JdbcUtil.java,v $ $Revision: 1.12 $ $Date: 2007-07-19 15:14:11 $";
 	protected static Logger log = LogUtil.getLogger(JdbcUtil.class);
 	
 	private static final boolean useMetaData=false;
@@ -150,6 +158,24 @@ public class JdbcUtil {
 		return blob.getBinaryStream();
 	}
 
+	public static Reader getBlobReader(final ResultSet rs, int columnIndex, String charset, boolean blobIsCompressed) throws IOException, JdbcException, SQLException {
+		Reader result;
+		InputStream input = getBlobInputStream(rs,columnIndex);
+		if (charset==null) {
+			charset = Misc.DEFAULT_INPUT_STREAM_ENCODING;
+		}
+		if (blobIsCompressed) {
+			result = new InputStreamReader(new InflaterInputStream(input), charset);
+		} else {
+			result = new InputStreamReader(input, charset);
+		}
+		return result;
+	}
+
+	public static String getBlobAsString(final ResultSet rs, int columnIndex, String charset, boolean xmlEncode, boolean blobIsCompressed) throws IOException, JdbcException, SQLException {
+		return Misc.readerToString(getBlobReader(rs,columnIndex,charset,blobIsCompressed),null,xmlEncode);
+	}
+
 	/**
 	 * retrieves an outputstream to a blob column from an updatable resultset.
 	 */
@@ -161,18 +187,18 @@ public class JdbcUtil {
 		return blob.setBinaryStream(1L);
 	}
 
-	public static String getBlobAsString(final ResultSet rs, int columnIndex, String charset, boolean xmlEncode, boolean blobIsCompressed) throws IOException, JdbcException, SQLException {
-		InputStream input = getBlobInputStream(rs,columnIndex);
-		String result;
+	public static Writer getBlobWriter(final ResultSet rs, int columnIndex, String charset, boolean compressBlob) throws IOException, JdbcException, SQLException {
+		Writer result;
+		OutputStream out = getBlobUpdateOutputStream(rs, columnIndex);
 		if (charset==null) {
 			charset = Misc.DEFAULT_INPUT_STREAM_ENCODING;
 		}
-		if (blobIsCompressed) {
-			result = Misc.streamToString(new InflaterInputStream(input), null, charset, xmlEncode);
+		if (compressBlob) {
+			result = new BufferedWriter(new OutputStreamWriter(new DeflaterOutputStream(out),charset));
 		} else {
-			result = Misc.streamToString(input, null, charset, xmlEncode);
+			result = new BufferedWriter(new OutputStreamWriter(out,charset));
 		}
-		return result;
+		return result;	
 	}
 
 	public static void putStringAsBlob(final ResultSet rs, int columnIndex, String content, String charset, boolean compressBlob) throws IOException, JdbcException, SQLException {
@@ -189,6 +215,7 @@ public class JdbcUtil {
 		}
 		out.close();
 	}
+	
 
 	public static InputStream getClobInputStream(ResultSet rs, int columnIndex) throws SQLException, JdbcException {
 		Clob clob = rs.getClob(columnIndex);
@@ -196,6 +223,14 @@ public class JdbcUtil {
 			throw new JdbcException("no clob found in column ["+columnIndex+"]");
 		}
 		return clob.getAsciiStream();
+	}
+
+	public static Reader getClobReader(ResultSet rs, int columnIndex) throws SQLException, JdbcException {
+		Clob clob = rs.getClob(columnIndex);
+		if (clob==null) {
+			throw new JdbcException("no clob found in column ["+columnIndex+"]");
+		}
+		return clob.getCharacterStream();
 	}
 
 	/**
@@ -209,18 +244,23 @@ public class JdbcUtil {
 		return clob.setAsciiStream(1L);
 	}
 
-//TODO should maybe set encoding to "US-ASCII"
-	public static String getClobAsString(final ResultSet rs, int columnIndex, boolean xmlEncode) throws IOException, JdbcException, SQLException {
-		InputStream input = getClobInputStream(rs,columnIndex);
-		return Misc.streamToString(input, null, xmlEncode);
+	public static Writer getClobWriter(ResultSet rs, int columnIndex) throws SQLException, JdbcException {
+		Clob clob = rs.getClob(columnIndex);
+		if (clob==null) {
+			throw new JdbcException("no clob found in column ["+columnIndex+"]");
+		}
+		return clob.setCharacterStream(1L);
 	}
 
-//	TODO should maybe set encoding to "US-ASCII"
-	public static void putStringAsClob(final ResultSet rs, int columnIndex, String content) throws IOException, JdbcException, SQLException {
-		OutputStream out = getClobUpdateOutputStream(rs, columnIndex);
-		out.write(content.getBytes());
-		out.close();
+	public static String getClobAsString(final ResultSet rs, int columnIndex, boolean xmlEncode) throws IOException, JdbcException, SQLException {
+		Reader reader = getClobReader(rs,columnIndex);
+		return Misc.readerToString(reader, null, xmlEncode);
 	}
-        
+
+	public static void putStringAsClob(final ResultSet rs, int columnIndex, String content) throws IOException, JdbcException, SQLException {
+		Writer writer = getClobWriter(rs, columnIndex);
+		writer.write(content);
+		writer.close();
+	}
 
 }
