@@ -1,6 +1,9 @@
 /*
  * $Log: ShowConfigurationStatus.java,v $
- * Revision 1.7  2007-06-12 11:25:02  europe\L190409
+ * Revision 1.8  2007-07-19 15:18:07  europe\L190409
+ * list Adapters in order of configuration
+ *
+ * Revision 1.7  2007/06/12 11:25:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added receiver-listener info
  *
  * Revision 1.6  2007/05/29 11:11:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -12,62 +15,54 @@
  */
 package nl.nn.adapterframework.webcontrol.action;
 
+import java.io.IOException;
+import java.util.Iterator;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
+import nl.nn.adapterframework.core.HasSender;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.ISender;
-import nl.nn.adapterframework.core.HasSender;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.XmlBuilder;
+
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.Enumeration;
-import java.util.Iterator;
-
 /**
  * Prepare the main screen of the IbisConsole.
  * 
- * @version Id
  * @author	Johan Verrips
+ * @version Id
  */
-
 public final class ShowConfigurationStatus extends ActionBase {
-	public static final String version = "$RCSfile: ShowConfigurationStatus.java,v $ $Revision: 1.7 $ $Date: 2007-06-12 11:25:02 $";
+	public static final String version = "$RCSfile: ShowConfigurationStatus.java,v $ $Revision: 1.8 $ $Date: 2007-07-19 15:18:07 $";
 
-		public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response)
-				throws IOException, ServletException {
+	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 
+		// Initialize action
+		initAction(request);
 
-				// Initialize action
-				initAction(request);
+		if (null==config) {
+			return (mapping.findForward("noconfig"));
+		}
 
-				if (null==config) {
-					return (mapping.findForward("noconfig"));
-				}
+		XmlBuilder adapters=new XmlBuilder("registeredAdapters");
+		for(int j=0; j<config.getRegisteredAdapters().size(); j++) {
+			Adapter adapter = (Adapter)config.getRegisteredAdapter(j);
 
-				// retrieve adapters
-				Iterator registeredAdapters=config.getRegisteredAdapterNames();
-				
-
-
-				XmlBuilder adapters=new XmlBuilder("registeredAdapters");
-				while (registeredAdapters.hasNext()){
-
-			String adapterName=(String)registeredAdapters.next();
-			Adapter adapter= (Adapter) config.getRegisteredAdapter(adapterName);
 			XmlBuilder adapterXML=new XmlBuilder("adapter");
 			adapters.addSubElement(adapterXML);
 		
@@ -119,9 +114,9 @@ public final class ShowConfigurationStatus extends ActionBase {
 			XmlBuilder pipesElem = new XmlBuilder("pipes");
 			adapterXML.addSubElement(pipesElem);
 			PipeLine pipeline = adapter.getPipeLine();
-			for (Enumeration enum_p=pipeline.getPipes().keys();enum_p.hasMoreElements();) {
-				String pipename=(String)enum_p.nextElement();
-				IPipe pipe = pipeline.getPipe(pipename);
+			for (int i=0; i<pipeline.getPipes().size(); i++) {
+				IPipe pipe = pipeline.getPipe(i);
+				String pipename=pipe.getName();
 				if (pipe instanceof MessageSendingPipe) {
 					MessageSendingPipe msp=(MessageSendingPipe)pipe;
 					XmlBuilder pipeElem = new XmlBuilder("pipe");

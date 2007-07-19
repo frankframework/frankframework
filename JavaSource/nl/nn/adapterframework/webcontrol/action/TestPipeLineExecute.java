@@ -1,6 +1,9 @@
 /*
  * $Log: TestPipeLineExecute.java,v $
- * Revision 1.7  2007-02-12 15:50:14  europe\L190409
+ * Revision 1.8  2007-07-19 15:16:19  europe\L190409
+ * list Adapters in order of configuration
+ *
+ * Revision 1.7  2007/02/12 15:50:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed remote directory facility
  *
  * Revision 1.6  2007/02/12 14:36:29  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -43,7 +46,7 @@ import org.apache.struts.upload.FormFile;
  */
 
 public final class TestPipeLineExecute extends ActionBase {
-	public static final String version="$RCSfile: TestPipeLineExecute.java,v $  $Revision: 1.7 $ $Date: 2007-02-12 15:50:14 $";
+	public static final String version="$RCSfile: TestPipeLineExecute.java,v $  $Revision: 1.8 $ $Date: 2007-07-19 15:16:19 $";
 	
 	public ActionForward execute(
 	    ActionMapping mapping,
@@ -161,11 +164,10 @@ public final class TestPipeLineExecute extends ActionBase {
 	    adapters.add("-- select an adapter --");
 	
 	    // get the names of the Adapters
-	    Iterator adapterNamesIt = config.getRegisteredAdapterNames();
-	    while (adapterNamesIt.hasNext()) {
-	        String adapterName = (String) adapterNamesIt.next();
-	        adapters.add(adapterName);
-	    }
+		for(int i=0; i<config.getRegisteredAdapters().size(); i++) {
+			IAdapter adapter = config.getRegisteredAdapter(i);
+			adapters.add(adapter.getName());
+		}
 	    pipeLineTestForm.set("adapters", adapters);
 	    if (null!=message) pipeLineTestForm.set("message", message);
 	    if (null != result) {

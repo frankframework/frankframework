@@ -1,36 +1,39 @@
 /*
  * $Log: ShowTracingConfiguration.java,v $
- * Revision 1.1  2006-09-14 15:29:44  europe\L190409
+ * Revision 1.2  2007-07-19 15:17:21  europe\L190409
+ * list Adapters in order of configuration
+ *
+ * Revision 1.1  2006/09/14 15:29:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * first version of TracingHandlers
  *
  */
 package nl.nn.adapterframework.webcontrol.action;
+
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.List;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.pipes.AbstractPipe;
 import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.util.XmlBuilder;
+
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.SortedSet;
-import java.util.TreeSet;
-
 /**
  * <code>Action</code> to retrieve the Tracing configuration.
  * @author  Peter Leeuwenburgh
+ * @version Id
  */
-
 public final class ShowTracingConfiguration extends ActionBase {
-	public static final String version="$RCSfile: ShowTracingConfiguration.java,v $ $Revision: 1.1 $ $Date: 2006-09-14 15:29:44 $";
+	public static final String version="$RCSfile: ShowTracingConfiguration.java,v $ $Revision: 1.2 $ $Date: 2007-07-19 15:17:21 $";
 
 	public ActionForward execute(
 		ActionMapping mapping,
@@ -49,11 +52,10 @@ public final class ShowTracingConfiguration extends ActionBase {
 		XmlBuilder tracingConfigurationXML =
 			new XmlBuilder("tracingConfiguration");
 
-		Iterator registeredAdapters = config.getRegisteredAdapterNames();
 		XmlBuilder adapters = new XmlBuilder("registeredAdapters");
-		while (registeredAdapters.hasNext()) {
-			String adapterName = (String) registeredAdapters.next();
-			Adapter adapter = (Adapter) config.getRegisteredAdapter(adapterName);
+		for(int j=0; j<config.getRegisteredAdapters().size(); j++) {
+			Adapter adapter = (Adapter)config.getRegisteredAdapter(j);
+
 			XmlBuilder adapterXML = new XmlBuilder("adapter");
 			adapterXML.addAttribute("name", adapter.getName());
 			Iterator recIt = adapter.getReceiverIterator();
@@ -73,15 +75,11 @@ public final class ShowTracingConfiguration extends ActionBase {
 
 			XmlBuilder pipelineXML = new XmlBuilder("pipeline");
 			
-			Hashtable pipelineTable = adapter.getPipeLine().getPipes();
-			// sort the Hashtable
-			SortedSet sortedKeys = new TreeSet(pipelineTable.keySet());
-			Iterator pipelineTableIter = sortedKeys.iterator();
-			if (pipelineTableIter.hasNext()) {
-				while (pipelineTableIter.hasNext()) {
-					String pipeName = (String) pipelineTableIter.next();
-					IPipe pipe = adapter.getPipeLine().getPipe(pipeName);
-
+			List pipeList = adapter.getPipeLine().getPipes();
+			if (pipeList.size()>0) {
+				for (int i=0; i<pipeList.size(); i++) {
+					IPipe pipe = adapter.getPipeLine().getPipe(i);
+	
 					XmlBuilder pipeXML = new XmlBuilder("pipe");
 					pipeXML.addAttribute("name", pipe.getName());
 					if (pipe instanceof AbstractPipe) {
@@ -89,7 +87,7 @@ public final class ShowTracingConfiguration extends ActionBase {
 						pipeXML.addAttribute("beforeEvent",	Integer.toString(ap.getBeforeEvent()));
 						pipeXML.addAttribute("afterEvent",  Integer.toString(ap.getAfterEvent()));
 						pipeXML.addAttribute("exceptionEvent",	Integer.toString(ap.getExceptionEvent()));
-	
+		
 					}
 					pipelineXML.addSubElement(pipeXML);
 				}
