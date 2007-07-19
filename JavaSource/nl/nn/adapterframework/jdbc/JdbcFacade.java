@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcFacade.java,v $
- * Revision 1.20  2007-07-17 15:10:36  europe\L190409
+ * Revision 1.21  2007-07-19 15:07:33  europe\L190409
+ * check for null datasource
+ *
+ * Revision 1.20  2007/07/17 15:10:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * show database info in log
  *
  * Revision 1.19  2007/06/14 08:47:46  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -91,7 +94,7 @@ import org.apache.log4j.Logger;
  * @since 	4.1
  */
 public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version="$RCSfile: JdbcFacade.java,v $ $Revision: 1.20 $ $Date: 2007-07-17 15:10:36 $";
+	public static final String version="$RCSfile: JdbcFacade.java,v $ $Revision: 1.21 $ $Date: 2007-07-19 15:07:33 $";
     protected Logger log = LogUtil.getLogger(this);
 	
 	public final static int DATABASE_GENERIC=0;
@@ -138,6 +141,9 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 			try {
 				log.debug(getLogPrefix()+"looking up Datasource ["+dsName+"]");
 				datasource =(DataSource) getContext().lookup( dsName );
+				if (datasource==null) {
+					throw new JdbcException("Could not find Datasource ["+dsName+"]");
+				}
 				String dsinfo=datasource.toString();
 				Connection conn=null;
 				try {
