@@ -1,6 +1,9 @@
 /*
  * $Log: FixedQuerySender.java,v $
- * Revision 1.15  2007-07-10 07:17:36  europe\L190409
+ * Revision 1.16  2007-07-19 15:10:45  europe\L190409
+ * removed unused code
+ *
+ * Revision 1.15  2007/07/10 07:17:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected typo in javadoc
  *
  * Revision 1.14  2006/12/13 16:27:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -97,48 +100,13 @@ import java.sql.SQLException;
  * @since 	4.1
  */
 public class FixedQuerySender extends JdbcQuerySenderBase {
-	public static final String version = "$RCSfile: FixedQuerySender.java,v $ $Revision: 1.15 $ $Date: 2007-07-10 07:17:36 $";
+	public static final String version = "$RCSfile: FixedQuerySender.java,v $ $Revision: 1.16 $ $Date: 2007-07-19 15:10:45 $";
 
 	private String query=null;
 		
 	protected PreparedStatement getStatement(Connection con, String correlationID, String message) throws JdbcException, SQLException {
 		return prepareQuery(con,getQuery());
 	}
-
-/*
-	public void open() throws SenderException {
-		super.open();
-		if (log.isDebugEnabled()) {
-			log.debug(getLogPrefix() +"test preparing statement for query ["+getQuery()+"]");
-			Connection c = null;
-			try {
-				c = getConnection();
-				PreparedStatement stmt = null;
-				try {
-					stmt = getStatement(c, null, null);
-				} finally {
-					if (stmt != null) {
-						try {
-							stmt.close();
-						} catch (SQLException e) {
-							log.warn(new SenderException(getLogPrefix() + "caught exception closing statement after test-preparing statement", e));
-						}
-					}
-				}
-			} catch (Exception e) {
-				throw new SenderException(getLogPrefix()+"caught exception test-preparing query",e);
-			} finally {
-				if (c!=null) {
-					try {
-						c.close();
-					} catch (SQLException e) {
-						log.warn(new SenderException(getLogPrefix() + "caught exception closing connection after test-preparing statement", e));
-					}
-				}
-			}
-		}
-	}
-*/
 
 	/**
 	 * Sets the SQL-query text to be executed each time sendMessage() is called.
