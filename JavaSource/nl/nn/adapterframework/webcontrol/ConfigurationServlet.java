@@ -1,6 +1,9 @@
 /*
  * $Log: ConfigurationServlet.java,v $
- * Revision 1.9  2007-06-26 06:58:51  europe\L190409
+ * Revision 1.10  2007-07-19 15:20:19  europe\L190409
+ * configure adapters in order of declaration
+ *
+ * Revision 1.9  2007/06/26 06:58:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improve logging
  *
  * Revision 1.8  2007/02/12 14:40:46  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -12,7 +15,6 @@ package nl.nn.adapterframework.webcontrol;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Date;
-import java.util.Iterator;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -42,11 +44,12 @@ import org.apache.log4j.Logger;
  *   <li>digester-rules - the name of the digester-rules file</li>
  *   <li>autoStart - when TRUE : automatically start the adapters</li>
  * </ul>
+ * 
+ * @author  Johan Verrips
  * @version Id
- * @author    Johan Verrips
  */
 public class ConfigurationServlet extends HttpServlet {
-	public static final String version = "$RCSfile: ConfigurationServlet.java,v $ $Revision: 1.9 $ $Date: 2007-06-26 06:58:51 $";
+	public static final String version = "$RCSfile: ConfigurationServlet.java,v $ $Revision: 1.10 $ $Date: 2007-07-19 15:20:19 $";
     protected Logger log = LogUtil.getLogger(this);
 
     static final String DFLT_DIGESTER_RULES = "digester-rules.xml";
@@ -62,16 +65,15 @@ public class ConfigurationServlet extends HttpServlet {
 
 			//check for adapters that are started
             boolean startedAdaptersPresent = false;
-            Iterator registeredAdapters = config.getRegisteredAdapterNames();
-            while (registeredAdapters.hasNext()) {
-                String adapterName = (String) registeredAdapters.next();
-                IAdapter adapter = config.getRegisteredAdapter(adapterName);
-                RunStateEnum currentRunState = adapter.getRunState();
-                if (currentRunState.equals(RunStateEnum.STARTED)) {
-                    log.warn("Adapter [" + adapterName + "] is running");
-                    startedAdaptersPresent = true;
-                }
-            }
+			for(int i=0; i<config.getRegisteredAdapters().size(); i++) {
+				IAdapter adapter = config.getRegisteredAdapter(i);
+
+				RunStateEnum currentRunState = adapter.getRunState();
+				if (currentRunState.equals(RunStateEnum.STARTED)) {
+					log.warn("Adapter [" + adapter.getName() + "] is running");
+					startedAdaptersPresent = true;
+				}
+			}
             if (startedAdaptersPresent) {
                 log.warn(
                         "Reload of configuration aborted because there are started adapters present");
