@@ -1,8 +1,10 @@
 /*
  * $Log: StreamTransformerPipe.java,v $
- * Revision 1.1  2007-07-24 08:04:15  europe\L190409
- * first version, to be tested
+ * Revision 1.2  2007-07-24 16:11:17  europe\L190409
+ * first working version
  *
+ * Revision 1.1  2007/07/24 08:04:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * first version, to be tested
  */
 package nl.nn.adapterframework.batch;
 
@@ -12,10 +14,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -24,7 +24,6 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
-import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.FileUtils;
 
 import org.apache.commons.lang.StringUtils;
@@ -32,8 +31,7 @@ import org.apache.commons.lang.StringUtils;
 /**
  * Pipe for transforming a stream with records. Records in the stream must be separated
  * with new line characters.
-
- *  * <p><b>Configuration:</b>
+ * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>classname</td><td>nl.nn.ibis4fundation.BatchFileTransformerPipe</td><td>&nbsp;</td></tr>
@@ -44,29 +42,27 @@ import org.apache.commons.lang.StringUtils;
  * <table border="1">
  * <tr><th>nested elements</th><th>description</th></tr>
  * <tr><td>{@link nl.nn.adapterframework.batch.IRecordHandlerManager manager}</td><td>Manager determines which handlers are to be used for the current line</td></tr>
+ * <tr><td>{@link nl.nn.adapterframework.batch.RecordHandlingFlow manager/flow}</td><td>Element that contains the handlers for a specific record type, to be assigned to the manager</td></tr>
  * <tr><td>{@link nl.nn.adapterframework.batch.IRecordHandler recordHandler}</td><td>Handler for transforming records of a specific type</td></tr>
  * <tr><td>{@link nl.nn.adapterframework.batch.IResultHandler resultHandler}</td><td>Handler for processing transformed records</td></tr>
- * <tr><td>{@link nl.nn.adapterframework.batch.RecordHandlingFlow flow}</td><td>Element that contains the handlers for a specific record type, to be assigned to a manager</td></tr>
  * </table>
  * </p>
  * 
  * @author: John Dekker
  */
 public class StreamTransformerPipe extends FixedForwardPipe {
-	public static final String version = "$RCSfile: StreamTransformerPipe.java,v $  $Revision: 1.1 $ $Date: 2007-07-24 08:04:15 $";
+	public static final String version = "$RCSfile: StreamTransformerPipe.java,v $  $Revision: 1.2 $ $Date: 2007-07-24 16:11:17 $";
 
 	private IRecordHandlerManager initialFactory;
 	private IResultHandler defaultHandler;
 	private HashMap registeredManagers;
 	private HashMap registeredRecordHandlers;
 	private HashMap registeredResultHandlers;
-	private Collection registeredFlows;
 	
 	public StreamTransformerPipe() {
 		this.registeredManagers = new HashMap();
 		this.registeredRecordHandlers = new HashMap();
 		this.registeredResultHandlers = new HashMap();
-		this.registeredFlows = new LinkedList(); 
 	}
 	
 	/**
@@ -91,27 +87,25 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 		}
 	}
 
+	public IRecordHandlerManager getManager(String name) {
+		return (IRecordHandlerManager)registeredManagers.get(name);
+	}
 	
 	/**
 	 * register a flow element that contains the handlers for a specific record type (key)
 	 * @param flowEl
 	 * @throws Exception
-	 * @deprecated please use registerFlow()
+	 * @deprecated please use manager.addFlow()
 	 */
 	public void registerChild(RecordHandlingFlow flowEl) throws Exception {
-		log.warn("configuration using element 'child' is deprecated. Please use element 'flow'");
-		registerFlow(flowEl);
+		log.warn("configuration using element 'child' is deprecated. Please use element 'flow' nested in element 'manager'");
+		IRecordHandlerManager manager = (IRecordHandlerManager)registeredManagers.get(flowEl.getRecordHandlerManagerRef());
+		if (manager == null) {
+			throw new ConfigurationException("RecordHandlerManager [" + flowEl.getRecordHandlerManagerRef() + "] not found. Manager must be defined before the flows it contains");
+		}
+		// register the flow with the manager
+		manager.addHandler(flowEl);
 	}
-	/**
-	 * register a flow element that contains the handlers for a specific record type (key)
-	 * @param flowEl
-	 * @throws Exception
-	 * @deprecated please use registerFlow()
-	 */
-	public void registerFlow(RecordHandlingFlow flowEl) throws Exception {
-		registeredFlows.add(flowEl);
-	}
-
 	
 	/**
 	 * register a uniquely named record manager.
@@ -131,6 +125,11 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	public void registerRecordHandler(IRecordHandler handler) throws Exception {
 		registeredRecordHandlers.put(handler.getName(), handler);
 	}
+	public IRecordHandler getRecordHandler(String name) {
+		return (IRecordHandler)registeredRecordHandlers.get(name);
+	}
+
+
 	
 	/**
 	 * register a uniquely named result manager.
@@ -153,95 +152,52 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 			defaultHandler = handler;
 		}
 	}
+	public IResultHandler getResultHandler(String name) {
+		return (IResultHandler)registeredResultHandlers.get(name);
+	}
 	
 	
 	public void configure() throws ConfigurationException {
 		super.configure();
-		for (Iterator flowIt = registeredFlows.iterator(); flowIt.hasNext();) {
-			RecordHandlingFlow flowEl = (RecordHandlingFlow) flowIt.next();
-			configure(flowEl);
+		for (Iterator it = registeredManagers.keySet().iterator(); it.hasNext();) {
+			String managerName = (String)it.next();
+			IRecordHandlerManager manager = getManager(managerName);
+			manager.configure(registeredManagers, registeredRecordHandlers, registeredResultHandlers, defaultHandler);
+		}
+		for (Iterator it = registeredRecordHandlers.keySet().iterator(); it.hasNext();) {
+			String recordHandlerName = (String)it.next();
+			IRecordHandler handler = getRecordHandler(recordHandlerName);
+			handler.configure();
 		}
 	}
 
 
 	public void start() throws PipeStartException {
 		super.start();
-		for (Iterator flowIt = registeredFlows.iterator(); flowIt.hasNext();) {
-			RecordHandlingFlow flowEl = (RecordHandlingFlow) flowIt.next();
+		for (Iterator it = registeredRecordHandlers.keySet().iterator(); it.hasNext();) {
+			String recordHandlerName = (String)it.next();
+			IRecordHandler handler = getRecordHandler(recordHandlerName);
 			try {
-				open(flowEl);
+				handler.open();
 			} catch (SenderException e) {
-				throw new PipeStartException(getLogPrefix(null)+"cannot start", e);
+				throw new PipeStartException(getLogPrefix(null)+"cannot start recordhandler ["+recordHandlerName+"]", e);
 			}
 		}
 	}
 	public void stop() {
 		super.stop();
-		for (Iterator flowIt = registeredFlows.iterator(); flowIt.hasNext();) {
-			RecordHandlingFlow flowEl = (RecordHandlingFlow) flowIt.next();
+		for (Iterator it = registeredRecordHandlers.keySet().iterator(); it.hasNext();) {
+			String recordHandlerName = (String)it.next();
+			IRecordHandler handler = getRecordHandler(recordHandlerName);
 			try {
-				close(flowEl);
+				handler.close();
 			} catch (SenderException e) {
-				log.error(getLogPrefix(null)+"exception on close", e);
+				log.error(getLogPrefix(null)+"exception on closing recordhandler ["+recordHandlerName+"]", e);
 			}
 		}
 	}
 
-	private void configure(RecordHandlingFlow flow) throws ConfigurationException {
-		log.debug("configuring flow ["+ClassUtils.nameOf(flow)+"]");
-		// obtain the named manager 
-		IRecordHandlerManager manager = (IRecordHandlerManager)registeredManagers.get(flow.getRecordHandlerManagerRef());
-		if (manager == null) {
-			throw new ConfigurationException("RecordHandlerManager [" + flow.getRecordHandlerManagerRef() + "] not found");
-		}
-		// register the flow with the manager
-		manager.addHandler(flow);
 
-		// obtain the named manager that is to be used after a specified record  
-		IRecordHandlerManager nextManager = null;
-		if (StringUtils.isEmpty(flow.getNextRecordHandlerManagerRef())) {
-			nextManager = manager; 
-		} else { 
-			nextManager = (IRecordHandlerManager)registeredManagers.get(flow.getNextRecordHandlerManagerRef());
-			if (nextManager == null) {
-				throw new ConfigurationException("RecordHandlerManager [" + flow.getNextRecordHandlerManagerRef() + "] not found");
-			}
-		}
-			
-		// obtain the recordhandler 
-		IRecordHandler recordHandler = (IRecordHandler)registeredRecordHandlers.get(flow.getRecordHandlerRef());
-		if (recordHandler!=null) {
-			recordHandler.configure();
-		} else {
-			log.debug("no recordhandler defined for ["+ClassUtils.nameOf(flow)+"]");
-//			throw new ConfigurationException("no recordhandler defined for ["+ClassUtils.nameOf(flow)+"]");
-		}
-		
-		// obtain the named resulthandler
-		IResultHandler resultHandler = (IResultHandler)registeredResultHandlers.get(flow.getResultHandlerRef());
-		if (resultHandler == null) {
-			if (StringUtils.isEmpty(flow.getResultHandlerRef())) {
-				resultHandler = defaultHandler;
-			}
-			else {
-				throw new ConfigurationException("ResultHandler [" + flow.getResultHandlerRef() + "] not found");
-			}
-		}
-		
-		// initialise the flow object
-		flow.setNextRecordHandlerManager(nextManager);
-		flow.setRecordHandler(recordHandler);
-		flow.setResultHandler(resultHandler);
-	}
-	
-	public void open(RecordHandlingFlow flow) throws SenderException {
-		IRecordHandler recordHandler = (IRecordHandler)registeredRecordHandlers.get(flow.getRecordHandlerRef());
-		recordHandler.open();
-	}
-	public void close(RecordHandlingFlow flow) throws SenderException {
-		IRecordHandler recordHandler = (IRecordHandler)registeredRecordHandlers.get(flow.getRecordHandlerRef());
-		recordHandler.close();
-	}
 
 	protected String getStreamId(Object input, PipeLineSession session) throws PipeRunException {
 		return session.getMessageId();
