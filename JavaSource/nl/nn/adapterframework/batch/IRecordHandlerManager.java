@@ -1,6 +1,9 @@
 /*
  * $Log: IRecordHandlerManager.java,v $
- * Revision 1.4  2006-05-19 09:28:38  europe\m00i745
+ * Revision 1.5  2007-07-24 07:59:15  europe\L190409
+ * update javadoc
+ *
+ * Revision 1.4  2006/05/19 09:28:38  Peter Eijgermans <peter.eijgermans@ibissource.org>
  * Restore java files from batch package after unwanted deletion.
  *
  * Revision 1.2  2005/10/31 14:38:03  John Dekker <john.dekker@ibissource.org>
@@ -20,6 +23,11 @@ import nl.nn.adapterframework.core.PipeLineSession;
 
 /**
  * Interface for handling a transformed record.
+ * 
+ * A RecordHandlerManager decides, based on some implementation dependent algorithm, which record handler
+ * is to be used to process a record. 
+ * A record manager keeps a table of flow-elements, that each define a recordhandler, resulthandler and, 
+ * optionally, a next-manager.
  * 
  * @author John Dekker
  */
