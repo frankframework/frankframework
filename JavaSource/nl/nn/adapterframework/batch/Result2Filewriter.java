@@ -1,6 +1,9 @@
 /*
  * $Log: Result2Filewriter.java,v $
- * Revision 1.7  2007-02-12 13:37:13  europe\L190409
+ * Revision 1.8  2007-07-24 08:00:35  europe\L190409
+ * change inputFilename to streamId
+ *
+ * Revision 1.7  2007/02/12 13:37:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Logger from LogUtil
  *
  * Revision 1.6  2006/05/19 09:28:36  Peter Eijgermans <peter.eijgermans@ibissource.org>
@@ -57,7 +60,7 @@ import org.apache.log4j.Logger;
  * @author: John Dekker
  */
 public class Result2Filewriter extends AbstractResultHandler {
-	public static final String version = "$RCSfile: Result2Filewriter.java,v $  $Revision: 1.7 $ $Date: 2007-02-12 13:37:13 $";
+	public static final String version = "$RCSfile: Result2Filewriter.java,v $  $Revision: 1.8 $ $Date: 2007-07-24 08:00:35 $";
 	private static Logger log = LogUtil.getLogger(Result2Filewriter.class);
 	
 	private String outputDirectory;
@@ -85,8 +88,8 @@ public class Result2Filewriter extends AbstractResultHandler {
 		bw.newLine();
 	}
 
-	private void write(PipeLineSession session, String inputFilename, String[] lines) throws Exception {
-		BufferedWriter bw = getBufferedWriter(session, inputFilename, true);
+	private void write(PipeLineSession session, String streamId, String[] lines) throws Exception {
+		BufferedWriter bw = getBufferedWriter(session, streamId, true);
 		for (int i = 0; i < lines.length; i++) {
 			bw.write(lines[i]);
 			bw.newLine();
@@ -122,22 +125,22 @@ public class Result2Filewriter extends AbstractResultHandler {
 		}
 	}
 	
-	public void writePrefix(PipeLineSession session, String inputFilename, boolean mustPrefix, boolean hasPreviousRecord) throws Exception {
+	public void writePrefix(PipeLineSession session, String streamId, boolean mustPrefix, boolean hasPreviousRecord) throws Exception {
 		String[] prefix = prefix(mustPrefix, hasPreviousRecord);
 		if (prefix != null) {
-			write(session, inputFilename, prefix);
+			write(session, streamId, prefix);
 		}
 	}
 
-	public void writeSuffix(PipeLineSession session, String inputFilename) throws Exception {
-		BufferedWriter bw = getBufferedWriter(session, inputFilename, false);
+	public void writeSuffix(PipeLineSession session, String streamId) throws Exception {
+		BufferedWriter bw = getBufferedWriter(session, streamId, false);
 		if (bw != null && ! StringUtils.isEmpty(getSuffix())) {
-			write(session, inputFilename, getSuffix());
+			write(session, streamId, getSuffix());
 		}
 	}
 
-	private BufferedWriter getBufferedWriter(PipeLineSession session, String inputFilename, boolean openIfNotOpen) throws IOException, ParameterException {
-		FileOutput fo = (FileOutput)openWriters.get(inputFilename);
+	private BufferedWriter getBufferedWriter(PipeLineSession session, String streamId, boolean openIfNotOpen) throws IOException, ParameterException {
+		FileOutput fo = (FileOutput)openWriters.get(streamId);
 		if (fo != null) {
 			return fo.writer;
 		}
@@ -146,13 +149,13 @@ public class Result2Filewriter extends AbstractResultHandler {
 			return null ;
 		}
 		
-		String outputFilename = FileUtils.getFilename(null, session, new File(inputFilename), filenamePattern);
+		String outputFilename = FileUtils.getFilename(null, session, new File(streamId), filenamePattern);
 		File outputFile = new File(outputDirectory, outputFilename);
 		if (outputFile.exists() && outputFile.isFile()) {
 			log.warn("Outputfile " + outputFilename + " exists in " + outputDirectory);
 		}
 		BufferedWriter bw = new BufferedWriter(new FileWriter(outputFile, false));
-		openWriters.put(inputFilename, new FileOutput(bw, outputFile));
+		openWriters.put(streamId, new FileOutput(bw, outputFile));
 		return bw;		
 	}
 	

@@ -1,6 +1,9 @@
 /*
  * $Log: IResultHandler.java,v $
- * Revision 1.4  2006-05-19 09:28:36  europe\m00i745
+ * Revision 1.5  2007-07-24 07:59:43  europe\L190409
+ * change inputFilename to streamId
+ *
+ * Revision 1.4  2006/05/19 09:28:36  Peter Eijgermans <peter.eijgermans@ibissource.org>
  * Restore java files from batch package after unwanted deletion.
  *
  * Revision 1.2  2005/10/31 14:38:03  John Dekker <john.dekker@ibissource.org>
@@ -44,13 +47,13 @@ public interface IResultHandler extends INamedObject {
 	 * @param hasPreviousRecord boolean indicates if a previous record has been written, in case a suffix has to be written first
 	 * @throws Exception
 	 */
-	void writePrefix(PipeLineSession session, String inputFilename, boolean mustPrefix, boolean hasPreviousRecord) throws Exception;
+	void writePrefix(PipeLineSession session, String streamId, boolean mustPrefix, boolean hasPreviousRecord) throws Exception;
 	
 	/**
 	 * @param inputFilename name of the original file containing the untransformed record
 	 * @throws Exception
 	 */
-	void writeSuffix(PipeLineSession session, String inputFilename) throws Exception;
+	void writeSuffix(PipeLineSession session, String streamId) throws Exception;
 	
 	/**
 	 * @return true if this resulthandler should be used for all flows if no resulthandler is specified for that flow 
