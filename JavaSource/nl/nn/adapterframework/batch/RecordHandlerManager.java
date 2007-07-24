@@ -1,6 +1,9 @@
 /*
  * $Log: RecordHandlerManager.java,v $
- * Revision 1.4  2006-05-19 09:28:36  europe\m00i745
+ * Revision 1.5  2007-07-24 08:02:44  europe\L190409
+ * reformatted code
+ *
+ * Revision 1.4  2006/05/19 09:28:36  Peter Eijgermans <peter.eijgermans@ibissource.org>
  * Restore java files from batch package after unwanted deletion.
  *
  * Revision 1.2  2005/10/31 14:38:02  John Dekker <john.dekker@ibissource.org>
@@ -16,7 +19,10 @@ package nl.nn.adapterframework.batch;
 import java.util.Collection;
 import java.util.HashMap;
 
+import org.apache.log4j.Logger;
+
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * The manager decides which handlers to be used for a specific record.
@@ -33,7 +39,8 @@ import nl.nn.adapterframework.core.PipeLineSession;
  * @author John Dekker
  */
 public class RecordHandlerManager implements IRecordHandlerManager {
-	public static final String version = "$RCSfile: RecordHandlerManager.java,v $  $Revision: 1.4 $ $Date: 2006-05-19 09:28:36 $";
+	public static final String version = "$RCSfile: RecordHandlerManager.java,v $  $Revision: 1.5 $ $Date: 2007-07-24 08:02:44 $";
+	protected Logger log = LogUtil.getLogger(this);
 
 	private HashMap valueHandlersMap;
 	private String name;
@@ -43,16 +50,10 @@ public class RecordHandlerManager implements IRecordHandlerManager {
 		this.valueHandlersMap = new HashMap();
 	}
 	
-	/* (non-Javadoc)
-	 * @see nl.nn.ibis4fundation.transformation.IRecordHandlerManager#getRecordFactoryUsingFilename(java.lang.String)
-	 */
 	public IRecordHandlerManager getRecordFactoryUsingFilename(PipeLineSession session, String inputFilename) {
 		return this;
 	}
 	
-	/* (non-Javadoc)
-	 * @see nl.nn.ibis4fundation.transformation.IRecordHandlerManager#addHandler(nl.nn.ibis4fundation.transformation.RecordHandlingFlow)
-	 */
 	public void addHandler(RecordHandlingFlow handlers) {
 		valueHandlersMap.put(handlers.getRecordKey(), handlers);
 		if (handlers.getNextRecordHandlerManager() == null) {
@@ -60,21 +61,17 @@ public class RecordHandlerManager implements IRecordHandlerManager {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see nl.nn.ibis4fundation.transformation.IRecordHandlerManager#getRecordHandlers()
-	 */
 	public Collection getRecordHandlers() {
 		return valueHandlersMap.values();	
 	}
 	
-	/* (non-Javadoc)
-	 * @see nl.nn.ibis4fundation.transformation.IRecordHandlerManager#getRecordHandler(java.lang.String)
-	 */
 	public RecordHandlingFlow getRecordHandler(PipeLineSession session, String record) throws Exception {
 		return (RecordHandlingFlow)valueHandlersMap.get("*");
 	}
 
 	/**
+	 * Determines the recordhandler to use, based on key.
+	 * Key is "*" by default, but can be changed by descendant implementations.
 	 * @param recordKey
 	 * @return RecordHandlingFlow element to be used for handling records of type recordkey
 	 * @throws Exception
@@ -91,32 +88,18 @@ public class RecordHandlerManager implements IRecordHandlerManager {
 		
 	}
 
-	/* (non-Javadoc)
-	 * @see nl.nn.adapterframework.core.INamedObject#getName()
-	 */
+	public void setName(String string) {
+		name = string;
+	}
 	public String getName() {
 		return name;
 	}
 
-	/* (non-Javadoc)
-	 * @see nl.nn.adapterframework.core.INamedObject#setName(java.lang.String)
-	 */
-	public void setName(String string) {
-		name = string;
-	}
-
-	/* (non-Javadoc)
-	 * @see nl.nn.ibis4fundation.transformation.IRecordHandlerManager#isInitial()
-	 */
-	public boolean isInitial() {
-		return initial;
-	}
-
-	/* (non-Javadoc)
-	 * @see nl.nn.ibis4fundation.transformation.IRecordHandlerManager#setInitial(boolean)
-	 */
 	public void setInitial(boolean b) {
 		initial = b;
+	}
+	public boolean isInitial() {
+		return initial;
 	}
 
 }
