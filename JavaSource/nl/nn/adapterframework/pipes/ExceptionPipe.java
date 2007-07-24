@@ -1,6 +1,9 @@
 /*
  * $Log: ExceptionPipe.java,v $
- * Revision 1.4  2007-07-24 08:06:05  europe\L190409
+ * Revision 1.5  2007-07-24 08:53:00  europe\L190409
+ * set default noThrow message
+ *
+ * Revision 1.4  2007/07/24 08:06:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added default message
  *
  * Revision 1.3  2007/07/10 07:30:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -59,7 +62,7 @@ public class ExceptionPipe extends FixedForwardPipe {
 			throw new PipeRunException(this, message);
 		else {
 			log.error(message);
-			return new PipeRunResult(getForward(), input);
+			return new PipeRunResult(getForward(), message);
 		}
 	}
 
