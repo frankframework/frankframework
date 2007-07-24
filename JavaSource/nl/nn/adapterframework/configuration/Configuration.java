@@ -1,6 +1,9 @@
 /*
  * $Log: Configuration.java,v $
- * Revision 1.24  2007-07-17 15:07:35  europe\L190409
+ * Revision 1.25  2007-07-24 08:04:49  europe\L190409
+ * reversed shutdown sequence
+ *
+ * Revision 1.24  2007/07/17 15:07:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added list of adapters, to access them in order
  *
  * Revision 1.23  2007/06/26 09:35:41  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -90,7 +93,7 @@ import org.apache.log4j.Logger;
  * @see    nl.nn.adapterframework.core.IAdapter
  */
 public class Configuration {
-	public static final String version="$RCSfile: Configuration.java,v $ $Revision: 1.24 $ $Date: 2007-07-17 15:07:35 $";
+	public static final String version="$RCSfile: Configuration.java,v $ $Revision: 1.25 $ $Date: 2007-07-24 08:04:49 $";
     protected Logger log=LogUtil.getLogger(this); 
      
     private Hashtable adapterTable = new Hashtable();
@@ -185,37 +188,25 @@ public class Configuration {
     public void handleAdapter(String action, String adapterName, String receiverName, String commandIssuedBy) {
         if (action.equalsIgnoreCase("STOPADAPTER")) {
         	if (adapterName.equals("**ALL**")) {
-	            log.info("Stopping all adapters on request of" + commandIssuedBy);
-	            this.stopAdapters();
+	            log.info("Stopping all adapters on request of [" + commandIssuedBy+"]");
+	            stopAdapters();
         	}
         	else {
-				log.info("Stopping adapter [" + adapterName + "], on request of" + commandIssuedBy);
-				this.getRegisteredAdapter(adapterName).stopRunning();
+				log.info("Stopping adapter [" + adapterName + "], on request of [" + commandIssuedBy+"]");
+				getRegisteredAdapter(adapterName).stopRunning();
         	}
         }
         else if (action.equalsIgnoreCase("STARTADAPTER")) {
         	if (adapterName.equals("**ALL**")) {
-	            // for the start option we 'd like to catch the errors
-	            // therefore the config.startAdapters() is not used
-	            for(int i=0; i<getRegisteredAdapters().size(); i++) {
-					IAdapter adapter = this.getRegisteredAdapter(i);
-					log.info("Starting adapter [" + adapter.getName() + "] on request of" + commandIssuedBy);
-					adapter.startRunning();
-	            }
+				log.info("Starting all adapters on request of [" + commandIssuedBy+"]");
+        		startAdapters();
         	}
         	else {
 				try {
-					log.info("Starting adapter [" + adapterName + "] on request of" + commandIssuedBy);
-					this.getRegisteredAdapter(adapterName).startRunning();
+					log.info("Starting adapter [" + adapterName + "] on request of [" + commandIssuedBy+"]");
+					getRegisteredAdapter(adapterName).startRunning();
 				} catch (Exception e) {
-					log.error(
-						"error in execution of command ["
-						+ action
-						+ "] for adapter ["
-						+ adapterName
-						+ "]",
-						e);
-
+					log.error("error in execution of command [" + action + "] for adapter [" + adapterName + "]",	e);
 					//errors.add("", new ActionError("errors.generic", e.toString()));
 				}
         	}
@@ -281,7 +272,6 @@ public class Configuration {
 
 			log.info(i+") "+ adapter.getName()+ ": "	+ adapter.toString());
         }
-
     }
     
     /**
@@ -358,7 +348,7 @@ public class Configuration {
     }
     
     public void stopAdapters() {
-		for (int i=0; i<adapters.size(); i++) {
+		for (int i=adapters.size()-1; i>=0; i--) {
 			IAdapter adapter = getRegisteredAdapter(i);
 
 			log.info("Stopping adapter [" + adapter.getName() + "]");
