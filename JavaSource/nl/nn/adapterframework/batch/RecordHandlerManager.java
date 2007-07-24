@@ -1,6 +1,9 @@
 /*
  * $Log: RecordHandlerManager.java,v $
- * Revision 1.5  2007-07-24 08:02:44  europe\L190409
+ * Revision 1.6  2007-07-24 16:13:40  europe\L190409
+ * moved configure to manager
+ *
+ * Revision 1.5  2007/07/24 08:02:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * reformatted code
  *
  * Revision 1.4  2006/05/19 09:28:36  Peter Eijgermans <peter.eijgermans@ibissource.org>
@@ -18,11 +21,13 @@ package nl.nn.adapterframework.batch;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 
-import org.apache.log4j.Logger;
-
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.util.LogUtil;
+
+import org.apache.log4j.Logger;
 
 /**
  * The manager decides which handlers to be used for a specific record.
@@ -39,7 +44,7 @@ import nl.nn.adapterframework.util.LogUtil;
  * @author John Dekker
  */
 public class RecordHandlerManager implements IRecordHandlerManager {
-	public static final String version = "$RCSfile: RecordHandlerManager.java,v $  $Revision: 1.5 $ $Date: 2007-07-24 08:02:44 $";
+	public static final String version = "$RCSfile: RecordHandlerManager.java,v $  $Revision: 1.6 $ $Date: 2007-07-24 16:13:40 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private HashMap valueHandlersMap;
@@ -52,6 +57,18 @@ public class RecordHandlerManager implements IRecordHandlerManager {
 	
 	public IRecordHandlerManager getRecordFactoryUsingFilename(PipeLineSession session, String inputFilename) {
 		return this;
+	}
+
+	public void configure(HashMap registeredManagers, HashMap registeredRecordHandlers, HashMap registeredResultHandlers, IResultHandler defaultHandler) throws ConfigurationException {
+		for(Iterator it=valueHandlersMap.keySet().iterator();it.hasNext();) {
+			String name=(String)it.next();
+			RecordHandlingFlow flow = getFlowByName(name);
+			flow.configure(this, registeredManagers, registeredRecordHandlers, registeredResultHandlers, defaultHandler);
+		}
+	}
+
+	private RecordHandlingFlow getFlowByName(String name) {
+		return (RecordHandlingFlow)valueHandlersMap.get(name);
 	}
 	
 	public void addHandler(RecordHandlingFlow handlers) {
@@ -101,5 +118,6 @@ public class RecordHandlerManager implements IRecordHandlerManager {
 	public boolean isInitial() {
 		return initial;
 	}
+
 
 }
