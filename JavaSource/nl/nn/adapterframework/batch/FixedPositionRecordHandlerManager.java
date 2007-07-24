@@ -1,6 +1,9 @@
 /*
  * $Log: FixedPositionRecordHandlerManager.java,v $
- * Revision 1.4  2006-05-19 09:28:37  europe\m00i745
+ * Revision 1.5  2007-07-24 08:02:02  europe\L190409
+ * updated javadoc
+ *
+ * Revision 1.4  2006/05/19 09:28:37  Peter Eijgermans <peter.eijgermans@ibissource.org>
  * Restore java files from batch package after unwanted deletion.
  *
  * Revision 1.2  2005/10/31 14:38:03  John Dekker <john.dekker@ibissource.org>
@@ -18,6 +21,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 /**
  * Manager that decides the handlers based on the content of a field in the specified 
  * position in a record. The fields in the record are of a fixed length.
+ * The data beween the start position and end position is taken as key in the flow-table.
  * 
  * <p><b>Configuration:</b>
  * <table border="1">
@@ -31,7 +35,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
  * @author John Dekker
  */
 public class FixedPositionRecordHandlerManager extends RecordHandlerManager {
-	public static final String version = "$RCSfile: FixedPositionRecordHandlerManager.java,v $  $Revision: 1.4 $ $Date: 2006-05-19 09:28:37 $";
+	public static final String version = "$RCSfile: FixedPositionRecordHandlerManager.java,v $  $Revision: 1.5 $ $Date: 2007-07-24 08:02:02 $";
 
 	private int startPosition;
 	private int endPosition;
