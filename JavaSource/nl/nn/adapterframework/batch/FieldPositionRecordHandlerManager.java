@@ -1,6 +1,9 @@
 /*
  * $Log: FieldPositionRecordHandlerManager.java,v $
- * Revision 1.4  2006-05-19 09:28:36  europe\m00i745
+ * Revision 1.5  2007-07-24 08:01:41  europe\L190409
+ * change seperator to separator
+ *
+ * Revision 1.4  2006/05/19 09:28:36  Peter Eijgermans <peter.eijgermans@ibissource.org>
  * Restore java files from batch package after unwanted deletion.
  *
  * Revision 1.2  2005/10/31 14:38:02  John Dekker <john.dekker@ibissource.org>
@@ -17,24 +20,25 @@ import nl.nn.adapterframework.core.PipeLineSession;
 
 /**
  * Manager that decides the handlers based on the content of a field in the specified 
- * position in a record. The fields in the ercord are seperated by a seperator.
+ * position in a record. The fields in the record are separated by a separator.
+ * The value of the specified field is taken as key in the flow-table.
  * 
  * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>classname</td><td>nl.nn.ibis4fundation.transformation.FieldPositionRecordHandlerManager</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setFieldNr(int) fieldNr}</td><td>Position of field with recordtype (position of first field is 1)</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSeperator(String) seperator}</td><td>Seperator that seperates the fields in the record</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setSeparator(String) separator}</td><td>Separator that separates the fields in the record</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * 
  * @author John Dekker
  */
 public class FieldPositionRecordHandlerManager extends RecordHandlerManager {
-	public static final String version = "$RCSfile: FieldPositionRecordHandlerManager.java,v $  $Revision: 1.4 $ $Date: 2006-05-19 09:28:36 $";
+	public static final String version = "$RCSfile: FieldPositionRecordHandlerManager.java,v $  $Revision: 1.5 $ $Date: 2007-07-24 08:01:41 $";
 
 	private int fieldNr;
-	private String seperator;
+	private String separator;
 	
 	public FieldPositionRecordHandlerManager() {
 	}
@@ -47,7 +51,7 @@ public class FieldPositionRecordHandlerManager extends RecordHandlerManager {
 				throw new Exception("Record contains less fields then the specified fieldnr indicating its type");
 			}
 			startNdx = endNdx + 1;
-			endNdx = record.indexOf(seperator, startNdx);
+			endNdx = record.indexOf(separator, startNdx);
 		}
 		if (endNdx == -1) {
 			return getRecordHandlerByKey(record.substring(startNdx));
@@ -61,16 +65,23 @@ public class FieldPositionRecordHandlerManager extends RecordHandlerManager {
 		return fieldNr;
 	}
 
-	public String getSeperator() {
-		return seperator;
+	public String getSeparator() {
+		return separator;
 	}
 
 	public void setFieldNr(int i) {
 		fieldNr = i;
 	}
 
+	/** 
+	 * @deprecated Please change to setSeparator()
+	 */
 	public void setSeperator(String string) {
-		seperator = string;
+		log.warn("typo has been fixed: please use 'separator' instead of 'seperator");
+		separator = string;
+	}
+	public void setSeparator(String string) {
+		separator = string;
 	}
 
 }
