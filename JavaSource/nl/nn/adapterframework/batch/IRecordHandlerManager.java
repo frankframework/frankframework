@@ -1,6 +1,9 @@
 /*
  * $Log: IRecordHandlerManager.java,v $
- * Revision 1.5  2007-07-24 07:59:15  europe\L190409
+ * Revision 1.6  2007-07-24 16:14:06  europe\L190409
+ * added configure()
+ *
+ * Revision 1.5  2007/07/24 07:59:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * update javadoc
  *
  * Revision 1.4  2006/05/19 09:28:38  Peter Eijgermans <peter.eijgermans@ibissource.org>
@@ -16,8 +19,9 @@
  */
 package nl.nn.adapterframework.batch;
 
-import java.util.Collection;
+import java.util.HashMap;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.PipeLineSession;
 
@@ -32,10 +36,8 @@ import nl.nn.adapterframework.core.PipeLineSession;
  * @author John Dekker
  */
 public interface IRecordHandlerManager extends INamedObject {
-	/**
-	 * @return List of RecordHandlingFlow elements that this manager manages
-	 */
-	Collection getRecordHandlers();
+
+	public void configure(HashMap registeredManagers, HashMap registeredRecordHandlers, HashMap registeredResultHandlers, IResultHandler defaultHandler) throws ConfigurationException;
 
 	/**
 	 * @param flow New flow to be added to the managed flow elements
