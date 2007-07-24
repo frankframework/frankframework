@@ -1,6 +1,9 @@
 /*
  * $Log: ExceptionPipe.java,v $
- * Revision 1.3  2007-07-10 07:30:07  europe\L190409
+ * Revision 1.4  2007-07-24 08:06:05  europe\L190409
+ * added default message
+ *
+ * Revision 1.3  2007/07/10 07:30:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved javadoc
  *
  * Revision 1.2  2007/06/26 09:35:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -16,6 +19,8 @@ package nl.nn.adapterframework.pipes;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+
+import org.apache.commons.lang.StringUtils;
 
 /**
  * Pipe that throws an exception, based on the input message.
@@ -46,6 +51,9 @@ public class ExceptionPipe extends FixedForwardPipe {
 		throws PipeRunException {
 
 		String message = (String)input;
+		if (StringUtils.isEmpty(message)) {
+			message="exception: "+getName();
+		}
 
 		if (isThrowException())
 			throw new PipeRunException(this, message);
