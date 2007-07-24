@@ -1,5 +1,5 @@
 <digester-rules>
-	<!-- $Id: digester-rules.xml,v 1.2 2007-05-21 12:26:24 europe\L190409 Exp $ -->
+	<!-- $Id: digester-rules.xml,v 1.3 2007-07-24 08:07:19 europe\L190409 Exp $ -->
     <pattern value="IOS-Adaptering">
         <set-properties-rule/>
     </pattern>
@@ -125,6 +125,28 @@
 		<set-properties-rule/>
 		<set-next-rule methodname="addParameter" />
 	</pattern>
+
+	<!-- batch related rules -->
+    <pattern value="*/manager">
+        <object-create-rule classname="nl.nn.adapterframework.batch.IRecordHandlerManager" attrname="className"/> 
+        <set-properties-rule/>
+        <set-next-rule methodname="registerManager"/>
+    </pattern>
+    <pattern value="*/flow">
+        <object-create-rule classname="nl.nn.adapterframework.batch.RecordHandlingFlow" attrname="className"/> 
+        <set-properties-rule/>
+        <set-next-rule methodname="registerFlow"/>
+    </pattern>
+    <pattern value="*/recordHandler">
+        <object-create-rule classname="nl.nn.adapterframework.batch.IRecordHandler" attrname="className"/> 
+        <set-properties-rule/>
+        <set-next-rule methodname="registerRecordHandler"/>
+    </pattern>
+    <pattern value="*/resultHandler">
+        <object-create-rule classname="nl.nn.adapterframework.batch.IResultHandler" attrname="className"/> 
+        <set-properties-rule/>
+        <set-next-rule methodname="registerResultHandler"/>
+    </pattern>
 
     
 </digester-rules>
