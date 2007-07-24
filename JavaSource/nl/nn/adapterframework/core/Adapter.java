@@ -1,6 +1,9 @@
 /*
  * $Log: Adapter.java,v $
- * Revision 1.30  2007-07-10 07:11:45  europe\L190409
+ * Revision 1.31  2007-07-24 08:05:22  europe\L190409
+ * added targetDesignDocument attribute
+ *
+ * Revision 1.30  2007/07/10 07:11:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * logging improvements
  *
  * Revision 1.29  2007/06/26 12:05:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -157,10 +160,11 @@ import org.apache.log4j.NDC;
  */
 
 public class Adapter implements Runnable, IAdapter {
-	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.30 $ $Date: 2007-07-10 07:11:45 $";
+	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.31 $ $Date: 2007-07-24 08:05:22 $";
 	private Logger log = LogUtil.getLogger(this);
 
 	private String name;
+	private String targetDesignDocument;
 	private boolean active=true;
 
 	private Vector receivers = new Vector();
@@ -891,6 +895,7 @@ public class Adapter implements Runnable, IAdapter {
 		StringBuffer sb = new StringBuffer();
 		sb.append("[name=" + name + "]");
 		sb.append("[version=" + version + "]");
+		sb.append("[targetDesignDocument=" + targetDesignDocument + "]");
 		Iterator it = receivers.iterator();
 		sb.append("[receivers=");
 		while (it.hasNext()) {
@@ -948,4 +953,13 @@ public class Adapter implements Runnable, IAdapter {
 	public boolean isActive() {
 		return active;
 	}
+
+	public void setTargetDesignDocument(String string) {
+		targetDesignDocument = string;
+	}
+	public String getTargetDesignDocument() {
+		return targetDesignDocument;
+	}
+
+
 }
