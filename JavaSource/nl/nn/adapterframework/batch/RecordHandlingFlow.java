@@ -1,6 +1,9 @@
 /*
  * $Log: RecordHandlingFlow.java,v $
- * Revision 1.5  2007-07-24 08:03:12  europe\L190409
+ * Revision 1.6  2007-07-24 16:12:52  europe\L190409
+ * moved configure to flow
+ *
+ * Revision 1.5  2007/07/24 08:03:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * reformatted code
  *
  * Revision 1.4  2006/05/19 09:28:36  Peter Eijgermans <peter.eijgermans@ibissource.org>
@@ -15,6 +18,15 @@
  *
  */
 package nl.nn.adapterframework.batch;
+
+import java.util.HashMap;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.LogUtil;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 
 /**
  * The flow contains the handlers to handle records of a specific type. 
@@ -35,7 +47,8 @@ package nl.nn.adapterframework.batch;
  * @author John Dekker
  */
 public final class RecordHandlingFlow {
-	public static final String version = "$RCSfile: RecordHandlingFlow.java,v $  $Revision: 1.5 $ $Date: 2007-07-24 08:03:12 $";
+	public static final String version = "$RCSfile: RecordHandlingFlow.java,v $  $Revision: 1.6 $ $Date: 2007-07-24 16:12:52 $";
+	protected Logger log = LogUtil.getLogger(this);
 
 	private String recordKey;
 	private String recordHandlerRef;
@@ -47,7 +60,47 @@ public final class RecordHandlingFlow {
 	private IRecordHandlerManager nextRecordHandlerManager;
 	private IResultHandler resultHandler;
 	
+	public void configure(IRecordHandlerManager manager, HashMap registeredManagers, HashMap registeredRecordHandlers, HashMap registeredResultHandlers, IResultHandler defaultHandler) throws ConfigurationException {
+		if (StringUtils.isNotEmpty(getRecordHandlerManagerRef()) &&
+		    !getRecordHandlerManagerRef().equals(manager.getName())) {
+		    	throw new ConfigurationException("recordHandlerManagerRef ["+getRecordHandlerManagerRef()+"] should be either equal to name of manager ["+manager.getName()+"], or left unspecified");
+		}
+		// obtain the named manager that is to be used after a specified record  
+		IRecordHandlerManager nextManager = null;
+		if (StringUtils.isEmpty(getNextRecordHandlerManagerRef())) {
+			nextManager = manager; 
+		} else { 
+			nextManager = (IRecordHandlerManager)registeredManagers.get(getNextRecordHandlerManagerRef());
+			if (nextManager == null) {
+				throw new ConfigurationException("RecordHandlerManager [" + getNextRecordHandlerManagerRef() + "] not found");
+			}
+		}
+			
+		// obtain the recordhandler 
+		IRecordHandler recordHandler = (IRecordHandler)registeredRecordHandlers.get(getRecordHandlerRef());
+		if (recordHandler==null) {
+			log.debug("no recordhandler defined for ["+ClassUtils.nameOf(this)+"]");
+//			throw new ConfigurationException("no recordhandler defined for ["+ClassUtils.nameOf(flow)+"]");
+		}
+		
+		// obtain the named resulthandler
+		IResultHandler resultHandler = (IResultHandler)registeredResultHandlers.get(getResultHandlerRef());
+		if (resultHandler == null) {
+			if (StringUtils.isEmpty(getResultHandlerRef())) {
+				resultHandler = defaultHandler;
+			} else {
+				throw new ConfigurationException("ResultHandler [" + getResultHandlerRef() + "] not found");
+			}
+		}
+		
+		// initialise the flow object
+		setNextRecordHandlerManager(nextManager);
+		setRecordHandler(recordHandler);
+		setResultHandler(resultHandler);
 
+	}
+	
+	
 	public void setRecordHandler(IRecordHandler handler) {
 		recordHandler = handler;
 	}
