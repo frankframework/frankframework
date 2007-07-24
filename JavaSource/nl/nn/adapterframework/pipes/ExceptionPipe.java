@@ -1,13 +1,7 @@
 /*
  * $Log: ExceptionPipe.java,v $
- * Revision 1.5  2007-07-24 08:53:00  europe\L190409
+ * Revision 1.2.2.1  2007-07-24 09:00:40  europe\L190409
  * set default noThrow message
- *
- * Revision 1.4  2007/07/24 08:06:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added default message
- *
- * Revision 1.3  2007/07/10 07:30:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * improved javadoc
  *
  * Revision 1.2  2007/06/26 09:35:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * cleanup exception message
