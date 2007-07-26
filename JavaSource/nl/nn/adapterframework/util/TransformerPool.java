@@ -1,6 +1,9 @@
 /*
  * $Log: TransformerPool.java,v $
- * Revision 1.16  2007-05-08 16:02:19  europe\L190409
+ * Revision 1.17  2007-07-26 16:26:18  europe\L190409
+ * added configureTransformer()
+ *
+ * Revision 1.16  2007/05/08 16:02:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added transform() with result as parameter
  *
  * Revision 1.15  2007/02/12 14:12:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -56,6 +59,9 @@ package nl.nn.adapterframework.util;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import javax.xml.transform.Result;
@@ -67,6 +73,10 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamSource;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.ParameterList;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.pool.BasePoolableObjectFactory;
@@ -82,7 +92,7 @@ import org.w3c.dom.Document;
  * @author Gerrit van Brakel
  */
 public class TransformerPool {
-	public static final String version = "$RCSfile: TransformerPool.java,v $ $Revision: 1.16 $ $Date: 2007-05-08 16:02:19 $";
+	public static final String version = "$RCSfile: TransformerPool.java,v $ $Revision: 1.17 $ $Date: 2007-07-26 16:26:18 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private TransformerFactory tFactory = TransformerFactory.newInstance();
@@ -125,6 +135,51 @@ public class TransformerPool {
 		this(new StreamSource(new StringReader(xsltString)), sysId);
 	}
 
+	public static TransformerPool configureTransformer(String logPrefix, String xPathExpression, String styleSheetName, String outputType, boolean includeXmlDeclaration, ParameterList params) throws ConfigurationException {
+		TransformerPool result;
+		if (logPrefix==null) {
+			logPrefix="";
+		}
+		if (!StringUtils.isEmpty(xPathExpression)) {
+			if (!StringUtils.isEmpty(styleSheetName)) {
+				throw new ConfigurationException(logPrefix+"cannot have both an xpathExpression and a styleSheetName specified");
+			}
+			try {
+				List paramNames = null;
+				if (params!=null) {
+					paramNames = new ArrayList();
+					Iterator iterator = params.iterator();
+					while (iterator.hasNext()) {
+						paramNames.add(((Parameter)iterator.next()).getName());
+					}
+				}
+				result = new TransformerPool(XmlUtils.createXPathEvaluatorSource("",xPathExpression, outputType, includeXmlDeclaration, paramNames));
+			} 
+			catch (TransformerConfigurationException te) {
+				throw new ConfigurationException(logPrefix+"got error creating transformer from xpathExpression [" + xPathExpression + "]", te);
+			}
+		} 
+		else {
+			if (!StringUtils.isEmpty(styleSheetName)) {
+				URL resource = ClassUtils.getResourceURL(TransformerPool.class, styleSheetName);
+				if (resource==null) {
+					throw new ConfigurationException(logPrefix+"cannot find ["+ styleSheetName + "]"); 
+				}
+				try {
+					result = new TransformerPool(resource);
+				} catch (IOException e) {
+					throw new ConfigurationException(logPrefix+"cannot retrieve ["+ styleSheetName + "], resource ["+resource.toString()+"]", e);
+				} catch (TransformerConfigurationException te) {
+					throw new ConfigurationException(logPrefix+"got error creating transformer from file [" + styleSheetName + "]", te);
+				}
+			} else {
+				throw new ConfigurationException(logPrefix+"either xpathExpression or styleSheetName must be specified");
+			}
+		}
+		return result;
+	}
+	
+
 	
 	public void open() throws Exception {
 	}
@@ -136,7 +191,6 @@ public class TransformerPool {
 			log.warn("exception clearing transformerPool",e);
 		}
 	}
-	
 	
 	protected Transformer getTransformer() throws TransformerConfigurationException {
 		try {
