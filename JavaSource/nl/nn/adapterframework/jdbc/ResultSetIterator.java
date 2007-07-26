@@ -1,20 +1,22 @@
 /*
  * $Log: ResultSetIterator.java,v $
- * Revision 1.1  2007-07-17 11:16:50  europe\L190409
+ * Revision 1.2  2007-07-26 16:14:08  europe\L190409
+ * use JdbcUtil.fullClose()
+ *
+ * Revision 1.1  2007/07/17 11:16:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added iterating classes
  *
  */
 package nl.nn.adapterframework.jdbc;
 
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.sql.Statement;
 
 import nl.nn.adapterframework.core.IDataIterator;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.util.DB2XMLWriter;
+import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 
@@ -66,39 +68,6 @@ class ResultSetIterator implements IDataIterator {
 	}
 
 	public void close() {
-
-		Statement stmt=null;			
-		Connection con = null;			
-		try {
-			stmt = rs.getStatement();
-			try {
-				con = stmt.getConnection();
-			} catch (SQLException e) {
-				log.warn("obtaining connection", e);
-			}
-		} catch (SQLException e) {
-			log.warn("obtaining statement", e);
-		}
-		try {
-			rs.close();
-		} catch (SQLException e) {
-			log.warn("closing resultset", e);
-		} finally {
-			try {
-				if (stmt!=null) {
-					stmt.close();
-				} 
-			} catch (SQLException e) {
-				log.warn("closing statement", e);
-			} finally {
-				try {
-					if (con!=null) {
-						con.close();
-					}
-				} catch (SQLException e) {
-					log.warn("closing connection", e);
-				}
-			}
-		}
+		JdbcUtil.fullClose(rs);
 	}
 }
