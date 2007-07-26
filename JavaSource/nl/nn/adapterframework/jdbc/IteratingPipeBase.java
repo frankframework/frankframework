@@ -1,6 +1,9 @@
 /*
  * $Log: IteratingPipeBase.java,v $
- * Revision 1.1  2007-07-17 11:16:49  europe\L190409
+ * Revision 1.2  2007-07-26 16:14:38  europe\L190409
+ * check for null resultset
+ *
+ * Revision 1.1  2007/07/17 11:16:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added iterating classes
  *
  */
@@ -71,6 +74,9 @@ public abstract class IteratingPipeBase extends IteratingPipe {
 					querySender.applyParameters(statement, prc.getValues(querySender.paramList));
 				}
 				ResultSet rs = statement.executeQuery();
+				if (rs==null || !rs.next()) {
+					throw new SenderException("query has empty resultset");
+				}
 				return getIterator(rs);
 //			} finally {
 //				try {
