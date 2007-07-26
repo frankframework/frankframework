@@ -1,6 +1,9 @@
 /*
  * $Log: DirectoryListener.java,v $
- * Revision 1.6  2007-07-10 15:18:40  europe\L190409
+ * Revision 1.7  2007-07-26 16:24:31  europe\L190409
+ * cosmetic changes
+ *
+ * Revision 1.6  2007/07/10 15:18:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fixed typo
  *
  * Revision 1.5  2007/05/21 12:21:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -73,14 +76,14 @@ import nl.nn.adapterframework.util.LogUtil;
  * <tr><td>{@link #setOverwrite(boolean) overwrite}</td><td>overwrite the file in the output directory if it already exist</td><td>false</td></tr>
  * <tr><td>{@link #setPassWithoutDirectory(boolean) passWithoutDirectory}</td><td>pass the filename without the <code>outputDirectory</code> to the pipeline</td><td>false</td></tr>
  * <tr><td>{@link #setCreateInputDirectory(boolean) createInputDirectory}</td><td>when set to <code>true</code>, the directory to look for files is created if it does not exist</td><td>false</td></tr>
- *  * </table>
+ * </table>
  * </p>
  *
- * @version Id
  * @author  John Dekker
+ * @version Id
  */
 public class DirectoryListener implements IPullingListener, INamedObject {
-	public static final String version = "$RCSfile: DirectoryListener.java,v $  $Revision: 1.6 $ $Date: 2007-07-10 15:18:40 $";
+	public static final String version = "$RCSfile: DirectoryListener.java,v $  $Revision: 1.7 $ $Date: 2007-07-26 16:24:31 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -104,14 +107,14 @@ public class DirectoryListener implements IPullingListener, INamedObject {
 	 */
 	public void configure() throws ConfigurationException {
 		if (StringUtils.isEmpty(getInputDirectory()))
-			throw new ConfigurationException("no value specified for [inputDirectory]");
+			throw new ConfigurationException("no value specified for inputDirectory");
 		if (StringUtils.isEmpty(getWildcard()))
-			throw new ConfigurationException("no value specified for [wildcard]");
+			throw new ConfigurationException("no value specified for wildcard");
 		if (StringUtils.isEmpty(getOutputDirectory()))
-			throw new ConfigurationException("no value specified for [inprocessDirectory]");
+			throw new ConfigurationException("no value specified for inprocessDirectory");
 		File dir = new File(getOutputDirectory());
 		if (!dir.isDirectory()) {
-			throw new ConfigurationException("The value for [directoryProcessedFiles] :[ " + getOutputDirectory() + "] is invalid. It is not a directory ");
+			throw new ConfigurationException("The value for directoryProcessedFiles [" + getOutputDirectory() + "] is invalid. It is not a directory ");
 		}
 		File inp = new File(getInputDirectory());
 		if (!inp.exists() && createInputDirectory) {
@@ -120,7 +123,7 @@ public class DirectoryListener implements IPullingListener, INamedObject {
 			}
 		}
 		if (!inp.isDirectory()) {
-			throw new ConfigurationException("The value for [inputDirectory] :[ " + getInputDirectory() + "] is invalid. It is not a directory ");
+			throw new ConfigurationException("The value for inputDirectory [" + getInputDirectory() + "] is invalid. It is not a directory ");
 
 		}
 	}
