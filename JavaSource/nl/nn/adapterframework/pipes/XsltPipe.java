@@ -1,6 +1,9 @@
 /*
  * $Log: XsltPipe.java,v $
- * Revision 1.23  2007-07-17 10:51:36  europe\L190409
+ * Revision 1.24  2007-07-26 16:23:08  europe\L190409
+ * move most configuration to TransformerPool
+ *
+ * Revision 1.23  2007/07/17 10:51:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added check for null-input
  *
  * Revision 1.22  2007/04/24 11:35:47  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -112,7 +115,7 @@ import org.apache.commons.lang.StringUtils;
  */
 
 public class XsltPipe extends FixedForwardPipe {
-	public static final String version="$RCSfile: XsltPipe.java,v $ $Revision: 1.23 $ $Date: 2007-07-17 10:51:36 $";
+	public static final String version="$RCSfile: XsltPipe.java,v $ $Revision: 1.24 $ $Date: 2007-07-26 16:23:08 $";
 
 	private TransformerPool transformerPool;
 	private String xpathExpression=null;
@@ -143,39 +146,7 @@ public class XsltPipe extends FixedForwardPipe {
 	public void configure() throws ConfigurationException {
 	    super.configure();
 	
-		if (!StringUtils.isEmpty(getXpathExpression())) {
-			if (!StringUtils.isEmpty(styleSheetName)) {
-				throw new ConfigurationException(getLogPrefix(null) + "cannot have both an xpathExpression and a styleSheetName specified");
-			}
-			try {
-				List params = new ArrayList();
-				Iterator iterator = getParameterList().iterator();
-				while (iterator.hasNext()) {
-					params.add(((Parameter)iterator.next()).getName());
-				}
-				transformerPool = new TransformerPool(XmlUtils.createXPathEvaluatorSource("",getXpathExpression(), getOutputType(), !isOmitXmlDeclaration(), params));
-			} 
-			catch (TransformerConfigurationException te) {
-				throw new ConfigurationException(getLogPrefix(null) + "got error creating transformer from xpathExpression [" + getXpathExpression() + "]", te);
-			}
-		} 
-		else {
-			if (!StringUtils.isEmpty(styleSheetName)) {
-				URL resource = ClassUtils.getResourceURL(this, styleSheetName);
-				if (resource==null) {
-					throw new ConfigurationException(getLogPrefix(null) + "cannot find ["+ styleSheetName + "]"); 
-				}
-				try {
-					transformerPool = new TransformerPool(resource);
-				} catch (IOException e) {
-					throw new ConfigurationException(getLogPrefix(null) + "cannot retrieve ["+ styleSheetName + "], resource ["+resource.toString()+"]", e);
-				} catch (TransformerConfigurationException te) {
-					throw new ConfigurationException(getLogPrefix(null) + "got error creating transformer from file [" + styleSheetName + "]", te);
-				}
-			} else {
-				throw new ConfigurationException(getLogPrefix(null) + "either xpathExpression or styleSheetName must be specified");
-			}
-		}
+		transformerPool = TransformerPool.configureTransformer(getLogPrefix(null), getXpathExpression(), getStyleSheetName(), getOutputType(), !isOmitXmlDeclaration(), getParameterList());
 		if (isSkipEmptyTags()) {
 			log.debug("test [" + skipEmptyTags_xslt + "]");
 			try {
@@ -268,33 +239,29 @@ public class XsltPipe extends FixedForwardPipe {
 	public void setStyleSheetName(String stylesheetName){
 		this.styleSheetName=stylesheetName;
 	}
+	public String getStyleSheetName() {
+		return styleSheetName;
+	}
 
 	/**
 	 * set the "omit xml declaration" on the transfomer. Defaults to true.
 	 * @return true or false
 	 */
+	public void setOmitXmlDeclaration(boolean b) {
+		omitXmlDeclaration = b;
+	}
 	public boolean isOmitXmlDeclaration() {
 		return omitXmlDeclaration;
 	}
 
-	public void setOmitXmlDeclaration(boolean b) {
-		omitXmlDeclaration = b;
-	}
-
-	public String getXpathExpression() {
-		return xpathExpression;
-	}
 
 	public void setXpathExpression(String string) {
 		xpathExpression = string;
 	}
-	/**
-	 * The name of the key in the <code>PipeLineSession</code> to store the input in
-	 * @see nl.nn.adapterframework.core.PipeLineSession
-	 */
-	public String getSessionKey() {
-		return sessionKey;
+	public String getXpathExpression() {
+		return xpathExpression;
 	}
+
 	/**
 	 * The name of the key in the <code>PipeLineSession</code> to store the input in
 	 * @see nl.nn.adapterframework.core.PipeLineSession
@@ -302,20 +269,24 @@ public class XsltPipe extends FixedForwardPipe {
 	public void setSessionKey(String newSessionKey) {
 		sessionKey = newSessionKey;
 	}
-
-	public String getOutputType() {
-		return outputType;
+	public String getSessionKey() {
+		return sessionKey;
 	}
+
 
 	public void setOutputType(String string) {
 		outputType = string;
 	}
-
-	public boolean isSkipEmptyTags() {
-		return skipEmptyTags;
+	public String getOutputType() {
+		return outputType;
 	}
+
 
 	public void setSkipEmptyTags(boolean b) {
 		skipEmptyTags = b;
 	}
+	public boolean isSkipEmptyTags() {
+		return skipEmptyTags;
+	}
+
 }
