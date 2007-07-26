@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractRecordHandler.java,v $
- * Revision 1.5  2007-05-03 11:29:43  europe\L190409
+ * Revision 1.6  2007-07-26 16:02:37  europe\L190409
+ * changed seperator into separator
+ *
+ * Revision 1.5  2007/05/03 11:29:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * add methods configure(), open() and close()
  *
  * Revision 1.4  2006/05/19 09:01:49  Peter Eijgermans <peter.eijgermans@ibissource.org>
@@ -22,16 +25,17 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import org.apache.log4j.Logger;
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
+
+import org.apache.log4j.Logger;
 
 /**
  * Abstract class that contains functionality for parsing the field values from a 
- * record (line). Fields in the record are either seperated with a seperator or have
+ * record (line). Fields in the record are either separated with a separator or have
  * a fixed position in the line.
  * 
  * <p><b>Configuration:</b>
@@ -39,9 +43,9 @@ import nl.nn.adapterframework.util.LogUtil;
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>classname</td><td>nl.nn.adapterframework.batch.AbstractRecordHandler</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the RecordHandler</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setInputFields(String) inputFields}</td><td>Comma seperated specification of fieldlengths</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setInputSeperator(String) inputSeperator}</td><td>Seperator that seperated the fields in the record</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setFieldsDifferConditionForPrefix(String) inputFields}</td><td>Comma seperated numbers of those fields that are compared with the previous record to determine if a prefix must be written</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setInputFields(String) inputFields}</td><td>Comma separated specification of fieldlengths</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setInputSeparator(String) inputSeparator}</td><td>Separator that separated the fields in the record</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setFieldsDifferConditionForPrefix(String) inputFields}</td><td>Comma separated numbers of those fields that are compared with the previous record to determine if a prefix must be written</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * 
@@ -51,14 +55,11 @@ public abstract class AbstractRecordHandler implements IRecordHandler {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String name;
-	private List inputFields; 
-	private String inputSeperator;
-	private List seperatorWhenFieldsDiffer;
+	private String inputSeparator;
+
+	private List inputFields=new LinkedList(); 
+	private List separatorWhenFieldsDiffer=new LinkedList();
 	
-	protected AbstractRecordHandler() {
-		this.inputFields = new LinkedList();
-		this.seperatorWhenFieldsDiffer = new LinkedList();
-	}
 
 	public void configure() throws ConfigurationException {
 		//nothing to do		
@@ -94,8 +95,8 @@ public abstract class AbstractRecordHandler implements IRecordHandler {
 		if (inputFields.size() > 0) {
 			return parseUsingInputFields(record);
 		}
-		else if (inputSeperator != null) {
-			return parseUsingSeperator(record);
+		else if (inputSeparator != null) {
+			return parseUsingSeparator(record);
 		}
 		else {
 			ArrayList result = new ArrayList();
@@ -134,11 +135,11 @@ public abstract class AbstractRecordHandler implements IRecordHandler {
 			return true;
 		}
 			
-		if (getSeperatorWhenFieldsDiffer().size() > 0) {
+		if (getSeparatorWhenFieldsDiffer().size() > 0) {
 			if (prevRecord == null) {
 				return true;
 			}
-			for (Iterator fieldNdxIt = seperatorWhenFieldsDiffer.iterator(); fieldNdxIt.hasNext();) {
+			for (Iterator fieldNdxIt = separatorWhenFieldsDiffer.iterator(); fieldNdxIt.hasNext();) {
 				int ndx = ((Integer)fieldNdxIt.next()).intValue();
 				if (! prevRecord.get(ndx-1).equals(curRecord.get(ndx-1))) {
 					return true;
@@ -148,13 +149,13 @@ public abstract class AbstractRecordHandler implements IRecordHandler {
 		return false;
 	}
 	
-	private ArrayList parseUsingSeperator(String record) {
+	private ArrayList parseUsingSeparator(String record) {
 		ArrayList result = new ArrayList();
 		
 		int endNdx = -1;
 		do {
 			int startNdx = endNdx + 1;
-			endNdx = record.indexOf(inputSeperator, startNdx);
+			endNdx = record.indexOf(inputSeparator, startNdx);
 			if (endNdx == -1) {
 				result.add(record.substring(startNdx));
 			}
@@ -174,36 +175,45 @@ public abstract class AbstractRecordHandler implements IRecordHandler {
 			this.length = length;
 		}
 	}
-	public String getName() {
-		return name;
+
+
+
+
+	public void setSeparatorWhenFieldsDiffer(List list) {
+		separatorWhenFieldsDiffer = list;
+	}
+	public List getSeparatorWhenFieldsDiffer() {
+		return separatorWhenFieldsDiffer;
 	}
 
-	public void setName(String string) {
-		name = string;
-	}
-
-	public String getInputSeperator() {
-		return inputSeperator;
-	}
-
-	public void setInputSeperator(String string) {
-		inputSeperator = string;
-	}
-
-	public List getSeperatorWhenFieldsDiffer() {
-		return seperatorWhenFieldsDiffer;
-	}
-
-	public void setSeperatorWhenFieldsDiffer(List list) {
-		seperatorWhenFieldsDiffer = list;
-	}
 
 	public void setFieldsDifferConditionForPrefix(String fieldNrs) {
 		StringTokenizer st = new StringTokenizer(fieldNrs, ",");
 		while (st.hasMoreTokens()) {
 			String token = st.nextToken().trim();
-			seperatorWhenFieldsDiffer.add(new Integer(token));
+			separatorWhenFieldsDiffer.add(new Integer(token));
 		}
+	}
+
+	public void setName(String string) {
+		name = string;
+	}
+	public String getName() {
+		return name;
+	}
+
+	/**
+	 * @deprecated typo has been fixed: please use 'inputSeparator' instead of 'inputSeperator'
+	 */
+	public void setInputSeperator(String string) {
+		log.warn(ClassUtils.nameOf(this) +"["+getName()+"]: typo has been fixed: please use 'inputSeparator' instead of 'inputSeperator'");
+		setInputSeparator(string);
+	}
+	public void setInputSeparator(String string) {
+		inputSeparator = string;
+	}
+	public String getInputSeperator() {
+		return inputSeparator;
 	}
 
 }
