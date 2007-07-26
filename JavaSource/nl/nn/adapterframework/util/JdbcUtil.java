@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcUtil.java,v $
- * Revision 1.12  2007-07-19 15:14:11  europe\L190409
+ * Revision 1.13  2007-07-26 16:25:03  europe\L190409
+ * added fullClose()
+ *
+ * Revision 1.12  2007/07/19 15:14:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * handle charsets of BLOB and CLOB streams correctly
  *
  * Revision 1.11  2007/02/12 14:12:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -56,6 +59,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
+import java.sql.Statement;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 
@@ -71,7 +75,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class JdbcUtil {
-	public static final String version = "$RCSfile: JdbcUtil.java,v $ $Revision: 1.12 $ $Date: 2007-07-19 15:14:11 $";
+	public static final String version = "$RCSfile: JdbcUtil.java,v $ $Revision: 1.13 $ $Date: 2007-07-26 16:25:03 $";
 	protected static Logger log = LogUtil.getLogger(JdbcUtil.class);
 	
 	private static final boolean useMetaData=false;
@@ -261,6 +265,64 @@ public class JdbcUtil {
 		Writer writer = getClobWriter(rs, columnIndex);
 		writer.write(content);
 		writer.close();
+	}
+
+	public static void fullClose(ResultSet rs) {
+		Statement statement=null;
+		Connection connection=null;
+				
+		try {
+			statement = rs.getStatement();
+			connection = statement.getConnection();
+		} catch (SQLException e) {
+			log.warn("Could not obtain statement or connection from resultset",e);
+		} finally {
+			try {
+				rs.close();
+			} catch (SQLException e) {
+				log.warn("Could not close resultset", e);
+			} finally {
+				if (statement!=null) {
+					try {
+						statement.close();
+					} catch (SQLException e) {
+						log.warn("Could not close statement", e);
+					} finally {
+						if (connection!=null) {
+							try {
+								connection.close();
+							} catch (SQLException e) {
+								log.warn("Could not close connection", e);
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	public static void fullClose(Statement statement) {
+		Connection connection=null;
+				
+		try {
+			connection = statement.getConnection();
+		} catch (SQLException e) {
+			log.warn("Could not obtain connection from statement",e);
+		} finally {
+			try {
+				statement.close();
+			} catch (SQLException e) {
+				log.warn("Could not close statement", e);
+			} finally {
+				if (connection!=null) {
+					try {
+						connection.close();
+					} catch (SQLException e) {
+						log.warn("Could not close connection", e);
+					}
+				}
+			}
+		}
 	}
 
 }
