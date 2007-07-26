@@ -1,6 +1,9 @@
 /*
  * $Log: StreamTransformerPipe.java,v $
- * Revision 1.2  2007-07-24 16:11:17  europe\L190409
+ * Revision 1.3  2007-07-26 16:12:40  europe\L190409
+ * cosmetic changes
+ *
+ * Revision 1.2  2007/07/24 16:11:17  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * first working version
  *
  * Revision 1.1  2007/07/24 08:04:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -34,9 +37,7 @@ import org.apache.commons.lang.StringUtils;
  * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>classname</td><td>nl.nn.ibis4fundation.BatchFileTransformerPipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #move2dirAfterTransform(String) directory}</td><td>Directory in which the transformed file(s) is stored</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #move2dirAfterError(String) directory}</td><td>Directory to which the inputfile is moved in case an error occurs</td><td>&nbsp;</td></tr>
+ * <tr><td>classname</td><td>nl.nn.adapterframework.batch.StreamTransformerPipe</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * <table border="1">
@@ -48,22 +49,65 @@ import org.apache.commons.lang.StringUtils;
  * </table>
  * </p>
  * 
- * @author: John Dekker
+ * @author: John Dekker / Gerrit van Brakel
+ * @since   4.7
+ * @version Id
  */
 public class StreamTransformerPipe extends FixedForwardPipe {
-	public static final String version = "$RCSfile: StreamTransformerPipe.java,v $  $Revision: 1.2 $ $Date: 2007-07-24 16:11:17 $";
+	public static final String version = "$RCSfile: StreamTransformerPipe.java,v $  $Revision: 1.3 $ $Date: 2007-07-26 16:12:40 $";
 
-	private IRecordHandlerManager initialFactory;
-	private IResultHandler defaultHandler;
-	private HashMap registeredManagers;
-	private HashMap registeredRecordHandlers;
-	private HashMap registeredResultHandlers;
+	private IRecordHandlerManager initialManager=null;
+	private IResultHandler defaultHandler=null;
+	private HashMap registeredManagers= new HashMap();
+	private HashMap registeredRecordHandlers= new HashMap();
+	private HashMap registeredResultHandlers= new HashMap();
 	
-	public StreamTransformerPipe() {
-		this.registeredManagers = new HashMap();
-		this.registeredRecordHandlers = new HashMap();
-		this.registeredResultHandlers = new HashMap();
+	public void configure() throws ConfigurationException {
+		super.configure();
+		if (registeredManagers.size()==0) {
+			throw new ConfigurationException(getLogPrefix(null)+"no managers specified");
+		}
+		if (initialManager==null) {
+			throw new ConfigurationException(getLogPrefix(null)+"no initial manager specified");
+		}
+		for (Iterator it = registeredManagers.keySet().iterator(); it.hasNext();) {
+			String managerName = (String)it.next();
+			IRecordHandlerManager manager = getManager(managerName);
+			manager.configure(registeredManagers, registeredRecordHandlers, registeredResultHandlers, defaultHandler);
+		}
+		for (Iterator it = registeredRecordHandlers.keySet().iterator(); it.hasNext();) {
+			String recordHandlerName = (String)it.next();
+			IRecordHandler handler = getRecordHandler(recordHandlerName);
+			handler.configure();
+		}
 	}
+
+
+	public void start() throws PipeStartException {
+		super.start();
+		for (Iterator it = registeredRecordHandlers.keySet().iterator(); it.hasNext();) {
+			String recordHandlerName = (String)it.next();
+			IRecordHandler handler = getRecordHandler(recordHandlerName);
+			try {
+				handler.open();
+			} catch (SenderException e) {
+				throw new PipeStartException(getLogPrefix(null)+"cannot start recordhandler ["+recordHandlerName+"]", e);
+			}
+		}
+	}
+	public void stop() {
+		super.stop();
+		for (Iterator it = registeredRecordHandlers.keySet().iterator(); it.hasNext();) {
+			String recordHandlerName = (String)it.next();
+			IRecordHandler handler = getRecordHandler(recordHandlerName);
+			try {
+				handler.close();
+			} catch (SenderException e) {
+				log.error(getLogPrefix(null)+"exception on closing recordhandler ["+recordHandlerName+"]", e);
+			}
+		}
+	}
+
 	
 	/**
 	 * register a uniquely named manager.
@@ -83,7 +127,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	public void registerManager(IRecordHandlerManager manager) throws Exception {
 		registeredManagers.put(manager.getName(), manager);
 		if (manager.isInitial()) {
-			initialFactory = manager;
+			initialManager = manager;
 		}
 	}
 
@@ -157,45 +201,6 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	}
 	
 	
-	public void configure() throws ConfigurationException {
-		super.configure();
-		for (Iterator it = registeredManagers.keySet().iterator(); it.hasNext();) {
-			String managerName = (String)it.next();
-			IRecordHandlerManager manager = getManager(managerName);
-			manager.configure(registeredManagers, registeredRecordHandlers, registeredResultHandlers, defaultHandler);
-		}
-		for (Iterator it = registeredRecordHandlers.keySet().iterator(); it.hasNext();) {
-			String recordHandlerName = (String)it.next();
-			IRecordHandler handler = getRecordHandler(recordHandlerName);
-			handler.configure();
-		}
-	}
-
-
-	public void start() throws PipeStartException {
-		super.start();
-		for (Iterator it = registeredRecordHandlers.keySet().iterator(); it.hasNext();) {
-			String recordHandlerName = (String)it.next();
-			IRecordHandler handler = getRecordHandler(recordHandlerName);
-			try {
-				handler.open();
-			} catch (SenderException e) {
-				throw new PipeStartException(getLogPrefix(null)+"cannot start recordhandler ["+recordHandlerName+"]", e);
-			}
-		}
-	}
-	public void stop() {
-		super.stop();
-		for (Iterator it = registeredRecordHandlers.keySet().iterator(); it.hasNext();) {
-			String recordHandlerName = (String)it.next();
-			IRecordHandler handler = getRecordHandler(recordHandlerName);
-			try {
-				handler.close();
-			} catch (SenderException e) {
-				log.error(getLogPrefix(null)+"exception on closing recordhandler ["+recordHandlerName+"]", e);
-			}
-		}
-	}
 
 
 
@@ -248,7 +253,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 		ArrayList prevParsedRecord = null; 
 		IRecordHandler prevHandler = null;
 
-		IRecordHandlerManager currentManager = initialFactory.getRecordFactoryUsingFilename(session, streamId);
+		IRecordHandlerManager currentManager = initialManager.getRecordFactoryUsingFilename(session, streamId);
 		try {
 			while ((rawRecord = reader.readLine()) != null) {
 				linenumber++; // remember linenumber for exception handler

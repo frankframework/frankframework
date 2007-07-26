@@ -1,6 +1,9 @@
 /*
  * $Log: Result2Filewriter.java,v $
- * Revision 1.8  2007-07-24 08:00:35  europe\L190409
+ * Revision 1.9  2007-07-26 16:12:06  europe\L190409
+ * cosmetic changes
+ *
+ * Revision 1.8  2007/07/24 08:00:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * change inputFilename to streamId
  *
  * Revision 1.7  2007/02/12 13:37:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -49,29 +52,28 @@ import org.apache.log4j.Logger;
  * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>classname</td><td>nl.nn.ibis4fundation.transformation.Result2Filewriter</td><td>&nbsp;</td></tr>
+ * <tr><td>classname</td><td>nl.nn.adapterframework.batch.Result2Filewriter</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setOutputDirectory(String) outputDirectory}</td><td>Directory in which the resultfile must be stored</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setFilenamePattern(String) filenamePattern}</td><td>Name of the file is created using the MessageFormat. Params: 1=inputfilename, 2=extension of file, 3=current date</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMove2dirAfterFinalize(String) move2dirAfterFinalize}</td><td>Directory to which the created file must be moved after finalization (is optional)</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setDefaultResultHandler(boolean) defaultResultHandler}</td><td>If true, this resulthandler is the default for all RecordHandlingFlow that do not have a handler specified</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setDefaultResultHandler(boolean) default}</td><td>If true, this resulthandler is the default for all RecordHandlingFlow that do not have a handler specified</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * 
  * @author: John Dekker
+ * @version Id
  */
 public class Result2Filewriter extends AbstractResultHandler {
-	public static final String version = "$RCSfile: Result2Filewriter.java,v $  $Revision: 1.8 $ $Date: 2007-07-24 08:00:35 $";
+	public static final String version = "$RCSfile: Result2Filewriter.java,v $  $Revision: 1.9 $ $Date: 2007-07-26 16:12:06 $";
 	private static Logger log = LogUtil.getLogger(Result2Filewriter.class);
 	
 	private String outputDirectory;
 	private String move2dirAfterFinalize;
 	private String filenamePattern;
 	private boolean defaultResultHandler;
-	private Map openWriters;
 	
-	public Result2Filewriter() {
-		openWriters = Collections.synchronizedMap(new HashMap());
-	}
+	private Map openWriters = Collections.synchronizedMap(new HashMap());
+	
 	
 	public void handleResult(PipeLineSession session, String inputFilename, String recordKey, Object result) throws Exception {
 		if (result instanceof String) {
@@ -139,6 +141,15 @@ public class Result2Filewriter extends AbstractResultHandler {
 		}
 	}
 
+	private class FileOutput {
+		private BufferedWriter writer;
+		private File file;
+		private FileOutput(BufferedWriter writer, File file) {
+			this.writer = writer;
+			this.file = file;
+		}
+	}
+
 	private BufferedWriter getBufferedWriter(PipeLineSession session, String streamId, boolean openIfNotOpen) throws IOException, ParameterException {
 		FileOutput fo = (FileOutput)openWriters.get(streamId);
 		if (fo != null) {
@@ -159,18 +170,17 @@ public class Result2Filewriter extends AbstractResultHandler {
 		return bw;		
 	}
 	
-	public boolean isDefault() {
-		return defaultResultHandler;
+	
+	public void setMove2dirAfterFinalize(String string) {
+		move2dirAfterFinalize = string;
+	}
+	public String getMove2dirAfterFinalize() {
+		return move2dirAfterFinalize;
 	}
 
-	public void setDefault(boolean isDefault) {
-		this.defaultResultHandler = isDefault;
+	public void setFilenamePattern(String string) {
+		filenamePattern = string;
 	}
-
-	public String getOutputDirectory() {
-		return outputDirectory;
-	}
-
 	public String getFilenamePattern() {
 		return filenamePattern;
 	}
@@ -178,25 +188,17 @@ public class Result2Filewriter extends AbstractResultHandler {
 	public void setOutputDirectory(String string) {
 		outputDirectory = string;
 	}
-
-	public void setFilenamePattern(String string) {
-		filenamePattern = string;
+	public String getOutputDirectory() {
+		return outputDirectory;
 	}
 
-	public String getMove2dirAfterFinalize() {
-		return move2dirAfterFinalize;
+	public void setDefault(boolean isDefault) {
+		this.defaultResultHandler = isDefault;
+	}
+	public boolean isDefault() {
+		return defaultResultHandler;
 	}
 
-	public void setMove2dirAfterFinalize(String string) {
-		move2dirAfterFinalize = string;
-	}
 
-	private class FileOutput {
-		private BufferedWriter writer;
-		private File file;
-		private FileOutput(BufferedWriter writer, File file) {
-			this.writer = writer;
-			this.file = file;
-		}
-	}
+
 }

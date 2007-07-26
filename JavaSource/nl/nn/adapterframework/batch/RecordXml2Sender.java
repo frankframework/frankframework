@@ -1,6 +1,9 @@
 /*
  * $Log: RecordXml2Sender.java,v $
- * Revision 1.5  2007-05-03 11:39:43  europe\L190409
+ * Revision 1.6  2007-07-26 16:10:10  europe\L190409
+ * cosmetic changes
+ *
+ * Revision 1.5  2007/05/03 11:39:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * implement methods configure(), open() and close()
  *
  * Revision 1.4  2006/05/19 09:28:38  Peter Eijgermans <peter.eijgermans@ibissource.org>
@@ -22,9 +25,10 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.util.ClassUtils;
 
 /**
- * Translate a record using XSL, then send it using a sender.
+ * Translate a record into XML, then send it using a sender.
  * 
  * <p><b>Configuration:</b>
  * <table border="1">
@@ -37,18 +41,19 @@ import nl.nn.adapterframework.core.SenderException;
  * </table>
  * </p>
  * 
- * @author: John Dekker
+ * @author  John Dekker
+ * @version Id
  */
 public class RecordXml2Sender extends RecordXmlTransformer {
-	public static final String version = "$RCSfile: RecordXml2Sender.java,v $  $Revision: 1.5 $ $Date: 2007-05-03 11:39:43 $";
+	public static final String version = "$RCSfile: RecordXml2Sender.java,v $  $Revision: 1.6 $ $Date: 2007-07-26 16:10:10 $";
 
-	private ISender sender = null; // answer-sender
+	private ISender sender = null; 
 	
-	public RecordXml2Sender() {
-	}
-
 	public void configure() throws ConfigurationException {
 		super.configure();
+		if (sender==null) {
+			throw new ConfigurationException(ClassUtils.nameOf(this)+" has no sender");
+		}
 		sender.configure();		
 	}
 	public void open() throws SenderException {
@@ -66,12 +71,12 @@ public class RecordXml2Sender extends RecordXmlTransformer {
 	}
 	
 
-	public ISender getSender() {
-		return sender;
-	}
 
 	public void setSender(ISender sender) {
 		this.sender = sender;
+	}
+	public ISender getSender() {
+		return sender;
 	}
 
 }

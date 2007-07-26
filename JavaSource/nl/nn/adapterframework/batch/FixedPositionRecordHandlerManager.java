@@ -1,6 +1,9 @@
 /*
  * $Log: FixedPositionRecordHandlerManager.java,v $
- * Revision 1.5  2007-07-24 08:02:02  europe\L190409
+ * Revision 1.6  2007-07-26 16:07:59  europe\L190409
+ * cosmetic changes
+ *
+ * Revision 1.5  2007/07/24 08:02:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.4  2006/05/19 09:28:37  Peter Eijgermans <peter.eijgermans@ibissource.org>
@@ -26,7 +29,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
  * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>classname</td><td>nl.nn.ibis4fundation.transformation.FieldPositionRecordHandlerManager</td><td>&nbsp;</td></tr>
+ * <tr><td>classname</td><td>nl.nn.adapterframework.batch.FixedPositionRecordHandlerManager</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setStartPosition(int) startPosition}</td><td>Startposition of the recordtype field in the record (first character is 0)</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setEndPosition(int) endPosition}</td><td>Endposition of the recordtype field in the record</td><td>&nbsp;</td></tr>
  * </table>
@@ -35,13 +38,10 @@ import nl.nn.adapterframework.core.PipeLineSession;
  * @author John Dekker
  */
 public class FixedPositionRecordHandlerManager extends RecordHandlerManager {
-	public static final String version = "$RCSfile: FixedPositionRecordHandlerManager.java,v $  $Revision: 1.5 $ $Date: 2007-07-24 08:02:02 $";
+	public static final String version = "$RCSfile: FixedPositionRecordHandlerManager.java,v $  $Revision: 1.6 $ $Date: 2007-07-26 16:07:59 $";
 
 	private int startPosition;
 	private int endPosition;
-	
-	public FixedPositionRecordHandlerManager() {
-	}
 	
 	public RecordHandlingFlow getRecordHandler(PipeLineSession session, String record) throws Exception {
 		String value = null;
@@ -58,10 +58,10 @@ public class FixedPositionRecordHandlerManager extends RecordHandlerManager {
 		return super.getRecordHandlerByKey(value);
 	}
 
-	public int getEndPosition() {
-		return endPosition;
-	}
 
+	public void setStartPosition(int i) {
+		startPosition = i;
+	}
 	public int getStartPosition() {
 		return startPosition;
 	}
@@ -69,9 +69,7 @@ public class FixedPositionRecordHandlerManager extends RecordHandlerManager {
 	public void setEndPosition(int i) {
 		endPosition = i;
 	}
-
-	public void setStartPosition(int i) {
-		startPosition = i;
+	public int getEndPosition() {
+		return endPosition;
 	}
-
 }
