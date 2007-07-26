@@ -1,24 +1,18 @@
 /*
  * $Log: BlobLineIteratingPipe.java,v $
- * Revision 1.1  2007-07-19 15:06:28  europe\L190409
+ * Revision 1.2  2007-07-26 16:22:00  europe\L190409
+ * now based on LobLineIteratingPipe
+ *
+ * Revision 1.1  2007/07/19 15:06:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * first version
- *
- * Revision 1.2  2007/07/17 15:09:41  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * improved error message
- *
- * Revision 1.1  2007/07/17 11:16:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * added iterating classes
- *
  */
 package nl.nn.adapterframework.jdbc;
 
 import java.io.Reader;
 import java.sql.ResultSet;
 
-import nl.nn.adapterframework.core.IDataIterator;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.util.JdbcUtil;
-import nl.nn.adapterframework.util.ReaderLineIterator;
 
 /**
  * Pipe that iterates over the lines in a blob.
@@ -26,7 +20,7 @@ import nl.nn.adapterframework.util.ReaderLineIterator;
  * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.pipes.ForEachChildElementPipe</td><td>&nbsp;</td></tr>
+ * <tr><td>className</td><td>nl.nn.adapterframework.jdbc.BlobLineIteratingPipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMaxThreads(int) maxThreads}</td><td>maximum number of threads that may call {@link #doPipe(Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously</td><td>0 (unlimited)</td></tr>
  * <tr><td>{@link #setDurationThreshold(long) durationThreshold}</td><td>if durationThreshold >=0 and the duration (in milliseconds) of the message processing exceeded the value specified the message is logged informatory</td><td>-1</td></tr>
@@ -56,17 +50,11 @@ import nl.nn.adapterframework.util.ReaderLineIterator;
  * @since   4.7
  * @version Id
  */
-public class BlobLineIteratingPipe extends IteratingPipeBase {
+public class BlobLineIteratingPipe extends LobLineIteratingPipeBase {
 
-
-	protected IDataIterator getIterator(ResultSet rs) throws SenderException {
+	protected Reader getReader(ResultSet rs) throws SenderException {
 		try {
-			if (!rs.next()) {
-				throw new SenderException("query has empty resultset");
-			}
-			Reader blobReader;
-			blobReader = JdbcUtil.getBlobReader(rs,1,querySender.getBlobCharset(),querySender.isBlobsCompressed());
-			return new ReaderLineIterator(blobReader);
+			return JdbcUtil.getBlobReader(rs,1,querySender.getBlobCharset(),querySender.isBlobsCompressed());
 		} catch (Exception e) {
 			throw new SenderException(e);
 		}
