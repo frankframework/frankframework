@@ -1,6 +1,9 @@
 /*
  * $Log: Result2Filewriter.java,v $
- * Revision 1.9  2007-07-26 16:12:06  europe\L190409
+ * Revision 1.10  2007-08-03 08:39:41  europe\L190409
+ * moved basic functionality to baseclass
+ *
+ * Revision 1.9  2007/07/26 16:12:06  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * cosmetic changes
  *
  * Revision 1.8  2007/07/24 08:00:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -29,21 +32,18 @@
  */
 package nl.nn.adapterframework.batch;
 
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Writer;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.util.FileUtils;
-import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
 
 
 /**
@@ -63,61 +63,41 @@ import org.apache.log4j.Logger;
  * @author: John Dekker
  * @version Id
  */
-public class Result2Filewriter extends AbstractResultHandler {
-	public static final String version = "$RCSfile: Result2Filewriter.java,v $  $Revision: 1.9 $ $Date: 2007-07-26 16:12:06 $";
-	private static Logger log = LogUtil.getLogger(Result2Filewriter.class);
+public class Result2Filewriter extends ResultWriter {
+	public static final String version = "$RCSfile: Result2Filewriter.java,v $  $Revision: 1.10 $ $Date: 2007-08-03 08:39:41 $";
 	
 	private String outputDirectory;
 	private String move2dirAfterFinalize;
 	private String filenamePattern;
-	private boolean defaultResultHandler;
 	
-	private Map openWriters = Collections.synchronizedMap(new HashMap());
+	private Map openFiles = Collections.synchronizedMap(new HashMap());
 	
-	
-	public void handleResult(PipeLineSession session, String inputFilename, String recordKey, Object result) throws Exception {
-		if (result instanceof String) {
-			write(session, inputFilename, (String)result);
+	protected Writer createWriter(PipeLineSession session, String streamId) throws Exception {
+		String outputFilename = FileUtils.getFilename(null, session, new File(streamId), getFilenamePattern());
+		File outputFile = new File(outputDirectory, outputFilename);
+		if (outputFile.exists() && outputFile.isFile()) {
+			log.warn("Outputfile " + outputFilename + " exists in " + outputDirectory);
 		}
-		else if (result instanceof String[]) {
-			write(session, inputFilename, (String[])result);
-		}
+		openFiles.put(streamId,outputFile);
+		return new FileWriter(outputFile, false);
 	}
 	
-	private void write(PipeLineSession session, String inputFilename, String line) throws Exception {
-		BufferedWriter bw = getBufferedWriter(session, inputFilename, true);
-		bw.write(line);
-		bw.newLine();
-	}
-
-	private void write(PipeLineSession session, String streamId, String[] lines) throws Exception {
-		BufferedWriter bw = getBufferedWriter(session, streamId, true);
-		for (int i = 0; i < lines.length; i++) {
-			bw.write(lines[i]);
-			bw.newLine();
-		}
-	}
-	
-	public Object finalizeResult(PipeLineSession session, String inputFilename, boolean error) throws IOException {
-		FileOutput fo = (FileOutput)openWriters.remove(inputFilename);
-		if (fo != null) {
-			BufferedWriter bw = fo.writer;
-			bw.close();
-		}
-		else {
+	public Object finalizeResult(PipeLineSession session, String streamId, boolean error) throws IOException {
+		super.finalizeResult(session,streamId, error);
+		
+		File file = (File)openFiles.get(streamId);
+		if (file==null) {
 			return null;
 		}
-		
-		File file = fo.file;
 		if (error) {
 			file.delete();
 			return null;
 		}
 		else {
-			if (! StringUtils.isEmpty(move2dirAfterFinalize)) {
-				File movedFile = new File(move2dirAfterFinalize, file.getName());
+			if (!StringUtils.isEmpty(getMove2dirAfterFinalize())) {
+				File movedFile = new File(getMove2dirAfterFinalize(), file.getName());
 				if (movedFile.exists()) {
-					log.warn("File " + movedFile.getAbsolutePath() + " exists, file gets overwritten");
+					log.warn("File [" + movedFile.getAbsolutePath() + "] exists, file gets overwritten");
 					movedFile.delete();
 				}
 				file.renameTo(movedFile);
@@ -126,50 +106,7 @@ public class Result2Filewriter extends AbstractResultHandler {
 			return file.getAbsolutePath();
 		}
 	}
-	
-	public void writePrefix(PipeLineSession session, String streamId, boolean mustPrefix, boolean hasPreviousRecord) throws Exception {
-		String[] prefix = prefix(mustPrefix, hasPreviousRecord);
-		if (prefix != null) {
-			write(session, streamId, prefix);
-		}
-	}
 
-	public void writeSuffix(PipeLineSession session, String streamId) throws Exception {
-		BufferedWriter bw = getBufferedWriter(session, streamId, false);
-		if (bw != null && ! StringUtils.isEmpty(getSuffix())) {
-			write(session, streamId, getSuffix());
-		}
-	}
-
-	private class FileOutput {
-		private BufferedWriter writer;
-		private File file;
-		private FileOutput(BufferedWriter writer, File file) {
-			this.writer = writer;
-			this.file = file;
-		}
-	}
-
-	private BufferedWriter getBufferedWriter(PipeLineSession session, String streamId, boolean openIfNotOpen) throws IOException, ParameterException {
-		FileOutput fo = (FileOutput)openWriters.get(streamId);
-		if (fo != null) {
-			return fo.writer;
-		}
-		
-		if (! openIfNotOpen) {
-			return null ;
-		}
-		
-		String outputFilename = FileUtils.getFilename(null, session, new File(streamId), filenamePattern);
-		File outputFile = new File(outputDirectory, outputFilename);
-		if (outputFile.exists() && outputFile.isFile()) {
-			log.warn("Outputfile " + outputFilename + " exists in " + outputDirectory);
-		}
-		BufferedWriter bw = new BufferedWriter(new FileWriter(outputFile, false));
-		openWriters.put(streamId, new FileOutput(bw, outputFile));
-		return bw;		
-	}
-	
 	
 	public void setMove2dirAfterFinalize(String string) {
 		move2dirAfterFinalize = string;
@@ -191,14 +128,4 @@ public class Result2Filewriter extends AbstractResultHandler {
 	public String getOutputDirectory() {
 		return outputDirectory;
 	}
-
-	public void setDefault(boolean isDefault) {
-		this.defaultResultHandler = isDefault;
-	}
-	public boolean isDefault() {
-		return defaultResultHandler;
-	}
-
-
-
 }
