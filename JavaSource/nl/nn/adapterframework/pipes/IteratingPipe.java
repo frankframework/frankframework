@@ -1,6 +1,9 @@
 /*
  * $Log: IteratingPipe.java,v $
- * Revision 1.3  2007-07-17 10:54:25  europe\L190409
+ * Revision 1.4  2007-08-03 08:47:16  europe\L190409
+ * updated javadoc
+ *
+ * Revision 1.3  2007/07/17 10:54:25  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed unused code
  *
  * Revision 1.2  2007/07/17 10:49:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -33,7 +36,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 import org.apache.commons.lang.StringUtils;
 
 /**
- * Sends a message to a Sender for each item returned by a configurable iterator.
+ * Abstract base class to sends a message to a Sender for each item returned by a configurable iterator.
  * 
  * <br>
  * The output of each of the processing of each of the elements is returned in XML as follows:
@@ -90,7 +93,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public abstract class IteratingPipe extends MessageSendingPipe {
-	public static final String version="$RCSfile: IteratingPipe.java,v $ $Revision: 1.3 $ $Date: 2007-07-17 10:54:25 $";
+	public static final String version="$RCSfile: IteratingPipe.java,v $ $Revision: 1.4 $ $Date: 2007-08-03 08:47:16 $";
 
 	private String stopConditionXPathExpression=null;
 	private boolean removeXmlDeclarationInResults=false;
