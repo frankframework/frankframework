@@ -1,6 +1,9 @@
 /*
  * $Log: SapFunctionFacade.java,v $
- * Revision 1.12  2007-06-07 15:16:56  europe\L190409
+ * Revision 1.13  2007-08-03 08:41:52  europe\L190409
+ * avoid rare NPE
+ *
+ * Revision 1.12  2007/06/07 15:16:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * now implements HasPhysicalDestination
  *
  * Revision 1.11  2007/05/02 11:33:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -85,7 +88,7 @@ import com.sap.mw.jco.JCO;
  * @since 4.2
  */
 public class SapFunctionFacade implements INamedObject, HasPhysicalDestination {
-	public static final String version="$RCSfile: SapFunctionFacade.java,v $  $Revision: 1.12 $ $Date: 2007-06-07 15:16:56 $";
+	public static final String version="$RCSfile: SapFunctionFacade.java,v $  $Revision: 1.13 $ $Date: 2007-08-03 08:41:52 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -146,6 +149,9 @@ public class SapFunctionFacade implements INamedObject, HasPhysicalDestination {
 
 	public String getPhysicalDestinationName() {
 		String result;
+		if (sapSystem==null) {
+			return "unknown"; // to avoid NPE
+		}
 		result = "mandant ["+sapSystem.getMandant()+"] on gwhost ["+sapSystem.getGwhost()+"] system ["+sapSystem.getSystemnr()+"]";
 		return result;
 	}
