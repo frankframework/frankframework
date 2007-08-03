@@ -1,6 +1,9 @@
 /*
  * $Log: RecordHandlingFlow.java,v $
- * Revision 1.6  2007-07-24 16:12:52  europe\L190409
+ * Revision 1.7  2007-08-03 08:28:59  europe\L190409
+ * updated javadoc
+ *
+ * Revision 1.6  2007/07/24 16:12:52  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * moved configure to flow
  *
  * Revision 1.5  2007/07/24 08:03:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -35,7 +38,7 @@ import org.apache.log4j.Logger;
  * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>classname</td><td>nl.nn.ibis4fundation.transformation.RecordHandlingFlow</td><td>&nbsp;</td></tr>
+ * <tr><td>classname</td><td>nl.nn.adapterframework.batch.RecordHandlingFlow</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setRecordHandlerManagerRef(String) recordHandlerManagerRef}</td><td>Name of the manager to which this RecordHandlingFlow must be added</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setRecordKey(String) recordKey}</td><td>Key under which this RecordHandlingFlow must be registered in the manager</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setRecordHandlerRef(String) recordHandlerRef}</td><td>Name of the recordhandler to be used to transform records of the type specified in the key (optional)</td><td>&nbsp;</td></tr>
@@ -44,10 +47,11 @@ import org.apache.log4j.Logger;
  * </table>
  * </p>
  * 
- * @author John Dekker
+ * @author  John Dekker
+ * @version Id
  */
 public final class RecordHandlingFlow {
-	public static final String version = "$RCSfile: RecordHandlingFlow.java,v $  $Revision: 1.6 $ $Date: 2007-07-24 16:12:52 $";
+	public static final String version = "$RCSfile: RecordHandlingFlow.java,v $  $Revision: 1.7 $ $Date: 2007-08-03 08:28:59 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String recordKey;
