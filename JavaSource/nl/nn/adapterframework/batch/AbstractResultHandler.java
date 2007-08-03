@@ -1,6 +1,10 @@
 /*
  * $Log: AbstractResultHandler.java,v $
- * Revision 1.6  2007-07-26 16:05:38  europe\L190409
+ * Revision 1.7  2007-08-03 08:25:06  europe\L190409
+ * added configure(), open() and close()
+ * moved setDefault() to here
+ *
+ * Revision 1.6  2007/07/26 16:05:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * cosmetic changes
  *
  * Revision 1.5  2006/05/19 09:28:36  Peter Eijgermans <peter.eijgermans@ibissource.org>
@@ -19,6 +23,8 @@
  */
 package nl.nn.adapterframework.batch;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.commons.lang.StringUtils;
@@ -35,6 +41,7 @@ import org.apache.log4j.Logger;
  * <tr><td>{@link #setName(String) name}</td><td>Name of the resulthandler</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setPrefix(String) prefix}</td><td>Prefix that has to be written before record, if the record is in another block than the previous record</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSuffix(String) suffix}</td><td>Suffix that has to be written after the record, if the record is in another block than the next record</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setDefaultResultHandler(boolean) default}</td><td>If true, this resulthandler is the default for all RecordHandlingFlow that do not have a handler specified</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * 
@@ -44,9 +51,18 @@ import org.apache.log4j.Logger;
 public abstract class AbstractResultHandler implements IResultHandler {
 	protected Logger log = LogUtil.getLogger(this);
 
+	private String name;
 	private String prefix;
 	private String suffix;
-	private String name;
+	private boolean defaultResultHandler;
+
+	public void configure() throws ConfigurationException {
+	}
+	public void open() throws SenderException {
+	}
+	public void close() throws SenderException {
+	}
+
 
 	protected String[] prefix(boolean mustPrefix, boolean hasPreviousRecord) {
 		if (! mustPrefix || StringUtils.isEmpty(prefix)) {
@@ -79,6 +95,13 @@ public abstract class AbstractResultHandler implements IResultHandler {
 	}
 	public String getSuffix() {
 		return suffix;
+	}
+
+	public void setDefault(boolean isDefault) {
+		this.defaultResultHandler = isDefault;
+	}
+	public boolean isDefault() {
+		return defaultResultHandler;
 	}
 
 }
