@@ -1,6 +1,9 @@
 /*
  * $Log: XsltPipe.java,v $
- * Revision 1.24  2007-07-26 16:23:08  europe\L190409
+ * Revision 1.25  2007-08-03 08:48:06  europe\L190409
+ * removed unused imports
+ *
+ * Revision 1.24  2007/07/26 16:23:08  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * move most configuration to TransformerPool
  *
  * Revision 1.23  2007/07/17 10:51:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -51,26 +54,18 @@
  */
 package nl.nn.adapterframework.pipes;
 
-import java.io.IOException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
+
+import javax.xml.transform.TransformerConfigurationException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
-import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.TransformerPool;
-import nl.nn.adapterframework.util.XmlUtils;
-
-import javax.xml.transform.TransformerConfigurationException;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -115,7 +110,7 @@ import org.apache.commons.lang.StringUtils;
  */
 
 public class XsltPipe extends FixedForwardPipe {
-	public static final String version="$RCSfile: XsltPipe.java,v $ $Revision: 1.24 $ $Date: 2007-07-26 16:23:08 $";
+	public static final String version="$RCSfile: XsltPipe.java,v $ $Revision: 1.25 $ $Date: 2007-08-03 08:48:06 $";
 
 	private TransformerPool transformerPool;
 	private String xpathExpression=null;
