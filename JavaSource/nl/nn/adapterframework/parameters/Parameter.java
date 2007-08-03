@@ -1,6 +1,9 @@
 /*
  * $Log: Parameter.java,v $
- * Revision 1.23  2007-06-14 08:49:04  europe\L190409
+ * Revision 1.24  2007-08-03 09:08:25  europe\L190409
+ * moved tp configuration to TransformerPool
+ *
+ * Revision 1.23  2007/06/14 08:49:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * support for parameter type=number
  *
  * Revision 1.22  2007/05/24 11:52:46  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -79,7 +82,6 @@
 package nl.nn.adapterframework.parameters;
 
 import java.io.IOException;
-import java.net.URL;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -90,7 +92,6 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import javax.xml.transform.Source;
-import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.dom.DOMResult;
 
@@ -98,7 +99,6 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IWithParameters;
 import nl.nn.adapterframework.core.ParameterException;
-import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
@@ -171,7 +171,7 @@ import org.w3c.dom.Node;
  * @author Gerrit van Brakel
  */
 public class Parameter implements INamedObject, IWithParameters {
-	public static final String version="$RCSfile: Parameter.java,v $ $Revision: 1.23 $ $Date: 2007-06-14 08:49:04 $";
+	public static final String version="$RCSfile: Parameter.java,v $ $Revision: 1.24 $ $Date: 2007-08-03 09:08:25 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static String TYPE_NODE="node";
@@ -209,40 +209,20 @@ public class Parameter implements INamedObject, IWithParameters {
 	}
 
 	public void configure() throws ConfigurationException {
-		if (StringUtils.isNotEmpty(getXpathExpression())) {
-			if (StringUtils.isNotEmpty(styleSheetName)) {
-				throw new ConfigurationException("Parameter ["+getName()+"] cannot have both an xpathExpression and a styleSheetName specified");
-			}
-			try {
-				String xsltSource;
-				if ("xml".equalsIgnoreCase(getType()) || TYPE_NODE.equalsIgnoreCase(getType())) {
-					xsltSource = XmlUtils.createXPathEvaluatorSource("",getXpathExpression(),"xml", false); 
-				} else {
-					xsltSource = XmlUtils.createXPathEvaluatorSource(getXpathExpression(),"text");
-				}
-				transformerPool = new TransformerPool(xsltSource);
-			} 
-			catch (TransformerConfigurationException te) {
-				throw new ConfigurationException("Parameter ["+getName()+"] got error creating transformer from xpathExpression [" + getXpathExpression() + "]", te);
-			}
-		} 
-		if (StringUtils.isNotEmpty(styleSheetName)) {
-			URL styleSheetUrl = ClassUtils.getResourceURL(this, styleSheetName); 
-			try {
-				transformerPool = new TransformerPool(styleSheetUrl);
-			} catch (IOException e) {
-				throw new ConfigurationException("Parameter ["+getName()+"] cannot retrieve ["+ styleSheetName + "]", e);
-			} catch (TransformerConfigurationException te) {
-				throw new ConfigurationException("Parameter ["+getName()+"] got error creating transformer from [" + styleSheetUrl.toString() + "]", te);
-			}
+		if (StringUtils.isNotEmpty(getXpathExpression()) || 
+		    StringUtils.isNotEmpty(styleSheetName)) {
 			if (paramList!=null) {
 				paramList.configure();
 			}
-		}  else {
+			String outputType="xml".equalsIgnoreCase(getType()) || TYPE_NODE.equalsIgnoreCase(getType())?"xml":"text";
+			boolean includeXmlDeclaration=false;
+			
+			transformerPool=TransformerPool.configureTransformer("Parameter ["+getName()+"]",getXpathExpression(), styleSheetName,outputType,includeXmlDeclaration,paramList);
+	    } else {
 			if (paramList!=null && StringUtils.isEmpty(getXpathExpression())) {
 				throw new ConfigurationException("Parameter ["+getName()+"] can only have parameters itself if a styleSheetName or xpathExpression is specified");
 			}
-		}
+	    }
 		if (TYPE_DATE.equals(getType()) & StringUtils.isEmpty(getFormatString())) {
 			setFormatString(TYPE_DATE_PATTERN);
 		}
