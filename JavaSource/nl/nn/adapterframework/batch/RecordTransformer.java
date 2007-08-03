@@ -1,6 +1,9 @@
 /*
  * $Log: RecordTransformer.java,v $
- * Revision 1.9  2006-05-19 09:28:37  europe\m00i745
+ * Revision 1.10  2007-08-03 08:38:48  europe\L190409
+ * fixed typo
+ *
+ * Revision 1.9  2006/05/19 09:28:37  Peter Eijgermans <peter.eijgermans@ibissource.org>
  * Restore java files from batch package after unwanted deletion.
  *
  * Revision 1.7  2005/12/06 10:05:06  John Dekker <john.dekker@ibissource.org>
@@ -43,6 +46,7 @@ import java.util.StringTokenizer;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.FileUtils;
 
 import org.apache.commons.lang.StringUtils;
@@ -69,23 +73,22 @@ import org.apache.commons.lang.StringUtils;
  * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>classname</td><td>nl.nn.ibis4fundation.transformation.RecordTransformer</td><td>&nbsp;</td></tr>
+ * <tr><td>classname</td><td>nl.nn.adapterframework.batch.RecordTransformer</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setOutputFields(String) outputFields}</td><td>Specification of the output record</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setOutputSeperator(String) outputSeperator}</td><td>Optional seperator to add between the fields</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * 
- * @author: John Dekker
+ * @author  John Dekker
+ * @version Id
  */
 public class RecordTransformer extends AbstractRecordHandler {
-	public static final String version = "$RCSfile: RecordTransformer.java,v $  $Revision: 1.9 $ $Date: 2006-05-19 09:28:37 $";
+	public static final String version = "$RCSfile: RecordTransformer.java,v $  $Revision: 1.10 $ $Date: 2007-08-03 08:38:48 $";
 
-	private List outputFields;
-	private String outputSeperator;
+	private String outputSeparator;
 
-	public RecordTransformer() {
-		outputFields = new LinkedList();
-	}
+	private List outputFields=new LinkedList();
+
 	
 	public Object handleRecord(PipeLineSession session, ArrayList parsedRecord) throws Exception {
 		StringBuffer output = new StringBuffer();
@@ -95,8 +98,8 @@ public class RecordTransformer extends AbstractRecordHandler {
 			IOutputField outputField = (IOutputField) outputFieldIt.next();
 			
 			// if outputfields are to be seperator with delimiter
-			if (outputSeperator != null && output.length() > 0) {
-				output.append(outputSeperator); 
+			if (outputSeparator != null && output.length() > 0) {
+				output.append(outputSeparator); 
 			}
 			
 			// if not in a condition
@@ -305,13 +308,6 @@ public class RecordTransformer extends AbstractRecordHandler {
 		}
 	}
 	
-	public String getOutputSeperator() {
-		return outputSeperator;
-	}
-
-	public void setOutputSeperator(String string) {
-		outputSeperator = string;
-	}
 
 	/**
 	 * Each function must implement this interface 
@@ -337,7 +333,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 				throw new ConfigurationException("Function refers to a non-existing inputfield [" + inputFieldIndex + "]");				
 			}
 			String val = (String)inputFields.get(inputFieldIndex);
-			if ((! StringUtils.isEmpty(outputSeperator)) && (val != null)) {
+			if ((! StringUtils.isEmpty(outputSeparator)) && (val != null)) {
 				return val.trim();
 			}
 			return val;
@@ -371,13 +367,13 @@ public class RecordTransformer extends AbstractRecordHandler {
 			String val = ((String)super.toValue(inputFields)).trim();
 			
 			if (startIndex >= val.length()) {
-				if (StringUtils.isEmpty(outputSeperator)) {
+				if (StringUtils.isEmpty(outputSeparator)) {
 					result.append(FileUtils.getFilledArray(endIndex - startIndex, ' '));
 				}
 			}
 			else if (endIndex >= val.length()) {
 				result.append(val.substring(startIndex));
-				if (StringUtils.isEmpty(outputSeperator)) {
+				if (StringUtils.isEmpty(outputSeparator)) {
 					int fillSize = endIndex - startIndex - val.length();
 					if (fillSize > 0) {
 						result.append(FileUtils.getFilledArray(fillSize, ' '));
@@ -648,4 +644,16 @@ public class RecordTransformer extends AbstractRecordHandler {
 		}
 	}
 	
+
+	public void setOutputSeperator(String string) {
+		log.warn(ClassUtils.nameOf(this) +"["+getName()+"]: typo has been fixed: please use 'outputSeparator' instead of 'outputSeperator'");
+		setOutputSeparator(string);
+	}
+	public void setOutputSeparator(String string) {
+		outputSeparator = string;
+	}
+	public String getOutputSeparator() {
+		return outputSeparator;
+	}
+
 }
