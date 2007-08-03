@@ -1,6 +1,9 @@
 /*
  * $Log: IResultHandler.java,v $
- * Revision 1.5  2007-07-24 07:59:43  europe\L190409
+ * Revision 1.6  2007-08-03 08:26:51  europe\L190409
+ * added configure(), open() and close()
+ *
+ * Revision 1.5  2007/07/24 07:59:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * change inputFilename to streamId
  *
  * Revision 1.4  2006/05/19 09:28:36  Peter Eijgermans <peter.eijgermans@ibissource.org>
@@ -16,33 +19,50 @@
  */
 package nl.nn.adapterframework.batch;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.SenderException;
 
 /**
  * Interface for handling a transformed record.
  * 
- * @author John Dekker
+ * @author  John Dekker
+ * @version Id
  */
 public interface IResultHandler extends INamedObject {
-	/**
-	 * @param inputFilename name of the original file containing the untransformed record
-	 * @param recordKey key of the record (describes the record type)
-	 * @param result transformed record
-	 * @throws Exception
-	 */
-	void handleResult(PipeLineSession session, String inputFilename, String recordKey, Object result) throws Exception;
+
+	public void configure() throws ConfigurationException;
+	public void open() throws SenderException;
+	public void close() throws SenderException;
 	
 	/**
-	 * Called when all records in the original file are handled
-	 * @param inputFilename name of the original file containing the untransformed record
-	 * @return the name or names of the output files
-	 * @throws Exception
+	 * Called once, before the first record of a stream is presented to handleResult.
+	 * @param session  current PipeLineSession
+	 * @param streamId identification of the original file/stream/message
 	 */
-	Object finalizeResult(PipeLineSession session, String inputFilename, boolean error) throws Exception;
+	void openResult(PipeLineSession session, String streamId) throws Exception;
 
 	/**
-	 * @param inputFilename name of the original file containing the untransformed record
+	 * write a result ta record. 
+	 * @param session  current PipeLineSession
+	 * @param streamId identification of the original file/stream/message containing the untransformed records
+	 * @param recordKey key of the record (describes the record type)
+	 * @param result transformed record
+	 */
+	void handleResult(PipeLineSession session, String streamId, String recordKey, Object result) throws Exception;
+	
+	/**
+	 * Called when all records in the original file are handled.
+	 * @param session  current PipeLineSession
+	 * @param streamId identification of the original file/stream/message containing the untransformed records
+	 * @return the name or names of the output files
+	 */
+	Object finalizeResult(PipeLineSession session, String streamId, boolean error) throws Exception;
+
+	/**
+	 * @param session  current PipeLineSession
+	 * @param streamId identification of the original file/stream/message containing the untransformed records
 	 * @param mustPrefix boolean indicates if the prefix must be written
 	 * @param hasPreviousRecord boolean indicates if a previous record has been written, in case a suffix has to be written first
 	 * @throws Exception
@@ -50,8 +70,8 @@ public interface IResultHandler extends INamedObject {
 	void writePrefix(PipeLineSession session, String streamId, boolean mustPrefix, boolean hasPreviousRecord) throws Exception;
 	
 	/**
-	 * @param inputFilename name of the original file containing the untransformed record
-	 * @throws Exception
+	 * @param session  current PipeLineSession
+	 * @param streamId identification of the original file/stream/message containing the untransformed records
 	 */
 	void writeSuffix(PipeLineSession session, String streamId) throws Exception;
 	
