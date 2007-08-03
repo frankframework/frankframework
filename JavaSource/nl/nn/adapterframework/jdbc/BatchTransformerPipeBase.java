@@ -1,6 +1,9 @@
 /*
- * $Log: BatchTransformingPipeBase.java,v $
- * Revision 1.1  2007-07-26 16:16:59  europe\L190409
+ * $Log: BatchTransformerPipeBase.java,v $
+ * Revision 1.1  2007-08-03 08:44:05  europe\L190409
+ * renamed TransformingPipes to TransformerPipes
+ *
+ * Revision 1.1  2007/07/26 16:16:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * first version
  *
  */
@@ -30,7 +33,7 @@ import nl.nn.adapterframework.util.JdbcUtil;
  * @since   4.7
  * @version Id
  */
-public abstract class BatchTransformingPipeBase extends StreamTransformerPipe {
+public abstract class BatchTransformerPipeBase extends StreamTransformerPipe {
 	
 	protected FixedQuerySender querySender = new FixedQuerySender();
 
