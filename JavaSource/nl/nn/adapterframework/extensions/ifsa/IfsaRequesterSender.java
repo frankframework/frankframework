@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaRequesterSender.java,v $
- * Revision 1.24  2007-06-26 06:52:52  europe\L190409
+ * Revision 1.25  2007-08-03 08:41:16  europe\L190409
+ * corrected javadoc
+ *
+ * Revision 1.24  2007/06/26 06:52:52  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added warnings about incorrect setting of transacted
  *
  * Revision 1.23  2006/11/06 08:18:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -122,7 +125,7 @@ import java.util.Map;
  *   <li>"FF": Fire & Forget protocol</li>
  *   <li>"RR": Request-Reply protocol</li>
  * </ul></td><td><td>&nbsp;</td></td></tr>
- * <tr><td>{@link #setTransacted(boolean) transacted}</td><td>must be set <code>true</true> for FF senders in transacted mode</td><td>false</td></tr>
+ * <tr><td>{@link #setTransacted(boolean) transacted}</td><td>must be set <code>true</code> for FF senders in transacted mode</td><td>false</td></tr>
  * </table>
  * <table border="1">
  * <p><b>Parameters:</b>
@@ -136,7 +139,7 @@ import java.util.Map;
  * @since  4.2
  */
 public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParameters {
-	public static final String version="$RCSfile: IfsaRequesterSender.java,v $ $Revision: 1.24 $ $Date: 2007-06-26 06:52:52 $";
+	public static final String version="$RCSfile: IfsaRequesterSender.java,v $ $Revision: 1.25 $ $Date: 2007-08-03 08:41:16 $";
  
 	protected ParameterList paramList = null;
   
