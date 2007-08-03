@@ -1,6 +1,9 @@
 /*
  * $Log: StreamTransformerPipe.java,v $
- * Revision 1.3  2007-07-26 16:12:40  europe\L190409
+ * Revision 1.4  2007-08-03 08:40:41  europe\L190409
+ * call configure(), open() and close() on resulthandlers too
+ *
+ * Revision 1.3  2007/07/26 16:12:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * cosmetic changes
  *
  * Revision 1.2  2007/07/24 16:11:17  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -54,7 +57,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class StreamTransformerPipe extends FixedForwardPipe {
-	public static final String version = "$RCSfile: StreamTransformerPipe.java,v $  $Revision: 1.3 $ $Date: 2007-07-26 16:12:40 $";
+	public static final String version = "$RCSfile: StreamTransformerPipe.java,v $  $Revision: 1.4 $ $Date: 2007-08-03 08:40:41 $";
 
 	private IRecordHandlerManager initialManager=null;
 	private IResultHandler defaultHandler=null;
@@ -80,6 +83,11 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 			IRecordHandler handler = getRecordHandler(recordHandlerName);
 			handler.configure();
 		}
+		for (Iterator it = registeredResultHandlers.keySet().iterator(); it.hasNext();) {
+			String resultHandlerName = (String)it.next();
+			IResultHandler handler = getResultHandler(resultHandlerName);
+			handler.configure();
+		}
 	}
 
 
@@ -94,6 +102,15 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 				throw new PipeStartException(getLogPrefix(null)+"cannot start recordhandler ["+recordHandlerName+"]", e);
 			}
 		}
+		for (Iterator it = registeredResultHandlers.keySet().iterator(); it.hasNext();) {
+			String resultHandlerName = (String)it.next();
+			IResultHandler handler = getResultHandler(resultHandlerName);
+			try {
+				handler.open();
+			} catch (SenderException e) {
+				throw new PipeStartException(getLogPrefix(null)+"cannot start resulthandler ["+resultHandlerName+"]", e);
+			}
+		}
 	}
 	public void stop() {
 		super.stop();
@@ -104,6 +121,15 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 				handler.close();
 			} catch (SenderException e) {
 				log.error(getLogPrefix(null)+"exception on closing recordhandler ["+recordHandlerName+"]", e);
+			}
+		}
+		for (Iterator it = registeredResultHandlers.keySet().iterator(); it.hasNext();) {
+			String resultHandlerName = (String)it.next();
+			IResultHandler handler = getResultHandler(resultHandlerName);
+			try {
+				handler.close();
+			} catch (SenderException e) {
+				log.error(getLogPrefix(null)+"exception on closing resulthandler ["+resultHandlerName+"]", e);
 			}
 		}
 	}
@@ -255,6 +281,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 
 		IRecordHandlerManager currentManager = initialManager.getRecordFactoryUsingFilename(session, streamId);
 		try {
+			openResult(session,streamId);
 			while ((rawRecord = reader.readLine()) != null) {
 				linenumber++; // remember linenumber for exception handler
 				if (StringUtils.isEmpty(rawRecord)) {
@@ -295,6 +322,13 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 				log.error("Unexpected error during finalizeResult of [" + streamId + "]", t);
 			}
 			throw new PipeRunException(this, "Error while transforming " + streamId + " at line " + linenumber, e);		
+		}
+	}
+
+	private void openResult(PipeLineSession session, String inputFilename) throws Exception {
+		for (Iterator it = registeredResultHandlers.values().iterator(); it.hasNext();) {
+			IResultHandler resultHandler = (IResultHandler)it.next();
+			resultHandler.openResult(session, inputFilename);
 		}
 	}
 	
