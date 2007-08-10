@@ -1,6 +1,12 @@
 /*
  * $Log: IfsaProviderListener.java,v $
- * Revision 1.27  2007-02-16 14:19:08  europe\L190409
+ * Revision 1.28  2007-08-10 11:18:50  europe\L190409
+ * removed attribute 'transacted'
+ * automatic determination of transaction state and capabilities
+ * removed (more or less hidden) attribute 'commitOnState'
+ * warning about non XA FF
+ *
+ * Revision 1.27  2007/02/16 14:19:08  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.26  2007/02/05 14:57:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -92,36 +98,38 @@
  */
 package nl.nn.adapterframework.extensions.ifsa;
 
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
+import javax.jms.DeliveryMode;
+import javax.jms.Destination;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.QueueReceiver;
+import javax.jms.QueueSession;
+import javax.jms.Session;
+import javax.jms.TextMessage;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
-import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.RunStateEnquirer;
 import nl.nn.adapterframework.util.RunStateEnquiring;
 import nl.nn.adapterframework.util.RunStateEnum;
 
+import org.apache.commons.lang.builder.ToStringBuilder;
+
+import com.ing.ifsa.IFSAHeader;
 import com.ing.ifsa.IFSAMessage;
 import com.ing.ifsa.IFSAPoisonMessage;
-import com.ing.ifsa.IFSAHeader;
 import com.ing.ifsa.IFSAServiceName;
 import com.ing.ifsa.IFSAServicesProvided;
 import com.ing.ifsa.IFSATextMessage;
-
-import java.util.HashMap;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.Map;
-
-import javax.jms.Message;
-import javax.jms.QueueSession;
-import javax.jms.QueueReceiver;
-import javax.jms.DeliveryMode;
-import javax.jms.Destination;
-import javax.jms.Session;
-import javax.jms.TextMessage;
-import javax.jms.JMSException;
-
-import org.apache.commons.lang.builder.ToStringBuilder;
 
 /**
  * Implementation of {@link IPullingListener} that acts as an IFSA-service.
@@ -168,13 +176,11 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * @since 4.2
  */
 public class IfsaProviderListener extends IfsaFacade implements IPullingListener, INamedObject, RunStateEnquiring {
-	public static final String version = "$RCSfile: IfsaProviderListener.java,v $ $Revision: 1.27 $ $Date: 2007-02-16 14:19:08 $";
+	public static final String version = "$RCSfile: IfsaProviderListener.java,v $ $Revision: 1.28 $ $Date: 2007-08-10 11:18:50 $";
 
     private final static String THREAD_CONTEXT_SESSION_KEY = "session";
     private final static String THREAD_CONTEXT_RECEIVER_KEY = "receiver";
 	private RunStateEnquirer runStateEnquirer=null;
-
-    private String commitOnState;
 
 	public IfsaProviderListener() {
 		super(true); //instantiate as a provider
@@ -224,6 +230,18 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 	}
 	
 	
+	public void configure() throws ConfigurationException {
+		super.configure();
+		if (IfsaMessageProtocolEnum.FIRE_AND_FORGET.equals(getMessageProtocolEnum())) {
+			if (!isXaEnabledForSure()) {
+				if (isNotXaEnabledForSure()) {
+					log.warn(getLogPrefix()+"The installed IFSA libraries do not have XA enabled. Transaction integrity cannot be fully guaranteed");
+				} else {
+					log.warn(getLogPrefix()+"XA-support of the installed IFSA libraries cannot be determined. It is assumed XA is NOT enabled. Transaction integrity cannot be fully guaranteed");
+				}
+			}
+		}
+	}
 
 
 
@@ -285,50 +303,35 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 	public void afterMessageProcessed(PipeLineResult plr, Object rawMessage, HashMap threadContext) throws ListenerException {	
 	    String cid = (String) threadContext.get("cid");
 	    		    
-		if (isJmsTransacted() && !isTransacted()) {
+		if (isJmsTransacted() && !isXaEnabledForSure()) {
 			QueueSession session = (QueueSession) threadContext.get(THREAD_CONTEXT_SESSION_KEY);
 	    
-		    /* 
-		     * Message are only committed in the Fire & Forget scenario when the outcome
-		     * of the adapter equals the getCommitOnResult value
-		     */
-		    
-		    String cos=getCommitOnState(); 
-		     
-		    if (log.isDebugEnabled()) {
-				log.debug("PipeLineResult ["+plr.toString()+"] commitOnState="+cos);
-		    }
-
-	        if (cos==null || cos.equals(plr.getState())) {
-				try {
-					session.commit();
-				} catch (JMSException e) {
-					log.error(getLogPrefix()+"got error committing the received message", e);
-				}
-	        } else {
-	            log.warn(getLogPrefix()+"message with correlationID ["+ cid+ " message ["+ getStringFromRawMessage(rawMessage, threadContext)+ "]"
-	                    + " is NOT committed. The result-state of the adapter is ["+ plr.getState()+ "] while the state for committing is set to ["+ cos+ "]");
-	        }
+			try {
+				session.commit();
+			} catch (JMSException e) {
+				log.error(getLogPrefix()+"got error committing the received message", e);
+			}
 	        if (isSessionsArePooled()) {
 				threadContext.remove(THREAD_CONTEXT_SESSION_KEY);
 				releaseSession(session);
 	        }
 	    }
-	    // on request-reply send the reply. 
+	    // on request-reply send the reply.
+	    // TODO fix problem: cannot reply from IfsaMessageWrapper, as it is not a message...
 	    if (getMessageProtocolEnum().equals(IfsaMessageProtocolEnum.REQUEST_REPLY)) {
 			QueueSession session = getSession(threadContext);
-	        try {
-	            sendReply(session, (Message) rawMessage, plr.getResult());
-	        } catch (IfsaException e) {
-	        	try {
+			try {
+				sendReply(session, (Message) rawMessage, plr.getResult());
+			} catch (IfsaException e) {
+				try {
 					sendReply(session, (Message) rawMessage, "<exception>"+e.getMessage()+"</exception>");
-	        	} catch (IfsaException e2) {
-	        		log.warn(getLogPrefix()+"exception sending errormessage as reply",e2);
-	        	}
-	            throw new ListenerException(getLogPrefix()+"Exception on sending result", e);
-	        } finally {
+				} catch (IfsaException e2) {
+					log.warn(getLogPrefix()+"exception sending errormessage as reply",e2);
+				}
+				throw new ListenerException(getLogPrefix()+"Exception on sending result", e);
+			} finally {
 				releaseSession(session);
-	        }
+			}
 	    }
 	}
 	
@@ -486,7 +489,7 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 	    threadContext.put("id", id);
 	    threadContext.put("cid", cid);
 	    threadContext.put("timestamp", dTimeStamp);
-	    threadContext.put("replyTo", replyTo);
+	    threadContext.put("replyTo", ((replyTo == null) ? "none" : replyTo.toString()));
 	    threadContext.put("messageText", messageText);
 	    threadContext.put("fullIfsaServiceName", fullIfsaServiceName);
 	    threadContext.put("ifsaServiceName", ifsaServiceName);
@@ -514,7 +517,7 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 	private boolean sessionNeedsToBeSavedForAfterProcessMessage(Object result)
 	{
 		return isJmsTransacted() &&
-			   	!isTransacted() && 
+			   	!isXaEnabledForSure() && 
 				isSessionsArePooled()&&
 				result != null && 
 				!(result instanceof IFSAPoisonMessage) ;
@@ -532,10 +535,10 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 			try {	
 				receiver = getReceiver(threadContext, session);
 		        result = receiver.receive(getTimeOut());
-				while (result==null && canGoOn() && !isTransacted()) {
+				while (result==null && canGoOn() && !JtaUtil.inTransaction()) {
 					result = receiver.receive(getTimeOut());
 				}
-			} catch (JMSException e) {
+			} catch (Exception e) {
 				throw new ListenerException(getLogPrefix(),e);
 		    } finally {
 		    	releaseReceiver(receiver);
@@ -561,10 +564,15 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 		                + "content [" + ToStringBuilder.reflectionToString((IFSAPoisonMessage) result) + "]";
 		    log.warn(msg);
 	    }
-	    if (isTransacted() && 
-	    	(result instanceof IFSATextMessage || result instanceof IFSAPoisonMessage)) {
-	    	result = new IfsaMessageWrapper(result, this);
-	    }
+	    try {
+			if ((result instanceof IFSATextMessage || result instanceof IFSAPoisonMessage) &&
+			     JtaUtil.inTransaction() 
+			    ) {
+				result = new IfsaMessageWrapper(result, this);
+			}
+		} catch (Exception e) {
+			throw new ListenerException("cannot wrap non serialzable message in wrapper",e);
+		}
 	    return result;
 	}
 	/**
@@ -613,11 +621,4 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 		runStateEnquirer=enquirer;
 	}
 
-	
-	public String getCommitOnState() {
-		return commitOnState;
-	}
-	public void setCommitOnState(String newCommitOnState) {
-		commitOnState = newCommitOnState;
-	}
 }
