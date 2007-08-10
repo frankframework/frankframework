@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcFacade.java,v $
- * Revision 1.21  2007-07-19 15:07:33  europe\L190409
+ * Revision 1.22  2007-08-10 11:05:23  europe\L190409
+ * added note about table SYS.DBA_PENDING_TRANSACTIONS that should be readable
+ *
+ * Revision 1.21  2007/07/19 15:07:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * check for null datasource
  *
  * Revision 1.20  2007/07/17 15:10:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -89,12 +92,22 @@ import org.apache.log4j.Logger;
 /**
  * Provides functions for JDBC connections.
  * 
+ * N.B. Note on using XA transactions:
+ * If transactions are used, make sure that the database user can access the table SYS.DBA_PENDING_TRANSACTIONS.
+ * If not, transactions present when the server goes down cannot be properly recovered, resulting in exceptions like:
+ * <pre>
+   The error code was XAER_RMERR. The exception stack trace follows: javax.transaction.xa.XAException
+	at oracle.jdbc.xa.OracleXAResource.recover(OracleXAResource.java:508)
+   </pre>
+ * 
+ * 
+ * 
  * @version Id
  * @author  Gerrit van Brakel
  * @since 	4.1
  */
 public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version="$RCSfile: JdbcFacade.java,v $ $Revision: 1.21 $ $Date: 2007-07-19 15:07:33 $";
+	public static final String version="$RCSfile: JdbcFacade.java,v $ $Revision: 1.22 $ $Date: 2007-08-10 11:05:23 $";
     protected Logger log = LogUtil.getLogger(this);
 	
 	public final static int DATABASE_GENERIC=0;
