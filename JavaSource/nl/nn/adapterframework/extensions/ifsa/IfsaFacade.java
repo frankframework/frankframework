@@ -1,6 +1,10 @@
 /*
  * $Log: IfsaFacade.java,v $
- * Revision 1.44  2007-02-12 13:47:55  europe\L190409
+ * Revision 1.45  2007-08-10 11:11:16  europe\L190409
+ * removed attribute 'transacted'
+ * automatic determination of transaction state and capabilities
+ *
+ * Revision 1.44  2007/02/12 13:47:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Logger from LogUtil
  *
  * Revision 1.43  2007/02/05 14:56:29  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -136,7 +140,6 @@ import javax.jms.TextMessage;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.INamedObject;
-import nl.nn.adapterframework.core.IXAEnabled;
 import nl.nn.adapterframework.core.IbisException;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
@@ -182,8 +185,8 @@ import com.ing.ifsa.IFSAServerQueueSender;
  * @author Johan Verrips / Gerrit van Brakel
  * @since 4.2
  */
-public class IfsaFacade implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version = "$RCSfile: IfsaFacade.java,v $ $Revision: 1.44 $ $Date: 2007-02-12 13:47:55 $";
+public class IfsaFacade implements INamedObject, HasPhysicalDestination {
+	public static final String version = "$RCSfile: IfsaFacade.java,v $ $Revision: 1.45 $ $Date: 2007-08-10 11:11:16 $";
     protected Logger log = LogUtil.getLogger(this);
     
     private static int BASIC_ACK_MODE = Session.AUTO_ACKNOWLEDGE;
@@ -207,9 +210,10 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination, IXAEnab
 	private boolean requestor=false;
 	private boolean provider=false;
 		
-	private boolean transacted=false; 
-
 	private String providerSelector=null;
+
+	private boolean notXaEnabledForSure=false;
+	private boolean xaEnabledForSure=false;
 
 	public IfsaFacade(boolean asProvider) {
 		super();
@@ -256,6 +260,14 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination, IXAEnab
 					+ "], should be one of the following "
 					+ IfsaMessageProtocolEnum.getNames());
 		// TODO: check if serviceId is specified, either as attribute or as parameter
+		try {
+			log.debug(getLogPrefix()+"opening connection for service, to obtain info about XA awareness");
+			getConnection();   // obtain and cache connection, then start it.
+			closeService();
+		} catch (IfsaException e) {
+			cleanUpAfterException();
+			throw new ConfigurationException(e);
+		}
 	}
 
 	protected void cleanUpAfterException() {
@@ -341,6 +353,15 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination, IXAEnab
 					try {
 						log.debug(getLogPrefix()+"creating IfsaConnection");
 						connection = (IfsaConnection)ifsaConnectionFactory.getConnection(getApplicationId());
+						if (ifsaConnectionFactory.xaCapabilityCanBeDetermined()) {
+							if (ifsaConnectionFactory.isXaEnabled()) {
+								xaEnabledForSure=true;
+								notXaEnabledForSure=false;
+							} else {
+								xaEnabledForSure=false;
+								notXaEnabledForSure=true;
+							}
+						}
 					} catch (IbisException e) {
 						if (e instanceof IfsaException) {
 							throw (IfsaException)e;
@@ -432,7 +453,7 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination, IXAEnab
 				if (StringUtils.isEmpty(selector)) {
 					queueReceiver = session.createReceiver(getServiceQueue());
 				} else {
-					log.debug(getLogPrefix()+"using selector ["+selector+"]");
+					//log.debug(getLogPrefix()+"using selector ["+selector+"]");
 					try {
 						queueReceiver = session.createReceiver(getServiceQueue(), selector);
 					} catch (JMSException e) {
@@ -569,7 +590,7 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination, IXAEnab
 	        sender.send(msg);
 	
 	        // perform commit
-	        if (isJmsTransacted() && !isTransacted()) {
+	        if (isJmsTransacted() && !isXaEnabledForSure()) {
 	            session.commit();
 	            log.debug(getLogPrefix()+ "committing (send) transaction");
 	        }
@@ -714,6 +735,14 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination, IXAEnab
 		return useSelectorsStore.booleanValue();
 	}
 
+	public boolean isNotXaEnabledForSure() {
+		return notXaEnabledForSure;
+	}
+
+	public boolean isXaEnabledForSure() {
+		return xaEnabledForSure;
+	}
+
 
 	public void setName(String newName) {
 		name = newName;
@@ -729,12 +758,5 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination, IXAEnab
 		this.timeOut = timeOut;
 	}
 
-	public boolean isTransacted() {
-		return transacted;
-	}
-
-	public void setTransacted(boolean b) {
-		transacted = b;
-	}
 
 }
