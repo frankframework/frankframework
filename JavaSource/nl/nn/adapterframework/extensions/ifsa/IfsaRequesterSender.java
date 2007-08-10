@@ -1,6 +1,10 @@
 /*
  * $Log: IfsaRequesterSender.java,v $
- * Revision 1.25  2007-08-03 08:41:16  europe\L190409
+ * Revision 1.26  2007-08-10 11:20:37  europe\L190409
+ * removed attribute 'transacted'
+ * automatic determination of transaction state and capabilities
+ *
+ * Revision 1.25  2007/08/03 08:41:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected javadoc
  *
  * Revision 1.24  2007/06/26 06:52:52  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -80,15 +84,8 @@
  */
 package nl.nn.adapterframework.extensions.ifsa;
 
-import nl.nn.adapterframework.core.ISenderWithParameters;
-import nl.nn.adapterframework.core.ParameterException;
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.parameters.ParameterList;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-import nl.nn.adapterframework.parameters.ParameterValueList;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -97,15 +94,22 @@ import javax.jms.QueueSender;
 import javax.jms.QueueSession;
 import javax.jms.TextMessage;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.ISenderWithParameters;
+import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.ParameterList;
+import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.util.JtaUtil;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 
 import com.ing.ifsa.IFSAQueue;
 import com.ing.ifsa.IFSAReportMessage;
 import com.ing.ifsa.IFSATimeOutMessage;
-
-import java.util.HashMap;
-import java.util.Map;
 
 
 /**
@@ -139,9 +143,11 @@ import java.util.Map;
  * @since  4.2
  */
 public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParameters {
-	public static final String version="$RCSfile: IfsaRequesterSender.java,v $ $Revision: 1.25 $ $Date: 2007-08-03 08:41:16 $";
+	public static final String version="$RCSfile: IfsaRequesterSender.java,v $ $Revision: 1.26 $ $Date: 2007-08-10 11:20:37 $";
  
 	protected ParameterList paramList = null;
+	
+	private int transactionAttributeToTest;
   
 	public IfsaRequesterSender() {
   		super(false); // instantiate IfsaFacade as a requestor	
@@ -153,11 +159,23 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 			paramList.configure();
 		}
 		log.info(getLogPrefix()+" configured sender on "+getPhysicalDestinationName());
-		if (IfsaMessageProtocolEnum.FIRE_AND_FORGET.equals(getMessageProtocolEnum()) && !isTransacted()) {
-			log.warn(getLogPrefix()+"transacted must be set to 'true' if messageProtocol=["+getMessageProtocolEnum()+"]");
-		}
-		if (IfsaMessageProtocolEnum.REQUEST_REPLY.equals(getMessageProtocolEnum()) && isTransacted()) {
-			log.warn(getLogPrefix()+"transacted should not be set to 'true' if messageProtocol=["+getMessageProtocolEnum()+"]");
+//		if (IfsaMessageProtocolEnum.FIRE_AND_FORGET.equals(getMessageProtocolEnum()) && !isTransacted()) {
+//			log.warn(getLogPrefix()+"transacted must be set to 'true' if messageProtocol=["+getMessageProtocolEnum()+"]");
+//		}
+//		if (IfsaMessageProtocolEnum.REQUEST_REPLY.equals(getMessageProtocolEnum()) && isTransacted()) {
+//			log.warn(getLogPrefix()+"transacted should not be set to 'true' if messageProtocol=["+getMessageProtocolEnum()+"]");
+//		}
+		if (IfsaMessageProtocolEnum.REQUEST_REPLY.equals(getMessageProtocolEnum())) {
+			transactionAttributeToTest=JtaUtil.TRANSACTION_ATTRIBUTE_NEVER;
+		} else {
+			transactionAttributeToTest=JtaUtil.TRANSACTION_ATTRIBUTE_MANDATORY;
+			if (!isXaEnabledForSure()) {
+				if (isNotXaEnabledForSure()) {
+					log.warn(getLogPrefix()+"The installed IFSA libraries do not have XA enabled. Transaction integrity cannot be fully guaranteed");
+				} else {
+					log.warn(getLogPrefix()+"XA-support of the installed IFSA libraries cannot be determined. It is assumed XA is NOT enabled. Transaction integrity cannot be fully guaranteed");
+				}
+			}
 		}
 	}
 	
@@ -248,6 +266,16 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 	}
 
 	public String sendMessage(String dummyCorrelationId, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+		boolean compatible;
+		try {
+			compatible = JtaUtil.transactionStateCompatible(transactionAttributeToTest);
+		} catch (Exception e) {
+			throw new SenderException(e);
+		}
+		if (!compatible) {
+			throw new SenderException("transaction state ["+JtaUtil.displayTransactionStatus()+"] not compabtible with message protocol ["+getMessageProtocol()+"]");
+		}
+
 		ParameterValueList paramValueList;
 		try {
 			paramValueList = prc.getValues(paramList);
