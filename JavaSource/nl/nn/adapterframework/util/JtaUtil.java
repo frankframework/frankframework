@@ -1,6 +1,9 @@
 /*
  * $Log: JtaUtil.java,v $
- * Revision 1.12  2007-06-08 12:18:36  europe\L190409
+ * Revision 1.13  2007-08-10 11:22:29  europe\L190409
+ * added non-argument inTransaction()
+ *
+ * Revision 1.12  2007/06/08 12:18:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * do not rollback after exception on commit if status is already final
  *
  * Revision 1.11  2007/05/08 16:01:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -61,7 +64,7 @@ import org.apache.log4j.Logger;
  * @since  4.1
  */
 public class JtaUtil {
-	public static final String version="$RCSfile: JtaUtil.java,v $ $Revision: 1.12 $ $Date: 2007-06-08 12:18:36 $";
+	public static final String version="$RCSfile: JtaUtil.java,v $ $Revision: 1.13 $ $Date: 2007-08-10 11:22:29 $";
 	private static Logger log = LogUtil.getLogger(JtaUtil.class);
 	
 	private static final String USERTRANSACTION_URL1_KEY="jta.userTransactionUrl1";
@@ -165,6 +168,9 @@ public class JtaUtil {
 	 */
 	public static boolean inTransaction(UserTransaction utx) throws SystemException {
 		return utx != null && utx.getStatus() != Status.STATUS_NO_TRANSACTION;
+	}
+	public static boolean inTransaction() throws SystemException, NamingException {
+		return inTransaction(getUserTransaction());
 	}
 
 	/**
