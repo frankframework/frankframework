@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.42  2007-06-26 12:06:08  europe\L190409
+ * Revision 1.43  2007-08-10 11:21:49  europe\L190409
+ * catch more exceptions
+ *
+ * Revision 1.42  2007/06/26 12:06:08  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * tuned logging
  *
  * Revision 1.41  2007/06/26 06:56:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -260,7 +263,7 @@ import org.apache.log4j.Logger;
  * @since 4.2
  */
 public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, IMessageHandler, IbisExceptionListener, HasSender, TracingEventNumbers {
-	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.42 $ $Date: 2007-06-26 12:06:08 $";
+	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.43 $ $Date: 2007-08-10 11:21:49 $";
 	protected Logger log = LogUtil.getLogger(this);
  
 	private String returnIfStopped="";
@@ -852,8 +855,8 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 			utx.commit();
 			retryCount.clear();
 			return newMessageId;
-		} catch (Exception e) {
-			log.error("["+getName()+"] Exception transfering message with messageId ["+originalMessageId+"] to inProcessStorage, original message: ["+rawMessage+"]",e);
+		} catch (Throwable t) {
+			log.error("["+getName()+"] Exception transfering message with messageId ["+originalMessageId+"] to inProcessStorage, original message: ["+rawMessage+"]", t);
 			try {
 				utx.rollback();
 			} catch (Exception rbe) {
@@ -866,7 +869,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 			} else {
 				log.info("["+getName()+"] waiting for message to reappear, retryCount=["+retries+"]");
 			}
-			throw new ListenerException("["+getName()+"] Exception retrieving/storing message with messageId ["+originalMessageId+"] under transaction control",e);
+			throw new ListenerException("["+getName()+"] Exception retrieving/storing message with messageId ["+originalMessageId+"] under transaction control", t);
 			// no need to send message on errorSender, message will remain on input channel due to rollback
 		}
 	}
@@ -894,7 +897,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 	}
 
 
-	private void finishTransactedProcessingOfMessage(UserTransaction utx, String inProcessMessageId, String originalMessageId, String correlationId, String message, Date receivedDate, String comments, Serializable rawMessage) {
+	private void finishTransactedProcessingOfMessage(UserTransaction utx, String inProcessMessageId, String originalMessageId, String correlationId, String message, Date receivedDate, String comments, Object rawMessage) {
 		try {
 			if (utx.getStatus()==Status.STATUS_ACTIVE){
 				try {
@@ -903,7 +906,11 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 					utx.commit();
 				} catch (Exception e) {
 					log.error("receiver [" + getName() + "] exception committing transaction", e);
-					moveInProcessToError(utx, inProcessMessageId, originalMessageId, correlationId, message, receivedDate, "exception committing transaction: "+ e.getMessage(), rawMessage);
+					if (rawMessage instanceof Serializable) {
+						moveInProcessToError(utx, inProcessMessageId, originalMessageId, correlationId, message, receivedDate, "exception committing transaction: "+ e.getMessage(), (Serializable)rawMessage);
+					} else {
+						log.error("receiver [" + getName() + "] message is not serializable, cannot store in errorStorage ["+rawMessage+"]");
+					}
 					if (ONERROR_CLOSE.equalsIgnoreCase(getOnError())) {
 						log.info("receiver [" + getName() + "] closing after exception in committing transaction");
 						stopRunning();
@@ -916,11 +923,15 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 				} catch (Exception e) {
 					log.error("receiver [" + getName() + "] exception rolling back transaction", e);
 				}
-				moveInProcessToError(utx, inProcessMessageId, originalMessageId, correlationId,message, receivedDate, comments, rawMessage);
+				if (rawMessage instanceof Serializable) {
+					moveInProcessToError(utx, inProcessMessageId, originalMessageId, correlationId,message, receivedDate, comments, (Serializable)rawMessage);
+				} else {
+					log.error("receiver [" + getName() + "] message is not serializable, cannot store in errorStorage ["+rawMessage+"]");
+				}
 			}
 	
-		} catch (Exception e) {
-			log.error("["+getName()+"] Exception processing message under transaction control",e);
+		} catch (Throwable t) {
+			log.error("["+getName()+"] Exception in finishTransactedProcessingOfMessage", t);
 			try {
 				utx.rollback();
 			} catch (Exception rbe) {
