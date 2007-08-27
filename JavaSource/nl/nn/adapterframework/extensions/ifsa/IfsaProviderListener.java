@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaProviderListener.java,v $
- * Revision 1.28  2007-08-10 11:18:50  europe\L190409
+ * Revision 1.29  2007-08-27 11:50:18  europe\L190409
+ * provide default result for RR
+ *
+ * Revision 1.28  2007/08/10 11:18:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed attribute 'transacted'
  * automatic determination of transaction state and capabilities
  * removed (more or less hidden) attribute 'commitOnState'
@@ -176,7 +179,7 @@ import com.ing.ifsa.IFSATextMessage;
  * @since 4.2
  */
 public class IfsaProviderListener extends IfsaFacade implements IPullingListener, INamedObject, RunStateEnquiring {
-	public static final String version = "$RCSfile: IfsaProviderListener.java,v $ $Revision: 1.28 $ $Date: 2007-08-10 11:18:50 $";
+	public static final String version = "$RCSfile: IfsaProviderListener.java,v $ $Revision: 1.29 $ $Date: 2007-08-27 11:50:18 $";
 
     private final static String THREAD_CONTEXT_SESSION_KEY = "session";
     private final static String THREAD_CONTEXT_RECEIVER_KEY = "receiver";
@@ -321,7 +324,11 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 	    if (getMessageProtocolEnum().equals(IfsaMessageProtocolEnum.REQUEST_REPLY)) {
 			QueueSession session = getSession(threadContext);
 			try {
-				sendReply(session, (Message) rawMessage, plr.getResult());
+				String result="<exception>no result</exception>";
+				if (plr!=null && plr.getResult()!=null) {
+					result=plr.getResult();
+				}
+				sendReply(session, (Message) rawMessage, result);
 			} catch (IfsaException e) {
 				try {
 					sendReply(session, (Message) rawMessage, "<exception>"+e.getMessage()+"</exception>");
