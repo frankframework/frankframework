@@ -1,6 +1,10 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.43  2007-08-10 11:21:49  europe\L190409
+ * Revision 1.44  2007-08-27 11:51:43  europe\L190409
+ * modified afterMessageProcessed handling
+ * added attribute 'returnedSessionKeys'
+ *
+ * Revision 1.43  2007/08/10 11:21:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * catch more exceptions
  *
  * Revision 1.42  2007/06/26 12:06:08  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -146,6 +150,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.StringTokenizer;
 
 import javax.transaction.Status;
 import javax.transaction.UserTransaction;
@@ -166,7 +171,6 @@ import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.IReceiverStatistics;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ITransactionalStorage;
-import nl.nn.adapterframework.core.IXAEnabled;
 import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
@@ -207,6 +211,7 @@ import org.apache.log4j.Logger;
  * <tr><td>{@link #setNumThreadsPolling(int) numThreadsPolling}</td><td>the number of threads that are activily polling for messages concurrently. '0' means 'limited only by <code>numThreads</code>' (only for pulling listeners)</td><td>1</td></tr>
  * <tr><td>{@link #setStyleSheetName(String) styleSheetName}</td>  <td></td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setOnError(String) onError}</td><td>one of 'continue' or 'close'. Controls the behaviour of the receiver when it encounters an error sending a reply or receives an exception asynchronously</td><td>continue</td></tr>
+ * <tr><td>{@link #setReturnedSessionKeys(String) returnedSessionKeys}</td><td>comma separated list of keys of session variables that should be returned to caller, for correct results as well as for erronous results. (Only for listeners that support it, like JavaListener)</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setTransacted(boolean) transacted}</td><td>if set to <code>true, messages will be received and processed under transaction control. If processing fails, messages will be sent to the error-sender. (see below)</code></td><td><code>false</code></td></tr>
  * <tr><td>{@link #setMaxRetries(int) maxRetries}</td><td>The number of times a pulling listening attempt is retried after an exception is caught</td><td>3</td></tr>
  * <tr><td>{@link #setIbis42compatibility(boolean) ibis42compatibility}</td><td>if set to <code>true, the result of a failed processing of a message is a formatted errormessage. Otherwise a listener specific error handling is performed</code></td><td><code>false</code></td></tr>
@@ -226,7 +231,7 @@ import org.apache.log4j.Logger;
  * </table>
  * </p>
  * <p><b>Transaction control</b><br>
- * If {@link #setTransacted(boolean) transacted} is set to <code>true, messages will be received and processed under transaction control.
+ * If {@link #setTransacted(boolean) transacted} is set to <code>true</code>, messages will be received and processed under transaction control.
  * This means that after a message has been read and processed and the transaction has ended, one of the following apply:
  * <ul>
  * <table border="1">
@@ -263,7 +268,7 @@ import org.apache.log4j.Logger;
  * @since 4.2
  */
 public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, IMessageHandler, IbisExceptionListener, HasSender, TracingEventNumbers {
-	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.43 $ $Date: 2007-08-10 11:21:49 $";
+	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.44 $ $Date: 2007-08-27 11:51:43 $";
 	protected Logger log = LogUtil.getLogger(this);
  
 	private String returnIfStopped="";
@@ -271,6 +276,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 	private String replaceFrom = null;
 	private String replaceTo = null;
 	private String styleSheetName = null;
+	private String returnedSessionKeys=null;
 
 	public static final String ONERROR_CONTINUE = "continue";
 	public static final String ONERROR_CLOSE = "close";
@@ -1069,6 +1075,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 	 */
 	private String processMessageInAdapter(UserTransaction utx, IListener origin, Object rawMessage, String message, String messageId, String correlationId, HashMap threadContext, long waitingDuration) throws ListenerException {
 		String result=null;
+		PipeLineResult pipeLineResult=null;
 		long startProcessingTimestamp = System.currentTimeMillis();
 		log.debug(getLogPrefix()+"received message with messageId ["+messageId+"] correlationId ["+correlationId+"]");
 
@@ -1117,45 +1124,56 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 						log.debug(contextDump);
 					}
 				}
-				PipeLineResult pipeLineResult;
-				if (isIbis42compatibility()) {
-					pipeLineResult = adapter.processMessage(correlationId, message, pipelineSession);
-					result=pipeLineResult.getResult();
-					errorMessage = result;
-				} else {
-					try {
-						if (getMessageLog()!=null) {
-							getMessageLog().storeMessage(messageId, correlationId, new Date(),"log",message);
-						}
-						pipeLineResult = adapter.processMessageWithExceptions(correlationId, message, pipelineSession);
+				try {
+					if (isIbis42compatibility()) {
+						pipeLineResult = adapter.processMessage(correlationId, message, pipelineSession);
 						result=pipeLineResult.getResult();
-						errorMessage = "exitState ["+pipeLineResult.getState()+"], result ["+result+"]";
-					} catch (Throwable t) {
-						if (isTransacted()) {
-							try {
-								adapter.getUserTransaction().setRollbackOnly();
-							} catch (Throwable t2) {
-								log.error("caught exception trying to invalidate transaction", t);
+						errorMessage = result;
+					} else {
+						try {
+							if (getMessageLog()!=null) {
+								getMessageLog().storeMessage(messageId, correlationId, new Date(),"log",message);
 							}
+							pipeLineResult = adapter.processMessageWithExceptions(correlationId, message, pipelineSession);
+							result=pipeLineResult.getResult();
+							errorMessage = "exitState ["+pipeLineResult.getState()+"], result ["+result+"]";
+						} catch (Throwable t) {
+							if (isTransacted()) {
+								try {
+									adapter.getUserTransaction().setRollbackOnly();
+								} catch (Throwable t2) {
+									log.error("caught exception trying to invalidate transaction", t);
+								}
+							}
+							ListenerException l;
+							if (t instanceof ListenerException) {
+								l = (ListenerException)t;
+							} else {
+								l = new ListenerException(t);
+							}
+							// disabled the following logging, as it is already done in the Pipeline
+							//String msg = "receiver [" + getName() + "] caught exception in message processing";
+							//error(msg, l);
+							errorMessage = l.getMessage();
+							throw l;
 						}
-						ListenerException l;
-						if (t instanceof ListenerException) {
-							l = (ListenerException)t;
-						} else {
-							l = new ListenerException(t);
+					}
+				} finally {
+					if (StringUtils.isNotEmpty(getReturnedSessionKeys()) && threadContext!=null) {
+						if (log.isDebugEnabled()) log.debug("setting returned session keys ["+getReturnedSessionKeys()+"]");
+						StringTokenizer st = new StringTokenizer(getReturnedSessionKeys()," ,;");
+						while (st.hasMoreTokens()) {
+							String key=st.nextToken();
+							Object value=pipelineSession.get(key);
+							if (log.isDebugEnabled()) log.debug("returning session key ["+key+"] value ["+value+"]");
+							threadContext.put(key,value);
 						}
-						// disabled the following logging, as it is already done in the Pipeline
-						//String msg = "receiver [" + getName() + "] caught exception in message processing";
-						//error(msg, l);
-						errorMessage = l.getMessage();
-						throw l;
 					}
 				}
 				try {
 					if (getSender()!=null) {
 						getSender().sendMessage(correlationId,result);
 					}
-					origin.afterMessageProcessed(pipeLineResult,rawMessage, threadContext);
 				} catch (Exception e) {
 					String msg = "receiver [" + getName() + "] caught exception in message post processing";
 					error(msg, e);
@@ -1171,8 +1189,12 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 				}
 			}
 		} finally {	
-			long finishProcessingTimestamp = System.currentTimeMillis();
-			finishProcessingMessage(finishProcessingTimestamp-startProcessingTimestamp);
+			try {
+				origin.afterMessageProcessed(pipeLineResult,rawMessage, threadContext);
+			} finally {
+				long finishProcessingTimestamp = System.currentTimeMillis();
+				finishProcessingMessage(finishProcessingTimestamp-startProcessingTimestamp);
+			}
 		}
 		log.debug(getLogPrefix()+"returning result ["+result+"] for message ["+messageId+"] correlationId ["+correlationId+"]");
 		return result;
@@ -1558,6 +1580,13 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 	}
 	public boolean isActive() {
 		return active;
+	}
+
+	public void setReturnedSessionKeys(String string) {
+		returnedSessionKeys = string;
+	}
+	public String getReturnedSessionKeys() {
+		return returnedSessionKeys;
 	}
 
 }
