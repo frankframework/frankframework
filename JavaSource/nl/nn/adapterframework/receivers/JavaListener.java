@@ -1,6 +1,9 @@
 /*
  * $Log: JavaListener.java,v $
- * Revision 1.22  2007-06-07 15:20:46  europe\L190409
+ * Revision 1.23  2007-08-29 15:10:39  europe\L190409
+ * added support for dependency checking
+ *
+ * Revision 1.22  2007/06/07 15:20:46  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved logging
  *
  * Revision 1.21  2007/05/16 11:47:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -129,13 +132,14 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class JavaListener implements IPushingListener, RequestProcessor {
-	public static final String version="$RCSfile: JavaListener.java,v $ $Revision: 1.22 $ $Date: 2007-06-07 15:20:46 $";
+	public static final String version="$RCSfile: JavaListener.java,v $ $Revision: 1.23 $ $Date: 2007-08-29 15:10:39 $";
 	protected Logger log = LogUtil.getLogger(this);
 	
 	private String name;
 	private String serviceName;
 	private boolean isolated=false;
 	private boolean synchronous=true;
+	private boolean opened=false;
 
 	private static Map registeredListeners; 
 	private IMessageHandler handler;
@@ -157,7 +161,7 @@ public class JavaListener implements IPushingListener, RequestProcessor {
 		}
 	}
 
-	public void open() throws ListenerException {
+	public synchronized void open() throws ListenerException {
 		try {
 			// add myself to local list so that IbisLocalSenders can find me 
 			registerListener();
@@ -176,12 +180,14 @@ public class JavaListener implements IPushingListener, RequestProcessor {
 			if (StringUtils.isNotEmpty(getServiceName())) {
 				rebind(true);
 			}
+			opened=true;
 		} catch (Exception e) {
 			throw new ListenerException("error occured while starting listener [" + getName() + "]", e);
 		}
 	}
 
-	public void close() throws ListenerException {
+	public synchronized void close() throws ListenerException {
+		opened=false;
 		try {
 			// unregister from global list
 			if (StringUtils.isNotEmpty(getServiceName())) {
@@ -207,7 +213,9 @@ public class JavaListener implements IPushingListener, RequestProcessor {
 
 
 	public String processRequest(String correlationId, String message, HashMap context) throws ListenerException {
-
+		if (!isOpen()) {
+			throw new ListenerException("JavaListener [" + getName() + "] is not opened");
+		}
 		if (log.isDebugEnabled()) {
 			log.debug("JavaListener [" + getName() + "] processing correlationId [" + correlationId + "]");
 		}
@@ -341,6 +349,8 @@ public class JavaListener implements IPushingListener, RequestProcessor {
 		return synchronous;
 	}
 
-	
+	public synchronized boolean isOpen() {
+		return opened;
+	}
 
 }
