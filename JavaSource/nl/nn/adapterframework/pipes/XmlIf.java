@@ -1,6 +1,9 @@
 /*
  * $Log: XmlIf.java,v $
- * Revision 1.6  2006-01-05 14:36:31  europe\L190409
+ * Revision 1.7  2007-08-29 15:08:41  europe\L190409
+ * updated javadoc
+ *
+ * Revision 1.6  2006/01/05 14:36:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.5  2005/12/29 15:18:08  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -46,7 +49,7 @@ import nl.nn.adapterframework.util.TransformerPool;
  * <tr><td>{@link #setGetInputFromSessionKey(String) getInputFromSessionKey}</td><td>when set, input is taken from this session key, instead of regular input</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setStoreResultInSessionKey(String) storeResultInSessionKey}</td><td>when set, the result is stored under this session key</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setNamespaceAware(boolean) namespaceAware}</td><td>controls namespace-awareness of transformation</td><td>application default</td></tr>
- * <tr><td>{@link #setSessionKey(String) sessionKey}</td><td>name of the key in the <code>PipeLineSession</code> to retrieve the input-message from. If not set, the current input message of the Pipe is taken. N.B. same as <code>getInputFromSessionKey</code>)</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setSessionKey(String) sessionKey}</td><td>name of the key in the <code>PipeLineSession</code> to retrieve the input-message from. If not set, the current input message of the Pipe is taken. N.B. same as <code>getInputFromSessionKey</code></td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setXpathExpression(String) xpathExpression}</td><td>XPath expression to be applied to the input-message. If not set, no transformation is done</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setExpressionValue(String) expressionValue}</td><td>a string to compare the result of the xpathExpression (or the input-message itself) to. If not specified, a non-empty result leads to the 'then'-forward, an empty result to 'else'-forward</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setThenForwardName(String) thenForwardName}</td><td>forward returned when 'true'</code></td><td>then</td></tr>
@@ -60,7 +63,7 @@ import nl.nn.adapterframework.util.TransformerPool;
  */
 
 public class XmlIf extends AbstractPipe {
-	public static final String version="$RCSfile: XmlIf.java,v $ $Revision: 1.6 $ $Date: 2006-01-05 14:36:31 $";
+	public static final String version="$RCSfile: XmlIf.java,v $ $Revision: 1.7 $ $Date: 2007-08-29 15:08:41 $";
 
 	private String sessionKey = null;
 	private String xpathExpression = null;
