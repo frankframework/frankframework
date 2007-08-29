@@ -1,6 +1,9 @@
 /*
  * $Log: IbisLocalSender.java,v $
- * Revision 1.13  2007-05-29 11:10:38  europe\L190409
+ * Revision 1.14  2007-08-29 15:09:41  europe\L190409
+ * added attribute checkDependency
+ *
+ * Revision 1.13  2007/05/29 11:10:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * implementation of HasPhysicalDestination
  *
  * Revision 1.12  2007/05/16 11:46:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -73,6 +76,7 @@ import java.util.HashMap;
  * <tr><td>{@link #setServiceName(String) serviceName}</td><td>Name of the {@link nl.nn.adapterframework.http.WebServiceListener WebServiceListener} that should be called</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setJavaListener(String) javaListener}</td><td>Name of the {@link nl.nn.adapterframework.receivers.JavaListener JavaListener} that should be called</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setIsolated(boolean) isolated}</td><td>when <code>true</code>, the call is made in a separate thread, possibly using separate transaction</td><td>false</td></tr>
+ * <tr><td>{@link #setCheckDependency(boolean) checkDependency}</td><td>when <code>true</code>, the sender waits upon open until the called {@link nl.nn.adapterframework.receivers.JavaListener JavaListener} is opened</td><td>true</td></tr>
  * <tr><td>{@link #setSynchronous(boolean) synchronous}</td><td> when set <code>false</code>, the call is made asynchronously. This implies <code>isolated=true</code></td><td>true</td></tr>
  * </table>
  * </p>
@@ -114,13 +118,14 @@ import java.util.HashMap;
  * @since  4.2
  */
 public class IbisLocalSender extends SenderWithParametersBase implements HasPhysicalDestination {
-	public static final String version="$RCSfile: IbisLocalSender.java,v $ $Revision: 1.13 $ $Date: 2007-05-29 11:10:38 $";
+	public static final String version="$RCSfile: IbisLocalSender.java,v $ $Revision: 1.14 $ $Date: 2007-08-29 15:09:41 $";
 	
 	private String name;
 	private String serviceName;
 	private String javaListener;
 	private boolean isolated=false;
 	private boolean synchronous=true;
+	private boolean checkDependency=true;
 
 
 
@@ -136,6 +141,28 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 			throw new ConfigurationException(getLogPrefix()+"serviceName and javaListener cannot be specified both");
 		}
 	}
+
+	public void open() throws SenderException {
+		super.open();
+		if (StringUtils.isNotEmpty(getJavaListener()) && isCheckDependency()) {
+			boolean listenerOpened=false;
+			while (!listenerOpened) {
+				JavaListener listener= JavaListener.getListener(getJavaListener());
+				if (listener!=null) {
+					listenerOpened=listener.isOpen();
+				}
+				if (!listenerOpened) {
+					try {
+						log.debug("waiting for JavaListener ["+getJavaListener()+"] to open");
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+						throw new SenderException(e);
+					}
+				}
+			}
+		}
+	}
+
 
 	public String getPhysicalDestinationName() {
 		if (StringUtils.isNotEmpty(getServiceName())) {
@@ -240,6 +267,14 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 	}
 	public boolean isSynchronous() {
 		return synchronous;
+	}
+
+
+	public void setCheckDependency(boolean b) {
+		checkDependency = b;
+	}
+	public boolean isCheckDependency() {
+		return checkDependency;
 	}
 
 }
