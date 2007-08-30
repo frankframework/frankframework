@@ -1,6 +1,9 @@
 /*
  * $Log: DumpIbisConsole.java,v $
- * Revision 1.4  2007-02-16 14:22:03  europe\L190409
+ * Revision 1.5  2007-08-30 15:12:12  europe\L190409
+ * modified getRootLogger()
+ *
+ * Revision 1.4  2007/02/16 14:22:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * retrieve logfiles automatically
  *
  * Revision 1.3  2007/02/12 14:41:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -24,7 +27,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -41,8 +43,8 @@ import javax.servlet.http.HttpServletResponse;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 
-import org.apache.log4j.Logger;
 import org.apache.log4j.FileAppender;
+import org.apache.log4j.Logger;
 
 /**
  * Dumps the entire Ibis Console to a zip-file which can be saved.
@@ -238,7 +240,7 @@ public class DumpIbisConsole extends HttpServlet {
 
 			copyServletResponse(request, response, "/showLogging.do", directoryName + "/showLogging.html");
 
-			FileAppender fa = (FileAppender)LogUtil.getHierarchy().getRootLogger().getAppender("file");
+			FileAppender fa = (FileAppender)LogUtil.getRootLogger().getAppender("file");
 			File logFile = new File(fa.getFile());
 			String logFileName = logFile.getName();
 
