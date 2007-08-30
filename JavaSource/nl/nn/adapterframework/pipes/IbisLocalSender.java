@@ -1,6 +1,9 @@
 /*
  * $Log: IbisLocalSender.java,v $
- * Revision 1.14  2007-08-29 15:09:41  europe\L190409
+ * Revision 1.15  2007-08-30 15:10:31  europe\L190409
+ * added timeout to dependency
+ *
+ * Revision 1.14  2007/08/29 15:09:41  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added attribute checkDependency
  *
  * Revision 1.13  2007/05/29 11:10:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -118,7 +121,7 @@ import java.util.HashMap;
  * @since  4.2
  */
 public class IbisLocalSender extends SenderWithParametersBase implements HasPhysicalDestination {
-	public static final String version="$RCSfile: IbisLocalSender.java,v $ $Revision: 1.14 $ $Date: 2007-08-29 15:09:41 $";
+	public static final String version="$RCSfile: IbisLocalSender.java,v $ $Revision: 1.15 $ $Date: 2007-08-30 15:10:31 $";
 	
 	private String name;
 	private String serviceName;
@@ -126,6 +129,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 	private boolean isolated=false;
 	private boolean synchronous=true;
 	private boolean checkDependency=true;
+	private int dependencyTimeOut=60;
 
 
 
@@ -146,12 +150,14 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 		super.open();
 		if (StringUtils.isNotEmpty(getJavaListener()) && isCheckDependency()) {
 			boolean listenerOpened=false;
-			while (!listenerOpened) {
+			int loops=getDependencyTimeOut();
+			while (!listenerOpened && loops>0) {
 				JavaListener listener= JavaListener.getListener(getJavaListener());
 				if (listener!=null) {
 					listenerOpened=listener.isOpen();
 				}
 				if (!listenerOpened) {
+					loops--;
 					try {
 						log.debug("waiting for JavaListener ["+getJavaListener()+"] to open");
 						Thread.sleep(1000);
@@ -275,6 +281,14 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 	}
 	public boolean isCheckDependency() {
 		return checkDependency;
+	}
+
+
+	public void setDependencyTimeOut(int i) {
+		dependencyTimeOut = i;
+	}
+	public int getDependencyTimeOut() {
+		return dependencyTimeOut;
 	}
 
 }
