@@ -1,6 +1,9 @@
 /*
  * $Log: BatchFileTransformerPipe.java,v $
- * Revision 1.9  2007-07-26 16:07:00  europe\L190409
+ * Revision 1.10  2007-09-04 07:57:15  europe\L190409
+ * fix bug in rename after transform
+ *
+ * Revision 1.9  2007/07/26 16:07:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.8  2007/07/24 16:10:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -48,7 +51,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class BatchFileTransformerPipe extends StreamTransformerPipe {
-	public static final String version = "$RCSfile: BatchFileTransformerPipe.java,v $  $Revision: 1.9 $ $Date: 2007-07-26 16:07:00 $";
+	public static final String version = "$RCSfile: BatchFileTransformerPipe.java,v $  $Revision: 1.10 $ $Date: 2007-09-04 07:57:15 $";
 
 	private String move2dirAfterTransform;
 	private String move2dirAfterError;
@@ -82,7 +85,7 @@ public class BatchFileTransformerPipe extends StreamTransformerPipe {
 			
 			PipeRunResult result = super.doPipe(file,session);
 			if (! StringUtils.isEmpty(getMove2dirAfterTransform())) {
-				File move2 = new File(getMove2dirAfterTransform(), getStreamId(input,session));
+				File move2 = new File(getMove2dirAfterTransform(), file.getName());
 				file.renameTo(move2); 
 			}
 			return result;
