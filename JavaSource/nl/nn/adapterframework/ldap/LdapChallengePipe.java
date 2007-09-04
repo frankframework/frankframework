@@ -1,6 +1,9 @@
 /*
  * $Log: LdapChallengePipe.java,v $
- * Revision 1.5  2007-09-04 07:59:50  europe\L190409
+ * Revision 1.6  2007-09-04 09:33:53  europe\L190409
+ * no stacktrace if reason is stored
+ *
+ * Revision 1.5  2007/09/04 07:59:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added attribute errorSessionKey
  *
  * Revision 1.4  2007/08/03 08:45:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -62,7 +65,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class LdapChallengePipe extends AbstractPipe {
-	public static String version = "$RCSfile: LdapChallengePipe.java,v $  $Revision: 1.5 $ $Date: 2007-09-04 07:59:50 $";
+	public static String version = "$RCSfile: LdapChallengePipe.java,v $  $Revision: 1.6 $ $Date: 2007-09-04 09:33:53 $";
 
 	private String ldapProviderURL=null;
 	private String initialContextFactoryName=null;
@@ -140,8 +143,11 @@ public class LdapChallengePipe extends AbstractPipe {
 			ldapSender.configure();
 			log.debug("Succesfully looked up context for principal ["+principal+"]");
 		} catch (Exception e) {
-			ldapSender.storeLdapException(e,pls);
-			log.warn("LDAP error looking up context for principal ["+principal+"]", e);
+			if (StringUtils.isNotEmpty(getErrorSessionKey())) {
+				ldapSender.storeLdapException(e,pls);
+			} else {
+				log.warn("LDAP error looking up context for principal ["+principal+"]", e);
+			}
 			return new PipeRunResult(findForward("invalid"), msg);
 		}
 						
