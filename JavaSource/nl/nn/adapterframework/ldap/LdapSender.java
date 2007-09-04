@@ -1,6 +1,9 @@
 /*
  * $Log: LdapSender.java,v $
- * Revision 1.25  2007-08-30 15:09:33  europe\L190409
+ * Revision 1.26  2007-09-04 07:59:03  europe\L190409
+ * made storeLdapException public
+ *
+ * Revision 1.25  2007/08/30 15:09:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * store additional information under reason session key
  *
  * Revision 1.24  2007/07/17 15:11:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -259,7 +262,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class LdapSender extends JNDIBase implements ISenderWithParameters {
-	public static final String version = "$RCSfile: LdapSender.java,v $  $Revision: 1.25 $ $Date: 2007-08-30 15:09:33 $";
+	public static final String version = "$RCSfile: LdapSender.java,v $  $Revision: 1.26 $ $Date: 2007-09-04 07:59:03 $";
 
 	private String FILTER = "filterExpression";
 	private String ENTRYNAME = "entryName";
@@ -397,7 +400,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 		return result;
 	}
 
-	private void storeLdapException(Throwable t, PipeLineSession pls) {
+	public void storeLdapException(Throwable t, PipeLineSession pls) {
 		if (StringUtils.isNotEmpty(getErrorSessionKey()) && pls!=null && t!=null) {
 			XmlBuilder ldapError=new XmlBuilder("ldapError");
 			ldapError.addAttribute("class",ClassUtils.nameOf(t));
