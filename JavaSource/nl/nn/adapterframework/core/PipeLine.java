@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.45  2007-07-17 15:09:08  europe\L190409
+ * Revision 1.46  2007-09-04 07:58:14  europe\L190409
+ * clearified exception message
+ *
+ * Revision 1.45  2007/07/17 15:09:08  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added list of pipes, to access them in order
  *
  * Revision 1.44  2007/06/21 07:05:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -216,7 +219,7 @@ import org.apache.log4j.Logger;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.45 $ $Date: 2007-07-17 15:09:08 $";
+	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.46 $ $Date: 2007-09-04 07:58:14 $";
     private Logger log = LogUtil.getLogger(this);
 	private Logger durationLog = LogUtil.getLogger("LongDurationMessages");
     
@@ -594,7 +597,7 @@ public class PipeLine {
 			if (t instanceof PipeRunException) {
 				throw (PipeRunException)t;
 			} else {
-				throw new PipeRunException(pipe,"in wrapper",t);
+				throw new PipeRunException(pipe,"in transaction isolation wrapper",t);
 			}
 		}
 
