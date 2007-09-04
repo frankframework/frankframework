@@ -1,6 +1,9 @@
 /*
  * $Log: BatchFileTransformerPipe.java,v $
- * Revision 1.10  2007-09-04 07:57:15  europe\L190409
+ * Revision 1.11  2007-09-04 09:34:22  europe\L190409
+ * check type of input message
+ *
+ * Revision 1.10  2007/09/04 07:57:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fix bug in rename after transform
  *
  * Revision 1.9  2007/07/26 16:07:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -20,6 +23,7 @@ import java.io.Reader;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.util.ClassUtils;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -51,7 +55,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class BatchFileTransformerPipe extends StreamTransformerPipe {
-	public static final String version = "$RCSfile: BatchFileTransformerPipe.java,v $  $Revision: 1.10 $ $Date: 2007-09-04 07:57:15 $";
+	public static final String version = "$RCSfile: BatchFileTransformerPipe.java,v $  $Revision: 1.11 $ $Date: 2007-09-04 09:34:22 $";
 
 	private String move2dirAfterTransform;
 	private String move2dirAfterError;
@@ -78,6 +82,12 @@ public class BatchFileTransformerPipe extends StreamTransformerPipe {
 	 * @see nl.nn.adapterframework.core.IPipe#doPipe(java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)
 	 */
 	public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRunException {
+		if (input==null) {
+			throw new PipeRunException(this,"got null input instead of String containing filename");
+		}
+		if (!(input instanceof String)) {
+			throw new PipeRunException(this,"expected String containing filename as input, got ["+ClassUtils.nameOf(input)+"], value ["+input+"]");
+		}
 		String filename	= input.toString();
 		File file = new File(filename);
 
