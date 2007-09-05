@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcUtil.java,v $
- * Revision 1.13  2007-07-26 16:25:03  europe\L190409
+ * Revision 1.14  2007-09-05 13:06:47  europe\L190409
+ * avoid NPE when putting null BLOBs and CLOBs
+ *
+ * Revision 1.13  2007/07/26 16:25:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added fullClose()
  *
  * Revision 1.12  2007/07/19 15:14:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -65,6 +68,7 @@ import java.util.zip.InflaterInputStream;
 
 import nl.nn.adapterframework.jdbc.JdbcException;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 /**
@@ -75,7 +79,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class JdbcUtil {
-	public static final String version = "$RCSfile: JdbcUtil.java,v $ $Revision: 1.13 $ $Date: 2007-07-26 16:25:03 $";
+	public static final String version = "$RCSfile: JdbcUtil.java,v $ $Revision: 1.14 $ $Date: 2007-09-05 13:06:47 $";
 	protected static Logger log = LogUtil.getLogger(JdbcUtil.class);
 	
 	private static final boolean useMetaData=false;
@@ -206,18 +210,22 @@ public class JdbcUtil {
 	}
 
 	public static void putStringAsBlob(final ResultSet rs, int columnIndex, String content, String charset, boolean compressBlob) throws IOException, JdbcException, SQLException {
-		OutputStream out = getBlobUpdateOutputStream(rs, columnIndex);
-		if (charset==null) {
-			charset = Misc.DEFAULT_INPUT_STREAM_ENCODING;
-		}
-		if (compressBlob) {
-			DeflaterOutputStream dos = new DeflaterOutputStream(out);
-			dos.write(content.getBytes(charset));
-			dos.close();
+		if (content!=null) {
+			OutputStream out = getBlobUpdateOutputStream(rs, columnIndex);
+			if (charset==null) {
+				charset = Misc.DEFAULT_INPUT_STREAM_ENCODING;
+			}
+			if (compressBlob) {
+				DeflaterOutputStream dos = new DeflaterOutputStream(out);
+				dos.write(content.getBytes(charset));
+				dos.close();
+			} else {
+				out.write(content.getBytes(charset));
+			}
+			out.close();
 		} else {
-			out.write(content.getBytes(charset));
+			log.warn("content to store in blob was null");
 		}
-		out.close();
 	}
 	
 
@@ -262,9 +270,13 @@ public class JdbcUtil {
 	}
 
 	public static void putStringAsClob(final ResultSet rs, int columnIndex, String content) throws IOException, JdbcException, SQLException {
-		Writer writer = getClobWriter(rs, columnIndex);
-		writer.write(content);
-		writer.close();
+		if (content!=null) {
+			Writer writer = getClobWriter(rs, columnIndex);
+			writer.write(content);
+			writer.close();
+		} else {
+			log.warn("content to store in blob was null");
+		}
 	}
 
 	public static void fullClose(ResultSet rs) {
