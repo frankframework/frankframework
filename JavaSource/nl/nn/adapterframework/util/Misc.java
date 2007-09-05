@@ -1,6 +1,9 @@
 /*
  * $Log: Misc.java,v $
- * Revision 1.14  2007-06-12 11:24:24  europe\L190409
+ * Revision 1.15  2007-09-05 13:05:44  europe\L190409
+ * added function to copy context
+ *
+ * Revision 1.14  2007/06/12 11:24:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added getHostname()
  *
  * Revision 1.13  2005/10/27 08:43:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -21,12 +24,25 @@
  */
 package nl.nn.adapterframework.util;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.Reader;
+import java.io.Writer;
 import java.net.InetAddress;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.rmi.server.UID;
+import java.util.Map;
 import java.util.Properties;
+import java.util.StringTokenizer;
 import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
 import java.util.zip.GZIPInputStream;
@@ -40,7 +56,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class Misc {
-	public static final String version="$RCSfile: Misc.java,v $ $Revision: 1.14 $ $Date: 2007-06-12 11:24:24 $";
+	public static final String version="$RCSfile: Misc.java,v $ $Revision: 1.15 $ $Date: 2007-09-05 13:05:44 $";
 	public static final int BUFFERSIZE=20000;
 	public static final String DEFAULT_INPUT_STREAM_ENCODING="UTF-8";
 
@@ -406,6 +422,17 @@ public class Misc {
 			}
 		}
 		return localHost;
+	}
+
+	public static void copyContext(String keys, Map from, Map to) {
+		if (StringUtils.isNotEmpty(keys) && from!=null && to!=null) {
+			StringTokenizer st = new StringTokenizer(keys,",;");
+			while (st.hasMoreTokens()) {
+				String key=st.nextToken();
+				Object value=from.get(key);
+				to.put(key,value);
+			}
+		}
 	}
 
 
