@@ -1,6 +1,9 @@
 /*
  * $Log: LdapChallengePipe.java,v $
- * Revision 1.6  2007-09-04 09:33:53  europe\L190409
+ * Revision 1.7  2007-09-05 13:03:09  europe\L190409
+ * updated javadoc
+ *
+ * Revision 1.6  2007/09/04 09:33:53  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * no stacktrace if reason is stored
  *
  * Revision 1.5  2007/09/04 07:59:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -65,7 +68,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class LdapChallengePipe extends AbstractPipe {
-	public static String version = "$RCSfile: LdapChallengePipe.java,v $  $Revision: 1.6 $ $Date: 2007-09-04 09:33:53 $";
+	public static String version = "$RCSfile: LdapChallengePipe.java,v $  $Revision: 1.7 $ $Date: 2007-09-05 13:03:09 $";
 
 	private String ldapProviderURL=null;
 	private String initialContextFactoryName=null;
@@ -168,6 +171,9 @@ public class LdapChallengePipe extends AbstractPipe {
 		return initialContextFactoryName;
 	}
 
+	/**
+	 * @since 4.7
+	 */
 	public void setErrorSessionKey(String string) {
 		errorSessionKey = string;
 	}
