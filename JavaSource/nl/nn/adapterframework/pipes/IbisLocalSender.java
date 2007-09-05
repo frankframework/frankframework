@@ -1,6 +1,9 @@
 /*
  * $Log: IbisLocalSender.java,v $
- * Revision 1.15  2007-08-30 15:10:31  europe\L190409
+ * Revision 1.16  2007-09-05 13:04:01  europe\L190409
+ * added support for returning session keys
+ *
+ * Revision 1.15  2007/08/30 15:10:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added timeout to dependency
  *
  * Revision 1.14  2007/08/29 15:09:41  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -59,6 +62,7 @@ import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
+import nl.nn.adapterframework.util.Misc;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -81,6 +85,7 @@ import java.util.HashMap;
  * <tr><td>{@link #setIsolated(boolean) isolated}</td><td>when <code>true</code>, the call is made in a separate thread, possibly using separate transaction</td><td>false</td></tr>
  * <tr><td>{@link #setCheckDependency(boolean) checkDependency}</td><td>when <code>true</code>, the sender waits upon open until the called {@link nl.nn.adapterframework.receivers.JavaListener JavaListener} is opened</td><td>true</td></tr>
  * <tr><td>{@link #setSynchronous(boolean) synchronous}</td><td> when set <code>false</code>, the call is made asynchronously. This implies <code>isolated=true</code></td><td>true</td></tr>
+ * <tr><td>{@link #setReturnedSessionKeys(String) returnedSessionKeys}</td><td>comma separated list of keys of session variables that should be returned to caller, for correct results as well as for erronous results. (Only for listeners that support it, like JavaListener)</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * Any parameters are copied to the PipeLineSession of the service called.
@@ -121,7 +126,7 @@ import java.util.HashMap;
  * @since  4.2
  */
 public class IbisLocalSender extends SenderWithParametersBase implements HasPhysicalDestination {
-	public static final String version="$RCSfile: IbisLocalSender.java,v $ $Revision: 1.15 $ $Date: 2007-08-30 15:10:31 $";
+	public static final String version="$RCSfile: IbisLocalSender.java,v $ $Revision: 1.16 $ $Date: 2007-09-05 13:04:01 $";
 	
 	private String name;
 	private String serviceName;
@@ -130,6 +135,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 	private boolean synchronous=true;
 	private boolean checkDependency=true;
 	private int dependencyTimeOut=60;
+	private String returnedSessionKeys=null;
 
 
 
@@ -186,6 +192,10 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 			} catch (ParameterException e) {
 				throw new SenderException(getLogPrefix()+"exception evaluating parameters",e);
 			}
+		} else {
+			if (StringUtils.isNotEmpty(getReturnedSessionKeys())) {
+				context = new HashMap();
+			}
 		}
 		if (StringUtils.isNotEmpty(getServiceName())) {
 			try {
@@ -204,7 +214,14 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 				}
 			} catch (ListenerException e) {
 				throw new SenderException(getLogPrefix()+"exception calling service ["+getServiceName()+"]",e);
-			}
+			} finally {
+				if (log.isDebugEnabled() && StringUtils.isNotEmpty(getReturnedSessionKeys())) {
+					log.debug("returning values of session keys ["+getReturnedSessionKeys()+"]");
+				}
+				if (prc!=null) {
+					Misc.copyContext(getReturnedSessionKeys(),context, prc.getSession());
+				}
+			} 
 		}  else {
 			try {
 				JavaListener listener= JavaListener.getListener(getJavaListener());
@@ -226,6 +243,13 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 				}
 			} catch (ListenerException e) {
 				throw new SenderException(getLogPrefix()+"exception calling JavaListener ["+getJavaListener()+"]",e);
+			} finally {
+				if (log.isDebugEnabled() && StringUtils.isNotEmpty(getReturnedSessionKeys())) {
+					log.debug("returning values of session keys ["+getReturnedSessionKeys()+"]");
+				}
+				if (prc!=null) {
+					Misc.copyContext(getReturnedSessionKeys(),context, prc.getSession());
+				}
 			}
 		}
 	}
@@ -289,6 +313,13 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 	}
 	public int getDependencyTimeOut() {
 		return dependencyTimeOut;
+	}
+
+	public void setReturnedSessionKeys(String string) {
+		returnedSessionKeys = string;
+	}
+	public String getReturnedSessionKeys() {
+		return returnedSessionKeys;
 	}
 
 }

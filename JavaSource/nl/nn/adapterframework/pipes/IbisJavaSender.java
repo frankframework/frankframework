@@ -1,6 +1,9 @@
 /*
  * $Log: IbisJavaSender.java,v $
- * Revision 1.4  2007-06-07 15:18:59  europe\L190409
+ * Revision 1.5  2007-09-05 13:04:01  europe\L190409
+ * added support for returning session keys
+ *
+ * Revision 1.4  2007/06/07 15:18:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * cosmetic changes
  *
  * Revision 1.3  2007/05/29 11:10:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -26,6 +29,7 @@ import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.dispatcher.DispatcherManager;
 import nl.nn.adapterframework.dispatcher.DispatcherManagerFactory;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.util.Misc;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -42,6 +46,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setName(String) name}</td><td>name of the sender</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setServiceName(String) serviceName}</td><td>serviceName of the 
  * {@link nl.nn.adapterframework.receivers.JavaListener JavaListener} that should be called</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setReturnedSessionKeys(String) returnedSessionKeys}</td><td>comma separated list of keys of session variables that should be returned to caller, for correct results as well as for erronous results. (Only for listeners that support it, like JavaListener)</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * Any parameters are copied to the PipeLineSession of the service called.
@@ -63,10 +68,11 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class IbisJavaSender extends SenderWithParametersBase implements HasPhysicalDestination {
-	public static final String version="$RCSfile: IbisJavaSender.java,v $ $Revision: 1.4 $ $Date: 2007-06-07 15:18:59 $";
+	public static final String version="$RCSfile: IbisJavaSender.java,v $ $Revision: 1.5 $ $Date: 2007-09-05 13:04:01 $";
 	
 	private String name;
 	private String serviceName;
+	private String returnedSessionKeys=null;
 
 
 	public void configure() throws ConfigurationException {
@@ -89,13 +95,22 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 		try {
 			if (paramList!=null) {
 				context = prc.getValueMap(paramList);
-			}			
+			} else {
+				context=new HashMap();			
+			}
 			DispatcherManager dm = DispatcherManagerFactory.getDispatcherManager();
 			return dm.processRequest(getServiceName(),correlationID, message, context);
 		} catch (ParameterException e) {
 			throw new SenderException(getLogPrefix()+"exception evaluating parameters",e);
 		} catch (Exception e) {
 			throw new SenderException(getLogPrefix()+"exception processing message using request processor ["+getServiceName()+"]",e);
+		} finally {
+			if (log.isDebugEnabled() && StringUtils.isNotEmpty(getReturnedSessionKeys())) {
+				log.debug("returning values of session keys ["+getReturnedSessionKeys()+"]");
+			}
+			if (prc!=null) {
+				Misc.copyContext(getReturnedSessionKeys(),context, prc.getSession());
+			}
 		}
 	}
 
@@ -115,5 +130,13 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 	public void setServiceName(String string) {
 		serviceName = string;
 	}
+
+	public void setReturnedSessionKeys(String string) {
+		returnedSessionKeys = string;
+	}
+	public String getReturnedSessionKeys() {
+		return returnedSessionKeys;
+	}
+
 
 }
