@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaProviderListener.java,v $
- * Revision 1.29  2007-08-27 11:50:18  europe\L190409
+ * Revision 1.30  2007-09-05 15:48:07  europe\L190409
+ * moved XA determination capabilities to IfsaConnection
+ *
+ * Revision 1.29  2007/08/27 11:50:18  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * provide default result for RR
  *
  * Revision 1.28  2007/08/10 11:18:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -114,6 +117,8 @@ import javax.jms.QueueReceiver;
 import javax.jms.QueueSession;
 import javax.jms.Session;
 import javax.jms.TextMessage;
+import javax.naming.NamingException;
+import javax.transaction.SystemException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.INamedObject;
@@ -179,7 +184,7 @@ import com.ing.ifsa.IFSATextMessage;
  * @since 4.2
  */
 public class IfsaProviderListener extends IfsaFacade implements IPullingListener, INamedObject, RunStateEnquiring {
-	public static final String version = "$RCSfile: IfsaProviderListener.java,v $ $Revision: 1.29 $ $Date: 2007-08-27 11:50:18 $";
+	public static final String version = "$RCSfile: IfsaProviderListener.java,v $ $Revision: 1.30 $ $Date: 2007-09-05 15:48:07 $";
 
     private final static String THREAD_CONTEXT_SESSION_KEY = "session";
     private final static String THREAD_CONTEXT_RECEIVER_KEY = "receiver";
@@ -235,15 +240,15 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 	
 	public void configure() throws ConfigurationException {
 		super.configure();
-		if (IfsaMessageProtocolEnum.FIRE_AND_FORGET.equals(getMessageProtocolEnum())) {
-			if (!isXaEnabledForSure()) {
-				if (isNotXaEnabledForSure()) {
-					log.warn(getLogPrefix()+"The installed IFSA libraries do not have XA enabled. Transaction integrity cannot be fully guaranteed");
-				} else {
-					log.warn(getLogPrefix()+"XA-support of the installed IFSA libraries cannot be determined. It is assumed XA is NOT enabled. Transaction integrity cannot be fully guaranteed");
-				}
-			}
-		}
+//		if (IfsaMessageProtocolEnum.FIRE_AND_FORGET.equals(getMessageProtocolEnum())) {
+//			if (!isXaEnabledForSure()) {
+//				if (isNotXaEnabledForSure()) {
+//					log.warn(getLogPrefix()+"The installed IFSA libraries do not have XA enabled. Transaction integrity cannot be fully guaranteed");
+//				} else {
+//					log.warn(getLogPrefix()+"XA-support of the installed IFSA libraries cannot be determined. It is assumed XA is NOT enabled. Transaction integrity cannot be fully guaranteed");
+//				}
+//			}
+//		}
 	}
 
 
@@ -306,19 +311,23 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 	public void afterMessageProcessed(PipeLineResult plr, Object rawMessage, HashMap threadContext) throws ListenerException {	
 	    String cid = (String) threadContext.get("cid");
 	    		    
-		if (isJmsTransacted() && !isXaEnabledForSure()) {
-			QueueSession session = (QueueSession) threadContext.get(THREAD_CONTEXT_SESSION_KEY);
-	    
-			try {
-				session.commit();
-			} catch (JMSException e) {
-				log.error(getLogPrefix()+"got error committing the received message", e);
+		try {
+			if (isJmsTransacted() && !(getConnection().isXaEnabledForSure() && JtaUtil.inTransaction())) {
+				QueueSession session = (QueueSession) threadContext.get(THREAD_CONTEXT_SESSION_KEY);
+			
+				try {
+					session.commit();
+				} catch (JMSException e) {
+					log.error(getLogPrefix()+"got error committing the received message", e);
+				}
+			    if (isSessionsArePooled()) {
+					threadContext.remove(THREAD_CONTEXT_SESSION_KEY);
+					releaseSession(session);
+			    }
 			}
-	        if (isSessionsArePooled()) {
-				threadContext.remove(THREAD_CONTEXT_SESSION_KEY);
-				releaseSession(session);
-	        }
-	    }
+		} catch (Exception e) {
+			log.error(e);
+		}
 	    // on request-reply send the reply.
 	    // TODO fix problem: cannot reply from IfsaMessageWrapper, as it is not a message...
 	    if (getMessageProtocolEnum().equals(IfsaMessageProtocolEnum.REQUEST_REPLY)) {
@@ -523,11 +532,16 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 	
 	private boolean sessionNeedsToBeSavedForAfterProcessMessage(Object result)
 	{
-		return isJmsTransacted() &&
-			   	!isXaEnabledForSure() && 
-				isSessionsArePooled()&&
-				result != null && 
-				!(result instanceof IFSAPoisonMessage) ;
+		try {
+			return isJmsTransacted() && 
+					!(getConnection().isXaEnabledForSure() && JtaUtil.inTransaction()) &&
+					isSessionsArePooled()&&
+					result != null && 
+					!(result instanceof IFSAPoisonMessage) ;
+		} catch (Throwable t) {
+			log.warn(t);
+			return false;
+		}
 	}
 	
 	/**

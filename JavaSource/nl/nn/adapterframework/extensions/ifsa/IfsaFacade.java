@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaFacade.java,v $
- * Revision 1.45  2007-08-10 11:11:16  europe\L190409
+ * Revision 1.46  2007-09-05 15:48:07  europe\L190409
+ * moved XA determination capabilities to IfsaConnection
+ *
+ * Revision 1.45  2007/08/10 11:11:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed attribute 'transacted'
  * automatic determination of transaction state and capabilities
  *
@@ -142,6 +145,7 @@ import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IbisException;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.commons.lang.StringUtils;
@@ -186,7 +190,7 @@ import com.ing.ifsa.IFSAServerQueueSender;
  * @since 4.2
  */
 public class IfsaFacade implements INamedObject, HasPhysicalDestination {
-	public static final String version = "$RCSfile: IfsaFacade.java,v $ $Revision: 1.45 $ $Date: 2007-08-10 11:11:16 $";
+	public static final String version = "$RCSfile: IfsaFacade.java,v $ $Revision: 1.46 $ $Date: 2007-09-05 15:48:07 $";
     protected Logger log = LogUtil.getLogger(this);
     
     private static int BASIC_ACK_MODE = Session.AUTO_ACKNOWLEDGE;
@@ -211,9 +215,6 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 	private boolean provider=false;
 		
 	private String providerSelector=null;
-
-	private boolean notXaEnabledForSure=false;
-	private boolean xaEnabledForSure=false;
 
 	public IfsaFacade(boolean asProvider) {
 		super();
@@ -260,14 +261,14 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 					+ "], should be one of the following "
 					+ IfsaMessageProtocolEnum.getNames());
 		// TODO: check if serviceId is specified, either as attribute or as parameter
-		try {
-			log.debug(getLogPrefix()+"opening connection for service, to obtain info about XA awareness");
-			getConnection();   // obtain and cache connection, then start it.
-			closeService();
-		} catch (IfsaException e) {
-			cleanUpAfterException();
-			throw new ConfigurationException(e);
-		}
+//		try {
+//			log.debug(getLogPrefix()+"opening connection for service, to obtain info about XA awareness");
+//			getConnection();   // obtain and cache connection, then start it.
+//			closeService();
+//		} catch (IfsaException e) {
+//			cleanUpAfterException();
+//			throw new ConfigurationException(e);
+//		}
 	}
 
 	protected void cleanUpAfterException() {
@@ -353,15 +354,6 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 					try {
 						log.debug(getLogPrefix()+"creating IfsaConnection");
 						connection = (IfsaConnection)ifsaConnectionFactory.getConnection(getApplicationId());
-						if (ifsaConnectionFactory.xaCapabilityCanBeDetermined()) {
-							if (ifsaConnectionFactory.isXaEnabled()) {
-								xaEnabledForSure=true;
-								notXaEnabledForSure=false;
-							} else {
-								xaEnabledForSure=false;
-								notXaEnabledForSure=true;
-							}
-						}
 					} catch (IbisException e) {
 						if (e instanceof IfsaException) {
 							throw (IfsaException)e;
@@ -590,14 +582,14 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 	        sender.send(msg);
 	
 	        // perform commit
-	        if (isJmsTransacted() && !isXaEnabledForSure()) {
+	        if (isJmsTransacted() && !(connection.isXaEnabledForSure() && JtaUtil.inTransaction())) {
 	            session.commit();
 	            log.debug(getLogPrefix()+ "committing (send) transaction");
 	        }
 	
 	        return msg;
 		    
-	 	} catch (JMSException e) {
+	 	} catch (Exception e) {
 			throw new IfsaException(e);
 		}
 	}
@@ -733,14 +725,6 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 			useSelectorsStore = new Boolean(pooled);
 		}
 		return useSelectorsStore.booleanValue();
-	}
-
-	public boolean isNotXaEnabledForSure() {
-		return notXaEnabledForSure;
-	}
-
-	public boolean isXaEnabledForSure() {
-		return xaEnabledForSure;
 	}
 
 

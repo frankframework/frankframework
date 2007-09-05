@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaConnectionFactory.java,v $
- * Revision 1.11  2007-08-10 11:08:59  europe\L190409
+ * Revision 1.12  2007-09-05 15:46:37  europe\L190409
+ * moved XA determination capabilities to IfsaConnection
+ *
+ * Revision 1.11  2007/08/10 11:08:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added functions to check XA capabilities
  *
  * Revision 1.10  2007/02/21 15:58:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -72,7 +75,7 @@ import com.ing.ifsa.IFSAQueueConnectionFactory;
  * @version Id
  */
 public class IfsaConnectionFactory extends ConnectionFactoryBase {
-	public static final String version="$RCSfile: IfsaConnectionFactory.java,v $ $Revision: 1.11 $ $Date: 2007-08-10 11:08:59 $";
+	public static final String version="$RCSfile: IfsaConnectionFactory.java,v $ $Revision: 1.12 $ $Date: 2007-09-05 15:46:37 $";
 
 	private final static String IFSA_INITIAL_CONTEXT_FACTORY="com.ing.ifsa.IFSAContextFactory";
 	private final static String IFSA_PROVIDER_URL_V2_0="IFSA APPLICATION BUS";
@@ -83,13 +86,15 @@ public class IfsaConnectionFactory extends ConnectionFactoryBase {
 		return connectionMap;
 	}
 
-	private boolean preJms22Api=false;
-	private boolean xaEnabled;
+	// the following two booleans are only valid if an IFSAQueueConnectionFactory has been created
+	// using createConnectionFactory() 
+	private boolean preJms22Api=false; 
+	private boolean xaEnabled=false;
 
 	protected ConnectionBase createConnection(String id) throws IbisException {
 		IFSAContext context = (IFSAContext)getContext();
 		IFSAQueueConnectionFactory connectionFactory = (IFSAQueueConnectionFactory)getConnectionFactory(context, id); 
-		return new IfsaConnection(id, context, connectionFactory, getConnectionMap(),preJms22Api);
+		return new IfsaConnection(id, context, connectionFactory, getConnectionMap(),preJms22Api, xaEnabled);
 	}
 
 	protected String getProviderUrl() {
@@ -150,12 +155,5 @@ public class IfsaConnectionFactory extends ConnectionFactoryBase {
 		return ifsaQueueConnectionFactory;
 	}
 
-	public boolean xaCapabilityCanBeDetermined() {
-		return !preJms22Api;
-	}
-
-	public boolean isXaEnabled() {
-		return xaEnabled;
-	}
 
 }

@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaConnection.java,v $
- * Revision 1.10  2006-02-28 08:44:16  europe\L190409
+ * Revision 1.11  2007-09-05 15:46:37  europe\L190409
+ * moved XA determination capabilities to IfsaConnection
+ *
+ * Revision 1.10  2006/02/28 08:44:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * cleanUp on close configurable
  *
  * Revision 1.9  2005/11/02 09:40:52  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -65,16 +68,18 @@ import com.ing.ifsa.IFSAQueueConnectionFactory;
  * @version Id
  */
 public class IfsaConnection extends ConnectionBase {
-	public static final String version="$RCSfile: IfsaConnection.java,v $ $Revision: 1.10 $ $Date: 2006-02-28 08:44:16 $";
+	public static final String version="$RCSfile: IfsaConnection.java,v $ $Revision: 1.11 $ $Date: 2007-09-05 15:46:37 $";
 
 	private final static String CLEANUP_ON_CLOSE_KEY="ifsa.cleanUpOnClose";
 	private static Boolean cleanUpOnClose=null; 
 
-
-	protected boolean preJms22Api=false;
-	public IfsaConnection(String applicationId, IFSAContext context, IFSAQueueConnectionFactory connectionFactory, HashMap connectionMap, boolean preJms22Api) {
+	private boolean preJms22Api;
+	private boolean xaEnabled;
+	
+	public IfsaConnection(String applicationId, IFSAContext context, IFSAQueueConnectionFactory connectionFactory, HashMap connectionMap, boolean preJms22Api, boolean xaEnabled) {
 		super(applicationId,context,connectionFactory,connectionMap);
 		this.preJms22Api=preJms22Api;
+		this.xaEnabled=xaEnabled;
 		log.debug("created new IfsaConnection for ["+applicationId+"] context ["+context+"] connectionfactory ["+connectionFactory+"]");
 	}
 
@@ -219,6 +224,22 @@ public class IfsaConnection extends ConnectionBase {
 			cleanUpOnClose = new Boolean(cleanup);
 		}
 		return cleanUpOnClose.booleanValue();
+	}
+
+	public boolean xaCapabilityCanBeDetermined() {
+		return !preJms22Api;
+	}
+
+	public boolean isXaEnabled() {
+		return xaEnabled;
+	}
+
+	public boolean isXaEnabledForSure() {
+		return xaCapabilityCanBeDetermined() && isXaEnabled();
+	}
+
+	public boolean isNotXaEnabledForSure() {
+		return xaCapabilityCanBeDetermined() && !isXaEnabled();
 	}
 
 }

@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaRequesterSender.java,v $
- * Revision 1.26  2007-08-10 11:20:37  europe\L190409
+ * Revision 1.27  2007-09-05 15:48:07  europe\L190409
+ * moved XA determination capabilities to IfsaConnection
+ *
+ * Revision 1.26  2007/08/10 11:20:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed attribute 'transacted'
  * automatic determination of transaction state and capabilities
  *
@@ -93,6 +96,8 @@ import javax.jms.QueueReceiver;
 import javax.jms.QueueSender;
 import javax.jms.QueueSession;
 import javax.jms.TextMessage;
+import javax.naming.NamingException;
+import javax.transaction.SystemException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISenderWithParameters;
@@ -143,7 +148,7 @@ import com.ing.ifsa.IFSATimeOutMessage;
  * @since  4.2
  */
 public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParameters {
-	public static final String version="$RCSfile: IfsaRequesterSender.java,v $ $Revision: 1.26 $ $Date: 2007-08-10 11:20:37 $";
+	public static final String version="$RCSfile: IfsaRequesterSender.java,v $ $Revision: 1.27 $ $Date: 2007-09-05 15:48:07 $";
  
 	protected ParameterList paramList = null;
 	
@@ -168,14 +173,14 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 		if (IfsaMessageProtocolEnum.REQUEST_REPLY.equals(getMessageProtocolEnum())) {
 			transactionAttributeToTest=JtaUtil.TRANSACTION_ATTRIBUTE_NEVER;
 		} else {
-			transactionAttributeToTest=JtaUtil.TRANSACTION_ATTRIBUTE_MANDATORY;
-			if (!isXaEnabledForSure()) {
-				if (isNotXaEnabledForSure()) {
-					log.warn(getLogPrefix()+"The installed IFSA libraries do not have XA enabled. Transaction integrity cannot be fully guaranteed");
-				} else {
-					log.warn(getLogPrefix()+"XA-support of the installed IFSA libraries cannot be determined. It is assumed XA is NOT enabled. Transaction integrity cannot be fully guaranteed");
-				}
-			}
+			transactionAttributeToTest=JtaUtil.TRANSACTION_ATTRIBUTE_SUPPORTS;
+//			if (!isXaEnabledForSure()) {
+//				if (isNotXaEnabledForSure()) {
+//					log.warn(getLogPrefix()+"The installed IFSA libraries do not have XA enabled. Transaction integrity cannot be fully guaranteed");
+//				} else {
+//					log.warn(getLogPrefix()+"XA-support of the installed IFSA libraries cannot be determined. It is assumed XA is NOT enabled. Transaction integrity cannot be fully guaranteed");
+//				}
+//			}
 		}
 	}
 	
@@ -274,6 +279,13 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 		}
 		if (!compatible) {
 			throw new SenderException("transaction state ["+JtaUtil.displayTransactionStatus()+"] not compabtible with message protocol ["+getMessageProtocol()+"]");
+		}
+		try {
+			if (getMessageProtocolEnum().equals(IfsaMessageProtocolEnum.FIRE_AND_FORGET) && !JtaUtil.inTransaction()) {
+				log.warn("Sending messages in Fire&Forget mode should be performed under transaction control");
+			}
+		} catch (Exception e) {
+			throw new SenderException(e);
 		}
 
 		ParameterValueList paramValueList;
