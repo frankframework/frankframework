@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.44  2007-08-27 11:51:43  europe\L190409
+ * Revision 1.45  2007-09-05 13:05:02  europe\L190409
+ * moved copying of context to Misc
+ *
+ * Revision 1.44  2007/08/27 11:51:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * modified afterMessageProcessed handling
  * added attribute 'returnedSessionKeys'
  *
@@ -150,7 +153,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.StringTokenizer;
 
 import javax.transaction.Status;
 import javax.transaction.UserTransaction;
@@ -268,7 +270,7 @@ import org.apache.log4j.Logger;
  * @since 4.2
  */
 public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, IMessageHandler, IbisExceptionListener, HasSender, TracingEventNumbers {
-	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.44 $ $Date: 2007-08-27 11:51:43 $";
+	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.45 $ $Date: 2007-09-05 13:05:02 $";
 	protected Logger log = LogUtil.getLogger(this);
  
 	private String returnIfStopped="";
@@ -1159,16 +1161,10 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 						}
 					}
 				} finally {
-					if (StringUtils.isNotEmpty(getReturnedSessionKeys()) && threadContext!=null) {
-						if (log.isDebugEnabled()) log.debug("setting returned session keys ["+getReturnedSessionKeys()+"]");
-						StringTokenizer st = new StringTokenizer(getReturnedSessionKeys()," ,;");
-						while (st.hasMoreTokens()) {
-							String key=st.nextToken();
-							Object value=pipelineSession.get(key);
-							if (log.isDebugEnabled()) log.debug("returning session key ["+key+"] value ["+value+"]");
-							threadContext.put(key,value);
-						}
+					if (log.isDebugEnabled() && StringUtils.isNotEmpty(getReturnedSessionKeys())) {
+						log.debug("returning values of session keys ["+getReturnedSessionKeys()+"]");
 					}
+					Misc.copyContext(getReturnedSessionKeys(),pipelineSession,threadContext);
 				}
 				try {
 					if (getSender()!=null) {
