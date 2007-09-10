@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcTransactionalStorage.java,v $
- * Revision 1.20  2007-06-12 11:21:11  europe\L190409
+ * Revision 1.21  2007-09-10 11:18:26  europe\L190409
+ * updated javadoc
+ *
+ * Revision 1.20  2007/06/12 11:21:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * adapted to new functionality
  *
  * Revision 1.19  2007/06/07 12:27:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -152,12 +155,21 @@ import org.apache.commons.lang.StringUtils;
  *  </pre>
  * If these objects do not exist, Ibis will try to create them if the attribute createTable="true".
  * 
+ * <br/>
+ * N.B. Note on using XA transactions:
+ * If transactions are used, make sure that the database user can access the table SYS.DBA_PENDING_TRANSACTIONS.
+ * If not, transactions present when the server goes down cannot be properly recovered, resulting in exceptions like:
+ * <pre>
+   The error code was XAER_RMERR. The exception stack trace follows: javax.transaction.xa.XAException
+	at oracle.jdbc.xa.OracleXAResource.recover(OracleXAResource.java:508)
+   </pre>
+ * 
  * @version Id
  * @author  Gerrit van Brakel
  * @since 	4.1
  */
 public class JdbcTransactionalStorage extends JdbcFacade implements ITransactionalStorage {
-	public static final String version = "$RCSfile: JdbcTransactionalStorage.java,v $ $Revision: 1.20 $ $Date: 2007-06-12 11:21:11 $";
+	public static final String version = "$RCSfile: JdbcTransactionalStorage.java,v $ $Revision: 1.21 $ $Date: 2007-09-10 11:18:26 $";
 	
 	// the following currently only for debug.... 
 	boolean checkIfTableExists=true;

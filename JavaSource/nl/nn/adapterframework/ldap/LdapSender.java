@@ -1,6 +1,9 @@
 /*
  * $Log: LdapSender.java,v $
- * Revision 1.26  2007-09-04 07:59:03  europe\L190409
+ * Revision 1.27  2007-09-10 11:18:41  europe\L190409
+ * updated javadoc
+ *
+ * Revision 1.26  2007/09/04 07:59:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * made storeLdapException public
  *
  * Revision 1.25  2007/08/30 15:09:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -256,13 +259,18 @@ import org.apache.commons.lang.StringUtils;
  *	&lt;/entries&gt;
  * </pre></code> <br/>
  *
+ * <h2>upgrading from earlier versions (pre 4.6)</h2>
+ * <ul>
+ *   <li>In earlier versions, the entryName was taken from the first parameter. To upgrade, call your first parameter 'entryName'</li> 
+ *   <li>In earlier versions, the filterExpression was taken from the first parameter. To upgrade, call your second parameter 'filterExpression'</li> 
+ * </ul>
  *  
  * @author Gerrit van Brakel
  * 
  * @version Id
  */
 public class LdapSender extends JNDIBase implements ISenderWithParameters {
-	public static final String version = "$RCSfile: LdapSender.java,v $  $Revision: 1.26 $ $Date: 2007-09-04 07:59:03 $";
+	public static final String version = "$RCSfile: LdapSender.java,v $  $Revision: 1.27 $ $Date: 2007-09-10 11:18:41 $";
 
 	private String FILTER = "filterExpression";
 	private String ENTRYNAME = "entryName";
