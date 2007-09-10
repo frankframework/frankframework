@@ -1,6 +1,9 @@
 /*
  * $Log: IRecordHandler.java,v $
- * Revision 1.5  2007-05-03 11:29:43  europe\L190409
+ * Revision 1.6  2007-09-10 11:05:32  europe\L190409
+ * renamed mustPrefix() to isNewRecordType()
+ *
+ * Revision 1.5  2007/05/03 11:29:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * add methods configure(), open() and close()
  *
  * Revision 1.4  2006/05/19 09:28:38  Peter Eijgermans <peter.eijgermans@ibissource.org>
@@ -64,6 +67,6 @@ public interface IRecordHandler extends INamedObject {
 	 * @return boolean that indicates whether a prefix must be added to the transformed result
 	 * @throws Exception
 	 */
-	boolean mustPrefix(PipeLineSession session, boolean equalRecordTypes, ArrayList prevRecord, ArrayList curRecord) throws Exception;
+	boolean isNewRecordType(PipeLineSession session, boolean equalRecordTypes, ArrayList prevRecord, ArrayList curRecord) throws Exception;
 	
 }
