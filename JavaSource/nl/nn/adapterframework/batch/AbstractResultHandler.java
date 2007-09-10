@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractResultHandler.java,v $
- * Revision 1.7  2007-08-03 08:25:06  europe\L190409
+ * Revision 1.8  2007-09-10 11:11:36  europe\L190409
+ * removed unused code
+ *
+ * Revision 1.7  2007/08/03 08:25:06  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added configure(), open() and close()
  * moved setDefault() to here
  *
@@ -27,7 +30,6 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.util.LogUtil;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 
@@ -64,18 +66,6 @@ public abstract class AbstractResultHandler implements IResultHandler {
 	}
 
 
-	protected String[] prefix(boolean mustPrefix, boolean hasPreviousRecord) {
-		if (! mustPrefix || StringUtils.isEmpty(prefix)) {
-			return null;
-		}
-		if (! hasPreviousRecord) {
-			return new String[] { prefix }; 
-		}
-		else {
-			return new String[] { suffix, prefix };
-		}
-	}
-	
 	public void setName(String string) {
 		name = string;
 	}
