@@ -1,6 +1,9 @@
 /*
  * $Log: ClassUtils.java,v $
- * Revision 1.11  2007-07-18 13:35:30  europe\L190409
+ * Revision 1.12  2007-09-10 11:20:15  europe\L190409
+ * added default getResourceURL()
+ *
+ * Revision 1.11  2007/07/18 13:35:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * try to get a resource as a URL
  * no replacemen of space to %20 for jar-entries
  *
@@ -44,7 +47,7 @@ import org.apache.log4j.Logger;
  *
  */
 public class ClassUtils {
-	public static final String version = "$RCSfile: ClassUtils.java,v $ $Revision: 1.11 $ $Date: 2007-07-18 13:35:30 $";
+	public static final String version = "$RCSfile: ClassUtils.java,v $ $Revision: 1.12 $ $Date: 2007-09-10 11:20:15 $";
 	private static Logger log = LogUtil.getLogger(ClassUtils.class);
 
     /**
@@ -92,6 +95,11 @@ public class ClassUtils {
         return stream;
          
     }
+    
+	static public URL getResourceURL(String resource) {
+		return getResourceURL(null,resource);
+	}
+
   /**
      * Get a resource-URL, first from Class then from ClassLoader
      * if not found with class.
