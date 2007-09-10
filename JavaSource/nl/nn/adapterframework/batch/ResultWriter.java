@@ -1,6 +1,10 @@
 /*
  * $Log: ResultWriter.java,v $
- * Revision 1.2  2007-09-05 13:02:33  europe\L190409
+ * Revision 1.3  2007-09-10 11:11:59  europe\L190409
+ * removed logic processing from writePrefix to calling class
+ * renamed writePrefix() and writeSuffix() into open/closeRecordType()
+ *
+ * Revision 1.2  2007/09/05 13:02:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.1  2007/08/03 08:37:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -40,7 +44,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public abstract class ResultWriter extends AbstractResultHandler {
-	public static final String version = "$RCSfile: ResultWriter.java,v $  $Revision: 1.2 $ $Date: 2007-09-05 13:02:33 $";
+	public static final String version = "$RCSfile: ResultWriter.java,v $  $Revision: 1.3 $ $Date: 2007-09-10 11:11:59 $";
 	
 	private Map openWriters = Collections.synchronizedMap(new HashMap());
 	
@@ -82,14 +86,14 @@ public abstract class ResultWriter extends AbstractResultHandler {
 		return null;
 	}
 	
-	public void writePrefix(PipeLineSession session, String streamId, boolean mustPrefix, boolean hasPreviousRecord) throws Exception {
-		String[] prefix = prefix(mustPrefix, hasPreviousRecord);
-		if (prefix != null) {
-			write(session, streamId, prefix);
+	public void openRecordType(PipeLineSession session, String streamId) throws Exception {
+		BufferedWriter bw = getBufferedWriter(session, streamId, false);
+		if (bw != null && ! StringUtils.isEmpty(getPrefix())) {
+			write(session, streamId, getPrefix());
 		}
 	}
 
-	public void writeSuffix(PipeLineSession session, String streamId) throws Exception {
+	public void closeRecordType(PipeLineSession session, String streamId) throws Exception {
 		BufferedWriter bw = getBufferedWriter(session, streamId, false);
 		if (bw != null && ! StringUtils.isEmpty(getSuffix())) {
 			write(session, streamId, getSuffix());

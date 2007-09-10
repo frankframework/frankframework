@@ -1,6 +1,10 @@
 /*
  * $Log: StreamTransformerPipe.java,v $
- * Revision 1.4  2007-08-03 08:40:41  europe\L190409
+ * Revision 1.5  2007-09-10 11:08:42  europe\L190409
+ * removed logic processing from writePrefix to calling class
+ * renamed writePrefix() and writeSuffix() into open/closeRecordType()
+ *
+ * Revision 1.4  2007/08/03 08:40:41  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * call configure(), open() and close() on resulthandlers too
  *
  * Revision 1.3  2007/07/26 16:12:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -57,7 +61,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class StreamTransformerPipe extends FixedForwardPipe {
-	public static final String version = "$RCSfile: StreamTransformerPipe.java,v $  $Revision: 1.4 $ $Date: 2007-08-03 08:40:41 $";
+	public static final String version = "$RCSfile: StreamTransformerPipe.java,v $  $Revision: 1.5 $ $Date: 2007-09-10 11:08:42 $";
 
 	private IRecordHandlerManager initialManager=null;
 	private IResultHandler defaultHandler=null;
@@ -303,8 +307,13 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 					// if there is a result handler, write the transformed result
 					IResultHandler resultHandler = handlers.getResultHandler();
 					if (result != null && resultHandler != null) {
-						boolean mustPrefix = curHandler.mustPrefix(session, curHandler.equals(prevHandler), prevParsedRecord, parsedRecord); 
-						resultHandler.writePrefix(session, streamId, mustPrefix, prevHandler != null);
+						boolean recordTypeChanged = curHandler.isNewRecordType(session, curHandler.equals(prevHandler), prevParsedRecord, parsedRecord);
+						if (recordTypeChanged) {
+							if (prevHandler != null)  {
+								resultHandler.closeRecordType(session, streamId);
+							}
+							resultHandler.openRecordType(session, streamId);
+						}
 						resultHandler.handleResult(session, streamId, handlers.getRecordKey(), result);
 					}
 					prevParsedRecord = parsedRecord;
@@ -334,14 +343,14 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	
 	/*
 	 * finalizeResult is called when all records in the input file are handled
-	 * and gives the resulthandlers a chance to f
+	 * and gives the resulthandlers a chance to finalize.
 	 */	
 	private Object finalizeResult(PipeLineSession session, String inputFilename, boolean error) throws Exception {
 		// finalize result
 		ArrayList results = new ArrayList();
 		for (Iterator handlersIt = registeredResultHandlers.values().iterator(); handlersIt.hasNext();) {
 			IResultHandler resultHandler = (IResultHandler)handlersIt.next();
-			resultHandler.writeSuffix(session, inputFilename);
+			resultHandler.closeRecordType(session, inputFilename);
 			Object result = resultHandler.finalizeResult(session, inputFilename, error);
 			if (result != null) {
 				results.add(result);

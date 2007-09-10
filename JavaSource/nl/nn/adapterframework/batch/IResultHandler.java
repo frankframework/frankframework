@@ -1,6 +1,10 @@
 /*
  * $Log: IResultHandler.java,v $
- * Revision 1.6  2007-08-03 08:26:51  europe\L190409
+ * Revision 1.7  2007-09-10 11:07:00  europe\L190409
+ * removed logic processing from writePrefix to calling class
+ * renamed writePrefix() and writeSuffix() into open/closeRecordType()
+ *
+ * Revision 1.6  2007/08/03 08:26:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added configure(), open() and close()
  *
  * Revision 1.5  2007/07/24 07:59:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -67,13 +71,13 @@ public interface IResultHandler extends INamedObject {
 	 * @param hasPreviousRecord boolean indicates if a previous record has been written, in case a suffix has to be written first
 	 * @throws Exception
 	 */
-	void writePrefix(PipeLineSession session, String streamId, boolean mustPrefix, boolean hasPreviousRecord) throws Exception;
+	void openRecordType(PipeLineSession session, String streamId) throws Exception;
 	
 	/**
 	 * @param session  current PipeLineSession
 	 * @param streamId identification of the original file/stream/message containing the untransformed records
 	 */
-	void writeSuffix(PipeLineSession session, String streamId) throws Exception;
+	void closeRecordType(PipeLineSession session, String streamId) throws Exception;
 	
 	/**
 	 * @return true if this resulthandler should be used for all flows if no resulthandler is specified for that flow 

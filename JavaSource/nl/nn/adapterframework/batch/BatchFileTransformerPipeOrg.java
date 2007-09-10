@@ -1,6 +1,10 @@
 /*
  * $Log: BatchFileTransformerPipeOrg.java,v $
- * Revision 1.1  2007-07-24 16:10:11  europe\L190409
+ * Revision 1.2  2007-09-10 11:08:00  europe\L190409
+ * removed logic processing from writePrefix to calling class
+ * renamed writePrefix() and writeSuffix() into open/closeRecordType()
+ *
+ * Revision 1.1  2007/07/24 16:10:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * new style BatchFileTransformerPipe
  *
  * Revision 1.7  2007/07/10 07:11:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -68,7 +72,7 @@ import org.apache.commons.lang.StringUtils;
  * @author: John Dekker
  */
 public class BatchFileTransformerPipeOrg extends FixedForwardPipe {
-	public static final String version = "$RCSfile: BatchFileTransformerPipeOrg.java,v $  $Revision: 1.1 $ $Date: 2007-07-24 16:10:11 $";
+	public static final String version = "$RCSfile: BatchFileTransformerPipeOrg.java,v $  $Revision: 1.2 $ $Date: 2007-09-10 11:08:00 $";
 
 	private IRecordHandlerManager initialFactory;
 	private IResultHandler defaultHandler;
@@ -297,8 +301,13 @@ public class BatchFileTransformerPipeOrg extends FixedForwardPipe {
 					// if there is a result handler, write the transformed result
 					IResultHandler resultHandler = handlers.getResultHandler();
 					if (result != null && resultHandler != null) {
-						boolean mustPrefix = curHandler.mustPrefix(session, curHandler.equals(prevHandler), prevParsedRecord, parsedRecord); 
-						resultHandler.writePrefix(session, inputFilename, mustPrefix, prevHandler != null);
+						boolean mustPrefix = curHandler.isNewRecordType(session, curHandler.equals(prevHandler), prevParsedRecord, parsedRecord); 
+						if (mustPrefix) {
+							if (prevHandler != null)  {
+								resultHandler.closeRecordType(session, inputFilename);
+							}
+							resultHandler.openRecordType(session, inputFilename);
+						}
 						resultHandler.handleResult(session, inputFilename, handlers.getRecordKey(), result);
 					}
 					prevParsedRecord = parsedRecord;
@@ -325,7 +334,7 @@ public class BatchFileTransformerPipeOrg extends FixedForwardPipe {
 		ArrayList results = new ArrayList();
 		for (Iterator handlersIt = registeredResultHandlers.values().iterator(); handlersIt.hasNext();) {
 			IResultHandler resultHandler = (IResultHandler)handlersIt.next();
-			resultHandler.writeSuffix(session, inputFilename);
+			resultHandler.closeRecordType(session, inputFilename);
 			Object result = resultHandler.finalizeResult(session, inputFilename, error);
 			if (result != null) {
 				results.add(result);
