@@ -1,6 +1,10 @@
 /*
  * $Log: AbstractRecordHandler.java,v $
- * Revision 1.7  2007-08-03 08:24:00  europe\L190409
+ * Revision 1.8  2007-09-10 11:11:05  europe\L190409
+ * renamed mustPrefix() to isNewRecordType()
+ * renamed attribute 'separatorWhenFieldsDiffer' to 'recordIdentifyingFields'
+ *
+ * Revision 1.7  2007/08/03 08:24:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.6  2007/07/26 16:02:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -48,7 +52,7 @@ import org.apache.log4j.Logger;
  * <tr><td>{@link #setName(String) name}</td><td>name of the RecordHandler</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setInputFields(String) inputFields}</td><td>Comma separated specification of fieldlengths</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setInputSeparator(String) inputSeparator}</td><td>Separator that separated the fields in the record</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setFieldsDifferConditionForPrefix(String) inputFields}</td><td>Comma separated numbers of those fields that are compared with the previous record to determine if a prefix must be written</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setRecordIdentifyingFields(String) recordIdentifyingFields}</td><td>Comma separated list of numbers of those fields that are compared with the previous record to determine if a prefix must be written. If any of these fields is not equal in both records, the record types are assumed to be different</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * 
@@ -60,9 +64,9 @@ public abstract class AbstractRecordHandler implements IRecordHandler {
 
 	private String name;
 	private String inputSeparator;
-
+	
 	private List inputFields=new LinkedList(); 
-	private List separatorWhenFieldsDiffer=new LinkedList();
+	private List recordIdentifyingFields=new LinkedList();
 	
 
 	public void configure() throws ConfigurationException {
@@ -83,13 +87,6 @@ public abstract class AbstractRecordHandler implements IRecordHandler {
 		setInputFields(part.getValue());
 	}
 
-	public void setInputFields(String fieldLengths) {
-		StringTokenizer st = new StringTokenizer(fieldLengths, ",");
-		while (st.hasMoreTokens()) {
-			String token = st.nextToken().trim();
-			addInputField(Integer.parseInt(token));
-		}
-	}
 
 	protected int getNumberOfInputFields() {
 		return inputFields.size();
@@ -133,26 +130,7 @@ public abstract class AbstractRecordHandler implements IRecordHandler {
 		
 		return result;
 	}
-	
-	public boolean mustPrefix(PipeLineSession session, boolean equalRecordTypes, ArrayList prevRecord, ArrayList curRecord) {
-		if (! equalRecordTypes) {
-			return true;
-		}
-			
-		if (getSeparatorWhenFieldsDiffer().size() > 0) {
-			if (prevRecord == null) {
-				return true;
-			}
-			for (Iterator fieldNdxIt = separatorWhenFieldsDiffer.iterator(); fieldNdxIt.hasNext();) {
-				int ndx = ((Integer)fieldNdxIt.next()).intValue();
-				if (! prevRecord.get(ndx-1).equals(curRecord.get(ndx-1))) {
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-	
+
 	private ArrayList parseUsingSeparator(String record) {
 		ArrayList result = new ArrayList();
 		
@@ -171,6 +149,26 @@ public abstract class AbstractRecordHandler implements IRecordHandler {
 		
 		return result;
 	}
+	
+	public boolean isNewRecordType(PipeLineSession session, boolean equalRecordTypes, ArrayList prevRecord, ArrayList curRecord) {
+		if (! equalRecordTypes) {
+			return true;
+		}
+			
+		if (getRecordIdentifyingFields().size() > 0) {
+			if (prevRecord == null) {
+				return true;
+			}
+			for (Iterator fieldNdxIt = recordIdentifyingFields.iterator(); fieldNdxIt.hasNext();) {
+				int ndx = ((Integer)fieldNdxIt.next()).intValue();
+				if (! prevRecord.get(ndx-1).equals(curRecord.get(ndx-1))) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
 
 	protected class InputField {
 		private int length;
@@ -181,22 +179,24 @@ public abstract class AbstractRecordHandler implements IRecordHandler {
 	}
 
 
-
-
-	public void setSeparatorWhenFieldsDiffer(List list) {
-		separatorWhenFieldsDiffer = list;
-	}
-	public List getSeparatorWhenFieldsDiffer() {
-		return separatorWhenFieldsDiffer;
+//	public void setSeparatorWhenFieldsDiffer(List list) {
+//		recordIdentifyingFields = list;
+//	}
+	public List getRecordIdentifyingFields() {
+		return recordIdentifyingFields;
 	}
 
 
-	public void setFieldsDifferConditionForPrefix(String fieldNrs) {
+	public void setRecordIdentifyingFields(String fieldNrs) {
 		StringTokenizer st = new StringTokenizer(fieldNrs, ",");
 		while (st.hasMoreTokens()) {
 			String token = st.nextToken().trim();
-			separatorWhenFieldsDiffer.add(new Integer(token));
+			recordIdentifyingFields.add(new Integer(token));
 		}
+	}
+	public void setFieldsDifferConditionForPrefix(String fieldNrs) {
+		log.warn(ClassUtils.nameOf(this) +"["+getName()+"]: the attribute 'fieldsDifferConditionForPrefix' has been renamed 'recordIdentifyingFields' since version 4.7");
+		setRecordIdentifyingFields(fieldNrs);
 	}
 
 	public void setName(String string) {
@@ -205,6 +205,16 @@ public abstract class AbstractRecordHandler implements IRecordHandler {
 	public String getName() {
 		return name;
 	}
+
+
+	public void setInputFields(String fieldLengths) {
+		StringTokenizer st = new StringTokenizer(fieldLengths, ",");
+		while (st.hasMoreTokens()) {
+			String token = st.nextToken().trim();
+			addInputField(Integer.parseInt(token));
+		}
+	}
+
 
 	/**
 	 * @deprecated typo has been fixed: please use 'inputSeparator' instead of 'inputSeperator'
