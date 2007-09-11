@@ -1,6 +1,9 @@
 /*
  * $Log: BatchFileTransformerPipeOrg.java,v $
- * Revision 1.2  2007-09-10 11:08:00  europe\L190409
+ * Revision 1.3  2007-09-11 11:51:44  europe\L190409
+ * updated javadoc
+ *
+ * Revision 1.2  2007/09/10 11:08:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed logic processing from writePrefix to calling class
  * renamed writePrefix() and writeSuffix() into open/closeRecordType()
  *
@@ -64,15 +67,15 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #registerChild(IResultHandler) resultHandler}</td><td>Handler for processing transformed records</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #registerChild(IRecordHandlerManager) manager}</td><td>Manager determines which handlers are to be used for the current line</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #registerChild(RecordHandlingFlow) flow}</td><td>Element that contains the handlers for a specific record type</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #move2dirAfterTransform(String) directory}</td><td>Directory in which the transformed file(s) is stored</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #move2dirAfterError(String) directory}</td><td>Directory to which the inputfile is moved in case an error occurs</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setMove2dirAfterTransform(String) move2dirAfterTransform}</td><td>Directory in which the transformed file(s) is stored</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setMove2dirAfterError(String) move2dirAfterError}</td><td>Directory to which the inputfile is moved in case an error occurs</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * 
  * @author: John Dekker
  */
 public class BatchFileTransformerPipeOrg extends FixedForwardPipe {
-	public static final String version = "$RCSfile: BatchFileTransformerPipeOrg.java,v $  $Revision: 1.2 $ $Date: 2007-09-10 11:08:00 $";
+	public static final String version = "$RCSfile: BatchFileTransformerPipeOrg.java,v $  $Revision: 1.3 $ $Date: 2007-09-11 11:51:44 $";
 
 	private IRecordHandlerManager initialFactory;
 	private IResultHandler defaultHandler;

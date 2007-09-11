@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractResultHandler.java,v $
- * Revision 1.8  2007-09-10 11:11:36  europe\L190409
+ * Revision 1.9  2007-09-11 11:51:45  europe\L190409
+ * updated javadoc
+ *
+ * Revision 1.8  2007/09/10 11:11:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed unused code
  *
  * Revision 1.7  2007/08/03 08:25:06  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -43,7 +46,7 @@ import org.apache.log4j.Logger;
  * <tr><td>{@link #setName(String) name}</td><td>Name of the resulthandler</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setPrefix(String) prefix}</td><td>Prefix that has to be written before record, if the record is in another block than the previous record</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSuffix(String) suffix}</td><td>Suffix that has to be written after the record, if the record is in another block than the next record</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setDefaultResultHandler(boolean) default}</td><td>If true, this resulthandler is the default for all RecordHandlingFlow that do not have a handler specified</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setDefault(boolean) default}</td><td>If true, this resulthandler is the default for all RecordHandlingFlow that do not have a handler specified</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * 

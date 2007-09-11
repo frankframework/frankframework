@@ -1,6 +1,9 @@
 /*
  * $Log: RecordTransformer.java,v $
- * Revision 1.10  2007-08-03 08:38:48  europe\L190409
+ * Revision 1.11  2007-09-11 11:51:45  europe\L190409
+ * updated javadoc
+ *
+ * Revision 1.10  2007/08/03 08:38:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fixed typo
  *
  * Revision 1.9  2006/05/19 09:28:37  Peter Eijgermans <peter.eijgermans@ibissource.org>
@@ -75,7 +78,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>classname</td><td>nl.nn.adapterframework.batch.RecordTransformer</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setOutputFields(String) outputFields}</td><td>Specification of the output record</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setOutputSeperator(String) outputSeperator}</td><td>Optional seperator to add between the fields</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setOutputSeparator(String) outputSeparator}</td><td>Optional seperator to add between the fields</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * 
@@ -83,7 +86,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class RecordTransformer extends AbstractRecordHandler {
-	public static final String version = "$RCSfile: RecordTransformer.java,v $  $Revision: 1.10 $ $Date: 2007-08-03 08:38:48 $";
+	public static final String version = "$RCSfile: RecordTransformer.java,v $  $Revision: 1.11 $ $Date: 2007-09-11 11:51:45 $";
 
 	private String outputSeparator;
 

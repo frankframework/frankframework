@@ -1,6 +1,9 @@
 /*
  * $Log: BatchFileTransformerPipe.java,v $
- * Revision 1.11  2007-09-04 09:34:22  europe\L190409
+ * Revision 1.12  2007-09-11 11:51:45  europe\L190409
+ * updated javadoc
+ *
+ * Revision 1.11  2007/09/04 09:34:22  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * check type of input message
  *
  * Revision 1.10  2007/09/04 07:57:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -38,8 +41,8 @@ import org.apache.commons.lang.StringUtils;
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>classname</td><td>nl.nn.adapterframework.batch.BatchFileTransformerPipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #move2dirAfterTransform(String) directory}</td><td>Directory in which the transformed file(s) is stored</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #move2dirAfterError(String) directory}</td><td>Directory to which the inputfile is moved in case an error occurs</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setMove2dirAfterTransform(String) move2dirAfterTransform}</td><td>Directory in which the transformed file(s) is stored</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setMove2dirAfterError(String) move2dirAfterError}</td><td>Directory to which the inputfile is moved in case an error occurs</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * <table border="1">
@@ -55,7 +58,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class BatchFileTransformerPipe extends StreamTransformerPipe {
-	public static final String version = "$RCSfile: BatchFileTransformerPipe.java,v $  $Revision: 1.11 $ $Date: 2007-09-04 09:34:22 $";
+	public static final String version = "$RCSfile: BatchFileTransformerPipe.java,v $  $Revision: 1.12 $ $Date: 2007-09-11 11:51:45 $";
 
 	private String move2dirAfterTransform;
 	private String move2dirAfterError;
