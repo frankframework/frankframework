@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcUtil.java,v $
- * Revision 1.14  2007-09-05 13:06:47  europe\L190409
+ * Revision 1.15  2007-09-12 09:27:36  europe\L190409
+ * added warning in fullClose()
+ *
+ * Revision 1.14  2007/09/05 13:06:47  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * avoid NPE when putting null BLOBs and CLOBs
  *
  * Revision 1.13  2007/07/26 16:25:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -79,7 +82,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class JdbcUtil {
-	public static final String version = "$RCSfile: JdbcUtil.java,v $ $Revision: 1.14 $ $Date: 2007-09-05 13:06:47 $";
+	public static final String version = "$RCSfile: JdbcUtil.java,v $ $Revision: 1.15 $ $Date: 2007-09-12 09:27:36 $";
 	protected static Logger log = LogUtil.getLogger(JdbcUtil.class);
 	
 	private static final boolean useMetaData=false;
@@ -282,7 +285,11 @@ public class JdbcUtil {
 	public static void fullClose(ResultSet rs) {
 		Statement statement=null;
 		Connection connection=null;
-				
+		
+		if (rs==null) {
+			log.warn("resultset to close was null");
+			return;		
+		}
 		try {
 			statement = rs.getStatement();
 			connection = statement.getConnection();
