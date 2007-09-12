@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.45  2007-09-05 13:05:02  europe\L190409
+ * Revision 1.46  2007-09-12 09:27:06  europe\L190409
+ * added attribute pollInterval
+ *
+ * Revision 1.45  2007/09/05 13:05:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * moved copying of context to Misc
  *
  * Revision 1.44  2007/08/27 11:51:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -216,6 +219,7 @@ import org.apache.log4j.Logger;
  * <tr><td>{@link #setReturnedSessionKeys(String) returnedSessionKeys}</td><td>comma separated list of keys of session variables that should be returned to caller, for correct results as well as for erronous results. (Only for listeners that support it, like JavaListener)</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setTransacted(boolean) transacted}</td><td>if set to <code>true, messages will be received and processed under transaction control. If processing fails, messages will be sent to the error-sender. (see below)</code></td><td><code>false</code></td></tr>
  * <tr><td>{@link #setMaxRetries(int) maxRetries}</td><td>The number of times a pulling listening attempt is retried after an exception is caught</td><td>3</td></tr>
+ * <tr><td>{@link #setPollInterval(int) pollInterval}</td><td>The number of seconds waited after an unsuccesful poll attempt before another poll attempt is made.</td><td>0</td></tr>
  * <tr><td>{@link #setIbis42compatibility(boolean) ibis42compatibility}</td><td>if set to <code>true, the result of a failed processing of a message is a formatted errormessage. Otherwise a listener specific error handling is performed</code></td><td><code>false</code></td></tr>
  * <tr><td>{@link #setBeforeEvent(int) beforeEvent}</td>      <td>METT eventnumber, fired just before a message is processed by this Receiver</td><td>-1 (disabled)</td></tr>
  * <tr><td>{@link #setAfterEvent(int) afterEvent}</td>        <td>METT eventnumber, fired just after message processing by this Receiver is finished</td><td>-1 (disabled)</td></tr>
@@ -270,7 +274,7 @@ import org.apache.log4j.Logger;
  * @since 4.2
  */
 public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, IMessageHandler, IbisExceptionListener, HasSender, TracingEventNumbers {
-	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.45 $ $Date: 2007-09-05 13:05:02 $";
+	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.46 $ $Date: 2007-09-12 09:27:06 $";
 	protected Logger log = LogUtil.getLogger(this);
  
 	private String returnIfStopped="";
@@ -295,7 +299,8 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 	private int numThreads = 1;
 	// the number of threads that are activily polling for messages (concurrently, only for pulling listeners)
 	private int numThreadsPolling = 1;
-   
+	private int pollInterval=0;
+  
 	private Counter threadsProcessing = new Counter(0);
 	private Counter threadsRunning = new Counter(0);
 	private Semaphore pollToken = null;
@@ -751,7 +756,13 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 					} finally {
 						TracingUtil.afterEvent(this);
 					}
-				} 
+				} else {
+					if (getPollInterval()>0) {
+						for (int i=0; i<getPollInterval() && getRunState().equals(RunStateEnum.STARTED); i++) {
+							Thread.sleep(1000);
+						}
+					}
+				}
 			}
 	
 		} catch (Throwable e) {
@@ -1584,5 +1595,13 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 	public String getReturnedSessionKeys() {
 		return returnedSessionKeys;
 	}
+
+	public void setPollInterval(int i) {
+		pollInterval = i;
+	}
+	public int getPollInterval() {
+		return pollInterval;
+	}
+
 
 }
