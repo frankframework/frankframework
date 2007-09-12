@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcTableListener.java,v $
- * Revision 1.1  2007-09-11 11:53:01  europe\L190409
+ * Revision 1.2  2007-09-12 09:26:39  europe\L190409
+ * first working version
+ *
+ * Revision 1.1  2007/09/11 11:53:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added JdbcListeners
  *
  */
@@ -11,7 +14,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import org.apache.commons.lang.StringUtils;
 
 /**
- * Database Listener that operates on a table having at least a key, message and status field.
+ * Database Listener that operates on a table having at least a key and a status field.
  *
  * <p><b>Configuration:</b>
  * <table border="1">
@@ -20,9 +23,15 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setName(String) name}</td>  <td>name of the listener</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setTableName(String) tableName}</td>  <td>name of the table to be used</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setKeyField(String) keyField}</td>  <td>primary key field of the table, used to identify messages</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setMessageField(String) messageField}</td>  <td>field containing the message data</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setStatusField(String) statusField}</td>  <td>field containing the status of the message</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setOrderField(String) orderField}</td>  <td>Field determining the order in which messages are processed</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setMessageField(String) messageField}</td>  <td>(optional) field containing the message data</td><td><i>same as keyField</i></td></tr>
+ * <tr><td>{@link #setOrderField(String) orderField}</td>  <td>(optional) field determining the order in which messages are processed</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setTimestampField(String) timestampField}</td>  <td>(optional) field used to store the date and time of the last change of the status field</td><td>&nbsp;</td></tr>
+
+ * <tr><td>{@link #setStatusValueAvailable(String) statusValueAvailable}</td> <td>(optional) value of status field indicating row is available to be processed. If not specified, any row not having any of the other status values is considered available.</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setStatusValueInProcess(String) statusValueInProcess}</td> <td>value of status field indicating row is currently being processed</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setStatusValueProcessed(String) statusValueProcessed}</td> <td>value of status field indicating row is processed OK</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setStatusValueError(String) statusValueError}</td>         <td>value of status field indicating the processing of the row resulted in an error</td><td>&nbsp;</td></tr>
 
  * <tr><td>{@link #setDatasourceName(String) datasourceName}</td><td>can be configured from JmsRealm, too</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDatasourceNameXA(String) datasourceNameXA}</td><td>can be configured from JmsRealm, too</td><td>&nbsp;</td></tr>
@@ -40,12 +49,12 @@ public class JdbcTableListener extends JdbcListener {
 	private String tableName;
 	private String statusField;
 	private String orderField;
-//	private String timestampField;
+	private String timestampField;
 	
 	private String statusValueAvailable;
 	private String statusValueInProcess;
-	private String statusValueError;
 	private String statusValueProcessed;
+	private String statusValueError;
 	
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -55,11 +64,11 @@ public class JdbcTableListener extends JdbcListener {
 		if (StringUtils.isEmpty(getKeyField())) {
 			throw new ConfigurationException(getLogPrefix()+"must specifiy keyField");
 		}
-		if (StringUtils.isEmpty(getMessageField())) {
-			throw new ConfigurationException(getLogPrefix()+"must specifiy messageField");
-		}
 		if (StringUtils.isEmpty(getStatusField())) {
 			throw new ConfigurationException(getLogPrefix()+"must specifiy statusField");
+		}
+		if (StringUtils.isEmpty(getMessageField())) {
+			log.info(getLogPrefix()+"has no messageField specified. Will use keyField as messageField, too");
 		}
 		if (StringUtils.isEmpty(getStatusValueError())) {
 			throw new ConfigurationException(getLogPrefix()+"must specifiy statusValueError");
@@ -70,24 +79,26 @@ public class JdbcTableListener extends JdbcListener {
 		if (StringUtils.isEmpty(getStatusValueProcessed())) {
 			throw new ConfigurationException(getLogPrefix()+"must specifiy statusValueProcessed");
 		}
-		setLockQuery("LOCK TABLE "+getTableName());
-		setUnlockQuery("UNLOCK TABLE "+getTableName());
-		setSelectQuery("SELECT FIRST "+getKeyField()+","+getMessageField()+
+		setLockQuery("LOCK TABLE "+getTableName()+" IN EXCLUSIVE MODE NOWAIT");
+		//setUnlockQuery("UNLOCK TABLE "+getTableName());
+		setSelectQuery("SELECT "+getKeyField()+
+						(StringUtils.isNotEmpty(getMessageField())?","+getMessageField():"")+
 						" FROM "+getTableName()+
 						" WHERE "+getStatusField()+
 						(StringUtils.isNotEmpty(getStatusValueAvailable())?
-						 "="+getStatusValueAvailable():
-						 "NOT IN ["+getStatusValueError()+","+getStatusValueInProcess()+","+getStatusValueProcessed()+"]")+
+						 "='"+getStatusValueAvailable()+"'":
+						 " NOT IN ('"+getStatusValueError()+"','"+getStatusValueInProcess()+"','"+getStatusValueProcessed()+"')")+
 						 (StringUtils.isNotEmpty(getOrderField())?
 						 " ORDER BY "+getOrderField():""));
-		setUpdateStatusToErrorQuery(getUpdateStatusQuery(getStatusValueError())); 
 		setUpdateStatusToInProcessQuery(getUpdateStatusQuery(getStatusValueInProcess()));	
 		setUpdateStatusToProcessedQuery(getUpdateStatusQuery(getStatusValueProcessed()));				 
+		setUpdateStatusToErrorQuery(getUpdateStatusQuery(getStatusValueError())); 
 	}
 
 	protected String getUpdateStatusQuery(String fieldValue) {
 		return "UPDATE "+getTableName()+ 
-				" SET "+getStatusField()+"="+fieldValue+
+				" SET "+getStatusField()+"='"+fieldValue+"'"+
+				(StringUtils.isNotEmpty(getTimestampField())?","+getTimestampField()+"=SYSDATE":"")+
 				" WHERE "+getKeyField()+"=?";
 	}
 
@@ -122,13 +133,12 @@ public class JdbcTableListener extends JdbcListener {
 		return orderField;
 	}
 
-//	public void setTimestampField(String fieldname) {
-//		timestampField = fieldname;
-//	}
-//	public String getTimestampField() {
-//		return timestampField;
-//	}
-
+	public void setTimestampField(String fieldname) {
+		timestampField = fieldname;
+	}
+	public String getTimestampField() {
+		return timestampField;
+	}
 
 	public void setStatusValueAvailable(String string) {
 		statusValueAvailable = string;
