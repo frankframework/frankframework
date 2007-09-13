@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcListener.java,v $
- * Revision 1.2  2007-09-12 09:17:55  europe\L190409
+ * Revision 1.3  2007-09-13 09:08:56  europe\L190409
+ * allowed use outside transaction
+ *
+ * Revision 1.2  2007/09/12 09:17:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * first working version
  *
  * Revision 1.1  2007/09/11 11:53:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -20,6 +23,8 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
+import nl.nn.adapterframework.receivers.MessageWrapper;
+import nl.nn.adapterframework.util.JtaUtil;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -33,6 +38,8 @@ public class JdbcListener extends JdbcFacade implements IPullingListener {
 	public static final String KEY_FIELD_KEY="KeyField";
 	public static final String MESSAGE_FIELD_KEY="MessageField";
 
+	private String startLocalTransactionQuery;
+	private String commitLocalTransactionQuery;
 	private String lockQuery;
 	private String unlockQuery;
 	private String selectQuery;
@@ -110,70 +117,100 @@ public class JdbcListener extends JdbcFacade implements IPullingListener {
 	}
 
 	protected Object getRawMessage(Connection conn, HashMap threadContext) throws ListenerException {
+		boolean inTransaction=false;
+		
 		try {
-			execute(conn,getLockQuery());
-		} catch (Throwable t) {
-			log.debug(getLogPrefix()+"was not able to obtain lock: "+t.getMessage());
-			return null;
-		}
-		try {
-			Statement stmt= null;
-			try {
-//				log.debug("creating statement for ["+getSelectQuery()+"]");
-				stmt = conn.createStatement();
-				ResultSet rs=null;
-				try {
-//					log.debug("executing query for ["+getSelectQuery()+"]");
-					rs = stmt.executeQuery(getSelectQuery());
-					if (rs.isAfterLast() || !rs.next()) {
-						return null;
-					}
-					String key=rs.getString(getKeyField());
-					threadContext.put(KEY_FIELD_KEY,key);
-					if (StringUtils.isNotEmpty(getMessageField())) {
-						threadContext.put(MESSAGE_FIELD_KEY,rs.getString(getMessageField()));
-					}
-					execute(conn,getUpdateStatusToInProcessQuery(),key);
-					return key;
-				} finally {
-					if (rs!=null) {
-//						log.debug("closing resultset");
-						rs.close();
-					}
-				}
-						
-			} finally {
-				try {
-					if (stmt!=null) {
-//						log.debug("closing statement");
-						stmt.close();
-					}
-				} finally {
-					execute(conn,getUnlockQuery());
-				}
-			}
+			inTransaction=JtaUtil.inTransaction();
 		} catch (Exception e) {
-			throw new ListenerException(getLogPrefix() + "caught exception retrieving message", e);
+			log.warn(getLogPrefix()+"could not determing XA transaction status, assuming not in XA transaction: "+ e.getMessage());
+			inTransaction=false;
 		}
+		try {
+			if (!inTransaction) {
+				execute(conn,getStartLocalTransactionQuery());
+			}
+			try {
+				execute(conn,getLockQuery());
+			} catch (Throwable t) {
+				log.debug(getLogPrefix()+"was not able to obtain lock: "+t.getMessage());
+				return null;
+			}
+			try {
+				Statement stmt= null;
+				try {
+//					log.debug("creating statement for ["+getSelectQuery()+"]");
+					stmt = conn.createStatement();
+					ResultSet rs=null;
+					try {
+//						log.debug("executing query for ["+getSelectQuery()+"]");
+						rs = stmt.executeQuery(getSelectQuery());
+						if (rs.isAfterLast() || !rs.next()) {
+							return null;
+						}
+						Object result;
+						String key=rs.getString(getKeyField());
+						//threadContext.put(KEY_FIELD_KEY,key);
+						if (StringUtils.isNotEmpty(getMessageField())) {
+							String message=rs.getString(getMessageField());
+							MessageWrapper mw = new MessageWrapper();
+							mw.setId(key);
+							mw.setText(message);
+							result=mw;
+							//threadContext.put(MESSAGE_FIELD_KEY,rs.getString(getMessageField()));
+						} else {
+							result = key;
+						}
+						execute(conn,getUpdateStatusToInProcessQuery(),key);
+						return key;
+					} finally {
+						if (rs!=null) {
+//							log.debug("closing resultset");
+							rs.close();
+						}
+					}
+						
+				} finally {
+					try {
+						if (stmt!=null) {
+//							log.debug("closing statement");
+							stmt.close();
+						}
+					} finally {
+						execute(conn,getUnlockQuery());
+					}
+				}
+			} catch (Exception e) {
+				throw new ListenerException(getLogPrefix() + "caught exception retrieving message", e);
+			}
+		} finally {
+			if (!inTransaction) {
+				execute(conn,getCommitLocalTransactionQuery());
+			}
+		}
+		
 	}
 
 	public String getIdFromRawMessage(Object rawMessage, HashMap context) throws ListenerException {
-		String id = (String)context.get(KEY_FIELD_KEY);
+		String id;
+		if (rawMessage instanceof MessageWrapper) {
+			id = ((MessageWrapper)rawMessage).getId();
+		} else {
+			id = (String)rawMessage;
+		}
 		return id;
 	}
 
 	public String getStringFromRawMessage(Object rawMessage, HashMap context) throws ListenerException {
 		String message;
-		if (StringUtils.isNotEmpty(getMessageField())) {
-			message = (String)context.get(MESSAGE_FIELD_KEY);
+		if (rawMessage instanceof MessageWrapper) {
+			message = ((MessageWrapper)rawMessage).getId();
 		} else {
-			message = (String)context.get(KEY_FIELD_KEY);
+			message = (String)rawMessage;
 		}
 		return message;
 	}
 
-	public void afterMessageProcessed(Connection c, PipeLineResult processResult, HashMap context) throws ListenerException {
-		String key=(String)context.get(KEY_FIELD_KEY);
+	protected void afterMessageProcessed(Connection c, PipeLineResult processResult, String key, HashMap context) throws ListenerException {
 		if (processResult==null || "success".equals(processResult.getState())) {
 			execute(c,getUpdateStatusToProcessedQuery(),key);
 		} else {
@@ -182,12 +219,13 @@ public class JdbcListener extends JdbcFacade implements IPullingListener {
 	}
 
 	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessage, HashMap context) throws ListenerException {
+		String key=getIdFromRawMessage(rawMessage,context);
 		if (isConnectionsArePooled()) {
 			Connection c = null;
 			try {
 //				log.debug("getting connection");
 				c = getConnection();
-				afterMessageProcessed(c,processResult, context);
+				afterMessageProcessed(c,processResult, key, context);
 			} catch (JdbcException e) {
 				throw new ListenerException(e);
 			} finally {
@@ -202,7 +240,7 @@ public class JdbcListener extends JdbcFacade implements IPullingListener {
 			}
 		} else {
 			synchronized (connection) {
-				afterMessageProcessed(connection,processResult, context);
+				afterMessageProcessed(connection,processResult, key, context);
 			}
 		}
 	}
@@ -317,4 +355,19 @@ public class JdbcListener extends JdbcFacade implements IPullingListener {
 	public String getMessageField() {
 		return messageField;
 	}
+
+	public void setStartLocalTransactionQuery(String string) {
+		startLocalTransactionQuery = string;
+	}
+	public String getStartLocalTransactionQuery() {
+		return startLocalTransactionQuery;
+	}
+
+	public void setCommitLocalTransactionQuery(String string) {
+		commitLocalTransactionQuery = string;
+	}
+	public String getCommitLocalTransactionQuery() {
+		return commitLocalTransactionQuery;
+	}
+
 }
