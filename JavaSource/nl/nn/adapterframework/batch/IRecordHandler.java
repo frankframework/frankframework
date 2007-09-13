@@ -1,6 +1,9 @@
 /*
  * $Log: IRecordHandler.java,v $
- * Revision 1.6  2007-09-10 11:05:32  europe\L190409
+ * Revision 1.7  2007-09-13 12:35:50  europe\L190409
+ * updated javadoc
+ *
+ * Revision 1.6  2007/09/10 11:05:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * renamed mustPrefix() to isNewRecordType()
  *
  * Revision 1.5  2007/05/03 11:29:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -47,14 +50,16 @@ public interface IRecordHandler extends INamedObject {
 	public void close() throws SenderException;
 
 	/**
-	 * @param record to be transformed
+	 * Parse the line into an array of fields.
+	 * 
 	 * @return ArrayList with String values for each inputfield
 	 * @throws Exception
 	 */
 	ArrayList parse(PipeLineSession session, String record) throws Exception;
 
 	/**
-	 * @param parsedRecord
+	 * Perform an action on the array of fields.
+	 * 
 	 * @return transformed result
 	 * @throws Exception
 	 */	
