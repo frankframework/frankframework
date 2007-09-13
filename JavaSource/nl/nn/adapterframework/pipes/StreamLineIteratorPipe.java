@@ -1,6 +1,9 @@
 /*
  * $Log: StreamLineIteratorPipe.java,v $
- * Revision 1.2  2007-07-17 10:57:00  europe\L190409
+ * Revision 1.3  2007-09-13 09:10:14  europe\L190409
+ * extracted getReader()
+ *
+ * Revision 1.2  2007/07/17 10:57:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * update javadoc
  *
  * Revision 1.1  2007/07/10 08:05:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -35,7 +38,7 @@ import nl.nn.adapterframework.util.ReaderLineIterator;
  * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.pipes.ForEachChildElementPipe</td><td>&nbsp;</td></tr>
+ * <tr><td>className</td><td>nl.nn.adapterframework.pipes.StreamLineIteratorPipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMaxThreads(int) maxThreads}</td><td>maximum number of threads that may call {@link #doPipe(Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously</td><td>0 (unlimited)</td></tr>
  * <tr><td>{@link #setDurationThreshold(long) durationThreshold}</td><td>if durationThreshold >=0 and the duration (in milliseconds) of the message processing exceeded the value specified the message is logged informatory</td><td>-1</td></tr>
@@ -78,9 +81,9 @@ import nl.nn.adapterframework.util.ReaderLineIterator;
  * @version Id
  */
 public class StreamLineIteratorPipe extends IteratingPipe {
-	public static final String version="$RCSfile: StreamLineIteratorPipe.java,v $ $Revision: 1.2 $ $Date: 2007-07-17 10:57:00 $";
+	public static final String version="$RCSfile: StreamLineIteratorPipe.java,v $ $Revision: 1.3 $ $Date: 2007-09-13 09:10:14 $";
 
-	protected IDataIterator getIterator(Object input, PipeLineSession session, String correlationID, HashMap threadContext) throws SenderException {
+	protected Reader getReader(Object input, PipeLineSession session, String correlationID, HashMap threadContext) throws SenderException {
 		if (input==null) {
 			throw new SenderException("input is null. Must supply stream as input");
 		}
@@ -88,7 +91,11 @@ public class StreamLineIteratorPipe extends IteratingPipe {
 			throw new SenderException("input must be of type InputStream");
 		}
 		Reader reader=new InputStreamReader((InputStream)input);
-		return new ReaderLineIterator(reader);
+		return reader;
+	}
+
+	protected IDataIterator getIterator(Object input, PipeLineSession session, String correlationID, HashMap threadContext) throws SenderException {
+		return new ReaderLineIterator(getReader(input,session, correlationID,threadContext));
 	}
 
 }
