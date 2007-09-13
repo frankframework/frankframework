@@ -1,6 +1,9 @@
 /*
  * $Log: LogSender.java,v $
- * Revision 1.5  2007-02-12 14:02:19  europe\L190409
+ * Revision 1.6  2007-09-13 09:09:43  europe\L190409
+ * return message instead of correlationid
+ *
+ * Revision 1.5  2007/02/12 14:02:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Logger from LogUtil
  *
  * Revision 1.4  2006/06/14 09:50:25  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -47,7 +50,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class LogSender extends SenderWithParametersBase implements IParameterHandler {
-	public static final String version="$RCSfile: LogSender.java,v $ $Revision: 1.5 $ $Date: 2007-02-12 14:02:19 $";
+	public static final String version="$RCSfile: LogSender.java,v $ $Revision: 1.6 $ $Date: 2007-09-13 09:09:43 $";
 	
 	private String logLevel="info";
 	private String logCategory=null;
@@ -62,7 +65,7 @@ public class LogSender extends SenderWithParametersBase implements IParameterHan
 	}
 
 	public boolean isSynchronous() {
-		return false;
+		return true;
 	}
 
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
@@ -76,7 +79,7 @@ public class LogSender extends SenderWithParametersBase implements IParameterHan
 			}
 		}
 		
-		return correlationID;
+		return message;
 	}
 
 	public void handleParam(String paramName, Object value) {
