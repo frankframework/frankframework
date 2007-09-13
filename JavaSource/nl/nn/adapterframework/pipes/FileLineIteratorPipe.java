@@ -1,6 +1,9 @@
 /*
  * $Log: FileLineIteratorPipe.java,v $
- * Revision 1.1  2007-09-13 08:58:38  europe\L190409
+ * Revision 1.2  2007-09-13 09:10:45  europe\L190409
+ * base on StreamLineIteratorPipe
+ *
+ * Revision 1.1  2007/09/13 08:58:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * first version
  *
  */
@@ -8,15 +11,14 @@ package nl.nn.adapterframework.pipes;
 
 import java.io.File;
 import java.io.FileReader;
+import java.io.Reader;
 import java.util.HashMap;
 
-import nl.nn.adapterframework.core.IDataIterator;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.ReaderLineIterator;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -71,14 +73,14 @@ import org.apache.commons.lang.StringUtils;
  * @author  Gerrit van Brakel
  * @version Id
  */
-public class FileLineIteratorPipe extends IteratingPipe {
-	public static final String version = "$RCSfile: FileLineIteratorPipe.java,v $  $Revision: 1.1 $ $Date: 2007-09-13 08:58:38 $";
+public class FileLineIteratorPipe extends StreamLineIteratorPipe {
+	public static final String version = "$RCSfile: FileLineIteratorPipe.java,v $  $Revision: 1.2 $ $Date: 2007-09-13 09:10:45 $";
 
 	private String move2dirAfterTransform;
 	private String move2dirAfterError;
 
 	
-	protected IDataIterator getIterator(Object input, PipeLineSession session, String correlationID, HashMap threadContext) throws SenderException {
+	protected Reader getReader(Object input, PipeLineSession session, String correlationID, HashMap threadContext) throws SenderException {
 		if (input==null) {
 			throw new SenderException("got null input instead of String containing filename");
 		}
@@ -87,7 +89,7 @@ public class FileLineIteratorPipe extends IteratingPipe {
 		}
 		File file = (File)input;
 		try {
-			return new ReaderLineIterator(new FileReader(file));
+			return new FileReader(file);
 		} catch (Exception e) {
 			throw new SenderException("cannot open file ["+file.getPath()+"]",e);
 		}
