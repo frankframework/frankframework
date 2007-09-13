@@ -1,6 +1,9 @@
 /*
  * $Log: ClassUtils.java,v $
- * Revision 1.12  2007-09-10 11:20:15  europe\L190409
+ * Revision 1.13  2007-09-13 12:39:05  europe\L190409
+ * cosmetic improvement
+ *
+ * Revision 1.12  2007/09/10 11:20:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added default getResourceURL()
  *
  * Revision 1.11  2007/07/18 13:35:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -47,7 +50,7 @@ import org.apache.log4j.Logger;
  *
  */
 public class ClassUtils {
-	public static final String version = "$RCSfile: ClassUtils.java,v $ $Revision: 1.12 $ $Date: 2007-09-10 11:20:15 $";
+	public static final String version = "$RCSfile: ClassUtils.java,v $ $Revision: 1.13 $ $Date: 2007-09-13 12:39:05 $";
 	private static Logger log = LogUtil.getLogger(ClassUtils.class);
 
     /**
@@ -131,11 +134,11 @@ public class ClassUtils {
 		}		
 		// then try to get it in java:comp/env
 		if (url == null && resource!=null && !resource.startsWith("java:comp/env/")) {
-			log.warn("cannot find URL for resource ["+resource+"], now trying [java:comp/env/"+resource+"] (e.g. for TomCat)");
-			resource = "java:comp/env/"+resource;
-			url = klass.getResource(resource); // to make things work under tomcat
+			log.debug("cannot find URL for resource ["+resource+"], now trying [java:comp/env/"+resource+"] (e.g. for TomCat)");
+			String altResource = "java:comp/env/"+resource;
+			url = klass.getResource(altResource); // to make things work under tomcat
 			if (url == null) {
-				url = klass.getClassLoader().getResource(resource);
+				url = klass.getClassLoader().getResource(altResource);
 			}
 		}
 		
