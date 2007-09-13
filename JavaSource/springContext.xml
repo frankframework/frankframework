@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+			http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd">
+
+	<!-- <bean/> definitions here -->
+	<bean name="ibisManager" class="nl.nn.adapterframework.unmanaged.ThreadedIbisManager"
+		autowire="byName">
+		
+	</bean>
+	
+	<bean name="configuration" class="nl.nn.adapterframework.configuration.Configuration"
+		autowire="byName"
+		init-method="init">
+	</bean>
+	
+	<bean name="configurationDigester" class="nl.nn.adapterframework.configuration.ConfigurationDigester" 
+		autowire="byName">
+		<lookup-method name="createDigester" bean="digester"/>
+	</bean>
+	
+	<bean name="digester" class="org.apache.commons.digester.Digester"
+		autowire="byName" scope="prototype">
+		<property name="substitutor">
+			<bean class="org.apache.commons.digester.substitution.VariableSubstitutor">
+				<constructor-arg ref="variableExpander"/>
+			</bean>
+		</property>
+		<property name="useContextClassLoader" value="true"/>
+		<property name="entityResolver">
+			<bean class="nl.nn.adapterframework.util.ClassPathEntityResolver"/>
+		</property>
+	</bean>
+	
+	<bean name="variableExpander" class="nl.nn.adapterframework.configuration.IbisMultiSourceExpander">
+		<property name="environmentFallback" value="false"/>
+		<property name="sources">
+			<list>
+				<bean class="java.lang.System" factory-method="getProperties"/>
+				<ref bean="appConstants"/>
+			</list>
+		</property>
+	</bean>
+	
+	<bean name="appConstants" class="nl.nn.adapterframework.util.AppConstants"
+		autowire="byName"
+		factory-method="getInstance">
+	</bean>
+	
+	
+	<!-- Replace with whatever TaskExecutor implementation suits best
+	     Replace with Common/J based TaskExecutor once deploying on
+	     WebSphere 6.0 or higher. -->
+	<bean name="taskExecutor" class="org.springframework.core.task.SimpleAsyncTaskExecutor"
+		scope="singleton">
+	</bean>
+	
+	<!-- Beans created from Configuration.xml, but prototyped here for
+	     extra dependancies which cannot be created otherwise -->
+	<bean name="adapter" class="nl.nn.adapterframework.core.Adapter"
+		autowire="byName" scope="prototype">
+	</bean>
+	
+	<bean name="pipeLine" class="nl.nn.adapterframework.core.PipeLine"
+		autowire="byName" scope="prototype">
+	</bean>
+	
+	<bean name="genericReceiver" class="nl.nn.adapterframework.receivers.GenericReceiver"
+		autowire="byName" scope="prototype">
+	</bean>
+	
+	<bean name="genericMessageSendingPipe" class="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+		autowire="byName" scope="prototype">
+	</bean>
+</beans>

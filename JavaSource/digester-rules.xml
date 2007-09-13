@@ -1,5 +1,5 @@
 <digester-rules>
-	<!-- $Id: digester-rules.xml,v 1.4 2007-07-24 16:14:56 europe\L190409 Exp $ -->
+	<!-- $Id: digester-rules.xml,v 1.4.2.1 2007-09-13 13:27:17 europe\M00035F Exp $ -->
     <pattern value="IOS-Adaptering">
         <set-properties-rule/>
     </pattern>
@@ -28,12 +28,12 @@
 
 
     <pattern value="*/adapter">
-        <object-create-rule classname="nl.nn.adapterframework.core.Adapter"/>
+        <factory-create-rule classname="nl.nn.adapterframework.configuration.AdapterFactory"/>
         <set-properties-rule/>
         <set-next-rule methodname="registerAdapter"/>
     </pattern>
     <pattern value="*/pipeline">
-        <object-create-rule classname="nl.nn.adapterframework.core.PipeLine"/>
+        <factory-create-rule classname="nl.nn.adapterframework.configuration.PipeLineFactory"/>
         <set-properties-rule/>
         <set-next-rule methodname="registerPipeLine"/>
     </pattern>
@@ -44,7 +44,7 @@
     </pattern>
 
     <pattern value="*/receiver">
-        <object-create-rule classname="nl.nn.adapterframework.receivers.GenericReceiver" attrname="className"/> 
+        <factory-create-rule classname="nl.nn.adapterframework.configuration.ReceiverFactory"/> 
         <set-properties-rule/>
         <set-next-rule methodname="registerReceiver"/>
     </pattern>
@@ -90,7 +90,7 @@
     </pattern>
 
     <pattern value="*/pipe">
-        <object-create-rule classname="nl.nn.adapterframework.pipes.GenericMessageSendingPipe" attrname="className"/> 
+        <factory-create-rule classname="nl.nn.adapterframework.configuration.PipeFactory" /> 
         <set-properties-rule/>
         <set-next-rule methodname="addPipe" paramtype="nl.nn.adapterframework.core.IPipe"/>
     </pattern>

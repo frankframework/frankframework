@@ -1,6 +1,9 @@
 /*
  * $Log: Configuration.java,v $
- * Revision 1.25  2007-07-24 08:04:49  europe\L190409
+ * Revision 1.25.2.1  2007-09-13 13:27:16  europe\M00035F
+ * First commit of work to use Spring for creating objects
+ *
+ * Revision 1.25  2007/07/24 08:04:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * reversed shutdown sequence
  *
  * Revision 1.24  2007/07/17 15:07:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -65,6 +68,7 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -93,16 +97,19 @@ import org.apache.log4j.Logger;
  * @see    nl.nn.adapterframework.core.IAdapter
  */
 public class Configuration {
-	public static final String version="$RCSfile: Configuration.java,v $ $Revision: 1.25 $ $Date: 2007-07-24 08:04:49 $";
+	public static final String version="$RCSfile: Configuration.java,v $ $Revision: 1.25.2.1 $ $Date: 2007-09-13 13:27:16 $";
     protected Logger log=LogUtil.getLogger(this); 
      
-    private Hashtable adapterTable = new Hashtable();
-	private ArrayList adapters = new ArrayList();
-
+    private Map adapterTable = new Hashtable();
+	private List adapters = new ArrayList();
+    private List scheduledJobs = new ArrayList();
+    
     private URL configurationURL;
     private URL digesterRulesURL;
     private String configurationName = "";
     private boolean enableJMX=false;
+    
+    private AppConstants appConstants;
     
     /**
      *Set JMX extensions as enabled or not. Default is that JMX extensions are NOT enabled.
@@ -124,7 +131,7 @@ public class Configuration {
 
 	public void forEachStatisticsKeeper(StatisticsKeeperIterationHandler hski) {
 		Object root=hski.start();
-		Object groupData=hski.openGroup(root,AppConstants.getInstance().getString("instance.name",""),"instance");
+		Object groupData=hski.openGroup(root,appConstants.getString("instance.name",""),"instance");
 		for (int i=0; i<adapters.size(); i++) {
 			IAdapter adapter = getRegisteredAdapter(i);
 			adapter.forEachStatisticsKeeperBody(hski,groupData);
@@ -138,17 +145,15 @@ public class Configuration {
      * @see nl.nn.adapterframework.util.AppConstants
      */
     public Configuration() {
- 
-        //initialize Application Constants
-        AppConstants.getInstance();
-        
-        log.info(VersionInfo());
     }
     public Configuration(URL digesterRulesURL, URL configurationURL) {
         this();
         this.configurationURL = configurationURL;
         this.digesterRulesURL = digesterRulesURL;
 
+    }
+    protected void init() {
+        log.info(VersionInfo());
     }
     public String getConfigurationName() {
         return configurationName;
@@ -158,8 +163,8 @@ public class Configuration {
     }
     public String getDigesterRulesFileName() {
         return digesterRulesURL.getFile();
-
     }
+    
     /**
      * get a registered adapter by its name
      * @param name  the adapter to retrieve
@@ -181,71 +186,71 @@ public class Configuration {
         SortedSet sortedKeys = new TreeSet(adapterTable.keySet());
         return sortedKeys.iterator();
     }
-    /**
-     * Utility function
-     */
-
-    public void handleAdapter(String action, String adapterName, String receiverName, String commandIssuedBy) {
-        if (action.equalsIgnoreCase("STOPADAPTER")) {
-        	if (adapterName.equals("**ALL**")) {
-	            log.info("Stopping all adapters on request of [" + commandIssuedBy+"]");
-	            stopAdapters();
-        	}
-        	else {
-				log.info("Stopping adapter [" + adapterName + "], on request of [" + commandIssuedBy+"]");
-				getRegisteredAdapter(adapterName).stopRunning();
-        	}
-        }
-        else if (action.equalsIgnoreCase("STARTADAPTER")) {
-        	if (adapterName.equals("**ALL**")) {
-				log.info("Starting all adapters on request of [" + commandIssuedBy+"]");
-        		startAdapters();
-        	}
-        	else {
-				try {
-					log.info("Starting adapter [" + adapterName + "] on request of [" + commandIssuedBy+"]");
-					getRegisteredAdapter(adapterName).startRunning();
-				} catch (Exception e) {
-					log.error("error in execution of command [" + action + "] for adapter [" + adapterName + "]",	e);
-					//errors.add("", new ActionError("errors.generic", e.toString()));
-				}
-        	}
-        }
-        else if (action.equalsIgnoreCase("STOPRECEIVER")) {
-            IAdapter adapter = (IAdapter) this.getRegisteredAdapter(adapterName);
-            IReceiver receiver = adapter.getReceiverByName(receiverName);
-            receiver.stopRunning();
-            log.info("receiver [" + receiverName + "] stopped by webcontrol on request of " + commandIssuedBy);
-        }
-        else if (action.equalsIgnoreCase("STARTRECEIVER")) {
-            IAdapter adapter = (IAdapter) this.getRegisteredAdapter(adapterName);
-            IReceiver receiver = adapter.getReceiverByName(receiverName);
-            receiver.startRunning();
-            log.info("receiver [" + receiverName + "] started by " + commandIssuedBy);
-        }
-		else if (action.equalsIgnoreCase("SENDMESSAGE")) {
-			try {
-				// send job
-				IbisLocalSender localSender = new IbisLocalSender();
-				localSender.setJavaListener(receiverName);
-				localSender.setIsolated(false);
-				localSender.setName("AdapterJob");
-				localSender.configure();
-			
-				localSender.open();
-				try {
-					localSender.sendMessage(null, "");
-				}
-				finally {
-					localSender.close();
-				}
-			}
-			catch(Exception e) {
-				log.error("Error while sending message (as part of scheduled job execution)", e);
-			}
-//			ServiceDispatcher.getInstance().dispatchRequest(receiverName, "");
-		}
-    }
+//    /**
+//     * Utility function
+//     */
+//
+//    public void handleAdapter(String action, String adapterName, String receiverName, String commandIssuedBy) {
+//        if (action.equalsIgnoreCase("STOPADAPTER")) {
+//        	if (adapterName.equals("**ALL**")) {
+//	            log.info("Stopping all adapters on request of [" + commandIssuedBy+"]");
+//	            stopAdapters();
+//        	}
+//        	else {
+//				log.info("Stopping adapter [" + adapterName + "], on request of [" + commandIssuedBy+"]");
+//				getRegisteredAdapter(adapterName).stopRunning();
+//        	}
+//        }
+//        else if (action.equalsIgnoreCase("STARTADAPTER")) {
+//        	if (adapterName.equals("**ALL**")) {
+//				log.info("Starting all adapters on request of [" + commandIssuedBy+"]");
+//        		startAdapters();
+//        	}
+//        	else {
+//				try {
+//					log.info("Starting adapter [" + adapterName + "] on request of [" + commandIssuedBy+"]");
+//					getRegisteredAdapter(adapterName).startRunning();
+//				} catch (Exception e) {
+//					log.error("error in execution of command [" + action + "] for adapter [" + adapterName + "]",	e);
+//					//errors.add("", new ActionError("errors.generic", e.toString()));
+//				}
+//        	}
+//        }
+//        else if (action.equalsIgnoreCase("STOPRECEIVER")) {
+//            IAdapter adapter = (IAdapter) this.getRegisteredAdapter(adapterName);
+//            IReceiver receiver = adapter.getReceiverByName(receiverName);
+//            receiver.stopRunning();
+//            log.info("receiver [" + receiverName + "] stopped by webcontrol on request of " + commandIssuedBy);
+//        }
+//        else if (action.equalsIgnoreCase("STARTRECEIVER")) {
+//            IAdapter adapter = (IAdapter) this.getRegisteredAdapter(adapterName);
+//            IReceiver receiver = adapter.getReceiverByName(receiverName);
+//            receiver.startRunning();
+//            log.info("receiver [" + receiverName + "] started by " + commandIssuedBy);
+//        }
+//		else if (action.equalsIgnoreCase("SENDMESSAGE")) {
+//			try {
+//				// send job
+//				IbisLocalSender localSender = new IbisLocalSender();
+//				localSender.setJavaListener(receiverName);
+//				localSender.setIsolated(false);
+//				localSender.setName("AdapterJob");
+//				localSender.configure();
+//			
+//				localSender.open();
+//				try {
+//					localSender.sendMessage(null, "");
+//				}
+//				finally {
+//					localSender.close();
+//				}
+//			}
+//			catch(Exception e) {
+//				log.error("Error while sending message (as part of scheduled job execution)", e);
+//			}
+////			ServiceDispatcher.getInstance().dispatchRequest(receiverName, "");
+//		}
+//    }
     /**
      * returns wether an adapter is known at the configuration.
      * @param name the Adaptername
@@ -322,13 +327,7 @@ public class Configuration {
 				throw new ConfigurationException(msg);
             }
         }
-		try {
-			SchedulerHelper.scheduleJob(this, jobdef);
-			log.info("job scheduled with properties :" + jobdef.toString());
-			SchedulerHelper.startScheduler();
-		} catch (Exception e) {
-			throw new ConfigurationException("Could not schedule job ["+jobdef.getName()+"]",e);
-		}
+        scheduledJobs.add(jobdef);
     }
     
     public void setConfigurationName(String name) {
@@ -336,29 +335,28 @@ public class Configuration {
         log.debug("configuration name set to [" + name + "]");
     }
     
-    public void startAdapters() {
-		for (int i=0; i<adapters.size(); i++) {
-			IAdapter adapter = getRegisteredAdapter(i);
-
-			if (adapter.isAutoStart()) {
-				log.info("Starting adapter [" + adapter.getName()+"]");
-				adapter.startRunning();
-			}
-		}
-    }
-    
-    public void stopAdapters() {
-		for (int i=adapters.size()-1; i>=0; i--) {
-			IAdapter adapter = getRegisteredAdapter(i);
-
-			log.info("Stopping adapter [" + adapter.getName() + "]");
-			adapter.stopRunning();
-		}
-        forEachStatisticsKeeper(new StatisticsKeeperLogger());
-    }
+//    public void startAdapters() {
+//		for (int i=0; i<adapters.size(); i++) {
+//			IAdapter adapter = getRegisteredAdapter(i);
+//
+//			if (adapter.isAutoStart()) {
+//				log.info("Starting adapter [" + adapter.getName()+"]");
+//				adapter.startRunning();
+//			}
+//		}
+//    }
+//    
+//    public void stopAdapters() {
+//		for (int i=adapters.size()-1; i>=0; i--) {
+//			IAdapter adapter = getRegisteredAdapter(i);
+//
+//			log.info("Stopping adapter [" + adapter.getName() + "]");
+//			adapter.stopRunning();
+//		}
+//        forEachStatisticsKeeper(new StatisticsKeeperLogger());
+//    }
     
     public String getInstanceInfo() {
-		AppConstants appConstants = AppConstants.getInstance();
 		String instanceInfo=appConstants.getProperty("application.name")+" "+
 							appConstants.getProperty("application.version")+" "+
 							appConstants.getProperty("instance.name")+" "+
@@ -414,4 +412,39 @@ public class Configuration {
     	return sb.toString();
     	
     }
+	/**
+	 * @param url
+	 */
+	public void setConfigurationURL(URL url) {
+		configurationURL = url;
+	}
+
+	/**
+	 * @param url
+	 */
+	public void setDigesterRulesURL(URL url) {
+		digesterRulesURL = url;
+	}
+
+	/**
+	 * @return
+	 */
+	public List getScheduledJobs() {
+		return scheduledJobs;
+	}
+
+    /**
+     * @return
+     */
+    public AppConstants getAppConstants() {
+        return appConstants;
+    }
+
+    /**
+     * @param constants
+     */
+    public void setAppConstants(AppConstants constants) {
+        appConstants = constants;
+    }
+
 }

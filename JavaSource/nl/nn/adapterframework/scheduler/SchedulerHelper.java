@@ -1,6 +1,9 @@
 /*
  * $Log: SchedulerHelper.java,v $
- * Revision 1.3  2007-02-26 16:50:09  europe\L190409
+ * Revision 1.3.4.1  2007-09-13 13:27:18  europe\M00035F
+ * First commit of work to use Spring for creating objects
+ *
+ * Revision 1.3  2007/02/26 16:50:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * add method startScheduler()
  *
  * Revision 1.2  2007/02/21 16:07:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -15,7 +18,7 @@ package nl.nn.adapterframework.scheduler;
 
 import java.text.ParseException;
 
-import nl.nn.adapterframework.configuration.Configuration;
+import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.commons.lang.StringUtils;
@@ -36,12 +39,13 @@ import org.quartz.impl.StdSchedulerFactory;
 public class SchedulerHelper {
 	protected static Logger log = LogUtil.getLogger(SchedulerHelper.class);
 	
-	public static void scheduleJob(Configuration config, JobDef jobdef) throws Exception {
+	public static void scheduleJob(IbisManager ibisManager, JobDef jobdef) throws Exception {
 		JobDetail jobDetail = new JobDetail(jobdef.getName(), // job name
 			Scheduler.DEFAULT_GROUP, // job group
 			AdapterJob.class); // the java class to execute
 
-		jobDetail.getJobDataMap().put("config", config); // reference to configuration.
+        jobDetail.getJobDataMap().put("manager", ibisManager); // reference to manager.
+        jobDetail.getJobDataMap().put("config", ibisManager.getConfiguration()); // reference to configuration.
 		jobDetail.getJobDataMap().put("adapterName", jobdef.getAdapterName());
 		jobDetail.getJobDataMap().put("receiverName", jobdef.getReceiverName());
 		jobDetail.getJobDataMap().put("function", jobdef.getFunction());

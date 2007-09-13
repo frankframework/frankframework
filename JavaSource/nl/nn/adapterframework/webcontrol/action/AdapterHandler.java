@@ -16,7 +16,7 @@ import java.io.IOException;
  */
 
 public final class AdapterHandler extends ActionBase {
-		public static final String version="$Id: AdapterHandler.java,v 1.3 2004-03-26 10:42:57 NNVZNL01#L180564 Exp $";
+		public static final String version="$Id: AdapterHandler.java,v 1.3.6.1 2007-09-13 13:27:20 europe\M00035F Exp $";
 
 
 
@@ -31,7 +31,7 @@ public ActionForward execute(
     // Initialize action
     initAction(request);
 
-    if (null == config) {
+    if (null == ibisManager) {
         return (mapping.findForward("noconfig"));
     }
     String action = request.getParameter("action");
@@ -47,7 +47,7 @@ public ActionForward execute(
     // command is sent from
 	String commandIssuedBy= getCommandIssuedBy(request);
 	        
-    config.handleAdapter(action,adapterName,receiverName, commandIssuedBy);
+    ibisManager.handleAdapter(action,adapterName,receiverName, commandIssuedBy);
     
     // Report any errors we have discovered back to the original form
     if (!errors.isEmpty()) {

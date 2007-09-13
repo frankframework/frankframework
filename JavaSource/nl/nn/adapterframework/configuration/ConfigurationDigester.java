@@ -1,6 +1,9 @@
 /*
  * $Log: ConfigurationDigester.java,v $
- * Revision 1.15  2007-05-21 12:18:44  europe\L190409
+ * Revision 1.15.4.1  2007-09-13 13:27:16  europe\M00035F
+ * First commit of work to use Spring for creating objects
+ *
+ * Revision 1.15  2007/05/21 12:18:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * add messageLog to attributeChecker-rules
  *
  * Revision 1.14  2007/05/11 09:37:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -40,23 +43,26 @@
  */
 package nl.nn.adapterframework.configuration;
 
-import nl.nn.adapterframework.util.StringResolver;
+import java.net.URL;
+
 import nl.nn.adapterframework.util.AppConstants;
-import org.xml.sax.InputSource;
+import nl.nn.adapterframework.util.ClassPathEntityResolver;
 import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StringResolver;
 import nl.nn.adapterframework.util.Variant;
 import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.digester.Digester;
 import org.apache.commons.digester.Rule;
 import org.apache.commons.digester.xmlrules.FromXmlRuleSet;
-import org.apache.log4j.Logger;
-import nl.nn.adapterframework.util.LogUtil;
 import org.apache.commons.lang.SystemUtils;
-import nl.nn.adapterframework.util.ClassPathEntityResolver;
-
-import java.net.URL;
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.BeanFactoryAware;
+import org.springframework.beans.factory.ListableBeanFactory;
+import org.xml.sax.InputSource;
 
 /**
  * The configurationDigester reads the configuration.xml and the digester rules
@@ -91,8 +97,8 @@ import java.net.URL;
  * @author Johan Verrips
  * @see Configuration
  */
-public class ConfigurationDigester {
-	public static final String version = "$RCSfile: ConfigurationDigester.java,v $ $Revision: 1.15 $ $Date: 2007-05-21 12:18:44 $";
+abstract public class ConfigurationDigester implements BeanFactoryAware {
+	public static final String version = "$RCSfile: ConfigurationDigester.java,v $ $Revision: 1.15.4.1 $ $Date: 2007-09-13 13:27:16 $";
     protected static Logger log = LogUtil.getLogger(ConfigurationDigester.class);
 
 	private static final String CONFIGURATION_FILE_DEFAULT  = "Configuration.xml";
@@ -100,52 +106,65 @@ public class ConfigurationDigester {
 
 	private String configurationFile=null;
 	private String digesterRulesFile=DIGESTER_RULES_DEFAULT;
-
-	public static void main(String args[]) {
-	    String configuration_file = CONFIGURATION_FILE_DEFAULT;
-	    String digester_rules_file = DIGESTER_RULES_DEFAULT;
+    
+    private BeanFactory beanFactory;
+    
+	private Configuration configuration;
+//	public static void main(String args[]) {
+//	    String configuration_file = CONFIGURATION_FILE_DEFAULT;
+//	    String digester_rules_file = DIGESTER_RULES_DEFAULT;
+//	
+//	    Configuration config = null;
+//	    ConfigurationDigester cd = new ConfigurationDigester();
+//	
+//	    if (args.length>=1)
+//	      configuration_file = args[0];
+//	    if (args.length>=2)
+//	      digester_rules_file = args[1];
+//	      
+//	    try {
+//			config = cd.unmarshalConfiguration(digester_rules_file, configuration_file);
+//		} catch (ConfigurationException e) {
+//			System.out.println(e.getMessage());
+//		}
+//	
+//	    if (null == config) {
+//	        System.out.println("Errors occured during configuration");
+//	        return;
+//	    } else {
+//	        System.out.println("       Object List:");
+//	        if (null!=config) 
+//	        config.listObjects();
+//	
+//	        System.out.println("------------------------------------------");
+//	        System.out.println("       start adapters");
+//	    }
+//	
+//	    if (null!=config)config.startAdapters();
+//	
+//	}
+//	
 	
-	    Configuration config = null;
-	    ConfigurationDigester cd = new ConfigurationDigester();
-	
-	    if (args.length>=1)
-	      configuration_file = args[0];
-	    if (args.length>=2)
-	      digester_rules_file = args[1];
-	      
-	    try {
-			config = cd.unmarshalConfiguration(digester_rules_file, configuration_file);
-		} catch (ConfigurationException e) {
-			System.out.println(e.getMessage());
-		}
-	
-	    if (null == config) {
-	        System.out.println("Errors occured during configuration");
-	        return;
-	    } else {
-	        System.out.println("       Object List:");
-	        if (null!=config) 
-	        config.listObjects();
-	
-	        System.out.println("------------------------------------------");
-	        System.out.println("       start adapters");
-	    }
-	
-	    if (null!=config)config.startAdapters();
-	
-	}
-	
-	public static void digestConfiguration(Object stackTop, URL digesterRulesURL, URL configurationFileURL) throws ConfigurationException {
+    /**
+     * This method is runtime implemented by Spring Framework to
+     * return a Digester instance created from the Spring Context
+     * 
+     */
+    abstract protected Digester createDigester();
+    
+    protected void digestConfiguration(Object stackTop, URL digesterRulesURL, URL configurationFileURL) throws ConfigurationException {
 		
 		if (digesterRulesURL==null) {
 			digesterRulesURL = ClassUtils.getResourceURL(stackTop, DIGESTER_RULES_DEFAULT);
 		}
-		
-		Digester digester = new Digester();
-		digester.setUseContextClassLoader(true);
+        if (configurationFileURL == null) {
+            configurationFileURL = ClassUtils.getResourceURL(stackTop, CONFIGURATION_FILE_DEFAULT);
+        }
+		Digester digester = createDigester();
+		//digester.setUseContextClassLoader(true);
 
 		//	set the entity resolver to load entity references from the classpath
-		digester.setEntityResolver(new ClassPathEntityResolver());
+		//digester.setEntityResolver(new ClassPathEntityResolver());
 		
 		// push config on the stack
 		digester.push(stackTop);
@@ -179,19 +198,21 @@ public class ConfigurationDigester {
 			digester.addRule("*/param", attributeChecker);
 			digester.addRule("*/pipeline/exits/exit", attributeChecker);
 			digester.addRule("*/scheduler/job", attributeChecker);
-			// ensure that lines are seperated, usefulls when a parsing error occurs
-			String lineSeperator=SystemUtils.LINE_SEPARATOR;
-			if (null==lineSeperator) lineSeperator="\n";
-			String configString=Misc.resourceToString(configurationFileURL, lineSeperator, false);
-			configString=XmlUtils.identityTransform(configString);
-			log.debug(configString);
-			//Resolve any variables
-			String resolvedConfig=StringResolver.substVars(configString, AppConstants.getInstance());
 
-			Variant var=new Variant(resolvedConfig);
-			InputSource is=var.asXmlInputSource();
+// Resolving variables is now done by Digester
+//			// ensure that lines are seperated, usefulls when a parsing error occurs
+//			String lineSeperator=SystemUtils.LINE_SEPARATOR;
+//			if (null==lineSeperator) lineSeperator="\n";
+//			String configString=Misc.resourceToString(configurationFileURL, lineSeperator, false);
+//			configString=XmlUtils.identityTransform(configString);
+//			log.debug(configString);
+//			//Resolve any variables
+//			String resolvedConfig=StringResolver.substVars(configString, AppConstants.getInstance());
+//
+//			Variant var=new Variant(resolvedConfig);
+//			InputSource is=var.asXmlInputSource();
 				
-			digester.parse(is);
+			digester.parse(configurationFileURL);
 
 		} catch (Throwable t) {
 			// wrap exception to be sure it gets rendered via the IbisException-renderer
@@ -203,9 +224,9 @@ public class ConfigurationDigester {
 	}
 
 	public void include(Object stackTop) throws ConfigurationException {
-		URL configuration = ClassUtils.getResourceURL(this, getConfiguration());
+		URL configuration = ClassUtils.getResourceURL(this, getConfigurationFile());
 		if (configuration == null) {
-			throw new ConfigurationException("cannot find resource ["+getConfiguration()+"] to include");
+			throw new ConfigurationException("cannot find resource ["+getConfigurationFile()+"] to include");
 		}
 		URL digesterRules = ClassUtils.getResourceURL(this, getDigesterRules());
 		if (digesterRules == null) {
@@ -216,7 +237,7 @@ public class ConfigurationDigester {
 	
 	public Configuration unmarshalConfiguration() throws ConfigurationException
 	{
-		return unmarshalConfiguration(getDigesterRules(), getConfiguration());
+		return unmarshalConfiguration(getDigesterRules(), getConfigurationFile());
 	}
 	
     public Configuration unmarshalConfiguration(String digesterRulesFile, String configurationFile) throws ConfigurationException
@@ -225,16 +246,16 @@ public class ConfigurationDigester {
     }
     
     public Configuration unmarshalConfiguration(URL digesterRulesURL, URL configurationFileURL) throws ConfigurationException{
-        Configuration config = new Configuration(digesterRulesURL, configurationFileURL);
-        
-		digestConfiguration(config,digesterRulesURL,configurationFileURL);
+        configuration.setDigesterRulesURL(digesterRulesURL);
+        configuration.setConfigurationURL(configurationFileURL);
+		digestConfiguration(configuration,digesterRulesURL,configurationFileURL);
 
         log.info("************** Configuration completed **************");
-		return config;
+		return configuration;
     }
     
     
-	public String getConfiguration() {
+	public String getConfigurationFile() {
 		return configurationFile;
 	}
 
@@ -242,7 +263,7 @@ public class ConfigurationDigester {
 		return digesterRulesFile;
 	}
 
-	public void setConfiguration(String string) {
+	public void setConfigurationFile(String string) {
 		configurationFile = string;
 	}
 
@@ -250,4 +271,28 @@ public class ConfigurationDigester {
 		digesterRulesFile = string;
 	}
 
+    /**
+     * @return
+     */
+    public BeanFactory getBeanFactory() {
+        return beanFactory;
+    }
+
+    /**
+     * @param factory
+     */
+    public void setBeanFactory(BeanFactory factory) {
+        beanFactory = factory;
+        AbstractSpringPoweredDigesterFactory.factory = (ListableBeanFactory) beanFactory;
+    }
+
+    /**
+     * @param configuration
+     */
+    public void setConfiguration(Configuration configuration) {
+        this.configuration = configuration;
+    }
+    public Configuration getConfiguration() {
+        return configuration;
+    }
 }

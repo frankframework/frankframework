@@ -1,6 +1,9 @@
 /*
  * $Log: Adapter.java,v $
- * Revision 1.31  2007-07-24 08:05:22  europe\L190409
+ * Revision 1.31.2.1  2007-09-13 13:27:17  europe\M00035F
+ * First commit of work to use Spring for creating objects
+ *
+ * Revision 1.31  2007/07/24 08:05:22  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added targetDesignDocument attribute
  *
  * Revision 1.30  2007/07/10 07:11:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -114,6 +117,7 @@ import nl.nn.adapterframework.util.StatisticsKeeperIterationHandler;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.log4j.Logger;
 import org.apache.log4j.NDC;
+import org.springframework.core.task.TaskExecutor;
 /**
  * The Adapter is the central manager in the IBIS Adapterframework, that has knowledge
  * and uses {@link IReceiver IReceivers} and a {@link PipeLine}.
@@ -159,8 +163,8 @@ import org.apache.log4j.NDC;
  * 
  */
 
-public class Adapter implements Runnable, IAdapter {
-	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.31 $ $Date: 2007-07-24 08:05:22 $";
+public class Adapter implements IAdapter {
+	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.31.2.1 $ $Date: 2007-09-13 13:27:17 $";
 	private Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -194,7 +198,10 @@ public class Adapter implements Runnable, IAdapter {
 	 * The nummer of message currently in process
 	 */
 	private int numOfMessagesInProcess = 0;
-
+    
+    
+    private TaskExecutor taskExecutor;
+    
 	/**
 	 * Indicates wether the configuration succeeded.
 	 * @return boolean
@@ -688,103 +695,6 @@ public class Adapter implements Runnable, IAdapter {
 		}
 	}
 	/**
-	 * do not call this method! start an adapter by the <code>start()</code>
-	 * method. This method starts the adapter, synchronizing the adapter itself.
-	 * This is done to prevent simultaenous starting and stopping of the adapter
-	 * by the web-application.
-	 */
-	public void run() {
-		try {
-			if (!configurationSucceeded) {
-				log.error(
-					"configuration of adapter ["
-						+ getName()
-						+ "] did not succeed, therefore starting the adapter is not possible");
-				warn("configuration did not succeed. Starting the adapter is not possible");
-				runState.setRunState(RunStateEnum.ERROR);
-				return;
-			}
-
-			synchronized (runState) {
-				RunStateEnum currentRunState = getRunState();
-				if (!currentRunState.equals(RunStateEnum.STOPPED)) {
-					String msg =
-						"Adapter ["
-							+ getName()
-							+ "] is currently in state ["
-							+ currentRunState
-							+ "], ignoring start() command";
-					warn(msg);
-					return;
-				}
-				// start the pipeline
-				runState.setRunState(RunStateEnum.STARTING);
-			}
-			try {
-				log.debug("Adapter [" + getName() + "] is starting pipeline");
-				pipeline.start();
-			}
-			catch (PipeStartException pre) {
-				error("got error starting PipeLine", pre);
-				runState.setRunState(RunStateEnum.ERROR);
-				return;
-			}
-
-			// as from version 3.0 the adapter is started,
-			// regardless of receivers are correctly started.
-			runState.setRunState(RunStateEnum.STARTED);
-
-			getMessageKeeper().add("Adapter up and running");
-			log.info("Adapter [" + getName() + "] up and running");
-
-			// starting receivers
-			Iterator it = receivers.iterator();
-			while (it.hasNext()) {
-				IReceiver receiver = (IReceiver) it.next();
-				if (receiver.getRunState() != RunStateEnum.ERROR) {
-					log.info("Adapter [" + getName() + "] is starting receiver [" + receiver.getName() + "]");
-					receiver.startRunning();
-				}
-				else
-					log.warn("Adapter [" + getName() + "] will NOT start receiver [" + receiver.getName() + "] as it is in state ERROR");
-			} //while
-
-			// wait until the stopRunning is called
-			waitForRunState(RunStateEnum.STOPPING);
-			
-			// stop the adapter
-			log.debug("***stopping adapter");
-			it = receivers.iterator();
-			while (it.hasNext()) {
-				IReceiver receiver = (IReceiver) it.next();
-				receiver.waitForRunState(RunStateEnum.STOPPED);
-				log.info("Adapter [" + getName() + "] stopped [" + receiver.getName() + "]");
-			}
-
-			int currentNumOfMessagesInProcess = getNumOfMessagesInProcess();
-			if (currentNumOfMessagesInProcess > 0) {
-				String msg =
-					"Adapter ["
-						+ name
-						+ "] is being stopped while still processing "
-						+ currentNumOfMessagesInProcess
-						+ " messages, waiting for them to finish";
-				warn(msg);
-			}
-			waitForNoMessagesInProcess();
-			log.debug("Adapter [" + name + "] is stopping pipeline");
-			pipeline.stop();
-			runState.setRunState(RunStateEnum.STOPPED);
-			getMessageKeeper().add("Adapter stopped");
-		}
-		catch (Throwable e) {
-			log.error("error running adapter [" + getName() + "] [" + ToStringBuilder.reflectionToString(e) + "]", e);
-			runState.setRunState(RunStateEnum.ERROR);
-		}
-
-	}
-
-	/**
 	 *  some functional description of the <code>Adapter</code>/
 	 */
 	public void setDescription(String description) {
@@ -840,9 +750,75 @@ public class Adapter implements Runnable, IAdapter {
 	 * @see Adapter#run
 	 */
 	public void startRunning() {
-		Thread t = new Thread(this, getName());
-		t.start();
-	}
+		taskExecutor.execute(new Runnable() {
+            public void run() {
+                try {
+                    if (!configurationSucceeded) {
+                        log.error(
+                            "configuration of adapter ["
+                                + getName()
+                                + "] did not succeed, therefore starting the adapter is not possible");
+                        warn("configuration did not succeed. Starting the adapter is not possible");
+                        runState.setRunState(RunStateEnum.ERROR);
+                        return;
+                    }
+
+                    synchronized (runState) {
+                        RunStateEnum currentRunState = getRunState();
+                        if (!currentRunState.equals(RunStateEnum.STOPPED)) {
+                            String msg =
+                                "Adapter ["
+                                    + getName()
+                                    + "] is currently in state ["
+                                    + currentRunState
+                                    + "], ignoring start() command";
+                            warn(msg);
+                            return;
+                        }
+                        // start the pipeline
+                        runState.setRunState(RunStateEnum.STARTING);
+                    }
+                    try {
+                        log.debug("Adapter [" + getName() + "] is starting pipeline");
+                        pipeline.start();
+                    }
+                    catch (PipeStartException pre) {
+                        error("got error starting PipeLine", pre);
+                        runState.setRunState(RunStateEnum.ERROR);
+                        return;
+                    }
+
+                    // as from version 3.0 the adapter is started,
+                    // regardless of receivers are correctly started.
+                    runState.setRunState(RunStateEnum.STARTED);
+
+                    getMessageKeeper().add("Adapter up and running");
+                    log.info("Adapter [" + getName() + "] up and running");
+
+                    // starting receivers
+                    Iterator it = receivers.iterator();
+                    while (it.hasNext()) {
+                        IReceiver receiver = (IReceiver) it.next();
+                        if (receiver.getRunState() != RunStateEnum.ERROR) {
+                            log.info("Adapter [" + getName() + "] is starting receiver [" + receiver.getName() + "]");
+                            receiver.startRunning();
+                        }
+                        else
+                            log.warn("Adapter [" + getName() + "] will NOT start receiver [" + receiver.getName() + "] as it is in state ERROR");
+                    } //while
+
+                    // wait until the stopRunning is called
+                    waitForRunState(RunStateEnum.STOPPING);
+            
+                }
+                catch (Throwable e) {
+                    log.error("error running adapter [" + getName() + "] [" + ToStringBuilder.reflectionToString(e) + "]", e);
+                    runState.setRunState(RunStateEnum.ERROR);
+                }
+            } // End Runnable.run()
+        }); // End Runnable
+	} // End startRunning()
+    
 	/**
 	 * Stop the <code>Adapter</code> and close all elements like receivers,
 	 * Pipeline, pipes etc.
@@ -873,24 +849,57 @@ public class Adapter implements Runnable, IAdapter {
 				return;
 			}
 
-			log.debug("Adapter [" + name + "] is stopping receivers");
-			Iterator it = receivers.iterator();
-			while (it.hasNext()) {
-				IReceiver receiver = (IReceiver) it.next();
-				try {
-					receiver.stopRunning();
-					log.info("Adapter [" + name + "] successfully stopped receiver [" + receiver.getName() + "]");
+            runState.setRunState(RunStateEnum.STOPPING);
+        }
+        taskExecutor.execute(new Runnable() {
+            public void run() {
+                try {
+                    log.debug("Adapter [" + name + "] is stopping receivers");
+                    Iterator it = receivers.iterator();
+                    while (it.hasNext()) {
+                        IReceiver receiver = (IReceiver) it.next();
+                        try {
+                            receiver.stopRunning();
+                            log.info("Adapter [" + name + "] successfully stopped receiver [" + receiver.getName() + "]");
 
-				}
-				catch (Exception e) {
-					error("received error while stopping receiver [" + receiver.getName() + "], ignoring this, so watch out.", e);
-				}
-			}
+                        }
+                        catch (Exception e) {
+                            error("received error while stopping receiver [" + receiver.getName() + "], ignoring this, so watch out.", e);
+                        }
+                    }
 
-			runState.setRunState(RunStateEnum.STOPPING);
+                    // stop the adapter
+                    log.debug("***stopping adapter");
+                    it = receivers.iterator();
+                    while (it.hasNext()) {
+                        IReceiver receiver = (IReceiver) it.next();
+                        receiver.waitForRunState(RunStateEnum.STOPPED);
+                        log.info("Adapter [" + getName() + "] stopped [" + receiver.getName() + "]");
+                    }
 
-		}
+                    int currentNumOfMessagesInProcess = getNumOfMessagesInProcess();
+                    if (currentNumOfMessagesInProcess > 0) {
+                        String msg =
+                            "Adapter ["
+                                + name
+                                + "] is being stopped while still processing "
+                                + currentNumOfMessagesInProcess
+                                + " messages, waiting for them to finish";
+                        warn(msg);
+                    }
+                    waitForNoMessagesInProcess();
+                    log.debug("Adapter [" + name + "] is stopping pipeline");
+                    pipeline.stop();
+                    runState.setRunState(RunStateEnum.STOPPED);
+                    getMessageKeeper().add("Adapter stopped");
+                } catch (Throwable e) {
+                    log.error("error running adapter [" + getName() + "] [" + ToStringBuilder.reflectionToString(e) + "]", e);
+                    runState.setRunState(RunStateEnum.ERROR);
+                }
+            }
+        });
 	}
+    
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
 		sb.append("[name=" + name + "]");
@@ -961,5 +970,19 @@ public class Adapter implements Runnable, IAdapter {
 		return targetDesignDocument;
 	}
 
+
+    /**
+     * @return
+     */
+    public TaskExecutor getTaskExecutor() {
+        return taskExecutor;
+    }
+
+    /**
+     * @param executor
+     */
+    public void setTaskExecutor(TaskExecutor executor) {
+        taskExecutor = executor;
+    }
 
 }

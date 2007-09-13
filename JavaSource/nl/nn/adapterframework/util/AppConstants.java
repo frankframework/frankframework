@@ -1,6 +1,9 @@
 /*
  * $Log: AppConstants.java,v $
- * Revision 1.12  2007-02-12 14:09:04  europe\L190409
+ * Revision 1.12.4.1  2007-09-13 13:27:18  europe\M00035F
+ * First commit of work to use Spring for creating objects
+ *
+ * Revision 1.12  2007/02/12 14:09:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Logger from LogUtil
  *
  * Revision 1.11  2006/03/15 14:01:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -39,6 +42,7 @@ import javax.naming.InitialContext;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 
+import org.apache.commons.digester.substitution.VariableExpander;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 /**
@@ -108,13 +112,15 @@ import org.apache.log4j.Logger;
  * 
  */
 public final class AppConstants extends Properties implements Serializable{
-	public static final String version = "$RCSfile: AppConstants.java,v $ $Revision: 1.12 $ $Date: 2007-02-12 14:09:04 $";
+	public static final String version = "$RCSfile: AppConstants.java,v $ $Revision: 1.12.4.1 $ $Date: 2007-09-13 13:27:18 $";
 	private Logger log = LogUtil.getLogger(this);
 	
 	public final static String propertiesFileName="AppConstants.properties";
 	private static AppConstants self=null;
 	private String additionalPropertiesFileKey="ADDITIONAL.PROPERTIES.FILE";
 	
+    private VariableExpander variableExpander;
+    
 	private AppConstants() {
 		super();
 		load();
@@ -357,4 +363,18 @@ public final class AppConstants extends Properties implements Serializable{
 		}
 		return xmlh.toXML();
 	}
+    /**
+     * @return
+     */
+    public VariableExpander getVariableExpander() {
+        return variableExpander;
+    }
+
+    /**
+     * @param expander
+     */
+    public void setVariableExpander(VariableExpander expander) {
+        variableExpander = expander;
+    }
+
 }

@@ -1,6 +1,9 @@
 /*
  * $Log: ConfigurationServlet.java,v $
- * Revision 1.10  2007-07-19 15:20:19  europe\L190409
+ * Revision 1.10.2.1  2007-09-13 13:27:18  europe\M00035F
+ * First commit of work to use Spring for creating objects
+ *
+ * Revision 1.10  2007/07/19 15:20:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * configure adapters in order of declaration
  *
  * Revision 1.9  2007/06/26 06:58:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -23,10 +26,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import nl.nn.adapterframework.configuration.Configuration;
-import nl.nn.adapterframework.configuration.ConfigurationDigester;
+import nl.nn.adapterframework.configuration.IbisMain;
+import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.RunStateEnum;
 
@@ -49,7 +52,9 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class ConfigurationServlet extends HttpServlet {
-	public static final String version = "$RCSfile: ConfigurationServlet.java,v $ $Revision: 1.10 $ $Date: 2007-07-19 15:20:19 $";
+	public static final String KEY_MANAGER = "KEY_MANAGER";
+	public static final String KEY_CONFIGURATION = "KEY_CONFIGURATION";
+	public static final String version = "$RCSfile: ConfigurationServlet.java,v $ $Revision: 1.10.2.1 $ $Date: 2007-09-13 13:27:18 $";
     protected Logger log = LogUtil.getLogger(this);
 
     static final String DFLT_DIGESTER_RULES = "digester-rules.xml";
@@ -92,9 +97,9 @@ public class ConfigurationServlet extends HttpServlet {
     public void destroy() {
         log.info("************** Configuration shutting down **************");
         try {
-            Configuration config = getConfiguration();
-            if (config != null) {
-				config.stopAdapters();
+            IbisManager ibisManager = getIbisManager();
+            if (ibisManager != null) {
+				ibisManager.stopAdapters();
             } else {
             	log.error("Cannot find configuration to shutdown");
             }
@@ -141,7 +146,8 @@ public class ConfigurationServlet extends HttpServlet {
 
 
         if (areAdaptersStopped()) {
-            boolean success = initConfig(configurationFile, digesterRulesFile, autoStart);
+            IbisMain im=new IbisMain();
+            boolean success = im.initConfig(configurationFile, digesterRulesFile, autoStart);
             if (success) {
                 out.println("<p> Configuration successfully completed</p></body>");
             } else {
@@ -150,6 +156,10 @@ public class ConfigurationServlet extends HttpServlet {
 					out.println("<p>"+lastErrorMessage+"</p>");
                 }
             }
+            ServletContext ctx = getServletContext();
+            ctx.setAttribute(
+                    AppConstants.getInstance().getProperty(KEY_CONFIGURATION),
+                    im.getConfiguration());
         } else {
             out.println(
                     "<p>Action cancelled: some adapters are still running.</p>");
@@ -163,8 +173,15 @@ public class ConfigurationServlet extends HttpServlet {
     public Configuration getConfiguration() {
         ServletContext ctx = getServletContext();
         Configuration config = null;
-        config = (Configuration) ctx.getAttribute(AppConstants.getInstance().getProperty("KEY_CONFIGURATION"));
+        config = (Configuration) ctx.getAttribute(AppConstants.getInstance().getProperty(KEY_CONFIGURATION));
         return config;
+    }
+    
+    public IbisManager getIbisManager() {
+        ServletContext ctx = getServletContext();
+        IbisManager manager = null;
+        manager = (IbisManager) ctx.getAttribute(AppConstants.getInstance().getProperty(KEY_MANAGER));
+        return manager;
     }
     
     /**
@@ -173,70 +190,26 @@ public class ConfigurationServlet extends HttpServlet {
      */
     public void init() throws ServletException {
         super.init();
+        IbisMain im=new IbisMain();
         String configurationFile = getInitParameter("configuration");
         String digesterRulesFile = getInitParameter("digester-rules");
         String autoStart = getInitParameter("autoStart");
         if (areAdaptersStopped()) {
-            boolean success = initConfig(configurationFile, digesterRulesFile, autoStart);
+            boolean success = im.initConfig(configurationFile, digesterRulesFile, autoStart);
             if (success)
                 log.info("Configuration succeeded");
             else
                 log.warn("Configuration did not succeed, please examine log");
+            ServletContext ctx = getServletContext();
+            ctx.setAttribute(
+                    AppConstants.getInstance().getProperty(KEY_CONFIGURATION),
+                    im.getConfiguration());
+            ctx.setAttribute(
+                    AppConstants.getInstance().getProperty(KEY_MANAGER),
+                    im.getIbisManager());
         } else
             log.warn("Not all adapters are stopped, cancelling ConfigurationServlet");
 
     }
     
-    /**
-     * Does the actual confguration work. <br/>
-     * For parameters that are null, the default values are used.
-     * @return true if no errors occured
-     */
-    public boolean initConfig(
-            String configurationFile,
-            String digesterRulesFile,
-            String autoStart) {
-        Configuration config = null;
-        ServletContext ctx = getServletContext();
-
-        if (null == configurationFile)
-            configurationFile = DFLT_CONFIGURATION;
-        if (null == digesterRulesFile)
-            digesterRulesFile = DFLT_DIGESTER_RULES;
-        if (null == autoStart)
-            autoStart = DFLT_AUTOSTART;
-
-		String msg="ConfigurationServlet starting with configurationFile ["+ configurationFile+ "] digesterRulesFile ["+ digesterRulesFile+ "] autoStart["+ autoStart+ "]"; 
-        log.info(msg);
-		System.out.println(msg);
-        ConfigurationDigester cd = new ConfigurationDigester();
-
-        try {
-            config =
-                    cd.unmarshalConfiguration(
-                            ClassUtils.getResourceURL(this, digesterRulesFile),
-                            ClassUtils.getResourceURL(this, configurationFile));
-        } catch (Throwable e) {
-            log.error("Error occured unmarshalling configuration:", e);
-			lastErrorMessage=e.getMessage();
-        }
-
-        // if configuration did not succeed, log and return.
-        if (null == config) {
-            log.error("Error occured unmarshalling configuration. See previous messages.");
-            return false;
-        }
-        // store configuration under key config
-
-        ctx.setAttribute(
-                AppConstants.getInstance().getProperty("KEY_CONFIGURATION"),
-                config);
-
-        if (autoStart.equalsIgnoreCase("TRUE")) {
-            log.info("Starting configuration");
-            config.startAdapters();
-        }
-        log.info("************** ConfigurationServlet complete **************");
-        return true;
-    }
 }

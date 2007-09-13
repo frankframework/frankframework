@@ -1,10 +1,7 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.46  2007-09-12 09:27:06  europe\L190409
- * added attribute pollInterval
- *
- * Revision 1.45  2007/09/05 13:05:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * moved copying of context to Misc
+ * Revision 1.44.2.1  2007-09-13 13:27:17  europe\M00035F
+ * First commit of work to use Spring for creating objects
  *
  * Revision 1.44  2007/08/27 11:51:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * modified afterMessageProcessed handling
@@ -156,6 +153,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.StringTokenizer;
 
 import javax.transaction.Status;
 import javax.transaction.UserTransaction;
@@ -202,6 +200,7 @@ import org.apache.commons.lang.SystemUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.apache.log4j.Logger;
+import org.springframework.core.task.TaskExecutor;
 
 /**
  * This {@link IReceiver Receiver} may be used as a base-class for developing receivers.
@@ -219,7 +218,6 @@ import org.apache.log4j.Logger;
  * <tr><td>{@link #setReturnedSessionKeys(String) returnedSessionKeys}</td><td>comma separated list of keys of session variables that should be returned to caller, for correct results as well as for erronous results. (Only for listeners that support it, like JavaListener)</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setTransacted(boolean) transacted}</td><td>if set to <code>true, messages will be received and processed under transaction control. If processing fails, messages will be sent to the error-sender. (see below)</code></td><td><code>false</code></td></tr>
  * <tr><td>{@link #setMaxRetries(int) maxRetries}</td><td>The number of times a pulling listening attempt is retried after an exception is caught</td><td>3</td></tr>
- * <tr><td>{@link #setPollInterval(int) pollInterval}</td><td>The number of seconds waited after an unsuccesful poll attempt before another poll attempt is made.</td><td>0</td></tr>
  * <tr><td>{@link #setIbis42compatibility(boolean) ibis42compatibility}</td><td>if set to <code>true, the result of a failed processing of a message is a formatted errormessage. Otherwise a listener specific error handling is performed</code></td><td><code>false</code></td></tr>
  * <tr><td>{@link #setBeforeEvent(int) beforeEvent}</td>      <td>METT eventnumber, fired just before a message is processed by this Receiver</td><td>-1 (disabled)</td></tr>
  * <tr><td>{@link #setAfterEvent(int) afterEvent}</td>        <td>METT eventnumber, fired just after message processing by this Receiver is finished</td><td>-1 (disabled)</td></tr>
@@ -274,7 +272,7 @@ import org.apache.log4j.Logger;
  * @since 4.2
  */
 public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, IMessageHandler, IbisExceptionListener, HasSender, TracingEventNumbers {
-	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.46 $ $Date: 2007-09-12 09:27:06 $";
+	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.44.2.1 $ $Date: 2007-09-13 13:27:17 $";
 	protected Logger log = LogUtil.getLogger(this);
  
 	private String returnIfStopped="";
@@ -299,8 +297,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 	private int numThreads = 1;
 	// the number of threads that are activily polling for messages (concurrently, only for pulling listeners)
 	private int numThreadsPolling = 1;
-	private int pollInterval=0;
-  
+   
 	private Counter threadsProcessing = new Counter(0);
 	private Counter threadsRunning = new Counter(0);
 	private Semaphore pollToken = null;
@@ -331,6 +328,11 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 	private int exceptionEvent=-1;
 
 	int retryInterval=1;
+    
+    /**
+     * The thread-pool for spawning threads, injected by Spring
+     */
+    private TaskExecutor taskExecutor;
     
 	protected String getLogPrefix() {
 		return "Receiver ["+getName()+"] "; 
@@ -402,8 +404,9 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 
 	private void addThread(String nameSuffix) {
 		if (getListener() instanceof IPullingListener){
-			Thread t = new Thread(this, getName() + (nameSuffix==null ? "" : nameSuffix));
-			t.start();
+			//Thread t = new Thread(this, getName() + (nameSuffix==null ? "" : nameSuffix));
+			//t.start();
+            taskExecutor.execute(this);
 		}
 	}
 
@@ -756,13 +759,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 					} finally {
 						TracingUtil.afterEvent(this);
 					}
-				} else {
-					if (getPollInterval()>0) {
-						for (int i=0; i<getPollInterval() && getRunState().equals(RunStateEnum.STARTED); i++) {
-							Thread.sleep(1000);
-						}
-					}
-				}
+				} 
 			}
 	
 		} catch (Throwable e) {
@@ -1172,10 +1169,16 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 						}
 					}
 				} finally {
-					if (log.isDebugEnabled() && StringUtils.isNotEmpty(getReturnedSessionKeys())) {
-						log.debug("returning values of session keys ["+getReturnedSessionKeys()+"]");
+					if (StringUtils.isNotEmpty(getReturnedSessionKeys()) && threadContext!=null) {
+						if (log.isDebugEnabled()) log.debug("setting returned session keys ["+getReturnedSessionKeys()+"]");
+						StringTokenizer st = new StringTokenizer(getReturnedSessionKeys()," ,;");
+						while (st.hasMoreTokens()) {
+							String key=st.nextToken();
+							Object value=pipelineSession.get(key);
+							if (log.isDebugEnabled()) log.debug("returning session key ["+key+"] value ["+value+"]");
+							threadContext.put(key,value);
+						}
 					}
-					Misc.copyContext(getReturnedSessionKeys(),pipelineSession,threadContext);
 				}
 				try {
 					if (getSender()!=null) {
@@ -1596,12 +1599,18 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 		return returnedSessionKeys;
 	}
 
-	public void setPollInterval(int i) {
-		pollInterval = i;
-	}
-	public int getPollInterval() {
-		return pollInterval;
-	}
+    /**
+     * @return
+     */
+    public TaskExecutor getTaskExecutor() {
+        return taskExecutor;
+    }
 
+    /**
+     * @param executor
+     */
+    public void setTaskExecutor(TaskExecutor executor) {
+        taskExecutor = executor;
+    }
 
 }
