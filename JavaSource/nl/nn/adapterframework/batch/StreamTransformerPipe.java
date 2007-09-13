@@ -1,6 +1,9 @@
 /*
  * $Log: StreamTransformerPipe.java,v $
- * Revision 1.5  2007-09-10 11:08:42  europe\L190409
+ * Revision 1.6  2007-09-13 12:38:11  europe\L190409
+ * improved debug info
+ *
+ * Revision 1.5  2007/09/10 11:08:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed logic processing from writePrefix to calling class
  * renamed writePrefix() and writeSuffix() into open/closeRecordType()
  *
@@ -61,7 +64,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class StreamTransformerPipe extends FixedForwardPipe {
-	public static final String version = "$RCSfile: StreamTransformerPipe.java,v $  $Revision: 1.5 $ $Date: 2007-09-10 11:08:42 $";
+	public static final String version = "$RCSfile: StreamTransformerPipe.java,v $  $Revision: 1.6 $ $Date: 2007-09-13 12:38:11 $";
 
 	private IRecordHandlerManager initialManager=null;
 	private IResultHandler defaultHandler=null;
@@ -157,6 +160,9 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	public void registerManager(IRecordHandlerManager manager) throws Exception {
 		registeredManagers.put(manager.getName(), manager);
 		if (manager.isInitial()) {
+			if (initialManager != null) {
+				throw new ConfigurationException("manager ["+manager.getName()+"] has initial=true, but initial manager already set to ["+initialManager.getName()+"]");
+			}
 			initialManager = manager;
 		}
 	}
@@ -293,19 +299,21 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 				}
 				
 				// get handlers for current line
-				RecordHandlingFlow handlers = currentManager.getRecordHandler(session, rawRecord);
-				if (handlers == null) {
+				RecordHandlingFlow flow = currentManager.getRecordHandler(session, rawRecord);
+				if (flow == null) {
+					log.debug("<no flow>: "+rawRecord);
 					continue; // ignore line for which no handlers are registered
 				}
 				
-				IRecordHandler curHandler = handlers.getRecordHandler(); 
+				IRecordHandler curHandler = flow.getRecordHandler(); 
 				if (curHandler != null) {
+					log.debug("manager ["+currentManager.getName()+"] key ["+flow.getRecordKey()+"] record handler ["+curHandler.getName()+"]: "+rawRecord);
 					// there is a record handler, so transform the line
 					ArrayList parsedRecord = curHandler.parse(session, rawRecord);
 					Object result = curHandler.handleRecord(session, parsedRecord);
 				
 					// if there is a result handler, write the transformed result
-					IResultHandler resultHandler = handlers.getResultHandler();
+					IResultHandler resultHandler = flow.getResultHandler();
 					if (result != null && resultHandler != null) {
 						boolean recordTypeChanged = curHandler.isNewRecordType(session, curHandler.equals(prevHandler), prevParsedRecord, parsedRecord);
 						if (recordTypeChanged) {
@@ -314,14 +322,16 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 							}
 							resultHandler.openRecordType(session, streamId);
 						}
-						resultHandler.handleResult(session, streamId, handlers.getRecordKey(), result);
+						resultHandler.handleResult(session, streamId, flow.getRecordKey(), result);
 					}
 					prevParsedRecord = parsedRecord;
 					prevHandler = curHandler;
+				} else {
+					log.debug("manager ["+currentManager.getName()+"] key ["+flow.getRecordKey()+"], no record handler: "+rawRecord);
 				}
 				
 				// get the manager for the next record
-				currentManager = handlers.getNextRecordHandlerManager();
+				currentManager = flow.getNextRecordHandlerManager();
 			}
 			return finalizeResult(session, streamId, false);
 		} catch(Exception e) {
