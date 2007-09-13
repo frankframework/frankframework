@@ -1,6 +1,9 @@
 /*
  * $Log: RecordHandlingFlow.java,v $
- * Revision 1.7  2007-08-03 08:28:59  europe\L190409
+ * Revision 1.8  2007-09-13 12:37:04  europe\L190409
+ * fixed bug in configuration
+ *
+ * Revision 1.7  2007/08/03 08:28:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.6  2007/07/24 16:12:52  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -51,7 +54,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public final class RecordHandlingFlow {
-	public static final String version = "$RCSfile: RecordHandlingFlow.java,v $  $Revision: 1.7 $ $Date: 2007-08-03 08:28:59 $";
+	public static final String version = "$RCSfile: RecordHandlingFlow.java,v $  $Revision: 1.8 $ $Date: 2007-09-13 12:37:04 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String recordKey;
@@ -76,15 +79,21 @@ public final class RecordHandlingFlow {
 		} else { 
 			nextManager = (IRecordHandlerManager)registeredManagers.get(getNextRecordHandlerManagerRef());
 			if (nextManager == null) {
-				throw new ConfigurationException("RecordHandlerManager [" + getNextRecordHandlerManagerRef() + "] not found");
+				throw new ConfigurationException("cannot find nextRecordHandlerManager [" + getNextRecordHandlerManagerRef() + "] for flow of manager [" + getNextRecordHandlerManagerRef() + "], key ["+getRecordKey()+"]");
 			}
 		}
+		setNextRecordHandlerManager(nextManager);
 			
 		// obtain the recordhandler 
-		IRecordHandler recordHandler = (IRecordHandler)registeredRecordHandlers.get(getRecordHandlerRef());
-		if (recordHandler==null) {
-			log.debug("no recordhandler defined for ["+ClassUtils.nameOf(this)+"]");
-//			throw new ConfigurationException("no recordhandler defined for ["+ClassUtils.nameOf(flow)+"]");
+		if (StringUtils.isNotEmpty(getRecordHandlerRef())) {
+			IRecordHandler recordHandler = (IRecordHandler)registeredRecordHandlers.get(getRecordHandlerRef());
+			if (recordHandler!=null) {
+				setRecordHandler(recordHandler);
+			} else {
+				throw new ConfigurationException("cannot find recordhandler ["+getRecordHandlerRef()+"] for flow of manager [" + getNextRecordHandlerManagerRef() + "], key ["+getRecordKey()+"]");
+			}
+		} else {
+			log.debug("no recordhandler defined for flow of manager [" + getNextRecordHandlerManagerRef() + "], key ["+getRecordKey()+"]");
 		}
 		
 		// obtain the named resulthandler
@@ -96,12 +105,7 @@ public final class RecordHandlingFlow {
 				throw new ConfigurationException("ResultHandler [" + getResultHandlerRef() + "] not found");
 			}
 		}
-		
-		// initialise the flow object
-		setNextRecordHandlerManager(nextManager);
-		setRecordHandler(recordHandler);
 		setResultHandler(resultHandler);
-
 	}
 	
 	
