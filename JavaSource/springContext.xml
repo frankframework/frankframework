@@ -1,81 +1,129 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
        xsi:schemaLocation="
-			http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd">
+			http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+            http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.0.xsd
+            http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.0.xsd">
 
-	<!-- <bean/> definitions here -->
-	<bean name="ibisManager" class="nl.nn.adapterframework.unmanaged.ThreadedIbisManager"
-		autowire="byName">
-		
-	</bean>
-	
-	<bean name="configuration" class="nl.nn.adapterframework.configuration.Configuration"
-		autowire="byName"
-		init-method="init">
-	</bean>
-	
-	<bean name="configurationDigester" class="nl.nn.adapterframework.configuration.ConfigurationDigester" 
-		autowire="byName">
-		<lookup-method name="createDigester" bean="digester"/>
-	</bean>
-	
-	<bean name="digester" class="org.apache.commons.digester.Digester"
-		autowire="byName" scope="prototype">
-		<property name="substitutor">
-			<bean class="org.apache.commons.digester.substitution.VariableSubstitutor">
-				<constructor-arg ref="variableExpander"/>
-			</bean>
-		</property>
-		<property name="useContextClassLoader" value="true"/>
-		<property name="entityResolver">
-			<bean class="nl.nn.adapterframework.util.ClassPathEntityResolver"/>
-		</property>
-	</bean>
-	
-	<bean name="variableExpander" class="nl.nn.adapterframework.configuration.IbisMultiSourceExpander">
-		<property name="environmentFallback" value="false"/>
-		<property name="sources">
-			<list>
-				<bean class="java.lang.System" factory-method="getProperties"/>
-				<ref bean="appConstants"/>
-			</list>
-		</property>
-	</bean>
-	
-	<bean name="appConstants" class="nl.nn.adapterframework.util.AppConstants"
-		autowire="byName"
-		factory-method="getInstance">
-	</bean>
-	
-	<bean name="pipeExecutor" class="nl.nn.adapterframework.unmanaged.SimplePipeExecutor"
-		scope="singleton">
-	</bean>
-	
-	<!-- Replace with whatever TaskExecutor implementation suits best
-	     Replace with Common/J based TaskExecutor once deploying on
-	     WebSphere 6.0 or higher. -->
-	<bean name="taskExecutor" class="org.springframework.core.task.SimpleAsyncTaskExecutor"
-		scope="singleton">
-	</bean>
-	
-	<!-- Beans created from Configuration.xml, but prototyped here for
-	     extra dependancies which cannot be created otherwise.
-	     Bean names are prefixed with 'proto-' so that autowiring by
-	     name doesn't create unnessecary instances. -->
-	<bean name="proto-adapter" class="nl.nn.adapterframework.core.Adapter"
-		autowire="byName" scope="prototype">
-	</bean>
-	
-	<bean name="proto-pipeLine" class="nl.nn.adapterframework.core.PipeLine"
-		autowire="byName" scope="prototype">
-	</bean>
-	
-	<bean name="proto-receiver" class="nl.nn.adapterframework.receivers.GenericReceiver"
-		autowire="byName" scope="prototype">
-	</bean>
-	
-	<bean name="proto-genericMessageSendingPipe" class="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
-		autowire="byName" scope="prototype">
-	</bean>
+    <!-- <bean/> definitions here -->
+    
+    <!-- Transaction stuff -->
+    <!-- bean definition below would be preferred txManager for WebSphere 6.0 and up
+    (see: 
+    http://www.ibm.com/developerworks/websphere/techjournal/0609_alcott/0609_alcott.html
+    http://static.springframework.org/spring/docs/2.1.x/api/org/springframework/transaction/jta/WebSphereUowTransactionManager.html
+    ) however doesn't work with WAS 5.0 / 5.1
+    <bean id="txManager" class="org.springframework.transaction.jta.WebSphereUowTransactionManager">
+    </bean> -->
+    
+    <!-- Defining a WAS5 compatible transaction manager -->
+    <bean id="txManager" class="org.springframework.transaction.jta.JtaTransactionManager">
+        <property name="transactionManager">
+            <bean class="org.springframework.transaction.jta.WebSphereTransactionManagerFactoryBean"/>
+        </property>
+    </bean>
+    
+    <!-- the transactional advice (what 'happens'; see the <aop:advisor/> bean below) -->
+    <tx:advice id="txAdvice" transaction-manager="txManager">
+        <!-- the transactional semantics... -->
+        <tx:attributes>
+            <!-- all methods starting with 'get' are read-only -->
+            <tx:method name="*Required" propagation="REQUIRED"/>
+            <tx:method name="*Supports" propagation="SUPPORTS"/>
+            <tx:method name="*Mandatory" propagation="MANDATORY"/>
+            <tx:method name="*RequiresNew" propagation="REQUIRES_NEW"/>
+            <tx:method name="*NotSupported" propagation="NOT_SUPPORTED"/>
+            <tx:method name="*Never" propagation="NEVER"/>
+        </tx:attributes>
+      </tx:advice>
+  
+      <!-- ensure that the above transactional advice runs for any execution
+           of an operation defined by the FooService interface -->
+      <aop:config>
+        <aop:pointcut id="txPropagationCut" expression="execution(* nl.nn.adapterframework.core.IPipe*Executor.*(..))"/>
+        <aop:advisor advice-ref="txAdvice" pointcut-ref="txPropagationCut"/>
+      </aop:config>
+      
+      
+    <!-- IBIS Beans -->
+    <bean name="ibisManager" class="nl.nn.adapterframework.unmanaged.ThreadedIbisManager"
+        autowire="byName">
+        
+    </bean>
+    
+    <bean name="configuration" class="nl.nn.adapterframework.configuration.Configuration"
+        autowire="byName"
+        init-method="init">
+    </bean>
+    
+    <bean name="configurationDigester" class="nl.nn.adapterframework.configuration.ConfigurationDigester" 
+        autowire="byName">
+        <lookup-method name="createDigester" bean="digester"/>
+    </bean>
+    
+    <bean name="digester" class="org.apache.commons.digester.Digester"
+        autowire="byName" scope="prototype">
+        <property name="substitutor">
+            <bean class="org.apache.commons.digester.substitution.VariableSubstitutor">
+                <constructor-arg ref="variableExpander"/>
+            </bean>
+        </property>
+        <property name="useContextClassLoader" value="true"/>
+        <property name="entityResolver">
+            <bean class="nl.nn.adapterframework.util.ClassPathEntityResolver"/>
+        </property>
+    </bean>
+    
+    <bean name="variableExpander" class="nl.nn.adapterframework.configuration.IbisMultiSourceExpander">
+        <property name="environmentFallback" value="false"/>
+        <property name="sources">
+            <list>
+                <bean class="java.lang.System" factory-method="getProperties"/>
+                <ref bean="appConstants"/>
+            </list>
+        </property>
+    </bean>
+    
+    <bean name="appConstants" class="nl.nn.adapterframework.util.AppConstants"
+        autowire="byName"
+        factory-method="getInstance">
+    </bean>
+    
+    <bean name="pipeLineExecutor" class="nl.nn.adapterframework.unmanaged.SimplePipeLineExecutor"
+        scope="singleton">
+    </bean>
+    
+    <bean name="pipeExecutor" class="nl.nn.adapterframework.unmanaged.SimplePipeExecutor"
+        scope="singleton">
+    </bean>
+    
+    <!-- Replace with whatever TaskExecutor implementation suits best
+         Replace with Common/J based TaskExecutor once deploying on
+         WebSphere 6.0 or higher. -->
+    <bean name="taskExecutor" class="org.springframework.core.task.SimpleAsyncTaskExecutor"
+        scope="singleton">
+    </bean>
+    
+    <!-- Beans created from Configuration.xml, but prototyped here for
+         extra dependancies which cannot be created otherwise.
+         Bean names are prefixed with 'proto-' so that autowiring by
+         name doesn't create unnessecary instances. -->
+    <bean name="proto-adapter" class="nl.nn.adapterframework.core.Adapter"
+        autowire="byName" scope="prototype">
+    </bean>
+    
+    <bean name="proto-pipeLine" class="nl.nn.adapterframework.core.PipeLine"
+        autowire="byName" scope="prototype">
+    </bean>
+    
+    <bean name="proto-receiver" class="nl.nn.adapterframework.receivers.GenericReceiver"
+        autowire="byName" scope="prototype">
+    </bean>
+    
+    <bean name="proto-genericMessageSendingPipe" class="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+        autowire="byName" scope="prototype">
+    </bean>
 </beans>

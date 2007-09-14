@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.45.2.1  2007-09-14 09:24:53  europe\M00035F
+ * Revision 1.45.2.2  2007-09-14 14:33:19  europe\M00035F
+ * Add AOP jars; add transactional invocation of PipeLine; add transaction definitions to Spring Context
+ *
+ * Revision 1.45.2.1  2007/09/14 09:24:53  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
  * Use special executor to run a Pipe under transactional control
  *
  * Revision 1.45  2007/07/17 15:09:08  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -219,7 +222,7 @@ import org.apache.log4j.Logger;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.45.2.1 $ $Date: 2007-09-14 09:24:53 $";
+	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.45.2.2 $ $Date: 2007-09-14 14:33:19 $";
     private Logger log = LogUtil.getLogger(this);
 	private Logger durationLog = LogUtil.getLogger("LongDurationMessages");
     
@@ -242,6 +245,7 @@ public class PipeLine {
 
 	private ArrayList exitHandlers = new ArrayList();
     
+    private IPipeLineExecutor pipeLineExecutor;
     private IPipeExecutor pipeExecutor;
     
 	/**
@@ -411,103 +415,48 @@ public class PipeLine {
 			throw new PipeRunException(null, "Pipeline of adapter ["+ owner.getName()+"] received null message");
 		}
 		pipeLineSession.set(message, messageId);
-//		pipeLineSession.setTransacted(isTransacted());
-//		PipeLineResult result;
-
-		// TODO: I really doubt that we really *need* to have isolation
-        // on the pipeline. 
-        // We should have it on calling the Adapter from
-        // another Adapter
-        // Otherwise, transactional execution of the pipeline should be
-        // governed by JMS Listener / MDB being transactional or not.
         
         boolean compatible;
-		boolean isolationRequired;
-		boolean doTransaction;
 		if (log.isDebugEnabled()) log.debug("evaluating transaction status ["+JtaUtil.displayTransactionStatus()+"], transaction attribute ["+getTransactionAttribute()+"], messageId ["+messageId+"]");
 		try {
 			compatible=JtaUtil.transactionStateCompatible(getTransactionAttributeNum());
-			isolationRequired=JtaUtil.isolationRequired(getTransactionAttributeNum());
-			doTransaction=JtaUtil.newTransactionRequired(getTransactionAttributeNum());
 		} catch (Exception t) {
 			throw new PipeRunException(null,"exception evaluating transaction status, transaction attribute ["+getTransactionAttribute()+"], messageId ["+messageId+"]",t);
 		}
 		if (!compatible) {
 			throw new PipeRunException(null,"transaction state ["+JtaUtil.displayTransactionStatus()+"] not compatible with transaction attribute ["+getTransactionAttribute()+"], messageId ["+messageId+"]");
 		}
-		if (log.isDebugEnabled()) log.debug("PipeLine transactionAttribute ["+getTransactionAttribute()+"], isolationRequired ["+isolationRequired+"], doTransaction ["+doTransaction+"]");
-
-		if (isolationRequired) {
-			PipeLineRunWrapper plrw = new PipeLineRunWrapper();
-			return plrw.runPipeLine(messageId,message,pipeLineSession,doTransaction);
-		} else { 
-			return processPipeLine(messageId,message,pipeLineSession,doTransaction);
-		}
-	
-//		try {
-//			if (adapter !=null && isTransacted() && !adapter.inTransaction()) {
-//				log.debug("Pipeline of adapter ["+ adapter.getName()+"], starting transaction for msgid ["+messageId+"]");
-//				utx = adapter.getUserTransaction();
-//				utx.begin();
-//			}
-//		} catch (Exception e) {
-//			throw new PipeRunException(null, "Pipeline of adapter ["+ owner.getName()+"] got exception starting transaction for msgid ["+messageId+"]", e);
-//		}
-//	
-//		try {
-//			result = processPipeLine(messageId, message, pipeLineSession);
-//			// commit or rollback the transaction
-//			// utx identifies wether the PipeLine instantiated the Transaction. If it did, commit or rollback.
-//			// If it did not, set the transaction to rollback only.
-//			if (utx!=null) {
-//				int txStatus = utx.getStatus();
-//			
-//				if  ((txStatus == Status.STATUS_ACTIVE)&&(commitOnState.equals(result.getState()))) {
-//	
-//					log.debug("Pipeline of adapter ["+ owner.getName()+"], msgid ["+messageId+"] transaction has status ACTIVE, exitState=["+result.getState()+"], performing commit");
-//					utx.commit();
-//				}
-//				else {
-//					log.warn("Pipeline of adapter ["+ owner.getName()+"], msgid ["+messageId+"] transaction has status "+JtaUtil.displayTransactionStatus(txStatus)+", exitState=["+result.getState()+"], performing ROLL BACK");
-//					utx.rollback();
-//				}
-//			} else {
-//				// if the Pipeline did not instantiate the transaction, someone else did, notify that
-//				// rollback is the only possibility.
-//				if (adapter!=null && isTransacted() && (!(commitOnState.equals(result.getState())))) {
-//					log.warn("Pipeline of adapter ["+ owner.getName()+"], msgid ["+messageId+"], exitState=["+result.getState()+"], setting transaction to ROLL BACK ONLY");
-//					utx = adapter.getUserTransaction();
-//					utx.setRollbackOnly();
-//				}
-//			}
-//			return result;
-//		} catch (Exception e) {
-//			if (utx!=null) {
-//				log.info("Pipeline of adapter ["+ owner.getName()+"], msgid ["+messageId+"] caught exception, will now perform rollback, (exception will be rethrown, exception message ["+ e.getMessage()+"])");
-//				try {
-//					utx.rollback();
-//				} catch (Exception txe) {
-//					log.error("Pipeline of adapter ["+ owner.getName()+"], msgid ["+messageId+"] got error rolling back transaction", txe);
-//				}
-//			}	else {
-//				if (adapter!=null && isTransacted())  {
-//					log.warn("Pipeline of adapter ["+ owner.getName()+"], msgid ["+messageId+"] setting transaction to ROLL BACK ONLY");
-//					try {
-//					utx = adapter.getUserTransaction();
-//					utx.setRollbackOnly();
-//					} catch(Exception et) {
-//						log.error("Pipeline of adapter["+ owner.getName()+"], msgid ["+messageId+"] got error setting transaction to ROLLBACK ONLY", et);
-//					}
-//				}
-//			}
-//			if (e instanceof PipeRunException)
-//				throw (PipeRunException)e;
-//			else
-//				throw new PipeRunException(null, "Pipeline of adapter ["+ owner.getName()+"] got error handling transaction", e);
-//		}
-//	
+		if (log.isDebugEnabled()) log.debug("PipeLine transactionAttribute ["+getTransactionAttribute()+"]");
+        return runPipeLineObeyingTransactionAttribute(message, messageId, pipeLineSession);
 	}
-
+    
+    protected PipeLineResult runPipeLineObeyingTransactionAttribute(String messageId, String message, PipeLineSession session) throws PipeRunException {
+        int txOption = this.getTransactionAttributeNum();
+        switch (txOption) {
+            case JtaUtil.TRANSACTION_ATTRIBUTE_MANDATORY:
+            return pipeLineExecutor.doPipeLineTxMandatory(this, messageId, message, session);
+            
+            case JtaUtil.TRANSACTION_ATTRIBUTE_NEVER:
+            return pipeLineExecutor.doPipeLineTxNever(this, messageId, message, session);
+            
+            case JtaUtil.TRANSACTION_ATTRIBUTE_NOT_SUPPORTED:
+            return pipeLineExecutor.doPipeLineTxNotSupported(this, messageId, message, session);
+            
+            case JtaUtil.TRANSACTION_ATTRIBUTE_SUPPORTS:
+            return pipeLineExecutor.doPipeLineTxSupports(this, messageId, message, session);
+            
+            case JtaUtil.TRANSACTION_ATTRIBUTE_REQUIRED:
+            return pipeLineExecutor.doPipeLineTxRequired(this, messageId, message, session);
+            
+            case JtaUtil.TRANSACTION_ATTRIBUTE_REQUIRES_NEW:
+            return pipeLineExecutor.doPipeLineTxRequiresNew(this, messageId, message, session);
+            
+            default:
+            throw new PipeRunException(null, "Invalid value of transactional attribute on PipeLine: value="
+                + txOption + "(" + JtaUtil.getTransactionAttributeString(txOption) + ")");
+        }
+    }
+    
 	protected PipeRunResult runPipeObeyingTransactionAttribute(IPipe pipe, Object message, PipeLineSession session) throws PipeRunException {
         int txOption;
         if (pipe instanceof HasTransactionAttribute) {
@@ -541,96 +490,19 @@ public class PipeLine {
         }
 	}
 
-	private class PipeLineRunWrapper extends Thread {
-		
-		String messageId;
-		String message;
-		PipeLineSession pipeLineSession;
-		boolean doTransaction;
-
-		PipeLineResult result = null;
-		Throwable t = null;
-		
-		private PipeLineRunWrapper() {
-		}
-		
-		public PipeLineResult runPipeLine(String messageId, String message, PipeLineSession pipeLineSession, boolean doTransaction) throws PipeRunException {
-			setName(getName()+"-sub");
-			this.messageId=messageId;
-			this.message=message;
-			this.pipeLineSession=pipeLineSession;
-			this.doTransaction=doTransaction;
-			this.start();
-			try {
-				join();
-			} catch (InterruptedException e) {
-				throw new PipeRunException(null,"pipeline",e);
-			}
-
-			if (t!=null) {
-				if (t instanceof PipeRunException) {
-					throw (PipeRunException)t;
-				} else {
-					throw new PipeRunException(null,"pipeline",t);
-				}
-			} else {
-				return result; 
-			}
-		}
-		
-		public void run() {
-			try {
-				result = processPipeLine(messageId, message, pipeLineSession, doTransaction);
-			} catch (Throwable t) {
-				log.warn("exception executing request for messageId ["+messageId+"]");
-				this.t = t;
-			}
-		}
-
-	}
-
-
-	/*
-	 * process a message, encapsulated in a transaction if required.
+	/**
+     * Run a PipeLine, without observing transaction status of the PipeLine.
+     * 
+     * This method is meant to be executed from the IPipeLineExecutor
+     * implementation.
+     * 
+	 * @param messageId
+	 * @param message
+	 * @param pipeLineSession
+	 * @return
+	 * @throws PipeRunException
 	 */
-	protected PipeLineResult processPipeLine(String messageId, String message, PipeLineSession pipeLineSession, boolean doTransaction) throws PipeRunException {
-		try {
-			if (doTransaction) {
-				JtaUtil.startTransaction();
-			}
-			PipeLineResult result = processPipeLine(messageId, message, pipeLineSession);
-			if (doTransaction) {
-				boolean mustRollback=false;
-				
-				if (result==null) {
-					mustRollback=true;
-					log.warn("received null result for messageId ["+messageId+"], will issue rollback");
-				} else {
-					if (StringUtils.isNotEmpty(getCommitOnState()) && !getCommitOnState().equalsIgnoreCase(result.getState())) {
-						mustRollback=true;
-						log.warn("result state ["+result.getState()+"] for messageId ["+messageId+"] is not equal to commitOnState ["+getCommitOnState()+"], will issue rollback");
-					}
-				}
-				JtaUtil.finishTransaction(mustRollback);
-			}
-			return result;
-		} catch (Throwable t) {
-			if (doTransaction) {
-				try {
-					JtaUtil.finishTransaction(true);
-				} catch (Exception e) {
-					log.warn("exception rolling back transaction", e);
-				}
-			}
-			if (t instanceof PipeRunException) {
-				throw (PipeRunException)t;
-			} else {
-				throw new PipeRunException(null,"pipeline",t);
-			}
-		}
-	}
-		
-	protected PipeLineResult processPipeLine(String messageId, String message, PipeLineSession pipeLineSession) throws PipeRunException {
+    public PipeLineResult processPipeLine(String messageId, String message, PipeLineSession pipeLineSession) throws PipeRunException {
 	    // Object is the object that is passed to and returned from Pipes
 	    Object object = (Object) message;
 	    Object preservedObject = object;
@@ -950,6 +822,20 @@ public class PipeLine {
      */
     public void setPipeExecutor(IPipeExecutor executor) {
         pipeExecutor = executor;
+    }
+
+    /**
+     * @return
+     */
+    public IPipeLineExecutor getPipeLineExecutor() {
+        return pipeLineExecutor;
+    }
+
+    /**
+     * @param executor
+     */
+    public void setPipeLineExecutor(IPipeLineExecutor executor) {
+        pipeLineExecutor = executor;
     }
 
 }
