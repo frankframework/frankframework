@@ -1,7 +1,7 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.46  2007-09-04 07:58:14  europe\L190409
- * clearified exception message
+ * Revision 1.45.2.1  2007-09-14 09:24:53  europe\M00035F
+ * Use special executor to run a Pipe under transactional control
  *
  * Revision 1.45  2007/07/17 15:09:08  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added list of pipes, to access them in order
@@ -219,7 +219,7 @@ import org.apache.log4j.Logger;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.46 $ $Date: 2007-09-04 07:58:14 $";
+	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.45.2.1 $ $Date: 2007-09-14 09:24:53 $";
     private Logger log = LogUtil.getLogger(this);
 	private Logger durationLog = LogUtil.getLogger("LongDurationMessages");
     
@@ -241,7 +241,9 @@ public class PipeLine {
 	private String commitOnState="success"; // exit state on which receiver will commit XA transactions
 
 	private ArrayList exitHandlers = new ArrayList();
-
+    
+    private IPipeExecutor pipeExecutor;
+    
 	/**
 	 * Register an Pipe at this pipeline.
 	 * The name is also put in the globalForwards table (with 
@@ -412,7 +414,14 @@ public class PipeLine {
 //		pipeLineSession.setTransacted(isTransacted());
 //		PipeLineResult result;
 
-		boolean compatible;
+		// TODO: I really doubt that we really *need* to have isolation
+        // on the pipeline. 
+        // We should have it on calling the Adapter from
+        // another Adapter
+        // Otherwise, transactional execution of the pipeline should be
+        // governed by JMS Listener / MDB being transactional or not.
+        
+        boolean compatible;
 		boolean isolationRequired;
 		boolean doTransaction;
 		if (log.isDebugEnabled()) log.debug("evaluating transaction status ["+JtaUtil.displayTransactionStatus()+"], transaction attribute ["+getTransactionAttribute()+"], messageId ["+messageId+"]");
@@ -499,108 +508,37 @@ public class PipeLine {
 //	
 	}
 
-	private class PipeRunWrapper extends Thread {
-		
-		IPipe pipe;
-		Object message;
-		PipeLineSession session;
-		boolean doTransaction;
-
-		PipeRunResult result = null;
-		Throwable t = null;
-		
-		private PipeRunWrapper() {
-		}
-		
-		public PipeRunResult runPipeWrapped(IPipe pipe, Object message, PipeLineSession session, boolean doTransaction) throws PipeRunException {
-			setName(pipe.getName());
-			this.pipe=pipe;
-			this.message=message;
-			this.session=session;
-			this.doTransaction=doTransaction;
-			this.start();
-			try {
-				join();
-			} catch (InterruptedException e) {
-				throw new PipeRunException(pipe,"waiting for thread",e);
-			}
-
-			if (t!=null) {
-				if (t instanceof PipeRunException) {
-					throw (PipeRunException)t;
-				} else {
-					throw new PipeRunException(pipe,"executing thread",t);
-				}
-			} else {
-				return result; 
-			}
-		}
-		
-		public void run() {
-			try {
-				result = runPipe(pipe,message, session, doTransaction);
-			} catch (Throwable t) {
-				log.warn("exception executing request");
-				this.t = t;
-			}
-		}
-
-	}
-
 	protected PipeRunResult runPipeObeyingTransactionAttribute(IPipe pipe, Object message, PipeLineSession session) throws PipeRunException {
-		boolean compatible=true;
-		boolean isolationRequired=false;
-		boolean doTransaction=false;
-
-		if (pipe instanceof HasTransactionAttribute) {
-			HasTransactionAttribute taPipe = (HasTransactionAttribute) pipe;
-
-			try {
-				compatible=JtaUtil.transactionStateCompatible(taPipe.getTransactionAttributeNum());
-				isolationRequired=JtaUtil.isolationRequired(taPipe.getTransactionAttributeNum());
-				doTransaction=JtaUtil.newTransactionRequired(taPipe.getTransactionAttributeNum());
-			} catch (Exception t) {
-				throw new PipeRunException(pipe,"exception evaluating transaction status for pipe ["+pipe.getName()+"], transaction attribute ["+taPipe.getTransactionAttribute()+"]",t);
-			}
-			if (!compatible) {
-				throw new PipeRunException(pipe,"transaction state ["+JtaUtil.displayTransactionStatus()+"] not compatible with transaction attribute ["+taPipe.getTransactionAttribute()+"]");
-			}
-			if (log.isDebugEnabled()) log.debug("Pipe ["+pipe.getName()+"] transactionAttribute ["+taPipe.getTransactionAttribute()+"], isolationRequired ["+isolationRequired+"], doTransaction ["+doTransaction+"]");
-		}
-	
-		if (isolationRequired) {
-			PipeRunWrapper prw = new PipeRunWrapper();
-			return prw.runPipeWrapped(pipe, message, session, doTransaction);
-		} else { 
-			return runPipe(pipe, message, session, doTransaction);
-		}
-	}
-
-	protected PipeRunResult runPipe(IPipe pipe, Object message, PipeLineSession session, boolean doTransaction) throws PipeRunException {
-		try {
-			if (doTransaction) {
-				JtaUtil.startTransaction();
-			}
-			PipeRunResult result = pipe.doPipe(message, session);
-			if (doTransaction) {
-				JtaUtil.finishTransaction();
-			}
-			return result;
-		} catch (Throwable t) {
-			if (doTransaction) {
-				try {
-					JtaUtil.finishTransaction(true);
-				} catch (Exception e) {
-					log.warn("exception rolling back transaction", e);
-				}
-			}
-			if (t instanceof PipeRunException) {
-				throw (PipeRunException)t;
-			} else {
-				throw new PipeRunException(pipe,"in transaction isolation wrapper",t);
-			}
-		}
-
+        int txOption;
+        if (pipe instanceof HasTransactionAttribute) {
+            HasTransactionAttribute taPipe = (HasTransactionAttribute) pipe;
+            txOption = taPipe.getTransactionAttributeNum();
+        } else {
+            txOption = JtaUtil.TRANSACTION_ATTRIBUTE_DEFAULT;
+        }
+        switch (txOption) {
+            case JtaUtil.TRANSACTION_ATTRIBUTE_MANDATORY:
+            return pipeExecutor.doPipeTxMandatory(pipe, message, session);
+            
+            case JtaUtil.TRANSACTION_ATTRIBUTE_NEVER:
+            return pipeExecutor.doPipeTxNever(pipe, message, session);
+            
+            case JtaUtil.TRANSACTION_ATTRIBUTE_NOT_SUPPORTED:
+            return pipeExecutor.doPipeTxNotSupported(pipe, message, session);
+            
+            case JtaUtil.TRANSACTION_ATTRIBUTE_SUPPORTS:
+            return pipeExecutor.doPipeTxSupports(pipe, message, session);
+            
+            case JtaUtil.TRANSACTION_ATTRIBUTE_REQUIRED:
+            return pipeExecutor.doPipeTxRequired(pipe, message, session);
+            
+            case JtaUtil.TRANSACTION_ATTRIBUTE_REQUIRES_NEW:
+            return pipeExecutor.doPipeTxRequiresNew(pipe, message, session);
+            
+            default:
+            throw new PipeRunException(pipe, "Invalid value of transactional attribute on pipe: value="
+                + txOption + "(" + JtaUtil.getTransactionAttributeString(txOption) + ")");
+        }
 	}
 
 	private class PipeLineRunWrapper extends Thread {
@@ -1000,4 +938,18 @@ public class PipeLine {
 
 		
 		
+    /**
+     * @return
+     */
+    public IPipeExecutor getPipeExecutor() {
+        return pipeExecutor;
+    }
+
+    /**
+     * @param executor
+     */
+    public void setPipeExecutor(IPipeExecutor executor) {
+        pipeExecutor = executor;
+    }
+
 }

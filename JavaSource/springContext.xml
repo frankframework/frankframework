@@ -48,6 +48,9 @@
 		factory-method="getInstance">
 	</bean>
 	
+	<bean name="pipeExecutor" class="nl.nn.adapterframework.unmanaged.SimplePipeExecutor"
+		scope="singleton">
+	</bean>
 	
 	<!-- Replace with whatever TaskExecutor implementation suits best
 	     Replace with Common/J based TaskExecutor once deploying on
@@ -57,20 +60,22 @@
 	</bean>
 	
 	<!-- Beans created from Configuration.xml, but prototyped here for
-	     extra dependancies which cannot be created otherwise -->
-	<bean name="adapter" class="nl.nn.adapterframework.core.Adapter"
+	     extra dependancies which cannot be created otherwise.
+	     Bean names are prefixed with 'proto-' so that autowiring by
+	     name doesn't create unnessecary instances. -->
+	<bean name="proto-adapter" class="nl.nn.adapterframework.core.Adapter"
 		autowire="byName" scope="prototype">
 	</bean>
 	
-	<bean name="pipeLine" class="nl.nn.adapterframework.core.PipeLine"
+	<bean name="proto-pipeLine" class="nl.nn.adapterframework.core.PipeLine"
 		autowire="byName" scope="prototype">
 	</bean>
 	
-	<bean name="genericReceiver" class="nl.nn.adapterframework.receivers.GenericReceiver"
+	<bean name="proto-receiver" class="nl.nn.adapterframework.receivers.GenericReceiver"
 		autowire="byName" scope="prototype">
 	</bean>
 	
-	<bean name="genericMessageSendingPipe" class="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+	<bean name="proto-genericMessageSendingPipe" class="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
 		autowire="byName" scope="prototype">
 	</bean>
 </beans>
