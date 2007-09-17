@@ -1,6 +1,9 @@
 /*
  * $Log: Result2Filewriter.java,v $
- * Revision 1.12  2007-09-11 11:51:45  europe\L190409
+ * Revision 1.13  2007-09-17 08:24:52  europe\L190409
+ * updated javadoc
+ *
+ * Revision 1.12  2007/09/11 11:51:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.11  2007/09/05 13:02:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -61,7 +64,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>classname</td><td>nl.nn.adapterframework.batch.Result2Filewriter</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>Name of the resulthandler</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setPrefix(String) prefix}</td><td>Prefix that has to be written before record, if the record is in another block than the previous record</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSuffix(String) suffix}</td><td>Suffix that has to be written after the record, if the record is in another block than the next record</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setSuffix(String) suffix}</td><td>Suffix that has to be written after the record, if the record is in another block than the next record. <br/>N.B. If a suffix is set without a prefix, it is only used at the end of processing (i.e. at the end of the file) as a final close</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDefault(boolean) default}</td><td>If true, this resulthandler is the default for all RecordHandlingFlow that do not have a handler specified</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setOutputDirectory(String) outputDirectory}</td><td>Directory in which the resultfile must be stored</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setFilenamePattern(String) filenamePattern}</td><td>Name of the file is created using the MessageFormat. Params: 1=inputfilename, 2=extension of file, 3=current date</td><td>&nbsp;</td></tr>
@@ -73,7 +76,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class Result2Filewriter extends ResultWriter {
-	public static final String version = "$RCSfile: Result2Filewriter.java,v $  $Revision: 1.12 $ $Date: 2007-09-11 11:51:45 $";
+	public static final String version = "$RCSfile: Result2Filewriter.java,v $  $Revision: 1.13 $ $Date: 2007-09-17 08:24:52 $";
 	
 	private String outputDirectory;
 	private String move2dirAfterFinalize;
