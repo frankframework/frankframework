@@ -1,6 +1,9 @@
 /*
  * $Log: StreamTransformerPipe.java,v $
- * Revision 1.6  2007-09-13 12:38:11  europe\L190409
+ * Revision 1.7  2007-09-17 08:21:42  europe\L190409
+ * only write suffix and prefix in the middle of processing if prefix non-emtpy
+ *
+ * Revision 1.6  2007/09/13 12:38:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved debug info
  *
  * Revision 1.5  2007/09/10 11:08:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -64,7 +67,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class StreamTransformerPipe extends FixedForwardPipe {
-	public static final String version = "$RCSfile: StreamTransformerPipe.java,v $  $Revision: 1.6 $ $Date: 2007-09-13 12:38:11 $";
+	public static final String version = "$RCSfile: StreamTransformerPipe.java,v $  $Revision: 1.7 $ $Date: 2007-09-17 08:21:42 $";
 
 	private IRecordHandlerManager initialManager=null;
 	private IResultHandler defaultHandler=null;
@@ -316,7 +319,9 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 					IResultHandler resultHandler = flow.getResultHandler();
 					if (result != null && resultHandler != null) {
 						boolean recordTypeChanged = curHandler.isNewRecordType(session, curHandler.equals(prevHandler), prevParsedRecord, parsedRecord);
-						if (recordTypeChanged) {
+						// the hasPrefix() call allows users use a suffix without a prefix. 
+						// The suffix is then only written at the end of the file.
+						if (recordTypeChanged && resultHandler.hasPrefix()) {   
 							if (prevHandler != null)  {
 								resultHandler.closeRecordType(session, streamId);
 							}
