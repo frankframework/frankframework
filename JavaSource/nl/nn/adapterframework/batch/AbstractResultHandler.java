@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractResultHandler.java,v $
- * Revision 1.9  2007-09-11 11:51:45  europe\L190409
+ * Revision 1.10  2007-09-17 07:43:02  europe\L190409
+ * added hasPrefix()
+ *
+ * Revision 1.9  2007/09/11 11:51:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.8  2007/09/10 11:11:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -33,6 +36,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.util.LogUtil;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 
@@ -81,6 +85,9 @@ public abstract class AbstractResultHandler implements IResultHandler {
 	}
 	public String getPrefix() {
 		return prefix;
+	}
+	public boolean hasPrefix() {
+		return StringUtils.isNotEmpty(getPrefix());
 	}
 
 	public void setSuffix(String string) {

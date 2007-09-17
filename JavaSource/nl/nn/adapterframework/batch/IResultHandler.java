@@ -1,6 +1,9 @@
 /*
  * $Log: IResultHandler.java,v $
- * Revision 1.7  2007-09-10 11:07:00  europe\L190409
+ * Revision 1.8  2007-09-17 07:43:17  europe\L190409
+ * added hasPrefix()
+ *
+ * Revision 1.7  2007/09/10 11:07:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed logic processing from writePrefix to calling class
  * renamed writePrefix() and writeSuffix() into open/closeRecordType()
  *
@@ -84,4 +87,6 @@ public interface IResultHandler extends INamedObject {
 	 */
 	boolean isDefault();
 	void setDefault(boolean isDefault);
+	
+	boolean hasPrefix();
 }
