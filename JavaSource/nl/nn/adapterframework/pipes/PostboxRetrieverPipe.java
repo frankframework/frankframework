@@ -1,6 +1,9 @@
 /*
  * $Log: PostboxRetrieverPipe.java,v $
- * Revision 1.4.6.1  2007-09-18 11:20:39  europe\M00035F
+ * Revision 1.4.6.2  2007-09-18 14:31:56  europe\M00035F
+ * Fix digester & Spring configuration for new JMS Listener impl
+ *
+ * Revision 1.4.6.1  2007/09/18 11:20:39  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
  * * Update a number of method-signatures to take a java.util.Map instead of HashMap
  * * Rewrite JmsListener to be instance of IPushingListener; use Spring JMS Container
  *
@@ -64,7 +67,7 @@ import nl.nn.adapterframework.core.PipeStartException;
  * @version Id
  */
 public class PostboxRetrieverPipe  extends FixedForwardPipe {
-	public static final String version="$Id: PostboxRetrieverPipe.java,v 1.4.6.1 2007-09-18 11:20:39 europe\M00035F Exp $";
+	public static final String version="$RCSfile: PostboxRetrieverPipe.java,v $ $Revision: 1.4.6.2 $ $Date: 2007-09-18 14:31:56 $";
 	private IPostboxListener listener = null;
 	private String resultOnEmptyPostbox = "empty postbox";
 		

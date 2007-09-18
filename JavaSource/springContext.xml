@@ -133,14 +133,13 @@
     
     <bean name="proto-jmsListener" class="nl.nn.adapterframework.jms.JmsListener"
         autowire="byName" scope="prototype">
-        
     </bean>
     
     <!-- DefaultMessageListenerContainer is supported configuration by IBM; proviced
          however that supported transaction-manager and thread-pooling are used. -->
     <bean name="proto-jmsContainer" class="org.springframework.jms.listener.DefaultMessageListenerContainer"
         autowire="byName" scope="prototype">
-        <property name="autostartup" value="false"/>
+        <property name="autoStartup" value="false"/>
         <property name="transactionManager" ref="txManager"/>
     </bean>
 </beans>

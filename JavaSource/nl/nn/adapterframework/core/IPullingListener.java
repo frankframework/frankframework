@@ -1,6 +1,9 @@
 /*
  * $Log: IPullingListener.java,v $
- * Revision 1.7.6.1  2007-09-18 11:20:37  europe\M00035F
+ * Revision 1.7.6.2  2007-09-18 14:31:56  europe\M00035F
+ * Fix digester & Spring configuration for new JMS Listener impl
+ *
+ * Revision 1.7.6.1  2007/09/18 11:20:37  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
  * * Update a number of method-signatures to take a java.util.Map instead of HashMap
  * * Rewrite JmsListener to be instance of IPushingListener; use Spring JMS Container
  *
@@ -33,30 +36,30 @@ import java.util.Map;
  * @author Gerrit van Brakel
  */
 public interface IPullingListener extends IListener {
-		public static final String version="$Id: IPullingListener.java,v 1.7.6.1 2007-09-18 11:20:37 europe\M00035F Exp $";
+    public static final String version="$RCSfile: IPullingListener.java,v $ $Revision: 1.7.6.2 $ $Date: 2007-09-18 14:31:56 $";
 
-/**
- * Prepares a thread for receiving messages.
- * Called once for each thread that will listen for messages.
- * @return the threadContext for this thread. The threadContext is a HashMap in which
- * thread-specific data can be stored. 
- */
-Map openThread() throws ListenerException;
-
-/**
- * Finalizes a message receiving thread.
- * Called once for each thread that listens for messages, just before
- * {@link #close()} is called.
- */
-void closeThread(Map threadContext) throws ListenerException;
-
-
-/**
- * Retrieves messages from queue or other channel, but does no processing on it.
- * Multiple objects may try to call this method at the same time, from different threads. 
- * Implementations of this method should therefore be thread-safe, or <code>synchronized</code>.
- * <p>Any thread-specific properties should be stored in and retrieved from the threadContext.
- */
-Object getRawMessage(Map threadContext) throws ListenerException;
-
+    /**
+     * Prepares a thread for receiving messages.
+     * Called once for each thread that will listen for messages.
+     * @return the threadContext for this thread. The threadContext is a HashMap in which
+     * thread-specific data can be stored. 
+     */
+    Map openThread() throws ListenerException;
+    
+    /**
+     * Finalizes a message receiving thread.
+     * Called once for each thread that listens for messages, just before
+     * {@link #close()} is called.
+     */
+    void closeThread(Map threadContext) throws ListenerException;
+    
+    
+    /**
+     * Retrieves messages from queue or other channel, but does no processing on it.
+     * Multiple objects may try to call this method at the same time, from different threads. 
+     * Implementations of this method should therefore be thread-safe, or <code>synchronized</code>.
+     * <p>Any thread-specific properties should be stored in and retrieved from the threadContext.
+     */
+    Object getRawMessage(Map threadContext) throws ListenerException;
+    
 }

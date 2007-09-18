@@ -1,5 +1,5 @@
 <digester-rules>
-	<!-- $Id: digester-rules.xml,v 1.4.2.1 2007-09-13 13:27:17 europe\M00035F Exp $ -->
+	<!-- $Id: digester-rules.xml,v 1.4.2.2 2007-09-18 14:31:56 europe\M00035F Exp $ -->
     <pattern value="IOS-Adaptering">
         <set-properties-rule/>
     </pattern>
@@ -59,7 +59,7 @@
         <set-next-rule methodname="setSender"/>
     </pattern>
     <pattern value="*/listener">
-        <object-create-rule classname="nl.nn.adapterframework.core.ICorrelatedPullingListener" attrname="className"/> 
+        <factory-create-rule classname="nl.nn.adapterframework.configuration.ListenerFactory"/> 
         <set-properties-rule/>
         <set-next-rule methodname="setListener"/>
     </pattern>
