@@ -1,6 +1,10 @@
 /*
  * $Log: JmsRealmFactory.java,v $
- * Revision 1.5  2007-02-12 13:58:11  europe\L190409
+ * Revision 1.5.4.1  2007-09-18 11:20:38  europe\M00035F
+ * * Update a number of method-signatures to take a java.util.Map instead of HashMap
+ * * Rewrite JmsListener to be instance of IPushingListener; use Spring JMS Container
+ *
+ * Revision 1.5  2007/02/12 13:58:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Logger from LogUtil
  *
  * Revision 1.4  2004/03/26 10:42:55  Johan Verrips <johan.verrips@ibissource.org>
@@ -30,9 +34,10 @@ import org.apache.log4j.Logger;
  * @version Id
  * @author Johan Verrips IOS
  * @see JmsRealm
+ * TODO: Some amount of cleanup possible by putting JmsRealmFactory in Spring context
  */
 public class JmsRealmFactory {
-	public static final String version="$RCSfile: JmsRealmFactory.java,v $ $Revision: 1.5 $ $Date: 2007-02-12 13:58:11 $";
+	public static final String version="$RCSfile: JmsRealmFactory.java,v $ $Revision: 1.5.4.1 $ $Date: 2007-09-18 11:20:38 $";
 	private Logger log;
 
 

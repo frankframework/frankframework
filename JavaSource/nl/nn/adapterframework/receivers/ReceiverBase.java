@@ -1,6 +1,10 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.44.2.1  2007-09-13 13:27:17  europe\M00035F
+ * Revision 1.44.2.2  2007-09-18 11:20:38  europe\M00035F
+ * * Update a number of method-signatures to take a java.util.Map instead of HashMap
+ * * Rewrite JmsListener to be instance of IPushingListener; use Spring JMS Container
+ *
+ * Revision 1.44.2.1  2007/09/13 13:27:17  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
  * First commit of work to use Spring for creating objects
  *
  * Revision 1.44  2007/08/27 11:51:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -113,7 +117,7 @@
  * fixed bug in getIdleStatistics
  *
  * Revision 1.10  2005/03/07 11:04:36  Johan Verrips <johan.verrips@ibissource.org>
- * PipeLineSession became a extension of HashMap, using other iterator
+ * PipeLineSession became a extension of Map, using other iterator
  *
  * Revision 1.9  2005/03/04 08:53:29  Johan Verrips <johan.verrips@ibissource.org>
  * Fixed IndexOutOfBoundException in getProcessStatistics  due to multi threading.
@@ -151,8 +155,9 @@ import java.io.Serializable;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
+import java.util.Map;
 import java.util.Iterator;
+import java.util.HashMap;
 import java.util.StringTokenizer;
 
 import javax.transaction.Status;
@@ -272,7 +277,7 @@ import org.springframework.core.task.TaskExecutor;
  * @since 4.2
  */
 public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, IMessageHandler, IbisExceptionListener, HasSender, TracingEventNumbers {
-	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.44.2.1 $ $Date: 2007-09-13 13:27:17 $";
+	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.44.2.2 $ $Date: 2007-09-18 11:20:38 $";
 	protected Logger log = LogUtil.getLogger(this);
  
 	private String returnIfStopped="";
@@ -676,7 +681,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 	public void run() {
 		threadsRunning.increase();
 		IPullingListener listener=null;
-		HashMap threadContext=null;
+		Map threadContext=null;
 		try {
 			listener = (IPullingListener)getListener();		
 			threadContext = listener.openThread();
@@ -804,12 +809,12 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 		log.debug("receiver ["+getName()+"] finishes processing message");
 	}
 
-	public Object getRawMessage(HashMap threadContext) throws ListenerException {
+	public Object getRawMessage(Map threadContext) throws ListenerException {
 		IPullingListener listener = (IPullingListener)getListener();
 
 		if (isTransacted()) {
 			Object rawMessage;
-			
+			// TODO: For the pulling listeners, implement the Spring tx things
 			UserTransaction utx = null;
 	
 			try {
@@ -1004,11 +1009,11 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 		return processRequest(origin, correlationId, message, null, -1);
 	}
 
-	public String processRequest(IListener origin, String correlationId, String message, HashMap context) throws ListenerException {
+	public String processRequest(IListener origin, String correlationId, String message, Map context) throws ListenerException {
 		return processRequest(origin, correlationId, message, context, -1);
 	}
 
-	public String processRequest(IListener origin, String correlationId, String message, HashMap context, long waitingTime) throws ListenerException {
+	public String processRequest(IListener origin, String correlationId, String message, Map context, long waitingTime) throws ListenerException {
 		if (getRunState() == RunStateEnum.STOPPED || getRunState() == RunStateEnum.STOPPING)
 			return getReturnIfStopped();
 			
@@ -1032,7 +1037,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 	public void processRawMessage(IListener origin, Object message) throws ListenerException {
 		processRawMessage(origin, message, null, -1);
 	}
-	public void processRawMessage(IListener origin, Object message, HashMap context) throws ListenerException {
+	public void processRawMessage(IListener origin, Object message, Map context) throws ListenerException {
 		processRawMessage(origin, message, context, -1);
 	}
 
@@ -1043,7 +1048,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 
 	 * Assumes that a transation has been started where necessary
 	 */
-	public void processRawMessage(IListener origin, Object rawMessage, HashMap threadContext, long waitingDuration) throws ListenerException {
+	public void processRawMessage(IListener origin, Object rawMessage, Map threadContext, long waitingDuration) throws ListenerException {
 		UserTransaction utx = null;
 		
 		if (isTransacted()) {
@@ -1083,7 +1088,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 	/*
 	 * assumes message is read, and when transacted, transation is still open to be able to store it in InProcessStore
 	 */
-	private String processMessageInAdapter(UserTransaction utx, IListener origin, Object rawMessage, String message, String messageId, String correlationId, HashMap threadContext, long waitingDuration) throws ListenerException {
+	private String processMessageInAdapter(UserTransaction utx, IListener origin, Object rawMessage, String message, String messageId, String correlationId, Map threadContext, long waitingDuration) throws ListenerException {
 		String result=null;
 		PipeLineResult pipeLineResult=null;
 		long startProcessingTimestamp = System.currentTimeMillis();

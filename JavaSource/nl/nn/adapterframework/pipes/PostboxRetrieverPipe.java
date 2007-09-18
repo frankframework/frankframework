@@ -1,6 +1,10 @@
 /*
  * $Log: PostboxRetrieverPipe.java,v $
- * Revision 1.4  2004-10-05 11:39:36  L190409
+ * Revision 1.4.6.1  2007-09-18 11:20:39  europe\M00035F
+ * * Update a number of method-signatures to take a java.util.Map instead of HashMap
+ * * Rewrite JmsListener to be instance of IPushingListener; use Spring JMS Container
+ *
+ * Revision 1.4  2004/10/05 11:39:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed unused imports
  *
  * Revision 1.3  2004/08/23 13:10:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -19,7 +23,7 @@
 package nl.nn.adapterframework.pipes;
 
 
-import java.util.HashMap;
+import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPostboxListener;
@@ -60,7 +64,7 @@ import nl.nn.adapterframework.core.PipeStartException;
  * @version Id
  */
 public class PostboxRetrieverPipe  extends FixedForwardPipe {
-	public static final String version="$Id: PostboxRetrieverPipe.java,v 1.4 2004-10-05 11:39:36 L190409 Exp $";
+	public static final String version="$Id: PostboxRetrieverPipe.java,v 1.4.6.1 2007-09-18 11:20:39 europe\M00035F Exp $";
 	private IPostboxListener listener = null;
 	private String resultOnEmptyPostbox = "empty postbox";
 		
@@ -103,7 +107,7 @@ public class PostboxRetrieverPipe  extends FixedForwardPipe {
 			throw new PipeRunException(this, "String expected, got a [" + input.getClass().getName() + "]");
 		}
 
-		HashMap threadContext = null;
+		Map threadContext = null;
 		try {
 			threadContext = getListener().openThread();
 			Object rawMessage = getListener().retrieveRawMessage((String)input, threadContext);

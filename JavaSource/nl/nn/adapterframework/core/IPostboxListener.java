@@ -3,7 +3,7 @@
  */
 package nl.nn.adapterframework.core;
 
-import java.util.HashMap;
+import java.util.Map;
 
 /**
  * The <code>IPostboxListener</code> is responsible for querying a message
@@ -23,6 +23,6 @@ public interface IPostboxListener extends IPullingListener {
 	 * changes per listener, for example a JMSListener's messageSelector follows the JMS specification.
 	 * @param threadContext context in which the method is called 
 	 */ 
-	Object retrieveRawMessage(String messageSelector, HashMap threadContext) throws ListenerException, TimeOutException;
+	Object retrieveRawMessage(String messageSelector, Map threadContext) throws ListenerException, TimeOutException;
 
 }

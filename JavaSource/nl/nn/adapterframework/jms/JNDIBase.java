@@ -1,6 +1,10 @@
 /*
  * $Log: JNDIBase.java,v $
- * Revision 1.12  2007-07-10 07:20:02  europe\L190409
+ * Revision 1.12.2.1  2007-09-18 11:20:38  europe\M00035F
+ * * Update a number of method-signatures to take a java.util.Map instead of HashMap
+ * * Rewrite JmsListener to be instance of IPushingListener; use Spring JMS Container
+ *
+ * Revision 1.12  2007/07/10 07:20:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * add some checks
  *
  * Revision 1.11  2007/05/08 16:27:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -71,7 +75,7 @@ import org.apache.log4j.Logger;
  * @author Johan Verrips IOS
  */
 public class JNDIBase {
-	public static final String version = "$RCSfile: JNDIBase.java,v $ $Revision: 1.12 $ $Date: 2007-07-10 07:20:02 $";
+	public static final String version = "$RCSfile: JNDIBase.java,v $ $Revision: 1.12.2.1 $ $Date: 2007-09-18 11:20:38 $";
 	protected Logger log = LogUtil.getLogger(this);
 
     // JNDI
@@ -81,6 +85,7 @@ public class JNDIBase {
 	private String principal = null;
     private String credentials = null;
 	private String jndiAuthAlias = null;
+    private String jmsRealmsName = null;
     private String urlPkgPrefixes = null;
     private String securityProtocol = null;
 
@@ -225,11 +230,16 @@ public class JNDIBase {
 	public void setJmsRealm(String jmsRealmName) {
 		try {
 			JmsRealm.copyRealm(this,jmsRealmName);
+            this.jmsRealmsName = jmsRealmName;
 		} catch (ConfigurationException e) {
 			log.warn("cannot copy data from realm",e);
 		}
 	}
-
+    
+    public String getJmsRealName() {
+        return this.jmsRealmsName;
+    }
+    
 	public String getAuthentication() {
 		return authentication;
 	}

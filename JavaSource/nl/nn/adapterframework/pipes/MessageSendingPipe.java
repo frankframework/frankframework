@@ -1,6 +1,10 @@
 /*
  * $Log: MessageSendingPipe.java,v $
- * Revision 1.34  2007-07-10 08:03:04  europe\L190409
+ * Revision 1.34.2.1  2007-09-18 11:20:39  europe\M00035F
+ * * Update a number of method-signatures to take a java.util.Map instead of HashMap
+ * * Rewrite JmsListener to be instance of IPushingListener; use Spring JMS Container
+ *
+ * Revision 1.34  2007/07/10 08:03:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * move String check to calling of sender
  *
  * Revision 1.33  2007/06/19 12:08:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -195,7 +199,7 @@ import org.apache.commons.lang.SystemUtils;
  */
 
 public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
-	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.34 $ $Date: 2007-07-10 08:03:04 $";
+	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.34.2.1 $ $Date: 2007-09-18 11:20:39 $";
 	private final static String TIMEOUTFORWARD = "timeout";
 	private final static String EXCEPTIONFORWARD = "exception";
 	private final static String ILLEGALRESULTFORWARD = "illegalResult";
@@ -352,7 +356,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 					log.info(getLogPrefix(session)+"returning result from static stub ["+getStubFileName()+"]");
 				}
 //				// Use remaining params as outgoing UDZs
-//				Map udzMap = new HashMap();
+//				Map udzMap = new Map();
 //				udzMap.putAll(params);
 //				udzMap.remove(STUBFILENAME);
 			} else {
@@ -360,7 +364,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 			}
 		} else {
 			ICorrelatedPullingListener replyListener = getListener();
-			HashMap threadContext=new HashMap();
+			Map threadContext=new HashMap();
 			try {
 				String correlationID = session.getMessageId();
 	
@@ -479,7 +483,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 		return validResult;
 	}
 
-	protected String sendMessage(Object input, PipeLineSession session, String correlationID, ISender sender, HashMap threadContext) throws SenderException, TimeOutException {
+	protected String sendMessage(Object input, PipeLineSession session, String correlationID, ISender sender, Map threadContext) throws SenderException, TimeOutException {
 		if (!(input instanceof String)) {
 			throw new SenderException("String expected, got a [" + input.getClass().getName() + "]");
 		}

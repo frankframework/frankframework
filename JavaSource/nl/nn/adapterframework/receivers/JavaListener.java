@@ -1,7 +1,8 @@
 /*
  * $Log: JavaListener.java,v $
- * Revision 1.23  2007-08-29 15:10:39  europe\L190409
- * added support for dependency checking
+ * Revision 1.22.4.1  2007-09-18 11:20:38  europe\M00035F
+ * * Update a number of method-signatures to take a java.util.Map instead of HashMap
+ * * Rewrite JmsListener to be instance of IPushingListener; use Spring JMS Container
  *
  * Revision 1.22  2007/06/07 15:20:46  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved logging
@@ -89,8 +90,8 @@
 package nl.nn.adapterframework.receivers;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.HashMap;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessageHandler;
@@ -132,14 +133,13 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class JavaListener implements IPushingListener, RequestProcessor {
-	public static final String version="$RCSfile: JavaListener.java,v $ $Revision: 1.23 $ $Date: 2007-08-29 15:10:39 $";
+	public static final String version="$RCSfile: JavaListener.java,v $ $Revision: 1.22.4.1 $ $Date: 2007-09-18 11:20:38 $";
 	protected Logger log = LogUtil.getLogger(this);
 	
 	private String name;
 	private String serviceName;
 	private boolean isolated=false;
 	private boolean synchronous=true;
-	private boolean opened=false;
 
 	private static Map registeredListeners; 
 	private IMessageHandler handler;
@@ -161,7 +161,7 @@ public class JavaListener implements IPushingListener, RequestProcessor {
 		}
 	}
 
-	public synchronized void open() throws ListenerException {
+	public void open() throws ListenerException {
 		try {
 			// add myself to local list so that IbisLocalSenders can find me 
 			registerListener();
@@ -180,14 +180,12 @@ public class JavaListener implements IPushingListener, RequestProcessor {
 			if (StringUtils.isNotEmpty(getServiceName())) {
 				rebind(true);
 			}
-			opened=true;
 		} catch (Exception e) {
 			throw new ListenerException("error occured while starting listener [" + getName() + "]", e);
 		}
 	}
 
-	public synchronized void close() throws ListenerException {
-		opened=false;
+	public void close() throws ListenerException {
 		try {
 			// unregister from global list
 			if (StringUtils.isNotEmpty(getServiceName())) {
@@ -213,9 +211,7 @@ public class JavaListener implements IPushingListener, RequestProcessor {
 
 
 	public String processRequest(String correlationId, String message, HashMap context) throws ListenerException {
-		if (!isOpen()) {
-			throw new ListenerException("JavaListener [" + getName() + "] is not opened");
-		}
+
 		if (log.isDebugEnabled()) {
 			log.debug("JavaListener [" + getName() + "] processing correlationId [" + correlationId + "]");
 		}
@@ -277,18 +273,18 @@ public class JavaListener implements IPushingListener, RequestProcessor {
 	}
 
 
-	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessage, HashMap context) throws ListenerException {
+	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessage, Map context) throws ListenerException {
 		// do nothing
 	}
 
 
 
-	public String getIdFromRawMessage(Object rawMessage, HashMap context) throws ListenerException {
+	public String getIdFromRawMessage(Object rawMessage, Map context) throws ListenerException {
 		// do nothing
 		return null;
 	}
 
-	public String getStringFromRawMessage(Object rawMessage, HashMap context) throws ListenerException {
+	public String getStringFromRawMessage(Object rawMessage, Map context) throws ListenerException {
 		return (String)rawMessage;
 	}
 
@@ -347,10 +343,6 @@ public class JavaListener implements IPushingListener, RequestProcessor {
 	}
 	public boolean isSynchronous() {
 		return synchronous;
-	}
-
-	public synchronized boolean isOpen() {
-		return opened;
 	}
 
 }

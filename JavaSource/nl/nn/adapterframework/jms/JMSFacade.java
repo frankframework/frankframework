@@ -1,6 +1,10 @@
 /*
  * $Log: JMSFacade.java,v $
- * Revision 1.26  2007-05-23 09:14:49  europe\L190409
+ * Revision 1.26.4.1  2007-09-18 11:20:38  europe\M00035F
+ * * Update a number of method-signatures to take a java.util.Map instead of HashMap
+ * * Rewrite JmsListener to be instance of IPushingListener; use Spring JMS Container
+ *
+ * Revision 1.26  2007/05/23 09:14:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * use alternate connectionfactoryname, if appropriate one not set
  *
  * Revision 1.25  2006/10/13 08:14:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -115,7 +119,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version="$RCSfile: JMSFacade.java,v $ $Revision: 1.26 $ $Date: 2007-05-23 09:14:49 $";
+	public static final String version="$RCSfile: JMSFacade.java,v $ $Revision: 1.26.4.1 $ $Date: 2007-09-18 11:20:38 $";
 
 	public static final String MODE_PERSISTENT="PERSISTENT";
 	public static final String MODE_NON_PERSISTENT="NON_PERSISTENT";
@@ -263,7 +267,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 		return connection;
 	}
 */
-	private String getConnectionFactoryName() throws JmsException {
+	public String getConnectionFactoryName() throws JmsException {
 		String result;
 		if (useTopicFunctions) {
 			result = isTransacted() ? getTopicConnectionFactoryNameXA() : getTopicConnectionFactoryName();

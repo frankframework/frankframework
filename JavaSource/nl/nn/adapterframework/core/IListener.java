@@ -1,6 +1,10 @@
 /*
  * $Log: IListener.java,v $
- * Revision 1.5  2005-07-19 12:18:09  europe\L190409
+ * Revision 1.5.6.1  2007-09-18 11:20:37  europe\M00035F
+ * * Update a number of method-signatures to take a java.util.Map instead of HashMap
+ * * Rewrite JmsListener to be instance of IPushingListener; use Spring JMS Container
+ *
+ * Revision 1.5  2005/07/19 12:18:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * reformat + moved some functions from pushing and pulling listeners to here
  *
  * Revision 1.4  2004/09/08 14:15:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -21,7 +25,7 @@ package nl.nn.adapterframework.core;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 
-import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Base-interface for IPullingListener and IMessagePusher
@@ -31,11 +35,11 @@ import java.util.HashMap;
  * @version Id
  */
 public interface IListener extends INamedObject {
-	public static final String version = "$RCSfile: IListener.java,v $ $Revision: 1.5 $ $Date: 2005-07-19 12:18:09 $";
+	public static final String version = "$RCSfile: IListener.java,v $ $Revision: 1.5.6.1 $ $Date: 2007-09-18 11:20:37 $";
 
 	/**
 	 * <code>configure()</code> is called once at startup of the framework in the configure method of the owner of this listener. 
-	 * Purpose of this method is to reduce creating connections to databases etc. in the {@link nl.nn.adapterframework.core.IPullingListener#getRawMessage(HashMap)} method.
+	 * Purpose of this method is to reduce creating connections to databases etc. in the {@link nl.nn.adapterframework.core.IPullingListener#getRawMessage(Map)} method.
 	 * As much as possible class-instantiating should take place in the
 	 * <code>configure()</code> or <code>open()</code> method, to improve performance.
 	 */ 
@@ -54,23 +58,23 @@ public interface IListener extends INamedObject {
 	void close() throws ListenerException;
 	
 	/**
-	 * Extracts ID-string from message obtained from {@link nl.nn.adapterframework.core.IPullingListener#getRawMessage(HashMap)}. May also extract
+	 * Extracts ID-string from message obtained from {@link nl.nn.adapterframework.core.IPullingListener#getRawMessage(Map)}. May also extract
 	 * other parameters from the message and put those in the threadContext.
 	 * @return ID-string of message for adapter.
 	 */
-	String getIdFromRawMessage(Object rawMessage, HashMap context) throws ListenerException;
+	String getIdFromRawMessage(Object rawMessage, Map context) throws ListenerException;
 	
 	/**
-	 * Extracts string from message obtained from {@link nl.nn.adapterframework.core.IPullingListener#getRawMessage(HashMap)}. May also extract
+	 * Extracts string from message obtained from {@link nl.nn.adapterframework.core.IPullingListener#getRawMessage(Map)}. May also extract
 	 * other parameters from the message and put those in the threadContext.
 	 * @return input message for adapter.
 	 */
-	String getStringFromRawMessage(Object rawMessage, HashMap context) throws ListenerException;
+	String getStringFromRawMessage(Object rawMessage, Map context) throws ListenerException;
 	
 	/**
 	 * Called to perform actions (like committing or sending a reply) after a message has been processed by the Pipeline. 
 	 */
-	void afterMessageProcessed(PipeLineResult processResult, Object rawMessage, HashMap context) throws ListenerException;
+	void afterMessageProcessed(PipeLineResult processResult, Object rawMessage, Map context) throws ListenerException;
 
 
 }

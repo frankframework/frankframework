@@ -16,7 +16,7 @@ import java.io.IOException;
  */
 
 public final class AdapterHandler extends ActionBase {
-		public static final String version="$Id: AdapterHandler.java,v 1.3.6.2 2007-09-14 09:24:54 europe\M00035F Exp $";
+		public static final String version="$RCSfile: AdapterHandler.java,v $ $Revision: 1.3.6.3 $ $Date: 2007-09-18 11:20:40 $";
 
 
 

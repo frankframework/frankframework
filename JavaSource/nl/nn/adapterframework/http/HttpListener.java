@@ -1,6 +1,10 @@
 /*
  * $Log: HttpListener.java,v $
- * Revision 1.2  2007-02-12 13:55:57  europe\L190409
+ * Revision 1.2.4.1  2007-09-18 11:20:40  europe\M00035F
+ * * Update a number of method-signatures to take a java.util.Map instead of HashMap
+ * * Rewrite JmsListener to be instance of IPushingListener; use Spring JMS Container
+ *
+ * Revision 1.2  2007/02/12 13:55:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Logger from LogUtil
  *
  * Revision 1.1  2006/02/09 07:54:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -9,7 +13,7 @@
  */
 package nl.nn.adapterframework.http;
 
-import java.util.HashMap;
+import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessageHandler;
@@ -46,7 +50,7 @@ import org.apache.log4j.Logger;
  * @author  Gerrit van Brakel 
  */
 public class HttpListener  implements IPushingListener, ServiceClient2 {
-	public static final String version="$RCSfile: HttpListener.java,v $ $Revision: 1.2 $ $Date: 2007-02-12 13:55:57 $";
+	public static final String version="$RCSfile: HttpListener.java,v $ $Revision: 1.2.4.1 $ $Date: 2007-09-18 11:20:40 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private IMessageHandler handler;        	
@@ -82,13 +86,13 @@ public class HttpListener  implements IPushingListener, ServiceClient2 {
 	}
 
 
-	public String getIdFromRawMessage(Object rawMessage, HashMap threadContext)  {
+	public String getIdFromRawMessage(Object rawMessage, Map threadContext)  {
 		return null;
 	}
-	public String getStringFromRawMessage(Object rawMessage, HashMap threadContext) {
+	public String getStringFromRawMessage(Object rawMessage, Map threadContext) {
 		return (String) rawMessage;
 	}
-	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessage, HashMap threadContext) throws ListenerException {
+	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessage, Map threadContext) throws ListenerException {
 	}
 
 
@@ -109,7 +113,7 @@ public class HttpListener  implements IPushingListener, ServiceClient2 {
 		}
 	}
 
-	public String processRequestWithExceptions(String correlationId, String message, HashMap requestContext) throws ListenerException {
+	public String processRequestWithExceptions(String correlationId, String message, Map requestContext) throws ListenerException {
 		try {
 			log.debug("HttpListener processRequestWithExceptions for correlationId ["+correlationId+"]");
 			return handler.processRequest(this, correlationId, message, requestContext);

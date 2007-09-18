@@ -40,5 +40,6 @@
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/spring-tx.jar"/>
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/commons-lang-2.3.jar"/>
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/commons-collections-3.2.jar"/>
+    <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/spring-context.jar"/>
     <classpathentry kind="output" path="bin"/>
 </classpath>

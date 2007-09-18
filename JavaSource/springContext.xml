@@ -11,7 +11,7 @@
     <!-- <bean/> definitions here -->
     
     <!-- Transaction stuff -->
-    <!-- bean definition below would be preferred txManager for WebSphere 6.0 and up
+    <!-- bean definition below would be preferred txManager for WebSphere V6.0.2.19 or V6.1.0.9 and up
     (see: 
     http://www.ibm.com/developerworks/websphere/techjournal/0609_alcott/0609_alcott.html
     http://static.springframework.org/spring/docs/2.1.x/api/org/springframework/transaction/jta/WebSphereUowTransactionManager.html
@@ -100,6 +100,10 @@
         scope="singleton">
     </bean>
     
+    <bean name="jmsConfigurator" class="nl.nn.adapterframework.unmanaged.SpringJmsConfigurator"
+        autowire="byName" scope="prototype">
+    </bean>
+    
     <!-- Replace with whatever TaskExecutor implementation suits best
          Replace with Common/J based TaskExecutor once deploying on
          WebSphere 6.0 or higher. -->
@@ -125,5 +129,18 @@
     
     <bean name="proto-genericMessageSendingPipe" class="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
         autowire="byName" scope="prototype">
+    </bean>
+    
+    <bean name="proto-jmsListener" class="nl.nn.adapterframework.jms.JmsListener"
+        autowire="byName" scope="prototype">
+        
+    </bean>
+    
+    <!-- DefaultMessageListenerContainer is supported configuration by IBM; proviced
+         however that supported transaction-manager and thread-pooling are used. -->
+    <bean name="proto-jmsContainer" class="org.springframework.jms.listener.DefaultMessageListenerContainer"
+        autowire="byName" scope="prototype">
+        <property name="autostartup" value="false"/>
+        <property name="transactionManager" ref="txManager"/>
     </bean>
 </beans>

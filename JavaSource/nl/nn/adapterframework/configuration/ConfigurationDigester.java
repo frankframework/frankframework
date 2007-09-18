@@ -1,6 +1,10 @@
 /*
  * $Log: ConfigurationDigester.java,v $
- * Revision 1.15.4.1  2007-09-13 13:27:16  europe\M00035F
+ * Revision 1.15.4.2  2007-09-18 11:20:40  europe\M00035F
+ * * Update a number of method-signatures to take a java.util.Map instead of HashMap
+ * * Rewrite JmsListener to be instance of IPushingListener; use Spring JMS Container
+ *
+ * Revision 1.15.4.1  2007/09/13 13:27:16  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
  * First commit of work to use Spring for creating objects
  *
  * Revision 1.15  2007/05/21 12:18:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -45,24 +49,16 @@ package nl.nn.adapterframework.configuration;
 
 import java.net.URL;
 
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.ClassPathEntityResolver;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.util.StringResolver;
-import nl.nn.adapterframework.util.Variant;
-import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.digester.Digester;
 import org.apache.commons.digester.Rule;
 import org.apache.commons.digester.xmlrules.FromXmlRuleSet;
-import org.apache.commons.lang.SystemUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.ListableBeanFactory;
-import org.xml.sax.InputSource;
 
 /**
  * The configurationDigester reads the configuration.xml and the digester rules
@@ -98,7 +94,7 @@ import org.xml.sax.InputSource;
  * @see Configuration
  */
 abstract public class ConfigurationDigester implements BeanFactoryAware {
-	public static final String version = "$RCSfile: ConfigurationDigester.java,v $ $Revision: 1.15.4.1 $ $Date: 2007-09-13 13:27:16 $";
+	public static final String version = "$RCSfile: ConfigurationDigester.java,v $ $Revision: 1.15.4.2 $ $Date: 2007-09-18 11:20:40 $";
     protected static Logger log = LogUtil.getLogger(ConfigurationDigester.class);
 
 	private static final String CONFIGURATION_FILE_DEFAULT  = "Configuration.xml";

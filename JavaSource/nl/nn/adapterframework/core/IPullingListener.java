@@ -1,6 +1,10 @@
 /*
  * $Log: IPullingListener.java,v $
- * Revision 1.7  2004-09-08 14:15:11  L190409
+ * Revision 1.7.6.1  2007-09-18 11:20:37  europe\M00035F
+ * * Update a number of method-signatures to take a java.util.Map instead of HashMap
+ * * Rewrite JmsListener to be instance of IPushingListener; use Spring JMS Container
+ *
+ * Revision 1.7  2004/09/08 14:15:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed unused imports
  *
  * Revision 1.6  2004/08/03 13:10:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -18,7 +22,8 @@
  */
 package nl.nn.adapterframework.core;
 
-import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Defines listening behaviour of pulling receivers.
  * Pulling receivers are receivers that poll for a message, as opposed to pushing receivers
@@ -28,7 +33,7 @@ import java.util.HashMap;
  * @author Gerrit van Brakel
  */
 public interface IPullingListener extends IListener {
-		public static final String version="$Id: IPullingListener.java,v 1.7 2004-09-08 14:15:11 L190409 Exp $";
+		public static final String version="$Id: IPullingListener.java,v 1.7.6.1 2007-09-18 11:20:37 europe\M00035F Exp $";
 
 /**
  * Prepares a thread for receiving messages.
@@ -36,14 +41,14 @@ public interface IPullingListener extends IListener {
  * @return the threadContext for this thread. The threadContext is a HashMap in which
  * thread-specific data can be stored. 
  */
-HashMap openThread() throws ListenerException;
+Map openThread() throws ListenerException;
 
 /**
  * Finalizes a message receiving thread.
  * Called once for each thread that listens for messages, just before
  * {@link #close()} is called.
  */
-void closeThread(HashMap threadContext) throws ListenerException;
+void closeThread(Map threadContext) throws ListenerException;
 
 
 /**
@@ -52,6 +57,6 @@ void closeThread(HashMap threadContext) throws ListenerException;
  * Implementations of this method should therefore be thread-safe, or <code>synchronized</code>.
  * <p>Any thread-specific properties should be stored in and retrieved from the threadContext.
  */
-Object getRawMessage(HashMap threadContext) throws ListenerException;
+Object getRawMessage(Map threadContext) throws ListenerException;
 
 }

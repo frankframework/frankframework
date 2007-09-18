@@ -1,6 +1,10 @@
 /*
  * $Log: FileRecordListener.java,v $
- * Revision 1.9  2007-07-17 15:13:05  europe\L190409
+ * Revision 1.9.2.1  2007-09-18 11:20:38  europe\M00035F
+ * * Update a number of method-signatures to take a java.util.Map instead of HashMap
+ * * Rewrite JmsListener to be instance of IPushingListener; use Spring JMS Container
+ *
+ * Revision 1.9  2007/07/17 15:13:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added attribute storeFileNameInSessionKey
  *
  * Revision 1.8  2007/02/12 14:03:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -24,7 +28,7 @@ package nl.nn.adapterframework.receivers;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Map;
 import java.util.Iterator;
 import java.util.StringTokenizer;
 
@@ -66,7 +70,7 @@ import org.apache.log4j.Logger;
  * @author  Johan Verrips
  */
 public class FileRecordListener implements IPullingListener, INamedObject {
-	public static final String version="$RCSfile: FileRecordListener.java,v $ $Revision: 1.9 $ $Date: 2007-07-17 15:13:05 $";
+	public static final String version="$RCSfile: FileRecordListener.java,v $ $Revision: 1.9.2.1 $ $Date: 2007-09-18 11:20:38 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -84,7 +88,7 @@ public class FileRecordListener implements IPullingListener, INamedObject {
 	public void afterMessageProcessed(
 		PipeLineResult processResult,
 		Object rawMessage,
-		HashMap threadContext)
+		Map threadContext)
 		throws ListenerException {
 		String cid = (String) threadContext.get("cid");
 		if (sender != null) {
@@ -197,7 +201,7 @@ public class FileRecordListener implements IPullingListener, INamedObject {
 				e);
 		}
 	}
-	public void closeThread(HashMap threadContext) throws ListenerException {
+	public void closeThread(Map threadContext) throws ListenerException {
 		// nothing special
 	}
 	
@@ -261,7 +265,7 @@ public class FileRecordListener implements IPullingListener, INamedObject {
 	 * in the processing of the file.
 	 * Override this method for your specific needs! 
 	 */
-	public String getIdFromRawMessage(Object rawMessage, HashMap threadContext)
+	public String getIdFromRawMessage(Object rawMessage, Map threadContext)
 		throws ListenerException {
 		String correlationId = inputFileName + "-" + recordNo;
 		threadContext.put("cid", correlationId);
@@ -271,7 +275,7 @@ public class FileRecordListener implements IPullingListener, INamedObject {
 	 * Retrieves a single record from a file. If the file is empty or fully processed, it looks wether there
 	 * is a new file to process and returns the first record.
 	 */
-	public synchronized Object getRawMessage(HashMap threadContext)
+	public synchronized Object getRawMessage(Map threadContext)
 		throws ListenerException {
 		String fullInputFileName = null;
 		if (recordIterator != null) {
@@ -327,7 +331,7 @@ public class FileRecordListener implements IPullingListener, INamedObject {
 	/**
 	 * Returns a string of the rawMessage
 	 */
-	public String getStringFromRawMessage(Object rawMessage, HashMap threadContext) throws ListenerException {
+	public String getStringFromRawMessage(Object rawMessage, Map threadContext) throws ListenerException {
 		return rawMessage.toString();
 	}
 
@@ -343,7 +347,7 @@ public class FileRecordListener implements IPullingListener, INamedObject {
 		return;
 	}
 
-	public HashMap openThread() throws ListenerException {
+	public Map openThread() throws ListenerException {
 		return null;
 	}
 	/**

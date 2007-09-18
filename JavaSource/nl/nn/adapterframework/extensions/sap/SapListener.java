@@ -1,6 +1,10 @@
 /*
  * $Log: SapListener.java,v $
- * Revision 1.10  2007-06-07 15:18:01  europe\L190409
+ * Revision 1.10.4.1  2007-09-18 11:20:39  europe\M00035F
+ * * Update a number of method-signatures to take a java.util.Map instead of HashMap
+ * * Rewrite JmsListener to be instance of IPushingListener; use Spring JMS Container
+ *
+ * Revision 1.10  2007/06/07 15:18:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * now implements HasPhysicalDestination
  *
  * Revision 1.9  2006/01/05 13:59:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -51,7 +55,7 @@
  */
 package nl.nn.adapterframework.extensions.sap;
 
-import java.util.HashMap;
+import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessageHandler;
@@ -91,7 +95,7 @@ import com.sap.mw.jco.JCO;
  * @see   http://help.sap.com/saphelp_nw04/helpdata/en/09/c88442a07b0e53e10000000a155106/frameset.htm
  */
 public class SapListener extends SapFunctionFacade implements IPushingListener, SapFunctionHandler, JCO.ServerExceptionListener, JCO.ServerErrorListener {
-	public static final String version="$RCSfile: SapListener.java,v $  $Revision: 1.10 $ $Date: 2007-06-07 15:18:01 $";
+	public static final String version="$RCSfile: SapListener.java,v $  $Revision: 1.10.4.1 $ $Date: 2007-09-18 11:20:39 $";
 
 	private String progid;	 // progid of the RFC-destination
         	
@@ -141,17 +145,17 @@ public class SapListener extends SapFunctionFacade implements IPushingListener, 
 	}
 
 
-	public String getIdFromRawMessage(Object rawMessage, HashMap threadContext) throws ListenerException {
+	public String getIdFromRawMessage(Object rawMessage, Map threadContext) throws ListenerException {
 		log.debug("SapListener.getCorrelationIdFromField");
 		return getCorrelationIdFromField((JCO.Function) rawMessage);
 	}
 
-	public String getStringFromRawMessage(Object rawMessage, HashMap threadContext) throws ListenerException {
+	public String getStringFromRawMessage(Object rawMessage, Map threadContext) throws ListenerException {
 		log.debug("SapListener.getStringFromRawMessage");
 		return functionCall2message((JCO.Function) rawMessage);
 	}
 
-	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessage, HashMap threadContext) throws ListenerException {
+	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessage, Map threadContext) throws ListenerException {
 		try {
 			log.debug("SapListener.afterMessageProcessed");
 			message2FunctionResult((JCO.Function) rawMessage, processResult.getResult());

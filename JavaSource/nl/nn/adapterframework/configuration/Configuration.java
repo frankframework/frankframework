@@ -1,6 +1,10 @@
 /*
  * $Log: Configuration.java,v $
- * Revision 1.25.2.1  2007-09-13 13:27:16  europe\M00035F
+ * Revision 1.25.2.2  2007-09-18 11:20:40  europe\M00035F
+ * * Update a number of method-signatures to take a java.util.Map instead of HashMap
+ * * Rewrite JmsListener to be instance of IPushingListener; use Spring JMS Container
+ *
+ * Revision 1.25.2.1  2007/09/13 13:27:16  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
  * First commit of work to use Spring for creating objects
  *
  * Revision 1.25  2007/07/24 08:04:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -74,14 +78,10 @@ import java.util.TreeSet;
 
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.core.IReceiver;
-import nl.nn.adapterframework.pipes.IbisLocalSender;
 import nl.nn.adapterframework.scheduler.JobDef;
-import nl.nn.adapterframework.scheduler.SchedulerHelper;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StatisticsKeeperIterationHandler;
-import nl.nn.adapterframework.util.StatisticsKeeperLogger;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
@@ -97,7 +97,7 @@ import org.apache.log4j.Logger;
  * @see    nl.nn.adapterframework.core.IAdapter
  */
 public class Configuration {
-	public static final String version="$RCSfile: Configuration.java,v $ $Revision: 1.25.2.1 $ $Date: 2007-09-13 13:27:16 $";
+	public static final String version="$RCSfile: Configuration.java,v $ $Revision: 1.25.2.2 $ $Date: 2007-09-18 11:20:40 $";
     protected Logger log=LogUtil.getLogger(this); 
      
     private Map adapterTable = new Hashtable();
