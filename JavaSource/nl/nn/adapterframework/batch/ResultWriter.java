@@ -1,6 +1,10 @@
 /*
  * $Log: ResultWriter.java,v $
- * Revision 1.4  2007-09-11 11:51:44  europe\L190409
+ * Revision 1.5  2007-09-19 13:00:54  europe\L190409
+ * added openDocument() and closeDocument()
+ * added openBlock() and closeBlock()
+ *
+ * Revision 1.4  2007/09/11 11:51:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.3  2007/09/10 11:11:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -47,15 +51,42 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public abstract class ResultWriter extends AbstractResultHandler {
-	public static final String version = "$RCSfile: ResultWriter.java,v $  $Revision: 1.4 $ $Date: 2007-09-11 11:51:44 $";
+	public static final String version = "$RCSfile: ResultWriter.java,v $  $Revision: 1.5 $ $Date: 2007-09-19 13:00:54 $";
+	
+	private String onOpenDocument="<document name=\"#name#\">";
+	private String onCloseDocument="</document>";
+	private String onOpenBlock="<#name#>";
+	private String onCloseBlock="</#name#>";
+	private String blockNamePattern="#name#";
 	
 	private Map openWriters = Collections.synchronizedMap(new HashMap());
 	
 	protected abstract Writer createWriter(PipeLineSession session, String streamId) throws Exception;
 
-	public void openResult(PipeLineSession session, String streamId) throws Exception {
-		getBufferedWriter(session, streamId, true);
+	public void openDocument(PipeLineSession session, String streamId) throws Exception {
+		super.openDocument(session,streamId);
+		getWriter(session, streamId, true);
+		write(session,streamId,replacePattern(getOnOpenDocument(),streamId));
 	}
+
+	public void closeDocument(PipeLineSession session, String streamId) {
+		Writer w = (Writer)openWriters.remove(streamId);
+		if (w != null) {
+			try {
+				w.close();
+			} catch (IOException e) {
+				log.error("Exception closing ["+streamId+"]",e);
+			}
+		}
+		super.closeDocument(session,streamId);
+	}
+
+	public Object finalizeResult(PipeLineSession session, String streamId, boolean error) throws Exception {
+		log.debug("finalizeResult ["+streamId+"]");
+		write(session,streamId,replacePattern(getOnCloseDocument(),streamId));
+		return null;
+	}
+	
 
 	
 	public void handleResult(PipeLineSession session, String streamId, String recordKey, Object result) throws Exception {
@@ -67,63 +98,119 @@ public abstract class ResultWriter extends AbstractResultHandler {
 		}
 	}
 	
+	protected void writeNewLine(Writer w) throws IOException {
+		if (w instanceof BufferedWriter) {
+			((BufferedWriter)w).newLine();
+		} else {
+			w.write("\n");
+		}
+	}
+	
 	private void write(PipeLineSession session, String streamId, String line) throws Exception {
-		BufferedWriter bw = getBufferedWriter(session, streamId, false);
-		bw.write(line);
-		bw.newLine();
+		if (line!=null) {
+			Writer w = getWriter(session, streamId, false);
+			w.write(line);
+			writeNewLine(w);
+		}
 	}
 
 	private void write(PipeLineSession session, String streamId, String[] lines) throws Exception {
-		BufferedWriter bw = getBufferedWriter(session, streamId, false);
+		Writer w = getWriter(session, streamId, false);
 		for (int i = 0; i < lines.length; i++) {
-			bw.write(lines[i]);
-			bw.newLine();
+			if (lines[i]!=null) {
+				w.write(lines[i]);
+				writeNewLine(w);
+			}
 		}
-	}
-	
-	public Object finalizeResult(PipeLineSession session, String streamId, boolean error) throws IOException {
-		BufferedWriter bw = (BufferedWriter)openWriters.remove(streamId);
-		if (bw != null) {
-			bw.close();
-		}
-		return null;
 	}
 	
 	public void openRecordType(PipeLineSession session, String streamId) throws Exception {
-		BufferedWriter bw = getBufferedWriter(session, streamId, false);
-		if (bw != null && ! StringUtils.isEmpty(getPrefix())) {
+		Writer w = getWriter(session, streamId, false);
+		if (w != null && ! StringUtils.isEmpty(getPrefix())) {
 			write(session, streamId, getPrefix());
 		}
 	}
 
 	public void closeRecordType(PipeLineSession session, String streamId) throws Exception {
-		BufferedWriter bw = getBufferedWriter(session, streamId, false);
-		if (bw != null && ! StringUtils.isEmpty(getSuffix())) {
+		Writer w = getWriter(session, streamId, false);
+		if (w != null && ! StringUtils.isEmpty(getSuffix())) {
 			write(session, streamId, getSuffix());
 		}
 	}
 
-	private BufferedWriter getBufferedWriter(PipeLineSession session, String streamId, boolean openIfNotOpen) throws Exception {
-		BufferedWriter bw;
-		bw = (BufferedWriter)openWriters.get(streamId);
-		if (bw != null) {
-			return bw;
-		}
-		
-		if (!openIfNotOpen) {
+	protected String replacePattern(String target, String blockName) {
+		if (StringUtils.isEmpty(target)) {
 			return null;
 		}
-		Writer writer = createWriter(session,streamId);
+		if (StringUtils.isEmpty(getBlockNamePattern())) {
+			return target;
+		}
+		String result=target.replaceAll(getBlockNamePattern(),blockName);
+		//if (log.isDebugEnabled()) log.debug("target ["+target+"] pattern ["+getBlockNamePattern()+"] value ["+blockName+"] result ["+result+"]");
+		return result;   
+	}
+
+	public void openBlock(PipeLineSession session, String streamId, String blockName) throws Exception  {
+		write(session,streamId, replacePattern(getOnOpenBlock(),blockName));
+	}
+	public void closeBlock(PipeLineSession session, String streamId, String blockName) throws Exception {
+		write(session,streamId, replacePattern(getOnCloseBlock(),blockName));
+	}
+
+
+	protected Writer getWriter(PipeLineSession session, String streamId, boolean create) throws Exception {
+		log.debug("getWriter ["+streamId+"], create ["+create+"]");
+		Writer writer;
+		writer = (Writer)openWriters.get(streamId);
+		if (writer != null) {
+			return writer;
+		}
+		
+		if (!create) {
+			return null;
+		}
+		writer = createWriter(session,streamId);
 		if (writer==null) {
 			throw new IOException("cannot get writer for stream ["+streamId+"]");
 		}
-		if (writer instanceof BufferedWriter) {
-			bw=(BufferedWriter)bw;
-		} else {
-			bw=new BufferedWriter(writer);
-		}
-		openWriters.put(streamId,bw);
-		return bw;		
+		openWriters.put(streamId,writer);
+		return writer;		
 	}
+
 	
+	public void setOnOpenDocument(String line) {
+		onOpenDocument = line;
+	}
+	public String getOnOpenDocument() {
+		return onOpenDocument;
+	}
+
+	public void setOnCloseDocument(String line) {
+		onCloseDocument = line;
+	}
+	public String getOnCloseDocument() {
+		return onCloseDocument;
+	}
+
+	public void setOnOpenBlock(String line) {
+		onOpenBlock = line;
+	}
+	public String getOnOpenBlock() {
+		return onOpenBlock;
+	}
+
+	public void setOnCloseBlock(String line) {
+		onCloseBlock = line;
+	}
+	public String getOnCloseBlock() {
+		return onCloseBlock;
+	}
+
+	public void setBlockNamePattern(String pattern) {
+		blockNamePattern = pattern;
+	}
+	public String getBlockNamePattern() {
+		return blockNamePattern;
+	}
+
 }
