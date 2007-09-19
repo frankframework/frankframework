@@ -1,6 +1,9 @@
 /*
  * $Log: ResultBlock2Sender.java,v $
- * Revision 1.2  2007-09-12 09:15:34  europe\L190409
+ * Revision 1.3  2007-09-19 13:21:21  europe\L190409
+ * first working version
+ *
+ * Revision 1.2  2007/09/12 09:15:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.1  2007/09/10 11:13:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -9,9 +12,8 @@
  */
 package nl.nn.adapterframework.batch;
 
+import java.io.StringWriter;
 import java.util.HashMap;
-
-import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISender;
@@ -38,16 +40,22 @@ import nl.nn.adapterframework.util.ClassUtils;
  * @since   4.7  
  * @version Id
  */
-public class ResultBlock2Sender extends AbstractResultHandler {
+public class ResultBlock2Sender extends Result2StringWriter {
 
 	private ISender sender = null; 
-	private HashMap buffers = new HashMap();
 	private HashMap counters = new HashMap();
+	private HashMap levels = new HashMap();
+	
+	public ResultBlock2Sender() {
+		super();
+		setOnOpenDocument(null);
+		setOnCloseDocument(null);
+	}
 	
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (sender==null) {
-			throw new ConfigurationException(ClassUtils.nameOf(this)+" has no sender");
+			throw new ConfigurationException(ClassUtils.nameOf(this)+" ["+getName()+"] has no sender");
 		}
 		sender.configure();		
 	}
@@ -58,23 +66,21 @@ public class ResultBlock2Sender extends AbstractResultHandler {
 	public void close() throws SenderException {
 		super.close();
 		sender.close();	
-		buffers.clear();	
 		counters.clear();	
+		levels.clear();
 	}
 
-	public void openResult(PipeLineSession session, String streamId) throws Exception {
-		StringBuffer buffer = new StringBuffer(1000);
-		buffers.put(streamId,buffer);
+	public void openDocument(PipeLineSession session, String streamId) throws Exception {
 		counters.put(streamId,new Integer(0));
+		levels.put(streamId,new Integer(0));
+		super.openDocument(session,streamId);
+	}
+	public void closeDocument(PipeLineSession session, String streamId) {
+		super.closeDocument(session,streamId);
+		counters.remove(streamId);
+		levels.remove(streamId);
 	}
 
-	protected StringBuffer getBuffer(String streamId) throws SenderException {
-		StringBuffer buffer = (StringBuffer)buffers.get(streamId);
-		if (buffer==null) {
-			throw new SenderException("no buffer found for stream ["+streamId+"]");
-		}
-		return buffer;
-	}
 
 	protected int getCounter(String streamId) throws SenderException {
 		Integer counter = (Integer)counters.get(streamId);
@@ -93,32 +99,52 @@ public class ResultBlock2Sender extends AbstractResultHandler {
 		return result;
 	}
 
-	public void handleResult(PipeLineSession session, String streamId, String recordKey, Object result) throws Exception {
-		getBuffer(streamId).append(result);
+	protected int getLevel(String streamId) throws SenderException {
+		Integer level = (Integer)levels.get(streamId);
+		if (level==null) {
+			throw new SenderException("no level found for stream ["+streamId+"]");
+		}
+		return level.intValue();
+	}
+	protected int incLevel(String streamId) throws SenderException {
+		Integer level = (Integer)levels.get(streamId);
+		if (level==null) {
+			throw new SenderException("no level found for stream ["+streamId+"]");
+		}
+		int result=level.intValue()+1;
+		levels.put(streamId,new Integer(result));
+		return result;
+	}
+	protected int decLevel(String streamId) throws SenderException {
+		Integer level = (Integer)levels.get(streamId);
+		if (level==null) {
+			throw new SenderException("no level found for stream ["+streamId+"]");
+		}
+		int result=level.intValue()-1;
+		levels.put(streamId,new Integer(result));
+		return result;
 	}
 
-	public Object finalizeResult(PipeLineSession session, String streamId, boolean error) throws Exception {
-		buffers.remove(streamId);
-		return null;
-	}
 
-	public void openRecordType(PipeLineSession session, String streamId) throws Exception {
-		StringBuffer buffer = getBuffer(streamId);
-		buffer.setLength(0);
-		if (StringUtils.isNotEmpty(getPrefix())) {
-			buffer.append(getPrefix());
+
+	public void openBlock(PipeLineSession session, String streamId, String blockName) throws Exception {
+		super.openBlock(session,streamId,blockName);
+		incLevel(streamId);
+	}
+	public void closeBlock(PipeLineSession session, String streamId, String blockName) throws Exception {
+		super.closeBlock(session,streamId,blockName);
+		int level=decLevel(streamId);
+		if (level==0) {
+			StringWriter writer=(StringWriter)getWriter(session,streamId,false);
+			if (writer!=null) {
+				String message=writer.getBuffer().toString();
+				log.debug("sending block ["+message+"] to sender ["+sender.getName()+"]");
+				writer.getBuffer().setLength(0);
+				sender.sendMessage(streamId+"-"+incCounter(streamId),message);
+			}
 		}
 	}
 
-	public void closeRecordType(PipeLineSession session, String streamId) throws Exception {
-		StringBuffer buffer = getBuffer(streamId);
-		if (StringUtils.isNotEmpty(getSuffix())) {
-			buffer.append(getSuffix());
-		}
-		ISender sender=getSender();
-		sender.sendMessage(streamId+"-"+incCounter(streamId),buffer.toString());
-		buffer.setLength(0);
-	}
 
 	public void setSender(ISender sender) {
 		this.sender = sender;
@@ -126,5 +152,6 @@ public class ResultBlock2Sender extends AbstractResultHandler {
 	public ISender getSender() {
 		return sender;
 	}
+
 
 }
