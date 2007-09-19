@@ -1,6 +1,9 @@
 /*
  * $Log: RecordHandlingFlow.java,v $
- * Revision 1.8  2007-09-13 12:37:04  europe\L190409
+ * Revision 1.9  2007-09-19 11:17:34  europe\L190409
+ * added block handling functions
+ *
+ * Revision 1.8  2007/09/13 12:37:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fixed bug in configuration
  *
  * Revision 1.7  2007/08/03 08:28:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -54,7 +57,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public final class RecordHandlingFlow {
-	public static final String version = "$RCSfile: RecordHandlingFlow.java,v $  $Revision: 1.8 $ $Date: 2007-09-13 12:37:04 $";
+	public static final String version = "$RCSfile: RecordHandlingFlow.java,v $  $Revision: 1.9 $ $Date: 2007-09-19 11:17:34 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String recordKey;
@@ -62,6 +65,12 @@ public final class RecordHandlingFlow {
 	private String recordHandlerManagerRef;
 	private String nextRecordHandlerManagerRef;
 	private String resultHandlerRef;
+	
+	private String openBlockBeforeLine=null;
+	private String closeBlockBeforeLine=null;
+	private String openBlockAfterLine=null;
+	private String closeBlockAfterLine=null;
+	private boolean autoCloseBlock=true;
 	
 	private IRecordHandler recordHandler;
 	private IRecordHandlerManager nextRecordHandlerManager;
@@ -165,5 +174,44 @@ public final class RecordHandlingFlow {
 	public String getResultHandlerRef() {
 		return resultHandlerRef;
 	}
+
+
+	public void setOpenBlockBeforeLine(String blockName) {
+		openBlockBeforeLine = blockName;
+	}
+	public String getOpenBlockBeforeLine() {
+		return openBlockBeforeLine;
+	}
+
+	public void setCloseBlockBeforeLine(String blockName) {
+		closeBlockBeforeLine = blockName;
+	}
+	public String getCloseBlockBeforeLine() {
+		return closeBlockBeforeLine;
+	}
+
+
+	public void setOpenBlockAfterLine(String blockName) {
+		openBlockAfterLine = blockName;
+	}
+	public String getOpenBlockAfterLine() {
+		return openBlockAfterLine;
+	}
+
+	public void setCloseBlockAfterLine(String blockName) {
+		closeBlockAfterLine = blockName;
+	}
+	public String getCloseBlockAfterLine() {
+		return closeBlockAfterLine;
+	}
+
+
+	public void setAutoCloseBlock(boolean b) {
+		autoCloseBlock = b;
+	}
+	public boolean isAutoCloseBlock() {
+		return autoCloseBlock;
+	}
+
 
 }
