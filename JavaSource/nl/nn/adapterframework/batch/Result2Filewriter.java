@@ -1,6 +1,9 @@
 /*
  * $Log: Result2Filewriter.java,v $
- * Revision 1.13  2007-09-17 08:24:52  europe\L190409
+ * Revision 1.14  2007-09-19 13:01:39  europe\L190409
+ * added openDocument() and closeDocument()
+ *
+ * Revision 1.13  2007/09/17 08:24:52  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.12  2007/09/11 11:51:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -41,9 +44,9 @@
  */
 package nl.nn.adapterframework.batch;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.io.Writer;
 import java.util.Collections;
 import java.util.HashMap;
@@ -76,7 +79,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class Result2Filewriter extends ResultWriter {
-	public static final String version = "$RCSfile: Result2Filewriter.java,v $  $Revision: 1.13 $ $Date: 2007-09-17 08:24:52 $";
+	public static final String version = "$RCSfile: Result2Filewriter.java,v $  $Revision: 1.14 $ $Date: 2007-09-19 13:01:39 $";
 	
 	private String outputDirectory;
 	private String move2dirAfterFinalize;
@@ -84,7 +87,14 @@ public class Result2Filewriter extends ResultWriter {
 	
 	private Map openFiles = Collections.synchronizedMap(new HashMap());
 	
+	public Result2Filewriter() {
+		super();
+		setOnOpenDocument("");
+		setOnCloseDocument("");
+	}
+	
 	protected Writer createWriter(PipeLineSession session, String streamId) throws Exception {
+		log.debug("create writer ["+streamId+"]");
 		String outputFilename = FileUtils.getFilename(null, session, new File(streamId), getFilenamePattern());
 		File outputFile = new File(outputDirectory, outputFilename);
 		if (outputFile.exists() && outputFile.isFile()) {
@@ -93,9 +103,15 @@ public class Result2Filewriter extends ResultWriter {
 		openFiles.put(streamId,outputFile);
 		return new FileWriter(outputFile, false);
 	}
-	
-	public Object finalizeResult(PipeLineSession session, String streamId, boolean error) throws IOException {
+
+	public void closeDocument(PipeLineSession session, String streamId) {
+		File outputFile = (File)openFiles.remove(streamId);
+	}
+
+	public Object finalizeResult(PipeLineSession session, String streamId, boolean error) throws Exception {
+		log.debug("finalizeResult ["+streamId+"]");
 		super.finalizeResult(session,streamId, error);
+		super.closeDocument(session,streamId);
 		
 		File file = (File)openFiles.get(streamId);
 		if (file==null) {
