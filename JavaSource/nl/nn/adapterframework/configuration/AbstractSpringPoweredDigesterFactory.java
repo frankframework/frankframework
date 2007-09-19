@@ -10,6 +10,7 @@ import org.apache.commons.digester.AbstractObjectCreationFactory;
 import org.apache.commons.digester.ObjectCreationFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.ListableBeanFactory;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.xml.sax.Attributes;
 
 /**
@@ -19,7 +20,9 @@ import org.xml.sax.Attributes;
  * The intention is to have objects created by the Apache Digester be created
  * via the Spring Factory thus allowing for dependancy injection; and if not
  * possible then create them ourselves but inject at least a reference to the
- * Spring Factory when supported by the object.
+ * Spring Factory when supported by the object. When the object is created
+ * directly by this factory, the Spring Factory is used for auto-wiring
+ * and initialization.
  * 
  * The factory is abstract; subclasses will need to implement method
  * 'getBeanName()' to return the name of the default Bean to load from
@@ -125,7 +128,14 @@ public abstract class AbstractSpringPoweredDigesterFactory
                 // Spring's BeanFactoryAware interface, use it to
                 // set BeanFactory attribute on this Bean.
                 Object o = beanClass.newInstance();
-                if (o instanceof BeanFactoryAware) {
+                if (factory instanceof AutowireCapableBeanFactory) {
+                    ((AutowireCapableBeanFactory)factory)
+                        .autowireBeanProperties(
+                            o, 
+                            AutowireCapableBeanFactory.AUTOWIRE_BY_NAME,
+                            true);
+                    o = ((AutowireCapableBeanFactory)factory).initializeBean(o, getBeanName());
+                } else if (o instanceof BeanFactoryAware) {
                     ((BeanFactoryAware)o).setBeanFactory(factory);
                 }
                 return o;
