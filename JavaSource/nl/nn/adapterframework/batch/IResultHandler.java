@@ -1,6 +1,10 @@
 /*
  * $Log: IResultHandler.java,v $
- * Revision 1.8  2007-09-17 07:43:17  europe\L190409
+ * Revision 1.9  2007-09-19 11:15:59  europe\L190409
+ * added openDocument() and closeDocument()
+ * added openBlock() and closeBlock()
+ *
+ * Revision 1.8  2007/09/17 07:43:17  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added hasPrefix()
  *
  * Revision 1.7  2007/09/10 11:07:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -48,7 +52,8 @@ public interface IResultHandler extends INamedObject {
 	 * @param session  current PipeLineSession
 	 * @param streamId identification of the original file/stream/message
 	 */
-	void openResult(PipeLineSession session, String streamId) throws Exception;
+	void openDocument(PipeLineSession session, String streamId) throws Exception;
+	void closeDocument(PipeLineSession session, String streamId);
 
 	/**
 	 * write a result ta record. 
@@ -82,6 +87,9 @@ public interface IResultHandler extends INamedObject {
 	 */
 	void closeRecordType(PipeLineSession session, String streamId) throws Exception;
 	
+	void openBlock(PipeLineSession session, String streamId, String blockName) throws Exception;
+	void closeBlock(PipeLineSession session, String streamId, String blockName) throws Exception;
+
 	/**
 	 * @return true if this resulthandler should be used for all flows if no resulthandler is specified for that flow 
 	 */
