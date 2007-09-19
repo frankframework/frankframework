@@ -69,6 +69,10 @@ public class IbisMain {
             digesterRulesFile = DFLT_DIGESTER_RULES;
         if (null == autoStart)
             autoStart = DFLT_AUTOSTART;
+        
+        log.info("* IBIS Startup: Reading IBIS configuration from file '"
+            + configurationFile + "'" + (configurationFile == DFLT_CONFIGURATION ?
+            " (default configuration file)" : ""));
         try {
             configuration =
                 cd.unmarshalConfiguration(

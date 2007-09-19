@@ -46,7 +46,9 @@ public class IbisMultiSourceExpander implements VariableExpander {
 	 * @see org.apache.commons.digester.substitution.VariableExpander#expand(java.lang.String)
 	 */
 	public String expand(String inp) {
-        log.debug("Requested to expand input-string [" + inp + "]");
+        if (log.isDebugEnabled()) {
+            log.debug("Requested to expand input-string [" + inp + "]");
+        }
         int lastVarEnd = 0;
         int varMarkerPos = inp.indexOf("${");
         if (varMarkerPos == -1) {
@@ -92,7 +94,11 @@ public class IbisMultiSourceExpander implements VariableExpander {
         if (lastVarEnd < inp.length()) {
             result.append(inp.substring(lastVarEnd));
         }
-		return result.toString();
+        String resultString = result.toString();
+        if (log.isDebugEnabled()) {
+            log.debug("Input-string [" + inp + "] expanded to [" + resultString + "]");
+        }
+		return resultString;
 	}
 
 	/**
@@ -111,6 +117,8 @@ public class IbisMultiSourceExpander implements VariableExpander {
         if (environmentFallback) {
             return System.getenv(varName);
         } else {
+            log.warn("No substitution can be found for variable name ["
+                + varName + "]");
             return null;
         }
 	}
