@@ -1,6 +1,9 @@
 /*
  * $Log: Result2LobWriterBase.java,v $
- * Revision 1.1  2007-08-03 08:43:30  europe\L190409
+ * Revision 1.2  2007-09-19 13:06:50  europe\L190409
+ * modify exception type thrown
+ *
+ * Revision 1.1  2007/08/03 08:43:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * first versions of Jdbc result writers
  *
  */
@@ -40,7 +43,7 @@ import nl.nn.adapterframework.util.JdbcUtil;
  * @version Id
  */
 public abstract class Result2LobWriterBase extends ResultWriter {
-	public static final String version = "$RCSfile: Result2LobWriterBase.java,v $  $Revision: 1.1 $ $Date: 2007-08-03 08:43:30 $";
+	public static final String version = "$RCSfile: Result2LobWriterBase.java,v $  $Revision: 1.2 $ $Date: 2007-09-19 13:06:50 $";
 	
 	protected Map openStreams = Collections.synchronizedMap(new HashMap());
 	protected Map openResultSets = Collections.synchronizedMap(new HashMap());
@@ -79,7 +82,7 @@ public abstract class Result2LobWriterBase extends ResultWriter {
 		return getWriter(rs);
 	}
 	
-	public Object finalizeResult(PipeLineSession session, String streamId, boolean error) throws IOException {
+	public Object finalizeResult(PipeLineSession session, String streamId, boolean error) throws Exception {
 		try {
 			return super.finalizeResult(session,streamId, error);
 		} finally {
