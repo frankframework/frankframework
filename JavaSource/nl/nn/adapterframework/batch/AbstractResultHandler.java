@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractResultHandler.java,v $
- * Revision 1.11  2007-09-17 08:24:52  europe\L190409
+ * Revision 1.12  2007-09-19 11:15:25  europe\L190409
+ * added openDocument() and closeDocument()
+ *
+ * Revision 1.11  2007/09/17 08:24:52  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.10  2007/09/17 07:43:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -36,6 +39,7 @@
 package nl.nn.adapterframework.batch;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -75,6 +79,10 @@ public abstract class AbstractResultHandler implements IResultHandler {
 	public void close() throws SenderException {
 	}
 
+	public void openDocument(PipeLineSession session, String streamId) throws Exception {
+	}
+	public void closeDocument(PipeLineSession session, String streamId) {
+	}
 
 	public void setName(String string) {
 		name = string;
