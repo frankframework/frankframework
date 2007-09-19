@@ -1,6 +1,9 @@
 /*
  * $Log: ResultWriter.java,v $
- * Revision 1.5  2007-09-19 13:00:54  europe\L190409
+ * Revision 1.6  2007-09-19 13:22:25  europe\L190409
+ * avoid NPE
+ *
+ * Revision 1.5  2007/09/19 13:00:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added openDocument() and closeDocument()
  * added openBlock() and closeBlock()
  *
@@ -51,7 +54,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public abstract class ResultWriter extends AbstractResultHandler {
-	public static final String version = "$RCSfile: ResultWriter.java,v $  $Revision: 1.5 $ $Date: 2007-09-19 13:00:54 $";
+	public static final String version = "$RCSfile: ResultWriter.java,v $  $Revision: 1.6 $ $Date: 2007-09-19 13:22:25 $";
 	
 	private String onOpenDocument="<document name=\"#name#\">";
 	private String onCloseDocument="</document>";
@@ -109,6 +112,9 @@ public abstract class ResultWriter extends AbstractResultHandler {
 	private void write(PipeLineSession session, String streamId, String line) throws Exception {
 		if (line!=null) {
 			Writer w = getWriter(session, streamId, false);
+			if (w==null) {
+				throw new NullPointerException("No Writer Found for stream ["+streamId+"]");
+			}
 			w.write(line);
 			writeNewLine(w);
 		}
