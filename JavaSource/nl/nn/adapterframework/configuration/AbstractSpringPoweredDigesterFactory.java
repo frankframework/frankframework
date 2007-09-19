@@ -52,7 +52,16 @@ public abstract class AbstractSpringPoweredDigesterFactory
     
     /**
      * Get the name of the bean which should be retrieved from
-     * the Spring BeanFactory
+     * the Spring BeanFactory.
+     * 
+     * If a className attribute has also been specified in the XML,
+     * then that takes precedence over finding a bean with given
+     * beanName.
+     * 
+     * If for the className multiple bean-definitions are found in
+     * the factory, then a bean is selected from those with this
+     * given bean-name. If no such bean exists, an error is thrown.
+     * 
      * @return
      */
     abstract public String getBeanName();

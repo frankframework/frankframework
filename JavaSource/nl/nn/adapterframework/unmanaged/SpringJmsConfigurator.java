@@ -25,8 +25,12 @@ import nl.nn.adapterframework.receivers.GenericReceiver;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.jms.listener.DefaultMessageListenerContainer;
+import org.springframework.jms.listener.DefaultMessageListenerContainer102;
 import org.springframework.jms.listener.SessionAwareMessageListener;
+import org.springframework.transaction.PlatformTransactionManager;
 
 /**
  * Configure a Spring JMS Container from a {@link nl.nn.adapterframework.jms.JmsListener}.
@@ -43,7 +47,7 @@ import org.springframework.jms.listener.SessionAwareMessageListener;
 public class SpringJmsConfigurator 
     implements IJmsConfigurator, BeanFactoryAware {
     
-    public static final String version="$RCSfile: SpringJmsConfigurator.java,v $ $Revision: 1.1.2.1 $ $Date: 2007-09-18 11:20:39 $";
+    public static final String version="$RCSfile: SpringJmsConfigurator.java,v $ $Revision: 1.1.2.2 $ $Date: 2007-09-19 14:19:42 $";
     
     
     private JmsListener jmsListener;
@@ -71,8 +75,12 @@ public class SpringJmsConfigurator
      */
     public void configureJmsReceiver(final JmsListener jmsListener) throws ConfigurationException {
         this.jmsListener = jmsListener;
-        jmsContainer = (DefaultMessageListenerContainer) beanFactory.getBean("proto-jmsContainer");
-        
+        //jmsContainer = (DefaultMessageListenerContainer) beanFactory.getBean("proto-jmsContainer");
+        jmsContainer = new DefaultMessageListenerContainer102();
+        //jmsContainer.setTaskExecutor((TaskExecutor) beanFactory.getBean("taskExecutor"));
+        if (jmsListener.isTransacted()) {
+            jmsContainer.setTransactionManager((PlatformTransactionManager) beanFactory.getBean("txManager"));
+        }
         
         try {
             String connectionFactoryName = jmsListener.getConnectionFactoryName();
@@ -100,6 +108,7 @@ public class SpringJmsConfigurator
                 }
             }
         });
+        ((AutowireCapableBeanFactory)beanFactory).configureBean(jmsContainer, "proto-jmsContainer");
     }
 
     /* (non-Javadoc)

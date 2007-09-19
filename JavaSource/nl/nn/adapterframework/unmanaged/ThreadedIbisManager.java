@@ -6,14 +6,9 @@
  */
 package nl.nn.adapterframework.unmanaged;
 
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Map;
-
-import org.apache.log4j.Logger;
-import org.quartz.SchedulerException;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisManager;
@@ -23,6 +18,9 @@ import nl.nn.adapterframework.pipes.IbisLocalSender;
 import nl.nn.adapterframework.scheduler.JobDef;
 import nl.nn.adapterframework.scheduler.SchedulerHelper;
 import nl.nn.adapterframework.util.LogUtil;
+
+import org.apache.log4j.Logger;
+import org.quartz.SchedulerException;
 
 /**
  * Implementation of IbisManager which does not use EJB for
@@ -35,9 +33,8 @@ public class ThreadedIbisManager implements IbisManager {
     protected Logger log=LogUtil.getLogger(this);
     
     private Configuration configuration;
-    private Map adapterThreads = new HashMap();
+	private SchedulerHelper schedulerHelper;
     
-	
     /* (non-Javadoc)
 	 * @see nl.nn.adapterframework.configuration.IbisManager#getConfiguration()
 	 */
@@ -120,7 +117,7 @@ public class ThreadedIbisManager implements IbisManager {
         for (Iterator iter = scheduledJobs.iterator(); iter.hasNext();) {
 			JobDef jobdef = (JobDef) iter.next();
             try {
-                SchedulerHelper.scheduleJob(this, jobdef);
+                schedulerHelper.scheduleJob(this, jobdef);
                 log.info("job scheduled with properties :" + jobdef.toString());
             } catch (Exception e) {
                 log.error("Could not schedule job ["+jobdef.getName()+"]",e);
@@ -128,7 +125,7 @@ public class ThreadedIbisManager implements IbisManager {
 			
 		}
         try {
-			SchedulerHelper.startScheduler();
+			schedulerHelper.startScheduler();
 		} catch (SchedulerException e) {
             log.error("Could not start scheduler", e);
 		}
@@ -214,5 +211,19 @@ public class ThreadedIbisManager implements IbisManager {
 	public void setConfiguration(Configuration configuration) {
 		this.configuration = configuration;
 	}
+
+    /**
+     * @return
+     */
+    public SchedulerHelper getSchedulerHelper() {
+        return schedulerHelper;
+    }
+
+    /**
+     * @param helper
+     */
+    public void setSchedulerHelper(SchedulerHelper helper) {
+        schedulerHelper = helper;
+    }
 
 }

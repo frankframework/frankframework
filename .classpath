@@ -6,7 +6,6 @@
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/activation.jar"/>
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/jaxp.jar"/>
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/jaxrpc.jar"/>
-    <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/quartz123.jar"/>
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/rowset.jar"/>
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/struts-11-final-Websphere.jar"/>
     <classpathentry kind="var" path="WAS_PLUGINDIR/lib/j2ee.jar"/>
@@ -41,5 +40,6 @@
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/commons-lang-2.3.jar"/>
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/commons-collections-3.2.jar"/>
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/spring-context.jar"/>
+    <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/quartz-1.6.0.jar"/>
     <classpathentry kind="output" path="bin"/>
 </classpath>

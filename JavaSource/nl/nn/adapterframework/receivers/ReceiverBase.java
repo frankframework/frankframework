@@ -1,6 +1,11 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.44.2.2  2007-09-18 11:20:38  europe\M00035F
+ * Revision 1.44.2.3  2007-09-19 14:19:43  europe\M00035F
+ * * More objects from Spring Factory
+ * * Fixes for Spring JMS Container
+ * * Quartz Scheduler from Spring Factory
+ *
+ * Revision 1.44.2.2  2007/09/18 11:20:38  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
  * * Update a number of method-signatures to take a java.util.Map instead of HashMap
  * * Rewrite JmsListener to be instance of IPushingListener; use Spring JMS Container
  *
@@ -206,6 +211,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.apache.log4j.Logger;
 import org.springframework.core.task.TaskExecutor;
+import org.springframework.util.CustomizableThreadCreator;
 
 /**
  * This {@link IReceiver Receiver} may be used as a base-class for developing receivers.
@@ -277,7 +283,7 @@ import org.springframework.core.task.TaskExecutor;
  * @since 4.2
  */
 public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, IMessageHandler, IbisExceptionListener, HasSender, TracingEventNumbers {
-	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.44.2.2 $ $Date: 2007-09-18 11:20:38 $";
+	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.44.2.3 $ $Date: 2007-09-19 14:19:43 $";
 	protected Logger log = LogUtil.getLogger(this);
  
 	private String returnIfStopped="";
@@ -411,6 +417,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 		if (getListener() instanceof IPullingListener){
 			//Thread t = new Thread(this, getName() + (nameSuffix==null ? "" : nameSuffix));
 			//t.start();
+            ((CustomizableThreadCreator)taskExecutor).setThreadNamePrefix(getName());
             taskExecutor.execute(this);
 		}
 	}

@@ -56,6 +56,8 @@ public class IbisMain {
         startJmxServer();
         
         // Reading in Spring Context
+        log.info("* IBIS Startup: Creating Spring Bean Factory from file '"
+            + DFLT_SPRING_CONTEXT + "'");
         Resource rs = new ClassPathResource(DFLT_SPRING_CONTEXT);
         beanFactory = new XmlBeanFactory(rs);
         
@@ -90,7 +92,7 @@ public class IbisMain {
 
         if (autoStart.equalsIgnoreCase("TRUE")) {
             log.info("Starting configuration");
-            ibisManager.startAdapters();
+            ibisManager.startIbis();
         }
         log.info(
             "****" + "********** Configuration complete **************");
@@ -103,6 +105,7 @@ public class IbisMain {
         // It seems that no reference to the server is required anymore,
         // anywhere later? So no reference is returned from
         // this method.
+        log.info("* IBIS Startup: Attempting to start MBean server");
 		MBeanServer server=MBeanServerFactory.createMBeanServer();
 		try {
 		  ObjectInstance html = server.createMBean("com.sun.jdmk.comm.HtmlAdaptorServer", 

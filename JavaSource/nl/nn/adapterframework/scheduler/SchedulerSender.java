@@ -1,6 +1,11 @@
 /*
  * $Log: SchedulerSender.java,v $
- * Revision 1.3  2007-02-26 16:52:21  europe\L190409
+ * Revision 1.3.4.1  2007-09-19 14:19:42  europe\M00035F
+ * * More objects from Spring Factory
+ * * Fixes for Spring JMS Container
+ * * Quartz Scheduler from Spring Factory
+ *
+ * Revision 1.3  2007/02/26 16:52:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * startScheduler on open()
  *
  * Revision 1.2  2007/02/12 14:08:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -53,7 +58,8 @@ public class SchedulerSender extends SenderWithParametersBase {
 	private String cronExpressionPattern;
 	private String jobGroup;
 	private String jobNamePattern;
-	
+	private SchedulerHelper schedulerHelper;
+    
 	public void configure() throws ConfigurationException {
 		if (StringUtils.isEmpty(javaListener)) {
 			throw new ConfigurationException("Property [serviceName] is empty");
@@ -79,7 +85,7 @@ public class SchedulerSender extends SenderWithParametersBase {
 	public void open() throws SenderException {
 		super.open();
 		try {
-			SchedulerHelper.startScheduler();
+			schedulerHelper.startScheduler();
 		} catch (SchedulerException e) {
 			throw new SenderException("Could not start Scheduler", e);
 		}
@@ -119,9 +125,9 @@ public class SchedulerSender extends SenderWithParametersBase {
 		jobDetail.getJobDataMap().put(CORRELATIONID, correlationId);
 
 		if (StringUtils.isEmpty(jobGroup))
-			SchedulerHelper.scheduleJob(jobName, jobDetail, cronExpression, false);
+			schedulerHelper.scheduleJob(jobName, jobDetail, cronExpression, false);
 		else 
-			SchedulerHelper.scheduleJob(jobName, jobGroup, jobDetail, cronExpression, false);
+			schedulerHelper.scheduleJob(jobName, jobGroup, jobDetail, cronExpression, false);
 
 		if (log.isDebugEnabled()) {
 			log.debug("SchedulerSender ["+ getName() +"] has send job [" + jobName + "] to the scheduler");
@@ -143,5 +149,19 @@ public class SchedulerSender extends SenderWithParametersBase {
 		javaListener = string;
 	}
 
+
+    /**
+     * @return
+     */
+    public SchedulerHelper getSchedulerHelper() {
+        return schedulerHelper;
+    }
+
+    /**
+     * @param helper
+     */
+    public void setSchedulerHelper(SchedulerHelper helper) {
+        schedulerHelper = helper;
+    }
 
 }

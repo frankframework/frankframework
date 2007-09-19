@@ -17,6 +17,7 @@ import nl.nn.adapterframework.core.IAdapter;
 public interface IbisManager {
     Configuration getConfiguration();
     void handleAdapter(String action, String adapterName, String receiverName, String commandIssuedBy);
+    void startIbis();
     void startAdapters();
     void stopAdapters();
     void startAdapter(IAdapter adapter);

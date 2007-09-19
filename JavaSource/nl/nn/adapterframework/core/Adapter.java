@@ -1,6 +1,11 @@
 /*
  * $Log: Adapter.java,v $
- * Revision 1.31.2.1  2007-09-13 13:27:17  europe\M00035F
+ * Revision 1.31.2.2  2007-09-19 14:19:43  europe\M00035F
+ * * More objects from Spring Factory
+ * * Fixes for Spring JMS Container
+ * * Quartz Scheduler from Spring Factory
+ *
+ * Revision 1.31.2.1  2007/09/13 13:27:17  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
  * First commit of work to use Spring for creating objects
  *
  * Revision 1.31  2007/07/24 08:05:22  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -117,7 +122,9 @@ import nl.nn.adapterframework.util.StatisticsKeeperIterationHandler;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.log4j.Logger;
 import org.apache.log4j.NDC;
+import org.springframework.beans.factory.NamedBean;
 import org.springframework.core.task.TaskExecutor;
+import org.springframework.util.CustomizableThreadCreator;
 /**
  * The Adapter is the central manager in the IBIS Adapterframework, that has knowledge
  * and uses {@link IReceiver IReceivers} and a {@link PipeLine}.
@@ -163,8 +170,8 @@ import org.springframework.core.task.TaskExecutor;
  * 
  */
 
-public class Adapter implements IAdapter {
-	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.31.2.1 $ $Date: 2007-09-13 13:27:17 $";
+public class Adapter implements IAdapter, NamedBean {
+	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.31.2.2 $ $Date: 2007-09-19 14:19:43 $";
 	private Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -750,6 +757,7 @@ public class Adapter implements IAdapter {
 	 * @see Adapter#run
 	 */
 	public void startRunning() {
+        ((CustomizableThreadCreator)taskExecutor).setThreadNamePrefix(getName()+"-starting");
 		taskExecutor.execute(new Runnable() {
             public void run() {
                 try {
@@ -851,6 +859,7 @@ public class Adapter implements IAdapter {
 
             runState.setRunState(RunStateEnum.STOPPING);
         }
+        ((CustomizableThreadCreator)taskExecutor).setThreadNamePrefix(getName()+ "-stopping");
         taskExecutor.execute(new Runnable() {
             public void run() {
                 try {
@@ -983,6 +992,13 @@ public class Adapter implements IAdapter {
      */
     public void setTaskExecutor(TaskExecutor executor) {
         taskExecutor = executor;
+    }
+
+    /* (non-Javadoc)
+     * @see org.springframework.beans.factory.NamedBean#getBeanName()
+     */
+    public String getBeanName() {
+        return name;
     }
 
 }

@@ -1,6 +1,11 @@
 /*
  * $Log: SchedulerHelper.java,v $
- * Revision 1.3.4.1  2007-09-13 13:27:18  europe\M00035F
+ * Revision 1.3.4.2  2007-09-19 14:19:42  europe\M00035F
+ * * More objects from Spring Factory
+ * * Fixes for Spring JMS Container
+ * * Quartz Scheduler from Spring Factory
+ *
+ * Revision 1.3.4.1  2007/09/13 13:27:18  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
  * First commit of work to use Spring for creating objects
  *
  * Revision 1.3  2007/02/26 16:50:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -27,9 +32,7 @@ import org.quartz.CronTrigger;
 import org.quartz.JobDetail;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
-import org.quartz.SchedulerFactory;
 import org.quartz.Trigger;
-import org.quartz.impl.StdSchedulerFactory;
 
 /**
  * The SchedulerHelper encapsulates the quarz scheduler.
@@ -39,7 +42,9 @@ import org.quartz.impl.StdSchedulerFactory;
 public class SchedulerHelper {
 	protected static Logger log = LogUtil.getLogger(SchedulerHelper.class);
 	
-	public static void scheduleJob(IbisManager ibisManager, JobDef jobdef) throws Exception {
+    private Scheduler scheduler;
+    
+	public void scheduleJob(IbisManager ibisManager, JobDef jobdef) throws Exception {
 		JobDetail jobDetail = new JobDetail(jobdef.getName(), // job name
 			Scheduler.DEFAULT_GROUP, // job group
 			AdapterJob.class); // the java class to execute
@@ -56,11 +61,11 @@ public class SchedulerHelper {
 		scheduleJob(jobdef.getName(), jobDetail, jobdef.getCronExpression(), true);
 	}
 	
-	public static void scheduleJob(String jobName, JobDetail jobDetail, String cronExpression, boolean overwrite) throws SchedulerException, ParseException {
+	public void scheduleJob(String jobName, JobDetail jobDetail, String cronExpression, boolean overwrite) throws SchedulerException, ParseException {
 		scheduleJob(jobName, Scheduler.DEFAULT_GROUP, jobDetail, cronExpression, overwrite);
 	}
 	
-	public static void scheduleJob(String jobName, String jobGroup, JobDetail jobDetail, String cronExpression, boolean overwrite) throws SchedulerException, ParseException {
+	public void scheduleJob(String jobName, String jobGroup, JobDetail jobDetail, String cronExpression, boolean overwrite) throws SchedulerException, ParseException {
 		Scheduler sched = getScheduler();
 
 		// if the job already exists, remove it.
@@ -76,19 +81,19 @@ public class SchedulerHelper {
 		sched.scheduleJob(jobDetail, cronTrigger);
 	}
 	
-	public static Trigger getTrigger(String jobName) throws SchedulerException {
+	public Trigger getTrigger(String jobName) throws SchedulerException {
 		return getTrigger(jobName, Scheduler.DEFAULT_GROUP);
 	}
 
-	public static Trigger getTrigger(String jobName, String jobGroup) throws SchedulerException {
+	public Trigger getTrigger(String jobName, String jobGroup) throws SchedulerException {
 		return getScheduler().getTrigger(jobName, jobGroup);
 	}
 
-	public static JobDetail getJobForTrigger(String jobName) throws SchedulerException {
+	public JobDetail getJobForTrigger(String jobName) throws SchedulerException {
 		return getJobForTrigger(jobName, Scheduler.DEFAULT_GROUP);
 	}
 
-	public static JobDetail getJobForTrigger(String jobName, String jobGroup) throws SchedulerException {
+	public JobDetail getJobForTrigger(String jobName, String jobGroup) throws SchedulerException {
 		Scheduler sched = getScheduler();
 		
 		Trigger t = sched.getTrigger(jobName, jobGroup);
@@ -98,23 +103,25 @@ public class SchedulerHelper {
 		return sched.getJobDetail(name, group);
 	}
 	
-	public static void deleteTrigger(String jobName) throws SchedulerException {
+	public void deleteTrigger(String jobName) throws SchedulerException {
 		deleteTrigger(jobName, Scheduler.DEFAULT_GROUP);
 	}
 	
-	public static void deleteTrigger(String jobName, String jobGroup) throws SchedulerException {
+	public void deleteTrigger(String jobName, String jobGroup) throws SchedulerException {
 		getScheduler().unscheduleJob(jobName, jobGroup);
 	}
 	
-	public static Scheduler getScheduler() throws SchedulerException {
-		SchedulerFactory schedFact = new StdSchedulerFactory();
-		Scheduler sched = schedFact.getScheduler();
-		return sched;		
+	public Scheduler getScheduler() throws SchedulerException {
+		return scheduler;		
 	}
-
-	public static void startScheduler() throws SchedulerException {
-		Scheduler scheduler = SchedulerHelper.getScheduler();
-		if (scheduler.isPaused()) {
+    
+    public void setScheduler(Scheduler scheduler) {
+        this.scheduler = scheduler;
+    }
+    
+	public void startScheduler() throws SchedulerException {
+		Scheduler scheduler = getScheduler();
+		if (!scheduler.isStarted()) {
 			log.info("Starting Scheduler");
 			scheduler.start();
 		}

@@ -111,6 +111,16 @@
         scope="singleton">
     </bean>
     
+    <!-- Scheduler (Quartz) -->
+    <bean id="scheduler" class="org.springframework.scheduling.quartz.SchedulerFactoryBean"
+        autowire="byName">
+        <!-- Auto-wiring wires up bean named taskExecutor as threadpool implementation -->
+    </bean>
+    
+    <bean id="schedulerHelper" class="nl.nn.adapterframework.scheduler.SchedulerHelper"
+        autowire="byName">
+    </bean>
+    
     <!-- Beans created from Configuration.xml, but prototyped here for
          extra dependancies which cannot be created otherwise.
          Bean names are prefixed with 'proto-' so that autowiring by
@@ -140,6 +150,6 @@
     <bean name="proto-jmsContainer" class="org.springframework.jms.listener.DefaultMessageListenerContainer"
         autowire="byName" scope="prototype">
         <property name="autoStartup" value="false"/>
-        <property name="transactionManager" ref="txManager"/>
+        <!--<property name="transactionManager" ref="txManager"/>-->
     </bean>
 </beans>
