@@ -1,6 +1,9 @@
 /*
  * $Log: ConfigurationDigester.java,v $
- * Revision 1.15  2007-05-21 12:18:44  europe\L190409
+ * Revision 1.16  2007-09-19 13:06:00  europe\L190409
+ * split digest in url and string
+ *
+ * Revision 1.15  2007/05/21 12:18:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * add messageLog to attributeChecker-rules
  *
  * Revision 1.14  2007/05/11 09:37:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -56,6 +59,7 @@ import nl.nn.adapterframework.util.LogUtil;
 import org.apache.commons.lang.SystemUtils;
 import nl.nn.adapterframework.util.ClassPathEntityResolver;
 
+import java.io.IOException;
 import java.net.URL;
 
 /**
@@ -92,7 +96,7 @@ import java.net.URL;
  * @see Configuration
  */
 public class ConfigurationDigester {
-	public static final String version = "$RCSfile: ConfigurationDigester.java,v $ $Revision: 1.15 $ $Date: 2007-05-21 12:18:44 $";
+	public static final String version = "$RCSfile: ConfigurationDigester.java,v $ $Revision: 1.16 $ $Date: 2007-09-19 13:06:00 $";
     protected static Logger log = LogUtil.getLogger(ConfigurationDigester.class);
 
 	private static final String CONFIGURATION_FILE_DEFAULT  = "Configuration.xml";
@@ -136,6 +140,18 @@ public class ConfigurationDigester {
 	}
 	
 	public static void digestConfiguration(Object stackTop, URL digesterRulesURL, URL configurationFileURL) throws ConfigurationException {
+		String lineSeperator=SystemUtils.LINE_SEPARATOR;
+		if (null==lineSeperator) lineSeperator="\n";
+		String configString;
+		try {
+			configString = 	Misc.resourceToString(configurationFileURL, lineSeperator, false);
+		} catch (IOException e) {
+			throw new ConfigurationException(e);
+		}
+		digestConfiguration(stackTop, digesterRulesURL, configString, configurationFileURL.toExternalForm());
+	}
+	
+	public static void digestConfiguration(Object stackTop, URL digesterRulesURL, String configString, String configName) throws ConfigurationException {
 		
 		if (digesterRulesURL==null) {
 			digesterRulesURL = ClassUtils.getResourceURL(stackTop, DIGESTER_RULES_DEFAULT);
@@ -180,10 +196,7 @@ public class ConfigurationDigester {
 			digester.addRule("*/pipeline/exits/exit", attributeChecker);
 			digester.addRule("*/scheduler/job", attributeChecker);
 			// ensure that lines are seperated, usefulls when a parsing error occurs
-			String lineSeperator=SystemUtils.LINE_SEPARATOR;
-			if (null==lineSeperator) lineSeperator="\n";
-			String configString=Misc.resourceToString(configurationFileURL, lineSeperator, false);
-			configString=XmlUtils.identityTransform(configString);
+			configString = XmlUtils.identityTransform(configString);
 			log.debug(configString);
 			//Resolve any variables
 			String resolvedConfig=StringResolver.substVars(configString, AppConstants.getInstance());
@@ -195,7 +208,7 @@ public class ConfigurationDigester {
 
 		} catch (Throwable t) {
 			// wrap exception to be sure it gets rendered via the IbisException-renderer
-			ConfigurationException e = new ConfigurationException("error during unmarshalling configuration from file ["+configurationFileURL +
+			ConfigurationException e = new ConfigurationException("error during unmarshalling configuration from file ["+configName +
 			"] with digester-rules-file ["+digesterRulesURL+"]", t);
 			log.error(e);
 			throw (e);
