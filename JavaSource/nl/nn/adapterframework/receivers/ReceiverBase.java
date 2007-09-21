@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.44.2.4  2007-09-21 09:20:34  europe\M00035F
+ * Revision 1.44.2.5  2007-09-21 12:29:34  europe\M00035F
+ * Move threaded processing from ReceiverBase into new class, PullingListenerContainer, to get better seperation of concerns.
+ *
+ * Revision 1.44.2.4  2007/09/21 09:20:34  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
  * * Remove UserTransaction from Adapter
  * * Remove InProcessStorage; refactor a lot of code in Receiver
  *
@@ -199,10 +202,8 @@ import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.RunStateEnquiring;
 import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.RunStateManager;
-import nl.nn.adapterframework.util.Semaphore;
 import nl.nn.adapterframework.util.StatisticsKeeper;
 import nl.nn.adapterframework.util.TracingEventNumbers;
-import nl.nn.adapterframework.util.TracingUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
@@ -210,6 +211,7 @@ import org.apache.commons.lang.SystemUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.BeanFactory;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
@@ -287,14 +289,16 @@ import org.springframework.util.CustomizableThreadCreator;
  * @author     Gerrit van Brakel
  * @since 4.2
  */
-public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, IMessageHandler, IbisExceptionListener, HasSender, TracingEventNumbers {
+public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHandler, IbisExceptionListener, HasSender, TracingEventNumbers {
 	private final static TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
 	private final static TransactionDefinition TXREQUIRED = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED);
 	private final static TransactionDefinition TXSUPPORTS = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_SUPPORTS);
     
-    public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.44.2.4 $ $Date: 2007-09-21 09:20:34 $";
+    public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.44.2.5 $ $Date: 2007-09-21 12:29:34 $";
 	protected Logger log = LogUtil.getLogger(this);
- 
+    
+    private BeanFactory beanFactory;
+    
 	private String returnIfStopped="";
 	private String fileNameIfStopped = null;
 	private String replaceFrom = null;
@@ -318,9 +322,9 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 	// the number of threads that are activily polling for messages (concurrently, only for pulling listeners)
 	private int numThreadsPolling = 1;
    
-	private Counter threadsProcessing = new Counter(0);
-	private Counter threadsRunning = new Counter(0);
-	private Semaphore pollToken = null;
+	private PullingListenerContainer listenerContainer;
+    
+    private Counter threadsProcessing = new Counter(0);
 	        
 	// number of messages received
     private Counter numReceived = new Counter(0);
@@ -499,9 +503,9 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 					addThread("[" + i+"]");
 				}
 			} else {
-				addThread(null);
+				addThread("");
 			}
-		}
+        }
 	}
 
 	private void addThread(String nameSuffix) {
@@ -509,7 +513,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 			//Thread t = new Thread(this, getName() + (nameSuffix==null ? "" : nameSuffix));
 			//t.start();
             ((CustomizableThreadCreator)taskExecutor).setThreadNamePrefix(getName()+nameSuffix);
-            taskExecutor.execute(this);
+            taskExecutor.execute(listenerContainer);
 		}
 	}
 
@@ -577,9 +581,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 				pl.setExceptionListener(this);
 			}
 			if (getListener() instanceof IPullingListener) {
-				if (getNumThreadsPolling()>0 && getNumThreadsPolling()<getNumThreads()) {
-					pollToken = new Semaphore(getNumThreadsPolling());
-				}
+                setListenerContainer(createListenerContainer());
 			}
 			getListener().configure();
 			if (getListener() instanceof HasPhysicalDestination) {
@@ -736,145 +738,6 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 			runState.setRunState(RunStateEnum.STOPPED);
 		}
 	}
-
-	
-
-	/**
-	 * Starts the receiver. This method is called by the startRunning method.<br/>
-	 * Basically:
-	 * <ul>
-	 * <li> it opens the threads</li>
-	 * <li>it calls the getRawMessage method to get a message<li>
-	 * <li> it performs the onMessage method, resulting a PipeLineResult</li>
-	 * <li>it calls the afterMessageProcessed() method of the listener<li>
-	 * <li> it optionally sends the result using the sender</li>
-	 * </ul>
-	 */
-	public void run() {
-		threadsRunning.increase();
-		IPullingListener listener=null;
-		Map threadContext=null;
-		try {
-			listener = (IPullingListener)getListener();		
-			threadContext = listener.openThread();
-			if (threadContext==null) {
-				threadContext = new HashMap();
-			}
-	    
-			long startProcessingTimestamp;
-			long finishProcessingTimestamp = System.currentTimeMillis();
-	
-			runState.setRunState(RunStateEnum.STARTED);
-			while (getRunState().equals(RunStateEnum.STARTED)) {
-				boolean permissionToGo=true;
-				if (pollToken!=null) {
-					try {
-						permissionToGo=false;
-						pollToken.acquire();
-						permissionToGo=true;
-					} catch (Exception e) {
-						error("acquisition of polltoken interupted" ,e);
-						stopRunning();
-					}
-				}
-				Object rawMessage=null;
-                TransactionStatus txStatus = null;
-				try {
-					if (permissionToGo && getRunState().equals(RunStateEnum.STARTED)) {
-						try {
-                            if (isTransacted()) {
-                                txStatus = txManager.getTransaction(TXNEW);
-                            }
-							rawMessage = listener.getRawMessage(threadContext);
-							synchronized (listener) {
-								retryInterval=1;
-							}
-						} catch (Exception e) {
-							if (ONERROR_CONTINUE.equalsIgnoreCase(getOnError())) {
-								long currentInterval;
-								synchronized (listener) {
-									currentInterval=retryInterval;
-									retryInterval=retryInterval*2;
-									if (retryInterval>3600) {
-										retryInterval=3600;
-									}
-								}
-								error("caught Exception retrieving message, will continue retrieving messages in ["+currentInterval+"] seconds", e);
-								while (getRunState().equals(RunStateEnum.STARTED) && currentInterval-->0) {
-									try {
-										Thread.sleep(1000);
-									} catch (Exception e2) {
-										error("sleep interupted" ,e2);
-										stopRunning();
-									}
-								}
-							} else {
-								error("stopping receiver after exception in retrieving message",e);
-								stopRunning();
-							}
-						}
-					}
-				} finally {
-					if (pollToken!=null) {
-						pollToken.release();
-					}
-				}
-				if (rawMessage!=null) {
-
-					try {
-						TracingUtil.beforeEvent(this);
-
-						startProcessingTimestamp = System.currentTimeMillis();
-						try {
-							processRawMessage(listener,rawMessage,threadContext,finishProcessingTimestamp-startProcessingTimestamp);
-                            if (txStatus != null) {
-                                txManager.commit(txStatus);
-                            }
-						} catch (Exception e) {
-							TracingUtil.exceptionEvent(this);
-                            if (txStatus != null && !txStatus.isCompleted()) {
-                                txManager.rollback(txStatus);
-                            }
-							if (ONERROR_CONTINUE.equalsIgnoreCase(getOnError())) {
-								error("caught Exception processing message, will continue processing next message", e);
-							} else {
-								error("stopping receiver after exception in processing message",e);
-								stopRunning();
-							}
-						}
-						finishProcessingTimestamp = System.currentTimeMillis();
-					} finally {
-						TracingUtil.afterEvent(this);
-					}
-				} else {
-                    // No message received, so roll back the 'unused' transaction.
-                    if (txStatus != null && !txStatus.isCompleted()) {
-                        txManager.rollback(txStatus);
-                    }
-				}
-			}
-	
-		} catch (Throwable e) {
-			error("error occured in receiver [" + getName() + "]",e);
-		} finally {
-			if (listener!=null) {
-				try {
-					listener.closeThread(threadContext);
-				} catch (ListenerException e) {
-					error("Exception closing listener of Receiver ["+getName()+"]", e);
-				}
-			}
-			long stillRunning=threadsRunning.decrease();
-	
-			if (stillRunning>0) {
-				log.info("a thread of Receiver ["+getName()+"] exited, ["+stillRunning+"] are still running");
-				return;
-			}
-			log.info("the last thread of Receiver ["+getName()+"] exited, cleaning up");
-			closeAllResources();
-		}
-	}
-
 
 	protected void startProcessingMessage(long waitingDuration) {
 		synchronized (threadsProcessing) {
@@ -1090,9 +953,9 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 		}
 	}
 
-
-
-	
+    public void setRunState(RunStateEnum state) {
+        runState.setRunState(state);
+    }
 
 	public void waitForRunState(RunStateEnum requestedRunState) throws InterruptedException {
 		runState.waitForRunState(requestedRunState);
@@ -1108,8 +971,10 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 		return runState.getRunState();
 	}
 	
-	
-	
+    public boolean isInRunState(RunStateEnum someRunState) {
+        return runState.isInState(someRunState);
+    }
+    
 	protected synchronized StatisticsKeeper getProcessStatistics(int threadsProcessing) {
 		StatisticsKeeper result;
 		try {
@@ -1303,6 +1168,10 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 	public String getOnError() {
 		return onError;
 	}
+    
+    public boolean isOnErrorStop() {
+        return ONERROR_CONTINUE.equalsIgnoreCase(getOnError());
+    }
 	protected IAdapter getAdapter() {
 		return adapter;
 	}
@@ -1525,4 +1394,26 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
         return l;
     }
 
+    public BeanFactory getBeanFactory() {
+        return beanFactory;
+    }
+
+    public void setBeanFactory(BeanFactory beanFactory) {
+        this.beanFactory = beanFactory;
+    }
+
+    public PullingListenerContainer getListenerContainer() {
+        return listenerContainer;
+    }
+
+    public void setListenerContainer(PullingListenerContainer listenerContainer) {
+        this.listenerContainer = listenerContainer;
+    }
+
+    public PullingListenerContainer createListenerContainer() {
+        PullingListenerContainer plc = (PullingListenerContainer) beanFactory.getBean("listenerContainer");
+        plc.setReceiver(this);
+        plc.configure();
+        return plc;
+    }
 }

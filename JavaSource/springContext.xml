@@ -109,6 +109,10 @@
         autowire="byName" scope="prototype">
     </bean>
     
+    <bean name="listenerContainer" class="nl.nn.adapterframework.receivers.PullingListenerContainer"
+        autowire="byName" scope="prototype">
+    </bean>
+    
     <!-- Replace with whatever TaskExecutor implementation suits best
          Replace with Common/J based TaskExecutor once deploying on
          WebSphere 6.0 or higher. -->
