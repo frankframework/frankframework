@@ -1,6 +1,10 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.44.2.5  2007-09-21 12:29:34  europe\M00035F
+ * Revision 1.44.2.6  2007-09-21 13:23:34  europe\M00035F
+ * * Add method to ITransactionalStorage to check if original message ID can be found in it
+ * * Check for presence of original message id in ErrorStorage before processing, so it can be removed from queue if it has already once been recorded as unprocessable (but the TX in which it ran could no longer be committed).
+ *
+ * Revision 1.44.2.5  2007/09/21 12:29:34  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
  * Move threaded processing from ReceiverBase into new class, PullingListenerContainer, to get better seperation of concerns.
  *
  * Revision 1.44.2.4  2007/09/21 09:20:34  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
@@ -294,7 +298,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	private final static TransactionDefinition TXREQUIRED = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED);
 	private final static TransactionDefinition TXSUPPORTS = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_SUPPORTS);
     
-    public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.44.2.5 $ $Date: 2007-09-21 12:29:34 $";
+    public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.44.2.6 $ $Date: 2007-09-21 13:23:34 $";
 	protected Logger log = LogUtil.getLogger(this);
     
     private BeanFactory beanFactory;
@@ -855,7 +859,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 
 
 	/*
-	 * assumes message is read, and when transacted, transation is still open to be able to store it in InProcessStore
+	 * assumes message is read, and when transacted, transation is still open.
 	 */
 	private String processMessageInAdapter(IListener origin, Object rawMessage, String message, String messageId, String correlationId, Map threadContext, long waitingDuration) throws ListenerException {
 		String result=null;
@@ -863,6 +867,11 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		long startProcessingTimestamp = System.currentTimeMillis();
 		log.debug(getLogPrefix()+"received message with messageId ["+messageId+"] correlationId ["+correlationId+"]");
         
+        if (checkIfMessageInErrorStorage(messageId)) {
+            log.warn(getLogPrefix()+"received message with messageId [" +
+                    messageId + "] which is already stored in error storage; aborting processing");
+            return result;
+        }
         TransactionStatus txStatus = getTransactionForProcessing();
         
 		// update processing statistics
@@ -939,10 +948,13 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		return result;
 	}
 
+    public boolean checkIfMessageInErrorStorage(String messageId) throws ListenerException {
+        if (getErrorStorage() == null) {
+            return false;
+        }
+        return getErrorStorage().containsMessageId(messageId);
+    }
 
-  
-    
-	
 	public void exceptionThrown(INamedObject object, Throwable t) {
 		String msg = getLogPrefix()+"received exception ["+t.getClass().getName()+"] from ["+object.getName()+"]";
 		if (ONERROR_CONTINUE.equalsIgnoreCase(getOnError())) {

@@ -1,6 +1,10 @@
 /*
  * $Log: JmsMessageBrowser.java,v $
- * Revision 1.5  2005-12-20 16:59:26  europe\L190409
+ * Revision 1.5.4.1  2007-09-21 13:23:34  europe\M00035F
+ * * Add method to ITransactionalStorage to check if original message ID can be found in it
+ * * Check for presence of original message id in ErrorStorage before processing, so it can be removed from queue if it has already once been recorded as unprocessable (but the TX in which it ran could no longer be committed).
+ *
+ * Revision 1.5  2005/12/20 16:59:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * implemented support for connection-pooling
  *
  * Revision 1.4  2005/07/28 07:36:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -21,6 +25,9 @@ package nl.nn.adapterframework.jms;
 
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -43,7 +50,7 @@ import nl.nn.adapterframework.core.ListenerException;
  * @see nl.nn.adapterframework.webcontrol.action.BrowseQueue
  */
 public class JmsMessageBrowser extends JMSFacade implements IMessageBrowser {
-	public static final String version = "$RCSfile: JmsMessageBrowser.java,v $ $Revision: 1.5 $ $Date: 2005-12-20 16:59:26 $";
+	public static final String version = "$RCSfile: JmsMessageBrowser.java,v $ $Revision: 1.5.4.1 $ $Date: 2007-09-21 13:23:34 $";
 
 	private long timeOut = 3000;
 	private String selector=null;
@@ -129,14 +136,14 @@ public class JmsMessageBrowser extends JMSFacade implements IMessageBrowser {
 			closeSession(session);
 		}
 	}
-
-	public Object browseMessage(String messageId) throws ListenerException {
+    
+    protected Object browseMessage(Map selectors) throws ListenerException {
 		QueueSession session=null;
 		Object msg = null;
 		QueueBrowser queueBrowser=null;
 		try {
 			session = (QueueSession)createSession();
-			queueBrowser = session.createBrowser((Queue)getDestination(),getCombinedSelector(messageId));
+			queueBrowser = session.createBrowser((Queue)getDestination(),getCombinedSelector(selectors));
 			Enumeration msgenum = queueBrowser.getEnumeration();
 			if (msgenum.hasMoreElements()) {
 				msg=msgenum.nextElement();
@@ -154,8 +161,17 @@ public class JmsMessageBrowser extends JMSFacade implements IMessageBrowser {
 			}
 			closeSession(session);
 		}
+    }
+    
+    protected Object browseMessage(String selectorKey, String selectorValue) throws ListenerException {
+        Map selectorMap = new HashMap();
+        selectorMap.put(selectorKey, selectorValue);
+        return browseMessage(selectorMap);
+    }
+    
+	public Object browseMessage(String messageId) throws ListenerException {
+        return browseMessage("JMSMessageID", messageId);
 	}
-
 	
 	public void deleteMessage(String messageId) throws ListenerException {
 		Session session=null;
@@ -180,11 +196,26 @@ public class JmsMessageBrowser extends JMSFacade implements IMessageBrowser {
 	}
 
 	protected String getCombinedSelector(String messageId) {
-		String result = "JMSMessageID='" + messageId + "'";
+        Map selectorMap = new HashMap();
+        selectorMap.put("JMSMessageID", messageId);
+        return getCombinedSelector(selectorMap);
+	}
+
+	protected String getCombinedSelector(Map selectors) {
+        StringBuffer result = new StringBuffer();
+        for (Iterator it = selectors.entrySet().iterator(); it.hasNext();) {
+            Map.Entry entry = (Map.Entry)it.next();
+            if (result.length() > 0) {
+                result.append(" AND ");
+            }
+            result.append(entry.getKey()).append("='").
+                    append(entry.getValue()).append("'");
+        }
+
 		if (StringUtils.isNotEmpty(getSelector())) {
-			result += " AND "+getSelector();
+			result.append(" AND ").append(getSelector());
 		}
-		return result;
+		return result.toString();
 	}
 
 	public void setTimeOut(long newTimeOut) {

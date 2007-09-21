@@ -1,7 +1,8 @@
 /*
  * $Log: JdbcTransactionalStorage.java,v $
- * Revision 1.21  2007-09-10 11:18:26  europe\L190409
- * updated javadoc
+ * Revision 1.20.4.1  2007-09-21 13:23:34  europe\M00035F
+ * * Add method to ITransactionalStorage to check if original message ID can be found in it
+ * * Check for presence of original message id in ErrorStorage before processing, so it can be removed from queue if it has already once been recorded as unprocessable (but the TX in which it ran could no longer be committed).
  *
  * Revision 1.20  2007/06/12 11:21:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * adapted to new functionality
@@ -155,21 +156,12 @@ import org.apache.commons.lang.StringUtils;
  *  </pre>
  * If these objects do not exist, Ibis will try to create them if the attribute createTable="true".
  * 
- * <br/>
- * N.B. Note on using XA transactions:
- * If transactions are used, make sure that the database user can access the table SYS.DBA_PENDING_TRANSACTIONS.
- * If not, transactions present when the server goes down cannot be properly recovered, resulting in exceptions like:
- * <pre>
-   The error code was XAER_RMERR. The exception stack trace follows: javax.transaction.xa.XAException
-	at oracle.jdbc.xa.OracleXAResource.recover(OracleXAResource.java:508)
-   </pre>
- * 
  * @version Id
  * @author  Gerrit van Brakel
  * @since 	4.1
  */
 public class JdbcTransactionalStorage extends JdbcFacade implements ITransactionalStorage {
-	public static final String version = "$RCSfile: JdbcTransactionalStorage.java,v $ $Revision: 1.21 $ $Date: 2007-09-10 11:18:26 $";
+	public static final String version = "$RCSfile: JdbcTransactionalStorage.java,v $ $Revision: 1.20.4.1 $ $Date: 2007-09-21 13:23:34 $";
 	
 	// the following currently only for debug.... 
 	boolean checkIfTableExists=true;
@@ -206,7 +198,8 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	protected String selectKeyQuery;
 	protected String selectListQuery;
 	protected String selectDataQuery;
-
+    protected String checkMessageIdQuery;
+    
 	// the following for Oracle
 	private String sequenceName="seq_ibisstore";
 	protected String updateBlobQuery;		
@@ -283,7 +276,8 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 						  " ORDER BY "+getDateField();
 		selectDataQuery = "SELECT "+getMessageField()+
 						  " FROM "+getTableName()+ getWhereClause(getKeyField()+"=?");
-						  
+        checkMessageIdQuery = "SELECT " + getIdField() + " WHERE "+getIdField() + "=?";
+        
 		if (databaseType==DATABASE_ORACLE) {
 			insertQuery = "INSERT INTO "+getTableName()+" ("+
 							getKeyField()+","+
@@ -666,6 +660,37 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		return result;
 	}
 
+    public boolean containsMessageId(String originalMessageId) throws ListenerException {
+		Connection conn;
+		try {
+			conn = getConnection();
+		} catch (JdbcException e) {
+			throw new ListenerException(e);
+		}
+		try {
+			PreparedStatement stmt = conn.prepareStatement(checkMessageIdQuery);			
+			stmt.clearParameters();
+			stmt.setString(1,originalMessageId);
+			ResultSet rs =  stmt.executeQuery();
+
+			if (!rs.next()) {
+				return false;
+			}
+			
+			return true;
+			
+		} catch (Exception e) {
+			throw new ListenerException("cannot deserialize message",e);
+		} finally {
+			try {
+				conn.close();
+			} catch (SQLException e) {
+				log.error("error closing JdbcConnection", e);
+			}
+		}
+    }
+    
+    
 	public Object browseMessage(String messageId) throws ListenerException {
 		Connection conn;
 		try {
