@@ -2,7 +2,10 @@
  * Created on 11-sep-07
  *
  * $Log: AbstractSpringPoweredDigesterFactory.java,v $
- * Revision 1.1.2.4  2007-09-21 09:20:33  europe\M00035F
+ * Revision 1.1.2.5  2007-09-21 14:22:15  europe\M00035F
+ * Apply a number of fixes so that the framework starts again
+ *
+ * Revision 1.1.2.4  2007/09/21 09:20:33  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
  * * Remove UserTransaction from Adapter
  * * Remove InProcessStorage; refactor a lot of code in Receiver
  *
@@ -38,7 +41,7 @@ import org.xml.sax.Attributes;
  * properties for each instance. (See {@link #isPrototypesOnly()}.)
  * 
  * @author m00035f
- * $Id: AbstractSpringPoweredDigesterFactory.java,v 1.1.2.4 2007-09-21 09:20:33 europe\M00035F Exp $
+ * $Id: AbstractSpringPoweredDigesterFactory.java,v 1.1.2.5 2007-09-21 14:22:15 europe\M00035F Exp $
  * 
  */
 public abstract class AbstractSpringPoweredDigesterFactory
@@ -148,7 +151,7 @@ public abstract class AbstractSpringPoweredDigesterFactory
                         .autowireBeanProperties(
                             o, 
                             AutowireCapableBeanFactory.AUTOWIRE_BY_NAME,
-                            true);
+                            false);
                     o = ((AutowireCapableBeanFactory)factory).initializeBean(o, getBeanName());
                 } else if (o instanceof BeanFactoryAware) {
                     ((BeanFactoryAware)o).setBeanFactory(factory);

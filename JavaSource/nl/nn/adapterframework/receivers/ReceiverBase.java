@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.44.2.7  2007-09-21 13:48:59  europe\M00035F
+ * Revision 1.44.2.8  2007-09-21 14:22:15  europe\M00035F
+ * Apply a number of fixes so that the framework starts again
+ *
+ * Revision 1.44.2.7  2007/09/21 13:48:59  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
  * Enhancement to checking ErrorStorage for known bad messages: internal in-memory cache of bad messages which is checked always, even if there is no ErrorStorage for the receiver.
  * This should help to protect against poison-messages when a Receiver does not have an ErrorStorage.
  *
@@ -222,6 +225,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
@@ -299,12 +303,12 @@ import org.springframework.util.CustomizableThreadCreator;
  * @author     Gerrit van Brakel
  * @since 4.2
  */
-public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHandler, IbisExceptionListener, HasSender, TracingEventNumbers {
+public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHandler, IbisExceptionListener, HasSender, TracingEventNumbers, BeanFactoryAware {
 	private final static TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
 	private final static TransactionDefinition TXREQUIRED = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED);
 	private final static TransactionDefinition TXSUPPORTS = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_SUPPORTS);
     
-    public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.44.2.7 $ $Date: 2007-09-21 13:48:59 $";
+    public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.44.2.8 $ $Date: 2007-09-21 14:22:15 $";
 	protected Logger log = LogUtil.getLogger(this);
     
     private BeanFactory beanFactory;
