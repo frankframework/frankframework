@@ -1,6 +1,10 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.44.2.6  2007-09-21 13:23:34  europe\M00035F
+ * Revision 1.44.2.7  2007-09-21 13:48:59  europe\M00035F
+ * Enhancement to checking ErrorStorage for known bad messages: internal in-memory cache of bad messages which is checked always, even if there is no ErrorStorage for the receiver.
+ * This should help to protect against poison-messages when a Receiver does not have an ErrorStorage.
+ *
+ * Revision 1.44.2.6  2007/09/21 13:23:34  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
  * * Add method to ITransactionalStorage to check if original message ID can be found in it
  * * Check for presence of original message id in ErrorStorage before processing, so it can be removed from queue if it has already once been recorded as unprocessable (but the TX in which it ran could no longer be committed).
  *
@@ -174,6 +178,8 @@ import java.util.Date;
 import java.util.Map;
 import java.util.Iterator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map.Entry;
 import java.util.StringTokenizer;
 
 import javax.xml.transform.Transformer;
@@ -298,7 +304,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	private final static TransactionDefinition TXREQUIRED = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED);
 	private final static TransactionDefinition TXSUPPORTS = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_SUPPORTS);
     
-    public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.44.2.6 $ $Date: 2007-09-21 13:23:34 $";
+    public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.44.2.7 $ $Date: 2007-09-21 13:48:59 $";
 	protected Logger log = LogUtil.getLogger(this);
     
     private BeanFactory beanFactory;
@@ -366,7 +372,23 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
      * Map containing message-ids which are currently being processed.
      */
     private Map messageRetryCounters = new HashMap();
+    /**
+     * The cache for poison messages acts as a sort of poor-mans error
+     * storage and is always available, even if an error-storage is not.
+     * Thus messages might be lost if they cannot be put in the error
+     * storage, but unless the server crashes, a message that has been
+     * put in the poison-cache will not be reprocessed even if it's
+     * offered again.
+     */
+    private LinkedHashMap poisonMessageIdCache = new LinkedHashMap() {
 
+        protected boolean removeEldestEntry(Entry eldest) {
+            return size() > poisonMessageIdCacheSize;
+        }
+        
+    };
+    private int poisonMessageIdCacheSize = 100;
+    
     private PipeLineSession createProcessingContext(String correlationId, Map threadContext, String messageId) {
         PipeLineSession pipelineSession = new PipeLineSession();
         if (threadContext != null) {
@@ -385,6 +407,13 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
             }
         }
         return pipelineSession;
+    }
+    
+    private synchronized void cachePoisonMessageId(String messageId) {
+        poisonMessageIdCache.put(messageId, messageId);
+    }
+    private synchronized boolean isMessageIdInPoisonCache(String messageId) {
+        return poisonMessageIdCache.containsKey(messageId);
     }
     
     private long getAndIncrementMessageRetryCount(String messageId) {
@@ -493,6 +522,9 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 			if (getErrorSender()!=null) {
 				getErrorSender().open();
 			}
+            if (getErrorStorage()!=null) {
+                getErrorStorage().open();
+            }
 			if (getMessageLog()!=null) {
 				getMessageLog().open();
 			}
@@ -766,7 +798,8 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	private void moveInProcessToError(String originalMessageId, String correlationId, String message, Date receivedDate, String comments, Serializable rawMessage) {
 	
 		log.info("receiver ["+getName()+"] moves message id ["+originalMessageId+"] correlationId ["+correlationId+"] to errorSender/errorStorage");
-		ISender errorSender = getErrorSender();
+		cachePoisonMessageId(originalMessageId);
+        ISender errorSender = getErrorSender();
 		ITransactionalStorage errorStorage = getErrorStorage();
 		if (errorSender==null && errorStorage==null) {
 			log.warn("["+getName()+"] has no errorSender or errorStorage, message with id [" +
@@ -949,6 +982,9 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	}
 
     public boolean checkIfMessageInErrorStorage(String messageId) throws ListenerException {
+        if (isMessageIdInPoisonCache(messageId)) {
+            return true;
+        }
         if (getErrorStorage() == null) {
             return false;
         }
@@ -1427,5 +1463,13 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
         plc.setReceiver(this);
         plc.configure();
         return plc;
+    }
+
+    public int getPoisonMessageIdCacheSize() {
+        return poisonMessageIdCacheSize;
+    }
+
+    public void setPoisonMessageIdCacheSize(int poisonMessageIdCacheSize) {
+        this.poisonMessageIdCacheSize = poisonMessageIdCacheSize;
     }
 }
