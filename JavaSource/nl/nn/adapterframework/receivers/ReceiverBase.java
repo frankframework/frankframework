@@ -1,6 +1,10 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.44.2.3  2007-09-19 14:19:43  europe\M00035F
+ * Revision 1.44.2.4  2007-09-21 09:20:34  europe\M00035F
+ * * Remove UserTransaction from Adapter
+ * * Remove InProcessStorage; refactor a lot of code in Receiver
+ *
+ * Revision 1.44.2.3  2007/09/19 14:19:43  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
  * * More objects from Spring Factory
  * * Fixes for Spring JMS Container
  * * Quartz Scheduler from Spring Factory
@@ -87,7 +91,7 @@
  * introduced RunStateEnquiries
  *
  * Revision 1.20  2005/10/26 08:52:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * allow for transacted="true" without inProcessStorage, (ohne Gewähr!)
+ * allow for transacted="true" without inProcessStorage, (ohne Gewï¿½hr!)
  *
  * Revision 1.19  2005/10/17 11:29:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fixed nullpointerexception in startRunning
@@ -165,8 +169,6 @@ import java.util.Iterator;
 import java.util.HashMap;
 import java.util.StringTokenizer;
 
-import javax.transaction.Status;
-import javax.transaction.UserTransaction;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -189,11 +191,9 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TransactionException;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Counter;
 import nl.nn.adapterframework.util.DomBuilderException;
-import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.RunStateEnquiring;
@@ -211,6 +211,11 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.apache.log4j.Logger;
 import org.springframework.core.task.TaskExecutor;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionException;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.util.CustomizableThreadCreator;
 
 /**
@@ -283,7 +288,11 @@ import org.springframework.util.CustomizableThreadCreator;
  * @since 4.2
  */
 public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, IMessageHandler, IbisExceptionListener, HasSender, TracingEventNumbers {
-	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.44.2.3 $ $Date: 2007-09-19 14:19:43 $";
+	private final static TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+	private final static TransactionDefinition TXREQUIRED = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED);
+	private final static TransactionDefinition TXSUPPORTS = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_SUPPORTS);
+    
+    public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.44.2.4 $ $Date: 2007-09-21 09:20:34 $";
 	protected Logger log = LogUtil.getLogger(this);
  
 	private String returnIfStopped="";
@@ -322,14 +331,12 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
     private IAdapter adapter;
 
 	private IListener listener;
-    private ITransactionalStorage inProcessStorage=null;
     private ISender errorSender=null;
 	private ITransactionalStorage errorStorage=null;
 	private ISender sender=null; // answer-sender
 	private ITransactionalStorage messageLog=null;
 	
 	private int maxRetries=3;
-	private Counter retryCount = new Counter(0);
     
     private boolean transacted=false;
  
@@ -340,15 +347,107 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 
 	int retryInterval=1;
     
+    private PlatformTransactionManager txManager;
+    
     /**
      * The thread-pool for spawning threads, injected by Spring
      */
     private TaskExecutor taskExecutor;
     
+    /**
+     * Map containing message-ids which are currently being processed.
+     */
+    private Map messageRetryCounters = new HashMap();
+
+    private PipeLineSession createProcessingContext(String correlationId, Map threadContext, String messageId) {
+        PipeLineSession pipelineSession = new PipeLineSession();
+        if (threadContext != null) {
+            pipelineSession.putAll(threadContext);
+            if (log.isDebugEnabled()) {
+                String contextDump = "PipeLineSession variables for messageId [" + messageId + "] correlationId [" + correlationId + "]:";
+                for (Iterator it = pipelineSession.keySet().iterator(); it.hasNext();) {
+                    String key = (String) it.next();
+                    Object value = pipelineSession.get(key);
+                    if (key.equals("messageText")) {
+                        value = "(... see elsewhere ...)";
+                    }
+                    contextDump += " " + key + "=[" + String.valueOf(value) + "]";
+                }
+                log.debug(contextDump);
+            }
+        }
+        return pipelineSession;
+    }
+    
+    private long getAndIncrementMessageRetryCount(String messageId) {
+        Counter retries;
+        synchronized (messageRetryCounters) {
+            retries = (Counter) messageRetryCounters.get(messageId);
+            if (retries == null) {
+                retries = new Counter(0);
+                messageRetryCounters.put(messageId, retries);
+                return 0L;
+            }
+        }
+        retries.increase();
+        return retries.getValue();
+    }
+
+    private TransactionStatus getTransactionForProcessing() throws ListenerException {
+        TransactionStatus txStatus;
+
+        // Latch on to existing TX, or start new one if needed
+        // We prefer _not_ do to any transaction-management on this,
+        // but we want to enquire on the status of the TX.
+        try {
+            if (isTransacted()) {
+                txStatus = txManager.getTransaction(TXREQUIRED);
+            } else {
+                txStatus = txManager.getTransaction(TXSUPPORTS);
+            }
+            if (txStatus.isNewTransaction()) {
+                log.debug("Receiver [" + getName() + "] started transaction as no one was yet present");
+            }
+        } catch (TransactionException e) {
+            throw new ListenerException("[" + getName() + "] Exception obtaining Spring transaction", e);
+        }
+
+        return txStatus;
+    }
+
+    private void putSessionKeysIntoThreadContext(Map threadContext, PipeLineSession pipelineSession) {
+        if (StringUtils.isNotEmpty(getReturnedSessionKeys()) && threadContext != null) {
+            if (log.isDebugEnabled()) {
+                log.debug("setting returned session keys [" + getReturnedSessionKeys() + "]");
+            }
+            StringTokenizer st = new StringTokenizer(getReturnedSessionKeys(), " ,;");
+            while (st.hasMoreTokens()) {
+                String key = st.nextToken();
+                Object value = pipelineSession.get(key);
+                if (log.isDebugEnabled()) {
+                    log.debug("returning session key [" + key + "] value [" + value + "]");
+                }
+                threadContext.put(key, value);
+            }
+        }
+    }
+    
+    private long removeMessageRetryCount(String messageId) {
+        synchronized (messageRetryCounters) {
+            Counter retries = (Counter) messageRetryCounters.get(messageId);
+            if (retries == null) {
+                return 0;
+            } else {
+                messageRetryCounters.remove(messageId);
+                return retries.getValue();
+            }
+        }
+    }
+    
 	protected String getLogPrefix() {
 		return "Receiver ["+getName()+"] "; 
 	}	
-
+    
 	/** 
 	 * sends an informational message to the log and to the messagekeeper of the adapter
 	 */
@@ -386,20 +485,12 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 			if (getErrorSender()!=null) {
 				getErrorSender().open();
 			}
-			if (getInProcessStorage()!=null) {
-				getInProcessStorage().open();
-			}
 			if (getMessageLog()!=null) {
 				getMessageLog().open();
 			}
-			if (isTransacted()) {
-				getAdapter().getUserTransaction();
-			}
 		} catch (SenderException e) {
 			throw new ListenerException(e);
-		} catch (TransactionException e) {
-			throw new ListenerException(e);
-		}
+        }
 		getListener().open();
 		if (getListener() instanceof IPullingListener){
 			// start all threads
@@ -417,7 +508,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 		if (getListener() instanceof IPullingListener){
 			//Thread t = new Thread(this, getName() + (nameSuffix==null ? "" : nameSuffix));
 			//t.start();
-            ((CustomizableThreadCreator)taskExecutor).setThreadNamePrefix(getName());
+            ((CustomizableThreadCreator)taskExecutor).setThreadNamePrefix(getName()+nameSuffix);
             taskExecutor.execute(this);
 		}
 	}
@@ -443,12 +534,9 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 			if (getErrorSender()!=null) {
 				getErrorSender().close();
 			}
-			if (getInProcessStorage()!=null) {
-				getInProcessStorage().close();
-			}
-			if (getErrorStorage()!=null && getErrorStorage()!=getInProcessStorage()) {
-				getInProcessStorage().close();
-			}
+            if (getErrorStorage()!=null) {
+                getErrorStorage().close();
+            }
 			if (getMessageLog()!=null) {
 				getMessageLog().close();
 			}
@@ -467,16 +555,12 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 		if (listener!=null && StringUtils.isEmpty(listener.getName())) {
 			listener.setName("listener of ["+getName()+"]");
 		}
-		ITransactionalStorage inProcess = getInProcessStorage();
-		if (inProcess != null) {
-			inProcess.setName("inProcessStorage of ["+getName()+"]");
-		}
 		ISender errorSender = getErrorSender();
 		if (errorSender != null) {
 			errorSender.setName("errorSender of ["+getName()+"]");
 		}
 		ITransactionalStorage errorStorage = getErrorStorage();
-		if (errorStorage != null && errorStorage != inProcess) {
+		if (errorStorage != null) {
 			errorStorage.setName("errorStorage of ["+getName()+"]");
 		}
 	}
@@ -515,13 +599,6 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 					info("receiver ["+getName()+"] has answer-sender on "+((HasPhysicalDestination)sender).getPhysicalDestinationName());
 				}
 			}
-			ITransactionalStorage inProcessStorage = getInProcessStorage();
-			if (inProcessStorage!=null) {
-				inProcessStorage.configure();
-				if (inProcessStorage instanceof HasPhysicalDestination) {
-					info("Receiver ["+getName()+"] has inProcessStorage in "+((HasPhysicalDestination)inProcessStorage).getPhysicalDestinationName());
-				}
-			}
 			ISender errorSender = getErrorSender();
 			if (errorSender!=null) {
 				errorSender.configure();
@@ -530,7 +607,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 				}
 			}
 			ITransactionalStorage errorStorage = getErrorStorage();
-			if (errorStorage!=null && errorStorage != getInProcessStorage()) {
+			if (errorStorage!=null) {
 				errorStorage.configure();
 				if (errorStorage instanceof HasPhysicalDestination) {
 					info("Receiver ["+getName()+"] has errorStorage to "+((HasPhysicalDestination)errorStorage).getPhysicalDestinationName());
@@ -547,14 +624,6 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 //				if (!(getListener() instanceof IXAEnabled && ((IXAEnabled)getListener()).isTransacted())) {
 //					warn("Receiver ["+getName()+"] sets transacted=true, but listener not. Transactional integrity is not guaranteed"); 
 //				}
-				if (inProcessStorage==null && getListener() instanceof IPullingListener) {
-//					throw new ConfigurationException("Receiver ["+getName()+"] sets transacted=true, but has no inProcessStorage.");
-					warn("Receiver ["+getName()+"] sets transacted=true, but has no inProcessStorage. Transactional integrity is not guaranteed");
-//				} else {
-//					if (!(inProcessStorage instanceof IXAEnabled && ((IXAEnabled)inProcessStorage).isTransacted())) {
-//						warn("Receiver ["+getName()+"] sets transacted=true, but inProcessStorage not. Transactional integrity is not guaranteed"); 
-//					}
-				}
 				
 				if (errorSender==null && errorStorage==null) {
 					warn("Receiver ["+getName()+"] sets transacted=true, but has no errorSender or errorStorage. Messages processed with errors will be lost");
@@ -565,10 +634,6 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 //					if (errorStorage!=null && !(errorStorage instanceof IXAEnabled && ((IXAEnabled)errorStorage).isTransacted())) {
 //						warn("Receiver ["+getName()+"] sets transacted=true, but errorStorage is not. Transactional integrity is not guaranteed"); 
 //					}
-					if (errorStorage==inProcessStorage) {
-						info("Receiver ["+getName()+"] has errorStorage in inProcessStorage, setting inProcessStorage's type to 'errorStorage'");
-						errorStorage.setType("E"); 
-					}
 				}
 			} 
 
@@ -713,10 +778,14 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 					}
 				}
 				Object rawMessage=null;
+                TransactionStatus txStatus = null;
 				try {
 					if (permissionToGo && getRunState().equals(RunStateEnum.STARTED)) {
 						try {
-							rawMessage = getRawMessage(threadContext);
+                            if (isTransacted()) {
+                                txStatus = txManager.getTransaction(TXNEW);
+                            }
+							rawMessage = listener.getRawMessage(threadContext);
 							synchronized (listener) {
 								retryInterval=1;
 							}
@@ -758,8 +827,14 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 						startProcessingTimestamp = System.currentTimeMillis();
 						try {
 							processRawMessage(listener,rawMessage,threadContext,finishProcessingTimestamp-startProcessingTimestamp);
+                            if (txStatus != null) {
+                                txManager.commit(txStatus);
+                            }
 						} catch (Exception e) {
 							TracingUtil.exceptionEvent(this);
+                            if (txStatus != null && !txStatus.isCompleted()) {
+                                txManager.rollback(txStatus);
+                            }
 							if (ONERROR_CONTINUE.equalsIgnoreCase(getOnError())) {
 								error("caught Exception processing message, will continue processing next message", e);
 							} else {
@@ -771,7 +846,12 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 					} finally {
 						TracingUtil.afterEvent(this);
 					}
-				} 
+				} else {
+                    // No message received, so roll back the 'unused' transaction.
+                    if (txStatus != null && !txStatus.isCompleted()) {
+                        txManager.rollback(txStatus);
+                    }
+				}
 			}
 	
 		} catch (Throwable e) {
@@ -816,190 +896,41 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 		log.debug("receiver ["+getName()+"] finishes processing message");
 	}
 
-	public Object getRawMessage(Map threadContext) throws ListenerException {
-		IPullingListener listener = (IPullingListener)getListener();
-
-		if (isTransacted()) {
-			Object rawMessage;
-			// TODO: For the pulling listeners, implement the Spring tx things
-			UserTransaction utx = null;
+	private void moveInProcessToError(String originalMessageId, String correlationId, String message, Date receivedDate, String comments, Serializable rawMessage) {
 	
-			try {
-				utx = getAdapter().getUserTransaction();
-				utx.begin();
-			
-			} catch (Exception e) {
-				throw new ListenerException("["+getName()+"] Exception preparing to read input message", e);
-				// no need to send message on errorSender, did not even try to read message
-			}
-			try {
-				rawMessage = listener.getRawMessage(threadContext);
-				if (rawMessage==null) {
-					try {
-						utx.rollback();
-					} catch (Exception e) {
-						log.warn("["+getName()+"] Exception while rolling back transaction after timeout on retrieving message", e);
-					}
-					return null;
-				}
-			} catch (Exception e) {
-				try {
-					utx.rollback();
-				} catch (Exception rbe) {
-					log.error("["+getName()+"] Exception while rolling back transaction after catching exception", rbe);
-				}
-				throw new ListenerException("["+getName()+"] Exception retrieving message under transaction control",e);
-				// no need to send message on errorSender, message will remain on input channel due to rollback
-			}
-			return rawMessage;
-		} else {
-			return listener.getRawMessage(threadContext);
-		}
-	}
-
-
-	/*
-	 * Store message from inProcessStore (if present), then commit reception of message.
-	 * State upon return:
-	 *   OK, result non null: transaction committed, message inProcessStore.
-	 *   OK, result null: transaction committed, no inProcessStore configured or message not serializable.
-	 *   Exception: message Rolled Back to input.
-	 */
-	private String prepareToProcessMessageTransacted1(UserTransaction utx, String originalMessageId, String correlationId, Object rawMessage) throws ListenerException {
-		log.info("receiver ["+getName()+"] moves message with originalMessageId ["+originalMessageId+"] correlationId ["+correlationId+"] to inProcess");
-		String newMessageId=null;
-		try {
-			if (getInProcessStorage() == null) {
-				log.warn(getLogPrefix()+"has no inProcessStorage, cannot store message before processing. Will commit read of message, and start a new transaction");
-			} else {
-				if (rawMessage instanceof Serializable) {
-					//TODO: received date preciezer doen
-					newMessageId = getInProcessStorage().storeMessage(originalMessageId,correlationId,new Date(),"in process",(Serializable)rawMessage);
-					log.debug("["+getName()+"] committing transfer of message with messageId ["+originalMessageId+"] to inProcessStorage, newMessageId ["+newMessageId+"]");
-				} else {
-					log.warn("["+getName()+"] received message of type ["+rawMessage.getClass().getName()+"] is not serializable, cannot be stored in inProcessStorage; will only commit its reception");
-				}
-			}
-			utx.commit();
-			retryCount.clear();
-			return newMessageId;
-		} catch (Throwable t) {
-			log.error("["+getName()+"] Exception transfering message with messageId ["+originalMessageId+"] to inProcessStorage, original message: ["+rawMessage+"]", t);
-			try {
-				utx.rollback();
-			} catch (Exception rbe) {
-				log.error("["+getName()+"] Exception while rolling back transaction for message with messageId ["+originalMessageId+"] after catching exception", rbe);
-			}
-			long retries=retryCount.increase();
-			if (retries>getMaxRetries()) {
-				log.warn("["+getName()+"] stopping receiver as message cannot be stored in inProcessStorage, tried ["+retries+"] times");
-				stopRunning();
-			} else {
-				log.info("["+getName()+"] waiting for message to reappear, retryCount=["+retries+"]");
-			}
-			throw new ListenerException("["+getName()+"] Exception retrieving/storing message with messageId ["+originalMessageId+"] under transaction control", t);
-			// no need to send message on errorSender, message will remain on input channel due to rollback
-		}
-	}
-
-
-	/*
-	 * Start new transaction, remove message from inProcessStore (if present)
-	 * State upon return:
-	 *   new transaction started, ready to process message, message deleted from inProcess as part of transaction.
-	 *   Exception: idem, but exception occurred. Message needs to be transferred to errorStorage;
-	 */
-	private void prepareToProcessMessageTransacted2(String newMessageId, UserTransaction utx, String originalMessageId, String correlationId) throws ListenerException {
-		log.info("receiver ["+getName()+"] starts new transaction, and removes message with originalMessageId ["+originalMessageId+"] correlationId ["+correlationId+"] from inProcess");
-		try {
-			utx.begin();
-			if (newMessageId==null) {
-				log.info("receiver ["+getName()+"] cannot remove message with originalMessageId ["+originalMessageId+"] correlationId ["+correlationId+"] from inProcess, newMessageId=null, (message not serializable, or inProcessStorage does not exist)");
-			} else {
-				log.debug("["+getName()+"] deleting message ["+newMessageId+"] correlationId ["+correlationId+"] from inProcessStorage as part of message processing transaction");
-				getInProcessStorage().deleteMessage(newMessageId);
-			}
-		} catch (Exception e) {
-			throw new ListenerException("["+getName()+"] Exception in preparation of transacted processing of message ["+newMessageId+"] correlationId ["+correlationId+"]",e);
-		}
-	}
-
-
-	private void finishTransactedProcessingOfMessage(UserTransaction utx, String inProcessMessageId, String originalMessageId, String correlationId, String message, Date receivedDate, String comments, Object rawMessage) {
-		try {
-			if (utx.getStatus()==Status.STATUS_ACTIVE){
-				try {
-					log.info("receiver [" + getName() + "] got active transaction from pipeline, committing transaction ["+utx+"] for messageid ["+inProcessMessageId+"]");
-								
-					utx.commit();
-				} catch (Exception e) {
-					log.error("receiver [" + getName() + "] exception committing transaction", e);
-					if (rawMessage instanceof Serializable) {
-						moveInProcessToError(utx, inProcessMessageId, originalMessageId, correlationId, message, receivedDate, "exception committing transaction: "+ e.getMessage(), (Serializable)rawMessage);
-					} else {
-						log.error("receiver [" + getName() + "] message is not serializable, cannot store in errorStorage ["+rawMessage+"]");
-					}
-					if (ONERROR_CLOSE.equalsIgnoreCase(getOnError())) {
-						log.info("receiver [" + getName() + "] closing after exception in committing transaction");
-						stopRunning();
-					}
-				}
-			} else {
-				log.warn("receiver [" + getName() + "] got transaction with state  ["+JtaUtil.displayTransactionStatus(utx)+"] from pipeline, rolling back transaction ["+utx+"] for messageid ["+inProcessMessageId+"]");
-				try {
-					utx.rollback();
-				} catch (Exception e) {
-					log.error("receiver [" + getName() + "] exception rolling back transaction", e);
-				}
-				if (rawMessage instanceof Serializable) {
-					moveInProcessToError(utx, inProcessMessageId, originalMessageId, correlationId,message, receivedDate, comments, (Serializable)rawMessage);
-				} else {
-					log.error("receiver [" + getName() + "] message is not serializable, cannot store in errorStorage ["+rawMessage+"]");
-				}
-			}
-	
-		} catch (Throwable t) {
-			log.error("["+getName()+"] Exception in finishTransactedProcessingOfMessage", t);
-			try {
-				utx.rollback();
-			} catch (Exception rbe) {
-				log.error("["+getName()+"] Exception while rolling back transaction after catching exception", rbe);
-			}
-		}
-	}
-
-	private void moveInProcessToError(UserTransaction utx, String inProcessMessageId, String originalMessageId, String correlationId, String message, Date receivedDate, String comments, Serializable rawMessage) {
-	
-		log.info("receiver ["+getName()+"] moves message id ["+originalMessageId+"] correlationId ["+correlationId+"] from inProcess ["+inProcessMessageId+"] to errorSender/errorStorage");
+		log.info("receiver ["+getName()+"] moves message id ["+originalMessageId+"] correlationId ["+correlationId+"] to errorSender/errorStorage");
 		ISender errorSender = getErrorSender();
 		ITransactionalStorage errorStorage = getErrorStorage();
 		if (errorSender==null && errorStorage==null) {
-			log.warn("["+getName()+"] has no errorSender or errorStorage, message with id ["+inProcessMessageId+"] will remain in inProcessStorage");
+			log.warn("["+getName()+"] has no errorSender or errorStorage, message with id [" +
+                originalMessageId + "] will be lost");
 			return;
 		}
-		
+		TransactionStatus txStatus = null;
 		try {
-			utx.begin();
+            txStatus = txManager.getTransaction(TXNEW);
 		} catch (Exception e) {
-			log.error("["+getName()+"] Exception preparing to move input message to error sender", e);
+			log.error("["+getName()+"] Exception preparing to move input message with id [" +
+                originalMessageId + "] to error sender", e);
 			// no use trying again to send message on errorSender, will cause same exception!
 			return;
 		}
 		try {
-			getInProcessStorage().deleteMessage(inProcessMessageId);
 			if (errorSender!=null) {
 				errorSender.sendMessage(correlationId, message);
 			} 
 			if (errorStorage!=null) {
 				errorStorage.storeMessage(originalMessageId, correlationId, receivedDate, comments, rawMessage);
 			} 
-			utx.commit();
+			txManager.commit(txStatus);
 		} catch (Exception e) {
-			log.error("["+getName()+"] Exception moving message with inprocess id ["+inProcessMessageId+"] correlationId ["+correlationId+"] to error sender, original message: ["+message+"]",e);
+			log.error("["+getName()+"] Exception moving message with id ["+originalMessageId+"] correlationId ["+correlationId+"] to error sender, original message: ["+message+"]",e);
 			try {
-				utx.rollback();
+				if (!txStatus.isCompleted()) {
+                    txManager.rollback(txStatus);
+				}
 			} catch (Exception rbe) {
-				log.error("["+getName()+"] Exception while rolling back transaction for message  with inprocess id ["+inProcessMessageId+"] correlationId ["+correlationId+"], original message: ["+message+"]", rbe);
+				log.error("["+getName()+"] Exception while rolling back transaction for message  with id ["+originalMessageId+"] correlationId ["+correlationId+"], original message: ["+message+"]", rbe);
 			}
 		}
 	}
@@ -1024,19 +955,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 		if (getRunState() == RunStateEnum.STOPPED || getRunState() == RunStateEnum.STOPPING)
 			return getReturnIfStopped();
 			
-		UserTransaction utx = null;
-		if (isTransacted()) {
-			try {
-				utx = adapter.getUserTransaction();
-				if (!adapter.inTransaction()) {
-					log.debug("Receiver ["+getName()+"] starts transaction as no one is yet present");
-					utx.begin();
-				}
-			} catch (Exception e) {
-				throw new ListenerException("["+getName()+"] Exception obtaining usertransaction", e);
-			}
-		}
-		return processMessageInAdapter(utx, origin, message, message, null, correlationId, context, waitingTime);
+		return processMessageInAdapter(origin, message, message, null, correlationId, context, waitingTime);
 	}
 
 
@@ -1056,31 +975,11 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 	 * Assumes that a transation has been started where necessary
 	 */
 	public void processRawMessage(IListener origin, Object rawMessage, Map threadContext, long waitingDuration) throws ListenerException {
-		UserTransaction utx = null;
-		
-		if (isTransacted()) {
-			try {
-				utx = adapter.getUserTransaction();
-				if (!adapter.inTransaction()) {
-					log.debug("Receiver ["+getName()+"] starts transaction as no one is yet present");
-					utx.begin();
-				}
-			} catch (Exception e) {
-				throw new ListenerException("["+getName()+"] Exception obtaining usertransaction", e);
-			}
-			if (rawMessage==null) {
-				try {
-					utx.rollback();
-				} catch (Exception e) {
-					log.warn("["+getName()+"] Exception while rolling back transaction after timeout on retrieving message", e);
-				}
-				return;
-			}
-		}
-		if (rawMessage==null) {
+        if (rawMessage==null) {
+            log.debug("Receiver [" + getName() +
+                    "] received null message, returning directly");
 			return;
 		}		
-		
 		if (threadContext==null) {
 			threadContext = new HashMap();
 		}
@@ -1088,23 +987,27 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 		String message = origin.getStringFromRawMessage(rawMessage, threadContext);
 		String correlationId = origin.getIdFromRawMessage(rawMessage, threadContext);
 		String messageId = (String)threadContext.get("id");
-		processMessageInAdapter(utx, origin, rawMessage, message, messageId, correlationId, threadContext, waitingDuration);
+		processMessageInAdapter(origin, rawMessage, message, messageId, correlationId, threadContext, waitingDuration);
 	}
 
 
 	/*
 	 * assumes message is read, and when transacted, transation is still open to be able to store it in InProcessStore
 	 */
-	private String processMessageInAdapter(UserTransaction utx, IListener origin, Object rawMessage, String message, String messageId, String correlationId, Map threadContext, long waitingDuration) throws ListenerException {
+	private String processMessageInAdapter(IListener origin, Object rawMessage, String message, String messageId, String correlationId, Map threadContext, long waitingDuration) throws ListenerException {
 		String result=null;
 		PipeLineResult pipeLineResult=null;
 		long startProcessingTimestamp = System.currentTimeMillis();
 		log.debug(getLogPrefix()+"received message with messageId ["+messageId+"] correlationId ["+correlationId+"]");
-
+        
+        TransactionStatus txStatus = getTransactionForProcessing();
+        
 		// update processing statistics
 		// count in processing statistics includes messages that are rolled back to input
 		startProcessingMessage(waitingDuration);
 		
+        String errorMessage="";
+        boolean messageInError = false;
 		try {
 			if (StringUtils.isEmpty(correlationId)) {
 				correlationId=getName()+"-"+Misc.createSimpleUUID();
@@ -1115,103 +1018,54 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 				messageId = correlationId;
 			}
 			
-			String inProcessMessageId=null;
-			if (isTransacted()) {
-				// store message in inProcessStorage, and commit transaction.
-				inProcessMessageId = prepareToProcessMessageTransacted1(utx,messageId,correlationId,rawMessage);
-				// If an Exception is thrown, the message is already rolled back to the input.
-			}
-			// from now on the message is really received, it cannot be rolled back to the input anymore
 			numReceived.increase();
-			
-			String errorMessage="";
+            // Note: errorMessage is used to pass value from catch-clause to finally-clause!
+            PipeLineSession pipelineSession = createProcessingContext(correlationId, threadContext, messageId);
+            try {
+                // TODO: What about Ibis42 compat mode?
+                if (isIbis42compatibility()) {
+                    pipeLineResult = adapter.processMessage(correlationId, message, pipelineSession);
+                    result=pipeLineResult.getResult();
+                    errorMessage = result;
+                    if (pipeLineResult.getState().equals(adapter.getErrorState())) {
+                        messageInError = true;
+                    }
+                } else {
+                    // TODO: Find the right catch-clause where we decide about
+                    // retrying or swallowing and pushing to error-storage
+                    // Right now we make the decision before pushing a response
+                    // back which might be too early.
+                    try {
+                        if (getMessageLog()!=null) {
+                            getMessageLog().storeMessage(messageId, correlationId, new Date(),"log",message);
+                        }
+                        pipeLineResult = adapter.processMessageWithExceptions(correlationId, message, pipelineSession);
+                        result=pipeLineResult.getResult();
+                        errorMessage = "exitState ["+pipeLineResult.getState()+"], result ["+result+"]";
+                    } catch (Throwable t) {
+                        errorMessage = t.getMessage();
+                        messageInError = true;
+                        ListenerException l = wrapExceptionAsListenerException(t);
+                        throw l;
+                    }
+                }
+            } finally {
+                putSessionKeysIntoThreadContext(threadContext, pipelineSession);
+            }
+            if (getSender()!=null) {
+                String sendMsg = sendResultToSender(correlationId, result);
+                if (sendMsg != null) {
+                    errorMessage = sendMsg;
+                }
+            }
+		} finally {
+            if (messageInError) {
+                retryOrErrorStorage(rawMessage, startProcessingTimestamp, txStatus, errorMessage, message, messageId, correlationId);
+            }
 			try {
-				if (isTransacted()) {
-					// start new transaction, and remove message from inProcessStorage
-					prepareToProcessMessageTransacted2(inProcessMessageId,utx,messageId,correlationId);
-				}
-				PipeLineSession pipelineSession = new PipeLineSession();
-				if (threadContext!=null) {
-					pipelineSession.putAll(threadContext);
-					if (log.isDebugEnabled()) {
-						String contextDump = "PipeLineSession variables for messageId ["+messageId+"] correlationId ["+correlationId+"]:";
-						for (Iterator it=pipelineSession.keySet().iterator(); it.hasNext();) {
-							String key = (String)it.next();
-							Object value = pipelineSession.get(key);
-							if (key.equals("messageText")) {
-								value = "(... see elsewhere ...)";
-							}
-							contextDump+=" "+key+"=["+(value==null? "null": value.toString())+"]";
-						}
-						log.debug(contextDump);
-					}
-				}
-				try {
-					if (isIbis42compatibility()) {
-						pipeLineResult = adapter.processMessage(correlationId, message, pipelineSession);
-						result=pipeLineResult.getResult();
-						errorMessage = result;
-					} else {
-						try {
-							if (getMessageLog()!=null) {
-								getMessageLog().storeMessage(messageId, correlationId, new Date(),"log",message);
-							}
-							pipeLineResult = adapter.processMessageWithExceptions(correlationId, message, pipelineSession);
-							result=pipeLineResult.getResult();
-							errorMessage = "exitState ["+pipeLineResult.getState()+"], result ["+result+"]";
-						} catch (Throwable t) {
-							if (isTransacted()) {
-								try {
-									adapter.getUserTransaction().setRollbackOnly();
-								} catch (Throwable t2) {
-									log.error("caught exception trying to invalidate transaction", t);
-								}
-							}
-							ListenerException l;
-							if (t instanceof ListenerException) {
-								l = (ListenerException)t;
-							} else {
-								l = new ListenerException(t);
-							}
-							// disabled the following logging, as it is already done in the Pipeline
-							//String msg = "receiver [" + getName() + "] caught exception in message processing";
-							//error(msg, l);
-							errorMessage = l.getMessage();
-							throw l;
-						}
-					}
-				} finally {
-					if (StringUtils.isNotEmpty(getReturnedSessionKeys()) && threadContext!=null) {
-						if (log.isDebugEnabled()) log.debug("setting returned session keys ["+getReturnedSessionKeys()+"]");
-						StringTokenizer st = new StringTokenizer(getReturnedSessionKeys()," ,;");
-						while (st.hasMoreTokens()) {
-							String key=st.nextToken();
-							Object value=pipelineSession.get(key);
-							if (log.isDebugEnabled()) log.debug("returning session key ["+key+"] value ["+value+"]");
-							threadContext.put(key,value);
-						}
-					}
-				}
-				try {
-					if (getSender()!=null) {
-						getSender().sendMessage(correlationId,result);
-					}
-				} catch (Exception e) {
-					String msg = "receiver [" + getName() + "] caught exception in message post processing";
-					error(msg, e);
-					errorMessage = msg+": "+e.getMessage();
-					if (ONERROR_CLOSE.equalsIgnoreCase(getOnError())) {
-						log.info("receiver [" + getName() + "] closing after exception in post processing");
-						stopRunning();
-					}
-				}
-			} finally {
-				if (isTransacted()) {
-					finishTransactedProcessingOfMessage(utx,inProcessMessageId,messageId,correlationId,message, new Date(startProcessingTimestamp), errorMessage, (Serializable)rawMessage);
-				}
-			}
-		} finally {	
-			try {
+                // TODO: Should this be done in a finally, unconditionally?
+                // Perhaps better to have seperate methods for correct processing,
+                // and cleanup after an error?
 				origin.afterMessageProcessed(pipeLineResult,rawMessage, threadContext);
 			} finally {
 				long finishProcessingTimestamp = System.currentTimeMillis();
@@ -1346,26 +1200,12 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 		}
 	}
 	/**
-	 * Returns the inProcessStorage.
-	 * @return ITransactionalStorage
-	 */
-	public ITransactionalStorage getInProcessStorage() {
-		return inProcessStorage;
-	}
-
-	/**
 	 * Sets the inProcessStorage.
 	 * @param inProcessStorage The inProcessStorage to set
+     * @deprecated
 	 */
 	protected void setInProcessStorage(ITransactionalStorage inProcessStorage) {
-		if (inProcessStorage.isActive()) {
-			this.inProcessStorage = inProcessStorage;
-			inProcessStorage.setName("inProcessStorage of ["+getName()+"]");
-			if (StringUtils.isEmpty(inProcessStorage.getSlotId())) {
-				inProcessStorage.setSlotId(getName());
-			}
-			inProcessStorage.setType("I");
-		}
+        log.warn("<*> In-Process Storage is not used anymore. Please remove from configuration. <*>");
 	}
 
 	/**
@@ -1379,9 +1219,6 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 	public ITransactionalStorage getErrorStorage() {
 		if (errorStorage!=null) { 
 			return errorStorage;
-		}
-		if (errorSender==null) {
-			return inProcessStorage;
 		}
 		return null;
 	}
@@ -1623,6 +1460,69 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
      */
     public void setTaskExecutor(TaskExecutor executor) {
         taskExecutor = executor;
+    }
+
+    /**
+     * @return
+     */
+    public PlatformTransactionManager getTxManager() {
+        return txManager;
+    }
+
+    /**
+     * @param manager
+     */
+    public void setTxManager(PlatformTransactionManager manager) {
+        txManager = manager;
+    }
+
+    private void retryOrErrorStorage(Object rawMessage, long startProcessingTimestamp, TransactionStatus txStatus, String errorMessage, String message, String messageId, String correlationId) {
+
+        long retryCount = getAndIncrementMessageRetryCount(messageId);
+
+        // If not yet exceeded the max retry count,
+        // mark TX as rollback-only and throw an
+        // exception
+        if (retryCount < maxRetries) {
+            txStatus.setRollbackOnly();
+        } else {
+            // Max retries exceeded; message to be moved
+            // to error location (OR LOST!)
+            removeMessageRetryCount(messageId);
+            if (rawMessage instanceof Serializable) {
+                moveInProcessToError(messageId, correlationId, message, new Date(startProcessingTimestamp), errorMessage, (Serializable) rawMessage);
+            } else {
+                log.error("receiver [" + getName() + "] message is not serializable, cannot store in errorStorage [" + rawMessage + "]");
+            }
+        }
+    }
+
+    private String sendResultToSender(String correlationId, String result) {
+        String errorMessage = null;
+        try {
+            if (getSender() != null) {
+                getSender().sendMessage(correlationId, result);
+            }
+        } catch (Exception e) {
+            String msg = "receiver [" + getName() + "] caught exception in message post processing";
+            error(msg, e);
+            errorMessage = msg + ": " + e.getMessage();
+            if (ONERROR_CLOSE.equalsIgnoreCase(getOnError())) {
+                log.info("receiver [" + getName() + "] closing after exception in post processing");
+                stopRunning();
+            }
+        }
+        return errorMessage;
+    }
+
+    private ListenerException wrapExceptionAsListenerException(Throwable t) {
+        ListenerException l;
+        if (t instanceof ListenerException) {
+            l = (ListenerException) t;
+        } else {
+            l = new ListenerException(t);
+        }
+        return l;
     }
 
 }

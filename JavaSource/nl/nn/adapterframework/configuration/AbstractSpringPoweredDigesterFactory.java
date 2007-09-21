@@ -1,8 +1,11 @@
 /*
  * Created on 11-sep-07
  *
- * To change the template for this generated file go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * $Log: AbstractSpringPoweredDigesterFactory.java,v $
+ * Revision 1.1.2.4  2007-09-21 09:20:33  europe\M00035F
+ * * Remove UserTransaction from Adapter
+ * * Remove InProcessStorage; refactor a lot of code in Receiver
+ *
  */
 package nl.nn.adapterframework.configuration;
 
@@ -35,7 +38,8 @@ import org.xml.sax.Attributes;
  * properties for each instance. (See {@link #isPrototypesOnly()}.)
  * 
  * @author m00035f
- *
+ * $Id: AbstractSpringPoweredDigesterFactory.java,v 1.1.2.4 2007-09-21 09:20:33 europe\M00035F Exp $
+ * 
  */
 public abstract class AbstractSpringPoweredDigesterFactory
     extends AbstractObjectCreationFactory
@@ -100,9 +104,11 @@ public abstract class AbstractSpringPoweredDigesterFactory
      * <li>If the Spring context contains no beans of type 'className', then
      * a new instance of this class is created without accessing the
      * Spring factory.<br/>
+     * The Spring BeanFactory will then be invoked to attempt auto-wiring
+     * beans by name and initialization via any BeanFactory - callback methods.
      * If the created class implements interface 
-     * {@link org.springframework.beans.factory.BeanFactoryAware} however,
-     * the Spring factory will be passed as a property so that it can
+     * {@link org.springframework.beans.factory.BeanFactoryAware},
+     * the Spring factory will be made available as a property so that it can
      * be accessed directly from the bean.<br/>
      * (NB:Objects created by the Spring Factory will also have a pointer to
      * the creating BeanFactory when they implement this interface.)</li>

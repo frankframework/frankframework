@@ -1,6 +1,10 @@
 /*
  * $Log: Adapter.java,v $
- * Revision 1.31.2.2  2007-09-19 14:19:43  europe\M00035F
+ * Revision 1.31.2.3  2007-09-21 09:20:34  europe\M00035F
+ * * Remove UserTransaction from Adapter
+ * * Remove InProcessStorage; refactor a lot of code in Receiver
+ *
+ * Revision 1.31.2.2  2007/09/19 14:19:43  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
  * * More objects from Spring Factory
  * * Fixes for Spring JMS Container
  * * Quartz Scheduler from Spring Factory
@@ -103,15 +107,11 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.Vector;
 
-import javax.naming.NamingException;
-import javax.transaction.SystemException;
-import javax.transaction.UserTransaction;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.errormessageformatters.ErrorMessageFormatter;
 import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.util.DateUtils;
-import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper;
 import nl.nn.adapterframework.util.RunStateEnum;
@@ -171,7 +171,7 @@ import org.springframework.util.CustomizableThreadCreator;
  */
 
 public class Adapter implements IAdapter, NamedBean {
-	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.31.2.2 $ $Date: 2007-09-19 14:19:43 $";
+	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.31.2.3 $ $Date: 2007-09-21 09:20:34 $";
 	private Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -454,38 +454,6 @@ public class Adapter implements IAdapter, NamedBean {
 		return name;
 	}
 
-	public UserTransaction getUserTransaction() throws TransactionException {
-
-		try {
-			return JtaUtil.getUserTransaction();
-		} catch (NamingException e) {
-			throw new TransactionException(e);
-		}
-//		try {
-//			return JtaUtil.getUserTransaction(getContext(), getUserTransactionUrl());
-//		} catch (Exception e1) {
-//			try {
-//				return JtaUtil.getUserTransaction(getContext(), userTransactionUrlAlternative);
-//			} catch (Exception e2) {
-//				log.warn("could not obtain UserTransaction from alternative  [" + userTransactionUrlAlternative + "]", e2);
-//				throw new TransactionException(
-//					"[" + name + "] could not obtain UserTransaction from URL [" + getUserTransactionUrl() + "] or URL [" + userTransactionUrlAlternative + "]",
-//					e1);
-//			}
-//		}
-	}
-
-
-	public boolean inTransaction() throws TransactionException {
-		try {
-			return JtaUtil.inTransaction(getUserTransaction());
-		}
-		catch (SystemException e) {
-			throw new TransactionException("[" + name + "] could not obtain transaction status", e);
-		}
-	}
-
-
 	/**
 	 * The number of messages for which processing ended unsuccessfully.
 	 */
@@ -730,7 +698,7 @@ public class Adapter implements IAdapter, NamedBean {
 	/**
 	* state to put in PipeLineResult when a PipeRunException occurs.
 	*/
-	public java.lang.String getErrorState() {
+	public String getErrorState() {
 		return errorState;
 	}
 	/**

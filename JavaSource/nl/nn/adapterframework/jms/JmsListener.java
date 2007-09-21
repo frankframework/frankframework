@@ -1,8 +1,11 @@
 /*
  * Created on 18-sep-07
+ * 
+ * $Log: JmsListener.java,v $
+ * Revision 1.25.4.2  2007-09-21 09:20:33  europe\M00035F
+ * * Remove UserTransaction from Adapter
+ * * Remove InProcessStorage; refactor a lot of code in Receiver
  *
- * To change the template for this generated file go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
  */
 package nl.nn.adapterframework.jms;
 
@@ -26,12 +29,14 @@ import nl.nn.adapterframework.core.PipeLineResult;
 
 /**
  * @author m00035f
- *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * 
+ * JMSListener re-implemented as a pushing listener rather than a pulling listener.
+ * The JMS messages have to come in from an external source: an MDB or a Spring
+ * message container.
+ * 
  */
 public class JmsListener extends JMSFacade implements IPushingListener {
-    public static final String version="$RCSfile: JmsListener.java,v $ $Revision: 1.25.4.1 $ $Date: 2007-09-18 11:20:38 $";
+    public static final String version="$RCSfile: JmsListener.java,v $ $Revision: 1.25.4.2 $ $Date: 2007-09-21 09:20:33 $";
 
     private final static String THREAD_CONTEXT_SESSION_KEY="session";
 
@@ -95,6 +100,16 @@ public class JmsListener extends JMSFacade implements IPushingListener {
         jmsConfigurator.closeJmsReceiver();
     }
     
+    /**
+     * Fill in thread-context with things needed by the JMSListener code.
+     * This includes a Session. The Session object can be passed in
+     * externally.
+     * 
+     * TODO: What if Session passed in is <code>null</code>?
+     * 
+     * @param threadContext
+     * @param session
+     */
     public void populateThreadContext(Map threadContext, Session session) {
         threadContext.put(THREAD_CONTEXT_SESSION_KEY, session);
     }

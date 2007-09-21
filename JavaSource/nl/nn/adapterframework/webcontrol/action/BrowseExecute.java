@@ -1,6 +1,10 @@
 /*
  * $Log: BrowseExecute.java,v $
- * Revision 1.3  2005-09-29 14:57:11  europe\L190409
+ * Revision 1.3.4.1  2007-09-21 09:20:33  europe\M00035F
+ * * Remove UserTransaction from Adapter
+ * * Remove InProcessStorage; refactor a lot of code in Receiver
+ *
+ * Revision 1.3  2005/09/29 14:57:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * split transactional storage browser in browse-only and processing-options
  *
  * Revision 1.2  2005/07/28 07:44:52  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -30,16 +34,17 @@ import org.apache.struts.action.ActionError;
  * @since   4.3
  */
 public class BrowseExecute extends Browse {
-	public static final String version="$RCSfile: BrowseExecute.java,v $ $Revision: 1.3 $ $Date: 2005-09-29 14:57:11 $";
+	public static final String version="$RCSfile: BrowseExecute.java,v $ $Revision: 1.3.4.1 $ $Date: 2007-09-21 09:20:33 $";
 
 	protected void performAction(Adapter adapter, ReceiverBase receiver, String action, IMessageBrowser mb, String messageId) {
 		if ("deletemessage".equalsIgnoreCase(action)) {
 			if (StringUtils.isNotEmpty(messageId)) {
 				try {
-					UserTransaction utx = adapter.getUserTransaction();
-					utx.begin();
+                    // TODO: Redo tx management (where exactly do we get the txManager from?)
+//					UserTransaction utx = adapter.getUserTransaction();
+//					utx.begin();
 					mb.deleteMessage(messageId);
-					utx.commit();
+//					utx.commit();
 				} catch (Throwable e) {
 					log.error(e);
 					errors.add("",
@@ -53,22 +58,23 @@ public class BrowseExecute extends Browse {
 		if ("resendmessage".equalsIgnoreCase(action)) {
 			if (StringUtils.isNotEmpty(messageId)) {
 				try {
-					UserTransaction utx = adapter.getUserTransaction();
-					utx.begin();
+                    // TODO: Redo tx management (where exactly do we get the txManager from?)
+//					UserTransaction utx = adapter.getUserTransaction();
+//					utx.begin();
 					Object msg = mb.getMessage(messageId);
 					if (msg==null) {
 						errors.add("",
 							new ActionError(
 								"errors.generic",
 								"did not retrieve message" ));
-						utx.rollback();
+//						utx.rollback();
 					} else {
 						if (adapter.getRunState()!=RunStateEnum.STARTED) {
 							errors.add("",
 								new ActionError(
 									"errors.generic",
 									"message not processed: adapter not open" ));
-							utx.rollback();
+//							utx.rollback();
 						} else {
 							receiver.processRawMessage(receiver.getListener(),msg,null,-1);
 						}

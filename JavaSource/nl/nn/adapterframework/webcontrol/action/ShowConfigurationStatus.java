@@ -1,6 +1,10 @@
 /*
  * $Log: ShowConfigurationStatus.java,v $
- * Revision 1.8  2007-07-19 15:18:07  europe\L190409
+ * Revision 1.8.2.1  2007-09-21 09:20:33  europe\M00035F
+ * * Remove UserTransaction from Adapter
+ * * Remove InProcessStorage; refactor a lot of code in Receiver
+ *
+ * Revision 1.8  2007/07/19 15:18:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * list Adapters in order of configuration
  *
  * Revision 1.7  2007/06/12 11:25:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -48,7 +52,7 @@ import org.apache.struts.action.ActionMapping;
  * @version Id
  */
 public final class ShowConfigurationStatus extends ActionBase {
-	public static final String version = "$RCSfile: ShowConfigurationStatus.java,v $ $Revision: 1.8 $ $Date: 2007-07-19 15:18:07 $";
+	public static final String version = "$RCSfile: ShowConfigurationStatus.java,v $ $Revision: 1.8.2.1 $ $Date: 2007-09-21 09:20:33 $";
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 
@@ -95,7 +99,7 @@ public final class ShowConfigurationStatus extends ActionBase {
 					if (receiver instanceof ReceiverBase ) {
 						ReceiverBase rb = (ReceiverBase) receiver;
 						receiverXML.addAttribute("listenerClass", ClassUtils.nameOf(rb.getListener()));
-						receiverXML.addAttribute("hasInprocessStorage", ""+(rb.getInProcessStorage()!=null));
+						receiverXML.addAttribute("hasInprocessStorage", "false");
 						receiverXML.addAttribute("hasErrorStorage", ""+(rb.getErrorStorage()!=null));
 						receiverXML.addAttribute("hasMessageLog", ""+(rb.getMessageLog()!=null));
 					}
