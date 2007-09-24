@@ -1,6 +1,9 @@
 /*
  * $Log: Browse.java,v $
- * Revision 1.3  2007-06-14 09:45:00  europe\L190409
+ * Revision 1.4  2007-09-24 13:05:02  europe\L190409
+ * ability to download file, using correct filename
+ *
+ * Revision 1.3  2007/06/14 09:45:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * strip slash from context path
  *
  * Revision 1.2  2007/05/29 11:13:25  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -42,7 +45,7 @@ import org.apache.struts.action.ActionMapping;
  * @since   4.4
  */
 public class Browse extends ActionBase {
-	public static final String version="$RCSfile: Browse.java,v $ $Revision: 1.3 $ $Date: 2007-06-14 09:45:00 $";
+	public static final String version="$RCSfile: Browse.java,v $ $Revision: 1.4 $ $Date: 2007-09-24 13:05:02 $";
 
 	protected void performAction(Adapter adapter, ReceiverBase receiver, String action, IMessageBrowser mb, String messageId) {
 		// allow for extensions
@@ -97,7 +100,7 @@ public class Browse extends ActionBase {
 					msg=(String)rawmsg;
 				}
 				String type = request.getParameter("type");
-				FileViewerServlet.showReaderContents(new StringReader(msg),type,response, request.getContextPath().substring(1),"message ["+messageId+"]");
+				FileViewerServlet.showReaderContents(new StringReader(msg),"msg"+messageId,type,response, request.getContextPath().substring(1),"message ["+messageId+"]");
 			} else {
 				IMessageBrowsingIterator mbi=mb.getIterator();
 				try {
