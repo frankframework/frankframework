@@ -1,6 +1,9 @@
 /*
  * $Log: JMSFacade.java,v $
- * Revision 1.26  2007-05-23 09:14:49  europe\L190409
+ * Revision 1.27  2007-09-24 13:03:24  europe\L190409
+ * removed unused code
+ *
+ * Revision 1.26  2007/05/23 09:14:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * use alternate connectionfactoryname, if appropriate one not set
  *
  * Revision 1.25  2006/10/13 08:14:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -115,7 +118,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version="$RCSfile: JMSFacade.java,v $ $Revision: 1.26 $ $Date: 2007-05-23 09:14:49 $";
+	public static final String version="$RCSfile: JMSFacade.java,v $ $Revision: 1.27 $ $Date: 2007-09-24 13:03:24 $";
 
 	public static final String MODE_PERSISTENT="PERSISTENT";
 	public static final String MODE_NON_PERSISTENT="NON_PERSISTENT";
@@ -198,72 +201,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 		return "["+getName()+"] ";
 	}
 
-    
-	/**
-	 *  Gets the queueConnectionFactory 
-	 *
-	 * @return                                   The queueConnectionFactory value
-	 * @exception  javax.naming.NamingException  Description of the Exception
-	 */
-	
-	
-/*	
-	private QueueConnectionFactory getQueueConnectionFactory()
-		throws NamingException {
-		if (null == queueConnectionFactory) {
-			String qcfName = isTransacted() ? getQueueConnectionFactoryNameXA() : getQueueConnectionFactoryName();
-			if (StringUtils.isEmpty(qcfName)) {
-				throw new NamingException("no queueConnectionFactoryName specified");
-			}
-			log.debug("["+name+"] searching for queueConnectionFactory [" + qcfName + "]");
-			queueConnectionFactory = (QueueConnectionFactory) getContext().lookup(qcfName);
-			if (queueConnectionFactory==null) {
-				throw new NamingException("cannot get queueConnectionFactory from ["+qcfName+"]");
-			}
-			log.info("["+name+"] queueConnectionFactory [" + qcfName + "] found: [" + queueConnectionFactory + "]");
-		}
-		return queueConnectionFactory;
-	}
-	private TopicConnectionFactory getTopicConnectionFactory()
-		throws NamingException, JMSException {
-		if (null == topicConnectionFactory) {
-			String tcfName = isTransacted() ? getTopicConnectionFactoryNameXA() : getTopicConnectionFactoryName();
-			if (StringUtils.isEmpty(tcfName)) {
-				throw new NamingException("no topicConnectionFactoryName specified");
-			}
-			log.debug("["+name+"] searching for topicConnectionFactory [" + tcfName + "]");
-			topicConnectionFactory = (TopicConnectionFactory) getContext().lookup(tcfName);
-			if (topicConnectionFactory==null) {
-				throw new NamingException("cannot get TopicConnectionFactory from ["+tcfName+"]");
-			}
-			log.info("["+name+"] topicConnectionFactory [" + tcfName + "] found: [" + topicConnectionFactory + "]");
-		}
-		return topicConnectionFactory;
-	}
-*/
-	/**
-	 * Returns a connection for a topic or a queue
-	 */
-/*	
-	protected Connection getConnection() throws NamingException, JMSException {
-		boolean initialized = false;
-		synchronized(this) {
-			initialized = (connection != null); 
-			if (! initialized) {
-				log.debug("["+getName()+"] creating connection, useTopicFunctions=["+useTopicFunctions+"], isTransacted=["+isTransacted()+"]");
-				if (useTopicFunctions)
-					connection = getTopicConnectionFactory().createTopicConnection();
-				else
-					connection = getQueueConnectionFactory().createQueueConnection();
-				log.debug("connection created " + connection);
-			}
-		}
-		if (! initialized)
-			connection.start();
-		return connection;
-	}
-*/
-	private String getConnectionFactoryName() throws JmsException {
+ 	private String getConnectionFactoryName() throws JmsException {
 		String result;
 		if (useTopicFunctions) {
 			result = isTransacted() ? getTopicConnectionFactoryNameXA() : getTopicConnectionFactoryName();
@@ -313,24 +251,6 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 
    
 	/**
-	 *  Gets the queueSession 
-	 *
-	 * @see javax.jms.QueueSession
-	 * @return                                   The queueSession value
-	 * @exception  javax.naming.NamingException
-	 * @exception  javax.jms.JMSException
-	 */
-/*
-	private QueueSession createQueueSession(QueueConnection connection)
-		throws NamingException, JMSException {
-		return connection.createQueueSession(isJmsTransacted(), getAckMode());
-	}
-	private TopicSession createTopicSession(TopicConnection connection)
-		throws NamingException, JMSException {
-		return connection.createTopicSession(isJmsTransacted(), getAckMode());
-	}
-*/	
-	/**
 	 * Returns a session on the connection for a topic or a queue
 	 */
 	protected Session createSession() throws JmsException {
@@ -342,11 +262,6 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 			}
 			throw new JmsException(e);
 		}		
-/*		if (useTopicFunctions)
-			return createTopicSession((TopicConnection)getConnection());
-		else
-			return createQueueSession((QueueConnection)getConnection());
-*/			
 	}
 
 	protected void closeSession(Session session) {
@@ -1002,20 +917,5 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 		return transacted;
 	}
 
-	/**
-	 * Create a browser session
-	 */
-/*	
-	public QueueSession getQueueBrowserSession()
-		   throws javax.naming.NamingException, JMSException {
-		   	QueueSession browserSession=null;
-		      	this.setTransacted(false);
-		      	this.setAckMode(Session.AUTO_ACKNOWLEDGE);
-				   	 browserSession = createQueueSession((QueueConnection)getConnection());
-			   log.debug(
-				   "["+name+"] got browserSession");
-		   return browserSession;
-   }
-*/
 
 }
