@@ -1,6 +1,9 @@
 /*
  * $Log: StreamTransformerPipe.java,v $
- * Revision 1.8  2007-09-19 13:03:36  europe\L190409
+ * Revision 1.9  2007-09-24 13:02:28  europe\L190409
+ * improved debug logging
+ *
+ * Revision 1.8  2007/09/19 13:03:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added block managing code
  *
  * Revision 1.7  2007/09/17 08:21:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -71,7 +74,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class StreamTransformerPipe extends FixedForwardPipe {
-	public static final String version = "$RCSfile: StreamTransformerPipe.java,v $  $Revision: 1.8 $ $Date: 2007-09-19 13:03:36 $";
+	public static final String version = "$RCSfile: StreamTransformerPipe.java,v $  $Revision: 1.9 $ $Date: 2007-09-24 13:02:28 $";
 
 	private IRecordHandlerManager initialManager=null;
 	private IResultHandler defaultHandler=null;
@@ -302,32 +305,35 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	}
 
 	protected void openBlock(PipeLineSession session, String streamId, IResultHandler handler, RecordHandlingFlow flow, String blockName) throws Exception {
-		log.debug("openBlock("+blockName+") handler["+handler+"]");
-		if (handler!=null && StringUtils.isNotEmpty(blockName)) {
-			if (flow.isAutoCloseBlock()) {
-				List blockStack=getBlockStack(session,streamId,true);
-				int blockLevel;
-				for (blockLevel=blockStack.size()-1;blockLevel>=0; blockLevel--) {
-					String stackedBlock=(String)blockStack.get(blockLevel);
-					if (stackedBlock.equals(blockName)) {
-						break;
+		if (StringUtils.isNotEmpty(blockName)) {
+			if (handler!=null) {
+				if (flow.isAutoCloseBlock()) {
+					List blockStack=getBlockStack(session,streamId,true);
+					int blockLevel;
+					for (blockLevel=blockStack.size()-1;blockLevel>=0; blockLevel--) {
+						String stackedBlock=(String)blockStack.get(blockLevel);
+						if (stackedBlock.equals(blockName)) {
+							break;
+						}
 					}
-				}
-				if (blockLevel>=0) {
-					for (int i=blockStack.size()-1; i>=blockLevel; i--) {
-						String stackedBlock=(String)blockStack.remove(i);
-						closeBlock(session,streamId,handler,stackedBlock);
+					if (blockLevel>=0) {
+						for (int i=blockStack.size()-1; i>=blockLevel; i--) {
+							String stackedBlock=(String)blockStack.remove(i);
+							closeBlock(session,streamId,handler,stackedBlock);
+						}
 					}
+					blockStack.add(blockName);
 				}
-				blockStack.add(blockName);
+				if (log.isDebugEnabled()) log.debug("opening block ["+blockName+"] resultHandler["+handler.getName()+"]");
+				handler.openBlock(session, streamId, blockName);
+			} else {
+				log.warn("openBlock("+blockName+") without resultHandler");
 			}
-			log.debug("opening block ["+blockName+"]");
-			handler.openBlock(session, streamId, blockName);
 		}
 	}
 	protected void closeBlock(PipeLineSession session, String streamId, IResultHandler handler, String blockName) throws Exception {
 		if (handler!=null && StringUtils.isNotEmpty(blockName)) {
-			log.debug("closing block ["+blockName+"]");
+			if (log.isDebugEnabled()) log.debug("closing block ["+blockName+"] resultHandler["+handler.getName()+"]");
 			handler.closeBlock(session, streamId, blockName);
 		}
 	}
