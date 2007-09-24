@@ -1,6 +1,9 @@
 /*
  * $Log: ResultBlock2Sender.java,v $
- * Revision 1.4  2007-09-24 13:02:38  europe\L190409
+ * Revision 1.5  2007-09-24 14:55:32  europe\L190409
+ * support for parameters
+ *
+ * Revision 1.4  2007/09/24 13:02:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.3  2007/09/19 13:21:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -22,8 +25,10 @@ import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISender;
+import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.ClassUtils;
 
 /**
@@ -34,19 +39,20 @@ import nl.nn.adapterframework.util.ClassUtils;
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>classname</td><td>nl.nn.adapterframework.batch.ResultBlock2Sender</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the RecordHandler</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setPrefix(String) prefix}</td><td>Prefix that has to be written before record, if the record is in another block than the previous record</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSuffix(String) suffix}</td><td>Suffix that has to be written after the record, if the record is in another block than the next record</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setPrefix(String) prefix}</td><td><i>Deprecated</i> Prefix that has to be written before record, if the record is in another block than the previous record</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setSuffix(String) suffix}</td><td><i>Deprecated</i> Suffix that has to be written after the record, if the record is in another block than the next record</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDefault(boolean) default}</td><td>If true, this resulthandler is the default for all RecordHandlingFlow that do not have a handler specified</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setOnOpenDocument(String) onOpenDocument}</td><td>String that is written before any data of results is written</td><td>&nbsp;</td>&lt;document name=&quot;#name#&quot;&gt;</tr>
- * <tr><td>{@link #setOnCloseDocument(String) onCloseDocument}</td><td>String that is written after all data of results is written</td><td>&nbsp;</td>&lt;/document&gt;</tr>
- * <tr><td>{@link #setOnOpenBlock(String) onOpenBlock}</td><td>String that is written before the start of each logical block, as defined in the flow</td><td>&nbsp;</td>&lt;#name#&gt;</tr>
- * <tr><td>{@link #setOnCloseBlock(String) onCloseBlock}</td><td>String that is written after the end of each logical block, as defined in the flow</td><td>&nbsp;</td>&lt;/#name#&gt;</tr>
- * <tr><td>{@link #setBlockNamePattern(String) blockNamePattern}</td><td>String that is replaced by name of block or name of stream in above strings</td><td>&nbsp;</td>#name#</tr>
+ * <tr><td>{@link #setOnOpenDocument(String) onOpenDocument}</td><td>String that is written before any data of results is written</td><td>&lt;document name=&quot;#name#&quot;&gt;</td></tr>
+ * <tr><td>{@link #setOnCloseDocument(String) onCloseDocument}</td><td>String that is written after all data of results is written</td><td>&lt;/document&gt;</td></tr>
+ * <tr><td>{@link #setOnOpenBlock(String) onOpenBlock}</td><td>String that is written before the start of each logical block, as defined in the flow</td><td>&lt;#name#&gt;</td></tr>
+ * <tr><td>{@link #setOnCloseBlock(String) onCloseBlock}</td><td>String that is written after the end of each logical block, as defined in the flow</td><td>&lt;/#name#&gt;</td></tr>
+ * <tr><td>{@link #setBlockNamePattern(String) blockNamePattern}</td><td>String that is replaced by name of block or name of stream in above strings</td><td>#name#</td></tr>
  * </table>
  * </p>
  * <table border="1">
  * <tr><th>nested elements</th><th>description</th></tr>
  * <tr><td>{@link nl.nn.adapterframework.core.ISender sender}</td><td>Sender to which each block of results is sent</td></tr>
+ * <tr><td>{@link nl.nn.adapterframework.parameters.Parameter param}</td><td>any parameters defined on the resultHandler will be handed to the sender, if this is a {@link IParameterizedSender}</td></tr>
  * </table>
  * </p>
  * 
@@ -87,13 +93,13 @@ public class ResultBlock2Sender extends Result2StringWriter {
 		levels.clear();
 	}
 
-	public void openDocument(PipeLineSession session, String streamId) throws Exception {
+	public void openDocument(PipeLineSession session, String streamId, ParameterResolutionContext prc) throws Exception {
 		counters.put(streamId,new Integer(0));
 		levels.put(streamId,new Integer(0));
-		super.openDocument(session,streamId);
+		super.openDocument(session, streamId, prc);
 	}
-	public void closeDocument(PipeLineSession session, String streamId) {
-		super.closeDocument(session,streamId);
+	public void closeDocument(PipeLineSession session, String streamId, ParameterResolutionContext prc) {
+		super.closeDocument(session,streamId, prc);
 		counters.remove(streamId);
 		levels.remove(streamId);
 	}
@@ -144,20 +150,26 @@ public class ResultBlock2Sender extends Result2StringWriter {
 
 
 
-	public void openBlock(PipeLineSession session, String streamId, String blockName) throws Exception {
-		super.openBlock(session,streamId,blockName);
+	public void openBlock(PipeLineSession session, String streamId, String blockName, ParameterResolutionContext prc) throws Exception {
+		super.openBlock(session,streamId,blockName, prc);
 		incLevel(streamId);
 	}
-	public void closeBlock(PipeLineSession session, String streamId, String blockName) throws Exception {
-		super.closeBlock(session,streamId,blockName);
+	public void closeBlock(PipeLineSession session, String streamId, String blockName, ParameterResolutionContext prc) throws Exception {
+		super.closeBlock(session,streamId,blockName, prc);
 		int level=decLevel(streamId);
 		if (level==0) {
-			StringWriter writer=(StringWriter)getWriter(session,streamId,false);
+			StringWriter writer=(StringWriter)getWriter(session,streamId,false, prc);
 			if (writer!=null) {
 				String message=writer.getBuffer().toString();
 				log.debug("sending block ["+message+"] to sender ["+sender.getName()+"]");
 				writer.getBuffer().setLength(0);
-				sender.sendMessage(streamId+"-"+incCounter(streamId),message);
+				ISender sender = getSender();
+				if (sender instanceof ISenderWithParameters) {
+					ISenderWithParameters psender = (ISenderWithParameters)sender;
+					psender.sendMessage(streamId+"-"+incCounter(streamId),message,prc); 
+				} else {
+					sender.sendMessage(streamId+"-"+incCounter(streamId),message); 
+				}
 			}
 		}
 	}

@@ -1,6 +1,9 @@
 /*
  * $Log: RecordXmlTransformer.java,v $
- * Revision 1.6  2007-07-26 16:10:44  europe\L190409
+ * Revision 1.7  2007-09-24 14:55:33  europe\L190409
+ * support for parameters
+ *
+ * Revision 1.6  2007/07/26 16:10:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * now uses XmlBuilder
  *
  * Revision 1.5  2007/05/03 11:36:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -26,6 +29,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -48,7 +52,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class RecordXmlTransformer extends AbstractRecordHandler {
-	public static final String version = "$RCSfile: RecordXmlTransformer.java,v $  $Revision: 1.6 $ $Date: 2007-07-26 16:10:44 $";
+	public static final String version = "$RCSfile: RecordXmlTransformer.java,v $  $Revision: 1.7 $ $Date: 2007-09-24 14:55:33 $";
 
 	private String rootTag="record";
 	private List outputFields; 
@@ -58,7 +62,7 @@ public class RecordXmlTransformer extends AbstractRecordHandler {
 	}
 
 
-	public Object handleRecord(PipeLineSession session, ArrayList parsedRecord) throws Exception {
+	public Object handleRecord(PipeLineSession session, ArrayList parsedRecord, ParameterResolutionContext prc) throws Exception {
 		return getXml(parsedRecord);
 	}
 	

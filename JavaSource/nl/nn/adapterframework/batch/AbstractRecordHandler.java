@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractRecordHandler.java,v $
- * Revision 1.8  2007-09-10 11:11:05  europe\L190409
+ * Revision 1.9  2007-09-24 14:55:32  europe\L190409
+ * support for parameters
+ *
+ * Revision 1.8  2007/09/10 11:11:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * renamed mustPrefix() to isNewRecordType()
  * renamed attribute 'separatorWhenFieldsDiffer' to 'recordIdentifyingFields'
  *
@@ -33,8 +36,11 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IWithParameters;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -59,7 +65,7 @@ import org.apache.log4j.Logger;
  * @author  John Dekker
  * @version Id
  */
-public abstract class AbstractRecordHandler implements IRecordHandler {
+public abstract class AbstractRecordHandler implements IRecordHandler, IWithParameters {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -68,9 +74,12 @@ public abstract class AbstractRecordHandler implements IRecordHandler {
 	private List inputFields=new LinkedList(); 
 	private List recordIdentifyingFields=new LinkedList();
 	
+	protected ParameterList paramList = null;
 
 	public void configure() throws ConfigurationException {
-		//nothing to do		
+		if (paramList!=null) {
+			paramList.configure();
+		}
 	}
 	public void open() throws SenderException {
 		//nothing to do		
@@ -198,6 +207,15 @@ public abstract class AbstractRecordHandler implements IRecordHandler {
 		log.warn(ClassUtils.nameOf(this) +"["+getName()+"]: the attribute 'fieldsDifferConditionForPrefix' has been renamed 'recordIdentifyingFields' since version 4.7");
 		setRecordIdentifyingFields(fieldNrs);
 	}
+
+
+	public void addParameter(Parameter p) {
+		if (paramList==null) {
+			paramList=new ParameterList();
+		}
+		paramList.add(p);
+	}
+
 
 	public void setName(String string) {
 		name = string;

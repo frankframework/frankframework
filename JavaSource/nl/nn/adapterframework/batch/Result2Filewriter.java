@@ -1,6 +1,9 @@
 /*
  * $Log: Result2Filewriter.java,v $
- * Revision 1.15  2007-09-24 13:02:38  europe\L190409
+ * Revision 1.16  2007-09-24 14:55:33  europe\L190409
+ * support for parameters
+ *
+ * Revision 1.15  2007/09/24 13:02:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.14  2007/09/19 13:01:39  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -55,6 +58,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.FileUtils;
 
 import org.apache.commons.lang.StringUtils;
@@ -68,25 +72,25 @@ import org.apache.commons.lang.StringUtils;
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>classname</td><td>nl.nn.adapterframework.batch.Result2Filewriter</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>Name of the resulthandler</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setPrefix(String) prefix}</td><td>Prefix that has to be written before record, if the record is in another block than the previous record</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSuffix(String) suffix}</td><td>Suffix that has to be written after the record, if the record is in another block than the next record. <br/>N.B. If a suffix is set without a prefix, it is only used at the end of processing (i.e. at the end of the file) as a final close</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setPrefix(String) prefix}</td><td><i>Deprecated</i> Prefix that has to be written before record, if the record is in another block than the previous record</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setSuffix(String) suffix}</td><td><i>Deprecated</i> Suffix that has to be written after the record, if the record is in another block than the next record. <br/>N.B. If a suffix is set without a prefix, it is only used at the end of processing (i.e. at the end of the file) as a final close</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDefault(boolean) default}</td><td>If true, this resulthandler is the default for all RecordHandlingFlow that do not have a handler specified</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setOnOpenDocument(String) onOpenDocument}</td><td>String that is written before any data of results is written</td><td>&nbsp;</td>&nbsp;</tr>
- * <tr><td>{@link #setOnCloseDocument(String) onCloseDocument}</td><td>String that is written after all data of results is written</td><td>&nbsp;</td>&nbsp;</tr>
- * <tr><td>{@link #setOnOpenBlock(String) onOpenBlock}</td><td>String that is written before the start of each logical block, as defined in the flow</td><td>&nbsp;</td>&lt;#name#&gt;</tr>
- * <tr><td>{@link #setOnCloseBlock(String) onCloseBlock}</td><td>String that is written after the end of each logical block, as defined in the flow</td><td>&nbsp;</td>&lt;/#name#&gt;</tr>
- * <tr><td>{@link #setBlockNamePattern(String) blockNamePattern}</td><td>String that is replaced by name of block or name of stream in above strings</td><td>&nbsp;</td>#name#</tr>
+ * <tr><td>{@link #setOnOpenDocument(String) onOpenDocument}</td><td>String that is written before any data of results is written</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setOnCloseDocument(String) onCloseDocument}</td><td>String that is written after all data of results is written</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setOnOpenBlock(String) onOpenBlock}</td><td>String that is written before the start of each logical block, as defined in the flow</td><td>&lt;#name#&gt;</td></tr>
+ * <tr><td>{@link #setOnCloseBlock(String) onCloseBlock}</td><td>String that is written after the end of each logical block, as defined in the flow</td><td>&lt;/#name#&gt;</td></tr>
+ * <tr><td>{@link #setBlockNamePattern(String) blockNamePattern}</td><td>String that is replaced by name of block or name of stream in above strings</td><td>#name#</td></tr>
  * <tr><td>{@link #setOutputDirectory(String) outputDirectory}</td><td>Directory in which the resultfile must be stored</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setFilenamePattern(String) filenamePattern}</td><td>Name of the file is created using the MessageFormat. Params: 1=inputfilename, 2=extension of file, 3=current date</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMove2dirAfterFinalize(String) move2dirAfterFinalize}</td><td>Directory to which the created file must be moved after finalization (is optional)</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * 
- * @author: John Dekker
+ * @author  John Dekker
  * @version Id
  */
 public class Result2Filewriter extends ResultWriter {
-	public static final String version = "$RCSfile: Result2Filewriter.java,v $  $Revision: 1.15 $ $Date: 2007-09-24 13:02:38 $";
+	public static final String version = "$RCSfile: Result2Filewriter.java,v $  $Revision: 1.16 $ $Date: 2007-09-24 14:55:33 $";
 	
 	private String outputDirectory;
 	private String move2dirAfterFinalize;
@@ -100,7 +104,7 @@ public class Result2Filewriter extends ResultWriter {
 		setOnCloseDocument("");
 	}
 	
-	protected Writer createWriter(PipeLineSession session, String streamId) throws Exception {
+	protected Writer createWriter(PipeLineSession session, String streamId, ParameterResolutionContext prc) throws Exception {
 		log.debug("create writer ["+streamId+"]");
 		String outputFilename = FileUtils.getFilename(null, session, new File(streamId), getFilenamePattern());
 		File outputFile = new File(outputDirectory, outputFilename);
@@ -111,14 +115,14 @@ public class Result2Filewriter extends ResultWriter {
 		return new FileWriter(outputFile, false);
 	}
 
-	public void closeDocument(PipeLineSession session, String streamId) {
+	public void closeDocument(PipeLineSession session, String streamId, ParameterResolutionContext prc) {
 		File outputFile = (File)openFiles.remove(streamId);
 	}
 
-	public Object finalizeResult(PipeLineSession session, String streamId, boolean error) throws Exception {
+	public Object finalizeResult(PipeLineSession session, String streamId, boolean error, ParameterResolutionContext prc) throws Exception {
 		log.debug("finalizeResult ["+streamId+"]");
-		super.finalizeResult(session,streamId, error);
-		super.closeDocument(session,streamId);
+		super.finalizeResult(session,streamId, error, prc);
+		super.closeDocument(session,streamId, prc);
 		
 		File file = (File)openFiles.get(streamId);
 		if (file==null) {

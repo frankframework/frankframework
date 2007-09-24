@@ -1,6 +1,9 @@
 /*
  * $Log: RecordXml2Sender.java,v $
- * Revision 1.7  2007-09-24 13:02:38  europe\L190409
+ * Revision 1.8  2007-09-24 14:55:33  europe\L190409
+ * support for parameters
+ *
+ * Revision 1.7  2007/09/24 13:02:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.6  2007/07/26 16:10:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -26,8 +29,10 @@ import java.util.ArrayList;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISender;
+import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.ClassUtils;
 
 /**
@@ -45,6 +50,7 @@ import nl.nn.adapterframework.util.ClassUtils;
  * <table border="1">
  * <tr><th>nested elements</th><th>description</th></tr>
  * <tr><td>{@link nl.nn.adapterframework.core.ISender sender}</td><td>Sender that needs to handle the (XML) record</td></tr>
+ * <tr><td>{@link nl.nn.adapterframework.parameters.Parameter param}</td><td>any parameters defined on the recordHandler will be handed to the sender, if this is a {@link IParameterizedSender}</td></tr>
  * </table>
  * </p>
  * 
@@ -52,7 +58,7 @@ import nl.nn.adapterframework.util.ClassUtils;
  * @version Id
  */
 public class RecordXml2Sender extends RecordXmlTransformer {
-	public static final String version = "$RCSfile: RecordXml2Sender.java,v $  $Revision: 1.7 $ $Date: 2007-09-24 13:02:38 $";
+	public static final String version = "$RCSfile: RecordXml2Sender.java,v $  $Revision: 1.8 $ $Date: 2007-09-24 14:55:33 $";
 
 	private ISender sender = null; 
 	
@@ -72,9 +78,15 @@ public class RecordXml2Sender extends RecordXmlTransformer {
 		sender.close();		
 	}
 
-	public Object handleRecord(PipeLineSession session, ArrayList parsedRecord) throws Exception {
+	public Object handleRecord(PipeLineSession session, ArrayList parsedRecord, ParameterResolutionContext prc) throws Exception {
 		String xml = getXml(parsedRecord);
-		return sender.sendMessage(null, xml);
+		ISender sender = getSender();
+		if (sender instanceof ISenderWithParameters) {
+			ISenderWithParameters psender = (ISenderWithParameters)sender;
+			return psender.sendMessage(null, xml,prc); 
+		} else {
+			return sender.sendMessage(null, xml); 
+		}
 	}
 	
 

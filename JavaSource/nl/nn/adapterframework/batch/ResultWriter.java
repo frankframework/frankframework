@@ -1,6 +1,9 @@
 /*
  * $Log: ResultWriter.java,v $
- * Revision 1.7  2007-09-24 13:02:38  europe\L190409
+ * Revision 1.8  2007-09-24 14:55:33  europe\L190409
+ * support for parameters
+ *
+ * Revision 1.7  2007/09/24 13:02:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.6  2007/09/19 13:22:25  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -34,6 +37,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -47,13 +51,13 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>classname</td><td>nl.nn.adapterframework.batch.ResultWriter</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>Name of the resulthandler</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDefault(boolean) default}</td><td>If true, this resulthandler is the default for all RecordHandlingFlow that do not have a handler specified</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setPrefix(String) prefix}</td><td><i>Deprecated</i>Prefix that has to be written before record, if the record is in another block than the previous record</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSuffix(String) suffix}</td><td><i>Deprecated</i>Suffix that has to be written after the record, if the record is in another block than the next record</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setOnOpenDocument(String) onOpenDocument}</td><td>String that is written before any data of results is written</td><td>&nbsp;</td>&lt;document name=&quot;#name#&quot;&gt;</tr>
- * <tr><td>{@link #setOnCloseDocument(String) onCloseDocument}</td><td>String that is written after all data of results is written</td><td>&nbsp;</td>&lt;/document&gt;</tr>
- * <tr><td>{@link #setOnOpenBlock(String) onOpenBlock}</td><td>String that is written before the start of each logical block, as defined in the flow</td><td>&nbsp;</td>&lt;#name#&gt;</tr>
- * <tr><td>{@link #setOnCloseBlock(String) onCloseBlock}</td><td>String that is written after the end of each logical block, as defined in the flow</td><td>&nbsp;</td>&lt;/#name#&gt;</tr>
- * <tr><td>{@link #setBlockNamePattern(String) blockNamePattern}</td><td>String that is replaced by name of block or name of stream in above strings</td><td>&nbsp;</td>#name#</tr>
+ * <tr><td>{@link #setPrefix(String) prefix}</td><td><i>Deprecated</i> Prefix that has to be written before record, if the record is in another block than the previous record</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setSuffix(String) suffix}</td><td><i>Deprecated</i> Suffix that has to be written after the record, if the record is in another block than the next record</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setOnOpenDocument(String) onOpenDocument}</td><td>String that is written before any data of results is written</td><td>&lt;document name=&quot;#name#&quot;&gt;</td></tr>
+ * <tr><td>{@link #setOnCloseDocument(String) onCloseDocument}</td><td>String that is written after all data of results is written</td><td>&lt;/document&gt;</td></tr>
+ * <tr><td>{@link #setOnOpenBlock(String) onOpenBlock}</td><td>String that is written before the start of each logical block, as defined in the flow</td><td>&lt;#name#&gt;</td></tr>
+ * <tr><td>{@link #setOnCloseBlock(String) onCloseBlock}</td><td>String that is written after the end of each logical block, as defined in the flow</td><td>&lt;/#name#&gt;</td></tr>
+ * <tr><td>{@link #setBlockNamePattern(String) blockNamePattern}</td><td>String that is replaced by name of block or name of stream in above strings</td><td>#name#</td></tr>
  * </table>
  * </p>
  * 
@@ -62,7 +66,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public abstract class ResultWriter extends AbstractResultHandler {
-	public static final String version = "$RCSfile: ResultWriter.java,v $  $Revision: 1.7 $ $Date: 2007-09-24 13:02:38 $";
+	public static final String version = "$RCSfile: ResultWriter.java,v $  $Revision: 1.8 $ $Date: 2007-09-24 14:55:33 $";
 	
 	private String onOpenDocument="<document name=\"#name#\">";
 	private String onCloseDocument="</document>";
@@ -72,15 +76,15 @@ public abstract class ResultWriter extends AbstractResultHandler {
 	
 	private Map openWriters = Collections.synchronizedMap(new HashMap());
 	
-	protected abstract Writer createWriter(PipeLineSession session, String streamId) throws Exception;
+	protected abstract Writer createWriter(PipeLineSession session, String streamId, ParameterResolutionContext prc) throws Exception;
 
-	public void openDocument(PipeLineSession session, String streamId) throws Exception {
-		super.openDocument(session,streamId);
-		getWriter(session, streamId, true);
-		write(session,streamId,replacePattern(getOnOpenDocument(),streamId));
+	public void openDocument(PipeLineSession session, String streamId, ParameterResolutionContext prc) throws Exception {
+		super.openDocument(session, streamId, prc);
+		getWriter(session, streamId, true, prc);
+		write(session,streamId,replacePattern(getOnOpenDocument(),streamId), prc);
 	}
 
-	public void closeDocument(PipeLineSession session, String streamId) {
+	public void closeDocument(PipeLineSession session, String streamId, ParameterResolutionContext prc) {
 		Writer w = (Writer)openWriters.remove(streamId);
 		if (w != null) {
 			try {
@@ -89,23 +93,23 @@ public abstract class ResultWriter extends AbstractResultHandler {
 				log.error("Exception closing ["+streamId+"]",e);
 			}
 		}
-		super.closeDocument(session,streamId);
+		super.closeDocument(session,streamId, prc);
 	}
 
-	public Object finalizeResult(PipeLineSession session, String streamId, boolean error) throws Exception {
+	public Object finalizeResult(PipeLineSession session, String streamId, boolean error, ParameterResolutionContext prc) throws Exception {
 		log.debug("finalizeResult ["+streamId+"]");
-		write(session,streamId,replacePattern(getOnCloseDocument(),streamId));
+		write(session,streamId,replacePattern(getOnCloseDocument(),streamId), prc);
 		return null;
 	}
 	
 
 	
-	public void handleResult(PipeLineSession session, String streamId, String recordKey, Object result) throws Exception {
+	public void handleResult(PipeLineSession session, String streamId, String recordKey, Object result, ParameterResolutionContext prc) throws Exception {
 		if (result instanceof String) {
-			write(session, streamId, (String)result);
+			write(session, streamId, (String)result, prc);
 		}
 		else if (result instanceof String[]) {
-			write(session, streamId, (String[])result);
+			write(session, streamId, (String[])result, prc);
 		}
 	}
 	
@@ -117,9 +121,9 @@ public abstract class ResultWriter extends AbstractResultHandler {
 		}
 	}
 	
-	private void write(PipeLineSession session, String streamId, String line) throws Exception {
+	private void write(PipeLineSession session, String streamId, String line, ParameterResolutionContext prc) throws Exception {
 		if (line!=null) {
-			Writer w = getWriter(session, streamId, false);
+			Writer w = getWriter(session, streamId, false, prc);
 			if (w==null) {
 				throw new NullPointerException("No Writer Found for stream ["+streamId+"]");
 			}
@@ -128,8 +132,8 @@ public abstract class ResultWriter extends AbstractResultHandler {
 		}
 	}
 
-	private void write(PipeLineSession session, String streamId, String[] lines) throws Exception {
-		Writer w = getWriter(session, streamId, false);
+	private void write(PipeLineSession session, String streamId, String[] lines, ParameterResolutionContext prc) throws Exception {
+		Writer w = getWriter(session, streamId, false, prc);
 		for (int i = 0; i < lines.length; i++) {
 			if (lines[i]!=null) {
 				w.write(lines[i]);
@@ -138,17 +142,17 @@ public abstract class ResultWriter extends AbstractResultHandler {
 		}
 	}
 	
-	public void openRecordType(PipeLineSession session, String streamId) throws Exception {
-		Writer w = getWriter(session, streamId, false);
+	public void openRecordType(PipeLineSession session, String streamId, ParameterResolutionContext prc) throws Exception {
+		Writer w = getWriter(session, streamId, false, prc);
 		if (w != null && ! StringUtils.isEmpty(getPrefix())) {
-			write(session, streamId, getPrefix());
+			write(session, streamId, getPrefix(), prc);
 		}
 	}
 
-	public void closeRecordType(PipeLineSession session, String streamId) throws Exception {
-		Writer w = getWriter(session, streamId, false);
+	public void closeRecordType(PipeLineSession session, String streamId, ParameterResolutionContext prc) throws Exception {
+		Writer w = getWriter(session, streamId, false, prc);
 		if (w != null && ! StringUtils.isEmpty(getSuffix())) {
-			write(session, streamId, getSuffix());
+			write(session, streamId, getSuffix(), prc);
 		}
 	}
 
@@ -164,15 +168,15 @@ public abstract class ResultWriter extends AbstractResultHandler {
 		return result;   
 	}
 
-	public void openBlock(PipeLineSession session, String streamId, String blockName) throws Exception  {
-		write(session,streamId, replacePattern(getOnOpenBlock(),blockName));
+	public void openBlock(PipeLineSession session, String streamId, String blockName, ParameterResolutionContext prc) throws Exception  {
+		write(session,streamId, replacePattern(getOnOpenBlock(),blockName), prc);
 	}
-	public void closeBlock(PipeLineSession session, String streamId, String blockName) throws Exception {
-		write(session,streamId, replacePattern(getOnCloseBlock(),blockName));
+	public void closeBlock(PipeLineSession session, String streamId, String blockName, ParameterResolutionContext prc) throws Exception {
+		write(session,streamId, replacePattern(getOnCloseBlock(),blockName), prc);
 	}
 
 
-	protected Writer getWriter(PipeLineSession session, String streamId, boolean create) throws Exception {
+	protected Writer getWriter(PipeLineSession session, String streamId, boolean create, ParameterResolutionContext prc) throws Exception {
 		log.debug("getWriter ["+streamId+"], create ["+create+"]");
 		Writer writer;
 		writer = (Writer)openWriters.get(streamId);
@@ -183,7 +187,7 @@ public abstract class ResultWriter extends AbstractResultHandler {
 		if (!create) {
 			return null;
 		}
-		writer = createWriter(session,streamId);
+		writer = createWriter(session,streamId, prc);
 		if (writer==null) {
 			throw new IOException("cannot get writer for stream ["+streamId+"]");
 		}

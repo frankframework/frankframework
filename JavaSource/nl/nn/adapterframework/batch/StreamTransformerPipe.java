@@ -1,6 +1,9 @@
 /*
  * $Log: StreamTransformerPipe.java,v $
- * Revision 1.9  2007-09-24 13:02:28  europe\L190409
+ * Revision 1.10  2007-09-24 14:55:33  europe\L190409
+ * support for parameters
+ *
+ * Revision 1.9  2007/09/24 13:02:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved debug logging
  *
  * Revision 1.8  2007/09/19 13:03:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -46,6 +49,7 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.util.FileUtils;
 
@@ -74,7 +78,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class StreamTransformerPipe extends FixedForwardPipe {
-	public static final String version = "$RCSfile: StreamTransformerPipe.java,v $  $Revision: 1.9 $ $Date: 2007-09-24 13:02:28 $";
+	public static final String version = "$RCSfile: StreamTransformerPipe.java,v $  $Revision: 1.10 $ $Date: 2007-09-24 14:55:33 $";
 
 	private IRecordHandlerManager initialManager=null;
 	private IResultHandler defaultHandler=null;
@@ -277,8 +281,9 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 			breader = new BufferedReader(reader);
 		}
 		Object transformationResult=null;
+		ParameterResolutionContext prc = new ParameterResolutionContext("", session);
 		try {
-			transformationResult = transform(streamId, breader, session);
+			transformationResult = transform(streamId, breader, session, prc);
 		} finally {
 			try {
 				reader.close();
@@ -304,7 +309,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 		return getBlockStack(session,streamId,false);
 	}
 
-	protected void openBlock(PipeLineSession session, String streamId, IResultHandler handler, RecordHandlingFlow flow, String blockName) throws Exception {
+	protected void openBlock(PipeLineSession session, String streamId, IResultHandler handler, RecordHandlingFlow flow, String blockName, ParameterResolutionContext prc) throws Exception {
 		if (StringUtils.isNotEmpty(blockName)) {
 			if (handler!=null) {
 				if (flow.isAutoCloseBlock()) {
@@ -319,32 +324,32 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 					if (blockLevel>=0) {
 						for (int i=blockStack.size()-1; i>=blockLevel; i--) {
 							String stackedBlock=(String)blockStack.remove(i);
-							closeBlock(session,streamId,handler,stackedBlock);
+							closeBlock(session,streamId,handler,stackedBlock, prc);
 						}
 					}
 					blockStack.add(blockName);
 				}
 				if (log.isDebugEnabled()) log.debug("opening block ["+blockName+"] resultHandler["+handler.getName()+"]");
-				handler.openBlock(session, streamId, blockName);
+				handler.openBlock(session, streamId, blockName, prc);
 			} else {
 				log.warn("openBlock("+blockName+") without resultHandler");
 			}
 		}
 	}
-	protected void closeBlock(PipeLineSession session, String streamId, IResultHandler handler, String blockName) throws Exception {
+	protected void closeBlock(PipeLineSession session, String streamId, IResultHandler handler, String blockName, ParameterResolutionContext prc) throws Exception {
 		if (handler!=null && StringUtils.isNotEmpty(blockName)) {
 			if (log.isDebugEnabled()) log.debug("closing block ["+blockName+"] resultHandler["+handler.getName()+"]");
-			handler.closeBlock(session, streamId, blockName);
+			handler.closeBlock(session, streamId, blockName, prc);
 		}
 	}
 
-	protected void closeAllBlocks(PipeLineSession session, String streamId, IResultHandler handler) throws Exception {
+	protected void closeAllBlocks(PipeLineSession session, String streamId, IResultHandler handler, ParameterResolutionContext prc) throws Exception {
 		if (handler!=null) {
 			List blockStack=getBlockStack(session,streamId,false);
 			if (blockStack!=null) {
 				for (int i=blockStack.size()-1; i>=0; i--) {
 					String stackedBlock=(String)blockStack.remove(i);
-					closeBlock(session,streamId,handler,stackedBlock);
+					closeBlock(session,streamId,handler,stackedBlock, prc);
 				}
 			}
 		}
@@ -355,7 +360,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	 * Read all lines from the reader, tread every line as a record and transform 
 	 * it using the registered managers, record and result handlerds.
 	 */	
-	private Object transform(String streamId, BufferedReader reader, PipeLineSession session) throws PipeRunException {
+	private Object transform(String streamId, BufferedReader reader, PipeLineSession session, ParameterResolutionContext prc) throws PipeRunException {
 		String rawRecord = null;
 		int linenumber = 0;
 		ArrayList prevParsedRecord = null; 
@@ -363,7 +368,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 
 		IRecordHandlerManager currentManager = initialManager.getRecordFactoryUsingFilename(session, streamId);
 		try {
-			openDocument(session,streamId);
+			openDocument(session,streamId, prc);
 			while ((rawRecord = reader.readLine()) != null) {
 				linenumber++; // remember linenumber for exception handler
 				if (StringUtils.isEmpty(rawRecord)) {
@@ -379,15 +384,15 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 					//log.debug("flow ["+flow.getRecordKey()+"] openBlockBeforeLine ["+flow.getOpenBlockBeforeLine()+"]");
 				}
 				IResultHandler resultHandler = flow.getResultHandler();
-				closeBlock(session, streamId, resultHandler, flow.getCloseBlockBeforeLine());
-				openBlock(session, streamId, resultHandler, flow, flow.getOpenBlockBeforeLine());
+				closeBlock(session, streamId, resultHandler, flow.getCloseBlockBeforeLine(), prc);
+				openBlock(session, streamId, resultHandler, flow, flow.getOpenBlockBeforeLine(), prc);
 				
 				IRecordHandler curHandler = flow.getRecordHandler(); 
 				if (curHandler != null) {
 					log.debug("manager ["+currentManager.getName()+"] key ["+flow.getRecordKey()+"] record handler ["+curHandler.getName()+"]: "+rawRecord);
 					// there is a record handler, so transform the line
 					ArrayList parsedRecord = curHandler.parse(session, rawRecord);
-					Object result = curHandler.handleRecord(session, parsedRecord);
+					Object result = curHandler.handleRecord(session, parsedRecord, prc);
 				
 					// if there is a result handler, write the transformed result
 					if (result != null && resultHandler != null) {
@@ -396,11 +401,11 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 						// The suffix is then only written at the end of the file.
 						if (recordTypeChanged && resultHandler.hasPrefix()) {   
 							if (prevHandler != null)  {
-								resultHandler.closeRecordType(session, streamId);
+								resultHandler.closeRecordType(session, streamId, prc);
 							}
-							resultHandler.openRecordType(session, streamId);
+							resultHandler.openRecordType(session, streamId, prc);
 						}
-						resultHandler.handleResult(session, streamId, flow.getRecordKey(), result);
+						resultHandler.handleResult(session, streamId, flow.getRecordKey(), result, prc);
 					}
 					prevParsedRecord = parsedRecord;
 					prevHandler = curHandler;
@@ -408,35 +413,35 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 					log.debug("manager ["+currentManager.getName()+"] key ["+flow.getRecordKey()+"], no record handler: "+rawRecord);
 				}
 				
-				closeBlock(session, streamId, resultHandler, flow.getCloseBlockAfterLine());
-				openBlock(session, streamId, resultHandler, flow, flow.getOpenBlockAfterLine());
+				closeBlock(session, streamId, resultHandler, flow.getCloseBlockAfterLine(), prc);
+				openBlock(session, streamId, resultHandler, flow, flow.getOpenBlockAfterLine(), prc);
 				
 				// get the manager for the next record
 				currentManager = flow.getNextRecordHandlerManager();
 			}
-			return finalizeResult(session, streamId, false);
+			return finalizeResult(session, streamId, false, prc);
 		} catch(Exception e) {
 			try {
-				finalizeResult(session, streamId, true);
+				finalizeResult(session, streamId, true, prc);
 		 	} catch(Throwable t) {
 				log.error("Unexpected error during finalizeResult of [" + streamId + "]", t);
 			}
 			throw new PipeRunException(this, "Error while transforming " + streamId + " at line " + linenumber, e);		
 		} finally {
-			closeDocument(session,streamId);
+			closeDocument(session,streamId, prc);
 		}
 	}
 
-	private void openDocument(PipeLineSession session, String inputFilename) throws Exception {
+	private void openDocument(PipeLineSession session, String inputFilename, ParameterResolutionContext prc) throws Exception {
 		for (Iterator it = registeredResultHandlers.values().iterator(); it.hasNext();) {
 			IResultHandler resultHandler = (IResultHandler)it.next();
-			resultHandler.openDocument(session, inputFilename);
+			resultHandler.openDocument(session, inputFilename, prc);
 		}
 	}
-	private void closeDocument(PipeLineSession session, String inputFilename) {
+	private void closeDocument(PipeLineSession session, String inputFilename, ParameterResolutionContext prc) {
 		for (Iterator it = registeredResultHandlers.values().iterator(); it.hasNext();) {
 			IResultHandler resultHandler = (IResultHandler)it.next();
-			resultHandler.closeDocument(session, inputFilename);
+			resultHandler.closeDocument(session, inputFilename, prc);
 		}
 	}
 	
@@ -444,15 +449,15 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	 * finalizeResult is called when all records in the input file are handled
 	 * and gives the resulthandlers a chance to finalize.
 	 */	
-	private Object finalizeResult(PipeLineSession session, String inputFilename, boolean error) throws Exception {
+	private Object finalizeResult(PipeLineSession session, String inputFilename, boolean error, ParameterResolutionContext prc) throws Exception {
 		// finalize result
 		ArrayList results = new ArrayList();
 		for (Iterator handlersIt = registeredResultHandlers.values().iterator(); handlersIt.hasNext();) {
 			IResultHandler resultHandler = (IResultHandler)handlersIt.next();
-			resultHandler.closeRecordType(session, inputFilename);
-			closeAllBlocks(session,inputFilename,resultHandler);
+			resultHandler.closeRecordType(session, inputFilename, prc);
+			closeAllBlocks(session,inputFilename,resultHandler, prc);
 			log.debug("finalizing resulthandler ["+resultHandler.getName()+"]");
-			Object result = resultHandler.finalizeResult(session, inputFilename, error);
+			Object result = resultHandler.finalizeResult(session, inputFilename, error, prc);
 			if (result != null) {
 				results.add(result);
 			}
