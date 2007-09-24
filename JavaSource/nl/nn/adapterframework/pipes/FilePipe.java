@@ -1,6 +1,9 @@
 /*
  * $Log: FilePipe.java,v $
- * Revision 1.13  2007-07-17 15:12:05  europe\L190409
+ * Revision 1.14  2007-09-24 13:03:58  europe\L190409
+ * improved error messages
+ *
+ * Revision 1.13  2007/07/17 15:12:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added writeLineSeparator
  *
  * Revision 1.12  2007/05/21 12:20:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -88,7 +91,7 @@ import sun.misc.BASE64Encoder;
  *
  */
 public class FilePipe extends FixedForwardPipe {
-	public static final String version="$RCSfile: FilePipe.java,v $ $Revision: 1.13 $ $Date: 2007-07-17 15:12:05 $";
+	public static final String version="$RCSfile: FilePipe.java,v $ $Revision: 1.14 $ $Date: 2007-09-24 13:03:58 $";
 
 	protected String actions;
 	protected String directory;
@@ -110,7 +113,7 @@ public class FilePipe extends FixedForwardPipe {
 		// translation action seperated string to Transformers		
 		transformers = new LinkedList();
 		if (StringUtils.isEmpty(actions))
-			throw new ConfigurationException("should at least define one action");
+			throw new ConfigurationException(getLogPrefix(null)+"should at least define one action");
 			
 		StringTokenizer tok = new StringTokenizer(actions, " ,\t\n\r\f");
 		while (tok.hasMoreTokens()) {
@@ -131,11 +134,11 @@ public class FilePipe extends FixedForwardPipe {
 			else if ("decode".equalsIgnoreCase(token))
 				transformers.add(new Decoder());
 			else
-				throw new ConfigurationException("Action " + token + " is not supported");
+				throw new ConfigurationException(getLogPrefix(null)+"Action " + token + " is not supported");
 		}
 		
 		if (transformers.size() == 0)
-			throw new ConfigurationException("should at least define one action");
+			throw new ConfigurationException(getLogPrefix(null)+"should at least define one action");
 		
 		// configure the transformers
 		for (Iterator it = transformers.iterator(); it.hasNext(); ) {
@@ -222,11 +225,11 @@ public class FilePipe extends FixedForwardPipe {
 					file.mkdirs();
 				} 
 				else if (!(file.isDirectory() && file.canWrite())) {
-					throw new ConfigurationException(directory + " is not a directory, or no write permission");
+					throw new ConfigurationException(getLogPrefix(null)+"directory ["+ directory + "] is not a directory, or no write permission");
 				}
 			}
 			else {
-				throw new ConfigurationException("directory is not specified");
+				throw new ConfigurationException(getLogPrefix(null)+"directory is not specified");
 			}
 		}
 		public byte[] go(byte[] in, PipeLineSession session) throws Exception {
