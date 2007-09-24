@@ -1,6 +1,9 @@
 /*
  * $Log: FieldPositionRecordHandlerManager.java,v $
- * Revision 1.6  2007-07-26 16:07:35  europe\L190409
+ * Revision 1.7  2007-09-24 14:54:57  europe\L190409
+ * corrected javadoc
+ *
+ * Revision 1.6  2007/07/26 16:07:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed seperator into separator
  *
  * Revision 1.5  2007/07/24 08:01:41  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -30,7 +33,7 @@ import nl.nn.adapterframework.util.ClassUtils;
  * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>classname</td><td>nl.nn.adapterframework.batch.FieldPositionRecordHandlerManager</td><td>&nbsp;</td></tr>
+ * <tr><td>className</td><td>nl.nn.adapterframework.batch.FieldPositionRecordHandlerManager</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setFieldNr(int) fieldNr}</td><td>Position of field with recordtype (position of first field is 1)</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSeparator(String) separator}</td><td>Separator that separates the fields in the record</td><td>&nbsp;</td></tr>
  * </table>
@@ -39,7 +42,7 @@ import nl.nn.adapterframework.util.ClassUtils;
  * @author John Dekker
  */
 public class FieldPositionRecordHandlerManager extends RecordHandlerManager {
-	public static final String version = "$RCSfile: FieldPositionRecordHandlerManager.java,v $  $Revision: 1.6 $ $Date: 2007-07-26 16:07:35 $";
+	public static final String version = "$RCSfile: FieldPositionRecordHandlerManager.java,v $  $Revision: 1.7 $ $Date: 2007-09-24 14:54:57 $";
 
 	private int fieldNr;
 	private String separator;
