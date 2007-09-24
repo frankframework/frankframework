@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.46  2007-09-12 09:27:06  europe\L190409
+ * Revision 1.47  2007-09-24 13:05:41  europe\L190409
+ * fixed bug in close of errorStorage
+ *
+ * Revision 1.46  2007/09/12 09:27:06  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added attribute pollInterval
  *
  * Revision 1.45  2007/09/05 13:05:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -274,7 +277,7 @@ import org.apache.log4j.Logger;
  * @since 4.2
  */
 public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, IMessageHandler, IbisExceptionListener, HasSender, TracingEventNumbers {
-	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.46 $ $Date: 2007-09-12 09:27:06 $";
+	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.47 $ $Date: 2007-09-24 13:05:41 $";
 	protected Logger log = LogUtil.getLogger(this);
  
 	private String returnIfStopped="";
@@ -432,7 +435,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 				getInProcessStorage().close();
 			}
 			if (getErrorStorage()!=null && getErrorStorage()!=getInProcessStorage()) {
-				getInProcessStorage().close();
+				getErrorStorage().close();
 			}
 			if (getMessageLog()!=null) {
 				getMessageLog().close();
