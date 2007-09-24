@@ -1,6 +1,9 @@
 /*
  * $Log: RecordHandlingFlow.java,v $
- * Revision 1.9  2007-09-19 11:17:34  europe\L190409
+ * Revision 1.10  2007-09-24 13:02:38  europe\L190409
+ * updated javadoc
+ *
+ * Revision 1.9  2007/09/19 11:17:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added block handling functions
  *
  * Revision 1.8  2007/09/13 12:37:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -31,7 +34,6 @@ package nl.nn.adapterframework.batch;
 import java.util.HashMap;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.commons.lang.StringUtils;
@@ -50,6 +52,11 @@ import org.apache.log4j.Logger;
  * <tr><td>{@link #setRecordHandlerRef(String) recordHandlerRef}</td><td>Name of the recordhandler to be used to transform records of the type specified in the key (optional)</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setResultHandlerRef(String) resultHandlerRef}</td><td>Name of the resulthandler to be used to handle the transformed result</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setNextRecordHandlerManagerRef(String) nextRecordHandlerManagerRef}</td><td>Name of the manager to be used after handling this record</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setOpenBlockBeforeLine(String) openBlockBeforeLine}</td><td>instructs the resultHandler to start a new block before the parsed line is processed</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setCloseBlockBeforeLine(String) closeBlockBeforeLine}</td><td>instructs the resultHandler to end the specified block before the parsed line is processed</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setOpenBlockAfterLine(String) openBlockAfterLine}</td><td>instructs the resultHandler to start a new block after the parsed line is processed</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setCloseBlockAfterLine(String) closeBlockAfterLine}</td><td>instructs the resultHandler to end the specified block after the parsed line is processed</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setAutoCloseBlock(boolean) autoCloseBlock}</td><td>when true, any open block of this type (and other nested open 'autoclose' block) is closed before a new one is opened</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * 
@@ -57,7 +64,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public final class RecordHandlingFlow {
-	public static final String version = "$RCSfile: RecordHandlingFlow.java,v $  $Revision: 1.9 $ $Date: 2007-09-19 11:17:34 $";
+	public static final String version = "$RCSfile: RecordHandlingFlow.java,v $  $Revision: 1.10 $ $Date: 2007-09-24 13:02:38 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String recordKey;

@@ -1,6 +1,9 @@
 /*
  * $Log: ResultWriter.java,v $
- * Revision 1.6  2007-09-19 13:22:25  europe\L190409
+ * Revision 1.7  2007-09-24 13:02:38  europe\L190409
+ * updated javadoc
+ *
+ * Revision 1.6  2007/09/19 13:22:25  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * avoid NPE
  *
  * Revision 1.5  2007/09/19 13:00:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -43,9 +46,14 @@ import org.apache.commons.lang.StringUtils;
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>classname</td><td>nl.nn.adapterframework.batch.ResultWriter</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>Name of the resulthandler</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setPrefix(String) prefix}</td><td>Prefix that has to be written before record, if the record is in another block than the previous record</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSuffix(String) suffix}</td><td>Suffix that has to be written after the record, if the record is in another block than the next record</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDefault(boolean) default}</td><td>If true, this resulthandler is the default for all RecordHandlingFlow that do not have a handler specified</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setPrefix(String) prefix}</td><td><i>Deprecated</i>Prefix that has to be written before record, if the record is in another block than the previous record</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setSuffix(String) suffix}</td><td><i>Deprecated</i>Suffix that has to be written after the record, if the record is in another block than the next record</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setOnOpenDocument(String) onOpenDocument}</td><td>String that is written before any data of results is written</td><td>&nbsp;</td>&lt;document name=&quot;#name#&quot;&gt;</tr>
+ * <tr><td>{@link #setOnCloseDocument(String) onCloseDocument}</td><td>String that is written after all data of results is written</td><td>&nbsp;</td>&lt;/document&gt;</tr>
+ * <tr><td>{@link #setOnOpenBlock(String) onOpenBlock}</td><td>String that is written before the start of each logical block, as defined in the flow</td><td>&nbsp;</td>&lt;#name#&gt;</tr>
+ * <tr><td>{@link #setOnCloseBlock(String) onCloseBlock}</td><td>String that is written after the end of each logical block, as defined in the flow</td><td>&nbsp;</td>&lt;/#name#&gt;</tr>
+ * <tr><td>{@link #setBlockNamePattern(String) blockNamePattern}</td><td>String that is replaced by name of block or name of stream in above strings</td><td>&nbsp;</td>#name#</tr>
  * </table>
  * </p>
  * 
@@ -54,7 +62,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public abstract class ResultWriter extends AbstractResultHandler {
-	public static final String version = "$RCSfile: ResultWriter.java,v $  $Revision: 1.6 $ $Date: 2007-09-19 13:22:25 $";
+	public static final String version = "$RCSfile: ResultWriter.java,v $  $Revision: 1.7 $ $Date: 2007-09-24 13:02:38 $";
 	
 	private String onOpenDocument="<document name=\"#name#\">";
 	private String onCloseDocument="</document>";

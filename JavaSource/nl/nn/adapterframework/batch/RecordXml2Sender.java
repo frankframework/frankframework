@@ -1,6 +1,9 @@
 /*
  * $Log: RecordXml2Sender.java,v $
- * Revision 1.6  2007-07-26 16:10:10  europe\L190409
+ * Revision 1.7  2007-09-24 13:02:38  europe\L190409
+ * updated javadoc
+ *
+ * Revision 1.6  2007/07/26 16:10:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * cosmetic changes
  *
  * Revision 1.5  2007/05/03 11:39:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -37,7 +40,11 @@ import nl.nn.adapterframework.util.ClassUtils;
  * <tr><td>{@link #setName(String) name}</td><td>name of the RecordHandler</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setRootTag(String) rootTag}</td><td>Roottag for the generated XML document</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setOutputFields(String) outputfields}</td><td>Comma seperated string with tagnames for the individual input fields (related using there positions). If you leave a tagname empty, the field is not xml-ized</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSender(ISender) sender}</td><td>Sender that needs to handle the (XML) record</td><td>&nbsp;</td></tr>
+ * </table>
+ * </p>
+ * <table border="1">
+ * <tr><th>nested elements</th><th>description</th></tr>
+ * <tr><td>{@link nl.nn.adapterframework.core.ISender sender}</td><td>Sender that needs to handle the (XML) record</td></tr>
  * </table>
  * </p>
  * 
@@ -45,7 +52,7 @@ import nl.nn.adapterframework.util.ClassUtils;
  * @version Id
  */
 public class RecordXml2Sender extends RecordXmlTransformer {
-	public static final String version = "$RCSfile: RecordXml2Sender.java,v $  $Revision: 1.6 $ $Date: 2007-07-26 16:10:10 $";
+	public static final String version = "$RCSfile: RecordXml2Sender.java,v $  $Revision: 1.7 $ $Date: 2007-09-24 13:02:38 $";
 
 	private ISender sender = null; 
 	
