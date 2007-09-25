@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.47  2007-09-24 13:05:41  europe\L190409
+ * Revision 1.48  2007-09-25 11:34:02  europe\L190409
+ * added deprecation warning for ibi42compatibility
+ *
+ * Revision 1.47  2007/09/24 13:05:41  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fixed bug in close of errorStorage
  *
  * Revision 1.46  2007/09/12 09:27:06  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -220,10 +223,10 @@ import org.apache.log4j.Logger;
  * <tr><td>{@link #setStyleSheetName(String) styleSheetName}</td>  <td></td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setOnError(String) onError}</td><td>one of 'continue' or 'close'. Controls the behaviour of the receiver when it encounters an error sending a reply or receives an exception asynchronously</td><td>continue</td></tr>
  * <tr><td>{@link #setReturnedSessionKeys(String) returnedSessionKeys}</td><td>comma separated list of keys of session variables that should be returned to caller, for correct results as well as for erronous results. (Only for listeners that support it, like JavaListener)</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setTransacted(boolean) transacted}</td><td>if set to <code>true, messages will be received and processed under transaction control. If processing fails, messages will be sent to the error-sender. (see below)</code></td><td><code>false</code></td></tr>
+ * <tr><td>{@link #setTransacted(boolean) transacted}</td><td>if set to <code>true</code>, messages will be received and processed under transaction control. If processing fails, messages will be sent to the error-sender. (see below)</code></td><td><code>false</code></td></tr>
  * <tr><td>{@link #setMaxRetries(int) maxRetries}</td><td>The number of times a pulling listening attempt is retried after an exception is caught</td><td>3</td></tr>
  * <tr><td>{@link #setPollInterval(int) pollInterval}</td><td>The number of seconds waited after an unsuccesful poll attempt before another poll attempt is made.</td><td>0</td></tr>
- * <tr><td>{@link #setIbis42compatibility(boolean) ibis42compatibility}</td><td>if set to <code>true, the result of a failed processing of a message is a formatted errormessage. Otherwise a listener specific error handling is performed</code></td><td><code>false</code></td></tr>
+ * <tr><td>{@link #setIbis42compatibility(boolean) ibis42compatibility}</td><td>if set to <code>true</code>, the result of a failed processing of a message is a formatted errormessage. Otherwise a listener specific error handling is performed</code></td><td><code>false</code></td></tr>
  * <tr><td>{@link #setBeforeEvent(int) beforeEvent}</td>      <td>METT eventnumber, fired just before a message is processed by this Receiver</td><td>-1 (disabled)</td></tr>
  * <tr><td>{@link #setAfterEvent(int) afterEvent}</td>        <td>METT eventnumber, fired just after message processing by this Receiver is finished</td><td>-1 (disabled)</td></tr>
  * <tr><td>{@link #setExceptionEvent(int) exceptionEvent}</td><td>METT eventnumber, fired when message processing by this Receiver resulted in an exception</td><td>-1 (disabled)</td></tr>
@@ -277,7 +280,7 @@ import org.apache.log4j.Logger;
  * @since 4.2
  */
 public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, IMessageHandler, IbisExceptionListener, HasSender, TracingEventNumbers {
-	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.47 $ $Date: 2007-09-24 13:05:41 $";
+	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.48 $ $Date: 2007-09-25 11:34:02 $";
 	protected Logger log = LogUtil.getLogger(this);
  
 	private String returnIfStopped="";
@@ -1514,8 +1517,16 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 		return ibis42compatibility;
 	}
 
+	/**
+	 * 
+	 * @param b
+	 * @deprecated Please consider removing this option.
+	 */
 	public void setIbis42compatibility(boolean b) {
 		ibis42compatibility = b;
+		if (ibis42compatibility) {
+			log.warn(getLogPrefix()+" set ibis42compatibility true. This is a deprecated option. Please consider removing this setting by anticipating the use of listener specific error handling");
+		}
 	}
 	
 
