@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaProviderListener.java,v $
- * Revision 1.31  2007-09-13 09:12:43  europe\L190409
+ * Revision 1.32  2007-09-25 11:33:14  europe\L190409
+ * show headers of incoming messages
+ *
+ * Revision 1.31  2007/09/13 09:12:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * move message wrapper from ifsa to receivers
  *
  * Revision 1.30  2007/09/05 15:48:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -108,6 +111,7 @@
 package nl.nn.adapterframework.extensions.ifsa;
 
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -127,6 +131,7 @@ import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.receivers.MessageWrapper;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.RunStateEnquirer;
 import nl.nn.adapterframework.util.RunStateEnquiring;
@@ -186,7 +191,7 @@ import com.ing.ifsa.IFSATextMessage;
  * @since 4.2
  */
 public class IfsaProviderListener extends IfsaFacade implements IPullingListener, INamedObject, RunStateEnquiring {
-	public static final String version = "$RCSfile: IfsaProviderListener.java,v $ $Revision: 1.31 $ $Date: 2007-09-13 09:12:43 $";
+	public static final String version = "$RCSfile: IfsaProviderListener.java,v $ $Revision: 1.32 $ $Date: 2007-09-25 11:33:14 $";
 
     private final static String THREAD_CONTEXT_SESSION_KEY = "session";
     private final static String THREAD_CONTEXT_RECEIVER_KEY = "receiver";
@@ -500,8 +505,9 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 					+ "] \n  ifsaVersion=["+ ifsaVersion
 					+ "] \n  Timestamp=[" + dTimeStamp.toString()
 					+ "] \n  ReplyTo=[" + ((replyTo == null) ? "none" : replyTo.toString())
-					+ "] \n  Message=[" + message.toString()
-					+ "]");
+					+ "] \n  MessageHeaders=["+displayHeaders(message)+"\n"
+					+ "] \n  Message=[" + message.toString()+"\n]");
+					
 		}
 	
 	    threadContext.put("id", id);
@@ -530,6 +536,34 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 		}
 
 	    return id;
+	}
+	
+	private String displayHeaders(IFSAMessage message) {
+		StringBuffer result= new StringBuffer();
+		try { 
+			for(Enumeration enum = message.getPropertyNames(); enum.hasMoreElements();) {
+				String tagName = (String)enum.nextElement();
+				Object value = message.getObjectProperty(tagName);
+				result.append("\n").append(tagName).append(": ");
+				if (value==null) {
+					result.append("null");
+				} else {
+					result.append("(").append(ClassUtils.nameOf(value)).append(") [").append(value).append("]");
+					if (tagName.startsWith("ifsa") && 
+						!tagName.equals("ifsa_unique_id") && 
+						!tagName.startsWith("ifsa_epz_") && 
+						!tagName.startsWith("ifsa_udz_")) {
+							result.append(" * copied when sending reply");
+							if (!(value instanceof String)) {
+								result.append(" THIS CAN CAUSE A PROBLEM AS "+ClassUtils.nameOf(value)+" IS NOT String!");
+							}
+						}
+				}
+			}
+		} catch(Throwable t) {
+			log.warn("exception parsing headers",t);
+		}
+		return result.toString();
 	}
 	
 	private boolean sessionNeedsToBeSavedForAfterProcessMessage(Object result)
