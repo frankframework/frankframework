@@ -1,6 +1,9 @@
 /*
  * $Log: FilePipe.java,v $
- * Revision 1.14  2007-09-24 13:03:58  europe\L190409
+ * Revision 1.15  2007-09-26 13:54:37  europe\m00f069
+ * directory isn't mandatory anymore, temp file will be created in java.io.tempdir, see updated javadoc for more info
+ *
+ * Revision 1.14  2007/09/24 13:03:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved error messages
  *
  * Revision 1.13  2007/07/17 15:12:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -59,10 +62,14 @@ import sun.misc.BASE64Encoder;
 
 
 /**
- * FilePipe allows to write to or read from a file. 
- * Write will create a file in the specified directory. The name is a concatenation
- * of the correlation id, a string that guarantees the filename to be unique and the
- * specified writeSuffic.
+ * FilePipe allows to write to or read from a file.
+ * Write will create a file in the specified directory. If a directory is not
+ * specified, the fileName is expected to include the directory. If both the
+ * fileName and the directory are not specified a temporary file is created as
+ * specified by the {@link java.io.File.createTempFile} method using the string "ibis"
+ * as a prefix and a suffix as specified bij the writeSuffix attribute. If only
+ * the directory is specified, the temporary file is created the same way except
+ * that the temporay file is created in the specified directory.
  * The pipe also support base64 en- and decoding.
  * 
  * <p><b>Configuration:</b>
@@ -87,11 +94,12 @@ import sun.misc.BASE64Encoder;
  * </p>
  * 
  * @author J. Dekker
+ * @author Jaco de Groot (***@dynasol.nl)
  * @version Id
  *
  */
 public class FilePipe extends FixedForwardPipe {
-	public static final String version="$RCSfile: FilePipe.java,v $ $Revision: 1.14 $ $Date: 2007-09-24 13:03:58 $";
+	public static final String version="$RCSfile: FilePipe.java,v $ $Revision: 1.15 $ $Date: 2007-09-26 13:54:37 $";
 
 	protected String actions;
 	protected String directory;
@@ -228,23 +236,28 @@ public class FilePipe extends FixedForwardPipe {
 					throw new ConfigurationException(getLogPrefix(null)+"directory ["+ directory + "] is not a directory, or no write permission");
 				}
 			}
-			else {
-				throw new ConfigurationException(getLogPrefix(null)+"directory is not specified");
-			}
 		}
 		public byte[] go(byte[] in, PipeLineSession session) throws Exception {
 			File tmpFile;
-			File dirFile = new File(getDirectory());
 			
-			if (StringUtils.isEmpty(fileName)) {
-				if (StringUtils.isEmpty(fileNameSessionKey)) {
-				tmpFile = File.createTempFile("ibis", writeSuffix, dirFile);
-			} else {
-					tmpFile = new File(getDirectory()+File.separator+session.get(fileNameSessionKey));
+			String name = fileName;
+			if (StringUtils.isEmpty(name)) {
+				name = (String)session.get(fileNameSessionKey);
+			}
+			if (StringUtils.isEmpty(getDirectory())) {
+				if (StringUtils.isEmpty(name)) {
+					tmpFile = File.createTempFile("ibis", writeSuffix);
+				} else {
+					tmpFile = new File(name);
 				}
 			} else {
-				tmpFile = new File(getDirectory()+File.separator+fileName);
+				if (StringUtils.isEmpty(name)) {
+					tmpFile = File.createTempFile("ibis", writeSuffix, new File(getDirectory()));
+				} else {
+					tmpFile = new File(getDirectory() + File.separator + name);
+				}
 			}
+
 			// Use tmpFile.getPath() instead of tmpFile to be WAS 5.0 / Java 1.3 compatible
 			FileOutputStream fos = new FileOutputStream(tmpFile.getPath(), append);
 			
@@ -258,7 +271,7 @@ public class FilePipe extends FixedForwardPipe {
 				fos.close();
 			}
 			
-			return tmpFile.getName().getBytes();
+			return tmpFile.getPath().getBytes();
 		}
 	}
 
@@ -287,12 +300,14 @@ public class FilePipe extends FixedForwardPipe {
 					throw new ConfigurationException(directory + " is not a directory, or no read permission");
 				}
 			}
-			else {
-				throw new ConfigurationException("directory is not specified");
-			}
 		}
 		public byte[] go(byte[] in, PipeLineSession session) throws Exception {
-			File file = new File(getDirectory(), new String(in));
+			File file;
+			if (StringUtils.isNotEmpty(getDirectory())) {
+				file = new File(getDirectory(), new String(in));
+			} else {
+				file = new File(new String(in));
+			}
 			FileInputStream fis = new FileInputStream(file);
 			
 			try {
