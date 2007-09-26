@@ -1,6 +1,9 @@
 /*
  * $Log: Adapter.java,v $
- * Revision 1.31.2.3  2007-09-21 09:20:34  europe\M00035F
+ * Revision 1.31.2.4  2007-09-26 06:05:18  europe\M00035F
+ * Add exception-propagation to new JMS Listener; increase robustness of JMS configuration
+ *
+ * Revision 1.31.2.3  2007/09/21 09:20:34  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
  * * Remove UserTransaction from Adapter
  * * Remove InProcessStorage; refactor a lot of code in Receiver
  *
@@ -171,7 +174,7 @@ import org.springframework.util.CustomizableThreadCreator;
  */
 
 public class Adapter implements IAdapter, NamedBean {
-	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.31.2.3 $ $Date: 2007-09-21 09:20:34 $";
+	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.31.2.4 $ $Date: 2007-09-26 06:05:18 $";
 	private Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -793,6 +796,7 @@ public class Adapter implements IAdapter, NamedBean {
                 }
             } // End Runnable.run()
         }); // End Runnable
+        ((CustomizableThreadCreator)taskExecutor).setThreadNamePrefix(taskExecutor.getClass().getName());
 	} // End startRunning()
     
 	/**
@@ -873,8 +877,9 @@ public class Adapter implements IAdapter, NamedBean {
                     log.error("error running adapter [" + getName() + "] [" + ToStringBuilder.reflectionToString(e) + "]", e);
                     runState.setRunState(RunStateEnum.ERROR);
                 }
-            }
-        });
+            } // End of run()
+        }); // End of Runnable
+        ((CustomizableThreadCreator)taskExecutor).setThreadNamePrefix(taskExecutor.getClass().getName());
 	}
     
 	public String toString() {

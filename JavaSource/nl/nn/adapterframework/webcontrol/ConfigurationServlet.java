@@ -1,6 +1,9 @@
 /*
  * $Log: ConfigurationServlet.java,v $
- * Revision 1.10.2.1  2007-09-13 13:27:18  europe\M00035F
+ * Revision 1.10.2.2  2007-09-26 06:05:19  europe\M00035F
+ * Add exception-propagation to new JMS Listener; increase robustness of JMS configuration
+ *
+ * Revision 1.10.2.1  2007/09/13 13:27:18  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
  * First commit of work to use Spring for creating objects
  *
  * Revision 1.10  2007/07/19 15:20:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -54,7 +57,7 @@ import org.apache.log4j.Logger;
 public class ConfigurationServlet extends HttpServlet {
 	public static final String KEY_MANAGER = "KEY_MANAGER";
 	public static final String KEY_CONFIGURATION = "KEY_CONFIGURATION";
-	public static final String version = "$RCSfile: ConfigurationServlet.java,v $ $Revision: 1.10.2.1 $ $Date: 2007-09-13 13:27:18 $";
+	public static final String version = "$RCSfile: ConfigurationServlet.java,v $ $Revision: 1.10.2.2 $ $Date: 2007-09-26 06:05:19 $";
     protected Logger log = LogUtil.getLogger(this);
 
     static final String DFLT_DIGESTER_RULES = "digester-rules.xml";
@@ -173,14 +176,14 @@ public class ConfigurationServlet extends HttpServlet {
     public Configuration getConfiguration() {
         ServletContext ctx = getServletContext();
         Configuration config = null;
-        config = (Configuration) ctx.getAttribute(AppConstants.getInstance().getProperty(KEY_CONFIGURATION));
+        config = (Configuration) ctx.getAttribute(AppConstants.getInstance().getResolvedProperty(KEY_CONFIGURATION));
         return config;
     }
     
     public IbisManager getIbisManager() {
         ServletContext ctx = getServletContext();
         IbisManager manager = null;
-        manager = (IbisManager) ctx.getAttribute(AppConstants.getInstance().getProperty(KEY_MANAGER));
+        manager = (IbisManager) ctx.getAttribute(AppConstants.getInstance().getResolvedProperty(KEY_MANAGER));
         return manager;
     }
     
@@ -202,11 +205,12 @@ public class ConfigurationServlet extends HttpServlet {
                 log.warn("Configuration did not succeed, please examine log");
             ServletContext ctx = getServletContext();
             ctx.setAttribute(
-                    AppConstants.getInstance().getProperty(KEY_CONFIGURATION),
+                    AppConstants.getInstance().getResolvedProperty(KEY_CONFIGURATION),
                     im.getConfiguration());
             ctx.setAttribute(
-                    AppConstants.getInstance().getProperty(KEY_MANAGER),
-                    im.getIbisManager());
+                AppConstants.getInstance().getResolvedProperty(KEY_MANAGER),
+                im.getIbisManager());
+            log.debug("Servlet init finished");
         } else
             log.warn("Not all adapters are stopped, cancelling ConfigurationServlet");
 

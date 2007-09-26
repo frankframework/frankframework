@@ -1,6 +1,9 @@
 /*
  * $Log: JMSFacade.java,v $
- * Revision 1.26.4.1  2007-09-18 11:20:38  europe\M00035F
+ * Revision 1.26.4.2  2007-09-26 06:05:18  europe\M00035F
+ * Add exception-propagation to new JMS Listener; increase robustness of JMS configuration
+ *
+ * Revision 1.26.4.1  2007/09/18 11:20:38  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
  * * Update a number of method-signatures to take a java.util.Map instead of HashMap
  * * Rewrite JmsListener to be instance of IPushingListener; use Spring JMS Container
  *
@@ -119,7 +122,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version="$RCSfile: JMSFacade.java,v $ $Revision: 1.26.4.1 $ $Date: 2007-09-18 11:20:38 $";
+	public static final String version="$RCSfile: JMSFacade.java,v $ $Revision: 1.26.4.2 $ $Date: 2007-09-26 06:05:18 $";
 
 	public static final String MODE_PERSISTENT="PERSISTENT";
 	public static final String MODE_NON_PERSISTENT="NON_PERSISTENT";
@@ -198,7 +201,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	   return "unknown delivery mode ["+mode+"]";
    }
     
-	protected String getLogPrefix() {
+	public String getLogPrefix() {
 		return "["+getName()+"] ";
 	}
 
@@ -268,49 +271,60 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	}
 */
 	public String getConnectionFactoryName() throws JmsException {
-		String result;
+//		try {
+//            throw new Exception();
+//		} catch (Exception e) {
+//            log.debug("getConnectionFactoryName called from:", e);
+//		}
+        String result;
 		if (useTopicFunctions) {
 			result = isTransacted() ? getTopicConnectionFactoryNameXA() : getTopicConnectionFactoryName();
 			if (StringUtils.isEmpty(result)) {
 				result = isTransacted() ? getTopicConnectionFactoryName() : getTopicConnectionFactoryNameXA();
+                if (StringUtils.isEmpty(result)) {
+                    throw new JmsException(getLogPrefix()+"neither topicConnectionFactoryName nor topicConnectionFactoryNameXA are specified");
+                }
+                log.warn(getLogPrefix()+"correct topicConnectionFactoryName attribute not specified, will use ["+result+"]");
 			}
-			if (StringUtils.isEmpty(result)) {
-				throw new JmsException(getLogPrefix()+"neither topicConnectionFactoryName nor topicConnectionFactoryNameXA are specified");
-			}
-			log.warn(getLogPrefix()+"correct topicConnectionFactoryName attribute not specified, will use ["+result+"]");
 		}
 		else {
 			result = isTransacted() ? getQueueConnectionFactoryNameXA() : getQueueConnectionFactoryName();
 			if (StringUtils.isEmpty(result)) {
 				result = isTransacted() ? getQueueConnectionFactoryName() : getQueueConnectionFactoryNameXA();
-			}
-			if (StringUtils.isEmpty(result)) {
-				throw new JmsException(getLogPrefix()+"neither queueConnectionFactoryName nor queueConnectionFactoryNameXA are specified");
-			}
-			log.warn(getLogPrefix()+"correct queueConnectionFactoryName attribute not specified, will use ["+result+"]");
+    			if (StringUtils.isEmpty(result)) {
+    				throw new JmsException(getLogPrefix()+"neither queueConnectionFactoryName nor queueConnectionFactoryNameXA are specified; jms-realm:"+getJmsRealName());
+    			}
+                log.warn(getLogPrefix()+"correct queueConnectionFactoryName attribute not specified, will use ["+result+"]");
+            }
 		}
-		log.debug("["+name+"] returning ConnectionFactoryName ["+result+"]");
+		log.debug(getLogPrefix()+"returning " + (isTransacted() ? "XA" : "")
+            + "ConnectionFactoryName ["+result+"]");
 		return result;
 	}
 	
 	protected JmsConnection getConnection() throws JmsException {
-		if (connection == null) {
-			synchronized (this) {
-				if (connection == null) {
-					log.debug("instantiating JmsConnectionFactory");
-					JmsConnectionFactory jmsConnectionFactory = new JmsConnectionFactory();
-					try {
-						String connectionFactoryName = getConnectionFactoryName();
-						log.debug("creating JmsConnection");
+		// We use double-checked locking here
+        // We're aware of the risks involved, but consider them
+        // to be acceptable since this method is invoked first time
+        // from 'configure', at which time only 1 single thread will
+        // access the JMS Facade instance.
+        if (connection == null) {
+            synchronized (this) {
+                if (connection == null) {
+                    log.debug("instantiating JmsConnectionFactory");
+                    JmsConnectionFactory jmsConnectionFactory = new JmsConnectionFactory();
+                    try {
+                        String connectionFactoryName = getConnectionFactoryName();
+                        log.debug("creating JmsConnection");
 						connection = (JmsConnection)jmsConnectionFactory.getConnection(connectionFactoryName);
-					} catch (IbisException e) {
-						if (e instanceof JmsException) {
-							throw (JmsException)e;
-						}
-						throw new JmsException(e);
-					}
-				}
-			}
+                    } catch (IbisException e) {
+                        if (e instanceof JmsException) {
+                                throw (JmsException)e;
+                        }
+                        throw new JmsException(e);
+                    }
+                }
+            }
 		}
 		return connection;
 	}
@@ -555,11 +569,12 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	    String result = null;
 	
 		try {
-		    if (getDestination() != null) {
+            Destination d = getDestination();
+		    if (d != null) {
 	            if (useTopicFunctions)
-	                result = ((Topic) destination).getTopicName();
+	                result = ((Topic) d).getTopicName();
 	            else
-	                result = ((Queue) destination).getQueueName();
+	                result = ((Queue) d).getQueueName();
 		    }
 	    } catch (Exception je) {
 	        log.warn("[" + name + "] got exception in getPhysicalDestinationName", je);
@@ -1005,6 +1020,10 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	public boolean isTransacted() {
 		return transacted;
 	}
+
+    public boolean isUseTopicFunctions() {
+        return useTopicFunctions;
+    }
 
 	/**
 	 * Create a browser session

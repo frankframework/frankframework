@@ -4,7 +4,10 @@
  */
 package nl.nn.adapterframework.configuration;
 
+import javax.jms.Destination;
+import javax.naming.NamingException;
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.jms.JmsException;
 import nl.nn.adapterframework.jms.JmsListener;
 
 /**
@@ -16,6 +19,9 @@ import nl.nn.adapterframework.jms.JmsListener;
  *
  */
 public interface IJmsConfigurator {
+
+    Destination getDestination(String destinationName) throws JmsException, NamingException;
+    Destination getDestination();
     void configureJmsReceiver(JmsListener jmsListener) throws ConfigurationException;
     void openJmsReceiver() throws ListenerException;
     void closeJmsReceiver() throws ListenerException;

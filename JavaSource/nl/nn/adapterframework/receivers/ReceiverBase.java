@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.44.2.8  2007-09-21 14:22:15  europe\M00035F
+ * Revision 1.44.2.9  2007-09-26 06:05:18  europe\M00035F
+ * Add exception-propagation to new JMS Listener; increase robustness of JMS configuration
+ *
+ * Revision 1.44.2.8  2007/09/21 14:22:15  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
  * Apply a number of fixes so that the framework starts again
  *
  * Revision 1.44.2.7  2007/09/21 13:48:59  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
@@ -308,7 +311,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	private final static TransactionDefinition TXREQUIRED = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED);
 	private final static TransactionDefinition TXSUPPORTS = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_SUPPORTS);
     
-    public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.44.2.8 $ $Date: 2007-09-21 14:22:15 $";
+    public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.44.2.9 $ $Date: 2007-09-26 06:05:18 $";
 	protected Logger log = LogUtil.getLogger(this);
     
     private BeanFactory beanFactory;
@@ -554,6 +557,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 			//t.start();
             ((CustomizableThreadCreator)taskExecutor).setThreadNamePrefix(getName()+nameSuffix);
             taskExecutor.execute(listenerContainer);
+            ((CustomizableThreadCreator)taskExecutor).setThreadNamePrefix(taskExecutor.getClass().getName());
 		}
 	}
 

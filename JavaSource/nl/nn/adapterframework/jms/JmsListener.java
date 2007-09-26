@@ -2,7 +2,10 @@
  * Created on 18-sep-07
  * 
  * $Log: JmsListener.java,v $
- * Revision 1.25.4.2  2007-09-21 09:20:33  europe\M00035F
+ * Revision 1.25.4.3  2007-09-26 06:05:18  europe\M00035F
+ * Add exception-propagation to new JMS Listener; increase robustness of JMS configuration
+ *
+ * Revision 1.25.4.2  2007/09/21 09:20:33  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
  * * Remove UserTransaction from Adapter
  * * Remove InProcessStorage; refactor a lot of code in Receiver
  *
@@ -17,6 +20,7 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.Session;
 import javax.jms.TextMessage;
+import javax.naming.NamingException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IJmsConfigurator;
@@ -36,7 +40,7 @@ import nl.nn.adapterframework.core.PipeLineResult;
  * 
  */
 public class JmsListener extends JMSFacade implements IPushingListener {
-    public static final String version="$RCSfile: JmsListener.java,v $ $Revision: 1.25.4.2 $ $Date: 2007-09-21 09:20:33 $";
+    public static final String version="$RCSfile: JmsListener.java,v $ $Revision: 1.25.4.3 $ $Date: 2007-09-26 06:05:18 $";
 
     private final static String THREAD_CONTEXT_SESSION_KEY="session";
 
@@ -54,7 +58,6 @@ public class JmsListener extends JMSFacade implements IPushingListener {
 
     
     private IJmsConfigurator jmsConfigurator;
-    private String name;
     private IMessageHandler handler;
     private IbisExceptionListener exceptionListener;
     
@@ -311,20 +314,16 @@ public class JmsListener extends JMSFacade implements IPushingListener {
         }
     }
 
-    /* (non-Javadoc)
-     * @see nl.nn.adapterframework.core.INamedObject#getName()
-     */
-    public String getName() {
-        return name;
+    public Destination getDestination() {
+        Destination d = getJmsConfigurator().getDestination();
+        return d;
     }
 
-    /* (non-Javadoc)
-     * @see nl.nn.adapterframework.core.INamedObject#setName(java.lang.String)
-     */
-    public void setName(String name) {
-        this.name = name;
+    public Destination getDestination(String destinationName) throws JmsException, NamingException {
+        return getJmsConfigurator().getDestination(destinationName);
     }
-
+    
+    
     /**
      * @return
      */

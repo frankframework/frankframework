@@ -91,7 +91,7 @@ public class IbisMain {
         }
 
         if (autoStart.equalsIgnoreCase("TRUE")) {
-            log.info("Starting configuration");
+            log.info("Starting adapters");
             ibisManager.startIbis();
         }
         log.info(
