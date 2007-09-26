@@ -24,7 +24,6 @@
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/commons-httpclient-2.0.2.jar"/>
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/soap-2_3_1.jar"/>
     <classpathentry kind="lib" path="ojdbc14.jar"/>
-    <classpathentry kind="var" path="WAS_V5_XALAN"/>
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/xerces.jar"/>
     <classpathentry kind="lib" path="jsse.jar"/>
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/j2ssh.jar"/>
