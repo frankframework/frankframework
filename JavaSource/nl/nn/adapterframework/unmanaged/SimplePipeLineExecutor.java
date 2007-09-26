@@ -4,7 +4,7 @@
  */
 package nl.nn.adapterframework.unmanaged;
 
-import nl.nn.adapterframework.core.IPipeLineExecutor;
+import nl.nn.adapterframework.txsupport.IPipeLineExecutor;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;

@@ -24,6 +24,7 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.jms.JmsException;
 import nl.nn.adapterframework.jms.JmsListener;
 import nl.nn.adapterframework.receivers.GenericReceiver;
+import nl.nn.adapterframework.util.Counter;
 import org.apache.log4j.Logger;
 
 import org.springframework.beans.BeansException;
@@ -34,6 +35,9 @@ import org.springframework.jms.listener.DefaultMessageListenerContainer;
 import org.springframework.jms.listener.DefaultMessageListenerContainer102;
 import org.springframework.jms.listener.SessionAwareMessageListener;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 /**
  * Configure a Spring JMS Container from a {@link nl.nn.adapterframework.jms.JmsListener}.
@@ -50,9 +54,12 @@ import org.springframework.transaction.PlatformTransactionManager;
 public class SpringJmsConfigurator 
     implements IJmsConfigurator, BeanFactoryAware, ExceptionListener {
     private static final Logger log = Logger.getLogger(SpringJmsConfigurator.class);
+    public static final TransactionDefinition TXSUPPORTS = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_SUPPORTS);
+    public static final TransactionDefinition TXMANDATORY = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_MANDATORY);
     
-    public static final String version="$RCSfile: SpringJmsConfigurator.java,v $ $Revision: 1.1.2.3 $ $Date: 2007-09-26 06:05:19 $";
+    public static final String version="$RCSfile: SpringJmsConfigurator.java,v $ $Revision: 1.1.2.4 $ $Date: 2007-09-26 14:59:02 $";
     
+    private PlatformTransactionManager txManager;
     private String destinationName;
     private String connectionFactoryName;
     private Destination destination;
@@ -122,7 +129,7 @@ public class SpringJmsConfigurator
         jmsContainer = new DefaultMessageListenerContainer102();
         
         if (jmsListener.isTransacted()) {
-            jmsContainer.setTransactionManager((PlatformTransactionManager) beanFactory.getBean("txManager"));
+            jmsContainer.setTransactionManager(txManager);
         }
         
         // Initialize with a number of dynamic properties which come from the configuration file
@@ -139,20 +146,52 @@ public class SpringJmsConfigurator
         }
         
         final GenericReceiver receiver = (GenericReceiver) jmsListener.getHandler();
+        final Counter threadsProcessing = new Counter(0);
         jmsContainer.setConcurrentConsumers(receiver.getNumThreads());
         jmsContainer.setExceptionListener(this);
         jmsContainer.setMessageListener(new SessionAwareMessageListener() {
             public void onMessage(Message message, Session session)
                 throws JMSException {
+                
+                threadsProcessing.increase();
+                Thread.currentThread().setName(receiver.getName()+"["+threadsProcessing.getValue()+"]");
+                
+                TransactionStatus txStatus = null;
                 Map threadContext = new HashMap();
-                jmsListener.populateThreadContext(threadContext, session);
                 try {
+                    if (jmsListener.isTransacted()) {
+                        txStatus = txManager.getTransaction(TXMANDATORY);
+                        if (txStatus.isNewTransaction()) {
+                            log.error("Current Transaction is NEW, but was retrieved is using propagation:MANDATORY");
+                        }
+                    }
+                    jmsListener.populateThreadContext(threadContext, session);
                     receiver.processRawMessage(jmsListener, message, threadContext,
                         jmsListener.getTimeOut());
                 } catch (ListenerException e) {
                     // TODO Proper way to handle this error
-                    e.printStackTrace();
+                    invalidateSessionTransaction(e, session, txStatus);
+                } finally {
+                    threadsProcessing.decrease();
+                }
+            }
+
+            private void invalidateSessionTransaction(Throwable t, Session session,
+                    TransactionStatus txStatus) throws JMSException {
+                // TODO Proper way to handle this error
+                if (!jmsListener.isTransacted()) {
+                    log.debug("Exception caught in onMessage; rolling back JMS Session", t);
                     session.rollback();
+                } else {
+                    if (txStatus == null) {
+                        log.error("Unable to rollback current global transaction since it is null! Original exception for which we want to rollback:", t);
+                        throw new javax.jms.IllegalStateException("Trying to roll back current global transaction for transacted listener ["
+                                + jmsListener.getName()+"] but reference to transaction-status is null; original exception for which we want to rollback is instance of "
+                                + t.getClass().getName()+"; exception message: "+t.getMessage());
+                    }
+                    log.debug("Exception caught in onMessage; rolling back global transaction", t);
+                    txStatus.setRollbackOnly();
+                    throw new JMSException("Forcing rollback because Receiver could not process the message");
                 }
             }
         });
@@ -203,6 +242,7 @@ public class SpringJmsConfigurator
      * @see nl.nn.adapterframework.configuration.IJmsConfigurator#openJmsReceiver()
      */
     public void openJmsReceiver() throws ListenerException {
+        log.debug("Starting Spring JMS Container");
         try {
             jmsContainer.start();
         } catch (Exception e) {
@@ -214,10 +254,11 @@ public class SpringJmsConfigurator
      * @see nl.nn.adapterframework.configuration.IJmsConfigurator#closeJmsReceiver()
      */
     public void closeJmsReceiver() throws ListenerException {
+        log.debug("Stopping Spring JMS Container");
         try {
             jmsContainer.stop();
         } catch (Exception e) {
-            throw new ListenerException("Cannot stop Spring JMS Container", e);
+            throw new ListenerException("Exception while trying to stop Spring JMS Container", e);
         }
     }
 
@@ -237,6 +278,14 @@ public class SpringJmsConfigurator
         } else {
             log.error("Cannot report the error to an IBIS Exception Listener");
         }
+    }
+
+    public PlatformTransactionManager getTxManager() {
+        return txManager;
+    }
+
+    public void setTxManager(PlatformTransactionManager txManager) {
+        this.txManager = txManager;
     }
 
 }

@@ -2,7 +2,9 @@
  * Created on 14-sep-07
  *
  */
-package nl.nn.adapterframework.core;
+package nl.nn.adapterframework.txsupport;
+
+import nl.nn.adapterframework.core.*;
 
 /**
  * Interface for wrapping execution of a PipeLine in a transaction

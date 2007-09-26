@@ -48,6 +48,7 @@ public class PullingListenerContainer implements Runnable {
 	 */
     public void run() {
         threadsRunning.increase();
+        Thread.currentThread().setName(receiver.getName()+"-listener["+threadsRunning.getValue()+"]");
         IPullingListener listener = null;
         Map threadContext = null;
         try {

@@ -4,7 +4,9 @@
  * To change the template for this generated file go to
  * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
  */
-package nl.nn.adapterframework.core;
+package nl.nn.adapterframework.txsupport;
+
+import nl.nn.adapterframework.core.*;
 
 /**
  * @author m00035f

@@ -1,6 +1,9 @@
 /*
  * $Log: JtaUtil.java,v $
- * Revision 1.13  2007-08-10 11:22:29  europe\L190409
+ * Revision 1.13.2.1  2007-09-26 14:59:02  europe\M00035F
+ * Updates for more robust and correct transaction handling
+ *
+ * Revision 1.13  2007/08/10 11:22:29  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added non-argument inTransaction()
  *
  * Revision 1.12  2007/06/08 12:18:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -46,7 +49,10 @@ package nl.nn.adapterframework.util;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+import javax.transaction.HeuristicMixedException;
+import javax.transaction.HeuristicRollbackException;
 import javax.transaction.NotSupportedException;
+import javax.transaction.RollbackException;
 import javax.transaction.Status;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
@@ -64,7 +70,7 @@ import org.apache.log4j.Logger;
  * @since  4.1
  */
 public class JtaUtil {
-	public static final String version="$RCSfile: JtaUtil.java,v $ $Revision: 1.13 $ $Date: 2007-08-10 11:22:29 $";
+	public static final String version="$RCSfile: JtaUtil.java,v $ $Revision: 1.13.2.1 $ $Date: 2007-09-26 14:59:02 $";
 	private static Logger log = LogUtil.getLogger(JtaUtil.class);
 	
 	private static final String USERTRANSACTION_URL1_KEY="jta.userTransactionUrl1";
@@ -97,7 +103,40 @@ public class JtaUtil {
 		};
 
     private static UserTransaction utx;
+    
+    private static class UtxWrapper implements UserTransaction {
+        UserTransaction realUtx;
 
+        public UtxWrapper(UserTransaction realUtx) {
+            log.debug("Allocated wrapper around real JTA UserTransaction");
+            this.realUtx = realUtx;
+        }
+        
+        public void begin() throws NotSupportedException, SystemException {
+            throw new UnsupportedOperationException("Not supported anymore; use Spring Transaction Manager instead.");
+        }
+
+        public void commit() throws RollbackException, HeuristicMixedException, HeuristicRollbackException, SecurityException, IllegalStateException, SystemException {
+            throw new UnsupportedOperationException("Not supported anymore; use Spring Transaction Manager instead.");
+        }
+
+        public void rollback() throws IllegalStateException, SecurityException, SystemException {
+            throw new UnsupportedOperationException("Not supported anymore; use Spring Transaction Manager instead.");
+        }
+
+        public void setRollbackOnly() throws IllegalStateException, SystemException {
+            realUtx.setRollbackOnly();
+        }
+
+        public int getStatus() throws SystemException {
+            return realUtx.getStatus();
+        }
+
+        public void setTransactionTimeout(int timeout) throws SystemException {
+            realUtx.setTransactionTimeout(timeout);
+        }
+        
+    }
 	/**
 	 * returns a meaningful string describing the transaction status.
 	 */
@@ -175,18 +214,22 @@ public class JtaUtil {
 
 	/**
 	 * Returns a UserTransaction object, that is used by Receivers and PipeLines to demarcate transactions. 
+     * 
+     * The UserTransaction is wrapped in a private class to prevent begin, commit and rollback operations
 	 */
 	public static UserTransaction getUserTransaction(Context ctx, String userTransactionUrl) throws NamingException {
 	
 		if (utx == null) {
 			log.debug("looking up UserTransaction ["+userTransactionUrl+"] in context ["+ctx.toString()+"]");
-			utx = (UserTransaction)ctx.lookup(userTransactionUrl);
+			utx = new UtxWrapper((UserTransaction)ctx.lookup(userTransactionUrl));
 		}
 		return utx;
 	}
 
 	/**
 	 * Returns a UserTransaction object, that is used by Receivers and PipeLines to demarcate transactions. 
+     * 
+     * The UserTransaction is wrapped in a private class to prevent begin, commit and rollback operations
 	 */
 	public static UserTransaction getUserTransaction() throws NamingException {
 		if (utx == null) {
@@ -194,12 +237,12 @@ public class JtaUtil {
 			String url = AppConstants.getInstance().getProperty(USERTRANSACTION_URL1_KEY,null);
 			log.debug("looking up UserTransaction ["+url+"] in context ["+ctx.toString()+"]");
 			try {
-				utx = (UserTransaction)ctx.lookup(url);
+				utx = new UtxWrapper((UserTransaction)ctx.lookup(url));
 			} catch (Exception e) {
 				log.debug("Could not lookup UserTransaction from url ["+url+"], will try alternative uri: "+e.getMessage());
 				url = AppConstants.getInstance().getProperty(USERTRANSACTION_URL2_KEY,null);
 				log.debug("looking up UserTransaction ["+url+"] in context ["+ctx.toString()+"]");
-				utx = (UserTransaction)ctx.lookup(url);
+				utx = new UtxWrapper((UserTransaction)ctx.lookup(url));
 			}
 		}
 		return utx;
@@ -260,16 +303,28 @@ public class JtaUtil {
 			   transactionAttribute!=TRANSACTION_ATTRIBUTE_SUPPORTS;
 	}
 	
-	public static void startTransaction() throws NamingException, NotSupportedException, SystemException {
+	/**
+     * This method has been deprecated and should no longer be used. Use Spring Transaction Framework instead.
+     * @deprecated Use Spring Transaction Framework instead.
+     */
+    public static void startTransaction() throws NamingException, NotSupportedException, SystemException {
 		log.debug("starting new transaction");
 		utx=getUserTransaction();
 		utx.begin();
 	}
 
+	/**
+     * This method has been deprecated and should no longer be used. Use Spring Transaction Framework instead.
+     * @deprecated Use Spring Transaction Framework instead.
+     */
 	public static void finishTransaction() throws NamingException, IllegalStateException, SecurityException, SystemException {
 		finishTransaction(false);
 	}
 	
+	/**
+     * This method has been deprecated and should no longer be used. Use Spring Transaction Framework instead.
+     * @deprecated Use Spring Transaction Framework instead.
+     */
 	public static void finishTransaction(boolean rollbackonly) throws NamingException, IllegalStateException, SecurityException, SystemException {
 		utx=getUserTransaction();
 		try {

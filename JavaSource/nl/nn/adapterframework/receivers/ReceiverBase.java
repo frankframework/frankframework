@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.44.2.9  2007-09-26 06:05:18  europe\M00035F
+ * Revision 1.44.2.10  2007-09-26 14:59:03  europe\M00035F
+ * Updates for more robust and correct transaction handling
+ *
+ * Revision 1.44.2.9  2007/09/26 06:05:18  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
  * Add exception-propagation to new JMS Listener; increase robustness of JMS configuration
  *
  * Revision 1.44.2.8  2007/09/21 14:22:15  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
@@ -235,7 +238,6 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
-import org.springframework.util.CustomizableThreadCreator;
 
 /**
  * This {@link IReceiver Receiver} may be used as a base-class for developing receivers.
@@ -311,7 +313,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	private final static TransactionDefinition TXREQUIRED = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED);
 	private final static TransactionDefinition TXSUPPORTS = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_SUPPORTS);
     
-    public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.44.2.9 $ $Date: 2007-09-26 06:05:18 $";
+    public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.44.2.10 $ $Date: 2007-09-26 14:59:03 $";
 	protected Logger log = LogUtil.getLogger(this);
     
     private BeanFactory beanFactory;
@@ -555,9 +557,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		if (getListener() instanceof IPullingListener){
 			//Thread t = new Thread(this, getName() + (nameSuffix==null ? "" : nameSuffix));
 			//t.start();
-            ((CustomizableThreadCreator)taskExecutor).setThreadNamePrefix(getName()+nameSuffix);
             taskExecutor.execute(listenerContainer);
-            ((CustomizableThreadCreator)taskExecutor).setThreadNamePrefix(taskExecutor.getClass().getName());
 		}
 	}
 
@@ -956,6 +956,9 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
                         result=pipeLineResult.getResult();
                         errorMessage = "exitState ["+pipeLineResult.getState()+"], result ["+result+"]";
                     } catch (Throwable t) {
+                        if (txStatus.isRollbackOnly()) {
+                            log.debug("<*>"+getLogPrefix() + "TX Update: Transaction already marked for rollback-only");
+                        }
                         errorMessage = t.getMessage();
                         messageInError = true;
                         ListenerException l = wrapExceptionAsListenerException(t);
@@ -973,6 +976,10 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
             }
 		} finally {
             if (messageInError) {
+                // NB: Because the below happens from a finally-clause, any
+                // exception that has occurred will still be propagated even
+                // if we decide not to retry the message.
+                // This should perhaps be avoided
                 retryOrErrorStorage(rawMessage, startProcessingTimestamp, txStatus, errorMessage, message, messageId, correlationId);
             }
 			try {
@@ -983,6 +990,24 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 			} finally {
 				long finishProcessingTimestamp = System.currentTimeMillis();
 				finishProcessingMessage(finishProcessingTimestamp-startProcessingTimestamp);
+                if (!txStatus.isCompleted()) {
+                    // Log what we're about to do
+                    if (txStatus.isNewTransaction()) {
+                        if (txStatus.isRollbackOnly()) {
+                            log.debug(getLogPrefix() + "transaction marked for rollback, so rolling back the transaction");
+                        } else {
+                            log.debug(getLogPrefix() + "transaction is not marked for rollback, so committing the transaction");
+                        }
+                        // NB: Spring will take care of executing a commit or a rollback;
+                        // Spring will also ONLY commit the transaction if it was newly created
+                        // by the above call to txManager.getTransaction().
+                        txManager.commit(txStatus);
+                    } else {
+                        log.debug(getLogPrefix() + "transaction not new; commit-attempt should have no effect.");
+                    }
+                } else {
+                    log.warn("Transaction already completed; we didn't expect this");
+                }
 			}
 		}
 		log.debug(getLogPrefix()+"returning result ["+result+"] for message ["+messageId+"] correlationId ["+correlationId+"]");
@@ -1401,24 +1426,48 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
         txManager = manager;
     }
 
-    private void retryOrErrorStorage(Object rawMessage, long startProcessingTimestamp, TransactionStatus txStatus, String errorMessage, String message, String messageId, String correlationId) {
+    /**
+     * Decide if a failed message can be retried, or should be removed from the
+     * queue and put to the error-storage.
+     * 
+     * <p>
+     * In the former case, the current transaction is marked rollback-onle.
+     * </p>
+     * <p>
+     * In the latter case, the message is also moved to the error-storage and
+     * it's message-id is 'blacklisted' in the internal cache of poison-messages.
+     * </p>
+     * <p>
+     * NB: Because the current global transaction might have already been marked for
+     * rollback-only, even if we decide not to retry the message it might still
+     * be redelivered to us. In that case, the poison-cache will save the day.
+     * </p>
+     * 
+     * @return Returns <code>true</code> if the message can still be retried,
+     * or <code>false</code> if the message will not be retried.
+     */
+    private boolean retryOrErrorStorage(Object rawMessage, long startProcessingTimestamp, TransactionStatus txStatus, String errorMessage, String message, String messageId, String correlationId) {
 
         long retryCount = getAndIncrementMessageRetryCount(messageId);
-
+        log.error("receiver ["+getName()+"] message with id ["+messageId+"] had error in processing; current retry-count: " + retryCount);
         // If not yet exceeded the max retry count,
         // mark TX as rollback-only and throw an
         // exception
         if (retryCount < maxRetries) {
+            log.error("receiver ["+getName()+"] message with id ["+messageId+"] will be retried; transacion marked rollback-only");
             txStatus.setRollbackOnly();
+            return true;
         } else {
             // Max retries exceeded; message to be moved
             // to error location (OR LOST!)
+            log.error("receiver ["+getName()+"] message with id ["+messageId+"] retry count exceeded; remove from queue.");
             removeMessageRetryCount(messageId);
             if (rawMessage instanceof Serializable) {
                 moveInProcessToError(messageId, correlationId, message, new Date(startProcessingTimestamp), errorMessage, (Serializable) rawMessage);
             } else {
                 log.error("receiver [" + getName() + "] message is not serializable, cannot store in errorStorage [" + rawMessage + "]");
             }
+            return false;
         }
     }
 

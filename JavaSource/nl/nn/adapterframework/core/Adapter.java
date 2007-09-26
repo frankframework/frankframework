@@ -1,6 +1,9 @@
 /*
  * $Log: Adapter.java,v $
- * Revision 1.31.2.4  2007-09-26 06:05:18  europe\M00035F
+ * Revision 1.31.2.5  2007-09-26 14:59:02  europe\M00035F
+ * Updates for more robust and correct transaction handling
+ *
+ * Revision 1.31.2.4  2007/09/26 06:05:18  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
  * Add exception-propagation to new JMS Listener; increase robustness of JMS configuration
  *
  * Revision 1.31.2.3  2007/09/21 09:20:34  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
@@ -127,7 +130,7 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.NDC;
 import org.springframework.beans.factory.NamedBean;
 import org.springframework.core.task.TaskExecutor;
-import org.springframework.util.CustomizableThreadCreator;
+
 /**
  * The Adapter is the central manager in the IBIS Adapterframework, that has knowledge
  * and uses {@link IReceiver IReceivers} and a {@link PipeLine}.
@@ -174,7 +177,7 @@ import org.springframework.util.CustomizableThreadCreator;
  */
 
 public class Adapter implements IAdapter, NamedBean {
-	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.31.2.4 $ $Date: 2007-09-26 06:05:18 $";
+	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.31.2.5 $ $Date: 2007-09-26 14:59:02 $";
 	private Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -728,9 +731,9 @@ public class Adapter implements IAdapter, NamedBean {
 	 * @see Adapter#run
 	 */
 	public void startRunning() {
-        ((CustomizableThreadCreator)taskExecutor).setThreadNamePrefix(getName()+"-starting");
 		taskExecutor.execute(new Runnable() {
             public void run() {
+                Thread.currentThread().setName(getName()+"-startingAdapter");
                 try {
                     if (!configurationSucceeded) {
                         log.error(
@@ -796,7 +799,6 @@ public class Adapter implements IAdapter, NamedBean {
                 }
             } // End Runnable.run()
         }); // End Runnable
-        ((CustomizableThreadCreator)taskExecutor).setThreadNamePrefix(taskExecutor.getClass().getName());
 	} // End startRunning()
     
 	/**
@@ -831,9 +833,9 @@ public class Adapter implements IAdapter, NamedBean {
 
             runState.setRunState(RunStateEnum.STOPPING);
         }
-        ((CustomizableThreadCreator)taskExecutor).setThreadNamePrefix(getName()+ "-stopping");
         taskExecutor.execute(new Runnable() {
             public void run() {
+                Thread.currentThread().setName(getName()+"-stopAdapter");
                 try {
                     log.debug("Adapter [" + name + "] is stopping receivers");
                     Iterator it = receivers.iterator();
@@ -879,7 +881,6 @@ public class Adapter implements IAdapter, NamedBean {
                 }
             } // End of run()
         }); // End of Runnable
-        ((CustomizableThreadCreator)taskExecutor).setThreadNamePrefix(taskExecutor.getClass().getName());
 	}
     
 	public String toString() {

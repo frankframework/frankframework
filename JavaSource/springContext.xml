@@ -35,24 +35,25 @@
     <tx:advice id="txAdvice" transaction-manager="txManager">
         <!-- the transactional semantics... -->
         <tx:attributes>
-            <!-- all methods starting with 'get' are read-only -->
-            <tx:method name="*Required" propagation="REQUIRED"/>
-            <tx:method name="*Supports" propagation="SUPPORTS"/>
-            <tx:method name="*Mandatory" propagation="MANDATORY"/>
-            <tx:method name="*RequiresNew" propagation="REQUIRES_NEW"/>
-            <tx:method name="*NotSupported" propagation="NOT_SUPPORTED"/>
-            <tx:method name="*Never" propagation="NEVER"/>
+            <tx:method name="*Required*" propagation="REQUIRED" rollback-for="Throwable"/>
+            <tx:method name="*Supports*" propagation="SUPPORTS" rollback-for="Throwable"/>
+            <tx:method name="*Mandatory*" propagation="MANDATORY" rollback-for="Throwable"/>
+            <tx:method name="*RequiresNew*" propagation="REQUIRES_NEW" rollback-for="Throwable"/>
+            <tx:method name="*NotSupported*" propagation="NOT_SUPPORTED" rollback-for="Throwable"/>
+            <tx:method name="*Never*" propagation="NEVER" rollback-for="Throwable"/>
         </tx:attributes>
-      </tx:advice>
+    </tx:advice>
   
-      <!-- ensure that the above transactional advice runs for any execution
-           of an operation defined by the FooService interface -->
-      <aop:config>
-        <aop:pointcut id="txPropagationCut" expression="execution(* nl.nn.adapterframework.core.IPipe*Executor.*(..))"/>
+    <!-- ensure that the above transactional advice runs for any execution
+       of an operation defined by the FooService interface -->
+    <aop:config>
+        <aop:pointcut id="txPropagationCut" expression="execution(* nl.nn.adapterframework.txsupport.*.*(..))"/>
         <aop:advisor advice-ref="txAdvice" pointcut-ref="txPropagationCut"/>
-      </aop:config>
+        <aop:advisor advice-ref="aspectTester" pointcut-ref="txPropagationCut"/>
+    </aop:config>
       
-      
+    <bean id="aspectTester" class="nl.nn.adapterframework.unmanaged.TestAspect"/>
+    
     <!-- IBIS Beans -->
     <bean name="ibisManager" class="nl.nn.adapterframework.unmanaged.ThreadedIbisManager"
         autowire="byName">
