@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.46  2007-09-04 07:58:14  europe\L190409
+ * Revision 1.47  2007-09-27 12:53:26  europe\L190409
+ * improved warning
+ *
+ * Revision 1.46  2007/09/04 07:58:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * clearified exception message
  *
  * Revision 1.45  2007/07/17 15:09:08  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -219,7 +222,7 @@ import org.apache.log4j.Logger;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.46 $ $Date: 2007-09-04 07:58:14 $";
+	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.47 $ $Date: 2007-09-27 12:53:26 $";
     private Logger log = LogUtil.getLogger(this);
 	private Logger durationLog = LogUtil.getLogger("LongDurationMessages");
     
@@ -280,7 +283,7 @@ public class PipeLine {
 	        pw.setPath(name);
 	        registerForward(pw);
 	    } else {
-	        log.info("already had a pipeForward with name ["+ name+ "] skipping this one ["+ pipe.toString()+ "]");
+	        log.info("already had a pipeForward with name ["+ name+ "] skipping the implicit one to Pipe ["+ pipe.getName()+ "]");
 	    }
 	}
 	
