@@ -1,6 +1,9 @@
 /*
  * $Log: JmsListener.java,v $
- * Revision 1.25  2007-05-23 09:15:44  europe\L190409
+ * Revision 1.26  2007-09-27 12:53:53  europe\L190409
+ * clarified warning
+ *
+ * Revision 1.25  2007/05/23 09:15:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved error message
  *
  * Revision 1.24  2006/10/13 08:15:17  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -162,7 +165,7 @@ import java.util.HashMap;
  * @since 4.0.1
  */
 public class JmsListener extends JMSFacade implements IPostboxListener, ICorrelatedPullingListener, HasSender, RunStateEnquiring {
-	public static final String version="$RCSfile: JmsListener.java,v $ $Revision: 1.25 $ $Date: 2007-05-23 09:15:44 $";
+	public static final String version="$RCSfile: JmsListener.java,v $ $Revision: 1.26 $ $Date: 2007-09-27 12:53:53 $";
 
 	private final static String THREAD_CONTEXT_SESSION_KEY="session";
 	private final static String THREAD_CONTEXT_MESSAGECONSUMER_KEY="messageConsumer";
@@ -336,7 +339,7 @@ public class JmsListener extends JMSFacade implements IPostboxListener, ICorrela
 	            }
 	        } else {
 				if (sender==null) {
-					log.info("["+getName()+"] has no sender, not sending the result.");
+					log.debug("["+getName()+"] itself has no sender to send the result (An enclosing Receiver might still have one).");
 				} else {
 					if (log.isDebugEnabled()) {
 				        log.debug(
