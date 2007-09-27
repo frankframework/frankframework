@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractPipe.java,v $
- * Revision 1.28  2007-06-08 07:58:14  europe\L190409
+ * Revision 1.29  2007-09-27 12:54:38  europe\L190409
+ * improved warning about duplicate forward
+ *
+ * Revision 1.28  2007/06/08 07:58:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * set default transactionAttribute to Supports
  *
  * Revision 1.27  2007/05/02 11:34:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -166,7 +169,7 @@ import org.apache.log4j.Logger;
  * @see nl.nn.adapterframework.core.PipeLineSession
  */
 public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttribute, TracingEventNumbers {
-	public static final String version="$RCSfile: AbstractPipe.java,v $ $Revision: 1.28 $ $Date: 2007-06-08 07:58:14 $";
+	public static final String version="$RCSfile: AbstractPipe.java,v $ $Revision: 1.29 $ $Date: 2007-09-27 12:54:38 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -281,13 +284,13 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	 * @see PipeForward
 	 */
 	public void registerForward(PipeForward forward){
-		if (pipeForwards.get(forward.getName())==null){
+		PipeForward current=(PipeForward)pipeForwards.get(forward.getName());
+		if (current==null){
 			pipeForwards.put(forward.getName(), forward);
+		} else {
+			log.warn(getLogPrefix(null)+"PipeForward ["+forward.getName()+"] already registered, pointing to ["+current.getPath()+"]. Ignoring new one, that points to ["+forward.getPath()+"]");
 		}
-		else
-			log.warn("PipeForward ["+forward.getName()+"] already registered for pipe ["+name+"] ignoring this one");
- 	  
-	}
+ 	}
 
 	
 	/**
