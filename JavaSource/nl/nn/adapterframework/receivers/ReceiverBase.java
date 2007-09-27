@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.48  2007-09-25 11:34:02  europe\L190409
+ * Revision 1.49  2007-09-27 12:55:42  europe\L190409
+ * introduction of monitoring
+ *
+ * Revision 1.48  2007/09/25 11:34:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added deprecation warning for ibi42compatibility
  *
  * Revision 1.47  2007/09/24 13:05:41  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -188,6 +191,10 @@ import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TransactionException;
+import nl.nn.adapterframework.monitoring.EventTypeEnum;
+import nl.nn.adapterframework.monitoring.IMonitorAdapter;
+import nl.nn.adapterframework.monitoring.MonitorAdapterFactory;
+import nl.nn.adapterframework.monitoring.SeverityEnum;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Counter;
 import nl.nn.adapterframework.util.DomBuilderException;
@@ -280,8 +287,12 @@ import org.apache.log4j.Logger;
  * @since 4.2
  */
 public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, IMessageHandler, IbisExceptionListener, HasSender, TracingEventNumbers {
-	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.48 $ $Date: 2007-09-25 11:34:02 $";
+	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.49 $ $Date: 2007-09-27 12:55:42 $";
 	protected Logger log = LogUtil.getLogger(this);
+ 
+ 	public static final String RCV_SHUTDOWN_MONITOR_EVENT_MSG ="RCVCLOSED Ibis Receiver shut down";
+	public static final String RCV_SUSPENDED_MONITOR_EVENT_MSG="RCVSUSPND Ibis Receiver operation suspended due to exceptions";
+	public static final int RCV_SUSPENSION_MESSAGE_THRESHOLD=600;
  
 	private String returnIfStopped="";
 	private String fileNameIfStopped = null;
@@ -337,6 +348,8 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 	private int exceptionEvent=-1;
 
 	int retryInterval=1;
+	
+	IMonitorAdapter monitorAdapter=null;
     
 	protected String getLogPrefix() {
 		return "Receiver ["+getName()+"] "; 
@@ -595,6 +608,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 				}
 			}
 	
+			monitorAdapter=MonitorAdapterFactory.getMonitorAdapter();
 			if (adapter != null) {
 				adapter.getMessageKeeper().add("Receiver ["+getName()+"] initialization complete");
 			}
@@ -677,7 +691,9 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 	 * </ul>
 	 */
 	public void run() {
-		threadsRunning.increase();
+		if (threadsRunning.increase()==1) {
+			fireMonitorEvent(EventTypeEnum.CLEARING,SeverityEnum.HARMLESS,RCV_SHUTDOWN_MONITOR_EVENT_MSG);
+		} 
 		IPullingListener listener=null;
 		HashMap threadContext=null;
 		try {
@@ -709,7 +725,10 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 						try {
 							rawMessage = getRawMessage(threadContext);
 							synchronized (listener) {
-								retryInterval=1;
+								if (retryInterval > RCV_SUSPENSION_MESSAGE_THRESHOLD) {
+									fireMonitorEvent(EventTypeEnum.CLEARING,SeverityEnum.HARMLESS,RCV_SUSPENDED_MONITOR_EVENT_MSG);
+									retryInterval=1;
+								}
 							}
 						} catch (Exception e) {
 							if (ONERROR_CONTINUE.equalsIgnoreCase(getOnError())) {
@@ -722,6 +741,9 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 									}
 								}
 								error("caught Exception retrieving message, will continue retrieving messages in ["+currentInterval+"] seconds", e);
+								if (currentInterval*2 > RCV_SUSPENSION_MESSAGE_THRESHOLD) {
+									fireMonitorEvent(EventTypeEnum.TECHNICAL,SeverityEnum.WARNING,RCV_SUSPENDED_MONITOR_EVENT_MSG);
+								}
 								while (getRunState().equals(RunStateEnum.STARTED) && currentInterval-->0) {
 									try {
 										Thread.sleep(1000);
@@ -785,8 +807,10 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 	
 			if (stillRunning>0) {
 				log.info("a thread of Receiver ["+getName()+"] exited, ["+stillRunning+"] are still running");
+				fireMonitorEvent(EventTypeEnum.TECHNICAL,SeverityEnum.WARNING,"a thread shut down, ["+stillRunning+"] are still running");
 				return;
 			}
+			fireMonitorEvent(EventTypeEnum.TECHNICAL,SeverityEnum.CRITICAL,RCV_SHUTDOWN_MONITOR_EVENT_MSG);
 			log.info("the last thread of Receiver ["+getName()+"] exited, cleaning up");
 			closeAllResources();
 		}
@@ -1227,6 +1251,12 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 		}
 	}
 
+
+	protected void fireMonitorEvent(EventTypeEnum eventType, SeverityEnum severity, String message) {
+		if (monitorAdapter!=null) {
+			monitorAdapter.fireEvent(getName(), eventType, severity, message);
+		}
+	}
 
 
 	
