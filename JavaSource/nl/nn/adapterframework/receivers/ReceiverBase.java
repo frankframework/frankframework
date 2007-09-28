@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.44.2.11  2007-09-28 10:50:29  europe\M00035F
+ * Revision 1.44.2.12  2007-09-28 13:38:13  europe\M00035F
+ * Remove unnecessary cast and fix type-name on some JavaDoc
+ *
+ * Revision 1.44.2.11  2007/09/28 10:50:29  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
  * Updates for more robust and correct transaction handling
  * Update Xerces dependency to modern Xerces
  *
@@ -317,7 +320,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	private final static TransactionDefinition TXREQUIRED = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED);
 	private final static TransactionDefinition TXSUPPORTS = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_SUPPORTS);
     
-    public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.44.2.11 $ $Date: 2007-09-28 10:50:29 $";
+    public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.44.2.12 $ $Date: 2007-09-28 13:38:13 $";
 	protected Logger log = LogUtil.getLogger(this);
     
     private BeanFactory beanFactory;
@@ -1128,7 +1131,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	
 	/**
 	 * Returns the listener
-	 * @return IPullingListener
+	 * @return IListener
 	 */
 	public IListener getListener() {
 		return listener;
@@ -1136,15 +1139,13 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	 * Sets the listener. If the listener implements the {@link nl.nn.adapterframework.core.INamedObject name} interface and no <code>getName()</code>
 	 * of the listener is empty, the name of this object is given to the listener.
 	 * Creation date: (04-11-2003 12:04:05)
-	 * @param newListener IPullingListener
+	 * @param newListener IListener
 	 */
 	protected void setListener(IListener newListener) {
 		listener = newListener;
-		if (listener instanceof INamedObject)  {
-			if (StringUtils.isEmpty(((INamedObject)listener).getName())) {
-				((INamedObject) listener).setName("listener of ["+getName()+"]");
-			}
-		}
+        if (StringUtils.isEmpty(listener.getName())) {
+            listener.setName("listener of ["+getName()+"]");
+        }
 		if (listener instanceof RunStateEnquiring)  {
 			((RunStateEnquiring) listener).SetRunStateEnquirer(runState);
 		}
