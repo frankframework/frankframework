@@ -2,7 +2,10 @@
  * Created on 18-sep-07
  * 
  * $Log: JmsListener.java,v $
- * Revision 1.25.4.3  2007-09-26 06:05:18  europe\M00035F
+ * Revision 1.25.4.4  2007-09-28 14:20:26  europe\M00035F
+ * Add destroying of thread-context; allow session to be 'null' when populating thread-context
+ *
+ * Revision 1.25.4.3  2007/09/26 06:05:18  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
  * Add exception-propagation to new JMS Listener; increase robustness of JMS configuration
  *
  * Revision 1.25.4.2  2007/09/21 09:20:33  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
@@ -40,10 +43,11 @@ import nl.nn.adapterframework.core.PipeLineResult;
  * 
  */
 public class JmsListener extends JMSFacade implements IPushingListener {
-    public static final String version="$RCSfile: JmsListener.java,v $ $Revision: 1.25.4.3 $ $Date: 2007-09-26 06:05:18 $";
+    public static final String version="$RCSfile: JmsListener.java,v $ $Revision: 1.25.4.4 $ $Date: 2007-09-28 14:20:26 $";
 
     private final static String THREAD_CONTEXT_SESSION_KEY="session";
-
+    private final static String THREAD_CONTEXT_SESSION_OWNER_FLAG_KEY="isSessionOwner";
+    
     private long timeOut = 3000;
     private boolean useReplyTo=true;
     private String replyMessageType=null;
@@ -91,7 +95,7 @@ public class JmsListener extends JMSFacade implements IPushingListener {
      * @see nl.nn.adapterframework.core.IListener#open()
      */
     public void open() throws ListenerException {
-        // Do NOT open JMSFacade!
+        // DO NOT open JMSFacade!
         jmsConfigurator.openJmsReceiver();
     }
 
@@ -99,8 +103,13 @@ public class JmsListener extends JMSFacade implements IPushingListener {
      * @see nl.nn.adapterframework.core.IListener#close()
      */
     public void close() throws ListenerException {
-        // Do NOT close JMSFacade!
-        jmsConfigurator.closeJmsReceiver();
+        try {
+            // DO close JMSFacade - it might have been opened via other calls
+            jmsConfigurator.closeJmsReceiver();
+            closeFacade();
+        } catch (JmsException ex) {
+            throw new ListenerException(ex);
+        }
     }
     
     /**
@@ -113,8 +122,21 @@ public class JmsListener extends JMSFacade implements IPushingListener {
      * @param threadContext
      * @param session
      */
-    public void populateThreadContext(Map threadContext, Session session) {
+    public void populateThreadContext(Map threadContext, Session session) throws JmsException {
+        boolean isSessionOwner = (session == null);
+        if (session == null) {
+            session = super.createSession();
+        }
         threadContext.put(THREAD_CONTEXT_SESSION_KEY, session);
+        threadContext.put(THREAD_CONTEXT_SESSION_OWNER_FLAG_KEY, Boolean.valueOf(isSessionOwner));
+    }
+    
+    public void destroyThreadContext(Map threadContext) {
+        Boolean isSessionOwner = (Boolean) threadContext.get(THREAD_CONTEXT_SESSION_OWNER_FLAG_KEY);
+        if (isSessionOwner.booleanValue()) {
+            Session session = (Session) threadContext.get(THREAD_CONTEXT_SESSION_KEY);
+            super.closeSession(session);
+        }
     }
     
     /* (non-Javadoc)
