@@ -2,10 +2,9 @@
  * Created on 13-sep-07
  *
  */
-package nl.nn.adapterframework.unmanaged;
+package nl.nn.adapterframework.txsupport;
 
 import nl.nn.adapterframework.core.IPipe;
-import nl.nn.adapterframework.txsupport.IPipeExecutor;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;

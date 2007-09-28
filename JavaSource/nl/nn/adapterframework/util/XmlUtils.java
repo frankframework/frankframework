@@ -1,6 +1,10 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.41  2007-07-17 11:02:40  europe\L190409
+ * Revision 1.41.2.1  2007-09-28 10:50:29  europe\M00035F
+ * Updates for more robust and correct transaction handling
+ * Update Xerces dependency to modern Xerces
+ *
+ * Revision 1.41  2007/07/17 11:02:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * encodeChars for byteArray
  *
  * Revision 1.40  2007/05/08 16:04:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -179,7 +183,7 @@ import org.xml.sax.helpers.DefaultHandler;
  * @version Id
  */
 public class XmlUtils {
-	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.41 $ $Date: 2007-07-17 11:02:40 $";
+	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.41.2.1 $ $Date: 2007-09-28 10:50:29 $";
 	static Logger log = LogUtil.getLogger(XmlUtils.class);
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
@@ -1084,7 +1088,7 @@ public class XmlUtils {
 		sb.append("Apache-XML tool version info:"+SystemUtils.LINE_SEPARATOR);
 
 		try {
-			sb.append("Xerces-Version="+org.apache.xerces.framework.Version.fVersion+SystemUtils.LINE_SEPARATOR);
+			sb.append("Xerces-Version="+org.apache.xerces.impl.Version.fVersion+SystemUtils.LINE_SEPARATOR);
 		}  catch (Throwable t) {
 			sb.append("Xerces-Version not found ("+t.getClass().getName()+": "+t.getMessage()+")"+SystemUtils.LINE_SEPARATOR);
 		}

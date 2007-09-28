@@ -1,6 +1,10 @@
 /*
  * $Log: MailSender.java,v $
- * Revision 1.13  2007-02-12 14:02:19  europe\L190409
+ * Revision 1.13.4.1  2007-09-28 10:50:29  europe\M00035F
+ * Updates for more robust and correct transaction handling
+ * Update Xerces dependency to modern Xerces
+ *
+ * Revision 1.13  2007/02/12 14:02:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Logger from LogUtil
  *
  * Revision 1.12  2005/12/19 16:37:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -77,7 +81,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.soap.util.mime.ByteArrayDataSource;
-import org.apache.xerces.utils.Base64;
+import org.apache.xerces.impl.dv.util.Base64;
 import org.w3c.dom.Element;
 
 /**
@@ -143,7 +147,7 @@ import org.w3c.dom.Element;
  */
 
 public class MailSender implements ISenderWithParameters {
-	public static final String version = "$RCSfile: MailSender.java,v $  $Revision: 1.13 $ $Date: 2007-02-12 14:02:19 $";
+	public static final String version = "$RCSfile: MailSender.java,v $  $Revision: 1.13.4.1 $ $Date: 2007-09-28 10:50:29 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -452,16 +456,14 @@ public class MailSender implements ISenderWithParameters {
 	}
 
 	private DataHandler decodeBase64 (String str) {
-			byte[] bytesEncoded = str.getBytes();
-			byte[] bytesDecoded = Base64.decode(bytesEncoded);
+			byte[] bytesDecoded = Base64.decode(str);
 			String encodingType = "application/octet-stream";
 			DataSource ads = new ByteArrayDataSource(bytesDecoded, encodingType);
 			return new DataHandler(ads);
 	}
 
 	private String decodeBase64ToString (String str) {
-			byte[] bytesEncoded = str.getBytes();
-			byte[] bytesDecoded = Base64.decode(bytesEncoded);
+			byte[] bytesDecoded = Base64.decode(str);
 			return new String(bytesDecoded);
 	}
 

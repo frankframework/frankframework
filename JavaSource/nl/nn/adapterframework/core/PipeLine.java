@@ -1,6 +1,10 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.45.2.3  2007-09-26 14:59:02  europe\M00035F
+ * Revision 1.45.2.4  2007-09-28 10:50:29  europe\M00035F
+ * Updates for more robust and correct transaction handling
+ * Update Xerces dependency to modern Xerces
+ *
+ * Revision 1.45.2.3  2007/09/26 14:59:02  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
  * Updates for more robust and correct transaction handling
  *
  * Revision 1.45.2.2  2007/09/14 14:33:19  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
@@ -227,7 +231,7 @@ import org.apache.log4j.Logger;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.45.2.3 $ $Date: 2007-09-26 14:59:02 $";
+	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.45.2.4 $ $Date: 2007-09-28 10:50:29 $";
     private Logger log = LogUtil.getLogger(this);
 	private Logger durationLog = LogUtil.getLogger("LongDurationMessages");
     
@@ -437,7 +441,6 @@ public class PipeLine {
     
     protected PipeLineResult runPipeLineObeyingTransactionAttribute(String messageId, String message, PipeLineSession session) throws PipeRunException {
         int txOption = this.getTransactionAttributeNum();
-        log.debug("Running pipeline [" + owner.getName() + "] with transaction " + getTransactionAttribute());
         switch (txOption) {
             case JtaUtil.TRANSACTION_ATTRIBUTE_MANDATORY:
             return pipeLineExecutor.doPipeLineTxMandatory(this, messageId, message, session);
@@ -464,7 +467,6 @@ public class PipeLine {
     }
     
 	protected PipeRunResult runPipeObeyingTransactionAttribute(IPipe pipe, Object message, PipeLineSession session) throws PipeRunException {
-        // TODO: Check for deprecated 'transacted' attribute being set and select txOption accordingling
         int txOption;
         if (pipe instanceof HasTransactionAttribute) {
             HasTransactionAttribute taPipe = (HasTransactionAttribute) pipe;
@@ -472,9 +474,6 @@ public class PipeLine {
         } else {
             txOption = JtaUtil.TRANSACTION_ATTRIBUTE_DEFAULT;
         }
-        log.debug("Running pipe [" + pipe.getName()
-                + "] of pipeline [" + owner.getName() + "] with transaction "
-                + getTransactionAttribute());
         switch (txOption) {
             case JtaUtil.TRANSACTION_ATTRIBUTE_MANDATORY:
             return pipeExecutor.doPipeTxMandatory(pipe, message, session);

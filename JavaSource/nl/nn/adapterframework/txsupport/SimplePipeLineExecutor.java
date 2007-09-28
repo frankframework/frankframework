@@ -2,9 +2,8 @@
  * Created on 14-sep-07
  *
  */
-package nl.nn.adapterframework.unmanaged;
+package nl.nn.adapterframework.txsupport;
 
-import nl.nn.adapterframework.txsupport.IPipeLineExecutor;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;

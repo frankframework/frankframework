@@ -35,12 +35,12 @@
     <tx:advice id="txAdvice" transaction-manager="txManager">
         <!-- the transactional semantics... -->
         <tx:attributes>
-            <tx:method name="*Required*" propagation="REQUIRED" rollback-for="Throwable"/>
-            <tx:method name="*Supports*" propagation="SUPPORTS" rollback-for="Throwable"/>
-            <tx:method name="*Mandatory*" propagation="MANDATORY" rollback-for="Throwable"/>
-            <tx:method name="*RequiresNew*" propagation="REQUIRES_NEW" rollback-for="Throwable"/>
-            <tx:method name="*NotSupported*" propagation="NOT_SUPPORTED" rollback-for="Throwable"/>
-            <tx:method name="*Never*" propagation="NEVER" rollback-for="Throwable"/>
+            <tx:method name="*Required" propagation="REQUIRED" rollback-for="Throwable"/>
+            <tx:method name="*Supports" propagation="SUPPORTS" rollback-for="Throwable"/>
+            <tx:method name="*Mandatory" propagation="MANDATORY" rollback-for="Throwable"/>
+            <tx:method name="*RequiresNew" propagation="REQUIRES_NEW" rollback-for="Throwable"/>
+            <tx:method name="*NotSupported" propagation="NOT_SUPPORTED" rollback-for="Throwable"/>
+            <tx:method name="*Never" propagation="NEVER" rollback-for="Throwable"/>
         </tx:attributes>
     </tx:advice>
   
@@ -49,10 +49,13 @@
     <aop:config>
         <aop:pointcut id="txPropagationCut" expression="execution(* nl.nn.adapterframework.txsupport.*.*(..))"/>
         <aop:advisor advice-ref="txAdvice" pointcut-ref="txPropagationCut"/>
-        <aop:advisor advice-ref="aspectTester" pointcut-ref="txPropagationCut"/>
+        <!-- <aop:advisor advice-ref="aspectTester" pointcut-ref="txPropagationCut"/>-->
+        <aop:aspect id="aspectTester" ref="aspectTesterBean">
+            <aop:around pointcut-ref="txPropagationCut" method="testAspectInvocation"/>
+        </aop:aspect>
     </aop:config>
       
-    <bean id="aspectTester" class="nl.nn.adapterframework.unmanaged.TestAspect"/>
+    <bean id="aspectTesterBean" class="nl.nn.adapterframework.unmanaged.TestAspect"/>
     
     <!-- IBIS Beans -->
     <bean name="ibisManager" class="nl.nn.adapterframework.unmanaged.ThreadedIbisManager"
@@ -98,12 +101,22 @@
         factory-method="getInstance">
     </bean>
     
-    <bean name="pipeLineExecutor" class="nl.nn.adapterframework.unmanaged.SimplePipeLineExecutor"
+    <!--
+    <bean name="pipeLineExecutor" class="nl.nn.adapterframework.txsupport.SimplePipeLineExecutor"
         scope="singleton">
     </bean>
     
-    <bean name="pipeExecutor" class="nl.nn.adapterframework.unmanaged.SimplePipeExecutor"
+    <bean name="pipeExecutor" class="nl.nn.adapterframework.txsupport.SimplePipeExecutor"
         scope="singleton">
+    </bean>
+    -->
+    
+    <bean name="pipeLineExecutor" class="nl.nn.adapterframework.txsupport.SpringTxPipeLineExecutor"
+        autowire="byName" scope="singleton">
+    </bean>
+    
+    <bean name="pipeExecutor" class="nl.nn.adapterframework.txsupport.SpringTxPipeExecutor"
+        autowire="byName" scope="singleton">
     </bean>
     
     <bean name="jmsConfigurator" class="nl.nn.adapterframework.unmanaged.SpringJmsConfigurator"
@@ -125,6 +138,8 @@
     <bean id="scheduler" class="org.springframework.scheduling.quartz.SchedulerFactoryBean"
         autowire="byName">
         <!-- Auto-wiring wires up bean named taskExecutor as threadpool implementation -->
+        <property name="autoStartup" value="false"/>
+        <property name="transactionManager" ref="txManager"/>
     </bean>
     
     <bean id="schedulerHelper" class="nl.nn.adapterframework.scheduler.SchedulerHelper"

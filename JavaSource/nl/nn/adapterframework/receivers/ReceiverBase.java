@@ -1,6 +1,10 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.44.2.10  2007-09-26 14:59:03  europe\M00035F
+ * Revision 1.44.2.11  2007-09-28 10:50:29  europe\M00035F
+ * Updates for more robust and correct transaction handling
+ * Update Xerces dependency to modern Xerces
+ *
+ * Revision 1.44.2.10  2007/09/26 14:59:03  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
  * Updates for more robust and correct transaction handling
  *
  * Revision 1.44.2.9  2007/09/26 06:05:18  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
@@ -313,7 +317,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	private final static TransactionDefinition TXREQUIRED = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED);
 	private final static TransactionDefinition TXSUPPORTS = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_SUPPORTS);
     
-    public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.44.2.10 $ $Date: 2007-09-26 14:59:03 $";
+    public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.44.2.11 $ $Date: 2007-09-28 10:50:29 $";
 	protected Logger log = LogUtil.getLogger(this);
     
     private BeanFactory beanFactory;
@@ -956,9 +960,9 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
                         result=pipeLineResult.getResult();
                         errorMessage = "exitState ["+pipeLineResult.getState()+"], result ["+result+"]";
                     } catch (Throwable t) {
-                        if (txStatus.isRollbackOnly()) {
-                            log.debug("<*>"+getLogPrefix() + "TX Update: Transaction already marked for rollback-only");
-                        }
+                        log.debug("<*>"+getLogPrefix() + "TX Update: Received failure, transaction " +
+                                (txStatus.isRollbackOnly()?"already":"not yet") +
+                                " marked for rollback-only");
                         errorMessage = t.getMessage();
                         messageInError = true;
                         ListenerException l = wrapExceptionAsListenerException(t);
@@ -1450,12 +1454,15 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 
         long retryCount = getAndIncrementMessageRetryCount(messageId);
         log.error("receiver ["+getName()+"] message with id ["+messageId+"] had error in processing; current retry-count: " + retryCount);
+        
+        // Mark TX as rollback-only, because in any case updates done in the
+        // transaction may not be performed.
+        txStatus.setRollbackOnly();
         // If not yet exceeded the max retry count,
         // mark TX as rollback-only and throw an
         // exception
         if (retryCount < maxRetries) {
             log.error("receiver ["+getName()+"] message with id ["+messageId+"] will be retried; transacion marked rollback-only");
-            txStatus.setRollbackOnly();
             return true;
         } else {
             // Max retries exceeded; message to be moved

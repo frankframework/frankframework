@@ -20,7 +20,11 @@ public class TestAspect {
     private final static Logger log = Logger.getLogger(TestAspect.class);
     
     public Object testAspectInvocation(ProceedingJoinPoint pjp) throws Throwable {
-        log.fatal("testAspectInvocation for pjp ["+pjp+"]");
-        return pjp.proceed();
+        log.fatal("<*****>testAspectInvocation for pjp ["+pjp+"]<*****>");
+        try {
+            return pjp.proceed();
+        } finally {
+            log.fatal("<******> done invoking method; return result <******>");
+        }
     }
 }

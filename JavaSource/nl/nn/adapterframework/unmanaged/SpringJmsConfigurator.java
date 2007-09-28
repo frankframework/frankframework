@@ -57,7 +57,7 @@ public class SpringJmsConfigurator
     public static final TransactionDefinition TXSUPPORTS = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_SUPPORTS);
     public static final TransactionDefinition TXMANDATORY = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_MANDATORY);
     
-    public static final String version="$RCSfile: SpringJmsConfigurator.java,v $ $Revision: 1.1.2.4 $ $Date: 2007-09-26 14:59:02 $";
+    public static final String version="$RCSfile: SpringJmsConfigurator.java,v $ $Revision: 1.1.2.5 $ $Date: 2007-09-28 10:50:28 $";
     
     private PlatformTransactionManager txManager;
     private String destinationName;
@@ -145,10 +145,12 @@ public class SpringJmsConfigurator
             throw new ConfigurationException("Cannot look up destination", e);
         }
         
+        jmsContainer.setExceptionListener(this);
+        jmsContainer.setReceiveTimeout(jmsListener.getTimeOut());
+        
         final GenericReceiver receiver = (GenericReceiver) jmsListener.getHandler();
         final Counter threadsProcessing = new Counter(0);
         jmsContainer.setConcurrentConsumers(receiver.getNumThreads());
-        jmsContainer.setExceptionListener(this);
         jmsContainer.setMessageListener(new SessionAwareMessageListener() {
             public void onMessage(Message message, Session session)
                 throws JMSException {
