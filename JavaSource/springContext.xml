@@ -47,7 +47,8 @@
     <!-- ensure that the above transactional advice runs for any execution
        of an operation defined by the FooService interface -->
     <aop:config>
-        <aop:pointcut id="txPropagationCut" expression="execution(* nl.nn.adapterframework.txsupport.*.*(..))"/>
+        <!-- <aop:pointcut id="txPropagationCut" expression="execution(* nl.nn.adapterframework.txsupport.*.*(..))"/> -->
+        <aop:pointcut id="txPropagationCut" expression=""/>
         <aop:advisor advice-ref="txAdvice" pointcut-ref="txPropagationCut"/>
         <!-- <aop:advisor advice-ref="aspectTester" pointcut-ref="txPropagationCut"/>-->
         <aop:aspect id="aspectTester" ref="aspectTesterBean">
