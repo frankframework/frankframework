@@ -57,7 +57,7 @@ public class SpringJmsConfigurator
     public static final TransactionDefinition TXSUPPORTS = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_SUPPORTS);
     public static final TransactionDefinition TXMANDATORY = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_MANDATORY);
     
-    public static final String version="$RCSfile: SpringJmsConfigurator.java,v $ $Revision: 1.1.2.5 $ $Date: 2007-09-28 10:50:28 $";
+    public static final String version="$RCSfile: SpringJmsConfigurator.java,v $ $Revision: 1.1.2.6 $ $Date: 2007-09-28 14:19:40 $";
     
     private PlatformTransactionManager txManager;
     private String destinationName;
@@ -170,11 +170,13 @@ public class SpringJmsConfigurator
                     jmsListener.populateThreadContext(threadContext, session);
                     receiver.processRawMessage(jmsListener, message, threadContext,
                         jmsListener.getTimeOut());
+                } catch (JmsException e) {
+                    invalidateSessionTransaction(e, session, txStatus);
                 } catch (ListenerException e) {
-                    // TODO Proper way to handle this error
                     invalidateSessionTransaction(e, session, txStatus);
                 } finally {
                     threadsProcessing.decrease();
+                    jmsListener.destroyThreadContext(threadContext);
                 }
             }
 
