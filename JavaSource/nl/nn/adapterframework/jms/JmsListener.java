@@ -2,7 +2,10 @@
  * Created on 18-sep-07
  * 
  * $Log: JmsListener.java,v $
- * Revision 1.25.4.4  2007-09-28 14:20:26  europe\M00035F
+ * Revision 1.25.4.5  2007-10-01 09:16:18  europe\M00035F
+ * Lazy creation of Session when not provided by caller
+ *
+ * Revision 1.25.4.4  2007/09/28 14:20:26  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
  * Add destroying of thread-context; allow session to be 'null' when populating thread-context
  *
  * Revision 1.25.4.3  2007/09/26 06:05:18  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
@@ -43,7 +46,7 @@ import nl.nn.adapterframework.core.PipeLineResult;
  * 
  */
 public class JmsListener extends JMSFacade implements IPushingListener {
-    public static final String version="$RCSfile: JmsListener.java,v $ $Revision: 1.25.4.4 $ $Date: 2007-09-28 14:20:26 $";
+    public static final String version="$RCSfile: JmsListener.java,v $ $Revision: 1.25.4.5 $ $Date: 2007-10-01 09:16:18 $";
 
     private final static String THREAD_CONTEXT_SESSION_KEY="session";
     private final static String THREAD_CONTEXT_SESSION_OWNER_FLAG_KEY="isSessionOwner";
@@ -117,26 +120,27 @@ public class JmsListener extends JMSFacade implements IPushingListener {
      * This includes a Session. The Session object can be passed in
      * externally.
      * 
-     * TODO: What if Session passed in is <code>null</code>?
-     * 
      * @param threadContext
      * @param session
      */
-    public void populateThreadContext(Map threadContext, Session session) throws JmsException {
-        boolean isSessionOwner = (session == null);
-        if (session == null) {
-            session = super.createSession();
+    public void populateThreadContext(Map threadContext, Session session) {
+        if (session != null) {
+            threadContext.put(THREAD_CONTEXT_SESSION_KEY, session);
+            threadContext.put(THREAD_CONTEXT_SESSION_OWNER_FLAG_KEY, Boolean.FALSE);
         }
-        threadContext.put(THREAD_CONTEXT_SESSION_KEY, session);
-        threadContext.put(THREAD_CONTEXT_SESSION_OWNER_FLAG_KEY, Boolean.valueOf(isSessionOwner));
     }
     
     public void destroyThreadContext(Map threadContext) {
-        Boolean isSessionOwner = (Boolean) threadContext.get(THREAD_CONTEXT_SESSION_OWNER_FLAG_KEY);
-        if (isSessionOwner.booleanValue()) {
-            Session session = (Session) threadContext.get(THREAD_CONTEXT_SESSION_KEY);
-            super.closeSession(session);
+        // Do we have a session in the thread-context, and do we need to close it?
+        if (threadContext.containsKey(THREAD_CONTEXT_SESSION_KEY)) {
+            Boolean isSessionOwner = (Boolean) threadContext.get(THREAD_CONTEXT_SESSION_OWNER_FLAG_KEY);
+            if (isSessionOwner.booleanValue()) {
+                Session session = (Session) threadContext.get(THREAD_CONTEXT_SESSION_KEY);
+                super.closeSession(session);
+            }
         }
+        
+        // No other cleanups yet
     }
     
     /* (non-Javadoc)
@@ -290,7 +294,7 @@ public class JmsListener extends JMSFacade implements IPushingListener {
                     }
                 }
                 if (threadContext!=null) {
-                    session = (Session)threadContext.get(THREAD_CONTEXT_SESSION_KEY);
+                    session = getSessionFromThreadContext(threadContext);
                 }
                 send(session, replyTo, cid, pipeLineResult.getResult(), getReplyMessageType(), timeToLive, stringToDeliveryMode(getReplyDeliveryMode()), getReplyPriority()); 
             } else {
@@ -310,7 +314,8 @@ public class JmsListener extends JMSFacade implements IPushingListener {
             if (!isTransacted()) {
                 if (isJmsTransacted()) {
                     // the following if transacted using transacted sessions, instead of XA-enabled sessions.
-                    Session session = (Session)threadContext.get(THREAD_CONTEXT_SESSION_KEY);
+                    Session session;
+                    session = getSessionFromThreadContext(threadContext);
                     if (session == null) {
                         log.warn("Listener ["+getName()+"] message ["+ (String)threadContext.get("id") +"] has no session to commit or rollback");
                     } else {
@@ -332,7 +337,11 @@ public class JmsListener extends JMSFacade implements IPushingListener {
                 }
             }
         } catch (Exception e) {
-            throw new ListenerException(e);
+            if (e instanceof ListenerException) {
+                throw (ListenerException)e;
+            } else {
+                throw new ListenerException(e);
+            }
         }
     }
 
@@ -498,6 +507,18 @@ public class JmsListener extends JMSFacade implements IPushingListener {
      */
     public void setUseReplyTo(boolean b) {
         useReplyTo = b;
+    }
+
+    private Session getSessionFromThreadContext(Map threadContext) throws JmsException {
+        Session session;
+        if (threadContext.containsKey(THREAD_CONTEXT_SESSION_KEY)) {
+            session = (Session) threadContext.get(THREAD_CONTEXT_SESSION_KEY);
+        } else {
+            session = super.createSession();
+            threadContext.put(THREAD_CONTEXT_SESSION_KEY, session);
+            threadContext.put(THREAD_CONTEXT_SESSION_OWNER_FLAG_KEY, Boolean.TRUE);
+        }
+        return session;
     }
 
 }

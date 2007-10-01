@@ -59,9 +59,6 @@ public class GenericMDB extends AbstractEJBBase implements MessageDrivenBean, Me
         } catch (ListenerException ex) {
             log.error(ex, ex);
             this.ejbContext.setRollbackOnly();
-        } catch (JmsException ex) {
-            log.error(ex, ex);
-            this.ejbContext.setRollbackOnly();
         } finally {
             this.listener.destroyThreadContext(threadContext);
         }
