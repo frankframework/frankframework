@@ -1,6 +1,9 @@
 /*
  * $Log: StringResolver.java,v $
- * Revision 1.7  2007-02-12 14:12:03  europe\L190409
+ * Revision 1.8  2007-10-01 14:13:53  europe\L190409
+ * improved error messages
+ *
+ * Revision 1.7  2007/02/12 14:12:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Logger from LogUtil
  *
  * Revision 1.6  2006/11/14 16:39:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -29,7 +32,7 @@ import org.apache.log4j.Logger;
  * @author Johan Verrips 
  */
 public class StringResolver {
-	public static final String version="$RCSfile: StringResolver.java,v $ $Revision: 1.7 $ $Date: 2007-02-12 14:12:03 $";
+	public static final String version="$RCSfile: StringResolver.java,v $ $Revision: 1.8 $ $Date: 2007-10-01 14:13:53 $";
 	protected static Logger log = LogUtil.getLogger(StringResolver.class);
 	
     static String DELIM_START = "${";
@@ -54,7 +57,7 @@ public class StringResolver {
         try {
             return System.getProperty(key, def);
         } catch (Throwable e) { // MS-Java throws com.ms.security.SecurityExceptionEx
-            log.warn("Was not allowed to read system property \"" + key + "\".");
+            log.warn("Was not allowed to read system property [" + key + "]: "+ e.getMessage());
             return def;
         }
     }
@@ -94,7 +97,7 @@ public class StringResolver {
                 k = val.indexOf(DELIM_STOP, j);
                 if (k == -1) {
                     throw new IllegalArgumentException(
-                        '"' + val + "\" has no closing brace. Opening brace at position " + j + '.');
+                        '[' + val + "] has no closing brace. Opening brace at position ["  + j + "]");
                 } else {
                     j += DELIM_START_LEN;
                     String key = val.substring(j, k);
