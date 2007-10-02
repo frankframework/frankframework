@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcTableListener.java,v $
- * Revision 1.3  2007-09-17 07:44:48  europe\L190409
+ * Revision 1.4  2007-10-02 09:17:48  europe\L190409
+ * added tablename to physical destination
+ *
+ * Revision 1.3  2007/09/17 07:44:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * limit query to single row
  *
  * Revision 1.2  2007/09/12 09:26:39  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -106,6 +109,10 @@ public class JdbcTableListener extends JdbcListener {
 				" WHERE "+getKeyField()+"=?";
 	}
 
+	public String getPhysicalDestinationName() {
+		return super.getPhysicalDestinationName()+" "+getTableName();
+	}
+
 
 
 	public void setTableName(String string) {
@@ -171,6 +178,5 @@ public class JdbcTableListener extends JdbcListener {
 	public String getStatusValueProcessed() {
 		return statusValueProcessed;
 	}
-
 
 }
