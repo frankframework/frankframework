@@ -1,6 +1,9 @@
 /*
  * $Log: ConfigurationServlet.java,v $
- * Revision 1.10.2.2  2007-09-26 06:05:19  europe\M00035F
+ * Revision 1.10.2.3  2007-10-02 14:15:29  europe\M00035F
+ * Further refactoring code further for adding in EJBs and enabling communication of web-front end with EJB-driven back-end.
+ *
+ * Revision 1.10.2.2  2007/09/26 06:05:19  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
  * Add exception-propagation to new JMS Listener; increase robustness of JMS configuration
  *
  * Revision 1.10.2.1  2007/09/13 13:27:18  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
@@ -57,7 +60,7 @@ import org.apache.log4j.Logger;
 public class ConfigurationServlet extends HttpServlet {
 	public static final String KEY_MANAGER = "KEY_MANAGER";
 	public static final String KEY_CONFIGURATION = "KEY_CONFIGURATION";
-	public static final String version = "$RCSfile: ConfigurationServlet.java,v $ $Revision: 1.10.2.2 $ $Date: 2007-09-26 06:05:19 $";
+	public static final String version = "$RCSfile: ConfigurationServlet.java,v $ $Revision: 1.10.2.3 $ $Date: 2007-10-02 14:15:29 $";
     protected Logger log = LogUtil.getLogger(this);
 
     static final String DFLT_DIGESTER_RULES = "digester-rules.xml";
@@ -138,7 +141,6 @@ public class ConfigurationServlet extends HttpServlet {
         commandIssuedBy += " remoteUser [" + request.getRemoteUser() + "]";
 
         String configurationFile = request.getParameter("configurationFile");
-        String digesterRulesFile = request.getParameter("digesterRulesFile");
         String autoStart = request.getParameter("autoStart");
 
         log.warn("ConfigurationServlet initiated by " + commandIssuedBy);
@@ -150,7 +152,7 @@ public class ConfigurationServlet extends HttpServlet {
 
         if (areAdaptersStopped()) {
             IbisMain im=new IbisMain();
-            boolean success = im.initConfig(configurationFile, digesterRulesFile, autoStart);
+            boolean success = im.initConfig(configurationFile, autoStart);
             if (success) {
                 out.println("<p> Configuration successfully completed</p></body>");
             } else {
@@ -163,6 +165,9 @@ public class ConfigurationServlet extends HttpServlet {
             ctx.setAttribute(
                     AppConstants.getInstance().getProperty(KEY_CONFIGURATION),
                     im.getConfiguration());
+            ctx.setAttribute(
+                    AppConstants.getInstance().getProperty(KEY_MANAGER),
+                    im.getIbisManager());
         } else {
             out.println(
                     "<p>Action cancelled: some adapters are still running.</p>");
@@ -195,10 +200,9 @@ public class ConfigurationServlet extends HttpServlet {
         super.init();
         IbisMain im=new IbisMain();
         String configurationFile = getInitParameter("configuration");
-        String digesterRulesFile = getInitParameter("digester-rules");
         String autoStart = getInitParameter("autoStart");
         if (areAdaptersStopped()) {
-            boolean success = im.initConfig(configurationFile, digesterRulesFile, autoStart);
+            boolean success = im.initConfig(configurationFile, autoStart);
             if (success)
                 log.info("Configuration succeeded");
             else

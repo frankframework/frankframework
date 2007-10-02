@@ -61,7 +61,7 @@
     <!-- IBIS Beans -->
     <bean name="ibisManager" class="nl.nn.adapterframework.unmanaged.DefaultIbisManager"
         autowire="byName">
-        
+        <util:constant static-field="nl.nn.adapterframework.configuration.IbisManager.DEPLOYMENT_MODE_UNMANAGED"/>
     </bean>
     
     <bean name="configuration" class="nl.nn.adapterframework.configuration.Configuration"

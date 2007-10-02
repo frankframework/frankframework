@@ -11,12 +11,15 @@ import java.util.List;
 import java.util.ListIterator;
 
 import nl.nn.adapterframework.configuration.Configuration;
+import nl.nn.adapterframework.configuration.ConfigurationDigester;
+
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.pipes.IbisLocalSender;
 import nl.nn.adapterframework.scheduler.JobDef;
 import nl.nn.adapterframework.scheduler.SchedulerHelper;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.log4j.Logger;
@@ -30,10 +33,35 @@ import org.quartz.SchedulerException;
  *
  */
 public class DefaultIbisManager implements IbisManager {
+    public static final String DFLT_DIGESTER_RULES = "digester-rules.xml";
+    
     protected Logger log=LogUtil.getLogger(this);
     
     private Configuration configuration;
+    private ConfigurationDigester configurationDigester;
 	private SchedulerHelper schedulerHelper;
+    private int deploymentMode;
+    
+    protected final String[] deploymentModes = new String[] {DEPLOYMENT_MODE_UNMANAGED_STRING, DEPLOYMENT_MODE_EJB_STRING};
+    
+    public void loadConfigurationFile(String configurationFile) {
+        String digesterRulesFile = DFLT_DIGESTER_RULES;
+        
+        // Reading in Apache Digester configuration file
+        if (null == configurationFile)
+            configurationFile = DFLT_CONFIGURATION;
+        
+        log.info("* IBIS Startup: Reading IBIS configuration from file '"
+            + configurationFile + "'" + (DFLT_CONFIGURATION.equals(configurationFile) ?
+            " (default configuration file)" : ""));
+        try {
+            configurationDigester.unmarshalConfiguration(
+                ClassUtils.getResourceURL(configurationDigester, digesterRulesFile),
+                ClassUtils.getResourceURL(configurationDigester, configurationFile));
+        } catch (Throwable e) {
+            log.error("Error occured unmarshalling configuration:", e);
+        }
+    }
     
     /* (non-Javadoc)
 	 * @see nl.nn.adapterframework.configuration.IbisManager#getConfiguration()
@@ -224,6 +252,30 @@ public class DefaultIbisManager implements IbisManager {
      */
     public void setSchedulerHelper(SchedulerHelper helper) {
         schedulerHelper = helper;
+    }
+
+    public ConfigurationDigester getConfigurationDigester() {
+        return configurationDigester;
+    }
+
+    public void setConfigurationDigester(ConfigurationDigester configurationDigester) {
+        this.configurationDigester = configurationDigester;
+    }
+
+    public int getDeploymentMode() {
+        return this.deploymentMode;
+    }
+
+    public void setDeploymentMode(int deploymentMode) {
+        if (deploymentMode < 0 || deploymentMode >= deploymentModes.length) {
+            throw new IllegalArgumentException("DeploymentMode should be a value between 0 and " 
+                    + (deploymentModes.length-1) + " inclusive.");
+        }
+        this.deploymentMode = deploymentMode;
+    }
+
+    public String getDeploymentModeString() {
+        return deploymentModes[this.deploymentMode];
     }
 
 }

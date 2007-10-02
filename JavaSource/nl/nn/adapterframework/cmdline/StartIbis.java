@@ -7,6 +7,7 @@
 package nl.nn.adapterframework.cmdline;
 
 import nl.nn.adapterframework.configuration.IbisMain;
+import nl.nn.adapterframework.configuration.IbisManager;
 
 /**
  *  
@@ -15,7 +16,7 @@ import nl.nn.adapterframework.configuration.IbisMain;
  * created    14 februari 2003
  */
 public class StartIbis {
-	public static final String version="$RCSfile: StartIbis.java,v $ $Revision: 1.5.4.1 $ $Date: 2007-09-13 13:27:18 $";
+	public static final String version="$RCSfile: StartIbis.java,v $ $Revision: 1.5.4.2 $ $Date: 2007-10-02 14:17:50 $";
 
 	/**
 	 * 
@@ -24,13 +25,12 @@ public class StartIbis {
 		super();
 	}
 	public static void main(String[] args) {
-        String configFile = IbisMain.DFLT_CONFIGURATION;
+        String configFile = IbisManager.DFLT_CONFIGURATION;
         if (args.length > 0) {
             configFile = args[0];
         }
         IbisMain im=new IbisMain();
         im.initConfig(configFile, 
-            IbisMain.DFLT_DIGESTER_RULES, IbisMain.
-            DFLT_AUTOSTART);
+            IbisMain.DFLT_AUTOSTART);
 	}
 }

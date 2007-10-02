@@ -9,13 +9,14 @@ package nl.nn.adapterframework.configuration;
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
 import javax.management.ObjectInstance;
+import javax.management.ReflectionException;
 
-import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.xml.XmlBeanFactory;
+import org.springframework.core.JdkVersion;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 
@@ -28,8 +29,6 @@ import org.springframework.core.io.Resource;
 public class IbisMain {
     protected Logger log = LogUtil.getLogger(this);
 
-    public static final String DFLT_DIGESTER_RULES = "digester-rules.xml";
-    public static final String DFLT_CONFIGURATION = "Configuration.xml";
     public static final String DFLT_AUTOSTART = "TRUE";
     public static final String DFLT_SPRING_CONTEXT = "/springContext.xml";
     
@@ -39,19 +38,20 @@ public class IbisMain {
     
 	public static void main(String[] args) {
         IbisMain im=new IbisMain();
-        im.initConfig(DFLT_CONFIGURATION, DFLT_DIGESTER_RULES, DFLT_AUTOSTART);
+        im.initConfig(IbisManager.DFLT_CONFIGURATION, DFLT_AUTOSTART);
 	}
     
     public boolean initConfig() {
-        return initConfig(IbisMain.DFLT_CONFIGURATION, 
-            IbisMain.DFLT_DIGESTER_RULES, IbisMain.
-            DFLT_AUTOSTART);
+        return initConfig(IbisManager.DFLT_CONFIGURATION, 
+            IbisMain.DFLT_AUTOSTART);
     }
     
     public boolean initConfig(
         String configurationFile,
-        String digesterRulesFile,
         String autoStart) {
+        log.info("* IBIS Startup: Running on JDK version '" 
+                + System.getProperty("java.version")
+                + "', Spring indicates JDK Major version: 1." + (JdkVersion.getMajorJavaVersion()+3));
         // This should be made conditional, somehow
         startJmxServer();
         
@@ -60,42 +60,16 @@ public class IbisMain {
             + DFLT_SPRING_CONTEXT + "'");
         Resource rs = new ClassPathResource(DFLT_SPRING_CONTEXT);
         beanFactory = new XmlBeanFactory(rs);
-        
-        ConfigurationDigester cd = (ConfigurationDigester) beanFactory.getBean("configurationDigester");
         ibisManager = (IbisManager) beanFactory.getBean("ibisManager");
         
-        // Reading in Apache Digester configuration file
-        if (null == configurationFile)
-            configurationFile = DFLT_CONFIGURATION;
-        if (null == digesterRulesFile)
-            digesterRulesFile = DFLT_DIGESTER_RULES;
-        if (null == autoStart)
-            autoStart = DFLT_AUTOSTART;
+        ibisManager.loadConfigurationFile(configurationFile);
+        configuration = ibisManager.getConfiguration();
         
-        log.info("* IBIS Startup: Reading IBIS configuration from file '"
-            + configurationFile + "'" + (configurationFile == DFLT_CONFIGURATION ?
-            " (default configuration file)" : ""));
-        try {
-            configuration =
-                cd.unmarshalConfiguration(
-                    ClassUtils.getResourceURL(cd, digesterRulesFile),
-                    ClassUtils.getResourceURL(cd, configurationFile));
-        } catch (Throwable e) {
-            log.error("Error occured unmarshalling configuration:", e);
-        }
-        // if configuration did not succeed, log and return.
-        if (null == configuration) {
-            log.error(
-                "Error occured unmarshalling configuration. See previous messages.");
-            return false;
-        }
-
         if (autoStart.equalsIgnoreCase("TRUE")) {
-            log.info("Starting adapters");
+            log.info("* IBIS Startup: Starting adapters");
             ibisManager.startIbis();
         }
-        log.info(
-            "****" + "********** Configuration complete **************");
+        log.info("* IBIS Startup: Startup complete");
         return true;
     }
 
@@ -112,7 +86,9 @@ public class IbisMain {
 		  null);
 		    
 		  server.invoke(html.getObjectName(), "start", new Object[0], new String[0]);
-		} catch (Exception e) {
+        } catch (ReflectionException e ) {
+            log.error("Requested JMX Server MBean can not be created; JMX not available.");
+        } catch (Exception e) {
 		    log.error("Error with jmx:",e);
 		}
 		log.info("MBean server up and running. Monitor your application by pointing your browser to http://localhost:8082");
