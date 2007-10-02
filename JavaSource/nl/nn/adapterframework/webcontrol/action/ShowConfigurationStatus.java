@@ -1,6 +1,9 @@
 /*
  * $Log: ShowConfigurationStatus.java,v $
- * Revision 1.8  2007-07-19 15:18:07  europe\L190409
+ * Revision 1.9  2007-10-02 09:19:50  europe\L190409
+ * show physical destination names of listeners and their senders
+ *
+ * Revision 1.8  2007/07/19 15:18:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * list Adapters in order of configuration
  *
  * Revision 1.7  2007/06/12 11:25:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -48,7 +51,7 @@ import org.apache.struts.action.ActionMapping;
  * @version Id
  */
 public final class ShowConfigurationStatus extends ActionBase {
-	public static final String version = "$RCSfile: ShowConfigurationStatus.java,v $ $Revision: 1.8 $ $Date: 2007-07-19 15:18:07 $";
+	public static final String version = "$RCSfile: ShowConfigurationStatus.java,v $ $Revision: 1.9 $ $Date: 2007-10-02 09:19:50 $";
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 
@@ -95,6 +98,10 @@ public final class ShowConfigurationStatus extends ActionBase {
 					if (receiver instanceof ReceiverBase ) {
 						ReceiverBase rb = (ReceiverBase) receiver;
 						receiverXML.addAttribute("listenerClass", ClassUtils.nameOf(rb.getListener()));
+						if (rb.getListener() instanceof HasPhysicalDestination) {
+							String pd = ((HasPhysicalDestination)rb.getListener()).getPhysicalDestinationName();
+							receiverXML.addAttribute("listenerDestination", pd);
+						}
 						receiverXML.addAttribute("hasInprocessStorage", ""+(rb.getInProcessStorage()!=null));
 						receiverXML.addAttribute("hasErrorStorage", ""+(rb.getErrorStorage()!=null));
 						receiverXML.addAttribute("hasMessageLog", ""+(rb.getMessageLog()!=null));
@@ -104,6 +111,11 @@ public final class ShowConfigurationStatus extends ActionBase {
 						ISender sender = ((HasSender) receiver).getSender();
 						if (sender != null) { 
 							receiverXML.addAttribute("senderName", sender.getName());
+							receiverXML.addAttribute("senderClass", ClassUtils.nameOf(sender));
+							if (sender instanceof HasPhysicalDestination) {
+								String pd = ((HasPhysicalDestination)sender).getPhysicalDestinationName();
+								receiverXML.addAttribute("senderDestination", pd);
+							}
 						}
 					}
 				}
