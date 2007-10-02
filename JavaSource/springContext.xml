@@ -59,7 +59,7 @@
     <bean id="aspectTesterBean" class="nl.nn.adapterframework.unmanaged.TestAspect"/>
     
     <!-- IBIS Beans -->
-    <bean name="ibisManager" class="nl.nn.adapterframework.unmanaged.ThreadedIbisManager"
+    <bean name="ibisManager" class="nl.nn.adapterframework.unmanaged.DefaultIbisManager"
         autowire="byName">
         
     </bean>
