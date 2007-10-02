@@ -8,14 +8,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.jms.ConnectionFactory;
-import javax.jms.Destination;
 import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.Session;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IJmsConfigurator;
@@ -52,106 +48,53 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  *
  */
 public class SpringJmsConfigurator 
-    implements IJmsConfigurator, BeanFactoryAware, ExceptionListener {
+        extends AbstractJmsConfigurator
+        implements IJmsConfigurator, BeanFactoryAware, ExceptionListener {
     private static final Logger log = Logger.getLogger(SpringJmsConfigurator.class);
     public static final TransactionDefinition TXSUPPORTS = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_SUPPORTS);
     public static final TransactionDefinition TXMANDATORY = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_MANDATORY);
     
-    public static final String version="$RCSfile: SpringJmsConfigurator.java,v $ $Revision: 1.1.2.6 $ $Date: 2007-09-28 14:19:40 $";
+    public static final String version="$RCSfile: SpringJmsConfigurator.java,v $ $Revision: 1.1.2.7 $ $Date: 2007-10-02 07:59:28 $";
     
     private PlatformTransactionManager txManager;
-    private String destinationName;
-    private String connectionFactoryName;
-    private Destination destination;
-    private JmsListener jmsListener;
     private BeanFactory beanFactory;
-    private Context context;
     private DefaultMessageListenerContainer jmsContainer;
-    
-    protected Context createContext() throws NamingException {
-        return (Context) new InitialContext();
-    }
-
-    protected ConnectionFactory createConnectionFactory(String cfName) throws ConfigurationException {
-        ConnectionFactory connectionFactory;
-        try {
-            connectionFactory = (ConnectionFactory) getContext().lookup(cfName);
-        } catch (NamingException e) {
-            throw new ConfigurationException("Problem looking up JMS " +
-                    (jmsListener.isUseTopicFunctions()?"Topic":"Queue") +
-                    "Connection Factory with name '" +
-                    cfName + "'", e);
-        }
-        return connectionFactory;
-    }
-    
-    public Destination getDestination() {
-        return destination;
-    }
-
-    public Destination getDestination(String destinationName) throws JmsException, NamingException {
-        try {
-            return createDestination(destinationName);
-        } catch (ConfigurationException ex) {
-            Throwable t = ex.getCause();
-            if (t instanceof NamingException) {
-                throw (NamingException)t;
-            } else if (t instanceof JmsException) {
-                throw (JmsException)t;
-            } else {
-                throw new JmsException(ex.getMessage(), t);
-            }
-        }
-    }
-    
-    protected Destination createDestination(String destinationName) throws ConfigurationException {
-        try {
-            return (Destination) getContext().lookup(destinationName);
-        } catch (NamingException e) {
-            throw new ConfigurationException("Problem looking up JMS " +
-                    (jmsListener.isUseTopicFunctions()?"Topic":"Queue") +
-                    "Destination with name '" +
-                    destinationName + "'", e);
-        }
-    }
     
     /* (non-Javadoc)
      * @see nl.nn.adapterframework.configuration.IJmsConfigurator#configureReceiver(nl.nn.adapterframework.jms.JmsListener)
      */
     public void configureJmsReceiver(final JmsListener jmsListener) throws ConfigurationException {
-        this.jmsListener = jmsListener;
+        super.configureJmsReceiver(jmsListener);
         
         // Create the Message Listener Container manually.
         // This is needed, because otherwise the Spring Factory will
         // call afterPropertiesSet() on the object which will validate
         // that all required properties are set before we get a chance
         // to insert our dynamic values from the config. file.
-        jmsContainer = new DefaultMessageListenerContainer102();
+        this.jmsContainer = new DefaultMessageListenerContainer102();
         
         if (jmsListener.isTransacted()) {
-            jmsContainer.setTransactionManager(txManager);
+            this.jmsContainer.setTransactionManager(this.txManager);
         }
         
         // Initialize with a number of dynamic properties which come from the configuration file
         try {
-            connectionFactoryName = jmsListener.getConnectionFactoryName();
-            destinationName = jmsListener.getDestinationName();
-            ConnectionFactory connectionFactory = createConnectionFactory(connectionFactoryName);
+            this.connectionFactoryName = jmsListener.getConnectionFactoryName();
+            ConnectionFactory connectionFactory = createConnectionFactory(this.connectionFactoryName);
             
-            destination = createDestination(destinationName);
-            jmsContainer.setConnectionFactory(connectionFactory);
-            jmsContainer.setDestination(destination);
+            this.jmsContainer.setConnectionFactory(connectionFactory);
+            this.jmsContainer.setDestination(getDestination());
         } catch (JmsException e) {
             throw new ConfigurationException("Cannot look up destination", e);
         }
         
-        jmsContainer.setExceptionListener(this);
-        jmsContainer.setReceiveTimeout(jmsListener.getTimeOut());
+        this.jmsContainer.setExceptionListener(this);
+        this.jmsContainer.setReceiveTimeout(jmsListener.getTimeOut());
         
         final GenericReceiver receiver = (GenericReceiver) jmsListener.getHandler();
         final Counter threadsProcessing = new Counter(0);
-        jmsContainer.setConcurrentConsumers(receiver.getNumThreads());
-        jmsContainer.setMessageListener(new SessionAwareMessageListener() {
+        this.jmsContainer.setConcurrentConsumers(receiver.getNumThreads());
+        this.jmsContainer.setMessageListener(new SessionAwareMessageListener() {
             public void onMessage(Message message, Session session)
                 throws JMSException {
                 
@@ -170,8 +113,6 @@ public class SpringJmsConfigurator
                     jmsListener.populateThreadContext(threadContext, session);
                     receiver.processRawMessage(jmsListener, message, threadContext,
                         jmsListener.getTimeOut());
-                } catch (JmsException e) {
-                    invalidateSessionTransaction(e, session, txStatus);
                 } catch (ListenerException e) {
                     invalidateSessionTransaction(e, session, txStatus);
                 } finally {
@@ -202,7 +143,7 @@ public class SpringJmsConfigurator
         // Use Spring BeanFactory to complete the auto-wiring of the JMS Listener Container,
         // and run the bean lifecycle methods.
         try {
-            ((AutowireCapableBeanFactory) beanFactory).configureBean(jmsContainer, "proto-jmsContainer");
+            ((AutowireCapableBeanFactory) this.beanFactory).configureBean(this.jmsContainer, "proto-jmsContainer");
         } catch (BeansException e) {
             throw new ConfigurationException("Out of luck wiring up and configuring Default JMS Message Listener Container for JMS Listener "
                     + (jmsListener.getName() != null?jmsListener.getName():jmsListener.getLogPrefix()), e);
@@ -210,9 +151,9 @@ public class SpringJmsConfigurator
         
         // Finally, set bean name to something we can make sense of
         if (jmsListener.getName() != null) {
-            jmsContainer.setBeanName(jmsListener.getName());
+            this.jmsContainer.setBeanName(jmsListener.getName());
         } else {
-            jmsContainer.setBeanName(jmsListener.getLogPrefix());
+            this.jmsContainer.setBeanName(jmsListener.getLogPrefix());
         }
         
     }
@@ -222,24 +163,6 @@ public class SpringJmsConfigurator
      */
     public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
         this.beanFactory = beanFactory;
-    }
-    
-    
-    /**
-     * @return
-     */
-    public Context getContext() throws NamingException {
-        if (context == null) {
-            context = createContext();
-        }
-        return context;
-    }
-
-    /**
-     * @param context
-     */
-    public void setContext(Context context) {
-        this.context = context;
     }
 
     /* (non-Javadoc)
@@ -268,17 +191,17 @@ public class SpringJmsConfigurator
 
     public void onException(JMSException e) {
         log.error("JMS Exception occurred in Message Listener Container configured for " +
-                (jmsListener.isUseTopicFunctions()?"Topic":"Queue")
+                (getJmsListener().isUseTopicFunctions()?"Topic":"Queue")
                 + "Connection Factory [" + connectionFactoryName
-                + "], destination [" + destinationName
+                + "], destination [" + getDestinationName()
                 + "]:", e);
-        IbisExceptionListener ibisExceptionListener = jmsListener.getExceptionListener();
+        IbisExceptionListener ibisExceptionListener = getJmsListener().getExceptionListener();
         if (ibisExceptionListener == null) {
-            ibisExceptionListener = (IbisExceptionListener) jmsListener.getHandler();
+            ibisExceptionListener = (IbisExceptionListener) getJmsListener().getHandler();
         }
         if (ibisExceptionListener!= null) {
             log.error("Reporting the error to the IBIS Exception Listener");
-            jmsListener.getExceptionListener().exceptionThrown(jmsListener, e);
+            getJmsListener().getExceptionListener().exceptionThrown(getJmsListener(), e);
         } else {
             log.error("Cannot report the error to an IBIS Exception Listener");
         }
@@ -291,5 +214,6 @@ public class SpringJmsConfigurator
     public void setTxManager(PlatformTransactionManager txManager) {
         this.txManager = txManager;
     }
+    private String connectionFactoryName;
 
 }

@@ -29,7 +29,7 @@ import org.quartz.SchedulerException;
  * @author m00035f
  *
  */
-public class ThreadedIbisManager implements IbisManager {
+public class DefaultIbisManager implements IbisManager {
     protected Logger log=LogUtil.getLogger(this);
     
     private Configuration configuration;
