@@ -31,33 +31,6 @@
         </property>
     </bean>
     
-    <!-- the transactional advice (what 'happens'; see the <aop:advisor/> bean below) -->
-    <tx:advice id="txAdvice" transaction-manager="txManager">
-        <!-- the transactional semantics... -->
-        <tx:attributes>
-            <tx:method name="*Required" propagation="REQUIRED" rollback-for="Throwable"/>
-            <tx:method name="*Supports" propagation="SUPPORTS" rollback-for="Throwable"/>
-            <tx:method name="*Mandatory" propagation="MANDATORY" rollback-for="Throwable"/>
-            <tx:method name="*RequiresNew" propagation="REQUIRES_NEW" rollback-for="Throwable"/>
-            <tx:method name="*NotSupported" propagation="NOT_SUPPORTED" rollback-for="Throwable"/>
-            <tx:method name="*Never" propagation="NEVER" rollback-for="Throwable"/>
-        </tx:attributes>
-    </tx:advice>
-  
-    <!-- ensure that the above transactional advice runs for any execution
-       of an operation defined by the FooService interface -->
-    <aop:config>
-        <!-- <aop:pointcut id="txPropagationCut" expression="execution(* nl.nn.adapterframework.txsupport.*.*(..))"/> -->
-        <aop:pointcut id="txPropagationCut" expression=""/>
-        <aop:advisor advice-ref="txAdvice" pointcut-ref="txPropagationCut"/>
-        <!-- <aop:advisor advice-ref="aspectTester" pointcut-ref="txPropagationCut"/>-->
-        <aop:aspect id="aspectTester" ref="aspectTesterBean">
-            <aop:around pointcut-ref="txPropagationCut" method="testAspectInvocation"/>
-        </aop:aspect>
-    </aop:config>
-      
-    <bean id="aspectTesterBean" class="nl.nn.adapterframework.unmanaged.TestAspect"/>
-    
     <!-- IBIS Beans -->
     <bean name="ibisManager" class="nl.nn.adapterframework.unmanaged.DefaultIbisManager"
         autowire="byName">
