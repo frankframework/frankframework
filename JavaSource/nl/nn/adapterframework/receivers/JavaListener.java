@@ -1,6 +1,9 @@
 /*
  * $Log: JavaListener.java,v $
- * Revision 1.23  2007-08-29 15:10:39  europe\L190409
+ * Revision 1.24  2007-10-02 09:18:17  europe\L190409
+ * added physical destination
+ *
+ * Revision 1.23  2007/08/29 15:10:39  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added support for dependency checking
  *
  * Revision 1.22  2007/06/07 15:20:46  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -93,6 +96,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IMessageHandler;
 import nl.nn.adapterframework.core.IPushingListener;
 import nl.nn.adapterframework.core.IbisExceptionListener;
@@ -131,8 +135,8 @@ import org.apache.log4j.Logger;
  * @author  Gerrit van Brakel
  * @version Id
  */
-public class JavaListener implements IPushingListener, RequestProcessor {
-	public static final String version="$RCSfile: JavaListener.java,v $ $Revision: 1.23 $ $Date: 2007-08-29 15:10:39 $";
+public class JavaListener implements IPushingListener, RequestProcessor, HasPhysicalDestination {
+	public static final String version="$RCSfile: JavaListener.java,v $ $Revision: 1.24 $ $Date: 2007-10-02 09:18:17 $";
 	protected Logger log = LogUtil.getLogger(this);
 	
 	private String name;
@@ -292,6 +296,14 @@ public class JavaListener implements IPushingListener, RequestProcessor {
 		return (String)rawMessage;
 	}
 
+	public String getPhysicalDestinationName() {
+		if (StringUtils.isNotEmpty(getServiceName())) {
+			return "external: "+getServiceName();
+		} else {
+			return "internal: "+getName();
+		}
+	}
+
 	
 	/**
 	 * The <code>toString()</code> method retrieves its value
@@ -352,5 +364,6 @@ public class JavaListener implements IPushingListener, RequestProcessor {
 	public synchronized boolean isOpen() {
 		return opened;
 	}
+
 
 }
