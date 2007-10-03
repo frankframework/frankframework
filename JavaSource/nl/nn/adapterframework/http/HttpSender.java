@@ -1,6 +1,9 @@
 /*
  * $Log: HttpSender.java,v $
- * Revision 1.29  2007-02-21 15:59:02  europe\L190409
+ * Revision 1.30  2007-10-03 08:46:40  europe\L190409
+ * added link to IBM site with JDK policy files
+ *
+ * Revision 1.29  2007/02/21 15:59:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * remove debug message
  *
  * Revision 1.28  2007/02/05 15:16:53  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -181,6 +184,7 @@ import nl.nn.adapterframework.util.CredentialFactory;
  * Note 1:
  * Some certificates require the &lt;java_home&gt;/jre/lib/security/xxx_policy.jar files to be upgraded to unlimited strength. Typically, in such a case, an error message like 
  * <code>Error in loading the keystore: Private key decryption error: (java.lang.SecurityException: Unsupported keysize or algorithm parameters</code> is observed.
+ * For IBM JDKs these files can be downloaded from http://www.ibm.com/developerworks/java/jdk/security/50/ (scroll down to 'IBM SDK Policy files')
  * </p>
  * <p>
  * Note 2:
@@ -220,7 +224,7 @@ import nl.nn.adapterframework.util.CredentialFactory;
  * @since 4.2c
  */
 public class HttpSender extends SenderWithParametersBase implements HasPhysicalDestination {
-	public static final String version = "$RCSfile: HttpSender.java,v $ $Revision: 1.29 $ $Date: 2007-02-21 15:59:02 $";
+	public static final String version = "$RCSfile: HttpSender.java,v $ $Revision: 1.30 $ $Date: 2007-10-03 08:46:40 $";
 
 	private String url;
 	private String methodType="GET"; // GET or POST
