@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaProviderListener.java,v $
- * Revision 1.32  2007-09-25 11:33:14  europe\L190409
+ * Revision 1.33  2007-10-03 08:32:41  europe\L190409
+ * changed HashMap to Map
+ *
+ * Revision 1.32  2007/09/25 11:33:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * show headers of incoming messages
  *
  * Revision 1.31  2007/09/13 09:12:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -185,13 +188,14 @@ import com.ing.ifsa.IFSATextMessage;
  * mode. This options is not compatible with earlier versions of IFSA-jms. If an earlier version of IFSA-jms is deployed on 
  * the server, this behaviour must be disabled by the following setting in DeploymentSpecifics.properties:
  * 
- * <code>    ifsa.provider.useSelectors=false</code>
+ * <code>ifsa.provider.useSelectors=false</code>
  * 
- * @author Gerrit van Brakel
- * @since 4.2
+ * @author  Gerrit van Brakel
+ * @since   4.2
+ * @version Id
  */
 public class IfsaProviderListener extends IfsaFacade implements IPullingListener, INamedObject, RunStateEnquiring {
-	public static final String version = "$RCSfile: IfsaProviderListener.java,v $ $Revision: 1.32 $ $Date: 2007-09-25 11:33:14 $";
+	public static final String version = "$RCSfile: IfsaProviderListener.java,v $ $Revision: 1.33 $ $Date: 2007-10-03 08:32:41 $";
 
     private final static String THREAD_CONTEXT_SESSION_KEY = "session";
     private final static String THREAD_CONTEXT_RECEIVER_KEY = "receiver";
@@ -203,7 +207,7 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 	}
 
 
-	protected QueueSession getSession(HashMap threadContext) throws ListenerException {
+	protected QueueSession getSession(Map threadContext) throws ListenerException {
 		if (isSessionsArePooled()) {
 			try {
 				return createSession();
@@ -221,7 +225,7 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 		}
 	}
 
-	protected QueueReceiver getReceiver(HashMap threadContext, QueueSession session) throws ListenerException {
+	protected QueueReceiver getReceiver(Map threadContext, QueueSession session) throws ListenerException {
 		if (isSessionsArePooled()) {
 			try {
 				return getServiceReceiver(session);
@@ -277,8 +281,8 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 		}
 	}
 	
-	public HashMap openThread() throws ListenerException {
-		HashMap threadContext = new HashMap();
+	public Map openThread() throws ListenerException {
+		Map threadContext = new HashMap();
 	
 		try {
 			if (!isSessionsArePooled()) {
@@ -303,7 +307,7 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 		}
 	}
 	
-	public void closeThread(HashMap threadContext) throws ListenerException {
+	public void closeThread(Map threadContext) throws ListenerException {
 	
 		if (!isSessionsArePooled()) {
 			QueueReceiver receiver = (QueueReceiver) threadContext.remove(THREAD_CONTEXT_RECEIVER_KEY);
@@ -315,7 +319,7 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 	}
 
 
-	public void afterMessageProcessed(PipeLineResult plr, Object rawMessage, HashMap threadContext) throws ListenerException {	
+	public void afterMessageProcessed(PipeLineResult plr, Object rawMessage, Map threadContext) throws ListenerException {	
 	    String cid = (String) threadContext.get("cid");
 	    		    
 		try {
@@ -359,7 +363,7 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 	}
 	
 
-	protected String getIdFromWrapper(MessageWrapper wrapper, HashMap threadContext)  {
+	protected String getIdFromWrapper(MessageWrapper wrapper, Map threadContext)  {
 		for (Iterator it=wrapper.getContext().keySet().iterator(); it.hasNext();) {
 			String key = (String)it.next();
 			Object value = wrapper.getContext().get(key);
@@ -368,7 +372,7 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 		}
 		return wrapper.getId();
 	}
-	protected String getStringFromWrapper(MessageWrapper wrapper, HashMap threadContext)  {
+	protected String getStringFromWrapper(MessageWrapper wrapper, Map threadContext)  {
 		return wrapper.getText();
 	}
 
@@ -376,7 +380,7 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 
 	
 	/**
-	 * Extracts ID-string from message obtained from {@link #getRawMessage(HashMap)}. 
+	 * Extracts ID-string from message obtained from {@link #getRawMessage(Map)}. 
 	 * Puts also the following parameters  in the threadContext:
 	 * <ul>
 	 *   <li>id</li>
@@ -392,7 +396,7 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 	 * </ul>
 	 * @return ID-string of message for adapter.
 	 */
-	public String getIdFromRawMessage(Object rawMessage, HashMap threadContext) throws ListenerException {
+	public String getIdFromRawMessage(Object rawMessage, Map threadContext) throws ListenerException {
 	
 		IFSAMessage message = null;
 	 
@@ -583,7 +587,7 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 	/**
 	 * Retrieves messages to be processed by the server, implementing an IFSA-service, but does no processing on it.
 	 */
-	public Object getRawMessage(HashMap threadContext) throws ListenerException {
+	public Object getRawMessage(Map threadContext) throws ListenerException {
 		Object result=null;
 		QueueSession session=null;
 		QueueReceiver receiver=null;
@@ -633,11 +637,11 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 	    return result;
 	}
 	/**
-	 * Extracts string from message obtained from {@link #getRawMessage(HashMap)}. May also extract
+	 * Extracts string from message obtained from {@link #getRawMessage(Map)}. May also extract
 	 * other parameters from the message and put those in the threadContext.
 	 * @return input message for adapter.
 	 */
-	public String getStringFromRawMessage(Object rawMessage, HashMap threadContext) throws ListenerException {
+	public String getStringFromRawMessage(Object rawMessage, Map threadContext) throws ListenerException {
 		if (rawMessage instanceof MessageWrapper) {
 			return getStringFromWrapper((MessageWrapper)rawMessage,threadContext);
 		}

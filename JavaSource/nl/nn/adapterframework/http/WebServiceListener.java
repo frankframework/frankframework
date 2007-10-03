@@ -1,6 +1,9 @@
 /*
  * $Log: WebServiceListener.java,v $
- * Revision 1.7  2007-02-12 13:55:57  europe\L190409
+ * Revision 1.8  2007-10-03 08:39:05  europe\L190409
+ * changed HashMap to Map
+ *
+ * Revision 1.7  2007/02/12 13:55:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Logger from LogUtil
  *
  * Revision 1.6  2006/01/05 14:18:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -39,6 +42,7 @@ package nl.nn.adapterframework.http;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessageHandler;
@@ -70,11 +74,11 @@ import org.apache.log4j.Logger;
  *   </table>
  * </td><td>true</td></tr>
  * </table>
+ * @author  Gerrit van Brakel 
  * @version Id
- * @author Gerrit van Brakel 
  */
 public class WebServiceListener  implements IPushingListener, ServiceClient2, Serializable {
-	public static final String version="$RCSfile: WebServiceListener.java,v $ $Revision: 1.7 $ $Date: 2007-02-12 13:55:57 $";
+	public static final String version="$RCSfile: WebServiceListener.java,v $ $Revision: 1.8 $ $Date: 2007-10-03 08:39:05 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private IMessageHandler handler;        	
@@ -110,13 +114,13 @@ public class WebServiceListener  implements IPushingListener, ServiceClient2, Se
 	}
 
 
-	public String getIdFromRawMessage(Object rawMessage, HashMap threadContext)  {
+	public String getIdFromRawMessage(Object rawMessage, Map threadContext)  {
 		return null;
 	}
-	public String getStringFromRawMessage(Object rawMessage, HashMap threadContext) {
+	public String getStringFromRawMessage(Object rawMessage, Map threadContext) {
 		return (String) rawMessage;
 	}
-	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessage, HashMap threadContext) throws ListenerException {
+	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessage, Map threadContext) throws ListenerException {
 	}
 
 

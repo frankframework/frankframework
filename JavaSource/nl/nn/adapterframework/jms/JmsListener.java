@@ -1,6 +1,9 @@
 /*
  * $Log: JmsListener.java,v $
- * Revision 1.26  2007-09-27 12:53:53  europe\L190409
+ * Revision 1.27  2007-10-03 08:30:37  europe\L190409
+ * changed HashMap to Map
+ *
+ * Revision 1.26  2007/09/27 12:53:53  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * clarified warning
  *
  * Revision 1.25  2007/05/23 09:15:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -73,18 +76,9 @@
  */
 package nl.nn.adapterframework.jms;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.ICorrelatedPullingListener;
-import nl.nn.adapterframework.core.IPostboxListener;
-import nl.nn.adapterframework.core.ISender;
-import nl.nn.adapterframework.core.HasSender;
-import nl.nn.adapterframework.core.PipeLineResult;
-import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.util.RunStateEnquirer;
-import nl.nn.adapterframework.util.RunStateEnquiring;
-import nl.nn.adapterframework.util.RunStateEnum;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.jms.Destination;
 import javax.jms.JMSException;
@@ -93,10 +87,20 @@ import javax.jms.MessageConsumer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
-import org.apache.commons.lang.StringUtils;
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.HasSender;
+import nl.nn.adapterframework.core.ICorrelatedPullingListener;
+import nl.nn.adapterframework.core.IPostboxListener;
+import nl.nn.adapterframework.core.ISender;
+import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.core.PipeLineResult;
+import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.util.RunStateEnquirer;
+import nl.nn.adapterframework.util.RunStateEnquiring;
+import nl.nn.adapterframework.util.RunStateEnum;
 
-import java.util.Date;
-import java.util.HashMap;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * A true multi-threaded {@link nl.nn.adapterframework.core.IPullingListener Listener}-class for {@link nl.nn.adapterframework.receivers.JmsReceiver JmsReceiver}.
@@ -165,7 +169,7 @@ import java.util.HashMap;
  * @since 4.0.1
  */
 public class JmsListener extends JMSFacade implements IPostboxListener, ICorrelatedPullingListener, HasSender, RunStateEnquiring {
-	public static final String version="$RCSfile: JmsListener.java,v $ $Revision: 1.26 $ $Date: 2007-09-27 12:53:53 $";
+	public static final String version="$RCSfile: JmsListener.java,v $ $Revision: 1.27 $ $Date: 2007-10-03 08:30:37 $";
 
 	private final static String THREAD_CONTEXT_SESSION_KEY="session";
 	private final static String THREAD_CONTEXT_MESSAGECONSUMER_KEY="messageConsumer";
@@ -185,7 +189,7 @@ public class JmsListener extends JMSFacade implements IPostboxListener, ICorrela
   
   
 
-	protected Session getSession(HashMap threadContext) throws ListenerException {
+	protected Session getSession(Map threadContext) throws ListenerException {
 		if (isSessionsArePooled()) {
 			try {
 				return createSession();
@@ -203,7 +207,7 @@ public class JmsListener extends JMSFacade implements IPostboxListener, ICorrela
 		}
 	}
 
-	protected MessageConsumer getReceiver(HashMap threadContext, Session session, String correlationId) throws ListenerException {
+	protected MessageConsumer getReceiver(Map threadContext, Session session, String correlationId) throws ListenerException {
 		try {
 			if (StringUtils.isNotEmpty(correlationId)) {
 				return getMessageConsumerForCorrelationId(session, getDestination(), correlationId);
@@ -253,8 +257,8 @@ public class JmsListener extends JMSFacade implements IPostboxListener, ICorrela
 		}
 	}
 	
-	public HashMap openThread() throws ListenerException {
-		HashMap threadContext = new HashMap();
+	public Map openThread() throws ListenerException {
+		Map threadContext = new HashMap();
 	
 		try {
 			if (!isSessionsArePooled()) { 
@@ -283,7 +287,7 @@ public class JmsListener extends JMSFacade implements IPostboxListener, ICorrela
 			throw new ListenerException(e);
 		}
 	}
-	public void closeThread(HashMap threadContext) throws ListenerException {
+	public void closeThread(Map threadContext) throws ListenerException {
 		try {
 			if (!isSessionsArePooled()) {
 				MessageConsumer mc = (MessageConsumer) threadContext.remove(THREAD_CONTEXT_MESSAGECONSUMER_KEY);
@@ -300,7 +304,7 @@ public class JmsListener extends JMSFacade implements IPostboxListener, ICorrela
 
 
 
-	public void afterMessageProcessed(PipeLineResult plr, Object rawMessage, HashMap threadContext) throws ListenerException {
+	public void afterMessageProcessed(PipeLineResult plr, Object rawMessage, Map threadContext) throws ListenerException {
 	    String cid = (String) threadContext.get("cid");
 	
 	    try {
@@ -385,11 +389,11 @@ public class JmsListener extends JMSFacade implements IPostboxListener, ICorrela
 	}
 
 	/**
-	 * Extracts ID-string from message obtained from {@link #getRawMessage(HashMap)}. May also extract
+	 * Extracts ID-string from message obtained from {@link #getRawMessage(Map)}. May also extract
 	 * other parameters from the message and put those in the threadContext.
 	 * @return ID-string of message for adapter.
 	 */
-	public String getIdFromRawMessage(Object rawMessage, HashMap threadContext) throws ListenerException {
+	public String getIdFromRawMessage(Object rawMessage, Map threadContext) throws ListenerException {
 	    TextMessage message = null;
 	    String cid = "unset";
 	    try {
@@ -491,11 +495,11 @@ public class JmsListener extends JMSFacade implements IPostboxListener, ICorrela
 	/**
 	 * Retrieves messages from queue or other channel, but does no processing on it.
 	 */
-	public Object getRawMessage(HashMap threadContext) throws ListenerException {
+	public Object getRawMessage(Map threadContext) throws ListenerException {
 		return getRawMessageFromDestination(null, threadContext);
 	}
 	
-	public Object getRawMessage(String correlationId, HashMap threadContext) throws ListenerException, TimeOutException {
+	public Object getRawMessage(String correlationId, Map threadContext) throws ListenerException, TimeOutException {
 		Object msg = getRawMessageFromDestination(correlationId, threadContext);
 		if (msg==null) {
 			throw new TimeOutException("waiting for message with correlationId ["+correlationId+"]");
@@ -518,7 +522,7 @@ public class JmsListener extends JMSFacade implements IPostboxListener, ICorrela
 	/**
 	 * Retrieves messages from queue or other channel under transaction control, but does no processing on it.
 	 */
-	private Object getRawMessageFromDestination(String correlationId, HashMap threadContext) throws ListenerException {
+	private Object getRawMessageFromDestination(String correlationId, Map threadContext) throws ListenerException {
 		Session session=null;
 		Object msg = null;
 		try {
@@ -546,9 +550,9 @@ public class JmsListener extends JMSFacade implements IPostboxListener, ICorrela
 	}
 
 	/** 
-	 * @see nl.nn.adapterframework.core.IPostboxListener#retrieveRawMessage(java.lang.String, java.util.HashMap)
+	 * @see nl.nn.adapterframework.core.IPostboxListener#retrieveRawMessage(java.lang.String, java.util.Map)
 	 */
-	public Object retrieveRawMessage(String messageSelector, HashMap threadContext) throws ListenerException {
+	public Object retrieveRawMessage(String messageSelector, Map threadContext) throws ListenerException {
 		Session session=null;
 		try {
 			session = getSession(threadContext);
@@ -576,11 +580,11 @@ public class JmsListener extends JMSFacade implements IPostboxListener, ICorrela
 	
 	
 	/**
-	 * Extracts string from message obtained from {@link #getRawMessage(HashMap)}. May also extract
+	 * Extracts string from message obtained from {@link #getRawMessage(Map)}. May also extract
 	 * other parameters from the message and put those in the threadContext.
 	 * @return String  input message for adapter.
 	 */
-	public String getStringFromRawMessage(Object rawMessage, HashMap threadContext) throws ListenerException {
+	public String getStringFromRawMessage(Object rawMessage, Map threadContext) throws ListenerException {
 	    TextMessage message = null;
 	    try {
 	        message = (TextMessage) rawMessage;

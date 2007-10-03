@@ -1,6 +1,9 @@
 /*
  * $Log: HttpListener.java,v $
- * Revision 1.2  2007-02-12 13:55:57  europe\L190409
+ * Revision 1.3  2007-10-03 08:37:49  europe\L190409
+ * changed HashMap to Map
+ *
+ * Revision 1.2  2007/02/12 13:55:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Logger from LogUtil
  *
  * Revision 1.1  2006/02/09 07:54:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -10,6 +13,7 @@
 package nl.nn.adapterframework.http;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessageHandler;
@@ -41,12 +45,12 @@ import org.apache.log4j.Logger;
  *   </table>
  * </td><td>true</td></tr>
  * </table>
- * @version Id
- * @since   4.4.x (still experimental)
  * @author  Gerrit van Brakel 
+ * @since   4.4.x (still experimental)
+ * @version Id
  */
 public class HttpListener  implements IPushingListener, ServiceClient2 {
-	public static final String version="$RCSfile: HttpListener.java,v $ $Revision: 1.2 $ $Date: 2007-02-12 13:55:57 $";
+	public static final String version="$RCSfile: HttpListener.java,v $ $Revision: 1.3 $ $Date: 2007-10-03 08:37:49 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private IMessageHandler handler;        	
@@ -82,13 +86,13 @@ public class HttpListener  implements IPushingListener, ServiceClient2 {
 	}
 
 
-	public String getIdFromRawMessage(Object rawMessage, HashMap threadContext)  {
+	public String getIdFromRawMessage(Object rawMessage, Map threadContext)  {
 		return null;
 	}
-	public String getStringFromRawMessage(Object rawMessage, HashMap threadContext) {
+	public String getStringFromRawMessage(Object rawMessage, Map threadContext) {
 		return (String) rawMessage;
 	}
-	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessage, HashMap threadContext) throws ListenerException {
+	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessage, Map threadContext) throws ListenerException {
 	}
 
 

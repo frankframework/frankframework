@@ -1,6 +1,9 @@
 /*
  * $Log: FtpListener.java,v $
- * Revision 1.9  2006-01-19 12:15:49  europe\L190409
+ * Revision 1.10  2007-10-03 08:36:29  europe\L190409
+ * changed HashMap to Map
+ *
+ * Revision 1.9  2006/01/19 12:15:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved logging
  *
  * Revision 1.8  2006/01/05 14:17:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -32,9 +35,9 @@
  */
 package nl.nn.adapterframework.ftp;
 
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.INamedObject;
@@ -98,11 +101,11 @@ import org.apache.commons.lang.builder.ToStringStyle;
  * </table>
  * </p>
  *
- * @version Id
  * @author  John Dekker
+ * @version Id
  */
 public class FtpListener extends FtpSession implements IPullingListener, INamedObject, RunStateEnquiring {
-	public static final String version = "$RCSfile: FtpListener.java,v $  $Revision: 1.9 $ $Date: 2006-01-19 12:15:49 $";
+	public static final String version = "$RCSfile: FtpListener.java,v $  $Revision: 1.10 $ $Date: 2007-10-03 08:36:29 $";
 
 	private LinkedList remoteFilenames;
 	private RunStateEnquirer runStateEnquirer=null;
@@ -114,7 +117,7 @@ public class FtpListener extends FtpSession implements IPullingListener, INamedO
 	private long localResponseTime =  1000; // time between checks if adapter still state 'started'
 	
 
-	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessage, HashMap context) throws ListenerException {
+	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessage, Map context) throws ListenerException {
 	}
 
 	public void open() throws ListenerException {
@@ -123,11 +126,11 @@ public class FtpListener extends FtpSession implements IPullingListener, INamedO
 	public void close() throws ListenerException {
 	}
 
-	public HashMap openThread() throws ListenerException {
+	public Map openThread() throws ListenerException {
 		return null;
 	}
 
-	public void closeThread(HashMap threadContext) throws ListenerException {
+	public void closeThread(Map threadContext) throws ListenerException {
 	}
 
 	/**
@@ -146,7 +149,7 @@ public class FtpListener extends FtpSession implements IPullingListener, INamedO
 	 * in the processing of the file.
 	 * Override this method for your specific needs! 
 	 */
-	public String getIdFromRawMessage(Object rawMessage, HashMap threadContext) throws ListenerException {
+	public String getIdFromRawMessage(Object rawMessage, Map threadContext) throws ListenerException {
 		String correlationId = rawMessage.toString();
 		threadContext.put("cid", correlationId);
 		return correlationId;
@@ -156,7 +159,7 @@ public class FtpListener extends FtpSession implements IPullingListener, INamedO
 	 * Retrieves a single record from a file. If the file is empty or fully processed, it looks wether there
 	 * is a new file to process and returns the first record.
 	 */
-	public synchronized Object getRawMessage(HashMap threadContext) throws ListenerException {
+	public synchronized Object getRawMessage(Map threadContext) throws ListenerException {
 		log.debug("FtpListener [" + getName() + "] in getRawMessage, retrieving contents of directory [" +remoteDirectory+ "]");
 		if (remoteFilenames.isEmpty()) {
 			try {
@@ -211,7 +214,7 @@ public class FtpListener extends FtpSession implements IPullingListener, INamedO
 	/**
 	 * Returns a string of the rawMessage
 	 */
-	public String getStringFromRawMessage(Object rawMessage, HashMap threadContext) throws ListenerException {
+	public String getStringFromRawMessage(Object rawMessage, Map threadContext) throws ListenerException {
 		return rawMessage.toString();
 	}
 
