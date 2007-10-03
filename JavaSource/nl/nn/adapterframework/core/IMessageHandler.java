@@ -1,6 +1,9 @@
 /*
  * $Log: IMessageHandler.java,v $
- * Revision 1.4  2005-07-05 12:54:15  europe\L190409
+ * Revision 1.5  2007-10-03 08:10:11  europe\L190409
+ * changed HashMap to Map
+ *
+ * Revision 1.4  2005/07/05 12:54:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * allow to set parameters from context for processRequest() methods
  *
  * Revision 1.3  2004/08/23 13:07:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -16,31 +19,31 @@
  */
 package nl.nn.adapterframework.core;
 
-import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Interface that {@link IPushingListener PushingListeners} can use to handle the messages they receive.
  * A call to any of the method defined in this interface will do to process the message.
  *
+ * @author  Gerrit van Brakel
+ * @since   4.2
  * @version Id
- * @author Gerrit van Brakel
- * @since 4.2
  */
 public interface IMessageHandler {
-	public static final String version = "$RCSfile: IMessageHandler.java,v $ $Revision: 1.4 $ $Date: 2005-07-05 12:54:15 $";
+	public static final String version = "$RCSfile: IMessageHandler.java,v $ $Revision: 1.5 $ $Date: 2007-10-03 08:10:11 $";
 	
 	/**
 	 * Will use listener to perform getIdFromRawMessage(), getStringFromRawMessage and afterMessageProcessed 
 	 */
-	public void processRawMessage(IListener origin, Object message, HashMap context) throws ListenerException;
+	public void processRawMessage(IListener origin, Object message, Map context) throws ListenerException;
 	
 	/**
-	 * Same as {@link #processRawMessage(IListener,Object,HashMap)}, but now updates IdleStatistics too
+	 * Same as {@link #processRawMessage(IListener,Object,Map)}, but now updates IdleStatistics too
 	 */
-	public void processRawMessage(IListener origin, Object message, HashMap context, long waitingTime) throws ListenerException;
+	public void processRawMessage(IListener origin, Object message, Map context, long waitingTime) throws ListenerException;
 
 	/**
-	 * Same as {@link #processRawMessage(IListener,Object,HashMap)}, but now without context, for convenience
+	 * Same as {@link #processRawMessage(IListener,Object,Map)}, but now without context, for convenience
 	 */
 	public void processRawMessage(IListener origin, Object message) throws ListenerException;
 	
@@ -54,8 +57,8 @@ public interface IMessageHandler {
 	 * as the correlationId is logged also.
 	 */	
 	public String processRequest(IListener origin, String correlationId, String message) throws ListenerException;
-	public String processRequest(IListener origin, String correlationId, String message, HashMap context) throws ListenerException;
-	public String processRequest(IListener origin, String correlationId, String message, HashMap context, long waitingTime) throws ListenerException;
+	public String processRequest(IListener origin, String correlationId, String message, Map context) throws ListenerException;
+	public String processRequest(IListener origin, String correlationId, String message, Map context, long waitingTime) throws ListenerException;
 
 	/**
 	 *	Formats any exception thrown by any of the above methods to a message that can be returned.

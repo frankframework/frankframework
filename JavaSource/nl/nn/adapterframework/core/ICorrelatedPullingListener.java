@@ -1,6 +1,9 @@
 /*
  * $Log: ICorrelatedPullingListener.java,v $
- * Revision 1.4  2004-03-30 07:29:59  L190409
+ * Revision 1.5  2007-10-03 08:09:34  europe\L190409
+ * changed HashMap to Map
+ *
+ * Revision 1.4  2004/03/30 07:29:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.3  2004/03/26 10:42:50  Johan Verrips <johan.verrips@ibissource.org>
@@ -9,22 +12,21 @@
  */
 package nl.nn.adapterframework.core;
 
-import java.util.HashMap;
+import java.util.Map;
 /**
- *
  * Additional behaviour for pulling listeners that are able to listen to a specific
  * message, specified by a correlation ID.
  * 
+ * @author  Gerrit van Brakel
+ * @since   4.0
  * @version Id
- * @author Gerrit van Brakel
- * @since 4.0
  */
 public interface ICorrelatedPullingListener extends IPullingListener{
-		public static final String version="$Id: ICorrelatedPullingListener.java,v 1.4 2004-03-30 07:29:59 L190409 Exp $";
+	public static final String version = "$RCSfile: ICorrelatedPullingListener.java,v $ $Revision: 1.5 $ $Date: 2007-10-03 08:09:34 $";
 
-/**
- * Retrieves messages from queue or other channel,  but retrieves only
- * messages with the specified correlationId.
- */
-Object getRawMessage(String correlationId, HashMap threadContext) throws ListenerException, TimeOutException;
+	/**
+	 * Retrieves messages from queue or other channel,  but retrieves only
+	 * messages with the specified correlationId.
+	 */
+	Object getRawMessage(String correlationId, Map threadContext) throws ListenerException, TimeOutException;
 }
