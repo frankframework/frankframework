@@ -13,12 +13,17 @@
     <!-- <bean/> definitions here -->
     
     <!-- Transaction stuff -->
+    <!-- In order to properly handle 'Propagation: Supports', set property
+         'transactionSynchronization' to 'Synchronize on actual transaction'. -->
     <!-- bean definition below would be preferred txManager for WebSphere V6.0.2.19 or V6.1.0.9 and up
     (see: 
     http://www.ibm.com/developerworks/websphere/techjournal/0609_alcott/0609_alcott.html
     http://static.springframework.org/spring/docs/2.1.x/api/org/springframework/transaction/jta/WebSphereUowTransactionManager.html
     ) however doesn't work with WAS 5.0 / 5.1
     <bean id="txManager" class="org.springframework.transaction.jta.WebSphereUowTransactionManager">
+        <property name="transactionSynchronization">
+            <util:constant static-field="org.springframework.transaction.support.AbstractPlatformTransactionManager.SYNCHRONIZATION_ON_ACTUAL_TRANSACTION"/>
+        </property>
     </bean> -->
     
     <!-- Defining a WAS5 compatible transaction manager -->
