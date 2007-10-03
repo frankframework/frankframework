@@ -1,6 +1,9 @@
 /*
  * $Log: JavaListener.java,v $
- * Revision 1.24  2007-10-02 09:18:17  europe\L190409
+ * Revision 1.25  2007-10-03 08:57:32  europe\L190409
+ * changed HashMap to Map
+ *
+ * Revision 1.24  2007/10/02 09:18:17  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added physical destination
  *
  * Revision 1.23  2007/08/29 15:10:39  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -136,7 +139,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class JavaListener implements IPushingListener, RequestProcessor, HasPhysicalDestination {
-	public static final String version="$RCSfile: JavaListener.java,v $ $Revision: 1.24 $ $Date: 2007-10-02 09:18:17 $";
+	public static final String version="$RCSfile: JavaListener.java,v $ $Revision: 1.25 $ $Date: 2007-10-03 08:57:32 $";
 	protected Logger log = LogUtil.getLogger(this);
 	
 	private String name;
@@ -281,18 +284,18 @@ public class JavaListener implements IPushingListener, RequestProcessor, HasPhys
 	}
 
 
-	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessage, HashMap context) throws ListenerException {
+	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessage, Map context) throws ListenerException {
 		// do nothing
 	}
 
 
 
-	public String getIdFromRawMessage(Object rawMessage, HashMap context) throws ListenerException {
+	public String getIdFromRawMessage(Object rawMessage, Map context) throws ListenerException {
 		// do nothing
 		return null;
 	}
 
-	public String getStringFromRawMessage(Object rawMessage, HashMap context) throws ListenerException {
+	public String getStringFromRawMessage(Object rawMessage, Map context) throws ListenerException {
 		return (String)rawMessage;
 	}
 

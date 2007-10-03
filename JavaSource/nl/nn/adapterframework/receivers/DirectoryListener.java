@@ -1,6 +1,9 @@
 /*
  * $Log: DirectoryListener.java,v $
- * Revision 1.7  2007-07-26 16:24:31  europe\L190409
+ * Revision 1.8  2007-10-03 08:59:50  europe\L190409
+ * changed HashMap to Map
+ *
+ * Revision 1.7  2007/07/26 16:24:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * cosmetic changes
  *
  * Revision 1.6  2007/07/10 15:18:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -40,7 +43,7 @@ package nl.nn.adapterframework.receivers;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.INamedObject;
@@ -49,15 +52,16 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.util.FileUtils;
+import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.apache.log4j.Logger;
-import nl.nn.adapterframework.util.LogUtil;
 
 /**
- * File {@link nl.nn.adapterframework.core.IPullingListener listener} that looks in a directory for files according to a wildcard. 
+ * File {@link nl.nn.adapterframework.core.IPullingListener listener} that looks in a directory for files 
+ * according to a <code>wildcard</code>.  
  * When a file is found, it is moved to an outputdirectory, so that it isn't found more then once.  
  * The name of the moved file is passed to the pipeline.  
  *
@@ -83,7 +87,7 @@ import nl.nn.adapterframework.util.LogUtil;
  * @version Id
  */
 public class DirectoryListener implements IPullingListener, INamedObject {
-	public static final String version = "$RCSfile: DirectoryListener.java,v $  $Revision: 1.7 $ $Date: 2007-07-26 16:24:31 $";
+	public static final String version = "$RCSfile: DirectoryListener.java,v $  $Revision: 1.8 $ $Date: 2007-10-03 08:59:50 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -131,7 +135,7 @@ public class DirectoryListener implements IPullingListener, INamedObject {
 	public void open() throws ListenerException {
 	}
 
-	public HashMap openThread() throws ListenerException {
+	public Map openThread() throws ListenerException {
 		return null;
 	}
 
@@ -139,11 +143,11 @@ public class DirectoryListener implements IPullingListener, INamedObject {
 	public void close() throws ListenerException {
 	}
 
-	public void closeThread(HashMap threadContext) throws ListenerException {
+	public void closeThread(Map threadContext) throws ListenerException {
 	}
 
 
-	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessage, HashMap context) throws ListenerException {
+	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessage, Map context) throws ListenerException {
 	}
 
 	/**
@@ -185,7 +189,7 @@ public class DirectoryListener implements IPullingListener, INamedObject {
 	/**
 	 * Returns a string of the rawMessage
 	 */
-	public String getStringFromRawMessage(Object rawMessage, HashMap threadContext) throws ListenerException {
+	public String getStringFromRawMessage(Object rawMessage, Map threadContext) throws ListenerException {
 		return rawMessage.toString();
 	}
 
@@ -196,7 +200,7 @@ public class DirectoryListener implements IPullingListener, INamedObject {
 	 * in the processing of the file.
 	 * Override this method for your specific needs! 
 	 */
-	public String getIdFromRawMessage(Object rawMessage, HashMap threadContext) throws ListenerException {
+	public String getIdFromRawMessage(Object rawMessage, Map threadContext) throws ListenerException {
 		String correlationId = inputFileName;
 		threadContext.put("cid", correlationId);
 		return correlationId;
@@ -205,7 +209,7 @@ public class DirectoryListener implements IPullingListener, INamedObject {
 	 * Retrieves a single record from a file. If the file is empty or fully processed, it looks wether there
 	 * is a new file to process and returns the first record.
 	 */
-	public synchronized Object getRawMessage(HashMap threadContext) throws ListenerException {
+	public synchronized Object getRawMessage(Map threadContext) throws ListenerException {
 		File inputFile = FileUtils.getFirstMatchingFile(inputDirectory, wildcard);
 		if (inputFile == null) {
 			return waitAWhile();
@@ -224,7 +228,7 @@ public class DirectoryListener implements IPullingListener, INamedObject {
 		return inprocessFile;
 	}
 	
-	private PipeLineSession getSession(HashMap threadContext) {
+	private PipeLineSession getSession(Map threadContext) {
 		PipeLineSession session = new PipeLineSession();
 		if(threadContext != null)
 			session.putAll(threadContext);

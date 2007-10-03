@@ -1,6 +1,9 @@
 /*
  * $Log: PostboxRetrieverPipe.java,v $
- * Revision 1.4  2004-10-05 11:39:36  L190409
+ * Revision 1.5  2007-10-03 08:55:41  europe\L190409
+ * changed HashMap to Map
+ *
+ * Revision 1.4  2004/10/05 11:39:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed unused imports
  *
  * Revision 1.3  2004/08/23 13:10:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -19,7 +22,7 @@
 package nl.nn.adapterframework.pipes;
 
 
-import java.util.HashMap;
+import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPostboxListener;
@@ -30,8 +33,15 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 
 /**
- * Retrieves a message using an {@link IPostboxListener}. Note that most listeners allow you to specify a timeout. The timeout has the following
- * meaning: <0 = no wait, 0 = block until message available, >= 0 maximum wait in milliseconds
+ * Retrieves a message using an {@link IPostboxListener}. 
+ * 
+ * Note that most listeners allow you to specify a timeout. The timeout has the following
+ * meaning:
+ * <ul> 
+ * <li>&lt;0 = no wait</li>
+ * <li>0 = block until message available</li>
+ * <li>&gt;= 0 maximum wait in milliseconds<li>
+ * </ul> 
  *
  * <p><b>Configuration:</b>
  * <table border="1">
@@ -60,7 +70,7 @@ import nl.nn.adapterframework.core.PipeStartException;
  * @version Id
  */
 public class PostboxRetrieverPipe  extends FixedForwardPipe {
-	public static final String version="$Id: PostboxRetrieverPipe.java,v 1.4 2004-10-05 11:39:36 L190409 Exp $";
+	public static final String version="$Id: PostboxRetrieverPipe.java,v 1.5 2007-10-03 08:55:41 europe\L190409 Exp $";
 	private IPostboxListener listener = null;
 	private String resultOnEmptyPostbox = "empty postbox";
 		
@@ -103,7 +113,7 @@ public class PostboxRetrieverPipe  extends FixedForwardPipe {
 			throw new PipeRunException(this, "String expected, got a [" + input.getClass().getName() + "]");
 		}
 
-		HashMap threadContext = null;
+		Map threadContext = null;
 		try {
 			threadContext = getListener().openThread();
 			Object rawMessage = getListener().retrieveRawMessage((String)input, threadContext);
