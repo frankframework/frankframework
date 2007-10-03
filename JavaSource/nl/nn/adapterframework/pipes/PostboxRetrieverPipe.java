@@ -1,6 +1,9 @@
 /*
  * $Log: PostboxRetrieverPipe.java,v $
- * Revision 1.5  2007-10-03 08:55:41  europe\L190409
+ * Revision 1.6  2007-10-03 08:56:30  europe\L190409
+ * corrected version string
+ *
+ * Revision 1.5  2007/10/03 08:55:41  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed HashMap to Map
  *
  * Revision 1.4  2004/10/05 11:39:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -66,11 +69,12 @@ import nl.nn.adapterframework.core.PipeStartException;
  * </table>
  * </p>
   * 
- * @author John Dekker
+ * @author  John Dekker
  * @version Id
  */
 public class PostboxRetrieverPipe  extends FixedForwardPipe {
-	public static final String version="$Id: PostboxRetrieverPipe.java,v 1.5 2007-10-03 08:55:41 europe\L190409 Exp $";
+	public static final String version = "$RCSfile: PostboxRetrieverPipe.java,v $ $Revision: 1.6 $ $Date: 2007-10-03 08:56:30 $";
+
 	private IPostboxListener listener = null;
 	private String resultOnEmptyPostbox = "empty postbox";
 		
