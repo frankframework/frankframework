@@ -1,6 +1,19 @@
 /*
  * $Log: IResultHandler.java,v $
- * Revision 1.7  2007-09-10 11:07:00  europe\L190409
+ * Revision 1.6.2.1  2007-10-04 13:07:13  europe\L190409
+ * synchronize with HEAD (4.7.0)
+ *
+ * Revision 1.10  2007/09/24 14:55:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * support for parameters
+ *
+ * Revision 1.9  2007/09/19 11:15:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * added openDocument() and closeDocument()
+ * added openBlock() and closeBlock()
+ *
+ * Revision 1.8  2007/09/17 07:43:17  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * added hasPrefix()
+ *
+ * Revision 1.7  2007/09/10 11:07:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed logic processing from writePrefix to calling class
  * renamed writePrefix() and writeSuffix() into open/closeRecordType()
  *
@@ -27,6 +40,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 
 /**
  * Interface for handling a transformed record.
@@ -45,7 +59,8 @@ public interface IResultHandler extends INamedObject {
 	 * @param session  current PipeLineSession
 	 * @param streamId identification of the original file/stream/message
 	 */
-	void openResult(PipeLineSession session, String streamId) throws Exception;
+	void openDocument(PipeLineSession session, String streamId, ParameterResolutionContext prc) throws Exception;
+	void closeDocument(PipeLineSession session, String streamId, ParameterResolutionContext prc);
 
 	/**
 	 * write a result ta record. 
@@ -54,7 +69,7 @@ public interface IResultHandler extends INamedObject {
 	 * @param recordKey key of the record (describes the record type)
 	 * @param result transformed record
 	 */
-	void handleResult(PipeLineSession session, String streamId, String recordKey, Object result) throws Exception;
+	void handleResult(PipeLineSession session, String streamId, String recordKey, Object result, ParameterResolutionContext prc) throws Exception;
 	
 	/**
 	 * Called when all records in the original file are handled.
@@ -62,7 +77,7 @@ public interface IResultHandler extends INamedObject {
 	 * @param streamId identification of the original file/stream/message containing the untransformed records
 	 * @return the name or names of the output files
 	 */
-	Object finalizeResult(PipeLineSession session, String streamId, boolean error) throws Exception;
+	Object finalizeResult(PipeLineSession session, String streamId, boolean error, ParameterResolutionContext prc) throws Exception;
 
 	/**
 	 * @param session  current PipeLineSession
@@ -71,17 +86,22 @@ public interface IResultHandler extends INamedObject {
 	 * @param hasPreviousRecord boolean indicates if a previous record has been written, in case a suffix has to be written first
 	 * @throws Exception
 	 */
-	void openRecordType(PipeLineSession session, String streamId) throws Exception;
+	void openRecordType(PipeLineSession session, String streamId, ParameterResolutionContext prc) throws Exception;
 	
 	/**
 	 * @param session  current PipeLineSession
 	 * @param streamId identification of the original file/stream/message containing the untransformed records
 	 */
-	void closeRecordType(PipeLineSession session, String streamId) throws Exception;
+	void closeRecordType(PipeLineSession session, String streamId, ParameterResolutionContext prc) throws Exception;
 	
+	void openBlock(PipeLineSession session, String streamId, String blockName, ParameterResolutionContext prc) throws Exception;
+	void closeBlock(PipeLineSession session, String streamId, String blockName, ParameterResolutionContext prc) throws Exception;
+
 	/**
 	 * @return true if this resulthandler should be used for all flows if no resulthandler is specified for that flow 
 	 */
 	boolean isDefault();
 	void setDefault(boolean isDefault);
+	
+	boolean hasPrefix();
 }

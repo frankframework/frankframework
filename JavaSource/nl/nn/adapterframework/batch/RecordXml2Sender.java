@@ -1,6 +1,15 @@
 /*
  * $Log: RecordXml2Sender.java,v $
- * Revision 1.6  2007-07-26 16:10:10  europe\L190409
+ * Revision 1.6.2.1  2007-10-04 13:07:13  europe\L190409
+ * synchronize with HEAD (4.7.0)
+ *
+ * Revision 1.8  2007/09/24 14:55:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * support for parameters
+ *
+ * Revision 1.7  2007/09/24 13:02:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * updated javadoc
+ *
+ * Revision 1.6  2007/07/26 16:10:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * cosmetic changes
  *
  * Revision 1.5  2007/05/03 11:39:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -23,8 +32,10 @@ import java.util.ArrayList;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISender;
+import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.ClassUtils;
 
 /**
@@ -37,7 +48,12 @@ import nl.nn.adapterframework.util.ClassUtils;
  * <tr><td>{@link #setName(String) name}</td><td>name of the RecordHandler</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setRootTag(String) rootTag}</td><td>Roottag for the generated XML document</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setOutputFields(String) outputfields}</td><td>Comma seperated string with tagnames for the individual input fields (related using there positions). If you leave a tagname empty, the field is not xml-ized</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSender(ISender) sender}</td><td>Sender that needs to handle the (XML) record</td><td>&nbsp;</td></tr>
+ * </table>
+ * </p>
+ * <table border="1">
+ * <tr><th>nested elements</th><th>description</th></tr>
+ * <tr><td>{@link nl.nn.adapterframework.core.ISender sender}</td><td>Sender that needs to handle the (XML) record</td></tr>
+ * <tr><td>{@link nl.nn.adapterframework.parameters.Parameter param}</td><td>any parameters defined on the recordHandler will be handed to the sender, if this is a {@link IParameterizedSender}</td></tr>
  * </table>
  * </p>
  * 
@@ -45,7 +61,7 @@ import nl.nn.adapterframework.util.ClassUtils;
  * @version Id
  */
 public class RecordXml2Sender extends RecordXmlTransformer {
-	public static final String version = "$RCSfile: RecordXml2Sender.java,v $  $Revision: 1.6 $ $Date: 2007-07-26 16:10:10 $";
+	public static final String version = "$RCSfile: RecordXml2Sender.java,v $  $Revision: 1.6.2.1 $ $Date: 2007-10-04 13:07:13 $";
 
 	private ISender sender = null; 
 	
@@ -65,9 +81,15 @@ public class RecordXml2Sender extends RecordXmlTransformer {
 		sender.close();		
 	}
 
-	public Object handleRecord(PipeLineSession session, ArrayList parsedRecord) throws Exception {
+	public Object handleRecord(PipeLineSession session, ArrayList parsedRecord, ParameterResolutionContext prc) throws Exception {
 		String xml = getXml(parsedRecord);
-		return sender.sendMessage(null, xml);
+		ISender sender = getSender();
+		if (sender instanceof ISenderWithParameters) {
+			ISenderWithParameters psender = (ISenderWithParameters)sender;
+			return psender.sendMessage(null, xml,prc); 
+		} else {
+			return sender.sendMessage(null, xml); 
+		}
 	}
 	
 

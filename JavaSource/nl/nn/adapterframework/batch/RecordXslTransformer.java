@@ -1,6 +1,12 @@
 /*
  * $Log: RecordXslTransformer.java,v $
- * Revision 1.6  2007-07-26 16:11:34  europe\L190409
+ * Revision 1.6.2.1  2007-10-04 13:07:12  europe\L190409
+ * synchronize with HEAD (4.7.0)
+ *
+ * Revision 1.7  2007/09/24 14:55:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * support for parameters
+ *
+ * Revision 1.6  2007/07/26 16:11:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed seperator into separator
  * allow use of xPathExpression and parameters
  *
@@ -26,6 +32,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
+import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.TransformerPool;
 
@@ -49,7 +56,7 @@ import nl.nn.adapterframework.util.TransformerPool;
  * @version Id
  */
 public class RecordXslTransformer extends RecordXmlTransformer {
-	public static final String version = "$RCSfile: RecordXslTransformer.java,v $  $Revision: 1.6 $ $Date: 2007-07-26 16:11:34 $";
+	public static final String version = "$RCSfile: RecordXslTransformer.java,v $  $Revision: 1.6.2.1 $ $Date: 2007-10-04 13:07:12 $";
 
 	private String xpathExpression=null;
 	private String styleSheetName;
@@ -83,9 +90,9 @@ public class RecordXslTransformer extends RecordXmlTransformer {
 	}
 
 
-	public Object handleRecord(PipeLineSession session, ArrayList parsedRecord) throws Exception {
+	public Object handleRecord(PipeLineSession session, ArrayList parsedRecord, ParameterResolutionContext prc) throws Exception {
 		String xml = getXml(parsedRecord);
-		return transformerPool.transform(xml, null);
+		return transformerPool.transform(xml, prc.getValueMap(paramList));
 	}
 	
 

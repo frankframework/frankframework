@@ -1,6 +1,12 @@
 /*
  * $Log: RecordTransformer.java,v $
- * Revision 1.11  2007-09-11 11:51:45  europe\L190409
+ * Revision 1.10.2.1  2007-10-04 13:07:13  europe\L190409
+ * synchronize with HEAD (4.7.0)
+ *
+ * Revision 1.12  2007/09/24 14:55:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * support for parameters
+ *
+ * Revision 1.11  2007/09/11 11:51:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.10  2007/08/03 08:38:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -49,6 +55,7 @@ import java.util.StringTokenizer;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.FileUtils;
 
@@ -86,14 +93,14 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class RecordTransformer extends AbstractRecordHandler {
-	public static final String version = "$RCSfile: RecordTransformer.java,v $  $Revision: 1.11 $ $Date: 2007-09-11 11:51:45 $";
+	public static final String version = "$RCSfile: RecordTransformer.java,v $  $Revision: 1.10.2.1 $ $Date: 2007-10-04 13:07:13 $";
 
 	private String outputSeparator;
 
 	private List outputFields=new LinkedList();
 
 	
-	public Object handleRecord(PipeLineSession session, ArrayList parsedRecord) throws Exception {
+	public Object handleRecord(PipeLineSession session, ArrayList parsedRecord, ParameterResolutionContext prc) throws Exception {
 		StringBuffer output = new StringBuffer();
 		Stack conditions = new Stack();
 		

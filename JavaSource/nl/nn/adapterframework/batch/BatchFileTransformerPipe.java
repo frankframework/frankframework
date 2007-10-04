@@ -1,6 +1,9 @@
 /*
  * $Log: BatchFileTransformerPipe.java,v $
- * Revision 1.12  2007-09-11 11:51:45  europe\L190409
+ * Revision 1.9.2.1  2007-10-04 13:07:13  europe\L190409
+ * synchronize with HEAD (4.7.0)
+ *
+ * Revision 1.12  2007/09/11 11:51:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.11  2007/09/04 09:34:22  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -58,7 +61,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class BatchFileTransformerPipe extends StreamTransformerPipe {
-	public static final String version = "$RCSfile: BatchFileTransformerPipe.java,v $  $Revision: 1.12 $ $Date: 2007-09-11 11:51:45 $";
+	public static final String version = "$RCSfile: BatchFileTransformerPipe.java,v $  $Revision: 1.9.2.1 $ $Date: 2007-10-04 13:07:13 $";
 
 	private String move2dirAfterTransform;
 	private String move2dirAfterError;

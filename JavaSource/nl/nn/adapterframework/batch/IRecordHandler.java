@@ -1,6 +1,12 @@
 /*
  * $Log: IRecordHandler.java,v $
- * Revision 1.7  2007-09-13 12:35:50  europe\L190409
+ * Revision 1.5.4.1  2007-10-04 13:07:13  europe\L190409
+ * synchronize with HEAD (4.7.0)
+ *
+ * Revision 1.8  2007/09/24 14:55:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * support for parameters
+ *
+ * Revision 1.7  2007/09/13 12:35:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.6  2007/09/10 11:05:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -28,6 +34,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 
 /**
  * Interface for transforming a record (= structured ASCII line). 
@@ -63,7 +70,7 @@ public interface IRecordHandler extends INamedObject {
 	 * @return transformed result
 	 * @throws Exception
 	 */	
-	Object handleRecord(PipeLineSession session, ArrayList parsedRecord) throws Exception;
+	Object handleRecord(PipeLineSession session, ArrayList parsedRecord, ParameterResolutionContext prc) throws Exception;
 	
 	/**
 	 * @param equalRecordTypes flag indicates if the previous record was of same type as the current
