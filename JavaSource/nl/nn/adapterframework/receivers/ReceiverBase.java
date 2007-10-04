@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.50  2007-10-03 08:57:04  europe\L190409
+ * Revision 1.51  2007-10-04 12:01:37  europe\L190409
+ * limit number of error messages written to log
+ *
+ * Revision 1.50  2007/10/03 08:57:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed HashMap to Map
  *
  * Revision 1.49  2007/09/27 12:55:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -291,7 +294,7 @@ import org.apache.log4j.Logger;
  * @since 4.2
  */
 public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, IMessageHandler, IbisExceptionListener, HasSender, TracingEventNumbers {
-	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.50 $ $Date: 2007-10-03 08:57:04 $";
+	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.51 $ $Date: 2007-10-04 12:01:37 $";
 	protected Logger log = LogUtil.getLogger(this);
  
  	public static final String RCV_SHUTDOWN_MONITOR_EVENT_MSG ="RCVCLOSED Ibis Receiver shut down";
@@ -909,18 +912,18 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 			retryCount.clear();
 			return newMessageId;
 		} catch (Throwable t) {
-			log.error("["+getName()+"] Exception transfering message with messageId ["+originalMessageId+"] to inProcessStorage, original message: ["+rawMessage+"]", t);
+			//log.error("["+getName()+"] Exception transfering message with messageId ["+originalMessageId+"] to inProcessStorage, original message: ["+rawMessage+"]", t);
 			try {
 				utx.rollback();
 			} catch (Exception rbe) {
-				log.error("["+getName()+"] Exception while rolling back transaction for message with messageId ["+originalMessageId+"] after catching exception", rbe);
+				log.error("["+getName()+"] Exception while rolling back transaction for message with messageId ["+originalMessageId+"] after catching exception (that will be thrown after this line has been logged)", rbe);
 			}
 			long retries=retryCount.increase();
 			if (retries>getMaxRetries()) {
-				log.warn("["+getName()+"] stopping receiver as message cannot be stored in inProcessStorage, tried ["+retries+"] times");
+				log.warn("["+getName()+"] stopping receiver as message cannot be stored in inProcessStorage after catching exception (that will be thrown after this line has been logged), tried ["+retries+"] times");
 				stopRunning();
 			} else {
-				log.info("["+getName()+"] waiting for message to reappear, retryCount=["+retries+"]");
+				log.info("["+getName()+"] waiting for message, rolled back after catching exception (that will be thrown after this line has been logged) to reappear, retryCount=["+retries+"]");
 			}
 			throw new ListenerException("["+getName()+"] Exception retrieving/storing message with messageId ["+originalMessageId+"] under transaction control", t);
 			// no need to send message on errorSender, message will remain on input channel due to rollback
