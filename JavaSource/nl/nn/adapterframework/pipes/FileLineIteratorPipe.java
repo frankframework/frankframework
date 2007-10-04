@@ -1,6 +1,9 @@
 /*
  * $Log: FileLineIteratorPipe.java,v $
- * Revision 1.2  2007-09-13 09:10:45  europe\L190409
+ * Revision 1.2.2.1  2007-10-04 13:28:21  europe\L190409
+ * synchronize with HEAD (4.7.0)
+ *
+ * Revision 1.2  2007/09/13 09:10:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * base on StreamLineIteratorPipe
  *
  * Revision 1.1  2007/09/13 08:58:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -74,7 +77,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class FileLineIteratorPipe extends StreamLineIteratorPipe {
-	public static final String version = "$RCSfile: FileLineIteratorPipe.java,v $  $Revision: 1.2 $ $Date: 2007-09-13 09:10:45 $";
+	public static final String version = "$RCSfile: FileLineIteratorPipe.java,v $  $Revision: 1.2.2.1 $ $Date: 2007-10-04 13:28:21 $";
 
 	private String move2dirAfterTransform;
 	private String move2dirAfterError;

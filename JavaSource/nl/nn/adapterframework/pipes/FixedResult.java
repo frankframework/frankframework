@@ -1,6 +1,12 @@
 /*
  * $Log: FixedResult.java,v $
- * Revision 1.16  2007-05-02 11:36:36  europe\L190409
+ * Revision 1.16.4.1  2007-10-04 13:28:21  europe\L190409
+ * synchronize with HEAD (4.7.0)
+ *
+ * Revision 1.17  2007/10/01 14:10:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * updated javadoc
+ *
+ * Revision 1.16  2007/05/02 11:36:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added attribute 'lookupAtRuntime'
  *
  * Revision 1.15  2006/06/20 14:10:22  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -83,9 +89,10 @@ import org.apache.commons.lang.SystemUtils;
  * <tr><th>name</th><th>type</th><th>remarks</th></tr>
  * <tr>
  *   <td><i>any</i></td><td><i>any</i></td>
- * 	 <td>Any parameters defined on the pipe will be used for replacements. Each 
- * 		 <code>${name-of-parameter}</code> will be replaced by its corresponding 
- * 		 <i>value-of-parameter</i></td>
+ * 	 <td>Any parameters defined on the pipe will be used for replacements. Each occurrence
+ * 		 of <code>${name-of-parameter}</code> in the file {@link #setFileName(String) fileName} 
+ *       will be replaced by its corresponding <i>value-of-parameter</i>. <br>
+ *       This works only with files, not with values supplied in attribute @link #setReturnString(String) returnString}</td>
  * </tr>
  * </table>
  * </p>
@@ -100,7 +107,7 @@ import org.apache.commons.lang.SystemUtils;
  * @author Johan Verrips
  */
 public class FixedResult extends FixedForwardPipe {
-	public static final String version="$RCSfile: FixedResult.java,v $ $Revision: 1.16 $ $Date: 2007-05-02 11:36:36 $";
+	public static final String version="$RCSfile: FixedResult.java,v $ $Revision: 1.16.4.1 $ $Date: 2007-10-04 13:28:21 $";
 	
     private String fileName;
     private String returnString;

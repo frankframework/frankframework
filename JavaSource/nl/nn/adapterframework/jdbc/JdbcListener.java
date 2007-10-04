@@ -1,6 +1,12 @@
 /*
  * $Log: JdbcListener.java,v $
- * Revision 1.3  2007-09-13 09:08:56  europe\L190409
+ * Revision 1.4.2.1  2007-10-04 13:25:15  europe\L190409
+ * synchronize with HEAD (4.7.0)
+ *
+ * Revision 1.4  2007/10/03 08:48:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * changed HashMap to Map
+ *
+ * Revision 1.3  2007/09/13 09:08:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * allowed use outside transaction
  *
  * Revision 1.2  2007/09/12 09:17:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -18,6 +24,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
+import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPullingListener;
@@ -29,6 +36,7 @@ import nl.nn.adapterframework.util.JtaUtil;
 import org.apache.commons.lang.StringUtils;
 
 /**
+ * JdbcListener base class.
  * @author  Gerrit van Brakel
  * @since   4.7
  * @version Id
@@ -84,14 +92,14 @@ public class JdbcListener extends JdbcFacade implements IPullingListener {
 		}
 	}
 	
-	public HashMap openThread() throws ListenerException {
+	public Map openThread() throws ListenerException {
 		return new HashMap();
 	}
 
-	public void closeThread(HashMap threadContext) throws ListenerException {
+	public void closeThread(Map threadContext) throws ListenerException {
 	}
 
-	public Object getRawMessage(HashMap threadContext) throws ListenerException {
+	public Object getRawMessage(Map threadContext) throws ListenerException {
 		if (isConnectionsArePooled()) {
 			Connection c = null;
 			try {
@@ -116,7 +124,7 @@ public class JdbcListener extends JdbcFacade implements IPullingListener {
 		}
 	}
 
-	protected Object getRawMessage(Connection conn, HashMap threadContext) throws ListenerException {
+	protected Object getRawMessage(Connection conn, Map threadContext) throws ListenerException {
 		boolean inTransaction=false;
 		
 		try {
@@ -190,7 +198,7 @@ public class JdbcListener extends JdbcFacade implements IPullingListener {
 		
 	}
 
-	public String getIdFromRawMessage(Object rawMessage, HashMap context) throws ListenerException {
+	public String getIdFromRawMessage(Object rawMessage, Map context) throws ListenerException {
 		String id;
 		if (rawMessage instanceof MessageWrapper) {
 			id = ((MessageWrapper)rawMessage).getId();
@@ -200,7 +208,7 @@ public class JdbcListener extends JdbcFacade implements IPullingListener {
 		return id;
 	}
 
-	public String getStringFromRawMessage(Object rawMessage, HashMap context) throws ListenerException {
+	public String getStringFromRawMessage(Object rawMessage, Map context) throws ListenerException {
 		String message;
 		if (rawMessage instanceof MessageWrapper) {
 			message = ((MessageWrapper)rawMessage).getId();
@@ -210,7 +218,7 @@ public class JdbcListener extends JdbcFacade implements IPullingListener {
 		return message;
 	}
 
-	protected void afterMessageProcessed(Connection c, PipeLineResult processResult, String key, HashMap context) throws ListenerException {
+	protected void afterMessageProcessed(Connection c, PipeLineResult processResult, String key, Map context) throws ListenerException {
 		if (processResult==null || "success".equals(processResult.getState())) {
 			execute(c,getUpdateStatusToProcessedQuery(),key);
 		} else {
@@ -218,7 +226,7 @@ public class JdbcListener extends JdbcFacade implements IPullingListener {
 		}
 	}
 
-	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessage, HashMap context) throws ListenerException {
+	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessage, Map context) throws ListenerException {
 		String key=getIdFromRawMessage(rawMessage,context);
 		if (isConnectionsArePooled()) {
 			Connection c = null;

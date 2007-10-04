@@ -1,8 +1,10 @@
 /*
  * $Log: IMessageHandler.java,v $
- * Revision 1.4.6.1  2007-09-18 11:20:37  europe\M00035F
- * * Update a number of method-signatures to take a java.util.Map instead of HashMap
- * * Rewrite JmsListener to be instance of IPushingListener; use Spring JMS Container
+ * Revision 1.4.6.2  2007-10-04 13:23:37  europe\L190409
+ * synchronize with HEAD (4.7.0)
+ *
+ * Revision 1.5  2007/10/03 08:10:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * changed HashMap to Map
  *
  * Revision 1.4  2005/07/05 12:54:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * allow to set parameters from context for processRequest() methods
@@ -26,12 +28,12 @@ import java.util.Map;
  * Interface that {@link IPushingListener PushingListeners} can use to handle the messages they receive.
  * A call to any of the method defined in this interface will do to process the message.
  *
+ * @author  Gerrit van Brakel
+ * @since   4.2
  * @version Id
- * @author Gerrit van Brakel
- * @since 4.2
  */
 public interface IMessageHandler {
-	public static final String version = "$RCSfile: IMessageHandler.java,v $ $Revision: 1.4.6.1 $ $Date: 2007-09-18 11:20:37 $";
+	public static final String version = "$RCSfile: IMessageHandler.java,v $ $Revision: 1.4.6.2 $ $Date: 2007-10-04 13:23:37 $";
 	
 	/**
 	 * Will use listener to perform getIdFromRawMessage(), getStringFromRawMessage and afterMessageProcessed 

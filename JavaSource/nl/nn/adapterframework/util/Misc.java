@@ -1,6 +1,9 @@
 /*
  * $Log: Misc.java,v $
- * Revision 1.15  2007-09-05 13:05:44  europe\L190409
+ * Revision 1.14.4.1  2007-10-04 13:29:31  europe\L190409
+ * synchronize with HEAD (4.7.0)
+ *
+ * Revision 1.15  2007/09/05 13:05:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added function to copy context
  *
  * Revision 1.14  2007/06/12 11:24:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -56,7 +59,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class Misc {
-	public static final String version="$RCSfile: Misc.java,v $ $Revision: 1.15 $ $Date: 2007-09-05 13:05:44 $";
+	public static final String version="$RCSfile: Misc.java,v $ $Revision: 1.14.4.1 $ $Date: 2007-10-04 13:29:31 $";
 	public static final int BUFFERSIZE=20000;
 	public static final String DEFAULT_INPUT_STREAM_ENCODING="UTF-8";
 

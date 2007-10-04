@@ -1,8 +1,10 @@
 /*
  * $Log: FtpListener.java,v $
- * Revision 1.9.4.1  2007-09-18 11:20:39  europe\M00035F
- * * Update a number of method-signatures to take a java.util.Map instead of HashMap
- * * Rewrite JmsListener to be instance of IPushingListener; use Spring JMS Container
+ * Revision 1.9.4.2  2007-10-04 13:24:20  europe\L190409
+ * synchronize with HEAD (4.7.0)
+ *
+ * Revision 1.10  2007/10/03 08:36:29  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * changed HashMap to Map
  *
  * Revision 1.9  2006/01/19 12:15:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved logging
@@ -36,9 +38,9 @@
  */
 package nl.nn.adapterframework.ftp;
 
-import java.util.Map;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.INamedObject;
@@ -102,11 +104,11 @@ import org.apache.commons.lang.builder.ToStringStyle;
  * </table>
  * </p>
  *
- * @version Id
  * @author  John Dekker
+ * @version Id
  */
 public class FtpListener extends FtpSession implements IPullingListener, INamedObject, RunStateEnquiring {
-	public static final String version = "$RCSfile: FtpListener.java,v $  $Revision: 1.9.4.1 $ $Date: 2007-09-18 11:20:39 $";
+	public static final String version = "$RCSfile: FtpListener.java,v $  $Revision: 1.9.4.2 $ $Date: 2007-10-04 13:24:20 $";
 
 	private LinkedList remoteFilenames;
 	private RunStateEnquirer runStateEnquirer=null;

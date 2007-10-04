@@ -1,6 +1,9 @@
 /*
  * $Log: IbisLocalSender.java,v $
- * Revision 1.17  2007-09-10 11:19:39  europe\L190409
+ * Revision 1.13.4.1  2007-10-04 13:28:21  europe\L190409
+ * synchronize with HEAD (4.7.0)
+ *
+ * Revision 1.17  2007/09/10 11:19:39  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.16  2007/09/05 13:04:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -130,7 +133,7 @@ import java.util.HashMap;
  * @since  4.2
  */
 public class IbisLocalSender extends SenderWithParametersBase implements HasPhysicalDestination {
-	public static final String version="$RCSfile: IbisLocalSender.java,v $ $Revision: 1.17 $ $Date: 2007-09-10 11:19:39 $";
+	public static final String version="$RCSfile: IbisLocalSender.java,v $ $Revision: 1.13.4.1 $ $Date: 2007-10-04 13:28:21 $";
 	
 	private String name;
 	private String serviceName;

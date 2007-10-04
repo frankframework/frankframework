@@ -1,6 +1,9 @@
 /*
  * $Log: LdapSender.java,v $
- * Revision 1.27  2007-09-10 11:18:41  europe\L190409
+ * Revision 1.24.2.1  2007-10-04 13:25:39  europe\L190409
+ * synchronize with HEAD (4.7.0)
+ *
+ * Revision 1.27  2007/09/10 11:18:41  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.26  2007/09/04 07:59:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -270,7 +273,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class LdapSender extends JNDIBase implements ISenderWithParameters {
-	public static final String version = "$RCSfile: LdapSender.java,v $  $Revision: 1.27 $ $Date: 2007-09-10 11:18:41 $";
+	public static final String version = "$RCSfile: LdapSender.java,v $  $Revision: 1.24.2.1 $ $Date: 2007-10-04 13:25:39 $";
 
 	private String FILTER = "filterExpression";
 	private String ENTRYNAME = "entryName";

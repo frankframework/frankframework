@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcTransactionalStorage.java,v $
- * Revision 1.20.4.1  2007-09-21 13:23:34  europe\M00035F
+ * Revision 1.20.4.2  2007-10-04 13:25:15  europe\L190409
+ * synchronize with HEAD (4.7.0)
+ *
+ * Revision 1.20.4.1  2007/09/21 13:23:34  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
  * * Add method to ITransactionalStorage to check if original message ID can be found in it
  * * Check for presence of original message id in ErrorStorage before processing, so it can be removed from queue if it has already once been recorded as unprocessable (but the TX in which it ran could no longer be committed).
  *
@@ -156,12 +159,21 @@ import org.apache.commons.lang.StringUtils;
  *  </pre>
  * If these objects do not exist, Ibis will try to create them if the attribute createTable="true".
  * 
+ * <br/>
+ * N.B. Note on using XA transactions:
+ * If transactions are used, make sure that the database user can access the table SYS.DBA_PENDING_TRANSACTIONS.
+ * If not, transactions present when the server goes down cannot be properly recovered, resulting in exceptions like:
+ * <pre>
+   The error code was XAER_RMERR. The exception stack trace follows: javax.transaction.xa.XAException
+	at oracle.jdbc.xa.OracleXAResource.recover(OracleXAResource.java:508)
+   </pre>
+ * 
  * @version Id
  * @author  Gerrit van Brakel
  * @since 	4.1
  */
 public class JdbcTransactionalStorage extends JdbcFacade implements ITransactionalStorage {
-	public static final String version = "$RCSfile: JdbcTransactionalStorage.java,v $ $Revision: 1.20.4.1 $ $Date: 2007-09-21 13:23:34 $";
+	public static final String version = "$RCSfile: JdbcTransactionalStorage.java,v $ $Revision: 1.20.4.2 $ $Date: 2007-10-04 13:25:15 $";
 	
 	// the following currently only for debug.... 
 	boolean checkIfTableExists=true;

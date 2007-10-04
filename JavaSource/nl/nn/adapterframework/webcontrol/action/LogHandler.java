@@ -1,6 +1,9 @@
 /*
  * $Log: LogHandler.java,v $
- * Revision 1.6  2007-08-30 15:12:12  europe\L190409
+ * Revision 1.5.4.1  2007-10-04 13:33:34  europe\L190409
+ * synchronize with HEAD (4.7.0)
+ *
+ * Revision 1.6  2007/08/30 15:12:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * modified getRootLogger()
  *
  * Revision 1.5  2007/02/16 14:24:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -32,7 +35,7 @@ import org.apache.struts.action.DynaActionForm;
  * @version Id
  */
 public class LogHandler extends ActionBase {
-	public static final String version = "$RCSfile: LogHandler.java,v $ $Revision: 1.6 $ $Date: 2007-08-30 15:12:12 $";
+	public static final String version = "$RCSfile: LogHandler.java,v $ $Revision: 1.5.4.1 $ $Date: 2007-10-04 13:33:34 $";
 	
 	 public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response)
         throws IOException, ServletException {

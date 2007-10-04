@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcUtil.java,v $
- * Revision 1.15  2007-09-12 09:27:36  europe\L190409
+ * Revision 1.13.2.1  2007-10-04 13:29:31  europe\L190409
+ * synchronize with HEAD (4.7.0)
+ *
+ * Revision 1.15  2007/09/12 09:27:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added warning in fullClose()
  *
  * Revision 1.14  2007/09/05 13:06:47  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -82,7 +85,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class JdbcUtil {
-	public static final String version = "$RCSfile: JdbcUtil.java,v $ $Revision: 1.15 $ $Date: 2007-09-12 09:27:36 $";
+	public static final String version = "$RCSfile: JdbcUtil.java,v $ $Revision: 1.13.2.1 $ $Date: 2007-10-04 13:29:31 $";
 	protected static Logger log = LogUtil.getLogger(JdbcUtil.class);
 	
 	private static final boolean useMetaData=false;

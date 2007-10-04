@@ -1,12 +1,20 @@
 /*
  * $Log: Result2LobWriterBase.java,v $
- * Revision 1.1  2007-08-03 08:43:30  europe\L190409
+ * Revision 1.1.2.1  2007-10-04 13:25:15  europe\L190409
+ * synchronize with HEAD (4.7.0)
+ *
+ * Revision 1.3  2007/09/24 14:58:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * support for parameters
+ *
+ * Revision 1.2  2007/09/19 13:06:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * modify exception type thrown
+ *
+ * Revision 1.1  2007/08/03 08:43:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * first versions of Jdbc result writers
  *
  */
 package nl.nn.adapterframework.jdbc;
 
-import java.io.IOException;
 import java.io.Writer;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -19,6 +27,7 @@ import nl.nn.adapterframework.batch.ResultWriter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.JdbcUtil;
 
 
@@ -29,18 +38,31 @@ import nl.nn.adapterframework.util.JdbcUtil;
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>classname</td><td>nl.nn.adapterframework.jdbc.Result2LobWriterBase</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setDefaultResultHandler(boolean) default}</td><td>If true, this resulthandler is the default for all RecordHandlingFlow that do not have a handler specified</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setName(String) name}</td><td>Name of the resulthandler</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setQuery(String) query}</td><td>the SQL query text</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDatasourceName(String) datasourceName}</td><td>can be configured from JmsRealm, too</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setDefault(boolean) default}</td><td>If true, this resulthandler is the default for all RecordHandlingFlow that do not have a handler specified</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setPrefix(String) prefix}</td><td><i>Deprecated</i> Prefix that has to be written before record, if the record is in another block than the previous record</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setSuffix(String) suffix}</td><td><i>Deprecated</i> Suffix that has to be written after the record, if the record is in another block than the next record</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setOnOpenDocument(String) onOpenDocument}</td><td>String that is written before any data of results is written</td><td>&lt;document name=&quot;#name#&quot;&gt;</td></tr>
+ * <tr><td>{@link #setOnCloseDocument(String) onCloseDocument}</td><td>String that is written after all data of results is written</td><td>&lt;/document&gt;</td></tr>
+ * <tr><td>{@link #setOnOpenBlock(String) onOpenBlock}</td><td>String that is written before the start of each logical block, as defined in the flow</td><td>&lt;#name#&gt;</td></tr>
+ * <tr><td>{@link #setOnCloseBlock(String) onCloseBlock}</td><td>String that is written after the end of each logical block, as defined in the flow</td><td>&lt;/#name#&gt;</td></tr>
+ * <tr><td>{@link #setBlockNamePattern(String) blockNamePattern}</td><td>String that is replaced by name of block or name of stream in above strings</td><td>#name#</td></tr>
  * </table>
- * </p>
+ * <p/>
+ * <table border="1">
+ * <tr><th>nested elements</th><th>description</th></tr>
+ * <tr><td>{@link nl.nn.adapterframework.parameters.Parameter param}</td><td>any parameters defined on the resultHandler will be applied to the SQL statement</td></tr>
+ * </table>
+ * <p/>
  * 
  * @author  Gerrit van Brakel
  * @since   4.7
  * @version Id
  */
 public abstract class Result2LobWriterBase extends ResultWriter {
-	public static final String version = "$RCSfile: Result2LobWriterBase.java,v $  $Revision: 1.1 $ $Date: 2007-08-03 08:43:30 $";
+	public static final String version = "$RCSfile: Result2LobWriterBase.java,v $  $Revision: 1.1.2.1 $ $Date: 2007-10-04 13:25:15 $";
 	
 	protected Map openStreams = Collections.synchronizedMap(new HashMap());
 	protected Map openResultSets = Collections.synchronizedMap(new HashMap());
@@ -68,20 +90,19 @@ public abstract class Result2LobWriterBase extends ResultWriter {
 
 	protected abstract Writer getWriter(ResultSet rs) throws SenderException;
 	
-	protected Writer createWriter(PipeLineSession session, String streamId) throws Exception {
+	protected Writer createWriter(PipeLineSession session, String streamId, ParameterResolutionContext prc) throws Exception {
 		querySender.sendMessage(streamId, streamId);
 		Connection conn=querySender.getConnection();
 		
 		PreparedStatement stmt = querySender.getStatement(conn,session.getMessageId(),streamId);
-		//TODO should apply parameters in some way
 		ResultSet rs =stmt.executeQuery();
 		openResultSets.put(streamId,rs);
 		return getWriter(rs);
 	}
 	
-	public Object finalizeResult(PipeLineSession session, String streamId, boolean error) throws IOException {
+	public Object finalizeResult(PipeLineSession session, String streamId, boolean error, ParameterResolutionContext prc) throws Exception {
 		try {
-			return super.finalizeResult(session,streamId, error);
+			return super.finalizeResult(session,streamId, error, prc);
 		} finally {
 			ResultSet rs = (ResultSet)openResultSets.get(streamId);
 			if (rs!=null) {

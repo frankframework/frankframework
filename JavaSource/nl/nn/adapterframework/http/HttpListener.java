@@ -1,8 +1,10 @@
 /*
  * $Log: HttpListener.java,v $
- * Revision 1.2.4.1  2007-09-18 11:20:40  europe\M00035F
- * * Update a number of method-signatures to take a java.util.Map instead of HashMap
- * * Rewrite JmsListener to be instance of IPushingListener; use Spring JMS Container
+ * Revision 1.2.4.2  2007-10-04 13:24:53  europe\L190409
+ * synchronize with HEAD (4.7.0)
+ *
+ * Revision 1.3  2007/10/03 08:37:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * changed HashMap to Map
  *
  * Revision 1.2  2007/02/12 13:55:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Logger from LogUtil
@@ -13,6 +15,7 @@
  */
 package nl.nn.adapterframework.http;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -45,12 +48,12 @@ import org.apache.log4j.Logger;
  *   </table>
  * </td><td>true</td></tr>
  * </table>
- * @version Id
- * @since   4.4.x (still experimental)
  * @author  Gerrit van Brakel 
+ * @since   4.4.x (still experimental)
+ * @version Id
  */
 public class HttpListener  implements IPushingListener, ServiceClient2 {
-	public static final String version="$RCSfile: HttpListener.java,v $ $Revision: 1.2.4.1 $ $Date: 2007-09-18 11:20:40 $";
+	public static final String version="$RCSfile: HttpListener.java,v $ $Revision: 1.2.4.2 $ $Date: 2007-10-04 13:24:53 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private IMessageHandler handler;        	

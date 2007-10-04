@@ -1,6 +1,9 @@
 /*
  * $Log: DumpIbisConsole.java,v $
- * Revision 1.5  2007-08-30 15:12:12  europe\L190409
+ * Revision 1.4.4.1  2007-10-04 13:35:37  europe\L190409
+ * synchronize with HEAD (4.7.0)
+ *
+ * Revision 1.5  2007/08/30 15:12:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * modified getRootLogger()
  *
  * Revision 1.4  2007/02/16 14:22:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>

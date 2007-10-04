@@ -1,8 +1,10 @@
 /*
  * $Log: SapListener.java,v $
- * Revision 1.10.4.1  2007-09-18 11:20:39  europe\M00035F
- * * Update a number of method-signatures to take a java.util.Map instead of HashMap
- * * Rewrite JmsListener to be instance of IPushingListener; use Spring JMS Container
+ * Revision 1.10.4.2  2007-10-04 13:24:00  europe\L190409
+ * synchronize with HEAD (4.7.0)
+ *
+ * Revision 1.11  2007/10/03 08:35:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * changed HashMap to Map
  *
  * Revision 1.10  2007/06/07 15:18:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * now implements HasPhysicalDestination
@@ -71,8 +73,9 @@ import com.sap.mw.jco.JCO;
 
 /**
  * Implementation of a {@link nl.nn.adapterframework.core.IPushingListener},
- * that enables a GenericReceiver to receive messages from SAP-systems. In SAP the function to be called is a RFC-function to the destination
- * that is registered using progid.
+ * that enables a GenericReceiver to receive messages from SAP-systems. 
+ * 
+ * In SAP the function to be called is a RFC-function to the destination that is registered using <code>progid</code>.
  * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
@@ -90,12 +93,13 @@ import com.sap.mw.jco.JCO;
  * N.B. If no requestFieldIndex or requestFieldName is specified, input is converted to xml;
  * If no replyFieldIndex or replyFieldName is specified, output is converted from xml. 
  * </p>
- * @author Gerrit van Brakel
- * @since 4.2
+ * @author  Gerrit van Brakel
+ * @since   4.2
+ * @version Id
  * @see   http://help.sap.com/saphelp_nw04/helpdata/en/09/c88442a07b0e53e10000000a155106/frameset.htm
  */
 public class SapListener extends SapFunctionFacade implements IPushingListener, SapFunctionHandler, JCO.ServerExceptionListener, JCO.ServerErrorListener {
-	public static final String version="$RCSfile: SapListener.java,v $  $Revision: 1.10.4.1 $ $Date: 2007-09-18 11:20:39 $";
+	public static final String version="$RCSfile: SapListener.java,v $  $Revision: 1.10.4.2 $ $Date: 2007-10-04 13:24:00 $";
 
 	private String progid;	 // progid of the RFC-destination
         	
@@ -108,7 +112,6 @@ public class SapListener extends SapFunctionFacade implements IPushingListener, 
 			throw new ConfigurationException("attribute progid must be specified");
 		}
 		super.configure();
-		
 	}
 
 

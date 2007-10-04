@@ -1,6 +1,9 @@
 /*
  * $Log: StreamLineIteratorPipe.java,v $
- * Revision 1.3  2007-09-13 09:10:14  europe\L190409
+ * Revision 1.2.2.1  2007-10-04 13:28:51  europe\L190409
+ * synchronize with HEAD (4.7.0)
+ *
+ * Revision 1.3  2007/09/13 09:10:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * extracted getReader()
  *
  * Revision 1.2  2007/07/17 10:57:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -81,7 +84,7 @@ import nl.nn.adapterframework.util.ReaderLineIterator;
  * @version Id
  */
 public class StreamLineIteratorPipe extends IteratingPipe {
-	public static final String version="$RCSfile: StreamLineIteratorPipe.java,v $ $Revision: 1.3 $ $Date: 2007-09-13 09:10:14 $";
+	public static final String version="$RCSfile: StreamLineIteratorPipe.java,v $ $Revision: 1.2.2.1 $ $Date: 2007-10-04 13:28:51 $";
 
 	protected Reader getReader(Object input, PipeLineSession session, String correlationID, HashMap threadContext) throws SenderException {
 		if (input==null) {

@@ -1,6 +1,9 @@
 /*
  * $Log: IbisJavaSender.java,v $
- * Revision 1.5  2007-09-05 13:04:01  europe\L190409
+ * Revision 1.4.4.1  2007-10-04 13:28:21  europe\L190409
+ * synchronize with HEAD (4.7.0)
+ *
+ * Revision 1.5  2007/09/05 13:04:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added support for returning session keys
  *
  * Revision 1.4  2007/06/07 15:18:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -68,7 +71,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class IbisJavaSender extends SenderWithParametersBase implements HasPhysicalDestination {
-	public static final String version="$RCSfile: IbisJavaSender.java,v $ $Revision: 1.5 $ $Date: 2007-09-05 13:04:01 $";
+	public static final String version="$RCSfile: IbisJavaSender.java,v $ $Revision: 1.4.4.1 $ $Date: 2007-10-04 13:28:21 $";
 	
 	private String name;
 	private String serviceName;

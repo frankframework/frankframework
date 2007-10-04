@@ -1,11 +1,13 @@
 /*
  * $Log: PostboxRetrieverPipe.java,v $
- * Revision 1.4.6.2  2007-09-18 14:31:56  europe\M00035F
- * Fix digester & Spring configuration for new JMS Listener impl
+ * Revision 1.4.6.3  2007-10-04 13:30:45  europe\L190409
+ * synchronize with HEAD (4.7.0)
  *
- * Revision 1.4.6.1  2007/09/18 11:20:39  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
- * * Update a number of method-signatures to take a java.util.Map instead of HashMap
- * * Rewrite JmsListener to be instance of IPushingListener; use Spring JMS Container
+ * Revision 1.6  2007/10/03 08:56:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * corrected version string
+ *
+ * Revision 1.5  2007/10/03 08:55:41  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * changed HashMap to Map
  *
  * Revision 1.4  2004/10/05 11:39:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed unused imports
@@ -37,8 +39,15 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 
 /**
- * Retrieves a message using an {@link IPostboxListener}. Note that most listeners allow you to specify a timeout. The timeout has the following
- * meaning: <0 = no wait, 0 = block until message available, >= 0 maximum wait in milliseconds
+ * Retrieves a message using an {@link IPostboxListener}. 
+ * 
+ * Note that most listeners allow you to specify a timeout. The timeout has the following
+ * meaning:
+ * <ul> 
+ * <li>&lt;0 = no wait</li>
+ * <li>0 = block until message available</li>
+ * <li>&gt;= 0 maximum wait in milliseconds<li>
+ * </ul> 
  *
  * <p><b>Configuration:</b>
  * <table border="1">
@@ -63,11 +72,12 @@ import nl.nn.adapterframework.core.PipeStartException;
  * </table>
  * </p>
   * 
- * @author John Dekker
+ * @author  John Dekker
  * @version Id
  */
 public class PostboxRetrieverPipe  extends FixedForwardPipe {
-	public static final String version="$RCSfile: PostboxRetrieverPipe.java,v $ $Revision: 1.4.6.2 $ $Date: 2007-09-18 14:31:56 $";
+	public static final String version = "$RCSfile: PostboxRetrieverPipe.java,v $ $Revision: 1.4.6.3 $ $Date: 2007-10-04 13:30:45 $";
+
 	private IPostboxListener listener = null;
 	private String resultOnEmptyPostbox = "empty postbox";
 		

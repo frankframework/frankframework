@@ -1,6 +1,9 @@
 /*
  * $Log: LogSender.java,v $
- * Revision 1.6  2007-09-13 09:09:43  europe\L190409
+ * Revision 1.5.4.1  2007-10-04 13:28:21  europe\L190409
+ * synchronize with HEAD (4.7.0)
+ *
+ * Revision 1.6  2007/09/13 09:09:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * return message instead of correlationid
  *
  * Revision 1.5  2007/02/12 14:02:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -50,7 +53,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class LogSender extends SenderWithParametersBase implements IParameterHandler {
-	public static final String version="$RCSfile: LogSender.java,v $ $Revision: 1.6 $ $Date: 2007-09-13 09:09:43 $";
+	public static final String version="$RCSfile: LogSender.java,v $ $Revision: 1.5.4.1 $ $Date: 2007-10-04 13:28:21 $";
 	
 	private String logLevel="info";
 	private String logCategory=null;

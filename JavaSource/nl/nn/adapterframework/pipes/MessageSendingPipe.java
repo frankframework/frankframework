@@ -1,8 +1,10 @@
 /*
  * $Log: MessageSendingPipe.java,v $
- * Revision 1.34.2.1  2007-09-18 11:20:39  europe\M00035F
- * * Update a number of method-signatures to take a java.util.Map instead of HashMap
- * * Rewrite JmsListener to be instance of IPushingListener; use Spring JMS Container
+ * Revision 1.34.2.2  2007-10-04 13:30:27  europe\L190409
+ * synchronize with HEAD (4.7.0)
+ *
+ * Revision 1.35  2007/10/03 08:52:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * changed HashMap to Map
  *
  * Revision 1.34  2007/07/10 08:03:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * move String check to calling of sender
@@ -131,7 +133,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
 
 /**
- * Sends a message using a {@link ISender} and optionally receives a reply from the same sender, or from a {@link nl.nn.adapterframework.core.ICorrelatedPullingListener listener}.
+ * Sends a message using a {@link ISender} and optionally receives a reply from the same sender, or 
+ * from a {@link nl.nn.adapterframework.core.ICorrelatedPullingListener listener}.
  *
  * <p><b>Configuration:</b>
  * <table border="1">
@@ -194,12 +197,13 @@ import org.apache.commons.lang.SystemUtils;
  * <tr><td>"exception"</td><td>an exception was thrown by the Sender or its reply-Listener. The result passed to the next pipe is the exception that was caught.</td></tr>
  * </table>
  * </p>
- * @version Id</p>
  * @author  Gerrit van Brakel
+ * @version Id</p>
  */
 
 public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
-	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.34.2.1 $ $Date: 2007-09-18 11:20:39 $";
+	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.34.2.2 $ $Date: 2007-10-04 13:30:27 $";
+
 	private final static String TIMEOUTFORWARD = "timeout";
 	private final static String EXCEPTIONFORWARD = "exception";
 	private final static String ILLEGALRESULTFORWARD = "illegalResult";
@@ -356,7 +360,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 					log.info(getLogPrefix(session)+"returning result from static stub ["+getStubFileName()+"]");
 				}
 //				// Use remaining params as outgoing UDZs
-//				Map udzMap = new Map();
+//				Map udzMap = new HashMap();
 //				udzMap.putAll(params);
 //				udzMap.remove(STUBFILENAME);
 			} else {

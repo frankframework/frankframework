@@ -1,8 +1,10 @@
 /*
  * $Log: IListener.java,v $
- * Revision 1.5.6.1  2007-09-18 11:20:37  europe\M00035F
- * * Update a number of method-signatures to take a java.util.Map instead of HashMap
- * * Rewrite JmsListener to be instance of IPushingListener; use Spring JMS Container
+ * Revision 1.5.6.2  2007-10-04 13:23:37  europe\L190409
+ * synchronize with HEAD (4.7.0)
+ *
+ * Revision 1.6  2007/10/03 08:09:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * changed HashMap to Map
  *
  * Revision 1.5  2005/07/19 12:18:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * reformat + moved some functions from pushing and pulling listeners to here
@@ -28,17 +30,18 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import java.util.Map;
 
 /**
- * Base-interface for IPullingListener and IMessagePusher
+ * Base-interface for IPullingListener and IPushingListener.
  * 
  * @author  Gerrit van Brakel
  * @since   4.2
  * @version Id
  */
 public interface IListener extends INamedObject {
-	public static final String version = "$RCSfile: IListener.java,v $ $Revision: 1.5.6.1 $ $Date: 2007-09-18 11:20:37 $";
+	public static final String version = "$RCSfile: IListener.java,v $ $Revision: 1.5.6.2 $ $Date: 2007-10-04 13:23:37 $";
 
 	/**
-	 * <code>configure()</code> is called once at startup of the framework in the configure method of the owner of this listener. 
+	 * <code>configure()</code> is called once at startup of the framework in the <code>configure()</code> method 
+	 * of the owner of this listener. 
 	 * Purpose of this method is to reduce creating connections to databases etc. in the {@link nl.nn.adapterframework.core.IPullingListener#getRawMessage(Map)} method.
 	 * As much as possible class-instantiating should take place in the
 	 * <code>configure()</code> or <code>open()</code> method, to improve performance.
@@ -59,7 +62,7 @@ public interface IListener extends INamedObject {
 	
 	/**
 	 * Extracts ID-string from message obtained from {@link nl.nn.adapterframework.core.IPullingListener#getRawMessage(Map)}. May also extract
-	 * other parameters from the message and put those in the threadContext.
+	 * other parameters from the message and put those in the context.
 	 * @return ID-string of message for adapter.
 	 */
 	String getIdFromRawMessage(Object rawMessage, Map context) throws ListenerException;
@@ -72,9 +75,9 @@ public interface IListener extends INamedObject {
 	String getStringFromRawMessage(Object rawMessage, Map context) throws ListenerException;
 	
 	/**
-	 * Called to perform actions (like committing or sending a reply) after a message has been processed by the Pipeline. 
+	 * Called to perform actions (like committing or sending a reply) after a message has been processed by the 
+	 * Pipeline. 
 	 */
 	void afterMessageProcessed(PipeLineResult processResult, Object rawMessage, Map context) throws ListenerException;
-
 
 }

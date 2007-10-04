@@ -1,6 +1,9 @@
 /*
  * $Log: LogUtil.java,v $
- * Revision 1.4  2007-08-30 15:11:46  europe\L190409
+ * Revision 1.2.4.1  2007-10-04 13:29:31  europe\L190409
+ * synchronize with HEAD (4.7.0)
+ *
+ * Revision 1.4  2007/08/30 15:11:46  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * use only hierarchy if log4j4ibis.properties is present
  *
  * Revision 1.3  2007/08/29 15:13:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -33,7 +36,7 @@ import org.apache.log4j.spi.RootCategory;
  * @version Id
  */
 public class LogUtil {
-	public static final String version="$RCSfile: LogUtil.java,v $  $Revision: 1.4 $ $Date: 2007-08-30 15:11:46 $";
+	public static final String version="$RCSfile: LogUtil.java,v $  $Revision: 1.2.4.1 $ $Date: 2007-10-04 13:29:31 $";
 
 	private static Hierarchy hierarchy=null;
 	

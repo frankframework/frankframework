@@ -1,6 +1,9 @@
 /*
  * $Log: MessageWrapper.java,v $
- * Revision 1.1  2007-09-13 09:08:00  europe\L190409
+ * Revision 1.1.2.1  2007-10-04 13:32:32  europe\L190409
+ * synchronize with HEAD (4.7.0)
+ *
+ * Revision 1.1  2007/09/13 09:08:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * move message wrapper from ifsa to receivers
  *
  * Revision 1.1  2005/09/22 16:07:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>

@@ -1,8 +1,10 @@
 /*
  * $Log: FileRecordListener.java,v $
- * Revision 1.9.2.1  2007-09-18 11:20:38  europe\M00035F
- * * Update a number of method-signatures to take a java.util.Map instead of HashMap
- * * Rewrite JmsListener to be instance of IPushingListener; use Spring JMS Container
+ * Revision 1.9.2.2  2007-10-04 13:31:37  europe\L190409
+ * synchronize with HEAD (4.7.0)
+ *
+ * Revision 1.10  2007/10/03 08:58:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * changed HashMap to Map
  *
  * Revision 1.9  2007/07/17 15:13:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added attribute storeFileNameInSessionKey
@@ -28,8 +30,8 @@ package nl.nn.adapterframework.receivers;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Map;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -70,7 +72,7 @@ import org.apache.log4j.Logger;
  * @author  Johan Verrips
  */
 public class FileRecordListener implements IPullingListener, INamedObject {
-	public static final String version="$RCSfile: FileRecordListener.java,v $ $Revision: 1.9.2.1 $ $Date: 2007-09-18 11:20:38 $";
+	public static final String version="$RCSfile: FileRecordListener.java,v $ $Revision: 1.9.2.2 $ $Date: 2007-10-04 13:31:37 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -85,10 +87,7 @@ public class FileRecordListener implements IPullingListener, INamedObject {
 	private ISender sender;
 	private Iterator recordIterator = null;
 
-	public void afterMessageProcessed(
-		PipeLineResult processResult,
-		Object rawMessage,
-		Map threadContext)
+	public void afterMessageProcessed(PipeLineResult processResult,	Object rawMessage, Map threadContext)
 		throws ListenerException {
 		String cid = (String) threadContext.get("cid");
 		if (sender != null) {

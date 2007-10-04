@@ -1,6 +1,9 @@
 /*
  * $Log: RunStateManager.java,v $
- * Revision 1.7  2007-09-05 13:06:07  europe\L190409
+ * Revision 1.6.4.1  2007-10-04 13:29:31  europe\L190409
+ * synchronize with HEAD (4.7.0)
+ *
+ * Revision 1.7  2007/09/05 13:06:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.6  2007/02/12 14:12:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -21,7 +24,7 @@ import org.apache.log4j.Logger;
  * @author Gerrit van Brakel
  */
 public class RunStateManager implements RunStateEnquirer {
-	public static final String version="$RCSfile: RunStateManager.java,v $ $Revision: 1.7 $ $Date: 2007-09-05 13:06:07 $";
+	public static final String version="$RCSfile: RunStateManager.java,v $ $Revision: 1.6.4.1 $ $Date: 2007-10-04 13:29:31 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private RunStateEnum runState = RunStateEnum.STOPPED;

@@ -1,11 +1,10 @@
 /*
  * $Log: IPullingListener.java,v $
- * Revision 1.7.6.2  2007-09-18 14:31:56  europe\M00035F
- * Fix digester & Spring configuration for new JMS Listener impl
+ * Revision 1.7.6.3  2007-10-04 13:23:37  europe\L190409
+ * synchronize with HEAD (4.7.0)
  *
- * Revision 1.7.6.1  2007/09/18 11:20:37  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
- * * Update a number of method-signatures to take a java.util.Map instead of HashMap
- * * Rewrite JmsListener to be instance of IPushingListener; use Spring JMS Container
+ * Revision 1.8  2007/10/03 08:13:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * changed HashMap to Map
  *
  * Revision 1.7  2004/09/08 14:15:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed unused imports
@@ -26,40 +25,38 @@
 package nl.nn.adapterframework.core;
 
 import java.util.Map;
-
 /**
  * Defines listening behaviour of pulling receivers.
  * Pulling receivers are receivers that poll for a message, as opposed to pushing receivers
  * that are 'message driven'
  * 
+ * @author  Gerrit van Brakel
  * @version Id
- * @author Gerrit van Brakel
  */
 public interface IPullingListener extends IListener {
-    public static final String version="$RCSfile: IPullingListener.java,v $ $Revision: 1.7.6.2 $ $Date: 2007-09-18 14:31:56 $";
+	public static final String version = "$RCSfile: IPullingListener.java,v $ $Revision: 1.7.6.3 $ $Date: 2007-10-04 13:23:37 $";
 
-    /**
-     * Prepares a thread for receiving messages.
-     * Called once for each thread that will listen for messages.
-     * @return the threadContext for this thread. The threadContext is a HashMap in which
-     * thread-specific data can be stored. 
-     */
-    Map openThread() throws ListenerException;
-    
-    /**
-     * Finalizes a message receiving thread.
-     * Called once for each thread that listens for messages, just before
-     * {@link #close()} is called.
-     */
-    void closeThread(Map threadContext) throws ListenerException;
-    
-    
-    /**
-     * Retrieves messages from queue or other channel, but does no processing on it.
-     * Multiple objects may try to call this method at the same time, from different threads. 
-     * Implementations of this method should therefore be thread-safe, or <code>synchronized</code>.
-     * <p>Any thread-specific properties should be stored in and retrieved from the threadContext.
-     */
-    Object getRawMessage(Map threadContext) throws ListenerException;
-    
+	/**
+	 * Prepares a thread for receiving messages.
+	 * Called once for each thread that will listen for messages.
+	 * @return the threadContext for this thread. The threadContext is a Map in which
+	 * thread-specific data can be stored. 
+	 */
+	Map openThread() throws ListenerException;
+	
+	/**
+	 * Finalizes a message receiving thread.
+	 * Called once for each thread that listens for messages, just before
+	 * {@link #close()} is called.
+	 */
+	void closeThread(Map threadContext) throws ListenerException;
+	
+	/**
+	 * Retrieves messages from queue or other channel, but does no processing on it.
+	 * Multiple objects may try to call this method at the same time, from different threads. 
+	 * Implementations of this method should therefore be thread-safe, or <code>synchronized</code>.
+	 * <p>Any thread-specific properties should be stored in and retrieved from the threadContext.
+	 */
+	Object getRawMessage(Map threadContext) throws ListenerException;
+
 }

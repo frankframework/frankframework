@@ -1,6 +1,9 @@
 /*
  * $Log: ForEachChildElementPipe.java,v $
- * Revision 1.13  2007-09-10 11:19:19  europe\L190409
+ * Revision 1.12.2.1  2007-10-04 13:28:21  europe\L190409
+ * synchronize with HEAD (4.7.0)
+ *
+ * Revision 1.13  2007/09/10 11:19:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * remove unused imports
  *
  * Revision 1.12  2007/07/17 11:06:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -91,10 +94,10 @@ import org.w3c.dom.Node;
  * @author Gerrit van Brakel
  * @since 4.6.1
  * 
- * $Id: ForEachChildElementPipe.java,v 1.13 2007-09-10 11:19:19 europe\L190409 Exp $
+ * $Id: ForEachChildElementPipe.java,v 1.12.2.1 2007-10-04 13:28:21 europe\L190409 Exp $
  */
 public class ForEachChildElementPipe extends IteratingPipe {
-	public static final String version="$RCSfile: ForEachChildElementPipe.java,v $ $Revision: 1.13 $ $Date: 2007-09-10 11:19:19 $";
+	public static final String version="$RCSfile: ForEachChildElementPipe.java,v $ $Revision: 1.12.2.1 $ $Date: 2007-10-04 13:28:21 $";
 
 	private String elementXPathExpression=null;
 

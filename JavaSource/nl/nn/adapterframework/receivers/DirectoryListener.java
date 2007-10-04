@@ -1,8 +1,10 @@
 /*
  * $Log: DirectoryListener.java,v $
- * Revision 1.7.2.1  2007-09-18 11:20:38  europe\M00035F
- * * Update a number of method-signatures to take a java.util.Map instead of HashMap
- * * Rewrite JmsListener to be instance of IPushingListener; use Spring JMS Container
+ * Revision 1.7.2.2  2007-10-04 13:31:11  europe\L190409
+ * synchronize with HEAD (4.7.0)
+ *
+ * Revision 1.8  2007/10/03 08:59:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * changed HashMap to Map
  *
  * Revision 1.7  2007/07/26 16:24:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * cosmetic changes
@@ -53,15 +55,16 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.util.FileUtils;
+import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.apache.log4j.Logger;
-import nl.nn.adapterframework.util.LogUtil;
 
 /**
- * File {@link nl.nn.adapterframework.core.IPullingListener listener} that looks in a directory for files according to a wildcard. 
+ * File {@link nl.nn.adapterframework.core.IPullingListener listener} that looks in a directory for files 
+ * according to a <code>wildcard</code>.  
  * When a file is found, it is moved to an outputdirectory, so that it isn't found more then once.  
  * The name of the moved file is passed to the pipeline.  
  *
@@ -87,7 +90,7 @@ import nl.nn.adapterframework.util.LogUtil;
  * @version Id
  */
 public class DirectoryListener implements IPullingListener, INamedObject {
-	public static final String version = "$RCSfile: DirectoryListener.java,v $  $Revision: 1.7.2.1 $ $Date: 2007-09-18 11:20:38 $";
+	public static final String version = "$RCSfile: DirectoryListener.java,v $  $Revision: 1.7.2.2 $ $Date: 2007-10-04 13:31:11 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String name;

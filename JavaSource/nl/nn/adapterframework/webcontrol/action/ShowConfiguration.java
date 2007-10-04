@@ -1,6 +1,9 @@
 /*
  * $Log: ShowConfiguration.java,v $
- * Revision 1.10  2007-08-30 15:12:12  europe\L190409
+ * Revision 1.9.4.1  2007-10-04 13:34:23  europe\L190409
+ * synchronize with HEAD (4.7.0)
+ *
+ * Revision 1.10  2007/08/30 15:12:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * modified getRootLogger()
  *
  * Revision 1.9  2007/02/16 14:22:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -66,7 +69,7 @@ import org.apache.struts.action.DynaActionForm;
  */
 
 public final class ShowConfiguration extends ActionBase {
-	public static final String version = "$RCSfile: ShowConfiguration.java,v $ $Revision: 1.10 $ $Date: 2007-08-30 15:12:12 $";
+	public static final String version = "$RCSfile: ShowConfiguration.java,v $ $Revision: 1.9.4.1 $ $Date: 2007-10-04 13:34:23 $";
 	
 	private static final String KEYWORD_INCLUDE="<include";
 	private static final String KEYWORD_CONFIG="configuration=\"";
