@@ -20,7 +20,6 @@
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/soap-2_3_1.jar"/>
     <classpathentry kind="lib" path="ojdbc14.jar"/>
     <classpathentry kind="var" path="WAS_V5_XALAN"/>
-    <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/xerces.jar"/>
     <classpathentry kind="lib" path="jsse.jar"/>
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/j2ssh.jar"/>
     <classpathentry kind="lib" path="ifsajmsXA-22.10.055(beta).jar"/>
@@ -32,14 +31,29 @@
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/commons-beanutils-1.8.0-BETA.jar"/>
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/commons-digester-1.8.jar"/>
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/log4j-1.2.15.jar"/>
-    <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/spring-aop.jar"/>
-    <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/spring-beans.jar"/>
-    <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/spring-core.jar"/>
-    <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/spring-jms.jar"/>
-    <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/spring-tx.jar"/>
+    <classpathentry kind="lib"
+        path="/IbisWar/Web Content/WEB-INF/lib/spring-aop.jar" sourcepath="C:/DATA/Tim/spring-framework-2.1-m4/src"/>
+    <classpathentry kind="lib"
+        path="/IbisWar/Web Content/WEB-INF/lib/spring-beans.jar" sourcepath="C:/DATA/Tim/spring-framework-2.1-m4/src"/>
+    <classpathentry kind="lib"
+        path="/IbisWar/Web Content/WEB-INF/lib/spring-core.jar" sourcepath="C:/DATA/Tim/spring-framework-2.1-m4/src"/>
+    <classpathentry kind="lib"
+        path="/IbisWar/Web Content/WEB-INF/lib/spring-jms.jar" sourcepath="C:/DATA/Tim/spring-framework-2.1-m4/src"/>
+    <classpathentry kind="lib"
+        path="/IbisWar/Web Content/WEB-INF/lib/spring-tx.jar" sourcepath="C:/DATA/Tim/spring-framework-2.1-m4/src"/>
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/commons-lang-2.3.jar"/>
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/commons-collections-3.2.jar"/>
-    <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/spring-context.jar"/>
+    <classpathentry kind="lib"
+        path="/IbisWar/Web Content/WEB-INF/lib/spring-context.jar" sourcepath="C:/DATA/Tim/spring-framework-2.1-m4/src"/>
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/quartz-1.6.0.jar"/>
+    <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/aopalliance.jar"/>
+    <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/aspectjrt.jar"/>
+    <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/aspectjweaver.jar"/>
+    <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/xercesImpl.jar"/>
+    <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/xml-apis.jar"/>
+    <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/serializer.jar"/>
+    <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/resolver.jar"/>
+    <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/xtags.jar"/>
+    <classpathentry kind="var" path="WAS_50_PLUGINDIR/lib/admin.jar"/>
     <classpathentry kind="output" path="bin"/>
 </classpath>
