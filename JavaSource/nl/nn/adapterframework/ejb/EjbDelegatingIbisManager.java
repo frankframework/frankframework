@@ -17,8 +17,8 @@ import nl.nn.adapterframework.core.IAdapter;
  *
  * @author m00035f
  */
-public class EjbIbisManager implements IbisManager {
-
+public class EjbDelegatingIbisManager implements IbisManager {
+    
     public Configuration getConfiguration() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
