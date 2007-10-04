@@ -13,7 +13,6 @@ import javax.jms.Message;
 import javax.jms.MessageListener;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.jms.JmsException;
 import nl.nn.adapterframework.jms.JmsListener;
 import nl.nn.adapterframework.receivers.GenericReceiver;
 import org.apache.log4j.Logger;

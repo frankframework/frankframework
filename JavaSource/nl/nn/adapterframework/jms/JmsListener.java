@@ -2,7 +2,10 @@
  * Created on 18-sep-07
  * 
  * $Log: JmsListener.java,v $
- * Revision 1.25.4.5  2007-10-01 09:16:18  europe\M00035F
+ * Revision 1.25.4.6  2007-10-04 12:01:21  europe\M00035F
+ * Work on EJB version of IBIS
+ *
+ * Revision 1.25.4.5  2007/10/01 09:16:18  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
  * Lazy creation of Session when not provided by caller
  *
  * Revision 1.25.4.4  2007/09/28 14:20:26  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
@@ -46,7 +49,7 @@ import nl.nn.adapterframework.core.PipeLineResult;
  * 
  */
 public class JmsListener extends JMSFacade implements IPushingListener {
-    public static final String version="$RCSfile: JmsListener.java,v $ $Revision: 1.25.4.5 $ $Date: 2007-10-01 09:16:18 $";
+    public static final String version="$RCSfile: JmsListener.java,v $ $Revision: 1.25.4.6 $ $Date: 2007-10-04 12:01:21 $";
 
     private final static String THREAD_CONTEXT_SESSION_KEY="session";
     private final static String THREAD_CONTEXT_SESSION_OWNER_FLAG_KEY="isSessionOwner";
@@ -58,7 +61,8 @@ public class JmsListener extends JMSFacade implements IPushingListener {
     private int replyPriority=-1;
     private String replyDeliveryMode=MODE_NON_PERSISTENT;
     private ISender sender;
-        
+    private String listenerPort;
+    
     private boolean forceMessageIdAsCorrelationId=false;
  
     private String commitOnState="success";
@@ -351,7 +355,7 @@ public class JmsListener extends JMSFacade implements IPushingListener {
     }
 
     public Destination getDestination(String destinationName) throws JmsException, NamingException {
-        return getJmsConfigurator().getDestination(destinationName);
+        throw new UnsupportedOperationException("JmsListener does not support operation getDestination(destinationName) inherited from parent-class JMSFacade");
     }
     
     
@@ -519,6 +523,36 @@ public class JmsListener extends JMSFacade implements IPushingListener {
             threadContext.put(THREAD_CONTEXT_SESSION_OWNER_FLAG_KEY, Boolean.TRUE);
         }
         return session;
+    }
+
+    /**
+     * Name of the WebSphere listener port that this JMS Listener binds to. Optional.
+     * 
+     * This property is only used in EJB Deployment mode and has no effect otherwise. 
+     * If it is not set in EJB Deployment Mode, then the listener port name is
+     * constructed by the {@link nl.nn.adapterframework.ejb.EjbJmsConfigurator} from
+     * the Listener name, Adapter name and the Receiver name.
+     * 
+     * @return The name of the WebSphere Listener Port, as configured in the
+     * application server.
+     */
+    public String getListenerPort() {
+        return listenerPort;
+    }
+
+    /**
+     * Name of the WebSphere listener port that this JMS Listener binds to. Optional.
+     * 
+     * This property is only used in EJB Deployment mode and has no effect otherwise. 
+     * If it is not set in EJB Deployment Mode, then the listener port name is
+     * constructed by the {@link nl.nn.adapterframework.ejb.EjbJmsConfigurator} from
+     * the Listener name, Adapter name and the Receiver name.
+     * 
+     * @param listenerPort Name of the listener port, as configured in the application
+     * server.
+     */
+    public void setListenerPort(String listenerPort) {
+        this.listenerPort = listenerPort;
     }
 
 }

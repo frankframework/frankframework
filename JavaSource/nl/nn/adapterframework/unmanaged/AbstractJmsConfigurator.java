@@ -15,7 +15,6 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.jms.JmsException;
 import nl.nn.adapterframework.jms.JmsListener;
 
 /**
@@ -32,8 +31,7 @@ abstract public class AbstractJmsConfigurator {
     public void configureJmsReceiver(final JmsListener jmsListener) throws ConfigurationException {
         this.jmsListener = jmsListener;
         setDestinationName(jmsListener.getDestinationName());
-            setDestination(createDestination(jmsListener.getDestinationName()));
-        
+        setDestination(createDestination(jmsListener.getDestinationName()));
     }
 
     protected ConnectionFactory createConnectionFactory(String cfName) throws ConfigurationException {
@@ -67,21 +65,6 @@ abstract public class AbstractJmsConfigurator {
 
     public Destination getDestination() {
         return destination;
-    }
-
-    public Destination getDestination(String destinationName) throws JmsException, NamingException {
-        try {
-            return createDestination(destinationName);
-        } catch (ConfigurationException ex) {
-            Throwable t = ex.getCause();
-            if (t instanceof NamingException) {
-                throw (NamingException) t;
-            } else if (t instanceof JmsException) {
-                throw (JmsException) t;
-            } else {
-                throw new JmsException(ex.getMessage(), t);
-            }
-        }
     }
 
     public void setContext(Context context) {
