@@ -1,6 +1,9 @@
 /*
  * $Log: ConfigurationServlet.java,v $
- * Revision 1.10.2.3  2007-10-02 14:15:29  europe\M00035F
+ * Revision 1.10.2.4  2007-10-05 09:09:57  europe\M00035F
+ * Update web front-end to retrieve Configuration-object via the IbisManager, not via the servlet-context
+ *
+ * Revision 1.10.2.3  2007/10/02 14:15:29  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
  * Further refactoring code further for adding in EJBs and enabling communication of web-front end with EJB-driven back-end.
  *
  * Revision 1.10.2.2  2007/09/26 06:05:19  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
@@ -59,11 +62,11 @@ import org.apache.log4j.Logger;
  */
 public class ConfigurationServlet extends HttpServlet {
 	public static final String KEY_MANAGER = "KEY_MANAGER";
-	public static final String KEY_CONFIGURATION = "KEY_CONFIGURATION";
-	public static final String version = "$RCSfile: ConfigurationServlet.java,v $ $Revision: 1.10.2.3 $ $Date: 2007-10-02 14:15:29 $";
+	public static final String version = "$RCSfile: ConfigurationServlet.java,v $ $Revision: 1.10.2.4 $ $Date: 2007-10-05 09:09:57 $";
     protected Logger log = LogUtil.getLogger(this);
 
-    static final String DFLT_DIGESTER_RULES = "digester-rules.xml";
+    static final String DFLT_SPRING_CONTEXT = "springContext.xml";
+    static final String EJB_SPRING_CONTEXT = "springContextEjbWeb.xml";
     static final String DFLT_CONFIGURATION = "Configuration.xml";
     static final String DFLT_AUTOSTART = "TRUE";
     
@@ -163,9 +166,6 @@ public class ConfigurationServlet extends HttpServlet {
             }
             ServletContext ctx = getServletContext();
             ctx.setAttribute(
-                    AppConstants.getInstance().getProperty(KEY_CONFIGURATION),
-                    im.getConfiguration());
-            ctx.setAttribute(
                     AppConstants.getInstance().getProperty(KEY_MANAGER),
                     im.getIbisManager());
         } else {
@@ -181,7 +181,7 @@ public class ConfigurationServlet extends HttpServlet {
     public Configuration getConfiguration() {
         ServletContext ctx = getServletContext();
         Configuration config = null;
-        config = (Configuration) ctx.getAttribute(AppConstants.getInstance().getResolvedProperty(KEY_CONFIGURATION));
+        config = getIbisManager().getConfiguration();
         return config;
     }
     
@@ -208,9 +208,6 @@ public class ConfigurationServlet extends HttpServlet {
             else
                 log.warn("Configuration did not succeed, please examine log");
             ServletContext ctx = getServletContext();
-            ctx.setAttribute(
-                    AppConstants.getInstance().getResolvedProperty(KEY_CONFIGURATION),
-                    im.getConfiguration());
             ctx.setAttribute(
                 AppConstants.getInstance().getResolvedProperty(KEY_MANAGER),
                 im.getIbisManager());
