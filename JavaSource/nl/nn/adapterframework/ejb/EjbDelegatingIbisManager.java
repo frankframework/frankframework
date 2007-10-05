@@ -9,54 +9,107 @@
 
 package nl.nn.adapterframework.ejb;
 
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathFactory;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IAdapter;
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.BeanFactoryAware;
+import org.springframework.ejb.access.LocalStatelessSessionProxyFactoryBean;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 
 /**
  *
  * @author m00035f
  */
-public class EjbDelegatingIbisManager implements IbisManager {
+public class EjbDelegatingIbisManager implements IbisManager, BeanFactoryAware {
+    private final static Logger log = Logger.getLogger(EjbDelegatingIbisManager.class);
+    
+    private final static String CONFIG_NAME_XPATH = "/child::*/@configurationName";
+    
+    private String configurationName;
+    private IbisManager ibisManager;
+    private BeanFactory beanFactory;
+    
+    protected synchronized IbisManager getIbisManager() {
+        if (this.ibisManager == null) {
+            // Look it up via EJB, using JNDI Name based on configuration name
+            LocalStatelessSessionProxyFactoryBean factoryBean = 
+                    (LocalStatelessSessionProxyFactoryBean) beanFactory.getBean("@ibisManagerEjb");
+            factoryBean.setJndiName("ejb/ibis/IbisManager/" + configurationName.replace(' ', '-'));
+            this.ibisManager = (IbisManager) factoryBean.getObject();
+        }
+        return this.ibisManager;
+    }
     
     public Configuration getConfiguration() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return getIbisManager().getConfiguration();
     }
 
     public void handleAdapter(String action, String adapterName, String receiverName, String commandIssuedBy) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        getIbisManager().handleAdapter(action, adapterName, receiverName, commandIssuedBy);
     }
 
     public void startIbis() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        // Not implemented for this case, since the Ibis will be auto-started from EJB container
     }
 
     public void startAdapters() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        getIbisManager().startAdapters();
     }
 
     public void stopAdapters() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        getIbisManager().stopAdapters();
     }
 
     public void startAdapter(IAdapter adapter) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        getIbisManager().startAdapter(adapter);
     }
 
     public void stopAdapter(IAdapter adapter) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        getIbisManager().stopAdapter(adapter);
     }
 
     public void loadConfigurationFile(String configurationFile) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        try {
+            XPath xpath = XPathFactory.newInstance().newXPath();
+            InputSource inputSource = new InputSource(configurationFile);
+            NodeList nodes = (NodeList) xpath.evaluate(CONFIG_NAME_XPATH, inputSource, XPathConstants.NODESET);
+            Node item = nodes.item(0);
+            setConfigurationName(item.getNodeValue());
+        } catch (Exception ex) {
+            log.error("Error retrieving configuration-name from configuration file '" +
+                    configurationFile + "'", ex);
+        }
+    }
+
+    public String getConfigurationName() {
+        return configurationName;
+    }
+
+    public void setConfigurationName(String configurationName) {
+        this.configurationName = configurationName;
+    }
+
+    public BeanFactory getBeanFactory() {
+        return beanFactory;
+    }
+
+    public void setBeanFactory(BeanFactory beanFactory) {
+        this.beanFactory = beanFactory;
     }
 
     public String getDeploymentModeString() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return IbisManager.DEPLOYMENT_MODE_EJB_STRING;
     }
 
     public int getDeploymentMode() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return IbisManager.DEPLOYMENT_MODE_EJB;
     }
 
 }
