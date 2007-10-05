@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="
+            http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+            http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.0.xsd
+            ">
+
+    <!-- IBIS Beans -->
+    <bean name="ibisManager" class="nl.nn.adapterframework.unmanaged.DefaultIbisManager"
+        autowire="byName">
+        <property name="deploymentMode">
+            <util:constant static-field="nl.nn.adapterframework.configuration.IbisManager.DEPLOYMENT_MODE_UNMANAGED"/>
+        </property>
+    </bean>
+    
+    <bean name="jmsConfigurator" class="nl.nn.adapterframework.unmanaged.SpringJmsConfigurator"
+        autowire="byName" scope="prototype">
+    </bean>
+    
+    <!-- SpringJmsConfigurator depends on bean definition for proto-jmsContainer below; this bean
+         is not needed in the EJB deployment mode.
+         
+         Please note that this definition is intentionally incomplete and can not be
+         instantiated as-is: Runtime-magic will take care of proper & complete instantiation.
+         
+         DefaultMessageListenerContainer is supported configuration by IBM; provided
+         however that supported transaction-manager and thread-pooling are used.
+         See:
+             http://www.ibm.com/developerworks/websphere/techjournal/0609_alcott/0609_alcott.html
+    -->
+    <bean name="proto-jmsContainer" class="org.springframework.jms.listener.DefaultMessageListenerContainer"
+        autowire="byName" scope="prototype">
+        <property name="autoStartup" value="false"/>
+    </bean>
+</beans>
