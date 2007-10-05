@@ -30,6 +30,9 @@ import org.xml.sax.InputSource;
 public class EjbDelegatingIbisManager implements IbisManager, BeanFactoryAware {
     private final static Logger log = Logger.getLogger(EjbDelegatingIbisManager.class);
     
+    private static final String FACTORY_BEAN_ID = "@ibisManagerEjb";
+    private static final String JNDI_NAME_PREFIX = "ejb/ibis/IbisManager/";
+    
     private final static String CONFIG_NAME_XPATH = "/child::*/@configurationName";
     
     private String configurationName;
@@ -40,9 +43,11 @@ public class EjbDelegatingIbisManager implements IbisManager, BeanFactoryAware {
         if (this.ibisManager == null) {
             // Look it up via EJB, using JNDI Name based on configuration name
             LocalStatelessSessionProxyFactoryBean factoryBean = 
-                    (LocalStatelessSessionProxyFactoryBean) beanFactory.getBean("@ibisManagerEjb");
-            factoryBean.setJndiName("ejb/ibis/IbisManager/" + configurationName.replace(' ', '-'));
+                    (LocalStatelessSessionProxyFactoryBean) beanFactory.getBean(FACTORY_BEAN_ID);
+            String beanJndiName = JNDI_NAME_PREFIX + configurationName.replace(' ', '-');
+            factoryBean.setJndiName(beanJndiName);
             this.ibisManager = (IbisManager) factoryBean.getObject();
+            log.info("Looked up IbisManagerEjb at JNDI location '" + beanJndiName + "'");
         }
         return this.ibisManager;
     }
@@ -82,6 +87,8 @@ public class EjbDelegatingIbisManager implements IbisManager, BeanFactoryAware {
             NodeList nodes = (NodeList) xpath.evaluate(CONFIG_NAME_XPATH, inputSource, XPathConstants.NODESET);
             Node item = nodes.item(0);
             setConfigurationName(item.getNodeValue());
+            log.info("Extracted configuration-name '" + getConfigurationName()
+                    + "' from configuration-file '" + configurationFile + "'");
         } catch (Exception ex) {
             log.error("Error retrieving configuration-name from configuration file '" +
                     configurationFile + "'", ex);
