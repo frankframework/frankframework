@@ -1,6 +1,9 @@
 /*
  * $Log: ConfigurationServlet.java,v $
- * Revision 1.10.2.5  2007-10-05 12:57:44  europe\M00035F
+ * Revision 1.10.2.6  2007-10-05 13:09:34  europe\M00035F
+ * Fix NPE which happened when IbisManager was not yet set in the ServletContext, as happens during init
+ *
+ * Revision 1.10.2.5  2007/10/05 12:57:44  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
  * Refactor so that spring-context to be used can come from servlet Init or Request parameters
  *
  * Revision 1.10.2.4  2007/10/05 09:09:57  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
@@ -65,7 +68,7 @@ import org.apache.log4j.Logger;
  */
 public class ConfigurationServlet extends HttpServlet {
 	public static final String KEY_MANAGER = "KEY_MANAGER";
-	public static final String version = "$RCSfile: ConfigurationServlet.java,v $ $Revision: 1.10.2.5 $ $Date: 2007-10-05 12:57:44 $";
+	public static final String version = "$RCSfile: ConfigurationServlet.java,v $ $Revision: 1.10.2.6 $ $Date: 2007-10-05 13:09:34 $";
     protected Logger log = LogUtil.getLogger(this);
 
     static final String DFLT_SPRING_CONTEXT = "springContext.xml";
@@ -186,7 +189,10 @@ public class ConfigurationServlet extends HttpServlet {
     public Configuration getConfiguration() {
         ServletContext ctx = getServletContext();
         Configuration config = null;
-        config = getIbisManager().getConfiguration();
+        IbisManager ibisManager = getIbisManager();
+        if (ibisManager != null) {
+            config = ibisManager.getConfiguration();
+        }
         return config;
     }
     
