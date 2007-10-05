@@ -1,6 +1,9 @@
 /*
  * $Log: ConfigurationServlet.java,v $
- * Revision 1.10.2.4  2007-10-05 09:09:57  europe\M00035F
+ * Revision 1.10.2.5  2007-10-05 12:57:44  europe\M00035F
+ * Refactor so that spring-context to be used can come from servlet Init or Request parameters
+ *
+ * Revision 1.10.2.4  2007/10/05 09:09:57  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
  * Update web front-end to retrieve Configuration-object via the IbisManager, not via the servlet-context
  *
  * Revision 1.10.2.3  2007/10/02 14:15:29  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
@@ -62,7 +65,7 @@ import org.apache.log4j.Logger;
  */
 public class ConfigurationServlet extends HttpServlet {
 	public static final String KEY_MANAGER = "KEY_MANAGER";
-	public static final String version = "$RCSfile: ConfigurationServlet.java,v $ $Revision: 1.10.2.4 $ $Date: 2007-10-05 09:09:57 $";
+	public static final String version = "$RCSfile: ConfigurationServlet.java,v $ $Revision: 1.10.2.5 $ $Date: 2007-10-05 12:57:44 $";
     protected Logger log = LogUtil.getLogger(this);
 
     static final String DFLT_SPRING_CONTEXT = "springContext.xml";
@@ -145,6 +148,7 @@ public class ConfigurationServlet extends HttpServlet {
 
         String configurationFile = request.getParameter("configurationFile");
         String autoStart = request.getParameter("autoStart");
+        String springContext = request.getParameter("springContext");
 
         log.warn("ConfigurationServlet initiated by " + commandIssuedBy);
 		noCache(response);
@@ -155,7 +159,8 @@ public class ConfigurationServlet extends HttpServlet {
 
         if (areAdaptersStopped()) {
             IbisMain im=new IbisMain();
-            boolean success = im.initConfig(configurationFile, autoStart);
+            boolean success = im.initConfig(
+                    springContext, configurationFile, autoStart);
             if (success) {
                 out.println("<p> Configuration successfully completed</p></body>");
             } else {
@@ -201,8 +206,11 @@ public class ConfigurationServlet extends HttpServlet {
         IbisMain im=new IbisMain();
         String configurationFile = getInitParameter("configuration");
         String autoStart = getInitParameter("autoStart");
+        String springContext = getInitParameter("springContext");
+        
         if (areAdaptersStopped()) {
-            boolean success = im.initConfig(configurationFile, autoStart);
+            boolean success = im.initConfig(springContext,
+                    configurationFile, autoStart);
             if (success)
                 log.info("Configuration succeeded");
             else

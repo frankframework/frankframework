@@ -38,17 +38,23 @@ public class IbisMain {
     
 	public static void main(String[] args) {
         IbisMain im=new IbisMain();
-        im.initConfig(IbisManager.DFLT_CONFIGURATION, DFLT_AUTOSTART);
+        im.initConfig(
+                IbisMain.DFLT_SPRING_CONTEXT,
+                IbisManager.DFLT_CONFIGURATION, 
+                IbisMain.DFLT_AUTOSTART);
 	}
     
     public boolean initConfig() {
-        return initConfig(IbisManager.DFLT_CONFIGURATION, 
-            IbisMain.DFLT_AUTOSTART);
+        return initConfig(
+                IbisMain.DFLT_SPRING_CONTEXT,
+                IbisManager.DFLT_CONFIGURATION,
+                IbisMain.DFLT_AUTOSTART);
     }
     
     public boolean initConfig(
-        String configurationFile,
-        String autoStart) {
+            String springContext,
+            String configurationFile,
+            String autoStart) {
         log.info("* IBIS Startup: Running on JDK version '" 
                 + System.getProperty("java.version")
                 + "', Spring indicates JDK Major version: 1." + (JdkVersion.getMajorJavaVersion()+3));
@@ -56,9 +62,12 @@ public class IbisMain {
         startJmxServer();
         
         // Reading in Spring Context
+        if (springContext == null) {
+            springContext = DFLT_SPRING_CONTEXT;
+        }
         log.info("* IBIS Startup: Creating Spring Bean Factory from file '"
-            + DFLT_SPRING_CONTEXT + "'");
-        Resource rs = new ClassPathResource(DFLT_SPRING_CONTEXT);
+            + springContext + "'");
+        Resource rs = new ClassPathResource(springContext);
         beanFactory = new XmlBeanFactory(rs);
         ibisManager = (IbisManager) beanFactory.getBean("ibisManager");
         

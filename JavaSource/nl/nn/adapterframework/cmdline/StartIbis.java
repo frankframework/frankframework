@@ -16,7 +16,7 @@ import nl.nn.adapterframework.configuration.IbisManager;
  * created    14 februari 2003
  */
 public class StartIbis {
-	public static final String version="$RCSfile: StartIbis.java,v $ $Revision: 1.5.4.2 $ $Date: 2007-10-02 14:17:50 $";
+	public static final String version="$RCSfile: StartIbis.java,v $ $Revision: 1.5.4.3 $ $Date: 2007-10-05 12:59:46 $";
 
 	/**
 	 * 
@@ -30,7 +30,7 @@ public class StartIbis {
             configFile = args[0];
         }
         IbisMain im=new IbisMain();
-        im.initConfig(configFile, 
+        im.initConfig(null, configFile, 
             IbisMain.DFLT_AUTOSTART);
 	}
 }
