@@ -28,7 +28,6 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.jms.listener.DefaultMessageListenerContainer;
-import org.springframework.jms.listener.DefaultMessageListenerContainer102;
 import org.springframework.jms.listener.SessionAwareMessageListener;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
@@ -54,11 +53,21 @@ public class SpringJmsConfigurator
     public static final TransactionDefinition TXSUPPORTS = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_SUPPORTS);
     public static final TransactionDefinition TXMANDATORY = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_MANDATORY);
     
-    public static final String version="$RCSfile: SpringJmsConfigurator.java,v $ $Revision: 1.1.2.7 $ $Date: 2007-10-02 07:59:28 $";
+    public static final String version="$RCSfile: SpringJmsConfigurator.java,v $ $Revision: 1.1.2.8 $ $Date: 2007-10-05 12:46:36 $";
     
     private PlatformTransactionManager txManager;
     private BeanFactory beanFactory;
     private DefaultMessageListenerContainer jmsContainer;
+    private String messageListenerClassName;
+    
+    protected DefaultMessageListenerContainer createMessageListenerContainer() throws ConfigurationException {
+        try {
+            Class klass = Class.forName(messageListenerClassName);
+            return (DefaultMessageListenerContainer) klass.newInstance();
+        } catch (Exception e) {
+            throw new ConfigurationException("Error creating instance of MessageListenerContainer", e);
+        }
+    }
     
     /* (non-Javadoc)
      * @see nl.nn.adapterframework.configuration.IJmsConfigurator#configureReceiver(nl.nn.adapterframework.jms.JmsListener)
@@ -71,7 +80,7 @@ public class SpringJmsConfigurator
         // call afterPropertiesSet() on the object which will validate
         // that all required properties are set before we get a chance
         // to insert our dynamic values from the config. file.
-        this.jmsContainer = new DefaultMessageListenerContainer102();
+        this.jmsContainer = createMessageListenerContainer();
         
         if (jmsListener.isTransacted()) {
             this.jmsContainer.setTransactionManager(this.txManager);
@@ -215,5 +224,13 @@ public class SpringJmsConfigurator
         this.txManager = txManager;
     }
     private String connectionFactoryName;
+
+    public String getMessageListenerClassName() {
+        return messageListenerClassName;
+    }
+
+    public void setMessageListenerClassName(String messageListenerClassName) {
+        this.messageListenerClassName = messageListenerClassName;
+    }
 
 }
