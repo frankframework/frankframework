@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.47  2007-09-27 12:53:26  europe\L190409
+ * Revision 1.48  2007-10-08 13:29:49  europe\L190409
+ * changed ArrayList to List where possible
+ *
+ * Revision 1.47  2007/09/27 12:53:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved warning
  *
  * Revision 1.46  2007/09/04 07:58:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -140,6 +143,7 @@ package nl.nn.adapterframework.core;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.List;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.util.AppConstants;
@@ -222,7 +226,7 @@ import org.apache.log4j.Logger;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.47 $ $Date: 2007-09-27 12:53:26 $";
+	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.48 $ $Date: 2007-10-08 13:29:49 $";
     private Logger log = LogUtil.getLogger(this);
 	private Logger durationLog = LogUtil.getLogger("LongDurationMessages");
     
@@ -236,14 +240,14 @@ public class PipeLine {
 	private int transactionAttribute=JtaUtil.TRANSACTION_ATTRIBUTE_SUPPORTS;
      
     private Hashtable pipesByName=new Hashtable();
-    private ArrayList pipes=new ArrayList();
+    private List pipes=new ArrayList();
     // set of exits paths with their state
     private Hashtable pipeLineExits=new Hashtable();
 	private Hashtable pipeThreadCounts=new Hashtable();
 	
 	private String commitOnState="success"; // exit state on which receiver will commit XA transactions
 
-	private ArrayList exitHandlers = new ArrayList();
+	private List exitHandlers = new ArrayList();
 
 	/**
 	 * Register an Pipe at this pipeline.
@@ -294,7 +298,7 @@ public class PipeLine {
 		return (IPipe)pipes.get(index);
 	}
 
-	public ArrayList getPipes() {
+	public List getPipes() {
 		return pipes;
 	}
 

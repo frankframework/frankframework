@@ -1,6 +1,9 @@
 /*
  * $Log: FileRecordListener.java,v $
- * Revision 1.10  2007-10-03 08:58:31  europe\L190409
+ * Revision 1.11  2007-10-08 13:33:31  europe\L190409
+ * changed ArrayList to List where possible
+ *
+ * Revision 1.10  2007/10/03 08:58:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed HashMap to Map
  *
  * Revision 1.9  2007/07/17 15:13:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -28,6 +31,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
@@ -69,7 +73,7 @@ import org.apache.log4j.Logger;
  * @author  Johan Verrips
  */
 public class FileRecordListener implements IPullingListener, INamedObject {
-	public static final String version="$RCSfile: FileRecordListener.java,v $ $Revision: 1.10 $ $Date: 2007-10-03 08:58:31 $";
+	public static final String version="$RCSfile: FileRecordListener.java,v $ $Revision: 1.11 $ $Date: 2007-10-08 13:33:31 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -353,7 +357,7 @@ public class FileRecordListener implements IPullingListener, INamedObject {
 	 */
 	protected Iterator parseToRecords(String input) {
 		StringTokenizer t = new StringTokenizer(input, "\n");
-		ArrayList array = new ArrayList();
+		List array = new ArrayList();
 		while (t.hasMoreTokens()) {
 			array.add(t.nextToken());
 		}

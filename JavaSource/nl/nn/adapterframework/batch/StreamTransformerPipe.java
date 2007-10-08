@@ -1,6 +1,9 @@
 /*
  * $Log: StreamTransformerPipe.java,v $
- * Revision 1.11  2007-10-08 12:14:55  europe\L190409
+ * Revision 1.12  2007-10-08 13:28:57  europe\L190409
+ * changed ArrayList to List where possible
+ *
+ * Revision 1.11  2007/10/08 12:14:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed HashMap to Map where possible
  *
  * Revision 1.10  2007/09/24 14:55:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -82,7 +85,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class StreamTransformerPipe extends FixedForwardPipe {
-	public static final String version = "$RCSfile: StreamTransformerPipe.java,v $  $Revision: 1.11 $ $Date: 2007-10-08 12:14:55 $";
+	public static final String version = "$RCSfile: StreamTransformerPipe.java,v $  $Revision: 1.12 $ $Date: 2007-10-08 13:28:57 $";
 
 	private IRecordHandlerManager initialManager=null;
 	private IResultHandler defaultHandler=null;
@@ -367,7 +370,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	private Object transform(String streamId, BufferedReader reader, PipeLineSession session, ParameterResolutionContext prc) throws PipeRunException {
 		String rawRecord = null;
 		int linenumber = 0;
-		ArrayList prevParsedRecord = null; 
+		List prevParsedRecord = null; 
 		IRecordHandler prevHandler = null;
 
 		IRecordHandlerManager currentManager = initialManager.getRecordFactoryUsingFilename(session, streamId);
@@ -395,7 +398,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 				if (curHandler != null) {
 					log.debug("manager ["+currentManager.getName()+"] key ["+flow.getRecordKey()+"] record handler ["+curHandler.getName()+"]: "+rawRecord);
 					// there is a record handler, so transform the line
-					ArrayList parsedRecord = curHandler.parse(session, rawRecord);
+					List parsedRecord = curHandler.parse(session, rawRecord);
 					Object result = curHandler.handleRecord(session, parsedRecord, prc);
 				
 					// if there is a result handler, write the transformed result
@@ -455,7 +458,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	 */	
 	private Object finalizeResult(PipeLineSession session, String inputFilename, boolean error, ParameterResolutionContext prc) throws Exception {
 		// finalize result
-		ArrayList results = new ArrayList();
+		List results = new ArrayList();
 		for (Iterator handlersIt = registeredResultHandlers.values().iterator(); handlersIt.hasNext();) {
 			IResultHandler resultHandler = (IResultHandler)handlersIt.next();
 			resultHandler.closeRecordType(session, inputFilename, prc);

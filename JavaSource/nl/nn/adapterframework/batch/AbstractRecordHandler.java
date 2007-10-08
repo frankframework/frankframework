@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractRecordHandler.java,v $
- * Revision 1.9  2007-09-24 14:55:32  europe\L190409
+ * Revision 1.10  2007-10-08 13:28:57  europe\L190409
+ * changed ArrayList to List where possible
+ *
+ * Revision 1.9  2007/09/24 14:55:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * support for parameters
  *
  * Revision 1.8  2007/09/10 11:11:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -101,7 +104,7 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 		return inputFields.size();
 	}
 	
-	public ArrayList parse(PipeLineSession session, String record) {
+	public List parse(PipeLineSession session, String record) {
 		if (inputFields.size() > 0) {
 			return parseUsingInputFields(record);
 		}
@@ -109,14 +112,14 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 			return parseUsingSeparator(record);
 		}
 		else {
-			ArrayList result = new ArrayList();
+			List result = new ArrayList();
 			result.add(record);
 			return result;
 		}
 	}
 	
-	private ArrayList parseUsingInputFields(String record) {
-		ArrayList result = new ArrayList();
+	private List parseUsingInputFields(String record) {
+		List result = new ArrayList();
 
 		int recordLength = record.length(); 
 		int curPos = 0;
@@ -140,8 +143,8 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 		return result;
 	}
 
-	private ArrayList parseUsingSeparator(String record) {
-		ArrayList result = new ArrayList();
+	private List parseUsingSeparator(String record) {
+		List result = new ArrayList();
 		
 		int endNdx = -1;
 		do {
@@ -159,7 +162,7 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 		return result;
 	}
 	
-	public boolean isNewRecordType(PipeLineSession session, boolean equalRecordTypes, ArrayList prevRecord, ArrayList curRecord) {
+	public boolean isNewRecordType(PipeLineSession session, boolean equalRecordTypes, List prevRecord, List curRecord) {
 		if (! equalRecordTypes) {
 			return true;
 		}

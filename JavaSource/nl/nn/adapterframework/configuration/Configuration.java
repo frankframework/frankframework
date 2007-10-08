@@ -1,6 +1,9 @@
 /*
  * $Log: Configuration.java,v $
- * Revision 1.25  2007-07-24 08:04:49  europe\L190409
+ * Revision 1.26  2007-10-08 13:29:28  europe\L190409
+ * changed ArrayList to List where possible
+ *
+ * Revision 1.25  2007/07/24 08:04:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * reversed shutdown sequence
  *
  * Revision 1.24  2007/07/17 15:07:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -93,11 +96,11 @@ import org.apache.log4j.Logger;
  * @see    nl.nn.adapterframework.core.IAdapter
  */
 public class Configuration {
-	public static final String version="$RCSfile: Configuration.java,v $ $Revision: 1.25 $ $Date: 2007-07-24 08:04:49 $";
+	public static final String version="$RCSfile: Configuration.java,v $ $Revision: 1.26 $ $Date: 2007-10-08 13:29:28 $";
     protected Logger log=LogUtil.getLogger(this); 
      
     private Hashtable adapterTable = new Hashtable();
-	private ArrayList adapters = new ArrayList();
+	private List adapters = new ArrayList();
 
     private URL configurationURL;
     private URL digesterRulesURL;

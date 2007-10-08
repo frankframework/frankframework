@@ -1,7 +1,12 @@
+/*
+ * $Log: JmxUtils.java,v $
+ * Revision 1.4  2007-10-08 13:35:13  europe\L190409
+ * changed ArrayList to List where possible
+ *
+ */
 package nl.nn.adapterframework.util;
 
-
-import java.util.ArrayList;
+import java.util.List;
 
 import javax.management.Descriptor;
 import javax.management.MBeanServer;
@@ -14,13 +19,13 @@ import javax.management.modelmbean.RequiredModelMBean;
 
 import org.apache.log4j.Logger;
 /**
- *
- * Utility classes for JMX
- * @version Id
+ * Utility classes for JMX.
+ * 
  * @author Johan Verrips
+ * @version Id
  */
 public class JmxUtils {
-	public static final String version = "$RCSfile: JmxUtils.java,v $ $Revision: 1.3 $ $Date: 2007-02-12 14:12:04 $";
+	public static final String version = "$RCSfile: JmxUtils.java,v $ $Revision: 1.4 $ $Date: 2007-10-08 13:35:13 $";
 	protected static Logger log = LogUtil.getLogger(JmxUtils.class);
 
 
@@ -33,7 +38,7 @@ public class JmxUtils {
 	 */
 	public static void registerMBean(ObjectName name, RequiredModelMBean mbean) throws Exception {
 
-		ArrayList servers = MBeanServerFactory.findMBeanServer(null);
+		List servers = MBeanServerFactory.findMBeanServer(null);
 		if (servers == null) {
 			throw new Exception("no Mbean servers found");
 		}

@@ -1,6 +1,9 @@
 /*
  * $Log: RecordXmlTransformer.java,v $
- * Revision 1.7  2007-09-24 14:55:33  europe\L190409
+ * Revision 1.8  2007-10-08 13:28:58  europe\L190409
+ * changed ArrayList to List where possible
+ *
+ * Revision 1.7  2007/09/24 14:55:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * support for parameters
  *
  * Revision 1.6  2007/07/26 16:10:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -22,7 +25,6 @@
  */
 package nl.nn.adapterframework.batch;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -52,7 +54,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class RecordXmlTransformer extends AbstractRecordHandler {
-	public static final String version = "$RCSfile: RecordXmlTransformer.java,v $  $Revision: 1.7 $ $Date: 2007-09-24 14:55:33 $";
+	public static final String version = "$RCSfile: RecordXmlTransformer.java,v $  $Revision: 1.8 $ $Date: 2007-10-08 13:28:58 $";
 
 	private String rootTag="record";
 	private List outputFields; 
@@ -62,11 +64,11 @@ public class RecordXmlTransformer extends AbstractRecordHandler {
 	}
 
 
-	public Object handleRecord(PipeLineSession session, ArrayList parsedRecord, ParameterResolutionContext prc) throws Exception {
+	public Object handleRecord(PipeLineSession session, List parsedRecord, ParameterResolutionContext prc) throws Exception {
 		return getXml(parsedRecord);
 	}
 	
-	protected String getXml(ArrayList parsedRecord) {
+	protected String getXml(List parsedRecord) {
 		XmlBuilder record=new XmlBuilder(getRootTag());
 		int ndx = 0;
 		for (Iterator it = outputFields.iterator(); it.hasNext();) {

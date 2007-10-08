@@ -1,6 +1,9 @@
 /*
  * $Log: CleanupOldFilesPipe.java,v $
- * Revision 1.4  2007-07-10 15:17:01  europe\L190409
+ * Revision 1.5  2007-10-08 13:33:00  europe\L190409
+ * changed ArrayList to List where possible
+ *
+ * Revision 1.4  2007/07/10 15:17:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fix switching between by input and by pattern
  *
  * Revision 1.3  2007/07/10 07:29:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -31,12 +34,11 @@ import java.io.File;
 import java.io.FileFilter;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.util.FileUtils;
 
 import org.apache.commons.lang.StringUtils;
@@ -60,7 +62,7 @@ import org.apache.commons.lang.StringUtils;
  * @since:  4.2
  */
 public class CleanupOldFilesPipe extends FixedForwardPipe {
-	public static final String version = "$RCSfile: CleanupOldFilesPipe.java,v $  $Revision: 1.4 $ $Date: 2007-07-10 15:17:01 $";
+	public static final String version = "$RCSfile: CleanupOldFilesPipe.java,v $  $Revision: 1.5 $ $Date: 2007-10-08 13:33:00 $";
 	
 	private String filePattern;
 	private boolean subdirectories=false;
@@ -84,7 +86,7 @@ public class CleanupOldFilesPipe extends FixedForwardPipe {
 				}
 			}
 			
-			ArrayList delFiles = getFilesForDeletion(filename);
+			List delFiles = getFilesForDeletion(filename);
 			if (delFiles != null && delFiles.size() > 0) {
 				for (Iterator fileIt = delFiles.iterator(); fileIt.hasNext();) {
 					File file = (File)fileIt.next();
@@ -102,10 +104,10 @@ public class CleanupOldFilesPipe extends FixedForwardPipe {
 		}
 	}
 
-	private ArrayList getFilesForDeletion(String filename) {
+	private List getFilesForDeletion(String filename) {
 		File file = new File(filename);
 		if (file.exists()) {
-			ArrayList result = new ArrayList();
+			List result = new ArrayList();
 			if (file.isDirectory()) {
 				getFilesForDeletion(result, file);
 			}
@@ -118,7 +120,7 @@ public class CleanupOldFilesPipe extends FixedForwardPipe {
 		return null;
 	}
 
-	private void getFilesForDeletion(ArrayList result, File directory) {
+	private void getFilesForDeletion(List result, File directory) {
 		File[] files = directory.listFiles(fileFilter);
 		for (int i = 0; i < files.length; i++) {
 			result.add(files[i]);

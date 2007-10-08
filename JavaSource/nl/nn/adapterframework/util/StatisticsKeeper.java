@@ -1,6 +1,9 @@
 /*
  * $Log: StatisticsKeeper.java,v $
- * Revision 1.10  2006-09-07 08:39:12  europe\L190409
+ * Revision 1.11  2007-10-08 13:35:13  europe\L190409
+ * changed ArrayList to List where possible
+ *
+ * Revision 1.10  2006/09/07 08:39:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected version String
  *
  * Revision 1.9  2006/09/07 08:38:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -23,16 +26,17 @@ package nl.nn.adapterframework.util;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.StringTokenizer;
 
 /**
  * Keeps statistics (min, max, count etc).
- * <p>Creation date: (19-02-2003 11:34:14)</p>
- * @version Id
+ * 
  * @author Johan Verrips / Gerrit van Brakel
+ * @version Id
  */
 public class StatisticsKeeper {
-	public static final String version="$RCSfile: StatisticsKeeper.java,v $ $Revision: 1.10 $ $Date: 2006-09-07 08:39:12 $";
+	public static final String version="$RCSfile: StatisticsKeeper.java,v $ $Revision: 1.11 $ $Date: 2007-10-08 13:35:13 $";
 	
 	private static final boolean calculatePercentiles=true;
 	
@@ -72,7 +76,7 @@ public class StatisticsKeeper {
 	public StatisticsKeeper(String name) {
 	    super();
 	    this.name = name;
-	    ArrayList classBoundariesBuffer = new ArrayList();
+	    List classBoundariesBuffer = new ArrayList();
 	
 	    StringTokenizer tok = AppConstants.getInstance().getTokenizer(statConfigKey,DEFAULT_BOUNDARY_LIST);
 	

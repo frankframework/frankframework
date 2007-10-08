@@ -1,6 +1,9 @@
 /*
  * $Log: JmsRealmFactory.java,v $
- * Revision 1.5  2007-02-12 13:58:11  europe\L190409
+ * Revision 1.6  2007-10-08 13:30:58  europe\L190409
+ * changed ArrayList to List where possible
+ *
+ * Revision 1.5  2007/02/12 13:58:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Logger from LogUtil
  *
  * Revision 1.4  2004/03/26 10:42:55  Johan Verrips <johan.verrips@ibissource.org>
@@ -15,6 +18,7 @@ package nl.nn.adapterframework.jms;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -32,7 +36,7 @@ import org.apache.log4j.Logger;
  * @see JmsRealm
  */
 public class JmsRealmFactory {
-	public static final String version="$RCSfile: JmsRealmFactory.java,v $ $Revision: 1.5 $ $Date: 2007-02-12 13:58:11 $";
+	public static final String version="$RCSfile: JmsRealmFactory.java,v $ $Revision: 1.6 $ $Date: 2007-10-08 13:30:58 $";
 	private Logger log;
 
 
@@ -85,11 +89,11 @@ public class JmsRealmFactory {
     }
     /**
      * Get the names as a list
-     * @return ArrayList with the realm names
+     * @return List with the realm names
      */
-    public ArrayList getRegisteredRealmNamesAsList() {
+    public List getRegisteredRealmNamesAsList() {
         Iterator it = getRegisteredRealmNames();
-        ArrayList result = new ArrayList();
+        List result = new ArrayList();
         while (it.hasNext()) {
             result.add((String) it.next());
         }

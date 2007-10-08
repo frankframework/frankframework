@@ -1,6 +1,9 @@
 /*
  * $Log: RecordXslTransformer.java,v $
- * Revision 1.7  2007-09-24 14:55:32  europe\L190409
+ * Revision 1.8  2007-10-08 13:28:57  europe\L190409
+ * changed ArrayList to List where possible
+ *
+ * Revision 1.7  2007/09/24 14:55:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * support for parameters
  *
  * Revision 1.6  2007/07/26 16:11:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -23,7 +26,7 @@
  */
 package nl.nn.adapterframework.batch;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -53,7 +56,7 @@ import nl.nn.adapterframework.util.TransformerPool;
  * @version Id
  */
 public class RecordXslTransformer extends RecordXmlTransformer {
-	public static final String version = "$RCSfile: RecordXslTransformer.java,v $  $Revision: 1.7 $ $Date: 2007-09-24 14:55:32 $";
+	public static final String version = "$RCSfile: RecordXslTransformer.java,v $  $Revision: 1.8 $ $Date: 2007-10-08 13:28:57 $";
 
 	private String xpathExpression=null;
 	private String styleSheetName;
@@ -87,7 +90,7 @@ public class RecordXslTransformer extends RecordXmlTransformer {
 	}
 
 
-	public Object handleRecord(PipeLineSession session, ArrayList parsedRecord, ParameterResolutionContext prc) throws Exception {
+	public Object handleRecord(PipeLineSession session, List parsedRecord, ParameterResolutionContext prc) throws Exception {
 		String xml = getXml(parsedRecord);
 		return transformerPool.transform(xml, prc.getValueMap(paramList));
 	}

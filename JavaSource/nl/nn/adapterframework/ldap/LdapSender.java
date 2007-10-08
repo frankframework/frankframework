@@ -1,6 +1,9 @@
 /*
  * $Log: LdapSender.java,v $
- * Revision 1.27  2007-09-10 11:18:41  europe\L190409
+ * Revision 1.28  2007-10-08 13:31:21  europe\L190409
+ * changed ArrayList to List where possible
+ *
+ * Revision 1.27  2007/09/10 11:18:41  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.26  2007/09/04 07:59:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -51,6 +54,7 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Vector;
 
 import javax.naming.NameClassPair;
@@ -270,7 +274,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class LdapSender extends JNDIBase implements ISenderWithParameters {
-	public static final String version = "$RCSfile: LdapSender.java,v $  $Revision: 1.27 $ $Date: 2007-09-10 11:18:41 $";
+	public static final String version = "$RCSfile: LdapSender.java,v $  $Revision: 1.28 $ $Date: 2007-10-08 13:31:21 $";
 
 	private String FILTER = "filterExpression";
 	private String ENTRYNAME = "entryName";
@@ -458,7 +462,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 
 		if(toSeparate == null || toSeparate == "") return null;		
 		
-		ArrayList list = new ArrayList();
+		List list = new ArrayList();
 		String[] strArr = new String[1]; //just do determine the type of the array in list.toArray(Object[] o)
 		
 		StringBuffer sb = new StringBuffer(toSeparate);

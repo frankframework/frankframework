@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.51  2007-10-04 12:01:37  europe\L190409
+ * Revision 1.52  2007-10-08 13:33:31  europe\L190409
+ * changed ArrayList to List where possible
+ *
+ * Revision 1.51  2007/10/04 12:01:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * limit number of error messages written to log
  *
  * Revision 1.50  2007/10/03 08:57:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -171,6 +174,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import javax.transaction.Status;
@@ -294,7 +298,7 @@ import org.apache.log4j.Logger;
  * @since 4.2
  */
 public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, IMessageHandler, IbisExceptionListener, HasSender, TracingEventNumbers {
-	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.51 $ $Date: 2007-10-04 12:01:37 $";
+	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.52 $ $Date: 2007-10-08 13:33:31 $";
 	protected Logger log = LogUtil.getLogger(this);
  
  	public static final String RCV_SHUTDOWN_MONITOR_EVENT_MSG ="RCVCLOSED Ibis Receiver shut down";
@@ -331,8 +335,8 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 	        
 	// number of messages received
     private Counter numReceived = new Counter(0);
-	private ArrayList processStatistics = new ArrayList();
-	private ArrayList idleStatistics = new ArrayList();
+	private List processStatistics = new ArrayList();
+	private List idleStatistics = new ArrayList();
 
     // the adapter that handles the messages and initiates this listener
     private IAdapter adapter;

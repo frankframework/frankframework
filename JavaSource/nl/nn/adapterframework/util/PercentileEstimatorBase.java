@@ -1,6 +1,9 @@
 /*
  * $Log: PercentileEstimatorBase.java,v $
- * Revision 1.4  2006-09-07 08:37:51  europe\L190409
+ * Revision 1.5  2007-10-08 13:35:13  europe\L190409
+ * changed ArrayList to List where possible
+ *
+ * Revision 1.4  2006/09/07 08:37:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added sample return facility
  *
  * Revision 1.3  2005/03/10 09:52:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -16,6 +19,7 @@
 package nl.nn.adapterframework.util;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.StringTokenizer;
 
 /**
@@ -34,7 +38,7 @@ public class PercentileEstimatorBase implements PercentileEstimator {
 	private int p[];
 
 	public PercentileEstimatorBase(String configKey, String defaultPList, int valueArraySize) {
-		ArrayList pListBuffer = new ArrayList();
+		List pListBuffer = new ArrayList();
 		StringTokenizer tok = AppConstants.getInstance().getTokenizer(configKey,defaultPList);
 		
 		while (tok.hasMoreTokens()) {

@@ -1,6 +1,9 @@
 /*
  * $Log: RecordXml2Sender.java,v $
- * Revision 1.8  2007-09-24 14:55:33  europe\L190409
+ * Revision 1.9  2007-10-08 13:28:57  europe\L190409
+ * changed ArrayList to List where possible
+ *
+ * Revision 1.8  2007/09/24 14:55:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * support for parameters
  *
  * Revision 1.7  2007/09/24 13:02:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -25,7 +28,7 @@
  */
 package nl.nn.adapterframework.batch;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISender;
@@ -58,7 +61,7 @@ import nl.nn.adapterframework.util.ClassUtils;
  * @version Id
  */
 public class RecordXml2Sender extends RecordXmlTransformer {
-	public static final String version = "$RCSfile: RecordXml2Sender.java,v $  $Revision: 1.8 $ $Date: 2007-09-24 14:55:33 $";
+	public static final String version = "$RCSfile: RecordXml2Sender.java,v $  $Revision: 1.9 $ $Date: 2007-10-08 13:28:57 $";
 
 	private ISender sender = null; 
 	
@@ -78,7 +81,7 @@ public class RecordXml2Sender extends RecordXmlTransformer {
 		sender.close();		
 	}
 
-	public Object handleRecord(PipeLineSession session, ArrayList parsedRecord, ParameterResolutionContext prc) throws Exception {
+	public Object handleRecord(PipeLineSession session, List parsedRecord, ParameterResolutionContext prc) throws Exception {
 		String xml = getXml(parsedRecord);
 		ISender sender = getSender();
 		if (sender instanceof ISenderWithParameters) {

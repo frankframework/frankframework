@@ -1,6 +1,9 @@
 /*
  * $Log: ParameterValueList.java,v $
- * Revision 1.4  2007-10-08 12:21:23  europe\L190409
+ * Revision 1.5  2007-10-08 13:31:49  europe\L190409
+ * changed ArrayList to List where possible
+ *
+ * Revision 1.4  2007/10/08 12:21:23  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed HashMap to Map where possible
  *
  * Revision 1.3  2005/10/24 09:59:23  John Dekker <john.dekker@ibissource.org>
@@ -22,6 +25,7 @@ package nl.nn.adapterframework.parameters;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import nl.nn.adapterframework.core.ParameterException;
@@ -34,7 +38,7 @@ import nl.nn.adapterframework.core.ParameterException;
  */
 public class ParameterValueList {
 	
-	ArrayList list;
+	List list;
 	Map   map;
 	
 	public ParameterValueList() {
