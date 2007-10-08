@@ -1,6 +1,9 @@
 /*
  * $Log: Adapter.java,v $
- * Revision 1.31  2007-07-24 08:05:22  europe\L190409
+ * Revision 1.32  2007-10-08 12:15:38  europe\L190409
+ * corrected date formatting
+ *
+ * Revision 1.31  2007/07/24 08:05:22  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added targetDesignDocument attribute
  *
  * Revision 1.30  2007/07/10 07:11:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -160,7 +163,7 @@ import org.apache.log4j.NDC;
  */
 
 public class Adapter implements Runnable, IAdapter {
-	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.31 $ $Date: 2007-07-24 08:05:22 $";
+	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.32 $ $Date: 2007-10-08 12:15:38 $";
 	private Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -326,7 +329,7 @@ public class Adapter implements Runnable, IAdapter {
 	public String getLastMessageDate() {
 		String result = "";
 		if (lastMessageDate != 0)
-			result = DateUtils.format(new Date(lastMessageDate), DateUtils.FORMAT_GENERICDATETIME);
+			result = DateUtils.format(new Date(lastMessageDate), DateUtils.FORMAT_FULL_GENERIC);
 		else
 			result = "-";
 		return result;
@@ -537,7 +540,7 @@ public class Adapter implements Runnable, IAdapter {
 	 * @return String  Date
 	 */
 	public String getStatsUpSince() {
-		return DateUtils.format(new Date(statsUpSince), DateUtils.FORMAT_GENERICDATETIME);
+		return DateUtils.format(new Date(statsUpSince), DateUtils.FORMAT_FULL_GENERIC);
 	}
 	/**
 	 * Retrieve the waiting statistics as a <code>Hashtable</code>
@@ -648,8 +651,8 @@ public class Adapter implements Runnable, IAdapter {
 				log.debug("Adapter: [" + getName()
 						+ "] STAT: Finished processing message with messageId [" + messageId
 						+ "] exit-state [" + result.getState()
-						+ "] started " + DateUtils.format(new Date(startTime), DateUtils.FORMAT_GENERICDATETIME)
-						+ " finished " + DateUtils.format(new Date(endTime), DateUtils.FORMAT_GENERICDATETIME)
+						+ "] started " + DateUtils.format(new Date(startTime), DateUtils.FORMAT_FULL_GENERIC)
+						+ " finished " + DateUtils.format(new Date(endTime), DateUtils.FORMAT_FULL_GENERIC)
 						+ " total duration: " + duration + " msecs");
 			} else {
 				log.info("Adapter [" + getName() + "] completed message with messageId [" + messageId + "] with exit-state [" + result.getState() + "]");
