@@ -1,6 +1,9 @@
 /*
  * $Log: BrowseQueueExecute.java,v $
- * Revision 1.5  2005-07-19 15:33:33  europe\L190409
+ * Revision 1.6  2007-10-08 13:41:35  europe\L190409
+ * changed ArrayList to List where possible
+ *
+ * Revision 1.5  2005/07/19 15:33:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected version-string
  *
  * Revision 1.4  2005/07/19 15:32:17  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -48,7 +51,7 @@ import org.apache.struts.action.ActionMapping;
  * @author Johan Verrips
  */
 public class BrowseQueueExecute extends ActionBase {
-	public static final String version="$RCSfile: BrowseQueueExecute.java,v $ $Revision: 1.5 $ $Date: 2005-07-19 15:33:33 $";
+	public static final String version="$RCSfile: BrowseQueueExecute.java,v $ $Revision: 1.6 $ $Date: 2007-10-08 13:41:35 $";
 
 	public ActionForward execute(
 		ActionMapping mapping,
@@ -200,8 +203,7 @@ public class BrowseQueueExecute extends ActionBase {
 
 	}
 	public void StoreFormData(IniDynaActionForm form) {
-		ArrayList jmsRealms =
-			JmsRealmFactory.getInstance().getRegisteredRealmNamesAsList();
+		List jmsRealms = JmsRealmFactory.getInstance().getRegisteredRealmNamesAsList();
 		if (jmsRealms.size() == 0)
 			jmsRealms.add("no realms defined");
 		form.set("jmsRealms", jmsRealms);

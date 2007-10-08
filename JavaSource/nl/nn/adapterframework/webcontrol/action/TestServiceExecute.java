@@ -1,22 +1,36 @@
+/*
+ * $Log: TestServiceExecute.java,v $
+ * Revision 1.4  2007-10-08 13:41:35  europe\L190409
+ * changed ArrayList to List where possible
+ *
+ */
 package nl.nn.adapterframework.webcontrol.action;
 
-import nl.nn.adapterframework.receivers.ServiceDispatcher;
-import org.apache.struts.action.*;
-import org.apache.struts.upload.FormFile;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
+
+import nl.nn.adapterframework.receivers.ServiceDispatcher;
+
+import org.apache.struts.action.ActionError;
+import org.apache.struts.action.ActionForm;
+import org.apache.struts.action.ActionForward;
+import org.apache.struts.action.ActionMapping;
+import org.apache.struts.action.DynaActionForm;
+import org.apache.struts.upload.FormFile;
+
 /**
  * Execute a service test
  * @version Id
  * @author Johan Verrips
  */
 public class TestServiceExecute extends ActionBase {
-	public static final String version="$Id: TestServiceExecute.java,v 1.3 2004-03-26 10:42:57 NNVZNL01#L180564 Exp $";
+	public static final String version = "$RCSfile: TestServiceExecute.java,v $ $Revision: 1.4 $ $Date: 2007-10-08 13:41:35 $";
 	
 
     public ActionForward execute(
@@ -33,7 +47,7 @@ public class TestServiceExecute extends ActionBase {
 	    }
 
         DynaActionForm serviceTestForm = (DynaActionForm) form;
-//        ArrayList form_services = (ArrayList) serviceTestForm.get("services");
+//        List form_services = (List) serviceTestForm.get("services");
         String form_serviceName = (String) serviceTestForm.get("serviceName");
         String form_message = (String) serviceTestForm.get("message");
         String form_result = (String) serviceTestForm.get("message");
@@ -127,7 +141,7 @@ public class TestServiceExecute extends ActionBase {
         // refresh list of stopped adapters
         // =================================
         Iterator it = ServiceDispatcher.getInstance().getRegisteredListenerNames();
-        ArrayList services = new ArrayList();
+        List services = new ArrayList();
         services.add("----- select a service -----");
         while (it.hasNext()) {
             services.add((String) it.next());

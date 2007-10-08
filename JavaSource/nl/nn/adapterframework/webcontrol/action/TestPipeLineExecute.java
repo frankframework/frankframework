@@ -1,6 +1,9 @@
 /*
  * $Log: TestPipeLineExecute.java,v $
- * Revision 1.8  2007-07-19 15:16:19  europe\L190409
+ * Revision 1.9  2007-10-08 13:41:35  europe\L190409
+ * changed ArrayList to List where possible
+ *
+ * Revision 1.8  2007/07/19 15:16:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * list Adapters in order of configuration
  *
  * Revision 1.7  2007/02/12 15:50:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -15,7 +18,7 @@ package nl.nn.adapterframework.webcontrol.action;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -44,9 +47,8 @@ import org.apache.struts.upload.FormFile;
  * @see nl.nn.adapterframework.core.PipeLine
  * @version Id
  */
-
 public final class TestPipeLineExecute extends ActionBase {
-	public static final String version="$RCSfile: TestPipeLineExecute.java,v $  $Revision: 1.8 $ $Date: 2007-07-19 15:16:19 $";
+	public static final String version="$RCSfile: TestPipeLineExecute.java,v $  $Revision: 1.9 $ $Date: 2007-10-08 13:41:35 $";
 	
 	public ActionForward execute(
 	    ActionMapping mapping,
@@ -160,7 +162,7 @@ public final class TestPipeLineExecute extends ActionBase {
 	
 	    // refresh list of stopped adapters
 	    // =================================
-	    ArrayList adapters = new ArrayList();
+	    List adapters = new ArrayList();
 	    adapters.add("-- select an adapter --");
 	
 	    // get the names of the Adapters

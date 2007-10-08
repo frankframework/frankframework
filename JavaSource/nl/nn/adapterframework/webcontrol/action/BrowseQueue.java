@@ -1,6 +1,9 @@
 /*
  * $Log: BrowseQueue.java,v $
- * Revision 1.1  2004-06-16 12:25:52  NNVZNL01#L180564
+ * Revision 1.2  2007-10-08 13:41:35  europe\L190409
+ * changed ArrayList to List where possible
+ *
+ * Revision 1.1  2004/06/16 12:25:52  Johan Verrips <johan.verrips@ibissource.org>
  * Initial version of Queue browsing functionality
  *
  *
@@ -9,7 +12,7 @@ package nl.nn.adapterframework.webcontrol.action;
 
 import java.io.IOException;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
@@ -27,13 +30,14 @@ import org.apache.struts.action.ActionMapping;
 
 
 /**
- * Send the form to get input for displaying messages from a queue
- * @version Id
+ * Send the form to get input for displaying messages from a queue.
+ * 
  * @author Johan Verrips
  * @since 4.1.1
+ * @version Id
  */
 public class BrowseQueue extends ActionBase {
-	public static final String version = "$Id: BrowseQueue.java,v 1.1 2004-06-16 12:25:52 NNVZNL01#L180564 Exp $";
+	public static final String version = "$RCSfile: BrowseQueue.java,v $ $Revision: 1.2 $ $Date: 2007-10-08 13:41:35 $";
 	
 
 public ActionForward execute(
@@ -94,7 +98,7 @@ public ActionForward execute(
 		}
 	}
 
-	ArrayList jmsRealms=JmsRealmFactory.getInstance().getRegisteredRealmNamesAsList();
+	List jmsRealms=JmsRealmFactory.getInstance().getRegisteredRealmNamesAsList();
 	if (jmsRealms.size()==0) jmsRealms.add("no realms defined");
 	browseQueueForm.set("jmsRealms", jmsRealms);
 

@@ -1,19 +1,19 @@
 /*
  * $Log: ExecuteJdbcQueryExecute.java,v $
- * Revision 1.1  2005-10-27 12:20:03  europe\L190409
+ * Revision 1.2  2007-10-08 13:41:35  europe\L190409
+ * changed ArrayList to List where possible
+ *
+ * Revision 1.1  2005/10/27 12:20:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * execQuery functionality in IbisConsole
  *
  */
 
 package nl.nn.adapterframework.webcontrol.action;
 
-import org.apache.struts.action.*;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.XmlUtils;
-import nl.nn.adapterframework.util.StringTagger;
-import nl.nn.adapterframework.jdbc.DirectQuerySender;
-import nl.nn.adapterframework.jms.JmsRealmFactory;
+import java.io.IOException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
@@ -21,17 +21,25 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.transform.Transformer;
 
-import java.io.IOException;
-import java.net.URL;
-import java.util.ArrayList;
+import nl.nn.adapterframework.jdbc.DirectQuerySender;
+import nl.nn.adapterframework.jms.JmsRealmFactory;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.StringTagger;
+import nl.nn.adapterframework.util.XmlUtils;
+
+import org.apache.struts.action.ActionError;
+import org.apache.struts.action.ActionForm;
+import org.apache.struts.action.ActionForward;
+import org.apache.struts.action.ActionMapping;
+import org.apache.struts.action.DynaActionForm;
 
 /**
- * @version Id 
  * @author m168309
+ * @version Id 
  */
-
 public final class ExecuteJdbcQueryExecute extends ActionBase {
-	public static final String version = "$RCSfile: ExecuteJdbcQueryExecute.java,v $ $Revision: 1.1 $ $Date: 2005-10-27 12:20:03 $";
+	public static final String version = "$RCSfile: ExecuteJdbcQueryExecute.java,v $ $Revision: 1.2 $ $Date: 2007-10-08 13:41:35 $";
 	public static final String DB2XML_XSLT="xml/xsl/dbxml2csv.xslt";
 
 	public ActionForward execute(
@@ -142,17 +150,16 @@ public final class ExecuteJdbcQueryExecute extends ActionBase {
 		String query,
 		String result,
 		DynaActionForm executeJdbcQueryExecuteForm) {
-		ArrayList jmsRealms =
-			JmsRealmFactory.getInstance().getRegisteredRealmNamesAsList();
+		List jmsRealms = JmsRealmFactory.getInstance().getRegisteredRealmNamesAsList();
 		if (jmsRealms.size() == 0)
 			jmsRealms.add("no realms defined");
 		executeJdbcQueryExecuteForm.set("jmsRealms", jmsRealms);
-		ArrayList queryTypes = new ArrayList();
+		List queryTypes = new ArrayList();
 		queryTypes.add("select");
 		queryTypes.add("other");
 		executeJdbcQueryExecuteForm.set("queryTypes", queryTypes);
 
-		ArrayList resultTypes = new ArrayList();
+		List resultTypes = new ArrayList();
 		resultTypes.add("csv");
 		resultTypes.add("xml");
 		executeJdbcQueryExecuteForm.set("resultTypes", resultTypes);

@@ -1,6 +1,9 @@
 /*
  * $Log: TestIfsaServiceExecute.java,v $
- * Revision 1.5  2005-06-28 09:03:20  europe\L190409
+ * Revision 1.6  2007-10-08 13:41:35  europe\L190409
+ * changed ArrayList to List where possible
+ *
+ * Revision 1.5  2005/06/28 09:03:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * close in finally-clause
  *
  * Revision 1.4  2005/04/14 09:54:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -19,32 +22,38 @@
  */
 package nl.nn.adapterframework.webcontrol.action;
 
-import nl.nn.adapterframework.extensions.ifsa.IfsaRequesterSender;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.util.XmlUtils;
-import nl.nn.adapterframework.util.StringTagger;
-import org.apache.struts.action.*;
-import org.apache.struts.upload.FormFile;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.ArrayList;
+
+import nl.nn.adapterframework.extensions.ifsa.IfsaRequesterSender;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StringTagger;
+import nl.nn.adapterframework.util.XmlUtils;
+
+import org.apache.struts.action.ActionError;
+import org.apache.struts.action.ActionForm;
+import org.apache.struts.action.ActionForward;
+import org.apache.struts.action.ActionMapping;
+import org.apache.struts.action.DynaActionForm;
+import org.apache.struts.upload.FormFile;
 
 
 /**
  * Executes the sending of a test message to an IFSA Service.
  * 
- * @version Id
  * @author  Gerrit van Brakel / Johan Verrips
  * @since   4.3
+ * @version Id
  */
-
 public final class TestIfsaServiceExecute extends ActionBase {
-	public static final String version = "$RCSfile: TestIfsaServiceExecute.java,v $ $Revision: 1.5 $ $Date: 2005-06-28 09:03:20 $";
+	public static final String version = "$RCSfile: TestIfsaServiceExecute.java,v $ $Revision: 1.6 $ $Date: 2007-10-08 13:41:35 $";
 	
 	public ActionForward execute(
 	    ActionMapping mapping,
@@ -152,7 +161,7 @@ public final class TestIfsaServiceExecute extends ActionBase {
 		if (null != result) {
 			form.set("result", result);
 		}
-		ArrayList protocols=new ArrayList();
+		List protocols=new ArrayList();
 		protocols.add("RR");
 		protocols.add("FF");
 		form.set("messageProtocols", protocols);

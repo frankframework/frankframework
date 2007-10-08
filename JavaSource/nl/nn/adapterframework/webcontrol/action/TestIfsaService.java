@@ -1,35 +1,40 @@
 /*
  * $Log: TestIfsaService.java,v $
- * Revision 1.1  2005-04-14 08:07:57  L190409
+ * Revision 1.2  2007-10-08 13:41:35  europe\L190409
+ * changed ArrayList to List where possible
+ *
+ * Revision 1.1  2005/04/14 08:07:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * introduction of TestIfsaService-functionality
  *
  */
 package nl.nn.adapterframework.webcontrol.action;
 
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.StringTagger;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.DynaActionForm;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.ArrayList;
+
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.StringTagger;
+
+import org.apache.struts.action.ActionForm;
+import org.apache.struts.action.ActionForward;
+import org.apache.struts.action.ActionMapping;
+import org.apache.struts.action.DynaActionForm;
 
 
 /**
  * Send a test message to an IFSA Service.
  * 
- * @version Id
  * @author Gerrit van Brakel / Johan Verrips
+ * @version Id
  */
-
 public final class TestIfsaService extends ActionBase {
-	public static final String version="$Id: TestIfsaService.java,v 1.1 2005-04-14 08:07:57 L190409 Exp $";
+	public static final String version = "$RCSfile: TestIfsaService.java,v $ $Revision: 1.2 $ $Date: 2007-10-08 13:41:35 $";
 
 	public ActionForward execute(
 	    ActionMapping mapping,
@@ -74,7 +79,7 @@ public final class TestIfsaService extends ActionBase {
 	        }
 	    }
 	
-	    ArrayList protocols=new ArrayList();
+	    List protocols=new ArrayList();
 	    protocols.add("RR");
 		protocols.add("FF");
 		sendIfsaMessageForm.set("messageProtocols", protocols);
