@@ -1,6 +1,9 @@
 /*
  * $Log: Browse.java,v $
- * Revision 1.4  2007-09-24 13:05:02  europe\L190409
+ * Revision 1.5  2007-10-08 12:26:12  europe\L190409
+ * corrected date formatting
+ *
+ * Revision 1.4  2007/09/24 13:05:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * ability to download file, using correct filename
  *
  * Revision 1.3  2007/06/14 09:45:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -45,7 +48,7 @@ import org.apache.struts.action.ActionMapping;
  * @since   4.4
  */
 public class Browse extends ActionBase {
-	public static final String version="$RCSfile: Browse.java,v $ $Revision: 1.4 $ $Date: 2007-09-24 13:05:02 $";
+	public static final String version="$RCSfile: Browse.java,v $ $Revision: 1.5 $ $Date: 2007-10-08 12:26:12 $";
 
 	protected void performAction(Adapter adapter, ReceiverBase receiver, String action, IMessageBrowser mb, String messageId) {
 		// allow for extensions
@@ -123,7 +126,7 @@ public class Browse extends ActionBase {
 						message.addAttribute("pos",Integer.toString(messageCount+1));
 						message.addAttribute("originalId",mb.getOriginalId(iterItem));
 						message.addAttribute("correlationId",mb.getCorrelationId(iterItem));
-						message.addAttribute("insertDate",DateUtils.format(mb.getInsertDate(iterItem), DateUtils.FORMAT_DATETIME_MILLISECONDS));
+						message.addAttribute("insertDate",DateUtils.format(mb.getInsertDate(iterItem), DateUtils.FORMAT_FULL_GENERIC));
 						message.addAttribute("comment",XmlUtils.encodeChars(mb.getCommentString(iterItem)));
 						messages.addSubElement(message);
 					}
