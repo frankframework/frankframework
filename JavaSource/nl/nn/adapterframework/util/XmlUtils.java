@@ -1,6 +1,9 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.41  2007-07-17 11:02:40  europe\L190409
+ * Revision 1.42  2007-10-08 12:25:32  europe\L190409
+ * corrected javadoc
+ *
+ * Revision 1.41  2007/07/17 11:02:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * encodeChars for byteArray
  *
  * Revision 1.40  2007/05/08 16:04:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -179,7 +182,7 @@ import org.xml.sax.helpers.DefaultHandler;
  * @version Id
  */
 public class XmlUtils {
-	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.41 $ $Date: 2007-07-17 11:02:40 $";
+	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.42 $ $Date: 2007-10-08 12:25:32 $";
 	static Logger log = LogUtil.getLogger(XmlUtils.class);
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
@@ -894,7 +897,7 @@ public class XmlUtils {
 
 	
 	/**
-	 * sets all the parameters of the transformer using a HashMap with parameter values. 
+	 * sets all the parameters of the transformer using a Map with parameter values. 
 	 */
 	public static void setTransformerParameters(Transformer t, Map parameters) {
 		t.clearParameters();
