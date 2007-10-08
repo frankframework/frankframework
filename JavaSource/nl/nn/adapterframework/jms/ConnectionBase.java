@@ -1,6 +1,9 @@
 /*
  * $Log: ConnectionBase.java,v $
- * Revision 1.11  2007-02-12 13:58:11  europe\L190409
+ * Revision 1.12  2007-10-08 12:20:04  europe\L190409
+ * changed HashMap to Map where possible
+ *
+ * Revision 1.11  2007/02/12 13:58:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Logger from LogUtil
  *
  * Revision 1.10  2006/03/15 14:12:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -45,8 +48,8 @@
  */
 package nl.nn.adapterframework.jms;
 
-import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Map;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -76,7 +79,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class ConnectionBase  {
-	public static final String version="$RCSfile: ConnectionBase.java,v $ $Revision: 1.11 $ $Date: 2007-02-12 13:58:11 $";
+	public static final String version="$RCSfile: ConnectionBase.java,v $ $Revision: 1.12 $ $Date: 2007-10-08 12:20:04 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private int referenceCount;
@@ -100,12 +103,12 @@ public class ConnectionBase  {
 	private ConnectionFactory connectionFactory = null;
 	private Connection globalConnection=null; // only used when connections are not pooled
 	
-	private HashMap siblingMap;
+	private Map siblingMap;
 	private Hashtable connectionTable; // hashtable is synchronized and does not permit nulls
 
 	private Queue globalDynamicReplyQueue = null;
 	
-	protected ConnectionBase(String id, Context context, ConnectionFactory connectionFactory, HashMap siblingMap) {
+	protected ConnectionBase(String id, Context context, ConnectionFactory connectionFactory, Map siblingMap) {
 		super();
 		referenceCount=0;
 		this.id=id;

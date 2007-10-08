@@ -1,6 +1,9 @@
 /*
  * $Log: HttpListener.java,v $
- * Revision 1.3  2007-10-03 08:37:49  europe\L190409
+ * Revision 1.4  2007-10-08 12:18:20  europe\L190409
+ * changed HashMap to Map where possible
+ *
+ * Revision 1.3  2007/10/03 08:37:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed HashMap to Map
  *
  * Revision 1.2  2007/02/12 13:55:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -12,7 +15,6 @@
  */
 package nl.nn.adapterframework.http;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -50,7 +52,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class HttpListener  implements IPushingListener, ServiceClient2 {
-	public static final String version="$RCSfile: HttpListener.java,v $ $Revision: 1.3 $ $Date: 2007-10-03 08:37:49 $";
+	public static final String version="$RCSfile: HttpListener.java,v $ $Revision: 1.4 $ $Date: 2007-10-08 12:18:20 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private IMessageHandler handler;        	
@@ -113,7 +115,7 @@ public class HttpListener  implements IPushingListener, ServiceClient2 {
 		}
 	}
 
-	public String processRequestWithExceptions(String correlationId, String message, HashMap requestContext) throws ListenerException {
+	public String processRequestWithExceptions(String correlationId, String message, Map requestContext) throws ListenerException {
 		try {
 			log.debug("HttpListener processRequestWithExceptions for correlationId ["+correlationId+"]");
 			return handler.processRequest(this, correlationId, message, requestContext);

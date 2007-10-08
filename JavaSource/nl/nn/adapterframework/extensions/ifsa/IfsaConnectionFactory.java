@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaConnectionFactory.java,v $
- * Revision 1.12  2007-09-05 15:46:37  europe\L190409
+ * Revision 1.13  2007-10-08 12:17:00  europe\L190409
+ * changed HashMap to Map where possible
+ *
+ * Revision 1.12  2007/09/05 15:46:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * moved XA determination capabilities to IfsaConnection
  *
  * Revision 1.11  2007/08/10 11:08:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -48,6 +51,7 @@ package nl.nn.adapterframework.extensions.ifsa;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Map;
 
 import javax.jms.ConnectionFactory;
 import javax.naming.Context;
@@ -55,8 +59,8 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import nl.nn.adapterframework.core.IbisException;
-import nl.nn.adapterframework.jms.ConnectionFactoryBase;
 import nl.nn.adapterframework.jms.ConnectionBase;
+import nl.nn.adapterframework.jms.ConnectionFactoryBase;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 
@@ -75,14 +79,14 @@ import com.ing.ifsa.IFSAQueueConnectionFactory;
  * @version Id
  */
 public class IfsaConnectionFactory extends ConnectionFactoryBase {
-	public static final String version="$RCSfile: IfsaConnectionFactory.java,v $ $Revision: 1.12 $ $Date: 2007-09-05 15:46:37 $";
+	public static final String version="$RCSfile: IfsaConnectionFactory.java,v $ $Revision: 1.13 $ $Date: 2007-10-08 12:17:00 $";
 
 	private final static String IFSA_INITIAL_CONTEXT_FACTORY="com.ing.ifsa.IFSAContextFactory";
 	private final static String IFSA_PROVIDER_URL_V2_0="IFSA APPLICATION BUS";
 	
-	static private HashMap connectionMap = new HashMap();	
+	static private Map connectionMap = new HashMap();	
 
-	protected HashMap getConnectionMap() {
+	protected Map getConnectionMap() {
 		return connectionMap;
 	}
 

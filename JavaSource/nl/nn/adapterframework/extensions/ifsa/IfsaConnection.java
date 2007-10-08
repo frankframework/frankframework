@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaConnection.java,v $
- * Revision 1.11  2007-09-05 15:46:37  europe\L190409
+ * Revision 1.12  2007-10-08 12:17:00  europe\L190409
+ * changed HashMap to Map where possible
+ *
+ * Revision 1.11  2007/09/05 15:46:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * moved XA determination capabilities to IfsaConnection
  *
  * Revision 1.10  2006/02/28 08:44:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -42,7 +45,7 @@
  */
 package nl.nn.adapterframework.extensions.ifsa;
 
-import java.util.HashMap;
+import java.util.Map;
 
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -68,7 +71,7 @@ import com.ing.ifsa.IFSAQueueConnectionFactory;
  * @version Id
  */
 public class IfsaConnection extends ConnectionBase {
-	public static final String version="$RCSfile: IfsaConnection.java,v $ $Revision: 1.11 $ $Date: 2007-09-05 15:46:37 $";
+	public static final String version="$RCSfile: IfsaConnection.java,v $ $Revision: 1.12 $ $Date: 2007-10-08 12:17:00 $";
 
 	private final static String CLEANUP_ON_CLOSE_KEY="ifsa.cleanUpOnClose";
 	private static Boolean cleanUpOnClose=null; 
@@ -76,7 +79,7 @@ public class IfsaConnection extends ConnectionBase {
 	private boolean preJms22Api;
 	private boolean xaEnabled;
 	
-	public IfsaConnection(String applicationId, IFSAContext context, IFSAQueueConnectionFactory connectionFactory, HashMap connectionMap, boolean preJms22Api, boolean xaEnabled) {
+	public IfsaConnection(String applicationId, IFSAContext context, IFSAQueueConnectionFactory connectionFactory, Map connectionMap, boolean preJms22Api, boolean xaEnabled) {
 		super(applicationId,context,connectionFactory,connectionMap);
 		this.preJms22Api=preJms22Api;
 		this.xaEnabled=xaEnabled;

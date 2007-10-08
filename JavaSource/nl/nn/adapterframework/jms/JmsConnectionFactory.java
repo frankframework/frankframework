@@ -1,6 +1,9 @@
 /*
  * $Log: JmsConnectionFactory.java,v $
- * Revision 1.2  2005-10-26 08:21:42  europe\L190409
+ * Revision 1.3  2007-10-08 12:20:04  europe\L190409
+ * changed HashMap to Map where possible
+ *
+ * Revision 1.2  2005/10/26 08:21:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * renamed createJmsConnection() into createConnection()
  *
  * Revision 1.1  2005/10/20 15:43:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -10,6 +13,7 @@
 package nl.nn.adapterframework.jms;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import javax.jms.ConnectionFactory;
 import javax.naming.Context;
@@ -17,8 +21,6 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import nl.nn.adapterframework.core.IbisException;
-import nl.nn.adapterframework.jms.ConnectionFactoryBase;
-import nl.nn.adapterframework.jms.ConnectionBase;
 
 
 /**
@@ -32,11 +34,11 @@ import nl.nn.adapterframework.jms.ConnectionBase;
  * @since   4.4
  */
 public class JmsConnectionFactory extends ConnectionFactoryBase {
-	public static final String version="$RCSfile: JmsConnectionFactory.java,v $ $Revision: 1.2 $ $Date: 2005-10-26 08:21:42 $";
+	public static final String version="$RCSfile: JmsConnectionFactory.java,v $ $Revision: 1.3 $ $Date: 2007-10-08 12:20:04 $";
 
-	static private HashMap connectionMap = new HashMap();
+	static private Map connectionMap = new HashMap();
 	
-	protected HashMap getConnectionMap() {
+	protected Map getConnectionMap() {
 		return connectionMap;
 	}
 

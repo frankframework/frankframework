@@ -1,6 +1,9 @@
 /*
  * $Log: LdapChallengePipe.java,v $
- * Revision 1.8  2007-09-27 13:46:08  europe\L190409
+ * Revision 1.9  2007-10-08 12:20:33  europe\L190409
+ * changed HashMap to Map where possible
+ *
+ * Revision 1.8  2007/09/27 13:46:08  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * modified handling of empty principal and credentials
  *
  * Revision 1.7  2007/09/05 13:03:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -26,9 +29,7 @@
  */
 package nl.nn.adapterframework.ldap;
 
-import java.util.HashMap;
-
-import javax.naming.NamingException;
+import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ParameterException;
@@ -73,7 +74,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class LdapChallengePipe extends AbstractPipe {
-	public static String version = "$RCSfile: LdapChallengePipe.java,v $  $Revision: 1.8 $ $Date: 2007-09-27 13:46:08 $";
+	public static String version = "$RCSfile: LdapChallengePipe.java,v $  $Revision: 1.9 $ $Date: 2007-10-08 12:20:33 $";
 
 	private String ldapProviderURL=null;
 	private String initialContextFactoryName=null;
@@ -110,7 +111,7 @@ public class LdapChallengePipe extends AbstractPipe {
 					
 		try {
 			ParameterResolutionContext prc = new ParameterResolutionContext((String)msg, pls);
-			HashMap paramMap = prc.getValueMap(getParameterList());
+			Map paramMap = prc.getValueMap(getParameterList());
 			if (StringUtils.isNotEmpty(getLdapProviderURL())) {
 				ldapProviderURL = getLdapProviderURL();
 			} else {

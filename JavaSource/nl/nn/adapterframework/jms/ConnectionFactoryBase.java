@@ -1,6 +1,9 @@
 /*
  * $Log: ConnectionFactoryBase.java,v $
- * Revision 1.7  2007-05-23 09:13:51  europe\L190409
+ * Revision 1.8  2007-10-08 12:20:04  europe\L190409
+ * changed HashMap to Map where possible
+ *
+ * Revision 1.7  2007/05/23 09:13:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved logging
  *
  * Revision 1.6  2007/02/12 13:58:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -24,7 +27,7 @@
  */
 package nl.nn.adapterframework.jms;
 
-import java.util.HashMap;
+import java.util.Map;
 
 import javax.jms.ConnectionFactory;
 import javax.naming.Context;
@@ -42,10 +45,10 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public abstract class ConnectionFactoryBase  {
-	public static final String version="$RCSfile: ConnectionFactoryBase.java,v $ $Revision: 1.7 $ $Date: 2007-05-23 09:13:51 $";
+	public static final String version="$RCSfile: ConnectionFactoryBase.java,v $ $Revision: 1.8 $ $Date: 2007-10-08 12:20:04 $";
 	protected Logger log = LogUtil.getLogger(this);
 
-	protected abstract HashMap getConnectionMap();
+	protected abstract Map getConnectionMap();
 	protected abstract Context createContext() throws NamingException;
 	protected abstract ConnectionFactory createConnectionFactory(Context context, String id) throws IbisException, NamingException;
 	
@@ -56,7 +59,7 @@ public abstract class ConnectionFactoryBase  {
 	}
 	
 	public synchronized ConnectionBase getConnection(String id) throws IbisException {
-		HashMap connectionMap = getConnectionMap();
+		Map connectionMap = getConnectionMap();
 		ConnectionBase result = (ConnectionBase)connectionMap.get(id);
 		if (result == null) {
 			result = createConnection(id);

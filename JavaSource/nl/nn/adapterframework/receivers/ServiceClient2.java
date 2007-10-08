@@ -1,12 +1,15 @@
 /*
  * $Log: ServiceClient2.java,v $
- * Revision 1.1  2005-07-05 13:05:46  europe\L190409
+ * Revision 1.2  2007-10-08 12:24:31  europe\L190409
+ * changed HashMap to Map where possible
+ *
+ * Revision 1.1  2005/07/05 13:05:46  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * extension to ServiceClient
  *
  */
 package nl.nn.adapterframework.receivers;
 
-import java.util.HashMap;
+import java.util.Map;
 
 import nl.nn.adapterframework.core.ListenerException;
 
@@ -18,7 +21,7 @@ import nl.nn.adapterframework.core.ListenerException;
  * @version Id
  */
 public interface ServiceClient2 extends ServiceClient {
-	public static final String version="$RCSfile: ServiceClient2.java,v $ $Revision: 1.1 $ $Date: 2005-07-05 13:05:46 $";
+	public static final String version="$RCSfile: ServiceClient2.java,v $ $Revision: 1.2 $ $Date: 2007-10-08 12:24:31 $";
 	
-	public String processRequestWithExceptions(String correlationId, String message, HashMap requestContext) throws ListenerException;
+	public String processRequestWithExceptions(String correlationId, String message, Map requestContext) throws ListenerException;
 }

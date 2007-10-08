@@ -1,6 +1,9 @@
 /*
  * $Log: FileLineIteratorPipe.java,v $
- * Revision 1.2  2007-09-13 09:10:45  europe\L190409
+ * Revision 1.3  2007-10-08 12:23:51  europe\L190409
+ * changed HashMap to Map where possible
+ *
+ * Revision 1.2  2007/09/13 09:10:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * base on StreamLineIteratorPipe
  *
  * Revision 1.1  2007/09/13 08:58:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -12,7 +15,7 @@ package nl.nn.adapterframework.pipes;
 import java.io.File;
 import java.io.FileReader;
 import java.io.Reader;
-import java.util.HashMap;
+import java.util.Map;
 
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -74,13 +77,13 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class FileLineIteratorPipe extends StreamLineIteratorPipe {
-	public static final String version = "$RCSfile: FileLineIteratorPipe.java,v $  $Revision: 1.2 $ $Date: 2007-09-13 09:10:45 $";
+	public static final String version = "$RCSfile: FileLineIteratorPipe.java,v $  $Revision: 1.3 $ $Date: 2007-10-08 12:23:51 $";
 
 	private String move2dirAfterTransform;
 	private String move2dirAfterError;
 
 	
-	protected Reader getReader(Object input, PipeLineSession session, String correlationID, HashMap threadContext) throws SenderException {
+	protected Reader getReader(Object input, PipeLineSession session, String correlationID, Map threadContext) throws SenderException {
 		if (input==null) {
 			throw new SenderException("got null input instead of String containing filename");
 		}

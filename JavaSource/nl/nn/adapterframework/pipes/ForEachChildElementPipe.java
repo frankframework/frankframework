@@ -1,6 +1,9 @@
 /*
  * $Log: ForEachChildElementPipe.java,v $
- * Revision 1.13  2007-09-10 11:19:19  europe\L190409
+ * Revision 1.14  2007-10-08 12:23:51  europe\L190409
+ * changed HashMap to Map where possible
+ *
+ * Revision 1.13  2007/09/10 11:19:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * remove unused imports
  *
  * Revision 1.12  2007/07/17 11:06:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -16,7 +19,7 @@
  */
 package nl.nn.adapterframework.pipes;
 
-import java.util.HashMap;
+import java.util.Map;
 
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.dom.DOMSource;
@@ -91,10 +94,10 @@ import org.w3c.dom.Node;
  * @author Gerrit van Brakel
  * @since 4.6.1
  * 
- * $Id: ForEachChildElementPipe.java,v 1.13 2007-09-10 11:19:19 europe\L190409 Exp $
+ * $Id: ForEachChildElementPipe.java,v 1.14 2007-10-08 12:23:51 europe\L190409 Exp $
  */
 public class ForEachChildElementPipe extends IteratingPipe {
-	public static final String version="$RCSfile: ForEachChildElementPipe.java,v $ $Revision: 1.13 $ $Date: 2007-09-10 11:19:19 $";
+	public static final String version="$RCSfile: ForEachChildElementPipe.java,v $ $Revision: 1.14 $ $Date: 2007-10-08 12:23:51 $";
 
 	private String elementXPathExpression=null;
 
@@ -191,7 +194,7 @@ public class ForEachChildElementPipe extends IteratingPipe {
 	}
 
 	
-	protected IDataIterator getIterator(Object input, PipeLineSession session, String correlationID, HashMap threadContext) throws SenderException {
+	protected IDataIterator getIterator(Object input, PipeLineSession session, String correlationID, Map threadContext) throws SenderException {
 		return new ElementIterator((String)input);
 	}
 

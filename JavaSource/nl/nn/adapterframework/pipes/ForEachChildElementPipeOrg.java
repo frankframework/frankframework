@@ -1,6 +1,9 @@
 /*
  * $Log: ForEachChildElementPipeOrg.java,v $
- * Revision 1.3  2007-07-17 11:06:30  europe\L190409
+ * Revision 1.4  2007-10-08 12:23:51  europe\L190409
+ * changed HashMap to Map where possible
+ *
+ * Revision 1.3  2007/07/17 11:06:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * switch to new version
  *
  * Revision 1.11  2007/07/10 10:06:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -43,15 +46,11 @@
 package nl.nn.adapterframework.pipes;
 
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.Map;
 
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.dom.DOMSource;
-
-import org.apache.commons.lang.StringUtils;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISender;
@@ -64,6 +63,10 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
+
+import org.apache.commons.lang.StringUtils;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 /**
  * Sends a message to a Sender for each child element of the input XML.
@@ -121,10 +124,10 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author Gerrit van Brakel
  * @since 4.3
  * 
- * $Id: ForEachChildElementPipeOrg.java,v 1.3 2007-07-17 11:06:30 europe\L190409 Exp $
+ * $Id: ForEachChildElementPipeOrg.java,v 1.4 2007-10-08 12:23:51 europe\L190409 Exp $
  */
 public class ForEachChildElementPipeOrg extends MessageSendingPipe {
-	public static final String version="$RCSfile: ForEachChildElementPipeOrg.java,v $ $Revision: 1.3 $ $Date: 2007-07-17 11:06:30 $";
+	public static final String version="$RCSfile: ForEachChildElementPipeOrg.java,v $ $Revision: 1.4 $ $Date: 2007-10-08 12:23:51 $";
 
 	private boolean elementsOnly=true;
 	private String stopConditionXPathExpression=null;
@@ -183,7 +186,7 @@ public class ForEachChildElementPipeOrg extends MessageSendingPipe {
 	}
 	
 
-	protected String sendMessage(Object input, PipeLineSession session, String correlationID, ISender sender, HashMap threadContext) throws SenderException, TimeOutException {
+	protected String sendMessage(Object input, PipeLineSession session, String correlationID, ISender sender, Map threadContext) throws SenderException, TimeOutException {
 		// sendResult has a messageID for async senders, the result for sync senders
 		String result=null;
 		ISenderWithParameters psender=null;

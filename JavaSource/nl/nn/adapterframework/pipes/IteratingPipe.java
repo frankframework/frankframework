@@ -1,6 +1,9 @@
 /*
  * $Log: IteratingPipe.java,v $
- * Revision 1.4  2007-08-03 08:47:16  europe\L190409
+ * Revision 1.5  2007-10-08 12:23:51  europe\L190409
+ * changed HashMap to Map where possible
+ *
+ * Revision 1.4  2007/08/03 08:47:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.3  2007/07/17 10:54:25  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -16,7 +19,7 @@
 package nl.nn.adapterframework.pipes;
 
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.Map;
 
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -93,7 +96,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public abstract class IteratingPipe extends MessageSendingPipe {
-	public static final String version="$RCSfile: IteratingPipe.java,v $ $Revision: 1.4 $ $Date: 2007-08-03 08:47:16 $";
+	public static final String version="$RCSfile: IteratingPipe.java,v $ $Revision: 1.5 $ $Date: 2007-10-08 12:23:51 $";
 
 	private String stopConditionXPathExpression=null;
 	private boolean removeXmlDeclarationInResults=false;
@@ -130,9 +133,9 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 		}
 	}
 
-	protected abstract IDataIterator getIterator(Object input, PipeLineSession session, String correlationID, HashMap threadContext) throws SenderException;
+	protected abstract IDataIterator getIterator(Object input, PipeLineSession session, String correlationID, Map threadContext) throws SenderException;
 
-	protected String sendMessage(Object input, PipeLineSession session, String correlationID, ISender sender, HashMap threadContext) throws SenderException, TimeOutException {
+	protected String sendMessage(Object input, PipeLineSession session, String correlationID, ISender sender, Map threadContext) throws SenderException, TimeOutException {
 		// sendResult has a messageID for async senders, the result for sync senders
 		String result=null;
 		ISenderWithParameters psender=null;

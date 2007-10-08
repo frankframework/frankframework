@@ -1,6 +1,9 @@
 /*
  * $Log: HttpListenerServlet.java,v $
- * Revision 1.2  2007-02-12 13:55:57  europe\L190409
+ * Revision 1.3  2007-10-08 12:18:19  europe\L190409
+ * changed HashMap to Map where possible
+ *
+ * Revision 1.2  2007/02/12 13:55:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Logger from LogUtil
  *
  * Revision 1.1  2006/02/09 07:54:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -12,6 +15,7 @@ package nl.nn.adapterframework.http;
 import java.io.IOException;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -35,7 +39,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class HttpListenerServlet extends HttpServlet {
-	public static final String version = "$RCSfile: HttpListenerServlet.java,v $ $Revision: 1.2 $ $Date: 2007-02-12 13:55:57 $";
+	public static final String version = "$RCSfile: HttpListenerServlet.java,v $ $Revision: 1.3 $ $Date: 2007-10-08 12:18:19 $";
 	protected Logger log=LogUtil.getLogger(this);
 	
 	public final String SERVICE_ID_PARAM = "service";
@@ -53,7 +57,7 @@ public class HttpListenerServlet extends HttpServlet {
 
 	public void invoke(String message, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 		ISecurityHandler securityHandler = new HttpSecurityHandler(request);
-		HashMap messageContext= new HashMap();
+		Map messageContext= new HashMap();
 		messageContext.put(PipeLineSession.securityHandlerKey, securityHandler);
 		String service=request.getParameter(SERVICE_ID_PARAM);
 		Enumeration paramnames=request.getParameterNames();

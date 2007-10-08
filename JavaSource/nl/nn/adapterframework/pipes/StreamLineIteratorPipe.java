@@ -1,6 +1,9 @@
 /*
  * $Log: StreamLineIteratorPipe.java,v $
- * Revision 1.3  2007-09-13 09:10:14  europe\L190409
+ * Revision 1.4  2007-10-08 12:23:51  europe\L190409
+ * changed HashMap to Map where possible
+ *
+ * Revision 1.3  2007/09/13 09:10:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * extracted getReader()
  *
  * Revision 1.2  2007/07/17 10:57:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -15,7 +18,7 @@ package nl.nn.adapterframework.pipes;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.util.HashMap;
+import java.util.Map;
 
 import nl.nn.adapterframework.core.IDataIterator;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -81,9 +84,9 @@ import nl.nn.adapterframework.util.ReaderLineIterator;
  * @version Id
  */
 public class StreamLineIteratorPipe extends IteratingPipe {
-	public static final String version="$RCSfile: StreamLineIteratorPipe.java,v $ $Revision: 1.3 $ $Date: 2007-09-13 09:10:14 $";
+	public static final String version="$RCSfile: StreamLineIteratorPipe.java,v $ $Revision: 1.4 $ $Date: 2007-10-08 12:23:51 $";
 
-	protected Reader getReader(Object input, PipeLineSession session, String correlationID, HashMap threadContext) throws SenderException {
+	protected Reader getReader(Object input, PipeLineSession session, String correlationID, Map threadContext) throws SenderException {
 		if (input==null) {
 			throw new SenderException("input is null. Must supply stream as input");
 		}
@@ -94,7 +97,7 @@ public class StreamLineIteratorPipe extends IteratingPipe {
 		return reader;
 	}
 
-	protected IDataIterator getIterator(Object input, PipeLineSession session, String correlationID, HashMap threadContext) throws SenderException {
+	protected IDataIterator getIterator(Object input, PipeLineSession session, String correlationID, Map threadContext) throws SenderException {
 		return new ReaderLineIterator(getReader(input,session, correlationID,threadContext));
 	}
 

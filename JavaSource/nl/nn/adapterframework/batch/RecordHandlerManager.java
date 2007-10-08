@@ -1,6 +1,9 @@
 /*
  * $Log: RecordHandlerManager.java,v $
- * Revision 1.7  2007-08-03 08:28:04  europe\L190409
+ * Revision 1.8  2007-10-08 12:14:57  europe\L190409
+ * changed HashMap to Map where possible
+ *
+ * Revision 1.7  2007/08/03 08:28:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.6  2007/07/24 16:13:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -25,6 +28,7 @@ package nl.nn.adapterframework.batch;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -48,10 +52,10 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class RecordHandlerManager implements IRecordHandlerManager {
-	public static final String version = "$RCSfile: RecordHandlerManager.java,v $  $Revision: 1.7 $ $Date: 2007-08-03 08:28:04 $";
+	public static final String version = "$RCSfile: RecordHandlerManager.java,v $  $Revision: 1.8 $ $Date: 2007-10-08 12:14:57 $";
 	protected Logger log = LogUtil.getLogger(this);
 
-	private HashMap valueHandlersMap;
+	private Map valueHandlersMap;
 	private String name;
 	private boolean initial;
 
@@ -63,7 +67,7 @@ public class RecordHandlerManager implements IRecordHandlerManager {
 		return this;
 	}
 
-	public void configure(HashMap registeredManagers, HashMap registeredRecordHandlers, HashMap registeredResultHandlers, IResultHandler defaultHandler) throws ConfigurationException {
+	public void configure(Map registeredManagers, Map registeredRecordHandlers, Map registeredResultHandlers, IResultHandler defaultHandler) throws ConfigurationException {
 		for(Iterator it=valueHandlersMap.keySet().iterator();it.hasNext();) {
 			String name=(String)it.next();
 			RecordHandlingFlow flow = getFlowByName(name);

@@ -1,6 +1,9 @@
 /*
  * $Log: WebServiceListener.java,v $
- * Revision 1.8  2007-10-03 08:39:05  europe\L190409
+ * Revision 1.9  2007-10-08 12:18:20  europe\L190409
+ * changed HashMap to Map where possible
+ *
+ * Revision 1.8  2007/10/03 08:39:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed HashMap to Map
  *
  * Revision 1.7  2007/02/12 13:55:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -78,7 +81,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class WebServiceListener  implements IPushingListener, ServiceClient2, Serializable {
-	public static final String version="$RCSfile: WebServiceListener.java,v $ $Revision: 1.8 $ $Date: 2007-10-03 08:39:05 $";
+	public static final String version="$RCSfile: WebServiceListener.java,v $ $Revision: 1.9 $ $Date: 2007-10-08 12:18:20 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private IMessageHandler handler;        	
@@ -141,7 +144,7 @@ public class WebServiceListener  implements IPushingListener, ServiceClient2, Se
 		}
 	}
 
-	public String processRequestWithExceptions(String correlationId, String message, HashMap requestContext) throws ListenerException {
+	public String processRequestWithExceptions(String correlationId, String message, Map requestContext) throws ListenerException {
 		try {
 			log.debug("WebServiceListener processRequestWithExceptions for correlationId ["+correlationId+"]");
 			return handler.processRequest(this, correlationId, message, requestContext);

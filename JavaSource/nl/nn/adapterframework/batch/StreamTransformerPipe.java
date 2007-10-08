@@ -1,6 +1,9 @@
 /*
  * $Log: StreamTransformerPipe.java,v $
- * Revision 1.10  2007-09-24 14:55:33  europe\L190409
+ * Revision 1.11  2007-10-08 12:14:55  europe\L190409
+ * changed HashMap to Map where possible
+ *
+ * Revision 1.10  2007/09/24 14:55:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * support for parameters
  *
  * Revision 1.9  2007/09/24 13:02:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -42,6 +45,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -78,13 +82,13 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class StreamTransformerPipe extends FixedForwardPipe {
-	public static final String version = "$RCSfile: StreamTransformerPipe.java,v $  $Revision: 1.10 $ $Date: 2007-09-24 14:55:33 $";
+	public static final String version = "$RCSfile: StreamTransformerPipe.java,v $  $Revision: 1.11 $ $Date: 2007-10-08 12:14:55 $";
 
 	private IRecordHandlerManager initialManager=null;
 	private IResultHandler defaultHandler=null;
-	private HashMap registeredManagers= new HashMap();
-	private HashMap registeredRecordHandlers= new HashMap();
-	private HashMap registeredResultHandlers= new HashMap();
+	private Map registeredManagers= new HashMap();
+	private Map registeredRecordHandlers= new HashMap();
+	private Map registeredResultHandlers= new HashMap();
 	
 	public void configure() throws ConfigurationException {
 		super.configure();

@@ -1,6 +1,9 @@
 /*
  * $Log: RecordHandlingFlow.java,v $
- * Revision 1.10  2007-09-24 13:02:38  europe\L190409
+ * Revision 1.11  2007-10-08 12:14:56  europe\L190409
+ * changed HashMap to Map where possible
+ *
+ * Revision 1.10  2007/09/24 13:02:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.9  2007/09/19 11:17:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -31,7 +34,7 @@
  */
 package nl.nn.adapterframework.batch;
 
-import java.util.HashMap;
+import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.util.LogUtil;
@@ -64,7 +67,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public final class RecordHandlingFlow {
-	public static final String version = "$RCSfile: RecordHandlingFlow.java,v $  $Revision: 1.10 $ $Date: 2007-09-24 13:02:38 $";
+	public static final String version = "$RCSfile: RecordHandlingFlow.java,v $  $Revision: 1.11 $ $Date: 2007-10-08 12:14:56 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String recordKey;
@@ -83,7 +86,7 @@ public final class RecordHandlingFlow {
 	private IRecordHandlerManager nextRecordHandlerManager;
 	private IResultHandler resultHandler;
 	
-	public void configure(IRecordHandlerManager manager, HashMap registeredManagers, HashMap registeredRecordHandlers, HashMap registeredResultHandlers, IResultHandler defaultHandler) throws ConfigurationException {
+	public void configure(IRecordHandlerManager manager, Map registeredManagers, Map registeredRecordHandlers, Map registeredResultHandlers, IResultHandler defaultHandler) throws ConfigurationException {
 		if (StringUtils.isNotEmpty(getRecordHandlerManagerRef()) &&
 		    !getRecordHandlerManagerRef().equals(manager.getName())) {
 		    	throw new ConfigurationException("recordHandlerManagerRef ["+getRecordHandlerManagerRef()+"] should be either equal to name of manager ["+manager.getName()+"], or left unspecified");
