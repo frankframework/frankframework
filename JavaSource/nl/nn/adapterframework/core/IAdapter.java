@@ -1,6 +1,11 @@
 /*
  * $Log: IAdapter.java,v $
- * Revision 1.9  2005-12-28 08:34:45  europe\L190409
+ * Revision 1.10  2007-10-09 15:33:00  europe\L190409
+ * copy changes from Ibis-EJB:
+ * removed usertransaction-methods
+ * added getErrorState()
+ *
+ * Revision 1.9  2005/12/28 08:34:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * introduced StatisticsKeeper-iteration
  *
  * Revision 1.8  2005/07/05 12:28:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -40,7 +45,7 @@ import javax.transaction.UserTransaction;
  * @version Id
  **/
 public interface IAdapter extends IManagable {
-	public static final String version = "$RCSfile: IAdapter.java,v $ $Revision: 1.9 $ $Date: 2005-12-28 08:34:45 $";
+	public static final String version = "$RCSfile: IAdapter.java,v $ $Revision: 1.10 $ $Date: 2007-10-09 15:33:00 $";
 
     /**
   	 * Instruct the adapter to configure itself. The adapter will call the
@@ -67,16 +72,6 @@ public interface IAdapter extends IManagable {
   	public boolean isAutoStart();
 	public String toString();
 	
-	/**
-	 *  return the userTransaction object that can be used to demarcate (begin/commit/rollback) transactions
-	 */
-	public UserTransaction getUserTransaction() throws TransactionException;
-	
-	/**
-	 *  return true when the current thread is running under a transaction.
-	 */
-	public boolean inTransaction() throws TransactionException;
-
 	public String formatErrorMessage(
 		String errorMessage,
 		Throwable t,
@@ -85,5 +80,10 @@ public interface IAdapter extends IManagable {
 		INamedObject objectInError,
 		long receivedTime);
 		
-	public void forEachStatisticsKeeperBody(StatisticsKeeperIterationHandler hski, Object data); 
+	public void forEachStatisticsKeeperBody(StatisticsKeeperIterationHandler hski, Object data);
+
+    /**
+     * state to put in PipeLineResult when a PipeRunException occurs.
+     */
+    String getErrorState();
 }
