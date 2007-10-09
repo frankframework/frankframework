@@ -1,6 +1,10 @@
 /*
  * $Log: ITransactionalStorage.java,v $
- * Revision 1.5  2007-06-12 11:19:42  europe\L190409
+ * Revision 1.6  2007-10-09 15:33:32  europe\L190409
+ * copy changes from Ibis-EJB:
+ * added containsMessageId()
+ *
+ * Revision 1.5  2007/06/12 11:19:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added set/getType
  *
  * Revision 1.4  2007/05/23 09:07:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -32,7 +36,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
  * @version Id
 */
 public interface ITransactionalStorage extends IMessageBrowser, INamedObject {
-	public static final String version = "$RCSfile: ITransactionalStorage.java,v $ $Revision: 1.5 $ $Date: 2007-06-12 11:19:42 $";
+	public static final String version = "$RCSfile: ITransactionalStorage.java,v $ $Revision: 1.6 $ $Date: 2007-10-09 15:33:32 $";
 
 	/**
 	 * Prepares the object for operation. After this
@@ -50,6 +54,12 @@ public interface ITransactionalStorage extends IMessageBrowser, INamedObject {
 	 */
 	public String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, Serializable message) throws SenderException;
 	
+    /**
+     * Check if the storage contains message with the given original messageId
+     * (as passed to storeMessage).
+     */
+    public boolean containsMessageId(String originalMessageId) throws ListenerException;
+    
 	public void setName(String name);
 
 	/**

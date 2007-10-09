@@ -1,6 +1,10 @@
 /*
  * $Log: JmsTransactionalStorage.java,v $
- * Revision 1.9  2007-06-12 11:21:34  europe\L190409
+ * Revision 1.10  2007-10-09 15:35:19  europe\L190409
+ * copy changes from Ibis-EJB:
+ * added containsMessageId()
+ *
+ * Revision 1.9  2007/06/12 11:21:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * adapted to new functionality
  *
  * Revision 1.8  2007/05/23 09:16:08  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -63,7 +67,7 @@ import nl.nn.adapterframework.core.SenderException;
  * @since   4.1
  */
 public class JmsTransactionalStorage extends JmsMessageBrowser implements ITransactionalStorage {
-	public static final String version = "$RCSfile: JmsTransactionalStorage.java,v $ $Revision: 1.9 $ $Date: 2007-06-12 11:21:34 $";
+	public static final String version = "$RCSfile: JmsTransactionalStorage.java,v $ $Revision: 1.10 $ $Date: 2007-10-09 15:35:19 $";
 
 	private String slotId=null;
 	private String type=null;
@@ -118,6 +122,11 @@ public class JmsTransactionalStorage extends JmsMessageBrowser implements ITrans
 		}
 	}
 
+    public boolean containsMessageId(String originalMessageId) throws ListenerException {
+        Object msg = super.browseMessage("originalId", originalMessageId);
+        return msg != null;
+    }
+    
 	public Object browseMessage(String messageId) throws ListenerException {
 		try {
 			ObjectMessage msg=(ObjectMessage)super.browseMessage(messageId);

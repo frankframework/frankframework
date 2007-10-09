@@ -1,6 +1,10 @@
 /*
  * $Log: JdbcTransactionalStorage.java,v $
- * Revision 1.21  2007-09-10 11:18:26  europe\L190409
+ * Revision 1.22  2007-10-09 15:34:41  europe\L190409
+ * copy changes from Ibis-EJB:
+ * added containsMessageId()
+ *
+ * Revision 1.21  2007/09/10 11:18:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.20  2007/06/12 11:21:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -169,7 +173,7 @@ import org.apache.commons.lang.StringUtils;
  * @since 	4.1
  */
 public class JdbcTransactionalStorage extends JdbcFacade implements ITransactionalStorage {
-	public static final String version = "$RCSfile: JdbcTransactionalStorage.java,v $ $Revision: 1.21 $ $Date: 2007-09-10 11:18:26 $";
+	public static final String version = "$RCSfile: JdbcTransactionalStorage.java,v $ $Revision: 1.22 $ $Date: 2007-10-09 15:34:41 $";
 	
 	// the following currently only for debug.... 
 	boolean checkIfTableExists=true;
@@ -206,7 +210,8 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	protected String selectKeyQuery;
 	protected String selectListQuery;
 	protected String selectDataQuery;
-
+    protected String checkMessageIdQuery;
+    
 	// the following for Oracle
 	private String sequenceName="seq_ibisstore";
 	protected String updateBlobQuery;		
@@ -283,7 +288,8 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 						  " ORDER BY "+getDateField();
 		selectDataQuery = "SELECT "+getMessageField()+
 						  " FROM "+getTableName()+ getWhereClause(getKeyField()+"=?");
-						  
+        checkMessageIdQuery = "SELECT " + getIdField() + " WHERE "+getIdField() + "=?";
+        
 		if (databaseType==DATABASE_ORACLE) {
 			insertQuery = "INSERT INTO "+getTableName()+" ("+
 							getKeyField()+","+
@@ -666,6 +672,37 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		return result;
 	}
 
+    public boolean containsMessageId(String originalMessageId) throws ListenerException {
+		Connection conn;
+		try {
+			conn = getConnection();
+		} catch (JdbcException e) {
+			throw new ListenerException(e);
+		}
+		try {
+			PreparedStatement stmt = conn.prepareStatement(checkMessageIdQuery);			
+			stmt.clearParameters();
+			stmt.setString(1,originalMessageId);
+			ResultSet rs =  stmt.executeQuery();
+
+			if (!rs.next()) {
+				return false;
+			}
+			
+			return true;
+			
+		} catch (Exception e) {
+			throw new ListenerException("cannot deserialize message",e);
+		} finally {
+			try {
+				conn.close();
+			} catch (SQLException e) {
+				log.error("error closing JdbcConnection", e);
+			}
+		}
+    }
+    
+    
 	public Object browseMessage(String messageId) throws ListenerException {
 		Connection conn;
 		try {
