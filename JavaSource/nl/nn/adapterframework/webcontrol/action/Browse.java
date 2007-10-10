@@ -1,7 +1,7 @@
 /*
  * $Log: Browse.java,v $
- * Revision 1.5  2007-10-08 12:26:12  europe\L190409
- * corrected date formatting
+ * Revision 1.4.4.1  2007-10-10 11:42:58  europe\L190409
+ * made max messages to browse configurable
  *
  * Revision 1.4  2007/09/24 13:05:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * ability to download file, using correct filename
@@ -31,6 +31,7 @@ import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -48,7 +49,9 @@ import org.apache.struts.action.ActionMapping;
  * @since   4.4
  */
 public class Browse extends ActionBase {
-	public static final String version="$RCSfile: Browse.java,v $ $Revision: 1.5 $ $Date: 2007-10-08 12:26:12 $";
+	public static final String version="$RCSfile: Browse.java,v $ $Revision: 1.4.4.1 $ $Date: 2007-10-10 11:42:58 $";
+
+	public int maxMessages = AppConstants.getInstance().getInt("browse.messages.max",0); 
 
 	protected void performAction(Adapter adapter, ReceiverBase receiver, String action, IMessageBrowser mb, String messageId) {
 		// allow for extensions
@@ -119,16 +122,21 @@ public class Browse extends ActionBase {
 						messages.addAttribute("receiverName",XmlUtils.encodeChars(receiverName));
  					}
 					int messageCount;
-					for (messageCount=0; mbi.hasNext(); messageCount++) {
+					for (messageCount=0; mbi.hasNext();) {
 						Object iterItem = mbi.next();
 						XmlBuilder message=new XmlBuilder("message");
 						message.addAttribute("id",mb.getId(iterItem));
 						message.addAttribute("pos",Integer.toString(messageCount+1));
 						message.addAttribute("originalId",mb.getOriginalId(iterItem));
 						message.addAttribute("correlationId",mb.getCorrelationId(iterItem));
-						message.addAttribute("insertDate",DateUtils.format(mb.getInsertDate(iterItem), DateUtils.FORMAT_FULL_GENERIC));
+						message.addAttribute("insertDate",DateUtils.format(mb.getInsertDate(iterItem), DateUtils.FORMAT_DATETIME_MILLISECONDS));
 						message.addAttribute("comment",XmlUtils.encodeChars(mb.getCommentString(iterItem)));
 						messages.addSubElement(message);
+						messageCount++;
+						if (getMaxMessages()>0 && messageCount>=getMaxMessages()) {
+							log.warn("stopped iterating messages after ["+messageCount+"]: limit reached");
+							break;
+						}
 					}
 					messages.addAttribute("messageCount",Integer.toString(messageCount));
 					request.setAttribute("messages",messages.toXML());
@@ -147,6 +155,13 @@ public class Browse extends ActionBase {
 		log.debug("forward to success");
 		return (mapping.findForward("success"));
 
+	}
+
+	public void setMaxMessages(int i) {
+		maxMessages = i;
+	}
+	public int getMaxMessages() {
+		return maxMessages;
 	}
 
 }
