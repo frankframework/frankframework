@@ -1,6 +1,10 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.52  2007-10-08 13:33:31  europe\L190409
+ * Revision 1.53  2007-10-10 08:53:00  europe\L190409
+ * transactions from JtaUtil
+ * make runState externally accessible
+ *
+ * Revision 1.52  2007/10/08 13:33:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed ArrayList to List where possible
  *
  * Revision 1.51  2007/10/04 12:01:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -177,6 +181,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import javax.naming.NamingException;
 import javax.transaction.Status;
 import javax.transaction.UserTransaction;
 import javax.xml.transform.Transformer;
@@ -201,7 +206,6 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TransactionException;
 import nl.nn.adapterframework.monitoring.EventTypeEnum;
 import nl.nn.adapterframework.monitoring.IMonitorAdapter;
 import nl.nn.adapterframework.monitoring.MonitorAdapterFactory;
@@ -298,7 +302,7 @@ import org.apache.log4j.Logger;
  * @since 4.2
  */
 public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, IMessageHandler, IbisExceptionListener, HasSender, TracingEventNumbers {
-	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.52 $ $Date: 2007-10-08 13:33:31 $";
+	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.53 $ $Date: 2007-10-10 08:53:00 $";
 	protected Logger log = LogUtil.getLogger(this);
  
  	public static final String RCV_SHUTDOWN_MONITOR_EVENT_MSG ="RCVCLOSED Ibis Receiver shut down";
@@ -410,11 +414,11 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 				getMessageLog().open();
 			}
 			if (isTransacted()) {
-				getAdapter().getUserTransaction();
+				JtaUtil.getUserTransaction();
 			}
 		} catch (SenderException e) {
 			throw new ListenerException(e);
-		} catch (TransactionException e) {
+		} catch (NamingException e) {
 			throw new ListenerException(e);
 		}
 		getListener().open();
@@ -857,7 +861,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 			UserTransaction utx = null;
 	
 			try {
-				utx = getAdapter().getUserTransaction();
+				utx = JtaUtil.getUserTransaction();
 				utx.begin();
 			
 			} catch (Exception e) {
@@ -1059,8 +1063,8 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 		UserTransaction utx = null;
 		if (isTransacted()) {
 			try {
-				utx = adapter.getUserTransaction();
-				if (!adapter.inTransaction()) {
+				utx = JtaUtil.getUserTransaction();
+				if (!JtaUtil.inTransaction()) {
 					log.debug("Receiver ["+getName()+"] starts transaction as no one is yet present");
 					utx.begin();
 				}
@@ -1092,8 +1096,8 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 		
 		if (isTransacted()) {
 			try {
-				utx = adapter.getUserTransaction();
-				if (!adapter.inTransaction()) {
+				utx = JtaUtil.getUserTransaction();
+				if (!JtaUtil.inTransaction()) {
 					log.debug("Receiver ["+getName()+"] starts transaction as no one is yet present");
 					utx.begin();
 				}
@@ -1194,7 +1198,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 						} catch (Throwable t) {
 							if (isTransacted()) {
 								try {
-									adapter.getUserTransaction().setRollbackOnly();
+									JtaUtil.getUserTransaction().setRollbackOnly();
 								} catch (Throwable t2) {
 									log.error("caught exception trying to invalidate transaction", t);
 								}
@@ -1262,6 +1266,9 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 		}
 	}
 
+    public void setRunState(RunStateEnum state) {
+        runState.setRunState(state);
+    }
 
 	protected void fireMonitorEvent(EventTypeEnum eventType, SeverityEnum severity, String message) {
 		if (monitorAdapter!=null) {
@@ -1286,8 +1293,10 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 		return runState.getRunState();
 	}
 	
-	
-	
+    public boolean isInRunState(RunStateEnum someRunState) {
+        return runState.isInState(someRunState);
+    }
+    
 	protected synchronized StatisticsKeeper getProcessStatistics(int threadsProcessing) {
 		StatisticsKeeper result;
 		try {
@@ -1498,6 +1507,10 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 	public String getOnError() {
 		return onError;
 	}
+    
+    public boolean isOnErrorStop() {
+        return ONERROR_CLOSE.equalsIgnoreCase(getOnError());
+    }
 	protected IAdapter getAdapter() {
 		return adapter;
 	}
