@@ -1,6 +1,9 @@
 /*
  * $Log: BrowseExecute.java,v $
- * Revision 1.3  2005-09-29 14:57:11  europe\L190409
+ * Revision 1.4  2007-10-10 07:31:29  europe\L190409
+ * transactions via JtaUtil instead of Adapter
+ *
+ * Revision 1.3  2005/09/29 14:57:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * split transactional storage browser in browse-only and processing-options
  *
  * Revision 1.2  2005/07/28 07:44:52  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -17,6 +20,7 @@ import javax.transaction.UserTransaction;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.RunStateEnum;
 
 import org.apache.commons.lang.StringUtils;
@@ -30,13 +34,14 @@ import org.apache.struts.action.ActionError;
  * @since   4.3
  */
 public class BrowseExecute extends Browse {
-	public static final String version="$RCSfile: BrowseExecute.java,v $ $Revision: 1.3 $ $Date: 2005-09-29 14:57:11 $";
+	public static final String version="$RCSfile: BrowseExecute.java,v $ $Revision: 1.4 $ $Date: 2007-10-10 07:31:29 $";
 
 	protected void performAction(Adapter adapter, ReceiverBase receiver, String action, IMessageBrowser mb, String messageId) {
 		if ("deletemessage".equalsIgnoreCase(action)) {
 			if (StringUtils.isNotEmpty(messageId)) {
 				try {
-					UserTransaction utx = adapter.getUserTransaction();
+					// TODO: Redo tx management (where exactly do we get the txManager from?)
+					UserTransaction utx = JtaUtil.getUserTransaction();
 					utx.begin();
 					mb.deleteMessage(messageId);
 					utx.commit();
@@ -53,7 +58,8 @@ public class BrowseExecute extends Browse {
 		if ("resendmessage".equalsIgnoreCase(action)) {
 			if (StringUtils.isNotEmpty(messageId)) {
 				try {
-					UserTransaction utx = adapter.getUserTransaction();
+					// TODO: Redo tx management (where exactly do we get the txManager from?)
+					UserTransaction utx = JtaUtil.getUserTransaction();
 					utx.begin();
 					Object msg = mb.getMessage(messageId);
 					if (msg==null) {
