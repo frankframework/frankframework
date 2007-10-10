@@ -1,12 +1,17 @@
 /*
  * $Log: AdapterJob.java,v $
- * Revision 1.4  2007-02-21 16:02:46  europe\L190409
+ * Revision 1.5  2007-10-10 09:40:07  europe\L190409
+ * Direct copy from Ibis-EJB:
+ * version using IbisManager
+ *
+ * Revision 1.4  2007/02/21 16:02:46  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  */
 package nl.nn.adapterframework.scheduler;
 
-import nl.nn.adapterframework.configuration.Configuration;
+import nl.nn.adapterframework.configuration.IbisManager;
+
 import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
@@ -37,7 +42,7 @@ import org.quartz.JobExecutionException;
  * @see nl.nn.adapterframework.configuration.Configuration
   */
 public class AdapterJob extends BaseJob implements Job  {
-	public static final String version="$RCSfile: AdapterJob.java,v $ $Revision: 1.4 $ $Date: 2007-02-21 16:02:46 $";
+	public static final String version="$RCSfile: AdapterJob.java,v $ $Revision: 1.5 $ $Date: 2007-10-10 09:40:07 $";
 	
     public AdapterJob() {
             super();
@@ -48,11 +53,12 @@ public class AdapterJob extends BaseJob implements Job  {
          try {
              log.info("executing"+getLogPrefix(context));
              JobDataMap dataMap = context.getJobDetail().getJobDataMap();
-             Configuration config=(Configuration) dataMap.get("config");
+             // TODO: Put correct manager into the dataMap
+             IbisManager ibisManager = (IbisManager) dataMap.get("manager");
              String adapterName  = dataMap.getString("adapterName");
              String receiverName = dataMap.getString("receiverName");
              String function = dataMap.getString("function");
-             config.handleAdapter(function, adapterName, receiverName, " scheduled job"+getLogPrefix(context));
+             ibisManager.handleAdapter(function, adapterName, receiverName, " scheduled job"+getLogPrefix(context));
 
          } catch (Exception e) {
             log.error (e);
