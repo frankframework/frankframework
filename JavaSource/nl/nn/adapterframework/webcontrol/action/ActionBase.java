@@ -1,6 +1,9 @@
 /*
  * $Log: ActionBase.java,v $
- * Revision 1.4  2007-02-12 14:34:16  europe\L190409
+ * Revision 1.5  2007-10-10 07:29:54  europe\L190409
+ * execute control via IbisManager
+ *
+ * Revision 1.4  2007/02/12 14:34:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Logger from LogUtil
  *
  */
@@ -15,6 +18,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import nl.nn.adapterframework.configuration.Configuration;
+import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -39,7 +43,7 @@ import org.apache.struts.util.MessageResources;
  * @see     org.apache.struts.action.Action
  */
 public abstract class ActionBase extends Action {
-	public static final String version="$RCSfile: ActionBase.java,v $ $Revision: 1.4 $ $Date: 2007-02-12 14:34:16 $";
+	public static final String version="$RCSfile: ActionBase.java,v $ $Revision: 1.5 $ $Date: 2007-10-10 07:29:54 $";
 	protected Logger log = LogUtil.getLogger(this);
 
     protected Locale locale;
@@ -52,6 +56,11 @@ public abstract class ActionBase extends Action {
      * @see nl.nn.adapterframework.configuration.Configuration
      */
 	protected Configuration config;
+    /**
+     * the <code>IbisManager</code> object through which 
+     * adapters can be controlled.
+     */
+    protected IbisManager ibisManager;
 	protected ActionMessages messages;
 
     /**
@@ -130,8 +139,9 @@ public abstract class ActionBase extends Action {
         errors = new ActionErrors();
 
         session = request.getSession();
-        config = (Configuration) getServlet().getServletContext().getAttribute(AppConstants.getInstance().getProperty("KEY_CONFIGURATION"));
-
+        ibisManager = (IbisManager) getServlet().getServletContext().getAttribute(AppConstants.getInstance().getProperty("KEY_MANAGER"));
+        // TODO: explain why this shouldn't happen too early
+        config = ibisManager.getConfiguration(); // NB: Hopefully this doesn't happen too early on in the game
         log = LogUtil.getLogger(this); // logging category for this class
  
         if (null == config) {

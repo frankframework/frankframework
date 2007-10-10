@@ -1,3 +1,9 @@
+/*
+ * $Log: AdapterHandler.java,v $
+ * Revision 1.4  2007-10-10 07:30:35  europe\L190409
+ * execute control via IbisManager
+ *
+ */
 package nl.nn.adapterframework.webcontrol.action;
 
 import org.apache.struts.action.ActionForm;
@@ -16,7 +22,7 @@ import java.io.IOException;
  */
 
 public final class AdapterHandler extends ActionBase {
-		public static final String version="$Id: AdapterHandler.java,v 1.3 2004-03-26 10:42:57 NNVZNL01#L180564 Exp $";
+	public static final String version="$RCSfile: AdapterHandler.java,v $ $Revision: 1.4 $ $Date: 2007-10-10 07:30:35 $";
 
 
 
@@ -31,7 +37,7 @@ public ActionForward execute(
     // Initialize action
     initAction(request);
 
-    if (null == config) {
+    if (null == ibisManager) {
         return (mapping.findForward("noconfig"));
     }
     String action = request.getParameter("action");
@@ -47,7 +53,7 @@ public ActionForward execute(
     // command is sent from
 	String commandIssuedBy= getCommandIssuedBy(request);
 	        
-    config.handleAdapter(action,adapterName,receiverName, commandIssuedBy);
+    ibisManager.handleAdapter(action,adapterName,receiverName, commandIssuedBy);
     
     // Report any errors we have discovered back to the original form
     if (!errors.isEmpty()) {
