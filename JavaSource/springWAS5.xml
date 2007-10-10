@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  $Log: springWAS5.xml,v $
+  Revision 1.2  2007-10-10 07:54:12  europe\L190409
+  Direct copy from Ibis-EJB:
+  first version in HEAD
+
+-->
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="
+            http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+            http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.0.xsd
+            ">
+
+    <!-- Transaction stuff -->
+    <!-- In order to properly handle 'Propagation: Supports', set property
+         'transactionSynchronization' to 'Synchronize on actual transaction'. -->
+    
+    <!-- Defining a WAS5 compatible transaction manager -->
+    <bean id="txManager" class="org.springframework.transaction.jta.JtaTransactionManager">
+        <property name="transactionManager">
+            <bean class="org.springframework.transaction.jta.WebSphereTransactionManagerFactoryBean"/>
+        </property>
+        <property name="transactionSynchronization">
+            <util:constant static-field="org.springframework.transaction.support.AbstractPlatformTransactionManager.SYNCHRONIZATION_ON_ACTUAL_TRANSACTION"/>
+        </property>
+    </bean>
+    
+    <!-- Replace with whatever TaskExecutor implementation suits best
+         Replace with Common/J based TaskExecutor once deploying on
+         WebSphere 6.0 or higher. -->
+    <bean name="taskExecutor" class="org.springframework.core.task.SimpleAsyncTaskExecutor"
+        scope="singleton">
+    </bean>
+    
+    <bean id="messageListenerClassName" class="java.lang.String">
+        <constructor-arg value="org.springframework.jms.listener.DefaultMessageListenerContainer102"/>
+    </bean>
+</beans>

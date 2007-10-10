@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  $Log: springCommon.xml,v $
+  Revision 1.2  2007-10-10 07:54:12  europe\L190409
+  Direct copy from Ibis-EJB:
+  first version in HEAD
+
+-->
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="
+            http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+            http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.0.xsd
+            ">
+
+    <!-- IBIS Beans -->
+    <bean name="configuration" class="nl.nn.adapterframework.configuration.Configuration"
+        autowire="byName"
+        init-method="init">
+    </bean>
+    
+    <bean name="configurationDigester" class="nl.nn.adapterframework.configuration.ConfigurationDigester" 
+        autowire="byName">
+        <lookup-method name="createDigester" bean="digester"/>
+    </bean>
+    
+    <bean name="digester" class="org.apache.commons.digester.Digester"
+        autowire="byName" scope="prototype">
+        <property name="substitutor">
+            <bean class="org.apache.commons.digester.substitution.VariableSubstitutor">
+                <constructor-arg ref="variableExpander"/>
+            </bean>
+        </property>
+        <property name="useContextClassLoader" value="true"/>
+        <property name="entityResolver">
+            <bean class="nl.nn.adapterframework.util.ClassPathEntityResolver"/>
+        </property>
+    </bean>
+    
+    <bean name="variableExpander" class="nl.nn.adapterframework.configuration.IbisMultiSourceExpander">
+        <property name="environmentFallback" value="false"/>
+        <property name="sources">
+            <list>
+                <bean class="java.lang.System" factory-method="getProperties"/>
+                <ref bean="appConstants"/>
+            </list>
+        </property>
+    </bean>
+    
+    <bean name="appConstants" class="nl.nn.adapterframework.util.AppConstants"
+        autowire="byName"
+        factory-method="getInstance">
+    </bean>
+    
+    <bean name="pipeLineExecutor" class="nl.nn.adapterframework.txsupport.SpringTxPipeLineExecutor"
+        autowire="byName" scope="singleton">
+    </bean>
+    
+    <bean name="pipeExecutor" class="nl.nn.adapterframework.txsupport.SpringTxPipeExecutor"
+        autowire="byName" scope="singleton">
+    </bean>
+    
+    <bean name="jmsConfigurator" class="nl.nn.adapterframework.unmanaged.SpringJmsConfigurator"
+        autowire="byName" scope="prototype">
+    </bean>
+    
+    <bean name="listenerContainer" class="nl.nn.adapterframework.receivers.PullingListenerContainer"
+        autowire="byName" scope="prototype">
+    </bean>
+    
+    <!-- Scheduler (Quartz) -->
+    <bean id="scheduler" class="org.springframework.scheduling.quartz.SchedulerFactoryBean"
+        autowire="byName">
+        <!-- Auto-wiring wires up bean named taskExecutor as threadpool implementation -->
+        <property name="autoStartup" value="false"/>
+        <property name="transactionManager" ref="txManager"/>
+    </bean>
+    
+    <bean id="schedulerHelper" class="nl.nn.adapterframework.scheduler.SchedulerHelper"
+        autowire="byName">
+    </bean>
+    
+    <!-- Beans created from Configuration.xml, but prototyped here for
+         extra dependancies which cannot be created otherwise.
+         Bean names are prefixed with 'proto-' so that autowiring by
+         name doesn't create unnessecary instances. -->
+    <bean name="proto-adapter" class="nl.nn.adapterframework.core.Adapter"
+        autowire="byName" scope="prototype">
+    </bean>
+    
+    <bean name="proto-pipeLine" class="nl.nn.adapterframework.core.PipeLine"
+        autowire="byName" scope="prototype">
+    </bean>
+    
+    <bean name="proto-receiver" class="nl.nn.adapterframework.receivers.GenericReceiver"
+        autowire="byName" scope="prototype">
+    </bean>
+    
+    <bean name="proto-genericMessageSendingPipe" class="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+        autowire="byName" scope="prototype">
+    </bean>
+    
+    <bean name="proto-jmsListener" class="nl.nn.adapterframework.jms.JmsListener"
+        autowire="byName" scope="prototype">
+    </bean>
+    
+    <bean name="proto-RecordHandlingFlow" class="nl.nn.adapterframework.batch.RecordHandlingFlow"
+        autowire="byName" scope="prototype">
+    </bean>
+    
+</beans>

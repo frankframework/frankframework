@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  $Log: springContext.xml,v $
+  Revision 1.2  2007-10-10 07:54:12  europe\L190409
+  Direct copy from Ibis-EJB:
+  first version in HEAD
+
+-->
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+            http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.1.xsd
+            ">
+
+    <import resource="springWAS5.xml"/>
+    <!-- <import resource="springWAS6.xml"/> -->
+    <import resource="springUnmanagedDeployement.xml"/>
+    <!-- <import resource="springEjbDeployment.xml"/> -->
+    <import resource="springCommon.xml"/>
+    
+</beans>
