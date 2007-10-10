@@ -1,6 +1,9 @@
 /*
  * $Log: JmsRealm.java,v $
- * Revision 1.12  2007-07-10 07:19:29  europe\L190409
+ * Revision 1.13  2007-10-10 08:23:11  europe\L190409
+ * added a ToDo about cleanup
+ *
+ * Revision 1.12  2007/07/10 07:19:29  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * add some checks
  *
  * Revision 1.11  2007/05/08 16:07:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -54,7 +57,7 @@ import org.apache.log4j.Logger;
  */
 public class JmsRealm {
 	//TODO: change to J2eeRealm
-	public static final String version="$RCSfile: JmsRealm.java,v $ $Revision: 1.12 $ $Date: 2007-07-10 07:19:29 $";
+	public static final String version="$RCSfile: JmsRealm.java,v $ $Revision: 1.13 $ $Date: 2007-10-10 08:23:11 $";
 	private Logger log = LogUtil.getLogger(this);
 
 	private String realmName;
@@ -118,6 +121,8 @@ public class JmsRealm {
  	/**
  	 * copies matching properties from a JmsRealm to any other class
  	 * @see JmsRealm
+     * 
+     * TODO: Some amount of cleanup possible by putting JmsRealmFactory in Spring context
  	 */ 
 	public static void copyRealm(Object destination, String jmsRealmName) throws ConfigurationException {
 
