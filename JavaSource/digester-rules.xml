@@ -1,5 +1,5 @@
 <digester-rules>
-	<!-- $Id: digester-rules.xml,v 1.4 2007-07-24 16:14:56 europe\L190409 Exp $ -->
+	<!-- $Id: digester-rules.xml,v 1.5 2007-10-10 09:44:38 europe\L190409 Exp $ -->
     <pattern value="IOS-Adaptering">
         <set-properties-rule/>
     </pattern>
@@ -28,12 +28,12 @@
 
 
     <pattern value="*/adapter">
-        <object-create-rule classname="nl.nn.adapterframework.core.Adapter"/>
+        <factory-create-rule classname="nl.nn.adapterframework.configuration.AdapterFactory"/>
         <set-properties-rule/>
         <set-next-rule methodname="registerAdapter"/>
     </pattern>
     <pattern value="*/pipeline">
-        <object-create-rule classname="nl.nn.adapterframework.core.PipeLine"/>
+        <factory-create-rule classname="nl.nn.adapterframework.configuration.PipeLineFactory"/>
         <set-properties-rule/>
         <set-next-rule methodname="registerPipeLine"/>
     </pattern>
@@ -44,53 +44,60 @@
     </pattern>
 
     <pattern value="*/receiver">
-        <object-create-rule classname="nl.nn.adapterframework.receivers.GenericReceiver" attrname="className"/> 
+        <factory-create-rule classname="nl.nn.adapterframework.configuration.ReceiverFactory"/> 
         <set-properties-rule/>
         <set-next-rule methodname="registerReceiver"/>
     </pattern>
     <pattern value="*/sender">
-        <object-create-rule classname="nl.nn.adapterframework.core.ISender" attrname="className"/> 
+        <factory-create-rule classname="nl.nn.adapterframework.configuration.GenericFactory"/> 
+        <!--<object-create-rule classname="nl.nn.adapterframework.core.ISender" attrname="className"/> -->
         <set-properties-rule/>
         <set-next-rule methodname="setSender"/>
     </pattern>
     <pattern value="*/postboxSender">
-        <object-create-rule classname="nl.nn.adapterframework.core.IPostboxSender" attrname="className"/> 
+        <factory-create-rule classname="nl.nn.adapterframework.configuration.GenericFactory"/> 
+        <!--<object-create-rule classname="nl.nn.adapterframework.core.IPostboxSender" attrname="className"/> -->
         <set-properties-rule/>
         <set-next-rule methodname="setSender"/>
     </pattern>
     <pattern value="*/listener">
-        <object-create-rule classname="nl.nn.adapterframework.core.ICorrelatedPullingListener" attrname="className"/> 
+        <factory-create-rule classname="nl.nn.adapterframework.configuration.ListenerFactory"/> 
         <set-properties-rule/>
         <set-next-rule methodname="setListener"/>
     </pattern>
     <pattern value="*/postboxListener">
-        <object-create-rule classname="nl.nn.adapterframework.core.IPostboxListener" attrname="className"/> 
+        <factory-create-rule classname="nl.nn.adapterframework.configuration.GenericFactory"/> 
+        <!--<object-create-rule classname="nl.nn.adapterframework.core.IPostboxListener" attrname="className"/> -->
         <set-properties-rule/>
         <set-next-rule methodname="setListener"/>
     </pattern>
     <pattern value="*/errorSender">
-        <object-create-rule classname="nl.nn.adapterframework.core.ISender" attrname="className"/> 
+        <factory-create-rule classname="nl.nn.adapterframework.configuration.GenericFactory"/> 
+        <!--<object-create-rule classname="nl.nn.adapterframework.core.ISender" attrname="className"/> -->
         <set-properties-rule/>
         <set-next-rule methodname="setErrorSender"/>
     </pattern>
     <pattern value="*/messageLog">
-        <object-create-rule classname="nl.nn.adapterframework.core.ITransactionalStorage" attrname="className"/> 
+        <factory-create-rule classname="nl.nn.adapterframework.configuration.GenericFactory"/> 
+        <!--<object-create-rule classname="nl.nn.adapterframework.core.ITransactionalStorage" attrname="className"/> -->
         <set-properties-rule/>
         <set-next-rule methodname="setMessageLog"/>
     </pattern>
     <pattern value="*/inProcessStorage">
-        <object-create-rule classname="nl.nn.adapterframework.core.ITransactionalStorage" attrname="className"/> 
+        <factory-create-rule classname="nl.nn.adapterframework.configuration.GenericFactory"/> 
+        <!--<object-create-rule classname="nl.nn.adapterframework.core.ITransactionalStorage" attrname="className"/> -->
         <set-properties-rule/>
         <set-next-rule methodname="setInProcessStorage"/>
     </pattern>
     <pattern value="*/errorStorage">
-        <object-create-rule classname="nl.nn.adapterframework.core.ITransactionalStorage" attrname="className"/> 
+        <factory-create-rule classname="nl.nn.adapterframework.configuration.GenericFactory"/> 
+        <!--<object-create-rule classname="nl.nn.adapterframework.core.ITransactionalStorage" attrname="className"/> -->
         <set-properties-rule/>
         <set-next-rule methodname="setErrorStorage"/>
     </pattern>
 
     <pattern value="*/pipe">
-        <object-create-rule classname="nl.nn.adapterframework.pipes.GenericMessageSendingPipe" attrname="className"/> 
+        <factory-create-rule classname="nl.nn.adapterframework.configuration.PipeFactory" /> 
         <set-properties-rule/>
         <set-next-rule methodname="addPipe" paramtype="nl.nn.adapterframework.core.IPipe"/>
     </pattern>
@@ -103,7 +110,8 @@
     </pattern>
 
     <pattern value="*/child">
-        <object-create-rule classname="java.Object" attrname="className"/> 
+        <factory-create-rule classname="nl.nn.adapterframework.configuration.GenericFactory"/> 
+        <!--<object-create-rule classname="java.Object" attrname="className"/> -->
         <set-properties-rule/>
         <set-next-rule methodname="registerChild"/>
     </pattern>
@@ -128,22 +136,26 @@
 
 	<!-- batch related rules -->
     <pattern value="*/manager">
-        <object-create-rule classname="nl.nn.adapterframework.batch.IRecordHandlerManager" attrname="className"/> 
+        <factory-create-rule classname="nl.nn.adapterframework.configuration.GenericFactory"/> 
+        <!--<object-create-rule classname="nl.nn.adapterframework.batch.IRecordHandlerManager" attrname="className"/> -->
         <set-properties-rule/>
         <set-next-rule methodname="registerManager"/>
     </pattern>
     <pattern value="*/manager/flow">
-        <object-create-rule classname="nl.nn.adapterframework.batch.RecordHandlingFlow" attrname="className"/> 
+        <factory-create-rule classname="nl.nn.adapterframework.configuration.RecordHandlingFlowFactory"/> 
+        <!--<object-create-rule classname="nl.nn.adapterframework.batch.RecordHandlingFlow" attrname="className"/> -->
         <set-properties-rule/>
         <set-next-rule methodname="addHandler"/>
     </pattern>
     <pattern value="*/recordHandler">
-        <object-create-rule classname="nl.nn.adapterframework.batch.IRecordHandler" attrname="className"/> 
+        <factory-create-rule classname="nl.nn.adapterframework.configuration.GenericFactory"/> 
+        <!--<object-create-rule classname="nl.nn.adapterframework.batch.IRecordHandler" attrname="className"/> -->
         <set-properties-rule/>
         <set-next-rule methodname="registerRecordHandler"/>
     </pattern>
     <pattern value="*/resultHandler">
-        <object-create-rule classname="nl.nn.adapterframework.batch.IResultHandler" attrname="className"/> 
+        <factory-create-rule classname="nl.nn.adapterframework.configuration.GenericFactory"/> 
+        <!--<object-create-rule classname="nl.nn.adapterframework.batch.IResultHandler" attrname="className"/> -->
         <set-properties-rule/>
         <set-next-rule methodname="registerResultHandler"/>
     </pattern>
