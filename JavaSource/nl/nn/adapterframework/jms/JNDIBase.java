@@ -1,6 +1,9 @@
 /*
  * $Log: JNDIBase.java,v $
- * Revision 1.12  2007-07-10 07:20:02  europe\L190409
+ * Revision 1.13  2007-10-10 08:24:25  europe\L190409
+ * added jmsRealmName, to be able to report it
+ *
+ * Revision 1.12  2007/07/10 07:20:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * add some checks
  *
  * Revision 1.11  2007/05/08 16:27:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -71,7 +74,7 @@ import org.apache.log4j.Logger;
  * @author Johan Verrips IOS
  */
 public class JNDIBase {
-	public static final String version = "$RCSfile: JNDIBase.java,v $ $Revision: 1.12 $ $Date: 2007-07-10 07:20:02 $";
+	public static final String version = "$RCSfile: JNDIBase.java,v $ $Revision: 1.13 $ $Date: 2007-10-10 08:24:25 $";
 	protected Logger log = LogUtil.getLogger(this);
 
     // JNDI
@@ -81,6 +84,7 @@ public class JNDIBase {
 	private String principal = null;
     private String credentials = null;
 	private String jndiAuthAlias = null;
+    private String jmsRealmName = null;
     private String urlPkgPrefixes = null;
     private String securityProtocol = null;
 
@@ -225,11 +229,16 @@ public class JNDIBase {
 	public void setJmsRealm(String jmsRealmName) {
 		try {
 			JmsRealm.copyRealm(this,jmsRealmName);
+            this.jmsRealmName = jmsRealmName;
 		} catch (ConfigurationException e) {
 			log.warn("cannot copy data from realm",e);
 		}
 	}
-
+    
+    public String getJmsRealName() {
+        return this.jmsRealmName;
+    }
+    
 	public String getAuthentication() {
 		return authentication;
 	}
