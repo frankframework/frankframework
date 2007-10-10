@@ -1,7 +1,10 @@
 /*
  * $Log: Browse.java,v $
- * Revision 1.3.4.1  2007-10-04 13:33:12  europe\L190409
- * synchronize with HEAD (4.7.0)
+ * Revision 1.3.4.2  2007-10-10 14:30:38  europe\L190409
+ * synchronize with HEAD (4.8-alpha1)
+ *
+ * Revision 1.5  2007/10/08 12:26:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * corrected date formatting
  *
  * Revision 1.4  2007/09/24 13:05:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * ability to download file, using correct filename
@@ -48,7 +51,7 @@ import org.apache.struts.action.ActionMapping;
  * @since   4.4
  */
 public class Browse extends ActionBase {
-	public static final String version="$RCSfile: Browse.java,v $ $Revision: 1.3.4.1 $ $Date: 2007-10-04 13:33:12 $";
+	public static final String version="$RCSfile: Browse.java,v $ $Revision: 1.3.4.2 $ $Date: 2007-10-10 14:30:38 $";
 
 	protected void performAction(Adapter adapter, ReceiverBase receiver, String action, IMessageBrowser mb, String messageId) {
 		// allow for extensions
@@ -126,7 +129,7 @@ public class Browse extends ActionBase {
 						message.addAttribute("pos",Integer.toString(messageCount+1));
 						message.addAttribute("originalId",mb.getOriginalId(iterItem));
 						message.addAttribute("correlationId",mb.getCorrelationId(iterItem));
-						message.addAttribute("insertDate",DateUtils.format(mb.getInsertDate(iterItem), DateUtils.FORMAT_DATETIME_MILLISECONDS));
+						message.addAttribute("insertDate",DateUtils.format(mb.getInsertDate(iterItem), DateUtils.FORMAT_FULL_GENERIC));
 						message.addAttribute("comment",XmlUtils.encodeChars(mb.getCommentString(iterItem)));
 						messages.addSubElement(message);
 					}

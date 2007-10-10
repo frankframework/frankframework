@@ -1,6 +1,12 @@
 /*
  * $Log: SoapGenericProvider.java,v $
- * Revision 1.2  2007-02-12 14:06:28  europe\L190409
+ * Revision 1.2.4.1  2007-10-10 14:30:45  europe\L190409
+ * synchronize with HEAD (4.8-alpha1)
+ *
+ * Revision 1.3  2007/10/08 12:24:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * changed HashMap to Map where possible
+ *
+ * Revision 1.2  2007/02/12 14:06:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Logger from LogUtil
  *
  * Revision 1.1  2005/10/18 08:14:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -16,6 +22,7 @@
 package nl.nn.adapterframework.soap;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -42,7 +49,7 @@ import org.apache.soap.util.Provider;
  * @author Gerrit van Brakel
  */
 public class SoapGenericProvider implements Provider {
-	public static final String version = "$RCSfile: SoapGenericProvider.java,v $ $Revision: 1.2 $ $Date: 2007-02-12 14:06:28 $";
+	public static final String version = "$RCSfile: SoapGenericProvider.java,v $ $Revision: 1.2.4.1 $ $Date: 2007-10-10 14:30:45 $";
 	protected Logger log=LogUtil.getLogger(this);
 	
 	private final String TARGET_OBJECT_URI_KEY = "TargetObjectNamespaceURI";
@@ -82,7 +89,7 @@ public class SoapGenericProvider implements Provider {
 			String message=soapWrapper.getBody(reqContext.getBodyPart(0).getContent().toString());
 			HttpServletRequest httpRequest=(HttpServletRequest) reqContext.getProperty(Constants.BAG_HTTPSERVLETREQUEST);
 			ISecurityHandler securityHandler = new HttpSecurityHandler(httpRequest);
-			HashMap messageContext= new HashMap();
+			Map messageContext= new HashMap();
 			messageContext.put(PipeLineSession.securityHandlerKey, securityHandler);
 			String result=sd.dispatchRequestWithExceptions(targetObjectURI, null, message, messageContext);
 			resContext.setRootPart( soapWrapper.putInEnvelope(result,null), Constants.HEADERVAL_CONTENT_TYPE_UTF8);

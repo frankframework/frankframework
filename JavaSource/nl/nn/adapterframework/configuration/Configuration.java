@@ -1,11 +1,15 @@
 /*
  * $Log: Configuration.java,v $
- * Revision 1.25.2.2  2007-09-18 11:20:40  europe\M00035F
- * * Update a number of method-signatures to take a java.util.Map instead of HashMap
- * * Rewrite JmsListener to be instance of IPushingListener; use Spring JMS Container
+ * Revision 1.25.2.3  2007-10-10 14:30:41  europe\L190409
+ * synchronize with HEAD (4.8-alpha1)
  *
- * Revision 1.25.2.1  2007/09/13 13:27:16  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
- * First commit of work to use Spring for creating objects
+ * Revision 1.27  2007/10/09 15:07:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * copy changes from Ibis-EJB:
+ * added formerly static classe appConstants to config 
+ * delegate work to IbisManager
+ *
+ * Revision 1.26  2007/10/08 13:29:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * changed ArrayList to List where possible
  *
  * Revision 1.25  2007/07/24 08:04:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * reversed shutdown sequence
@@ -97,7 +101,7 @@ import org.apache.log4j.Logger;
  * @see    nl.nn.adapterframework.core.IAdapter
  */
 public class Configuration {
-	public static final String version="$RCSfile: Configuration.java,v $ $Revision: 1.25.2.2 $ $Date: 2007-09-18 11:20:40 $";
+	public static final String version="$RCSfile: Configuration.java,v $ $Revision: 1.25.2.3 $ $Date: 2007-10-10 14:30:41 $";
     protected Logger log=LogUtil.getLogger(this); 
      
     private Map adapterTable = new Hashtable();
@@ -163,8 +167,8 @@ public class Configuration {
     }
     public String getDigesterRulesFileName() {
         return digesterRulesURL.getFile();
+
     }
-    
     /**
      * get a registered adapter by its name
      * @param name  the adapter to retrieve

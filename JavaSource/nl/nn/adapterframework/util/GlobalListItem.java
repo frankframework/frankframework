@@ -1,6 +1,12 @@
 /*
  * $Log: GlobalListItem.java,v $
- * Revision 1.4  2007-02-12 14:12:03  europe\L190409
+ * Revision 1.4.4.1  2007-10-10 14:30:36  europe\L190409
+ * synchronize with HEAD (4.8-alpha1)
+ *
+ * Revision 1.5  2007/10/08 13:35:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * changed ArrayList to List where possible
+ *
+ * Revision 1.4  2007/02/12 14:12:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Logger from LogUtil
  *
  * Revision 1.3  2004/06/23 11:31:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -18,6 +24,7 @@ package nl.nn.adapterframework.util;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -37,7 +44,7 @@ import org.apache.log4j.Logger;
  * @author Gerrit van Brakel
  */
 public class GlobalListItem implements INamedObject {
-	public static final String version = "$RCSfile: GlobalListItem.java,v $ $Revision: 1.4 $ $Date: 2007-02-12 14:12:03 $";
+	public static final String version = "$RCSfile: GlobalListItem.java,v $ $Revision: 1.4.4.1 $ $Date: 2007-10-10 14:30:36 $";
 	protected Logger log = LogUtil.getLogger(this);
 
     private static Hashtable items = new Hashtable();
@@ -81,11 +88,11 @@ public class GlobalListItem implements INamedObject {
     }
     /**
      * Get the names as a list
-     * @return ArrayList with the system names
+     * @return List with the system names
      */
-    public static ArrayList getRegisteredNamesAsList() {
+    public static List getRegisteredNamesAsList() {
         Iterator it = getRegisteredNames();
-        ArrayList result = new ArrayList();
+        List result = new ArrayList();
         while (it.hasNext()) {
             result.add((String) it.next());
         }

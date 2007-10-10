@@ -1,7 +1,11 @@
 /*
  * $Log: AdapterJob.java,v $
- * Revision 1.4.4.1  2007-09-13 13:27:19  europe\M00035F
- * First commit of work to use Spring for creating objects
+ * Revision 1.4.4.2  2007-10-10 14:30:44  europe\L190409
+ * synchronize with HEAD (4.8-alpha1)
+ *
+ * Revision 1.5  2007/10/10 09:40:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * Direct copy from Ibis-EJB:
+ * version using IbisManager
  *
  * Revision 1.4  2007/02/21 16:02:46  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
@@ -41,7 +45,7 @@ import org.quartz.JobExecutionException;
  * @see nl.nn.adapterframework.configuration.Configuration
   */
 public class AdapterJob extends BaseJob implements Job  {
-	public static final String version="$RCSfile: AdapterJob.java,v $ $Revision: 1.4.4.1 $ $Date: 2007-09-13 13:27:19 $";
+	public static final String version="$RCSfile: AdapterJob.java,v $ $Revision: 1.4.4.2 $ $Date: 2007-10-10 14:30:44 $";
 	
     public AdapterJob() {
             super();

@@ -1,6 +1,12 @@
 /*
  * $Log: ServiceDispatcher.java,v $
- * Revision 1.9  2007-02-12 14:03:44  europe\L190409
+ * Revision 1.9.4.1  2007-10-10 14:30:44  europe\L190409
+ * synchronize with HEAD (4.8-alpha1)
+ *
+ * Revision 1.10  2007/10/08 12:24:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * changed HashMap to Map where possible
+ *
+ * Revision 1.9  2007/02/12 14:03:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Logger from LogUtil
  *
  * Revision 1.8  2005/09/20 13:28:52  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -15,7 +21,7 @@
  */
 package nl.nn.adapterframework.receivers;
 
-import java.util.HashMap;
+import java.util.Map;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.SortedSet;
@@ -40,7 +46,7 @@ import org.apache.log4j.Logger;
  * @see ServiceDispatcherBean
  */
 public class ServiceDispatcher  {
-	public static final String version = "$RCSfile: ServiceDispatcher.java,v $ $Revision: 1.9 $ $Date: 2007-02-12 14:03:44 $";
+	public static final String version = "$RCSfile: ServiceDispatcher.java,v $ $Revision: 1.9.4.1 $ $Date: 2007-10-10 14:30:44 $";
 	protected Logger log = LogUtil.getLogger(this);
 	
 	private Hashtable registeredListeners=new Hashtable();
@@ -85,7 +91,7 @@ public class ServiceDispatcher  {
      * Dispatch a request.
      * @since 4.3
      */
-	public String dispatchRequestWithExceptions(String serviceName, String correlationId, String request, HashMap requestContext) throws ListenerException {
+	public String dispatchRequestWithExceptions(String serviceName, String correlationId, String request, Map requestContext) throws ListenerException {
 		if (log.isDebugEnabled()) {
 			log.debug("dispatchRequest for service ["+serviceName+"] correlationId ["+correlationId+"]");
 		}

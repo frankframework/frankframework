@@ -1,6 +1,12 @@
 /*
  * $Log: JdbcQuerySenderBase.java,v $
- * Revision 1.30  2007-07-19 15:09:54  europe\L190409
+ * Revision 1.30.2.1  2007-10-10 14:30:47  europe\L190409
+ * synchronize with HEAD (4.8-alpha1)
+ *
+ * Revision 1.31  2007/10/08 13:30:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * changed ArrayList to List where possible
+ *
+ * Revision 1.30  2007/07/19 15:09:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * handle charsets of BLOB and CLOB streams correctly
  *
  * Revision 1.29  2007/07/17 09:20:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -110,6 +116,7 @@ import java.sql.Types;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.StringTokenizer;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -187,7 +194,7 @@ import org.apache.commons.lang.StringUtils;
  * @since 	4.1
  */
 public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
-	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.30 $ $Date: 2007-07-19 15:09:54 $";
+	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.30.2.1 $ $Date: 2007-10-10 14:30:47 $";
 
 	private String queryType = "other";
 	private int maxRows=-1; // return all rows
@@ -217,7 +224,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		super.configure();
 		
 		if (StringUtils.isNotEmpty(getColumnsReturned())) {
-			ArrayList tempList = new ArrayList();
+			List tempList = new ArrayList();
 			StringTokenizer st = new StringTokenizer(getColumnsReturned(),",");
 			while (st.hasMoreTokens()) {
 				String column = st.nextToken();
@@ -228,7 +235,6 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 				columnsReturnedList[i]=(String)tempList.get(i);
 			}
 		}
-		
 	}
 
 	

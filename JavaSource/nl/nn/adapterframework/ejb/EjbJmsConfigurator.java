@@ -1,12 +1,13 @@
 /*
- * EjbJmsConfigurator.java
- * 
- * Created on 4-okt-2007, 10:38:10
- * 
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * $Log: EjbJmsConfigurator.java,v $
+ * Revision 1.1.2.3  2007-10-10 14:30:43  europe\L190409
+ * synchronize with HEAD (4.8-alpha1)
+ *
+ * Revision 1.2  2007/10/10 09:48:23  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * Direct copy from Ibis-EJB:
+ * first version in HEAD
+ *
  */
-
 package nl.nn.adapterframework.ejb;
 
 import com.ibm.websphere.management.AdminService;
@@ -27,7 +28,9 @@ import nl.nn.adapterframework.receivers.GenericReceiver;
 
 /**
  *
- * @author m00035f
+ * @author  Tim van der Leeuw
+ * @since   4.8
+ * @version Id
  */
 public class EjbJmsConfigurator implements IJmsConfigurator {
     private final static String LISTENER_PORTNAME_SUFFIX = "ListenerPort";

@@ -1,8 +1,11 @@
 /*
  * $Log: ITransactionalStorage.java,v $
- * Revision 1.5.4.1  2007-09-21 13:23:34  europe\M00035F
- * * Add method to ITransactionalStorage to check if original message ID can be found in it
- * * Check for presence of original message id in ErrorStorage before processing, so it can be removed from queue if it has already once been recorded as unprocessable (but the TX in which it ran could no longer be committed).
+ * Revision 1.5.4.2  2007-10-10 14:30:40  europe\L190409
+ * synchronize with HEAD (4.8-alpha1)
+ *
+ * Revision 1.6  2007/10/09 15:33:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * copy changes from Ibis-EJB:
+ * added containsMessageId()
  *
  * Revision 1.5  2007/06/12 11:19:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added set/getType
@@ -36,7 +39,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
  * @version Id
 */
 public interface ITransactionalStorage extends IMessageBrowser, INamedObject {
-	public static final String version = "$RCSfile: ITransactionalStorage.java,v $ $Revision: 1.5.4.1 $ $Date: 2007-09-21 13:23:34 $";
+	public static final String version = "$RCSfile: ITransactionalStorage.java,v $ $Revision: 1.5.4.2 $ $Date: 2007-10-10 14:30:40 $";
 
 	/**
 	 * Prepares the object for operation. After this

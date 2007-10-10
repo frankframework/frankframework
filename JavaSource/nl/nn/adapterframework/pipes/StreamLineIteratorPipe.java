@@ -1,7 +1,10 @@
 /*
  * $Log: StreamLineIteratorPipe.java,v $
- * Revision 1.2.2.1  2007-10-04 13:28:51  europe\L190409
- * synchronize with HEAD (4.7.0)
+ * Revision 1.2.2.2  2007-10-10 14:30:39  europe\L190409
+ * synchronize with HEAD (4.8-alpha1)
+ *
+ * Revision 1.4  2007/10/08 12:23:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * changed HashMap to Map where possible
  *
  * Revision 1.3  2007/09/13 09:10:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * extracted getReader()
@@ -18,7 +21,7 @@ package nl.nn.adapterframework.pipes;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.util.HashMap;
+import java.util.Map;
 
 import nl.nn.adapterframework.core.IDataIterator;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -84,9 +87,9 @@ import nl.nn.adapterframework.util.ReaderLineIterator;
  * @version Id
  */
 public class StreamLineIteratorPipe extends IteratingPipe {
-	public static final String version="$RCSfile: StreamLineIteratorPipe.java,v $ $Revision: 1.2.2.1 $ $Date: 2007-10-04 13:28:51 $";
+	public static final String version="$RCSfile: StreamLineIteratorPipe.java,v $ $Revision: 1.2.2.2 $ $Date: 2007-10-10 14:30:39 $";
 
-	protected Reader getReader(Object input, PipeLineSession session, String correlationID, HashMap threadContext) throws SenderException {
+	protected Reader getReader(Object input, PipeLineSession session, String correlationID, Map threadContext) throws SenderException {
 		if (input==null) {
 			throw new SenderException("input is null. Must supply stream as input");
 		}
@@ -97,7 +100,7 @@ public class StreamLineIteratorPipe extends IteratingPipe {
 		return reader;
 	}
 
-	protected IDataIterator getIterator(Object input, PipeLineSession session, String correlationID, HashMap threadContext) throws SenderException {
+	protected IDataIterator getIterator(Object input, PipeLineSession session, String correlationID, Map threadContext) throws SenderException {
 		return new ReaderLineIterator(getReader(input,session, correlationID,threadContext));
 	}
 

@@ -1,8 +1,13 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.41.2.1  2007-09-28 10:50:29  europe\M00035F
- * Updates for more robust and correct transaction handling
- * Update Xerces dependency to modern Xerces
+ * Revision 1.41.2.2  2007-10-10 14:30:36  europe\L190409
+ * synchronize with HEAD (4.8-alpha1)
+ *
+ * Revision 1.43  2007/10/10 07:23:53  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * multiple style versions of Xerces
+ *
+ * Revision 1.42  2007/10/08 12:25:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * corrected javadoc
  *
  * Revision 1.41  2007/07/17 11:02:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * encodeChars for byteArray
@@ -183,7 +188,7 @@ import org.xml.sax.helpers.DefaultHandler;
  * @version Id
  */
 public class XmlUtils {
-	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.41.2.1 $ $Date: 2007-09-28 10:50:29 $";
+	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.41.2.2 $ $Date: 2007-10-10 14:30:36 $";
 	static Logger log = LogUtil.getLogger(XmlUtils.class);
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
@@ -898,7 +903,7 @@ public class XmlUtils {
 
 	
 	/**
-	 * sets all the parameters of the transformer using a HashMap with parameter values. 
+	 * sets all the parameters of the transformer using a Map with parameter values. 
 	 */
 	public static void setTransformerParameters(Transformer t, Map parameters) {
 		t.clearParameters();
@@ -1088,9 +1093,14 @@ public class XmlUtils {
 		sb.append("Apache-XML tool version info:"+SystemUtils.LINE_SEPARATOR);
 
 		try {
-			sb.append("Xerces-Version="+org.apache.xerces.impl.Version.fVersion+SystemUtils.LINE_SEPARATOR);
+			sb.append("Xerces-Version(old style)="+org.apache.xerces.framework.Version.fVersion+SystemUtils.LINE_SEPARATOR);
 		}  catch (Throwable t) {
-			sb.append("Xerces-Version not found ("+t.getClass().getName()+": "+t.getMessage()+")"+SystemUtils.LINE_SEPARATOR);
+			sb.append("Xerces-Version(old style) not found ("+t.getClass().getName()+": "+t.getMessage()+")"+SystemUtils.LINE_SEPARATOR);
+		}
+		try {
+			sb.append("Xerces-Version(new style)="+org.apache.xerces.impl.Version.fVersion+SystemUtils.LINE_SEPARATOR);
+		}  catch (Throwable t) {
+			sb.append("Xerces-Version(new style) not found ("+t.getClass().getName()+": "+t.getMessage()+")"+SystemUtils.LINE_SEPARATOR);
 		}
 			
 		try {

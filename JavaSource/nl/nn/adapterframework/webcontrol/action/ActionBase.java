@@ -1,10 +1,10 @@
 /*
  * $Log: ActionBase.java,v $
- * Revision 1.4.4.2  2007-10-05 09:09:57  europe\M00035F
- * Update web front-end to retrieve Configuration-object via the IbisManager, not via the servlet-context
+ * Revision 1.4.4.3  2007-10-10 14:30:38  europe\L190409
+ * synchronize with HEAD (4.8-alpha1)
  *
- * Revision 1.4.4.1  2007/09/13 13:27:20  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
- * First commit of work to use Spring for creating objects
+ * Revision 1.5  2007/10/10 07:29:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * execute control via IbisManager
  *
  * Revision 1.4  2007/02/12 14:34:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Logger from LogUtil
@@ -46,7 +46,7 @@ import org.apache.struts.util.MessageResources;
  * @see     org.apache.struts.action.Action
  */
 public abstract class ActionBase extends Action {
-	public static final String version="$RCSfile: ActionBase.java,v $ $Revision: 1.4.4.2 $ $Date: 2007-10-05 09:09:57 $";
+	public static final String version="$RCSfile: ActionBase.java,v $ $Revision: 1.4.4.3 $ $Date: 2007-10-10 14:30:38 $";
 	protected Logger log = LogUtil.getLogger(this);
 
     protected Locale locale;
@@ -143,6 +143,7 @@ public abstract class ActionBase extends Action {
 
         session = request.getSession();
         ibisManager = (IbisManager) getServlet().getServletContext().getAttribute(AppConstants.getInstance().getProperty("KEY_MANAGER"));
+        // TODO: explain why this shouldn't happen too early
         config = ibisManager.getConfiguration(); // NB: Hopefully this doesn't happen too early on in the game
         log = LogUtil.getLogger(this); // logging category for this class
  

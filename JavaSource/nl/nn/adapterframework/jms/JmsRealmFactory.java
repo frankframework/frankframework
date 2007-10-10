@@ -1,8 +1,10 @@
 /*
  * $Log: JmsRealmFactory.java,v $
- * Revision 1.5.4.1  2007-09-18 11:20:38  europe\M00035F
- * * Update a number of method-signatures to take a java.util.Map instead of HashMap
- * * Rewrite JmsListener to be instance of IPushingListener; use Spring JMS Container
+ * Revision 1.5.4.2  2007-10-10 14:30:42  europe\L190409
+ * synchronize with HEAD (4.8-alpha1)
+ *
+ * Revision 1.6  2007/10/08 13:30:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * changed ArrayList to List where possible
  *
  * Revision 1.5  2007/02/12 13:58:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Logger from LogUtil
@@ -19,6 +21,7 @@ package nl.nn.adapterframework.jms;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -34,10 +37,9 @@ import org.apache.log4j.Logger;
  * @version Id
  * @author Johan Verrips IOS
  * @see JmsRealm
- * TODO: Some amount of cleanup possible by putting JmsRealmFactory in Spring context
  */
 public class JmsRealmFactory {
-	public static final String version="$RCSfile: JmsRealmFactory.java,v $ $Revision: 1.5.4.1 $ $Date: 2007-09-18 11:20:38 $";
+	public static final String version="$RCSfile: JmsRealmFactory.java,v $ $Revision: 1.5.4.2 $ $Date: 2007-10-10 14:30:42 $";
 	private Logger log;
 
 
@@ -90,11 +92,11 @@ public class JmsRealmFactory {
     }
     /**
      * Get the names as a list
-     * @return ArrayList with the realm names
+     * @return List with the realm names
      */
-    public ArrayList getRegisteredRealmNamesAsList() {
+    public List getRegisteredRealmNamesAsList() {
         Iterator it = getRegisteredRealmNames();
-        ArrayList result = new ArrayList();
+        List result = new ArrayList();
         while (it.hasNext()) {
             result.add((String) it.next());
         }

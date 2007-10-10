@@ -1,8 +1,10 @@
 /*
  * $Log: JmsRealm.java,v $
- * Revision 1.12.2.1  2007-09-18 11:20:38  europe\M00035F
- * * Update a number of method-signatures to take a java.util.Map instead of HashMap
- * * Rewrite JmsListener to be instance of IPushingListener; use Spring JMS Container
+ * Revision 1.12.2.2  2007-10-10 14:30:42  europe\L190409
+ * synchronize with HEAD (4.8-alpha1)
+ *
+ * Revision 1.13  2007/10/10 08:23:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * added a ToDo about cleanup
  *
  * Revision 1.12  2007/07/10 07:19:29  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * add some checks
@@ -58,7 +60,7 @@ import org.apache.log4j.Logger;
  */
 public class JmsRealm {
 	//TODO: change to J2eeRealm
-	public static final String version="$RCSfile: JmsRealm.java,v $ $Revision: 1.12.2.1 $ $Date: 2007-09-18 11:20:38 $";
+	public static final String version="$RCSfile: JmsRealm.java,v $ $Revision: 1.12.2.2 $ $Date: 2007-10-10 14:30:42 $";
 	private Logger log = LogUtil.getLogger(this);
 
 	private String realmName;

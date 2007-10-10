@@ -1,8 +1,12 @@
 /*
  * $Log: IAdapter.java,v $
- * Revision 1.9.4.1  2007-09-21 09:20:33  europe\M00035F
- * * Remove UserTransaction from Adapter
- * * Remove InProcessStorage; refactor a lot of code in Receiver
+ * Revision 1.9.4.2  2007-10-10 14:30:40  europe\L190409
+ * synchronize with HEAD (4.8-alpha1)
+ *
+ * Revision 1.10  2007/10/09 15:33:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * copy changes from Ibis-EJB:
+ * removed usertransaction-methods
+ * added getErrorState()
  *
  * Revision 1.9  2005/12/28 08:34:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * introduced StatisticsKeeper-iteration
@@ -34,6 +38,7 @@ import nl.nn.adapterframework.util.StatisticsKeeperIterationHandler;
 
 import java.util.Iterator;
 
+import javax.transaction.UserTransaction;
 /**
  * The Adapter is the central manager in the framework. It has knowledge of both
  * <code>IReceiver</code>s as well as the <code>PipeLine</code> and statistics.
@@ -43,7 +48,7 @@ import java.util.Iterator;
  * @version Id
  **/
 public interface IAdapter extends IManagable {
-	public static final String version = "$RCSfile: IAdapter.java,v $ $Revision: 1.9.4.1 $ $Date: 2007-09-21 09:20:33 $";
+	public static final String version = "$RCSfile: IAdapter.java,v $ $Revision: 1.9.4.2 $ $Date: 2007-10-10 14:30:40 $";
 
     /**
   	 * Instruct the adapter to configure itself. The adapter will call the

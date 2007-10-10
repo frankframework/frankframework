@@ -1,22 +1,14 @@
 /*
  * $Log: Adapter.java,v $
- * Revision 1.31.2.5  2007-09-26 14:59:02  europe\M00035F
- * Updates for more robust and correct transaction handling
+ * Revision 1.31.2.6  2007-10-10 14:30:40  europe\L190409
+ * synchronize with HEAD (4.8-alpha1)
  *
- * Revision 1.31.2.4  2007/09/26 06:05:18  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
- * Add exception-propagation to new JMS Listener; increase robustness of JMS configuration
+ * Revision 1.33  2007/10/10 09:35:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * Direct copy from Ibis-EJB:
+ * spring enabled version
  *
- * Revision 1.31.2.3  2007/09/21 09:20:34  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
- * * Remove UserTransaction from Adapter
- * * Remove InProcessStorage; refactor a lot of code in Receiver
- *
- * Revision 1.31.2.2  2007/09/19 14:19:43  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
- * * More objects from Spring Factory
- * * Fixes for Spring JMS Container
- * * Quartz Scheduler from Spring Factory
- *
- * Revision 1.31.2.1  2007/09/13 13:27:17  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
- * First commit of work to use Spring for creating objects
+ * Revision 1.32  2007/10/08 12:15:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * corrected date formatting
  *
  * Revision 1.31  2007/07/24 08:05:22  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added targetDesignDocument attribute
@@ -113,7 +105,6 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.Vector;
 
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.errormessageformatters.ErrorMessageFormatter;
 import nl.nn.adapterframework.receivers.ReceiverBase;
@@ -130,7 +121,6 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.NDC;
 import org.springframework.beans.factory.NamedBean;
 import org.springframework.core.task.TaskExecutor;
-
 /**
  * The Adapter is the central manager in the IBIS Adapterframework, that has knowledge
  * and uses {@link IReceiver IReceivers} and a {@link PipeLine}.
@@ -177,7 +167,7 @@ import org.springframework.core.task.TaskExecutor;
  */
 
 public class Adapter implements IAdapter, NamedBean {
-	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.31.2.5 $ $Date: 2007-09-26 14:59:02 $";
+	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.31.2.6 $ $Date: 2007-10-10 14:30:40 $";
 	private Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -346,7 +336,7 @@ public class Adapter implements IAdapter, NamedBean {
 	public String getLastMessageDate() {
 		String result = "";
 		if (lastMessageDate != 0)
-			result = DateUtils.format(new Date(lastMessageDate), DateUtils.FORMAT_GENERICDATETIME);
+			result = DateUtils.format(new Date(lastMessageDate), DateUtils.FORMAT_FULL_GENERIC);
 		else
 			result = "-";
 		return result;
@@ -525,7 +515,7 @@ public class Adapter implements IAdapter, NamedBean {
 	 * @return String  Date
 	 */
 	public String getStatsUpSince() {
-		return DateUtils.format(new Date(statsUpSince), DateUtils.FORMAT_GENERICDATETIME);
+		return DateUtils.format(new Date(statsUpSince), DateUtils.FORMAT_FULL_GENERIC);
 	}
 	/**
 	 * Retrieve the waiting statistics as a <code>Hashtable</code>
@@ -636,8 +626,8 @@ public class Adapter implements IAdapter, NamedBean {
 				log.debug("Adapter: [" + getName()
 						+ "] STAT: Finished processing message with messageId [" + messageId
 						+ "] exit-state [" + result.getState()
-						+ "] started " + DateUtils.format(new Date(startTime), DateUtils.FORMAT_GENERICDATETIME)
-						+ " finished " + DateUtils.format(new Date(endTime), DateUtils.FORMAT_GENERICDATETIME)
+						+ "] started " + DateUtils.format(new Date(startTime), DateUtils.FORMAT_FULL_GENERIC)
+						+ " finished " + DateUtils.format(new Date(endTime), DateUtils.FORMAT_FULL_GENERIC)
 						+ " total duration: " + duration + " msecs");
 			} else {
 				log.info("Adapter [" + getName() + "] completed message with messageId [" + messageId + "] with exit-state [" + result.getState() + "]");
@@ -953,20 +943,12 @@ public class Adapter implements IAdapter, NamedBean {
 		return targetDesignDocument;
 	}
 
-
-    /**
-     * @return
-     */
-    public TaskExecutor getTaskExecutor() {
-        return taskExecutor;
-    }
-
-    /**
-     * @param executor
-     */
     public void setTaskExecutor(TaskExecutor executor) {
         taskExecutor = executor;
     }
+	public TaskExecutor getTaskExecutor() {
+		return taskExecutor;
+	}
 
     /* (non-Javadoc)
      * @see org.springframework.beans.factory.NamedBean#getBeanName()

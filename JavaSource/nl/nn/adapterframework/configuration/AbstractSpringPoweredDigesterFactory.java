@@ -1,8 +1,13 @@
 /*
- * Created on 11-sep-07
- *
  * $Log: AbstractSpringPoweredDigesterFactory.java,v $
- * Revision 1.1.2.5  2007-09-21 14:22:15  europe\M00035F
+ * Revision 1.1.2.6  2007-10-10 14:30:41  europe\L190409
+ * synchronize with HEAD (4.8-alpha1)
+ *
+ * Revision 1.2  2007/10/09 16:02:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * Direct copy from Ibis-EJB:
+ * first version in HEAD
+ *
+ * Revision 1.1.2.5  2007/09/21 14:22:15  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
  * Apply a number of fixes so that the framework starts again
  *
  * Revision 1.1.2.4  2007/09/21 09:20:33  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
@@ -40,8 +45,9 @@ import org.xml.sax.Attributes;
  * instances with each call. The Apache Digester will normally set extra 
  * properties for each instance. (See {@link #isPrototypesOnly()}.)
  * 
- * @author m00035f
- * $Id: AbstractSpringPoweredDigesterFactory.java,v 1.1.2.5 2007-09-21 14:22:15 europe\M00035F Exp $
+ * @author  Tim van der Leeuw
+ * @since   4.8
+ * @version Id
  * 
  */
 public abstract class AbstractSpringPoweredDigesterFactory

@@ -1,7 +1,10 @@
 /*
  * $Log: LdapSender.java,v $
- * Revision 1.24.2.1  2007-10-04 13:25:39  europe\L190409
- * synchronize with HEAD (4.7.0)
+ * Revision 1.24.2.2  2007-10-10 14:30:37  europe\L190409
+ * synchronize with HEAD (4.8-alpha1)
+ *
+ * Revision 1.28  2007/10/08 13:31:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * changed ArrayList to List where possible
  *
  * Revision 1.27  2007/09/10 11:18:41  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
@@ -54,6 +57,7 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Vector;
 
 import javax.naming.NameClassPair;
@@ -273,7 +277,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class LdapSender extends JNDIBase implements ISenderWithParameters {
-	public static final String version = "$RCSfile: LdapSender.java,v $  $Revision: 1.24.2.1 $ $Date: 2007-10-04 13:25:39 $";
+	public static final String version = "$RCSfile: LdapSender.java,v $  $Revision: 1.24.2.2 $ $Date: 2007-10-10 14:30:37 $";
 
 	private String FILTER = "filterExpression";
 	private String ENTRYNAME = "entryName";
@@ -461,7 +465,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 
 		if(toSeparate == null || toSeparate == "") return null;		
 		
-		ArrayList list = new ArrayList();
+		List list = new ArrayList();
 		String[] strArr = new String[1]; //just do determine the type of the array in list.toArray(Object[] o)
 		
 		StringBuffer sb = new StringBuffer(toSeparate);

@@ -1,6 +1,12 @@
 /*
  * $Log: JmxMbeanHelper.java,v $
- * Revision 1.8  2007-02-12 13:38:58  europe\L190409
+ * Revision 1.8.4.1  2007-10-10 14:30:41  europe\L190409
+ * synchronize with HEAD (4.8-alpha1)
+ *
+ * Revision 1.9  2007/10/08 13:29:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * changed ArrayList to List where possible
+ *
+ * Revision 1.8  2007/02/12 13:38:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Logger from LogUtil
  *
  * Revision 1.7  2006/09/14 11:44:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -15,7 +21,7 @@
  */
 package nl.nn.adapterframework.configuration;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
@@ -40,7 +46,7 @@ import org.apache.log4j.Logger;
  * @since 4.1.1
  */
 public class JmxMbeanHelper {
-	public static final String version = "$RCSfile: JmxMbeanHelper.java,v $ $Revision: 1.8 $ $Date: 2007-02-12 13:38:58 $";
+	public static final String version = "$RCSfile: JmxMbeanHelper.java,v $ $Revision: 1.8.4.1 $ $Date: 2007-10-10 14:30:41 $";
  	private static Logger log = LogUtil.getLogger(JmxMbeanHelper.class);
  	
 
@@ -77,7 +83,7 @@ public class JmxMbeanHelper {
 	 */
 	public static void registerMBean(ObjectName name, RequiredModelMBean mbean) throws ConfigurationException {
 
-		ArrayList servers = MBeanServerFactory.findMBeanServer(null);
+		List servers = MBeanServerFactory.findMBeanServer(null);
 		if (servers == null) {
 			throw new ConfigurationException("no Mbean servers found");
 		}

@@ -1,7 +1,10 @@
 /*
  * $Log: IRecordHandler.java,v $
- * Revision 1.5.4.1  2007-10-04 13:07:13  europe\L190409
- * synchronize with HEAD (4.7.0)
+ * Revision 1.5.4.2  2007-10-10 14:30:46  europe\L190409
+ * synchronize with HEAD (4.8-alpha1)
+ *
+ * Revision 1.9  2007/10/08 13:28:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * changed ArrayList to List where possible
  *
  * Revision 1.8  2007/09/24 14:55:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * support for parameters
@@ -28,7 +31,7 @@
  */
 package nl.nn.adapterframework.batch;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.INamedObject;
@@ -59,10 +62,10 @@ public interface IRecordHandler extends INamedObject {
 	/**
 	 * Parse the line into an array of fields.
 	 * 
-	 * @return ArrayList with String values for each inputfield
+	 * @return List with String values for each inputfield
 	 * @throws Exception
 	 */
-	ArrayList parse(PipeLineSession session, String record) throws Exception;
+	List parse(PipeLineSession session, String record) throws Exception;
 
 	/**
 	 * Perform an action on the array of fields.
@@ -70,7 +73,7 @@ public interface IRecordHandler extends INamedObject {
 	 * @return transformed result
 	 * @throws Exception
 	 */	
-	Object handleRecord(PipeLineSession session, ArrayList parsedRecord, ParameterResolutionContext prc) throws Exception;
+	Object handleRecord(PipeLineSession session, List parsedRecord, ParameterResolutionContext prc) throws Exception;
 	
 	/**
 	 * @param equalRecordTypes flag indicates if the previous record was of same type as the current
@@ -79,6 +82,6 @@ public interface IRecordHandler extends INamedObject {
 	 * @return boolean that indicates whether a prefix must be added to the transformed result
 	 * @throws Exception
 	 */
-	boolean isNewRecordType(PipeLineSession session, boolean equalRecordTypes, ArrayList prevRecord, ArrayList curRecord) throws Exception;
+	boolean isNewRecordType(PipeLineSession session, boolean equalRecordTypes, List prevRecord, List curRecord) throws Exception;
 	
 }

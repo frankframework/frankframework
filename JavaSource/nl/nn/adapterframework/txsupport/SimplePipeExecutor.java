@@ -1,5 +1,11 @@
 /*
- * Created on 13-sep-07
+ * $Log: SimplePipeExecutor.java,v $
+ * Revision 1.1.2.2  2007-10-10 14:30:43  europe\L190409
+ * synchronize with HEAD (4.8-alpha1)
+ *
+ * Revision 1.2  2007/10/09 15:54:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * Direct copy from Ibis-EJB:
+ * first version in HEAD of txSupport classes
  *
  */
 package nl.nn.adapterframework.txsupport;
@@ -14,75 +20,52 @@ import nl.nn.adapterframework.core.PipeRunResult;
  * up to container (EJB or Spring) to ensure that each method is
  * executed with the right kind of transaction-context.
  * 
- * @author m00035f
- *
+ * @author  Tim van der Leeuw
+ * @since   4.8
+ * @version Id
  */
 public class SimplePipeExecutor implements IPipeExecutor {
 
     /* (non-Javadoc)
      * @see nl.nn.adapterframework.core.IPipeExecutor#doPipeTxRequired(nl.nn.adapterframework.core.IPipe, java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)
      */
-    public PipeRunResult doPipeTxRequired(
-        IPipe pipe,
-        Object input,
-        PipeLineSession session)
-        throws PipeRunException {
+    public PipeRunResult doPipeTxRequired(IPipe pipe, Object input, PipeLineSession session) throws PipeRunException {
         return pipe.doPipe(input, session);
     }
 
     /* (non-Javadoc)
      * @see nl.nn.adapterframework.core.IPipeExecutor#doPipeTxMandatory(nl.nn.adapterframework.core.IPipe, java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)
      */
-    public PipeRunResult doPipeTxMandatory(
-        IPipe pipe,
-        Object input,
-        PipeLineSession session)
-        throws PipeRunException {
-            return pipe.doPipe(input, session);
+    public PipeRunResult doPipeTxMandatory(IPipe pipe, Object input, PipeLineSession session) throws PipeRunException {
+		return pipe.doPipe(input, session);
     }
 
     /* (non-Javadoc)
      * @see nl.nn.adapterframework.core.IPipeExecutor#doPipeTxRequiresNew(nl.nn.adapterframework.core.IPipe, java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)
      */
-    public PipeRunResult doPipeTxRequiresNew(
-        IPipe pipe,
-        Object input,
-        PipeLineSession session)
-        throws PipeRunException {
-            return pipe.doPipe(input, session);
+    public PipeRunResult doPipeTxRequiresNew(IPipe pipe, Object input, PipeLineSession session) throws PipeRunException {
+		return pipe.doPipe(input, session);
     }
 
     /* (non-Javadoc)
      * @see nl.nn.adapterframework.core.IPipeExecutor#doPipeTxSupports(nl.nn.adapterframework.core.IPipe, java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)
      */
-    public PipeRunResult doPipeTxSupports(
-        IPipe pipe,
-        Object input,
-        PipeLineSession session)
-        throws PipeRunException {
-            return pipe.doPipe(input, session);
+    public PipeRunResult doPipeTxSupports(IPipe pipe, Object input, PipeLineSession session) throws PipeRunException {
+		return pipe.doPipe(input, session);
     }
 
     /* (non-Javadoc)
      * @see nl.nn.adapterframework.core.IPipeExecutor#doPipeTxNotSupported(nl.nn.adapterframework.core.IPipe, java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)
      */
-    public PipeRunResult doPipeTxNotSupported(
-        IPipe pipe,
-        Object input,
-        PipeLineSession session)
-        throws PipeRunException {
-            return pipe.doPipe(input, session);
+    public PipeRunResult doPipeTxNotSupported(IPipe pipe, Object input, PipeLineSession session) throws PipeRunException {
+		return pipe.doPipe(input, session);
     }
 
     /* (non-Javadoc)
      * @see nl.nn.adapterframework.core.IPipeExecutor#doPipeTxNever(nl.nn.adapterframework.core.IPipe, java.lang.Object, nl.nn.adapterframework.core.PipeLineSession)
      */
-    public PipeRunResult doPipeTxNever(
-        IPipe pipe,
-        Object input,
-        PipeLineSession session)
-        throws PipeRunException {
-            return pipe.doPipe(input, session);
+    public PipeRunResult doPipeTxNever(IPipe pipe, Object input, PipeLineSession session) throws PipeRunException {
+		return pipe.doPipe(input, session);
     }
 
 }

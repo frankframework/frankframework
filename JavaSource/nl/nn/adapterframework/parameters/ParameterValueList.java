@@ -1,6 +1,15 @@
 /*
  * $Log: ParameterValueList.java,v $
- * Revision 1.3  2005-10-24 09:59:23  europe\m00f531
+ * Revision 1.3.4.1  2007-10-10 14:30:45  europe\L190409
+ * synchronize with HEAD (4.8-alpha1)
+ *
+ * Revision 1.5  2007/10/08 13:31:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * changed ArrayList to List where possible
+ *
+ * Revision 1.4  2007/10/08 12:21:23  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * changed HashMap to Map where possible
+ *
+ * Revision 1.3  2005/10/24 09:59:23  John Dekker <john.dekker@ibissource.org>
  * Add support for pattern parameters, and include them into several listeners,
  * senders and pipes that are file related
  *
@@ -19,6 +28,8 @@ package nl.nn.adapterframework.parameters;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 import nl.nn.adapterframework.core.ParameterException;
 
@@ -30,8 +41,8 @@ import nl.nn.adapterframework.core.ParameterException;
  */
 public class ParameterValueList {
 	
-	ArrayList list;
-	HashMap   map;
+	List list;
+	Map   map;
 	
 	public ParameterValueList() {
 		super();
@@ -66,7 +77,7 @@ public class ParameterValueList {
 		return list.size();
 	}
 	
-	HashMap getParameterValueMap() {
+	Map getParameterValueMap() {
 		return map;
 	}
 

@@ -1,8 +1,12 @@
 /*
- * Created on 11-sep-07
+ * $Log: JndiMap.java,v $
+ * Revision 1.1.2.2  2007-10-10 14:30:36  europe\L190409
+ * synchronize with HEAD (4.8-alpha1)
  *
- * To change the template for this generated file go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * Revision 1.2  2007/10/09 15:58:39  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * Direct copy from Ibis-EJB:
+ * first version in HEAD
+ *
  */
 package nl.nn.adapterframework.util;
 
@@ -23,39 +27,26 @@ import javax.naming.NamingException;
  * You have to set a Context before using the Map; no default-context
  * is instantiated.
  * 
- * @author m00035f
- *
- * To change the template for this generated type comment go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * @author  Tim van der Leeuw
+ * @since   4.8
+ * @version Id
  */
 public class JndiMap implements Map {
     
     private Context context;
     
-	/**
-	 * 
-	 */
 	public JndiMap() {
 		super();
 	}
 
-	/* (non-Javadoc)
-	 * @see java.util.Map#size()
-	 */
 	public int size() {
 		throw new UnsupportedOperationException("Cannot determine size of a JNDI Context");
 	}
 
-	/* (non-Javadoc)
-	 * @see java.util.Map#isEmpty()
-	 */
 	public boolean isEmpty() {
 		return false;
 	}
 
-	/* (non-Javadoc)
-	 * @see java.util.Map#containsKey(java.lang.Object)
-	 */
 	public boolean containsKey(Object key) {
 		String name = keyToString(key);
         try {
@@ -74,16 +65,10 @@ public class JndiMap implements Map {
         }
 	}
 
-	/* (non-Javadoc)
-	 * @see java.util.Map#containsValue(java.lang.Object)
-	 */
 	public boolean containsValue(Object value) {
 		throw new UnsupportedOperationException("Can not determine if JNDI Context contains a value");
 	}
 
-	/* (non-Javadoc)
-	 * @see java.util.Map#get(java.lang.Object)
-	 */
 	public Object get(Object key) {
        String name = keyToString(key);
         try {
@@ -95,9 +80,6 @@ public class JndiMap implements Map {
         }
 	}
 
-	/* (non-Javadoc)
-	 * @see java.util.Map#put(java.lang.Object, java.lang.Object)
-	 */
 	public Object put(Object key, Object value) {
        String name = keyToString(key);
         try {
@@ -121,9 +103,6 @@ public class JndiMap implements Map {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see java.util.Map#remove(java.lang.Object)
-	 */
 	public Object remove(Object key) {
         String name = keyToString(key);
         try {
@@ -142,9 +121,6 @@ public class JndiMap implements Map {
         }
 	}
 
-	/* (non-Javadoc)
-	 * @see java.util.Map#putAll(java.util.Map)
-	 */
 	public void putAll(Map t) {
 		for (Iterator iter = t.entrySet().iterator(); iter.hasNext();) {
 			Map.Entry entry = (Map.Entry) iter.next();
@@ -152,46 +128,28 @@ public class JndiMap implements Map {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see java.util.Map#clear()
-	 */
 	public void clear() {
 		throw new UnsupportedOperationException();
 	}
 
-	/* (non-Javadoc)
-	 * @see java.util.Map#keySet()
-	 */
 	public Set keySet() {
         throw new UnsupportedOperationException();
 	}
 
-	/* (non-Javadoc)
-	 * @see java.util.Map#values()
-	 */
 	public Collection values() {
         throw new UnsupportedOperationException();
 	}
 
-	/* (non-Javadoc)
-	 * @see java.util.Map#entrySet()
-	 */
 	public Set entrySet() {
         throw new UnsupportedOperationException();
 	}
 
-    /**
-     * @return
-     */
-    public Context getContext() {
-        return context;
-    }
 
-    /**
-     * @param context
-     */
     public void setContext(Context context) {
         this.context = context;
     }
+	public Context getContext() {
+		return context;
+	}
 
 }

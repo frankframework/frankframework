@@ -1,7 +1,13 @@
 /*
  * $Log: StreamTransformerPipe.java,v $
- * Revision 1.4.2.1  2007-10-04 13:07:13  europe\L190409
- * synchronize with HEAD (4.7.0)
+ * Revision 1.4.2.2  2007-10-10 14:30:46  europe\L190409
+ * synchronize with HEAD (4.8-alpha1)
+ *
+ * Revision 1.12  2007/10/08 13:28:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * changed ArrayList to List where possible
+ *
+ * Revision 1.11  2007/10/08 12:14:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * changed HashMap to Map where possible
  *
  * Revision 1.10  2007/09/24 14:55:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * support for parameters
@@ -45,6 +51,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -81,13 +88,13 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class StreamTransformerPipe extends FixedForwardPipe {
-	public static final String version = "$RCSfile: StreamTransformerPipe.java,v $  $Revision: 1.4.2.1 $ $Date: 2007-10-04 13:07:13 $";
+	public static final String version = "$RCSfile: StreamTransformerPipe.java,v $  $Revision: 1.4.2.2 $ $Date: 2007-10-10 14:30:46 $";
 
 	private IRecordHandlerManager initialManager=null;
 	private IResultHandler defaultHandler=null;
-	private HashMap registeredManagers= new HashMap();
-	private HashMap registeredRecordHandlers= new HashMap();
-	private HashMap registeredResultHandlers= new HashMap();
+	private Map registeredManagers= new HashMap();
+	private Map registeredRecordHandlers= new HashMap();
+	private Map registeredResultHandlers= new HashMap();
 	
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -366,7 +373,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	private Object transform(String streamId, BufferedReader reader, PipeLineSession session, ParameterResolutionContext prc) throws PipeRunException {
 		String rawRecord = null;
 		int linenumber = 0;
-		ArrayList prevParsedRecord = null; 
+		List prevParsedRecord = null; 
 		IRecordHandler prevHandler = null;
 
 		IRecordHandlerManager currentManager = initialManager.getRecordFactoryUsingFilename(session, streamId);
@@ -394,7 +401,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 				if (curHandler != null) {
 					log.debug("manager ["+currentManager.getName()+"] key ["+flow.getRecordKey()+"] record handler ["+curHandler.getName()+"]: "+rawRecord);
 					// there is a record handler, so transform the line
-					ArrayList parsedRecord = curHandler.parse(session, rawRecord);
+					List parsedRecord = curHandler.parse(session, rawRecord);
 					Object result = curHandler.handleRecord(session, parsedRecord, prc);
 				
 					// if there is a result handler, write the transformed result
@@ -454,7 +461,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	 */	
 	private Object finalizeResult(PipeLineSession session, String inputFilename, boolean error, ParameterResolutionContext prc) throws Exception {
 		// finalize result
-		ArrayList results = new ArrayList();
+		List results = new ArrayList();
 		for (Iterator handlersIt = registeredResultHandlers.values().iterator(); handlersIt.hasNext();) {
 			IResultHandler resultHandler = (IResultHandler)handlersIt.next();
 			resultHandler.closeRecordType(session, inputFilename, prc);

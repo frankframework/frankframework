@@ -1,6 +1,12 @@
 /*
  * $Log: IfsaRequesterSender.java,v $
- * Revision 1.27  2007-09-05 15:48:07  europe\L190409
+ * Revision 1.26.2.1  2007-10-10 14:30:39  europe\L190409
+ * synchronize with HEAD (4.8-alpha1)
+ *
+ * Revision 1.28  2007/10/08 12:16:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * removed unused imports
+ *
+ * Revision 1.27  2007/09/05 15:48:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * moved XA determination capabilities to IfsaConnection
  *
  * Revision 1.26  2007/08/10 11:20:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -96,8 +102,6 @@ import javax.jms.QueueReceiver;
 import javax.jms.QueueSender;
 import javax.jms.QueueSession;
 import javax.jms.TextMessage;
-import javax.naming.NamingException;
-import javax.transaction.SystemException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISenderWithParameters;
@@ -148,7 +152,7 @@ import com.ing.ifsa.IFSATimeOutMessage;
  * @since  4.2
  */
 public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParameters {
-	public static final String version="$RCSfile: IfsaRequesterSender.java,v $ $Revision: 1.27 $ $Date: 2007-09-05 15:48:07 $";
+	public static final String version="$RCSfile: IfsaRequesterSender.java,v $ $Revision: 1.26.2.1 $ $Date: 2007-10-10 14:30:39 $";
  
 	protected ParameterList paramList = null;
 	

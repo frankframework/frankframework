@@ -1,16 +1,26 @@
 /*
- * Created on 13-sep-07
+ * $Log: IPipeExecutor.java,v $
+ * Revision 1.1.2.2  2007-10-10 14:30:43  europe\L190409
+ * synchronize with HEAD (4.8-alpha1)
  *
- * To change the template for this generated file go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * Revision 1.2  2007/10/09 15:54:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * Direct copy from Ibis-EJB:
+ * first version in HEAD of txSupport classes
+ *
  */
 package nl.nn.adapterframework.txsupport;
 
-import nl.nn.adapterframework.core.*;
+import nl.nn.adapterframework.core.IPipe;
+import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.PipeRunException;
+import nl.nn.adapterframework.core.PipeRunResult;
 
 /**
- * @author m00035f
- *
+ * Interface for wrapping execution of a Pipe in a transaction.
+ * 
+ * @author  Tim van der Leeuw
+ * @since   4.8
+ * @version Id
  */
 public interface IPipeExecutor {
     PipeRunResult doPipeTxRequired (IPipe pipe, Object input, PipeLineSession session) throws PipeRunException;

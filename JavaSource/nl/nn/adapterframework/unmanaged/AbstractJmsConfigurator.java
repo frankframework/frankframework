@@ -1,12 +1,13 @@
 /*
- * AbstractJmsConfigurator.java
- * 
- * Created on 2-okt-2007, 9:45:07
- * 
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * $Log: AbstractJmsConfigurator.java,v $
+ * Revision 1.1.2.3  2007-10-10 14:30:47  europe\L190409
+ * synchronize with HEAD (4.8-alpha1)
+ *
+ * Revision 1.2  2007/10/10 07:49:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * Direct copy from Ibis-EJB:
+ * first version in HEAD
+ *
  */
-
 package nl.nn.adapterframework.unmanaged;
 
 import javax.jms.ConnectionFactory;
@@ -14,15 +15,23 @@ import javax.jms.Destination;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+
+import org.apache.log4j.Logger;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.jms.JmsListener;
+import nl.nn.adapterframework.util.LogUtil;
 
 /**
- * Base class for JMS Configurator implementations
- * @author m00035f
+ * Base class for JMS Configurator implementations.
+ * 
+ * @author  Tim van der Leeuw
+ * @since   4.8
+ * @version Id
  */
 abstract public class AbstractJmsConfigurator {
-    
+	protected Logger log=LogUtil.getLogger(this);
+   
     private JmsListener jmsListener;
     private Context context;
     private Destination destination;
@@ -39,7 +48,7 @@ abstract public class AbstractJmsConfigurator {
         try {
             connectionFactory = (ConnectionFactory) getContext().lookup(cfName);
         } catch (NamingException e) {
-            throw new ConfigurationException("Problem looking up JMS " + (jmsListener.isUseTopicFunctions() ? "Topic" : "Queue") + "Connection Factory with name \'" + cfName + "\'", e);
+            throw new ConfigurationException("Problem looking up JMS " + (jmsListener.isUseTopicFunctions() ? "Topic" : "Queue") + "Connection Factory with name [" + cfName + "]", e);
         }
         return connectionFactory;
     }
@@ -52,7 +61,7 @@ abstract public class AbstractJmsConfigurator {
         try {
             return (Destination) getContext().lookup(destinationName);
         } catch (NamingException e) {
-            throw new ConfigurationException("Problem looking up JMS " + (jmsListener.isUseTopicFunctions() ? "Topic" : "Queue") + "Destination with name \'" + destinationName + "\'", e);
+            throw new ConfigurationException("Problem looking up JMS " + (jmsListener.isUseTopicFunctions() ? "Topic" : "Queue") + "Destination with name [" + destinationName + "]", e);
         }
     }
 

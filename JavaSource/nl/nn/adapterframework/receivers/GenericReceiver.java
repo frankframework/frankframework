@@ -1,7 +1,10 @@
 /*
  * $Log: GenericReceiver.java,v $
- * Revision 1.4.4.1  2007-10-04 12:01:21  europe\M00035F
- * Work on EJB version of IBIS
+ * Revision 1.4.4.2  2007-10-10 14:30:44  europe\L190409
+ * synchronize with HEAD (4.8-alpha1)
+ *
+ * Revision 1.5  2007/10/10 08:54:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * added getAdapter()
  *
  * Revision 1.4  2007/05/21 12:24:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added public setMessageLog()
@@ -43,7 +46,7 @@ import nl.nn.adapterframework.core.ITransactionalStorage;
  * @since   4.1
  */
 public class GenericReceiver extends ReceiverBase {
-	public static final String version="$RCSfile: GenericReceiver.java,v $ $Revision: 1.4.4.1 $ $Date: 2007-10-04 12:01:21 $";
+	public static final String version="$RCSfile: GenericReceiver.java,v $ $Revision: 1.4.4.2 $ $Date: 2007-10-10 14:30:44 $";
 
 	public void setListener(IListener listener) {
 		super.setListener(listener);

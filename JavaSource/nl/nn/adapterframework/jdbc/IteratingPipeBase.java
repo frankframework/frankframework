@@ -1,6 +1,12 @@
 /*
  * $Log: IteratingPipeBase.java,v $
- * Revision 1.2  2007-07-26 16:14:38  europe\L190409
+ * Revision 1.2.2.1  2007-10-10 14:30:47  europe\L190409
+ * synchronize with HEAD (4.8-alpha1)
+ *
+ * Revision 1.3  2007/10/08 12:18:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * changed HashMap to Map where possible
+ *
+ * Revision 1.2  2007/07/26 16:14:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * check for null resultset
  *
  * Revision 1.1  2007/07/17 11:16:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -12,7 +18,7 @@ package nl.nn.adapterframework.jdbc;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.HashMap;
+import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IDataIterator;
@@ -61,7 +67,7 @@ public abstract class IteratingPipeBase extends IteratingPipe {
 
 	protected abstract IDataIterator getIterator(ResultSet rs) throws SenderException; 
 
-	protected IDataIterator getIterator(Object input, PipeLineSession session, String correlationID, HashMap threadContext) throws SenderException {
+	protected IDataIterator getIterator(Object input, PipeLineSession session, String correlationID, Map threadContext) throws SenderException {
 		Connection connection = null;
 		try {
 			connection = querySender.getConnection();

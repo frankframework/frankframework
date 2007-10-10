@@ -1,6 +1,12 @@
 /*
  * $Log: ParameterResolutionContext.java,v $
- * Revision 1.13  2007-02-12 13:59:42  europe\L190409
+ * Revision 1.13.4.1  2007-10-10 14:30:45  europe\L190409
+ * synchronize with HEAD (4.8-alpha1)
+ *
+ * Revision 1.14  2007/10/08 12:21:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * changed HashMap to Map where possible
+ *
+ * Revision 1.13  2007/02/12 13:59:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Logger from LogUtil
  *
  * Revision 1.12  2006/11/06 08:19:52  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -47,6 +53,7 @@ package nl.nn.adapterframework.parameters;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 import javax.xml.transform.Source;
 
@@ -65,7 +72,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class ParameterResolutionContext {
-	public static final String version="$RCSfile: ParameterResolutionContext.java,v $ $Revision: 1.13 $ $Date: 2007-02-12 13:59:42 $";
+	public static final String version="$RCSfile: ParameterResolutionContext.java,v $ $Revision: 1.13.4.1 $ $Date: 2007-10-10 14:30:45 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String input;
@@ -132,7 +139,7 @@ public class ParameterResolutionContext {
 		if (parameters==null) {
 			return null;
 		}
-		HashMap paramValuesMap = getValues(parameters).getParameterValueMap();
+		Map paramValuesMap = getValues(parameters).getParameterValueMap();
 
 		// convert map with parameterValue to map with value		
 		HashMap result = new HashMap(paramValuesMap.size());

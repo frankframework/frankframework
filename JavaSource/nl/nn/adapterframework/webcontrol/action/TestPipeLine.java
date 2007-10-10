@@ -1,6 +1,12 @@
 /*
  * $Log: TestPipeLine.java,v $
- * Revision 1.4  2007-07-19 15:15:49  europe\L190409
+ * Revision 1.4.2.1  2007-10-10 14:30:38  europe\L190409
+ * synchronize with HEAD (4.8-alpha1)
+ *
+ * Revision 1.5  2007/10/08 13:41:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * changed ArrayList to List where possible
+ *
+ * Revision 1.4  2007/07/19 15:15:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * list Adapters in order of configuration
  *
  */
@@ -8,6 +14,7 @@ package nl.nn.adapterframework.webcontrol.action;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -32,7 +39,7 @@ import org.apache.struts.action.DynaActionForm;
  * @see nl.nn.adapterframework.core.PipeLine
  */
 public final class TestPipeLine extends ActionBase {
-	public static final String version="$RCSfile: TestPipeLine.java,v $ $Revision: 1.4 $ $Date: 2007-07-19 15:15:49 $";
+	public static final String version="$RCSfile: TestPipeLine.java,v $ $Revision: 1.4.2.1 $ $Date: 2007-10-10 14:30:38 $";
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 	
@@ -44,7 +51,7 @@ public final class TestPipeLine extends ActionBase {
 	
 	    DynaActionForm pipeLineTestForm = getPersistentForm(mapping, form, request);
 	
-	    ArrayList adapters = new ArrayList();
+	    List adapters = new ArrayList();
 	    adapters.add("-- select an adapter --");
 	
 		for(int i=0; i<config.getRegisteredAdapters().size(); i++) {

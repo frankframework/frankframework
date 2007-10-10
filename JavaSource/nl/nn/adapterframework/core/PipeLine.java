@@ -1,17 +1,19 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.45.2.4  2007-09-28 10:50:29  europe\M00035F
- * Updates for more robust and correct transaction handling
- * Update Xerces dependency to modern Xerces
+ * Revision 1.45.2.5  2007-10-10 14:30:40  europe\L190409
+ * synchronize with HEAD (4.8-alpha1)
  *
- * Revision 1.45.2.3  2007/09/26 14:59:02  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
- * Updates for more robust and correct transaction handling
+ * Revision 1.49  2007/10/10 07:57:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * use configurable transactional executors
  *
- * Revision 1.45.2.2  2007/09/14 14:33:19  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
- * Add AOP jars; add transactional invocation of PipeLine; add transaction definitions to Spring Context
+ * Revision 1.48  2007/10/08 13:29:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * changed ArrayList to List where possible
  *
- * Revision 1.45.2.1  2007/09/14 09:24:53  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
- * Use special executor to run a Pipe under transactional control
+ * Revision 1.47  2007/09/27 12:53:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * improved warning
+ *
+ * Revision 1.46  2007/09/04 07:58:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * clearified exception message
  *
  * Revision 1.45  2007/07/17 15:09:08  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added list of pipes, to access them in order
@@ -144,13 +146,14 @@
  */
 package nl.nn.adapterframework.core;
 
-import nl.nn.adapterframework.txsupport.IPipeExecutor;
-import nl.nn.adapterframework.txsupport.IPipeLineExecutor;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.List;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.txsupport.IPipeExecutor;
+import nl.nn.adapterframework.txsupport.IPipeLineExecutor;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.LogUtil;
@@ -231,7 +234,7 @@ import org.apache.log4j.Logger;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.45.2.4 $ $Date: 2007-09-28 10:50:29 $";
+	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.45.2.5 $ $Date: 2007-10-10 14:30:40 $";
     private Logger log = LogUtil.getLogger(this);
 	private Logger durationLog = LogUtil.getLogger("LongDurationMessages");
     
@@ -245,14 +248,14 @@ public class PipeLine {
 	private int transactionAttribute=JtaUtil.TRANSACTION_ATTRIBUTE_SUPPORTS;
      
     private Hashtable pipesByName=new Hashtable();
-    private ArrayList pipes=new ArrayList();
+    private List pipes=new ArrayList();
     // set of exits paths with their state
     private Hashtable pipeLineExits=new Hashtable();
 	private Hashtable pipeThreadCounts=new Hashtable();
 	
 	private String commitOnState="success"; // exit state on which receiver will commit XA transactions
 
-	private ArrayList exitHandlers = new ArrayList();
+	private List exitHandlers = new ArrayList();
     
     private IPipeLineExecutor pipeLineExecutor;
     private IPipeExecutor pipeExecutor;
@@ -295,7 +298,7 @@ public class PipeLine {
 	        pw.setPath(name);
 	        registerForward(pw);
 	    } else {
-	        log.info("already had a pipeForward with name ["+ name+ "] skipping this one ["+ pipe.toString()+ "]");
+	        log.info("already had a pipeForward with name ["+ name+ "] skipping the implicit one to Pipe ["+ pipe.getName()+ "]");
 	    }
 	}
 	
@@ -306,7 +309,7 @@ public class PipeLine {
 		return (IPipe)pipes.get(index);
 	}
 
-	public ArrayList getPipes() {
+	public List getPipes() {
 		return pipes;
 	}
 
@@ -819,33 +822,18 @@ public class PipeLine {
 	}
 
 		
-		
-    /**
-     * @return
-     */
-    public IPipeExecutor getPipeExecutor() {
-        return pipeExecutor;
-    }
-
-    /**
-     * @param executor
-     */
     public void setPipeExecutor(IPipeExecutor executor) {
         pipeExecutor = executor;
     }
+	public IPipeExecutor getPipeExecutor() {
+		return pipeExecutor;
+	}
 
-    /**
-     * @return
-     */
-    public IPipeLineExecutor getPipeLineExecutor() {
-        return pipeLineExecutor;
-    }
-
-    /**
-     * @param executor
-     */
     public void setPipeLineExecutor(IPipeLineExecutor executor) {
         pipeLineExecutor = executor;
     }
+	public IPipeLineExecutor getPipeLineExecutor() {
+		return pipeLineExecutor;
+	}
 
 }

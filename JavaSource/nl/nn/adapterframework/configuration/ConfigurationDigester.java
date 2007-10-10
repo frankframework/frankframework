@@ -1,11 +1,14 @@
 /*
  * $Log: ConfigurationDigester.java,v $
- * Revision 1.15.4.2  2007-09-18 11:20:40  europe\M00035F
- * * Update a number of method-signatures to take a java.util.Map instead of HashMap
- * * Rewrite JmsListener to be instance of IPushingListener; use Spring JMS Container
+ * Revision 1.15.4.3  2007-10-10 14:30:40  europe\L190409
+ * synchronize with HEAD (4.8-alpha1)
  *
- * Revision 1.15.4.1  2007/09/13 13:27:16  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
- * First commit of work to use Spring for creating objects
+ * Revision 1.17  2007/10/10 09:23:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * Direct copy from Ibis-EJB:
+ * spring enabled version
+ *
+ * Revision 1.16  2007/09/19 13:06:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * split digest in url and string
  *
  * Revision 1.15  2007/05/21 12:18:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * add messageLog to attributeChecker-rules
@@ -94,7 +97,7 @@ import org.springframework.beans.factory.ListableBeanFactory;
  * @see Configuration
  */
 abstract public class ConfigurationDigester implements BeanFactoryAware {
-	public static final String version = "$RCSfile: ConfigurationDigester.java,v $ $Revision: 1.15.4.2 $ $Date: 2007-09-18 11:20:40 $";
+	public static final String version = "$RCSfile: ConfigurationDigester.java,v $ $Revision: 1.15.4.3 $ $Date: 2007-10-10 14:30:40 $";
     protected static Logger log = LogUtil.getLogger(ConfigurationDigester.class);
 
 	private static final String CONFIGURATION_FILE_DEFAULT  = "Configuration.xml";
@@ -106,41 +109,42 @@ abstract public class ConfigurationDigester implements BeanFactoryAware {
     private BeanFactory beanFactory;
     
 	private Configuration configuration;
-//	public static void main(String args[]) {
-//	    String configuration_file = CONFIGURATION_FILE_DEFAULT;
-//	    String digester_rules_file = DIGESTER_RULES_DEFAULT;
-//	
-//	    Configuration config = null;
-//	    ConfigurationDigester cd = new ConfigurationDigester();
-//	
-//	    if (args.length>=1)
-//	      configuration_file = args[0];
-//	    if (args.length>=2)
-//	      digester_rules_file = args[1];
-//	      
-//	    try {
-//			config = cd.unmarshalConfiguration(digester_rules_file, configuration_file);
-//		} catch (ConfigurationException e) {
-//			System.out.println(e.getMessage());
-//		}
-//	
-//	    if (null == config) {
-//	        System.out.println("Errors occured during configuration");
-//	        return;
-//	    } else {
-//	        System.out.println("       Object List:");
-//	        if (null!=config) 
-//	        config.listObjects();
-//	
-//	        System.out.println("------------------------------------------");
-//	        System.out.println("       start adapters");
-//	    }
-//	
-//	    if (null!=config)config.startAdapters();
-//	
-//	}
-//	
+/*	
+	public static void main(String args[]) {
+	    String configuration_file = CONFIGURATION_FILE_DEFAULT;
+	    String digester_rules_file = DIGESTER_RULES_DEFAULT;
 	
+	    Configuration config = null;
+	    ConfigurationDigester cd = new ConfigurationDigester();
+	
+	    if (args.length>=1)
+	      configuration_file = args[0];
+	    if (args.length>=2)
+	      digester_rules_file = args[1];
+	      
+	    try {
+			config = cd.unmarshalConfiguration(digester_rules_file, configuration_file);
+		} catch (ConfigurationException e) {
+			System.out.println(e.getMessage());
+		}
+	
+	    if (null == config) {
+	        System.out.println("Errors occured during configuration");
+	        return;
+	    } else {
+	        System.out.println("       Object List:");
+	        if (null!=config) 
+	        config.listObjects();
+	
+	        System.out.println("------------------------------------------");
+	        System.out.println("       start adapters");
+	    }
+	
+	    if (null!=config)config.startAdapters();
+	
+	}
+	
+*/	
     /**
      * This method is runtime implemented by Spring Framework to
      * return a Digester instance created from the Spring Context

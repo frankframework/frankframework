@@ -1,6 +1,12 @@
 /*
  * $Log: Parameter.java,v $
- * Revision 1.24  2007-08-03 09:08:25  europe\L190409
+ * Revision 1.24.2.1  2007-10-10 14:30:45  europe\L190409
+ * synchronize with HEAD (4.8-alpha1)
+ *
+ * Revision 1.25  2007/10/08 13:31:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * changed ArrayList to List where possible
+ *
+ * Revision 1.24  2007/08/03 09:08:25  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * moved tp configuration to TransformerPool
  *
  * Revision 1.23  2007/06/14 08:49:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -90,6 +96,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
@@ -171,7 +178,7 @@ import org.w3c.dom.Node;
  * @author Gerrit van Brakel
  */
 public class Parameter implements INamedObject, IWithParameters {
-	public static final String version="$RCSfile: Parameter.java,v $ $Revision: 1.24 $ $Date: 2007-08-03 09:08:25 $";
+	public static final String version="$RCSfile: Parameter.java,v $ $Revision: 1.24.2.1 $ $Date: 2007-10-10 14:30:45 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static String TYPE_NODE="node";
@@ -367,7 +374,7 @@ public class Parameter implements INamedObject, IWithParameters {
 
 		// replace the named parameter with numbered parameters
 		StringBuffer formatPattern = new StringBuffer();
-		ArrayList params = new ArrayList();
+		List params = new ArrayList();
 		int paramPosition = 0;
 		while(endNdx != -1) {
 			// get name of parameter in pattern to be substituted 

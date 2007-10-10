@@ -1,8 +1,10 @@
 /*
  * $Log: ShowConfigurationStatus.java,v $
- * Revision 1.8.2.2  2007-10-04 13:35:05  europe\L190409
- * synchronize with HEAD (4.7.0)
- * + removed inprocessStorage
+ * Revision 1.8.2.3  2007-10-10 14:30:38  europe\L190409
+ * synchronize with HEAD (4.8-alpha1)
+ *
+ * Revision 1.10  2007/10/08 12:26:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * corrected date formatting
  *
  * Revision 1.9  2007/10/02 09:19:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * show physical destination names of listeners and their senders
@@ -55,7 +57,7 @@ import org.apache.struts.action.ActionMapping;
  * @version Id
  */
 public final class ShowConfigurationStatus extends ActionBase {
-	public static final String version = "$RCSfile: ShowConfigurationStatus.java,v $ $Revision: 1.8.2.2 $ $Date: 2007-10-04 13:35:05 $";
+	public static final String version = "$RCSfile: ShowConfigurationStatus.java,v $ $Revision: 1.8.2.3 $ $Date: 2007-10-10 14:30:38 $";
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 
@@ -161,7 +163,7 @@ public final class ShowConfigurationStatus extends ActionBase {
 			for (int t=0; t<adapter.getMessageKeeper().size(); t++) {
 				XmlBuilder adapterMessage=new XmlBuilder("adapterMessage");
 				adapterMessage.setCdataValue(adapter.getMessageKeeper().getMessage(t).getMessageText());
-				adapterMessage.addAttribute("date", DateUtils.format(adapter.getMessageKeeper().getMessage(t).getMessageDate(), DateUtils.FORMAT_GENERICDATETIME));
+				adapterMessage.addAttribute("date", DateUtils.format(adapter.getMessageKeeper().getMessage(t).getMessageDate(), DateUtils.FORMAT_FULL_GENERIC));
 				adapterMessages.addSubElement(adapterMessage);
 			}
 

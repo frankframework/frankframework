@@ -1,8 +1,12 @@
 /*
- * Created on 6-sep-07
+ * $Log: DefaultIbisManager.java,v $
+ * Revision 1.1.2.3  2007-10-10 14:30:47  europe\L190409
+ * synchronize with HEAD (4.8-alpha1)
  *
- * To change the template for this generated file go to
- * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
+ * Revision 1.2  2007/10/10 07:52:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * Direct copy from Ibis-EJB:
+ * first version in HEAD
+ *
  */
 package nl.nn.adapterframework.unmanaged;
 
@@ -28,14 +32,15 @@ import org.quartz.SchedulerException;
 /**
  * Implementation of IbisManager which does not use EJB for
  * managing IBIS Adapters.
- *  
- * @author m00035f
- *
+ * 
+ * @author  Tim van der Leeuw
+ * @since   4.8
+ * @version Id
  */
 public class DefaultIbisManager implements IbisManager {
+	protected Logger log=LogUtil.getLogger(this);
+	
     public static final String DFLT_DIGESTER_RULES = "digester-rules.xml";
-    
-    protected Logger log=LogUtil.getLogger(this);
     
     private Configuration configuration;
     private ConfigurationDigester configurationDigester;
@@ -48,11 +53,11 @@ public class DefaultIbisManager implements IbisManager {
         String digesterRulesFile = DFLT_DIGESTER_RULES;
         
         // Reading in Apache Digester configuration file
-        if (null == configurationFile)
-            configurationFile = DFLT_CONFIGURATION;
+        if (null == configurationFile) {
+			configurationFile = DFLT_CONFIGURATION;
+        }
         
-        log.info("* IBIS Startup: Reading IBIS configuration from file '"
-            + configurationFile + "'" + (DFLT_CONFIGURATION.equals(configurationFile) ?
+        log.info("* IBIS Startup: Reading IBIS configuration from file [" + configurationFile + "]" + (DFLT_CONFIGURATION.equals(configurationFile) ?
             " (default configuration file)" : ""));
         try {
             configurationDigester.unmarshalConfiguration(
@@ -63,12 +68,6 @@ public class DefaultIbisManager implements IbisManager {
         }
     }
     
-    /* (non-Javadoc)
-	 * @see nl.nn.adapterframework.configuration.IbisManager#getConfiguration()
-	 */
-	public Configuration getConfiguration() {
-		return configuration;
-	}
     
     public void startIbis() {
         startAdapters();
@@ -83,8 +82,7 @@ public class DefaultIbisManager implements IbisManager {
             if (adapterName.equals("**ALL**")) {
                 log.info("Stopping all adapters on request of [" + commandIssuedBy+"]");
                 stopAdapters();
-            }
-            else {
+            } else {
                 log.info("Stopping adapter [" + adapterName + "], on request of [" + commandIssuedBy+"]");
                 stopAdapter(configuration.getRegisteredAdapter(adapterName));
             }
@@ -93,8 +91,7 @@ public class DefaultIbisManager implements IbisManager {
             if (adapterName.equals("**ALL**")) {
                 log.info("Starting all adapters on request of [" + commandIssuedBy+"]");
                 startAdapters();
-            }
-            else {
+            } else {
                 try {
                     log.info("Starting adapter [" + adapterName + "] on request of [" + commandIssuedBy+"]");
                     startAdapter(configuration.getRegisteredAdapter(adapterName));
@@ -233,38 +230,27 @@ public class DefaultIbisManager implements IbisManager {
         */
 	}
 
-	/**
-	 * @param configuration
-	 */
 	public void setConfiguration(Configuration configuration) {
 		this.configuration = configuration;
 	}
+	public Configuration getConfiguration() {
+		return configuration;
+	}
 
-    /**
-     * @return
-     */
-    public SchedulerHelper getSchedulerHelper() {
-        return schedulerHelper;
-    }
 
-    /**
-     * @param helper
-     */
     public void setSchedulerHelper(SchedulerHelper helper) {
         schedulerHelper = helper;
     }
-
-    public ConfigurationDigester getConfigurationDigester() {
-        return configurationDigester;
-    }
+	public SchedulerHelper getSchedulerHelper() {
+		return schedulerHelper;
+	}
 
     public void setConfigurationDigester(ConfigurationDigester configurationDigester) {
         this.configurationDigester = configurationDigester;
     }
-
-    public int getDeploymentMode() {
-        return this.deploymentMode;
-    }
+	public ConfigurationDigester getConfigurationDigester() {
+		return configurationDigester;
+	}
 
     public void setDeploymentMode(int deploymentMode) {
         if (deploymentMode < 0 || deploymentMode >= deploymentModes.length) {
@@ -273,7 +259,9 @@ public class DefaultIbisManager implements IbisManager {
         }
         this.deploymentMode = deploymentMode;
     }
-
+	public int getDeploymentMode() {
+		return deploymentMode;
+	}
     public String getDeploymentModeString() {
         return deploymentModes[this.deploymentMode];
     }

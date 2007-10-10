@@ -1,7 +1,10 @@
 /*
  * $Log: AbstractRecordHandler.java,v $
- * Revision 1.7.2.1  2007-10-04 13:07:12  europe\L190409
- * synchronize with HEAD (4.7.0)
+ * Revision 1.7.2.2  2007-10-10 14:30:46  europe\L190409
+ * synchronize with HEAD (4.8-alpha1)
+ *
+ * Revision 1.10  2007/10/08 13:28:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * changed ArrayList to List where possible
  *
  * Revision 1.9  2007/09/24 14:55:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * support for parameters
@@ -104,7 +107,7 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 		return inputFields.size();
 	}
 	
-	public ArrayList parse(PipeLineSession session, String record) {
+	public List parse(PipeLineSession session, String record) {
 		if (inputFields.size() > 0) {
 			return parseUsingInputFields(record);
 		}
@@ -112,14 +115,14 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 			return parseUsingSeparator(record);
 		}
 		else {
-			ArrayList result = new ArrayList();
+			List result = new ArrayList();
 			result.add(record);
 			return result;
 		}
 	}
 	
-	private ArrayList parseUsingInputFields(String record) {
-		ArrayList result = new ArrayList();
+	private List parseUsingInputFields(String record) {
+		List result = new ArrayList();
 
 		int recordLength = record.length(); 
 		int curPos = 0;
@@ -143,8 +146,8 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 		return result;
 	}
 
-	private ArrayList parseUsingSeparator(String record) {
-		ArrayList result = new ArrayList();
+	private List parseUsingSeparator(String record) {
+		List result = new ArrayList();
 		
 		int endNdx = -1;
 		do {
@@ -162,7 +165,7 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 		return result;
 	}
 	
-	public boolean isNewRecordType(PipeLineSession session, boolean equalRecordTypes, ArrayList prevRecord, ArrayList curRecord) {
+	public boolean isNewRecordType(PipeLineSession session, boolean equalRecordTypes, List prevRecord, List curRecord) {
 		if (! equalRecordTypes) {
 			return true;
 		}

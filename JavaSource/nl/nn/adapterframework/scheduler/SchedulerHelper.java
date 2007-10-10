@@ -1,12 +1,11 @@
 /*
  * $Log: SchedulerHelper.java,v $
- * Revision 1.3.4.2  2007-09-19 14:19:42  europe\M00035F
- * * More objects from Spring Factory
- * * Fixes for Spring JMS Container
- * * Quartz Scheduler from Spring Factory
+ * Revision 1.3.4.3  2007-10-10 14:30:44  europe\L190409
+ * synchronize with HEAD (4.8-alpha1)
  *
- * Revision 1.3.4.1  2007/09/13 13:27:18  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
- * First commit of work to use Spring for creating objects
+ * Revision 1.4  2007/10/10 09:40:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * Direct copy from Ibis-EJB:
+ * version using IbisManager
  *
  * Revision 1.3  2007/02/26 16:50:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * add method startScheduler()

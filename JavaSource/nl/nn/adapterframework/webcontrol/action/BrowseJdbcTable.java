@@ -1,6 +1,12 @@
 /*
  * $Log: BrowseJdbcTable.java,v $
- * Revision 1.2  2007-05-21 12:25:43  europe\L190409
+ * Revision 1.2.4.1  2007-10-10 14:30:38  europe\L190409
+ * synchronize with HEAD (4.8-alpha1)
+ *
+ * Revision 1.3  2007/10/08 13:41:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * changed ArrayList to List where possible
+ *
+ * Revision 1.2  2007/05/21 12:25:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fixed version string
  *
  * Revision 1.1  2007/05/21 12:24:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -11,13 +17,13 @@
 package nl.nn.adapterframework.webcontrol.action;
 
 import java.io.IOException;
-
-import java.util.ArrayList;
+import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.StringTagger;
@@ -28,7 +34,7 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 
 public class BrowseJdbcTable extends ActionBase {
-	public static final String version = "$RCSfile: BrowseJdbcTable.java,v $ $Revision: 1.2 $ $Date: 2007-05-21 12:25:43 $";
+	public static final String version = "$RCSfile: BrowseJdbcTable.java,v $ $Revision: 1.2.4.1 $ $Date: 2007-10-10 14:30:38 $";
 
 	public ActionForward execute(
 		ActionMapping mapping,
@@ -99,8 +105,7 @@ public class BrowseJdbcTable extends ActionBase {
 			}
 		}
 
-		ArrayList jmsRealms =
-			JmsRealmFactory.getInstance().getRegisteredRealmNamesAsList();
+		List jmsRealms = JmsRealmFactory.getInstance().getRegisteredRealmNamesAsList();
 		if (jmsRealms.size() == 0)
 			jmsRealms.add("no realms defined");
 		browseJdbcTableForm.set("jmsRealms", jmsRealms);

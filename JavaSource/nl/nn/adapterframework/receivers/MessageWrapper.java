@@ -1,7 +1,10 @@
 /*
  * $Log: MessageWrapper.java,v $
- * Revision 1.1.2.1  2007-10-04 13:32:32  europe\L190409
- * synchronize with HEAD (4.7.0)
+ * Revision 1.1.2.2  2007-10-10 14:30:44  europe\L190409
+ * synchronize with HEAD (4.8-alpha1)
+ *
+ * Revision 1.2  2007/10/08 12:24:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * changed HashMap to Map where possible
  *
  * Revision 1.1  2007/09/13 09:08:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * move message wrapper from ifsa to receivers
@@ -14,6 +17,7 @@ package nl.nn.adapterframework.receivers;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.Map;
 
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.ListenerException;
@@ -27,7 +31,7 @@ import nl.nn.adapterframework.core.ListenerException;
  */
 public class MessageWrapper implements Serializable {
 	
-	private HashMap context = new HashMap();
+	private Map context = new HashMap();
 	private String text; 
 	private String id; 
 	
@@ -40,7 +44,7 @@ public class MessageWrapper implements Serializable {
 		id = listener.getIdFromRawMessage(message, context);
 	}
 
-	public HashMap getContext() {
+	public Map getContext() {
 		return context;
 	}
 

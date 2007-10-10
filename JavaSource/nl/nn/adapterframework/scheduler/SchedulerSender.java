@@ -1,9 +1,11 @@
 /*
  * $Log: SchedulerSender.java,v $
- * Revision 1.3.4.1  2007-09-19 14:19:42  europe\M00035F
- * * More objects from Spring Factory
- * * Fixes for Spring JMS Container
- * * Quartz Scheduler from Spring Factory
+ * Revision 1.3.4.2  2007-10-10 14:30:44  europe\L190409
+ * synchronize with HEAD (4.8-alpha1)
+ *
+ * Revision 1.4  2007/10/10 09:40:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * Direct copy from Ibis-EJB:
+ * version using IbisManager
  *
  * Revision 1.3  2007/02/26 16:52:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * startScheduler on open()
@@ -149,17 +151,10 @@ public class SchedulerSender extends SenderWithParametersBase {
 		javaListener = string;
 	}
 
-
-    /**
-     * @return
-     */
     public SchedulerHelper getSchedulerHelper() {
         return schedulerHelper;
     }
 
-    /**
-     * @param helper
-     */
     public void setSchedulerHelper(SchedulerHelper helper) {
         schedulerHelper = helper;
     }

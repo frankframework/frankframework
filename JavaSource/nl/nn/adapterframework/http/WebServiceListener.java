@@ -1,7 +1,10 @@
 /*
  * $Log: WebServiceListener.java,v $
- * Revision 1.7.4.2  2007-10-04 13:24:53  europe\L190409
- * synchronize with HEAD (4.7.0)
+ * Revision 1.7.4.3  2007-10-10 14:30:39  europe\L190409
+ * synchronize with HEAD (4.8-alpha1)
+ *
+ * Revision 1.9  2007/10/08 12:18:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * changed HashMap to Map where possible
  *
  * Revision 1.8  2007/10/03 08:39:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed HashMap to Map
@@ -81,7 +84,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class WebServiceListener  implements IPushingListener, ServiceClient2, Serializable {
-	public static final String version="$RCSfile: WebServiceListener.java,v $ $Revision: 1.7.4.2 $ $Date: 2007-10-04 13:24:53 $";
+	public static final String version="$RCSfile: WebServiceListener.java,v $ $Revision: 1.7.4.3 $ $Date: 2007-10-10 14:30:39 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private IMessageHandler handler;        	

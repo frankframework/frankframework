@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaFacade.java,v $
- * Revision 1.46  2007-09-05 15:48:07  europe\L190409
+ * Revision 1.45.2.1  2007-10-10 14:30:39  europe\L190409
+ * synchronize with HEAD (4.8-alpha1)
+ *
+ * Revision 1.46  2007/09/05 15:48:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * moved XA determination capabilities to IfsaConnection
  *
  * Revision 1.45  2007/08/10 11:11:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -190,7 +193,7 @@ import com.ing.ifsa.IFSAServerQueueSender;
  * @since 4.2
  */
 public class IfsaFacade implements INamedObject, HasPhysicalDestination {
-	public static final String version = "$RCSfile: IfsaFacade.java,v $ $Revision: 1.46 $ $Date: 2007-09-05 15:48:07 $";
+	public static final String version = "$RCSfile: IfsaFacade.java,v $ $Revision: 1.45.2.1 $ $Date: 2007-10-10 14:30:39 $";
     protected Logger log = LogUtil.getLogger(this);
     
     private static int BASIC_ACK_MODE = Session.AUTO_ACKNOWLEDGE;

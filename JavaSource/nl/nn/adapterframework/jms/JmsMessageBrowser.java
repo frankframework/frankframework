@@ -1,6 +1,12 @@
 /*
  * $Log: JmsMessageBrowser.java,v $
- * Revision 1.5.4.1  2007-09-21 13:23:34  europe\M00035F
+ * Revision 1.5.4.2  2007-10-10 14:30:42  europe\L190409
+ * synchronize with HEAD (4.8-alpha1)
+ *
+ * Revision 1.6  2007/10/10 08:32:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * additional selector specifications possible
+ *
+ * Revision 1.5.4.1  2007/09/21 13:23:34  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
  * * Add method to ITransactionalStorage to check if original message ID can be found in it
  * * Check for presence of original message id in ErrorStorage before processing, so it can be removed from queue if it has already once been recorded as unprocessable (but the TX in which it ran could no longer be committed).
  *
@@ -50,7 +56,7 @@ import nl.nn.adapterframework.core.ListenerException;
  * @see nl.nn.adapterframework.webcontrol.action.BrowseQueue
  */
 public class JmsMessageBrowser extends JMSFacade implements IMessageBrowser {
-	public static final String version = "$RCSfile: JmsMessageBrowser.java,v $ $Revision: 1.5.4.1 $ $Date: 2007-09-21 13:23:34 $";
+	public static final String version = "$RCSfile: JmsMessageBrowser.java,v $ $Revision: 1.5.4.2 $ $Date: 2007-10-10 14:30:42 $";
 
 	private long timeOut = 3000;
 	private String selector=null;
@@ -136,6 +142,11 @@ public class JmsMessageBrowser extends JMSFacade implements IMessageBrowser {
 			closeSession(session);
 		}
 	}
+
+	public Object browseMessage(String messageId) throws ListenerException {
+		return browseMessage("JMSMessageID", messageId);
+	}
+	
     
     protected Object browseMessage(Map selectors) throws ListenerException {
 		QueueSession session=null;
@@ -169,10 +180,6 @@ public class JmsMessageBrowser extends JMSFacade implements IMessageBrowser {
         return browseMessage(selectorMap);
     }
     
-	public Object browseMessage(String messageId) throws ListenerException {
-        return browseMessage("JMSMessageID", messageId);
-	}
-	
 	public void deleteMessage(String messageId) throws ListenerException {
 		Session session=null;
 		MessageConsumer mc = null;

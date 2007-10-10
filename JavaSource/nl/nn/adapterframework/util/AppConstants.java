@@ -1,10 +1,10 @@
 /*
  * $Log: AppConstants.java,v $
- * Revision 1.12.4.2  2007-09-26 06:05:18  europe\M00035F
- * Add exception-propagation to new JMS Listener; increase robustness of JMS configuration
+ * Revision 1.12.4.3  2007-10-10 14:30:37  europe\L190409
+ * synchronize with HEAD (4.8-alpha1)
  *
- * Revision 1.12.4.1  2007/09/13 13:27:18  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
- * First commit of work to use Spring for creating objects
+ * Revision 1.13  2007/10/10 07:27:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * introduction of VariableExpander
  *
  * Revision 1.12  2007/02/12 14:09:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Logger from LogUtil
@@ -115,7 +115,7 @@ import org.apache.log4j.Logger;
  * 
  */
 public final class AppConstants extends Properties implements Serializable{
-	public static final String version = "$RCSfile: AppConstants.java,v $ $Revision: 1.12.4.2 $ $Date: 2007-09-26 06:05:18 $";
+	public static final String version = "$RCSfile: AppConstants.java,v $ $Revision: 1.12.4.3 $ $Date: 2007-10-10 14:30:37 $";
 	private Logger log = LogUtil.getLogger(this);
 	
 	public final static String propertiesFileName="AppConstants.properties";
@@ -202,7 +202,7 @@ public final class AppConstants extends Properties implements Serializable{
 	public String getResolvedProperty(String key) {
         String value = this.getProperty(key);
         if (value == null) {
-            log.debug("getResolvedProperty: key ["+key+"] resolved to value ["+value+"]");
+            if (log.isDebugEnabled()) log.debug("getResolvedProperty: key ["+key+"] resolved to value ["+value+"]");
             return null;
         }
 
@@ -368,16 +368,12 @@ public final class AppConstants extends Properties implements Serializable{
 		}
 		return xmlh.toXML();
 	}
-    /**
-     * @return
-     */
+  
+
     public VariableExpander getVariableExpander() {
         return variableExpander;
     }
 
-    /**
-     * @param expander
-     */
     public void setVariableExpander(VariableExpander expander) {
         variableExpander = expander;
     }

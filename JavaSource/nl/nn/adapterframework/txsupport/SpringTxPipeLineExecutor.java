@@ -1,41 +1,32 @@
 /*
- * SpringTxPipeLineExecutor.java
- * 
- * Created on 28-sep-2007, 10:28:54
- * 
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * $Log: SpringTxPipeLineExecutor.java,v $
+ * Revision 1.1.2.2  2007-10-10 14:30:43  europe\L190409
+ * synchronize with HEAD (4.8-alpha1)
+ *
+ * Revision 1.2  2007/10/09 15:54:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * Direct copy from Ibis-EJB:
+ * first version in HEAD of txSupport classes
+ *
  */
-
 package nl.nn.adapterframework.txsupport;
 
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
-import org.apache.log4j.Logger;
 
-import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 /**
- *
- * @author m00035f
+ * Implementation of interface IPipeLineExecutor that uses a transaction manager provided 
+ * by the Spring framework to ensure the method is executed in the right transaction state.
+ * 
+ * @author  Tim van der Leeuw
+ * @since   4.8
+ * @version Id
  */
-public class SpringTxPipeLineExecutor implements IPipeLineExecutor {
-
-    public final static TransactionDefinition TXREQUIRED = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED);
-    public final static TransactionDefinition TXSUPPORTS = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_SUPPORTS);
-    public final static TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
-    public final static TransactionDefinition TXNOTSUPPORTED = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_NOT_SUPPORTED);
-    public final static TransactionDefinition TXMANDATORY = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_MANDATORY);
-    public final static TransactionDefinition TXNEVER = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_NEVER);
-    
-    private final static Logger log = Logger.getLogger(SpringTxPipeLineExecutor.class);
-
-    private PlatformTransactionManager txManager;
+public class SpringTxPipeLineExecutor extends SpringTxExecutorBase implements IPipeLineExecutor {
 
     protected PipeLineResult doPipeLineTransactional(TransactionDefinition txDef, PipeLine pipeLine, String messageId, String message, PipeLineSession session) throws PipeRunException {
         TransactionStatus txStatus = txManager.getTransaction(txDef);
@@ -85,14 +76,6 @@ public class SpringTxPipeLineExecutor implements IPipeLineExecutor {
 
     public PipeLineResult doPipeLineTxNever(PipeLine pipeLine, String messageId, String message, PipeLineSession session) throws PipeRunException {
         return doPipeLineTransactional(TXNEVER, pipeLine, messageId, message, session);
-    }
-
-    public PlatformTransactionManager getTxManager() {
-        return txManager;
-    }
-
-    public void setTxManager(PlatformTransactionManager txManager) {
-        this.txManager = txManager;
     }
 
 }

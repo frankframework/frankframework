@@ -1,6 +1,12 @@
 /*
  * $Log: SapFunctionFacade.java,v $
- * Revision 1.13  2007-08-03 08:41:52  europe\L190409
+ * Revision 1.13.2.1  2007-10-10 14:30:47  europe\L190409
+ * synchronize with HEAD (4.8-alpha1)
+ *
+ * Revision 1.14  2007/10/08 12:17:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * changed HashMap to Map where possible
+ *
+ * Revision 1.13  2007/08/03 08:41:52  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * avoid rare NPE
  *
  * Revision 1.12  2007/06/07 15:16:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -52,6 +58,7 @@
 package nl.nn.adapterframework.extensions.sap;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
@@ -88,7 +95,7 @@ import com.sap.mw.jco.JCO;
  * @since 4.2
  */
 public class SapFunctionFacade implements INamedObject, HasPhysicalDestination {
-	public static final String version="$RCSfile: SapFunctionFacade.java,v $  $Revision: 1.13 $ $Date: 2007-08-03 08:41:52 $";
+	public static final String version="$RCSfile: SapFunctionFacade.java,v $  $Revision: 1.13.2.1 $ $Date: 2007-10-10 14:30:47 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -104,7 +111,7 @@ public class SapFunctionFacade implements INamedObject, HasPhysicalDestination {
 	private IFunctionTemplate ftemplate;
 	private SapSystem sapSystem;
 
-	static HashMap extractors = new HashMap();
+	static Map extractors = new HashMap();
 
 	protected String getLogPrefix() {
 		return this.getClass().getName()+" ["+getName()+"] ";

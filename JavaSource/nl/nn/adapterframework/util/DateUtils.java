@@ -1,6 +1,12 @@
 /*
  * $Log: DateUtils.java,v $
- * Revision 1.9  2007-02-19 08:17:29  europe\L190409
+ * Revision 1.9.4.1  2007-10-10 14:30:36  europe\L190409
+ * synchronize with HEAD (4.8-alpha1)
+ *
+ * Revision 1.10  2007/10/08 12:25:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * removed incorrect date format
+ *
+ * Revision 1.9  2007/02/19 08:17:29  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * add convertDate() function (by Sanne Hoekstra)
  *
  * Revision 1.8  2007/02/19 07:46:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -33,7 +39,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class DateUtils {
-	public static final String version = "$RCSfile: DateUtils.java,v $ $Revision: 1.9 $ $Date: 2007-02-19 08:17:29 $";
+	public static final String version = "$RCSfile: DateUtils.java,v $ $Revision: 1.9.4.1 $ $Date: 2007-10-10 14:30:36 $";
 	protected static Logger log = LogUtil.getLogger(DateUtils.class);
 	
 
@@ -65,11 +71,6 @@ public class DateUtils {
      * Format for "HH:mm:ss"
      */
 	public final static String FORMAT_TIME_HMS         ="HH:mm:ss";	
-
-	/**
-     * Format for "dd-MM-yy HH:mm,SSS"
-     */
-	public final static String FORMAT_DATETIME_MILLISECONDS  ="dd-MM-yy HH:mm,SSS";
 
 	
 	public static String format(Date date, String dateFormat) {

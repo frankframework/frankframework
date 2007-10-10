@@ -1,7 +1,10 @@
 /*
  * $Log: ResultBlock2Sender.java,v $
- * Revision 1.5.2.1  2007-10-04 13:22:24  europe\L190409
- * synchronize with HEAD (4.7.0)
+ * Revision 1.5.2.2  2007-10-10 14:30:46  europe\L190409
+ * synchronize with HEAD (4.8-alpha1)
+ *
+ * Revision 1.6  2007/10/08 12:14:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * changed HashMap to Map where possible
  *
  * Revision 1.5  2007/09/24 14:55:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * support for parameters
@@ -23,8 +26,7 @@ package nl.nn.adapterframework.batch;
 
 import java.io.StringWriter;
 import java.util.HashMap;
-
-import org.apache.commons.lang.StringUtils;
+import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISender;
@@ -33,6 +35,8 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.ClassUtils;
+
+import org.apache.commons.lang.StringUtils;
 
 /**
  * ResultHandler that collects a number of records and sends them together to a sender.
@@ -66,8 +70,8 @@ import nl.nn.adapterframework.util.ClassUtils;
 public class ResultBlock2Sender extends Result2StringWriter {
 
 	private ISender sender = null; 
-	private HashMap counters = new HashMap();
-	private HashMap levels = new HashMap();
+	private Map counters = new HashMap();
+	private Map levels = new HashMap();
 	
 	public ResultBlock2Sender() {
 		super();

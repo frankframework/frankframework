@@ -1,7 +1,12 @@
 /*
- * Created on 19-sep-07
+ * $Log: GenericFactory.java,v $
+ * Revision 1.1.2.2  2007-10-10 14:30:41  europe\L190409
+ * synchronize with HEAD (4.8-alpha1)
  *
- * $Id: GenericFactory.java,v 1.1.2.1 2007-09-19 14:19:41 europe\M00035F Exp $
+ * Revision 1.2  2007/10/09 15:29:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * Direct copy from Ibis-EJB:
+ * first version in HEAD
+ *
  */
 package nl.nn.adapterframework.configuration;
 
@@ -19,8 +24,9 @@ package nl.nn.adapterframework.configuration;
  * the Apache Digester cannot read a factory-create-rule from XML and supply
  * parameters to the factory created from the XML.
  * 
- * @author m00035f
- *
+ * @author  Tim van der Leeuw
+ * @since   4.8
+ * @version Id
  */
 public class GenericFactory extends AbstractSpringPoweredDigesterFactory {
 

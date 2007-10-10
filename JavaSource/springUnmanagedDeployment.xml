@@ -1,4 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  $Log: springUnmanagedDeployment.xml,v $
+  Revision 1.1.2.2  2007-10-10 14:30:45  europe\L190409
+  synchronize with HEAD (4.8-alpha1)
+
+  Revision 1.2  2007/10/10 07:54:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+  Direct copy from Ibis-EJB:
+  first version in HEAD
+
+-->
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:util="http://www.springframework.org/schema/util"

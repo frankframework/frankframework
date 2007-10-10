@@ -1,3 +1,12 @@
+/*
+ * $Log: AdapterHandler.java,v $
+ * Revision 1.3.6.4  2007-10-10 14:30:38  europe\L190409
+ * synchronize with HEAD (4.8-alpha1)
+ *
+ * Revision 1.4  2007/10/10 07:30:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * execute control via IbisManager
+ *
+ */
 package nl.nn.adapterframework.webcontrol.action;
 
 import org.apache.struts.action.ActionForm;
@@ -16,44 +25,44 @@ import java.io.IOException;
  */
 
 public final class AdapterHandler extends ActionBase {
-		public static final String version="$RCSfile: AdapterHandler.java,v $ $Revision: 1.3.6.3 $ $Date: 2007-09-18 11:20:40 $";
+	public static final String version="$RCSfile: AdapterHandler.java,v $ $Revision: 1.3.6.4 $ $Date: 2007-10-10 14:30:38 $";
 
 
 
 public ActionForward execute(
-    ActionMapping mapping,
-    ActionForm form,
-    HttpServletRequest request,
-    HttpServletResponse response)
-    throws IOException, ServletException {
+	ActionMapping mapping,
+	ActionForm form,
+	HttpServletRequest request,
+	HttpServletResponse response)
+	throws IOException, ServletException {
 	String adapterName=null;
 	String receiverName=null;
-    // Initialize action
-    initAction(request);
+	// Initialize action
+	initAction(request);
 
-    if (null == ibisManager) {
-        return (mapping.findForward("noconfig"));
-    }
-    String action = request.getParameter("action");
-    if (null == action)
-        action = mapping.getParameter();
+	if (null == ibisManager) {
+		return (mapping.findForward("noconfig"));
+	}
+	String action = request.getParameter("action");
+	if (null == action)
+		action = mapping.getParameter();
         
-    adapterName = request.getParameter("adapterName");
-    receiverName = request.getParameter("receiverName");
-    log.debug("action ["+action+"] adapterName ["+adapterName+"] receiverName ["+receiverName+"]");
+	adapterName = request.getParameter("adapterName");
+	receiverName = request.getParameter("receiverName");
+	log.debug("action ["+action+"] adapterName ["+adapterName+"] receiverName ["+receiverName+"]");
     
 
-    //commandIssuedBy containes information about the location the
-    // command is sent from
+	//commandIssuedBy containes information about the location the
+	// command is sent from
 	String commandIssuedBy= getCommandIssuedBy(request);
 	        
-    ibisManager.handleAdapter(action,adapterName,receiverName, commandIssuedBy);
+	ibisManager.handleAdapter(action,adapterName,receiverName, commandIssuedBy);
     
-    // Report any errors we have discovered back to the original form
-    if (!errors.isEmpty()) {
-        saveErrors(request, errors);
-    } // Forward control to the specified success URI
-    log.debug("forward to success");
-    return (mapping.findForward("success"));
+	// Report any errors we have discovered back to the original form
+	if (!errors.isEmpty()) {
+		saveErrors(request, errors);
+	} // Forward control to the specified success URI
+	log.debug("forward to success");
+	return (mapping.findForward("success"));
 }
 }

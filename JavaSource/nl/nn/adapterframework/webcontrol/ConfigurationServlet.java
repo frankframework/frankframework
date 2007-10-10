@@ -1,6 +1,13 @@
 /*
  * $Log: ConfigurationServlet.java,v $
- * Revision 1.10.2.6  2007-10-05 13:09:34  europe\M00035F
+ * Revision 1.10.2.7  2007-10-10 14:30:47  europe\L190409
+ * synchronize with HEAD (4.8-alpha1)
+ *
+ * Revision 1.11  2007/10/10 09:43:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * Direct copy from Ibis-EJB:
+ * version using IbisManager
+ *
+ * Revision 1.10.2.6  2007/10/05 13:09:34  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
  * Fix NPE which happened when IbisManager was not yet set in the ServletContext, as happens during init
  *
  * Revision 1.10.2.5  2007/10/05 12:57:44  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
@@ -45,6 +52,7 @@ import nl.nn.adapterframework.configuration.IbisMain;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.RunStateEnum;
 
@@ -67,9 +75,10 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class ConfigurationServlet extends HttpServlet {
-	public static final String KEY_MANAGER = "KEY_MANAGER";
-	public static final String version = "$RCSfile: ConfigurationServlet.java,v $ $Revision: 1.10.2.6 $ $Date: 2007-10-05 13:09:34 $";
+	public static final String version = "$RCSfile: ConfigurationServlet.java,v $ $Revision: 1.10.2.7 $ $Date: 2007-10-10 14:30:47 $";
     protected Logger log = LogUtil.getLogger(this);
+
+	public static final String KEY_MANAGER = "KEY_MANAGER";
 
     static final String DFLT_SPRING_CONTEXT = "springContext.xml";
     static final String EJB_SPRING_CONTEXT = "springContextEjbWeb.xml";
@@ -162,8 +171,7 @@ public class ConfigurationServlet extends HttpServlet {
 
         if (areAdaptersStopped()) {
             IbisMain im=new IbisMain();
-            boolean success = im.initConfig(
-                    springContext, configurationFile, autoStart);
+            boolean success = im.initConfig(springContext, configurationFile, autoStart);
             if (success) {
                 out.println("<p> Configuration successfully completed</p></body>");
             } else {
@@ -173,9 +181,7 @@ public class ConfigurationServlet extends HttpServlet {
                 }
             }
             ServletContext ctx = getServletContext();
-            ctx.setAttribute(
-                    AppConstants.getInstance().getProperty(KEY_MANAGER),
-                    im.getIbisManager());
+            ctx.setAttribute(AppConstants.getInstance().getProperty(KEY_MANAGER), im.getIbisManager());
         } else {
             out.println(
                     "<p>Action cancelled: some adapters are still running.</p>");
@@ -215,16 +221,13 @@ public class ConfigurationServlet extends HttpServlet {
         String springContext = getInitParameter("springContext");
         
         if (areAdaptersStopped()) {
-            boolean success = im.initConfig(springContext,
-                    configurationFile, autoStart);
+            boolean success = im.initConfig(springContext, configurationFile, autoStart);
             if (success)
                 log.info("Configuration succeeded");
             else
                 log.warn("Configuration did not succeed, please examine log");
             ServletContext ctx = getServletContext();
-            ctx.setAttribute(
-                AppConstants.getInstance().getResolvedProperty(KEY_MANAGER),
-                im.getIbisManager());
+            ctx.setAttribute(AppConstants.getInstance().getResolvedProperty(KEY_MANAGER), im.getIbisManager());
             log.debug("Servlet init finished");
         } else
             log.warn("Not all adapters are stopped, cancelling ConfigurationServlet");

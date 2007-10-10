@@ -1,6 +1,12 @@
 /*
  * $Log: XmlBuilder.java,v $
- * Revision 1.7  2006-11-13 15:43:15  europe\L190409
+ * Revision 1.7.4.1  2007-10-10 14:30:36  europe\L190409
+ * synchronize with HEAD (4.8-alpha1)
+ *
+ * Revision 1.8  2007/10/08 13:35:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * changed ArrayList to List where possible
+ *
+ * Revision 1.7  2006/11/13 15:43:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected version string
  *
  */
@@ -9,6 +15,7 @@ package nl.nn.adapterframework.util;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Vector;
 /**
  * Builds a XML-element with attributes and sub-elements. 
@@ -20,9 +27,9 @@ import java.util.Vector;
  * @author Johan Verrips
  **/
 public class XmlBuilder {
-	public static final String version = "$RCSfile: XmlBuilder.java,v $ $Revision: 1.7 $ $Date: 2006-11-13 15:43:15 $";
+	public static final String version = "$RCSfile: XmlBuilder.java,v $ $Revision: 1.7.4.1 $ $Date: 2007-10-10 14:30:36 $";
 	
-  private ArrayList attributeNames = new ArrayList();;
+  private List attributeNames = new ArrayList();;
   private Hashtable attributes = new Hashtable();;
   private String value;
   private Vector subElements=new Vector();

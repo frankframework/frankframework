@@ -1,12 +1,13 @@
 /*
- * IbisManagerEjbBean.java
- * 
- * Created on 5-okt-2007, 11:37:40
- * 
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * $Log: IbisManagerEjbBean.java,v $
+ * Revision 1.1.2.2  2007-10-10 14:30:43  europe\L190409
+ * synchronize with HEAD (4.8-alpha1)
+ *
+ * Revision 1.2  2007/10/09 16:07:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * Direct copy from Ibis-EJB:
+ * first version in HEAD
+ *
  */
-
 package nl.nn.adapterframework.ejb;
 
 import java.rmi.RemoteException;
@@ -26,7 +27,9 @@ import org.apache.log4j.Logger;
  * The base-class {@link AbstractEJBBase} takes care of initializing the
  * Spring context in it's static class initialization.
  * 
- * @author m00035f
+ * @author  Tim van der Leeuw
+ * @since   4.8
+ * @version Id
  */
 public class IbisManagerEjbBean extends AbstractEJBBase implements SessionBean, IbisManager {
     private final static Logger log = Logger.getLogger(IbisManagerEjbBean.class);

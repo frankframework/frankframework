@@ -1,6 +1,12 @@
 /*
  * $Log: FTPsClient.java,v $
- * Revision 1.8  2007-05-11 09:39:30  europe\L190409
+ * Revision 1.8.4.1  2007-10-10 14:30:47  europe\L190409
+ * synchronize with HEAD (4.8-alpha1)
+ *
+ * Revision 1.9  2007/10/08 13:30:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * changed ArrayList to List where possible
+ *
+ * Revision 1.8  2007/05/11 09:39:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * make class public
  *
  * Revision 1.7  2007/02/12 13:50:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -39,6 +45,7 @@ import java.security.GeneralSecurityException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.List;
 
 import nl.nn.adapterframework.http.AuthSSLProtocolSocketFactoryBase;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -59,7 +66,7 @@ import org.apache.log4j.Logger;
  * @author John Dekker
  */
 public class FTPsClient extends FTPClient {
-	public static final String version = "$RCSfile: FTPsClient.java,v $  $Revision: 1.8 $ $Date: 2007-05-11 09:39:30 $";
+	public static final String version = "$RCSfile: FTPsClient.java,v $  $Revision: 1.8.4.1 $ $Date: 2007-10-10 14:30:47 $";
 	protected Logger log = LogUtil.getLogger(this);
 	
 	private FtpSession session;
@@ -271,7 +278,7 @@ public class FTPsClient extends FTPClient {
 	
 		int replyCode = 0;
 		StringBuffer reply = new StringBuffer();
-		ArrayList replyList = new ArrayList();
+		List replyList = new ArrayList();
 		String line = reader.readLine();
 	
 		if (line == null)

@@ -1,7 +1,10 @@
 /*
  * $Log: RecordHandlingFlow.java,v $
- * Revision 1.7.2.1  2007-10-04 13:07:12  europe\L190409
- * synchronize with HEAD (4.7.0)
+ * Revision 1.7.2.2  2007-10-10 14:30:46  europe\L190409
+ * synchronize with HEAD (4.8-alpha1)
+ *
+ * Revision 1.11  2007/10/08 12:14:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * changed HashMap to Map where possible
  *
  * Revision 1.10  2007/09/24 13:02:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
@@ -34,7 +37,7 @@
  */
 package nl.nn.adapterframework.batch;
 
-import java.util.HashMap;
+import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.util.LogUtil;
@@ -67,7 +70,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public final class RecordHandlingFlow {
-	public static final String version = "$RCSfile: RecordHandlingFlow.java,v $  $Revision: 1.7.2.1 $ $Date: 2007-10-04 13:07:12 $";
+	public static final String version = "$RCSfile: RecordHandlingFlow.java,v $  $Revision: 1.7.2.2 $ $Date: 2007-10-10 14:30:46 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String recordKey;
@@ -86,7 +89,7 @@ public final class RecordHandlingFlow {
 	private IRecordHandlerManager nextRecordHandlerManager;
 	private IResultHandler resultHandler;
 	
-	public void configure(IRecordHandlerManager manager, HashMap registeredManagers, HashMap registeredRecordHandlers, HashMap registeredResultHandlers, IResultHandler defaultHandler) throws ConfigurationException {
+	public void configure(IRecordHandlerManager manager, Map registeredManagers, Map registeredRecordHandlers, Map registeredResultHandlers, IResultHandler defaultHandler) throws ConfigurationException {
 		if (StringUtils.isNotEmpty(getRecordHandlerManagerRef()) &&
 		    !getRecordHandlerManagerRef().equals(manager.getName())) {
 		    	throw new ConfigurationException("recordHandlerManagerRef ["+getRecordHandlerManagerRef()+"] should be either equal to name of manager ["+manager.getName()+"], or left unspecified");
