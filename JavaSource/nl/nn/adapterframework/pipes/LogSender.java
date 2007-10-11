@@ -1,6 +1,9 @@
 /*
  * $Log: LogSender.java,v $
- * Revision 1.6  2007-09-13 09:09:43  europe\L190409
+ * Revision 1.6.4.1  2007-10-11 15:09:15  europe\L190409
+ * added hex log feature
+ *
+ * Revision 1.6  2007/09/13 09:09:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * return message instead of correlationid
  *
  * Revision 1.5  2007/02/12 14:02:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -43,6 +46,7 @@ import org.apache.log4j.Logger;
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setLogLevel(String) logLevel}</td><td>level on which messages are logged</td><td>info</td></tr>
  * <tr><td>{@link #setLogCategory(String) logCategory}</td><td>category under which messages are logged</td><td>name of the sender</td></tr>
+ * <tr><td>{@link #setHex(boolean) hex}</td><td>when <code>true</code>, the message will be logged in a hex format, too</td><td>false</td></tr>
  * </table>
  * 
  * @author Gerrit van Brakel
@@ -50,10 +54,11 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class LogSender extends SenderWithParametersBase implements IParameterHandler {
-	public static final String version="$RCSfile: LogSender.java,v $ $Revision: 1.6 $ $Date: 2007-09-13 09:09:43 $";
+	public static final String version="$RCSfile: LogSender.java,v $ $Revision: 1.6.4.1 $ $Date: 2007-10-11 15:09:15 $";
 	
 	private String logLevel="info";
 	private String logCategory=null;
+	private boolean hex=false;
 
 	protected Level level;
 	protected Logger log;
@@ -70,6 +75,9 @@ public class LogSender extends SenderWithParametersBase implements IParameterHan
 
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		log.log(level,message);
+		if (isHex()) {
+			log.log(level,dumpHEX(message));
+		}
 		
 		if (prc != null) {
 			try {
@@ -80,6 +88,18 @@ public class LogSender extends SenderWithParametersBase implements IParameterHan
 		}
 		
 		return message;
+	}
+
+	private String dumpHEX( String str )
+	{
+		StringBuffer s=new StringBuffer();
+		for(int i=0; i<str.length(); ++i) {
+			char c = str.charAt(i);
+			String x="("+c+") "+(int)c+" 0x"+Integer.toHexString(c);
+			s.append(x);
+			s.append("\n");
+		}
+		return s.toString();
 	}
 
 	public void handleParam(String paramName, Object value) {
@@ -112,5 +132,11 @@ public class LogSender extends SenderWithParametersBase implements IParameterHan
 		return "LogSender ["+getName()+"] logLevel ["+getLogLevel()+"] logCategory ["+logCategory+"]";
 	}
 
+	public void setHex(boolean b) {
+		hex = b;
+	}
+	public boolean isHex() {
+		return hex;
+	}
 
 }
