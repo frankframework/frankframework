@@ -1,6 +1,15 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.43  2007-10-10 07:23:53  europe\L190409
+ * Revision 1.44  2007-10-15 13:13:44  europe\L190409
+ * fixed typo + modified Xerces version retrieval
+ *
+ * Revision 1.41.2.3  2007/10/12 09:09:07  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
+ * Fix compilation-problems after code-merge
+ *
+ * Revision 1.41.2.2  2007/10/10 14:30:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * synchronize with HEAD (4.8-alpha1)
+ *
+ * Revision 1.43  2007/10/10 07:23:53  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * multiple style versions of Xerces
  *
  * Revision 1.42  2007/10/08 12:25:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -185,7 +194,7 @@ import org.xml.sax.helpers.DefaultHandler;
  * @version Id
  */
 public class XmlUtils {
-	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.43 $ $Date: 2007-10-10 07:23:53 $";
+	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.44 $ $Date: 2007-10-15 13:13:44 $";
 	static Logger log = LogUtil.getLogger(XmlUtils.class);
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
@@ -236,7 +245,7 @@ public class XmlUtils {
 		try {
 			in.close();
 		} catch (IOException e) {
-			log.debug("Ëxception closing file", e);
+			log.debug("Exception closing file", e);
 		}
 		return output;
 	}
@@ -1095,7 +1104,7 @@ public class XmlUtils {
 			sb.append("Xerces-Version(old style) not found ("+t.getClass().getName()+": "+t.getMessage()+")"+SystemUtils.LINE_SEPARATOR);
 		}
 		try {
-			sb.append("Xerces-Version(new style)="+org.apache.xerces.impl.Version.fVersion+SystemUtils.LINE_SEPARATOR);
+			sb.append("Xerces-Version(new style)="+org.apache.xerces.impl.Version.getVersion()+SystemUtils.LINE_SEPARATOR);
 		}  catch (Throwable t) {
 			sb.append("Xerces-Version(new style) not found ("+t.getClass().getName()+": "+t.getMessage()+")"+SystemUtils.LINE_SEPARATOR);
 		}
