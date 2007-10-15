@@ -1,6 +1,18 @@
 /*
  * $Log: IbisManagerEjbBean.java,v $
- * Revision 1.2  2007-10-09 16:07:37  europe\L190409
+ * Revision 1.3  2007-10-15 13:08:37  europe\L190409
+ * EJB updates
+ *
+ * Revision 1.1.2.4  2007/10/15 11:35:51  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
+ * Fix direct retrieving of Logger w/o using the LogUtil
+ *
+ * Revision 1.1.2.3  2007/10/15 09:51:57  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
+ * Add back transaction-management to BrowseExecute action
+ *
+ * Revision 1.1.2.2  2007/10/10 14:30:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * synchronize with HEAD (4.8-alpha1)
+ *
+ * Revision 1.2  2007/10/09 16:07:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Direct copy from Ibis-EJB:
  * first version in HEAD
  *
@@ -15,7 +27,9 @@ import javax.ejb.SessionContext;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.util.LogUtil;
 import org.apache.log4j.Logger;
+import org.springframework.transaction.PlatformTransactionManager;
 
 /**
  * EJB layer around the IbisManager implementation which is defined in the
@@ -29,7 +43,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class IbisManagerEjbBean extends AbstractEJBBase implements SessionBean, IbisManager {
-    private final static Logger log = Logger.getLogger(IbisManagerEjbBean.class);
+    private final static Logger log = LogUtil.getLogger(IbisManagerEjbBean.class);
     
     SessionContext sessionContext;
     
@@ -91,6 +105,10 @@ public class IbisManagerEjbBean extends AbstractEJBBase implements SessionBean, 
 
     public int getDeploymentMode() {
         return manager.getDeploymentMode();
+    }
+
+    public PlatformTransactionManager getTransactionManager() {
+        return manager.getTransactionManager();
     }
 
 }

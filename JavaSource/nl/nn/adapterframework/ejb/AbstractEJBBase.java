@@ -1,6 +1,18 @@
 /*
  * $Log: AbstractEJBBase.java,v $
- * Revision 1.2  2007-10-09 16:07:37  europe\L190409
+ * Revision 1.3  2007-10-15 13:08:38  europe\L190409
+ * EJB updates
+ *
+ * Revision 1.1.2.4  2007/10/15 08:37:29  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
+ * Use LogUtil for retrieving logging-instance
+ *
+ * Revision 1.1.2.3  2007/10/12 11:53:42  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
+ * Add variable to indicate to MDB if it's transactions are container-managed, or bean-managed
+ *
+ * Revision 1.1.2.2  2007/10/10 14:30:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * synchronize with HEAD (4.8-alpha1)
+ *
+ * Revision 1.2  2007/10/09 16:07:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Direct copy from Ibis-EJB:
  * first version in HEAD
  *
@@ -13,6 +25,7 @@ import javax.naming.NamingException;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisMain;
 import nl.nn.adapterframework.configuration.IbisManager;
+import nl.nn.adapterframework.util.LogUtil;
 import org.apache.log4j.Logger;
 import org.springframework.jndi.JndiLookupFailureException;
 
@@ -24,7 +37,7 @@ import org.springframework.jndi.JndiLookupFailureException;
  */
 abstract public class AbstractEJBBase {
     public static final String COMP_ENV_JNDI_PREFIX = "java:comp/env/";
-    private final static Logger log = Logger.getLogger(AbstractEJBBase.class);
+    private final static Logger log = LogUtil.getLogger(AbstractEJBBase.class);
     
     protected static IbisMain main;
     protected static IbisManager manager;
@@ -58,12 +71,12 @@ abstract public class AbstractEJBBase {
         return context;
     }
     
-    protected String getContextVariable(String varName) {
+    protected Object getContextVariable(String varName) throws JndiLookupFailureException {
         try {
             if (!varName.startsWith(COMP_ENV_JNDI_PREFIX)) {
                 varName = COMP_ENV_JNDI_PREFIX + varName;
             }
-            return (String) getContext().lookup(varName);
+            return getContext().lookup(varName);
         } catch (NamingException ex) {
             throw new JndiLookupFailureException(varName, ex);
         }
