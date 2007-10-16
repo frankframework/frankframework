@@ -1,6 +1,9 @@
 /*
  * $Log: PasswordGeneratorPipe.java,v $
- * Revision 1.1  2006-09-18 13:08:42  europe\L190409
+ * Revision 1.2  2007-10-16 07:53:14  europe\m00f069
+ * Added set/get methods for lCharacters, uCharacters, numbers and signs. Fixed some typo's in javadoc.
+ *
+ * Revision 1.1  2006/09/18 13:08:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * first version
  *
  */
@@ -28,11 +31,15 @@ import nl.nn.adapterframework.core.PipeRunResult;
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMaxThreads(int) maxThreads}</td><td>maximum number of threads that may call {@link #doPipe(Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously</td><td>0 (unlimited)</td></tr>
  * <tr><td>{@link #setForwardName(String) forwardName}</td>  <td>name of forward returned upon completion</td><td>"success"</td></tr>
- * <tr><td>{@link #setUseSecureRandom(String) useSecureRandom}</td>  <td>Whether the SecureRandom algorithm is to be used (slower)</td><td>true</td></tr>
- * <tr><td>{@link #setNumOfLCharacters(int) numOfLCharacters}</td><td>The number of lowercase characters ('a'..'z') in the generated password</td><td>2</td></tr>
- * <tr><td>{@link #setNumOfUCharacters(int) numOfUCharacters}</td><td>The number of uppercase characters ('A'..'Z') in the generated password</td><td>2</td></tr>
- * <tr><td>{@link #setNumOfDigitss(int) numOfDigits}</td><td>The number of digits ('0'..'9') in the generated password</td><td>2</td></tr>
- * <tr><td>{@link #setNumOfSigns(int) numOfSigns}</td><td>The number of sign characters (one of ;:_%$#@!&gt;&lt;) in the generated password</td><td>2</td></tr>
+ * <tr><td>{@link #setLCharacters(String) lCharacters}</td><td>The lowercase characters to use</td><td>('a'..'z')</td></tr>
+ * <tr><td>{@link #setUCharacters(String) uCharacters}</td><td>The uppercase characters to use</td><td>('A'..'Z')</td></tr>
+ * <tr><td>{@link #setNumbers(String) numbers}</td><td>The numbers to use</td><td>('0'..'9')</td></tr>
+ * <tr><td>{@link #setSigns(String) signs}</td><td>The signs to use</td><td>(;:_%$#@!&gt;&lt;)</td></tr>
+ * <tr><td>{@link #setUseSecureRandom(boolean) useSecureRandom}</td>  <td>Whether the SecureRandom algorithm is to be used (slower)</td><td>true</td></tr>
+ * <tr><td>{@link #setNumOfLCharacters(int) numOfLCharacters}</td><td>The number of lowercase characters in the generated password</td><td>2</td></tr>
+ * <tr><td>{@link #setNumOfUCharacters(int) numOfUCharacters}</td><td>The number of uppercase characters in the generated password</td><td>2</td></tr>
+ * <tr><td>{@link #setNumOfDigits(int) numOfDigits}</td><td>The number of digits in the generated password</td><td>2</td></tr>
+ * <tr><td>{@link #setNumOfSigns(int) numOfSigns}</td><td>The number of sign characters in the generated password</td><td>2</td></tr>
  * </table>
  * </p>
  * <p><b>Exits:</b>
@@ -47,12 +54,12 @@ import nl.nn.adapterframework.core.PipeRunResult;
  * @since   4.5
  */
 public class PasswordGeneratorPipe extends FixedForwardPipe {
-	public static final String version = "$RCSfile: PasswordGeneratorPipe.java,v $ $Revision: 1.1 $ $Date: 2006-09-18 13:08:42 $";
+	public static final String version = "$RCSfile: PasswordGeneratorPipe.java,v $ $Revision: 1.2 $ $Date: 2007-10-16 07:53:14 $";
 	
-	private static final String LCHARACTERS="abcdefghijklmnopqrstuvwxyz";
-	private static final String UCHARACTERS="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-	private static final String NUMBERS="0123456789";
-	private static final String SIGNS=";:_%$#@!><";
+	private String lCharacters="abcdefghijklmnopqrstuvwxyz";
+	private String uCharacters="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+	private String numbers="0123456789";
+	private String signs=";:_%$#@!><";
 	
 	private SecureRandom random;
 	private boolean useSecureRandom = true; // more secure but mutch slower
@@ -97,10 +104,10 @@ public class PasswordGeneratorPipe extends FixedForwardPipe {
     
 	protected  String generate(int numOfLCharacters, int numOfUCharacters, int numOfSigns, int numOfNumbers){
 		StringBuffer resultSb=new StringBuffer();
-		resultSb.append(getRandomElementsOfString(LCHARACTERS, numOfLCharacters));
-		resultSb.append(getRandomElementsOfString(UCHARACTERS, numOfUCharacters));
-		resultSb.append(getRandomElementsOfString(SIGNS, numOfSigns));
-		resultSb.append(getRandomElementsOfString(NUMBERS, numOfNumbers));
+		resultSb.append(getRandomElementsOfString(getLCharacters(), numOfLCharacters));
+		resultSb.append(getRandomElementsOfString(getUCharacters(), numOfUCharacters));
+		resultSb.append(getRandomElementsOfString(getSigns(), numOfSigns));
+		resultSb.append(getRandomElementsOfString(getNumbers(), numOfNumbers));
 		String result=garbleString(resultSb.toString());
 		return result;
 	}
@@ -151,6 +158,38 @@ public class PasswordGeneratorPipe extends FixedForwardPipe {
 	 */
 	public void setUseSecureRandom(boolean b) {
 		useSecureRandom = b;
+	}
+
+	public String getLCharacters() {
+		return lCharacters;
+	}
+
+	public void setLCharacters(String lCharacters) {
+		this.lCharacters = lCharacters;
+	}
+
+	public String getUCharacters() {
+		return uCharacters;
+	}
+
+	public void setUCharacters(String uCharacters) {
+		this.uCharacters = uCharacters;
+	}
+
+	public String getNumbers() {
+		return numbers;
+	}
+
+	public void setNumbers(String numbers) {
+		this.numbers = numbers;
+	}
+
+	public String getSigns() {
+		return signs;
+	}
+
+	public void setSigns(String signs) {
+		this.signs = signs;
 	}
 
 	public int getNumOfLCharacters() {
