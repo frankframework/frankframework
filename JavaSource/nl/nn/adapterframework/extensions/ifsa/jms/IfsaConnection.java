@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaConnection.java,v $
- * Revision 1.1  2007-10-16 08:15:43  europe\L190409
+ * Revision 1.2  2007-10-16 08:39:30  europe\L190409
+ * moved IfsaException and IfsaMessageProtocolEnum back to main package
+ *
+ * Revision 1.1  2007/10/16 08:15:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * introduced switch class for jms and ejb
  *
  * Revision 1.12  2007/10/08 12:17:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -57,6 +60,7 @@ import javax.jms.QueueReceiver;
 import javax.jms.QueueSession;
 import javax.naming.NamingException;
 
+import nl.nn.adapterframework.extensions.ifsa.IfsaException;
 import nl.nn.adapterframework.jms.ConnectionBase;
 import nl.nn.adapterframework.util.AppConstants;
 
@@ -74,7 +78,7 @@ import com.ing.ifsa.IFSAQueueConnectionFactory;
  * @version Id
  */
 public class IfsaConnection extends ConnectionBase {
-	public static final String version="$RCSfile: IfsaConnection.java,v $ $Revision: 1.1 $ $Date: 2007-10-16 08:15:43 $";
+	public static final String version="$RCSfile: IfsaConnection.java,v $ $Revision: 1.2 $ $Date: 2007-10-16 08:39:30 $";
 
 	private final static String CLEANUP_ON_CLOSE_KEY="ifsa.cleanUpOnClose";
 	private static Boolean cleanUpOnClose=null; 

@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaFacade.java,v $
- * Revision 1.1  2007-10-16 08:15:43  europe\L190409
+ * Revision 1.2  2007-10-16 08:39:30  europe\L190409
+ * moved IfsaException and IfsaMessageProtocolEnum back to main package
+ *
+ * Revision 1.1  2007/10/16 08:15:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * introduced switch class for jms and ejb
  *
  * Revision 1.46  2007/09/05 15:48:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -147,6 +150,8 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IbisException;
+import nl.nn.adapterframework.extensions.ifsa.IfsaException;
+import nl.nn.adapterframework.extensions.ifsa.IfsaMessageProtocolEnum;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.LogUtil;
@@ -193,7 +198,7 @@ import com.ing.ifsa.IFSAServerQueueSender;
  * @since 4.2
  */
 public class IfsaFacade implements INamedObject, HasPhysicalDestination {
-	public static final String version = "$RCSfile: IfsaFacade.java,v $ $Revision: 1.1 $ $Date: 2007-10-16 08:15:43 $";
+	public static final String version = "$RCSfile: IfsaFacade.java,v $ $Revision: 1.2 $ $Date: 2007-10-16 08:39:30 $";
     protected Logger log = LogUtil.getLogger(this);
     
     private static int BASIC_ACK_MODE = Session.AUTO_ACKNOWLEDGE;

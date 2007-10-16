@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaProviderListener.java,v $
- * Revision 1.1  2007-10-16 08:15:43  europe\L190409
+ * Revision 1.2  2007-10-16 08:39:30  europe\L190409
+ * moved IfsaException and IfsaMessageProtocolEnum back to main package
+ *
+ * Revision 1.1  2007/10/16 08:15:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * introduced switch class for jms and ejb
  *
  * Revision 1.33  2007/10/03 08:32:41  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -136,6 +139,8 @@ import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
+import nl.nn.adapterframework.extensions.ifsa.IfsaException;
+import nl.nn.adapterframework.extensions.ifsa.IfsaMessageProtocolEnum;
 import nl.nn.adapterframework.receivers.MessageWrapper;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.JtaUtil;
@@ -198,7 +203,7 @@ import com.ing.ifsa.IFSATextMessage;
  * @version Id
  */
 public class IfsaProviderListener extends IfsaFacade implements IPullingListener, INamedObject, RunStateEnquiring {
-	public static final String version = "$RCSfile: IfsaProviderListener.java,v $ $Revision: 1.1 $ $Date: 2007-10-16 08:15:43 $";
+	public static final String version = "$RCSfile: IfsaProviderListener.java,v $ $Revision: 1.2 $ $Date: 2007-10-16 08:39:30 $";
 
     private final static String THREAD_CONTEXT_SESSION_KEY = "session";
     private final static String THREAD_CONTEXT_RECEIVER_KEY = "receiver";

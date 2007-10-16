@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaRequesterSender.java,v $
- * Revision 1.1  2007-10-16 08:15:43  europe\L190409
+ * Revision 1.2  2007-10-16 08:39:30  europe\L190409
+ * moved IfsaException and IfsaMessageProtocolEnum back to main package
+ *
+ * Revision 1.1  2007/10/16 08:15:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * introduced switch class for jms and ejb
  *
  * Revision 1.28  2007/10/08 12:16:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -108,6 +111,8 @@ import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.extensions.ifsa.IfsaException;
+import nl.nn.adapterframework.extensions.ifsa.IfsaMessageProtocolEnum;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
@@ -152,7 +157,7 @@ import com.ing.ifsa.IFSATimeOutMessage;
  * @since  4.2
  */
 public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParameters {
-	public static final String version="$RCSfile: IfsaRequesterSender.java,v $ $Revision: 1.1 $ $Date: 2007-10-16 08:15:43 $";
+	public static final String version="$RCSfile: IfsaRequesterSender.java,v $ $Revision: 1.2 $ $Date: 2007-10-16 08:39:30 $";
  
 	protected ParameterList paramList = null;
 	
