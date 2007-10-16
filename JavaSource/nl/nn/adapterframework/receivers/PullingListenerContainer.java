@@ -1,6 +1,9 @@
 /*
  * $Log: PullingListenerContainer.java,v $
- * Revision 1.2  2007-10-10 08:53:18  europe\L190409
+ * Revision 1.3  2007-10-16 13:02:09  europe\M00035F
+ * Add ReceiverBaseSpring from EJB branch
+ *
+ * Revision 1.2  2007/10/10 08:53:18  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Direct copy from Ibis-EJB:
  * first version in HEAD
  *
@@ -35,7 +38,7 @@ public class PullingListenerContainer implements Runnable {
 
     private final static TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
 
-    ReceiverBase receiver;
+    ReceiverBaseSpring receiver;
     PlatformTransactionManager txManager;
     private Counter threadsRunning = new Counter(0);
     private Semaphore pollToken = null;
@@ -180,11 +183,11 @@ public class PullingListenerContainer implements Runnable {
         }
     }
 
-    public ReceiverBase getReceiver() {
+    public ReceiverBaseSpring getReceiver() {
         return receiver;
     }
 
-    public void setReceiver(ReceiverBase receiver) {
+    public void setReceiver(ReceiverBaseSpring receiver) {
         this.receiver = receiver;
     }
     
