@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractJmsConfigurator.java,v $
- * Revision 1.2  2007-10-10 07:49:57  europe\L190409
+ * Revision 1.3  2007-10-16 09:52:35  europe\M00035F
+ * Change over JmsListener to a 'switch-class' to facilitate smoother switchover from older version to spring version
+ *
+ * Revision 1.2  2007/10/10 07:49:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Direct copy from Ibis-EJB:
  * first version in HEAD
  *
@@ -16,7 +19,7 @@ import javax.naming.NamingException;
 import org.apache.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.jms.JmsListener;
+import nl.nn.adapterframework.jms.PushingJmsListener;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
@@ -29,12 +32,12 @@ import nl.nn.adapterframework.util.LogUtil;
 abstract public class AbstractJmsConfigurator {
 	protected Logger log=LogUtil.getLogger(this);
    
-    private JmsListener jmsListener;
+    private PushingJmsListener jmsListener;
     private Context context;
     private Destination destination;
     private String destinationName;
 
-    public void configureJmsReceiver(final JmsListener jmsListener) throws ConfigurationException {
+    public void configureJmsReceiver(final PushingJmsListener jmsListener) throws ConfigurationException {
         this.jmsListener = jmsListener;
         setDestinationName(jmsListener.getDestinationName());
         setDestination(createDestination(jmsListener.getDestinationName()));
@@ -85,11 +88,11 @@ abstract public class AbstractJmsConfigurator {
         this.destinationName = destinationName;
     }
 
-    public JmsListener getJmsListener() {
+    public PushingJmsListener getJmsListener() {
         return jmsListener;
     }
 
-    public void setJmsListener(JmsListener jmsListener) {
+    public void setJmsListener(PushingJmsListener jmsListener) {
         this.jmsListener = jmsListener;
     }
 

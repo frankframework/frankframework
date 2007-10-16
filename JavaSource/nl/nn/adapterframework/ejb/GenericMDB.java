@@ -1,6 +1,9 @@
 /*
  * $Log: GenericMDB.java,v $
- * Revision 1.3  2007-10-15 13:08:38  europe\L190409
+ * Revision 1.4  2007-10-16 09:52:35  europe\M00035F
+ * Change over JmsListener to a 'switch-class' to facilitate smoother switchover from older version to spring version
+ *
+ * Revision 1.3  2007/10/15 13:08:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * EJB updates
  *
  * Revision 1.1.2.6  2007/10/15 11:35:51  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
@@ -28,7 +31,7 @@ import javax.jms.Message;
 import javax.jms.MessageListener;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.jms.JmsListener;
+import nl.nn.adapterframework.jms.PushingJmsListener;
 import nl.nn.adapterframework.receivers.GenericReceiver;
 import nl.nn.adapterframework.util.LogUtil;
 import org.apache.log4j.Logger;
@@ -43,7 +46,7 @@ public class GenericMDB extends AbstractEJBBase implements MessageDrivenBean, Me
     private final static Logger log = LogUtil.getLogger(GenericMDB.class);
     
     protected MessageDrivenContext ejbContext;
-    protected JmsListener listener;
+    protected PushingJmsListener listener;
     protected boolean containerManagedTransactions;
     
     public void setMessageDrivenContext(MessageDrivenContext ejbContext) throws EJBException {
@@ -98,16 +101,16 @@ public class GenericMDB extends AbstractEJBBase implements MessageDrivenBean, Me
         }
     }
 
-    protected JmsListener retrieveJmsListener() {
+    protected PushingJmsListener retrieveJmsListener() {
         String adapterName = (String) getContextVariable("adapterName");
         String receiverName = (String) getContextVariable("receiverName");
         return retrieveJmsListener(receiverName, adapterName);
     }
 
-    protected JmsListener retrieveJmsListener(String receiverName, String adapterName) {
+    protected PushingJmsListener retrieveJmsListener(String receiverName, String adapterName) {
         IAdapter adapter = config.getRegisteredAdapter(adapterName);
         GenericReceiver receiver = (GenericReceiver) adapter.getReceiverByName(receiverName);
-        JmsListener l = (JmsListener) receiver.getListener();
+        PushingJmsListener l = (PushingJmsListener) receiver.getListener();
         return l;
     }
 

@@ -1,6 +1,9 @@
 /*
  * $Log: SpringJmsConfigurator.java,v $
- * Revision 1.2  2007-10-15 13:11:04  europe\L190409
+ * Revision 1.3  2007-10-16 09:52:35  europe\M00035F
+ * Change over JmsListener to a 'switch-class' to facilitate smoother switchover from older version to spring version
+ *
+ * Revision 1.2  2007/10/15 13:11:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * copy from EJB branch
  *
  */
@@ -20,7 +23,7 @@ import nl.nn.adapterframework.configuration.IJmsConfigurator;
 import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.jms.JmsException;
-import nl.nn.adapterframework.jms.JmsListener;
+import nl.nn.adapterframework.jms.PushingJmsListener;
 import nl.nn.adapterframework.receivers.GenericReceiver;
 import nl.nn.adapterframework.util.Counter;
 import nl.nn.adapterframework.util.LogUtil;
@@ -38,7 +41,7 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 /**
- * Configure a Spring JMS Container from a {@link nl.nn.adapterframework.jms.JmsListener}.
+ * Configure a Spring JMS Container from a {@link nl.nn.adapterframework.jms.PushingJmsListener}.
  * 
  * This implementation expects to receive an instance of
  * org.springframework.jms.listener.DefaultMessageListenerContainer
@@ -56,7 +59,7 @@ public class SpringJmsConfigurator extends AbstractJmsConfigurator implements IJ
 	public static final TransactionDefinition TXSUPPORTS = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_SUPPORTS);
 	public static final TransactionDefinition TXMANDATORY = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_MANDATORY);
     
-	public static final String version="$RCSfile: SpringJmsConfigurator.java,v $ $Revision: 1.2 $ $Date: 2007-10-15 13:11:04 $";
+	public static final String version="$RCSfile: SpringJmsConfigurator.java,v $ $Revision: 1.3 $ $Date: 2007-10-16 09:52:35 $";
     
 	private PlatformTransactionManager txManager;
 	private BeanFactory beanFactory;
@@ -73,9 +76,9 @@ public class SpringJmsConfigurator extends AbstractJmsConfigurator implements IJ
 	}
     
 	/* (non-Javadoc)
-	 * @see nl.nn.adapterframework.configuration.IJmsConfigurator#configureReceiver(nl.nn.adapterframework.jms.JmsListener)
+	 * @see nl.nn.adapterframework.configuration.IJmsConfigurator#configureReceiver(nl.nn.adapterframework.jms.PushingJmsListener)
 	 */
-	public void configureJmsReceiver(final JmsListener jmsListener) throws ConfigurationException {
+	public void configureJmsReceiver(final PushingJmsListener jmsListener) throws ConfigurationException {
 		super.configureJmsReceiver(jmsListener);
         
 		// Create the Message Listener Container manually.

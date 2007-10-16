@@ -1,6 +1,9 @@
 /*
  * $Log: EjbJmsConfigurator.java,v $
- * Revision 1.3  2007-10-15 13:08:38  europe\L190409
+ * Revision 1.4  2007-10-16 09:52:35  europe\M00035F
+ * Change over JmsListener to a 'switch-class' to facilitate smoother switchover from older version to spring version
+ *
+ * Revision 1.3  2007/10/15 13:08:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * EJB updates
  *
  * Revision 1.1.2.5  2007/10/15 08:36:31  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
@@ -32,7 +35,7 @@ import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IJmsConfigurator;
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.jms.JmsListener;
+import nl.nn.adapterframework.jms.PushingJmsListener;
 import nl.nn.adapterframework.receivers.GenericReceiver;
 
 /**
@@ -44,7 +47,7 @@ import nl.nn.adapterframework.receivers.GenericReceiver;
 public class EjbJmsConfigurator implements IJmsConfigurator {
     private final static String LISTENER_PORTNAME_SUFFIX = "ListenerPort";
     
-    private JmsListener jmsListener;
+    private PushingJmsListener jmsListener;
     private ObjectName listenerPortMBean;
     private AdminService adminService;
     private Destination destination;
@@ -54,7 +57,7 @@ public class EjbJmsConfigurator implements IJmsConfigurator {
         return destination;
     }
 
-    public void configureJmsReceiver(JmsListener jmsListener) throws ConfigurationException {
+    public void configureJmsReceiver(PushingJmsListener jmsListener) throws ConfigurationException {
         try {
             this.jmsListener = jmsListener;
             this.listenerPortMBean = lookupListenerPortMBean(jmsListener);
@@ -88,7 +91,7 @@ public class EjbJmsConfigurator implements IJmsConfigurator {
      * Lookup the MBean for the listener-port in WebSphere that the JMS Listener
      * binds to.
      */
-    protected ObjectName lookupListenerPortMBean(JmsListener jmsListener)  throws ConfigurationException {
+    protected ObjectName lookupListenerPortMBean(PushingJmsListener jmsListener)  throws ConfigurationException {
         try {
             // Get the admin service
             AdminService as = getAdminService();
@@ -108,10 +111,10 @@ public class EjbJmsConfigurator implements IJmsConfigurator {
             // Assume that only 1 is returned and return it
             if (names.size() == 0) {
                 throw new ConfigurationException("Can not find WebSphere ListenerPort by name of '"
-                        + listenerPortName + "', JmsListener can not be configured");
+                        + listenerPortName + "', PushingJmsListener can not be configured");
             } else if (names.size() > 1) {
                 throw new ConfigurationException("Multiple WebSphere ListenerPorts found by name of '"
-                        + listenerPortName + "': " + names + ", JmsListener can not be configured");
+                        + listenerPortName + "': " + names + ", PushingJmsListener can not be configured");
             } else {
                 return (ObjectName) names.iterator().next();
             }
@@ -141,7 +144,7 @@ public class EjbJmsConfigurator implements IJmsConfigurator {
      * </ol>
      * 
      */
-    protected String getListenerPortName(JmsListener jmsListener) {
+    protected String getListenerPortName(PushingJmsListener jmsListener) {
         String name = jmsListener.getListenerPort();
         
         if (name == null) {
