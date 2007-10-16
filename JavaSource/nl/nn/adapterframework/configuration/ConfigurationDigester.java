@@ -1,6 +1,9 @@
 /*
  * $Log: ConfigurationDigester.java,v $
- * Revision 1.17  2007-10-10 09:23:12  europe\L190409
+ * Revision 1.18  2007-10-16 13:18:30  europe\M00035F
+ * Make method 'digestConfiguration' public again so that it can be used from test cases.
+ *
+ * Revision 1.17  2007/10/10 09:23:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Direct copy from Ibis-EJB:
  * spring enabled version
  *
@@ -94,7 +97,7 @@ import org.springframework.beans.factory.ListableBeanFactory;
  * @see Configuration
  */
 abstract public class ConfigurationDigester implements BeanFactoryAware {
-	public static final String version = "$RCSfile: ConfigurationDigester.java,v $ $Revision: 1.17 $ $Date: 2007-10-10 09:23:12 $";
+	public static final String version = "$RCSfile: ConfigurationDigester.java,v $ $Revision: 1.18 $ $Date: 2007-10-16 13:18:30 $";
     protected static Logger log = LogUtil.getLogger(ConfigurationDigester.class);
 
 	private static final String CONFIGURATION_FILE_DEFAULT  = "Configuration.xml";
@@ -149,7 +152,7 @@ abstract public class ConfigurationDigester implements BeanFactoryAware {
      */
     abstract protected Digester createDigester();
     
-    protected void digestConfiguration(Object stackTop, URL digesterRulesURL, URL configurationFileURL) throws ConfigurationException {
+    public void digestConfiguration(Object stackTop, URL digesterRulesURL, URL configurationFileURL) throws ConfigurationException {
 		
 		if (digesterRulesURL==null) {
 			digesterRulesURL = ClassUtils.getResourceURL(stackTop, DIGESTER_RULES_DEFAULT);
