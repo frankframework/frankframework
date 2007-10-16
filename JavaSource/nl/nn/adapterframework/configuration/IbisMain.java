@@ -1,6 +1,9 @@
 /*
  * $Log: IbisMain.java,v $
- * Revision 1.5  2007-10-16 13:07:39  europe\M00035F
+ * Revision 1.6  2007-10-16 13:18:03  europe\M00035F
+ * Allow creating of Spring Factory without creating instance of IbisMain
+ *
+ * Revision 1.5  2007/10/16 13:07:39  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
  * Refactor so that creation of Spring factory is in seperate method, which can be called externally
  *
  * Revision 1.4  2007/10/16 09:12:28  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
@@ -56,7 +59,7 @@ import org.springframework.core.io.Resource;
  * @version Id
  */
 public class IbisMain {
-    protected Logger log = LogUtil.getLogger(this);
+    private final static Logger log = LogUtil.getLogger(IbisMain.class);
 
     public static final String DFLT_AUTOSTART = "TRUE";
     public static final String DFLT_SPRING_CONTEXT = "/springContext.xml";
@@ -136,7 +139,7 @@ public class IbisMain {
 	 * @throws BeansException If the Factory can not be created.
 	 * 
 	 */
-	public XmlBeanFactory createBeanFactory(String springContext)
+	static public XmlBeanFactory createBeanFactory(String springContext)
 		throws BeansException {
 		// Reading in Spring Context
 		if (springContext == null) {
