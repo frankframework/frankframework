@@ -1,6 +1,15 @@
 /*
  * $Log: IbisMultiSourceExpander.java,v $
- * Revision 1.2  2007-10-09 15:29:43  europe\L190409
+ * Revision 1.3  2007-10-16 09:12:27  europe\M00035F
+ * Merge with changes from EJB branch in preparation for creating new EJB brance
+ *
+ * Revision 1.1.2.4  2007/10/15 11:35:52  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
+ * Fix direct retrieving of Logger w/o using the LogUtil
+ *
+ * Revision 1.1.2.3  2007/10/10 14:30:41  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * synchronize with HEAD (4.8-alpha1)
+ *
+ * Revision 1.2  2007/10/09 15:29:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Direct copy from Ibis-EJB:
  * first version in HEAD
  *
@@ -11,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.commons.digester.substitution.VariableExpander;
 import org.apache.log4j.Logger;
@@ -23,7 +33,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class IbisMultiSourceExpander implements VariableExpander {
-    private final static Logger log = Logger.getLogger(IbisMultiSourceExpander.class);
+    private final static Logger log = LogUtil.getLogger(IbisMultiSourceExpander.class);
     
     private List sources = new ArrayList();
     private boolean environmentFallback = false;

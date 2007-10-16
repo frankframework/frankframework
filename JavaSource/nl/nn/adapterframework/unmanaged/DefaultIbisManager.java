@@ -1,6 +1,15 @@
 /*
  * $Log: DefaultIbisManager.java,v $
- * Revision 1.2  2007-10-10 07:52:01  europe\L190409
+ * Revision 1.3  2007-10-16 09:12:27  europe\M00035F
+ * Merge with changes from EJB branch in preparation for creating new EJB brance
+ *
+ * Revision 1.1.2.4  2007/10/15 09:51:58  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
+ * Add back transaction-management to BrowseExecute action
+ *
+ * Revision 1.1.2.3  2007/10/10 14:30:47  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * synchronize with HEAD (4.8-alpha1)
+ *
+ * Revision 1.2  2007/10/10 07:52:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Direct copy from Ibis-EJB:
  * first version in HEAD
  *
@@ -25,6 +34,7 @@ import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.log4j.Logger;
 import org.quartz.SchedulerException;
+import org.springframework.transaction.PlatformTransactionManager;
 
 /**
  * Implementation of IbisManager which does not use EJB for
@@ -43,6 +53,7 @@ public class DefaultIbisManager implements IbisManager {
     private ConfigurationDigester configurationDigester;
 	private SchedulerHelper schedulerHelper;
     private int deploymentMode;
+    private PlatformTransactionManager transactionManager;
     
     protected final String[] deploymentModes = new String[] {DEPLOYMENT_MODE_UNMANAGED_STRING, DEPLOYMENT_MODE_EJB_STRING};
     
@@ -261,6 +272,14 @@ public class DefaultIbisManager implements IbisManager {
 	}
     public String getDeploymentModeString() {
         return deploymentModes[this.deploymentMode];
+    }
+
+    public PlatformTransactionManager getTransactionManager() {
+        return transactionManager;
+    }
+
+    public void setTransactionManager(PlatformTransactionManager transactionManager) {
+        this.transactionManager = transactionManager;
     }
 
 }

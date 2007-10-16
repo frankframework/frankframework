@@ -1,6 +1,9 @@
 /*
  * $Log: EjbDelegatingIbisManager.java,v $
- * Revision 1.4  2007-10-16 08:31:53  europe\L190409
+ * Revision 1.5  2007-10-16 09:12:27  europe\M00035F
+ * Merge with changes from EJB branch in preparation for creating new EJB brance
+ *
+ * Revision 1.4  2007/10/16 08:31:53  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed xpath dependency
  * removed loading of configuration name from configuration file
  *
@@ -52,23 +55,22 @@ public class EjbDelegatingIbisManager implements IbisManager, BeanFactoryAware {
     private final static Logger log = LogUtil.getLogger(EjbDelegatingIbisManager.class);
     
     private static final String FACTORY_BEAN_ID = "&ibisManagerEjb";
-    private static final String JNDI_NAME_PREFIX = "ejb/ibis/IbisManager/";
+    private static final String JNDI_NAME_PREFIX = "java:comp/ejb/IbisManager";
     
-    private String configurationName;
     private IbisManager ibisManager;
     private BeanFactory beanFactory;
     private PlatformTransactionManager transactionManager;
     
     protected synchronized IbisManager getIbisManager() {
         if (this.ibisManager == null) {
-            if (configurationName == null) {
-                log.error("Cannot look up the IbisManager implementation when configuration-name not yet read from the configuration file");
-                return null;
-            }
+        	// TODO: Set JNDI name in Spring Context and retrieve EJB
+        	// directly instead of first retrieving factory, tweaking factory,
+        	// creating the bean.
+        	
             // Look it up via EJB, using JNDI Name based on configuration name
             LocalStatelessSessionProxyFactoryBean factoryBean = 
                     (LocalStatelessSessionProxyFactoryBean) beanFactory.getBean(FACTORY_BEAN_ID);
-            String beanJndiName = JNDI_NAME_PREFIX + configurationName.replace(' ', '-');
+            String beanJndiName = JNDI_NAME_PREFIX;
             factoryBean.setJndiName(beanJndiName);
             this.ibisManager = (IbisManager) factoryBean.getObject();
             log.info("Looked up IbisManagerEjb at JNDI location '" + beanJndiName + "'");
@@ -120,14 +122,6 @@ public class EjbDelegatingIbisManager implements IbisManager, BeanFactoryAware {
 
     public void loadConfigurationFile(String configurationFile) {
     	// Do not delegate to EJB; EJB initializes itself.
-    }
-
-    public String getConfigurationName() {
-        return configurationName;
-    }
-
-    public void setConfigurationName(String configurationName) {
-        this.configurationName = configurationName;
     }
 
     public BeanFactory getBeanFactory() {

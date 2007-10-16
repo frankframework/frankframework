@@ -1,6 +1,15 @@
 /*
  * $Log: JMSFacade.java,v $
- * Revision 1.28  2007-10-10 08:42:39  europe\L190409
+ * Revision 1.29  2007-10-16 09:12:27  europe\M00035F
+ * Merge with changes from EJB branch in preparation for creating new EJB brance
+ *
+ * Revision 1.26.4.4  2007/10/12 09:09:07  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
+ * Fix compilation-problems after code-merge
+ *
+ * Revision 1.26.4.3  2007/10/10 14:30:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * synchronize with HEAD (4.8-alpha1)
+ *
+ * Revision 1.28  2007/10/10 08:42:39  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added isUseTopicFunctions()
  *
  * Revision 1.27  2007/09/24 13:03:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -121,7 +130,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version="$RCSfile: JMSFacade.java,v $ $Revision: 1.28 $ $Date: 2007-10-10 08:42:39 $";
+	public static final String version="$RCSfile: JMSFacade.java,v $ $Revision: 1.29 $ $Date: 2007-10-16 09:12:27 $";
 
 	public static final String MODE_PERSISTENT="PERSISTENT";
 	public static final String MODE_NON_PERSISTENT="NON_PERSISTENT";
@@ -204,7 +213,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 		return "["+getName()+"] ";
 	}
 
- 	private String getConnectionFactoryName() throws JmsException {
+ 	public String getConnectionFactoryName() throws JmsException {
 		String result;
 		if (useTopicFunctions) {
 			result = isTransacted() ? getTopicConnectionFactoryNameXA() : getTopicConnectionFactoryName();

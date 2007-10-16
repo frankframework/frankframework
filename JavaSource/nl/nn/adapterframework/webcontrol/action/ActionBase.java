@@ -1,6 +1,9 @@
 /*
  * $Log: ActionBase.java,v $
- * Revision 1.5  2007-10-10 07:29:54  europe\L190409
+ * Revision 1.6  2007-10-16 09:12:28  europe\M00035F
+ * Merge with changes from EJB branch in preparation for creating new EJB brance
+ *
+ * Revision 1.5  2007/10/10 07:29:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * execute control via IbisManager
  *
  * Revision 1.4  2007/02/12 14:34:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -43,7 +46,7 @@ import org.apache.struts.util.MessageResources;
  * @see     org.apache.struts.action.Action
  */
 public abstract class ActionBase extends Action {
-	public static final String version="$RCSfile: ActionBase.java,v $ $Revision: 1.5 $ $Date: 2007-10-10 07:29:54 $";
+	public static final String version="$RCSfile: ActionBase.java,v $ $Revision: 1.6 $ $Date: 2007-10-16 09:12:28 $";
 	protected Logger log = LogUtil.getLogger(this);
 
     protected Locale locale;
@@ -145,7 +148,7 @@ public abstract class ActionBase extends Action {
         log = LogUtil.getLogger(this); // logging category for this class
  
         if (null == config) {
-            log.info("configuration not present in context. Configuration probably add errors. see log");
+            log.info("initAction(): configuration not present in context. Configuration probably has errors. see log");
         }
     }
 

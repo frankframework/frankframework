@@ -1,7 +1,21 @@
 /*
  * $Log: IbisMain.java,v $
- * Revision 1.3  2007-10-15 13:06:47  europe\L190409
+ * Revision 1.4  2007-10-16 09:12:28  europe\M00035F
+ * Merge with changes from EJB branch in preparation for creating new EJB brance
+ *
+ * Revision 1.3  2007/10/15 13:06:47  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added configuration field (TvdL)
+ * Revision 1.1.2.10  2007/10/15 13:01:00  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
+ * Suppress message that Ibis internal MBean server is running when it isn't
+ *
+ * Revision 1.1.2.9  2007/10/15 08:35:29  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
+ * Fix NPE in ConfigurationServlet
+ *
+ * Revision 1.1.2.8  2007/10/12 14:29:31  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
+ * Several fixes and improvements to get EJB deployment mode running
+ *
+ * Revision 1.1.2.7  2007/10/10 14:30:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * synchronize with HEAD (4.8-alpha1)
  *
  * Revision 1.2  2007/10/09 15:29:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Direct copy from Ibis-EJB:
@@ -125,8 +139,10 @@ public class IbisMain {
 		  server.invoke(html.getObjectName(), "start", new Object[0], new String[0]);
         } catch (ReflectionException e ) {
             log.error("Requested JMX Server MBean can not be created; JMX not available.");
+            return;
         } catch (Exception e) {
 		    log.error("Error with jmx:",e);
+            return;
 		}
 		log.info("MBean server up and running. Monitor your application by pointing your browser to http://localhost:8082");
 	}

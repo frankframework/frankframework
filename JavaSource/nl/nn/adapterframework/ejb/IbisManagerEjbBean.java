@@ -1,6 +1,9 @@
 /*
  * $Log: IbisManagerEjbBean.java,v $
- * Revision 1.3  2007-10-15 13:08:37  europe\L190409
+ * Revision 1.4  2007-10-16 09:12:27  europe\M00035F
+ * Merge with changes from EJB branch in preparation for creating new EJB brance
+ *
+ * Revision 1.3  2007/10/15 13:08:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * EJB updates
  *
  * Revision 1.1.2.4  2007/10/15 11:35:51  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
@@ -47,7 +50,13 @@ public class IbisManagerEjbBean extends AbstractEJBBase implements SessionBean, 
     
     SessionContext sessionContext;
     
+    public IbisManagerEjbBean() {
+        super();
+        log.info("Created IbisManagerEjbBean instance");
+    }
+    
     public void setSessionContext(SessionContext sessionContext) throws EJBException, RemoteException {
+        log.info("Set session context for IbisManagerEjb");
         this.sessionContext = sessionContext;
     }
     
