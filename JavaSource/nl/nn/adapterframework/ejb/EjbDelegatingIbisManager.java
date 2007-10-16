@@ -1,6 +1,10 @@
 /*
  * $Log: EjbDelegatingIbisManager.java,v $
- * Revision 1.3  2007-10-15 13:08:37  europe\L190409
+ * Revision 1.4  2007-10-16 08:31:53  europe\L190409
+ * removed xpath dependency
+ * removed loading of configuration name from configuration file
+ *
+ * Revision 1.3  2007/10/15 13:08:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * EJB updates
  *
  * Revision 1.1.2.9  2007/10/15 11:35:51  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
@@ -32,7 +36,7 @@ import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.XPathUtil;
+
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
@@ -50,13 +54,9 @@ public class EjbDelegatingIbisManager implements IbisManager, BeanFactoryAware {
     private static final String FACTORY_BEAN_ID = "&ibisManagerEjb";
     private static final String JNDI_NAME_PREFIX = "ejb/ibis/IbisManager/";
     
-    private final static String CONFIG_NAME_XPATH = "/child::*/@configurationName";
-//    private final static String CONFIG_NAME_XPATH = "//@configurationName";
-    
     private String configurationName;
     private IbisManager ibisManager;
     private BeanFactory beanFactory;
-    private XPathUtil xPathUtil;
     private PlatformTransactionManager transactionManager;
     
     protected synchronized IbisManager getIbisManager() {
@@ -119,20 +119,7 @@ public class EjbDelegatingIbisManager implements IbisManager, BeanFactoryAware {
     }
 
     public void loadConfigurationFile(String configurationFile) {
-        try {
-            setConfigurationName(xPathUtil.parseXpathToString(CONFIG_NAME_XPATH, configurationFile));
-            if (getConfigurationName() == null) {
-                log.error("Can not start the Ibis WEB front-end because no configuration-name can be extracted from the configuration-file '"
-                    + configurationFile + "'");
-                throw new IllegalStateException("Configuration-name loaded from configuration-file '"
-                    + configurationFile + "' is null; this means that the Ibis WEB front can not be started.");
-            }
-            log.info("Extracted configuration-name '" + getConfigurationName()
-                    + "' from configuration-file '" + configurationFile + "'");
-        } catch (Exception ex) {
-            log.error("Error retrieving configuration-name from configuration file '" +
-                    configurationFile + "'", ex);
-        }
+    	// Do not delegate to EJB; EJB initializes itself.
     }
 
     public String getConfigurationName() {
@@ -157,14 +144,6 @@ public class EjbDelegatingIbisManager implements IbisManager, BeanFactoryAware {
 
     public int getDeploymentMode() {
         return IbisManager.DEPLOYMENT_MODE_EJB;
-    }
-
-    public XPathUtil getXPathUtil() {
-        return xPathUtil;
-    }
-
-    public void setXPathUtil(XPathUtil xPathUtil) {
-        this.xPathUtil = xPathUtil;
     }
 
     public PlatformTransactionManager getTransactionManager() {
