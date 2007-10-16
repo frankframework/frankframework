@@ -1,6 +1,9 @@
 /*
  * $Log: IbisMain.java,v $
- * Revision 1.4  2007-10-16 09:12:28  europe\M00035F
+ * Revision 1.5  2007-10-16 13:07:39  europe\M00035F
+ * Refactor so that creation of Spring factory is in seperate method, which can be called externally
+ *
+ * Revision 1.4  2007/10/16 09:12:28  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
  * Merge with changes from EJB branch in preparation for creating new EJB brance
  *
  * Revision 1.3  2007/10/15 13:06:47  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -32,6 +35,7 @@ import javax.management.ReflectionException;
 import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.log4j.Logger;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.xml.XmlBeanFactory;
 import org.springframework.core.JdkVersion;
@@ -104,14 +108,7 @@ public class IbisMain {
         // This should be made conditional, somehow
         startJmxServer();
         
-        // Reading in Spring Context
-        if (springContext == null) {
-            springContext = DFLT_SPRING_CONTEXT;
-        }
-        log.info("* IBIS Startup: Creating Spring Bean Factory from file '"
-            + springContext + "'");
-        Resource rs = new ClassPathResource(springContext);
-        beanFactory = new XmlBeanFactory(rs);
+		beanFactory = createBeanFactory(springContext);
         ibisManager = (IbisManager) beanFactory.getBean("ibisManager");
         
         ibisManager.loadConfigurationFile(configurationFile);
@@ -123,6 +120,34 @@ public class IbisMain {
         log.info("* IBIS Startup: Startup complete");
         return true;
     }
+
+	/**
+	 * Create Spring Bean factory. Parameter 'springContext' can be null.
+	 * 
+	 * Create the Spring Bean Factory using the supplied <code>springContext</code>,
+	 * if not <code>null</code>.
+	 * 
+	 * @param springContext Spring Context to create. If <code>null</code>,
+	 * use the default spring context.
+	 * The spring context is loaded as a spring ClassPathResource from
+	 * the class path.
+	 * 
+	 * @return The Spring XML Bean Factory.
+	 * @throws BeansException If the Factory can not be created.
+	 * 
+	 */
+	public XmlBeanFactory createBeanFactory(String springContext)
+		throws BeansException {
+		// Reading in Spring Context
+		if (springContext == null) {
+		    springContext = DFLT_SPRING_CONTEXT;
+		}
+		log.info("* IBIS Startup: Creating Spring Bean Factory from file '"
+		    + springContext + "'");
+		Resource rs = new ClassPathResource(springContext);
+		XmlBeanFactory bf = new XmlBeanFactory(rs);
+		return bf;
+	}
 
 	private void startJmxServer() {
 		//Start MBean server
