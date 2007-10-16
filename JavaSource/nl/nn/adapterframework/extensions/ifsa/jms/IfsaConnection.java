@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaConnection.java,v $
- * Revision 1.12  2007-10-08 12:17:00  europe\L190409
+ * Revision 1.1  2007-10-16 08:15:43  europe\L190409
+ * introduced switch class for jms and ejb
+ *
+ * Revision 1.12  2007/10/08 12:17:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed HashMap to Map where possible
  *
  * Revision 1.11  2007/09/05 15:46:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -43,7 +46,7 @@
  * Revision 1.1  2005/04/26 09:36:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * introduction of IfsaApplicationConnection
  */
-package nl.nn.adapterframework.extensions.ifsa;
+package nl.nn.adapterframework.extensions.ifsa.jms;
 
 import java.util.Map;
 
@@ -71,7 +74,7 @@ import com.ing.ifsa.IFSAQueueConnectionFactory;
  * @version Id
  */
 public class IfsaConnection extends ConnectionBase {
-	public static final String version="$RCSfile: IfsaConnection.java,v $ $Revision: 1.12 $ $Date: 2007-10-08 12:17:00 $";
+	public static final String version="$RCSfile: IfsaConnection.java,v $ $Revision: 1.1 $ $Date: 2007-10-16 08:15:43 $";
 
 	private final static String CLEANUP_ON_CLOSE_KEY="ifsa.cleanUpOnClose";
 	private static Boolean cleanUpOnClose=null; 

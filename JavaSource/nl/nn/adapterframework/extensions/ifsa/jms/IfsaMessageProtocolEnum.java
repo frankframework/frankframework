@@ -1,4 +1,4 @@
-package nl.nn.adapterframework.extensions.ifsa;
+package nl.nn.adapterframework.extensions.ifsa.jms;
 
 import java.util.Iterator;
 import java.util.Map;
@@ -15,7 +15,7 @@ public class IfsaMessageProtocolEnum extends Enum {
 	
    public static final IfsaMessageProtocolEnum REQUEST_REPLY = new IfsaMessageProtocolEnum("RR");
    public static final IfsaMessageProtocolEnum FIRE_AND_FORGET = new IfsaMessageProtocolEnum("FF");
-   public static final String version="$Id: IfsaMessageProtocolEnum.java,v 1.1 2004-03-11 08:13:36 NNVZNL01#L180564 Exp $";
+   public static final String version="$Id: IfsaMessageProtocolEnum.java,v 1.1 2007-10-16 08:15:43 europe\L190409 Exp $";
 /**
  * MessageProtocolEnum constructor 
  * @param arg1 Value of new enumeration item

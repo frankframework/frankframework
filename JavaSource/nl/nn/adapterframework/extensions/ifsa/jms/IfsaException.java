@@ -1,10 +1,13 @@
 /*
  * $Log: IfsaException.java,v $
- * Revision 1.2  2004-07-05 14:30:41  L190409
+ * Revision 1.1  2007-10-16 08:15:43  europe\L190409
+ * introduced switch class for jms and ejb
+ *
+ * Revision 1.2  2004/07/05 14:30:41  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * made descender of IbisException
  *
  */
-package nl.nn.adapterframework.extensions.ifsa;
+package nl.nn.adapterframework.extensions.ifsa.jms;
 
 import nl.nn.adapterframework.core.IbisException;
 
