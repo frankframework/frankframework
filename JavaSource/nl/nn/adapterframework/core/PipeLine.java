@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.49  2007-10-10 07:57:40  europe\L190409
+ * Revision 1.50  2007-10-16 07:51:52  europe\L190409
+ * fixed argument order in pipelineexecute
+ *
+ * Revision 1.49  2007/10/10 07:57:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * use configurable transactional executors
  *
  * Revision 1.48  2007/10/08 13:29:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -231,7 +234,7 @@ import org.apache.log4j.Logger;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.49 $ $Date: 2007-10-10 07:57:40 $";
+	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.50 $ $Date: 2007-10-16 07:51:52 $";
     private Logger log = LogUtil.getLogger(this);
 	private Logger durationLog = LogUtil.getLogger("LongDurationMessages");
     
@@ -423,7 +426,8 @@ public class PipeLine {
 		if (message == null) {
 			throw new PipeRunException(null, "Pipeline of adapter ["+ owner.getName()+"] received null message");
 		}
-		pipeLineSession.set(message, messageId);
+		// TODO: check where this comes from
+		//pipeLineSession.set(message, messageId);
         
         boolean compatible;
 		if (log.isDebugEnabled()) log.debug("evaluating transaction status ["+JtaUtil.displayTransactionStatus()+"], transaction attribute ["+getTransactionAttribute()+"], messageId ["+messageId+"]");
@@ -436,7 +440,7 @@ public class PipeLine {
 			throw new PipeRunException(null,"transaction state ["+JtaUtil.displayTransactionStatus()+"] not compatible with transaction attribute ["+getTransactionAttribute()+"], messageId ["+messageId+"]");
 		}
 		if (log.isDebugEnabled()) log.debug("PipeLine transactionAttribute ["+getTransactionAttribute()+"]");
-        return runPipeLineObeyingTransactionAttribute(message, messageId, pipeLineSession);
+        return runPipeLineObeyingTransactionAttribute(messageId, message, pipeLineSession);
 	}
     
     protected PipeLineResult runPipeLineObeyingTransactionAttribute(String messageId, String message, PipeLineSession session) throws PipeRunException {
