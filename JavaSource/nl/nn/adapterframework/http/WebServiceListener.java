@@ -1,6 +1,9 @@
 /*
  * $Log: WebServiceListener.java,v $
- * Revision 1.9  2007-10-08 12:18:20  europe\L190409
+ * Revision 1.10  2007-10-17 09:07:24  europe\L190409
+ * removed unused imports
+ *
+ * Revision 1.9  2007/10/08 12:18:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed HashMap to Map where possible
  *
  * Revision 1.8  2007/10/03 08:39:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -44,7 +47,6 @@
 package nl.nn.adapterframework.http;
 
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -81,7 +83,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class WebServiceListener  implements IPushingListener, ServiceClient2, Serializable {
-	public static final String version="$RCSfile: WebServiceListener.java,v $ $Revision: 1.9 $ $Date: 2007-10-08 12:18:20 $";
+	public static final String version="$RCSfile: WebServiceListener.java,v $ $Revision: 1.10 $ $Date: 2007-10-17 09:07:24 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private IMessageHandler handler;        	
