@@ -1,6 +1,9 @@
 /*
  * $Log: JavaListener.java,v $
- * Revision 1.25  2007-10-03 08:57:32  europe\L190409
+ * Revision 1.26  2007-10-17 09:08:00  europe\L190409
+ * commented out unused code
+ *
+ * Revision 1.25  2007/10/03 08:57:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed HashMap to Map
  *
  * Revision 1.24  2007/10/02 09:18:17  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -139,7 +142,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class JavaListener implements IPushingListener, RequestProcessor, HasPhysicalDestination {
-	public static final String version="$RCSfile: JavaListener.java,v $ $Revision: 1.25 $ $Date: 2007-10-03 08:57:32 $";
+	public static final String version="$RCSfile: JavaListener.java,v $ $Revision: 1.26 $ $Date: 2007-10-17 09:08:00 $";
 	protected Logger log = LogUtil.getLogger(this);
 	
 	private String name;
@@ -229,25 +232,25 @@ public class JavaListener implements IPushingListener, RequestProcessor, HasPhys
 		return handler.processRequest(this, correlationId, message, context);
 	}
 
-	public String processRequest(String message) {
-		try {
-			return handler.processRequest(this, message);
-		} 
-		catch (ListenerException e) {
-			return handler.formatException(null,null, message,e);
-		}
-	}
+//	public String processRequest(String message) {
+//		try {
+//			return handler.processRequest(this, message);
+//		} 
+//		catch (ListenerException e) {
+//			return handler.formatException(null,null, message,e);
+//		}
+//	}
 
-	public String processRequestNoException(String correlationId, String message) {
-		try {
-			if (log.isDebugEnabled())
-				log.debug("JavaListener [" + getName() + "] processing correlationId [" + correlationId + "]");
-			return handler.processRequest(this, correlationId, message);
-		} 
-		catch (ListenerException e) {
-			return handler.formatException(null,correlationId, message,e);
-		}
-	}
+//	public String processRequestNoException(String correlationId, String message) {
+//		try {
+//			if (log.isDebugEnabled())
+//				log.debug("JavaListener [" + getName() + "] processing correlationId [" + correlationId + "]");
+//			return handler.processRequest(this, correlationId, message);
+//		} 
+//		catch (ListenerException e) {
+//			return handler.formatException(null,correlationId, message,e);
+//		}
+//	}
 
 
 
