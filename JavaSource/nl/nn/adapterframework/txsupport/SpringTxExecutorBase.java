@@ -1,6 +1,9 @@
 /*
  * $Log: SpringTxExecutorBase.java,v $
- * Revision 1.1  2007-10-09 15:54:43  europe\L190409
+ * Revision 1.2  2007-10-17 08:14:49  europe\L190409
+ * Add extra log statements
+ *
+ * Revision 1.1  2007/10/09 15:54:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Direct copy from Ibis-EJB:
  * first version in HEAD of txSupport classes
  *
@@ -23,7 +26,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  * @version Id
  */
 public class SpringTxExecutorBase {
-	protected Logger log=LogUtil.getLogger(SpringTxExecutorBase.class);
+	protected Logger log=LogUtil.getLogger(this);
 
     public final static TransactionDefinition TXREQUIRED = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED);
     public final static TransactionDefinition TXSUPPORTS = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_SUPPORTS);

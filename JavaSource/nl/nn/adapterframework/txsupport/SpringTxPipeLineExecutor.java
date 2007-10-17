@@ -1,6 +1,9 @@
 /*
  * $Log: SpringTxPipeLineExecutor.java,v $
- * Revision 1.2  2007-10-09 15:54:43  europe\L190409
+ * Revision 1.3  2007-10-17 08:14:49  europe\L190409
+ * Add extra log statements
+ *
+ * Revision 1.2  2007/10/09 15:54:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Direct copy from Ibis-EJB:
  * first version in HEAD of txSupport classes
  *
@@ -44,10 +47,16 @@ public class SpringTxPipeLineExecutor extends SpringTxExecutorBase implements IP
                 throw new PipeRunException(null, "Caught unknown checked exception", t);
             }
         } finally {
-            if (txStatus.isNewTransaction() && !txStatus.isCompleted()) {
-                log.debug("Performing commit/rollback on transaction " + txStatus);
-                txManager.commit(txStatus);
-            }
+			if (txStatus.isNewTransaction()) {
+				if (!txStatus.isCompleted()) {
+					log.debug("Performing commit/rollback on transaction " + txStatus);
+					txManager.commit(txStatus);
+				} else {
+					log.warn("Transaction started by us already completed after pipeline-call finished");
+				}
+			} else {
+				log.debug("PipeLine call finished; transaction not started by us therefore not committing");
+			}
         }
     }
 
