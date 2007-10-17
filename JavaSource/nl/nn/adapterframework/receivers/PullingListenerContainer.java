@@ -1,6 +1,9 @@
 /*
  * $Log: PullingListenerContainer.java,v $
- * Revision 1.3  2007-10-16 13:02:09  europe\M00035F
+ * Revision 1.4  2007-10-17 10:49:37  europe\L190409
+ * added getter and setter for txManager
+ *
+ * Revision 1.3  2007/10/16 13:02:09  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
  * Add ReceiverBaseSpring from EJB branch
  *
  * Revision 1.2  2007/10/10 08:53:18  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -12,37 +15,34 @@ package nl.nn.adapterframework.receivers;
 
 import java.util.HashMap;
 import java.util.Map;
+
 import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.util.Counter;
-import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.Semaphore;
 import nl.nn.adapterframework.util.TracingUtil;
-import org.apache.log4j.Logger;
+
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 /**
- * 
+ * Container that provides threads to exectue pulling listeners.
  * 
  * @author  Tim van der Leeuw
  * @since   4.8
  * @version Id
  */
-
 public class PullingListenerContainer implements Runnable {
-	protected Logger log = LogUtil.getLogger(this);
-
     private final static TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
 
-    ReceiverBaseSpring receiver;
-    PlatformTransactionManager txManager;
+    private ReceiverBaseSpring receiver;
+	private PlatformTransactionManager txManager;
     private Counter threadsRunning = new Counter(0);
     private Semaphore pollToken = null;
-    private int retryInterval;
+    private int retryInterval=1;
     
     private PullingListenerContainer() {
         super();
@@ -175,20 +175,26 @@ public class PullingListenerContainer implements Runnable {
             }
             long stillRunning = threadsRunning.decrease();
             if (stillRunning > 0) {
-                log.info("a thread of Receiver [" + receiver.getName() + "] exited, [" + stillRunning + "] are still running");
+				receiver.info("a thread of Receiver [" + receiver.getName() + "] exited, [" + stillRunning + "] are still running");
                 return;
             }
-            log.info("the last thread of Receiver [" + receiver.getName() + "] exited, cleaning up");
+			receiver.info("the last thread of Receiver [" + receiver.getName() + "] exited, cleaning up");
             receiver.closeAllResources();
         }
-    }
-
-    public ReceiverBaseSpring getReceiver() {
-        return receiver;
     }
 
     public void setReceiver(ReceiverBaseSpring receiver) {
         this.receiver = receiver;
     }
+	public ReceiverBaseSpring getReceiver() {
+		return receiver;
+	}
     
+	public void setTxManager(PlatformTransactionManager manager) {
+		txManager = manager;
+	}
+	public PlatformTransactionManager getTxManager() {
+		return txManager;
+	}
+
 }
