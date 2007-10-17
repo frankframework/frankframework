@@ -1,6 +1,9 @@
 /*
  * $Log: SpringTxPipeExecutor.java,v $
- * Revision 1.3  2007-10-17 08:14:49  europe\L190409
+ * Revision 1.4  2007-10-17 08:22:03  europe\L190409
+ * Always commit 'own' transaction-status
+ *
+ * Revision 1.3  2007/10/17 08:14:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Add extra log statements
  *
  * Revision 1.2  2007/10/09 15:54:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -47,16 +50,16 @@ public class SpringTxPipeExecutor extends SpringTxExecutorBase implements IPipeE
                 throw new PipeRunException(pipe, "Caught unknown checked exception", t);
             }
         } finally {
-            if (txStatus.isNewTransaction()) {
+            //if (txStatus.isNewTransaction()) {
             	if (!txStatus.isCompleted()) {
 	                log.debug("Performing commit/rollback on transaction " + txStatus);
 	                txManager.commit(txStatus);
             	} else {
             		log.warn("Transaction started by us already completed after pipe-call finished");
             	}
-            } else {
-            	log.debug("Pipe call finished; transaction not started by us therefore not committing");
-            }
+            //} else {
+            //	log.debug("Pipe call finished; transaction not started by us therefore not committing");
+            //}
         }
     }
 
