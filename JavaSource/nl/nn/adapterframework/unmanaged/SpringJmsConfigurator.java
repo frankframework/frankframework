@@ -1,6 +1,9 @@
 /*
  * $Log: SpringJmsConfigurator.java,v $
- * Revision 1.3  2007-10-16 09:52:35  europe\M00035F
+ * Revision 1.4  2007-10-17 11:33:40  europe\L190409
+ * add at least one consumer
+ *
+ * Revision 1.3  2007/10/16 09:52:35  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
  * Change over JmsListener to a 'switch-class' to facilitate smoother switchover from older version to spring version
  *
  * Revision 1.2  2007/10/15 13:11:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -59,8 +62,9 @@ public class SpringJmsConfigurator extends AbstractJmsConfigurator implements IJ
 	public static final TransactionDefinition TXSUPPORTS = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_SUPPORTS);
 	public static final TransactionDefinition TXMANDATORY = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_MANDATORY);
     
-	public static final String version="$RCSfile: SpringJmsConfigurator.java,v $ $Revision: 1.3 $ $Date: 2007-10-16 09:52:35 $";
+	public static final String version="$RCSfile: SpringJmsConfigurator.java,v $ $Revision: 1.4 $ $Date: 2007-10-17 11:33:40 $";
     
+	private String connectionFactoryName;
 	private PlatformTransactionManager txManager;
 	private BeanFactory beanFactory;
 	private DefaultMessageListenerContainer jmsContainer;
@@ -71,7 +75,7 @@ public class SpringJmsConfigurator extends AbstractJmsConfigurator implements IJ
 			Class klass = Class.forName(messageListenerClassName);
 			return (DefaultMessageListenerContainer) klass.newInstance();
 		} catch (Exception e) {
-			throw new ConfigurationException("Error creating instance of MessageListenerContainer", e);
+			throw new ConfigurationException("Error creating instance of MessageListenerContainer ["+messageListenerClassName+"]", e);
 		}
 	}
     
@@ -108,7 +112,11 @@ public class SpringJmsConfigurator extends AbstractJmsConfigurator implements IJ
         
 		final GenericReceiver receiver = (GenericReceiver) jmsListener.getHandler();
 		final Counter threadsProcessing = new Counter(0);
-		this.jmsContainer.setConcurrentConsumers(receiver.getNumThreads());
+		if (receiver.getNumThreads() > 0) {
+			this.jmsContainer.setConcurrentConsumers(receiver.getNumThreads());
+		} else {
+			this.jmsContainer.setConcurrentConsumers(1);
+		}
 		this.jmsContainer.setMessageListener(new SessionAwareMessageListener() {
 			public void onMessage(Message message, Session session)
 				throws JMSException {
@@ -222,21 +230,20 @@ public class SpringJmsConfigurator extends AbstractJmsConfigurator implements IJ
 		}
 	}
 
-	public PlatformTransactionManager getTxManager() {
-		return txManager;
-	}
 
 	public void setTxManager(PlatformTransactionManager txManager) {
 		this.txManager = txManager;
 	}
-	private String connectionFactoryName;
-
-	public String getMessageListenerClassName() {
-		return messageListenerClassName;
+	public PlatformTransactionManager getTxManager() {
+		return txManager;
 	}
+
 
 	public void setMessageListenerClassName(String messageListenerClassName) {
 		this.messageListenerClassName = messageListenerClassName;
+	}
+	public String getMessageListenerClassName() {
+		return messageListenerClassName;
 	}
 
 }
