@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaProviderListener.java,v $
- * Revision 1.2  2007-10-16 08:39:30  europe\L190409
+ * Revision 1.3  2007-10-17 09:32:49  europe\L190409
+ * store originalRawMessage when wrapper is created, use it to send reply
+ *
+ * Revision 1.2  2007/10/16 08:39:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * moved IfsaException and IfsaMessageProtocolEnum back to main package
  *
  * Revision 1.1  2007/10/16 08:15:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -203,10 +206,11 @@ import com.ing.ifsa.IFSATextMessage;
  * @version Id
  */
 public class IfsaProviderListener extends IfsaFacade implements IPullingListener, INamedObject, RunStateEnquiring {
-	public static final String version = "$RCSfile: IfsaProviderListener.java,v $ $Revision: 1.2 $ $Date: 2007-10-16 08:39:30 $";
+	public static final String version = "$RCSfile: IfsaProviderListener.java,v $ $Revision: 1.3 $ $Date: 2007-10-17 09:32:49 $";
 
     private final static String THREAD_CONTEXT_SESSION_KEY = "session";
     private final static String THREAD_CONTEXT_RECEIVER_KEY = "receiver";
+	private final static String THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY = "originalRawMessage";
 	private RunStateEnquirer runStateEnquirer=null;
 
 	public IfsaProviderListener() {
@@ -348,24 +352,33 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 			log.error(e);
 		}
 	    // on request-reply send the reply.
-	    // TODO fix problem: cannot reply from IfsaMessageWrapper, as it is not a message...
 	    if (getMessageProtocolEnum().equals(IfsaMessageProtocolEnum.REQUEST_REPLY)) {
-			QueueSession session = getSession(threadContext);
-			try {
-				String result="<exception>no result</exception>";
-				if (plr!=null && plr.getResult()!=null) {
-					result=plr.getResult();
-				}
-				sendReply(session, (Message) rawMessage, result);
-			} catch (IfsaException e) {
+			Message originalRawMessage;
+			if (rawMessage instanceof Message) { 
+				originalRawMessage = (Message)rawMessage;
+			} else {
+				originalRawMessage = (Message)threadContext.get(THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY);
+			}
+			if (originalRawMessage==null) {
+				log.warn(getLogPrefix()+"no original raw message found for correlationId ["+cid+"], cannot send result");
+			} else {
+				QueueSession session = getSession(threadContext);
 				try {
-					sendReply(session, (Message) rawMessage, "<exception>"+e.getMessage()+"</exception>");
-				} catch (IfsaException e2) {
-					log.warn(getLogPrefix()+"exception sending errormessage as reply",e2);
+					String result="<exception>no result</exception>";
+					if (plr!=null && plr.getResult()!=null) {
+						result=plr.getResult();
+					}
+					sendReply(session, originalRawMessage, result);
+				} catch (IfsaException e) {
+					try {
+						sendReply(session, originalRawMessage, "<exception>"+e.getMessage()+"</exception>");
+					} catch (IfsaException e2) {
+						log.warn(getLogPrefix()+"exception sending errormessage as reply",e2);
+					}
+					throw new ListenerException(getLogPrefix()+"Exception on sending result", e);
+				} finally {
+					releaseSession(session);
 				}
-				throw new ListenerException(getLogPrefix()+"Exception on sending result", e);
-			} finally {
-				releaseSession(session);
 			}
 	    }
 	}
@@ -599,6 +612,8 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 		Object result=null;
 		QueueSession session=null;
 		QueueReceiver receiver=null;
+		
+		threadContext.remove(THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY);
 	    try {	
 			session = getSession(threadContext);
 			try {	
@@ -637,6 +652,7 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 			if ((result instanceof IFSATextMessage || result instanceof IFSAPoisonMessage) &&
 			     JtaUtil.inTransaction() 
 			    ) {
+				threadContext.put(THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY, result);
 				result = new MessageWrapper(result, this);
 			}
 		} catch (Exception e) {
