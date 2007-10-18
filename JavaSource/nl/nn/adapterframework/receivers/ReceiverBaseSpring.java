@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBaseSpring.java,v $
- * Revision 1.1  2007-10-16 13:02:09  europe\M00035F
+ * Revision 1.2  2007-10-18 15:56:48  europe\L190409
+ * added pollInterval attribute
+ *
+ * Revision 1.1  2007/10/16 13:02:09  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
  * Add ReceiverBaseSpring from EJB branch
  *
  * Revision 1.44.2.12  2007/09/28 13:38:13  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
@@ -323,10 +326,12 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 	private final static TransactionDefinition TXREQUIRED = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED);
 	private final static TransactionDefinition TXSUPPORTS = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_SUPPORTS);
     
-	public static final String version="$RCSfile: ReceiverBaseSpring.java,v $ $Revision: 1.1 $ $Date: 2007-10-16 13:02:09 $";
+	public static final String version="$RCSfile: ReceiverBaseSpring.java,v $ $Revision: 1.2 $ $Date: 2007-10-18 15:56:48 $";
 	protected Logger log = LogUtil.getLogger(this);
     
 	private BeanFactory beanFactory;
+
+	private int pollInterval=0;
     
 	private String returnIfStopped="";
 	private String fileNameIfStopped = null;
@@ -1160,6 +1165,7 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 	 */
 	protected void setInProcessStorage(ITransactionalStorage inProcessStorage) {
 		log.warn("<*> In-Process Storage is not used anymore. Please remove from configuration. <*>");
+		
 	}
 
 	/**
@@ -1540,4 +1546,13 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 	public void setPoisonMessageIdCacheSize(int poisonMessageIdCacheSize) {
 		this.poisonMessageIdCacheSize = poisonMessageIdCacheSize;
 	}
+
+	public void setPollInterval(int i) {
+		pollInterval = i;
+	}
+	public int getPollInterval() {
+		return pollInterval;
+	}
+
+
 }
