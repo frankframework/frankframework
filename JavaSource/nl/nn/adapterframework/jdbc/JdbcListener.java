@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcListener.java,v $
- * Revision 1.4  2007-10-03 08:48:16  europe\L190409
+ * Revision 1.5  2007-10-18 15:55:38  europe\L190409
+ * fixed returning of message text
+ *
+ * Revision 1.4  2007/10/03 08:48:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed HashMap to Map
  *
  * Revision 1.3  2007/09/13 09:08:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -137,8 +140,7 @@ public class JdbcListener extends JdbcFacade implements IPullingListener {
 			try {
 				execute(conn,getLockQuery());
 			} catch (Throwable t) {
-				log.debug(getLogPrefix()+"was not able to obtain lock: "+t.getMessage());
-				return null;
+				throw new ListenerException(getLogPrefix()+"was not able to obtain lock",t);
 			}
 			try {
 				Statement stmt= null;
@@ -157,6 +159,7 @@ public class JdbcListener extends JdbcFacade implements IPullingListener {
 						//threadContext.put(KEY_FIELD_KEY,key);
 						if (StringUtils.isNotEmpty(getMessageField())) {
 							String message=rs.getString(getMessageField());
+							// log.debug("building wrapper for key ["+key+"], message ["+message+"]");
 							MessageWrapper mw = new MessageWrapper();
 							mw.setId(key);
 							mw.setText(message);
@@ -166,7 +169,7 @@ public class JdbcListener extends JdbcFacade implements IPullingListener {
 							result = key;
 						}
 						execute(conn,getUpdateStatusToInProcessQuery(),key);
-						return key;
+						return result;
 					} finally {
 						if (rs!=null) {
 //							log.debug("closing resultset");
@@ -208,7 +211,7 @@ public class JdbcListener extends JdbcFacade implements IPullingListener {
 	public String getStringFromRawMessage(Object rawMessage, Map context) throws ListenerException {
 		String message;
 		if (rawMessage instanceof MessageWrapper) {
-			message = ((MessageWrapper)rawMessage).getId();
+			message = ((MessageWrapper)rawMessage).getText();
 		} else {
 			message = (String)rawMessage;
 		}
