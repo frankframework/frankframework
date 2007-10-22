@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBaseSpring.java,v $
- * Revision 1.2  2007-10-18 15:56:48  europe\L190409
+ * Revision 1.3  2007-10-22 13:24:54  europe\M00035F
+ * Restore the ability to use the in-process storage as error-storage.
+ *
+ * Revision 1.2  2007/10/18 15:56:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added pollInterval attribute
  *
  * Revision 1.1  2007/10/16 13:02:09  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
@@ -326,7 +329,7 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 	private final static TransactionDefinition TXREQUIRED = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED);
 	private final static TransactionDefinition TXSUPPORTS = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_SUPPORTS);
     
-	public static final String version="$RCSfile: ReceiverBaseSpring.java,v $ $Revision: 1.2 $ $Date: 2007-10-18 15:56:48 $";
+	public static final String version="$RCSfile: ReceiverBaseSpring.java,v $ $Revision: 1.3 $ $Date: 2007-10-22 13:24:54 $";
 	protected Logger log = LogUtil.getLogger(this);
     
 	private BeanFactory beanFactory;
@@ -371,6 +374,8 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 	private IListener listener;
 	private ISender errorSender=null;
 	private ITransactionalStorage errorStorage=null;
+	// See configure() for explanation on this field
+	private ITransactionalStorage tmpInProcessStorage=null;
 	private ISender sender=null; // answer-sender
 	private ITransactionalStorage messageLog=null;
 	
@@ -660,6 +665,27 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 					info("receiver ["+getName()+"] has answer-sender on "+((HasPhysicalDestination)sender).getPhysicalDestinationName());
 				}
 			}
+			// Check if we need to use the in-process storage as
+			// error-storage.
+			// In-process storage is no longer used, but is often
+			// still configured to be used as error-storage.
+			// The rule is:
+			// 1. if error-storage is configured, use it.
+			// 2. If error-storage is not configure but an error-sender is,
+			//    then use the error-sender.
+			// 3. If neither error-storage nor error-sender are configured,
+			//    but the in-process storage is, then use the in-process storage
+			//    for error-storage.
+			// Member variables are accessed directly, to avoid any possible
+			// aliasing-effects applied by getter methods. (These have been
+			// removed for now, but since the getter-methods were not
+			// straightforward in the earlier versions, I felt it was safer
+			// to use direct member variables).
+			if (this.errorSender == null && this.errorStorage == null) {
+				this.errorStorage = this.tmpInProcessStorage;
+			}
+			this.tmpInProcessStorage = null;
+			
 			ISender errorSender = getErrorSender();
 			if (errorSender!=null) {
 				errorSender.configure();
@@ -1165,7 +1191,11 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 	 */
 	protected void setInProcessStorage(ITransactionalStorage inProcessStorage) {
 		log.warn("<*> In-Process Storage is not used anymore. Please remove from configuration. <*>");
-		
+		// We do not use an in-process storage anymore, but we temporarily
+		// store it if it's set by the configuration.
+		// During configure, we check if we need to use the in-process storage
+		// as error-storage.
+		this.tmpInProcessStorage = inProcessStorage;
 	}
 
 	/**
@@ -1177,10 +1207,7 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 	}
 
 	public ITransactionalStorage getErrorStorage() {
-		if (errorStorage!=null) { 
-			return errorStorage;
-		}
-		return null;
+		return errorStorage;
 	}
 
 	/**
