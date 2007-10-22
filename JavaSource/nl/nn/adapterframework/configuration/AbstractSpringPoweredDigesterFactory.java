@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractSpringPoweredDigesterFactory.java,v $
- * Revision 1.2  2007-10-09 16:02:37  europe\L190409
+ * Revision 1.3  2007-10-22 14:38:35  europe\M00035F
+ * Refactor to better allow subclasses to override the createObject() method
+ *
+ * Revision 1.2  2007/10/09 16:02:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Direct copy from Ibis-EJB:
  * first version in HEAD
  *
@@ -13,6 +16,9 @@
  *
  */
 package nl.nn.adapterframework.configuration;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.digester.AbstractObjectCreationFactory;
 import org.apache.commons.digester.ObjectCreationFactory;
@@ -124,7 +130,45 @@ public abstract class AbstractSpringPoweredDigesterFactory
      * @see org.apache.commons.digester.ObjectCreationFactory#createObject(org.xml.sax.Attributes)
      */
     public Object createObject(Attributes attrs) throws Exception {
-        String className = attrs.getValue("className");
+    	Map attrMap = copyAttrsToMap(attrs);
+        return createObject(attrMap);
+    }
+    
+    /**
+     * Create Object from Spring factory, but using the attributes
+     * from the XML converted to a Map. This is so that sub-classes
+     * can override this method and change attributes in the map
+     * before creating the object from the Spring factory.
+     * 
+     * @param attrs
+     * @return
+     * @throws Exception
+     */
+    protected Object createObject(Map attrs) throws Exception {
+        String className = (String) attrs.get("className");
+        return createBeanFromClassName(className);
+    }
+
+    /**
+     * Given a class-name, create a bean. The classname-parameter can be
+     * <code>null</code>, in which case the bean is created using the
+     * bean-name returned by <code>getBeanName()</code>.
+     * 
+     * 
+     * @param className
+     * @return
+     * @throws ClassNotFoundException
+     * @throws InstantiationException
+     * @throws IllegalAccessException
+     * @throws ConfigurationException
+     */
+    protected Object createBeanFromClassName(String className)
+        throws
+            ClassNotFoundException,
+            InstantiationException,
+            IllegalAccessException,
+            ConfigurationException {
+        
         String beanName;
         Class beanClass;
         
@@ -148,28 +192,41 @@ public abstract class AbstractSpringPoweredDigesterFactory
                 // Create instance, and if the instance implements
                 // Spring's BeanFactoryAware interface, use it to
                 // set BeanFactory attribute on this Bean.
-                Object o = beanClass.newInstance();
-                if (factory instanceof AutowireCapableBeanFactory) {
-                    ((AutowireCapableBeanFactory)factory)
-                        .autowireBeanProperties(
-                            o, 
-                            AutowireCapableBeanFactory.AUTOWIRE_BY_NAME,
-                            false);
-                    o = ((AutowireCapableBeanFactory)factory).initializeBean(o, getBeanName());
-                } else if (o instanceof BeanFactoryAware) {
-                    ((BeanFactoryAware)o).setBeanFactory(factory);
-                }
-                return o;
+                return createBeanAndAutoWire(beanClass);
             }
         }
         
         // Only accept prototype-beans!
         if (isPrototypesOnly() && !factory.isPrototype(beanName)) {
-            throw new Exception("Beans created from the BeanFactory must be prototype-beans, bean '"
+            throw new ConfigurationException("Beans created from the BeanFactory must be prototype-beans, bean '"
                 + beanName + "' of class '" + className + "' is not.");
         }
         
         return factory.getBean(beanName, beanClass);
+    }
+
+    protected Object createBeanAndAutoWire(Class beanClass)
+        throws InstantiationException, IllegalAccessException {
+        Object o = beanClass.newInstance();
+        if (factory instanceof AutowireCapableBeanFactory) {
+            ((AutowireCapableBeanFactory)factory)
+                .autowireBeanProperties(
+                    o, 
+                    AutowireCapableBeanFactory.AUTOWIRE_BY_NAME,
+                    false);
+            o = ((AutowireCapableBeanFactory)factory).initializeBean(o, getBeanName());
+        } else if (o instanceof BeanFactoryAware) {
+            ((BeanFactoryAware)o).setBeanFactory(factory);
+        }
+        return o;
+    }
+    
+    protected Map copyAttrsToMap(Attributes attrs) {
+    	Map map = new HashMap(attrs.getLength());
+    	for (int i=0;i<attrs.getLength();++i) {
+    		map.put(attrs.getQName(i), attrs.getValue(i));
+    	}
+    	return map;
     }
 
 }
