@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBaseClassic.java,v $
- * Revision 1.1  2007-10-16 12:40:36  europe\L190409
+ * Revision 1.2  2007-10-23 12:53:20  europe\M00035F
+ * Fix NPE when no error-storage and no inprocess-storage have been defined, but only an error-sender
+ *
+ * Revision 1.1  2007/10/16 12:40:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * moved code to ReceiverBaseClassic
  *
  * Revision 1.53  2007/10/10 08:53:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -305,7 +308,7 @@ import org.apache.log4j.Logger;
  * @since 4.2
  */
 public class ReceiverBaseClassic implements IReceiver, IReceiverStatistics, Runnable, IMessageHandler, IbisExceptionListener, HasSender, TracingEventNumbers {
-	public static final String version="$RCSfile: ReceiverBaseClassic.java,v $ $Revision: 1.1 $ $Date: 2007-10-16 12:40:36 $";
+	public static final String version="$RCSfile: ReceiverBaseClassic.java,v $ $Revision: 1.2 $ $Date: 2007-10-23 12:53:20 $";
 	protected Logger log = LogUtil.getLogger(this);
  
  	public static final String RCV_SHUTDOWN_MONITOR_EVENT_MSG ="RCVCLOSED Ibis Receiver shut down";
@@ -587,7 +590,7 @@ public class ReceiverBaseClassic implements IReceiver, IReceiverStatistics, Runn
 //					if (errorStorage!=null && !(errorStorage instanceof IXAEnabled && ((IXAEnabled)errorStorage).isTransacted())) {
 //						warn("Receiver ["+getName()+"] sets transacted=true, but errorStorage is not. Transactional integrity is not guaranteed"); 
 //					}
-					if (errorStorage==inProcessStorage) {
+					if (errorStorage != null && errorStorage==inProcessStorage) {
 						info("Receiver ["+getName()+"] has errorStorage in inProcessStorage, setting inProcessStorage's type to 'errorStorage'");
 						errorStorage.setType("E"); 
 					}
