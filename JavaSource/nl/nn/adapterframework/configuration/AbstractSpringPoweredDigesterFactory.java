@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractSpringPoweredDigesterFactory.java,v $
- * Revision 1.3  2007-10-22 14:38:35  europe\M00035F
+ * Revision 1.4  2007-10-23 14:16:20  europe\M00035F
+ * Add some logging for improved debugging
+ *
+ * Revision 1.3  2007/10/22 14:38:35  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
  * Refactor to better allow subclasses to override the createObject() method
  *
  * Revision 1.2  2007/10/09 16:02:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -20,8 +23,11 @@ package nl.nn.adapterframework.configuration;
 import java.util.HashMap;
 import java.util.Map;
 
+import nl.nn.adapterframework.util.LogUtil;
+
 import org.apache.commons.digester.AbstractObjectCreationFactory;
 import org.apache.commons.digester.ObjectCreationFactory;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
@@ -58,6 +64,7 @@ public abstract class AbstractSpringPoweredDigesterFactory
     implements ObjectCreationFactory {
 
     public static ListableBeanFactory factory;
+    private final Logger log = LogUtil.getLogger(this);
     
     /**
      * 
@@ -146,6 +153,18 @@ public abstract class AbstractSpringPoweredDigesterFactory
      */
     protected Object createObject(Map attrs) throws Exception {
         String className = (String) attrs.get("className");
+        if (log.isDebugEnabled()) {
+            log.debug(
+                "CreateObject: Element=["
+                    + getDigester().getCurrentElementName()
+                    + "], name=["
+                    + attrs.get("name")
+                    + "], Configured ClassName=["
+                    + className
+                    + "], Suggested Spring Bean Name=["
+                    + getBeanName()
+                    + "]");
+        }
         return createBeanFromClassName(className);
     }
 
