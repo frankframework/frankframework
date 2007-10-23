@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBaseSpring.java,v $
- * Revision 1.3  2007-10-22 13:24:54  europe\M00035F
+ * Revision 1.4  2007-10-23 12:58:23  europe\M00035F
+ * Improve changing InProcessStorage to ErrorStorge: Do it before propagating names, and add logging
+ *
+ * Revision 1.3  2007/10/22 13:24:54  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
  * Restore the ability to use the in-process storage as error-storage.
  *
  * Revision 1.2  2007/10/18 15:56:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -329,7 +332,7 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 	private final static TransactionDefinition TXREQUIRED = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED);
 	private final static TransactionDefinition TXSUPPORTS = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_SUPPORTS);
     
-	public static final String version="$RCSfile: ReceiverBaseSpring.java,v $ $Revision: 1.3 $ $Date: 2007-10-22 13:24:54 $";
+	public static final String version="$RCSfile: ReceiverBaseSpring.java,v $ $Revision: 1.4 $ $Date: 2007-10-23 12:58:23 $";
 	protected Logger log = LogUtil.getLogger(this);
     
 	private BeanFactory beanFactory;
@@ -635,6 +638,40 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 
 	public void configure() throws ConfigurationException {		
 		try {
+            // Check if we need to use the in-process storage as
+            // error-storage.
+            // In-process storage is no longer used, but is often
+            // still configured to be used as error-storage.
+            // The rule is:
+            // 1. if error-storage is configured, use it.
+            // 2. If error-storage is not configure but an error-sender is,
+            //    then use the error-sender.
+            // 3. If neither error-storage nor error-sender are configured,
+            //    but the in-process storage is, then use the in-process storage
+            //    for error-storage.
+            // Member variables are accessed directly, to avoid any possible
+            // aliasing-effects applied by getter methods. (These have been
+            // removed for now, but since the getter-methods were not
+            // straightforward in the earlier versions, I felt it was safer
+            // to use direct member variables).
+            if (this.tmpInProcessStorage != null) {
+                if (this.errorSender == null && this.errorStorage == null) {
+                    this.errorStorage = this.tmpInProcessStorage;
+                    info(
+                        "Receiver ["
+                            + getName()
+                            + "] has errorStorage in inProcessStorage, setting inProcessStorage's type to 'errorStorage'. Please update the configuration to change the inProcessStorage element to an errorStorage element, since the inProcessStorage is no longer used.");
+                    errorStorage.setType("E");
+                } else {
+                    info("Receiver [" +
+                        getName() +
+                        "] has inProcessStorage defined but also has an errorStorage or errorSender. InProcessStorage is not used and can be removed from the configuration.");
+                }
+                // Set temporary in-process storage pointer to null
+                this.tmpInProcessStorage = null;
+            }
+            
+            // Do propagate-name AFTER changing the errorStorage!
 			propagateName();
 			if (getListener()==null) {
 				throw new ConfigurationException("Receiver ["+getName()+"] has no listener");
@@ -665,26 +702,6 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 					info("receiver ["+getName()+"] has answer-sender on "+((HasPhysicalDestination)sender).getPhysicalDestinationName());
 				}
 			}
-			// Check if we need to use the in-process storage as
-			// error-storage.
-			// In-process storage is no longer used, but is often
-			// still configured to be used as error-storage.
-			// The rule is:
-			// 1. if error-storage is configured, use it.
-			// 2. If error-storage is not configure but an error-sender is,
-			//    then use the error-sender.
-			// 3. If neither error-storage nor error-sender are configured,
-			//    but the in-process storage is, then use the in-process storage
-			//    for error-storage.
-			// Member variables are accessed directly, to avoid any possible
-			// aliasing-effects applied by getter methods. (These have been
-			// removed for now, but since the getter-methods were not
-			// straightforward in the earlier versions, I felt it was safer
-			// to use direct member variables).
-			if (this.errorSender == null && this.errorStorage == null) {
-				this.errorStorage = this.tmpInProcessStorage;
-			}
-			this.tmpInProcessStorage = null;
 			
 			ISender errorSender = getErrorSender();
 			if (errorSender!=null) {
