@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBaseClassic.java,v $
- * Revision 1.2  2007-10-23 12:53:20  europe\M00035F
+ * Revision 1.3  2007-10-23 13:07:35  europe\M00035F
+ * Fix another NPE when no inProcessStorage is defined
+ *
+ * Revision 1.2  2007/10/23 12:53:20  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
  * Fix NPE when no error-storage and no inprocess-storage have been defined, but only an error-sender
  *
  * Revision 1.1  2007/10/16 12:40:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -308,7 +311,7 @@ import org.apache.log4j.Logger;
  * @since 4.2
  */
 public class ReceiverBaseClassic implements IReceiver, IReceiverStatistics, Runnable, IMessageHandler, IbisExceptionListener, HasSender, TracingEventNumbers {
-	public static final String version="$RCSfile: ReceiverBaseClassic.java,v $ $Revision: 1.2 $ $Date: 2007-10-23 12:53:20 $";
+	public static final String version="$RCSfile: ReceiverBaseClassic.java,v $ $Revision: 1.3 $ $Date: 2007-10-23 13:07:35 $";
 	protected Logger log = LogUtil.getLogger(this);
  
  	public static final String RCV_SHUTDOWN_MONITOR_EVENT_MSG ="RCVCLOSED Ibis Receiver shut down";
@@ -1028,7 +1031,10 @@ public class ReceiverBaseClassic implements IReceiver, IReceiverStatistics, Runn
 			return;
 		}
 		try {
-			getInProcessStorage().deleteMessage(inProcessMessageId);
+			ITransactionalStorage inProcessStorage = getInProcessStorage();
+            if (inProcessStorage != null) {
+                inProcessStorage.deleteMessage(inProcessMessageId);
+            }
 			if (errorSender!=null) {
 				errorSender.sendMessage(correlationId, message);
 			} 
