@@ -1,5 +1,10 @@
 <digester-rules>
-	<!-- $Id: digester-rules.xml,v 1.5 2007-10-10 09:44:38 europe\L190409 Exp $ -->
+	<!-- $Id: digester-rules.xml,v 1.6 2007-10-23 09:24:49 europe\M00035F Exp $ -->
+    
+    <!-- Objects created using a factory-create-rule are created via the Spring Beans Factory. 
+         Objects created using an object-create-rule are created directly by the Apache Digester,
+         and do not pass by the Spring Beans Factory. -->
+    
     <pattern value="IOS-Adaptering">
         <set-properties-rule/>
     </pattern>
@@ -11,7 +16,7 @@
     </pattern>
 
     <pattern value="*/jmsRealms">
-        <object-create-rule classname="nl.nn.adapterframework.jms.JmsRealmFactoryBean"/>
+        <factory-create-rule classname="nl.nn.adapterframework.configuration.JmsRealmsFactory"/>
         <set-properties-rule/>
     </pattern>
     <pattern value="*/jmsRealm">
@@ -28,12 +33,12 @@
 
 
     <pattern value="*/adapter">
-        <factory-create-rule classname="nl.nn.adapterframework.configuration.AdapterFactory"/>
+        <factory-create-rule classname="nl.nn.adapterframework.configuration.GenericFactory"/>
         <set-properties-rule/>
         <set-next-rule methodname="registerAdapter"/>
     </pattern>
     <pattern value="*/pipeline">
-        <factory-create-rule classname="nl.nn.adapterframework.configuration.PipeLineFactory"/>
+        <factory-create-rule classname="nl.nn.adapterframework.configuration.GenericFactory"/>
         <set-properties-rule/>
         <set-next-rule methodname="registerPipeLine"/>
     </pattern>
@@ -44,7 +49,7 @@
     </pattern>
 
     <pattern value="*/receiver">
-        <factory-create-rule classname="nl.nn.adapterframework.configuration.ReceiverFactory"/> 
+        <factory-create-rule classname="nl.nn.adapterframework.configuration.GenericFactory"/> 
         <set-properties-rule/>
         <set-next-rule methodname="registerReceiver"/>
     </pattern>
@@ -97,7 +102,7 @@
     </pattern>
 
     <pattern value="*/pipe">
-        <factory-create-rule classname="nl.nn.adapterframework.configuration.PipeFactory" /> 
+        <factory-create-rule classname="nl.nn.adapterframework.configuration.GenericFactory" /> 
         <set-properties-rule/>
         <set-next-rule methodname="addPipe" paramtype="nl.nn.adapterframework.core.IPipe"/>
     </pattern>
