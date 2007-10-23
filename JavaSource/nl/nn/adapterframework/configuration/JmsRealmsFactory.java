@@ -1,0 +1,38 @@
+/*
+ * $Log: JmsRealmsFactory.java,v $
+ * Revision 1.1  2007-10-23 09:18:28  europe\M00035F
+ * Add Digester-Factory for the JmsRealmFactory object to retrieve it from spring beans factory instead of old helper-bean-object.
+ *
+ * Created on 23-okt-07
+ *
+ */
+package nl.nn.adapterframework.configuration;
+
+/**
+ * Factory for the JMS Realms instance, which holds all JMS Realm definitions
+ * found in the Configuration File.
+ * 
+ * This bean is a singleton, not a prototype, which is why the GenericFactory
+ * can not be used.
+ * 
+ * @author Tim van der Leeuw
+ * @version Id
+ *
+ */
+public class JmsRealmsFactory extends AbstractSpringPoweredDigesterFactory {
+
+    /* (non-Javadoc)
+     * @see nl.nn.adapterframework.configuration.AbstractSpringPoweredDigesterFactory#getBeanName()
+     */
+    public String getBeanName() {
+        return "jmsRealmsFactory";
+    }
+    
+    /* (non-Javadoc)
+     * @see nl.nn.adapterframework.configuration.AbstractSpringPoweredDigesterFactory#isPrototypesOnly()
+     */
+    public boolean isPrototypesOnly() {
+        return false;
+    }
+
+}
