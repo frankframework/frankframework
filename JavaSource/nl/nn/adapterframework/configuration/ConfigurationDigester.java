@@ -1,6 +1,9 @@
 /*
  * $Log: ConfigurationDigester.java,v $
- * Revision 1.18  2007-10-16 13:18:30  europe\M00035F
+ * Revision 1.19  2007-10-24 08:28:03  europe\M00035F
+ * Allow 'include' to work when no digester-rules.xml is specified, and use default configuration for 'stackTop' when stackTop = null
+ *
+ * Revision 1.18  2007/10/16 13:18:30  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
  * Make method 'digestConfiguration' public again so that it can be used from test cases.
  *
  * Revision 1.17  2007/10/10 09:23:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -97,7 +100,7 @@ import org.springframework.beans.factory.ListableBeanFactory;
  * @see Configuration
  */
 abstract public class ConfigurationDigester implements BeanFactoryAware {
-	public static final String version = "$RCSfile: ConfigurationDigester.java,v $ $Revision: 1.18 $ $Date: 2007-10-16 13:18:30 $";
+	public static final String version = "$RCSfile: ConfigurationDigester.java,v $ $Revision: 1.19 $ $Date: 2007-10-24 08:28:03 $";
     protected static Logger log = LogUtil.getLogger(ConfigurationDigester.class);
 
 	private static final String CONFIGURATION_FILE_DEFAULT  = "Configuration.xml";
@@ -229,9 +232,9 @@ abstract public class ConfigurationDigester implements BeanFactoryAware {
 			throw new ConfigurationException("cannot find resource ["+getConfigurationFile()+"] to include");
 		}
 		URL digesterRules = ClassUtils.getResourceURL(this, getDigesterRules());
-		if (digesterRules == null) {
-			throw new ConfigurationException("cannot find resource ["+getDigesterRules()+"] use as digesterrules to include");
-		}
+        if (stackTop == null) {
+            stackTop = configuration;
+        }
 		digestConfiguration(stackTop, digesterRules, configuration);
 	}
 	
