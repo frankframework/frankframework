@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractSpringPoweredDigesterFactory.java,v $
- * Revision 1.5  2007-10-24 07:13:21  europe\M00035F
+ * Revision 1.6  2007-10-24 08:04:23  europe\M00035F
+ * Add logging for case when classname of Listener implementation is replaced
+ *
+ * Revision 1.5  2007/10/24 07:13:21  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
  * Rename abstract method 'getBeanName()' to 'getSuggestedBeanName()' since it better reflects the role of the method in the class.
  *
  * Revision 1.4  2007/10/23 14:16:20  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
@@ -67,7 +70,7 @@ public abstract class AbstractSpringPoweredDigesterFactory
     implements ObjectCreationFactory {
 
     public static ListableBeanFactory factory;
-    private final Logger log = LogUtil.getLogger(this);
+    protected final Logger log = LogUtil.getLogger(this);
     
     /**
      * 

@@ -1,6 +1,9 @@
 /*
  * $Log: ListenerFactory.java,v $
- * Revision 1.4  2007-10-24 07:13:21  europe\M00035F
+ * Revision 1.5  2007-10-24 08:04:23  europe\M00035F
+ * Add logging for case when classname of Listener implementation is replaced
+ *
+ * Revision 1.4  2007/10/24 07:13:21  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
  * Rename abstract method 'getBeanName()' to 'getSuggestedBeanName()' since it better reflects the role of the method in the class.
  *
  * Revision 1.3  2007/10/22 14:42:55  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
@@ -35,6 +38,8 @@ import org.xml.sax.Attributes;
  * @version Id
  */
 public class ListenerFactory extends AbstractSpringPoweredDigesterFactory {
+    public static final String JMS_LISTENER_CLASSNAME_SUFFIX = ".JmsListener";
+    protected static final String CORRELATED_LISTENER_CLASSNAME = "nl.nn.adapterframework.jms.PullingJmsListener";
 
     /**
      * Default bean to create from the Spring factory is 'proto-jmsListener',
@@ -55,8 +60,10 @@ public class ListenerFactory extends AbstractSpringPoweredDigesterFactory {
 	 */
 	public Object createObject(Attributes attrs) throws Exception {
 		String className = attrs.getValue("className");
-		if (className != null && getDigester().peek() instanceof MessageSendingPipe && className.endsWith(".JmsListener")) {
-			return createBeanFromClassName("nl.nn.adapterframework.jms.PullingJmsListener");
+		if (className != null && getDigester().peek() instanceof MessageSendingPipe && className.endsWith(JMS_LISTENER_CLASSNAME_SUFFIX)) {
+			log.debug("JmsListener is created as part of a MessageSendingPipe; replace classname with '"
+                    + CORRELATED_LISTENER_CLASSNAME + "' to ensure compatibility");
+            return createBeanFromClassName(CORRELATED_LISTENER_CLASSNAME);
 		} else {
             return createBeanFromClassName(className);
 		}
