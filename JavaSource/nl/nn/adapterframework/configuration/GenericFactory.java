@@ -1,6 +1,9 @@
 /*
  * $Log: GenericFactory.java,v $
- * Revision 1.3  2007-10-22 14:56:21  europe\M00035F
+ * Revision 1.4  2007-10-24 07:13:21  europe\M00035F
+ * Rename abstract method 'getBeanName()' to 'getSuggestedBeanName()' since it better reflects the role of the method in the class.
+ *
+ * Revision 1.3  2007/10/22 14:56:21  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
  * Make the 'Generic Factory' more generically useful by allowing beans to be created based of name of element in IBIS Configuration file.
  *
  * Revision 1.2  2007/10/09 15:29:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -53,7 +56,7 @@ public class GenericFactory extends AbstractSpringPoweredDigesterFactory {
      * 
      * @see nl.nn.adapterframework.configuration.AbstractSpringPoweredDigesterFactory#getBeanName()
      */
-    public String getBeanName() {
+    public String getSuggestedBeanName() {
         return "proto-" + getDigester().getCurrentElementName();
     }
 

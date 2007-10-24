@@ -1,10 +1,17 @@
 /*
  * $Log: ListenerFactory.java,v $
- * Revision 1.3  2007-10-22 14:42:55  europe\M00035F
+ * Revision 1.4  2007-10-24 07:13:21  europe\M00035F
+ * Rename abstract method 'getBeanName()' to 'getSuggestedBeanName()' since it better reflects the role of the method in the class.
+ *
+ * Revision 1.3  2007/10/22 14:42:55  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
  * Override createObject so that a JMS PullingJmsListener is created instead of a 'default' JmsListener when the parent is instance of MessageSendingPipe;
+
  * this is for compatibility with the MessageSendingPipe using an instance of ICorrelatedPullingListener (which the PushingJmsListener can not provide).
+
  * 
+
  * This solution is a workaround to be used until we decide how to refactor the MessageSendingPipe, or if the functionality of correlated listener should be
+
  * added to PushingJmsListener (which would contradict it's design, and currently have the unwanted side-effect ofcreating a JMS Container for the queue).
  *
  * Revision 1.2  2007/10/09 15:29:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -39,7 +46,7 @@ public class ListenerFactory extends AbstractSpringPoweredDigesterFactory {
      * 
      * @see nl.nn.adapterframework.configuration.AbstractSpringPoweredDigesterFactory#getBeanName()
      */
-    public String getBeanName() {
+    public String getSuggestedBeanName() {
         return "proto-jmsListener";
     }
     

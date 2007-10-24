@@ -1,6 +1,9 @@
 /*
  * $Log: ConfigurationDigesterFactory.java,v $
- * Revision 1.1  2007-10-23 09:17:24  europe\M00035F
+ * Revision 1.2  2007-10-24 07:13:21  europe\M00035F
+ * Rename abstract method 'getBeanName()' to 'getSuggestedBeanName()' since it better reflects the role of the method in the class.
+ *
+ * Revision 1.1  2007/10/23 09:17:24  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
  * ConfigurationDigester is an abstract class to be loaded from the Spring Beans Factory, so add a factory for it
  *
  * 
@@ -28,7 +31,7 @@ public class ConfigurationDigesterFactory
     /* (non-Javadoc)
      * @see nl.nn.adapterframework.configuration.AbstractSpringPoweredDigesterFactory#getBeanName()
      */
-    public String getBeanName() {
+    public String getSuggestedBeanName() {
         return "configurationDigester";
     }
 
