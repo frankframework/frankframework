@@ -1,5 +1,5 @@
 <digester-rules>
-	<!-- $Id: digester-rules.xml,v 1.6 2007-10-23 09:24:49 europe\M00035F Exp $ -->
+	<!-- $Id: digester-rules.xml,v 1.7 2007-10-24 08:28:34 europe\M00035F Exp $ -->
     
     <!-- Objects created using a factory-create-rule are created via the Spring Beans Factory. 
          Objects created using an object-create-rule are created directly by the Apache Digester,
@@ -10,7 +10,7 @@
     </pattern>
 
     <pattern value="*/include">
-        <object-create-rule classname="nl.nn.adapterframework.configuration.ConfigurationDigester"/>
+        <factory-create-rule classname="nl.nn.adapterframework.configuration.ConfigurationDigesterFactory"/>
         <set-properties-rule/>
         <set-top-rule methodname="include"/>
     </pattern>
