@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   $Log: springUnmanagedDeployment.xml,v $
-  Revision 1.5  2007-11-05 12:23:37  europe\M00035F
+  Revision 1.6  2007-11-05 12:29:07  europe\M00035F
+  Rename bean 'jmsConfigurator' to 'jmsConnector'
+
+  Revision 1.5  2007/11/05 12:23:37  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
   Rename 'SpringJmsConfigurator' to 'SpringJmsConnector'
 
   Revision 1.4  2007/10/24 08:08:08  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
@@ -31,12 +34,12 @@
         </property>
     </bean>
     
-    <bean name="jmsConfigurator" class="nl.nn.adapterframework.unmanaged.SpringJmsConnector"
+    <bean name="jmsConnector" class="nl.nn.adapterframework.unmanaged.SpringJmsConnector"
         autowire="byName" scope="prototype">
         <property name="messageListenerClassName" ref="messageListenerClassName"/>
     </bean>
     
-    <!-- SpringJmsConfigurator depends on bean definition for proto-jmsContainer below; this bean
+    <!-- SpringJmsConnector depends on bean definition for proto-jmsContainer below; this bean
          is not needed in the EJB deployment mode.
          
          Please note that this definition is intentionally incomplete and can not be
