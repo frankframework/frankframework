@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.54  2007-10-16 12:40:36  europe\L190409
+ * Revision 1.55  2007-11-05 10:33:16  europe\M00035F
+ * Move interface 'IJmsConfigurator' from package 'configuration' to package 'core' in preparation of renaming it
+ *
+ * Revision 1.54  2007/10/16 12:40:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * moved code to ReceiverBaseClassic
  *
  * Revision 1.53  2007/10/10 08:53:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -252,5 +255,5 @@ import nl.nn.adapterframework.util.TracingEventNumbers;
  * @author     Gerrit van Brakel
  * @since 4.2
  */
-public class ReceiverBase extends ReceiverBaseClassic {
+public class ReceiverBase extends ReceiverBaseSpring {
 }

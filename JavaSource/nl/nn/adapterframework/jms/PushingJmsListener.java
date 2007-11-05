@@ -2,7 +2,10 @@
  * Created on 18-sep-07
  * 
  * $Log: PushingJmsListener.java,v $
- * Revision 1.1  2007-10-16 09:52:35  europe\M00035F
+ * Revision 1.2  2007-11-05 10:33:15  europe\M00035F
+ * Move interface 'IJmsConfigurator' from package 'configuration' to package 'core' in preparation of renaming it
+ *
+ * Revision 1.1  2007/10/16 09:52:35  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
  * Change over JmsListener to a 'switch-class' to facilitate smoother switchover from older version to spring version
  *
  * Revision 1.25.4.7  2007/10/12 09:09:06  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
@@ -38,7 +41,7 @@ import javax.jms.TextMessage;
 import javax.naming.NamingException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.IJmsConfigurator;
+import nl.nn.adapterframework.core.IJmsConfigurator;
 import nl.nn.adapterframework.core.IMessageHandler;
 import nl.nn.adapterframework.core.IPushingListener;
 import nl.nn.adapterframework.core.ISender;
@@ -58,7 +61,7 @@ import nl.nn.adapterframework.core.PipeLineResult;
  * 
  */
 public class PushingJmsListener extends JMSFacade implements IPushingListener {
-    public static final String version="$RCSfile: PushingJmsListener.java,v $ $Revision: 1.1 $ $Date: 2007-10-16 09:52:35 $";
+    public static final String version="$RCSfile: PushingJmsListener.java,v $ $Revision: 1.2 $ $Date: 2007-11-05 10:33:15 $";
 
     private final static String THREAD_CONTEXT_SESSION_KEY="session";
     private final static String THREAD_CONTEXT_SESSION_OWNER_FLAG_KEY="isSessionOwner";

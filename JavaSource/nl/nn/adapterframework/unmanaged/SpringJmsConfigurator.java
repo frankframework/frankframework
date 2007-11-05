@@ -1,6 +1,9 @@
 /*
  * $Log: SpringJmsConfigurator.java,v $
- * Revision 1.4  2007-10-17 11:33:40  europe\L190409
+ * Revision 1.5  2007-11-05 10:33:15  europe\M00035F
+ * Move interface 'IJmsConfigurator' from package 'configuration' to package 'core' in preparation of renaming it
+ *
+ * Revision 1.4  2007/10/17 11:33:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * add at least one consumer
  *
  * Revision 1.3  2007/10/16 09:52:35  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
@@ -22,7 +25,7 @@ import javax.jms.Message;
 import javax.jms.Session;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.IJmsConfigurator;
+import nl.nn.adapterframework.core.IJmsConfigurator;
 import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.jms.JmsException;
@@ -62,7 +65,7 @@ public class SpringJmsConfigurator extends AbstractJmsConfigurator implements IJ
 	public static final TransactionDefinition TXSUPPORTS = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_SUPPORTS);
 	public static final TransactionDefinition TXMANDATORY = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_MANDATORY);
     
-	public static final String version="$RCSfile: SpringJmsConfigurator.java,v $ $Revision: 1.4 $ $Date: 2007-10-17 11:33:40 $";
+	public static final String version="$RCSfile: SpringJmsConfigurator.java,v $ $Revision: 1.5 $ $Date: 2007-11-05 10:33:15 $";
     
 	private String connectionFactoryName;
 	private PlatformTransactionManager txManager;
