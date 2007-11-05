@@ -1,7 +1,10 @@
 /*
- * $Log: EjbJmsConfigurator.java,v $
- * Revision 1.5  2007-11-05 10:33:16  europe\M00035F
- * Move interface 'IJmsConfigurator' from package 'configuration' to package 'core' in preparation of renaming it
+ * $Log: EjbListenerPortConnector.java,v $
+ * Revision 1.1  2007-11-05 12:20:17  europe\M00035F
+ * Rename 'EjbJmsConfigurator' to 'EjbListenerPortConnector'
+ *
+ * Revision 1.5  2007/11/05 10:33:16  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
+ * Move interface 'IListenerConnector' from package 'configuration' to package 'core' in preparation of renaming it
  *
  * Revision 1.4  2007/10/16 09:52:35  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
  * Change over JmsListener to a 'switch-class' to facilitate smoother switchover from older version to spring version
@@ -36,7 +39,7 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IJmsConfigurator;
+import nl.nn.adapterframework.core.IListenerConnector;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.jms.PushingJmsListener;
 import nl.nn.adapterframework.receivers.GenericReceiver;
@@ -47,7 +50,7 @@ import nl.nn.adapterframework.receivers.GenericReceiver;
  * @since   4.8
  * @version Id
  */
-public class EjbJmsConfigurator implements IJmsConfigurator {
+public class EjbListenerPortConnector implements IListenerConnector {
     private final static String LISTENER_PORTNAME_SUFFIX = "ListenerPort";
     
     private PushingJmsListener jmsListener;
