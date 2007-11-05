@@ -1,6 +1,9 @@
 /*
  * $Log: SpringJmsConnector.java,v $
- * Revision 1.1  2007-11-05 12:24:01  europe\M00035F
+ * Revision 1.2  2007-11-05 13:06:55  europe\M00035F
+ * Rename and redefine methods in interface IListenerConnector to remove 'jms' from names
+ *
+ * Revision 1.1  2007/11/05 12:24:01  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
  * Rename 'SpringJmsConfigurator' to 'SpringJmsConnector'
  *
  * Revision 1.5  2007/11/05 10:33:15  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
@@ -29,6 +32,7 @@ import javax.jms.Session;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IListenerConnector;
+import nl.nn.adapterframework.core.IPortConnectedListener;
 import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.jms.JmsException;
@@ -52,12 +56,16 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 /**
  * Configure a Spring JMS Container from a {@link nl.nn.adapterframework.jms.PushingJmsListener}.
  * 
+ * <p>
  * This implementation expects to receive an instance of
  * org.springframework.jms.listener.DefaultMessageListenerContainer
  * from the Spring BeanFactory. If another type of MessageListenerContainer
  * is created by the BeanFactory, then another implementation of IListenerConnector
  * should be provided as well.
- * 
+ * </p>
+ * <p>
+ * This implementation works only with a PushingJmsListener, and not with other types PortConnectedListeners.
+ * </p>
  * @author  Tim van der Leeuw
  * @since   4.8
  * @version Id
@@ -68,7 +76,7 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 	public static final TransactionDefinition TXSUPPORTS = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_SUPPORTS);
 	public static final TransactionDefinition TXMANDATORY = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_MANDATORY);
     
-	public static final String version="$RCSfile: SpringJmsConnector.java,v $ $Revision: 1.1 $ $Date: 2007-11-05 12:24:01 $";
+	public static final String version="$RCSfile: SpringJmsConnector.java,v $ $Revision: 1.2 $ $Date: 2007-11-05 13:06:55 $";
     
 	private String connectionFactoryName;
 	private PlatformTransactionManager txManager;
@@ -88,8 +96,8 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 	/* (non-Javadoc)
 	 * @see nl.nn.adapterframework.configuration.IListenerConnector#configureReceiver(nl.nn.adapterframework.jms.PushingJmsListener)
 	 */
-	public void configureJmsReceiver(final PushingJmsListener jmsListener) throws ConfigurationException {
-		super.configureJmsReceiver(jmsListener);
+	public void configureEndpointConnection(final IPortConnectedListener jmsListener) throws ConfigurationException {
+		super.configureEndpointConnection(jmsListener);
         
 		// Create the Message Listener Container manually.
 		// This is needed, because otherwise the Spring Factory will
@@ -98,13 +106,13 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 		// to insert our dynamic values from the config. file.
 		this.jmsContainer = createMessageListenerContainer();
         
-		if (jmsListener.isTransacted()) {
+		if (getJmsListener().isTransacted()) {
 			this.jmsContainer.setTransactionManager(this.txManager);
 		}
         
 		// Initialize with a number of dynamic properties which come from the configuration file
 		try {
-			this.connectionFactoryName = jmsListener.getConnectionFactoryName();
+			this.connectionFactoryName = getJmsListener().getConnectionFactoryName();
 			ConnectionFactory connectionFactory = createConnectionFactory(this.connectionFactoryName);
             
 			this.jmsContainer.setConnectionFactory(connectionFactory);
@@ -114,9 +122,9 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 		}
         
 		this.jmsContainer.setExceptionListener(this);
-		this.jmsContainer.setReceiveTimeout(jmsListener.getTimeOut());
+		this.jmsContainer.setReceiveTimeout(getJmsListener().getTimeOut());
         
-		final GenericReceiver receiver = (GenericReceiver) jmsListener.getHandler();
+		final GenericReceiver receiver = (GenericReceiver) getJmsListener().getReceiver();
 		final Counter threadsProcessing = new Counter(0);
 		if (receiver.getNumThreads() > 0) {
 			this.jmsContainer.setConcurrentConsumers(receiver.getNumThreads());
@@ -133,34 +141,34 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 				TransactionStatus txStatus = null;
 				Map threadContext = new HashMap();
 				try {
-					if (jmsListener.isTransacted()) {
+					if (getJmsListener().isTransacted()) {
 						txStatus = txManager.getTransaction(TXMANDATORY);
 						if (txStatus.isNewTransaction()) {
 							log.error("Current Transaction is NEW, but was retrieved is using propagation:MANDATORY");
 						}
 					}
-					jmsListener.populateThreadContext(threadContext, session);
+                    getJmsListener().populateThreadContext(threadContext, session);
 					receiver.processRawMessage(jmsListener, message, threadContext,
-						jmsListener.getTimeOut());
+                            getJmsListener().getTimeOut());
 				} catch (ListenerException e) {
 					invalidateSessionTransaction(e, session, txStatus);
 				} finally {
 					threadsProcessing.decrease();
-					jmsListener.destroyThreadContext(threadContext);
+                    getJmsListener().destroyThreadContext(threadContext);
 				}
 			}
 
 			private void invalidateSessionTransaction(Throwable t, Session session,
 					TransactionStatus txStatus) throws JMSException {
 				// TODO Proper way to handle this error
-				if (!jmsListener.isTransacted()) {
+				if (!getJmsListener().isTransacted()) {
 					log.debug("Exception caught in onMessage; rolling back JMS Session", t);
 					session.rollback();
 				} else {
 					if (txStatus == null) {
 						log.error("Unable to rollback current global transaction since it is null! Original exception for which we want to rollback:", t);
 						throw new javax.jms.IllegalStateException("Trying to roll back current global transaction for transacted listener ["
-								+ jmsListener.getName()+"] but reference to transaction-status is null; original exception for which we want to rollback is instance of "
+								+ getJmsListener().getName()+"] but reference to transaction-status is null; original exception for which we want to rollback is instance of "
 								+ t.getClass().getName()+"; exception message: "+t.getMessage());
 					}
 					log.debug("Exception caught in onMessage; rolling back global transaction", t);
@@ -175,14 +183,14 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 			((AutowireCapableBeanFactory) this.beanFactory).configureBean(this.jmsContainer, "proto-jmsContainer");
 		} catch (BeansException e) {
 			throw new ConfigurationException("Out of luck wiring up and configuring Default JMS Message Listener Container for JMS Listener "
-					+ (jmsListener.getName() != null?jmsListener.getName():jmsListener.getLogPrefix()), e);
+					+ (getJmsListener().getName() != null?getJmsListener().getName():getJmsListener().getLogPrefix()), e);
 		}
         
 		// Finally, set bean name to something we can make sense of
-		if (jmsListener.getName() != null) {
-			this.jmsContainer.setBeanName(jmsListener.getName());
+		if (getJmsListener().getName() != null) {
+			this.jmsContainer.setBeanName(getJmsListener().getName());
 		} else {
-			this.jmsContainer.setBeanName(jmsListener.getLogPrefix());
+			this.jmsContainer.setBeanName(getJmsListener().getLogPrefix());
 		}
         
 	}
@@ -197,7 +205,7 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 	/* (non-Javadoc)
 	 * @see nl.nn.adapterframework.configuration.IListenerConnector#openJmsReceiver()
 	 */
-	public void openJmsReceiver() throws ListenerException {
+	public void start() throws ListenerException {
 		log.debug("Starting Spring JMS Container");
 		try {
 			jmsContainer.start();
@@ -209,7 +217,7 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 	/* (non-Javadoc)
 	 * @see nl.nn.adapterframework.configuration.IListenerConnector#closeJmsReceiver()
 	 */
-	public void closeJmsReceiver() throws ListenerException {
+	public void stop() throws ListenerException {
 		log.debug("Stopping Spring JMS Container");
 		try {
 			jmsContainer.stop();

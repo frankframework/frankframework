@@ -2,7 +2,10 @@
  * Created on 18-sep-07
  * 
  * $Log: PushingJmsListener.java,v $
- * Revision 1.3  2007-11-05 12:26:51  europe\M00035F
+ * Revision 1.4  2007-11-05 13:06:55  europe\M00035F
+ * Rename and redefine methods in interface IListenerConnector to remove 'jms' from names
+ *
+ * Revision 1.3  2007/11/05 12:26:51  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
  * * Implement new interface 'IPortConnectedListener'
  * * Rename property 'jmsConfigurator' to 'jmsConnector'
  *
@@ -67,7 +70,7 @@ import nl.nn.adapterframework.core.PipeLineResult;
  * 
  */
 public class PushingJmsListener extends JMSFacade implements IPortConnectedListener {
-    public static final String version="$RCSfile: PushingJmsListener.java,v $ $Revision: 1.3 $ $Date: 2007-11-05 12:26:51 $";
+    public static final String version="$RCSfile: PushingJmsListener.java,v $ $Revision: 1.4 $ $Date: 2007-11-05 13:06:55 $";
 
     private final static String THREAD_CONTEXT_SESSION_KEY="session";
     private final static String THREAD_CONTEXT_SESSION_OWNER_FLAG_KEY="isSessionOwner";
@@ -114,7 +117,7 @@ public class PushingJmsListener extends JMSFacade implements IPortConnectedListe
         if (sender != null) {
             sender.configure();
         }
-        jmsConnector.configureJmsReceiver(this);
+        jmsConnector.configureEndpointConnection(this);
     }
 
     /* (non-Javadoc)
@@ -122,7 +125,7 @@ public class PushingJmsListener extends JMSFacade implements IPortConnectedListe
      */
     public void open() throws ListenerException {
         // DO NOT open JMSFacade!
-        jmsConnector.openJmsReceiver();
+        jmsConnector.start();
     }
 
     /* (non-Javadoc)
@@ -131,7 +134,7 @@ public class PushingJmsListener extends JMSFacade implements IPortConnectedListe
     public void close() throws ListenerException {
         try {
             // DO close JMSFacade - it might have been opened via other calls
-            jmsConnector.closeJmsReceiver();
+            jmsConnector.stop();
             closeFacade();
         } catch (JmsException ex) {
             throw new ListenerException(ex);

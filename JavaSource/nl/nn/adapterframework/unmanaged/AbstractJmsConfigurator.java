@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractJmsConfigurator.java,v $
- * Revision 1.3  2007-10-16 09:52:35  europe\M00035F
+ * Revision 1.4  2007-11-05 13:06:55  europe\M00035F
+ * Rename and redefine methods in interface IListenerConnector to remove 'jms' from names
+ *
+ * Revision 1.3  2007/10/16 09:52:35  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
  * Change over JmsListener to a 'switch-class' to facilitate smoother switchover from older version to spring version
  *
  * Revision 1.2  2007/10/10 07:49:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -19,6 +22,7 @@ import javax.naming.NamingException;
 import org.apache.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IPortConnectedListener;
 import nl.nn.adapterframework.jms.PushingJmsListener;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -37,10 +41,10 @@ abstract public class AbstractJmsConfigurator {
     private Destination destination;
     private String destinationName;
 
-    public void configureJmsReceiver(final PushingJmsListener jmsListener) throws ConfigurationException {
-        this.jmsListener = jmsListener;
-        setDestinationName(jmsListener.getDestinationName());
-        setDestination(createDestination(jmsListener.getDestinationName()));
+    public void configureEndpointConnection(final IPortConnectedListener jmsListener) throws ConfigurationException {
+        this.jmsListener = (PushingJmsListener) jmsListener;
+        setDestinationName(this.jmsListener.getDestinationName());
+        setDestination(createDestination(this.jmsListener.getDestinationName()));
     }
 
     protected ConnectionFactory createConnectionFactory(String cfName) throws ConfigurationException {

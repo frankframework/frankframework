@@ -1,6 +1,9 @@
 /*
  * $Log: EjbListenerPortConnector.java,v $
- * Revision 1.1  2007-11-05 12:20:17  europe\M00035F
+ * Revision 1.2  2007-11-05 13:06:55  europe\M00035F
+ * Rename and redefine methods in interface IListenerConnector to remove 'jms' from names
+ *
+ * Revision 1.1  2007/11/05 12:20:17  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
  * Rename 'EjbJmsConfigurator' to 'EjbListenerPortConnector'
  *
  * Revision 1.5  2007/11/05 10:33:16  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
@@ -40,6 +43,8 @@ import javax.naming.InitialContext;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IListenerConnector;
+import nl.nn.adapterframework.core.IPortConnectedListener;
+import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.jms.PushingJmsListener;
 import nl.nn.adapterframework.receivers.GenericReceiver;
@@ -53,7 +58,7 @@ import nl.nn.adapterframework.receivers.GenericReceiver;
 public class EjbListenerPortConnector implements IListenerConnector {
     private final static String LISTENER_PORTNAME_SUFFIX = "ListenerPort";
     
-    private PushingJmsListener jmsListener;
+    private IPortConnectedListener jmsListener;
     private ObjectName listenerPortMBean;
     private AdminService adminService;
     private Destination destination;
@@ -63,7 +68,7 @@ public class EjbListenerPortConnector implements IListenerConnector {
         return destination;
     }
 
-    public void configureJmsReceiver(PushingJmsListener jmsListener) throws ConfigurationException {
+    public void configureEndpointConnection(IPortConnectedListener jmsListener) throws ConfigurationException {
         try {
             this.jmsListener = jmsListener;
             this.listenerPortMBean = lookupListenerPortMBean(jmsListener);
@@ -77,7 +82,7 @@ public class EjbListenerPortConnector implements IListenerConnector {
         }
     }
 
-    public void openJmsReceiver() throws ListenerException {
+    public void start() throws ListenerException {
         try {
             getAdminService().invoke(listenerPortMBean, "start", null, null);
         } catch (Exception ex) {
@@ -85,7 +90,7 @@ public class EjbListenerPortConnector implements IListenerConnector {
         }
     }
 
-    public void closeJmsReceiver() throws ListenerException {
+    public void stop() throws ListenerException {
         try {
             getAdminService().invoke(listenerPortMBean, "stop", null, null);
         } catch (Exception ex) {
@@ -97,7 +102,7 @@ public class EjbListenerPortConnector implements IListenerConnector {
      * Lookup the MBean for the listener-port in WebSphere that the JMS Listener
      * binds to.
      */
-    protected ObjectName lookupListenerPortMBean(PushingJmsListener jmsListener)  throws ConfigurationException {
+    protected ObjectName lookupListenerPortMBean(IPortConnectedListener jmsListener)  throws ConfigurationException {
         try {
             // Get the admin service
             AdminService as = getAdminService();
@@ -117,10 +122,10 @@ public class EjbListenerPortConnector implements IListenerConnector {
             // Assume that only 1 is returned and return it
             if (names.size() == 0) {
                 throw new ConfigurationException("Can not find WebSphere ListenerPort by name of '"
-                        + listenerPortName + "', PushingJmsListener can not be configured");
+                        + listenerPortName + "', IPortConnectedListener can not be configured");
             } else if (names.size() > 1) {
                 throw new ConfigurationException("Multiple WebSphere ListenerPorts found by name of '"
-                        + listenerPortName + "': " + names + ", PushingJmsListener can not be configured");
+                        + listenerPortName + "': " + names + ", IPortConnectedListener can not be configured");
             } else {
                 return (ObjectName) names.iterator().next();
             }
@@ -150,12 +155,12 @@ public class EjbListenerPortConnector implements IListenerConnector {
      * </ol>
      * 
      */
-    protected String getListenerPortName(PushingJmsListener jmsListener) {
+    protected String getListenerPortName(IPortConnectedListener jmsListener) {
         String name = jmsListener.getListenerPort();
         
         if (name == null) {
-            GenericReceiver receiver;
-            receiver = (GenericReceiver)jmsListener.getHandler();
+            IReceiver receiver;
+            receiver = (GenericReceiver)jmsListener.getReceiver();
             name = configuration.getConfigurationName()
                     + '-' + receiver.getName() + LISTENER_PORTNAME_SUFFIX;
             name = name.replace(' ', '-');

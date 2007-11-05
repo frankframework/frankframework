@@ -1,6 +1,9 @@
 /*
  * $Log: IListenerConnector.java,v $
- * Revision 1.1  2007-11-05 12:18:49  europe\M00035F
+ * Revision 1.2  2007-11-05 13:06:55  europe\M00035F
+ * Rename and redefine methods in interface IListenerConnector to remove 'jms' from names
+ *
+ * Revision 1.1  2007/11/05 12:18:49  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
  * Rename interface IJmsConfigurator to IListenerConnector to make it more generic and make the name better match what the implementations do.
  *
  * Revision 1.1  2007/11/05 10:33:16  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
@@ -32,7 +35,7 @@ import nl.nn.adapterframework.jms.PushingJmsListener;
 public interface IListenerConnector {
 
     Destination getDestination();
-    void configureJmsReceiver(PushingJmsListener jmsListener) throws ConfigurationException;
-    void openJmsReceiver() throws ListenerException;
-    void closeJmsReceiver() throws ListenerException;
+    void configureEndpointConnection(IPortConnectedListener listener) throws ConfigurationException;
+    void start() throws ListenerException;
+    void stop() throws ListenerException;
 }
