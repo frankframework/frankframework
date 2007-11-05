@@ -1,7 +1,10 @@
 /*
- * $Log: SpringJmsConfigurator.java,v $
- * Revision 1.5  2007-11-05 10:33:15  europe\M00035F
- * Move interface 'IJmsConfigurator' from package 'configuration' to package 'core' in preparation of renaming it
+ * $Log: SpringJmsConnector.java,v $
+ * Revision 1.1  2007-11-05 12:24:01  europe\M00035F
+ * Rename 'SpringJmsConfigurator' to 'SpringJmsConnector'
+ *
+ * Revision 1.5  2007/11/05 10:33:15  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
+ * Move interface 'IListenerConnector' from package 'configuration' to package 'core' in preparation of renaming it
  *
  * Revision 1.4  2007/10/17 11:33:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * add at least one consumer
@@ -25,7 +28,7 @@ import javax.jms.Message;
 import javax.jms.Session;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IJmsConfigurator;
+import nl.nn.adapterframework.core.IListenerConnector;
 import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.jms.JmsException;
@@ -52,20 +55,20 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  * This implementation expects to receive an instance of
  * org.springframework.jms.listener.DefaultMessageListenerContainer
  * from the Spring BeanFactory. If another type of MessageListenerContainer
- * is created by the BeanFactory, then another implementation of IJmsConfigurator
+ * is created by the BeanFactory, then another implementation of IListenerConnector
  * should be provided as well.
  * 
  * @author  Tim van der Leeuw
  * @since   4.8
  * @version Id
  */
-public class SpringJmsConfigurator extends AbstractJmsConfigurator implements IJmsConfigurator, BeanFactoryAware, ExceptionListener {
-	private static final Logger log = LogUtil.getLogger(SpringJmsConfigurator.class);
+public class SpringJmsConnector extends AbstractJmsConfigurator implements IListenerConnector, BeanFactoryAware, ExceptionListener {
+	private static final Logger log = LogUtil.getLogger(SpringJmsConnector.class);
 	
 	public static final TransactionDefinition TXSUPPORTS = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_SUPPORTS);
 	public static final TransactionDefinition TXMANDATORY = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_MANDATORY);
     
-	public static final String version="$RCSfile: SpringJmsConfigurator.java,v $ $Revision: 1.5 $ $Date: 2007-11-05 10:33:15 $";
+	public static final String version="$RCSfile: SpringJmsConnector.java,v $ $Revision: 1.1 $ $Date: 2007-11-05 12:24:01 $";
     
 	private String connectionFactoryName;
 	private PlatformTransactionManager txManager;
@@ -83,7 +86,7 @@ public class SpringJmsConfigurator extends AbstractJmsConfigurator implements IJ
 	}
     
 	/* (non-Javadoc)
-	 * @see nl.nn.adapterframework.configuration.IJmsConfigurator#configureReceiver(nl.nn.adapterframework.jms.PushingJmsListener)
+	 * @see nl.nn.adapterframework.configuration.IListenerConnector#configureReceiver(nl.nn.adapterframework.jms.PushingJmsListener)
 	 */
 	public void configureJmsReceiver(final PushingJmsListener jmsListener) throws ConfigurationException {
 		super.configureJmsReceiver(jmsListener);
@@ -192,7 +195,7 @@ public class SpringJmsConfigurator extends AbstractJmsConfigurator implements IJ
 	}
 
 	/* (non-Javadoc)
-	 * @see nl.nn.adapterframework.configuration.IJmsConfigurator#openJmsReceiver()
+	 * @see nl.nn.adapterframework.configuration.IListenerConnector#openJmsReceiver()
 	 */
 	public void openJmsReceiver() throws ListenerException {
 		log.debug("Starting Spring JMS Container");
@@ -204,7 +207,7 @@ public class SpringJmsConfigurator extends AbstractJmsConfigurator implements IJ
 	}
 
 	/* (non-Javadoc)
-	 * @see nl.nn.adapterframework.configuration.IJmsConfigurator#closeJmsReceiver()
+	 * @see nl.nn.adapterframework.configuration.IListenerConnector#closeJmsReceiver()
 	 */
 	public void closeJmsReceiver() throws ListenerException {
 		log.debug("Stopping Spring JMS Container");
