@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcTransactionalStorage.java,v $
- * Revision 1.22  2007-10-09 15:34:41  europe\L190409
+ * Revision 1.23  2007-11-13 14:12:13  europe\L190409
+ * corrected checkMessageIdQuery
+ *
+ * Revision 1.22  2007/10/09 15:34:41  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * copy changes from Ibis-EJB:
  * added containsMessageId()
  *
@@ -173,7 +176,7 @@ import org.apache.commons.lang.StringUtils;
  * @since 	4.1
  */
 public class JdbcTransactionalStorage extends JdbcFacade implements ITransactionalStorage {
-	public static final String version = "$RCSfile: JdbcTransactionalStorage.java,v $ $Revision: 1.22 $ $Date: 2007-10-09 15:34:41 $";
+	public static final String version = "$RCSfile: JdbcTransactionalStorage.java,v $ $Revision: 1.23 $ $Date: 2007-11-13 14:12:13 $";
 	
 	// the following currently only for debug.... 
 	boolean checkIfTableExists=true;
@@ -288,7 +291,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 						  " ORDER BY "+getDateField();
 		selectDataQuery = "SELECT "+getMessageField()+
 						  " FROM "+getTableName()+ getWhereClause(getKeyField()+"=?");
-        checkMessageIdQuery = "SELECT " + getIdField() + " WHERE "+getIdField() + "=?";
+        checkMessageIdQuery = "SELECT " + getIdField() +" FROM "+getTableName()+ " WHERE "+getIdField() + "=?";
         
 		if (databaseType==DATABASE_ORACLE) {
 			insertQuery = "INSERT INTO "+getTableName()+" ("+
