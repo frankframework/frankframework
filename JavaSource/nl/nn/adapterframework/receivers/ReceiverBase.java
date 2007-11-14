@@ -1,17 +1,7 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.53  2007-10-10 08:53:00  europe\L190409
- * transactions from JtaUtil
- * make runState externally accessible
- *
- * Revision 1.52  2007/10/08 13:33:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * changed ArrayList to List where possible
- *
- * Revision 1.51  2007/10/04 12:01:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * limit number of error messages written to log
- *
- * Revision 1.50  2007/10/03 08:57:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * changed HashMap to Map
+ * Revision 1.49.2.1  2007-11-14 15:50:41  europe\L190409
+ * avoid rolling back transaction already rolled back
  *
  * Revision 1.49  2007/09/27 12:55:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * introduction of monitoring
@@ -178,10 +168,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 
-import javax.naming.NamingException;
 import javax.transaction.Status;
 import javax.transaction.UserTransaction;
 import javax.xml.transform.Transformer;
@@ -206,6 +193,7 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.TransactionException;
 import nl.nn.adapterframework.monitoring.EventTypeEnum;
 import nl.nn.adapterframework.monitoring.IMonitorAdapter;
 import nl.nn.adapterframework.monitoring.MonitorAdapterFactory;
@@ -302,7 +290,7 @@ import org.apache.log4j.Logger;
  * @since 4.2
  */
 public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, IMessageHandler, IbisExceptionListener, HasSender, TracingEventNumbers {
-	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.53 $ $Date: 2007-10-10 08:53:00 $";
+	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.49.2.1 $ $Date: 2007-11-14 15:50:41 $";
 	protected Logger log = LogUtil.getLogger(this);
  
  	public static final String RCV_SHUTDOWN_MONITOR_EVENT_MSG ="RCVCLOSED Ibis Receiver shut down";
@@ -339,8 +327,8 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 	        
 	// number of messages received
     private Counter numReceived = new Counter(0);
-	private List processStatistics = new ArrayList();
-	private List idleStatistics = new ArrayList();
+	private ArrayList processStatistics = new ArrayList();
+	private ArrayList idleStatistics = new ArrayList();
 
     // the adapter that handles the messages and initiates this listener
     private IAdapter adapter;
@@ -414,11 +402,11 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 				getMessageLog().open();
 			}
 			if (isTransacted()) {
-				JtaUtil.getUserTransaction();
+				getAdapter().getUserTransaction();
 			}
 		} catch (SenderException e) {
 			throw new ListenerException(e);
-		} catch (NamingException e) {
+		} catch (TransactionException e) {
 			throw new ListenerException(e);
 		}
 		getListener().open();
@@ -710,7 +698,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 			fireMonitorEvent(EventTypeEnum.CLEARING,SeverityEnum.HARMLESS,RCV_SHUTDOWN_MONITOR_EVENT_MSG);
 		} 
 		IPullingListener listener=null;
-		Map threadContext=null;
+		HashMap threadContext=null;
 		try {
 			listener = (IPullingListener)getListener();		
 			threadContext = listener.openThread();
@@ -852,7 +840,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 		log.debug("receiver ["+getName()+"] finishes processing message");
 	}
 
-	public Object getRawMessage(Map threadContext) throws ListenerException {
+	public Object getRawMessage(HashMap threadContext) throws ListenerException {
 		IPullingListener listener = (IPullingListener)getListener();
 
 		if (isTransacted()) {
@@ -861,7 +849,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 			UserTransaction utx = null;
 	
 			try {
-				utx = JtaUtil.getUserTransaction();
+				utx = getAdapter().getUserTransaction();
 				utx.begin();
 			
 			} catch (Exception e) {
@@ -920,18 +908,27 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 			retryCount.clear();
 			return newMessageId;
 		} catch (Throwable t) {
-			//log.error("["+getName()+"] Exception transfering message with messageId ["+originalMessageId+"] to inProcessStorage, original message: ["+rawMessage+"]", t);
-			try {
-				utx.rollback();
-			} catch (Exception rbe) {
-				log.error("["+getName()+"] Exception while rolling back transaction for message with messageId ["+originalMessageId+"] after catching exception (that will be thrown after this line has been logged)", rbe);
+			log.error("["+getName()+"] Exception transfering message with messageId ["+originalMessageId+"] to inProcessStorage, original message: ["+rawMessage+"]", t);
+			if (!(t instanceof javax.transaction.RollbackException)) {
+				try {
+					utx.rollback();
+				} catch (Exception rbe) {
+					log.error("["+getName()+"] Exception while rolling back transaction for message with messageId ["+originalMessageId+"] after catching exception", rbe);
+				}
+			} else {
+				try {
+					int status = utx.getStatus();
+					log.debug("["+getName()+"] Transaction status [" + status + "]");
+				} catch (Exception e) {
+					log.error("["+getName()+"] Exception while getting transaction status for message with messageId ["+originalMessageId+"] after catching exception", e);
+				}
 			}
 			long retries=retryCount.increase();
 			if (retries>getMaxRetries()) {
-				log.warn("["+getName()+"] stopping receiver as message cannot be stored in inProcessStorage after catching exception (that will be thrown after this line has been logged), tried ["+retries+"] times");
+				log.warn("["+getName()+"] stopping receiver as message cannot be stored in inProcessStorage, tried ["+retries+"] times");
 				stopRunning();
 			} else {
-				log.info("["+getName()+"] waiting for message, rolled back after catching exception (that will be thrown after this line has been logged) to reappear, retryCount=["+retries+"]");
+				log.info("["+getName()+"] waiting for message to reappear, retryCount=["+retries+"]");
 			}
 			throw new ListenerException("["+getName()+"] Exception retrieving/storing message with messageId ["+originalMessageId+"] under transaction control", t);
 			// no need to send message on errorSender, message will remain on input channel due to rollback
@@ -1052,19 +1049,19 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 		return processRequest(origin, correlationId, message, null, -1);
 	}
 
-	public String processRequest(IListener origin, String correlationId, String message, Map context) throws ListenerException {
+	public String processRequest(IListener origin, String correlationId, String message, HashMap context) throws ListenerException {
 		return processRequest(origin, correlationId, message, context, -1);
 	}
 
-	public String processRequest(IListener origin, String correlationId, String message, Map context, long waitingTime) throws ListenerException {
+	public String processRequest(IListener origin, String correlationId, String message, HashMap context, long waitingTime) throws ListenerException {
 		if (getRunState() == RunStateEnum.STOPPED || getRunState() == RunStateEnum.STOPPING)
 			return getReturnIfStopped();
 			
 		UserTransaction utx = null;
 		if (isTransacted()) {
 			try {
-				utx = JtaUtil.getUserTransaction();
-				if (!JtaUtil.inTransaction()) {
+				utx = adapter.getUserTransaction();
+				if (!adapter.inTransaction()) {
 					log.debug("Receiver ["+getName()+"] starts transaction as no one is yet present");
 					utx.begin();
 				}
@@ -1080,7 +1077,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 	public void processRawMessage(IListener origin, Object message) throws ListenerException {
 		processRawMessage(origin, message, null, -1);
 	}
-	public void processRawMessage(IListener origin, Object message, Map context) throws ListenerException {
+	public void processRawMessage(IListener origin, Object message, HashMap context) throws ListenerException {
 		processRawMessage(origin, message, context, -1);
 	}
 
@@ -1091,13 +1088,13 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 
 	 * Assumes that a transation has been started where necessary
 	 */
-	public void processRawMessage(IListener origin, Object rawMessage, Map threadContext, long waitingDuration) throws ListenerException {
+	public void processRawMessage(IListener origin, Object rawMessage, HashMap threadContext, long waitingDuration) throws ListenerException {
 		UserTransaction utx = null;
 		
 		if (isTransacted()) {
 			try {
-				utx = JtaUtil.getUserTransaction();
-				if (!JtaUtil.inTransaction()) {
+				utx = adapter.getUserTransaction();
+				if (!adapter.inTransaction()) {
 					log.debug("Receiver ["+getName()+"] starts transaction as no one is yet present");
 					utx.begin();
 				}
@@ -1131,7 +1128,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 	/*
 	 * assumes message is read, and when transacted, transation is still open to be able to store it in InProcessStore
 	 */
-	private String processMessageInAdapter(UserTransaction utx, IListener origin, Object rawMessage, String message, String messageId, String correlationId, Map threadContext, long waitingDuration) throws ListenerException {
+	private String processMessageInAdapter(UserTransaction utx, IListener origin, Object rawMessage, String message, String messageId, String correlationId, HashMap threadContext, long waitingDuration) throws ListenerException {
 		String result=null;
 		PipeLineResult pipeLineResult=null;
 		long startProcessingTimestamp = System.currentTimeMillis();
@@ -1198,7 +1195,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 						} catch (Throwable t) {
 							if (isTransacted()) {
 								try {
-									JtaUtil.getUserTransaction().setRollbackOnly();
+									adapter.getUserTransaction().setRollbackOnly();
 								} catch (Throwable t2) {
 									log.error("caught exception trying to invalidate transaction", t);
 								}
@@ -1266,9 +1263,6 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 		}
 	}
 
-    public void setRunState(RunStateEnum state) {
-        runState.setRunState(state);
-    }
 
 	protected void fireMonitorEvent(EventTypeEnum eventType, SeverityEnum severity, String message) {
 		if (monitorAdapter!=null) {
@@ -1293,10 +1287,8 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 		return runState.getRunState();
 	}
 	
-    public boolean isInRunState(RunStateEnum someRunState) {
-        return runState.isInState(someRunState);
-    }
-    
+	
+	
 	protected synchronized StatisticsKeeper getProcessStatistics(int threadsProcessing) {
 		StatisticsKeeper result;
 		try {
@@ -1507,10 +1499,6 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, Runnable, I
 	public String getOnError() {
 		return onError;
 	}
-    
-    public boolean isOnErrorStop() {
-        return ONERROR_CLOSE.equalsIgnoreCase(getOnError());
-    }
 	protected IAdapter getAdapter() {
 		return adapter;
 	}
