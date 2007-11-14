@@ -1,8 +1,7 @@
 /*
  * $Log: JdbcTransactionalStorage.java,v $
- * Revision 1.22  2007-10-09 15:34:41  europe\L190409
- * copy changes from Ibis-EJB:
- * added containsMessageId()
+ * Revision 1.21.4.1  2007-11-14 15:49:42  europe\L190409
+ * added order to storage browsing
  *
  * Revision 1.21  2007/09/10 11:18:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
@@ -87,6 +86,7 @@ import nl.nn.adapterframework.core.IMessageBrowsingIterator;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.Misc;
 
@@ -173,7 +173,7 @@ import org.apache.commons.lang.StringUtils;
  * @since 	4.1
  */
 public class JdbcTransactionalStorage extends JdbcFacade implements ITransactionalStorage {
-	public static final String version = "$RCSfile: JdbcTransactionalStorage.java,v $ $Revision: 1.22 $ $Date: 2007-10-09 15:34:41 $";
+	public static final String version = "$RCSfile: JdbcTransactionalStorage.java,v $ $Revision: 1.21.4.1 $ $Date: 2007-11-14 15:49:42 $";
 	
 	// the following currently only for debug.... 
 	boolean checkIfTableExists=true;
@@ -193,7 +193,8 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	private String type = "";
 	private String hostField="host";
 	private String host;
-	private boolean active=true;   
+	private boolean active=true;
+	private String order=AppConstants.getInstance().getString("browse.messages.order","");
    
 	protected static final int MAXIDLEN=100;		
 	protected static final int MAXCOMMENTLEN=1000;		
@@ -210,8 +211,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	protected String selectKeyQuery;
 	protected String selectListQuery;
 	protected String selectDataQuery;
-    protected String checkMessageIdQuery;
-    
+
 	// the following for Oracle
 	private String sequenceName="seq_ibisstore";
 	protected String updateBlobQuery;		
@@ -286,10 +286,12 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		selectListQuery = "SELECT "+getKeyField()+","+getIdField()+","+getCorrelationIdField()+","+getDateField()+","+getCommentField()+
 						  " FROM "+getTableName()+ getWhereClause(null)+
 						  " ORDER BY "+getDateField();
+		if (StringUtils.isNotEmpty(getOrder())) {
+			selectListQuery = selectListQuery + " " + getOrder();
+		}
 		selectDataQuery = "SELECT "+getMessageField()+
 						  " FROM "+getTableName()+ getWhereClause(getKeyField()+"=?");
-        checkMessageIdQuery = "SELECT " + getIdField() + " WHERE "+getIdField() + "=?";
-        
+						  
 		if (databaseType==DATABASE_ORACLE) {
 			insertQuery = "INSERT INTO "+getTableName()+" ("+
 							getKeyField()+","+
@@ -672,37 +674,6 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		return result;
 	}
 
-    public boolean containsMessageId(String originalMessageId) throws ListenerException {
-		Connection conn;
-		try {
-			conn = getConnection();
-		} catch (JdbcException e) {
-			throw new ListenerException(e);
-		}
-		try {
-			PreparedStatement stmt = conn.prepareStatement(checkMessageIdQuery);			
-			stmt.clearParameters();
-			stmt.setString(1,originalMessageId);
-			ResultSet rs =  stmt.executeQuery();
-
-			if (!rs.next()) {
-				return false;
-			}
-			
-			return true;
-			
-		} catch (Exception e) {
-			throw new ListenerException("cannot deserialize message",e);
-		} finally {
-			try {
-				conn.close();
-			} catch (SQLException e) {
-				log.error("error closing JdbcConnection", e);
-			}
-		}
-    }
-    
-    
 	public Object browseMessage(String messageId) throws ListenerException {
 		Connection conn;
 		try {
@@ -944,4 +915,10 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		return hostField;
 	}
 
+	public void setOrder(String string) {
+		order = string;
+	}
+	public String getOrder() {
+		return order;
+	}
 }
