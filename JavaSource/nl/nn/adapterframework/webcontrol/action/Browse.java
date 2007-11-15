@@ -1,6 +1,9 @@
 /*
  * $Log: Browse.java,v $
- * Revision 1.4.4.1  2007-10-10 11:42:58  europe\L190409
+ * Revision 1.4.4.2  2007-11-15 10:00:18  europe\L190409
+ * indication of no message found for show message
+ *
+ * Revision 1.4.4.1  2007/10/10 11:42:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * made max messages to browse configurable
  *
  * Revision 1.4  2007/09/24 13:05:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -37,6 +40,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.webcontrol.FileViewerServlet;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
@@ -49,7 +53,7 @@ import org.apache.struts.action.ActionMapping;
  * @since   4.4
  */
 public class Browse extends ActionBase {
-	public static final String version="$RCSfile: Browse.java,v $ $Revision: 1.4.4.1 $ $Date: 2007-10-10 11:42:58 $";
+	public static final String version="$RCSfile: Browse.java,v $ $Revision: 1.4.4.2 $ $Date: 2007-11-15 10:00:18 $";
 
 	public int maxMessages = AppConstants.getInstance().getInt("browse.messages.max",0); 
 
@@ -104,6 +108,9 @@ public class Browse extends ActionBase {
 					msg = listener.getStringFromRawMessage(rawmsg,null);
 				} else {
 					msg=(String)rawmsg;
+				}
+				if (StringUtils.isEmpty(msg)) {
+					msg="<no message found>";
 				}
 				String type = request.getParameter("type");
 				FileViewerServlet.showReaderContents(new StringReader(msg),"msg"+messageId,type,response, request.getContextPath().substring(1),"message ["+messageId+"]");
