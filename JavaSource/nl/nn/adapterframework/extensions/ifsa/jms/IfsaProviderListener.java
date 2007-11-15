@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaProviderListener.java,v $
- * Revision 1.3  2007-10-17 09:32:49  europe\L190409
+ * Revision 1.4  2007-11-15 12:38:08  europe\L190409
+ * fixed message wrapping
+ *
+ * Revision 1.3  2007/10/17 09:32:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * store originalRawMessage when wrapper is created, use it to send reply
  *
  * Revision 1.2  2007/10/16 08:39:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -138,6 +141,7 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IMessageWrapper;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.ListenerException;
@@ -206,7 +210,7 @@ import com.ing.ifsa.IFSATextMessage;
  * @version Id
  */
 public class IfsaProviderListener extends IfsaFacade implements IPullingListener, INamedObject, RunStateEnquiring {
-	public static final String version = "$RCSfile: IfsaProviderListener.java,v $ $Revision: 1.3 $ $Date: 2007-10-17 09:32:49 $";
+	public static final String version = "$RCSfile: IfsaProviderListener.java,v $ $Revision: 1.4 $ $Date: 2007-11-15 12:38:08 $";
 
     private final static String THREAD_CONTEXT_SESSION_KEY = "session";
     private final static String THREAD_CONTEXT_RECEIVER_KEY = "receiver";
@@ -384,7 +388,7 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 	}
 	
 
-	protected String getIdFromWrapper(MessageWrapper wrapper, Map threadContext)  {
+	protected String getIdFromWrapper(IMessageWrapper wrapper, Map threadContext)  {
 		for (Iterator it=wrapper.getContext().keySet().iterator(); it.hasNext();) {
 			String key = (String)it.next();
 			Object value = wrapper.getContext().get(key);
@@ -393,7 +397,7 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 		}
 		return wrapper.getId();
 	}
-	protected String getStringFromWrapper(MessageWrapper wrapper, Map threadContext)  {
+	protected String getStringFromWrapper(IMessageWrapper wrapper, Map threadContext)  {
 		return wrapper.getText();
 	}
 
@@ -421,8 +425,8 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 	
 		IFSAMessage message = null;
 	 
-	 	if (rawMessage instanceof MessageWrapper) {
-	 		return getIdFromWrapper((MessageWrapper)rawMessage,threadContext);
+	 	if (rawMessage instanceof IMessageWrapper) {
+	 		return getIdFromWrapper((IMessageWrapper)rawMessage,threadContext);
 	 	}
 	 
 	    try {
@@ -666,8 +670,8 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 	 * @return input message for adapter.
 	 */
 	public String getStringFromRawMessage(Object rawMessage, Map threadContext) throws ListenerException {
-		if (rawMessage instanceof MessageWrapper) {
-			return getStringFromWrapper((MessageWrapper)rawMessage,threadContext);
+		if (rawMessage instanceof IMessageWrapper) {
+			return getStringFromWrapper((IMessageWrapper)rawMessage,threadContext);
 		}
 		if (rawMessage instanceof IFSAPoisonMessage) {
 			IFSAPoisonMessage pm = (IFSAPoisonMessage)rawMessage;

@@ -1,19 +1,16 @@
 /*
- * $Log: MessageWrapper.java,v $
+ * $Log: IfsaMessageWrapper.java,v $
  * Revision 1.3  2007-11-15 12:38:08  europe\L190409
  * fixed message wrapping
  *
- * Revision 1.2  2007/10/08 12:24:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * changed HashMap to Map where possible
- *
- * Revision 1.1  2007/09/13 09:08:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * move message wrapper from ifsa to receivers
+ * Revision 1.2.2.2  2007/11/15 10:01:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * fixed message wrappers
  *
  * Revision 1.1  2005/09/22 16:07:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * introduction of IfsaMessageWrapper
  *
  */
-package nl.nn.adapterframework.receivers;
+package nl.nn.adapterframework.extensions.ifsa;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -30,19 +27,16 @@ import nl.nn.adapterframework.core.ListenerException;
  * @since   4.3
  * @version Id
  */
-public class MessageWrapper implements Serializable, IMessageWrapper {
+public class IfsaMessageWrapper implements Serializable, IMessageWrapper {
 
-	static final long serialVersionUID = -8251009650246241025L;
+	static final long serialVersionUID = 6543734487515204545L;
 	
-	private Map context = new HashMap();
+	private HashMap context = new HashMap();
 	private String text; 
 	private String id; 
 	
-	public MessageWrapper()  {
+	public IfsaMessageWrapper(Object message, IListener listener) throws ListenerException  {
 		super();
-	}
-	public MessageWrapper(Object message, IListener listener) throws ListenerException  {
-		this();
 		text = listener.getStringFromRawMessage(message, context);
 		id = listener.getIdFromRawMessage(message, context);
 	}
@@ -51,17 +45,12 @@ public class MessageWrapper implements Serializable, IMessageWrapper {
 		return context;
 	}
 
-	public void setId(String string) {
-		id = string;
-	}
 	public String getId() {
 		return id;
 	}
 
-	public void setText(String string) {
-		text = string;
-	}
 	public String getText() {
 		return text;
 	}
+
 }

@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcListener.java,v $
- * Revision 1.5  2007-10-18 15:55:38  europe\L190409
+ * Revision 1.6  2007-11-15 12:38:08  europe\L190409
+ * fixed message wrapping
+ *
+ * Revision 1.5  2007/10/18 15:55:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fixed returning of message text
  *
  * Revision 1.4  2007/10/03 08:48:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -27,6 +30,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IMessageWrapper;
 import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
@@ -200,8 +204,8 @@ public class JdbcListener extends JdbcFacade implements IPullingListener {
 
 	public String getIdFromRawMessage(Object rawMessage, Map context) throws ListenerException {
 		String id;
-		if (rawMessage instanceof MessageWrapper) {
-			id = ((MessageWrapper)rawMessage).getId();
+		if (rawMessage instanceof IMessageWrapper) {
+			id = ((IMessageWrapper)rawMessage).getId();
 		} else {
 			id = (String)rawMessage;
 		}
@@ -210,8 +214,8 @@ public class JdbcListener extends JdbcFacade implements IPullingListener {
 
 	public String getStringFromRawMessage(Object rawMessage, Map context) throws ListenerException {
 		String message;
-		if (rawMessage instanceof MessageWrapper) {
-			message = ((MessageWrapper)rawMessage).getText();
+		if (rawMessage instanceof IMessageWrapper) {
+			message = ((IMessageWrapper)rawMessage).getText();
 		} else {
 			message = (String)rawMessage;
 		}
