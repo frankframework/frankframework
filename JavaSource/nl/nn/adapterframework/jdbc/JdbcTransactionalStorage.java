@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcTransactionalStorage.java,v $
- * Revision 1.23  2007-11-13 14:12:13  europe\L190409
+ * Revision 1.24  2007-11-15 12:30:37  europe\L190409
+ * configurable order for browsing
+ *
+ * Revision 1.23  2007/11/13 14:12:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected checkMessageIdQuery
  *
  * Revision 1.22  2007/10/09 15:34:41  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -90,6 +93,7 @@ import nl.nn.adapterframework.core.IMessageBrowsingIterator;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.Misc;
 
@@ -176,7 +180,7 @@ import org.apache.commons.lang.StringUtils;
  * @since 	4.1
  */
 public class JdbcTransactionalStorage extends JdbcFacade implements ITransactionalStorage {
-	public static final String version = "$RCSfile: JdbcTransactionalStorage.java,v $ $Revision: 1.23 $ $Date: 2007-11-13 14:12:13 $";
+	public static final String version = "$RCSfile: JdbcTransactionalStorage.java,v $ $Revision: 1.24 $ $Date: 2007-11-15 12:30:37 $";
 	
 	// the following currently only for debug.... 
 	boolean checkIfTableExists=true;
@@ -196,7 +200,8 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	private String type = "";
 	private String hostField="host";
 	private String host;
-	private boolean active=true;   
+	private boolean active=true;
+	private String order=AppConstants.getInstance().getString("browse.messages.order","");
    
 	protected static final int MAXIDLEN=100;		
 	protected static final int MAXCOMMENTLEN=1000;		
@@ -289,6 +294,9 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		selectListQuery = "SELECT "+getKeyField()+","+getIdField()+","+getCorrelationIdField()+","+getDateField()+","+getCommentField()+
 						  " FROM "+getTableName()+ getWhereClause(null)+
 						  " ORDER BY "+getDateField();
+		if (StringUtils.isNotEmpty(getOrder())) {
+			selectListQuery = selectListQuery + " " + getOrder();
+		}
 		selectDataQuery = "SELECT "+getMessageField()+
 						  " FROM "+getTableName()+ getWhereClause(getKeyField()+"=?");
         checkMessageIdQuery = "SELECT " + getIdField() +" FROM "+getTableName()+ " WHERE "+getIdField() + "=?";
@@ -947,4 +955,10 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		return hostField;
 	}
 
+	public void setOrder(String string) {
+		order = string;
+	}
+	public String getOrder() {
+		return order;
+	}
 }
