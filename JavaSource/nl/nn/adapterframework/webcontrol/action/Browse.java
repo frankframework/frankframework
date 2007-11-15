@@ -1,6 +1,10 @@
 /*
  * $Log: Browse.java,v $
- * Revision 1.5  2007-10-08 12:26:12  europe\L190409
+ * Revision 1.6  2007-11-15 12:36:10  europe\L190409
+ * configurable order for jdbc transactional storage browsing
+ * + max number of messages
+ *
+ * Revision 1.5  2007/10/08 12:26:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected date formatting
  *
  * Revision 1.4  2007/09/24 13:05:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -31,11 +35,13 @@ import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.webcontrol.FileViewerServlet;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
@@ -48,7 +54,9 @@ import org.apache.struts.action.ActionMapping;
  * @since   4.4
  */
 public class Browse extends ActionBase {
-	public static final String version="$RCSfile: Browse.java,v $ $Revision: 1.5 $ $Date: 2007-10-08 12:26:12 $";
+	public static final String version="$RCSfile: Browse.java,v $ $Revision: 1.6 $ $Date: 2007-11-15 12:36:10 $";
+
+	public int maxMessages = AppConstants.getInstance().getInt("browse.messages.max",0); 
 
 	protected void performAction(Adapter adapter, ReceiverBase receiver, String action, IMessageBrowser mb, String messageId) {
 		// allow for extensions
@@ -102,6 +110,9 @@ public class Browse extends ActionBase {
 				} else {
 					msg=(String)rawmsg;
 				}
+				if (StringUtils.isEmpty(msg)) {
+					msg="<no message found>";
+				}
 				String type = request.getParameter("type");
 				FileViewerServlet.showReaderContents(new StringReader(msg),"msg"+messageId,type,response, request.getContextPath().substring(1),"message ["+messageId+"]");
 			} else {
@@ -129,6 +140,11 @@ public class Browse extends ActionBase {
 						message.addAttribute("insertDate",DateUtils.format(mb.getInsertDate(iterItem), DateUtils.FORMAT_FULL_GENERIC));
 						message.addAttribute("comment",XmlUtils.encodeChars(mb.getCommentString(iterItem)));
 						messages.addSubElement(message);
+						messageCount++;
+						if (getMaxMessages()>0 && messageCount>=getMaxMessages()) {
+							log.warn("stopped iterating messages after ["+messageCount+"]: limit reached");
+							break;
+						}
 					}
 					messages.addAttribute("messageCount",Integer.toString(messageCount));
 					request.setAttribute("messages",messages.toXML());
@@ -147,6 +163,13 @@ public class Browse extends ActionBase {
 		log.debug("forward to success");
 		return (mapping.findForward("success"));
 
+	}
+
+	public void setMaxMessages(int i) {
+		maxMessages = i;
+	}
+	public int getMaxMessages() {
+		return maxMessages;
 	}
 
 }
