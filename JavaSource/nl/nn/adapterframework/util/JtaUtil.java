@@ -1,6 +1,9 @@
 /*
  * $Log: JtaUtil.java,v $
- * Revision 1.13  2007-08-10 11:22:29  europe\L190409
+ * Revision 1.13.6.1  2007-11-15 14:21:58  europe\L190409
+ * added setRollBackOnly()
+ *
+ * Revision 1.13  2007/08/10 11:22:29  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added non-argument inTransaction()
  *
  * Revision 1.12  2007/06/08 12:18:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -58,13 +61,14 @@ import nl.nn.adapterframework.core.TransactionException;
 import org.apache.log4j.Logger;
 
 /**
- * Utility functions for JTA 
+ * Utility functions for JTA.
+ *  
+ * @author  Gerrit van Brakel
+ * @since   4.1
  * @version Id
- * @author Gerrit van Brakel
- * @since  4.1
  */
 public class JtaUtil {
-	public static final String version="$RCSfile: JtaUtil.java,v $ $Revision: 1.13 $ $Date: 2007-08-10 11:22:29 $";
+	public static final String version="$RCSfile: JtaUtil.java,v $ $Revision: 1.13.6.1 $ $Date: 2007-11-15 14:21:58 $";
 	private static Logger log = LogUtil.getLogger(JtaUtil.class);
 	
 	private static final String USERTRANSACTION_URL1_KEY="jta.userTransactionUrl1";
@@ -268,6 +272,14 @@ public class JtaUtil {
 
 	public static void finishTransaction() throws NamingException, IllegalStateException, SecurityException, SystemException {
 		finishTransaction(false);
+	}
+
+	public static void setRollBackOnly() throws NamingException, IllegalStateException, SystemException {
+		UserTransaction utx=JtaUtil.getUserTransaction();
+		if (inTransaction(utx)) {
+			log.debug("marking transaction for rollback");
+			utx.setRollbackOnly();
+		}
 	}
 	
 	public static void finishTransaction(boolean rollbackonly) throws NamingException, IllegalStateException, SecurityException, SystemException {
