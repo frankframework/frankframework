@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.51  2007-10-17 09:27:02  europe\L190409
+ * Revision 1.52  2007-11-21 13:16:13  europe\L190409
+ * make commitOnState work
+ *
+ * Revision 1.51  2007/10/17 09:27:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * restore setting of message and messageId in the pipelinesession
  *
  * Revision 1.50  2007/10/16 07:51:52  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -237,7 +240,7 @@ import org.apache.log4j.Logger;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.51 $ $Date: 2007-10-17 09:27:02 $";
+	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.52 $ $Date: 2007-11-21 13:16:13 $";
     private Logger log = LogUtil.getLogger(this);
 	private Logger durationLog = LogUtil.getLogger("LongDurationMessages");
     
@@ -674,6 +677,17 @@ public class PipeLine {
 				} catch (Throwable t) {
 					log.warn("Caught Exception processing ExitHandler ["+exitHandler.getName()+"]",t);
 				}
+			}
+		}
+//		boolean mustRollback=false;
+				
+		if (pipeLineResult==null) {
+			//mustRollback=true;
+			throw new PipeRunException(null,"received null result for messageId ["+messageId+"], transaction (when present and active) will be rolled back");
+		} else {
+			if (StringUtils.isNotEmpty(getCommitOnState()) && !getCommitOnState().equalsIgnoreCase(pipeLineResult.getState())) {
+				//mustRollback=true;
+				throw new PipeRunException(null,"result state ["+pipeLineResult.getState()+"] for messageId ["+messageId+"] is not equal to commitOnState ["+getCommitOnState()+"], transaction (when present and active) will be rolled back");
 			}
 		}
 	    return pipeLineResult;
