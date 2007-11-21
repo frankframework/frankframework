@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaProviderListener.java,v $
- * Revision 1.4  2007-11-15 12:38:08  europe\L190409
+ * Revision 1.5  2007-11-21 13:17:47  europe\L190409
+ * improved error logging
+ *
+ * Revision 1.4  2007/11/15 12:38:08  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fixed message wrapping
  *
  * Revision 1.3  2007/10/17 09:32:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -210,7 +213,7 @@ import com.ing.ifsa.IFSATextMessage;
  * @version Id
  */
 public class IfsaProviderListener extends IfsaFacade implements IPullingListener, INamedObject, RunStateEnquiring {
-	public static final String version = "$RCSfile: IfsaProviderListener.java,v $ $Revision: 1.4 $ $Date: 2007-11-15 12:38:08 $";
+	public static final String version = "$RCSfile: IfsaProviderListener.java,v $ $Revision: 1.5 $ $Date: 2007-11-21 13:17:47 $";
 
     private final static String THREAD_CONTEXT_SESSION_KEY = "session";
     private final static String THREAD_CONTEXT_RECEIVER_KEY = "receiver";
@@ -353,7 +356,7 @@ public class IfsaProviderListener extends IfsaFacade implements IPullingListener
 			    }
 			}
 		} catch (Exception e) {
-			log.error(e);
+			log.error(getLogPrefix()+"exception in closing or releasing session", e);
 		}
 	    // on request-reply send the reply.
 	    if (getMessageProtocolEnum().equals(IfsaMessageProtocolEnum.REQUEST_REPLY)) {
