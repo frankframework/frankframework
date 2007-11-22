@@ -1,8 +1,9 @@
 /*
- * Created on 18-sep-07
- * 
  * $Log: PushingJmsListener.java,v $
- * Revision 1.5  2007-11-22 09:08:56  europe\L190409
+ * Revision 1.6  2007-11-22 13:29:52  europe\L190409
+ * some more logging
+ *
+ * Revision 1.5  2007/11/22 09:08:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * update from ejb-branch
  *
  * Revision 1.1.2.6  2007/11/15 10:35:24  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
@@ -79,18 +80,18 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 
 /**
- * @author Tim van der Leeuw
- * @since 4.8
- * 
  * JMSListener re-implemented as a pushing listener rather than a pulling listener.
  * The JMS messages have to come in from an external source: an MDB or a Spring
  * message container.
  * 
  * Configuration is same as JmsListener / PullingJmsListener.
  * 
+ * @author  Tim van der Leeuw
+ * @since   4.8
+ * @version Id
  */
 public class PushingJmsListener extends JMSFacade implements IPortConnectedListener {
-    public static final String version="$RCSfile: PushingJmsListener.java,v $ $Revision: 1.5 $ $Date: 2007-11-22 09:08:56 $";
+    public static final String version="$RCSfile: PushingJmsListener.java,v $ $Revision: 1.6 $ $Date: 2007-11-22 13:29:52 $";
 
     private final static String THREAD_CONTEXT_SESSION_KEY="session";
     private final static String THREAD_CONTEXT_SESSION_OWNER_FLAG_KEY="isSessionOwner";
@@ -136,6 +137,9 @@ public class PushingJmsListener extends JMSFacade implements IPortConnectedListe
         ISender sender = getSender();
         if (sender != null) {
             sender.configure();
+        }
+        if (jmsConnector==null) {
+        	throw new ConfigurationException(getLogPrefix()+" has no jmsConnector. It should be configured via springContext.xml");
         }
         jmsConnector.configureEndpointConnection(this);
     }
