@@ -1,6 +1,20 @@
 /*
  * $Log: IbisManagerEjbBean.java,v $
- * Revision 1.4  2007-10-16 09:12:27  europe\M00035F
+ * Revision 1.5  2007-11-22 08:47:43  europe\L190409
+ * update from ejb-branch
+ *
+ * Revision 1.4.2.3  2007/10/29 10:37:25  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
+ * Fix method visibility error
+ *
+ * Revision 1.4.2.2  2007/10/29 10:29:13  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
+ * Refactor: pullup a number of methods to abstract base class so they can be shared with new IFSA Session EJBs
+ *
+ * Revision 1.4.2.1  2007/10/25 08:36:58  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
+ * Add shutdown method for IBIS which shuts down the scheduler too, and which unregisters all EjbJmsConfigurators from the ListenerPortPoller.
+ * Unregister JmsListener from ListenerPortPoller during ejbRemove method.
+ * Both changes are to facilitate more proper shutdown of the IBIS adapters.
+ *
+ * Revision 1.4  2007/10/16 09:12:27  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
  * Merge with changes from EJB branch in preparation for creating new EJB brance
  *
  * Revision 1.3  2007/10/15 13:08:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -24,6 +38,7 @@ package nl.nn.adapterframework.ejb;
 
 import java.rmi.RemoteException;
 import javax.ejb.CreateException;
+import javax.ejb.EJBContext;
 import javax.ejb.EJBException;
 import javax.ejb.SessionBean;
 import javax.ejb.SessionContext;
@@ -88,6 +103,10 @@ public class IbisManagerEjbBean extends AbstractEJBBase implements SessionBean, 
         manager.startIbis();
     }
 
+    public void shutdownIbis() {
+        manager.shutdownIbis();
+    }
+    
     public void startAdapters() {
         manager.startAdapters();
     }
@@ -118,6 +137,13 @@ public class IbisManagerEjbBean extends AbstractEJBBase implements SessionBean, 
 
     public PlatformTransactionManager getTransactionManager() {
         return manager.getTransactionManager();
+    }
+
+    /* (non-Javadoc)
+     * @see nl.nn.adapterframework.ejb.AbstractEJBBase#getEJBContext()
+     */
+    protected EJBContext getEJBContext() {
+        return this.sessionContext;
     }
 
 }

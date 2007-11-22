@@ -1,6 +1,33 @@
 /*
  * $Log: GenericMDB.java,v $
- * Revision 1.4  2007-10-16 09:52:35  europe\M00035F
+ * Revision 1.5  2007-11-22 08:47:43  europe\L190409
+ * update from ejb-branch
+ *
+ * Revision 1.4.2.7  2007/11/15 10:27:49  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
+ * * Add exception-registration via ExceptionListener of the listener
+ * * Move code up to parent class
+ *
+ * Revision 1.4.2.6  2007/11/06 12:41:16  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
+ * Add original raw message as parameter to method 'createThreadContext' of 'pushingJmsListener' in preparation of adding it to interface
+ *
+ * Revision 1.4.2.5  2007/11/06 09:39:13  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
+ * Merge refactoring/renaming from HEAD
+ *
+ * Revision 1.4.2.4  2007/10/29 10:37:25  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
+ * Fix method visibility error
+ *
+ * Revision 1.4.2.3  2007/10/29 10:29:13  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
+ * Refactor: pullup a number of methods to abstract base class so they can be shared with new IFSA Session EJBs
+ *
+ * Revision 1.4.2.2  2007/10/25 08:36:57  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
+ * Add shutdown method for IBIS which shuts down the scheduler too, and which unregisters all EjbJmsConfigurators from the ListenerPortPoller.
+ * Unregister JmsListener from ListenerPortPoller during ejbRemove method.
+ * Both changes are to facilitate more proper shutdown of the IBIS adapters.
+ *
+ * Revision 1.4.2.1  2007/10/24 15:04:43  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
+ * Let runstate of receivers/listeners follow the state of WebSphere ListenerPorts if they are changed outside the control of IBIS.
+ *
+ * Revision 1.4  2007/10/16 09:52:35  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
  * Change over JmsListener to a 'switch-class' to facilitate smoother switchover from older version to spring version
  *
  * Revision 1.3  2007/10/15 13:08:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -24,30 +51,25 @@ package nl.nn.adapterframework.ejb;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.ejb.EJBContext;
 import javax.ejb.EJBException;
 import javax.ejb.MessageDrivenBean;
 import javax.ejb.MessageDrivenContext;
 import javax.jms.Message;
 import javax.jms.MessageListener;
-import nl.nn.adapterframework.core.IAdapter;
+
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.jms.PushingJmsListener;
 import nl.nn.adapterframework.receivers.GenericReceiver;
-import nl.nn.adapterframework.util.LogUtil;
-import org.apache.log4j.Logger;
-import org.springframework.jndi.JndiLookupFailureException;
 
 /**
  * @author  Tim van der Leeuw
  * @since   4.8
  * @version Id
  */
-public class GenericMDB extends AbstractEJBBase implements MessageDrivenBean, MessageListener {
-    private final static Logger log = LogUtil.getLogger(GenericMDB.class);
+public class GenericMDB extends AbstractListenerConnectingEJB implements MessageDrivenBean, MessageListener {
     
     protected MessageDrivenContext ejbContext;
-    protected PushingJmsListener listener;
-    protected boolean containerManagedTransactions;
     
     public void setMessageDrivenContext(MessageDrivenContext ejbContext) throws EJBException {
         log.info("Received EJB-MDB Context");
@@ -56,82 +78,41 @@ public class GenericMDB extends AbstractEJBBase implements MessageDrivenBean, Me
     
     public void ejbCreate() {
         log.info("Creating MDB");
-        this.listener = retrieveJmsListener();
-        this.containerManagedTransactions = retrieveTransactionType();
+        onEjbCreate();
     }
     
     public void ejbRemove() throws EJBException {
         log.info("Removing MDB");
+        onEjbRemove();
     }
 
-    public void onMessage(Message rawMessage) {
+    public void onMessage(Message message) {
         Map threadContext = new HashMap();
         try {
             // Code is not thread-safe but the same instance
             // should be looked up always so there's no point
             // in locking
             if (this.listener == null) {
-                this.listener = retrieveJmsListener();
+                this.listener = retrieveListener();
             }
 
-            GenericReceiver receiver = (GenericReceiver) this.listener.getHandler();
-            this.listener.populateThreadContext(threadContext, null);
-            receiver.processRawMessage(listener, rawMessage, threadContext);
-            throw new UnsupportedOperationException("Not supported yet.");
+            GenericReceiver receiver = (GenericReceiver) this.listener.getReceiver();
+            this.listener.populateThreadContext(message,threadContext, null);
+            receiver.processRawMessage(listener, message, threadContext);
         } catch (ListenerException ex) {
             log.error(ex, ex);
+            listener.getExceptionListener().exceptionThrown(listener, ex);
             rollbackTransaction();
         } finally {
             this.listener.destroyThreadContext(threadContext);
         }
     }
 
-    protected boolean retrieveTransactionType() {
-        try {
-            Boolean txType = (Boolean) getContextVariable("containerTransactions");
-            if (txType == null) {
-                log.warn("Value of variable 'containerTransactions' in Bean JNDI context is null, assuming bean-managed transactions");
-                return false;
-            } else {
-                return txType.booleanValue();
-            }
-        } catch (JndiLookupFailureException e) {
-            log.error("Cannot look up variable 'containerTransactions' in Bean JNDI context; assuming bean-managed transactions", e);
-            return false;
-        }
-    }
-
-    protected PushingJmsListener retrieveJmsListener() {
-        String adapterName = (String) getContextVariable("adapterName");
-        String receiverName = (String) getContextVariable("receiverName");
-        return retrieveJmsListener(receiverName, adapterName);
-    }
-
-    protected PushingJmsListener retrieveJmsListener(String receiverName, String adapterName) {
-        IAdapter adapter = config.getRegisteredAdapter(adapterName);
-        GenericReceiver receiver = (GenericReceiver) adapter.getReceiverByName(receiverName);
-        PushingJmsListener l = (PushingJmsListener) receiver.getListener();
-        return l;
-    }
-
-    protected void rollbackTransaction() throws IllegalStateException {
-        if (containerManagedTransactions) {
-            this.ejbContext.setRollbackOnly();
-        } else {
-            try {
-                this.ejbContext.getUserTransaction().setRollbackOnly();
-            } catch (Exception ex) {
-                log.error("Cannot roll back user-transactions, must be using container-managed transactions without being properly configured for it?", ex);
-                // Try the container-maanged way
-                try {
-                    this.ejbContext.setRollbackOnly();
-                } catch (IllegalStateException e) {
-                    log.error("After failing to rolll back user-transaction, also failing to roll back container-transaction.", e);
-                }
-                throw new IllegalStateException("Cannot roll back user-transaction; must be using container-managed transactions? Error-message: ["
-                        + ex.getMessage() + "]");
-            }
-        }
+    /* (non-Javadoc)
+     * @see nl.nn.adapterframework.ejb.AbstractEJBBase#getEJBContext()
+     */
+    protected EJBContext getEJBContext() {
+        return this.ejbContext;
     }
     
     

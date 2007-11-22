@@ -1,6 +1,20 @@
 /*
  * $Log: EjbDelegatingIbisManager.java,v $
- * Revision 1.5  2007-10-16 09:12:27  europe\M00035F
+ * Revision 1.6  2007-11-22 08:47:43  europe\L190409
+ * update from ejb-branch
+ *
+ * Revision 1.5.2.3  2007/10/25 08:36:57  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
+ * Add shutdown method for IBIS which shuts down the scheduler too, and which unregisters all EjbJmsConfigurators from the ListenerPortPoller.
+ * Unregister JmsListener from ListenerPortPoller during ejbRemove method.
+ * Both changes are to facilitate more proper shutdown of the IBIS adapters.
+ *
+ * Revision 1.5.2.2  2007/10/24 15:04:44  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
+ * Let runstate of receivers/listeners follow the state of WebSphere ListenerPorts if they are changed outside the control of IBIS.
+ *
+ * Revision 1.5.2.1  2007/10/17 11:42:57  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
+ * Fix name by which EJB was looked up
+ *
+ * Revision 1.5  2007/10/16 09:12:27  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
  * Merge with changes from EJB branch in preparation for creating new EJB brance
  *
  * Revision 1.4  2007/10/16 08:31:53  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -55,7 +69,6 @@ public class EjbDelegatingIbisManager implements IbisManager, BeanFactoryAware {
     private final static Logger log = LogUtil.getLogger(EjbDelegatingIbisManager.class);
     
     private static final String FACTORY_BEAN_ID = "&ibisManagerEjb";
-    private static final String JNDI_NAME_PREFIX = "java:comp/ejb/IbisManager";
     
     private IbisManager ibisManager;
     private BeanFactory beanFactory;
@@ -63,17 +76,11 @@ public class EjbDelegatingIbisManager implements IbisManager, BeanFactoryAware {
     
     protected synchronized IbisManager getIbisManager() {
         if (this.ibisManager == null) {
-        	// TODO: Set JNDI name in Spring Context and retrieve EJB
-        	// directly instead of first retrieving factory, tweaking factory,
-        	// creating the bean.
-        	
             // Look it up via EJB, using JNDI Name based on configuration name
             LocalStatelessSessionProxyFactoryBean factoryBean = 
                     (LocalStatelessSessionProxyFactoryBean) beanFactory.getBean(FACTORY_BEAN_ID);
-            String beanJndiName = JNDI_NAME_PREFIX;
-            factoryBean.setJndiName(beanJndiName);
             this.ibisManager = (IbisManager) factoryBean.getObject();
-            log.info("Looked up IbisManagerEjb at JNDI location '" + beanJndiName + "'");
+            log.info("Looked up IbisManagerEjb at JNDI location '" + factoryBean.getJndiName() + "'");
         }
         return this.ibisManager;
     }
@@ -104,6 +111,10 @@ public class EjbDelegatingIbisManager implements IbisManager, BeanFactoryAware {
         // Not implemented for this case, since the Ibis will be auto-started from EJB container
     }
 
+    public void shutdownIbis() {
+        getIbisManager().shutdownIbis();
+    }
+    
     public void startAdapters() {
         getIbisManager().startAdapters();
     }
