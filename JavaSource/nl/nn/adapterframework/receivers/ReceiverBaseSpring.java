@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBaseSpring.java,v $
- * Revision 1.5  2007-11-05 13:06:55  europe\M00035F
+ * Revision 1.6  2007-11-22 13:36:53  europe\L190409
+ * improved logging
+ *
+ * Revision 1.5  2007/11/05 13:06:55  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
  * Rename and redefine methods in interface IListenerConnector to remove 'jms' from names
  *
  * Revision 1.4  2007/10/23 12:58:23  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
@@ -336,7 +339,7 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 	private final static TransactionDefinition TXREQUIRED = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED);
 	private final static TransactionDefinition TXSUPPORTS = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_SUPPORTS);
     
-	public static final String version="$RCSfile: ReceiverBaseSpring.java,v $ $Revision: 1.5 $ $Date: 2007-11-05 13:06:55 $";
+	public static final String version="$RCSfile: ReceiverBaseSpring.java,v $ $Revision: 1.6 $ $Date: 2007-11-22 13:36:53 $";
 	protected Logger log = LogUtil.getLogger(this);
     
 	private BeanFactory beanFactory;
@@ -439,7 +442,7 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 					}
 					contextDump += " " + key + "=[" + String.valueOf(value) + "]";
 				}
-				log.debug(contextDump);
+				log.debug(getLogPrefix()+contextDump);
 			}
 		}
 		return pipelineSession;
@@ -479,10 +482,10 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 				txStatus = txManager.getTransaction(TXSUPPORTS);
 			}
 			if (txStatus.isNewTransaction()) {
-				log.debug("Receiver [" + getName() + "] started transaction as no one was yet present");
+				log.debug(getLogPrefix()+"started transaction as no one was yet present");
 			}
 		} catch (TransactionException e) {
-			throw new ListenerException("[" + getName() + "] Exception obtaining Spring transaction", e);
+			throw new ListenerException(getLogPrefix()+"Exception obtaining Spring transaction", e);
 		}
 
 		return txStatus;
@@ -491,14 +494,14 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 	private void putSessionKeysIntoThreadContext(Map threadContext, PipeLineSession pipelineSession) {
 		if (StringUtils.isNotEmpty(getReturnedSessionKeys()) && threadContext != null) {
 			if (log.isDebugEnabled()) {
-				log.debug("setting returned session keys [" + getReturnedSessionKeys() + "]");
+				log.debug(getLogPrefix()+"setting returned session keys [" + getReturnedSessionKeys() + "]");
 			}
 			StringTokenizer st = new StringTokenizer(getReturnedSessionKeys(), " ,;");
 			while (st.hasMoreTokens()) {
 				String key = st.nextToken();
 				Object value = pipelineSession.get(key);
 				if (log.isDebugEnabled()) {
-					log.debug("returning session key [" + key + "] value [" + value + "]");
+					log.debug(getLogPrefix()+"returning session key [" + key + "] value [" + value + "]");
 				}
 				threadContext.put(key, value);
 			}
@@ -785,7 +788,7 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 				adapter.getMessageKeeper().add("Receiver ["+getName()+"] initialization complete");
 			}
 		} catch(ConfigurationException e){
-			log.debug("Errors occured during configuration, setting runstate to ERROR");
+			log.debug(getLogPrefix()+"Errors occured during configuration, setting runstate to ERROR");
 			runState.setRunState(RunStateEnum.ERROR);
 			throw e;
 		}
@@ -1215,7 +1218,7 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 	 * @deprecated
 	 */
 	protected void setInProcessStorage(ITransactionalStorage inProcessStorage) {
-		log.warn("<*> In-Process Storage is not used anymore. Please remove from configuration. <*>");
+		log.warn(getLogPrefix()+"<*> In-Process Storage is not used anymore. Please remove from configuration. <*>");
 		// We do not use an in-process storage anymore, but we temporarily
 		// store it if it's set by the configuration.
 		// During configure, we check if we need to use the in-process storage
