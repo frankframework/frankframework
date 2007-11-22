@@ -1,6 +1,9 @@
 /*
  * $Log: SpringJmsConnector.java,v $
- * Revision 1.2  2007-11-05 13:06:55  europe\M00035F
+ * Revision 1.3  2007-11-22 09:12:03  europe\L190409
+ * added message as parameter of populateThreadContext
+ *
+ * Revision 1.2  2007/11/05 13:06:55  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
  * Rename and redefine methods in interface IListenerConnector to remove 'jms' from names
  *
  * Revision 1.1  2007/11/05 12:24:01  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
@@ -76,7 +79,7 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 	public static final TransactionDefinition TXSUPPORTS = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_SUPPORTS);
 	public static final TransactionDefinition TXMANDATORY = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_MANDATORY);
     
-	public static final String version="$RCSfile: SpringJmsConnector.java,v $ $Revision: 1.2 $ $Date: 2007-11-05 13:06:55 $";
+	public static final String version="$RCSfile: SpringJmsConnector.java,v $ $Revision: 1.3 $ $Date: 2007-11-22 09:12:03 $";
     
 	private String connectionFactoryName;
 	private PlatformTransactionManager txManager;
@@ -147,7 +150,7 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 							log.error("Current Transaction is NEW, but was retrieved is using propagation:MANDATORY");
 						}
 					}
-                    getJmsListener().populateThreadContext(threadContext, session);
+					getJmsListener().populateThreadContext(message, threadContext,session);
 					receiver.processRawMessage(jmsListener, message, threadContext,
                             getJmsListener().getTimeOut());
 				} catch (ListenerException e) {
