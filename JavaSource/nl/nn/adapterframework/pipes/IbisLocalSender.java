@@ -1,6 +1,9 @@
 /*
  * $Log: IbisLocalSender.java,v $
- * Revision 1.17  2007-09-10 11:19:39  europe\L190409
+ * Revision 1.18  2007-11-22 15:18:07  europe\L190409
+ * improved javadoc
+ *
+ * Revision 1.17  2007/09/10 11:19:39  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.16  2007/09/05 13:04:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -89,7 +92,9 @@ import java.util.HashMap;
  * <tr><td>{@link #setCheckDependency(boolean) checkDependency}</td><td>when <code>true</code>, the sender waits upon open until the called {@link nl.nn.adapterframework.receivers.JavaListener JavaListener} is opened</td><td>true</td></tr>
  * <tr><td>{@link #setDependencyTimeOut(int) dependencyTimeOut}</td><td>maximum time (in seconds) the sender waits for the listener to start</td><td>60 s</td></tr>
  * <tr><td>{@link #setSynchronous(boolean) synchronous}</td><td> when set <code>false</code>, the call is made asynchronously. This implies <code>isolated=true</code></td><td>true</td></tr>
- * <tr><td>{@link #setReturnedSessionKeys(String) returnedSessionKeys}</td><td>comma separated list of keys of session variables that should be returned to caller, for correct results as well as for erronous results. (Only for listeners that support it, like JavaListener)</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setReturnedSessionKeys(String) returnedSessionKeys}</td><td>comma separated list of keys of session variables that should be returned to caller, 
+ *         for correct results as well as for erronous results. (Only for listeners that support it, like JavaListener)<br/>
+ *         N.B. To get this working, the attribute returnedSessionKeys must also be set on the corresponding Receiver</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * Any parameters are copied to the PipeLineSession of the service called.
@@ -130,7 +135,7 @@ import java.util.HashMap;
  * @since  4.2
  */
 public class IbisLocalSender extends SenderWithParametersBase implements HasPhysicalDestination {
-	public static final String version="$RCSfile: IbisLocalSender.java,v $ $Revision: 1.17 $ $Date: 2007-09-10 11:19:39 $";
+	public static final String version="$RCSfile: IbisLocalSender.java,v $ $Revision: 1.18 $ $Date: 2007-11-22 15:18:07 $";
 	
 	private String name;
 	private String serviceName;
