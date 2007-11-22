@@ -1,6 +1,21 @@
 /*
  * $Log: ListenerFactory.java,v $
- * Revision 1.5  2007-10-24 08:04:23  europe\M00035F
+ * Revision 1.6  2007-11-22 08:36:31  europe\L190409
+ * improved logging
+ *
+ * Revision 1.2.2.4  2007/11/09 12:32:05  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
+ * Conditionalize logging for performance
+ *
+ * Revision 1.2.2.3  2007/11/09 12:05:56  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
+ * Improve logging of actions
+ *
+ * Revision 1.2.2.2  2007/11/09 11:59:46  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
+ * Reformat
+ *
+ * Revision 1.2.2.1  2007/10/24 09:39:48  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
+ * Merge changes from HEAD
+ *
+ * Revision 1.5  2007/10/24 08:04:23  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
  * Add logging for case when classname of Listener implementation is replaced
  *
  * Revision 1.4  2007/10/24 07:13:21  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
@@ -55,18 +70,22 @@ public class ListenerFactory extends AbstractSpringPoweredDigesterFactory {
         return "proto-jmsListener";
     }
     
-	/**
-	 * @see nl.nn.adapterframework.configuration.AbstractSpringPoweredDigesterFactory#createObject(org.xml.sax.Attributes)
-	 */
-	public Object createObject(Attributes attrs) throws Exception {
-		String className = attrs.getValue("className");
-		if (className != null && getDigester().peek() instanceof MessageSendingPipe && className.endsWith(JMS_LISTENER_CLASSNAME_SUFFIX)) {
-			log.debug("JmsListener is created as part of a MessageSendingPipe; replace classname with '"
-                    + CORRELATED_LISTENER_CLASSNAME + "' to ensure compatibility");
+    /**
+     * @see nl.nn.adapterframework.configuration.AbstractSpringPoweredDigesterFactory#createObject(org.xml.sax.Attributes)
+     */
+    public Object createObject(Attributes attrs) throws Exception {
+        String className = attrs.getValue("className");
+        if (className != null && getDigester().peek() instanceof MessageSendingPipe && className.endsWith(JMS_LISTENER_CLASSNAME_SUFFIX)) {
+            if (log.isDebugEnabled()) {
+                log.debug("JmsListener is created as part of a MessageSendingPipe; replace classname with '" + CORRELATED_LISTENER_CLASSNAME + "' to ensure compatibility");
+            }
             return createBeanFromClassName(CORRELATED_LISTENER_CLASSNAME);
-		} else {
+        } else {
+            if (log.isDebugEnabled()) {
+                log.debug("Creating Listener class '" + className + "'");
+            }
             return createBeanFromClassName(className);
-		}
-	}
+        }
+    }
 
 }
