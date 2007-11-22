@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.52  2007-11-21 13:16:13  europe\L190409
+ * Revision 1.53  2007-11-22 08:42:18  europe\L190409
+ * wrap exceptions
+ *
+ * Revision 1.52  2007/11/21 13:16:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * make commitOnState work
  *
  * Revision 1.51  2007/10/17 09:27:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -240,7 +243,7 @@ import org.apache.log4j.Logger;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.52 $ $Date: 2007-11-21 13:16:13 $";
+	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.53 $ $Date: 2007-11-22 08:42:18 $";
     private Logger log = LogUtil.getLogger(this);
 	private Logger durationLog = LogUtil.getLogger("LongDurationMessages");
     
@@ -446,7 +449,15 @@ public class PipeLine {
 			throw new PipeRunException(null,"transaction state ["+JtaUtil.displayTransactionStatus()+"] not compatible with transaction attribute ["+getTransactionAttribute()+"], messageId ["+messageId+"]");
 		}
 		if (log.isDebugEnabled()) log.debug("PipeLine transactionAttribute ["+getTransactionAttribute()+"]");
-        return runPipeLineObeyingTransactionAttribute(messageId, message, pipeLineSession);
+        try {
+            return runPipeLineObeyingTransactionAttribute(
+                messageId,
+                message,
+                pipeLineSession);
+        } catch (RuntimeException e) {
+            throw new PipeRunException(null, "RuntimeException calling PipeLine with tx attribute '"
+                + getTransactionAttribute() + "'", e);
+        }
 	}
     
     protected PipeLineResult runPipeLineObeyingTransactionAttribute(String messageId, String message, PipeLineSession session) throws PipeRunException {
@@ -625,6 +636,10 @@ public class PipeLine {
 				} catch (PipeRunException pre) {
 					TracingUtil.exceptionEvent(pipeToRun);
 					throw pre;
+				} catch (RuntimeException re) {
+					TracingUtil.exceptionEvent(pipeToRun);
+					throw new PipeRunException(pipeToRun, "Uncaught runtime exception running pipe '"
+                            + pipeToRun.getName() + "'", re);
 				} finally {
 					TracingUtil.afterEvent(pipeToRun);
 					if (pe!=null) {
