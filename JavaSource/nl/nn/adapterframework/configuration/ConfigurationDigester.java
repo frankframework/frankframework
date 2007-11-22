@@ -1,6 +1,9 @@
 /*
  * $Log: ConfigurationDigester.java,v $
- * Revision 1.19  2007-10-24 08:28:03  europe\M00035F
+ * Revision 1.20  2007-11-22 08:24:42  europe\L190409
+ * fixed include() code
+ *
+ * Revision 1.19  2007/10/24 08:28:03  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
  * Allow 'include' to work when no digester-rules.xml is specified, and use default configuration for 'stackTop' when stackTop = null
  *
  * Revision 1.18  2007/10/16 13:18:30  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
@@ -100,7 +103,7 @@ import org.springframework.beans.factory.ListableBeanFactory;
  * @see Configuration
  */
 abstract public class ConfigurationDigester implements BeanFactoryAware {
-	public static final String version = "$RCSfile: ConfigurationDigester.java,v $ $Revision: 1.19 $ $Date: 2007-10-24 08:28:03 $";
+	public static final String version = "$RCSfile: ConfigurationDigester.java,v $ $Revision: 1.20 $ $Date: 2007-11-22 08:24:42 $";
     protected static Logger log = LogUtil.getLogger(ConfigurationDigester.class);
 
 	private static final String CONFIGURATION_FILE_DEFAULT  = "Configuration.xml";
@@ -227,15 +230,15 @@ abstract public class ConfigurationDigester implements BeanFactoryAware {
 	}
 
 	public void include(Object stackTop) throws ConfigurationException {
-		URL configuration = ClassUtils.getResourceURL(this, getConfigurationFile());
-		if (configuration == null) {
+		URL includedConfigUrl = ClassUtils.getResourceURL(this, getConfigurationFile());
+		if (includedConfigUrl == null) {
 			throw new ConfigurationException("cannot find resource ["+getConfigurationFile()+"] to include");
 		}
 		URL digesterRules = ClassUtils.getResourceURL(this, getDigesterRules());
-        if (stackTop == null) {
-            stackTop = configuration;
-        }
-		digestConfiguration(stackTop, digesterRules, configuration);
+		if (stackTop == null) {
+			stackTop = this.configuration;
+		}
+		digestConfiguration(stackTop, digesterRules, includedConfigUrl);
 	}
 	
 	public Configuration unmarshalConfiguration() throws ConfigurationException
