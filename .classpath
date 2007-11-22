@@ -35,5 +35,10 @@
     <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/WebSphere v5.1 JRE"/>
     <classpathentry kind="var" path="WAS_50_PLUGINDIR/lib/admin.jar"/>
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/commons-digester-1.8.jar"/>
+    <classpathentry kind="lib" path="IFSACommon.jar"/>
+    <classpathentry kind="lib" path="ifsaj2ee.jar"/>
+    <classpathentry kind="lib" path="ifsajcil.jar"/>
+    <classpathentry kind="lib" path="IFSAProviderEJB.jar"/>
+    <classpathentry kind="lib" path="IFSARequestorEJB.jar"/>
     <classpathentry kind="output" path="bin"/>
 </classpath>
