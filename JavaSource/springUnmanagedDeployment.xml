@@ -1,7 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   $Log: springUnmanagedDeployment.xml,v $
-  Revision 1.6  2007-11-05 12:29:07  europe\M00035F
+  Revision 1.7  2007-11-22 09:20:01  europe\L190409
+  update from ejb-branch
+
+  Revision 1.2.2.5  2007/11/19 16:21:23  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
+  Lazy-load the transaction manager and wrap it in a proxy, to attempt creating the transaction-manager instance and looking up things in websphere JNDI at a point in time where it's not yet allowed.
+
+  Revision 1.2.2.4  2007/11/06 09:39:14  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
+  Merge refactoring/renaming from HEAD
+
+  Revision 1.2.2.3  2007/10/24 15:04:44  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
+  Let runstate of receivers/listeners follow the state of WebSphere ListenerPorts if they are changed outside the control of IBIS.
+
+  Revision 1.2.2.2  2007/10/24 09:39:50  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
+  Merge changes from HEAD
+
+  Revision 1.6  2007/11/05 12:29:07  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
   Rename bean 'jmsConfigurator' to 'jmsConnector'
 
   Revision 1.5  2007/11/05 12:23:37  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
@@ -26,6 +41,14 @@
             http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.0.xsd
             ">
 
+    <!-- Scheduler (Quartz) -->
+    <bean id="scheduler" class="org.springframework.scheduling.quartz.SchedulerFactoryBean"
+        autowire="byName" lazy-init="true">
+        <!-- Auto-wiring wires up bean named taskExecutor as threadpool implementation -->
+        <property name="autoStartup" value="false"/>
+        <property name="transactionManager" ref="txManager"/>
+    </bean>
+    
     <!-- IBIS Beans -->
     <bean name="ibisManager" class="nl.nn.adapterframework.unmanaged.DefaultIbisManager"
         autowire="byName">
