@@ -2,7 +2,28 @@
  * Created on 18-sep-07
  * 
  * $Log: PushingJmsListener.java,v $
- * Revision 1.4  2007-11-05 13:06:55  europe\M00035F
+ * Revision 1.5  2007-11-22 09:08:56  europe\L190409
+ * update from ejb-branch
+ *
+ * Revision 1.1.2.6  2007/11/15 10:35:24  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
+ * Add methods new in implemented interface
+ *
+ * Revision 1.1.2.5  2007/11/06 13:15:10  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
+ * Move code putting properties into threadContext from 'getIdFromRawMessage' to 'populateThreadContext'
+ *
+ * Revision 1.1.2.4  2007/11/06 12:43:56  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
+ * Improve some JavaDoc
+ *
+ * Revision 1.1.2.3  2007/11/06 12:41:17  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
+ * Add original raw message as parameter to method 'createThreadContext' of 'pushingJmsListener' in preparation of adding it to interface
+ *
+ * Revision 1.1.2.2  2007/11/06 12:29:54  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
+ * Rename parameter 'context' to 'threadContext', in keeping with other code
+ *
+ * Revision 1.1.2.1  2007/11/06 09:39:14  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
+ * Merge refactoring/renaming from HEAD
+ *
+ * Revision 1.4  2007/11/05 13:06:55  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
  * Rename and redefine methods in interface IListenerConnector to remove 'jms' from names
  *
  * Revision 1.3  2007/11/05 12:26:51  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
@@ -51,7 +72,6 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IListenerConnector;
 import nl.nn.adapterframework.core.IMessageHandler;
 import nl.nn.adapterframework.core.IPortConnectedListener;
-import nl.nn.adapterframework.core.IPushingListener;
 import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.IbisExceptionListener;
@@ -70,7 +90,7 @@ import nl.nn.adapterframework.core.PipeLineResult;
  * 
  */
 public class PushingJmsListener extends JMSFacade implements IPortConnectedListener {
-    public static final String version="$RCSfile: PushingJmsListener.java,v $ $Revision: 1.4 $ $Date: 2007-11-05 13:06:55 $";
+    public static final String version="$RCSfile: PushingJmsListener.java,v $ $Revision: 1.5 $ $Date: 2007-11-22 09:08:56 $";
 
     private final static String THREAD_CONTEXT_SESSION_KEY="session";
     private final static String THREAD_CONTEXT_SESSION_OWNER_FLAG_KEY="isSessionOwner";
@@ -146,43 +166,24 @@ public class PushingJmsListener extends JMSFacade implements IPortConnectedListe
      * This includes a Session. The Session object can be passed in
      * externally.
      * 
-     * @param threadContext
-     * @param session
+     * @param rawMessage - Original message received, can not be <code>null</code>
+     * @param threadContext - Thread context to be populated, can not be <code>null</code>
+     * @param session - JMS Session under which message was received; can be <code>null</code>
      */
-    public void populateThreadContext(Map threadContext, Session session) {
+    public void populateThreadContext(Object rawMessage, Map threadContext, Session session) throws ListenerException {
         if (session != null) {
             threadContext.put(THREAD_CONTEXT_SESSION_KEY, session);
             threadContext.put(THREAD_CONTEXT_SESSION_OWNER_FLAG_KEY, Boolean.FALSE);
         }
-    }
-    
-    public void destroyThreadContext(Map threadContext) {
-        // Do we have a session in the thread-context, and do we need to close it?
-        if (threadContext.containsKey(THREAD_CONTEXT_SESSION_KEY)) {
-            Boolean isSessionOwner = (Boolean) threadContext.get(THREAD_CONTEXT_SESSION_OWNER_FLAG_KEY);
-            if (isSessionOwner.booleanValue()) {
-                Session session = (Session) threadContext.get(THREAD_CONTEXT_SESSION_KEY);
-                super.closeSession(session);
-            }
-        }
-        
-        // No other cleanups yet
-    }
-    
-    /* (non-Javadoc)
-     * @see nl.nn.adapterframework.core.IListener#getIdFromRawMessage(java.lang.Object, java.util.Map)
-     */
-    public String getIdFromRawMessage(Object rawMessage, Map context)
-        throws ListenerException {
         TextMessage message = null;
-        String cid = "unset";
         try {
             message = (TextMessage) rawMessage;
         } catch (ClassCastException e) {
             log.error("message received by listener on ["+ getDestinationName()+ "] was not of type TextMessage, but ["+rawMessage.getClass().getName()+"]", e);
-            return null;
+            return;
         }
         String mode = "unknown";
+        String cid = "unset";
         String id = "unset";
         Date dTimeStamp = null;
         Destination replyTo=null;
@@ -254,10 +255,10 @@ public class PushingJmsListener extends JMSFacade implements IPortConnectedListe
                 + message.toString()
                 + "]");
     
-        context.put("id",id);
-        context.put("cid",cid);
-        context.put("timestamp",dTimeStamp);
-        context.put("replyTo",replyTo);
+        threadContext.put("id",id);
+        threadContext.put("cid",cid);
+        threadContext.put("timestamp",dTimeStamp);
+        threadContext.put("replyTo",replyTo);
         try {
             if (getAckMode() == Session.CLIENT_ACKNOWLEDGE) {
                 message.acknowledge();
@@ -266,13 +267,75 @@ public class PushingJmsListener extends JMSFacade implements IPortConnectedListe
         } catch (JMSException e) {
             log.error("Warning in ack", e);
         }
+    }
+    
+    /**
+     * Perform any required cleanups on the thread context, such as closing
+     * a JMS Session if the session is owned by the JMS Listener.
+     * 
+     * @param threadContext
+     */
+    public void destroyThreadContext(Map threadContext) {
+        // Do we have a session in the thread-context, and do we need to close it?
+        if (threadContext.containsKey(THREAD_CONTEXT_SESSION_KEY)) {
+            Boolean isSessionOwner = (Boolean) threadContext.get(THREAD_CONTEXT_SESSION_OWNER_FLAG_KEY);
+            if (isSessionOwner.booleanValue()) {
+                Session session = (Session) threadContext.get(THREAD_CONTEXT_SESSION_KEY);
+                super.closeSession(session);
+            }
+        }
+        
+        // No other cleanups yet
+    }
+    
+    /* (non-Javadoc)
+     * @see nl.nn.adapterframework.core.IListener#getIdFromRawMessage(java.lang.Object, java.util.Map)
+     */
+    public String getIdFromRawMessage(Object rawMessage, Map threadContext)
+        throws ListenerException {
+        TextMessage message = null;
+        try {
+            message = (TextMessage) rawMessage;
+        } catch (ClassCastException e) {
+            log.error("message received by listener on ["+ getDestinationName()+ "] was not of type TextMessage, but ["+rawMessage.getClass().getName()+"]", e);
+            return null;
+        }
+        String cid = "unset";
+        String id = "unset";
+        
+        // --------------------------
+        // retrieve MessageID
+        // --------------------------
+        try {
+            id = message.getJMSMessageID();
+        } catch (JMSException ignore) {
+            log.debug("ignoring JMSException in getJMSMessageID()", ignore);
+        }
+        // --------------------------
+        // retrieve CorrelationID
+        // --------------------------
+        try {
+            if (isForceMessageIdAsCorrelationId()){
+                if (log.isDebugEnabled()) log.debug("forcing the messageID to be the correlationID");
+                cid =id;
+            }
+            else {
+                cid = message.getJMSCorrelationID();
+                if (cid==null) {
+                  cid = id;
+                  log.debug("Setting correlation ID to MessageId");
+                }
+            }
+        } catch (JMSException ignore) {
+            log.debug("ignoring JMSException in getJMSCorrelationID()", ignore);
+        }
         return cid;
     }
 
     /* (non-Javadoc)
      * @see nl.nn.adapterframework.core.IListener#getStringFromRawMessage(java.lang.Object, java.util.Map)
      */
-    public String getStringFromRawMessage(Object rawMessage, Map context)
+    public String getStringFromRawMessage(Object rawMessage, Map threadContext)
         throws ListenerException {
         TextMessage message = null;
         try {
@@ -587,5 +650,9 @@ public class PushingJmsListener extends JMSFacade implements IPortConnectedListe
     
     public void setReceiver(IReceiver receiver) {
         this.receiver = receiver;
+    }
+
+    public IListenerConnector getListenerPortConnector() {
+        return jmsConnector;
     }
 }
