@@ -1,6 +1,9 @@
 /*
  * $Log: JmsListener.java,v $
- * Revision 1.28  2007-10-16 09:52:35  europe\M00035F
+ * Revision 1.29  2007-11-22 09:10:09  europe\L190409
+ * switch to PushingListener
+ *
+ * Revision 1.28  2007/10/16 09:52:35  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
  * Change over JmsListener to a 'switch-class' to facilitate smoother switchover from older version to spring version
  *
  * 
@@ -73,6 +76,6 @@ package nl.nn.adapterframework.jms;
  * @author Gerrit van Brakel
  * @since 4.0.1, since 4.8 as 'switch'-class
  */
-public class JmsListener extends PullingJmsListener {
+public class JmsListener extends PushingJmsListener {
 
 }
