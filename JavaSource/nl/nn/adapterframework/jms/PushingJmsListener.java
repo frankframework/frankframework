@@ -1,6 +1,9 @@
 /*
  * $Log: PushingJmsListener.java,v $
- * Revision 1.6  2007-11-22 13:29:52  europe\L190409
+ * Revision 1.7  2007-11-23 14:22:04  europe\L190409
+ * Remove code that confirms processing of message to JMS Session, because from the PushingJmsListener this is now always done by a container.
+ *
+ * Revision 1.6  2007/11/22 13:29:52  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * some more logging
  *
  * Revision 1.5  2007/11/22 09:08:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -91,7 +94,7 @@ import nl.nn.adapterframework.core.PipeLineResult;
  * @version Id
  */
 public class PushingJmsListener extends JMSFacade implements IPortConnectedListener {
-    public static final String version="$RCSfile: PushingJmsListener.java,v $ $Revision: 1.6 $ $Date: 2007-11-22 13:29:52 $";
+    public static final String version="$RCSfile: PushingJmsListener.java,v $ $Revision: 1.7 $ $Date: 2007-11-23 14:22:04 $";
 
     private final static String THREAD_CONTEXT_SESSION_KEY="session";
     private final static String THREAD_CONTEXT_SESSION_OWNER_FLAG_KEY="isSessionOwner";
@@ -403,32 +406,6 @@ public class PushingJmsListener extends JMSFacade implements IPortConnectedListe
                 }
             }
         
-            // handle transaction details
-            if (!isTransacted()) {
-                if (isJmsTransacted()) {
-                    // the following if transacted using transacted sessions, instead of XA-enabled sessions.
-                    Session session;
-                    session = getSessionFromThreadContext(threadContext);
-                    if (session == null) {
-                        log.warn("Listener ["+getName()+"] message ["+ (String)threadContext.get("id") +"] has no session to commit or rollback");
-                    } else {
-                        String successState = getCommitOnState();
-                        if (successState!=null && successState.equals(pipeLineResult.getState())) {
-                            session.commit();
-                        } else {
-                            log.warn("Listener ["+getName()+"] message ["+ (String)threadContext.get("id") +"] not committed nor rolled back either");
-                            //TODO: enable rollback, or remove support for JmsTransacted altogether (XA-transactions should do it all)
-                            // session.rollback();
-                        }
-                    }
-                } else {
-                    // TODO: dit weghalen. Het hoort hier niet, en zit ook al in getIdFromRawMessage. Daar hoort het ook niet, overigens...
-                    if (getAckMode() == Session.CLIENT_ACKNOWLEDGE) {
-                        log.debug("["+getName()+"] acknowledges message with id ["+cid+"]");
-                        ((TextMessage)rawMessage).acknowledge();
-                    }
-                }
-            }
         } catch (Exception e) {
             if (e instanceof ListenerException) {
                 throw (ListenerException)e;
