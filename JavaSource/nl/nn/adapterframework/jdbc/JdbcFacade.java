@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcFacade.java,v $
- * Revision 1.23  2007-11-23 14:16:50  europe\L190409
+ * Revision 1.24  2007-11-23 14:47:36  europe\L190409
+ * fix check on XA datasource
+ *
+ * Revision 1.23  2007/11/23 14:16:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * remove datasourceNameXA
  *
  * Revision 1.22  2007/08/10 11:05:23  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -110,7 +113,7 @@ import org.apache.log4j.Logger;
  * @since 	4.1
  */
 public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version="$RCSfile: JdbcFacade.java,v $ $Revision: 1.23 $ $Date: 2007-11-23 14:16:50 $";
+	public static final String version="$RCSfile: JdbcFacade.java,v $ $Revision: 1.24 $ $Date: 2007-11-23 14:47:36 $";
     protected Logger log = LogUtil.getLogger(this);
 	
 	public final static int DATABASE_GENERIC=0;
@@ -324,7 +327,9 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 	 * Sets the JNDI name of datasource that is used when {@link #isTransacted()} returns <code>true</code> 
 	 */
 	public void setDatasourceNameXA(String datasourceNameXA) {
-		throw new IllegalArgumentException(getLogPrefix()+"use of attribute 'datasourceNameXA' is no longer supported. The datasource can now only be specified using attribute 'datasourceName'");
+		if (StringUtils.isNotEmpty(datasourceNameXA)) {
+			throw new IllegalArgumentException(getLogPrefix()+"use of attribute 'datasourceNameXA' is no longer supported. The datasource can now only be specified using attribute 'datasourceName'");
+		}
 //		this.datasourceNameXA = datasourceNameXA;
 	}
 //	public String getDatasourceNameXA() {
