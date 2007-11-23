@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBaseSpring.java,v $
- * Revision 1.6  2007-11-22 13:36:53  europe\L190409
+ * Revision 1.7  2007-11-23 14:18:31  europe\L190409
+ * progagate transacted attribute to Jms and Jdbc Listeners
+ *
+ * Revision 1.6  2007/11/22 13:36:53  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved logging
  *
  * Revision 1.5  2007/11/05 13:06:55  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
@@ -239,6 +242,8 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.jdbc.JdbcFacade;
+import nl.nn.adapterframework.jms.JMSFacade;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Counter;
 import nl.nn.adapterframework.util.DomBuilderException;
@@ -339,7 +344,7 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 	private final static TransactionDefinition TXREQUIRED = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED);
 	private final static TransactionDefinition TXSUPPORTS = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_SUPPORTS);
     
-	public static final String version="$RCSfile: ReceiverBaseSpring.java,v $ $Revision: 1.6 $ $Date: 2007-11-22 13:36:53 $";
+	public static final String version="$RCSfile: ReceiverBaseSpring.java,v $ $Revision: 1.7 $ $Date: 2007-11-23 14:18:31 $";
 	protected Logger log = LogUtil.getLogger(this);
     
 	private BeanFactory beanFactory;
@@ -694,6 +699,12 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
             }
 			if (getListener() instanceof IPullingListener) {
 				setListenerContainer(createListenerContainer());
+			}
+			if (getListener() instanceof JdbcFacade) {
+				((JdbcFacade)getListener()).setTransacted(isTransacted());
+			}
+			if (getListener() instanceof JMSFacade) {
+				((JMSFacade)getListener()).setTransacted(isTransacted());
 			}
 			getListener().configure();
 			if (getListener() instanceof HasPhysicalDestination) {

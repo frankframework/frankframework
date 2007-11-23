@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBaseClassic.java,v $
- * Revision 1.3  2007-10-23 13:07:35  europe\M00035F
+ * Revision 1.4  2007-11-23 14:18:31  europe\L190409
+ * progagate transacted attribute to Jms and Jdbc Listeners
+ *
+ * Revision 1.3  2007/10/23 13:07:35  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
  * Fix another NPE when no inProcessStorage is defined
  *
  * Revision 1.2  2007/10/23 12:53:20  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
@@ -215,6 +218,8 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.jdbc.JdbcFacade;
+import nl.nn.adapterframework.jms.JMSFacade;
 import nl.nn.adapterframework.monitoring.EventTypeEnum;
 import nl.nn.adapterframework.monitoring.IMonitorAdapter;
 import nl.nn.adapterframework.monitoring.MonitorAdapterFactory;
@@ -311,7 +316,7 @@ import org.apache.log4j.Logger;
  * @since 4.2
  */
 public class ReceiverBaseClassic implements IReceiver, IReceiverStatistics, Runnable, IMessageHandler, IbisExceptionListener, HasSender, TracingEventNumbers {
-	public static final String version="$RCSfile: ReceiverBaseClassic.java,v $ $Revision: 1.3 $ $Date: 2007-10-23 13:07:35 $";
+	public static final String version="$RCSfile: ReceiverBaseClassic.java,v $ $Revision: 1.4 $ $Date: 2007-11-23 14:18:31 $";
 	protected Logger log = LogUtil.getLogger(this);
  
  	public static final String RCV_SHUTDOWN_MONITOR_EVENT_MSG ="RCVCLOSED Ibis Receiver shut down";
@@ -524,6 +529,12 @@ public class ReceiverBaseClassic implements IReceiver, IReceiverStatistics, Runn
 				if (getNumThreadsPolling()>0 && getNumThreadsPolling()<getNumThreads()) {
 					pollToken = new Semaphore(getNumThreadsPolling());
 				}
+			}
+			if (getListener() instanceof JdbcFacade) {
+				((JdbcFacade)getListener()).setTransacted(isTransacted());
+			}
+			if (getListener() instanceof JMSFacade) {
+				((JMSFacade)getListener()).setTransacted(isTransacted());
 			}
 			getListener().configure();
 			if (getListener() instanceof HasPhysicalDestination) {
