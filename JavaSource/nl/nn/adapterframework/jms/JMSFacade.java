@@ -1,6 +1,9 @@
 /*
  * $Log: JMSFacade.java,v $
- * Revision 1.30  2007-11-23 14:17:36  europe\L190409
+ * Revision 1.31  2007-11-23 14:47:55  europe\L190409
+ * fix check on XA connection factories
+ *
+ * Revision 1.30  2007/11/23 14:17:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * remove XA connectionfactories
  *
  * Revision 1.29  2007/10/16 09:12:27  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
@@ -133,7 +136,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version="$RCSfile: JMSFacade.java,v $ $Revision: 1.30 $ $Date: 2007-11-23 14:17:36 $";
+	public static final String version="$RCSfile: JMSFacade.java,v $ $Revision: 1.31 $ $Date: 2007-11-23 14:47:55 $";
 
 	public static final String MODE_PERSISTENT="PERSISTENT";
 	public static final String MODE_NON_PERSISTENT="NON_PERSISTENT";
@@ -868,7 +871,9 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	 * The corresponding connection factory should support XA transactions. 
 	 */
 	public void setQueueConnectionFactoryNameXA(String queueConnectionFactoryNameXA) {
-		throw new IllegalArgumentException(getLogPrefix()+"use of attribute 'queueConnectionFactoryNameXA' is no longer supported. The queueConnectionFactory can now only be specified using attribute 'queueConnectionFactoryName'");
+		if (StringUtils.isNotEmpty(queueConnectionFactoryNameXA)) {
+			throw new IllegalArgumentException(getLogPrefix()+"use of attribute 'queueConnectionFactoryNameXA' is no longer supported. The queueConnectionFactory can now only be specified using attribute 'queueConnectionFactoryName'");
+		}
 //		this.queueConnectionFactoryNameXA = queueConnectionFactoryNameXA;
 	}
 //	public String getQueueConnectionFactoryNameXA() {
@@ -892,7 +897,9 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	 * The corresponding connection factory should support XA transactions. 
 	 */
 	public void setTopicConnectionFactoryNameXA(String topicConnectionFactoryNameXA) {
-		throw new IllegalArgumentException(getLogPrefix()+"use of attribute 'topicConnectionFactoryNameXA' is no longer supported. The topicConnectionFactory can now only be specified using attribute 'topicConnectionFactoryName'");
+		if (StringUtils.isNotEmpty(topicConnectionFactoryNameXA)) {
+			throw new IllegalArgumentException(getLogPrefix()+"use of attribute 'topicConnectionFactoryNameXA' is no longer supported. The topicConnectionFactory can now only be specified using attribute 'topicConnectionFactoryName'");
+		}
 //		this.topicConnectionFactoryNameXA = topicConnectionFactoryNameXA;
 	}
 //	public String getTopicConnectionFactoryNameXA() {
