@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcFacade.java,v $
- * Revision 1.22  2007-08-10 11:05:23  europe\L190409
+ * Revision 1.23  2007-11-23 14:16:50  europe\L190409
+ * remove datasourceNameXA
+ *
+ * Revision 1.22  2007/08/10 11:05:23  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added note about table SYS.DBA_PENDING_TRANSACTIONS that should be readable
  *
  * Revision 1.21  2007/07/19 15:07:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -107,7 +110,7 @@ import org.apache.log4j.Logger;
  * @since 	4.1
  */
 public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version="$RCSfile: JdbcFacade.java,v $ $Revision: 1.22 $ $Date: 2007-08-10 11:05:23 $";
+	public static final String version="$RCSfile: JdbcFacade.java,v $ $Revision: 1.23 $ $Date: 2007-11-23 14:16:50 $";
     protected Logger log = LogUtil.getLogger(this);
 	
 	public final static int DATABASE_GENERIC=0;
@@ -119,7 +122,7 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
     
 	private DataSource datasource = null;
 	private String datasourceName = null;
-	private String datasourceNameXA = null;
+//	private String datasourceNameXA = null;
 
 	private boolean transacted = false;
 	private boolean connectionsArePooled=true;
@@ -130,20 +133,27 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 		return "["+this.getClass().getName()+"] ["+getName()+"] ";
 	}
 
-	/**
-	 * Returns either {@link #getDatasourceName() datasourceName} or {@link #getDatasourceNameXA() datasourceNameXA},
-	 * depending on the value of {@link #isTransacted()}.
-	 * If the right one is not specified, the other is used. 
-	 */
+//	/**
+//	 * Returns either {@link #getDatasourceName() datasourceName} or {@link #getDatasourceNameXA() datasourceNameXA},
+//	 * depending on the value of {@link #isTransacted()}.
+//	 * If the right one is not specified, the other is used. 
+//	 */
+//	public String getDataSourceNameToUse() throws JdbcException {
+//		String result = isTransacted() ? getDatasourceNameXA() : getDatasourceName();
+//		if (StringUtils.isEmpty(result)) {
+//			// try the alternative...
+//			result = isTransacted() ? getDatasourceName() : getDatasourceNameXA();
+//			if (StringUtils.isEmpty(result)) {
+//				throw new JdbcException(getLogPrefix()+"neither datasourceName nor datasourceNameXA are specified");
+//			}
+//			log.warn(getLogPrefix()+"correct datasourceName attribute not specified, will use ["+result+"]");
+//		}
+//		return result;
+//	}
 	public String getDataSourceNameToUse() throws JdbcException {
-		String result = isTransacted() ? getDatasourceNameXA() : getDatasourceName();
+		String result = getDatasourceName();
 		if (StringUtils.isEmpty(result)) {
-			// try the alternative...
-			result = isTransacted() ? getDatasourceName() : getDatasourceNameXA();
-			if (StringUtils.isEmpty(result)) {
-				throw new JdbcException(getLogPrefix()+"neither datasourceName nor datasourceNameXA are specified");
-			}
-			log.warn(getLogPrefix()+"correct datasourceName attribute not specified, will use ["+result+"]");
+			throw new JdbcException(getLogPrefix()+"no datasourceName specified");
 		}
 		return result;
 	}
@@ -314,11 +324,12 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 	 * Sets the JNDI name of datasource that is used when {@link #isTransacted()} returns <code>true</code> 
 	 */
 	public void setDatasourceNameXA(String datasourceNameXA) {
-		this.datasourceNameXA = datasourceNameXA;
+		throw new IllegalArgumentException(getLogPrefix()+"use of attribute 'datasourceNameXA' is no longer supported. The datasource can now only be specified using attribute 'datasourceName'");
+//		this.datasourceNameXA = datasourceNameXA;
 	}
-	public String getDatasourceNameXA() {
-		return datasourceNameXA;
-	}
+//	public String getDatasourceNameXA() {
+//		return datasourceNameXA;
+//	}
 
 	/**
 	 * Sets the user name that is used to open the database connection.
