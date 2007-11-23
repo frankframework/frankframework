@@ -1,6 +1,9 @@
 /*
  * $Log: JMSFacade.java,v $
- * Revision 1.29  2007-10-16 09:12:27  europe\M00035F
+ * Revision 1.30  2007-11-23 14:17:36  europe\L190409
+ * remove XA connectionfactories
+ *
+ * Revision 1.29  2007/10/16 09:12:27  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
  * Merge with changes from EJB branch in preparation for creating new EJB brance
  *
  * Revision 1.26.4.4  2007/10/12 09:09:07  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
@@ -130,7 +133,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version="$RCSfile: JMSFacade.java,v $ $Revision: 1.29 $ $Date: 2007-10-16 09:12:27 $";
+	public static final String version="$RCSfile: JMSFacade.java,v $ $Revision: 1.30 $ $Date: 2007-11-23 14:17:36 $";
 
 	public static final String MODE_PERSISTENT="PERSISTENT";
 	public static final String MODE_NON_PERSISTENT="NON_PERSISTENT";
@@ -165,13 +168,13 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
     // Queue fields
     //---------------------------------------------------------------------
     private String queueConnectionFactoryName;
-	private String queueConnectionFactoryNameXA;
+//	private String queueConnectionFactoryNameXA;
 //    private QueueConnectionFactory queueConnectionFactory = null;
     //---------------------------------------------------------------------
     // Topic fields
     //---------------------------------------------------------------------
     private String topicConnectionFactoryName;
-	private String topicConnectionFactoryNameXA;
+//	private String topicConnectionFactoryNameXA;
 //    private TopicConnectionFactory topicConnectionFactory = null;
 
 	//the MessageSelector will provide filter functionality, as specified
@@ -213,30 +216,37 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 		return "["+getName()+"] ";
 	}
 
- 	public String getConnectionFactoryName() throws JmsException {
-		String result;
-		if (useTopicFunctions) {
-			result = isTransacted() ? getTopicConnectionFactoryNameXA() : getTopicConnectionFactoryName();
-			if (StringUtils.isEmpty(result)) {
-				result = isTransacted() ? getTopicConnectionFactoryName() : getTopicConnectionFactoryNameXA();
-                if (StringUtils.isEmpty(result)) {
-                    throw new JmsException(getLogPrefix()+"neither topicConnectionFactoryName nor topicConnectionFactoryNameXA are specified");
-                }
-                log.warn(getLogPrefix()+"correct topicConnectionFactoryName attribute not specified, will use ["+result+"]");
-			}
+// 	public String getConnectionFactoryName() throws JmsException {
+//		String result;
+//		if (useTopicFunctions) {
+//			result = isTransacted() ? getTopicConnectionFactoryNameXA() : getTopicConnectionFactoryName();
+//			if (StringUtils.isEmpty(result)) {
+//				result = isTransacted() ? getTopicConnectionFactoryName() : getTopicConnectionFactoryNameXA();
+//                if (StringUtils.isEmpty(result)) {
+//                    throw new JmsException(getLogPrefix()+"neither topicConnectionFactoryName nor topicConnectionFactoryNameXA are specified");
+//                }
+//                log.warn(getLogPrefix()+"correct topicConnectionFactoryName attribute not specified, will use ["+result+"]");
+//			}
+//		}
+//		else {
+//			result = isTransacted() ? getQueueConnectionFactoryNameXA() : getQueueConnectionFactoryName();
+//			if (StringUtils.isEmpty(result)) {
+//				result = isTransacted() ? getQueueConnectionFactoryName() : getQueueConnectionFactoryNameXA();
+//    			if (StringUtils.isEmpty(result)) {
+//    				throw new JmsException(getLogPrefix()+"neither queueConnectionFactoryName nor queueConnectionFactoryNameXA are specified; jms-realm:"+getJmsRealName());
+//    			}
+//                log.warn(getLogPrefix()+"correct queueConnectionFactoryName attribute not specified, will use ["+result+"]");
+//            }
+//		}
+//		log.debug(getLogPrefix()+"returning " + (isTransacted() ? "XA" : "")
+//            + "ConnectionFactoryName ["+result+"]");
+//		return result;
+//	}
+	public String getConnectionFactoryName() throws JmsException {
+		String result = useTopicFunctions ? getTopicConnectionFactoryName() : getQueueConnectionFactoryName();
+		if (StringUtils.isEmpty(result)) {
+			throw new JmsException(getLogPrefix()+"no "+(useTopicFunctions ?"topic":"queue")+"ConnectionFactoryName specified");
 		}
-		else {
-			result = isTransacted() ? getQueueConnectionFactoryNameXA() : getQueueConnectionFactoryName();
-			if (StringUtils.isEmpty(result)) {
-				result = isTransacted() ? getQueueConnectionFactoryName() : getQueueConnectionFactoryNameXA();
-    			if (StringUtils.isEmpty(result)) {
-    				throw new JmsException(getLogPrefix()+"neither queueConnectionFactoryName nor queueConnectionFactoryNameXA are specified; jms-realm:"+getJmsRealName());
-    			}
-                log.warn(getLogPrefix()+"correct queueConnectionFactoryName attribute not specified, will use ["+result+"]");
-            }
-		}
-		log.debug(getLogPrefix()+"returning " + (isTransacted() ? "XA" : "")
-            + "ConnectionFactoryName ["+result+"]");
 		return result;
 	}
 	
@@ -682,11 +692,11 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
         if (useTopicFunctions) {
             sb.append("[topicName=" + destinationName + "]");
 	        sb.append("[topicConnectionFactoryName=" + topicConnectionFactoryName + "]");
-	        sb.append("[topicConnectionFactoryNameXA=" + topicConnectionFactoryNameXA + "]");
+//	        sb.append("[topicConnectionFactoryNameXA=" + topicConnectionFactoryNameXA + "]");
         } else {
             sb.append("[queueName=" + destinationName + "]");
 	        sb.append("[queueConnectionFactoryName=" + queueConnectionFactoryName + "]");
-	        sb.append("[queueConnectionFactoryNameXA=" + queueConnectionFactoryNameXA + "]");
+//	        sb.append("[queueConnectionFactoryNameXA=" + queueConnectionFactoryNameXA + "]");
         }
 	//  sb.append("[physicalDestinationName="+getPhysicalDestinationName()+"]");
         sb.append("[ackMode=" + getAcknowledgeModeAsString(ackMode) + "]");
@@ -858,11 +868,12 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	 * The corresponding connection factory should support XA transactions. 
 	 */
 	public void setQueueConnectionFactoryNameXA(String queueConnectionFactoryNameXA) {
-		this.queueConnectionFactoryNameXA = queueConnectionFactoryNameXA;
+		throw new IllegalArgumentException(getLogPrefix()+"use of attribute 'queueConnectionFactoryNameXA' is no longer supported. The queueConnectionFactory can now only be specified using attribute 'queueConnectionFactoryName'");
+//		this.queueConnectionFactoryNameXA = queueConnectionFactoryNameXA;
 	}
-	public String getQueueConnectionFactoryNameXA() {
-		return queueConnectionFactoryNameXA;
-	}
+//	public String getQueueConnectionFactoryNameXA() {
+//		return queueConnectionFactoryNameXA;
+//	}
 
 
 	/**
@@ -881,11 +892,12 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	 * The corresponding connection factory should support XA transactions. 
 	 */
 	public void setTopicConnectionFactoryNameXA(String topicConnectionFactoryNameXA) {
-		this.topicConnectionFactoryNameXA = topicConnectionFactoryNameXA;
+		throw new IllegalArgumentException(getLogPrefix()+"use of attribute 'topicConnectionFactoryNameXA' is no longer supported. The topicConnectionFactory can now only be specified using attribute 'topicConnectionFactoryName'");
+//		this.topicConnectionFactoryNameXA = topicConnectionFactoryNameXA;
 	}
-	public String getTopicConnectionFactoryNameXA() {
-		return topicConnectionFactoryNameXA;
-	}
+//	public String getTopicConnectionFactoryNameXA() {
+//		return topicConnectionFactoryNameXA;
+//	}
 
 	/**
 	 * Controls the use of JMS transacted session.
