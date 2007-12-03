@@ -1,6 +1,9 @@
 /*
  * $Log: Adios2XmlPipe.java,v $
- * Revision 1.11  2007-02-12 14:31:03  europe\L190409
+ * Revision 1.12  2007-12-03 13:36:15  europe\L190409
+ * allow for sub records while converting to xml
+ *
+ * Revision 1.11  2007/02/12 14:31:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected version string
  *
  * Revision 1.10  2007/02/12 13:47:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -55,6 +58,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
 
 import java.util.Hashtable;
+import java.util.Map;
 import java.util.StringTokenizer;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -78,6 +82,7 @@ import java.net.URL;
  * For input, a 'naam' or a 'nummer'-attribute must be specified. If both are specified, their match is checked.
  * On output, 'nummer', 'naam' and 'waarde'-attributes are always present in each rubriek-element. 
  * Where applicable 'index', 'recordnr', 'record' and 'recordindex' are present, too.
+ * If sub-records exist, they are present with a 'sub' prefix to all attributes.
  * </p>
  *
  * <p><b>Configuration:</b>
@@ -107,7 +112,7 @@ import java.net.URL;
  * @version Id
  */
 public class Adios2XmlPipe extends FixedForwardPipe {
-	public static final String version = "$RCSfile: Adios2XmlPipe.java,v $ $Revision: 1.11 $ $Date: 2007-02-12 14:31:03 $";
+	public static final String version = "$RCSfile: Adios2XmlPipe.java,v $ $Revision: 1.12 $ $Date: 2007-12-03 13:36:15 $";
 
 	private Hashtable rubriek2nummer;	 
 	private Hashtable record2nummer;
@@ -260,93 +265,94 @@ public class Adios2XmlPipe extends FixedForwardPipe {
 	
 	protected void initializeConversionTables() throws ConfigurationException	{
 	 	// lees de template file en store het in een hashtable
-	
-		rubriek2nummer = new Hashtable(3000);	 
-		record2nummer  = new Hashtable(1000);
-		nummer2rubriek = new Hashtable(3000);	 
-		nummer2record  = new Hashtable(1000);
-	
-	 	try {
-		    handler = new Xml2AdiosHandler();
-		    // Use the default (non-validating) parser 
-			SAXParserFactory parserFactory = SAXParserFactory.newInstance();
-			saxParser = parserFactory.newSAXParser();
-	 	} catch (Throwable e) {
-		 	throw new ConfigurationException(getLogPrefix(null)+"cannot configure a parser", e);
-	 	}
+		if (StringUtils.isNotEmpty(getAdiosDefinities())) {
+		
+			rubriek2nummer = new Hashtable(3000);	 
+			record2nummer  = new Hashtable(1000);
+			nummer2rubriek = new Hashtable(3000);	 
+			nummer2record  = new Hashtable(1000);
+		
+		 	try {
+			    handler = new Xml2AdiosHandler();
+			    // Use the default (non-validating) parser 
+				SAXParserFactory parserFactory = SAXParserFactory.newInstance();
+				saxParser = parserFactory.newSAXParser();
+		 	} catch (Throwable e) {
+			 	throw new ConfigurationException(getLogPrefix(null)+"cannot configure a parser", e);
+		 	}
 	 	
-		try {
-	
-			URL url = ClassUtils.getResourceURL(this,getAdiosDefinities()); 
-			if (url==null) {
-				throw new ConfigurationException(getLogPrefix(null)+"cannot find adios definitions from resource ["+getAdiosDefinities()+"]");
-			}
-	    	BufferedReader bufinput = new BufferedReader(new InputStreamReader(url.openStream()));
-	 		String line,labelnr,waarde;
-	
-	 		line = bufinput.readLine();
-	
-	 		labelnr="";
-	 		waarde=""; 
-	
-	
-	 		// read in the rubrieken
-	 		while (line != null && !waarde.equals(recordIdentifier)) {
-	 			StringTokenizer st = new StringTokenizer(line,"{};= \n");
-	 		 	if (st.countTokens()>=1) {
-	 				waarde = st.nextToken();
-	 				if (!waarde.equals(recordIdentifier)) {
-	 					waarde = waarde.substring(3);
-	 				} 
-	 				if (st.hasMoreTokens()) {
-	 					labelnr  = st.nextToken();
-	         			//System.out.println("Rubriek label: " + labelnr + "   \t" + waarde);
-	 					if (alldigits(labelnr)) {
-	       					//System.out.println("rubriek label: " + labelnr + "   \t" + waarde);
-	       					
-	       					// als de key al bestaat betekend dit dat er een fout zit in de invoer
-	       					if (nummer2rubriek.containsKey(labelnr)) {
-		       					throw new ConfigurationException(getLogPrefix(null)+"rubriek ["+labelnr+"] komt meermaals voor. Waarde1: ["+nummer2rubriek.get(labelnr)+"], Waarde2: ["+waarde+"]");
-	       					}
-	       					nummer2rubriek.put(labelnr,waarde);
-	       					rubriek2nummer.put(waarde,labelnr);
-	 					}
-	 				}
-	
-	 			}
-	 			line = bufinput.readLine();	
-	 		}
-	
-	 		// Read in the records
-	 		while (line != null ) {
-	 			StringTokenizer st1 = new StringTokenizer(line,"{};= \n");
-	 			if (st1.countTokens()>=1) {
-	 				waarde = st1.nextToken();
-	 				waarde = waarde.substring(3);
-	 				if (st1.hasMoreTokens()) {
-	 					labelnr  = st1.nextToken();
-	         			//System.out.println("Record label: " + labelnr + "   \t" + waarde);
-	 					if (alldigits(labelnr)){
-	 						//labeln = Integer.parseInt(labelnr);
-	         				//System.out.println("record label: " + labelnr + "   \t" + waarde);
-	
-	         				if (nummer2record.containsKey(labelnr))	{
-		       					throw new ConfigurationException(getLogPrefix(null)+"record ["+labelnr+"] komt meermaals voor. Waarde1: ["+nummer2record.get(labelnr)+"], Waarde2: ["+waarde+"]");
-	       					}
-	       					nummer2record.put(labelnr,waarde);
-	       					record2nummer.put(waarde,labelnr);
-	 					}
-	 				}
-	
-	 			}
-	
-	 			line = bufinput.readLine();
-	 		}
-	 		bufinput.close();
-	 	}
-	 	catch (IOException e) {
-		 	throw new ConfigurationException(getLogPrefix(null)+"IOException on ["+getAdiosDefinities()+"]", e);
-	 	}
+			try {
+				URL url = ClassUtils.getResourceURL(this,getAdiosDefinities()); 
+				if (url==null) {
+					throw new ConfigurationException(getLogPrefix(null)+"cannot find adios definitions from resource ["+getAdiosDefinities()+"]");
+				}
+		    	BufferedReader bufinput = new BufferedReader(new InputStreamReader(url.openStream()));
+		 		String line,labelnr,waarde;
+		
+		 		line = bufinput.readLine();
+		
+		 		labelnr="";
+		 		waarde=""; 
+		
+		
+		 		// read in the rubrieken
+		 		while (line != null && !waarde.equals(recordIdentifier)) {
+		 			StringTokenizer st = new StringTokenizer(line,"{};= \n");
+		 		 	if (st.countTokens()>=1) {
+		 				waarde = st.nextToken();
+		 				if (!waarde.equals(recordIdentifier)) {
+		 					waarde = waarde.substring(3);
+		 				} 
+		 				if (st.hasMoreTokens()) {
+		 					labelnr  = st.nextToken();
+		         			//System.out.println("Rubriek label: " + labelnr + "   \t" + waarde);
+		 					if (alldigits(labelnr)) {
+		       					//System.out.println("rubriek label: " + labelnr + "   \t" + waarde);
+		       					
+		       					// als de key al bestaat betekend dit dat er een fout zit in de invoer
+		       					if (nummer2rubriek.containsKey(labelnr)) {
+			       					throw new ConfigurationException(getLogPrefix(null)+"rubriek ["+labelnr+"] komt meermaals voor. Waarde1: ["+nummer2rubriek.get(labelnr)+"], Waarde2: ["+waarde+"]");
+		       					}
+		       					nummer2rubriek.put(labelnr,waarde);
+		       					rubriek2nummer.put(waarde,labelnr);
+		 					}
+		 				}
+		
+		 			}
+		 			line = bufinput.readLine();	
+		 		}
+		
+		 		// Read in the records
+		 		while (line != null ) {
+		 			StringTokenizer st1 = new StringTokenizer(line,"{};= \n");
+		 			if (st1.countTokens()>=1) {
+		 				waarde = st1.nextToken();
+		 				waarde = waarde.substring(3);
+		 				if (st1.hasMoreTokens()) {
+		 					labelnr  = st1.nextToken();
+		         			//System.out.println("Record label: " + labelnr + "   \t" + waarde);
+		 					if (alldigits(labelnr)){
+		 						//labeln = Integer.parseInt(labelnr);
+		         				//System.out.println("record label: " + labelnr + "   \t" + waarde);
+		
+		         				if (nummer2record.containsKey(labelnr))	{
+			       					throw new ConfigurationException(getLogPrefix(null)+"record ["+labelnr+"] komt meermaals voor. Waarde1: ["+nummer2record.get(labelnr)+"], Waarde2: ["+waarde+"]");
+		       					}
+		       					nummer2record.put(labelnr,waarde);
+		       					record2nummer.put(waarde,labelnr);
+		 					}
+		 				}
+		
+		 			}
+		
+		 			line = bufinput.readLine();
+		 		}
+		 		bufinput.close();
+		 	}
+		 	catch (IOException e) {
+			 	throw new ConfigurationException(getLogPrefix(null)+"IOException on ["+getAdiosDefinities()+"]", e);
+		 	}
+		}
 	}
 	
 	
@@ -386,99 +392,74 @@ public class Adios2XmlPipe extends FixedForwardPipe {
 			bericht.addAttribute("rekenbox", rekenbox);
 		}
 	 
-		StringTokenizer st1 = new StringTokenizer(s,";\n");
+		StringTokenizer st1 = new StringTokenizer(s,";\n\r");
 		while (st1.hasMoreTokens()) {
 			String regel=st1.nextToken();
 			StringTokenizer st2 = new StringTokenizer(regel,":");
 			if (st2.hasMoreTokens()) {
-				String labelnr = st2.nextToken();
+				String label = st2.nextToken();
+				//log.debug("label ["+label+"]");
 				String waarde;
-				String recordnr="";
-				String recordnaam=null;
-				String index="";
-				String recindex="";
 
-				if (regel.length()>labelnr.length()) {
+				if (regel.length()>label.length()) {
 					waarde = regel.substring(regel.indexOf(':')+1); // 'waarde' might contain colons, so nextToken() doesn't work correctly
 				} else { 
 					waarde="NVT";
 				}
-				waarde =waarde.trim();
-		    	String rubrieknaam = (String)nummer2rubriek.get(labelnr);
-	
-				if (rubrieknaam==null) {
-					// label not found in hashtabel, so check for other format.
-					// check on record, label combination
-					StringTokenizer st3 = new StringTokenizer(labelnr,",");
-					labelnr = st3.nextToken();
-					if (st3.hasMoreTokens()) {
-						recordnr = labelnr;
-						labelnr = st3.nextToken();
-					}
-	
-					rubrieknaam = (String)nummer2rubriek.get(labelnr);
-					if (!(recordnr == "")) {
-						recordnaam = (String)nummer2record.get(recordnr);
-					} 
-	
-					//  label
-					index="";
-					if (rubrieknaam==null) {  // als label niet gevonden dan is het een type: record , rubriek combinatie bv 74,41
-						StringTokenizer st4 = new StringTokenizer(labelnr,"[]");
-						labelnr = st4.nextToken();
-						if (st4.hasMoreTokens()) { 
-							index= st4.nextToken();
-						} 
-						rubrieknaam = (String)nummer2rubriek.get(labelnr);
-					}
-	
-					//record
-					recindex="";
-					if (!(recordnr=="")) {
-						if (recordnaam==null) {  // als label niet gevonden dan is het een type: record , rubriek combinatie bv 74,41
-							StringTokenizer st5 = new StringTokenizer(recordnr,"[]");
-							recordnr = st5.nextToken();
-							if (st5.hasMoreTokens()) { 
-								recindex= st5.nextToken(); 
-							} 
-							recordnaam = (String)nummer2rubriek.get(recordnr);
-						}
-					}
-	
-				}
-	
-				/*
-				* render to xml
-				*/
-				if (rubrieknaam==null) {
-					rubrieknaam="RUBRIEK_UNKNOWN"; 
-				}
-					
+				waarde = waarde.trim();
+
 				XmlBuilder rubriek = new XmlBuilder("rubriek");
-				rubriek.addAttribute("nummer", labelnr);
-				rubriek.addAttribute("naam", rubrieknaam);
-	
-				if (!(index=="")) { 
-					rubriek.addAttribute("index", index);
+				String prefix = "";
+
+				StringTokenizer st3 = new StringTokenizer(label,",");
+				while(st3.hasMoreTokens()) {
+					String item = st3.nextToken();
+					//log.debug("item ["+item+"]");
+					
+					if (st3.hasMoreTokens()) {
+						addItem(item, rubriek, nummer2record, prefix+"record", prefix+"recordnr", prefix+"recordindex" );
+						prefix=prefix+"sub";
+					} else {
+						addItem(item, rubriek, nummer2rubriek, "naam", "nummer", "index" );
+					}				
 				}
-				if (!(recordnr=="")) {
-					rubriek.addAttribute("recordnr", recordnr);
-					if (recordnaam==null) {
-						recordnaam="RECORD_UNKNOWN"; 
-					}
-					rubriek.addAttribute("record", recordnaam);
-				}
-				if (!(recindex=="")) {
-					rubriek.addAttribute("recordindex", recindex);
-				}
+							
+				rubriek.addAttribute("label", label);
 				rubriek.addAttribute("waarde", waarde);
 				bericht.addSubElement(rubriek);
-	
-		    }
+			}
 		}
 		return bericht.toXML(true);
 	}
 
+	public void addItem(String item, XmlBuilder builder, Map nummer2naam, String naamLabel, String nummerLabel, String indexLabel) {
+
+		String nummer;
+		String naam = null;
+		String index=null;
+		
+		if (item.indexOf('[')<0) {
+			nummer=item; 
+		} else {
+			StringTokenizer st1 = new StringTokenizer(item,"[]");
+			nummer = st1.nextToken();
+			if (st1.hasMoreTokens()) { 
+				index= st1.nextToken();
+			} 
+		}
+		if (nummer2naam!=null) {
+			naam = (String)nummer2naam.get(item);
+			if (naam==null) {
+				naam="UNKNOWN"; 
+			}
+			builder.addAttribute(naamLabel,naam);
+		}
+		
+		builder.addAttribute(nummerLabel,nummer);
+		if (index!=null) {			
+			builder.addAttribute(indexLabel,index);			
+		}
+	}
 
 
 	/**
