@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   $Log: springUnmanagedDeployment.xml,v $
-  Revision 1.7  2007-11-22 09:20:01  europe\L190409
+  Revision 1.8  2007-12-10 10:26:54  europe\L190409
+  added transactionManager property to IbisManager
+
+  Revision 1.7  2007/11/22 09:20:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
   update from ejb-branch
 
   Revision 1.2.2.5  2007/11/19 16:21:23  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
@@ -51,10 +54,11 @@
     
     <!-- IBIS Beans -->
     <bean name="ibisManager" class="nl.nn.adapterframework.unmanaged.DefaultIbisManager"
-        autowire="byName">
+        autowire="byName" >
         <property name="deploymentMode">
             <util:constant static-field="nl.nn.adapterframework.configuration.IbisManager.DEPLOYMENT_MODE_UNMANAGED"/>
         </property>
+        <property name="transactionManager" ref="txManager"/>
     </bean>
     
     <bean name="jmsConnector" class="nl.nn.adapterframework.unmanaged.SpringJmsConnector"
