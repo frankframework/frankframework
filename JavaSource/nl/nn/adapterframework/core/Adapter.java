@@ -1,6 +1,9 @@
 /*
  * $Log: Adapter.java,v $
- * Revision 1.33  2007-10-10 09:35:28  europe\L190409
+ * Revision 1.34  2007-12-10 10:00:02  europe\L190409
+ * added monitoring
+ *
+ * Revision 1.33  2007/10/10 09:35:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Direct copy from Ibis-EJB:
  * spring enabled version
  *
@@ -104,6 +107,10 @@ import java.util.Vector;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.errormessageformatters.ErrorMessageFormatter;
+import nl.nn.adapterframework.monitoring.EventTypeEnum;
+import nl.nn.adapterframework.monitoring.IMonitorAdapter;
+import nl.nn.adapterframework.monitoring.MonitorAdapterFactory;
+import nl.nn.adapterframework.monitoring.SeverityEnum;
 import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
@@ -164,7 +171,7 @@ import org.springframework.core.task.TaskExecutor;
  */
 
 public class Adapter implements IAdapter, NamedBean {
-	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.33 $ $Date: 2007-10-10 09:35:28 $";
+	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.34 $ $Date: 2007-12-10 10:00:02 $";
 	private Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -199,6 +206,8 @@ public class Adapter implements IAdapter, NamedBean {
 	 */
 	private int numOfMessagesInProcess = 0;
     
+	private IMonitorAdapter monitorAdapter=null;
+
     
     private TaskExecutor taskExecutor;
     
@@ -247,6 +256,7 @@ public class Adapter implements IAdapter, NamedBean {
 				}
 
 			}
+			monitorAdapter=MonitorAdapterFactory.getMonitorAdapter();
 			configurationSucceeded = true;
 		}
 		catch (ConfigurationException e) {
@@ -268,8 +278,14 @@ public class Adapter implements IAdapter, NamedBean {
 	protected void error(String msg, Throwable t) {
 		log.error("Adapter [" + getName() + "] "+msg, t);
 		getMessageKeeper().add("ERROR: " + msg+": "+t.getMessage());
+		fireMonitorEvent(EventTypeEnum.TECHNICAL,SeverityEnum.WARNING, msg+": "+t.getMessage());
 	}
 
+	protected void fireMonitorEvent(EventTypeEnum eventType, SeverityEnum severity, String message) {
+		if (monitorAdapter!=null) {
+			monitorAdapter.fireEvent(getName(), eventType, severity, message);
+		}
+	}
 	
 	/**
 	 * Increase the number of messages in process
