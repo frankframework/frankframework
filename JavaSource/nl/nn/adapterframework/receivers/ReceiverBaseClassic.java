@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBaseClassic.java,v $
- * Revision 1.4  2007-11-23 14:18:31  europe\L190409
+ * Revision 1.5  2007-12-10 10:16:40  europe\L190409
+ * fixed clearing of retryInterval
+ *
+ * Revision 1.4  2007/11/23 14:18:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * progagate transacted attribute to Jms and Jdbc Listeners
  *
  * Revision 1.3  2007/10/23 13:07:35  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
@@ -316,7 +319,7 @@ import org.apache.log4j.Logger;
  * @since 4.2
  */
 public class ReceiverBaseClassic implements IReceiver, IReceiverStatistics, Runnable, IMessageHandler, IbisExceptionListener, HasSender, TracingEventNumbers {
-	public static final String version="$RCSfile: ReceiverBaseClassic.java,v $ $Revision: 1.4 $ $Date: 2007-11-23 14:18:31 $";
+	public static final String version="$RCSfile: ReceiverBaseClassic.java,v $ $Revision: 1.5 $ $Date: 2007-12-10 10:16:40 $";
 	protected Logger log = LogUtil.getLogger(this);
  
  	public static final String RCV_SHUTDOWN_MONITOR_EVENT_MSG ="RCVCLOSED Ibis Receiver shut down";
@@ -378,7 +381,7 @@ public class ReceiverBaseClassic implements IReceiver, IReceiverStatistics, Runn
 
 	int retryInterval=1;
 	
-	IMonitorAdapter monitorAdapter=null;
+	private IMonitorAdapter monitorAdapter=null;
     
 	protected String getLogPrefix() {
 		return "Receiver ["+getName()+"] "; 
@@ -491,6 +494,7 @@ public class ReceiverBaseClassic implements IReceiver, IReceiverStatistics, Runn
 			log.error(
 				"Receiver [" + getName()+ "]: error closing connection", e);
 		}
+		fireMonitorEvent(EventTypeEnum.TECHNICAL,SeverityEnum.CRITICAL,RCV_SHUTDOWN_MONITOR_EVENT_MSG);
 		runState.setRunState(RunStateEnum.STOPPED);
 		info("Receiver [" + getName() + "] stopped");
 	}
@@ -762,8 +766,8 @@ public class ReceiverBaseClassic implements IReceiver, IReceiverStatistics, Runn
 							synchronized (listener) {
 								if (retryInterval > RCV_SUSPENSION_MESSAGE_THRESHOLD) {
 									fireMonitorEvent(EventTypeEnum.CLEARING,SeverityEnum.HARMLESS,RCV_SUSPENDED_MONITOR_EVENT_MSG);
-									retryInterval=1;
 								}
+								retryInterval=1;
 							}
 						} catch (Exception e) {
 							if (ONERROR_CONTINUE.equalsIgnoreCase(getOnError())) {
