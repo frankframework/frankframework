@@ -1,6 +1,9 @@
 /*
  * $Log: JtaUtil.java,v $
- * Revision 1.14  2007-11-21 13:18:06  europe\L190409
+ * Revision 1.15  2007-12-10 10:23:12  europe\L190409
+ * removed some functions
+ *
+ * Revision 1.14  2007/11/21 13:18:06  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added setRollBackOnly
  *
  * Revision 1.13  2007/08/10 11:22:29  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -49,16 +52,18 @@ package nl.nn.adapterframework.util;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.transaction.NotSupportedException;
 import javax.transaction.Status;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
-import javax.transaction.TransactionManager;
 import javax.transaction.UserTransaction;
 
-import nl.nn.adapterframework.core.TransactionException;
-
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
 import org.apache.log4j.Logger;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.jta.JtaTransactionObject;
+import org.springframework.transaction.support.DefaultTransactionStatus;
 
 /**
  * Utility functions for JTA 
@@ -67,7 +72,7 @@ import org.apache.log4j.Logger;
  * @since  4.1
  */
 public class JtaUtil {
-	public static final String version="$RCSfile: JtaUtil.java,v $ $Revision: 1.14 $ $Date: 2007-11-21 13:18:06 $";
+	public static final String version="$RCSfile: JtaUtil.java,v $ $Revision: 1.15 $ $Date: 2007-12-10 10:23:12 $";
 	private static Logger log = LogUtil.getLogger(JtaUtil.class);
 	
 	private static final String USERTRANSACTION_URL1_KEY="jta.userTransactionUrl1";
@@ -120,16 +125,16 @@ public class JtaUtil {
 		}   
 	}
 
-	/**
-	 * Convenience function for {@link #displayTransactionStatus(int status)}
-	 */
-	public static String displayTransactionStatus(Transaction tx) {
-		try {
-			return displayTransactionStatus(tx.getStatus());
-		} catch (Exception e) {
-			return "exception obtaining transaction status from transaction ["+tx+"]: "+e.getMessage();
-		}
-	}
+//	/**
+//	 * Convenience function for {@link #displayTransactionStatus(int status)}
+//	 */
+//	public static String displayTransactionStatus(Transaction tx) {
+//		try {
+//			return displayTransactionStatus(tx.getStatus());
+//		} catch (Exception e) {
+//			return "exception obtaining transaction status from transaction ["+tx+"]: "+e.getMessage();
+//		}
+//	}
 	/**
 	 * Convenience function for {@link #displayTransactionStatus(int status)}
 	 */
@@ -141,16 +146,37 @@ public class JtaUtil {
 		}
 	}
 	
-	/**
-	 * Convenience function for {@link #displayTransactionStatus(int status)}
-	 */
-	public static String displayTransactionStatus(TransactionManager tm) {
-		try {
-			return displayTransactionStatus(tm.getStatus());
-		} catch (Exception e) {
-			return "exception obtaining transaction status from transactionmanager ["+tm+"]: "+e.getMessage();
-		}
-	}
+//	/**
+//	 * Convenience function for {@link #displayTransactionStatus(int status)}
+//	 */
+//	public static String displayTransactionStatus(TransactionManager tm) {
+//		try {
+//			return displayTransactionStatus(tm.getStatus());
+//		} catch (Exception e) {
+//			return "exception obtaining transaction status from transactionmanager ["+tm+"]: "+e.getMessage();
+//		}
+//	}
+
+//	/**
+//	 * Convenience function for {@link #displayTransactionStatus(int status)}
+//	 */
+//	public static String displayTransactionStatus(TransactionStatus txStatus) {
+//		String result="";
+//		if (txStatus instanceof DefaultTransactionStatus) {
+//			Object tr = ((DefaultTransactionStatus)txStatus).getTransaction();
+//			if (tr instanceof JtaTransactionObject) {
+//				JtaTransactionObject jto=(JtaTransactionObject)tr;
+//				UserTransaction utr=jto.getUserTransaction();
+//				result= "transaction: "+ToStringBuilder.reflectionToString(utr, ToStringStyle.MULTI_LINE_STYLE);;
+//			} else {
+//				result= "transaction: "+ToStringBuilder.reflectionToString(tr, ToStringStyle.MULTI_LINE_STYLE);;
+//			}
+//		} else { 
+//			result= "txStatus: "+ToStringBuilder.reflectionToString(txStatus, ToStringStyle.MULTI_LINE_STYLE);
+//		}
+//		return result;		
+//	}
+
 
 	/**
 	 * Convenience function for {@link #displayTransactionStatus(int status)}
@@ -179,14 +205,14 @@ public class JtaUtil {
 	/**
 	 * Returns a UserTransaction object, that is used by Receivers and PipeLines to demarcate transactions. 
 	 */
-	public static UserTransaction getUserTransaction(Context ctx, String userTransactionUrl) throws NamingException {
-	
-		if (utx == null) {
-			log.debug("looking up UserTransaction ["+userTransactionUrl+"] in context ["+ctx.toString()+"]");
-			utx = (UserTransaction)ctx.lookup(userTransactionUrl);
-		}
-		return utx;
-	}
+//	public static UserTransaction getUserTransaction(Context ctx, String userTransactionUrl) throws NamingException {
+//	
+//		if (utx == null) {
+//			log.debug("looking up UserTransaction ["+userTransactionUrl+"] in context ["+ctx.toString()+"]");
+//			utx = (UserTransaction)ctx.lookup(userTransactionUrl);
+//		}
+//		return utx;
+//	}
 
 	/**
 	 * Returns a UserTransaction object, that is used by Receivers and PipeLines to demarcate transactions. 
@@ -232,46 +258,46 @@ public class JtaUtil {
 		return true;
 	}
 
-	public static boolean isolationRequired(int transactionAttribute) throws SystemException, TransactionException, NamingException {
-		if (transactionAttribute!=TRANSACTION_ATTRIBUTE_REQUIRES_NEW &&
-		    transactionAttribute!=TRANSACTION_ATTRIBUTE_NOT_SUPPORTED) {
-		    	return false;
-		}
-		if (!transactionStateCompatible(transactionAttribute)) {
-			throw new TransactionException("transaction attribute ["+getTransactionAttributeString(transactionAttribute)+"] not compatible with state ["+displayTransactionStatus(utx)+"]");
-		}
-		UserTransaction utx = getUserTransaction();
-		return inTransaction(utx) &&
-				(transactionAttribute==TRANSACTION_ATTRIBUTE_REQUIRES_NEW ||
-				 transactionAttribute==TRANSACTION_ATTRIBUTE_NOT_SUPPORTED);
-	}
+//	public static boolean isolationRequired(int transactionAttribute) throws SystemException, TransactionException, NamingException {
+//		if (transactionAttribute!=TRANSACTION_ATTRIBUTE_REQUIRES_NEW &&
+//		    transactionAttribute!=TRANSACTION_ATTRIBUTE_NOT_SUPPORTED) {
+//		    	return false;
+//		}
+//		if (!transactionStateCompatible(transactionAttribute)) {
+//			throw new TransactionException("transaction attribute ["+getTransactionAttributeString(transactionAttribute)+"] not compatible with state ["+displayTransactionStatus(utx)+"]");
+//		}
+//		UserTransaction utx = getUserTransaction();
+//		return inTransaction(utx) &&
+//				(transactionAttribute==TRANSACTION_ATTRIBUTE_REQUIRES_NEW ||
+//				 transactionAttribute==TRANSACTION_ATTRIBUTE_NOT_SUPPORTED);
+//	}
 
-	public static boolean newTransactionRequired(int transactionAttribute) throws SystemException, TransactionException, NamingException {
-		if (!transactionStateCompatible(transactionAttribute)) {
-			throw new TransactionException("transaction attribute ["+getTransactionAttributeString(transactionAttribute)+"] not compatible with state ["+displayTransactionStatus(utx)+"]");
-		}
-		if (transactionAttribute==TRANSACTION_ATTRIBUTE_REQUIRED) {
-			UserTransaction utx = getUserTransaction();
-			return !inTransaction(utx);
-		}
-		return transactionAttribute==TRANSACTION_ATTRIBUTE_REQUIRES_NEW;
-	}
+//	public static boolean newTransactionRequired(int transactionAttribute) throws SystemException, TransactionException, NamingException {
+//		if (!transactionStateCompatible(transactionAttribute)) {
+//			throw new TransactionException("transaction attribute ["+getTransactionAttributeString(transactionAttribute)+"] not compatible with state ["+displayTransactionStatus(utx)+"]");
+//		}
+//		if (transactionAttribute==TRANSACTION_ATTRIBUTE_REQUIRED) {
+//			UserTransaction utx = getUserTransaction();
+//			return !inTransaction(utx);
+//		}
+//		return transactionAttribute==TRANSACTION_ATTRIBUTE_REQUIRES_NEW;
+//	}
 
-	private static boolean stateEvaluationRequired(int transactionAttribute) {
-		return transactionAttribute>=0 && 
-			   transactionAttribute!=TRANSACTION_ATTRIBUTE_REQUIRES_NEW &&
-			   transactionAttribute!=TRANSACTION_ATTRIBUTE_SUPPORTS;
-	}
+//	private static boolean stateEvaluationRequired(int transactionAttribute) {
+//		return transactionAttribute>=0 && 
+//			   transactionAttribute!=TRANSACTION_ATTRIBUTE_REQUIRES_NEW &&
+//			   transactionAttribute!=TRANSACTION_ATTRIBUTE_SUPPORTS;
+//	}
 	
-	public static void startTransaction() throws NamingException, NotSupportedException, SystemException {
-		log.debug("starting new transaction");
-		utx=getUserTransaction();
-		utx.begin();
-	}
-
-	public static void finishTransaction() throws NamingException, IllegalStateException, SecurityException, SystemException {
-		finishTransaction(false);
-	}
+//	public static void startTransaction() throws NamingException, NotSupportedException, SystemException {
+//		log.debug("starting new transaction");
+//		utx=getUserTransaction();
+//		utx.begin();
+//	}
+//
+//	public static void finishTransaction() throws NamingException, IllegalStateException, SecurityException, SystemException {
+//		finishTransaction(false);
+//	}
 
 	public static void setRollBackOnly() throws NamingException, IllegalStateException, SystemException {
 		UserTransaction utx=JtaUtil.getUserTransaction();
@@ -281,36 +307,36 @@ public class JtaUtil {
 		}
 	}
 	
-	public static void finishTransaction(boolean rollbackonly) throws NamingException, IllegalStateException, SecurityException, SystemException {
-		utx=getUserTransaction();
-		try {
-			if (inTransaction(utx) && !rollbackonly) {
-				log.debug("committing transaction");
-				utx.commit();
-			} else {
-				log.debug("rolling back transaction");
-				utx.rollback();
-			}
-		} catch (Throwable t1) {
-			try {
-				int currentStatus=-1;
-				try {
-					currentStatus=utx.getStatus();
-				} catch (Throwable t) {
-					log.debug("caught exception obtaining transaction status: "+ t.getMessage());
-				}
-				if (currentStatus != Status.STATUS_COMMITTED &&
-					currentStatus != Status.STATUS_NO_TRANSACTION &&
-					currentStatus != Status.STATUS_ROLLEDBACK &&
-					currentStatus != Status.STATUS_ROLLING_BACK) {
-						log.warn("current status ["+displayTransactionStatus(currentStatus)+"], trying to roll back transaction after exception ",t1);
-						utx.rollback();
-				} else {
-					log.info("current status ["+displayTransactionStatus(currentStatus)+"], will not issue rollback command");
-				}
-			} catch (Throwable t2) {
-				log.warn("exception rolling back transaction",t2);
-			}
-		}		
-	}
+//	public static void finishTransaction(boolean rollbackonly) throws NamingException, IllegalStateException, SecurityException, SystemException {
+//		utx=getUserTransaction();
+//		try {
+//			if (inTransaction(utx) && !rollbackonly) {
+//				log.debug("committing transaction");
+//				utx.commit();
+//			} else {
+//				log.debug("rolling back transaction");
+//				utx.rollback();
+//			}
+//		} catch (Throwable t1) {
+//			try {
+//				int currentStatus=-1;
+//				try {
+//					currentStatus=utx.getStatus();
+//				} catch (Throwable t) {
+//					log.debug("caught exception obtaining transaction status: "+ t.getMessage());
+//				}
+//				if (currentStatus != Status.STATUS_COMMITTED &&
+//					currentStatus != Status.STATUS_NO_TRANSACTION &&
+//					currentStatus != Status.STATUS_ROLLEDBACK &&
+//					currentStatus != Status.STATUS_ROLLING_BACK) {
+//						log.warn("current status ["+displayTransactionStatus(currentStatus)+"], trying to roll back transaction after exception ",t1);
+//						utx.rollback();
+//				} else {
+//					log.info("current status ["+displayTransactionStatus(currentStatus)+"], will not issue rollback command");
+//				}
+//			} catch (Throwable t2) {
+//				log.warn("exception rolling back transaction",t2);
+//			}
+//		}		
+//	}
 }
