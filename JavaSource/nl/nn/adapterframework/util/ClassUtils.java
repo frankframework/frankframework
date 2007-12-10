@@ -1,6 +1,9 @@
 /*
  * $Log: ClassUtils.java,v $
- * Revision 1.13  2007-09-13 12:39:05  europe\L190409
+ * Revision 1.14  2007-12-10 10:22:30  europe\L190409
+ * void NPE in classOf
+ *
+ * Revision 1.13  2007/09/13 12:39:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * cosmetic improvement
  *
  * Revision 1.12  2007/09/10 11:20:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -50,7 +53,7 @@ import org.apache.log4j.Logger;
  *
  */
 public class ClassUtils {
-	public static final String version = "$RCSfile: ClassUtils.java,v $ $Revision: 1.13 $ $Date: 2007-09-13 12:39:05 $";
+	public static final String version = "$RCSfile: ClassUtils.java,v $ $Revision: 1.14 $ $Date: 2007-12-10 10:22:30 $";
 	private static Logger log = LogUtil.getLogger(ClassUtils.class);
 
     /**
@@ -311,6 +314,9 @@ public class ClassUtils {
  	 * returns the classname of the object, without the pacakge name. 
  	 */   
 	public static String nameOf(Object o) {
+		if (o==null) {
+			return "<null>";
+		}
 		String name=o.getClass().getName();
 		int pos=name.lastIndexOf('.');
 		if (pos<0) {
