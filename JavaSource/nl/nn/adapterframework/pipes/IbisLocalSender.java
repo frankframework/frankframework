@@ -1,6 +1,9 @@
 /*
  * $Log: IbisLocalSender.java,v $
- * Revision 1.18  2007-11-22 15:18:07  europe\L190409
+ * Revision 1.19  2007-12-10 10:10:51  europe\L190409
+ * no transactions in IsolatedServiceCaller
+ *
+ * Revision 1.18  2007/11/22 15:18:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved javadoc
  *
  * Revision 1.17  2007/09/10 11:19:39  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -135,7 +138,7 @@ import java.util.HashMap;
  * @since  4.2
  */
 public class IbisLocalSender extends SenderWithParametersBase implements HasPhysicalDestination {
-	public static final String version="$RCSfile: IbisLocalSender.java,v $ $Revision: 1.18 $ $Date: 2007-11-22 15:18:07 $";
+	public static final String version="$RCSfile: IbisLocalSender.java,v $ $Revision: 1.19 $ $Date: 2007-12-10 10:10:51 $";
 	
 	private String name;
 	private String serviceName;
@@ -211,10 +214,10 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 				if (isIsolated()) {
 					if (isSynchronous()) {
 						log.debug(getLogPrefix()+"calling service ["+getServiceName()+"] in separate Thread");
-						return IsolatedServiceCaller.callServiceIsolated(getServiceName(), correlationID, message, context, false, false);
+						return IsolatedServiceCaller.callServiceIsolated(getServiceName(), correlationID, message, context, false);
 					} else {
 						log.debug(getLogPrefix()+"calling service ["+getServiceName()+"] in asynchronously");
-						IsolatedServiceCaller.callServiceAsynchronous(getServiceName(), correlationID, message, context, false, false);
+						IsolatedServiceCaller.callServiceAsynchronous(getServiceName(), correlationID, message, context, false);
 						return message;
 					}
 				} else {
@@ -240,10 +243,10 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 				if (isIsolated()) {
 					if (isSynchronous()) {
 						log.debug(getLogPrefix()+"calling JavaListener ["+getJavaListener()+"] in separate Thread");
-						return IsolatedServiceCaller.callServiceIsolated(getJavaListener(), correlationID, message, context, true, false);
+						return IsolatedServiceCaller.callServiceIsolated(getJavaListener(), correlationID, message, context, true);
 					} else {
 						log.debug(getLogPrefix()+"calling JavaListener ["+getJavaListener()+"] in asynchronously");
-						IsolatedServiceCaller.callServiceAsynchronous(getJavaListener(), correlationID, message, context, true, false);
+						IsolatedServiceCaller.callServiceAsynchronous(getJavaListener(), correlationID, message, context, true);
 						return message;
 					}
 				} else {
