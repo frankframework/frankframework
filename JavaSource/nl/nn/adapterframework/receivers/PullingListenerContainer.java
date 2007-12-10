@@ -1,6 +1,9 @@
 /*
  * $Log: PullingListenerContainer.java,v $
- * Revision 1.5  2007-10-18 15:56:11  europe\L190409
+ * Revision 1.6  2007-12-10 10:15:22  europe\L190409
+ * fix handling of transactions in case of exceptions
+ *
+ * Revision 1.5  2007/10/18 15:56:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added pollInterval handling
  *
  * Revision 1.4  2007/10/17 10:49:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -21,11 +24,16 @@ import java.util.Map;
 
 import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.monitoring.EventTypeEnum;
+import nl.nn.adapterframework.monitoring.SeverityEnum;
 import nl.nn.adapterframework.util.Counter;
+import nl.nn.adapterframework.util.JtaUtil;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.Semaphore;
 import nl.nn.adapterframework.util.TracingUtil;
 
+import org.apache.log4j.Logger;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
@@ -39,6 +47,8 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  * @version Id
  */
 public class PullingListenerContainer implements Runnable {
+	protected Logger log = LogUtil.getLogger(this);
+
     private final static TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
 
     private ReceiverBaseSpring receiver;
@@ -68,7 +78,7 @@ public class PullingListenerContainer implements Runnable {
 	 * </ul>
 	 */
     public void run() {
-        threadsRunning.increase();
+		threadsRunning.increase(); 
         Thread.currentThread().setName(receiver.getName()+"-listener["+threadsRunning.getValue()+"]");
         IPullingListener listener = null;
         Map threadContext = null;
@@ -96,80 +106,73 @@ public class PullingListenerContainer implements Runnable {
                 Object rawMessage = null;
                 TransactionStatus txStatus = null;
                 try {
-                    if (permissionToGo && receiver.isInRunState(RunStateEnum.STARTED)) {
-                        try {
-                            if (receiver.isTransacted()) {
-                                txStatus = txManager.getTransaction(TXNEW);
-                            }
-                            rawMessage = listener.getRawMessage(threadContext);
-                            synchronized (listener) {
-                                retryInterval = 1;
-                            }
-                        } catch (Exception e) {
-                            if (receiver.isOnErrorStop()) {
-                                long currentInterval;
-                                synchronized (listener) {
-                                    currentInterval = retryInterval;
-                                    retryInterval = retryInterval * 2;
-                                    if (retryInterval > 3600) {
-                                        retryInterval = 3600;
-                                    }
-                                }
-                                receiver.error("caught Exception retrieving message, will continue retrieving messages in [" + currentInterval + "] seconds", e);
-                                while (receiver.isInRunState(RunStateEnum.STARTED) && currentInterval-- > 0) {
-                                    try {
-                                        Thread.sleep(1000);
-                                    } catch (Exception e2) {
-                                        receiver.error("sleep interupted", e2);
-                                        receiver.stopRunning();
-                                    }
-                                }
-                            } else {
-                                receiver.error("stopping receiver after exception in retrieving message", e);
-                                receiver.stopRunning();
-                            }
-                        }
-                    }
-                } finally {
-                    if (pollToken != null) {
-                        pollToken.release();
-                    }
-                }
-                if (rawMessage != null) {
-                    try {
-                        TracingUtil.beforeEvent(this);
-                        startProcessingTimestamp = System.currentTimeMillis();
-                        try {
-                            receiver.processRawMessage(listener, rawMessage, threadContext, finishProcessingTimestamp - startProcessingTimestamp);
-                            if (txStatus != null) {
-                                txManager.commit(txStatus);
-                            }
-                        } catch (Exception e) {
-                            TracingUtil.exceptionEvent(this);
-                            if (txStatus != null && !txStatus.isCompleted()) {
-                                txManager.rollback(txStatus);
-                            }
-                            if (receiver.isOnErrorStop()) {
-                                receiver.error("caught Exception processing message, will continue processing next message", e);
-                            } else {
-                                receiver.error("stopping receiver after exception in processing message", e);
-                                receiver.stopRunning();
-                            }
-                        }
-                        finishProcessingTimestamp = System.currentTimeMillis();
-                    } finally {
-                        TracingUtil.afterEvent(this);
-                    }
-                } else {
-                    if (txStatus != null && !txStatus.isCompleted()) {
-                        txManager.rollback(txStatus);
-                    }
-					if (receiver.getPollInterval()>0) {
-						for (int i=0; i<receiver.getPollInterval() && receiver.isInRunState(RunStateEnum.STARTED); i++) {
-							Thread.sleep(1000);
+					try {
+						if (permissionToGo && receiver.isInRunState(RunStateEnum.STARTED)) {
+							try {
+								if (receiver.isTransacted()) {
+									txStatus = txManager.getTransaction(TXNEW);
+//									log.debug("started transaction "+JtaUtil.displayTransactionStatus(txStatus));
+								}
+								rawMessage = listener.getRawMessage(threadContext);
+								resetRetryInterval();
+							} catch (Exception e) {
+								if (txStatus!=null) {
+									txManager.rollback(txStatus);
+								}
+								if (receiver.isOnErrorStop()) {
+									increaseRetryIntervalAndWait(e);
+								} else {
+									receiver.error("stopping receiver after exception in retrieving message", e);
+									receiver.stopRunning();
+								}
+							}
+						}
+					} finally {
+						if (pollToken != null) {
+							pollToken.release();
 						}
 					}
-
+					if (rawMessage != null) {
+						// found a message, process it
+						try {
+							TracingUtil.beforeEvent(this);
+							startProcessingTimestamp = System.currentTimeMillis();
+							try {
+								receiver.processRawMessage(listener, rawMessage, threadContext, finishProcessingTimestamp - startProcessingTimestamp);
+								if (txStatus != null) {
+									txManager.commit(txStatus);
+								}
+							} catch (Exception e) {
+								TracingUtil.exceptionEvent(this);
+								if (txStatus != null && !txStatus.isCompleted()) {
+									txManager.rollback(txStatus);
+								}
+								if (receiver.isOnErrorStop()) {
+									receiver.error("caught Exception processing message, will continue processing next message", e);
+								} else {
+									receiver.error("stopping receiver after exception in processing message", e);
+									receiver.stopRunning();
+								}
+							}
+							finishProcessingTimestamp = System.currentTimeMillis();
+						} finally {
+							TracingUtil.afterEvent(this);
+						}
+					} else {
+						// no message found, cleanup
+					   if (txStatus != null && !txStatus.isCompleted()) {
+							txManager.rollback(txStatus);
+						}
+						if (receiver.getPollInterval()>0) {
+							for (int i=0; i<receiver.getPollInterval() && receiver.isInRunState(RunStateEnum.STARTED); i++) {
+								Thread.sleep(1000);
+							}
+						}
+					}
+                } finally  {
+					if (txStatus != null && !txStatus.isCompleted()) {
+						 txManager.rollback(txStatus);
+					 }
                 }
             }
         } catch (Throwable e) {
@@ -185,6 +188,7 @@ public class PullingListenerContainer implements Runnable {
             long stillRunning = threadsRunning.decrease();
             if (stillRunning > 0) {
 				receiver.info("a thread of Receiver [" + receiver.getName() + "] exited, [" + stillRunning + "] are still running");
+				receiver.fireMonitorEvent(EventTypeEnum.TECHNICAL,SeverityEnum.WARNING,"a thread shut down, ["+stillRunning+"] are still running");
                 return;
             }
 			receiver.info("the last thread of Receiver [" + receiver.getName() + "] exited, cleaning up");
@@ -192,6 +196,39 @@ public class PullingListenerContainer implements Runnable {
         }
     }
 
+	private void resetRetryInterval() {
+		synchronized (receiver) {
+			if (retryInterval > receiver.RCV_SUSPENSION_MESSAGE_THRESHOLD) {
+				receiver.fireMonitorEvent(EventTypeEnum.CLEARING,SeverityEnum.HARMLESS,receiver.RCV_SUSPENDED_MONITOR_EVENT_MSG);
+			}
+			retryInterval = 1;
+		}
+	}
+
+	private void increaseRetryIntervalAndWait(Throwable t) {
+		long currentInterval;
+		synchronized (receiver) {
+			currentInterval = retryInterval;
+			retryInterval = retryInterval * 2;
+			if (retryInterval > 3600) {
+				retryInterval = 3600;
+			}
+		}
+		receiver.error("caught Exception retrieving message, will continue retrieving messages in [" + currentInterval + "] seconds", t);
+		if (currentInterval*2 > receiver.RCV_SUSPENSION_MESSAGE_THRESHOLD) {
+			receiver.fireMonitorEvent(EventTypeEnum.TECHNICAL,SeverityEnum.WARNING,receiver.RCV_SUSPENDED_MONITOR_EVENT_MSG);
+		}
+		while (receiver.isInRunState(RunStateEnum.STARTED) && currentInterval-- > 0) {
+			try {
+				Thread.sleep(1000);
+			} catch (Exception e2) {
+				receiver.error("sleep interupted", e2);
+				receiver.stopRunning();
+			}
+		}
+	}
+	
+	
     public void setReceiver(ReceiverBaseSpring receiver) {
         this.receiver = receiver;
     }
