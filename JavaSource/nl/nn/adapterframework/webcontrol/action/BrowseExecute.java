@@ -1,6 +1,9 @@
 /*
  * $Log: BrowseExecute.java,v $
- * Revision 1.5  2007-11-22 09:15:32  europe\L190409
+ * Revision 1.6  2007-12-10 10:25:32  europe\L190409
+ * rework
+ *
+ * Revision 1.5  2007/11/22 09:15:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * switch to Spring transaction manager
  *
  * Revision 1.4.2.1  2007/10/16 14:18:09  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
@@ -28,13 +31,13 @@ package nl.nn.adapterframework.webcontrol.action;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.RunStateEnum;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.struts.action.ActionError;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
@@ -46,79 +49,89 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  * @since   4.3
  */
 public class BrowseExecute extends Browse {
-	public static final String version="$RCSfile: BrowseExecute.java,v $ $Revision: 1.5 $ $Date: 2007-11-22 09:15:32 $";
+	public static final String version="$RCSfile: BrowseExecute.java,v $ $Revision: 1.6 $ $Date: 2007-12-10 10:25:32 $";
     
     protected static final TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
     
-	protected void performAction(Adapter adapter, ReceiverBase receiver, String action, IMessageBrowser mb, String messageId) {
-		TransactionStatus txStatus = null;
+	protected void performAction(Adapter adapter, ReceiverBase receiver, String action, IMessageBrowser mb, String messageId, String selected[]) {
         PlatformTransactionManager transactionManager = ibisManager.getTransactionManager();
-        
-        if ("deletemessage".equalsIgnoreCase(action)) {
-			if (StringUtils.isNotEmpty(messageId)) {
-				try {
-					txStatus = transactionManager.getTransaction(TXNEW);
-                    mb.deleteMessage(messageId);
-                    transactionManager.commit(txStatus);
-				} catch (Throwable e) {
-                    if (txStatus != null && !txStatus.isCompleted()) {
-                        try {
-                            transactionManager.rollback(txStatus);
-                        } catch (TransactionException te) {
-                            log.error("Error rolling back transaction after original error, transaction rollback error:", te);
-                        }
-                    }
-					log.error("Error occurred performing action '" + action + "'", e);
-					errors.add("",
-						new ActionError(
-							"errors.generic",
-							"error occured deleting message:" + e.getMessage()));
-				}
-			}
-		} 
+		log.debug("retrieved transactionManager ["+ClassUtils.nameOf(transactionManager)+"]["+transactionManager+"] from ibismanager ["+ibisManager+"]");
 
-		if ("resendmessage".equalsIgnoreCase(action)) {
-			if (StringUtils.isNotEmpty(messageId)) {
-				try {
-					txStatus = transactionManager.getTransaction(TXNEW);
-					Object msg = mb.getMessage(messageId);
-					if (msg==null) {
-						errors.add("",
-							new ActionError(
-								"errors.generic",
-								"did not retrieve message" ));
-                        transactionManager.rollback(txStatus);
-					} else {
-						if (adapter.getRunState()!=RunStateEnum.STARTED) {
-							errors.add("",
-								new ActionError(
-									"errors.generic",
-									"message not processed: adapter not open" ));
-                            transactionManager.rollback(txStatus);
-						} else {
-							receiver.processRawMessage(receiver.getListener(),msg,null,-1);
-                            if (!txStatus.isCompleted()) {
-                                transactionManager.commit(txStatus);
-                            }
-						}
-					}
-				} catch (Throwable e) {
-                    if (txStatus != null && !txStatus.isCompleted()) {
-                        try {
-                            transactionManager.rollback(txStatus);
-                        } catch (TransactionException te) {
-                            log.error("Error rolling back transaction after original error, transaction rollback error:", te);
-                        }
-                    }
-					log.error("Error occurred performing action '" + action + "'", e);
-					errors.add("",
-						new ActionError(
-							"errors.generic",
-							"error occured sending message:" + e.getMessage()));
+		log.debug("performing action ["+action+"]");
+		try {
+       
+	        if ("deletemessage".equalsIgnoreCase(action)) {
+				if (StringUtils.isNotEmpty(messageId)) {
+					deleteMessage(mb,messageId,transactionManager);
+				}
+			} 
+	
+			if ("delete selected".equalsIgnoreCase(action)) {
+				for(int i=0; i<selected.length; i++) {
+					deleteMessage(mb,selected[i],transactionManager);
 				}
 			}
-		} 
+	
+			if ("resendmessage".equalsIgnoreCase(action)) {
+				if (StringUtils.isNotEmpty(messageId)) {
+					resendMessage(adapter,receiver, mb, messageId, transactionManager);
+				}
+			}
+			
+			if ("resend selected".equalsIgnoreCase(action)) {
+				for(int i=0; i<selected.length; i++) {
+					resendMessage(adapter,receiver, mb, selected[i], transactionManager);
+				}
+			}
+ 
+		} catch (Throwable e) {
+			log.error("Error occurred performing action [" + action + "]", e);
+		}
 	}
 
+	private void deleteMessage(IMessageBrowser mb, String messageId, PlatformTransactionManager transactionManager) throws Throwable {
+		TransactionStatus txStatus = null;
+		try {
+			txStatus = transactionManager.getTransaction(TXNEW);
+			mb.deleteMessage(messageId);
+		} catch (Throwable e) {
+			txStatus.setRollbackOnly();
+			error(", ", "errors.generic", "error occured deleting message", e);
+			throw e;
+		} finally { 
+			transactionManager.commit(txStatus);
+		}
+	}
+
+	private void resendMessage(Adapter adapter, ReceiverBase receiver, IMessageBrowser mb, String messageId, PlatformTransactionManager transactionManager) throws Throwable {
+		TransactionStatus txStatus = null;
+		try {
+			txStatus = transactionManager.getTransaction(TXNEW);
+			Object msg = mb.getMessage(messageId);
+			if (msg==null) {
+				error(", ", "errors.generic", "did not retrieve message", null);
+				txStatus.setRollbackOnly();
+			} else {
+				if (adapter.getRunState()!=RunStateEnum.STARTED) {
+					error(", ", "errors.generic", "message not processed: adapter not open", null);
+					txStatus.setRollbackOnly();
+				} else {
+					receiver.processRawMessage(receiver.getListener(),msg,null,-1);
+				}
+			}
+		} catch (Throwable e) {
+			txStatus.setRollbackOnly();
+			error(", ", "errors.generic", "error occured resending message", e);
+		} finally { 
+			transactionManager.commit(txStatus);
+		}
+	}
+
+	private void error(String key, String category, String message, Throwable t) {
+		if (t!=null) {
+			message+=": "+ClassUtils.nameOf(t)+" "+t.getMessage();
+		}
+		errors.add(key, new ActionError(category, message));
+	}
 
 }
