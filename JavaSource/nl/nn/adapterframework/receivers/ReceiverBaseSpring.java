@@ -1,6 +1,10 @@
 /*
  * $Log: ReceiverBaseSpring.java,v $
- * Revision 1.7  2007-11-23 14:18:31  europe\L190409
+ * Revision 1.8  2007-12-10 10:20:57  europe\L190409
+ * added monitoring
+ * fixed poisonMessage handling
+ *
+ * Revision 1.7  2007/11/23 14:18:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * progagate transacted attribute to Jms and Jdbc Listeners
  *
  * Revision 1.6  2007/11/22 13:36:53  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -212,12 +216,12 @@ import java.io.Serializable;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Map;
-import java.util.Iterator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.Map.Entry;
+import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.Map.Entry;
 
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
@@ -244,6 +248,10 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.jdbc.JdbcFacade;
 import nl.nn.adapterframework.jms.JMSFacade;
+import nl.nn.adapterframework.monitoring.EventTypeEnum;
+import nl.nn.adapterframework.monitoring.IMonitorAdapter;
+import nl.nn.adapterframework.monitoring.MonitorAdapterFactory;
+import nl.nn.adapterframework.monitoring.SeverityEnum;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Counter;
 import nl.nn.adapterframework.util.DomBuilderException;
@@ -340,13 +348,18 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  * @since 4.2
  */
 public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMessageHandler, IbisExceptionListener, HasSender, TracingEventNumbers, BeanFactoryAware {
-	private final static TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
-	private final static TransactionDefinition TXREQUIRED = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED);
-	private final static TransactionDefinition TXSUPPORTS = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_SUPPORTS);
     
-	public static final String version="$RCSfile: ReceiverBaseSpring.java,v $ $Revision: 1.7 $ $Date: 2007-11-23 14:18:31 $";
+	public static final String version="$RCSfile: ReceiverBaseSpring.java,v $ $Revision: 1.8 $ $Date: 2007-12-10 10:20:57 $";
 	protected Logger log = LogUtil.getLogger(this);
-    
+
+	public final static TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+	public final static TransactionDefinition TXREQUIRED = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED);
+	public final static TransactionDefinition TXSUPPORTS = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_SUPPORTS);
+ 
+	public static final String RCV_SHUTDOWN_MONITOR_EVENT_MSG ="RCVCLOSED Ibis Receiver shut down";
+	public static final String RCV_SUSPENDED_MONITOR_EVENT_MSG="RCVSUSPND Ibis Receiver operation suspended due to exceptions";
+	public static final int RCV_SUSPENSION_MESSAGE_THRESHOLD=600;
+   
 	private BeanFactory beanFactory;
 
 	private int pollInterval=0;
@@ -404,8 +417,11 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 	private int exceptionEvent=-1;
 
 	int retryInterval=1;
-    
+	private int poisonMessageIdCacheSize = 100;
+   
 	private PlatformTransactionManager txManager;
+
+	private IMonitorAdapter monitorAdapter=null;
     
 	/**
 	 * The thread-pool for spawning threads, injected by Spring
@@ -416,6 +432,7 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 	 * Map containing message-ids which are currently being processed.
 	 */
 	private Map messageRetryCounters = new HashMap();
+
 	/**
 	 * The cache for poison messages acts as a sort of poor-mans error
 	 * storage and is always available, even if an error-storage is not.
@@ -427,11 +444,10 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 	private LinkedHashMap poisonMessageIdCache = new LinkedHashMap() {
 
 		protected boolean removeEldestEntry(Entry eldest) {
-			return size() > poisonMessageIdCacheSize;
+			return size() > getPoisonMessageIdCacheSize();
 		}
         
 	};
-	private int poisonMessageIdCacheSize = 100;
     
 	private PipeLineSession createProcessingContext(String correlationId, Map threadContext, String messageId) {
 		PipeLineSession pipelineSession = new PipeLineSession();
@@ -452,28 +468,6 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 		}
 		return pipelineSession;
 	}
-    
-	private synchronized void cachePoisonMessageId(String messageId) {
-		poisonMessageIdCache.put(messageId, messageId);
-	}
-	private synchronized boolean isMessageIdInPoisonCache(String messageId) {
-		return poisonMessageIdCache.containsKey(messageId);
-	}
-    
-	private long getAndIncrementMessageRetryCount(String messageId) {
-		Counter retries;
-		synchronized (messageRetryCounters) {
-			retries = (Counter) messageRetryCounters.get(messageId);
-			if (retries == null) {
-				retries = new Counter(0);
-				messageRetryCounters.put(messageId, retries);
-				return 0L;
-			}
-		}
-		retries.increase();
-		return retries.getValue();
-	}
-
 	private TransactionStatus getTransactionForProcessing() throws ListenerException {
 		TransactionStatus txStatus;
 
@@ -513,17 +507,7 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 		}
 	}
     
-	private long removeMessageRetryCount(String messageId) {
-		synchronized (messageRetryCounters) {
-			Counter retries = (Counter) messageRetryCounters.get(messageId);
-			if (retries == null) {
-				return 0;
-			} else {
-				messageRetryCounters.remove(messageId);
-				return retries.getValue();
-			}
-		}
-	}
+    
     
 	protected String getLogPrefix() {
 		return "Receiver ["+getName()+"] "; 
@@ -576,6 +560,7 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 			throw new ListenerException(e);
 		}
 		getListener().open();
+		fireMonitorEvent(EventTypeEnum.CLEARING,SeverityEnum.HARMLESS,RCV_SHUTDOWN_MONITOR_EVENT_MSG);
 		if (getListener() instanceof IPullingListener){
 			// start all threads
 			if (getNumThreads() > 1) {
@@ -630,6 +615,7 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 				"Receiver [" + getName()+ "]: error closing connection", e);
 		}
 		runState.setRunState(RunStateEnum.STOPPED);
+		fireMonitorEvent(EventTypeEnum.TECHNICAL,SeverityEnum.CRITICAL,RCV_SHUTDOWN_MONITOR_EVENT_MSG);
 		info("Receiver [" + getName() + "] stopped");
 	}
 	 
@@ -794,7 +780,8 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 					}
 				}
 			}
-	
+
+			monitorAdapter=MonitorAdapterFactory.getMonitorAdapter();
 			if (adapter != null) {
 				adapter.getMessageKeeper().add("Receiver ["+getName()+"] initialization complete");
 			}
@@ -988,7 +975,7 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 		long startProcessingTimestamp = System.currentTimeMillis();
 		log.debug(getLogPrefix()+"received message with messageId ["+messageId+"] correlationId ["+correlationId+"]");
         
-		if (checkIfMessageInErrorStorage(messageId)) {
+		if (checkTryCount(messageId)) {
 			log.warn(getLogPrefix()+"received message with messageId [" +
 					messageId + "] which is already stored in error storage; aborting processing");
 			return result;
@@ -1035,6 +1022,7 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 						pipeLineResult = adapter.processMessageWithExceptions(correlationId, message, pipelineSession);
 						result=pipeLineResult.getResult();
 						errorMessage = "exitState ["+pipeLineResult.getState()+"], result ["+result+"]";
+						messageInError=txStatus.isRollbackOnly();
 					} catch (Throwable t) {
 						log.debug("<*>"+getLogPrefix() + "TX Update: Received failure, transaction " +
 								(txStatus.isRollbackOnly()?"already":"not yet") +
@@ -1086,7 +1074,7 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 						log.debug(getLogPrefix() + "transaction not new; commit-attempt should have no effect.");
 					}
 				} else {
-					log.warn("Transaction already completed; we didn't expect this");
+					throw new ListenerException(getLogPrefix()+"Transaction already completed; we didn't expect this");
 				}
 			}
 		}
@@ -1094,14 +1082,98 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 		return result;
 	}
 
-	public boolean checkIfMessageInErrorStorage(String messageId) throws ListenerException {
+
+
+	private synchronized void cachePoisonMessageId(String messageId) {
+		poisonMessageIdCache.put(messageId, messageId);
+	}
+	private synchronized boolean isMessageIdInPoisonCache(String messageId) {
+		return poisonMessageIdCache.containsKey(messageId);
+	}
+    
+	private long getAndIncrementMessageRetryCount(String messageId) {
+		Counter retries;
+		synchronized (messageRetryCounters) {
+			retries = (Counter) messageRetryCounters.get(messageId);
+			if (retries == null) {
+				retries = new Counter(0);
+				messageRetryCounters.put(messageId, retries);
+				return 0L;
+			}
+		}
+		retries.increase();
+		return retries.getValue();
+	}
+
+	private long removeMessageRetryCount(String messageId) {
+		synchronized (messageRetryCounters) {
+			Counter retries = (Counter) messageRetryCounters.get(messageId);
+			if (retries == null) {
+				return 0;
+			} else {
+				messageRetryCounters.remove(messageId);
+				return retries.getValue();
+			}
+		}
+	}
+
+	private boolean checkTryCount(String messageId) throws ListenerException {
 		if (isMessageIdInPoisonCache(messageId)) {
 			return true;
 		}
+		
 		if (getErrorStorage() == null) {
 			return false;
 		}
 		return getErrorStorage().containsMessageId(messageId);
+	}
+
+	/**
+	 * Decide if a failed message can be retried, or should be removed from the
+	 * queue and put to the error-storage.
+	 * 
+	 * <p>
+	 * In the former case, the current transaction is marked rollback-onle.
+	 * </p>
+	 * <p>
+	 * In the latter case, the message is also moved to the error-storage and
+	 * it's message-id is 'blacklisted' in the internal cache of poison-messages.
+	 * </p>
+	 * <p>
+	 * NB: Because the current global transaction might have already been marked for
+	 * rollback-only, even if we decide not to retry the message it might still
+	 * be redelivered to us. In that case, the poison-cache will save the day.
+	 * </p>
+	 * 
+	 * @return Returns <code>true</code> if the message can still be retried,
+	 * or <code>false</code> if the message will not be retried.
+	 */
+	private boolean retryOrErrorStorage(Object rawMessage, long startProcessingTimestamp, TransactionStatus txStatus, String errorMessage, String message, String messageId, String correlationId) {
+
+		long retryCount = getAndIncrementMessageRetryCount(messageId);
+		log.error("receiver ["+getName()+"] message with id ["+messageId+"] had error in processing; current retry-count: " + retryCount);
+        
+		// Mark TX as rollback-only, because in any case updates done in the
+		// transaction may not be performed.
+		txStatus.setRollbackOnly();
+		// If not yet exceeded the max retry count,
+		// mark TX as rollback-only and throw an
+		// exception
+		if (retryCount < maxRetries) {
+			log.error("receiver ["+getName()+"] message with id ["+messageId+"] will be retried; transacion marked rollback-only");
+			return true;
+		} else {
+			// Max retries exceeded; message to be moved
+			// to error location (OR LOST!)
+			log.error("receiver ["+getName()+"] message with id ["+messageId+"] retry count exceeded; remove from queue.");
+			removeMessageRetryCount(messageId);
+			if (rawMessage instanceof Serializable) {
+				moveInProcessToError(messageId, correlationId, message, new Date(startProcessingTimestamp), errorMessage, (Serializable) rawMessage);
+			} else {
+				log.error("receiver [" + getName() + "] message is not serializable, cannot store in errorStorage [" + rawMessage + "]");
+			}
+			return false;
+		}
 	}
 
 	public void exceptionThrown(INamedObject object, Throwable t) {
@@ -1113,6 +1185,13 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 			stopRunning();
 		}
 	}
+
+	public void fireMonitorEvent(EventTypeEnum eventType, SeverityEnum severity, String message) {
+		if (monitorAdapter!=null) {
+			monitorAdapter.fireEvent(getName(), eventType, severity, message);
+		}
+	}
+
 
 	public void setRunState(RunStateEnum state) {
 		runState.setRunState(state);
@@ -1478,81 +1557,21 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 		return returnedSessionKeys;
 	}
 
-	/**
-	 * @return
-	 */
+	public void setTaskExecutor(TaskExecutor executor) {
+		taskExecutor = executor;
+	}
 	public TaskExecutor getTaskExecutor() {
 		return taskExecutor;
 	}
 
-	/**
-	 * @param executor
-	 */
-	public void setTaskExecutor(TaskExecutor executor) {
-		taskExecutor = executor;
-	}
 
-	/**
-	 * @return
-	 */
+	public void setTxManager(PlatformTransactionManager manager) {
+		txManager = manager;
+	}
 	public PlatformTransactionManager getTxManager() {
 		return txManager;
 	}
 
-	/**
-	 * @param manager
-	 */
-	public void setTxManager(PlatformTransactionManager manager) {
-		txManager = manager;
-	}
-
-	/**
-	 * Decide if a failed message can be retried, or should be removed from the
-	 * queue and put to the error-storage.
-	 * 
-	 * <p>
-	 * In the former case, the current transaction is marked rollback-onle.
-	 * </p>
-	 * <p>
-	 * In the latter case, the message is also moved to the error-storage and
-	 * it's message-id is 'blacklisted' in the internal cache of poison-messages.
-	 * </p>
-	 * <p>
-	 * NB: Because the current global transaction might have already been marked for
-	 * rollback-only, even if we decide not to retry the message it might still
-	 * be redelivered to us. In that case, the poison-cache will save the day.
-	 * </p>
-	 * 
-	 * @return Returns <code>true</code> if the message can still be retried,
-	 * or <code>false</code> if the message will not be retried.
-	 */
-	private boolean retryOrErrorStorage(Object rawMessage, long startProcessingTimestamp, TransactionStatus txStatus, String errorMessage, String message, String messageId, String correlationId) {
-
-		long retryCount = getAndIncrementMessageRetryCount(messageId);
-		log.error("receiver ["+getName()+"] message with id ["+messageId+"] had error in processing; current retry-count: " + retryCount);
-        
-		// Mark TX as rollback-only, because in any case updates done in the
-		// transaction may not be performed.
-		txStatus.setRollbackOnly();
-		// If not yet exceeded the max retry count,
-		// mark TX as rollback-only and throw an
-		// exception
-		if (retryCount < maxRetries) {
-			log.error("receiver ["+getName()+"] message with id ["+messageId+"] will be retried; transacion marked rollback-only");
-			return true;
-		} else {
-			// Max retries exceeded; message to be moved
-			// to error location (OR LOST!)
-			log.error("receiver ["+getName()+"] message with id ["+messageId+"] retry count exceeded; remove from queue.");
-			removeMessageRetryCount(messageId);
-			if (rawMessage instanceof Serializable) {
-				moveInProcessToError(messageId, correlationId, message, new Date(startProcessingTimestamp), errorMessage, (Serializable) rawMessage);
-			} else {
-				log.error("receiver [" + getName() + "] message is not serializable, cannot store in errorStorage [" + rawMessage + "]");
-			}
-			return false;
-		}
-	}
 
 	private String sendResultToSender(String correlationId, String result) {
 		String errorMessage = null;
