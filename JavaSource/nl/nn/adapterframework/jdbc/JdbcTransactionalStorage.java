@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcTransactionalStorage.java,v $
- * Revision 1.24  2007-11-15 12:30:37  europe\L190409
+ * Revision 1.25  2007-12-10 10:06:28  europe\L190409
+ * modified SQL creation scripts
+ *
+ * Revision 1.24  2007/11/15 12:30:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * configurable order for browsing
  *
  * Revision 1.23  2007/11/13 14:12:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -133,20 +136,25 @@ import org.apache.commons.lang.StringUtils;
  * 
  * For an Oracle database the following objects are used by default:
  *  <pre>
- 	CREATE TABLE ibisstore (
-	  messageKey NUMBER(10) CONSTRAINT ibisstore_pk PRIMARY KEY,
-	  type CHAR(1),
-	  slotId VARCHAR2(100), 
-	  host VARCHAR2(100),
-	  messageId VARCHAR2(100), 
-	  correlationId VARCHAR2(100), 
-	  messageDate TIMESTAMP, 
-	  comments VARCHAR2(1000), 
-	  message BLOB);
+	CREATE TABLE IBISSTORE
+	(
+	MESSAGEKEY NUMBER(10),
+	TYPE CHAR(1 CHAR),
+	SLOTID VARCHAR2(100 CHAR),
+	HOST VARCHAR2(100 CHAR),
+	MESSAGEID VARCHAR2(100 CHAR),
+	CORRELATIONID VARCHAR2(100 CHAR),
+	MESSAGEDATE TIMESTAMP(6),
+	COMMENTS VARCHAR2(1000 CHAR),
+	MESSAGE BLOB,
+	CONSTRAINT PK_IBISSTORE PRIMARY KEY (MESSAGEKEY)
+	);
+	
+	CREATE INDEX IX_IBISSTORE ON IBISSTORE (SLOTID, MESSAGEDATE);
+	CREATE SEQUENCE SEQ_IBISSTORE;
 
-	CREATE INDEX ibisstore_idx ON ibisstore (slotId, messageDate);
-
-	CREATE SEQUENCE seq_ibisstore START WITH 1 INCREMENT BY 1;
+	GRANT DELETE, INSERT, SELECT, UPDATE ON IBISSTORE TO <rolenaam>;
+	GRANT SELECT ON SEQ_IBISSTORE TO <rolenaam>;
  *  </pre>
  * 
  * For a generic database the following objects are used by default:
@@ -180,7 +188,7 @@ import org.apache.commons.lang.StringUtils;
  * @since 	4.1
  */
 public class JdbcTransactionalStorage extends JdbcFacade implements ITransactionalStorage {
-	public static final String version = "$RCSfile: JdbcTransactionalStorage.java,v $ $Revision: 1.24 $ $Date: 2007-11-15 12:30:37 $";
+	public static final String version = "$RCSfile: JdbcTransactionalStorage.java,v $ $Revision: 1.25 $ $Date: 2007-12-10 10:06:28 $";
 	
 	// the following currently only for debug.... 
 	boolean checkIfTableExists=true;

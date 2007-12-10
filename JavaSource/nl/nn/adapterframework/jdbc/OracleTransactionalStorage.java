@@ -1,6 +1,9 @@
 /*
  * $Log: OracleTransactionalStorage.java,v $
- * Revision 1.10  2007-06-12 11:20:57  europe\L190409
+ * Revision 1.11  2007-12-10 10:06:28  europe\L190409
+ * modified SQL creation scripts
+ *
+ * Revision 1.10  2007/06/12 11:20:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added depreciation warning
  *
  * Revision 1.9  2007/05/23 09:13:17  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -64,18 +67,25 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
  * 
  * The default uses the following objects:
  *  <pre>
- 	CREATE TABLE ibisstore (
-	  messageKey NUMBER(10) CONSTRAINT ibisstore_pk PRIMARY KEY,
-	  slotId VARCHAR2(100), 
-	  messageId VARCHAR2(100), 
-	  correlationId VARCHAR2(100), 
-	  messageDate TIMESTAMP, 
-	  comments VARCHAR2(1000), 
-	  message BLOB);
+	CREATE TABLE IBISSTORE
+	(
+	MESSAGEKEY NUMBER(10),
+	TYPE CHAR(1 CHAR),
+	SLOTID VARCHAR2(100 CHAR),
+	HOST VARCHAR2(100 CHAR),
+	MESSAGEID VARCHAR2(100 CHAR),
+	CORRELATIONID VARCHAR2(100 CHAR),
+	MESSAGEDATE TIMESTAMP(6),
+	COMMENTS VARCHAR2(1000 CHAR),
+	MESSAGE BLOB,
+	CONSTRAINT PK_IBISSTORE PRIMARY KEY (MESSAGEKEY)
+	);
+	
+	CREATE INDEX IX_IBISSTORE ON IBISSTORE (SLOTID, MESSAGEDATE);
+	CREATE SEQUENCE SEQ_IBISSTORE;
 
-	CREATE INDEX ibisstore_idx ON ibisstore (slotId, messageDate);
-
-	CREATE SEQUENCE ibisstore_seq START WITH 1 INCREMENT BY 1;
+	GRANT DELETE, INSERT, SELECT, UPDATE ON IBISSTORE TO <rolenaam>;
+	GRANT SELECT ON SEQ_IBISSTORE TO <rolenaam>;
  *  </pre>
  * If these objects do not exist, Ibis will try to create them if the attribute createTable="true".
  * 
@@ -85,7 +95,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
  * @deprecated The functionality of the OracleTransactionalStorage has been incorporated in de JdbcTransactionalStorage.
  */
 public class OracleTransactionalStorage extends JdbcTransactionalStorage {
-	public static final String version = "$RCSfile: OracleTransactionalStorage.java,v $ $Revision: 1.10 $ $Date: 2007-06-12 11:20:57 $";
+	public static final String version = "$RCSfile: OracleTransactionalStorage.java,v $ $Revision: 1.11 $ $Date: 2007-12-10 10:06:28 $";
 
 	public void configure() throws ConfigurationException {
 		log.warn("Class OracleTransactionalStorage is no longer maintained. Please replace with JdbcTransactionalStorage");
