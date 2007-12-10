@@ -1,6 +1,9 @@
 /*
  * $Log: ConfigurationServlet.java,v $
- * Revision 1.12  2007-11-22 09:18:38  europe\L190409
+ * Revision 1.13  2007-12-10 10:24:16  europe\L190409
+ * style fix
+ *
+ * Revision 1.12  2007/11/22 09:18:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * extended shutdown
  *
  * Revision 1.11.2.1  2007/10/25 08:36:58  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
@@ -80,7 +83,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class ConfigurationServlet extends HttpServlet {
-	public static final String version = "$RCSfile: ConfigurationServlet.java,v $ $Revision: 1.12 $ $Date: 2007-11-22 09:18:38 $";
+	public static final String version = "$RCSfile: ConfigurationServlet.java,v $ $Revision: 1.13 $ $Date: 2007-12-10 10:24:16 $";
     protected Logger log = LogUtil.getLogger(this);
 
 	public static final String KEY_MANAGER = "KEY_MANAGER";
@@ -227,12 +230,16 @@ public class ConfigurationServlet extends HttpServlet {
         
         if (areAdaptersStopped()) {
             boolean success = im.initConfig(springContext, configurationFile, autoStart);
-            if (success)
-                log.info("Configuration succeeded");
-            else
-                log.warn("Configuration did not succeed, please examine log");
+            if (success) {
+				log.info("Configuration succeeded");
+            }
+            else {
+				log.warn("Configuration did not succeed, please examine log");
+            }
             ServletContext ctx = getServletContext();
-            ctx.setAttribute(AppConstants.getInstance().getResolvedProperty(KEY_MANAGER), im.getIbisManager());
+            String attributeKey=AppConstants.getInstance().getResolvedProperty(KEY_MANAGER);
+            ctx.setAttribute(attributeKey, im.getIbisManager());
+			log.debug("stored IbisManager ["+ClassUtils.nameOf(im.getIbisManager())+"]["+im.getIbisManager()+"] in ServletContext under key ["+attributeKey+"]");
             log.debug("Servlet init finished");
         } else
             log.warn("Not all adapters are stopped, cancelling ConfigurationServlet");
