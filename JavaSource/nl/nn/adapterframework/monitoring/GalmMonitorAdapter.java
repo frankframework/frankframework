@@ -1,6 +1,9 @@
 /*
  * $Log: GalmMonitorAdapter.java,v $
- * Revision 1.2  2007-10-01 14:06:00  europe\L190409
+ * Revision 1.3  2007-12-10 10:07:48  europe\L190409
+ * added removal of special characters from sourceId
+ *
+ * Revision 1.2  2007/10/01 14:06:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * modified configuration keys
  *
  * Revision 1.1  2007/09/27 12:55:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -57,9 +60,21 @@ public class GalmMonitorAdapter implements IMonitorAdapter {
 			throw new ConfigurationException("cannot read sourceId from ["+SOURCE_ID_KEY+"]");
 		}
 		if (sourceId.indexOf(' ')>=0) {
-			String replacement=Misc.replace(sourceId," ","_");
-			log.warn("sourceId ["+sourceId+"] read from ["+SOURCE_ID_KEY+"] contains spaces, replacing them with underscores, resulting in ["+replacement+"]");
-			sourceId=replacement;
+			StringBuffer replacement=new StringBuffer();
+			boolean replacementsMade=false;
+			for (int i=0; i<sourceId.length(); i++) {
+				char c=sourceId.charAt(i);
+				if (Character.isLetterOrDigit(c)||c=='_') {
+					replacement.append(c);
+				} else { 
+					replacement.append('_');
+					replacementsMade=true;
+				}
+			}
+			if (replacementsMade) {
+				log.warn("sourceId ["+sourceId+"] read from ["+SOURCE_ID_KEY+"] contains spaces, replacing them with underscores, resulting in ["+replacement.toString()+"]");
+				sourceId=replacement.toString();
+			}
 		}
 		dtapStage=appConstants.getString(DTAP_STAGE_KEY,null);
 		if (StringUtils.isEmpty(dtapStage)) {
