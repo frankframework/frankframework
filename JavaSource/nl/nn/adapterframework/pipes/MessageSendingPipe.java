@@ -1,6 +1,9 @@
 /*
  * $Log: MessageSendingPipe.java,v $
- * Revision 1.35  2007-10-03 08:52:56  europe\L190409
+ * Revision 1.36  2007-12-10 10:11:39  europe\L190409
+ * added input/output validation
+ *
+ * Revision 1.35  2007/10/03 08:52:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed HashMap to Map
  *
  * Revision 1.34  2007/07/10 08:03:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -105,6 +108,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.HasSender;
 import nl.nn.adapterframework.core.ICorrelatedPullingListener;
+import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.ITransactionalStorage;
@@ -199,7 +203,7 @@ import org.apache.commons.lang.SystemUtils;
  */
 
 public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
-	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.35 $ $Date: 2007-10-03 08:52:56 $";
+	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.36 $ $Date: 2007-12-10 10:11:39 $";
 
 	private final static String TIMEOUTFORWARD = "timeout";
 	private final static String EXCEPTIONFORWARD = "exception";
@@ -223,6 +227,9 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 	private String returnString;
 	private TransformerPool auditTrailTp=null;
 	private TransformerPool correlationIDTp=null;
+     
+	private IPipe inputValidator=null;
+	private IPipe outputValidator=null;
 	
 	protected void propagateName() {
 		ISender sender=getSender();
@@ -322,6 +329,12 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 				}
 			}
 		}
+		if (getInputValidator()!=null) {
+			getInputValidator().configure();
+		}
+		if (getOutputValidator()!=null) {
+			getOutputValidator().configure();
+		}
 	}
 
 	public PipeRunResult doPipe(Object input, PipeLineSession session)	throws PipeRunException {
@@ -330,6 +343,15 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 //		}
 
 		String result = null;
+
+		if (getInputValidator()!=null) {
+			log.debug(getLogPrefix(session)+"validating input");
+			PipeRunResult validationResult = getInputValidator().doPipe(input,session);
+			if (validationResult!=null && !validationResult.getPipeForward().getName().equals("success")) {
+				return validationResult;
+			}
+		}
+
 		
 		if (StringUtils.isNotEmpty(getStubFileName())) {
 			ParameterList pl = getParameterList();
@@ -470,7 +492,13 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 			PipeForward illegalResultForward = findForward(ILLEGALRESULTFORWARD);
 			return new PipeRunResult(illegalResultForward, result);
 		}
-
+		if (getOutputValidator()!=null) {
+			log.debug(getLogPrefix(session)+"validating response");
+			PipeRunResult validationResult = getOutputValidator().doPipe(result,session);
+			if (validationResult!=null && !validationResult.getPipeForward().getName().equals("success")) {
+				return validationResult;
+			}
+		}
 		return new PipeRunResult(getForward(), result);
 	}
 
@@ -671,4 +699,23 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 	public String getCorrelationIDXPath() {
 		return correlationIDXPath;
 	}
+	
+	public void setInputValidator(IPipe inputValidator) {
+//		if (inputValidator.isActive()) {
+			this.inputValidator = inputValidator;
+//		}
+	}
+	public IPipe getInputValidator() {
+		return inputValidator;
+	}
+
+	public void setOutputValidator(IPipe outputValidator) {
+//		if (outputValidator.isActive()) {
+			this.outputValidator = outputValidator;
+//		}
+	}
+	public IPipe getOutputValidator() {
+		return outputValidator;
+	}
+
 }
