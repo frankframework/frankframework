@@ -1,6 +1,9 @@
 /*
  * $Log: DefaultIbisManager.java,v $
- * Revision 1.4  2007-11-22 09:10:48  europe\L190409
+ * Revision 1.5  2007-12-10 10:21:38  europe\L190409
+ * improved logging
+ *
+ * Revision 1.4  2007/11/22 09:10:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * update from ejb-branch
  *
  * Revision 1.3.2.4  2007/11/15 12:24:30  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
@@ -341,6 +344,7 @@ public class DefaultIbisManager implements IbisManager, BeanFactoryAware {
             throw new IllegalArgumentException("DeploymentMode should be a value between 0 and " 
                     + (deploymentModes.length-1) + " inclusive.");
         }
+		log.debug("setting deploymentMode to ["+deploymentMode+"]");
         this.deploymentMode = deploymentMode;
     }
     public int getDeploymentMode() {
@@ -356,6 +360,7 @@ public class DefaultIbisManager implements IbisManager, BeanFactoryAware {
     }
 
     public void setTransactionManager(PlatformTransactionManager transactionManager) {
+    	log.debug("setting transaction manager to ["+transactionManager+"]");
         this.transactionManager = transactionManager;
     }
 
