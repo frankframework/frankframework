@@ -1,5 +1,5 @@
 <digester-rules>
-	<!-- $Id: digester-rules.xml,v 1.7 2007-10-24 08:28:34 europe\M00035F Exp $ -->
+	<!-- $Id: digester-rules.xml,v 1.8 2007-12-10 10:25:57 europe\L190409 Exp $ -->
     
     <!-- Objects created using a factory-create-rule are created via the Spring Beans Factory. 
          Objects created using an object-create-rule are created directly by the Apache Digester,
@@ -99,6 +99,16 @@
         <!--<object-create-rule classname="nl.nn.adapterframework.core.ITransactionalStorage" attrname="className"/> -->
         <set-properties-rule/>
         <set-next-rule methodname="setErrorStorage"/>
+    </pattern>
+    <pattern value="*/inputValidator">
+        <factory-create-rule classname="nl.nn.adapterframework.configuration.GenericFactory" /> 
+        <set-properties-rule/>
+        <set-next-rule methodname="setInputValidator"/>
+    </pattern>
+    <pattern value="*/outputValidator">
+        <factory-create-rule classname="nl.nn.adapterframework.configuration.GenericFactory" /> 
+        <set-properties-rule/>
+        <set-next-rule methodname="setOutputValidator"/>
     </pattern>
 
     <pattern value="*/pipe">
