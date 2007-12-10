@@ -1,6 +1,10 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.53  2007-11-22 08:42:18  europe\L190409
+ * Revision 1.54  2007-12-10 10:04:53  europe\L190409
+ * fixed commitOnState (rollback only, no exceptions)
+ * added input/output validation
+ *
+ * Revision 1.53  2007/11/22 08:42:18  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * wrap exceptions
  *
  * Revision 1.52  2007/11/21 13:16:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -210,7 +214,9 @@ import org.apache.log4j.Logger;
  * </p>
  * <table border="1">
  * <tr><th>nested elements</th><th>description</th></tr>
- * <tr><td>&lt;exits&gt;one or more {@link nl.nn.adapterframework.core.PipeLineExit exits}&lt;/exits&gt;</td><td>specifications of exit-paths, in the form &lt;exit path="<i>forwardname</i>" state="<i>statename</i>"/&gt;</td></tr>
+ * <tr><td>&lt;exits&gt; one or more {@link nl.nn.adapterframework.core.PipeLineExit exits}&lt;/exits&gt;</td><td>specifications of exit-paths, in the form &lt;exit path="<i>forwardname</i>" state="<i>statename</i>"/&gt;</td></tr>
+ * <tr><td>&lt;inputValidator&gt;</td><td>specification of Pipe to validate input messages</td></tr>
+ * <tr><td>&lt;outputValidator&gt;</td><td>specification of Pipe to validate output messages</td></tr>
  * </table>
  * </p>
  *
@@ -243,7 +249,7 @@ import org.apache.log4j.Logger;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.53 $ $Date: 2007-11-22 08:42:18 $";
+	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.54 $ $Date: 2007-12-10 10:04:53 $";
     private Logger log = LogUtil.getLogger(this);
 	private Logger durationLog = LogUtil.getLogger("LongDurationMessages");
     
@@ -255,6 +261,10 @@ public class PipeLine {
     private Hashtable globalForwards = new Hashtable();
     private String firstPipe;
 	private int transactionAttribute=JtaUtil.TRANSACTION_ATTRIBUTE_SUPPORTS;
+     
+	private IPipe inputValidator=null;
+	private IPipe outputValidator=null;
+     
      
     private Hashtable pipesByName=new Hashtable();
     private List pipes=new ArrayList();
@@ -366,6 +376,14 @@ public class PipeLine {
 	    if (getPipe(firstPipe)==null) {
 		    throw new ConfigurationException("no pipe found for firstPipe ["+firstPipe+"]");
 	    }
+
+		if (getInputValidator()!=null) {
+			getInputValidator().configure();
+		}
+		if (getOutputValidator()!=null) {
+			getOutputValidator().configure();
+		}
+
 		log.debug("Pipeline of ["+owner.getName()+"] successfully configured");
 	}
     /**
@@ -438,16 +456,16 @@ public class PipeLine {
 		// store message and messageId in the pipeLineSession
 		pipeLineSession.set(message, messageId);
         
-        boolean compatible;
-		if (log.isDebugEnabled()) log.debug("evaluating transaction status ["+JtaUtil.displayTransactionStatus()+"], transaction attribute ["+getTransactionAttribute()+"], messageId ["+messageId+"]");
-		try {
-			compatible=JtaUtil.transactionStateCompatible(getTransactionAttributeNum());
-		} catch (Exception t) {
-			throw new PipeRunException(null,"exception evaluating transaction status, transaction attribute ["+getTransactionAttribute()+"], messageId ["+messageId+"]",t);
-		}
-		if (!compatible) {
-			throw new PipeRunException(null,"transaction state ["+JtaUtil.displayTransactionStatus()+"] not compatible with transaction attribute ["+getTransactionAttribute()+"], messageId ["+messageId+"]");
-		}
+//        boolean compatible;
+//		if (log.isDebugEnabled()) log.debug("evaluating transaction status ["+JtaUtil.displayTransactionStatus()+"], transaction attribute ["+getTransactionAttribute()+"], messageId ["+messageId+"]");
+//		try {
+//			compatible=JtaUtil.transactionStateCompatible(getTransactionAttributeNum());
+//		} catch (Exception t) {
+//			throw new PipeRunException(null,"exception evaluating transaction status, transaction attribute ["+getTransactionAttribute()+"], messageId ["+messageId+"]",t);
+//		}
+//		if (!compatible) {
+//			throw new PipeRunException(null,"transaction state ["+JtaUtil.displayTransactionStatus()+"] not compatible with transaction attribute ["+getTransactionAttribute()+"], messageId ["+messageId+"]");
+//		}
 		if (log.isDebugEnabled()) log.debug("PipeLine transactionAttribute ["+getTransactionAttribute()+"]");
         try {
             return runPipeLineObeyingTransactionAttribute(
@@ -545,9 +563,17 @@ public class PipeLine {
 		
 	    // ready indicates wether the pipeline processing is complete
 	    boolean ready=false;
-	    
-	    // get the first pipe to run
-	    IPipe pipeToRun = getPipe(firstPipe);
+
+		// get the first pipe to run
+		IPipe pipeToRun = getPipe(firstPipe);
+
+		IPipe inputValidator = getInputValidator();
+		if (inputValidator!=null) {
+			PipeRunResult validationResult = inputValidator.doPipe(message,pipeLineSession);
+			if (validationResult!=null && !validationResult.getPipeForward().getName().equals("success")) {
+				pipeToRun = getPipe(validationResult.getPipeForward().getPath());
+			}
+		}
 	
 		try {    
 			while (!ready){
@@ -694,15 +720,22 @@ public class PipeLine {
 				}
 			}
 		}
-//		boolean mustRollback=false;
+		boolean mustRollback=false;
 				
 		if (pipeLineResult==null) {
-			//mustRollback=true;
-			throw new PipeRunException(null,"received null result for messageId ["+messageId+"], transaction (when present and active) will be rolled back");
+			mustRollback=true;
+			log.warn("Pipeline received null result for messageId ["+messageId+"], transaction (when present and active) will be rolled back");
 		} else {
 			if (StringUtils.isNotEmpty(getCommitOnState()) && !getCommitOnState().equalsIgnoreCase(pipeLineResult.getState())) {
-				//mustRollback=true;
-				throw new PipeRunException(null,"result state ["+pipeLineResult.getState()+"] for messageId ["+messageId+"] is not equal to commitOnState ["+getCommitOnState()+"], transaction (when present and active) will be rolled back");
+				mustRollback=true;
+				log.warn("Pipeline result state ["+pipeLineResult.getState()+"] for messageId ["+messageId+"] is not equal to commitOnState ["+getCommitOnState()+"], transaction (when present and active) will be rolled back");
+			}
+		}
+		if (mustRollback) {
+			try {
+				JtaUtil.setRollBackOnly();
+			} catch (Exception e) {
+				throw new PipeRunException(null,"Could not set RollBackOnly",e);
 			}
 		}
 	    return pipeLineResult;
@@ -867,6 +900,24 @@ public class PipeLine {
     }
 	public IPipeLineExecutor getPipeLineExecutor() {
 		return pipeLineExecutor;
+	}
+
+	public void setInputValidator(IPipe inputValidator) {
+//		if (inputValidator.isActive()) {
+			this.inputValidator = inputValidator;
+//		}
+	}
+	public IPipe getInputValidator() {
+		return inputValidator;
+	}
+
+	public void setOutputValidator(IPipe outputValidator) {
+//		if (outputValidator.isActive()) {
+			this.outputValidator = outputValidator;
+//		}
+	}
+	public IPipe getOutputValidator() {
+		return outputValidator;
 	}
 
 }
