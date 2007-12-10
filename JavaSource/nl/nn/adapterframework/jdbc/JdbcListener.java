@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcListener.java,v $
- * Revision 1.6  2007-11-15 12:38:08  europe\L190409
+ * Revision 1.7  2007-12-10 10:05:54  europe\L190409
+ * put id and cid in session
+ *
+ * Revision 1.6  2007/11/15 12:38:08  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fixed message wrapping
  *
  * Revision 1.5  2007/10/18 15:55:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -209,6 +212,8 @@ public class JdbcListener extends JdbcFacade implements IPullingListener {
 		} else {
 			id = (String)rawMessage;
 		}
+		context.put("id",id);
+		context.put("cid",id);
 		return id;
 	}
 
