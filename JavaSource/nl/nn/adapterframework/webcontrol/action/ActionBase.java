@@ -1,6 +1,9 @@
 /*
  * $Log: ActionBase.java,v $
- * Revision 1.6  2007-10-16 09:12:28  europe\M00035F
+ * Revision 1.7  2007-12-10 10:24:53  europe\L190409
+ * added getAndSetProperty
+ *
+ * Revision 1.6  2007/10/16 09:12:28  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
  * Merge with changes from EJB branch in preparation for creating new EJB brance
  *
  * Revision 1.5  2007/10/10 07:29:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -23,8 +26,11 @@ import javax.servlet.http.HttpSession;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.webcontrol.ConfigurationServlet;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionErrors;
@@ -46,7 +52,7 @@ import org.apache.struts.util.MessageResources;
  * @see     org.apache.struts.action.Action
  */
 public abstract class ActionBase extends Action {
-	public static final String version="$RCSfile: ActionBase.java,v $ $Revision: 1.6 $ $Date: 2007-10-16 09:12:28 $";
+	public static final String version="$RCSfile: ActionBase.java,v $ $Revision: 1.7 $ $Date: 2007-12-10 10:24:53 $";
 	protected Logger log = LogUtil.getLogger(this);
 
     protected Locale locale;
@@ -96,6 +102,32 @@ public abstract class ActionBase extends Action {
         return definedForward;
     }
 
+	public String getAndSetProperty(HttpServletRequest request, DynaActionForm form, String propertyName) {
+		return getAndSetProperty(request, form, propertyName, "");
+	}
+
+	public String getAndSetProperty(HttpServletRequest request, DynaActionForm form, String propertyName, String defaultValue) {
+		String result=request.getParameter(propertyName);
+		if (StringUtils.isNotEmpty(result)) {
+			form.set(propertyName,result);
+			log.debug("set property ["+propertyName+"] to ["+result+"] from request");
+		} else {
+			result=(String)form.get(propertyName);
+			if (StringUtils.isNotEmpty(result)) {
+				log.debug("get property ["+propertyName+"] value ["+result+"] from form");
+			} else {
+				if (StringUtils.isNotEmpty(defaultValue)) {
+					result=defaultValue;
+					form.set(propertyName,result);
+					log.debug("get property ["+propertyName+"] value ["+result+"] from default");
+				} else {
+					log.debug("get property ["+propertyName+"] value empty, no default");
+				}
+			}
+		}
+		return result;
+	}
+
     /**
      * Gets the full request Uri, that is, the reference suitable for ActionForwards.<br/>
      * Queryparameters of the request are added to it.
@@ -142,7 +174,9 @@ public abstract class ActionBase extends Action {
         errors = new ActionErrors();
 
         session = request.getSession();
-        ibisManager = (IbisManager) getServlet().getServletContext().getAttribute(AppConstants.getInstance().getProperty("KEY_MANAGER"));
+        String attributeKey=AppConstants.getInstance().getProperty(ConfigurationServlet.KEY_MANAGER);
+        ibisManager = (IbisManager) getServlet().getServletContext().getAttribute(attributeKey);
+        log.debug("retrieved ibisManager ["+ClassUtils.nameOf(ibisManager)+"]["+ibisManager+"] from servlet context attribute ["+attributeKey+"]");
         // TODO: explain why this shouldn't happen too early
         config = ibisManager.getConfiguration(); // NB: Hopefully this doesn't happen too early on in the game
         log = LogUtil.getLogger(this); // logging category for this class
