@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractPipe.java,v $
- * Revision 1.29  2007-09-27 12:54:38  europe\L190409
+ * Revision 1.30  2007-12-10 10:08:58  europe\L190409
+ * assume usertransaction can be obtained
+ *
+ * Revision 1.29  2007/09/27 12:54:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved warning about duplicate forward
  *
  * Revision 1.28  2007/06/08 07:58:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -169,7 +172,7 @@ import org.apache.log4j.Logger;
  * @see nl.nn.adapterframework.core.PipeLineSession
  */
 public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttribute, TracingEventNumbers {
-	public static final String version="$RCSfile: AbstractPipe.java,v $ $Revision: 1.29 $ $Date: 2007-09-27 12:54:38 $";
+	public static final String version="$RCSfile: AbstractPipe.java,v $ $Revision: 1.30 $ $Date: 2007-12-10 10:08:58 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -299,14 +302,14 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	  * adapter.
 	  */
 	public void start() throws PipeStartException{
-		if (getTransactionAttributeNum()>0 && getTransactionAttributeNum()!=JtaUtil.TRANSACTION_ATTRIBUTE_SUPPORTS) {
-			try {
-				// getUserTransaction, to make sure its available
-				JtaUtil.getUserTransaction();
-			} catch (NamingException e) {
-				throw new PipeStartException(getLogPrefix(null)+"cannot obtain UserTransaction",e);
-			}
-		}
+//		if (getTransactionAttributeNum()>0 && getTransactionAttributeNum()!=JtaUtil.TRANSACTION_ATTRIBUTE_SUPPORTS) {
+//			try {
+//				// getUserTransaction, to make sure its available
+//				JtaUtil.getUserTransaction();
+//			} catch (NamingException e) {
+//				throw new PipeStartException(getLogPrefix(null)+"cannot obtain UserTransaction",e);
+//			}
+//		}
 	}
 	 /**
 	  * Perform necessary actions to stop the <code>Pipe</code>.<br/>
