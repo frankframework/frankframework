@@ -1,6 +1,9 @@
 /*
  * $Log: JavaListener.java,v $
- * Revision 1.26  2007-10-17 09:08:00  europe\L190409
+ * Revision 1.27  2007-12-10 10:14:30  europe\L190409
+ * assume usertransaction can be obtained
+ *
+ * Revision 1.26  2007/10/17 09:08:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * commented out unused code
  *
  * Revision 1.25  2007/10/03 08:57:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -142,7 +145,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class JavaListener implements IPushingListener, RequestProcessor, HasPhysicalDestination {
-	public static final String version="$RCSfile: JavaListener.java,v $ $Revision: 1.26 $ $Date: 2007-10-17 09:08:00 $";
+	public static final String version="$RCSfile: JavaListener.java,v $ $Revision: 1.27 $ $Date: 2007-12-10 10:14:30 $";
 	protected Logger log = LogUtil.getLogger(this);
 	
 	private String name;
@@ -176,14 +179,14 @@ public class JavaListener implements IPushingListener, RequestProcessor, HasPhys
 			// add myself to local list so that IbisLocalSenders can find me 
 			registerListener();
 			
-			// display transaction status, to force caching of UserTransaction.
-			// UserTransaction is not found in context if looked up from javalistener.
-			try {
-				String transactionStatus = JtaUtil.displayTransactionStatus();
-				log.debug("transaction status at startup ["+transactionStatus+"]");
-			} catch (Exception e) {
-				log.warn("could not get transaction status at startup",e);
-			}
+//			// display transaction status, to force caching of UserTransaction.
+//			// UserTransaction is not found in context if looked up from javalistener.
+//			try {
+//				String transactionStatus = JtaUtil.displayTransactionStatus();
+//				log.debug("transaction status at startup ["+transactionStatus+"]");
+//			} catch (Exception e) {
+//				log.warn("could not get transaction status at startup",e);
+//			}
 			
 			// add myself to global list so that other applications in this JVM (like Everest Portal) can find me.
 			// (performed only if serviceName is not empty
