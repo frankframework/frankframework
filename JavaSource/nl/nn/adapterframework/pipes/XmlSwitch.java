@@ -1,6 +1,9 @@
 /*
  * $Log: XmlSwitch.java,v $
- * Revision 1.20  2006-01-05 14:36:31  europe\L190409
+ * Revision 1.21  2007-12-10 10:13:01  europe\L190409
+ * fix configuration of notFoundForward (no exception when not found)
+ *
+ * Revision 1.20  2006/01/05 14:36:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.19  2005/12/29 15:19:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -80,7 +83,7 @@ import java.util.Map;
  * @author Johan Verrips
  */
 public class XmlSwitch extends AbstractPipe {
-	public static final String version="$RCSfile: XmlSwitch.java,v $ $Revision: 1.20 $ $Date: 2006-01-05 14:36:31 $";
+	public static final String version="$RCSfile: XmlSwitch.java,v $ $Revision: 1.21 $ $Date: 2007-12-10 10:13:01 $";
 	
     private static final String DEFAULT_SERVICESELECTION_XPATH = XmlUtils.XPATH_GETROOTNODENAME;
 	private TransformerPool transformerPool=null;
@@ -97,7 +100,8 @@ public class XmlSwitch extends AbstractPipe {
 		super.configure();
 		if (getNotFoundForwardName()!=null) {
 			if (findForward(getNotFoundForwardName())==null){
-				throw new ConfigurationException(getLogPrefix(null)+"has a notFoundForwardName attribute. However, this forward ["+getNotFoundForwardName()+"] is not configured.");
+//				throw new ConfigurationException(getLogPrefix(null)+"has a notFoundForwardName attribute. However, this forward ["+getNotFoundForwardName()+"] is not configured.");
+				log.warn(getLogPrefix(null)+"has a notFoundForwardName attribute. However, this forward ["+getNotFoundForwardName()+"] is not configured.");
 			}
 		}
 
