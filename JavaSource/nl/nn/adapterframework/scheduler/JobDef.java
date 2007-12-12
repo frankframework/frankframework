@@ -1,6 +1,9 @@
 /*
  * $Log: JobDef.java,v $
- * Revision 1.7  2007-05-16 11:48:07  europe\L190409
+ * Revision 1.8  2007-12-12 09:09:56  europe\L190409
+ * allow for query-type jobs
+ *
+ * Revision 1.7  2007/05/16 11:48:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved javadoc
  *
  * Revision 1.6  2007/02/21 16:04:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -24,14 +27,16 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * <tr><td>{@link #setName(String) name}</td><td>name of the Job</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDescription(String) description}</td><td>optional description of the job</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setCronExpression(String) cronExpression}</td><td>cron expression that determines the frequency of excution (see below)</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setFunction(String) function}</td><td>one of: StopAdapter, StartAdapter, StopReceiver, StartReceiver, SendMessage</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setFunction(String) function}</td><td>one of: StopAdapter, StartAdapter, StopReceiver, StartReceiver, SendMessage, ExecuteQuery</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setAdapterName(String) adapterName}</td><td>Adapter on which job operates</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setReceiverName(String) receiverName}</td><td>Receiver on which job operates. If function is 'sendMessage' is used this name is also used as name of JavaListener</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setQuery(String) query}</td><td>the SQL query text to be excecuted</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * </table>
  * <br>
  * Operation of scheduling:
  * <ul>
- *   <li>at configuration tim {@link nl.nn.adapterframework.configuration.Configuration#registerScheduledJob(JobDef) Configuration.registerScheduledJob()} is called; </li>
+ *   <li>at configuration time {@link nl.nn.adapterframework.configuration.Configuration#registerScheduledJob(JobDef) Configuration.registerScheduledJob()} is called; </li>
  *   <li>this calls {@link nl.nn.adapterframework.scheduler.SchedulerHelper.scheduleJob() SchedulerHelper.scheduleJob(Object, JobDef)};</li>
  *   <li>this creates a Quartz JobDetail object, and copies adaptername, receivername, function and a reference to the configuration to jobdetail's datamap;</li>
  *   <li>it sets the class to execute to AdapterJob</li>
@@ -280,12 +285,12 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  *   </li>
  * </ul>
  * </p>
- * @version Id
- * @author  Johan  Verrips
  * 
+ * @author  Johan  Verrips
+ * @version Id
  */
 public class JobDef {
-	public static final String version = "$RCSfile: JobDef.java,v $  $Revision: 1.7 $ $Date: 2007-05-16 11:48:07 $";
+	public static final String version = "$RCSfile: JobDef.java,v $  $Revision: 1.8 $ $Date: 2007-12-12 09:09:56 $";
 	
     private String name;
     private String cronExpression;
@@ -293,57 +298,81 @@ public class JobDef {
     private String adapterName;
     private String description;
     private String receiverName;
-    private String jobGroup=AppConstants.getInstance().getString("scheduler.defaultJobGroup", "DEFAULT");
+	private String query;
+	private String jmsRealm;
 
-    public String getAdapterName() {
-        return adapterName;
-    }
-    public String getCronExpression() {
-        return cronExpression;
-    }
-    public String getDescription() {
-        return description;
-    }
-    public String getFunction() {
-        return function;
-    }
-    public String getJobGroup() {
-        return jobGroup;
-    }
-    public String getName() {
-        return name;
-    }
-    public String getReceiverName() {
-        return receiverName;
-    }
-    public void setAdapterName(String adapterName) {
-        this.adapterName = adapterName;
-    }
-    public void setCronExpression(String cronExpression) {
-        this.cronExpression = cronExpression;
-    }
-    public void setDescription(String description) {
-        this.description = description;
-    }
-    public void setFunction(String function) {
-        this.function = function;
-    }
-    /**
+    private String jobGroup=AppConstants.getInstance().getString("scheduler.defaultJobGroup", "DEFAULT");
+    
+	public String toString() {
+		return ToStringBuilder.reflectionToString(this);
+	}
+
+   /**
      * Defaults to the value under key <code>scheduler.defaultJobGroup</code> in the {@link AppConstants}.
      * If the value is not specified, it assumes <code>DEFAULT</code>
      * @param jobGroup
      */
-    public void setJobGroup(String jobGroup) {
-        this.jobGroup = jobGroup;
-    }
-    public void setName(String name) {
-        this.name = name;
-    }
-    public void setReceiverName(String receiverName) {
-        this.receiverName = receiverName;
-    }
-   public String toString() {
-	return ToStringBuilder.reflectionToString(this);
+	public void setJobGroup(String jobGroup) {
+		this.jobGroup = jobGroup;
+	}
+	public String getJobGroup() {
+		return jobGroup;
+	}
 
-  }
+	public void setName(String name) {
+		this.name = name;
+	}
+	public String getName() {
+		return name;
+	}
+	
+	public void setDescription(String description) {
+		this.description = description;
+	}
+	public String getDescription() {
+	   return description;
+	}
+
+	public void setCronExpression(String cronExpression) {
+		this.cronExpression = cronExpression;
+	}
+	public String getCronExpression() {
+		return cronExpression;
+	}
+
+	public void setFunction(String function) {
+		this.function = function;
+	}
+	public String getFunction() {
+		return function;
+	}
+
+	public void setAdapterName(String adapterName) {
+		this.adapterName = adapterName;
+	}
+	public String getAdapterName() {
+		return adapterName;
+	}
+  
+	public void setReceiverName(String receiverName) {
+		this.receiverName = receiverName;
+	}
+	public String getReceiverName() {
+		return receiverName;
+	}
+
+	public void setQuery(String query) {
+		this.query = query;
+	}
+	public String getQuery() {
+		return query;
+	}
+	
+	public void setJmsRealm(String jmsRealm) {
+		this.jmsRealm = jmsRealm;
+	}
+	public String getJmsRealm() {
+		return jmsRealm;
+	}
+
 }

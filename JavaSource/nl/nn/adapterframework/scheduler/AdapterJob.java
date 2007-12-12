@@ -1,6 +1,9 @@
 /*
  * $Log: AdapterJob.java,v $
- * Revision 1.5  2007-10-10 09:40:07  europe\L190409
+ * Revision 1.6  2007-12-12 09:09:56  europe\L190409
+ * allow for query-type jobs
+ *
+ * Revision 1.5  2007/10/10 09:40:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Direct copy from Ibis-EJB:
  * version using IbisManager
  *
@@ -11,6 +14,7 @@
 package nl.nn.adapterframework.scheduler;
 
 import nl.nn.adapterframework.configuration.IbisManager;
+import nl.nn.adapterframework.jdbc.DirectQuerySender;
 
 import org.quartz.Job;
 import org.quartz.JobDataMap;
@@ -42,28 +46,49 @@ import org.quartz.JobExecutionException;
  * @see nl.nn.adapterframework.configuration.Configuration
   */
 public class AdapterJob extends BaseJob implements Job  {
-	public static final String version="$RCSfile: AdapterJob.java,v $ $Revision: 1.5 $ $Date: 2007-10-10 09:40:07 $";
-	
-    public AdapterJob() {
-            super();
-     }
-     public void execute(JobExecutionContext context)
-       throws JobExecutionException
-     {
-         try {
-             log.info("executing"+getLogPrefix(context));
-             JobDataMap dataMap = context.getJobDetail().getJobDataMap();
-             // TODO: Put correct manager into the dataMap
-             IbisManager ibisManager = (IbisManager) dataMap.get("manager");
-             String adapterName  = dataMap.getString("adapterName");
-             String receiverName = dataMap.getString("receiverName");
-             String function = dataMap.getString("function");
-             ibisManager.handleAdapter(function, adapterName, receiverName, " scheduled job"+getLogPrefix(context));
+	public static final String version = "$RCSfile: AdapterJob.java,v $ $Revision: 1.6 $ $Date: 2007-12-12 09:09:56 $";
 
-         } catch (Exception e) {
-            log.error (e);
-             throw new JobExecutionException (e, false);
-         }
-         log.debug(getLogPrefix(context)+"completed");
-     }
+	public void execute(JobExecutionContext context) throws JobExecutionException {
+		try {
+			log.info("executing" + getLogPrefix(context));
+			JobDataMap dataMap = context.getJobDetail().getJobDataMap();
+			// TODO: Put correct manager into the dataMap
+			IbisManager ibisManager = (IbisManager)dataMap.get("manager");
+			String function = dataMap.getString("function");
+
+			if (!function.equalsIgnoreCase("EXECUTEQUERY")) {
+				String adapterName = dataMap.getString("adapterName");
+				String receiverName = dataMap.getString("receiverName");
+
+				ibisManager.handleAdapter(function, adapterName, receiverName, " scheduled job" + getLogPrefix(context));
+			} else {
+				try {
+					String query = dataMap.getString("query");
+					String jmsRealm = dataMap.getString("jmsRealm");
+
+					DirectQuerySender qs = new DirectQuerySender();
+					try {
+						qs.setName("QuerySender");
+						qs.setJmsRealm(jmsRealm);
+						qs.setQueryType("other");
+						qs.configure();
+						qs.open();
+						String result = qs.sendMessage("dummy", query);
+						log.info("result [" + result + "]");
+					} catch (Exception e) {
+						log.error("Error while executing query (as part of scheduled job execution)", e);
+					} finally {
+						qs.close();
+					}
+				} catch (Exception e) {
+					log.error("Error while creating or closing connection (as part of scheduled job execution)", e);
+				}
+			}
+
+		} catch (Exception e) {
+			log.error(e);
+			throw new JobExecutionException(e, false);
+		}
+		log.debug(getLogPrefix(context) + "completed");
+	}
 }
