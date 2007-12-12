@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   $Log: springCommon.xml,v $
-  Revision 1.7  2007-12-10 10:26:14  europe\L190409
+  Revision 1.8  2007-12-12 09:10:44  europe\L190409
+  disable validation temporarily
+
+  Revision 1.7  2007/12/10 10:26:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
   added input/output validation
 
   Revision 1.6  2007/11/22 09:20:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -138,12 +141,12 @@
     <bean name="proto-RecordHandlingFlow" class="nl.nn.adapterframework.batch.RecordHandlingFlow"
         autowire="byName" scope="prototype">
     </bean>
-
+<!--
     <bean name="proto-inputValidator" class="nl.nn.adapterframework.pipes.XmlValidator"
         autowire="byName" scope="prototype">
     </bean>
     <bean name="proto-outputValidator" class="nl.nn.adapterframework.pipes.XmlValidator"
         autowire="byName" scope="prototype">
     </bean>
-    
+-->    
 </beans>
