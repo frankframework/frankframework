@@ -1,6 +1,9 @@
 /*
  * $Log: GalmMonitorAdapter.java,v $
- * Revision 1.3  2007-12-10 10:07:48  europe\L190409
+ * Revision 1.4  2007-12-12 09:09:13  europe\L190409
+ * truncated messages after newline
+ *
+ * Revision 1.3  2007/12/10 10:07:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added removal of special characters from sourceId
  *
  * Revision 1.2  2007/10/01 14:06:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -93,6 +96,20 @@ public class GalmMonitorAdapter implements IMonitorAdapter {
 			String replacement=Misc.replace(subSource," ","_");
 			log.warn("subSource ["+subSource+"] contains spaces, replacing them with underscores, resulting in ["+replacement+"]");
 			subSource=replacement;
+		}
+		if (message!=null) {
+			int npos=message.indexOf('\n');
+			if (npos>=0) {
+				message=message.substring(0,npos);
+			}
+			int rpos=message.indexOf('\r');
+			if (rpos>=0) {
+				message=message.substring(0,rpos);
+			}
+			message=message.trim();
+			if (message.endsWith(":")) {
+				message=message.substring(0,message.length()-1);
+			}
 		}
 		String result=
 			dateTimeFormatter.format(new Date()) +" "+
