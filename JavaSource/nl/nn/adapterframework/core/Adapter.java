@@ -1,6 +1,9 @@
 /*
  * $Log: Adapter.java,v $
- * Revision 1.34  2007-12-10 10:00:02  europe\L190409
+ * Revision 1.35  2007-12-12 09:08:41  europe\L190409
+ * added message class to monitor event from error
+ *
+ * Revision 1.34  2007/12/10 10:00:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added monitoring
  *
  * Revision 1.33  2007/10/10 09:35:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -171,7 +174,7 @@ import org.springframework.core.task.TaskExecutor;
  */
 
 public class Adapter implements IAdapter, NamedBean {
-	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.34 $ $Date: 2007-12-10 10:00:02 $";
+	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.35 $ $Date: 2007-12-12 09:08:41 $";
 	private Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -278,7 +281,7 @@ public class Adapter implements IAdapter, NamedBean {
 	protected void error(String msg, Throwable t) {
 		log.error("Adapter [" + getName() + "] "+msg, t);
 		getMessageKeeper().add("ERROR: " + msg+": "+t.getMessage());
-		fireMonitorEvent(EventTypeEnum.TECHNICAL,SeverityEnum.WARNING, msg+": "+t.getMessage());
+		fireMonitorEvent(EventTypeEnum.TECHNICAL,SeverityEnum.WARNING, "ADPTWARN "+msg+": "+t.getMessage());
 	}
 
 	protected void fireMonitorEvent(EventTypeEnum eventType, SeverityEnum severity, String message) {
