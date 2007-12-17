@@ -1,6 +1,9 @@
 /*
  * $Log: FilePipe.java,v $
- * Revision 1.15  2007-09-26 13:54:37  europe\m00f069
+ * Revision 1.16  2007-12-17 08:57:21  europe\L190409
+ * corrected documentation
+ *
+ * Revision 1.15  2007/09/26 13:54:37  Jaco de Groot <jaco.de.groot@ibissource.org>
  * directory isn't mandatory anymore, temp file will be created in java.io.tempdir, see updated javadoc for more info
  *
  * Revision 1.14  2007/09/24 13:03:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -79,7 +82,16 @@ import sun.misc.BASE64Encoder;
  * <tr><td>{@link #setDirectory(String) directory}</td><td>base directory where files are stored in or read from</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setFileName(String) fileName}</td><td>The name of the file to use</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setFileNameSessionKey(String) fileNameSessionKey}</td><td>The session key that contains the name of the file to use (only used if fileName is not set)</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setActions(String) actions}</td><td>name of forward returned upon completion</td><td>"success"</td></tr>
+ * <tr><td>{@link #setActions(String) actions}</td><td>comma separated list of actions to be performed. Possible action values:
+ * <ul>
+ * <li>write: create a new file and write input to it</li>
+ * <li>write_append: create a new file if it does not exist, otherwise append to existing file; then write input to it</li>
+ * <li>read: read from file</li>
+ * <li>delete: delete the file</li>
+ * <li>read_delete: read the contents, then delete</li>
+ * <li>encode: encode base64</li>
+ * <li>decode: decode base64</li>
+ * </ul></td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setWriteSuffix(String) writeSuffix}</td><td>suffix of the file to be created (only used if fileName and fileNameSession are not set)</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setCreateDirectory(boolean) createDirectory}</td><td>when set to <code>true</code>, the directory to read from is created if it does not exist</td><td>false</td></tr>
  * <tr><td>{@link #setWriteLineSeparator(boolean) writeLineSeparator}</td><td>when set to <code>true</code>, a line separator is written after the content is written</td><td>false</td></tr>
@@ -99,7 +111,7 @@ import sun.misc.BASE64Encoder;
  *
  */
 public class FilePipe extends FixedForwardPipe {
-	public static final String version="$RCSfile: FilePipe.java,v $ $Revision: 1.15 $ $Date: 2007-09-26 13:54:37 $";
+	public static final String version="$RCSfile: FilePipe.java,v $ $Revision: 1.16 $ $Date: 2007-12-17 08:57:21 $";
 
 	protected String actions;
 	protected String directory;
@@ -142,7 +154,7 @@ public class FilePipe extends FixedForwardPipe {
 			else if ("decode".equalsIgnoreCase(token))
 				transformers.add(new Decoder());
 			else
-				throw new ConfigurationException(getLogPrefix(null)+"Action " + token + " is not supported");
+				throw new ConfigurationException(getLogPrefix(null)+"Action [" + token + "] is not supported");
 		}
 		
 		if (transformers.size() == 0)
