@@ -1,6 +1,9 @@
 /*
  * $Log: FilePipe.java,v $
- * Revision 1.16  2007-12-17 08:57:21  europe\L190409
+ * Revision 1.17  2007-12-17 13:21:49  europe\L190409
+ * added create option
+ *
+ * Revision 1.16  2007/12/17 08:57:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected documentation
  *
  * Revision 1.15  2007/09/26 13:54:37  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -48,6 +51,7 @@ package nl.nn.adapterframework.pipes;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -86,6 +90,7 @@ import sun.misc.BASE64Encoder;
  * <ul>
  * <li>write: create a new file and write input to it</li>
  * <li>write_append: create a new file if it does not exist, otherwise append to existing file; then write input to it</li>
+ * <li>create: create a new file, but do not write anything to it</li>
  * <li>read: read from file</li>
  * <li>delete: delete the file</li>
  * <li>read_delete: read the contents, then delete</li>
@@ -111,7 +116,7 @@ import sun.misc.BASE64Encoder;
  *
  */
 public class FilePipe extends FixedForwardPipe {
-	public static final String version="$RCSfile: FilePipe.java,v $ $Revision: 1.16 $ $Date: 2007-12-17 08:57:21 $";
+	public static final String version="$RCSfile: FilePipe.java,v $ $Revision: 1.17 $ $Date: 2007-12-17 13:21:49 $";
 
 	protected String actions;
 	protected String directory;
@@ -143,6 +148,8 @@ public class FilePipe extends FixedForwardPipe {
 				transformers.add(new FileWriter(false));
 			else if ("write_append".equalsIgnoreCase(token))
 				transformers.add(new FileWriter(true));
+			else if ("create".equalsIgnoreCase(token))
+				transformers.add(new FileCreater());
 			else if ("read".equalsIgnoreCase(token))
 				transformers.add(new FileReader());
 			else if ("delete".equalsIgnoreCase(token))
@@ -228,6 +235,29 @@ public class FilePipe extends FixedForwardPipe {
 		}
 	}
 
+	private File createFile(PipeLineSession session) throws IOException {
+		File tmpFile;
+			
+		String name = fileName;
+		if (StringUtils.isEmpty(name)) {
+			name = (String)session.get(fileNameSessionKey);
+		}
+		if (StringUtils.isEmpty(getDirectory())) {
+			if (StringUtils.isEmpty(name)) {
+				tmpFile = File.createTempFile("ibis", writeSuffix);
+			} else {
+				tmpFile = new File(name);
+			}
+		} else {
+			if (StringUtils.isEmpty(name)) {
+				tmpFile = File.createTempFile("ibis", writeSuffix, new File(getDirectory()));
+			} else {
+				tmpFile = new File(getDirectory() + File.separator + name);
+			}
+		}
+		return tmpFile;
+	}
+
 	/**
 	 * Write the input to a file in the specified directory.
 	 */
@@ -243,46 +273,50 @@ public class FilePipe extends FixedForwardPipe {
 				File file = new File(getDirectory());
 				if (!file.exists()) {
 					file.mkdirs();
-				} 
-				else if (!(file.isDirectory() && file.canWrite())) {
+				} else if (!(file.isDirectory() && file.canWrite())) {
 					throw new ConfigurationException(getLogPrefix(null)+"directory ["+ directory + "] is not a directory, or no write permission");
 				}
 			}
 		}
 		public byte[] go(byte[] in, PipeLineSession session) throws Exception {
-			File tmpFile;
-			
-			String name = fileName;
-			if (StringUtils.isEmpty(name)) {
-				name = (String)session.get(fileNameSessionKey);
-			}
-			if (StringUtils.isEmpty(getDirectory())) {
-				if (StringUtils.isEmpty(name)) {
-					tmpFile = File.createTempFile("ibis", writeSuffix);
-				} else {
-					tmpFile = new File(name);
-				}
-			} else {
-				if (StringUtils.isEmpty(name)) {
-					tmpFile = File.createTempFile("ibis", writeSuffix, new File(getDirectory()));
-				} else {
-					tmpFile = new File(getDirectory() + File.separator + name);
-				}
-			}
+			File tmpFile=createFile(session);
 
 			// Use tmpFile.getPath() instead of tmpFile to be WAS 5.0 / Java 1.3 compatible
 			FileOutputStream fos = new FileOutputStream(tmpFile.getPath(), append);
 			
 			try {
-				fos.write(in);
-				if (isWriteLineSeparator()) {
-					fos.write(eolArray);
+				if (in!=null) {
+					fos.write(in);
+					if (isWriteLineSeparator()) {
+						fos.write(eolArray);
+					}
 				}
-			}
-			finally {
+			} finally {
 				fos.close();
 			}
 			
+			return tmpFile.getPath().getBytes();
+		}
+	}
+
+	/**
+	 * create a new file.
+	 */
+	private class FileCreater implements TransformerAction {
+		// create the directory structure if not exists and
+		// check the permissions
+		public void configure() throws ConfigurationException {
+			if (StringUtils.isNotEmpty(getDirectory())) {
+				File file = new File(getDirectory());
+				if (!file.exists()) {
+					file.mkdirs();
+				} else if (!(file.isDirectory() && file.canWrite())) {
+					throw new ConfigurationException(getLogPrefix(null)+"directory ["+ directory + "] is not a directory, or no write permission");
+				}
+			}
+		}
+		public byte[] go(byte[] in, PipeLineSession session) throws Exception {
+			File tmpFile=createFile(session);
 			return tmpFile.getPath().getBytes();
 		}
 	}
@@ -326,8 +360,7 @@ public class FilePipe extends FixedForwardPipe {
 				byte[] result = new byte[fis.available()];
 				fis.read(result);
 				return result;
-			}
-			finally {
+			} finally {
 				fis.close();
 
 				if (deleteAfterRead)
