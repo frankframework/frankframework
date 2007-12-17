@@ -1,6 +1,9 @@
 /*
  * $Log: MessageSendingPipe.java,v $
- * Revision 1.36  2007-12-10 10:11:39  europe\L190409
+ * Revision 1.37  2007-12-17 08:57:40  europe\L190409
+ * input and output validation
+ *
+ * Revision 1.36  2007/12/10 10:11:39  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added input/output validation
  *
  * Revision 1.35  2007/10/03 08:52:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -203,7 +206,7 @@ import org.apache.commons.lang.SystemUtils;
  */
 
 public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
-	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.36 $ $Date: 2007-12-10 10:11:39 $";
+	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.37 $ $Date: 2007-12-17 08:57:40 $";
 
 	private final static String TIMEOUTFORWARD = "timeout";
 	private final static String EXCEPTIONFORWARD = "exception";
@@ -330,9 +333,19 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 			}
 		}
 		if (getInputValidator()!=null) {
+			PipeForward pf = new PipeForward();
+			pf.setName("success");
+			getInputValidator().registerForward(pf);
+			getInputValidator().setName("inputValidator of "+getName());
+			getInputValidator().configure();
 			getInputValidator().configure();
 		}
 		if (getOutputValidator()!=null) {
+			PipeForward pf = new PipeForward();
+			pf.setName("success");
+			getOutputValidator().registerForward(pf);
+			getOutputValidator().setName("outputValidator of "+getName());
+			getOutputValidator().configure();
 			getOutputValidator().configure();
 		}
 	}
