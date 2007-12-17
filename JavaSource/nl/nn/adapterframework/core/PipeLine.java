@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.54  2007-12-10 10:04:53  europe\L190409
+ * Revision 1.55  2007-12-17 08:49:00  europe\L190409
+ * input and output validation
+ *
+ * Revision 1.54  2007/12/10 10:04:53  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fixed commitOnState (rollback only, no exceptions)
  * added input/output validation
  *
@@ -249,7 +252,7 @@ import org.apache.log4j.Logger;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.54 $ $Date: 2007-12-10 10:04:53 $";
+	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.55 $ $Date: 2007-12-17 08:49:00 $";
     private Logger log = LogUtil.getLogger(this);
 	private Logger durationLog = LogUtil.getLogger("LongDurationMessages");
     
@@ -378,9 +381,17 @@ public class PipeLine {
 	    }
 
 		if (getInputValidator()!=null) {
+			PipeForward pf = new PipeForward();
+			pf.setName("success");
+			getInputValidator().registerForward(pf);
+			getInputValidator().setName("inputValidator of "+owner.getName());
 			getInputValidator().configure();
 		}
 		if (getOutputValidator()!=null) {
+			PipeForward pf = new PipeForward();
+			pf.setName("success");
+			getOutputValidator().registerForward(pf);
+			getOutputValidator().setName("outputValidator of "+owner.getName());
 			getOutputValidator().configure();
 		}
 
@@ -571,10 +582,19 @@ public class PipeLine {
 		if (inputValidator!=null) {
 			PipeRunResult validationResult = inputValidator.doPipe(message,pipeLineSession);
 			if (validationResult!=null && !validationResult.getPipeForward().getName().equals("success")) {
-				pipeToRun = getPipe(validationResult.getPipeForward().getPath());
+				PipeForward validationForward=validationResult.getPipeForward();
+				if (validationForward.getPath()==null) {
+					throw new PipeRunException(pipeToRun,"forward ["+validationForward.getName()+"] of inputValidator has emtpy forward path");
+				}	
+				log.warn("setting first pipe to ["+validationForward.getPath()+"] due to validation fault");
+				pipeToRun = getPipe(validationForward.getPath());
+				if (pipeToRun==null) {
+					throw new PipeRunException(pipeToRun,"forward ["+validationForward.getName()+"], path ["+validationForward.getPath()+"] does not correspond to a pipe");
+				}
 			}
 		}
 	
+		boolean outputValidated=false;
 		try {    
 			while (!ready){
 				IExtendedPipe pe=null;
@@ -588,7 +608,9 @@ public class PipeLine {
 			
 				if (log.isDebugEnabled()){  // for performance reasons
 					StringBuffer sb=new StringBuffer();
-					sb.append("Pipeline of adapter ["+owner.getName()+"] messageId ["+messageId+"] is about to call pipe ["+ pipeToRun.getName()+"]");
+					String ownerName=owner==null?"<null>":owner.getName();
+					String pipeToRunName=pipeToRun==null?"<null>":pipeToRun.getName();
+					sb.append("Pipeline of adapter ["+ownerName+"] messageId ["+messageId+"] is about to call pipe ["+ pipeToRunName+"]");
 	
 					if (AppConstants.getInstance().getProperty("log.logIntermediaryResults")!=null) {
 						if (AppConstants.getInstance().getProperty("log.logIntermediaryResults").equalsIgnoreCase("true")) {
@@ -653,11 +675,11 @@ public class PipeLine {
 					if (pe !=null) {
 						if (pipeRunResult!=null && StringUtils.isNotEmpty(pe.getStoreResultInSessionKey())) {
 							if (log.isDebugEnabled()) log.debug("Pipeline of adapter ["+owner.getName()+"] storing result for pipe ["+pe.getName()+"] under sessionKey ["+pe.getStoreResultInSessionKey()+"]");
-						pipeLineSession.put(pe.getStoreResultInSessionKey(),pipeRunResult.getResult());
-					}
-					if (pe.isPreserveInput()) {
-						pipeRunResult.setResult(preservedObject);
-					}
+							pipeLineSession.put(pe.getStoreResultInSessionKey(),pipeRunResult.getResult());
+						}
+						if (pe.isPreserveInput()) {
+							pipeRunResult.setResult(preservedObject);
+						}
 					}
 				} catch (PipeRunException pre) {
 					TracingUtil.exceptionEvent(pipeToRun);
@@ -665,7 +687,7 @@ public class PipeLine {
 				} catch (RuntimeException re) {
 					TracingUtil.exceptionEvent(pipeToRun);
 					throw new PipeRunException(pipeToRun, "Uncaught runtime exception running pipe '"
-                            + pipeToRun.getName() + "'", re);
+                            + (pipeToRun==null?"null":pipeToRun.getName()) + "'", re);
 				} finally {
 					TracingUtil.afterEvent(pipeToRun);
 					if (pe!=null) {
@@ -692,13 +714,31 @@ public class PipeLine {
 					throw new PipeRunException(pipeToRun, "Pipeline of ["+owner.getName()+"] got an path that equals null or has a zero-length value from pipe ["+pipeToRun.getName()+"]. Check the configuration, probably forwards are not defined for this pipe.");
 				}
 	
-				if (null!=pipeLineExits.get(nextPath)){
-					String state=((PipeLineExit)pipeLineExits.get(nextPath)).getState();
-					pipeLineResult.setState(state);
-					pipeLineResult.setResult(object.toString());
-					ready=true;
-					if (log.isDebugEnabled()){  // for performance reasons
-						log.debug("Pipeline of adapter ["+ owner.getName()+ "] finished processing messageId ["+messageId+"] result: ["+ object.toString()+ "] with exit-state ["+state+"]");
+				PipeLineExit plExit=(PipeLineExit)pipeLineExits.get(nextPath);
+				if (null!=plExit){
+					IPipe outputValidator = getOutputValidator();
+					if (outputValidator !=null && !outputValidated) {
+						outputValidated=true;
+						PipeRunResult validationResult = outputValidator.doPipe(object,pipeLineSession);
+						if (validationResult!=null && !validationResult.getPipeForward().getName().equals("success")) {
+							PipeForward validationForward=validationResult.getPipeForward();
+							if (validationForward.getPath()==null) {
+								throw new PipeRunException(pipeToRun,"forward ["+validationForward.getName()+"] of outputValidator has emtpy forward path");
+							}	
+							log.warn("setting next pipe to ["+validationForward.getPath()+"] due to validation fault");
+							pipeToRun = getPipe(validationForward.getPath());
+							if (pipeToRun==null) {
+								throw new PipeRunException(pipeToRun,"forward ["+validationForward.getName()+"], path ["+validationForward.getPath()+"] does not correspond to a pipe");
+							}
+						}
+					} else {
+						String state=plExit.getState();
+						pipeLineResult.setState(state);
+						pipeLineResult.setResult(object.toString());
+						ready=true;
+						if (log.isDebugEnabled()){  // for performance reasons
+							log.debug("Pipeline of adapter ["+ owner.getName()+ "] finished processing messageId ["+messageId+"] result: ["+ object.toString()+ "] with exit-state ["+state+"]");
+						}
 					}
 				} else {
 					pipeToRun=getPipe(pipeForward.getPath());
