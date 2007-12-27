@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.55  2007-12-17 08:49:00  europe\L190409
+ * Revision 1.56  2007-12-27 16:01:59  europe\L190409
+ * avoid NPE for null pipeline results
+ *
+ * Revision 1.55  2007/12/17 08:49:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * input and output validation
  *
  * Revision 1.54  2007/12/10 10:04:53  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -252,7 +255,7 @@ import org.apache.log4j.Logger;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.55 $ $Date: 2007-12-17 08:49:00 $";
+	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.56 $ $Date: 2007-12-27 16:01:59 $";
     private Logger log = LogUtil.getLogger(this);
 	private Logger durationLog = LogUtil.getLogger("LongDurationMessages");
     
@@ -734,7 +737,11 @@ public class PipeLine {
 					} else {
 						String state=plExit.getState();
 						pipeLineResult.setState(state);
-						pipeLineResult.setResult(object.toString());
+						if (object!=null) {
+							pipeLineResult.setResult(object.toString());
+						} else { 
+							pipeLineResult.setResult(null);
+						}
 						ready=true;
 						if (log.isDebugEnabled()){  // for performance reasons
 							log.debug("Pipeline of adapter ["+ owner.getName()+ "] finished processing messageId ["+messageId+"] result: ["+ object.toString()+ "] with exit-state ["+state+"]");
