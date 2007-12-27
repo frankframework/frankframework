@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcTransactionalStorage.java,v $
- * Revision 1.25  2007-12-10 10:06:28  europe\L190409
+ * Revision 1.26  2007-12-27 16:02:55  europe\L190409
+ * add grant to SYS.PENDING_TRANSACTIONS to create DDL-comments
+ *
+ * Revision 1.25  2007/12/10 10:06:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * modified SQL creation scripts
  *
  * Revision 1.24  2007/11/15 12:30:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -155,6 +158,7 @@ import org.apache.commons.lang.StringUtils;
 
 	GRANT DELETE, INSERT, SELECT, UPDATE ON IBISSTORE TO <rolenaam>;
 	GRANT SELECT ON SEQ_IBISSTORE TO <rolenaam>;
+	GRANT SELECT ON SYS.DBA_PENDING_TRANSACTIONS TO <rolenaam>;
  *  </pre>
  * 
  * For a generic database the following objects are used by default:
@@ -188,7 +192,7 @@ import org.apache.commons.lang.StringUtils;
  * @since 	4.1
  */
 public class JdbcTransactionalStorage extends JdbcFacade implements ITransactionalStorage {
-	public static final String version = "$RCSfile: JdbcTransactionalStorage.java,v $ $Revision: 1.25 $ $Date: 2007-12-10 10:06:28 $";
+	public static final String version = "$RCSfile: JdbcTransactionalStorage.java,v $ $Revision: 1.26 $ $Date: 2007-12-27 16:02:55 $";
 	
 	// the following currently only for debug.... 
 	boolean checkIfTableExists=true;

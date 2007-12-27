@@ -1,6 +1,9 @@
 /*
  * $Log: OracleTransactionalStorage.java,v $
- * Revision 1.11  2007-12-10 10:06:28  europe\L190409
+ * Revision 1.12  2007-12-27 16:02:55  europe\L190409
+ * add grant to SYS.PENDING_TRANSACTIONS to create DDL-comments
+ *
+ * Revision 1.11  2007/12/10 10:06:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * modified SQL creation scripts
  *
  * Revision 1.10  2007/06/12 11:20:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -86,6 +89,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 
 	GRANT DELETE, INSERT, SELECT, UPDATE ON IBISSTORE TO <rolenaam>;
 	GRANT SELECT ON SEQ_IBISSTORE TO <rolenaam>;
+	GRANT SELECT ON SYS.DBA_PENDING_TRANSACTIONS TO <rolenaam>;
  *  </pre>
  * If these objects do not exist, Ibis will try to create them if the attribute createTable="true".
  * 
@@ -95,7 +99,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
  * @deprecated The functionality of the OracleTransactionalStorage has been incorporated in de JdbcTransactionalStorage.
  */
 public class OracleTransactionalStorage extends JdbcTransactionalStorage {
-	public static final String version = "$RCSfile: OracleTransactionalStorage.java,v $ $Revision: 1.11 $ $Date: 2007-12-10 10:06:28 $";
+	public static final String version = "$RCSfile: OracleTransactionalStorage.java,v $ $Revision: 1.12 $ $Date: 2007-12-27 16:02:55 $";
 
 	public void configure() throws ConfigurationException {
 		log.warn("Class OracleTransactionalStorage is no longer maintained. Please replace with JdbcTransactionalStorage");
