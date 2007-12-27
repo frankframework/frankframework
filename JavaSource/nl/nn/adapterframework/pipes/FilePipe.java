@@ -1,6 +1,9 @@
 /*
  * $Log: FilePipe.java,v $
- * Revision 1.17  2007-12-17 13:21:49  europe\L190409
+ * Revision 1.18  2007-12-27 16:04:15  europe\L190409
+ * force file to be created for action 'create'
+ *
+ * Revision 1.17  2007/12/17 13:21:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added create option
  *
  * Revision 1.16  2007/12/17 08:57:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -116,7 +119,7 @@ import sun.misc.BASE64Encoder;
  *
  */
 public class FilePipe extends FixedForwardPipe {
-	public static final String version="$RCSfile: FilePipe.java,v $ $Revision: 1.17 $ $Date: 2007-12-17 13:21:49 $";
+	public static final String version="$RCSfile: FilePipe.java,v $ $Revision: 1.18 $ $Date: 2007-12-27 16:04:15 $";
 
 	protected String actions;
 	protected String directory;
@@ -317,6 +320,8 @@ public class FilePipe extends FixedForwardPipe {
 		}
 		public byte[] go(byte[] in, PipeLineSession session) throws Exception {
 			File tmpFile=createFile(session);
+			FileOutputStream fos = new FileOutputStream(tmpFile.getPath(), false);
+			fos.close();
 			return tmpFile.getPath().getBytes();
 		}
 	}
