@@ -1,6 +1,9 @@
 /*
  * $Log: StartIbis.java,v $
- * Revision 1.6  2007-10-09 15:02:54  europe\L190409
+ * Revision 1.7  2007-12-27 16:00:30  europe\L190409
+ * cosmetic changes
+ *
+ * Revision 1.6  2007/10/09 15:02:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Direct copy from Ibis-EJB:
  * delegate work to IbisManager
  *
@@ -19,18 +22,13 @@ import nl.nn.adapterframework.configuration.IbisManager;
  * @version Id
  */
 public class StartIbis {
-	public static final String version="$RCSfile: StartIbis.java,v $ $Revision: 1.6 $ $Date: 2007-10-09 15:02:54 $";
 
-	public StartIbis() {
-		super();
-	}
 	public static void main(String[] args) {
         String configFile = IbisManager.DFLT_CONFIGURATION;
         if (args.length > 0) {
             configFile = args[0];
         }
         IbisMain im=new IbisMain();
-        im.initConfig(null, configFile, 
-            IbisMain.DFLT_AUTOSTART);
+        im.initConfig(null, configFile, IbisMain.DFLT_AUTOSTART);
 	}
 }
