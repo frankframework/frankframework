@@ -1,6 +1,9 @@
 /*
  * $Log: Adapter.java,v $
- * Revision 1.35  2007-12-12 09:08:41  europe\L190409
+ * Revision 1.36  2007-12-28 12:01:00  europe\L190409
+ * log error messages in request-reply logging
+ *
+ * Revision 1.35  2007/12/12 09:08:41  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added message class to monitor event from error
  *
  * Revision 1.34  2007/12/10 10:00:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -174,7 +177,7 @@ import org.springframework.core.task.TaskExecutor;
  */
 
 public class Adapter implements IAdapter, NamedBean {
-	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.35 $ $Date: 2007-12-12 09:08:41 $";
+	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.36 $ $Date: 2007-12-28 12:01:00 $";
 	private Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -331,13 +334,21 @@ public class Adapter implements IAdapter, NamedBean {
 		}
 		// you never can trust an implementation, so try/catch!
 		try {
-			return errorMessageFormatter.format(
+			String formattedErrorMessage= errorMessageFormatter.format(
 				errorMessage,
 				t,
 				objectInError,
 				originalMessage,
 				messageID,
 				receivedTime);
+			if (isRequestReplyLogging()) {
+				log.info("Adapter [" + getName() + "] messageId[" + messageID + "] formatted errormessage, result [" + formattedErrorMessage + "]");
+			} else {
+				if (log.isDebugEnabled()) {
+					log.info("Adapter [" + getName() + "] messageId[" + messageID + "] formatted errormessage, result [" + formattedErrorMessage + "]");
+				}
+			}
+			return formattedErrorMessage;
 		}
 		catch (Exception e) {
 			String msg = "got error while formatting errormessage, original errorMessage [" + errorMessage + "]";
