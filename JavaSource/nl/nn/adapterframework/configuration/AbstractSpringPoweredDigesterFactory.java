@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractSpringPoweredDigesterFactory.java,v $
- * Revision 1.7  2007-11-22 08:23:25  europe\L190409
+ * Revision 1.8  2007-12-28 08:53:24  europe\L190409
+ * cosmetic changes
+ *
+ * Revision 1.7  2007/11/22 08:23:25  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved logging
  *
  * Revision 1.6  2007/10/24 08:04:23  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
@@ -68,9 +71,7 @@ import org.xml.sax.Attributes;
  * @version Id
  * 
  */
-public abstract class AbstractSpringPoweredDigesterFactory
-    extends AbstractObjectCreationFactory
-    implements ObjectCreationFactory {
+public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjectCreationFactory implements ObjectCreationFactory {
 
     public static ListableBeanFactory factory;
     protected final Logger log = LogUtil.getLogger(this);
@@ -191,12 +192,8 @@ public abstract class AbstractSpringPoweredDigesterFactory
      * @throws IllegalAccessException
      * @throws ConfigurationException
      */
-    protected Object createBeanFromClassName(String className)
-        throws
-            ClassNotFoundException,
-            InstantiationException,
-            IllegalAccessException,
-            ConfigurationException {
+    protected Object createBeanFromClassName(String className) 
+    	throws ClassNotFoundException, InstantiationException, IllegalAccessException, ConfigurationException {
         
         String beanName;
         Class beanClass;
@@ -227,8 +224,8 @@ public abstract class AbstractSpringPoweredDigesterFactory
         
         // Only accept prototype-beans!
         if (isPrototypesOnly() && !factory.isPrototype(beanName)) {
-            throw new ConfigurationException("Beans created from the BeanFactory must be prototype-beans, bean '"
-                + beanName + "' of class '" + className + "' is not.");
+            throw new ConfigurationException("Beans created from the BeanFactory must be prototype-beans, bean ["
+                + beanName + "] of class [" + className + "] is not.");
         }
         if (log.isDebugEnabled()) {
             log.debug("Creating bean with actual bean-name [" + beanName + "], bean-class [" + (beanClass != null ? beanClass.getName() : "null") + "] from Spring Bean Factory.");
@@ -236,18 +233,13 @@ public abstract class AbstractSpringPoweredDigesterFactory
         return factory.getBean(beanName, beanClass);
     }
 
-    protected Object createBeanAndAutoWire(Class beanClass)
-        throws InstantiationException, IllegalAccessException {
+    protected Object createBeanAndAutoWire(Class beanClass) throws InstantiationException, IllegalAccessException {
         if (log.isDebugEnabled()) {
-            log.debug("Bean class '" + beanClass.getName() + "' not found in Spring Bean Factory, instantiating directly and using Spring Factory for auto-wiring support.");
+            log.debug("Bean class [" + beanClass.getName() + "] not found in Spring Bean Factory, instantiating directly and using Spring Factory for auto-wiring support.");
         }
         Object o = beanClass.newInstance();
         if (factory instanceof AutowireCapableBeanFactory) {
-            ((AutowireCapableBeanFactory)factory)
-                .autowireBeanProperties(
-                    o, 
-                    AutowireCapableBeanFactory.AUTOWIRE_BY_NAME,
-                    false);
+            ((AutowireCapableBeanFactory)factory).autowireBeanProperties(o,AutowireCapableBeanFactory.AUTOWIRE_BY_NAME,false);
             o = ((AutowireCapableBeanFactory)factory).initializeBean(o, getSuggestedBeanName());
         } else if (o instanceof BeanFactoryAware) {
             ((BeanFactoryAware)o).setBeanFactory(factory);
