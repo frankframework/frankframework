@@ -1,6 +1,9 @@
 /*
  * $Log: FtpSender.java,v $
- * Revision 1.11  2006-01-05 14:17:46  europe\L190409
+ * Revision 1.12  2007-12-28 12:08:05  europe\L190409
+ * added certificate property getters
+ *
+ * Revision 1.11  2006/01/05 14:17:46  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.10  2005/12/19 17:22:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -93,7 +96,7 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
  * @author: John Dekker
  */
 public class FtpSender extends SenderWithParametersBase {
-	public static final String version = "$RCSfile: FtpSender.java,v $  $Revision: 1.11 $ $Date: 2006-01-05 14:17:46 $";
+	public static final String version = "$RCSfile: FtpSender.java,v $  $Revision: 1.12 $ $Date: 2007-12-28 12:08:05 $";
 
 	private FtpSession ftpSession;
 	
@@ -225,11 +228,20 @@ public class FtpSender extends SenderWithParametersBase {
 	public void setCertificate(String certificate) {
 		ftpSession.setCertificate(certificate);
 	}
+	public String getCertificate() {
+		return ftpSession.getCertificate();
+	}
 	public void setCertificateType(String keystoreType) {
 		ftpSession.setCertificateType(keystoreType);
 	}
+	public String getCertificateType() {
+		return ftpSession.getCertificateType();
+	}
 	public void setCertificateAuthAlias(String certificateAuthAlias) {
 		ftpSession.setCertificateAuthAlias(certificateAuthAlias);
+	}
+	public String getCertificateAuthAlias() {
+		return ftpSession.getCertificateAuthAlias();
 	}
 	public void setCertificatePassword(String certificatePassword) {
 		ftpSession.setCertificatePassword(certificatePassword);
