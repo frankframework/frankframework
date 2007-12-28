@@ -1,6 +1,9 @@
 /*
  * $Log: HttpSender.java,v $
- * Revision 1.30  2007-10-03 08:46:40  europe\L190409
+ * Revision 1.31  2007-12-28 12:09:33  europe\L190409
+ * added timeout exception detection
+ *
+ * Revision 1.30  2007/10/03 08:46:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added link to IBM site with JDK policy files
  *
  * Revision 1.29  2007/02/21 15:59:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -224,7 +227,7 @@ import nl.nn.adapterframework.util.CredentialFactory;
  * @since 4.2c
  */
 public class HttpSender extends SenderWithParametersBase implements HasPhysicalDestination {
-	public static final String version = "$RCSfile: HttpSender.java,v $ $Revision: 1.30 $ $Date: 2007-10-03 08:46:40 $";
+	public static final String version = "$RCSfile: HttpSender.java,v $ $Revision: 1.31 $ $Date: 2007-12-28 12:09:33 $";
 
 	private String url;
 	private String methodType="GET"; // GET or POST
@@ -530,6 +533,7 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 		String result = null;
 		int statusCode = -1;
 		int count=getMaxExecuteRetries();
+		String msg = null;
 		try {
 			while (count-->0 && statusCode==-1) {
 				try {
@@ -554,7 +558,6 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 					if (throwable!=null) {
 						cause = throwable.toString();
 					}
-					String msg = null;
 					if (e!=null) {
 						msg = e.getMessage();
 					}
@@ -568,7 +571,12 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 		}
 
 		if (statusCode==-1){
-			throw new SenderException("Failed to recover from exception");
+			if (StringUtils.contains(msg.toUpperCase(), "TIMEOUTEXCEPTION")) {
+				//java.net.SocketTimeoutException: Read timed out
+				throw new TimeOutException("Failed to recover from timeout exception");
+			} else {
+				throw new SenderException("Failed to recover from exception");
+			}
 		}
 
 		return result;	
