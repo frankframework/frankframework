@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractEJBBase.java,v $
- * Revision 1.4  2007-11-22 08:47:43  europe\L190409
+ * Revision 1.5  2007-12-28 08:55:45  europe\L190409
+ * get config from manager instead of from main
+ *
+ * Revision 1.4  2007/11/22 08:47:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * update from ejb-branch
  *
  * Revision 1.3.2.3  2007/11/15 10:24:32  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
@@ -58,7 +61,7 @@ abstract public class AbstractEJBBase {
     protected static IbisMain main;
     protected static IbisManager manager;
     protected static Configuration config;
-    protected static ListableBeanFactory beanFactory;
+    private static ListableBeanFactory beanFactory;
     
     private Context context;
     
@@ -73,7 +76,7 @@ abstract public class AbstractEJBBase {
         // most importantly the right Spring Context!
         main.initConfig();
         manager = main.getIbisManager();
-        config = main.getConfiguration();
+        config = manager.getConfiguration();
         manager.startIbis();
         beanFactory = main.getBeanFactory();
     }
@@ -85,12 +88,9 @@ abstract public class AbstractEJBBase {
      */
     public AbstractEJBBase() {
         // Apply auto-wiring and initialization to self
-        ((AutowireCapableBeanFactory)beanFactory)
-            .autowireBeanProperties(
-                this, 
-                AutowireCapableBeanFactory.AUTOWIRE_BY_NAME,
-                false);
-        ((AutowireCapableBeanFactory)beanFactory).initializeBean(this, "IbisEJB");
+		AutowireCapableBeanFactory acbf = (AutowireCapableBeanFactory)beanFactory;
+		acbf.autowireBeanProperties(this, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
+		acbf.initializeBean(this, "IbisEJB");
     }
     
     /**
