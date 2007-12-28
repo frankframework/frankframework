@@ -1,7 +1,7 @@
 /*
  * $Log: FtpSender.java,v $
- * Revision 1.12  2007-12-28 12:08:05  europe\L190409
- * added certificate property getters
+ * Revision 1.13  2007-12-28 12:15:35  europe\L190409
+ * added getPassword
  *
  * Revision 1.11  2006/01/05 14:17:46  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
@@ -96,7 +96,7 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
  * @author: John Dekker
  */
 public class FtpSender extends SenderWithParametersBase {
-	public static final String version = "$RCSfile: FtpSender.java,v $  $Revision: 1.12 $ $Date: 2007-12-28 12:08:05 $";
+	public static final String version = "$RCSfile: FtpSender.java,v $  $Revision: 1.13 $ $Date: 2007-12-28 12:15:35 $";
 
 	private FtpSession ftpSession;
 	
@@ -245,6 +245,9 @@ public class FtpSender extends SenderWithParametersBase {
 	}
 	public void setCertificatePassword(String certificatePassword) {
 		ftpSession.setCertificatePassword(certificatePassword);
+	}
+	public String getCertificatePassword() {
+		return ftpSession.getCertificatePassword();
 	}
 
 
