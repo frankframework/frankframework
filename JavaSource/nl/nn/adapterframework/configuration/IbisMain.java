@@ -1,6 +1,9 @@
 /*
  * $Log: IbisMain.java,v $
- * Revision 1.6  2007-10-16 13:18:03  europe\M00035F
+ * Revision 1.7  2007-12-28 08:54:23  europe\L190409
+ * made fields private
+ *
+ * Revision 1.6  2007/10/16 13:18:03  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
  * Allow creating of Spring Factory without creating instance of IbisMain
  *
  * Revision 1.5  2007/10/16 13:07:39  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
@@ -64,28 +67,22 @@ public class IbisMain {
     public static final String DFLT_AUTOSTART = "TRUE";
     public static final String DFLT_SPRING_CONTEXT = "/springContext.xml";
     
-    protected ListableBeanFactory beanFactory;
-    protected IbisManager ibisManager;
+    private ListableBeanFactory beanFactory;
+    private IbisManager ibisManager;
     
 	public static void main(String[] args) {
         IbisMain im=new IbisMain();
-        im.initConfig(
-                IbisMain.DFLT_SPRING_CONTEXT,
-                IbisManager.DFLT_CONFIGURATION, 
-                IbisMain.DFLT_AUTOSTART);
+        im.initConfig(IbisMain.DFLT_SPRING_CONTEXT, IbisManager.DFLT_CONFIGURATION, IbisMain.DFLT_AUTOSTART);
 	}
     
-    /**
-     * Initialize Ibis with all default parameters
-     * 
-     * @return
-     */
-    public boolean initConfig() {
-        return initConfig(
-                IbisMain.DFLT_SPRING_CONTEXT,
-                IbisManager.DFLT_CONFIGURATION,
-                IbisMain.DFLT_AUTOSTART);
-    }
+	/**
+	 * Initialize Ibis with all default parameters.
+	 * 
+	 * @return
+	 */
+	public boolean initConfig() {
+	    return initConfig(IbisMain.DFLT_SPRING_CONTEXT, IbisManager.DFLT_CONFIGURATION, IbisMain.DFLT_AUTOSTART);
+	}
     
     /**
      * Initalize Ibis with the given parameters, substituting default
@@ -101,19 +98,8 @@ public class IbisMain {
      * @param autoStart
      * @return
      */
-    public boolean initConfig(
-            String springContext,
-            String configurationFile,
-            String autoStart) {
-        log.info("* IBIS Startup: Running on JDK version '" 
-                + System.getProperty("java.version")
-                + "', Spring indicates JDK Major version: 1." + (JdkVersion.getMajorJavaVersion()+3));
-        // This should be made conditional, somehow
-        startJmxServer();
-        
-		beanFactory = createBeanFactory(springContext);
-        ibisManager = (IbisManager) beanFactory.getBean("ibisManager");
-        
+    public boolean initConfig(String springContext, String configurationFile, String autoStart) {
+		init(springContext);        
         ibisManager.loadConfigurationFile(configurationFile);
         
         if ("TRUE".equalsIgnoreCase(autoStart)) {
@@ -123,6 +109,16 @@ public class IbisMain {
         log.info("* IBIS Startup: Startup complete");
         return true;
     }
+
+	public void init(String springContext) {
+		log.info("* IBIS Startup: Running on JDK version [" + System.getProperty("java.version")
+				+ "], Spring indicates JDK Major version: 1." + (JdkVersion.getMajorJavaVersion()+3));
+		// This should be made conditional, somehow
+		startJmxServer();
+		
+		beanFactory = createBeanFactory(springContext);
+		ibisManager = getIbisManager(beanFactory);
+	}
 
 	/**
 	 * Create Spring Bean factory. Parameter 'springContext' can be null.
@@ -139,17 +135,19 @@ public class IbisMain {
 	 * @throws BeansException If the Factory can not be created.
 	 * 
 	 */
-	static public XmlBeanFactory createBeanFactory(String springContext)
-		throws BeansException {
+	static public XmlBeanFactory createBeanFactory(String springContext) throws BeansException {
 		// Reading in Spring Context
 		if (springContext == null) {
 		    springContext = DFLT_SPRING_CONTEXT;
 		}
-		log.info("* IBIS Startup: Creating Spring Bean Factory from file '"
-		    + springContext + "'");
+		log.info("* IBIS Startup: Creating Spring Bean Factory from file [" + springContext + "]");
 		Resource rs = new ClassPathResource(springContext);
 		XmlBeanFactory bf = new XmlBeanFactory(rs);
 		return bf;
+	}
+
+	static public IbisManager getIbisManager(ListableBeanFactory beanFactory) throws BeansException {
+		return (IbisManager) beanFactory.getBean("ibisManager");
 	}
 
 	private void startJmxServer() {
@@ -161,8 +159,7 @@ public class IbisMain {
         log.info("* IBIS Startup: Attempting to start MBean server");
 		MBeanServer server=MBeanServerFactory.createMBeanServer();
 		try {
-		  ObjectInstance html = server.createMBean("com.sun.jdmk.comm.HtmlAdaptorServer", 
-		  null);
+		  ObjectInstance html = server.createMBean("com.sun.jdmk.comm.HtmlAdaptorServer", null);
 		    
 		  server.invoke(html.getObjectName(), "start", new Object[0], new String[0]);
         } catch (ReflectionException e ) {
@@ -175,30 +172,18 @@ public class IbisMain {
 		log.info("MBean server up and running. Monitor your application by pointing your browser to http://localhost:8082");
 	}
     
-	/**
-	 * @return
-	 */
-	public ListableBeanFactory getBeanFactory() {
-		return beanFactory;
-	}
 
-	/**
-	 * @return
-	 */
-	public Configuration getConfiguration() {
-		return ibisManager.getConfiguration();
-	}
-
-	/**
-	 * @param factory
-	 */
 	public void setBeanFactory(ListableBeanFactory factory) {
 		beanFactory = factory;
 	}
+	public ListableBeanFactory getBeanFactory() {
+		if (beanFactory==null) {
+			init(DFLT_SPRING_CONTEXT);
+		}
+		return beanFactory;
+	}
 
-	/**
-	 * @return
-	 */
+
 	public IbisManager getIbisManager() {
 		return ibisManager;
 	}
