@@ -1,6 +1,9 @@
 /*
  * $Log: IbisMultiSourceExpander.java,v $
- * Revision 1.3  2007-10-16 09:12:27  europe\M00035F
+ * Revision 1.4  2008-01-03 15:39:20  europe\L190409
+ * remove superfluous logging
+ *
+ * Revision 1.3  2007/10/16 09:12:27  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
  * Merge with changes from EJB branch in preparation for creating new EJB brance
  *
  * Revision 1.1.2.4  2007/10/15 11:35:52  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
@@ -38,9 +41,8 @@ public class IbisMultiSourceExpander implements VariableExpander {
     private List sources = new ArrayList();
     private boolean environmentFallback = false;
     
-	/**
-	 * 
-	 */
+    private boolean trace=false;
+    
 	public IbisMultiSourceExpander() {
 		super();
 	}
@@ -58,13 +60,13 @@ public class IbisMultiSourceExpander implements VariableExpander {
 	 * @see org.apache.commons.digester.substitution.VariableExpander#expand(java.lang.String)
 	 */
 	public String expand(String inp) {
-        if (log.isDebugEnabled()) {
+        if (trace && log.isDebugEnabled()) {
             log.debug("Requested to expand input-string [" + inp + "]");
         }
         int lastVarEnd = 0;
         int varMarkerPos = inp.indexOf("${");
         if (varMarkerPos == -1) {
-            log.debug("No substitutions to be made");
+			if (trace && log.isDebugEnabled()) { log.debug("No substitutions to be made"); } 
             return inp;
         }
         StringBuffer result = new StringBuffer();
@@ -107,7 +109,7 @@ public class IbisMultiSourceExpander implements VariableExpander {
             result.append(inp.substring(lastVarEnd));
         }
         String resultString = result.toString();
-        if (log.isDebugEnabled()) {
+        if (trace && log.isDebugEnabled()) {
             log.debug("Input-string [" + inp + "] expanded to [" + resultString + "]");
         }
 		return resultString;
