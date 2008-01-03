@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaEjbBeanBase.java,v $
- * Revision 1.2  2007-11-22 08:48:19  europe\L190409
+ * Revision 1.3  2008-01-03 15:44:39  europe\L190409
+ * rework port connected listener interfaces
+ *
+ * Revision 1.2  2007/11/22 08:48:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * update from ejb-branch
  *
  * Revision 1.1.2.4  2007/11/15 12:59:51  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
@@ -21,20 +24,21 @@
 
 package nl.nn.adapterframework.extensions.ifsa.ejb;
 
-import com.ing.ifsa.api.ServiceRequest;
-import com.ing.ifsa.exceptions.ServiceException;
 import java.rmi.RemoteException;
 import java.util.HashMap;
 import java.util.Map;
+
 import javax.ejb.CreateException;
 import javax.ejb.EJBContext;
 import javax.ejb.EJBException;
 import javax.ejb.SessionBean;
 import javax.ejb.SessionContext;
-import nl.nn.adapterframework.core.IPortConnectedListener;
+
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.ejb.AbstractListenerConnectingEJB;
-import nl.nn.adapterframework.receivers.GenericReceiver;
+
+import com.ing.ifsa.api.ServiceRequest;
+import com.ing.ifsa.exceptions.ServiceException;
 
 /**
  *
@@ -58,12 +62,11 @@ abstract public class IfsaEjbBeanBase extends AbstractListenerConnectingEJB impl
         log.debug(">>> processRequest() Processing IFSA Request, generic handling");
         Map threadContext = new HashMap();
         try {
-            GenericReceiver receiver = (GenericReceiver) listener.getReceiver();
-            listener.populateThreadContext(request, threadContext, null);
+//            listener.populateThreadContext(request, threadContext, null);
             String message = listener.getStringFromRawMessage(request, threadContext);
             String id = listener.getIdFromRawMessage(request, threadContext);
             String cid = id;
-            String replyText = receiver.processRequest(listener, cid, message, threadContext);
+            String replyText = listener.getHandler().processRequest(listener, cid, message, threadContext);
             if (log.isDebugEnabled()) {
                 log.debug("processRequest(): ReplyText=[" + replyText + "]");
             }
@@ -75,7 +78,7 @@ abstract public class IfsaEjbBeanBase extends AbstractListenerConnectingEJB impl
             throw new ServiceException(ex);
         } finally {
             log.debug("<<< processRequest() finished generic handling");
-            listener.destroyThreadContext(threadContext);
+//            listener.destroyThreadContext(threadContext);
         }
     }
 

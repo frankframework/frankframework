@@ -1,6 +1,9 @@
 /*
  * $Log: EjbListenerPortConnector.java,v $
- * Revision 1.3  2007-11-22 08:47:43  europe\L190409
+ * Revision 1.4  2008-01-03 15:42:47  europe\L190409
+ * rework port connected listener interfaces
+ *
+ * Revision 1.3  2007/11/22 08:47:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * update from ejb-branch
  *
  * Revision 1.2.2.4  2007/11/15 10:34:02  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
@@ -47,20 +50,25 @@
  */
 package nl.nn.adapterframework.ejb;
 
-import com.ibm.websphere.management.AdminService;
-import com.ibm.websphere.management.AdminServiceFactory;
 import java.util.Set;
+
+import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 import javax.naming.Context;
 import javax.naming.InitialContext;
+
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IListenerConnector;
 import nl.nn.adapterframework.core.IPortConnectedListener;
+import nl.nn.adapterframework.core.IReceiver;
+import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.receivers.GenericReceiver;
+
+import com.ibm.websphere.management.AdminService;
+import com.ibm.websphere.management.AdminServiceFactory;
 
 /**
  *
@@ -83,7 +91,7 @@ public class EjbListenerPortConnector implements IListenerConnector {
         return destination;
     }
 
-    public void configureEndpointConnection(IPortConnectedListener listener) throws ConfigurationException {
+    public void configureEndpointConnection(IPortConnectedListener listener, ConnectionFactory connectionFactory, Destination destination, IbisExceptionListener exceptionListener, String cacheMode, boolean sessionTransacted, String selector) throws ConfigurationException {
         try {
             this.listener = listener;
             this.listenerPortMBean = lookupListenerPortMBean(listener);
@@ -219,8 +227,7 @@ public class EjbListenerPortConnector implements IListenerConnector {
         String name = listener.getListenerPort();
         
         if (name == null) {
-            GenericReceiver receiver;
-            receiver = (GenericReceiver)listener.getReceiver();
+            IReceiver receiver = listener.getReceiver();
             name = configuration.getConfigurationName()
                     + '-' + receiver.getName() + LISTENER_PORTNAME_SUFFIX;
             name = name.replace(' ', '-').replaceAll("(:|\\(|\\)|\\\\|/|\\||<|>|&|\\^|%)", "");

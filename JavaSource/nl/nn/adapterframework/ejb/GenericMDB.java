@@ -1,6 +1,9 @@
 /*
  * $Log: GenericMDB.java,v $
- * Revision 1.5  2007-11-22 08:47:43  europe\L190409
+ * Revision 1.6  2008-01-03 15:43:36  europe\L190409
+ * rework port connected listener interfaces
+ *
+ * Revision 1.5  2007/11/22 08:47:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * update from ejb-branch
  *
  * Revision 1.4.2.7  2007/11/15 10:27:49  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
@@ -59,6 +62,7 @@ import javax.ejb.MessageDrivenContext;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 
+import nl.nn.adapterframework.core.IMessageHandler;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.receivers.GenericReceiver;
 
@@ -96,15 +100,15 @@ public class GenericMDB extends AbstractListenerConnectingEJB implements Message
                 this.listener = retrieveListener();
             }
 
-            GenericReceiver receiver = (GenericReceiver) this.listener.getReceiver();
-            this.listener.populateThreadContext(message,threadContext, null);
-            receiver.processRawMessage(listener, message, threadContext);
+            IMessageHandler handler = this.listener.getHandler();
+			String messageText=listener.getStringFromRawMessage(message, threadContext);
+			String cid=listener.getIdFromRawMessage(message, threadContext);
+//			threadContext.put("session",session);
+			handler.processRequest(listener, cid, messageText, threadContext,-1);
         } catch (ListenerException ex) {
             log.error(ex, ex);
             listener.getExceptionListener().exceptionThrown(listener, ex);
             rollbackTransaction();
-        } finally {
-            this.listener.destroyThreadContext(threadContext);
         }
     }
 

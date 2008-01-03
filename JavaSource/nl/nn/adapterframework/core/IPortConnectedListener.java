@@ -1,6 +1,9 @@
 /*
  * $Log: IPortConnectedListener.java,v $
- * Revision 1.3  2007-11-22 08:37:15  europe\L190409
+ * Revision 1.4  2008-01-03 15:41:48  europe\L190409
+ * rework port connected listener interfaces
+ *
+ * Revision 1.3  2007/11/22 08:37:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fixed javadoc
  *
  * Revision 1.2.2.4  2007/11/15 10:23:37  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
@@ -46,12 +49,10 @@ public interface IPortConnectedListener extends IPushingListener {
 
     public IbisExceptionListener getExceptionListener();
     String getListenerPort();
+	IMessageHandler getHandler();
+
     void setReceiver(IReceiver receiver);
     IReceiver getReceiver();
-
-    void destroyThreadContext(Map threadContext);
-
-    void populateThreadContext(Object rawMessage, Map threadContext, Session session) throws ListenerException;
 
     IListenerConnector getListenerPortConnector();
 }

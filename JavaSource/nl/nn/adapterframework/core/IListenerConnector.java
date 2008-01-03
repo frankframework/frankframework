@@ -1,6 +1,9 @@
 /*
  * $Log: IListenerConnector.java,v $
- * Revision 1.2  2007-11-05 13:06:55  europe\M00035F
+ * Revision 1.3  2008-01-03 15:41:49  europe\L190409
+ * rework port connected listener interfaces
+ *
+ * Revision 1.2  2007/11/05 13:06:55  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
  * Rename and redefine methods in interface IListenerConnector to remove 'jms' from names
  *
  * Revision 1.1  2007/11/05 12:18:49  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
@@ -19,23 +22,30 @@
  */
 package nl.nn.adapterframework.core;
 
+import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.jms.PushingJmsListener;
 
 /**
  * Interface specifying method to configure a JMS receiver or some sort
- * from a provided {@link nl.nn.adapterframework.jms.PushingJmsListener} instance.
+ * from a provided {@link nl.nn.adapterframework.jms.ConnectionBase appConnection} instance.
  * 
  * @author  Tim van der Leeuw
  * @since   4.8
  * @version Id
  */
 public interface IListenerConnector {
+    
+    void configureEndpointConnection(IPortConnectedListener listener, ConnectionFactory connectionFactory, Destination destination, IbisExceptionListener exceptionListener, String cacheMode, boolean sessionTransacted, String selector) throws ConfigurationException;
 
-    Destination getDestination();
-    void configureEndpointConnection(IPortConnectedListener listener) throws ConfigurationException;
+	/**
+	 * Start Listener-port to which the Listener is connected.
+	 */
     void start() throws ListenerException;
+ 
+	/**
+	 * Stop Listener-port to which the Listener is connected.
+	 */
     void stop() throws ListenerException;
 }

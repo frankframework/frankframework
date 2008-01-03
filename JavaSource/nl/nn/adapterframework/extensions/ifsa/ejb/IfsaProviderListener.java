@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaProviderListener.java,v $
- * Revision 1.2  2007-11-22 08:48:19  europe\L190409
+ * Revision 1.3  2008-01-03 15:45:28  europe\L190409
+ * rework port connected listener interfaces
+ *
+ * Revision 1.2  2007/11/22 08:48:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * update from ejb-branch
  *
  * Revision 1.1.2.12  2007/11/14 09:11:50  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
@@ -44,12 +47,12 @@
 
 package nl.nn.adapterframework.extensions.ifsa.ejb;
 
-import com.ing.ifsa.api.ServiceRequest;
-import com.ing.ifsa.api.ServiceURI;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
+
 import javax.jms.Session;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IListenerConnector;
 import nl.nn.adapterframework.core.IMessageHandler;
@@ -59,6 +62,9 @@ import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 
+import com.ing.ifsa.api.ServiceRequest;
+import com.ing.ifsa.api.ServiceURI;
+
 /**
  *
  * @author Tim van der Leeuw
@@ -66,7 +72,7 @@ import nl.nn.adapterframework.core.PipeLineResult;
  * @version Id
  */
 public class IfsaProviderListener extends IfsaEjbBase implements IPortConnectedListener {
-    public static final String version = "$RCSfile: IfsaProviderListener.java,v $ $Revision: 1.2 $ $Date: 2007-11-22 08:48:19 $";
+    public static final String version = "$RCSfile: IfsaProviderListener.java,v $ $Revision: 1.3 $ $Date: 2008-01-03 15:45:28 $";
     
     private IMessageHandler handler;
     private IbisExceptionListener exceptionListener;
@@ -83,7 +89,7 @@ public class IfsaProviderListener extends IfsaEjbBase implements IPortConnectedL
 
     public void configure() throws ConfigurationException {
         super.configure();
-        listenerPortConnector.configureEndpointConnection(this);
+        listenerPortConnector.configureEndpointConnection(this, null, null, getExceptionListener(), null, false, null);
     }
 
     public void open() throws ListenerException {
@@ -138,10 +144,6 @@ public class IfsaProviderListener extends IfsaEjbBase implements IPortConnectedL
         this.listenerPortConnector = listenerPortConnector;
     }
 
-    public void destroyThreadContext(Map threadContext) {
-        // Do nothing here
-        return;
-    }
 
     public void populateThreadContext(Object rawMessage, Map threadContext, Session session) throws ListenerException {
         ServiceRequest request = (ServiceRequest) rawMessage;
