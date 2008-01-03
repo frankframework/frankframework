@@ -1,6 +1,10 @@
 /*
  * $Log: Adapter.java,v $
- * Revision 1.36  2007-12-28 12:01:00  europe\L190409
+ * Revision 1.37  2008-01-03 15:40:19  europe\L190409
+ * renamed start and stop threads
+ * do not wait at end of start thread
+ *
+ * Revision 1.36  2007/12/28 12:01:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * log error messages in request-reply logging
  *
  * Revision 1.35  2007/12/12 09:08:41  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -177,7 +181,7 @@ import org.springframework.core.task.TaskExecutor;
  */
 
 public class Adapter implements IAdapter, NamedBean {
-	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.36 $ $Date: 2007-12-28 12:01:00 $";
+	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.37 $ $Date: 2008-01-03 15:40:19 $";
 	private Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -750,7 +754,7 @@ public class Adapter implements IAdapter, NamedBean {
 	public void startRunning() {
 		taskExecutor.execute(new Runnable() {
             public void run() {
-                Thread.currentThread().setName(getName()+"-startingAdapter");
+                Thread.currentThread().setName("starting Adapter "+getName());
                 try {
                     if (!configurationSucceeded) {
                         log.error(
@@ -806,8 +810,8 @@ public class Adapter implements IAdapter, NamedBean {
                             log.warn("Adapter [" + getName() + "] will NOT start receiver [" + receiver.getName() + "] as it is in state ERROR");
                     } //while
 
-                    // wait until the stopRunning is called
-                    waitForRunState(RunStateEnum.STOPPING);
+//                    // wait until the stopRunning is called
+//                    waitForRunState(RunStateEnum.STOPPING);
             
                 }
                 catch (Throwable e) {
@@ -852,7 +856,7 @@ public class Adapter implements IAdapter, NamedBean {
         }
         taskExecutor.execute(new Runnable() {
             public void run() {
-                Thread.currentThread().setName(getName()+"-stopAdapter");
+                Thread.currentThread().setName("stopping Adapter " +getName());
                 try {
                     log.debug("Adapter [" + name + "] is stopping receivers");
                     Iterator it = receivers.iterator();
