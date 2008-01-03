@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractJmsConfigurator.java,v $
- * Revision 1.4  2007-11-05 13:06:55  europe\M00035F
+ * Revision 1.5  2008-01-03 15:57:58  europe\L190409
+ * rework port connected listener interfaces
+ *
+ * Revision 1.4  2007/11/05 13:06:55  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
  * Rename and redefine methods in interface IListenerConnector to remove 'jms' from names
  *
  * Revision 1.3  2007/10/16 09:52:35  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
@@ -15,16 +18,14 @@ package nl.nn.adapterframework.unmanaged;
 
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-
-import org.apache.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPortConnectedListener;
-import nl.nn.adapterframework.jms.PushingJmsListener;
+import nl.nn.adapterframework.core.IbisExceptionListener;
+import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.util.LogUtil;
+
+import org.apache.log4j.Logger;
 
 /**
  * Base class for JMS Configurator implementations.
@@ -36,72 +37,47 @@ import nl.nn.adapterframework.util.LogUtil;
 abstract public class AbstractJmsConfigurator {
 	protected Logger log=LogUtil.getLogger(this);
    
-    private PushingJmsListener jmsListener;
-    private Context context;
+    private IPortConnectedListener listener;
+    private ConnectionFactory connectionFactory;
     private Destination destination;
-    private String destinationName;
+	private ReceiverBase receiver;
+	private IbisExceptionListener exceptionListener;        
 
-    public void configureEndpointConnection(final IPortConnectedListener jmsListener) throws ConfigurationException {
-        this.jmsListener = (PushingJmsListener) jmsListener;
-        setDestinationName(this.jmsListener.getDestinationName());
-        setDestination(createDestination(this.jmsListener.getDestinationName()));
+    public void configureEndpointConnection(IPortConnectedListener listener, ConnectionFactory connectionFactory, Destination destination, IbisExceptionListener exceptionListener) throws ConfigurationException {
+		setListener(listener);
+		setConnectionFactory(connectionFactory);
+        setDestination(destination);
+		this.receiver = (ReceiverBase)getListener().getReceiver();
+		this.exceptionListener = exceptionListener;
     }
 
-    protected ConnectionFactory createConnectionFactory(String cfName) throws ConfigurationException {
-        ConnectionFactory connectionFactory;
-        try {
-            connectionFactory = (ConnectionFactory) getContext().lookup(cfName);
-        } catch (NamingException e) {
-            throw new ConfigurationException("Problem looking up JMS " + (jmsListener.isUseTopicFunctions() ? "Topic" : "Queue") + "Connection Factory with name [" + cfName + "]", e);
-        }
-        return connectionFactory;
-    }
 
-    protected Context createContext() throws NamingException {
-        return (Context) new InitialContext();
+    public void setListener(IPortConnectedListener listener) {
+        this.listener = listener;
     }
+	public IPortConnectedListener getListener() {
+		return listener;
+	}
 
-    protected Destination createDestination(String destinationName) throws ConfigurationException {
-        try {
-            return (Destination) getContext().lookup(destinationName);
-        } catch (NamingException e) {
-            throw new ConfigurationException("Problem looking up JMS " + (jmsListener.isUseTopicFunctions() ? "Topic" : "Queue") + "Destination with name [" + destinationName + "]", e);
-        }
-    }
-
-    public Context getContext() throws NamingException {
-        if (context == null) {
-            context = createContext();
-        }
-        return context;
-    }
-
-    public Destination getDestination() {
-        return destination;
-    }
-
-    public void setContext(Context context) {
-        this.context = context;
-    }
-
-    public String getDestinationName() {
-        return destinationName;
-    }
-
-    public void setDestinationName(String destinationName) {
-        this.destinationName = destinationName;
-    }
-
-    public PushingJmsListener getJmsListener() {
-        return jmsListener;
-    }
-
-    public void setJmsListener(PushingJmsListener jmsListener) {
-        this.jmsListener = jmsListener;
-    }
+	public void setConnectionFactory(ConnectionFactory connectionFactory) {
+		this.connectionFactory = connectionFactory;
+	}
+	public ConnectionFactory getConnectionFactory() {
+		return connectionFactory;
+	}
 
     public void setDestination(Destination destination) {
         this.destination = destination;
     }
+	public Destination getDestination() {
+		return destination;
+	}
 
+	public ReceiverBase getReceiver() {
+		return receiver;
+	}
+
+	public IbisExceptionListener getExceptionListener() {
+		return exceptionListener;
+	}
 }
