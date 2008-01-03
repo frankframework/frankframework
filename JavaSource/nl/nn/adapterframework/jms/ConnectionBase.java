@@ -1,6 +1,9 @@
 /*
  * $Log: ConnectionBase.java,v $
- * Revision 1.12  2007-10-08 12:20:04  europe\L190409
+ * Revision 1.13  2008-01-03 15:49:35  europe\L190409
+ * made connectionFactory getter public
+ *
+ * Revision 1.12  2007/10/08 12:20:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed HashMap to Map where possible
  *
  * Revision 1.11  2007/02/12 13:58:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -79,7 +82,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class ConnectionBase  {
-	public static final String version="$RCSfile: ConnectionBase.java,v $ $Revision: 1.12 $ $Date: 2007-10-08 12:20:04 $";
+	public static final String version="$RCSfile: ConnectionBase.java,v $ $Revision: 1.13 $ $Date: 2008-01-03 15:49:35 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private int referenceCount;
@@ -170,7 +173,7 @@ public class ConnectionBase  {
 		return context;
 	}
 
-	protected ConnectionFactory getConnectionFactory() {
+	public ConnectionFactory getConnectionFactory() {
 		return connectionFactory;
 	}
 
