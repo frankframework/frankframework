@@ -1,6 +1,9 @@
 /*
  * $Log: PullingListenerContainer.java,v $
- * Revision 1.6  2007-12-10 10:15:22  europe\L190409
+ * Revision 1.7  2008-01-03 15:52:36  europe\L190409
+ * improved logging
+ *
+ * Revision 1.6  2007/12/10 10:15:22  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fix handling of transactions in case of exceptions
  *
  * Revision 1.5  2007/10/18 15:56:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -148,9 +151,9 @@ public class PullingListenerContainer implements Runnable {
 									txManager.rollback(txStatus);
 								}
 								if (receiver.isOnErrorStop()) {
-									receiver.error("caught Exception processing message, will continue processing next message", e);
+									receiver.error(receiver.getLogPrefix()+"caught Exception processing message, will continue processing next message", e);
 								} else {
-									receiver.error("stopping receiver after exception in processing message", e);
+									receiver.error(receiver.getLogPrefix()+"stopping receiver after exception in processing message", e);
 									receiver.stopRunning();
 								}
 							}

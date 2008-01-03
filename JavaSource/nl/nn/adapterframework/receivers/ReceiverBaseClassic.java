@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBaseClassic.java,v $
- * Revision 1.5  2007-12-10 10:16:40  europe\L190409
+ * Revision 1.6  2008-01-03 15:53:23  europe\L190409
+ * improved logging
+ *
+ * Revision 1.5  2007/12/10 10:16:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fixed clearing of retryInterval
  *
  * Revision 1.4  2007/11/23 14:18:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -319,7 +322,7 @@ import org.apache.log4j.Logger;
  * @since 4.2
  */
 public class ReceiverBaseClassic implements IReceiver, IReceiverStatistics, Runnable, IMessageHandler, IbisExceptionListener, HasSender, TracingEventNumbers {
-	public static final String version="$RCSfile: ReceiverBaseClassic.java,v $ $Revision: 1.5 $ $Date: 2007-12-10 10:16:40 $";
+	public static final String version="$RCSfile: ReceiverBaseClassic.java,v $ $Revision: 1.6 $ $Date: 2008-01-03 15:53:23 $";
 	protected Logger log = LogUtil.getLogger(this);
  
  	public static final String RCV_SHUTDOWN_MONITOR_EVENT_MSG ="RCVCLOSED Ibis Receiver shut down";
@@ -813,9 +816,9 @@ public class ReceiverBaseClassic implements IReceiver, IReceiverStatistics, Runn
 						} catch (Exception e) {
 							TracingUtil.exceptionEvent(this);
 							if (ONERROR_CONTINUE.equalsIgnoreCase(getOnError())) {
-								error("caught Exception processing message, will continue processing next message", e);
+								error(getLogPrefix()+"caught Exception processing message, will continue processing next message", e);
 							} else {
-								error("stopping receiver after exception in processing message",e);
+								error(getLogPrefix()+"stopping receiver after exception in processing message",e);
 								stopRunning();
 							}
 						}

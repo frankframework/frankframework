@@ -1,6 +1,9 @@
 /*
  * $Log: SpringTxPipeExecutor.java,v $
- * Revision 1.4  2007-10-17 08:22:03  europe\L190409
+ * Revision 1.5  2008-01-03 15:56:46  europe\L190409
+ * improved logging
+ *
+ * Revision 1.4  2007/10/17 08:22:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Always commit 'own' transaction-status
  *
  * Revision 1.3  2007/10/17 08:14:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -33,7 +36,7 @@ public class SpringTxPipeExecutor extends SpringTxExecutorBase implements IPipeE
 
     protected PipeRunResult doPipeTransactional(TransactionDefinition txDef, IPipe pipe, Object input, PipeLineSession session) throws PipeRunException {
         TransactionStatus txStatus = txManager.getTransaction(txDef);
-        log.debug("doPipeTransactional with TX-definition " + txDef + ", txStatus: new="
+        log.debug("doPipeTransactional for pipe ["+pipe.getName()+"] with TX-definition " + txDef + ", txStatus: new="
                 + txStatus.isNewTransaction() + ", rollback-only:" + txStatus.isRollbackOnly());
         try {
             return pipe.doPipe(input, session);
@@ -52,10 +55,10 @@ public class SpringTxPipeExecutor extends SpringTxExecutorBase implements IPipeE
         } finally {
             //if (txStatus.isNewTransaction()) {
             	if (!txStatus.isCompleted()) {
-	                log.debug("Performing commit/rollback on transaction " + txStatus);
+	                log.debug("Performing commit/rollback for pipe ["+pipe.getName()+"] on transaction " + txStatus);
 	                txManager.commit(txStatus);
             	} else {
-            		log.warn("Transaction started by us already completed after pipe-call finished");
+            		log.warn("Transaction for pipe ["+pipe.getName()+"] started by us already completed after pipe-call finished");
             	}
             //} else {
             //	log.debug("Pipe call finished; transaction not started by us therefore not committing");
