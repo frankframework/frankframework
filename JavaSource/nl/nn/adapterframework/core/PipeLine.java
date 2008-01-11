@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.57  2008-01-11 09:07:32  europe\L190409
+ * Revision 1.58  2008-01-11 14:49:24  europe\L190409
+ * removed external pipe and pipeline executors
+ *
+ * Revision 1.57  2008/01/11 09:07:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * convert transaction management to Spring
  *
  * Revision 1.56  2007/12/27 16:01:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -174,18 +177,18 @@ import java.util.Hashtable;
 import java.util.List;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.txsupport.IPipeExecutor;
-import nl.nn.adapterframework.txsupport.IPipeLineExecutor;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.Semaphore;
+import nl.nn.adapterframework.util.SpringTxManagerProxy;
 import nl.nn.adapterframework.util.StatisticsKeeper;
 import nl.nn.adapterframework.util.TracingUtil;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 
@@ -260,7 +263,7 @@ import org.springframework.transaction.TransactionStatus;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.57 $ $Date: 2008-01-11 09:07:32 $";
+	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.58 $ $Date: 2008-01-11 14:49:24 $";
     private Logger log = LogUtil.getLogger(this);
 	private Logger durationLog = LogUtil.getLogger("LongDurationMessages");
     
@@ -276,7 +279,8 @@ public class PipeLine {
 	private IPipe inputValidator=null;
 	private IPipe outputValidator=null;
      
-     
+	private PlatformTransactionManager txManager;
+    
     private Hashtable pipesByName=new Hashtable();
     private List pipes=new ArrayList();
     // set of exits paths with their state
@@ -286,9 +290,6 @@ public class PipeLine {
 	private String commitOnState="success"; // exit state on which receiver will commit XA transactions
 
 	private List exitHandlers = new ArrayList();
-    
-    private IPipeLineExecutor pipeLineExecutor;
-    private IPipeExecutor pipeExecutor;
     
 	/**
 	 * Register an Pipe at this pipeline.
@@ -499,7 +500,27 @@ public class PipeLine {
     
     private PipeLineResult runPipeLineObeyingTransactionAttribute(String messageId, String message, PipeLineSession session) throws PipeRunException {
         int txOption = this.getTransactionAttributeNum();
-		return pipeLineExecutor.doPipeLineTransactional(txOption, this, messageId, message, session);
+		if (log.isDebugEnabled()) log.debug("runPipeLineObeyingTransactionAttribute with transactionAttribute ["+getTransactionAttribute()+"]");
+
+		TransactionStatus txStatus = txManager.getTransaction(SpringTxManagerProxy.getTransactionDefinition(txOption));
+		try {
+			return processPipeLine(messageId, message, session, txStatus);
+		} catch (Throwable t) {
+			log.debug("setting RollBackOnly for pipeline after catching exception");
+			txStatus.setRollbackOnly();
+			if (t instanceof Error) {
+				throw (Error)t;
+			} else if (t instanceof RuntimeException) {
+				throw (RuntimeException)t;
+			} else if (t instanceof PipeRunException) {
+				throw (PipeRunException)t;
+			} else {
+				throw new PipeRunException(null, "Caught unknown checked exception", t);
+			}
+		} finally {
+			if (log.isDebugEnabled()) log.debug("Performing commit/rollback for pipeline on transaction [" + txStatus+"]");
+			txManager.commit(txStatus);
+		}
     }
     
 	private PipeRunResult runPipeObeyingTransactionAttribute(IPipe pipe, Object message, PipeLineSession session) throws PipeRunException {
@@ -507,10 +528,32 @@ public class PipeLine {
         if (pipe instanceof HasTransactionAttribute) {
             HasTransactionAttribute taPipe = (HasTransactionAttribute) pipe;
             txOption = taPipe.getTransactionAttributeNum();
+			if (log.isDebugEnabled()) log.debug("runPipeObeyingTransactionAttribute for pipe ["+pipe.getName()+"] with transactionAttribute ["+taPipe.getTransactionAttribute()+"]");
         } else {
             txOption = TransactionDefinition.PROPAGATION_SUPPORTS;
+			if (log.isDebugEnabled()) log.debug("runPipeObeyingTransactionAttribute for pipe ["+pipe.getName()+"] with default transaction attribute (supports)");
         }
-		return pipeExecutor.doPipeTransactional(txOption, pipe, message, session);
+
+		TransactionStatus txStatus = txManager.getTransaction(SpringTxManagerProxy.getTransactionDefinition(txOption));
+		try {
+			return pipe.doPipe(message, session);
+		} catch (Throwable t) {
+			log.debug("setting RollBackOnly for pipe [" + pipe.getName()+"] after catching exception");
+			txStatus.setRollbackOnly();
+			if (t instanceof Error) {
+				throw (Error)t;
+			} else if (t instanceof RuntimeException) {
+				throw (RuntimeException)t;
+			} else if (t instanceof PipeRunException) {
+				throw (PipeRunException)t;
+			} else {
+				throw new PipeRunException(pipe, "Caught unknown checked exception", t);
+			}
+		} finally {
+			if (log.isDebugEnabled()) log.debug("Performing commit/rollback for pipe ["+pipe.getName()+"] on transaction [" + txStatus+"]");
+			txManager.commit(txStatus);
+		}
+
 	}
 
 	/**
@@ -895,20 +938,6 @@ public class PipeLine {
 	}
 
 		
-    public void setPipeExecutor(IPipeExecutor executor) {
-        pipeExecutor = executor;
-    }
-	public IPipeExecutor getPipeExecutor() {
-		return pipeExecutor;
-	}
-
-    public void setPipeLineExecutor(IPipeLineExecutor executor) {
-        pipeLineExecutor = executor;
-    }
-	public IPipeLineExecutor getPipeLineExecutor() {
-		return pipeLineExecutor;
-	}
-
 	public void setInputValidator(IPipe inputValidator) {
 //		if (inputValidator.isActive()) {
 			this.inputValidator = inputValidator;
@@ -926,5 +955,13 @@ public class PipeLine {
 	public IPipe getOutputValidator() {
 		return outputValidator;
 	}
+
+	public void setTxManager(PlatformTransactionManager txManager) {
+		this.txManager = txManager;
+	}
+	public PlatformTransactionManager getTxManager() {
+		return txManager;
+	}
+
 
 }
