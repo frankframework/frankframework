@@ -1,6 +1,9 @@
 /*
  * $Log: SpringTxPipeExecutor.java,v $
- * Revision 1.5  2008-01-03 15:56:46  europe\L190409
+ * Revision 1.6  2008-01-11 10:06:05  europe\L190409
+ * some rework
+ *
+ * Revision 1.5  2008/01/03 15:56:46  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved logging
  *
  * Revision 1.4  2007/10/17 08:22:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -20,6 +23,7 @@ import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.util.SpringTxManagerProxy;
 
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
@@ -34,10 +38,14 @@ import org.springframework.transaction.TransactionStatus;
  */
 public class SpringTxPipeExecutor extends SpringTxExecutorBase implements IPipeExecutor {
 
-    protected PipeRunResult doPipeTransactional(TransactionDefinition txDef, IPipe pipe, Object input, PipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipeTransactional(int propagation, IPipe pipe, Object input, PipeLineSession session) throws PipeRunException {
+		return doPipeTransactional(SpringTxManagerProxy.getTransactionDefinition(propagation), pipe, input, session);
+	}
+
+	public PipeRunResult doPipeTransactional(TransactionDefinition txDef, IPipe pipe, Object input, PipeLineSession session) throws PipeRunException {
         TransactionStatus txStatus = txManager.getTransaction(txDef);
-        log.debug("doPipeTransactional for pipe ["+pipe.getName()+"] with TX-definition " + txDef + ", txStatus: new="
-                + txStatus.isNewTransaction() + ", rollback-only:" + txStatus.isRollbackOnly());
+        if (log.isDebugEnabled()) log.debug("doPipeTransactional for pipe ["+pipe.getName()+"] with TX-definition " + txDef + ", txStatus: new="
+                + txStatus.isNewTransaction());
         try {
             return pipe.doPipe(input, session);
         } catch (Throwable t) {
@@ -53,40 +61,9 @@ public class SpringTxPipeExecutor extends SpringTxExecutorBase implements IPipeE
                 throw new PipeRunException(pipe, "Caught unknown checked exception", t);
             }
         } finally {
-            //if (txStatus.isNewTransaction()) {
-            	if (!txStatus.isCompleted()) {
-	                log.debug("Performing commit/rollback for pipe ["+pipe.getName()+"] on transaction " + txStatus);
-	                txManager.commit(txStatus);
-            	} else {
-            		log.warn("Transaction for pipe ["+pipe.getName()+"] started by us already completed after pipe-call finished");
-            	}
-            //} else {
-            //	log.debug("Pipe call finished; transaction not started by us therefore not committing");
-            //}
+			if (log.isDebugEnabled()) log.debug("Performing commit/rollback for pipe ["+pipe.getName()+"] on transaction " + txStatus);
+			txManager.commit(txStatus);
         }
     }
 
-    public PipeRunResult doPipeTxRequired(IPipe pipe, Object input, PipeLineSession session) throws PipeRunException {
-        return doPipeTransactional(TXREQUIRED, pipe, input, session);
-    }
-
-    public PipeRunResult doPipeTxMandatory(IPipe pipe, Object input, PipeLineSession session) throws PipeRunException {
-        return doPipeTransactional(TXMANDATORY, pipe, input, session);
-    }
-
-    public PipeRunResult doPipeTxRequiresNew(IPipe pipe, Object input, PipeLineSession session) throws PipeRunException {
-        return doPipeTransactional(TXNEW, pipe, input, session);
-    }
-
-    public PipeRunResult doPipeTxSupports(IPipe pipe, Object input, PipeLineSession session) throws PipeRunException {
-        return doPipeTransactional(TXSUPPORTS, pipe, input, session);
-    }
-
-    public PipeRunResult doPipeTxNotSupported(IPipe pipe, Object input, PipeLineSession session) throws PipeRunException {
-        return doPipeTransactional(TXNOTSUPPORTED, pipe, input, session);
-    }
-
-    public PipeRunResult doPipeTxNever(IPipe pipe, Object input, PipeLineSession session) throws PipeRunException {
-        return doPipeTransactional(TXNEVER, pipe, input, session);
-    }
 }

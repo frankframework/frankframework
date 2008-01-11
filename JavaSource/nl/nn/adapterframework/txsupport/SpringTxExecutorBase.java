@@ -1,6 +1,9 @@
 /*
  * $Log: SpringTxExecutorBase.java,v $
- * Revision 1.2  2007-10-17 08:14:49  europe\L190409
+ * Revision 1.3  2008-01-11 10:06:05  europe\L190409
+ * some rework
+ *
+ * Revision 1.2  2007/10/17 08:14:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Add extra log statements
  *
  * Revision 1.1  2007/10/09 15:54:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -14,8 +17,6 @@ import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.log4j.Logger;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 /**
  * Base class for excecutor implementations that use a transaction manager provided 
@@ -28,12 +29,12 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 public class SpringTxExecutorBase {
 	protected Logger log=LogUtil.getLogger(this);
 
-    public final static TransactionDefinition TXREQUIRED = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED);
-    public final static TransactionDefinition TXSUPPORTS = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_SUPPORTS);
-    public final static TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
-    public final static TransactionDefinition TXNOTSUPPORTED = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_NOT_SUPPORTED);
-    public final static TransactionDefinition TXMANDATORY = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_MANDATORY);
-    public final static TransactionDefinition TXNEVER = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_NEVER);
+//    public final static TransactionDefinition TXREQUIRED = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED);
+//    public final static TransactionDefinition TXSUPPORTS = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_SUPPORTS);
+//    public final static TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+//    public final static TransactionDefinition TXNOTSUPPORTED = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_NOT_SUPPORTED);
+//    public final static TransactionDefinition TXMANDATORY = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_MANDATORY);
+//    public final static TransactionDefinition TXNEVER = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_NEVER);
     
     protected PlatformTransactionManager txManager;
 

@@ -1,6 +1,9 @@
 /*
  * $Log: IPipeExecutor.java,v $
- * Revision 1.2  2007-10-09 15:54:42  europe\L190409
+ * Revision 1.3  2008-01-11 10:06:05  europe\L190409
+ * some rework
+ *
+ * Revision 1.2  2007/10/09 15:54:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Direct copy from Ibis-EJB:
  * first version in HEAD of txSupport classes
  *
@@ -20,11 +23,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
  * @version Id
  */
 public interface IPipeExecutor {
-    PipeRunResult doPipeTxRequired (IPipe pipe, Object input, PipeLineSession session) throws PipeRunException;
-    PipeRunResult doPipeTxMandatory (IPipe pipe, Object input, PipeLineSession session) throws PipeRunException;
-    PipeRunResult doPipeTxRequiresNew (IPipe pipe, Object input, PipeLineSession session) throws PipeRunException;
-    PipeRunResult doPipeTxSupports (IPipe pipe, Object input, PipeLineSession session) throws PipeRunException;
-    PipeRunResult doPipeTxNotSupported (IPipe pipe, Object input, PipeLineSession session) throws PipeRunException;
-    PipeRunResult doPipeTxNever (IPipe pipe, Object input, PipeLineSession session) throws PipeRunException;
+	
+	public PipeRunResult doPipeTransactional(int propagation, IPipe pipe, Object input, PipeLineSession session) throws PipeRunException;
 
 }

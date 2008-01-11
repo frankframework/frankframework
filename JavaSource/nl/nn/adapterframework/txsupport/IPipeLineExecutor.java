@@ -1,6 +1,9 @@
 /*
  * $Log: IPipeLineExecutor.java,v $
- * Revision 1.2  2007-10-09 15:54:43  europe\L190409
+ * Revision 1.3  2008-01-11 10:06:05  europe\L190409
+ * some rework
+ *
+ * Revision 1.2  2007/10/09 15:54:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Direct copy from Ibis-EJB:
  * first version in HEAD of txSupport classes
  *
@@ -20,11 +23,7 @@ import nl.nn.adapterframework.core.PipeRunException;
  * @version Id
  */
 public interface IPipeLineExecutor {
-    PipeLineResult doPipeLineTxRequired (PipeLine pipeLine, String messageId, String message, PipeLineSession session) throws PipeRunException;
-    PipeLineResult doPipeLineTxMandatory (PipeLine pipeLine, String messageId, String message, PipeLineSession session) throws PipeRunException;
-    PipeLineResult doPipeLineTxRequiresNew (PipeLine pipeLine, String messageId, String message, PipeLineSession session) throws PipeRunException;
-    PipeLineResult doPipeLineTxSupports (PipeLine pipeLine, String messageId, String message, PipeLineSession session) throws PipeRunException;
-    PipeLineResult doPipeLineTxNotSupported (PipeLine pipeLine, String messageId, String message, PipeLineSession session) throws PipeRunException;
-    PipeLineResult doPipeLineTxNever (PipeLine pipeLine, String messageId, String message, PipeLineSession session) throws PipeRunException;
+	
+	PipeLineResult doPipeLineTransactional(int propagation, PipeLine pipeLine, String messageId, String message, PipeLineSession session) throws PipeRunException;
 
 }
