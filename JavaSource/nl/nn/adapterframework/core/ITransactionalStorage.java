@@ -1,6 +1,9 @@
 /*
  * $Log: ITransactionalStorage.java,v $
- * Revision 1.6  2007-10-09 15:33:32  europe\L190409
+ * Revision 1.7  2008-01-11 14:48:49  europe\L190409
+ * added getTypeString() and getHostString()
+ *
+ * Revision 1.6  2007/10/09 15:33:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * copy changes from Ibis-EJB:
  * added containsMessageId()
  *
@@ -36,7 +39,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
  * @version Id
 */
 public interface ITransactionalStorage extends IMessageBrowser, INamedObject {
-	public static final String version = "$RCSfile: ITransactionalStorage.java,v $ $Revision: 1.6 $ $Date: 2007-10-09 15:33:32 $";
+	public static final String version = "$RCSfile: ITransactionalStorage.java,v $ $Revision: 1.7 $ $Date: 2008-01-11 14:48:49 $";
 
 	/**
 	 * Prepares the object for operation. After this
@@ -46,6 +49,9 @@ public interface ITransactionalStorage extends IMessageBrowser, INamedObject {
 	public void close() throws SenderException, ListenerException;
 	
 	public void configure() throws ConfigurationException;
+
+	public String getTypeString(Object iteratorItem) throws ListenerException;
+	public String getHostString(Object iteratorItem) throws ListenerException;
 	
 	/**
 	 * Store the message, returns new messageId.

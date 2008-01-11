@@ -1,6 +1,9 @@
 /*
  * $Log: JmsTransactionalStorage.java,v $
- * Revision 1.10  2007-10-09 15:35:19  europe\L190409
+ * Revision 1.11  2008-01-11 14:51:55  europe\L190409
+ * added getTypeString() and getHostString()
+ *
+ * Revision 1.10  2007/10/09 15:35:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * copy changes from Ibis-EJB:
  * added containsMessageId()
  *
@@ -67,7 +70,14 @@ import nl.nn.adapterframework.core.SenderException;
  * @since   4.1
  */
 public class JmsTransactionalStorage extends JmsMessageBrowser implements ITransactionalStorage {
-	public static final String version = "$RCSfile: JmsTransactionalStorage.java,v $ $Revision: 1.10 $ $Date: 2007-10-09 15:35:19 $";
+	public static final String version = "$RCSfile: JmsTransactionalStorage.java,v $ $Revision: 1.11 $ $Date: 2008-01-11 14:51:55 $";
+
+	public static final String FIELD_TYPE="type";
+	public static final String FIELD_ORIGINAL_ID="originalId";
+	public static final String FIELD_RECEIVED_DATE="receivedDate";
+	public static final String FIELD_COMMENTS="comments";
+	public static final String FIELD_SLOTID="SlotId";
+	public static final String FIELD_HOST="host";
 
 	private String slotId=null;
 	private String type=null;
@@ -106,13 +116,13 @@ public class JmsTransactionalStorage extends JmsMessageBrowser implements ITrans
 		try {
 			session = createSession();
 			ObjectMessage msg = session.createObjectMessage(message);
-			msg.setStringProperty("type",getType());
-			msg.setStringProperty("originalId",messageId);
+			msg.setStringProperty(FIELD_TYPE,getType());
+			msg.setStringProperty(FIELD_ORIGINAL_ID,messageId);
 			msg.setJMSCorrelationID(correlationId);
-			msg.setLongProperty("receivedDate",receivedDate.getTime());
-			msg.setStringProperty("comments",comments);
+			msg.setLongProperty(FIELD_RECEIVED_DATE,receivedDate.getTime());
+			msg.setStringProperty(FIELD_COMMENTS,comments);
 			if (StringUtils.isNotEmpty(getSlotId())) {
-				msg.setStringProperty("SlotId",getSlotId());
+				msg.setStringProperty(FIELD_SLOTID,getSlotId());
 			}
 			return send(session,getDestination(),msg);
 		} catch (Exception e) {
@@ -123,7 +133,7 @@ public class JmsTransactionalStorage extends JmsMessageBrowser implements ITrans
 	}
 
     public boolean containsMessageId(String originalMessageId) throws ListenerException {
-        Object msg = super.browseMessage("originalId", originalMessageId);
+        Object msg = super.browseMessage(FIELD_ORIGINAL_ID, originalMessageId);
         return msg != null;
     }
     
@@ -149,7 +159,7 @@ public class JmsTransactionalStorage extends JmsMessageBrowser implements ITrans
 	public String getOriginalId(Object iteratorItem) throws ListenerException {
 		ObjectMessage msg = (ObjectMessage)iteratorItem;
 		try {
-			return msg.getStringProperty("originalId");
+			return msg.getStringProperty(FIELD_ORIGINAL_ID);
 		} catch (JMSException e) {
 			throw new ListenerException(e);
 		}
@@ -158,7 +168,7 @@ public class JmsTransactionalStorage extends JmsMessageBrowser implements ITrans
 	public Date getInsertDate(Object iteratorItem) throws ListenerException {
 		ObjectMessage msg = (ObjectMessage)iteratorItem;
 		try {
-			return new Date(msg.getLongProperty("receivedDate"));
+			return new Date(msg.getLongProperty(FIELD_RECEIVED_DATE));
 		} catch (JMSException e) {
 			throw new ListenerException(e);
 		}
@@ -166,17 +176,37 @@ public class JmsTransactionalStorage extends JmsMessageBrowser implements ITrans
 	public String getCommentString(Object iteratorItem) throws ListenerException {
 		ObjectMessage msg = (ObjectMessage)iteratorItem;
 		try {
-			return msg.getStringProperty("comments");
+			return msg.getStringProperty(FIELD_COMMENTS);
 		} catch (JMSException e) {
 			throw new ListenerException(e);
 		}
 	}
 
+	public String getTypeString(Object iteratorItem) throws ListenerException {
+		ObjectMessage msg = (ObjectMessage)iteratorItem;
+		try {
+			return msg.getStringProperty(FIELD_TYPE);
+		} catch (JMSException e) {
+			throw new ListenerException(e);
+		}
+	}
+
+	public String getHostString(Object iteratorItem) throws ListenerException {
+		ObjectMessage msg = (ObjectMessage)iteratorItem;
+		try {
+			return msg.getStringProperty(FIELD_HOST);
+		} catch (JMSException e) {
+			throw new ListenerException(e);
+		}
+	}
+
+
+
 	public String getSelector() {
 		if (StringUtils.isEmpty(getSlotId())) {
 			return null; 
 		}
-		return "SlotId='"+getSlotId()+"'";
+		return FIELD_SLOTID+"='"+getSlotId()+"'";
 	}
 
 

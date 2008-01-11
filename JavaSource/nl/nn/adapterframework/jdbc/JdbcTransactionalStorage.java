@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcTransactionalStorage.java,v $
- * Revision 1.26  2007-12-27 16:02:55  europe\L190409
+ * Revision 1.27  2008-01-11 14:51:26  europe\L190409
+ * added getTypeString() and getHostString()
+ *
+ * Revision 1.26  2007/12/27 16:02:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * add grant to SYS.PENDING_TRANSACTIONS to create DDL-comments
  *
  * Revision 1.25  2007/12/10 10:06:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -192,7 +195,7 @@ import org.apache.commons.lang.StringUtils;
  * @since 	4.1
  */
 public class JdbcTransactionalStorage extends JdbcFacade implements ITransactionalStorage {
-	public static final String version = "$RCSfile: JdbcTransactionalStorage.java,v $ $Revision: 1.26 $ $Date: 2007-12-27 16:02:55 $";
+	public static final String version = "$RCSfile: JdbcTransactionalStorage.java,v $ $Revision: 1.27 $ $Date: 2008-01-11 14:51:26 $";
 	
 	// the following currently only for debug.... 
 	boolean checkIfTableExists=true;
@@ -304,14 +307,15 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 									" AND " +getCorrelationIdField()+"=?"+
 									" AND "+getDateField()+"=?");
 		selectListQuery = "SELECT "+getKeyField()+","+getIdField()+","+getCorrelationIdField()+","+getDateField()+","+getCommentField()+
+							(StringUtils.isNotEmpty(getTypeField())?","+getTypeField():"")+
+							(StringUtils.isNotEmpty(getHostField())?","+getHostField():"")+
 						  " FROM "+getTableName()+ getWhereClause(null)+
 						  " ORDER BY "+getDateField();
 		if (StringUtils.isNotEmpty(getOrder())) {
 			selectListQuery = selectListQuery + " " + getOrder();
 		}
-		selectDataQuery = "SELECT "+getMessageField()+
-						  " FROM "+getTableName()+ getWhereClause(getKeyField()+"=?");
-        checkMessageIdQuery = "SELECT " + getIdField() +" FROM "+getTableName()+ " WHERE "+getIdField() + "=?";
+		selectDataQuery = "SELECT "+getMessageField()+  " FROM "+getTableName()+ getWhereClause(getKeyField()+"=?");
+        checkMessageIdQuery = "SELECT " + getIdField() +" FROM "+getTableName()+ getWhereClause(getIdField() +"=?");
         
 		if (databaseType==DATABASE_ORACLE) {
 			insertQuery = "INSERT INTO "+getTableName()+" ("+
@@ -805,6 +809,30 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		ResultSet row = (ResultSet) iteratorItem;
 		try {
 			return row.getString(getCommentField());
+		} catch (SQLException e) {
+			throw new ListenerException(e);
+		}
+	}
+
+	public String getTypeString(Object iteratorItem) throws ListenerException {
+		if (StringUtils.isEmpty(getTypeField())) {
+			return null;
+		}
+		ResultSet row = (ResultSet) iteratorItem;
+		try {
+			return row.getString(getTypeField());
+		} catch (SQLException e) {
+			throw new ListenerException(e);
+		}
+	}
+
+	public String getHostString(Object iteratorItem) throws ListenerException {
+		if (StringUtils.isEmpty(getHostField())) {
+			return null;
+		}
+		ResultSet row = (ResultSet) iteratorItem;
+		try {
+			return row.getString(getHostField());
 		} catch (SQLException e) {
 			throw new ListenerException(e);
 		}
