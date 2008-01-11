@@ -1,6 +1,10 @@
 /*
  * $Log: JtaUtil.java,v $
- * Revision 1.15  2007-12-10 10:23:12  europe\L190409
+ * Revision 1.16  2008-01-11 09:59:33  europe\L190409
+ * changed attributed definitions to Spring's
+ * removed some functions
+ *
+ * Revision 1.15  2007/12/10 10:23:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed some functions
  *
  * Revision 1.14  2007/11/21 13:18:06  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -54,16 +58,10 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.transaction.Status;
 import javax.transaction.SystemException;
-import javax.transaction.Transaction;
 import javax.transaction.UserTransaction;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.builder.ToStringStyle;
 import org.apache.log4j.Logger;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.jta.JtaTransactionObject;
-import org.springframework.transaction.support.DefaultTransactionStatus;
+import org.springframework.transaction.TransactionDefinition;
 
 /**
  * Utility functions for JTA 
@@ -72,20 +70,13 @@ import org.springframework.transaction.support.DefaultTransactionStatus;
  * @since  4.1
  */
 public class JtaUtil {
-	public static final String version="$RCSfile: JtaUtil.java,v $ $Revision: 1.15 $ $Date: 2007-12-10 10:23:12 $";
+	public static final String version="$RCSfile: JtaUtil.java,v $ $Revision: 1.16 $ $Date: 2008-01-11 09:59:33 $";
 	private static Logger log = LogUtil.getLogger(JtaUtil.class);
 	
 	private static final String USERTRANSACTION_URL1_KEY="jta.userTransactionUrl1";
 	private static final String USERTRANSACTION_URL2_KEY="jta.userTransactionUrl2";
 	
-	public static final int TRANSACTION_ATTRIBUTE_REQUIRED=0;
-	public static final int TRANSACTION_ATTRIBUTE_REQUIRES_NEW=1;
-	public static final int TRANSACTION_ATTRIBUTE_MANDATORY=2;
-	public static final int TRANSACTION_ATTRIBUTE_NOT_SUPPORTED=3;
-	public static final int TRANSACTION_ATTRIBUTE_SUPPORTS=4;
-	public static final int TRANSACTION_ATTRIBUTE_NEVER=5;
-
-	public static final int TRANSACTION_ATTRIBUTE_DEFAULT=TRANSACTION_ATTRIBUTE_SUPPORTS;
+	public static final int TRANSACTION_ATTRIBUTE_DEFAULT=TransactionDefinition.PROPAGATION_SUPPORTS;
 
 	public static final String TRANSACTION_ATTRIBUTE_REQUIRED_STR="Required";
 	public static final String TRANSACTION_ATTRIBUTE_REQUIRES_NEW_STR="RequiresNew";
@@ -102,6 +93,16 @@ public class JtaUtil {
 			TRANSACTION_ATTRIBUTE_NOT_SUPPORTED_STR, 
 			TRANSACTION_ATTRIBUTE_SUPPORTS_STR,
 			TRANSACTION_ATTRIBUTE_NEVER_STR
+		};
+
+	public static final int transactionAttributeNums[]=
+		{ 
+			TransactionDefinition.PROPAGATION_REQUIRED,
+			TransactionDefinition.PROPAGATION_REQUIRES_NEW,
+			TransactionDefinition.PROPAGATION_MANDATORY,
+			TransactionDefinition.PROPAGATION_NOT_SUPPORTED, 
+			TransactionDefinition.PROPAGATION_SUPPORTS,
+			TransactionDefinition.PROPAGATION_NEVER
 		};
 
     private static UserTransaction utx;
@@ -195,7 +196,7 @@ public class JtaUtil {
 	/** 
 	 * returns true if the current thread is associated with a transaction
 	 */
-	public static boolean inTransaction(UserTransaction utx) throws SystemException {
+	private static boolean inTransaction(UserTransaction utx) throws SystemException {
 		return utx != null && utx.getStatus() != Status.STATUS_NO_TRANSACTION;
 	}
 	public static boolean inTransaction() throws SystemException, NamingException {
@@ -239,20 +240,41 @@ public class JtaUtil {
 		int i=transactionAttributes.length-1;
 		while (i>=0 && !transactionAttributes[i].equalsIgnoreCase(transactionAttribute))
 			i--; // try next
-		return i; 
+		return transactionAttributeNums[i]; 
 	}
 
 	public static String getTransactionAttributeString(int transactionAttribute) {
 		if (transactionAttribute<0 || transactionAttribute>=transactionAttributes.length) {
 			return "UnknownTransactionAttribute:"+transactionAttribute;
 		}
-		return transactionAttributes[transactionAttribute];
+		switch (transactionAttribute) {
+			case TransactionDefinition.PROPAGATION_MANDATORY:
+			return TRANSACTION_ATTRIBUTE_MANDATORY_STR;
+    
+			case TransactionDefinition.PROPAGATION_NEVER:
+			return TRANSACTION_ATTRIBUTE_NEVER_STR;
+    
+			case TransactionDefinition.PROPAGATION_NOT_SUPPORTED:
+			return TRANSACTION_ATTRIBUTE_NOT_SUPPORTED_STR;
+    
+			case TransactionDefinition.PROPAGATION_SUPPORTS:
+			return TRANSACTION_ATTRIBUTE_SUPPORTS_STR;
+    
+			case TransactionDefinition.PROPAGATION_REQUIRED:
+			return TRANSACTION_ATTRIBUTE_REQUIRED_STR;
+    
+			case TransactionDefinition.PROPAGATION_REQUIRES_NEW:
+			return TRANSACTION_ATTRIBUTE_REQUIRES_NEW_STR;
+    
+			default:
+			return null;
+		}
 	}
 	
 	public static boolean transactionStateCompatible(int transactionAttribute) throws SystemException, NamingException {
-		if (transactionAttribute==TRANSACTION_ATTRIBUTE_NEVER) {
+		if (transactionAttribute==TransactionDefinition.PROPAGATION_NEVER) {
 			return !inTransaction(getUserTransaction());
-		} else if (transactionAttribute==TRANSACTION_ATTRIBUTE_MANDATORY) {
+		} else if (transactionAttribute==TransactionDefinition.PROPAGATION_MANDATORY) {
 			return inTransaction(getUserTransaction());
 		}
 		return true;
@@ -299,13 +321,13 @@ public class JtaUtil {
 //		finishTransaction(false);
 //	}
 
-	public static void setRollBackOnly() throws NamingException, IllegalStateException, SystemException {
-		UserTransaction utx=JtaUtil.getUserTransaction();
-		if (inTransaction(utx)) {
-			log.debug("marking transaction for rollback");
-			utx.setRollbackOnly();
-		}
-	}
+//	public static void setRollBackOnly() throws NamingException, IllegalStateException, SystemException {
+//		UserTransaction utx=JtaUtil.getUserTransaction();
+//		if (inTransaction(utx)) {
+//			log.debug("marking transaction for rollback");
+//			utx.setRollbackOnly();
+//		}
+//	}
 	
 //	public static void finishTransaction(boolean rollbackonly) throws NamingException, IllegalStateException, SecurityException, SystemException {
 //		utx=getUserTransaction();
