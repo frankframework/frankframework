@@ -1,6 +1,11 @@
 /*
  * $Log: ReceiverBaseSpring.java,v $
- * Revision 1.8  2007-12-10 10:20:57  europe\L190409
+ * Revision 1.9  2008-01-11 10:22:20  europe\L190409
+ * corrected receiver.isOnErrorStop to isOnErrorContinue
+ * corrected transaction handling
+ * reduced default maxRetries to 2
+ *
+ * Revision 1.8  2007/12/10 10:20:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added monitoring
  * fixed poisonMessage handling
  *
@@ -349,7 +354,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  */
 public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMessageHandler, IbisExceptionListener, HasSender, TracingEventNumbers, BeanFactoryAware {
     
-	public static final String version="$RCSfile: ReceiverBaseSpring.java,v $ $Revision: 1.8 $ $Date: 2007-12-10 10:20:57 $";
+	public static final String version="$RCSfile: ReceiverBaseSpring.java,v $ $Revision: 1.9 $ $Date: 2008-01-11 10:22:20 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -407,7 +412,7 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 	private ISender sender=null; // answer-sender
 	private ITransactionalStorage messageLog=null;
 	
-	private int maxRetries=3;
+	private int maxRetries=2;
     
 	private boolean transacted=false;
  
@@ -611,8 +616,7 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 	
 			log.info("closed Receiver ["+ getName()+ "]");
 		} catch (Exception e) {
-			log.error(
-				"Receiver [" + getName()+ "]: error closing connection", e);
+			error("Receiver [" + getName()+ "]: error closing connection", e);
 		}
 		runState.setRunState(RunStateEnum.STOPPED);
 		fireMonitorEvent(EventTypeEnum.TECHNICAL,SeverityEnum.CRITICAL,RCV_SHUTDOWN_MONITOR_EVENT_MSG);
@@ -631,6 +635,10 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 		ITransactionalStorage errorStorage = getErrorStorage();
 		if (errorStorage != null) {
 			errorStorage.setName("errorStorage of ["+getName()+"]");
+		}
+		ISender answerSender = getSender();
+		if (answerSender != null) {
+			answerSender.setName("answerSender of ["+getName()+"]");
 		}
 	}
 
@@ -821,10 +829,7 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 			runState.setRunState(RunStateEnum.STARTED);
             
 		} catch (ListenerException e) {
-			log.error("error occured while starting receiver [" + getName() + "]", e);
-			if (null != adapter)
-				adapter.getMessageKeeper().add(
-					"error occured while starting receiver [" + getName() + "]:" + e.getMessage());
+			error("error occured while starting receiver [" + getName() + "]", e);
 			runState.setRunState(RunStateEnum.ERROR);            
         
 		}    
@@ -976,8 +981,7 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 		log.debug(getLogPrefix()+"received message with messageId ["+messageId+"] correlationId ["+correlationId+"]");
         
 		if (checkTryCount(messageId)) {
-			log.warn(getLogPrefix()+"received message with messageId [" +
-					messageId + "] which is already stored in error storage; aborting processing");
+			log.warn(getLogPrefix()+"received message with messageId [" + messageId + "] which is already stored in error storage; aborting processing");
 			return result;
 		}
 		TransactionStatus txStatus = getTransactionForProcessing();
@@ -1022,6 +1026,7 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 						pipeLineResult = adapter.processMessageWithExceptions(correlationId, message, pipelineSession);
 						result=pipeLineResult.getResult();
 						errorMessage = "exitState ["+pipeLineResult.getState()+"], result ["+result+"]";
+						if (log.isDebugEnabled()) { log.debug("Receiver ["+getName()+"] received result: "+errorMessage); }
 						messageInError=txStatus.isRollbackOnly();
 					} catch (Throwable t) {
 						log.debug("<*>"+getLogPrefix() + "TX Update: Received failure, transaction " +
@@ -1052,7 +1057,7 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 			}
 			try {
 				// TODO: Should this be done in a finally, unconditionally?
-				// Perhaps better to have seperate methods for correct processing,
+				// Perhaps better to have separate methods for correct processing,
 				// and cleanup after an error?
 				origin.afterMessageProcessed(pipeLineResult,rawMessage, threadContext);
 			} finally {
@@ -1060,19 +1065,15 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 				finishProcessingMessage(finishProcessingTimestamp-startProcessingTimestamp);
 				if (!txStatus.isCompleted()) {
 					// Log what we're about to do
-					if (txStatus.isNewTransaction()) {
-						if (txStatus.isRollbackOnly()) {
-							log.debug(getLogPrefix() + "transaction marked for rollback, so rolling back the transaction");
-						} else {
-							log.debug(getLogPrefix() + "transaction is not marked for rollback, so committing the transaction");
-						}
-						// NB: Spring will take care of executing a commit or a rollback;
-						// Spring will also ONLY commit the transaction if it was newly created
-						// by the above call to txManager.getTransaction().
-						txManager.commit(txStatus);
+					if (txStatus.isRollbackOnly()) {
+						log.debug(getLogPrefix() + "transaction marked for rollback, so rolling back the transaction");
 					} else {
-						log.debug(getLogPrefix() + "transaction not new; commit-attempt should have no effect.");
+						log.debug(getLogPrefix() + "transaction is not marked for rollback, so committing the transaction");
 					}
+					// NB: Spring will take care of executing a commit or a rollback;
+					// Spring will also ONLY commit the transaction if it was newly created
+					// by the above call to txManager.getTransaction().
+					txManager.commit(txStatus);
 				} else {
 					throw new ListenerException(getLogPrefix()+"Transaction already completed; we didn't expect this");
 				}
@@ -1122,10 +1123,13 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 			return true;
 		}
 		
-		if (getErrorStorage() == null) {
-			return false;
+		if (getErrorStorage() != null && getErrorStorage().containsMessageId(messageId)) {
+			return true;
 		}
-		return getErrorStorage().containsMessageId(messageId);
+		if (getMessageLog() != null && getMessageLog().containsMessageId(messageId)) {
+			return true;
+		}
+		return false;
 	}
 
 	/**
@@ -1160,17 +1164,22 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 		// mark TX as rollback-only and throw an
 		// exception
 		if (retryCount < maxRetries) {
-			log.error("receiver ["+getName()+"] message with id ["+messageId+"] will be retried; transacion marked rollback-only");
+			log.error("receiver ["+getName()+"] message with id ["+messageId+"] will be retried; transaction marked rollback-only");
 			return true;
 		} else {
 			// Max retries exceeded; message to be moved
 			// to error location (OR LOST!)
-			log.error("receiver ["+getName()+"] message with id ["+messageId+"] retry count exceeded; remove from queue.");
-			removeMessageRetryCount(messageId);
+			log.error("receiver ["+getName()+"] message with id ["+messageId+"] retry count exceeded;");
+			//removeMessageRetryCount(messageId);
 			if (rawMessage instanceof Serializable) {
 				moveInProcessToError(messageId, correlationId, message, new Date(startProcessingTimestamp), errorMessage, (Serializable) rawMessage);
 			} else {
-				log.error("receiver [" + getName() + "] message is not serializable, cannot store in errorStorage [" + rawMessage + "]");
+				try {
+					MessageWrapper mw = new MessageWrapper(rawMessage, getListener());
+					moveInProcessToError(messageId, correlationId, message, new Date(startProcessingTimestamp), errorMessage, mw);
+				} catch (ListenerException e) {
+					log.error(getLogPrefix()+"could not wrap non serializable message for messageId ["+messageId+"]",e);
+				}
 			}
 			return false;
 		}
@@ -1409,7 +1418,7 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 		return onError;
 	}
     
-	public boolean isOnErrorStop() {
+	public boolean isOnErrorContinue() {
 		return ONERROR_CONTINUE.equalsIgnoreCase(getOnError());
 	}
 	protected IAdapter getAdapter() {
@@ -1577,6 +1586,7 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 		String errorMessage = null;
 		try {
 			if (getSender() != null) {
+				if (log.isDebugEnabled()) { log.debug("Receiver ["+getName()+"] sending result to configured sender"); }
 				getSender().sendMessage(correlationId, result);
 			}
 		} catch (Exception e) {
