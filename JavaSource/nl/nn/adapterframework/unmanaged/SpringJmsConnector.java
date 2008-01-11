@@ -1,6 +1,9 @@
 /*
  * $Log: SpringJmsConnector.java,v $
- * Revision 1.4  2008-01-03 15:57:58  europe\L190409
+ * Revision 1.5  2008-01-11 10:23:59  europe\L190409
+ * fixed a lot of things
+ *
+ * Revision 1.4  2008/01/03 15:57:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * rework port connected listener interfaces
  *
  * Revision 1.3  2007/11/22 09:12:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -78,19 +81,18 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 public class SpringJmsConnector extends AbstractJmsConfigurator implements IListenerConnector, BeanFactoryAware, ExceptionListener, SessionAwareMessageListener {
 	private static final Logger log = LogUtil.getLogger(SpringJmsConnector.class);
 	
-	public static final TransactionDefinition TXSUPPORTS = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_SUPPORTS);
-	public static final TransactionDefinition TXMANDATORY = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_MANDATORY);
+	public static final TransactionDefinition TXREQUIRED = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED);
     
-	public static final String version="$RCSfile: SpringJmsConnector.java,v $ $Revision: 1.4 $ $Date: 2008-01-03 15:57:58 $";
+	public static final String version="$RCSfile: SpringJmsConnector.java,v $ $Revision: 1.5 $ $Date: 2008-01-11 10:23:59 $";
     
-	private PlatformTransactionManager txManager;
+ 	private PlatformTransactionManager txManager;
 	private BeanFactory beanFactory;
 	private DefaultMessageListenerContainer jmsContainer;
 	private String messageListenerClassName;
     
     public static final int CACHE_LEVEL=DefaultMessageListenerContainer.CACHE_CONSUMER;
 //	public static final int MAX_MESSAGES_PER_TASK=100;
-	public static final int IDLE_TASK_EXECUTION_LIMIT=10;
+	public static final int IDLE_TASK_EXECUTION_LIMIT=1000;
  
 	final Counter threadsProcessing = new Counter(0);
     
@@ -99,7 +101,7 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 			Class klass = Class.forName(messageListenerClassName);
 			return (DefaultMessageListenerContainer) klass.newInstance();
 		} catch (Exception e) {
-			throw new ConfigurationException("Error creating instance of MessageListenerContainer ["+messageListenerClassName+"]", e);
+			throw new ConfigurationException(getLogPrefix()+"error creating instance of MessageListenerContainer ["+messageListenerClassName+"]", e);
 		}
 	}
     
@@ -118,87 +120,150 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 		
         
 		if (getReceiver().isTransacted()) {
-			this.jmsContainer.setTransactionManager(this.txManager);
+			log.debug(getLogPrefix()+"setting transction manager to ["+txManager+"]");
+			jmsContainer.setTransactionManager(txManager);
+		} else { 
+			log.debug(getLogPrefix()+"setting no transction manager");
 		}
 		if (sessionTransacted) { 
-			this.jmsContainer.setSessionTransacted(sessionTransacted);
+			jmsContainer.setSessionTransacted(sessionTransacted);
 		} 
 		if (StringUtils.isNotEmpty(messageSelector)) {
 			jmsContainer.setMessageSelector(messageSelector);
 		}
 		
 		// Initialize with a number of dynamic properties which come from the configuration file
-		this.jmsContainer.setConnectionFactory(getConnectionFactory());
-		this.jmsContainer.setDestination(getDestination());
+		jmsContainer.setConnectionFactory(getConnectionFactory());
+		jmsContainer.setDestination(getDestination());
         
-		this.jmsContainer.setExceptionListener(this);
+		jmsContainer.setExceptionListener(this);
 		// the following is not required, the timeout set is the time waited to start a new poll attempt.
 		//this.jmsContainer.setReceiveTimeout(getJmsListener().getTimeOut());
         
 		if (getReceiver().getNumThreads() > 0) {
-			this.jmsContainer.setConcurrentConsumers(getReceiver().getNumThreads());
+			jmsContainer.setConcurrentConsumers(getReceiver().getNumThreads());
 		} else {
-			this.jmsContainer.setConcurrentConsumers(1);
+			jmsContainer.setConcurrentConsumers(1);
 		}
-		this.jmsContainer.setIdleTaskExecutionLimit(IDLE_TASK_EXECUTION_LIMIT);
-//		this.jmsContainer.setCacheLevel(CACHE_LEVEL);
-		this.jmsContainer.setCacheLevelName(cacheMode);
-		this.jmsContainer.setMessageListener(this);
+		jmsContainer.setIdleTaskExecutionLimit(IDLE_TASK_EXECUTION_LIMIT);
+
+		if (StringUtils.isNotEmpty(cacheMode)) {
+			jmsContainer.setCacheLevelName(cacheMode);
+		} else {
+			if (getReceiver().isTransacted()) {
+				jmsContainer.setCacheLevel(DefaultMessageListenerContainer.CACHE_NONE);
+			} else {
+				jmsContainer.setCacheLevel(DefaultMessageListenerContainer.CACHE_CONSUMER);
+			}
+		}
+		jmsContainer.setMessageListener(this);
 		// Use Spring BeanFactory to complete the auto-wiring of the JMS Listener Container,
 		// and run the bean lifecycle methods.
 		try {
 			((AutowireCapableBeanFactory) this.beanFactory).configureBean(this.jmsContainer, "proto-jmsContainer");
 		} catch (BeansException e) {
-			throw new ConfigurationException("Out of luck wiring up and configuring Default JMS Message Listener Container for JMS Listener ["+ (getListener().getName()+"]"), e);
+			throw new ConfigurationException(getLogPrefix()+"Out of luck wiring up and configuring Default JMS Message Listener Container for JMS Listener ["+ (getListener().getName()+"]"), e);
 		}
         
 		// Finally, set bean name to something we can make sense of
 		if (getListener().getName() != null) {
-			this.jmsContainer.setBeanName(getListener().getName());
+			jmsContainer.setBeanName(getListener().getName());
 		} else {
-			this.jmsContainer.setBeanName(getReceiver().getName());
+			jmsContainer.setBeanName(getReceiver().getName());
 		}
         
 	}
 
-	public void onMessage(Message message, Session session)
-		throws JMSException {
+	public void start() throws ListenerException {
+		log.debug(getLogPrefix()+"starting");
+		try {
+			jmsContainer.start();
+		} catch (Exception e) {
+			throw new ListenerException(getLogPrefix()+"cannot start", e);
+		}
+	}
+
+	public void stop() throws ListenerException {
+		log.debug(getLogPrefix()+"stopping");
+		try {
+			jmsContainer.stop();
+		} catch (Exception e) {
+			throw new ListenerException(getLogPrefix()+"Exception while trying to stop", e);
+		}
+	}
+
+
+	public void onMessage(Message message, Session session)	throws JMSException {
                 
 		threadsProcessing.increase();
 		Thread.currentThread().setName(getReceiver().getName()+"["+threadsProcessing.getValue()+"]");
                 
-		TransactionStatus txStatus = null;
 		Map threadContext = new HashMap();
+		TransactionStatus txStatus=null;
+		if (getReceiver().isTransacted() || jmsContainer.isSessionTransacted()) {
+			txStatus = txManager.getTransaction(TXREQUIRED);
+			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"created transaction");
+		}
 		try {
 			IPortConnectedListener listener = getListener();
-			String messageText=listener.getStringFromRawMessage(message, threadContext);
-			String cid=listener.getIdFromRawMessage(message, threadContext);
-			String mid = (String)threadContext.get("id");
 			threadContext.put("session",session);
-			getReceiver().processRequest(getListener(), mid, cid, messageText, threadContext,-1);
+			getReceiver().processRawMessage(listener, message, threadContext);
+			if (txStatus!=null && txStatus.isRollbackOnly()) {
+				log.warn(getLogPrefix()+"received status rollbackonly");
+				if (jmsContainer.isSessionTransacted() && !getReceiver().isTransacted()) {
+					log.warn(getLogPrefix()+"receiver is not XA transacted, rolling back session");
+					session.rollback(); // als je dit niet doet, dan rolt alleen jms-transacted niet terug
+				}
+			}
 		} catch (ListenerException e) {
-			invalidateSessionTransaction(e, session, txStatus);
+			if (txStatus!=null && getReceiver().isTransacted()) {
+				log.warn(getLogPrefix()+"caught exception, setting rollbackonly");
+				txStatus.setRollbackOnly();
+			} else {
+				if (jmsContainer.isSessionTransacted()) {
+					log.warn(getLogPrefix()+"caught exception, rolling back session");
+					session.rollback();
+				} else {
+					log.warn(getLogPrefix()+"caught exception, no transactional stuff to rollback, rethrowing ListenerException as JmsException");
+					JMSException jmse = new JMSException(e.getMessage());
+					throw jmse;
+				}
+			}  
 		} finally {
+			if (txStatus!=null) {
+				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"committing transaction");
+				txManager.commit(txStatus); 
+			} else {
+				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"ending, no transactional stuff to commit");
+			}
 			threadsProcessing.decrease();
+//			boolean simulateCrashAfterCommit=false;
+//			if (simulateCrashAfterCommit) {
+//				toggle=!toggle;
+//				if (toggle) {
+//					throw new JMSException("simulate crash after commit");
+//				}
+//			}
 		}
 	}
 
-	private void invalidateSessionTransaction(Throwable t, Session session,	TransactionStatus txStatus) throws JMSException {
-		// TODO Proper way to handle this error
-		if (!getReceiver().isTransacted()) {
-			log.debug("Exception caught in onMessage; rolling back JMS Session", t);
-			session.rollback();
+//	private boolean toggle=false;
+
+	public void onException(JMSException e) {
+		IbisExceptionListener ibisExceptionListener = getExceptionListener();
+		if (ibisExceptionListener!= null) {
+			ibisExceptionListener.exceptionThrown(getListener(), e);
 		} else {
-			if (txStatus == null) {
-				log.error("Unable to rollback current global transaction since it is null! Original exception for which we want to rollback:", t);
-				throw new javax.jms.IllegalStateException("Trying to roll back current global transaction for transacted listener ["
-						+ getListener().getName()+"] but reference to transaction-status is null; original exception for which we want to rollback is instance of "
-						+ t.getClass().getName()+"; exception message: "+t.getMessage());
-			}
-			log.debug("Exception caught in onMessage; rolling back global transaction", t);
-			txStatus.setRollbackOnly();
-			throw new JMSException("Forcing rollback because Receiver could not process the message");
+			log.error(getLogPrefix()+"Cannot report the error to an IBIS Exception Listener", e);
 		}
+	}
+
+	public String getLogPrefix() {
+		String result="SpringJmsContainer ";
+		if (getListener()!=null && getListener().getReceiver()!=null) {
+			result += "of Receiver ["+getListener().getReceiver().getName()+"] ";
+		}
+		return result;
 	}
 
 	/* (non-Javadoc)
@@ -206,39 +271,6 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 	 */
 	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
 		this.beanFactory = beanFactory;
-	}
-
-	/* (non-Javadoc)
-	 * @see nl.nn.adapterframework.configuration.IListenerConnector#openJmsReceiver()
-	 */
-	public void start() throws ListenerException {
-		log.debug("Starting Spring JMS Container");
-		try {
-			jmsContainer.start();
-		} catch (Exception e) {
-			throw new ListenerException("Cannot start Spring JMS Container", e);
-		}
-	}
-
-	/* (non-Javadoc)
-	 * @see nl.nn.adapterframework.configuration.IListenerConnector#closeJmsReceiver()
-	 */
-	public void stop() throws ListenerException {
-		log.debug("Stopping Spring JMS Container");
-		try {
-			jmsContainer.stop();
-		} catch (Exception e) {
-			throw new ListenerException("Exception while trying to stop Spring JMS Container", e);
-		}
-	}
-
-	public void onException(JMSException e) {
-		IbisExceptionListener ibisExceptionListener = getExceptionListener();
-		if (ibisExceptionListener!= null) {
-			ibisExceptionListener.exceptionThrown(getListener(), e);
-		} else {
-			log.error("Cannot report the error to an IBIS Exception Listener", e);
-		}
 	}
 
 
