@@ -1,6 +1,9 @@
 /*
  * $Log: PushingJmsListener.java,v $
- * Revision 1.8  2008-01-03 15:51:56  europe\L190409
+ * Revision 1.9  2008-01-11 09:45:08  europe\L190409
+ * copy jmsTransacted to jmsConnector
+ *
+ * Revision 1.8  2008/01/03 15:51:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * rework port connected listener interfaces
  *
  * Revision 1.7  2007/11/23 14:22:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -74,6 +77,8 @@ import javax.jms.Message;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
+import org.apache.commons.lang.StringUtils;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IListenerConnector;
 import nl.nn.adapterframework.core.IMessageHandler;
@@ -96,7 +101,7 @@ import nl.nn.adapterframework.core.PipeLineResult;
  * @version Id
  */
 public class PushingJmsListener extends JMSFacade implements IPortConnectedListener {
-    public static final String version="$RCSfile: PushingJmsListener.java,v $ $Revision: 1.8 $ $Date: 2008-01-03 15:51:56 $";
+    public static final String version="$RCSfile: PushingJmsListener.java,v $ $Revision: 1.9 $ $Date: 2008-01-11 09:45:08 $";
 
 	private final static String THREAD_CONTEXT_SESSION_KEY="session";
 
@@ -113,7 +118,7 @@ public class PushingJmsListener extends JMSFacade implements IPortConnectedListe
     private String commitOnState="success";
 
 	private String listenerPort;
-	private String cacheMode = "CACHE_CONSUMER"; // set to CACHE_NONE if multiple JmsListeners appear in one chain, to avoid lock up / timeout in session creation
+	private String cacheMode; 
     
     private IListenerConnector jmsConnector;
     private IMessageHandler handler;
@@ -131,6 +136,14 @@ public class PushingJmsListener extends JMSFacade implements IPortConnectedListe
         if (jmsConnector==null) {
         	throw new ConfigurationException(getLogPrefix()+" has no jmsConnector. It should be configured via springContext.xml");
         }
+		if (StringUtils.isNotEmpty(getCacheMode())) {
+			if (!getCacheMode().equals("CACHE_NONE") && 
+				!getCacheMode().equals("CACHE_CONNECTION") && 
+				!getCacheMode().equals("CACHE_SESSION") && 
+				!getCacheMode().equals("CACHE_CONSUMER")) {
+					throw new ConfigurationException(getLogPrefix()+"cacheMode ["+getCacheMode()+"] must be one of CACHE_NONE, CACHE_CONNECTION, CACHE_SESSION or CACHE_CONSUMER");
+				}
+		}
 		Destination destination=null;
         try {
 			destination=getDestination();
@@ -138,7 +151,7 @@ public class PushingJmsListener extends JMSFacade implements IPortConnectedListe
 			throw new ConfigurationException(getLogPrefix()+"could not get Destination",e);
 		}
         try {
-			jmsConnector.configureEndpointConnection(this, getConnection().getConnectionFactory(), destination, getExceptionListener(), getCacheMode(), false, getMessageSelector());
+			jmsConnector.configureEndpointConnection(this, getConnection().getConnectionFactory(), destination, getExceptionListener(), getCacheMode(), isJmsTransacted(), getMessageSelector());
 		} catch (JmsException e) {
 			throw new ConfigurationException(e);
 		}
