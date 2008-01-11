@@ -1,6 +1,9 @@
 /*
  * $Log: MessageWrapper.java,v $
- * Revision 1.3  2007-11-15 12:38:08  europe\L190409
+ * Revision 1.4  2008-01-11 14:52:52  europe\L190409
+ * remove non serializable original message from context
+ *
+ * Revision 1.3  2007/11/15 12:38:08  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fixed message wrapping
  *
  * Revision 1.2  2007/10/08 12:24:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -22,6 +25,7 @@ import java.util.Map;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IMessageWrapper;
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.extensions.ifsa.jms.PushingIfsaProviderListener;
 
 /**
  * Wrapper for messages that are not serializable.
@@ -44,6 +48,7 @@ public class MessageWrapper implements Serializable, IMessageWrapper {
 	public MessageWrapper(Object message, IListener listener) throws ListenerException  {
 		this();
 		text = listener.getStringFromRawMessage(message, context);
+		Object rm = context.remove(PushingIfsaProviderListener.THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY);
 		id = listener.getIdFromRawMessage(message, context);
 	}
 
