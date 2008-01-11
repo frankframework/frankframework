@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   $Log: springCommon.xml,v $
-  Revision 1.8  2007-12-12 09:10:44  europe\L190409
+  Revision 1.9  2008-01-11 14:57:28  europe\L190409
+  removed external pipe and pipeline executors
+
+  Revision 1.8  2007/12/12 09:10:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
   disable validation temporarily
 
   Revision 1.7  2007/12/10 10:26:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -91,13 +94,6 @@
         factory-method="getInstance">
     </bean>
     
-    <bean name="pipeLineExecutor" class="nl.nn.adapterframework.txsupport.SpringTxPipeLineExecutor"
-        autowire="byName" scope="singleton">
-    </bean>
-    
-    <bean name="pipeExecutor" class="nl.nn.adapterframework.txsupport.SpringTxPipeExecutor"
-        autowire="byName" scope="singleton">
-    </bean>
     
     <bean name="listenerContainer" class="nl.nn.adapterframework.receivers.PullingListenerContainer"
         autowire="byName" scope="prototype">
