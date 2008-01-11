@@ -1,6 +1,9 @@
 /*
  * $Log: PushingIfsaProviderListener.java,v $
- * Revision 1.1  2008-01-03 15:46:19  europe\L190409
+ * Revision 1.2  2008-01-11 09:41:49  europe\L190409
+ * check values of cache mode
+ *
+ * Revision 1.1  2008/01/03 15:46:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * split IfsaProviderListener into a Pulling and a Pushing version
  *
  */
@@ -8,7 +11,6 @@ package nl.nn.adapterframework.extensions.ifsa.jms;
 
 import java.util.Date;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -16,9 +18,7 @@ import javax.jms.DeliveryMode;
 import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Message;
-import javax.jms.QueueReceiver;
 import javax.jms.QueueSession;
-import javax.jms.Session;
 import javax.jms.TextMessage;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -34,6 +34,7 @@ import nl.nn.adapterframework.extensions.ifsa.IfsaException;
 import nl.nn.adapterframework.extensions.ifsa.IfsaMessageProtocolEnum;
 import nl.nn.adapterframework.util.ClassUtils;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 
 import com.ing.ifsa.IFSAHeader;
@@ -43,7 +44,7 @@ import com.ing.ifsa.IFSAServiceName;
 import com.ing.ifsa.IFSAServicesProvided;
 
 /**
- * Implementation of {@link IPullingListener} that acts as an IFSA-service.
+ * Implementation of {@link IPortConnectedListener} that acts as an IFSA-service.
  * 
  * There is no need or possibility to set the ServiceId as the Provider will receive all messages
  * for this Application on the same serviceQueue.
@@ -59,7 +60,10 @@ import com.ing.ifsa.IFSAServicesProvided;
  *   <li>"FF": Fire & Forget protocol</li>
  *   <li>"RR": Request-Reply protocol</li>
  * </ul></td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setTransacted(boolean) transacted}</td><td>must be set <code>true</true> for FF listeners in transacted mode</td><td>false</td></tr>
+ * <tr><td>{@link #setCacheMode(String) cacheMode}</td><td>controls caching of JMS objects. Must be one of CACHE_NONE, CACHE_CONNECTION, CACHE_SESSION, CACHE_CONSUMER</td><td>effectively: <ul>
+ *   <li>in transacted receivers: CACHE_NONE</li>
+ *   <li>in non transacted receivers: CACHE_CONSUMER</li>
+ * </ul></td></tr>
  * <tr><td>{@link #setTimeOut(long) timeOut}</td><td>receiver timeout, in milliseconds</td><td>3000</td></tr>
  * </table>
  * The following session keys are set for each message:
@@ -88,14 +92,13 @@ import com.ing.ifsa.IFSAServicesProvided;
  * @version Id
  */
 public class PushingIfsaProviderListener extends IfsaFacade implements IPortConnectedListener {
-	public static final String version = "$RCSfile: PushingIfsaProviderListener.java,v $ $Revision: 1.1 $ $Date: 2008-01-03 15:46:19 $";
+	public static final String version = "$RCSfile: PushingIfsaProviderListener.java,v $ $Revision: 1.2 $ $Date: 2008-01-11 09:41:49 $";
 
     private final static String THREAD_CONTEXT_SESSION_KEY = "session";
-    private final static String THREAD_CONTEXT_RECEIVER_KEY = "receiver";
-	private final static String THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY = "originalRawMessage";
+	public final static String THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY = "originalRawMessage";
 
 	private String listenerPort;
-	private String cacheMode = "CACHE_CONSUMER"; // set to CACHE_NONE if multiple JmsListeners appear in one chain, to avoid lock up / timeout in session creation
+	private String cacheMode; // default is set in spring container
 
 	private IListenerConnector jmsConnector;
 	private IMessageHandler handler;
@@ -112,6 +115,14 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 		super.configure();
 		if (jmsConnector==null) {
 			throw new ConfigurationException(getLogPrefix()+" has no jmsConnector. It should be configured via springContext.xml");
+		}
+		if (StringUtils.isNotEmpty(getCacheMode())) {
+			if (!getCacheMode().equals("CACHE_NONE") && 
+				!getCacheMode().equals("CACHE_CONNECTION") && 
+				!getCacheMode().equals("CACHE_SESSION") && 
+				!getCacheMode().equals("CACHE_CONSUMER")) {
+					throw new ConfigurationException(getLogPrefix()+"cacheMode ["+getCacheMode()+"] must be one of CACHE_NONE, CACHE_CONNECTION, CACHE_SESSION or CACHE_CONSUMER");
+				}
 		}
 		Destination destination=null;
 		try {
