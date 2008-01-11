@@ -1,6 +1,9 @@
 /*
  * $Log: PullingListenerContainer.java,v $
- * Revision 1.7  2008-01-03 15:52:36  europe\L190409
+ * Revision 1.8  2008-01-11 09:54:30  europe\L190409
+ * corrected receiver.isOnErrorStop to isOnErrorContinue
+ *
+ * Revision 1.7  2008/01/03 15:52:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved logging
  *
  * Revision 1.6  2007/12/10 10:15:22  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -30,7 +33,6 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.monitoring.EventTypeEnum;
 import nl.nn.adapterframework.monitoring.SeverityEnum;
 import nl.nn.adapterframework.util.Counter;
-import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.Semaphore;
@@ -122,7 +124,7 @@ public class PullingListenerContainer implements Runnable {
 								if (txStatus!=null) {
 									txManager.rollback(txStatus);
 								}
-								if (receiver.isOnErrorStop()) {
+								if (receiver.isOnErrorContinue()) {
 									increaseRetryIntervalAndWait(e);
 								} else {
 									receiver.error("stopping receiver after exception in retrieving message", e);
@@ -143,22 +145,27 @@ public class PullingListenerContainer implements Runnable {
 							try {
 								receiver.processRawMessage(listener, rawMessage, threadContext, finishProcessingTimestamp - startProcessingTimestamp);
 								if (txStatus != null) {
-									txManager.commit(txStatus);
+									if (txStatus.isRollbackOnly()) {
+										receiver.warn(receiver.getLogPrefix()+"pipeline processing ended with status RollbackOnly, so rolling back transaction");
+										txManager.rollback(txStatus);
+									} else {
+										txManager.commit(txStatus);
+									}
 								}
 							} catch (Exception e) {
 								TracingUtil.exceptionEvent(this);
 								if (txStatus != null && !txStatus.isCompleted()) {
 									txManager.rollback(txStatus);
 								}
-								if (receiver.isOnErrorStop()) {
+								if (receiver.isOnErrorContinue()) {
 									receiver.error(receiver.getLogPrefix()+"caught Exception processing message, will continue processing next message", e);
 								} else {
 									receiver.error(receiver.getLogPrefix()+"stopping receiver after exception in processing message", e);
 									receiver.stopRunning();
 								}
 							}
-							finishProcessingTimestamp = System.currentTimeMillis();
 						} finally {
+							finishProcessingTimestamp = System.currentTimeMillis();
 							TracingUtil.afterEvent(this);
 						}
 					} else {
