@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.56  2007-12-27 16:01:59  europe\L190409
+ * Revision 1.57  2008-01-11 09:07:32  europe\L190409
+ * convert transaction management to Spring
+ *
+ * Revision 1.56  2007/12/27 16:01:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * avoid NPE for null pipeline results
  *
  * Revision 1.55  2007/12/17 08:49:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -183,6 +186,8 @@ import nl.nn.adapterframework.util.TracingUtil;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
 
 /**
  * Processor and keeper of a line of {@link IPipe Pipes}.
@@ -255,7 +260,7 @@ import org.apache.log4j.Logger;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.56 $ $Date: 2007-12-27 16:01:59 $";
+	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.57 $ $Date: 2008-01-11 09:07:32 $";
     private Logger log = LogUtil.getLogger(this);
 	private Logger durationLog = LogUtil.getLogger("LongDurationMessages");
     
@@ -266,7 +271,7 @@ public class PipeLine {
     private Hashtable pipeWaitingStatistics = new Hashtable();
     private Hashtable globalForwards = new Hashtable();
     private String firstPipe;
-	private int transactionAttribute=JtaUtil.TRANSACTION_ATTRIBUTE_SUPPORTS;
+	private int transactionAttribute=TransactionDefinition.PROPAGATION_SUPPORTS;
      
 	private IPipe inputValidator=null;
 	private IPipe outputValidator=null;
@@ -492,65 +497,20 @@ public class PipeLine {
         }
 	}
     
-    protected PipeLineResult runPipeLineObeyingTransactionAttribute(String messageId, String message, PipeLineSession session) throws PipeRunException {
+    private PipeLineResult runPipeLineObeyingTransactionAttribute(String messageId, String message, PipeLineSession session) throws PipeRunException {
         int txOption = this.getTransactionAttributeNum();
-        switch (txOption) {
-            case JtaUtil.TRANSACTION_ATTRIBUTE_MANDATORY:
-            return pipeLineExecutor.doPipeLineTxMandatory(this, messageId, message, session);
-            
-            case JtaUtil.TRANSACTION_ATTRIBUTE_NEVER:
-            return pipeLineExecutor.doPipeLineTxNever(this, messageId, message, session);
-            
-            case JtaUtil.TRANSACTION_ATTRIBUTE_NOT_SUPPORTED:
-            return pipeLineExecutor.doPipeLineTxNotSupported(this, messageId, message, session);
-            
-            case JtaUtil.TRANSACTION_ATTRIBUTE_SUPPORTS:
-            return pipeLineExecutor.doPipeLineTxSupports(this, messageId, message, session);
-            
-            case JtaUtil.TRANSACTION_ATTRIBUTE_REQUIRED:
-            return pipeLineExecutor.doPipeLineTxRequired(this, messageId, message, session);
-            
-            case JtaUtil.TRANSACTION_ATTRIBUTE_REQUIRES_NEW:
-            return pipeLineExecutor.doPipeLineTxRequiresNew(this, messageId, message, session);
-            
-            default:
-            throw new PipeRunException(null, "Invalid value of transactional attribute on PipeLine: value="
-                + txOption + "(" + JtaUtil.getTransactionAttributeString(txOption) + ")");
-        }
+		return pipeLineExecutor.doPipeLineTransactional(txOption, this, messageId, message, session);
     }
     
-	protected PipeRunResult runPipeObeyingTransactionAttribute(IPipe pipe, Object message, PipeLineSession session) throws PipeRunException {
+	private PipeRunResult runPipeObeyingTransactionAttribute(IPipe pipe, Object message, PipeLineSession session) throws PipeRunException {
         int txOption;
         if (pipe instanceof HasTransactionAttribute) {
             HasTransactionAttribute taPipe = (HasTransactionAttribute) pipe;
             txOption = taPipe.getTransactionAttributeNum();
         } else {
-            txOption = JtaUtil.TRANSACTION_ATTRIBUTE_DEFAULT;
+            txOption = TransactionDefinition.PROPAGATION_SUPPORTS;
         }
-        switch (txOption) {
-            case JtaUtil.TRANSACTION_ATTRIBUTE_MANDATORY:
-            return pipeExecutor.doPipeTxMandatory(pipe, message, session);
-            
-            case JtaUtil.TRANSACTION_ATTRIBUTE_NEVER:
-            return pipeExecutor.doPipeTxNever(pipe, message, session);
-            
-            case JtaUtil.TRANSACTION_ATTRIBUTE_NOT_SUPPORTED:
-            return pipeExecutor.doPipeTxNotSupported(pipe, message, session);
-            
-            case JtaUtil.TRANSACTION_ATTRIBUTE_SUPPORTS:
-            return pipeExecutor.doPipeTxSupports(pipe, message, session);
-            
-            case JtaUtil.TRANSACTION_ATTRIBUTE_REQUIRED:
-            return pipeExecutor.doPipeTxRequired(pipe, message, session);
-            
-            case JtaUtil.TRANSACTION_ATTRIBUTE_REQUIRES_NEW:
-            return pipeExecutor.doPipeTxRequiresNew(pipe, message, session);
-            
-            default:
-            throw new PipeRunException(pipe, "Invalid value of transactional attribute on pipe '" +
-                pipe.getName() + "': value="
-                + txOption + " (" + JtaUtil.getTransactionAttributeString(txOption) + ")");
-        }
+		return pipeExecutor.doPipeTransactional(txOption, pipe, message, session);
 	}
 
 	/**
@@ -565,7 +525,7 @@ public class PipeLine {
 	 * @return
 	 * @throws PipeRunException
 	 */
-    public PipeLineResult processPipeLine(String messageId, String message, PipeLineSession pipeLineSession) throws PipeRunException {
+    public PipeLineResult processPipeLine(String messageId, String message, PipeLineSession pipeLineSession, TransactionStatus txStatus) throws PipeRunException {
 	    // Object is the object that is passed to and returned from Pipes
 	    Object object = (Object) message;
 	    Object preservedObject = object;
@@ -780,7 +740,7 @@ public class PipeLine {
 		}
 		if (mustRollback) {
 			try {
-				JtaUtil.setRollBackOnly();
+				txStatus.setRollbackOnly();
 			} catch (Exception e) {
 				throw new PipeRunException(null,"Could not set RollBackOnly",e);
 			}
@@ -900,10 +860,10 @@ public class PipeLine {
 //		this.transacted = transacted;
 		if (transacted) {
 			log.warn("implementing setting of transacted=true as transactionAttribute=Required");
-			setTransactionAttributeNum(JtaUtil.TRANSACTION_ATTRIBUTE_REQUIRED);
+			setTransactionAttributeNum(TransactionDefinition.PROPAGATION_REQUIRED);
 		} else {
 			log.warn("implementing setting of transacted=false as transactionAttribute=Supports");
-			setTransactionAttributeNum(JtaUtil.TRANSACTION_ATTRIBUTE_SUPPORTS);
+			setTransactionAttributeNum(TransactionDefinition.PROPAGATION_SUPPORTS);
 		}
 	}
 	/**
