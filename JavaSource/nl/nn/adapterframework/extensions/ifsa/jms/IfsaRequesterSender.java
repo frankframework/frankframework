@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaRequesterSender.java,v $
- * Revision 1.2  2007-10-16 08:39:30  europe\L190409
+ * Revision 1.3  2008-01-11 14:50:59  europe\L190409
+ * changed transaction checking to using Spring
+ *
+ * Revision 1.2  2007/10/16 08:39:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * moved IfsaException and IfsaMessageProtocolEnum back to main package
  *
  * Revision 1.1  2007/10/16 08:15:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -117,9 +120,12 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
-import nl.nn.adapterframework.util.JtaUtil;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import com.ing.ifsa.IFSAQueue;
 import com.ing.ifsa.IFSAReportMessage;
@@ -157,11 +163,16 @@ import com.ing.ifsa.IFSATimeOutMessage;
  * @since  4.2
  */
 public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParameters {
-	public static final String version="$RCSfile: IfsaRequesterSender.java,v $ $Revision: 1.2 $ $Date: 2007-10-16 08:39:30 $";
+	public static final String version="$RCSfile: IfsaRequesterSender.java,v $ $Revision: 1.3 $ $Date: 2008-01-11 14:50:59 $";
+ 
+	public final static TransactionDefinition TXNEVER = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_NEVER);
+	public final static TransactionDefinition TXSUPPORTS = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_SUPPORTS);
+
  
 	protected ParameterList paramList = null;
-	
-	private int transactionAttributeToTest;
+
+	protected PlatformTransactionManager txManager;
+	private TransactionDefinition transactionDefinitionToTest;
   
 	public IfsaRequesterSender() {
   		super(false); // instantiate IfsaFacade as a requestor	
@@ -180,9 +191,9 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 //			log.warn(getLogPrefix()+"transacted should not be set to 'true' if messageProtocol=["+getMessageProtocolEnum()+"]");
 //		}
 		if (IfsaMessageProtocolEnum.REQUEST_REPLY.equals(getMessageProtocolEnum())) {
-			transactionAttributeToTest=JtaUtil.TRANSACTION_ATTRIBUTE_NEVER;
+			transactionDefinitionToTest=TXNEVER;
 		} else {
-			transactionAttributeToTest=JtaUtil.TRANSACTION_ATTRIBUTE_SUPPORTS;
+			transactionDefinitionToTest=TXSUPPORTS;
 //			if (!isXaEnabledForSure()) {
 //				if (isNotXaEnabledForSure()) {
 //					log.warn(getLogPrefix()+"The installed IFSA libraries do not have XA enabled. Transaction integrity cannot be fully guaranteed");
@@ -280,38 +291,33 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 	}
 
 	public String sendMessage(String dummyCorrelationId, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
-		boolean compatible;
+		
+		TransactionStatus txStatus=null;
 		try {
-			compatible = JtaUtil.transactionStateCompatible(transactionAttributeToTest);
-		} catch (Exception e) {
-			throw new SenderException(e);
-		}
-		if (!compatible) {
-			throw new SenderException("transaction state ["+JtaUtil.displayTransactionStatus()+"] not compabtible with message protocol ["+getMessageProtocol()+"]");
-		}
-		try {
-			if (getMessageProtocolEnum().equals(IfsaMessageProtocolEnum.FIRE_AND_FORGET) && !JtaUtil.inTransaction()) {
-				log.warn("Sending messages in Fire&Forget mode should be performed under transaction control");
-			}
-		} catch (Exception e) {
-			throw new SenderException(e);
-		}
+			txStatus = txManager.getTransaction(transactionDefinitionToTest);
 
-		ParameterValueList paramValueList;
-		try {
-			paramValueList = prc.getValues(paramList);
-		} catch (ParameterException e) {
-			throw new SenderException(getLogPrefix()+"caught ParameterException in sendMessage() determining serviceId",e);
-		}
-		Map params = new HashMap();
-		if (paramValueList != null && paramList != null) {
-			for (int i = 0; i < paramList.size(); i++) {
-				String key = paramList.getParameter(i).getName();
-				String value = paramValueList.getParameterValue(i).asStringValue(null);
-				params.put(key, value);
+			ParameterValueList paramValueList;
+			try {
+				paramValueList = prc.getValues(paramList);
+			} catch (ParameterException e) {
+				throw new SenderException(getLogPrefix()+"caught ParameterException in sendMessage() determining serviceId",e);
+			}
+			Map params = new HashMap();
+			if (paramValueList != null && paramList != null) {
+				for (int i = 0; i < paramList.size(); i++) {
+					String key = paramList.getParameter(i).getName();
+					String value = paramValueList.getParameterValue(i).asStringValue(null);
+					params.put(key, value);
+				}
+			}
+			return sendMessage(dummyCorrelationId, message, params);
+		} catch (Exception e) {
+			throw new SenderException(e);
+		} finally {
+			if (txStatus!=null) {
+				txManager.commit(txStatus);
 			}
 		}
-		return sendMessage(dummyCorrelationId, message, params);
 	}
 
 	/**
@@ -422,4 +428,12 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 		}
 		paramList.add(p);
 	}
+	
+	public void setTxManager(PlatformTransactionManager txManager) {
+		this.txManager = txManager;
+	}
+	public PlatformTransactionManager getTxManager() {
+		return txManager;
+	}
+	
 }
