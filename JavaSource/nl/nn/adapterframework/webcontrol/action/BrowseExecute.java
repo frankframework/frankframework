@@ -1,6 +1,9 @@
 /*
  * $Log: BrowseExecute.java,v $
- * Revision 1.6  2007-12-10 10:25:32  europe\L190409
+ * Revision 1.7  2008-01-11 14:56:13  europe\L190409
+ * resend using retry function of receiver
+ *
+ * Revision 1.6  2007/12/10 10:25:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * rework
  *
  * Revision 1.5  2007/11/22 09:15:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -32,7 +35,6 @@ import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.RunStateEnum;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.struts.action.ActionError;
@@ -49,7 +51,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  * @since   4.3
  */
 public class BrowseExecute extends Browse {
-	public static final String version="$RCSfile: BrowseExecute.java,v $ $Revision: 1.6 $ $Date: 2007-12-10 10:25:32 $";
+	public static final String version="$RCSfile: BrowseExecute.java,v $ $Revision: 1.7 $ $Date: 2008-01-11 14:56:13 $";
     
     protected static final TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
     
@@ -68,24 +70,32 @@ public class BrowseExecute extends Browse {
 	
 			if ("delete selected".equalsIgnoreCase(action)) {
 				for(int i=0; i<selected.length; i++) {
-					deleteMessage(mb,selected[i],transactionManager);
+					try {
+						deleteMessage(mb,selected[i],transactionManager);
+					} catch (Throwable e) {
+						error(", ", "errors.generic", "Could not delete message with id ["+selected[i]+"]", e);
+					}
 				}
 			}
 	
 			if ("resendmessage".equalsIgnoreCase(action)) {
 				if (StringUtils.isNotEmpty(messageId)) {
-					resendMessage(adapter,receiver, mb, messageId, transactionManager);
+					receiver.retryMessage(messageId);
 				}
 			}
 			
 			if ("resend selected".equalsIgnoreCase(action)) {
 				for(int i=0; i<selected.length; i++) {
-					resendMessage(adapter,receiver, mb, selected[i], transactionManager);
+					try {
+						receiver.retryMessage(selected[i]);
+					} catch (Throwable e) {
+						error(", ", "errors.generic", "Could not resend message with id ["+selected[i]+"]", e);
+					}
 				}
 			}
  
 		} catch (Throwable e) {
-			log.error("Error occurred performing action [" + action + "]", e);
+			error(", ", "errors.generic", "Error occurred performing action [" + action + "]", e);
 		}
 	}
 
@@ -103,29 +113,29 @@ public class BrowseExecute extends Browse {
 		}
 	}
 
-	private void resendMessage(Adapter adapter, ReceiverBase receiver, IMessageBrowser mb, String messageId, PlatformTransactionManager transactionManager) throws Throwable {
-		TransactionStatus txStatus = null;
-		try {
-			txStatus = transactionManager.getTransaction(TXNEW);
-			Object msg = mb.getMessage(messageId);
-			if (msg==null) {
-				error(", ", "errors.generic", "did not retrieve message", null);
-				txStatus.setRollbackOnly();
-			} else {
-				if (adapter.getRunState()!=RunStateEnum.STARTED) {
-					error(", ", "errors.generic", "message not processed: adapter not open", null);
-					txStatus.setRollbackOnly();
-				} else {
-					receiver.processRawMessage(receiver.getListener(),msg,null,-1);
-				}
-			}
-		} catch (Throwable e) {
-			txStatus.setRollbackOnly();
-			error(", ", "errors.generic", "error occured resending message", e);
-		} finally { 
-			transactionManager.commit(txStatus);
-		}
-	}
+//	private void resendMessage(Adapter adapter, ReceiverBase receiver, IMessageBrowser mb, String messageId, PlatformTransactionManager transactionManager) throws Throwable {
+//		TransactionStatus txStatus = null;
+//		try {
+//			txStatus = transactionManager.getTransaction(TXNEW);
+//			Object msg = mb.getMessage(messageId);
+//			if (msg==null) {
+//				error(", ", "errors.generic", "did not retrieve message", null);
+//				txStatus.setRollbackOnly();
+//			} else {
+//				if (adapter.getRunState()!=RunStateEnum.STARTED) {
+//					error(", ", "errors.generic", "message not processed: adapter not open", null);
+//					txStatus.setRollbackOnly();
+//				} else {
+//					receiver.processRawMessage(receiver.getListener(),msg,null,-1);
+//				}
+//			}
+//		} catch (Throwable e) {
+//			txStatus.setRollbackOnly();
+//			error(", ", "errors.generic", "error occured resending message", e);
+//		} finally { 
+//			transactionManager.commit(txStatus);
+//		}
+//	}
 
 	private void error(String key, String category, String message, Throwable t) {
 		if (t!=null) {
