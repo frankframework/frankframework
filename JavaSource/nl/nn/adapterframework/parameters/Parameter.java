@@ -1,6 +1,9 @@
 /*
  * $Log: Parameter.java,v $
- * Revision 1.25  2007-10-08 13:31:49  europe\L190409
+ * Revision 1.26  2008-01-11 09:45:50  europe\L190409
+ * added type domdoc
+ *
+ * Revision 1.25  2007/10/08 13:31:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed ArrayList to List where possible
  *
  * Revision 1.24  2007/08/03 09:08:25  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -132,7 +135,8 @@ import org.w3c.dom.Node;
  * <ul>
  * 	<li><code>string</code>: renders the contents of the first node (in combination with xslt or xpath)</li>
  * 	<li><code>xml</code>:  renders a xml-nodeset as an xml-string (in combination with xslt or xpath)</li>
- * 	<li><code>node</code>: renders a xml-nodeset as nodeset that can be used as such when passed as xslt-parameter</li>
+ * 	<li><code>node</code>: renders the contents of the first node as a nodeset that can be used as such when passed as xslt-parameter (only for XSLT 1.0). Please note that the nodeset may contain multiple nodes, without a common root node</li>
+ * 	<li><code>domdoc</code>: renders xml as a DOM document; similar to <code>node</code> with the distinction that there is always a common root node (required for XSLT 2.0)</li>
  * 	<li><code>date</code>: converts the result to a Date, by default using formatString <code>yyyy-MM-dd</code>. When applied as a JDBC parameter, the method setDate() is used</li>
  * 	<li><code>time</code>: converts the result to a Date, by default using formatString <code>HH:mm:ss</code>. When applied as a JDBC parameter, the method setTime() is used</li>
  * 	<li><code>datetime</code>: converts the result to a Date, by default using formatString <code>yyyy-MM-dd HH:mm:ss</code>. When applied as a JDBC parameter, the method setTimestamp() is used</li>
@@ -175,10 +179,12 @@ import org.w3c.dom.Node;
  * @author Gerrit van Brakel
  */
 public class Parameter implements INamedObject, IWithParameters {
-	public static final String version="$RCSfile: Parameter.java,v $ $Revision: 1.25 $ $Date: 2007-10-08 13:31:49 $";
+	public static final String version="$RCSfile: Parameter.java,v $ $Revision: 1.26 $ $Date: 2008-01-11 09:45:50 $";
 	protected Logger log = LogUtil.getLogger(this);
 
+	public final static String TYPE_XML="xml";
 	public final static String TYPE_NODE="node";
+	public final static String TYPE_DOMDOC="domdoc";
 	public final static String TYPE_DATE="date";
 	public final static String TYPE_TIME="time";
 	public final static String TYPE_DATETIME="datetime";
@@ -218,7 +224,9 @@ public class Parameter implements INamedObject, IWithParameters {
 			if (paramList!=null) {
 				paramList.configure();
 			}
-			String outputType="xml".equalsIgnoreCase(getType()) || TYPE_NODE.equalsIgnoreCase(getType())?"xml":"text";
+			String outputType=TYPE_XML.equalsIgnoreCase(getType()) ||
+							  TYPE_NODE.equalsIgnoreCase(getType()) || 
+							  TYPE_DOMDOC.equalsIgnoreCase(getType())?"xml":"text";
 			boolean includeXmlDeclaration=false;
 			
 			transformerPool=TransformerPool.configureTransformer("Parameter ["+getName()+"]",getXpathExpression(), styleSheetName,outputType,includeXmlDeclaration,paramList);
@@ -250,12 +258,12 @@ public class Parameter implements INamedObject, IWithParameters {
 
 	private Object transform(Source xmlSource, ParameterResolutionContext prc) throws ParameterException, TransformerException, IOException {
 		TransformerPool pool = getTransformerPool();
-		if (TYPE_NODE.equals(getType())) {
+		if (TYPE_NODE.equals(getType()) || TYPE_DOMDOC.equals(getType())) {
 			
 			DOMResult transformResult = new DOMResult();
 			pool.transform(xmlSource,transformResult,prc.getValueMap(paramList));
 			Node result=transformResult.getNode();
-			if (result!=null) {
+			if (result!=null && TYPE_NODE.equals(getType())) {
 				result=result.getFirstChild();
 			}			
 			if (log.isDebugEnabled()) { if (result!=null) log.debug("Returning Node result ["+result.getClass().getName()+"]["+result+"]: "+ ToStringBuilder.reflectionToString(result)); } 
@@ -338,7 +346,15 @@ public class Parameter implements INamedObject, IWithParameters {
 					result=XmlUtils.buildNode((String)result,prc.isNamespaceAware());
 					if (log.isDebugEnabled()) log.debug("final result ["+result.getClass().getName()+"]["+result+"]");
 				} catch (DomBuilderException e) {
-					throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+result+"] to XML",e);
+					throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+result+"] to XML nodeset",e);
+				}
+			}
+			if (TYPE_DOMDOC.equals(getType())) {
+				try {
+					result=XmlUtils.buildDomDocument((String)result,prc.isNamespaceAware());
+					if (log.isDebugEnabled()) log.debug("final result ["+result.getClass().getName()+"]["+result+"]");
+				} catch (DomBuilderException e) {
+					throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+result+"] to XML document",e);
 				}
 			}
 			if (TYPE_DATE.equals(getType()) || TYPE_DATETIME.equals(getType()) || TYPE_TIME.equals(getType())) {
