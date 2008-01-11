@@ -1,6 +1,9 @@
 /*
  * $Log: Browse.java,v $
- * Revision 1.7  2007-12-10 10:25:32  europe\L190409
+ * Revision 1.8  2008-01-11 14:55:36  europe\L190409
+ * filter on host and type, too
+ *
+ * Revision 1.7  2007/12/10 10:25:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * rework
  *
  * Revision 1.6  2007/11/15 12:36:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -38,6 +41,7 @@ import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
+import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.util.AppConstants;
@@ -60,7 +64,7 @@ import org.apache.struts.action.DynaActionForm;
  * @since   4.4
  */
 public class Browse extends ActionBase {
-	public static final String version="$RCSfile: Browse.java,v $ $Revision: 1.7 $ $Date: 2007-12-10 10:25:32 $";
+	public static final String version="$RCSfile: Browse.java,v $ $Revision: 1.8 $ $Date: 2008-01-11 14:55:36 $";
 
 	public int maxMessages = AppConstants.getInstance().getInt("browse.messages.max",0); 
 
@@ -88,6 +92,8 @@ public class Browse extends ActionBase {
 		String receiverName = getAndSetProperty(request,browseForm,"receiverName");
 		String pipeName     = getAndSetProperty(request,browseForm,"pipeName");
 		String messageId    = getAndSetProperty(request,browseForm,"messageId");
+		String typeMask    = getAndSetProperty(request,browseForm,"typeMask");
+		String hostMask    = getAndSetProperty(request,browseForm,"hostMask");
 		String currentIdMask    = getAndSetProperty(request,browseForm,"currentIdMask");
 		String messageIdMask    = getAndSetProperty(request,browseForm,"messageIdMask");
 		String correlationIdMask    = getAndSetProperty(request,browseForm,"correlationIdMask");
@@ -179,11 +185,24 @@ public class Browse extends ActionBase {
 					int messageCount;
 					for (messageCount=0; mbi.hasNext(); ) {
 						Object iterItem = mbi.next();
+						String cType=null;
+						String cHost=null;
+						if (mb instanceof ITransactionalStorage) {
+							ITransactionalStorage ts =(ITransactionalStorage)mb;
+							cType=ts.getTypeString(iterItem);
+							cHost=ts.getHostString(iterItem);
+						}
 						String cId=mb.getId(iterItem);
 						String cMessageId=mb.getOriginalId(iterItem);
 						String cCorrelationId=mb.getCorrelationId(iterItem);
 						String comment=mb.getCommentString(iterItem);
 						Date insertDate=mb.getInsertDate(iterItem);
+						if (StringUtils.isNotEmpty(typeMask) && !cType.startsWith(typeMask)) {
+							continue;
+						}
+						if (StringUtils.isNotEmpty(hostMask) && !cHost.startsWith(hostMask)) {
+							continue;
+						}
 						if (StringUtils.isNotEmpty(currentIdMask) && !cId.startsWith(currentIdMask)) {
 							continue;
 						}
@@ -204,6 +223,11 @@ public class Browse extends ActionBase {
 						message.addAttribute("pos",Integer.toString(messageCount+1));
 						message.addAttribute("originalId",mb.getOriginalId(iterItem));
 						message.addAttribute("correlationId",mb.getCorrelationId(iterItem));
+						if (mb instanceof ITransactionalStorage) {
+							ITransactionalStorage ts = (ITransactionalStorage)mb;
+							message.addAttribute("type",ts.getTypeString(iterItem));
+							message.addAttribute("host",ts.getHostString(iterItem));
+						}
 						message.addAttribute("insertDate",DateUtils.format(mb.getInsertDate(iterItem), DateUtils.FORMAT_FULL_GENERIC));
 						message.addAttribute("comment",XmlUtils.encodeChars(mb.getCommentString(iterItem)));
 						messages.addSubElement(message);
