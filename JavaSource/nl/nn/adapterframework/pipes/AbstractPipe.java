@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractPipe.java,v $
- * Revision 1.30  2007-12-10 10:08:58  europe\L190409
+ * Revision 1.31  2008-01-11 09:47:18  europe\L190409
+ * use Springs transaction definition
+ *
+ * Revision 1.30  2007/12/10 10:08:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * assume usertransaction can be obtained
  *
  * Revision 1.29  2007/09/27 12:54:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -87,8 +90,6 @@ package nl.nn.adapterframework.pipes;
 
 import java.util.Hashtable;
 
-import javax.naming.NamingException;
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasTransactionAttribute;
 import nl.nn.adapterframework.core.IExtendedPipe;
@@ -108,6 +109,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.log4j.Logger;
+import org.springframework.transaction.TransactionDefinition;
 
 /**
  * Base class for {@link nl.nn.adapterframework.core.IPipe Pipe}.
@@ -172,7 +174,7 @@ import org.apache.log4j.Logger;
  * @see nl.nn.adapterframework.core.PipeLineSession
  */
 public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttribute, TracingEventNumbers {
-	public static final String version="$RCSfile: AbstractPipe.java,v $ $Revision: 1.30 $ $Date: 2007-12-10 10:08:58 $";
+	public static final String version="$RCSfile: AbstractPipe.java,v $ $Revision: 1.31 $ $Date: 2008-01-11 09:47:18 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -186,7 +188,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	private String storeResultInSessionKey=null;
 	private boolean preserveInput=false;
 	private boolean namespaceAware=XmlUtils.isNamespaceAwareByDefault();
-	private int transactionAttribute=JtaUtil.TRANSACTION_ATTRIBUTE_SUPPORTS;
+	private int transactionAttribute=TransactionDefinition.PROPAGATION_SUPPORTS;
  
 	// METT event numbers
 	private int beforeEvent=-1;
