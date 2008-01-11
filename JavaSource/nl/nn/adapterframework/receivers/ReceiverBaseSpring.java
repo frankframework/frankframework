@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBaseSpring.java,v $
- * Revision 1.9  2008-01-11 10:22:20  europe\L190409
+ * Revision 1.10  2008-01-11 14:54:40  europe\L190409
+ * added retry function
+ *
+ * Revision 1.9  2008/01/11 10:22:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected receiver.isOnErrorStop to isOnErrorContinue
  * corrected transaction handling
  * reduced default maxRetries to 2
@@ -354,7 +357,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  */
 public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMessageHandler, IbisExceptionListener, HasSender, TracingEventNumbers, BeanFactoryAware {
     
-	public static final String version="$RCSfile: ReceiverBaseSpring.java,v $ $Revision: 1.9 $ $Date: 2008-01-11 10:22:20 $";
+	public static final String version="$RCSfile: ReceiverBaseSpring.java,v $ $Revision: 1.10 $ $Date: 2008-01-11 14:54:40 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -935,7 +938,7 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 		if (getRunState() == RunStateEnum.STOPPED || getRunState() == RunStateEnum.STOPPING)
 			return getReturnIfStopped();
 			
-		return processMessageInAdapter(origin, message, message, null, correlationId, context, waitingTime);
+		return processMessageInAdapter(origin, message, message, null, correlationId, context, waitingTime, false);
 	}
 
 
@@ -947,6 +950,9 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 		processRawMessage(origin, message, context, -1);
 	}
 
+	public void processRawMessage(IListener origin, Object rawMessage, Map threadContext, long waitingDuration) throws ListenerException {
+		processRawMessage(origin, rawMessage, threadContext, waitingDuration, false);
+	}
 
 	/**
 	 * All messages that for this receiver are pumped down to this method, so it actually
@@ -954,7 +960,7 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 
 	 * Assumes that a transation has been started where necessary
 	 */
-	public void processRawMessage(IListener origin, Object rawMessage, Map threadContext, long waitingDuration) throws ListenerException {
+	private void processRawMessage(IListener origin, Object rawMessage, Map threadContext, long waitingDuration, boolean retry) throws ListenerException {
 		if (rawMessage==null) {
 			log.debug("Receiver [" + getName() +
 					"] received null message, returning directly");
@@ -967,21 +973,38 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 		String message = origin.getStringFromRawMessage(rawMessage, threadContext);
 		String correlationId = origin.getIdFromRawMessage(rawMessage, threadContext);
 		String messageId = (String)threadContext.get("id");
-		processMessageInAdapter(origin, rawMessage, message, messageId, correlationId, threadContext, waitingDuration);
+		processMessageInAdapter(origin, rawMessage, message, messageId, correlationId, threadContext, waitingDuration, retry);
 	}
 
+	public void retryMessage(String messageId) throws ListenerException {
+		if (getErrorStorage()==null) {
+			throw new ListenerException(getLogPrefix()+"has no errorStorage, cannot retry messageId ["+messageId+"]");
+		}
+		PlatformTransactionManager txManager = getTxManager(); 
+		TransactionStatus txStatus = txManager.getTransaction(TXNEW);
+		try {
+			ITransactionalStorage errorStorage = getErrorStorage();
+			Object msg = errorStorage.getMessage(messageId);
+			processRawMessage(getListener(), msg, null, -1, true);
+		} catch (Exception e) {
+			txStatus.setRollbackOnly();
+			throw new ListenerException(e);
+		} finally {
+			txManager.commit(txStatus);
+		}
+	}
 
 	/*
 	 * assumes message is read, and when transacted, transation is still open.
 	 */
-	private String processMessageInAdapter(IListener origin, Object rawMessage, String message, String messageId, String correlationId, Map threadContext, long waitingDuration) throws ListenerException {
+	private String processMessageInAdapter(IListener origin, Object rawMessage, String message, String messageId, String correlationId, Map threadContext, long waitingDuration, boolean retry) throws ListenerException {
 		String result=null;
 		PipeLineResult pipeLineResult=null;
 		long startProcessingTimestamp = System.currentTimeMillis();
 		log.debug(getLogPrefix()+"received message with messageId ["+messageId+"] correlationId ["+correlationId+"]");
         
-		if (checkTryCount(messageId)) {
-			log.warn(getLogPrefix()+"received message with messageId [" + messageId + "] which is already stored in error storage; aborting processing");
+		if (checkTryCount(messageId, retry)) {
+			log.warn(getLogPrefix()+"received message with messageId [" + messageId + "] which is already stored in error storage or messagelog; aborting processing");
 			return result;
 		}
 		TransactionStatus txStatus = getTransactionForProcessing();
@@ -1053,7 +1076,7 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 				// exception that has occurred will still be propagated even
 				// if we decide not to retry the message.
 				// This should perhaps be avoided
-				retryOrErrorStorage(rawMessage, startProcessingTimestamp, txStatus, errorMessage, message, messageId, correlationId);
+				retryOrErrorStorage(rawMessage, startProcessingTimestamp, txStatus, errorMessage, message, messageId, correlationId, retry);
 			}
 			try {
 				// TODO: Should this be done in a finally, unconditionally?
@@ -1118,13 +1141,15 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 		}
 	}
 
-	private boolean checkTryCount(String messageId) throws ListenerException {
-		if (isMessageIdInPoisonCache(messageId)) {
-			return true;
-		}
+	private boolean checkTryCount(String messageId, boolean retry) throws ListenerException {
+		if (!retry) {
+			if (isMessageIdInPoisonCache(messageId)) {
+				return true;
+			}
 		
-		if (getErrorStorage() != null && getErrorStorage().containsMessageId(messageId)) {
-			return true;
+			if (getErrorStorage() != null && getErrorStorage().containsMessageId(messageId)) {
+				return true;
+			}
 		}
 		if (getMessageLog() != null && getMessageLog().containsMessageId(messageId)) {
 			return true;
@@ -1152,7 +1177,7 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 	 * @return Returns <code>true</code> if the message can still be retried,
 	 * or <code>false</code> if the message will not be retried.
 	 */
-	private boolean retryOrErrorStorage(Object rawMessage, long startProcessingTimestamp, TransactionStatus txStatus, String errorMessage, String message, String messageId, String correlationId) {
+	private boolean retryOrErrorStorage(Object rawMessage, long startProcessingTimestamp, TransactionStatus txStatus, String errorMessage, String message, String messageId, String correlationId, boolean wasRetry) {
 
 		long retryCount = getAndIncrementMessageRetryCount(messageId);
 		log.error("receiver ["+getName()+"] message with id ["+messageId+"] had error in processing; current retry-count: " + retryCount);
@@ -1160,6 +1185,9 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 		// Mark TX as rollback-only, because in any case updates done in the
 		// transaction may not be performed.
 		txStatus.setRollbackOnly();
+		if (wasRetry) {
+			return false;
+		}
 		// If not yet exceeded the max retry count,
 		// mark TX as rollback-only and throw an
 		// exception
@@ -1648,6 +1676,5 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 	public int getPollInterval() {
 		return pollInterval;
 	}
-
 
 }
