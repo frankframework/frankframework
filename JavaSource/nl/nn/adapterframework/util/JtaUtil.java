@@ -1,6 +1,9 @@
 /*
  * $Log: JtaUtil.java,v $
- * Revision 1.16  2008-01-11 09:59:33  europe\L190409
+ * Revision 1.17  2008-01-15 10:21:00  europe\L190409
+ * adapt displayTransactionStatus to Spring
+ *
+ * Revision 1.16  2008/01/11 09:59:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed attributed definitions to Spring's
  * removed some functions
  *
@@ -53,6 +56,10 @@
  */
 package nl.nn.adapterframework.util;
 
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -61,7 +68,10 @@ import javax.transaction.SystemException;
 import javax.transaction.UserTransaction;
 
 import org.apache.log4j.Logger;
+import org.springframework.jms.connection.JmsResourceHolder;
 import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 /**
  * Utility functions for JTA 
@@ -70,7 +80,7 @@ import org.springframework.transaction.TransactionDefinition;
  * @since  4.1
  */
 public class JtaUtil {
-	public static final String version="$RCSfile: JtaUtil.java,v $ $Revision: 1.16 $ $Date: 2008-01-11 09:59:33 $";
+	public static final String version="$RCSfile: JtaUtil.java,v $ $Revision: 1.17 $ $Date: 2008-01-15 10:21:00 $";
 	private static Logger log = LogUtil.getLogger(JtaUtil.class);
 	
 	private static final String USERTRANSACTION_URL1_KEY="jta.userTransactionUrl1";
@@ -126,6 +136,31 @@ public class JtaUtil {
 		}   
 	}
 
+	public static String displayTransactionStatus() {
+		String result;
+		result="txName ["+TransactionSynchronizationManager.getCurrentTransactionName()+"]";
+		result+=" isolation ["+TransactionSynchronizationManager.getCurrentTransactionIsolationLevel()+"]";
+		result+=" active ["+TransactionSynchronizationManager.isActualTransactionActive()+"]\n";
+		Map resources = TransactionSynchronizationManager.getResourceMap();
+		result += "resources:\n";
+		for (Iterator it=resources.keySet().iterator(); it.hasNext();) {
+			Object key = it.next();
+			Object resource = resources.get(key);
+			result += ClassUtils.nameOf(key)+"("+key+"): "+ClassUtils.nameOf(resource)+"("+resource+")\n";
+			if (resource instanceof JmsResourceHolder) {
+				JmsResourceHolder jrh = (JmsResourceHolder)resource; 
+				result+="  connection: "+jrh.getConnection()+", session: "+jrh.getSession()+"\n";
+			}
+		}
+		List synchronizations = TransactionSynchronizationManager.getSynchronizations();
+		result += "synchronizations:\n";
+		for (int i=0; i<synchronizations.size(); i++) {
+			Object synchronization = synchronizations.get(i);
+			result += ClassUtils.nameOf(synchronization)+"("+synchronization+")\n"; 
+		}
+		return result;
+	}
+
 //	/**
 //	 * Convenience function for {@link #displayTransactionStatus(int status)}
 //	 */
@@ -179,19 +214,19 @@ public class JtaUtil {
 //	}
 
 
-	/**
-	 * Convenience function for {@link #displayTransactionStatus(int status)}
-	 */
-	public static String displayTransactionStatus() {
-		UserTransaction utx;
-		try {
-			utx = getUserTransaction();
-		} catch (Exception e) {
-			return "exception obtaining user transaction: "+e.getMessage();
-		}
-		return displayTransactionStatus(utx);
-	}
-
+//	/**
+//	 * Convenience function for {@link #displayTransactionStatus(int status)}
+//	 */
+//	public static String displayTransactionStatus() {
+//		UserTransaction utx;
+//		try {
+//			utx = getUserTransaction();
+//		} catch (Exception e) {
+//			return "exception obtaining user transaction: "+e.getMessage();
+//		}
+//		return displayTransactionStatus(utx);
+//	}
+//
 
 	/** 
 	 * returns true if the current thread is associated with a transaction
