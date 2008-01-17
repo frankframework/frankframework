@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaFacade.java,v $
- * Revision 1.2  2007-10-16 08:39:30  europe\L190409
+ * Revision 1.3  2008-01-17 16:20:01  europe\L190409
+ * never use jmsTransacted sessions
+ *
+ * Revision 1.2  2007/10/16 08:39:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * moved IfsaException and IfsaMessageProtocolEnum back to main package
  *
  * Revision 1.1  2007/10/16 08:15:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -198,7 +201,7 @@ import com.ing.ifsa.IFSAServerQueueSender;
  * @since 4.2
  */
 public class IfsaFacade implements INamedObject, HasPhysicalDestination {
-	public static final String version = "$RCSfile: IfsaFacade.java,v $ $Revision: 1.2 $ $Date: 2007-10-16 08:39:30 $";
+	public static final String version = "$RCSfile: IfsaFacade.java,v $ $Revision: 1.3 $ $Date: 2008-01-17 16:20:01 $";
     protected Logger log = LogUtil.getLogger(this);
     
     private static int BASIC_ACK_MODE = Session.AUTO_ACKNOWLEDGE;
@@ -656,7 +659,8 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 	}
     
     protected boolean isJmsTransacted() {
-    	return getMessageProtocolEnum().equals(IfsaMessageProtocolEnum.FIRE_AND_FORGET);
+    	return false;
+    	//return getMessageProtocolEnum().equals(IfsaMessageProtocolEnum.FIRE_AND_FORGET);
     }
     
 	public String toString() {
