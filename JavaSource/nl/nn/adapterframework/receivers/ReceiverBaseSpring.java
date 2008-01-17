@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBaseSpring.java,v $
- * Revision 1.10  2008-01-11 14:54:40  europe\L190409
+ * Revision 1.11  2008-01-17 16:16:24  europe\L190409
+ * added attribute checkForDuplicates
+ *
+ * Revision 1.10  2008/01/11 14:54:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added retry function
  *
  * Revision 1.9  2008/01/11 10:22:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -302,6 +305,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  * <tr><td>{@link #setReturnedSessionKeys(String) returnedSessionKeys}</td><td>comma separated list of keys of session variables that should be returned to caller, for correct results as well as for erronous results. (Only for listeners that support it, like JavaListener)</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setTransacted(boolean) transacted}</td><td>if set to <code>true, messages will be received and processed under transaction control. If processing fails, messages will be sent to the error-sender. (see below)</code></td><td><code>false</code></td></tr>
  * <tr><td>{@link #setMaxRetries(int) maxRetries}</td><td>The number of times a pulling listening attempt is retried after an exception is caught</td><td>3</td></tr>
+ * <tr><td>{@link #setCheckForDuplicates(boolean) checkForDuplicates}</td><td>if set to <code>true, each message is checked for presence in the message log. If already present, it is not processed again. (only required for non XA compatible messaging). Requires messagelog!</code></td><td><code>false</code></td></tr>
  * <tr><td>{@link #setIbis42compatibility(boolean) ibis42compatibility}</td><td>if set to <code>true, the result of a failed processing of a message is a formatted errormessage. Otherwise a listener specific error handling is performed</code></td><td><code>false</code></td></tr>
  * <tr><td>{@link #setBeforeEvent(int) beforeEvent}</td>      <td>METT eventnumber, fired just before a message is processed by this Receiver</td><td>-1 (disabled)</td></tr>
  * <tr><td>{@link #setAfterEvent(int) afterEvent}</td>        <td>METT eventnumber, fired just after message processing by this Receiver is finished</td><td>-1 (disabled)</td></tr>
@@ -357,7 +361,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  */
 public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMessageHandler, IbisExceptionListener, HasSender, TracingEventNumbers, BeanFactoryAware {
     
-	public static final String version="$RCSfile: ReceiverBaseSpring.java,v $ $Revision: 1.10 $ $Date: 2008-01-11 14:54:40 $";
+	public static final String version="$RCSfile: ReceiverBaseSpring.java,v $ $Revision: 1.11 $ $Date: 2008-01-17 16:16:24 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -378,6 +382,7 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 	private String replaceTo = null;
 	private String styleSheetName = null;
 	private String returnedSessionKeys=null;
+	private boolean checkForDuplicates=false;
 
 	public static final String ONERROR_CONTINUE = "continue";
 	public static final String ONERROR_CLOSE = "close";
@@ -1151,7 +1156,7 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 				return true;
 			}
 		}
-		if (getMessageLog() != null && getMessageLog().containsMessageId(messageId)) {
+		if (isCheckForDuplicates() && getMessageLog()!= null && getMessageLog().containsMessageId(messageId)) {
 			return true;
 		}
 		return false;
@@ -1675,6 +1680,13 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 	}
 	public int getPollInterval() {
 		return pollInterval;
+	}
+
+	public void setCheckForDuplicates(boolean b) {
+		checkForDuplicates = b;
+	}
+	public boolean isCheckForDuplicates() {
+		return checkForDuplicates;
 	}
 
 }
