@@ -1,6 +1,9 @@
 /*
  * $Log: JtaUtil.java,v $
- * Revision 1.17  2008-01-15 10:21:00  europe\L190409
+ * Revision 1.18  2008-01-17 16:28:09  europe\L190409
+ * Springifications
+ *
+ * Revision 1.17  2008/01/15 10:21:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * adapt displayTransactionStatus to Spring
  *
  * Revision 1.16  2008/01/11 09:59:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -69,8 +72,10 @@ import javax.transaction.UserTransaction;
 
 import org.apache.log4j.Logger;
 import org.springframework.jms.connection.JmsResourceHolder;
+import org.springframework.transaction.NoTransactionException;
 import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 /**
@@ -80,7 +85,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  * @since  4.1
  */
 public class JtaUtil {
-	public static final String version="$RCSfile: JtaUtil.java,v $ $Revision: 1.17 $ $Date: 2008-01-15 10:21:00 $";
+	public static final String version="$RCSfile: JtaUtil.java,v $ $Revision: 1.18 $ $Date: 2008-01-17 16:28:09 $";
 	private static Logger log = LogUtil.getLogger(JtaUtil.class);
 	
 	private static final String USERTRANSACTION_URL1_KEY="jta.userTransactionUrl1";
@@ -117,46 +122,77 @@ public class JtaUtil {
 
     private static UserTransaction utx;
 
-	/**
-	 * returns a meaningful string describing the transaction status.
-	 */
-	public static String displayTransactionStatus(int status) {
-		switch (status) {
-			case 	Status.STATUS_ACTIVE 			 : return status+"=STATUS_ACTIVE:"+ 	    " A transaction is associated with the target object and it is in the active state."; 
-			case 	Status.STATUS_COMMITTED 		 : return status+"=STATUS_COMMITTED:"+ 	    " A transaction is associated with the target object and it has been committed."; 
-			case 	Status.STATUS_COMMITTING 		 : return status+"=STATUS_COMMITTING:"+ 	" A transaction is associated with the target object and it is in the process of committing."; 
-			case 	Status.STATUS_MARKED_ROLLBACK 	 : return status+"=STATUS_MARKED_ROLLBACK:"+" A transaction is associated with the target object and it has been marked for rollback, perhaps as a result of a setRollbackOnly operation."; 
-			case 	Status.STATUS_NO_TRANSACTION 	 : return status+"=STATUS_NO_TRANSACTION:"+ " No transaction is currently associated with the target object.";
-			case 	Status.STATUS_PREPARED 			 : return status+"=STATUS_PREPARED:"+ 	    " A transaction is associated with the target object and it has been prepared.";
-			case 	Status.STATUS_PREPARING 		 : return status+"=STATUS_PREPARING:"+ 	    " A transaction is associated with the target object and it is in the process of preparing.";
-			case 	Status.STATUS_ROLLEDBACK 		 : return status+"=STATUS_ROLLEDBACK:"+ 	" A transaction is associated with the target object and the outcome has been determined to be rollback.";
-			case 	Status.STATUS_ROLLING_BACK 		 : return status+"=STATUS_ROLLING_BACK:"+ 	" A transaction is associated with the target object and it is in the process of rolling back.";
-			case 	Status.STATUS_UNKNOWN 	 		 : return status+"=STATUS_UNKNOWN:"+ 	    " A transaction is associated with the target object but its current status cannot be determined.";
-			default : return "unknown transaction status";
-		}   
+//	/**
+//	 * returns a meaningful string describing the transaction status.
+//	 */
+//	public static String displayTransactionStatus(int status) {
+//		switch (status) {
+//			case 	Status.STATUS_ACTIVE 			 : return status+"=STATUS_ACTIVE:"+ 	    " A transaction is associated with the target object and it is in the active state."; 
+//			case 	Status.STATUS_COMMITTED 		 : return status+"=STATUS_COMMITTED:"+ 	    " A transaction is associated with the target object and it has been committed."; 
+//			case 	Status.STATUS_COMMITTING 		 : return status+"=STATUS_COMMITTING:"+ 	" A transaction is associated with the target object and it is in the process of committing."; 
+//			case 	Status.STATUS_MARKED_ROLLBACK 	 : return status+"=STATUS_MARKED_ROLLBACK:"+" A transaction is associated with the target object and it has been marked for rollback, perhaps as a result of a setRollbackOnly operation."; 
+//			case 	Status.STATUS_NO_TRANSACTION 	 : return status+"=STATUS_NO_TRANSACTION:"+ " No transaction is currently associated with the target object.";
+//			case 	Status.STATUS_PREPARED 			 : return status+"=STATUS_PREPARED:"+ 	    " A transaction is associated with the target object and it has been prepared.";
+//			case 	Status.STATUS_PREPARING 		 : return status+"=STATUS_PREPARING:"+ 	    " A transaction is associated with the target object and it is in the process of preparing.";
+//			case 	Status.STATUS_ROLLEDBACK 		 : return status+"=STATUS_ROLLEDBACK:"+ 	" A transaction is associated with the target object and the outcome has been determined to be rollback.";
+//			case 	Status.STATUS_ROLLING_BACK 		 : return status+"=STATUS_ROLLING_BACK:"+ 	" A transaction is associated with the target object and it is in the process of rolling back.";
+//			case 	Status.STATUS_UNKNOWN 	 		 : return status+"=STATUS_UNKNOWN:"+ 	    " A transaction is associated with the target object but its current status cannot be determined.";
+//			default : return "unknown transaction status";
+//		}   
+//	}
+
+	public static TransactionStatus getCurrentTransactionStatus() {
+		TransactionStatus txStatus=null;
+		try {
+			txStatus=TransactionAspectSupport.currentTransactionStatus();
+		} catch (NoTransactionException e) {
+			log.debug("not in transaction");
+		}
+		return txStatus;
 	}
 
 	public static String displayTransactionStatus() {
+		return displayTransactionStatus(getCurrentTransactionStatus());
+	}
+	
+	public static String displayTransactionStatus(TransactionStatus txStatus) {
 		String result;
 		result="txName ["+TransactionSynchronizationManager.getCurrentTransactionName()+"]";
+		if (txStatus!=null) {
+			result+=" status new ["+txStatus.isNewTransaction()+"]";
+			result+=" status completeted ["+txStatus.isCompleted()+"]";
+			result+=" status rollbackOnly ["+txStatus.isRollbackOnly()+"]";
+			result+=" status hasSavepoint ["+txStatus.hasSavepoint()+"]";
+		} else {
+			result+=" currently not in a transaction";
+		}
 		result+=" isolation ["+TransactionSynchronizationManager.getCurrentTransactionIsolationLevel()+"]";
-		result+=" active ["+TransactionSynchronizationManager.isActualTransactionActive()+"]\n";
+		result+=" active ["+TransactionSynchronizationManager.isActualTransactionActive()+"]";
+		boolean syncActive=TransactionSynchronizationManager.isSynchronizationActive();
+		result+=" synchronization active ["+syncActive+"]";
+		result+="\n";
 		Map resources = TransactionSynchronizationManager.getResourceMap();
 		result += "resources:\n";
-		for (Iterator it=resources.keySet().iterator(); it.hasNext();) {
-			Object key = it.next();
-			Object resource = resources.get(key);
-			result += ClassUtils.nameOf(key)+"("+key+"): "+ClassUtils.nameOf(resource)+"("+resource+")\n";
-			if (resource instanceof JmsResourceHolder) {
-				JmsResourceHolder jrh = (JmsResourceHolder)resource; 
-				result+="  connection: "+jrh.getConnection()+", session: "+jrh.getSession()+"\n";
+		if (resources==null) {
+			result+="  map is null\n";
+		} else {
+			for (Iterator it=resources.keySet().iterator(); it.hasNext();) {
+				Object key = it.next();
+				Object resource = resources.get(key);
+				result += ClassUtils.nameOf(key)+"("+key+"): "+ClassUtils.nameOf(resource)+"("+resource+")\n";
+				if (resource instanceof JmsResourceHolder) {
+					JmsResourceHolder jrh = (JmsResourceHolder)resource; 
+					result+="  connection: "+jrh.getConnection()+", session: "+jrh.getSession()+"\n";
+				}
 			}
 		}
-		List synchronizations = TransactionSynchronizationManager.getSynchronizations();
-		result += "synchronizations:\n";
-		for (int i=0; i<synchronizations.size(); i++) {
-			Object synchronization = synchronizations.get(i);
-			result += ClassUtils.nameOf(synchronization)+"("+synchronization+")\n"; 
+		if (syncActive) {
+			List synchronizations = TransactionSynchronizationManager.getSynchronizations();
+			result += "synchronizations:\n";
+			for (int i=0; i<synchronizations.size(); i++) {
+				Object synchronization = synchronizations.get(i);
+				result += ClassUtils.nameOf(synchronization)+"("+synchronization+")\n"; 
+			}
 		}
 		return result;
 	}
@@ -171,16 +207,16 @@ public class JtaUtil {
 //			return "exception obtaining transaction status from transaction ["+tx+"]: "+e.getMessage();
 //		}
 //	}
-	/**
-	 * Convenience function for {@link #displayTransactionStatus(int status)}
-	 */
-	public static String displayTransactionStatus(UserTransaction utx) {
-		try {
-			return displayTransactionStatus(utx.getStatus());
-		} catch (Exception e) {
-			return "exception obtaining transaction status from transaction ["+utx+"]: "+e.getMessage();
-		}
-	}
+//	/**
+//	 * Convenience function for {@link #displayTransactionStatus(int status)}
+//	 */
+//	public static String displayTransactionStatus(UserTransaction utx) {
+//		try {
+//			return displayTransactionStatus(utx.getStatus());
+//		} catch (Exception e) {
+//			return "exception obtaining transaction status from transaction ["+utx+"]: "+e.getMessage();
+//		}
+//	}
 	
 //	/**
 //	 * Convenience function for {@link #displayTransactionStatus(int status)}
@@ -356,13 +392,18 @@ public class JtaUtil {
 //		finishTransaction(false);
 //	}
 
-//	public static void setRollBackOnly() throws NamingException, IllegalStateException, SystemException {
-//		UserTransaction utx=JtaUtil.getUserTransaction();
-//		if (inTransaction(utx)) {
-//			log.debug("marking transaction for rollback");
-//			utx.setRollbackOnly();
-//		}
-//	}
+	public static void setRollbackOnly() {
+		TransactionStatus txStatus = getCurrentTransactionStatus();
+		if (txStatus!=null) {
+			log.debug("marking current transaction RollbackOnly");
+			txStatus.setRollbackOnly();
+		}
+	}
+
+	public static boolean isRollbackOnly() {
+		TransactionStatus txStatus = getCurrentTransactionStatus();
+		return txStatus!=null && txStatus.isRollbackOnly();
+	}
 	
 //	public static void finishTransaction(boolean rollbackonly) throws NamingException, IllegalStateException, SecurityException, SystemException {
 //		utx=getUserTransaction();
