@@ -1,6 +1,9 @@
 /*
  * $Log: SpringJmsConnector.java,v $
- * Revision 1.5  2008-01-11 10:23:59  europe\L190409
+ * Revision 1.6  2008-01-17 16:24:47  europe\L190409
+ * txManager in onMessage only for only local transacted sessions
+ *
+ * Revision 1.5  2008/01/11 10:23:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fixed a lot of things
  *
  * Revision 1.4  2008/01/03 15:57:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -46,6 +49,7 @@ import nl.nn.adapterframework.core.IPortConnectedListener;
 import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.util.Counter;
+import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.commons.lang.StringUtils;
@@ -83,7 +87,7 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 	
 	public static final TransactionDefinition TXREQUIRED = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED);
     
-	public static final String version="$RCSfile: SpringJmsConnector.java,v $ $Revision: 1.5 $ $Date: 2008-01-11 10:23:59 $";
+	public static final String version="$RCSfile: SpringJmsConnector.java,v $ $Revision: 1.6 $ $Date: 2008-01-17 16:24:47 $";
     
  	private PlatformTransactionManager txManager;
 	private BeanFactory beanFactory;
@@ -200,28 +204,27 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
                 
 		Map threadContext = new HashMap();
 		TransactionStatus txStatus=null;
-		if (getReceiver().isTransacted() || jmsContainer.isSessionTransacted()) {
+		if (!getReceiver().isTransacted() && jmsContainer.isSessionTransacted()) {
 			txStatus = txManager.getTransaction(TXREQUIRED);
-			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"created transaction");
+			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"created transaction to support local JmsTransaction");
 		}
 		try {
 			IPortConnectedListener listener = getListener();
 			threadContext.put("session",session);
+//			if (log.isDebugEnabled()) log.debug("transaction status before: "+JtaUtil.displayTransactionStatus());
 			getReceiver().processRawMessage(listener, message, threadContext);
+//			if (log.isDebugEnabled()) log.debug("transaction status after: "+JtaUtil.displayTransactionStatus());
 			if (txStatus!=null && txStatus.isRollbackOnly()) {
-				log.warn(getLogPrefix()+"received status rollbackonly");
-				if (jmsContainer.isSessionTransacted() && !getReceiver().isTransacted()) {
-					log.warn(getLogPrefix()+"receiver is not XA transacted, rolling back session");
-					session.rollback(); // als je dit niet doet, dan rolt alleen jms-transacted niet terug
-				}
+				log.warn(getLogPrefix()+"received status rollbackonly from not XA transacted receiver, rolling back session");
+				session.rollback(); // als je dit niet doet, dan rolt alleen jms-transacted niet terug
 			}
 		} catch (ListenerException e) {
-			if (txStatus!=null && getReceiver().isTransacted()) {
+			if (getReceiver().isTransacted()) {
 				log.warn(getLogPrefix()+"caught exception, setting rollbackonly");
-				txStatus.setRollbackOnly();
+				JtaUtil.setRollbackOnly();
 			} else {
-				if (jmsContainer.isSessionTransacted()) {
-					log.warn(getLogPrefix()+"caught exception, rolling back session");
+				if (txStatus!=null) {
+					log.warn(getLogPrefix()+"caught exception, rolling back JmsTransacted Session");
 					session.rollback();
 				} else {
 					log.warn(getLogPrefix()+"caught exception, no transactional stuff to rollback, rethrowing ListenerException as JmsException");
@@ -233,21 +236,21 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 			if (txStatus!=null) {
 				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"committing transaction");
 				txManager.commit(txStatus); 
-			} else {
-				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"ending, no transactional stuff to commit");
 			}
 			threadsProcessing.decrease();
-//			boolean simulateCrashAfterCommit=false;
+			
+//			boolean simulateCrashAfterCommit=true;
 //			if (simulateCrashAfterCommit) {
 //				toggle=!toggle;
 //				if (toggle) {
-//					throw new JMSException("simulate crash after commit");
+//					JtaUtil.setRollbackOnly();
+//					throw new JMSException("simulate crash just before final commit");
 //				}
 //			}
 		}
 	}
 
-//	private boolean toggle=false;
+//	private boolean toggle=true;
 
 	public void onException(JMSException e) {
 		IbisExceptionListener ibisExceptionListener = getExceptionListener();
