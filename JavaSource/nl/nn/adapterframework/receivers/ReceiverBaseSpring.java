@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBaseSpring.java,v $
- * Revision 1.11  2008-01-17 16:16:24  europe\L190409
+ * Revision 1.12  2008-01-18 13:49:22  europe\L190409
+ * transacted: once and only once, move to error in same transaction
+ *
+ * Revision 1.11  2008/01/17 16:16:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added attribute checkForDuplicates
  *
  * Revision 1.10  2008/01/11 14:54:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -361,7 +364,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  */
 public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMessageHandler, IbisExceptionListener, HasSender, TracingEventNumbers, BeanFactoryAware {
     
-	public static final String version="$RCSfile: ReceiverBaseSpring.java,v $ $Revision: 1.11 $ $Date: 2008-01-17 16:16:24 $";
+	public static final String version="$RCSfile: ReceiverBaseSpring.java,v $ $Revision: 1.12 $ $Date: 2008-01-18 13:49:22 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -431,6 +434,7 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 
 	int retryInterval=1;
 	private int poisonMessageIdCacheSize = 100;
+	private int processResultCacheSize = 100;
    
 	private PlatformTransactionManager txManager;
 
@@ -461,6 +465,21 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 		}
         
 	};
+
+	private LinkedHashMap processResultCache = new LinkedHashMap() {
+
+		protected boolean removeEldestEntry(Entry eldest) {
+			return size() > getProcessResultCacheSize();
+		}
+        
+	};
+
+	private class ProcessResultCacheItem {
+		int tryCount;
+		Date receiveDate;
+		String correlationId;
+		String comments;
+	}
     
 	private PipeLineSession createProcessingContext(String correlationId, Map threadContext, String messageId) {
 		PipeLineSession pipelineSession = new PipeLineSession();
@@ -883,32 +902,41 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 		log.debug("receiver ["+getName()+"] finishes processing message");
 	}
 
-	private void moveInProcessToError(String originalMessageId, String correlationId, String message, Date receivedDate, String comments, Serializable rawMessage) {
+	private void moveInProcessToError(String originalMessageId, String correlationId, String message, Date receivedDate, String comments, Object rawMessage, TransactionDefinition txDef) {
 	
 		log.info("receiver ["+getName()+"] moves message id ["+originalMessageId+"] correlationId ["+correlationId+"] to errorSender/errorStorage");
 		cachePoisonMessageId(originalMessageId);
 		ISender errorSender = getErrorSender();
 		ITransactionalStorage errorStorage = getErrorStorage();
 		if (errorSender==null && errorStorage==null) {
-			log.warn("["+getName()+"] has no errorSender or errorStorage, message with id [" +
-				originalMessageId + "] will be lost");
+			log.warn("["+getName()+"] has no errorSender or errorStorage, message with id [" + originalMessageId + "] will be lost");
 			return;
 		}
 		TransactionStatus txStatus = null;
 		try {
-			txStatus = txManager.getTransaction(TXNEW);
+			txStatus = txManager.getTransaction(txDef);
 		} catch (Exception e) {
-			log.error("["+getName()+"] Exception preparing to move input message with id [" +
-				originalMessageId + "] to error sender", e);
+			log.error("["+getName()+"] Exception preparing to move input message with id [" + originalMessageId + "] to error sender", e);
 			// no use trying again to send message on errorSender, will cause same exception!
 			return;
 		}
 		try {
 			if (errorSender!=null) {
 				errorSender.sendMessage(correlationId, message);
-			} 
+			}
+			Serializable sobj;
+			if (rawMessage instanceof Serializable) {
+				sobj=(Serializable)rawMessage;
+			} else {
+				try {
+					sobj = new MessageWrapper(rawMessage, getListener());
+				} catch (ListenerException e) {
+					log.error(getLogPrefix()+"could not wrap non serializable message for messageId ["+originalMessageId+"]",e);
+					sobj=message;
+				}
+			}
 			if (errorStorage!=null) {
-				errorStorage.storeMessage(originalMessageId, correlationId, receivedDate, comments, rawMessage);
+				errorStorage.storeMessage(originalMessageId, correlationId, receivedDate, comments, sobj);
 			} 
 			txManager.commit(txStatus);
 		} catch (Exception e) {
@@ -1008,8 +1036,10 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 		long startProcessingTimestamp = System.currentTimeMillis();
 		log.debug(getLogPrefix()+"received message with messageId ["+messageId+"] correlationId ["+correlationId+"]");
         
-		if (checkTryCount(messageId, retry)) {
-			log.warn(getLogPrefix()+"received message with messageId [" + messageId + "] which is already stored in error storage or messagelog; aborting processing");
+		if (checkTryCount(messageId, retry, rawMessage, message)) {
+			if (!isTransacted()) {
+				log.warn(getLogPrefix()+"received message with messageId [" + messageId + "] which is already stored in error storage or messagelog; aborting processing");
+ 			}
 			return result;
 		}
 		TransactionStatus txStatus = getTransactionForProcessing();
@@ -1076,12 +1106,16 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 				}
 			}
 		} finally {
-			if (messageInError) {
-				// NB: Because the below happens from a finally-clause, any
-				// exception that has occurred will still be propagated even
-				// if we decide not to retry the message.
-				// This should perhaps be avoided
-				retryOrErrorStorage(rawMessage, startProcessingTimestamp, txStatus, errorMessage, message, messageId, correlationId, retry);
+			if (isTransacted()) {
+				cacheProcessResult(messageId, correlationId, errorMessage, new Date(startProcessingTimestamp));
+			} else { 
+				if (messageInError) {
+					// NB: Because the below happens from a finally-clause, any
+					// exception that has occurred will still be propagated even
+					// if we decide not to retry the message.
+					// This should perhaps be avoided
+					retryOrErrorStorage(rawMessage, startProcessingTimestamp, txStatus, errorMessage, message, messageId, correlationId, retry);
+				}
 			}
 			try {
 				// TODO: Should this be done in a finally, unconditionally?
@@ -1119,6 +1153,27 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 	private synchronized boolean isMessageIdInPoisonCache(String messageId) {
 		return poisonMessageIdCache.containsKey(messageId);
 	}
+
+	private synchronized void cacheProcessResult(String messageId, String correlationId, String errorMessage, Date receivedDate) {
+		ProcessResultCacheItem cacheItem=getCachedProcessResult(messageId);
+		if (cacheItem==null) {
+			cacheItem= new ProcessResultCacheItem();
+			cacheItem.tryCount=1;
+			cacheItem.correlationId=correlationId;
+			cacheItem.receiveDate=receivedDate;
+		} else {
+			cacheItem.tryCount++;
+		}
+		cacheItem.comments=errorMessage;
+		processResultCache.put(messageId, cacheItem);
+	}
+	private synchronized boolean isMessageIdInProcessResultCache(String messageId) {
+		return processResultCache.containsKey(messageId);
+	}
+	private synchronized ProcessResultCacheItem getCachedProcessResult(String messageId) {
+		return (ProcessResultCacheItem)processResultCache.get(messageId);
+	}
+    
     
 	private long getAndIncrementMessageRetryCount(String messageId) {
 		Counter retries;
@@ -1146,14 +1201,32 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 		}
 	}
 
-	private boolean checkTryCount(String messageId, boolean retry) throws ListenerException {
+	private boolean checkTryCount(String messageId, boolean retry, Object rawMessage, String message) throws ListenerException {
 		if (!retry) {
-			if (isMessageIdInPoisonCache(messageId)) {
+			if (isTransacted()) {
+				ProcessResultCacheItem prci = getCachedProcessResult(messageId);
+				if (prci==null) {
+					return false;
+				}
+				if (prci.tryCount<=getMaxRetries()) {
+					log.warn(getLogPrefix()+"message with messageId ["+messageId+" has already been processed ["+prci.tryCount+"] times, will try again");
+					return false;
+				}
+				log.warn(getLogPrefix()+"message with messageId ["+messageId+" has already been processed ["+prci.tryCount+"] times, will not try again");
+				if (prci.tryCount<=getMaxRetries()+2) {
+					moveInProcessToError(messageId, prci.correlationId, message, prci.receiveDate, prci.comments, rawMessage, TXREQUIRED);
+				} else {
+					log.error(getLogPrefix()+"tried ["+(prci.tryCount-getMaxRetries())+"] times to put messageId ["+messageId+"] message ["+message+"] in errorStorage without success, now dropping");
+				}
+				prci.tryCount++;
 				return true;
-			}
-		
-			if (getErrorStorage() != null && getErrorStorage().containsMessageId(messageId)) {
-				return true;
+			} else {
+				if (isMessageIdInPoisonCache(messageId)) {
+					return true;
+				}
+				if (getErrorStorage() != null && getErrorStorage().containsMessageId(messageId)) {
+					return true;
+				}
 			}
 		}
 		if (isCheckForDuplicates() && getMessageLog()!= null && getMessageLog().containsMessageId(messageId)) {
@@ -1204,16 +1277,7 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 			// to error location (OR LOST!)
 			log.error("receiver ["+getName()+"] message with id ["+messageId+"] retry count exceeded;");
 			//removeMessageRetryCount(messageId);
-			if (rawMessage instanceof Serializable) {
-				moveInProcessToError(messageId, correlationId, message, new Date(startProcessingTimestamp), errorMessage, (Serializable) rawMessage);
-			} else {
-				try {
-					MessageWrapper mw = new MessageWrapper(rawMessage, getListener());
-					moveInProcessToError(messageId, correlationId, message, new Date(startProcessingTimestamp), errorMessage, mw);
-				} catch (ListenerException e) {
-					log.error(getLogPrefix()+"could not wrap non serializable message for messageId ["+messageId+"]",e);
-				}
-			}
+			moveInProcessToError(messageId, correlationId, message, new Date(startProcessingTimestamp), errorMessage, (Serializable) rawMessage, TXNEW);
 			return false;
 		}
 	}
@@ -1675,6 +1739,13 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 		this.poisonMessageIdCacheSize = poisonMessageIdCacheSize;
 	}
 
+	public int getProcessResultCacheSize() {
+		return processResultCacheSize;
+	}
+	public void setProcessResultCacheSize(int processResultCacheSize) {
+		this.processResultCacheSize = processResultCacheSize;
+	}
+	
 	public void setPollInterval(int i) {
 		pollInterval = i;
 	}
