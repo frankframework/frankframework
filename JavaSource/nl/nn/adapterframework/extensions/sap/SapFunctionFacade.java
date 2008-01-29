@@ -1,6 +1,9 @@
 /*
  * $Log: SapFunctionFacade.java,v $
- * Revision 1.14  2007-10-08 12:17:27  europe\L190409
+ * Revision 1.15  2008-01-29 15:43:20  europe\L190409
+ * added support for dynamic selection of sapsystem
+ *
+ * Revision 1.14  2007/10/08 12:17:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed HashMap to Map where possible
  *
  * Revision 1.13  2007/08/03 08:41:52  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -92,7 +95,7 @@ import com.sap.mw.jco.JCO;
  * @since 4.2
  */
 public class SapFunctionFacade implements INamedObject, HasPhysicalDestination {
-	public static final String version="$RCSfile: SapFunctionFacade.java,v $  $Revision: 1.14 $ $Date: 2007-10-08 12:17:27 $";
+	public static final String version="$RCSfile: SapFunctionFacade.java,v $  $Revision: 1.15 $ $Date: 2008-01-29 15:43:20 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -107,6 +110,7 @@ public class SapFunctionFacade implements INamedObject, HasPhysicalDestination {
 
 	private IFunctionTemplate ftemplate;
 	private SapSystem sapSystem;
+	private boolean fieldIndicesCalculated=false;
 
 	static Map extractors = new HashMap();
 
@@ -115,38 +119,43 @@ public class SapFunctionFacade implements INamedObject, HasPhysicalDestination {
 	}
 
 	public void configure() throws ConfigurationException {
-		if (StringUtils.isEmpty(getSapSystemName())) {
-			throw new ConfigurationException("attribute sapSystemName must be specified");
-		}
-		sapSystem=SapSystem.getSystem(getSapSystemName());
-		if (sapSystem==null) {
-			throw new ConfigurationException(getLogPrefix()+"cannot find SapSystem ["+getSapSystemName()+"]");
-		}
+//		if (StringUtils.isEmpty(getSapSystemName())) {
+//			throw new ConfigurationException("attribute sapSystemName must be specified");
+//		}
+		if (StringUtils.isNotEmpty(getSapSystemName())) {
+			sapSystem=SapSystem.getSystem(getSapSystemName());
+			if (sapSystem==null) {
+				throw new ConfigurationException(getLogPrefix()+"cannot find SapSystem ["+getSapSystemName()+"]");
+			}
+ 		} else {
+ 			SapSystem.configureAll();
+ 		}
 	}
 
 	public void openFacade() throws SapException {
-		sapSystem.openSystem();
-		if (!StringUtils.isEmpty(getFunctionName())) {
-			try {
-				ftemplate = sapSystem.getRepository().getFunctionTemplate(getFunctionName());
-			} catch (Exception e) {
-				throw new SapException(getLogPrefix()+"exception obtaining template for function ["+getFunctionName()+"]", e);
+		if (sapSystem!=null) {
+			sapSystem.openSystem();
+			if (!StringUtils.isEmpty(getFunctionName())) {
+				ftemplate = getFunctionTemplate(sapSystem, getFunctionName());
+				try {
+					calculateStaticFieldIndices(ftemplate);
+					fieldIndicesCalculated=true;
+				} catch (Exception e) {
+					throw new SapException(getLogPrefix()+"Exception calculation field-indices ["+getFunctionName()+"]", e);
+				}
 			}
-			if (ftemplate == null) {
-				throw new SapException(getLogPrefix()+"could not obtain template for function ["+getFunctionName()+"]");
-			}
-			try {
-				calculateStaticFieldIndices(ftemplate);
-			} catch (Exception e) {
-				throw new SapException(getLogPrefix()+"Exception calculation field-indices ["+getFunctionName()+"]", e);
-			}
+		} else {
+			SapSystem.openSystems();
 		}
 	}
 	
 	public void closeFacade() {
 		if (sapSystem!=null) {
 			sapSystem.closeSystem();
+		} else {
+			SapSystem.closeSystems();
 		}
+		fieldIndicesCalculated=false;
 		ftemplate = null;
 	}
 
@@ -154,7 +163,7 @@ public class SapFunctionFacade implements INamedObject, HasPhysicalDestination {
 	public String getPhysicalDestinationName() {
 		String result;
 		if (sapSystem==null) {
-			return "unknown"; // to avoid NPE
+			return "dynamical determined"; // to avoid NPE
 		}
 		result = "mandant ["+sapSystem.getMandant()+"] on gwhost ["+sapSystem.getGwhost()+"] system ["+sapSystem.getSystemnr()+"]";
 		return result;
@@ -349,13 +358,38 @@ public class SapFunctionFacade implements INamedObject, HasPhysicalDestination {
 	}
 	
 
-	public SapSystem getSapSystem() {
+	public SapSystem getSapSystem() throws SapException {
+		if(sapSystem==null) {
+			throw new SapException("no fixed sapSystem specified");
+		}
+		return sapSystem;
+	}
+	public SapSystem getSapSystem(String systemName) throws SapException {
+		SapSystem sapSystem = SapSystem.getSystem(systemName);
+		if(sapSystem==null) {
+			throw new SapException("cannot find sapSystem ["+systemName+"]");
+		}
 		return sapSystem;
 	}
 
 
-	protected IFunctionTemplate getFunctionTemplate() {
+	protected IFunctionTemplate getFunctionTemplate() throws SapException {
+		if(ftemplate==null) {
+			throw new SapException("no fixed functionName specified");
+		}
 		return ftemplate;
+	}
+	protected IFunctionTemplate getFunctionTemplate(SapSystem sapSystem, String functionName) throws SapException {
+		IFunctionTemplate functionTemplate;
+		try {
+			functionTemplate = sapSystem.getJcoRepository().getFunctionTemplate(functionName);
+		} catch (Exception e) {
+			throw new SapException(getLogPrefix()+"exception obtaining template for function ["+functionName+"] from sapSystem ["+sapSystem.getName()+"]", e);
+		}
+		if (functionTemplate == null) {
+			throw new SapException(getLogPrefix()+"could not obtain template for function ["+functionName+"] from sapSystem ["+sapSystem.getName()+"]");
+		}
+		return functionTemplate;
 	}
 
 
