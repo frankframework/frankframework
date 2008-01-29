@@ -1,6 +1,10 @@
 /*
  * $Log: ReceiverBaseSpring.java,v $
- * Revision 1.12  2008-01-18 13:49:22  europe\L190409
+ * Revision 1.13  2008-01-29 12:16:16  europe\L190409
+ * added support for thread number control
+ * call afterMessageProcessed after moving to error store under XA
+ *
+ * Revision 1.12  2008/01/18 13:49:22  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * transacted: once and only once, move to error in same transaction
  *
  * Revision 1.11  2008/01/17 16:16:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -254,6 +258,7 @@ import nl.nn.adapterframework.core.IPushingListener;
 import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.IReceiverStatistics;
 import nl.nn.adapterframework.core.ISender;
+import nl.nn.adapterframework.core.IThreadCountControllable;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
@@ -362,9 +367,9 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  * @author     Gerrit van Brakel
  * @since 4.2
  */
-public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMessageHandler, IbisExceptionListener, HasSender, TracingEventNumbers, BeanFactoryAware {
+public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMessageHandler, IbisExceptionListener, HasSender, TracingEventNumbers, IThreadCountControllable, BeanFactoryAware {
     
-	public static final String version="$RCSfile: ReceiverBaseSpring.java,v $ $Revision: 1.12 $ $Date: 2008-01-18 13:49:22 $";
+	public static final String version="$RCSfile: ReceiverBaseSpring.java,v $ $Revision: 1.13 $ $Date: 2008-01-29 12:16:16 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -1036,7 +1041,7 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 		long startProcessingTimestamp = System.currentTimeMillis();
 		log.debug(getLogPrefix()+"received message with messageId ["+messageId+"] correlationId ["+correlationId+"]");
         
-		if (checkTryCount(messageId, retry, rawMessage, message)) {
+		if (checkTryCount(messageId, retry, rawMessage, message, threadContext)) {
 			if (!isTransacted()) {
 				log.warn(getLogPrefix()+"received message with messageId [" + messageId + "] which is already stored in error storage or messagelog; aborting processing");
  			}
@@ -1201,7 +1206,7 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 		}
 	}
 
-	private boolean checkTryCount(String messageId, boolean retry, Object rawMessage, String message) throws ListenerException {
+	private boolean checkTryCount(String messageId, boolean retry, Object rawMessage, String message, Map threadContext) throws ListenerException {
 		if (!retry) {
 			if (isTransacted()) {
 				ProcessResultCacheItem prci = getCachedProcessResult(messageId);
@@ -1215,6 +1220,10 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 				log.warn(getLogPrefix()+"message with messageId ["+messageId+" has already been processed ["+prci.tryCount+"] times, will not try again");
 				if (prci.tryCount<=getMaxRetries()+2) {
 					moveInProcessToError(messageId, prci.correlationId, message, prci.receiveDate, prci.comments, rawMessage, TXREQUIRED);
+					PipeLineResult plr = new PipeLineResult();
+					plr.setResult("<error>"+prci.comments+"</error>");
+					plr.setState("ERROR");
+					getListener().afterMessageProcessed(plr, rawMessage, threadContext);
 				} else {
 					log.error(getLogPrefix()+"tried ["+(prci.tryCount-getMaxRetries())+"] times to put messageId ["+messageId+"] message ["+message+"] in errorStorage without success, now dropping");
 				}
@@ -1298,6 +1307,65 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 		}
 	}
 
+	public boolean isThreadCountReadable() {
+		if (getListener() instanceof IThreadCountControllable) {
+			IThreadCountControllable tcc = (IThreadCountControllable)getListener();
+			
+			return tcc.isThreadCountReadable();
+		}
+		if (getListener() instanceof IPullingListener) {
+			return true;
+		}
+		return false;
+	}
+	public boolean isThreadCountControllable() {
+		if (getListener() instanceof IThreadCountControllable) {
+			IThreadCountControllable tcc = (IThreadCountControllable)getListener();
+			
+			return tcc.isThreadCountControllable();
+		}
+		return false;
+	}
+
+	public int getCurrentThreadCount() {
+		if (getListener() instanceof IThreadCountControllable) {
+			IThreadCountControllable tcc = (IThreadCountControllable)getListener();
+			
+			return tcc.getCurrentThreadCount();
+		}
+		if (getListener() instanceof IPullingListener) {
+			return listenerContainer.getThreadsRunning();
+		}
+		return -1;
+	}
+
+	public int getMaxThreadCount() {
+		if (getListener() instanceof IThreadCountControllable) {
+			IThreadCountControllable tcc = (IThreadCountControllable)getListener();
+			
+			return tcc.getMaxThreadCount();
+		}
+		if (getListener() instanceof IPullingListener) {
+			return getNumThreads();
+		}
+		return -1;
+	}
+
+	public void increaseThreadCount() {
+		if (getListener() instanceof IThreadCountControllable) {
+			IThreadCountControllable tcc = (IThreadCountControllable)getListener();
+			
+			tcc.increaseThreadCount();
+		}
+	}
+
+	public void decreaseThreadCount() {
+		if (getListener() instanceof IThreadCountControllable) {
+			IThreadCountControllable tcc = (IThreadCountControllable)getListener();
+			
+			tcc.decreaseThreadCount();
+		}
+	}
 
 	public void setRunState(RunStateEnum state) {
 		runState.setRunState(state);
