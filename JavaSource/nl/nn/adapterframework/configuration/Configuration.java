@@ -1,6 +1,9 @@
 /*
  * $Log: Configuration.java,v $
- * Revision 1.28  2007-10-16 08:40:36  europe\L190409
+ * Revision 1.29  2008-01-29 15:49:53  europe\L190409
+ * removed a class from versions
+ *
+ * Revision 1.28  2007/10/16 08:40:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed ifsa facade version display
  *
  * Revision 1.27  2007/10/09 15:07:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -101,7 +104,7 @@ import org.apache.log4j.Logger;
  * @see    nl.nn.adapterframework.core.IAdapter
  */
 public class Configuration {
-	public static final String version="$RCSfile: Configuration.java,v $ $Revision: 1.28 $ $Date: 2007-10-16 08:40:36 $";
+	public static final String version="$RCSfile: Configuration.java,v $ $Revision: 1.29 $ $Date: 2008-01-29 15:49:53 $";
     protected Logger log=LogUtil.getLogger(this); 
      
     private Map adapterTable = new Hashtable();
@@ -409,7 +412,6 @@ public class Configuration {
 		sb.append(nl.nn.adapterframework.extensions.sap.SapFunctionFacade.version +SystemUtils.LINE_SEPARATOR);
 		sb.append(nl.nn.adapterframework.extensions.sap.SapListener.version +SystemUtils.LINE_SEPARATOR);
 		sb.append(nl.nn.adapterframework.extensions.sap.SapSender.version +SystemUtils.LINE_SEPARATOR);
-		sb.append(nl.nn.adapterframework.extensions.sap.SapFunctionHandler.version +SystemUtils.LINE_SEPARATOR);
 		sb.append(nl.nn.adapterframework.extensions.sap.SapSystem.version +SystemUtils.LINE_SEPARATOR);
 		sb.append(nl.nn.adapterframework.util.XmlUtils.getVersionInfo());
     	return sb.toString();
