@@ -1,6 +1,9 @@
 /*
  * $Log: SapSystem.java,v $
- * Revision 1.9  2007-05-01 14:20:36  europe\L190409
+ * Revision 1.10  2008-01-29 15:34:11  europe\L190409
+ * added support for idocs and for multiple sap system objects
+ *
+ * Revision 1.9  2007/05/01 14:20:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved exception handling
  *
  * Revision 1.8  2005/12/19 16:44:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -33,13 +36,18 @@
  */
 package nl.nn.adapterframework.extensions.sap;
 
-import com.sap.mw.jco.*;
+import java.util.Iterator;
 
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.GlobalListItem;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
+
+import com.sap.mw.idoc.IDoc;
+import com.sap.mw.idoc.jco.JCoIDoc;
+import com.sap.mw.jco.IRepository;
+import com.sap.mw.jco.JCO;
 /**
  * A SapSystem is a provider of repository information and connections to a SAP-system.
  * <p><b>Configuration:</b>
@@ -62,7 +70,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * @since 4.1.1
  */
 public class SapSystem extends GlobalListItem  implements JCO.ServerStateChangedListener  {
-	public static final String version="$RCSfile: SapSystem.java,v $  $Revision: 1.9 $ $Date: 2007-05-01 14:20:36 $";
+	public static final String version="$RCSfile: SapSystem.java,v $  $Revision: 1.10 $ $Date: 2008-01-29 15:34:11 $";
 
 	private int maxConnections = 10;
 
@@ -78,7 +86,8 @@ public class SapSystem extends GlobalListItem  implements JCO.ServerStateChanged
 
 	private int serviceOffset = 3300;
 
-	private IRepository repository = null;
+	private IRepository jcoRepository = null;
+	private IDoc.Repository idocRepository = null;
 
 	private int referenceCount=0;
 
@@ -128,11 +137,11 @@ public class SapSystem extends GlobalListItem  implements JCO.ServerStateChanged
 			//    to be used for all calls to the system SID. The creation of
 			//    redundant instances cause performance and memory waste.
 			log.debug(getLogPrefix()+"creating repository");
-			repository = JCO.createRepository(getName()+"-repository", getName());
+			jcoRepository = JCO.createRepository(getName()+"-Repository", getName());
 		} catch (Throwable t) {
 			throw new SapException(getLogPrefix()+"exception initializing", t);
 		}
-		if (repository == null) {
+		if (jcoRepository == null) {
 			throw new SapException(getLogPrefix()+"could not create repository");
 		}
 	}
@@ -143,6 +152,14 @@ public class SapSystem extends GlobalListItem  implements JCO.ServerStateChanged
 			JCO.addServerStateChangedListener(this);
 		}
 		log.info(getLogPrefix()+"JCo version ["+JCO.getVersion()+"] on middleware ["+JCO.getMiddlewareLayer()+"] version ["+JCO.getMiddlewareVersion()+"]");
+	}
+
+	public static void configureAll() {
+		for(Iterator it = getRegisteredNames(); it.hasNext();) {
+			String systemName=(String)it.next();
+			SapSystem system = getSystem(systemName);
+			system.configure();
+		}
 	}
   
   	public synchronized void openSystem() throws SapException {
@@ -159,18 +176,36 @@ public class SapSystem extends GlobalListItem  implements JCO.ServerStateChanged
 			log.debug(getLogPrefix()+"reference count ["+referenceCount+"], closing system");
 			referenceCount=0;
 			clearSystem();
-			repository=null;
+			jcoRepository=null;
 			log.debug(getLogPrefix()+"closed system");
 		} else {
 			log.debug(getLogPrefix()+"reference count ["+referenceCount+"], waiting for other references to close");
 		}
 	}
 
+	public static void openSystems() throws SapException {
+		for(Iterator it = getRegisteredNames(); it.hasNext();) {
+			String systemName=(String)it.next();
+			SapSystem system = getSystem(systemName);
+			system.openSystem();
+		}
+	}
+
+	public static void closeSystems() {
+		for(Iterator it = getRegisteredNames(); it.hasNext();) {
+			String systemName=(String)it.next();
+			SapSystem system = getSystem(systemName);
+			system.closeSystem();
+		}
+	}
+
+
+
   	public JCO.Client getClient() {
 		// Get a client from the pool
 		return JCO.getClient(getName());
   	}
-	// after use client should be relaese into the pool by calling releaseClient(client);
+	// after use client should be released into the pool by calling releaseClient(client);
   	
 	public void releaseClient(JCO.Client client) {
 		// Release the client into the pool
@@ -188,16 +223,22 @@ public class SapSystem extends GlobalListItem  implements JCO.ServerStateChanged
 	}
 
 	public void serverStateChangeOccurred(JCO.Server server, int old_state, int new_state) {
-		log.debug("Server [" + server.getProgID() + "] changed state from ["
+		log.debug(getLogPrefix()+"a thread of Server [" + server.getProgID() + "] changed state from ["
 				+stateToString(old_state)+"] to ["+stateToString(new_state)+"]");
 	}
 
 
-	public IRepository getRepository() {
-		return repository;
+	public IRepository getJcoRepository() {
+		return jcoRepository;
+	}
+	public synchronized IDoc.Repository getIDocRepository() {
+		if (idocRepository==null) {
+			idocRepository = JCoIDoc.createRepository(getName()+"-IDocRepository", getName());
+		}
+		return idocRepository;
 	}
 
-	protected String getLogPrefix() {
+	public String getLogPrefix() {
 		return "SapSystem ["+getName()+"] "; 
 	}
   
