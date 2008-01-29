@@ -1,6 +1,9 @@
 /*
  * $Log: SapListener.java,v $
- * Revision 1.11  2007-10-03 08:35:01  europe\L190409
+ * Revision 1.12  2008-01-29 15:39:55  europe\L190409
+ * added support for idocs
+ *
+ * Revision 1.11  2007/10/03 08:35:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed HashMap to Map
  *
  * Revision 1.10  2007/06/07 15:18:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -66,6 +69,7 @@ import nl.nn.adapterframework.core.PipeLineResult;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 
+import com.sap.mw.idoc.IDoc.Document;
 import com.sap.mw.jco.JCO;
 
 /**
@@ -96,7 +100,7 @@ import com.sap.mw.jco.JCO;
  * @see   http://help.sap.com/saphelp_nw04/helpdata/en/09/c88442a07b0e53e10000000a155106/frameset.htm
  */
 public class SapListener extends SapFunctionFacade implements IPushingListener, SapFunctionHandler, JCO.ServerExceptionListener, JCO.ServerErrorListener {
-	public static final String version="$RCSfile: SapListener.java,v $  $Revision: 1.11 $ $Date: 2007-10-03 08:35:01 $";
+	public static final String version="$RCSfile: SapListener.java,v $  $Revision: 1.12 $ $Date: 2008-01-29 15:39:55 $";
 
 	private String progid;	 // progid of the RFC-destination
         	
@@ -117,6 +121,13 @@ public class SapListener extends SapFunctionFacade implements IPushingListener, 
 			openFacade();
 			sapServer = new SapServer(getSapSystem(), getProgid(), this);
 			sapServer.start();
+			if (log.isDebugEnabled()) {
+				String pi[][] = sapServer.getPropertyInfo();
+				log.debug(getLogPrefix()+"properties:");
+				for (int i=0; i<pi.length; i++) {
+					log.debug(getLogPrefix()+"property ["+pi[i][0]+"] ("+pi[i][1]+") value ("+sapServer.getProperty(pi[i][0])+")");
+				}
+			}
 		} catch (Exception e) {
 			try {
 				close();
@@ -181,6 +192,15 @@ public class SapListener extends SapFunctionFacade implements IPushingListener, 
 		}
 	}
 
+	public void processIDoc(Document idoc) throws SapException {
+		try {
+			log.debug("SapListener.processIDoc()");
+			handler.processRequest(this, idoc.toXML());
+		} catch (ListenerException e) {
+			throw new SapException(e);
+		}
+	}
+
 	/**
 	 * The <code>toString()</code> method retrieves its value
   	 * by reflection.
@@ -221,7 +241,5 @@ public class SapListener extends SapFunctionFacade implements IPushingListener, 
 			exceptionListener.exceptionThrown(this, new SapException(getLogPrefix()+"error in SapServer ["+server.getProgID()+"]",e));
 		}
 	}
-
-
 
 }

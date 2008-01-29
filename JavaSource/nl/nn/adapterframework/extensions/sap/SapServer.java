@@ -1,6 +1,9 @@
 /* 
  * $Log: SapServer.java,v $
- * Revision 1.8  2007-02-12 13:47:54  europe\L190409
+ * Revision 1.9  2008-01-29 15:36:33  europe\L190409
+ * added support for idocs
+ *
+ * Revision 1.8  2007/02/12 13:47:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Logger from LogUtil
  *
  * Revision 1.7  2005/08/10 11:31:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -36,36 +39,43 @@
  */
 package nl.nn.adapterframework.extensions.sap;
 
+import nl.nn.adapterframework.extensions.sap.SapFunctionHandler;
+import nl.nn.adapterframework.extensions.sap.SapSystem;
 import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.log4j.Logger;
 
+import com.sap.mw.idoc.IDoc;
+import com.sap.mw.idoc.jco.JCoIDoc;
 import com.sap.mw.jco.JCO;
 
+
 /**
- * Object that acts as a SAP-server. Currently used to receive RFC-function calls from SAP.
+ * Object that acts as a SAP.server to receive iDocs and RFC-function from SAP.
+ * 
  * @author Gerrit van Brakel
  * @since 4.2
  */
-public class SapServer extends JCO.Server implements JCO.ServerExceptionListener, JCO.ServerErrorListener {
-	public static final String version="$RCSfile: SapServer.java,v $  $Revision: 1.8 $ $Date: 2007-02-12 13:47:54 $";
+public class SapServer extends JCoIDoc.Server implements JCO.ServerExceptionListener, JCO.ServerErrorListener {
 	protected Logger log = LogUtil.getLogger(this);
 	
 	private SapFunctionHandler handler = null;
+	private SapSystem system;
 	
 	public SapServer(SapSystem system, String progid, SapFunctionHandler handler) {
-		super(system.getGwhost(), system.getGwserv(), progid, system.getRepository());
+		super(system.getGwhost(), system.getGwserv(), progid, system.getJcoRepository(), system.getIDocRepository());
 		this.handler = handler;
-		log.info("SapServer connected to ["+system.getGwhost()+":"+system.getGwserv()+"] using progid ["+progid+"]");
+		this.system=system;
+		log.info(getLogPrefix()+"connected to ["+system.getGwhost()+":"+system.getGwserv()+"]");
 
 //		JCO.addServerExceptionListener(this);
 //		JCO.addServerErrorListener(this);
-  	}
+	}
   	
-  	public void stop() {
-  		//abort("Ibis disconnects");
-  		super.stop();
-  	}
+	public void stop() {
+		//abort("Ibis disconnects");
+		super.stop();
+	}
 
 	/*
 	 *  Not really necessary to override this function but for demonstration purposes...
@@ -91,14 +101,34 @@ public class SapServer extends JCO.Server implements JCO.ServerExceptionListener
 	protected void handleRequest(JCO.Function function)
 	{
 		try {
-			log.info("sap function called: "+function.getName());
+			log.info(getLogPrefix()+"sap function called: "+function.getName());
 			handler.processFunctionCall(function);
 		} catch (Throwable t) {
-			log.warn("Exception caught and handed to SAP",t);
+			log.warn(getLogPrefix()+"Exception caught and handed to SAP",t);
 			throw new JCO.AbapException("IbisException", t.getMessage());
 		}
 	}
 	
+	protected void handleRequest(IDoc.DocumentList documentList)
+	{
+		log.debug(getLogPrefix()+"Incoming IDoc list request containing " + documentList.getNumDocuments() + " documents...");
+
+		IDoc.DocumentIterator iterator = documentList.iterator();
+		IDoc.Document doc = null;
+
+		while (iterator.hasNext())
+		{
+			doc = iterator.nextDocument();
+			log.debug(getLogPrefix()+"Processing document no. [" + doc.getIDocNumber() + "] of type ["+doc.getIDocType()+"]");
+
+			try {
+				handler.processIDoc(doc);
+			} catch (Throwable t) {
+				log.warn(getLogPrefix()+"Exception caught and handed to SAP",t);
+				throw new JCO.AbapException("IbisException", t.getMessage());
+			}
+		}
+	}
 	
 
 	/**
@@ -115,7 +145,7 @@ public class SapServer extends JCO.Server implements JCO.ServerExceptionListener
 	protected boolean onCheckTID(String tid)
 	{
 		if (log.isDebugEnabled()) {
-			log.debug("SapServer [" + getProgID() + "] is requested to check TID ["+tid+"]; (currently ignored)");
+			log.debug(getLogPrefix()+"is requested to check TID ["+tid+"]; (currently ignored)");
 		}
 		return true;
 	}
@@ -130,7 +160,7 @@ public class SapServer extends JCO.Server implements JCO.ServerExceptionListener
 	protected void onConfirmTID(String tid)
 	{
 		if (log.isDebugEnabled()) {
-			log.debug("SapServer [" + getProgID() + "] is requested to confirm TID ["+tid+"]; (currently ignored)");
+			log.debug(getLogPrefix()+"is requested to confirm TID ["+tid+"]; (currently ignored)");
 		}
 	}
 
@@ -144,7 +174,7 @@ public class SapServer extends JCO.Server implements JCO.ServerExceptionListener
 	protected void onCommit(String tid)
 	{
 		if (log.isDebugEnabled()) {
-			log.debug("SapServer [" + getProgID() + "] is requested to commit TID ["+tid+"]; (currently ignored)");
+			log.debug(getLogPrefix()+"is requested to commit TID ["+tid+"]; (currently ignored)");
 		}
 	}
 
@@ -158,20 +188,23 @@ public class SapServer extends JCO.Server implements JCO.ServerExceptionListener
 	protected void onRollback(String tid)
 	{
 		if (log.isDebugEnabled()) {
-			log.debug("SapServer [" + getProgID() + "] is requested to rollback TID ["+tid+"]; (currently ignored)");
+			log.warn(getLogPrefix()+"is requested to rollback TID ["+tid+"]; (currently ignored)");
 		}
 	}
 
 	
 
 	public void serverExceptionOccurred(JCO.Server server, Exception e) {
-		log.error("Exception in SapServer [" + server.getProgID() + "]", e);
+		log.error(getLogPrefix()+"exception occurred", e);
 	}
 
 	public void serverErrorOccurred(JCO.Server server, Error err)
 	{
-		log.error("Error in SapServer [" + server.getProgID() + "]", err);
+		log.error(getLogPrefix()+"error occurred", err);
 	}
 
+	protected String getLogPrefix() {
+		return system.getLogPrefix()+ "server ["+getProgID()+"] ";
+	}
 
 }
