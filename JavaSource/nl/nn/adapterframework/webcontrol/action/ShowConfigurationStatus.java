@@ -1,6 +1,9 @@
 /*
  * $Log: ShowConfigurationStatus.java,v $
- * Revision 1.11  2007-11-22 09:17:08  europe\L190409
+ * Revision 1.12  2008-01-29 12:19:27  europe\L190409
+ * added support for thread number control
+ *
+ * Revision 1.11  2007/11/22 09:17:08  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * remove check for inprocessstorage
  *
  * Revision 1.10  2007/10/08 12:26:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -37,6 +40,7 @@ import nl.nn.adapterframework.core.HasSender;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.ISender;
+import nl.nn.adapterframework.core.IThreadCountControllable;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
@@ -57,7 +61,7 @@ import org.apache.struts.action.ActionMapping;
  * @version Id
  */
 public final class ShowConfigurationStatus extends ActionBase {
-	public static final String version = "$RCSfile: ShowConfigurationStatus.java,v $ $Revision: 1.11 $ $Date: 2007-11-22 09:17:08 $";
+	public static final String version = "$RCSfile: ShowConfigurationStatus.java,v $ $Revision: 1.12 $ $Date: 2008-01-29 12:19:27 $";
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 
@@ -122,6 +126,16 @@ public final class ShowConfigurationStatus extends ActionBase {
 								String pd = ((HasPhysicalDestination)sender).getPhysicalDestinationName();
 								receiverXML.addAttribute("senderDestination", pd);
 							}
+						}
+					}
+					if (receiver instanceof IThreadCountControllable) {
+						IThreadCountControllable tcc = (IThreadCountControllable)receiver;
+						if (tcc.isThreadCountReadable()) {
+							receiverXML.addAttribute("threadCount", tcc.getCurrentThreadCount()+"");
+							receiverXML.addAttribute("maxThreadCount", tcc.getMaxThreadCount()+"");
+						}
+						if (tcc.isThreadCountControllable()) {
+							receiverXML.addAttribute("threadCountControllable", "true");
 						}
 					}
 				}

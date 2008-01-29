@@ -1,6 +1,9 @@
 /*
  * $Log: SpringJmsConnector.java,v $
- * Revision 1.6  2008-01-17 16:24:47  europe\L190409
+ * Revision 1.7  2008-01-29 12:17:26  europe\L190409
+ * added support for thread number control
+ *
+ * Revision 1.6  2008/01/17 16:24:47  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * txManager in onMessage only for only local transacted sessions
  *
  * Revision 1.5  2008/01/11 10:23:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -46,6 +49,7 @@ import javax.jms.Session;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IListenerConnector;
 import nl.nn.adapterframework.core.IPortConnectedListener;
+import nl.nn.adapterframework.core.IThreadCountControllable;
 import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.util.Counter;
@@ -82,12 +86,12 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  * @since   4.8
  * @version Id
  */
-public class SpringJmsConnector extends AbstractJmsConfigurator implements IListenerConnector, BeanFactoryAware, ExceptionListener, SessionAwareMessageListener {
+public class SpringJmsConnector extends AbstractJmsConfigurator implements IListenerConnector, IThreadCountControllable, BeanFactoryAware, ExceptionListener, SessionAwareMessageListener {
 	private static final Logger log = LogUtil.getLogger(SpringJmsConnector.class);
 	
 	public static final TransactionDefinition TXREQUIRED = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED);
     
-	public static final String version="$RCSfile: SpringJmsConnector.java,v $ $Revision: 1.6 $ $Date: 2008-01-17 16:24:47 $";
+	public static final String version="$RCSfile: SpringJmsConnector.java,v $ $Revision: 1.7 $ $Date: 2008-01-29 12:17:26 $";
     
  	private PlatformTransactionManager txManager;
 	private BeanFactory beanFactory;
@@ -260,6 +264,33 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 			log.error(getLogPrefix()+"Cannot report the error to an IBIS Exception Listener", e);
 		}
 	}
+
+	public boolean isThreadCountReadable() {
+		return true;
+	}
+	public boolean isThreadCountControllable() {
+		return true;
+	}
+
+	public int getCurrentThreadCount() {
+		return jmsContainer.getActiveConsumerCount();
+	}
+
+	public int getMaxThreadCount() {
+		return jmsContainer.getMaxConcurrentConsumers();
+	}
+
+	public void increaseThreadCount() {
+		jmsContainer.setMaxConcurrentConsumers(jmsContainer.getMaxConcurrentConsumers()+1);	
+	}
+
+	public void decreaseThreadCount() {
+		int current=getMaxThreadCount();
+		if (current>1) {
+			jmsContainer.setMaxConcurrentConsumers(current-1);	
+		}
+	}
+
 
 	public String getLogPrefix() {
 		String result="SpringJmsContainer ";

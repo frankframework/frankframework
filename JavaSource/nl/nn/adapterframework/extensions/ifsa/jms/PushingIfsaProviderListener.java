@@ -1,6 +1,9 @@
 /*
  * $Log: PushingIfsaProviderListener.java,v $
- * Revision 1.2  2008-01-11 09:41:49  europe\L190409
+ * Revision 1.3  2008-01-29 12:20:32  europe\L190409
+ * added support for thread number control
+ *
+ * Revision 1.2  2008/01/11 09:41:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * check values of cache mode
  *
  * Revision 1.1  2008/01/03 15:46:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -27,6 +30,7 @@ import nl.nn.adapterframework.core.IMessageHandler;
 import nl.nn.adapterframework.core.IMessageWrapper;
 import nl.nn.adapterframework.core.IPortConnectedListener;
 import nl.nn.adapterframework.core.IReceiver;
+import nl.nn.adapterframework.core.IThreadCountControllable;
 import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
@@ -91,8 +95,8 @@ import com.ing.ifsa.IFSAServicesProvided;
  * @since   4.2
  * @version Id
  */
-public class PushingIfsaProviderListener extends IfsaFacade implements IPortConnectedListener {
-	public static final String version = "$RCSfile: PushingIfsaProviderListener.java,v $ $Revision: 1.2 $ $Date: 2008-01-11 09:41:49 $";
+public class PushingIfsaProviderListener extends IfsaFacade implements IPortConnectedListener, IThreadCountControllable {
+	public static final String version = "$RCSfile: PushingIfsaProviderListener.java,v $ $Revision: 1.3 $ $Date: 2008-01-29 12:20:32 $";
 
     private final static String THREAD_CONTEXT_SESSION_KEY = "session";
 	public final static String THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY = "originalRawMessage";
@@ -512,6 +516,58 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 	}
 	public String getCacheMode() {
 		return cacheMode;
+	}
+
+	public boolean isThreadCountReadable() {
+		if (jmsConnector instanceof IThreadCountControllable) {
+			IThreadCountControllable tcc = (IThreadCountControllable)jmsConnector;
+			
+			return tcc.isThreadCountReadable();
+		}
+		return false;
+	}
+
+	public boolean isThreadCountControllable() {
+		if (jmsConnector instanceof IThreadCountControllable) {
+			IThreadCountControllable tcc = (IThreadCountControllable)jmsConnector;
+			
+			return tcc.isThreadCountControllable();
+		}
+		return false;
+	}
+
+	public int getCurrentThreadCount() {
+		if (jmsConnector instanceof IThreadCountControllable) {
+			IThreadCountControllable tcc = (IThreadCountControllable)jmsConnector;
+			
+			return tcc.getCurrentThreadCount();
+		}
+		return -1;
+	}
+
+	public int getMaxThreadCount() {
+		if (jmsConnector instanceof IThreadCountControllable) {
+			IThreadCountControllable tcc = (IThreadCountControllable)jmsConnector;
+			
+			return tcc.getMaxThreadCount();
+		}
+		return -1;
+	}
+
+	public void increaseThreadCount() {
+		if (jmsConnector instanceof IThreadCountControllable) {
+			IThreadCountControllable tcc = (IThreadCountControllable)jmsConnector;
+			
+			tcc.increaseThreadCount();
+		}
+	}
+
+	public void decreaseThreadCount() {
+		if (jmsConnector instanceof IThreadCountControllable) {
+			IThreadCountControllable tcc = (IThreadCountControllable)jmsConnector;
+			
+			tcc.decreaseThreadCount();
+		}
 	}
 
 

@@ -1,6 +1,9 @@
 /*
  * $Log: DefaultIbisManager.java,v $
- * Revision 1.5  2007-12-10 10:21:38  europe\L190409
+ * Revision 1.6  2008-01-29 12:16:43  europe\L190409
+ * added support for thread number control
+ *
+ * Revision 1.5  2007/12/10 10:21:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved logging
  *
  * Revision 1.4  2007/11/22 09:10:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -48,6 +51,7 @@ import nl.nn.adapterframework.configuration.ConfigurationDigester;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IReceiver;
+import nl.nn.adapterframework.core.IThreadCountControllable;
 import nl.nn.adapterframework.ejb.ListenerPortPoller;
 import nl.nn.adapterframework.pipes.IbisLocalSender;
 import nl.nn.adapterframework.scheduler.JobDef;
@@ -187,6 +191,28 @@ public class DefaultIbisManager implements IbisManager, BeanFactoryAware {
             receiver.startRunning();
             log.info("receiver [" + receiverName + "] started by " + commandIssuedBy);
         }
+		else if (action.equalsIgnoreCase("INCTHREADS")) {
+			IAdapter adapter = configuration.getRegisteredAdapter(adapterName);
+			IReceiver receiver = adapter.getReceiverByName(receiverName);
+			if (receiver instanceof IThreadCountControllable) {
+				IThreadCountControllable tcc = (IThreadCountControllable)receiver;
+				if (tcc.isThreadCountControllable()) {
+					tcc.increaseThreadCount();
+				}
+			}
+			log.info("receiver [" + receiverName + "] increased threadcount on request of " + commandIssuedBy);
+		}
+		else if (action.equalsIgnoreCase("DECTHREADS")) {
+			IAdapter adapter = configuration.getRegisteredAdapter(adapterName);
+			IReceiver receiver = adapter.getReceiverByName(receiverName);
+			if (receiver instanceof IThreadCountControllable) {
+				IThreadCountControllable tcc = (IThreadCountControllable)receiver;
+				if (tcc.isThreadCountControllable()) {
+					tcc.decreaseThreadCount();
+				}
+			}
+			log.info("receiver [" + receiverName + "] decreased threadcount on request of " + commandIssuedBy);
+		}
         else if (action.equalsIgnoreCase("SENDMESSAGE")) {
             try {
                 // send job
