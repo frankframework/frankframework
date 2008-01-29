@@ -1,6 +1,9 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.44  2007-10-15 13:13:44  europe\L190409
+ * Revision 1.45  2008-01-29 12:18:41  europe\L190409
+ * added parse functions
+ *
+ * Revision 1.44  2007/10/15 13:13:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fixed typo + modified Xerces version retrieval
  *
  * Revision 1.41.2.3  2007/10/12 09:09:07  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
@@ -182,10 +185,13 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
+import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
+import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
+import org.xml.sax.helpers.XMLReaderFactory;
 
 /**
  * Some utilities for working with XML. 
@@ -194,7 +200,7 @@ import org.xml.sax.helpers.DefaultHandler;
  * @version Id
  */
 public class XmlUtils {
-	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.44 $ $Date: 2007-10-15 13:13:44 $";
+	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.45 $ $Date: 2008-01-29 12:18:41 $";
 	static Logger log = LogUtil.getLogger(XmlUtils.class);
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
@@ -228,6 +234,24 @@ public class XmlUtils {
 			namespaceAwareByDefault = new Boolean(aware);
 		}
 		return namespaceAwareByDefault.booleanValue();
+	}
+
+
+	static public void parseXml(ContentHandler handler, String source) throws IOException, SAXException {
+		parseXml(handler,new Variant(source).asXmlInputSource());
+	}
+	
+	static public void parseXml(ContentHandler handler, InputSource source) throws IOException, SAXException {
+		XMLReader parser;
+		parser = getParser();
+		parser.setContentHandler(handler);
+		parser.parse(source);
+	}
+
+	static private XMLReader getParser() throws SAXException  {
+		XMLReader parser = null;
+		parser = XMLReaderFactory.createXMLReader();
+		return parser;
 	}
 
 
