@@ -1,6 +1,9 @@
 /*
  * $Log: PullingListenerContainer.java,v $
- * Revision 1.8  2008-01-11 09:54:30  europe\L190409
+ * Revision 1.9  2008-01-29 12:14:06  europe\L190409
+ * added support for thread number control
+ *
+ * Revision 1.8  2008/01/11 09:54:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected receiver.isOnErrorStop to isOnErrorContinue
  *
  * Revision 1.7  2008/01/03 15:52:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -251,6 +254,10 @@ public class PullingListenerContainer implements Runnable {
 	}
 	public PlatformTransactionManager getTxManager() {
 		return txManager;
+	}
+
+	public int getThreadsRunning() {
+		return (int)threadsRunning.getValue();
 	}
 
 }
