@@ -1,6 +1,9 @@
 /*
  * $Log: ParameterValueList.java,v $
- * Revision 1.5  2007-10-08 13:31:49  europe\L190409
+ * Revision 1.6  2008-01-29 12:13:13  europe\L190409
+ * added removeParameterValue()
+ *
+ * Revision 1.5  2007/10/08 13:31:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed ArrayList to List where possible
  *
  * Revision 1.4  2007/10/08 12:21:23  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -64,6 +67,14 @@ public class ParameterValueList {
 
 	public ParameterValue getParameterValue(String name) {
 		return (ParameterValue)(map.get(name));
+	}
+
+	public ParameterValue removeParameterValue(String name) {
+		ParameterValue pv = (ParameterValue)map.remove(name);
+		if (pv!=null) {
+			list.remove(pv);
+		}
+		return pv;
 	}
 	
 	public boolean parameterExists(String name) {
