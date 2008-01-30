@@ -1,6 +1,9 @@
 /*
  * $Log: IdocXmlHandler.java,v $
- * Revision 1.1  2008-01-29 12:36:17  europe\L190409
+ * Revision 1.2  2008-01-30 14:43:40  europe\L190409
+ * improved logging
+ *
+ * Revision 1.1  2008/01/29 12:36:17  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * first version
  *
  */
@@ -79,6 +82,7 @@ public class IdocXmlHandler extends DefaultHandler {
 			String value=currentFieldValue.toString().trim();
 			if (StringUtils.isNotEmpty(value)) {
 				if (parsingEdiDcHeader) {
+					if (log.isDebugEnabled()) log.debug("parsed header field ["+currentField+"] value ["+value+"]");
 					if (currentField.equals("ARCKEY")) 		{ doc.setArchiveKey(value); }
 					else if (currentField.equals("MANDT"))  { doc.setClient(value); }
 					else if (currentField.equals("CREDAT")) { doc.setCreationDate(value); }
@@ -116,7 +120,7 @@ public class IdocXmlHandler extends DefaultHandler {
 					else if (currentField.equals("STATUS")) { doc.setStatus(value); }
 					else if (currentField.equals("TEST"))   { doc.setTestFlag(value); }
 					else {
-						log.debug("header field ["+currentField+"] value ["+value+"] discarded");
+						log.warn("header field ["+currentField+"] value ["+value+"] discarded");
 					}
 				} else {
 					IDoc.Segment segment = (IDoc.Segment)segmentStack.get(segmentStack.size()-1);
