@@ -1,6 +1,9 @@
 /* 
  * $Log: SapServer.java,v $
- * Revision 1.9  2008-01-29 15:36:33  europe\L190409
+ * Revision 1.10  2008-01-30 14:42:16  europe\L190409
+ * modified javadoc
+ *
+ * Revision 1.9  2008/01/29 15:36:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added support for idocs
  *
  * Revision 1.8  2007/02/12 13:47:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -53,8 +56,9 @@ import com.sap.mw.jco.JCO;
 /**
  * Object that acts as a SAP.server to receive iDocs and RFC-function from SAP.
  * 
- * @author Gerrit van Brakel
- * @since 4.2
+ * @author  Gerrit van Brakel
+ * @since   4.2
+ * @version Id
  */
 public class SapServer extends JCoIDoc.Server implements JCO.ServerExceptionListener, JCO.ServerErrorListener {
 	protected Logger log = LogUtil.getLogger(this);

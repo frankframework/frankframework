@@ -1,6 +1,9 @@
 /*
  * $Log: SapSenderBase.java,v $
- * Revision 1.1  2008-01-29 15:37:22  europe\L190409
+ * Revision 1.2  2008-01-30 14:41:58  europe\L190409
+ * modified javadoc
+ *
+ * Revision 1.1  2008/01/29 15:37:22  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * base class extracted from SapSender
  *
  */
@@ -26,17 +29,16 @@ import com.sap.mw.jco.JCO;
  * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.extensions.sap.SapListener</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setName(String) name}</td><td>Name of the Sender</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSapSystemName(String) sapSystemName}</td><td>name of the SapSystem used by this object</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSapSystemParam(String) sapSystemNameParam}</td><td>name of the parameter used to indicate the name of the SapSystem used by this object if the attribute <code>sapSystemName</code> is empty</td><td>sapSystemName</td></tr>
+ * <tr><td>{@link #setName(String) name}</td><td>name of the Sender</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setSapSystemName(String) sapSystemName}</td><td>name of the {@link SapSystem} used by this object</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setSapSystemNameParam(String) sapSystemNameParam}</td><td>name of the parameter used to indicate the name of the {@link SapSystem} used by this object if the attribute <code>sapSystemName</code> is empty</td><td>sapSystemName</td></tr>
  * <tr><td>{@link #setLuwHandleSessionKey(String) luwHandleSessionKey}</td><td>session key in which LUW information is stored. When set, actions that share a LUW-handle will be executed using the same client. Can only be used for synchronous functions</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * <table border="1">
  * <p><b>Parameters:</b>
  * <tr><th>name</th><th>type</th><th>remarks</th></tr>
- * <tr><td>sapSystemName</td><td>String</td><td>points to sapSystem to use; required when attribute <code>sapSystemName</code> is empty</td></tr>
+ * <tr><td>sapSystemName</td><td>String</td><td>points to {@link SapSystem} to use; required when attribute <code>sapSystemName</code> is empty</td></tr>
  * </table>
  * </p>
  * 

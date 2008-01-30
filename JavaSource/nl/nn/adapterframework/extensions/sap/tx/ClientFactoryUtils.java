@@ -1,13 +1,14 @@
 /*
  * $Log: ClientFactoryUtils.java,v $
- * Revision 1.1  2008-01-29 15:49:02  europe\L190409
+ * Revision 1.2  2008-01-30 14:41:12  europe\L190409
+ * modified javadoc
+ *
+ * Revision 1.1  2008/01/29 15:49:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * first version
  *
  */
 
 package nl.nn.adapterframework.extensions.sap.tx;
-
-import javax.jms.JMSException;
 
 import nl.nn.adapterframework.extensions.sap.SapException;
 import nl.nn.adapterframework.extensions.sap.SapSystem;
@@ -21,12 +22,8 @@ import org.springframework.util.Assert;
 import com.sap.mw.jco.JCO;
 
 /**
- * Helper class for managing a JCo clients {@link javax.jms.ConnectionFactory}, in particular
+ * Helper class for managing a JCo clients, in particular
  * for obtaining transactional resources.
- *
- * <p>Mainly for internal use within the framework. Used by
- * {@link org.springframework.jms.core.JmsTemplate} as well as
- * {@link org.springframework.jms.listener.DefaultMessageListenerContainer}.
  *
  * <p>based on {@link org.springframework.jms.connection.ConnectionFactoryUtils}
  * 

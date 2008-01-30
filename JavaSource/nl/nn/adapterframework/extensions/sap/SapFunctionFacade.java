@@ -1,6 +1,9 @@
 /*
  * $Log: SapFunctionFacade.java,v $
- * Revision 1.15  2008-01-29 15:43:20  europe\L190409
+ * Revision 1.16  2008-01-30 14:43:12  europe\L190409
+ * modified javadoc
+ *
+ * Revision 1.15  2008/01/29 15:43:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added support for dynamic selection of sapsystem
  *
  * Revision 1.14  2007/10/08 12:17:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -80,7 +83,7 @@ import com.sap.mw.jco.JCO;
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setName(String) name}</td><td>Name of the Ibis-object</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSapSystemName(String) sapSystemName}</td><td>name of the SapSystem used by this object</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setSapSystemName(String) sapSystemName}</td><td>name of the {@link SapSystem} used by this object</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setCorrelationIdFieldIndex(int) correlationIdFieldIndex}</td><td>Index of the field in the ImportParameterList of the RFC function that contains the correlationId</td><td>0</td></tr>
  * <tr><td>{@link #setCorrelationIdFieldName(String) correlationIdFieldName}</td><td>Name of the field in the ImportParameterList of the RFC function that contains the correlationId</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setRequestFieldIndex(int) requestFieldIndex}</td><td>Index of the field in the ImportParameterList of the RFC function that contains the whole request message contents</td><td>0</td></tr>
@@ -91,11 +94,12 @@ import com.sap.mw.jco.JCO;
  * N.B. If no requestFieldIndex or requestFieldName is specified, input is converted from/to xml;
  * If no replyFieldIndex or replyFieldName is specified, output is converted from/to xml. 
  * </p>
- * @author Gerrit van Brakel
- * @since 4.2
+ * @author  Gerrit van Brakel
+ * @since   4.2
+ * @version Id
  */
 public class SapFunctionFacade implements INamedObject, HasPhysicalDestination {
-	public static final String version="$RCSfile: SapFunctionFacade.java,v $  $Revision: 1.15 $ $Date: 2008-01-29 15:43:20 $";
+	public static final String version="$RCSfile: SapFunctionFacade.java,v $  $Revision: 1.16 $ $Date: 2008-01-30 14:43:12 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String name;
