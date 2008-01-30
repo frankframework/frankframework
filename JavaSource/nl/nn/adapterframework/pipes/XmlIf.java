@@ -1,6 +1,9 @@
 /*
  * $Log: XmlIf.java,v $
- * Revision 1.7  2007-08-29 15:08:41  europe\L190409
+ * Revision 1.8  2008-01-30 14:47:19  europe\L190409
+ * avoid NPE
+ *
+ * Revision 1.7  2007/08/29 15:08:41  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.6  2006/01/05 14:36:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -63,7 +66,7 @@ import nl.nn.adapterframework.util.TransformerPool;
  */
 
 public class XmlIf extends AbstractPipe {
-	public static final String version="$RCSfile: XmlIf.java,v $ $Revision: 1.7 $ $Date: 2007-08-29 15:08:41 $";
+	public static final String version="$RCSfile: XmlIf.java,v $ $Revision: 1.8 $ $Date: 2008-01-30 14:47:19 $";
 
 	private String sessionKey = null;
 	private String xpathExpression = null;
@@ -111,7 +114,11 @@ public class XmlIf extends AbstractPipe {
 
 		String sInput;
 		if (StringUtils.isEmpty(getSessionKey())) {
-			sInput = input.toString();
+			if (input==null) {
+				sInput="";
+			} else {
+				sInput = input.toString();
+			}
 		} else {
 			log.debug(getLogPrefix(session)+"taking input from sessionKey ["+getSessionKey()+"]");
 			sInput=(String) session.get(getSessionKey());
