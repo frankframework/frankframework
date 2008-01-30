@@ -1,6 +1,9 @@
 /*
  * $Log: MessageSendingPipe.java,v $
- * Revision 1.37  2007-12-17 08:57:40  europe\L190409
+ * Revision 1.38  2008-01-30 14:49:21  europe\L190409
+ * updated javadoc, removed superfluous configure()s
+ *
+ * Revision 1.37  2007/12/17 08:57:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * input and output validation
  *
  * Revision 1.36  2007/12/10 10:11:39  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -190,6 +193,8 @@ import org.apache.commons.lang.SystemUtils;
  * and it is used at runtime instead of the stubFileName specified by the attribute. A lookup of the 
  * file for this stubFileName will be done at runtime, while the file for the stubFileName specified 
  * as an attribute will be done at configuration time.</td></tr>
+ * <tr><td>&lt;inputValidator&gt;</td><td>specification of Pipe to validate input messages</td></tr>
+ * <tr><td>&lt;outputValidator&gt;</td><td>specification of Pipe to validate output messages</td></tr>
  * </table>
  * </p>
  * <p><b>Exits:</b>
@@ -206,7 +211,7 @@ import org.apache.commons.lang.SystemUtils;
  */
 
 public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
-	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.37 $ $Date: 2007-12-17 08:57:40 $";
+	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.38 $ $Date: 2008-01-30 14:49:21 $";
 
 	private final static String TIMEOUTFORWARD = "timeout";
 	private final static String EXCEPTIONFORWARD = "exception";
@@ -338,14 +343,12 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 			getInputValidator().registerForward(pf);
 			getInputValidator().setName("inputValidator of "+getName());
 			getInputValidator().configure();
-			getInputValidator().configure();
 		}
 		if (getOutputValidator()!=null) {
 			PipeForward pf = new PipeForward();
 			pf.setName("success");
 			getOutputValidator().registerForward(pf);
 			getOutputValidator().setName("outputValidator of "+getName());
-			getOutputValidator().configure();
 			getOutputValidator().configure();
 		}
 	}
