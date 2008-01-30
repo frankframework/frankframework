@@ -1,6 +1,9 @@
 /*
  * $Log: JtaUtil.java,v $
- * Revision 1.18  2008-01-17 16:28:09  europe\L190409
+ * Revision 1.19  2008-01-30 14:47:54  europe\L190409
+ * Springification of inTransaction()
+ *
+ * Revision 1.18  2008/01/17 16:28:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Springifications
  *
  * Revision 1.17  2008/01/15 10:21:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -85,7 +88,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  * @since  4.1
  */
 public class JtaUtil {
-	public static final String version="$RCSfile: JtaUtil.java,v $ $Revision: 1.18 $ $Date: 2008-01-17 16:28:09 $";
+	public static final String version="$RCSfile: JtaUtil.java,v $ $Revision: 1.19 $ $Date: 2008-01-30 14:47:54 $";
 	private static Logger log = LogUtil.getLogger(JtaUtil.class);
 	
 	private static final String USERTRANSACTION_URL1_KEY="jta.userTransactionUrl1";
@@ -267,11 +270,8 @@ public class JtaUtil {
 	/** 
 	 * returns true if the current thread is associated with a transaction
 	 */
-	private static boolean inTransaction(UserTransaction utx) throws SystemException {
-		return utx != null && utx.getStatus() != Status.STATUS_NO_TRANSACTION;
-	}
 	public static boolean inTransaction() throws SystemException, NamingException {
-		return inTransaction(getUserTransaction());
+		return TransactionSynchronizationManager.isSynchronizationActive();
 	}
 
 	/**
@@ -344,9 +344,9 @@ public class JtaUtil {
 	
 	public static boolean transactionStateCompatible(int transactionAttribute) throws SystemException, NamingException {
 		if (transactionAttribute==TransactionDefinition.PROPAGATION_NEVER) {
-			return !inTransaction(getUserTransaction());
+			return !inTransaction();
 		} else if (transactionAttribute==TransactionDefinition.PROPAGATION_MANDATORY) {
-			return inTransaction(getUserTransaction());
+			return inTransaction();
 		}
 		return true;
 	}
