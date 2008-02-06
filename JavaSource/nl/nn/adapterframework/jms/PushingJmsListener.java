@@ -1,6 +1,9 @@
 /*
  * $Log: PushingJmsListener.java,v $
- * Revision 1.10  2008-01-29 12:20:57  europe\L190409
+ * Revision 1.11  2008-02-06 16:37:02  europe\L190409
+ * disabled use of commitOnState
+ *
+ * Revision 1.10  2008/01/29 12:20:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added support for thread number control
  *
  * Revision 1.9  2008/01/11 09:45:08  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -105,7 +108,7 @@ import nl.nn.adapterframework.core.PipeLineResult;
  * @version Id
  */
 public class PushingJmsListener extends JMSFacade implements IPortConnectedListener, IThreadCountControllable {
-    public static final String version="$RCSfile: PushingJmsListener.java,v $ $Revision: 1.10 $ $Date: 2008-01-29 12:20:57 $";
+    public static final String version="$RCSfile: PushingJmsListener.java,v $ $Revision: 1.11 $ $Date: 2008-02-06 16:37:02 $";
 
 	private final static String THREAD_CONTEXT_SESSION_KEY="session";
 
@@ -382,8 +385,9 @@ public class PushingJmsListener extends JMSFacade implements IPortConnectedListe
 	 * @deprecated consider using XA transactions, controled by the <code>transacted</code>-attribute, rather than
 	 * local transactions controlled by the <code>jmsTransacted</code>-attribute.
 	 */
-	public void setCommitOnState(String newCommitOnState) {
+	public void setCommitOnState(String newCommitOnState) throws ConfigurationException {
 		commitOnState = newCommitOnState;
+		throw new ConfigurationException(getLogPrefix()+"setting commitOnState is no longer supported for JmsListener. Please change to commitOnState on PipeLine and a transacted Receiver");
 	}
 	public String getCommitOnState() {
 		return commitOnState;
