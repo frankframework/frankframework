@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.58  2008-01-11 14:49:24  europe\L190409
+ * Revision 1.59  2008-02-06 16:36:16  europe\L190409
+ * added support for setting of transaction timeout
+ *
+ * Revision 1.58  2008/01/11 14:49:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed external pipe and pipeline executors
  *
  * Revision 1.57  2008/01/11 09:07:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -224,6 +227,7 @@ import org.springframework.transaction.TransactionStatus;
  *   <tr><td colspan="1" rowspan="2">Never</td>       <td>none</td><td>none</td></tr>
  * 											      <tr><td>T1</td>  <td>error</td></tr>
  *  </table></td><td>Supports</td></tr>
+ * <tr><td>{@link #setTransactionTimeout(int) transactionTimeout}</td><td>Timeout (in seconds) of transaction started to process a message.</td><td><code>0</code> (use system default)</code></td></tr>
  * </table>
  * </p>
  * <table border="1">
@@ -263,7 +267,7 @@ import org.springframework.transaction.TransactionStatus;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.58 $ $Date: 2008-01-11 14:49:24 $";
+	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.59 $ $Date: 2008-02-06 16:36:16 $";
     private Logger log = LogUtil.getLogger(this);
 	private Logger durationLog = LogUtil.getLogger("LongDurationMessages");
     
@@ -275,10 +279,12 @@ public class PipeLine {
     private Hashtable globalForwards = new Hashtable();
     private String firstPipe;
 	private int transactionAttribute=TransactionDefinition.PROPAGATION_SUPPORTS;
+	private int transactionTimeout=0;
      
 	private IPipe inputValidator=null;
 	private IPipe outputValidator=null;
      
+	private TransactionDefinition txDef=null;
 	private PlatformTransactionManager txManager;
     
     private Hashtable pipesByName=new Hashtable();
@@ -404,6 +410,10 @@ public class PipeLine {
 			getOutputValidator().configure();
 		}
 
+		int txOption = this.getTransactionAttributeNum();
+		if (log.isDebugEnabled()) log.debug("creating TransactionDefinition for transactionAttribute ["+getTransactionAttribute()+"], timeout ["+getTransactionTimeout()+"]");
+		txDef = SpringTxManagerProxy.getTransactionDefinition(txOption,getTransactionTimeout());
+
 		log.debug("Pipeline of ["+owner.getName()+"] successfully configured");
 	}
     /**
@@ -493,16 +503,15 @@ public class PipeLine {
                 message,
                 pipeLineSession);
         } catch (RuntimeException e) {
-            throw new PipeRunException(null, "RuntimeException calling PipeLine with tx attribute '"
-                + getTransactionAttribute() + "'", e);
+            throw new PipeRunException(null, "RuntimeException calling PipeLine with tx attribute ["
+                + getTransactionAttribute() + "]", e);
         }
 	}
     
     private PipeLineResult runPipeLineObeyingTransactionAttribute(String messageId, String message, PipeLineSession session) throws PipeRunException {
-        int txOption = this.getTransactionAttributeNum();
-		if (log.isDebugEnabled()) log.debug("runPipeLineObeyingTransactionAttribute with transactionAttribute ["+getTransactionAttribute()+"]");
+		if (log.isDebugEnabled()) log.debug("runPipeLineObeyingTransactionAttribute with transactionAttribute ["+getTransactionAttribute()+"], timeout ["+getTransactionTimeout()+"]");
 
-		TransactionStatus txStatus = txManager.getTransaction(SpringTxManagerProxy.getTransactionDefinition(txOption));
+		TransactionStatus txStatus = txManager.getTransaction(txDef);
 		try {
 			return processPipeLine(messageId, message, session, txStatus);
 		} catch (Throwable t) {
@@ -525,16 +534,18 @@ public class PipeLine {
     
 	private PipeRunResult runPipeObeyingTransactionAttribute(IPipe pipe, Object message, PipeLineSession session) throws PipeRunException {
         int txOption;
+        int txTimeout=0;
         if (pipe instanceof HasTransactionAttribute) {
             HasTransactionAttribute taPipe = (HasTransactionAttribute) pipe;
             txOption = taPipe.getTransactionAttributeNum();
-			if (log.isDebugEnabled()) log.debug("runPipeObeyingTransactionAttribute for pipe ["+pipe.getName()+"] with transactionAttribute ["+taPipe.getTransactionAttribute()+"]");
+            txTimeout= taPipe.getTransactionTimeout();
+			if (log.isDebugEnabled()) log.debug("runPipeObeyingTransactionAttribute for pipe ["+pipe.getName()+"] with transactionAttribute ["+taPipe.getTransactionAttribute()+"] timeout ["+(txTimeout==0?"system default(=120s":""+txTimeout)+"]");
         } else {
             txOption = TransactionDefinition.PROPAGATION_SUPPORTS;
 			if (log.isDebugEnabled()) log.debug("runPipeObeyingTransactionAttribute for pipe ["+pipe.getName()+"] with default transaction attribute (supports)");
         }
 
-		TransactionStatus txStatus = txManager.getTransaction(SpringTxManagerProxy.getTransactionDefinition(txOption));
+		TransactionStatus txStatus = txManager.getTransaction(SpringTxManagerProxy.getTransactionDefinition(txOption,txTimeout));
 		try {
 			return pipe.doPipe(message, session);
 		} catch (Throwable t) {
@@ -655,6 +666,10 @@ public class PipeLine {
 	
 							try { 
 								pipeRunResult = runPipeObeyingTransactionAttribute(pipeToRun,object, pipeLineSession);
+							} catch (PipeRunException e) {
+								throw e;
+							} catch (Throwable t) {
+								throw new PipeRunException(pipeToRun, "caught exception", t);
 							} finally {
 								long pipeEndTime = System.currentTimeMillis();
 								pipeDuration = pipeEndTime - pipeStartTime - waitingDuration;
@@ -670,6 +685,10 @@ public class PipeLine {
 					} else { //no restrictions on the maximum number of threads (s==null)
 						try {
 							pipeRunResult = runPipeObeyingTransactionAttribute(pipeToRun,object, pipeLineSession);
+						} catch (PipeRunException e) {
+							throw e;
+						} catch (Throwable t) {
+							throw new PipeRunException(pipeToRun, "caught exception", t);
 						} finally {
 							long pipeEndTime = System.currentTimeMillis();
 							pipeDuration = pipeEndTime - pipeStartTime;
@@ -963,5 +982,11 @@ public class PipeLine {
 		return txManager;
 	}
 
+	public void setTransactionTimeout(int i) {
+		transactionTimeout = i;
+	}
+	public int getTransactionTimeout() {
+		return transactionTimeout;
+	}
 
 }

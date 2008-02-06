@@ -1,6 +1,9 @@
 /*
  * $Log: SpringTxManagerProxy.java,v $
- * Revision 1.3  2008-01-11 09:55:45  europe\L190409
+ * Revision 1.4  2008-02-06 16:39:17  europe\L190409
+ * added support for setting of transaction timeout
+ *
+ * Revision 1.3  2008/01/11 09:55:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added utility functions
  *
  * Revision 1.2  2007/11/22 09:14:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -33,17 +36,14 @@ public class SpringTxManagerProxy implements PlatformTransactionManager, BeanFac
 	private String realTxManagerBeanName;
 	private PlatformTransactionManager realTxManager;
 
-	public final static TransactionDefinition TXREQUIRED = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED);
-	public final static TransactionDefinition TXSUPPORTS = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_SUPPORTS);
-	public final static TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
-	public final static TransactionDefinition TXNOTSUPPORTED = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_NOT_SUPPORTED);
-	public final static TransactionDefinition TXMANDATORY = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_MANDATORY);
-	public final static TransactionDefinition TXNEVER = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_NEVER);
-
 	private boolean trace=false;
 	
-	public static TransactionDefinition getTransactionDefinition(int txOption) {
-		return new DefaultTransactionDefinition(txOption);
+	public static TransactionDefinition getTransactionDefinition(int txOption, int timeout) {
+		DefaultTransactionDefinition result=new DefaultTransactionDefinition(txOption);
+		if (timeout>0) {
+			result.setTimeout(timeout);
+		}
+		return result; 
 	}
 	
 	/* (non-Javadoc)
