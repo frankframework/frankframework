@@ -1,6 +1,10 @@
 /*
  * $Log: SpringJmsConnector.java,v $
- * Revision 1.7  2008-01-29 12:17:26  europe\L190409
+ * Revision 1.8  2008-02-06 16:38:51  europe\L190409
+ * added support for setting of transaction timeout
+ * removed global transaction inserted for jmsTransacted handling
+ *
+ * Revision 1.7  2008/01/29 12:17:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added support for thread number control
  *
  * Revision 1.6  2008/01/17 16:24:47  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -54,10 +58,8 @@ import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.util.Counter;
 import nl.nn.adapterframework.util.JtaUtil;
-import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
@@ -65,9 +67,6 @@ import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.jms.listener.DefaultMessageListenerContainer;
 import org.springframework.jms.listener.SessionAwareMessageListener;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 /**
  * Configure a Spring JMS Container from a {@link nl.nn.adapterframework.jms.PushingJmsListener}.
@@ -87,12 +86,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  * @version Id
  */
 public class SpringJmsConnector extends AbstractJmsConfigurator implements IListenerConnector, IThreadCountControllable, BeanFactoryAware, ExceptionListener, SessionAwareMessageListener {
-	private static final Logger log = LogUtil.getLogger(SpringJmsConnector.class);
-	
-	public static final TransactionDefinition TXREQUIRED = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED);
-    
-	public static final String version="$RCSfile: SpringJmsConnector.java,v $ $Revision: 1.7 $ $Date: 2008-01-29 12:17:26 $";
-    
+
  	private PlatformTransactionManager txManager;
 	private BeanFactory beanFactory;
 	private DefaultMessageListenerContainer jmsContainer;
@@ -130,6 +124,9 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 		if (getReceiver().isTransacted()) {
 			log.debug(getLogPrefix()+"setting transction manager to ["+txManager+"]");
 			jmsContainer.setTransactionManager(txManager);
+			if (getReceiver().getTransactionTimeout()>0) {
+				jmsContainer.setTransactionTimeout(getReceiver().getTransactionTimeout());
+			}
 		} else { 
 			log.debug(getLogPrefix()+"setting no transction manager");
 		}
@@ -207,39 +204,30 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 		Thread.currentThread().setName(getReceiver().getName()+"["+threadsProcessing.getValue()+"]");
                 
 		Map threadContext = new HashMap();
-		TransactionStatus txStatus=null;
-		if (!getReceiver().isTransacted() && jmsContainer.isSessionTransacted()) {
-			txStatus = txManager.getTransaction(TXREQUIRED);
-			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"created transaction to support local JmsTransaction");
-		}
 		try {
 			IPortConnectedListener listener = getListener();
 			threadContext.put("session",session);
 //			if (log.isDebugEnabled()) log.debug("transaction status before: "+JtaUtil.displayTransactionStatus());
 			getReceiver().processRawMessage(listener, message, threadContext);
 //			if (log.isDebugEnabled()) log.debug("transaction status after: "+JtaUtil.displayTransactionStatus());
-			if (txStatus!=null && txStatus.isRollbackOnly()) {
-				log.warn(getLogPrefix()+"received status rollbackonly from not XA transacted receiver, rolling back session");
-				session.rollback(); // als je dit niet doet, dan rolt alleen jms-transacted niet terug
-			}
 		} catch (ListenerException e) {
-			if (getReceiver().isTransacted()) {
+			if (JtaUtil.inTransaction()) {
 				log.warn(getLogPrefix()+"caught exception, setting rollbackonly");
 				JtaUtil.setRollbackOnly();
 			} else {
-				if (txStatus!=null) {
-					log.warn(getLogPrefix()+"caught exception, rolling back JmsTransacted Session");
+				if (jmsContainer.isSessionTransacted()) {
+					log.warn("rolling back JMS session");
 					session.rollback();
 				} else {
 					log.warn(getLogPrefix()+"caught exception, no transactional stuff to rollback, rethrowing ListenerException as JmsException");
 					JMSException jmse = new JMSException(e.getMessage());
 					throw jmse;
 				}
-			}  
+			}
 		} finally {
-			if (txStatus!=null) {
-				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"committing transaction");
-				txManager.commit(txStatus); 
+			if (jmsContainer.isSessionTransacted()) {
+				log.debug(getLogPrefix()+"committing JMS session");
+				session.commit();
 			}
 			threadsProcessing.decrease();
 			
