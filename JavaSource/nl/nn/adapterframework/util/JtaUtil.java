@@ -1,6 +1,9 @@
 /*
  * $Log: JtaUtil.java,v $
- * Revision 1.19  2008-01-30 14:47:54  europe\L190409
+ * Revision 1.20  2008-02-06 16:03:25  europe\L190409
+ * remove non-thrown exceptions
+ *
+ * Revision 1.19  2008/01/30 14:47:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Springification of inTransaction()
  *
  * Revision 1.18  2008/01/17 16:28:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -69,7 +72,6 @@ import java.util.Map;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.transaction.Status;
 import javax.transaction.SystemException;
 import javax.transaction.UserTransaction;
 
@@ -88,7 +90,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  * @since  4.1
  */
 public class JtaUtil {
-	public static final String version="$RCSfile: JtaUtil.java,v $ $Revision: 1.19 $ $Date: 2008-01-30 14:47:54 $";
+	public static final String version="$RCSfile: JtaUtil.java,v $ $Revision: 1.20 $ $Date: 2008-02-06 16:03:25 $";
 	private static Logger log = LogUtil.getLogger(JtaUtil.class);
 	
 	private static final String USERTRANSACTION_URL1_KEY="jta.userTransactionUrl1";
@@ -270,7 +272,7 @@ public class JtaUtil {
 	/** 
 	 * returns true if the current thread is associated with a transaction
 	 */
-	public static boolean inTransaction() throws SystemException, NamingException {
+	public static boolean inTransaction() {
 		return TransactionSynchronizationManager.isSynchronizationActive();
 	}
 
