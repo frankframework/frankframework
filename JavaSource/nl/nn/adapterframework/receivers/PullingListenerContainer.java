@@ -1,6 +1,9 @@
 /*
  * $Log: PullingListenerContainer.java,v $
- * Revision 1.9  2008-01-29 12:14:06  europe\L190409
+ * Revision 1.10  2008-02-06 15:58:38  europe\L190409
+ * added support for setting of transaction timeout
+ *
+ * Revision 1.9  2008/01/29 12:14:06  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added support for thread number control
  *
  * Revision 1.8  2008/01/11 09:54:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -57,7 +60,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 public class PullingListenerContainer implements Runnable {
 	protected Logger log = LogUtil.getLogger(this);
 
-    private final static TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+    private static TransactionDefinition txNew=null;
 
     private ReceiverBaseSpring receiver;
 	private PlatformTransactionManager txManager;
@@ -72,6 +75,13 @@ public class PullingListenerContainer implements Runnable {
     public void configure() {
         if (receiver.getNumThreadsPolling()>0 && receiver.getNumThreadsPolling()<receiver.getNumThreads()) {
             pollToken = new Semaphore(receiver.getNumThreadsPolling());
+        }
+        if (receiver.isTransacted()) {
+			DefaultTransactionDefinition txDef = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+         	if (receiver.getTransactionTimeout()>0) {
+				txDef.setTimeout(receiver.getTransactionTimeout());
+         	}
+			txNew=txDef;
         }
     }
     
@@ -118,7 +128,7 @@ public class PullingListenerContainer implements Runnable {
 						if (permissionToGo && receiver.isInRunState(RunStateEnum.STARTED)) {
 							try {
 								if (receiver.isTransacted()) {
-									txStatus = txManager.getTransaction(TXNEW);
+									txStatus = txManager.getTransaction(txNew);
 //									log.debug("started transaction "+JtaUtil.displayTransactionStatus(txStatus));
 								}
 								rawMessage = listener.getRawMessage(threadContext);

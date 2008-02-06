@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractPipe.java,v $
- * Revision 1.31  2008-01-11 09:47:18  europe\L190409
+ * Revision 1.32  2008-02-06 15:57:09  europe\L190409
+ * added support for setting of transaction timeout
+ *
+ * Revision 1.31  2008/01/11 09:47:18  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * use Springs transaction definition
  *
  * Revision 1.30  2007/12/10 10:08:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -163,6 +166,7 @@ import org.springframework.transaction.TransactionDefinition;
  *   <tr><td colspan="1" rowspan="2">Never</td>       <td>none</td><td>none</td></tr>
  * 											      <tr><td>T1</td>  <td>error</td></tr>
  *  </table></td><td>Supports</td></tr>
+ * <tr><td>{@link #setTransactionTimeout(int) transactionTimeout}</td><td>Timeout (in seconds) of transaction started to process a message.</td><td><code>0</code> (use system default)</code></td></tr>
  * <tr><td>{@link #setBeforeEvent(int) beforeEvent}</td>      <td>METT eventnumber, fired just before a message is processed by this Pipe</td><td>-1 (disabled)</td></tr>
  * <tr><td>{@link #setAfterEvent(int) afterEvent}</td>        <td>METT eventnumber, fired just after message processing by this Pipe is finished</td><td>-1 (disabled)</td></tr>
  * <tr><td>{@link #setExceptionEvent(int) exceptionEvent}</td><td>METT eventnumber, fired when message processing by this Pipe resulted in an exception</td><td>-1 (disabled)</td></tr>
@@ -174,7 +178,7 @@ import org.springframework.transaction.TransactionDefinition;
  * @see nl.nn.adapterframework.core.PipeLineSession
  */
 public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttribute, TracingEventNumbers {
-	public static final String version="$RCSfile: AbstractPipe.java,v $ $Revision: 1.31 $ $Date: 2008-01-11 09:47:18 $";
+	public static final String version="$RCSfile: AbstractPipe.java,v $ $Revision: 1.32 $ $Date: 2008-02-06 15:57:09 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -189,6 +193,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	private boolean preserveInput=false;
 	private boolean namespaceAware=XmlUtils.isNamespaceAwareByDefault();
 	private int transactionAttribute=TransactionDefinition.PROPAGATION_SUPPORTS;
+	private int transactionTimeout=0;
  
 	// METT event numbers
 	private int beforeEvent=-1;
@@ -473,5 +478,11 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 		return active;
 	}
 
+	public void setTransactionTimeout(int i) {
+		transactionTimeout = i;
+	}
+	public int getTransactionTimeout() {
+		return transactionTimeout;
+	}
 
 }

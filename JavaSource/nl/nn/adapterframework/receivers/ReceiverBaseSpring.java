@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBaseSpring.java,v $
- * Revision 1.13  2008-01-29 12:16:16  europe\L190409
+ * Revision 1.14  2008-02-06 16:01:34  europe\L190409
+ * added support for setting of transaction timeout
+ *
+ * Revision 1.13  2008/01/29 12:16:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added support for thread number control
  * call afterMessageProcessed after moving to error store under XA
  *
@@ -311,10 +314,11 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  * <tr><td>{@link #setStyleSheetName(String) styleSheetName}</td>  <td></td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setOnError(String) onError}</td><td>one of 'continue' or 'close'. Controls the behaviour of the receiver when it encounters an error sending a reply or receives an exception asynchronously</td><td>continue</td></tr>
  * <tr><td>{@link #setReturnedSessionKeys(String) returnedSessionKeys}</td><td>comma separated list of keys of session variables that should be returned to caller, for correct results as well as for erronous results. (Only for listeners that support it, like JavaListener)</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setTransacted(boolean) transacted}</td><td>if set to <code>true, messages will be received and processed under transaction control. If processing fails, messages will be sent to the error-sender. (see below)</code></td><td><code>false</code></td></tr>
- * <tr><td>{@link #setMaxRetries(int) maxRetries}</td><td>The number of times a pulling listening attempt is retried after an exception is caught</td><td>3</td></tr>
- * <tr><td>{@link #setCheckForDuplicates(boolean) checkForDuplicates}</td><td>if set to <code>true, each message is checked for presence in the message log. If already present, it is not processed again. (only required for non XA compatible messaging). Requires messagelog!</code></td><td><code>false</code></td></tr>
- * <tr><td>{@link #setIbis42compatibility(boolean) ibis42compatibility}</td><td>if set to <code>true, the result of a failed processing of a message is a formatted errormessage. Otherwise a listener specific error handling is performed</code></td><td><code>false</code></td></tr>
+ * <tr><td>{@link #setTransacted(boolean) transacted}</td><td>if set to <code>true</code>, messages will be received and processed under transaction control. If processing fails, messages will be sent to the error-sender. (see below)</code></td><td><code>false</code></td></tr>
+ * <tr><td>{@link #setTransactionTimeout(int) transactionTimeout}</td><td>Timeout (in seconds) of transaction started to receive and process a message.</td><td><code>0</code> (use system default)</code></td></tr>
+ * <tr><td>{@link #setMaxRetries(int) maxRetries}</td><td>The number of times a processing attempt is retried after an exception is caught or rollback is experienced</td><td>2</td></tr>
+ * <tr><td>{@link #setCheckForDuplicates(boolean) checkForDuplicates}</td><td>if set to <code>true</code>, each message is checked for presence in the message log. If already present, it is not processed again. (only required for non XA compatible messaging). Requires messagelog!</code></td><td><code>false</code></td></tr>
+ * <tr><td>{@link #setIbis42compatibility(boolean) ibis42compatibility}</td><td>if set to <code>true</code>, the result of a failed processing of a message is a formatted errormessage. Otherwise a listener specific error handling is performed</code></td><td><code>false</code></td></tr>
  * <tr><td>{@link #setBeforeEvent(int) beforeEvent}</td>      <td>METT eventnumber, fired just before a message is processed by this Receiver</td><td>-1 (disabled)</td></tr>
  * <tr><td>{@link #setAfterEvent(int) afterEvent}</td>        <td>METT eventnumber, fired just after message processing by this Receiver is finished</td><td>-1 (disabled)</td></tr>
  * <tr><td>{@link #setExceptionEvent(int) exceptionEvent}</td><td>METT eventnumber, fired when message processing by this Receiver resulted in an exception</td><td>-1 (disabled)</td></tr>
@@ -369,7 +373,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  */
 public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMessageHandler, IbisExceptionListener, HasSender, TracingEventNumbers, IThreadCountControllable, BeanFactoryAware {
     
-	public static final String version="$RCSfile: ReceiverBaseSpring.java,v $ $Revision: 1.13 $ $Date: 2008-01-29 12:16:16 $";
+	public static final String version="$RCSfile: ReceiverBaseSpring.java,v $ $Revision: 1.14 $ $Date: 2008-02-06 16:01:34 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -396,6 +400,7 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 	public static final String ONERROR_CLOSE = "close";
 
 	private boolean active=true;
+	private int transactionTimeout=0;
 
 	private String name;
 	private String onError = ONERROR_CONTINUE; 
@@ -1826,6 +1831,13 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 	}
 	public boolean isCheckForDuplicates() {
 		return checkForDuplicates;
+	}
+
+	public void setTransactionTimeout(int i) {
+		transactionTimeout = i;
+	}
+	public int getTransactionTimeout() {
+		return transactionTimeout;
 	}
 
 }
