@@ -1,6 +1,9 @@
 /*
  * $Log: HasTransactionAttribute.java,v $
- * Revision 1.2  2006-08-21 15:06:51  europe\L190409
+ * Revision 1.3  2008-02-06 15:48:47  europe\L190409
+ * added support for setting of transaction timeout
+ *
+ * Revision 1.2  2006/08/21 15:06:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected version string
  *
  * Revision 1.1  2006/08/21 15:05:23  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -35,8 +38,10 @@ package nl.nn.adapterframework.core;
  * @since   4.5
  */
 public interface HasTransactionAttribute {
-	public static final String version = "$RCSfile: HasTransactionAttribute.java,v $ $Revision: 1.2 $ $Date: 2006-08-21 15:06:51 $";
+	public static final String version = "$RCSfile: HasTransactionAttribute.java,v $ $Revision: 1.3 $ $Date: 2008-02-06 15:48:47 $";
 
 	public String getTransactionAttribute();
 	public int getTransactionAttributeNum();
+
+	public int getTransactionTimeout();
 }
