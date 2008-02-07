@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBaseSpring.java,v $
- * Revision 1.14  2008-02-06 16:01:34  europe\L190409
+ * Revision 1.15  2008-02-07 11:47:24  europe\L190409
+ * removed unnessecary cast to serializable
+ *
+ * Revision 1.14  2008/02/06 16:01:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added support for setting of transaction timeout
  *
  * Revision 1.13  2008/01/29 12:16:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -373,7 +376,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  */
 public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMessageHandler, IbisExceptionListener, HasSender, TracingEventNumbers, IThreadCountControllable, BeanFactoryAware {
     
-	public static final String version="$RCSfile: ReceiverBaseSpring.java,v $ $Revision: 1.14 $ $Date: 2008-02-06 16:01:34 $";
+	public static final String version="$RCSfile: ReceiverBaseSpring.java,v $ $Revision: 1.15 $ $Date: 2008-02-07 11:47:24 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -1291,7 +1294,7 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 			// to error location (OR LOST!)
 			log.error("receiver ["+getName()+"] message with id ["+messageId+"] retry count exceeded;");
 			//removeMessageRetryCount(messageId);
-			moveInProcessToError(messageId, correlationId, message, new Date(startProcessingTimestamp), errorMessage, (Serializable) rawMessage, TXNEW);
+			moveInProcessToError(messageId, correlationId, message, new Date(startProcessingTimestamp), errorMessage, rawMessage, TXNEW);
 			return false;
 		}
 	}
