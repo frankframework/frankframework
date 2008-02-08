@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBaseSpring.java,v $
- * Revision 1.15  2008-02-07 11:47:24  europe\L190409
+ * Revision 1.16  2008-02-08 09:49:22  europe\L190409
+ * cacheProcessResult for non-transacted too
+ *
+ * Revision 1.15  2008/02/07 11:47:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed unnessecary cast to serializable
  *
  * Revision 1.14  2008/02/06 16:01:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -376,7 +379,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  */
 public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMessageHandler, IbisExceptionListener, HasSender, TracingEventNumbers, IThreadCountControllable, BeanFactoryAware {
     
-	public static final String version="$RCSfile: ReceiverBaseSpring.java,v $ $Revision: 1.15 $ $Date: 2008-02-07 11:47:24 $";
+	public static final String version="$RCSfile: ReceiverBaseSpring.java,v $ $Revision: 1.16 $ $Date: 2008-02-08 09:49:22 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -1119,16 +1122,13 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 				}
 			}
 		} finally {
-			if (isTransacted()) {
-				cacheProcessResult(messageId, correlationId, errorMessage, new Date(startProcessingTimestamp));
-			} else { 
-				if (messageInError) {
-					// NB: Because the below happens from a finally-clause, any
-					// exception that has occurred will still be propagated even
-					// if we decide not to retry the message.
-					// This should perhaps be avoided
-					retryOrErrorStorage(rawMessage, startProcessingTimestamp, txStatus, errorMessage, message, messageId, correlationId, retry);
-				}
+			cacheProcessResult(messageId, correlationId, errorMessage, new Date(startProcessingTimestamp));
+			if (!isTransacted() && messageInError) {
+				// NB: Because the below happens from a finally-clause, any
+				// exception that has occurred will still be propagated even
+				// if we decide not to retry the message.
+				// This should perhaps be avoided
+				retryOrErrorStorage(rawMessage, startProcessingTimestamp, txStatus, errorMessage, message, messageId, correlationId, retry);
 			}
 			try {
 				// TODO: Should this be done in a finally, unconditionally?
@@ -1216,7 +1216,7 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 
 	private boolean checkTryCount(String messageId, boolean retry, Object rawMessage, String message, Map threadContext) throws ListenerException {
 		if (!retry) {
-			if (isTransacted()) {
+//			if (isTransacted()) {
 				ProcessResultCacheItem prci = getCachedProcessResult(messageId);
 				if (prci==null) {
 					return false;
@@ -1227,7 +1227,9 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 				}
 				log.warn(getLogPrefix()+"message with messageId ["+messageId+" has already been processed ["+prci.tryCount+"] times, will not try again");
 				if (prci.tryCount<=getMaxRetries()+2) {
-					moveInProcessToError(messageId, prci.correlationId, message, prci.receiveDate, prci.comments, rawMessage, TXREQUIRED);
+					if (isTransacted() || (getErrorStorage() != null && !getErrorStorage().containsMessageId(messageId))) {
+						moveInProcessToError(messageId, prci.correlationId, message, prci.receiveDate, prci.comments, rawMessage, TXREQUIRED);
+					}
 					PipeLineResult plr = new PipeLineResult();
 					plr.setResult("<error>"+prci.comments+"</error>");
 					plr.setState("ERROR");
@@ -1237,14 +1239,14 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 				}
 				prci.tryCount++;
 				return true;
-			} else {
-				if (isMessageIdInPoisonCache(messageId)) {
-					return true;
-				}
-				if (getErrorStorage() != null && getErrorStorage().containsMessageId(messageId)) {
-					return true;
-				}
-			}
+//			} else {
+//				if (isMessageIdInPoisonCache(messageId)) {
+//					return true;
+//				}
+//				if (getErrorStorage() != null && getErrorStorage().containsMessageId(messageId)) {
+//					return true;
+//				}
+//			}
 		}
 		if (isCheckForDuplicates() && getMessageLog()!= null && getMessageLog().containsMessageId(messageId)) {
 			return true;
