@@ -1,6 +1,9 @@
 /*
  * $Log: ConfigurationServlet.java,v $
- * Revision 1.13  2007-12-10 10:24:16  europe\L190409
+ * Revision 1.14  2008-02-08 09:50:47  europe\L190409
+ * loadConfig in a separate method
+ *
+ * Revision 1.13  2007/12/10 10:24:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * style fix
  *
  * Revision 1.12  2007/11/22 09:18:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -83,7 +86,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class ConfigurationServlet extends HttpServlet {
-	public static final String version = "$RCSfile: ConfigurationServlet.java,v $ $Revision: 1.13 $ $Date: 2007-12-10 10:24:16 $";
+	public static final String version = "$RCSfile: ConfigurationServlet.java,v $ $Revision: 1.14 $ $Date: 2008-02-08 09:50:47 $";
     protected Logger log = LogUtil.getLogger(this);
 
 	public static final String KEY_MANAGER = "KEY_MANAGER";
@@ -147,7 +150,13 @@ public class ConfigurationServlet extends HttpServlet {
 		response.setHeader("Cache-Control","no-store, no-cache, must-revalidate");
 		response.setHeader("Pragma","no-cache");
     }
-    
+
+	public void init() throws ServletException {
+		super.init();
+		loadConfig();
+		log.debug("Servlet init finished");
+	}
+   
     /**
      * Initializes the configuration. Request parameters are used.
      * Request parameters:
@@ -160,15 +169,10 @@ public class ConfigurationServlet extends HttpServlet {
      * @param  request  the request
      * @param  response  the response
      */
-    public void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws IOException, ServletException {
+    public void doGet(HttpServletRequest request, HttpServletResponse response)  throws IOException, ServletException {
         String commandIssuedBy = " remoteHost [" + request.getRemoteHost() + "]";
         commandIssuedBy += " remoteAddress [" + request.getRemoteAddr() + "]";
         commandIssuedBy += " remoteUser [" + request.getRemoteUser() + "]";
-
-        String configurationFile = request.getParameter("configurationFile");
-        String autoStart = request.getParameter("autoStart");
-        String springContext = request.getParameter("springContext");
 
         log.warn("ConfigurationServlet initiated by " + commandIssuedBy);
 		noCache(response);
@@ -176,29 +180,45 @@ public class ConfigurationServlet extends HttpServlet {
         out.println("<html>");
         out.println("<body>");
 
-
-        if (areAdaptersStopped()) {
-            IbisMain im=new IbisMain();
-            boolean success = im.initConfig(springContext, configurationFile, autoStart);
-            if (success) {
-                out.println("<p> Configuration successfully completed</p></body>");
-            } else {
-                out.println("<p> Errors occured during configuration. Please, examine logfiles</p>");
-                if (StringUtils.isNotEmpty(lastErrorMessage)) {
-					out.println("<p>"+lastErrorMessage+"</p>");
-                }
-            }
-            ServletContext ctx = getServletContext();
-            ctx.setAttribute(AppConstants.getInstance().getProperty(KEY_MANAGER), im.getIbisManager());
-        } else {
-            out.println(
-                    "<p>Action cancelled: some adapters are still running.</p>");
-        }
+		if (loadConfig()) {
+			out.println("<p> Configuration successfully completed</p></body>");
+		} else {
+			out.println("<p> Errors occured during configuration. Please, examine logfiles</p>");
+			if (StringUtils.isNotEmpty(lastErrorMessage)) {
+				out.println("<p>"+lastErrorMessage+"</p>");
+			}
+		}
         out.println("Click <a href=\"" + request.getContextPath() + "\">" + "here</a> to return");
         out.println("</body>");
         out.println("</html>");
 
     }
+ 
+	private boolean loadConfig() {
+		if (areAdaptersStopped()) {
+			IbisMain im = new IbisMain();
+			String configurationFile = getInitParameter("configuration");
+			String autoStart = getInitParameter("autoStart");
+			String springContext = getInitParameter("springContext");
+			boolean success = im.initConfig(springContext, configurationFile, autoStart);
+			if (success) {
+				log.info("Configuration succeeded");
+			} else {
+				log.warn("Configuration did not succeed, please examine log");
+			}
+			ServletContext ctx = getServletContext();
+			String attributeKey = AppConstants.getInstance().getResolvedProperty(KEY_MANAGER);
+			ctx.setAttribute(attributeKey, im.getIbisManager());
+			log.debug("stored IbisManager [" + ClassUtils.nameOf(im.getIbisManager()) + "]["+ im.getIbisManager() + "] in ServletContext under key ["+ attributeKey	+ "]");
+			return success;
+		} else {
+			log.warn("Not all adapters are stopped, cancelling ConfigurationServlet");
+			lastErrorMessage= "Action cancelled: some adapters are still running.";
+			return false;
+		}
+	}
+  
+
     
     public Configuration getConfiguration() {
         ServletContext ctx = getServletContext();
@@ -215,35 +235,6 @@ public class ConfigurationServlet extends HttpServlet {
         IbisManager manager = null;
         manager = (IbisManager) ctx.getAttribute(AppConstants.getInstance().getResolvedProperty(KEY_MANAGER));
         return manager;
-    }
-    
-    /**
-     *  Initialize Servlet.
-     *
-     */
-    public void init() throws ServletException {
-        super.init();
-        IbisMain im=new IbisMain();
-        String configurationFile = getInitParameter("configuration");
-        String autoStart = getInitParameter("autoStart");
-        String springContext = getInitParameter("springContext");
-        
-        if (areAdaptersStopped()) {
-            boolean success = im.initConfig(springContext, configurationFile, autoStart);
-            if (success) {
-				log.info("Configuration succeeded");
-            }
-            else {
-				log.warn("Configuration did not succeed, please examine log");
-            }
-            ServletContext ctx = getServletContext();
-            String attributeKey=AppConstants.getInstance().getResolvedProperty(KEY_MANAGER);
-            ctx.setAttribute(attributeKey, im.getIbisManager());
-			log.debug("stored IbisManager ["+ClassUtils.nameOf(im.getIbisManager())+"]["+im.getIbisManager()+"] in ServletContext under key ["+attributeKey+"]");
-            log.debug("Servlet init finished");
-        } else
-            log.warn("Not all adapters are stopped, cancelling ConfigurationServlet");
-
     }
     
 }
