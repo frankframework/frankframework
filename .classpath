@@ -40,8 +40,8 @@
     <classpathentry kind="lib" path="IFSAProviderEJB.jar"/>
     <classpathentry kind="lib" path="IFSARequestorEJB.jar"/>
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/IbisServiceDispatcher-1.1.jar"/>
-    <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/spring-2.5.0.jar"/>
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/sapidoc-1.0.1.jar"/>
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/sapidocjco-1.0.2.jar"/>
+    <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/spring-2.5.1.jar"/>
     <classpathentry kind="output" path="bin"/>
 </classpath>
