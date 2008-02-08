@@ -1,6 +1,9 @@
 /*
  * $Log: PushingJmsListener.java,v $
- * Revision 1.11  2008-02-06 16:37:02  europe\L190409
+ * Revision 1.12  2008-02-08 09:48:29  europe\L190409
+ * reintroduced rollback for states other than commitOnState
+ *
+ * Revision 1.11  2008/02/06 16:37:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * disabled use of commitOnState
  *
  * Revision 1.10  2008/01/29 12:20:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -100,15 +103,73 @@ import nl.nn.adapterframework.core.PipeLineResult;
  * JMSListener re-implemented as a pushing listener rather than a pulling listener.
  * The JMS messages have to come in from an external source: an MDB or a Spring
  * message container.
+ *
+ * <p><b>Configuration:</b>
+ * <table border="1">
+ * <tr><th>attributes</th><th>description</th><th>default</th></tr>
+ * <tr><td>className</td><td>nl.nn.adapterframework.jms.JmsListener</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setName(String) name}</td>  <td>name of the listener</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setDestinationName(String) destinationName}</td><td>name of the JMS destination (queue or topic) to use</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setDestinationType(String) destinationType}</td><td>either <code>QUEUE</code> or <code>TOPIC</code></td><td><code>QUEUE</code></td></tr>
+ * <tr><td>{@link #setJmsTransacted(boolean) jmsTransacted}</td><td><i>Deprecated</i> when true, sessions are explicitly committed (exit-state equals commitOnState) or rolled-back (other exit-states). Please do not use this mechanism, but control transactions using <code>transactionAttribute</code>s.</td><td>false</td></tr>
+ * <tr><td>{@link #setCommitOnState(String) commitOnState}</td><td><i>Deprecated</i> exit state to control commit or rollback of jmsSession. Only used if <code>jmsTransacted</code> is set true.</td><td>"success"</td></tr>
+ * <tr><td>{@link #setAcknowledgeMode(String) acknowledgeMode}</td><td>"auto", "dups" or "client"</td><td>"auto"</td></tr>
+ * <tr><td>{@link #setPersistent(boolean) persistent}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setTimeOut(long) timeOut}</td><td>receiver timeout, in milliseconds</td><td>3000 [ms]</td></tr>
+ * <tr><td>{@link #setUseReplyTo(boolean) useReplyTo}</td><td>&nbsp;</td><td>true</td></tr>
+ * <tr><td>{@link #setReplyMessageTimeToLive(long) replyMessageTimeToLive}</td><td>time that replymessage will live</td><td>0 [ms]</td></tr>
+ * <tr><td>{@link #setReplyMessageType(String) replyMessageType}</td><td>value of the JMSType field of the reply message</td><td>not set by application</td></tr>
+ * <tr><td>{@link #setReplyDeliveryMode(String) replyDeliveryMode}</td><td>controls mode that reply messages are sent with: either 'persistent' or 'non_persistent'</td><td>not set by application</td></tr>
+ * <tr><td>{@link #setReplyPriority(int) replyPriority}</td><td>sets the priority that is used to deliver the reply message. ranges from 0 to 9. Defaults to -1, meaning not set. Effectively the default priority is set by Jms to 4</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setForceMQCompliancy(String) forceMQCompliancy}</td><td>Possible values: 'MQ' or 'JMS'. Setting to 'MQ' informs the MQ-server that the replyto queue is not JMS compliant.</td><td>JMS</td></tr>
+ * <tr><td>{@link #setForceMessageIdAsCorrelationId(boolean) forceMessageIdAsCorrelationId}</td><td>
+ * forces that the CorrelationId that is received is ignored and replaced by the messageId that is received. Use this to create a new, globally unique correlationId to be used downstream. It also
+ * forces that not the Correlation ID of the received message is used in a reply as CorrelationId, but the MessageId.</td><td>false</td></tr>
+ * </table>
+ *</p><p><b>Using transactions</b><br/>
+ * This version of the <code>JmsListener</code> supports distributed transactions using the XA-protocol.
+ * No special action is required to have the listener join the transaction. 
  * 
- * Configuration is same as JmsListener / PullingJmsListener.
+ *</p><p><b>Using jmsTransacted and acknowledgement</b><br/>
+ * If jmsTransacted is set <code>true</code>, it should ensure that a message is received and processed on
+ * a both or nothing basis. IBIS will commit the the message, otherwise perform rollback. However, using 
+ * jmsTransacted, IBIS does not bring transactions within the adapters under transaction control, 
+ * compromising the idea of atomic transactions. In the roll-back situation messages sent to other 
+ * destinations within the Pipeline are NOT rolled back if jmsTransacted is set <code>true</code>! In 
+ * the failure situation the message is therefore completely processed, and the roll back does not mean 
+ * that the processing is rolled back! To obtain the correct (transactional) behaviour, set 
+ * <code>transacted</code>="true" for the enclosing Receiver. Do not use jmsTransacted for any new situation.
+ * 
+ *<p>
+ * Setting {@link #setAcknowledgeMode(String) listener.acknowledgeMode} to "auto" means that messages are allways acknowledged (removed from
+ * the queue, regardless of what the status of the Adapter is. "client" means that the message will only be removed from the queue
+ * when the state of the Adapter equals the defined state for committing (specified by {@link #setCommitOnState(String) listener.commitOnState}).
+ * The "dups" mode instructs the session to lazily acknowledge the delivery of the messages. This is likely to result in the
+ * delivery of duplicate messages if JMS fails. It should be used by consumers who are tolerant in processing duplicate messages. 
+ * In cases where the client is tolerant of duplicate messages, some enhancement in performance can be achieved using this mode, 
+ * since a session has lower overhead in trying to prevent duplicate messages.
+ * </p>
+ * <p>The setting for {@link #setAcknowledgeMode(String) listener.acknowledgeMode} will only be processed if 
+ * the setting for {@link #setTransacted(boolean) listener.transacted} as well as for 
+ * {@link #setJmsTransacted(boolean) listener.jmsTransacted} is false.</p>
+ * 
+ * <p>If {@link #setUseReplyTo(boolean) useReplyTo} is set and a replyTo-destination is
+ * specified in the message, the JmsListener sends the result of the processing
+ * in the pipeline to this destination. Otherwise the result is sent using the (optionally)
+ * specified {@link #setSender(ISender) Sender}, that in turn sends the message to
+ * whatever it is configured to.</p>
+ * 
+ * <p><b>Notice:</b> the JmsListener is ONLY capable of processing
+ * <code>javax.jms.TextMessage</code>s <br/><br/>
+ * </p>
  * 
  * @author  Tim van der Leeuw
  * @since   4.8
  * @version Id
  */
 public class PushingJmsListener extends JMSFacade implements IPortConnectedListener, IThreadCountControllable {
-    public static final String version="$RCSfile: PushingJmsListener.java,v $ $Revision: 1.11 $ $Date: 2008-02-06 16:37:02 $";
+    public static final String version="$RCSfile: PushingJmsListener.java,v $ $Revision: 1.12 $ $Date: 2008-02-08 09:48:29 $";
 
 	private final static String THREAD_CONTEXT_SESSION_KEY="session";
 
@@ -196,8 +257,8 @@ public class PushingJmsListener extends JMSFacade implements IPortConnectedListe
 				log.debug("sending reply message with correlationID[" + cid + "], replyTo [" + replyTo.toString()+ "]");
 				long timeToLive = getReplyMessageTimeToLive();
 				if (timeToLive == 0) {
-					Message messageSent=(Message)rawMessage;
-					long expiration=messageSent.getJMSExpiration();
+					Message messageReceived=(Message)rawMessage;
+					long expiration=messageReceived.getJMSExpiration();
 					if (expiration!=0) {
 						timeToLive=expiration-new Date().getTime();
 						if (timeToLive<=0) {
@@ -220,6 +281,15 @@ public class PushingJmsListener extends JMSFacade implements IPortConnectedListe
 				}
 			}
         
+        	if (plr!=null && isJmsTransacted() && StringUtils.isNotEmpty(getCommitOnState()) && 
+	        		!getCommitOnState().equals(plr.getState())) {
+	        	if (session==null) {
+					log.error(getLogPrefix()+"session is null, cannot roll back session");
+	        	} else {
+					log.warn(getLogPrefix()+"got exit state ["+plr.getState()+"], rolling back session");
+					session.rollback();
+	        	}
+        	}
 		} catch (Exception e) {
 			if (e instanceof ListenerException) {
 				throw (ListenerException)e;
@@ -387,7 +457,6 @@ public class PushingJmsListener extends JMSFacade implements IPortConnectedListe
 	 */
 	public void setCommitOnState(String newCommitOnState) throws ConfigurationException {
 		commitOnState = newCommitOnState;
-		throw new ConfigurationException(getLogPrefix()+"setting commitOnState is no longer supported for JmsListener. Please change to commitOnState on PipeLine and a transacted Receiver");
 	}
 	public String getCommitOnState() {
 		return commitOnState;
