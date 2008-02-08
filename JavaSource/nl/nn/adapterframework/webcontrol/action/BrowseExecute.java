@@ -1,6 +1,9 @@
 /*
  * $Log: BrowseExecute.java,v $
- * Revision 1.7  2008-01-11 14:56:13  europe\L190409
+ * Revision 1.8  2008-02-08 09:49:58  europe\L190409
+ * log errors for retry attempts
+ *
+ * Revision 1.7  2008/01/11 14:56:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * resend using retry function of receiver
  *
  * Revision 1.6  2007/12/10 10:25:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -51,7 +54,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  * @since   4.3
  */
 public class BrowseExecute extends Browse {
-	public static final String version="$RCSfile: BrowseExecute.java,v $ $Revision: 1.7 $ $Date: 2008-01-11 14:56:13 $";
+	public static final String version="$RCSfile: BrowseExecute.java,v $ $Revision: 1.8 $ $Date: 2008-02-08 09:49:58 $";
     
     protected static final TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
     
@@ -138,6 +141,7 @@ public class BrowseExecute extends Browse {
 //	}
 
 	private void error(String key, String category, String message, Throwable t) {
+		log.warn(message,t);
 		if (t!=null) {
 			message+=": "+ClassUtils.nameOf(t)+" "+t.getMessage();
 		}
