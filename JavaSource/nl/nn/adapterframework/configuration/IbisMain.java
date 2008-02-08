@@ -1,6 +1,9 @@
 /*
  * $Log: IbisMain.java,v $
- * Revision 1.7  2007-12-28 08:54:23  europe\L190409
+ * Revision 1.8  2008-02-08 09:47:28  europe\L190409
+ * cosmetic changes
+ *
+ * Revision 1.7  2007/12/28 08:54:23  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * made fields private
  *
  * Revision 1.6  2007/10/16 13:18:03  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
@@ -69,11 +72,6 @@ public class IbisMain {
     
     private ListableBeanFactory beanFactory;
     private IbisManager ibisManager;
-    
-	public static void main(String[] args) {
-        IbisMain im=new IbisMain();
-        im.initConfig(IbisMain.DFLT_SPRING_CONTEXT, IbisManager.DFLT_CONFIGURATION, IbisMain.DFLT_AUTOSTART);
-	}
     
 	/**
 	 * Initialize Ibis with all default parameters.
@@ -186,6 +184,11 @@ public class IbisMain {
 
 	public IbisManager getIbisManager() {
 		return ibisManager;
+	}
+
+	public static void main(String[] args) {
+		IbisMain im=new IbisMain();
+		im.initConfig(IbisMain.DFLT_SPRING_CONTEXT, IbisManager.DFLT_CONFIGURATION, IbisMain.DFLT_AUTOSTART);
 	}
 
 }
