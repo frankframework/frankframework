@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaRequesterSender.java,v $
- * Revision 1.4  2008-01-30 15:11:14  europe\L190409
+ * Revision 1.5  2008-02-13 12:55:24  europe\L190409
+ * show detailed processing times
+ *
+ * Revision 1.4  2008/01/30 15:11:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * simplified transaction checking
  *
  * Revision 1.3  2008/01/11 14:50:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -123,14 +126,12 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.JtaUtil;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
 
+import com.ing.ifsa.IFSAMessage;
 import com.ing.ifsa.IFSAQueue;
 import com.ing.ifsa.IFSAReportMessage;
 import com.ing.ifsa.IFSATimeOutMessage;
@@ -167,7 +168,7 @@ import com.ing.ifsa.IFSATimeOutMessage;
  * @since  4.2
  */
 public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParameters {
-	public static final String version="$RCSfile: IfsaRequesterSender.java,v $ $Revision: 1.4 $ $Date: 2008-01-30 15:11:14 $";
+	public static final String version="$RCSfile: IfsaRequesterSender.java,v $ $Revision: 1.5 $ $Date: 2008-02-13 12:55:24 $";
  
 	protected ParameterList paramList = null;
 
@@ -338,6 +339,7 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 
 			log.debug(getLogPrefix()+"sending message");
 
+			long timestampBeforeSend = System.currentTimeMillis();
 		    TextMessage sentMessage=sendMessage(session, sender, message, udzMap);
 			log.debug(getLogPrefix()+"message sent");
 
@@ -345,6 +347,34 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 		
 				log.debug(getLogPrefix()+"waiting for reply");
 				Message msg=getRawReplyMessage(session, queue, sentMessage);
+				if (log.isInfoEnabled()) {
+					try {
+						long timestampAfterRcvd = System.currentTimeMillis();
+						long jmsTimestampSent = sentMessage.getJMSTimestamp();
+						long jmsTimestampRcvd = msg.getJMSTimestamp();
+						long businessProcStartSent=0;
+//						long businessProcFinishSent=0;
+//						long businessProcStartRcvd=0;
+						long businessProcFinishRcvd=0;
+						if (sentMessage instanceof IFSAMessage) {
+							businessProcStartSent=((IFSAMessage)sentMessage).getBusinessProcessingStartTime();
+//							businessProcFinishSent=((IFSAMessage)sentMessage).getBusinessProcessingFinishTime();
+						}
+						if (msg instanceof IFSAMessage) {
+//							businessProcStartRcvd=((IFSAMessage)msg).getBusinessProcessingStartTime();
+							businessProcFinishRcvd=((IFSAMessage)msg).getBusinessProcessingFinishTime();
+						}
+						log.info(getLogPrefix()+"A) timestampBeforeSend    ["+DateUtils.format(timestampBeforeSend)+"]");
+						log.info(getLogPrefix()+"B) jmsTimestampSent       ["+DateUtils.format(jmsTimestampSent)      +"] diff ["+(jmsTimestampSent-timestampBeforeSend)+"]");
+						log.info(getLogPrefix()+"C) businessProcStartSent  ["+DateUtils.format(businessProcStartSent) +"] diff ["+(businessProcStartSent-jmsTimestampSent)+"]");
+						log.info(getLogPrefix()+"D) jmsTimestampRcvd       ["+DateUtils.format(jmsTimestampRcvd)      +"] diff ["+(jmsTimestampRcvd-businessProcStartSent)+"]");
+						log.info(getLogPrefix()+"E) businessProcFinishRcvd ["+DateUtils.format(businessProcFinishRcvd)+"] diff ["+(businessProcFinishRcvd-jmsTimestampRcvd)+"] (=time spend on IFSA bus sending result?)");
+						log.info(getLogPrefix()+"F) timestampAfterRcvd     ["+DateUtils.format(timestampAfterRcvd)    +"] diff ["+(timestampAfterRcvd-businessProcFinishRcvd)+"] ");
+						log.info(getLogPrefix()+"business processing time (E-C) ["+(businessProcFinishRcvd-businessProcStartSent)+"] ");
+					} catch (JMSException e) {
+						log.warn(getLogPrefix()+"exception determining processing times",e);
+					}
+				}
 				if (msg instanceof TextMessage) {
 					result = ((TextMessage)msg).getText();
 				} else {
