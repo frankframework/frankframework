@@ -1,6 +1,9 @@
 /*
  * $Log: ConfigurationServlet.java,v $
- * Revision 1.14  2008-02-08 09:50:47  europe\L190409
+ * Revision 1.15  2008-02-13 13:37:11  europe\L190409
+ * renamed IbisMain to IbisContext
+ *
+ * Revision 1.14  2008/02/08 09:50:47  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * loadConfig in a separate method
  *
  * Revision 1.13  2007/12/10 10:24:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -59,7 +62,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import nl.nn.adapterframework.configuration.Configuration;
-import nl.nn.adapterframework.configuration.IbisMain;
+import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.util.AppConstants;
@@ -86,7 +89,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class ConfigurationServlet extends HttpServlet {
-	public static final String version = "$RCSfile: ConfigurationServlet.java,v $ $Revision: 1.14 $ $Date: 2008-02-08 09:50:47 $";
+	public static final String version = "$RCSfile: ConfigurationServlet.java,v $ $Revision: 1.15 $ $Date: 2008-02-13 13:37:11 $";
     protected Logger log = LogUtil.getLogger(this);
 
 	public static final String KEY_MANAGER = "KEY_MANAGER";
@@ -196,7 +199,7 @@ public class ConfigurationServlet extends HttpServlet {
  
 	private boolean loadConfig() {
 		if (areAdaptersStopped()) {
-			IbisMain im = new IbisMain();
+			IbisContext im = new IbisContext();
 			String configurationFile = getInitParameter("configuration");
 			String autoStart = getInitParameter("autoStart");
 			String springContext = getInitParameter("springContext");
