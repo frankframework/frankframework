@@ -1,6 +1,9 @@
 /*
  * $Log: XsltPipe.java,v $
- * Revision 1.25  2007-08-03 08:48:06  europe\L190409
+ * Revision 1.26  2008-02-13 13:36:27  europe\L190409
+ * made indent optional for skipEmptyTags
+ *
+ * Revision 1.25  2007/08/03 08:48:06  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed unused imports
  *
  * Revision 1.24  2007/07/26 16:23:08  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -66,6 +69,7 @@ import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.TransformerPool;
+import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -92,6 +96,7 @@ import org.apache.commons.lang.StringUtils;
  * the same as the input (the xml). If NOT specified, the result of the xpath expression 
  * will be the result of this pipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSkipEmptyTags(boolean) skipEmptyTags}</td><td>when set <code>true</code> empty tags in the output are removed</td><td>false</td></tr>
+ * <tr><td>{@link #setIndentXml(boolean) indentXml}</td><td>when set <code>true</code>, result is pretty-printed. (only used when <code>skipEmptyTags="true"</code>)</td><td>true</td></tr>
  * </table>
  * <table border="1">
  * <tr><th>nested elements</th><th>description</th></tr>
@@ -110,28 +115,19 @@ import org.apache.commons.lang.StringUtils;
  */
 
 public class XsltPipe extends FixedForwardPipe {
-	public static final String version="$RCSfile: XsltPipe.java,v $ $Revision: 1.25 $ $Date: 2007-08-03 08:48:06 $";
+	public static final String version="$RCSfile: XsltPipe.java,v $ $Revision: 1.26 $ $Date: 2008-02-13 13:36:27 $";
 
 	private TransformerPool transformerPool;
 	private String xpathExpression=null;
 	private String outputType="text";
 	private String styleSheetName;
 	private boolean omitXmlDeclaration=true;
+	private boolean indentXml=true;
 	private String sessionKey=null;
 	private boolean skipEmptyTags=false;
 
 	private TransformerPool transformerPoolSkipEmptyTags;
-	private static String skipEmptyTags_xslt =
-		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"1.0\">"
-			+ "<xsl:output method=\"xml\" indent=\"yes\" omit-xml-declaration=\"yes\"/>"
-			+ "<xsl:strip-space elements=\"*\"/>"
-			+ "<xsl:template match=\"* [.//text()] | text()|@*|comment()|processing-instruction()\">"
-			+ "<xsl:copy>"
-			+ "<xsl:apply-templates select=\"*|@*|comment()|processing-instruction()|text()\"/>"
-			+ "</xsl:copy>"
-			+ "</xsl:template>"
-			+ "</xsl:stylesheet>";
-	
+
 	
 	/**
 	 * The <code>configure()</code> method instantiates a transformer for the specified
@@ -143,6 +139,7 @@ public class XsltPipe extends FixedForwardPipe {
 	
 		transformerPool = TransformerPool.configureTransformer(getLogPrefix(null), getXpathExpression(), getStyleSheetName(), getOutputType(), !isOmitXmlDeclaration(), getParameterList());
 		if (isSkipEmptyTags()) {
+			String skipEmptyTags_xslt = XmlUtils.makeSkipEmptyTagsXslt(isOmitXmlDeclaration(),isIndentXml());
 			log.debug("test [" + skipEmptyTags_xslt + "]");
 			try {
 				transformerPoolSkipEmptyTags = new TransformerPool(skipEmptyTags_xslt);
@@ -282,6 +279,13 @@ public class XsltPipe extends FixedForwardPipe {
 	}
 	public boolean isSkipEmptyTags() {
 		return skipEmptyTags;
+	}
+
+	public void setIndentXml(boolean b) {
+		indentXml = b;
+	}
+	public boolean isIndentXml() {
+		return indentXml;
 	}
 
 }
