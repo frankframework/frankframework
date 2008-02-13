@@ -1,6 +1,9 @@
 /*
  * $Log: SpringJmsConnector.java,v $
- * Revision 1.8  2008-02-06 16:38:51  europe\L190409
+ * Revision 1.9  2008-02-13 13:32:49  europe\L190409
+ * show detailed processing times
+ *
+ * Revision 1.8  2008/02/06 16:38:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added support for setting of transaction timeout
  * removed global transaction inserted for jmsTransacted handling
  *
@@ -57,6 +60,7 @@ import nl.nn.adapterframework.core.IThreadCountControllable;
 import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.util.Counter;
+import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.JtaUtil;
 
 import org.apache.commons.lang.StringUtils;
@@ -67,6 +71,8 @@ import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.jms.listener.DefaultMessageListenerContainer;
 import org.springframework.jms.listener.SessionAwareMessageListener;
 import org.springframework.transaction.PlatformTransactionManager;
+
+import com.ing.ifsa.IFSAMessage;
 
 /**
  * Configure a Spring JMS Container from a {@link nl.nn.adapterframework.jms.PushingJmsListener}.
@@ -200,6 +206,8 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 
 	public void onMessage(Message message, Session session)	throws JMSException {
                 
+		long onMessageStart= System.currentTimeMillis();
+		long jmsTimestamp= message.getJMSTimestamp();
 		threadsProcessing.increase();
 		Thread.currentThread().setName(getReceiver().getName()+"["+threadsProcessing.getValue()+"]");
                 
@@ -230,6 +238,22 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 				session.commit();
 			}
 			threadsProcessing.decrease();
+			if (log.isInfoEnabled()) {
+				long onMessageEnd= System.currentTimeMillis();
+
+				log.info(getLogPrefix()+"A) JMSMessageTime ["+DateUtils.format(jmsTimestamp)+"]");
+				log.info(getLogPrefix()+"B) onMessageStart ["+DateUtils.format(onMessageStart)+"] diff ["+(onMessageStart-jmsTimestamp)+"]");
+				log.info(getLogPrefix()+"C) onMessageEnd   ["+DateUtils.format(onMessageEnd)+"] diff ["+(onMessageEnd-onMessageStart)+"]");
+
+			
+				if (message instanceof IFSAMessage) {
+					IFSAMessage im = (IFSAMessage)message;
+					long busStartTime=im.getBusinessProcessingStartTime();
+					long busFinTime=im.getBusinessProcessingFinishTime();
+					log.info(getLogPrefix()+"D) Ifsa BusinessProcessingStartTime ["+DateUtils.format(busStartTime)+"]");
+					log.info(getLogPrefix()+"E) BusinessProcessingFinishTime     ["+DateUtils.format(busFinTime)+"] diff ["+(busFinTime-busStartTime)+"]");
+				}
+			}
 			
 //			boolean simulateCrashAfterCommit=true;
 //			if (simulateCrashAfterCommit) {
