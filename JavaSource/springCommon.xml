@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   $Log: springCommon.xml,v $
-  Revision 1.9  2008-01-11 14:57:28  europe\L190409
+  Revision 1.10  2008-02-13 13:44:58  europe\L190409
+  typo in comment
+
+  Revision 1.9  2008/01/11 14:57:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
   removed external pipe and pipeline executors
 
   Revision 1.8  2007/12/12 09:10:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -110,7 +113,7 @@
     <alias name="txManagerProxy" alias="txManager"/>
     
     <!-- Beans created from Configuration.xml, but prototyped here for
-         extra dependancies which cannot be created otherwise.
+         extra dependencies which cannot be created otherwise.
          Bean names are prefixed with 'proto-' so that autowiring by
          name doesn't create unnessecary instances. -->
     <bean name="proto-adapter" class="nl.nn.adapterframework.core.Adapter"
