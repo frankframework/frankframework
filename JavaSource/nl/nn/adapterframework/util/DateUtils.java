@@ -1,6 +1,9 @@
 /*
  * $Log: DateUtils.java,v $
- * Revision 1.10  2007-10-08 12:25:14  europe\L190409
+ * Revision 1.11  2008-02-13 12:58:11  europe\L190409
+ * added format() with default format
+ *
+ * Revision 1.10  2007/10/08 12:25:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed incorrect date format
  *
  * Revision 1.9  2007/02/19 08:17:29  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -36,7 +39,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class DateUtils {
-	public static final String version = "$RCSfile: DateUtils.java,v $ $Revision: 1.10 $ $Date: 2007-10-08 12:25:14 $";
+	public static final String version = "$RCSfile: DateUtils.java,v $ $Revision: 1.11 $ $Date: 2008-02-13 12:58:11 $";
 	protected static Logger log = LogUtil.getLogger(DateUtils.class);
 	
 
@@ -77,6 +80,13 @@ public class DateUtils {
 
 	public static String format(long date, String dateFormat) {
 		return format(new Date(date),dateFormat);
+	}
+
+	public static String format(long date) {
+		return format(new Date(date),FORMAT_FULL_GENERIC);
+	}
+	public static String format(Date date) {
+		return format(date,FORMAT_FULL_GENERIC);
 	}
 
 
