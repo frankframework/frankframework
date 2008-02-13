@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractEJBBase.java,v $
- * Revision 1.5  2007-12-28 08:55:45  europe\L190409
+ * Revision 1.6  2008-02-13 12:53:28  europe\L190409
+ * renamed IbisMain to IbisContext
+ *
+ * Revision 1.5  2007/12/28 08:55:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * get config from manager instead of from main
  *
  * Revision 1.4  2007/11/22 08:47:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -40,7 +43,7 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import nl.nn.adapterframework.configuration.Configuration;
-import nl.nn.adapterframework.configuration.IbisMain;
+import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.util.LogUtil;
 import org.apache.log4j.Logger;
@@ -58,7 +61,7 @@ abstract public class AbstractEJBBase {
     public static final String COMP_ENV_JNDI_PREFIX = "java:comp/env/";
     private final static Logger log = LogUtil.getLogger(AbstractEJBBase.class);
     
-    protected static IbisMain main;
+    protected static IbisContext main;
     protected static IbisManager manager;
     protected static Configuration config;
     private static ListableBeanFactory beanFactory;
@@ -70,7 +73,7 @@ abstract public class AbstractEJBBase {
         // NB: This MUST me done statically, not from an instance.
         
         log.info("<** - **> Starting initialization of IBIS Framework from EJB");
-        main = new IbisMain();
+        main = new IbisContext();
         
         // TODO: Get the right parameters for initialization from somewhere,
         // most importantly the right Spring Context!

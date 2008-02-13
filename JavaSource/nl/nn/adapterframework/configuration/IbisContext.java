@@ -1,6 +1,9 @@
 /*
- * $Log: IbisMain.java,v $
- * Revision 1.8  2008-02-08 09:47:28  europe\L190409
+ * $Log: IbisContext.java,v $
+ * Revision 1.1  2008-02-13 12:52:21  europe\L190409
+ * renamed IbisMain to IbisContext
+ *
+ * Revision 1.8  2008/02/08 09:47:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * cosmetic changes
  *
  * Revision 1.7  2007/12/28 08:54:23  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -45,7 +48,9 @@ import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.ListableBeanFactory;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.beans.factory.xml.XmlBeanFactory;
 import org.springframework.core.JdkVersion;
 import org.springframework.core.io.ClassPathResource;
@@ -64,8 +69,8 @@ import org.springframework.core.io.Resource;
  * @since   4.8
  * @version Id
  */
-public class IbisMain {
-    private final static Logger log = LogUtil.getLogger(IbisMain.class);
+public class IbisContext {
+    private final static Logger log = LogUtil.getLogger(IbisContext.class);
 
     public static final String DFLT_AUTOSTART = "TRUE";
     public static final String DFLT_SPRING_CONTEXT = "/springContext.xml";
@@ -79,7 +84,7 @@ public class IbisMain {
 	 * @return
 	 */
 	public boolean initConfig() {
-	    return initConfig(IbisMain.DFLT_SPRING_CONTEXT, IbisManager.DFLT_CONFIGURATION, IbisMain.DFLT_AUTOSTART);
+	    return initConfig(IbisContext.DFLT_SPRING_CONTEXT, IbisManager.DFLT_CONFIGURATION, IbisContext.DFLT_AUTOSTART);
 	}
     
     /**
@@ -97,7 +102,7 @@ public class IbisMain {
      * @return
      */
     public boolean initConfig(String springContext, String configurationFile, String autoStart) {
-		init(springContext);        
+		initContext(springContext);        
         ibisManager.loadConfigurationFile(configurationFile);
         
         if ("TRUE".equalsIgnoreCase(autoStart)) {
@@ -108,7 +113,7 @@ public class IbisMain {
         return true;
     }
 
-	public void init(String springContext) {
+	public void initContext(String springContext) {
 		log.info("* IBIS Startup: Running on JDK version [" + System.getProperty("java.version")
 				+ "], Spring indicates JDK Major version: 1." + (JdkVersion.getMajorJavaVersion()+3));
 		// This should be made conditional, somehow
@@ -144,8 +149,68 @@ public class IbisMain {
 		return bf;
 	}
 
-	static public IbisManager getIbisManager(ListableBeanFactory beanFactory) throws BeansException {
+	static private IbisManager getIbisManager(ListableBeanFactory beanFactory) throws BeansException {
 		return (IbisManager) beanFactory.getBean("ibisManager");
+	}
+
+	public Object getAutoWiredObject(Class clazz) throws ConfigurationException {
+		return getAutoWiredObject(clazz, null);
+	}
+	
+	public Object getAutoWiredObject(Class clazz, String prototypeName) throws ConfigurationException {
+		
+		String beanName;
+		
+		prototypeName="proto-"+prototypeName;
+		// No explicit classname given; get bean from Spring Factory
+		if (clazz == null) {
+			beanName = prototypeName;
+		} else {
+			// Get all beans matching the classname given
+			String[] matchingBeans = getBeanFactory().getBeanNamesForType(clazz);
+			if (matchingBeans.length == 1) {
+				// Only 1 bean of this type, so create it
+				beanName = matchingBeans[0];
+			} else if (matchingBeans.length > 1) {
+				// multiple beans; find if there's one with the
+				// same name as from 'getBeanName'.
+				beanName = prototypeName;
+			} else {
+				// No beans matching the type.
+				// Create instance, and if the instance implements
+				// Spring's BeanFactoryAware interface, use it to
+				// set BeanFactory attribute on this Bean.
+				try {
+					return createBeanAndAutoWire(clazz, prototypeName);
+				} catch (Exception e) {
+					throw new ConfigurationException(e);
+				}
+			}
+		}
+        
+		// Only accept prototype-beans!
+		if (!getBeanFactory().isPrototype(beanName)) {
+			throw new ConfigurationException("Beans created from the BeanFactory must be prototype-beans, bean ["
+				+ beanName + "] of class [" + clazz.getName() + "] is not.");
+		}
+		if (log.isDebugEnabled()) {
+			log.debug("Creating bean with actual bean-name [" + beanName + "], bean-class [" + (clazz != null ? clazz.getName() : "null") + "] from Spring Bean Factory.");
+		}
+		return getBeanFactory().getBean(beanName, clazz);
+	}
+
+	protected Object createBeanAndAutoWire(Class beanClass, String prototype) throws InstantiationException, IllegalAccessException {
+		if (log.isDebugEnabled()) {
+			log.debug("Bean class [" + beanClass.getName() + "] not found in Spring Bean Factory, instantiating directly and using Spring Factory for auto-wiring support.");
+		}
+		Object o = beanClass.newInstance();
+		if (getBeanFactory() instanceof AutowireCapableBeanFactory) {
+			((AutowireCapableBeanFactory)getBeanFactory()).autowireBeanProperties(o,AutowireCapableBeanFactory.AUTOWIRE_BY_NAME,false);
+			o = ((AutowireCapableBeanFactory)getBeanFactory()).initializeBean(o, prototype);
+		} else if (o instanceof BeanFactoryAware) {
+			((BeanFactoryAware)o).setBeanFactory(getBeanFactory());
+		}
+		return o;
 	}
 
 	private void startJmxServer() {
@@ -176,7 +241,7 @@ public class IbisMain {
 	}
 	public ListableBeanFactory getBeanFactory() {
 		if (beanFactory==null) {
-			init(DFLT_SPRING_CONTEXT);
+			initContext(DFLT_SPRING_CONTEXT);
 		}
 		return beanFactory;
 	}
@@ -187,8 +252,8 @@ public class IbisMain {
 	}
 
 	public static void main(String[] args) {
-		IbisMain im=new IbisMain();
-		im.initConfig(IbisMain.DFLT_SPRING_CONTEXT, IbisManager.DFLT_CONFIGURATION, IbisMain.DFLT_AUTOSTART);
+		IbisContext im=new IbisContext();
+		im.initConfig(IbisContext.DFLT_SPRING_CONTEXT, IbisManager.DFLT_CONFIGURATION, IbisContext.DFLT_AUTOSTART);
 	}
 
 }
