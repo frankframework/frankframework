@@ -1,6 +1,9 @@
 /*
  * $Log: ConfigurationDigester.java,v $
- * Revision 1.20  2007-11-22 08:24:42  europe\L190409
+ * Revision 1.21  2008-02-13 12:52:07  europe\L190409
+ * cosmetic changes
+ *
+ * Revision 1.20  2007/11/22 08:24:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fixed include() code
  *
  * Revision 1.19  2007/10/24 08:28:03  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
@@ -103,7 +106,7 @@ import org.springframework.beans.factory.ListableBeanFactory;
  * @see Configuration
  */
 abstract public class ConfigurationDigester implements BeanFactoryAware {
-	public static final String version = "$RCSfile: ConfigurationDigester.java,v $ $Revision: 1.20 $ $Date: 2007-11-22 08:24:42 $";
+	public static final String version = "$RCSfile: ConfigurationDigester.java,v $ $Revision: 1.21 $ $Date: 2008-02-13 12:52:07 $";
     protected static Logger log = LogUtil.getLogger(ConfigurationDigester.class);
 
 	private static final String CONFIGURATION_FILE_DEFAULT  = "Configuration.xml";
@@ -115,42 +118,7 @@ abstract public class ConfigurationDigester implements BeanFactoryAware {
     private BeanFactory beanFactory;
     
 	private Configuration configuration;
-/*	
-	public static void main(String args[]) {
-	    String configuration_file = CONFIGURATION_FILE_DEFAULT;
-	    String digester_rules_file = DIGESTER_RULES_DEFAULT;
-	
-	    Configuration config = null;
-	    ConfigurationDigester cd = new ConfigurationDigester();
-	
-	    if (args.length>=1)
-	      configuration_file = args[0];
-	    if (args.length>=2)
-	      digester_rules_file = args[1];
-	      
-	    try {
-			config = cd.unmarshalConfiguration(digester_rules_file, configuration_file);
-		} catch (ConfigurationException e) {
-			System.out.println(e.getMessage());
-		}
-	
-	    if (null == config) {
-	        System.out.println("Errors occured during configuration");
-	        return;
-	    } else {
-	        System.out.println("       Object List:");
-	        if (null!=config) 
-	        config.listObjects();
-	
-	        System.out.println("------------------------------------------");
-	        System.out.println("       start adapters");
-	    }
-	
-	    if (null!=config)config.startAdapters();
-	
-	}
-	
-*/	
+
     /**
      * This method is runtime implemented by Spring Framework to
      * return a Digester instance created from the Spring Context

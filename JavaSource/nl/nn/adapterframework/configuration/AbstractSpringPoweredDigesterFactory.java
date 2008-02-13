@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractSpringPoweredDigesterFactory.java,v $
- * Revision 1.8  2007-12-28 08:53:24  europe\L190409
+ * Revision 1.9  2008-02-13 12:51:35  europe\L190409
+ * cosmetic changes
+ *
+ * Revision 1.8  2007/12/28 08:53:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * cosmetic changes
  *
  * Revision 1.7  2007/11/22 08:23:25  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -50,14 +53,14 @@ import org.xml.sax.Attributes;
  * of the Apache Digester framework as a replacement for the 'object-create-rule'.
  * 
  * The intention is to have objects created by the Apache Digester be created
- * via the Spring Factory thus allowing for dependancy injection; and if not
+ * via the Spring Factory thus allowing for dependency injection; and if not
  * possible then create them ourselves but inject at least a reference to the
  * Spring Factory when supported by the object. When the object is created
  * directly by this factory, the Spring Factory is used for auto-wiring
  * and initialization.
  * 
  * The factory is abstract; subclasses will need to implement method
- * 'getBeanName()' to return the name of the default Bean to load from
+ * 'getSuggestedBeanName()' to return the name of the default Bean to load from
  * the Spring Context.
  * 
  * All Beans defined in the Spring Context that can be loaded via this
@@ -130,7 +133,7 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
      * not relevant.</li>
      * <li>If multiple beans of type given by 'className' attribute are
      * defined in the Spring context, then an instance is created whose 
-     * bean-name is the same as that returned by the method getBeanName().</li>
+     * bean-name is the same as that returned by the method getSuggestedBeanName().</li>
      * <li>If the Spring context contains no beans of type 'className', then
      * a new instance of this class is created without accessing the
      * Spring factory.<br/>
@@ -165,16 +168,10 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
     protected Object createObject(Map attrs) throws Exception {
         String className = (String) attrs.get("className");
         if (log.isDebugEnabled()) {
-            log.debug(
-                "CreateObject: Element=["
-                    + getDigester().getCurrentElementName()
-                    + "], name=["
-                    + attrs.get("name")
-                    + "], Configured ClassName=["
-                    + className
-                    + "], Suggested Spring Bean Name=["
-                    + getSuggestedBeanName()
-                    + "]");
+            log.debug("CreateObject: Element=[" + getDigester().getCurrentElementName()
+                    + "], name=[" + attrs.get("name")
+                    + "], Configured ClassName=[" + className
+                    + "], Suggested Spring Bean Name=[" + getSuggestedBeanName() + "]");
         }
         return createBeanFromClassName(className);
     }
@@ -182,10 +179,10 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
     /**
      * Given a class-name, create a bean. The classname-parameter can be
      * <code>null</code>, in which case the bean is created using the
-     * bean-name returned by <code>getBeanName()</code>.
+     * bean-name returned by <code>getSuggestedBeanName()</code>, that is often
+     * implemented by prefixing the element name with 'proto-'
      * 
-     * 
-     * @param className
+     * @param ClassName
      * @return
      * @throws ClassNotFoundException
      * @throws InstantiationException
