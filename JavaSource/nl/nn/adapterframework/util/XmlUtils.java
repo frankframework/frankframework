@@ -1,6 +1,9 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.45  2008-01-29 12:18:41  europe\L190409
+ * Revision 1.46  2008-02-13 13:33:18  europe\L190409
+ * added makeSkipEmptyTagsXslt
+ *
+ * Revision 1.45  2008/01/29 12:18:41  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added parse functions
  *
  * Revision 1.44  2007/10/15 13:13:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -200,7 +203,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * @version Id
  */
 public class XmlUtils {
-	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.45 $ $Date: 2008-01-29 12:18:41 $";
+	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.46 $ $Date: 2008-02-13 13:33:18 $";
 	static Logger log = LogUtil.getLogger(XmlUtils.class);
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
@@ -226,6 +229,20 @@ public class XmlUtils {
 
 	public XmlUtils() {
 		super();
+	}
+
+
+	public static String makeSkipEmptyTagsXslt(boolean omitXmlDeclaration, boolean indent) {
+		return 	
+		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"1.0\">"
+			+ "<xsl:output method=\"xml\" indent=\""+(indent?"yes":"no")+"\" omit-xml-declaration=\""+(omitXmlDeclaration?"yes":"no")+"\"/>"
+			+ "<xsl:strip-space elements=\"*\"/>"
+			+ "<xsl:template match=\"* [.//text()] | text()|@*|comment()|processing-instruction()\">"
+			+ "<xsl:copy>"
+			+ "<xsl:apply-templates select=\"*|@*|comment()|processing-instruction()|text()\"/>"
+			+ "</xsl:copy>"
+			+ "</xsl:template>"
+			+ "</xsl:stylesheet>";
 	}
 
 	public static synchronized boolean isNamespaceAwareByDefault() {
