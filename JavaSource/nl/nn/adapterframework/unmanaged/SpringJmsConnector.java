@@ -1,6 +1,9 @@
 /*
  * $Log: SpringJmsConnector.java,v $
- * Revision 1.9  2008-02-13 13:32:49  europe\L190409
+ * Revision 1.10  2008-02-15 14:11:16  europe\L190409
+ * avoid NPE when not configured
+ *
+ * Revision 1.9  2008/02/13 13:32:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * show detailed processing times
  *
  * Revision 1.8  2008/02/06 16:38:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -278,28 +281,38 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 	}
 
 	public boolean isThreadCountReadable() {
-		return true;
+		return jmsContainer!=null;
 	}
 	public boolean isThreadCountControllable() {
-		return true;
+		return jmsContainer!=null;
 	}
 
 	public int getCurrentThreadCount() {
-		return jmsContainer.getActiveConsumerCount();
+		if (jmsContainer!=null) {
+			return jmsContainer.getActiveConsumerCount();
+		}
+		return 0;
 	}
 
 	public int getMaxThreadCount() {
-		return jmsContainer.getMaxConcurrentConsumers();
+		if (jmsContainer!=null) {
+			return jmsContainer.getMaxConcurrentConsumers();
+		}
+		return 0;
 	}
 
 	public void increaseThreadCount() {
-		jmsContainer.setMaxConcurrentConsumers(jmsContainer.getMaxConcurrentConsumers()+1);	
+		if (jmsContainer!=null) {
+			jmsContainer.setMaxConcurrentConsumers(jmsContainer.getMaxConcurrentConsumers()+1);	
+		}
 	}
 
 	public void decreaseThreadCount() {
-		int current=getMaxThreadCount();
-		if (current>1) {
-			jmsContainer.setMaxConcurrentConsumers(current-1);	
+		if (jmsContainer!=null) {
+			int current=getMaxThreadCount();
+			if (current>1) {
+				jmsContainer.setMaxConcurrentConsumers(current-1);	
+			}
 		}
 	}
 
