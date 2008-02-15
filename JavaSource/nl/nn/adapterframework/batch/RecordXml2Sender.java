@@ -1,6 +1,9 @@
 /*
  * $Log: RecordXml2Sender.java,v $
- * Revision 1.9  2007-10-08 13:28:57  europe\L190409
+ * Revision 1.10  2008-02-15 16:05:10  europe\L190409
+ * updated javadoc
+ *
+ * Revision 1.9  2007/10/08 13:28:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed ArrayList to List where possible
  *
  * Revision 1.8  2007/09/24 14:55:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -46,8 +49,12 @@ import nl.nn.adapterframework.util.ClassUtils;
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>classname</td><td>nl.nn.adapterframework.batch.RecordXml2Sender</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the RecordHandler</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setRootTag(String) rootTag}</td><td>Roottag for the generated XML document</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setInputFields(String) inputFields}</td><td>Comma separated specification of fieldlengths. Either this attribute or <code>inputSeparator</code>must be specified</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setInputSeparator(String) inputSeparator}</td><td>Separator that separated the fields in the input record. Either this attribute or <code>inputFields</code>must be specified</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setTrim(boolean) trim}</td><td>when <code>true</code>, trailing spaces are removed from each field</td><td>false</td></tr>
+ * <tr><td>{@link #setRootTag(String) rootTag}</td><td>Roottag for the generated XML document that will be send to the Sender</td><td>record</td></tr>
  * <tr><td>{@link #setOutputFields(String) outputfields}</td><td>Comma seperated string with tagnames for the individual input fields (related using there positions). If you leave a tagname empty, the field is not xml-ized</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setRecordIdentifyingFields(String) recordIdentifyingFields}</td><td>Comma separated list of numbers of those fields that are compared with the previous record to determine if a prefix must be written. If any of these fields is not equal in both records, the record types are assumed to be different</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * <table border="1">
@@ -61,7 +68,7 @@ import nl.nn.adapterframework.util.ClassUtils;
  * @version Id
  */
 public class RecordXml2Sender extends RecordXmlTransformer {
-	public static final String version = "$RCSfile: RecordXml2Sender.java,v $  $Revision: 1.9 $ $Date: 2007-10-08 13:28:57 $";
+	public static final String version = "$RCSfile: RecordXml2Sender.java,v $  $Revision: 1.10 $ $Date: 2008-02-15 16:05:10 $";
 
 	private ISender sender = null; 
 	

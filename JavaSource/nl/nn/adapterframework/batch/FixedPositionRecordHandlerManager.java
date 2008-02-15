@@ -1,6 +1,9 @@
 /*
  * $Log: FixedPositionRecordHandlerManager.java,v $
- * Revision 1.8  2007-09-24 14:54:57  europe\L190409
+ * Revision 1.9  2008-02-15 16:06:03  europe\L190409
+ * updated javadoc
+ *
+ * Revision 1.8  2007/09/24 14:54:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected javadoc
  *
  * Revision 1.7  2007/09/12 09:15:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -36,6 +39,8 @@ import nl.nn.adapterframework.core.PipeLineSession;
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.batch.FixedPositionRecordHandlerManager</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setName(String) name}</td><td>Name of the manager</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setInitial(boolean) initial}</td><td>This manager is the initial manager, i.e. to be used for the first record</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setStartPosition(int) startPosition}</td><td>Startposition of the recordtype field in the record (first character is 0)</td><td>0</td></tr>
  * <tr><td>{@link #setEndPosition(int) endPosition}</td><td>Endposition of the recordtype field in the record</td><td>&nbsp;</td></tr>
  * </table>
@@ -44,7 +49,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
  * @author John Dekker
  */
 public class FixedPositionRecordHandlerManager extends RecordHandlerManager {
-	public static final String version = "$RCSfile: FixedPositionRecordHandlerManager.java,v $  $Revision: 1.8 $ $Date: 2007-09-24 14:54:57 $";
+	public static final String version = "$RCSfile: FixedPositionRecordHandlerManager.java,v $  $Revision: 1.9 $ $Date: 2008-02-15 16:06:03 $";
 
 	private int startPosition;
 	private int endPosition;

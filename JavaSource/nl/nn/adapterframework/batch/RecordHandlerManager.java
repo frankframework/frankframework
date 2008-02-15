@@ -1,6 +1,9 @@
 /*
  * $Log: RecordHandlerManager.java,v $
- * Revision 1.8  2007-10-08 12:14:57  europe\L190409
+ * Revision 1.9  2008-02-15 16:07:27  europe\L190409
+ * updated javadoc
+ *
+ * Revision 1.8  2007/10/08 12:14:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed HashMap to Map where possible
  *
  * Revision 1.7  2007/08/03 08:28:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -37,6 +40,7 @@ import nl.nn.adapterframework.util.LogUtil;
 import org.apache.log4j.Logger;
 
 /**
+ * Basic implementation of RecordHandlerManager, that allows only for a single flow.
  * The manager decides which handlers to be used for a specific record.
  * 
  * <p><b>Configuration:</b>
@@ -52,7 +56,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class RecordHandlerManager implements IRecordHandlerManager {
-	public static final String version = "$RCSfile: RecordHandlerManager.java,v $  $Revision: 1.8 $ $Date: 2007-10-08 12:14:57 $";
+	public static final String version = "$RCSfile: RecordHandlerManager.java,v $  $Revision: 1.9 $ $Date: 2008-02-15 16:07:27 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private Map valueHandlersMap;
