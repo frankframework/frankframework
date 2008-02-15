@@ -1,6 +1,9 @@
 /*
  * $Log: FileUtils.java,v $
- * Revision 1.10  2007-10-08 13:35:13  europe\L190409
+ * Revision 1.11  2008-02-15 13:56:06  europe\L190409
+ * added functions for backing up, moving and deleting  processed files
+ *
+ * Revision 1.10  2007/10/08 13:35:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed ArrayList to List where possible
  *
  * Revision 1.9  2007/02/05 15:02:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -32,6 +35,7 @@ package nl.nn.adapterframework.util;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -57,7 +61,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class FileUtils {
-	public static final String version = "$RCSfile: FileUtils.java,v $  $Revision: 1.10 $ $Date: 2007-10-08 13:35:13 $";
+	public static final String version = "$RCSfile: FileUtils.java,v $  $Revision: 1.11 $ $Date: 2008-02-15 13:56:06 $";
 
 	/**
 	 * Construct a filename from a pattern and session variables. 
@@ -116,7 +120,53 @@ public class FileUtils {
 			return getFilename(definedParameters, session, "", filenamePattern);
 		return getFilename(definedParameters, session, originalFile.getName(), filenamePattern);
 	}
+
+	public static void moveFileAfterProcessing(File orgFile, String destDir, boolean delete, boolean overwrite, int numBackups) throws InterruptedException, IOException {
+		if (delete) {
+			if (orgFile.exists()) {
+				orgFile.delete();
+//			} else {
+//				log.warn("file ["+orgFile.getParent()+"] does not exist anymore, cannot delete");
+			}
+		} else {
+			if (StringUtils.isNotEmpty(destDir)) {
+				moveFile(orgFile, destDir, overwrite, numBackups);
+			}
+		}
+	}
+
 	
+	public static String moveFile(String filename, String destDir, boolean overwrite, int numBackups) throws InterruptedException, IOException {
+		File srcFile = new File(filename);
+		return moveFile(srcFile, destDir, overwrite, numBackups);
+	}
+
+	public static String moveFile(File orgFile, String destDir, boolean overwrite, int numBackups) throws InterruptedException, IOException {
+		File dstFile = new File(destDir, orgFile.getName());
+		return moveFile(orgFile, dstFile, overwrite, numBackups);
+	}
+
+	public static String moveFile(File orgFile, File rename2File, boolean overwrite, int numBackups) throws InterruptedException, IOException {
+		return moveFile(orgFile, rename2File, overwrite, numBackups, 5, 500);
+	}
+
+	public static String moveFile(File orgFile, File rename2File, boolean overwrite, int numBackups, int nrRetries, long waitTime) throws InterruptedException, IOException {
+		if (orgFile.exists()) {
+			if (numBackups>0) {
+				makeBackups(rename2File,numBackups);
+			} else {
+				if (overwrite && rename2File.exists()) {
+					rename2File.delete();
+				}
+			}
+		}
+		String result=moveFile(orgFile, rename2File, nrRetries, waitTime);
+		if (result==null) {
+			throw new IOException("Could not move file ["+orgFile.getPath()+"] to ["+rename2File.getPath()+"]");
+		}
+		return result;
+	}
+
 	public static String moveFile(File orgFile, File rename2File, int nrRetries, long waitTime) throws InterruptedException {
 		int errCount = 0;
 		
@@ -133,6 +183,43 @@ public class FileUtils {
 		}
 		return null;
 	}
+
+	/**
+	 * 
+	 */
+	public static void makeBackups(File targetFile, int numBackups)  {
+		if (numBackups<=0 || !targetFile.exists()) {
+			return;
+		}
+		if (numBackups>1) {
+			File curFile=null;
+			int i=1;
+			// check for currently available backup files
+			for (;i<=numBackups; i++) {
+				String filename=targetFile.getPath()+"."+i;
+				curFile=new File(filename);
+				if (!curFile.exists())  {
+					break;
+				}
+			}
+			// delete the oldest backup file
+			if (i>numBackups) {
+				curFile.delete();
+			}
+			// move all backup files one step up
+			for(;i>1;i--) {
+				String srcFilename=targetFile.getPath()+"."+(i-1);
+				File srcFile=new File(srcFilename);
+				srcFile.renameTo(curFile);
+				curFile=srcFile;
+			}
+		}
+		// move current file to backup 
+		String backupFilename=targetFile.getPath()+".1";
+		File backupFile=new File(backupFilename);
+		targetFile.renameTo(backupFile);
+	}
+
 
 	public static File[] getFiles(String directory, String wildcard) {
 		WildCardFilter filter = new WildCardFilter(wildcard);
