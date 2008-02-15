@@ -1,6 +1,9 @@
 /*
  * $Log: DirectoryListener.java,v $
- * Revision 1.8  2007-10-03 08:59:50  europe\L190409
+ * Revision 1.9  2008-02-15 13:59:30  europe\L190409
+ * added attributes processedDirectory, numberOfBackups, overwrite and delete
+ *
+ * Revision 1.8  2007/10/03 08:59:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed HashMap to Map
  *
  * Revision 1.7  2007/07/26 16:24:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -72,12 +75,15 @@ import org.apache.log4j.Logger;
  * <tr><td>{@link #setName(String) name}</td><td>name of the listener</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setInputDirectory(String) inputDirectory}</td><td>Directory to look for files</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setWildcard(String) wildcard}</td><td>Filter of files to look for in inputDirectory</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setOutputDirectory(String) outputDirectory}</td><td>Directory where to move the files to</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setOutputDirectory(String) outputDirectory}</td><td>Directory where files are stored <i>while</i> being processed</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setOutputFilenamePattern(String) outputFilenamePattern}</td><td>Pattern for the name using the MessageFormat.format method. Params: 0=inputfilename, 1=inputfile extension, 2=unique uuid, 3=current date</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setProcessedDirectory(String) processedDirectory}</td><td>Directory where files are stored <i>after</i> being processed</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setNumberOfBackups(String) numberOfBackups}</td><td>number of copies held of a file with the same name. Backup files have a dot and a number suffixed to their name. If set to 0, no backups will be kept.</td><td>0</td></tr>
+ * <tr><td>{@link #setOverwrite(boolean) overwrite}</td><td>overwrite the file in the output directory if it already exist</td><td>false</td></tr>
+ * <tr><td>{@link #setDelete(boolean) delete}</td><td>when set <code>true</code>the file processed will deleted after being processed, and not stored</td><td>false</td></tr>
  * <tr><td>{@link #setResponseTime(long) responseTime}</td><td>Waittime to wait between polling</td><td>10000 [ms]</td></tr>
  * <tr><td>{@link #setNumberOfAttempts(int) numberOfAttempts}</td><td>maximum number of move attempts before throwing an exception</td><td>10</td></tr>
  * <tr><td>{@link #setWaitBeforeRetry(long) waitBeforeRetry}</td><td>time waited after unsuccesful try</td><td>1000</td></tr>
- * <tr><td>{@link #setOverwrite(boolean) overwrite}</td><td>overwrite the file in the output directory if it already exist</td><td>false</td></tr>
  * <tr><td>{@link #setPassWithoutDirectory(boolean) passWithoutDirectory}</td><td>pass the filename without the <code>outputDirectory</code> to the pipeline</td><td>false</td></tr>
  * <tr><td>{@link #setCreateInputDirectory(boolean) createInputDirectory}</td><td>when set to <code>true</code>, the directory to look for files is created if it does not exist</td><td>false</td></tr>
  * </table>
@@ -87,7 +93,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class DirectoryListener implements IPullingListener, INamedObject {
-	public static final String version = "$RCSfile: DirectoryListener.java,v $  $Revision: 1.8 $ $Date: 2007-10-03 08:59:50 $";
+	public static final String version = "$RCSfile: DirectoryListener.java,v $  $Revision: 1.9 $ $Date: 2008-02-15 13:59:30 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -96,11 +102,15 @@ public class DirectoryListener implements IPullingListener, INamedObject {
 	private String outputDirectory;
 	private String outputFilenamePattern;
 	private long responseTime = 10000;
-	private int numberOfAttempts = 10;
-	private long waitBeforeRetry = 1000;
-	private boolean overwrite = false;
 	private boolean passWithoutDirectory = false;
 	protected boolean createInputDirectory = false;
+
+	private String processedDirectory;
+	private int numberOfBackups = 0;
+	private boolean overwrite = false;
+	private boolean delete = false;
+	private int numberOfAttempts = 10;
+	private long waitBeforeRetry = 1000;
 
 	//TODO: check if this is thread-safe
 	private String inputFileName=null;
@@ -115,10 +125,10 @@ public class DirectoryListener implements IPullingListener, INamedObject {
 		if (StringUtils.isEmpty(getWildcard()))
 			throw new ConfigurationException("no value specified for wildcard");
 		if (StringUtils.isEmpty(getOutputDirectory()))
-			throw new ConfigurationException("no value specified for inprocessDirectory");
+			throw new ConfigurationException("no value specified for outputDirectory");
 		File dir = new File(getOutputDirectory());
 		if (!dir.isDirectory()) {
-			throw new ConfigurationException("The value for directoryProcessedFiles [" + getOutputDirectory() + "] is invalid. It is not a directory ");
+			throw new ConfigurationException("The value for outputDirectory [" + getOutputDirectory() + "] is invalid. It is not a directory ");
 		}
 		File inp = new File(getInputDirectory());
 		if (!inp.exists() && createInputDirectory) {
@@ -148,6 +158,15 @@ public class DirectoryListener implements IPullingListener, INamedObject {
 
 
 	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessage, Map context) throws ListenerException {
+		if (isDelete() || StringUtils.isNotEmpty(getProcessedDirectory())) {
+			String filename=getStringFromRawMessage(rawMessage, context);
+			File f=new File(filename);
+			try {
+				FileUtils.moveFileAfterProcessing(f, getProcessedDirectory(), isDelete(), isOverwrite(), getNumberOfBackups()); 
+			} catch (Exception e) {
+				throw new ListenerException("Could not move file ["+filename+"]",e);
+			}
+		}
 	}
 
 	/**
@@ -161,18 +180,10 @@ public class DirectoryListener implements IPullingListener, INamedObject {
 		
 		try {
 			File rename2 = new File(getOutputDirectory(), FileUtils.getFilename(null, session, file, outputFilenamePattern));
-			if (overwrite) {
-				if (rename2.exists()) {
-					log.debug("File exist: " + rename2);
-					if (!rename2.delete()) {
-						log.error("Could not delete file: " + rename2);
-					}
-				}
-			}
-			newFilename = FileUtils.moveFile(file, rename2, numberOfAttempts, waitBeforeRetry);
+			newFilename = FileUtils.moveFile(file, rename2, isOverwrite(), getNumberOfBackups(), numberOfAttempts, waitBeforeRetry);
 
 			if (newFilename == null) {
-				throw new ListenerException(getName() + " was unable to rename file [" + file.getAbsolutePath() + "] to [" + outputDirectory + "]");
+				throw new ListenerException(getName() + " was unable to rename file [" + file.getAbsolutePath() + "] to [" + getOutputDirectory() + "]");
 			}
 
 			if (passWithoutDirectory) {
@@ -182,7 +193,7 @@ public class DirectoryListener implements IPullingListener, INamedObject {
 			return newFilename;
 		}
 		catch(Exception e) {
-			throw new ListenerException(getName() + " was unable to rename file [" + file.getAbsolutePath() + "] to [" + outputDirectory + "]", e);
+			throw new ListenerException(getName() + " was unable to rename file [" + file.getAbsolutePath() + "] to [" + getOutputDirectory() + "]", e);
 		}
 	}
 
@@ -344,9 +355,6 @@ public class DirectoryListener implements IPullingListener, INamedObject {
 		return waitBeforeRetry;
 	}
 
-	public void setOverwrite(boolean overwrite) {
-		this.overwrite = overwrite;
-	}
 
 	public void setPassWithoutDirectory(boolean b) {
 		passWithoutDirectory = b;
@@ -363,4 +371,33 @@ public class DirectoryListener implements IPullingListener, INamedObject {
 	public boolean isCreateInputDirectory() {
 		return createInputDirectory;
 	}
+
+	public void setProcessedDirectory(String processedDirectory) {
+		this.processedDirectory = processedDirectory;
+	}
+	public String getProcessedDirectory() {
+		return processedDirectory;
+	}
+	
+	public void setNumberOfBackups(int i) {
+		numberOfBackups = i;
+	}
+	public int getNumberOfBackups() {
+		return numberOfBackups;
+	}
+
+	public void setOverwrite(boolean overwrite) {
+		this.overwrite = overwrite;
+	}
+	public boolean isOverwrite() {
+		return overwrite;
+	}
+
+	public void setDelete(boolean b) {
+		delete = b;
+	}
+	public boolean isDelete() {
+		return delete;
+	}
+
 }
