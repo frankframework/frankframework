@@ -1,6 +1,9 @@
 /*
  * $Log: BatchFileTransformerPipe.java,v $
- * Revision 1.12  2007-09-11 11:51:45  europe\L190409
+ * Revision 1.13  2008-02-15 13:57:25  europe\L190409
+ * added attributes numberOfBackups, overwrite and delete
+ *
+ * Revision 1.12  2007/09/11 11:51:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.11  2007/09/04 09:34:22  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -27,6 +30,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.FileUtils;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -43,6 +47,9 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>classname</td><td>nl.nn.adapterframework.batch.BatchFileTransformerPipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMove2dirAfterTransform(String) move2dirAfterTransform}</td><td>Directory in which the transformed file(s) is stored</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMove2dirAfterError(String) move2dirAfterError}</td><td>Directory to which the inputfile is moved in case an error occurs</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setNumberOfBackups(String) numberOfBackups}</td><td>number of copies held of a file with the same name. Backup files have a dot and a number suffixed to their name. If set to 0, no backups will be kept.</td><td>5</td></tr>
+ * <tr><td>{@link #setOverwrite(boolean) overwrite}</td><td>when set <code>true</code>, the destination file will be deleted if it already exists</td><td>false</td></tr>
+ * <tr><td>{@link #setDelete(boolean) delete}</td><td>when set <code>true</code>the file processed will deleted after being processed, and not stored</td><td>false</td></tr>
  * </table>
  * </p>
  * <table border="1">
@@ -58,10 +65,13 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class BatchFileTransformerPipe extends StreamTransformerPipe {
-	public static final String version = "$RCSfile: BatchFileTransformerPipe.java,v $  $Revision: 1.12 $ $Date: 2007-09-11 11:51:45 $";
+	public static final String version = "$RCSfile: BatchFileTransformerPipe.java,v $  $Revision: 1.13 $ $Date: 2008-02-15 13:57:25 $";
 
 	private String move2dirAfterTransform;
 	private String move2dirAfterError;
+	private int numberOfBackups = 5;
+	private boolean overwrite = false;
+	private boolean delete = false;
 
 
 	protected String getStreamId(Object input, PipeLineSession session) throws PipeRunException {
@@ -95,17 +105,18 @@ public class BatchFileTransformerPipe extends StreamTransformerPipe {
 		File file = new File(filename);
 
 		try {
-			
 			PipeRunResult result = super.doPipe(file,session);
-			if (! StringUtils.isEmpty(getMove2dirAfterTransform())) {
-				File move2 = new File(getMove2dirAfterTransform(), file.getName());
-				file.renameTo(move2); 
+			try {
+				FileUtils.moveFileAfterProcessing(file, getMove2dirAfterTransform(), isDelete(),isOverwrite(), getNumberOfBackups()); 
+			} catch (Exception e) {
+				log.error(getLogPrefix(session),e);
 			}
 			return result;
 		} catch (PipeRunException e) {
-			if (! StringUtils.isEmpty(getMove2dirAfterError())) {
-				File move2 = new File(getMove2dirAfterError(), file.getName());
-				file.renameTo(move2); 
+			try {
+				FileUtils.moveFileAfterProcessing(file, getMove2dirAfterError(), isDelete(),isOverwrite(), getNumberOfBackups()); 
+			} catch (Exception e2) {
+				log.error(getLogPrefix(session)+"Could not move file after exception ["+e2+"]");
 			}
 			throw e;
 		}
@@ -130,6 +141,28 @@ public class BatchFileTransformerPipe extends StreamTransformerPipe {
 	}
 	public String getMove2dirAfterError() {
 		return move2dirAfterError;
+	}
+
+
+	public void setNumberOfBackups(int i) {
+		numberOfBackups = i;
+	}
+	public int getNumberOfBackups() {
+		return numberOfBackups;
+	}
+
+	public void setOverwrite(boolean b) {
+		overwrite = b;
+	}
+	public boolean isOverwrite() {
+		return overwrite;
+	}
+
+	public void setDelete(boolean b) {
+		delete = b;
+	}
+	public boolean isDelete() {
+		return delete;
 	}
 
 }
