@@ -1,6 +1,9 @@
 /*
  * $Log: MoveFilePipe.java,v $
- * Revision 1.2  2007-07-10 15:17:54  europe\L190409
+ * Revision 1.3  2008-02-15 14:10:10  europe\L190409
+ * added attributes numberOfBackups and overwrite
+ *
+ * Revision 1.2  2007/07/10 15:17:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improve logging
  *
  * Revision 1.1  2006/08/23 11:35:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -46,21 +49,26 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setName(String) name}</td><td>name of the sender</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setFilename(String) filename}</td><td>The name of the file to move (if not specified, the input for this pipe is assumed to be the name of the file</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMove2dir(String) move2dir}</td><td>destination directory</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setNumberOfAttempts(int) numberOfAttempts}</td><td>maximum number of attempts before throwing an exception</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setWaitBeforeRetry(long) waitBeforeRetry}</td><td>Number of attempts</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setNumberOfBackups(String) numberOfBackups}</td><td>number of copies held of a file with the same name. Backup files have a dot and a number suffixed to their name. If set to 0, no backups will be kept.</td><td>5</td></tr>
+ * <tr><td>{@link #setOverwrite(boolean) overwrite}</td><td>when set <code>true</code>, the destination file will be overwritten if it already exists</td><td>false</td></tr>
+ * <tr><td>{@link #setNumberOfAttempts(int) numberOfAttempts}</td><td>maximum number of attempts before throwing an exception</td><td>10</td></tr>
+ * <tr><td>{@link #setWaitBeforeRetry(long) waitBeforeRetry}</td><td>Time between attempts</td><td>1000 [ms]</td></tr>
  * </table>
  * </p>
  * 
  * @author: John Dekker
  * @author: Jaco de Groot (***@dynasol.nl)
+ * @author: Gerrit van Brakel
  */
 public class MoveFilePipe extends FixedForwardPipe {
-	public static final String version = "$RCSfile: MoveFilePipe.java,v $  $Revision: 1.2 $ $Date: 2007-07-10 15:17:54 $";
+	public static final String version = "$RCSfile: MoveFilePipe.java,v $  $Revision: 1.3 $ $Date: 2008-02-15 14:10:10 $";
 
 	private String filename;
 	private String move2dir;
-	private long waitBeforeRetry = 1000;
 	private int numberOfAttempts = 10;
+	private long waitBeforeRetry = 1000;
+	private int numberOfBackups = 5;
+	private boolean overwrite = false;
 	
 		
 	public void configure() throws ConfigurationException {
@@ -82,10 +90,11 @@ public class MoveFilePipe extends FixedForwardPipe {
 		}
 		try {
 			File srcFile = new File(orgFilename);
-			File dstFile = new File(getMove2dir(), srcFile.getName());
+			String dstFilename = srcFile.getName();
 
-			if (FileUtils.moveFile(srcFile, dstFile, getNumberOfAttempts(), getWaitBeforeRetry()) == null) {
-				throw new PipeRunException(this, "Error while moving file [" + orgFilename + "]"); 
+			File dstFile = new File(getMove2dir(), dstFilename);
+			if (FileUtils.moveFile(srcFile, dstFile, isOverwrite(), getNumberOfBackups(), getNumberOfAttempts(), getWaitBeforeRetry()) == null) {
+				throw new PipeRunException(this, "Could not move file [" + orgFilename + "] directory ["+getMove2dir()+"]"); 
 			} else {
 				log.info(getLogPrefix(session)+"moved ["+srcFile.getAbsolutePath()+"] to ["+dstFile.getAbsolutePath()+"]");
 			}			 
@@ -95,7 +104,7 @@ public class MoveFilePipe extends FixedForwardPipe {
 			throw e;
 		}
 		catch(Exception e) {
-			throw new PipeRunException(this, "Error while moving file [" + orgFilename + "]", e); 
+			throw new PipeRunException(this, "Error while moving file [" + orgFilename + "] to directory ["+getMove2dir()+"]", e); 
 		}
 	}
 
@@ -106,6 +115,7 @@ public class MoveFilePipe extends FixedForwardPipe {
 	public String getFilename() {
 		return filename;
 	}
+
 
 
 	public void setMove2dir(String string) {
@@ -129,6 +139,21 @@ public class MoveFilePipe extends FixedForwardPipe {
 	}
 	public long getWaitBeforeRetry() {
 		return waitBeforeRetry;
+	}
+
+
+	public void setNumberOfBackups(int i) {
+		numberOfBackups = i;
+	}
+	public int getNumberOfBackups() {
+		return numberOfBackups;
+	}
+
+	public void setOverwrite(boolean b) {
+		overwrite = b;
+	}
+	public boolean isOverwrite() {
+		return overwrite;
 	}
 
 }
