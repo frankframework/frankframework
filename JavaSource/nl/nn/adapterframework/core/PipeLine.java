@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.59  2008-02-06 16:36:16  europe\L190409
+ * Revision 1.60  2008-02-15 14:05:08  europe\L190409
+ * improved logging
+ *
+ * Revision 1.59  2008/02/06 16:36:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added support for setting of transaction timeout
  *
  * Revision 1.58  2008/01/11 14:49:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -267,7 +270,7 @@ import org.springframework.transaction.TransactionStatus;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.59 $ $Date: 2008-02-06 16:36:16 $";
+	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.60 $ $Date: 2008-02-15 14:05:08 $";
     private Logger log = LogUtil.getLogger(this);
 	private Logger durationLog = LogUtil.getLogger("LongDurationMessages");
     
@@ -539,13 +542,16 @@ public class PipeLine {
             HasTransactionAttribute taPipe = (HasTransactionAttribute) pipe;
             txOption = taPipe.getTransactionAttributeNum();
             txTimeout= taPipe.getTransactionTimeout();
-			if (log.isDebugEnabled()) log.debug("runPipeObeyingTransactionAttribute for pipe ["+pipe.getName()+"] with transactionAttribute ["+taPipe.getTransactionAttribute()+"] timeout ["+(txTimeout==0?"system default(=120s":""+txTimeout)+"]");
+			if (log.isDebugEnabled()) log.debug("runPipeObeyingTransactionAttribute for pipe ["+pipe.getName()+"] with transactionAttribute ["+taPipe.getTransactionAttribute()+"]");
         } else {
             txOption = TransactionDefinition.PROPAGATION_SUPPORTS;
 			if (log.isDebugEnabled()) log.debug("runPipeObeyingTransactionAttribute for pipe ["+pipe.getName()+"] with default transaction attribute (supports)");
         }
 
 		TransactionStatus txStatus = txManager.getTransaction(SpringTxManagerProxy.getTransactionDefinition(txOption,txTimeout));
+		if (log.isDebugEnabled() && txStatus.isNewTransaction()) {
+			log.debug("Pipeline created new transaction, timeout ["+(txTimeout==0?"system default(=120s)":""+txTimeout)+"]");
+		}
 		try {
 			return pipe.doPipe(message, session);
 		} catch (Throwable t) {
