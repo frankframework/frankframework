@@ -1,6 +1,9 @@
 /*
  * $Log: StreamTransformerPipe.java,v $
- * Revision 1.12  2007-10-08 13:28:57  europe\L190409
+ * Revision 1.13  2008-02-15 16:05:45  europe\L190409
+ * added default manager and flow, for simple configurations
+ *
+ * Revision 1.12  2007/10/08 13:28:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed ArrayList to List where possible
  *
  * Revision 1.11  2007/10/08 12:14:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -80,12 +83,16 @@ import org.apache.commons.lang.StringUtils;
  * </table>
  * </p>
  * 
+ * For file containing only a single type of lines, a simpler configuration without managers and flows
+ * can be specified. A single recordHandler with key="*" and (optional) a single resultHandler need to be specified.
+ * Each line will be handled by this recordHandler and resultHandler.
+ * 
  * @author: John Dekker / Gerrit van Brakel
  * @since   4.7
  * @version Id
  */
 public class StreamTransformerPipe extends FixedForwardPipe {
-	public static final String version = "$RCSfile: StreamTransformerPipe.java,v $  $Revision: 1.12 $ $Date: 2007-10-08 13:28:57 $";
+	public static final String version = "$RCSfile: StreamTransformerPipe.java,v $  $Revision: 1.13 $ $Date: 2008-02-15 16:05:45 $";
 
 	private IRecordHandlerManager initialManager=null;
 	private IResultHandler defaultHandler=null;
@@ -96,7 +103,28 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (registeredManagers.size()==0) {
-			throw new ConfigurationException(getLogPrefix(null)+"no managers specified");
+			log.info(getLogPrefix(null)+"creating default manager");
+			IRecordHandlerManager manager = new RecordHandlerManager();
+			manager.setInitial(true);
+			manager.setName("default");
+			RecordHandlingFlow flow = new RecordHandlingFlow();
+			flow.setRecordKey("*");
+			Iterator itrch = registeredRecordHandlers.keySet().iterator();
+			if (itrch.hasNext()) {
+				String recordHandlerName = (String)itrch.next();
+				flow.setRecordHandlerRef(recordHandlerName);
+			}
+			Iterator itrsh = registeredResultHandlers.keySet().iterator();
+			if (itrsh.hasNext()) {
+				String resultHandlerName = (String)itrsh.next();
+				flow.setResultHandlerRef(resultHandlerName);
+			}
+			manager.addHandler(flow);
+			try {
+				registerManager(manager);
+			} catch (Exception e) {
+				throw new ConfigurationException(getLogPrefix(null)+"could not register default manager and flow");
+			}
 		}
 		if (initialManager==null) {
 			throw new ConfigurationException(getLogPrefix(null)+"no initial manager specified");

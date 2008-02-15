@@ -1,6 +1,9 @@
 /*
  * $Log: BatchFileTransformerPipe.java,v $
- * Revision 1.13  2008-02-15 13:57:25  europe\L190409
+ * Revision 1.14  2008-02-15 16:05:45  europe\L190409
+ * added default manager and flow, for simple configurations
+ *
+ * Revision 1.13  2008/02/15 13:57:25  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added attributes numberOfBackups, overwrite and delete
  *
  * Revision 1.12  2007/09/11 11:51:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -61,11 +64,16 @@ import org.apache.commons.lang.StringUtils;
  * </table>
  * </p>
  * 
+ * 
+ * For files containing only a single type of lines, a simpler configuration without managers and flows
+ * can be specified. A single recordHandler with key="*" and (optional) a single resultHandler need to be specified.
+ * Each line will be handled by this recordHandler and resultHandler.
+ * 
  * @author  John Dekker
  * @version Id
  */
 public class BatchFileTransformerPipe extends StreamTransformerPipe {
-	public static final String version = "$RCSfile: BatchFileTransformerPipe.java,v $  $Revision: 1.13 $ $Date: 2008-02-15 13:57:25 $";
+	public static final String version = "$RCSfile: BatchFileTransformerPipe.java,v $  $Revision: 1.14 $ $Date: 2008-02-15 16:05:45 $";
 
 	private String move2dirAfterTransform;
 	private String move2dirAfterError;
