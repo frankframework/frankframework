@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractRecordHandler.java,v $
- * Revision 1.10  2007-10-08 13:28:57  europe\L190409
+ * Revision 1.11  2008-02-15 16:04:22  europe\L190409
+ * added trim attribute
+ *
+ * Revision 1.10  2007/10/08 13:28:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed ArrayList to List where possible
  *
  * Revision 1.9  2007/09/24 14:55:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -59,8 +62,9 @@ import org.apache.log4j.Logger;
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>classname</td><td>nl.nn.adapterframework.batch.AbstractRecordHandler</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the RecordHandler</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setInputFields(String) inputFields}</td><td>Comma separated specification of fieldlengths</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setInputSeparator(String) inputSeparator}</td><td>Separator that separated the fields in the record</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setInputFields(String) inputFields}</td><td>Comma separated specification of fieldlengths. Either this attribute or <code>inputSeparator</code>must be specified</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setInputSeparator(String) inputSeparator}</td><td>Separator that separated the fields in the input record. Either this attribute or <code>inputFields</code>must be specified</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setTrim(boolean) trim}</td><td>when <code>true</code>, trailing spaces are removed from each field</td><td>false</td></tr>
  * <tr><td>{@link #setRecordIdentifyingFields(String) recordIdentifyingFields}</td><td>Comma separated list of numbers of those fields that are compared with the previous record to determine if a prefix must be written. If any of these fields is not equal in both records, the record types are assumed to be different</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
@@ -73,6 +77,7 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 
 	private String name;
 	private String inputSeparator;
+	private boolean trim=false;
 	
 	private List inputFields=new LinkedList(); 
 	private List recordIdentifyingFields=new LinkedList();
@@ -84,6 +89,7 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 			paramList.configure();
 		}
 	}
+	
 	public void open() throws SenderException {
 		//nothing to do		
 	}
@@ -127,14 +133,20 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 			InputField field = (InputField) fieldIt.next();
 			int endPos = curPos + field.length; 
 			
+			String item;
 			if (curPos >= recordLength) {
-				result.add("");
+				item="";
 			}
 			else if (endPos >= recordLength) {
-				result.add(record.substring(curPos));
+				item=record.substring(curPos);
 			}
 			else {
-				result.add(record.substring(curPos, endPos));
+				item=record.substring(curPos, endPos);
+			}
+			if (isTrim()) {
+				result.add(item.trim());
+			} else {
+				result.add(item);
 			}
 			
 			curPos = endPos;
@@ -150,11 +162,17 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 		do {
 			int startNdx = endNdx + 1;
 			endNdx = record.indexOf(inputSeparator, startNdx);
+			String item;
 			if (endNdx == -1) {
-				result.add(record.substring(startNdx));
+				item=record.substring(startNdx);
 			}
 			else {
-				result.add(record.substring(startNdx, endNdx));
+				item=record.substring(startNdx, endNdx);
+			}
+			if (isTrim()) {
+				result.add(item.trim());
+			} else {
+				result.add(item);
 			}
 		}
 		while(endNdx != -1);
@@ -249,6 +267,13 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 	}
 	public String getInputSeperator() {
 		return inputSeparator;
+	}
+
+	public void setTrim(boolean b) {
+		trim = b;
+	}
+	public boolean isTrim() {
+		return trim;
 	}
 
 }
