@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractResultHandler.java,v $
- * Revision 1.13  2007-09-24 14:55:33  europe\L190409
+ * Revision 1.14  2008-02-19 09:23:48  europe\L190409
+ * updated javadoc
+ *
+ * Revision 1.13  2007/09/24 14:55:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * support for parameters
  *
  * Revision 1.12  2007/09/19 11:15:25  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -64,7 +67,7 @@ import org.apache.log4j.Logger;
  * <tr><td>{@link #setName(String) name}</td><td>Name of the resulthandler</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setPrefix(String) prefix}</td><td><i>Deprecated</i> Prefix that has to be written before record, if the record is in another block than the previous record</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSuffix(String) suffix}</td><td><i>Deprecated</i> Suffix that has to be written after the record, if the record is in another block than the next record. <br/>N.B. If a suffix is set without a prefix, it is only used at the end of processing (i.e. at the end of the file) as a final close</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setDefault(boolean) default}</td><td>If true, this resulthandler is the default for all RecordHandlingFlow that do not have a handler specified</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setDefault(boolean) default}</td><td>If set <code>true</code>, this ResultHandler is the default for all {@link RecordHandlingFlow flow}s that do not have a handler specified</td><td>false</td></tr>
  * </table>
  * </p>
  * 

@@ -1,6 +1,9 @@
 /*
  * $Log: RecordHandlerManager.java,v $
- * Revision 1.9  2008-02-15 16:07:27  europe\L190409
+ * Revision 1.10  2008-02-19 09:23:47  europe\L190409
+ * updated javadoc
+ *
+ * Revision 1.9  2008/02/15 16:07:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.8  2007/10/08 12:14:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -48,7 +51,7 @@ import org.apache.log4j.Logger;
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>classname</td><td>nl.nn.adapterframework.batch.FieldPositionRecordHandlerManager</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>Name of the manager</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setInitial(boolean) initial}</td><td>This manager is the initial manager, i.e. to be used for the first record</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setInitial(boolean) initial}</td><td>This manager is the initial manager, i.e. to be used for the first record</td><td>false</td></tr>
  * </table>
  * </p>
  * 
@@ -56,7 +59,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class RecordHandlerManager implements IRecordHandlerManager {
-	public static final String version = "$RCSfile: RecordHandlerManager.java,v $  $Revision: 1.9 $ $Date: 2008-02-15 16:07:27 $";
+	public static final String version = "$RCSfile: RecordHandlerManager.java,v $  $Revision: 1.10 $ $Date: 2008-02-19 09:23:47 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private Map valueHandlersMap;

@@ -1,6 +1,9 @@
 /*
  * $Log: RecordTransformer.java,v $
- * Revision 1.14  2008-02-15 16:05:10  europe\L190409
+ * Revision 1.15  2008-02-19 09:23:48  europe\L190409
+ * updated javadoc
+ *
+ * Revision 1.14  2008/02/15 16:05:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.13  2007/10/08 13:28:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -70,9 +73,9 @@ import org.apache.commons.lang.StringUtils;
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>classname</td><td>nl.nn.adapterframework.batch.RecordTransformer</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setInputFields(String) inputFields}</td><td>Comma separated specification of fieldlengths. Either this attribute or <code>inputSeparator</code>must be specified</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setInputSeparator(String) inputSeparator}</td><td>Separator that separated the fields in the input record. Either this attribute or <code>inputFields</code>must be specified</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setTrim(boolean) trim}</td><td>when <code>true</code>, trailing spaces are removed from each field</td><td>false</td></tr>
+ * <tr><td>{@link #setInputFields(String) inputFields}</td><td>Comma separated specification of fieldlengths. Either this attribute or <code>inputSeparator</code> must be specified</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setInputSeparator(String) inputSeparator}</td><td>Separator that separated the fields in the input record. Either this attribute or <code>inputFields</code> must be specified</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setTrim(boolean) trim}</td><td>when set <code>true</code>, trailing spaces are removed from each field</td><td>false</td></tr>
  * <tr><td>{@link #setOutputFields(String) outputFields}</td><td>Semicolon separated list of output record field specifications (see table below)</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setOutputSeparator(String) outputSeparator}</td><td>Optional separator to add between the fields</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setRecordIdentifyingFields(String) recordIdentifyingFields}</td><td>Comma separated list of numbers of those fields that are compared with the previous record to determine if a prefix must be written. If any of these fields is not equal in both records, the record types are assumed to be different</td><td>&nbsp;</td></tr>
@@ -100,7 +103,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class RecordTransformer extends AbstractRecordHandler {
-	public static final String version = "$RCSfile: RecordTransformer.java,v $  $Revision: 1.14 $ $Date: 2008-02-15 16:05:10 $";
+	public static final String version = "$RCSfile: RecordTransformer.java,v $  $Revision: 1.15 $ $Date: 2008-02-19 09:23:48 $";
 
 	private String outputSeparator;
 

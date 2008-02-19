@@ -1,6 +1,9 @@
 /*
  * $Log: Result2StringWriter.java,v $
- * Revision 1.3  2007-09-24 14:55:33  europe\L190409
+ * Revision 1.4  2008-02-19 09:23:48  europe\L190409
+ * updated javadoc
+ *
+ * Revision 1.3  2007/09/24 14:55:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * support for parameters
  *
  * Revision 1.2  2007/09/24 13:02:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -23,7 +26,7 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 
 
 /**
- * Resulthandler that writes the transformed record to a file.
+ * Resulthandler that writes the transformed record to a String.
  * 
  * <p><b>Configuration:</b>
  * <table border="1">
@@ -49,7 +52,7 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
  * @version Id
  */
 public class Result2StringWriter extends ResultWriter {
-	public static final String version = "$RCSfile: Result2StringWriter.java,v $  $Revision: 1.3 $ $Date: 2007-09-24 14:55:33 $";
+	public static final String version = "$RCSfile: Result2StringWriter.java,v $  $Revision: 1.4 $ $Date: 2008-02-19 09:23:48 $";
 	
 	private Map openWriters = Collections.synchronizedMap(new HashMap());
 	

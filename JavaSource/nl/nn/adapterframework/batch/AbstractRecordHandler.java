@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractRecordHandler.java,v $
- * Revision 1.11  2008-02-15 16:04:22  europe\L190409
+ * Revision 1.12  2008-02-19 09:23:48  europe\L190409
+ * updated javadoc
+ *
+ * Revision 1.11  2008/02/15 16:04:22  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added trim attribute
  *
  * Revision 1.10  2007/10/08 13:28:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -50,6 +53,7 @@ import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 /**
@@ -62,9 +66,9 @@ import org.apache.log4j.Logger;
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>classname</td><td>nl.nn.adapterframework.batch.AbstractRecordHandler</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the RecordHandler</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setInputFields(String) inputFields}</td><td>Comma separated specification of fieldlengths. Either this attribute or <code>inputSeparator</code>must be specified</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setInputSeparator(String) inputSeparator}</td><td>Separator that separated the fields in the input record. Either this attribute or <code>inputFields</code>must be specified</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setTrim(boolean) trim}</td><td>when <code>true</code>, trailing spaces are removed from each field</td><td>false</td></tr>
+ * <tr><td>{@link #setInputFields(String) inputFields}</td><td>Comma separated specification of fieldlengths. Either this attribute or <code>inputSeparator</code> must be specified</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setInputSeparator(String) inputSeparator}</td><td>Separator that separated the fields in the input record. Either this attribute or <code>inputFields</code> must be specified</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setTrim(boolean) trim}</td><td>when set <code>true</code>, trailing spaces are removed from each field</td><td>false</td></tr>
  * <tr><td>{@link #setRecordIdentifyingFields(String) recordIdentifyingFields}</td><td>Comma separated list of numbers of those fields that are compared with the previous record to determine if a prefix must be written. If any of these fields is not equal in both records, the record types are assumed to be different</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
@@ -87,6 +91,12 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 	public void configure() throws ConfigurationException {
 		if (paramList!=null) {
 			paramList.configure();
+		}
+		if (inputFields.size()==0 && StringUtils.isEmpty(getInputSeparator())) {
+			throw new ConfigurationException(ClassUtils.nameOf(this)+" ["+getName()+"] either inputFields or inputSeparator must be specified");
+		}
+		if (inputFields.size()>0 && StringUtils.isNotEmpty(getInputSeparator())) {
+			throw new ConfigurationException(ClassUtils.nameOf(this)+" ["+getName()+"] inputFields and inputSeparator cannot be specified both");
 		}
 	}
 	
@@ -265,7 +275,7 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 	public void setInputSeparator(String string) {
 		inputSeparator = string;
 	}
-	public String getInputSeperator() {
+	public String getInputSeparator() {
 		return inputSeparator;
 	}
 

@@ -1,6 +1,9 @@
 /*
  * $Log: BatchFileTransformerPipe.java,v $
- * Revision 1.14  2008-02-15 16:05:45  europe\L190409
+ * Revision 1.15  2008-02-19 09:23:48  europe\L190409
+ * updated javadoc
+ *
+ * Revision 1.14  2008/02/15 16:05:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added default manager and flow, for simple configurations
  *
  * Revision 1.13  2008/02/15 13:57:25  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -35,8 +38,6 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.FileUtils;
 
-import org.apache.commons.lang.StringUtils;
-
 /**
  * Pipe for transforming a (batch)file with records. Records in the file must be separated
  * with new line characters.
@@ -50,9 +51,9 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>classname</td><td>nl.nn.adapterframework.batch.BatchFileTransformerPipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMove2dirAfterTransform(String) move2dirAfterTransform}</td><td>Directory in which the transformed file(s) is stored</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMove2dirAfterError(String) move2dirAfterError}</td><td>Directory to which the inputfile is moved in case an error occurs</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setNumberOfBackups(String) numberOfBackups}</td><td>number of copies held of a file with the same name. Backup files have a dot and a number suffixed to their name. If set to 0, no backups will be kept.</td><td>5</td></tr>
+ * <tr><td>{@link #setNumberOfBackups(int) numberOfBackups}</td><td>number of copies held of a file with the same name. Backup files have a dot and a number suffixed to their name. If set to 0, no backups will be kept.</td><td>5</td></tr>
  * <tr><td>{@link #setOverwrite(boolean) overwrite}</td><td>when set <code>true</code>, the destination file will be deleted if it already exists</td><td>false</td></tr>
- * <tr><td>{@link #setDelete(boolean) delete}</td><td>when set <code>true</code>the file processed will deleted after being processed, and not stored</td><td>false</td></tr>
+ * <tr><td>{@link #setDelete(boolean) delete}</td><td>when set <code>true</code>, the file processed will deleted after being processed, and not stored</td><td>false</td></tr>
  * </table>
  * </p>
  * <table border="1">
@@ -73,7 +74,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class BatchFileTransformerPipe extends StreamTransformerPipe {
-	public static final String version = "$RCSfile: BatchFileTransformerPipe.java,v $  $Revision: 1.14 $ $Date: 2008-02-15 16:05:45 $";
+	public static final String version = "$RCSfile: BatchFileTransformerPipe.java,v $  $Revision: 1.15 $ $Date: 2008-02-19 09:23:48 $";
 
 	private String move2dirAfterTransform;
 	private String move2dirAfterError;

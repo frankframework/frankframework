@@ -1,6 +1,9 @@
 /*
  * $Log: RecordXslTransformer.java,v $
- * Revision 1.9  2008-02-15 16:05:10  europe\L190409
+ * Revision 1.10  2008-02-19 09:23:47  europe\L190409
+ * updated javadoc
+ *
+ * Revision 1.9  2008/02/15 16:05:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.8  2007/10/08 13:28:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -47,9 +50,9 @@ import nl.nn.adapterframework.util.TransformerPool;
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>classname</td><td>nl.nn.adapterframework.batch.RecordXslTransformer</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setRootTag(String) rootTag}</td><td>Roottag for the generated XML document</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setInputFields(String) inputFields}</td><td>Comma separated specification of fieldlengths. Either this attribute or <code>inputSeparator</code>must be specified</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setInputSeparator(String) inputSeparator}</td><td>Separator that separated the fields in the input record. Either this attribute or <code>inputFields</code>must be specified</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setTrim(boolean) trim}</td><td>when <code>true</code>, trailing spaces are removed from each field</td><td>false</td></tr>
+ * <tr><td>{@link #setInputFields(String) inputFields}</td><td>Comma separated specification of fieldlengths. Either this attribute or <code>inputSeparator</code> must be specified</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setInputSeparator(String) inputSeparator}</td><td>Separator that separated the fields in the input record. Either this attribute or <code>inputFields</code> must be specified</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setTrim(boolean) trim}</td><td>when set <code>true</code>, trailing spaces are removed from each field</td><td>false</td></tr>
  * <tr><td>{@link #setRootTag(String) rootTag}</td><td>Roottag for the generated XML document that will be send to the Sender</td><td>record</td></tr>
  * <tr><td>{@link #setOutputFields(String) outputfields}</td><td>Comma seperated string with tagnames for the individual input fields (related using there positions). If you leave a tagname empty, the field is not xml-ized</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setRecordIdentifyingFields(String) recordIdentifyingFields}</td><td>Comma separated list of numbers of those fields that are compared with the previous record to determine if a prefix must be written. If any of these fields is not equal in both records, the record types are assumed to be different</td><td>&nbsp;</td></tr>
@@ -64,7 +67,7 @@ import nl.nn.adapterframework.util.TransformerPool;
  * @version Id
  */
 public class RecordXslTransformer extends RecordXmlTransformer {
-	public static final String version = "$RCSfile: RecordXslTransformer.java,v $  $Revision: 1.9 $ $Date: 2008-02-15 16:05:10 $";
+	public static final String version = "$RCSfile: RecordXslTransformer.java,v $  $Revision: 1.10 $ $Date: 2008-02-19 09:23:47 $";
 
 	private String xpathExpression=null;
 	private String styleSheetName;

@@ -1,6 +1,9 @@
 /*
  * $Log: FieldPositionRecordHandlerManager.java,v $
- * Revision 1.8  2008-02-15 16:06:03  europe\L190409
+ * Revision 1.9  2008-02-19 09:23:47  europe\L190409
+ * updated javadoc
+ *
+ * Revision 1.8  2008/02/15 16:06:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.7  2007/09/24 14:54:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -38,16 +41,16 @@ import nl.nn.adapterframework.util.ClassUtils;
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.batch.FieldPositionRecordHandlerManager</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>Name of the manager</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setInitial(boolean) initial}</td><td>This manager is the initial manager, i.e. to be used for the first record</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setFieldNr(int) fieldNr}</td><td>Position of field with recordtype (position of first field is 1)</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setInitial(boolean) initial}</td><td>This manager is the initial manager, i.e. to be used for the first record</td><td>false</td></tr>
  * <tr><td>{@link #setSeparator(String) separator}</td><td>Separator that separates the fields in the record</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setFieldNr(int) fieldNr}</td><td>Position of field that identifies the recordtype (position of first field is 1)</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * 
  * @author John Dekker
  */
 public class FieldPositionRecordHandlerManager extends RecordHandlerManager {
-	public static final String version = "$RCSfile: FieldPositionRecordHandlerManager.java,v $  $Revision: 1.8 $ $Date: 2008-02-15 16:06:03 $";
+	public static final String version = "$RCSfile: FieldPositionRecordHandlerManager.java,v $  $Revision: 1.9 $ $Date: 2008-02-19 09:23:47 $";
 
 	private int fieldNr;
 	private String separator;
