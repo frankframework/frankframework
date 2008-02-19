@@ -1,6 +1,9 @@
 /*
  * $Log: JMSFacade.java,v $
- * Revision 1.31  2007-11-23 14:47:55  europe\L190409
+ * Revision 1.32  2008-02-19 09:39:44  europe\L190409
+ * updated javadoc
+ *
+ * Revision 1.31  2007/11/23 14:47:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fix check on XA connection factories
  *
  * Revision 1.30  2007/11/23 14:17:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -124,6 +127,9 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setName(String) name}</td>  <td>name of the listener</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDestinationName(String) destinationName}</td><td>name of the JMS destination (queue or topic) to use</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDestinationType(String) destinationType}</td><td>either <code>QUEUE</code> or <code>TOPIC</code></td><td><code>QUEUE</code></td></tr>
+ * <tr><td>{@link #setQueueConnectionFactoryName(String) queueConnectionFactoryName}</td><td>jndi-name of the queueConnectionFactory, used when <code>destinationType<code>=</code>QUEUE</code></td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setTopicConnectionFactoryName(String) topicConnectionFactoryName}</td><td>jndi-name of the topicConnectionFactory, used when <code>destinationType<code>=</code>TOPIC</code></td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setMessageSelector(String) messageSelector}</td><td>When set, the value of this attribute is used as a selector to filter messages.</td><td>0 (unlimited)</td></tr>
  * <tr><td>{@link #setMessageTimeToLive(long) messageTimeToLive}</td><td>the time it takes for the message to expire. If the message is not consumed before, it will be lost. Make sure to set it to a positive value for request/repy type of messages.</td><td>0 (unlimited)</td></tr>
  * <tr><td>{@link #setPersistent(boolean) persistent}</td><td>rather useless attribute, and not the same as <code>deliveryMode</code>. You probably want to use that.</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setAcknowledgeMode(String) acknowledgeMode}</td><td>&nbsp;</td><td>AUTO_ACKNOWLEDGE</td></tr>
@@ -136,7 +142,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version="$RCSfile: JMSFacade.java,v $ $Revision: 1.31 $ $Date: 2007-11-23 14:47:55 $";
+	public static final String version="$RCSfile: JMSFacade.java,v $ $Revision: 1.32 $ $Date: 2008-02-19 09:39:44 $";
 
 	public static final String MODE_PERSISTENT="PERSISTENT";
 	public static final String MODE_NON_PERSISTENT="NON_PERSISTENT";
@@ -869,6 +875,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	/**
 	 * The JNDI-name of the connection factory to use to connect to a <i>queue</i> if {@link #isTransacted()} returns <code>true</code>.
 	 * The corresponding connection factory should support XA transactions. 
+	 * @deprecated please use 'setQueueConnectionFactoryName()' instead
 	 */
 	public void setQueueConnectionFactoryNameXA(String queueConnectionFactoryNameXA) {
 		if (StringUtils.isNotEmpty(queueConnectionFactoryNameXA)) {
@@ -895,6 +902,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	/**
 	 * The JNDI-name of the connection factory to use to connect to a <i>topic</i> if {@link #isTransacted()} returns <code>true</code>.
 	 * The corresponding connection factory should support XA transactions. 
+	 * @deprecated please use 'setTopicConnectionFactoryName()' instead
 	 */
 	public void setTopicConnectionFactoryNameXA(String topicConnectionFactoryNameXA) {
 		if (StringUtils.isNotEmpty(topicConnectionFactoryNameXA)) {

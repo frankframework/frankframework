@@ -1,13 +1,15 @@
 /*
  * $Log: FxfSender.java,v $
- * Revision 1.1  2008-02-13 12:53:53  europe\L190409
+ * Revision 1.2  2008-02-19 09:39:27  europe\L190409
+ * updated javadoc
+ *
+ * Revision 1.1  2008/02/13 12:53:53  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * introduction of FxF components
  *
  */
 package nl.nn.adapterframework.extensions.fxf;
 
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.ProcessUtil;
 
@@ -18,8 +20,7 @@ import nl.nn.adapterframework.util.ProcessUtil;
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.extensions.fxf.FxfListener</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setScript(String) script}</td><td>full pathname to the FXF script to be executed to transfer the file</td><td>/usr/local/bin/FXF_put</td></tr>
- * <tr><td>{@link #setDestinationName(String) destinationName}</td><td>name of the JMS destination (queue or topic) to use</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setTransfername(String) transfername}</td><td>FXF transfername</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * 
@@ -27,14 +28,14 @@ import nl.nn.adapterframework.util.ProcessUtil;
  * @since   4.8
  * @version Id
  */
-public class FxfSender extends JmsSender {
+public class FxfSender {
 
 	private String script="/usr/local/bin/FXF_init";
 	private String transfername;
 
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException {
 //		return super.sendMessage(correlationID, message, prc);
-		String command = getScript()+" "+getTransfername() +" "+message;
+		String command = getScript()+" put "+getTransfername() +" "+message;
 		return ProcessUtil.executeCommand(command);
 	}
 

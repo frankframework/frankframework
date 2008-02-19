@@ -1,6 +1,9 @@
 /*
  * $Log: PushingJmsListener.java,v $
- * Revision 1.12  2008-02-08 09:48:29  europe\L190409
+ * Revision 1.13  2008-02-19 09:39:44  europe\L190409
+ * updated javadoc
+ *
+ * Revision 1.12  2008/02/08 09:48:29  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * reintroduced rollback for states other than commitOnState
  *
  * Revision 1.11  2008/02/06 16:37:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -111,6 +114,9 @@ import nl.nn.adapterframework.core.PipeLineResult;
  * <tr><td>{@link #setName(String) name}</td>  <td>name of the listener</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDestinationName(String) destinationName}</td><td>name of the JMS destination (queue or topic) to use</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDestinationType(String) destinationType}</td><td>either <code>QUEUE</code> or <code>TOPIC</code></td><td><code>QUEUE</code></td></tr>
+ * <tr><td>{@link #setQueueConnectionFactoryName(String) queueConnectionFactoryName}</td><td>jndi-name of the queueConnectionFactory, used when <code>destinationType<code>=</code>QUEUE</code></td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setTopicConnectionFactoryName(String) topicConnectionFactoryName}</td><td>jndi-name of the topicConnectionFactory, used when <code>destinationType<code>=</code>TOPIC</code></td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setMessageSelector(String) messageSelector}</td><td>When set, the value of this attribute is used as a selector to filter messages.</td><td>0 (unlimited)</td></tr>
  * <tr><td>{@link #setJmsTransacted(boolean) jmsTransacted}</td><td><i>Deprecated</i> when true, sessions are explicitly committed (exit-state equals commitOnState) or rolled-back (other exit-states). Please do not use this mechanism, but control transactions using <code>transactionAttribute</code>s.</td><td>false</td></tr>
  * <tr><td>{@link #setCommitOnState(String) commitOnState}</td><td><i>Deprecated</i> exit state to control commit or rollback of jmsSession. Only used if <code>jmsTransacted</code> is set true.</td><td>"success"</td></tr>
  * <tr><td>{@link #setAcknowledgeMode(String) acknowledgeMode}</td><td>"auto", "dups" or "client"</td><td>"auto"</td></tr>
@@ -169,7 +175,7 @@ import nl.nn.adapterframework.core.PipeLineResult;
  * @version Id
  */
 public class PushingJmsListener extends JMSFacade implements IPortConnectedListener, IThreadCountControllable {
-    public static final String version="$RCSfile: PushingJmsListener.java,v $ $Revision: 1.12 $ $Date: 2008-02-08 09:48:29 $";
+    public static final String version="$RCSfile: PushingJmsListener.java,v $ $Revision: 1.13 $ $Date: 2008-02-19 09:39:44 $";
 
 	private final static String THREAD_CONTEXT_SESSION_KEY="session";
 
