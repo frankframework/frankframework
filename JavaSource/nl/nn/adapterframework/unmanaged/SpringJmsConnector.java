@@ -1,6 +1,9 @@
 /*
  * $Log: SpringJmsConnector.java,v $
- * Revision 1.10  2008-02-15 14:11:16  europe\L190409
+ * Revision 1.11  2008-02-19 13:58:35  europe\L190409
+ * tiny little bug, pushed into 4.8.0
+ *
+ * Revision 1.10  2008/02/15 14:11:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * avoid NPE when not configured
  *
  * Revision 1.9  2008/02/13 13:32:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -155,9 +158,9 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 		//this.jmsContainer.setReceiveTimeout(getJmsListener().getTimeOut());
         
 		if (getReceiver().getNumThreads() > 0) {
-			jmsContainer.setConcurrentConsumers(getReceiver().getNumThreads());
+			jmsContainer.setMaxConcurrentConsumers(getReceiver().getNumThreads());
 		} else {
-			jmsContainer.setConcurrentConsumers(1);
+			jmsContainer.setMaxConcurrentConsumers(1);
 		}
 		jmsContainer.setIdleTaskExecutionLimit(IDLE_TASK_EXECUTION_LIMIT);
 
