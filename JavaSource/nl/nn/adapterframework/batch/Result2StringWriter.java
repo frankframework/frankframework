@@ -1,6 +1,9 @@
 /*
  * $Log: Result2StringWriter.java,v $
- * Revision 1.4  2008-02-19 09:23:48  europe\L190409
+ * Revision 1.5  2008-02-19 09:49:17  europe\L190409
+ * updated javadoc
+ *
+ * Revision 1.4  2008/02/19 09:23:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.3  2007/09/24 14:55:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -26,7 +29,7 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 
 
 /**
- * Resulthandler that writes the transformed record to a String.
+ * Resulthandler that writes the transformed record to a String, that is passed literally to the next Pipe.
  * 
  * <p><b>Configuration:</b>
  * <table border="1">
@@ -41,9 +44,6 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
  * <tr><td>{@link #setOnOpenBlock(String) onOpenBlock}</td><td>String that is written before the start of each logical block, as defined in the flow</td><td>&lt;#name#&gt;</td></tr>
  * <tr><td>{@link #setOnCloseBlock(String) onCloseBlock}</td><td>String that is written after the end of each logical block, as defined in the flow</td><td>&lt;/#name#&gt;</td></tr>
  * <tr><td>{@link #setBlockNamePattern(String) blockNamePattern}</td><td>String that is replaced by name of block or name of stream in above strings</td><td>#name#</td></tr>
- * <tr><td>{@link #setOutputDirectory(String) outputDirectory}</td><td>Directory in which the resultfile must be stored</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setFilenamePattern(String) filenamePattern}</td><td>Name of the file is created using the MessageFormat. Params: 1=inputfilename, 2=extension of file, 3=current date</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setMove2dirAfterFinalize(String) move2dirAfterFinalize}</td><td>Directory to which the created file must be moved after finalization (is optional)</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * 
@@ -52,7 +52,7 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
  * @version Id
  */
 public class Result2StringWriter extends ResultWriter {
-	public static final String version = "$RCSfile: Result2StringWriter.java,v $  $Revision: 1.4 $ $Date: 2008-02-19 09:23:48 $";
+	public static final String version = "$RCSfile: Result2StringWriter.java,v $  $Revision: 1.5 $ $Date: 2008-02-19 09:49:17 $";
 	
 	private Map openWriters = Collections.synchronizedMap(new HashMap());
 	
