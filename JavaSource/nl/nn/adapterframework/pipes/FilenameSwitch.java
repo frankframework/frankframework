@@ -1,6 +1,9 @@
 /*
  * $Log: FilenameSwitch.java,v $
- * Revision 1.1  2008-02-15 14:09:04  europe\L190409
+ * Revision 1.2  2008-02-19 09:58:23  europe\L190409
+ * updated javadoc
+ *
+ * Revision 1.1  2008/02/15 14:09:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * first version
  *
  */
@@ -19,12 +22,12 @@ import nl.nn.adapterframework.core.PipeRunResult;
  * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.pipes.XmlSwitch</td><td>&nbsp;</td></tr>
+ * <tr><td>className</td><td>nl.nn.adapterframework.pipes.FilenameSwitch</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setGetInputFromSessionKey(String) getInputFromSessionKey}</td><td>when set, input is taken from this session key, instead of regular input</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setStoreResultInSessionKey(String) storeResultInSessionKey}</td><td>when set, the result is stored under this session key</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setNotFoundForwardName(String) notFoundForwardName}</td><td>Forward returned when the pipename derived from the stylesheet could not be found.</i></td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setToLowercase(boolean) toLowercase}</td><td>convert the result to lowercase</td><td>true</td></tr>
+ * <tr><td>{@link #setNotFoundForwardName(String) notFoundForwardName}</td><td>Forward returned when the forward or pipename derived from the filename that was the input could not be found.</i></td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setToLowercase(boolean) toLowercase}</td><td>convert the result to lowercase, before searching for a corresponding forward</td><td>true</td></tr>
  * </table>
  * </p>
  * <p><b>Exits:</b>
