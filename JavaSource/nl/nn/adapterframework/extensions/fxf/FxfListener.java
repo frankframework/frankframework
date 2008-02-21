@@ -1,6 +1,10 @@
 /*
  * $Log: FxfListener.java,v $
- * Revision 1.3  2008-02-19 09:39:27  europe\L190409
+ * Revision 1.4  2008-02-21 12:35:37  europe\L190409
+ * fixed default of script
+ * added signalling of file processed
+ *
+ * Revision 1.3  2008/02/19 09:39:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.2  2008/02/15 13:58:25  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -32,7 +36,7 @@ import org.apache.commons.lang.StringUtils;
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.extensions.fxf.FxfListener</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setScript(String) script}</td><td>full pathname to the FXF script to be executed to transfer the file</td><td>/usr/local/bin/FXF_get</td></tr>
+ * <tr><td>{@link #setScript(String) script}</td><td>full pathname to the FXF script to be executed to transfer the file</td><td>/usr/local/bin/FXF_init</td></tr>
  * <tr><td>{@link #setDestinationName(String) destinationName}</td><td>name of the JMS destination (queue or topic) to use</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setQueueConnectionFactoryName(String) queueConnectionFactoryName}</td><td>jndi-name of the queueConnectionFactory, used when <code>destinationType<code>=</code>QUEUE</code></td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMessageSelector(String) messageSelector}</td><td>When set, the value of this attribute is used as a selector to filter messages.</td><td>0 (unlimited)</td></tr>
@@ -53,7 +57,7 @@ public class FxfListener extends JmsListener {
 	public static final String EXTRACT_TRANSFERNAME_DXPATH="FXF/Transfer_name";
 	public static final String EXTRACT_LOCALNAME_DXPATH="FXF/Local_File";
 	
-	private String script;
+	private String script="/usr/local/bin/FXF_init";
 	private String processedDirectory;
 	private int numberOfBackups = 0;
 	private boolean overwrite = false;
@@ -94,14 +98,28 @@ public class FxfListener extends JmsListener {
 
 	public void afterMessageProcessed(PipeLineResult plr, Object rawMessage, Map threadContext) throws ListenerException { 
 		super.afterMessageProcessed(plr, rawMessage, threadContext);
+		String message=super.getStringFromRawMessage(rawMessage, threadContext);
+		String transfername;
+		String localname;
+		try {
+			transfername=extractTransfername.transform(message,null);
+			localname=extractLocalname.transform(message,null);
+		} catch (Exception e) {
+			throw new ListenerException("could not extract name from message ["+message+"]");
+		}
+		
+		// confirm processing of file
+		String command = getScript()+" processed "+transfername;
+		log.debug(getLogPrefix()+"confirming processing of file ["+localname+"] by executing command ["+command+"]");
+		try {
+			String execResult=ProcessUtil.executeCommand(command);
+			log.debug(getLogPrefix()+"output of command ["+execResult+"]");
+		} catch (SenderException e1) {
+			throw new ListenerException(e1);
+		}
+
+		// delete file or move it to processed directory
 		if (isDelete() || StringUtils.isNotEmpty(getProcessedDirectory())) {
-			String message=super.getStringFromRawMessage(rawMessage, threadContext);
-			String localname;
-			try {
-				localname=extractLocalname.transform(message,null);
-			} catch (Exception e) {
-				throw new ListenerException("could not extract name from message ["+message+"]");
-			}
 			File f=new File(localname);
 			try {
 				FileUtils.moveFileAfterProcessing(f, getProcessedDirectory(), isDelete(), isOverwrite(), getNumberOfBackups()); 
