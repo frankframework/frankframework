@@ -1,6 +1,9 @@
 /*
  * $Log: RecordTransformer.java,v $
- * Revision 1.15  2008-02-19 09:23:48  europe\L190409
+ * Revision 1.16  2008-02-21 12:33:53  europe\L190409
+ * added SW (starts with) and NS (not starts with) to operators
+ *
+ * Revision 1.15  2008/02/19 09:23:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.14  2008/02/15 16:05:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -57,6 +60,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 import java.util.StringTokenizer;
+import java.util.Vector;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -94,8 +98,8 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>lookup(fieldnr,orgvval=newval,...)</td><td>replace original value using lookup table</td><td>lookup(3,Debit=+,Credit=-)</td></tr>
  * <tr><td>indate(fieldnr,informat,outformat)</td><td>inserts an input datefield using a different format</td><td>indate(2~MMddYY~dd MMM yyyy)</td></tr>
  * <tr><td>inalign(fieldnr,size,align,fillchar)</td><td>inserts an input field</td><td>inalign(3~5~left~0)</td></tr>
- * <tr><td>if(fieldnr,comparator,compareval)</td><td>only output the next fields if condition is true. Comparator is NE or EQ</td><td>if(1,eq,3)</td></tr>
- * <tr><td>elseif(fieldnr,comparator,compareval)</td><td>only output the next fields if condition is true. Comparator is NE or EQ</td><td>elseif(1,ne,4)</td></tr>
+ * <tr><td>if(fieldnr,comparator,compareval)</td><td>only output the next fields if condition is true. Comparator is EQ (is equal to), NE (is not equal to), SW (starts with) or NS (not starts with). Use "{..|..|..}" for multiple compareValues</td><td>if(1,eq,3)</td></tr>
+ * <tr><td>elseif(fieldnr,comparator,compareval)</td><td>only output the next fields if condition is true. Comparator is EQ, NE, SW or NS</td><td>elseif(1,ne,4)</td></tr>
  * <tr><td>endif()</td><td>endmarker for if</td><td>endif()</td></tr>
  * </table>
  * 
@@ -103,7 +107,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class RecordTransformer extends AbstractRecordHandler {
-	public static final String version = "$RCSfile: RecordTransformer.java,v $  $Revision: 1.15 $ $Date: 2008-02-19 09:23:48 $";
+	public static final String version = "$RCSfile: RecordTransformer.java,v $  $Revision: 1.16 $ $Date: 2008-02-21 12:33:53 $";
 
 	private String outputSeparator;
 
@@ -268,13 +272,13 @@ public class RecordTransformer extends AbstractRecordHandler {
 		}
 		else if ("IF".equals(def)) {
 			int field = Integer.parseInt(nextToken(st, "If function expects a fieldnummer"));
-			String comparator = nextToken(st, "If function expects a comparator (EQ | NE)");
+			String comparator = nextToken(st, "If function expects a comparator (EQ | NE | SW | NS)");
 			String compareValue = nextToken(st, "If function expects a compareValue");
 			addIf(field, comparator, compareValue);
 		}
 		else if ("ELSEIF".equals(def)) {
 			int field = Integer.parseInt(nextToken(st, "If function expects a fieldnummer"));
-			String comparator = nextToken(st, "If function expects a comparator (EQ | NE)");
+			String comparator = nextToken(st, "If function expects a comparator (EQ | NE | SW | NS)");
 			String compareValue = nextToken(st, "If function expects a compareValue");
 			addElseIf(field, comparator, compareValue);
 		}
@@ -353,7 +357,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 				throw new ConfigurationException("Function refers to a non-existing inputfield [" + inputFieldIndex + "]");				
 			}
 			String val = (String)inputFields.get(inputFieldIndex);
-			if ((! StringUtils.isEmpty(outputSeparator)) && (val != null)) {
+			if ((! StringUtils.isEmpty(getOutputSeparator())) && (val != null)) {
 				return val.trim();
 			}
 			return val;
@@ -363,6 +367,11 @@ public class RecordTransformer extends AbstractRecordHandler {
 			result.append(toValue(inputFields));
 			return null;
 		}
+
+		public int getInputFieldIndex() {
+			return inputFieldIndex;
+		}
+
 	}
 	
 	/**
@@ -387,13 +396,13 @@ public class RecordTransformer extends AbstractRecordHandler {
 			String val = ((String)super.toValue(inputFields)).trim();
 			
 			if (startIndex >= val.length()) {
-				if (StringUtils.isEmpty(outputSeparator)) {
+				if (StringUtils.isEmpty(getOutputSeparator())) {
 					result.append(FileUtils.getFilledArray(endIndex - startIndex, ' '));
 				}
 			}
 			else if (endIndex >= val.length()) {
 				result.append(val.substring(startIndex));
-				if (StringUtils.isEmpty(outputSeparator)) {
+				if (StringUtils.isEmpty(getOutputSeparator())) {
 					int fillSize = endIndex - startIndex - val.length();
 					if (fillSize > 0) {
 						result.append(FileUtils.getFilledArray(fillSize, ' '));
@@ -594,6 +603,10 @@ public class RecordTransformer extends AbstractRecordHandler {
 				this.comparator = 1;
 			else if ("NE".equals(comp))
 				this.comparator = 2;
+			else if ("SW".equals(comp))
+				this.comparator = 3;
+			else if ("NS".equals(comp))
+				this.comparator = 4;
 			else 
 				throw new ConfigurationException("If function does not support [" + comparator + "]");				
 
@@ -605,12 +618,46 @@ public class RecordTransformer extends AbstractRecordHandler {
 				throw new ConfigurationException("Function refers to a non-existing inputfield [" + inputFieldIndex + "]");				
 			}
 			String val = (String)inputFields.get(inputFieldIndex);
-			
-			switch(comparator) {
-				case 1: // eq
-					return val.equals(compareValue);
-				default: // ne
-					return ! val.equals(compareValue);
+
+			if (compareValue.startsWith("{") && compareValue.endsWith("}")) { 
+				Vector v = new Vector();
+				StringTokenizer st = new StringTokenizer(compareValue.substring(1, compareValue.length() - 1),"|");
+				while (st.hasMoreTokens()) {
+					v.add(st.nextToken());
+				}
+				switch(comparator) {
+					case 1: // eq
+						return v.contains(val);
+					case 3: // sw
+						for (int i = 0; i < v.size(); i++) {
+							String  vs = (String)v.elementAt(i);
+							if (val.startsWith(vs)) {
+								return true;
+							}
+						}
+						return false;
+					case 4: // ns
+						for (int i = 0; i < v.size(); i++) {
+							String  vs = (String)v.elementAt(i);
+							if (val.startsWith(vs)) {
+								return false;
+							}
+						}
+						return true;
+					default: // ne
+						return ! v.contains(val);
+				}
+			} else {
+				switch(comparator) {
+					case 1: // eq
+						return val.equals(compareValue);
+					case 3: // sw
+						return val.startsWith(compareValue);
+					case 4: // ns
+						return ! val.startsWith(compareValue);
+					default: // ne
+						return ! val.equals(compareValue);
+				}
 			}
 		}
 		
@@ -658,7 +705,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 		}
 
 		public IOutputField appendValue(IOutputField curFunction, StringBuffer result, List inputFields) {
-			String transform = delegate.transform(super.inputFieldIndex, inputFields, params);
+			String transform = delegate.transform(getInputFieldIndex(), inputFields, params);
 			result.append(transform);
 			return null;
 		}
