@@ -1,6 +1,9 @@
 /*
  * $Log: ForEachChildElementPipe.java,v $
- * Revision 1.14  2007-10-08 12:23:51  europe\L190409
+ * Revision 1.15  2008-02-21 12:48:28  europe\L190409
+ * added option for pushing iteration
+ *
+ * Revision 1.14  2007/10/08 12:23:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed HashMap to Map where possible
  *
  * Revision 1.13  2007/09/10 11:19:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -19,27 +22,36 @@
  */
 package nl.nn.adapterframework.pipes;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.UnsupportedEncodingException;
 import java.util.Map;
 
+import javax.xml.transform.Source;
 import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.sax.SAXResult;
+import javax.xml.transform.stream.StreamSource;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IDataIterator;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.util.DomBuilderException;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
+import org.xml.sax.Attributes;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * Sends a message to a Sender for each child element of the input XML.
- * Alternative implementation, based on IteratingPipe.
+ * Input can be a String containing XML, a filename (set processFile true), an InputStream or a Reader.
  * 
  * <br>
  * The output of each of the processing of each of the elements is returned in XML as follows:
@@ -74,6 +86,8 @@ import org.w3c.dom.Node;
  * </td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setElementXPathExpression(String) elementXPathExpression}</td><td>expression used to determine the set of elements iterated over, i.e. the set of child elements</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setRemoveXmlDeclarationInResults(boolean) removeXmlDeclarationInResults}</td><td>postprocess each partial result, to remove the xml-declaration, as this is not allowed inside an xml-document</td><td>false</td></tr>
+ * <tr><td>{@link #setProcessFile(boolean) processFile}</td><td>when set <code>true</code>, the input is assumed to be the name of a file to be processed. Otherwise, the input itself is transformed</td><td>application default</td></tr>
+ * <tr><td>{@link #setCharset(String) charset}</td><td>characterset used for reading file or inputstream, only used when {@link #setProcessFile(boolean) processFile} is <code>true</code>, or the input is of type InputStream</td><td>UTF-8</td></tr>
  * </table>
  * <table border="1">
  * <tr><th>nested elements</th><th>description</th></tr>
@@ -94,12 +108,14 @@ import org.w3c.dom.Node;
  * @author Gerrit van Brakel
  * @since 4.6.1
  * 
- * $Id: ForEachChildElementPipe.java,v 1.14 2007-10-08 12:23:51 europe\L190409 Exp $
+ * $Id: ForEachChildElementPipe.java,v 1.15 2008-02-21 12:48:28 europe\L190409 Exp $
  */
 public class ForEachChildElementPipe extends IteratingPipe {
-	public static final String version="$RCSfile: ForEachChildElementPipe.java,v $ $Revision: 1.14 $ $Date: 2007-10-08 12:23:51 $";
+	public static final String version="$RCSfile: ForEachChildElementPipe.java,v $ $Revision: 1.15 $ $Date: 2008-02-21 12:48:28 $";
 
 	private String elementXPathExpression=null;
+	private boolean processFile=false;
+	private String charset=StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 
 	private TransformerPool identityTp;
 	private TransformerPool extractElementsTp=null;
@@ -131,72 +147,220 @@ public class ForEachChildElementPipe extends IteratingPipe {
 		identityTp.close();
 		super.stop();
 	}
-	
-	public class ElementIterator implements IDataIterator {
-		private static final boolean elementsOnly=true;
 
-		Node node;
-		boolean nextElementReady;
+	private class ItemCallbackCallingHandler extends DefaultHandler {
+		
+		ItemCallback callback;
+		
+		StringBuffer elementbuffer=new StringBuffer();
+		int elementLevel=0;
+		Exception rootException=null;
+		int startLength;		
+		boolean contentSeen;
+		boolean stopRequested;
+		
+		public ItemCallbackCallingHandler(ItemCallback callback) {
+			this.callback=callback;
+			elementbuffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+			startLength=elementbuffer.length();
+		}
+		
+		public void characters(char[] ch, int start, int length) throws SAXException {
+			if (elementLevel>1) {
+				if (!contentSeen) {
+					contentSeen=true;
+					elementbuffer.append(">");
+				}
+				elementbuffer.append(ch, start, length);
+			}
+		}
 
-		public ElementIterator(String xmlString) throws SenderException {
-			super();
-			if (getExtractElementsTp()!=null) {
-				log.debug("transforming input to obtain list of elements using xpath ["+getElementXPathExpression()+"]");
+		public void endElement(String uri, String localName, String qname) throws SAXException {
+			if (elementLevel>1) {
+				if (!contentSeen) {
+					contentSeen=true;
+					elementbuffer.append("/>");
+				} else {
+					elementbuffer.append("</"+localName+">");
+				}
+			}
+			if (--elementLevel==1) {
 				try {
-					xmlString=getExtractElementsTp().transform(xmlString, null, isNamespaceAware());
+					stopRequested = !callback.handleItem(elementbuffer.toString());
+					elementbuffer.setLength(startLength);
 				} catch (Exception e) {
+					rootException=e;
+					throw new SAXException(e);
+				}
+				if (stopRequested) {
+					throw new SAXException("stop maar");
+				}
+			}
+		}
+
+
+		public void startElement(String uri, String localName, String qName, Attributes attributes)	throws SAXException {
+			if (++elementLevel>1) {
+				elementbuffer.append("<"+localName);
+				for (int i=0; i<attributes.getLength(); i++) {
+					elementbuffer.append(" "+attributes.getLocalName(i)+"=\""+attributes.getValue(i)+"\"");
+				}
+				contentSeen=false;
+			}
+		}
+
+		public Exception getRootException() {
+			return rootException;	
+		}
+		public boolean isStopRequested() {
+			return stopRequested;
+		}
+
+	}
+
+
+	protected void iterateInput(Object input, PipeLineSession session, String correlationID, Map threadContext, ItemCallback callback) throws SenderException {
+		Reader reader=null;
+		try {
+			if (input instanceof Reader) {
+				reader = (Reader)input;
+			} else 	if (input instanceof InputStream) {
+				reader=new InputStreamReader((InputStream)input,getCharset());
+			} else 	if (isProcessFile()) {
+				// TODO: arrange for non-namespace aware processing of files
+				reader=new InputStreamReader(new FileInputStream((String)input),getCharset());
+			}
+		} catch (FileNotFoundException e) {
+			throw new SenderException("could not find file ["+input+"]",e);
+		} catch (UnsupportedEncodingException e) {
+			throw new SenderException("could not use charset ["+getCharset()+"]",e);
+		}
+		ItemCallbackCallingHandler handler = new ItemCallbackCallingHandler(callback);
+		
+		if (getExtractElementsTp()!=null) {
+			log.debug("transforming input to obtain list of elements using xpath ["+getElementXPathExpression()+"]");
+			try {
+				SAXResult transformedStream = new SAXResult();
+				Source src;
+				if (reader!=null) {
+					src=new StreamSource(reader);
+				} else {
+					src = XmlUtils.stringToSourceForSingleUse((String)input, isNamespaceAware());
+				}
+				transformedStream.setHandler(handler);
+				getExtractElementsTp().transform(src, transformedStream, null);
+			} catch (Exception e) {
+				if (!handler.isStopRequested()) {
 					throw new SenderException("Could not extract list of elements using xpath ["+getElementXPathExpression()+"]");
 				}
 			}
-			Element fullMessage;
+		} else {
+			
 			try {
-				fullMessage = XmlUtils.buildElement(xmlString, isNamespaceAware());
-			} catch (DomBuilderException e) {
-				throw new SenderException("Could not build elements",e);
-			}
-			node=fullMessage.getFirstChild();
-			nextElementReady=false;
-		}
-
-		private void findNextElement() {
-			if (elementsOnly) {
-				while (node!=null && !(node instanceof Element)) { 
-					node=node.getNextSibling();
+				if (reader!=null) {
+					XmlUtils.parseXml(handler,new InputSource(reader));
+				} else {
+					XmlUtils.parseXml(handler,(String)input);
+				}
+			} catch (Exception e) {
+				if (!handler.isStopRequested()) {
+					throw new SenderException("Could not parse input",e);
 				}
 			}
 		}
-
-		public boolean hasNext() {
-			findNextElement();
-			return node!=null;
-		}
-
-		public Object next() throws SenderException {
-			findNextElement();
-			if (node==null) {
-				return null;
-			}
-			DOMSource src = new DOMSource(node);
-			String result;
-			try {
-				result = getIdentityTp().transform(src, null);
-			} catch (Exception e) {
-				throw new SenderException("could not extract element",e);
-			}
-			if (node!=null) {
-				node=node.getNextSibling();
-			} 
-			return result; 
-		}
-
-		public void close() {
-		}
+		
 	}
 
 	
-	protected IDataIterator getIterator(Object input, PipeLineSession session, String correlationID, Map threadContext) throws SenderException {
-		return new ElementIterator((String)input);
-	}
+//	public class ElementIterator implements IDataIterator {
+//		private static final boolean elementsOnly=true;
+//
+//		Node node;
+//		boolean nextElementReady;
+//
+//		public ElementIterator(String inputString) throws SenderException {
+//			super();
+//
+//			Reader reader=null;
+//			if (isProcessFile()) {
+//				try {
+//					// TODO: arrange for non-namespace aware processing of files
+//					reader=new InputStreamReader(new FileInputStream(inputString));
+//				} catch (FileNotFoundException e) {
+//					throw new SenderException("could not find file ["+inputString+"]",e);
+//				}
+//			}
+//
+//			if (getExtractElementsTp()!=null) {
+//				log.debug("transforming input to obtain list of elements using xpath ["+getElementXPathExpression()+"]");
+//				try {
+//					DOMResult fullMessage = new DOMResult();
+//					Source src;
+//					if (reader!=null) {
+//						src=new StreamSource(reader);
+//					} else {
+//						src = XmlUtils.stringToSourceForSingleUse(inputString, isNamespaceAware());
+//					}
+//					getExtractElementsTp().transform(src, fullMessage, null);
+//					node=fullMessage.getNode().getFirstChild();
+//				} catch (Exception e) {
+//					throw new SenderException("Could not extract list of elements using xpath ["+getElementXPathExpression()+"]");
+//				}
+//			} else {
+//				Document fullMessage;
+//				try {
+//					if (reader!=null) {
+//						fullMessage=XmlUtils.buildDomDocument(reader, isNamespaceAware());
+//					} else {
+//						fullMessage=XmlUtils.buildDomDocument(inputString, isNamespaceAware());
+//					}
+//					node=fullMessage.getDocumentElement().getFirstChild();
+//				} catch (DomBuilderException e) {
+//					throw new SenderException("Could not build elements",e);
+//				}
+//			}
+//			nextElementReady=false;
+//		}
+//
+//		private void findNextElement() {
+//			if (elementsOnly) {
+//				while (node!=null && !(node instanceof Element)) { 
+//					node=node.getNextSibling();
+//				}
+//			}
+//		}
+//
+//		public boolean hasNext() {
+//			findNextElement();
+//			return node!=null;
+//		}
+//
+//		public Object next() throws SenderException {
+//			findNextElement();
+//			if (node==null) {
+//				return null;
+//			}
+//			DOMSource src = new DOMSource(node);
+//			String result;
+//			try {
+//				result = getIdentityTp().transform(src, null);
+//			} catch (Exception e) {
+//				throw new SenderException("could not extract element",e);
+//			}
+//			if (node!=null) {
+//				node=node.getNextSibling();
+//			} 
+//			return result; 
+//		}
+//
+//		public void close() {
+//		}
+//	}
+
+	
+//	protected IDataIterator getIterator(Object input, PipeLineSession session, String correlationID, Map threadContext) throws SenderException {
+//		return new ElementIterator((String)input);
+//	}
 
 	protected TransformerPool getExtractElementsTp() {
 		return extractElementsTp;
@@ -212,6 +376,20 @@ public class ForEachChildElementPipe extends IteratingPipe {
 	}
 	public String getElementXPathExpression() {
 		return elementXPathExpression;
+	}
+
+	public void setProcessFile(boolean b) {
+		processFile = b;
+	}
+	public boolean isProcessFile() {
+		return processFile;
+	}
+
+	public void setCharset(String string) {
+		charset = string;
+	}
+	public String getCharset() {
+		return charset;
 	}
 
 }

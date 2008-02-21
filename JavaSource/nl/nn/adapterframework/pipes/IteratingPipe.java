@@ -1,6 +1,9 @@
 /*
  * $Log: IteratingPipe.java,v $
- * Revision 1.5  2007-10-08 12:23:51  europe\L190409
+ * Revision 1.6  2008-02-21 12:49:05  europe\L190409
+ * added option for pushing iteration
+ *
+ * Revision 1.5  2007/10/08 12:23:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed HashMap to Map where possible
  *
  * Revision 1.4  2007/08/03 08:47:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -32,6 +35,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -96,7 +100,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public abstract class IteratingPipe extends MessageSendingPipe {
-	public static final String version="$RCSfile: IteratingPipe.java,v $ $Revision: 1.5 $ $Date: 2007-10-08 12:23:51 $";
+	public static final String version="$RCSfile: IteratingPipe.java,v $ $Revision: 1.6 $ $Date: 2008-02-21 12:49:05 $";
 
 	private String stopConditionXPathExpression=null;
 	private boolean removeXmlDeclarationInResults=false;
@@ -133,72 +137,107 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 		}
 	}
 
-	protected abstract IDataIterator getIterator(Object input, PipeLineSession session, String correlationID, Map threadContext) throws SenderException;
+	protected IDataIterator getIterator(Object input, PipeLineSession session, String correlationID, Map threadContext) throws SenderException {
+		return null;
+	}
 
-	protected String sendMessage(Object input, PipeLineSession session, String correlationID, ISender sender, Map threadContext) throws SenderException, TimeOutException {
-		// sendResult has a messageID for async senders, the result for sync senders
-		String result=null;
+	protected void iterateInput(Object input, PipeLineSession session, String correlationID, Map threadContext, ItemCallback callback) throws SenderException {
+		 throw new SenderException("Could not obtain iterator and no iterateInput method provided by class ["+ClassUtils.nameOf(this)+"]");
+	}
+
+	protected class ItemCallback {
+		
+		PipeLineSession session;
+		String correlationID;
+		ISender sender; 
 		ISenderWithParameters psender=null;
-		if (sender instanceof ISenderWithParameters && getParameterList()!=null) {
-			psender = (ISenderWithParameters) sender;
-		}		
-		String resultsXml = "";
-		boolean keepGoing = true;
-		IDataIterator it=null;
-		try {
-			int count=0;
-			it = getIterator(input,session, correlationID,threadContext);
-			if (it==null) {
-				throw new SenderException("Could not obtain iterator");
+		
+		private String results="";
+		int count=0;
+		
+		public ItemCallback(PipeLineSession session, String correlationID, ISender sender) {
+			this.session=session;
+			this.correlationID=correlationID;
+			this.sender=sender;
+			if (sender instanceof ISenderWithParameters && getParameterList()!=null) {
+				psender = (ISenderWithParameters) sender;
+			}		
+		}
+		public boolean handleItem(String item) throws SenderException, TimeOutException {
+			String itemResult=null;
+			count++;
+			if (log.isDebugEnabled()) {
+				//log.debug(getLogPrefix(session)+"set current item to ["+item+"]");
+				log.debug(getLogPrefix(session)+"sending item no ["+count+"]");
+			} 
+			if (psender!=null) {
+				//result = psender.sendMessage(correlationID, item, new ParameterResolutionContext(src, session));
+				//TODO find out why ParameterResolutionContext cannot be constructed using dom-source
+				ParameterResolutionContext prc = new ParameterResolutionContext(item, session, isNamespaceAware());
+				itemResult = psender.sendMessage(correlationID, item, prc);
+			} else {
+				itemResult = sender.sendMessage(correlationID, item);
 			}
-			while (keepGoing && it.hasNext()) {
-				String item = (String)it.next(); 
-				count++;
-				if (log.isDebugEnabled()) {
-					//log.debug(getLogPrefix(session)+"set current item to ["+item+"]");
-					log.debug(getLogPrefix(session)+"sending item no ["+count+"]");
-				} 
-				if (psender!=null) {
-					//result = psender.sendMessage(correlationID, item, new ParameterResolutionContext(src, session));
-					//TODO find out why ParameterResolutionContext cannot be constructed using dom-source
-					ParameterResolutionContext prc = new ParameterResolutionContext(item, session, isNamespaceAware());
-					result = psender.sendMessage(correlationID, item, prc);
-				} else {
-					result = sender.sendMessage(correlationID, item);
-				}
+			try {
 				if (isCollectResults()) {
 					if (isRemoveXmlDeclarationInResults()) {
-						log.debug(getLogPrefix(session)+"post processing partial result ["+result+"]");
-						result = encapsulateResultsTp.transform(result,null);
+						log.debug(getLogPrefix(session)+"post processing partial result ["+itemResult+"]");
+						itemResult = getEncapsulateResultsTp().transform(itemResult,null);
 					} else {
-						log.debug(getLogPrefix(session)+"partial result ["+result+"]");
-						result = "<result>\n"+result+"\n</result>";
+						log.debug(getLogPrefix(session)+"partial result ["+itemResult+"]");
+						itemResult = "<result>\n"+itemResult+"\n</result>";
 					}
-					resultsXml += result+"\n";
+					results += itemResult+"\n";
 				}
 
-				if (stopConditionTp!=null) {
-					String stopConditionResult = stopConditionTp.transform(result,null);
+				if (getStopConditionTp()!=null) {
+					String stopConditionResult = getStopConditionTp().transform(itemResult,null);
 					if (StringUtils.isNotEmpty(stopConditionResult) && !stopConditionResult.equalsIgnoreCase("false")) {
 						log.debug(getLogPrefix(session)+"stopcondition result ["+stopConditionResult+"], stopping loop");
-						keepGoing=false;
+						return false;
 					} else {
 						log.debug(getLogPrefix(session)+"stopcondition result ["+stopConditionResult+"], continueing loop");
 					}
 				}
+				return true;
+			} catch (DomBuilderException e) {
+				throw new SenderException(getLogPrefix(session)+"cannot parse input",e);
+			} catch (TransformerException e) {
+				throw new SenderException(getLogPrefix(session)+"cannot serialize item",e);
+			} catch (IOException e) {
+				throw new SenderException(getLogPrefix(session)+"cannot serialize item",e);
 			}
-			if (isCollectResults()) {
-				resultsXml = "<results count=\""+count+"\">\n"+resultsXml+"</results>";
+		}
+		public String getResults() {
+			return results;
+		}
+		public int getCount() {
+			return count;
+		}
+	}
+
+	protected String sendMessage(Object input, PipeLineSession session, String correlationID, ISender sender, Map threadContext) throws SenderException, TimeOutException {
+		// sendResult has a messageID for async senders, the result for sync senders
+		boolean keepGoing = true;
+		IDataIterator it=null;
+		try {
+			ItemCallback callback = new ItemCallback(session,correlationID,sender);
+			it = getIterator(input,session, correlationID,threadContext);
+			if (it==null) {
+				iterateInput(input,session,correlationID, threadContext, callback);
 			} else {
-				resultsXml = "<results count=\""+count+"\"/>";
+				while (keepGoing && it.hasNext()) {
+					String item = (String)it.next();
+					keepGoing = callback.handleItem(item); 
+				}
 			}
-			return resultsXml;
-		} catch (DomBuilderException e) {
-			throw new SenderException(getLogPrefix(session)+"cannot parse input",e);
-		} catch (TransformerException e) {
-			throw new SenderException(getLogPrefix(session)+"cannot serialize item",e);
-		} catch (IOException e) {
-			throw new SenderException(getLogPrefix(session)+"cannot serialize item",e);
+			String results = "";
+			if (isCollectResults()) {
+				results = "<results count=\""+callback.getCount()+"\">\n"+callback.getResults()+"</results>";
+			} else {
+				results = "<results count=\""+callback.getCount()+"\"/>";
+			}
+			return results;
 		} finally {
 			if (it!=null) {
 				try {
@@ -236,6 +275,14 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 	}
 	public boolean isCollectResults() {
 		return collectResults;
+	}
+
+	protected TransformerPool getEncapsulateResultsTp() {
+		return encapsulateResultsTp;
+	}
+
+	protected TransformerPool getStopConditionTp() {
+		return stopConditionTp;
 	}
 
 }
