@@ -1,6 +1,9 @@
 /*
  * $Log: XmlValidator.java,v $
- * Revision 1.23  2007-07-19 07:30:00  europe\L190409
+ * Revision 1.24  2008-02-21 12:45:02  europe\L190409
+ * added option to validate file
+ *
+ * Revision 1.23  2007/07/19 07:30:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * put remark about spaces in javadoc
  *
  * Revision 1.22  2007/07/16 11:34:47  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -63,6 +66,10 @@
 package nl.nn.adapterframework.pipes;
 
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -72,6 +79,7 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.Variant;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlFindingHandler;
@@ -122,6 +130,8 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * <tr><td>{@link #setReasonSessionKey(String) reasonSessionKey}</td><td>if set: key of session variable to store reasons of mis-validation in</td><td>none</td></tr>
  * <tr><td>{@link #setXmlReasonSessionKey(String) xmlReasonSessionKey}</td><td>like <code>reasonSessionKey</code> but stores reasons in xml format and more extensive</td><td>none</td></tr>
  * <tr><td>{@link #setRoot(String) root}</td><td>name of the root element</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setValidateFile(boolean) validateFile}</td><td>when set <code>true</code>, the input is assumed to be the name of the file to be validated. Otherwise the input itself is validated</td><td><code>false</code></td></tr>
+ * <tr><td>{@link #setCharset(String) charset}</td><td>characterset used for reading file, only used when {@link #setValidateFile(boolean) validateFile} is <code>true</code></td><td>UTF-8</td></tr>
  * </table>
  * <p><b>Exits:</b>
  * <table border="1">
@@ -138,7 +148,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * @author Johan Verrips IOS / Jaco de Groot (***@dynasol.nl)
  */
 public class XmlValidator extends FixedForwardPipe {
-	public static final String version="$RCSfile: XmlValidator.java,v $ $Revision: 1.23 $ $Date: 2007-07-19 07:30:00 $";
+	public static final String version="$RCSfile: XmlValidator.java,v $ $Revision: 1.24 $ $Date: 2008-02-21 12:45:02 $";
 
     private String schemaLocation = null;
     private String noNamespaceSchemaLocation = null;
@@ -148,6 +158,8 @@ public class XmlValidator extends FixedForwardPipe {
 	private String reasonSessionKey = null;
 	private String xmlReasonSessionKey = null;
 	private String root = null;
+	private boolean validateFile=false;
+	private String charset=StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 
     public class XmlErrorHandler implements ErrorHandler {
         private boolean errorOccured = false;
@@ -375,7 +387,18 @@ public class XmlValidator extends FixedForwardPipe {
 			throw new PipeRunException(this, getLogPrefix(session)+ "error configuring the parser", e);
 		}
 
-		InputSource is = in.asXmlInputSource();
+		InputSource is;
+		if (isValidateFile()) {
+			try {
+				is = new InputSource(new InputStreamReader(new FileInputStream(in.asString()),getCharset()));
+			} catch (FileNotFoundException e) {
+				throw new PipeRunException(this,"could not find file ["+in.asString()+"]",e);
+			} catch (UnsupportedEncodingException e) {
+				throw new PipeRunException(this,"could not use charset ["+getCharset()+"]",e);
+			}
+		} else {
+			is = in.asXmlInputSource();
+		}
 
         try {
             parser.parse(is);
@@ -541,6 +564,20 @@ public class XmlValidator extends FixedForwardPipe {
 	}
 	public String getRoot() {
 		return root;
+	}
+
+	public void setValidateFile(boolean b) {
+		validateFile = b;
+	}
+	public boolean isValidateFile() {
+		return validateFile;
+	}
+
+	public void setCharset(String string) {
+		charset = string;
+	}
+	public String getCharset() {
+		return charset;
 	}
 
 }
