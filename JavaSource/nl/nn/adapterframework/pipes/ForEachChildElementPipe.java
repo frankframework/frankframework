@@ -1,6 +1,9 @@
 /*
  * $Log: ForEachChildElementPipe.java,v $
- * Revision 1.15  2008-02-21 12:48:28  europe\L190409
+ * Revision 1.16  2008-02-22 14:32:39  europe\L190409
+ * fix bug for nested elements
+ *
+ * Revision 1.15  2008/02/21 12:48:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added option for pushing iteration
  *
  * Revision 1.14  2007/10/08 12:23:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -108,10 +111,10 @@ import org.xml.sax.helpers.DefaultHandler;
  * @author Gerrit van Brakel
  * @since 4.6.1
  * 
- * $Id: ForEachChildElementPipe.java,v 1.15 2008-02-21 12:48:28 europe\L190409 Exp $
+ * $Id: ForEachChildElementPipe.java,v 1.16 2008-02-22 14:32:39 europe\L190409 Exp $
  */
 public class ForEachChildElementPipe extends IteratingPipe {
-	public static final String version="$RCSfile: ForEachChildElementPipe.java,v $ $Revision: 1.15 $ $Date: 2008-02-21 12:48:28 $";
+	public static final String version="$RCSfile: ForEachChildElementPipe.java,v $ $Revision: 1.16 $ $Date: 2008-02-22 14:32:39 $";
 
 	private String elementXPathExpression=null;
 	private boolean processFile=false;
@@ -200,6 +203,9 @@ public class ForEachChildElementPipe extends IteratingPipe {
 
 
 		public void startElement(String uri, String localName, String qName, Attributes attributes)	throws SAXException {
+			if (elementLevel>1 && !contentSeen) {
+				elementbuffer.append(">");
+			}
 			if (++elementLevel>1) {
 				elementbuffer.append("<"+localName);
 				for (int i=0; i<attributes.getLength(); i++) {
