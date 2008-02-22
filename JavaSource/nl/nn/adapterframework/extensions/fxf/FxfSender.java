@@ -1,6 +1,9 @@
 /*
  * $Log: FxfSender.java,v $
- * Revision 1.3  2008-02-21 12:42:56  europe\L190409
+ * Revision 1.4  2008-02-22 14:29:22  europe\L190409
+ * implement ISender
+ *
+ * Revision 1.3  2008/02/21 12:42:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fixed default of script
  * options to delete or backup file after sending
  *
@@ -15,12 +18,17 @@ package nl.nn.adapterframework.extensions.fxf;
 
 import java.io.File;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.FileUtils;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.ProcessUtil;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 
 /**
  * Sender for transferring files using the FxF protocol. Assumes pipe input is local name
@@ -41,8 +49,10 @@ import org.apache.commons.lang.StringUtils;
  * @since   4.8
  * @version Id
  */
-public class FxfSender {
+public class FxfSender implements ISender {
+	protected Logger log = LogUtil.getLogger(this);
 
+	private String name;
 	private String script="/usr/local/bin/FXF_init";
 	private String transfername;
 	private String processedDirectory;
@@ -50,21 +60,44 @@ public class FxfSender {
 	private boolean overwrite = false;
 	private boolean delete = true;
 
+	public void configure() throws ConfigurationException {
+		if (StringUtils.isEmpty(getTransfername())) {
+			throw new ConfigurationException("FxfSender ["+getName()+"] must specify transfername");
+		}
+	}
+
+	public void open() throws SenderException {
+	}
+
+	public void close() throws SenderException {
+	}
+
+	public boolean isSynchronous() {
+		return false;
+	}
+
+	public String sendMessage(String correlationID, String message) throws SenderException, TimeOutException {
+		return sendMessage(correlationID, message, null);
+	}
+
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException {
 //		return super.sendMessage(correlationID, message, prc);
 		String command = getScript()+" put "+getTransfername() +" "+message;
-		String result=ProcessUtil.executeCommand(command);
+		log.debug("sending local file ["+message+"] by executing command ["+command+"]");
+		String execResult=ProcessUtil.executeCommand(command);
+		log.debug("output of command ["+execResult+"]");
 		
 		// delete file or move it to processed directory
 		if (isDelete() || StringUtils.isNotEmpty(getProcessedDirectory())) {
 			File f=new File(message);
 			try {
+				log.debug("moving or deleteing file ["+message+"]");
 				FileUtils.moveFileAfterProcessing(f, getProcessedDirectory(), isDelete(), isOverwrite(), getNumberOfBackups()); 
 			} catch (Exception e) {
 				throw new SenderException("Could not move file ["+message+"]",e);
 			}
 		}
-		return result;
+		return execResult;
 	}
 
 	public void setScript(String string) {
@@ -107,6 +140,15 @@ public class FxfSender {
 	}
 	public boolean isDelete() {
 		return delete;
+	}
+
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name=name;
 	}
 
 }
