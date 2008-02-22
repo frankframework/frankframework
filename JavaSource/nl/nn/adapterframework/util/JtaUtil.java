@@ -1,6 +1,9 @@
 /*
  * $Log: JtaUtil.java,v $
- * Revision 1.20  2008-02-06 16:03:25  europe\L190409
+ * Revision 1.21  2008-02-22 14:34:00  europe\L190409
+ * improved logging
+ *
+ * Revision 1.20  2008/02/06 16:03:25  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * remove non-thrown exceptions
  *
  * Revision 1.19  2008/01/30 14:47:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -90,7 +93,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  * @since  4.1
  */
 public class JtaUtil {
-	public static final String version="$RCSfile: JtaUtil.java,v $ $Revision: 1.20 $ $Date: 2008-02-06 16:03:25 $";
+	public static final String version="$RCSfile: JtaUtil.java,v $ $Revision: 1.21 $ $Date: 2008-02-22 14:34:00 $";
 	private static Logger log = LogUtil.getLogger(JtaUtil.class);
 	
 	private static final String USERTRANSACTION_URL1_KEY="jta.userTransactionUrl1";
@@ -151,7 +154,7 @@ public class JtaUtil {
 		try {
 			txStatus=TransactionAspectSupport.currentTransactionStatus();
 		} catch (NoTransactionException e) {
-			log.debug("not in transaction");
+			log.debug("not in transaction: "+e.getMessage());
 		}
 		return txStatus;
 	}
