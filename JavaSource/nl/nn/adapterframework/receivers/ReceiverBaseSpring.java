@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBaseSpring.java,v $
- * Revision 1.16  2008-02-08 09:49:22  europe\L190409
+ * Revision 1.17  2008-02-22 14:33:37  europe\L190409
+ * added feature to extract correlationId from message
+ *
+ * Revision 1.16  2008/02/08 09:49:22  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * cacheProcessResult for non-transacted too
  *
  * Revision 1.15  2008/02/07 11:47:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -290,6 +293,7 @@ import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.RunStateManager;
 import nl.nn.adapterframework.util.StatisticsKeeper;
 import nl.nn.adapterframework.util.TracingEventNumbers;
+import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
@@ -328,6 +332,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  * <tr><td>{@link #setBeforeEvent(int) beforeEvent}</td>      <td>METT eventnumber, fired just before a message is processed by this Receiver</td><td>-1 (disabled)</td></tr>
  * <tr><td>{@link #setAfterEvent(int) afterEvent}</td>        <td>METT eventnumber, fired just after message processing by this Receiver is finished</td><td>-1 (disabled)</td></tr>
  * <tr><td>{@link #setExceptionEvent(int) exceptionEvent}</td><td>METT eventnumber, fired when message processing by this Receiver resulted in an exception</td><td>-1 (disabled)</td></tr>
+ * <tr><td>{@link #setCorrelationIDXPath(String) correationIdXPath}</td><td>xpath expression to extract correlationID from message</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * <p>
@@ -379,7 +384,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  */
 public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMessageHandler, IbisExceptionListener, HasSender, TracingEventNumbers, IThreadCountControllable, BeanFactoryAware {
     
-	public static final String version="$RCSfile: ReceiverBaseSpring.java,v $ $Revision: 1.16 $ $Date: 2008-02-08 09:49:22 $";
+	public static final String version="$RCSfile: ReceiverBaseSpring.java,v $ $Revision: 1.17 $ $Date: 2008-02-22 14:33:37 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -401,6 +406,7 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 	private String styleSheetName = null;
 	private String returnedSessionKeys=null;
 	private boolean checkForDuplicates=false;
+	private String correlationIDXPath;
 
 	public static final String ONERROR_CONTINUE = "continue";
 	public static final String ONERROR_CLOSE = "close";
@@ -442,6 +448,8 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 	private int maxRetries=2;
     
 	private boolean transacted=false;
+
+	private TransformerPool correlationIDTp=null;
  
 	// METT event numbers
 	private int beforeEvent=-1;
@@ -832,6 +840,14 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 				}
 			}
 
+			if (StringUtils.isNotEmpty(getCorrelationIDXPath())) {
+				try {
+					correlationIDTp = new TransformerPool(XmlUtils.createXPathEvaluatorSource(getCorrelationIDXPath()));
+				} catch (TransformerConfigurationException e) {
+					throw new ConfigurationException(getLogPrefix() + "cannot create transformer for correlationID ["+getCorrelationIDXPath()+"]",e);
+				}
+			}
+
 			monitorAdapter=MonitorAdapterFactory.getMonitorAdapter();
 			if (adapter != null) {
 				adapter.getMessageKeeper().add("Receiver ["+getName()+"] initialization complete");
@@ -1020,7 +1036,22 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 		}
 		
 		String message = origin.getStringFromRawMessage(rawMessage, threadContext);
-		String correlationId = origin.getIdFromRawMessage(rawMessage, threadContext);
+		String originalCorrelationId = origin.getIdFromRawMessage(rawMessage, threadContext);
+		String correlationId;
+		if (correlationIDTp!=null) {
+			try {
+				correlationId=correlationIDTp.transform(message,null);
+			} catch (Exception e) {
+				throw new ListenerException(getLogPrefix()+"could not extract correlationId",e);
+			}
+			if (StringUtils.isEmpty(correlationId) && StringUtils.isNotEmpty(originalCorrelationId)) {
+				log.warn(getLogPrefix()+"did not find correlationId using XpathExpression ["+getCorrelationIDXPath()+"], reverting to correlationId of transfer ["+originalCorrelationId+"]");
+				correlationId=originalCorrelationId;
+			}
+			threadContext.put("cid",correlationId);
+		} else {
+			correlationId = origin.getIdFromRawMessage(rawMessage, threadContext);
+		}
 		String messageId = (String)threadContext.get("id");
 		processMessageInAdapter(origin, rawMessage, message, messageId, correlationId, threadContext, waitingDuration, retry);
 	}
@@ -1843,6 +1874,13 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 	}
 	public int getTransactionTimeout() {
 		return transactionTimeout;
+	}
+
+	public void setCorrelationIDXPath(String string) {
+		correlationIDXPath = string;
+	}
+	public String getCorrelationIDXPath() {
+		return correlationIDXPath;
 	}
 
 }
