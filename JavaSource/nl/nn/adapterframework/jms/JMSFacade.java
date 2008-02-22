@@ -1,6 +1,9 @@
 /*
  * $Log: JMSFacade.java,v $
- * Revision 1.32  2008-02-19 09:39:44  europe\L190409
+ * Revision 1.33  2008-02-22 14:31:48  europe\L190409
+ * added Selector to getPhysicalDestinationName
+ *
+ * Revision 1.32  2008/02/19 09:39:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.31  2007/11/23 14:47:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -142,7 +145,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version="$RCSfile: JMSFacade.java,v $ $Revision: 1.32 $ $Date: 2008-02-19 09:39:44 $";
+	public static final String version="$RCSfile: JMSFacade.java,v $ $Revision: 1.33 $ $Date: 2008-02-22 14:31:48 $";
 
 	public static final String MODE_PERSISTENT="PERSISTENT";
 	public static final String MODE_NON_PERSISTENT="NON_PERSISTENT";
@@ -189,13 +192,6 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	//the MessageSelector will provide filter functionality, as specified
 	//javax.jms.Message.
     private String messageSelector=null;
-    
-    public String getMessageSelector() {
-    	return messageSelector;
-    }
-    public void setMessageSelector(String newMessageSelector) {
-    	this.messageSelector=newMessageSelector;
-    }
     
  
 	public static int stringToDeliveryMode(String mode) {
@@ -513,7 +509,11 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	    } catch (Exception je) {
 	        log.warn("[" + name + "] got exception in getPhysicalDestinationName", je);
 	    }
-	    return getDestinationType()+"("+getDestinationName()+") ["+result+"]";
+	    result=getDestinationType()+"("+getDestinationName()+") ["+result+"]";
+		if (StringUtils.isNotEmpty(getMessageSelector())) {
+			result+=" selector ["+getMessageSelector()+"]";
+		}
+	    return result;
 	}
 	
     /**
@@ -966,5 +966,13 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
     public boolean isUseTopicFunctions() {
         return useTopicFunctions;
     }
+    
+	public void setMessageSelector(String newMessageSelector) {
+		this.messageSelector=newMessageSelector;
+	}
+	public String getMessageSelector() {
+		return messageSelector;
+	}
+    
 
 }
