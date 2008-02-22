@@ -1,6 +1,9 @@
 /*
  * $Log: FxfListener.java,v $
- * Revision 1.4  2008-02-21 12:35:37  europe\L190409
+ * Revision 1.5  2008-02-22 14:37:55  europe\L190409
+ * store transfername and local filename in threadcontext
+ *
+ * Revision 1.4  2008/02/21 12:35:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fixed default of script
  * added signalling of file processed
  *
@@ -25,10 +28,14 @@ import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.jms.JmsListener;
 import nl.nn.adapterframework.util.FileUtils;
+import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.ProcessUtil;
 import nl.nn.adapterframework.util.TransformerPool;
 
 import org.apache.commons.lang.StringUtils;
+import org.springframework.transaction.NoTransactionException;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 /**
  * Listener for files transferred using the FxF protocol. Message handed to the pipeline is the local filename.
@@ -56,6 +63,9 @@ public class FxfListener extends JmsListener {
 
 	public static final String EXTRACT_TRANSFERNAME_DXPATH="FXF/Transfer_name";
 	public static final String EXTRACT_LOCALNAME_DXPATH="FXF/Local_File";
+
+	public static final String TRANSFERNAME_SESSION_KEY="FxfTransferName";
+	public static final String LOCALNAME_SESSION_KEY="FxfLocalFile";
 	
 	private String script="/usr/local/bin/FXF_init";
 	private String processedDirectory;
@@ -77,6 +87,7 @@ public class FxfListener extends JmsListener {
 	
 	public String getStringFromRawMessage(Object rawMessage, Map threadContext) throws ListenerException {
 		String message=super.getStringFromRawMessage(rawMessage, threadContext);
+		log.debug(getLogPrefix()+"retrieved FXF message ["+message+"]");
 		String transfername;
 		String localname;
 		try {
@@ -93,29 +104,45 @@ public class FxfListener extends JmsListener {
 		} catch (SenderException e1) {
 			throw new ListenerException(e1);
 		}
+		threadContext.put(TRANSFERNAME_SESSION_KEY,transfername);
+		threadContext.put(LOCALNAME_SESSION_KEY,localname);
 		return localname;
 	}
 
 	public void afterMessageProcessed(PipeLineResult plr, Object rawMessage, Map threadContext) throws ListenerException { 
 		super.afterMessageProcessed(plr, rawMessage, threadContext);
-		String message=super.getStringFromRawMessage(rawMessage, threadContext);
-		String transfername;
-		String localname;
-		try {
-			transfername=extractTransfername.transform(message,null);
-			localname=extractLocalname.transform(message,null);
-		} catch (Exception e) {
-			throw new ListenerException("could not extract name from message ["+message+"]");
+
+		String transfername=(String)threadContext.get(TRANSFERNAME_SESSION_KEY);
+		String localname=(String)threadContext.get(LOCALNAME_SESSION_KEY);
+		if (StringUtils.isEmpty(transfername)) {
+			throw new ListenerException("could not extract FXF transfername from session key ["+TRANSFERNAME_SESSION_KEY+"]");
 		}
-		
-		// confirm processing of file
-		String command = getScript()+" processed "+transfername;
-		log.debug(getLogPrefix()+"confirming processing of file ["+localname+"] by executing command ["+command+"]");
-		try {
-			String execResult=ProcessUtil.executeCommand(command);
-			log.debug(getLogPrefix()+"output of command ["+execResult+"]");
-		} catch (SenderException e1) {
-			throw new ListenerException(e1);
+		if (StringUtils.isEmpty(localname)) {
+			throw new ListenerException("could not extract FXF localname from session key ["+LOCALNAME_SESSION_KEY+"]");
+		}
+	
+//		log.debug("FXF transaction status1:"+JtaUtil.displayTransactionStatus());
+//
+//		TransactionStatus txStatus=null;
+//		try {
+//			txStatus=TransactionAspectSupport.currentTransactionStatus();
+//			log.debug("FXF transaction status2:"+JtaUtil.displayTransactionStatus(txStatus));
+//		} catch (NoTransactionException e) {
+//			log.debug("not in transaction: "+e.getMessage());
+//		}
+
+		if (JtaUtil.isRollbackOnly()) {
+			log.info(getLogPrefix()+"transaction status is RollbackOnly, will not confirm processing to FXF");		
+		} else {
+			// confirm processing of file
+			String command = getScript()+" processed "+transfername;
+			log.debug(getLogPrefix()+"confirming FXF processing of file ["+localname+"] by executing command ["+command+"]");
+			try {
+				String execResult=ProcessUtil.executeCommand(command);
+				log.debug(getLogPrefix()+"output of command ["+execResult+"]");
+			} catch (SenderException e1) {
+				throw new ListenerException(e1);
+			}
 		}
 
 		// delete file or move it to processed directory
