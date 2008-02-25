@@ -1,6 +1,9 @@
 /*
  * $Log: IbisContext.java,v $
- * Revision 1.1  2008-02-13 12:52:21  europe\L190409
+ * Revision 1.2  2008-02-25 10:10:59  europe\L190409
+ * removed JMX server starting
+ *
+ * Revision 1.1  2008/02/13 12:52:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * renamed IbisMain to IbisContext
  *
  * Revision 1.8  2008/02/08 09:47:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -38,11 +41,6 @@
  *
  */
 package nl.nn.adapterframework.configuration;
-
-import javax.management.MBeanServer;
-import javax.management.MBeanServerFactory;
-import javax.management.ObjectInstance;
-import javax.management.ReflectionException;
 
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -117,7 +115,7 @@ public class IbisContext {
 		log.info("* IBIS Startup: Running on JDK version [" + System.getProperty("java.version")
 				+ "], Spring indicates JDK Major version: 1." + (JdkVersion.getMajorJavaVersion()+3));
 		// This should be made conditional, somehow
-		startJmxServer();
+//		startJmxServer();
 		
 		beanFactory = createBeanFactory(springContext);
 		ibisManager = getIbisManager(beanFactory);
@@ -213,27 +211,27 @@ public class IbisContext {
 		return o;
 	}
 
-	private void startJmxServer() {
-		//Start MBean server
-        
-        // It seems that no reference to the server is required anymore,
-        // anywhere later? So no reference is returned from
-        // this method.
-        log.info("* IBIS Startup: Attempting to start MBean server");
-		MBeanServer server=MBeanServerFactory.createMBeanServer();
-		try {
-		  ObjectInstance html = server.createMBean("com.sun.jdmk.comm.HtmlAdaptorServer", null);
-		    
-		  server.invoke(html.getObjectName(), "start", new Object[0], new String[0]);
-        } catch (ReflectionException e ) {
-            log.error("Requested JMX Server MBean can not be created; JMX not available.");
-            return;
-        } catch (Exception e) {
-		    log.error("Error with jmx:",e);
-            return;
-		}
-		log.info("MBean server up and running. Monitor your application by pointing your browser to http://localhost:8082");
-	}
+//	private void startJmxServer() {
+//		//Start MBean server
+//        
+//        // It seems that no reference to the server is required anymore,
+//        // anywhere later? So no reference is returned from
+//        // this method.
+//        log.info("* IBIS Startup: Attempting to start MBean server");
+//		MBeanServer server=MBeanServerFactory.createMBeanServer();
+//		try {
+//		  ObjectInstance html = server.createMBean("com.sun.jdmk.comm.HtmlAdaptorServer", null);
+//		    
+//		  server.invoke(html.getObjectName(), "start", new Object[0], new String[0]);
+//        } catch (ReflectionException e ) {
+//            log.error("Requested JMX Server MBean can not be created; JMX not available.");
+//            return;
+//        } catch (Exception e) {
+//		    log.error("Error with jmx:",e);
+//            return;
+//		}
+//		log.info("MBean server up and running. Monitor your application by pointing your browser to http://localhost:8082");
+//	}
     
 
 	public void setBeanFactory(ListableBeanFactory factory) {
