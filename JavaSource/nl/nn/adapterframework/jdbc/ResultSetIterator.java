@@ -1,6 +1,9 @@
 /*
  * $Log: ResultSetIterator.java,v $
- * Revision 1.2  2007-07-26 16:14:08  europe\L190409
+ * Revision 1.3  2008-02-26 08:36:05  europe\L190409
+ * updated javadoc
+ *
+ * Revision 1.2  2007/07/26 16:14:08  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * use JdbcUtil.fullClose()
  *
  * Revision 1.1  2007/07/17 11:16:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -24,6 +27,8 @@ import org.apache.log4j.Logger;
 
 /**
  * Iterator over ResultSet.
+ * 
+ * Each row is returned in the same way a row is usually returned from a query.
  * 
  * @author  Gerrit van Brakel
  * @since   4.7
