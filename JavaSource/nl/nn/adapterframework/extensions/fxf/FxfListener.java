@@ -1,6 +1,9 @@
 /*
  * $Log: FxfListener.java,v $
- * Revision 1.5  2008-02-22 14:37:55  europe\L190409
+ * Revision 1.6  2008-02-26 09:39:16  europe\L190409
+ * added transfername attribute
+ *
+ * Revision 1.5  2008/02/22 14:37:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * store transfername and local filename in threadcontext
  *
  * Revision 1.4  2008/02/21 12:35:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -33,9 +36,6 @@ import nl.nn.adapterframework.util.ProcessUtil;
 import nl.nn.adapterframework.util.TransformerPool;
 
 import org.apache.commons.lang.StringUtils;
-import org.springframework.transaction.NoTransactionException;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 /**
  * Listener for files transferred using the FxF protocol. Message handed to the pipeline is the local filename.
@@ -44,6 +44,7 @@ import org.springframework.transaction.interceptor.TransactionAspectSupport;
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.extensions.fxf.FxfListener</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setScript(String) script}</td><td>full pathname to the FXF script to be executed to transfer the file</td><td>/usr/local/bin/FXF_init</td></tr>
+ * <tr><td>{@link #setTransfername(String) transfername}</td><td><i>Experimental in 4.8.2</i>FXF transfername, will be converted in to hexadecimal messageselector</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDestinationName(String) destinationName}</td><td>name of the JMS destination (queue or topic) to use</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setQueueConnectionFactoryName(String) queueConnectionFactoryName}</td><td>jndi-name of the queueConnectionFactory, used when <code>destinationType<code>=</code>QUEUE</code></td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMessageSelector(String) messageSelector}</td><td>When set, the value of this attribute is used as a selector to filter messages.</td><td>0 (unlimited)</td></tr>
@@ -72,6 +73,7 @@ public class FxfListener extends JmsListener {
 	private int numberOfBackups = 0;
 	private boolean overwrite = false;
 	private boolean delete = false;
+	private String transfername;
 
 	private TransformerPool extractTransfername;
 	private TransformerPool extractLocalname;
@@ -81,6 +83,9 @@ public class FxfListener extends JmsListener {
 		if (StringUtils.isEmpty(getScript())) {
 			throw new ConfigurationException("attribute 'script' empty, please specify (e.g. /usr/local/bin/FXF_init)");
 		}
+//		if (StringUtils.isNotEmpty(getTransfername()) && StringUtils.isNotEmpty(super.getMessageSelector())) {
+//			throw new ConfigurationException("cannot specify both transfername and messageSelector");
+//		}
 		extractTransfername=TransformerPool.configureTransformer(getLogPrefix(),EXTRACT_TRANSFERNAME_DXPATH,null,"text",false,null);
 		extractLocalname=TransformerPool.configureTransformer(getLogPrefix(),EXTRACT_LOCALNAME_DXPATH,null,"text",false,null);
 	}
@@ -156,12 +161,44 @@ public class FxfListener extends JmsListener {
 		}
 	}
 
+	public String getMessageSelector() {
+		String result=super.getMessageSelector();
+		if (StringUtils.isNotEmpty(result) || StringUtils.isEmpty(getTransfername())) {
+			return result;
+		}
+		String transfername=getTransfername();
+		result="ID:";
+		int i;
+		for (i=0;i<transfername.length();i++) {
+			int c=transfername.charAt(i);
+			result+=transfername+Integer.toHexString(c);
+		};
+		for (;i<24;i++) {
+			result+="00";		
+		}
+		return result;
+	}
+
+	public String getPhysicalDestinationName() {
+		String result = super.getPhysicalDestinationName();
+		if (StringUtils.isNotEmpty(getTransfername())) {
+			result += " transfername ["+getTransfername()+"]";
+		}
+		return result;
+	}
 
 	public void setScript(String string) {
 		script = string;
 	}
 	public String getScript() {
 		return script;
+	}
+
+	public void setTransfername(String string) {
+		transfername = string;
+	}
+	public String getTransfername() {
+		return transfername;
 	}
 
 	public void setProcessedDirectory(String processedDirectory) {
