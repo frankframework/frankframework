@@ -1,6 +1,9 @@
 /*
  * $Log: LobLineIteratingPipeBase.java,v $
- * Revision 1.1  2007-07-26 16:15:28  europe\L190409
+ * Revision 1.2  2008-02-26 08:36:40  europe\L190409
+ * renamed IteratingPipeBase to JdbcIteratingPipeBase
+ *
+ * Revision 1.1  2007/07/26 16:15:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * first version
  *
  */
@@ -21,7 +24,7 @@ import nl.nn.adapterframework.util.ReaderLineIterator;
  * @since   4.7
  * @version Id
  */
-public abstract class LobLineIteratingPipeBase extends IteratingPipeBase {
+public abstract class LobLineIteratingPipeBase extends JdbcIteratingPipeBase {
 
 	protected abstract Reader getReader(ResultSet rs) throws SenderException;
 
