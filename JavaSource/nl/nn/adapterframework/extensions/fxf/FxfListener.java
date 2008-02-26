@@ -1,6 +1,9 @@
 /*
  * $Log: FxfListener.java,v $
- * Revision 1.6  2008-02-26 09:39:16  europe\L190409
+ * Revision 1.7  2008-02-26 12:53:40  europe\L190409
+ * corrected calculation of messageSelector from transfername
+ *
+ * Revision 1.6  2008/02/26 09:39:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added transfername attribute
  *
  * Revision 1.5  2008/02/22 14:37:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -44,7 +47,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.extensions.fxf.FxfListener</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setScript(String) script}</td><td>full pathname to the FXF script to be executed to transfer the file</td><td>/usr/local/bin/FXF_init</td></tr>
- * <tr><td>{@link #setTransfername(String) transfername}</td><td><i>Experimental in 4.8.2</i>FXF transfername, will be converted in to hexadecimal messageselector</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setTransfername(String) transfername}</td><td>FXF transfername, will be converted in to hexadecimal messageselector</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDestinationName(String) destinationName}</td><td>name of the JMS destination (queue or topic) to use</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setQueueConnectionFactoryName(String) queueConnectionFactoryName}</td><td>jndi-name of the queueConnectionFactory, used when <code>destinationType<code>=</code>QUEUE</code></td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMessageSelector(String) messageSelector}</td><td>When set, the value of this attribute is used as a selector to filter messages.</td><td>0 (unlimited)</td></tr>
@@ -83,9 +86,12 @@ public class FxfListener extends JmsListener {
 		if (StringUtils.isEmpty(getScript())) {
 			throw new ConfigurationException("attribute 'script' empty, please specify (e.g. /usr/local/bin/FXF_init)");
 		}
-//		if (StringUtils.isNotEmpty(getTransfername()) && StringUtils.isNotEmpty(super.getMessageSelector())) {
-//			throw new ConfigurationException("cannot specify both transfername and messageSelector");
-//		}
+		if (StringUtils.isNotEmpty(getTransfername()) && StringUtils.isNotEmpty(super.getMessageSelector())) {
+			throw new ConfigurationException("cannot specify both transfername and messageSelector");
+		}
+		if (StringUtils.isEmpty(getTransfername()) && StringUtils.isEmpty(super.getMessageSelector())) {
+			throw new ConfigurationException("either messageSelector or transfername must be specified");
+		}
 		extractTransfername=TransformerPool.configureTransformer(getLogPrefix(),EXTRACT_TRANSFERNAME_DXPATH,null,"text",false,null);
 		extractLocalname=TransformerPool.configureTransformer(getLogPrefix(),EXTRACT_LOCALNAME_DXPATH,null,"text",false,null);
 	}
@@ -167,15 +173,16 @@ public class FxfListener extends JmsListener {
 			return result;
 		}
 		String transfername=getTransfername();
-		result="ID:";
+		result="JMSCorrelationID='ID:";
 		int i;
 		for (i=0;i<transfername.length();i++) {
 			int c=transfername.charAt(i);
-			result+=transfername+Integer.toHexString(c);
+			result+=Integer.toHexString(c);
 		};
 		for (;i<24;i++) {
 			result+="00";		
 		}
+		result+="'";
 		return result;
 	}
 
