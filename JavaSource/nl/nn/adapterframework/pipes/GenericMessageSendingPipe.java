@@ -1,6 +1,9 @@
 /*
  * $Log: GenericMessageSendingPipe.java,v $
- * Revision 1.7  2007-05-21 12:28:15  europe\L190409
+ * Revision 1.8  2008-02-26 09:18:50  europe\L190409
+ * updated javadoc
+ *
+ * Revision 1.7  2007/05/21 12:28:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added public setMessageLog()
  *
  * Revision 1.6  2007/05/09 09:47:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -45,7 +48,7 @@ import nl.nn.adapterframework.core.ITransactionalStorage;
  * <tr><td>{@link #setCheckXmlWellFormed(boolean) checkXmlWellFormed}</td><td>when set <code>true</code>, the XML well-formedness of the result is checked</td><td>false</td></tr>
  * <tr><td>{@link #setCheckRootTag(String) checkRootTag}</td><td>when set, besides the XML well-formedness the root element of the result is checked to be equal to the value set</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setPreserveInput(boolean) preserveInput}</td><td>when set <code>true</code>, the input of a pipe is restored before processing the next one</td><td>false</td></tr>
- * <tr><td>{@link #setNamespaceAware(boolean) namespaceAware}</td><td>controls namespace-awareness of possible XML parsing in descender-classes</td><td>application default</td></tr>
+ * <tr><td>{@link #setNamespaceAware(boolean) namespaceAware}</td><td>controls namespaceAwarenes for parameters</td><td>application default</td></tr>
  * <tr><td>{@link #setTransactionAttribute(String) transactionAttribute}</td><td>Defines transaction and isolation behaviour. Equal to <A href="http://java.sun.com/j2ee/sdk_1.2.1/techdocs/guides/ejb/html/Transaction2.html#10494">EJB transaction attribute</a>. Possible values are: 
  *   <table border="1">
  *   <tr><th>transactionAttribute</th><th>callers Transaction</th><th>Pipe excecuted in Transaction</th></tr>
@@ -68,14 +71,17 @@ import nl.nn.adapterframework.core.ITransactionalStorage;
  * <tr><td>{@link #setForwardName(String) forwardName}</td>  <td>name of forward returned upon completion</td><td>"success"</td></tr>
  * <tr><td>{@link #setResultOnTimeOut(String) resultOnTimeOut}</td><td>result returned when no return-message was received within the timeout limit</td><td>"receiver timed out"</td></tr>
  * <tr><td>{@link #setLinkMethod(String) linkMethod}</td><td>Indicates wether the server uses the correlationID or the messageID in the correlationID field of the reply</td><td>CORRELATIONID</td></tr>
- * <tr><td>{@link #setNamespaceAware(boolean) namespaceAware}</td><td>controls namespaceAwarenes for parameters</td><td>application default</td></tr>
- * <tr><td><code>sender.*</td><td>any attribute of the sender instantiated by descendant classes</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setAuditTrailXPath(String) auditTrailXPath}</td><td>xpath expression to extract audit trail from message</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setCorrelationIDXPath(String) correationIdXPath}</td><td>xpath expression to extract correlationID from message</td><td>&nbsp;</td></tr>
  * </table>
  * <table border="1">
  * <tr><th>nested elements</th><th>description</th></tr>
  * <tr><td>{@link nl.nn.adapterframework.core.ISender sender}</td><td>specification of sender to send messages with</td></tr>
  * <tr><td>{@link nl.nn.adapterframework.core.ICorrelatedPullingListener listener}</td><td>specification of listener to listen to for replies</td></tr>
  * <tr><td>{@link nl.nn.adapterframework.parameters.Parameter param}</td><td>any parameters defined on the pipe will be handed to the sender, if this is a {@link IParameterizedSender}</td></tr>
+ * <tr><td><code>inputValidator</code></td><td>specification of Pipe to validate input messages</td></tr>
+ * <tr><td><code>outputValidator</code></td><td>specification of Pipe to validate output messages</td></tr>
+ * <tr><td>{@link nl.nn.adapterframework.core.ITransactionalStorage messageLog}</td><td>log of all messages sent</td></tr>
  * </table>
  * </p>
  * <p><b>Exits:</b>
@@ -94,7 +100,7 @@ import nl.nn.adapterframework.core.ITransactionalStorage;
  */
 
 public class GenericMessageSendingPipe extends MessageSendingPipe {
-	public static final String version="$RCSfile: GenericMessageSendingPipe.java,v $ $Revision: 1.7 $ $Date: 2007-05-21 12:28:15 $";
+	public static final String version="$RCSfile: GenericMessageSendingPipe.java,v $ $Revision: 1.8 $ $Date: 2008-02-26 09:18:50 $";
 
 	public void setListener(ICorrelatedPullingListener listener) {
 		super.setListener(listener);

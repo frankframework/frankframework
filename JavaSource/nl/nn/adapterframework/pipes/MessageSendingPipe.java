@@ -1,6 +1,9 @@
 /*
  * $Log: MessageSendingPipe.java,v $
- * Revision 1.38  2008-01-30 14:49:21  europe\L190409
+ * Revision 1.39  2008-02-26 09:18:50  europe\L190409
+ * updated javadoc
+ *
+ * Revision 1.38  2008/01/30 14:49:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc, removed superfluous configure()s
  *
  * Revision 1.37  2007/12/17 08:57:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -156,7 +159,7 @@ import org.apache.commons.lang.SystemUtils;
  * <tr><td>{@link #setCheckXmlWellFormed(boolean) checkXmlWellFormed}</td><td>when set <code>true</code>, the XML well-formedness of the result is checked</td><td>false</td></tr>
  * <tr><td>{@link #setCheckRootTag(String) checkRootTag}</td><td>when set, besides the XML well-formedness the root element of the result is checked to be equal to the value set</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setPreserveInput(boolean) preserveInput}</td><td>when set <code>true</code>, the input of a pipe is restored before processing the next one</td><td>false</td></tr>
- * <tr><td>{@link #setNamespaceAware(boolean) namespaceAware}</td><td>controls namespace-awareness of possible XML parsing in descender-classes</td><td>application default</td></tr>
+ * <tr><td>{@link #setNamespaceAware(boolean) namespaceAware}</td><td>controls namespaceAwareness for parameters</td><td>application default</td></tr>
  * <tr><td>{@link #setTransactionAttribute(String) transactionAttribute}</td><td>Defines transaction and isolation behaviour. Equal to <A href="http://java.sun.com/j2ee/sdk_1.2.1/techdocs/guides/ejb/html/Transaction2.html#10494">EJB transaction attribute</a>. Possible values are: 
  *   <table border="1">
  *   <tr><th>transactionAttribute</th><th>callers Transaction</th><th>Pipe excecuted in Transaction</th></tr>
@@ -193,8 +196,9 @@ import org.apache.commons.lang.SystemUtils;
  * and it is used at runtime instead of the stubFileName specified by the attribute. A lookup of the 
  * file for this stubFileName will be done at runtime, while the file for the stubFileName specified 
  * as an attribute will be done at configuration time.</td></tr>
- * <tr><td>&lt;inputValidator&gt;</td><td>specification of Pipe to validate input messages</td></tr>
- * <tr><td>&lt;outputValidator&gt;</td><td>specification of Pipe to validate output messages</td></tr>
+ * <tr><td><code>inputValidator</code></td><td>specification of Pipe to validate input messages</td></tr>
+ * <tr><td><code>outputValidator</code></td><td>specification of Pipe to validate output messages</td></tr>
+ * <tr><td>{@link nl.nn.adapterframework.core.ITransactionalStorage messageLog}</td><td>log of all messages sent</td></tr>
  * </table>
  * </p>
  * <p><b>Exits:</b>
@@ -211,7 +215,7 @@ import org.apache.commons.lang.SystemUtils;
  */
 
 public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
-	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.38 $ $Date: 2008-01-30 14:49:21 $";
+	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.39 $ $Date: 2008-02-26 09:18:50 $";
 
 	private final static String TIMEOUTFORWARD = "timeout";
 	private final static String EXCEPTIONFORWARD = "exception";
