@@ -1,6 +1,9 @@
 /*
  * $Log: JmxUtils.java,v $
- * Revision 1.4  2007-10-08 13:35:13  europe\L190409
+ * Revision 1.5  2008-02-26 09:40:32  europe\L190409
+ * added getMbeanServer function
+ *
+ * Revision 1.4  2007/10/08 13:35:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed ArrayList to List where possible
  *
  */
@@ -25,9 +28,22 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class JmxUtils {
-	public static final String version = "$RCSfile: JmxUtils.java,v $ $Revision: 1.4 $ $Date: 2007-10-08 13:35:13 $";
+	public static final String version = "$RCSfile: JmxUtils.java,v $ $Revision: 1.5 $ $Date: 2008-02-26 09:40:32 $";
 	protected static Logger log = LogUtil.getLogger(JmxUtils.class);
 
+	static MBeanServer mbeanServer=null;
+	
+	public static MBeanServer getMBeanServer() throws Exception {
+		if (mbeanServer==null) {
+			List servers = MBeanServerFactory.findMBeanServer(null);
+			if (servers == null) {
+				throw new Exception("no MBean servers found");
+			}
+			mbeanServer = (MBeanServer) servers.get(0);
+			log.debug("got an MBean server, domain ["+mbeanServer.getDefaultDomain()+"]");
+		}
+		return mbeanServer;
+	}
 
 	/**
 	 * Registers an mBean at an MBeanServer. If there is already an mbean registered 
@@ -38,16 +54,11 @@ public class JmxUtils {
 	 */
 	public static void registerMBean(ObjectName name, RequiredModelMBean mbean) throws Exception {
 
-		List servers = MBeanServerFactory.findMBeanServer(null);
-		if (servers == null) {
-			throw new Exception("no Mbean servers found");
-		}
-		MBeanServer server = (MBeanServer) servers.get(0);
-		log.debug("got an MBean server");
-		if (server.isRegistered(name)) {
-				log.debug("unregistering ["+name.getCanonicalName()+"] as it already exists");
-				server.unregisterMBean(name);
-		}
+		MBeanServer server = getMBeanServer(); 
+//		if (server.isRegistered(name)) {
+//				log.debug("unregistering ["+name.getCanonicalName()+"] as it already exists");
+//				server.unregisterMBean(name);
+//		}
 		server.registerMBean(mbean, name);
 	
 		log.debug("MBean [" + name.getCanonicalName() + "] registered");
