@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcTableListener.java,v $
- * Revision 1.4  2007-10-02 09:17:48  europe\L190409
+ * Revision 1.5  2008-02-28 16:21:30  europe\L190409
+ * updated javadoc
+ *
+ * Revision 1.4  2007/10/02 09:17:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added tablename to physical destination
  *
  * Revision 1.3  2007/09/17 07:44:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -40,7 +43,6 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setStatusValueError(String) statusValueError}</td>         <td>value of status field indicating the processing of the row resulted in an error</td><td>&nbsp;</td></tr>
 
  * <tr><td>{@link #setDatasourceName(String) datasourceName}</td><td>can be configured from JmsRealm, too</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setDatasourceNameXA(String) datasourceNameXA}</td><td>can be configured from JmsRealm, too</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setUsername(String) username}</td><td>username used to connect to datasource</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setPassword(String) password}</td><td>password used to connect to datasource</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setConnectionsArePooled(boolean) connectionsArePooled}</td><td>when true, it is assumed that an connectionpooling mechanism is present. Before a message is sent, a new connection is obtained, that is closed after the message is sent. When transacted is true, connectionsArePooled is true, too</td><td>true</td></tr>
