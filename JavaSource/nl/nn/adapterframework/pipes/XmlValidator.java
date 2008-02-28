@@ -1,6 +1,9 @@
 /*
  * $Log: XmlValidator.java,v $
- * Revision 1.24  2008-02-21 12:45:02  europe\L190409
+ * Revision 1.25  2008-02-28 16:24:05  europe\L190409
+ * improved errorMessage
+ *
+ * Revision 1.24  2008/02/21 12:45:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added option to validate file
  *
  * Revision 1.23  2007/07/19 07:30:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -148,7 +151,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * @author Johan Verrips IOS / Jaco de Groot (***@dynasol.nl)
  */
 public class XmlValidator extends FixedForwardPipe {
-	public static final String version="$RCSfile: XmlValidator.java,v $ $Revision: 1.24 $ $Date: 2008-02-21 12:45:02 $";
+	public static final String version="$RCSfile: XmlValidator.java,v $ $Revision: 1.25 $ $Date: 2008-02-28 16:24:05 $";
 
     private String schemaLocation = null;
     private String noNamespaceSchemaLocation = null;
@@ -265,7 +268,7 @@ public class XmlValidator extends FixedForwardPipe {
         
 		if (!isThrowException()){
             if (findForward("failure")==null) throw new ConfigurationException(
-            getLogPrefix(null)+ "has no forward with name [failure]");
+            getLogPrefix(null)+ "must either set throwException true, or have a forward with name [failure]");
         }
 		if ((StringUtils.isNotEmpty(getNoNamespaceSchemaLocation()) ||
 			 StringUtils.isNotEmpty(getSchemaLocation())) &&
