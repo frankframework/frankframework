@@ -1,6 +1,9 @@
 /*
  * $Log: RecordXslTransformer.java,v $
- * Revision 1.10  2008-02-19 09:23:47  europe\L190409
+ * Revision 1.11  2008-02-28 16:17:07  europe\L190409
+ * move xslt functionality to base class RecordXmlTransformer
+ *
+ * Revision 1.10  2008/02/19 09:23:47  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.9  2008/02/15 16:05:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -32,15 +35,6 @@
  */
 package nl.nn.adapterframework.batch;
 
-import java.util.List;
-
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.parameters.ParameterList;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.TransformerPool;
 
 /**
  * Translate a record using XSL.
@@ -67,67 +61,7 @@ import nl.nn.adapterframework.util.TransformerPool;
  * @version Id
  */
 public class RecordXslTransformer extends RecordXmlTransformer {
-	public static final String version = "$RCSfile: RecordXslTransformer.java,v $  $Revision: 1.10 $ $Date: 2008-02-19 09:23:47 $";
-
-	private String xpathExpression=null;
-	private String styleSheetName;
-	private String outputType="text";
-	private boolean omitXmlDeclaration=true;
-
-	private TransformerPool transformerPool; 
-	private ParameterList parameterList = new ParameterList();
-
-	public void configure() throws ConfigurationException {
-		super.configure();
-		ParameterList params = getParameterList();
-		if (params!=null) {
-			try {
-				params.configure();
-			} catch (ConfigurationException e) {
-				throw new ConfigurationException("while configuring parameters",e);
-			}
-		}
-		transformerPool = TransformerPool.configureTransformer(ClassUtils.nameOf(this)+" ["+getName()+"]", getXpathExpression(), getStyleSheetName(), getOutputType(), !isOmitXmlDeclaration(), getParameterList());
-	}
-
-
-	private ParameterList getParameterList() {
-		return parameterList;
-	}
-
-	public void addParameter(Parameter param) {
-		log.debug("added parameter ["+param.toString()+"]");
-		parameterList.add(param);
-	}
-
-
-	public Object handleRecord(PipeLineSession session, List parsedRecord, ParameterResolutionContext prc) throws Exception {
-		String xml = getXml(parsedRecord);
-		return transformerPool.transform(xml, prc.getValueMap(paramList));
-	}
-	
-
-	public void setXpathExpression(String string) {
-		xpathExpression = string;
-	}
-	public String getXpathExpression() {
-		return xpathExpression;
-	}
-
-
-	public void setOmitXmlDeclaration(boolean b) {
-		omitXmlDeclaration = b;
-	}
-	public boolean isOmitXmlDeclaration() {
-		return omitXmlDeclaration;
-	}
-
-	public void setOutputType(String string) {
-		outputType = string;
-	}
-	public String getOutputType() {
-		return outputType;
-	}
+	public static final String version = "$RCSfile: RecordXslTransformer.java,v $  $Revision: 1.11 $ $Date: 2008-02-28 16:17:07 $";
 
 	/**
 	 * @deprecated configuration using attribute 'xslFile' is deprecated. Please use attribute 'styleSheetName' 
@@ -135,12 +69,6 @@ public class RecordXslTransformer extends RecordXmlTransformer {
 	public void setXslFile(String xslFile) {
 		log.warn("configuration using attribute 'xslFile' is deprecated. Please use attribute 'styleSheetName'");
 		setStyleSheetName(xslFile);
-	}
-	public void setStyleSheetName(String string) {
-		styleSheetName = string;
-	}
-	public String getStyleSheetName() {
-		return styleSheetName;
 	}
 
 }

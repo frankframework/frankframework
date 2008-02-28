@@ -1,6 +1,9 @@
 /*
  * $Log: RecordXmlTransformer.java,v $
- * Revision 1.10  2008-02-19 09:23:48  europe\L190409
+ * Revision 1.11  2008-02-28 16:17:07  europe\L190409
+ * move xslt functionality to base class RecordXmlTransformer
+ *
+ * Revision 1.10  2008/02/19 09:23:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.9  2008/02/15 16:05:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -36,15 +39,20 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
 
 /**
- * Encapsulates a record in XML.
+ * Encapsulates a record in XML, optionally translates it using XSLT or XPath.
  * 
  * <p><b>Configuration:</b>
  * <table border="1">
@@ -55,8 +63,12 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setInputSeparator(String) inputSeparator}</td><td>Separator that separated the fields in the input record. Either this attribute or <code>inputFields</code> must be specified</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setTrim(boolean) trim}</td><td>when set <code>true</code>, trailing spaces are removed from each field</td><td>false</td></tr>
  * <tr><td>{@link #setRootTag(String) rootTag}</td><td>Roottag for the generated XML document</td><td>record</td></tr>
- * <tr><td>{@link #setOutputFields(String) outputfields}</td><td>Comma seperated string with tagnames for the individual input fields (related using there positions). If you leave a tagname empty, the field is not xml-ized</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setOutputFields(String) outputfields}</td><td>Comma separated string with tagnames for the individual input fields (related using there positions). If you leave a tagname empty, the field is not xml-ized</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setRecordIdentifyingFields(String) recordIdentifyingFields}</td><td>Comma separated list of numbers of those fields that are compared with the previous record to determine if a prefix must be written. If any of these fields is not equal in both records, the record types are assumed to be different</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setStyleSheetName(String) styleSheetName}</td><td>name of stylesheet to transform an individual record</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setXpathExpression(String) xpathExpression}</td><td>alternatively: XPath-expression to create stylesheet from</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setOutputType(String) outputType}</td><td>either 'text' or 'xml'. Only valid for xpathExpression</td><td>text</td></tr>
+ * <tr><td>{@link #setOmitXmlDeclaration(boolean) omitXmlDeclaration}</td><td>force the transformer generated from the XPath-expression to omit the xml declaration</td><td>true</td></tr>
  * </table>
  * </p>
  * 
@@ -64,18 +76,47 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class RecordXmlTransformer extends AbstractRecordHandler {
-	public static final String version = "$RCSfile: RecordXmlTransformer.java,v $  $Revision: 1.10 $ $Date: 2008-02-19 09:23:48 $";
+	public static final String version = "$RCSfile: RecordXmlTransformer.java,v $  $Revision: 1.11 $ $Date: 2008-02-28 16:17:07 $";
 
 	private String rootTag="record";
+	private String xpathExpression=null;
+	private String styleSheetName;
+	private String outputType="text";
+	private boolean omitXmlDeclaration=true;
+
+	private TransformerPool transformerPool; 
+	private ParameterList parameterList = new ParameterList();
+
 	private List outputFields; 
 
 	public RecordXmlTransformer() {
 		outputFields = new LinkedList();
 	}
 
+	public void configure() throws ConfigurationException {
+		super.configure();
+		ParameterList params = getParameterList();
+		if (params!=null) {
+			try {
+				params.configure();
+			} catch (ConfigurationException e) {
+				throw new ConfigurationException("while configuring parameters",e);
+			}
+		}
+		if (StringUtils.isNotEmpty(getStyleSheetName())||StringUtils.isNotEmpty(getXpathExpression())) {
+			transformerPool = TransformerPool.configureTransformer(ClassUtils.nameOf(this)+" ["+getName()+"]", getXpathExpression(), getStyleSheetName(), getOutputType(), !isOmitXmlDeclaration(), getParameterList());
+		}
+	}
+
+
 
 	public Object handleRecord(PipeLineSession session, List parsedRecord, ParameterResolutionContext prc) throws Exception {
-		return getXml(parsedRecord);
+		String xml = getXml(parsedRecord);
+		if (transformerPool!=null) {
+			return transformerPool.transform(xml, prc.getValueMap(paramList));
+		} else {
+			return xml;
+		}
 	}
 	
 	protected String getXml(List parsedRecord) {
@@ -108,11 +149,50 @@ public class RecordXmlTransformer extends AbstractRecordHandler {
 		}
 	}
 
+	private ParameterList getParameterList() {
+		return parameterList;
+	}
+
+	public void addParameter(Parameter param) {
+		log.debug("added parameter ["+param.toString()+"]");
+		parameterList.add(param);
+	}
+
+
+
 	public void setRootTag(String string) {
 		rootTag = string;
 	}
 	public String getRootTag() {
 		return rootTag;
+	}
+
+	public void setXpathExpression(String string) {
+		xpathExpression = string;
+	}
+	public String getXpathExpression() {
+		return xpathExpression;
+	}
+
+	public void setStyleSheetName(String string) {
+		styleSheetName = string;
+	}
+	public String getStyleSheetName() {
+		return styleSheetName;
+	}
+
+	public void setOutputType(String string) {
+		outputType = string;
+	}
+	public String getOutputType() {
+		return outputType;
+	}
+
+	public void setOmitXmlDeclaration(boolean b) {
+		omitXmlDeclaration = b;
+	}
+	public boolean isOmitXmlDeclaration() {
+		return omitXmlDeclaration;
 	}
 
 }

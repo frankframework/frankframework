@@ -1,6 +1,9 @@
 /*
  * $Log: RecordXml2Sender.java,v $
- * Revision 1.11  2008-02-19 09:23:48  europe\L190409
+ * Revision 1.12  2008-02-28 16:17:06  europe\L190409
+ * move xslt functionality to base class RecordXmlTransformer
+ *
+ * Revision 1.11  2008/02/19 09:23:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.10  2008/02/15 16:05:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -56,8 +59,12 @@ import nl.nn.adapterframework.util.ClassUtils;
  * <tr><td>{@link #setInputSeparator(String) inputSeparator}</td><td>Separator that separated the fields in the input record. Either this attribute or <code>inputFields</code> must be specified</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setTrim(boolean) trim}</td><td>when set <code>true</code>, trailing spaces are removed from each field</td><td>false</td></tr>
  * <tr><td>{@link #setRootTag(String) rootTag}</td><td>Roottag for the generated XML document that will be send to the Sender</td><td>record</td></tr>
- * <tr><td>{@link #setOutputFields(String) outputfields}</td><td>Comma seperated string with tagnames for the individual input fields (related using there positions). If you leave a tagname empty, the field is not xml-ized</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setOutputFields(String) outputfields}</td><td>Comma separated string with tagnames for the individual input fields (related using there positions). If you leave a tagname empty, the field is not xml-ized</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setRecordIdentifyingFields(String) recordIdentifyingFields}</td><td>Comma separated list of numbers of those fields that are compared with the previous record to determine if a prefix must be written. If any of these fields is not equal in both records, the record types are assumed to be different</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setStyleSheetName(String) styleSheetName}</td><td>name of stylesheet to transform an individual record, before handing it to the sender</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setXpathExpression(String) xpathExpression}</td><td>alternatively: XPath-expression to create stylesheet from</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setOutputType(String) outputType}</td><td>either 'text' or 'xml'. Only valid for xpathExpression</td><td>text</td></tr>
+ * <tr><td>{@link #setOmitXmlDeclaration(boolean) omitXmlDeclaration}</td><td>force the transformer generated from the XPath-expression to omit the xml declaration</td><td>true</td></tr>
  * </table>
  * </p>
  * <table border="1">
@@ -71,7 +78,7 @@ import nl.nn.adapterframework.util.ClassUtils;
  * @version Id
  */
 public class RecordXml2Sender extends RecordXmlTransformer {
-	public static final String version = "$RCSfile: RecordXml2Sender.java,v $  $Revision: 1.11 $ $Date: 2008-02-19 09:23:48 $";
+	public static final String version = "$RCSfile: RecordXml2Sender.java,v $  $Revision: 1.12 $ $Date: 2008-02-28 16:17:06 $";
 
 	private ISender sender = null; 
 	
@@ -92,7 +99,7 @@ public class RecordXml2Sender extends RecordXmlTransformer {
 	}
 
 	public Object handleRecord(PipeLineSession session, List parsedRecord, ParameterResolutionContext prc) throws Exception {
-		String xml = getXml(parsedRecord);
+		String xml = (String)super.handleRecord(session,parsedRecord,prc);
 		ISender sender = getSender();
 		if (sender instanceof ISenderWithParameters) {
 			ISenderWithParameters psender = (ISenderWithParameters)sender;
