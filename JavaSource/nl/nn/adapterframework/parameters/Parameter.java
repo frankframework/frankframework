@@ -1,6 +1,9 @@
 /*
  * $Log: Parameter.java,v $
- * Revision 1.26  2008-01-11 09:45:50  europe\L190409
+ * Revision 1.27  2008-02-28 16:23:39  europe\L190409
+ * added type timestamp
+ *
+ * Revision 1.26  2008/01/11 09:45:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added type domdoc
  *
  * Revision 1.25  2007/10/08 13:31:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -106,6 +109,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IWithParameters;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
@@ -140,6 +144,7 @@ import org.w3c.dom.Node;
  * 	<li><code>date</code>: converts the result to a Date, by default using formatString <code>yyyy-MM-dd</code>. When applied as a JDBC parameter, the method setDate() is used</li>
  * 	<li><code>time</code>: converts the result to a Date, by default using formatString <code>HH:mm:ss</code>. When applied as a JDBC parameter, the method setTime() is used</li>
  * 	<li><code>datetime</code>: converts the result to a Date, by default using formatString <code>yyyy-MM-dd HH:mm:ss</code>. When applied as a JDBC parameter, the method setTimestamp() is used</li>
+ * 	<li><code>timestamp</code>: similar to datetime, except for the formatString that is <code>yyyy-MM-dd HH:mm:ss.SSS</code> by default</li>
  * 	<li><code>number</code>: converts the result to a Number, using decimalSeparator and groupingSeparator. When applied as a JDBC parameter, the method setDouble() is used</li>
  * </ul>
  * </td><td>string</td></tr>
@@ -179,7 +184,7 @@ import org.w3c.dom.Node;
  * @author Gerrit van Brakel
  */
 public class Parameter implements INamedObject, IWithParameters {
-	public static final String version="$RCSfile: Parameter.java,v $ $Revision: 1.26 $ $Date: 2008-01-11 09:45:50 $";
+	public static final String version="$RCSfile: Parameter.java,v $ $Revision: 1.27 $ $Date: 2008-02-28 16:23:39 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static String TYPE_XML="xml";
@@ -188,11 +193,13 @@ public class Parameter implements INamedObject, IWithParameters {
 	public final static String TYPE_DATE="date";
 	public final static String TYPE_TIME="time";
 	public final static String TYPE_DATETIME="datetime";
+	public final static String TYPE_TIMESTAMP="timestamp";
 	public final static String TYPE_NUMBER="number";
 	
 	public final static String TYPE_DATE_PATTERN="yyyy-MM-dd";
 	public final static String TYPE_TIME_PATTERN="HH:mm:ss";
 	public final static String TYPE_DATETIME_PATTERN="yyyy-MM-dd HH:mm:ss";
+	public final static String TYPE_TIMESTAMP_PATTERN=DateUtils.FORMAT_FULL_GENERIC;
 
 	private String name = null;
 	private String type = null;
@@ -240,6 +247,9 @@ public class Parameter implements INamedObject, IWithParameters {
 		}
 		if (TYPE_DATETIME.equals(getType()) & StringUtils.isEmpty(getFormatString())) {
 			setFormatString(TYPE_DATETIME_PATTERN);
+		}
+		if (TYPE_TIMESTAMP.equals(getType()) & StringUtils.isEmpty(getFormatString())) {
+			setFormatString(TYPE_TIMESTAMP_PATTERN);
 		}
 		if (TYPE_TIME.equals(getType()) & StringUtils.isEmpty(getFormatString())) {
 			setFormatString(TYPE_TIME_PATTERN);
@@ -357,7 +367,7 @@ public class Parameter implements INamedObject, IWithParameters {
 					throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+result+"] to XML document",e);
 				}
 			}
-			if (TYPE_DATE.equals(getType()) || TYPE_DATETIME.equals(getType()) || TYPE_TIME.equals(getType())) {
+			if (TYPE_DATE.equals(getType()) || TYPE_DATETIME.equals(getType()) || TYPE_TIMESTAMP.equals(getType()) || TYPE_TIME.equals(getType())) {
 				log.debug("Parameter ["+getName()+"] converting result ["+result+"] to date using formatString ["+getFormatString()+"]" );
 				DateFormat df = new SimpleDateFormat(getFormatString());
 				try {
