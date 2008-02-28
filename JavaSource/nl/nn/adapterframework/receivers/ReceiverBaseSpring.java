@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBaseSpring.java,v $
- * Revision 1.17  2008-02-22 14:33:37  europe\L190409
+ * Revision 1.18  2008-02-28 16:25:01  europe\L190409
+ * modified handling of Business Correlation ID
+ *
+ * Revision 1.17  2008/02/22 14:33:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added feature to extract correlationId from message
  *
  * Revision 1.16  2008/02/08 09:49:22  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -384,7 +387,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  */
 public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMessageHandler, IbisExceptionListener, HasSender, TracingEventNumbers, IThreadCountControllable, BeanFactoryAware {
     
-	public static final String version="$RCSfile: ReceiverBaseSpring.java,v $ $Revision: 1.17 $ $Date: 2008-02-22 14:33:37 $";
+	public static final String version="$RCSfile: ReceiverBaseSpring.java,v $ $Revision: 1.18 $ $Date: 2008-02-28 16:25:01 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -1036,24 +1039,30 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 		}
 		
 		String message = origin.getStringFromRawMessage(rawMessage, threadContext);
-		String originalCorrelationId = origin.getIdFromRawMessage(rawMessage, threadContext);
-		String correlationId;
+		String technicalCorrelationId = origin.getIdFromRawMessage(rawMessage, threadContext);
+		String businessCorrelationId=null;
 		if (correlationIDTp!=null) {
 			try {
-				correlationId=correlationIDTp.transform(message,null);
+				businessCorrelationId=correlationIDTp.transform(message,null);
 			} catch (Exception e) {
-				throw new ListenerException(getLogPrefix()+"could not extract correlationId",e);
+				throw new ListenerException(getLogPrefix()+"could not extract businessCorrelationId",e);
 			}
-			if (StringUtils.isEmpty(correlationId) && StringUtils.isNotEmpty(originalCorrelationId)) {
-				log.warn(getLogPrefix()+"did not find correlationId using XpathExpression ["+getCorrelationIDXPath()+"], reverting to correlationId of transfer ["+originalCorrelationId+"]");
-				correlationId=originalCorrelationId;
-			}
-			threadContext.put("cid",correlationId);
-		} else {
-			correlationId = origin.getIdFromRawMessage(rawMessage, threadContext);
 		}
+		if (StringUtils.isEmpty(businessCorrelationId)) {
+			if (StringUtils.isNotEmpty(technicalCorrelationId)) {
+				log.warn(getLogPrefix()+"did not find correlationId using XpathExpression ["+getCorrelationIDXPath()+"], reverting to correlationId of transfer ["+technicalCorrelationId+"]");
+				businessCorrelationId=technicalCorrelationId;
+			} else {
+				String messageId=(String)threadContext.get(PipeLineSession.messageIdKey);
+				if (StringUtils.isNotEmpty(messageId)) {
+					log.warn(getLogPrefix()+"did not find correlationId using XpathExpression ["+getCorrelationIDXPath()+"] or technical correlationId, reverting to messageId ["+messageId+"]");
+					businessCorrelationId=messageId;
+				}
+			}
+		}
+		threadContext.put(PipeLineSession.businessCorrelationIdKey,businessCorrelationId);
 		String messageId = (String)threadContext.get("id");
-		processMessageInAdapter(origin, rawMessage, message, messageId, correlationId, threadContext, waitingDuration, retry);
+		processMessageInAdapter(origin, rawMessage, message, messageId, businessCorrelationId, threadContext, waitingDuration, retry);
 	}
 
 	public void retryMessage(String messageId) throws ListenerException {
@@ -1201,12 +1210,14 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 	private synchronized void cacheProcessResult(String messageId, String correlationId, String errorMessage, Date receivedDate) {
 		ProcessResultCacheItem cacheItem=getCachedProcessResult(messageId);
 		if (cacheItem==null) {
+			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"caching first result for correlationId ["+correlationId+"]");
 			cacheItem= new ProcessResultCacheItem();
 			cacheItem.tryCount=1;
 			cacheItem.correlationId=correlationId;
 			cacheItem.receiveDate=receivedDate;
 		} else {
 			cacheItem.tryCount++;
+			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"increased try count for correlationId ["+correlationId+"] to ["+cacheItem.tryCount+"]");
 		}
 		cacheItem.comments=errorMessage;
 		processResultCache.put(messageId, cacheItem);
@@ -1247,7 +1258,8 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 
 	private boolean checkTryCount(String messageId, boolean retry, Object rawMessage, String message, Map threadContext) throws ListenerException {
 		if (!retry) {
-//			if (isTransacted()) {
+			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"checking try count for messageId ["+messageId+"]");
+ //			if (isTransacted()) {
 				ProcessResultCacheItem prci = getCachedProcessResult(messageId);
 				if (prci==null) {
 					return false;
