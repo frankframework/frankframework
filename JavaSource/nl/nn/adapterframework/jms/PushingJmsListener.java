@@ -1,6 +1,9 @@
 /*
  * $Log: PushingJmsListener.java,v $
- * Revision 1.13  2008-02-19 09:39:44  europe\L190409
+ * Revision 1.14  2008-02-28 16:23:18  europe\L190409
+ * use PipeLineSession.setListenerParameters()
+ *
+ * Revision 1.13  2008/02/19 09:39:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.12  2008/02/08 09:48:29  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -101,6 +104,8 @@ import nl.nn.adapterframework.core.IThreadCountControllable;
 import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
+import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.util.DateUtils;
 
 /**
  * JMSListener re-implemented as a pushing listener rather than a pulling listener.
@@ -175,7 +180,7 @@ import nl.nn.adapterframework.core.PipeLineResult;
  * @version Id
  */
 public class PushingJmsListener extends JMSFacade implements IPortConnectedListener, IThreadCountControllable {
-    public static final String version="$RCSfile: PushingJmsListener.java,v $ $Revision: 1.13 $ $Date: 2008-02-19 09:39:44 $";
+    public static final String version="$RCSfile: PushingJmsListener.java,v $ $Revision: 1.14 $ $Date: 2008-02-28 16:23:18 $";
 
 	private final static String THREAD_CONTEXT_SESSION_KEY="session";
 
@@ -251,7 +256,7 @@ public class PushingJmsListener extends JMSFacade implements IPortConnectedListe
  
 
 	public void afterMessageProcessed(PipeLineResult plr, Object rawMessage, Map threadContext) throws ListenerException {
-		String cid     = (String) threadContext.get("cid");
+		String cid     = (String) threadContext.get(PipeLineSession.businessCorrelationIdKey);
 		Session session= (Session) threadContext.get(THREAD_CONTEXT_SESSION_KEY);
 
 		try {
@@ -325,7 +330,7 @@ public class PushingJmsListener extends JMSFacade implements IPortConnectedListe
         }
         String mode = "unknown";
         String id = "unset";
-        Date dTimeStamp = null;
+		Date tsSent = null;
         Destination replyTo=null;
         try {
             mode = deliveryModeToString(message.getJMSDeliveryMode());
@@ -363,7 +368,7 @@ public class PushingJmsListener extends JMSFacade implements IPortConnectedListe
         // --------------------------
         try {
             long lTimeStamp = message.getJMSTimestamp();
-            dTimeStamp = new Date(lTimeStamp);
+			tsSent = new Date(lTimeStamp);
 
         } catch (JMSException ignore) {
             log.debug("ignoring JMSException in getJMSTimestamp()", ignore);
@@ -378,26 +383,18 @@ public class PushingJmsListener extends JMSFacade implements IPortConnectedListe
             log.debug("ignoring JMSException in getJMSReplyTo()", ignore);
         }
 
-        log.info(
-            "listener on ["
-                + getDestinationName()
-                + "] got message with JMSDeliveryMode=["
-                + mode
-                + "] \n  JMSMessageID=["
-                + id
-                + "] \n  JMSCorrelationID=["
-                + cid
-                + "] \n  Timestamp=["
-                + dTimeStamp.toString()
-                + "] \n  ReplyTo=["
-                + ((replyTo==null)?"none" : replyTo.toString())
-                + "] \n Message=["
-                + message.toString()
+		if (log.isDebugEnabled()) {
+			log.debug(getLogPrefix()+"listener on ["+ getDestinationName() 
+		        + "] got message with JMSDeliveryMode=[" + mode
+                + "] \n  JMSMessageID=[" + id
+                + "] \n  JMSCorrelationID=[" + cid
+				+ "] \n  Timestamp Sent=[" + DateUtils.format(tsSent) 
+                + "] \n  ReplyTo=[" + ((replyTo==null)?"none" : replyTo.toString())
+                + "] \n Message=[" + message.toString()
                 + "]");
-    
-        threadContext.put("id",id);
-        threadContext.put("cid",cid);
-        threadContext.put("timestamp",dTimeStamp);
+		}    
+		PipeLineSession.setListenerParameters(threadContext, id, cid, null, tsSent);
+		threadContext.put("timestamp",tsSent);
         threadContext.put("replyTo",replyTo);
         try {
             if (getAckMode() == Session.CLIENT_ACKNOWLEDGE) {

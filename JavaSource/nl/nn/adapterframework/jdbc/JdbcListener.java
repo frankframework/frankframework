@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcListener.java,v $
- * Revision 1.7  2007-12-10 10:05:54  europe\L190409
+ * Revision 1.8  2008-02-28 16:22:27  europe\L190409
+ * use PipeLineSession.setListenerParameters()
+ *
+ * Revision 1.7  2007/12/10 10:05:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * put id and cid in session
  *
  * Revision 1.6  2007/11/15 12:38:08  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -37,6 +40,7 @@ import nl.nn.adapterframework.core.IMessageWrapper;
 import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.receivers.MessageWrapper;
 import nl.nn.adapterframework.util.JtaUtil;
 
@@ -66,6 +70,8 @@ public class JdbcListener extends JdbcFacade implements IPullingListener {
 	private String messageField;
 	
 	protected Connection connection=null;
+
+	private static final boolean trace=false;
 
 	public void configure() throws ConfigurationException {
 		try {
@@ -156,7 +162,7 @@ public class JdbcListener extends JdbcFacade implements IPullingListener {
 					stmt = conn.createStatement();
 					ResultSet rs=null;
 					try {
-//						log.debug("executing query for ["+getSelectQuery()+"]");
+						if (trace && log.isDebugEnabled()) log.debug("executing query for ["+getSelectQuery()+"]");
 						rs = stmt.executeQuery(getSelectQuery());
 						if (rs.isAfterLast() || !rs.next()) {
 							return null;
@@ -212,8 +218,7 @@ public class JdbcListener extends JdbcFacade implements IPullingListener {
 		} else {
 			id = (String)rawMessage;
 		}
-		context.put("id",id);
-		context.put("cid",id);
+		PipeLineSession.setListenerParameters(context, id, id, null, null);
 		return id;
 	}
 
@@ -228,7 +233,7 @@ public class JdbcListener extends JdbcFacade implements IPullingListener {
 	}
 
 	protected void afterMessageProcessed(Connection c, PipeLineResult processResult, String key, Map context) throws ListenerException {
-		if (processResult==null || "success".equals(processResult.getState())) {
+		if (processResult==null || "success".equals(processResult.getState()) || StringUtils.isEmpty(getUpdateStatusToErrorQuery())) {
 			execute(c,getUpdateStatusToProcessedQuery(),key);
 		} else {
 			execute(c,getUpdateStatusToErrorQuery(),key);
@@ -266,7 +271,7 @@ public class JdbcListener extends JdbcFacade implements IPullingListener {
 		if (StringUtils.isEmpty(query)) {
 			throw new ListenerException(getLogPrefix()+"cannot execute empty query");
 		}
-//		log.debug("executing query ["+query+"]");
+		if (trace && log.isDebugEnabled()) log.debug("executing query ["+query+"]");
 		Statement stmt=null;
 		try {
 			stmt = conn.createStatement();
@@ -290,7 +295,7 @@ public class JdbcListener extends JdbcFacade implements IPullingListener {
 
 	protected void execute(Connection conn, String query, String parameter) throws ListenerException {
 		if (StringUtils.isNotEmpty(query)) {
-//			log.debug("executing query ["+query+"]");
+			if (trace && log.isDebugEnabled()) log.debug("executing statement ["+query+"]");
 			PreparedStatement stmt=null;
 			try {
 				stmt = conn.prepareStatement(query);

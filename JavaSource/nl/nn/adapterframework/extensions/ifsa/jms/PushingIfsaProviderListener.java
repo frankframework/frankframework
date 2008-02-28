@@ -1,6 +1,9 @@
 /*
  * $Log: PushingIfsaProviderListener.java,v $
- * Revision 1.3  2008-01-29 12:20:32  europe\L190409
+ * Revision 1.4  2008-02-28 16:20:38  europe\L190409
+ * use PipeLineSession.setListenerParameters()
+ *
+ * Revision 1.3  2008/01/29 12:20:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added support for thread number control
  *
  * Revision 1.2  2008/01/11 09:41:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -34,9 +37,11 @@ import nl.nn.adapterframework.core.IThreadCountControllable;
 import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.extensions.ifsa.IfsaException;
 import nl.nn.adapterframework.extensions.ifsa.IfsaMessageProtocolEnum;
 import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.DateUtils;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -96,7 +101,7 @@ import com.ing.ifsa.IFSAServicesProvided;
  * @version Id
  */
 public class PushingIfsaProviderListener extends IfsaFacade implements IPortConnectedListener, IThreadCountControllable {
-	public static final String version = "$RCSfile: PushingIfsaProviderListener.java,v $ $Revision: 1.3 $ $Date: 2008-01-29 12:20:32 $";
+	public static final String version = "$RCSfile: PushingIfsaProviderListener.java,v $ $Revision: 1.4 $ $Date: 2008-02-28 16:20:38 $";
 
     private final static String THREAD_CONTEXT_SESSION_KEY = "session";
 	public final static String THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY = "originalRawMessage";
@@ -174,7 +179,6 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 
 
 	public void afterMessageProcessed(PipeLineResult plr, Object rawMessage, Map threadContext) throws ListenerException {	
-	    String cid = (String) threadContext.get("cid");
 		QueueSession session= (QueueSession) threadContext.get(THREAD_CONTEXT_SESSION_KEY);
 	    		    
 	    // on request-reply send the reply.
@@ -186,6 +190,7 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 				originalRawMessage = (Message)threadContext.get(THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY);
 			}
 			if (originalRawMessage==null) {
+				String cid = (String) threadContext.get(PipeLineSession.businessCorrelationIdKey);
 				log.warn(getLogPrefix()+"no original raw message found for correlationId ["+cid+"], cannot send result");
 			} else {
 				try {
@@ -258,7 +263,7 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 	    String mode = "unknown";
 	    String id = "unset";
 	    String cid = "unset";
-	    Date dTimeStamp = null;
+	    Date tsSent = null;
 	    Destination replyTo = null;
 	    String messageText = null;
 		String fullIfsaServiceName = null;
@@ -296,7 +301,7 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 	    // --------------------------
 	    try {
 	        long lTimeStamp = message.getJMSTimestamp();
-	        dTimeStamp = new Date(lTimeStamp);
+			tsSent = new Date(lTimeStamp);
 	
 	    } catch (JMSException ignore) {
 	    }
@@ -340,16 +345,15 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 					+ "] \n  ifsaGroup=["+ ifsaGroup
 					+ "] \n  ifsaOccurrence=["+ ifsaOccurrence
 					+ "] \n  ifsaVersion=["+ ifsaVersion
-					+ "] \n  Timestamp=[" + dTimeStamp.toString()
+					+ "] \n  Timestamp Sent=[" + DateUtils.format(tsSent) 
 					+ "] \n  ReplyTo=[" + ((replyTo == null) ? "none" : replyTo.toString())
 					+ "] \n  MessageHeaders=["+displayHeaders(message)+"\n"
 					+ "] \n  Message=[" + message.toString()+"\n]");
 					
 		}
 	
-	    threadContext.put("id", id);
-	    threadContext.put("cid", cid);
-	    threadContext.put("timestamp", dTimeStamp);
+		PipeLineSession.setListenerParameters(threadContext, id, cid, null, tsSent);
+	    threadContext.put("timestamp", tsSent);
 	    threadContext.put("replyTo", ((replyTo == null) ? "none" : replyTo.toString()));
 	    threadContext.put("messageText", messageText);
 	    threadContext.put("fullIfsaServiceName", fullIfsaServiceName);

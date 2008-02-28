@@ -1,6 +1,9 @@
 /*
  * $Log: DirectoryListener.java,v $
- * Revision 1.10  2008-02-19 09:41:09  europe\L190409
+ * Revision 1.11  2008-02-28 16:24:31  europe\L190409
+ * use PipeLineSession.setListenerParameters()
+ *
+ * Revision 1.10  2008/02/19 09:41:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.9  2008/02/15 13:59:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -96,7 +99,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class DirectoryListener implements IPullingListener, INamedObject {
-	public static final String version = "$RCSfile: DirectoryListener.java,v $  $Revision: 1.10 $ $Date: 2008-02-19 09:41:09 $";
+	public static final String version = "$RCSfile: DirectoryListener.java,v $  $Revision: 1.11 $ $Date: 2008-02-28 16:24:31 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -215,8 +218,8 @@ public class DirectoryListener implements IPullingListener, INamedObject {
 	 * Override this method for your specific needs! 
 	 */
 	public String getIdFromRawMessage(Object rawMessage, Map threadContext) throws ListenerException {
-		String correlationId = inputFileName;
-		threadContext.put("cid", correlationId);
+		String correlationId = rawMessage.toString();
+		PipeLineSession.setListenerParameters(threadContext, correlationId, correlationId, null, null);
 		return correlationId;
 	}
 	/**
@@ -231,10 +234,10 @@ public class DirectoryListener implements IPullingListener, INamedObject {
 		
 		try {
 			inputFileName = inputFile.getCanonicalPath();
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			throw new ListenerException("Error while getting canonical path", e);
 		}
+//		String tsReceived=inputFile.lastModified()
 		String inprocessFile = archiveFile(getSession(threadContext), inputFile);
 		if (inprocessFile == null) { // moving was unsuccessful, probably becausing writing was not finished
 			return waitAWhile();

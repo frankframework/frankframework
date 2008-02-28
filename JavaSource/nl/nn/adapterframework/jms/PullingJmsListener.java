@@ -1,6 +1,9 @@
 /*
  * $Log: PullingJmsListener.java,v $
- * Revision 1.3  2007-12-17 08:56:33  europe\L190409
+ * Revision 1.4  2008-02-28 16:23:18  europe\L190409
+ * use PipeLineSession.setListenerParameters()
+ *
+ * Revision 1.3  2007/12/17 08:56:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved documentation
  *
  * Revision 1.2  2007/10/16 09:52:35  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
@@ -100,8 +103,10 @@ import nl.nn.adapterframework.core.IPostboxListener;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.RunStateEnquirer;
 import nl.nn.adapterframework.util.RunStateEnquiring;
 import nl.nn.adapterframework.util.RunStateEnum;
@@ -177,7 +182,7 @@ import org.apache.commons.lang.StringUtils;
  * @since 4.0.1
  */
 public class PullingJmsListener extends JMSFacade implements IPostboxListener, ICorrelatedPullingListener, HasSender, RunStateEnquiring {
-	public static final String version="$RCSfile: PullingJmsListener.java,v $ $Revision: 1.3 $ $Date: 2007-12-17 08:56:33 $";
+	public static final String version="$RCSfile: PullingJmsListener.java,v $ $Revision: 1.4 $ $Date: 2008-02-28 16:23:18 $";
 
 	private final static String THREAD_CONTEXT_SESSION_KEY="session";
 	private final static String THREAD_CONTEXT_MESSAGECONSUMER_KEY="messageConsumer";
@@ -313,7 +318,7 @@ public class PullingJmsListener extends JMSFacade implements IPostboxListener, I
 
 
 	public void afterMessageProcessed(PipeLineResult plr, Object rawMessage, Map threadContext) throws ListenerException {
-		String cid = (String) threadContext.get("cid");
+		String cid = (String) threadContext.get(PipeLineSession.businessCorrelationIdKey);
 	
 		try {
 			Destination replyTo = (Destination) threadContext.get("replyTo");
@@ -323,7 +328,7 @@ public class PullingJmsListener extends JMSFacade implements IPostboxListener, I
 				Session session=null;
 				
 	
-				log.debug("sending reply message with correlationID[" + cid + "], replyTo [" + replyTo.toString()+ "]");
+				log.debug(getLogPrefix()+"sending reply message with correlationID [" + cid + "], replyTo [" + replyTo.toString()+ "]");
 				long timeToLive = getReplyMessageTimeToLive();
 				if (timeToLive == 0) {
 					Message messageSent=(Message)rawMessage;
@@ -331,7 +336,7 @@ public class PullingJmsListener extends JMSFacade implements IPostboxListener, I
 					if (expiration!=0) {
 						timeToLive=expiration-new Date().getTime();
 						if (timeToLive<=0) {
-							log.warn("message ["+cid+"] expired ["+timeToLive+"]ms, sending response with 1 second time to live");
+							log.warn(getLogPrefix()+"message ["+cid+"] expired ["+timeToLive+"]ms, sending response with 1 second time to live");
 							timeToLive=1000;
 						}
 					}
@@ -351,11 +356,11 @@ public class PullingJmsListener extends JMSFacade implements IPostboxListener, I
 				}
 			} else {
 				if (sender==null) {
-					log.debug("["+getName()+"] itself has no sender to send the result (An enclosing Receiver might still have one).");
+					log.debug(getLogPrefix()+"itself has no sender to send the result (An enclosing Receiver might still have one).");
 				} else {
 					if (log.isDebugEnabled()) {
-						log.debug(
-							"["+getName()+"] no replyTo address found or not configured to use replyTo, using default destination" 
+						log.debug(getLogPrefix()+
+							"no replyTo address found or not configured to use replyTo, using default destination" 
 							+ "sending message with correlationID[" + cid + "] [" + plr.getResult() + "]");
 					}
 					sender.sendMessage(cid, plr.getResult());
@@ -412,7 +417,7 @@ public class PullingJmsListener extends JMSFacade implements IPostboxListener, I
 		}
 			String mode = "unknown";
 			String id = "unset";
-			Date dTimeStamp = null;
+			Date tsSent = null;
 			Destination replyTo=null;
 			try {
 				mode = deliveryModeToString(message.getJMSDeliveryMode());
@@ -450,7 +455,7 @@ public class PullingJmsListener extends JMSFacade implements IPostboxListener, I
 			// --------------------------
 			try {
 				long lTimeStamp = message.getJMSTimestamp();
-				dTimeStamp = new Date(lTimeStamp);
+				tsSent = new Date(lTimeStamp);
 	
 			} catch (JMSException ignore) {
 				log.debug("ignoring JMSException in getJMSTimestamp()", ignore);
@@ -465,26 +470,19 @@ public class PullingJmsListener extends JMSFacade implements IPostboxListener, I
 				log.debug("ignoring JMSException in getJMSReplyTo()", ignore);
 			}
 	
-			log.info(
-				"listener on ["
-					+ getDestinationName()
-					+ "] got message with JMSDeliveryMode=["
-					+ mode
-					+ "] \n  JMSMessageID=["
-					+ id
-					+ "] \n  JMSCorrelationID=["
-					+ cid
-					+ "] \n  Timestamp=["
-					+ dTimeStamp.toString()
-					+ "] \n  ReplyTo=["
-					+ ((replyTo==null)?"none" : replyTo.toString())
-					+ "] \n Message=["
-					+ message.toString()
-					+ "]");
-	
-			threadContext.put("id",id);
-			threadContext.put("cid",cid);
-			threadContext.put("timestamp",dTimeStamp);
+			if (log.isDebugEnabled()) {
+				log.debug(getLogPrefix()+
+					"listener on [" + getDestinationName()
+						+ "] got message with JMSDeliveryMode=[" + mode 
+						+ "] \n  JMSMessageID=[" + id
+						+ "] \n  JMSCorrelationID=[" + cid
+						+ "] \n  Timestamp Sent=[" + DateUtils.format(tsSent) 
+						+ "] \n  ReplyTo=[" + ((replyTo==null)?"none" : replyTo.toString())
+						+ "] \n Message=[" + message.toString()
+						+ "]");
+			}	
+			PipeLineSession.setListenerParameters(threadContext, id, cid, null, tsSent);
+			threadContext.put("timestamp",tsSent);
 			threadContext.put("replyTo",replyTo);
 			try {
 				if (getAckMode() == Session.CLIENT_ACKNOWLEDGE) {

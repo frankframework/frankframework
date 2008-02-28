@@ -1,6 +1,9 @@
 /*
  * $Log: FtpListener.java,v $
- * Revision 1.10  2007-10-03 08:36:29  europe\L190409
+ * Revision 1.11  2008-02-28 16:20:57  europe\L190409
+ * use PipeLineSession.setListenerParameters()
+ *
+ * Revision 1.10  2007/10/03 08:36:29  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed HashMap to Map
  *
  * Revision 1.9  2006/01/19 12:15:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -44,6 +47,7 @@ import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.util.RunStateEnquirer;
 import nl.nn.adapterframework.util.RunStateEnquiring;
 import nl.nn.adapterframework.util.RunStateEnum;
@@ -105,7 +109,7 @@ import org.apache.commons.lang.builder.ToStringStyle;
  * @version Id
  */
 public class FtpListener extends FtpSession implements IPullingListener, INamedObject, RunStateEnquiring {
-	public static final String version = "$RCSfile: FtpListener.java,v $  $Revision: 1.10 $ $Date: 2007-10-03 08:36:29 $";
+	public static final String version = "$RCSfile: FtpListener.java,v $  $Revision: 1.11 $ $Date: 2008-02-28 16:20:57 $";
 
 	private LinkedList remoteFilenames;
 	private RunStateEnquirer runStateEnquirer=null;
@@ -151,7 +155,7 @@ public class FtpListener extends FtpSession implements IPullingListener, INamedO
 	 */
 	public String getIdFromRawMessage(Object rawMessage, Map threadContext) throws ListenerException {
 		String correlationId = rawMessage.toString();
-		threadContext.put("cid", correlationId);
+		PipeLineSession.setListenerParameters(threadContext, correlationId, correlationId, null, null);
 		return correlationId;
 	}
 

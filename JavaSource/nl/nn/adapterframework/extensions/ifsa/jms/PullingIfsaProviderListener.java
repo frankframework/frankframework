@@ -1,6 +1,9 @@
 /*
  * $Log: PullingIfsaProviderListener.java,v $
- * Revision 1.1  2008-01-03 15:46:19  europe\L190409
+ * Revision 1.2  2008-02-28 16:20:38  europe\L190409
+ * use PipeLineSession.setListenerParameters()
+ *
+ * Revision 1.1  2008/01/03 15:46:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * split IfsaProviderListener into a Pulling and a Pushing version
  *
  * Revision 1.5  2007/11/21 13:17:47  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -152,10 +155,12 @@ import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.extensions.ifsa.IfsaException;
 import nl.nn.adapterframework.extensions.ifsa.IfsaMessageProtocolEnum;
 import nl.nn.adapterframework.receivers.MessageWrapper;
 import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.RunStateEnquirer;
 import nl.nn.adapterframework.util.RunStateEnquiring;
@@ -216,7 +221,7 @@ import com.ing.ifsa.IFSATextMessage;
  * @version Id
  */
 public class PullingIfsaProviderListener extends IfsaFacade implements IPullingListener, INamedObject, RunStateEnquiring {
-	public static final String version = "$RCSfile: PullingIfsaProviderListener.java,v $ $Revision: 1.1 $ $Date: 2008-01-03 15:46:19 $";
+	public static final String version = "$RCSfile: PullingIfsaProviderListener.java,v $ $Revision: 1.2 $ $Date: 2008-02-28 16:20:38 $";
 
     private final static String THREAD_CONTEXT_SESSION_KEY = "session";
     private final static String THREAD_CONTEXT_RECEIVER_KEY = "receiver";
@@ -342,7 +347,6 @@ public class PullingIfsaProviderListener extends IfsaFacade implements IPullingL
 
 
 	public void afterMessageProcessed(PipeLineResult plr, Object rawMessage, Map threadContext) throws ListenerException {	
-	    String cid = (String) threadContext.get("cid");
 	    		    
 		try {
 			if (isJmsTransacted() && !(getConnection().isXaEnabledForSure() && JtaUtil.inTransaction())) {
@@ -370,7 +374,9 @@ public class PullingIfsaProviderListener extends IfsaFacade implements IPullingL
 				originalRawMessage = (Message)threadContext.get(THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY);
 			}
 			if (originalRawMessage==null) {
-				log.warn(getLogPrefix()+"no original raw message found for correlationId ["+cid+"], cannot send result");
+				String id = (String) threadContext.get(PipeLineSession.messageIdKey);
+				String cid = (String) threadContext.get(PipeLineSession.businessCorrelationIdKey);
+				log.warn(getLogPrefix()+"no original raw message found for messageId ["+id+"] correlationId ["+cid+"], cannot send result");
 			} else {
 				QueueSession session = getSession(threadContext);
 				try {
@@ -445,7 +451,7 @@ public class PullingIfsaProviderListener extends IfsaFacade implements IPullingL
 	    String mode = "unknown";
 	    String id = "unset";
 	    String cid = "unset";
-	    Date dTimeStamp = null;
+	    Date tsSent = null;
 	    Destination replyTo = null;
 	    String messageText = null;
 		String fullIfsaServiceName = null;
@@ -483,7 +489,7 @@ public class PullingIfsaProviderListener extends IfsaFacade implements IPullingL
 	    // --------------------------
 	    try {
 	        long lTimeStamp = message.getJMSTimestamp();
-	        dTimeStamp = new Date(lTimeStamp);
+			tsSent = new Date(lTimeStamp);
 	
 	    } catch (JMSException ignore) {
 	    }
@@ -518,17 +524,6 @@ public class PullingIfsaProviderListener extends IfsaFacade implements IPullingL
 	        log.error(getLogPrefix() + "got error getting serviceparameter", e);
 	    }
 
-/*
-		// acknowledge the message when necessary
-		try {
-			if (!isTransacted() && !isJmsTransacted()) {
-				message.acknowledge();
-				log.debug(getLogPrefix()+"acknowledged received message");
-			}
-		} catch (JMSException e) {
-			log.error(getLogPrefix()+"exception in ack ", e);
-		}
-*/
 		if (log.isDebugEnabled()) {
 			log.debug(getLogPrefix()+ "got message for [" + fullIfsaServiceName
 					+ "] with JMSDeliveryMode=[" + mode
@@ -538,16 +533,15 @@ public class PullingIfsaProviderListener extends IfsaFacade implements IPullingL
 					+ "] \n  ifsaGroup=["+ ifsaGroup
 					+ "] \n  ifsaOccurrence=["+ ifsaOccurrence
 					+ "] \n  ifsaVersion=["+ ifsaVersion
-					+ "] \n  Timestamp=[" + dTimeStamp.toString()
+					+ "] \n  Timestamp Sent=[" + DateUtils.format(tsSent) 
 					+ "] \n  ReplyTo=[" + ((replyTo == null) ? "none" : replyTo.toString())
 					+ "] \n  MessageHeaders=["+displayHeaders(message)+"\n"
 					+ "] \n  Message=[" + message.toString()+"\n]");
 					
 		}
 	
-	    threadContext.put("id", id);
-	    threadContext.put("cid", cid);
-	    threadContext.put("timestamp", dTimeStamp);
+		PipeLineSession.setListenerParameters(threadContext, id, cid, null, tsSent);
+	    threadContext.put("timestamp", tsSent);
 	    threadContext.put("replyTo", ((replyTo == null) ? "none" : replyTo.toString()));
 	    threadContext.put("messageText", messageText);
 	    threadContext.put("fullIfsaServiceName", fullIfsaServiceName);
