@@ -1,6 +1,9 @@
 /*
  * $Log: GenericMDB.java,v $
- * Revision 1.6  2008-01-03 15:43:36  europe\L190409
+ * Revision 1.7  2008-02-28 16:18:34  europe\L190409
+ * simplified onMessage
+ *
+ * Revision 1.6  2008/01/03 15:43:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * rework port connected listener interfaces
  *
  * Revision 1.5  2007/11/22 08:47:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -91,7 +94,6 @@ public class GenericMDB extends AbstractListenerConnectingEJB implements Message
     }
 
     public void onMessage(Message message) {
-        Map threadContext = new HashMap();
         try {
             // Code is not thread-safe but the same instance
             // should be looked up always so there's no point
@@ -101,10 +103,7 @@ public class GenericMDB extends AbstractListenerConnectingEJB implements Message
             }
 
             IMessageHandler handler = this.listener.getHandler();
-			String messageText=listener.getStringFromRawMessage(message, threadContext);
-			String cid=listener.getIdFromRawMessage(message, threadContext);
-//			threadContext.put("session",session);
-			handler.processRequest(listener, cid, messageText, threadContext,-1);
+            handler.processRawMessage(listener,message);
         } catch (ListenerException ex) {
             log.error(ex, ex);
             listener.getExceptionListener().exceptionThrown(listener, ex);
