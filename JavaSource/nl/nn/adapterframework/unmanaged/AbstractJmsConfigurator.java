@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractJmsConfigurator.java,v $
- * Revision 1.5  2008-01-03 15:57:58  europe\L190409
+ * Revision 1.6  2008-02-28 16:25:26  europe\L190409
+ * improved configuration checking
+ *
+ * Revision 1.5  2008/01/03 15:57:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * rework port connected listener interfaces
  *
  * Revision 1.4  2007/11/05 13:06:55  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
@@ -44,6 +47,12 @@ abstract public class AbstractJmsConfigurator {
 	private IbisExceptionListener exceptionListener;        
 
     public void configureEndpointConnection(IPortConnectedListener listener, ConnectionFactory connectionFactory, Destination destination, IbisExceptionListener exceptionListener) throws ConfigurationException {
+    	if (connectionFactory==null) {
+    		throw new ConfigurationException("ConnectionFactory must be specified");
+    	}
+		if (destination==null) {
+			throw new ConfigurationException("Destination must be specified");
+		}
 		setListener(listener);
 		setConnectionFactory(connectionFactory);
         setDestination(destination);
