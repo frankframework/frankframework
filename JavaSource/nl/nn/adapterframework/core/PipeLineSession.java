@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLineSession.java,v $
- * Revision 1.9  2006-08-22 06:47:35  europe\L190409
+ * Revision 1.10  2008-02-28 16:17:53  europe\L190409
+ * added setListenerParameters()
+ *
+ * Revision 1.9  2006/08/22 06:47:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed IXAEnabled from PipeLineSession
  *
  * Revision 1.8  2005/07/05 10:45:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -25,8 +28,11 @@
 package nl.nn.adapterframework.core;
 
 import java.security.Principal;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+
+import nl.nn.adapterframework.util.DateUtils;
 
 import org.apache.commons.lang.NotImplementedException;
 
@@ -47,10 +53,14 @@ import org.apache.commons.lang.NotImplementedException;
  * @since   version 3.2.2
  */
 public class PipeLineSession extends HashMap {
-	public static final String version="$RCSfile: PipeLineSession.java,v $ $Revision: 1.9 $ $Date: 2006-08-22 06:47:35 $";
+	public static final String version="$RCSfile: PipeLineSession.java,v $ $Revision: 1.10 $ $Date: 2008-02-28 16:17:53 $";
 
 	public static final String originalMessageKey="originalMessage";
 	public static final String messageIdKey="messageId";
+	public static final String businessCorrelationIdKey="cid";
+	public static final String technicalCorrelationIdKey="tcid";
+	public static final String tsReceivedKey="tsReceived";
+	public static final String tsSentKey="tsSent";
 	public static final String securityHandlerKey="securityHandler";
 //	private boolean transacted=false;
 	private ISecurityHandler securityHandler = null;
@@ -94,6 +104,22 @@ public class PipeLineSession extends HashMap {
 	    put(messageIdKey, messageId);
 	}
 
+	/**
+	 * Convenience method to set required parameters from listeners
+	 * @param map
+	 */
+	public static void setListenerParameters(Map map, String messageId, String technicalCorrelationId, Date tsReceived, Date tsSent) {
+		map.put("id", messageId);
+		map.put(technicalCorrelationIdKey, technicalCorrelationId);
+		if (tsReceived==null) {
+			tsReceived=new Date();
+		}
+		map.put(tsReceivedKey,DateUtils.format(tsReceived, DateUtils.FORMAT_FULL_GENERIC));
+		if (tsSent!=null) {
+			map.put(tsSentKey,DateUtils.format(tsSent, DateUtils.FORMAT_FULL_GENERIC));
+		}
+	}
+
 	public ISecurityHandler getSecurityHandler() throws NotImplementedException {
 		if (securityHandler==null) {
 			securityHandler=(ISecurityHandler)get(securityHandlerKey);
@@ -114,14 +140,4 @@ public class PipeLineSession extends HashMap {
 		return handler.getPrincipal(this);
 	}
 
-//	/**
-//	 * Indicates the processing of this pipeline is either commited in one transaction, or 
-//	 * rolled back to the situation prior to starting the pipeline, using XA-transactions.
-//	 */
-//	public boolean isTransacted() {
-//		return transacted;
-//	}
-//	public void setTransacted(boolean transacted) {
-//		this.transacted = transacted;
-//	}
 }
