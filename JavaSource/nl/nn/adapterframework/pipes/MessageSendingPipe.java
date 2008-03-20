@@ -1,6 +1,9 @@
 /*
  * $Log: MessageSendingPipe.java,v $
- * Revision 1.39  2008-02-26 09:18:50  europe\L190409
+ * Revision 1.40  2008-03-20 12:08:01  europe\L190409
+ * improved stub handling
+ *
+ * Revision 1.39  2008/02/26 09:18:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.38  2008/01/30 14:49:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -107,6 +110,7 @@
  */
 package nl.nn.adapterframework.pipes;
 
+import java.net.URL;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -215,7 +219,7 @@ import org.apache.commons.lang.SystemUtils;
  */
 
 public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
-	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.39 $ $Date: 2008-02-26 09:18:50 $";
+	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.40 $ $Date: 2008-03-20 12:08:01 $";
 
 	private final static String TIMEOUTFORWARD = "timeout";
 	private final static String EXCEPTIONFORWARD = "exception";
@@ -275,10 +279,19 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (StringUtils.isNotEmpty(getStubFileName())) {
+			URL stubUrl;
 			try {
-				returnString = Misc.resourceToString(ClassUtils.getResourceURL(this,getStubFileName()), SystemUtils.LINE_SEPARATOR);
+				stubUrl = ClassUtils.getResourceURL(this,getStubFileName());
 			} catch (Throwable e) {
-				throw new ConfigurationException("Pipe [" + getName() + "] got exception loading ["+getStubFileName()+"]", e);
+				throw new ConfigurationException(getLogPrefix(null)+"got exception finding resource for stubfile ["+getStubFileName()+"]", e);
+			}
+			if (stubUrl==null) {
+				throw new ConfigurationException(getLogPrefix(null)+"could not find resource for stubfile ["+getStubFileName()+"]");
+			}
+			try {
+				returnString = Misc.resourceToString(stubUrl, SystemUtils.LINE_SEPARATOR);
+			} catch (Throwable e) {
+				throw new ConfigurationException(getLogPrefix(null)+"got exception loading stubfile ["+getStubFileName()+"] from resource ["+stubUrl.toExternalForm()+"]", e);
 			}
 		} else {
 			propagateName();
@@ -312,10 +325,8 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 			}
 			if (!(getLinkMethod().equalsIgnoreCase("MESSAGEID"))
 				&& (!(getLinkMethod().equalsIgnoreCase("CORRELATIONID")))) {
-				throw new ConfigurationException(
-					"Invalid argument for property LinkMethod ["
-						+ getLinkMethod()
-						+ "]. it should be either MESSAGEID or CORRELATIONID");
+				throw new ConfigurationException(getLogPrefix(null)+
+					"Invalid argument for property LinkMethod ["+getLinkMethod()+ "]. it should be either MESSAGEID or CORRELATIONID");
 			}	
 
 			if (isCheckXmlWellFormed() || StringUtils.isNotEmpty(getCheckRootTag())) {
