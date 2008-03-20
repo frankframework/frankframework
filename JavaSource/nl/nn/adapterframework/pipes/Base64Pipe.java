@@ -1,6 +1,9 @@
 /*
  * $Log: Base64Pipe.java,v $
- * Revision 1.3  2006-04-25 06:56:00  europe\L190409
+ * Revision 1.4  2008-03-20 12:06:56  europe\L190409
+ * updated javadoc
+ *
+ * Revision 1.3  2006/04/25 06:56:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added attribute convert2String
  *
  * Revision 1.2  2005/10/13 11:44:53  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -32,7 +35,7 @@ import sun.misc.BASE64Encoder;
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDirection(String) direction}</td><td>either <code>encode</code> or <code>decode</code></td><td>"encode"</td></tr>
- * <tr><td>{@link #setConvert2String(boolean) convert2String}</td><td>If true and decoding, result is returned as a string, otherwise as a byte array. If true and encoding, input is read as a string, otherwise as a byte array.</td><td>true</td></tr>
+ * <tr><td>{@link #setConvert2String(boolean) convert2String}</td><td>If <code>true</code> and decoding, result is returned as a string, otherwise as a byte array. If <code>true</code> and encoding, input is read as a string, otherwise as a byte array.</td><td><code>true</code></td></tr>
  * </table>
  * </p>
  * 
@@ -41,7 +44,7 @@ import sun.misc.BASE64Encoder;
  * @version Id
  */
 public class Base64Pipe extends FixedForwardPipe {
-	public static final String version="$RCSfile: Base64Pipe.java,v $ $Revision: 1.3 $ $Date: 2006-04-25 06:56:00 $";
+	public static final String version="$RCSfile: Base64Pipe.java,v $ $Revision: 1.4 $ $Date: 2008-03-20 12:06:56 $";
 
 	private String direction="encode";
 	private boolean convert2String=true;
