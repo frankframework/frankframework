@@ -1,6 +1,9 @@
 /*
  * $Log: HttpSender.java,v $
- * Revision 1.31  2007-12-28 12:09:33  europe\L190409
+ * Revision 1.32  2008-03-20 12:00:10  europe\L190409
+ * set default path '/'
+ *
+ * Revision 1.31  2007/12/28 12:09:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added timeout exception detection
  *
  * Revision 1.30  2007/10/03 08:46:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -227,7 +230,7 @@ import nl.nn.adapterframework.util.CredentialFactory;
  * @since 4.2c
  */
 public class HttpSender extends SenderWithParametersBase implements HasPhysicalDestination {
-	public static final String version = "$RCSfile: HttpSender.java,v $ $Revision: 1.31 $ $Date: 2007-12-28 12:09:33 $";
+	public static final String version = "$RCSfile: HttpSender.java,v $ $Revision: 1.32 $ $Date: 2008-03-20 12:00:10 $";
 
 	private String url;
 	private String methodType="GET"; // GET or POST
@@ -354,6 +357,9 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 					log.debug(getLogPrefix()+"protocol for scheme ["+uri.getScheme()+"] not found, setting port to 80",e);
 					port=80; 
 				}
+			}
+			if (uri.getPath()==null) {
+				uri.setPath("/");
 			}
 
 			log.info(getLogPrefix()+"created uri: scheme=["+uri.getScheme()+"] host=["+uri.getHost()+"] port=["+port+"] path=["+uri.getPath()+"]");
