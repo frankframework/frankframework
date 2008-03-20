@@ -1,6 +1,9 @@
 /*
  * $Log: IbisException.java,v $
- * Revision 1.21  2007-07-17 15:08:15  europe\L190409
+ * Revision 1.22  2008-03-20 11:57:56  europe\L190409
+ * do not skip Exception from classname
+ *
+ * Revision 1.21  2007/07/17 15:08:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * tune SQL exception
  *
  * Revision 1.20  2007/07/17 10:46:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -77,7 +80,7 @@ import org.xml.sax.SAXParseException;
  * @author Gerrit van Brakel
  */
 public class IbisException extends NestableException {
-	public static final String version = "$RCSfile: IbisException.java,v $ $Revision: 1.21 $ $Date: 2007-07-17 15:08:15 $";
+	public static final String version = "$RCSfile: IbisException.java,v $ $Revision: 1.22 $ $Date: 2008-03-20 11:57:56 $";
 
 	static {
 		// add methodname to find cause of JMS-Exceptions
@@ -101,9 +104,6 @@ public class IbisException extends NestableException {
 		String name = t.getClass().getName();
 		int dotpos=name.lastIndexOf(".");
 		name=name.substring(dotpos+1);
-		if ( name.endsWith("Exception") ) {
-			name=name.substring(0,name.length()-9);
-		}
 		return name;
 	}
 	
