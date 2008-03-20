@@ -1,6 +1,9 @@
 /*
  * $Log: RecordHandlingFlow.java,v $
- * Revision 1.11  2007-10-08 12:14:56  europe\L190409
+ * Revision 1.12  2008-03-20 11:57:00  europe\L190409
+ * updated javadoc
+ *
+ * Revision 1.11  2007/10/08 12:14:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed HashMap to Map where possible
  *
  * Revision 1.10  2007/09/24 13:02:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -59,7 +62,7 @@ import org.apache.log4j.Logger;
  * <tr><td>{@link #setCloseBlockBeforeLine(String) closeBlockBeforeLine}</td><td>instructs the resultHandler to end the specified block before the parsed line is processed</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setOpenBlockAfterLine(String) openBlockAfterLine}</td><td>instructs the resultHandler to start a new block after the parsed line is processed</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setCloseBlockAfterLine(String) closeBlockAfterLine}</td><td>instructs the resultHandler to end the specified block after the parsed line is processed</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setAutoCloseBlock(boolean) autoCloseBlock}</td><td>when true, any open block of this type (and other nested open 'autoclose' block) is closed before a new one is opened</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setAutoCloseBlock(boolean) autoCloseBlock}</td><td>when <code>true</code>, any open block of this type (and other nested open 'autoclose' block) is closed before a new one of the same type is opened</td><td><code>true</code></td></tr>
  * </table>
  * </p>
  * 
@@ -67,7 +70,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public final class RecordHandlingFlow {
-	public static final String version = "$RCSfile: RecordHandlingFlow.java,v $  $Revision: 1.11 $ $Date: 2007-10-08 12:14:56 $";
+	public static final String version = "$RCSfile: RecordHandlingFlow.java,v $  $Revision: 1.12 $ $Date: 2008-03-20 11:57:00 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String recordKey;
