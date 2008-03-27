@@ -1,6 +1,9 @@
 /*
  * $Log: StreamTransformerPipe.java,v $
- * Revision 1.13  2008-02-15 16:05:45  europe\L190409
+ * Revision 1.14  2008-03-27 10:52:50  europe\L190409
+ * autoclose block on forced close, too
+ *
+ * Revision 1.13  2008/02/15 16:05:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added default manager and flow, for simple configurations
  *
  * Revision 1.12  2007/10/08 13:28:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -92,7 +95,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class StreamTransformerPipe extends FixedForwardPipe {
-	public static final String version = "$RCSfile: StreamTransformerPipe.java,v $  $Revision: 1.13 $ $Date: 2008-02-15 16:05:45 $";
+	public static final String version = "$RCSfile: StreamTransformerPipe.java,v $  $Revision: 1.14 $ $Date: 2008-03-27 10:52:50 $";
 
 	private IRecordHandlerManager initialManager=null;
 	private IResultHandler defaultHandler=null;
@@ -344,37 +347,62 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 		return getBlockStack(session,streamId,false);
 	}
 
+	private boolean autoCloseBlocks(PipeLineSession session, String streamId, IResultHandler handler, RecordHandlingFlow flow, String blockName, ParameterResolutionContext prc) throws Exception {
+		List blockStack=getBlockStack(session,streamId,true);
+		int blockLevel;
+		if (log.isDebugEnabled()) log.debug("searching block stack for open block ["+blockName+"] to perform autoclose");
+		for (blockLevel=blockStack.size()-1;blockLevel>=0; blockLevel--) {
+			String stackedBlock=(String)blockStack.get(blockLevel);
+			if (log.isDebugEnabled()) log.debug("stack position ["+blockLevel+"] block ["+stackedBlock+"]");
+			if (stackedBlock.equals(blockName)) {
+				break;
+			}
+		}
+		if (blockLevel>=0) {
+			if (log.isDebugEnabled()) log.debug("found open block ["+blockName+"] at stack position ["+blockLevel+"]");
+			for (int i=blockStack.size()-1; i>=blockLevel; i--) {
+				String stackedBlock=(String)blockStack.remove(i);
+				closeBlock(session,streamId,handler,null,stackedBlock, "autoclose of previous blocks while opening block ["+blockName+"]", prc);
+			}
+			return true;
+		} else {
+			if (log.isDebugEnabled()) log.debug("did not found open block ["+blockName+"] at block stack");
+			return false;
+		}
+	}
+
 	protected void openBlock(PipeLineSession session, String streamId, IResultHandler handler, RecordHandlingFlow flow, String blockName, ParameterResolutionContext prc) throws Exception {
 		if (StringUtils.isNotEmpty(blockName)) {
 			if (handler!=null) {
 				if (flow.isAutoCloseBlock()) {
+					autoCloseBlocks(session,streamId,handler,flow,blockName,prc);
 					List blockStack=getBlockStack(session,streamId,true);
-					int blockLevel;
-					for (blockLevel=blockStack.size()-1;blockLevel>=0; blockLevel--) {
-						String stackedBlock=(String)blockStack.get(blockLevel);
-						if (stackedBlock.equals(blockName)) {
-							break;
-						}
-					}
-					if (blockLevel>=0) {
-						for (int i=blockStack.size()-1; i>=blockLevel; i--) {
-							String stackedBlock=(String)blockStack.remove(i);
-							closeBlock(session,streamId,handler,stackedBlock, prc);
-						}
-					}
+					if (log.isDebugEnabled()) log.debug("adding block ["+blockName+"] to block stack at position ["+blockStack.size()+"]");
 					blockStack.add(blockName);
 				}
-				if (log.isDebugEnabled()) log.debug("opening block ["+blockName+"] resultHandler["+handler.getName()+"]");
+				if (log.isDebugEnabled()) log.debug("opening block ["+blockName+"] for resultHandler ["+handler.getName()+"]");
 				handler.openBlock(session, streamId, blockName, prc);
 			} else {
 				log.warn("openBlock("+blockName+") without resultHandler");
 			}
 		}
 	}
-	protected void closeBlock(PipeLineSession session, String streamId, IResultHandler handler, String blockName, ParameterResolutionContext prc) throws Exception {
-		if (handler!=null && StringUtils.isNotEmpty(blockName)) {
-			if (log.isDebugEnabled()) log.debug("closing block ["+blockName+"] resultHandler["+handler.getName()+"]");
-			handler.closeBlock(session, streamId, blockName, prc);
+	protected void closeBlock(PipeLineSession session, String streamId, IResultHandler handler, RecordHandlingFlow flow, String blockName, String reason, ParameterResolutionContext prc) throws Exception {
+		if (StringUtils.isNotEmpty(blockName)) {
+			if (handler!=null) {
+				if (flow!=null && flow.isAutoCloseBlock()) {
+					if (autoCloseBlocks(session,streamId,handler,flow,blockName,prc)) {
+						if (log.isDebugEnabled()) log.debug("autoclosed block ["+blockName+"] due to "+reason);
+					} else {
+						if (log.isDebugEnabled()) log.debug("autoclose did not find block ["+blockName+"] to close due to "+reason);
+					}
+				} else {
+					if (log.isDebugEnabled()) log.debug("closing block ["+blockName+"] for resultHandler ["+handler.getName()+"] due to "+reason);
+					handler.closeBlock(session, streamId, blockName, prc);
+				}
+			} else {
+				log.warn("closeBlock("+blockName+") without resultHandler");
+			}
 		}
 	}
 
@@ -384,7 +412,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 			if (blockStack!=null) {
 				for (int i=blockStack.size()-1; i>=0; i--) {
 					String stackedBlock=(String)blockStack.remove(i);
-					closeBlock(session,streamId,handler,stackedBlock, prc);
+					closeBlock(session,streamId,handler,null,stackedBlock,"closeAllBlocks",prc);
 				}
 			}
 		}
@@ -419,7 +447,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 					//log.debug("flow ["+flow.getRecordKey()+"] openBlockBeforeLine ["+flow.getOpenBlockBeforeLine()+"]");
 				}
 				IResultHandler resultHandler = flow.getResultHandler();
-				closeBlock(session, streamId, resultHandler, flow.getCloseBlockBeforeLine(), prc);
+				closeBlock(session, streamId, resultHandler, flow, flow.getCloseBlockBeforeLine(),"closeBlockBeforeLine of flow ["+flow.getRecordKey()+"]", prc);
 				openBlock(session, streamId, resultHandler, flow, flow.getOpenBlockBeforeLine(), prc);
 				
 				IRecordHandler curHandler = flow.getRecordHandler(); 
@@ -448,7 +476,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 					log.debug("manager ["+currentManager.getName()+"] key ["+flow.getRecordKey()+"], no record handler: "+rawRecord);
 				}
 				
-				closeBlock(session, streamId, resultHandler, flow.getCloseBlockAfterLine(), prc);
+				closeBlock(session, streamId, resultHandler, flow, flow.getCloseBlockAfterLine(),"closeBlockAfterLine of flow ["+flow.getRecordKey()+"]", prc);
 				openBlock(session, streamId, resultHandler, flow, flow.getOpenBlockAfterLine(), prc);
 				
 				// get the manager for the next record
@@ -490,7 +518,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 		for (Iterator handlersIt = registeredResultHandlers.values().iterator(); handlersIt.hasNext();) {
 			IResultHandler resultHandler = (IResultHandler)handlersIt.next();
 			resultHandler.closeRecordType(session, inputFilename, prc);
-			closeAllBlocks(session,inputFilename,resultHandler, prc);
+			closeAllBlocks(session,inputFilename,resultHandler,prc);
 			log.debug("finalizing resulthandler ["+resultHandler.getName()+"]");
 			Object result = resultHandler.finalizeResult(session, inputFilename, error, prc);
 			if (result != null) {
