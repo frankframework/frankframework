@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaFacade.java,v $
- * Revision 1.3  2008-01-17 16:20:01  europe\L190409
+ * Revision 1.4  2008-03-27 12:00:14  europe\L190409
+ * set default timeout to 20s
+ *
+ * Revision 1.3  2008/01/17 16:20:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * never use jmsTransacted sessions
  *
  * Revision 1.2  2007/10/16 08:39:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -186,7 +189,7 @@ import com.ing.ifsa.IFSAServerQueueSender;
  *   <li>"RR": Request-Reply protocol</li>
  * </ul></td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setTransacted(boolean) transacted}</td><td>must be set <code>true</true> for FF senders/listeners in transacted mode</td><td>false</td></tr>
- * <tr><td>{@link #setTimeOut(long) timeOut}</td><td>receiver timeout, in milliseconds</td><td>defined by IFSA expiry</td></tr>
+ * <tr><td>{@link #setTimeOut(long) timeOut}</td><td>receiver timeout, in milliseconds. To use the timeout defined as IFSA expiry, set this value to -1</td><td>20000 (20s)</td></tr>
  * </table>
  * 
  * N.B. 
@@ -201,7 +204,7 @@ import com.ing.ifsa.IFSAServerQueueSender;
  * @since 4.2
  */
 public class IfsaFacade implements INamedObject, HasPhysicalDestination {
-	public static final String version = "$RCSfile: IfsaFacade.java,v $ $Revision: 1.3 $ $Date: 2008-01-17 16:20:01 $";
+	public static final String version = "$RCSfile: IfsaFacade.java,v $ $Revision: 1.4 $ $Date: 2008-03-27 12:00:14 $";
     protected Logger log = LogUtil.getLogger(this);
     
     private static int BASIC_ACK_MODE = Session.AUTO_ACKNOWLEDGE;
@@ -216,7 +219,7 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 	private String polishedServiceId=null;;
 	private IfsaMessageProtocolEnum messageProtocol;
 
-	private long timeOut = -1; // when set (>=0), overrides IFSA-expiry
+	private long timeOut = 20000; // when set less than zero the IFSA-expiry will be used
 
     private IFSAQueue queue;
 

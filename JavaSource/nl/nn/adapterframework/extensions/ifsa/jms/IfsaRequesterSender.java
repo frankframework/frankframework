@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaRequesterSender.java,v $
- * Revision 1.5  2008-02-13 12:55:24  europe\L190409
+ * Revision 1.6  2008-03-27 12:00:14  europe\L190409
+ * set default timeout to 20s
+ *
+ * Revision 1.5  2008/02/13 12:55:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * show detailed processing times
  *
  * Revision 1.4  2008/01/30 15:11:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -154,7 +157,7 @@ import com.ing.ifsa.IFSATimeOutMessage;
  *   <li>"FF": Fire & Forget protocol</li>
  *   <li>"RR": Request-Reply protocol</li>
  * </ul></td><td><td>&nbsp;</td></td></tr>
- * <tr><td>{@link #setTransacted(boolean) transacted}</td><td>must be set <code>true</code> for FF senders in transacted mode</td><td>false</td></tr>
+ * <tr><td>{@link #setTimeOut(long) timeOut}</td><td>receiver timeout, in milliseconds. To use the timeout defined as IFSA expiry, set this value to -1</td><td>20000 (20s)</td></tr>
  * </table>
  * <table border="1">
  * <p><b>Parameters:</b>
@@ -168,8 +171,8 @@ import com.ing.ifsa.IFSATimeOutMessage;
  * @since  4.2
  */
 public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParameters {
-	public static final String version="$RCSfile: IfsaRequesterSender.java,v $ $Revision: 1.5 $ $Date: 2008-02-13 12:55:24 $";
- 
+	public static final String version="$RCSfile: IfsaRequesterSender.java,v $ $Revision: 1.6 $ $Date: 2008-03-27 12:00:14 $";
+	
 	protected ParameterList paramList = null;
 
 	public IfsaRequesterSender() {
