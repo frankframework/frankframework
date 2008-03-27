@@ -1,6 +1,9 @@
 /*
  * $Log: RecordXmlTransformer.java,v $
- * Revision 1.11  2008-02-28 16:17:07  europe\L190409
+ * Revision 1.12  2008-03-27 10:33:11  europe\L190409
+ * improved logging
+ *
+ * Revision 1.11  2008/02/28 16:17:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * move xslt functionality to base class RecordXmlTransformer
  *
  * Revision 1.10  2008/02/19 09:23:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -76,7 +79,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class RecordXmlTransformer extends AbstractRecordHandler {
-	public static final String version = "$RCSfile: RecordXmlTransformer.java,v $  $Revision: 1.11 $ $Date: 2008-02-28 16:17:07 $";
+	public static final String version = "$RCSfile: RecordXmlTransformer.java,v $  $Revision: 1.12 $ $Date: 2008-03-27 10:33:11 $";
 
 	private String rootTag="record";
 	private String xpathExpression=null;
@@ -113,6 +116,9 @@ public class RecordXmlTransformer extends AbstractRecordHandler {
 	public Object handleRecord(PipeLineSession session, List parsedRecord, ParameterResolutionContext prc) throws Exception {
 		String xml = getXml(parsedRecord);
 		if (transformerPool!=null) {
+			if (log.isDebugEnabled()) {
+				log.debug("Transformer ["+getName()+"] record before XSL transformation ["+xml+"]");
+			}
 			return transformerPool.transform(xml, prc.getValueMap(paramList));
 		} else {
 			return xml;
