@@ -1,6 +1,9 @@
 /*
  * $Log: Adapter.java,v $
- * Revision 1.37  2008-01-03 15:40:19  europe\L190409
+ * Revision 1.38  2008-03-27 11:09:41  europe\L190409
+ * avoid nested non-informative NDCs
+ *
+ * Revision 1.37  2008/01/03 15:40:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * renamed start and stop threads
  * do not wait at end of start thread
  *
@@ -181,7 +184,7 @@ import org.springframework.core.task.TaskExecutor;
  */
 
 public class Adapter implements IAdapter, NamedBean {
-	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.37 $ $Date: 2008-01-03 15:40:19 $";
+	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.38 $ $Date: 2008-03-27 11:09:41 $";
 	private Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -613,7 +616,12 @@ public class Adapter implements IAdapter, NamedBean {
 		}
 
 		incNumOfMessagesInProcess(startTime);
-		NDC.push("cid [" + messageId + "]");
+		String lastNDC=NDC.peek();
+		String newNDC="cid [" + messageId + "]";
+		boolean ndcChanged=newNDC.equals(lastNDC);
+		if (ndcChanged) {
+			NDC.push(newNDC);
+		}
 		
 		if (isRequestReplyLogging()) {
 			if (log.isInfoEnabled()) log.info("Adapter [" + name + "] received message [" + message + "] with messageId [" + messageId + "]");
@@ -663,7 +671,9 @@ public class Adapter implements IAdapter, NamedBean {
 			} else {
 				log.info("Adapter [" + getName() + "] completed message with messageId [" + messageId + "] with exit-state [" + result.getState() + "]");
 			}
-			NDC.pop();
+			if (ndcChanged) {
+				NDC.pop();
+			}
 		}
 	}
 	/**
