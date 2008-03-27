@@ -1,6 +1,9 @@
 /*
  * $Log: IListener.java,v $
- * Revision 1.6  2007-10-03 08:09:11  europe\L190409
+ * Revision 1.7  2008-03-27 11:54:12  europe\L190409
+ * document common session variables
+ *
+ * Revision 1.6  2007/10/03 08:09:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed HashMap to Map
  *
  * Revision 1.5  2005/07/19 12:18:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -34,7 +37,7 @@ import java.util.Map;
  * @version Id
  */
 public interface IListener extends INamedObject {
-	public static final String version = "$RCSfile: IListener.java,v $ $Revision: 1.6 $ $Date: 2007-10-03 08:09:11 $";
+	public static final String version = "$RCSfile: IListener.java,v $ $Revision: 1.7 $ $Date: 2008-03-27 11:54:12 $";
 
 	/**
 	 * <code>configure()</code> is called once at startup of the framework in the <code>configure()</code> method 
@@ -60,7 +63,16 @@ public interface IListener extends INamedObject {
 	/**
 	 * Extracts ID-string from message obtained from {@link nl.nn.adapterframework.core.IPullingListener#getRawMessage(Map)}. May also extract
 	 * other parameters from the message and put those in the context.
-	 * @return ID-string of message for adapter.
+	 * <br>
+	 * Common entries in the session context are:
+	 * <ul>
+	 * 	<li>id: messageId, identifies the current transportation of the message</li>
+	 * 	<li>cid: correlationId, identifies the processing of the message in the global chain</li>
+	 * 	<li>tsReceived: timestamp of reception of the message, formatted as yyyy-MM-dd HH:mm:ss.SSS</li>
+	 * 	<li>tsSent: timestamp of sending of the message (only when available), formatted as yyyy-MM-dd HH:mm:ss.SSS</li>
+	 * </ul>
+	 * 
+	 * @return Correlation ID string.
 	 */
 	String getIdFromRawMessage(Object rawMessage, Map context) throws ListenerException;
 	
