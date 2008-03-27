@@ -1,6 +1,9 @@
 /*
  * $Log: PullingListenerContainer.java,v $
- * Revision 1.10  2008-02-06 15:58:38  europe\L190409
+ * Revision 1.11  2008-03-27 11:01:22  europe\L190409
+ * remove NDC on close
+ *
+ * Revision 1.10  2008/02/06 15:58:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added support for setting of transaction timeout
  *
  * Revision 1.9  2008/01/29 12:14:06  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -45,6 +48,7 @@ import nl.nn.adapterframework.util.Semaphore;
 import nl.nn.adapterframework.util.TracingUtil;
 
 import org.apache.log4j.Logger;
+import org.apache.log4j.NDC;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
@@ -216,6 +220,7 @@ public class PullingListenerContainer implements Runnable {
             }
 			receiver.info("the last thread of Receiver [" + receiver.getName() + "] exited, cleaning up");
             receiver.closeAllResources();
+            NDC.remove();
         }
     }
 
