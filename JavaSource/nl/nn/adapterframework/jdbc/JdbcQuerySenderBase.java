@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcQuerySenderBase.java,v $
- * Revision 1.31  2007-10-08 13:30:32  europe\L190409
+ * Revision 1.32  2008-03-27 10:54:03  europe\L190409
+ * cosmetic changes to javadoc
+ *
+ * Revision 1.31  2007/10/08 13:30:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed ArrayList to List where possible
  *
  * Revision 1.30  2007/07/19 15:09:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -161,7 +164,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setMaxRows(int) maxRows}</td><td>maximum number of rows returned</td><td>-1 (unlimited)</td></tr>
  * <tr><td>{@link #setStartRow(int) startRow}</td><td>the number of the first row returned from the output</td><td>1</td></tr>
  * <tr><td>{@link #setScalar(boolean) scalar}</td><td>when true, the value of the first column of the first row (or the StartRow) is returned as the only result, as a simple non-XML value</td><td>false</td></tr>
- * <tr><td>{@link #setScalarExtended(boolean) scalarExtended}</td><td>when true and <code>scalar</code> is also true, but returns no value, one of the following is returned:
+ * <tr><td>{@link #setScalarExtended(boolean) scalarExtended}</td><td>when <code>true</code> and <code>scalar</code> is also <code>true</code>, but returns no value, one of the following is returned:
  * <ul><li>"[absent]" no row is found</li>
  *     <li>"[null]" a row is found, but the value is a SQL-NULL</li>
  *     <li>"[empty]" a row is found, but the value is a empty string</li>
@@ -191,7 +194,7 @@ import org.apache.commons.lang.StringUtils;
  * @since 	4.1
  */
 public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
-	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.31 $ $Date: 2007-10-08 13:30:32 $";
+	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.32 $ $Date: 2008-03-27 10:54:03 $";
 
 	private String queryType = "other";
 	private int maxRows=-1; // return all rows
