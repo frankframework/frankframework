@@ -1,6 +1,9 @@
 /*
  * $Log: RecordHandlingFlow.java,v $
- * Revision 1.12  2008-03-20 11:57:00  europe\L190409
+ * Revision 1.13  2008-03-27 10:53:08  europe\L190409
+ * javadoc for autoclose block on forced close, too
+ *
+ * Revision 1.12  2008/03/20 11:57:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.11  2007/10/08 12:14:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -62,7 +65,7 @@ import org.apache.log4j.Logger;
  * <tr><td>{@link #setCloseBlockBeforeLine(String) closeBlockBeforeLine}</td><td>instructs the resultHandler to end the specified block before the parsed line is processed</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setOpenBlockAfterLine(String) openBlockAfterLine}</td><td>instructs the resultHandler to start a new block after the parsed line is processed</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setCloseBlockAfterLine(String) closeBlockAfterLine}</td><td>instructs the resultHandler to end the specified block after the parsed line is processed</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setAutoCloseBlock(boolean) autoCloseBlock}</td><td>when <code>true</code>, any open block of this type (and other nested open 'autoclose' block) is closed before a new one of the same type is opened</td><td><code>true</code></td></tr>
+ * <tr><td>{@link #setAutoCloseBlock(boolean) autoCloseBlock}</td><td>when <code>true</code>, any open block of this type (and other nested open 'autoclose' block) is closed before a new one of the same type is opened. At a forced close, nested blocks are closed too (since 4.9)</td><td><code>true</code></td></tr>
  * </table>
  * </p>
  * 
@@ -70,7 +73,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public final class RecordHandlingFlow {
-	public static final String version = "$RCSfile: RecordHandlingFlow.java,v $  $Revision: 1.12 $ $Date: 2008-03-20 11:57:00 $";
+	public static final String version = "$RCSfile: RecordHandlingFlow.java,v $  $Revision: 1.13 $ $Date: 2008-03-27 10:53:08 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String recordKey;
