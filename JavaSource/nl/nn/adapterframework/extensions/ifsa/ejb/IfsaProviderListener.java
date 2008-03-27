@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaProviderListener.java,v $
- * Revision 1.3  2008-01-03 15:45:28  europe\L190409
+ * Revision 1.4  2008-03-27 11:55:53  europe\L190409
+ * modified cid handling
+ *
+ * Revision 1.3  2008/01/03 15:45:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * rework port connected listener interfaces
  *
  * Revision 1.2  2007/11/22 08:48:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -61,6 +64,7 @@ import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
+import nl.nn.adapterframework.core.PipeLineSession;
 
 import com.ing.ifsa.api.ServiceRequest;
 import com.ing.ifsa.api.ServiceURI;
@@ -72,7 +76,7 @@ import com.ing.ifsa.api.ServiceURI;
  * @version Id
  */
 public class IfsaProviderListener extends IfsaEjbBase implements IPortConnectedListener {
-    public static final String version = "$RCSfile: IfsaProviderListener.java,v $ $Revision: 1.3 $ $Date: 2008-01-03 15:45:28 $";
+    public static final String version = "$RCSfile: IfsaProviderListener.java,v $ $Revision: 1.4 $ $Date: 2008-03-27 11:55:53 $";
     
     private IMessageHandler handler;
     private IbisExceptionListener exceptionListener;
@@ -184,7 +188,7 @@ public class IfsaProviderListener extends IfsaEjbBase implements IPortConnectedL
 
         }
         threadContext.put("id", id);
-        threadContext.put("cid", cid);
+        threadContext.put(PipeLineSession.technicalCorrelationIdKey, cid);
         threadContext.put("timestamp", dTimeStamp);
         threadContext.put("replyTo", "none");
         threadContext.put("messageText", messageText);

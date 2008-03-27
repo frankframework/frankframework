@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaEjbBeanBase.java,v $
- * Revision 1.3  2008-01-03 15:44:39  europe\L190409
+ * Revision 1.4  2008-03-27 11:55:08  europe\L190409
+ * modified cid handling
+ *
+ * Revision 1.3  2008/01/03 15:44:39  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * rework port connected listener interfaces
  *
  * Revision 1.2  2007/11/22 08:48:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -64,8 +67,7 @@ abstract public class IfsaEjbBeanBase extends AbstractListenerConnectingEJB impl
         try {
 //            listener.populateThreadContext(request, threadContext, null);
             String message = listener.getStringFromRawMessage(request, threadContext);
-            String id = listener.getIdFromRawMessage(request, threadContext);
-            String cid = id;
+            String cid = listener.getIdFromRawMessage(request, threadContext);
             String replyText = listener.getHandler().processRequest(listener, cid, message, threadContext);
             if (log.isDebugEnabled()) {
                 log.debug("processRequest(): ReplyText=[" + replyText + "]");
