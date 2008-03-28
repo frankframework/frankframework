@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBaseSpring.java,v $
- * Revision 1.18  2008-02-28 16:25:01  europe\L190409
+ * Revision 1.19  2008-03-28 14:23:52  europe\L190409
+ * removed 'returnIfStopped' attributes, now just throw exception
+ *
+ * Revision 1.18  2008/02/28 16:25:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * modified handling of Business Correlation ID
  *
  * Revision 1.17  2008/02/22 14:33:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -244,9 +247,7 @@
  */
 package nl.nn.adapterframework.receivers;
 
-import java.io.IOException;
 import java.io.Serializable;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -256,9 +257,7 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.Map.Entry;
 
-import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
@@ -286,9 +285,7 @@ import nl.nn.adapterframework.monitoring.EventTypeEnum;
 import nl.nn.adapterframework.monitoring.IMonitorAdapter;
 import nl.nn.adapterframework.monitoring.MonitorAdapterFactory;
 import nl.nn.adapterframework.monitoring.SeverityEnum;
-import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Counter;
-import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.RunStateEnquiring;
@@ -300,10 +297,10 @@ import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.SystemUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.apache.log4j.Logger;
+import org.apache.log4j.NDC;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.core.task.TaskExecutor;
@@ -324,7 +321,6 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  * <tr><td>{@link #setActive(boolean) active}</td>  <td>when set <code>false</code> or set to something else as "true", (even set to the empty string), the receiver is not included in the configuration</td><td>true</td></tr>
  * <tr><td>{@link #setNumThreads(int) numThreads}</td><td>the number of threads that may execute a pipeline concurrently (only for pulling listeners)</td><td>1</td></tr>
  * <tr><td>{@link #setNumThreadsPolling(int) numThreadsPolling}</td><td>the number of threads that are activily polling for messages concurrently. '0' means 'limited only by <code>numThreads</code>' (only for pulling listeners)</td><td>1</td></tr>
- * <tr><td>{@link #setStyleSheetName(String) styleSheetName}</td>  <td></td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setOnError(String) onError}</td><td>one of 'continue' or 'close'. Controls the behaviour of the receiver when it encounters an error sending a reply or receives an exception asynchronously</td><td>continue</td></tr>
  * <tr><td>{@link #setReturnedSessionKeys(String) returnedSessionKeys}</td><td>comma separated list of keys of session variables that should be returned to caller, for correct results as well as for erronous results. (Only for listeners that support it, like JavaListener)</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setTransacted(boolean) transacted}</td><td>if set to <code>true</code>, messages will be received and processed under transaction control. If processing fails, messages will be sent to the error-sender. (see below)</code></td><td><code>false</code></td></tr>
@@ -387,7 +383,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  */
 public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMessageHandler, IbisExceptionListener, HasSender, TracingEventNumbers, IThreadCountControllable, BeanFactoryAware {
     
-	public static final String version="$RCSfile: ReceiverBaseSpring.java,v $ $Revision: 1.18 $ $Date: 2008-02-28 16:25:01 $";
+	public static final String version="$RCSfile: ReceiverBaseSpring.java,v $ $Revision: 1.19 $ $Date: 2008-03-28 14:23:52 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -402,11 +398,6 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 
 	private int pollInterval=0;
     
-	private String returnIfStopped="";
-	private String fileNameIfStopped = null;
-	private String replaceFrom = null;
-	private String replaceTo = null;
-	private String styleSheetName = null;
 	private String returnedSessionKeys=null;
 	private boolean checkForDuplicates=false;
 	private String correlationIDXPath;
@@ -811,38 +802,6 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 				}
 			} 
 
-			if (StringUtils.isNotEmpty(getFileNameIfStopped())) {
-				try {
-					setReturnIfStopped(Misc.resourceToString(ClassUtils.getResourceURL(this,fileNameIfStopped), SystemUtils.LINE_SEPARATOR));
-				} catch (Throwable e) {
-					throw new ConfigurationException("Receiver ["+getName()+"] got exception loading ["+getFileNameIfStopped()+"]", e);
-				}
-			}
-
-			if (StringUtils.isNotEmpty(getReplaceFrom())) {
-				setReturnIfStopped(Misc.replace(getReturnIfStopped(), getReplaceFrom(), getReplaceTo()));
-			}
-
-			if (StringUtils.isNotEmpty(styleSheetName)) {
-				URL xsltSource = ClassUtils.getResourceURL(this, styleSheetName);
-				if (xsltSource!=null) {
-					try{
-						String xsltResult = null;
-						Transformer transformer = XmlUtils.createTransformer(xsltSource);
-						xsltResult = XmlUtils.transformXml(transformer, getReturnIfStopped());
-						setReturnIfStopped(xsltResult);
-					} catch (IOException e) {
-						throw new ConfigurationException("Receiver cannot retrieve ["+ styleSheetName + "], resource [" + xsltSource.toString() + "]", e);
-					} catch (TransformerConfigurationException te) {
-						throw new ConfigurationException("Receiver got error creating transformer from file [" + styleSheetName + "]", te);
-					} catch (TransformerException te) {
-						throw new ConfigurationException("Receiver got error transforming resource [" + xsltSource.toString() + "] from [" + styleSheetName + "]", te);
-					} catch (DomBuilderException te) {
-						throw new ConfigurationException("Receiver caught DomBuilderException", te);
-					}
-				}
-			}
-
 			if (StringUtils.isNotEmpty(getCorrelationIDXPath())) {
 				try {
 					correlationIDTp = new TransformerPool(XmlUtils.createXPathEvaluatorSource(getCorrelationIDXPath()));
@@ -915,6 +874,7 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 			closeAllResources();
 			runState.setRunState(RunStateEnum.STOPPED);
 		}
+		NDC.remove();
 	}
 
 	protected void startProcessingMessage(long waitingDuration) {
@@ -1003,9 +963,9 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 	}
 
 	public String processRequest(IListener origin, String correlationId, String message, Map context, long waitingTime) throws ListenerException {
-		if (getRunState() == RunStateEnum.STOPPED || getRunState() == RunStateEnum.STOPPING)
-			return getReturnIfStopped();
-			
+		if (getRunState() != RunStateEnum.STARTED) {
+			throw new ListenerException(getLogPrefix()+"is not started");
+		}
 		return processMessageInAdapter(origin, message, message, null, correlationId, context, waitingTime, false);
 	}
 
@@ -1660,19 +1620,6 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 
 	
 	/**
-	 * Return this value when this receiver is stopped.
-	 */
-	public String getReturnIfStopped() {
-		return returnIfStopped;
-	}
-	/**
-	 * Return this value when this receiver is stopped.
-	 */
-	public void setReturnIfStopped (String returnIfStopped){
-		this.returnIfStopped=returnIfStopped;
-	}
-
-	/**
 	 * The number of threads that this receiver is configured to work with.
 	 */
 	public void setNumThreads(int newNumThreads) {
@@ -1704,54 +1651,28 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 	}
 	
 
-	public void setFileNameIfStopped(String fileNameIfStopped) {
-		this.fileNameIfStopped = fileNameIfStopped;
-	}
-	public String getFileNameIfStopped() {
-		return fileNameIfStopped;
-	}
-
-
-	public void setReplaceFrom (String replaceFrom){
-		this.replaceFrom=replaceFrom;
-	}
-	public String getReplaceFrom() {
-		return replaceFrom;
-	}
-
-
-	public void setReplaceTo (String replaceTo){
-		this.replaceTo=replaceTo;
-	}
-	public String getReplaceTo() {
-		return replaceTo;
-	}
-
 	// event numbers for tracing
-
-	public int getAfterEvent() {
-		return afterEvent;
+	public void setBeforeEvent(int i) {
+		beforeEvent = i;
 	}
-
 	public int getBeforeEvent() {
 		return beforeEvent;
 	}
-
+	public void setAfterEvent(int i) {
+		afterEvent = i;
+	}
+	public int getAfterEvent() {
+		return afterEvent;
+	}
+	public void setExceptionEvent(int i) {
+		exceptionEvent = i;
+	}
 	public int getExceptionEvent() {
 		return exceptionEvent;
 	}
 
-	public void setAfterEvent(int i) {
-		afterEvent = i;
-	}
 
-	public void setBeforeEvent(int i) {
-		beforeEvent = i;
-	}
 
-	public void setExceptionEvent(int i) {
-		exceptionEvent = i;
-	}
 
 
 	public int getMaxRetries() {
@@ -1762,14 +1683,6 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 		maxRetries = i;
 	}
 	
-	public String getStyleSheetName() {
-		return styleSheetName;
-	}
-
-	public void setStyleSheetName (String styleSheetName){
-		this.styleSheetName=styleSheetName;
-	}
-
 	public void setActive(boolean b) {
 		active = b;
 	}
