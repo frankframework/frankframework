@@ -1,6 +1,9 @@
 /*
  * $Log: AttributeCheckingRule.java,v $
- * Revision 1.1  2007-05-11 09:36:59  europe\L190409
+ * Revision 1.2  2008-03-28 10:14:21  europe\L190409
+ * improved error message
+ *
+ * Revision 1.1  2007/05/11 09:36:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * first version
  *
  */
@@ -56,7 +59,7 @@ public class AttributeCheckingRule extends Rule {
 				}
 				if (m==null) {
 					Locator loc = digester.getDocumentLocator();
-					log.warn("line "+loc.getLineNumber()+", col "+loc.getColumnNumber()+": "+getObjectName(top)+" does not have an attribute ["+name+"]");
+					log.warn("line "+loc.getLineNumber()+", col "+loc.getColumnNumber()+": "+getObjectName(top)+" does not have an attribute ["+name+"] to set to value ["+attributes.getValue(name)+"]");
 				}
 			}
 		}
