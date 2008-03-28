@@ -1,6 +1,9 @@
 /*
  * $Log: IbisMultiSourceExpander.java,v $
- * Revision 1.4  2008-01-03 15:39:20  europe\L190409
+ * Revision 1.5  2008-03-28 14:19:36  europe\L190409
+ * resolve non-found value to empty string
+ *
+ * Revision 1.4  2008/01/03 15:39:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * remove superfluous logging
  *
  * Revision 1.3  2007/10/16 09:12:27  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
@@ -40,6 +43,7 @@ public class IbisMultiSourceExpander implements VariableExpander {
     
     private List sources = new ArrayList();
     private boolean environmentFallback = false;
+    private boolean keepUnresolvables = false;
     
     private boolean trace=false;
     
@@ -50,10 +54,6 @@ public class IbisMultiSourceExpander implements VariableExpander {
     public IbisMultiSourceExpander(boolean environmentFallback) {
         this();
         this.environmentFallback = environmentFallback;
-    }
-    
-    public void addSource(Map source) {
-        sources.add(source);
     }
     
 	/* (non-Javadoc)
@@ -91,7 +91,9 @@ public class IbisMultiSourceExpander implements VariableExpander {
             // Get the value and append to result
             String value = getValue(varName);
             if (value == null) {
-                result.append(inp.substring(varMarkerPos, lastVarEnd+1));
+            	if (isKeepUnresolvables()) {
+					result.append(inp.substring(varMarkerPos, lastVarEnd+1));
+            	} 
             } else {
                 // Recursive expansion
                 value = expand(value);
@@ -119,7 +121,7 @@ public class IbisMultiSourceExpander implements VariableExpander {
 	 * @param varName
 	 * @return
 	 */
-	public String getValue(String varName) {
+	protected String getValue(String varName) {
         for (Iterator iter = sources.iterator(); iter.hasNext();) {
 			Map source = (Map) iter.next();
 			if (source.containsKey(varName)) {
@@ -131,37 +133,35 @@ public class IbisMultiSourceExpander implements VariableExpander {
         if (environmentFallback) {
             return System.getenv(varName);
         } else {
-            log.warn("No substitution can be found for variable name ["
-                + varName + "]");
+            log.warn("No substitution can be found for variable name [" + varName + "]");
             return null;
         }
 	}
-	/**
-	 * @return
-	 */
-	public boolean isEnvironmentFallback() {
-		return environmentFallback;
-	}
 
-	/**
-	 * @return
-	 */
+	public void addSource(Map source) {
+		sources.add(source);
+	}
+    
+	public void setSources(List list) {
+		sources = list;
+	}
 	public List getSources() {
 		return sources;
 	}
 
-	/**
-	 * @param b
-	 */
 	public void setEnvironmentFallback(boolean b) {
 		environmentFallback = b;
 	}
-
-	/**
-	 * @param list
-	 */
-	public void setSources(List list) {
-		sources = list;
+	public boolean isEnvironmentFallback() {
+		return environmentFallback;
 	}
+
+	public void setKeepUnresolvables(boolean b) {
+		keepUnresolvables = b;
+	}
+	public boolean isKeepUnresolvables() {
+		return keepUnresolvables;
+	}
+
 
 }
