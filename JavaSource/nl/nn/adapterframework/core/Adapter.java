@@ -1,6 +1,9 @@
 /*
  * $Log: Adapter.java,v $
- * Revision 1.38  2008-03-27 11:09:41  europe\L190409
+ * Revision 1.39  2008-03-28 14:20:42  europe\L190409
+ * simplify error messages
+ *
+ * Revision 1.38  2008/03/27 11:09:41  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * avoid nested non-informative NDCs
  *
  * Revision 1.37  2008/01/03 15:40:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -184,7 +187,7 @@ import org.springframework.core.task.TaskExecutor;
  */
 
 public class Adapter implements IAdapter, NamedBean {
-	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.38 $ $Date: 2008-03-27 11:09:41 $";
+	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.39 $ $Date: 2008-03-28 14:20:42 $";
 	private Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -265,7 +268,7 @@ public class Adapter implements IAdapter, NamedBean {
 					receiver.configure();
 					messageKeeper.add("receiver [" + receiver.getName() + "] successfully configured");
 				} catch (ConfigurationException e) {
-					error("Adapter [" + getName() + "] got error initializing receiver [" + receiver.getName() + "]",e);
+					error("error initializing receiver [" + receiver.getName() + "]",e);
 				}
 
 			}
@@ -273,7 +276,7 @@ public class Adapter implements IAdapter, NamedBean {
 			configurationSucceeded = true;
 		}
 		catch (ConfigurationException e) {
-			error("Adapter [" + getName() + "] got error initializing pipeline", e);
+			error("error initializing pipeline", e);
 		}
 	}
 
@@ -780,11 +783,7 @@ public class Adapter implements IAdapter, NamedBean {
                         RunStateEnum currentRunState = getRunState();
                         if (!currentRunState.equals(RunStateEnum.STOPPED)) {
                             String msg =
-                                "Adapter ["
-                                    + getName()
-                                    + "] is currently in state ["
-                                    + currentRunState
-                                    + "], ignoring start() command";
+                                "currently in state [" + currentRunState + "], ignoring start() command";
                             warn(msg);
                             return;
                         }
@@ -848,13 +847,7 @@ public class Adapter implements IAdapter, NamedBean {
 			RunStateEnum currentRunState = getRunState();
 
 			if (!currentRunState.equals(RunStateEnum.STARTED) && (!currentRunState.equals(RunStateEnum.ERROR))) {
-				String msg =
-					"Adapter ["
-						+ name
-						+ "] in state ["
-						+ currentRunState
-						+ "] while stopAdapter() command is issued, ignoring command";
-				warn(msg);
+				warn("in state [" + currentRunState + "] while stopAdapter() command is issued, ignoring command");
 				return;
 			}
 			if (currentRunState.equals(RunStateEnum.ERROR)) {
