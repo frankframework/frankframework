@@ -1,6 +1,9 @@
 /*
  * $Log: StringResolver.java,v $
- * Revision 1.8  2007-10-01 14:13:53  europe\L190409
+ * Revision 1.9  2008-03-28 14:24:36  europe\L190409
+ * removed unused code
+ *
+ * Revision 1.8  2007/10/01 14:13:53  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved error messages
  *
  * Revision 1.7  2007/02/12 14:12:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -32,7 +35,7 @@ import org.apache.log4j.Logger;
  * @author Johan Verrips 
  */
 public class StringResolver {
-	public static final String version="$RCSfile: StringResolver.java,v $ $Revision: 1.8 $ $Date: 2007-10-01 14:13:53 $";
+	public static final String version="$RCSfile: StringResolver.java,v $ $Revision: 1.9 $ $Date: 2008-03-28 14:24:36 $";
 	protected static Logger log = LogUtil.getLogger(StringResolver.class);
 	
     static String DELIM_START = "${";
@@ -128,21 +131,5 @@ public class StringResolver {
             }
         }
     }
- 
-    
-	/**
-	 * Starts the application.
-	 * @param args an array of command-line arguments
-	 */
-	public static void main(java.lang.String[] args) {
-		// Insert code to start the application here.
-	//	StringResolver sr=new StringResolver();
-		Properties prop=new Properties();
-		prop.put("test.name", "dit is de naam met ${test.xx}");
-		prop.put("test.xx", "hier nog eens");
-		System.out.println(prop.get("test.name"));
-		System.out.println(StringResolver.substVars("dit is ${test.name}", prop));
-	
-	}
-    
+
 }
