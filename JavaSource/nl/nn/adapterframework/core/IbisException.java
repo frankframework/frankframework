@@ -1,6 +1,9 @@
 /*
  * $Log: IbisException.java,v $
- * Revision 1.22  2008-03-20 11:57:56  europe\L190409
+ * Revision 1.23  2008-03-28 14:50:24  europe\L190409
+ * changed position of XML location info
+ *
+ * Revision 1.22  2008/03/20 11:57:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * do not skip Exception from classname
  *
  * Revision 1.21  2007/07/17 15:08:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -80,7 +83,7 @@ import org.xml.sax.SAXParseException;
  * @author Gerrit van Brakel
  */
 public class IbisException extends NestableException {
-	public static final String version = "$RCSfile: IbisException.java,v $ $Revision: 1.22 $ $Date: 2008-03-20 11:57:56 $";
+	public static final String version = "$RCSfile: IbisException.java,v $ $Revision: 1.23 $ $Date: 2008-03-28 14:50:24 $";
 
 	static {
 		// add methodname to find cause of JMS-Exceptions
@@ -135,15 +138,17 @@ public class IbisException extends NestableException {
 			int col = spe.getColumnNumber();
 			String sysid = spe.getSystemId();
 			
+			String locationInfo=null;
 			if (StringUtils.isNotEmpty(sysid)) {
-				currentResult =  addPart(currentResult, " ", "SystemId ["+sysid+"]");
+				locationInfo =  "SystemId ["+sysid+"]";
 			}
 			if (line>=0) {
-				currentResult =  addPart(currentResult, " ", "line ["+line+"]");
+				locationInfo =  addPart(locationInfo, " ", "line ["+line+"]");
 			}
 			if (col>=0) {
-				currentResult =  addPart(currentResult, " ", "column ["+col+"]");
+				locationInfo =  addPart(locationInfo, " ", "column ["+col+"]");
 			}
+			currentResult = addPart(locationInfo, ": ", currentResult);
 		} 
 		if (t instanceof TransformerException) {
 			TransformerException te = (TransformerException)t;
@@ -153,15 +158,17 @@ public class IbisException extends NestableException {
 				int col = locator.getColumnNumber();
 				String sysid = locator.getSystemId();
 				
+				String locationInfo=null;
 				if (StringUtils.isNotEmpty(sysid)) {
-					currentResult =  addPart(currentResult, " ", "SystemId ["+sysid+"]");
+					locationInfo =  "SystemId ["+sysid+"]";
 				}
 				if (line>=0) {
-					currentResult =  addPart(currentResult, " ", "line ["+line+"]");
+					locationInfo =  addPart(locationInfo, " ", "line ["+line+"]");
 				}
 				if (col>=0) {
-					currentResult =  addPart(currentResult, " ", "column ["+col+"]");
+					locationInfo =  addPart(locationInfo, " ", "column ["+col+"]");
 				}
+				currentResult = addPart(locationInfo, ": ", currentResult);
 			}
 		} 
 		if (t instanceof SQLException) {
