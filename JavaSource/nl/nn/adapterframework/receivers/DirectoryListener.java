@@ -1,6 +1,9 @@
 /*
  * $Log: DirectoryListener.java,v $
- * Revision 1.10.2.1  2008-04-03 08:16:19  europe\L190409
+ * Revision 1.10.2.2  2008-04-03 09:12:36  europe\L190409
+ * implemented HasPhysicalDestination as interface, too
+ *
+ * Revision 1.10.2.1  2008/04/03 08:16:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * use received filename instead of configured
  * implemented HasPhysicalDestination
  *
@@ -100,8 +103,8 @@ import org.apache.log4j.Logger;
  * @author  John Dekker
  * @version Id
  */
-public class DirectoryListener implements IPullingListener, INamedObject {
-	public static final String version = "$RCSfile: DirectoryListener.java,v $  $Revision: 1.10.2.1 $ $Date: 2008-04-03 08:16:19 $";
+public class DirectoryListener implements IPullingListener, INamedObject, HasPhysicalDestination {
+	public static final String version = "$RCSfile: DirectoryListener.java,v $  $Revision: 1.10.2.2 $ $Date: 2008-04-03 09:12:36 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String name;
