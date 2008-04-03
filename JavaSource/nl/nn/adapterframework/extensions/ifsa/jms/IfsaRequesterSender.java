@@ -1,7 +1,7 @@
 /*
  * $Log: IfsaRequesterSender.java,v $
- * Revision 1.6  2008-03-27 12:00:14  europe\L190409
- * set default timeout to 20s
+ * Revision 1.5.2.1  2008-04-03 08:11:33  europe\L190409
+ * synch from HEAD
  *
  * Revision 1.5  2008/02/13 12:55:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * show detailed processing times
@@ -171,8 +171,8 @@ import com.ing.ifsa.IFSATimeOutMessage;
  * @since  4.2
  */
 public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParameters {
-	public static final String version="$RCSfile: IfsaRequesterSender.java,v $ $Revision: 1.6 $ $Date: 2008-03-27 12:00:14 $";
-	
+	public static final String version="$RCSfile: IfsaRequesterSender.java,v $ $Revision: 1.5.2.1 $ $Date: 2008-04-03 08:11:33 $";
+ 
 	protected ParameterList paramList = null;
 
 	public IfsaRequesterSender() {

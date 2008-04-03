@@ -1,6 +1,9 @@
 /*
  * $Log: AttributeCheckingRule.java,v $
- * Revision 1.2  2008-03-28 10:14:21  europe\L190409
+ * Revision 1.1.16.1  2008-04-03 08:09:52  europe\L190409
+ * synch from HEAD
+ *
+ * Revision 1.2  2008/03/28 10:14:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved error message
  *
  * Revision 1.1  2007/05/11 09:36:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>

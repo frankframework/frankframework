@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcQueryListener.java,v $
- * Revision 1.1  2008-02-28 16:22:45  europe\L190409
+ * Revision 1.1.2.1  2008-04-03 08:12:39  europe\L190409
+ * synch from HEAD
+ *
+ * Revision 1.1  2008/02/28 16:22:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * first version
  *
  */

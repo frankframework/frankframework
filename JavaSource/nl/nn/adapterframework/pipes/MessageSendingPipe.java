@@ -1,6 +1,9 @@
 /*
  * $Log: MessageSendingPipe.java,v $
- * Revision 1.40  2008-03-20 12:08:01  europe\L190409
+ * Revision 1.39.2.1  2008-04-03 08:14:16  europe\L190409
+ * synch from HEAD
+ *
+ * Revision 1.40  2008/03/20 12:08:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved stub handling
  *
  * Revision 1.39  2008/02/26 09:18:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -219,7 +222,7 @@ import org.apache.commons.lang.SystemUtils;
  */
 
 public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
-	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.40 $ $Date: 2008-03-20 12:08:01 $";
+	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.39.2.1 $ $Date: 2008-04-03 08:14:16 $";
 
 	private final static String TIMEOUTFORWARD = "timeout";
 	private final static String EXCEPTIONFORWARD = "exception";

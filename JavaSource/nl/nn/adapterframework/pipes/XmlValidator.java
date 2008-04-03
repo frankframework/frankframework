@@ -1,6 +1,9 @@
 /*
  * $Log: XmlValidator.java,v $
- * Revision 1.25  2008-02-28 16:24:05  europe\L190409
+ * Revision 1.24.2.1  2008-04-03 08:14:16  europe\L190409
+ * synch from HEAD
+ *
+ * Revision 1.25  2008/02/28 16:24:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved errorMessage
  *
  * Revision 1.24  2008/02/21 12:45:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -151,7 +154,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * @author Johan Verrips IOS / Jaco de Groot (***@dynasol.nl)
  */
 public class XmlValidator extends FixedForwardPipe {
-	public static final String version="$RCSfile: XmlValidator.java,v $ $Revision: 1.25 $ $Date: 2008-02-28 16:24:05 $";
+	public static final String version="$RCSfile: XmlValidator.java,v $ $Revision: 1.24.2.1 $ $Date: 2008-04-03 08:14:16 $";
 
     private String schemaLocation = null;
     private String noNamespaceSchemaLocation = null;

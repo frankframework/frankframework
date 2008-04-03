@@ -1,6 +1,9 @@
 /*
  * $Log: RecordHandlingFlow.java,v $
- * Revision 1.13  2008-03-27 10:53:08  europe\L190409
+ * Revision 1.11.4.1  2008-04-03 08:09:07  europe\L190409
+ * synch from HEAD
+ *
+ * Revision 1.13  2008/03/27 10:53:08  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * javadoc for autoclose block on forced close, too
  *
  * Revision 1.12  2008/03/20 11:57:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -73,7 +76,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public final class RecordHandlingFlow {
-	public static final String version = "$RCSfile: RecordHandlingFlow.java,v $  $Revision: 1.13 $ $Date: 2008-03-27 10:53:08 $";
+	public static final String version = "$RCSfile: RecordHandlingFlow.java,v $  $Revision: 1.11.4.1 $ $Date: 2008-04-03 08:09:07 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String recordKey;

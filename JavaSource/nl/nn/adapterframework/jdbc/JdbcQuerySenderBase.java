@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcQuerySenderBase.java,v $
- * Revision 1.32  2008-03-27 10:54:03  europe\L190409
+ * Revision 1.31.4.1  2008-04-03 08:12:39  europe\L190409
+ * synch from HEAD
+ *
+ * Revision 1.32  2008/03/27 10:54:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * cosmetic changes to javadoc
  *
  * Revision 1.31  2007/10/08 13:30:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -194,7 +197,7 @@ import org.apache.commons.lang.StringUtils;
  * @since 	4.1
  */
 public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
-	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.32 $ $Date: 2008-03-27 10:54:03 $";
+	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.31.4.1 $ $Date: 2008-04-03 08:12:39 $";
 
 	private String queryType = "other";
 	private int maxRows=-1; // return all rows

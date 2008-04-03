@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractJmsConfigurator.java,v $
- * Revision 1.6  2008-02-28 16:25:26  europe\L190409
+ * Revision 1.5.2.1  2008-04-03 08:18:33  europe\L190409
+ * synch from HEAD
+ *
+ * Revision 1.6  2008/02/28 16:25:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved configuration checking
  *
  * Revision 1.5  2008/01/03 15:57:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>

@@ -1,6 +1,9 @@
 /*
  * $Log: HttpSender.java,v $
- * Revision 1.32  2008-03-20 12:00:10  europe\L190409
+ * Revision 1.31.2.1  2008-04-03 08:11:51  europe\L190409
+ * synch from HEAD
+ *
+ * Revision 1.32  2008/03/20 12:00:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * set default path '/'
  *
  * Revision 1.31  2007/12/28 12:09:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -230,7 +233,7 @@ import nl.nn.adapterframework.util.CredentialFactory;
  * @since 4.2c
  */
 public class HttpSender extends SenderWithParametersBase implements HasPhysicalDestination {
-	public static final String version = "$RCSfile: HttpSender.java,v $ $Revision: 1.32 $ $Date: 2008-03-20 12:00:10 $";
+	public static final String version = "$RCSfile: HttpSender.java,v $ $Revision: 1.31.2.1 $ $Date: 2008-04-03 08:11:51 $";
 
 	private String url;
 	private String methodType="GET"; // GET or POST

@@ -1,6 +1,9 @@
 /*
  * $Log: RecordXml2Sender.java,v $
- * Revision 1.12  2008-02-28 16:17:06  europe\L190409
+ * Revision 1.11.2.1  2008-04-03 08:09:07  europe\L190409
+ * synch from HEAD
+ *
+ * Revision 1.12  2008/02/28 16:17:06  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * move xslt functionality to base class RecordXmlTransformer
  *
  * Revision 1.11  2008/02/19 09:23:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -78,7 +81,7 @@ import nl.nn.adapterframework.util.ClassUtils;
  * @version Id
  */
 public class RecordXml2Sender extends RecordXmlTransformer {
-	public static final String version = "$RCSfile: RecordXml2Sender.java,v $  $Revision: 1.12 $ $Date: 2008-02-28 16:17:06 $";
+	public static final String version = "$RCSfile: RecordXml2Sender.java,v $  $Revision: 1.11.2.1 $ $Date: 2008-04-03 08:09:07 $";
 
 	private ISender sender = null; 
 	

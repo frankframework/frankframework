@@ -1,6 +1,9 @@
 /*
  * $Log: CompressPipe.java,v $
- * Revision 1.2  2008-03-20 12:06:09  europe\L190409
+ * Revision 1.1.16.1  2008-04-03 08:14:16  europe\L190409
+ * synch from HEAD
+ *
+ * Revision 1.2  2008/03/20 12:06:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.1  2006/08/23 11:35:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>

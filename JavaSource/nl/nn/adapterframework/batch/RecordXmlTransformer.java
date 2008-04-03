@@ -1,6 +1,9 @@
 /*
  * $Log: RecordXmlTransformer.java,v $
- * Revision 1.12  2008-03-27 10:33:11  europe\L190409
+ * Revision 1.10.2.1  2008-04-03 08:09:07  europe\L190409
+ * synch from HEAD
+ *
+ * Revision 1.12  2008/03/27 10:33:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved logging
  *
  * Revision 1.11  2008/02/28 16:17:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -79,7 +82,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class RecordXmlTransformer extends AbstractRecordHandler {
-	public static final String version = "$RCSfile: RecordXmlTransformer.java,v $  $Revision: 1.12 $ $Date: 2008-03-27 10:33:11 $";
+	public static final String version = "$RCSfile: RecordXmlTransformer.java,v $  $Revision: 1.10.2.1 $ $Date: 2008-04-03 08:09:07 $";
 
 	private String rootTag="record";
 	private String xpathExpression=null;

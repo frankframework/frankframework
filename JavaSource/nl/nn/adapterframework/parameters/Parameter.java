@@ -1,6 +1,9 @@
 /*
  * $Log: Parameter.java,v $
- * Revision 1.27  2008-02-28 16:23:39  europe\L190409
+ * Revision 1.26.2.1  2008-04-03 08:13:19  europe\L190409
+ * synch from HEAD
+ *
+ * Revision 1.27  2008/02/28 16:23:39  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added type timestamp
  *
  * Revision 1.26  2008/01/11 09:45:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -184,7 +187,7 @@ import org.w3c.dom.Node;
  * @author Gerrit van Brakel
  */
 public class Parameter implements INamedObject, IWithParameters {
-	public static final String version="$RCSfile: Parameter.java,v $ $Revision: 1.27 $ $Date: 2008-02-28 16:23:39 $";
+	public static final String version="$RCSfile: Parameter.java,v $ $Revision: 1.26.2.1 $ $Date: 2008-04-03 08:13:19 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static String TYPE_XML="xml";

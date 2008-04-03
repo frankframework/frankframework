@@ -1,6 +1,9 @@
 /*
  * $Log: PullingListenerContainer.java,v $
- * Revision 1.11  2008-03-27 11:01:22  europe\L190409
+ * Revision 1.10.2.1  2008-04-03 08:18:04  europe\L190409
+ * synch from HEAD
+ *
+ * Revision 1.11  2008/03/27 11:01:22  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * remove NDC on close
  *
  * Revision 1.10  2008/02/06 15:58:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>

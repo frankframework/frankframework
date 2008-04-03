@@ -1,6 +1,9 @@
 /*
  * $Log: IbisException.java,v $
- * Revision 1.23  2008-03-28 14:50:24  europe\L190409
+ * Revision 1.21.14.1  2008-04-03 08:10:58  europe\L190409
+ * synch from HEAD
+ *
+ * Revision 1.23  2008/03/28 14:50:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed position of XML location info
  *
  * Revision 1.22  2008/03/20 11:57:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -83,7 +86,7 @@ import org.xml.sax.SAXParseException;
  * @author Gerrit van Brakel
  */
 public class IbisException extends NestableException {
-	public static final String version = "$RCSfile: IbisException.java,v $ $Revision: 1.23 $ $Date: 2008-03-28 14:50:24 $";
+	public static final String version = "$RCSfile: IbisException.java,v $ $Revision: 1.21.14.1 $ $Date: 2008-04-03 08:10:58 $";
 
 	static {
 		// add methodname to find cause of JMS-Exceptions

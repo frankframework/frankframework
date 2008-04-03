@@ -1,6 +1,9 @@
 /*
  * $Log: StringResolver.java,v $
- * Revision 1.9  2008-03-28 14:24:36  europe\L190409
+ * Revision 1.8.8.1  2008-04-03 08:18:53  europe\L190409
+ * synch from HEAD
+ *
+ * Revision 1.9  2008/03/28 14:24:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed unused code
  *
  * Revision 1.8  2007/10/01 14:13:53  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -35,7 +38,7 @@ import org.apache.log4j.Logger;
  * @author Johan Verrips 
  */
 public class StringResolver {
-	public static final String version="$RCSfile: StringResolver.java,v $ $Revision: 1.9 $ $Date: 2008-03-28 14:24:36 $";
+	public static final String version="$RCSfile: StringResolver.java,v $ $Revision: 1.8.8.1 $ $Date: 2008-04-03 08:18:53 $";
 	protected static Logger log = LogUtil.getLogger(StringResolver.class);
 	
     static String DELIM_START = "${";

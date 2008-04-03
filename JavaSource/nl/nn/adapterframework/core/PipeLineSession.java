@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLineSession.java,v $
- * Revision 1.10  2008-02-28 16:17:53  europe\L190409
+ * Revision 1.9.16.1  2008-04-03 08:10:58  europe\L190409
+ * synch from HEAD
+ *
+ * Revision 1.10  2008/02/28 16:17:53  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added setListenerParameters()
  *
  * Revision 1.9  2006/08/22 06:47:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -53,7 +56,7 @@ import org.apache.commons.lang.NotImplementedException;
  * @since   version 3.2.2
  */
 public class PipeLineSession extends HashMap {
-	public static final String version="$RCSfile: PipeLineSession.java,v $ $Revision: 1.10 $ $Date: 2008-02-28 16:17:53 $";
+	public static final String version="$RCSfile: PipeLineSession.java,v $ $Revision: 1.9.16.1 $ $Date: 2008-04-03 08:10:58 $";
 
 	public static final String originalMessageKey="originalMessage";
 	public static final String messageIdKey="messageId";

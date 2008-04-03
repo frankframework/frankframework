@@ -1,6 +1,9 @@
 /*
  * $Log: RecordXslTransformer.java,v $
- * Revision 1.11  2008-02-28 16:17:07  europe\L190409
+ * Revision 1.10.2.1  2008-04-03 08:09:07  europe\L190409
+ * synch from HEAD
+ *
+ * Revision 1.11  2008/02/28 16:17:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * move xslt functionality to base class RecordXmlTransformer
  *
  * Revision 1.10  2008/02/19 09:23:47  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -61,7 +64,7 @@ package nl.nn.adapterframework.batch;
  * @version Id
  */
 public class RecordXslTransformer extends RecordXmlTransformer {
-	public static final String version = "$RCSfile: RecordXslTransformer.java,v $  $Revision: 1.11 $ $Date: 2008-02-28 16:17:07 $";
+	public static final String version = "$RCSfile: RecordXslTransformer.java,v $  $Revision: 1.10.2.1 $ $Date: 2008-04-03 08:09:07 $";
 
 	/**
 	 * @deprecated configuration using attribute 'xslFile' is deprecated. Please use attribute 'styleSheetName' 

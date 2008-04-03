@@ -1,6 +1,9 @@
 /*
  * $Log: BytesOutputPipe.java,v $
- * Revision 1.1  2008-03-27 11:00:15  europe\L190409
+ * Revision 1.1.2.1  2008-04-03 08:14:16  europe\L190409
+ * synch from HEAD
+ *
+ * Revision 1.1  2008/03/27 11:00:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * first version
  *
  */

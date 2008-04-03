@@ -1,6 +1,9 @@
 /*
  * $Log: Adapter.java,v $
- * Revision 1.39  2008-03-28 14:20:42  europe\L190409
+ * Revision 1.37.2.1  2008-04-03 08:10:58  europe\L190409
+ * synch from HEAD
+ *
+ * Revision 1.39  2008/03/28 14:20:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * simplify error messages
  *
  * Revision 1.38  2008/03/27 11:09:41  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -187,7 +190,7 @@ import org.springframework.core.task.TaskExecutor;
  */
 
 public class Adapter implements IAdapter, NamedBean {
-	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.39 $ $Date: 2008-03-28 14:20:42 $";
+	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.37.2.1 $ $Date: 2008-04-03 08:10:58 $";
 	private Logger log = LogUtil.getLogger(this);
 
 	private String name;
