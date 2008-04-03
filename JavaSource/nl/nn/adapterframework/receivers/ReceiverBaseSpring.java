@@ -1,10 +1,7 @@
 /*
  * $Log: ReceiverBaseSpring.java,v $
- * Revision 1.19  2008-03-28 14:23:52  europe\L190409
- * removed 'returnIfStopped' attributes, now just throw exception
- *
- * Revision 1.18  2008/02/28 16:25:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * modified handling of Business Correlation ID
+ * Revision 1.17.2.1  2008-04-03 08:17:46  europe\L190409
+ * removed returnIfStopped handling
  *
  * Revision 1.17  2008/02/22 14:33:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added feature to extract correlationId from message
@@ -247,7 +244,9 @@
  */
 package nl.nn.adapterframework.receivers;
 
+import java.io.IOException;
 import java.io.Serializable;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -257,7 +256,9 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.Map.Entry;
 
+import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
@@ -285,7 +286,9 @@ import nl.nn.adapterframework.monitoring.EventTypeEnum;
 import nl.nn.adapterframework.monitoring.IMonitorAdapter;
 import nl.nn.adapterframework.monitoring.MonitorAdapterFactory;
 import nl.nn.adapterframework.monitoring.SeverityEnum;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Counter;
+import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.RunStateEnquiring;
@@ -297,6 +300,7 @@ import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.SystemUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.apache.log4j.Logger;
@@ -383,7 +387,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  */
 public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMessageHandler, IbisExceptionListener, HasSender, TracingEventNumbers, IThreadCountControllable, BeanFactoryAware {
     
-	public static final String version="$RCSfile: ReceiverBaseSpring.java,v $ $Revision: 1.19 $ $Date: 2008-03-28 14:23:52 $";
+	public static final String version="$RCSfile: ReceiverBaseSpring.java,v $ $Revision: 1.17.2.1 $ $Date: 2008-04-03 08:17:46 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -963,9 +967,9 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 	}
 
 	public String processRequest(IListener origin, String correlationId, String message, Map context, long waitingTime) throws ListenerException {
-		if (getRunState() != RunStateEnum.STARTED) {
+		if (getRunState() == RunStateEnum.STOPPED || getRunState() == RunStateEnum.STOPPING)
 			throw new ListenerException(getLogPrefix()+"is not started");
-		}
+			
 		return processMessageInAdapter(origin, message, message, null, correlationId, context, waitingTime, false);
 	}
 
@@ -999,30 +1003,24 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 		}
 		
 		String message = origin.getStringFromRawMessage(rawMessage, threadContext);
-		String technicalCorrelationId = origin.getIdFromRawMessage(rawMessage, threadContext);
-		String businessCorrelationId=null;
+		String originalCorrelationId = origin.getIdFromRawMessage(rawMessage, threadContext);
+		String correlationId;
 		if (correlationIDTp!=null) {
 			try {
-				businessCorrelationId=correlationIDTp.transform(message,null);
+				correlationId=correlationIDTp.transform(message,null);
 			} catch (Exception e) {
-				throw new ListenerException(getLogPrefix()+"could not extract businessCorrelationId",e);
+				throw new ListenerException(getLogPrefix()+"could not extract correlationId",e);
 			}
-		}
-		if (StringUtils.isEmpty(businessCorrelationId)) {
-			if (StringUtils.isNotEmpty(technicalCorrelationId)) {
-				log.warn(getLogPrefix()+"did not find correlationId using XpathExpression ["+getCorrelationIDXPath()+"], reverting to correlationId of transfer ["+technicalCorrelationId+"]");
-				businessCorrelationId=technicalCorrelationId;
-			} else {
-				String messageId=(String)threadContext.get(PipeLineSession.messageIdKey);
-				if (StringUtils.isNotEmpty(messageId)) {
-					log.warn(getLogPrefix()+"did not find correlationId using XpathExpression ["+getCorrelationIDXPath()+"] or technical correlationId, reverting to messageId ["+messageId+"]");
-					businessCorrelationId=messageId;
-				}
+			if (StringUtils.isEmpty(correlationId) && StringUtils.isNotEmpty(originalCorrelationId)) {
+				log.warn(getLogPrefix()+"did not find correlationId using XpathExpression ["+getCorrelationIDXPath()+"], reverting to correlationId of transfer ["+originalCorrelationId+"]");
+				correlationId=originalCorrelationId;
 			}
+			threadContext.put("cid",correlationId);
+		} else {
+			correlationId = origin.getIdFromRawMessage(rawMessage, threadContext);
 		}
-		threadContext.put(PipeLineSession.businessCorrelationIdKey,businessCorrelationId);
 		String messageId = (String)threadContext.get("id");
-		processMessageInAdapter(origin, rawMessage, message, messageId, businessCorrelationId, threadContext, waitingDuration, retry);
+		processMessageInAdapter(origin, rawMessage, message, messageId, correlationId, threadContext, waitingDuration, retry);
 	}
 
 	public void retryMessage(String messageId) throws ListenerException {
