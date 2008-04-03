@@ -1,6 +1,9 @@
 /*
  * $Log: DirectoryListener.java,v $
- * Revision 1.11  2008-02-28 16:24:31  europe\L190409
+ * Revision 1.12  2008-04-03 07:18:06  europe\L190409
+ * now implements HasPhysicalDestination
+ *
+ * Revision 1.11  2008/02/28 16:24:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * use PipeLineSession.setListenerParameters()
  *
  * Revision 1.10  2008/02/19 09:41:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -55,6 +58,7 @@ import java.io.IOException;
 import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.ListenerException;
@@ -98,8 +102,8 @@ import org.apache.log4j.Logger;
  * @author  John Dekker
  * @version Id
  */
-public class DirectoryListener implements IPullingListener, INamedObject {
-	public static final String version = "$RCSfile: DirectoryListener.java,v $  $Revision: 1.11 $ $Date: 2008-02-28 16:24:31 $";
+public class DirectoryListener implements IPullingListener, INamedObject, HasPhysicalDestination {
+	public static final String version = "$RCSfile: DirectoryListener.java,v $  $Revision: 1.12 $ $Date: 2008-04-03 07:18:06 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -261,6 +265,10 @@ public class DirectoryListener implements IPullingListener, INamedObject {
 			throw new ListenerException("Interrupted while listening", e);
 		}
 		
+	}
+
+	public String getPhysicalDestinationName() {
+		return "pattern ["+getWildcard()+"] in directory ["+ getInputDirectory()+"]";
 	}
 
 	
