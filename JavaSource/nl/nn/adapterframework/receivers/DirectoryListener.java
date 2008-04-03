@@ -1,10 +1,8 @@
 /*
  * $Log: DirectoryListener.java,v $
- * Revision 1.12  2008-04-03 07:18:06  europe\L190409
- * now implements HasPhysicalDestination
- *
- * Revision 1.11  2008/02/28 16:24:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * use PipeLineSession.setListenerParameters()
+ * Revision 1.10.2.1  2008-04-03 08:16:19  europe\L190409
+ * use received filename instead of configured
+ * implemented HasPhysicalDestination
  *
  * Revision 1.10  2008/02/19 09:41:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
@@ -102,8 +100,8 @@ import org.apache.log4j.Logger;
  * @author  John Dekker
  * @version Id
  */
-public class DirectoryListener implements IPullingListener, INamedObject, HasPhysicalDestination {
-	public static final String version = "$RCSfile: DirectoryListener.java,v $  $Revision: 1.12 $ $Date: 2008-04-03 07:18:06 $";
+public class DirectoryListener implements IPullingListener, INamedObject {
+	public static final String version = "$RCSfile: DirectoryListener.java,v $  $Revision: 1.10.2.1 $ $Date: 2008-04-03 08:16:19 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -223,7 +221,7 @@ public class DirectoryListener implements IPullingListener, INamedObject, HasPhy
 	 */
 	public String getIdFromRawMessage(Object rawMessage, Map threadContext) throws ListenerException {
 		String correlationId = rawMessage.toString();
-		PipeLineSession.setListenerParameters(threadContext, correlationId, correlationId, null, null);
+		threadContext.put("cid", correlationId);
 		return correlationId;
 	}
 	/**
@@ -238,10 +236,10 @@ public class DirectoryListener implements IPullingListener, INamedObject, HasPhy
 		
 		try {
 			inputFileName = inputFile.getCanonicalPath();
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			throw new ListenerException("Error while getting canonical path", e);
 		}
-//		String tsReceived=inputFile.lastModified()
 		String inprocessFile = archiveFile(getSession(threadContext), inputFile);
 		if (inprocessFile == null) { // moving was unsuccessful, probably becausing writing was not finished
 			return waitAWhile();
