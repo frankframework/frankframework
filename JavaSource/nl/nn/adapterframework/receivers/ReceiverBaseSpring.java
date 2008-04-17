@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBaseSpring.java,v $
- * Revision 1.19  2008-03-28 14:23:52  europe\L190409
+ * Revision 1.20  2008-04-17 13:03:34  europe\L190409
+ * do not drop messages that cannot be stored in errorStorage
+ *
+ * Revision 1.19  2008/03/28 14:23:52  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed 'returnIfStopped' attributes, now just throw exception
  *
  * Revision 1.18  2008/02/28 16:25:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -383,7 +386,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  */
 public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMessageHandler, IbisExceptionListener, HasSender, TracingEventNumbers, IThreadCountControllable, BeanFactoryAware {
     
-	public static final String version="$RCSfile: ReceiverBaseSpring.java,v $ $Revision: 1.19 $ $Date: 2008-03-28 14:23:52 $";
+	public static final String version="$RCSfile: ReceiverBaseSpring.java,v $ $Revision: 1.20 $ $Date: 2008-04-17 13:03:34 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -587,7 +590,7 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 	protected void error(String msg, Throwable t) {
 		log.error(msg, t);
 		if (adapter != null)
-			adapter.getMessageKeeper().add("ERROR: " + msg+": "+t.getMessage());
+			adapter.getMessageKeeper().add("ERROR: " + msg+(t!=null?": "+t.getMessage():""));
 	}
 
 
@@ -665,6 +668,7 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 		}
 		runState.setRunState(RunStateEnum.STOPPED);
 		fireMonitorEvent(EventTypeEnum.TECHNICAL,SeverityEnum.CRITICAL,RCV_SHUTDOWN_MONITOR_EVENT_MSG);
+		resetRetryInterval();
 		info("Receiver [" + getName() + "] stopped");
 	}
 	 
@@ -1216,30 +1220,34 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 		}
 	}
 
+	/*
+	 * returns true if message is already processed
+	 */
 	private boolean checkTryCount(String messageId, boolean retry, Object rawMessage, String message, Map threadContext) throws ListenerException {
 		if (!retry) {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"checking try count for messageId ["+messageId+"]");
  //			if (isTransacted()) {
 				ProcessResultCacheItem prci = getCachedProcessResult(messageId);
 				if (prci==null) {
+					resetRetryInterval();
 					return false;
 				}
 				if (prci.tryCount<=getMaxRetries()) {
 					log.warn(getLogPrefix()+"message with messageId ["+messageId+" has already been processed ["+prci.tryCount+"] times, will try again");
+					resetRetryInterval();
 					return false;
 				}
 				log.warn(getLogPrefix()+"message with messageId ["+messageId+" has already been processed ["+prci.tryCount+"] times, will not try again");
-				if (prci.tryCount<=getMaxRetries()+2) {
-					if (isTransacted() || (getErrorStorage() != null && !getErrorStorage().containsMessageId(messageId))) {
-						moveInProcessToError(messageId, prci.correlationId, message, prci.receiveDate, prci.comments, rawMessage, TXREQUIRED);
-					}
-					PipeLineResult plr = new PipeLineResult();
-					plr.setResult("<error>"+prci.comments+"</error>");
-					plr.setState("ERROR");
-					getListener().afterMessageProcessed(plr, rawMessage, threadContext);
-				} else {
-					log.error(getLogPrefix()+"tried ["+(prci.tryCount-getMaxRetries())+"] times to put messageId ["+messageId+"] message ["+message+"] in errorStorage without success, now dropping");
+				if (prci.tryCount>getMaxRetries()+2) {
+					increaseRetryIntervalAndWait(null,"rollback storing error");
 				}
+				if (isTransacted() || (getErrorStorage() != null && !getErrorStorage().containsMessageId(messageId))) {
+					moveInProcessToError(messageId, prci.correlationId, message, prci.receiveDate, prci.comments, rawMessage, TXREQUIRED);
+				}
+				PipeLineResult plr = new PipeLineResult();
+				plr.setResult("<error>"+prci.comments+"</error>");
+				plr.setState("ERROR");
+				getListener().afterMessageProcessed(plr, rawMessage, threadContext);
 				prci.tryCount++;
 				return true;
 //			} else {
@@ -1319,6 +1327,41 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 			monitorAdapter.fireEvent(getName(), eventType, severity, message);
 		}
 	}
+
+	private void resetRetryInterval() {
+		synchronized (this) {
+			if (retryInterval > RCV_SUSPENSION_MESSAGE_THRESHOLD) {
+				fireMonitorEvent(EventTypeEnum.CLEARING,SeverityEnum.HARMLESS,RCV_SUSPENDED_MONITOR_EVENT_MSG);
+			}
+			retryInterval = 1;
+		}
+	}
+
+	private void increaseRetryIntervalAndWait(Throwable t, String description) {
+		long currentInterval;
+		synchronized (this) {
+			currentInterval = retryInterval;
+			retryInterval = retryInterval * 2;
+			if (retryInterval > 60) {
+				retryInterval = 60;
+			}
+		}
+		error(description+", will continue retrieving messages in [" + currentInterval + "] seconds", t);
+		if (currentInterval*2 > RCV_SUSPENSION_MESSAGE_THRESHOLD) {
+			fireMonitorEvent(EventTypeEnum.TECHNICAL,SeverityEnum.WARNING,RCV_SUSPENDED_MONITOR_EVENT_MSG);
+		}
+		while (isInRunState(RunStateEnum.STARTED) && currentInterval-- > 0) {
+			try {
+				Thread.sleep(1000);
+			} catch (Exception e2) {
+				error("sleep interupted", e2);
+				stopRunning();
+			}
+		}
+	}
+	
+
+
 
 	public boolean isThreadCountReadable() {
 		if (getListener() instanceof IThreadCountControllable) {
