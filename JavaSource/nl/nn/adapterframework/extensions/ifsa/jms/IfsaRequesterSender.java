@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaRequesterSender.java,v $
- * Revision 1.6  2008-03-27 12:00:14  europe\L190409
+ * Revision 1.7  2008-04-17 12:58:28  europe\L190409
+ * restored timeout handling
+ *
+ * Revision 1.6  2008/03/27 12:00:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * set default timeout to 20s
  *
  * Revision 1.5  2008/02/13 12:55:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -171,7 +174,7 @@ import com.ing.ifsa.IFSATimeOutMessage;
  * @since  4.2
  */
 public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParameters {
-	public static final String version="$RCSfile: IfsaRequesterSender.java,v $ $Revision: 1.6 $ $Date: 2008-03-27 12:00:14 $";
+	public static final String version="$RCSfile: IfsaRequesterSender.java,v $ $Revision: 1.7 $ $Date: 2008-04-17 12:58:28 $";
 	
 	protected ParameterList paramList = null;
 
@@ -275,25 +278,25 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 					log.warn("FF messages should be sent from within a transaction");
 				}
 			}
-
-			ParameterValueList paramValueList;
-			try {
-				paramValueList = prc.getValues(paramList);
-			} catch (ParameterException e) {
-				throw new SenderException(getLogPrefix()+"caught ParameterException in sendMessage() determining serviceId",e);
-			}
-			Map params = new HashMap();
-			if (paramValueList != null && paramList != null) {
-				for (int i = 0; i < paramList.size(); i++) {
-					String key = paramList.getParameter(i).getName();
-					String value = paramValueList.getParameterValue(i).asStringValue(null);
-					params.put(key, value);
-				}
-			}
-			return sendMessage(dummyCorrelationId, message, params);
-		} catch (Exception e) {
+		} catch (Exception e) { // N.B. do not move this catch clause down; this will catch TimeOutExceptions unwantedly
 			throw new SenderException(e);
 		}
+
+		ParameterValueList paramValueList;
+		try {
+			paramValueList = prc.getValues(paramList);
+		} catch (ParameterException e) {
+			throw new SenderException(getLogPrefix()+"caught ParameterException in sendMessage() determining serviceId",e);
+		}
+		Map params = new HashMap();
+		if (paramValueList != null && paramList != null) {
+			for (int i = 0; i < paramList.size(); i++) {
+				String key = paramList.getParameter(i).getName();
+				String value = paramValueList.getParameterValue(i).asStringValue(null);
+				params.put(key, value);
+			}
+		}
+		return sendMessage(dummyCorrelationId, message, params);
 	}
 
 	/**
