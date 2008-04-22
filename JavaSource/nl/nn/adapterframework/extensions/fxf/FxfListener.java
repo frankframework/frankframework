@@ -1,6 +1,9 @@
 /*
  * $Log: FxfListener.java,v $
- * Revision 1.7.2.1  2008-04-17 13:23:56  europe\L190409
+ * Revision 1.7.2.2  2008-04-22 12:12:40  europe\L190409
+ * extra javadoc
+ *
+ * Revision 1.7.2.1  2008/04/17 13:23:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * synch from HEAD
  *
  * Revision 1.8  2008/04/17 12:57:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -47,7 +50,7 @@ import nl.nn.adapterframework.util.TransformerPool;
 import org.apache.commons.lang.StringUtils;
 
 /**
- * Listener for files transferred using the FxF protocol. Message handed to the pipeline is the local filename.
+ * Listener for files transferred using the FxF protocol. the message handed to the pipeline is the local filename.
  * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
@@ -64,7 +67,12 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
- * 
+ * <b>session variables set:</b>
+ * <table border="1">
+ * <tr><th>name</th><th>description</th></tr>
+ * <tr><td>FxfTransferName</td><td>transfername of the file received</td></tr>
+ * </table>
+ * </p>
  * @author  Gerrit van Brakel
  * @since   4.8
  * @version Id
