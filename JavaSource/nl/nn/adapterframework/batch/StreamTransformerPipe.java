@@ -1,6 +1,9 @@
 /*
  * $Log: StreamTransformerPipe.java,v $
- * Revision 1.14  2008-03-27 10:52:50  europe\L190409
+ * Revision 1.15  2008-04-22 11:54:10  europe\L190409
+ * cosmetic change
+ *
+ * Revision 1.14  2008/03/27 10:52:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * autoclose block on forced close, too
  *
  * Revision 1.13  2008/02/15 16:05:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -95,7 +98,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class StreamTransformerPipe extends FixedForwardPipe {
-	public static final String version = "$RCSfile: StreamTransformerPipe.java,v $  $Revision: 1.14 $ $Date: 2008-03-27 10:52:50 $";
+	public static final String version = "$RCSfile: StreamTransformerPipe.java,v $  $Revision: 1.15 $ $Date: 2008-04-22 11:54:10 $";
 
 	private IRecordHandlerManager initialManager=null;
 	private IResultHandler defaultHandler=null;
@@ -489,7 +492,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 		 	} catch(Throwable t) {
 				log.error("Unexpected error during finalizeResult of [" + streamId + "]", t);
 			}
-			throw new PipeRunException(this, "Error while transforming " + streamId + " at line " + linenumber, e);		
+			throw new PipeRunException(this, "Error while transforming [" + streamId + "] at line [" + linenumber+"]", e);		
 		} finally {
 			closeDocument(session,streamId, prc);
 		}
