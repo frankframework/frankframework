@@ -1,6 +1,9 @@
 /*
  * $Log: SapSender.java,v $
- * Revision 1.10  2008-01-30 14:42:50  europe\L190409
+ * Revision 1.11  2008-04-24 12:19:23  europe\L190409
+ * fix NPE in configure() when no parameters present
+ *
+ * Revision 1.10  2008/01/30 14:42:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * return TID for asynchronous functions
  *
  * Revision 1.9  2008/01/29 15:39:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -89,7 +92,7 @@ import com.sap.mw.jco.JCO;
  * @version Id
  */
 public class SapSender extends SapSenderBase {
-	public static final String version="$RCSfile: SapSender.java,v $  $Revision: 1.10 $ $Date: 2008-01-30 14:42:50 $";
+	public static final String version="$RCSfile: SapSender.java,v $  $Revision: 1.11 $ $Date: 2008-04-24 12:19:23 $";
 	
 	private String functionName=null;
 	private String functionNameParam="functionName";
@@ -109,7 +112,7 @@ public class SapSender extends SapSenderBase {
 				throw new ConfigurationException(getLogPrefix()+"functionName must be specified, either in attribute functionName, or via parameter ["+getFunctionNameParam()+"]");
 			}
 		} else {
-			if (StringUtils.isNotEmpty(getFunctionNameParam()) && paramList.findParameter(getFunctionNameParam())!=null) {
+			if (StringUtils.isNotEmpty(getFunctionNameParam()) && paramList!=null && paramList.findParameter(getFunctionNameParam())!=null) {
 				throw new ConfigurationException(getLogPrefix()+"functionName cannot be specified both in attribute functionName ["+getFunctionName()+"] and via parameter ["+getFunctionNameParam()+"]");
 			}
 		}
