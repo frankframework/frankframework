@@ -1,6 +1,9 @@
 /*
  * $Log: WebServiceSender.java,v $
- * Revision 1.16  2006-06-14 09:41:41  europe\L190409
+ * Revision 1.17  2008-04-28 08:02:00  europe\L190409
+ * Encoding fix for WebServiceSender ("text/xml" -> "text/xml;charset=UTF-8") to make Encoding scenarios in Ibis4Test work.
+ *
+ * Revision 1.16  2006/06/14 09:41:41  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved logging
  *
  * Revision 1.15  2005/12/28 08:40:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -104,7 +107,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  */
 
 public class WebServiceSender extends HttpSender {
-	public static final String version = "$RCSfile: WebServiceSender.java,v $ $Revision: 1.16 $ $Date: 2006-06-14 09:41:41 $";
+	public static final String version = "$RCSfile: WebServiceSender.java,v $ $Revision: 1.17 $ $Date: 2008-04-28 08:02:00 $";
 	
 	private String soapActionURI = "";
 	private String encodingStyleURI=null;
@@ -133,7 +136,7 @@ public class WebServiceSender extends HttpSender {
 		String soapmsg= soapWrapper.putInEnvelope(message, getEncodingStyleURI(),getServiceNamespaceURI());
 		HttpMethod method = super.getMethod(soapmsg,parameters);
 		log.debug("setting Content-Type and SOAPAction header ["+getSoapActionURI()+"]");
-		method.addRequestHeader("Content-Type","text/xml");
+		method.addRequestHeader("Content-Type","text/xml;charset=UTF-8");
 		method.addRequestHeader("SOAPAction",getSoapActionURI());
 		return method;
 	}
