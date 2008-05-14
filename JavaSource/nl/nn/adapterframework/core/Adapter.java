@@ -1,6 +1,10 @@
 /*
  * $Log: Adapter.java,v $
- * Revision 1.39  2008-03-28 14:20:42  europe\L190409
+ * Revision 1.40  2008-05-14 09:33:30  europe\L190409
+ * simplified methodnames of StatisticsKeeperIterationHandler
+ * now implements interface HasStatistics
+ *
+ * Revision 1.39  2008/03/28 14:20:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * simplify error messages
  *
  * Revision 1.38  2008/03/27 11:09:41  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -129,6 +133,7 @@ import nl.nn.adapterframework.monitoring.MonitorAdapterFactory;
 import nl.nn.adapterframework.monitoring.SeverityEnum;
 import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.HasStatistics;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper;
 import nl.nn.adapterframework.util.RunStateEnum;
@@ -187,7 +192,7 @@ import org.springframework.core.task.TaskExecutor;
  */
 
 public class Adapter implements IAdapter, NamedBean {
-	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.39 $ $Date: 2008-03-28 14:20:42 $";
+	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.40 $ $Date: 2008-05-14 09:33:30 $";
 	private Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -397,21 +402,21 @@ public class Adapter implements IAdapter, NamedBean {
 	
 	public void forEachStatisticsKeeperBody(StatisticsKeeperIterationHandler hski, Object data) {
 		Object adapterData=hski.openGroup(data,getName(),"adapter");
-		hski.handleScalarIteration(adapterData,"name", getName());
-		hski.handleScalarIteration(adapterData,"upSince", getStatsUpSince());
-		hski.handleScalarIteration(adapterData,"lastMessageDate", getLastMessageDate());
+		hski.handleScalar(adapterData,"name", getName());
+		hski.handleScalar(adapterData,"upSince", getStatsUpSince());
+		hski.handleScalar(adapterData,"lastMessageDate", getLastMessageDate());
 
-		hski.handleScalarIteration(adapterData,"messagesInProcess", getNumOfMessagesInProcess());
-		hski.handleScalarIteration(adapterData,"messagesProcessed", getNumOfMessagesProcessed());
-		hski.handleScalarIteration(adapterData,"messagesInError", getNumOfMessagesInError());
-		hski.handleStatisticsKeeperIteration(adapterData, statsMessageProcessingDuration);
+		hski.handleScalar(adapterData,"messagesInProcess", getNumOfMessagesInProcess());
+		hski.handleScalar(adapterData,"messagesProcessed", getNumOfMessagesProcessed());
+		hski.handleScalar(adapterData,"messagesInError", getNumOfMessagesInError());
+		hski.handleStatisticsKeeper(adapterData, statsMessageProcessingDuration);
 		Object recsData=hski.openGroup(adapterData,getName(),"receivers");
 		Iterator recIt=getReceiverIterator();
 		if (recIt.hasNext()) {
 			while (recIt.hasNext()) {
 				IReceiver receiver=(IReceiver) recIt.next();
 				Object recData=hski.openGroup(recsData,receiver.getName(),"receiver");
-				hski.handleScalarIteration(recData,"messagesReceived", receiver.getMessagesReceived());
+				hski.handleScalar(recData,"messagesReceived", receiver.getMessagesReceived());
 				if (receiver instanceof IReceiverStatistics) {
 
 					IReceiverStatistics statReceiver = (IReceiverStatistics)receiver;
@@ -422,7 +427,7 @@ public class Adapter implements IAdapter, NamedBean {
 					if (statsIter != null) {
 						while(statsIter.hasNext()) {				    
 							StatisticsKeeper pstat = (StatisticsKeeper) statsIter.next();
-							hski.handleStatisticsKeeperIteration(pstatData,pstat);
+							hski.handleStatisticsKeeper(pstatData,pstat);
 						}
 					}
 					hski.closeGroup(pstatData);
@@ -432,7 +437,7 @@ public class Adapter implements IAdapter, NamedBean {
 					if (statsIter != null) {
 						while(statsIter.hasNext()) {				    
 							StatisticsKeeper pstat = (StatisticsKeeper) statsIter.next();
-							hski.handleStatisticsKeeperIteration(istatData,pstat);
+							hski.handleStatisticsKeeper(istatData,pstat);
 						}
 					}
 					hski.closeGroup(istatData);
@@ -455,7 +460,11 @@ public class Adapter implements IAdapter, NamedBean {
 		while (pipelineStatisticsIter.hasNext()) {
 			String pipeName = (String) pipelineStatisticsIter.next();
 			StatisticsKeeper pstat = (StatisticsKeeper) pipelineStatistics.get(pipeName);
-			hski.handleStatisticsKeeperIteration(pipestatData,pstat);
+			hski.handleStatisticsKeeper(pipestatData,pstat);
+			IPipe pipe = pipeline.getPipe(pipeName);
+			if (pipe instanceof HasStatistics) {
+				((HasStatistics) pipe).iterateOverStatistics(hski, pipestatData);
+			}
 		}
 		hski.closeGroup(pipestatData);
 
@@ -470,7 +479,7 @@ public class Adapter implements IAdapter, NamedBean {
 			while (pipelineStatisticsIter.hasNext()) {
 				String pipeName = (String) pipelineStatisticsIter.next();
 				StatisticsKeeper pstat = (StatisticsKeeper) pipelineStatistics.get(pipeName);
-				hski.handleStatisticsKeeperIteration(pipestatData,pstat);
+				hski.handleStatisticsKeeper(pipestatData,pstat);
 			}
 		}
 		hski.closeGroup(pipestatData);
