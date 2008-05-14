@@ -1,6 +1,9 @@
 /*
  * $Log: StatisticsKeeperLogger.java,v $
- * Revision 1.3  2007-02-12 14:12:03  europe\L190409
+ * Revision 1.4  2008-05-14 09:30:43  europe\L190409
+ * simplified methodnames of StatisticsKeeperIterationHandler
+ *
+ * Revision 1.3  2007/02/12 14:12:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Logger from LogUtil
  *
  * Revision 1.2  2006/02/09 08:02:46  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -23,7 +26,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class StatisticsKeeperLogger implements StatisticsKeeperIterationHandler {
-	public static final String version="$RCSfile: StatisticsKeeperLogger.java,v $ $Revision: 1.3 $ $Date: 2007-02-12 14:12:03 $";
+	public static final String version="$RCSfile: StatisticsKeeperLogger.java,v $ $Revision: 1.4 $ $Date: 2008-05-14 09:30:43 $";
 	protected Logger log = LogUtil.getLogger("nl.nn.adapterframework.statistics");
 
 	public Object start() {
@@ -34,7 +37,7 @@ public class StatisticsKeeperLogger implements StatisticsKeeperIterationHandler 
 		log.info("**********  end statistics dump  **********");
 	}
 
-	public void handleStatisticsKeeperIteration(Object data, StatisticsKeeper sk) {
+	public void handleStatisticsKeeper(Object data, StatisticsKeeper sk) {
 		String msg=sk.getName();
 		for (int i=0;i<sk.getItemCount();i++) {
 			msg+=" "+sk.getItemName(i)+"="+sk.getItemValue(i)+";";
@@ -42,11 +45,11 @@ public class StatisticsKeeperLogger implements StatisticsKeeperIterationHandler 
 		log.info((String)data+" "+msg);
 	}
 
-	public void handleScalarIteration(Object data, String scalarName, long value){
-		handleScalarIteration(data,scalarName,""+value);
+	public void handleScalar(Object data, String scalarName, long value){
+		handleScalar(data,scalarName,""+value);
 	}
 
-	public void handleScalarIteration(Object data, String scalarName, String value){
+	public void handleScalar(Object data, String scalarName, String value){
 		log.info((String)data+" "+scalarName+"="+value+";");
 	}
 
