@@ -1,6 +1,9 @@
 /*
  * $Log: ConfigurationDigester.java,v $
- * Revision 1.21  2008-02-13 12:52:07  europe\L190409
+ * Revision 1.22  2008-05-14 11:45:53  europe\L190409
+ * optional perform validation of configuration using xsd
+ *
+ * Revision 1.21  2008/02/13 12:52:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * cosmetic changes
  *
  * Revision 1.20  2007/11/22 08:24:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -61,6 +64,7 @@ package nl.nn.adapterframework.configuration;
 
 import java.net.URL;
 
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -71,6 +75,8 @@ import org.apache.log4j.Logger;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.ListableBeanFactory;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.SAXParseException;
 
 /**
  * The configurationDigester reads the configuration.xml and the digester rules
@@ -106,11 +112,13 @@ import org.springframework.beans.factory.ListableBeanFactory;
  * @see Configuration
  */
 abstract public class ConfigurationDigester implements BeanFactoryAware {
-	public static final String version = "$RCSfile: ConfigurationDigester.java,v $ $Revision: 1.21 $ $Date: 2008-02-13 12:52:07 $";
+	public static final String version = "$RCSfile: ConfigurationDigester.java,v $ $Revision: 1.22 $ $Date: 2008-05-14 11:45:53 $";
     protected static Logger log = LogUtil.getLogger(ConfigurationDigester.class);
 
 	private static final String CONFIGURATION_FILE_DEFAULT  = "Configuration.xml";
 	private static final String DIGESTER_RULES_DEFAULT      = "digester-rules.xml";
+	
+	private static final String CONFIGURATION_VALIDATION_KEY = "validate.configuration";
 
 	private String configurationFile=null;
 	private String digesterRulesFile=DIGESTER_RULES_DEFAULT;
@@ -125,6 +133,21 @@ abstract public class ConfigurationDigester implements BeanFactoryAware {
      * 
      */
     abstract protected Digester createDigester();
+
+	public class XmlErrorHandler implements ErrorHandler  {
+		public void warning(SAXParseException exception) throws SAXParseException {
+			log.error(exception);
+			throw(exception);
+		}
+		public void error(SAXParseException exception) throws SAXParseException {
+			log.error(exception);
+			throw(exception);
+		}
+		public void fatalError(SAXParseException exception) throws SAXParseException {
+			log.error(exception);
+			throw(exception);
+		}
+	}
     
     public void digestConfiguration(Object stackTop, URL digesterRulesURL, URL configurationFileURL) throws ConfigurationException {
 		
@@ -186,6 +209,15 @@ abstract public class ConfigurationDigester implements BeanFactoryAware {
 //			Variant var=new Variant(resolvedConfig);
 //			InputSource is=var.asXmlInputSource();
 				
+			boolean validation=AppConstants.getInstance().getBoolean(CONFIGURATION_VALIDATION_KEY,false);
+			if (validation) {
+				digester.setValidating(true);
+				digester.setNamespaceAware(true);
+				digester.setProperty("http://java.sun.com/xml/jaxp/properties/schemaLanguage", "http://www.w3.org/2001/XMLSchema");
+				digester.setProperty("http://java.sun.com/xml/jaxp/properties/schemaSource","AdapterFramework.xsd");
+				XmlErrorHandler xeh = new XmlErrorHandler();
+				digester.setErrorHandler(xeh);
+			}
 			digester.parse(configurationFileURL);
 
 		} catch (Throwable t) {
@@ -261,6 +293,7 @@ abstract public class ConfigurationDigester implements BeanFactoryAware {
     }
 
     /**
+     * This method is used from the Spring configuration file.
      * @param configuration
      */
     public void setConfiguration(Configuration configuration) {
