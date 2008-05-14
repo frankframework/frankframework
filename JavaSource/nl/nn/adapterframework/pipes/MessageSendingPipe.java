@@ -1,6 +1,9 @@
 /*
  * $Log: MessageSendingPipe.java,v $
- * Revision 1.40  2008-03-20 12:08:01  europe\L190409
+ * Revision 1.41  2008-05-14 09:31:39  europe\L190409
+ * introduction of interface HasStatistics
+ *
+ * Revision 1.40  2008/03/20 12:08:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved stub handling
  *
  * Revision 1.39  2008/02/26 09:18:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -139,7 +142,9 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.HasStatistics;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StatisticsKeeperIterationHandler;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -218,8 +223,8 @@ import org.apache.commons.lang.SystemUtils;
  * @version Id</p>
  */
 
-public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
-	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.40 $ $Date: 2008-03-20 12:08:01 $";
+public class MessageSendingPipe extends FixedForwardPipe implements HasSender, HasStatistics {
+	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.41 $ $Date: 2008-05-14 09:31:39 $";
 
 	private final static String TIMEOUTFORWARD = "timeout";
 	private final static String EXCEPTIONFORWARD = "exception";
@@ -607,6 +612,13 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 			}
 		}
 	}
+
+	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data) {
+		if (sender instanceof HasStatistics) {
+			((HasStatistics)sender).iterateOverStatistics(hski,data);
+		}
+	}
+
 	
 	/**
 	 * Register a {@link ICorrelatedPullingListener} at this Pipe
