@@ -1,6 +1,9 @@
 /*
  * $Log: SoapWrapper.java,v $
- * Revision 1.4  2007-02-12 14:06:28  europe\L190409
+ * Revision 1.5  2008-05-14 11:50:29  europe\L190409
+ * strip xml declaration from payload message
+ *
+ * Revision 1.4  2007/02/12 14:06:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Logger from LogUtil
  *
  * Revision 1.3  2006/06/21 08:54:52  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -51,7 +54,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class SoapWrapper {
-	public static final String version="$RCSfile: SoapWrapper.java,v $ $Revision: 1.4 $ $Date: 2007-02-12 14:06:28 $";
+	public static final String version="$RCSfile: SoapWrapper.java,v $ $Revision: 1.5 $ $Date: 2008-05-14 11:50:29 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private TransformerPool extractBody;
@@ -150,7 +153,7 @@ public class SoapWrapper {
 			"xmlns:xsi=\"http://www.w3.org/1999/XMLSchema-instance\" " + 
 			"xmlns:xsd=\"http://www.w3.org/1999/XMLSchema\" >" + 
 			"<soapenv:Body>" + 	
-				message +
+				XmlUtils.skipXmlDeclaration(message) +
 			"</soapenv:Body>"+
 		"</soapenv:Envelope>";
 		return soapmsg;
