@@ -1,6 +1,9 @@
 /*
  * $Log: ConfigurationDigester.java,v $
- * Revision 1.22  2008-05-14 11:45:53  europe\L190409
+ * Revision 1.23  2008-05-15 14:30:05  europe\L190409
+ * store configuration exception that is caught
+ *
+ * Revision 1.22  2008/05/14 11:45:53  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * optional perform validation of configuration using xsd
  *
  * Revision 1.21  2008/02/13 12:52:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -112,7 +115,7 @@ import org.xml.sax.SAXParseException;
  * @see Configuration
  */
 abstract public class ConfigurationDigester implements BeanFactoryAware {
-	public static final String version = "$RCSfile: ConfigurationDigester.java,v $ $Revision: 1.22 $ $Date: 2008-05-14 11:45:53 $";
+	public static final String version = "$RCSfile: ConfigurationDigester.java,v $ $Revision: 1.23 $ $Date: 2008-05-15 14:30:05 $";
     protected static Logger log = LogUtil.getLogger(ConfigurationDigester.class);
 
 	private static final String CONFIGURATION_FILE_DEFAULT  = "Configuration.xml";
@@ -224,6 +227,9 @@ abstract public class ConfigurationDigester implements BeanFactoryAware {
 			// wrap exception to be sure it gets rendered via the IbisException-renderer
 			ConfigurationException e = new ConfigurationException("error during unmarshalling configuration from file ["+configurationFileURL +
 			"] with digester-rules-file ["+digesterRulesURL+"]", t);
+			if (configuration!=null) {
+				configuration.setConfigurationException(e);
+			}
 			log.error(e);
 			throw (e);
 		}
@@ -293,7 +299,7 @@ abstract public class ConfigurationDigester implements BeanFactoryAware {
     }
 
     /**
-     * This method is used from the Spring configuration file.
+     * This method is used from the Spring configuration file. The Configuration is available as a Spring Bean.
      * @param configuration
      */
     public void setConfiguration(Configuration configuration) {
