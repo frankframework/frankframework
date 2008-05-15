@@ -1,6 +1,9 @@
 /*
  * $Log: MailSender.java,v $
- * Revision 1.13  2007-02-12 14:02:19  europe\L190409
+ * Revision 1.14  2008-05-15 15:12:51  europe\L190409
+ * allow to send messages without parameters
+ *
+ * Revision 1.13  2007/02/12 14:02:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Logger from LogUtil
  *
  * Revision 1.12  2005/12/19 16:37:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -143,7 +146,7 @@ import org.w3c.dom.Element;
  */
 
 public class MailSender implements ISenderWithParameters {
-	public static final String version = "$RCSfile: MailSender.java,v $  $Revision: 1.13 $ $Date: 2007-02-12 14:02:19 $";
+	public static final String version = "$RCSfile: MailSender.java,v $  $Revision: 1.14 $ $Date: 2008-05-15 15:12:51 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -244,6 +247,9 @@ public class MailSender implements ISenderWithParameters {
 		ParameterValueList pvl;
 		ParameterValue pv;
 		
+		if (paramList==null) {
+			return sendMessage(correlationID,message);
+		}
 		try {
 			pvl = prc.getValues(paramList);
 			pv = pvl.getParameterValue("from");
@@ -472,6 +478,9 @@ public class MailSender implements ISenderWithParameters {
 			CredentialFactory cf = new CredentialFactory(getSmtpAuthAlias(), getSmtpUserid(), getSmtpPassword());
 			transport = session.getTransport("smtp");
 			transport.connect(getSmtpHost(), cf.getUsername(), cf.getPassword());
+			if (log.isDebugEnabled()) {
+				log.debug("MailSender [" + getName() + "] connected transport to URL ["+transport.getURLName()+"]");
+			}
 			transport.sendMessage(msg, msg.getAllRecipients());
 			transport.close();
 		} catch (Exception e) {
