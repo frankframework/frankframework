@@ -1,6 +1,9 @@
 /*
  * $Log: JmsSender.java,v $
- * Revision 1.25  2007-05-11 09:50:37  europe\L190409
+ * Revision 1.26  2008-05-15 14:56:40  europe\L190409
+ * added Soap support
+ *
+ * Revision 1.25  2007/05/11 09:50:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * update javadoc
  *
  * Revision 1.24  2006/10/13 08:15:18  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -83,7 +86,9 @@ import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.soap.SoapWrapper;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 
 import javax.jms.JMSException;
@@ -110,11 +115,14 @@ import javax.jms.Message;
  * <tr><td>{@link #setReplyToName(String) replyToName}</td><td>Name of the queue the reply is expected on. This value is send in the JmsReplyTo-header with the message.</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setPersistent(boolean) persistent}</td><td>rather useless attribute, and not the same as delivery mode. You probably want to use that.</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setSoap(boolean) soap}</td><td>when <code>true</code>, messages sent are put in a SOAP envelope</td><td><code>false</code></td></tr>
+ * <tr><td>{@link #setSoapAction(String) soapAction}</td><td>SoapAction string sent as messageproperty</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * <table border="1">
  * <p><b>Parameters:</b>
  * <tr><th>name</th><th>type</th><th>remarks</th></tr>
+ * <tr><td></td>SoapAction<td><i>String</i></td><td>SoapAction. Automatically filled from attribute <code>soapAction</code></td></tr>
  * <tr><td><i>any</i></td><td><i>any</i></td><td>all parameters present are set as messageproperties</td></tr>
  * </table>
  * </p>
@@ -124,23 +132,36 @@ import javax.jms.Message;
  */
 
 public class JmsSender extends JMSFacade implements ISenderWithParameters, IPostboxSender {
-	public static final String version="$RCSfile: JmsSender.java,v $ $Revision: 1.25 $ $Date: 2007-05-11 09:50:37 $";
+	public static final String version="$RCSfile: JmsSender.java,v $ $Revision: 1.26 $ $Date: 2008-05-15 14:56:40 $";
 	private String replyToName = null;
 	private int deliveryMode = 0;
 	private String messageType = null;
 	private int priority=-1;
-	
+	private boolean soap=false;
+	private String encodingStyleURI=null;
+	private String serviceNamespaceURI=null;
+	private String soapAction=null;
 	
 	protected ParameterList paramList = null;
+	private SoapWrapper soapWrapper=null;
 
 	/**
 	 * Configures the sender
 	 */
 	public void configure() throws ConfigurationException {
+		if (StringUtils.isNotEmpty(getSoapAction()) && (paramList==null || paramList.findParameter("SoapAction")==null)) {
+			Parameter p = new Parameter();
+			p.setName("SoapAction");
+			p.setValue(getSoapAction());
+			addParameter(p);
+		}
 		if (paramList!=null) {
 			paramList.configure();
 		}
 		super.configure();
+		if (isSoap()) {
+			soapWrapper=SoapWrapper.getInstance();
+		}
 	}
 
 	/**
@@ -187,6 +208,10 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 		Session s = null;
 		MessageProducer mp = null;
 
+		if (isSoap()) {
+			message = soapWrapper.putInEnvelope(message, getEncodingStyleURI(),getServiceNamespaceURI());
+			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"correlationId [ "+correlationID+"] soap message ["+message+"]");
+		}
 		try {
 			s = createSession();
 			mp = getMessageProducer(s, getDestination());
@@ -226,7 +251,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 			}
 			return msg.getJMSMessageID();
 		} catch (Throwable e) {
-			log.error("JmsSender [" + getName() + "] got exception: " + ToStringBuilder.reflectionToString(e), e);
+			//log.error(getLogPrefix()+"got exception: " + ToStringBuilder.reflectionToString(e), e);
 			throw new SenderException(e);
 		} finally {
 			if (mp != null) { 
@@ -320,6 +345,34 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 	}
 	public void setPriority(int i) {
 		priority = i;
+	}
+
+	public void setSoap(boolean b) {
+		soap = b;
+	}
+	public boolean isSoap() {
+		return soap;
+	}
+
+	public void setEncodingStyleURI(String string) {
+		encodingStyleURI = string;
+	}
+	public String getEncodingStyleURI() {
+		return encodingStyleURI;
+	}
+
+	public void setServiceNamespaceURI(String string) {
+		serviceNamespaceURI = string;
+	}
+	public String getServiceNamespaceURI() {
+		return serviceNamespaceURI;
+	}
+
+	public void setSoapAction(String string) {
+		soapAction = string;
+	}
+	public String getSoapAction() {
+		return soapAction;
 	}
 
 }
