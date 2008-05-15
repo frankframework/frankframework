@@ -1,6 +1,9 @@
 /*
  * $Log: TransformerPool.java,v $
- * Revision 1.17  2007-07-26 16:26:18  europe\L190409
+ * Revision 1.18  2008-05-15 15:21:54  europe\L190409
+ * implemented auto reload (still experimental)
+ *
+ * Revision 1.17  2007/07/26 16:26:18  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added configureTransformer()
  *
  * Revision 1.16  2007/05/08 16:02:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -92,12 +95,13 @@ import org.w3c.dom.Document;
  * @author Gerrit van Brakel
  */
 public class TransformerPool {
-	public static final String version = "$RCSfile: TransformerPool.java,v $ $Revision: 1.17 $ $Date: 2007-07-26 16:26:18 $";
+	public static final String version = "$RCSfile: TransformerPool.java,v $ $Revision: 1.18 $ $Date: 2008-05-15 15:21:54 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private TransformerFactory tFactory = TransformerFactory.newInstance();
 
 	private Templates templates;
+	private URL reloadURL=null;
 	
 	private ObjectPool pool = new SoftReferenceObjectPool(new BasePoolableObjectFactory() {
 		public Object makeObject() throws Exception {
@@ -107,11 +111,7 @@ public class TransformerPool {
 
 	public TransformerPool(Source source, String sysId) throws TransformerConfigurationException {
 		super();
-		if (StringUtils.isNotEmpty(sysId)) {
-			source.setSystemId(sysId);
-			log.debug("setting systemId to ["+sysId+"]");
-		}
-		templates=tFactory.newTemplates(source);
+		initTransformerPool(source, sysId);
 
 		// check if a transformer can be initiated
 		Transformer t = getTransformer();
@@ -135,6 +135,32 @@ public class TransformerPool {
 		this(new StreamSource(new StringReader(xsltString)), sysId);
 	}
 
+	private void initTransformerPool(Source source, String sysId) throws TransformerConfigurationException {
+		if (StringUtils.isNotEmpty(sysId)) {
+			source.setSystemId(sysId);
+			log.debug("setting systemId to ["+sysId+"]");
+		}
+		templates=tFactory.newTemplates(source);
+	}
+
+	private void reloadTransformerPool() throws TransformerConfigurationException, IOException {
+		if (reloadURL!=null) {
+			initTransformerPool(new StreamSource(reloadURL.openStream(),Misc.DEFAULT_INPUT_STREAM_ENCODING),reloadURL.toString());
+			try {
+				pool.clear();
+			} catch (Exception e) {
+				throw new TransformerConfigurationException("Could not clear pool",e);
+			}
+		}
+	}
+
+	public static TransformerPool configureTransformer(String logPrefix, String xPathExpression, String styleSheetName, String outputType, boolean includeXmlDeclaration, ParameterList params, boolean mandatory) throws ConfigurationException {
+		if (mandatory || StringUtils.isNotEmpty(xPathExpression) || StringUtils.isNotEmpty(styleSheetName)) {
+			return configureTransformer(logPrefix,xPathExpression,styleSheetName, outputType, includeXmlDeclaration, params);
+		} 
+		return null;
+	}
+	
 	public static TransformerPool configureTransformer(String logPrefix, String xPathExpression, String styleSheetName, String outputType, boolean includeXmlDeclaration, ParameterList params) throws ConfigurationException {
 		TransformerPool result;
 		if (logPrefix==null) {
@@ -172,6 +198,9 @@ public class TransformerPool {
 				} catch (TransformerConfigurationException te) {
 					throw new ConfigurationException(logPrefix+"got error creating transformer from file [" + styleSheetName + "]", te);
 				}
+				if (XmlUtils.isAutoReload()) {
+					result.reloadURL=resource;
+				}
 			} else {
 				throw new ConfigurationException(logPrefix+"either xpathExpression or styleSheetName must be specified");
 			}
@@ -194,6 +223,7 @@ public class TransformerPool {
 	
 	protected Transformer getTransformer() throws TransformerConfigurationException {
 		try {
+			reloadTransformerPool();
 			return (Transformer)pool.borrowObject();
 		} catch (Exception e) {
 			throw new TransformerConfigurationException(e);
