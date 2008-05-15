@@ -1,6 +1,9 @@
 /*
  * $Log: Configuration.java,v $
- * Revision 1.29  2008-01-29 15:49:53  europe\L190409
+ * Revision 1.30  2008-05-15 14:29:33  europe\L190409
+ * added storage facility for configuration exceptions
+ *
+ * Revision 1.29  2008/01/29 15:49:53  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed a class from versions
  *
  * Revision 1.28  2007/10/16 08:40:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -104,7 +107,7 @@ import org.apache.log4j.Logger;
  * @see    nl.nn.adapterframework.core.IAdapter
  */
 public class Configuration {
-	public static final String version="$RCSfile: Configuration.java,v $ $Revision: 1.29 $ $Date: 2008-01-29 15:49:53 $";
+	public static final String version="$RCSfile: Configuration.java,v $ $Revision: 1.30 $ $Date: 2008-05-15 14:29:33 $";
     protected Logger log=LogUtil.getLogger(this); 
      
     private Map adapterTable = new Hashtable();
@@ -117,6 +120,8 @@ public class Configuration {
     private boolean enableJMX=false;
     
     private AppConstants appConstants;
+    
+    private ConfigurationException configurationException=null;
     
     /**
      *Set JMX extensions as enabled or not. Default is that JMX extensions are NOT enabled.
@@ -438,18 +443,19 @@ public class Configuration {
 		return scheduledJobs;
 	}
 
-    /**
-     * @return
-     */
-    public AppConstants getAppConstants() {
-        return appConstants;
-    }
-
-    /**
-     * @param constants
-     */
     public void setAppConstants(AppConstants constants) {
         appConstants = constants;
     }
+	public AppConstants getAppConstants() {
+		return appConstants;
+	}
+
+
+	public void setConfigurationException(ConfigurationException exception) {
+		configurationException = exception;
+	}
+	public ConfigurationException getConfigurationException() {
+		return configurationException;
+	}
 
 }
