@@ -1,15 +1,16 @@
 /*
  * $Log: EchoSender.java,v $
- * Revision 1.1  2007-07-19 15:12:08  europe\L190409
+ * Revision 1.2  2008-05-15 15:10:34  europe\L190409
+ * moved implementation to senders package
+ *
+ * Revision 1.1  2007/07/19 15:12:08  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * first version
  *
  */
 package nl.nn.adapterframework.pipes;
 
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.SenderWithParametersBase;
-import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.configuration.ConfigurationException;
+
 
 /**
  * Echos input to output. 
@@ -18,14 +19,11 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
  * @since   4.7
  * @version Id
  */
-public class EchoSender extends SenderWithParametersBase {
+public class EchoSender extends nl.nn.adapterframework.senders.EchoSender {
 
-	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
-		return message;
-	}
-
-	public boolean isSynchronous() {
-		return true;
+	public void configure() throws ConfigurationException {
+		log.warn(getLogPrefix()+"The class ["+getClass().getName()+"] has been deprecated. Please change to ["+nl.nn.adapterframework.senders.EchoSender.class.getName()+"]");
+		super.configure();
 	}
 
 }
