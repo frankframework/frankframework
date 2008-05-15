@@ -1,6 +1,9 @@
 /*
  * $Log: JmsConnection.java,v $
- * Revision 1.5  2007-10-08 12:20:04  europe\L190409
+ * Revision 1.6  2008-05-15 14:45:45  europe\L190409
+ * allow to throw more exceptions in lookupDestination
+ *
+ * Revision 1.5  2007/10/08 12:20:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed HashMap to Map where possible
  *
  * Revision 1.4  2005/10/20 15:42:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -24,13 +27,13 @@ import javax.naming.NamingException;
  * @version Id
  */
 public class JmsConnection extends ConnectionBase {
-	public static final String version="$RCSfile: JmsConnection.java,v $ $Revision: 1.5 $ $Date: 2007-10-08 12:20:04 $";
+	public static final String version="$RCSfile: JmsConnection.java,v $ $Revision: 1.6 $ $Date: 2008-05-15 14:45:45 $";
 	
 	public JmsConnection(String connectionFactoryName, Context context, ConnectionFactory connectionFactory, Map connectionMap) {
 		super(connectionFactoryName, context, connectionFactory, connectionMap);
 	}
 	
-	public Destination lookupDestination(String destinationName) throws NamingException {
+	public Destination lookupDestination(String destinationName) throws JmsException, NamingException {
 		Destination dest=null;
 		dest=(Destination) getContext().lookup(destinationName);
 		return dest;
