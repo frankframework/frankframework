@@ -1,6 +1,9 @@
 /*
  * $Log: ResultSetIterator.java,v $
- * Revision 1.3  2008-02-26 08:36:05  europe\L190409
+ * Revision 1.4  2008-05-15 14:36:12  europe\L190409
+ * change startup behaviour, first line is now returned too
+ *
+ * Revision 1.3  2008/02/26 08:36:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.2  2007/07/26 16:14:08  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -40,8 +43,8 @@ class ResultSetIterator implements IDataIterator {
 	private ResultSet rs;
 		
 	private ResultSetMetaData rsmeta;
-	private boolean lineChecked=false;
-	private boolean lineAvailable=false;
+	private boolean lineChecked=true; // assumes at least one line is present, and cursor is on it!
+	private boolean lineAvailable=true;
 
 	int rowNumber=0;
 
