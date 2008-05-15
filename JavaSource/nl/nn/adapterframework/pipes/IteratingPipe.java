@@ -1,6 +1,9 @@
 /*
  * $Log: IteratingPipe.java,v $
- * Revision 1.8  2008-05-15 15:28:55  europe\L190409
+ * Revision 1.9  2008-05-15 15:31:35  europe\L190409
+ * modified element of timeout
+ *
+ * Revision 1.8  2008/05/15 15:28:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added attribute ignoreExceptions
  * added Xslt facility for each message
  *
@@ -148,7 +151,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public abstract class IteratingPipe extends MessageSendingPipe {
-	public static final String version="$RCSfile: IteratingPipe.java,v $ $Revision: 1.8 $ $Date: 2008-05-15 15:28:55 $";
+	public static final String version="$RCSfile: IteratingPipe.java,v $ $Revision: 1.9 $ $Date: 2008-05-15 15:31:35 $";
 
 	private String stopConditionXPathExpression=null;
 	private boolean removeXmlDeclarationInResults=false;
@@ -259,7 +262,7 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 			} catch (TimeOutException e) {
 				if (isIgnoreExceptions()) {
 					log.info(getLogPrefix(session)+"ignoring TimeOutException after excution of sender for item ["+item+"]",e);
-					itemResult="<exception>"+XmlUtils.encodeChars(e.getMessage())+"</exception>";
+					itemResult="<timeout>"+XmlUtils.encodeChars(e.getMessage())+"</timeout>";
 				} else {
 					throw e;
 				}
