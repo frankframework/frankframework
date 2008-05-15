@@ -1,6 +1,9 @@
 /*
  * $Log: MessageSendingPipe.java,v $
- * Revision 1.41  2008-05-14 09:31:39  europe\L190409
+ * Revision 1.42  2008-05-15 15:16:42  europe\L190409
+ * make ParameterResolutionContext also for senders parameters
+ *
+ * Revision 1.41  2008/05/14 09:31:39  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * introduction of interface HasStatistics
  *
  * Revision 1.40  2008/03/20 12:08:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -224,7 +227,7 @@ import org.apache.commons.lang.SystemUtils;
  */
 
 public class MessageSendingPipe extends FixedForwardPipe implements HasSender, HasStatistics {
-	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.41 $ $Date: 2008-05-14 09:31:39 $";
+	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.42 $ $Date: 2008-05-15 15:16:42 $";
 
 	private final static String TIMEOUTFORWARD = "timeout";
 	private final static String EXCEPTIONFORWARD = "exception";
@@ -553,7 +556,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 			throw new SenderException("String expected, got a [" + input.getClass().getName() + "]");
 		}
 		// sendResult has a messageID for async senders, the result for sync senders
-		if (sender instanceof ISenderWithParameters && getParameterList()!=null) {
+		if (sender instanceof ISenderWithParameters) { // do not only check own parameters, sender may have them by itself
 			ISenderWithParameters psender = (ISenderWithParameters) sender;
 			ParameterResolutionContext prc = new ParameterResolutionContext((String)input, session, isNamespaceAware());
 			return psender.sendMessage(correlationID, (String) input, prc);
