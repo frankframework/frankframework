@@ -1,6 +1,9 @@
 /*
  * $Log: JMSFacade.java,v $
- * Revision 1.33  2008-02-22 14:31:48  europe\L190409
+ * Revision 1.34  2008-05-15 14:55:07  europe\L190409
+ * make connection available to descender classes
+ *
+ * Revision 1.33  2008/02/22 14:31:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added Selector to getPhysicalDestinationName
  *
  * Revision 1.32  2008/02/19 09:39:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -145,7 +148,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version="$RCSfile: JMSFacade.java,v $ $Revision: 1.33 $ $Date: 2008-02-22 14:31:48 $";
+	public static final String version="$RCSfile: JMSFacade.java,v $ $Revision: 1.34 $ $Date: 2008-05-15 14:55:07 $";
 
 	public static final String MODE_PERSISTENT="PERSISTENT";
 	public static final String MODE_NON_PERSISTENT="NON_PERSISTENT";
@@ -164,7 +167,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 
     private String destinationType="QUEUE"; // QUEUE or TOPIC
 
-    private JmsConnection connection;
+    protected JmsConnection connection;
     private Destination destination;
 
 
