@@ -1,6 +1,9 @@
 /*
  * $Log: DB2XMLWriter.java,v $
- * Revision 1.15  2008-05-14 09:21:40  europe\L190409
+ * Revision 1.16  2008-05-15 15:18:20  europe\L190409
+ * fixed trimming of values
+ *
+ * Revision 1.15  2008/05/14 09:21:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * return null for LOBs when no LOB found
  * improved logging
  *
@@ -79,7 +82,7 @@ import org.apache.log4j.Logger;
  **/
 
 public class DB2XMLWriter {
-	public static final String version="$RCSfile: DB2XMLWriter.java,v $ $Revision: 1.15 $ $Date: 2008-05-14 09:21:40 $";
+	public static final String version="$RCSfile: DB2XMLWriter.java,v $ $Revision: 1.16 $ $Date: 2008-05-15 15:18:20 $";
 	protected static Logger log = LogUtil.getLogger(DB2XMLWriter.class);
 
 	private String docname = new String("result");
@@ -154,7 +157,7 @@ public class DB2XMLWriter {
                     return nullValue;
                 else
                 	if (trimSpaces) {
-						value.trim();
+                		return value.trim();
                 	}
 					return value;
 
@@ -216,7 +219,7 @@ public class DB2XMLWriter {
 				} catch (SQLException e) {
 					log.warn("Could not determine precision",e);
 				} catch (NumberFormatException e2) {
-					log.debug("Could not determine precision",e2);
+					if (log.isDebugEnabled()) log.debug("Could not determine precision: "+e2.getMessage());
 				}
 				try {
 					field.addAttribute("scale", "" + rsmeta.getScale(j));
