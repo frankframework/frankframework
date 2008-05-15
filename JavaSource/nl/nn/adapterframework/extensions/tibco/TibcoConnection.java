@@ -1,6 +1,9 @@
 /*
  * $Log: TibcoConnection.java,v $
- * Revision 1.1  2008-05-15 14:32:58  europe\L190409
+ * Revision 1.2  2008-05-15 14:53:12  europe\L190409
+ * remove unnecessary overridden code
+ *
+ * Revision 1.1  2008/05/15 14:32:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * first version
  *
  */
@@ -34,7 +37,7 @@ import com.tibco.tibjms.TibjmsConnectionFactory;
  * @version Id
  */
 public class TibcoConnection extends JmsConnection {
-	public static final String version="$RCSfile: TibcoConnection.java,v $ $Revision: 1.1 $ $Date: 2008-05-15 14:32:58 $";
+	public static final String version="$RCSfile: TibcoConnection.java,v $ $Revision: 1.2 $ $Date: 2008-05-15 14:53:12 $";
 	
 	private TibjmsConnectionFactory connectionFactory;
 	
@@ -49,21 +52,12 @@ public class TibcoConnection extends JmsConnection {
 		return connectionFactory.createConnection(userName,password);
 	}
 
-	protected Session doCreateSession(Connection connection, boolean transacted, int acknowledgeMode) throws JMSException {
-		log.debug("Connection class ["+connection.getClass().getName()+"]");
-		if (connection instanceof TopicConnection) {
-			return (Session)((TopicConnection)connection).createTopicSession(transacted,acknowledgeMode);
-		} else {
-			return (Session)((QueueConnection)connection).createQueueSession(transacted,acknowledgeMode);
-		}
-	}
 
-	
 	public Destination lookupDestination(String destinationName) throws JmsException {
-		Session session = createSession(false,Session.AUTO_ACKNOWLEDGE);
-		log.debug("Session class ["+session.getClass().getName()+"]");
-		
+		Session session=null;		
 		try {
+			session = createSession(false,Session.AUTO_ACKNOWLEDGE);
+			log.debug("Session class ["+session.getClass().getName()+"]");
 			Destination destination;
 
 			/* create the destination */
