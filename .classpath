@@ -8,6 +8,7 @@
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/jaxp.jar"/>
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/jaxrpc.jar"/>
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/log4j-1.2.7.jar"/>
+    <classpathentry kind="lib" path="/Tibco connector/jms.jar"/>
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/rowset.jar"/>
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/struts-11-final-Websphere.jar"/>
     <classpathentry kind="var" path="WAS_PLUGINDIR/lib/j2ee.jar"/>
@@ -45,5 +46,6 @@
     <classpathentry kind="var" path="WAS_50_PLUGINDIR/lib/ws-config-servers.jar"/>
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/commons-beanutils-core-1.7.0.jar"/>
     <classpathentry kind="var" path="WAS_50_PLUGINDIR/lib/runtime.jar"/>
+    <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/tibjms.jar"/>
     <classpathentry kind="output" path="bin"/>
 </classpath>
