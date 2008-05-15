@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcIteratingPipeBase.java,v $
- * Revision 1.1  2008-02-26 08:34:48  europe\L190409
+ * Revision 1.2  2008-05-15 14:37:56  europe\L190409
+ * improved handling of empty resultsets
+ *
+ * Revision 1.1  2008/02/26 08:34:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * renamed IteratingPipeBase to JdbcIteratingPipeBase
  *
  * Revision 1.3  2007/10/08 12:18:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -135,6 +138,11 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe {
 		}
 	}
 
+	protected void iterateInput(Object input, PipeLineSession session, String correlationID, Map threadContext, ItemCallback callback) throws SenderException {
+		if (log.isDebugEnabled()) {log.debug(getLogPrefix(session)+"result set is empty, nothing to iterate over");}
+	}
+
+
 	protected abstract IDataIterator getIterator(ResultSet rs) throws SenderException; 
 
 	protected IDataIterator getIterator(Object input, PipeLineSession session, String correlationID, Map threadContext) throws SenderException {
@@ -150,8 +158,11 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe {
 					querySender.applyParameters(statement, prc.getValues(querySender.paramList));
 				}
 				ResultSet rs = statement.executeQuery();
-				if (rs==null || !rs.next()) {
-					throw new SenderException("query has empty resultset");
+				if (rs==null) {
+					throw new SenderException("resultset is null");
+				}
+				if (!rs.next()) {
+					return null; // no results
 				}
 				return getIterator(rs);
 //			} finally {
@@ -203,5 +214,4 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe {
 		querySender.setJmsRealm(jmsRealmName);
 	}
 	
-
 }
