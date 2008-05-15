@@ -1,6 +1,12 @@
 /*
  * $Log: GenericMessageSendingPipe.java,v $
- * Revision 1.8  2008-02-26 09:18:50  europe\L190409
+ * Revision 1.8.2.1  2008-05-15 16:07:08  europe\L190409
+ * synch from HEAD
+ *
+ * Revision 1.9  2008/05/14 09:56:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * improved error message for non-sender senders
+ *
+ * Revision 1.8  2008/02/26 09:18:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.7  2007/05/21 12:28:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -30,6 +36,7 @@ package nl.nn.adapterframework.pipes;
 import nl.nn.adapterframework.core.ICorrelatedPullingListener;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ITransactionalStorage;
+import nl.nn.adapterframework.util.ClassUtils;
 
 /**
  * Plain extension to {@link MessageSendingPipe} that can be used directly in configurations.
@@ -100,14 +107,18 @@ import nl.nn.adapterframework.core.ITransactionalStorage;
  */
 
 public class GenericMessageSendingPipe extends MessageSendingPipe {
-	public static final String version="$RCSfile: GenericMessageSendingPipe.java,v $ $Revision: 1.8 $ $Date: 2008-02-26 09:18:50 $";
+	public static final String version="$RCSfile: GenericMessageSendingPipe.java,v $ $Revision: 1.8.2.1 $ $Date: 2008-05-15 16:07:08 $";
 
 	public void setListener(ICorrelatedPullingListener listener) {
 		super.setListener(listener);
 	}
 
-	public void setSender(ISender sender) {
-		super.setSender(sender);
+	public void setSender(Object sender) {
+		if (sender instanceof ISender) {
+			super.setSender((ISender)sender);
+		} else {
+			throw new IllegalArgumentException("sender ["+ClassUtils.nameOf(sender)+"] must implment interface ISender");
+		}
 	}
 
 	public void setMessageLog(ITransactionalStorage messageLog) {

@@ -1,6 +1,12 @@
 /*
  * $Log: XsltPipe.java,v $
- * Revision 1.26  2008-02-13 13:36:27  europe\L190409
+ * Revision 1.26.2.1  2008-05-15 16:07:08  europe\L190409
+ * synch from HEAD
+ *
+ * Revision 1.27  2008/05/15 15:27:41  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * corrected typo in documentation
+ *
+ * Revision 1.26  2008/02/13 13:36:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * made indent optional for skipEmptyTags
  *
  * Revision 1.25  2007/08/03 08:48:06  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -80,7 +86,7 @@ import org.apache.commons.lang.StringUtils;
  * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.pipes.XmlIf</td><td>&nbsp;</td></tr>
+ * <tr><td>className</td><td>nl.nn.adapterframework.pipes.XsltPipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMaxThreads(int) maxThreads}</td><td>maximum number of threads that may call {@link #doPipe(Object, PipeLineSession)} simultaneously</td><td>0 (unlimited)</td></tr>
  * <tr><td>{@link #setDurationThreshold(long) durationThreshold}</td><td>if durationThreshold >=0 and the duration (in milliseconds) of the message processing exceeded the value specified the message is logged informatory</td><td>-1</td></tr>
@@ -115,7 +121,7 @@ import org.apache.commons.lang.StringUtils;
  */
 
 public class XsltPipe extends FixedForwardPipe {
-	public static final String version="$RCSfile: XsltPipe.java,v $ $Revision: 1.26 $ $Date: 2008-02-13 13:36:27 $";
+	public static final String version="$RCSfile: XsltPipe.java,v $ $Revision: 1.26.2.1 $ $Date: 2008-05-15 16:07:08 $";
 
 	private TransformerPool transformerPool;
 	private String xpathExpression=null;

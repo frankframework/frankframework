@@ -1,10 +1,10 @@
 /*
  * $Log: FxfListener.java,v $
- * Revision 1.7.2.2  2008-04-22 12:12:40  europe\L190409
- * extra javadoc
- *
- * Revision 1.7.2.1  2008/04/17 13:23:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * Revision 1.7.2.3  2008-05-15 16:07:08  europe\L190409
  * synch from HEAD
+ *
+ * Revision 1.9  2008/05/14 09:34:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * documented session variables set
  *
  * Revision 1.8  2008/04/17 12:57:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * change transfername to applicationId
@@ -50,7 +50,7 @@ import nl.nn.adapterframework.util.TransformerPool;
 import org.apache.commons.lang.StringUtils;
 
 /**
- * Listener for files transferred using the FxF protocol. the message handed to the pipeline is the local filename.
+ * Listener for files transferred using the FxF protocol. The message handed to the pipeline is the local filename.
  * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>

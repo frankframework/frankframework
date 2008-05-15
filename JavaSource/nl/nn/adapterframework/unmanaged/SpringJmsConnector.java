@@ -1,6 +1,12 @@
 /*
  * $Log: SpringJmsConnector.java,v $
- * Revision 1.11  2008-02-19 13:58:35  europe\L190409
+ * Revision 1.11.2.1  2008-05-15 16:07:09  europe\L190409
+ * synch from HEAD
+ *
+ * Revision 1.12  2008/05/14 11:51:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * improved handling when not completly configured
+ *
+ * Revision 1.11  2008/02/19 13:58:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * tiny little bug, pushed into 4.8.0
  *
  * Revision 1.10  2008/02/15 14:11:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -193,19 +199,27 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 
 	public void start() throws ListenerException {
 		log.debug(getLogPrefix()+"starting");
-		try {
-			jmsContainer.start();
-		} catch (Exception e) {
-			throw new ListenerException(getLogPrefix()+"cannot start", e);
+		if (jmsContainer!=null) {
+			try {
+				jmsContainer.start();
+			} catch (Exception e) {
+				throw new ListenerException(getLogPrefix()+"cannot start", e);
+			}
+		} else {
+			throw new ListenerException(getLogPrefix()+"no jmsContainer defined");
 		}
 	}
 
 	public void stop() throws ListenerException {
 		log.debug(getLogPrefix()+"stopping");
-		try {
-			jmsContainer.stop();
-		} catch (Exception e) {
-			throw new ListenerException(getLogPrefix()+"Exception while trying to stop", e);
+		if (jmsContainer!=null) {
+			try {
+				jmsContainer.stop();
+			} catch (Exception e) {
+				throw new ListenerException(getLogPrefix()+"Exception while trying to stop", e);
+			}
+		} else {
+			throw new ListenerException(getLogPrefix()+"no jmsContainer defined");
 		}
 	}
 

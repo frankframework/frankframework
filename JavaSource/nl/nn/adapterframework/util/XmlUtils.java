@@ -1,6 +1,13 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.46  2008-02-13 13:33:18  europe\L190409
+ * Revision 1.46.2.1  2008-05-15 16:07:09  europe\L190409
+ * synch from HEAD
+ *
+ * Revision 1.47  2008/05/14 09:24:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * added isAutoReload
+ * added skipXmlDeclaration
+ *
+ * Revision 1.46  2008/02/13 13:33:18  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added makeSkipEmptyTagsXslt
  *
  * Revision 1.45  2008/01/29 12:18:41  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -203,7 +210,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * @version Id
  */
 public class XmlUtils {
-	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.46 $ $Date: 2008-02-13 13:33:18 $";
+	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.46.2.1 $ $Date: 2008-05-15 16:07:09 $";
 	static Logger log = LogUtil.getLogger(XmlUtils.class);
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
@@ -211,6 +218,7 @@ public class XmlUtils {
 	static final String JAXP_SCHEMA_SOURCE =   "http://java.sun.com/xml/jaxp/properties/schemaSource";
 
 	public static final String NAMESPACE_AWARE_BY_DEFAULT_KEY = "xml.namespaceAware.default";
+	public static final String AUTO_RELOAD_KEY = "xml.auto.reload";
 
 	public final static String OPEN_FROM_FILE = "file";
 	public final static String OPEN_FROM_URL = "url";
@@ -218,6 +226,7 @@ public class XmlUtils {
 	public final static String OPEN_FROM_XML = "xml";
 	
 	private static Boolean namespaceAwareByDefault = null;
+	private static Boolean autoReload = null;
 
 	public static final String XPATH_GETROOTNODENAME = "name(/node()[position()=last()])";
 
@@ -251,6 +260,14 @@ public class XmlUtils {
 			namespaceAwareByDefault = new Boolean(aware);
 		}
 		return namespaceAwareByDefault.booleanValue();
+	}
+
+	public static synchronized boolean isAutoReload() {
+		if (autoReload==null) {
+			boolean reload=AppConstants.getInstance().getBoolean(AUTO_RELOAD_KEY, false);
+			autoReload = new Boolean(reload);
+		}
+		return autoReload.booleanValue();
 	}
 
 
@@ -332,6 +349,9 @@ public class XmlUtils {
 	}
 
 	public static Document buildDomDocument(String s, boolean namespaceAware) throws DomBuilderException {
+		if (StringUtils.isEmpty(s)) {
+			throw new DomBuilderException("input is null");
+		}
 		StringReader sr = new StringReader(s);
 		return (buildDomDocument(sr,namespaceAware));
 	}
@@ -389,6 +409,25 @@ public class XmlUtils {
 		return buildDomDocument(s).getDocumentElement();
 	}
 
+
+	public static String skipXmlDeclaration(String xmlString) {
+		if (xmlString!=null && xmlString.startsWith("<?xml")) {
+			int endPos = xmlString.indexOf("?>")+2;
+			if (endPos>0) {
+				try {
+					while (Character.isWhitespace(xmlString.charAt(endPos))) {
+						endPos++;
+					} 
+				} catch (IndexOutOfBoundsException e) {
+					// silently ignore...
+				}
+				return xmlString.substring(endPos);
+			} else {
+				throw new IllegalArgumentException("no valid xml declaration in string ["+xmlString+"]");
+			}
+		}
+		return xmlString;
+	}
 
 	public static String createXPathEvaluatorSource(String XPathExpression)
 		throws TransformerConfigurationException {

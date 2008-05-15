@@ -1,6 +1,16 @@
 /*
  * $Log: DB2XMLWriter.java,v $
- * Revision 1.14  2007-07-17 11:00:35  europe\L190409
+ * Revision 1.14.14.1  2008-05-15 16:07:09  europe\L190409
+ * synch from HEAD
+ *
+ * Revision 1.16  2008/05/15 15:18:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * fixed trimming of values
+ *
+ * Revision 1.15  2008/05/14 09:21:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * return null for LOBs when no LOB found
+ * improved logging
+ *
+ * Revision 1.14  2007/07/17 11:00:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * separate function to get single row
  *
  * Revision 1.13  2007/02/12 14:09:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -75,8 +85,8 @@ import org.apache.log4j.Logger;
  **/
 
 public class DB2XMLWriter {
-	public static final String version="$RCSfile: DB2XMLWriter.java,v $ $Revision: 1.14 $ $Date: 2007-07-17 11:00:35 $";
-	protected Logger log = LogUtil.getLogger(this);
+	public static final String version="$RCSfile: DB2XMLWriter.java,v $ $Revision: 1.14.14.1 $ $Date: 2008-05-15 16:07:09 $";
+	protected static Logger log = LogUtil.getLogger(DB2XMLWriter.class);
 
 	private String docname = new String("result");
 	private String recordname = new String("rowset");
@@ -122,9 +132,19 @@ public class DB2XMLWriter {
         {
         	// return "undefined" for types that cannot be rendered to strings easily
 			case Types.BLOB :
+				try {
 					return JdbcUtil.getBlobAsString(rs,colNum,blobCharset,false,decompressBlobs);
+				} catch (JdbcException e) {
+					log.debug("Caught JdbcException, assuming no blob found",e);
+					return nullValue;
+				}
 			case Types.CLOB :
+				try {
 					return JdbcUtil.getClobAsString(rs,colNum,false);
+				} catch (JdbcException e) {
+					log.debug("Caught JdbcException, assuming no clob found",e);
+					return nullValue;
+				}
             case Types.ARRAY :
             case Types.DISTINCT :
             case Types.LONGVARBINARY :
@@ -140,7 +160,7 @@ public class DB2XMLWriter {
                     return nullValue;
                 else
                 	if (trimSpaces) {
-						value.trim();
+                		return value.trim();
                 	}
 					return value;
 
@@ -190,39 +210,39 @@ public class DB2XMLWriter {
 				try {
 					field.addAttribute("type", "" + getFieldType(rsmeta.getColumnType(j)));
 				} catch (SQLException e) {
-					log.debug(e);
+					log.debug("Could not determine columnType",e);
 				}
 				try {
 					field.addAttribute("columnDisplaySize", "" + rsmeta.getColumnDisplaySize(j));
 				} catch (SQLException e) {
-					log.debug(e);
+					log.debug("Could not determine columnDisplaySize",e);
 				}
 				try {
 					field.addAttribute("precision", "" + rsmeta.getPrecision(j));
 				} catch (SQLException e) {
-					log.warn(e);
+					log.warn("Could not determine precision",e);
 				} catch (NumberFormatException e2) {
-					log.debug(e2);
+					if (log.isDebugEnabled()) log.debug("Could not determine precision: "+e2.getMessage());
 				}
 				try {
 					field.addAttribute("scale", "" + rsmeta.getScale(j));
 				} catch (SQLException e) {
-					log.debug(e);
+					log.debug("Could not determine scale",e);
 				}
 				try {
 					field.addAttribute("isCurrency", "" + rsmeta.isCurrency(j));
 				} catch (SQLException e) {
-					log.debug(e);
+					log.debug("Could not determine isCurrency",e);
 				}
 				try {
 					field.addAttribute("columnTypeName", "" + rsmeta.getColumnTypeName(j));
 				} catch (SQLException e) {
-					log.debug(e);
+					log.debug("Could not determine columnTypeName",e);
 				}
 				try {
 					field.addAttribute("columnClassName", "" + rsmeta.getColumnClassName(j));
 				} catch (SQLException e) {
-					log.debug(e);
+					log.debug("Could not determine columnClassName",e);
 				}
 				fields.addSubElement(field);
 			}
