@@ -1,6 +1,10 @@
 /*
  * $Log: IteratingPipe.java,v $
- * Revision 1.7  2008-02-26 09:18:50  europe\L190409
+ * Revision 1.8  2008-05-15 15:28:55  europe\L190409
+ * added attribute ignoreExceptions
+ * added Xslt facility for each message
+ *
+ * Revision 1.7  2008/02/26 09:18:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.6  2008/02/21 12:49:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -34,6 +38,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IDataIterator;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
+import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
@@ -84,6 +89,11 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setLinkMethod(String) linkMethod}</td><td>Indicates wether the server uses the correlationID or the messageID in the correlationID field of the reply</td><td>CORRELATIONID</td></tr>
  * <tr><td>{@link #setAuditTrailXPath(String) auditTrailXPath}</td><td>xpath expression to extract audit trail from message</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setCorrelationIDXPath(String) correationIdXPath}</td><td>xpath expression to extract correlationID from message</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setStyleSheetName(String) styleSheetName}</td><td>stylesheet to apply to each message, before sending it</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setXpathExpression(String) xpathExpression}</td><td>alternatively: XPath-expression to create stylesheet from</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setOutputType(String) outputType}</td><td>either 'text' or 'xml'. Only valid for xpathExpression</td><td>text</td></tr>
+ * <tr><td>{@link #setOmitXmlDeclaration(boolean) omitXmlDeclaration}</td><td>force the transformer generated from the XPath-expression to omit the xml declaration</td><td>true</td></tr>
+ * <tr><td>{@link #setIgnoreExceptions(boolean) ignoreExceptions}</td><td>when <code>true</code> ignore any exception thrown by executing sender</td><td>false</td></tr>
  * <tr><td>{@link #setStopConditionXPathExpression(String) stopConditionXPathExpression}</td><td>expression evaluated on each result if set. 
  * 		Iteration stops if condition returns anything other than <code>false</code> or an empty result.
  * For example, to stop after the second child element has been processed, one of the following expressions could be used:
@@ -138,12 +148,19 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public abstract class IteratingPipe extends MessageSendingPipe {
-	public static final String version="$RCSfile: IteratingPipe.java,v $ $Revision: 1.7 $ $Date: 2008-02-26 09:18:50 $";
+	public static final String version="$RCSfile: IteratingPipe.java,v $ $Revision: 1.8 $ $Date: 2008-05-15 15:28:55 $";
 
 	private String stopConditionXPathExpression=null;
 	private boolean removeXmlDeclarationInResults=false;
 	private boolean collectResults=true;
+	private String xpathExpression=null;
+	private String outputType="text";
+	private String styleSheetName;
+	private boolean omitXmlDeclaration=true;
+	
+	private boolean ignoreExceptions=false;
 
+	protected TransformerPool msgTransformerPool;
 	private TransformerPool stopConditionTp=null;
 	private TransformerPool encapsulateResultsTp=null;
 
@@ -163,6 +180,7 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 
 	public void configure() throws ConfigurationException {
 		super.configure();
+		msgTransformerPool = TransformerPool.configureTransformer(getLogPrefix(null), getXpathExpression(), getStyleSheetName(), getOutputType(), !isOmitXmlDeclaration(), getParameterList(), false);
 		try {
 			if (StringUtils.isNotEmpty(getStopConditionXPathExpression())) {
 				stopConditionTp=new TransformerPool(XmlUtils.createXPathEvaluatorSource(null,getStopConditionXPathExpression(),"xml",false));
@@ -208,13 +226,43 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 				//log.debug(getLogPrefix(session)+"set current item to ["+item+"]");
 				log.debug(getLogPrefix(session)+"sending item no ["+count+"]");
 			} 
-			if (psender!=null) {
-				//result = psender.sendMessage(correlationID, item, new ParameterResolutionContext(src, session));
+			ParameterResolutionContext prc=null;
+			if (psender !=null || msgTransformerPool!=null && getParameterList()!=null) {
 				//TODO find out why ParameterResolutionContext cannot be constructed using dom-source
-				ParameterResolutionContext prc = new ParameterResolutionContext(item, session, isNamespaceAware());
-				itemResult = psender.sendMessage(correlationID, item, prc);
-			} else {
-				itemResult = sender.sendMessage(correlationID, item);
+				prc = new ParameterResolutionContext(item, session, isNamespaceAware());
+			}
+			if (msgTransformerPool!=null) {
+				try {
+					String transformedMsg=msgTransformerPool.transform(item,prc!=null?prc.getValueMap(getParameterList()):null);
+					if (log.isDebugEnabled()) {
+						log.debug(getLogPrefix(session)+" transformed item ["+item+"] into ["+transformedMsg+"]");
+					}
+					item=transformedMsg;
+				} catch (Exception e) {
+					throw new SenderException(getLogPrefix(session)+"cannot transform item",e);
+				}
+			}
+			try {
+				if (psender!=null) {
+					//result = psender.sendMessage(correlationID, item, new ParameterResolutionContext(src, session));
+					itemResult = psender.sendMessage(correlationID, item, prc);
+				} else {
+					itemResult = sender.sendMessage(correlationID, item);
+				}
+			} catch (SenderException e) {
+				if (isIgnoreExceptions()) {
+					log.info(getLogPrefix(session)+"ignoring SenderException after excution of sender for item ["+item+"]",e);
+					itemResult="<exception>"+XmlUtils.encodeChars(e.getMessage())+"</exception>";
+				} else {
+					throw e;
+				}
+			} catch (TimeOutException e) {
+				if (isIgnoreExceptions()) {
+					log.info(getLogPrefix(session)+"ignoring TimeOutException after excution of sender for item ["+item+"]",e);
+					itemResult="<exception>"+XmlUtils.encodeChars(e.getMessage())+"</exception>";
+				} else {
+					throw e;
+				}
 			}
 			try {
 				if (isCollectResults()) {
@@ -288,8 +336,12 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 	}
 
 
-	public void setSender(ISender sender) {
-		super.setSender(sender);
+	public void setSender(Object sender) {
+		if (sender instanceof ISender) {
+			super.setSender((ISender)sender);
+		} else {
+			throw new IllegalArgumentException("sender ["+ClassUtils.nameOf(sender)+"] must implment interface ISender");
+		}
 	}
 
 
@@ -321,6 +373,44 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 
 	protected TransformerPool getStopConditionTp() {
 		return stopConditionTp;
+	}
+
+
+	public void setStyleSheetName(String stylesheetName){
+		this.styleSheetName=stylesheetName;
+	}
+	public String getStyleSheetName() {
+		return styleSheetName;
+	}
+
+	public void setOmitXmlDeclaration(boolean b) {
+		omitXmlDeclaration = b;
+	}
+	public boolean isOmitXmlDeclaration() {
+		return omitXmlDeclaration;
+	}
+
+
+	public void setXpathExpression(String string) {
+		xpathExpression = string;
+	}
+	public String getXpathExpression() {
+		return xpathExpression;
+	}
+
+	public void setOutputType(String string) {
+		outputType = string;
+	}
+	public String getOutputType() {
+		return outputType;
+	}
+
+
+	public void setIgnoreExceptions(boolean b) {
+		ignoreExceptions = b;
+	}
+	public boolean isIgnoreExceptions() {
+		return ignoreExceptions;
 	}
 
 }
