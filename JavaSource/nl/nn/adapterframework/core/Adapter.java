@@ -1,6 +1,10 @@
 /*
  * $Log: Adapter.java,v $
- * Revision 1.40  2008-05-14 09:33:30  europe\L190409
+ * Revision 1.41  2008-05-21 10:56:09  europe\L190409
+ * modified monitorAdapter interface
+ * fixed NDC handling
+ *
+ * Revision 1.40  2008/05/14 09:33:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * simplified methodnames of StatisticsKeeperIterationHandler
  * now implements interface HasStatistics
  *
@@ -192,7 +196,7 @@ import org.springframework.core.task.TaskExecutor;
  */
 
 public class Adapter implements IAdapter, NamedBean {
-	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.40 $ $Date: 2008-05-14 09:33:30 $";
+	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.41 $ $Date: 2008-05-21 10:56:09 $";
 	private Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -299,12 +303,12 @@ public class Adapter implements IAdapter, NamedBean {
 	protected void error(String msg, Throwable t) {
 		log.error("Adapter [" + getName() + "] "+msg, t);
 		getMessageKeeper().add("ERROR: " + msg+": "+t.getMessage());
-		fireMonitorEvent(EventTypeEnum.TECHNICAL,SeverityEnum.WARNING, "ADPTWARN "+msg+": "+t.getMessage());
+		fireMonitorEvent(EventTypeEnum.TECHNICAL,SeverityEnum.WARNING, "ADPTWARN "+msg,t);
 	}
 
-	protected void fireMonitorEvent(EventTypeEnum eventType, SeverityEnum severity, String message) {
+	protected void fireMonitorEvent(EventTypeEnum eventType, SeverityEnum severity, String message, Throwable t) {
 		if (monitorAdapter!=null) {
-			monitorAdapter.fireEvent(getName(), eventType, severity, message);
+			monitorAdapter.fireEvent(getName(), eventType, severity, message, t);
 		}
 	}
 	
@@ -368,7 +372,7 @@ public class Adapter implements IAdapter, NamedBean {
 		catch (Exception e) {
 			String msg = "got error while formatting errormessage, original errorMessage [" + errorMessage + "]";
 			msg = msg + " from [" + (objectInError == null ? "unknown-null" : objectInError.getName()) + "]";
-			error(msg, e);
+			error("got error while formatting errormessage", e);
 			return errorMessage;
 		}
 	}
@@ -630,7 +634,7 @@ public class Adapter implements IAdapter, NamedBean {
 		incNumOfMessagesInProcess(startTime);
 		String lastNDC=NDC.peek();
 		String newNDC="cid [" + messageId + "]";
-		boolean ndcChanged=newNDC.equals(lastNDC);
+		boolean ndcChanged=!newNDC.equals(lastNDC);
 		if (ndcChanged) {
 			NDC.push(newNDC);
 		}
