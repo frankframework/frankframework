@@ -1,6 +1,9 @@
 /*
  * $Log: SenderSeries.java,v $
- * Revision 1.1  2008-05-15 15:08:27  europe\L190409
+ * Revision 1.2  2008-05-21 10:54:07  europe\L190409
+ * added documentation
+ *
+ * Revision 1.1  2008/05/15 15:08:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * created senders package
  * moved some sender to senders package
  * created special senders
@@ -31,8 +34,24 @@ import org.apache.log4j.Logger;
 /**
  * Series of Senders, that are executed one after another.
  * 
+ * <p><b>Configuration:</b>
+ * <table border="1">
+ * <tr><th>attributes</th><th>description</th><th>default</th></tr>
+ * <tr><td>className</td><td>nl.nn.adapterframework.senders.ParallelSenders</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setGetInputFromSessionKey(String) getInputFromSessionKey}</td><td>when set, input is taken from this session key, instead of regular input</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setGetInputFromFixedValue(String) getInputFromFixedValue}</td><td>when set, this fixed value is taken as input, instead of regular input</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setStoreResultInSessionKey(String) storeResultInSessionKey}</td><td>when set, the result is stored under this session key</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setPreserveInput(boolean) preserveInput}</td><td>when set <code>true</code>, the input of a pipe is restored before processing the next one</td><td>false</td></tr>
+ * </table>
+ * </p>
+ * <table border="1">
+ * <tr><th>nested elements</th><th>description</th></tr>
+ * <tr><td>{@link nl.nn.adapterframework.core.ISender sender}</td><td>one or more specifications of senders that will be executed one after another. Each sender will get the result of the preceding one as input</td></tr>
+ * </table>
+ * </p>
+ * 
  * @author  Gerrit van Brakel
- * @since  
+ * @since   4.9
  * @version Id
  */
 public class SenderSeries extends SenderWrapperBase {
@@ -40,7 +59,7 @@ public class SenderSeries extends SenderWrapperBase {
 
 	private List senderList=new LinkedList();
 	private Map statisticsMap=new HashMap();
-	private boolean synchronous;
+	private boolean synchronous=true;
 
 	protected boolean isSenderConfigured() {
 		return senderList.size()!=0;
