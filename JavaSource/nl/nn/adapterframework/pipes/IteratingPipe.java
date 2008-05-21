@@ -1,6 +1,9 @@
 /*
  * $Log: IteratingPipe.java,v $
- * Revision 1.9  2008-05-15 15:31:35  europe\L190409
+ * Revision 1.10  2008-05-21 09:40:09  europe\L190409
+ * added block feature
+ *
+ * Revision 1.9  2008/05/15 15:31:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * modified element of timeout
  *
  * Revision 1.8  2008/05/15 15:28:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -41,7 +44,6 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IDataIterator;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
-import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
@@ -107,6 +109,9 @@ import org.apache.commons.lang.StringUtils;
  * </td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setRemoveXmlDeclarationInResults(boolean) removeXmlDeclarationInResults}</td><td>postprocess each partial result, to remove the xml-declaration, as this is not allowed inside an xml-document</td><td>false</td></tr>
  * <tr><td>{@link #setCollectResults(boolean) collectResults}</td><td>controls whether all the results of each iteration will be collected in one result message. If set <code>false</code>, only a small summary is returned</td><td>true</td></tr>
+ * <tr><td>{@link #setBlockSize(int) blockSize}</td><td>controls multiline behaviour. when set to a value greater than 0, it specifies the number of rows send in a block to the sender.</td><td>0 (one line at a time, no prefix of suffix)</td></tr>
+ * <tr><td>{@link #setBlockPrefix(String) blockPrefix}</td><td>When <code>blockSize &gt; 0</code>, this string is inserted at the start of the set of lines.</td><td>&lt;block&gt;</td></tr>
+ * <tr><td>{@link #setBlockSuffix(String) blockSuffix}</td><td>When <code>blockSize &gt; 0</code>, this string is inserted at the end of the set of lines.</td><td>&lt;/block&gt;</td></tr>
  * </table>
  * <table border="1">
  * <tr><th>nested elements</th><th>description</th></tr>
@@ -151,7 +156,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public abstract class IteratingPipe extends MessageSendingPipe {
-	public static final String version="$RCSfile: IteratingPipe.java,v $ $Revision: 1.9 $ $Date: 2008-05-15 15:31:35 $";
+	public static final String version="$RCSfile: IteratingPipe.java,v $ $Revision: 1.10 $ $Date: 2008-05-21 09:40:09 $";
 
 	private String stopConditionXPathExpression=null;
 	private boolean removeXmlDeclarationInResults=false;
@@ -162,6 +167,10 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 	private boolean omitXmlDeclaration=true;
 	
 	private boolean ignoreExceptions=false;
+	
+	private String blockPrefix="<block>";
+	private String blockSuffix="</block>";
+	private int blockSize=0;
 
 	protected TransformerPool msgTransformerPool;
 	private TransformerPool stopConditionTp=null;
@@ -316,8 +325,20 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 				iterateInput(input,session,correlationID, threadContext, callback);
 			} else {
 				while (keepGoing && it.hasNext()) {
-					String item = (String)it.next();
-					keepGoing = callback.handleItem(item); 
+					StringBuffer items = new StringBuffer();
+					if (getBlockSize()>0) {
+						items.append(getBlockPrefix());
+						for (int i=0; i<getBlockSize() && it.hasNext(); i++) {
+							String item = (String)it.next();
+							items.append(item);
+						}
+						items.append(getBlockSuffix());
+						keepGoing = callback.handleItem(items.toString()); 
+						
+					} else {
+						String item = (String)it.next();
+						keepGoing = callback.handleItem(item); 
+					}
 				}
 			}
 			String results = "";
@@ -415,5 +436,27 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 	public boolean isIgnoreExceptions() {
 		return ignoreExceptions;
 	}
+
+	public void setBlockPrefix(String string) {
+		blockPrefix = string;
+	}
+	public String getBlockPrefix() {
+		return blockPrefix;
+	}
+
+	public void setBlockSuffix(String string) {
+		blockSuffix = string;
+	}
+	public String getBlockSuffix() {
+		return blockSuffix;
+	}
+
+	public void setBlockSize(int i) {
+		blockSize = i;
+	}
+	public int getBlockSize() {
+		return blockSize;
+	}
+
 
 }
