@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.60  2008-02-15 14:05:08  europe\L190409
+ * Revision 1.61  2008-05-21 08:40:36  europe\L190409
+ * fixed pipeline output validation
+ *
+ * Revision 1.60  2008/02/15 14:05:08  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved logging
  *
  * Revision 1.59  2008/02/06 16:36:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -270,7 +273,7 @@ import org.springframework.transaction.TransactionStatus;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.60 $ $Date: 2008-02-15 14:05:08 $";
+	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.61 $ $Date: 2008-05-21 08:40:36 $";
     private Logger log = LogUtil.getLogger(this);
 	private Logger durationLog = LogUtil.getLogger("LongDurationMessages");
     
@@ -750,6 +753,7 @@ public class PipeLine {
 					IPipe outputValidator = getOutputValidator();
 					if (outputValidator !=null && !outputValidated) {
 						outputValidated=true;
+						log.debug("validating PipeLineResult");
 						PipeRunResult validationResult = outputValidator.doPipe(object,pipeLineSession);
 						if (validationResult!=null && !validationResult.getPipeForward().getName().equals("success")) {
 							PipeForward validationForward=validationResult.getPipeForward();
@@ -761,8 +765,14 @@ public class PipeLine {
 							if (pipeToRun==null) {
 								throw new PipeRunException(pipeToRun,"forward ["+validationForward.getName()+"], path ["+validationForward.getPath()+"] does not correspond to a pipe");
 							}
+						} else {
+							log.debug("validation succeeded");
+							ready=true;
 						}
 					} else {
+						ready=true;
+					}
+					if (ready) {
 						String state=plExit.getState();
 						pipeLineResult.setState(state);
 						if (object!=null) {
@@ -777,12 +787,10 @@ public class PipeLine {
 					}
 				} else {
 					pipeToRun=getPipe(pipeForward.getPath());
+					if (pipeToRun==null) {
+						throw new PipeRunException(null, "Pipeline of adapter ["+ owner.getName()+"] got an erroneous definition. Pipe to execute ["+pipeForward.getPath()+ "] is not defined.");
+					}
 				}
-	
-				if (pipeToRun==null) {
-					throw new PipeRunException(null, "Pipeline of adapter ["+ owner.getName()+"] got an erroneous definition. Pipe to execute ["+pipeForward.getPath()+ "] is not defined.");
-				}
-			
 			}
 		} finally {
 			for (int i=0; i<exitHandlers.size(); i++) {
