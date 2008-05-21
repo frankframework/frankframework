@@ -1,6 +1,9 @@
 /*
  * $Log: ConfigurationDigester.java,v $
- * Revision 1.23  2008-05-15 14:30:05  europe\L190409
+ * Revision 1.24  2008-05-21 08:37:31  europe\L190409
+ * added elementname to errormessage
+ *
+ * Revision 1.23  2008/05/15 14:30:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * store configuration exception that is caught
  *
  * Revision 1.22  2008/05/14 11:45:53  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -115,7 +118,7 @@ import org.xml.sax.SAXParseException;
  * @see Configuration
  */
 abstract public class ConfigurationDigester implements BeanFactoryAware {
-	public static final String version = "$RCSfile: ConfigurationDigester.java,v $ $Revision: 1.23 $ $Date: 2008-05-15 14:30:05 $";
+	public static final String version = "$RCSfile: ConfigurationDigester.java,v $ $Revision: 1.24 $ $Date: 2008-05-21 08:37:31 $";
     protected static Logger log = LogUtil.getLogger(ConfigurationDigester.class);
 
 	private static final String CONFIGURATION_FILE_DEFAULT  = "Configuration.xml";
@@ -225,8 +228,9 @@ abstract public class ConfigurationDigester implements BeanFactoryAware {
 
 		} catch (Throwable t) {
 			// wrap exception to be sure it gets rendered via the IbisException-renderer
+			String currentElementName=digester.getCurrentElementName();
 			ConfigurationException e = new ConfigurationException("error during unmarshalling configuration from file ["+configurationFileURL +
-			"] with digester-rules-file ["+digesterRulesURL+"]", t);
+			"] with digester-rules-file ["+digesterRulesURL+"] in element ["+currentElementName+"]", t);
 			if (configuration!=null) {
 				configuration.setConfigurationException(e);
 			}
