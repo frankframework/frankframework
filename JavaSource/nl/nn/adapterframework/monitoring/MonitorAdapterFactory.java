@@ -1,6 +1,9 @@
 /*
  * $Log: MonitorAdapterFactory.java,v $
- * Revision 1.2  2007-10-01 14:09:13  europe\L190409
+ * Revision 1.3  2008-05-21 10:52:17  europe\L190409
+ * modified monitorAdapter interface
+ *
+ * Revision 1.2  2007/10/01 14:09:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * modified configuration keys
  *
  * Revision 1.1  2007/09/27 12:55:41  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -20,7 +23,7 @@ import org.apache.log4j.Logger;
 /**
  * Factory to provide a (configurable) MonitorAdapter.
  * 
- * Checks first if AppConstant 'monitor.galm', that gets it value by default from custom property 'galm' , is set 
+ * Checks first if AppConstant 'galm', that gets it value by default from custom property 'galm' , is set 
  * to <code>true</code>. If so, a {@link GalmMonitorAdapter} is created.
  * Otherwise, a MonitorAdapter can be configured by AppConstant 'monitor.adapter'.
  * 
@@ -32,7 +35,7 @@ public class MonitorAdapterFactory {
 	protected static Logger log = LogUtil.getLogger(MonitorAdapterFactory.class);
 	
 	public static final String MONITOR_ADAPTER_CLASS_KEY="monitor.adapter";
-	public static final String GALM_KEY="monitor.galm";
+	public static final String GALM_KEY="galm";
 	
 	private static IMonitorAdapter monitorAdapter=null;
 	private static boolean configured=false;

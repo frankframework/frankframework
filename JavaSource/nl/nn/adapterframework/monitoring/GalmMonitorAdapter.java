@@ -1,6 +1,9 @@
 /*
  * $Log: GalmMonitorAdapter.java,v $
- * Revision 1.4  2007-12-12 09:09:13  europe\L190409
+ * Revision 1.5  2008-05-21 10:52:18  europe\L190409
+ * modified monitorAdapter interface
+ *
+ * Revision 1.4  2007/12/12 09:09:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * truncated messages after newline
  *
  * Revision 1.3  2007/12/10 10:07:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -23,13 +26,14 @@ import org.apache.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 
 /**
  * MonitorAdapter that creates log lines for the GALM log adapter.
  * 
- * configuration is done via the AppConstants 'monitor.galm.stage' and 'monitor.galm.source',
+ * configuration is done via the AppConstants 'galm.stage' and 'galm.source',
  * that in the default implemenation obtain their values from custom properties 'galm.stage' and
  * appConstant 'instance.name'.
  *  
@@ -41,8 +45,8 @@ public class GalmMonitorAdapter implements IMonitorAdapter {
 	protected Logger log = LogUtil.getLogger(this);
 	protected Logger galmLog = LogUtil.getLogger("GALM");
 
-	private String DTAP_STAGE_KEY="monitor.galm.stage";
-	private String SOURCE_ID_KEY="monitor.galm.source";
+	private String DTAP_STAGE_KEY="galm.stage";
+	private String SOURCE_ID_KEY="galm.source";
 
 	private String hostname;
 	private String sourceId;
@@ -123,7 +127,13 @@ public class GalmMonitorAdapter implements IMonitorAdapter {
 		return result;
 	}
 
-	public void fireEvent(String subSource, EventTypeEnum eventType, SeverityEnum severity, String message) {
+	public void fireEvent(String subSource, EventTypeEnum eventType, SeverityEnum severity, String message, Throwable t) {
+		if (t!=null) {
+			if (StringUtils.isEmpty(message)) {
+				message = ClassUtils.nameOf(t);
+			} else
+			message += ": "+ ClassUtils.nameOf(t);
+		}
 		String galmRecord=getGalmRecord(subSource, eventType, severity, message);
 		if (log.isDebugEnabled()) {
 			log.debug("firing GALM event ["+galmRecord+"]");
