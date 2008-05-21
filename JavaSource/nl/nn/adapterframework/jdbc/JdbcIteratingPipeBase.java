@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcIteratingPipeBase.java,v $
- * Revision 1.2  2008-05-15 14:37:56  europe\L190409
+ * Revision 1.3  2008-05-21 09:37:34  europe\L190409
+ * allow for query to be passed as inputmessage
+ *
+ * Revision 1.2  2008/05/15 14:37:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved handling of empty resultsets
  *
  * Revision 1.1  2008/02/26 08:34:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -21,7 +24,10 @@ package nl.nn.adapterframework.jdbc;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Map;
+
+import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IDataIterator;
@@ -31,6 +37,7 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.pipes.IteratingPipe;
+import nl.nn.adapterframework.util.JdbcUtil;
 
 
 /**
@@ -83,8 +90,11 @@ import nl.nn.adapterframework.pipes.IteratingPipe;
  * </td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setRemoveXmlDeclarationInResults(boolean) removeXmlDeclarationInResults}</td><td>postprocess each partial result, to remove the xml-declaration, as this is not allowed inside an xml-document</td><td>false</td></tr>
  * <tr><td>{@link #setCollectResults(boolean) collectResults}</td><td>controls whether all the results of each iteration will be collected in one result message. If set <code>false</code>, only a small summary is returned</td><td>true</td></tr>
- * <tr><td>{@link #setQuery(String) query}</td><td>the SQL query text to be excecuted each time sendMessage() is called</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setQuery(String) query}</td><td>the SQL query text to be excecuted each time sendMessage() is called. When not set, the input message is taken as the query</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDatasourceName(String) datasourceName}</td><td>can be configured from JmsRealm, too</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setBlockSize(int) blockSize}</td><td>controls multiline behaviour. when set to a value greater than 0, it specifies the number of rows send in a block to the sender.</td><td>0 (one line at a time, no prefix of suffix)</td></tr>
+ * <tr><td>{@link #setBlockPrefix(String) blockPrefix}</td><td>When <code>blockSize &gt; 0</code>, this string is inserted at the start of the set of lines.</td><td>&lt;block&gt;</td></tr>
+ * <tr><td>{@link #setBlockSuffix(String) blockSuffix}</td><td>When <code>blockSize &gt; 0</code>, this string is inserted at the end of the set of lines.</td><td>&lt;/block&gt;</td></tr>
  * </table>
  * <table border="1">
  * <tr><th>nested elements</th><th>description</th></tr>
@@ -111,8 +121,19 @@ import nl.nn.adapterframework.pipes.IteratingPipe;
  * @version Id
  */
 public abstract class JdbcIteratingPipeBase extends IteratingPipe {
+
+	private String query=null;
 	
-	protected FixedQuerySender querySender = new FixedQuerySender();
+	protected JdbcQuerySenderBase querySender = new JdbcQuerySenderBase() {
+
+		protected PreparedStatement getStatement(Connection con, String correlationID, String message) throws JdbcException, SQLException {
+			if (StringUtils.isNotEmpty(getQuery())) {
+				return prepareQuery(con,getQuery());
+			} else {
+				return prepareQuery(con, message);
+			}
+		}
+	};
 
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -147,43 +168,44 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe {
 
 	protected IDataIterator getIterator(Object input, PipeLineSession session, String correlationID, Map threadContext) throws SenderException {
 		Connection connection = null;
+		PreparedStatement statement=null;
+		ResultSet rs=null;
 		try {
 			connection = querySender.getConnection();
-			PreparedStatement statement=null;
-//			try {
-				String msg = (String)input;
-				statement = querySender.getStatement(connection, correlationID, msg);
-				ParameterResolutionContext prc = new ParameterResolutionContext(msg,session);
-				if (prc != null && querySender.paramList != null) {
-					querySender.applyParameters(statement, prc.getValues(querySender.paramList));
-				}
-				ResultSet rs = statement.executeQuery();
-				if (rs==null) {
-					throw new SenderException("resultset is null");
-				}
-				if (!rs.next()) {
-					return null; // no results
-				}
-				return getIterator(rs);
-//			} finally {
-//				try {
-//					if (statement!=null) {
-//						statement.close();
-//					}
-//				} catch (SQLException e) {
-//					log.warn(new SenderException(getLogPrefix(session) + "got exception closing SQL statement",e ));
-//				}
-//			}
+			String msg = (String)input;
+			statement = querySender.getStatement(connection, correlationID, msg);
+			ParameterResolutionContext prc = new ParameterResolutionContext(msg,session);
+			if (prc != null && querySender.paramList != null) {
+				querySender.applyParameters(statement, prc.getValues(querySender.paramList));
+			}
+			rs = statement.executeQuery();
+			if (rs==null) {
+				throw new SenderException("resultset is null");
+			}
+			if (!rs.next()) {
+				return null; // no results
+			}
+			return getIterator(rs);
 		} catch (Exception e) {
-			throw new SenderException(e);
-//		} finally {
-//			if (connection!=null) {
-//				try {
-//					connection.close();
-//				} catch (SQLException e) {
-//					log.warn(new SenderException(getLogPrefix(session) + "caught exception closing sender after sending message, ID=["+correlationID+"]", e));
-//				}
-//			}
+			try {
+				if (rs!=null) {
+					JdbcUtil.fullClose(rs);
+				} else {
+					if (statement!=null) {
+						JdbcUtil.fullClose(statement);
+					} else {
+						if (connection!=null) {
+							try {
+								connection.close();
+							} catch (SQLException e1) {
+								log.debug(getLogPrefix(session) + "caught exception closing sender after exception",e1);
+							}
+						}
+					}
+				}
+			} finally {
+				throw new SenderException(getLogPrefix(session),e);
+			}
 		}
 	}
 
@@ -193,10 +215,10 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe {
 
 
 	public void setQuery(String query) {
-		querySender.setQuery(query);
+		this.query=query;
 	}
 	public String getQuery() {
-		return querySender.getQuery();
+		return query;
 	}
 	
 	public void setDatasourceName(String datasourceName) {
