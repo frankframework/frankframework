@@ -1,6 +1,9 @@
 /*
  * $Log: TransformerPool.java,v $
- * Revision 1.17  2007-07-26 16:26:18  europe\L190409
+ * Revision 1.17.14.1  2008-05-22 14:34:41  europe\L190409
+ * added extra configureTransformer method, that can return null
+ *
+ * Revision 1.17  2007/07/26 16:26:18  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added configureTransformer()
  *
  * Revision 1.16  2007/05/08 16:02:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -92,7 +95,7 @@ import org.w3c.dom.Document;
  * @author Gerrit van Brakel
  */
 public class TransformerPool {
-	public static final String version = "$RCSfile: TransformerPool.java,v $ $Revision: 1.17 $ $Date: 2007-07-26 16:26:18 $";
+	public static final String version = "$RCSfile: TransformerPool.java,v $ $Revision: 1.17.14.1 $ $Date: 2008-05-22 14:34:41 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private TransformerFactory tFactory = TransformerFactory.newInstance();
@@ -135,6 +138,13 @@ public class TransformerPool {
 		this(new StreamSource(new StringReader(xsltString)), sysId);
 	}
 
+	public static TransformerPool configureTransformer(String logPrefix, String xPathExpression, String styleSheetName, String outputType, boolean includeXmlDeclaration, ParameterList params, boolean mandatory) throws ConfigurationException {
+		if (mandatory || StringUtils.isNotEmpty(xPathExpression) || StringUtils.isNotEmpty(styleSheetName)) {
+			return configureTransformer(logPrefix,xPathExpression,styleSheetName, outputType, includeXmlDeclaration, params);
+		} 
+		return null;
+	}
+	
 	public static TransformerPool configureTransformer(String logPrefix, String xPathExpression, String styleSheetName, String outputType, boolean includeXmlDeclaration, ParameterList params) throws ConfigurationException {
 		TransformerPool result;
 		if (logPrefix==null) {
