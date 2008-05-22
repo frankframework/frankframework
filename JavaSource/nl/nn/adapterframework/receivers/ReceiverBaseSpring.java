@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBaseSpring.java,v $
- * Revision 1.17.2.2  2008-04-17 13:24:40  europe\L190409
+ * Revision 1.17.2.3  2008-05-22 14:34:05  europe\L190409
+ * set default pollInterval to 10 seconds
+ *
+ * Revision 1.17.2.2  2008/04/17 13:24:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * do not drop messages when errorstore not available
  *
  * Revision 1.17.2.1  2008/04/03 08:17:46  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -390,7 +393,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  */
 public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMessageHandler, IbisExceptionListener, HasSender, TracingEventNumbers, IThreadCountControllable, BeanFactoryAware {
     
-	public static final String version="$RCSfile: ReceiverBaseSpring.java,v $ $Revision: 1.17.2.2 $ $Date: 2008-04-17 13:24:40 $";
+	public static final String version="$RCSfile: ReceiverBaseSpring.java,v $ $Revision: 1.17.2.3 $ $Date: 2008-05-22 14:34:05 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -403,7 +406,7 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
    
 	private BeanFactory beanFactory;
 
-	private int pollInterval=0;
+	private int pollInterval=10;
     
 	private String returnedSessionKeys=null;
 	private boolean checkForDuplicates=false;
