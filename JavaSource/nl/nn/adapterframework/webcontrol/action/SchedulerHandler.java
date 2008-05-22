@@ -1,6 +1,9 @@
 /*
  * $Log: SchedulerHandler.java,v $
- * Revision 1.4  2008-05-22 07:38:48  europe\L190409
+ * Revision 1.5  2008-05-22 07:39:14  europe\L190409
+ * removed version string
+ *
+ * Revision 1.4  2008/05/22 07:38:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * use inherited error() method
  *
  */
@@ -25,7 +28,6 @@ import org.quartz.Scheduler;
  * @author  Johan Verrips
  */
 public class SchedulerHandler extends ActionBase {
-	public static final String version="$Id: SchedulerHandler.java,v 1.4 2008-05-22 07:38:48 europe\L190409 Exp $";
 	
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 	    // Extract attributes we will need
