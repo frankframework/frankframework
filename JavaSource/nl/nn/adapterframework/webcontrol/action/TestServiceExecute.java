@@ -1,6 +1,9 @@
 /*
  * $Log: TestServiceExecute.java,v $
- * Revision 1.4  2007-10-08 13:41:35  europe\L190409
+ * Revision 1.5  2008-05-22 07:46:18  europe\L190409
+ * use inherited error() method
+ *
+ * Revision 1.4  2007/10/08 13:41:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed ArrayList to List where possible
  *
  */
@@ -17,7 +20,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
 
-import org.apache.struts.action.ActionError;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
@@ -25,14 +27,13 @@ import org.apache.struts.action.DynaActionForm;
 import org.apache.struts.upload.FormFile;
 
 /**
- * Execute a service test
+ * Execute a service test.
  * @version Id
  * @author Johan Verrips
  */
 public class TestServiceExecute extends ActionBase {
-	public static final String version = "$RCSfile: TestServiceExecute.java,v $ $Revision: 1.4 $ $Date: 2007-10-08 13:41:35 $";
+	public static final String version = "$RCSfile: TestServiceExecute.java,v $ $Revision: 1.5 $ $Date: 2008-05-22 07:46:18 $";
 	
-
     public ActionForward execute(
         ActionMapping mapping,
         ActionForm form,
@@ -57,7 +58,7 @@ public class TestServiceExecute extends ActionBase {
         if ((form_message == null) || (form_message.length() == 0)) {
             if ((form_file == null) || (form_file.getFileSize() == 0)) {
                 storeFormData(null, null, serviceTestForm);
-                errors.add("", new ActionError("errors.generic", "Nothing to send or test"));
+                warn("Nothing to send or test");
             }
         }
         // Report any errors we have discovered back to the original form
@@ -67,7 +68,7 @@ public class TestServiceExecute extends ActionBase {
             return (new ActionForward(mapping.getInput()));
         }
         if ((form_serviceName == null) || (form_serviceName.length() == 0)) {
-            errors.add("", new ActionError("errors.generic", "No service selected"));
+            warn("No service selected");
         }
         // Report any errors we have discovered back to the original form
         if (!errors.isEmpty()) {
@@ -76,16 +77,9 @@ public class TestServiceExecute extends ActionBase {
             return (new ActionForward(mapping.getInput()));
         }
         // Execute the request
-        if (!(ServiceDispatcher
-            .getInstance()
-            .isRegisteredServiceListener(form_serviceName)))
-            errors.add(
-                "",
-                new ActionError(
-                    "errors.generic",
-                    "Servicer with specified name ["
-                        + form_serviceName
-                        + "] is not registered at the Dispatcher"));
+        if (!(ServiceDispatcher.getInstance().isRegisteredServiceListener(form_serviceName)))
+        	warn("Servicer with specified name [" + form_serviceName
+                        + "] is not registered at the Dispatcher");
         // Report any errors we have discovered back to the original form
         if (!errors.isEmpty()) {
             saveErrors(request, errors);
@@ -110,15 +104,7 @@ public class TestServiceExecute extends ActionBase {
             form_result =
                 ServiceDispatcher.getInstance().dispatchRequest(form_serviceName, form_message);
         } catch (Exception e) {
-            log.error(e);
-            errors.add(
-                "",
-                new ActionError(
-                    "errors.generic",
-                    "Service with specified name ["
-                        + form_serviceName
-                        + "] got error: "
-                        + e.getMessage()));
+        	warn("Service with specified name [" + form_serviceName + "] got error",e);
         }
         storeFormData(form_result, form_message, serviceTestForm);
 
@@ -133,6 +119,7 @@ public class TestServiceExecute extends ActionBase {
         return (mapping.findForward("success"));
 
     }
+    
     public void storeFormData(
         String result,
         String message,
@@ -153,6 +140,6 @@ public class TestServiceExecute extends ActionBase {
             serviceTestForm.set("result", result);
 
         }
-
     }
+    
 }

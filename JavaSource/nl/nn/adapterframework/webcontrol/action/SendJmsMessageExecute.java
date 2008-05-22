@@ -1,6 +1,9 @@
 /*
  * $Log: SendJmsMessageExecute.java,v $
- * Revision 1.5  2007-10-08 13:41:35  europe\L190409
+ * Revision 1.6  2008-05-22 07:41:15  europe\L190409
+ * use inherited error() method
+ *
+ * Revision 1.5  2007/10/08 13:41:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed ArrayList to List where possible
  *
  * Revision 1.4  2004/03/26 10:42:58  Johan Verrips <johan.verrips@ibissource.org>
@@ -26,9 +29,7 @@ import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StringTagger;
-import nl.nn.adapterframework.util.XmlUtils;
 
-import org.apache.struts.action.ActionError;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
@@ -37,21 +38,15 @@ import org.apache.struts.upload.FormFile;
 
 
 /**
- * Executes the sending of a message with JMS
+ * Executes the sending of a message with JMS.
+ * 
  * @version Id
  * @author  Johan Verrips
- * @see nl.nn.adapterframework.configuration.Configuration
  */
-
 public final class SendJmsMessageExecute extends ActionBase {
-	public static final String version = "$RCSfile: SendJmsMessageExecute.java,v $ $Revision: 1.5 $ $Date: 2007-10-08 13:41:35 $";
+	public static final String version = "$RCSfile: SendJmsMessageExecute.java,v $ $Revision: 1.6 $ $Date: 2008-05-22 07:41:15 $";
 	
-	public ActionForward execute(
-	    ActionMapping mapping,
-	    ActionForm form,
-	    HttpServletRequest request,
-	    HttpServletResponse response)
-	    throws IOException, ServletException {
+	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 	
 	    // Initialize action
 	    initAction(request);
@@ -102,22 +97,12 @@ public final class SendJmsMessageExecute extends ActionBase {
 		    qms.open();
 	        qms.sendMessage("testmsg_"+Misc.createUUID(),form_message);
 	    } catch (SenderException e) {
-	        log.error(e);
-	        errors.add(
-	            "",
-	            new ActionError(
-	                "errors.generic",
-	                "error occured sending message:" + XmlUtils.encodeChars(e.getMessage())));
+	        error("error occured sending message",e);
 	    }
 	    try {
 		    qms.close();
 	    } catch (Exception e) {
-	        log.error(e);
-	        errors.add(
-	            "",
-	            new ActionError(
-	                "errors.generic",
-	                "error occured on closing connection:" +  XmlUtils.encodeChars(e.getMessage())));
+			error("error occured on closing connection",e);
 	    }
 	
 	    // Report any errors we have discovered back to the original form
@@ -153,6 +138,7 @@ public final class SendJmsMessageExecute extends ActionBase {
 	    return (mapping.findForward("success"));
 	
 	}
+	
 	public void StoreFormData(DynaActionForm form){
 	    List jmsRealms=JmsRealmFactory.getInstance().getRegisteredRealmNamesAsList();
 	    if (jmsRealms.size()==0) jmsRealms.add("no realms defined");

@@ -1,6 +1,9 @@
 /*
  * $Log: TestPipeLineExecute.java,v $
- * Revision 1.9  2007-10-08 13:41:35  europe\L190409
+ * Revision 1.10  2008-05-22 07:45:03  europe\L190409
+ * use inherited error() method
+ *
+ * Revision 1.9  2007/10/08 13:41:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed ArrayList to List where possible
  *
  * Revision 1.8  2007/07/19 15:16:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -31,7 +34,6 @@ import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.util.Misc;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.struts.action.ActionError;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
@@ -48,7 +50,7 @@ import org.apache.struts.upload.FormFile;
  * @version Id
  */
 public final class TestPipeLineExecute extends ActionBase {
-	public static final String version="$RCSfile: TestPipeLineExecute.java,v $  $Revision: 1.9 $ $Date: 2007-10-08 13:41:35 $";
+	public static final String version="$RCSfile: TestPipeLineExecute.java,v $  $Revision: 1.10 $ $Date: 2008-05-22 07:45:03 $";
 	
 	public ActionForward execute(
 	    ActionMapping mapping,
@@ -76,7 +78,7 @@ public final class TestPipeLineExecute extends ActionBase {
 	        ( form_file==null || form_file.getFileSize() == 0 )) {
 	
 	        storeFormData(null, null, null, pipeLineTestForm);
-	        errors.add("", new ActionError("errors.generic", "Nothing to send or test"));
+	        warn("Nothing to send or test");
 	    }
 	    // Report any errors we have discovered back to the original form
 	    if (!errors.isEmpty()) {
@@ -85,7 +87,7 @@ public final class TestPipeLineExecute extends ActionBase {
 	        return (new ActionForward(mapping.getInput()));
 	    }
 	    if ((form_adapterName == null) || (form_adapterName.length() == 0)) {
-	        errors.add("", new ActionError("errors.generic", "No adapter selected"));
+	        warn("No adapter selected");
 	    }
 	    // Report any errors we have discovered back to the original form
 	    if (!errors.isEmpty()) {
@@ -96,7 +98,7 @@ public final class TestPipeLineExecute extends ActionBase {
 	    // Execute the request
 	    IAdapter adapter = config.getRegisteredAdapter(form_adapterName);
 	    if (adapter == null) {
-			errors.add("", new ActionError("errors.generic", "Adapter with specified name ["+form_adapterName+"] could not be retrieved"));
+			warn("Adapter with specified name ["+form_adapterName+"] could not be retrieved");
 	    }
 	    // Report any errors we have discovered back to the original form
 	    if (!errors.isEmpty()) {

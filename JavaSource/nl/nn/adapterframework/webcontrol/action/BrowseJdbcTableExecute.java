@@ -1,6 +1,9 @@
 /*
  * $Log: BrowseJdbcTableExecute.java,v $
- * Revision 1.3  2007-10-08 13:41:35  europe\L190409
+ * Revision 1.4  2008-05-22 07:34:00  europe\L190409
+ * use inherited error() method
+ *
+ * Revision 1.3  2007/10/08 13:41:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed ArrayList to List where possible
  *
  * Revision 1.2  2007/05/24 09:54:47  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -8,7 +11,6 @@
  *
  * Revision 1.1  2007/05/21 12:24:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added browseJdbcTable functions
- *
  *
  */
 package nl.nn.adapterframework.webcontrol.action;
@@ -26,17 +28,15 @@ import nl.nn.adapterframework.jdbc.JdbcFacade;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.StringTagger;
-import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.webcontrol.IniDynaActionForm;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.struts.action.ActionError;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 
 public class BrowseJdbcTableExecute extends ActionBase {
-	public static final String version = "$RCSfile: BrowseJdbcTableExecute.java,v $ $Revision: 1.3 $ $Date: 2007-10-08 13:41:35 $";
+	public static final String version = "$RCSfile: BrowseJdbcTableExecute.java,v $ $Revision: 1.4 $ $Date: 2008-05-22 07:34:00 $";
 
 	public ActionForward execute(
 		ActionMapping mapping,
@@ -129,24 +129,12 @@ public class BrowseJdbcTableExecute extends ActionBase {
 				qs.open();
 				result = qs.sendMessage("dummy", query);
 			} catch (Throwable t) {
-				log.error(t);
-				errors.add(
-					"",
-					new ActionError(
-						"errors.generic",
-						"error occured on executing jdbc query ["+query+"]: "
-							+ XmlUtils.encodeChars(t.getMessage())));
+				error("errors.generic","error occured on executing jdbc query ["+query+"]",t);
 			} finally {
 				qs.close();
 			}
 		} catch (Exception e) {
-			log.error(e);
-			errors.add(
-				"",
-				new ActionError(
-					"errors.generic",
-					"error occured on creating or closing connection: "
-						+ XmlUtils.encodeChars(e.getMessage())));
+			error("errors.generic","error occured on creating or closing connection",e);
 		}
 		String resultEnvelope =
 			"<resultEnvelope>"
