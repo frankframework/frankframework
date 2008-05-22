@@ -1,6 +1,9 @@
 /*
  * $Log: MessageSendingPipe.java,v $
- * Revision 1.39.2.1  2008-04-03 08:14:16  europe\L190409
+ * Revision 1.39.2.2  2008-05-22 14:33:31  europe\L190409
+ * use prc more often
+ *
+ * Revision 1.39.2.1  2008/04/03 08:14:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * synch from HEAD
  *
  * Revision 1.40  2008/03/20 12:08:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -222,7 +225,7 @@ import org.apache.commons.lang.SystemUtils;
  */
 
 public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
-	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.39.2.1 $ $Date: 2008-04-03 08:14:16 $";
+	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.39.2.2 $ $Date: 2008-05-22 14:33:31 $";
 
 	private final static String TIMEOUTFORWARD = "timeout";
 	private final static String EXCEPTIONFORWARD = "exception";
@@ -551,7 +554,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 			throw new SenderException("String expected, got a [" + input.getClass().getName() + "]");
 		}
 		// sendResult has a messageID for async senders, the result for sync senders
-		if (sender instanceof ISenderWithParameters && getParameterList()!=null) {
+		if (sender instanceof ISenderWithParameters) { // do not only check own parameters, sender may have them by itself
 			ISenderWithParameters psender = (ISenderWithParameters) sender;
 			ParameterResolutionContext prc = new ParameterResolutionContext((String)input, session, isNamespaceAware());
 			return psender.sendMessage(correlationID, (String) input, prc);
