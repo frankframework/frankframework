@@ -1,4 +1,19 @@
+/*
+ * $Log: ShowAdapterStatistics.java,v $
+ * Revision 1.5  2008-05-22 07:42:56  europe\L190409
+ * cosmetic changes
+ *
+ */
 package nl.nn.adapterframework.webcontrol.action;
+
+import java.io.IOException;
+import java.text.DecimalFormat;
+import java.util.Hashtable;
+import java.util.Iterator;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IPipe;
@@ -9,19 +24,10 @@ import nl.nn.adapterframework.util.HasStatistics;
 import nl.nn.adapterframework.util.StatisticsKeeper;
 import nl.nn.adapterframework.util.StatisticsKeeperIterationHandler;
 import nl.nn.adapterframework.util.XmlBuilder;
+
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.text.DecimalFormat;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.SortedSet;
-import java.util.TreeSet;
 /**
  * <code>Action</code> to retrieve the statistics from a
  * specific adapter. The pipeline statistics are sorted by
@@ -101,6 +107,8 @@ public final class ShowAdapterStatistics extends ActionBase {
 				    statsIter = statReceiver.getProcessStatisticsIterator();
 				    if (statsIter != null) {
 					    XmlBuilder procStatsXML = new XmlBuilder("procStats");
+//						procStatsXML.addSubElement(statisticsKeeperToXmlBuilder(statReceiver.getRequestSizeStatistics(), "stat"));
+//						procStatsXML.addSubElement(statisticsKeeperToXmlBuilder(statReceiver.getResponseSizeStatistics(), "stat"));
 					    while(statsIter.hasNext()) {				    
 					        StatisticsKeeper pstat = (StatisticsKeeper) statsIter.next();
 					        procStatsXML.addSubElement(statisticsKeeperToXmlBuilder(pstat, "stat"));
