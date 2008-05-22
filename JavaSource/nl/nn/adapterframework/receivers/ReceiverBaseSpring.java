@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBaseSpring.java,v $
- * Revision 1.21  2008-05-21 10:51:12  europe\L190409
+ * Revision 1.22  2008-05-22 07:27:45  europe\L190409
+ * set default poll interval to 10 seconds
+ *
+ * Revision 1.21  2008/05/21 10:51:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * modified monitorAdapter interface
  *
  * Revision 1.20  2008/04/17 13:03:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -333,6 +336,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  * <tr><td>{@link #setTransactionTimeout(int) transactionTimeout}</td><td>Timeout (in seconds) of transaction started to receive and process a message.</td><td><code>0</code> (use system default)</code></td></tr>
  * <tr><td>{@link #setMaxRetries(int) maxRetries}</td><td>The number of times a processing attempt is retried after an exception is caught or rollback is experienced</td><td>2</td></tr>
  * <tr><td>{@link #setCheckForDuplicates(boolean) checkForDuplicates}</td><td>if set to <code>true</code>, each message is checked for presence in the message log. If already present, it is not processed again. (only required for non XA compatible messaging). Requires messagelog!</code></td><td><code>false</code></td></tr>
+ * <tr><td>{@link #setPollInterval(int) pollInterval}</td><td>The number of seconds waited after an unsuccesful poll attempt before another poll attempt is made. (only for polling listeners, not for e.g. IFSA, JMS, WebService or JavaListeners)</td><td>10</td></tr>
  * <tr><td>{@link #setIbis42compatibility(boolean) ibis42compatibility}</td><td>if set to <code>true</code>, the result of a failed processing of a message is a formatted errormessage. Otherwise a listener specific error handling is performed</code></td><td><code>false</code></td></tr>
  * <tr><td>{@link #setBeforeEvent(int) beforeEvent}</td>      <td>METT eventnumber, fired just before a message is processed by this Receiver</td><td>-1 (disabled)</td></tr>
  * <tr><td>{@link #setAfterEvent(int) afterEvent}</td>        <td>METT eventnumber, fired just after message processing by this Receiver is finished</td><td>-1 (disabled)</td></tr>
@@ -389,7 +393,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  */
 public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMessageHandler, IbisExceptionListener, HasSender, TracingEventNumbers, IThreadCountControllable, BeanFactoryAware {
     
-	public static final String version="$RCSfile: ReceiverBaseSpring.java,v $ $Revision: 1.21 $ $Date: 2008-05-21 10:51:12 $";
+	public static final String version="$RCSfile: ReceiverBaseSpring.java,v $ $Revision: 1.22 $ $Date: 2008-05-22 07:27:45 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -402,7 +406,7 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
    
 	private BeanFactory beanFactory;
 
-	private int pollInterval=0;
+	private int pollInterval=10;
     
 	private String returnedSessionKeys=null;
 	private boolean checkForDuplicates=false;
@@ -433,6 +437,9 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 	private Counter numReceived = new Counter(0);
 	private ArrayList processStatistics = new ArrayList();
 	private ArrayList idleStatistics = new ArrayList();
+
+//	private StatisticsKeeper requestSizeStatistics = new StatisticsKeeper("request size");
+//	private StatisticsKeeper responseSizeStatistics = new StatisticsKeeper("response size");
 
 	// the adapter that handles the messages and initiates this listener
 	private IAdapter adapter;
@@ -1057,6 +1064,11 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 		String result=null;
 		PipeLineResult pipeLineResult=null;
 		long startProcessingTimestamp = System.currentTimeMillis();
+//		if (message==null) {
+//			requestSizeStatistics.addValue(0);
+//		} else {
+//			requestSizeStatistics.addValue(message.length());
+//		}
 		log.debug(getLogPrefix()+"received message with messageId ["+messageId+"] correlationId ["+correlationId+"]");
         
 		if (checkTryCount(messageId, retry, rawMessage, message, threadContext)) {
@@ -1122,6 +1134,11 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 			} finally {
 				putSessionKeysIntoThreadContext(threadContext, pipelineSession);
 			}
+//			if (result==null) {
+//				responseSizeStatistics.addValue(0);
+//			} else {
+//				responseSizeStatistics.addValue(result.length());
+//			}
 			if (getSender()!=null) {
 				String sendMsg = sendResultToSender(correlationId, result);
 				if (sendMsg != null) {
@@ -1607,6 +1624,12 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 		return numReceived.getValue();
 	}
 	
+//	public StatisticsKeeper getRequestSizeStatistics() {
+//		return requestSizeStatistics;
+//	}
+//	public StatisticsKeeper getResponseSizeStatistics() {
+//		return responseSizeStatistics;
+//	}
 
 
 	/**
