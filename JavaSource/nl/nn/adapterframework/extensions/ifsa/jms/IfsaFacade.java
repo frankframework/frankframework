@@ -1,6 +1,10 @@
 /*
  * $Log: IfsaFacade.java,v $
- * Revision 1.4  2008-03-27 12:00:14  europe\L190409
+ * Revision 1.5  2008-05-22 07:23:35  europe\L190409
+ * added serviceId to logPrefix of requester
+ * added some support for bif and btc
+ *
+ * Revision 1.4  2008/03/27 12:00:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * set default timeout to 20s
  *
  * Revision 1.3  2008/01/17 16:20:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -171,6 +175,7 @@ import com.ing.ifsa.IFSAMessage;
 import com.ing.ifsa.IFSAQueue;
 import com.ing.ifsa.IFSAQueueSender;
 import com.ing.ifsa.IFSAServerQueueSender;
+import com.ing.ifsa.IFSATextMessage;
 
 /**
  * Base class for IFSA 2.0/2.2 functions.
@@ -204,7 +209,7 @@ import com.ing.ifsa.IFSAServerQueueSender;
  * @since 4.2
  */
 public class IfsaFacade implements INamedObject, HasPhysicalDestination {
-	public static final String version = "$RCSfile: IfsaFacade.java,v $ $Revision: 1.4 $ $Date: 2008-03-27 12:00:14 $";
+	public static final String version = "$RCSfile: IfsaFacade.java,v $ $Revision: 1.5 $ $Date: 2008-05-22 07:23:35 $";
     protected Logger log = LogUtil.getLogger(this);
     
     private static int BASIC_ACK_MODE = Session.AUTO_ACKNOWLEDGE;
@@ -246,7 +251,7 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 		try {
 			if (isRequestor()) {
 				objectType = "IfsaRequester";
-				serviceInfo = "of Application ["+getApplicationId()+"] "; 
+				serviceInfo = "of Application ["+getApplicationId()+"] "+(polishedServiceId!=null?"to Service ["+polishedServiceId+"]":""); 
 			} else {
 				objectType = "IfsaProvider";				
 				serviceInfo = "for Application ["+getApplicationId()+"] "; 
@@ -555,14 +560,14 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
      * will use the <code>sendReply</code>.
      * @return the correlationID of the sent message
      */
-    public TextMessage sendMessage(QueueSession session, QueueSender sender, String message, Map udzMap)
+    public TextMessage sendMessage(QueueSession session, QueueSender sender, String message, Map udzMap, String bifName, byte btcData[])
         throws IfsaException {
 
 	    try {
 			if (!isRequestor()) {
 				throw new IfsaException(getLogPrefix()+ "Provider cannot use sendMessage, should use sendReply");
 			}
-	        TextMessage msg = session.createTextMessage();
+	        IFSATextMessage msg = (IFSATextMessage)session.createTextMessage();
 	        msg.setText(message);
 			if (udzMap != null && msg instanceof IFSAMessage) {
 				// Handle UDZs
@@ -582,6 +587,12 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 	        if (messageProtocol.equals(IfsaMessageProtocolEnum.FIRE_AND_FORGET)) {
 	         	// not applicable
 	        }
+			if (StringUtils.isNotEmpty(bifName)) {
+				msg.setBifName(bifName);
+			}
+			if (btcData!=null && btcData.length>0) {
+				msg.setBtcData(btcData);
+			}
 	
 	        log.info(getLogPrefix()
 	        	    + " messageProtocol ["
