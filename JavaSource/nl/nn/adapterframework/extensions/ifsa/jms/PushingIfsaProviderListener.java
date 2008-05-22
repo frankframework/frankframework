@@ -1,6 +1,9 @@
 /*
  * $Log: PushingIfsaProviderListener.java,v $
- * Revision 1.4  2008-02-28 16:20:38  europe\L190409
+ * Revision 1.5  2008-05-22 07:24:16  europe\L190409
+ * added some support for bif and btc
+ *
+ * Revision 1.4  2008/02/28 16:20:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * use PipeLineSession.setListenerParameters()
  *
  * Revision 1.3  2008/01/29 12:20:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -87,6 +90,8 @@ import com.ing.ifsa.IFSAServicesProvided;
  *   <li>ifsaGroup</li>
  *   <li>ifsaOccurrence</li>
  *   <li>ifsaVersion</li>
+ *   <li>ifsaBifName</li>
+ *   <li>ifsaBtcData</li>
  * </ul>
  * N.B. 
  * Starting from IFSA-jms version 2.2.10.055(beta) a feature was created to have separate service-queues for Request/Reply
@@ -101,7 +106,7 @@ import com.ing.ifsa.IFSAServicesProvided;
  * @version Id
  */
 public class PushingIfsaProviderListener extends IfsaFacade implements IPortConnectedListener, IThreadCountControllable {
-	public static final String version = "$RCSfile: PushingIfsaProviderListener.java,v $ $Revision: 1.4 $ $Date: 2008-02-28 16:20:38 $";
+	public static final String version = "$RCSfile: PushingIfsaProviderListener.java,v $ $Revision: 1.5 $ $Date: 2008-05-22 07:24:16 $";
 
     private final static String THREAD_CONTEXT_SESSION_KEY = "session";
 	public final static String THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY = "originalRawMessage";
@@ -242,6 +247,8 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 	 *   <li>ifsaGroup</li>
 	 *   <li>ifsaOccurrence</li>
 	 *   <li>ifsaVersion</li>
+	 *   <li>ifsaBifName</li>
+	 *   <li>ifsaBtcData</li>
 	 * </ul>
 	 * @return ID-string of message for adapter.
 	 */
@@ -336,11 +343,25 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 	        log.error(getLogPrefix() + "got error getting serviceparameter", e);
 	    }
 
+		String BIFname=null;
+		try {
+			BIFname= message.getBifName();
+		} catch (JMSException e) {
+			log.error(getLogPrefix() + "got error getting BIFname", e);
+		}
+		byte btcData[]=null;
+		try {
+			btcData= message.getBtcData();
+		} catch (JMSException e) {
+			log.error(getLogPrefix() + "got error getting btcData", e);
+		}
+
 		if (log.isDebugEnabled()) {
 			log.debug(getLogPrefix()+ "got message for [" + fullIfsaServiceName
 					+ "] with JMSDeliveryMode=[" + mode
 					+ "] \n  JMSMessageID=[" + id
 					+ "] \n  JMSCorrelationID=["+ cid
+					+ "] \n  BIFname=["+ BIFname
 					+ "] \n  ifsaServiceName=["+ ifsaServiceName
 					+ "] \n  ifsaGroup=["+ ifsaGroup
 					+ "] \n  ifsaOccurrence=["+ ifsaOccurrence
@@ -348,6 +369,7 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 					+ "] \n  Timestamp Sent=[" + DateUtils.format(tsSent) 
 					+ "] \n  ReplyTo=[" + ((replyTo == null) ? "none" : replyTo.toString())
 					+ "] \n  MessageHeaders=["+displayHeaders(message)+"\n"
+//					+ "] \n  btcData=["+ btcData
 					+ "] \n  Message=[" + message.toString()+"\n]");
 					
 		}
@@ -361,6 +383,8 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 	    threadContext.put("ifsaGroup", ifsaGroup);
 	    threadContext.put("ifsaOccurrence", ifsaOccurrence);
 	    threadContext.put("ifsaVersion", ifsaVersion);
+		threadContext.put("ifsaBifName", BIFname);
+		threadContext.put("ifsaBtcData", btcData);
 
 		Map udz = (Map)message.getIncomingUDZObject();
 		if (udz!=null) {

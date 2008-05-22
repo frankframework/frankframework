@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaRequesterSender.java,v $
- * Revision 1.8  2008-05-15 14:32:21  europe\L190409
+ * Revision 1.9  2008-05-22 07:23:59  europe\L190409
+ * added some support for bif and btc
+ *
+ * Revision 1.8  2008/05/15 14:32:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * preparations for business process time statistics
  *
  * Revision 1.7  2008/04/17 12:58:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -180,7 +183,7 @@ import com.ing.ifsa.IFSATimeOutMessage;
  * @since  4.2
  */
 public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParameters, HasStatistics {
-	public static final String version="$RCSfile: IfsaRequesterSender.java,v $ $Revision: 1.8 $ $Date: 2008-05-15 14:32:21 $";
+	public static final String version="$RCSfile: IfsaRequesterSender.java,v $ $Revision: 1.9 $ $Date: 2008-05-22 07:23:59 $";
 	
 	protected ParameterList paramList = null;
 	private StatisticsKeeper businessProcessTimes;
@@ -306,14 +309,19 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 				params.put(key, value);
 			}
 		}
+		//IFSAMessage originatingMessage = (IFSAMessage)prc.getSession().get(PushingIfsaProviderListener.THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY);
 		return sendMessage(dummyCorrelationId, message, params);
+	}
+
+	public String sendMessage(String dummyCorrelationId, String message, Map params) throws SenderException, TimeOutException {
+		return sendMessage(dummyCorrelationId, message,params, null, null);
 	}
 
 	/**
 	 * Execute a request to the IFSA service.
 	 * @return in Request/Reply, the retrieved message or TIMEOUT, otherwise null
 	 */
-	public String sendMessage(String dummyCorrelationId, String message, Map params) throws SenderException, TimeOutException {
+	public String sendMessage(String dummyCorrelationId, String message, Map params, String bifName, byte btcData[]) throws SenderException, TimeOutException {
 	    String result = null;
 		QueueSession session = null;
 		QueueSender sender = null;
@@ -356,7 +364,7 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 			log.debug(getLogPrefix()+"sending message");
 
 			long timestampBeforeSend = System.currentTimeMillis();
-		    TextMessage sentMessage=sendMessage(session, sender, message, udzMap);
+		    TextMessage sentMessage=sendMessage(session, sender, message, udzMap, bifName, btcData);
 			log.debug(getLogPrefix()+"message sent");
 
 			if (isSynchronous()){
