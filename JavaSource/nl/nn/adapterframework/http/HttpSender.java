@@ -1,7 +1,10 @@
 /*
  * $Log: HttpSender.java,v $
- * Revision 1.31.2.1  2008-04-03 08:11:51  europe\L190409
- * synch from HEAD
+ * Revision 1.31.2.2  2008-05-22 14:31:43  europe\L190409
+ * sync from HEAD
+ *
+ * Revision 1.33  2008/05/21 08:42:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * content-type configurable
  *
  * Revision 1.32  2008/03/20 12:00:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * set default path '/'
@@ -136,6 +139,7 @@ import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
+import nl.nn.adapterframework.util.Misc;
 
 /**
  * Sender that gets information via a HTTP using POST or GET.
@@ -147,6 +151,7 @@ import nl.nn.adapterframework.util.CredentialFactory;
  * <tr><td>{@link #setName(String) name}</td><td>name of the sender</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setUrl(String) url}</td><td>URL or base of URL to be used </td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMethodType(String) methodType}</td><td>type of method to be executed, either 'GET' or 'POST'</td><td>GET</td></tr>
+ * <tr><td>{@link #setContentType(String) contentType}</td><td>conent-type of the request, only for POST methods</td><td>text/html; charset=UTF-8</td></tr>
  * <tr><td>{@link #setTimeout(int) timeout}</td><td>timeout in ms of obtaining a connection/result. 0 means no timeout</td><td>60000</td></tr>
  * <tr><td>{@link #setMaxConnections(int) maxConnections}</td><td>the maximum number of concurrent connections</td><td>2</td></tr>
  * <tr><td>{@link #setMaxConnectionRetries(int) maxConnectionRetries}</td><td>the maximum number of times it is retried to obtain a connection</td><td>10</td></tr>
@@ -233,10 +238,11 @@ import nl.nn.adapterframework.util.CredentialFactory;
  * @since 4.2c
  */
 public class HttpSender extends SenderWithParametersBase implements HasPhysicalDestination {
-	public static final String version = "$RCSfile: HttpSender.java,v $ $Revision: 1.31.2.1 $ $Date: 2008-04-03 08:11:51 $";
+	public static final String version = "$RCSfile: HttpSender.java,v $ $Revision: 1.31.2.2 $ $Date: 2008-05-22 14:31:43 $";
 
 	private String url;
 	private String methodType="GET"; // GET or POST
+	private String contentType="text/html; charset="+Misc.DEFAULT_INPUT_STREAM_ENCODING;
 
 	private int timeout=60000;
 	private int maxConnections=2;
@@ -497,6 +503,9 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 			} else {
 				if (getMethodType().equals("POST")) {
 					PostMethod postMethod = new PostMethod(path.toString());
+					if (StringUtils.isNotEmpty(getContentType())) {
+						postMethod.setRequestHeader("Content-Type",getContentType());
+					}
 					if (parameters!=null) {
 						StringBuffer msg = new StringBuffer(message);
 						appendParameters(true,msg,parameters);
@@ -821,6 +830,13 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 	}
 	public int getMaxExecuteRetries() {
 		return maxExecuteRetries;
+	}
+
+	public void setContentType(String string) {
+		contentType = string;
+	}
+	public String getContentType() {
+		return contentType;
 	}
 
 }

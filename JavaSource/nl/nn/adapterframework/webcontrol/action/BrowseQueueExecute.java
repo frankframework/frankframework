@@ -1,6 +1,12 @@
 /*
  * $Log: BrowseQueueExecute.java,v $
- * Revision 1.6  2007-10-08 13:41:35  europe\L190409
+ * Revision 1.6.4.1  2008-05-22 14:36:57  europe\L190409
+ * sync from HEAD
+ *
+ * Revision 1.7  2008/05/22 07:35:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * use inherited error() method
+ *
+ * Revision 1.6  2007/10/08 13:41:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed ArrayList to List where possible
  *
  * Revision 1.5  2005/07/19 15:33:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -17,7 +23,6 @@
  *
  * Revision 1.1  2004/06/16 12:25:52  Johan Verrips <johan.verrips@ibissource.org>
  * Initial version of Queue browsing functionality
- *
  *
  */
 package nl.nn.adapterframework.webcontrol.action;
@@ -38,10 +43,8 @@ import nl.nn.adapterframework.jms.JmsMessageBrowser;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.StringTagger;
-import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.webcontrol.IniDynaActionForm;
 
-import org.apache.struts.action.ActionError;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
@@ -51,7 +54,7 @@ import org.apache.struts.action.ActionMapping;
  * @author Johan Verrips
  */
 public class BrowseQueueExecute extends ActionBase {
-	public static final String version="$RCSfile: BrowseQueueExecute.java,v $ $Revision: 1.6 $ $Date: 2007-10-08 13:41:35 $";
+	public static final String version="$RCSfile: BrowseQueueExecute.java,v $ $Revision: 1.6.4.1 $ $Date: 2008-05-22 14:36:57 $";
 
 	public ActionForward execute(
 		ActionMapping mapping,
@@ -133,14 +136,7 @@ public class BrowseQueueExecute extends ActionBase {
 			} else
 				browseQueueForm.set("messages", new ArrayList());
 		} catch (ListenerException e) {
-			log.error("Error occured browsing the queue", e);
-			String errorString = e.getMessage();
-			errorString = XmlUtils.encodeChars(errorString);
-			errors.add(
-				"",
-				new ActionError(
-					"errors.generic",
-					"error occured browsing messages:" + errorString));
+			error("Error occured browsing messages", e);
 		} finally {
 			try {
 				if (it!=null) {

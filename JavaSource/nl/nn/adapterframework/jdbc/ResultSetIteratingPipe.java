@@ -1,6 +1,12 @@
 /*
  * $Log: ResultSetIteratingPipe.java,v $
- * Revision 1.2  2008-02-26 08:35:52  europe\L190409
+ * Revision 1.2.2.1  2008-05-22 14:32:13  europe\L190409
+ * sync from HEAD
+ *
+ * Revision 1.3  2008/05/21 09:36:52  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * added block info to javadoc
+ *
+ * Revision 1.2  2008/02/26 08:35:52  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.1  2007/07/17 11:16:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -68,6 +74,9 @@ import nl.nn.adapterframework.core.SenderException;
  * <tr><td>{@link #setCollectResults(boolean) collectResults}</td><td>controls whether all the results of each iteration will be collected in one result message. If set <code>false</code>, only a small summary is returned</td><td>true</td></tr>
  * <tr><td>{@link #setQuery(String) query}</td><td>the SQL query text to be excecuted each time sendMessage() is called</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDatasourceName(String) datasourceName}</td><td>can be configured from JmsRealm, too</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setBlockSize(int) blockSize}</td><td>controls multiline behaviour. when set to a value greater than 0, it specifies the number of rows send in a block to the sender.</td><td>0 (one line at a time, no prefix of suffix)</td></tr>
+ * <tr><td>{@link #setBlockPrefix(String) blockPrefix}</td><td>When <code>blockSize &gt; 0</code>, this string is inserted at the start of the set of lines.</td><td>&lt;block&gt;</td></tr>
+ * <tr><td>{@link #setBlockSuffix(String) blockSuffix}</td><td>When <code>blockSize &gt; 0</code>, this string is inserted at the end of the set of lines.</td><td>&lt;/block&gt;</td></tr>
  * </table>
  * <table border="1">
  * <tr><th>nested elements</th><th>description</th></tr>

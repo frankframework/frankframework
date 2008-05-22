@@ -1,7 +1,10 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.46.2.1  2008-05-15 16:07:09  europe\L190409
- * synch from HEAD
+ * Revision 1.46.2.2  2008-05-22 14:34:56  europe\L190409
+ * sync from HEAD
+ *
+ * Revision 1.48  2008/05/21 09:41:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * changed auto reload key
  *
  * Revision 1.47  2008/05/14 09:24:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added isAutoReload
@@ -210,7 +213,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * @version Id
  */
 public class XmlUtils {
-	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.46.2.1 $ $Date: 2008-05-15 16:07:09 $";
+	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.46.2.2 $ $Date: 2008-05-22 14:34:56 $";
 	static Logger log = LogUtil.getLogger(XmlUtils.class);
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
@@ -218,7 +221,7 @@ public class XmlUtils {
 	static final String JAXP_SCHEMA_SOURCE =   "http://java.sun.com/xml/jaxp/properties/schemaSource";
 
 	public static final String NAMESPACE_AWARE_BY_DEFAULT_KEY = "xml.namespaceAware.default";
-	public static final String AUTO_RELOAD_KEY = "xml.auto.reload";
+	public static final String AUTO_RELOAD_KEY = "xslt.auto.reload";
 
 	public final static String OPEN_FROM_FILE = "file";
 	public final static String OPEN_FROM_URL = "url";

@@ -1,13 +1,18 @@
 /*
  * $Log: ExecuteJdbcQueryExecute.java,v $
- * Revision 1.2  2007-10-08 13:41:35  europe\L190409
+ * Revision 1.2.4.1  2008-05-22 14:36:56  europe\L190409
+ * sync from HEAD
+ *
+ * Revision 1.3  2008/05/22 07:36:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * use inherited error() method
+ *
+ * Revision 1.2  2007/10/08 13:41:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed ArrayList to List where possible
  *
  * Revision 1.1  2005/10/27 12:20:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * execQuery functionality in IbisConsole
  *
  */
-
 package nl.nn.adapterframework.webcontrol.action;
 
 import java.io.IOException;
@@ -28,7 +33,6 @@ import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.StringTagger;
 import nl.nn.adapterframework.util.XmlUtils;
 
-import org.apache.struts.action.ActionError;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
@@ -39,7 +43,7 @@ import org.apache.struts.action.DynaActionForm;
  * @version Id 
  */
 public final class ExecuteJdbcQueryExecute extends ActionBase {
-	public static final String version = "$RCSfile: ExecuteJdbcQueryExecute.java,v $ $Revision: 1.2 $ $Date: 2007-10-08 13:41:35 $";
+	public static final String version = "$RCSfile: ExecuteJdbcQueryExecute.java,v $ $Revision: 1.2.4.1 $ $Date: 2008-05-22 14:36:56 $";
 	public static final String DB2XML_XSLT="xml/xsl/dbxml2csv.xslt";
 
 	public ActionForward execute(
@@ -81,24 +85,12 @@ public final class ExecuteJdbcQueryExecute extends ActionBase {
 					}
 				}
 			} catch (Throwable t) {
-				log.error(t);
-				errors.add(
-					"",
-					new ActionError(
-						"errors.generic",
-						"error occured on executing jdbc query: "
-							+ XmlUtils.encodeChars(t.getMessage())));
+				error("error occured on executing jdbc query",t);
 			} finally {
 				qs.close();
 			}
 		} catch (Exception e) {
-			log.error(e);
-			errors.add(
-				"",
-				new ActionError(
-					"errors.generic",
-					"error occured on creating or closing connection: "
-						+ XmlUtils.encodeChars(e.getMessage())));
+			error("error occured on creating or closing connection",e);
 		}
 
 		StoreFormData(form_query, result, executeJdbcQueryExecuteForm);

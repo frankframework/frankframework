@@ -1,26 +1,32 @@
 /*
  * $Log: AlterTracingPropertiesExecute.java,v $
- * Revision 1.1  2006-09-14 15:28:49  europe\L190409
+ * Revision 1.1.16.1  2008-05-22 14:36:57  europe\L190409
+ * sync from HEAD
+ *
+ * Revision 1.2  2008/05/22 07:33:22  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * use inherited error() method
+ *
+ * Revision 1.1  2006/09/14 15:28:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * first version of TracingHandlers
  *
  */
 package nl.nn.adapterframework.webcontrol.action;
 
-import nl.nn.adapterframework.util.TracingUtil;
+import java.io.IOException;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 
-import org.apache.struts.action.ActionError;
+import nl.nn.adapterframework.util.TracingUtil;
+
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.DynaActionForm;
 
 public final class AlterTracingPropertiesExecute extends ActionBase {
-	public static final String version="$RCSfile: AlterTracingPropertiesExecute.java,v $ $Revision: 1.1 $ $Date: 2006-09-14 15:28:49 $";
+	public static final String version="$RCSfile: AlterTracingPropertiesExecute.java,v $ $Revision: 1.1.16.1 $ $Date: 2008-05-22 14:36:57 $";
 
 	public ActionForward execute(
 		ActionMapping mapping,
@@ -48,7 +54,7 @@ public final class AlterTracingPropertiesExecute extends ActionBase {
 		try {
 			TracingUtil.setProperties(form_properties);
 		} catch (Throwable t) {
-			errors.add("", new ActionError("errors.generic", t));
+			error("could not set properties",t);
 		}
 
 		if (!errors.isEmpty()) {

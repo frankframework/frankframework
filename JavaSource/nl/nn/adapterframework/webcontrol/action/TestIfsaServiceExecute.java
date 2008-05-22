@@ -1,6 +1,12 @@
 /*
  * $Log: TestIfsaServiceExecute.java,v $
- * Revision 1.6  2007-10-08 13:41:35  europe\L190409
+ * Revision 1.6.4.1  2008-05-22 14:36:57  europe\L190409
+ * sync from HEAD
+ *
+ * Revision 1.7  2008/05/22 07:44:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * use inherited error() method
+ *
+ * Revision 1.6  2007/10/08 13:41:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed ArrayList to List where possible
  *
  * Revision 1.5  2005/06/28 09:03:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -35,9 +41,7 @@ import nl.nn.adapterframework.extensions.ifsa.IfsaRequesterSender;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StringTagger;
-import nl.nn.adapterframework.util.XmlUtils;
 
-import org.apache.struts.action.ActionError;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
@@ -53,7 +57,7 @@ import org.apache.struts.upload.FormFile;
  * @version Id
  */
 public final class TestIfsaServiceExecute extends ActionBase {
-	public static final String version = "$RCSfile: TestIfsaServiceExecute.java,v $ $Revision: 1.6 $ $Date: 2007-10-08 13:41:35 $";
+	public static final String version = "$RCSfile: TestIfsaServiceExecute.java,v $ $Revision: 1.6.4.1 $ $Date: 2008-05-22 14:36:57 $";
 	
 	public ActionForward execute(
 	    ActionMapping mapping,
@@ -108,22 +112,12 @@ public final class TestIfsaServiceExecute extends ActionBase {
 			    sender.open();
 		        result = sender.sendMessage("testmsg_"+Misc.createUUID(),form_message);
 		    } catch (Throwable t) {
-		        log.error(t);
-		        errors.add(
-		            "",
-		            new ActionError(
-		                "errors.generic",
-		                "error occured sending message:" + XmlUtils.encodeChars(t.getMessage())));
+		    	error("error occured sending message",t);
 		    } finally {
 				sender.close();
 		    }
 	    } catch (Exception e) {
-	        log.error(e);
-	        errors.add(
-	            "",
-	            new ActionError(
-	                "errors.generic",
-	                "error occured on creating object or closing connection:" +  XmlUtils.encodeChars(e.getMessage())));
+			error("error occured on creating object or closing connection",e);
 	    }
 		StoreFormData(form_message, result, sendIfsaMessageForm);
 	

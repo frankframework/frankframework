@@ -1,6 +1,12 @@
 /*
  * $Log: ActionBase.java,v $
- * Revision 1.7  2007-12-10 10:24:53  europe\L190409
+ * Revision 1.7.2.1  2008-05-22 14:36:57  europe\L190409
+ * sync from HEAD
+ *
+ * Revision 1.8  2008/05/22 07:29:29  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * added error and warn methods
+ *
+ * Revision 1.7  2007/12/10 10:24:53  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added getAndSetProperty
  *
  * Revision 1.6  2007/10/16 09:12:28  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
@@ -28,11 +34,13 @@ import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.webcontrol.ConfigurationServlet;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.struts.action.Action;
+import org.apache.struts.action.ActionError;
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
@@ -52,7 +60,7 @@ import org.apache.struts.util.MessageResources;
  * @see     org.apache.struts.action.Action
  */
 public abstract class ActionBase extends Action {
-	public static final String version="$RCSfile: ActionBase.java,v $ $Revision: 1.7 $ $Date: 2007-12-10 10:24:53 $";
+	public static final String version="$RCSfile: ActionBase.java,v $ $Revision: 1.7.2.1 $ $Date: 2008-05-22 14:36:57 $";
 	protected Logger log = LogUtil.getLogger(this);
 
     protected Locale locale;
@@ -217,4 +225,44 @@ public abstract class ActionBase extends Action {
         session.setAttribute("forward", forward);
         return forward;
     }
+    
+	protected void warn(String message) {
+		warn(message,null);
+	}
+
+	protected void warn(Throwable t) {
+		warn(null,t);
+	}
+	protected void warn(String message, Throwable t) {
+		if (t!=null) {
+			if (StringUtils.isEmpty(message)) {
+				message=ClassUtils.nameOf(t)+" "+t.getMessage();
+			} else {
+				message+=": "+ClassUtils.nameOf(t)+" "+t.getMessage();
+			}
+		}
+		log.warn(message);
+		errors.add("", new ActionError("errors.generic", XmlUtils.encodeChars(message)));
+	}
+
+
+	protected void error(String message, Throwable t) {
+		error("","errors.generic",message,t);
+	}
+
+	protected void error(String category, String message, Throwable t) {
+		error("",category,message,t);
+	}
+
+	protected void error(String key, String category, String message, Throwable t) {
+		log.error(message,t);
+		if (t!=null) {
+			if (StringUtils.isEmpty(message)) {
+				message=ClassUtils.nameOf(t)+" "+t.getMessage();
+			} else {
+				message+=": "+ClassUtils.nameOf(t)+" "+t.getMessage();
+			}
+		}
+		errors.add(key, new ActionError(category, XmlUtils.encodeChars(message)));
+	}
 }

@@ -1,6 +1,12 @@
 /*
  * $Log: ShowConfigurationStatus.java,v $
- * Revision 1.13  2008-02-06 16:04:55  europe\L190409
+ * Revision 1.13.2.1  2008-05-22 14:36:57  europe\L190409
+ * sync from HEAD
+ *
+ * Revision 1.14  2008/05/15 15:23:53  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * some support to display configuration exceptions again
+ *
+ * Revision 1.13  2008/02/06 16:04:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * encode message instead of CDATA
  *
  * Revision 1.12  2008/01/29 12:19:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -64,7 +70,7 @@ import org.apache.struts.action.ActionMapping;
  * @version Id
  */
 public final class ShowConfigurationStatus extends ActionBase {
-	public static final String version = "$RCSfile: ShowConfigurationStatus.java,v $ $Revision: 1.13 $ $Date: 2008-02-06 16:04:55 $";
+	public static final String version = "$RCSfile: ShowConfigurationStatus.java,v $ $Revision: 1.13.2.1 $ $Date: 2008-05-22 14:36:57 $";
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 
@@ -76,6 +82,13 @@ public final class ShowConfigurationStatus extends ActionBase {
 		}
 
 		XmlBuilder adapters=new XmlBuilder("registeredAdapters");
+		if (config.getConfigurationException()!=null) {
+			XmlBuilder exceptionsXML=new XmlBuilder("exceptions");
+			XmlBuilder exceptionXML=new XmlBuilder("exception");
+			exceptionXML.setValue(config.getConfigurationException().getMessage());
+			exceptionsXML.addSubElement(exceptionXML);
+			adapters.addSubElement(exceptionsXML);
+		}
 		for(int j=0; j<config.getRegisteredAdapters().size(); j++) {
 			Adapter adapter = (Adapter)config.getRegisteredAdapter(j);
 

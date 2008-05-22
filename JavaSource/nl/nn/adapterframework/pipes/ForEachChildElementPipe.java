@@ -1,6 +1,15 @@
 /*
  * $Log: ForEachChildElementPipe.java,v $
- * Revision 1.16  2008-02-22 14:32:39  europe\L190409
+ * Revision 1.16.2.1  2008-05-22 14:33:42  europe\L190409
+ * sync from HEAD
+ *
+ * Revision 1.18  2008/05/21 09:40:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * added block info to javadoc
+ *
+ * Revision 1.17  2008/05/15 15:32:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * set root cause of SAX exception
+ *
+ * Revision 1.16  2008/02/22 14:32:39  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fix bug for nested elements
  *
  * Revision 1.15  2008/02/21 12:48:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -91,6 +100,9 @@ import org.xml.sax.helpers.DefaultHandler;
  * <tr><td>{@link #setRemoveXmlDeclarationInResults(boolean) removeXmlDeclarationInResults}</td><td>postprocess each partial result, to remove the xml-declaration, as this is not allowed inside an xml-document</td><td>false</td></tr>
  * <tr><td>{@link #setProcessFile(boolean) processFile}</td><td>when set <code>true</code>, the input is assumed to be the name of a file to be processed. Otherwise, the input itself is transformed</td><td>application default</td></tr>
  * <tr><td>{@link #setCharset(String) charset}</td><td>characterset used for reading file or inputstream, only used when {@link #setProcessFile(boolean) processFile} is <code>true</code>, or the input is of type InputStream</td><td>UTF-8</td></tr>
+ * <tr><td>{@link #setBlockSize(int) blockSize}</td><td>controls multiline behaviour. when set to a value greater than 0, it specifies the number of rows send in a block to the sender.</td><td>0 (one line at a time, no prefix of suffix)</td></tr>
+ * <tr><td>{@link #setBlockPrefix(String) blockPrefix}</td><td>When <code>blockSize &gt; 0</code>, this string is inserted at the start of the set of lines.</td><td>&lt;block&gt;</td></tr>
+ * <tr><td>{@link #setBlockSuffix(String) blockSuffix}</td><td>When <code>blockSize &gt; 0</code>, this string is inserted at the end of the set of lines.</td><td>&lt;/block&gt;</td></tr>
  * </table>
  * <table border="1">
  * <tr><th>nested elements</th><th>description</th></tr>
@@ -111,10 +123,10 @@ import org.xml.sax.helpers.DefaultHandler;
  * @author Gerrit van Brakel
  * @since 4.6.1
  * 
- * $Id: ForEachChildElementPipe.java,v 1.16 2008-02-22 14:32:39 europe\L190409 Exp $
+ * $Id: ForEachChildElementPipe.java,v 1.16.2.1 2008-05-22 14:33:42 europe\L190409 Exp $
  */
 public class ForEachChildElementPipe extends IteratingPipe {
-	public static final String version="$RCSfile: ForEachChildElementPipe.java,v $ $Revision: 1.16 $ $Date: 2008-02-22 14:32:39 $";
+	public static final String version="$RCSfile: ForEachChildElementPipe.java,v $ $Revision: 1.16.2.1 $ $Date: 2008-05-22 14:33:42 $";
 
 	private String elementXPathExpression=null;
 	private boolean processFile=false;
@@ -147,7 +159,9 @@ public class ForEachChildElementPipe extends IteratingPipe {
 	}
 
 	public void stop()   {
-		identityTp.close();
+		if (identityTp!=null) {
+			identityTp.close();
+		}
 		super.stop();
 	}
 
@@ -192,8 +206,15 @@ public class ForEachChildElementPipe extends IteratingPipe {
 					stopRequested = !callback.handleItem(elementbuffer.toString());
 					elementbuffer.setLength(startLength);
 				} catch (Exception e) {
-					rootException=e;
-					throw new SAXException(e);
+					rootException =e;
+					Throwable rootCause = e;
+					while (rootCause.getCause()!=null) {
+						rootCause=rootCause.getCause();
+					}
+					SAXException se = new SAXException(e);
+					se.setStackTrace(rootCause.getStackTrace());
+					throw se;
+					
 				}
 				if (stopRequested) {
 					throw new SAXException("stop maar");

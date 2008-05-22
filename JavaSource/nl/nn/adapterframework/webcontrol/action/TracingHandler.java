@@ -1,30 +1,35 @@
 /*
  * $Log: TracingHandler.java,v $
- * Revision 1.1  2006-09-14 15:28:50  europe\L190409
+ * Revision 1.1.16.1  2008-05-22 14:36:57  europe\L190409
+ * sync from HEAD
+ *
+ * Revision 1.2  2008/05/22 07:49:06  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * use inherited error() method
+ *
+ * Revision 1.1  2006/09/14 15:28:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * first version of TracingHandlers
  *
  */
 package nl.nn.adapterframework.webcontrol.action;
 
-import nl.nn.adapterframework.util.TracingUtil;
-
-import org.apache.struts.action.ActionError;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
+import java.io.IOException;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
+
+import nl.nn.adapterframework.util.TracingUtil;
+
+import org.apache.struts.action.ActionForm;
+import org.apache.struts.action.ActionForward;
+import org.apache.struts.action.ActionMapping;
 
 /**
  * Handles various function for tracing: start, stop.
  * @author  Peter Leeuwenburgh
  */
-
 public final class TracingHandler extends ActionBase {
-	public static final String version="$RCSfile: TracingHandler.java,v $ $Revision: 1.1 $ $Date: 2006-09-14 15:28:50 $";
+	public static final String version="$RCSfile: TracingHandler.java,v $ $Revision: 1.1.16.1 $ $Date: 2008-05-22 14:36:57 $";
 
 	public ActionForward execute(
 		ActionMapping mapping,
@@ -49,14 +54,14 @@ public final class TracingHandler extends ActionBase {
 			try {
 				TracingUtil.stopTracing();
 			} catch (Throwable t) {
-				errors.add("", new ActionError("errors.generic", t));
+				warn("could not stop tracing",t);
 			}
 		} else {
 			if (action.equals("starttracing")) {
 				try {
 					TracingUtil.startTracing();
 				} catch (Throwable t) {
-					errors.add("", new ActionError("errors.generic", t));
+					warn("could not start tracing",t);
 				}
 			}
 		}

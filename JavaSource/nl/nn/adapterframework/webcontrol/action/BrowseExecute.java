@@ -1,6 +1,12 @@
 /*
  * $Log: BrowseExecute.java,v $
- * Revision 1.8  2008-02-08 09:49:58  europe\L190409
+ * Revision 1.8.2.1  2008-05-22 14:36:57  europe\L190409
+ * sync from HEAD
+ *
+ * Revision 1.9  2008/05/22 07:32:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * use inherited error() method
+ *
+ * Revision 1.8  2008/02/08 09:49:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * log errors for retry attempts
  *
  * Revision 1.7  2008/01/11 14:56:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -40,7 +46,6 @@ import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.util.ClassUtils;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.struts.action.ActionError;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
@@ -54,7 +59,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  * @since   4.3
  */
 public class BrowseExecute extends Browse {
-	public static final String version="$RCSfile: BrowseExecute.java,v $ $Revision: 1.8 $ $Date: 2008-02-08 09:49:58 $";
+	public static final String version="$RCSfile: BrowseExecute.java,v $ $Revision: 1.8.2.1 $ $Date: 2008-05-22 14:36:57 $";
     
     protected static final TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
     
@@ -140,12 +145,5 @@ public class BrowseExecute extends Browse {
 //		}
 //	}
 
-	private void error(String key, String category, String message, Throwable t) {
-		log.warn(message,t);
-		if (t!=null) {
-			message+=": "+ClassUtils.nameOf(t)+" "+t.getMessage();
-		}
-		errors.add(key, new ActionError(category, message));
-	}
 
 }
