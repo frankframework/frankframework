@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaFacade.java,v $
- * Revision 1.3.2.1  2008-04-03 08:11:33  europe\L190409
+ * Revision 1.3.2.2  2008-05-22 14:31:23  europe\L190409
+ * added serviceId to logprefix of requester
+ *
+ * Revision 1.3.2.1  2008/04/03 08:11:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * synch from HEAD
  *
  * Revision 1.4  2008/03/27 12:00:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -207,7 +210,7 @@ import com.ing.ifsa.IFSAServerQueueSender;
  * @since 4.2
  */
 public class IfsaFacade implements INamedObject, HasPhysicalDestination {
-	public static final String version = "$RCSfile: IfsaFacade.java,v $ $Revision: 1.3.2.1 $ $Date: 2008-04-03 08:11:33 $";
+	public static final String version = "$RCSfile: IfsaFacade.java,v $ $Revision: 1.3.2.2 $ $Date: 2008-05-22 14:31:23 $";
     protected Logger log = LogUtil.getLogger(this);
     
     private static int BASIC_ACK_MODE = Session.AUTO_ACKNOWLEDGE;
@@ -249,7 +252,7 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 		try {
 			if (isRequestor()) {
 				objectType = "IfsaRequester";
-				serviceInfo = "of Application ["+getApplicationId()+"] "; 
+				serviceInfo = "of Application ["+getApplicationId()+"] "+(polishedServiceId!=null?"to Service ["+polishedServiceId+"]":""); 
 			} else {
 				objectType = "IfsaProvider";				
 				serviceInfo = "for Application ["+getApplicationId()+"] "; 
