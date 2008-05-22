@@ -1,6 +1,9 @@
 /*
  * $Log: Adapter.java,v $
- * Revision 1.37.2.1  2008-04-03 08:10:58  europe\L190409
+ * Revision 1.37.2.2  2008-05-22 14:30:27  europe\L190409
+ * restored setting of correlationId in NDC
+ *
+ * Revision 1.37.2.1  2008/04/03 08:10:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * synch from HEAD
  *
  * Revision 1.39  2008/03/28 14:20:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -190,7 +193,7 @@ import org.springframework.core.task.TaskExecutor;
  */
 
 public class Adapter implements IAdapter, NamedBean {
-	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.37.2.1 $ $Date: 2008-04-03 08:10:58 $";
+	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.37.2.2 $ $Date: 2008-05-22 14:30:27 $";
 	private Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -624,7 +627,7 @@ public class Adapter implements IAdapter, NamedBean {
 		incNumOfMessagesInProcess(startTime);
 		String lastNDC=NDC.peek();
 		String newNDC="cid [" + messageId + "]";
-		boolean ndcChanged=newNDC.equals(lastNDC);
+		boolean ndcChanged=!newNDC.equals(lastNDC);
 		if (ndcChanged) {
 			NDC.push(newNDC);
 		}
