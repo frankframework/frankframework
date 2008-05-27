@@ -1,6 +1,9 @@
 /*
  * $Log: LdapSender.java,v $
- * Revision 1.29  2008-05-27 08:35:06  europe\L190409
+ * Revision 1.30  2008-05-27 11:21:14  europe\L190409
+ * check maxEntries in while converting to XML too
+ *
+ * Revision 1.29  2008/05/27 08:35:06  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added attribute maxEntriesReturned
  *
  * Revision 1.28  2007/10/08 13:31:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -278,7 +281,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class LdapSender extends JNDIBase implements ISenderWithParameters {
-	public static final String version = "$RCSfile: LdapSender.java,v $  $Revision: 1.29 $ $Date: 2008-05-27 08:35:06 $";
+	public static final String version = "$RCSfile: LdapSender.java,v $  $Revision: 1.30 $ $Date: 2008-05-27 11:21:14 $";
 
 	private String FILTER = "filterExpression";
 	private String ENTRYNAME = "entryName";
@@ -1085,7 +1088,8 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 		throws NamingException {
 		
 		XmlBuilder entriesElem = new XmlBuilder("entries");
-		while (entries.hasMore()) {
+		int row=0;
+		while ((getMaxEntriesReturned()==0 || row<getMaxEntriesReturned()) && entries.hasMore()) {
 			SearchResult searchResult = (SearchResult) entries.next();
 			XmlBuilder entryElem = new XmlBuilder("entry");
 			 
@@ -1093,6 +1097,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 			entryElem.addSubElement(attributesToXml(searchResult.getAttributes()));
 			
 			entriesElem.addSubElement(entryElem);
+			row++;
 		}
 		return entriesElem;
 	}
