@@ -1,6 +1,9 @@
 /*
  * $Log: ForEachChildElementPipe.java,v $
- * Revision 1.18  2008-05-21 09:40:34  europe\L190409
+ * Revision 1.19  2008-05-27 16:56:34  europe\L190409
+ * handle blocks correctly
+ *
+ * Revision 1.18  2008/05/21 09:40:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added block info to javadoc
  *
  * Revision 1.17  2008/05/15 15:32:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -120,10 +123,10 @@ import org.xml.sax.helpers.DefaultHandler;
  * @author Gerrit van Brakel
  * @since 4.6.1
  * 
- * $Id: ForEachChildElementPipe.java,v 1.18 2008-05-21 09:40:34 europe\L190409 Exp $
+ * $Id: ForEachChildElementPipe.java,v 1.19 2008-05-27 16:56:34 europe\L190409 Exp $
  */
 public class ForEachChildElementPipe extends IteratingPipe {
-	public static final String version="$RCSfile: ForEachChildElementPipe.java,v $ $Revision: 1.18 $ $Date: 2008-05-21 09:40:34 $";
+	public static final String version="$RCSfile: ForEachChildElementPipe.java,v $ $Revision: 1.19 $ $Date: 2008-05-27 16:56:34 $";
 
 	private String elementXPathExpression=null;
 	private boolean processFile=false;
@@ -142,7 +145,7 @@ public class ForEachChildElementPipe extends IteratingPipe {
 				extractElementsTp=new TransformerPool(makeEncapsulatingXslt("root",getElementXPathExpression()));
 			}
 		} catch (TransformerConfigurationException e) {
-			throw new ConfigurationException(e);
+			throw new ConfigurationException(getLogPrefix(null)+"elementXPathExpression ["+getElementXPathExpression()+"]",e);
 		}
 	}
 
@@ -156,7 +159,9 @@ public class ForEachChildElementPipe extends IteratingPipe {
 	}
 
 	public void stop()   {
-		identityTp.close();
+		if (identityTp!=null) {
+			identityTp.close();
+		}
 		super.stop();
 	}
 
@@ -166,6 +171,7 @@ public class ForEachChildElementPipe extends IteratingPipe {
 		
 		StringBuffer elementbuffer=new StringBuffer();
 		int elementLevel=0;
+		int itemCounter=0;
 		Exception rootException=null;
 		int startLength;		
 		boolean contentSeen;
@@ -174,6 +180,9 @@ public class ForEachChildElementPipe extends IteratingPipe {
 		public ItemCallbackCallingHandler(ItemCallback callback) {
 			this.callback=callback;
 			elementbuffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+			if (getBlockSize()>0) {
+				elementbuffer.append(getBlockPrefix());
+			}
 			startLength=elementbuffer.length();
 		}
 		
@@ -183,7 +192,7 @@ public class ForEachChildElementPipe extends IteratingPipe {
 					contentSeen=true;
 					elementbuffer.append(">");
 				}
-				elementbuffer.append(ch, start, length);
+				elementbuffer.append(XmlUtils.encodeChars(ch, start, length));
 			}
 		}
 
@@ -196,10 +205,16 @@ public class ForEachChildElementPipe extends IteratingPipe {
 					elementbuffer.append("</"+localName+">");
 				}
 			}
-			if (--elementLevel==1) {
+			if (--elementLevel<=1 && ++itemCounter>=getBlockSize()) {
 				try {
-					stopRequested = !callback.handleItem(elementbuffer.toString());
-					elementbuffer.setLength(startLength);
+					if (elementLevel==1 || itemCounter>1) {
+						if (getBlockSize()>0) {
+							elementbuffer.append(getBlockSuffix());
+						}
+						stopRequested = !callback.handleItem(elementbuffer.toString());
+						elementbuffer.setLength(startLength);
+					}
+					itemCounter=0;
 				} catch (Exception e) {
 					rootException =e;
 					Throwable rootCause = e;
@@ -273,7 +288,7 @@ public class ForEachChildElementPipe extends IteratingPipe {
 				getExtractElementsTp().transform(src, transformedStream, null);
 			} catch (Exception e) {
 				if (!handler.isStopRequested()) {
-					throw new SenderException("Could not extract list of elements using xpath ["+getElementXPathExpression()+"]");
+					throw new SenderException("Could not extract list of elements using xpath ["+getElementXPathExpression()+"],e");
 				}
 			}
 		} else {
