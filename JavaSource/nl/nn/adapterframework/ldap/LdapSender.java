@@ -1,6 +1,9 @@
 /*
  * $Log: LdapSender.java,v $
- * Revision 1.28  2007-10-08 13:31:21  europe\L190409
+ * Revision 1.29  2008-05-27 08:35:06  europe\L190409
+ * added attribute maxEntriesReturned
+ *
+ * Revision 1.28  2007/10/08 13:31:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed ArrayList to List where possible
  *
  * Revision 1.27  2007/09/10 11:18:41  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -113,6 +116,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setUsePooling(boolean) usePooling}</td><td>specifies whether connection pooling is used or not</td><td>true</td></tr>
  * <tr><td>{@link #setInitialContextFactoryName(String) initialContextFactoryName}</td><td>class to use as initial context factory</td><td>com.sun.jndi.ldap.LdapCtxFactory</td></tr>
  * <tr><td>{@link #setAttributesToReturn(String) attributesToReturn}</td>  <td>comma separated list of attributes to return. when no are attributes specified, all the attributes from the object read are returned.</td><td><i>all attributes</i></td></tr>
+ * <tr><td>{@link #setMaxEntriesReturned(int) maxEntriesReturned}</td>  <td>The maximum number of entries to be returned by a search query, or 0 for unlimited</td><td><i>0 (unlimited)</i></td></tr>
  * <tr><td>{@link #setJndiAuthAlias(String) jndiAuthAlias}</td><td>Authentication alias, may be used to override principal and credential-settings</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
@@ -274,7 +278,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class LdapSender extends JNDIBase implements ISenderWithParameters {
-	public static final String version = "$RCSfile: LdapSender.java,v $  $Revision: 1.28 $ $Date: 2007-10-08 13:31:21 $";
+	public static final String version = "$RCSfile: LdapSender.java,v $  $Revision: 1.29 $ $Date: 2008-05-27 08:35:06 $";
 
 	private String FILTER = "filterExpression";
 	private String ENTRYNAME = "entryName";
@@ -315,6 +319,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 	private String attributesToReturn;
 	private boolean usePooling=true;
 	private String errorSessionKey=null;
+	private int maxEntriesReturned=0;
 
 	protected ParameterList paramList = null;
 	private Hashtable jndiEnv=null;
@@ -711,7 +716,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 
 	private String performOperationSearch(DirContext dirContext, String entryName, PipeLineSession pls, String filterExpression, int scope) throws SenderException {
 		int timeout=getSearchTimeout();
-		SearchControls controls = new SearchControls(scope, 0, timeout, 
+		SearchControls controls = new SearchControls(scope, getMaxEntriesReturned(), timeout, 
 													 getAttributesReturnedParameter(), false, false);
 //		attrs = parseAttributesFromMessage(message);
 		try {
@@ -1154,6 +1159,13 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 	}
 	public String getErrorSessionKey() {
 		return errorSessionKey;
+	}
+
+	public void setMaxEntriesReturned(int i) {
+		maxEntriesReturned = i;
+	}
+	public int getMaxEntriesReturned() {
+		return maxEntriesReturned;
 	}
 
 }
