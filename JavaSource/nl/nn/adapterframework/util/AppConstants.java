@@ -1,6 +1,9 @@
 /*
  * $Log: AppConstants.java,v $
- * Revision 1.13  2007-10-10 07:27:50  europe\L190409
+ * Revision 1.14  2008-05-29 13:41:29  europe\L190409
+ * reordered methods in file
+ *
+ * Revision 1.13  2007/10/10 07:27:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * introduction of VariableExpander
  *
  * Revision 1.12  2007/02/12 14:09:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -112,7 +115,7 @@ import org.apache.log4j.Logger;
  * 
  */
 public final class AppConstants extends Properties implements Serializable{
-	public static final String version = "$RCSfile: AppConstants.java,v $ $Revision: 1.13 $ $Date: 2007-10-10 07:27:50 $";
+	public static final String version = "$RCSfile: AppConstants.java,v $ $Revision: 1.14 $ $Date: 2008-05-29 13:41:29 $";
 	private Logger log = LogUtil.getLogger(this);
 	
 	public final static String propertiesFileName="AppConstants.properties";
@@ -124,73 +127,20 @@ public final class AppConstants extends Properties implements Serializable{
 	private AppConstants() {
 		super();
 		load();
-	
 	}
-	 /**
-     * Gets a <code>boolean</code> value
-     * Returns "true" if the retrieved value is "true", otherwise "false"
-     * Uses the {@link #getResolvedProperty(String)} method.
-     * @param key    the Key
-     * @param dfault the default value
-     * @return double
-     */
-     public boolean getBoolean(String key, boolean dfault) {
-         String ob = this.getResolvedProperty(key);
-         if (ob == null)return dfault;
-         
-         return ob.equalsIgnoreCase("true");
-     }
-    /**
-     * Gets a <code>double</code> value
-     * Uses the {@link #getResolvedProperty(String)} method.
-     * @param key    the Key
-     * @param dfault the default value
-     * @return double
-     */
-     public double getDouble(String key, double dfault) {
-         String ob = this.getResolvedProperty(key);
-         if (ob == null)return dfault;
-         return Double.parseDouble(ob);
-     }
-    /**
-     * Retrieve an instance of this singleton
-     * @return AppConstants instance
-     */
 
+	/**
+	 * Retrieve an instance of this singleton
+	 * @return AppConstants instance
+	 */
 	public static synchronized AppConstants getInstance() {
 		if (self==null) {
 			self=new AppConstants();
-
 		}
 		return self;
 	}
-    /**
-     * Gets an <code>int</code> value
-     * Uses the {@link #getResolvedProperty(String)} method.
-     * @param key    the Key
-     * @param dfault the default value
-     * @return int
-     */
-
-    public int getInt(String key, int dfault) {
-         String ob = this.getResolvedProperty(key);
-
-         if (ob == null) return dfault;
-         return Integer.parseInt(ob);
-     }
-    /**
-     * Gets a <code>long</code> value
-     * Uses the {@link #getResolvedProperty(String)} method.
-     * @param key    the Key
-     * @param dfault the default value
-     * @return long
-     */
-     public long getLong(String key, long dfault) {
-         String ob = this.getResolvedProperty(key);
-
-         if (ob == null)return dfault;
-         return Long.parseLong(ob);
-     }
+	
+     
 	/**
 	 * the method is like the <code>getProperty</code>, but provides functionality to resolve <code>${variable}</code>
 	 * syntaxis. It uses the AppConstants values and systemvalues to resolve the variables, and does this recursively.
@@ -217,21 +167,6 @@ public final class AppConstants extends Properties implements Serializable{
             return value;
         }
 	}
-    /**
-     * Gets a <code>String</code> value
-     * Uses the {@link #getResolvedProperty(String)} method.
-     * @param key    the Key
-     * @param dfault the default value
-     * @return String
-     */
-
-    public String getString(String key, String dfault){
-        String ob = this.getResolvedProperty(key);
-
-        if (ob == null)return dfault;
-        return ob;
-
-    }
 	/**
 	 * Creates a tokenizer from the values of this key.  As a sepearator the "," is used.
 	 * Uses the {@link #getResolvedProperty(String)} method.
@@ -311,8 +246,6 @@ public final class AppConstants extends Properties implements Serializable{
 	public synchronized void load(String filename) {
 	
 	    StringTokenizer tokenizer = new StringTokenizer(filename, ",");
-	    
-	     
 	     
 	    while (tokenizer.hasMoreTokens()) {
 	        String theFilename=((String) (tokenizer.nextToken())).trim();
@@ -365,14 +298,86 @@ public final class AppConstants extends Properties implements Serializable{
 		}
 		return xmlh.toXML();
 	}
+ 
+	/**
+	 * Gets a <code>String</code> value
+	 * Uses the {@link #getResolvedProperty(String)} method.
+	 * @param key    the Key
+	 * @param dfault the default value
+	 * @return String
+	 */
+	public String getString(String key, String dfault){
+		String ob = this.getResolvedProperty(key);
+
+		if (ob == null)return dfault;
+		return ob;
+
+	}
+	 /**
+	 * Gets a <code>boolean</code> value
+	 * Returns "true" if the retrieved value is "true", otherwise "false"
+	 * Uses the {@link #getResolvedProperty(String)} method.
+	 * @param key    the Key
+	 * @param dfault the default value
+	 * @return double
+	 */
+	 public boolean getBoolean(String key, boolean dfault) {
+		 String ob = this.getResolvedProperty(key);
+		 if (ob == null)return dfault;
+         
+		 return ob.equalsIgnoreCase("true");
+	 }
+
+	/**
+	 * Gets an <code>int</code> value
+	 * Uses the {@link #getResolvedProperty(String)} method.
+	 * @param key    the Key
+	 * @param dfault the default value
+	 * @return int
+	 */
+	public int getInt(String key, int dfault) {
+		 String ob = this.getResolvedProperty(key);
+
+		 if (ob == null) return dfault;
+		 return Integer.parseInt(ob);
+	 }
+
+	/**
+	 * Gets a <code>long</code> value
+	 * Uses the {@link #getResolvedProperty(String)} method.
+	 * @param key    the Key
+	 * @param dfault the default value
+	 * @return long
+	 */
+	 public long getLong(String key, long dfault) {
+		 String ob = this.getResolvedProperty(key);
+
+		 if (ob == null)return dfault;
+		 return Long.parseLong(ob);
+	 }
+     
+	/**
+	 * Gets a <code>double</code> value
+	 * Uses the {@link #getResolvedProperty(String)} method.
+	 * @param key    the Key
+	 * @param dfault the default value
+	 * @return double
+	 */
+	 public double getDouble(String key, double dfault) {
+		 String ob = this.getResolvedProperty(key);
+		 if (ob == null)return dfault;
+		 return Double.parseDouble(ob);
+	 }
+
   
-
-    public VariableExpander getVariableExpander() {
-        return variableExpander;
-    }
-
+	/*
+	 *	The variableExpander is set from the SpringContext. 
+	 */
     public void setVariableExpander(VariableExpander expander) {
         variableExpander = expander;
     }
+	public VariableExpander getVariableExpander() {
+		return variableExpander;
+	}
 
 }
