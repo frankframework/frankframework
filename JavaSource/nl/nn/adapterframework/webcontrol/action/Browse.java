@@ -1,6 +1,9 @@
 /*
  * $Log: Browse.java,v $
- * Revision 1.4.4.2  2007-11-15 10:00:18  europe\L190409
+ * Revision 1.4.4.3  2008-06-02 15:34:48  europe\L190409
+ * added type-attribute
+ *
+ * Revision 1.4.4.2  2007/11/15 10:00:18  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * indication of no message found for show message
  *
  * Revision 1.4.4.1  2007/10/10 11:42:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -21,8 +24,12 @@
  */
 package nl.nn.adapterframework.webcontrol.action;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.io.IOException;
 import java.io.StringReader;
+
+import java.net.URL;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -32,10 +39,12 @@ import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
+import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.webcontrol.FileViewerServlet;
@@ -53,7 +62,7 @@ import org.apache.struts.action.ActionMapping;
  * @since   4.4
  */
 public class Browse extends ActionBase {
-	public static final String version="$RCSfile: Browse.java,v $ $Revision: 1.4.4.2 $ $Date: 2007-11-15 10:00:18 $";
+	public static final String version="$RCSfile: Browse.java,v $ $Revision: 1.4.4.3 $ $Date: 2008-06-02 15:34:48 $";
 
 	public int maxMessages = AppConstants.getInstance().getInt("browse.messages.max",0); 
 
@@ -136,6 +145,10 @@ public class Browse extends ActionBase {
 						message.addAttribute("pos",Integer.toString(messageCount+1));
 						message.addAttribute("originalId",mb.getOriginalId(iterItem));
 						message.addAttribute("correlationId",mb.getCorrelationId(iterItem));
+						if (mb instanceof ITransactionalStorage) {
+							ITransactionalStorage ts = (ITransactionalStorage)mb;
+							message.addAttribute("type",ts.getType());
+						}
 						message.addAttribute("insertDate",DateUtils.format(mb.getInsertDate(iterItem), DateUtils.FORMAT_DATETIME_MILLISECONDS));
 						message.addAttribute("comment",XmlUtils.encodeChars(mb.getCommentString(iterItem)));
 						messages.addSubElement(message);
