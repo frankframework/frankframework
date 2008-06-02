@@ -1,7 +1,7 @@
 /*
  * $Log: BrowseExecute.java,v $
- * Revision 1.4  2007-10-10 07:31:29  europe\L190409
- * transactions via JtaUtil instead of Adapter
+ * Revision 1.3.8.1  2008-06-02 15:10:52  europe\L190409
+ * ErrorStoreClient: fixed bug in presentation of errors, error messages are now XML-escaped.
  *
  * Revision 1.3  2005/09/29 14:57:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * split transactional storage browser in browse-only and processing-options
@@ -20,8 +20,8 @@ import javax.transaction.UserTransaction;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.receivers.ReceiverBase;
-import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.RunStateEnum;
+import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.struts.action.ActionError;
@@ -34,14 +34,13 @@ import org.apache.struts.action.ActionError;
  * @since   4.3
  */
 public class BrowseExecute extends Browse {
-	public static final String version="$RCSfile: BrowseExecute.java,v $ $Revision: 1.4 $ $Date: 2007-10-10 07:31:29 $";
+	public static final String version="$RCSfile: BrowseExecute.java,v $ $Revision: 1.3.8.1 $ $Date: 2008-06-02 15:10:52 $";
 
 	protected void performAction(Adapter adapter, ReceiverBase receiver, String action, IMessageBrowser mb, String messageId) {
 		if ("deletemessage".equalsIgnoreCase(action)) {
 			if (StringUtils.isNotEmpty(messageId)) {
 				try {
-					// TODO: Redo tx management (where exactly do we get the txManager from?)
-					UserTransaction utx = JtaUtil.getUserTransaction();
+					UserTransaction utx = adapter.getUserTransaction();
 					utx.begin();
 					mb.deleteMessage(messageId);
 					utx.commit();
@@ -50,7 +49,7 @@ public class BrowseExecute extends Browse {
 					errors.add("",
 						new ActionError(
 							"errors.generic",
-							"error occured deleting message:" + e.getMessage()));
+							"error occured deleting message:" +XmlUtils.encodeChars(e.getMessage())));
 				}
 			}
 		} 
@@ -58,8 +57,7 @@ public class BrowseExecute extends Browse {
 		if ("resendmessage".equalsIgnoreCase(action)) {
 			if (StringUtils.isNotEmpty(messageId)) {
 				try {
-					// TODO: Redo tx management (where exactly do we get the txManager from?)
-					UserTransaction utx = JtaUtil.getUserTransaction();
+					UserTransaction utx = adapter.getUserTransaction();
 					utx.begin();
 					Object msg = mb.getMessage(messageId);
 					if (msg==null) {
@@ -84,7 +82,7 @@ public class BrowseExecute extends Browse {
 					errors.add("",
 						new ActionError(
 							"errors.generic",
-							"error occured sending message:" + e.getMessage()));
+							"error occured sending message:" + XmlUtils.encodeChars(e.getMessage())));
 				}
 			}
 		} 
