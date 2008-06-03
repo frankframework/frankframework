@@ -1,6 +1,9 @@
 /*
  * $Log: ShowConfiguration.java,v $
- * Revision 1.10  2007-08-30 15:12:12  europe\L190409
+ * Revision 1.11  2008-06-03 16:00:23  europe\L190409
+ * encode errorMessages
+ *
+ * Revision 1.10  2007/08/30 15:12:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * modified getRootLogger()
  *
  * Revision 1.9  2007/02/16 14:22:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -66,7 +69,7 @@ import org.apache.struts.action.DynaActionForm;
  */
 
 public final class ShowConfiguration extends ActionBase {
-	public static final String version = "$RCSfile: ShowConfiguration.java,v $ $Revision: 1.10 $ $Date: 2007-08-30 15:12:12 $";
+	public static final String version = "$RCSfile: ShowConfiguration.java,v $ $Revision: 1.11 $ $Date: 2008-06-03 16:00:23 $";
 	
 	private static final String KEYWORD_INCLUDE="<include";
 	private static final String KEYWORD_CONFIG="configuration=\"";
@@ -140,10 +143,10 @@ public final class ShowConfiguration extends ActionBase {
 	        
 	    } catch (MalformedURLException e) {
 	        result =
-	            "<b>error occured retrieving configurationfile:" + e.getMessage() + "</b>";
+	            "<b>error occured retrieving configurationfile:" + XmlUtils.encodeChars(e.getMessage()) + "</b>";
 	    } catch (IOException e) {
 	        result =
-	            "<b>error occured retrieving configurationfile:" + e.getMessage() + "</b>";
+	            "<b>error occured retrieving configurationfile:" + XmlUtils.encodeChars(e.getMessage()) + "</b>";
 	    }
 			
 	    request.setAttribute("configXML", result);
