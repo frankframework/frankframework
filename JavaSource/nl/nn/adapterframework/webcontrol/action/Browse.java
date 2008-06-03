@@ -1,6 +1,9 @@
 /*
  * $Log: Browse.java,v $
- * Revision 1.8  2008-01-11 14:55:36  europe\L190409
+ * Revision 1.9  2008-06-03 15:59:41  europe\L190409
+ * improved parsing of start date
+ *
+ * Revision 1.8  2008/01/11 14:55:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * filter on host and type, too
  *
  * Revision 1.7  2007/12/10 10:25:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -45,6 +48,7 @@ import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.CalendarParserException;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -64,7 +68,7 @@ import org.apache.struts.action.DynaActionForm;
  * @since   4.4
  */
 public class Browse extends ActionBase {
-	public static final String version="$RCSfile: Browse.java,v $ $Revision: 1.8 $ $Date: 2008-01-11 14:55:36 $";
+	public static final String version="$RCSfile: Browse.java,v $ $Revision: 1.9 $ $Date: 2008-06-03 15:59:41 $";
 
 	public int maxMessages = AppConstants.getInstance().getInt("browse.messages.max",0); 
 
@@ -108,11 +112,17 @@ public class Browse extends ActionBase {
 		
 		Date startDate=null;
 		if (StringUtils.isNotEmpty(startDateStr)) {
-			startDate=DateUtils.parseToDate(startDateStr,DateUtils.FORMAT_FULL_GENERIC);
-			if (startDate!=null) {
-				log.debug("parsed start date to ["+DateUtils.format(startDate, DateUtils.FORMAT_FULL_GENERIC));
-			} else {
-				log.warn("could not parse date from ["+startDateStr+"]");
+			try {
+				startDate=DateUtils.parseAnyDate(startDateStr);
+				if (startDate!=null) {
+					String formattedStartDate=DateUtils.formatOptimal(startDate);
+					log.debug("parsed start date to ["+formattedStartDate+"]");
+					browseForm.set("insertedAfter",formattedStartDate);
+				} else {
+					warn("could not parse date from ["+startDateStr+"]");
+				}
+			} catch (CalendarParserException e) {
+				warn("could not parse date from ["+startDateStr+"]", e);
 			}
 		}
 		
