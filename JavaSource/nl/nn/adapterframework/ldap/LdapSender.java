@@ -1,6 +1,9 @@
 /*
  * $Log: LdapSender.java,v $
- * Revision 1.30  2008-05-27 11:21:14  europe\L190409
+ * Revision 1.31  2008-06-03 15:46:24  europe\L190409
+ * set some INFO logging to DEBUG
+ *
+ * Revision 1.30  2008/05/27 11:21:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * check maxEntries in while converting to XML too
  *
  * Revision 1.29  2008/05/27 08:35:06  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -281,7 +284,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class LdapSender extends JNDIBase implements ISenderWithParameters {
-	public static final String version = "$RCSfile: LdapSender.java,v $  $Revision: 1.30 $ $Date: 2008-05-27 11:21:14 $";
+	public static final String version = "$RCSfile: LdapSender.java,v $  $Revision: 1.31 $ $Date: 2008-06-03 15:46:24 $";
 
 	private String FILTER = "filterExpression";
 	private String ENTRYNAME = "entryName";
@@ -452,7 +455,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 			if (log.isDebugEnabled()) { log.debug("sessionKey ["+getErrorSessionKey()+"] loaded with error message ["+reasonXml+"]"); }
 			pls.put(getErrorSessionKey(),reasonXml);
 		}
-		log.info("exit storeLdapException");
+		log.debug("exit storeLdapException");
 	}
 
 	/**
@@ -514,7 +517,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 //		prc.forAllParameters(paramList, helper);
 //		Name name = helper.result;
 //
-//		log.debug("constructed LDAP Names from parameters [" + name + "]");
+//		if (log.isDebugEnabled()) { log.debug("constructed LDAP Names from parameters [" + name + "]"); }
 //		return name;
 //	}
 
@@ -542,7 +545,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 		} catch(NamingException e) {
 			storeLdapException(e,pls);
 			if(	e.getMessage().startsWith("[LDAP: error code 32 - No Such Object") ) {
-				log.info("Operation [" + getOperation()+ "] found nothing - no such entryName: " + entryName);
+				if (log.isDebugEnabled()) log.debug("Operation [" + getOperation()+ "] found nothing - no such entryName: " + entryName);
 				return DEFAULT_RESULT_READ;	
 			} else {
 				throw new SenderException("Exception in operation [" + getOperation()+ "] entryName=["+entryName+"]", e);	
@@ -623,7 +626,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 					}catch(NamingException e){
 						if(	e.getMessage().startsWith("[LDAP: error code 20 - Attribute Or Value Exists]") )
 						{
-							log.info("Operation [" + getOperation()+ "] successful: " + e.getMessage());	
+							if (log.isDebugEnabled()) log.debug("Operation [" + getOperation()+ "] successful: " + e.getMessage());	
 							result = DEFAULT_RESULT_CREATE_OK;
 						}
 						else{		
@@ -643,8 +646,8 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 				return DEFAULT_RESULT;
 			} catch (NamingException e) {
 				storeLdapException(e,pls);
-				// log.debug("Exception in operation [" + getOperation()+ "] entryName ["+entryName+"]", e);
-				log.debug("Exception in operation [" + getOperation()+ "] entryName ["+entryName+"]: "+ e.getMessage());
+				// if (log.isDebugEnabled()) log.debug("Exception in operation [" + getOperation()+ "] entryName ["+entryName+"]", e);
+				if (log.isDebugEnabled()) log.debug("Exception in operation [" + getOperation()+ "] entryName ["+entryName+"]: "+ e.getMessage());
 				if(e.getMessage().startsWith("[LDAP: error code 68 - Entry Already Exists]")) {
 					return DEFAULT_RESULT_CREATE_OK;
 				} else {
@@ -677,7 +680,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 					if(	e.getMessage().startsWith("[LDAP: error code 16 - No Such Attribute") ||
 						e.getMessage().startsWith("[LDAP: error code 32 - No Such Object")) 
 					{
-						log.info("Operation [" + getOperation()+ "] successful: " + e.getMessage());
+						if (log.isDebugEnabled()) log.debug("Operation [" + getOperation()+ "] successful: " + e.getMessage());
 						result = DEFAULT_RESULT_DELETE;
 					} else {
 						storeLdapException(e,pls);
@@ -699,7 +702,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 		} catch (NamingException e) {
 			storeLdapException(e,pls);
 			if(	e.getMessage().startsWith("[LDAP: error code 32 - No Such Object")) {
-				log.info("Operation [" + getOperation()+ "] successful: " + e.getMessage());
+				if (log.isDebugEnabled()) log.debug("Operation [" + getOperation()+ "] successful: " + e.getMessage());
 				return DEFAULT_RESULT_DELETE;
 			} else {
 				throw new SenderException("Exception in operation [" + getOperation()+ "] entryName ["+entryName+"]", e);
@@ -756,7 +759,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 		
 		if (paramList!=null && prc!=null){
 			entryName = (String)prc.getValueMap(paramList).get("entryName");
-			log.debug("entryName=["+entryName+"]");
+			if (log.isDebugEnabled()) log.debug("entryName=["+entryName+"]");
 		} else {
 //			try {
 //				entryName = entryNameExtractor.transform(message,null);
@@ -883,7 +886,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 			//  to it
 			Vector n = new Vector();
 			NamingEnumeration list = parentContext.list(relativeContext);
-			log.debug("getSubCOntextList(context) : context = " + relativeContext);
+			if (log.isDebugEnabled()) log.debug("getSubCOntextList(context) : context = " + relativeContext);
 			for (int x = 0; list.hasMore(); x++) {
 				NameClassPair nc = (NameClassPair)list.next();
 				n.addElement (nc);
@@ -952,7 +955,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 	//		prc.forAllParameters(paramList, helper);
 	//		Attributes result = helper.result; 
 	//		
-	//		log.info("LDAP STEP:	applyParameters(String message, ParameterResolutionContext prc)");
+	//		log.debug("LDAP STEP:	applyParameters(String message, ParameterResolutionContext prc)");
 	//		log.debug("collected LDAP Attributes from parameters ["+result.toString()+"]");
 	//		return result;
 	//	}
@@ -967,7 +970,7 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 	//			else
 	//				result.get(paramName).add(value);
 	//		
-	//			log.info("LDAP STEP:	(Parameter2 ATTRIBUTE Helper)handleParam(String paramName, Object value) - result = [" + result.toString() +"]");
+	//			log.debug("LDAP STEP:	(Parameter2 ATTRIBUTE Helper)handleParam(String paramName, Object value) - result = [" + result.toString() +"]");
 	//		}
 	//	}
 
@@ -1029,13 +1032,13 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 
 	/*	protected String searchResultsToXml(NamingEnumeration searchresults) {
 			// log.debug("SearchResultsToXml for class ["+searchresults.getClass().getName()+"]:"+ToStringBuilder.reflectionToString(searchresults));
-			log.info("LDAP STEP:	SearchResultsToXml(NamingEnumeration searchresults)");
+			log.debug("LDAP STEP:	SearchResultsToXml(NamingEnumeration searchresults)");
 			XmlBuilder searchresultsElem = new XmlBuilder("searchresults");
 			if (searchresults!=null) {
 				try {
 					while (searchresults.hasMore()) {
 						SearchResult sr = (SearchResult)searchresults.next();
-						// log.info("result:"+ sr.toString());
+						// log.debug("result:"+ sr.toString());
 	
 						XmlBuilder itemElem = new XmlBuilder("item");
 						itemElem.addAttribute("name",sr.getName());
