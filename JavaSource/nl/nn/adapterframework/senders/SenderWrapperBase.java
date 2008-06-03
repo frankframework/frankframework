@@ -1,6 +1,9 @@
 /*
  * $Log: SenderWrapperBase.java,v $
- * Revision 1.2  2008-05-21 10:42:19  europe\L190409
+ * Revision 1.3  2008-06-03 15:51:58  europe\L190409
+ * removed superfluous code
+ *
+ * Revision 1.2  2008/05/21 10:42:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * same attributenames as Pipes
  *
  * Revision 1.1  2008/05/15 15:08:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -19,10 +22,8 @@ import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.HasStatistics;
-import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
 
 /**
  * Baseclasse for Wrappers for senders, that allows to get input from a session variable, and to store output in a session variable.
@@ -42,7 +43,6 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public abstract class SenderWrapperBase extends SenderWithParametersBase implements HasStatistics {
-	protected Logger log = LogUtil.getLogger(this);
 
 	private String getInputFromSessionKey; 
 	private String getInputFromFixedValue=null;

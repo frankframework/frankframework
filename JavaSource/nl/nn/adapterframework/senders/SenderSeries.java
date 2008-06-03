@@ -1,6 +1,9 @@
 /*
  * $Log: SenderSeries.java,v $
- * Revision 1.2  2008-05-21 10:54:07  europe\L190409
+ * Revision 1.3  2008-06-03 15:51:26  europe\L190409
+ * removed superfluous code
+ *
+ * Revision 1.2  2008/05/21 10:54:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added documentation
  *
  * Revision 1.1  2008/05/15 15:08:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -25,11 +28,8 @@ import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.HasStatistics;
-import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StatisticsKeeper;
 import nl.nn.adapterframework.util.StatisticsKeeperIterationHandler;
-
-import org.apache.log4j.Logger;
 
 /**
  * Series of Senders, that are executed one after another.
@@ -55,7 +55,6 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class SenderSeries extends SenderWrapperBase {
-	protected Logger log = LogUtil.getLogger(this);
 
 	private List senderList=new LinkedList();
 	private Map statisticsMap=new HashMap();
