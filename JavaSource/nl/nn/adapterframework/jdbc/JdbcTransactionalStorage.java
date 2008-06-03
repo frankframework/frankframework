@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcTransactionalStorage.java,v $
- * Revision 1.27  2008-01-11 14:51:26  europe\L190409
+ * Revision 1.28  2008-06-03 15:44:02  europe\L190409
+ * compress messages in blobs
+ *
+ * Revision 1.27  2008/01/11 14:51:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added getTypeString() and getHostString()
  *
  * Revision 1.26  2007/12/27 16:02:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -85,6 +88,7 @@ package nl.nn.adapterframework.jdbc;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
@@ -96,6 +100,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.Date;
+import java.util.zip.DeflaterOutputStream;
+import java.util.zip.InflaterInputStream;
+import java.util.zip.ZipException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
@@ -103,6 +110,7 @@ import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.Misc;
 
@@ -123,7 +131,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setPassword(String) password}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setTableName(String) tableName}</td><td>the name of the table messages are stored in</td><td>ibisstore</td></tr>
- * <tr><td>{@link #setCreateTable(boolean) createTable}</td><td>when set to <code>true</code>, the table is created if it does not exist</td><td>false</td></tr>
+ * <tr><td>{@link #setCreateTable(boolean) createTable}</td><td>when set to <code>true</code>, the table is created if it does not exist</td><td><code>false</code></td></tr>
  * <tr><td>{@link #setKeyField(String) keyField}</td><td>the name of the column that contains the primary key of the table</td><td>messageKey</td></tr>
  * <tr><td>{@link #setTypeField(String) typeField}</td><td>the name of the column types are stored in</td><td>type</td></tr>
  * <tr><td>{@link #setHostField(String) hostField}</td><td>the name of the column that stores the hostname of the server</td><td>host</td></tr>
@@ -136,6 +144,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setDateFieldType(String) dateFieldType}</td><td>the type of the column the timestamp is stored in</td><td>TIMESTAMP</td></tr>
  * <tr><td>{@link #setTextFieldType(String) textFieldType}</td><td>the type of the columns messageId and correlationId, slotId and comments are stored in. N.B. (100) is appended for id's, (1000) is appended for comments.</td><td>VARCHAR</td></tr>
  * <tr><td>{@link #setMessageFieldType(String) messageFieldType}</td><td>the type of the column message themselves are stored in</td><td>LONG BINARY</td></tr>
+ * <tr><td>{@link #setBlobsCompressed(boolean) blobsCompressed}</td><td>when set to <code>true</code>, the messages are stored compressed</td><td><code>true</code></td></tr>
  * <tr><td>{@link #setSequenceName(String) sequenceName}</td><td>the name of the sequence used to generate the primary key (only for Oracle)<br>N.B. the default name has been changed in version 4.6</td><td>seq_ibisstore</td></tr>
  * </table>
  * </p>
@@ -195,7 +204,7 @@ import org.apache.commons.lang.StringUtils;
  * @since 	4.1
  */
 public class JdbcTransactionalStorage extends JdbcFacade implements ITransactionalStorage {
-	public static final String version = "$RCSfile: JdbcTransactionalStorage.java,v $ $Revision: 1.27 $ $Date: 2008-01-11 14:51:26 $";
+	public static final String version = "$RCSfile: JdbcTransactionalStorage.java,v $ $Revision: 1.28 $ $Date: 2008-06-03 15:44:02 $";
 	
 	// the following currently only for debug.... 
 	boolean checkIfTableExists=true;
@@ -216,6 +225,8 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	private String hostField="host";
 	private String host;
 	private boolean active=true;
+	private boolean blobsCompressed=true;
+	
 	private String order=AppConstants.getInstance().getString("browse.messages.order","");
    
 	protected static final int MAXIDLEN=100;		
@@ -490,8 +501,17 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	
 			if (databaseType!=DATABASE_ORACLE) {
 				ByteArrayOutputStream out = new ByteArrayOutputStream();
-				ObjectOutputStream oos = new ObjectOutputStream(out);
-				oos.writeObject(message);
+				
+				if (isBlobsCompressed()) {
+					DeflaterOutputStream dos = new DeflaterOutputStream(out);
+					ObjectOutputStream oos = new ObjectOutputStream(dos);
+					oos.writeObject(message);
+					dos.close();
+				} else {
+					ObjectOutputStream oos = new ObjectOutputStream(out);
+					oos.writeObject(message);
+				}
+				
 				stmt.setBytes(++parPos, out.toByteArray());
 
 				stmt.execute();
@@ -523,11 +543,19 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 					}
 //					String newKey = rs.getString(1);
 //					BLOB blob = (BLOB)rs.getBlob(2);
-					OutputStream outstream = JdbcUtil.getBlobUpdateOutputStream(rs,1);
-					ObjectOutputStream oos = new ObjectOutputStream(outstream);
-					oos.writeObject(message);
-					oos.close();
-					outstream.close();
+					OutputStream out = JdbcUtil.getBlobUpdateOutputStream(rs,1);
+					if (isBlobsCompressed()) {
+						DeflaterOutputStream dos = new DeflaterOutputStream(out);
+						ObjectOutputStream oos = new ObjectOutputStream(dos);
+						oos.writeObject(message);
+						oos.close();
+						dos.close();
+					} else {
+						ObjectOutputStream oos = new ObjectOutputStream(out);
+						oos.writeObject(message);
+						oos.close();
+					}
+					out.close();
 					return newKey;
 				
 				} finally {
@@ -691,12 +719,46 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		}
 	}
 
+	private Object retrieveObject(ResultSet rs, int columnIndex, boolean compressed) throws ClassNotFoundException, JdbcException, IOException, SQLException {
+		InputStream blobStream=null;
+		try {
+			if (compressed) {
+				blobStream=new InflaterInputStream(JdbcUtil.getBlobInputStream(rs, columnIndex));
+			} else {
+				blobStream=JdbcUtil.getBlobInputStream(rs, columnIndex);
+			}
+			ObjectInputStream ois = new ObjectInputStream(blobStream);
+			Object result = ois.readObject();
+			ois.close();
+			return result;
+		} finally {
+			if (blobStream!=null) {
+				blobStream.close();
+			}
+		}
+	}
 
+	
 	protected Object retrieveObject(ResultSet rs, int columnIndex) throws ClassNotFoundException, JdbcException, IOException, SQLException {
-		ObjectInputStream ois = new ObjectInputStream(JdbcUtil.getBlobInputStream(rs, columnIndex));
-		Object result = ois.readObject();
-		ois.close();
-		return result;
+		try {
+			if (isBlobsCompressed()) {
+				try {
+					return retrieveObject(rs,columnIndex,true);
+				} catch (ZipException e1) {
+					log.warn(getLogPrefix()+"could not extract compressed blob, trying non-compressed: ("+ClassUtils.nameOf(e1)+") "+e1.getMessage());
+					return retrieveObject(rs,columnIndex,false);
+				}
+			} else {
+				try {
+					return retrieveObject(rs,columnIndex,false);
+				} catch (Exception e1) {
+					log.warn(getLogPrefix()+"could not extract non-compressed blob, trying compressed: ("+ClassUtils.nameOf(e1)+") "+e1.getMessage());
+					return retrieveObject(rs,columnIndex,true);
+				}
+			}
+		} catch (Exception e2) {
+			throw new JdbcException("could not extract message", e2);
+		}
 	}
 
     public boolean containsMessageId(String originalMessageId) throws ListenerException {
@@ -1001,4 +1063,12 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	public String getOrder() {
 		return order;
 	}
+
+	public void setBlobsCompressed(boolean b) {
+		blobsCompressed = b;
+	}
+	public boolean isBlobsCompressed() {
+		return blobsCompressed;
+	}
+
 }
