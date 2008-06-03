@@ -1,6 +1,9 @@
 /*
  * $Log: FixedResult.java,v $
- * Revision 1.17  2007-10-01 14:10:15  europe\L190409
+ * Revision 1.18  2008-06-03 15:47:31  europe\L190409
+ * avoid NPE at file lookup
+ *
+ * Revision 1.17  2007/10/01 14:10:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.16  2007/05/02 11:36:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -104,7 +107,7 @@ import org.apache.commons.lang.SystemUtils;
  * @author Johan Verrips
  */
 public class FixedResult extends FixedForwardPipe {
-	public static final String version="$RCSfile: FixedResult.java,v $ $Revision: 1.17 $ $Date: 2007-10-01 14:10:15 $";
+	public static final String version="$RCSfile: FixedResult.java,v $ $Revision: 1.18 $ $Date: 2008-06-03 15:47:31 $";
 	
     private String fileName;
     private String returnString;
@@ -126,8 +129,17 @@ public class FixedResult extends FixedForwardPipe {
 	    super.configure();
 	    
 		if (StringUtils.isNotEmpty(getFileName()) && !isLookupAtRuntime()) {
+			URL resource = null;
+			try {
+				resource = ClassUtils.getResourceURL(this,getFileName());
+			} catch (Throwable e) {
+				throw new ConfigurationException(getLogPrefix(null)+"got exception searching for ["+getFileName()+"]", e);
+			}
+			if (resource==null) {
+				throw new ConfigurationException(getLogPrefix(null)+"cannot find resource ["+getFileName()+"]");
+			}
             try {
-				returnString = Misc.resourceToString(ClassUtils.getResourceURL(this,getFileName()), SystemUtils.LINE_SEPARATOR);
+				returnString = Misc.resourceToString(resource, SystemUtils.LINE_SEPARATOR);
             } catch (Throwable e) {
                 throw new ConfigurationException(getLogPrefix(null)+"got exception loading ["+getFileName()+"]", e);
             }
