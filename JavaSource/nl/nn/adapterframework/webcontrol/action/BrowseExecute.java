@@ -1,6 +1,9 @@
 /*
  * $Log: BrowseExecute.java,v $
- * Revision 1.3.8.2  2008-06-02 15:35:43  europe\L190409
+ * Revision 1.3.8.3  2008-06-03 08:43:09  europe\L190409
+ * fixed resend all
+ *
+ * Revision 1.3.8.2  2008/06/02 15:35:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added resend-all processing
  *
  * Revision 1.3.8.1  2008/06/02 15:10:52  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -21,6 +24,8 @@ package nl.nn.adapterframework.webcontrol.action;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URL;
+
+import java.util.Vector;
 
 import javax.servlet.ServletException;
 import javax.transaction.UserTransaction;
@@ -44,7 +49,7 @@ import org.apache.struts.action.ActionError;
  * @since   4.3
  */
 public class BrowseExecute extends Browse {
-	public static final String version="$RCSfile: BrowseExecute.java,v $ $Revision: 1.3.8.2 $ $Date: 2008-06-02 15:35:43 $";
+	public static final String version="$RCSfile: BrowseExecute.java,v $ $Revision: 1.3.8.3 $ $Date: 2008-06-03 08:43:09 $";
 
 	protected void performAction(Adapter adapter, ReceiverBase receiver, String action, IMessageBrowser mb, String messageId) {
 		if ("deletemessage".equalsIgnoreCase(action)) {
@@ -72,11 +77,18 @@ public class BrowseExecute extends Browse {
 			try {
 				IMessageBrowsingIterator mbi=mb.getIterator();
 				int messageCount;
+				Vector errorLog = new Vector();
 				for (messageCount=0; mbi.hasNext();) {
 					Object iterItem = mbi.next();
 					String id = mb.getId(iterItem);
+					errorLog.addElement(id);
 					messageCount++;
-					log.debug("Resend ErrorLog record [" + messageCount	+ "] with id ["	+ id + "]");
+				}
+
+				for (int i = 0; i < errorLog.size(); i++)
+				{
+					String id = (String) errorLog.elementAt(i);
+					log.debug("Resend ErrorLog record [" + (i + 1) + "/" + messageCount + "] with id ["	+ id + "]");
 					resendMessage(adapter,receiver,mb,id);
 				}
 			} catch (Throwable e) {
