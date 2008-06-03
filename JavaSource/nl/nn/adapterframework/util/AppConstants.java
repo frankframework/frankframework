@@ -1,6 +1,9 @@
 /*
  * $Log: AppConstants.java,v $
- * Revision 1.14  2008-05-29 13:41:29  europe\L190409
+ * Revision 1.15  2008-06-03 16:04:12  europe\L190409
+ * let custom properties override appConstants and DeploymentSpecifics
+ *
+ * Revision 1.14  2008/05/29 13:41:29  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * reordered methods in file
  *
  * Revision 1.13  2007/10/10 07:27:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -36,6 +39,7 @@ import java.io.Serializable;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
@@ -115,7 +119,7 @@ import org.apache.log4j.Logger;
  * 
  */
 public final class AppConstants extends Properties implements Serializable{
-	public static final String version = "$RCSfile: AppConstants.java,v $ $Revision: 1.14 $ $Date: 2008-05-29 13:41:29 $";
+	public static final String version = "$RCSfile: AppConstants.java,v $ $Revision: 1.15 $ $Date: 2008-06-03 16:04:12 $";
 	private Logger log = LogUtil.getLogger(this);
 	
 	public final static String propertiesFileName="AppConstants.properties";
@@ -139,32 +143,54 @@ public final class AppConstants extends Properties implements Serializable{
 		}
 		return self;
 	}
-	
-     
+
+	/**
+	   Very similar to <code>System.getProperty</code> except
+	   that the {@link SecurityException} is hidden.
+    
+	   @param key The key to search for.
+	   @param def The default value to return.
+	   @return the string value of the system property, or the default
+	   value if there is no property with that key.
+    
+	   @since 1.1 */
+	private String getSystemProperty(String key) {
+		try {
+			return System.getProperty(key);
+		} catch (Throwable e) { // MS-Java throws com.ms.security.SecurityExceptionEx
+			log.warn("Was not allowed to read system property [" + key + "]: "+ e.getMessage());
+			return null;
+		}
+	}
+
 	/**
 	 * the method is like the <code>getProperty</code>, but provides functionality to resolve <code>${variable}</code>
 	 * syntaxis. It uses the AppConstants values and systemvalues to resolve the variables, and does this recursively.
 	 * @see nl.nn.adapterframework.util.StringResolver
 	 */
 	public String getResolvedProperty(String key) {
-        String value = this.getProperty(key);
-        if (value == null) {
+        String value = null;
+        value=getSystemProperty(key); // first try custom properties
+        if (value==null) {
+			value = getProperty(key); // then try DeploymentSpecifics and appConstants 
+        }
+		if (value != null) {
+			try {
+				String result=StringResolver.substVars(value, this);
+				if (log.isDebugEnabled()) {
+					if (!value.equals(result)){
+						log.debug("resolved key ["+key+"], value ["+value+"] to ["+result+"]");
+					}
+	        
+				}
+				return result;
+			} catch (IllegalArgumentException e) {
+				log.error("Bad option value [" + value + "].", e);
+				return value;
+			}
+		} else {
             if (log.isDebugEnabled()) log.debug("getResolvedProperty: key ["+key+"] resolved to value ["+value+"]");
             return null;
-        }
-
-        try {
-	        String result=StringResolver.substVars(value, this);
-	        if (log.isDebugEnabled()) {
-		        if (!value.equals(result)){
-			        log.debug("resolved key ["+key+"], value ["+value+"] to ["+result+"]");
-		        }
-	        
-	        }
-	        return result;
-        } catch (IllegalArgumentException e) {
-            log.error("Bad option value [" + value + "].", e);
-            return value;
         }
 	}
 	/**
