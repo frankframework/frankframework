@@ -1,6 +1,9 @@
 /*
  * $Log: IbisMultiSourceExpander.java,v $
- * Revision 1.5  2008-03-28 14:19:36  europe\L190409
+ * Revision 1.6  2008-06-03 11:42:47  europe\L190409
+ * added some javadoc
+ *
+ * Revision 1.5  2008/03/28 14:19:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * resolve non-found value to empty string
  *
  * Revision 1.4  2008/01/03 15:39:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -32,7 +35,7 @@ import org.apache.commons.digester.substitution.VariableExpander;
 import org.apache.log4j.Logger;
 
 /**
- * 
+ * Configurable Variable substitutor.
  * 
  * @author  Tim van der Leeuw
  * @since   4.8
