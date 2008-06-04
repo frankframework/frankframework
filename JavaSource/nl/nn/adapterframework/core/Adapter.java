@@ -1,6 +1,9 @@
 /*
  * $Log: Adapter.java,v $
- * Revision 1.37.2.2  2008-05-22 14:30:27  europe\L190409
+ * Revision 1.37.2.3  2008-06-04 16:22:55  europe\L190409
+ * reduce size and detail of GALM messages
+ *
+ * Revision 1.37.2.2  2008/05/22 14:30:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * restored setting of correlationId in NDC
  *
  * Revision 1.37.2.1  2008/04/03 08:10:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -193,7 +196,7 @@ import org.springframework.core.task.TaskExecutor;
  */
 
 public class Adapter implements IAdapter, NamedBean {
-	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.37.2.2 $ $Date: 2008-05-22 14:30:27 $";
+	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.37.2.3 $ $Date: 2008-06-04 16:22:55 $";
 	private Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -300,12 +303,12 @@ public class Adapter implements IAdapter, NamedBean {
 	protected void error(String msg, Throwable t) {
 		log.error("Adapter [" + getName() + "] "+msg, t);
 		getMessageKeeper().add("ERROR: " + msg+": "+t.getMessage());
-		fireMonitorEvent(EventTypeEnum.TECHNICAL,SeverityEnum.WARNING, "ADPTWARN "+msg+": "+t.getMessage());
+		fireMonitorEvent(EventTypeEnum.TECHNICAL,SeverityEnum.WARNING, "ADPTWARN "+msg,t);
 	}
 
-	protected void fireMonitorEvent(EventTypeEnum eventType, SeverityEnum severity, String message) {
+	protected void fireMonitorEvent(EventTypeEnum eventType, SeverityEnum severity, String message, Throwable t) {
 		if (monitorAdapter!=null) {
-			monitorAdapter.fireEvent(getName(), eventType, severity, message);
+			monitorAdapter.fireEvent(getName(), eventType, severity, message, t);
 		}
 	}
 	
@@ -369,7 +372,7 @@ public class Adapter implements IAdapter, NamedBean {
 		catch (Exception e) {
 			String msg = "got error while formatting errormessage, original errorMessage [" + errorMessage + "]";
 			msg = msg + " from [" + (objectInError == null ? "unknown-null" : objectInError.getName()) + "]";
-			error(msg, e);
+			error("got error while formatting errormessage", e);
 			return errorMessage;
 		}
 	}

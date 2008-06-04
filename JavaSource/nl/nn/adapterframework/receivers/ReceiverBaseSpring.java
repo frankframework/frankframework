@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBaseSpring.java,v $
- * Revision 1.17.2.3  2008-05-22 14:34:05  europe\L190409
+ * Revision 1.17.2.4  2008-06-04 16:26:04  europe\L190409
+ * reduce size and detail of GALM messages
+ *
+ * Revision 1.17.2.3  2008/05/22 14:34:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * set default pollInterval to 10 seconds
  *
  * Revision 1.17.2.2  2008/04/17 13:24:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -337,6 +340,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  * <tr><td>{@link #setTransactionTimeout(int) transactionTimeout}</td><td>Timeout (in seconds) of transaction started to receive and process a message.</td><td><code>0</code> (use system default)</code></td></tr>
  * <tr><td>{@link #setMaxRetries(int) maxRetries}</td><td>The number of times a processing attempt is retried after an exception is caught or rollback is experienced</td><td>2</td></tr>
  * <tr><td>{@link #setCheckForDuplicates(boolean) checkForDuplicates}</td><td>if set to <code>true</code>, each message is checked for presence in the message log. If already present, it is not processed again. (only required for non XA compatible messaging). Requires messagelog!</code></td><td><code>false</code></td></tr>
+ * <tr><td>{@link #setPollInterval(int) pollInterval}</td><td>The number of seconds waited after an unsuccesful poll attempt before another poll attempt is made. (only for polling listeners, not for e.g. IFSA, JMS, WebService or JavaListeners)</td><td>10</td></tr>
  * <tr><td>{@link #setIbis42compatibility(boolean) ibis42compatibility}</td><td>if set to <code>true</code>, the result of a failed processing of a message is a formatted errormessage. Otherwise a listener specific error handling is performed</code></td><td><code>false</code></td></tr>
  * <tr><td>{@link #setBeforeEvent(int) beforeEvent}</td>      <td>METT eventnumber, fired just before a message is processed by this Receiver</td><td>-1 (disabled)</td></tr>
  * <tr><td>{@link #setAfterEvent(int) afterEvent}</td>        <td>METT eventnumber, fired just after message processing by this Receiver is finished</td><td>-1 (disabled)</td></tr>
@@ -393,7 +397,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  */
 public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMessageHandler, IbisExceptionListener, HasSender, TracingEventNumbers, IThreadCountControllable, BeanFactoryAware {
     
-	public static final String version="$RCSfile: ReceiverBaseSpring.java,v $ $Revision: 1.17.2.3 $ $Date: 2008-05-22 14:34:05 $";
+	public static final String version="$RCSfile: ReceiverBaseSpring.java,v $ $Revision: 1.17.2.4 $ $Date: 2008-06-04 16:26:04 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -1325,7 +1329,7 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 
 	public void fireMonitorEvent(EventTypeEnum eventType, SeverityEnum severity, String message) {
 		if (monitorAdapter!=null) {
-			monitorAdapter.fireEvent(getName(), eventType, severity, message);
+			monitorAdapter.fireEvent(getName(), eventType, severity, message, null);
 		}
 	}
 
