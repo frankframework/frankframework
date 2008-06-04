@@ -1,6 +1,12 @@
 /*
  * $Log: DateUtils.java,v $
- * Revision 1.11  2008-02-13 12:58:11  europe\L190409
+ * Revision 1.11.2.1  2008-06-04 16:26:59  europe\L190409
+ * sync from HEAD
+ *
+ * Revision 1.12  2008/06/03 15:55:06  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * added code for parsing in any format, and optimal formatting
+ *
+ * Revision 1.11  2008/02/13 12:58:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added format() with default format
  *
  * Revision 1.10  2007/10/08 12:25:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -39,7 +45,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class DateUtils {
-	public static final String version = "$RCSfile: DateUtils.java,v $ $Revision: 1.11 $ $Date: 2008-02-13 12:58:11 $";
+	public static final String version = "$RCSfile: DateUtils.java,v $ $Revision: 1.11.2.1 $ $Date: 2008-06-04 16:26:59 $";
 	protected static Logger log = LogUtil.getLogger(DateUtils.class);
 	
 
@@ -109,6 +115,36 @@ public class DateUtils {
         Date result = df.parse(s, p);
         return result;
     }
+
+	/**
+	 * Parses a string to a Date, according to many possible conventions
+	 */
+	static public Date parseAnyDate(String dateInAnyFormat) throws CalendarParserException {
+		Calendar c = CalendarParser.parse(dateInAnyFormat);
+		Date d = new Date(c.getTimeInMillis());
+		return d;
+	}
+
+	/**
+	 * Formats a Date to a String, leaving out trailing zero values.
+	 */
+	static public String formatOptimal(Date d)  {
+		String result;
+		if ((d.getTime()%1000)==0 ) {
+			if (d.getSeconds()==0) {
+				if (d.getMinutes()==0 && d.getHours()==0) {
+					result = format(d,"yyyy-MM-dd");
+				} else {
+					result = format(d,"yyyy-MM-dd HH:mm");
+				}
+			} else {
+				result = format(d,"yyyy-MM-dd HH:mm:ss");
+			}
+		} else {
+			result = format(d,"yyyy-MM-dd HH:mm:ss.SSS");
+		}
+		return result;
+	}
 
 
 	/**

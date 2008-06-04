@@ -1,7 +1,10 @@
 /*
  * $Log: StringResolver.java,v $
- * Revision 1.8.8.1  2008-04-03 08:18:53  europe\L190409
- * synch from HEAD
+ * Revision 1.8.8.2  2008-06-04 16:26:40  europe\L190409
+ * sync from HEAD
+ *
+ * Revision 1.10  2008/06/03 15:59:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * avoid NPE in solving keys to properties
  *
  * Revision 1.9  2008/03/28 14:24:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed unused code
@@ -38,7 +41,7 @@ import org.apache.log4j.Logger;
  * @author Johan Verrips 
  */
 public class StringResolver {
-	public static final String version="$RCSfile: StringResolver.java,v $ $Revision: 1.8.8.1 $ $Date: 2008-04-03 08:18:53 $";
+	public static final String version="$RCSfile: StringResolver.java,v $ $Revision: 1.8.8.2 $ $Date: 2008-06-04 16:26:40 $";
 	protected static Logger log = LogUtil.getLogger(StringResolver.class);
 	
     static String DELIM_START = "${";
@@ -114,18 +117,20 @@ public class StringResolver {
                     	if (props instanceof Properties){
                     		replacement=((Properties)props).getProperty(key);
                     	} else {
-                    	
-	                        replacement = props.get(key).toString();
+                    		Object replacementSource = props.get(key); 
+                    		if (replacementSource!=null) {
+								replacement = replacementSource.toString();
+                    		}
 						}
 
                     }
 
                     if (replacement != null) {
                         // Do variable substitution on the replacement string
-                        // such that we can solve "Hello ${x2}" as "Hello p1" 
+                        // such that we can solve "Hello ${x1}" as "Hello p2" 
                         // the where the properties are
-                        // x1=p1
-                        // x2=${x1}
+						// x1=${x2}
+                        // x2=p2
                         String recursiveReplacement = substVars(replacement, props);
                         sbuf.append(recursiveReplacement);
                     }
