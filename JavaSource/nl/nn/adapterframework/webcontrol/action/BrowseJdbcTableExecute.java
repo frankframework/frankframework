@@ -1,6 +1,9 @@
 /*
  * $Log: BrowseJdbcTableExecute.java,v $
- * Revision 1.4  2008-05-22 07:34:00  europe\L190409
+ * Revision 1.5  2008-06-18 09:17:42  europe\L190409
+ * corrected rownums together with order by (MO)
+ *
+ * Revision 1.4  2008/05/22 07:34:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * use inherited error() method
  *
  * Revision 1.3  2007/10/08 13:41:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -36,7 +39,7 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 
 public class BrowseJdbcTableExecute extends ActionBase {
-	public static final String version = "$RCSfile: BrowseJdbcTableExecute.java,v $ $Revision: 1.4 $ $Date: 2008-05-22 07:34:00 $";
+	public static final String version = "$RCSfile: BrowseJdbcTableExecute.java,v $ $Revision: 1.5 $ $Date: 2008-06-18 09:17:42 $";
 
 	public ActionForward execute(
 		ActionMapping mapping,
@@ -86,12 +89,13 @@ public class BrowseJdbcTableExecute extends ActionBase {
 					query = "SELECT COUNT(*) AS rowcount FROM " + form_tableName;
 				} else {
 					if (qs.getDatabaseType()==JdbcFacade.DATABASE_ORACLE) {					
-						query = "SELECT ROWNUM AS ROWNUMBER, "+form_tableName+ ".* FROM " + form_tableName;
+						if (StringUtils.isNotEmpty(form_order)) {
+							query = "SELECT ROW_NUMBER() OVER (ORDER BY "+ form_order +") AS ROWNUMBER, "+form_tableName+ ".* FROM " + form_tableName;
+						} else {
+							query = "SELECT ROWNUM AS ROWNUMBER, "+form_tableName+ ".* FROM " + form_tableName;
+						}
 					} else {
 						query = "SELECT * FROM " + form_tableName;
-					}
-					if (StringUtils.isNotEmpty(form_order)) {
-						query = query + " ORDER BY " + form_order;
 					}
 					if (qs.getDatabaseType()==JdbcFacade.DATABASE_ORACLE) {					
 						if (StringUtils.isNotEmpty(form_rownumMin)
