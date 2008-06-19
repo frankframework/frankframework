@@ -1,6 +1,9 @@
 /*
  * $Log: MessageSendingPipe.java,v $
- * Revision 1.39.2.2  2008-05-22 14:33:31  europe\L190409
+ * Revision 1.39.2.3  2008-06-19 07:09:16  europe\L190409
+ * monitor timeouts
+ *
+ * Revision 1.39.2.2  2008/05/22 14:33:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * use prc more often
  *
  * Revision 1.39.2.1  2008/04/03 08:14:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -141,6 +144,10 @@ import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.errormessageformatters.ErrorMessageFormatter;
+import nl.nn.adapterframework.monitoring.EventTypeEnum;
+import nl.nn.adapterframework.monitoring.IMonitorAdapter;
+import nl.nn.adapterframework.monitoring.MonitorAdapterFactory;
+import nl.nn.adapterframework.monitoring.SeverityEnum;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
@@ -225,7 +232,7 @@ import org.apache.commons.lang.SystemUtils;
  */
 
 public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
-	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.39.2.2 $ $Date: 2008-05-22 14:33:31 $";
+	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.39.2.3 $ $Date: 2008-06-19 07:09:16 $";
 
 	private final static String TIMEOUTFORWARD = "timeout";
 	private final static String EXCEPTIONFORWARD = "exception";
@@ -253,6 +260,9 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 	private IPipe inputValidator=null;
 	private IPipe outputValidator=null;
 	
+	private IMonitorAdapter monitorAdapter=null;
+	private boolean timeoutPending=false;
+
 	protected void propagateName() {
 		ISender sender=getSender();
 		if (sender!=null && StringUtils.isEmpty(sender.getName())) {
@@ -372,6 +382,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 			getOutputValidator().setName("outputValidator of "+getName());
 			getOutputValidator().configure();
 		}
+		monitorAdapter=MonitorAdapterFactory.getMonitorAdapter();
 	}
 
 	public PipeRunResult doPipe(Object input, PipeLineSession session)	throws PipeRunException {
@@ -488,8 +499,16 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 				if (result == null) {
 					result = "";
 				}
-
+				if (timeoutPending) {
+					timeoutPending=false;
+					fireMonitorEvent(EventTypeEnum.CLEARING,SeverityEnum.WARNING,"TIMEOUT timeout executing pipe ["+getName()+"]");
+				}
+		
 			} catch (TimeOutException toe) {
+				if (!timeoutPending) {
+					timeoutPending=true;
+					fireMonitorEvent(EventTypeEnum.TECHNICAL,SeverityEnum.WARNING,"TIMEOUT timeout executing pipe ["+getName()+"]");
+				}
 				PipeForward timeoutForward = findForward(TIMEOUTFORWARD);
 				if (timeoutForward==null) {
 					log.warn(getLogPrefix(session) + "timeout occured, but no timeout-forward defined", toe);
@@ -611,6 +630,12 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 			} catch (Exception e) {
 				log.warn(getLogPrefix(null) + "Exception closing messageLog", e);
 			}
+		}
+	}
+
+	public void fireMonitorEvent(EventTypeEnum eventType, SeverityEnum severity, String message) {
+		if (monitorAdapter!=null) {
+			monitorAdapter.fireEvent(getName(), eventType, severity, message, null);
 		}
 	}
 	
