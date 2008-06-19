@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBaseSpring.java,v $
- * Revision 1.24  2008-06-19 08:12:20  europe\L190409
+ * Revision 1.25  2008-06-19 11:09:38  europe\L190409
+ * changed two harmless messages to critical
+ *
+ * Revision 1.24  2008/06/19 08:12:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * other message when message seen too many times
  *
  * Revision 1.23  2008/06/18 12:38:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -404,7 +407,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  */
 public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMessageHandler, IbisExceptionListener, HasSender, TracingEventNumbers, IThreadCountControllable, BeanFactoryAware {
     
-	public static final String version="$RCSfile: ReceiverBaseSpring.java,v $ $Revision: 1.24 $ $Date: 2008-06-19 08:12:20 $";
+	public static final String version="$RCSfile: ReceiverBaseSpring.java,v $ $Revision: 1.25 $ $Date: 2008-06-19 11:09:38 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -634,7 +637,7 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 			throw new ListenerException(e);
 		}
 		getListener().open();
-		fireMonitorEvent(EventTypeEnum.CLEARING,SeverityEnum.HARMLESS,RCV_SHUTDOWN_MONITOR_EVENT_MSG);
+		fireMonitorEvent(EventTypeEnum.CLEARING,SeverityEnum.CRITICAL,RCV_SHUTDOWN_MONITOR_EVENT_MSG);
 		if (getListener() instanceof IPullingListener){
 			// start all threads
 			if (getNumThreads() > 1) {
@@ -1368,7 +1371,7 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 	private void resetRetryInterval() {
 		synchronized (this) {
 			if (retryInterval > RCV_SUSPENSION_MESSAGE_THRESHOLD) {
-				fireMonitorEvent(EventTypeEnum.CLEARING,SeverityEnum.HARMLESS,RCV_SUSPENDED_MONITOR_EVENT_MSG);
+				fireMonitorEvent(EventTypeEnum.CLEARING,SeverityEnum.WARNING,RCV_SUSPENDED_MONITOR_EVENT_MSG);
 			}
 			retryInterval = 1;
 		}
