@@ -1,6 +1,12 @@
 /*
  * $Log: JdbcUtil.java,v $
- * Revision 1.15  2007-09-12 09:27:36  europe\L190409
+ * Revision 1.15.8.1  2008-06-19 15:20:23  europe\L190409
+ * sync from HEAD
+ *
+ * Revision 1.16  2008/06/19 15:14:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * added inputstream and outputstream methods for blobs
+ *
+ * Revision 1.15  2007/09/12 09:27:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added warning in fullClose()
  *
  * Revision 1.14  2007/09/05 13:06:47  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -71,7 +77,6 @@ import java.util.zip.InflaterInputStream;
 
 import nl.nn.adapterframework.jdbc.JdbcException;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 /**
@@ -82,7 +87,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class JdbcUtil {
-	public static final String version = "$RCSfile: JdbcUtil.java,v $ $Revision: 1.15 $ $Date: 2007-09-12 09:27:36 $";
+	public static final String version = "$RCSfile: JdbcUtil.java,v $ $Revision: 1.15.8.1 $ $Date: 2008-06-19 15:20:23 $";
 	protected static Logger log = LogUtil.getLogger(JdbcUtil.class);
 	
 	private static final boolean useMetaData=false;
@@ -169,6 +174,15 @@ public class JdbcUtil {
 		return blob.getBinaryStream();
 	}
 
+	public static InputStream getBlobInputStream(ResultSet rs, int columnIndex, boolean blobIsCompressed) throws SQLException, JdbcException {
+		InputStream input = getBlobInputStream(rs,columnIndex);
+		if (blobIsCompressed) {
+			return new InflaterInputStream(input);
+		} else {
+			return input;
+		}
+	}
+
 	public static Reader getBlobReader(final ResultSet rs, int columnIndex, String charset, boolean blobIsCompressed) throws IOException, JdbcException, SQLException {
 		Reader result;
 		InputStream input = getBlobInputStream(rs,columnIndex);
@@ -196,6 +210,17 @@ public class JdbcUtil {
 			throw new JdbcException("no blob found in column ["+columnIndex+"]");
 		}
 		return blob.setBinaryStream(1L);
+	}
+
+	public static OutputStream getBlobOutputStream(final ResultSet rs, int columnIndex, boolean compressBlob) throws IOException, JdbcException, SQLException {
+		OutputStream result;
+		OutputStream out = getBlobUpdateOutputStream(rs, columnIndex);
+		if (compressBlob) {
+			result = new DeflaterOutputStream(out);
+		} else {
+			result = out;
+		}
+		return result;	
 	}
 
 	public static Writer getBlobWriter(final ResultSet rs, int columnIndex, String charset, boolean compressBlob) throws IOException, JdbcException, SQLException {
