@@ -1,7 +1,10 @@
 /*
  * $Log: SoapWrapper.java,v $
- * Revision 1.4.16.1  2008-05-15 16:07:09  europe\L190409
- * synch from HEAD
+ * Revision 1.4.16.2  2008-06-19 07:10:14  europe\L190409
+ * sync from HEAD
+ *
+ * Revision 1.6  2008/06/09 09:57:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * extract fault count always namespace aware
  *
  * Revision 1.5  2008/05/14 11:50:29  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * strip xml declaration from payload message
@@ -57,7 +60,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class SoapWrapper {
-	public static final String version="$RCSfile: SoapWrapper.java,v $ $Revision: 1.4.16.1 $ $Date: 2008-05-15 16:07:09 $";
+	public static final String version="$RCSfile: SoapWrapper.java,v $ $Revision: 1.4.16.2 $ $Date: 2008-06-19 07:10:14 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private TransformerPool extractBody;
@@ -130,7 +133,7 @@ public class SoapWrapper {
 	}
 
 	public int getFaultCount(String message) throws NumberFormatException, DomBuilderException, TransformerException, IOException {
-		return Integer.parseInt(extractFaultCount.transform(message,null));
+		return Integer.parseInt(extractFaultCount.transform(message,null,true));
 	}
 	public String getFaultCode(String message) throws DomBuilderException, TransformerException, IOException {
 		return extractFaultCode.transform(message,null,true);

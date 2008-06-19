@@ -1,7 +1,10 @@
 /*
  * $Log: SpringJmsConnector.java,v $
- * Revision 1.11.2.1  2008-05-15 16:07:09  europe\L190409
- * synch from HEAD
+ * Revision 1.11.2.2  2008-06-19 07:11:03  europe\L190409
+ * sync from HEAD
+ *
+ * Revision 1.13  2008/06/18 12:39:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * set default cache mode CACHE_NONE, for both transacted and non transacted
  *
  * Revision 1.12  2008/05/14 11:51:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved handling when not completly configured
@@ -110,7 +113,8 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 	private DefaultMessageListenerContainer jmsContainer;
 	private String messageListenerClassName;
     
-    public static final int CACHE_LEVEL=DefaultMessageListenerContainer.CACHE_CONSUMER;
+    public static final int DEFAULT_CACHE_LEVEL_TRANSACTED=DefaultMessageListenerContainer.CACHE_NONE;
+	public static final int DEFAULT_CACHE_LEVEL_NON_TRANSACTED=DefaultMessageListenerContainer.CACHE_NONE;
 //	public static final int MAX_MESSAGES_PER_TASK=100;
 	public static final int IDLE_TASK_EXECUTION_LIMIT=1000;
  
@@ -174,9 +178,9 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 			jmsContainer.setCacheLevelName(cacheMode);
 		} else {
 			if (getReceiver().isTransacted()) {
-				jmsContainer.setCacheLevel(DefaultMessageListenerContainer.CACHE_NONE);
+				jmsContainer.setCacheLevel(DEFAULT_CACHE_LEVEL_TRANSACTED);
 			} else {
-				jmsContainer.setCacheLevel(DefaultMessageListenerContainer.CACHE_CONSUMER);
+				jmsContainer.setCacheLevel(DEFAULT_CACHE_LEVEL_NON_TRANSACTED);
 			}
 		}
 		jmsContainer.setMessageListener(this);
