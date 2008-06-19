@@ -1,6 +1,9 @@
 /*
  * $Log: Adapter.java,v $
- * Revision 1.37.2.3  2008-06-04 16:22:55  europe\L190409
+ * Revision 1.37.2.4  2008-06-19 07:06:17  europe\L190409
+ * discern between severe errors and warnings (for monitoring)
+ *
+ * Revision 1.37.2.3  2008/06/04 16:22:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * reduce size and detail of GALM messages
  *
  * Revision 1.37.2.2  2008/05/22 14:30:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -196,7 +199,7 @@ import org.springframework.core.task.TaskExecutor;
  */
 
 public class Adapter implements IAdapter, NamedBean {
-	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.37.2.3 $ $Date: 2008-06-04 16:22:55 $";
+	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.37.2.4 $ $Date: 2008-06-19 07:06:17 $";
 	private Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -277,7 +280,7 @@ public class Adapter implements IAdapter, NamedBean {
 					receiver.configure();
 					messageKeeper.add("receiver [" + receiver.getName() + "] successfully configured");
 				} catch (ConfigurationException e) {
-					error("error initializing receiver [" + receiver.getName() + "]",e);
+					error(true, "error initializing receiver [" + receiver.getName() + "]",e);
 				}
 
 			}
@@ -285,7 +288,7 @@ public class Adapter implements IAdapter, NamedBean {
 			configurationSucceeded = true;
 		}
 		catch (ConfigurationException e) {
-			error("error initializing pipeline", e);
+			error(true, "error initializing pipeline", e);
 		}
 	}
 
@@ -300,10 +303,12 @@ public class Adapter implements IAdapter, NamedBean {
 	/** 
 	 * sends a warning to the log and to the messagekeeper of the adapter
 	 */
-	protected void error(String msg, Throwable t) {
+	protected void error(boolean critical, String msg, Throwable t) {
 		log.error("Adapter [" + getName() + "] "+msg, t);
 		getMessageKeeper().add("ERROR: " + msg+": "+t.getMessage());
-		fireMonitorEvent(EventTypeEnum.TECHNICAL,SeverityEnum.WARNING, "ADPTWARN "+msg,t);
+		
+		String prefix=critical?"ADPTERROR ":"ADPTWARN ";
+		fireMonitorEvent(EventTypeEnum.TECHNICAL,critical?SeverityEnum.CRITICAL:SeverityEnum.WARNING, prefix+msg,t);
 	}
 
 	protected void fireMonitorEvent(EventTypeEnum eventType, SeverityEnum severity, String message, Throwable t) {
@@ -372,7 +377,7 @@ public class Adapter implements IAdapter, NamedBean {
 		catch (Exception e) {
 			String msg = "got error while formatting errormessage, original errorMessage [" + errorMessage + "]";
 			msg = msg + " from [" + (objectInError == null ? "unknown-null" : objectInError.getName()) + "]";
-			error("got error while formatting errormessage", e);
+			error(false, "got error while formatting errormessage", e);
 			return errorMessage;
 		}
 	}
@@ -665,7 +670,7 @@ public class Adapter implements IAdapter, NamedBean {
 				e = new ListenerException(t);
 			}
 			incNumOfMessagesInError();
-			error("error processing message with messageId [" + messageId+"]: ",e);
+			error(false, "error processing message with messageId [" + messageId+"]: ",e);
 			throw e;
 		} finally {
 			long endTime = System.currentTimeMillis();
@@ -804,7 +809,7 @@ public class Adapter implements IAdapter, NamedBean {
                         pipeline.start();
                     }
                     catch (PipeStartException pre) {
-                        error("got error starting PipeLine", pre);
+                        error(true, "got error starting PipeLine", pre);
                         runState.setRunState(RunStateEnum.ERROR);
                         return;
                     }
@@ -880,7 +885,7 @@ public class Adapter implements IAdapter, NamedBean {
 
                         }
                         catch (Exception e) {
-                            error("received error while stopping receiver [" + receiver.getName() + "], ignoring this, so watch out.", e);
+                            error(false, "received error while stopping receiver [" + receiver.getName() + "], ignoring this, so watch out.", e);
                         }
                     }
 
