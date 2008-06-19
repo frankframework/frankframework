@@ -1,7 +1,10 @@
 /*
  * $Log: PullingListenerContainer.java,v $
- * Revision 1.10.2.1  2008-04-03 08:18:04  europe\L190409
- * synch from HEAD
+ * Revision 1.10.2.2  2008-06-19 07:12:38  europe\L190409
+ * sync from HEAD
+ *
+ * Revision 1.12  2008/06/18 12:31:17  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * added prefix to monitor message
  *
  * Revision 1.11  2008/03/27 11:01:22  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * remove NDC on close
@@ -218,7 +221,7 @@ public class PullingListenerContainer implements Runnable {
             long stillRunning = threadsRunning.decrease();
             if (stillRunning > 0) {
 				receiver.info("a thread of Receiver [" + receiver.getName() + "] exited, [" + stillRunning + "] are still running");
-				receiver.fireMonitorEvent(EventTypeEnum.TECHNICAL,SeverityEnum.WARNING,"a thread shut down, ["+stillRunning+"] are still running");
+				receiver.fireMonitorEvent(EventTypeEnum.TECHNICAL,SeverityEnum.WARNING,receiver.RCV_SHUTDOWN_MONITOR_EVENT_MSG+" a thread shut down, ["+stillRunning+"] are still running");
                 return;
             }
 			receiver.info("the last thread of Receiver [" + receiver.getName() + "] exited, cleaning up");
