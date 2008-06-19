@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBaseSpring.java,v $
- * Revision 1.23  2008-06-18 12:38:07  europe\L190409
+ * Revision 1.24  2008-06-19 08:12:20  europe\L190409
+ * other message when message seen too many times
+ *
+ * Revision 1.23  2008/06/18 12:38:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * reduced suspension threshold for monitoring event from 10 to 1 minute
  * set default maxRetries to 1
  * modified logging statements
@@ -401,7 +404,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  */
 public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMessageHandler, IbisExceptionListener, HasSender, TracingEventNumbers, IThreadCountControllable, BeanFactoryAware {
     
-	public static final String version="$RCSfile: ReceiverBaseSpring.java,v $ $Revision: 1.23 $ $Date: 2008-06-18 12:38:07 $";
+	public static final String version="$RCSfile: ReceiverBaseSpring.java,v $ $Revision: 1.24 $ $Date: 2008-06-19 08:12:20 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -1261,13 +1264,13 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 					return false;
 				}
 				if (prci.tryCount<=getMaxRetries()) {
-					log.warn(getLogPrefix()+"message with messageId ["+messageId+" has already been processed ["+prci.tryCount+"] times, will try again");
+					log.warn(getLogPrefix()+"message with messageId ["+messageId+"] has already been processed ["+prci.tryCount+"] times, will try again");
 					resetRetryInterval();
 					return false;
 				}
-				log.warn(getLogPrefix()+"message with messageId ["+messageId+" has already been processed ["+prci.tryCount+"] times, will not try again");
+				warn(getLogPrefix()+"message with messageId ["+messageId+"] has already been processed ["+prci.tryCount+"] times, will not try again; maxRetries=["+getMaxRetries()+"]");
 				if (prci.tryCount>getMaxRetries()+2) {
-					increaseRetryIntervalAndWait(null,getLogPrefix()+"rollback storing error");
+					increaseRetryIntervalAndWait(null,getLogPrefix()+"saw message with messageId ["+messageId+"] too many times ["+prci.tryCount+"]; maxRetries=["+getMaxRetries()+"]");
 				}
 				if (isTransacted() || (getErrorStorage() != null && !getErrorStorage().containsMessageId(messageId))) {
 					moveInProcessToError(messageId, prci.correlationId, message, prci.receiveDate, prci.comments, rawMessage, TXREQUIRED);
