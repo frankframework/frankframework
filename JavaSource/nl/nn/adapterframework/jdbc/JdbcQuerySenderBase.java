@@ -1,6 +1,10 @@
 /*
  * $Log: JdbcQuerySenderBase.java,v $
- * Revision 1.33  2008-05-15 14:35:18  europe\L190409
+ * Revision 1.34  2008-06-19 15:13:11  europe\L190409
+ * added support for binary BLOBs
+ * select binary BLOB as base64
+ *
+ * Revision 1.33  2008/05/15 14:35:18  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * catch more exceptions
  *
  * Revision 1.32  2008/03/27 10:54:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -102,9 +106,11 @@
  */
 package nl.nn.adapterframework.jdbc;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
 import java.sql.CallableStatement;
@@ -132,6 +138,8 @@ import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 import org.apache.commons.lang.StringUtils;
+
+import sun.misc.BASE64Encoder;
 
 /**
  * This executes the query that is obtained from the (here still abstract) method getStatement.
@@ -177,7 +185,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setSynchronous(boolean) synchronous}</td><td>&nbsp;</td><td>true</td></tr>
  * <tr><td>{@link #setTrimSpaces(boolean) trimSpaces}</td><td>remove trailing blanks from all values.</td><td>true</td></tr>
  * <tr><td>{@link #setBlobCharset(String) blobCharset}</td><td>charset used to read and write BLOBs</td><td>UTF-8</td></tr>
- * <tr><td>{@link #setStreamCharset(String) streamCharset}</td><td>charset used when reading a stream (that is e.g. going to be written to a BLOB or CLOB)</td><td>UTF-8</td></tr>
+ * <tr><td>{@link #setStreamCharset(String) streamCharset}</td><td>charset used when reading a stream (that is e.g. going to be written to a BLOB or CLOB). When empty, the stream is copied directly to the BLOB, without conversion</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setBlobsCompressed(boolean) blobsCompressed}</td><td>controls whether blobdata is stored compressed in the database</td><td>true</td></tr>
  * <tr><td>{@link #setColumnsReturned(String) columnsReturned}</td><td>comma separated list of columns whose values are to be returned. Works only if the driver implements JDBC 3.0 getGeneratedKeys()</td><td>&nbsp;</td></tr>
  * </table>
@@ -197,7 +205,7 @@ import org.apache.commons.lang.StringUtils;
  * @since 	4.1
  */
 public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
-	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.33 $ $Date: 2008-05-15 14:35:18 $";
+	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.34 $ $Date: 2008-06-19 15:13:11 $";
 
 	private String queryType = "other";
 	private int maxRows=-1; // return all rows
@@ -214,7 +222,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 	private String resultQuery=null;
 	private boolean trimSpaces=true;
 	private String blobCharset = Misc.DEFAULT_INPUT_STREAM_ENCODING;
-	private String streamCharset = Misc.DEFAULT_INPUT_STREAM_ENCODING;
+	private String streamCharset = null;
 	private boolean blobsCompressed=true;
 
 	private String packageContent = "db2";
@@ -377,7 +385,16 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		 {
 			 // return "undefined" for types that cannot be rendered to strings easily
 			 case Types.BLOB :
-					 return JdbcUtil.getBlobAsString(rs,colNum,getBlobCharset(),false,isBlobsCompressed());
+			 	if (StringUtils.isEmpty(getBlobCharset())) {
+					BASE64Encoder encoder = new BASE64Encoder();
+					
+					InputStream blobStream = JdbcUtil.getBlobInputStream(rs, colNum,isBlobsCompressed());
+					ByteArrayOutputStream baos = new ByteArrayOutputStream();
+					encoder.encode(blobStream,baos);
+					return baos.toString();
+			 	} else {
+					return JdbcUtil.getBlobAsString(rs,colNum,getBlobCharset(),false,isBlobsCompressed());
+			 	}
 			 case Types.CLOB :
 					 return JdbcUtil.getClobAsString(rs,colNum,false);
 			 case Types.ARRAY :
@@ -409,12 +426,23 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 			XmlBuilder result=new XmlBuilder("result");
 			JdbcUtil.warningsToXml(statement.getWarnings(),result);
 			rs.next();
-			if (message instanceof InputStream) {
-				InputStream inStream = (InputStream)message;
+			if (message instanceof Reader) {
+				Reader inReader = (Reader)message;
 				Writer writer = JdbcUtil.getBlobWriter(rs, blobColumn, getBlobCharset(), isBlobsCompressed());
-				Reader reader = new InputStreamReader(inStream,getStreamCharset());
-				Misc.readerToWriter(reader,writer);
+				Misc.readerToWriter(inReader,writer);
 				writer.close();
+			} else if (message instanceof InputStream) {
+				InputStream inStream = (InputStream)message;
+				if (StringUtils.isNotEmpty(getStreamCharset())) {
+					Writer writer = JdbcUtil.getBlobWriter(rs, blobColumn, getBlobCharset(), isBlobsCompressed());
+					Reader reader = new InputStreamReader(inStream,getStreamCharset());
+					Misc.readerToWriter(reader,writer);
+					writer.close();
+				} else {
+					OutputStream outStream = JdbcUtil.getBlobOutputStream(rs, blobColumn, isBlobsCompressed());
+					Misc.streamToStream(inStream,outStream);
+					outStream.close();
+				}
 			} else {
 				JdbcUtil.putStringAsBlob(rs, blobColumn, (String)message, getBlobCharset(), isBlobsCompressed());
 			}
@@ -444,10 +472,20 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 			XmlBuilder result=new XmlBuilder("result");
 			JdbcUtil.warningsToXml(statement.getWarnings(),result);
 			rs.next();
-			if (message instanceof InputStream) {
-				InputStream inStream = (InputStream)message;
+			if (message instanceof Reader) {
+				Reader inReader = (Reader)message;
 				Writer writer = JdbcUtil.getClobWriter(rs, clobColumn);
-				Reader reader = new InputStreamReader(inStream,getStreamCharset());
+				Misc.readerToWriter(inReader,writer);
+				writer.close();
+			} else if (message instanceof InputStream) {
+				InputStream inStream = (InputStream)message;
+				Reader reader;
+				if (StringUtils.isNotEmpty(getStreamCharset())) {
+					reader = new InputStreamReader(inStream,getStreamCharset());
+				} else {
+					reader = new InputStreamReader(inStream);
+				}
+				Writer writer = JdbcUtil.getClobWriter(rs, clobColumn);
 				Misc.readerToWriter(reader,writer);
 				writer.close();
 			} else {
