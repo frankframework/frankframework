@@ -1,7 +1,10 @@
 /*
  * $Log: JdbcQueryListener.java,v $
- * Revision 1.1.2.1  2008-04-03 08:12:39  europe\L190409
- * synch from HEAD
+ * Revision 1.1.2.2  2008-06-19 09:24:37  europe\L190409
+ * sync from HEAD
+ *
+ * Revision 1.2  2008/06/19 08:10:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * set default updateStatusToError-query to updateStatusToProcessed
  *
  * Revision 1.1  2008/02/28 16:22:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * first version
@@ -52,6 +55,10 @@ public class JdbcQueryListener extends JdbcListener {
 		}
 		if (StringUtils.isEmpty(getKeyField())) {
 			throw new ConfigurationException("keyField must be specified");
+		}
+		if (StringUtils.isEmpty(getUpdateStatusToErrorQuery())) {
+			log.warn(getLogPrefix()+"has no updateStatusToErrorQuery specified, will use updateStatusToProcessedQuery instead");
+			setUpdateStatusToErrorQuery(getUpdateStatusToProcessedQuery());
 		}
 	}
 	
