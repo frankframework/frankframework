@@ -1,6 +1,9 @@
 /*
  * $Log: Adapter.java,v $
- * Revision 1.42  2008-06-18 12:27:43  europe\L190409
+ * Revision 1.43  2008-06-19 11:08:59  europe\L190409
+ * GALM message when exception caught starting adapter
+ *
+ * Revision 1.42  2008/06/18 12:27:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * discern between severe errors and warnings (for monitoring)
  *
  * Revision 1.41  2008/05/21 10:56:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -199,7 +202,7 @@ import org.springframework.core.task.TaskExecutor;
  */
 
 public class Adapter implements IAdapter, NamedBean {
-	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.42 $ $Date: 2008-06-18 12:27:43 $";
+	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.43 $ $Date: 2008-06-19 11:08:59 $";
 	private Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -841,8 +844,9 @@ public class Adapter implements IAdapter, NamedBean {
 //                    waitForRunState(RunStateEnum.STOPPING);
             
                 }
-                catch (Throwable e) {
-                    log.error("error running adapter [" + getName() + "] [" + ToStringBuilder.reflectionToString(e) + "]", e);
+                catch (Throwable t) {
+					error(true, "got error starting Adapter", t);
+                    log.error("error running adapter [" + getName() + "]", t);
                     runState.setRunState(RunStateEnum.ERROR);
                 }
             } // End Runnable.run()
