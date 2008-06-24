@@ -1,6 +1,9 @@
 /*
  * $Log: Browse.java,v $
- * Revision 1.9  2008-06-03 15:59:41  europe\L190409
+ * Revision 1.10  2008-06-24 08:00:39  europe\L190409
+ * prepare for export of messages in zipfile
+ *
+ * Revision 1.9  2008/06/03 15:59:41  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved parsing of start date
  *
  * Revision 1.8  2008/01/11 14:55:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -68,11 +71,11 @@ import org.apache.struts.action.DynaActionForm;
  * @since   4.4
  */
 public class Browse extends ActionBase {
-	public static final String version="$RCSfile: Browse.java,v $ $Revision: 1.9 $ $Date: 2008-06-03 15:59:41 $";
+	public static final String version="$RCSfile: Browse.java,v $ $Revision: 1.10 $ $Date: 2008-06-24 08:00:39 $";
 
 	public int maxMessages = AppConstants.getInstance().getInt("browse.messages.max",0); 
 
-	protected void performAction(Adapter adapter, ReceiverBase receiver, String action, IMessageBrowser mb, String messageId, String selected[]) {
+	protected void performAction(Adapter adapter, ReceiverBase receiver, String action, IMessageBrowser mb, String messageId, String selected[], HttpServletResponse response) {
 		log.debug("performing action ["+action+"]");
 	}
 
@@ -156,7 +159,7 @@ public class Browse extends ActionBase {
 		} else {
 			ReceiverBase receiver = (ReceiverBase) adapter.getReceiverByName(receiverName);
 			mb = receiver.getErrorStorage();
-			performAction(adapter, receiver, action, mb, messageId, selected);
+			performAction(adapter, receiver, action, mb, messageId, selected, response);
 			listener = receiver.getListener();
 		}
 

@@ -1,6 +1,9 @@
 /*
  * $Log: BrowseExecute.java,v $
- * Revision 1.9  2008-05-22 07:32:45  europe\L190409
+ * Revision 1.10  2008-06-24 08:00:39  europe\L190409
+ * prepare for export of messages in zipfile
+ *
+ * Revision 1.9  2008/05/22 07:32:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * use inherited error() method
  *
  * Revision 1.8  2008/02/08 09:49:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -37,10 +40,19 @@
  */
 package nl.nn.adapterframework.webcontrol.action;
 
+import java.io.OutputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+
+import javax.servlet.http.HttpServletResponse;
+
 import nl.nn.adapterframework.core.Adapter;
+import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.Misc;
 
 import org.apache.commons.lang.StringUtils;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -56,11 +68,11 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  * @since   4.3
  */
 public class BrowseExecute extends Browse {
-	public static final String version="$RCSfile: BrowseExecute.java,v $ $Revision: 1.9 $ $Date: 2008-05-22 07:32:45 $";
+	public static final String version="$RCSfile: BrowseExecute.java,v $ $Revision: 1.10 $ $Date: 2008-06-24 08:00:39 $";
     
     protected static final TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
     
-	protected void performAction(Adapter adapter, ReceiverBase receiver, String action, IMessageBrowser mb, String messageId, String selected[]) {
+	protected void performAction(Adapter adapter, ReceiverBase receiver, String action, IMessageBrowser mb, String messageId, String selected[], HttpServletResponse response) {
         PlatformTransactionManager transactionManager = ibisManager.getTransactionManager();
 		log.debug("retrieved transactionManager ["+ClassUtils.nameOf(transactionManager)+"]["+transactionManager+"] from ibismanager ["+ibisManager+"]");
 
@@ -98,6 +110,51 @@ public class BrowseExecute extends Browse {
 					}
 				}
 			}
+
+			if ("export selected".equalsIgnoreCase(action)) {
+				OutputStream out = response.getOutputStream();
+				response.setContentType("application/x-zip-compressed");
+				response.setHeader("Content-Disposition","attachment; filename=\"IbisConsoleDump-"+AppConstants.getInstance().getProperty("instance.name","")+"-"+Misc.getHostname()+"\"");
+				ZipOutputStream zipOutputStream = new ZipOutputStream(out);
+				IListener listener = receiver.getListener();
+				for(int i=0; i<selected.length; i++) {
+					String id=selected[i];
+					String filename="msg_"+id.replace(':','-');
+					zipOutputStream.putNextEntry(new ZipEntry(filename));
+					try {
+						Object rawmsg = mb.browseMessage(id);
+						String msg=null;
+						if (listener!=null) {
+							msg = listener.getStringFromRawMessage(rawmsg,null);
+						} else {
+							msg=(String)rawmsg;
+						}
+						if (StringUtils.isEmpty(msg)) {
+							msg="<no message found>";
+						}
+						String encoding=Misc.DEFAULT_INPUT_STREAM_ENCODING;
+						if (msg.startsWith("<?xml")) {
+							int lastpos=msg.indexOf("?>");
+							if (lastpos>0) {
+								String prefix=msg.substring(6,lastpos);
+								int encodingStartPos=prefix.indexOf("encoding=\"");
+								if (encodingStartPos>0) {
+									int encodingEndPos=prefix.indexOf('"',encodingStartPos+10);
+									if (encodingEndPos>0) {
+										encoding=prefix.substring(encodingStartPos+10,encodingEndPos-1);
+									}
+								}
+							}
+						}
+						zipOutputStream.write(msg.getBytes(encoding));
+					} catch (Throwable e) {
+						error(", ", "errors.generic", "Could not export message with id ["+selected[i]+"]", e);
+					}
+					zipOutputStream.closeEntry();
+				}
+				zipOutputStream.close();
+			}
+
  
 		} catch (Throwable e) {
 			error(", ", "errors.generic", "Error occurred performing action [" + action + "]", e);
