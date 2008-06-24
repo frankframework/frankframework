@@ -1,7 +1,10 @@
 /*
  * $Log: SpringJmsConnector.java,v $
- * Revision 1.11.2.2  2008-06-19 07:11:03  europe\L190409
+ * Revision 1.11.2.3  2008-06-24 15:18:37  europe\L190409
  * sync from HEAD
+ *
+ * Revision 1.14  2008/06/24 15:13:08  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * improved logging of exceptions
  *
  * Revision 1.13  2008/06/18 12:39:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * set default cache mode CACHE_NONE, for both transacted and non transacted
@@ -244,15 +247,15 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 //			if (log.isDebugEnabled()) log.debug("transaction status after: "+JtaUtil.displayTransactionStatus());
 		} catch (ListenerException e) {
 			if (JtaUtil.inTransaction()) {
-				log.warn(getLogPrefix()+"caught exception, setting rollbackonly");
+				log.warn(getLogPrefix()+"caught exception processing message, setting rollbackonly", e);
 				JtaUtil.setRollbackOnly();
 			} else {
 				if (jmsContainer.isSessionTransacted()) {
-					log.warn("rolling back JMS session");
+					log.warn(getLogPrefix()+"caught exception processing message, rolling back JMS session", e);
 					session.rollback();
 				} else {
-					log.warn(getLogPrefix()+"caught exception, no transactional stuff to rollback, rethrowing ListenerException as JmsException");
-					JMSException jmse = new JMSException(e.getMessage());
+					JMSException jmse = new JMSException(getLogPrefix()+"caught exception, no transactional stuff to rollback");
+					jmse.initCause(e);
 					throw jmse;
 				}
 			}
