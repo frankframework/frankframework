@@ -1,6 +1,9 @@
 /*
  * $Log: GalmMonitorAdapter.java,v $
- * Revision 1.5  2008-05-21 10:52:18  europe\L190409
+ * Revision 1.6  2008-06-24 07:58:55  europe\L190409
+ * reduce warnings to debug
+ *
+ * Revision 1.5  2008/05/21 10:52:18  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * modified monitorAdapter interface
  *
  * Revision 1.4  2007/12/12 09:09:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -79,7 +82,7 @@ public class GalmMonitorAdapter implements IMonitorAdapter {
 				}
 			}
 			if (replacementsMade) {
-				log.warn("sourceId ["+sourceId+"] read from ["+SOURCE_ID_KEY+"] contains spaces, replacing them with underscores, resulting in ["+replacement.toString()+"]");
+				if (log.isDebugEnabled()) log.debug("sourceId ["+sourceId+"] read from ["+SOURCE_ID_KEY+"] contains spaces, replacing them with underscores, resulting in ["+replacement.toString()+"]");
 				sourceId=replacement.toString();
 			}
 		}
@@ -98,7 +101,7 @@ public class GalmMonitorAdapter implements IMonitorAdapter {
 	public String getGalmRecord(String subSource, EventTypeEnum eventType, SeverityEnum severity, String message) {
 		if (subSource.indexOf(' ')>=0) {
 			String replacement=Misc.replace(subSource," ","_");
-			log.warn("subSource ["+subSource+"] contains spaces, replacing them with underscores, resulting in ["+replacement+"]");
+			if (log.isDebugEnabled()) log.debug("subSource ["+subSource+"] contains spaces, replacing them with underscores, resulting in ["+replacement+"]");
 			subSource=replacement;
 		}
 		if (message!=null) {
