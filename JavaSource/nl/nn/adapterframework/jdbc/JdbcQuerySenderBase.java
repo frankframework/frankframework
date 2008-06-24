@@ -1,7 +1,10 @@
 /*
  * $Log: JdbcQuerySenderBase.java,v $
- * Revision 1.31.4.3  2008-06-19 15:22:47  europe\L190409
+ * Revision 1.31.4.4  2008-06-24 08:24:40  europe\L190409
  * sync from HEAD
+ *
+ * Revision 1.35  2008/06/24 07:57:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * allocate larger buffer for package result
  *
  * Revision 1.34  2008/06/19 15:13:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added support for binary BLOBs
@@ -169,6 +172,7 @@ import sun.misc.BASE64Encoder;
  * <ul><li>"select" for queries that return data</li>
  *     <li>"updateBlob" for queries that update a BLOB</li>
  *     <li>"updateClob" for queries that update a CLOB</li>
+ *     <li>"package" to execute Oracle PL/SQL package</li>
  *     <li>anything else for queries that return no data.</li>
  * </ul></td><td>"other"</td></tr>
  * <tr><td>{@link #setBlobColumn(int) blobColumn}</td><td>only for queryType 'updateBlob': column that contains the blob to be updated</td><td>1</td></tr>
@@ -198,7 +202,15 @@ import sun.misc.BASE64Encoder;
  * <tr><th>name</th><th>type</th><th>remarks</th></tr>
  * <tr><td>&nbsp;</td><td>all parameters present are applied to the statement to be executed</td></tr>
  * </table>
-
+ * <br/>
+ * <h3>Note on using packages</h3>
+ * The package processor makes some assumptions about the datatypes:
+ * <ul>
+ *   <li>elements that start with a single quote are assumed to be Strings</li>
+ *   <li>elements thta contain a dash ('-') are assumed to be dates (yyyy-MM-dd) or timestamps (yyyy-MM-dd HH:mm:ss)</li>
+ *   <li>elements containing a dot ('.') are assumed to be floats</li>
+ *   <li>all other elements are assumed to be integers</li>
+ * </ul>
  * </p>
  * 
  * Queries that return no data (queryType 'other') return a message indicating the number of rows processed
@@ -208,7 +220,7 @@ import sun.misc.BASE64Encoder;
  * @since 	4.1
  */
 public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
-	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.31.4.3 $ $Date: 2008-06-19 15:22:47 $";
+	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.31.4.4 $ $Date: 2008-06-24 08:24:40 $";
 
 	private String queryType = "other";
 	private int maxRows=-1; // return all rows
@@ -581,7 +593,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 				}
 			}
 			if (message.indexOf('?') != -1) {
-				pstmt.registerOutParameter(var, Types.VARCHAR);
+				pstmt.registerOutParameter(var, Types.CLOB); // make sure enough space is available for result...
 			}
 			if ("xml".equalsIgnoreCase(getPackageContent())) {
 				pstmt.executeUpdate();
@@ -593,12 +605,8 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 					Statement resStmt = null;
 					try {
 						resStmt = connection.createStatement();
-						log.debug(
-							"obtaining result from ["
-								+ getResultQuery()
-								+ "]");
-						ResultSet rs =
-							resStmt.executeQuery(getResultQuery());
+						log.debug("obtaining result from ["	+ getResultQuery() + "]");
+						ResultSet rs = resStmt.executeQuery(getResultQuery());
 						return getResult(rs);
 					} finally {
 						if (resStmt != null) {
@@ -641,7 +649,8 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 			return message;
 		if (beginOutput < 0)
 			beginOutput = eindHaakje;
-		String packageCall = message.substring(startHaakje, eindHaakje + 1);
+		// Watch out, this cannot handle nested parentheses
+//		String packageCall = message.substring(startHaakje, eindHaakje + 1);
 		String packageInput = message.substring(startHaakje + 1, beginOutput);
 		int idx = 0;
 		if (message.indexOf(',') == -1) {
@@ -652,19 +661,18 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 			}
 		}
 		int ix  = 1;
+		String element=null;
 		try {		
 			if (packageInput.lastIndexOf(',') > 0) {
 				while ((packageInput.charAt(packageInput.length() - ix) != ',')	& (ix < packageInput.length())) {
 					ix++;
 				}
 				int eindInputs = beginOutput - ix;
-				String packageInput2 = message.substring(startHaakje + 1, eindInputs);
-				packageInput = null;
-				packageInput = packageInput2;
+				packageInput = message.substring(startHaakje + 1, eindInputs);
 				StringTokenizer st2 = new StringTokenizer(packageInput, ",");		
 				if (idx != 1) {
 					while (st2.hasMoreTokens()) {
-						String element = st2.nextToken().trim();
+						element = st2.nextToken().trim();
 						if (element.startsWith("'")) {
 							int x = element.indexOf('\'');
 							int y = element.lastIndexOf('\'');
@@ -721,10 +729,8 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 				}
 			}
 			return newMessage.toString();
-		} catch (ParseException parse) {
-			throw new SenderException(
-				getLogPrefix() + "got exception parsing a date string !!",
-				parse);
+		} catch (ParseException e) {
+			throw new SenderException(getLogPrefix() + "got exception parsing a date string from element ["+element+"]", e);
 		}
 	}
 

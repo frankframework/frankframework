@@ -1,7 +1,11 @@
 /*
  * $Log: DumpIbisConsole.java,v $
- * Revision 1.5.8.1  2008-06-19 07:11:51  europe\L190409
+ * Revision 1.5.8.2  2008-06-24 08:27:05  europe\L190409
  * sync from HEAD
+ *
+ * Revision 1.7  2008/06/24 08:01:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * remove subdirectory from zip
+ * added newlines to logfile lines
  *
  * Revision 1.6  2008/06/18 12:40:23  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * quite a lot of modifications.
@@ -67,7 +71,7 @@ import org.apache.log4j.Logger;
 public class DumpIbisConsole extends HttpServlet {
 	private Logger log = LogUtil.getLogger(this);
 
-	private String directoryName = "dump";
+	private String directoryName = "";
 	private ServletContext servletContext;
 	private Set resources = new HashSet();
 	private Set setFileViewer = new HashSet();
@@ -89,9 +93,7 @@ public class DumpIbisConsole extends HttpServlet {
 
 			InputStream inputStream = servletContext.getResourceAsStream(resource);
 			zipOutputStream.putNextEntry(new ZipEntry(fileName));
-			for (int c = inputStream.read(); c != -1; c = inputStream.read()) {
-				zipOutputStream.write(c);
-			}
+			Misc.streamToStream(inputStream,zipOutputStream);
 			zipOutputStream.closeEntry();
 		} catch (Exception e) {
 			log.error("Error copying resource", e);
@@ -118,7 +120,7 @@ public class DumpIbisConsole extends HttpServlet {
 			StringBuffer sb = new StringBuffer();
 			String s = br.readLine();
 			while (s != null) {
-				sb.append(s);
+				sb.append(s).append('\n');
 				s = br.readLine();
 			}
 			String htmlString = sb.toString();
@@ -127,9 +129,7 @@ public class DumpIbisConsole extends HttpServlet {
 			zipOutputStream.putNextEntry(new ZipEntry(destinationFileName));
 			// HttpServletResponseSink sink = new HttpServletResponseSink(response,zipOutputStream);
 			
-			for (int c = inputStream.read(); c != -1; c = inputStream.read()) {
-				zipOutputStream.write(c);
-			}
+			Misc.streamToStream(inputStream,zipOutputStream);
 			zipOutputStream.closeEntry();
 
 			if (!resource.startsWith("FileViewerServlet")) {
@@ -251,7 +251,7 @@ public class DumpIbisConsole extends HttpServlet {
 			response.setHeader("Content-Disposition","attachment; filename=\"IbisConsoleDump-"+AppConstants.getInstance().getProperty("instance.name","")+"-"+Misc.getHostname()+"\"");
 			zipOutputStream = new ZipOutputStream(out);
 
-			copyServletResponse( request, "/showConfigurationStatus.do", directoryName + "/showConfigurationStatus.html");
+			copyServletResponse( request, "/showConfigurationStatus.do", directoryName + "showConfigurationStatus.html");
 
 			for (Iterator iterator = setShowAdapterStatistics.iterator();
 				iterator.hasNext();
@@ -261,10 +261,10 @@ public class DumpIbisConsole extends HttpServlet {
 				int p2 = s.indexOf("adapterName=");
 				String fileName = s.substring(p2 + 12, p1);
 				File file = new File(fileName);
-				copyServletResponse(request, "/" + s, directoryName + "/showAdapterStatistics_" + file.getName() + ".html");
+				copyServletResponse(request, "/" + s, directoryName + "showAdapterStatistics_" + file.getName() + ".html");
 			}
 
-			copyServletResponse(request, "/showLogging.do", directoryName + "/showLogging.html");
+			copyServletResponse(request, "/showLogging.do", directoryName + "showLogging.html");
 
 			FileAppender fa = (FileAppender)LogUtil.getRootLogger().getAppender("file");
 			File logFile = new File(fa.getFile());
@@ -279,17 +279,17 @@ public class DumpIbisConsole extends HttpServlet {
 					File file = new File(fileName);
 					String fn = file.getName();
 					if (fn.startsWith(logFileName)) {
-						copyServletResponse(request, "/" + s, directoryName + "/log/" + fn);
+						copyServletResponse(request, "/" + s, directoryName + "log/" + fn);
 					}
 				}
 			}
 
-			copyServletResponse(request, "/showEnvironmentVariables.do", directoryName + "/showEnvironmentVariables.html");
-			copyServletResponse(request, "/showConfiguration.do", directoryName + "/showConfiguration.html");
-			copyServletResponse(request, "/showSchedulerStatus.do", directoryName + "/showSchedulerStatus.html");
+			copyServletResponse(request, "/showEnvironmentVariables.do", directoryName + "showEnvironmentVariables.html");
+			copyServletResponse(request, "/showConfiguration.do", directoryName + "showConfiguration.html");
+			copyServletResponse(request, "/showSchedulerStatus.do", directoryName + "showSchedulerStatus.html");
 
 			for (Iterator iterator = resources.iterator(); iterator.hasNext();) {
-				copyResource("/" + iterator.next());
+				copyResource((String)iterator.next());
 			}
 
 			zipOutputStream.close();
