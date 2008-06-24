@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcTransactionalStorage.java,v $
- * Revision 1.28  2008-06-03 15:44:02  europe\L190409
+ * Revision 1.29  2008-06-24 07:58:25  europe\L190409
+ * use hint where appropriate
+ *
+ * Revision 1.28  2008/06/03 15:44:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * compress messages in blobs
  *
  * Revision 1.27  2008/01/11 14:51:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -146,6 +149,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setMessageFieldType(String) messageFieldType}</td><td>the type of the column message themselves are stored in</td><td>LONG BINARY</td></tr>
  * <tr><td>{@link #setBlobsCompressed(boolean) blobsCompressed}</td><td>when set to <code>true</code>, the messages are stored compressed</td><td><code>true</code></td></tr>
  * <tr><td>{@link #setSequenceName(String) sequenceName}</td><td>the name of the sequence used to generate the primary key (only for Oracle)<br>N.B. the default name has been changed in version 4.6</td><td>seq_ibisstore</td></tr>
+ * <tr><td>{@link #setIndexName(String) indexName}</td><td>the name of the index, to be used in hints for query optimizer too (only for Oracle)</td><td>IX_IBISSTORE</td></tr>
  * </table>
  * </p>
  * 
@@ -204,7 +208,7 @@ import org.apache.commons.lang.StringUtils;
  * @since 	4.1
  */
 public class JdbcTransactionalStorage extends JdbcFacade implements ITransactionalStorage {
-	public static final String version = "$RCSfile: JdbcTransactionalStorage.java,v $ $Revision: 1.28 $ $Date: 2008-06-03 15:44:02 $";
+	public static final String version = "$RCSfile: JdbcTransactionalStorage.java,v $ $Revision: 1.29 $ $Date: 2008-06-24 07:58:25 $";
 	
 	// the following currently only for debug.... 
 	boolean checkIfTableExists=true;
@@ -226,6 +230,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	private String host;
 	private boolean active=true;
 	private boolean blobsCompressed=true;
+	private String indexName="IX_IBISSTORE";
 	
 	private String order=AppConstants.getInstance().getString("browse.messages.order","");
    
@@ -317,7 +322,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 						getWhereClause(getIdField()+"=?"+
 									" AND " +getCorrelationIdField()+"=?"+
 									" AND "+getDateField()+"=?");
-		selectListQuery = "SELECT "+getKeyField()+","+getIdField()+","+getCorrelationIdField()+","+getDateField()+","+getCommentField()+
+		selectListQuery = "SELECT "+provideIndexHint(databaseType)+getKeyField()+","+getIdField()+","+getCorrelationIdField()+","+getDateField()+","+getCommentField()+
 							(StringUtils.isNotEmpty(getTypeField())?","+getTypeField():"")+
 							(StringUtils.isNotEmpty(getHostField())?","+getHostField():"")+
 						  " FROM "+getTableName()+ getWhereClause(null)+
@@ -326,7 +331,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 			selectListQuery = selectListQuery + " " + getOrder();
 		}
 		selectDataQuery = "SELECT "+getMessageField()+  " FROM "+getTableName()+ getWhereClause(getKeyField()+"=?");
-        checkMessageIdQuery = "SELECT " + getIdField() +" FROM "+getTableName()+ getWhereClause(getIdField() +"=?");
+        checkMessageIdQuery = "SELECT "+provideIndexHint(databaseType) + getIdField() +" FROM "+getTableName()+ getWhereClause(getIdField() +"=?");
         
 		if (databaseType==DATABASE_ORACLE) {
 			insertQuery = "INSERT INTO "+getTableName()+" ("+
@@ -349,6 +354,12 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	}
 
 
+	private String provideIndexHint(int databaseType) {
+		if (databaseType==DATABASE_ORACLE && StringUtils.isNotEmpty(getIndexName())) {
+			return " /*+ INDEX ( "+getTableName()+ " "+getIndexName()+" ) */ "; 
+		}
+		return "";
+	}
 
 	/**
 	 *	Checks if table exists, and creates when necessary. 
@@ -411,9 +422,11 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 					  
 			log.debug(getLogPrefix()+"creating table ["+getTableName()+"] using query ["+query+"]");
 			stmt.execute(query);
-			query = "CREATE INDEX "+getTableName()+"_idx ON "+getTableName()+"("+(StringUtils.isNotEmpty(getSlotId())?getSlotIdField()+",":"")+getDateField()+")";				
-			log.debug(getLogPrefix()+"creating index ["+getTableName()+"_idx] using query ["+query+"]");
-			stmt.execute(query);
+			if (StringUtils.isNotEmpty(getIndexName())) {
+				query = "CREATE INDEX "+getIndexName()+" ON "+getTableName()+"("+(StringUtils.isNotEmpty(getSlotId())?getSlotIdField()+",":"")+getDateField()+")";				
+				log.debug(getLogPrefix()+"creating index ["+getIndexName()+"] using query ["+query+"]");
+				stmt.execute(query);
+			}
 			if (databaseType==DATABASE_ORACLE) {
 				query="CREATE SEQUENCE "+getSequenceName()+" START WITH 1 INCREMENT BY 1";
 				log.debug(getLogPrefix()+"creating sequence for table ["+getTableName()+"] using query ["+query+"]");
@@ -1069,6 +1082,13 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	}
 	public boolean isBlobsCompressed() {
 		return blobsCompressed;
+	}
+
+	public void setIndexName(String string) {
+		indexName = string;
+	}
+	public String getIndexName() {
+		return indexName;
 	}
 
 }
