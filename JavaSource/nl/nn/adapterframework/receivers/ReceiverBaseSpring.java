@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBaseSpring.java,v $
- * Revision 1.25  2008-06-19 11:09:38  europe\L190409
+ * Revision 1.26  2008-06-24 07:59:48  europe\L190409
+ * only check for duplicates in errorStore when explicitly instructed
+ *
+ * Revision 1.25  2008/06/19 11:09:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed two harmless messages to critical
  *
  * Revision 1.24  2008/06/19 08:12:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -407,7 +410,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  */
 public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMessageHandler, IbisExceptionListener, HasSender, TracingEventNumbers, IThreadCountControllable, BeanFactoryAware {
     
-	public static final String version="$RCSfile: ReceiverBaseSpring.java,v $ $Revision: 1.25 $ $Date: 2008-06-19 11:09:38 $";
+	public static final String version="$RCSfile: ReceiverBaseSpring.java,v $ $Revision: 1.26 $ $Date: 2008-06-24 07:59:48 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -1275,7 +1278,7 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 				if (prci.tryCount>getMaxRetries()+2) {
 					increaseRetryIntervalAndWait(null,getLogPrefix()+"saw message with messageId ["+messageId+"] too many times ["+prci.tryCount+"]; maxRetries=["+getMaxRetries()+"]");
 				}
-				if (isTransacted() || (getErrorStorage() != null && !getErrorStorage().containsMessageId(messageId))) {
+				if (isTransacted() || (getErrorStorage() != null && (!isCheckForDuplicates() || !getErrorStorage().containsMessageId(messageId)))) {
 					moveInProcessToError(messageId, prci.correlationId, message, prci.receiveDate, prci.comments, rawMessage, TXREQUIRED);
 				}
 				PipeLineResult plr = new PipeLineResult();
