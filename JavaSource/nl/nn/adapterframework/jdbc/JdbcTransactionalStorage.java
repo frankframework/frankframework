@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcTransactionalStorage.java,v $
- * Revision 1.29  2008-06-24 07:58:25  europe\L190409
+ * Revision 1.30  2008-06-26 16:06:13  europe\L190409
+ * update database always in transaction
+ *
+ * Revision 1.29  2008/06/24 07:58:25  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * use hint where appropriate
  *
  * Revision 1.28  2008/06/03 15:44:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -118,6 +121,10 @@ import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.Misc;
 
 import org.apache.commons.lang.StringUtils;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 /**
  * JDBC implementation of {@link ITransactionalStorage}.
@@ -208,7 +215,9 @@ import org.apache.commons.lang.StringUtils;
  * @since 	4.1
  */
 public class JdbcTransactionalStorage extends JdbcFacade implements ITransactionalStorage {
-	public static final String version = "$RCSfile: JdbcTransactionalStorage.java,v $ $Revision: 1.29 $ $Date: 2008-06-24 07:58:25 $";
+	public static final String version = "$RCSfile: JdbcTransactionalStorage.java,v $ $Revision: 1.30 $ $Date: 2008-06-26 16:06:13 $";
+
+	public final static TransactionDefinition TXREQUIRED = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED);
 	
 	// the following currently only for debug.... 
 	boolean checkIfTableExists=true;
@@ -243,7 +252,8 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	private String textFieldType="VARCHAR";
 	int databaseType=-1;
 
-	
+	private PlatformTransactionManager txManager;
+
 	protected String insertQuery;
 	protected String deleteQuery;
 	protected String selectKeyQuery;
@@ -589,43 +599,53 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 
 
 	public String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, Serializable message) throws SenderException {
-		Connection conn;
-		String result;
-		if (messageId==null) {
-			throw new SenderException("messageId cannot be null");
-		}
-		if (correlationId==null) {
-			throw new SenderException("correlationId cannot be null");
+		TransactionStatus txStatus=null;
+		if (txManager!=null) {
+			txStatus = txManager.getTransaction(TXREQUIRED);
 		}
 		try {
-			conn = getConnection();
-		} catch (JdbcException e) {
-			throw new SenderException(e);
-		}
-		try {
-			Timestamp receivedDateTime = new Timestamp(receivedDate.getTime());
-			if (messageId.length()>MAXIDLEN) {
-				messageId=messageId.substring(0,MAXIDLEN);
+			Connection conn;
+			String result;
+			if (messageId==null) {
+				throw new SenderException("messageId cannot be null");
 			}
-			if (correlationId.length()>MAXIDLEN) {
-				correlationId=correlationId.substring(0,MAXIDLEN);
+			if (correlationId==null) {
+				throw new SenderException("correlationId cannot be null");
 			}
-			if (comments!=null && comments.length()>MAXCOMMENTLEN) {
-				comments=comments.substring(0,MAXCOMMENTLEN);
-			}
-			result = storeMessageInDatabase(conn, messageId, correlationId, receivedDateTime, comments, message);
-			if (result==null) {
-				result=retrieveKey(conn,messageId,correlationId,receivedDateTime);
-			}
-			return result;
-			
-		} catch (Exception e) {
-			throw new SenderException("cannot serialize message",e);
-		} finally {
 			try {
-				conn.close();
-			} catch (SQLException e) {
-				log.error("error closing JdbcConnection", e);
+				conn = getConnection();
+			} catch (JdbcException e) {
+				throw new SenderException(e);
+			}
+			try {
+				Timestamp receivedDateTime = new Timestamp(receivedDate.getTime());
+				if (messageId.length()>MAXIDLEN) {
+					messageId=messageId.substring(0,MAXIDLEN);
+				}
+				if (correlationId.length()>MAXIDLEN) {
+					correlationId=correlationId.substring(0,MAXIDLEN);
+				}
+				if (comments!=null && comments.length()>MAXCOMMENTLEN) {
+					comments=comments.substring(0,MAXCOMMENTLEN);
+				}
+				result = storeMessageInDatabase(conn, messageId, correlationId, receivedDateTime, comments, message);
+				if (result==null) {
+					result=retrieveKey(conn,messageId,correlationId,receivedDateTime);
+				}
+				return result;
+			
+			} catch (Exception e) {
+				throw new SenderException("cannot serialize message",e);
+			} finally {
+				try {
+					conn.close();
+				} catch (SQLException e) {
+					log.error("error closing JdbcConnection", e);
+				}
+			}
+		} finally {
+			if (txStatus!=null) {
+				txManager.commit(txStatus);
 			}
 		}
 		
@@ -1089,6 +1109,13 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	}
 	public String getIndexName() {
 		return indexName;
+	}
+
+	public void setTxManager(PlatformTransactionManager manager) {
+		txManager = manager;
+	}
+	public PlatformTransactionManager getTxManager() {
+		return txManager;
 	}
 
 }
