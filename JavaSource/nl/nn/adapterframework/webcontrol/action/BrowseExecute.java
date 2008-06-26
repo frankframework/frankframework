@@ -1,6 +1,9 @@
 /*
  * $Log: BrowseExecute.java,v $
- * Revision 1.10  2008-06-24 08:00:39  europe\L190409
+ * Revision 1.11  2008-06-26 12:51:13  europe\L190409
+ * fix export selected
+ *
+ * Revision 1.10  2008/06/24 08:00:39  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * prepare for export of messages in zipfile
  *
  * Revision 1.9  2008/05/22 07:32:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -41,6 +44,8 @@
 package nl.nn.adapterframework.webcontrol.action;
 
 import java.io.OutputStream;
+import java.text.NumberFormat;
+import java.util.HashMap;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -68,7 +73,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  * @since   4.3
  */
 public class BrowseExecute extends Browse {
-	public static final String version="$RCSfile: BrowseExecute.java,v $ $Revision: 1.10 $ $Date: 2008-06-24 08:00:39 $";
+	public static final String version="$RCSfile: BrowseExecute.java,v $ $Revision: 1.11 $ $Date: 2008-06-26 12:51:13 $";
     
     protected static final TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
     
@@ -114,24 +119,30 @@ public class BrowseExecute extends Browse {
 			if ("export selected".equalsIgnoreCase(action)) {
 				OutputStream out = response.getOutputStream();
 				response.setContentType("application/x-zip-compressed");
-				response.setHeader("Content-Disposition","attachment; filename=\"IbisConsoleDump-"+AppConstants.getInstance().getProperty("instance.name","")+"-"+Misc.getHostname()+"\"");
+				response.setHeader("Content-Disposition","attachment; filename=\"messages-"+AppConstants.getInstance().getProperty("instance.name","")+"-"+Misc.getHostname()+".zip\"");
 				ZipOutputStream zipOutputStream = new ZipOutputStream(out);
 				IListener listener = receiver.getListener();
 				for(int i=0; i<selected.length; i++) {
-					String id=selected[i];
-					String filename="msg_"+id.replace(':','-');
-					zipOutputStream.putNextEntry(new ZipEntry(filename));
 					try {
-						Object rawmsg = mb.browseMessage(id);
+						Object rawmsg = mb.browseMessage(selected[i]);
 						String msg=null;
+						String id=selected[i];
+						HashMap context = new HashMap();
 						if (listener!=null) {
-							msg = listener.getStringFromRawMessage(rawmsg,null);
+							msg = listener.getStringFromRawMessage(rawmsg,context);
+							id= listener.getIdFromRawMessage(rawmsg,context);
 						} else {
 							msg=(String)rawmsg;
 						}
 						if (StringUtils.isEmpty(msg)) {
 							msg="<no message found>";
+						} else {
+							log.debug("id ["+id+"] msg ["+msg+"]");
 						}
+						String filename="msg_"+id.replace(':','-')+".txt";
+						ZipEntry zipEntry=new ZipEntry(filename);
+						//zipEntry.setTime();
+						zipOutputStream.putNextEntry(zipEntry);
 						String encoding=Misc.DEFAULT_INPUT_STREAM_ENCODING;
 						if (msg.startsWith("<?xml")) {
 							int lastpos=msg.indexOf("?>");
@@ -141,7 +152,8 @@ public class BrowseExecute extends Browse {
 								if (encodingStartPos>0) {
 									int encodingEndPos=prefix.indexOf('"',encodingStartPos+10);
 									if (encodingEndPos>0) {
-										encoding=prefix.substring(encodingStartPos+10,encodingEndPos-1);
+										encoding=prefix.substring(encodingStartPos+10,encodingEndPos);
+										log.debug("parsed encoding ["+encoding+"] from prefix ["+prefix+"]");
 									}
 								}
 							}
