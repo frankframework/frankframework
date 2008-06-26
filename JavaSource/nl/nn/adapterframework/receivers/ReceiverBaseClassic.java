@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBaseClassic.java,v $
- * Revision 1.8  2008-05-21 10:51:12  europe\L190409
+ * Revision 1.9  2008-06-26 12:53:28  europe\L190409
+ * fixed logstatement
+ *
+ * Revision 1.8  2008/05/21 10:51:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * modified monitorAdapter interface
  *
  * Revision 1.7  2008/01/17 16:28:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -328,7 +331,7 @@ import org.apache.log4j.Logger;
  * @since 4.2
  */
 public class ReceiverBaseClassic implements IReceiver, IReceiverStatistics, Runnable, IMessageHandler, IbisExceptionListener, HasSender, TracingEventNumbers {
-	public static final String version="$RCSfile: ReceiverBaseClassic.java,v $ $Revision: 1.8 $ $Date: 2008-05-21 10:51:12 $";
+	public static final String version="$RCSfile: ReceiverBaseClassic.java,v $ $Revision: 1.9 $ $Date: 2008-06-26 12:53:28 $";
 	protected Logger log = LogUtil.getLogger(this);
  
  	public static final String RCV_SHUTDOWN_MONITOR_EVENT_MSG ="RCVCLOSED Ibis Receiver shut down";
@@ -1014,7 +1017,7 @@ public class ReceiverBaseClassic implements IReceiver, IReceiverStatistics, Runn
 					}
 				}
 			} else {
-				log.warn("receiver [" + getName() + "] got transaction with state  ["+JtaUtil.displayTransactionStatus()+"] from pipeline, rolling back transaction ["+utx+"] for messageid ["+inProcessMessageId+"]");
+				log.warn("receiver [" + getName() + "] got transaction with inactive state  ["+utx.getStatus()+"] from pipeline, rolling back transaction ["+utx+"] for messageid ["+inProcessMessageId+"]");
 				try {
 					utx.rollback();
 				} catch (Exception e) {
