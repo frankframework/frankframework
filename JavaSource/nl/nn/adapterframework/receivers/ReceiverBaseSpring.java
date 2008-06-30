@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBaseSpring.java,v $
- * Revision 1.26  2008-06-24 07:59:48  europe\L190409
+ * Revision 1.27  2008-06-30 09:08:48  europe\L190409
+ * increase max retry interval to 10 minutes
+ *
+ * Revision 1.26  2008/06/24 07:59:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * only check for duplicates in errorStore when explicitly instructed
  *
  * Revision 1.25  2008/06/19 11:09:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -410,7 +413,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  */
 public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMessageHandler, IbisExceptionListener, HasSender, TracingEventNumbers, IThreadCountControllable, BeanFactoryAware {
     
-	public static final String version="$RCSfile: ReceiverBaseSpring.java,v $ $Revision: 1.26 $ $Date: 2008-06-24 07:59:48 $";
+	public static final String version="$RCSfile: ReceiverBaseSpring.java,v $ $Revision: 1.27 $ $Date: 2008-06-30 09:08:48 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -420,6 +423,8 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 	public static final String RCV_SHUTDOWN_MONITOR_EVENT_MSG ="RCVCLOSED Ibis Receiver shut down";
 	public static final String RCV_SUSPENDED_MONITOR_EVENT_MSG="RCVSUSPND Ibis Receiver operation suspended due to exceptions";
 	public static final int RCV_SUSPENSION_MESSAGE_THRESHOLD=60;
+	public static final int MAX_RETRY_INTERVAL=600;
+	private boolean suspensionMessagePending=false;
    
 	private BeanFactory beanFactory;
 
@@ -1371,27 +1376,31 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 		}
 	}
 
-	private void resetRetryInterval() {
+	public void resetRetryInterval() {
 		synchronized (this) {
-			if (retryInterval > RCV_SUSPENSION_MESSAGE_THRESHOLD) {
+			if (suspensionMessagePending) {
+				suspensionMessagePending=false;
 				fireMonitorEvent(EventTypeEnum.CLEARING,SeverityEnum.WARNING,RCV_SUSPENDED_MONITOR_EVENT_MSG);
 			}
 			retryInterval = 1;
 		}
 	}
 
-	private void increaseRetryIntervalAndWait(Throwable t, String description) {
+	public void increaseRetryIntervalAndWait(Throwable t, String description) {
 		long currentInterval;
 		synchronized (this) {
 			currentInterval = retryInterval;
 			retryInterval = retryInterval * 2;
-			if (retryInterval > 60) {
-				retryInterval = 60;
+			if (retryInterval > MAX_RETRY_INTERVAL) {
+				retryInterval = MAX_RETRY_INTERVAL;
 			}
 		}
 		error(description+", will continue retrieving messages in [" + currentInterval + "] seconds", t);
 		if (currentInterval*2 > RCV_SUSPENSION_MESSAGE_THRESHOLD) {
+			if (!suspensionMessagePending) {
+				suspensionMessagePending=true;
 			fireMonitorEvent(EventTypeEnum.TECHNICAL,SeverityEnum.WARNING,RCV_SUSPENDED_MONITOR_EVENT_MSG);
+		}
 		}
 		while (isInRunState(RunStateEnum.STARTED) && currentInterval-- > 0) {
 			try {
