@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBaseSpring.java,v $
- * Revision 1.27  2008-06-30 09:08:48  europe\L190409
+ * Revision 1.28  2008-06-30 13:42:57  europe\L190409
+ * only warn for suspension >1 sec
+ *
+ * Revision 1.27  2008/06/30 09:08:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * increase max retry interval to 10 minutes
  *
  * Revision 1.26  2008/06/24 07:59:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -413,7 +416,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  */
 public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMessageHandler, IbisExceptionListener, HasSender, TracingEventNumbers, IThreadCountControllable, BeanFactoryAware {
     
-	public static final String version="$RCSfile: ReceiverBaseSpring.java,v $ $Revision: 1.27 $ $Date: 2008-06-30 09:08:48 $";
+	public static final String version="$RCSfile: ReceiverBaseSpring.java,v $ $Revision: 1.28 $ $Date: 2008-06-30 13:42:57 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -1395,7 +1398,11 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 				retryInterval = MAX_RETRY_INTERVAL;
 			}
 		}
-		error(description+", will continue retrieving messages in [" + currentInterval + "] seconds", t);
+		if (currentInterval>1) {
+			error(description+", will continue retrieving messages in [" + currentInterval + "] seconds", t);
+		} else {
+			log.warn(getLogPrefix()+"will continue retrieving messages in [" + currentInterval + "] seconds", t);
+		}
 		if (currentInterval*2 > RCV_SUSPENSION_MESSAGE_THRESHOLD) {
 			if (!suspensionMessagePending) {
 				suspensionMessagePending=true;
