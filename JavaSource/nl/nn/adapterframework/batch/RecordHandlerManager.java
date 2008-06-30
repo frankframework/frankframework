@@ -1,6 +1,9 @@
 /*
  * $Log: RecordHandlerManager.java,v $
- * Revision 1.10  2008-02-19 09:23:47  europe\L190409
+ * Revision 1.11  2008-06-30 08:51:01  europe\L190409
+ * make valueHandlersMap available to descenders
+ *
+ * Revision 1.10  2008/02/19 09:23:47  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.9  2008/02/15 16:07:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -59,7 +62,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class RecordHandlerManager implements IRecordHandlerManager {
-	public static final String version = "$RCSfile: RecordHandlerManager.java,v $  $Revision: 1.10 $ $Date: 2008-02-19 09:23:47 $";
+	public static final String version = "$RCSfile: RecordHandlerManager.java,v $  $Revision: 1.11 $ $Date: 2008-06-30 08:51:01 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private Map valueHandlersMap;
@@ -95,6 +98,10 @@ public class RecordHandlerManager implements IRecordHandlerManager {
 
 	public Collection getRecordHandlers() {
 		return valueHandlersMap.values();	
+	}
+	
+	protected Map getValueHandlersMap() {
+		return valueHandlersMap;	
 	}
 	
 	public RecordHandlingFlow getRecordHandler(PipeLineSession session, String record) throws Exception {
