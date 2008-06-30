@@ -1,6 +1,9 @@
 /*
  * $Log: SpringJmsConnector.java,v $
- * Revision 1.14  2008-06-24 15:13:08  europe\L190409
+ * Revision 1.15  2008-06-30 14:18:27  europe\L190409
+ * use more robust detection transaction and setting of rollbackonly
+ *
+ * Revision 1.14  2008/06/24 15:13:08  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved logging of exceptions
  *
  * Revision 1.13  2008/06/18 12:39:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -76,7 +79,6 @@ import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.util.Counter;
 import nl.nn.adapterframework.util.DateUtils;
-import nl.nn.adapterframework.util.JtaUtil;
 
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeansException;
@@ -86,6 +88,9 @@ import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.jms.listener.DefaultMessageListenerContainer;
 import org.springframework.jms.listener.SessionAwareMessageListener;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import com.ing.ifsa.IFSAMessage;
 
@@ -118,6 +123,9 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 //	public static final int MAX_MESSAGES_PER_TASK=100;
 	public static final int IDLE_TASK_EXECUTION_LIMIT=1000;
  
+	private TransactionDefinition TX = null;
+	int retryInterval=5;
+
 	final Counter threadsProcessing = new Counter(0);
     
 	protected DefaultMessageListenerContainer createMessageListenerContainer() throws ConfigurationException {
@@ -149,6 +157,7 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 			if (getReceiver().getTransactionTimeout()>0) {
 				jmsContainer.setTransactionTimeout(getReceiver().getTransactionTimeout());
 			}
+			TX = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED);
 		} else { 
 			log.debug(getLogPrefix()+"setting no transction manager");
 		}
@@ -198,7 +207,6 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 		} else {
 			jmsContainer.setBeanName(getReceiver().getName());
 		}
-        
 	}
 
 	public void start() throws ListenerException {
@@ -229,37 +237,57 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 
 
 	public void onMessage(Message message, Session session)	throws JMSException {
-                
+		TransactionStatus txStatus=null;
+               
 		long onMessageStart= System.currentTimeMillis();
 		long jmsTimestamp= message.getJMSTimestamp();
 		threadsProcessing.increase();
 		Thread.currentThread().setName(getReceiver().getName()+"["+threadsProcessing.getValue()+"]");
+
+		try {		
+			if (TX!=null) {
+				txStatus = txManager.getTransaction(TX);
+			}
                 
-		Map threadContext = new HashMap();
-		try {
-			IPortConnectedListener listener = getListener();
-			threadContext.put("session",session);
-//			if (log.isDebugEnabled()) log.debug("transaction status before: "+JtaUtil.displayTransactionStatus());
-			getReceiver().processRawMessage(listener, message, threadContext);
-//			if (log.isDebugEnabled()) log.debug("transaction status after: "+JtaUtil.displayTransactionStatus());
-		} catch (ListenerException e) {
-			if (JtaUtil.inTransaction()) {
-				log.warn(getLogPrefix()+"caught exception processing message, setting rollbackonly", e);
-				JtaUtil.setRollbackOnly();
-			} else {
-				if (jmsContainer.isSessionTransacted()) {
-					log.warn(getLogPrefix()+"caught exception processing message, rolling back JMS session", e);
-					session.rollback();
+			Map threadContext = new HashMap();
+			try {
+				IPortConnectedListener listener = getListener();
+				threadContext.put("session",session);
+//				if (log.isDebugEnabled()) log.debug("transaction status before: "+JtaUtil.displayTransactionStatus());
+				getReceiver().processRawMessage(listener, message, threadContext);
+//				if (log.isDebugEnabled()) log.debug("transaction status after: "+JtaUtil.displayTransactionStatus());
+				getReceiver().resetRetryInterval();
+			} catch (ListenerException e) {
+				getReceiver().increaseRetryIntervalAndWait(e,getLogPrefix());
+				if (txStatus!=null) {
+					txStatus.setRollbackOnly();
 				} else {
-					JMSException jmse = new JMSException(getLogPrefix()+"caught exception, no transactional stuff to rollback");
-					jmse.initCause(e);
+					JMSException jmse = new JMSException(getLogPrefix()+"caught exception: "+e.getMessage());
+					jmse.setLinkedException(e);
 					throw jmse;
+				}
+//				if (JtaUtil.inTransaction()) {
+//					log.warn(getLogPrefix()+"caught exception processing message, setting rollbackonly", e);
+//					JtaUtil.setRollbackOnly();
+//				} else {
+//					if (jmsContainer.isSessionTransacted()) {
+//						log.warn(getLogPrefix()+"caught exception processing message, rolling back JMS session", e);
+//						session.rollback();
+//					} else {
+//						JMSException jmse = new JMSException(getLogPrefix()+"caught exception, no transactional stuff to rollback");
+//						jmse.initCause(e);
+//						throw jmse;
+//					}
+//				}
+			} finally {
+				if (jmsContainer.isSessionTransacted()) {
+					log.debug(getLogPrefix()+"committing JMS session");
+					session.commit();
 				}
 			}
 		} finally {
-			if (jmsContainer.isSessionTransacted()) {
-				log.debug(getLogPrefix()+"committing JMS session");
-				session.commit();
+			if (txStatus!=null) {
+				txManager.commit(txStatus);
 			}
 			threadsProcessing.decrease();
 			if (log.isInfoEnabled()) {
@@ -300,6 +328,7 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 			log.error(getLogPrefix()+"Cannot report the error to an IBIS Exception Listener", e);
 		}
 	}
+
 
 	public boolean isThreadCountReadable() {
 		return jmsContainer!=null;
