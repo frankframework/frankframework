@@ -1,10 +1,13 @@
 /*
  * $Log: IteratingPipe.java,v $
- * Revision 1.7.2.2  2008-07-01 07:38:15  europe\L190409
- * facility to store itemno in sessionkey
- *
- * Revision 1.7.2.1  2008/05/22 14:33:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * Revision 1.7.2.3  2008-07-01 08:33:37  europe\L190409
  * sync from HEAD
+ *
+ * Revision 1.12  2008/06/26 12:53:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * itemno sessionkey
+ *
+ * Revision 1.11  2008/05/27 16:58:08  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * modified logging and stripping of xml-version
  *
  * Revision 1.10  2008/05/21 09:40:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added block feature
@@ -163,7 +166,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public abstract class IteratingPipe extends MessageSendingPipe {
-	public static final String version="$RCSfile: IteratingPipe.java,v $ $Revision: 1.7.2.2 $ $Date: 2008-07-01 07:38:15 $";
+	public static final String version="$RCSfile: IteratingPipe.java,v $ $Revision: 1.7.2.3 $ $Date: 2008-07-01 08:33:37 $";
 
 	private String stopConditionXPathExpression=null;
 	private boolean removeXmlDeclarationInResults=false;
@@ -182,7 +185,6 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 
 	protected TransformerPool msgTransformerPool;
 	private TransformerPool stopConditionTp=null;
-	private TransformerPool encapsulateResultsTp=null;
 
 	protected String makeEncapsulatingXslt(String rootElementname,String xpathExpression) {
 		return 
@@ -204,9 +206,6 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 		try {
 			if (StringUtils.isNotEmpty(getStopConditionXPathExpression())) {
 				stopConditionTp=new TransformerPool(XmlUtils.createXPathEvaluatorSource(null,getStopConditionXPathExpression(),"xml",false));
-			}
-			if (isRemoveXmlDeclarationInResults()) {
-				encapsulateResultsTp=new TransformerPool( makeEncapsulatingXslt("result","*"));
 			}
 		} catch (TransformerConfigurationException e) {
 			throw new ConfigurationException(e);
@@ -242,10 +241,6 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 		public boolean handleItem(String item) throws SenderException, TimeOutException {
 			String itemResult=null;
 			count++;
-			if (log.isDebugEnabled()) {
-				//log.debug(getLogPrefix(session)+"set current item to ["+item+"]");
-				log.debug(getLogPrefix(session)+"sending item no ["+count+"]");
-			} 
 			if (StringUtils.isNotEmpty(getItemNoSessionKey())) {
 				session.put(getItemNoSessionKey(),""+count);
 			}
@@ -258,12 +253,16 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 				try {
 					String transformedMsg=msgTransformerPool.transform(item,prc!=null?prc.getValueMap(getParameterList()):null);
 					if (log.isDebugEnabled()) {
-						log.debug(getLogPrefix(session)+" transformed item ["+item+"] into ["+transformedMsg+"]");
+						log.debug(getLogPrefix(session)+"iteration ["+count+"] transformed item ["+item+"] into ["+transformedMsg+"]");
 					}
 					item=transformedMsg;
 				} catch (Exception e) {
 					throw new SenderException(getLogPrefix(session)+"cannot transform item",e);
 				}
+			} else {
+				if (log.isDebugEnabled()) {
+					log.debug(getLogPrefix(session)+"iteration ["+count+"] item ["+item+"]");
+				} 
 			}
 			try {
 				if (psender!=null) {
@@ -290,12 +289,11 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 			try {
 				if (isCollectResults()) {
 					if (isRemoveXmlDeclarationInResults()) {
-						log.debug(getLogPrefix(session)+"post processing partial result ["+itemResult+"]");
-						itemResult = getEncapsulateResultsTp().transform(itemResult,null);
-					} else {
-						log.debug(getLogPrefix(session)+"partial result ["+itemResult+"]");
-						itemResult = "<result>\n"+itemResult+"\n</result>";
-					}
+						if (log.isDebugEnabled()) log.debug(getLogPrefix(session)+"removing XML declaration from ["+itemResult+"]");
+						itemResult = XmlUtils.skipXmlDeclaration(itemResult);
+					} 
+					if (log.isDebugEnabled()) log.debug(getLogPrefix(session)+"partial result ["+itemResult+"]");
+					itemResult = "<result>\n"+itemResult+"\n</result>";
 					results += itemResult+"\n";
 				}
 
@@ -344,7 +342,7 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 							items.append(item);
 						}
 						items.append(getBlockSuffix());
-						keepGoing = callback.handleItem(items.toString()); 
+ 						keepGoing = callback.handleItem(items.toString()); 
 						
 					} else {
 						String item = (String)it.next();
@@ -400,10 +398,6 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 	}
 	public boolean isCollectResults() {
 		return collectResults;
-	}
-
-	protected TransformerPool getEncapsulateResultsTp() {
-		return encapsulateResultsTp;
 	}
 
 	protected TransformerPool getStopConditionTp() {
