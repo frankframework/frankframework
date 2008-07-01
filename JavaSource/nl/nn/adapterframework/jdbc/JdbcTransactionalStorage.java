@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcTransactionalStorage.java,v $
- * Revision 1.27.2.1  2008-06-24 08:25:55  europe\L190409
+ * Revision 1.27.2.2  2008-07-01 07:46:10  europe\L190409
+ * update database always in transaction
+ *
+ * Revision 1.27.2.1  2008/06/24 08:25:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * provide hint using index, where appropriate
  *
  * Revision 1.27  2008/01/11 14:51:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -110,6 +113,10 @@ import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.Misc;
 
 import org.apache.commons.lang.StringUtils;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 /**
  * JDBC implementation of {@link ITransactionalStorage}.
@@ -126,7 +133,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setPassword(String) password}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setTableName(String) tableName}</td><td>the name of the table messages are stored in</td><td>ibisstore</td></tr>
- * <tr><td>{@link #setCreateTable(boolean) createTable}</td><td>when set to <code>true</code>, the table is created if it does not exist</td><td>false</td></tr>
+ * <tr><td>{@link #setCreateTable(boolean) createTable}</td><td>when set to <code>true</code>, the table is created if it does not exist</td><td><code>false</code></td></tr>
  * <tr><td>{@link #setKeyField(String) keyField}</td><td>the name of the column that contains the primary key of the table</td><td>messageKey</td></tr>
  * <tr><td>{@link #setTypeField(String) typeField}</td><td>the name of the column types are stored in</td><td>type</td></tr>
  * <tr><td>{@link #setHostField(String) hostField}</td><td>the name of the column that stores the hostname of the server</td><td>host</td></tr>
@@ -199,7 +206,9 @@ import org.apache.commons.lang.StringUtils;
  * @since 	4.1
  */
 public class JdbcTransactionalStorage extends JdbcFacade implements ITransactionalStorage {
-	public static final String version = "$RCSfile: JdbcTransactionalStorage.java,v $ $Revision: 1.27.2.1 $ $Date: 2008-06-24 08:25:55 $";
+	public static final String version = "$RCSfile: JdbcTransactionalStorage.java,v $ $Revision: 1.27.2.2 $ $Date: 2008-07-01 07:46:10 $";
+
+	public final static TransactionDefinition TXREQUIRED = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED);
 	
 	// the following currently only for debug.... 
 	boolean checkIfTableExists=true;
@@ -233,7 +242,8 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	private String textFieldType="VARCHAR";
 	int databaseType=-1;
 
-	
+	private PlatformTransactionManager txManager;
+
 	protected String insertQuery;
 	protected String deleteQuery;
 	protected String selectKeyQuery;
@@ -562,43 +572,53 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 
 
 	public String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, Serializable message) throws SenderException {
-		Connection conn;
-		String result;
-		if (messageId==null) {
-			throw new SenderException("messageId cannot be null");
-		}
-		if (correlationId==null) {
-			throw new SenderException("correlationId cannot be null");
+		TransactionStatus txStatus=null;
+		if (txManager!=null) {
+			txStatus = txManager.getTransaction(TXREQUIRED);
 		}
 		try {
-			conn = getConnection();
-		} catch (JdbcException e) {
-			throw new SenderException(e);
-		}
-		try {
-			Timestamp receivedDateTime = new Timestamp(receivedDate.getTime());
-			if (messageId.length()>MAXIDLEN) {
-				messageId=messageId.substring(0,MAXIDLEN);
+			Connection conn;
+			String result;
+			if (messageId==null) {
+				throw new SenderException("messageId cannot be null");
 			}
-			if (correlationId.length()>MAXIDLEN) {
-				correlationId=correlationId.substring(0,MAXIDLEN);
+			if (correlationId==null) {
+				throw new SenderException("correlationId cannot be null");
 			}
-			if (comments!=null && comments.length()>MAXCOMMENTLEN) {
-				comments=comments.substring(0,MAXCOMMENTLEN);
-			}
-			result = storeMessageInDatabase(conn, messageId, correlationId, receivedDateTime, comments, message);
-			if (result==null) {
-				result=retrieveKey(conn,messageId,correlationId,receivedDateTime);
-			}
-			return result;
-			
-		} catch (Exception e) {
-			throw new SenderException("cannot serialize message",e);
-		} finally {
 			try {
-				conn.close();
-			} catch (SQLException e) {
-				log.error("error closing JdbcConnection", e);
+				conn = getConnection();
+			} catch (JdbcException e) {
+				throw new SenderException(e);
+			}
+			try {
+				Timestamp receivedDateTime = new Timestamp(receivedDate.getTime());
+				if (messageId.length()>MAXIDLEN) {
+					messageId=messageId.substring(0,MAXIDLEN);
+				}
+				if (correlationId.length()>MAXIDLEN) {
+					correlationId=correlationId.substring(0,MAXIDLEN);
+				}
+				if (comments!=null && comments.length()>MAXCOMMENTLEN) {
+					comments=comments.substring(0,MAXCOMMENTLEN);
+				}
+				result = storeMessageInDatabase(conn, messageId, correlationId, receivedDateTime, comments, message);
+				if (result==null) {
+					result=retrieveKey(conn,messageId,correlationId,receivedDateTime);
+				}
+				return result;
+			
+			} catch (Exception e) {
+				throw new SenderException("cannot serialize message",e);
+			} finally {
+				try {
+					conn.close();
+				} catch (SQLException e) {
+					log.error("error closing JdbcConnection", e);
+				}
+			}
+		} finally {
+			if (txStatus!=null) {
+				txManager.commit(txStatus);
 			}
 		}
 		
@@ -1021,6 +1041,13 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	}
 	public String getIndexName() {
 		return indexName;
+	}
+
+	public void setTxManager(PlatformTransactionManager manager) {
+		txManager = manager;
+	}
+	public PlatformTransactionManager getTxManager() {
+		return txManager;
 	}
 
 }
