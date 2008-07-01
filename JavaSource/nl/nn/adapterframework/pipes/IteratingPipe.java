@@ -1,6 +1,9 @@
 /*
  * $Log: IteratingPipe.java,v $
- * Revision 1.7.2.1  2008-05-22 14:33:43  europe\L190409
+ * Revision 1.7.2.2  2008-07-01 07:38:15  europe\L190409
+ * facility to store itemno in sessionkey
+ *
+ * Revision 1.7.2.1  2008/05/22 14:33:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * sync from HEAD
  *
  * Revision 1.10  2008/05/21 09:40:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -115,6 +118,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setBlockSize(int) blockSize}</td><td>controls multiline behaviour. when set to a value greater than 0, it specifies the number of rows send in a block to the sender.</td><td>0 (one line at a time, no prefix of suffix)</td></tr>
  * <tr><td>{@link #setBlockPrefix(String) blockPrefix}</td><td>When <code>blockSize &gt; 0</code>, this string is inserted at the start of the set of lines.</td><td>&lt;block&gt;</td></tr>
  * <tr><td>{@link #setBlockSuffix(String) blockSuffix}</td><td>When <code>blockSize &gt; 0</code>, this string is inserted at the end of the set of lines.</td><td>&lt;/block&gt;</td></tr>
+ * <tr><td>{@link #setItemNoSessionKey(String) itemNoSessionKey}</td><td>key of session variable to store number of item processed.</td><td>&nbsp;</td></tr>
  * </table>
  * <table border="1">
  * <tr><th>nested elements</th><th>description</th></tr>
@@ -159,7 +163,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public abstract class IteratingPipe extends MessageSendingPipe {
-	public static final String version="$RCSfile: IteratingPipe.java,v $ $Revision: 1.7.2.1 $ $Date: 2008-05-22 14:33:43 $";
+	public static final String version="$RCSfile: IteratingPipe.java,v $ $Revision: 1.7.2.2 $ $Date: 2008-07-01 07:38:15 $";
 
 	private String stopConditionXPathExpression=null;
 	private boolean removeXmlDeclarationInResults=false;
@@ -168,6 +172,7 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 	private String outputType="text";
 	private String styleSheetName;
 	private boolean omitXmlDeclaration=true;
+	private String itemNoSessionKey=null;
 	
 	private boolean ignoreExceptions=false;
 	
@@ -241,6 +246,9 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 				//log.debug(getLogPrefix(session)+"set current item to ["+item+"]");
 				log.debug(getLogPrefix(session)+"sending item no ["+count+"]");
 			} 
+			if (StringUtils.isNotEmpty(getItemNoSessionKey())) {
+				session.put(getItemNoSessionKey(),""+count);
+			}
 			ParameterResolutionContext prc=null;
 			if (psender !=null || msgTransformerPool!=null && getParameterList()!=null) {
 				//TODO find out why ParameterResolutionContext cannot be constructed using dom-source
@@ -461,5 +469,11 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 		return blockSize;
 	}
 
+	public void setItemNoSessionKey(String string) {
+		itemNoSessionKey = string;
+	}
+	public String getItemNoSessionKey() {
+		return itemNoSessionKey;
+	}
 
 }
