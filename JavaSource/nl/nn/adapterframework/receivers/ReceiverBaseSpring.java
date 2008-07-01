@@ -1,6 +1,10 @@
 /*
  * $Log: ReceiverBaseSpring.java,v $
- * Revision 1.17.2.6  2008-06-19 09:29:59  europe\L190409
+ * Revision 1.17.2.7  2008-07-01 07:48:01  europe\L190409
+ * only warn for suspension >1 sec
+ * increase max retry interval to 10 minutes
+ *
+ * Revision 1.17.2.6  2008/06/19 09:29:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * use logprefix in logging
  * put non transacted messages in errorStore on erroneous exit state or exception
  * clearer logging when messageid seen too many times
@@ -406,7 +410,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  */
 public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMessageHandler, IbisExceptionListener, HasSender, TracingEventNumbers, IThreadCountControllable, BeanFactoryAware {
     
-	public static final String version="$RCSfile: ReceiverBaseSpring.java,v $ $Revision: 1.17.2.6 $ $Date: 2008-06-19 09:29:59 $";
+	public static final String version="$RCSfile: ReceiverBaseSpring.java,v $ $Revision: 1.17.2.7 $ $Date: 2008-07-01 07:48:01 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -416,6 +420,8 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 	public static final String RCV_SHUTDOWN_MONITOR_EVENT_MSG ="RCVCLOSED Ibis Receiver shut down";
 	public static final String RCV_SUSPENDED_MONITOR_EVENT_MSG="RCVSUSPND Ibis Receiver operation suspended due to exceptions";
 	public static final int RCV_SUSPENSION_MESSAGE_THRESHOLD=60;
+	public static final int MAX_RETRY_INTERVAL=600;
+	private boolean suspensionMessagePending=false;
    
 	private BeanFactory beanFactory;
 
@@ -1255,7 +1261,7 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 				if (prci.tryCount>getMaxRetries()+2) {
 					increaseRetryIntervalAndWait(null,getLogPrefix()+"saw message with messageId ["+messageId+"] too many times ["+prci.tryCount+"]; maxRetries=["+getMaxRetries()+"]");
 				}
-				if (isTransacted() || (getErrorStorage() != null && !getErrorStorage().containsMessageId(messageId))) {
+				if (isTransacted() || (getErrorStorage() != null && (!isCheckForDuplicates() || !getErrorStorage().containsMessageId(messageId)))) {
 					moveInProcessToError(messageId, prci.correlationId, message, prci.receiveDate, prci.comments, rawMessage, TXREQUIRED);
 				}
 				PipeLineResult plr = new PipeLineResult();
@@ -1348,27 +1354,35 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 		}
 	}
 
-	private void resetRetryInterval() {
+	public void resetRetryInterval() {
 		synchronized (this) {
-			if (retryInterval > RCV_SUSPENSION_MESSAGE_THRESHOLD) {
+			if (suspensionMessagePending) {
+				suspensionMessagePending=false;
 				fireMonitorEvent(EventTypeEnum.CLEARING,SeverityEnum.WARNING,RCV_SUSPENDED_MONITOR_EVENT_MSG);
 			}
 			retryInterval = 1;
 		}
 	}
 
-	private void increaseRetryIntervalAndWait(Throwable t, String description) {
+	public void increaseRetryIntervalAndWait(Throwable t, String description) {
 		long currentInterval;
 		synchronized (this) {
 			currentInterval = retryInterval;
 			retryInterval = retryInterval * 2;
-			if (retryInterval > 60) {
-				retryInterval = 60;
+			if (retryInterval > MAX_RETRY_INTERVAL) {
+				retryInterval = MAX_RETRY_INTERVAL;
 			}
 		}
-		error(description+", will continue retrieving messages in [" + currentInterval + "] seconds", t);
+		if (currentInterval>1) {
+			error(description+", will continue retrieving messages in [" + currentInterval + "] seconds", t);
+		} else {
+			log.warn(getLogPrefix()+"will continue retrieving messages in [" + currentInterval + "] seconds", t);
+		}
 		if (currentInterval*2 > RCV_SUSPENSION_MESSAGE_THRESHOLD) {
+			if (!suspensionMessagePending) {
+				suspensionMessagePending=true;
 			fireMonitorEvent(EventTypeEnum.TECHNICAL,SeverityEnum.WARNING,RCV_SUSPENDED_MONITOR_EVENT_MSG);
+		}
 		}
 		while (isInRunState(RunStateEnum.STARTED) && currentInterval-- > 0) {
 			try {
