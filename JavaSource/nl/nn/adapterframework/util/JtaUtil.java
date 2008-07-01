@@ -1,6 +1,12 @@
 /*
  * $Log: JtaUtil.java,v $
- * Revision 1.21  2008-02-22 14:34:00  europe\L190409
+ * Revision 1.21.2.1  2008-07-01 07:39:24  europe\L190409
+ * sync from HEAD
+ *
+ * Revision 1.22  2008/06/30 09:10:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * removed functions that proved to be unreliable
+ *
+ * Revision 1.21  2008/02/22 14:34:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved logging
  *
  * Revision 1.20  2008/02/06 16:03:25  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -93,7 +99,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  * @since  4.1
  */
 public class JtaUtil {
-	public static final String version="$RCSfile: JtaUtil.java,v $ $Revision: 1.21 $ $Date: 2008-02-22 14:34:00 $";
+	public static final String version="$RCSfile: JtaUtil.java,v $ $Revision: 1.21.2.1 $ $Date: 2008-07-01 07:39:24 $";
 	private static Logger log = LogUtil.getLogger(JtaUtil.class);
 	
 	private static final String USERTRANSACTION_URL1_KEY="jta.userTransactionUrl1";
@@ -149,19 +155,19 @@ public class JtaUtil {
 //		}   
 //	}
 
-	public static TransactionStatus getCurrentTransactionStatus() {
-		TransactionStatus txStatus=null;
-		try {
-			txStatus=TransactionAspectSupport.currentTransactionStatus();
-		} catch (NoTransactionException e) {
-			log.debug("not in transaction: "+e.getMessage());
-		}
-		return txStatus;
-	}
+//	public static TransactionStatus getCurrentTransactionStatus() {
+//		TransactionStatus txStatus=null;
+//		try {
+//			txStatus=TransactionAspectSupport.currentTransactionStatus();
+//		} catch (NoTransactionException e) {
+//			log.debug("not in transaction: "+e.getMessage());
+//		}
+//		return txStatus;
+//	}
 
-	public static String displayTransactionStatus() {
-		return displayTransactionStatus(getCurrentTransactionStatus());
-	}
+//	public static String displayTransactionStatus() {
+//		return displayTransactionStatus(getCurrentTransactionStatus());
+//	}
 	
 	public static String displayTransactionStatus(TransactionStatus txStatus) {
 		String result;
@@ -397,18 +403,20 @@ public class JtaUtil {
 //		finishTransaction(false);
 //	}
 
-	public static void setRollbackOnly() {
-		TransactionStatus txStatus = getCurrentTransactionStatus();
-		if (txStatus!=null) {
-			log.debug("marking current transaction RollbackOnly");
-			txStatus.setRollbackOnly();
-		}
-	}
+	// ONDERSTAANDE, MET getCurrentTransactionStatus, WERKT NIET BETROUWBAAR!
+//	public static void setRollbackOnly() {
+//		TransactionStatus txStatus = getCurrentTransactionStatus();
+//		if (txStatus!=null) {
+//			log.debug("marking current transaction RollbackOnly");
+//			txStatus.setRollbackOnly();
+//		}
+//	}
 
-	public static boolean isRollbackOnly() {
-		TransactionStatus txStatus = getCurrentTransactionStatus();
-		return txStatus!=null && txStatus.isRollbackOnly();
-	}
+	// ONDERSTAANDE, MET getCurrentTransactionStatus, WERKT NIET BETROUWBAAR!
+//	public static boolean isRollbackOnly() {
+//		TransactionStatus txStatus = getCurrentTransactionStatus();
+//		return txStatus!=null && txStatus.isRollbackOnly();
+//	}
 	
 //	public static void finishTransaction(boolean rollbackonly) throws NamingException, IllegalStateException, SecurityException, SystemException {
 //		utx=getUserTransaction();

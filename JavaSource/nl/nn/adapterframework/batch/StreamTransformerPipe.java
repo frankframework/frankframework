@@ -1,10 +1,10 @@
 /*
  * $Log: StreamTransformerPipe.java,v $
- * Revision 1.13.2.2  2008-04-03 11:18:45  europe\L190409
- * improved error message
+ * Revision 1.13.2.3  2008-07-01 07:36:28  europe\L190409
+ * sync from HEAD
  *
- * Revision 1.13.2.1  2008/04/03 08:09:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * synch from HEAD
+ * Revision 1.15  2008/04/22 11:54:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * cosmetic change
  *
  * Revision 1.14  2008/03/27 10:52:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * autoclose block on forced close, too
@@ -101,7 +101,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class StreamTransformerPipe extends FixedForwardPipe {
-	public static final String version = "$RCSfile: StreamTransformerPipe.java,v $  $Revision: 1.13.2.2 $ $Date: 2008-04-03 11:18:45 $";
+	public static final String version = "$RCSfile: StreamTransformerPipe.java,v $  $Revision: 1.13.2.3 $ $Date: 2008-07-01 07:36:28 $";
 
 	private IRecordHandlerManager initialManager=null;
 	private IResultHandler defaultHandler=null;

@@ -1,7 +1,11 @@
 /*
  * $Log: FxfListener.java,v $
- * Revision 1.7.2.3  2008-05-15 16:07:08  europe\L190409
- * synch from HEAD
+ * Revision 1.7.2.4  2008-07-01 07:37:05  europe\L190409
+ * sync from HEAD
+ *
+ * Revision 1.10  2008/06/30 08:55:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+ * only commit file reception in case of success
+ * otherwise only delete local file
  *
  * Revision 1.9  2008/05/14 09:34:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * documented session variables set
@@ -43,7 +47,6 @@ import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.jms.JmsListener;
 import nl.nn.adapterframework.util.FileUtils;
-import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.ProcessUtil;
 import nl.nn.adapterframework.util.TransformerPool;
 
@@ -146,18 +149,12 @@ public class FxfListener extends JmsListener {
 			throw new ListenerException("could not extract FXF localname from session key ["+LOCALNAME_SESSION_KEY+"]");
 		}
 	
-//		log.debug("FXF transaction status1:"+JtaUtil.displayTransactionStatus());
-//
-//		TransactionStatus txStatus=null;
-//		try {
-//			txStatus=TransactionAspectSupport.currentTransactionStatus();
-//			log.debug("FXF transaction status2:"+JtaUtil.displayTransactionStatus(txStatus));
-//		} catch (NoTransactionException e) {
-//			log.debug("not in transaction: "+e.getMessage());
-//		}
-
-		if (JtaUtil.isRollbackOnly()) {
-			log.info(getLogPrefix()+"transaction status is RollbackOnly, will not confirm processing to FXF");		
+//		if (JtaUtil.isRollbackOnly()) {
+//			log.info(getLogPrefix()+"transaction status is RollbackOnly, will not confirm processing to FXF");		
+		if (plr==null || !"success".equals(plr.getState())) {
+			log.warn(getLogPrefix()+"pipeLineExitState not equal to success, will not confirm processing to FXF, only delete local file");
+			File f=new File(localname);
+			f.delete();		
 		} else {
 			// confirm processing of file
 			String command = getScript()+" processed "+transfername;
