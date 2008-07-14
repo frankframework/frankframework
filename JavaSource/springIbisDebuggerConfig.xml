@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  $Log: springIbisDebuggerConfig.xml,v $
+  Revision 1.1  2008-07-14 17:48:46  europe\L190409
+  deactivated debugger config
+
+-->
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+            http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+            http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.0.xsd
+            ">
+<!--
+    <bean name="ibisDebugger" class="nl.nn.testtool.ibis.Debugger"
+        autowire="byName">
+    </bean>
+-->    
+</beans>
