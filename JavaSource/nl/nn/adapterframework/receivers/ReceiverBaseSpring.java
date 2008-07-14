@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBaseSpring.java,v $
- * Revision 1.28  2008-06-30 13:42:57  europe\L190409
+ * Revision 1.29  2008-07-14 17:27:44  europe\L190409
+ * use flexible monitoring
+ *
+ * Revision 1.28  2008/06/30 13:42:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * only warn for suspension >1 sec
  *
  * Revision 1.27  2008/06/30 09:08:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -313,10 +316,9 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.jdbc.JdbcFacade;
 import nl.nn.adapterframework.jms.JMSFacade;
-import nl.nn.adapterframework.monitoring.EventTypeEnum;
-import nl.nn.adapterframework.monitoring.IMonitorAdapter;
-import nl.nn.adapterframework.monitoring.MonitorAdapterFactory;
-import nl.nn.adapterframework.monitoring.SeverityEnum;
+import nl.nn.adapterframework.monitoring.EventHandler;
+import nl.nn.adapterframework.monitoring.EventThrowing;
+import nl.nn.adapterframework.monitoring.MonitorManager;
 import nl.nn.adapterframework.util.Counter;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
@@ -364,7 +366,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  * <tr><td>{@link #setBeforeEvent(int) beforeEvent}</td>      <td>METT eventnumber, fired just before a message is processed by this Receiver</td><td>-1 (disabled)</td></tr>
  * <tr><td>{@link #setAfterEvent(int) afterEvent}</td>        <td>METT eventnumber, fired just after message processing by this Receiver is finished</td><td>-1 (disabled)</td></tr>
  * <tr><td>{@link #setExceptionEvent(int) exceptionEvent}</td><td>METT eventnumber, fired when message processing by this Receiver resulted in an exception</td><td>-1 (disabled)</td></tr>
- * <tr><td>{@link #setCorrelationIDXPath(String) correationIdXPath}</td><td>xpath expression to extract correlationID from message</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setCorrelationIDXPath(String) correlationIDXPath}</td><td>xpath expression to extract correlationID from message</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * <p>
@@ -414,17 +416,23 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  * @author     Gerrit van Brakel
  * @since 4.2
  */
-public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMessageHandler, IbisExceptionListener, HasSender, TracingEventNumbers, IThreadCountControllable, BeanFactoryAware {
+public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMessageHandler, EventThrowing, IbisExceptionListener, HasSender, TracingEventNumbers, IThreadCountControllable, BeanFactoryAware {
     
-	public static final String version="$RCSfile: ReceiverBaseSpring.java,v $ $Revision: 1.28 $ $Date: 2008-06-30 13:42:57 $";
+	public static final String version="$RCSfile: ReceiverBaseSpring.java,v $ $Revision: 1.29 $ $Date: 2008-07-14 17:27:44 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
 	public final static TransactionDefinition TXREQUIRED = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED);
 	public final static TransactionDefinition TXSUPPORTS = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_SUPPORTS);
- 
-	public static final String RCV_SHUTDOWN_MONITOR_EVENT_MSG ="RCVCLOSED Ibis Receiver shut down";
-	public static final String RCV_SUSPENDED_MONITOR_EVENT_MSG="RCVSUSPND Ibis Receiver operation suspended due to exceptions";
+
+	public static final String RCV_CONFIGURED_MONITOR_EVENT = "Receiver Configured";
+	public static final String RCV_CONFIGURATIONEXCEPTION_MONITOR_EVENT = "Exception Configuring Receiver";
+	public static final String RCV_STARTED_RUNNING_MONITOR_EVENT = "Receiver Started Running";
+	public static final String RCV_SHUTDOWN_MONITOR_EVENT = "Receiver Shutdown";
+	public static final String RCV_SUSPENDED_MONITOR_EVENT = "Receiver Operation Suspended";
+	public static final String RCV_RESUMED_MONITOR_EVENT = "Receiver Operation Resumed";
+	public static final String RCV_THREAD_EXIT_MONITOR_EVENT = "Receiver Thread Exited";
+	
 	public static final int RCV_SUSPENSION_MESSAGE_THRESHOLD=60;
 	public static final int MAX_RETRY_INTERVAL=600;
 	private boolean suspensionMessagePending=false;
@@ -494,7 +502,7 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
    
 	private PlatformTransactionManager txManager;
 
-	private IMonitorAdapter monitorAdapter=null;
+	private EventHandler eventHandler=null;
     
 	/**
 	 * The thread-pool for spawning threads, injected by Spring
@@ -648,7 +656,7 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 			throw new ListenerException(e);
 		}
 		getListener().open();
-		fireMonitorEvent(EventTypeEnum.CLEARING,SeverityEnum.CRITICAL,RCV_SHUTDOWN_MONITOR_EVENT_MSG);
+		throwEvent(RCV_STARTED_RUNNING_MONITOR_EVENT);
 		if (getListener() instanceof IPullingListener){
 			// start all threads
 			if (getNumThreads() > 1) {
@@ -702,7 +710,7 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 			error(getLogPrefix()+"error closing connection", e);
 		}
 		runState.setRunState(RunStateEnum.STOPPED);
-		fireMonitorEvent(EventTypeEnum.TECHNICAL,SeverityEnum.CRITICAL,RCV_SHUTDOWN_MONITOR_EVENT_MSG);
+		throwEvent(RCV_SHUTDOWN_MONITOR_EVENT);
 		resetRetryInterval();
 		info(getLogPrefix()+"stopped");
 	}
@@ -844,11 +852,20 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 				}
 			}
 
-			monitorAdapter=MonitorAdapterFactory.getMonitorAdapter();
+			eventHandler = MonitorManager.getEventHandler();
+			registerEvent(RCV_CONFIGURED_MONITOR_EVENT);
+			registerEvent(RCV_CONFIGURATIONEXCEPTION_MONITOR_EVENT);
+			registerEvent(RCV_STARTED_RUNNING_MONITOR_EVENT);
+			registerEvent(RCV_SHUTDOWN_MONITOR_EVENT);
+			registerEvent(RCV_SUSPENDED_MONITOR_EVENT);
+			registerEvent(RCV_RESUMED_MONITOR_EVENT);
+			registerEvent(RCV_THREAD_EXIT_MONITOR_EVENT);
 			if (adapter != null) {
 				adapter.getMessageKeeper().add(getLogPrefix()+"initialization complete");
 			}
+			throwEvent(RCV_CONFIGURED_MONITOR_EVENT);
 		} catch(ConfigurationException e){
+			throwEvent(RCV_CONFIGURATIONEXCEPTION_MONITOR_EVENT);
 			log.debug(getLogPrefix()+"Errors occured during configuration, setting runstate to ERROR");
 			runState.setRunState(RunStateEnum.ERROR);
 			throw e;
@@ -1373,9 +1390,17 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 		}
 	}
 
-	public void fireMonitorEvent(EventTypeEnum eventType, SeverityEnum severity, String message) {
-		if (monitorAdapter!=null) {
-			monitorAdapter.fireEvent(getName(), eventType, severity, message, null);
+	public String getEventSourceName() {
+		return getLogPrefix().trim();
+	}
+	protected void registerEvent(String eventCode) {
+		if (eventHandler!=null) {
+			eventHandler.registerEvent(this,eventCode);
+		}		
+	}
+	protected void throwEvent(String eventCode) {
+		if (eventHandler!=null) {
+			eventHandler.fireEvent(this,eventCode);
 		}
 	}
 
@@ -1383,7 +1408,7 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 		synchronized (this) {
 			if (suspensionMessagePending) {
 				suspensionMessagePending=false;
-				fireMonitorEvent(EventTypeEnum.CLEARING,SeverityEnum.WARNING,RCV_SUSPENDED_MONITOR_EVENT_MSG);
+				throwEvent(RCV_RESUMED_MONITOR_EVENT);
 			}
 			retryInterval = 1;
 		}
@@ -1406,8 +1431,8 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 		if (currentInterval*2 > RCV_SUSPENSION_MESSAGE_THRESHOLD) {
 			if (!suspensionMessagePending) {
 				suspensionMessagePending=true;
-			fireMonitorEvent(EventTypeEnum.TECHNICAL,SeverityEnum.WARNING,RCV_SUSPENDED_MONITOR_EVENT_MSG);
-		}
+				throwEvent(RCV_SUSPENDED_MONITOR_EVENT);
+			}
 		}
 		while (isInRunState(RunStateEnum.STARTED) && currentInterval-- > 0) {
 			try {
@@ -1653,7 +1678,7 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 	public ITransactionalStorage getMessageLog() {
 		return messageLog;
 	}
-	
+
 
 	/**
 	 * Get the number of messages received.

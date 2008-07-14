@@ -1,6 +1,9 @@
 /*
  * $Log: PullingListenerContainer.java,v $
- * Revision 1.12  2008-06-18 12:31:17  europe\L190409
+ * Revision 1.13  2008-07-14 17:27:44  europe\L190409
+ * use flexible monitoring
+ *
+ * Revision 1.12  2008/06/18 12:31:17  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added prefix to monitor message
  *
  * Revision 1.11  2008/03/27 11:01:22  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -42,8 +45,6 @@ import java.util.Map;
 
 import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.monitoring.EventTypeEnum;
-import nl.nn.adapterframework.monitoring.SeverityEnum;
 import nl.nn.adapterframework.util.Counter;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.RunStateEnum;
@@ -218,7 +219,7 @@ public class PullingListenerContainer implements Runnable {
             long stillRunning = threadsRunning.decrease();
             if (stillRunning > 0) {
 				receiver.info("a thread of Receiver [" + receiver.getName() + "] exited, [" + stillRunning + "] are still running");
-				receiver.fireMonitorEvent(EventTypeEnum.TECHNICAL,SeverityEnum.WARNING,receiver.RCV_SHUTDOWN_MONITOR_EVENT_MSG+" a thread shut down, ["+stillRunning+"] are still running");
+				receiver.throwEvent(receiver.RCV_THREAD_EXIT_MONITOR_EVENT);
                 return;
             }
 			receiver.info("the last thread of Receiver [" + receiver.getName() + "] exited, cleaning up");
@@ -230,7 +231,7 @@ public class PullingListenerContainer implements Runnable {
 	private void resetRetryInterval() {
 		synchronized (receiver) {
 			if (retryInterval > receiver.RCV_SUSPENSION_MESSAGE_THRESHOLD) {
-				receiver.fireMonitorEvent(EventTypeEnum.CLEARING,SeverityEnum.HARMLESS,receiver.RCV_SUSPENDED_MONITOR_EVENT_MSG);
+				receiver.throwEvent(receiver.RCV_SUSPENDED_MONITOR_EVENT);
 			}
 			retryInterval = 1;
 		}
@@ -247,7 +248,7 @@ public class PullingListenerContainer implements Runnable {
 		}
 		receiver.error("caught Exception retrieving message, will continue retrieving messages in [" + currentInterval + "] seconds", t);
 		if (currentInterval*2 > receiver.RCV_SUSPENSION_MESSAGE_THRESHOLD) {
-			receiver.fireMonitorEvent(EventTypeEnum.TECHNICAL,SeverityEnum.WARNING,receiver.RCV_SUSPENDED_MONITOR_EVENT_MSG);
+			receiver.throwEvent(receiver.RCV_SUSPENDED_MONITOR_EVENT);
 		}
 		while (receiver.isInRunState(RunStateEnum.STARTED) && currentInterval-- > 0) {
 			try {
