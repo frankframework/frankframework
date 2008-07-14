@@ -1,6 +1,9 @@
 /*
  * $Log: Parameter.java,v $
- * Revision 1.27  2008-02-28 16:23:39  europe\L190409
+ * Revision 1.28  2008-07-14 17:22:15  europe\L190409
+ * support for debugging
+ *
+ * Revision 1.27  2008/02/28 16:23:39  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added type timestamp
  *
  * Revision 1.26  2008/01/11 09:45:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -109,6 +112,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IWithParameters;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.debug.IbisDebugger;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.LogUtil;
@@ -184,8 +188,10 @@ import org.w3c.dom.Node;
  * @author Gerrit van Brakel
  */
 public class Parameter implements INamedObject, IWithParameters {
-	public static final String version="$RCSfile: Parameter.java,v $ $Revision: 1.27 $ $Date: 2008-02-28 16:23:39 $";
+	public static final String version="$RCSfile: Parameter.java,v $ $Revision: 1.28 $ $Date: 2008-07-14 17:22:15 $";
 	protected Logger log = LogUtil.getLogger(this);
+
+	private IbisDebugger ibisDebugger;
 
 	public final static String TYPE_XML="xml";
 	public final static String TYPE_NODE="node";
@@ -350,6 +356,7 @@ public class Parameter implements INamedObject, IWithParameters {
 			log.debug("Parameter ["+getName()+"] resolved to defaultvalue ["+getDefaultValue()+"]");
 			result=getDefaultValue();
 		}
+		if (log.isDebugEnabled() && ibisDebugger!=null) result = ibisDebugger.parameterResolvedTo(this, prc.getSession().getMessageId(), result);
 		if (result !=null && result instanceof String) {
 			if (TYPE_NODE.equals(getType())) {
 				try {
@@ -555,5 +562,9 @@ public class Parameter implements INamedObject, IWithParameters {
 	}
 	public String getGroupingSeparator() {
 		return groupingSeparator;
+	}
+	
+	public void setIbisDebugger(IbisDebugger ibisDebugger) {
+		this.ibisDebugger = ibisDebugger;
 	}
 }
