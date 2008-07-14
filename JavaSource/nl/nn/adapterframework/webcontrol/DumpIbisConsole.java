@@ -1,6 +1,9 @@
 /*
  * $Log: DumpIbisConsole.java,v $
- * Revision 1.7  2008-06-24 08:01:35  europe\L190409
+ * Revision 1.8  2008-07-14 17:46:17  europe\L190409
+ * added .zip to filename
+ *
+ * Revision 1.7  2008/06/24 08:01:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * remove subdirectory from zip
  * added newlines to logfile lines
  *
@@ -245,7 +248,7 @@ public class DumpIbisConsole extends HttpServlet {
 		try {
 			OutputStream out = response.getOutputStream();
 			response.setContentType("application/x-zip-compressed");
-			response.setHeader("Content-Disposition","attachment; filename=\"IbisConsoleDump-"+AppConstants.getInstance().getProperty("instance.name","")+"-"+Misc.getHostname()+"\"");
+			response.setHeader("Content-Disposition","attachment; filename=\"IbisConsoleDump-"+AppConstants.getInstance().getProperty("instance.name","")+"-"+Misc.getHostname()+".zip\"");
 			zipOutputStream = new ZipOutputStream(out);
 
 			copyServletResponse( request, "/showConfigurationStatus.do", directoryName + "showConfigurationStatus.html");
