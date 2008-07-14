@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractPipe.java,v $
- * Revision 1.32  2008-02-06 15:57:09  europe\L190409
+ * Revision 1.33  2008-07-14 17:24:05  europe\L190409
+ * support for flexibile monitoring
+ *
+ * Revision 1.32  2008/02/06 15:57:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added support for setting of transaction timeout
  *
  * Revision 1.31  2008/01/11 09:47:18  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -102,6 +105,9 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
+import nl.nn.adapterframework.monitoring.EventHandler;
+import nl.nn.adapterframework.monitoring.EventThrowing;
+import nl.nn.adapterframework.monitoring.MonitorManager;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.util.JtaUtil;
@@ -177,8 +183,8 @@ import org.springframework.transaction.TransactionDefinition;
  *
  * @see nl.nn.adapterframework.core.PipeLineSession
  */
-public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttribute, TracingEventNumbers {
-	public static final String version="$RCSfile: AbstractPipe.java,v $ $Revision: 1.32 $ $Date: 2008-02-06 15:57:09 $";
+public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttribute, TracingEventNumbers, EventThrowing {
+	public static final String version="$RCSfile: AbstractPipe.java,v $ $Revision: 1.33 $ $Date: 2008-07-14 17:24:05 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -201,6 +207,8 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	private int exceptionEvent=-1;
 
 	private boolean active=true;
+
+	private EventHandler eventHandler=null;
  
  
 	/**
@@ -219,6 +227,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 				throw new ConfigurationException(getLogPrefix(null)+"while configuring parameters",e);
 			}
 		}
+		eventHandler = MonitorManager.getEventHandler();
 	}
 
 	/**
@@ -353,6 +362,21 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	public ParameterList getParameterList() {
 		return parameterList;
 	}
+
+	public String getEventSourceName() {
+		return getLogPrefix(null).trim();
+	}
+	public void registerEvent(String description) {
+		if (eventHandler!=null) {
+			eventHandler.registerEvent(this,description);
+		}		
+	}
+	public void throwEvent(String event) {
+		if (eventHandler!=null) {
+			eventHandler.fireEvent(this,event);
+		}
+	}
+
 
 	/**
 	 * Indicates the maximum number of treads ;that may call {@link #doPipe(Object, PipeLineSession)} simultaneously in case
