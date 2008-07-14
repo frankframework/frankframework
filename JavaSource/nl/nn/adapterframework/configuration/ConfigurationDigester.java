@@ -1,6 +1,9 @@
 /*
  * $Log: ConfigurationDigester.java,v $
- * Revision 1.24  2008-05-21 08:37:31  europe\L190409
+ * Revision 1.25  2008-07-14 17:02:54  europe\L190409
+ * added support for monitoring
+ *
+ * Revision 1.24  2008/05/21 08:37:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added elementname to errormessage
  *
  * Revision 1.23  2008/05/15 14:30:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -70,6 +73,8 @@ package nl.nn.adapterframework.configuration;
 
 import java.net.URL;
 
+import nl.nn.adapterframework.monitoring.Monitor;
+import nl.nn.adapterframework.monitoring.MonitorManager;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
@@ -118,7 +123,7 @@ import org.xml.sax.SAXParseException;
  * @see Configuration
  */
 abstract public class ConfigurationDigester implements BeanFactoryAware {
-	public static final String version = "$RCSfile: ConfigurationDigester.java,v $ $Revision: 1.24 $ $Date: 2008-05-21 08:37:31 $";
+	public static final String version = "$RCSfile: ConfigurationDigester.java,v $ $Revision: 1.25 $ $Date: 2008-07-14 17:02:54 $";
     protected static Logger log = LogUtil.getLogger(ConfigurationDigester.class);
 
 	private static final String CONFIGURATION_FILE_DEFAULT  = "Configuration.xml";
@@ -201,6 +206,7 @@ abstract public class ConfigurationDigester implements BeanFactoryAware {
 			digester.addRule("*/param", attributeChecker);
 			digester.addRule("*/pipeline/exits/exit", attributeChecker);
 			digester.addRule("*/scheduler/job", attributeChecker);
+			MonitorManager.getInstance().setDigesterRules(digester);
 
 // Resolving variables is now done by Digester
 //			// ensure that lines are seperated, usefulls when a parsing error occurs
@@ -225,7 +231,6 @@ abstract public class ConfigurationDigester implements BeanFactoryAware {
 				digester.setErrorHandler(xeh);
 			}
 			digester.parse(configurationFileURL);
-
 		} catch (Throwable t) {
 			// wrap exception to be sure it gets rendered via the IbisException-renderer
 			String currentElementName=digester.getCurrentElementName();
@@ -265,6 +270,7 @@ abstract public class ConfigurationDigester implements BeanFactoryAware {
         configuration.setDigesterRulesURL(digesterRulesURL);
         configuration.setConfigurationURL(configurationFileURL);
 		digestConfiguration(configuration,digesterRulesURL,configurationFileURL);
+		MonitorManager.getInstance().configure();
 
         log.info("************** Configuration completed **************");
 		return configuration;
