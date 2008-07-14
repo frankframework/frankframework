@@ -1,6 +1,9 @@
 /*
  * $Log: XmlBuilder.java,v $
- * Revision 1.8  2007-10-08 13:35:13  europe\L190409
+ * Revision 1.9  2008-07-14 17:29:16  europe\L190409
+ * reformatted
+ *
+ * Revision 1.8  2007/10/08 13:35:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed ArrayList to List where possible
  *
  * Revision 1.7  2006/11/13 15:43:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -24,186 +27,179 @@ import java.util.Vector;
  * @author Johan Verrips
  **/
 public class XmlBuilder {
-	public static final String version = "$RCSfile: XmlBuilder.java,v $ $Revision: 1.8 $ $Date: 2007-10-08 13:35:13 $";
-	
-  private List attributeNames = new ArrayList();;
-  private Hashtable attributes = new Hashtable();;
-  private String value;
-  private Vector subElements=new Vector();
-  private String tagName;
+	public static final String version = "$RCSfile: XmlBuilder.java,v $ $Revision: 1.9 $ $Date: 2008-07-14 17:29:16 $";
 
-  /**
-   * &lt; sign
-   */
-  public final static String OPEN_START = "<";
-  /**
-   * /&lt; sign
-   */
-  public final static String SIMPLE_CLOSE = "/>";
+	private List attributeNames = new ArrayList();
+	private Hashtable attributes = new Hashtable();
 
-  /**
-   * &gt;/ sign
-   */
-  public final static String OPEN_END = "</";
-  /**
-   * /&gt; sign
-   */
-  public final static String CLOSE = ">";
-  /**
-   * a new line constant
-   */
-  public final static String NEWLINE = "\n";
-  /**
-   * the tab constant
-   */
-  public final static String INDENT = "\t";
-  /**
-   * a quote like &quote;
-   */
-  public final static String QUOTE = "\"";
+	private String value;
+	private Vector subElements = new Vector();
+	private String tagName;
 
-  protected static int indentlevel; //level of indentation
+	/**
+	 * &lt; sign
+	 */
+	public final static String OPEN_START = "<";
+	/**
+	 * /&lt; sign
+	 */
+	public final static String SIMPLE_CLOSE = "/>";
 
-  public XmlBuilder() {}
-  public XmlBuilder(String tagName){
-    this.setTagName(tagName);
-  }
-  /**
-   * adds an attribute with an attribute value to the list of attributes
-   **/
-  public void addAttribute(String name, String value) {
-	if (value!=null) {
-	    attributeNames.add(name);
-	    attributes.put(name, XmlUtils.encodeChars(value));
+	/**
+	 * &gt;/ sign
+	 */
+	public final static String OPEN_END = "</";
+	/**
+	 * /&gt; sign
+	 */
+	public final static String CLOSE = ">";
+	/**
+	 * a new line constant
+	 */
+	public final static String NEWLINE = "\n";
+	/**
+	 * the tab constant
+	 */
+	public final static String INDENT = "\t";
+	/**
+	 * a quote like &quote;
+	 */
+	public final static String QUOTE = "\"";
+
+	protected static int indentlevel; //level of indentation
+
+	public XmlBuilder() {
 	}
-  }
-/**
- * adds an XmlBuilder element to the list of subelements
- */
-public void addSubElement(XmlBuilder newElement) {
-    if (newElement != null) {
-        subElements.add(newElement);
-    }
-}
-  public String getTagName() {
-    return this.tagName;
-  }
-  /**
-   * for testing purposes.
-   */
-  public static void main(String args[]) {
-      XmlBuilder xl=new XmlBuilder("TestTag");
-      xl.addAttribute("att1name",  "att1value");
-      xl.addAttribute("att2name",  "att2value");
-      xl.setValue("dit is de value");
-      XmlBuilder sb1=new XmlBuilder("sub1");
-      sb1.addAttribute("sb1at1", "sb1at1value");
-      //add to root element
-      xl.addSubElement(sb1);
-      XmlBuilder sb2=new XmlBuilder("sub2");
-      sb2.addAttribute("sb2at1", "sb2at1value");
-      sb2.setValue("dit is een value voor sub2");
-      sb1.addSubElement(sb2);
-      XmlBuilder sb3=new XmlBuilder("sub3");
-      sb3.addAttribute("sb3at1", "sb3\"+>at1value");
-      sb3.setValue("dit is een value voor sub2");
-      sb2.addSubElement(sb3);
-      XmlBuilder sb4=new XmlBuilder("sub4");
-      xl.addSubElement(sb4);
+	public XmlBuilder(String tagName) {
+		this.setTagName(tagName);
+	}
+	/**
+	 * adds an attribute with an attribute value to the list of attributes
+	 **/
+	public void addAttribute(String name, String value) {
+		if (value != null) {
+			attributeNames.add(name);
+			attributes.put(name, XmlUtils.encodeChars(value));
+		}
+	}
+	public void addAttribute(String name, boolean value) {
+		addAttribute(name,""+value);
+	}
+	public void addAttribute(String name, long value) {
+		addAttribute(name,""+value);
+	}
 
-      System.out.println(xl.toXML());
-  }
- /**
-   * sets the content of the element as CDATA <br>
-   * <code>setCdataValue(&lt;h1&gt;This is a HtmlMessage&lt;/h1&gt;)</code> sets
-   * <code><pre> &lt;![CDATA[&lt;h1&gt;This is a HtmlMessage&lt;/h1&gt;]]&gt;</pre></code>
-   **/
-  public void setCdataValue (String value) {
-	if (value!=null) 
-	    this.value="<![CDATA["+value+"]]>";
-	else this.value=value;
-	
-  }
-  public void setTagName (String tagName) {
-    this.tagName=tagName;
-  }
-  /**
-   * sets the content of the element
-   **/
-  public void setValue (String value) {
+	/**
+	 * adds an XmlBuilder element to the list of subelements
+	 */
+	public void addSubElement(XmlBuilder newElement) {
+		if (newElement != null) {
+			subElements.add(newElement);
+		}
+	}
+	public String getTagName() {
+		return this.tagName;
+	}
+
+	/**
+	  * sets the content of the element as CDATA <br>
+	  * <code>setCdataValue(&lt;h1&gt;This is a HtmlMessage&lt;/h1&gt;)</code> sets
+	  * <code><pre> &lt;![CDATA[&lt;h1&gt;This is a HtmlMessage&lt;/h1&gt;]]&gt;</pre></code>
+	  **/
+	public void setCdataValue(String value) {
+		if (value != null)
+			this.value = "<![CDATA[" + value + "]]>";
+		else
+			this.value = value;
+
+	}
+	public void setTagName(String tagName) {
+		this.tagName = tagName;
+	}
+	/**
+	 * sets the content of the element
+	 **/
+	public void setValue(String value) {
 		setValue(value, true);
-  }
-  public void setValue (String value, boolean encode) {
-	if (value!=null && encode)
-		this.value=XmlUtils.encodeChars(value);
-	else this.value=value;
-  }
-  /**
-   * returns the xmlelement and all subElements as an xml string.
-   */
-  public String toXML() {
-    String attributeName;
- 
-    StringBuffer sb = new StringBuffer();
+	}
+	public void setValue(String value, boolean encode) {
+		if (value != null && encode)
+			this.value = XmlUtils.encodeChars(value);
+		else
+			this.value = value;
+	}
+	/**
+	 * returns the xmlelement and all subElements as an xml string.
+	 */
+	public String toXML() {
+		String attributeName;
 
-    // indent
-    for (int t=0; t<indentlevel;t++){ sb.append(INDENT);}
-    //construct the tag
-    sb.append (OPEN_START);
-    sb.append (this.tagName);
+		StringBuffer sb = new StringBuffer();
 
-    //process attributes
-    Iterator i = attributeNames.iterator();
-    while (i.hasNext()) {
-        attributeName = (String) i.next();
-        sb.append(" "+attributeName);
-        sb.append("=");
-        sb.append(QUOTE+(String) attributes.get(attributeName)+QUOTE);
-    }
+		// indent
+		for (int t = 0; t < indentlevel; t++) {
+			sb.append(INDENT);
+		}
+		//construct the tag
+		sb.append(OPEN_START);
+		sb.append(this.tagName);
 
-    if ((this.value==null) && (subElements.size()==0)) {
-      sb.append(SIMPLE_CLOSE);
-      return sb.toString();
-    }
-    sb.append (CLOSE);
+		//process attributes
+		Iterator i = attributeNames.iterator();
+		while (i.hasNext()) {
+			attributeName = (String)i.next();
+			sb.append(" " + attributeName);
+			sb.append("=");
+			sb.append(QUOTE + (String)attributes.get(attributeName) + QUOTE);
+		}
 
-    boolean pendingTextValue=false;
-    // put the tag value
-    if (null!=this.value) {
-//      sb.append(NEWLINE);
-//      for (int t=0; t<indentlevel;t++){ sb.append(INDENT);}
-      sb.append(this.value);
-      pendingTextValue=true;
-    }
+		if ((this.value == null) && (subElements.size() == 0)) {
+			sb.append(SIMPLE_CLOSE);
+			return sb.toString();
+		}
+		sb.append(CLOSE);
 
-    //process subelements
-    Iterator it=subElements.iterator();
-    while (it.hasNext()) {
-        XmlBuilder sub=(XmlBuilder) it.next();
-        indentlevel=indentlevel+1;
-        if (pendingTextValue) {
-        	pendingTextValue=false;
-        } else {
-        	sb.append(NEWLINE);
-        }
-        sb.append(sub.toXML());
-        indentlevel=indentlevel-1;
-    }
-    // indent
-    if (pendingTextValue) {
-      	pendingTextValue=false;
-    } else {
-       	sb.append(NEWLINE);
-	    for (int t=0; t<indentlevel;t++){ sb.append(INDENT);}
-    }
-    sb.append(OPEN_END + tagName + CLOSE);
+		boolean pendingTextValue = false;
+		// put the tag value
+		if (null != this.value) {
+			//      sb.append(NEWLINE);
+			//      for (int t=0; t<indentlevel;t++){ sb.append(INDENT);}
+			sb.append(this.value);
+			pendingTextValue = true;
+		}
 
-    return sb.toString();
-  }
+		//process subelements
+		Iterator it = subElements.iterator();
+		while (it.hasNext()) {
+			XmlBuilder sub = (XmlBuilder)it.next();
+			indentlevel = indentlevel + 1;
+			if (pendingTextValue) {
+				pendingTextValue = false;
+			} else {
+				sb.append(NEWLINE);
+			}
+			sb.append(sub.toXML());
+			indentlevel = indentlevel - 1;
+		}
+		// indent
+		if (pendingTextValue) {
+			pendingTextValue = false;
+		} else {
+			sb.append(NEWLINE);
+			for (int t = 0; t < indentlevel; t++) {
+				sb.append(INDENT);
+			}
+		}
+		sb.append(OPEN_END + tagName + CLOSE);
 
-  public String toXML(boolean xmlHeader) {
-  	if (xmlHeader) return  "<?xml version=\"1.0\"?>"+NEWLINE+toXML();
-  	else return toXML();
-  }
+		return sb.toString();
+	}
+
+	public String toXML(boolean xmlHeader) {
+		if (xmlHeader)
+			return "<?xml version=\"1.0\"?>" + NEWLINE + toXML();
+		else
+			return toXML();
+	}
   
 }
