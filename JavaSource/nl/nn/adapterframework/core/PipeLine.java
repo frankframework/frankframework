@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.61  2008-05-21 08:40:36  europe\L190409
+ * Revision 1.62  2008-07-14 17:16:44  europe\L190409
+ * support for debugging
+ *
+ * Revision 1.61  2008/05/21 08:40:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fixed pipeline output validation
  *
  * Revision 1.60  2008/02/15 14:05:08  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -186,6 +189,8 @@ import java.util.Hashtable;
 import java.util.List;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.debug.IbisDebugger;
+import nl.nn.adapterframework.debug.PipeDescriptionProvider;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.LogUtil;
@@ -273,10 +278,12 @@ import org.springframework.transaction.TransactionStatus;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.61 $ $Date: 2008-05-21 08:40:36 $";
+	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.62 $ $Date: 2008-07-14 17:16:44 $";
     private Logger log = LogUtil.getLogger(this);
 	private Logger durationLog = LogUtil.getLogger("LongDurationMessages");
     
+	private IbisDebugger ibisDebugger;
+
 	private Adapter adapter;    // for transaction managing
 	private INamedObject owner; // for logging purposes
 
@@ -303,6 +310,8 @@ public class PipeLine {
 
 	private List exitHandlers = new ArrayList();
     
+	private PipeDescriptionProvider pipeDescriptionProvider;
+
 	/**
 	 * Register an Pipe at this pipeline.
 	 * The name is also put in the globalForwards table (with 
@@ -419,7 +428,9 @@ public class PipeLine {
 		int txOption = this.getTransactionAttributeNum();
 		if (log.isDebugEnabled()) log.debug("creating TransactionDefinition for transactionAttribute ["+getTransactionAttribute()+"], timeout ["+getTransactionTimeout()+"]");
 		txDef = SpringTxManagerProxy.getTransactionDefinition(txOption,getTransactionTimeout());
-
+		if (ibisDebugger!=null) {
+			pipeDescriptionProvider = new PipeDescriptionProvider(owner.getName());
+		}
 		log.debug("Pipeline of ["+owner.getName()+"] successfully configured");
 	}
     /**
@@ -523,6 +534,9 @@ public class PipeLine {
 		} catch (Throwable t) {
 			log.debug("setting RollBackOnly for pipeline after catching exception");
 			txStatus.setRollbackOnly();
+			if (log.isDebugEnabled() && ibisDebugger!=null) {
+				ibisDebugger.pipeLineRollback(this, messageId, t.getMessage());
+			}
 			if (t instanceof Error) {
 				throw (Error)t;
 			} else if (t instanceof RuntimeException) {
@@ -591,6 +605,7 @@ public class PipeLine {
     public PipeLineResult processPipeLine(String messageId, String message, PipeLineSession pipeLineSession, TransactionStatus txStatus) throws PipeRunException {
 	    // Object is the object that is passed to and returned from Pipes
 	    Object object = (Object) message;
+		if (log.isDebugEnabled() && ibisDebugger!=null) object = ibisDebugger.pipeLineInput(this, messageId, message);
 	    Object preservedObject = object;
 	    PipeRunResult pipeRunResult;
 	    // the PipeLineResult 
@@ -637,6 +652,9 @@ public class PipeLine {
 					String ownerName=owner==null?"<null>":owner.getName();
 					String pipeToRunName=pipeToRun==null?"<null>":pipeToRun.getName();
 					sb.append("Pipeline of adapter ["+ownerName+"] messageId ["+messageId+"] is about to call pipe ["+ pipeToRunName+"]");
+					if (ibisDebugger!=null) {
+						object = ibisDebugger.pipeInput(this, pipeToRun, messageId, object);
+					} 
 	
 					if (AppConstants.getInstance().getProperty("log.logIntermediaryResults")!=null) {
 						if (AppConstants.getInstance().getProperty("log.logIntermediaryResults").equalsIgnoreCase("true")) {
@@ -653,10 +671,12 @@ public class PipeLine {
 					if (StringUtils.isNotEmpty(pe.getGetInputFromSessionKey())) {
 						if (log.isDebugEnabled()) log.debug("Pipeline of adapter ["+owner.getName()+"] replacing input for pipe ["+pe.getName()+"] with contents of sessionKey ["+pe.getGetInputFromSessionKey()+"]");
 						object=pipeLineSession.get(pe.getGetInputFromSessionKey());
+						if (log.isDebugEnabled() && ibisDebugger!=null) object = ibisDebugger.pipeGetInputFromSessionKey(this, pe, messageId, object);
 					}
 					if (StringUtils.isNotEmpty(pe.getGetInputFromFixedValue())) {
 						if (log.isDebugEnabled()) log.debug("Pipeline of adapter ["+owner.getName()+"] replacing input for pipe ["+pe.getName()+"] with fixed value ["+pe.getGetInputFromFixedValue()+"]");
 						object=pe.getGetInputFromFixedValue();
+						if (log.isDebugEnabled() && ibisDebugger!=null) object = ibisDebugger.pipeGetInputFromFixedValue(this, pe, messageId, object);
 					}
 				}
 			
@@ -709,7 +729,9 @@ public class PipeLine {
 					if (pe !=null) {
 						if (pipeRunResult!=null && StringUtils.isNotEmpty(pe.getStoreResultInSessionKey())) {
 							if (log.isDebugEnabled()) log.debug("Pipeline of adapter ["+owner.getName()+"] storing result for pipe ["+pe.getName()+"] under sessionKey ["+pe.getStoreResultInSessionKey()+"]");
-							pipeLineSession.put(pe.getStoreResultInSessionKey(),pipeRunResult.getResult());
+							Object result = pipeRunResult.getResult();
+							if (log.isDebugEnabled() && ibisDebugger!=null) result = ibisDebugger.pipeStoreResultInSessionKey(this, pe, messageId, result);
+							pipeLineSession.put(pe.getStoreResultInSessionKey(),result);
 						}
 						if (pe.isPreserveInput()) {
 							pipeRunResult.setResult(preservedObject);
@@ -735,6 +757,7 @@ public class PipeLine {
 					throw new PipeRunException(pipeToRun, "Pipeline of ["+owner.getName()+"] received null result from pipe ["+pipeToRun.getName()+"]d");
 				}
 				object=pipeRunResult.getResult();
+				if (log.isDebugEnabled() && ibisDebugger!=null) object = ibisDebugger.pipeOutput(this, pipeToRun, messageId, object);
 				preservedObject=object;
 				PipeForward pipeForward=pipeRunResult.getPipeForward();
 	
@@ -821,6 +844,7 @@ public class PipeLine {
 				throw new PipeRunException(null,"Could not set RollBackOnly",e);
 			}
 		}
+		if (log.isDebugEnabled() && ibisDebugger!=null) pipeLineResult.setResult(ibisDebugger.pipeLineOutput(this, messageId, pipeLineResult.getResult()));
 	    return pipeLineResult;
 	}
 	
@@ -1001,6 +1025,14 @@ public class PipeLine {
 	}
 	public int getTransactionTimeout() {
 		return transactionTimeout;
+	}
+
+	public PipeDescriptionProvider getPipeDescriptionProvider() {
+		return pipeDescriptionProvider;
+	}
+	
+	public void setIbisDebugger(IbisDebugger ibisDebugger) {
+		this.ibisDebugger = ibisDebugger;
 	}
 
 }
