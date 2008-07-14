@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaFacade.java,v $
- * Revision 1.5  2008-05-22 07:23:35  europe\L190409
+ * Revision 1.6  2008-07-14 17:17:49  europe\L190409
+ * added space after logprefix
+ *
+ * Revision 1.5  2008/05/22 07:23:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added serviceId to logPrefix of requester
  * added some support for bif and btc
  *
@@ -209,7 +212,7 @@ import com.ing.ifsa.IFSATextMessage;
  * @since 4.2
  */
 public class IfsaFacade implements INamedObject, HasPhysicalDestination {
-	public static final String version = "$RCSfile: IfsaFacade.java,v $ $Revision: 1.5 $ $Date: 2008-05-22 07:23:35 $";
+	public static final String version = "$RCSfile: IfsaFacade.java,v $ $Revision: 1.6 $ $Date: 2008-07-14 17:17:49 $";
     protected Logger log = LogUtil.getLogger(this);
     
     private static int BASIC_ACK_MODE = Session.AUTO_ACKNOWLEDGE;
@@ -251,7 +254,7 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 		try {
 			if (isRequestor()) {
 				objectType = "IfsaRequester";
-				serviceInfo = "of Application ["+getApplicationId()+"] "+(polishedServiceId!=null?"to Service ["+polishedServiceId+"]":""); 
+				serviceInfo = "of Application ["+getApplicationId()+"] "+(polishedServiceId!=null?"to Service ["+polishedServiceId+"] ":""); 
 			} else {
 				objectType = "IfsaProvider";				
 				serviceInfo = "for Application ["+getApplicationId()+"] "; 
