@@ -1,6 +1,9 @@
 /*
  * $Log: FileUtils.java,v $
- * Revision 1.11  2008-02-15 13:56:06  europe\L190409
+ * Revision 1.11.2.1  2008-07-15 12:52:21  europe\m168309
+ * *** empty log message ***
+ *
+ * Revision 1.11  2008/02/15 13:56:06  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added functions for backing up, moving and deleting  processed files
  *
  * Revision 1.10  2007/10/08 13:35:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -61,7 +64,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class FileUtils {
-	public static final String version = "$RCSfile: FileUtils.java,v $  $Revision: 1.11 $ $Date: 2008-02-15 13:56:06 $";
+	public static final String version = "$RCSfile: FileUtils.java,v $  $Revision: 1.11.2.1 $ $Date: 2008-07-15 12:52:21 $";
 
 	/**
 	 * Construct a filename from a pattern and session variables. 
@@ -222,9 +225,18 @@ public class FileUtils {
 
 
 	public static File[] getFiles(String directory, String wildcard) {
+		return getFiles(directory, wildcard, null);
+	}
+
+	public static File[] getFiles(String directory, String wildcard, String excludeWildcard) {
 		WildCardFilter filter = new WildCardFilter(wildcard);
 		File dir = new File(directory);
 		File[] files = dir.listFiles(filter);
+
+		WildCardFilter excludeFilter = null;
+		if (excludeWildcard!=null) {
+			excludeFilter = new WildCardFilter(excludeWildcard);
+		}
 		
 		List result = new ArrayList();
 		int count = (files == null ? 0 : files.length);
@@ -233,13 +245,20 @@ public class FileUtils {
 			if (file.isDirectory()) {
 				continue;
 			}
+			if (excludeFilter!=null && excludeFilter.accept(dir, file.getName())) {
+				continue;
+			}
 			result.add(file);
 		}
 		return (File[])result.toArray(new File[0]);
 	}
 
 	public static File getFirstMatchingFile(String directory, String wildcard) {
-		File[] files = getFiles(directory, wildcard);
+		return getFirstMatchingFile(directory, wildcard, null);
+	}
+
+	public static File getFirstMatchingFile(String directory, String wildcard, String excludeWildcard) {
+		File[] files = getFiles(directory, wildcard, excludeWildcard);
 		if (files.length > 0)
 			return files[0];
 
