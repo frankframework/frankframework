@@ -1,6 +1,9 @@
 /*
  * $Log: DirectoryListener.java,v $
- * Revision 1.10.2.2  2008-04-03 09:12:36  europe\L190409
+ * Revision 1.10.2.3  2008-07-15 12:52:09  europe\m168309
+ * added excludeWildcard attribute
+ *
+ * Revision 1.10.2.2  2008/04/03 09:12:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * implemented HasPhysicalDestination as interface, too
  *
  * Revision 1.10.2.1  2008/04/03 08:16:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -75,7 +78,7 @@ import org.apache.log4j.Logger;
 
 /**
  * File {@link nl.nn.adapterframework.core.IPullingListener listener} that looks in a directory for files 
- * according to a <code>wildcard</code>.  
+ * according to a <code>wildcard</code> and a <code>excludeWildcard</code>.  
  * When a file is found, it is moved to an outputdirectory, so that it isn't found more then once.  
  * The name of the moved file is passed to the pipeline.  
  *
@@ -86,6 +89,7 @@ import org.apache.log4j.Logger;
  * <tr><td>{@link #setName(String) name}</td><td>name of the listener</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setInputDirectory(String) inputDirectory}</td><td>Directory to look for files</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setWildcard(String) wildcard}</td><td>Filter of files to look for in inputDirectory</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setExcludeWildcard(String) excludeWildcard}</td><td>Filter of files to be excluded when looking in inputDirectory</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setOutputDirectory(String) outputDirectory}</td><td>Directory where files are stored <i>while</i> being processed</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setOutputFilenamePattern(String) outputFilenamePattern}</td><td>Pattern for the name using the MessageFormat.format method. Params: 0=inputfilename, 1=inputfile extension, 2=unique uuid, 3=current date</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setProcessedDirectory(String) processedDirectory}</td><td>Directory where files are stored <i>after</i> being processed</td><td>&nbsp;</td></tr>
@@ -104,12 +108,13 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class DirectoryListener implements IPullingListener, INamedObject, HasPhysicalDestination {
-	public static final String version = "$RCSfile: DirectoryListener.java,v $  $Revision: 1.10.2.2 $ $Date: 2008-04-03 09:12:36 $";
+	public static final String version = "$RCSfile: DirectoryListener.java,v $  $Revision: 1.10.2.3 $ $Date: 2008-07-15 12:52:09 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String name;
 	private String inputDirectory;
 	private String wildcard;
+	private String excludeWildcard;
 	private String outputDirectory;
 	private String outputFilenamePattern;
 	private long responseTime = 10000;
@@ -232,7 +237,12 @@ public class DirectoryListener implements IPullingListener, INamedObject, HasPhy
 	 * is a new file to process and returns the first record.
 	 */
 	public synchronized Object getRawMessage(Map threadContext) throws ListenerException {
-		File inputFile = FileUtils.getFirstMatchingFile(inputDirectory, wildcard);
+		File inputFile;
+		if (StringUtils.isEmpty(getExcludeWildcard())) { 
+			inputFile = FileUtils.getFirstMatchingFile(inputDirectory, wildcard);
+		} else {
+			inputFile = FileUtils.getFirstMatchingFile(inputDirectory, wildcard, excludeWildcard);
+		}
 		if (inputFile == null) {
 			return waitAWhile();
 		}
@@ -269,7 +279,7 @@ public class DirectoryListener implements IPullingListener, INamedObject, HasPhy
 	}
 
 	public String getPhysicalDestinationName() {
-		return "pattern ["+getWildcard()+"] in directory ["+ getInputDirectory()+"]";
+		return "pattern ["+getWildcard()+"] to exclusion of ["+getExcludeWildcard()+"] in directory ["+ getInputDirectory()+"]";
 	}
 
 	
@@ -280,6 +290,7 @@ public class DirectoryListener implements IPullingListener, INamedObject, HasPhy
 		ts.append("name", getName());
 		ts.append("inputDirectory", getInputDirectory());
 		ts.append("wildcard", getWildcard());
+		ts.append("excludeWildcard", getExcludeWildcard());
 		result += ts.toString();
 		return result;
 
@@ -319,6 +330,13 @@ public class DirectoryListener implements IPullingListener, INamedObject, HasPhy
 		return wildcard;
 	}
 
+	public void setExcludeWildcard(String excludeWildcard) {
+		this.excludeWildcard = excludeWildcard;
+	}
+
+	public String getExcludeWildcard() {
+		return excludeWildcard;
+	}
 
 	/**
 	 * Sets the directory to store processed files in
