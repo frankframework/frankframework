@@ -24,8 +24,6 @@ import nl.nn.adapterframework.core.TimeOutException;
 
 
 public class Semaphore {
-	public static final String version="$Id: Semaphore.java,v 1.5 2008-07-17 16:20:25 europe\L190409 Exp $";
-	
     private int counter;
     
     public Semaphore() {
