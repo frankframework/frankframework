@@ -1,6 +1,9 @@
 /*
  * $Log: MonitorManager.java,v $
- * Revision 1.2  2008-07-17 16:17:19  europe\L190409
+ * Revision 1.3  2008-07-17 16:23:29  europe\L190409
+ * removed default monitors
+ *
+ * Revision 1.2  2008/07/17 16:17:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * rework
  *
  * Revision 1.1  2008/07/14 17:21:18  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -53,22 +56,22 @@ public class MonitorManager implements EventHandler {
 
 	public void configure() throws ConfigurationException {
 		monitorAdapter=MonitorAdapterFactory.getMonitorAdapter();
-		if (monitors.size()==0) {
-			Monitor monitor=new Monitor();
-			monitor.setName("Configuration");
-			monitor.setExport(true);
-			monitor.setTypeEnum(EventTypeEnum.TECHNICAL);
-			monitor.setSeverityEnum(SeverityEnum.CRITICAL);
-			monitor.setGuardedObject("Receiver [FxfListener]");
-//			monitor.setObject(((EventThrowing)throwersByEvent.get(ReceiverBase.RCV_CONFIGURATIONEXCEPTION_MONITOR_EVENT)).getEventSourceName());
-			Trigger alarm = new Trigger();
-			alarm.setEventCode(ReceiverBase.RCV_CONFIGURATIONEXCEPTION_MONITOR_EVENT);
-			alarm.setSeverityEnum(SeverityEnum.CRITICAL);
-			monitor.registerAlarm(alarm);
-			Trigger clearing = new Trigger();
-			clearing.setEventCode(ReceiverBase.RCV_CONFIGURED_MONITOR_EVENT);
-			monitor.registerClearing(clearing);
-		}
+//		if (monitors.size()==0) {
+//			Monitor monitor=new Monitor();
+//			monitor.setName("Configuration");
+//			monitor.setExport(true);
+//			monitor.setTypeEnum(EventTypeEnum.TECHNICAL);
+//			monitor.setSeverityEnum(SeverityEnum.CRITICAL);
+//			monitor.setGuardedObject("Receiver [FxfListener]");
+////			monitor.setObject(((EventThrowing)throwersByEvent.get(ReceiverBase.RCV_CONFIGURATIONEXCEPTION_MONITOR_EVENT)).getEventSourceName());
+//			Trigger alarm = new Trigger();
+//			alarm.setEventCode(ReceiverBase.RCV_CONFIGURATIONEXCEPTION_MONITOR_EVENT);
+//			alarm.setSeverityEnum(SeverityEnum.CRITICAL);
+//			monitor.registerAlarm(alarm);
+//			Trigger clearing = new Trigger();
+//			clearing.setEventCode(ReceiverBase.RCV_CONFIGURED_MONITOR_EVENT);
+//			monitor.registerClearing(clearing);
+//		}
 		for (Iterator it=monitors.iterator(); it.hasNext();) {
 			Monitor monitor = (Monitor)it.next();
 			monitor.configure();
