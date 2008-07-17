@@ -1,6 +1,9 @@
 /*
  * $Log: SenderSeries.java,v $
- * Revision 1.3  2008-06-03 15:51:26  europe\L190409
+ * Revision 1.4  2008-07-17 16:18:11  europe\L190409
+ * show partial results in debug mode
+ *
+ * Revision 1.3  2008/06/03 15:51:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed superfluous code
  *
  * Revision 1.2  2008/05/21 10:54:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -92,6 +95,7 @@ public class SenderSeries extends SenderWrapperBase {
 		long t1 = System.currentTimeMillis();
 		for (Iterator it=senderList.iterator();it.hasNext();) {
 			ISender sender = (ISender)it.next();
+			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"sending correlationID ["+correlationID+"] message ["+message+"] to sender ["+sender.getName()+"]");
 			if (sender instanceof ISenderWithParameters) {
 				message = ((ISenderWithParameters)sender).sendMessage(correlationID,message,prc);
 			} else {
