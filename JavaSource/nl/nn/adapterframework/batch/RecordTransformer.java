@@ -1,6 +1,9 @@
 /*
  * $Log: RecordTransformer.java,v $
- * Revision 1.16  2008-02-21 12:33:53  europe\L190409
+ * Revision 1.17  2008-07-17 16:13:37  europe\L190409
+ * updated javadoc
+ *
+ * Revision 1.16  2008/02/21 12:33:53  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added SW (starts with) and NS (not starts with) to operators
  *
  * Revision 1.15  2008/02/19 09:23:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -77,8 +80,8 @@ import org.apache.commons.lang.StringUtils;
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>classname</td><td>nl.nn.adapterframework.batch.RecordTransformer</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setInputFields(String) inputFields}</td><td>Comma separated specification of fieldlengths. Either this attribute or <code>inputSeparator</code> must be specified</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setInputSeparator(String) inputSeparator}</td><td>Separator that separated the fields in the input record. Either this attribute or <code>inputFields</code> must be specified</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setInputFields(String) inputFields}</td><td>Comma separated specification of fieldlengths. If neither this attribute nor <code>inputSeparator</code> is specified then the entire record is parsed</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setInputSeparator(String) inputSeparator}</td><td>Separator that separated the fields in the input record. If neither this attribute nor <code>inputFields</code> is specified then the entire record is parsed</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setTrim(boolean) trim}</td><td>when set <code>true</code>, trailing spaces are removed from each field</td><td>false</td></tr>
  * <tr><td>{@link #setOutputFields(String) outputFields}</td><td>Semicolon separated list of output record field specifications (see table below)</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setOutputSeparator(String) outputSeparator}</td><td>Optional separator to add between the fields</td><td>&nbsp;</td></tr>
@@ -107,7 +110,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class RecordTransformer extends AbstractRecordHandler {
-	public static final String version = "$RCSfile: RecordTransformer.java,v $  $Revision: 1.16 $ $Date: 2008-02-21 12:33:53 $";
+	public static final String version = "$RCSfile: RecordTransformer.java,v $  $Revision: 1.17 $ $Date: 2008-07-17 16:13:37 $";
 
 	private String outputSeparator;
 
