@@ -1,6 +1,9 @@
 /*
  * $Log: SenderWrapper.java,v $
- * Revision 1.2  2008-05-21 10:41:50  europe\L190409
+ * Revision 1.3  2008-07-17 16:18:46  europe\L190409
+ * call sender.configure in configure
+ *
+ * Revision 1.2  2008/05/21 10:41:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added documentation
  *
  * Revision 1.1  2008/05/15 15:08:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -11,6 +14,7 @@
  */
 package nl.nn.adapterframework.senders;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.SenderException;
@@ -50,6 +54,10 @@ public class SenderWrapper extends SenderWrapperBase {
 		return getSender()!=null;
 	}
 
+	public void configure() throws ConfigurationException {
+		super.configure();
+		getSender().configure();
+	}
 	public void open() throws SenderException {
 		getSender().open();
 	}
