@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.62  2008-07-14 17:16:44  europe\L190409
+ * Revision 1.63  2008-07-17 16:14:42  europe\L190409
+ * changed signature of getPipeDescriptionProvider
+ *
+ * Revision 1.62  2008/07/14 17:16:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * support for debugging
  *
  * Revision 1.61  2008/05/21 08:40:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -190,6 +193,7 @@ import java.util.List;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.debug.IbisDebugger;
+import nl.nn.adapterframework.debug.PipeDescription;
 import nl.nn.adapterframework.debug.PipeDescriptionProvider;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.JtaUtil;
@@ -278,7 +282,7 @@ import org.springframework.transaction.TransactionStatus;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.62 $ $Date: 2008-07-14 17:16:44 $";
+	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.63 $ $Date: 2008-07-17 16:14:42 $";
     private Logger log = LogUtil.getLogger(this);
 	private Logger durationLog = LogUtil.getLogger("LongDurationMessages");
     
@@ -429,7 +433,7 @@ public class PipeLine {
 		if (log.isDebugEnabled()) log.debug("creating TransactionDefinition for transactionAttribute ["+getTransactionAttribute()+"], timeout ["+getTransactionTimeout()+"]");
 		txDef = SpringTxManagerProxy.getTransactionDefinition(txOption,getTransactionTimeout());
 		if (ibisDebugger!=null) {
-			pipeDescriptionProvider = new PipeDescriptionProvider(owner.getName());
+			pipeDescriptionProvider = new PipeDescriptionProvider(this);
 		}
 		log.debug("Pipeline of ["+owner.getName()+"] successfully configured");
 	}
@@ -1027,8 +1031,8 @@ public class PipeLine {
 		return transactionTimeout;
 	}
 
-	public PipeDescriptionProvider getPipeDescriptionProvider() {
-		return pipeDescriptionProvider;
+	public PipeDescription getPipeDescription(IPipe pipe) {
+		return pipeDescriptionProvider.getPipeDescription(pipe);
 	}
 	
 	public void setIbisDebugger(IbisDebugger ibisDebugger) {
