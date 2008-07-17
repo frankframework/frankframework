@@ -1,6 +1,9 @@
 /*
  * $Log: ShowMonitors.java,v $
- * Revision 1.1  2008-07-14 17:29:47  europe\L190409
+ * Revision 1.2  2008-07-17 16:21:49  europe\L190409
+ * work in progess
+ *
+ * Revision 1.1  2008/07/14 17:29:47  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * support for flexibile monitoring
  *
  */
@@ -14,7 +17,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import nl.nn.adapterframework.monitoring.MonitorException;
 import nl.nn.adapterframework.monitoring.MonitorManager;
-import nl.nn.adapterframework.util.XmlBuilder;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.struts.action.ActionForm;
@@ -61,8 +63,9 @@ public class ShowMonitors extends ActionBase {
 			}
 		}
 
-		XmlBuilder monitors = MonitorManager.getInstance().toXml();
-		request.setAttribute("monitoring", monitors.toXML());
+//		XmlBuilder monitors = MonitorManager.getInstance().toXml(false);
+//		request.setAttribute("monitoring", monitors.toXML());
+		monitorForm.set("monitors",MonitorManager.getInstance().getMonitors());
 
 		// Forward control to the specified success URI
 		log.debug("forward to success");

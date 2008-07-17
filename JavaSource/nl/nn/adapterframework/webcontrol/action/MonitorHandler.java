@@ -1,6 +1,9 @@
 /*
  * $Log: MonitorHandler.java,v $
- * Revision 1.1  2008-07-14 17:29:47  europe\L190409
+ * Revision 1.2  2008-07-17 16:21:49  europe\L190409
+ * work in progess
+ *
+ * Revision 1.1  2008/07/14 17:29:47  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * support for flexibile monitoring
  *
  */
@@ -78,7 +81,7 @@ public class MonitorHandler extends ShowMonitors {
 				response.setHeader("Content-Disposition","attachment; filename=\"monitorConfig-"+AppConstants.getInstance().getProperty("instance.name","")+".xml\"");
 				PrintWriter writer=response.getWriter();
 
-				XmlBuilder config = mm.toXml();
+				XmlBuilder config = mm.toXml(true);
 				writer.print(config.toXML());
 				writer.close();
 			} catch (IOException e) {
