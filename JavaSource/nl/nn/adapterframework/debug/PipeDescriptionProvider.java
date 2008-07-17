@@ -1,26 +1,30 @@
 /*
  * $Log: PipeDescriptionProvider.java,v $
- * Revision 1.1  2008-07-14 17:07:32  europe\L190409
+ * Revision 1.2  2008-07-17 16:16:26  europe\L190409
+ * made PipeDescription an interface
+ *
+ * Revision 1.1  2008/07/14 17:07:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * first version of debugger
  *
  */
 package nl.nn.adapterframework.debug;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-import javax.xml.transform.TransformerConfigurationException;
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IPipe;
+import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.DomBuilderException;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.util.TransformerPool;
-import nl.nn.adapterframework.util.XmlUtils;
 
-import org.w3c.dom.Document;
-
+import org.apache.commons.beanutils.BeanUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 
 /**
  * Get a description of a specified pipe. The description contains the XML
@@ -31,83 +35,47 @@ import org.w3c.dom.Document;
  * @version Id
  */
 public class PipeDescriptionProvider {
-	private String adapterName;
-	private Document document;
+	private Logger log = LogUtil.getLogger(this);
+
 	private Map pipeDescriptionCache = new HashMap();
 	private Map styleSheetNameCache = new HashMap();
-	
-	public static final String PIPEDESCRIPTION_XPATH="//*/adapter[@name=\"$adapterName\"]/pipeline/pipe[@name=\"$pipeName\"]"; 
-	public static final String STYLESHEET_XPATH="//@styleSheetName"; 
-	
-	private TransformerPool pipeDescriptionExtractor;
-	private TransformerPool stylesheetExtractor;
 
-	public PipeDescriptionProvider(String adapterName) throws ConfigurationException {
-		this.adapterName = adapterName;
-		try {
-			// TODO: use correct configuration file, not just "Configuration.xml". [GvB]
-			document = XmlUtils.buildDomDocument(ClassUtils.getResourceURL(this, "Configuration.xml"));
-		} catch(DomBuilderException e) {
-			throw new ConfigurationException("cannot read configuration",e);
-		}
-		try {
-			pipeDescriptionExtractor= new TransformerPool(XmlUtils.createXPathEvaluatorSource(PIPEDESCRIPTION_XPATH,"xml"));
-			stylesheetExtractor= new TransformerPool(XmlUtils.createXPathEvaluatorSource(STYLESHEET_XPATH));
-		} catch (TransformerConfigurationException e) {
-			throw new ConfigurationException("cannot create transformers from",e);
-		}
+	public PipeDescriptionProvider(PipeLine pipeline) throws ConfigurationException {
 	}
 
 	/**
 	 * Get a PipeDescription objectt for the specified pipe. The returned object
 	 * is cached.
 	 */
-	public PipeDescription getPipeDescription(String pipeName) {
-		PipeDescription pipeDescription;
+	public PipeDescription getPipeDescription(IPipe pipe) {
+		PipeDescriptionImpl pipeDescription;
 		synchronized(pipeDescriptionCache) {
-			pipeDescription = (PipeDescription)pipeDescriptionCache.get(pipeName);
+			pipeDescription = (PipeDescriptionImpl)pipeDescriptionCache.get(pipe);
 			if (pipeDescription == null) {
-				pipeDescription = new PipeDescription();
-				Map params=new HashMap();
-				params.put("adapterName",adapterName);
-				params.put("pipeName",pipeName);
-				
-				try{
-					String pipeConfig = pipeDescriptionExtractor.transform(document,params);
-					pipeDescription.setDescription(pipeConfig);
-				} catch (Exception e) {
-					pipeDescription.setDescription("Exception: " + e.getMessage());
-				}
-//				Node node = document.selectSingleNode( "//*/adapter[@name=\"" + adapterName + "\"]/pipeline/pipe[@name=\"" + pipeName + "\"]" );
-//				if (node != null) {
-//					StringWriter stringWriter = new StringWriter();
-//					OutputFormat outputFormat = OutputFormat.createPrettyPrint();
-//					XMLWriter xmlWriter = new XMLWriter(stringWriter, outputFormat);
-//					try {
-//						xmlWriter.write(node);
-//						xmlWriter.flush();
-//						pipeDescription.setDescription(stringWriter.toString());
-//					} catch(IOException e) {
-//						pipeDescription.setDescription("IOException: " + e.getMessage());
-//					}
-//					List styleSheetNameNodes = node.selectNodes("@styleSheetName");
-//					styleSheetNameNodes.addAll(node.selectNodes("*/@styleSheetName"));
-//					styleSheetNameNodes.addAll(node.selectNodes("*/*/@styleSheetName"));
-//					styleSheetNameNodes.addAll(node.selectNodes("*/*/*/@styleSheetName"));
-//					styleSheetNameNodes.addAll(node.selectNodes("@serviceSelectionStylesheetFilename"));
-//					Iterator iterator = styleSheetNameNodes.iterator();
-//					while (iterator.hasNext()) {
-//						String styleSheetName = ((Node)iterator.next()).getStringValue();
-//						pipeDescription.addStyleSheetName(styleSheetName);
-//					}
-//				} else {
-//					pipeDescription.setDescription("Pipe not found in configuration.");
-//				}
-				pipeDescriptionCache.put(pipeName, pipeDescription);
+				pipeDescription = new PipeDescriptionImpl();
+				pipeDescription.setDescription(pipe.toString());
+				List styleSheetNameNodes = new ArrayList();
+				addStyleSheet(styleSheetNameNodes,pipe,"styleSheetName");
+				addStyleSheet(styleSheetNameNodes,pipe,"sender.styleSheetName");
+				addStyleSheet(styleSheetNameNodes,pipe,"serviceSelectionStylesheetFilename");
+				pipeDescription.setStyleSheetNames(styleSheetNameNodes);
+				pipeDescriptionCache.put(pipe, pipeDescription);
 			}
 		}
 		return pipeDescription;
 	}
+
+	private void addStyleSheet(List stylesheetList, IPipe pipe, String propertyName) {
+		try {
+			String property = BeanUtils.getProperty(pipe, propertyName);
+			if (StringUtils.isNotEmpty(property)) {
+				stylesheetList.add(property);
+			}
+		} catch (Exception e) {
+			log.error("Could not read property ["+propertyName+"] for pipe ["+ pipe.getName()+"]", e);
+		}
+	}
+
 
 	/**
 	 * Return the content of the specified style sheet. The returned object

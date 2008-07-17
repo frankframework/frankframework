@@ -1,12 +1,14 @@
 /*
  * $Log: PipeDescription.java,v $
- * Revision 1.1  2008-07-14 17:07:32  europe\L190409
+ * Revision 1.2  2008-07-17 16:16:26  europe\L190409
+ * made PipeDescription an interface
+ *
+ * Revision 1.1  2008/07/14 17:07:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * first version of debugger
  *
  */
 package nl.nn.adapterframework.debug;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -17,27 +19,9 @@ import java.util.List;
  * @since   4.9
  * @version Id
  */
-public class PipeDescription {
+public interface PipeDescription {
 	
-	private String description;
-	private List styleSheetsNames = new ArrayList();
-
-	public PipeDescription() {
-	}
-
-	public void setDescription(String description) {
-		this.description = description;
-	}
-	public String getDescription() {
-		return description;
-	}
-
-	public void addStyleSheetName(String styleSheetName) {
-		styleSheetsNames.add(styleSheetName);
-	}
-
-	public List getStyleSheetNames() {
-		return styleSheetsNames;
-	}
+	public String getDescription();
+	public List getStyleSheetNames();
 
 }
