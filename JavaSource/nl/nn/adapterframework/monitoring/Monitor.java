@@ -1,6 +1,9 @@
 /*
  * $Log: Monitor.java,v $
- * Revision 1.1  2008-07-14 17:21:18  europe\L190409
+ * Revision 1.2  2008-07-17 16:17:19  europe\L190409
+ * rework
+ *
+ * Revision 1.1  2008/07/14 17:21:18  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * first version of flexible monitoring
  *
  */
@@ -21,14 +24,14 @@ import nl.nn.adapterframework.util.XmlBuilder;
 public class Monitor {
 
 	private String name;
-	private boolean raised=false;
-	private boolean functional=false;
-	private SeverityEnum severity=null;  
+	private EventTypeEnum type=EventTypeEnum.TECHNICAL;
+	private String guardedObject;
 	private boolean export=true;
-	private String object;
+	private boolean raised=false;
+	private SeverityEnum severity=null;  
+
 	
 	private MonitorManager owner=null;
-	private EventTypeEnum eventType;
 
 	private List triggers = new ArrayList();
 	
@@ -41,7 +44,6 @@ public class Monitor {
 	}
 	
 	public void configure() throws ConfigurationException {
-		eventType = functional?EventTypeEnum.FUNCTIONAL:EventTypeEnum.TECHNICAL;
 		for (Iterator it=triggers.iterator(); it.hasNext();) {
 			Trigger trigger = (Trigger)it.next();
 			trigger.configure();
@@ -49,23 +51,23 @@ public class Monitor {
 	}
 	
 	public void registerEventNotificationListener(Trigger trigger, String eventCode) throws MonitorException {
-		getOwner().registerEventNotificationListener(trigger,eventCode,object);
+		getOwner().registerEventNotificationListener(trigger,eventCode,getGuardedObject());
 	}
 	
 	public void changeState(boolean alarm, SeverityEnum severity, EventThrowing source, String details, Throwable t) throws MonitorException {
 		if (export) {
-			boolean up=alarm && (!raised || this.severity==null || this.severity.compareTo(severity)<=0);
-			boolean clear=raised && (!alarm || up && this.severity!=null && this.severity!=severity);
+			boolean up=alarm && (!raised || getSeverityEnum()==null || getSeverityEnum().compareTo(severity)<=0);
+			boolean clear=raised && (!alarm || up && getSeverityEnum()!=null && getSeverityEnum()!=severity);
 			if (clear) {
-				SeverityEnum clearSeverity=this.severity!=null?this.severity:severity;
+				SeverityEnum clearSeverity=getSeverityEnum()!=null?getSeverityEnum():severity;
 				getOwner().changeMonitorState(source, EventTypeEnum.CLEARING, clearSeverity, details, t);
 			}
 			if (up) {
-				getOwner().changeMonitorState(source, eventType, severity, details, t);
+				getOwner().changeMonitorState(source, getTypeEnum(), severity, details, t);
 			}
 		}
 		raised=alarm;
-		this.severity=severity;
+		setSeverityEnum(severity);
 		notifyReverseTrigger(alarm,source);
 	}
 
@@ -78,23 +80,22 @@ public class Monitor {
 		}
 	}
 
-	public void toXml(XmlBuilder config, int index) {
+	public void toXml(XmlBuilder config, int index, boolean configOnly) {
 		XmlBuilder monitor=new XmlBuilder("monitor");
 		config.addSubElement(monitor);
-		monitor.addAttribute("name",getName());
 		if (index>=0) {
 			monitor.addAttribute("index",index);
 		}
-		monitor.addAttribute("functional",isFunctional());
-		if (getEventType()!=null) {
-			monitor.addAttribute("eventType",getEventType().getName());
+		monitor.addAttribute("name",getName());
+		monitor.addAttribute("type",getType());
+		monitor.addAttribute("guardedObject",getGuardedObject());
+		monitor.addAttribute("export",isExport());
+		if (!configOnly) {
+			monitor.addAttribute("raised",isRaised());
 		}
 		if (getSeverity()!=null) {
-			monitor.addAttribute("severity",getSeverity().getName());
+			monitor.addAttribute("severity",getSeverity());
 		}
-		monitor.addAttribute("raised",isRaised());
-		monitor.addAttribute("export",isExport());
-		monitor.addAttribute("object",getObject());
 		for (Iterator it=triggers.iterator();it.hasNext();) {
 			Trigger trigger=(Trigger)it.next();
 			trigger.toXml(monitor);
@@ -123,12 +124,38 @@ public class Monitor {
 		return owner;
 	}
 
+	public List getTriggers() {
+		return triggers;
+	}
+	public Trigger getTrigger(int index) {
+		return (Trigger)triggers.get(index);
+	}
 
 	public void setName(String string) {
 		name = string;
 	}
 	public String getName() {
 		return name;
+	}
+
+	public void setType(String eventType) {
+		setTypeEnum((EventTypeEnum)EventTypeEnum.getEnumMap().get(eventType));
+	}
+	public String getType() {
+		return type==null?null:type.getName();
+	}
+	public void setTypeEnum(EventTypeEnum enum) {
+		type = enum;
+	}
+	public EventTypeEnum getTypeEnum() {
+		return type;
+	}
+
+	public void setGuardedObject(String string) {
+		guardedObject = string;
+	}
+	public String getGuardedObject() {
+		return guardedObject;
 	}
 
 	public void setExport(boolean b) {
@@ -138,14 +165,6 @@ public class Monitor {
 		return export;
 	}
 
-	public void setFunctional(boolean b) {
-		functional = b;
-	}
-	public boolean isFunctional() {
-		return functional;
-	}
-
-
 	public void setRaised(boolean b) {
 		raised = b;
 	}
@@ -153,30 +172,16 @@ public class Monitor {
 		return raised;
 	}
 
-	public void setEventType(String eventType) {
-		setEventTypeEnum((EventTypeEnum)EventTypeEnum.getEnumMap().get(eventType));
-	}
-	public void setEventTypeEnum(EventTypeEnum enum) {
-		eventType = enum;
-	}
-	public EventTypeEnum getEventType() {
-		return eventType;
-	}
-
-	public void setObject(String string) {
-		object = string;
-	}
-	public String getObject() {
-		return object;
-	}
-
 	public void setSeverity(String severity) {
 		setSeverityEnum((SeverityEnum)SeverityEnum.getEnumMap().get(severity));
+	}
+	public String getSeverity() {
+		return severity==null?null:severity.getName();
 	}
 	public void setSeverityEnum(SeverityEnum enum) {
 		severity = enum;
 	}
-	public SeverityEnum getSeverity() {
+	public SeverityEnum getSeverityEnum() {
 		return severity;
 	}
 

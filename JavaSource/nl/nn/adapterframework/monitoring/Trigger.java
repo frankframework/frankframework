@@ -1,6 +1,9 @@
 /*
  * $Log: Trigger.java,v $
- * Revision 1.1  2008-07-14 17:21:18  europe\L190409
+ * Revision 1.2  2008-07-17 16:17:19  europe\L190409
+ * rework
+ *
+ * Revision 1.1  2008/07/14 17:21:18  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * first version of flexible monitoring
  *
  */
@@ -107,6 +110,14 @@ public class Trigger {
 	}
 	public boolean isAlarm() {
 		return alarm;
+	}
+
+	public String getType() {
+		if (isAlarm()) {
+			return "Alarm";
+		} else {
+			return "Clearing";
+		}
 	}
 
 	public void setEventCode(String string) {
