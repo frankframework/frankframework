@@ -1,6 +1,10 @@
 /*
  * $Log: ReceiverBaseSpring.java,v $
- * Revision 1.29  2008-07-14 17:27:44  europe\L190409
+ * Revision 1.30  2008-07-24 12:23:05  europe\L190409
+ * fix transactional FXF
+ * modified correlation ID calculation, should work with all listeners now
+ *
+ * Revision 1.29  2008/07/14 17:27:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * use flexible monitoring
  *
  * Revision 1.28  2008/06/30 13:42:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -298,6 +302,7 @@ import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.HasSender;
 import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.core.IBulkDataListener;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IMessageHandler;
 import nl.nn.adapterframework.core.INamedObject;
@@ -320,6 +325,7 @@ import nl.nn.adapterframework.monitoring.EventHandler;
 import nl.nn.adapterframework.monitoring.EventThrowing;
 import nl.nn.adapterframework.monitoring.MonitorManager;
 import nl.nn.adapterframework.util.Counter;
+import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.RunStateEnquiring;
@@ -418,7 +424,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  */
 public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMessageHandler, EventThrowing, IbisExceptionListener, HasSender, TracingEventNumbers, IThreadCountControllable, BeanFactoryAware {
     
-	public static final String version="$RCSfile: ReceiverBaseSpring.java,v $ $Revision: 1.29 $ $Date: 2008-07-14 17:27:44 $";
+	public static final String version="$RCSfile: ReceiverBaseSpring.java,v $ $Revision: 1.30 $ $Date: 2008-07-24 12:23:05 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -1047,29 +1053,8 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 		
 		String message = origin.getStringFromRawMessage(rawMessage, threadContext);
 		String technicalCorrelationId = origin.getIdFromRawMessage(rawMessage, threadContext);
-		String businessCorrelationId=null;
-		if (correlationIDTp!=null) {
-			try {
-				businessCorrelationId=correlationIDTp.transform(message,null);
-			} catch (Exception e) {
-				throw new ListenerException(getLogPrefix()+"could not extract businessCorrelationId",e);
-			}
-		}
-		if (StringUtils.isEmpty(businessCorrelationId)) {
-			if (StringUtils.isNotEmpty(technicalCorrelationId)) {
-				log.warn(getLogPrefix()+"did not find correlationId using XpathExpression ["+getCorrelationIDXPath()+"], reverting to correlationId of transfer ["+technicalCorrelationId+"]");
-				businessCorrelationId=technicalCorrelationId;
-			} else {
-				String messageId=(String)threadContext.get(PipeLineSession.messageIdKey);
-				if (StringUtils.isNotEmpty(messageId)) {
-					log.warn(getLogPrefix()+"did not find correlationId using XpathExpression ["+getCorrelationIDXPath()+"] or technical correlationId, reverting to messageId ["+messageId+"]");
-					businessCorrelationId=messageId;
-				}
-			}
-		}
-		threadContext.put(PipeLineSession.businessCorrelationIdKey,businessCorrelationId);
 		String messageId = (String)threadContext.get("id");
-		processMessageInAdapter(origin, rawMessage, message, messageId, businessCorrelationId, threadContext, waitingDuration, retry);
+		processMessageInAdapter(origin, rawMessage, message, messageId, technicalCorrelationId, threadContext, waitingDuration, retry);
 	}
 
 	public void retryMessage(String messageId) throws ListenerException {
@@ -1078,22 +1063,45 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 		}
 		PlatformTransactionManager txManager = getTxManager(); 
 		TransactionStatus txStatus = txManager.getTransaction(TXNEW);
+		Map threadContext = new HashMap();
+		Object msg=null;
 		try {
-			ITransactionalStorage errorStorage = getErrorStorage();
-			Object msg = errorStorage.getMessage(messageId);
-			processRawMessage(getListener(), msg, null, -1, true);
-		} catch (Exception e) {
-			txStatus.setRollbackOnly();
-			throw new ListenerException(e);
-		} finally {
-			txManager.commit(txStatus);
+			try {
+				ITransactionalStorage errorStorage = getErrorStorage();
+				msg = errorStorage.getMessage(messageId);
+				processRawMessage(getListener(), msg, threadContext, -1, true);
+			} catch (Exception e) {
+				txStatus.setRollbackOnly();
+				throw new ListenerException(e);
+			} finally {
+				txManager.commit(txStatus);
+			}
+		} catch (ListenerException e) {
+			txStatus = txManager.getTransaction(TXNEW);
+			try {	
+				if (msg instanceof Serializable) {
+					String correlationId = (String)threadContext.get(PipeLineSession.businessCorrelationIdKey);
+					String receivedDateStr = (String)threadContext.get(PipeLineSession.tsReceivedKey);
+					Date receivedDate = DateUtils.parseToDate(receivedDateStr,DateUtils.FORMAT_FULL_GENERIC);
+					errorStorage.deleteMessage(messageId);
+					errorStorage.storeMessage(messageId,correlationId,receivedDate,"after retry: "+e.getMessage(),(Serializable)msg);	
+				} else {
+					log.warn(getLogPrefix()+"retried message is not serializable, cannot update comments");
+				}
+			} catch (SenderException e1) {
+				txStatus.setRollbackOnly();
+				log.warn(getLogPrefix()+"could not update comments in errorStorage",e1);
+			} finally {
+				txManager.commit(txStatus);
+			}
+			throw e;
 		}
 	}
 
 	/*
 	 * assumes message is read, and when transacted, transation is still open.
 	 */
-	private String processMessageInAdapter(IListener origin, Object rawMessage, String message, String messageId, String correlationId, Map threadContext, long waitingDuration, boolean retry) throws ListenerException {
+	private String processMessageInAdapter(IListener origin, Object rawMessage, String message, String messageId, String technicalCorrelationId, Map threadContext, long waitingDuration, boolean retry) throws ListenerException {
 		String result=null;
 		PipeLineResult pipeLineResult=null;
 		long startProcessingTimestamp = System.currentTimeMillis();
@@ -1102,7 +1110,35 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 //		} else {
 //			requestSizeStatistics.addValue(message.length());
 //		}
-		log.debug(getLogPrefix()+"received message with messageId ["+messageId+"] correlationId ["+correlationId+"]");
+		log.debug(getLogPrefix()+"received message with messageId ["+messageId+"] (technical) correlationId ["+technicalCorrelationId+"]");
+
+		if (StringUtils.isEmpty(messageId)) {
+			messageId=getName()+"-"+Misc.createSimpleUUID();
+			if (log.isDebugEnabled()) 
+				log.debug(getLogPrefix()+"generated messageId ["+messageId+"]");
+		}
+
+		String businessCorrelationId=technicalCorrelationId;
+		if (correlationIDTp!=null) {
+			try {
+				businessCorrelationId=correlationIDTp.transform(message,null);
+			} catch (Exception e) {
+				throw new ListenerException(getLogPrefix()+"could not extract businessCorrelationId",e);
+			}
+			if (StringUtils.isEmpty(businessCorrelationId)) {
+				if (StringUtils.isNotEmpty(technicalCorrelationId)) {
+					log.warn(getLogPrefix()+"did not find correlationId using XpathExpression ["+getCorrelationIDXPath()+"], reverting to correlationId of transfer ["+technicalCorrelationId+"]");
+					businessCorrelationId=technicalCorrelationId;
+				} else {
+					if (StringUtils.isNotEmpty(messageId)) {
+						log.warn(getLogPrefix()+"did not find correlationId using XpathExpression ["+getCorrelationIDXPath()+"] or technical correlationId, reverting to messageId ["+messageId+"]");
+						businessCorrelationId=messageId;
+					}
+				}
+			}
+			log.info(getLogPrefix()+"messageId [" + messageId + "] technicalCorrelationId [" + technicalCorrelationId + "] businessCorrelationId [" + businessCorrelationId + "]");
+		}
+		threadContext.put(PipeLineSession.businessCorrelationIdKey,businessCorrelationId);
         
 		if (checkTryCount(messageId, retry, rawMessage, message, threadContext)) {
 			if (!isTransacted()) {
@@ -1119,22 +1155,28 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 		String errorMessage="";
 		boolean messageInError = false;
 		try {
-			if (StringUtils.isEmpty(correlationId)) {
-				correlationId=getName()+"-"+Misc.createSimpleUUID();
-				if (log.isDebugEnabled()) 
-					log.debug(getLogPrefix()+"generated correlationId ["+correlationId+"]");
-			}
-			if (StringUtils.isEmpty(messageId)) {
-				messageId = correlationId;
+			String pipelineMessage;
+			if (origin instanceof IBulkDataListener) {
+				try {
+					IBulkDataListener bdl = (IBulkDataListener)origin;
+					pipelineMessage=bdl.retrieveBulkData(rawMessage,message,threadContext);
+				} catch (Throwable t) {
+					errorMessage = t.getMessage();
+					messageInError = true;
+					ListenerException l = wrapExceptionAsListenerException(t);
+					throw l;
+				}
+			} else {
+				pipelineMessage=message;
 			}
 			
 			numReceived.increase();
 			// Note: errorMessage is used to pass value from catch-clause to finally-clause!
-			PipeLineSession pipelineSession = createProcessingContext(correlationId, threadContext, messageId);
+			PipeLineSession pipelineSession = createProcessingContext(businessCorrelationId, threadContext, messageId);
 			try {
 				// TODO: What about Ibis42 compat mode?
 				if (isIbis42compatibility()) {
-					pipeLineResult = adapter.processMessage(correlationId, message, pipelineSession);
+					pipeLineResult = adapter.processMessage(businessCorrelationId, pipelineMessage, pipelineSession);
 					result=pipeLineResult.getResult();
 					errorMessage = result;
 					if (pipeLineResult.getState().equals(adapter.getErrorState())) {
@@ -1147,9 +1189,9 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 					// back which might be too early.
 					try {
 						if (getMessageLog()!=null) {
-							getMessageLog().storeMessage(messageId, correlationId, new Date(),"log",message);
+							getMessageLog().storeMessage(messageId, businessCorrelationId, new Date(),"log",pipelineMessage);
 						}
-						pipeLineResult = adapter.processMessageWithExceptions(correlationId, message, pipelineSession);
+						pipeLineResult = adapter.processMessageWithExceptions(businessCorrelationId, pipelineMessage, pipelineSession);
 						result=pipeLineResult.getResult();
 						errorMessage = "exitState ["+pipeLineResult.getState()+"], result ["+result+"]";
 						if (log.isDebugEnabled()) { log.debug(getLogPrefix()+"received result: "+errorMessage); }
@@ -1182,19 +1224,19 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 //				responseSizeStatistics.addValue(result.length());
 //			}
 			if (getSender()!=null) {
-				String sendMsg = sendResultToSender(correlationId, result);
+				String sendMsg = sendResultToSender(technicalCorrelationId, result);
 				if (sendMsg != null) {
 					errorMessage = sendMsg;
 				}
 			}
 		} finally {
-			cacheProcessResult(messageId, correlationId, errorMessage, new Date(startProcessingTimestamp));
+			cacheProcessResult(messageId, businessCorrelationId, errorMessage, new Date(startProcessingTimestamp));
 			if (!isTransacted() && messageInError) {
 				// NB: Because the below happens from a finally-clause, any
 				// exception that has occurred will still be propagated even
 				// if we decide not to retry the message.
 				// This should perhaps be avoided
-				retryOrErrorStorage(rawMessage, startProcessingTimestamp, txStatus, errorMessage, message, messageId, correlationId, retry);
+				retryOrErrorStorage(rawMessage, startProcessingTimestamp, txStatus, errorMessage, message, messageId, businessCorrelationId, retry);
 			}
 			try {
 				// TODO: Should this be done in a finally, unconditionally?
@@ -1220,7 +1262,7 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 				}
 			}
 		}
-		log.debug(getLogPrefix()+"returning result ["+result+"] for message ["+messageId+"] correlationId ["+correlationId+"]");
+		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"messageId ["+messageId+"] correlationId ["+businessCorrelationId+"] returning result ["+result+"]");
 		return result;
 	}
 
