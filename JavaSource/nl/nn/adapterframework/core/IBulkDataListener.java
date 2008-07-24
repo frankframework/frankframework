@@ -1,6 +1,9 @@
 /*
  * $Log: IBulkDataListener.java,v $
- * Revision 1.1  2008-07-24 12:03:40  europe\L190409
+ * Revision 1.2  2008-07-24 12:31:45  europe\L190409
+ * fix
+ *
+ * Revision 1.1  2008/07/24 12:03:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fix transactional FXF
  *
  */
@@ -22,6 +25,6 @@ public interface IBulkDataListener extends IListener {
 	 * It returns the handle to the file as a result, and uses that as the message for the pipeline.
 	 * @return input message for adapter.
 	 */
-	void retrieveBulkData(Object rawMessage, Map context) throws ListenerException;
+	String retrieveBulkData(Object rawMessage, String message, Map context) throws ListenerException;
 
 }

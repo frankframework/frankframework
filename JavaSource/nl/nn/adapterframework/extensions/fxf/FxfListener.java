@@ -1,6 +1,9 @@
 /*
  * $Log: FxfListener.java,v $
- * Revision 1.10  2008-06-30 08:55:32  europe\L190409
+ * Revision 1.11  2008-07-24 12:31:19  europe\L190409
+ * fix
+ *
+ * Revision 1.10  2008/06/30 08:55:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * only commit file reception in case of success
  * otherwise only delete local file
  *
@@ -39,6 +42,7 @@ import java.io.File;
 import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IBulkDataListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.SenderException;
@@ -72,12 +76,23 @@ import org.apache.commons.lang.StringUtils;
  * <tr><th>name</th><th>description</th></tr>
  * <tr><td>FxfTransferName</td><td>transfername of the file received</td></tr>
  * </table>
+ * <h2>fxf_init returncodes</h2>
+ * <table>
+<tr><th>Returncode</th><th>Reason</th><th>Action required</th></tr>
+<tr><td>0</td><td>all went well</td><td>none</td></tr>
+<tr><td>1</td><td>remote file not deleted</td><td>delete the file manually</td></tr>
+<tr><td>2</td><td>local file not deleted</td><td>delete the file manually</td></tr>
+<tr><td>3</td><td>both local- and remote file not deleted</td><td>delete the files manually</td></tr>
+<tr><td>5</td><td>function/transfer_name combination not found in FXF configuration</td><td>check function/transfer_name combination provided and FXF configuration</td></tr>
+<tr><td>6</td><td>for indirect transfer: MQ put failed</td><td>Check QManager and Queue as found in FXF configuration</td></tr>
+<tr><td>7</td><td>for direct transfer: xcomtcp command failed</td><td>Check XCOM configuration as found in FXF configuration</td></tr>
+</table>
  * </p>
  * @author  Gerrit van Brakel
  * @since   4.8
  * @version Id
  */
-public class FxfListener extends JmsListener {
+public class FxfListener extends JmsListener implements IBulkDataListener {
 
 	public static final String EXTRACT_TRANSFERNAME_DXPATH="FXF/Transfer_name";
 	public static final String EXTRACT_LOCALNAME_DXPATH="FXF/Local_File";
@@ -113,6 +128,10 @@ public class FxfListener extends JmsListener {
 	public String getStringFromRawMessage(Object rawMessage, Map threadContext) throws ListenerException {
 		String message=super.getStringFromRawMessage(rawMessage, threadContext);
 		log.debug(getLogPrefix()+"retrieved FXF message ["+message+"]");
+		return message;
+	}
+
+	public String retrieveBulkData(Object rawMessage, String message, Map context) throws ListenerException {
 		String transfername;
 		String localname;
 		try {
@@ -121,6 +140,13 @@ public class FxfListener extends JmsListener {
 		} catch (Exception e) {
 			throw new ListenerException("could not extract name from message ["+message+"]");
 		}
+		if (context!=null) {
+			context.put(TRANSFERNAME_SESSION_KEY,transfername);
+			context.put(LOCALNAME_SESSION_KEY,localname);
+		} else {
+			log.warn(getLogPrefix()+"cannot store transfername ["+transfername+"] and localname ["+localname+"], as context is null");
+		}
+
 		String command = getScript()+" get "+transfername+" "+localname;
 		log.debug(getLogPrefix()+"retrieving local file ["+localname+"] by executing command ["+command+"]");
 		try {
@@ -129,8 +155,6 @@ public class FxfListener extends JmsListener {
 		} catch (SenderException e1) {
 			throw new ListenerException(e1);
 		}
-		threadContext.put(TRANSFERNAME_SESSION_KEY,transfername);
-		threadContext.put(LOCALNAME_SESSION_KEY,localname);
 		return localname;
 	}
 
@@ -243,5 +267,6 @@ public class FxfListener extends JmsListener {
 	public boolean isDelete() {
 		return delete;
 	}
+
 
 }
