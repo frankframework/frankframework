@@ -1,6 +1,9 @@
 /*
  * $Log: ShowConfigurationStatus.java,v $
- * Revision 1.14  2008-05-15 15:23:53  europe\L190409
+ * Revision 1.15  2008-07-24 12:40:45  europe\L190409
+ * support for messageCounts in messaglog
+ *
+ * Revision 1.14  2008/05/15 15:23:53  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * some support to display configuration exceptions again
  *
  * Revision 1.13  2008/02/06 16:04:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -67,7 +70,7 @@ import org.apache.struts.action.ActionMapping;
  * @version Id
  */
 public final class ShowConfigurationStatus extends ActionBase {
-	public static final String version = "$RCSfile: ShowConfigurationStatus.java,v $ $Revision: 1.14 $ $Date: 2008-05-15 15:23:53 $";
+	public static final String version = "$RCSfile: ShowConfigurationStatus.java,v $ $Revision: 1.15 $ $Date: 2008-07-24 12:40:45 $";
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 
@@ -126,8 +129,27 @@ public final class ShowConfigurationStatus extends ActionBase {
 							receiverXML.addAttribute("listenerDestination", pd);
 						}
 						//receiverXML.addAttribute("hasInprocessStorage", ""+(rb.getInProcessStorage()!=null));
-						receiverXML.addAttribute("hasErrorStorage", ""+(rb.getErrorStorage()!=null));
-						receiverXML.addAttribute("hasMessageLog", ""+(rb.getMessageLog()!=null));
+						ITransactionalStorage ts;
+						ts=rb.getErrorStorage();
+						receiverXML.addAttribute("hasErrorStorage", ""+(ts!=null));
+						if (ts!=null) {
+							try {
+								receiverXML.addAttribute("errorStorageCount", ts.getMessageCount());
+							} catch (Exception e) {
+								log.warn(e);
+								receiverXML.addAttribute("errorStorageCount", "error");
+							}
+						}
+						ts=rb.getMessageLog();
+						receiverXML.addAttribute("hasMessageLog", ""+(ts!=null));
+						if (ts!=null) {
+							try {
+								receiverXML.addAttribute("messageLogCount", ts.getMessageCount());
+							} catch (Exception e) {
+								log.warn(e);
+								receiverXML.addAttribute("messageLogCount", "error");
+							}
+						}
 					}
 
 					if (receiver instanceof HasSender) {
@@ -179,6 +201,12 @@ public final class ShowConfigurationStatus extends ActionBase {
 						browserElem.addAttribute("name",messageLog.getName());
 						browserElem.addAttribute("type","log");
 						browserElem.addAttribute("slotId",messageLog.getSlotId());
+						try {
+							browserElem.addAttribute("messageLogCount", messageLog.getMessageCount());
+						} catch (Exception e) {
+							log.warn(e);
+							browserElem.addAttribute("messageLogCount", "error");
+						}
 						pipeElem.addSubElement(browserElem);
 					}
 				}
