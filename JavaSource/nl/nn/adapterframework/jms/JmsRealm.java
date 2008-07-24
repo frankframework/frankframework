@@ -1,6 +1,9 @@
 /*
  * $Log: JmsRealm.java,v $
- * Revision 1.13  2007-10-10 08:23:11  europe\L190409
+ * Revision 1.14  2008-07-24 12:20:00  europe\L190409
+ * added support for authenticated JMS
+ *
+ * Revision 1.13  2007/10/10 08:23:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added a ToDo about cleanup
  *
  * Revision 1.12  2007/07/10 07:19:29  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -57,7 +60,7 @@ import org.apache.log4j.Logger;
  */
 public class JmsRealm {
 	//TODO: change to J2eeRealm
-	public static final String version="$RCSfile: JmsRealm.java,v $ $Revision: 1.13 $ $Date: 2007-10-10 08:23:11 $";
+	public static final String version="$RCSfile: JmsRealm.java,v $ $Revision: 1.14 $ $Date: 2008-07-24 12:20:00 $";
 	private Logger log = LogUtil.getLogger(this);
 
 	private String realmName;
@@ -67,6 +70,7 @@ public class JmsRealm {
     private String authentication = null;
     private String credentials = null;
 	private String principal = null;
+	private String authAlias = null;
 	private String jndiAuthAlias = null;
     private String urlPkgPrefixes = null;
     private String securityProtocol = null;
@@ -282,6 +286,13 @@ public class JmsRealm {
 	}
 	public String getJndiAuthAlias() {
 		return jndiAuthAlias;
+	}
+
+	public void setAuthAlias(String string) {
+		authAlias = string;
+	}
+	public String getAuthAlias() {
+		return authAlias;
 	}
 
 }

@@ -1,6 +1,9 @@
 /*
  * $Log: ConnectionBase.java,v $
- * Revision 1.13  2008-01-03 15:49:35  europe\L190409
+ * Revision 1.14  2008-07-24 12:20:00  europe\L190409
+ * added support for authenticated JMS
+ *
+ * Revision 1.13  2008/01/03 15:49:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * made connectionFactory getter public
  *
  * Revision 1.12  2007/10/08 12:20:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -71,8 +74,10 @@ import nl.nn.adapterframework.core.IbisException;
 import nl.nn.adapterframework.extensions.ifsa.IfsaException;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.Counter;
+import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 /**
@@ -82,7 +87,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class ConnectionBase  {
-	public static final String version="$RCSfile: ConnectionBase.java,v $ $Revision: 1.13 $ $Date: 2008-01-03 15:49:35 $";
+	public static final String version="$RCSfile: ConnectionBase.java,v $ $Revision: 1.14 $ $Date: 2008-07-24 12:20:00 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private int referenceCount;
@@ -95,7 +100,7 @@ public class ConnectionBase  {
 	private final static String CLEANUP_ON_CLOSE_KEY="jms.cleanUpOnClose";
 	private static Boolean cleanUpOnClose=null; 
 
-
+	private String authAlias;
 
 	private Counter openConnectionCount = new Counter(0);
 	private Counter openSessionCount = new Counter(0);
@@ -111,7 +116,7 @@ public class ConnectionBase  {
 
 	private Queue globalDynamicReplyQueue = null;
 	
-	protected ConnectionBase(String id, Context context, ConnectionFactory connectionFactory, Map siblingMap) {
+	protected ConnectionBase(String id, Context context, ConnectionFactory connectionFactory, Map siblingMap, String authAlias) {
 		super();
 		referenceCount=0;
 		this.id=id;
@@ -122,7 +127,8 @@ public class ConnectionBase  {
 		if (connectionsArePooled()) {
 			connectionTable = new Hashtable();
 		}
-		log.debug(getLogPrefix()+"set id ["+id+"] context ["+context+"] connectionFactory ["+connectionFactory+"] ");
+		this.authAlias=authAlias;
+		log.debug(getLogPrefix()+"set id ["+id+"] context ["+context+"] connectionFactory ["+connectionFactory+"] authAlias ["+authAlias+"]");
 	}
 		
 	public synchronized boolean close() throws IbisException
@@ -179,6 +185,15 @@ public class ConnectionBase  {
 
 	
 	protected Connection createConnection() throws JMSException {
+		if (StringUtils.isNotEmpty(authAlias)) {
+			CredentialFactory cf = new CredentialFactory(authAlias,null,null);
+			log.debug("using userId ["+cf.getUsername()+"] to create Connection");
+			if (connectionFactory instanceof QueueConnectionFactory) {
+				return ((QueueConnectionFactory)connectionFactory).createQueueConnection(cf.getUsername(),cf.getPassword());
+			} else {
+				return ((TopicConnectionFactory)connectionFactory).createTopicConnection(cf.getUsername(),cf.getPassword());
+			}
+		}
 		if (connectionFactory instanceof QueueConnectionFactory) {
 			return ((QueueConnectionFactory)connectionFactory).createQueueConnection();
 		} else {
@@ -357,5 +372,11 @@ public class ConnectionBase  {
 	}
 
 
+	public void setAuthAlias(String string) {
+		authAlias = string;
+	}
+	public String getAuthAlias() {
+		return authAlias;
+	}
 
 }

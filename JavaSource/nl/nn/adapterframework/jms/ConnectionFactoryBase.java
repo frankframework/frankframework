@@ -1,6 +1,9 @@
 /*
  * $Log: ConnectionFactoryBase.java,v $
- * Revision 1.8  2007-10-08 12:20:04  europe\L190409
+ * Revision 1.9  2008-07-24 12:20:00  europe\L190409
+ * added support for authenticated JMS
+ *
+ * Revision 1.8  2007/10/08 12:20:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed HashMap to Map where possible
  *
  * Revision 1.7  2007/05/23 09:13:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -45,24 +48,24 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public abstract class ConnectionFactoryBase  {
-	public static final String version="$RCSfile: ConnectionFactoryBase.java,v $ $Revision: 1.8 $ $Date: 2007-10-08 12:20:04 $";
+	public static final String version="$RCSfile: ConnectionFactoryBase.java,v $ $Revision: 1.9 $ $Date: 2008-07-24 12:20:00 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	protected abstract Map getConnectionMap();
 	protected abstract Context createContext() throws NamingException;
 	protected abstract ConnectionFactory createConnectionFactory(Context context, String id) throws IbisException, NamingException;
 	
-	protected ConnectionBase createConnection(String id) throws IbisException {
+	protected ConnectionBase createConnection(String id, String authAlias) throws IbisException {
 		Context context = getContext();
 		ConnectionFactory connectionFactory = getConnectionFactory(context, id); 
-		return new ConnectionBase(id, context, connectionFactory, getConnectionMap());
+		return new ConnectionBase(id, context, connectionFactory, getConnectionMap(), authAlias);
 	}
 	
-	public synchronized ConnectionBase getConnection(String id) throws IbisException {
+	public synchronized ConnectionBase getConnection(String id, String authAlias) throws IbisException {
 		Map connectionMap = getConnectionMap();
 		ConnectionBase result = (ConnectionBase)connectionMap.get(id);
 		if (result == null) {
-			result = createConnection(id);
+			result = createConnection(id, authAlias);
 			log.debug("created new Connection-object for ["+id+"]");
 		}
 		result.increaseReferences();

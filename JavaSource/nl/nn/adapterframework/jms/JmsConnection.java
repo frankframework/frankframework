@@ -1,6 +1,9 @@
 /*
  * $Log: JmsConnection.java,v $
- * Revision 1.6  2008-05-15 14:45:45  europe\L190409
+ * Revision 1.7  2008-07-24 12:20:00  europe\L190409
+ * added support for authenticated JMS
+ *
+ * Revision 1.6  2008/05/15 14:45:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * allow to throw more exceptions in lookupDestination
  *
  * Revision 1.5  2007/10/08 12:20:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -27,10 +30,10 @@ import javax.naming.NamingException;
  * @version Id
  */
 public class JmsConnection extends ConnectionBase {
-	public static final String version="$RCSfile: JmsConnection.java,v $ $Revision: 1.6 $ $Date: 2008-05-15 14:45:45 $";
+	public static final String version="$RCSfile: JmsConnection.java,v $ $Revision: 1.7 $ $Date: 2008-07-24 12:20:00 $";
 	
-	public JmsConnection(String connectionFactoryName, Context context, ConnectionFactory connectionFactory, Map connectionMap) {
-		super(connectionFactoryName, context, connectionFactory, connectionMap);
+	public JmsConnection(String connectionFactoryName, Context context, ConnectionFactory connectionFactory, Map connectionMap, String authAlias) {
+		super(connectionFactoryName, context, connectionFactory, connectionMap, authAlias);
 	}
 	
 	public Destination lookupDestination(String destinationName) throws JmsException, NamingException {

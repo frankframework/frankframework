@@ -1,6 +1,9 @@
 /*
  * $Log: JMSFacade.java,v $
- * Revision 1.34  2008-05-15 14:55:07  europe\L190409
+ * Revision 1.35  2008-07-24 12:20:00  europe\L190409
+ * added support for authenticated JMS
+ *
+ * Revision 1.34  2008/05/15 14:55:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * make connection available to descender classes
  *
  * Revision 1.33  2008/02/22 14:31:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -140,6 +143,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setPersistent(boolean) persistent}</td><td>rather useless attribute, and not the same as <code>deliveryMode</code>. You probably want to use that.</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setAcknowledgeMode(String) acknowledgeMode}</td><td>&nbsp;</td><td>AUTO_ACKNOWLEDGE</td></tr>
  * <tr><td>{@link #setTransacted(boolean) transacted}</td><td>&nbsp;</td><td>false</td></tr>
+ * <tr><td>{@link #setAuthAlias(String) authAlias}</td><td>alias used to obtain credentials for authentication to JMS server</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
@@ -148,7 +152,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version="$RCSfile: JMSFacade.java,v $ $Revision: 1.34 $ $Date: 2008-05-15 14:55:07 $";
+	public static final String version="$RCSfile: JMSFacade.java,v $ $Revision: 1.35 $ $Date: 2008-07-24 12:20:00 $";
 
 	public static final String MODE_PERSISTENT="PERSISTENT";
 	public static final String MODE_NON_PERSISTENT="NON_PERSISTENT";
@@ -164,6 +168,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	private long messageTimeToLive=0;
     private String destinationName;
     private boolean useTopicFunctions = false;
+    private String authAlias;
 
     private String destinationType="QUEUE"; // QUEUE or TOPIC
 
@@ -272,7 +277,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
                     try {
                         String connectionFactoryName = getConnectionFactoryName();
                         log.debug("creating JmsConnection");
-						connection = (JmsConnection)jmsConnectionFactory.getConnection(connectionFactoryName);
+						connection = (JmsConnection)jmsConnectionFactory.getConnection(connectionFactoryName,getAuthAlias());
                     } catch (IbisException e) {
                         if (e instanceof JmsException) {
                                 throw (JmsException)e;
@@ -977,5 +982,12 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 		return messageSelector;
 	}
     
+
+	public void setAuthAlias(String string) {
+		authAlias = string;
+	}
+	public String getAuthAlias() {
+		return authAlias;
+	}
 
 }

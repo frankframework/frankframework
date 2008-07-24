@@ -1,6 +1,9 @@
 /*
  * $Log: JmsConnectionFactory.java,v $
- * Revision 1.3  2007-10-08 12:20:04  europe\L190409
+ * Revision 1.4  2008-07-24 12:20:00  europe\L190409
+ * added support for authenticated JMS
+ *
+ * Revision 1.3  2007/10/08 12:20:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed HashMap to Map where possible
  *
  * Revision 1.2  2005/10/26 08:21:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -34,7 +37,7 @@ import nl.nn.adapterframework.core.IbisException;
  * @since   4.4
  */
 public class JmsConnectionFactory extends ConnectionFactoryBase {
-	public static final String version="$RCSfile: JmsConnectionFactory.java,v $ $Revision: 1.3 $ $Date: 2007-10-08 12:20:04 $";
+	public static final String version="$RCSfile: JmsConnectionFactory.java,v $ $Revision: 1.4 $ $Date: 2008-07-24 12:20:00 $";
 
 	static private Map connectionMap = new HashMap();
 	
@@ -42,10 +45,10 @@ public class JmsConnectionFactory extends ConnectionFactoryBase {
 		return connectionMap;
 	}
 
-	protected ConnectionBase createConnection(String jmsConnectionFactoryName) throws IbisException {
+	protected ConnectionBase createConnection(String jmsConnectionFactoryName, String authAlias) throws IbisException {
 		Context context = getContext();
 		ConnectionFactory connectionFactory = getConnectionFactory(context, jmsConnectionFactoryName); 
-		return new JmsConnection(jmsConnectionFactoryName, context, connectionFactory, getConnectionMap());
+		return new JmsConnection(jmsConnectionFactoryName, context, connectionFactory, getConnectionMap(), authAlias);
 	}
 
 	protected Context createContext() throws NamingException {
