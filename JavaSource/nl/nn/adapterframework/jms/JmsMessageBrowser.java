@@ -1,6 +1,9 @@
 /*
  * $Log: JmsMessageBrowser.java,v $
- * Revision 1.6  2007-10-10 08:32:09  europe\L190409
+ * Revision 1.7  2008-07-24 12:18:36  europe\L190409
+ * added messageCount
+ *
+ * Revision 1.6  2007/10/10 08:32:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * additional selector specifications possible
  *
  * Revision 1.5.4.1  2007/09/21 13:23:34  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
@@ -53,7 +56,7 @@ import nl.nn.adapterframework.core.ListenerException;
  * @see nl.nn.adapterframework.webcontrol.action.BrowseQueue
  */
 public class JmsMessageBrowser extends JMSFacade implements IMessageBrowser {
-	public static final String version = "$RCSfile: JmsMessageBrowser.java,v $ $Revision: 1.6 $ $Date: 2007-10-10 08:32:09 $";
+	public static final String version = "$RCSfile: JmsMessageBrowser.java,v $ $Revision: 1.7 $ $Date: 2008-07-24 12:18:36 $";
 
 	private long timeOut = 3000;
 	private String selector=null;
@@ -75,6 +78,37 @@ public class JmsMessageBrowser extends JMSFacade implements IMessageBrowser {
 			throw new ListenerException(e);
 		}
 	}
+
+	public int getMessageCount() throws ListenerException {
+		QueueBrowser queueBrowser=null;
+		QueueSession session = null;
+		try {
+			session = (QueueSession)(createSession());
+			if (StringUtils.isEmpty(getSelector())) {
+				queueBrowser=session.createBrowser((Queue)getDestination());
+			} else {
+				queueBrowser=session.createBrowser((Queue)getDestination(), getSelector());
+			}
+			int count=0;
+			for (Enumeration enum=queueBrowser.getEnumeration();enum.hasMoreElements();enum.nextElement()) {
+				count++;
+			}
+			return count;
+		} catch (Exception e) {
+			throw new ListenerException("cannot determin messagecount",e);
+		} finally {
+			try {
+				if (queueBrowser!=null) {
+					queueBrowser.close();
+				}
+			} catch (JMSException e) {
+				throw new ListenerException("error closing queuebrowser",e);
+			}
+			closeSession(session);
+		}
+	}
+
+
 	
 	public String getId(Object iteratorItem) throws ListenerException {
 		Message msg = (Message)iteratorItem;
