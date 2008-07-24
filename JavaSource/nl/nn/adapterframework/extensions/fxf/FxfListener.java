@@ -1,6 +1,9 @@
 /*
  * $Log: FxfListener.java,v $
- * Revision 1.11  2008-07-24 12:31:19  europe\L190409
+ * Revision 1.12  2008-07-24 14:10:03  europe\L190409
+ * avoid trying to delete file twice
+ *
+ * Revision 1.11  2008/07/24 12:31:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fix
  *
  * Revision 1.10  2008/06/30 08:55:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -163,20 +166,24 @@ public class FxfListener extends JmsListener implements IBulkDataListener {
 
 		String transfername=(String)threadContext.get(TRANSFERNAME_SESSION_KEY);
 		String localname=(String)threadContext.get(LOCALNAME_SESSION_KEY);
-		if (StringUtils.isEmpty(transfername)) {
-			throw new ListenerException("could not extract FXF transfername from session key ["+TRANSFERNAME_SESSION_KEY+"]");
-		}
-		if (StringUtils.isEmpty(localname)) {
-			throw new ListenerException("could not extract FXF localname from session key ["+LOCALNAME_SESSION_KEY+"]");
-		}
 	
 //		if (JtaUtil.isRollbackOnly()) {
 //			log.info(getLogPrefix()+"transaction status is RollbackOnly, will not confirm processing to FXF");		
 		if (plr==null || !"success".equals(plr.getState())) {
-			log.warn(getLogPrefix()+"pipeLineExitState not equal to success, will not confirm processing to FXF, only delete local file");
-			File f=new File(localname);
-			f.delete();		
+			if (StringUtils.isNotEmpty(localname)) {
+				log.warn(getLogPrefix()+"pipeLineExitState not equal to success, will not confirm processing to FXF, only delete local file");
+				File f=new File(localname);
+				f.delete();		
+			} else {
+				log.warn(getLogPrefix()+"pipeLineExitState not equal to success, don't know local filename, so assume that it does not exist");
+			}
 		} else {
+			if (StringUtils.isEmpty(transfername)) {
+				throw new ListenerException("could not extract FXF transfername from session key ["+TRANSFERNAME_SESSION_KEY+"]");
+			}
+			if (StringUtils.isEmpty(localname)) {
+				throw new ListenerException("could not extract FXF localname from session key ["+LOCALNAME_SESSION_KEY+"]");
+			}
 			// confirm processing of file
 			String command = getScript()+" processed "+transfername;
 			log.debug(getLogPrefix()+"confirming FXF processing of file ["+localname+"] by executing command ["+command+"]");
@@ -186,15 +193,14 @@ public class FxfListener extends JmsListener implements IBulkDataListener {
 			} catch (SenderException e1) {
 				throw new ListenerException(e1);
 			}
-		}
-
-		// delete file or move it to processed directory
-		if (isDelete() || StringUtils.isNotEmpty(getProcessedDirectory())) {
-			File f=new File(localname);
-			try {
-				FileUtils.moveFileAfterProcessing(f, getProcessedDirectory(), isDelete(), isOverwrite(), getNumberOfBackups()); 
-			} catch (Exception e) {
-				throw new ListenerException("Could not move file ["+localname+"]",e);
+			// delete file or move it to processed directory
+			if (isDelete() || StringUtils.isNotEmpty(getProcessedDirectory())) {
+				File f=new File(localname);
+				try {
+					FileUtils.moveFileAfterProcessing(f, getProcessedDirectory(), isDelete(), isOverwrite(), getNumberOfBackups()); 
+				} catch (Exception e) {
+					throw new ListenerException("Could not move file ["+localname+"]",e);
+				}
 			}
 		}
 	}
