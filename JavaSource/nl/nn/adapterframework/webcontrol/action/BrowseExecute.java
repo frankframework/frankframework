@@ -1,6 +1,9 @@
 /*
  * $Log: BrowseExecute.java,v $
- * Revision 1.11  2008-06-26 12:51:13  europe\L190409
+ * Revision 1.12  2008-07-24 12:39:44  europe\L190409
+ * removed unused code
+ *
+ * Revision 1.11  2008/06/26 12:51:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fix export selected
  *
  * Revision 1.10  2008/06/24 08:00:39  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -54,6 +57,7 @@ import javax.servlet.http.HttpServletResponse;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IMessageBrowser;
+import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -73,7 +77,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  * @since   4.3
  */
 public class BrowseExecute extends Browse {
-	public static final String version="$RCSfile: BrowseExecute.java,v $ $Revision: 1.11 $ $Date: 2008-06-26 12:51:13 $";
+	public static final String version="$RCSfile: BrowseExecute.java,v $ $Revision: 1.12 $ $Date: 2008-07-24 12:39:44 $";
     
     protected static final TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
     
@@ -186,30 +190,5 @@ public class BrowseExecute extends Browse {
 			transactionManager.commit(txStatus);
 		}
 	}
-
-//	private void resendMessage(Adapter adapter, ReceiverBase receiver, IMessageBrowser mb, String messageId, PlatformTransactionManager transactionManager) throws Throwable {
-//		TransactionStatus txStatus = null;
-//		try {
-//			txStatus = transactionManager.getTransaction(TXNEW);
-//			Object msg = mb.getMessage(messageId);
-//			if (msg==null) {
-//				error(", ", "errors.generic", "did not retrieve message", null);
-//				txStatus.setRollbackOnly();
-//			} else {
-//				if (adapter.getRunState()!=RunStateEnum.STARTED) {
-//					error(", ", "errors.generic", "message not processed: adapter not open", null);
-//					txStatus.setRollbackOnly();
-//				} else {
-//					receiver.processRawMessage(receiver.getListener(),msg,null,-1);
-//				}
-//			}
-//		} catch (Throwable e) {
-//			txStatus.setRollbackOnly();
-//			error(", ", "errors.generic", "error occured resending message", e);
-//		} finally { 
-//			transactionManager.commit(txStatus);
-//		}
-//	}
-
 
 }
