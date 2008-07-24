@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBaseSpring.java,v $
- * Revision 1.30  2008-07-24 12:23:05  europe\L190409
+ * Revision 1.31  2008-07-24 14:43:08  europe\L190409
+ * avoid NPE
+ *
+ * Revision 1.30  2008/07/24 12:23:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fix transactional FXF
  * modified correlation ID calculation, should work with all listeners now
  *
@@ -424,7 +427,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  */
 public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMessageHandler, EventThrowing, IbisExceptionListener, HasSender, TracingEventNumbers, IThreadCountControllable, BeanFactoryAware {
     
-	public static final String version="$RCSfile: ReceiverBaseSpring.java,v $ $Revision: 1.30 $ $Date: 2008-07-24 12:23:05 $";
+	public static final String version="$RCSfile: ReceiverBaseSpring.java,v $ $Revision: 1.31 $ $Date: 2008-07-24 14:43:08 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -1138,7 +1141,6 @@ public class ReceiverBaseSpring implements IReceiver, IReceiverStatistics, IMess
 			}
 			log.info(getLogPrefix()+"messageId [" + messageId + "] technicalCorrelationId [" + technicalCorrelationId + "] businessCorrelationId [" + businessCorrelationId + "]");
 		}
-		threadContext.put(PipeLineSession.businessCorrelationIdKey,businessCorrelationId);
         
 		if (checkTryCount(messageId, retry, rawMessage, message, threadContext)) {
 			if (!isTransacted()) {
