@@ -1,6 +1,9 @@
 /*
  * $Log: GalmMonitorAdapter.java,v $
- * Revision 1.6  2008-06-24 07:58:55  europe\L190409
+ * Revision 1.7  2008-07-24 12:34:01  europe\L190409
+ * rework
+ *
+ * Revision 1.6  2008/06/24 07:58:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * reduce warnings to debug
  *
  * Revision 1.5  2008/05/21 10:52:18  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -44,8 +47,7 @@ import nl.nn.adapterframework.util.Misc;
  * @since   4.7
  * @version Id
  */
-public class GalmMonitorAdapter implements IMonitorAdapter {
-	protected Logger log = LogUtil.getLogger(this);
+public class GalmMonitorAdapter extends MonitorAdapterBase {
 	protected Logger galmLog = LogUtil.getLogger("GALM");
 
 	private String DTAP_STAGE_KEY="galm.stage";
@@ -63,6 +65,7 @@ public class GalmMonitorAdapter implements IMonitorAdapter {
 	}
 
 	public void configure() throws ConfigurationException {
+		super.configure();
 		hostname=Misc.getHostname();
 		AppConstants appConstants = AppConstants.getInstance();
 		sourceId=appConstants.getResolvedProperty(SOURCE_ID_KEY);

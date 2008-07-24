@@ -1,6 +1,9 @@
 /*
  * $Log: Trigger.java,v $
- * Revision 1.2  2008-07-17 16:17:19  europe\L190409
+ * Revision 1.3  2008-07-24 12:34:01  europe\L190409
+ * rework
+ *
+ * Revision 1.2  2008/07/17 16:17:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * rework
  *
  * Revision 1.1  2008/07/14 17:21:18  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -16,6 +19,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.builder.ToStringBuilder;
 
 /**
  * @author  Gerrit van Brakel
@@ -62,10 +66,10 @@ public class Trigger {
 			cleanUpEvents(now);
 			eventDts.add(now);
 			if (eventDts.size()>=getThreshold()) {
-				getOwner().changeState(alarm, getSeverity(), source, eventCode, null);
+				getOwner().changeState(alarm, getSeverityEnum(), source, eventCode, null);
 			}
 		} else {
-			getOwner().changeState(alarm, getSeverity(), source, eventCode, null);
+			getOwner().changeState(alarm, getSeverityEnum(), source, eventCode, null);
 		}
 	}	
 	
@@ -87,7 +91,7 @@ public class Trigger {
 		monitor.addSubElement(trigger);
 		trigger.addAttribute("eventCode",getEventCode());
 		if (getSeverity()!=null) {
-			trigger.addAttribute("severity",getSeverity().getName());
+			trigger.addAttribute("severity",getSeverity());
 		}
 		if (getThreshold()>1) {
 			trigger.addAttribute("threshold",getThreshold());
@@ -102,6 +106,10 @@ public class Trigger {
 	}
 	public Monitor getOwner() {
 		return owner;
+	}
+
+	public String toString() {
+		return ToStringBuilder.reflectionToString(this);
 	}
 
 
@@ -119,6 +127,14 @@ public class Trigger {
 			return "Clearing";
 		}
 	}
+	public void setType(String type) {
+		if (type.equalsIgnoreCase("Alarm")) {
+			setAlarm(true);
+		}
+		if (type.equalsIgnoreCase("Clearing")) {
+			setAlarm(false);
+		}
+	}
 
 	public void setEventCode(String string) {
 		eventCode = string;
@@ -133,8 +149,11 @@ public class Trigger {
 	public void setSeverityEnum(SeverityEnum enum) {
 		severity = enum;
 	}
-	public SeverityEnum getSeverity() {
+	public SeverityEnum getSeverityEnum() {
 		return severity;
+	}
+	public String getSeverity() {
+		return severity==null?null:severity.getName();
 	}
 
 	public void setThreshold(int i) {
