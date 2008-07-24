@@ -1,6 +1,9 @@
 /*
  * $Log: TestPipeLineExecute.java,v $
- * Revision 1.10  2008-05-22 07:45:03  europe\L190409
+ * Revision 1.11  2008-07-24 12:41:09  europe\L190409
+ * do not execute when cancelled
+ *
+ * Revision 1.10  2008/05/22 07:45:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * use inherited error() method
  *
  * Revision 1.9  2007/10/08 13:41:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -50,7 +53,7 @@ import org.apache.struts.upload.FormFile;
  * @version Id
  */
 public final class TestPipeLineExecute extends ActionBase {
-	public static final String version="$RCSfile: TestPipeLineExecute.java,v $  $Revision: 1.10 $ $Date: 2008-05-22 07:45:03 $";
+	public static final String version="$RCSfile: TestPipeLineExecute.java,v $  $Revision: 1.11 $ $Date: 2008-07-24 12:41:09 $";
 	
 	public ActionForward execute(
 	    ActionMapping mapping,
@@ -64,6 +67,10 @@ public final class TestPipeLineExecute extends ActionBase {
 	    if (null == config) {
 	        return (mapping.findForward("noconfig"));
 	    }
+
+		if (isCancelled(request)) {
+			return (mapping.findForward("success"));
+		}
 	    
 	
 	    DynaActionForm pipeLineTestForm = (DynaActionForm) form;
