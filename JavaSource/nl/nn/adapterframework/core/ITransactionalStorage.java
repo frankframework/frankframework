@@ -1,6 +1,9 @@
 /*
  * $Log: ITransactionalStorage.java,v $
- * Revision 1.7  2008-01-11 14:48:49  europe\L190409
+ * Revision 1.8  2008-07-24 12:04:04  europe\L190409
+ * added messageCount
+ *
+ * Revision 1.7  2008/01/11 14:48:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added getTypeString() and getHostString()
  *
  * Revision 1.6  2007/10/09 15:33:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -39,7 +42,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
  * @version Id
 */
 public interface ITransactionalStorage extends IMessageBrowser, INamedObject {
-	public static final String version = "$RCSfile: ITransactionalStorage.java,v $ $Revision: 1.7 $ $Date: 2008-01-11 14:48:49 $";
+	public static final String version = "$RCSfile: ITransactionalStorage.java,v $ $Revision: 1.8 $ $Date: 2008-07-24 12:04:04 $";
 
 	/**
 	 * Prepares the object for operation. After this
@@ -82,5 +85,7 @@ public interface ITransactionalStorage extends IMessageBrowser, INamedObject {
 	public void setType(String string);
 	
 	public boolean isActive();
+	
+	public int getMessageCount() throws ListenerException;
 
 }
