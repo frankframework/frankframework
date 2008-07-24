@@ -1,6 +1,9 @@
 /*
  * $Log: DefaultIbisManager.java,v $
- * Revision 1.6  2008-01-29 12:16:43  europe\L190409
+ * Revision 1.7  2008-07-24 12:23:36  europe\L190409
+ * write statistics on shutdown
+ *
+ * Revision 1.6  2008/01/29 12:16:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added support for thread number control
  *
  * Revision 1.5  2007/12/10 10:21:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -58,6 +61,8 @@ import nl.nn.adapterframework.scheduler.JobDef;
 import nl.nn.adapterframework.scheduler.SchedulerHelper;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.StatisticsKeeperLogger;
+import nl.nn.adapterframework.util.StatisticsKeeperXmlBuilder;
 
 import org.apache.log4j.Logger;
 import org.quartz.SchedulerException;
@@ -285,6 +290,9 @@ public class DefaultIbisManager implements IbisManager, BeanFactoryAware {
      * @see nl.nn.adapterframework.configuration.IbisManager#stopAdapters()
      */
     public void stopAdapters() {
+		StatisticsKeeperLogger skl = new StatisticsKeeperLogger();
+     	getConfiguration().forEachStatisticsKeeper(skl);
+     	
         log.info("Stopping all adapters");
         List adapters = configuration.getRegisteredAdapters();
         for (ListIterator iter = adapters.listIterator(adapters.size()); iter.hasPrevious();) {
