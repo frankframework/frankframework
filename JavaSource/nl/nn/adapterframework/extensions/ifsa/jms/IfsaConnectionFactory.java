@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaConnectionFactory.java,v $
- * Revision 1.1  2007-10-16 08:15:43  europe\L190409
+ * Revision 1.2  2008-07-24 12:26:26  europe\L190409
+ * added support for authenticated JMS
+ *
+ * Revision 1.1  2007/10/16 08:15:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * introduced switch class for jms and ejb
  *
  * Revision 1.13  2007/10/08 12:17:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -82,7 +85,7 @@ import com.ing.ifsa.IFSAQueueConnectionFactory;
  * @version Id
  */
 public class IfsaConnectionFactory extends ConnectionFactoryBase {
-	public static final String version="$RCSfile: IfsaConnectionFactory.java,v $ $Revision: 1.1 $ $Date: 2007-10-16 08:15:43 $";
+	public static final String version="$RCSfile: IfsaConnectionFactory.java,v $ $Revision: 1.2 $ $Date: 2008-07-24 12:26:26 $";
 
 	private final static String IFSA_INITIAL_CONTEXT_FACTORY="com.ing.ifsa.IFSAContextFactory";
 	private final static String IFSA_PROVIDER_URL_V2_0="IFSA APPLICATION BUS";
@@ -98,10 +101,14 @@ public class IfsaConnectionFactory extends ConnectionFactoryBase {
 	private boolean preJms22Api=false; 
 	private boolean xaEnabled=false;
 
-	protected ConnectionBase createConnection(String id) throws IbisException {
+	protected ConnectionBase createConnection(String id, String authAlias) throws IbisException {
 		IFSAContext context = (IFSAContext)getContext();
 		IFSAQueueConnectionFactory connectionFactory = (IFSAQueueConnectionFactory)getConnectionFactory(context, id); 
 		return new IfsaConnection(id, context, connectionFactory, getConnectionMap(),preJms22Api, xaEnabled);
+	}
+
+	public synchronized ConnectionBase getConnection(String id) throws IbisException {
+		return super.getConnection(id,null);
 	}
 
 	protected String getProviderUrl() {

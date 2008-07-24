@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaConnection.java,v $
- * Revision 1.2  2007-10-16 08:39:30  europe\L190409
+ * Revision 1.3  2008-07-24 12:26:26  europe\L190409
+ * added support for authenticated JMS
+ *
+ * Revision 1.2  2007/10/16 08:39:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * moved IfsaException and IfsaMessageProtocolEnum back to main package
  *
  * Revision 1.1  2007/10/16 08:15:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -78,7 +81,7 @@ import com.ing.ifsa.IFSAQueueConnectionFactory;
  * @version Id
  */
 public class IfsaConnection extends ConnectionBase {
-	public static final String version="$RCSfile: IfsaConnection.java,v $ $Revision: 1.2 $ $Date: 2007-10-16 08:39:30 $";
+	public static final String version="$RCSfile: IfsaConnection.java,v $ $Revision: 1.3 $ $Date: 2008-07-24 12:26:26 $";
 
 	private final static String CLEANUP_ON_CLOSE_KEY="ifsa.cleanUpOnClose";
 	private static Boolean cleanUpOnClose=null; 
@@ -87,7 +90,7 @@ public class IfsaConnection extends ConnectionBase {
 	private boolean xaEnabled;
 	
 	public IfsaConnection(String applicationId, IFSAContext context, IFSAQueueConnectionFactory connectionFactory, Map connectionMap, boolean preJms22Api, boolean xaEnabled) {
-		super(applicationId,context,connectionFactory,connectionMap);
+		super(applicationId,context,connectionFactory,connectionMap,null);
 		this.preJms22Api=preJms22Api;
 		this.xaEnabled=xaEnabled;
 		log.debug("created new IfsaConnection for ["+applicationId+"] context ["+context+"] connectionfactory ["+connectionFactory+"]");

@@ -1,6 +1,9 @@
 /*
  * $Log: TibcoConnectionFactory.java,v $
- * Revision 1.1  2008-05-15 14:32:58  europe\L190409
+ * Revision 1.2  2008-07-24 12:30:05  europe\L190409
+ * added support for authenticated JMS
+ *
+ * Revision 1.1  2008/05/15 14:32:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * first version
  *
  */
@@ -32,7 +35,7 @@ import com.tibco.tibjms.TibjmsTopicConnectionFactory;
  * @since   4.9
  */
 public class TibcoConnectionFactory extends JmsConnectionFactory {
-	public static final String version="$RCSfile: TibcoConnectionFactory.java,v $ $Revision: 1.1 $ $Date: 2008-05-15 14:32:58 $";
+	public static final String version="$RCSfile: TibcoConnectionFactory.java,v $ $Revision: 1.2 $ $Date: 2008-07-24 12:30:05 $";
 
 	static private Map connectionMap = new HashMap();
 	private boolean useTopic;
@@ -46,9 +49,9 @@ public class TibcoConnectionFactory extends JmsConnectionFactory {
 		this.useTopic=useTopic;
 	}
 
-	protected ConnectionBase createConnection(String serverUrl) throws IbisException {
+	protected ConnectionBase createConnection(String serverUrl, String authAlias) throws IbisException {
 		ConnectionFactory connectionFactory = getConnectionFactory(null, serverUrl); 
-		return new TibcoConnection(serverUrl, null, connectionFactory, getConnectionMap());
+		return new TibcoConnection(serverUrl, null, connectionFactory, getConnectionMap(),authAlias);
 	}
 
 	protected Context createContext() throws NamingException {

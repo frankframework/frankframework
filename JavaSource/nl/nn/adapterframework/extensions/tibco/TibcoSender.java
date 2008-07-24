@@ -1,6 +1,9 @@
 /*
  * $Log: TibcoSender.java,v $
- * Revision 1.1  2008-05-15 14:32:58  europe\L190409
+ * Revision 1.2  2008-07-24 12:30:05  europe\L190409
+ * added support for authenticated JMS
+ *
+ * Revision 1.1  2008/05/15 14:32:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * first version
  *
  */
@@ -22,6 +25,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>classname</td><td>nl.nn.adapterframework.jms.JmsSender</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the sender</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setServerUrl(String) serverUrl}</td><td>URL (hostname and port, separated by ':') of Tibco-Server</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDestinationName(String) destinationName}</td><td>name of the JMS destination (queue or topic) to use</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDestinationType(String) destinationType}</td><td>either <code>QUEUE</code> or <code>TOPIC</code></td><td><code>QUEUE</code></td></tr>
  * <tr><td>{@link #setMessageTimeToLive(long) messageTimeToLive}</td><td>the time it takes for the message to expire. If the message is not consumed before, it will be lost. Make sure to set it to a positive value for request/repy type of messages.</td><td>0 (unlimited)</td></tr>
@@ -35,6 +39,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSoap(boolean) soap}</td><td>when <code>true</code>, messages sent are put in a SOAP envelope</td><td><code>false</code></td></tr>
  * <tr><td>{@link #setSoapAction(String) soapAction}</td><td>SoapAction string sent as messageproperty</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setAuthAlias(String) authAlias}</td><td>alias used to obtain credentials for authentication to JMS server</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * <table border="1">
@@ -75,7 +80,7 @@ public class TibcoSender extends JmsSender {
 					try {
 						String serverUrl = getServerUrl();
 						log.debug("creating JmsConnection");
-						connection = (TibcoConnection)tibcoConnectionFactory.getConnection(serverUrl);
+						connection = (TibcoConnection)tibcoConnectionFactory.getConnection(serverUrl,getAuthAlias());
 					} catch (IbisException e) {
 						if (e instanceof JmsException) {
 							throw (JmsException)e;
