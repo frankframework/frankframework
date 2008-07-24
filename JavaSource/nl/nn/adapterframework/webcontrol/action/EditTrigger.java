@@ -1,6 +1,9 @@
 /*
  * $Log: EditTrigger.java,v $
- * Revision 1.1  2008-07-17 16:21:49  europe\L190409
+ * Revision 1.2  2008-07-24 12:42:10  europe\L190409
+ * rework of monitoring
+ *
+ * Revision 1.1  2008/07/17 16:21:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * work in progess
  *
  * Revision 1.1  2008/07/14 17:29:47  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -54,5 +57,12 @@ public class EditTrigger extends EditMonitor {
 		monitorForm.set("sources",sources);
 		monitorForm.set("eventTypes",EventTypeEnum.getEnumList());
 		monitorForm.set("severities",SeverityEnum.getEnumList());
+		List triggerTypes = new ArrayList(); {
+			triggerTypes.add("Alarm");
+			triggerTypes.add("Clearing");
+		}
+		monitorForm.set("triggerTypes",triggerTypes);
+		monitorForm.set("eventCodes",mm.getEventCodes(mm.findThrower(null)));
+
 	}
 }

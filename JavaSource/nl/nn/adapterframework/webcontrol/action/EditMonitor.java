@@ -1,6 +1,9 @@
 /*
  * $Log: EditMonitor.java,v $
- * Revision 1.2  2008-07-17 16:21:49  europe\L190409
+ * Revision 1.3  2008-07-24 12:42:10  europe\L190409
+ * rework of monitoring
+ *
+ * Revision 1.2  2008/07/17 16:21:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * work in progess
  *
  * Revision 1.1  2008/07/14 17:29:47  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -13,6 +16,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -24,6 +28,7 @@ import nl.nn.adapterframework.monitoring.Monitor;
 import nl.nn.adapterframework.monitoring.MonitorManager;
 import nl.nn.adapterframework.monitoring.SeverityEnum;
 import nl.nn.adapterframework.monitoring.Trigger;
+import nl.nn.adapterframework.util.ClassUtils;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.struts.action.ActionForm;
@@ -81,8 +86,22 @@ public class EditMonitor extends ActionBase {
 		if (null == config) {
 			return (mapping.findForward("noconfig"));
 		}
+		if (isCancelled(request)) {
+			log.debug("edit is canceled");
+			return (mapping.findForward("success"));
+		}
 	
 		DynaActionForm monitorForm = getPersistentForm(mapping, form, request);
+
+
+		if (log.isDebugEnabled()) {
+			Map map=monitorForm.getMap();
+			for (Iterator it=map.keySet().iterator(); it.hasNext();) {
+				String key=(String)it.next();
+				Object value=map.get(key);
+				log.debug("key ["+key+"] class ["+ClassUtils.nameOf(value)+"] value ["+value+"]");
+			}
+		}
 
 		String action 	      = getAndSetProperty(request,monitorForm,"action");
 		String indexStr       = request.getParameter("index");

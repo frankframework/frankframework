@@ -1,6 +1,9 @@
 /*
- * $Log: MonitorHandler.java,v $
- * Revision 1.2  2008-07-17 16:21:49  europe\L190409
+ * $Log: ShowMonitorExecute.java,v $
+ * Revision 1.1  2008-07-24 12:42:10  europe\L190409
+ * rework of monitoring
+ *
+ * Revision 1.2  2008/07/17 16:21:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * work in progess
  *
  * Revision 1.1  2008/07/14 17:29:47  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -22,7 +25,10 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
 
+import org.apache.commons.digester.Digester;
 import org.apache.commons.lang.StringUtils;
+import org.apache.struts.action.DynaActionForm;
+import org.apache.struts.upload.FormFile;
 
 
 /**
@@ -32,13 +38,35 @@ import org.apache.commons.lang.StringUtils;
  * @author  Gerrit van Brakel
  * @since   4.3
  */
-public class MonitorHandler extends ShowMonitors {
+public class ShowMonitorExecute extends ShowMonitors {
     
-	protected void performAction(String action, int index, HttpServletResponse response) throws MonitorException {
+	protected void performAction(String action, int index, DynaActionForm form, HttpServletResponse response) throws MonitorException {
 		log.debug("performing action ["+action+"] on monitorName nr ["+index+"]");
 		MonitorManager mm = MonitorManager.getInstance();
 		if (StringUtils.isEmpty(action)) {
 			log.warn("monitorHandler did not find action");
+			return;
+		}
+		if (action.equals("edit")) {
+			FormFile form_file=(FormFile) form.get("configFile");
+	
+			if (form_file!=null) {
+				if (form_file.getFileSize()==0) {
+					error("configFile does not exist or is empty",null);
+				}
+				log.debug("Upload of file ["+form_file.getFileName()+"] ContentType["+form_file.getContentType()+"]");
+				Digester d=new Digester();
+				mm.setDigesterRules(d);
+				mm.getMonitors().clear();
+				d.push(mm);
+				try {
+					d.parse(form_file.getInputStream());
+				} catch (Exception e) {
+					error("cannot parse file ["+form_file.getFileName()+"]",e);
+				}
+			} else {
+				mm.updateDestinations((String[])form.get("selDestinations"));
+			}
 			return;
 		}
 		if (action.equals("createMonitor")) {
