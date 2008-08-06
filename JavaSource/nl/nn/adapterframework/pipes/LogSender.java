@@ -1,6 +1,9 @@
 /*
  * $Log: LogSender.java,v $
- * Revision 1.6  2007-09-13 09:09:43  europe\L190409
+ * Revision 1.7  2008-08-06 16:38:21  europe\L190409
+ * moved from pipes to senders package
+ *
+ * Revision 1.6  2007/09/13 09:09:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * return message instead of correlationid
  *
  * Revision 1.5  2007/02/12 14:02:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -23,17 +26,6 @@
 package nl.nn.adapterframework.pipes;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.ParameterException;
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.SenderWithParametersBase;
-import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.parameters.IParameterHandler;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-import nl.nn.adapterframework.util.LogUtil;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 
 /**
  * Sender that just logs its message.
@@ -48,69 +40,12 @@ import org.apache.log4j.Logger;
  * @author Gerrit van Brakel
  * @since  4.3
  * @version Id
+ * @deprecated Please replace with nl.nn.adapterframework.senders.LogSender
  */
-public class LogSender extends SenderWithParametersBase implements IParameterHandler {
-	public static final String version="$RCSfile: LogSender.java,v $ $Revision: 1.6 $ $Date: 2007-09-13 09:09:43 $";
-	
-	private String logLevel="info";
-	private String logCategory=null;
-
-	protected Level level;
-	protected Logger log;
+public class LogSender extends nl.nn.adapterframework.senders.LogSender {
 
 	public void configure() throws ConfigurationException {
+		log.warn(getLogPrefix()+"The class ["+getClass().getName()+"] has been deprecated. Please change to ["+super.getClass().getName()+"]");
 		super.configure();
-		log=LogUtil.getLogger(getLogCategory());
-		level=Level.toLevel(getLogLevel());
 	}
-
-	public boolean isSynchronous() {
-		return true;
-	}
-
-	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
-		log.log(level,message);
-		
-		if (prc != null) {
-			try {
-				prc.forAllParameters(paramList, this);
-			} catch (ParameterException e) {
-				throw new SenderException("exception determining value of parameters", e);
-			}
-		}
-		
-		return message;
-	}
-
-	public void handleParam(String paramName, Object value) {
-		log.log(level,"parameter [" + paramName + "] value [" + value + "]");
-	}
-
-	public String getLogCategory() {
-		if (StringUtils.isNotEmpty(logCategory)) {
-			return logCategory;
-		}
-		if (StringUtils.isNotEmpty(getName())) {
-			return getName();
-		}
-		return this.getClass().getName();
-	}
-
-	public void setLogCategory(String string) {
-		logCategory = string;
-	}
-
-	public String getLogLevel() {
-		return logLevel;
-	}
-
-	public void setLogLevel(String string) {
-		logLevel = string;
-	}
-
-	public String toString() {
-		return "LogSender ["+getName()+"] logLevel ["+getLogLevel()+"] logCategory ["+logCategory+"]";
-	}
-
-
 }

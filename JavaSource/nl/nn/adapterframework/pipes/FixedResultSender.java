@@ -1,6 +1,9 @@
 /*
  * $Log: FixedResultSender.java,v $
- * Revision 1.2  2008-05-15 15:10:47  europe\L190409
+ * Revision 1.3  2008-08-06 16:38:20  europe\L190409
+ * moved from pipes to senders package
+ *
+ * Revision 1.2  2008/05/15 15:10:47  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * moved implementation to senders package
  *
  * Revision 1.1  2007/05/01 14:10:23  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -19,6 +22,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
  * @author  Gerrit van Brakel
  * @since   4.6.0
  * @version Id
+ * @deprecated Please replace with nl.nn.adapterframework.senders.FixedResultSender
  */
 public class FixedResultSender extends nl.nn.adapterframework.senders.FixedResultSender {
 

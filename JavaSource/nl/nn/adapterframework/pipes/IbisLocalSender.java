@@ -1,6 +1,9 @@
 /*
  * $Log: IbisLocalSender.java,v $
- * Revision 1.19  2007-12-10 10:10:51  europe\L190409
+ * Revision 1.20  2008-08-06 16:38:20  europe\L190409
+ * moved from pipes to senders package
+ *
+ * Revision 1.19  2007/12/10 10:10:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * no transactions in IsolatedServiceCaller
  *
  * Revision 1.18  2007/11/22 15:18:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -62,20 +65,6 @@
 package nl.nn.adapterframework.pipes;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.HasPhysicalDestination;
-import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.core.ParameterException;
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.SenderWithParametersBase;
-import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-import nl.nn.adapterframework.receivers.JavaListener;
-import nl.nn.adapterframework.receivers.ServiceDispatcher;
-import nl.nn.adapterframework.util.Misc;
-
-import org.apache.commons.lang.StringUtils;
-
-import java.util.HashMap;
 
 
 /**
@@ -136,202 +125,12 @@ import java.util.HashMap;
  *
  * @author Gerrit van Brakel
  * @since  4.2
+ * @deprecated Please replace with nl.nn.adapterframework.senders.IbisLocalSender
  */
-public class IbisLocalSender extends SenderWithParametersBase implements HasPhysicalDestination {
-	public static final String version="$RCSfile: IbisLocalSender.java,v $ $Revision: 1.19 $ $Date: 2007-12-10 10:10:51 $";
-	
-	private String name;
-	private String serviceName;
-	private String javaListener;
-	private boolean isolated=false;
-	private boolean synchronous=true;
-	private boolean checkDependency=true;
-	private int dependencyTimeOut=60;
-	private String returnedSessionKeys=null;
-
-
+public class IbisLocalSender extends nl.nn.adapterframework.senders.IbisLocalSender {
 
 	public void configure() throws ConfigurationException {
+		log.warn(getLogPrefix()+"The class ["+getClass().getName()+"] has been deprecated. Please change to ["+super.getClass().getName()+"]");
 		super.configure();
-		if (!isSynchronous()) {
-			setIsolated(true);
-		}
-		if (StringUtils.isEmpty(getServiceName()) && StringUtils.isEmpty(getJavaListener())) {
-			throw new ConfigurationException(getLogPrefix()+"has no serviceName or javaListener specified");
-		}
-		if (StringUtils.isNotEmpty(getServiceName()) && StringUtils.isNotEmpty(getJavaListener())) {
-			throw new ConfigurationException(getLogPrefix()+"serviceName and javaListener cannot be specified both");
-		}
 	}
-
-	public void open() throws SenderException {
-		super.open();
-		if (StringUtils.isNotEmpty(getJavaListener()) && isCheckDependency()) {
-			boolean listenerOpened=false;
-			int loops=getDependencyTimeOut();
-			while (!listenerOpened && loops>0) {
-				JavaListener listener= JavaListener.getListener(getJavaListener());
-				if (listener!=null) {
-					listenerOpened=listener.isOpen();
-				}
-				if (!listenerOpened) {
-					loops--;
-					try {
-						log.debug("waiting for JavaListener ["+getJavaListener()+"] to open");
-						Thread.sleep(1000);
-					} catch (InterruptedException e) {
-						throw new SenderException(e);
-					}
-				}
-			}
-		}
-	}
-
-
-	public String getPhysicalDestinationName() {
-		if (StringUtils.isNotEmpty(getServiceName())) {
-			return "WebServiceListener "+getServiceName();
-		} else {
-			return "JavaListener "+getJavaListener();
-		}
-	}
-
-	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
-		HashMap context = null;
-		if (paramList!=null) {
-			try {
-				context = prc.getValueMap(paramList);
-			} catch (ParameterException e) {
-				throw new SenderException(getLogPrefix()+"exception evaluating parameters",e);
-			}
-		} else {
-			if (StringUtils.isNotEmpty(getReturnedSessionKeys())) {
-				context = new HashMap();
-			}
-		}
-		if (StringUtils.isNotEmpty(getServiceName())) {
-			try {
-				if (isIsolated()) {
-					if (isSynchronous()) {
-						log.debug(getLogPrefix()+"calling service ["+getServiceName()+"] in separate Thread");
-						return IsolatedServiceCaller.callServiceIsolated(getServiceName(), correlationID, message, context, false);
-					} else {
-						log.debug(getLogPrefix()+"calling service ["+getServiceName()+"] in asynchronously");
-						IsolatedServiceCaller.callServiceAsynchronous(getServiceName(), correlationID, message, context, false);
-						return message;
-					}
-				} else {
-					log.debug(getLogPrefix()+"calling service ["+getServiceName()+"] in same Thread");
-					return ServiceDispatcher.getInstance().dispatchRequestWithExceptions(getServiceName(), correlationID, message, context);
-				}
-			} catch (ListenerException e) {
-				throw new SenderException(getLogPrefix()+"exception calling service ["+getServiceName()+"]",e);
-			} finally {
-				if (log.isDebugEnabled() && StringUtils.isNotEmpty(getReturnedSessionKeys())) {
-					log.debug("returning values of session keys ["+getReturnedSessionKeys()+"]");
-				}
-				if (prc!=null) {
-					Misc.copyContext(getReturnedSessionKeys(),context, prc.getSession());
-				}
-			} 
-		}  else {
-			try {
-				JavaListener listener= JavaListener.getListener(getJavaListener());
-				if (listener==null) {
-					throw new SenderException("could not find JavaListener ["+getJavaListener()+"]");
-				}
-				if (isIsolated()) {
-					if (isSynchronous()) {
-						log.debug(getLogPrefix()+"calling JavaListener ["+getJavaListener()+"] in separate Thread");
-						return IsolatedServiceCaller.callServiceIsolated(getJavaListener(), correlationID, message, context, true);
-					} else {
-						log.debug(getLogPrefix()+"calling JavaListener ["+getJavaListener()+"] in asynchronously");
-						IsolatedServiceCaller.callServiceAsynchronous(getJavaListener(), correlationID, message, context, true);
-						return message;
-					}
-				} else {
-					log.debug(getLogPrefix()+"calling JavaListener ["+getJavaListener()+"] in same Thread");
-					return listener.processRequest(correlationID,message,context);
-				}
-			} catch (ListenerException e) {
-				throw new SenderException(getLogPrefix()+"exception calling JavaListener ["+getJavaListener()+"]",e);
-			} finally {
-				if (log.isDebugEnabled() && StringUtils.isNotEmpty(getReturnedSessionKeys())) {
-					log.debug("returning values of session keys ["+getReturnedSessionKeys()+"]");
-				}
-				if (prc!=null) {
-					Misc.copyContext(getReturnedSessionKeys(),context, prc.getSession());
-				}
-			}
-		}
-	}
-
-
-	public void setName(String name) {
-		this.name=name;
-	}
-	public String getName() {
-		return name;
-	}
-
-	/**
-	 * serviceName under which the JavaListener or WebServiceListener is registered.
-	 */
-	public void setServiceName(String serviceName) {
-		this.serviceName = serviceName;
-	}
-	public String getServiceName() {
-		return serviceName;
-	}
-
-
-	/**
-	 * when <code>true</code>, the call is made in a separate thread, possibly using separate transaction. 
-	 */
-	public void setIsolated(boolean b) {
-		isolated = b;
-	}
-	public boolean isIsolated() {
-		return isolated;
-	}
-
-
-	public void setJavaListener(String string) {
-		javaListener = string;
-	}
-	public String getJavaListener() {
-		return javaListener;
-	}
-
-
-	public void setSynchronous(boolean b) {
-		synchronous = b;
-	}
-	public boolean isSynchronous() {
-		return synchronous;
-	}
-
-
-	public void setCheckDependency(boolean b) {
-		checkDependency = b;
-	}
-	public boolean isCheckDependency() {
-		return checkDependency;
-	}
-
-
-	public void setDependencyTimeOut(int i) {
-		dependencyTimeOut = i;
-	}
-	public int getDependencyTimeOut() {
-		return dependencyTimeOut;
-	}
-
-	public void setReturnedSessionKeys(String string) {
-		returnedSessionKeys = string;
-	}
-	public String getReturnedSessionKeys() {
-		return returnedSessionKeys;
-	}
-
 }

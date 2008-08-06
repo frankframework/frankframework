@@ -1,20 +1,15 @@
 /*
  * $Log: CommandSender.java,v $
- * Revision 1.1  2008-02-13 12:56:20  europe\L190409
+ * Revision 1.2  2008-08-06 16:38:20  europe\L190409
+ * moved from pipes to senders package
+ *
+ * Revision 1.1  2008/02/13 12:56:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * first version
  *
  */
 package nl.nn.adapterframework.pipes;
 
-import nl.nn.adapterframework.core.ParameterException;
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.SenderWithParametersBase;
-import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-import nl.nn.adapterframework.parameters.ParameterValueList;
-import nl.nn.adapterframework.util.ProcessUtil;
-
-import org.apache.commons.lang.StringUtils;
+import nl.nn.adapterframework.configuration.ConfigurationException;
 
 /**
  * Sender that executes either its input or a fixed line, with all parametervalues appended, as a command.
@@ -34,44 +29,12 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  * @since   4.8
  * @author  Gerrit van Brakel
+ * @deprecated Please replace with nl.nn.adapterframework.senders.CommandSender
  */
-public class CommandSender extends SenderWithParametersBase {
-	
-	private String command;
-	private boolean synchronous=true;
+public class CommandSender extends nl.nn.adapterframework.senders.CommandSender {
 
-	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
-	
-		String commandline;
-		if (StringUtils.isNotEmpty(getCommand())) {
-			commandline=getCommand();
-		} else {
-			commandline=message;
-		}
-		if (paramList!=null) {
-			ParameterValueList pvl;
-			try {
-				pvl = prc.getValues(paramList);
-			} catch (ParameterException e) {
-				throw new SenderException("Could not extract parametervalues",e);
-			}
-			for (int i=0; i<pvl.size(); i++) {
-				commandline += " "+pvl.getParameterValue(i);
-			}
-		}
-		return ProcessUtil.executeCommand(commandline);
+	public void configure() throws ConfigurationException {
+		log.warn(getLogPrefix()+"The class ["+getClass().getName()+"] has been deprecated. Please change to ["+super.getClass().getName()+"]");
+		super.configure();
 	}
-
-
-	public boolean isSynchronous() {
-		return synchronous;
-	}
-
-	public void setCommand(String string) {
-		command = string;
-	}
-	public String getCommand() {
-		return command;
-	}
-
 }

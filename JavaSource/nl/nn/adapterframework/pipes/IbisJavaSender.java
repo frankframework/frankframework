@@ -1,6 +1,9 @@
 /*
  * $Log: IbisJavaSender.java,v $
- * Revision 1.5  2007-09-05 13:04:01  europe\L190409
+ * Revision 1.6  2008-08-06 16:38:20  europe\L190409
+ * moved from pipes to senders package
+ *
+ * Revision 1.5  2007/09/05 13:04:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added support for returning session keys
  *
  * Revision 1.4  2007/06/07 15:18:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -18,20 +21,7 @@
  */
 package nl.nn.adapterframework.pipes;
 
-import java.util.HashMap;
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.HasPhysicalDestination;
-import nl.nn.adapterframework.core.ParameterException;
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.SenderWithParametersBase;
-import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.dispatcher.DispatcherManager;
-import nl.nn.adapterframework.dispatcher.DispatcherManagerFactory;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-import nl.nn.adapterframework.util.Misc;
-
-import org.apache.commons.lang.StringUtils;
 
 /**
  * Posts a message to another IBIS-adapter in the same JVM.
@@ -66,77 +56,12 @@ import org.apache.commons.lang.StringUtils;
  * @author  Gerrit van Brakel
  * @since   4.4.5
  * @version Id
+ * @deprecated Please replace with nl.nn.adapterframework.senders.IbisJavaSender
  */
-public class IbisJavaSender extends SenderWithParametersBase implements HasPhysicalDestination {
-	public static final String version="$RCSfile: IbisJavaSender.java,v $ $Revision: 1.5 $ $Date: 2007-09-05 13:04:01 $";
-	
-	private String name;
-	private String serviceName;
-	private String returnedSessionKeys=null;
-
+public class IbisJavaSender extends nl.nn.adapterframework.senders.IbisJavaSender {
 
 	public void configure() throws ConfigurationException {
+		log.warn(getLogPrefix()+"The class ["+getClass().getName()+"] has been deprecated. Please change to ["+super.getClass().getName()+"]");
 		super.configure();
-		if (StringUtils.isEmpty(getServiceName())) {
-			throw new ConfigurationException(getLogPrefix()+"must specify serviceName");
-		}
 	}
-
-	public String getPhysicalDestinationName() {
-		return "JavaListener "+getServiceName();
-	}
-
-	public boolean isSynchronous() {
-		return true;
-	}
-
-	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
-		HashMap context = null;
-		try {
-			if (paramList!=null) {
-				context = prc.getValueMap(paramList);
-			} else {
-				context=new HashMap();			
-			}
-			DispatcherManager dm = DispatcherManagerFactory.getDispatcherManager();
-			return dm.processRequest(getServiceName(),correlationID, message, context);
-		} catch (ParameterException e) {
-			throw new SenderException(getLogPrefix()+"exception evaluating parameters",e);
-		} catch (Exception e) {
-			throw new SenderException(getLogPrefix()+"exception processing message using request processor ["+getServiceName()+"]",e);
-		} finally {
-			if (log.isDebugEnabled() && StringUtils.isNotEmpty(getReturnedSessionKeys())) {
-				log.debug("returning values of session keys ["+getReturnedSessionKeys()+"]");
-			}
-			if (prc!=null) {
-				Misc.copyContext(getReturnedSessionKeys(),context, prc.getSession());
-			}
-		}
-	}
-
-
-	public void setName(String name) {
-		this.name=name;
-	}
-	public String getName() {
-		return name;
-	}
-
-
-	public String getServiceName() {
-		return serviceName;
-	}
-
-	public void setServiceName(String string) {
-		serviceName = string;
-	}
-
-	public void setReturnedSessionKeys(String string) {
-		returnedSessionKeys = string;
-	}
-	public String getReturnedSessionKeys() {
-		return returnedSessionKeys;
-	}
-
-
 }
