@@ -1,6 +1,9 @@
 /*
  * $Log: XmlValidator.java,v $
- * Revision 1.25  2008-02-28 16:24:05  europe\L190409
+ * Revision 1.26  2008-08-06 16:40:34  europe\L190409
+ * added support for flexible monitoring
+ *
+ * Revision 1.25  2008/02/28 16:24:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved errorMessage
  *
  * Revision 1.24  2008/02/21 12:45:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -151,7 +154,13 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * @author Johan Verrips IOS / Jaco de Groot (***@dynasol.nl)
  */
 public class XmlValidator extends FixedForwardPipe {
-	public static final String version="$RCSfile: XmlValidator.java,v $ $Revision: 1.25 $ $Date: 2008-02-28 16:24:05 $";
+	public static final String version="$RCSfile: XmlValidator.java,v $ $Revision: 1.26 $ $Date: 2008-08-06 16:40:34 $";
+
+	public static final String XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT = "Invalid XML: parser error";
+	public static final String XML_VALIDATOR_ILLEGAL_ROOT_MONITOR_EVENT = "Invalid XML: wrong root";
+	public static final String XML_VALIDATOR_NOT_VALID_MONITOR_EVENT = "Invalid XML: does not comply to XSD";
+	public static final String XML_VALIDATOR_VALID_MONITOR_EVENT = "valid XML";
+
 
     private String schemaLocation = null;
     private String noNamespaceSchemaLocation = null;
@@ -294,11 +303,16 @@ public class XmlValidator extends FixedForwardPipe {
 			StringUtils.isEmpty(getSchemaSessionKey())) {
 				throw new ConfigurationException(getLogPrefix(null)+"must have either schemaSessionKey, schemaLocation or noNamespaceSchemaLocation");
 		}
+		registerEvent(XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT);
+		registerEvent(XML_VALIDATOR_ILLEGAL_ROOT_MONITOR_EVENT);
+		registerEvent(XML_VALIDATOR_NOT_VALID_MONITOR_EVENT);
+		registerEvent(XML_VALIDATOR_VALID_MONITOR_EVENT);
     }
 
-	protected PipeRunResult handleFailures(XmlErrorHandler xeh, String input, PipeLineSession session, String mainReason, String forwardName, Throwable t) throws PipeRunException {
+	protected PipeRunResult handleFailures(XmlErrorHandler xeh, String input, PipeLineSession session, String mainReason, String forwardName, String event, Throwable t) throws PipeRunException {
 		
 		String fullReasons=mainReason;
+		throwEvent(event);
 		if (StringUtils.isNotEmpty(xeh.getReasons())) {
 			if (StringUtils.isNotEmpty(mainReason)) {
 				fullReasons+=":\n"+xeh.getReasons();
@@ -406,7 +420,7 @@ public class XmlValidator extends FixedForwardPipe {
         try {
             parser.parse(is);
          } catch (Exception e) {
-			return handleFailures(xeh,(String)input,session,"", "parserError",e);
+			return handleFailures(xeh,(String)input,session,"", "parserError", XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT, e);
         }
 
 		boolean illegalRoot = StringUtils.isNotEmpty(getRoot()) && 
@@ -414,14 +428,15 @@ public class XmlValidator extends FixedForwardPipe {
 		if (illegalRoot) {
 			String str = "got xml with root element '"+((XmlFindingHandler)parser.getContentHandler()).getRootElementName()+"' instead of '"+getRoot()+"'";
 			xeh.addReason(str,"");
-			return handleFailures(xeh,(String)input,session,"","illegalRoot",null);
+			return handleFailures(xeh,(String)input,session,"","illegalRoot", XML_VALIDATOR_ILLEGAL_ROOT_MONITOR_EVENT, null);
 		} 
 		boolean isValid = !(xeh.hasErrorOccured());
 		
 		if (!isValid) { 
 			String mainReason = getLogPrefix(session) + "got invalid xml according to schema [" + Misc.concatStrings(schemaLocation," ",noNamespaceSchemaLocation) + "]";
-			return handleFailures(xeh,(String)input,session,mainReason,"failure",null);
+			return handleFailures(xeh,(String)input,session,mainReason,"failure", XML_VALIDATOR_ILLEGAL_ROOT_MONITOR_EVENT, null);
         }
+		throwEvent(XML_VALIDATOR_VALID_MONITOR_EVENT);
         return new PipeRunResult(getForward(), input);
     }
 

@@ -1,12 +1,16 @@
 /*
  * $Log: XmlWellFormedChecker.java,v $
- * Revision 1.1  2006-02-06 12:42:07  europe\L190409
+ * Revision 1.2  2008-08-06 16:40:34  europe\L190409
+ * added support for flexible monitoring
+ *
+ * Revision 1.1  2006/02/06 12:42:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * first version
  *
  */
 
 package nl.nn.adapterframework.pipes;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -29,11 +33,22 @@ import nl.nn.adapterframework.util.XmlUtils;
 public class XmlWellFormedChecker extends FixedForwardPipe {
 	private String root = null;
 
+	public void configure() throws ConfigurationException {
+		super.configure();
+		registerEvent(XmlValidator.XML_VALIDATOR_VALID_MONITOR_EVENT);
+		registerEvent(XmlValidator.XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT);
+	}
+
+
 	public PipeRunResult doPipe(Object input, PipeLineSession session) {
-		if (XmlUtils.isWellFormed(input.toString(), getRoot()))
+		if (XmlUtils.isWellFormed(input.toString(), getRoot())) {
+			throwEvent(XmlValidator.XML_VALIDATOR_VALID_MONITOR_EVENT);
 			return new PipeRunResult(getForward(), input);
-		else
+		}
+		else {
+			throwEvent(XmlValidator.XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT);
 			return new PipeRunResult(findForward("failure"), input);
+		}
 	}
 
 	public void setRoot(String root) {
@@ -42,4 +57,5 @@ public class XmlWellFormedChecker extends FixedForwardPipe {
 	public String getRoot() {
 		return root;
 	}
+
 }

@@ -1,6 +1,9 @@
 /*
  * $Log: XmlSwitch.java,v $
- * Revision 1.21  2007-12-10 10:13:01  europe\L190409
+ * Revision 1.22  2008-08-06 16:40:34  europe\L190409
+ * added support for flexible monitoring
+ *
+ * Revision 1.21  2007/12/10 10:13:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fix configuration of notFoundForward (no exception when not found)
  *
  * Revision 1.20  2006/01/05 14:36:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -83,7 +86,10 @@ import java.util.Map;
  * @author Johan Verrips
  */
 public class XmlSwitch extends AbstractPipe {
-	public static final String version="$RCSfile: XmlSwitch.java,v $ $Revision: 1.21 $ $Date: 2007-12-10 10:13:01 $";
+	public static final String version="$RCSfile: XmlSwitch.java,v $ $Revision: 1.22 $ $Date: 2008-08-06 16:40:34 $";
+
+	public static final String XML_SWITCH_FORWARD_FOUND_MONITOR_EVENT = "Switch: Forward Found";
+	public static final String XML_SWITCH_FORWARD_NOT_FOUND_MONITOR_EVENT = "Switch: Forward Not Found";
 	
     private static final String DEFAULT_SERVICESELECTION_XPATH = XmlUtils.XPATH_GETROOTNODENAME;
 	private TransformerPool transformerPool=null;
@@ -140,6 +146,8 @@ public class XmlSwitch extends AbstractPipe {
 				}
 			}
 		}
+		registerEvent(XML_SWITCH_FORWARD_FOUND_MONITOR_EVENT);
+		registerEvent(XML_SWITCH_FORWARD_NOT_FOUND_MONITOR_EVENT);
 	}
 	
 	public void start() throws PipeStartException {
@@ -196,10 +204,13 @@ public class XmlSwitch extends AbstractPipe {
 
 		log.debug(getLogPrefix(session)+ "determined forward ["+forward+"]");
 
-		if (findForward(forward) != null) 
+		if (findForward(forward) != null) {
+			throwEvent(XML_SWITCH_FORWARD_FOUND_MONITOR_EVENT);
 			pipeForward=findForward(forward);
+		}
 		else {
 			log.info(getLogPrefix(session)+"determined forward ["+forward+"], which is not defined. Will use ["+getNotFoundForwardName()+"] instead");
+			throwEvent(XML_SWITCH_FORWARD_NOT_FOUND_MONITOR_EVENT);
 			pipeForward=findForward(getNotFoundForwardName());
 		}
 		
