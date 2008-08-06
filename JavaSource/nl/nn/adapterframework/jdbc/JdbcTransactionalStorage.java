@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcTransactionalStorage.java,v $
- * Revision 1.31  2008-07-24 12:17:29  europe\L190409
+ * Revision 1.32  2008-08-06 16:29:33  europe\L190409
+ * corrected insertQuery for use of prefix
+ *
+ * Revision 1.31  2008/07/24 12:17:29  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added messageCount
  * added prefix attribute
  *
@@ -220,7 +223,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  * @since 	4.1
  */
 public class JdbcTransactionalStorage extends JdbcFacade implements ITransactionalStorage {
-	public static final String version = "$RCSfile: JdbcTransactionalStorage.java,v $ $Revision: 1.31 $ $Date: 2008-07-24 12:17:29 $";
+	public static final String version = "$RCSfile: JdbcTransactionalStorage.java,v $ $Revision: 1.32 $ $Date: 2008-08-06 16:29:33 $";
 
 	public final static TransactionDefinition TXREQUIRED = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED);
 	
@@ -357,14 +360,14 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 							(StringUtils.isNotEmpty(getSlotId())?getSlotIdField()+",":"")+
 							(StringUtils.isNotEmpty(getHostField())?getHostField()+",":"")+
 							getIdField()+","+getCorrelationIdField()+","+getDateField()+","+getCommentField()+","+getMessageField()+
-							") VALUES ("+getSequenceName()+".NEXTVAL,"+
+							") VALUES ("+getPrefix()+getSequenceName()+".NEXTVAL,"+
 							(StringUtils.isNotEmpty(getTypeField())?"?,":"")+
 							(StringUtils.isNotEmpty(getSlotId())?"?,":"")+
 							(StringUtils.isNotEmpty(getHostField())?"?,":"")+
 							"?,?,?,?,empty_blob())";
 			selectKeyQuery = "SELECT "+getPrefix()+getSequenceName()+".currval FROM DUAL";
 			updateBlobQuery = "SELECT "+getMessageField()+
-							  " FROM "+getTableName()+
+							  " FROM "+getPrefix()+getTableName()+
 							  " WHERE "+getKeyField()+"=?"+ 
 							  " FOR UPDATE";
 		}
