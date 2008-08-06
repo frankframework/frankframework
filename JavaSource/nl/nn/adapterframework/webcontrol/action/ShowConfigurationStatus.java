@@ -1,6 +1,9 @@
 /*
  * $Log: ShowConfigurationStatus.java,v $
- * Revision 1.15  2008-07-24 12:40:45  europe\L190409
+ * Revision 1.16  2008-08-06 16:43:17  europe\L190409
+ * fixed display of messagelog counts
+ *
+ * Revision 1.15  2008/07/24 12:40:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * support for messageCounts in messaglog
  *
  * Revision 1.14  2008/05/15 15:23:53  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -70,7 +73,7 @@ import org.apache.struts.action.ActionMapping;
  * @version Id
  */
 public final class ShowConfigurationStatus extends ActionBase {
-	public static final String version = "$RCSfile: ShowConfigurationStatus.java,v $ $Revision: 1.15 $ $Date: 2008-07-24 12:40:45 $";
+	public static final String version = "$RCSfile: ShowConfigurationStatus.java,v $ $Revision: 1.16 $ $Date: 2008-08-06 16:43:17 $";
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 
@@ -197,16 +200,19 @@ public final class ShowConfigurationStatus extends ActionBase {
 					ITransactionalStorage messageLog = msp.getMessageLog();
 					if (messageLog!=null) {
 						pipeElem.addAttribute("hasMessageLog","true");
+						String messageLogCount;
+						try {
+							messageLogCount=""+messageLog.getMessageCount();
+						} catch (Exception e) {
+							log.warn(e);
+							messageLogCount="error";
+						}
+						pipeElem.addAttribute("messageLogCount",messageLogCount);
 						XmlBuilder browserElem = new XmlBuilder("browser");
 						browserElem.addAttribute("name",messageLog.getName());
 						browserElem.addAttribute("type","log");
 						browserElem.addAttribute("slotId",messageLog.getSlotId());
-						try {
-							browserElem.addAttribute("messageLogCount", messageLog.getMessageCount());
-						} catch (Exception e) {
-							log.warn(e);
-							browserElem.addAttribute("messageLogCount", "error");
-						}
+						browserElem.addAttribute("count", messageLogCount);
 						pipeElem.addSubElement(browserElem);
 					}
 				}
