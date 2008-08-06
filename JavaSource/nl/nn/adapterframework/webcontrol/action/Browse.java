@@ -1,6 +1,9 @@
 /*
  * $Log: Browse.java,v $
- * Revision 1.10  2008-06-24 08:00:39  europe\L190409
+ * Revision 1.11  2008-08-06 16:42:18  europe\L190409
+ * allow to search in message body text
+ *
+ * Revision 1.10  2008/06/24 08:00:39  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * prepare for export of messages in zipfile
  *
  * Revision 1.9  2008/06/03 15:59:41  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -71,7 +74,7 @@ import org.apache.struts.action.DynaActionForm;
  * @since   4.4
  */
 public class Browse extends ActionBase {
-	public static final String version="$RCSfile: Browse.java,v $ $Revision: 1.10 $ $Date: 2008-06-24 08:00:39 $";
+	public static final String version="$RCSfile: Browse.java,v $ $Revision: 1.11 $ $Date: 2008-08-06 16:42:18 $";
 
 	public int maxMessages = AppConstants.getInstance().getInt("browse.messages.max",0); 
 
@@ -105,6 +108,7 @@ public class Browse extends ActionBase {
 		String messageIdMask    = getAndSetProperty(request,browseForm,"messageIdMask");
 		String correlationIdMask    = getAndSetProperty(request,browseForm,"correlationIdMask");
 		String commentMask  = getAndSetProperty(request,browseForm,"commentMask");
+		String messageTextMask = getAndSetProperty(request,browseForm,"messageTextMask");
 		String startDateStr = getAndSetProperty(request,browseForm,"insertedAfter");
 		String viewAs = getAndSetProperty(request,browseForm,"viewAs", request.getParameter("type"));
 		String selected[] = (String[])browseForm.get("selected");
@@ -231,6 +235,19 @@ public class Browse extends ActionBase {
 						if (StringUtils.isNotEmpty(commentMask) && (StringUtils.isEmpty(comment) || comment.indexOf(commentMask)<0)) {
 							continue;
 						}
+						if (StringUtils.isNotEmpty(messageTextMask)) {
+							Object rawmsg = mb.browseMessage(cId);
+							String msg=null;
+							if (listener!=null) {
+								msg = listener.getStringFromRawMessage(rawmsg,null);
+							} else {
+								msg=(String)rawmsg;
+							}
+							if (msg==null || msg.indexOf(messageTextMask)<0) {
+								continue;
+							}
+						}
+						
 						XmlBuilder message=new XmlBuilder("message");
 						message.addAttribute("id",mb.getId(iterItem));
 						message.addAttribute("pos",Integer.toString(messageCount+1));
