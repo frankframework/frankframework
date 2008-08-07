@@ -1,6 +1,9 @@
 /*
  * $Log: JmsSender.java,v $
- * Revision 1.26  2008-05-15 14:56:40  europe\L190409
+ * Revision 1.27  2008-08-07 11:36:33  europe\L190409
+ * added support for SoapHeaders
+ *
+ * Revision 1.26  2008/05/15 14:56:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added Soap support
  *
  * Revision 1.25  2007/05/11 09:50:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -80,6 +83,7 @@ package nl.nn.adapterframework.jms;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPostboxSender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
+import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
@@ -117,6 +121,7 @@ import javax.jms.Message;
  * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSoap(boolean) soap}</td><td>when <code>true</code>, messages sent are put in a SOAP envelope</td><td><code>false</code></td></tr>
  * <tr><td>{@link #setSoapAction(String) soapAction}</td><td>SoapAction string sent as messageproperty</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setSoapHeaderParam(String) soapHeaderParam}</td><td>name of parameter containing SOAP header</td><td>soapHeader</td></tr>
  * </table>
  * </p>
  * <table border="1">
@@ -132,7 +137,7 @@ import javax.jms.Message;
  */
 
 public class JmsSender extends JMSFacade implements ISenderWithParameters, IPostboxSender {
-	public static final String version="$RCSfile: JmsSender.java,v $ $Revision: 1.26 $ $Date: 2008-05-15 14:56:40 $";
+	public static final String version="$RCSfile: JmsSender.java,v $ $Revision: 1.27 $ $Date: 2008-08-07 11:36:33 $";
 	private String replyToName = null;
 	private int deliveryMode = 0;
 	private String messageType = null;
@@ -141,6 +146,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 	private String encodingStyleURI=null;
 	private String serviceNamespaceURI=null;
 	private String soapAction=null;
+	private String soapHeaderParam="soapHeader";
 	
 	protected ParameterList paramList = null;
 	private SoapWrapper soapWrapper=null;
@@ -208,9 +214,22 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 		Session s = null;
 		MessageProducer mp = null;
 
+		ParameterValueList pvl=null;
+		if (prc != null && paramList != null) {
+			try {
+				pvl=prc.getValues(paramList);
+			} catch (ParameterException e) {
+				throw new SenderException(getLogPrefix()+"cannot extract parameters",e);
+			}
+		}
+
 		if (isSoap()) {
-			message = soapWrapper.putInEnvelope(message, getEncodingStyleURI(),getServiceNamespaceURI());
-			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"correlationId [ "+correlationID+"] soap message ["+message+"]");
+			String soapHeader=null;
+			if (pvl!=null && StringUtils.isNotEmpty(getSoapHeaderParam())) {
+				soapHeader=pvl.getParameterValue(getSoapHeaderParam()).asStringValue("");
+			}
+			message = soapWrapper.putInEnvelope(message, getEncodingStyleURI(),getServiceNamespaceURI(),soapHeader);
+			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"correlationId ["+correlationID+"] soap message ["+message+"]");
 		}
 		try {
 			s = createSession();
@@ -232,10 +251,10 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 			}
 
 			// set properties
-			if (prc != null && paramList != null) {
-				setProperties(msg, prc.getValues(paramList));
+			if (pvl != null) {
+				setProperties(msg, pvl);
 			}
-			if (null != replyToName) {
+			if (replyToName != null) {
 				msg.setJMSReplyTo(getDestination(replyToName));
 				log.debug("replyTo set to [" + msg.getJMSReplyTo().toString() + "]");
 			}
@@ -271,30 +290,35 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 	 * @param msgProperties
 	 * @throws JMSException
 	 */
-	private void setProperties(final Message msg, ParameterValueList msgProperties) throws JMSException {
+	private void setProperties(Message msg, ParameterValueList msgProperties) throws JMSException {
 		for (int i=0; i<msgProperties.size(); i++) {
 			ParameterValue property = msgProperties.getParameterValue(i);
 			String type = property.getDefinition().getType();
 			String name = property.getDefinition().getName();
 
-			if ("boolean".equalsIgnoreCase(type))
-				msg.setBooleanProperty(name, property.asBooleanValue(false));
-			else if ("byte".equalsIgnoreCase(type))
-				msg.setByteProperty(name, property.asByteValue((byte) 0));
-			else if ("double".equalsIgnoreCase(type))
-				msg.setDoubleProperty(name, property.asDoubleValue(0));
-			else if ("float".equalsIgnoreCase(type))
-				msg.setFloatProperty(name, property.asFloatValue(0));
-			else if ("int".equalsIgnoreCase(type))
-				msg.setIntProperty(name, property.asIntegerValue(0));
-			else if ("long".equalsIgnoreCase(type))
-				msg.setLongProperty(name, property.asLongValue(0L));
-			else if ("short".equalsIgnoreCase(type))
-				msg.setShortProperty(name, property.asShortValue((short) 0));
-			else if ("string".equalsIgnoreCase(type))
-				msg.setStringProperty(name, property.asStringValue(""));
-			else // if ("object".equalsIgnoreCase(type))
-				msg.setObjectProperty(name, property.getValue());
+			if (!isSoap() || !name.equals(getSoapHeaderParam())) {
+
+				if (log.isDebugEnabled()) { log.debug(getLogPrefix()+"setting ["+type+"] property from param ["+name+"] to value ["+property.getValue()+"]"); }
+
+				if ("boolean".equalsIgnoreCase(type))
+					msg.setBooleanProperty(name, property.asBooleanValue(false));
+				else if ("byte".equalsIgnoreCase(type))
+					msg.setByteProperty(name, property.asByteValue((byte) 0));
+				else if ("double".equalsIgnoreCase(type))
+					msg.setDoubleProperty(name, property.asDoubleValue(0));
+				else if ("float".equalsIgnoreCase(type))
+					msg.setFloatProperty(name, property.asFloatValue(0));
+				else if ("int".equalsIgnoreCase(type))
+					msg.setIntProperty(name, property.asIntegerValue(0));
+				else if ("long".equalsIgnoreCase(type))
+					msg.setLongProperty(name, property.asLongValue(0L));
+				else if ("short".equalsIgnoreCase(type))
+					msg.setShortProperty(name, property.asShortValue((short) 0));
+				else if ("string".equalsIgnoreCase(type))
+					msg.setStringProperty(name, property.asStringValue(""));
+				else // if ("object".equalsIgnoreCase(type))
+					msg.setObjectProperty(name, property.getValue());
+			}
 		}
 	}
 	
@@ -373,6 +397,13 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 	}
 	public String getSoapAction() {
 		return soapAction;
+	}
+
+	public void setSoapHeaderParam(String string) {
+		soapHeaderParam = string;
+	}
+	public String getSoapHeaderParam() {
+		return soapHeaderParam;
 	}
 
 }
