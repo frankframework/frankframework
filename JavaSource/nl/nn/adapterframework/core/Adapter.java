@@ -1,6 +1,9 @@
 /*
  * $Log: Adapter.java,v $
- * Revision 1.44  2008-08-07 07:54:55  europe\L190409
+ * Revision 1.45  2008-08-07 11:34:07  europe\L190409
+ * removed references to old monitoring code
+ *
+ * Revision 1.44  2008/08/07 07:54:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * modified for flexibile monitoring
  *
  * Revision 1.43  2008/06/19 11:08:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -140,10 +143,6 @@ import java.util.Vector;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.errormessageformatters.ErrorMessageFormatter;
-import nl.nn.adapterframework.monitoring.EventTypeEnum;
-import nl.nn.adapterframework.monitoring.IMonitorAdapter;
-import nl.nn.adapterframework.monitoring.MonitorAdapterFactory;
-import nl.nn.adapterframework.monitoring.SeverityEnum;
 import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.HasStatistics;
@@ -205,7 +204,7 @@ import org.springframework.core.task.TaskExecutor;
  */
 
 public class Adapter implements IAdapter, NamedBean {
-	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.44 $ $Date: 2008-08-07 07:54:55 $";
+	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.45 $ $Date: 2008-08-07 11:34:07 $";
 	private Logger log = LogUtil.getLogger(this);
 
 	private String name;
