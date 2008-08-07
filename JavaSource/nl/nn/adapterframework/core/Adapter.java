@@ -1,6 +1,9 @@
 /*
  * $Log: Adapter.java,v $
- * Revision 1.43  2008-06-19 11:08:59  europe\L190409
+ * Revision 1.44  2008-08-07 07:54:55  europe\L190409
+ * modified for flexibile monitoring
+ *
+ * Revision 1.43  2008/06/19 11:08:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * GALM message when exception caught starting adapter
  *
  * Revision 1.42  2008/06/18 12:27:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -202,7 +205,7 @@ import org.springframework.core.task.TaskExecutor;
  */
 
 public class Adapter implements IAdapter, NamedBean {
-	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.43 $ $Date: 2008-06-19 11:08:59 $";
+	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.44 $ $Date: 2008-08-07 07:54:55 $";
 	private Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -237,8 +240,6 @@ public class Adapter implements IAdapter, NamedBean {
 	 */
 	private int numOfMessagesInProcess = 0;
     
-	private IMonitorAdapter monitorAdapter=null;
-
     
     private TaskExecutor taskExecutor;
     
@@ -287,7 +288,6 @@ public class Adapter implements IAdapter, NamedBean {
 				}
 
 			}
-			monitorAdapter=MonitorAdapterFactory.getMonitorAdapter();
 			configurationSucceeded = true;
 		}
 		catch (ConfigurationException e) {
@@ -310,16 +310,11 @@ public class Adapter implements IAdapter, NamedBean {
 		log.error("Adapter [" + getName() + "] "+msg, t);
 		getMessageKeeper().add("ERROR: " + msg+": "+t.getMessage());
 		
-		String prefix=critical?"ADPTERROR ":"ADPTWARN ";
-		fireMonitorEvent(EventTypeEnum.TECHNICAL,critical?SeverityEnum.CRITICAL:SeverityEnum.WARNING, prefix+msg,t);
+//		String prefix=critical?"ADPTERROR ":"ADPTWARN ";
+//		fireMonitorEvent(EventTypeEnum.TECHNICAL,critical?SeverityEnum.CRITICAL:SeverityEnum.WARNING, prefix+msg,t);
 	}
 
-	protected void fireMonitorEvent(EventTypeEnum eventType, SeverityEnum severity, String message, Throwable t) {
-		if (monitorAdapter!=null) {
-			monitorAdapter.fireEvent(getName(), eventType, severity, message, t);
-		}
-	}
-	
+
 	/**
 	 * Increase the number of messages in process
 	 */
@@ -589,7 +584,10 @@ public class Adapter implements IAdapter, NamedBean {
 	 *
 	 */
 	public PipeLineResult processMessage(String messageId, String message) {
-		return processMessage(messageId, message, null);
+		PipeLineSession pls=new PipeLineSession();
+		Date now=new Date();
+		PipeLineSession.setListenerParameters(pls,messageId,null,now,now);
+		return processMessage(messageId, message, pls);
 	}
 
 	public PipeLineResult processMessage(String messageId, String message, PipeLineSession pipeLineSession) {
