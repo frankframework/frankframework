@@ -1,6 +1,9 @@
 /*
  * $Log: SoapWrapper.java,v $
- * Revision 1.6  2008-06-09 09:57:42  europe\L190409
+ * Revision 1.7  2008-08-07 07:58:09  europe\L190409
+ * skip xml declaration from soap header
+ *
+ * Revision 1.6  2008/06/09 09:57:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * extract fault count always namespace aware
  *
  * Revision 1.5  2008/05/14 11:50:29  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -57,7 +60,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class SoapWrapper {
-	public static final String version="$RCSfile: SoapWrapper.java,v $ $Revision: 1.6 $ $Date: 2008-06-09 09:57:42 $";
+	public static final String version="$RCSfile: SoapWrapper.java,v $ $Revision: 1.7 $ $Date: 2008-08-07 07:58:09 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private TransformerPool extractBody;
@@ -140,6 +143,10 @@ public class SoapWrapper {
 	}
 	
 	public String putInEnvelope(String message, String encodingStyleUri, String targetObjectNamespace) {
+		return putInEnvelope(message, encodingStyleUri, targetObjectNamespace, null);
+	}
+
+	public String putInEnvelope(String message, String encodingStyleUri, String targetObjectNamespace, String soapHeader) {
 		
 		String encodingStyle="";
 		String targetObjectNamespaceClause="";
@@ -149,12 +156,18 @@ public class SoapWrapper {
 		if (!StringUtils.isEmpty(targetObjectNamespace)) {
 			targetObjectNamespaceClause=" xmlns=\""+ targetObjectNamespace+"\" ";
 		}
+		if (StringUtils.isNotEmpty(soapHeader)) {
+			soapHeader="<soapenv:Header>"+XmlUtils.skipXmlDeclaration(soapHeader)+"</soapenv:Header>";
+		} else {
+			soapHeader="";
+		}
 		String soapmsg= 
 		"<soapenv:Envelope " + 
 			"xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" "+encodingStyle +
 			targetObjectNamespaceClause +
 			"xmlns:xsi=\"http://www.w3.org/1999/XMLSchema-instance\" " + 
 			"xmlns:xsd=\"http://www.w3.org/1999/XMLSchema\" >" + 
+			soapHeader+
 			"<soapenv:Body>" + 	
 				XmlUtils.skipXmlDeclaration(message) +
 			"</soapenv:Body>"+
