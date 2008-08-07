@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcTransactionalStorage.java,v $
- * Revision 1.32  2008-08-06 16:29:33  europe\L190409
+ * Revision 1.33  2008-08-07 11:21:31  europe\L190409
+ * added schema owners to create script
+ *
+ * Revision 1.32  2008/08/06 16:29:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected insertQuery for use of prefix
  *
  * Revision 1.31  2008/07/24 12:17:29  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -170,7 +173,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  * 
  * For an Oracle database the following objects are used by default:
  *  <pre>
-	CREATE TABLE IBISSTORE
+	CREATE TABLE <schema_owner>.IBISSTORE
 	(
 	MESSAGEKEY NUMBER(10),
 	TYPE CHAR(1 CHAR),
@@ -184,12 +187,14 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 	CONSTRAINT PK_IBISSTORE PRIMARY KEY (MESSAGEKEY)
 	);
 	
-	CREATE INDEX IX_IBISSTORE ON IBISSTORE (SLOTID, MESSAGEDATE);
-	CREATE SEQUENCE SEQ_IBISSTORE;
+	CREATE INDEX <schema_owner>.IX_IBISSTORE ON <schema_owner>.IBISSTORE (SLOTID, MESSAGEDATE);
+	CREATE SEQUENCE <schema_owner>.SEQ_IBISSTORE;
 
-	GRANT DELETE, INSERT, SELECT, UPDATE ON IBISSTORE TO <rolenaam>;
-	GRANT SELECT ON SEQ_IBISSTORE TO <rolenaam>;
+	GRANT DELETE, INSERT, SELECT, UPDATE ON <schema_owner>.IBISSTORE TO <rolenaam>;
+	GRANT SELECT ON <schema_owner>.SEQ_IBISSTORE TO <rolenaam>;
 	GRANT SELECT ON SYS.DBA_PENDING_TRANSACTIONS TO <rolenaam>;
+	
+	COMMIT;
  *  </pre>
  * 
  * For a generic database the following objects are used by default:
@@ -223,7 +228,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  * @since 	4.1
  */
 public class JdbcTransactionalStorage extends JdbcFacade implements ITransactionalStorage {
-	public static final String version = "$RCSfile: JdbcTransactionalStorage.java,v $ $Revision: 1.32 $ $Date: 2008-08-06 16:29:33 $";
+	public static final String version = "$RCSfile: JdbcTransactionalStorage.java,v $ $Revision: 1.33 $ $Date: 2008-08-07 11:21:31 $";
 
 	public final static TransactionDefinition TXREQUIRED = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED);
 	
