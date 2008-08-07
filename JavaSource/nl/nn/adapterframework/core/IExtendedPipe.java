@@ -1,6 +1,9 @@
 /*
  * $Log: IExtendedPipe.java,v $
- * Revision 1.5  2007-05-02 11:30:30  europe\L190409
+ * Revision 1.6  2008-08-07 11:19:30  europe\L190409
+ * added event supporting functions
+ *
+ * Revision 1.5  2007/05/02 11:30:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added attribute 'active'
  * added attribute getInputFromFixedValue
  *
@@ -42,6 +45,8 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
  */
 public interface IExtendedPipe extends IPipe {
 
+	public static final String LONG_DURATION_MONITORING_EVENT="Long Processing Duration";
+
 	/**
 	 * Extension, allowing Pipes to register things with the PipeLine at Configuration time.
 	 * For IExtendedPipes, PileLine will call this method rather then the no-args configure().
@@ -73,5 +78,16 @@ public interface IExtendedPipe extends IPipe {
 
 	public void setPreserveInput(boolean preserveInput);
 	public boolean isPreserveInput();
+
+	/**
+	 * Register an event for flexible monitoring.
+	 * @param description
+	 */
+	public void registerEvent(String description);
+	/**
+	 * Throw an event for flexible monitoring.
+	 * @param description
+	 */
+	public void throwEvent(String event);
 
 }
