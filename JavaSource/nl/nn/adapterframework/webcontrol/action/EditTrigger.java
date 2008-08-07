@@ -1,6 +1,9 @@
 /*
  * $Log: EditTrigger.java,v $
- * Revision 1.2  2008-07-24 12:42:10  europe\L190409
+ * Revision 1.3  2008-08-07 11:32:29  europe\L190409
+ * rework
+ *
+ * Revision 1.2  2008/07/24 12:42:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * rework of monitoring
  *
  * Revision 1.1  2008/07/17 16:21:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -15,6 +18,9 @@ package nl.nn.adapterframework.webcontrol.action;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import nl.nn.adapterframework.monitoring.EventThrowing;
 import nl.nn.adapterframework.monitoring.EventTypeEnum;
@@ -36,7 +42,12 @@ import org.apache.struts.action.DynaActionForm;
  */
 public class EditTrigger extends EditMonitor {
 
-	public void performAction(DynaActionForm monitorForm, String action, int index, int triggerIndex) {
+
+	public String determineExitForward(DynaActionForm monitorForm) {
+		return (String)monitorForm.get("return");
+	}
+
+	public String performAction(DynaActionForm monitorForm, String action, int index, int triggerIndex, HttpServletResponse response) {
 		MonitorManager mm = MonitorManager.getInstance();
 	
 		if (index>=0) {
@@ -47,22 +58,38 @@ public class EditTrigger extends EditMonitor {
 				monitorForm.set("trigger",trigger);
 			}
 		}
-		
-		List sources = new ArrayList();
-		sources.add("-- select an event source --");
-		for(Iterator it=mm.getThrowerIterator();it.hasNext();) {
-			EventThrowing thrower = (EventThrowing)it.next();
-			sources.add(thrower.getEventSourceName());
-		}
-		monitorForm.set("sources",sources);
-		monitorForm.set("eventTypes",EventTypeEnum.getEnumList());
-		monitorForm.set("severities",SeverityEnum.getEnumList());
 		List triggerTypes = new ArrayList(); {
 			triggerTypes.add("Alarm");
 			triggerTypes.add("Clearing");
 		}
 		monitorForm.set("triggerTypes",triggerTypes);
-		monitorForm.set("eventCodes",mm.getEventCodes(mm.findThrower(null)));
+		
+		List eventCodes;
+		if (action.equals("Filter Events")) {
+			Trigger formTrigger = (Trigger)monitorForm.get("trigger");
+			String source = formTrigger.getSource();
+			eventCodes=mm.getEventCodes(mm.findThrower(source));
+			log.debug("filteredEventCodes.size ["+eventCodes.size()+"]");
+		} else {
+			eventCodes=mm.getEventCodes(mm.findThrower(null));
+		}
+		log.debug("eventCodes.size ["+eventCodes.size()+"]");
+		monitorForm.set("eventCodes",eventCodes);
 
+		List sources;
+		if (action.equals("Filter Sources")) {
+			Trigger formTrigger = (Trigger)monitorForm.get("trigger");
+			String eventCode = formTrigger.getEventCode();
+			sources=mm.getEventSourceNames(eventCode);
+		} else {
+			sources=mm.getEventSourceNames(null);
+		}
+		log.debug("sources.size ["+sources.size()+"]");
+		monitorForm.set("sources",sources);
+
+
+		monitorForm.set("severities",SeverityEnum.getEnumList());
+
+		return null;
 	}
 }

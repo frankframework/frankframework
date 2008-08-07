@@ -1,6 +1,9 @@
 /*
  * $Log: Monitor.java,v $
- * Revision 1.3  2008-07-24 12:34:00  europe\L190409
+ * Revision 1.4  2008-08-07 11:31:27  europe\L190409
+ * rework
+ *
+ * Revision 1.3  2008/07/24 12:34:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * rework
  *
  * Revision 1.2  2008/07/17 16:17:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -36,9 +39,10 @@ public class Monitor {
 
 	private String name;
 	private EventTypeEnum type=EventTypeEnum.TECHNICAL;
-	private String guardedObject;
 	private boolean raised=false;
-	private SeverityEnum severity=null;  
+	
+	private SeverityEnum alarmSeverity=null;  
+	private EventThrowing alarmSource=null;  
 
 	
 	private MonitorManager owner=null;
@@ -61,24 +65,28 @@ public class Monitor {
 		}
 	}
 	
-	public void registerEventNotificationListener(Trigger trigger, String eventCode) throws MonitorException {
-		getOwner().registerEventNotificationListener(trigger,eventCode,getGuardedObject());
+	public void registerEventNotificationListener(Trigger trigger, String eventCode, String thrower) throws MonitorException {
+		getOwner().registerEventNotificationListener(trigger,eventCode,thrower);
 	}
 	
 	public void changeState(boolean alarm, SeverityEnum severity, EventThrowing source, String details, Throwable t) throws MonitorException {
 		if (destinationSet.size()>0) {
-			boolean up=alarm && (!raised || getSeverityEnum()==null || getSeverityEnum().compareTo(severity)<=0);
-			boolean clear=raised && (!alarm || up && getSeverityEnum()!=null && getSeverityEnum()!=severity);
+			boolean up=alarm && (!raised || getAlarmSeverityEnum()==null || getAlarmSeverityEnum().compareTo(severity)<0);
+			boolean clear=raised && (!alarm || up && getAlarmSeverityEnum()!=null && getAlarmSeverityEnum()!=severity);
 			if (clear) {
-				SeverityEnum clearSeverity=getSeverityEnum()!=null?getSeverityEnum():severity;
-				changeMonitorState(source, EventTypeEnum.CLEARING, clearSeverity, details, t);
+				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"state ["+getAlarmSeverityEnum()+"] will be cleared");
+				SeverityEnum clearSeverity=getAlarmSeverityEnum()!=null?getAlarmSeverityEnum():severity;
+				EventThrowing clearSource=getAlarmSource()!=null?getAlarmSource():source;
+				changeMonitorState(clearSource, EventTypeEnum.CLEARING, clearSeverity, details, t);
 			}
 			if (up) {
+				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"state ["+getAlarmSeverityEnum()+"] will be raised to ["+severity+"]");
 				changeMonitorState(source, getTypeEnum(), severity, details, t);
+				setAlarmSource(source);
+				setAlarmSeverityEnum(severity);
 			}
 		}
 		raised=alarm;
-		setSeverityEnum(severity);
 		notifyReverseTrigger(alarm,source);
 	}
 
@@ -94,8 +102,9 @@ public class Monitor {
 		for (Iterator it=destinationSet.iterator();it.hasNext();) {
 			String key=(String)it.next();
 			IMonitorAdapter monitorAdapter = getOwner().getDestination(key);
+			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"firing event on destination ["+key+"]");
 			if (monitorAdapter!=null) {
-				monitorAdapter.fireEvent(eventSource, eventType, severity, message, t); 
+				monitorAdapter.fireEvent(eventSource, eventType, severity, getName(), null); 
 			}
 		}
 	}
@@ -110,21 +119,11 @@ public class Monitor {
 		}
 	}
 
-	public XmlBuilder toXml(int index, boolean configOnly) {
+	public XmlBuilder toXml() {
 		XmlBuilder monitor=new XmlBuilder("monitor");
-		if (index>=0 && !configOnly) {
-			monitor.addAttribute("index",index);
-		}
 		monitor.addAttribute("name",getName());
 		monitor.addAttribute("type",getType());
-		monitor.addAttribute("guardedObject",getGuardedObject());
 		monitor.addAttribute("destinations",getDestinationsAsString());
-		if (!configOnly) {
-			monitor.addAttribute("raised",isRaised());
-		}
-		if (getSeverity()!=null) {
-			monitor.addAttribute("severity",getSeverity());
-		}
 		for (Iterator it=triggers.iterator();it.hasNext();) {
 			Trigger trigger=(Trigger)it.next();
 			trigger.toXml(monitor);
@@ -132,22 +131,12 @@ public class Monitor {
 		return monitor;
 	}
 
-	public Set getAllDestinations() {
-		return getOwner().getDestinations().keySet();
-	}
 
-	public void setDestinationX(String name, boolean value) {
-		if (value) {
-			destinationSet.add(name);
-		} else {
-			destinationSet.remove(name);
-		}
-	}
 	public boolean isDestination(String name) {
 		return destinationSet.contains(name);
 	}
 	public String getDestinationsAsString() {
-		log.debug(getLogPrefix()+"calling getDestinationsAsString()");
+		//log.debug(getLogPrefix()+"calling getDestinationsAsString()");
 		String result=null;
 		for (Iterator it=getDestinationSet().iterator();it.hasNext();) {
 			String item=(String)it.next();
@@ -160,30 +149,43 @@ public class Monitor {
 		return result;
 	}
 	public String[] getDestinations() {
-		log.debug(getLogPrefix()+"calling getDestinations()");
+		//log.debug(getLogPrefix()+"entering getDestinations()");
 		String[] result=new String[destinationSet.size()];
 		result=(String[])destinationSet.toArray(result);
-		for (int i=0;i<result.length;i++) {
-			log.debug(getLogPrefix()+"destination["+i+"]=["+result[i]+"]");
-		}
+//		for (int i=0;i<result.length;i++) {
+//			log.debug(getLogPrefix()+"destination["+i+"]=["+result[i]+"]");
+//		}
 		return result;
 	}
 	public void setDestinations(String newDestinations) {
+//		log.debug(getLogPrefix()+"entering setDestinations(String)");
 		destinationSet.clear();
 		StringTokenizer st=new StringTokenizer(newDestinations,",");
 		while (st.hasMoreTokens()) {
 			String token=st.nextToken();
+//			log.debug(getLogPrefix()+"adding destination ["+token+"]");
 			destinationSet.add(token);			
 		}
 	}
 	public void setDestinations(String[] newDestinations) {
-		log.debug(getLogPrefix()+"calling setDestinations()");
-		Set set=new HashSet();
-		for (int i=0;i<newDestinations.length;i++) {
-			log.debug(getLogPrefix()+"adding destination ["+newDestinations[i]+"]");
-			set.add(newDestinations[i]); 
+		if (newDestinations.length==1) {
+			log.debug("assuming single string, separated by commas");
+			destinationSet.clear();
+			StringTokenizer st=new StringTokenizer(newDestinations[0],",");
+			while (st.hasMoreTokens()) {
+				String token=st.nextToken();
+				log.debug(getLogPrefix()+"adding destination ["+token+"]");
+				destinationSet.add(token);			
+			}
+		} else {
+			log.debug(getLogPrefix()+"entering setDestinations(String[])");
+			Set set=new HashSet();
+			for (int i=0;i<newDestinations.length;i++) {
+				log.debug(getLogPrefix()+"adding destination ["+newDestinations[i]+"]");
+				set.add(newDestinations[i]); 
+			}
+			setDestinationSet(set);
 		}
-		setDestinationSet(set);
 	}
 	public Set getDestinationSet() {
 		return destinationSet;
@@ -204,11 +206,11 @@ public class Monitor {
 				}
 				log.debug(getLogPrefix()+"setting destinations to ["+destinations+"]");
 			}
-			log.debug("size before retain all ["+destinationSet.size()+"]" );
+//			log.debug("size before retain all ["+destinationSet.size()+"]" );
 			destinationSet.retainAll(newDestinations);
-			log.debug("size after retain all ["+destinationSet.size()+"]" );
+//			log.debug("size after retain all ["+destinationSet.size()+"]" );
 			destinationSet.addAll(newDestinations);
-			log.debug("size after add all ["+destinationSet.size()+"]" );
+//			log.debug("size after add all ["+destinationSet.size()+"]" );
 		}
 	}
 
@@ -268,13 +270,6 @@ public class Monitor {
 		return type;
 	}
 
-	public void setGuardedObject(String string) {
-		guardedObject = string;
-	}
-	public String getGuardedObject() {
-		return guardedObject;
-	}
-
 	public void setRaised(boolean b) {
 		raised = b;
 	}
@@ -282,17 +277,24 @@ public class Monitor {
 		return raised;
 	}
 
-	public void setSeverity(String severity) {
-		setSeverityEnum((SeverityEnum)SeverityEnum.getEnumMap().get(severity));
+	public String getAlarmSeverity() {
+		return alarmSeverity==null?null:alarmSeverity.getName();
 	}
-	public String getSeverity() {
-		return severity==null?null:severity.getName();
+	public void setAlarmSeverityEnum(SeverityEnum enum) {
+		alarmSeverity = enum;
 	}
-	public void setSeverityEnum(SeverityEnum enum) {
-		severity = enum;
+	public SeverityEnum getAlarmSeverityEnum() {
+		return alarmSeverity;
 	}
-	public SeverityEnum getSeverityEnum() {
-		return severity;
+
+	public EventThrowing getAlarmSource() {
+		return alarmSource;
+	}
+	public String getAlarmSourceName() {
+		return alarmSource==null?null:alarmSource.getEventSourceName();
+	}
+	public void setAlarmSource(EventThrowing source) {
+		alarmSource = source;
 	}
 
 }

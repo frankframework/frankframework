@@ -1,6 +1,9 @@
 /*
  * $Log: EditMonitorExecute.java,v $
- * Revision 1.2  2008-07-24 12:42:10  europe\L190409
+ * Revision 1.3  2008-08-07 11:32:29  europe\L190409
+ * rework
+ *
+ * Revision 1.2  2008/07/24 12:42:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * rework of monitoring
  *
  * Revision 1.1  2008/07/17 16:21:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -8,6 +11,8 @@
  *
  */
 package nl.nn.adapterframework.webcontrol.action;
+
+import javax.servlet.http.HttpServletResponse;
 
 import nl.nn.adapterframework.monitoring.Monitor;
 import nl.nn.adapterframework.monitoring.MonitorManager;
@@ -25,7 +30,7 @@ import org.apache.struts.action.DynaActionForm;
  */
 public final class EditMonitorExecute extends EditMonitor {
 
-	public void performAction(DynaActionForm monitorForm, String action, int index, int triggerIndex) {
+	public String performAction(DynaActionForm monitorForm, String action, int index, int triggerIndex, HttpServletResponse response) {
 		
 		MonitorManager mm = MonitorManager.getInstance();
 		if (index>=0) {
@@ -33,9 +38,11 @@ public final class EditMonitorExecute extends EditMonitor {
 			Monitor formMonitor = (Monitor)monitorForm.get("monitor");
 			monitor.setName(formMonitor.getName());
 			monitor.setTypeEnum(formMonitor.getTypeEnum());
-			monitor.setGuardedObject(formMonitor.getGuardedObject());
 			monitor.setDestinations(formMonitor.getDestinations());
-			monitor.setSeverity(formMonitor.getSeverity());
 		}
+		if (action.equals("OK")) {
+			return determineExitForward(monitorForm);
+		} 
+		return "self";
 	}
 }

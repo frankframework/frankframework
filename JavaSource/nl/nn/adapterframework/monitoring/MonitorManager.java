@@ -1,6 +1,9 @@
 /*
  * $Log: MonitorManager.java,v $
- * Revision 1.4  2008-07-24 12:34:00  europe\L190409
+ * Revision 1.5  2008-08-07 11:31:27  europe\L190409
+ * rework
+ *
+ * Revision 1.4  2008/07/24 12:34:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * rework
  *
  * Revision 1.3  2008/07/17 16:23:29  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -26,14 +29,18 @@ import java.util.Set;
 
 import nl.nn.adapterframework.configuration.AttributeCheckingRule;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.util.Lock;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 
+import org.apache.commons.digester.AbstractObjectCreationFactory;
 import org.apache.commons.digester.Digester;
+import org.apache.commons.digester.ObjectCreationFactory;
 import org.apache.commons.digester.Rule;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.xml.sax.Attributes;
 
 /**
  * Manager for Monitoring.
@@ -46,9 +53,11 @@ public class MonitorManager implements EventHandler {
 	protected Logger log = LogUtil.getLogger(this);
 
 	List monitors = new ArrayList();
-	Map  eventsByThrower = new HashMap();
-	Map  throwersByEvent = new HashMap();
-	Map  eventNotificationListeners = new HashMap();
+	Map  eventsByThrower = new LinkedHashMap();
+	Map  throwersByEvent = new LinkedHashMap();
+	Map  eventNotificationListeners = new LinkedHashMap();
+	
+	private boolean enabled;
 	
 	Lock structureLock = new Lock();
 
@@ -60,38 +69,7 @@ public class MonitorManager implements EventHandler {
 	}
 
 	public void configure() throws ConfigurationException {
-//		IMonitorAdapter ma=MonitorAdapterFactory.getMonitorAdapter();
-//		ma.setName("MCR (GALM)");
-//		ma.register();
-//		ma=new DummyMonitorAdapter();
-//		ma.setName("dummy");
-//		ma.register();
-//		for (Iterator it=destinations.keySet().iterator(); it.hasNext();) {
-//			String key=(String)it.next();
-//			IMonitorAdapter monitorAdapter=getDestination(key);
-//			monitorAdapter.configure();
-//		}
-//		getMonitor(0).setDestinationX("MCR (GALM)",false);
-//		getMonitor(0).setDestinationX("dummy",true);
-//		getMonitor(1).setDestinationX("MCR (GALM)",true);
-//		getMonitor(1).setDestinationX("dummy",false);
-
-//		if (monitors.size()==0) {
-//			Monitor monitor=new Monitor();
-//			monitor.setName("Configuration");
-//			monitor.setExport(true);
-//			monitor.setTypeEnum(EventTypeEnum.TECHNICAL);
-//			monitor.setSeverityEnum(SeverityEnum.CRITICAL);
-//			monitor.setGuardedObject("Receiver [FxfListener]");
-////			monitor.setObject(((EventThrowing)throwersByEvent.get(ReceiverBase.RCV_CONFIGURATIONEXCEPTION_MONITOR_EVENT)).getEventSourceName());
-//			Trigger alarm = new Trigger();
-//			alarm.setEventCode(ReceiverBase.RCV_CONFIGURATIONEXCEPTION_MONITOR_EVENT);
-//			alarm.setSeverityEnum(SeverityEnum.CRITICAL);
-//			monitor.registerAlarm(alarm);
-//			Trigger clearing = new Trigger();
-//			clearing.setEventCode(ReceiverBase.RCV_CONFIGURED_MONITOR_EVENT);
-//			monitor.registerClearing(clearing);
-//		}
+		eventNotificationListeners.clear();
 		for (Iterator it=destinations.keySet().iterator(); it.hasNext();) {
 			String name=(String)it.next();
 			IMonitorAdapter destination = getDestination(name);
@@ -133,14 +111,44 @@ public class MonitorManager implements EventHandler {
 		}
 	}
 
+	public class CreationFactory extends AbstractObjectCreationFactory {
+		
+		public CreationFactory() {
+			super();
+		}
+
+		public Object createObject(Attributes attributes) throws Exception {
+			return getInstance();
+		}
+	}
+
+	private class DestinationCleanup extends Rule {
+		
+		public void begin(String uri, String elementName, Attributes attributes) throws Exception {
+			destinations.clear();
+		}
+
+	}
 
 	public void setDigesterRules(Digester d) {
 		Rule attributeChecker=new AttributeCheckingRule(); 
+
+		d.addFactoryCreate("*/monitoring",new CreationFactory());
+		d.addSetProperties("*/monitoring");
+		d.addSetTop("*/monitoring","register");
+		d.addRule("*/monitoring", attributeChecker);
+
+		d.addRule("*/monitoring/destinations",new DestinationCleanup());
 
 		d.addObjectCreate("*/destination","className",IMonitorAdapter.class);
 		d.addSetProperties("*/destination");
 		d.addSetTop("*/destination","register");
 		d.addRule("*/destination", attributeChecker);
+
+		d.addObjectCreate("*/destination/sender","className",ISender.class);
+		d.addSetProperties("*/destination/sender");
+		d.addSetNext("*/destination/sender","setSender");
+		d.addRule("*/destination/sender", attributeChecker);
 
 		d.addObjectCreate("*/monitor",Monitor.class);
 		d.addSetProperties("*/monitor");
@@ -162,6 +170,10 @@ public class MonitorManager implements EventHandler {
 		d.addSetNext("*/trigger","registerTrigger");
 		d.addRule("*/trigger", attributeChecker);
 
+	}
+
+	public void register(Object dummy) {
+		// do nothing, just to get rid of stack item
 	}
 
 	public void registerDestination(IMonitorAdapter monitorAdapter) {
@@ -188,59 +200,22 @@ public class MonitorManager implements EventHandler {
 
 	public void addMonitor(Monitor monitor) {
 		monitor.setOwner(this);
-		try {
-			structureLock.acquireExclusive();
-			try {
-				monitors.add(monitor);
-			} finally {
-				structureLock.releaseExclusive();
-			}
-		} catch (InterruptedException e) {
-			log.error("Could not obtain lock for addMonitor" , e);
-		}
+		monitors.add(monitor);
 	}
 	public Monitor removeMonitor(int index) {
 		Monitor result=null;
-		try {
-			structureLock.acquireExclusive();
-			try {
-				result = (Monitor)monitors.remove(index);
-			} finally {
-				structureLock.releaseExclusive();
-			}
-		} catch (InterruptedException e) {
-			log.error("Could not obtain lock for removeMonitor" , e);
-		}
+		result = (Monitor)monitors.remove(index);
 		return result;
 	}
 	public Monitor getMonitor(int index) {
-		try {
-			structureLock.acquireShared();
-			try {
-				return (Monitor)monitors.get(index);
-			} finally {
-				structureLock.releaseShared();
-			}
-		} catch (InterruptedException e) {
-			log.error("Could not obtain lock for getMonitor" , e);
-		}
-		return null;
+		return (Monitor)monitors.get(index);
 	}
 	public Monitor findMonitor(String name) {
-		try {
-			structureLock.acquireShared();
-			try {
-				for (int i=0; i<monitors.size(); i++) {
-					Monitor monitor = (Monitor)monitors.get(i);
-					if (name!=null && name.equals(monitor.getName()) || name==monitor.getName()) {
-						return monitor;
-					}
-				}
-			} finally {
-				structureLock.releaseShared();
+		for (int i=0; i<monitors.size(); i++) {
+			Monitor monitor = (Monitor)monitors.get(i);
+			if (name!=null && name.equals(monitor.getName()) || name==monitor.getName()) {
+				return monitor;
 			}
-		} catch (InterruptedException e) {
-			log.error("Could not obtain lock for findMonitor" , e);
 		}
 		return null;
 	}
@@ -260,29 +235,42 @@ public class MonitorManager implements EventHandler {
 			return result;
 		}
 	}
+	public List getEventSources(String eventCode) {
+		if (eventCode!=null) {
+			return (List)throwersByEvent.get(eventCode);
+		} else {
+			List result = new ArrayList();
+			for (Iterator it=eventsByThrower.keySet().iterator(); it.hasNext();) {
+				result.add(it.next());
+			}
+			return result;
+		}
+	}
+	public List getEventSourceNames(String eventCode) {
+		List result = new ArrayList();
+		List sources=getEventSources(eventCode);
+		if (sources!=null) {
+			for (int i=0; i<sources.size(); i++) {
+				EventThrowing source=(EventThrowing)sources.get(i);
+				result.add(source.getEventSourceName());			
+			}
+		}
+		return result;
+	}
 
 	public void registerEvent(EventThrowing thrower, String eventCode) {
-		try {
-			structureLock.acquireExclusive();
-			try {
-				List throwersEvents = (List)eventsByThrower.get(thrower);
-				if (throwersEvents==null) {
-					throwersEvents = new ArrayList();
-					eventsByThrower.put(thrower, throwersEvents);
-				}
-				throwersEvents.add(eventCode);
-				List eventsThrowers = (List)throwersByEvent.get(eventCode);
-				if (eventsThrowers==null) {
-					eventsThrowers = new ArrayList();
-					throwersByEvent.put(eventCode, eventsThrowers);
-				}
-				eventsThrowers.add(thrower);
-			} finally {
-				structureLock.releaseExclusive();
-			}
-		} catch (InterruptedException e) {
-			log.error("Could not obtain lock for registerEvent" , e);
+		List throwersEvents = (List)eventsByThrower.get(thrower);
+		if (throwersEvents==null) {
+			throwersEvents = new ArrayList();
+			eventsByThrower.put(thrower, throwersEvents);
 		}
+		throwersEvents.add(eventCode);
+		List eventsThrowers = (List)throwersByEvent.get(eventCode);
+		if (eventsThrowers==null) {
+			eventsThrowers = new ArrayList();
+			throwersByEvent.put(eventCode, eventsThrowers);
+		}
+		eventsThrowers.add(thrower);
 	}
 
 	public void registerEventNotificationListener(Trigger trigger, String eventCode, String thrower) throws MonitorException {
@@ -313,71 +301,57 @@ public class MonitorManager implements EventHandler {
 		notificationListeners.put(trigger,thrower);
 	}
 
-	public synchronized void fireEvent(EventThrowing source, String eventCode) {
-		try {
-			structureLock.acquireShared();
+	public void fireEvent(EventThrowing source, String eventCode) {
+		if (isEnabled()) {
 			try {
-				Map notificationListeners = (Map)eventNotificationListeners.get(eventCode);
-				if (notificationListeners!=null) {
-					for (Iterator it=notificationListeners.keySet().iterator(); it.hasNext();) {
-						Trigger trigger = (Trigger)it.next();
-						EventThrowing filter = (EventThrowing)notificationListeners.get(trigger);
-						if (filter==null || filter==source) {
-							try {
-								trigger.evaluateEvent(source,eventCode);
-							} catch (MonitorException e) {
-								log.error("Could not evaluate event ["+eventCode+"]",e);
+				structureLock.acquireShared();
+				try {
+					Map notificationListeners = (Map)eventNotificationListeners.get(eventCode);
+					if (notificationListeners!=null) {
+						for (Iterator it=notificationListeners.keySet().iterator(); it.hasNext();) {
+							Trigger trigger = (Trigger)it.next();
+							EventThrowing filter = (EventThrowing)notificationListeners.get(trigger);
+							if (filter==null || filter==source) {
+								try {
+									trigger.evaluateEvent(source,eventCode);
+								} catch (MonitorException e) {
+									log.error("Could not evaluate event ["+eventCode+"]",e);
+								}
 							}
 						}
 					}
+				} finally {
+					structureLock.releaseShared();
 				}
-			} finally {
-				structureLock.releaseShared();
+			} catch (InterruptedException e) {
+				log.error("Could not obtain lock for fireEvent" , e);
 			}
-		} catch (InterruptedException e) {
-			log.error("Could not obtain lock for fireEvent" , e);
 		}
 	}
 
 	
-	public XmlBuilder toXml(boolean configOnly) {
+	public XmlBuilder toXml() {
 		XmlBuilder configXml=new XmlBuilder("monitoring");
+		configXml.addAttribute("enabled",isEnabled());
 		XmlBuilder destinationsXml=new XmlBuilder("destinations");
 		for (Iterator it=destinations.keySet().iterator(); it.hasNext(); ) {
 			String name=(String)it.next();
 			IMonitorAdapter ma=getDestination(name);
+			
 			XmlBuilder destinationXml=new XmlBuilder("destination");
 			destinationXml.addAttribute("name",ma.getName());
 			destinationXml.addAttribute("className",ma.getClass().getName());
-			destinationsXml.addSubElement(destinationXml);
+
+			destinationsXml.addSubElement(ma.toXml());
 		}
 		configXml.addSubElement(destinationsXml);
 		XmlBuilder monitorsXml=new XmlBuilder("monitors");
 		for (int i=0; i<monitors.size(); i++) {
 			Monitor monitor=getMonitor(i);
-			monitorsXml.addSubElement(monitor.toXml(i,configOnly));
+			monitorsXml.addSubElement(monitor.toXml());
 		}
 		configXml.addSubElement(monitorsXml);
 		
-//		if (!configOnly) {
-//			XmlBuilder throwersXml=new XmlBuilder("throwers");
-//			for (Iterator it=eventsByThrower.keySet().iterator();it.hasNext();) {
-//				XmlBuilder throwerXml=new XmlBuilder("thrower");
-//				EventThrowing thrower = (EventThrowing)it.next();
-//				throwerXml.addAttribute("name",thrower.getEventSourceName());
-//				throwersXml.addSubElement(throwerXml);
-//			}
-//			configXml.addSubElement(throwersXml);
-//		
-//			XmlBuilder eventsXml=new XmlBuilder("events");
-//			for (Iterator it=throwersByEvent.keySet().iterator();it.hasNext();) {
-//				XmlBuilder eventXml=new XmlBuilder("event");
-//				String event = (String)it.next();
-//				eventXml.addAttribute("name",event);
-//				eventsXml.addSubElement(eventXml);
-//			}
-//			configXml.addSubElement(eventsXml);
-//		}
 		return configXml;
 	}
 	
@@ -397,6 +371,17 @@ public class MonitorManager implements EventHandler {
 			}
 		}
 		return null;
+	}
+
+	public Lock getStructureLock() {
+		return structureLock;
+	}
+
+	public void setEnabled(boolean b) {
+		enabled = b;
+	}
+	public boolean isEnabled() {
+		return enabled;
 	}
 
 }

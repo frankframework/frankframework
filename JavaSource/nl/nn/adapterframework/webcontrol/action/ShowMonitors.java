@@ -1,6 +1,9 @@
 /*
  * $Log: ShowMonitors.java,v $
- * Revision 1.3  2008-07-24 12:42:10  europe\L190409
+ * Revision 1.4  2008-08-07 11:32:29  europe\L190409
+ * rework
+ *
+ * Revision 1.3  2008/07/24 12:42:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * rework of monitoring
  *
  * Revision 1.2  2008/07/17 16:21:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -27,6 +30,7 @@ import nl.nn.adapterframework.monitoring.Monitor;
 import nl.nn.adapterframework.monitoring.MonitorException;
 import nl.nn.adapterframework.monitoring.MonitorManager;
 import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.Lock;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.struts.action.ActionForm;
@@ -42,6 +46,96 @@ import org.apache.struts.action.DynaActionForm;
  * @version Id
  */
 public class ShowMonitors extends ActionBase {
+
+	protected String performAction(DynaActionForm monitorForm, String action, int index, int triggerIndex, HttpServletResponse response) throws MonitorException {
+		log.debug("should performing action ["+action+"] on monitorName nr ["+index+"]");
+		return null;
+	}
+
+	public String determineExitForward(DynaActionForm monitorForm) {
+		return "success";
+	}
+
+	public void initForm(DynaActionForm monitorForm) {
+		MonitorManager mm = MonitorManager.getInstance();
+
+		monitorForm.set("monitors",mm.getMonitors());
+		monitorForm.set("allDestinations",mm.getDestinations().keySet());
+		List destinations=new ArrayList();
+		for (int i=0;i<mm.getMonitors().size();i++) {
+			Monitor m=mm.getMonitor(i);
+			Set d=m.getDestinationSet();
+			for (Iterator it=d.iterator();it.hasNext();) {
+				destinations.add(i+","+it.next());				
+			}
+		}
+		String[] selDest=new String[destinations.size()];
+		selDest=(String[])destinations.toArray(selDest);
+		monitorForm.set("selDestinations",selDest);
+		monitorForm.set("enabled",new Boolean(mm.isEnabled()));
+	}
+
+	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+
+		// Initialize action
+		initAction(request);
+
+		if (null == config) {
+			return (mapping.findForward("noconfig"));
+		}
+
+		String forward=null;
+		DynaActionForm monitorForm = getPersistentForm(mapping, form, request);
+
+		if (isCancelled(request)) {
+			log.debug("edit is canceled");
+			forward=determineExitForward(monitorForm);
+		} 
+		else { 
+
+			debugFormData(request,form);
+
+			String action 	 = request.getParameter("action");
+			String indexStr  = request.getParameter("index");
+			String triggerIndexStr = request.getParameter("triggerIndex");
+			int index=-1;
+			if (StringUtils.isNotEmpty(indexStr)) {
+				index=Integer.parseInt(indexStr);
+			}
+			int triggerIndex=-1;
+			if (StringUtils.isNotEmpty(triggerIndexStr)) {
+				triggerIndex=Integer.parseInt(triggerIndexStr);
+			}
+		
+			MonitorManager mm = MonitorManager.getInstance();
+			Lock lock = mm.getStructureLock();
+			try {
+				lock.acquireExclusive();
+				forward=performAction(monitorForm, action, index, triggerIndex, response);
+				log.debug("forward ["+forward+"] returned from performAction");
+				mm.configure();
+			} catch (Exception e) {
+				error("could not perform action ["+action+"] on monitorIndex ["+index+"] triggerIndex ["+triggerIndex+"]", e);
+			} finally {
+				lock.releaseExclusive();
+			}
+		}	
+		if (StringUtils.isEmpty(forward)) {
+			log.debug("replacing empty forward with [success]");
+			forward="success";
+		}
+		
+		
+		initForm(monitorForm);
+		
+		ActionForward af=mapping.findForward(forward);
+		if (af==null) {
+			throw new ServletException("could not find forward ["+forward+"]");
+		}
+		// Forward control to the specified success URI
+		log.debug("forward to ["+forward+"], path ["+af.getPath()+"]");
+		return (af);
+	}
 
 	public void debugFormData(HttpServletRequest request, ActionForm form) {
 		for (Enumeration enum=request.getParameterNames();enum.hasMoreElements();) {
@@ -65,62 +159,11 @@ public class ShowMonitors extends ActionBase {
 				if (value!=null) {
 					if (value instanceof Monitor) {
 						Monitor monitor=(Monitor)value;
-						log.debug("Monitor :"+monitor.toXml(-1,true).toXML());		
+						log.debug("Monitor :"+monitor.toXml().toXML());		
 					}
 				}
 			}
 		}
 	}
 
-
-	protected void performAction(String action, int index, DynaActionForm form, HttpServletResponse response) throws MonitorException {
-		log.debug("should performing action ["+action+"] on monitorName nr ["+index+"]");
-	}
-
-
-	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-
-		// Initialize action
-		initAction(request);
-
-		if (null==config) {
-			return (mapping.findForward("noconfig"));
-		}
-
-		DynaActionForm monitorForm = getPersistentForm(mapping, form, request);
-
-		debugFormData(request, monitorForm);
-
-		String action 	 = request.getParameter("action");
-		String indexStr  = request.getParameter("index");
-		int index=-1;
-		if (StringUtils.isNotEmpty(indexStr)) {
-			index=Integer.parseInt(indexStr);
-		}
-		try {
-			performAction(action, index, monitorForm, response);
-		} catch (MonitorException e) {
-			error("could not perform action ["+action+"] on monitor nr ["+index+"]", e);
-		}
-		
-		MonitorManager mm = MonitorManager.getInstance();
-
-		monitorForm.set("monitors",mm.getMonitors());
-		monitorForm.set("allDestinations",mm.getDestinations().keySet());
-		List destinations=new ArrayList();
-		for (int i=0;i<mm.getMonitors().size();i++) {
-			Monitor m=mm.getMonitor(i);
-			Set d=m.getDestinationSet();
-			for (Iterator it=d.iterator();it.hasNext();) {
-				destinations.add(i+","+it.next());				
-			}
-		}
-		String[] selDest=new String[destinations.size()];
-		selDest=(String[])destinations.toArray(selDest);
-		monitorForm.set("selDestinations",selDest);
-
-		// Forward control to the specified success URI
-		log.debug("forward to success");
-		return (mapping.findForward("success"));
-	}
 }

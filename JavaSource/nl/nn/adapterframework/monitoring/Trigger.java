@@ -1,6 +1,9 @@
 /*
  * $Log: Trigger.java,v $
- * Revision 1.3  2008-07-24 12:34:01  europe\L190409
+ * Revision 1.4  2008-08-07 11:31:27  europe\L190409
+ * rework
+ *
+ * Revision 1.3  2008/07/24 12:34:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * rework
  *
  * Revision 1.2  2008/07/17 16:17:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -16,10 +19,12 @@ import java.util.Date;
 import java.util.LinkedList;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.log4j.Logger;
 
 /**
  * @author  Gerrit van Brakel
@@ -27,13 +32,16 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * @version Id
  */
 public class Trigger {
+	protected Logger log = LogUtil.getLogger(this);
 	
 	private Monitor owner;
 	private SeverityEnum severity;
 	private boolean alarm;
+
 	private String eventCode;
-	
-	private int threshold=1;
+	private String source;
+		
+	private int threshold=0;
 	private int period=0;
 	
 	private LinkedList eventDts=null;
@@ -41,16 +49,16 @@ public class Trigger {
 
 	public void configure() throws ConfigurationException {
 		if (StringUtils.isEmpty(eventCode)) {
-			throw new ConfigurationException("trigger of Monitor ["+owner.getName()+"] must have eventCode specified");
+			log.warn("trigger of Monitor ["+owner.getName()+"] should have eventCode specified");
 		}
 		if (StringUtils.isNotEmpty(eventCode)) {
 			try {
-				getOwner().registerEventNotificationListener(this,eventCode);
+				getOwner().registerEventNotificationListener(this,eventCode,source);
 			} catch (MonitorException e) {
 				throw new ConfigurationException(e);
 			}
 		}
-		if (threshold>1) {
+		if (threshold>0) {
 			if (eventDts==null) {
 				eventDts = new LinkedList();
 			}
@@ -61,7 +69,7 @@ public class Trigger {
 	
 
 	public void evaluateEvent(EventThrowing source, String eventCode) throws MonitorException {
-		if (getThreshold()>1) {
+		if (getThreshold()>0) {
 			Date now = new Date();
 			cleanUpEvents(now);
 			eventDts.add(now);
@@ -90,10 +98,13 @@ public class Trigger {
 		XmlBuilder trigger=new XmlBuilder(isAlarm()?"alarm":"clearing");
 		monitor.addSubElement(trigger);
 		trigger.addAttribute("eventCode",getEventCode());
+		if (StringUtils.isNotEmpty(getSource())) {
+			trigger.addAttribute("source",getSource());
+		}
 		if (getSeverity()!=null) {
 			trigger.addAttribute("severity",getSeverity());
 		}
-		if (getThreshold()>1) {
+		if (getThreshold()>0) {
 			trigger.addAttribute("threshold",getThreshold());
 		}
 		if (getPeriod()>0) {
@@ -168,6 +179,13 @@ public class Trigger {
 	}
 	public int getPeriod() {
 		return period;
+	}
+
+	public void setSource(String source) {
+		this.source = source;
+	}
+	public String getSource() {
+		return source;
 	}
 
 }

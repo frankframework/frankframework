@@ -1,6 +1,9 @@
 /*
  * $Log: ShowMonitorExecute.java,v $
- * Revision 1.1  2008-07-24 12:42:10  europe\L190409
+ * Revision 1.2  2008-08-07 11:32:30  europe\L190409
+ * rework
+ *
+ * Revision 1.1  2008/07/24 12:42:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * rework of monitoring
  *
  * Revision 1.2  2008/07/17 16:21:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -40,20 +43,17 @@ import org.apache.struts.upload.FormFile;
  */
 public class ShowMonitorExecute extends ShowMonitors {
     
-	protected void performAction(String action, int index, DynaActionForm form, HttpServletResponse response) throws MonitorException {
+	protected String performAction(DynaActionForm monitorForm, String action, int index, int triggerIndex, HttpServletResponse response) throws MonitorException {
 		log.debug("performing action ["+action+"] on monitorName nr ["+index+"]");
 		MonitorManager mm = MonitorManager.getInstance();
 		if (StringUtils.isEmpty(action)) {
 			log.warn("monitorHandler did not find action");
-			return;
+			return null;
 		}
 		if (action.equals("edit")) {
-			FormFile form_file=(FormFile) form.get("configFile");
+			FormFile form_file=(FormFile) monitorForm.get("configFile");
 	
-			if (form_file!=null) {
-				if (form_file.getFileSize()==0) {
-					error("configFile does not exist or is empty",null);
-				}
+			if (form_file!=null && form_file.getFileSize()>0) {
 				log.debug("Upload of file ["+form_file.getFileName()+"] ContentType["+form_file.getContentType()+"]");
 				Digester d=new Digester();
 				mm.setDigesterRules(d);
@@ -65,9 +65,10 @@ public class ShowMonitorExecute extends ShowMonitors {
 					error("cannot parse file ["+form_file.getFileName()+"]",e);
 				}
 			} else {
-				mm.updateDestinations((String[])form.get("selDestinations"));
+				mm.updateDestinations((String[])monitorForm.get("selDestinations"));
 			}
-			return;
+			mm.setEnabled(((Boolean)monitorForm.get("enabled")).booleanValue());
+			return null;
 		}
 		if (action.equals("createMonitor")) {
 			Monitor monitor=new Monitor();
@@ -77,7 +78,7 @@ public class ShowMonitorExecute extends ShowMonitors {
 			}
 			monitor.setName("monitor "+i);
 			mm.addMonitor(monitor);
-			return;
+			return null;
 		}
 		if (action.equals("deleteMonitor")) {
 			Monitor monitor=mm.getMonitor(index);
@@ -85,7 +86,7 @@ public class ShowMonitorExecute extends ShowMonitors {
 				log.info("removing monitor nr ["+index+"] name ["+monitor.getName()+"]");
 				mm.removeMonitor(index);
 			}
-			return;
+			return null;
 		}
 		if (action.equals("clearMonitor")) {
 			Monitor monitor=mm.getMonitor(index);
@@ -93,7 +94,7 @@ public class ShowMonitorExecute extends ShowMonitors {
 				log.info("clearing monitor ["+monitor.getName()+"]");
 				monitor.changeState(false,SeverityEnum.WARNING,null,null,null);
 			}
-			return;
+			return null;
 		}
 		if (action.equals("raiseMonitor")) {
 			Monitor monitor=mm.getMonitor(index);
@@ -101,7 +102,7 @@ public class ShowMonitorExecute extends ShowMonitors {
 				log.info("raising monitor ["+monitor.getName()+"]");
 				monitor.changeState(true,SeverityEnum.WARNING,null,null,null);
 			}
-			return;
+			return null;
 		}
 		if (action.equals("exportConfig")) {
 			try {
@@ -109,14 +110,15 @@ public class ShowMonitorExecute extends ShowMonitors {
 				response.setHeader("Content-Disposition","attachment; filename=\"monitorConfig-"+AppConstants.getInstance().getProperty("instance.name","")+".xml\"");
 				PrintWriter writer=response.getWriter();
 
-				XmlBuilder config = mm.toXml(true);
+				XmlBuilder config = mm.toXml();
 				writer.print(config.toXML());
 				writer.close();
 			} catch (IOException e) {
 				error("could not export config",e);
 			}
-			return;
+			return null;
 		}
 		log.debug("should performing action ["+action+"]");
+		return null;
 	}
 }

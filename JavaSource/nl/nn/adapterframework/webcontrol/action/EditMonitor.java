@@ -1,6 +1,9 @@
 /*
  * $Log: EditMonitor.java,v $
- * Revision 1.3  2008-07-24 12:42:10  europe\L190409
+ * Revision 1.4  2008-08-07 11:32:30  europe\L190409
+ * rework
+ *
+ * Revision 1.3  2008/07/24 12:42:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * rework of monitoring
  *
  * Revision 1.2  2008/07/17 16:21:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -12,14 +15,10 @@
  */
 package nl.nn.adapterframework.webcontrol.action;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import nl.nn.adapterframework.monitoring.EventThrowing;
@@ -28,12 +27,7 @@ import nl.nn.adapterframework.monitoring.Monitor;
 import nl.nn.adapterframework.monitoring.MonitorManager;
 import nl.nn.adapterframework.monitoring.SeverityEnum;
 import nl.nn.adapterframework.monitoring.Trigger;
-import nl.nn.adapterframework.util.ClassUtils;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.DynaActionForm;
 
 
@@ -45,9 +39,9 @@ import org.apache.struts.action.DynaActionForm;
  * @since   4.9
  * @version Id
  */
-public class EditMonitor extends ActionBase {
+public class EditMonitor extends ShowMonitors {
 
-	public void performAction(DynaActionForm monitorForm, String action, int index, int triggerIndex) {
+	protected String performAction(DynaActionForm monitorForm, String action, int index, int triggerIndex, HttpServletResponse response) {
 		MonitorManager mm = MonitorManager.getInstance();
 	
 		if (index>=0) {
@@ -77,47 +71,11 @@ public class EditMonitor extends ActionBase {
 		monitorForm.set("sources",sources);
 		monitorForm.set("eventTypes",EventTypeEnum.getEnumList());
 		monitorForm.set("severities",SeverityEnum.getEnumList());
+		return null;
 	}
 
-	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-	
-		// Initialize action
-		initAction(request);
-		if (null == config) {
-			return (mapping.findForward("noconfig"));
-		}
-		if (isCancelled(request)) {
-			log.debug("edit is canceled");
-			return (mapping.findForward("success"));
-		}
-	
-		DynaActionForm monitorForm = getPersistentForm(mapping, form, request);
-
-
-		if (log.isDebugEnabled()) {
-			Map map=monitorForm.getMap();
-			for (Iterator it=map.keySet().iterator(); it.hasNext();) {
-				String key=(String)it.next();
-				Object value=map.get(key);
-				log.debug("key ["+key+"] class ["+ClassUtils.nameOf(value)+"] value ["+value+"]");
-			}
-		}
-
-		String action 	      = getAndSetProperty(request,monitorForm,"action");
-		String indexStr       = request.getParameter("index");
-		String triggerIndexStr = request.getParameter("triggerIndex");
-		int index=-1;
-		if (StringUtils.isNotEmpty(indexStr)) {
-			index=Integer.parseInt(indexStr);
-		}
-		int triggerIndex=-1;
-		if (StringUtils.isNotEmpty(triggerIndexStr)) {
-			triggerIndex=Integer.parseInt(triggerIndexStr);
-		}
-	
-		performAction(monitorForm, action,index,triggerIndex);
-		
-	    log.debug("forward to success");
-	    return (mapping.findForward("success"));
+	public String determineExitForward(DynaActionForm monitorForm) {
+		return "showmonitors";
 	}
+
 }
