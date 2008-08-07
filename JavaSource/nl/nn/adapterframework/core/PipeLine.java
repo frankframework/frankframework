@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.63  2008-07-17 16:14:42  europe\L190409
+ * Revision 1.64  2008-08-07 11:20:56  europe\L190409
+ * catch other throwables while configuring pipes
+ *
+ * Revision 1.63  2008/07/17 16:14:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed signature of getPipeDescriptionProvider
  *
  * Revision 1.62  2008/07/14 17:16:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -282,7 +285,7 @@ import org.springframework.transaction.TransactionStatus;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.63 $ $Date: 2008-07-17 16:14:42 $";
+	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.64 $ $Date: 2008-08-07 11:20:56 $";
     private Logger log = LogUtil.getLogger(this);
 	private Logger durationLog = LogUtil.getLogger("LongDurationMessages");
     
@@ -384,7 +387,7 @@ public class PipeLine {
 			IPipe pipe=getPipe(i);
 
 			String pipeName=pipe.getName();
-			log.debug("Pipeline of ["+owner.getName()+"] configuring "+pipeName);
+			log.debug("Pipeline of ["+owner.getName()+"] configuring Pipe ["+pipeName+"]");
 	
 			// register the global forwards at the Pipes
 			// the pipe will take care that if a local, pipe-specific
@@ -395,11 +398,23 @@ public class PipeLine {
 				PipeForward pipeForward= (PipeForward) globalForwards.get(gfName);
 				pipe.registerForward(pipeForward);
 			}
-			if (pipe instanceof IExtendedPipe) {
-				IExtendedPipe epipe=(IExtendedPipe)pipe;
-				epipe.configure(this);
-			} else {
-				pipe.configure();
+			try {
+				if (pipe instanceof IExtendedPipe) {
+					IExtendedPipe epipe=(IExtendedPipe)pipe;
+					epipe.configure(this);
+					if (epipe.getDurationThreshold() >= 0) {
+						epipe.registerEvent(IExtendedPipe.LONG_DURATION_MONITORING_EVENT);
+					}
+
+				} else {
+					pipe.configure();
+				}
+			} catch (Throwable t) {
+				if (t instanceof ConfigurationException) {
+					throw (ConfigurationException)t;
+				} else {
+					throw new ConfigurationException("Exception configuring Pipe ["+pipeName+"]",t);
+				}
 			}
 			if (log.isDebugEnabled()) log.debug("Pipeline of ["+owner.getName()+"]: Pipe ["+pipeName+"] successfully configured: ["+pipe.toString()+"]");
 			
@@ -415,6 +430,7 @@ public class PipeLine {
 	    }
 
 		if (getInputValidator()!=null) {
+			log.debug("Pipeline of ["+owner.getName()+"] configuring InputValidator");
 			PipeForward pf = new PipeForward();
 			pf.setName("success");
 			getInputValidator().registerForward(pf);
@@ -422,6 +438,7 @@ public class PipeLine {
 			getInputValidator().configure();
 		}
 		if (getOutputValidator()!=null) {
+			log.debug("Pipeline of ["+owner.getName()+"] configuring OutputValidator");
 			PipeForward pf = new PipeForward();
 			pf.setName("success");
 			getOutputValidator().registerForward(pf);
@@ -753,6 +770,7 @@ public class PipeLine {
 					if (pe!=null) {
 						if (pe.getDurationThreshold() >= 0 && pipeDuration > pe.getDurationThreshold()) {
 							durationLog.info("Pipe ["+pe.getName()+"] of ["+owner.getName()+"] duration ["+pipeDuration+"] ms exceeds max ["+ pe.getDurationThreshold()+ "], message ["+object+"]");
+							pe.throwEvent(IExtendedPipe.LONG_DURATION_MONITORING_EVENT);
 						}
 					}
 				}
