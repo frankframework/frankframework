@@ -1,6 +1,9 @@
 /*
  * $Log: LogSender.java,v $
- * Revision 1.7  2008-08-06 16:38:21  europe\L190409
+ * Revision 1.8  2008-08-07 11:40:10  europe\L190409
+ * fix npe
+ *
+ * Revision 1.7  2008/08/06 16:38:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * moved from pipes to senders package
  *
  * Revision 1.6  2007/09/13 09:09:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -45,7 +48,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 public class LogSender extends nl.nn.adapterframework.senders.LogSender {
 
 	public void configure() throws ConfigurationException {
-		log.warn(getLogPrefix()+"The class ["+getClass().getName()+"] has been deprecated. Please change to ["+super.getClass().getName()+"]");
 		super.configure();
+		log.warn(getLogPrefix()+"The class ["+getClass().getName()+"] has been deprecated. Please change to ["+super.getClass().getName()+"]");
 	}
 }
