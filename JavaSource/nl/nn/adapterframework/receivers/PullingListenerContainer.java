@@ -1,6 +1,10 @@
 /*
  * $Log: PullingListenerContainer.java,v $
- * Revision 1.13  2008-07-14 17:27:44  europe\L190409
+ * Revision 1.14  2008-08-07 11:42:38  europe\L190409
+ * removed ReceiverBaseClassic
+ * renamed ReceiverBaseSpring into ReceiverBase
+ *
+ * Revision 1.13  2008/07/14 17:27:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * use flexible monitoring
  *
  * Revision 1.12  2008/06/18 12:31:17  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -70,7 +74,7 @@ public class PullingListenerContainer implements Runnable {
 
     private static TransactionDefinition txNew=null;
 
-    private ReceiverBaseSpring receiver;
+    private ReceiverBase receiver;
 	private PlatformTransactionManager txManager;
     private Counter threadsRunning = new Counter(0);
     private Semaphore pollToken = null;
@@ -261,10 +265,10 @@ public class PullingListenerContainer implements Runnable {
 	}
 	
 	
-    public void setReceiver(ReceiverBaseSpring receiver) {
+    public void setReceiver(ReceiverBase receiver) {
         this.receiver = receiver;
     }
-	public ReceiverBaseSpring getReceiver() {
+	public ReceiverBase getReceiver() {
 		return receiver;
 	}
     
