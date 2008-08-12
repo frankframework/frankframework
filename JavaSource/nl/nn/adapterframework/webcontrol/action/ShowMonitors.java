@@ -1,6 +1,9 @@
 /*
  * $Log: ShowMonitors.java,v $
- * Revision 1.4  2008-08-07 11:32:29  europe\L190409
+ * Revision 1.5  2008-08-12 16:05:10  europe\L190409
+ * added feature to show events in console
+ *
+ * Revision 1.4  2008/08/07 11:32:29  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * rework
  *
  * Revision 1.3  2008/07/24 12:42:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -73,6 +76,8 @@ public class ShowMonitors extends ActionBase {
 		selDest=(String[])destinations.toArray(selDest);
 		monitorForm.set("selDestinations",selDest);
 		monitorForm.set("enabled",new Boolean(mm.isEnabled()));
+		monitorForm.set("throwersByEvent",mm.getThrowersByEvent());
+		monitorForm.set("throwerTypesByEvent",mm.getThrowerTypesByEvent());
 	}
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
