@@ -1,6 +1,9 @@
 /*
  * $Log: HttpSender.java,v $
- * Revision 1.33  2008-05-21 08:42:37  europe\L190409
+ * Revision 1.34  2008-08-12 15:34:33  europe\L190409
+ * maxConnections must be positive
+ *
+ * Revision 1.33  2008/05/21 08:42:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * content-type configurable
  *
  * Revision 1.32  2008/03/20 12:00:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -235,7 +238,7 @@ import nl.nn.adapterframework.util.Misc;
  * @since 4.2c
  */
 public class HttpSender extends SenderWithParametersBase implements HasPhysicalDestination {
-	public static final String version = "$RCSfile: HttpSender.java,v $ $Revision: 1.33 $ $Date: 2008-05-21 08:42:37 $";
+	public static final String version = "$RCSfile: HttpSender.java,v $ $Revision: 1.34 $ $Date: 2008-08-12 15:34:33 $";
 
 	private String url;
 	private String methodType="GET"; // GET or POST
@@ -350,6 +353,9 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 		}
 		if (StringUtils.isEmpty(getUrl())) {
 			throw new ConfigurationException(getLogPrefix()+"Url must be specified");
+		}
+		if (getMaxConnections()<=0) {
+			throw new ConfigurationException(getLogPrefix()+"maxConnections is set to ["+getMaxConnections()+"], which is not enough for adequate operation");
 		}
 		try {
 			uri = new URI(getUrl());
