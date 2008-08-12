@@ -1,6 +1,9 @@
 /*
  * $Log: FixedQuerySender.java,v $
- * Revision 1.16  2007-07-19 15:10:45  europe\L190409
+ * Revision 1.17  2008-08-12 15:36:08  europe\L190409
+ * test if query is specified
+ *
+ * Revision 1.16  2007/07/19 15:10:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed unused code
  *
  * Revision 1.15  2007/07/10 07:17:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -53,6 +56,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
+import org.apache.commons.lang.StringUtils;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
+
 /**
  * QuerySender that assumes a fixed query, possibly with attributes.
  * 
@@ -100,9 +107,16 @@ import java.sql.SQLException;
  * @since 	4.1
  */
 public class FixedQuerySender extends JdbcQuerySenderBase {
-	public static final String version = "$RCSfile: FixedQuerySender.java,v $ $Revision: 1.16 $ $Date: 2007-07-19 15:10:45 $";
+	public static final String version = "$RCSfile: FixedQuerySender.java,v $ $Revision: 1.17 $ $Date: 2008-08-12 15:36:08 $";
 
 	private String query=null;
+
+	public void configure() throws ConfigurationException {
+		super.configure();
+		if (StringUtils.isEmpty(getQuery())) {
+			throw new ConfigurationException(getLogPrefix()+"query must be specified");
+		}
+	}
 		
 	protected PreparedStatement getStatement(Connection con, String correlationID, String message) throws JdbcException, SQLException {
 		return prepareQuery(con,getQuery());
@@ -118,5 +132,6 @@ public class FixedQuerySender extends JdbcQuerySenderBase {
 	public String getQuery() {
 		return query;
 	}
+
 
 }
