@@ -1,6 +1,9 @@
 /*
  * $Log: WebServiceSender.java,v $
- * Revision 1.18  2008-05-21 08:43:15  europe\L190409
+ * Revision 1.19  2008-08-12 15:35:14  europe\L190409
+ * warn about empty SoapActionURI
+ *
+ * Revision 1.18  2008/05/21 08:43:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * content-type configurable
  *
  * Revision 1.17  2008/04/28 08:02:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -63,10 +66,9 @@ import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.soap.SoapWrapper;
 import nl.nn.adapterframework.util.Misc;
 
-
 import org.apache.commons.httpclient.HttpMethod;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
-
 
 /**
  * Sender that sends a message via a WebService.
@@ -110,9 +112,8 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * @author Gerrit van Brakel
  * @since 4.2c
  */
-
 public class WebServiceSender extends HttpSender {
-	public static final String version = "$RCSfile: WebServiceSender.java,v $ $Revision: 1.18 $ $Date: 2008-05-21 08:43:15 $";
+	public static final String version = "$RCSfile: WebServiceSender.java,v $ $Revision: 1.19 $ $Date: 2008-08-12 15:35:14 $";
 	
 	private String soapActionURI = "";
 	private String encodingStyleURI=null;
@@ -135,13 +136,16 @@ public class WebServiceSender extends HttpSender {
 	public void configure() throws ConfigurationException {
 		super.configure();
 		soapWrapper=SoapWrapper.getInstance();
+		if (StringUtils.isEmpty(getSoapActionURI())) {
+			log.warn(getLogPrefix()+"no soapActionURI found, please check if this is appropriate");
+		}
 	}
 
 	protected HttpMethod getMethod(String message, ParameterValueList parameters) throws SenderException {
 		
 		String soapmsg= soapWrapper.putInEnvelope(message, getEncodingStyleURI(),getServiceNamespaceURI());
 		HttpMethod method = super.getMethod(soapmsg,parameters);
-		log.debug("setting Content-Type and SOAPAction header ["+getSoapActionURI()+"]");
+		log.debug("setting SOAPAction header ["+getSoapActionURI()+"]");
 		method.addRequestHeader("SOAPAction",getSoapActionURI());
 		return method;
 	}
