@@ -1,6 +1,9 @@
 /*
  * $Log: MonitorManager.java,v $
- * Revision 1.5  2008-08-07 11:31:27  europe\L190409
+ * Revision 1.6  2008-08-12 15:38:08  europe\L190409
+ * keep maps of eventThrowerTypes
+ *
+ * Revision 1.5  2008/08/07 11:31:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * rework
  *
  * Revision 1.4  2008/07/24 12:34:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -36,7 +39,6 @@ import nl.nn.adapterframework.util.XmlBuilder;
 
 import org.apache.commons.digester.AbstractObjectCreationFactory;
 import org.apache.commons.digester.Digester;
-import org.apache.commons.digester.ObjectCreationFactory;
 import org.apache.commons.digester.Rule;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -55,6 +57,7 @@ public class MonitorManager implements EventHandler {
 	List monitors = new ArrayList();
 	Map  eventsByThrower = new LinkedHashMap();
 	Map  throwersByEvent = new LinkedHashMap();
+	Map  throwerTypesByEvent = new LinkedHashMap();
 	Map  eventNotificationListeners = new LinkedHashMap();
 	
 	private boolean enabled;
@@ -265,12 +268,22 @@ public class MonitorManager implements EventHandler {
 			eventsByThrower.put(thrower, throwersEvents);
 		}
 		throwersEvents.add(eventCode);
+		
 		List eventsThrowers = (List)throwersByEvent.get(eventCode);
 		if (eventsThrowers==null) {
 			eventsThrowers = new ArrayList();
 			throwersByEvent.put(eventCode, eventsThrowers);
 		}
 		eventsThrowers.add(thrower);
+		
+		List eventThrowersTypes = (List)throwerTypesByEvent.get(eventCode);
+		if (eventThrowersTypes==null) {
+			eventThrowersTypes = new ArrayList();
+			throwerTypesByEvent.put(eventCode, eventThrowersTypes);
+		}
+		if (!eventThrowersTypes.contains(thrower.getClass())) {
+			eventThrowersTypes.add(thrower.getClass());
+		}
 	}
 
 	public void registerEventNotificationListener(Trigger trigger, String eventCode, String thrower) throws MonitorException {
@@ -382,6 +395,13 @@ public class MonitorManager implements EventHandler {
 	}
 	public boolean isEnabled() {
 		return enabled;
+	}
+
+	public Map getThrowersByEvent() {
+		return throwersByEvent;
+	}
+	public Map getThrowerTypesByEvent() {
+		return throwerTypesByEvent;
 	}
 
 }
