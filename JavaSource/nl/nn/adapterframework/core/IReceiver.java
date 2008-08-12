@@ -1,6 +1,10 @@
 /*
  * $Log: IReceiver.java,v $
- * Revision 1.6  2004-08-25 09:11:33  a1909356#db2admin
+ * Revision 1.7  2008-08-12 15:33:02  europe\L190409
+ * receiver must implement HasStatistics
+ * added property messagesRetried
+ *
+ * Revision 1.6  2004/08/25 09:11:33  unknown <unknown@ibissource.org>
  * Add waitForRunstate with timeout
  *
  * Revision 1.5  2004/03/31 12:04:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -16,6 +20,7 @@
 package nl.nn.adapterframework.core;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.util.HasStatistics;
 import nl.nn.adapterframework.util.RunStateEnum;
 
 /**
@@ -45,8 +50,7 @@ import nl.nn.adapterframework.util.RunStateEnum;
  *  @see PipeLineResult
  *
  */
-public interface IReceiver extends IManagable {
-	public static final String version="$Id: IReceiver.java,v 1.6 2004-08-25 09:11:33 a1909356#db2admin Exp $";
+public interface IReceiver extends IManagable, HasStatistics {
 
  	/**
  	 * This method is called by the <code>IAdapter</code> to let the
@@ -58,9 +62,13 @@ public interface IReceiver extends IManagable {
 	public void configure() throws ConfigurationException;
 	
 	/**
-	 * get the number of messages received by this receiver
+	 * get the number of messages received by this receiver.
 	 */
 	public long getMessagesReceived();
+	/**
+	 * get the number of duplicate messages received this receiver.
+	 */
+	public long getMessagesRetried();
 	
     /**
      * The processing of messages must be delegated to the <code>Adapter</code>
