@@ -1,6 +1,9 @@
 /*
  * $Log: Browse.java,v $
- * Revision 1.11  2008-08-06 16:42:18  europe\L190409
+ * Revision 1.12  2008-08-12 16:04:34  europe\L190409
+ * added skipMessages
+ *
+ * Revision 1.11  2008/08/06 16:42:18  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * allow to search in message body text
  *
  * Revision 1.10  2008/06/24 08:00:39  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -74,10 +77,11 @@ import org.apache.struts.action.DynaActionForm;
  * @since   4.4
  */
 public class Browse extends ActionBase {
-	public static final String version="$RCSfile: Browse.java,v $ $Revision: 1.11 $ $Date: 2008-08-06 16:42:18 $";
+	public static final String version="$RCSfile: Browse.java,v $ $Revision: 1.12 $ $Date: 2008-08-12 16:04:34 $";
 
-	public int maxMessages = AppConstants.getInstance().getInt("browse.messages.max",0); 
-
+	private int maxMessages = AppConstants.getInstance().getInt("browse.messages.max",0); 
+	private int skipMessages=0;
+	
 	protected void performAction(Adapter adapter, ReceiverBase receiver, String action, IMessageBrowser mb, String messageId, String selected[], HttpServletResponse response) {
 		log.debug("performing action ["+action+"]");
 	}
@@ -96,6 +100,7 @@ public class Browse extends ActionBase {
 		log.debug("submit param ["+submit+"]");
 
 		String maxMessagesStr = getAndSetProperty(request,browseForm,"maxMessages",getMaxMessages()+"");         
+		String skipMessagesStr = getAndSetProperty(request,browseForm,"skipMessages","0");         
 		String action 		= getAndSetProperty(request,browseForm,"action");
 		String storageType  = getAndSetProperty(request,browseForm,"storageType");
 		String adapterName  = getAndSetProperty(request,browseForm,"adapterName");
@@ -147,6 +152,7 @@ public class Browse extends ActionBase {
 		
 
 		maxMessages=Integer.parseInt(maxMessagesStr);
+		skipMessages=Integer.parseInt(skipMessagesStr);
 		//commandIssuedBy containes information about the location the
 		// command is sent from
 		String commandIssuedBy= getCommandIssuedBy(request);
@@ -247,27 +253,29 @@ public class Browse extends ActionBase {
 								continue;
 							}
 						}
-						
-						XmlBuilder message=new XmlBuilder("message");
-						message.addAttribute("id",mb.getId(iterItem));
-						message.addAttribute("pos",Integer.toString(messageCount+1));
-						message.addAttribute("originalId",mb.getOriginalId(iterItem));
-						message.addAttribute("correlationId",mb.getCorrelationId(iterItem));
-						if (mb instanceof ITransactionalStorage) {
-							ITransactionalStorage ts = (ITransactionalStorage)mb;
-							message.addAttribute("type",ts.getTypeString(iterItem));
-							message.addAttribute("host",ts.getHostString(iterItem));
-						}
-						message.addAttribute("insertDate",DateUtils.format(mb.getInsertDate(iterItem), DateUtils.FORMAT_FULL_GENERIC));
-						message.addAttribute("comment",XmlUtils.encodeChars(mb.getCommentString(iterItem)));
-						messages.addSubElement(message);
 						messageCount++;
-						if (getMaxMessages()>0 && messageCount>=getMaxMessages()) {
+						if (messageCount>skipMessages) { 
+							XmlBuilder message=new XmlBuilder("message");
+							message.addAttribute("id",mb.getId(iterItem));
+							message.addAttribute("pos",Integer.toString(messageCount));
+							message.addAttribute("originalId",mb.getOriginalId(iterItem));
+							message.addAttribute("correlationId",mb.getCorrelationId(iterItem));
+							if (mb instanceof ITransactionalStorage) {
+								ITransactionalStorage ts = (ITransactionalStorage)mb;
+								message.addAttribute("type",ts.getTypeString(iterItem));
+								message.addAttribute("host",ts.getHostString(iterItem));
+							}
+							message.addAttribute("insertDate",DateUtils.format(mb.getInsertDate(iterItem), DateUtils.FORMAT_FULL_GENERIC));
+							message.addAttribute("comment",XmlUtils.encodeChars(mb.getCommentString(iterItem)));
+							messages.addSubElement(message);
+						}
+
+						if (getMaxMessages()>0 && messageCount>=(getMaxMessages()+skipMessages)) {
 							log.warn("stopped iterating messages after ["+messageCount+"]: limit reached");
 							break;
 						}
 					}
-					messages.addAttribute("messageCount",Integer.toString(messageCount));
+					messages.addAttribute("messageCount",Integer.toString(messageCount-skipMessages));
 					request.setAttribute("messages",messages.toXML());
 				} finally {
 					mbi.close();
