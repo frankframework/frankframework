@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.64  2008-08-07 11:20:56  europe\L190409
+ * Revision 1.65  2008-08-12 15:33:45  europe\L190409
+ * support for pipe exception event
+ *
+ * Revision 1.64  2008/08/07 11:20:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * catch other throwables while configuring pipes
  *
  * Revision 1.63  2008/07/17 16:14:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -285,7 +288,7 @@ import org.springframework.transaction.TransactionStatus;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.64 $ $Date: 2008-08-07 11:20:56 $";
+	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.65 $ $Date: 2008-08-12 15:33:45 $";
     private Logger log = LogUtil.getLogger(this);
 	private Logger durationLog = LogUtil.getLogger("LongDurationMessages");
     
@@ -405,6 +408,7 @@ public class PipeLine {
 					if (epipe.getDurationThreshold() >= 0) {
 						epipe.registerEvent(IExtendedPipe.LONG_DURATION_MONITORING_EVENT);
 					}
+					epipe.registerEvent(IExtendedPipe.PIPE_EXCEPTION_MONITORING_EVENT);
 
 				} else {
 					pipe.configure();
@@ -760,9 +764,15 @@ public class PipeLine {
 					}
 				} catch (PipeRunException pre) {
 					TracingUtil.exceptionEvent(pipeToRun);
+					if (pe!=null) {
+						pe.throwEvent(IExtendedPipe.PIPE_EXCEPTION_MONITORING_EVENT);
+					}
 					throw pre;
 				} catch (RuntimeException re) {
 					TracingUtil.exceptionEvent(pipeToRun);
+					if (pe!=null) {
+						pe.throwEvent(IExtendedPipe.PIPE_EXCEPTION_MONITORING_EVENT);
+					}
 					throw new PipeRunException(pipeToRun, "Uncaught runtime exception running pipe '"
                             + (pipeToRun==null?"null":pipeToRun.getName()) + "'", re);
 				} finally {
