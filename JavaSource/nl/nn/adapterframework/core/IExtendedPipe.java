@@ -1,6 +1,9 @@
 /*
  * $Log: IExtendedPipe.java,v $
- * Revision 1.6  2008-08-07 11:19:30  europe\L190409
+ * Revision 1.7  2008-08-12 15:32:04  europe\L190409
+ * defined additional events
+ *
+ * Revision 1.6  2008/08/07 11:19:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added event supporting functions
  *
  * Revision 1.5  2007/05/02 11:30:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -45,7 +48,8 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
  */
 public interface IExtendedPipe extends IPipe {
 
-	public static final String LONG_DURATION_MONITORING_EVENT="Long Processing Duration";
+	public static final String LONG_DURATION_MONITORING_EVENT="Pipe Long Processing Duration";
+	public static final String PIPE_EXCEPTION_MONITORING_EVENT="Pipe Exception";
 
 	/**
 	 * Extension, allowing Pipes to register things with the PipeLine at Configuration time.
