@@ -1,6 +1,9 @@
 /*
  * $Log: ShowAdapterStatistics.java,v $
- * Revision 1.5  2008-05-22 07:42:56  europe\L190409
+ * Revision 1.6  2008-08-12 15:50:10  europe\L190409
+ * added messagesRetried
+ *
+ * Revision 1.5  2008/05/22 07:42:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * cosmetic changes
  *
  */
@@ -92,6 +95,7 @@ public final class ShowAdapterStatistics extends ActionBase {
 			    receiverXML.addAttribute("name",receiver.getName());
 				receiverXML.addAttribute("class", receiver.getClass().getName());
 				receiverXML.addAttribute("messagesReceived", ""+receiver.getMessagesReceived());
+				receiverXML.addAttribute("messagesRetried", ""+receiver.getMessagesRetried());
 	/*				  
 			    if (receiver instanceof HasSender) {
 					ISender sender = ((HasSender) receiver).getSender();

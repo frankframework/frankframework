@@ -1,6 +1,9 @@
 /*
  * $Log: ShowConfigurationStatus.java,v $
- * Revision 1.16  2008-08-06 16:43:17  europe\L190409
+ * Revision 1.17  2008-08-12 15:50:55  europe\L190409
+ * added messagesRetried
+ *
+ * Revision 1.16  2008/08/06 16:43:17  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fixed display of messagelog counts
  *
  * Revision 1.15  2008/07/24 12:40:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -73,7 +76,7 @@ import org.apache.struts.action.ActionMapping;
  * @version Id
  */
 public final class ShowConfigurationStatus extends ActionBase {
-	public static final String version = "$RCSfile: ShowConfigurationStatus.java,v $ $Revision: 1.16 $ $Date: 2008-08-06 16:43:17 $";
+	public static final String version = "$RCSfile: ShowConfigurationStatus.java,v $ $Revision: 1.17 $ $Date: 2008-08-12 15:50:55 $";
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 
@@ -124,6 +127,7 @@ public final class ShowConfigurationStatus extends ActionBase {
 					receiverXML.addAttribute("name",receiver.getName());
 					receiverXML.addAttribute("class", ClassUtils.nameOf(receiver));
 					receiverXML.addAttribute("messagesReceived", ""+receiver.getMessagesReceived());
+					receiverXML.addAttribute("messagesRetried", ""+receiver.getMessagesRetried());
 					if (receiver instanceof ReceiverBase ) {
 						ReceiverBase rb = (ReceiverBase) receiver;
 						receiverXML.addAttribute("listenerClass", ClassUtils.nameOf(rb.getListener()));
