@@ -1,6 +1,9 @@
 /*
  * $Log: IbisException.java,v $
- * Revision 1.23  2008-03-28 14:50:24  europe\L190409
+ * Revision 1.24  2008-08-12 15:13:48  europe\L190409
+ * removed duplicate parts in getMessage
+ *
+ * Revision 1.23  2008/03/28 14:50:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed position of XML location info
  *
  * Revision 1.22  2008/03/20 11:57:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -83,7 +86,7 @@ import org.xml.sax.SAXParseException;
  * @author Gerrit van Brakel
  */
 public class IbisException extends NestableException {
-	public static final String version = "$RCSfile: IbisException.java,v $ $Revision: 1.23 $ $Date: 2008-03-28 14:50:24 $";
+//	private Logger log = LogUtil.getLogger(this);
 
 	static {
 		// add methodname to find cause of JMS-Exceptions
@@ -120,16 +123,17 @@ public class IbisException extends NestableException {
 		return part1+separator+part2;
 	}
 	
-	public String addExceptionSpecificDetails(Throwable t, String currentResult) {
+	public String getExceptionSpecificDetails(Throwable t) {
+		String result=null;
 		if (t instanceof AddressException) { 
 			AddressException ae = (AddressException)t;
 			String parsedString=ae.getRef();
 			if (StringUtils.isNotEmpty(parsedString)) {
-				currentResult = addPart(currentResult, " ", "["+parsedString+"]");
+				result = addPart(result, " ", "["+parsedString+"]");
 			}
 			int column = ae.getPos()+1;
 			if (column>0) {
-				currentResult = addPart(currentResult, " ", "at column ["+column+"]");
+				result = addPart(result, " ", "at column ["+column+"]");
 			}
 		}
 		if (t instanceof SAXParseException) {
@@ -148,7 +152,7 @@ public class IbisException extends NestableException {
 			if (col>=0) {
 				locationInfo =  addPart(locationInfo, " ", "column ["+col+"]");
 			}
-			currentResult = addPart(locationInfo, ": ", currentResult);
+			result = addPart(locationInfo, ": ", result);
 		} 
 		if (t instanceof TransformerException) {
 			TransformerException te = (TransformerException)t;
@@ -168,7 +172,7 @@ public class IbisException extends NestableException {
 				if (col>=0) {
 					locationInfo =  addPart(locationInfo, " ", "column ["+col+"]");
 				}
-				currentResult = addPart(locationInfo, ": ", currentResult);
+				result = addPart(locationInfo, ": ", result);
 			}
 		} 
 		if (t instanceof SQLException) {
@@ -176,37 +180,46 @@ public class IbisException extends NestableException {
 			int errorCode = sqle.getErrorCode();
 			String sqlState = sqle.getSQLState();
 			if (errorCode!=0) {
-				currentResult =  addPart("errorCode ["+errorCode+"]", ", ", currentResult);
+				result =  addPart("errorCode ["+errorCode+"]", ", ", result);
 			}
 			if (StringUtils.isNotEmpty(sqlState)) {
-				currentResult =  addPart("SQLState ["+sqlState+"]", ", ", currentResult);
+				result =  addPart("SQLState ["+sqlState+"]", ", ", result);
 			}
 		} 
-		return currentResult;
+		return result;
 	}
 	
     public String getMessage() {
-	    String messages[]=getMessages(); 
 	    Throwable throwables[]=getThrowables();
 		String result=null;
 		String prev_message=null;
 
-		for(int i=messages.length-1; i>=0; i--) {
-			String newPart=null;
+
+		for(int i=getThrowableCount()-1; i>=0; i--) {
 			
-			newPart = addExceptionSpecificDetails(throwables[i], newPart);
+			String cur_message=getMessage(i);
+			
+//			if (log.isDebugEnabled()) {
+//				log.debug("t["+i+"], ["+ClassUtils.nameOf(throwables[i])+"], cur ["+cur_message+"], prev ["+prev_message+"]");
+//			} 			
+			
+			String newPart=null;
 			
 			// prefix the result with the message of this exception.
 			// if the new message ends with the previous, remove the part that is already known
-			if (StringUtils.isNotEmpty(messages[i])) {
-				newPart = addPart(messages[i], " ", newPart);
+			if (StringUtils.isNotEmpty(cur_message)) {
+				newPart = addPart(cur_message, " ", newPart);
 				if (StringUtils.isNotEmpty(newPart) && StringUtils.isNotEmpty(prev_message) && newPart.endsWith(prev_message)) {
 					newPart=newPart.substring(0,newPart.length()-prev_message.length());
 				}
 				if (StringUtils.isNotEmpty(newPart) && newPart.endsWith(": ")) {
 					newPart=newPart.substring(0,newPart.length()-2);
 				}
-				prev_message=messages[i];
+				prev_message=cur_message;
+			}
+			String specificDetails = getExceptionSpecificDetails(throwables[i]);
+			if (StringUtils.isNotEmpty(specificDetails) && (result==null || result.indexOf(specificDetails)<0)) {
+				newPart= addPart(specificDetails,": ",newPart);
 			}
 			
 			if (!(throwables[i] instanceof IbisException)) { 
@@ -217,10 +230,10 @@ public class IbisException extends NestableException {
 		}
 		
 	    if (result==null) {
+//	    	log.debug("no message found, returning fields by inspection");
 	    	// do not replace the following with toString(), this causes an endless loop. GvB
 		    result="no message, fields of this exception: "+ToStringBuilder.reflectionToString(this,ToStringStyle.MULTI_LINE_STYLE);
 	    }
-	   
 	    return result;
     }
 
