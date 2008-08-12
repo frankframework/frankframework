@@ -1,6 +1,9 @@
 /*
  * $Log: Adapter.java,v $
- * Revision 1.45  2008-08-07 11:34:07  europe\L190409
+ * Revision 1.46  2008-08-12 15:31:13  europe\L190409
+ * moved collection of receiver statistics to receiver
+ *
+ * Revision 1.45  2008/08/07 11:34:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed references to old monitoring code
  *
  * Revision 1.44  2008/08/07 07:54:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -204,7 +207,7 @@ import org.springframework.core.task.TaskExecutor;
  */
 
 public class Adapter implements IAdapter, NamedBean {
-	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.45 $ $Date: 2008-08-07 11:34:07 $";
+	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.46 $ $Date: 2008-08-12 15:31:13 $";
 	private Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -421,36 +424,7 @@ public class Adapter implements IAdapter, NamedBean {
 		if (recIt.hasNext()) {
 			while (recIt.hasNext()) {
 				IReceiver receiver=(IReceiver) recIt.next();
-				Object recData=hski.openGroup(recsData,receiver.getName(),"receiver");
-				hski.handleScalar(recData,"messagesReceived", receiver.getMessagesReceived());
-				if (receiver instanceof IReceiverStatistics) {
-
-					IReceiverStatistics statReceiver = (IReceiverStatistics)receiver;
-					Iterator statsIter;
-
-					statsIter = statReceiver.getProcessStatisticsIterator();
-					Object pstatData=hski.openGroup(recData,receiver.getName(),"procStats");
-					if (statsIter != null) {
-						while(statsIter.hasNext()) {				    
-							StatisticsKeeper pstat = (StatisticsKeeper) statsIter.next();
-							hski.handleStatisticsKeeper(pstatData,pstat);
-						}
-					}
-					hski.closeGroup(pstatData);
-
-					statsIter = statReceiver.getIdleStatisticsIterator();
-					Object istatData=hski.openGroup(recData,receiver.getName(),"idleStats");
-					if (statsIter != null) {
-						while(statsIter.hasNext()) {				    
-							StatisticsKeeper pstat = (StatisticsKeeper) statsIter.next();
-							hski.handleStatisticsKeeper(istatData,pstat);
-						}
-					}
-					hski.closeGroup(istatData);
-
-
-				}
-				hski.closeGroup(recData);
+				receiver.iterateOverStatistics(hski,recsData);
 			}
 		}
 		hski.closeGroup(recsData);
