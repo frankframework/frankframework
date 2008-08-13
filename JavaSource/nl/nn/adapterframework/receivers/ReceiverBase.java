@@ -1,6 +1,10 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.56  2008-08-07 11:42:38  europe\L190409
+ * Revision 1.57  2008-08-13 13:43:02  europe\L190409
+ * added numRetries
+ * added iterateOverStatistics
+ *
+ * Revision 1.56  2008/08/07 11:42:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed ReceiverBaseClassic
  * renamed ReceiverBaseSpring into ReceiverBase
  *
@@ -333,12 +337,14 @@ import nl.nn.adapterframework.monitoring.EventThrowing;
 import nl.nn.adapterframework.monitoring.MonitorManager;
 import nl.nn.adapterframework.util.Counter;
 import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.HasStatistics;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.RunStateEnquiring;
 import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.RunStateManager;
 import nl.nn.adapterframework.util.StatisticsKeeper;
+import nl.nn.adapterframework.util.StatisticsKeeperIterationHandler;
 import nl.nn.adapterframework.util.TracingEventNumbers;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -429,9 +435,9 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  * @author     Gerrit van Brakel
  * @since 4.2
  */
-public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHandler, EventThrowing, IbisExceptionListener, HasSender, TracingEventNumbers, IThreadCountControllable, BeanFactoryAware {
+public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHandler, EventThrowing, IbisExceptionListener, HasSender, HasStatistics, TracingEventNumbers, IThreadCountControllable, BeanFactoryAware {
     
-	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.56 $ $Date: 2008-08-07 11:42:38 $";
+	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.57 $ $Date: 2008-08-13 13:43:02 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -481,6 +487,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	        
 	// number of messages received
 	private Counter numReceived = new Counter(0);
+	private Counter numRetried = new Counter(0);
 	private ArrayList processStatistics = new ArrayList();
 	private ArrayList idleStatistics = new ArrayList();
 
@@ -1145,12 +1152,18 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 			}
 			log.info(getLogPrefix()+"messageId [" + messageId + "] technicalCorrelationId [" + technicalCorrelationId + "] businessCorrelationId [" + businessCorrelationId + "]");
 		}
-        
+		if (StringUtils.isEmpty(businessCorrelationId)) {
+			if (log.isDebugEnabled()) { log.debug(getLogPrefix()+"did not find businessCorrelationId, reverting to correlationId of transfer ["+technicalCorrelationId+"]"); } 
+			businessCorrelationId=messageId;
+		}       
 		if (checkTryCount(messageId, retry, rawMessage, message, threadContext)) {
 			if (!isTransacted()) {
 				log.warn(getLogPrefix()+"received message with messageId [" + messageId + "] which is already stored in error storage or messagelog; aborting processing");
  			}
 			return result;
+		}
+		if (getCachedProcessResult(messageId)!=null) {
+			numRetried.increase();
 		}
 		TransactionStatus txStatus = getTransactionForProcessing();
         
@@ -1368,7 +1381,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 //					return true;
 //				}
 //			}
-		}
+		} 
 		if (isCheckForDuplicates() && getMessageLog()!= null && getMessageLog().containsMessageId(messageId)) {
 			return true;
 		}
@@ -1422,7 +1435,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 				return false;
 			}
 		} else {
-			log.error(getLogPrefix()+" not transacted, message with id ["+messageId+"] will not be retried");
+			log.error(getLogPrefix()+"not transacted, message with id ["+messageId+"] will not be retried");
 			moveInProcessToError(messageId, correlationId, message, new Date(startProcessingTimestamp), errorMessage, rawMessage, TXNEW);
 			return false;
 		}
@@ -1492,6 +1505,33 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		}
 	}
 	
+
+	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data) {
+		Object recData=hski.openGroup(data,getName(),"receiver");
+		hski.handleScalar(recData,"messagesReceived", getMessagesReceived());
+		hski.handleScalar(recData,"messagesRetried", getMessagesRetried());
+		Iterator statsIter=getProcessStatisticsIterator();
+		Object pstatData=hski.openGroup(recData,getName(),"procStats");
+		if (statsIter != null) {
+			while(statsIter.hasNext()) {				    
+				StatisticsKeeper pstat = (StatisticsKeeper) statsIter.next();
+				hski.handleStatisticsKeeper(pstatData,pstat);
+			}
+		}
+		hski.closeGroup(pstatData);
+
+		statsIter = getIdleStatisticsIterator();
+		Object istatData=hski.openGroup(recData,getName(),"idleStats");
+		if (statsIter != null) {
+			while(statsIter.hasNext()) {				    
+				StatisticsKeeper pstat = (StatisticsKeeper) statsIter.next();
+				hski.handleStatisticsKeeper(istatData,pstat);
+			}
+		}
+		hski.closeGroup(istatData);
+
+		hski.closeGroup(recData);
+	}
 
 
 
@@ -1735,6 +1775,15 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	public long getMessagesReceived() {
 		return numReceived.getValue();
 	}
+
+	/**
+	 * Get the number of messages retried.
+	  * @return long
+	 */
+	public long getMessagesRetried() {
+		return numRetried.getValue();
+	}
+
 	
 //	public StatisticsKeeper getRequestSizeStatistics() {
 //		return requestSizeStatistics;
