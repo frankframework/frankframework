@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.57  2008-08-13 13:43:02  europe\L190409
+ * Revision 1.58  2008-08-13 13:50:36  europe\L190409
+ * no changes
+ *
+ * Revision 1.57  2008/08/13 13:43:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added numRetries
  * added iterateOverStatistics
  *
@@ -437,7 +440,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  */
 public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHandler, EventThrowing, IbisExceptionListener, HasSender, HasStatistics, TracingEventNumbers, IThreadCountControllable, BeanFactoryAware {
     
-	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.57 $ $Date: 2008-08-13 13:43:02 $";
+	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.58 $ $Date: 2008-08-13 13:50:36 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);

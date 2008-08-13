@@ -1,6 +1,9 @@
 /*
  * $Log: PullingListenerContainer.java,v $
- * Revision 1.14  2008-08-07 11:42:38  europe\L190409
+ * Revision 1.15  2008-08-13 13:50:36  europe\L190409
+ * no changes
+ *
+ * Revision 1.14  2008/08/07 11:42:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed ReceiverBaseClassic
  * renamed ReceiverBaseSpring into ReceiverBase
  *
