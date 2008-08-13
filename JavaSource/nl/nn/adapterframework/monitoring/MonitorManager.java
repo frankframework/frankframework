@@ -1,6 +1,9 @@
 /*
  * $Log: MonitorManager.java,v $
- * Revision 1.6  2008-08-12 15:38:08  europe\L190409
+ * Revision 1.7  2008-08-13 13:39:02  europe\L190409
+ * added eventsByThrowerType
+ *
+ * Revision 1.6  2008/08/12 15:38:08  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * keep maps of eventThrowerTypes
  *
  * Revision 1.5  2008/08/07 11:31:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -56,6 +59,7 @@ public class MonitorManager implements EventHandler {
 
 	List monitors = new ArrayList();
 	Map  eventsByThrower = new LinkedHashMap();
+	Map  eventsByThrowerType = new LinkedHashMap();
 	Map  throwersByEvent = new LinkedHashMap();
 	Map  throwerTypesByEvent = new LinkedHashMap();
 	Map  eventNotificationListeners = new LinkedHashMap();
@@ -284,6 +288,15 @@ public class MonitorManager implements EventHandler {
 		if (!eventThrowersTypes.contains(thrower.getClass())) {
 			eventThrowersTypes.add(thrower.getClass());
 		}
+
+		List throwersTypeEvents = (List)eventsByThrowerType.get(thrower.getClass());
+		if (throwersTypeEvents==null) {
+			throwersTypeEvents = new ArrayList();
+			eventsByThrowerType.put(thrower.getClass(), throwersTypeEvents);
+		}
+		if (!throwersTypeEvents.contains(eventCode)) {
+			throwersTypeEvents.add(eventCode);
+		}
 	}
 
 	public void registerEventNotificationListener(Trigger trigger, String eventCode, String thrower) throws MonitorException {
@@ -402,6 +415,10 @@ public class MonitorManager implements EventHandler {
 	}
 	public Map getThrowerTypesByEvent() {
 		return throwerTypesByEvent;
+	}
+
+	public Map getEventsByThrowerType() {
+		return eventsByThrowerType;
 	}
 
 }
