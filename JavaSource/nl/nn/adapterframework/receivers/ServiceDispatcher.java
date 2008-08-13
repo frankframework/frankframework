@@ -1,6 +1,9 @@
 /*
  * $Log: ServiceDispatcher.java,v $
- * Revision 1.10  2007-10-08 12:24:31  europe\L190409
+ * Revision 1.11  2008-08-13 13:43:29  europe\L190409
+ * removed reference to ServiceListener
+ *
+ * Revision 1.10  2007/10/08 12:24:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed HashMap to Map where possible
  *
  * Revision 1.9  2007/02/12 14:03:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -43,7 +46,7 @@ import org.apache.log4j.Logger;
  * @see ServiceDispatcherBean
  */
 public class ServiceDispatcher  {
-	public static final String version = "$RCSfile: ServiceDispatcher.java,v $ $Revision: 1.10 $ $Date: 2007-10-08 12:24:31 $";
+	public static final String version = "$RCSfile: ServiceDispatcher.java,v $ $Revision: 1.11 $ $Date: 2008-08-13 13:43:29 $";
 	protected Logger log = LogUtil.getLogger(this);
 	
 	private Hashtable registeredListeners=new Hashtable();
@@ -135,13 +138,13 @@ public class ServiceDispatcher  {
 	public boolean isRegisteredServiceListener(String name) {
 		return (registeredListeners.get(name)!=null);
 	}
-    /**
-     * Registers a ServiceListener implementation
-     * @param listener a ServiceListener implementation
-     */
-	public  void registerServiceListener(ServiceListener listener) throws ListenerException{
-		registerServiceClient(listener.getName(), listener);
-	}
+//    /**
+//     * Registers a ServiceListener implementation
+//     * @param listener a ServiceListener implementation
+//     */
+//	public  void registerServiceListener(ServiceListener listener) throws ListenerException{
+//		registerServiceClient(listener.getName(), listener);
+//	}
 
 	public  void registerServiceClient(String name, ServiceClient listener) throws ListenerException{
 		if (isRegisteredServiceListener(name)) {
