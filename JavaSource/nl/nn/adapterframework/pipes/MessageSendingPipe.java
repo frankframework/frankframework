@@ -1,6 +1,9 @@
 /*
  * $Log: MessageSendingPipe.java,v $
- * Revision 1.44  2008-07-14 17:25:52  europe\L190409
+ * Revision 1.45  2008-08-13 13:40:34  europe\L190409
+ * modified eventnames
+ *
+ * Revision 1.44  2008/07/14 17:25:52  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * use flexible monitoring
  *
  * Revision 1.43  2008/06/18 12:29:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -234,11 +237,11 @@ import org.apache.commons.lang.SystemUtils;
  */
 
 public class MessageSendingPipe extends FixedForwardPipe implements HasSender, HasStatistics, EventThrowing {
-	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.44 $ $Date: 2008-07-14 17:25:52 $";
+	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.45 $ $Date: 2008-08-13 13:40:34 $";
 
-	public static final String PIPE_TIMEOUT_MONITOR_EVENT = "Timeout";
-	public static final String PIPE_CLEAR_TIMEOUT_MONITOR_EVENT = "Succes after Timeout";
-	public static final String PIPE_EXCEPTION_MONITOR_EVENT = "Exception";
+	public static final String PIPE_TIMEOUT_MONITOR_EVENT = "Sender Timeout";
+	public static final String PIPE_CLEAR_TIMEOUT_MONITOR_EVENT = "Sender Received Result on Time";
+	public static final String PIPE_EXCEPTION_MONITOR_EVENT = "Sender Exception Caught";
 
 	private final static String TIMEOUTFORWARD = "timeout";
 	private final static String EXCEPTIONFORWARD = "exception";
