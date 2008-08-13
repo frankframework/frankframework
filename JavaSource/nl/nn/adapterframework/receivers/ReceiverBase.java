@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.58  2008-08-13 13:50:36  europe\L190409
+ * Revision 1.59  2008-08-13 17:50:01  europe\L190409
+ * perform PipeLineSession.setListenerParameters for processRequest() too
+ *
+ * Revision 1.58  2008/08/13 13:50:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * no changes
  *
  * Revision 1.57  2008/08/13 13:43:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -440,7 +443,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  */
 public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHandler, EventThrowing, IbisExceptionListener, HasSender, HasStatistics, TracingEventNumbers, IThreadCountControllable, BeanFactoryAware {
     
-	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.58 $ $Date: 2008-08-13 13:50:36 $";
+	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.59 $ $Date: 2008-08-13 17:50:01 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -1037,6 +1040,9 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		if (getRunState() != RunStateEnum.STARTED) {
 			throw new ListenerException(getLogPrefix()+"is not started");
 		}
+		Date tsReceived = (Date)context.get(PipeLineSession.tsReceivedKey);
+		Date tsSent = (Date)context.get(PipeLineSession.tsSentKey);
+		PipeLineSession.setListenerParameters(context, null, correlationId, tsReceived, tsSent);
 		return processMessageInAdapter(origin, message, message, null, correlationId, context, waitingTime, false);
 	}
 
