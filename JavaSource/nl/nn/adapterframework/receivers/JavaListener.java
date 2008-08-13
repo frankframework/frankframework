@@ -1,6 +1,9 @@
 /*
  * $Log: JavaListener.java,v $
- * Revision 1.27  2007-12-10 10:14:30  europe\L190409
+ * Revision 1.28  2008-08-13 13:42:14  europe\L190409
+ * removed unused imports
+ *
+ * Revision 1.27  2007/12/10 10:14:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * assume usertransaction can be obtained
  *
  * Revision 1.26  2007/10/17 09:08:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -115,7 +118,6 @@ import nl.nn.adapterframework.dispatcher.DispatcherException;
 import nl.nn.adapterframework.dispatcher.DispatcherManager;
 import nl.nn.adapterframework.dispatcher.DispatcherManagerFactory;
 import nl.nn.adapterframework.dispatcher.RequestProcessor;
-import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.commons.lang.StringUtils;
@@ -145,7 +147,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class JavaListener implements IPushingListener, RequestProcessor, HasPhysicalDestination {
-	public static final String version="$RCSfile: JavaListener.java,v $ $Revision: 1.27 $ $Date: 2007-12-10 10:14:30 $";
+	public static final String version="$RCSfile: JavaListener.java,v $ $Revision: 1.28 $ $Date: 2008-08-13 13:42:14 $";
 	protected Logger log = LogUtil.getLogger(this);
 	
 	private String name;
