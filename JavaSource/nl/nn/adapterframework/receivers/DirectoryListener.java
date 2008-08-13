@@ -1,6 +1,9 @@
 /*
  * $Log: DirectoryListener.java,v $
- * Revision 1.13  2008-07-15 12:50:51  europe\L190409
+ * Revision 1.14  2008-08-13 13:41:54  europe\L190409
+ * prepare to react better on stop command
+ *
+ * Revision 1.13  2008/07/15 12:50:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added excludeWildcard attribute
  *
  * Revision 1.12  2008/04/03 07:18:06  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -107,7 +110,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class DirectoryListener implements IPullingListener, INamedObject, HasPhysicalDestination {
-	public static final String version = "$RCSfile: DirectoryListener.java,v $  $Revision: 1.13 $ $Date: 2008-07-15 12:50:51 $";
+	public static final String version = "$RCSfile: DirectoryListener.java,v $  $Revision: 1.14 $ $Date: 2008-08-13 13:41:54 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -268,7 +271,13 @@ public class DirectoryListener implements IPullingListener, INamedObject, HasPhy
 
 	private Object waitAWhile() throws ListenerException {
 		try {
-			Thread.sleep(responseTime);
+			for (long waitedTime=0; waitedTime<responseTime; waitedTime+=1000) {
+				if (responseTime-waitedTime < 1000) {
+					Thread.sleep(responseTime-waitedTime);
+				} else {
+					Thread.sleep(1000);
+				}
+			}
 			return null;
 		}
 		catch(InterruptedException e) {		
