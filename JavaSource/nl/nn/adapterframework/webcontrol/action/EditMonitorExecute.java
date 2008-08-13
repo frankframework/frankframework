@@ -1,6 +1,9 @@
 /*
  * $Log: EditMonitorExecute.java,v $
- * Revision 1.3  2008-08-07 11:32:29  europe\L190409
+ * Revision 1.4  2008-08-13 13:46:57  europe\L190409
+ * some bugfixing
+ *
+ * Revision 1.3  2008/08/07 11:32:29  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * rework
  *
  * Revision 1.2  2008/07/24 12:42:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -16,6 +19,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import nl.nn.adapterframework.monitoring.Monitor;
 import nl.nn.adapterframework.monitoring.MonitorManager;
+import nl.nn.adapterframework.monitoring.Trigger;
 
 import org.apache.struts.action.DynaActionForm;
 
@@ -35,14 +39,30 @@ public final class EditMonitorExecute extends EditMonitor {
 		MonitorManager mm = MonitorManager.getInstance();
 		if (index>=0) {
 			Monitor monitor = mm.getMonitor(index);
-			Monitor formMonitor = (Monitor)monitorForm.get("monitor");
-			monitor.setName(formMonitor.getName());
-			monitor.setTypeEnum(formMonitor.getTypeEnum());
-			monitor.setDestinations(formMonitor.getDestinations());
+			if (action.equals("createTrigger")) {
+				int triggerCount=monitor.getTriggers().size();
+				Trigger trigger = new Trigger();
+				switch (triggerCount) {
+					case 0: trigger.setAlarm(true);
+					case 1: trigger.setAlarm(false);
+					default: trigger.setAlarm(true);
+				}
+				monitor.registerTrigger(trigger);				
+			} else 
+			if (action.equals("deleteTrigger")) {
+				monitor.getTriggers().remove(triggerIndex);
+				return determineExitForward(monitorForm);
+			} else   
+			if (action.equals("OK") || action.equals("Apply")) {
+				Monitor formMonitor = (Monitor)monitorForm.get("monitor");
+				monitor.setName(formMonitor.getName());
+				monitor.setTypeEnum(formMonitor.getTypeEnum());
+				monitor.setDestinations(formMonitor.getDestinations());
+				if (action.equals("OK")) {
+					return determineExitForward(monitorForm);
+				} 
+			}
 		}
-		if (action.equals("OK")) {
-			return determineExitForward(monitorForm);
-		} 
 		return "self";
 	}
 }

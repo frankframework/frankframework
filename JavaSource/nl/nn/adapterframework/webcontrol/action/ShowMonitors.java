@@ -1,6 +1,9 @@
 /*
  * $Log: ShowMonitors.java,v $
- * Revision 1.5  2008-08-12 16:05:10  europe\L190409
+ * Revision 1.6  2008-08-13 13:46:57  europe\L190409
+ * some bugfixing
+ *
+ * Revision 1.5  2008/08/12 16:05:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added feature to show events in console
  *
  * Revision 1.4  2008/08/07 11:32:29  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -29,9 +32,11 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import nl.nn.adapterframework.monitoring.EventTypeEnum;
 import nl.nn.adapterframework.monitoring.Monitor;
 import nl.nn.adapterframework.monitoring.MonitorException;
 import nl.nn.adapterframework.monitoring.MonitorManager;
+import nl.nn.adapterframework.monitoring.SeverityEnum;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Lock;
 
@@ -62,8 +67,7 @@ public class ShowMonitors extends ActionBase {
 	public void initForm(DynaActionForm monitorForm) {
 		MonitorManager mm = MonitorManager.getInstance();
 
-		monitorForm.set("monitors",mm.getMonitors());
-		monitorForm.set("allDestinations",mm.getDestinations().keySet());
+		monitorForm.set("monitorManager",mm);
 		List destinations=new ArrayList();
 		for (int i=0;i<mm.getMonitors().size();i++) {
 			Monitor m=mm.getMonitor(i);
@@ -76,8 +80,8 @@ public class ShowMonitors extends ActionBase {
 		selDest=(String[])destinations.toArray(selDest);
 		monitorForm.set("selDestinations",selDest);
 		monitorForm.set("enabled",new Boolean(mm.isEnabled()));
-		monitorForm.set("throwersByEvent",mm.getThrowersByEvent());
-		monitorForm.set("throwerTypesByEvent",mm.getThrowerTypesByEvent());
+		monitorForm.set("eventTypes",EventTypeEnum.getEnumList());
+		monitorForm.set("severities",SeverityEnum.getEnumList());
 	}
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {

@@ -1,6 +1,9 @@
 /*
  * $Log: EditTrigger.java,v $
- * Revision 1.3  2008-08-07 11:32:29  europe\L190409
+ * Revision 1.4  2008-08-13 13:46:57  europe\L190409
+ * some bugfixing
+ *
+ * Revision 1.3  2008/08/07 11:32:29  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * rework
  *
  * Revision 1.2  2008/07/24 12:42:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -16,17 +19,12 @@
 package nl.nn.adapterframework.webcontrol.action;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import nl.nn.adapterframework.monitoring.EventThrowing;
-import nl.nn.adapterframework.monitoring.EventTypeEnum;
 import nl.nn.adapterframework.monitoring.Monitor;
 import nl.nn.adapterframework.monitoring.MonitorManager;
-import nl.nn.adapterframework.monitoring.SeverityEnum;
 import nl.nn.adapterframework.monitoring.Trigger;
 
 import org.apache.struts.action.DynaActionForm;
@@ -43,9 +41,6 @@ import org.apache.struts.action.DynaActionForm;
 public class EditTrigger extends EditMonitor {
 
 
-	public String determineExitForward(DynaActionForm monitorForm) {
-		return (String)monitorForm.get("return");
-	}
 
 	public String performAction(DynaActionForm monitorForm, String action, int index, int triggerIndex, HttpServletResponse response) {
 		MonitorManager mm = MonitorManager.getInstance();
@@ -86,9 +81,6 @@ public class EditTrigger extends EditMonitor {
 		}
 		log.debug("sources.size ["+sources.size()+"]");
 		monitorForm.set("sources",sources);
-
-
-		monitorForm.set("severities",SeverityEnum.getEnumList());
 
 		return null;
 	}

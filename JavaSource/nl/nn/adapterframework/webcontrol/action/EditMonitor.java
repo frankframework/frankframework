@@ -1,6 +1,9 @@
 /*
  * $Log: EditMonitor.java,v $
- * Revision 1.4  2008-08-07 11:32:30  europe\L190409
+ * Revision 1.5  2008-08-13 13:46:57  europe\L190409
+ * some bugfixing
+ *
+ * Revision 1.4  2008/08/07 11:32:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * rework
  *
  * Revision 1.3  2008/07/24 12:42:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -15,18 +18,10 @@
  */
 package nl.nn.adapterframework.webcontrol.action;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
 import javax.servlet.http.HttpServletResponse;
 
-import nl.nn.adapterframework.monitoring.EventThrowing;
-import nl.nn.adapterframework.monitoring.EventTypeEnum;
 import nl.nn.adapterframework.monitoring.Monitor;
 import nl.nn.adapterframework.monitoring.MonitorManager;
-import nl.nn.adapterframework.monitoring.SeverityEnum;
-import nl.nn.adapterframework.monitoring.Trigger;
 
 import org.apache.struts.action.DynaActionForm;
 
@@ -47,35 +42,13 @@ public class EditMonitor extends ShowMonitors {
 		if (index>=0) {
 			Monitor monitor = mm.getMonitor(index);
 			monitorForm.set("monitor",monitor);
-			if (action.equals("createTrigger")) {
-				int triggerCount=monitor.getTriggers().size();
-				Trigger trigger = new Trigger();
-				switch (triggerCount) {
-					case 0: trigger.setAlarm(true);
-					case 1: trigger.setAlarm(false);
-					default: trigger.setAlarm(true);
-				}
-				monitor.registerTrigger(trigger);				
-			} else 
-			if (action.equals("deleteTrigger")) {
-				monitor.getTriggers().remove(triggerIndex);
-			}  
 		}
 		
-		List sources = new ArrayList();
-		sources.add("");
-		for(Iterator it=mm.getThrowerIterator();it.hasNext();) {
-			EventThrowing thrower = (EventThrowing)it.next();
-			sources.add(thrower.getEventSourceName());
-		}
-		monitorForm.set("sources",sources);
-		monitorForm.set("eventTypes",EventTypeEnum.getEnumList());
-		monitorForm.set("severities",SeverityEnum.getEnumList());
 		return null;
 	}
 
 	public String determineExitForward(DynaActionForm monitorForm) {
-		return "showmonitors";
+		return (String)monitorForm.get("return");
 	}
 
 }
