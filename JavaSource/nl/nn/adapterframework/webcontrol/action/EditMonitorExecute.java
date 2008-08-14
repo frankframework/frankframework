@@ -1,6 +1,9 @@
 /*
  * $Log: EditMonitorExecute.java,v $
- * Revision 1.4  2008-08-13 13:46:57  europe\L190409
+ * Revision 1.5  2008-08-14 14:53:51  europe\L190409
+ * fixed exit determination
+ *
+ * Revision 1.4  2008/08/13 13:46:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * some bugfixing
  *
  * Revision 1.3  2008/08/07 11:32:29  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -32,7 +35,11 @@ import org.apache.struts.action.DynaActionForm;
  * @since   4.9
  * @version Id
  */
-public final class EditMonitorExecute extends EditMonitor {
+public class EditMonitorExecute extends EditMonitor {
+
+	public String determineExitForward(DynaActionForm monitorForm) {
+		return (String)monitorForm.get("return");
+	}
 
 	public String performAction(DynaActionForm monitorForm, String action, int index, int triggerIndex, HttpServletResponse response) {
 		
