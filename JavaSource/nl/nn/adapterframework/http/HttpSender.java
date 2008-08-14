@@ -1,6 +1,9 @@
 /*
  * $Log: HttpSender.java,v $
- * Revision 1.34  2008-08-12 15:34:33  europe\L190409
+ * Revision 1.35  2008-08-14 14:52:54  europe\L190409
+ * increased default maxConnections to 10
+ *
+ * Revision 1.34  2008/08/12 15:34:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * maxConnections must be positive
  *
  * Revision 1.33  2008/05/21 08:42:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -238,14 +241,14 @@ import nl.nn.adapterframework.util.Misc;
  * @since 4.2c
  */
 public class HttpSender extends SenderWithParametersBase implements HasPhysicalDestination {
-	public static final String version = "$RCSfile: HttpSender.java,v $ $Revision: 1.34 $ $Date: 2008-08-12 15:34:33 $";
+	public static final String version = "$RCSfile: HttpSender.java,v $ $Revision: 1.35 $ $Date: 2008-08-14 14:52:54 $";
 
 	private String url;
 	private String methodType="GET"; // GET or POST
 	private String contentType="text/html; charset="+Misc.DEFAULT_INPUT_STREAM_ENCODING;
 
 	private int timeout=60000;
-	private int maxConnections=2;
+	private int maxConnections=10;
 	
 	private int maxConnectionRetries=10;
 	private int maxExecuteRetries=5;
