@@ -1,6 +1,9 @@
 /*
  * $Log: ClassUtils.java,v $
- * Revision 1.14  2007-12-10 10:22:30  europe\L190409
+ * Revision 1.15  2008-08-18 11:22:03  europe\L190409
+ * changed system.err.printline to log.error
+ *
+ * Revision 1.14  2007/12/10 10:22:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * void NPE in classOf
  *
  * Revision 1.13  2007/09/13 12:39:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -53,7 +56,7 @@ import org.apache.log4j.Logger;
  *
  */
 public class ClassUtils {
-	public static final String version = "$RCSfile: ClassUtils.java,v $ $Revision: 1.14 $ $Date: 2007-12-10 10:22:30 $";
+	public static final String version = "$RCSfile: ClassUtils.java,v $ $Revision: 1.15 $ $Date: 2008-08-18 11:22:03 $";
 	private static Logger log = LogUtil.getLogger(ClassUtils.class);
 
     /**
@@ -67,22 +70,21 @@ public class ClassUtils {
     public static ClassLoader getClassLoader() {
         return Thread.currentThread().getContextClassLoader();
     }
-  /**
-  * Retrieves the constructor of a class, based on the parameters
-  *
-  **/
-  public static Constructor getConstructorOnType(Class clas,Class[] parameterTypes) {
-    Constructor theConstructor=null;
-    try {
-      theConstructor=clas.getDeclaredConstructor(parameterTypes);
-    } catch (java.lang.NoSuchMethodException E)
-      {System.err.println(E);
-       System.err.println("Class: "+clas.getName());
-         for(int i=0;i<parameterTypes.length;i++) System.err.println("Parameter "+i+" type "+parameterTypes[i].getName());
-
-      }
-  return theConstructor;
-  }
+	/**
+	* Retrieves the constructor of a class, based on the parameters
+	*
+	**/
+	public static Constructor getConstructorOnType(Class clas, Class[] parameterTypes) {
+		Constructor theConstructor = null;
+		try {
+			theConstructor = clas.getDeclaredConstructor(parameterTypes);
+		} catch (java.lang.NoSuchMethodException e) {
+			log.error("cannot create constructor for Class [" + clas.getName() + "]", e);
+			for (int i = 0; i < parameterTypes.length; i++)
+				log.error("Parameter " + i + " type " + parameterTypes[i].getName());
+		}
+		return theConstructor;
+	}
     /**
      * Return a resource URL.
      * BL: if this is command line operation, the classloading issues
