@@ -1,6 +1,9 @@
 /*
  * $Log: FixedResultSender.java,v $
- * Revision 1.1  2008-05-15 15:08:26  europe\L190409
+ * Revision 1.2  2008-08-18 11:21:21  europe\L190409
+ * fixed javadoc
+ *
+ * Revision 1.1  2008/05/15 15:08:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * created senders package
  * moved some sender to senders package
  * created special senders
@@ -55,7 +58,7 @@ import org.apache.commons.lang.SystemUtils;
  * 	 <td>Any parameters defined on the sender will be used for replacements. Each occurrence
  * 		 of <code>${name-of-parameter}</code> in the file {@link #setFileName(String) fileName} 
  *       will be replaced by its corresponding <i>value-of-parameter</i>. <br>
- *       This works only with files, not with values supplied in attribute @link #setReturnString(String) returnString}</td>
+ *       This works only with files, not with values supplied in attribute {@link #setReturnString(String) returnString}</td>
  * </tr>
  * </table>
  * </p>

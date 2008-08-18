@@ -1,6 +1,9 @@
 /*
  * $Log: FixedResult.java,v $
- * Revision 1.19  2008-06-03 15:50:26  europe\L190409
+ * Revision 1.20  2008-08-18 11:20:19  europe\L190409
+ * fixed javadoc
+ *
+ * Revision 1.19  2008/06/03 15:50:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * avoid another NPE at file lookup
  *
  * Revision 1.18  2008/06/03 15:47:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -95,7 +98,7 @@ import org.apache.commons.lang.SystemUtils;
  * 	 <td>Any parameters defined on the pipe will be used for replacements. Each occurrence
  * 		 of <code>${name-of-parameter}</code> in the file {@link #setFileName(String) fileName} 
  *       will be replaced by its corresponding <i>value-of-parameter</i>. <br>
- *       This works only with files, not with values supplied in attribute @link #setReturnString(String) returnString}</td>
+ *       This works only with files, not with values supplied in attribute {@link #setReturnString(String) returnString}</td>
  * </tr>
  * </table>
  * </p>
@@ -110,7 +113,7 @@ import org.apache.commons.lang.SystemUtils;
  * @author Johan Verrips
  */
 public class FixedResult extends FixedForwardPipe {
-	public static final String version="$RCSfile: FixedResult.java,v $ $Revision: 1.19 $ $Date: 2008-06-03 15:50:26 $";
+	public static final String version="$RCSfile: FixedResult.java,v $ $Revision: 1.20 $ $Date: 2008-08-18 11:20:19 $";
 	
     private String fileName;
     private String returnString;
