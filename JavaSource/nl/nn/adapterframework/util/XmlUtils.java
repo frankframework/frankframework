@@ -1,6 +1,10 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.48  2008-05-21 09:41:43  europe\L190409
+ * Revision 1.49  2008-08-18 09:41:09  europe\L190409
+ * made transformer buffersize configurable
+ * reduced default to 4096
+ *
+ * Revision 1.48  2008/05/21 09:41:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed auto reload key
  *
  * Revision 1.47  2008/05/14 09:24:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -210,7 +214,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * @version Id
  */
 public class XmlUtils {
-	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.48 $ $Date: 2008-05-21 09:41:43 $";
+	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.49 $ $Date: 2008-08-18 09:41:09 $";
 	static Logger log = LogUtil.getLogger(XmlUtils.class);
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
@@ -219,6 +223,8 @@ public class XmlUtils {
 
 	public static final String NAMESPACE_AWARE_BY_DEFAULT_KEY = "xml.namespaceAware.default";
 	public static final String AUTO_RELOAD_KEY = "xslt.auto.reload";
+	public static final String XSLT_BUFFERSIZE_KEY = "xslt.bufsize";
+	public static final int XSLT_BUFFERSIZE_DEFAULT=4096;
 
 	public final static String OPEN_FROM_FILE = "file";
 	public final static String OPEN_FROM_URL = "url";
@@ -227,6 +233,7 @@ public class XmlUtils {
 	
 	private static Boolean namespaceAwareByDefault = null;
 	private static Boolean autoReload = null;
+	private static Integer buffersize=null;
 
 	public static final String XPATH_GETROOTNODENAME = "name(/node()[position()=last()])";
 
@@ -270,6 +277,13 @@ public class XmlUtils {
 		return autoReload.booleanValue();
 	}
 
+	public static synchronized int getBufSize() {
+		if (buffersize==null) {
+			int size=AppConstants.getInstance().getInt(XSLT_BUFFERSIZE_KEY, XSLT_BUFFERSIZE_DEFAULT);
+			buffersize = new Integer(size);
+		}
+		return buffersize.intValue();
+	}
 
 	static public void parseXml(ContentHandler handler, String source) throws IOException, SAXException {
 		parseXml(handler,new Variant(source).asXmlInputSource());
@@ -1029,7 +1043,7 @@ public class XmlUtils {
 	public static String transformXml(Transformer t, Source s)
 		throws TransformerException, IOException {
 
-		StringWriter out = new StringWriter(64 * 1024);
+		StringWriter out = new StringWriter(getBufSize());
 		transformXml(t,s,out);
 		out.close();
 
