@@ -1,6 +1,9 @@
 /*
  * $Log: DefaultIbisManager.java,v $
- * Revision 1.7  2008-07-24 12:23:36  europe\L190409
+ * Revision 1.8  2008-08-21 17:56:54  europe\L190409
+ * get statisticsdump from configuration
+ *
+ * Revision 1.7  2008/07/24 12:23:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * write statistics on shutdown
  *
  * Revision 1.6  2008/01/29 12:16:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -50,7 +53,6 @@ import java.util.ListIterator;
 import nl.nn.adapterframework.configuration.AbstractSpringPoweredDigesterFactory;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationDigester;
-
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IReceiver;
@@ -62,7 +64,6 @@ import nl.nn.adapterframework.scheduler.SchedulerHelper;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StatisticsKeeperLogger;
-import nl.nn.adapterframework.util.StatisticsKeeperXmlBuilder;
 
 import org.apache.log4j.Logger;
 import org.quartz.SchedulerException;
@@ -285,13 +286,13 @@ public class DefaultIbisManager implements IbisManager, BeanFactoryAware {
             }
         }
     }
+
     
     /* (non-Javadoc)
      * @see nl.nn.adapterframework.configuration.IbisManager#stopAdapters()
      */
     public void stopAdapters() {
-		StatisticsKeeperLogger skl = new StatisticsKeeperLogger();
-     	getConfiguration().forEachStatisticsKeeper(skl);
+		getConfiguration().dumpStatistics(false);
      	
         log.info("Stopping all adapters");
         List adapters = configuration.getRegisteredAdapters();
