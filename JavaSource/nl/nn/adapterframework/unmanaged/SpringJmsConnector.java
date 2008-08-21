@@ -1,6 +1,9 @@
 /*
  * $Log: SpringJmsConnector.java,v $
- * Revision 1.15  2008-06-30 14:18:27  europe\L190409
+ * Revision 1.16  2008-08-21 17:56:20  europe\L190409
+ * removed ifsa specific timing evaluation, that was not working
+ *
+ * Revision 1.15  2008/06/30 14:18:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * use more robust detection transaction and setting of rollbackonly
  *
  * Revision 1.14  2008/06/24 15:13:08  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -296,15 +299,6 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 				log.info(getLogPrefix()+"A) JMSMessageTime ["+DateUtils.format(jmsTimestamp)+"]");
 				log.info(getLogPrefix()+"B) onMessageStart ["+DateUtils.format(onMessageStart)+"] diff ["+(onMessageStart-jmsTimestamp)+"]");
 				log.info(getLogPrefix()+"C) onMessageEnd   ["+DateUtils.format(onMessageEnd)+"] diff ["+(onMessageEnd-onMessageStart)+"]");
-
-			
-				if (message instanceof IFSAMessage) {
-					IFSAMessage im = (IFSAMessage)message;
-					long busStartTime=im.getBusinessProcessingStartTime();
-					long busFinTime=im.getBusinessProcessingFinishTime();
-					log.info(getLogPrefix()+"D) Ifsa BusinessProcessingStartTime ["+DateUtils.format(busStartTime)+"]");
-					log.info(getLogPrefix()+"E) BusinessProcessingFinishTime     ["+DateUtils.format(busFinTime)+"] diff ["+(busFinTime-busStartTime)+"]");
-				}
 			}
 			
 //			boolean simulateCrashAfterCommit=true;
