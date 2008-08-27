@@ -1,3 +1,9 @@
+/*
+ * $Log: ShowSchedulerStatus.java,v $
+ * Revision 1.5  2008-08-27 16:30:42  europe\L190409
+ * the good old version string
+ *
+ */
 package nl.nn.adapterframework.webcontrol.action;
 
 import java.io.IOException;
@@ -24,9 +30,6 @@ import org.quartz.SchedulerException;
  */
 
 public final class ShowSchedulerStatus extends ActionBase {
-	public static final String version="$Id: ShowSchedulerStatus.java,v 1.4 2008-08-27 16:29:32 europe\L190409 Exp $";
-	
-
 
     public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response)
         throws IOException, ServletException {
