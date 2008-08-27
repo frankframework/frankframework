@@ -1,6 +1,9 @@
 /*
  * $Log: PercentileEstimatorRanked.java,v $
- * Revision 1.3  2006-09-07 08:37:51  europe\L190409
+ * Revision 1.4  2008-08-27 16:25:16  europe\L190409
+ * added clear()
+ *
+ * Revision 1.3  2006/09/07 08:37:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added sample return facility
  *
  * Revision 1.2  2005/04/06 13:08:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -16,7 +19,7 @@
 package nl.nn.adapterframework.util;
 
 
-/** * 
+/**  
  * @author Gerrit van Brakel
  * @version Id
  */
@@ -206,6 +209,11 @@ public class PercentileEstimatorRanked extends PercentileEstimatorBase {
 		sample.addAttribute("percentile",""+((100*rank)-50)/count);
 		
 		return sample;
+	}
+
+	public void clear(){
+		super.clear();
+		local_count=0;
 	}
 
     	

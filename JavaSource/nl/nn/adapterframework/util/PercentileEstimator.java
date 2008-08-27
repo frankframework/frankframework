@@ -1,6 +1,9 @@
 /*
  * $Log: PercentileEstimator.java,v $
- * Revision 1.3  2006-09-07 08:37:51  europe\L190409
+ * Revision 1.4  2008-08-27 16:25:16  europe\L190409
+ * added clear()
+ *
+ * Revision 1.3  2006/09/07 08:37:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added sample return facility
  *
  * Revision 1.2  2005/03/10 09:52:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -26,5 +29,8 @@ public interface PercentileEstimator {
 	double getPercentileEstimate(int index, long count, long min, long max);
 
 	int getSampleCount(long count, long min, long max);
-	XmlBuilder getSample(int index, long count, long min, long max)	;
+	XmlBuilder getSample(int index, long count, long min, long max);
+	
+	public void clear();
+
 }

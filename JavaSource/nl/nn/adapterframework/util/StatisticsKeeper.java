@@ -1,6 +1,9 @@
 /*
  * $Log: StatisticsKeeper.java,v $
- * Revision 1.11  2007-10-08 13:35:13  europe\L190409
+ * Revision 1.12  2008-08-27 16:25:36  europe\L190409
+ * added clear()
+ *
+ * Revision 1.11  2007/10/08 13:35:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed ArrayList to List where possible
  *
  * Revision 1.10  2006/09/07 08:39:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -36,7 +39,7 @@ import java.util.StringTokenizer;
  * @version Id
  */
 public class StatisticsKeeper {
-	public static final String version="$RCSfile: StatisticsKeeper.java,v $ $Revision: 1.11 $ $Date: 2007-10-08 13:35:13 $";
+	public static final String version="$RCSfile: StatisticsKeeper.java,v $ $Revision: 1.12 $ $Date: 2008-08-27 16:25:36 $";
 	
 	private static final boolean calculatePercentiles=true;
 	
@@ -94,6 +97,18 @@ public class StatisticsKeeper {
 			pest = new PercentileEstimatorRanked(percentileConfigKey,DEFAULT_P_LIST,100);
 		}
 	}
+	
+	public void clear() {
+		min = Integer.MAX_VALUE;
+		max = 0;
+		count = 0;
+		total = 0;
+		totalSquare=0;
+		first=0;
+		last=0;
+		pest.clear();
+	}
+	
 /*	
 	public StatisticsKeeper(StatisticsKeeper stat) {
 		name = stat.name;
