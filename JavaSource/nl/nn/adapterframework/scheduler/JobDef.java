@@ -1,6 +1,9 @@
 /*
  * $Log: JobDef.java,v $
- * Revision 1.8  2007-12-12 09:09:56  europe\L190409
+ * Revision 1.9  2008-08-27 16:21:48  europe\L190409
+ * added configure()
+ *
+ * Revision 1.8  2007/12/12 09:09:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * allow for query-type jobs
  *
  * Revision 1.7  2007/05/16 11:48:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -12,8 +15,11 @@
  */
 package nl.nn.adapterframework.scheduler;
 
+import nl.nn.adapterframework.configuration.Configuration;
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.util.AppConstants;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 
 /**
@@ -290,7 +296,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * @version Id
  */
 public class JobDef {
-	public static final String version = "$RCSfile: JobDef.java,v $  $Revision: 1.8 $ $Date: 2007-12-12 09:09:56 $";
+	public static final String version = "$RCSfile: JobDef.java,v $  $Revision: 1.9 $ $Date: 2008-08-27 16:21:48 $";
 	
     private String name;
     private String cronExpression;
@@ -306,6 +312,22 @@ public class JobDef {
 	public String toString() {
 		return ToStringBuilder.reflectionToString(this);
 	}
+
+	public void configure(Configuration config) throws ConfigurationException {
+		if (!("dumpStatistics".equals(function) || "dumpStatisticsAndReset".equals(function))) {
+			if (config.getRegisteredAdapter(getAdapterName()) == null) {
+				String msg="Jobdef [" + getName() + "] got error: adapter [" + getAdapterName() + "] not registered.";
+				throw new ConfigurationException(msg);
+			}
+			if (StringUtils.isNotEmpty(getReceiverName())){
+				if (! config.isRegisteredReceiver(getAdapterName(), getReceiverName())) {
+					String msg="Jobdef [" + getName() + "] got error: adapter [" + getAdapterName() + "] receiver ["+getReceiverName()+"] not registered.";
+					throw new ConfigurationException(msg);
+				}
+			}
+		}
+	}
+
 
    /**
      * Defaults to the value under key <code>scheduler.defaultJobGroup</code> in the {@link AppConstants}.
