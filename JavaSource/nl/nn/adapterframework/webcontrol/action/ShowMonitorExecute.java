@@ -1,6 +1,9 @@
 /*
  * $Log: ShowMonitorExecute.java,v $
- * Revision 1.2  2008-08-07 11:32:30  europe\L190409
+ * Revision 1.3  2008-08-27 16:28:19  europe\L190409
+ * added stateChangeDate
+ *
+ * Revision 1.2  2008/08/07 11:32:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * rework
  *
  * Revision 1.1  2008/07/24 12:42:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -17,6 +20,7 @@ package nl.nn.adapterframework.webcontrol.action;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Date;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -92,7 +96,7 @@ public class ShowMonitorExecute extends ShowMonitors {
 			Monitor monitor=mm.getMonitor(index);
 			if (monitor!=null) {
 				log.info("clearing monitor ["+monitor.getName()+"]");
-				monitor.changeState(false,SeverityEnum.WARNING,null,null,null);
+				monitor.changeState(new Date(),false,SeverityEnum.WARNING,null,null,null);
 			}
 			return null;
 		}
@@ -100,7 +104,7 @@ public class ShowMonitorExecute extends ShowMonitors {
 			Monitor monitor=mm.getMonitor(index);
 			if (monitor!=null) {
 				log.info("raising monitor ["+monitor.getName()+"]");
-				monitor.changeState(true,SeverityEnum.WARNING,null,null,null);
+				monitor.changeState(new Date(),true,SeverityEnum.WARNING,null,null,null);
 			}
 			return null;
 		}
