@@ -1,6 +1,10 @@
 /*
  * $Log: Configuration.java,v $
- * Revision 1.30  2008-05-15 14:29:33  europe\L190409
+ * Revision 1.31  2008-08-27 15:53:01  europe\L190409
+ * added statistics dump code
+ * added reset option to statisticsdump
+ *
+ * Revision 1.30  2008/05/15 14:29:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added storage facility for configuration exceptions
  *
  * Revision 1.29  2008/01/29 15:49:53  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -92,6 +96,7 @@ import nl.nn.adapterframework.scheduler.JobDef;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StatisticsKeeperIterationHandler;
+import nl.nn.adapterframework.util.StatisticsKeeperLogger;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
@@ -107,7 +112,7 @@ import org.apache.log4j.Logger;
  * @see    nl.nn.adapterframework.core.IAdapter
  */
 public class Configuration {
-	public static final String version="$RCSfile: Configuration.java,v $ $Revision: 1.30 $ $Date: 2008-05-15 14:29:33 $";
+	public static final String version="$RCSfile: Configuration.java,v $ $Revision: 1.31 $ $Date: 2008-08-27 15:53:01 $";
     protected Logger log=LogUtil.getLogger(this); 
      
     private Map adapterTable = new Hashtable();
@@ -141,16 +146,22 @@ public class Configuration {
     	return enableJMX;
     }
 
-	public void forEachStatisticsKeeper(StatisticsKeeperIterationHandler hski) {
+	public void forEachStatisticsKeeper(StatisticsKeeperIterationHandler hski, boolean reset) {
 		Object root=hski.start();
 		Object groupData=hski.openGroup(root,appConstants.getString("instance.name",""),"instance");
 		for (int i=0; i<adapters.size(); i++) {
 			IAdapter adapter = getRegisteredAdapter(i);
-			adapter.forEachStatisticsKeeperBody(hski,groupData);
+			adapter.forEachStatisticsKeeperBody(hski,groupData,reset);
 		}
 		hski.closeGroup(groupData);
 		hski.end(root);
 	}
+
+	public void dumpStatistics(boolean reset) {
+		StatisticsKeeperLogger skl = new StatisticsKeeperLogger();
+		forEachStatisticsKeeper(skl, reset);
+	}
+
 
     /**
      *	initializes the log and the AppConstants
@@ -327,18 +338,7 @@ public class Configuration {
      * @since 4.0
      */
     public void registerScheduledJob(JobDef jobdef) throws ConfigurationException {
-        if (this.getRegisteredAdapter(jobdef.getAdapterName()) == null) {
-        	String msg="Jobdef [" + jobdef.getName() + "] got error: adapter [" + jobdef.getAdapterName() + "] not registered.";
-            log.error(msg);
-            throw new ConfigurationException(msg);
-        }
-        if (StringUtils.isNotEmpty(jobdef.getReceiverName())){
-            if (! isRegisteredReceiver(jobdef.getAdapterName(), jobdef.getReceiverName())) {
-				String msg="Jobdef [" + jobdef.getName() + "] got error: adapter [" + jobdef.getAdapterName() + "] receiver ["+jobdef.getReceiverName()+"] not registered.";
-                log.error(msg);
-				throw new ConfigurationException(msg);
-            }
-        }
+		jobdef.configure(this);
         scheduledJobs.add(jobdef);
     }
     
