@@ -1,6 +1,9 @@
 /*
  * $Log: PushingJmsListener.java,v $
- * Revision 1.14  2008-02-28 16:23:18  europe\L190409
+ * Revision 1.15  2008-08-27 16:15:13  europe\L190409
+ * introduced delivery count calculation
+ *
+ * Revision 1.14  2008/02/28 16:23:18  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * use PipeLineSession.setListenerParameters()
  *
  * Revision 1.13  2008/02/19 09:39:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -95,6 +98,7 @@ import javax.jms.TextMessage;
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IKnowsDeliveryCount;
 import nl.nn.adapterframework.core.IListenerConnector;
 import nl.nn.adapterframework.core.IMessageHandler;
 import nl.nn.adapterframework.core.IPortConnectedListener;
@@ -179,8 +183,8 @@ import nl.nn.adapterframework.util.DateUtils;
  * @since   4.8
  * @version Id
  */
-public class PushingJmsListener extends JMSFacade implements IPortConnectedListener, IThreadCountControllable {
-    public static final String version="$RCSfile: PushingJmsListener.java,v $ $Revision: 1.14 $ $Date: 2008-02-28 16:23:18 $";
+public class PushingJmsListener extends JMSFacade implements IPortConnectedListener, IThreadCountControllable, IKnowsDeliveryCount {
+    public static final String version="$RCSfile: PushingJmsListener.java,v $ $Revision: 1.15 $ $Date: 2008-08-27 16:15:13 $";
 
 	private final static String THREAD_CONTEXT_SESSION_KEY="session";
 
@@ -634,6 +638,18 @@ public class PushingJmsListener extends JMSFacade implements IPortConnectedListe
 			IThreadCountControllable tcc = (IThreadCountControllable)jmsConnector;
 			
 			tcc.decreaseThreadCount();
+		}
+	}
+
+	public int getDeliveryCount(Object rawMessage) {
+		try {
+			Message message=(Message)rawMessage;
+			int value = message.getIntProperty("JMSXDeliveryCount");
+			if (log.isDebugEnabled()) log.debug("determined delivery count ["+value+"]");
+			return value;
+		} catch (Exception e) {
+			log.error(getLogPrefix()+"exception in determination of DeliveryCount",e);
+			return -1;
 		}
 	}
 
