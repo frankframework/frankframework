@@ -1,6 +1,11 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.61  2008-08-18 13:15:28  europe\L190409
+ * Revision 1.62  2008-08-27 16:20:36  europe\L190409
+ * modified event registration
+ * modified delivery count calculation
+ * introduced queing statistics
+ *
+ * Revision 1.61  2008/08/18 13:15:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fixed another NPE
  *
  * Revision 1.60  2008/08/18 11:20:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -326,6 +331,7 @@ import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.HasSender;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IBulkDataListener;
+import nl.nn.adapterframework.core.IKnowsDeliveryCount;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IMessageHandler;
 import nl.nn.adapterframework.core.INamedObject;
@@ -449,7 +455,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  */
 public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHandler, EventThrowing, IbisExceptionListener, HasSender, HasStatistics, TracingEventNumbers, IThreadCountControllable, BeanFactoryAware {
     
-	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.61 $ $Date: 2008-08-18 13:15:28 $";
+	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.62 $ $Date: 2008-08-27 16:20:36 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -463,6 +469,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	public static final String RCV_SUSPENDED_MONITOR_EVENT = "Receiver Operation Suspended";
 	public static final String RCV_RESUMED_MONITOR_EVENT = "Receiver Operation Resumed";
 	public static final String RCV_THREAD_EXIT_MONITOR_EVENT = "Receiver Thread Exited";
+	public static final String RCV_MESSAGE_TO_ERRORSTORE_EVENT = "Receiver Moved Message to ErrorStorage";
 	
 	public static final int RCV_SUSPENSION_MESSAGE_THRESHOLD=60;
 	public static final int MAX_RETRY_INTERVAL=600;
@@ -502,6 +509,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	private Counter numRetried = new Counter(0);
 	private ArrayList processStatistics = new ArrayList();
 	private ArrayList idleStatistics = new ArrayList();
+	private ArrayList queueingStatistics;
 
 //	private StatisticsKeeper requestSizeStatistics = new StatisticsKeeper("request size");
 //	private StatisticsKeeper responseSizeStatistics = new StatisticsKeeper("response size");
@@ -768,6 +776,14 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 
 	public void configure() throws ConfigurationException {		
 		try {
+			eventHandler = MonitorManager.getEventHandler();
+			registerEvent(RCV_CONFIGURED_MONITOR_EVENT);
+			registerEvent(RCV_CONFIGURATIONEXCEPTION_MONITOR_EVENT);
+			registerEvent(RCV_STARTED_RUNNING_MONITOR_EVENT);
+			registerEvent(RCV_SHUTDOWN_MONITOR_EVENT);
+			registerEvent(RCV_SUSPENDED_MONITOR_EVENT);
+			registerEvent(RCV_RESUMED_MONITOR_EVENT);
+			registerEvent(RCV_THREAD_EXIT_MONITOR_EVENT);
             // Check if we need to use the in-process storage as
             // error-storage.
             // In-process storage is no longer used, but is often
@@ -851,6 +867,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 				if (errorStorage instanceof HasPhysicalDestination) {
 					info(getLogPrefix()+"has errorStorage to "+((HasPhysicalDestination)errorStorage).getPhysicalDestinationName());
 				}
+				registerEvent(RCV_MESSAGE_TO_ERRORSTORE_EVENT);
 			}
 			ITransactionalStorage messageLog = getMessageLog();
 			if (messageLog!=null) {
@@ -884,14 +901,6 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 				}
 			}
 
-			eventHandler = MonitorManager.getEventHandler();
-			registerEvent(RCV_CONFIGURED_MONITOR_EVENT);
-			registerEvent(RCV_CONFIGURATIONEXCEPTION_MONITOR_EVENT);
-			registerEvent(RCV_STARTED_RUNNING_MONITOR_EVENT);
-			registerEvent(RCV_SHUTDOWN_MONITOR_EVENT);
-			registerEvent(RCV_SUSPENDED_MONITOR_EVENT);
-			registerEvent(RCV_RESUMED_MONITOR_EVENT);
-			registerEvent(RCV_THREAD_EXIT_MONITOR_EVENT);
 			if (adapter != null) {
 				adapter.getMessageKeeper().add(getLogPrefix()+"initialization complete");
 			}
@@ -979,6 +988,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 
 	private void moveInProcessToError(String originalMessageId, String correlationId, String message, Date receivedDate, String comments, Object rawMessage, TransactionDefinition txDef) {
 	
+		throwEvent(RCV_MESSAGE_TO_ERRORSTORE_EVENT);
 		log.info(getLogPrefix()+"moves message id ["+originalMessageId+"] correlationId ["+correlationId+"] to errorSender/errorStorage");
 		cachePoisonMessageId(originalMessageId);
 		ISender errorSender = getErrorSender();
@@ -1177,7 +1187,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 			if (log.isDebugEnabled()) { log.debug(getLogPrefix()+"did not find businessCorrelationId, reverting to correlationId of transfer ["+technicalCorrelationId+"]"); } 
 			businessCorrelationId=messageId;
 		}       
-		if (checkTryCount(messageId, retry, rawMessage, message, threadContext)) {
+		if (checkTryCount(messageId, retry, rawMessage, message, threadContext, businessCorrelationId)) {
 			if (!isTransacted()) {
 				log.warn(getLogPrefix()+"received message with messageId [" + messageId + "] which is already stored in error storage or messagelog; aborting processing");
  			}
@@ -1367,32 +1377,51 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	/*
 	 * returns true if message is already processed
 	 */
-	private boolean checkTryCount(String messageId, boolean retry, Object rawMessage, String message, Map threadContext) throws ListenerException {
+	private boolean checkTryCount(String messageId, boolean retry, Object rawMessage, String message, Map threadContext, String correlationId) throws ListenerException {
 		if (!retry) {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"checking try count for messageId ["+messageId+"]");
  //			if (isTransacted()) {
+ 				int deliveryCount=-1;
+ 				if (getListener() instanceof IKnowsDeliveryCount) {
+					deliveryCount = ((IKnowsDeliveryCount)getListener()).getDeliveryCount(rawMessage);
+ 				}
 				ProcessResultCacheItem prci = getCachedProcessResult(messageId);
 				if (prci==null) {
+					if (deliveryCount<=1) {
+						resetRetryInterval();
+						return false;
+					}
+				} else {
+					if (deliveryCount<1) {
+						deliveryCount=prci.tryCount;
+					}
+					prci.tryCount++;
+				}
+				
+				if (deliveryCount<=getMaxRetries()+1) {
+					log.warn(getLogPrefix()+"message with messageId ["+messageId+"] has already been processed ["+(deliveryCount-1)+"] times, will try again");
 					resetRetryInterval();
 					return false;
 				}
-				if (prci.tryCount<=getMaxRetries()) {
-					log.warn(getLogPrefix()+"message with messageId ["+messageId+"] has already been processed ["+prci.tryCount+"] times, will try again");
-					resetRetryInterval();
-					return false;
+				warn(getLogPrefix()+"message with messageId ["+messageId+"] has already been processed ["+(deliveryCount-1)+"] times, will not try again; maxRetries=["+getMaxRetries()+"]");
+				if (deliveryCount>getMaxRetries()+2) {
+					increaseRetryIntervalAndWait(null,getLogPrefix()+"saw message with messageId ["+messageId+"] too many times ["+deliveryCount+"]; maxRetries=["+getMaxRetries()+"]");
 				}
-				warn(getLogPrefix()+"message with messageId ["+messageId+"] has already been processed ["+prci.tryCount+"] times, will not try again; maxRetries=["+getMaxRetries()+"]");
-				if (prci.tryCount>getMaxRetries()+2) {
-					increaseRetryIntervalAndWait(null,getLogPrefix()+"saw message with messageId ["+messageId+"] too many times ["+prci.tryCount+"]; maxRetries=["+getMaxRetries()+"]");
+				String comments="too many retries";
+				Date rcvDate;
+				if (prci!=null) {
+					comments+="; "+prci.comments;
+					rcvDate=prci.receiveDate;
+				} else {
+					rcvDate=new Date();
 				}
 				if (isTransacted() || (getErrorStorage() != null && (!isCheckForDuplicates() || !getErrorStorage().containsMessageId(messageId)))) {
-					moveInProcessToError(messageId, prci.correlationId, message, prci.receiveDate, prci.comments, rawMessage, TXREQUIRED);
+					moveInProcessToError(messageId, correlationId, message, rcvDate, comments, rawMessage, TXREQUIRED);
 				}
 				PipeLineResult plr = new PipeLineResult();
-				plr.setResult("<error>"+prci.comments+"</error>");
+				plr.setResult("<error>"+comments+"</error>");
 				plr.setState("ERROR");
 				getListener().afterMessageProcessed(plr, rawMessage, threadContext);
-				prci.tryCount++;
 				return true;
 //			} else {
 //				if (isMessageIdInPoisonCache(messageId)) {
@@ -1527,16 +1556,23 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	}
 	
 
-	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data) {
+	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, boolean reset) {
 		Object recData=hski.openGroup(data,getName(),"receiver");
 		hski.handleScalar(recData,"messagesReceived", getMessagesReceived());
 		hski.handleScalar(recData,"messagesRetried", getMessagesRetried());
+		if (reset) {
+			numReceived.setValue(0);
+			numRetried.setValue(0);
+		}
 		Iterator statsIter=getProcessStatisticsIterator();
 		Object pstatData=hski.openGroup(recData,getName(),"procStats");
 		if (statsIter != null) {
 			while(statsIter.hasNext()) {				    
 				StatisticsKeeper pstat = (StatisticsKeeper) statsIter.next();
 				hski.handleStatisticsKeeper(pstatData,pstat);
+				if (reset) {
+					pstat.clear();
+				}
 			}
 		}
 		hski.closeGroup(pstatData);
@@ -1547,9 +1583,28 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 			while(statsIter.hasNext()) {				    
 				StatisticsKeeper pstat = (StatisticsKeeper) statsIter.next();
 				hski.handleStatisticsKeeper(istatData,pstat);
+				if (reset) {
+					pstat.clear();
+				}
 			}
 		}
 		hski.closeGroup(istatData);
+
+		statsIter = getQueueingStatisticsIterator();
+		if (statsIter!=null) {
+			Object qstatData=hski.openGroup(recData,getName(),"queueingStats");
+			if (statsIter != null) {
+				while(statsIter.hasNext()) {				    
+					StatisticsKeeper qstat = (StatisticsKeeper) statsIter.next();
+					hski.handleStatisticsKeeper(qstatData,qstat);
+					if (reset) {
+						qstat.clear();
+					}
+				}
+			}
+			hski.closeGroup(qstatData);
+		}
+
 
 		hski.closeGroup(recData);
 	}
@@ -1688,7 +1743,12 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	public Iterator getIdleStatisticsIterator() {
 		return idleStatistics.iterator();
 	}
-	
+	public Iterator getQueueingStatisticsIterator() {
+		if (queueingStatistics==null) {
+			return null;
+		}
+		return queueingStatistics.iterator();
+	}		
 	
 	public ISender getSender() {
 		return sender;
