@@ -1,6 +1,9 @@
 /*
  * $Log: Monitor.java,v $
- * Revision 1.4  2008-08-07 11:31:27  europe\L190409
+ * Revision 1.5  2008-08-27 16:16:50  europe\L190409
+ * added stateChangeDate
+ *
+ * Revision 1.4  2008/08/07 11:31:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * rework
  *
  * Revision 1.3  2008/07/24 12:34:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -16,6 +19,7 @@
 package nl.nn.adapterframework.monitoring;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -23,6 +27,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 
@@ -40,6 +45,7 @@ public class Monitor {
 	private String name;
 	private EventTypeEnum type=EventTypeEnum.TECHNICAL;
 	private boolean raised=false;
+	private Date stateChangeDt=null;
 	
 	private SeverityEnum alarmSeverity=null;  
 	private EventThrowing alarmSource=null;  
@@ -69,28 +75,26 @@ public class Monitor {
 		getOwner().registerEventNotificationListener(trigger,eventCode,thrower);
 	}
 	
-	public void changeState(boolean alarm, SeverityEnum severity, EventThrowing source, String details, Throwable t) throws MonitorException {
-		if (destinationSet.size()>0) {
-			boolean up=alarm && (!raised || getAlarmSeverityEnum()==null || getAlarmSeverityEnum().compareTo(severity)<0);
-			boolean clear=raised && (!alarm || up && getAlarmSeverityEnum()!=null && getAlarmSeverityEnum()!=severity);
-			if (clear) {
-				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"state ["+getAlarmSeverityEnum()+"] will be cleared");
-				SeverityEnum clearSeverity=getAlarmSeverityEnum()!=null?getAlarmSeverityEnum():severity;
-				EventThrowing clearSource=getAlarmSource()!=null?getAlarmSource():source;
-				changeMonitorState(clearSource, EventTypeEnum.CLEARING, clearSeverity, details, t);
-			}
-			if (up) {
-				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"state ["+getAlarmSeverityEnum()+"] will be raised to ["+severity+"]");
-				changeMonitorState(source, getTypeEnum(), severity, details, t);
-				setAlarmSource(source);
-				setAlarmSeverityEnum(severity);
-			}
+	public void changeState(Date date, boolean alarm, SeverityEnum severity, EventThrowing source, String details, Throwable t) throws MonitorException {
+		boolean up=alarm && (!raised || getAlarmSeverityEnum()==null || getAlarmSeverityEnum().compareTo(severity)<0);
+		boolean clear=raised && (!alarm || up && getAlarmSeverityEnum()!=null && getAlarmSeverityEnum()!=severity);
+		if (clear) {
+			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"state ["+getAlarmSeverityEnum()+"] will be cleared");
+			SeverityEnum clearSeverity=getAlarmSeverityEnum()!=null?getAlarmSeverityEnum():severity;
+			EventThrowing clearSource=getAlarmSource()!=null?getAlarmSource():source;
+			changeMonitorState(date, clearSource, EventTypeEnum.CLEARING, clearSeverity, details, t);
+		}
+		if (up) {
+			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"state ["+getAlarmSeverityEnum()+"] will be raised to ["+severity+"]");
+			changeMonitorState(date, source, getTypeEnum(), severity, details, t);
+			setAlarmSource(source);
+			setAlarmSeverityEnum(severity);
 		}
 		raised=alarm;
 		notifyReverseTrigger(alarm,source);
 	}
 
-	public void changeMonitorState(EventThrowing subSource, EventTypeEnum eventType, SeverityEnum severity, String message, Throwable t) throws MonitorException {
+	public void changeMonitorState(Date date, EventThrowing subSource, EventTypeEnum eventType, SeverityEnum severity, String message, Throwable t) throws MonitorException {
 		String eventSource=subSource==null?"unknown":subSource.getEventSourceName();
 		if (eventType==null) {
 			throw new MonitorException("eventType cannot be null");
@@ -98,6 +102,7 @@ public class Monitor {
 		if (severity==null) {
 			throw new MonitorException("severity cannot be null");
 		}
+		setStateChangeDt(date);
 		
 		for (Iterator it=destinationSet.iterator();it.hasNext();) {
 			String key=(String)it.next();
@@ -119,6 +124,22 @@ public class Monitor {
 		}
 	}
 
+	public XmlBuilder getStatusXml() {
+		XmlBuilder monitor=new XmlBuilder("monitor");
+		monitor.addAttribute("name",getName());
+		monitor.addAttribute("raised",isRaised());
+		if (stateChangeDt!=null) {
+			monitor.addAttribute("changed",getStateChangeDtStr());
+		}
+		if (isRaised()) {
+			monitor.addAttribute("severity",getAlarmSeverity());
+			EventThrowing source = getAlarmSource();
+			if (source!=null) {
+				monitor.addAttribute("source",source.getEventSourceName());
+			}
+		}
+		return monitor;
+	}
 	public XmlBuilder toXml() {
 		XmlBuilder monitor=new XmlBuilder("monitor");
 		monitor.addAttribute("name",getName());
@@ -295,6 +316,20 @@ public class Monitor {
 	}
 	public void setAlarmSource(EventThrowing source) {
 		alarmSource = source;
+	}
+
+	public void setStateChangeDt(Date date) {
+		stateChangeDt = date;
+		getOwner().registerStateChange(date);
+	}
+	public Date getStateChangeDt() {
+		return stateChangeDt;
+	}
+	public String getStateChangeDtStr() {
+		if (stateChangeDt!=null) {
+			return DateUtils.format(stateChangeDt,DateUtils.FORMAT_FULL_GENERIC);
+		}
+		return "";
 	}
 
 }
