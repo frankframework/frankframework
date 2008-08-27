@@ -1,6 +1,9 @@
 /*
  * $Log: MonitorManager.java,v $
- * Revision 1.7  2008-08-13 13:39:02  europe\L190409
+ * Revision 1.8  2008-08-27 16:17:34  europe\L190409
+ * added lastStateChangeDate
+ *
+ * Revision 1.7  2008/08/13 13:39:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added eventsByThrowerType
  *
  * Revision 1.6  2008/08/12 15:38:08  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -25,6 +28,7 @@
 package nl.nn.adapterframework.monitoring;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -36,6 +40,7 @@ import java.util.Set;
 import nl.nn.adapterframework.configuration.AttributeCheckingRule;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISender;
+import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.Lock;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
@@ -65,6 +70,7 @@ public class MonitorManager implements EventHandler {
 	Map  eventNotificationListeners = new LinkedHashMap();
 	
 	private boolean enabled;
+	private Date lastStateChange=null;
 	
 	Lock structureLock = new Lock();
 
@@ -88,7 +94,9 @@ public class MonitorManager implements EventHandler {
 		}
 	}
 
-
+	public void registerStateChange(Date date) {
+		lastStateChange=date;
+	}
 
 	public void updateDestinations(String[] selectedDestinations) {
 		Map monitorDestinations=new HashMap();
@@ -355,6 +363,18 @@ public class MonitorManager implements EventHandler {
 		}
 	}
 
+	public XmlBuilder getStatusXml() {
+		XmlBuilder statusXml=new XmlBuilder("monitorstatus");
+		if (lastStateChange!=null) {
+			statusXml.addAttribute("lastStateChange",DateUtils.format(lastStateChange,DateUtils.FORMAT_FULL_GENERIC));
+		}
+		statusXml.addAttribute("timestamp",DateUtils.format(new Date()));
+		for (int i=0; i<monitors.size(); i++) {
+			Monitor monitor=getMonitor(i);
+			statusXml.addSubElement(monitor.getStatusXml());
+		}
+		return statusXml;
+	}
 	
 	public XmlBuilder toXml() {
 		XmlBuilder configXml=new XmlBuilder("monitoring");
