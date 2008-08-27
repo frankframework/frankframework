@@ -1,6 +1,9 @@
 /*
  * $Log: ShowMonitors.java,v $
- * Revision 1.6  2008-08-13 13:46:57  europe\L190409
+ * Revision 1.7  2008-08-27 16:28:44  europe\L190409
+ * added getStatus in xml
+ *
+ * Revision 1.6  2008/08/13 13:46:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * some bugfixing
  *
  * Revision 1.5  2008/08/12 16:05:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -22,6 +25,7 @@
 package nl.nn.adapterframework.webcontrol.action;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Iterator;
@@ -117,16 +121,27 @@ public class ShowMonitors extends ActionBase {
 			}
 		
 			MonitorManager mm = MonitorManager.getInstance();
-			Lock lock = mm.getStructureLock();
-			try {
-				lock.acquireExclusive();
-				forward=performAction(monitorForm, action, index, triggerIndex, response);
-				log.debug("forward ["+forward+"] returned from performAction");
-				mm.configure();
-			} catch (Exception e) {
-				error("could not perform action ["+action+"] on monitorIndex ["+index+"] triggerIndex ["+triggerIndex+"]", e);
-			} finally {
-				lock.releaseExclusive();
+			if ("getStatus".equals(action)) {
+				response.setContentType("text/xml");
+				PrintWriter out = response.getWriter();
+				out.print(mm.getStatusXml().toXML());
+				out.close();
+				return null;
+			} else {
+				Lock lock = mm.getStructureLock();
+				try {
+					lock.acquireExclusive();
+					forward=performAction(monitorForm, action, index, triggerIndex, response);
+					log.debug("forward ["+forward+"] returned from performAction");
+					mm.configure();
+				} catch (Exception e) {
+					error("could not perform action ["+action+"] on monitorIndex ["+index+"] triggerIndex ["+triggerIndex+"]", e);
+				} finally {
+					lock.releaseExclusive();
+				}
+			}
+			if (response.isCommitted()) {
+				return null;
 			}
 		}	
 		if (StringUtils.isEmpty(forward)) {
