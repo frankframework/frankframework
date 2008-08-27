@@ -1,6 +1,9 @@
 /*
  * $Log: FxfSender.java,v $
- * Revision 1.4  2008-02-22 14:29:22  europe\L190409
+ * Revision 1.5  2008-08-27 15:55:41  europe\L190409
+ * added remote filename option
+ *
+ * Revision 1.4  2008/02/22 14:29:22  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * implement ISender
  *
  * Revision 1.3  2008/02/21 12:42:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -19,9 +22,11 @@ package nl.nn.adapterframework.extensions.fxf;
 import java.io.File;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.ISender;
+import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.LogUtil;
@@ -31,7 +36,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 /**
- * Sender for transferring files using the FxF protocol. Assumes pipe input is local name
+ * Sender for transferring files using the FxF protocol. Assumes sender input is local filename.
  * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
@@ -44,13 +49,21 @@ import org.apache.log4j.Logger;
  * <tr><td>{@link #setDelete(boolean) delete}</td><td>when set <code>true</code>, the file processed will deleted after being processed, and not stored</td><td>true</td></tr>
  * </table>
  * </p>
+ * <table border="1">
+ * <p><b>Parameters:</b>
+ * <tr><th>name</th><th>type</th><th>remarks</th></tr>
+ * <tr><td>remoteFilename</td><td><i>String</i></td><td>remote filename, used as 4th parameter of fxf command. When not specified, the remote filename is determined by FXF from the its configuration</td></tr>
+ * </table>
+ * </p>
  * 
  * @author  Gerrit van Brakel
  * @since   4.8
  * @version Id
  */
-public class FxfSender implements ISender {
+public class FxfSender extends SenderWithParametersBase {
 	protected Logger log = LogUtil.getLogger(this);
+
+	public static final String REMOTE_FILENAME_PARAM="remoteFilename";
 
 	private String name;
 	private String script="/usr/local/bin/FXF_init";
@@ -59,18 +72,22 @@ public class FxfSender implements ISender {
 	private int numberOfBackups = 0;
 	private boolean overwrite = false;
 	private boolean delete = true;
+	
+	private Parameter remoteFilenameParam=null;
 
 	public void configure() throws ConfigurationException {
+		super.configure();
 		if (StringUtils.isEmpty(getTransfername())) {
 			throw new ConfigurationException("FxfSender ["+getName()+"] must specify transfername");
 		}
+		if (paramList!=null && paramList.size()>0) {
+			remoteFilenameParam=(Parameter)paramList.get(0);
+			if (!REMOTE_FILENAME_PARAM.equalsIgnoreCase(remoteFilenameParam.getName())) {
+				log.warn(getLogPrefix()+"name of parameter for remote filename ["+remoteFilenameParam.getName()+"] is not equal to ["+REMOTE_FILENAME_PARAM+"], as expected. Using it anyway" );
+			}
+		}
 	}
 
-	public void open() throws SenderException {
-	}
-
-	public void close() throws SenderException {
-	}
 
 	public boolean isSynchronous() {
 		return false;
@@ -81,8 +98,16 @@ public class FxfSender implements ISender {
 	}
 
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException {
-//		return super.sendMessage(correlationID, message, prc);
 		String command = getScript()+" put "+getTransfername() +" "+message;
+		String remoteFilename = null;
+		if (remoteFilenameParam!=null && prc!=null) {
+			try {
+				remoteFilename=(String)prc.getValues(paramList).getParameterValue(0).getValue();
+				command += " "+remoteFilename;
+			} catch (ParameterException e) {
+				throw new SenderException("Could not resolve remote filename", e);
+			}
+		}
 		log.debug("sending local file ["+message+"] by executing command ["+command+"]");
 		String execResult=ProcessUtil.executeCommand(command);
 		log.debug("output of command ["+execResult+"]");
