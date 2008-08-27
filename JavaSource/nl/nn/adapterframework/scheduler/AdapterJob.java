@@ -1,6 +1,9 @@
 /*
  * $Log: AdapterJob.java,v $
- * Revision 1.6  2007-12-12 09:09:56  europe\L190409
+ * Revision 1.7  2008-08-27 16:21:26  europe\L190409
+ * added function dumpStatistics
+ *
+ * Revision 1.6  2007/12/12 09:09:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * allow for query-type jobs
  *
  * Revision 1.5  2007/10/10 09:40:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -46,7 +49,7 @@ import org.quartz.JobExecutionException;
  * @see nl.nn.adapterframework.configuration.Configuration
   */
 public class AdapterJob extends BaseJob implements Job  {
-	public static final String version = "$RCSfile: AdapterJob.java,v $ $Revision: 1.6 $ $Date: 2007-12-12 09:09:56 $";
+	public static final String version = "$RCSfile: AdapterJob.java,v $ $Revision: 1.7 $ $Date: 2008-08-27 16:21:26 $";
 
 	public void execute(JobExecutionContext context) throws JobExecutionException {
 		try {
@@ -56,12 +59,7 @@ public class AdapterJob extends BaseJob implements Job  {
 			IbisManager ibisManager = (IbisManager)dataMap.get("manager");
 			String function = dataMap.getString("function");
 
-			if (!function.equalsIgnoreCase("EXECUTEQUERY")) {
-				String adapterName = dataMap.getString("adapterName");
-				String receiverName = dataMap.getString("receiverName");
-
-				ibisManager.handleAdapter(function, adapterName, receiverName, " scheduled job" + getLogPrefix(context));
-			} else {
+			if (function.equalsIgnoreCase("EXECUTEQUERY")) {
 				try {
 					String query = dataMap.getString("query");
 					String jmsRealm = dataMap.getString("jmsRealm");
@@ -83,6 +81,13 @@ public class AdapterJob extends BaseJob implements Job  {
 				} catch (Exception e) {
 					log.error("Error while creating or closing connection (as part of scheduled job execution)", e);
 				}
+			} else if (function.equalsIgnoreCase("dumpStatistics") || function.equalsIgnoreCase("dumpStatisticsAndReset")) {
+				ibisManager.getConfiguration().dumpStatistics(function.equalsIgnoreCase("dumpStatisticsAndReset"));
+			} else {
+				String adapterName = dataMap.getString("adapterName");
+				String receiverName = dataMap.getString("receiverName");
+
+				ibisManager.handleAdapter(function, adapterName, receiverName, " scheduled job" + getLogPrefix(context));
 			}
 
 		} catch (Exception e) {
