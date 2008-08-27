@@ -1,6 +1,9 @@
 /*
  * $Log: Trigger.java,v $
- * Revision 1.4  2008-08-07 11:31:27  europe\L190409
+ * Revision 1.5  2008-08-27 16:18:07  europe\L190409
+ * fixed period handling
+ *
+ * Revision 1.4  2008/08/07 11:31:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * rework
  *
  * Revision 1.3  2008/07/24 12:34:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -19,6 +22,7 @@ import java.util.Date;
 import java.util.LinkedList;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 
@@ -69,15 +73,15 @@ public class Trigger {
 	
 
 	public void evaluateEvent(EventThrowing source, String eventCode) throws MonitorException {
+		Date now = new Date();
 		if (getThreshold()>0) {
-			Date now = new Date();
 			cleanUpEvents(now);
 			eventDts.add(now);
 			if (eventDts.size()>=getThreshold()) {
-				getOwner().changeState(alarm, getSeverityEnum(), source, eventCode, null);
+				getOwner().changeState(now, alarm, getSeverityEnum(), source, eventCode, null);
 			}
 		} else {
-			getOwner().changeState(alarm, getSeverityEnum(), source, eventCode, null);
+			getOwner().changeState(now, alarm, getSeverityEnum(), source, eventCode, null);
 		}
 	}	
 	
@@ -88,9 +92,14 @@ public class Trigger {
 	}
 
 	protected void cleanUpEvents(Date now) {
-		Date firstDate = (Date)eventDts.getFirst();
-		if ((now.getTime()-firstDate.getTime())>getPeriod()*1000) {
-			eventDts.removeFirst();
+		while(eventDts.size()>0) {
+			Date firstDate = (Date)eventDts.getFirst();
+			if ((now.getTime()-firstDate.getTime())>getPeriod()*1000) {
+				eventDts.removeFirst();
+				if (log.isDebugEnabled()) log.debug("removed element dated ["+DateUtils.format(firstDate)+"]");
+			} else {
+				break;
+			}
 		}
 	}
 
