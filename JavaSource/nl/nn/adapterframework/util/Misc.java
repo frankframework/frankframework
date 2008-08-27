@@ -1,6 +1,9 @@
 /*
  * $Log: Misc.java,v $
- * Revision 1.15  2007-09-05 13:05:44  europe\L190409
+ * Revision 1.16  2008-08-27 16:24:30  europe\L190409
+ * made closeInput optional in streamToStream
+ *
+ * Revision 1.15  2007/09/05 13:05:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added function to copy context
  *
  * Revision 1.14  2007/06/12 11:24:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -56,7 +59,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class Misc {
-	public static final String version="$RCSfile: Misc.java,v $ $Revision: 1.15 $ $Date: 2007-09-05 13:05:44 $";
+	public static final String version="$RCSfile: Misc.java,v $ $Revision: 1.16 $ $Date: 2008-08-27 16:24:30 $";
 	public static final int BUFFERSIZE=20000;
 	public static final String DEFAULT_INPUT_STREAM_ENCODING="UTF-8";
 
@@ -119,6 +122,9 @@ public class Misc {
 	}
 	
 	public static void streamToStream(InputStream input, OutputStream output) throws IOException {
+		streamToStream(input,output,true);
+	}
+	public static void streamToStream(InputStream input, OutputStream output, boolean closeInput) throws IOException {
 		if (input!=null) {
 			byte buffer[]=new byte[BUFFERSIZE]; 
 				
@@ -126,7 +132,9 @@ public class Misc {
 			while ((bytesRead=input.read(buffer,0,BUFFERSIZE))>0) {
 				output.write(buffer,0,bytesRead);
 			}
-			input.close();
+			if (closeInput) {
+				input.close();
+			} 
 		}
 	}
 
