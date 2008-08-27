@@ -1,6 +1,9 @@
 /*
  * $Log: DumpIbisConsole.java,v $
- * Revision 1.9  2008-07-24 12:38:07  europe\L190409
+ * Revision 1.10  2008-08-27 16:26:50  europe\L190409
+ * some simplifications
+ *
+ * Revision 1.9  2008/07/24 12:38:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed threadUnsafeness
  * now uses requestDispatcher
  *
@@ -40,6 +43,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.Date;
 import java.util.HashSet;
@@ -56,9 +60,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.FileAppender;
 import org.apache.log4j.Logger;
 
@@ -98,8 +104,22 @@ public class DumpIbisConsole extends HttpServlet {
 		}
 	}
 
+	public void copyResource(ZipOutputStream zipOutputStream, String resourceName, String resourceContents) {
+		try {
+			String fileName = directoryName + resourceName;
+
+			PrintWriter pw = new PrintWriter(new OutputStreamWriter(zipOutputStream,Misc.DEFAULT_INPUT_STREAM_ENCODING));
+			zipOutputStream.putNextEntry(new ZipEntry(fileName));
+			pw.print(resourceContents);
+			pw.flush();
+			zipOutputStream.closeEntry();
+		} catch (Exception e) {
+			log.error("Error copying resource", e);
+		}
+	}
+
 	public void copyServletResponse(ZipOutputStream zipOutputStream, HttpServletRequest request, HttpServletResponse response, String resource, 
-		String destinationFileName, Set resources, Set setFileViewer, Set setShowAdapterStatistics) {
+		String destinationFileName, Set resources, Set linkSet, String linkFilter) {
 		long timeStart = new Date().getTime();
 		try {
 			IbisServletResponseWrapper ibisHttpServletResponseGrabber =  new IbisServletResponseWrapper(response);
@@ -117,11 +137,8 @@ public class DumpIbisConsole extends HttpServlet {
 			if (!resource.startsWith("FileViewerServlet")) {
 				extractResources(resources, htmlString);
 			}
-			if (resource.equals("/showLogging.do")) {
-				extractLogging(setFileViewer, htmlString);
-			}
-			if (resource.equals("/showConfigurationStatus.do")) {
-				extractStatistics(setShowAdapterStatistics, htmlString);
+			if (linkSet!=null) {
+				followLinks(linkSet, htmlString, linkFilter);
 			}
 		} catch (Exception e) {
 			log.error("Error copying servletResponse", e);
@@ -130,29 +147,29 @@ public class DumpIbisConsole extends HttpServlet {
 		log.debug("dumped file [" + destinationFileName + "] in " + (timeEnd - timeStart) + " msec.");
 	}
 
-	public void extractLogging(Set setFileViewer, String htmlString) {
+	public void followLinks(Set resourceSet, String htmlString, String linkStartFilter) {
 
 		String hs = htmlString.toUpperCase();
-		int p0 = hs.indexOf("<A ");
-		while (p0 >= 0) {
-			int p1 = hs.indexOf(">", p0);
-			if (p1 > p0) {
-				int p2 = hs.indexOf(" HREF", p0);
-				if (p2 > p0 && p2 < p1) {
-					int p3 = hs.indexOf("\"", p2);
-					if (p3 > p2 && p3 < p1) {
-						p3++;
-						int p4 = hs.indexOf("\"", p3);
-						if (p4 > p3 && p4 < p1) {
-							String s = htmlString.substring(p3, p4);
-							if (s.startsWith("FileViewerServlet")) {
-								setFileViewer.add(s);
+		int posLinkStart = hs.indexOf("<A ");
+		while (posLinkStart >= 0) {
+			int posLinkStartClose = hs.indexOf(">", posLinkStart);
+			if (posLinkStartClose > posLinkStart) {
+				int posHref = hs.indexOf(" HREF", posLinkStart);
+				if (posHref > posLinkStart && posHref < posLinkStartClose) {
+					int posHrefContentStart = hs.indexOf("\"", posHref);
+					if (posHrefContentStart > posHref && posHrefContentStart < posLinkStartClose) {
+						posHrefContentStart++;
+						int posHrefContentEnd = hs.indexOf("\"", posHrefContentStart);
+						if (posHrefContentEnd > posHrefContentStart && posHrefContentEnd < posLinkStartClose) {
+							String s = htmlString.substring(posHrefContentStart, posHrefContentEnd);
+							if (StringUtils.isEmpty(linkStartFilter) || s.startsWith(linkStartFilter)) {
+								resourceSet.add(s);
 							}
 						}
 					}
 				}
 			}
-			p0 = hs.indexOf("<A ", p1);
+			posLinkStart = hs.indexOf("<A ", posLinkStartClose);
 		}
 	}
 
@@ -200,31 +217,6 @@ public class DumpIbisConsole extends HttpServlet {
 		}
 	}
 
-	public void extractStatistics(Set setShowAdapterStatistics, String htmlString) {
-
-		String hs = htmlString.toUpperCase();
-		int p0 = hs.indexOf("<A ");
-		while (p0 >= 0) {
-			int p1 = hs.indexOf(">", p0);
-			if (p1 > p0) {
-				int p2 = hs.indexOf(" HREF", p0);
-				if (p2 > p0 && p2 < p1) {
-					int p3 = hs.indexOf("\"", p2);
-					if (p3 > p2 && p3 < p1) {
-						p3++;
-						int p4 = hs.indexOf("\"", p3);
-						if (p4 > p3 && p4 < p1) {
-							String s = htmlString.substring(p3, p4);
-							if (s.startsWith("showAdapterStatistics.do")) {
-								setShowAdapterStatistics.add(s);
-							}
-						}
-					}
-				}
-			}
-			p0 = hs.indexOf("<A ", p1);
-		}
-	}
 
 	public void process(HttpServletRequest request, HttpServletResponse response) {
 		try {
@@ -237,7 +229,7 @@ public class DumpIbisConsole extends HttpServlet {
 			response.setHeader("Content-Disposition","attachment; filename=\"IbisConsoleDump-"+AppConstants.getInstance().getProperty("instance.name","")+"-"+Misc.getHostname()+".zip\"");
 			ZipOutputStream zipOutputStream = new ZipOutputStream(out);
 
-			copyServletResponse(zipOutputStream, request, response, "/showConfigurationStatus.do", directoryName + "showConfigurationStatus.html", resources, setFileViewer, setShowAdapterStatistics);
+			copyServletResponse(zipOutputStream, request, response, "/showConfigurationStatus.do", directoryName + "showConfigurationStatus.html", resources, setShowAdapterStatistics, "showAdapterStatistics.do");
 
 			for (Iterator iterator = setShowAdapterStatistics.iterator();
 				iterator.hasNext();
@@ -247,10 +239,10 @@ public class DumpIbisConsole extends HttpServlet {
 				int p2 = s.indexOf("adapterName=");
 				String fileName = s.substring(p2 + 12, p1);
 				File file = new File(fileName);
-				copyServletResponse(zipOutputStream, request, response, "/" + s, directoryName + "showAdapterStatistics_" + file.getName() + ".html", resources, setFileViewer, setShowAdapterStatistics);
+				copyServletResponse(zipOutputStream, request, response, "/" + s, directoryName + "showAdapterStatistics_" + file.getName() + ".html", resources, null,null);
 			}
 
-			copyServletResponse(zipOutputStream, request, response, "/showLogging.do", directoryName + "showLogging.html", resources, setFileViewer, setShowAdapterStatistics);
+			copyServletResponse(zipOutputStream, request, response, "/showLogging.do", directoryName + "showLogging.html", resources, setFileViewer, "FileViewerServlet");
 
 			FileAppender fa = (FileAppender)LogUtil.getRootLogger().getAppender("file");
 			File logFile = new File(fa.getFile());
@@ -265,19 +257,21 @@ public class DumpIbisConsole extends HttpServlet {
 					File file = new File(fileName);
 					String fn = file.getName();
 					if (fn.startsWith(logFileName)) {
-						copyServletResponse(zipOutputStream, request, response, "/" + s, directoryName + "log/" + fn, resources, setFileViewer, setShowAdapterStatistics);
+						copyServletResponse(zipOutputStream, request, response, "/" + s, directoryName + "log/" + fn, resources, null,null);
 					}
 				}
 			}
 
-			copyServletResponse(zipOutputStream, request, response, "/showEnvironmentVariables.do", directoryName + "showEnvironmentVariables.html", resources, setFileViewer, setShowAdapterStatistics);
-			copyServletResponse(zipOutputStream, request, response, "/showConfiguration.do", directoryName + "showConfiguration.html", resources, setFileViewer, setShowAdapterStatistics);
-			copyServletResponse(zipOutputStream, request, response, "/showSchedulerStatus.do", directoryName + "showSchedulerStatus.html", resources, setFileViewer, setShowAdapterStatistics);
+			copyServletResponse(zipOutputStream, request, response, "/showEnvironmentVariables.do", directoryName + "showEnvironmentVariables.html", resources, null,null);
+			copyServletResponse(zipOutputStream, request, response, "/showConfiguration.do", directoryName + "showConfiguration.html", resources, null,null);
+			copyServletResponse(zipOutputStream, request, response, "/showSchedulerStatus.do", directoryName + "showSchedulerStatus.html", resources, null,null);
+			copyServletResponse(zipOutputStream, request, response, "/showMonitors.do", directoryName + "showMonitors.html", resources, null,null);
 
 			for (Iterator iterator = resources.iterator(); iterator.hasNext();) {
 				copyResource(zipOutputStream, (String)iterator.next());
 			}
 
+			//copyResource(zipOutputStream,"statistics.xml", configuration.getStatisticsOfZo());
 			zipOutputStream.close();
 
 		} catch (Exception e) {
