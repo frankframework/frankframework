@@ -1,6 +1,10 @@
 /*
  * $Log: PushingIfsaProviderListener.java,v $
- * Revision 1.5  2008-05-22 07:24:16  europe\L190409
+ * Revision 1.6  2008-08-27 15:57:43  europe\L190409
+ * introduced delivery count calculation
+ * use bifname for correlationID
+ *
+ * Revision 1.5  2008/05/22 07:24:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added some support for bif and btc
  *
  * Revision 1.4  2008/02/28 16:20:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -31,6 +35,7 @@ import javax.jms.QueueSession;
 import javax.jms.TextMessage;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IKnowsDeliveryCount;
 import nl.nn.adapterframework.core.IListenerConnector;
 import nl.nn.adapterframework.core.IMessageHandler;
 import nl.nn.adapterframework.core.IMessageWrapper;
@@ -105,8 +110,8 @@ import com.ing.ifsa.IFSAServicesProvided;
  * @since   4.2
  * @version Id
  */
-public class PushingIfsaProviderListener extends IfsaFacade implements IPortConnectedListener, IThreadCountControllable {
-	public static final String version = "$RCSfile: PushingIfsaProviderListener.java,v $ $Revision: 1.5 $ $Date: 2008-05-22 07:24:16 $";
+public class PushingIfsaProviderListener extends IfsaFacade implements IPortConnectedListener, IThreadCountControllable, IKnowsDeliveryCount {
+	public static final String version = "$RCSfile: PushingIfsaProviderListener.java,v $ $Revision: 1.6 $ $Date: 2008-08-27 15:57:43 $";
 
     private final static String THREAD_CONTEXT_SESSION_KEY = "session";
 	public final static String THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY = "originalRawMessage";
@@ -297,10 +302,6 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 	    // --------------------------
 	    try {
 	        cid = message.getJMSCorrelationID();
-	        if (cid == null) {
-	            cid = id;
-	            log.debug("Setting correlation ID to MessageId");
-	        }
 	    } catch (JMSException ignore) {
 	    }
 	    // --------------------------
@@ -348,6 +349,15 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 			BIFname= message.getBifName();
 		} catch (JMSException e) {
 			log.error(getLogPrefix() + "got error getting BIFname", e);
+		}
+		if (cid == null) {
+			if (StringUtils.isNotEmpty(BIFname)) {
+				cid = BIFname;
+				if (log.isDebugEnabled()) log.debug("Setting correlation ID to BIFname ["+cid+"]");
+			} else {
+				cid = id;
+				if (log.isDebugEnabled()) log.debug("Setting correlation ID to MessageId ["+cid+"]");
+			}
 		}
 		byte btcData[]=null;
 		try {
@@ -595,6 +605,18 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 			IThreadCountControllable tcc = (IThreadCountControllable)jmsConnector;
 			
 			tcc.decreaseThreadCount();
+		}
+	}
+
+	public int getDeliveryCount(Object rawMessage) {
+		try {
+			Message message=(Message)rawMessage;
+			int value = message.getIntProperty("JMSXDeliveryCount");
+			if (log.isDebugEnabled()) log.debug("determined delivery count ["+value+"]");
+			return value;
+		} catch (Exception e) {
+			log.error(getLogPrefix()+"exception in determination of DeliveryCount",e);
+			return -1;
 		}
 	}
 
