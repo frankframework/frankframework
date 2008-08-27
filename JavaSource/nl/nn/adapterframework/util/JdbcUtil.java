@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcUtil.java,v $
- * Revision 1.16  2008-06-19 15:14:14  europe\L190409
+ * Revision 1.17  2008-08-27 16:23:44  europe\L190409
+ * added columnExists
+ *
+ * Revision 1.16  2008/06/19 15:14:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added inputstream and outputstream methods for blobs
  *
  * Revision 1.15  2007/09/12 09:27:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -84,7 +87,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class JdbcUtil {
-	public static final String version = "$RCSfile: JdbcUtil.java,v $ $Revision: 1.16 $ $Date: 2008-06-19 15:14:14 $";
+	public static final String version = "$RCSfile: JdbcUtil.java,v $ $Revision: 1.17 $ $Date: 2008-08-27 16:23:44 $";
 	protected static Logger log = LogUtil.getLogger(JdbcUtil.class);
 	
 	private static final boolean useMetaData=false;
@@ -117,6 +120,34 @@ public class JdbcUtil {
 			}
 		}
 	}
+	
+	public static boolean columnExists(Connection conn, String tableName, String columnName) throws SQLException {
+		PreparedStatement stmt = null;
+		try {
+			String query = "SELECT count(" + columnName + ") FROM " + tableName;
+			stmt = conn.prepareStatement(query);
+
+			ResultSet rs = null;
+			try {
+				rs = stmt.executeQuery();
+				return true;
+			} catch (SQLException e) {
+				return false;
+			} finally {
+				if (rs != null) {
+					rs.close();
+				}
+			}
+		} catch (SQLException e) {
+			return false;
+		} finally {
+			if (stmt != null) {
+				stmt.close();
+			}
+		}
+	}
+
+
 
 	public static String warningsToString(SQLWarning warnings) {
 		XmlBuilder warningsElem = warningsToXmlBuilder(warnings);
