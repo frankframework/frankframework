@@ -1,6 +1,9 @@
 /*
  * $Log: SchedulerHandler.java,v $
- * Revision 1.5  2008-05-22 07:39:14  europe\L190409
+ * Revision 1.6  2008-08-27 16:27:22  europe\L190409
+ * fixed scheduler client
+ *
+ * Revision 1.5  2008/05/22 07:39:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed version string
  *
  * Revision 1.4  2008/05/22 07:38:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -17,11 +20,14 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import nl.nn.adapterframework.scheduler.SchedulerAdapter;
+import nl.nn.adapterframework.scheduler.SchedulerHelper;
+import nl.nn.adapterframework.unmanaged.DefaultIbisManager;
 
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
 
 /**
  * @version Id
@@ -39,8 +45,23 @@ public class SchedulerHandler extends ActionBase {
 	    String jobName = request.getParameter("jobName");
 	    String groupName = request.getParameter("groupName");
 	
+		if (ibisManager==null) {
+			error("Cannot find ibismanager",null);
+			return null;
+		}
+	
+		// TODO Dit moet natuurlijk netter...
+		DefaultIbisManager manager = (DefaultIbisManager)ibisManager;
+		SchedulerHelper sh = manager.getSchedulerHelper();
+
 	    SchedulerAdapter schedulerAdapter = new SchedulerAdapter();
-	    Scheduler scheduler = schedulerAdapter.getTheScheduler();
+	    Scheduler scheduler;
+		try {
+			scheduler = sh.getScheduler();
+		} catch (SchedulerException e) {
+			error("Cannot find scheduler",e);
+			return null;
+		}
 	    try {
 	        if (action.equalsIgnoreCase("startScheduler")) {
 	            log.info("start scheduler:" + new Date() + getCommandIssuedBy(request));

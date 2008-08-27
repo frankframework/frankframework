@@ -1,14 +1,20 @@
 package nl.nn.adapterframework.webcontrol.action;
 
-import nl.nn.adapterframework.scheduler.SchedulerAdapter;
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
+import java.io.IOException;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
+
+import nl.nn.adapterframework.scheduler.SchedulerAdapter;
+import nl.nn.adapterframework.scheduler.SchedulerHelper;
+import nl.nn.adapterframework.unmanaged.DefaultIbisManager;
+
+import org.apache.struts.action.ActionForm;
+import org.apache.struts.action.ActionForward;
+import org.apache.struts.action.ActionMapping;
+import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
 
 /**
  * Retrieves the Scheduler metadata and the jobgroups with there jobs
@@ -18,7 +24,7 @@ import java.io.IOException;
  */
 
 public final class ShowSchedulerStatus extends ActionBase {
-	public static final String version="$Id: ShowSchedulerStatus.java,v 1.3 2004-03-26 10:42:57 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: ShowSchedulerStatus.java,v 1.4 2008-08-27 16:29:32 europe\L190409 Exp $";
 	
 
 
@@ -29,11 +35,33 @@ public final class ShowSchedulerStatus extends ActionBase {
         // Initialize action
         initAction(request);
 
-        SchedulerAdapter scheduler=new SchedulerAdapter();
+		if (ibisManager==null) {
+			error("Cannot find ibismanager",null);
+			return null;
+		}
+	
+		// TODO Dit moet natuurlijk netter...
+		DefaultIbisManager manager = (DefaultIbisManager)ibisManager;
+		SchedulerHelper sh = manager.getSchedulerHelper();
 
-	    request.setAttribute("metadata", scheduler.getSchedulerMetaDataToXml());
-        request.setAttribute("jobdata", scheduler.getJobGroupNamesWithJobsToXml());
+		SchedulerAdapter schedulerAdapter = new SchedulerAdapter();
+		Scheduler scheduler;
+		try {
+			scheduler = sh.getScheduler();
+		} catch (SchedulerException e) {
+			error("Cannot find scheduler",e);
+			return null;
+		}
 
+
+        SchedulerAdapter sa=new SchedulerAdapter();
+
+		if (log.isDebugEnabled()) {
+			log.debug("set metadata ["+sa.getSchedulerMetaDataToXml(scheduler).toXML()+"]");
+			log.debug("set jobdata ["+sa.getJobGroupNamesWithJobsToXml(scheduler).toXML()+"]");
+		}
+	    request.setAttribute("metadata", sa.getSchedulerMetaDataToXml(scheduler).toXML());
+        request.setAttribute("jobdata", sa.getJobGroupNamesWithJobsToXml(scheduler).toXML());
 
 
         // Forward control to the specified success URI
