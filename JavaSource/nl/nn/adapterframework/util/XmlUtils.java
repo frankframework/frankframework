@@ -1,6 +1,9 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.49  2008-08-18 09:41:09  europe\L190409
+ * Revision 1.50  2008-08-27 16:26:26  europe\L190409
+ * made transformer type configurable
+ *
+ * Revision 1.49  2008/08/18 09:41:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * made transformer buffersize configurable
  * reduced default to 4096
  *
@@ -167,6 +170,8 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Iterator;
@@ -214,13 +219,14 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * @version Id
  */
 public class XmlUtils {
-	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.49 $ $Date: 2008-08-18 09:41:09 $";
+	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.50 $ $Date: 2008-08-27 16:26:26 $";
 	static Logger log = LogUtil.getLogger(XmlUtils.class);
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
 	static final String JAXP_SCHEMA_LANGUAGE = "http://java.sun.com/xml/jaxp/properties/schemaLanguage";
 	static final String JAXP_SCHEMA_SOURCE =   "http://java.sun.com/xml/jaxp/properties/schemaSource";
 
+	public static final String TRANSFORMERFACTORY_KEY = "xslt.transformerFactory";
 	public static final String NAMESPACE_AWARE_BY_DEFAULT_KEY = "xml.namespaceAware.default";
 	public static final String AUTO_RELOAD_KEY = "xslt.auto.reload";
 	public static final String XSLT_BUFFERSIZE_KEY = "xslt.bufsize";
@@ -234,6 +240,7 @@ public class XmlUtils {
 	private static Boolean namespaceAwareByDefault = null;
 	private static Boolean autoReload = null;
 	private static Integer buffersize=null;
+	private static TransformerFactory transfomerFactory=null;
 
 	public static final String XPATH_GETROOTNODENAME = "name(/node()[position()=last()])";
 
@@ -579,11 +586,34 @@ public class XmlUtils {
 	public static synchronized Transformer createTransformer(Source source)
 		throws TransformerConfigurationException {
 
-		TransformerFactory tFactory = TransformerFactory.newInstance();
-		Transformer result;
-		result = tFactory.newTransformer(source);
+		TransformerFactory tFactory = getTransformerFactory();
+		Transformer result = tFactory.newTransformer(source);
 
 		return result;
+	}
+
+	public static synchronized TransformerFactory getTransformerFactory() {
+		if (transfomerFactory==null) {
+			String transformerFactoryClassName = AppConstants.getInstance().getProperty(TRANSFORMERFACTORY_KEY,null);
+			try {
+				if (StringUtils.isNotEmpty(transformerFactoryClassName)) {
+					
+					Class transformerFactoryClass = XmlUtils.class.forName(transformerFactoryClassName);
+					log.debug("loaded transformerFactoryClass ["+transformerFactoryClass.getName()+"]");
+					Constructor constructor = transformerFactoryClass.getConstructor(null);
+					log.debug("found constructor method ["+constructor.getName()+"]");
+					transfomerFactory = (TransformerFactory)constructor.newInstance(null);
+					log.debug("invoked constructor to obtain transformer factory ["+transfomerFactory.getClass().getName()+"]");
+				} 
+			} catch (Exception e) {
+				log.warn("Could not load TransformerFactory ["+transformerFactoryClassName+"]",e);
+			}
+			if (transfomerFactory==null) {
+				transfomerFactory = TransformerFactory.newInstance();
+				log.debug("no explicit TransformerFactory configured, now instantiated class ["+transfomerFactory.getClass().getName()+"]");
+			}
+		}
+		return transfomerFactory.newInstance();
 	}
 	
 	/**
@@ -1187,7 +1217,7 @@ public class XmlUtils {
 		DocumentBuilderFactory domFactory = DocumentBuilderFactory.newInstance();
 		sb.append("DocumentBuilderFactory-class ="+domFactory.getClass().getName()+SystemUtils.LINE_SEPARATOR);
 
-		TransformerFactory tFactory = TransformerFactory.newInstance();
+		TransformerFactory tFactory = getTransformerFactory();
 		sb.append("TransformerFactory-class ="+tFactory.getClass().getName()+SystemUtils.LINE_SEPARATOR);
 
 		sb.append("Apache-XML tool version info:"+SystemUtils.LINE_SEPARATOR);
