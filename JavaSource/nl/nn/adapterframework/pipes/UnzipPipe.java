@@ -1,11 +1,15 @@
 /*
  * $Log: UnzipPipe.java,v $
- * Revision 1.1  2008-06-26 12:51:49  europe\L190409
+ * Revision 1.2  2008-08-27 16:19:13  europe\L190409
+ * some fixes
+ *
+ * Revision 1.1  2008/06/26 12:51:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fisrt version
  *
  */
 package nl.nn.adapterframework.pipes;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -25,6 +29,7 @@ import nl.nn.adapterframework.util.Misc;
 
 /**
  * Assumes input to be a ZIP archive, and unzips it to a directory.
+ * Currently no subdirectories in zip files are supported.
  *
  * <p><b>Configuration:</b>
  * <table border="1">
@@ -49,7 +54,7 @@ import nl.nn.adapterframework.util.Misc;
  * @author  Gerrit van Brakel
  */
 public class UnzipPipe extends FixedForwardPipe {
-	public static final String version="$RCSfile: UnzipPipe.java,v $ $Revision: 1.1 $ $Date: 2008-06-26 12:51:49 $";
+	public static final String version="$RCSfile: UnzipPipe.java,v $ $Revision: 1.2 $ $Date: 2008-08-27 16:19:13 $";
 	
     private String directory;
     
@@ -79,17 +84,24 @@ public class UnzipPipe extends FixedForwardPipe {
 				throw new PipeRunException(this, "could not find file ["+filename+"]",e);
 			}
 		}
-		ZipInputStream zis = new ZipInputStream(in);
+		ZipInputStream zis = new ZipInputStream(new BufferedInputStream(in));
 		try {
-			while (zis.available()>0) {
-				ZipEntry ze=zis.getNextEntry();
-				String filename=getDirectory()+ze.getName();
+			ZipEntry ze;
+			while ((ze=zis.getNextEntry())!=null) {
+				String filename=getDirectory()+"/"+ze.getName();
 				FileOutputStream fos = new FileOutputStream(filename);
-				Misc.streamToStream(zis,fos);
-				zis.closeEntry();				
+				log.debug(getLogPrefix(session)+"writing ZipEntry ["+ze.getName()+"] to file ["+filename+"]");
+				Misc.streamToStream(zis,fos,false);
+				fos.close();
 			}
 		} catch (IOException e) {
 			throw new PipeRunException(this,"cannot unzip",e);
+		} finally {
+			try {
+				zis.close();
+			} catch (IOException e1) {
+				log.warn(getLogPrefix(session)+"exception closing zip",e1);
+			}
 		}
 		return new PipeRunResult(getForward(),getDirectory());
 	}
