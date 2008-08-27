@@ -1,6 +1,9 @@
 /*
  * $Log: SenderSeries.java,v $
- * Revision 1.4  2008-07-17 16:18:11  europe\L190409
+ * Revision 1.5  2008-08-27 16:22:27  europe\L190409
+ * added reset option to statisticsdump
+ *
+ * Revision 1.4  2008/07/17 16:18:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * show partial results in debug mode
  *
  * Revision 1.3  2008/06/03 15:51:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -109,13 +112,13 @@ public class SenderSeries extends SenderWrapperBase {
 		return message;
 	}
 
-	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data) {
+	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, boolean reset) {
 		//Object senderData=hski.openGroup(data,getName(),"sender");
 		for (Iterator it=getSenderIterator();it.hasNext();) {
 			ISender sender = (ISender)it.next();
 			hski.handleStatisticsKeeper(data,getStatisticsKeeper(sender));		
 			if (sender instanceof HasStatistics) {
-				((HasStatistics)sender).iterateOverStatistics(hski,data);
+				((HasStatistics)sender).iterateOverStatistics(hski,data,reset);
 			}
 		}
 		//hski.closeGroup(senderData);

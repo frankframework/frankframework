@@ -1,6 +1,9 @@
 /*
  * $Log: ShowAdapterStatistics.java,v $
- * Revision 1.6  2008-08-12 15:50:10  europe\L190409
+ * Revision 1.7  2008-08-27 16:27:41  europe\L190409
+ * added reset option to statisticsdump
+ *
+ * Revision 1.6  2008/08/12 15:50:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added messagesRetried
  *
  * Revision 1.5  2008/05/22 07:42:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -151,7 +154,7 @@ public final class ShowAdapterStatistics extends ActionBase {
 			StatisticsKeeper pstat = (StatisticsKeeper) pipelineStatistics.get(pipe.getName());
 			handler.handleStatisticsKeeper(pipeStatsData,pstat);
 			if (pipe instanceof HasStatistics) {
-				((HasStatistics)pipe).iterateOverStatistics(handler,pipeStatsData);
+				((HasStatistics)pipe).iterateOverStatistics(handler,pipeStatsData,false);
 			}
 		}
 	

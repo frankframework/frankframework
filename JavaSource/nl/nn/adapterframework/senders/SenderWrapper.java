@@ -1,6 +1,9 @@
 /*
  * $Log: SenderWrapper.java,v $
- * Revision 1.3  2008-07-17 16:18:46  europe\L190409
+ * Revision 1.4  2008-08-27 16:22:40  europe\L190409
+ * added reset option to statisticsdump
+ *
+ * Revision 1.3  2008/07/17 16:18:46  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * call sender.configure in configure
  *
  * Revision 1.2  2008/05/21 10:41:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -75,9 +78,9 @@ public class SenderWrapper extends SenderWrapperBase {
 		return result;
 	}
 
-	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data) {
+	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, boolean reset) {
 		if (getSender() instanceof HasStatistics) {
-			((HasStatistics)getSender()).iterateOverStatistics(hski,data);
+			((HasStatistics)getSender()).iterateOverStatistics(hski,data,reset);
 		}
 	}
 
