@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaRequesterSender.java,v $
- * Revision 1.9  2008-05-22 07:23:59  europe\L190409
+ * Revision 1.10  2008-08-27 15:56:31  europe\L190409
+ * added reset option to statisticsdump
+ *
+ * Revision 1.9  2008/05/22 07:23:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added some support for bif and btc
  *
  * Revision 1.8  2008/05/15 14:32:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -183,7 +186,7 @@ import com.ing.ifsa.IFSATimeOutMessage;
  * @since  4.2
  */
 public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParameters, HasStatistics {
-	public static final String version="$RCSfile: IfsaRequesterSender.java,v $ $Revision: 1.9 $ $Date: 2008-05-22 07:23:59 $";
+	public static final String version="$RCSfile: IfsaRequesterSender.java,v $ $Revision: 1.10 $ $Date: 2008-08-27 15:56:31 $";
 	
 	protected ParameterList paramList = null;
 	private StatisticsKeeper businessProcessTimes;
@@ -442,9 +445,12 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 	    return result;	
 	}
 
-	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data) {
+	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, boolean reset) {
 		if (businessProcessTimes!=null) {
 			hski.handleStatisticsKeeper(data,businessProcessTimes);
+			if (reset) {
+				businessProcessTimes.clear();
+			}
 		}
 	}
 	

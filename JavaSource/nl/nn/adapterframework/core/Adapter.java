@@ -1,6 +1,9 @@
 /*
  * $Log: Adapter.java,v $
- * Revision 1.46  2008-08-12 15:31:13  europe\L190409
+ * Revision 1.47  2008-08-27 15:54:07  europe\L190409
+ * added reset option to statisticsdump
+ *
+ * Revision 1.46  2008/08/12 15:31:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * moved collection of receiver statistics to receiver
  *
  * Revision 1.45  2008/08/07 11:34:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -207,7 +210,7 @@ import org.springframework.core.task.TaskExecutor;
  */
 
 public class Adapter implements IAdapter, NamedBean {
-	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.46 $ $Date: 2008-08-12 15:31:13 $";
+	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.47 $ $Date: 2008-08-27 15:54:07 $";
 	private Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -403,28 +406,29 @@ public class Adapter implements IAdapter, NamedBean {
 		return messageKeeper;
 	}
 	
-	public void forEachStatisticsKeeper(StatisticsKeeperIterationHandler hski) {
+	public void forEachStatisticsKeeper(StatisticsKeeperIterationHandler hski, boolean reset) {
 		Object root=hski.start();
-		forEachStatisticsKeeperBody(hski,root);
+		forEachStatisticsKeeperBody(hski,root,reset);
 		hski.end(root);
 	}
 	
-	public void forEachStatisticsKeeperBody(StatisticsKeeperIterationHandler hski, Object data) {
-		Object adapterData=hski.openGroup(data,getName(),"adapter");
-		hski.handleScalar(adapterData,"name", getName());
-		hski.handleScalar(adapterData,"upSince", getStatsUpSince());
-		hski.handleScalar(adapterData,"lastMessageDate", getLastMessageDate());
-
+	private void doForEachStatisticsKeeperBody(StatisticsKeeperIterationHandler hski, Object adapterData, boolean reset) {
 		hski.handleScalar(adapterData,"messagesInProcess", getNumOfMessagesInProcess());
 		hski.handleScalar(adapterData,"messagesProcessed", getNumOfMessagesProcessed());
 		hski.handleScalar(adapterData,"messagesInError", getNumOfMessagesInError());
 		hski.handleStatisticsKeeper(adapterData, statsMessageProcessingDuration);
+		if (reset) {
+			numOfMessagesInProcess=0;
+			numOfMessagesProcessed=0;
+			numOfMessagesInError=0;
+			statsMessageProcessingDuration.clear();
+		}
 		Object recsData=hski.openGroup(adapterData,getName(),"receivers");
 		Iterator recIt=getReceiverIterator();
 		if (recIt.hasNext()) {
 			while (recIt.hasNext()) {
 				IReceiver receiver=(IReceiver) recIt.next();
-				receiver.iterateOverStatistics(hski,recsData);
+				receiver.iterateOverStatistics(hski,recsData,reset);
 			}
 		}
 		hski.closeGroup(recsData);
@@ -441,9 +445,12 @@ public class Adapter implements IAdapter, NamedBean {
 			String pipeName = (String) pipelineStatisticsIter.next();
 			StatisticsKeeper pstat = (StatisticsKeeper) pipelineStatistics.get(pipeName);
 			hski.handleStatisticsKeeper(pipestatData,pstat);
+			if (reset) {
+				pstat.clear();
+			}
 			IPipe pipe = pipeline.getPipe(pipeName);
 			if (pipe instanceof HasStatistics) {
-				((HasStatistics) pipe).iterateOverStatistics(hski, pipestatData);
+				((HasStatistics) pipe).iterateOverStatistics(hski, pipestatData,reset);
 			}
 		}
 		hski.closeGroup(pipestatData);
@@ -460,10 +467,28 @@ public class Adapter implements IAdapter, NamedBean {
 				String pipeName = (String) pipelineStatisticsIter.next();
 				StatisticsKeeper pstat = (StatisticsKeeper) pipelineStatistics.get(pipeName);
 				hski.handleStatisticsKeeper(pipestatData,pstat);
+				if (reset) {
+					pstat.clear();
+				}
 			}
 		}
 		hski.closeGroup(pipestatData);
 		hski.closeGroup(pipelineData);
+	}
+	
+	public void forEachStatisticsKeeperBody(StatisticsKeeperIterationHandler hski, Object data, boolean reset) {
+		Object adapterData=hski.openGroup(data,getName(),"adapter");
+		hski.handleScalar(adapterData,"name", getName());
+		hski.handleScalar(adapterData,"upSince", getStatsUpSince());
+		hski.handleScalar(adapterData,"lastMessageDate", getLastMessageDate());
+
+		if (reset) {
+			synchronized (statsMessageProcessingDuration) {
+				doForEachStatisticsKeeperBody(hski,adapterData,reset);
+			}
+		} else {
+			doForEachStatisticsKeeperBody(hski,adapterData,reset);
+		}
 		hski.closeGroup(adapterData);
 				
 	}
