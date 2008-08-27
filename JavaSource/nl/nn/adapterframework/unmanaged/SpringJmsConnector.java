@@ -1,6 +1,9 @@
 /*
  * $Log: SpringJmsConnector.java,v $
- * Revision 1.16  2008-08-21 17:56:20  europe\L190409
+ * Revision 1.17  2008-08-27 16:23:02  europe\L190409
+ * improved logging
+ *
+ * Revision 1.16  2008/08/21 17:56:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed ifsa specific timing evaluation, that was not working
  *
  * Revision 1.15  2008/06/30 14:18:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -297,8 +300,8 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 				long onMessageEnd= System.currentTimeMillis();
 
 				log.info(getLogPrefix()+"A) JMSMessageTime ["+DateUtils.format(jmsTimestamp)+"]");
-				log.info(getLogPrefix()+"B) onMessageStart ["+DateUtils.format(onMessageStart)+"] diff ["+(onMessageStart-jmsTimestamp)+"]");
-				log.info(getLogPrefix()+"C) onMessageEnd   ["+DateUtils.format(onMessageEnd)+"] diff ["+(onMessageEnd-onMessageStart)+"]");
+				log.info(getLogPrefix()+"B) onMessageStart ["+DateUtils.format(onMessageStart)+"] diff (~'queing' time) ["+(onMessageStart-jmsTimestamp)+"]");
+				log.info(getLogPrefix()+"C) onMessageEnd   ["+DateUtils.format(onMessageEnd)+"] diff (process time) ["+(onMessageEnd-onMessageStart)+"]");
 			}
 			
 //			boolean simulateCrashAfterCommit=true;
