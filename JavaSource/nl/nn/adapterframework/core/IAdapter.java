@@ -1,6 +1,9 @@
 /*
  * $Log: IAdapter.java,v $
- * Revision 1.10  2007-10-09 15:33:00  europe\L190409
+ * Revision 1.11  2008-08-27 15:54:21  europe\L190409
+ * *** empty log message ***
+ *
+ * Revision 1.10  2007/10/09 15:33:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * copy changes from Ibis-EJB:
  * removed usertransaction-methods
  * added getErrorState()
@@ -45,7 +48,7 @@ import javax.transaction.UserTransaction;
  * @version Id
  **/
 public interface IAdapter extends IManagable {
-	public static final String version = "$RCSfile: IAdapter.java,v $ $Revision: 1.10 $ $Date: 2007-10-09 15:33:00 $";
+	public static final String version = "$RCSfile: IAdapter.java,v $ $Revision: 1.11 $ $Date: 2008-08-27 15:54:21 $";
 
     /**
   	 * Instruct the adapter to configure itself. The adapter will call the
@@ -80,7 +83,7 @@ public interface IAdapter extends IManagable {
 		INamedObject objectInError,
 		long receivedTime);
 		
-	public void forEachStatisticsKeeperBody(StatisticsKeeperIterationHandler hski, Object data);
+	public void forEachStatisticsKeeperBody(StatisticsKeeperIterationHandler hski, Object data, boolean reset);
 
     /**
      * state to put in PipeLineResult when a PipeRunException occurs.
