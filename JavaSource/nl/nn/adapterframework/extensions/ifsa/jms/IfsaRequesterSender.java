@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaRequesterSender.java,v $
- * Revision 1.10  2008-08-27 15:56:31  europe\L190409
+ * Revision 1.11  2008-09-01 15:10:17  europe\L190409
+ * forward BIFname when present
+ *
+ * Revision 1.10  2008/08/27 15:56:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added reset option to statisticsdump
  *
  * Revision 1.9  2008/05/22 07:23:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -186,7 +189,7 @@ import com.ing.ifsa.IFSATimeOutMessage;
  * @since  4.2
  */
 public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParameters, HasStatistics {
-	public static final String version="$RCSfile: IfsaRequesterSender.java,v $ $Revision: 1.10 $ $Date: 2008-08-27 15:56:31 $";
+	public static final String version="$RCSfile: IfsaRequesterSender.java,v $ $Revision: 1.11 $ $Date: 2008-09-01 15:10:17 $";
 	
 	protected ParameterList paramList = null;
 	private StatisticsKeeper businessProcessTimes;
@@ -313,7 +316,8 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 			}
 		}
 		//IFSAMessage originatingMessage = (IFSAMessage)prc.getSession().get(PushingIfsaProviderListener.THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY);
-		return sendMessage(dummyCorrelationId, message, params);
+		String BIF=(String)prc.getSession().get(PushingIfsaProviderListener.THREAD_CONTEXT_BIFNAME_KEY);
+		return sendMessage(dummyCorrelationId, message, params,BIF,null);
 	}
 
 	public String sendMessage(String dummyCorrelationId, String message, Map params) throws SenderException, TimeOutException {
