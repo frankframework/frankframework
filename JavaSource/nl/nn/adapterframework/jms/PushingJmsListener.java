@@ -1,6 +1,9 @@
 /*
  * $Log: PushingJmsListener.java,v $
- * Revision 1.15  2008-08-27 16:15:13  europe\L190409
+ * Revision 1.16  2008-09-01 15:13:33  europe\L190409
+ * made common baseclass for pushing and pulling jms listeners
+ *
+ * Revision 1.15  2008/08/27 16:15:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * introduced delivery count calculation
  *
  * Revision 1.14  2008/02/28 16:23:18  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -90,12 +93,8 @@ import java.util.Date;
 import java.util.Map;
 
 import javax.jms.Destination;
-import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.Session;
-import javax.jms.TextMessage;
-
-import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IKnowsDeliveryCount;
@@ -103,13 +102,13 @@ import nl.nn.adapterframework.core.IListenerConnector;
 import nl.nn.adapterframework.core.IMessageHandler;
 import nl.nn.adapterframework.core.IPortConnectedListener;
 import nl.nn.adapterframework.core.IReceiver;
-import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.IThreadCountControllable;
 import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.util.DateUtils;
+
+import org.apache.commons.lang.StringUtils;
 
 /**
  * JMSListener re-implemented as a pushing listener rather than a pulling listener.
@@ -183,22 +182,8 @@ import nl.nn.adapterframework.util.DateUtils;
  * @since   4.8
  * @version Id
  */
-public class PushingJmsListener extends JMSFacade implements IPortConnectedListener, IThreadCountControllable, IKnowsDeliveryCount {
-    public static final String version="$RCSfile: PushingJmsListener.java,v $ $Revision: 1.15 $ $Date: 2008-08-27 16:15:13 $";
-
-	private final static String THREAD_CONTEXT_SESSION_KEY="session";
-
-    private long timeOut = 3000;
-    private boolean useReplyTo=true;
-    private String replyMessageType=null;
-    private long replyMessageTimeToLive=0;
-    private int replyPriority=-1;
-    private String replyDeliveryMode=MODE_NON_PERSISTENT;
-    private ISender sender;
-    
-    private boolean forceMessageIdAsCorrelationId=false;
- 
-    private String commitOnState="success";
+public class PushingJmsListener extends JmsListenerBase implements IPortConnectedListener, IThreadCountControllable, IKnowsDeliveryCount {
+    public static final String version="$RCSfile: PushingJmsListener.java,v $ $Revision: 1.16 $ $Date: 2008-09-01 15:13:33 $";
 
 	private String listenerPort;
 	private String cacheMode; 
@@ -212,10 +197,6 @@ public class PushingJmsListener extends JMSFacade implements IPortConnectedListe
 
     public void configure() throws ConfigurationException {
         super.configure();
-        ISender sender = getSender();
-        if (sender != null) {
-            sender.configure();
-        }
         if (jmsConnector==null) {
         	throw new ConfigurationException(getLogPrefix()+" has no jmsConnector. It should be configured via springContext.xml");
         }
@@ -241,18 +222,14 @@ public class PushingJmsListener extends JMSFacade implements IPortConnectedListe
     }
 
     public void open() throws ListenerException {
-        // DO NOT open JMSFacade!
+        super.open();
         jmsConnector.start();
     }
 
     public void close() throws ListenerException {
         try {
-            // DO close JMSFacade - it might have been opened via other calls
             jmsConnector.stop();
-            closeFacade();
-			if (sender != null) {
-				sender.close();
-			}
+			super.close();
         } catch (Exception ex) {
             throw new ListenerException(ex);
         }
@@ -260,14 +237,15 @@ public class PushingJmsListener extends JMSFacade implements IPortConnectedListe
  
 
 	public void afterMessageProcessed(PipeLineResult plr, Object rawMessage, Map threadContext) throws ListenerException {
-		String cid     = (String) threadContext.get(PipeLineSession.businessCorrelationIdKey);
-		Session session= (Session) threadContext.get(THREAD_CONTEXT_SESSION_KEY);
+		String cid     = (String) threadContext.get(PipeLineSession.technicalCorrelationIdKey);
+		Session session= (Session) threadContext.get(jmsConnector.THREAD_CONTEXT_SESSION_KEY); // session is/must be saved in threadcontext by JmsConnector
 
+		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"in PushingJmsListener.afterMessageProcessed()");
 		try {
 			Destination replyTo = (Destination) threadContext.get("replyTo");
 
 			// handle reply
-			if (getUseReplyTo() && (replyTo != null)) {
+			if (isUseReplyTo() && (replyTo != null)) {
 
 				log.debug("sending reply message with correlationID[" + cid + "], replyTo [" + replyTo.toString()+ "]");
 				long timeToLive = getReplyMessageTimeToLive();
@@ -284,7 +262,7 @@ public class PushingJmsListener extends JMSFacade implements IPortConnectedListe
 				}
 				send(session, replyTo, cid, plr.getResult(), getReplyMessageType(), timeToLive, stringToDeliveryMode(getReplyDeliveryMode()), getReplyPriority()); 
 			} else {
-				if (sender==null) {
+				if (getSender()==null) {
 					log.info("["+getName()+"] has no sender, not sending the result.");
 				} else {
 					if (log.isDebugEnabled()) {
@@ -292,7 +270,7 @@ public class PushingJmsListener extends JMSFacade implements IPortConnectedListe
 							"["+getName()+"] no replyTo address found or not configured to use replyTo, using default destination" 
 							+ "sending message with correlationID[" + cid + "] [" + plr.getResult() + "]");
 					}
-					sender.sendMessage(cid, plr.getResult());
+					getSender().sendMessage(cid, plr.getResult());
 				}
 			}
         
@@ -313,208 +291,7 @@ public class PushingJmsListener extends JMSFacade implements IPortConnectedListe
 			}
 		}
 	}
-   
-    /**
-     * Fill in thread-context with things needed by the JMSListener code.
-     * This includes a Session. The Session object can be passed in
-     * externally.
-     * 
-     * @param rawMessage - Original message received, can not be <code>null</code>
-     * @param threadContext - Thread context to be populated, can not be <code>null</code>
-     * @param session - JMS Session under which message was received; can be <code>null</code>
-     */
-	public String getIdFromRawMessage(Object rawMessage, Map threadContext) throws ListenerException {
-        TextMessage message = null;
-		String cid = "unset";
-        try {
-            message = (TextMessage) rawMessage;
-        } catch (ClassCastException e) {
-            log.error("message received by listener on ["+ getDestinationName()+ "] was not of type TextMessage, but ["+rawMessage.getClass().getName()+"]", e);
-            return null;
-        }
-        String mode = "unknown";
-        String id = "unset";
-		Date tsSent = null;
-        Destination replyTo=null;
-        try {
-            mode = deliveryModeToString(message.getJMSDeliveryMode());
-        } catch (JMSException ignore) {
-            log.debug("ignoring JMSException in getJMSDeliveryMode()", ignore);
-        }
-        // --------------------------
-        // retrieve MessageID
-        // --------------------------
-        try {
-            id = message.getJMSMessageID();
-        } catch (JMSException ignore) {
-            log.debug("ignoring JMSException in getJMSMessageID()", ignore);
-        }
-        // --------------------------
-        // retrieve CorrelationID
-        // --------------------------
-        try {
-            if (isForceMessageIdAsCorrelationId()){
-                if (log.isDebugEnabled()) log.debug("forcing the messageID to be the correlationID");
-                cid =id;
-            }
-            else {
-                cid = message.getJMSCorrelationID();
-                if (cid==null) {
-                  cid = id;
-                  log.debug("Setting correlation ID to MessageId");
-                }
-            }
-        } catch (JMSException ignore) {
-            log.debug("ignoring JMSException in getJMSCorrelationID()", ignore);
-        }
-        // --------------------------
-        // retrieve TimeStamp
-        // --------------------------
-        try {
-            long lTimeStamp = message.getJMSTimestamp();
-			tsSent = new Date(lTimeStamp);
-
-        } catch (JMSException ignore) {
-            log.debug("ignoring JMSException in getJMSTimestamp()", ignore);
-        }
-        // --------------------------
-        // retrieve ReplyTo address
-        // --------------------------
-        try {
-            replyTo = message.getJMSReplyTo();
-
-        } catch (JMSException ignore) {
-            log.debug("ignoring JMSException in getJMSReplyTo()", ignore);
-        }
-
-		if (log.isDebugEnabled()) {
-			log.debug(getLogPrefix()+"listener on ["+ getDestinationName() 
-		        + "] got message with JMSDeliveryMode=[" + mode
-                + "] \n  JMSMessageID=[" + id
-                + "] \n  JMSCorrelationID=[" + cid
-				+ "] \n  Timestamp Sent=[" + DateUtils.format(tsSent) 
-                + "] \n  ReplyTo=[" + ((replyTo==null)?"none" : replyTo.toString())
-                + "] \n Message=[" + message.toString()
-                + "]");
-		}    
-		PipeLineSession.setListenerParameters(threadContext, id, cid, null, tsSent);
-		threadContext.put("timestamp",tsSent);
-        threadContext.put("replyTo",replyTo);
-        try {
-            if (getAckMode() == Session.CLIENT_ACKNOWLEDGE) {
-                message.acknowledge();
-                log.debug("Listener on [" + getDestinationName() + "] acknowledged message");
-            }
-        } catch (JMSException e) {
-            log.error("Warning in ack", e);
-        }
-        return cid;
-    }
-
   
-    
-
-	/**
-	 * Extracts string from message obtained from {@link #getRawMessage(Map)}. May also extract
-	 * other parameters from the message and put those in the threadContext.
-	 * @return String  input message for adapter.
-	 */
-	public String getStringFromRawMessage(Object rawMessage, Map threadContext) throws ListenerException {
-        TextMessage message = null;
-        try {
-            message = (TextMessage) rawMessage;
-        } catch (ClassCastException e) {
-            log.error("message received by listener on ["+ getDestinationName()+ "] was not of type TextMessage, but ["+rawMessage.getClass().getName()+"]", e);
-            return null;
-        }
-        try {
-            return message.getText();
-        } catch (JMSException e) {
-            throw new ListenerException(e);
-        }
-    }
-
-	public void setSender(ISender newSender) {
-		sender = newSender;
-			log.debug("["+getName()+"] ** registered sender ["+sender.getName()+"] with properties ["+sender.toString()+"]");
-    
-	}
-	public ISender getSender() {
-		return sender;
-	}
-
-	/**
-	 * By default, the JmsListener takes the Correlation ID (if present) as the ID that has to be put in the
-	 * correlation id of the reply. When you set ForceMessageIdAsCorrelationId to <code>true</code>,
-	 * the messageID set in the correlationID of the reply.
-	 * @param force
-	 */
-	public void setForceMessageIdAsCorrelationId(boolean force){
-	   forceMessageIdAsCorrelationId=force;
-	}
-	public boolean isForceMessageIdAsCorrelationId(){
-	  return forceMessageIdAsCorrelationId;
-	}
-
-	/**
-	 * Controls when the JmsListener will commit it's local transacted session, that is created when
-	 * jmsTransacted = <code>true</code>. This is probably not what you want. 
-	 * @deprecated consider using XA transactions, controled by the <code>transacted</code>-attribute, rather than
-	 * local transactions controlled by the <code>jmsTransacted</code>-attribute.
-	 */
-	public void setCommitOnState(String newCommitOnState) throws ConfigurationException {
-		commitOnState = newCommitOnState;
-	}
-	public String getCommitOnState() {
-		return commitOnState;
-	}
-
-	public void setTimeOut(long newTimeOut) {
-		timeOut = newTimeOut;
-	}
-	public long getTimeOut() {
-		return timeOut;
-	}
-
-
-	public void setUseReplyTo(boolean newUseReplyTo) {
-		useReplyTo = newUseReplyTo;
-	}
-	public boolean getUseReplyTo() {
-		return useReplyTo;
-	}
-
-	
-	public void setReplyMessageType(String string) {
-		replyMessageType = string;
-	}
-	public String getReplyMessageType() {
-		return replyMessageType;
-	}
-
-
-	public void setReplyDeliveryMode(String string) {
-		replyDeliveryMode = string;
-	}
-	public String getReplyDeliveryMode() {
-		return replyDeliveryMode;
-	}
-
-
-	public void setReplyPriority(int i) {
-		replyPriority = i;
-	}
-	public int getReplyPriority() {
-		return replyPriority;
-	}
-
-
-	public void setReplyMessageTimeToLive(long l) {
-		replyMessageTimeToLive = l;
-	}
-	public long getReplyMessageTimeToLive() {
-		return replyMessageTimeToLive;
-	}
     
     
 	public void setJmsConnector(IListenerConnector configurator) {
