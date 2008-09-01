@@ -1,6 +1,9 @@
 /*
  * $Log: PushingIfsaProviderListener.java,v $
- * Revision 1.6  2008-08-27 15:57:43  europe\L190409
+ * Revision 1.7  2008-09-01 15:09:34  europe\L190409
+ * use BIFname as correlationId
+ *
+ * Revision 1.6  2008/08/27 15:57:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * introduced delivery count calculation
  * use bifname for correlationID
  *
@@ -111,10 +114,12 @@ import com.ing.ifsa.IFSAServicesProvided;
  * @version Id
  */
 public class PushingIfsaProviderListener extends IfsaFacade implements IPortConnectedListener, IThreadCountControllable, IKnowsDeliveryCount {
-	public static final String version = "$RCSfile: PushingIfsaProviderListener.java,v $ $Revision: 1.6 $ $Date: 2008-08-27 15:57:43 $";
+	public static final String version = "$RCSfile: PushingIfsaProviderListener.java,v $ $Revision: 1.7 $ $Date: 2008-09-01 15:09:34 $";
 
     private final static String THREAD_CONTEXT_SESSION_KEY = "session";
 	public final static String THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY = "originalRawMessage";
+	public final static String THREAD_CONTEXT_BIFNAME_KEY="IfsaBif";
+
 
 	private String listenerPort;
 	private String cacheMode; // default is set in spring container
@@ -347,17 +352,11 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 		String BIFname=null;
 		try {
 			BIFname= message.getBifName();
+			if (StringUtils.isNotEmpty(BIFname)) {
+				threadContext.put(THREAD_CONTEXT_BIFNAME_KEY,BIFname);
+			}
 		} catch (JMSException e) {
 			log.error(getLogPrefix() + "got error getting BIFname", e);
-		}
-		if (cid == null) {
-			if (StringUtils.isNotEmpty(BIFname)) {
-				cid = BIFname;
-				if (log.isDebugEnabled()) log.debug("Setting correlation ID to BIFname ["+cid+"]");
-			} else {
-				cid = id;
-				if (log.isDebugEnabled()) log.debug("Setting correlation ID to MessageId ["+cid+"]");
-			}
 		}
 		byte btcData[]=null;
 		try {
@@ -383,8 +382,17 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 					+ "] \n  Message=[" + message.toString()+"\n]");
 					
 		}
+//		if (cid == null) {
+//			if (StringUtils.isNotEmpty(BIFname)) {
+//				cid = BIFname;
+//				if (log.isDebugEnabled()) log.debug("Setting correlation ID to BIFname ["+cid+"]");
+//			} else {
+//				cid = id;
+//				if (log.isDebugEnabled()) log.debug("Setting correlation ID to MessageId ["+cid+"]");
+//			}
+//		}
 	
-		PipeLineSession.setListenerParameters(threadContext, id, cid, null, tsSent);
+		PipeLineSession.setListenerParameters(threadContext, id, BIFname, null, tsSent);
 	    threadContext.put("timestamp", tsSent);
 	    threadContext.put("replyTo", ((replyTo == null) ? "none" : replyTo.toString()));
 	    threadContext.put("messageText", messageText);
@@ -410,7 +418,7 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 			}
 		}
 
-	    return id;
+	    return BIFname;
 	}
 	
 	private String displayHeaders(IFSAMessage message) {
