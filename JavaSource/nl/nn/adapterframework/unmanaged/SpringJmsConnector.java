@@ -1,6 +1,9 @@
 /*
  * $Log: SpringJmsConnector.java,v $
- * Revision 1.17  2008-08-27 16:23:02  europe\L190409
+ * Revision 1.18  2008-09-01 13:01:37  europe\L190409
+ * set default cache level for non transacted back to CACHE_CONSUMER
+ *
+ * Revision 1.17  2008/08/27 16:23:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved logging
  *
  * Revision 1.16  2008/08/21 17:56:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -98,8 +101,6 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
-import com.ing.ifsa.IFSAMessage;
-
 /**
  * Configure a Spring JMS Container from a {@link nl.nn.adapterframework.jms.PushingJmsListener}.
  * 
@@ -125,7 +126,7 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 	private String messageListenerClassName;
     
     public static final int DEFAULT_CACHE_LEVEL_TRANSACTED=DefaultMessageListenerContainer.CACHE_NONE;
-	public static final int DEFAULT_CACHE_LEVEL_NON_TRANSACTED=DefaultMessageListenerContainer.CACHE_NONE;
+	public static final int DEFAULT_CACHE_LEVEL_NON_TRANSACTED=DefaultMessageListenerContainer.CACHE_CONSUMER;
 //	public static final int MAX_MESSAGES_PER_TASK=100;
 	public static final int IDLE_TASK_EXECUTION_LIMIT=1000;
  
