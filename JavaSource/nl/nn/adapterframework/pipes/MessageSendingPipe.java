@@ -1,6 +1,9 @@
 /*
  * $Log: MessageSendingPipe.java,v $
- * Revision 1.46  2008-08-27 16:18:49  europe\L190409
+ * Revision 1.47  2008-09-01 12:59:38  europe\L190409
+ * corrected log message
+ *
+ * Revision 1.46  2008/08/27 16:18:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added reset option to statisticsdump
  *
  * Revision 1.45  2008/08/13 13:40:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -240,7 +243,7 @@ import org.apache.commons.lang.SystemUtils;
  */
 
 public class MessageSendingPipe extends FixedForwardPipe implements HasSender, HasStatistics, EventThrowing {
-	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.46 $ $Date: 2008-08-27 16:18:49 $";
+	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.47 $ $Date: 2008-09-01 12:59:38 $";
 
 	public static final String PIPE_TIMEOUT_MONITOR_EVENT = "Sender Timeout";
 	public static final String PIPE_CLEAR_TIMEOUT_MONITOR_EVENT = "Sender Received Result on Time";
@@ -464,13 +467,14 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 					result = sendResult;
 				} else {
 					messageID = sendResult;
+					if (log.isInfoEnabled()) {
+						log.info(getLogPrefix(session) + "sent message to [" + getSender().getName()+ "] messageID ["+ messageID+ "] correlationID ["+ correlationID+ "] linkMethod ["+ getLinkMethod()	+ "]");
+					}
 					// if linkMethod is MESSAGEID overwrite correlationID with the messageID
 					// as this will be used with the listener
 					if (getLinkMethod().equalsIgnoreCase("MESSAGEID")) {
 						correlationID = sendResult;
-					}
-					if (log.isInfoEnabled()) {
-						log.info(getLogPrefix(session) + "sent message to [" + getSender().getName()+ "] messageID ["+ messageID+ "] correlationID ["+ correlationID+ "] linkMethod ["+ getLinkMethod()	+ "]");
+						if (log.isDebugEnabled()) log.debug(getLogPrefix(session)+"setting correlationId to listen for to messageId ["+correlationID+"]");
 					}
 				}
 
