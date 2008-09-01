@@ -1,6 +1,9 @@
 /*
  * $Log: DateUtils.java,v $
- * Revision 1.12  2008-06-03 15:55:06  europe\L190409
+ * Revision 1.13  2008-09-01 15:36:43  europe\L190409
+ * added seconds to generic datetime format
+ *
+ * Revision 1.12  2008/06/03 15:55:06  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added code for parsing in any format, and optimal formatting
  *
  * Revision 1.11  2008/02/13 12:58:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -42,7 +45,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class DateUtils {
-	public static final String version = "$RCSfile: DateUtils.java,v $ $Revision: 1.12 $ $Date: 2008-06-03 15:55:06 $";
+	public static final String version = "$RCSfile: DateUtils.java,v $ $Revision: 1.13 $ $Date: 2008-09-01 15:36:43 $";
 	protected static Logger log = LogUtil.getLogger(DateUtils.class);
 	
 
@@ -62,7 +65,7 @@ public class DateUtils {
     /**
      * Format for "dd-MM-yy HH:mm"
      */
-	public final static String FORMAT_GENERICDATETIME  ="dd-MM-yy HH:mm";
+	public final static String FORMAT_GENERICDATETIME  ="dd-MM-yy HH:mm:ss";
 
 
     /**
