@@ -1,6 +1,9 @@
 /*
  * $Log: IListenerConnector.java,v $
- * Revision 1.3  2008-01-03 15:41:49  europe\L190409
+ * Revision 1.4  2008-09-01 15:08:27  europe\L190409
+ * added session key to store session
+ *
+ * Revision 1.3  2008/01/03 15:41:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * rework port connected listener interfaces
  *
  * Revision 1.2  2007/11/05 13:06:55  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
@@ -36,7 +39,10 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
  * @version Id
  */
 public interface IListenerConnector {
-    
+
+	public final static String THREAD_CONTEXT_SESSION_KEY="JmsSession";
+
+   
     void configureEndpointConnection(IPortConnectedListener listener, ConnectionFactory connectionFactory, Destination destination, IbisExceptionListener exceptionListener, String cacheMode, boolean sessionTransacted, String selector) throws ConfigurationException;
 
 	/**
