@@ -1,12 +1,16 @@
 /*
  * $Log: StatisticsKeeperXmlBuilder.java,v $
- * Revision 1.1  2008-06-03 15:57:54  europe\L190409
+ * Revision 1.2  2008-09-01 15:37:26  europe\L190409
+ * added generic summary information
+ *
+ * Revision 1.1  2008/06/03 15:57:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * first version
  *
  */
 package nl.nn.adapterframework.util;
 
 import java.text.DecimalFormat;
+import java.util.Date;
 
 import org.apache.log4j.Logger;
 
@@ -37,6 +41,9 @@ public class StatisticsKeeperXmlBuilder implements StatisticsKeeperIterationHand
 	public Object start() {
 		log.debug("**********  start StatisticsKeeperXmlBuilder  **********");
 		root = new XmlBuilder(ROOT_ELEMENT);
+		root.addAttribute("timestamp",DateUtils.format(new Date(),DateUtils.FORMAT_GENERICDATETIME));
+		root.addAttribute("host",Misc.getHostname());
+		root.addAttribute("instance",AppConstants.getInstance().getProperty("instance.name"));
 		return root;
 	}
 	public void end(Object data) {
