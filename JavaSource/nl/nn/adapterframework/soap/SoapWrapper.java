@@ -1,6 +1,9 @@
 /*
  * $Log: SoapWrapper.java,v $
- * Revision 1.7  2008-08-07 07:58:09  europe\L190409
+ * Revision 1.8  2008-09-01 13:00:27  europe\L190409
+ * removed xsd and xsi namespace prefix definitions in putInEnvelope
+ *
+ * Revision 1.7  2008/08/07 07:58:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * skip xml declaration from soap header
  *
  * Revision 1.6  2008/06/09 09:57:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -60,7 +63,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class SoapWrapper {
-	public static final String version="$RCSfile: SoapWrapper.java,v $ $Revision: 1.7 $ $Date: 2008-08-07 07:58:09 $";
+	public static final String version="$RCSfile: SoapWrapper.java,v $ $Revision: 1.8 $ $Date: 2008-09-01 13:00:27 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private TransformerPool extractBody;
@@ -165,8 +168,9 @@ public class SoapWrapper {
 		"<soapenv:Envelope " + 
 			"xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" "+encodingStyle +
 			targetObjectNamespaceClause +
-			"xmlns:xsi=\"http://www.w3.org/1999/XMLSchema-instance\" " + 
-			"xmlns:xsd=\"http://www.w3.org/1999/XMLSchema\" >" + 
+//			"xmlns:xsi=\"http://www.w3.org/1999/XMLSchema-instance\" " + 
+//			"xmlns:xsd=\"http://www.w3.org/1999/XMLSchema\" " +
+			">" + 
 			soapHeader+
 			"<soapenv:Body>" + 	
 				XmlUtils.skipXmlDeclaration(message) +
