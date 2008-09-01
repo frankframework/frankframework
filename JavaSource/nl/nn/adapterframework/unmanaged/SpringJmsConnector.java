@@ -1,6 +1,9 @@
 /*
  * $Log: SpringJmsConnector.java,v $
- * Revision 1.18  2008-09-01 13:01:37  europe\L190409
+ * Revision 1.19  2008-09-01 15:14:56  europe\L190409
+ * use session key definition from parent to store session
+ *
+ * Revision 1.18  2008/09/01 13:01:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * set default cache level for non transacted back to CACHE_CONSUMER
  *
  * Revision 1.17  2008/08/27 16:23:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -259,7 +262,7 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 			Map threadContext = new HashMap();
 			try {
 				IPortConnectedListener listener = getListener();
-				threadContext.put("session",session);
+				threadContext.put(THREAD_CONTEXT_SESSION_KEY,session);
 //				if (log.isDebugEnabled()) log.debug("transaction status before: "+JtaUtil.displayTransactionStatus());
 				getReceiver().processRawMessage(listener, message, threadContext);
 //				if (log.isDebugEnabled()) log.debug("transaction status after: "+JtaUtil.displayTransactionStatus());
