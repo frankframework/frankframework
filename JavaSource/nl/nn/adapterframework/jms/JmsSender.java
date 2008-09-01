@@ -1,6 +1,9 @@
 /*
  * $Log: JmsSender.java,v $
- * Revision 1.27  2008-08-07 11:36:33  europe\L190409
+ * Revision 1.28  2008-09-01 12:58:17  europe\L190409
+ * modified logging
+ *
+ * Revision 1.27  2008/08/07 11:36:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added support for SoapHeaders
  *
  * Revision 1.26  2008/05/15 14:56:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -137,7 +140,7 @@ import javax.jms.Message;
  */
 
 public class JmsSender extends JMSFacade implements ISenderWithParameters, IPostboxSender {
-	public static final String version="$RCSfile: JmsSender.java,v $ $Revision: 1.27 $ $Date: 2008-08-07 11:36:33 $";
+	public static final String version="$RCSfile: JmsSender.java,v $ $Revision: 1.28 $ $Date: 2008-09-01 12:58:17 $";
 	private String replyToName = null;
 	private int deliveryMode = 0;
 	private String messageType = null;
@@ -266,7 +269,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 					"[" + getName() + "] " + "sent Message: [" + message + "] " + "to [" + getDestinationName()
 						+ "] " + "msgID [" + msg.getJMSMessageID() + "] " + "correlationID [" + msg.getJMSCorrelationID()
 						+ "] " + "using deliveryMode [" + getDeliveryMode() + "] "
-						+ ((replyToName != null) ? "replyTo:" + replyToName : ""));
+						+ ((replyToName != null) ? "replyTo [" + replyToName+"]" : ""));
 			}
 			return msg.getJMSMessageID();
 		} catch (Throwable e) {
