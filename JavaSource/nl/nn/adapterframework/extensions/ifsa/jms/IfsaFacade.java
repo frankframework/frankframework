@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaFacade.java,v $
- * Revision 1.6  2008-07-14 17:17:49  europe\L190409
+ * Revision 1.7  2008-09-02 11:43:57  europe\L190409
+ * close reply sender in finally clause
+ *
+ * Revision 1.6  2008/07/14 17:17:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added space after logprefix
  *
  * Revision 1.5  2008/05/22 07:23:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -212,7 +215,7 @@ import com.ing.ifsa.IFSATextMessage;
  * @since 4.2
  */
 public class IfsaFacade implements INamedObject, HasPhysicalDestination {
-	public static final String version = "$RCSfile: IfsaFacade.java,v $ $Revision: 1.6 $ $Date: 2008-07-14 17:17:49 $";
+	public static final String version = "$RCSfile: IfsaFacade.java,v $ $Revision: 1.7 $ $Date: 2008-09-02 11:43:57 $";
     protected Logger log = LogUtil.getLogger(this);
     
     private static int BASIC_ACK_MODE = Session.AUTO_ACKNOWLEDGE;
@@ -626,23 +629,25 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 	 * Intended for server-side reponse sending and implies that the received
 	 * message *always* contains a reply-to address.
 	 */
-	public void sendReply(QueueSession session, Message received_message, String response)
-	    throws IfsaException {
+	public void sendReply(QueueSession session, Message received_message, String response) throws IfsaException {
+		QueueSender tqs=null;
 	    try {
 	        TextMessage answer = session.createTextMessage();
 	        answer.setText(response);
 			Queue replyQueue = (Queue)received_message.getJMSReplyTo();
-			if (log.isDebugEnabled()) {
-				log.debug(getLogPrefix()+"obtained replyQueue ["+replyQueue.getQueueName()+"]");
-			}
-	        QueueSender tqs = session.createSender(replyQueue );
-	        if (log.isDebugEnabled()) {
-	            log.debug(getLogPrefix()+ "sending reply to ["+ received_message.getJMSReplyTo()+ "]");
-	        }
+	        tqs = session.createSender(replyQueue );
+	        if (log.isDebugEnabled()) log.debug(getLogPrefix()+ "sending reply to ["+ received_message.getJMSReplyTo()+ "]");
 	        ((IFSAServerQueueSender) tqs).sendReply(received_message, answer);
-	        tqs.close();
-	    } catch (JMSException e) {
-	        throw new IfsaException(e);
+	    } catch (Throwable t) {
+	        throw new IfsaException(t);
+	    } finally {
+	    	if (tqs!=null) {
+				try {
+					tqs.close();
+				} catch (JMSException e) {
+					log.warn(getLogPrefix()+ "exception closing reply queue sender",e);
+				}	
+	    	}
 	    }
 	}
 
