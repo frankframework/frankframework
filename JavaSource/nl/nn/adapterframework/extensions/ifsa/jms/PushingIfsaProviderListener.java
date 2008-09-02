@@ -1,6 +1,9 @@
 /*
  * $Log: PushingIfsaProviderListener.java,v $
- * Revision 1.7  2008-09-01 15:09:34  europe\L190409
+ * Revision 1.8  2008-09-02 11:45:07  europe\L190409
+ * use session key definition from interface to retrieve session
+ *
+ * Revision 1.7  2008/09/01 15:09:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * use BIFname as correlationId
  *
  * Revision 1.6  2008/08/27 15:57:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -114,9 +117,8 @@ import com.ing.ifsa.IFSAServicesProvided;
  * @version Id
  */
 public class PushingIfsaProviderListener extends IfsaFacade implements IPortConnectedListener, IThreadCountControllable, IKnowsDeliveryCount {
-	public static final String version = "$RCSfile: PushingIfsaProviderListener.java,v $ $Revision: 1.7 $ $Date: 2008-09-01 15:09:34 $";
+	public static final String version = "$RCSfile: PushingIfsaProviderListener.java,v $ $Revision: 1.8 $ $Date: 2008-09-02 11:45:07 $";
 
-    private final static String THREAD_CONTEXT_SESSION_KEY = "session";
 	public final static String THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY = "originalRawMessage";
 	public final static String THREAD_CONTEXT_BIFNAME_KEY="IfsaBif";
 
@@ -194,8 +196,8 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 
 
 	public void afterMessageProcessed(PipeLineResult plr, Object rawMessage, Map threadContext) throws ListenerException {	
-		QueueSession session= (QueueSession) threadContext.get(THREAD_CONTEXT_SESSION_KEY);
-	    		    
+		QueueSession session= (QueueSession) threadContext.get(IListenerConnector.THREAD_CONTEXT_SESSION_KEY);
+			    		    
 	    // on request-reply send the reply.
 	    if (getMessageProtocolEnum().equals(IfsaMessageProtocolEnum.REQUEST_REPLY)) {
 			Message originalRawMessage;
@@ -208,6 +210,9 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 				String cid = (String) threadContext.get(PipeLineSession.businessCorrelationIdKey);
 				log.warn(getLogPrefix()+"no original raw message found for correlationId ["+cid+"], cannot send result");
 			} else {
+				if (session==null) {
+					throw new ListenerException(getLogPrefix()+"no session found in context, cannot send result");
+				}
 				try {
 					String result="<exception>no result</exception>";
 					if (plr!=null && plr.getResult()!=null) {
