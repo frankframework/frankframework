@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.62  2008-08-27 16:20:36  europe\L190409
+ * Revision 1.63  2008-09-02 12:15:04  europe\L190409
+ * escaped errormessage contents
+ *
+ * Revision 1.62  2008/08/27 16:20:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * modified event registration
  * modified delivery count calculation
  * introduced queing statistics
@@ -455,7 +458,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  */
 public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHandler, EventThrowing, IbisExceptionListener, HasSender, HasStatistics, TracingEventNumbers, IThreadCountControllable, BeanFactoryAware {
     
-	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.62 $ $Date: 2008-08-27 16:20:36 $";
+	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.63 $ $Date: 2008-09-02 12:15:04 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -1419,7 +1422,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 					moveInProcessToError(messageId, correlationId, message, rcvDate, comments, rawMessage, TXREQUIRED);
 				}
 				PipeLineResult plr = new PipeLineResult();
-				plr.setResult("<error>"+comments+"</error>");
+				plr.setResult("<error>"+XmlUtils.encodeChars(comments)+"</error>");
 				plr.setState("ERROR");
 				getListener().afterMessageProcessed(plr, rawMessage, threadContext);
 				return true;
