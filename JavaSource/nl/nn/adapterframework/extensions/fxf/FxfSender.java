@@ -1,6 +1,9 @@
 /*
  * $Log: FxfSender.java,v $
- * Revision 1.5  2008-08-27 15:55:41  europe\L190409
+ * Revision 1.6  2008-09-04 12:05:25  europe\L190409
+ * test for version of fxf
+ *
+ * Revision 1.5  2008/08/27 15:55:41  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added remote filename option
  *
  * Revision 1.4  2008/02/22 14:29:22  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -85,6 +88,10 @@ public class FxfSender extends SenderWithParametersBase {
 			if (!REMOTE_FILENAME_PARAM.equalsIgnoreCase(remoteFilenameParam.getName())) {
 				log.warn(getLogPrefix()+"name of parameter for remote filename ["+remoteFilenameParam.getName()+"] is not equal to ["+REMOTE_FILENAME_PARAM+"], as expected. Using it anyway" );
 			}
+		}
+		if (log.isDebugEnabled()) {
+			String version=FxfUtil.getVersion(getScript());
+			log.debug(getLogPrefix()+"FxF version ["+version+"]");
 		}
 	}
 

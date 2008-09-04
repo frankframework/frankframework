@@ -1,6 +1,9 @@
 /*
  * $Log: FxfListener.java,v $
- * Revision 1.12  2008-07-24 14:10:03  europe\L190409
+ * Revision 1.13  2008-09-04 12:05:25  europe\L190409
+ * test for version of fxf
+ *
+ * Revision 1.12  2008/07/24 14:10:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * avoid trying to delete file twice
  *
  * Revision 1.11  2008/07/24 12:31:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -126,6 +129,12 @@ public class FxfListener extends JmsListener implements IBulkDataListener {
 		}
 		extractTransfername=TransformerPool.configureTransformer(getLogPrefix(),EXTRACT_TRANSFERNAME_DXPATH,null,"text",false,null);
 		extractLocalname=TransformerPool.configureTransformer(getLogPrefix(),EXTRACT_LOCALNAME_DXPATH,null,"text",false,null);
+
+		if (log.isDebugEnabled()) {
+			String version=FxfUtil.getVersion(getScript());
+			log.debug(getLogPrefix()+"FxF version ["+version+"]");
+		}
+
 	}
 	
 	public String getStringFromRawMessage(Object rawMessage, Map threadContext) throws ListenerException {
