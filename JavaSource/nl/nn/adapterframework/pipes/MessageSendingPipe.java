@@ -1,6 +1,9 @@
 /*
  * $Log: MessageSendingPipe.java,v $
- * Revision 1.47  2008-09-01 12:59:38  europe\L190409
+ * Revision 1.48  2008-09-04 12:13:00  europe\L190409
+ * collect interval statistics
+ *
+ * Revision 1.47  2008/09/01 12:59:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected log message
  *
  * Revision 1.46  2008/08/27 16:18:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -243,7 +246,7 @@ import org.apache.commons.lang.SystemUtils;
  */
 
 public class MessageSendingPipe extends FixedForwardPipe implements HasSender, HasStatistics, EventThrowing {
-	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.47 $ $Date: 2008-09-01 12:59:38 $";
+	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.48 $ $Date: 2008-09-04 12:13:00 $";
 
 	public static final String PIPE_TIMEOUT_MONITOR_EVENT = "Sender Timeout";
 	public static final String PIPE_CLEAR_TIMEOUT_MONITOR_EVENT = "Sender Received Result on Time";
@@ -652,9 +655,9 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 		}
 	}
 
-	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, boolean reset) {
+	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, int action) {
 		if (sender instanceof HasStatistics) {
-			((HasStatistics)sender).iterateOverStatistics(hski,data,reset);
+			((HasStatistics)sender).iterateOverStatistics(hski,data,action);
 		}
 	}
 

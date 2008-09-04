@@ -1,6 +1,9 @@
 /*
  * $Log: SenderWrapper.java,v $
- * Revision 1.4  2008-08-27 16:22:40  europe\L190409
+ * Revision 1.5  2008-09-04 12:16:03  europe\L190409
+ * collect interval statistics
+ *
+ * Revision 1.4  2008/08/27 16:22:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added reset option to statisticsdump
  *
  * Revision 1.3  2008/07/17 16:18:46  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -78,9 +81,9 @@ public class SenderWrapper extends SenderWrapperBase {
 		return result;
 	}
 
-	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, boolean reset) {
+	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, int action) {
 		if (getSender() instanceof HasStatistics) {
-			((HasStatistics)getSender()).iterateOverStatistics(hski,data,reset);
+			((HasStatistics)getSender()).iterateOverStatistics(hski,data,action);
 		}
 	}
 

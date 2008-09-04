@@ -1,6 +1,9 @@
 /*
  * $Log: DefaultIbisManager.java,v $
- * Revision 1.8  2008-08-21 17:56:54  europe\L190409
+ * Revision 1.9  2008-09-04 12:16:52  europe\L190409
+ * collect interval statistics
+ *
+ * Revision 1.8  2008/08/21 17:56:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * get statisticsdump from configuration
  *
  * Revision 1.7  2008/07/24 12:23:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -58,12 +61,12 @@ import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.IThreadCountControllable;
 import nl.nn.adapterframework.ejb.ListenerPortPoller;
-import nl.nn.adapterframework.pipes.IbisLocalSender;
+import nl.nn.adapterframework.senders.IbisLocalSender;
 import nl.nn.adapterframework.scheduler.JobDef;
 import nl.nn.adapterframework.scheduler.SchedulerHelper;
 import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.HasStatistics;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.StatisticsKeeperLogger;
 
 import org.apache.log4j.Logger;
 import org.quartz.SchedulerException;
@@ -292,7 +295,7 @@ public class DefaultIbisManager implements IbisManager, BeanFactoryAware {
      * @see nl.nn.adapterframework.configuration.IbisManager#stopAdapters()
      */
     public void stopAdapters() {
-		getConfiguration().dumpStatistics(false);
+		getConfiguration().dumpStatistics(HasStatistics.STATISTICS_ACTION_MARK);
      	
         log.info("Stopping all adapters");
         List adapters = configuration.getRegisteredAdapters();
