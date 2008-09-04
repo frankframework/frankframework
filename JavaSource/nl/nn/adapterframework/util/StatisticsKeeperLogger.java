@@ -1,6 +1,9 @@
 /*
  * $Log: StatisticsKeeperLogger.java,v $
- * Revision 1.5  2008-07-24 12:24:12  europe\L190409
+ * Revision 1.6  2008-09-04 12:19:05  europe\L190409
+ * log to daily rolling file
+ *
+ * Revision 1.5  2008/07/24 12:24:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * log statistics as XML
  *
  * Revision 1.4  2008/05/14 09:30:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -18,10 +21,15 @@
  */
 package nl.nn.adapterframework.util;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.Date;
+
 import org.apache.log4j.Logger;
 
 /**
- * Logs statistics-keeper contents to log
+ * Logs statistics-keeper contents to log.
  * 
  * @author  Gerrit van Brakel
  * @since   4.4.3
@@ -30,9 +38,36 @@ import org.apache.log4j.Logger;
 public class StatisticsKeeperLogger extends StatisticsKeeperXmlBuilder {
 	protected Logger log = LogUtil.getLogger("nl.nn.adapterframework.statistics");
 
+	public StatisticsKeeperLogger(Date now, Date mark) {
+		super(now,mark);
+	}
+
 	public void end(Object data) {
 		super.end(data);
-		log.info(getXml().toXML());
+
+		AppConstants ac = AppConstants.getInstance();		
+		String directory = ac.getResolvedProperty("log.dir");
+		int retentionDays=ac.getInt("statistics.retention",7);
+		String filenamePattern=ac.getResolvedProperty("instance.name")+"-stats_";
+		String extension=".log";
+		File outfile=FileUtils.getDailyRollingFile(directory, filenamePattern, extension, retentionDays);
+
+		FileWriter fw=null;
+		try {
+			fw = new FileWriter(outfile,true);
+			fw.write(getXml().toXML());
+			fw.write("\n");
+		} catch (IOException e) {
+			log.error("Could not write statistics to file ["+outfile.getPath()+"]",e);
+		} finally {
+			if (fw!=null) {
+				try {
+					fw.close();
+				} catch (Exception e) {
+					log.error("Could not close statistics file ["+outfile.getPath()+"]",e);
+				}
+			}
+		}
 	}
 	
 	
