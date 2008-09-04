@@ -1,6 +1,9 @@
 /*
  * $Log: StatisticsKeeper.java,v $
- * Revision 1.12  2008-08-27 16:25:36  europe\L190409
+ * Revision 1.13  2008-09-04 13:26:10  europe\L190409
+ * collect interval statistics
+ *
+ * Revision 1.12  2008/08/27 16:25:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added clear()
  *
  * Revision 1.11  2007/10/08 13:35:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -39,26 +42,51 @@ import java.util.StringTokenizer;
  * @version Id
  */
 public class StatisticsKeeper {
-	public static final String version="$RCSfile: StatisticsKeeper.java,v $ $Revision: 1.12 $ $Date: 2008-08-27 16:25:36 $";
-	
+	public static final String version="$RCSfile: StatisticsKeeper.java,v $ $Revision: 1.13 $ $Date: 2008-09-04 13:26:10 $";
+
 	private static final boolean calculatePercentiles=true;
 	
+	private class Basics {
+		long min = Integer.MAX_VALUE;
+		long max = 0;
+		long count = 0;
+		long total = 0;
+		long totalSquare=0;
+		
+		public void reset() {
+			min = Integer.MAX_VALUE;
+			max = 0;
+			count = 0;
+			total = 0;
+			totalSquare=0;
+		}
+
+		public void mark(Basics other) {
+			min = Integer.MAX_VALUE;
+			max = 0;
+			count = other.count;
+			total = other.total;
+			totalSquare=other.totalSquare;
+		}
+		
+		
+	}
+	
 	private String name = null;
-	private long min = Integer.MAX_VALUE;
-    private long max = 0;
-    private long count = 0;
-    private long total = 0;
-    private long totalSquare=0;
 	private long first=0;
     private long last=0;
+    private Basics cumulative = new Basics();
+	private Basics mark = new Basics();
     private long classBoundaries[];
     private long classCounts[];
+    
     
 
    	// key that is looked up to retrieve texts to be signalled
 	private static final String statConfigKey="Statistics.boundaries";
  
  	public static final int NUM_STATIC_ITEMS=8;   
+	public static final int NUM_INTERVAL_ITEMS=6;   
     public static final int ITEM_TYPE_INTEGER=1;
     public static final int ITEM_TYPE_TIME=2;
     public static final int ITEM_TYPE_FRACTION=3;
@@ -98,48 +126,48 @@ public class StatisticsKeeper {
 		}
 	}
 	
+	public void performAction(int action) {
+		if (action==HasStatistics.STATISTICS_ACTION_NONE) {
+			return;
+		}
+		if (action==HasStatistics.STATISTICS_ACTION_RESET) {
+			clear();
+		}
+		if (action==HasStatistics.STATISTICS_ACTION_MARK) {
+			mark.mark(cumulative);
+		}
+	}
+	
 	public void clear() {
-		min = Integer.MAX_VALUE;
-		max = 0;
-		count = 0;
-		total = 0;
-		totalSquare=0;
+		cumulative.reset();
+		mark.reset();
 		first=0;
 		last=0;
 		pest.clear();
 	}
 	
-/*	
-	public StatisticsKeeper(StatisticsKeeper stat) {
-		name = stat.name;
-	    min = stat.min;
-	    max = stat.max;
-	    count = stat.count;
-	    total = stat.total;
-	    totalSquare = stat.totalSquare;
-	
-	    classBoundaries = stat.getClassBoundaries();
-	    classCounts = new long[classBoundaries.length];
-
-		pest = stat.pest;
-	}
-*/	
 	public void addValue(long value) {
-		if (count==0) { 
+		if (cumulative.count==0) { 
 			first=value;
 		}
-	    ++count;
+	    ++cumulative.count;
 		if (calculatePercentiles) {
-			pest.addValue(value,count,min,max);
+			pest.addValue(value,cumulative.count,cumulative.min,cumulative.max);
 		}
-	    total += value;
-	    if (value > max) {
-	        max = value;
+		cumulative.total += value;
+		if (value > mark.max) {
+			mark.max = value;
+		    if (value > cumulative.max) {
+				cumulative.max = value;
+		    }
 	    }
-	    if (value < min) {
-	        min = value;
+		if (value < mark.min) {
+			mark.min = value;
+		    if (value < cumulative.min) {
+				cumulative.min = value;
+		    }
 	    }
-	    totalSquare += value * value;
+		cumulative.totalSquare += value * value;
 	    last = value;
 	
 	    for (int i = 0; i < classBoundaries.length; i++) {
@@ -151,33 +179,24 @@ public class StatisticsKeeper {
 	
 
 
-    public double getAvg()
-    {
-        if (count == 0)
-        {
-            return 0;
-        }
-        return (total / (double)count);
-    }
 	public long[] getClassBoundaries() {
 		return classBoundaries;
 	}
 	public long[] getClassCounts() {
 		return classCounts;
 	}
-    public long getCount()
-    {
-        return count;
-    }
-    public int getItemCount()
-    {
+
+    public int getItemCount() {
 		if (calculatePercentiles) {
 	        return NUM_STATIC_ITEMS+classBoundaries.length+pest.getNumPercentiles();
 		}
 		return NUM_STATIC_ITEMS+classBoundaries.length;
     }
-    public String getItemName(int index)
-    {
+	public int getIntervalItemCount() {
+		return NUM_INTERVAL_ITEMS;
+	}
+	
+    public String getItemName(int index) {
 	    switch (index) {
 		    case 0: return "count";
 		    case 1: return "min";
@@ -186,7 +205,7 @@ public class StatisticsKeeper {
 			case 4: return "stdDev";
 			case 5: return "first";
 			case 6: return "last";
-		    case 7: return "total";
+		    case 7: return "sum";
 		    default : if ((index-NUM_STATIC_ITEMS) < classBoundaries.length) { 
 				return "< "+classBoundaries[index-NUM_STATIC_ITEMS]+"ms";
 		    }
@@ -196,6 +215,17 @@ public class StatisticsKeeper {
 			return null;
 	    }
     }
+	public String getIntervalItemName(int index) {
+		switch (index) {
+			case 0: return "count";
+			case 1: return "min";
+			case 2: return "max";
+			case 3: return "avg";
+			case 4: return "sum";
+			case 5: return "sumsq";
+			default: return null;
+		}
+	}
     
 	public int getItemIndex(String name) {
 		int top=NUM_STATIC_ITEMS+classBoundaries.length;
@@ -212,8 +242,7 @@ public class StatisticsKeeper {
 	}
 
     
-    public int getItemType(int index)
-    {
+    public int getItemType(int index) {
 	    switch (index) {
 		    case 0: return ITEM_TYPE_INTEGER;
 		    case 1: return ITEM_TYPE_TIME;
@@ -230,6 +259,17 @@ public class StatisticsKeeper {
 				return ITEM_TYPE_TIME;
 	    }
     }
+	public int getIntervalItemType(int index) {
+		switch (index) {
+			case 0: return ITEM_TYPE_INTEGER;
+			case 1: return ITEM_TYPE_TIME;
+			case 2: return ITEM_TYPE_TIME;
+			case 3: return ITEM_TYPE_TIME;
+			case 4: return ITEM_TYPE_INTEGER;
+			case 5: return ITEM_TYPE_INTEGER;
+			default : return ITEM_TYPE_INTEGER;
+		}
+	}
     public Object getItemValue(int index) {
 	    switch (index) {
 		    case 0: return new Long(getCount());
@@ -253,6 +293,17 @@ public class StatisticsKeeper {
 				throw new ArrayIndexOutOfBoundsException("StatisticsKeeper.getItemValue() item index too high: "+index);
 	    }
     }
+	public Object getIntervalItemValue(int index) {
+		switch (index) {
+			case 0: return new Long(cumulative.count-mark.count);
+			case 1: if (cumulative.count == mark.count) return null; else return new Long(mark.min);
+			case 2: if (cumulative.count == mark.count) return null; else return new Long(mark.max);
+			case 3: if (cumulative.count == mark.count) return null; else return new Double((cumulative.total-mark.total)/(double)(cumulative.count-mark.count));
+			case 4: return new Long(cumulative.total-mark.total);
+			case 5: return new Long(cumulative.totalSquare-mark.totalSquare);
+			default : return null;
+		}
+	}
 
 	public String getItemValueFormated(int index) {
 		Object item = getItemValue(index);
@@ -290,7 +341,7 @@ public class StatisticsKeeper {
 		items.addSubElement(item);
 		item.addAttribute("index","-1");
 		item.addAttribute("name","sumofsquares");
-		item.addAttribute("value",""+totalSquare);
+		item.addAttribute("value",""+cumulative.totalSquare);
 
 		XmlBuilder samples = new XmlBuilder("samples");
 		result.addSubElement(samples);
@@ -300,8 +351,20 @@ public class StatisticsKeeper {
 		}
     	return result;
     }
+ 
+   
     
-    
+	public long getCount() {
+		return cumulative.count;
+	}
+	
+	public double getAvg() {
+		if (cumulative.count == 0) {
+			return 0;
+		}
+		return (cumulative.total / (double)cumulative.count);
+	}
+   
     
     public long getFirst() {
 	    return first;
@@ -309,33 +372,29 @@ public class StatisticsKeeper {
 	public long getLast() {
 		return last;
 	}
-    public long getMax()
-    {
-        return max;
+    public long getMax() {
+        return cumulative.max;
     }
-    public long getMin()
-    {
-        return min;
+    public long getMin() {
+        return cumulative.min;
     }
 
 	public String getName() {
 		return name;
 	}
     public double getStdDev() {
-    	
     	return Math.sqrt(getVariance());
     }
-    public long getTotal()
-    {
-        return total;
+    public long getTotal() {
+        return cumulative.total;
     }
     public long getTotalSquare(){
-    	return totalSquare;
+    	return cumulative.totalSquare;
     }
-    public double getVariance(){
+    public double getVariance() {
     	double result;
-    	if (count>1) {
-    		result=(totalSquare-((total*total)/count))/(count-1);
+    	if (cumulative.count>1) {
+    		result=(cumulative.totalSquare-((cumulative.total*cumulative.total)/cumulative.count))/(cumulative.count-1);
 
     	}
     	else result=Double.NaN;
