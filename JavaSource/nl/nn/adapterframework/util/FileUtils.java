@@ -1,6 +1,9 @@
 /*
  * $Log: FileUtils.java,v $
- * Revision 1.12  2008-07-15 12:16:36  europe\L190409
+ * Revision 1.13  2008-09-04 12:17:30  europe\L190409
+ * added getDailyRollingFile()
+ *
+ * Revision 1.12  2008/07/15 12:16:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * *** empty log message ***
  *
  * Revision 1.11  2008/02/15 13:56:06  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -41,6 +44,8 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -64,7 +69,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class FileUtils {
-	public static final String version = "$RCSfile: FileUtils.java,v $  $Revision: 1.12 $ $Date: 2008-07-15 12:16:36 $";
+	public static final String version = "$RCSfile: FileUtils.java,v $  $Revision: 1.13 $ $Date: 2008-09-04 12:17:30 $";
 
 	/**
 	 * Construct a filename from a pattern and session variables. 
@@ -221,6 +226,44 @@ public class FileUtils {
 		String backupFilename=targetFile.getPath()+".1";
 		File backupFile=new File(backupFilename);
 		targetFile.renameTo(backupFile);
+	}
+	
+	public static File getDailyRollingFile(String directory, String filenamePrefix, String filenameSuffix, int retentionDays) {
+		
+		final long millisPerDay=24*60*60*1000;
+		String dateformat = "yyyy-MM-dd";
+
+		Date now=new Date();
+
+		String filename=filenamePrefix+DateUtils.format(now,dateformat)+filenameSuffix;
+		File result = new File(directory+"/"+filename);
+		if (!result.exists()) {
+			int year=now.getYear();
+			int month=now.getMonth();
+			int date=now.getDate();
+		
+			long thisMorning = new Date(year, month, date).getTime();
+
+			long deleteBefore = thisMorning - retentionDays * millisPerDay;
+
+			WildCardFilter filter = new WildCardFilter(filenamePrefix+"*"+filenameSuffix);
+			File dir = new File(directory);
+			File[] files = dir.listFiles(filter);
+
+			int count = (files == null ? 0 : files.length);
+			for (int i = 0; i < count; i++) {
+				File file = files[i];
+				if (file.isDirectory()) {
+					continue;
+				}
+				if (file.lastModified()<deleteBefore) {
+					file.delete();
+				}
+			}
+		}
+		
+		return result;
+
 	}
 
 
