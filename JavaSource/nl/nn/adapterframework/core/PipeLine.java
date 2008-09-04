@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.65  2008-08-12 15:33:45  europe\L190409
+ * Revision 1.66  2008-09-04 12:03:13  europe\L190409
+ * added getOwner()
+ *
+ * Revision 1.65  2008/08/12 15:33:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * support for pipe exception event
  *
  * Revision 1.64  2008/08/07 11:20:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -288,7 +291,7 @@ import org.springframework.transaction.TransactionStatus;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.65 $ $Date: 2008-08-12 15:33:45 $";
+	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.66 $ $Date: 2008-09-04 12:03:13 $";
     private Logger log = LogUtil.getLogger(this);
 	private Logger durationLog = LogUtil.getLogger("LongDurationMessages");
     
@@ -904,6 +907,9 @@ public class PipeLine {
 	public void setOwner(INamedObject owner) {
 		this.owner = owner;
 	}
+	public INamedObject getOwner() {
+		return owner;
+	}
    /**
     * The indicator for the end of the processing, with default state "undefined".
     * @deprecated since v 3.2 this functionality is superseded by the use of {@link nl.nn.adapterframework.core.PipeLineExit PipeLineExits}.
@@ -1066,5 +1072,6 @@ public class PipeLine {
 	public void setIbisDebugger(IbisDebugger ibisDebugger) {
 		this.ibisDebugger = ibisDebugger;
 	}
+
 
 }
