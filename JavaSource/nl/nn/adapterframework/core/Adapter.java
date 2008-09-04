@@ -1,6 +1,9 @@
 /*
  * $Log: Adapter.java,v $
- * Revision 1.47  2008-08-27 15:54:07  europe\L190409
+ * Revision 1.48  2008-09-04 12:02:27  europe\L190409
+ * collect interval statistics
+ *
+ * Revision 1.47  2008/08/27 15:54:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added reset option to statisticsdump
  *
  * Revision 1.46  2008/08/12 15:31:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -210,7 +213,7 @@ import org.springframework.core.task.TaskExecutor;
  */
 
 public class Adapter implements IAdapter, NamedBean {
-	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.47 $ $Date: 2008-08-27 15:54:07 $";
+	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.48 $ $Date: 2008-09-04 12:02:27 $";
 	private Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -221,8 +224,14 @@ public class Adapter implements IAdapter, NamedBean {
 	private long lastMessageDate = 0;
 	private PipeLine pipeline;
 
+	private int numOfMessagesInProcess = 0;
+   
 	private long numOfMessagesProcessed = 0;
+	private long numOfMessagesProcessedMarked = 0;
+	
 	private long numOfMessagesInError = 0;
+	private long numOfMessagesInErrorMarked = 0;
+	
 	private StatisticsKeeper statsMessageProcessingDuration = null;
 
 	private long statsUpSince = System.currentTimeMillis();
@@ -240,11 +249,6 @@ public class Adapter implements IAdapter, NamedBean {
 	private String errorState = "ERROR";
 
 
-	/**
-	 * The nummer of message currently in process
-	 */
-	private int numOfMessagesInProcess = 0;
-    
     
     private TaskExecutor taskExecutor;
     
@@ -406,29 +410,38 @@ public class Adapter implements IAdapter, NamedBean {
 		return messageKeeper;
 	}
 	
-	public void forEachStatisticsKeeper(StatisticsKeeperIterationHandler hski, boolean reset) {
+	public void forEachStatisticsKeeper(StatisticsKeeperIterationHandler hski, int action) {
 		Object root=hski.start();
-		forEachStatisticsKeeperBody(hski,root,reset);
+		forEachStatisticsKeeperBody(hski,root,action);
 		hski.end(root);
 	}
 	
-	private void doForEachStatisticsKeeperBody(StatisticsKeeperIterationHandler hski, Object adapterData, boolean reset) {
+	private void doForEachStatisticsKeeperBody(StatisticsKeeperIterationHandler hski, Object adapterData, int action) {
 		hski.handleScalar(adapterData,"messagesInProcess", getNumOfMessagesInProcess());
 		hski.handleScalar(adapterData,"messagesProcessed", getNumOfMessagesProcessed());
 		hski.handleScalar(adapterData,"messagesInError", getNumOfMessagesInError());
+		hski.handleScalar(adapterData,"messagesProcessedThisInterval", getNumOfMessagesProcessed()-numOfMessagesProcessedMarked);
+		hski.handleScalar(adapterData,"messagesInErrorThisInterval", getNumOfMessagesInError()-numOfMessagesInErrorMarked);
 		hski.handleStatisticsKeeper(adapterData, statsMessageProcessingDuration);
-		if (reset) {
-			numOfMessagesInProcess=0;
+		statsMessageProcessingDuration.performAction(action);
+
+		if (action==HasStatistics.STATISTICS_ACTION_RESET) {
 			numOfMessagesProcessed=0;
 			numOfMessagesInError=0;
-			statsMessageProcessingDuration.clear();
+			numOfMessagesProcessedMarked=0;
+			numOfMessagesInErrorMarked=0;
+		} else {
+			if (action==HasStatistics.STATISTICS_ACTION_MARK) {
+				numOfMessagesProcessedMarked=numOfMessagesProcessed;
+				numOfMessagesInErrorMarked=numOfMessagesInError;
+			}
 		}
 		Object recsData=hski.openGroup(adapterData,getName(),"receivers");
 		Iterator recIt=getReceiverIterator();
 		if (recIt.hasNext()) {
 			while (recIt.hasNext()) {
 				IReceiver receiver=(IReceiver) recIt.next();
-				receiver.iterateOverStatistics(hski,recsData,reset);
+				receiver.iterateOverStatistics(hski,recsData,action);
 			}
 		}
 		hski.closeGroup(recsData);
@@ -445,12 +458,10 @@ public class Adapter implements IAdapter, NamedBean {
 			String pipeName = (String) pipelineStatisticsIter.next();
 			StatisticsKeeper pstat = (StatisticsKeeper) pipelineStatistics.get(pipeName);
 			hski.handleStatisticsKeeper(pipestatData,pstat);
-			if (reset) {
-				pstat.clear();
-			}
+			pstat.performAction(action);
 			IPipe pipe = pipeline.getPipe(pipeName);
 			if (pipe instanceof HasStatistics) {
-				((HasStatistics) pipe).iterateOverStatistics(hski, pipestatData,reset);
+				((HasStatistics) pipe).iterateOverStatistics(hski, pipestatData,action);
 			}
 		}
 		hski.closeGroup(pipestatData);
@@ -467,27 +478,25 @@ public class Adapter implements IAdapter, NamedBean {
 				String pipeName = (String) pipelineStatisticsIter.next();
 				StatisticsKeeper pstat = (StatisticsKeeper) pipelineStatistics.get(pipeName);
 				hski.handleStatisticsKeeper(pipestatData,pstat);
-				if (reset) {
-					pstat.clear();
-				}
+				pstat.performAction(action);
 			}
 		}
 		hski.closeGroup(pipestatData);
 		hski.closeGroup(pipelineData);
 	}
 	
-	public void forEachStatisticsKeeperBody(StatisticsKeeperIterationHandler hski, Object data, boolean reset) {
+	public void forEachStatisticsKeeperBody(StatisticsKeeperIterationHandler hski, Object data, int action) {
 		Object adapterData=hski.openGroup(data,getName(),"adapter");
 		hski.handleScalar(adapterData,"name", getName());
 		hski.handleScalar(adapterData,"upSince", getStatsUpSince());
 		hski.handleScalar(adapterData,"lastMessageDate", getLastMessageDate());
 
-		if (reset) {
+		if (action!=HasStatistics.STATISTICS_ACTION_NONE) {
 			synchronized (statsMessageProcessingDuration) {
-				doForEachStatisticsKeeperBody(hski,adapterData,reset);
+				doForEachStatisticsKeeperBody(hski,adapterData,action);
 			}
 		} else {
-			doForEachStatisticsKeeperBody(hski,adapterData,reset);
+			doForEachStatisticsKeeperBody(hski,adapterData,action);
 		}
 		hski.closeGroup(adapterData);
 				

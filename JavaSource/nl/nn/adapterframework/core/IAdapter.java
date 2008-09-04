@@ -1,6 +1,9 @@
 /*
  * $Log: IAdapter.java,v $
- * Revision 1.11  2008-08-27 15:54:21  europe\L190409
+ * Revision 1.12  2008-09-04 12:02:50  europe\L190409
+ * collect interval statistics
+ *
+ * Revision 1.11  2008/08/27 15:54:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * *** empty log message ***
  *
  * Revision 1.10  2007/10/09 15:33:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -48,7 +51,7 @@ import javax.transaction.UserTransaction;
  * @version Id
  **/
 public interface IAdapter extends IManagable {
-	public static final String version = "$RCSfile: IAdapter.java,v $ $Revision: 1.11 $ $Date: 2008-08-27 15:54:21 $";
+	public static final String version = "$RCSfile: IAdapter.java,v $ $Revision: 1.12 $ $Date: 2008-09-04 12:02:50 $";
 
     /**
   	 * Instruct the adapter to configure itself. The adapter will call the
@@ -83,7 +86,7 @@ public interface IAdapter extends IManagable {
 		INamedObject objectInError,
 		long receivedTime);
 		
-	public void forEachStatisticsKeeperBody(StatisticsKeeperIterationHandler hski, Object data, boolean reset);
+	public void forEachStatisticsKeeperBody(StatisticsKeeperIterationHandler hski, Object data, int action);
 
     /**
      * state to put in PipeLineResult when a PipeRunException occurs.

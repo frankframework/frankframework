@@ -1,6 +1,9 @@
 /*
  * $Log: Configuration.java,v $
- * Revision 1.31  2008-08-27 15:53:01  europe\L190409
+ * Revision 1.32  2008-09-04 12:00:43  europe\L190409
+ * collect interval statistics
+ *
+ * Revision 1.31  2008/08/27 15:53:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added statistics dump code
  * added reset option to statisticsdump
  *
@@ -83,6 +86,7 @@ package nl.nn.adapterframework.configuration;
 
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
@@ -94,6 +98,7 @@ import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.scheduler.JobDef;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.HasStatistics;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StatisticsKeeperIterationHandler;
 import nl.nn.adapterframework.util.StatisticsKeeperLogger;
@@ -112,7 +117,7 @@ import org.apache.log4j.Logger;
  * @see    nl.nn.adapterframework.core.IAdapter
  */
 public class Configuration {
-	public static final String version="$RCSfile: Configuration.java,v $ $Revision: 1.31 $ $Date: 2008-08-27 15:53:01 $";
+	public static final String version="$RCSfile: Configuration.java,v $ $Revision: 1.32 $ $Date: 2008-09-04 12:00:43 $";
     protected Logger log=LogUtil.getLogger(this); 
      
     private Map adapterTable = new Hashtable();
@@ -127,6 +132,8 @@ public class Configuration {
     private AppConstants appConstants;
     
     private ConfigurationException configurationException=null;
+    
+    private static Date markDate=new Date();
     
     /**
      *Set JMX extensions as enabled or not. Default is that JMX extensions are NOT enabled.
@@ -146,20 +153,25 @@ public class Configuration {
     	return enableJMX;
     }
 
-	public void forEachStatisticsKeeper(StatisticsKeeperIterationHandler hski, boolean reset) {
+	public void forEachStatisticsKeeper(StatisticsKeeperIterationHandler hski, int action) {
 		Object root=hski.start();
 		Object groupData=hski.openGroup(root,appConstants.getString("instance.name",""),"instance");
 		for (int i=0; i<adapters.size(); i++) {
 			IAdapter adapter = getRegisteredAdapter(i);
-			adapter.forEachStatisticsKeeperBody(hski,groupData,reset);
+			adapter.forEachStatisticsKeeperBody(hski,groupData,action);
 		}
 		hski.closeGroup(groupData);
 		hski.end(root);
 	}
 
-	public void dumpStatistics(boolean reset) {
-		StatisticsKeeperLogger skl = new StatisticsKeeperLogger();
-		forEachStatisticsKeeper(skl, reset);
+	public void dumpStatistics(int action) {
+		Date now=new Date();
+		StatisticsKeeperLogger skl = new StatisticsKeeperLogger(now,markDate);
+		forEachStatisticsKeeper(skl, action);
+		if (action==HasStatistics.STATISTICS_ACTION_MARK || action==HasStatistics.STATISTICS_ACTION_RESET) {
+			markDate=now;
+		}
+		
 	}
 
 
