@@ -1,6 +1,9 @@
 /*
  * $Log: SchedulerHelper.java,v $
- * Revision 1.5  2007-12-12 09:09:56  europe\L190409
+ * Revision 1.6  2008-09-04 13:27:26  europe\L190409
+ * restructured job scheduling
+ *
+ * Revision 1.5  2007/12/12 09:09:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * allow for query-type jobs
  *
  * Revision 1.4  2007/10/10 09:40:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -44,20 +47,7 @@ public class SchedulerHelper {
     private Scheduler scheduler;
     
 	public void scheduleJob(IbisManager ibisManager, JobDef jobdef) throws Exception {
-		JobDetail jobDetail = new JobDetail(jobdef.getName(), // job name
-			Scheduler.DEFAULT_GROUP, // job group
-			AdapterJob.class); // the java class to execute
-
-        jobDetail.getJobDataMap().put("manager", ibisManager); // reference to manager.
-        jobDetail.getJobDataMap().put("config", ibisManager.getConfiguration()); // reference to configuration.
-		jobDetail.getJobDataMap().put("adapterName", jobdef.getAdapterName());
-		jobDetail.getJobDataMap().put("receiverName", jobdef.getReceiverName());
-		jobDetail.getJobDataMap().put("function", jobdef.getFunction());
-		jobDetail.getJobDataMap().put("query", jobdef.getQuery());
-		jobDetail.getJobDataMap().put("jmsRealm", jobdef.getJmsRealm());
-		
-		if (StringUtils.isNotEmpty(jobdef.getDescription()))
-			jobDetail.setDescription(jobdef.getDescription());
+		JobDetail jobDetail = jobdef.getJobDetail(ibisManager);
 
 		scheduleJob(jobdef.getName(), jobDetail, jobdef.getCronExpression(), true);
 	}

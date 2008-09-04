@@ -1,6 +1,9 @@
 /*
- * $Log: AdapterJob.java,v $
- * Revision 1.7  2008-08-27 16:21:26  europe\L190409
+ * $Log: ConfiguredJob.java,v $
+ * Revision 1.1  2008-09-04 13:27:26  europe\L190409
+ * restructured job scheduling
+ *
+ * Revision 1.7  2008/08/27 16:21:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added function dumpStatistics
  *
  * Revision 1.6  2007/12/12 09:09:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -17,7 +20,6 @@
 package nl.nn.adapterframework.scheduler;
 
 import nl.nn.adapterframework.configuration.IbisManager;
-import nl.nn.adapterframework.jdbc.DirectQuerySender;
 
 import org.quartz.Job;
 import org.quartz.JobDataMap;
@@ -48,52 +50,21 @@ import org.quartz.JobExecutionException;
  * @see nl.nn.adapterframework.core.IAdapter
  * @see nl.nn.adapterframework.configuration.Configuration
   */
-public class AdapterJob extends BaseJob implements Job  {
-	public static final String version = "$RCSfile: AdapterJob.java,v $ $Revision: 1.7 $ $Date: 2008-08-27 16:21:26 $";
+public class ConfiguredJob extends BaseJob implements Job  {
+
 
 	public void execute(JobExecutionContext context) throws JobExecutionException {
 		try {
-			log.info("executing" + getLogPrefix(context));
 			JobDataMap dataMap = context.getJobDetail().getJobDataMap();
-			// TODO: Put correct manager into the dataMap
 			IbisManager ibisManager = (IbisManager)dataMap.get("manager");
-			String function = dataMap.getString("function");
-
-			if (function.equalsIgnoreCase("EXECUTEQUERY")) {
-				try {
-					String query = dataMap.getString("query");
-					String jmsRealm = dataMap.getString("jmsRealm");
-
-					DirectQuerySender qs = new DirectQuerySender();
-					try {
-						qs.setName("QuerySender");
-						qs.setJmsRealm(jmsRealm);
-						qs.setQueryType("other");
-						qs.configure();
-						qs.open();
-						String result = qs.sendMessage("dummy", query);
-						log.info("result [" + result + "]");
-					} catch (Exception e) {
-						log.error("Error while executing query (as part of scheduled job execution)", e);
-					} finally {
-						qs.close();
-					}
-				} catch (Exception e) {
-					log.error("Error while creating or closing connection (as part of scheduled job execution)", e);
-				}
-			} else if (function.equalsIgnoreCase("dumpStatistics") || function.equalsIgnoreCase("dumpStatisticsAndReset")) {
-				ibisManager.getConfiguration().dumpStatistics(function.equalsIgnoreCase("dumpStatisticsAndReset"));
-			} else {
-				String adapterName = dataMap.getString("adapterName");
-				String receiverName = dataMap.getString("receiverName");
-
-				ibisManager.handleAdapter(function, adapterName, receiverName, " scheduled job" + getLogPrefix(context));
-			}
-
+			JobDef jobDef = (JobDef)dataMap.get("jobdef");
+			log.info(getLogPrefix(jobDef) + "executing");
+			jobDef.executeJob(ibisManager);
+			log.debug(getLogPrefix(jobDef) + "completed");
 		} catch (Exception e) {
 			log.error(e);
 			throw new JobExecutionException(e, false);
 		}
-		log.debug(getLogPrefix(context) + "completed");
 	}
+	
 }

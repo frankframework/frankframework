@@ -1,6 +1,9 @@
 /*
  * $Log: ServiceJob.java,v $
- * Revision 1.2  2007-02-21 16:09:20  europe\L190409
+ * Revision 1.3  2008-09-04 13:27:26  europe\L190409
+ * restructured job scheduling
+ *
+ * Revision 1.2  2007/02/21 16:09:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.1  2005/11/01 08:51:14  John Dekker <john.dekker@ibissource.org>
@@ -10,7 +13,7 @@
  */
 package nl.nn.adapterframework.scheduler;
 
-import nl.nn.adapterframework.pipes.IbisLocalSender;
+import nl.nn.adapterframework.senders.IbisLocalSender;
 
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
@@ -25,7 +28,7 @@ import org.quartz.JobExecutionException;
  * @author John Dekker
  */
 public class ServiceJob extends BaseJob {
-	public static final String version="$RCSfile: ServiceJob.java,v $ $Revision: 1.2 $ $Date: 2007-02-21 16:09:20 $";
+	public static final String version="$RCSfile: ServiceJob.java,v $ $Revision: 1.3 $ $Date: 2008-09-04 13:27:26 $";
 
 	public ServiceJob() {
 		super();

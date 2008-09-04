@@ -1,6 +1,9 @@
 /*
  * $Log: JobDef.java,v $
- * Revision 1.9  2008-08-27 16:21:48  europe\L190409
+ * Revision 1.10  2008-09-04 13:27:27  europe\L190409
+ * restructured job scheduling
+ *
+ * Revision 1.9  2008/08/27 16:21:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added configure()
  *
  * Revision 1.8  2007/12/12 09:09:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -17,10 +20,19 @@ package nl.nn.adapterframework.scheduler;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.IbisManager;
+import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.jdbc.DirectQuerySender;
+import nl.nn.adapterframework.pipes.IbisLocalSender;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.HasStatistics;
+import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.log4j.Logger;
+import org.quartz.JobDetail;
+import org.quartz.Scheduler;
 
 /**
  * Definition / configuration of scheduler jobs.
@@ -296,7 +308,15 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * @version Id
  */
 public class JobDef {
-	public static final String version = "$RCSfile: JobDef.java,v $  $Revision: 1.9 $ $Date: 2008-08-27 16:21:48 $";
+	protected Logger log=LogUtil.getLogger(this);
+
+	public static final String JOB_FUNCTION_STOP_ADAPTER="StopAdapter";	
+	public static final String JOB_FUNCTION_START_ADAPTER="StartAdapter";	
+	public static final String JOB_FUNCTION_STOP_RECEIVER="StopReceiver";	
+	public static final String JOB_FUNCTION_START_RECEIVER="StartReceiver";	
+	public static final String JOB_FUNCTION_SEND_MESSAGE="SendMessage";	
+	public static final String JOB_FUNCTION_QUERY="ExecuteQuery";	
+	public static final String JOB_FUNCTION_DUMPSTATS="dumpStatistics";	
 	
     private String name;
     private String cronExpression;
@@ -314,20 +334,132 @@ public class JobDef {
 	}
 
 	public void configure(Configuration config) throws ConfigurationException {
-		if (!("dumpStatistics".equals(function) || "dumpStatisticsAndReset".equals(function))) {
+		if (StringUtils.isEmpty(getFunction())) {
+			throw new ConfigurationException("jobdef ["+getName()+"] function must be specified");
+		}
+		if (!(getFunction().equalsIgnoreCase(JOB_FUNCTION_STOP_ADAPTER)||
+				getFunction().equalsIgnoreCase(JOB_FUNCTION_START_ADAPTER)||
+				getFunction().equalsIgnoreCase(JOB_FUNCTION_STOP_RECEIVER)||
+				getFunction().equalsIgnoreCase(JOB_FUNCTION_START_RECEIVER)||
+				getFunction().equalsIgnoreCase(JOB_FUNCTION_SEND_MESSAGE)||
+				getFunction().equalsIgnoreCase(JOB_FUNCTION_QUERY)||
+				getFunction().equalsIgnoreCase(JOB_FUNCTION_DUMPSTATS)
+			)) {
+			throw new ConfigurationException("jobdef ["+getName()+"] function ["+getFunction()+"] must be one of ["+
+			JOB_FUNCTION_STOP_ADAPTER+","+
+			JOB_FUNCTION_START_ADAPTER+","+
+			JOB_FUNCTION_STOP_RECEIVER+","+
+			JOB_FUNCTION_START_RECEIVER+","+
+			JOB_FUNCTION_SEND_MESSAGE+","+
+			JOB_FUNCTION_QUERY+","+
+			JOB_FUNCTION_DUMPSTATS+","+
+			"]");
+		}
+		if (getFunction().equalsIgnoreCase(JOB_FUNCTION_DUMPSTATS)) {
+			// nothing special for now
+		} else 
+		if (getFunction().equalsIgnoreCase(JOB_FUNCTION_QUERY)) {
+			if (StringUtils.isEmpty(getJmsRealm())) {
+				throw new ConfigurationException("jobdef ["+getName()+"] for function ["+getFunction()+"] a jmsRealm must be specified");
+			}
+		} else {
+			if (StringUtils.isEmpty(getAdapterName())) {
+				throw new ConfigurationException("jobdef ["+getName()+"] for function ["+getFunction()+"] a adapterName must be specified");
+			}
 			if (config.getRegisteredAdapter(getAdapterName()) == null) {
 				String msg="Jobdef [" + getName() + "] got error: adapter [" + getAdapterName() + "] not registered.";
 				throw new ConfigurationException(msg);
 			}
-			if (StringUtils.isNotEmpty(getReceiverName())){
-				if (! config.isRegisteredReceiver(getAdapterName(), getReceiverName())) {
-					String msg="Jobdef [" + getName() + "] got error: adapter [" + getAdapterName() + "] receiver ["+getReceiverName()+"] not registered.";
-					throw new ConfigurationException(msg);
+			if (getFunction().equalsIgnoreCase(JOB_FUNCTION_STOP_RECEIVER) || getFunction().equalsIgnoreCase(JOB_FUNCTION_START_RECEIVER)) {
+				if (StringUtils.isEmpty(getReceiverName())) {
+					throw new ConfigurationException("jobdef ["+getName()+"] for function ["+getFunction()+"] a receiverName must be specified");
+				}
+				if (StringUtils.isNotEmpty(getReceiverName())){
+					if (! config.isRegisteredReceiver(getAdapterName(), getReceiverName())) {
+						String msg="Jobdef [" + getName() + "] got error: adapter [" + getAdapterName() + "] receiver ["+getReceiverName()+"] not registered.";
+						throw new ConfigurationException(msg);
+					}
 				}
 			}
 		}
 	}
 
+	public JobDetail getJobDetail(IbisManager ibisManager) {
+		JobDetail jobDetail = new JobDetail(getName(), Scheduler.DEFAULT_GROUP, ConfiguredJob.class);;
+		
+		jobDetail.getJobDataMap().put("manager", ibisManager); // reference to manager.
+		jobDetail.getJobDataMap().put("jobdef", this);
+		
+		if (StringUtils.isNotEmpty(getDescription())) {
+			jobDetail.setDescription(getDescription());
+		}
+		return jobDetail;		
+	}
+
+
+	protected void executeJob(IbisManager ibisManager) {
+		String function = getFunction();
+
+		if (function.equalsIgnoreCase(JOB_FUNCTION_DUMPSTATS)) {
+			ibisManager.getConfiguration().dumpStatistics(HasStatistics.STATISTICS_ACTION_MARK);
+		} else 
+		if (function.equalsIgnoreCase(JOB_FUNCTION_QUERY)) {
+			executeQueryJob();
+		} else
+		if (function.equalsIgnoreCase(JOB_FUNCTION_SEND_MESSAGE)) {
+			executeSendMessageJob();
+		} else{
+			ibisManager.handleAdapter(getFunction(), getAdapterName(), getReceiverName(), "scheduled job ["+getName()+"]");
+		}
+
+	}
+
+	private void executeQueryJob() {
+		DirectQuerySender qs = new DirectQuerySender();
+		try {
+			qs.setName("QuerySender");
+			qs.setJmsRealm(getJmsRealm());
+			qs.setQueryType("other");
+			qs.configure();
+			qs.open();
+			String result = qs.sendMessage("dummy", getQuery());
+			log.info("result [" + result + "]");
+		} catch (Exception e) {
+			log.error(getLogPrefix()+"error while executing query ["+getQuery()+"] (as part of scheduled job execution)", e);
+		} finally {
+			try {
+				qs.close();
+			} catch (SenderException e1) {
+				log.warn("Could not close query sender",e1);
+			}
+		}
+	}
+
+	private void executeSendMessageJob() {
+		try {
+			// send job
+			IbisLocalSender localSender = new IbisLocalSender();
+			localSender.setJavaListener(receiverName);
+			localSender.setIsolated(false);
+			localSender.setName("AdapterJob");
+			localSender.configure();
+            
+			localSender.open();
+			try {
+				localSender.sendMessage(null, "");
+			}
+			finally {
+				localSender.close();
+			}
+		}
+		catch(Exception e) {
+			log.error("Error while sending message (as part of scheduled job execution)", e);
+		}
+	}
+
+	public String getLogPrefix() {
+		return "Job ["+getName()+"] ";
+	}
 
    /**
      * Defaults to the value under key <code>scheduler.defaultJobGroup</code> in the {@link AppConstants}.
