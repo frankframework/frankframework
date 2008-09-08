@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaRequesterSender.java,v $
- * Revision 1.11  2008-09-01 15:10:17  europe\L190409
+ * Revision 1.12  2008-09-08 07:20:28  europe\L190409
+ * throw exceptions when appropriate
+ *
+ * Revision 1.11  2008/09/01 15:10:17  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * forward BIFname when present
  *
  * Revision 1.10  2008/08/27 15:56:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -152,7 +155,6 @@ import nl.nn.adapterframework.util.StatisticsKeeperIterationHandler;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 
-import com.ing.ifsa.IFSAMessage;
 import com.ing.ifsa.IFSAQueue;
 import com.ing.ifsa.IFSAReportMessage;
 import com.ing.ifsa.IFSATimeOutMessage;
@@ -176,6 +178,7 @@ import com.ing.ifsa.IFSATimeOutMessage;
  *   <li>"RR": Request-Reply protocol</li>
  * </ul></td><td><td>&nbsp;</td></td></tr>
  * <tr><td>{@link #setTimeOut(long) timeOut}</td><td>receiver timeout, in milliseconds. To use the timeout defined as IFSA expiry, set this value to -1</td><td>20000 (20s)</td></tr>
+ * <tr><td>{@link #setThrowExceptions(boolean) throwExceptions}</td><td>when <code>true</code>, IFSA reports and response messages consisting of a &lt;exception&gt;-element are converted into an exception</td><td><code>true</code></td></tr>
  * </table>
  * <table border="1">
  * <p><b>Parameters:</b>
@@ -189,7 +192,9 @@ import com.ing.ifsa.IFSATimeOutMessage;
  * @since  4.2
  */
 public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParameters, HasStatistics {
-	public static final String version="$RCSfile: IfsaRequesterSender.java,v $ $Revision: 1.11 $ $Date: 2008-09-01 15:10:17 $";
+	public static final String version="$RCSfile: IfsaRequesterSender.java,v $ $Revision: 1.12 $ $Date: 2008-09-08 07:20:28 $";
+
+	private boolean throwExceptions=true;	
 	
 	protected ParameterList paramList = null;
 	private StatisticsKeeper businessProcessTimes;
@@ -370,7 +375,6 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 
 			log.debug(getLogPrefix()+"sending message");
 
-			long timestampBeforeSend = System.currentTimeMillis();
 		    TextMessage sentMessage=sendMessage(session, sender, message, udzMap, bifName, btcData);
 			log.debug(getLogPrefix()+"message sent");
 
@@ -379,34 +383,35 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 				log.debug(getLogPrefix()+"waiting for reply");
 				Message msg=getRawReplyMessage(session, queue, sentMessage);
 				try {
-					long timestampAfterRcvd = System.currentTimeMillis();
-					long jmsTimestampSent = sentMessage.getJMSTimestamp();
-					long jmsTimestampRcvd = msg.getJMSTimestamp();
-//						long businessProcFinishSent=0;
-					long businessProcStartRcvd=0;
-					long businessProcStartSent=0;
-					long businessProcFinishRcvd=0;
-					if (sentMessage instanceof IFSAMessage) {
-						businessProcStartSent=((IFSAMessage)sentMessage).getBusinessProcessingStartTime();
-//							businessProcFinishSent=((IFSAMessage)sentMessage).getBusinessProcessingFinishTime();
-					}
-					if (msg instanceof IFSAMessage) {
-						businessProcStartRcvd=((IFSAMessage)msg).getBusinessProcessingStartTime();
-						businessProcFinishRcvd=((IFSAMessage)msg).getBusinessProcessingFinishTime();
-					}
+					long tsReplyReceived = System.currentTimeMillis();
+					long tsRequestSent = sentMessage.getJMSTimestamp();
+					long tsReplySent   = msg.getJMSTimestamp();
+//					long jmsTimestampRcvd = msg.getJMSTimestamp();
+////						long businessProcFinishSent=0;
+//					long businessProcStartRcvd=0;
+//					long businessProcStartSent=0;
+//					long businessProcFinishRcvd=0;
+//					if (sentMessage instanceof IFSAMessage) {
+//						businessProcStartSent=((IFSAMessage)sentMessage).getBusinessProcessingStartTime();
+////							businessProcFinishSent=((IFSAMessage)sentMessage).getBusinessProcessingFinishTime();
+//					}
+//					if (msg instanceof IFSAMessage) {
+//						businessProcStartRcvd=((IFSAMessage)msg).getBusinessProcessingStartTime();
+//						businessProcFinishRcvd=((IFSAMessage)msg).getBusinessProcessingFinishTime();
+//					}
 					if (log.isInfoEnabled()) {
-						log.info(getLogPrefix()+"A)  timestampBeforeSend            ["+DateUtils.format(timestampBeforeSend)+"]");
-						log.info(getLogPrefix()+"B)  msgSent.jmsTimestamp       	["+DateUtils.format(jmsTimestampSent)      +"] diff ["+(jmsTimestampSent-timestampBeforeSend)+"]");
-						log.info(getLogPrefix()+"C1) msgSent.businessProcStartSent  ["+DateUtils.format(businessProcStartSent) +"] diff ["+(businessProcStartSent-jmsTimestampSent)+"]");
-						log.info(getLogPrefix()+"C2) msgRcvd.businessProcStartRcvd  ["+DateUtils.format(businessProcStartRcvd) +"] ");
-						log.info(getLogPrefix()+"D)  msgRcvd.jmsTimestamp           ["+DateUtils.format(jmsTimestampRcvd)      +"] diff ["+(jmsTimestampRcvd-businessProcStartSent)+"]");
-						log.info(getLogPrefix()+"E)  msgRcvd.businessProcFinishRcvd ["+DateUtils.format(businessProcFinishRcvd)+"] diff ["+(businessProcFinishRcvd-jmsTimestampRcvd)+"] (=time spend on IFSA bus sending result?)");
-						log.info(getLogPrefix()+"F)  timestampAfterRcvd             ["+DateUtils.format(timestampAfterRcvd)    +"] diff ["+(timestampAfterRcvd-businessProcFinishRcvd)+"] ");
-						log.info(getLogPrefix()+"business processing time (E-C1) ["+(businessProcFinishRcvd-businessProcStartSent)+"] ");
+						log.info(getLogPrefix()+"A) RequestSent   ["+DateUtils.format(tsRequestSent)   +"]");
+						log.info(getLogPrefix()+"B) ReplySent     ["+DateUtils.format(tsReplySent)     +"] diff (~queing + processing) ["+(tsReplySent-tsRequestSent)+"]");
+						log.info(getLogPrefix()+"C) ReplyReceived ["+DateUtils.format(tsReplyReceived) +"] diff (transport of reply )["+(tsReplyReceived-tsReplySent)+"]");
+//						log.info(getLogPrefix()+"C2) msgRcvd.businessProcStartRcvd  ["+DateUtils.format(businessProcStartRcvd) +"] ");
+//						log.info(getLogPrefix()+"D)  msgRcvd.jmsTimestamp           ["+DateUtils.format(jmsTimestampRcvd)      +"] diff ["+(jmsTimestampRcvd-businessProcStartSent)+"]");
+//						log.info(getLogPrefix()+"E)  msgRcvd.businessProcFinishRcvd ["+DateUtils.format(businessProcFinishRcvd)+"] diff ["+(businessProcFinishRcvd-jmsTimestampRcvd)+"] (=time spend on IFSA bus sending result?)");
+//						log.info(getLogPrefix()+"F)  timestampAfterRcvd             ["+DateUtils.format(timestampAfterRcvd)    +"] diff ["+(timestampAfterRcvd-businessProcFinishRcvd)+"] ");
+//						log.info(getLogPrefix()+"business processing time (E-C1) ["+(businessProcFinishRcvd-businessProcStartSent)+"] ");
 					}	
-					if (businessProcessTimes!=null) {						
-						businessProcessTimes.addValue(businessProcFinishRcvd-businessProcStartSent);
-					}
+//					if (businessProcessTimes!=null) {						
+//						businessProcessTimes.addValue(businessProcFinishRcvd-businessProcStartSent);
+//					}
 				} catch (JMSException e) {
 					log.warn(getLogPrefix()+"exception determining processing times",e);
 				}
@@ -416,10 +421,14 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 					if (msg.getClass().getName().endsWith("IFSAReportMessage")) {
 						if (msg instanceof IFSAReportMessage) {
 							IFSAReportMessage irm = (IFSAReportMessage)msg;
+							if (isThrowExceptions()) {
+								throw new SenderException(getLogPrefix()+"received IFSAReportMessage ["+irm.toString()+"]");
+							}
 							log.warn(getLogPrefix()+"received IFSAReportMessage ["+irm.toString()+"]");
 							result = "<IFSAReport>"+
 										"<NoReplyReason>"+irm.getNoReplyReason()+"</NoReplyReason>"+
 									 "</IFSAReport>";
+									
 						 }
 					} else {
 						log.warn(getLogPrefix()+"received neither TextMessage nor IFSAReportMessage but ["+msg.getClass().getName()+"]");
@@ -446,15 +455,16 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 			}
 			closeSession(session);
 		}
+		if (isThrowExceptions() && result!=null && result.startsWith("<exception>")) {
+			throw new SenderException("Retrieved exception message from IFSA bus: "+result);
+		}
 	    return result;	
 	}
 
-	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, boolean reset) {
+	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, int action) {
 		if (businessProcessTimes!=null) {
 			hski.handleStatisticsKeeper(data,businessProcessTimes);
-			if (reset) {
-				businessProcessTimes.clear();
-			}
+			businessProcessTimes.performAction(action);
 		}
 	}
 	
@@ -474,6 +484,13 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 			paramList=new ParameterList();
 		}
 		paramList.add(p);
+	}
+
+	public void setThrowExceptions(boolean b) {
+		throwExceptions = b;
+	}
+	public boolean isThrowExceptions() {
+		return throwExceptions;
 	}
 
 }
