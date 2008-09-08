@@ -1,6 +1,9 @@
 /*
  * $Log: Misc.java,v $
- * Revision 1.16  2008-08-27 16:24:30  europe\L190409
+ * Revision 1.17  2008-09-08 15:00:23  europe\L190409
+ * avoid NPE in getEnvironmentVariables
+ *
+ * Revision 1.16  2008/08/27 16:24:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * made closeInput optional in streamToStream
  *
  * Revision 1.15  2007/09/05 13:05:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -59,7 +62,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class Misc {
-	public static final String version="$RCSfile: Misc.java,v $ $Revision: 1.16 $ $Date: 2008-08-27 16:24:30 $";
+	public static final String version="$RCSfile: Misc.java,v $ $Revision: 1.17 $ $Date: 2008-09-08 15:00:23 $";
 	public static final int BUFFERSIZE=20000;
 	public static final String DEFAULT_INPUT_STREAM_ENCODING="UTF-8";
 
@@ -410,9 +413,11 @@ public class Misc {
 		String line;
 		while ((line = br.readLine()) != null) {
 			int idx = line.indexOf('=');
-			String key = line.substring(0, idx);
-			String value = line.substring(idx + 1);
-			props.setProperty(key,value);
+			if (idx>=0) {
+				String key = line.substring(0, idx);
+				String value = line.substring(idx + 1);
+				props.setProperty(key,value);
+			}
 		}
 		return props;
 	}
