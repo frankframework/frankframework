@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.66  2008-09-04 12:03:13  europe\L190409
+ * Revision 1.67  2008-09-08 07:23:16  europe\L190409
+ * removed PipeDescription code
+ *
+ * Revision 1.66  2008/09/04 12:03:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added getOwner()
  *
  * Revision 1.65  2008/08/12 15:33:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -202,8 +205,6 @@ import java.util.List;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.debug.IbisDebugger;
-import nl.nn.adapterframework.debug.PipeDescription;
-import nl.nn.adapterframework.debug.PipeDescriptionProvider;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.LogUtil;
@@ -291,7 +292,7 @@ import org.springframework.transaction.TransactionStatus;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.66 $ $Date: 2008-09-04 12:03:13 $";
+	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.67 $ $Date: 2008-09-08 07:23:16 $";
     private Logger log = LogUtil.getLogger(this);
 	private Logger durationLog = LogUtil.getLogger("LongDurationMessages");
     
@@ -323,8 +324,6 @@ public class PipeLine {
 
 	private List exitHandlers = new ArrayList();
     
-	private PipeDescriptionProvider pipeDescriptionProvider;
-
 	/**
 	 * Register an Pipe at this pipeline.
 	 * The name is also put in the globalForwards table (with 
@@ -456,9 +455,6 @@ public class PipeLine {
 		int txOption = this.getTransactionAttributeNum();
 		if (log.isDebugEnabled()) log.debug("creating TransactionDefinition for transactionAttribute ["+getTransactionAttribute()+"], timeout ["+getTransactionTimeout()+"]");
 		txDef = SpringTxManagerProxy.getTransactionDefinition(txOption,getTransactionTimeout());
-		if (ibisDebugger!=null) {
-			pipeDescriptionProvider = new PipeDescriptionProvider(this);
-		}
 		log.debug("Pipeline of ["+owner.getName()+"] successfully configured");
 	}
     /**
@@ -1065,10 +1061,6 @@ public class PipeLine {
 		return transactionTimeout;
 	}
 
-	public PipeDescription getPipeDescription(IPipe pipe) {
-		return pipeDescriptionProvider.getPipeDescription(pipe);
-	}
-	
 	public void setIbisDebugger(IbisDebugger ibisDebugger) {
 		this.ibisDebugger = ibisDebugger;
 	}
