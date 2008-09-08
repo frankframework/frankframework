@@ -1,0 +1,3 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<server-target
+   target-id="com.ibm.etools.websphere.serverTarget.base.v51" type-id="j2ee.web"/>
