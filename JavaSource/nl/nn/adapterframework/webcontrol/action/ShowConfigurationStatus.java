@@ -1,6 +1,9 @@
 /*
  * $Log: ShowConfigurationStatus.java,v $
- * Revision 1.17  2008-08-12 15:50:55  europe\L190409
+ * Revision 1.18  2008-09-17 12:30:52  europe\L190409
+ * show sender nested in listener too
+ *
+ * Revision 1.17  2008/08/12 15:50:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added messagesRetried
  *
  * Revision 1.16  2008/08/06 16:43:17  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -52,6 +55,7 @@ import javax.servlet.http.HttpServletResponse;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.HasSender;
+import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.ISender;
@@ -76,7 +80,7 @@ import org.apache.struts.action.ActionMapping;
  * @version Id
  */
 public final class ShowConfigurationStatus extends ActionBase {
-	public static final String version = "$RCSfile: ShowConfigurationStatus.java,v $ $Revision: 1.17 $ $Date: 2008-08-12 15:50:55 $";
+	public static final String version = "$RCSfile: ShowConfigurationStatus.java,v $ $Revision: 1.18 $ $Date: 2008-09-17 12:30:52 $";
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 
@@ -128,12 +132,17 @@ public final class ShowConfigurationStatus extends ActionBase {
 					receiverXML.addAttribute("class", ClassUtils.nameOf(receiver));
 					receiverXML.addAttribute("messagesReceived", ""+receiver.getMessagesReceived());
 					receiverXML.addAttribute("messagesRetried", ""+receiver.getMessagesRetried());
+					ISender sender=null;
 					if (receiver instanceof ReceiverBase ) {
 						ReceiverBase rb = (ReceiverBase) receiver;
-						receiverXML.addAttribute("listenerClass", ClassUtils.nameOf(rb.getListener()));
-						if (rb.getListener() instanceof HasPhysicalDestination) {
+						IListener listener=rb.getListener();
+						receiverXML.addAttribute("listenerClass", ClassUtils.nameOf(listener));
+						if (listener instanceof HasPhysicalDestination) {
 							String pd = ((HasPhysicalDestination)rb.getListener()).getPhysicalDestinationName();
 							receiverXML.addAttribute("listenerDestination", pd);
+						}
+						if (listener instanceof HasSender) {
+							sender = ((HasSender)listener).getSender();
 						}
 						//receiverXML.addAttribute("hasInprocessStorage", ""+(rb.getInProcessStorage()!=null));
 						ITransactionalStorage ts;
@@ -160,14 +169,17 @@ public final class ShowConfigurationStatus extends ActionBase {
 					}
 
 					if (receiver instanceof HasSender) {
-						ISender sender = ((HasSender) receiver).getSender();
-						if (sender != null) { 
-							receiverXML.addAttribute("senderName", sender.getName());
-							receiverXML.addAttribute("senderClass", ClassUtils.nameOf(sender));
-							if (sender instanceof HasPhysicalDestination) {
-								String pd = ((HasPhysicalDestination)sender).getPhysicalDestinationName();
-								receiverXML.addAttribute("senderDestination", pd);
-							}
+						ISender rsender = ((HasSender) receiver).getSender();
+						if (rsender!=null) { // this sender has preference, but avoid overwriting listeners sender with null
+							sender=rsender; 
+						}
+					}
+					if (sender != null) { 
+						receiverXML.addAttribute("senderName", sender.getName());
+						receiverXML.addAttribute("senderClass", ClassUtils.nameOf(sender));
+						if (sender instanceof HasPhysicalDestination) {
+							String pd = ((HasPhysicalDestination)sender).getPhysicalDestinationName();
+							receiverXML.addAttribute("senderDestination", pd);
 						}
 					}
 					if (receiver instanceof IThreadCountControllable) {
