@@ -1,6 +1,9 @@
 /*
  * $Log: DumpIbisConsole.java,v $
- * Revision 1.10  2008-08-27 16:26:50  europe\L190409
+ * Revision 1.11  2008-09-17 12:28:58  europe\L190409
+ * add SystemOut and statistics file to Dump
+ *
+ * Revision 1.10  2008/08/27 16:26:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * some simplifications
  *
  * Revision 1.9  2008/07/24 12:38:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -60,7 +63,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 
@@ -244,9 +246,15 @@ public class DumpIbisConsole extends HttpServlet {
 
 			copyServletResponse(zipOutputStream, request, response, "/showLogging.do", directoryName + "showLogging.html", resources, setFileViewer, "FileViewerServlet");
 
+			// find filename of ibis logfiles
 			FileAppender fa = (FileAppender)LogUtil.getRootLogger().getAppender("file");
 			File logFile = new File(fa.getFile());
-			String logFileName = logFile.getName();
+			String ibisLogFileName = logFile.getName();
+			
+			// find filename of stats logfiles
+			String statLogFileStart = AppConstants.getInstance().getResolvedProperty("instance.name");
+			
+			String sysLogFileStart = "SystemOut";
 
 			for (Iterator iterator = setFileViewer.iterator();iterator.hasNext();) {
 				String s = (String) iterator.next();
@@ -256,7 +264,9 @@ public class DumpIbisConsole extends HttpServlet {
 					String fileName = s.substring(p2 + 9, p1);
 					File file = new File(fileName);
 					String fn = file.getName();
-					if (fn.startsWith(logFileName)) {
+					if (fn.startsWith(ibisLogFileName) || 
+					    fn.startsWith(statLogFileStart) || 
+						fn.startsWith(sysLogFileStart)) {
 						copyServletResponse(zipOutputStream, request, response, "/" + s, directoryName + "log/" + fn, resources, null,null);
 					}
 				}
