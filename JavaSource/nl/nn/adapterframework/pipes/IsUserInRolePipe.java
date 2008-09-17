@@ -1,6 +1,9 @@
 /*
  * $Log: IsUserInRolePipe.java,v $
- * Revision 1.2  2005-12-29 15:20:44  europe\L190409
+ * Revision 1.3  2008-09-17 09:50:39  europe\L190409
+ * fixed result of doPipe
+ *
+ * Revision 1.2  2005/12/29 15:20:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected javadoc / added default for notInRoleForward
  *
  * Revision 1.1  2005/07/05 13:20:06  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -46,7 +49,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class IsUserInRolePipe extends FixedForwardPipe {
-	public static final String version = "$RCSfile: IsUserInRolePipe.java,v $ $Revision: 1.2 $ $Date: 2005-12-29 15:20:44 $";
+	public static final String version = "$RCSfile: IsUserInRolePipe.java,v $ $Revision: 1.3 $ $Date: 2008-09-17 09:50:39 $";
 
 	private String role=null;
 	private String notInRoleForwardName="notInRole";
@@ -81,7 +84,7 @@ public class IsUserInRolePipe extends FixedForwardPipe {
 				throw new PipeRunException(this,"",e);
 			}
 		}
-		return super.doPipe(input, session);
+		return new PipeRunResult(getForward(),input);
 	}
 	
 	public String getRole() {
