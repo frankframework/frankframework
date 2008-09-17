@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.67  2008-09-08 07:23:16  europe\L190409
+ * Revision 1.68  2008-09-17 09:45:56  europe\L190409
+ * change declared type of Hashtables to Map
+ *
+ * Revision 1.67  2008/09/08 07:23:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed PipeDescription code
  *
  * Revision 1.66  2008/09/04 12:03:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -199,9 +202,10 @@
 package nl.nn.adapterframework.core;
 
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.debug.IbisDebugger;
@@ -292,7 +296,7 @@ import org.springframework.transaction.TransactionStatus;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.67 $ $Date: 2008-09-08 07:23:16 $";
+	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.68 $ $Date: 2008-09-17 09:45:56 $";
     private Logger log = LogUtil.getLogger(this);
 	private Logger durationLog = LogUtil.getLogger("LongDurationMessages");
     
@@ -301,9 +305,9 @@ public class PipeLine {
 	private Adapter adapter;    // for transaction managing
 	private INamedObject owner; // for logging purposes
 
-    private Hashtable pipeStatistics = new Hashtable();
-    private Hashtable pipeWaitingStatistics = new Hashtable();
-    private Hashtable globalForwards = new Hashtable();
+    private Map pipeStatistics = new Hashtable();
+    private Map pipeWaitingStatistics = new Hashtable();
+    private Map globalForwards = new Hashtable();
     private String firstPipe;
 	private int transactionAttribute=TransactionDefinition.PROPAGATION_SUPPORTS;
 	private int transactionTimeout=0;
@@ -314,11 +318,11 @@ public class PipeLine {
 	private TransactionDefinition txDef=null;
 	private PlatformTransactionManager txManager;
     
-    private Hashtable pipesByName=new Hashtable();
+    private Map pipesByName=new Hashtable();
     private List pipes=new ArrayList();
     // set of exits paths with their state
-    private Hashtable pipeLineExits=new Hashtable();
-	private Hashtable pipeThreadCounts=new Hashtable();
+    private Map pipeLineExits=new Hashtable();
+	private Map pipeThreadCounts=new Hashtable();
 	
 	private String commitOnState="success"; // exit state on which receiver will commit XA transactions
 
@@ -397,9 +401,9 @@ public class PipeLine {
 			// register the global forwards at the Pipes
 			// the pipe will take care that if a local, pipe-specific
 			// forward is defined, it is not overwritten by the globals
-			Enumeration globalForwardNames=globalForwards.keys();
-			while (globalForwardNames.hasMoreElements()) {
-				String gfName=(String)globalForwardNames.nextElement();
+			Iterator globalForwardNames=globalForwards.keySet().iterator();
+			while (globalForwardNames.hasNext()) {
+				String gfName=(String)globalForwardNames.next();
 				PipeForward pipeForward= (PipeForward) globalForwards.get(gfName);
 				pipe.registerForward(pipeForward);
 			}
@@ -467,14 +471,14 @@ public class PipeLine {
      * @return a Hashtable with in the key the pipenames and in the
      * value a {@link StatisticsKeeper} object with the statistics
      */
-	public Hashtable getPipeStatistics(){
+	public Map getPipeStatistics(){
 		return pipeStatistics;
 	}
     /**
      * @return a Hashtable with in the key the pipenames and in the
      * value a {@link StatisticsKeeper} object with the statistics
      */
-	public Hashtable getPipeWaitingStatistics(){
+	public Map getPipeWaitingStatistics(){
 		return pipeWaitingStatistics;
 	}
 	
@@ -527,16 +531,6 @@ public class PipeLine {
 		// store message and messageId in the pipeLineSession
 		pipeLineSession.set(message, messageId);
         
-//        boolean compatible;
-//		if (log.isDebugEnabled()) log.debug("evaluating transaction status ["+JtaUtil.displayTransactionStatus()+"], transaction attribute ["+getTransactionAttribute()+"], messageId ["+messageId+"]");
-//		try {
-//			compatible=JtaUtil.transactionStateCompatible(getTransactionAttributeNum());
-//		} catch (Exception t) {
-//			throw new PipeRunException(null,"exception evaluating transaction status, transaction attribute ["+getTransactionAttribute()+"], messageId ["+messageId+"]",t);
-//		}
-//		if (!compatible) {
-//			throw new PipeRunException(null,"transaction state ["+JtaUtil.displayTransactionStatus()+"] not compatible with transaction attribute ["+getTransactionAttribute()+"], messageId ["+messageId+"]");
-//		}
 		if (log.isDebugEnabled()) log.debug("PipeLine transactionAttribute ["+getTransactionAttribute()+"]");
         try {
             return runPipeLineObeyingTransactionAttribute(
@@ -977,18 +971,15 @@ public class PipeLine {
 		for (int i=0; i<pipes.size(); i++) {
 			result+="pipe"+i+"=["+getPipe(i).getName()+"]";
 		}
-        Enumeration exitKeys=pipeLineExits.keys();
-        while (exitKeys.hasMoreElements()){
-            String exitPath=(String)exitKeys.nextElement();
+        Iterator exitKeys=pipeLineExits.keySet().iterator();
+        while (exitKeys.hasNext()){
+            String exitPath=(String)exitKeys.next();
             PipeLineExit pe=(PipeLineExit)pipeLineExits.get(exitPath);
             result+="[path:"+pe.getPath()+" state:"+pe.getState()+"]";
         }
         return result;
     }
 
-//	public boolean isTransacted() {
-//		return transacted;
-//	}
 
 	public void setTransacted(boolean transacted) {
 //		this.transacted = transacted;
@@ -1030,18 +1021,14 @@ public class PipeLine {
 
 		
 	public void setInputValidator(IPipe inputValidator) {
-//		if (inputValidator.isActive()) {
-			this.inputValidator = inputValidator;
-//		}
+		this.inputValidator = inputValidator;
 	}
 	public IPipe getInputValidator() {
 		return inputValidator;
 	}
 
 	public void setOutputValidator(IPipe outputValidator) {
-//		if (outputValidator.isActive()) {
-			this.outputValidator = outputValidator;
-//		}
+		this.outputValidator = outputValidator;
 	}
 	public IPipe getOutputValidator() {
 		return outputValidator;
@@ -1064,6 +1051,5 @@ public class PipeLine {
 	public void setIbisDebugger(IbisDebugger ibisDebugger) {
 		this.ibisDebugger = ibisDebugger;
 	}
-
 
 }
