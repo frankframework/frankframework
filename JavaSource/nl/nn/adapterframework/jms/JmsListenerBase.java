@@ -1,6 +1,9 @@
 /*
  * $Log: JmsListenerBase.java,v $
- * Revision 1.1  2008-09-01 15:13:33  europe\L190409
+ * Revision 1.2  2008-09-17 09:49:32  europe\L190409
+ * implement interface HasSender
+ *
+ * Revision 1.1  2008/09/01 15:13:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * made common baseclass for pushing and pulling jms listeners
  *
  */
@@ -15,6 +18,7 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.HasSender;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -28,7 +32,7 @@ import nl.nn.adapterframework.util.DateUtils;
  * @since   4.9
  * @version Id
  */
-public class JmsListenerBase extends JMSFacade {
+public class JmsListenerBase extends JMSFacade implements HasSender {
 
 	private long timeOut = 3000;
 	private boolean useReplyTo=true;
