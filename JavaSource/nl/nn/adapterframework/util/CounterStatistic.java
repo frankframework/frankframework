@@ -1,6 +1,9 @@
 /*
  * $Log: CounterStatistic.java,v $
- * Revision 1.1  2008-09-17 09:58:12  europe\L190409
+ * Revision 1.2  2008-09-22 13:25:45  europe\L190409
+ * renamed methodname
+ *
+ * Revision 1.1  2008/09/17 09:58:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * first version
  *
  */
@@ -36,7 +39,7 @@ public class CounterStatistic extends Counter {
 		}
 	}
 
-	public synchronized long getValueInterval() {
+	public synchronized long getIntervalValue() {
 		return getValue()-mark;
 	}
 
