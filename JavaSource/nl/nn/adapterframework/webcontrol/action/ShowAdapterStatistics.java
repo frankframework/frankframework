@@ -1,6 +1,10 @@
 /*
  * $Log: ShowAdapterStatistics.java,v $
- * Revision 1.8  2008-09-04 12:20:07  europe\L190409
+ * Revision 1.9  2008-09-22 13:33:18  europe\L190409
+ * exchanged name and type in statisticshandler
+ * changed reference to Hashtable to Map
+ *
+ * Revision 1.8  2008/09/04 12:20:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * collect interval statistics
  *
  * Revision 1.7  2008/08/27 16:27:41  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -17,8 +21,8 @@ package nl.nn.adapterframework.webcontrol.action;
 
 import java.io.IOException;
 import java.text.DecimalFormat;
-import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -146,12 +150,12 @@ public final class ShowAdapterStatistics extends ActionBase {
 		StatisticsKeeperToXml handler = new StatisticsKeeperToXml(adapterXML);
 		Object handle = handler.start();
 
-		Object pipelineData = handler.openGroup(handle,"pipeline",null);
+		Object pipelineData = handler.openGroup(handle,null,"pipeline");
 //	    XmlBuilder pipelineXML = new XmlBuilder("pipeline");
 	
-	    Hashtable pipelineStatistics = adapter.getPipeLineStatistics();
+	    Map pipelineStatistics = adapter.getPipeLineStatistics();
 	
-		Object pipeStatsData = handler.openGroup(pipelineData,"pipeStats",null);
+		Object pipeStatsData = handler.openGroup(pipelineData,null,"pipeStats");
 		for(Iterator it=adapter.getPipeLine().getPipes().iterator();it.hasNext();) {
 			IPipe pipe = (IPipe)it.next();
 			StatisticsKeeper pstat = (StatisticsKeeper) pipelineStatistics.get(pipe.getName());
@@ -163,7 +167,7 @@ public final class ShowAdapterStatistics extends ActionBase {
 	
 		pipelineStatistics = adapter.getWaitingStatistics();
 		if (pipelineStatistics.size()>0) {
-			Object waitStatsData = handler.openGroup(pipelineData,"waitStats",null);
+			Object waitStatsData = handler.openGroup(pipelineData,null,"waitStats");
 			for(Iterator it=adapter.getPipeLine().getPipes().iterator();it.hasNext();) {
 				IPipe pipe = (IPipe)it.next();
 				StatisticsKeeper pstat = (StatisticsKeeper) pipelineStatistics.get(pipe.getName());
@@ -172,6 +176,15 @@ public final class ShowAdapterStatistics extends ActionBase {
 				}
 			}
 		}
+//		if (log.isDebugEnabled()) {
+//			log.debug("about to set adapterStatistics ["+adapterXML.toXML()+"]");
+//			
+//			XmlBuilder alt = new XmlBuilder("alt");
+//			StatisticsKeeperToXml hh = new StatisticsKeeperToXml(alt);
+//			adapter.forEachStatisticsKeeper(hh,HasStatistics.STATISTICS_ACTION_NONE);
+//			log.debug("alternative ["+alt.toXML()+"]");
+//			
+//		}
 	    request.setAttribute("adapterStatistics", adapterXML.toXML());
 	
 	    // Forward control to the specified success URI
@@ -179,6 +192,7 @@ public final class ShowAdapterStatistics extends ActionBase {
 	    return (mapping.findForward("success"));
 	
 	}
+
 	
 	private class StatisticsKeeperToXml implements StatisticsKeeperIterationHandler {
 
@@ -212,9 +226,8 @@ public final class ShowAdapterStatistics extends ActionBase {
 
 		public Object openGroup(Object parentData, String name, String type) {
 			XmlBuilder parent=(XmlBuilder)parentData;
-			XmlBuilder group=new XmlBuilder(name);
+			XmlBuilder group=new XmlBuilder(type);
 			group.addAttribute("name",name);
-			group.addAttribute("type",type);
 			parent.addSubElement(group);
 			return group;
 		}
