@@ -1,6 +1,10 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.64  2008-09-08 07:21:34  europe\L190409
+ * Revision 1.65  2008-09-22 13:36:26  europe\L190409
+ * use CounterStatistics for counters
+ * removed redundant names from statistics
+ *
+ * Revision 1.64  2008/09/08 07:21:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * support interval statistics
  *
  * Revision 1.63  2008/09/02 12:15:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -325,6 +329,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.Map.Entry;
@@ -367,6 +372,7 @@ import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.RunStateEnquiring;
 import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.RunStateManager;
+import nl.nn.adapterframework.util.CounterStatistic;
 import nl.nn.adapterframework.util.StatisticsKeeper;
 import nl.nn.adapterframework.util.StatisticsKeeperIterationHandler;
 import nl.nn.adapterframework.util.TracingEventNumbers;
@@ -461,7 +467,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  */
 public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHandler, EventThrowing, IbisExceptionListener, HasSender, HasStatistics, TracingEventNumbers, IThreadCountControllable, BeanFactoryAware {
     
-	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.64 $ $Date: 2008-09-08 07:21:34 $";
+	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.65 $ $Date: 2008-09-22 13:36:26 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -511,13 +517,13 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	private Counter threadsProcessing = new Counter(0);
 	        
 	// number of messages received
-	private Counter numReceived = new Counter(0);
-	private Counter numRetried = new Counter(0);
-	private long numReceivedMarked=0;
-	private long numRetriedMarked=0;
-	private ArrayList processStatistics = new ArrayList();
-	private ArrayList idleStatistics = new ArrayList();
-	private ArrayList queueingStatistics;
+	private CounterStatistic numReceived = new CounterStatistic(0);
+	private CounterStatistic numRetried = new CounterStatistic(0);
+//	private ScalarStatistic numRejected = new ScalarStatistic(0);
+
+	private List processStatistics = new ArrayList();
+	private List idleStatistics = new ArrayList();
+	private List queueingStatistics;
 
 //	private StatisticsKeeper requestSizeStatistics = new StatisticsKeeper("request size");
 //	private StatisticsKeeper responseSizeStatistics = new StatisticsKeeper("response size");
@@ -1568,21 +1574,15 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		Object recData=hski.openGroup(data,getName(),"receiver");
 		hski.handleScalar(recData,"messagesReceived", getMessagesReceived());
 		hski.handleScalar(recData,"messagesRetried", getMessagesRetried());
-		hski.handleScalar(recData,"messagesReceivedThisInterval", getMessagesReceived()-numReceivedMarked);
-		hski.handleScalar(recData,"messagesRetriedThisInterval", getMessagesRetried()-numRetriedMarked);
-		if (action==HasStatistics.STATISTICS_ACTION_RESET) {
-			numReceivedMarked=0;
-			numRetriedMarked=0;
-			numReceived.setValue(0);
-			numRetried.setValue(0);
-		} else {
-			if (action==HasStatistics.STATISTICS_ACTION_MARK) {
-				numReceivedMarked=getMessagesReceived();
-				numRetriedMarked=getMessagesRetried();
-			}
-		}
+//		hski.handleScalar(recData,"messagesRejected", numRejected.getValue());
+		hski.handleScalar(recData,"messagesReceivedThisInterval", numReceived.getIntervalValue());
+		hski.handleScalar(recData,"messagesRetriedThisInterval", numRetried.getIntervalValue());
+//		hski.handleScalar(recData,"messagesRejectedThisInterval", numRejected.getIntervalValue());
+		numReceived.performAction(action);
+		numRetried.performAction(action);
+//		numRejected.performAction(action);
 		Iterator statsIter=getProcessStatisticsIterator();
-		Object pstatData=hski.openGroup(recData,getName(),"procStats");
+		Object pstatData=hski.openGroup(recData,null,"procStats");
 		if (statsIter != null) {
 			while(statsIter.hasNext()) {				    
 				StatisticsKeeper pstat = (StatisticsKeeper) statsIter.next();
@@ -1593,25 +1593,23 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		hski.closeGroup(pstatData);
 
 		statsIter = getIdleStatisticsIterator();
-		Object istatData=hski.openGroup(recData,getName(),"idleStats");
 		if (statsIter != null) {
+			Object istatData=hski.openGroup(recData,null,"idleStats");
 			while(statsIter.hasNext()) {				    
 				StatisticsKeeper pstat = (StatisticsKeeper) statsIter.next();
 				hski.handleStatisticsKeeper(istatData,pstat);
 				pstat.performAction(action);
 			}
+			hski.closeGroup(istatData);
 		}
-		hski.closeGroup(istatData);
 
 		statsIter = getQueueingStatisticsIterator();
 		if (statsIter!=null) {
-			Object qstatData=hski.openGroup(recData,getName(),"queueingStats");
-			if (statsIter != null) {
-				while(statsIter.hasNext()) {				    
-					StatisticsKeeper qstat = (StatisticsKeeper) statsIter.next();
-					hski.handleStatisticsKeeper(qstatData,qstat);
-					qstat.performAction(action);
-				}
+			Object qstatData=hski.openGroup(recData,null,"queueingStats");
+			while(statsIter.hasNext()) {				    
+				StatisticsKeeper qstat = (StatisticsKeeper) statsIter.next();
+				hski.handleStatisticsKeeper(qstatData,qstat);
+				qstat.performAction(action);
 			}
 			hski.closeGroup(qstatData);
 		}
