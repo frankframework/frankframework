@@ -1,6 +1,11 @@
 /*
  * $Log: Adapter.java,v $
- * Revision 1.48  2008-09-04 12:02:27  europe\L190409
+ * Revision 1.49  2008-09-22 13:28:45  europe\L190409
+ * use CounterStatistics for counters
+ * changed references to Hashtable to Map
+ * output statistics in order of Pipes
+ *
+ * Revision 1.48  2008/09/04 12:02:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * collect interval statistics
  *
  * Revision 1.47  2008/08/27 15:54:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -146,6 +151,8 @@ package nl.nn.adapterframework.core;
 import java.util.Date;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.Vector;
@@ -159,6 +166,7 @@ import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper;
 import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.RunStateManager;
+import nl.nn.adapterframework.util.CounterStatistic;
 import nl.nn.adapterframework.util.StatisticsKeeper;
 import nl.nn.adapterframework.util.StatisticsKeeperIterationHandler;
 
@@ -213,7 +221,7 @@ import org.springframework.core.task.TaskExecutor;
  */
 
 public class Adapter implements IAdapter, NamedBean {
-	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.48 $ $Date: 2008-09-04 12:02:27 $";
+	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.49 $ $Date: 2008-09-22 13:28:45 $";
 	private Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -226,11 +234,8 @@ public class Adapter implements IAdapter, NamedBean {
 
 	private int numOfMessagesInProcess = 0;
    
-	private long numOfMessagesProcessed = 0;
-	private long numOfMessagesProcessedMarked = 0;
-	
-	private long numOfMessagesInError = 0;
-	private long numOfMessagesInErrorMarked = 0;
+	private CounterStatistic numOfMessagesProcessed = new CounterStatistic(0);
+	private CounterStatistic numOfMessagesInError = new CounterStatistic(0);
 	
 	private StatisticsKeeper statsMessageProcessingDuration = null;
 
@@ -339,7 +344,7 @@ public class Adapter implements IAdapter, NamedBean {
 	private synchronized void decNumOfMessagesInProcess(long duration) {
 		synchronized (statsMessageProcessingDuration) {
 			numOfMessagesInProcess--;
-			numOfMessagesProcessed++;
+			numOfMessagesProcessed.increase();
 			statsMessageProcessingDuration.addValue(duration);
 			notifyAll();
 		}
@@ -349,7 +354,7 @@ public class Adapter implements IAdapter, NamedBean {
 	 */
 	private void incNumOfMessagesInError() {
 		synchronized (statsMessageProcessingDuration) {
-			numOfMessagesInError++;
+			numOfMessagesInError.increase();
 		}
 	}
 
@@ -420,22 +425,12 @@ public class Adapter implements IAdapter, NamedBean {
 		hski.handleScalar(adapterData,"messagesInProcess", getNumOfMessagesInProcess());
 		hski.handleScalar(adapterData,"messagesProcessed", getNumOfMessagesProcessed());
 		hski.handleScalar(adapterData,"messagesInError", getNumOfMessagesInError());
-		hski.handleScalar(adapterData,"messagesProcessedThisInterval", getNumOfMessagesProcessed()-numOfMessagesProcessedMarked);
-		hski.handleScalar(adapterData,"messagesInErrorThisInterval", getNumOfMessagesInError()-numOfMessagesInErrorMarked);
+		hski.handleScalar(adapterData,"messagesProcessedThisInterval", numOfMessagesProcessed.getIntervalValue());
+		hski.handleScalar(adapterData,"messagesInErrorThisInterval", numOfMessagesInError.getIntervalValue());
 		hski.handleStatisticsKeeper(adapterData, statsMessageProcessingDuration);
 		statsMessageProcessingDuration.performAction(action);
-
-		if (action==HasStatistics.STATISTICS_ACTION_RESET) {
-			numOfMessagesProcessed=0;
-			numOfMessagesInError=0;
-			numOfMessagesProcessedMarked=0;
-			numOfMessagesInErrorMarked=0;
-		} else {
-			if (action==HasStatistics.STATISTICS_ACTION_MARK) {
-				numOfMessagesProcessedMarked=numOfMessagesProcessed;
-				numOfMessagesInErrorMarked=numOfMessagesInError;
-			}
-		}
+		numOfMessagesProcessed.performAction(action);
+		numOfMessagesInError.performAction(action);
 		Object recsData=hski.openGroup(adapterData,getName(),"receivers");
 		Iterator recIt=getReceiverIterator();
 		if (recIt.hasNext()) {
@@ -448,40 +443,35 @@ public class Adapter implements IAdapter, NamedBean {
 
 		Object pipelineData=hski.openGroup(adapterData,getName(),"pipeline");
 
-		Hashtable pipelineStatistics = getPipeLineStatistics();
-		// sort the Hashtable
-		SortedSet sortedKeys = new TreeSet(pipelineStatistics.keySet());
-		Iterator pipelineStatisticsIter = sortedKeys.iterator();
+		Map pipelineStatistics = getPipeLineStatistics();
 		Object pipestatData=hski.openGroup(pipelineData,getName(),"pipeStats");
 
-		while (pipelineStatisticsIter.hasNext()) {
-			String pipeName = (String) pipelineStatisticsIter.next();
+		for(Iterator it=getPipeLine().getPipes().iterator();it.hasNext();) {
+			IPipe pipe = (IPipe)it.next();
+			String pipeName = pipe.getName();
+
 			StatisticsKeeper pstat = (StatisticsKeeper) pipelineStatistics.get(pipeName);
 			hski.handleStatisticsKeeper(pipestatData,pstat);
 			pstat.performAction(action);
-			IPipe pipe = pipeline.getPipe(pipeName);
 			if (pipe instanceof HasStatistics) {
 				((HasStatistics) pipe).iterateOverStatistics(hski, pipestatData,action);
 			}
 		}
 		hski.closeGroup(pipestatData);
 
-
-		pipestatData=hski.openGroup(pipelineData,getName(),"idleStats");
 		pipelineStatistics = getWaitingStatistics();
 		if (pipelineStatistics.size()>0) {
-			// sort the Hashtable
-			sortedKeys = new TreeSet(pipelineStatistics.keySet());
-			pipelineStatisticsIter = sortedKeys.iterator();
+			pipestatData=hski.openGroup(pipelineData,getName(),"idleStats");
 
-			while (pipelineStatisticsIter.hasNext()) {
-				String pipeName = (String) pipelineStatisticsIter.next();
+			for(Iterator it=getPipeLine().getPipes().iterator();it.hasNext();) {
+				IPipe pipe = (IPipe)it.next();
+				String pipeName = pipe.getName();
 				StatisticsKeeper pstat = (StatisticsKeeper) pipelineStatistics.get(pipeName);
 				hski.handleStatisticsKeeper(pipestatData,pstat);
 				pstat.performAction(action);
 			}
+			hski.closeGroup(pipestatData);
 		}
-		hski.closeGroup(pipestatData);
 		hski.closeGroup(pipelineData);
 	}
 	
@@ -515,7 +505,7 @@ public class Adapter implements IAdapter, NamedBean {
 	 */
 	public long getNumOfMessagesInError() {
 		synchronized (statsMessageProcessingDuration) {
-			return numOfMessagesInError;
+			return numOfMessagesInError.getValue();
 		}
 	}
 	public int getNumOfMessagesInProcess() {
@@ -529,10 +519,10 @@ public class Adapter implements IAdapter, NamedBean {
 	 */
 	public long getNumOfMessagesProcessed() {
 		synchronized (statsMessageProcessingDuration) {
-			return numOfMessagesProcessed;
+			return numOfMessagesProcessed.getValue();
 		}
 	}
-	public Hashtable getPipeLineStatistics() {
+	public Map getPipeLineStatistics() {
 		return pipeline.getPipeStatistics();
 	}
 	public IReceiver getReceiverByName(String receiverName) {
@@ -580,7 +570,7 @@ public class Adapter implements IAdapter, NamedBean {
 	/**
 	 * Retrieve the waiting statistics as a <code>Hashtable</code>
 	 */
-	public Hashtable getWaitingStatistics() {
+	public Map getWaitingStatistics() {
 		return pipeline.getPipeWaitingStatistics();
 	}
 	/**
