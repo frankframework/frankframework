@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.65  2008-09-22 13:36:26  europe\L190409
+ * Revision 1.66  2008-09-23 12:05:58  europe\L190409
+ * send answer to separate sender for errors too
+ *
+ * Revision 1.65  2008/09/22 13:36:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * use CounterStatistics for counters
  * removed redundant names from statistics
  *
@@ -467,7 +470,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  */
 public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHandler, EventThrowing, IbisExceptionListener, HasSender, HasStatistics, TracingEventNumbers, IThreadCountControllable, BeanFactoryAware {
     
-	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.65 $ $Date: 2008-09-22 13:36:26 $";
+	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.66 $ $Date: 2008-09-23 12:05:58 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -1433,8 +1436,16 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 					moveInProcessToError(messageId, correlationId, message, rcvDate, comments, rawMessage, TXREQUIRED);
 				}
 				PipeLineResult plr = new PipeLineResult();
-				plr.setResult("<error>"+XmlUtils.encodeChars(comments)+"</error>");
+				String result="<error>"+XmlUtils.encodeChars(comments)+"</error>";
+				plr.setResult(result);
 				plr.setState("ERROR");
+				if (getSender()!=null) {
+					// TODO correlationId should be technical correlationID!
+					String sendMsg = sendResultToSender(correlationId, result);
+					if (sendMsg != null) {
+						log.warn("problem sending result:"+sendMsg);
+					}
+				}
 				getListener().afterMessageProcessed(plr, rawMessage, threadContext);
 				return true;
 //			} else {
