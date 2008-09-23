@@ -1,6 +1,9 @@
 /*
  * $Log: Text2XmlPipe.java,v $
- * Revision 1.5  2006-04-28 06:19:37  europe\m00f070
+ * Revision 1.6  2008-09-23 09:17:21  europe\m00f069
+ * Fixed typo xmlag -> xmlTag in javadoc
+ *
+ * Revision 1.5  2006/04/28 06:19:37  Martijn IJsselmuiden <martijn.ijsselmuiden@ibissource.org>
  * fixed exception text
  *
  * Revision 1.4  2006/04/26 11:29:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -35,7 +38,7 @@ import org.apache.commons.lang.StringUtils;
  * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setXmlTag(String) xmlag}</td><td>the xml tag to encapsulate the text in</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setXmlTag(String) xmlTag}</td><td>the xml tag to encapsulate the text in</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setIncludeXmlDeclaration(boolean) includeXmlDeclaration}</td><td>controls whether a declation is included above the Xml text</td><td>true</td></tr>
  * <tr><td>{@link #setSplitLines(boolean) splitLines}</td><td>controls whether the lines of the input are places in separated &lt;line&gt; tags</td><td>false</td></tr>
  * </table>
