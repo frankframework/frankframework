@@ -1,6 +1,9 @@
 /*
  * $Log: MessageSendingPipe.java,v $
- * Revision 1.48  2008-09-04 12:13:00  europe\L190409
+ * Revision 1.49  2008-10-06 14:28:57  europe\L190409
+ * avoid NPE
+ *
+ * Revision 1.48  2008/09/04 12:13:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * collect interval statistics
  *
  * Revision 1.47  2008/09/01 12:59:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -246,7 +249,7 @@ import org.apache.commons.lang.SystemUtils;
  */
 
 public class MessageSendingPipe extends FixedForwardPipe implements HasSender, HasStatistics, EventThrowing {
-	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.48 $ $Date: 2008-09-04 12:13:00 $";
+	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.49 $ $Date: 2008-10-06 14:28:57 $";
 
 	public static final String PIPE_TIMEOUT_MONITOR_EVENT = "Sender Timeout";
 	public static final String PIPE_CLEAR_TIMEOUT_MONITOR_EVENT = "Sender Received Result on Time";
@@ -591,7 +594,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	}
 
 	protected String sendMessage(Object input, PipeLineSession session, String correlationID, ISender sender, Map threadContext) throws SenderException, TimeOutException {
-		if (!(input instanceof String)) {
+		if (input!=null && !(input instanceof String)) {
 			throw new SenderException("String expected, got a [" + input.getClass().getName() + "]");
 		}
 		// sendResult has a messageID for async senders, the result for sync senders
