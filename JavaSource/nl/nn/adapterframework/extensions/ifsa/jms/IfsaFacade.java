@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaFacade.java,v $
- * Revision 1.7  2008-09-02 11:43:57  europe\L190409
+ * Revision 1.8  2008-10-06 14:30:36  europe\L190409
+ * use JMS transacted sessions for FF
+ *
+ * Revision 1.7  2008/09/02 11:43:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * close reply sender in finally clause
  *
  * Revision 1.6  2008/07/14 17:17:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -215,7 +218,7 @@ import com.ing.ifsa.IFSATextMessage;
  * @since 4.2
  */
 public class IfsaFacade implements INamedObject, HasPhysicalDestination {
-	public static final String version = "$RCSfile: IfsaFacade.java,v $ $Revision: 1.7 $ $Date: 2008-09-02 11:43:57 $";
+	public static final String version = "$RCSfile: IfsaFacade.java,v $ $Revision: 1.8 $ $Date: 2008-10-06 14:30:36 $";
     protected Logger log = LogUtil.getLogger(this);
     
     private static int BASIC_ACK_MODE = Session.AUTO_ACKNOWLEDGE;
@@ -680,9 +683,13 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 		}
 	}
     
+    /**
+     * controls whether sessions are created in JMS transacted mode. JMS transacted sessions
+     * are required by IFSA for FF, although they result in log messages about active transactions
+     * that should be present.
+     */
     protected boolean isJmsTransacted() {
-    	return false;
-    	//return getMessageProtocolEnum().equals(IfsaMessageProtocolEnum.FIRE_AND_FORGET);
+		return getMessageProtocolEnum().equals(IfsaMessageProtocolEnum.FIRE_AND_FORGET);
     }
     
 	public String toString() {
