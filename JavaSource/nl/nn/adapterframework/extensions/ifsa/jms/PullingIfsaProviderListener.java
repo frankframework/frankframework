@@ -1,6 +1,9 @@
 /*
  * $Log: PullingIfsaProviderListener.java,v $
- * Revision 1.2  2008-02-28 16:20:38  europe\L190409
+ * Revision 1.3  2008-10-06 14:31:14  europe\L190409
+ * encode contents of poisonmessage
+ *
+ * Revision 1.2  2008/02/28 16:20:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * use PipeLineSession.setListenerParameters()
  *
  * Revision 1.1  2008/01/03 15:46:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -165,6 +168,7 @@ import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.RunStateEnquirer;
 import nl.nn.adapterframework.util.RunStateEnquiring;
 import nl.nn.adapterframework.util.RunStateEnum;
+import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 
@@ -221,7 +225,7 @@ import com.ing.ifsa.IFSATextMessage;
  * @version Id
  */
 public class PullingIfsaProviderListener extends IfsaFacade implements IPullingListener, INamedObject, RunStateEnquiring {
-	public static final String version = "$RCSfile: PullingIfsaProviderListener.java,v $ $Revision: 1.2 $ $Date: 2008-02-28 16:20:38 $";
+	public static final String version = "$RCSfile: PullingIfsaProviderListener.java,v $ $Revision: 1.3 $ $Date: 2008-10-06 14:31:14 $";
 
     private final static String THREAD_CONTEXT_SESSION_KEY = "session";
     private final static String THREAD_CONTEXT_RECEIVER_KEY = "receiver";
@@ -684,7 +688,7 @@ public class PullingIfsaProviderListener extends IfsaFacade implements IPullingL
 			}
 			return  "<poisonmessage>"+
 					"  <source>"+source+"</source>"+
-					"  <contents>"+ToStringBuilder.reflectionToString(pm)+"</contents>"+
+					"  <contents>"+XmlUtils.encodeChars(ToStringBuilder.reflectionToString(pm))+"</contents>"+
 					"</poisonmessage>";
 		}
 

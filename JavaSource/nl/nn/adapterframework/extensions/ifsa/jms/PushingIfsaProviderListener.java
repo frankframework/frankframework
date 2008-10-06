@@ -1,6 +1,9 @@
 /*
  * $Log: PushingIfsaProviderListener.java,v $
- * Revision 1.8  2008-09-02 11:45:07  europe\L190409
+ * Revision 1.9  2008-10-06 14:31:41  europe\L190409
+ * encode contents of poisonmessage
+ *
+ * Revision 1.8  2008/09/02 11:45:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * use session key definition from interface to retrieve session
  *
  * Revision 1.7  2008/09/01 15:09:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -56,6 +59,7 @@ import nl.nn.adapterframework.extensions.ifsa.IfsaException;
 import nl.nn.adapterframework.extensions.ifsa.IfsaMessageProtocolEnum;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -112,12 +116,21 @@ import com.ing.ifsa.IFSAServicesProvided;
  * 
  * <code>ifsa.provider.useSelectors=false</code>
  * 
+ * <p>
+ * For Fire&Forget providers, the message log might get cluttered with messages like:
+ * <code><pre>
+   [1-10-08 17:10:34:382 CEST] 209d4317 ConnectionMan W J2CA0075W: An active transaction should be present while processing method allocateMCWrapper.
+   [1-10-08 17:10:34:382 CEST] 209d4317 ConnectionMan W J2CA0075W: An active transaction should be present while processing method initializeForUOW
+ * </pre></code> 
+ * This is due to a IFSA requirement, that sessions be created using a parameter transacted=true, indicating
+ * JMS transacted sessions. 
+ * 
  * @author  Gerrit van Brakel
  * @since   4.2
  * @version Id
  */
 public class PushingIfsaProviderListener extends IfsaFacade implements IPortConnectedListener, IThreadCountControllable, IKnowsDeliveryCount {
-	public static final String version = "$RCSfile: PushingIfsaProviderListener.java,v $ $Revision: 1.8 $ $Date: 2008-09-02 11:45:07 $";
+	public static final String version = "$RCSfile: PushingIfsaProviderListener.java,v $ $Revision: 1.9 $ $Date: 2008-10-06 14:31:41 $";
 
 	public final static String THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY = "originalRawMessage";
 	public final static String THREAD_CONTEXT_BIFNAME_KEY="IfsaBif";
@@ -475,7 +488,7 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 			}
 			return  "<poisonmessage>"+
 					"  <source>"+source+"</source>"+
-					"  <contents>"+ToStringBuilder.reflectionToString(pm)+"</contents>"+
+					"  <contents>"+XmlUtils.encodeChars(ToStringBuilder.reflectionToString(pm))+"</contents>"+
 					"</poisonmessage>";
 		}
 
