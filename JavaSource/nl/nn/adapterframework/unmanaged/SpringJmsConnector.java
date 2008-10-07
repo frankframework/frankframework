@@ -1,6 +1,9 @@
 /*
  * $Log: SpringJmsConnector.java,v $
- * Revision 1.19  2008-09-01 15:14:56  europe\L190409
+ * Revision 1.20  2008-10-07 08:46:26  europe\L190409
+ * do not commit JMS transacted sessions from within a global transaction
+ *
+ * Revision 1.19  2008/09/01 15:14:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * use session key definition from parent to store session
  *
  * Revision 1.18  2008/09/01 13:01:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -290,7 +293,7 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 //					}
 //				}
 			} finally {
-				if (jmsContainer.isSessionTransacted()) {
+				if (txStatus==null && jmsContainer.isSessionTransacted()) {
 					log.debug(getLogPrefix()+"committing JMS session");
 					session.commit();
 				}
