@@ -5,19 +5,11 @@
 		<delete dir="${build.dir}"/>
 		<mkdir dir="${build.dir}"/>
 		<property file="bin/AppConstants.properties" prefix="ac"/>
-		<condition property="iaf.version" value="${ac.application.version}">
-			<equals arg1="${ac.application.version.alpha}" arg2=""/>
-		</condition>
-		<condition property="iaf.version" value="${ac.application.version}-alpha${ac.application.version.alpha}">
-			<not>
-				<equals arg1="${ac.application.version.alpha}" arg2=""/>
-			</not>
-		</condition>
 		<propertyfile file="${build.dir}/IAF.properties">
 			<entry key="timestamp" type="date" pattern="yyyyMMdd-HHmm" value="now"/>
 		</propertyfile>
 		<property file="${build.dir}/IAF.properties" prefix="iaf"/>
-		<jar destfile="${build.dir}/AdapterFramework ${iaf.version}.jar" duplicate="preserve">
+		<jar destfile="${build.dir}/AdapterFramework ${ac.application.version}.jar" duplicate="preserve">
 			<fileset dir="Java Source"/>
 			<fileset dir="bin"/>
 			<manifest>
@@ -25,10 +17,10 @@
 				<section name="nl/nn/adapterframework/">
 					<attribute name="Specification-Title" value="${ac.application.name}"/>
 					<attribute name="Specification-Version" value="${ac.application.version}"/>
-					<attribute name="Specification-Vendor" value="NN"/>
+					<attribute name="Specification-Vendor" value="ING Nederland / Divisie Intermediair / BPI"/>
 					<attribute name="Implementation-Title" value="nl.nn.adapterframework"/>
-					<attribute name="Implementation-Version" value="${iaf.version} ${iaf.timestamp}"/> 
-					<attribute name="Implementation-Vendor" value="NN"/>
+					<attribute name="Implementation-Version" value="${ac.application.version}_${iaf.timestamp}"/> 
+					<attribute name="Implementation-Vendor" value="ING Nederland / Divisie Intermediair / BPI"/>
 				</section>
 			</manifest>		
 		</jar>
