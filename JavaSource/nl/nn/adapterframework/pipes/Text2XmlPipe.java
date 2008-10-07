@@ -1,6 +1,9 @@
 /*
  * $Log: Text2XmlPipe.java,v $
- * Revision 1.6  2008-09-23 09:17:21  europe\m00f069
+ * Revision 1.7  2008-10-07 10:48:41  europe\m168309
+ * added replaceNonXmlChars attribute
+ *
+ * Revision 1.6  2008/09/23 09:17:21  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Fixed typo xmlag -> xmlTag in javadoc
  *
  * Revision 1.5  2006/04/28 06:19:37  Martijn IJsselmuiden <martijn.ijsselmuiden@ibissource.org>
@@ -23,12 +26,15 @@ package nl.nn.adapterframework.pipes;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.Reader;
 import java.io.StringReader;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.util.EncapsulatingReader;
+import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -41,6 +47,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setXmlTag(String) xmlTag}</td><td>the xml tag to encapsulate the text in</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setIncludeXmlDeclaration(boolean) includeXmlDeclaration}</td><td>controls whether a declation is included above the Xml text</td><td>true</td></tr>
  * <tr><td>{@link #setSplitLines(boolean) splitLines}</td><td>controls whether the lines of the input are places in separated &lt;line&gt; tags</td><td>false</td></tr>
+ * <tr><td>{@link #setReplaceNonXmlChars(boolean) replaceNonXmlChars}</td><td>Replace all non XML chars (not in the <a href="http://www.w3.org/TR/2006/REC-xml-20060816/#NT-Char">character range as specified by the XML specification</a>) with the inverted question mark (0x00BF)</td><td>true</td></tr>
  * </table>
  * </p>
  * <p><b>Exits:</b>
@@ -58,6 +65,7 @@ public class Text2XmlPipe extends FixedForwardPipe {
 	private String xmlTag;
 	private boolean includeXmlDeclaration = true;
 	private boolean splitLines = false;
+	private boolean replaceNonXmlChars = true;
 	
 	/** 
 	 * @see nl.nn.adapterframework.core.IPipe#configure()
@@ -77,7 +85,12 @@ public class Text2XmlPipe extends FixedForwardPipe {
 	public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRunException {
 		if (isSplitLines() && input != null) {
 			try {
-				BufferedReader br = new BufferedReader(new StringReader(input.toString()));
+				Reader reader = new StringReader(input.toString());
+				if (replaceNonXmlChars) {
+					reader = new EncapsulatingReader(reader, "", "", true);
+				}
+				BufferedReader br = new BufferedReader(reader);
+
 				String l;
 				StringBuffer result = new StringBuffer();
 
@@ -93,9 +106,11 @@ public class Text2XmlPipe extends FixedForwardPipe {
 			}
 			
 						
-		}
-		else
+		} else if (replaceNonXmlChars && input != null) {
+			input = "<![CDATA["+ XmlUtils.encodeCdataString(input.toString()) +"]]>";
+		} else {
 			input = "<![CDATA["+ input +"]]>";
+		}
 			
 		String resultString = (isIncludeXmlDeclaration()?"<?xml version=\"1.0\" encoding=\"UTF-8\"?>":"") +
 		"<" + getXmlTag() + ">"+input+"</" + xmlTag + ">";	
@@ -130,6 +145,10 @@ public class Text2XmlPipe extends FixedForwardPipe {
 
 	public void setSplitLines(boolean b) {
 		splitLines = b;
+	}
+
+	public void setReplaceNonXmlChars(boolean b) {
+		replaceNonXmlChars = b;
 	}
 
 }
