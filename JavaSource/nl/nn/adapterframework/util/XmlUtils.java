@@ -1,6 +1,9 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.50  2008-08-27 16:26:26  europe\L190409
+ * Revision 1.51  2008-10-07 10:55:19  europe\m168309
+ * added makeRemoveNamespacesXslt
+ *
+ * Revision 1.50  2008/08/27 16:26:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * made transformer type configurable
  *
  * Revision 1.49  2008/08/18 09:41:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -219,7 +222,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * @version Id
  */
 public class XmlUtils {
-	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.50 $ $Date: 2008-08-27 16:26:26 $";
+	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.51 $ $Date: 2008-10-07 10:55:19 $";
 	static Logger log = LogUtil.getLogger(XmlUtils.class);
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
@@ -263,6 +266,26 @@ public class XmlUtils {
 			+ "<xsl:template match=\"* [.//text()] | text()|@*|comment()|processing-instruction()\">"
 			+ "<xsl:copy>"
 			+ "<xsl:apply-templates select=\"*|@*|comment()|processing-instruction()|text()\"/>"
+			+ "</xsl:copy>"
+			+ "</xsl:template>"
+			+ "</xsl:stylesheet>";
+	}
+
+	public static String makeRemoveNamespacesXslt(boolean omitXmlDeclaration, boolean indent) {
+		return 	
+		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"1.0\">"
+			+ "<xsl:output method=\"xml\" indent=\""+(indent?"yes":"no")+"\" omit-xml-declaration=\""+(omitXmlDeclaration?"yes":"no")+"\"/>"
+			+ "<xsl:template match=\"*\">"
+			+ "<xsl:element name=\"{local-name()}\">"
+			+ "<xsl:for-each select=\"@*\">"
+			+ "<xsl:attribute name=\"{local-name()}\"><xsl:value-of select=\".\"/></xsl:attribute>"
+			+ "</xsl:for-each>"
+			+ "<xsl:apply-templates/>"
+			+ "</xsl:element>"
+			+ "</xsl:template>"
+			+ "<xsl:template match=\"comment() | processing-instruction() | text()\">"
+			+ "<xsl:copy>"
+			+ "<xsl:apply-templates/>"
 			+ "</xsl:copy>"
 			+ "</xsl:template>"
 			+ "</xsl:stylesheet>";
