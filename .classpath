@@ -8,7 +8,6 @@
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/jaxp.jar"/>
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/jaxrpc.jar"/>
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/log4j-1.2.7.jar"/>
-    <classpathentry kind="lib" path="/Tibco connector/jms.jar"/>
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/rowset.jar"/>
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/struts-11-final-Websphere.jar"/>
     <classpathentry kind="var" path="WAS_PLUGINDIR/lib/j2ee.jar"/>
