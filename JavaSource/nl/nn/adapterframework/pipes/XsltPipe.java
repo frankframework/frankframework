@@ -1,6 +1,9 @@
 /*
  * $Log: XsltPipe.java,v $
- * Revision 1.27  2008-05-15 15:27:41  europe\L190409
+ * Revision 1.28  2008-10-07 10:57:40  europe\m168309
+ * added removeNamespaces attribute
+ *
+ * Revision 1.27  2008/05/15 15:27:41  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected typo in documentation
  *
  * Revision 1.26  2008/02/13 13:36:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -100,6 +103,7 @@ import org.apache.commons.lang.StringUtils;
  * will be the result of this pipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSkipEmptyTags(boolean) skipEmptyTags}</td><td>when set <code>true</code> empty tags in the output are removed</td><td>false</td></tr>
  * <tr><td>{@link #setIndentXml(boolean) indentXml}</td><td>when set <code>true</code>, result is pretty-printed. (only used when <code>skipEmptyTags="true"</code>)</td><td>true</td></tr>
+ * <tr><td>{@link #setRemoveNamespaces(boolean) removeNamespaces}</td><td>when set <code>true</code> namespaces (and prefixes) in the input message are removed</td><td>false</td></tr>
  * </table>
  * <table border="1">
  * <tr><th>nested elements</th><th>description</th></tr>
@@ -118,7 +122,7 @@ import org.apache.commons.lang.StringUtils;
  */
 
 public class XsltPipe extends FixedForwardPipe {
-	public static final String version="$RCSfile: XsltPipe.java,v $ $Revision: 1.27 $ $Date: 2008-05-15 15:27:41 $";
+	public static final String version="$RCSfile: XsltPipe.java,v $ $Revision: 1.28 $ $Date: 2008-10-07 10:57:40 $";
 
 	private TransformerPool transformerPool;
 	private String xpathExpression=null;
@@ -128,8 +132,10 @@ public class XsltPipe extends FixedForwardPipe {
 	private boolean indentXml=true;
 	private String sessionKey=null;
 	private boolean skipEmptyTags=false;
+	private boolean removeNamespaces=false;
 
 	private TransformerPool transformerPoolSkipEmptyTags;
+	private TransformerPool transformerPoolRemoveNamespaces;
 
 	
 	/**
@@ -150,10 +156,26 @@ public class XsltPipe extends FixedForwardPipe {
 				throw new ConfigurationException(getLogPrefix(null) + "got error creating transformer from skipEmptyTags", te);
 			}
 		}
+		if (isRemoveNamespaces()) {
+			String removeNamespaces_xslt = XmlUtils.makeRemoveNamespacesXslt(isOmitXmlDeclaration(),isIndentXml());
+			log.debug("test [" + removeNamespaces_xslt + "]");
+			try {
+				transformerPoolRemoveNamespaces = new TransformerPool(removeNamespaces_xslt);
+			} catch (TransformerConfigurationException te) {
+				throw new ConfigurationException(getLogPrefix(null) + "got error creating transformer from removeNamespace", te);
+			}
+		}
 	}
 
 	public void start() throws PipeStartException {
 		super.start();
+		if (transformerPoolRemoveNamespaces!=null) {
+			try {
+				transformerPoolRemoveNamespaces.open();
+			} catch (Exception e) {
+				throw new PipeStartException(getLogPrefix(null)+"cannot start TransformerPool RemoveNamespaces", e);
+			}
+		}
 		if (transformerPool!=null) {
 			try {
 				transformerPool.open();
@@ -172,6 +194,9 @@ public class XsltPipe extends FixedForwardPipe {
 	
 	public void stop() {
 		super.stop();
+		if (transformerPoolRemoveNamespaces!=null) {
+			transformerPoolRemoveNamespaces.close();
+		}
 		if (transformerPool!=null) {
 			transformerPool.close();
 		}
@@ -197,15 +222,25 @@ public class XsltPipe extends FixedForwardPipe {
 	    }
 	    
 		ParameterList parameterList = null;
-		ParameterResolutionContext prc = new ParameterResolutionContext((String)input, session, isNamespaceAware()); 
+		//ParameterResolutionContext prc = new ParameterResolutionContext((String)input, session, isNamespaceAware()); 
 	    try {
+			String stringResult = (String)input;
+
+			if (isRemoveNamespaces()) {
+				log.debug(getLogPrefix(session)+ " removing namespaces from input message");
+				ParameterResolutionContext prc_RemoveNamespaces = new ParameterResolutionContext(stringResult, session, isNamespaceAware()); 
+				stringResult = transformerPoolRemoveNamespaces.transform(prc_RemoveNamespaces.getInputSource(), null); 
+				log.debug(getLogPrefix(session)+ " output message after removing namespaces [" + stringResult + "]");
+			}
+
+			ParameterResolutionContext prc = new ParameterResolutionContext(stringResult, session, isNamespaceAware());
 			Map parametervalues = null;
 			if (getParameterList()!=null) {
 				parameterList =  getParameterList();
 				parametervalues = prc.getValueMap(parameterList);
 			}
 			
-	        String stringResult = transformerPool.transform(prc.getInputSource(), parametervalues); 
+	        stringResult = transformerPool.transform(prc.getInputSource(), parametervalues); 
 
 			if (isSkipEmptyTags()) {
 				log.debug(getLogPrefix(session)+ " skipping empty tags from result [" + stringResult + "]");
@@ -291,4 +326,10 @@ public class XsltPipe extends FixedForwardPipe {
 		return indentXml;
 	}
 
+	public void setRemoveNamespaces(boolean b) {
+		removeNamespaces = b;
+	}
+	public boolean isRemoveNamespaces() {
+		return removeNamespaces;
+	}
 }
