@@ -1,6 +1,9 @@
 /*
  * $Log: XsltPipe.java,v $
- * Revision 1.28  2008-10-07 10:57:40  europe\m168309
+ * Revision 1.29  2008-10-10 12:47:54  europe\m168309
+ * *** empty log message ***
+ *
+ * Revision 1.28  2008/10/07 10:57:40  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added removeNamespaces attribute
  *
  * Revision 1.27  2008/05/15 15:27:41  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -122,7 +125,7 @@ import org.apache.commons.lang.StringUtils;
  */
 
 public class XsltPipe extends FixedForwardPipe {
-	public static final String version="$RCSfile: XsltPipe.java,v $ $Revision: 1.28 $ $Date: 2008-10-07 10:57:40 $";
+	public static final String version="$RCSfile: XsltPipe.java,v $ $Revision: 1.29 $ $Date: 2008-10-10 12:47:54 $";
 
 	private TransformerPool transformerPool;
 	private String xpathExpression=null;
@@ -162,7 +165,7 @@ public class XsltPipe extends FixedForwardPipe {
 			try {
 				transformerPoolRemoveNamespaces = new TransformerPool(removeNamespaces_xslt);
 			} catch (TransformerConfigurationException te) {
-				throw new ConfigurationException(getLogPrefix(null) + "got error creating transformer from removeNamespace", te);
+				throw new ConfigurationException(getLogPrefix(null) + "got error creating transformer from removeNamespaces", te);
 			}
 		}
 	}
