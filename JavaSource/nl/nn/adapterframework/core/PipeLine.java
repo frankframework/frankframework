@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.68  2008-09-17 09:45:56  europe\L190409
+ * Revision 1.69  2008-10-10 14:16:06  europe\m168309
+ * added storeOriginalMessageWithoutNamespaces attribute
+ *
+ * Revision 1.68  2008/09/17 09:45:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * change declared type of Hashtables to Map
  *
  * Revision 1.67  2008/09/08 07:23:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -201,15 +204,22 @@
  */
 package nl.nn.adapterframework.core;
 
+import java.io.IOException;
+
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.debug.IbisDebugger;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
@@ -217,6 +227,8 @@ import nl.nn.adapterframework.util.Semaphore;
 import nl.nn.adapterframework.util.SpringTxManagerProxy;
 import nl.nn.adapterframework.util.StatisticsKeeper;
 import nl.nn.adapterframework.util.TracingUtil;
+import nl.nn.adapterframework.util.TransformerPool;
+import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -257,6 +269,7 @@ import org.springframework.transaction.TransactionStatus;
  * 											      <tr><td>T1</td>  <td>error</td></tr>
  *  </table></td><td>Supports</td></tr>
  * <tr><td>{@link #setTransactionTimeout(int) transactionTimeout}</td><td>Timeout (in seconds) of transaction started to process a message.</td><td><code>0</code> (use system default)</code></td></tr>
+ * <tr><td>{@link #setStoreOriginalMessageWithoutNamespaces(boolean) storeOriginalMessageWithoutNamespaces}</td><td>when set <code>true</code> the original message without namespaces (and prefixes) is stored under the session key originalMessageWithoutNamespaces</td><td>false</td></tr>
  * </table>
  * </p>
  * <table border="1">
@@ -296,7 +309,7 @@ import org.springframework.transaction.TransactionStatus;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.68 $ $Date: 2008-09-17 09:45:56 $";
+	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.69 $ $Date: 2008-10-10 14:16:06 $";
     private Logger log = LogUtil.getLogger(this);
 	private Logger durationLog = LogUtil.getLogger("LongDurationMessages");
     
@@ -325,6 +338,7 @@ public class PipeLine {
 	private Map pipeThreadCounts=new Hashtable();
 	
 	private String commitOnState="success"; // exit state on which receiver will commit XA transactions
+	private boolean storeOriginalMessageWithoutNamespaces=false;
 
 	private List exitHandlers = new ArrayList();
     
@@ -650,6 +664,30 @@ public class PipeLine {
 				if (pipeToRun==null) {
 					throw new PipeRunException(pipeToRun,"forward ["+validationForward.getName()+"], path ["+validationForward.getPath()+"] does not correspond to a pipe");
 				}
+			}
+		}
+
+		if (isStoreOriginalMessageWithoutNamespaces()) {
+			if (XmlUtils.isWellFormed(message)) {
+				String removeNamespaces_xslt = XmlUtils.makeRemoveNamespacesXslt(true,true);
+				log.debug("test [" + removeNamespaces_xslt + "]");
+				try{
+					String xsltResult = null;
+					Transformer transformer = XmlUtils.createTransformer(removeNamespaces_xslt);
+					xsltResult = XmlUtils.transformXml(transformer, message);
+					pipeLineSession.put("originalMessageWithoutNamespaces", xsltResult);
+				} catch (IOException e) {
+					throw new PipeRunException(pipeToRun,"cannot retrieve removeNamespaces", e);
+				} catch (TransformerConfigurationException te) {
+					throw new PipeRunException(pipeToRun,"got error creating transformer from removeNamespaces", te);
+				} catch (TransformerException te) {
+					throw new PipeRunException(pipeToRun,"got error transforming removeNamespaces", te);
+				} catch (DomBuilderException te) {
+					throw new PipeRunException(pipeToRun,"caught DomBuilderException", te);
+				}
+			} else {
+				log.warn("original message is not well-formed");
+				pipeLineSession.put("originalMessageWithoutNamespaces", message);
 			}
 		}
 	
@@ -1052,4 +1090,10 @@ public class PipeLine {
 		this.ibisDebugger = ibisDebugger;
 	}
 
+	public void setStoreOriginalMessageWithoutNamespaces(boolean b) {
+		storeOriginalMessageWithoutNamespaces = b;
+	}
+	public boolean isStoreOriginalMessageWithoutNamespaces() {
+		return storeOriginalMessageWithoutNamespaces;
+	}
 }
