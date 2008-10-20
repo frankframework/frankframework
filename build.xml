@@ -2,6 +2,7 @@
 	<!-- ================================================================== -->
 	<target name="jar" description="Create the jar file">
 		<property name="build.dir" value="C:/Temp/AdapterFramework/build"/>
+		<property name="lib_path" value="../IbisWar/Web Content/WEB-INF/lib"/>
 		<delete dir="${build.dir}"/>
 		<mkdir dir="${build.dir}"/>
 		<property file="bin/AppConstants.properties" prefix="ac"/>
@@ -24,5 +25,20 @@
 				</section>
 			</manifest>		
 		</jar>
+		<path id="project.class.path">
+			<fileset dir="${lib_path}">
+				<include name="*.jar"/>
+			</fileset>
+		</path>
+		<javadoc sourcepath="Java Source"
+				 classpathref="project.class.path"
+				 packagenames="nl.nn.adapterframework.*,nl.nn.coolgen.proxy"
+				 destdir="${build.dir}/api"
+				 windowtitle="${ac.application.name} v${ac.application.version} Developer Documentation"
+				 use="true"
+				 author="true">
+			<doctitle><![CDATA[<h1>IBIS AdapterFramework v${ac.application.version} Developer Documentation</h1>]]></doctitle>
+			<bottom><![CDATA[<i>MIX/IBIS</i>]]></bottom>
+		</javadoc>
 	</target>
 </project>
