@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcQuerySenderBase.java,v $
- * Revision 1.35  2008-06-24 07:57:43  europe\L190409
+ * Revision 1.36  2008-10-20 12:52:23  europe\m168309
+ * added blobSmartGet attribute
+ *
+ * Revision 1.35  2008/06/24 07:57:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * allocate larger buffer for package result
  *
  * Revision 1.34  2008/06/19 15:13:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -192,6 +195,7 @@ import sun.misc.BASE64Encoder;
  * <tr><td>{@link #setStreamCharset(String) streamCharset}</td><td>charset used when reading a stream (that is e.g. going to be written to a BLOB or CLOB). When empty, the stream is copied directly to the BLOB, without conversion</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setBlobsCompressed(boolean) blobsCompressed}</td><td>controls whether blobdata is stored compressed in the database</td><td>true</td></tr>
  * <tr><td>{@link #setColumnsReturned(String) columnsReturned}</td><td>comma separated list of columns whose values are to be returned. Works only if the driver implements JDBC 3.0 getGeneratedKeys()</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setBlobSmartGet(boolean) blobSmartGet}</td><td>controls automatically whether blobdata is stored compressed and/or serialized in the database</td><td>false</td></tr>
  * </table>
  * </p>
  * <table border="1">
@@ -217,7 +221,7 @@ import sun.misc.BASE64Encoder;
  * @since 	4.1
  */
 public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
-	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.35 $ $Date: 2008-06-24 07:57:43 $";
+	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.36 $ $Date: 2008-10-20 12:52:23 $";
 
 	private String queryType = "other";
 	private int maxRows=-1; // return all rows
@@ -236,6 +240,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 	private String blobCharset = Misc.DEFAULT_INPUT_STREAM_ENCODING;
 	private String streamCharset = null;
 	private boolean blobsCompressed=true;
+	private boolean blobSmartGet=false;
 
 	private String packageContent = "db2";
 	
@@ -386,6 +391,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 			db2xml.setTrimSpaces(isTrimSpaces());
 			db2xml.setBlobCharset(getBlobCharset());
 			db2xml.setDecompressBlobs(isBlobsCompressed());
+			db2xml.setGetBlobSmart(isBlobSmartGet());
 			result = db2xml.getXML(resultset, getMaxRows());
 		}
 		return result;
@@ -405,7 +411,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 					encoder.encode(blobStream,baos);
 					return baos.toString();
 			 	} else {
-					return JdbcUtil.getBlobAsString(rs,colNum,getBlobCharset(),false,isBlobsCompressed());
+					return JdbcUtil.getBlobAsString(rs,colNum,getBlobCharset(),false,isBlobsCompressed(),isBlobSmartGet());
 			 	}
 			 case Types.CLOB :
 					 return JdbcUtil.getClobAsString(rs,colNum,false);
@@ -850,6 +856,13 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 	}
 	public boolean isBlobsCompressed() {
 		return blobsCompressed;
+	}
+
+	public void setBlobSmartGet(boolean b) {
+		blobSmartGet = b;
+	}
+	public boolean isBlobSmartGet() {
+		return blobSmartGet;
 	}
 
 	public String getBlobCharset() {
