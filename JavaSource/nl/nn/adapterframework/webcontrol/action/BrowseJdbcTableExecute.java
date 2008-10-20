@@ -1,6 +1,9 @@
 /*
  * $Log: BrowseJdbcTableExecute.java,v $
- * Revision 1.5  2008-06-18 09:17:42  europe\L190409
+ * Revision 1.6  2008-10-20 13:02:44  europe\m168309
+ * also show not compressed blobs and not serialized blobs
+ *
+ * Revision 1.5  2008/06/18 09:17:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected rownums together with order by (MO)
  *
  * Revision 1.4  2008/05/22 07:34:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -39,7 +42,7 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 
 public class BrowseJdbcTableExecute extends ActionBase {
-	public static final String version = "$RCSfile: BrowseJdbcTableExecute.java,v $ $Revision: 1.5 $ $Date: 2008-06-18 09:17:42 $";
+	public static final String version = "$RCSfile: BrowseJdbcTableExecute.java,v $ $Revision: 1.6 $ $Date: 2008-10-20 13:02:44 $";
 
 	public ActionForward execute(
 		ActionMapping mapping,
@@ -129,6 +132,7 @@ public class BrowseJdbcTableExecute extends ActionBase {
 //					query = query + " FROM (" + subQuery + ")";
 				}
 				qs.setQueryType("select");
+				qs.setBlobSmartGet(true);
 				qs.configure();
 				qs.open();
 				result = qs.sendMessage("dummy", query);

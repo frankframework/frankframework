@@ -1,6 +1,9 @@
 /*
  * $Log: DB2XMLWriter.java,v $
- * Revision 1.16  2008-05-15 15:18:20  europe\L190409
+ * Revision 1.17  2008-10-20 13:03:27  europe\m168309
+ * also show not compressed blobs and not serialized blobs
+ *
+ * Revision 1.16  2008/05/15 15:18:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fixed trimming of values
  *
  * Revision 1.15  2008/05/14 09:21:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -82,7 +85,7 @@ import org.apache.log4j.Logger;
  **/
 
 public class DB2XMLWriter {
-	public static final String version="$RCSfile: DB2XMLWriter.java,v $ $Revision: 1.16 $ $Date: 2008-05-15 15:18:20 $";
+	public static final String version="$RCSfile: DB2XMLWriter.java,v $ $Revision: 1.17 $ $Date: 2008-10-20 13:03:27 $";
 	protected static Logger log = LogUtil.getLogger(DB2XMLWriter.class);
 
 	private String docname = new String("result");
@@ -90,6 +93,7 @@ public class DB2XMLWriter {
 	private String nullValue = "";
 	private boolean trimSpaces=true;
 	private boolean decompressBlobs=false;
+	private boolean getBlobSmart=false;
 	private String blobCharset = Misc.DEFAULT_INPUT_STREAM_ENCODING;
 
    
@@ -123,14 +127,14 @@ public class DB2XMLWriter {
     /**
      * This method gets the value of the specified column
      */
-    private static String getValue(final ResultSet rs, int colNum, int type, String blobCharset, boolean decompressBlobs, String nullValue, boolean trimSpaces) throws JdbcException, IOException, SQLException
+    private static String getValue(final ResultSet rs, int colNum, int type, String blobCharset, boolean decompressBlobs, String nullValue, boolean trimSpaces, boolean getBlobSmart) throws JdbcException, IOException, SQLException
     {
         switch(type)
         {
         	// return "undefined" for types that cannot be rendered to strings easily
 			case Types.BLOB :
 				try {
-					return JdbcUtil.getBlobAsString(rs,colNum,blobCharset,false,decompressBlobs);
+					return JdbcUtil.getBlobAsString(rs,colNum,blobCharset,false,decompressBlobs,getBlobSmart);
 				} catch (JdbcException e) {
 					log.debug("Caught JdbcException, assuming no blob found",e);
 					return nullValue;
@@ -251,7 +255,7 @@ public class DB2XMLWriter {
 	
 			XmlBuilder queryresult = new XmlBuilder(recordname);
 			while (rs.next() & rowCounter < maxlength) {
-				XmlBuilder row = getRowXml(rs,rowCounter,rsmeta,getBlobCharset(),decompressBlobs,nullValue,trimSpaces);
+				XmlBuilder row = getRowXml(rs,rowCounter,rsmeta,getBlobCharset(),decompressBlobs,nullValue,trimSpaces,getBlobSmart);
 				queryresult.addSubElement(row);
 				rowCounter++;
 			}
@@ -263,7 +267,7 @@ public class DB2XMLWriter {
 		return answer;
 	}
 	
-	public static XmlBuilder getRowXml(ResultSet rs, int rowNumber, ResultSetMetaData rsmeta, String blobCharset, boolean decompressBlobs, String nullValue, boolean trimSpaces) throws SenderException, SQLException {
+	public static XmlBuilder getRowXml(ResultSet rs, int rowNumber, ResultSetMetaData rsmeta, String blobCharset, boolean decompressBlobs, String nullValue, boolean trimSpaces, boolean getBlobSmart) throws SenderException, SQLException {
 		XmlBuilder row = new XmlBuilder("row");
 		row.addAttribute("number", "" + rowNumber);
 	
@@ -273,7 +277,7 @@ public class DB2XMLWriter {
 			resultField.addAttribute("name", "" + rsmeta.getColumnName(i));
 	
 			try {
-				String value = getValue(rs, i, rsmeta.getColumnType(i), blobCharset, decompressBlobs, nullValue, trimSpaces);
+				String value = getValue(rs, i, rsmeta.getColumnType(i), blobCharset, decompressBlobs, nullValue, trimSpaces, getBlobSmart);
 				if (rs.wasNull()) {
 					resultField.addAttribute("null","true");
 				}
@@ -321,6 +325,13 @@ public class DB2XMLWriter {
 	}
 	public boolean isDecompressBlobs() {
 		return decompressBlobs;
+	}
+
+	public void setGetBlobSmart(boolean b) {
+		getBlobSmart = b;
+	}
+	public boolean isGetBlobSmart() {
+		return getBlobSmart;
 	}
 
 	public String getBlobCharset() {

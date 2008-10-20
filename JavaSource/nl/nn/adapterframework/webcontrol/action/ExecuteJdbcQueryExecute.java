@@ -1,6 +1,9 @@
 /*
  * $Log: ExecuteJdbcQueryExecute.java,v $
- * Revision 1.3  2008-05-22 07:36:21  europe\L190409
+ * Revision 1.4  2008-10-20 13:02:44  europe\m168309
+ * also show not compressed blobs and not serialized blobs
+ *
+ * Revision 1.3  2008/05/22 07:36:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * use inherited error() method
  *
  * Revision 1.2  2007/10/08 13:41:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -40,7 +43,7 @@ import org.apache.struts.action.DynaActionForm;
  * @version Id 
  */
 public final class ExecuteJdbcQueryExecute extends ActionBase {
-	public static final String version = "$RCSfile: ExecuteJdbcQueryExecute.java,v $ $Revision: 1.3 $ $Date: 2008-05-22 07:36:21 $";
+	public static final String version = "$RCSfile: ExecuteJdbcQueryExecute.java,v $ $Revision: 1.4 $ $Date: 2008-10-20 13:02:44 $";
 	public static final String DB2XML_XSLT="xml/xsl/dbxml2csv.xslt";
 
 	public ActionForward execute(
@@ -71,6 +74,7 @@ public final class ExecuteJdbcQueryExecute extends ActionBase {
 				qs.setName("QuerySender");
 				qs.setJmsRealm(form_jmsRealm);
 				qs.setQueryType(form_queryType);
+				qs.setBlobSmartGet(true);
 				qs.configure();
 				qs.open();
 				result = qs.sendMessage("dummy", form_query);

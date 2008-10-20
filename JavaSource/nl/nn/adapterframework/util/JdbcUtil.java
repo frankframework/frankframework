@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcUtil.java,v $
- * Revision 1.17  2008-08-27 16:23:44  europe\L190409
+ * Revision 1.18  2008-10-20 13:02:26  europe\m168309
+ * also show not compressed blobs and not serialized blobs
+ *
+ * Revision 1.17  2008/08/27 16:23:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added columnExists
  *
  * Revision 1.16  2008/06/19 15:14:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -56,9 +59,12 @@
 package nl.nn.adapterframework.util;
 
 import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
@@ -72,9 +78,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.sql.Statement;
+import java.util.zip.DataFormatException;
 import java.util.zip.DeflaterOutputStream;
+import java.util.zip.Inflater;
 import java.util.zip.InflaterInputStream;
 
+import nl.nn.adapterframework.core.IMessageWrapper;
 import nl.nn.adapterframework.jdbc.JdbcException;
 
 import org.apache.log4j.Logger;
@@ -87,7 +96,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class JdbcUtil {
-	public static final String version = "$RCSfile: JdbcUtil.java,v $ $Revision: 1.17 $ $Date: 2008-08-27 16:23:44 $";
+	public static final String version = "$RCSfile: JdbcUtil.java,v $ $Revision: 1.18 $ $Date: 2008-10-20 13:02:26 $";
 	protected static Logger log = LogUtil.getLogger(JdbcUtil.class);
 	
 	private static final boolean useMetaData=false;
@@ -226,7 +235,67 @@ public class JdbcUtil {
 	}
 
 	public static String getBlobAsString(final ResultSet rs, int columnIndex, String charset, boolean xmlEncode, boolean blobIsCompressed) throws IOException, JdbcException, SQLException {
-		return Misc.readerToString(getBlobReader(rs,columnIndex,charset,blobIsCompressed),null,xmlEncode);
+		return getBlobAsString(rs, columnIndex, charset, xmlEncode, blobIsCompressed, false);
+	}
+
+	public static String getBlobAsString(final ResultSet rs, int columnIndex, String charset, boolean xmlEncode, boolean blobIsCompressed, boolean blobSmartGet) throws IOException, JdbcException, SQLException {
+		if (blobSmartGet) {
+			Blob blob = rs.getBlob(columnIndex);
+			if (blob==null) {
+				log.debug("no blob found in column ["+columnIndex+"]");
+				return null;
+			}
+			int bl = (int)blob.length();
+
+			InputStream is = blob.getBinaryStream();
+			byte[] buf = new byte[bl];
+			int bl1 = is.read(buf);
+
+			Inflater decompressor = new Inflater();
+			decompressor.setInput(buf);
+			ByteArrayOutputStream bos = new ByteArrayOutputStream(buf.length);
+			byte[] bufDecomp = new byte[1024];
+			boolean decompresOK = true;
+			while (!decompressor.finished()) {
+				try {
+					int count = decompressor.inflate(bufDecomp);
+					bos.write(bufDecomp, 0, count);
+				} catch (DataFormatException e) {
+					log.debug("message in column ["+columnIndex+"] is not compressed");
+					decompresOK = false;
+					break;
+				}
+			}
+			bos.close();
+			if (decompresOK)
+				buf = bos.toByteArray(); 
+
+			Object result = null;
+			ObjectInputStream ois = null;
+			boolean objectOK = true;
+			try {
+				ByteArrayInputStream bis = new ByteArrayInputStream(buf);
+				ois = new ObjectInputStream(bis);
+				result = ois.readObject();
+			} catch (Exception e) {
+				log.debug("message in column ["+columnIndex+"] is not serialized");
+				objectOK=false;
+			}
+			if (ois!=null)
+				ois.close();
+		
+			String rawMessage;
+			if (objectOK && result instanceof IMessageWrapper) {
+				rawMessage = ((IMessageWrapper)result).getText();
+			} else {
+				rawMessage = new String(buf,charset);
+			}
+
+			String message = XmlUtils.encodeCdataString(rawMessage);
+			return message;
+		} else {
+			return Misc.readerToString(getBlobReader(rs,columnIndex,charset,blobIsCompressed),null,xmlEncode);
+		}
 	}
 
 	/**
