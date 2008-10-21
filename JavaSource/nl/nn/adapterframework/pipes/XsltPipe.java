@@ -1,6 +1,9 @@
 /*
  * $Log: XsltPipe.java,v $
- * Revision 1.29  2008-10-10 12:47:54  europe\m168309
+ * Revision 1.30  2008-10-21 11:29:31  europe\m168309
+ * skipEmptyTags always  namespaceAware
+ *
+ * Revision 1.29  2008/10/10 12:47:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * *** empty log message ***
  *
  * Revision 1.28  2008/10/07 10:57:40  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -125,7 +128,7 @@ import org.apache.commons.lang.StringUtils;
  */
 
 public class XsltPipe extends FixedForwardPipe {
-	public static final String version="$RCSfile: XsltPipe.java,v $ $Revision: 1.29 $ $Date: 2008-10-10 12:47:54 $";
+	public static final String version="$RCSfile: XsltPipe.java,v $ $Revision: 1.30 $ $Date: 2008-10-21 11:29:31 $";
 
 	private TransformerPool transformerPool;
 	private String xpathExpression=null;
@@ -250,7 +253,7 @@ public class XsltPipe extends FixedForwardPipe {
 				//URL xsltSource = ClassUtils.getResourceURL( this, skipEmptyTags_xslt);
 				//Transformer transformer = XmlUtils.createTransformer(xsltSource);
 				//stringResult = XmlUtils.transformXml(transformer, stringResult);
-				ParameterResolutionContext prc_SkipEmptyTags = new ParameterResolutionContext(stringResult, session, isNamespaceAware()); 
+				ParameterResolutionContext prc_SkipEmptyTags = new ParameterResolutionContext(stringResult, session, true); 
 				stringResult = transformerPoolSkipEmptyTags.transform(prc_SkipEmptyTags.getInputSource(), null); 
 			}
 
