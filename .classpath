@@ -46,5 +46,7 @@
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/commons-beanutils-core-1.7.0.jar"/>
     <classpathentry kind="var" path="WAS_50_PLUGINDIR/lib/runtime.jar"/>
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/tibjms.jar"/>
+    <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/saxon8.jar"/>
+    <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/saxon8-dom.jar"/>
     <classpathentry kind="output" path="bin"/>
 </classpath>
