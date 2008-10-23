@@ -1,6 +1,9 @@
 /*
  * $Log: ResultSetIterator.java,v $
- * Revision 1.4  2008-05-15 14:36:12  europe\L190409
+ * Revision 1.5  2008-10-23 14:16:51  europe\m168309
+ * XSLT 2.0 made possible
+ *
+ * Revision 1.4  2008/05/15 14:36:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * change startup behaviour, first line is now returned too
  *
  * Revision 1.3  2008/02/26 08:36:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -69,7 +72,7 @@ class ResultSetIterator implements IDataIterator {
 	public Object next() throws SenderException {
 		try {
 			lineChecked=false;
-			return DB2XMLWriter.getRowXml(rs, rowNumber++, rsmeta, Misc.DEFAULT_INPUT_STREAM_ENCODING, false, "", true).toXML();
+			return DB2XMLWriter.getRowXml(rs, rowNumber++, rsmeta, Misc.DEFAULT_INPUT_STREAM_ENCODING, false, "", true, false).toXML();
 		} catch (Exception e) {
 			throw new SenderException(e);
 		}

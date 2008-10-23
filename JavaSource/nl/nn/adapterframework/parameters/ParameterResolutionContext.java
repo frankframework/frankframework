@@ -1,6 +1,9 @@
 /*
  * $Log: ParameterResolutionContext.java,v $
- * Revision 1.14  2007-10-08 12:21:02  europe\L190409
+ * Revision 1.15  2008-10-23 14:16:51  europe\m168309
+ * XSLT 2.0 made possible
+ *
+ * Revision 1.14  2007/10/08 12:21:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed HashMap to Map where possible
  *
  * Revision 1.13  2007/02/12 13:59:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -69,23 +72,29 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class ParameterResolutionContext {
-	public static final String version="$RCSfile: ParameterResolutionContext.java,v $ $Revision: 1.14 $ $Date: 2007-10-08 12:21:02 $";
+	public static final String version="$RCSfile: ParameterResolutionContext.java,v $ $Revision: 1.15 $ $Date: 2008-10-23 14:16:51 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String input;
 	private PipeLineSession session;
 	private Source xmlSource;
 	private boolean namespaceAware;
+	private boolean xslt2;
 
 	/**
 	 * constructor
 	 * @param input contains the input (xml formatted) message
 	 * @param session 
 	 */		
-	public ParameterResolutionContext(String input, PipeLineSession session, boolean namespaceAware) {
+	public ParameterResolutionContext(String input, PipeLineSession session, boolean namespaceAware, boolean xslt2) {
 		this.input = input;
 		this.session = session;
 		this.namespaceAware = namespaceAware;
+		this.xslt2 = xslt2;
+	}
+
+	public ParameterResolutionContext(String input, PipeLineSession session, boolean namespaceAware) {
+		this(input, session, XmlUtils.isNamespaceAwareByDefault(), false);
 	}
 
 	public ParameterResolutionContext(String input, PipeLineSession session) {
@@ -214,4 +223,14 @@ public class ParameterResolutionContext {
 		namespaceAware = b;
 	}
 
+	public boolean isXslt2() {
+		return xslt2;
+	}
+
+	/**
+	 * @param b
+	 */
+	public void setXslt2(boolean b) {
+		xslt2 = b;
+	}
 }

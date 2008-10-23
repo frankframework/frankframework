@@ -1,6 +1,9 @@
 /*
  * $Log: XsltPipe.java,v $
- * Revision 1.30  2008-10-21 11:29:31  europe\m168309
+ * Revision 1.31  2008-10-23 14:16:51  europe\m168309
+ * XSLT 2.0 made possible
+ *
+ * Revision 1.30  2008/10/21 11:29:31  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * skipEmptyTags always  namespaceAware
  *
  * Revision 1.29  2008/10/10 12:47:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -78,6 +81,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
+import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.TransformerPool;
@@ -110,6 +114,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setSkipEmptyTags(boolean) skipEmptyTags}</td><td>when set <code>true</code> empty tags in the output are removed</td><td>false</td></tr>
  * <tr><td>{@link #setIndentXml(boolean) indentXml}</td><td>when set <code>true</code>, result is pretty-printed. (only used when <code>skipEmptyTags="true"</code>)</td><td>true</td></tr>
  * <tr><td>{@link #setRemoveNamespaces(boolean) removeNamespaces}</td><td>when set <code>true</code> namespaces (and prefixes) in the input message are removed</td><td>false</td></tr>
+ * <tr><td>{@link #setXslt2(boolean) xslt2}</td><td>when set <code>true</code> XSLT processor 2.0 (net.sf.saxon) will be used, otherwise XSLT processor 1.0 (org.apache.xalan)</td><td>false</td></tr>
  * </table>
  * <table border="1">
  * <tr><th>nested elements</th><th>description</th></tr>
@@ -128,7 +133,7 @@ import org.apache.commons.lang.StringUtils;
  */
 
 public class XsltPipe extends FixedForwardPipe {
-	public static final String version="$RCSfile: XsltPipe.java,v $ $Revision: 1.30 $ $Date: 2008-10-21 11:29:31 $";
+	public static final String version="$RCSfile: XsltPipe.java,v $ $Revision: 1.31 $ $Date: 2008-10-23 14:16:51 $";
 
 	private TransformerPool transformerPool;
 	private String xpathExpression=null;
@@ -139,6 +144,7 @@ public class XsltPipe extends FixedForwardPipe {
 	private String sessionKey=null;
 	private boolean skipEmptyTags=false;
 	private boolean removeNamespaces=false;
+	private boolean xslt2=false;
 
 	private TransformerPool transformerPoolSkipEmptyTags;
 	private TransformerPool transformerPoolRemoveNamespaces;
@@ -152,7 +158,7 @@ public class XsltPipe extends FixedForwardPipe {
 	public void configure() throws ConfigurationException {
 	    super.configure();
 	
-		transformerPool = TransformerPool.configureTransformer(getLogPrefix(null), getXpathExpression(), getStyleSheetName(), getOutputType(), !isOmitXmlDeclaration(), getParameterList());
+		transformerPool = TransformerPool.configureTransformer0(getLogPrefix(null), getXpathExpression(), getStyleSheetName(), getOutputType(), !isOmitXmlDeclaration(), getParameterList(), isXslt2());
 		if (isSkipEmptyTags()) {
 			String skipEmptyTags_xslt = XmlUtils.makeSkipEmptyTagsXslt(isOmitXmlDeclaration(),isIndentXml());
 			log.debug("test [" + skipEmptyTags_xslt + "]");
@@ -169,6 +175,16 @@ public class XsltPipe extends FixedForwardPipe {
 				transformerPoolRemoveNamespaces = new TransformerPool(removeNamespaces_xslt);
 			} catch (TransformerConfigurationException te) {
 				throw new ConfigurationException(getLogPrefix(null) + "got error creating transformer from removeNamespaces", te);
+			}
+		}
+
+		if (isXslt2()) {
+			ParameterList parameterList = getParameterList();
+			for (int i=0; i<parameterList.size(); i++) {
+				Parameter parameter = parameterList.getParameter(i);
+				if (StringUtils.isNotEmpty(parameter.getType()) && "node".equalsIgnoreCase(parameter.getType())) {
+					throw new ConfigurationException(getLogPrefix(null) + "type \"node\" is not permitted in combination with XSLT 2.0, use type \"domdoc\"");
+				}
 			}
 		}
 	}
@@ -239,7 +255,7 @@ public class XsltPipe extends FixedForwardPipe {
 				log.debug(getLogPrefix(session)+ " output message after removing namespaces [" + stringResult + "]");
 			}
 
-			ParameterResolutionContext prc = new ParameterResolutionContext(stringResult, session, isNamespaceAware());
+			ParameterResolutionContext prc = new ParameterResolutionContext(stringResult, session, isNamespaceAware(), isXslt2());
 			Map parametervalues = null;
 			if (getParameterList()!=null) {
 				parameterList =  getParameterList();
@@ -337,5 +353,13 @@ public class XsltPipe extends FixedForwardPipe {
 	}
 	public boolean isRemoveNamespaces() {
 		return removeNamespaces;
+	}
+
+	public boolean isXslt2() {
+		return xslt2;
+	}
+
+	public void setXslt2(boolean b) {
+		xslt2 = b;
 	}
 }

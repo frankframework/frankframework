@@ -1,6 +1,9 @@
 /*
  * $Log: Configuration.java,v $
- * Revision 1.32  2008-09-04 12:00:43  europe\L190409
+ * Revision 1.33  2008-10-23 14:16:51  europe\m168309
+ * XSLT 2.0 made possible
+ *
+ * Revision 1.32  2008/09/04 12:00:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * collect interval statistics
  *
  * Revision 1.31  2008/08/27 15:53:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -117,7 +120,7 @@ import org.apache.log4j.Logger;
  * @see    nl.nn.adapterframework.core.IAdapter
  */
 public class Configuration {
-	public static final String version="$RCSfile: Configuration.java,v $ $Revision: 1.32 $ $Date: 2008-09-04 12:00:43 $";
+	public static final String version="$RCSfile: Configuration.java,v $ $Revision: 1.33 $ $Date: 2008-10-23 14:16:51 $";
     protected Logger log=LogUtil.getLogger(this); 
      
     private Map adapterTable = new Hashtable();
@@ -188,6 +191,8 @@ public class Configuration {
 
     }
     protected void init() {
+		//Default XSLT processor 1.0, not XSLT 2.0 processor (net.sf.saxon.TransformerFactoryImpl)
+		System.setProperty("javax.xml.transform.TransformerFactory", "org.apache.xalan.processor.TransformerFactoryImpl");
         log.info(VersionInfo());
     }
     public String getConfigurationName() {

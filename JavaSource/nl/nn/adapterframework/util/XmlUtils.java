@@ -1,6 +1,9 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.51  2008-10-07 10:55:19  europe\m168309
+ * Revision 1.52  2008-10-23 14:16:51  europe\m168309
+ * XSLT 2.0 made possible
+ *
+ * Revision 1.51  2008/10/07 10:55:19  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added makeRemoveNamespacesXslt
  *
  * Revision 1.50  2008/08/27 16:26:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -222,7 +225,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * @version Id
  */
 public class XmlUtils {
-	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.51 $ $Date: 2008-10-07 10:55:19 $";
+	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.52 $ $Date: 2008-10-23 14:16:51 $";
 	static Logger log = LogUtil.getLogger(XmlUtils.class);
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
@@ -358,11 +361,24 @@ public class XmlUtils {
 	
 	static public Document buildDomDocument(Reader in, boolean namespaceAware)
 		throws DomBuilderException {
+			return buildDomDocument(in, namespaceAware, false);
+		}
+
+	static public Document buildDomDocument(Reader in, boolean namespaceAware, boolean xslt2)
+		throws DomBuilderException {
 		Document document;
 		InputSource src;
 
-		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-		factory.setNamespaceAware(namespaceAware);
+		DocumentBuilderFactory factory;
+		if (xslt2) {
+			factory = new net.sf.saxon.dom.DocumentBuilderFactoryImpl(); 
+			if (!namespaceAware) {
+				log.warn("Saxon parser is always namespace aware");
+			}
+		} else {
+			factory = DocumentBuilderFactory.newInstance();
+			factory.setNamespaceAware(namespaceAware);
+		}
 		try {
 			DocumentBuilder builder = factory.newDocumentBuilder();
 			src = new InputSource(in);
@@ -393,12 +409,17 @@ public class XmlUtils {
 	}
 
 	public static Document buildDomDocument(String s, boolean namespaceAware) throws DomBuilderException {
+		return (buildDomDocument(s,namespaceAware,false));
+	}
+
+	public static Document buildDomDocument(String s, boolean namespaceAware, boolean xslt2) throws DomBuilderException {
 		if (StringUtils.isEmpty(s)) {
 			throw new DomBuilderException("input is null");
 		}
 		StringReader sr = new StringReader(s);
-		return (buildDomDocument(sr,namespaceAware));
+		return (buildDomDocument(sr,namespaceAware,xslt2));
 	}
+
 	/**
 	 * Build a Document from a URL
 	 * @param url

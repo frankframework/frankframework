@@ -1,6 +1,9 @@
 /*
  * $Log: Parameter.java,v $
- * Revision 1.28  2008-07-14 17:22:15  europe\L190409
+ * Revision 1.29  2008-10-23 14:16:51  europe\m168309
+ * XSLT 2.0 made possible
+ *
+ * Revision 1.28  2008/07/14 17:22:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * support for debugging
  *
  * Revision 1.27  2008/02/28 16:23:39  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -188,7 +191,7 @@ import org.w3c.dom.Node;
  * @author Gerrit van Brakel
  */
 public class Parameter implements INamedObject, IWithParameters {
-	public static final String version="$RCSfile: Parameter.java,v $ $Revision: 1.28 $ $Date: 2008-07-14 17:22:15 $";
+	public static final String version="$RCSfile: Parameter.java,v $ $Revision: 1.29 $ $Date: 2008-10-23 14:16:51 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private IbisDebugger ibisDebugger;
@@ -360,7 +363,7 @@ public class Parameter implements INamedObject, IWithParameters {
 		if (result !=null && result instanceof String) {
 			if (TYPE_NODE.equals(getType())) {
 				try {
-					result=XmlUtils.buildNode((String)result,prc.isNamespaceAware());
+					result=XmlUtils.buildNode((String)result,prc. isNamespaceAware());
 					if (log.isDebugEnabled()) log.debug("final result ["+result.getClass().getName()+"]["+result+"]");
 				} catch (DomBuilderException e) {
 					throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+result+"] to XML nodeset",e);
@@ -368,7 +371,7 @@ public class Parameter implements INamedObject, IWithParameters {
 			}
 			if (TYPE_DOMDOC.equals(getType())) {
 				try {
-					result=XmlUtils.buildDomDocument((String)result,prc.isNamespaceAware());
+					result=XmlUtils.buildDomDocument((String)result,prc.isNamespaceAware(),prc.isXslt2());
 					if (log.isDebugEnabled()) log.debug("final result ["+result.getClass().getName()+"]["+result+"]");
 				} catch (DomBuilderException e) {
 					throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+result+"] to XML document",e);

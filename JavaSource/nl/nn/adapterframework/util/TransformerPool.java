@@ -1,6 +1,9 @@
 /*
  * $Log: TransformerPool.java,v $
- * Revision 1.18  2008-05-15 15:21:54  europe\L190409
+ * Revision 1.19  2008-10-23 14:16:51  europe\m168309
+ * XSLT 2.0 made possible
+ *
+ * Revision 1.18  2008/05/15 15:21:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * implemented auto reload (still experimental)
  *
  * Revision 1.17  2007/07/26 16:26:18  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -95,10 +98,10 @@ import org.w3c.dom.Document;
  * @author Gerrit van Brakel
  */
 public class TransformerPool {
-	public static final String version = "$RCSfile: TransformerPool.java,v $ $Revision: 1.18 $ $Date: 2008-05-15 15:21:54 $";
+	public static final String version = "$RCSfile: TransformerPool.java,v $ $Revision: 1.19 $ $Date: 2008-10-23 14:16:51 $";
 	protected Logger log = LogUtil.getLogger(this);
 
-	private TransformerFactory tFactory = TransformerFactory.newInstance();
+	private TransformerFactory tFactory;
 
 	private Templates templates;
 	private URL reloadURL=null;
@@ -110,7 +113,16 @@ public class TransformerPool {
 	}); 
 
 	public TransformerPool(Source source, String sysId) throws TransformerConfigurationException {
+		this(source,sysId,false);
+	}	
+
+	public TransformerPool(Source source, String sysId, boolean xslt2) throws TransformerConfigurationException {
 		super();
+		if (xslt2) {
+			tFactory = new net.sf.saxon.TransformerFactoryImpl();
+		} else {
+			tFactory = TransformerFactory.newInstance();
+		}
 		initTransformerPool(source, sysId);
 
 		// check if a transformer can be initiated
@@ -120,19 +132,34 @@ public class TransformerPool {
 	}	
 	
 	public TransformerPool(Source source) throws TransformerConfigurationException {
-		this(source,null);
+		this(source,false);
+	}	
+
+	public TransformerPool(Source source, boolean xslt2) throws TransformerConfigurationException {
+		this(source,null,xslt2);
 	}	
 
 	public TransformerPool(URL url) throws TransformerConfigurationException, IOException {
-		this(new StreamSource(url.openStream(),Misc.DEFAULT_INPUT_STREAM_ENCODING),url.toString());
+		this(url, false);
+	}
+
+	public TransformerPool(URL url, boolean xslt2) throws TransformerConfigurationException, IOException {
+		this(new StreamSource(url.openStream(),Misc.DEFAULT_INPUT_STREAM_ENCODING),url.toString(),xslt2);
 	}
 	
 	public TransformerPool(String xsltString) throws TransformerConfigurationException {
-		this(new StreamSource(new StringReader(xsltString)));
+		this(xsltString, false);
+	}
+
+	public TransformerPool(String xsltString, boolean xslt2) throws TransformerConfigurationException {
+		this(new StreamSource(new StringReader(xsltString)),xslt2);
 	}
 
 	public TransformerPool(String xsltString, String sysId) throws TransformerConfigurationException {
-		this(new StreamSource(new StringReader(xsltString)), sysId);
+		this(xsltString, sysId, false);
+	}
+	public TransformerPool(String xsltString, String sysId, boolean xslt2) throws TransformerConfigurationException {
+		this(new StreamSource(new StringReader(xsltString)), sysId, xslt2);
 	}
 
 	private void initTransformerPool(Source source, String sysId) throws TransformerConfigurationException {
@@ -162,6 +189,10 @@ public class TransformerPool {
 	}
 	
 	public static TransformerPool configureTransformer(String logPrefix, String xPathExpression, String styleSheetName, String outputType, boolean includeXmlDeclaration, ParameterList params) throws ConfigurationException {
+		return configureTransformer0(logPrefix,xPathExpression,styleSheetName,outputType,includeXmlDeclaration,params,false);
+	}
+
+	public static TransformerPool configureTransformer0(String logPrefix, String xPathExpression, String styleSheetName, String outputType, boolean includeXmlDeclaration, ParameterList params, boolean xslt2) throws ConfigurationException {
 		TransformerPool result;
 		if (logPrefix==null) {
 			logPrefix="";
@@ -179,7 +210,7 @@ public class TransformerPool {
 						paramNames.add(((Parameter)iterator.next()).getName());
 					}
 				}
-				result = new TransformerPool(XmlUtils.createXPathEvaluatorSource("",xPathExpression, outputType, includeXmlDeclaration, paramNames));
+				result = new TransformerPool(XmlUtils.createXPathEvaluatorSource("",xPathExpression, outputType, includeXmlDeclaration, paramNames), xslt2);
 			} 
 			catch (TransformerConfigurationException te) {
 				throw new ConfigurationException(logPrefix+"got error creating transformer from xpathExpression [" + xPathExpression + "]", te);
@@ -192,7 +223,7 @@ public class TransformerPool {
 					throw new ConfigurationException(logPrefix+"cannot find ["+ styleSheetName + "]"); 
 				}
 				try {
-					result = new TransformerPool(resource);
+					result = new TransformerPool(resource, xslt2);
 				} catch (IOException e) {
 					throw new ConfigurationException(logPrefix+"cannot retrieve ["+ styleSheetName + "], resource ["+resource.toString()+"]", e);
 				} catch (TransformerConfigurationException te) {
