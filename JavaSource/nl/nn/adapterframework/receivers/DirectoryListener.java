@@ -1,6 +1,9 @@
 /*
  * $Log: DirectoryListener.java,v $
- * Revision 1.14  2008-08-13 13:41:54  europe\L190409
+ * Revision 1.15  2008-10-24 07:03:34  europe\m168309
+ * outputDirectory attribute is optional instead of obliged
+ *
+ * Revision 1.14  2008/08/13 13:41:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * prepare to react better on stop command
  *
  * Revision 1.13  2008/07/15 12:50:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -110,7 +113,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class DirectoryListener implements IPullingListener, INamedObject, HasPhysicalDestination {
-	public static final String version = "$RCSfile: DirectoryListener.java,v $  $Revision: 1.14 $ $Date: 2008-08-13 13:41:54 $";
+	public static final String version = "$RCSfile: DirectoryListener.java,v $  $Revision: 1.15 $ $Date: 2008-10-24 07:03:34 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -142,11 +145,14 @@ public class DirectoryListener implements IPullingListener, INamedObject, HasPhy
 			throw new ConfigurationException("no value specified for inputDirectory");
 		if (StringUtils.isEmpty(getWildcard()))
 			throw new ConfigurationException("no value specified for wildcard");
-		if (StringUtils.isEmpty(getOutputDirectory()))
-			throw new ConfigurationException("no value specified for outputDirectory");
-		File dir = new File(getOutputDirectory());
-		if (!dir.isDirectory()) {
-			throw new ConfigurationException("The value for outputDirectory [" + getOutputDirectory() + "] is invalid. It is not a directory ");
+		if (StringUtils.isEmpty(getOutputDirectory())) {
+			//throw new ConfigurationException("no value specified for outputDirectory");
+			//TODO: instead of an outputDirectory a script to remove processed files is permitted
+		} else {
+			File dir = new File(getOutputDirectory());
+			if (!dir.isDirectory()) {
+				throw new ConfigurationException("The value for outputDirectory [" + getOutputDirectory() + "] is invalid. It is not a directory ");
+			}
 		}
 		File inp = new File(getInputDirectory());
 		if (!inp.exists() && createInputDirectory) {
@@ -255,11 +261,18 @@ public class DirectoryListener implements IPullingListener, INamedObject, HasPhy
 			throw new ListenerException("Error while getting canonical path", e);
 		}
 //		String tsReceived=inputFile.lastModified()
-		String inprocessFile = archiveFile(getSession(threadContext), inputFile);
-		if (inprocessFile == null) { // moving was unsuccessful, probably becausing writing was not finished
-			return waitAWhile();
+		if (StringUtils.isNotEmpty(getOutputDirectory())) {
+			String inprocessFile = archiveFile(getSession(threadContext), inputFile);
+			if (inprocessFile == null) { // moving was unsuccessful, probably becausing writing was not finished
+				return waitAWhile();
+			}
+			return inprocessFile;
+		} else {
+			if (passWithoutDirectory) {
+				return inputFile.getName();
+			}
+			return inputFileName;
 		}
-		return inprocessFile;
 	}
 	
 	private PipeLineSession getSession(Map threadContext) {
