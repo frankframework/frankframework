@@ -1,6 +1,9 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.52  2008-10-23 14:16:51  europe\m168309
+ * Revision 1.53  2008-10-24 14:42:05  europe\m168309
+ * XSLT 2.0 made possible
+ *
+ * Revision 1.52  2008/10/23 14:16:51  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * XSLT 2.0 made possible
  *
  * Revision 1.51  2008/10/07 10:55:19  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -225,7 +228,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * @version Id
  */
 public class XmlUtils {
-	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.52 $ $Date: 2008-10-23 14:16:51 $";
+	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.53 $ $Date: 2008-10-24 14:42:05 $";
 	static Logger log = LogUtil.getLogger(XmlUtils.class);
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
@@ -263,7 +266,7 @@ public class XmlUtils {
 
 	public static String makeSkipEmptyTagsXslt(boolean omitXmlDeclaration, boolean indent) {
 		return 	
-		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"1.0\">"
+		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"2.0\">"
 			+ "<xsl:output method=\"xml\" indent=\""+(indent?"yes":"no")+"\" omit-xml-declaration=\""+(omitXmlDeclaration?"yes":"no")+"\"/>"
 			+ "<xsl:strip-space elements=\"*\"/>"
 			+ "<xsl:template match=\"* [.//text()] | text()|@*|comment()|processing-instruction()\">"
