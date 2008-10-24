@@ -1,6 +1,9 @@
 /*
  * $Log: ShowTracingConfiguration.java,v $
- * Revision 1.2  2007-07-19 15:17:21  europe\L190409
+ * Revision 1.3  2008-10-24 14:42:31  europe\m168309
+ * adapters are shown case insensitive sorted
+ *
+ * Revision 1.2  2007/07/19 15:17:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * list Adapters in order of configuration
  *
  * Revision 1.1  2006/09/14 15:29:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -23,6 +26,7 @@ import nl.nn.adapterframework.pipes.AbstractPipe;
 import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.util.XmlBuilder;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
@@ -33,7 +37,7 @@ import org.apache.struts.action.ActionMapping;
  * @version Id
  */
 public final class ShowTracingConfiguration extends ActionBase {
-	public static final String version="$RCSfile: ShowTracingConfiguration.java,v $ $Revision: 1.2 $ $Date: 2007-07-19 15:17:21 $";
+	public static final String version="$RCSfile: ShowTracingConfiguration.java,v $ $Revision: 1.3 $ $Date: 2008-10-24 14:42:31 $";
 
 	public ActionForward execute(
 		ActionMapping mapping,
@@ -58,6 +62,7 @@ public final class ShowTracingConfiguration extends ActionBase {
 
 			XmlBuilder adapterXML = new XmlBuilder("adapter");
 			adapterXML.addAttribute("name", adapter.getName());
+			adapterXML.addAttribute("nameUC",StringUtils.upperCase(adapter.getName()));
 			Iterator recIt = adapter.getReceiverIterator();
 			if (recIt.hasNext()) {
 				XmlBuilder receiversXML = new XmlBuilder("receivers");

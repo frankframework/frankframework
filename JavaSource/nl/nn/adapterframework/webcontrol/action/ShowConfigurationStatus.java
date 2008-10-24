@@ -1,6 +1,9 @@
 /*
  * $Log: ShowConfigurationStatus.java,v $
- * Revision 1.18  2008-09-17 12:30:52  europe\L190409
+ * Revision 1.19  2008-10-24 14:42:45  europe\m168309
+ * adapters are shown case insensitive sorted
+ *
+ * Revision 1.18  2008/09/17 12:30:52  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * show sender nested in listener too
  *
  * Revision 1.17  2008/08/12 15:50:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -69,6 +72,7 @@ import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.XmlBuilder;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
@@ -80,7 +84,7 @@ import org.apache.struts.action.ActionMapping;
  * @version Id
  */
 public final class ShowConfigurationStatus extends ActionBase {
-	public static final String version = "$RCSfile: ShowConfigurationStatus.java,v $ $Revision: 1.18 $ $Date: 2008-09-17 12:30:52 $";
+	public static final String version = "$RCSfile: ShowConfigurationStatus.java,v $ $Revision: 1.19 $ $Date: 2008-10-24 14:42:45 $";
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 
@@ -108,6 +112,7 @@ public final class ShowConfigurationStatus extends ActionBase {
 			RunStateEnum adapterRunState = adapter.getRunState();
 			
 			adapterXML.addAttribute("name",adapter.getName());
+			adapterXML.addAttribute("nameUC",StringUtils.upperCase(adapter.getName()));
 			adapterXML.addAttribute("started", ""+(adapterRunState.equals(RunStateEnum.STARTED)));
 			adapterXML.addAttribute("state", adapterRunState.toString());
 			adapterXML.addAttribute("configured", ""+adapter.configurationSucceeded());

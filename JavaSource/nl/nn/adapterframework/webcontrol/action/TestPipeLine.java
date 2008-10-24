@@ -1,6 +1,9 @@
 /*
  * $Log: TestPipeLine.java,v $
- * Revision 1.5  2007-10-08 13:41:35  europe\L190409
+ * Revision 1.6  2008-10-24 14:42:31  europe\m168309
+ * adapters are shown case insensitive sorted
+ *
+ * Revision 1.5  2007/10/08 13:41:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed ArrayList to List where possible
  *
  * Revision 1.4  2007/07/19 15:15:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -11,6 +14,7 @@ package nl.nn.adapterframework.webcontrol.action;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.servlet.ServletException;
@@ -36,7 +40,7 @@ import org.apache.struts.action.DynaActionForm;
  * @see nl.nn.adapterframework.core.PipeLine
  */
 public final class TestPipeLine extends ActionBase {
-	public static final String version="$RCSfile: TestPipeLine.java,v $ $Revision: 1.5 $ $Date: 2007-10-08 13:41:35 $";
+	public static final String version="$RCSfile: TestPipeLine.java,v $ $Revision: 1.6 $ $Date: 2008-10-24 14:42:31 $";
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 	
@@ -48,16 +52,19 @@ public final class TestPipeLine extends ActionBase {
 	
 	    DynaActionForm pipeLineTestForm = getPersistentForm(mapping, form, request);
 	
-	    List adapters = new ArrayList();
-	    adapters.add("-- select an adapter --");
+	    List startedAdapters = new ArrayList();
 	
 		for(int i=0; i<config.getRegisteredAdapters().size(); i++) {
 			IAdapter adapter = config.getRegisteredAdapter(i);
 	        // add the adapter if it is started.
 	        if (adapter.getRunState().equals(RunStateEnum.STARTED)) {
-		        adapters.add(adapter.getName());
+		        startedAdapters.add(adapter.getName());
 	        }
 	    }
+		Collections.sort(startedAdapters, String.CASE_INSENSITIVE_ORDER);
+		List adapters = new ArrayList();
+		adapters.add("-- select an adapter --");
+		adapters.addAll(startedAdapters);	
 		pipeLineTestForm.set("adapters", adapters);
 	
 	    // Forward control to the specified success URI
