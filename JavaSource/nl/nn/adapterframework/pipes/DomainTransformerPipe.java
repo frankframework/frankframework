@@ -1,6 +1,9 @@
 /*
  * $Log: DomainTransformerPipe.java,v $
- * Revision 1.1  2008-08-27 16:18:33  europe\L190409
+ * Revision 1.2  2008-10-24 06:39:44  europe\m168309
+ * dummy query required
+ *
+ * Revision 1.1  2008/08/27 16:18:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * first version
  *
  */
@@ -74,6 +77,8 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 
 		qs = new FixedQuerySender();
 		qs.setJmsRealm(jmsRealm);
+		//dummy query required
+		qs.setQuery("SELECT count(*) FROM ALL_TABLES");
 		qs.configure();
 
 		try {
