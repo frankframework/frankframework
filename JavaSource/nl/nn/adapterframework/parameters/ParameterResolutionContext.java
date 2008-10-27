@@ -1,6 +1,9 @@
 /*
  * $Log: ParameterResolutionContext.java,v $
- * Revision 1.15  2008-10-23 14:16:51  europe\m168309
+ * Revision 1.16  2008-10-27 08:08:50  europe\m168309
+ * XSLT 2.0 made possible
+ *
+ * Revision 1.15  2008/10/23 14:16:51  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * XSLT 2.0 made possible
  *
  * Revision 1.14  2007/10/08 12:21:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -72,7 +75,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class ParameterResolutionContext {
-	public static final String version="$RCSfile: ParameterResolutionContext.java,v $ $Revision: 1.15 $ $Date: 2008-10-23 14:16:51 $";
+	public static final String version="$RCSfile: ParameterResolutionContext.java,v $ $Revision: 1.16 $ $Date: 2008-10-27 08:08:50 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String input;
@@ -94,7 +97,7 @@ public class ParameterResolutionContext {
 	}
 
 	public ParameterResolutionContext(String input, PipeLineSession session, boolean namespaceAware) {
-		this(input, session, XmlUtils.isNamespaceAwareByDefault(), false);
+		this(input, session, namespaceAware, false);
 	}
 
 	public ParameterResolutionContext(String input, PipeLineSession session) {
