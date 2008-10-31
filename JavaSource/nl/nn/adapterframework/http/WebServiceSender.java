@@ -1,6 +1,9 @@
 /*
  * $Log: WebServiceSender.java,v $
- * Revision 1.19  2008-08-12 15:35:14  europe\L190409
+ * Revision 1.20  2008-10-31 15:02:17  europe\m168309
+ * WS-Security made possible
+ *
+ * Revision 1.19  2008/08/12 15:35:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * warn about empty SoapActionURI
  *
  * Revision 1.18  2008/05/21 08:43:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -64,6 +67,7 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.soap.SoapWrapper;
+import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.Misc;
 
 import org.apache.commons.httpclient.HttpMethod;
@@ -106,6 +110,9 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * <tr><td>{@link #setVerifyHostname(boolean) verifyHostname}</td><td>when true, the hostname in the certificate will be checked against the actual hostname</td><td>true</td></tr>
  * <tr><td>{@link #setJdk13Compatibility(boolean) jdk13Compatibility}</td><td>enables the use of certificates on JDK 1.3.x. The SUN reference implementation JSSE 1.0.3 is included for convenience</td><td>false</td></tr>
  * <tr><td>{@link #setStaleChecking(boolean) staleChecking}</td><td>controls whether connections checked to be stale, i.e. appear open, but are not.</td><td>true</td></tr>
+ * <tr><td>{@link #setWssAuthAlias(String) wssAuthAlias}</td><td>alias used to obtain credentials for authentication to Web Services Security</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setWssUserName(String) wssUserName}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setWssPassword(String) wssPassword}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * 
@@ -113,14 +120,18 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * @since 4.2c
  */
 public class WebServiceSender extends HttpSender {
-	public static final String version = "$RCSfile: WebServiceSender.java,v $ $Revision: 1.19 $ $Date: 2008-08-12 15:35:14 $";
+	public static final String version = "$RCSfile: WebServiceSender.java,v $ $Revision: 1.20 $ $Date: 2008-10-31 15:02:17 $";
 	
 	private String soapActionURI = "";
 	private String encodingStyleURI=null;
 	private String serviceNamespaceURI=null;
 	private boolean throwApplicationFaults=true;
+	private String wssAuthAlias;
+	private String wssUserName;
+	private String wssPassword;
 
 	private SoapWrapper soapWrapper;
+	private CredentialFactory wsscf=null;
 	
 	public String getLogPrefix() {
 		return "WebServiceSender ["+getName()+"] to ["+getPhysicalDestinationName()+"] ";
@@ -139,13 +150,24 @@ public class WebServiceSender extends HttpSender {
 		if (StringUtils.isEmpty(getSoapActionURI())) {
 			log.warn(getLogPrefix()+"no soapActionURI found, please check if this is appropriate");
 		}
+		if (StringUtils.isNotEmpty(getWssAuthAlias()) || 
+			StringUtils.isNotEmpty(getWssUserName())) {
+				wsscf = new CredentialFactory(getWssAuthAlias(), getWssUserName(), getWssPassword());
+			log.debug(getLogPrefix()+"created CredentialFactor for  username=["+wsscf.getUsername()+"]");
+		}
 	}
 
 	protected HttpMethod getMethod(String message, ParameterValueList parameters) throws SenderException {
 		
 		String soapmsg= soapWrapper.putInEnvelope(message, getEncodingStyleURI(),getServiceNamespaceURI());
+
+		if (wsscf!=null) {
+			soapmsg = soapWrapper.signMessage(soapmsg,wsscf.getUsername(),wsscf.getPassword());
+		}
+		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"SOAPMSG [" + soapmsg + "]");
+
 		HttpMethod method = super.getMethod(soapmsg,parameters);
-		log.debug("setting SOAPAction header ["+getSoapActionURI()+"]");
+		log.debug("setting Content-Type and SOAPAction header ["+getSoapActionURI()+"]");
 		method.addRequestHeader("SOAPAction",getSoapActionURI());
 		return method;
 	}
@@ -213,6 +235,28 @@ public class WebServiceSender extends HttpSender {
 	}
 	public String getServiceNamespaceURI() {
 		return serviceNamespaceURI;
+	}
+
+
+	public void setWssUserName(String string) {
+		wssUserName = string;
+	}
+	public String getWssUserName() {
+		return wssUserName;
+	}
+
+	public void setWssPassword(String string) {
+		wssPassword = string;
+	}
+	public String getWssPassword() {
+		return wssPassword;
+	}
+
+	public void setWssAuthAlias(String string) {
+		wssAuthAlias = string;
+	}
+	public String getWssAuthAlias() {
+		return wssAuthAlias;
 	}
 
 }

@@ -1,6 +1,9 @@
 /*
  * $Log: SoapWrapper.java,v $
- * Revision 1.8  2008-09-01 13:00:27  europe\L190409
+ * Revision 1.9  2008-10-31 15:02:17  europe\m168309
+ * WS-Security made possible
+ *
+ * Revision 1.8  2008/09/01 13:00:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed xsd and xsi namespace prefix definitions in putInEnvelope
  *
  * Revision 1.7  2008/08/07 07:58:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -39,6 +42,7 @@
  */
 package nl.nn.adapterframework.soap;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -53,8 +57,23 @@ import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
+import org.apache.axis.Message;
+import org.apache.axis.MessageContext;
+import org.apache.axis.client.AxisClient;
+import org.apache.axis.configuration.NullProvider;
+import org.apache.axis.message.SOAPEnvelope;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.apache.ws.security.WSConstants;
+import org.apache.ws.security.WSSConfig;
+import org.apache.ws.security.WSSecurityEngine;
+import org.apache.ws.security.message.WSSecHeader;
+import org.apache.ws.security.message.WSSecSignature;
+import org.apache.ws.security.message.WSSecTimestamp;
+import org.apache.ws.security.message.WSSecUsernameToken;
+import org.apache.ws.security.util.DOM2Writer;
+import org.apache.xml.security.signature.XMLSignature;
+import org.w3c.dom.Document;
 
 /**
  * Utility class that wraps and unwraps messages from (and into) a SOAP Envelope.
@@ -63,7 +82,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class SoapWrapper {
-	public static final String version="$RCSfile: SoapWrapper.java,v $ $Revision: 1.8 $ $Date: 2008-09-01 13:00:27 $";
+	public static final String version="$RCSfile: SoapWrapper.java,v $ $Revision: 1.9 $ $Date: 2008-10-31 15:02:17 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private TransformerPool extractBody;
@@ -183,4 +202,60 @@ public class SoapWrapper {
 		return putInEnvelope(message, encodingStyleUri, null);
 	}
 
+
+
+	public String signMessage(String soapMessage, String user, String password) throws SenderException {
+		try {
+			WSSecurityEngine secEngine = WSSecurityEngine.getInstance();
+			WSSConfig config = secEngine.getWssConfig();
+			config.setPrecisionInMilliSeconds(false);
+
+			// create context
+			AxisClient tmpEngine = new AxisClient(new NullProvider());
+			MessageContext msgContext = new MessageContext(tmpEngine);
+
+			InputStream in = new ByteArrayInputStream(soapMessage.getBytes());
+			Message msg = new Message(in);
+			msg.setMessageContext(msgContext);
+
+			// create unsigned envelope
+			SOAPEnvelope unsignedEnvelope = msg.getSOAPEnvelope();
+			Document doc = unsignedEnvelope.getAsDocument();
+
+			// create security header and insert it into unsigned envelope
+			WSSecHeader secHeader = new WSSecHeader();
+			secHeader.insertSecurityHeader(doc);
+
+			// add a UsernameToken
+			WSSecUsernameToken tokenBuilder = new WSSecUsernameToken();
+			tokenBuilder.setPasswordType(WSConstants.PASSWORD_DIGEST);
+			tokenBuilder.setUserInfo(user, password);
+			tokenBuilder.addNonce();
+			tokenBuilder.addCreated();
+			tokenBuilder.prepare(doc);
+
+		
+			WSSecSignature sign = new WSSecSignature();
+			sign.setUsernameToken(tokenBuilder);
+			sign.setKeyIdentifierType(WSConstants.UT_SIGNING);
+			sign.setSignatureAlgorithm(XMLSignature.ALGO_ID_MAC_HMAC_SHA1);
+			sign.build(doc, null, secHeader);
+
+			tokenBuilder.prependToHeader(secHeader);
+
+			// add a Timestamp
+			WSSecTimestamp timestampBuilder = new WSSecTimestamp(); 
+			timestampBuilder.setTimeToLive(300);
+			timestampBuilder.prepare(doc);
+			timestampBuilder.prependToHeader(secHeader);
+
+			Document signedDoc = doc;
+
+			String result=DOM2Writer.nodeToString(signedDoc);
+		
+			return result;
+		} catch (Throwable t) {
+			throw new SenderException(t);
+		}
+	}
 }
