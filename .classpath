@@ -48,5 +48,9 @@
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/tibjms.jar"/>
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/saxon8.jar"/>
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/saxon8-dom.jar"/>
+    <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/axis-1.4.jar"/>
+    <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/wss4j-1.5.4.jar"/>
+    <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/xmlsec-1.4.1.jar"/>
+    <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/saaj.jar"/>
     <classpathentry kind="output" path="bin"/>
 </classpath>
