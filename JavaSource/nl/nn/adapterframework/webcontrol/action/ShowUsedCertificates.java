@@ -1,6 +1,9 @@
 /*
  * $Log: ShowUsedCertificates.java,v $
- * Revision 1.1  2007-12-28 12:17:51  europe\L190409
+ * Revision 1.2  2008-10-31 10:56:34  europe\m168309
+ * Error handling  when certificateUrl is null
+ *
+ * Revision 1.1  2007/12/28 12:17:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * first version
  *
  */
@@ -47,7 +50,7 @@ import org.apache.struts.action.ActionMapping;
  */
 
 public final class ShowUsedCertificates extends ActionBase {
-	public static final String version = "$RCSfile: ShowUsedCertificates.java,v $ $Revision: 1.1 $ $Date: 2007-12-28 12:17:51 $";
+	public static final String version = "$RCSfile: ShowUsedCertificates.java,v $ $Revision: 1.2 $ $Date: 2008-10-31 10:56:34 $";
 
 	protected void addCertificateInfo(XmlBuilder certElem, final URL url, final String password, String keyStoreType, String prefix) {
 		try {
@@ -153,12 +156,20 @@ public final class ShowUsedCertificates extends ActionBase {
 							String certificateAuthAlias = s.getCertificateAuthAlias();
 							certElem.addAttribute("authAlias",certificateAuthAlias);
 							URL certificateUrl = ClassUtils.getResourceURL(this, certificate);
-							certElem.addAttribute("url",certificateUrl.toString());
-							pipeElem.addSubElement(certElem);
-							String certificatePassword = s.getCertificatePassword();
-							CredentialFactory certificateCf = new CredentialFactory(certificateAuthAlias, null, certificatePassword);
-							String keystoreType = s.getKeystoreType();
-							addCertificateInfo(certElem, certificateUrl, certificateCf.getPassword(), keystoreType, "Certificate chain");
+							if (certificateUrl == null) {
+								certElem.addAttribute("url","");
+								pipeElem.addSubElement(certElem);
+								XmlBuilder infoElem = new XmlBuilder("info");
+								infoElem.setCdataValue("*** ERROR ***");
+								certElem.addSubElement(infoElem);
+							} else {
+								certElem.addAttribute("url",certificateUrl.toString());
+								pipeElem.addSubElement(certElem);
+								String certificatePassword = s.getCertificatePassword();
+								CredentialFactory certificateCf = new CredentialFactory(certificateAuthAlias, null, certificatePassword);
+								String keystoreType = s.getKeystoreType();
+								addCertificateInfo(certElem, certificateUrl, certificateCf.getPassword(), keystoreType, "Certificate chain");
+							}
 						}
 					} else {
 						if (sender instanceof HttpSender) {
@@ -170,12 +181,20 @@ public final class ShowUsedCertificates extends ActionBase {
 								String certificateAuthAlias = s.getCertificateAuthAlias();
 								certElem.addAttribute("authAlias",certificateAuthAlias);
 								URL certificateUrl = ClassUtils.getResourceURL(this, certificate);
-								certElem.addAttribute("url",certificateUrl.toString());
-								pipeElem.addSubElement(certElem);
-								String certificatePassword = s.getCertificatePassword();
-								CredentialFactory certificateCf = new CredentialFactory(certificateAuthAlias, null, certificatePassword);
-								String keystoreType = s.getKeystoreType();
-								addCertificateInfo(certElem, certificateUrl, certificateCf.getPassword(), keystoreType, "Certificate chain");
+								if (certificateUrl == null) {
+									certElem.addAttribute("url","");
+									pipeElem.addSubElement(certElem);
+									XmlBuilder infoElem = new XmlBuilder("info");
+									infoElem.setCdataValue("*** ERROR ***");
+									certElem.addSubElement(infoElem);
+								} else {
+									certElem.addAttribute("url",certificateUrl.toString());
+									pipeElem.addSubElement(certElem);
+									String certificatePassword = s.getCertificatePassword();
+									CredentialFactory certificateCf = new CredentialFactory(certificateAuthAlias, null, certificatePassword);
+									String keystoreType = s.getKeystoreType();
+									addCertificateInfo(certElem, certificateUrl, certificateCf.getPassword(), keystoreType, "Certificate chain");
+								}
 							}
 						} else {
 							if (sender instanceof FtpSender) {
@@ -187,12 +206,20 @@ public final class ShowUsedCertificates extends ActionBase {
 									String certificateAuthAlias = s.getCertificateAuthAlias();
 									certElem.addAttribute("authAlias",certificateAuthAlias);
 									URL certificateUrl = ClassUtils.getResourceURL(this, certificate);
-									certElem.addAttribute("url",certificateUrl.toString());
-									pipeElem.addSubElement(certElem);
-									String certificatePassword = s.getCertificatePassword();
-									CredentialFactory certificateCf = new CredentialFactory(certificateAuthAlias, null, certificatePassword);
-									String keystoreType = s.getCertificateType();
-									addCertificateInfo(certElem, certificateUrl, certificateCf.getPassword(), keystoreType, "Certificate chain");
+									if (certificateUrl == null) {
+										certElem.addAttribute("url","");
+										pipeElem.addSubElement(certElem);
+										XmlBuilder infoElem = new XmlBuilder("info");
+										infoElem.setCdataValue("*** ERROR ***");
+										certElem.addSubElement(infoElem);
+									} else {
+										certElem.addAttribute("url",certificateUrl.toString());
+										pipeElem.addSubElement(certElem);
+										String certificatePassword = s.getCertificatePassword();
+										CredentialFactory certificateCf = new CredentialFactory(certificateAuthAlias, null, certificatePassword);
+										String keystoreType = s.getCertificateType();
+										addCertificateInfo(certElem, certificateUrl, certificateCf.getPassword(), keystoreType, "Certificate chain");
+									}
 								}
 							}
 						}
