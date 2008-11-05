@@ -1,6 +1,9 @@
 /*
  * $Log: BrowseJdbcTableExecute.java,v $
- * Revision 1.6  2008-10-20 13:02:44  europe\m168309
+ * Revision 1.7  2008-11-05 12:22:06  europe\m168309
+ * impose limits to prevent memory exception
+ *
+ * Revision 1.6  2008/10/20 13:02:44  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * also show not compressed blobs and not serialized blobs
  *
  * Revision 1.5  2008/06/18 09:17:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -22,6 +25,7 @@
 package nl.nn.adapterframework.webcontrol.action;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.List;
 
 import javax.servlet.ServletException;
@@ -29,11 +33,15 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import javax.xml.transform.Transformer;
+
 import nl.nn.adapterframework.jdbc.DirectQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcFacade;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.StringTagger;
+import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.webcontrol.IniDynaActionForm;
 
 import org.apache.commons.lang.StringUtils;
@@ -42,7 +50,8 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 
 public class BrowseJdbcTableExecute extends ActionBase {
-	public static final String version = "$RCSfile: BrowseJdbcTableExecute.java,v $ $Revision: 1.6 $ $Date: 2008-10-20 13:02:44 $";
+	public static final String version = "$RCSfile: BrowseJdbcTableExecute.java,v $ $Revision: 1.7 $ $Date: 2008-11-05 12:22:06 $";
+	public static final String DB2XML_XSLT = "xml/xsl/BrowseJdbcTableExecute.xsl";
 
 	public ActionForward execute(
 		ActionMapping mapping,
@@ -76,86 +85,98 @@ public class BrowseJdbcTableExecute extends ActionBase {
 			form_numberOfRowsOnly =
 				((Boolean) browseJdbcTableForm.get("numberOfRowsOnly"))
 					.booleanValue();
-		String form_rownumMin = (String) browseJdbcTableForm.get("rownumMin");
-		String form_rownumMax = (String) browseJdbcTableForm.get("rownumMax");
+		int form_rownumMin = ((Integer) browseJdbcTableForm.get("rownumMin")).intValue();
+		int form_rownumMax = ((Integer) browseJdbcTableForm.get("rownumMax")).intValue();
 
-		DirectQuerySender qs;
-		String result = "";
-		String query = null;
-		try {
-			qs = new DirectQuerySender();
-			try {
-				qs.setName("QuerySender");
-				qs.setJmsRealm(form_jmsRealm);
-
-				if (form_numberOfRowsOnly) {
-					query = "SELECT COUNT(*) AS rowcount FROM " + form_tableName;
-				} else {
-					if (qs.getDatabaseType()==JdbcFacade.DATABASE_ORACLE) {					
-						if (StringUtils.isNotEmpty(form_order)) {
-							query = "SELECT ROW_NUMBER() OVER (ORDER BY "+ form_order +") AS ROWNUMBER, "+form_tableName+ ".* FROM " + form_tableName;
-						} else {
-							query = "SELECT ROWNUM AS ROWNUMBER, "+form_tableName+ ".* FROM " + form_tableName;
-						}
-					} else {
-						query = "SELECT * FROM " + form_tableName;
-					}
-					if (qs.getDatabaseType()==JdbcFacade.DATABASE_ORACLE) {					
-						if (StringUtils.isNotEmpty(form_rownumMin)
-							|| StringUtils.isNotEmpty(form_rownumMax)) {
-								
-							query = "SELECT * FROM ("+query+") ";
-								
-							if (StringUtils.isNotEmpty(form_rownumMin)
-								&& StringUtils.isNotEmpty(form_rownumMax)) {
-								query =
-									query
-										+ " WHERE ROWNUMBER BETWEEN "
-										+ form_rownumMin
-										+ " AND "
-										+ form_rownumMax;
-							} else if (StringUtils.isNotEmpty(form_rownumMin)) {
-								query = query + " WHERE ROWNUMBER >= " + form_rownumMin;
-							} else if (StringUtils.isNotEmpty(form_rownumMax)) {
-								query = query + " WHERE ROWNUMBER <= " + form_rownumMax;
-							}
-						}		
-
-					}
-					
-//					String subQuery = null;
-//					subQuery =
-//						"SELECT ROWNUM AS ROWNUMBER, "
-//							+ form_tableName
-//							+ ".* FROM "
-//							+ form_tableName;
-//					query = query + " FROM (" + subQuery + ")";
-				}
-				qs.setQueryType("select");
-				qs.setBlobSmartGet(true);
-				qs.configure();
-				qs.open();
-				result = qs.sendMessage("dummy", query);
-			} catch (Throwable t) {
-				error("errors.generic","error occured on executing jdbc query ["+query+"]",t);
-			} finally {
-				qs.close();
+		if (!form_numberOfRowsOnly) {
+			if (form_rownumMin < 0) {
+				form_rownumMin = 0;
 			}
-		} catch (Exception e) {
-			error("errors.generic","error occured on creating or closing connection",e);
+			if (form_rownumMax < 0) {
+				form_rownumMax = 0;
+			}
+			if (form_rownumMin == 0 && form_rownumMax == 0) {
+				form_rownumMin = 1;
+				form_rownumMax = 100;
+			}
+			if (errors.isEmpty()) {
+				if (form_rownumMax < form_rownumMin) {
+					error("errors.generic","Rownum max must be greater than or equal to Rownum min",null);
+				}
+			}
+			if (errors.isEmpty()) {
+				if (form_rownumMax - form_rownumMin >= 100) {
+					error("errors.generic","Difference between Rownum max and Rownum min must be less than hundred",null);
+				}
+			}
 		}
-		String resultEnvelope =
-			"<resultEnvelope>"
-				+ "<request "
-				+ "tableName=\""
-				+ form_tableName
-				+ "\">"
-				+ query
-				+ "</request>"
-				+ result
-				+ "</resultEnvelope>";
 
-		request.setAttribute("DB2Xml", resultEnvelope);
+		if (errors.isEmpty()) {
+			DirectQuerySender qs;
+			String result = "";
+			String query = null;
+			try {
+				qs = new DirectQuerySender();
+				try {
+					qs.setName("QuerySender");
+					qs.setJmsRealm(form_jmsRealm);
+
+					if (form_numberOfRowsOnly || qs.getDatabaseType() == JdbcFacade.DATABASE_ORACLE) {
+						qs.setQueryType("select");
+						qs.setBlobSmartGet(true);
+						qs.configure();
+						qs.open();
+						query = "SELECT * FROM " + form_tableName + " WHERE ROWNUM=0";
+						result = qs.sendMessage("dummy", query);
+						String browseJdbcTableExecuteREQ =
+							"<browseJdbcTableExecuteREQ>"
+								+ "<tableName>"
+								+ form_tableName
+								+ "</tableName>"
+								+ "<numberOfRowsOnly>"
+								+ form_numberOfRowsOnly
+								+ "</numberOfRowsOnly>"
+								+ "<order>"
+								+ form_order
+								+ "</order>"
+								+ "<rownumMin>"
+								+ form_rownumMin
+								+ "</rownumMin>"
+								+ "<rownumMax>"
+								+ form_rownumMax
+								+ "</rownumMax>"
+								+ result
+								+ "</browseJdbcTableExecuteREQ>";
+						URL url = ClassUtils.getResourceURL(this, DB2XML_XSLT);
+						if (url != null) {
+							Transformer t = XmlUtils.createTransformer(url);
+							query = XmlUtils.transformXml(t, browseJdbcTableExecuteREQ);
+						}
+						result = qs.sendMessage("dummy", query);
+					} else {
+						error("errors.generic","This function only supports oracle databases",null);
+					}
+				} catch (Throwable t) {
+					error("errors.generic","error occured on executing jdbc query [" + query + "]",t);
+				} finally {
+					qs.close();
+				}
+			} catch (Exception e) {
+				error("errors.generic","error occured on creating or closing connection",e);
+			}
+			String resultEnvelope =
+				"<resultEnvelope>"
+					+ "<request "
+					+ "tableName=\""
+					+ form_tableName
+					+ "\">"
+					+ XmlUtils.encodeChars(query)
+					+ "</request>"
+					+ result
+					+ "</resultEnvelope>";
+
+			request.setAttribute("DB2Xml", resultEnvelope);
+		}
 
 		// Report any errors we have discovered back to the original form
 		if (!errors.isEmpty()) {
