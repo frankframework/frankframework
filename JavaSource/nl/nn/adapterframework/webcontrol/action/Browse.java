@@ -1,6 +1,9 @@
 /*
  * $Log: Browse.java,v $
- * Revision 1.12  2008-08-12 16:04:34  europe\L190409
+ * Revision 1.13  2008-11-06 10:23:14  europe\m168309
+ * *** empty log message ***
+ *
+ * Revision 1.12  2008/08/12 16:04:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added skipMessages
  *
  * Revision 1.11  2008/08/06 16:42:18  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -77,7 +80,7 @@ import org.apache.struts.action.DynaActionForm;
  * @since   4.4
  */
 public class Browse extends ActionBase {
-	public static final String version="$RCSfile: Browse.java,v $ $Revision: 1.12 $ $Date: 2008-08-12 16:04:34 $";
+	public static final String version="$RCSfile: Browse.java,v $ $Revision: 1.13 $ $Date: 2008-11-06 10:23:14 $";
 
 	private int maxMessages = AppConstants.getInstance().getInt("browse.messages.max",0); 
 	private int skipMessages=0;
@@ -165,7 +168,9 @@ public class Browse extends ActionBase {
 		IListener listener=null;
 		if ("messagelog".equals(storageType)) {
 			MessageSendingPipe pipe=(MessageSendingPipe)adapter.getPipeLine().getPipe(pipeName);
-			mb=pipe.getMessageLog();	
+			mb=pipe.getMessageLog();
+			// actions 'deletemessage' and 'resendmessage' not allowed for messageLog	
+			//performAction(adapter, null, action, mb, messageId, selected, response);
 		} else {
 			ReceiverBase receiver = (ReceiverBase) adapter.getReceiverByName(receiverName);
 			mb = receiver.getErrorStorage();
