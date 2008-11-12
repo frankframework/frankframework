@@ -1,6 +1,9 @@
 /*
  * $Log: BrowseJdbcTableExecute.java,v $
- * Revision 1.7  2008-11-05 12:22:06  europe\m168309
+ * Revision 1.8  2008-11-12 12:34:24  europe\m168309
+ * fixed error in cookies
+ *
+ * Revision 1.7  2008/11/05 12:22:06  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * impose limits to prevent memory exception
  *
  * Revision 1.6  2008/10/20 13:02:44  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -50,7 +53,7 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 
 public class BrowseJdbcTableExecute extends ActionBase {
-	public static final String version = "$RCSfile: BrowseJdbcTableExecute.java,v $ $Revision: 1.7 $ $Date: 2008-11-05 12:22:06 $";
+	public static final String version = "$RCSfile: BrowseJdbcTableExecute.java,v $ $Revision: 1.8 $ $Date: 2008-11-12 12:34:24 $";
 	public static final String DB2XML_XSLT = "xml/xsl/BrowseJdbcTableExecute.xsl";
 
 	public ActionForward execute(
@@ -190,6 +193,8 @@ public class BrowseJdbcTableExecute extends ActionBase {
 		cookieValue += "jmsRealm=\"" + form_jmsRealm + "\"";
 		cookieValue += " "; //separator
 		cookieValue += "tableName=\"" + form_tableName + "\"";
+		cookieValue += " "; //separator          
+		cookieValue += "numberOfRowsOnly=\"" + form_numberOfRowsOnly + "\"";
 		cookieValue += " "; //separator          
 		cookieValue += "rownumMin=\"" + form_rownumMin + "\"";
 		cookieValue += " "; //separator          

@@ -1,6 +1,9 @@
 /*
  * $Log: BrowseJdbcTable.java,v $
- * Revision 1.3  2007-10-08 13:41:35  europe\L190409
+ * Revision 1.4  2008-11-12 12:34:24  europe\m168309
+ * fixed error in cookies
+ *
+ * Revision 1.3  2007/10/08 13:41:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed ArrayList to List where possible
  *
  * Revision 1.2  2007/05/21 12:25:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -31,7 +34,7 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 
 public class BrowseJdbcTable extends ActionBase {
-	public static final String version = "$RCSfile: BrowseJdbcTable.java,v $ $Revision: 1.3 $ $Date: 2007-10-08 13:41:35 $";
+	public static final String version = "$RCSfile: BrowseJdbcTable.java,v $ $Revision: 1.4 $ $Date: 2008-11-12 12:34:24 $";
 
 	public ActionForward execute(
 		ActionMapping mapping,
@@ -90,10 +93,10 @@ public class BrowseJdbcTable extends ActionBase {
 							new Boolean(cs.Value("numberOfRowsOnly")));
 						browseJdbcTableForm.set(
 							"rownumMin",
-							cs.Value("rownumMin"));
+							new Integer(cs.Value("rownumMin")));
 						browseJdbcTableForm.set(
 							"rownumMax",
-						cs.Value("rownumMax"));
+							new Integer(cs.Value("rownumMax")));
 					} catch (Exception e) {
 						log.warn("could not restore Cookie value's", e);
 					}
