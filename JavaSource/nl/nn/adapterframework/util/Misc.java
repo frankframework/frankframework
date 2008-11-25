@@ -1,6 +1,9 @@
 /*
  * $Log: Misc.java,v $
- * Revision 1.17  2008-09-08 15:00:23  europe\L190409
+ * Revision 1.18  2008-11-25 10:17:10  m168309
+ * added getDeployedApplicationName and getDeployedApplicationBindings
+ *
+ * Revision 1.17  2008/09/08 15:00:23  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * avoid NPE in getEnvironmentVariables
  *
  * Revision 1.16  2008/08/27 16:24:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -33,6 +36,7 @@ package nl.nn.adapterframework.util;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -55,14 +59,18 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import java.util.zip.Inflater;
 
+import nl.nn.adapterframework.util.StringResolver;
+
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 
 /**
  * Miscellanous conversion functions.
  * @version Id
  */
 public class Misc {
-	public static final String version="$RCSfile: Misc.java,v $ $Revision: 1.17 $ $Date: 2008-09-08 15:00:23 $";
+	public static final String version="$RCSfile: Misc.java,v $ $Revision: 1.18 $ $Date: 2008-11-25 10:17:10 $";
+	static Logger log = LogUtil.getLogger(Misc.class);
 	public static final int BUFFERSIZE=20000;
 	public static final String DEFAULT_INPUT_STREAM_ENCODING="UTF-8";
 
@@ -448,5 +456,46 @@ public class Misc {
 		}
 	}
 
+	public static String getDeployedApplicationName() {
+		URL url= ClassUtils.getResourceURL(Misc.class, "");
+		String path = url.getPath();
+		log.debug("classloader resource [" + path + "]");
+		StringTokenizer st = new StringTokenizer(path, File.separator);
+		String appName = null;
+		while (st.hasMoreTokens() && appName == null) {
+			String token = st.nextToken();
+			if (StringUtils.upperCase(token).endsWith(".EAR")) {
+				appName = token.substring(0,token.length()-4);
+			}
+		}
+		log.debug("deployedApplicationName [" + appName + "]");
+		return appName;
+	}
 
+	public static String getDeployedApplicationBindings(String appName) throws IOException {
+		String appBndPath =
+			"${WAS_HOME}"
+				+ File.separator
+				+ "config"
+				+ File.separator
+				+ "cells"
+				+ File.separator
+				+ "${WAS_CELL}"
+				+ File.separator
+				+ "applications"
+				+ File.separator
+				+ appName
+				+ ".ear"
+				+ File.separator
+				+ "deployments"
+				+ File.separator
+				+ appName
+				+ File.separator
+				+ "META-INF"
+				+ File.separator
+				+ "ibm-application-bnd.xmi";
+		String appBndFile = StringResolver.substVars(appBndPath, Misc.getEnvironmentVariables());
+		log.debug("deployedApplicationBindingsFile [" + appBndFile + "]");
+		return fileToString(appBndFile);
+	}
 }
