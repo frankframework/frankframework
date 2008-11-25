@@ -1,6 +1,9 @@
 /*
- * $Log: ShowUsedCertificates.java,v $
- * Revision 1.2  2008-10-31 10:56:34  europe\m168309
+ * $Log: ShowSecurityItems.java,v $
+ * Revision 1.1  2008-11-25 10:14:45  m168309
+ * ShowUsedCertificates renamed to ShowSecurityItems
+ *
+ * Revision 1.2  2008/10/31 10:56:34  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * Error handling  when certificateUrl is null
  *
  * Revision 1.1  2007/12/28 12:17:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -9,6 +12,7 @@
  */
 package nl.nn.adapterframework.webcontrol.action;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.security.KeyStore;
@@ -16,6 +20,7 @@ import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.Enumeration;
 import java.util.Iterator;
+import java.util.StringTokenizer;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -33,10 +38,13 @@ import nl.nn.adapterframework.http.WebServiceSender;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
+import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.XmlBuilder;
+import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.SystemUtils;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
@@ -49,8 +57,8 @@ import org.apache.struts.action.ActionMapping;
  * @version Id 
  */
 
-public final class ShowUsedCertificates extends ActionBase {
-	public static final String version = "$RCSfile: ShowUsedCertificates.java,v $ $Revision: 1.2 $ $Date: 2008-10-31 10:56:34 $";
+public final class ShowSecurityItems extends ActionBase {
+	public static final String version = "$RCSfile: ShowSecurityItems.java,v $ $Revision: 1.1 $ $Date: 2008-11-25 10:14:45 $";
 
 	protected void addCertificateInfo(XmlBuilder certElem, final URL url, final String password, String keyStoreType, String prefix) {
 		try {
@@ -100,12 +108,14 @@ public final class ShowUsedCertificates extends ActionBase {
 			return (mapping.findForward("noconfig"));
 		}
 
-		XmlBuilder adapters=new XmlBuilder("registeredAdapters");
+		XmlBuilder securityItems=new XmlBuilder("securityItems");
+		XmlBuilder usedCertificates=new XmlBuilder("usedCertificates");
+		securityItems.addSubElement(usedCertificates);
 		for(int j=0; j<config.getRegisteredAdapters().size(); j++) {
 			Adapter adapter = (Adapter)config.getRegisteredAdapter(j);
 
 			XmlBuilder adapterXML=new XmlBuilder("adapter");
-			adapters.addSubElement(adapterXML);
+			usedCertificates.addSubElement(adapterXML);
 		
 			RunStateEnum adapterRunState = adapter.getRunState();
 			
@@ -227,7 +237,22 @@ public final class ShowUsedCertificates extends ActionBase {
 				}
 			}
 		}
-		request.setAttribute("usedCert", adapters.toXML());
+
+		String appName = Misc.getDeployedApplicationName();
+		XmlBuilder appBnd = new XmlBuilder("securityRoleBindings");
+		if (appName!=null) {
+			appBnd.addAttribute("appName", appName);
+			String appBndString = null;
+			try {
+				appBndString = Misc.getDeployedApplicationBindings(appName);
+				appBndString = XmlUtils.removeNamespaces(appBndString);
+			} catch (IOException e) {
+				appBndString = "*** ERROR ***";
+			}
+			appBnd.setValue(appBndString, false);
+			securityItems.addSubElement(appBnd);
+		}
+		request.setAttribute("secItems", securityItems.toXML());
 
 		// Forward control to the specified success URI
 		log.debug("forward to success");
