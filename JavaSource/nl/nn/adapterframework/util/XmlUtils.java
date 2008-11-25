@@ -1,6 +1,9 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.53  2008-10-24 14:42:05  europe\m168309
+ * Revision 1.54  2008-11-25 10:16:09  m168309
+ * added removeNamespaces
+ *
+ * Revision 1.53  2008/10/24 14:42:05  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * XSLT 2.0 made possible
  *
  * Revision 1.52  2008/10/23 14:16:51  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -228,7 +231,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * @version Id
  */
 public class XmlUtils {
-	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.53 $ $Date: 2008-10-24 14:42:05 $";
+	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.54 $ $Date: 2008-11-25 10:16:09 $";
 	static Logger log = LogUtil.getLogger(XmlUtils.class);
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
@@ -1295,4 +1298,14 @@ public class XmlUtils {
 		return sb.toString();
 	}
 
+	public static String removeNamespaces(String input) {
+		String removeNamespaces_xslt = XmlUtils.makeRemoveNamespacesXslt(true,false);
+		try {
+			Transformer t = XmlUtils.createTransformer(removeNamespaces_xslt);
+			String query = XmlUtils.transformXml(t, input);
+			return query;
+		} catch (Exception e) {
+			return null;
+		}
+	}
 }
