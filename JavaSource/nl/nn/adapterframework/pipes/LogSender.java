@@ -1,6 +1,9 @@
 /*
  * $Log: LogSender.java,v $
- * Revision 1.8  2008-08-07 11:40:10  europe\L190409
+ * Revision 1.9  2008-11-26 09:38:54  m168309
+ * Fixed warning message in deprecated classes
+ *
+ * Revision 1.8  2008/08/07 11:40:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fix npe
  *
  * Revision 1.7  2008/08/06 16:38:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -49,6 +52,6 @@ public class LogSender extends nl.nn.adapterframework.senders.LogSender {
 
 	public void configure() throws ConfigurationException {
 		super.configure();
-		log.warn(getLogPrefix()+"The class ["+getClass().getName()+"] has been deprecated. Please change to ["+super.getClass().getName()+"]");
+		log.warn(getLogPrefix()+"The class ["+getClass().getName()+"] has been deprecated. Please change to ["+getClass().getSuperclass().getName()+"]");
 	}
 }

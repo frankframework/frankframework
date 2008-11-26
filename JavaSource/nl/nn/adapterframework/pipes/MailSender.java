@@ -1,6 +1,9 @@
 /*
  * $Log: MailSender.java,v $
- * Revision 1.15  2008-08-06 16:38:20  europe\L190409
+ * Revision 1.16  2008-11-26 09:38:54  m168309
+ * Fixed warning message in deprecated classes
+ *
+ * Revision 1.15  2008/08/06 16:38:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * moved from pipes to senders package
  *
  * Revision 1.14  2008/05/15 15:12:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -112,7 +115,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 public class MailSender extends nl.nn.adapterframework.senders.MailSender {
 
 	public void configure() throws ConfigurationException {
-		log.warn("The class ["+getClass().getName()+"] has been deprecated. Please change to ["+super.getClass().getName()+"]");
+		log.warn("The class ["+getClass().getName()+"] has been deprecated. Please change to ["+getClass().getSuperclass().getName()+"]");
 		super.configure();
 	}
 }

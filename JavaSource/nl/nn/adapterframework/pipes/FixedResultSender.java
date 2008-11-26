@@ -1,6 +1,9 @@
 /*
  * $Log: FixedResultSender.java,v $
- * Revision 1.3  2008-08-06 16:38:20  europe\L190409
+ * Revision 1.4  2008-11-26 09:38:54  m168309
+ * Fixed warning message in deprecated classes
+ *
+ * Revision 1.3  2008/08/06 16:38:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * moved from pipes to senders package
  *
  * Revision 1.2  2008/05/15 15:10:47  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -27,7 +30,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 public class FixedResultSender extends nl.nn.adapterframework.senders.FixedResultSender {
 
 	public void configure() throws ConfigurationException {
-		log.warn(getLogPrefix()+"The class ["+getClass().getName()+"] has been deprecated. Please change to ["+nl.nn.adapterframework.senders.FixedResultSender.class.getName()+"]");
+		log.warn(getLogPrefix()+"The class ["+getClass().getName()+"] has been deprecated. Please change to ["+getClass().getSuperclass().getName()+"]");
 		super.configure();
 	}
 

@@ -1,6 +1,9 @@
 /*
  * $Log: IbisJavaSender.java,v $
- * Revision 1.6  2008-08-06 16:38:20  europe\L190409
+ * Revision 1.7  2008-11-26 09:38:54  m168309
+ * Fixed warning message in deprecated classes
+ *
+ * Revision 1.6  2008/08/06 16:38:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * moved from pipes to senders package
  *
  * Revision 1.5  2007/09/05 13:04:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -61,7 +64,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 public class IbisJavaSender extends nl.nn.adapterframework.senders.IbisJavaSender {
 
 	public void configure() throws ConfigurationException {
-		log.warn(getLogPrefix()+"The class ["+getClass().getName()+"] has been deprecated. Please change to ["+super.getClass().getName()+"]");
+		log.warn(getLogPrefix()+"The class ["+getClass().getName()+"] has been deprecated. Please change to ["+getClass().getSuperclass().getName()+"]");
 		super.configure();
 	}
 }
