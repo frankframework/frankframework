@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.66  2008-09-23 12:05:58  europe\L190409
+ * Revision 1.67  2008-12-02 13:10:20  m168309
+ * clarified transaction management logging
+ *
+ * Revision 1.66  2008/09/23 12:05:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * send answer to separate sender for errors too
  *
  * Revision 1.65  2008/09/22 13:36:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -391,6 +394,7 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.TransactionStatus;
@@ -470,7 +474,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  */
 public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHandler, EventThrowing, IbisExceptionListener, HasSender, HasStatistics, TracingEventNumbers, IThreadCountControllable, BeanFactoryAware {
     
-	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.66 $ $Date: 2008-09-23 12:05:58 $";
+	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.67 $ $Date: 2008-12-02 13:10:20 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -1214,6 +1218,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 			numRetried.increase();
 		}
 		TransactionStatus txStatus = getTransactionForProcessing();
+		boolean txIsNew = txStatus.isNewTransaction();
         
 		// update processing statistics
 		// count in processing statistics includes messages that are rolled back to input
@@ -1273,9 +1278,11 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 						}							
 
 					} catch (Throwable t) {
-						log.debug("<*>"+getLogPrefix() + "TX Update: Received failure, transaction " +
-								(txStatus.isRollbackOnly()?"already":"not yet") +
-								" marked for rollback-only");
+						if (TransactionSynchronizationManager.isActualTransactionActive()) {
+							log.debug("<*>"+getLogPrefix() + "TX Update: Received failure, transaction " +
+									(txStatus.isRollbackOnly()?"already":"not yet") +
+									" marked for rollback-only");
+						}
 						errorMessage = t.getMessage();
 						messageInError = true;
 						ListenerException l = wrapExceptionAsListenerException(t);
@@ -1315,10 +1322,12 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 				finishProcessingMessage(finishProcessingTimestamp-startProcessingTimestamp);
 				if (!txStatus.isCompleted()) {
 					// Log what we're about to do
-					if (txStatus.isRollbackOnly()) {
-						log.debug(getLogPrefix() + "transaction marked for rollback, so rolling back the transaction");
-					} else {
-						log.debug(getLogPrefix() + "transaction is not marked for rollback, so committing the transaction");
+					if (txIsNew) {
+						if (txStatus.isRollbackOnly()) {
+							log.debug(getLogPrefix() + "transaction marked for rollback, so rolling back the transaction");
+						} else {
+							log.debug(getLogPrefix() + "transaction is not marked for rollback, so committing the transaction");
+						}
 					}
 					// NB: Spring will take care of executing a commit or a rollback;
 					// Spring will also ONLY commit the transaction if it was newly created

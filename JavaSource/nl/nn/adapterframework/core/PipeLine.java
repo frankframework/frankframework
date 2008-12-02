@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.70  2008-11-27 11:40:54  m168309
+ * Revision 1.71  2008-12-02 13:09:11  m168309
+ * clarified transaction management logging
+ *
+ * Revision 1.70  2008/11/27 11:40:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * clarified transaction management logging
  *
  * Revision 1.69  2008/10/10 14:16:06  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -313,7 +316,7 @@ import org.springframework.transaction.TransactionStatus;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.70 $ $Date: 2008-11-27 11:40:54 $";
+	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.71 $ $Date: 2008-12-02 13:09:11 $";
     private Logger log = LogUtil.getLogger(this);
 	private Logger durationLog = LogUtil.getLogger("LongDurationMessages");
     
@@ -569,7 +572,7 @@ public class PipeLine {
 		String txNewName = Misc.createSimpleUUID();
 		TransactionSynchronizationManager.setCurrentTransactionName(txNewName);
 		boolean txIsNew = txStatus.isNewTransaction();
-		// TODO: The creation of a new transaction and the commit/rollback
+		// TODO: The creation of a new transaction and the actual commit/rollback
 		//       of this transaction has to be logged.
 		//       Can this automatically be done by Spring instead of the lines below? 
 		if (txIsNew) {
