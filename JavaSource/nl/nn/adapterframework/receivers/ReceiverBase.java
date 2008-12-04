@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.67  2008-12-02 13:10:20  m168309
+ * Revision 1.68  2008-12-04 14:44:08  m168309
+ * clarified transaction management logging
+ *
+ * Revision 1.67  2008/12/02 13:10:20  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * clarified transaction management logging
  *
  * Revision 1.66  2008/09/23 12:05:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -415,6 +418,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  * <tr><td>{@link #setReturnedSessionKeys(String) returnedSessionKeys}</td><td>comma separated list of keys of session variables that should be returned to caller, for correct results as well as for erronous results. (Only for listeners that support it, like JavaListener)</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setTransacted(boolean) transacted}</td><td>if set to <code>true</code>, messages will be received and processed under transaction control. If processing fails, messages will be sent to the error-sender. (see below)</code></td><td><code>false</code></td></tr>
  * <tr><td>{@link #setTransactionTimeout(int) transactionTimeout}</td><td>Timeout (in seconds) of transaction started to receive and process a message.</td><td><code>0</code> (use system default)</code></td></tr>
+ * <tr><td>{@link #setExecuteWithinClientTransaction(boolean) executeWithinClientTransaction}</td><td>if set to <code>true</code> and the client is running within a transaction, the receiver executes within the client's transaction; otherwise a new transaction is started (transacted=true) or the client's transaction will be suspended(transacted=false)</td><td><code>true</code></td></tr>
  * <tr><td>{@link #setMaxRetries(int) maxRetries}</td><td>The number of times a processing attempt is retried after an exception is caught or rollback is experienced</td><td>1</td></tr>
  * <tr><td>{@link #setCheckForDuplicates(boolean) checkForDuplicates}</td><td>if set to <code>true</code>, each message is checked for presence in the message log. If already present, it is not processed again. (only required for non XA compatible messaging). Requires messagelog!</code></td><td><code>false</code></td></tr>
  * <tr><td>{@link #setPollInterval(int) pollInterval}</td><td>The number of seconds waited after an unsuccesful poll attempt before another poll attempt is made. (only for polling listeners, not for e.g. IFSA, JMS, WebService or JavaListeners)</td><td>10</td></tr>
@@ -474,12 +478,14 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  */
 public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHandler, EventThrowing, IbisExceptionListener, HasSender, HasStatistics, TracingEventNumbers, IThreadCountControllable, BeanFactoryAware {
     
-	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.67 $ $Date: 2008-12-02 13:10:20 $";
+	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.68 $ $Date: 2008-12-04 14:44:08 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
 	public final static TransactionDefinition TXREQUIRED = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED);
+	public final static TransactionDefinition TXREQUIRESNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
 	public final static TransactionDefinition TXSUPPORTS = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_SUPPORTS);
+	public final static TransactionDefinition TXNOTSUPPORTED = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_NOT_SUPPORTED);
 
 	public static final String RCV_CONFIGURED_MONITOR_EVENT = "Receiver Configured";
 	public static final String RCV_CONFIGURATIONEXCEPTION_MONITOR_EVENT = "Exception Configuring Receiver";
@@ -507,6 +513,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 
 	private boolean active=true;
 	private int transactionTimeout=0;
+	private boolean executeWithinClientTransaction=true;
 
 	private String name;
 	private String onError = ONERROR_CONTINUE; 
@@ -633,9 +640,17 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		// but we want to enquire on the status of the TX.
 		try {
 			if (isTransacted()) {
-				txStatus = txManager.getTransaction(TXREQUIRED);
+				if (isExecuteWithinClientTransaction()) {
+					txStatus = txManager.getTransaction(TXREQUIRED);
+				} else {
+					txStatus = txManager.getTransaction(TXREQUIRESNEW);
+				}
 			} else {
-				txStatus = txManager.getTransaction(TXSUPPORTS);
+				if (isExecuteWithinClientTransaction()) {
+					txStatus = txManager.getTransaction(TXSUPPORTS);
+				} else {
+					txStatus = txManager.getTransaction(TXNOTSUPPORTED);
+				}
 			}
 			if (txStatus.isNewTransaction()) {
 				log.debug(getLogPrefix()+"started transaction as no one was yet present");
@@ -1928,6 +1943,12 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		return transacted;
 	}
 
+	public void setExecuteWithinClientTransaction(boolean executeWithinClientTransaction) {
+		this.executeWithinClientTransaction = executeWithinClientTransaction;
+	}
+	public boolean isExecuteWithinClientTransaction() {
+		return executeWithinClientTransaction;
+	}
 
 	public void setOnError(String newOnError) {
 		onError = newOnError;
