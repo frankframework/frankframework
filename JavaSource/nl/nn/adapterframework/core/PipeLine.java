@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.73  2008-12-05 09:40:59  m168309
+ * Revision 1.74  2008-12-05 09:46:23  m168309
+ * clarified transaction management logging
+ *
+ * Revision 1.73  2008/12/05 09:40:59  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * clarified transaction management logging
  *
  * Revision 1.72  2008/12/04 15:49:58  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -245,7 +248,6 @@ import nl.nn.adapterframework.util.XmlUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 
@@ -322,7 +324,7 @@ import org.springframework.transaction.TransactionStatus;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.73 $ $Date: 2008-12-05 09:40:59 $";
+	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.74 $ $Date: 2008-12-05 09:46:23 $";
     private Logger log = LogUtil.getLogger(this);
 	private Logger durationLog = LogUtil.getLogger("LongDurationMessages");
     

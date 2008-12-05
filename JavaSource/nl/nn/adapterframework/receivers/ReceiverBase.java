@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.70  2008-12-05 09:40:40  m168309
+ * Revision 1.71  2008-12-05 09:46:23  m168309
+ * clarified transaction management logging
+ *
+ * Revision 1.70  2008/12/05 09:40:40  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * clarified transaction management logging
  *
  * Revision 1.69  2008/12/04 15:51:10  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -485,7 +488,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  */
 public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHandler, EventThrowing, IbisExceptionListener, HasSender, HasStatistics, TracingEventNumbers, IThreadCountControllable, BeanFactoryAware {
     
-	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.70 $ $Date: 2008-12-05 09:40:40 $";
+	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.71 $ $Date: 2008-12-05 09:46:23 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -1332,7 +1335,6 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 				long finishProcessingTimestamp = System.currentTimeMillis();
 				finishProcessingMessage(finishProcessingTimestamp-startProcessingTimestamp);
 				if (!txStatus.isCompleted()) {
-					// Log what we're about to do
 					// NB: Spring will take care of executing a commit or a rollback;
 					// Spring will also ONLY commit the transaction if it was newly created
 					// by the above call to txManager.getTransaction().
