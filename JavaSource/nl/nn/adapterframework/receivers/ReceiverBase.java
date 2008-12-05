@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.69  2008-12-04 15:51:10  m168309
+ * Revision 1.70  2008-12-05 09:40:40  m168309
+ * clarified transaction management logging
+ *
+ * Revision 1.69  2008/12/04 15:51:10  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * clarified transaction management logging
  *
  * Revision 1.68  2008/12/04 14:44:08  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -353,6 +356,7 @@ import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.HasSender;
 import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.core.IbisTransaction;
 import nl.nn.adapterframework.core.IBulkDataListener;
 import nl.nn.adapterframework.core.IKnowsDeliveryCount;
 import nl.nn.adapterframework.core.IListener;
@@ -481,7 +485,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  */
 public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHandler, EventThrowing, IbisExceptionListener, HasSender, HasStatistics, TracingEventNumbers, IThreadCountControllable, BeanFactoryAware {
     
-	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.69 $ $Date: 2008-12-04 15:51:10 $";
+	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.70 $ $Date: 2008-12-05 09:40:40 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -1223,28 +1227,9 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		}
 
 		TransactionDefinition txDef = getTransactionDefinitionForProcessing();
-
-		boolean txOldIsActive = TransactionSynchronizationManager.isActualTransactionActive();
-		String txOldName = TransactionSynchronizationManager.getCurrentTransactionName();
-		int txTimeout = getTransactionTimeout();
-		TransactionStatus txStatus = txManager.getTransaction(txDef);
-		boolean txIsActive = TransactionSynchronizationManager.isActualTransactionActive();
-		String txNewName = null;
-		boolean txIsNew = txStatus.isNewTransaction();
-
-		if (txIsNew) {
-			txNewName = Misc.createSimpleUUID();
-			TransactionSynchronizationManager.setCurrentTransactionName(txNewName);
-			log.debug(getLogPrefix()+"Adapter created new transaction ["+txNewName+"] for receiver, timeout ["+(txTimeout==0?"system default(=120s)":""+txTimeout)+"]");
-		} else {
-			if (txIsActive) {
-				txNewName = TransactionSynchronizationManager.getCurrentTransactionName();
-			} else {
-				if (txOldIsActive) {
-					log.debug(getLogPrefix()+"Adapter suspended transaction [" + txOldName + "] for receiver");
-				}
-			}
-		}
+		//TransactionStatus txStatus = txManager.getTransaction(txDef);
+		IbisTransaction itx = new IbisTransaction(txManager, txDef, "receiver [" + getName() + "]");
+		TransactionStatus txStatus = itx.getStatus();
         
 		// update processing statistics
 		// count in processing statistics includes messages that are rolled back to input
@@ -1348,21 +1333,11 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 				finishProcessingMessage(finishProcessingTimestamp-startProcessingTimestamp);
 				if (!txStatus.isCompleted()) {
 					// Log what we're about to do
-					if (txIsNew) {
-						log.debug(getLogPrefix()+"Performing commit/rollback for receiver on transaction ["+txNewName+"]");	
-						if (txStatus.isRollbackOnly()) {
-							log.debug(getLogPrefix() + "transaction marked for rollback, so rolling back the transaction");
-						} else {
-							log.debug(getLogPrefix() + "transaction is not marked for rollback, so committing the transaction");
-						}
-					}
 					// NB: Spring will take care of executing a commit or a rollback;
 					// Spring will also ONLY commit the transaction if it was newly created
 					// by the above call to txManager.getTransaction().
-					txManager.commit(txStatus);
-					if (!txIsNew && txOldIsActive && !txIsActive) {
-						log.debug(getLogPrefix()+"Adapter resumed transaction [" + txOldName + "] for receiver");
-					}
+					//txManager.commit(txStatus);
+					itx.commit();
 				} else {
 					throw new ListenerException(getLogPrefix()+"Transaction already completed; we didn't expect this");
 				}

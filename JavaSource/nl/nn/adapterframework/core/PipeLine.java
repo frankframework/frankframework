@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.72  2008-12-04 15:49:58  m168309
+ * Revision 1.73  2008-12-05 09:40:59  m168309
+ * clarified transaction management logging
+ *
+ * Revision 1.72  2008/12/04 15:49:58  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * clarified transaction management logging
  *
  * Revision 1.71  2008/12/02 13:09:11  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -319,7 +322,7 @@ import org.springframework.transaction.TransactionStatus;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.72 $ $Date: 2008-12-04 15:49:58 $";
+	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.73 $ $Date: 2008-12-05 09:40:59 $";
     private Logger log = LogUtil.getLogger(this);
 	private Logger durationLog = LogUtil.getLogger("LongDurationMessages");
     
@@ -567,29 +570,9 @@ public class PipeLine {
 	}
     
     private PipeLineResult runPipeLineObeyingTransactionAttribute(String messageId, String message, PipeLineSession session) throws PipeRunException {
-		boolean txOldIsActive = TransactionSynchronizationManager.isActualTransactionActive();
-		String txOldName = TransactionSynchronizationManager.getCurrentTransactionName();
-		int txTimeout = getTransactionTimeout();
-		TransactionStatus txStatus = txManager.getTransaction(txDef);
-		boolean txIsActive = TransactionSynchronizationManager.isActualTransactionActive();
-		String txNewName = null;
-		boolean txIsNew = txStatus.isNewTransaction();
-		// TODO: The creation of a new transaction and the actual commit/rollback
-		//       of this transaction has to be logged.
-		//       Can this automatically be done by Spring instead of the lines below? 
-		if (txIsNew) {
-			txNewName = Misc.createSimpleUUID();
-			TransactionSynchronizationManager.setCurrentTransactionName(txNewName);
-			log.debug("Adapter created new transaction ["+txNewName+"] for pipeline, timeout ["+(txTimeout==0?"system default(=120s)":""+txTimeout)+"]");
-		} else {
-			if (txIsActive) {
-				txNewName = TransactionSynchronizationManager.getCurrentTransactionName();
-			} else {
-				if (txOldIsActive) {
-					log.debug("Adapter suspended transaction [" + txOldName + "] for pipeline");
-				}
-			}
-		}
+		//TransactionStatus txStatus = txManager.getTransaction(txDef);
+		IbisTransaction itx = new IbisTransaction(txManager, txDef, "pipeline of adapter [" + owner.getName() + "]");
+		TransactionStatus txStatus = itx.getStatus();
 		try {
 			return processPipeLine(messageId, message, session, txStatus);
 		} catch (Throwable t) {
@@ -608,20 +591,12 @@ public class PipeLine {
 				throw new PipeRunException(null, "Caught unknown checked exception", t);
 			}
 		} finally {
-			if (txIsNew) {
-				log.debug("Performing commit/rollback for pipeline on transaction ["+txNewName+"]");	
-			}
-			txManager.commit(txStatus);
-			if (!txIsNew && txOldIsActive && !txIsActive) {
-				log.debug("Adapter resumed transaction [" + txOldName + "] for pipeline");
-			}
-
+			//txManager.commit(txStatus);
+			itx.commit();
 		}
     }
     
 	private PipeRunResult runPipeObeyingTransactionAttribute(IPipe pipe, Object message, PipeLineSession session) throws PipeRunException {
-		boolean txOldIsActive = TransactionSynchronizationManager.isActualTransactionActive();
-		String txOldName = TransactionSynchronizationManager.getCurrentTransactionName();
         int txOption;
         int txTimeout=0;
         if (pipe instanceof HasTransactionAttribute) {
@@ -631,23 +606,9 @@ public class PipeLine {
         } else {
             txOption = TransactionDefinition.PROPAGATION_SUPPORTS;
         }
-		TransactionStatus txStatus = txManager.getTransaction(SpringTxManagerProxy.getTransactionDefinition(txOption,txTimeout));
-		boolean txIsActive = TransactionSynchronizationManager.isActualTransactionActive();
-		String txNewName = null;
-		boolean txIsNew = txStatus.isNewTransaction();
-		if (txIsNew) {
-			txNewName = Misc.createSimpleUUID();
-			TransactionSynchronizationManager.setCurrentTransactionName(txNewName);
-			log.debug("Pipeline created new transaction ["+txNewName+"] for pipe, timeout ["+(txTimeout==0?"system default(=120s)":""+txTimeout)+"]");
-		} else {
-			if (txIsActive) {
-				txNewName = TransactionSynchronizationManager.getCurrentTransactionName();
-			} else {
-				if (txOldIsActive) {
-					log.debug("Pipeline suspended transaction [" + txOldName + "] for pipe");
-				}
-			}
-		}
+		//TransactionStatus txStatus = txManager.getTransaction(SpringTxManagerProxy.getTransactionDefinition(txOption,txTimeout));
+		IbisTransaction itx = new IbisTransaction(txManager, SpringTxManagerProxy.getTransactionDefinition(txOption,txTimeout), "pipe [" + pipe.getName() + "]");
+		TransactionStatus txStatus = itx.getStatus();
 		try {
 			return pipe.doPipe(message, session);
 		} catch (Throwable t) {
@@ -663,13 +624,8 @@ public class PipeLine {
 				throw new PipeRunException(pipe, "Caught unknown checked exception", t);
 			}
 		} finally {
-			if (txIsNew) {
-				log.debug("Performing commit/rollback for pipe ["+pipe.getName()+"] on transaction ["+txNewName+"]");
-			}
-			txManager.commit(txStatus);
-			if (!txIsNew && txOldIsActive && !txIsActive) {
-				log.debug("Pipeline resumed transaction [" + txOldName + "] for pipe");
-			}
+			//txManager.commit(txStatus);
+			itx.commit();
 		}
 	}
 
