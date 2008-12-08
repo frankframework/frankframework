@@ -1,6 +1,9 @@
 /*
  * $Log: UUIDGeneratorPipe.java,v $
- * Revision 1.1  2008-12-08 13:02:32  m168309
+ * Revision 1.2  2008-12-08 13:12:03  m168309
+ * *** empty log message ***
+ *
+ * Revision 1.1  2008/12/08 13:02:32  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * first version
  *
  */
@@ -31,13 +34,13 @@ import nl.nn.adapterframework.util.Misc;
  * </p>
  * 
  * If {@link #setType(String) type} is set to <code>numeric</code>, a UUID with fixed length 31 will be generated.
- * If {@link #setType(String) type} is set to <code>alphanumeric</code>, the UUID will not have a fixed length and will be about 42.
+ * If {@link #setType(String) type} is set to <code>alphanumeric</code>, the UUID will not have a fixed length which will be about 42.
  * 
  * @version Id
  * @author Peter Leeuwenburgh
  */
 public class UUIDGeneratorPipe extends FixedForwardPipe {
-	public static final String version = "$Id: UUIDGeneratorPipe.java,v 1.1 2008-12-08 13:02:32 m168309 Exp $";
+	public static final String version = "$Id: UUIDGeneratorPipe.java,v 1.2 2008-12-08 13:12:03 m168309 Exp $";
 
 	private String type = "alphanumeric";
 
