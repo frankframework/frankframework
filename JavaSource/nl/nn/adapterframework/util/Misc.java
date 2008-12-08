@@ -1,6 +1,9 @@
 /*
  * $Log: Misc.java,v $
- * Revision 1.18  2008-11-25 10:17:10  m168309
+ * Revision 1.19  2008-12-08 13:06:58  m168309
+ * added createNumericUUID
+ *
+ * Revision 1.18  2008/11/25 10:17:10  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added getDeployedApplicationName and getDeployedApplicationBindings
  *
  * Revision 1.17  2008/09/08 15:00:23  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -50,6 +53,7 @@ import java.net.InetAddress;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.rmi.server.UID;
+import java.text.DecimalFormat;
 import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
@@ -69,7 +73,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class Misc {
-	public static final String version="$RCSfile: Misc.java,v $ $Revision: 1.18 $ $Date: 2008-11-25 10:17:10 $";
+	public static final String version="$RCSfile: Misc.java,v $ $Revision: 1.19 $ $Date: 2008-12-08 13:06:58 $";
 	static Logger log = LogUtil.getLogger(Misc.class);
 	public static final int BUFFERSIZE=20000;
 	public static final String DEFAULT_INPUT_STREAM_ENCODING="UTF-8";
@@ -103,17 +107,7 @@ public class Misc {
 	*/
 	static public String createUUID() {
 		String user = System.getProperty("user.name");
-		InetAddress inetAddress = null;
-		String ipAddress = null;
-
-		try {
-			inetAddress = InetAddress.getLocalHost();
-			ipAddress = inetAddress.getHostAddress();
-		}
-
-		catch (UnknownHostException uhe) {
-			ipAddress = "127.0.0.1";
-		}
+		String ipAddress = getIPAddress();
 
 		StringBuffer s = new StringBuffer();
 
@@ -122,6 +116,45 @@ public class Misc {
 			Math.round(Math.random() * 1000000));
 
 		return s.toString();
+	}
+
+	static private String getIPAddress() {
+		InetAddress inetAddress = null;
+		String ipAddress = null;
+
+		try {
+			inetAddress = InetAddress.getLocalHost();
+			return inetAddress.getHostAddress();
+		}
+
+		catch (UnknownHostException uhe) {
+			return "127.0.0.1";
+		}
+	}
+
+	static public String createNumericUUID() {
+		String ipAddress = getIPAddress();
+		DecimalFormat df = new DecimalFormat("000");
+		String[] iaArray = ipAddress.split("[.]");
+		String ia1 = df.format(Integer.parseInt(iaArray[0]));
+		String ia2 = df.format(Integer.parseInt(iaArray[1]));
+		String ia3 = df.format(Integer.parseInt(iaArray[2]));
+		String ia4 = df.format(Integer.parseInt(iaArray[3]));
+		String ia = ia1 + ia2 + ia3 + ia4;
+
+		long hashL = Math.round(Math.random() * 1000000);
+		df = new DecimalFormat("000000");
+		String hash = df.format(hashL);
+
+		//Unique string is <ipaddress with length 4*3><currentTime with length 13><hashcode with length 6>
+		StringBuffer s = new StringBuffer();
+		s.append(ia).append(getCurrentTimeMillis()).append(hash);
+
+		return s.toString();
+	}
+
+	public static synchronized long getCurrentTimeMillis(){
+		return System.currentTimeMillis();
 	}
 
 	public static void fileToWriter(String filename, Writer writer) throws IOException {
