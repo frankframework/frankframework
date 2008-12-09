@@ -1,6 +1,9 @@
 /*
  * $Log: XmlWellFormedChecker.java,v $
- * Revision 1.2  2008-08-06 16:40:34  europe\L190409
+ * Revision 1.3  2008-12-09 12:47:00  m168309
+ * added forward parserError
+ *
+ * Revision 1.2  2008/08/06 16:40:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added support for flexible monitoring
  *
  * Revision 1.1  2006/02/06 12:42:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -11,6 +14,7 @@
 package nl.nn.adapterframework.pipes;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -24,7 +28,15 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setRoot(String) root}</td><td>name of the root element</td><td>&nbsp;</td></tr>
  * </table>
- * </p>
+ * </p><b>Exits:</b>
+ * <table border="1">
+ * <tr><th>state</th><th>condition</th></tr>
+ * <tr><td>"success"</td><td>default</td></tr>
+ * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified, the value for "success"</td></tr>
+ * <tr><td>"parserError"</td><td>a parser exception occurred, probably caused by non-well-formed XML. If not specified, "failure" is used in such a case</td></tr>
+ * <tr><td>"failure"</td><td>if a validation error occurred</td></tr>
+ * </table>
+ * <br>
  * @author  Peter Leeuwenburgh
  * @since	4.4.5
  * @version Id
@@ -47,7 +59,11 @@ public class XmlWellFormedChecker extends FixedForwardPipe {
 		}
 		else {
 			throwEvent(XmlValidator.XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT);
-			return new PipeRunResult(findForward("failure"), input);
+			PipeForward forward = findForward("parserError");
+			if (forward==null) {
+				forward = findForward("failure");
+			}
+			return new PipeRunResult(forward, input);
 		}
 	}
 
