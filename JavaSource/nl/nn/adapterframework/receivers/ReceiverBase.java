@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.71  2008-12-05 09:46:23  m168309
+ * Revision 1.72  2008-12-10 13:32:16  m168309
+ * bugfix - when resend message from errorLog and an error occurs, the record in errorLog is not updated
+ *
+ * Revision 1.71  2008/12/05 09:46:23  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * clarified transaction management logging
  *
  * Revision 1.70  2008/12/05 09:40:40  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -488,7 +491,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  */
 public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHandler, EventThrowing, IbisExceptionListener, HasSender, HasStatistics, TracingEventNumbers, IThreadCountControllable, BeanFactoryAware {
     
-	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.71 $ $Date: 2008-12-05 09:46:23 $";
+	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.72 $ $Date: 2008-12-10 13:32:16 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -1218,7 +1221,8 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		if (StringUtils.isEmpty(businessCorrelationId)) {
 			if (log.isDebugEnabled()) { log.debug(getLogPrefix()+"did not find businessCorrelationId, reverting to correlationId of transfer ["+technicalCorrelationId+"]"); } 
 			businessCorrelationId=messageId;
-		}       
+		}
+		threadContext.put(PipeLineSession.businessCorrelationIdKey, businessCorrelationId);       
 		if (checkTryCount(messageId, retry, rawMessage, message, threadContext, businessCorrelationId)) {
 			if (!isTransacted()) {
 				log.warn(getLogPrefix()+"received message with messageId [" + messageId + "] which is already stored in error storage or messagelog; aborting processing");
