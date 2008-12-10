@@ -1,6 +1,10 @@
 /*
  * $Log: JdbcQueryListener.java,v $
- * Revision 1.2  2008-06-19 08:10:55  europe\L190409
+ * Revision 1.3  2008-12-10 08:35:55  L190409
+ * improved locking and selection mechanism: now works in multiple threads. 
+ * improved disaster recovery: no more specific 'in process' status, rolls back to original state (where apropriate)
+ *
+ * Revision 1.2  2008/06/19 08:10:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * set default updateStatusToError-query to updateStatusToProcessed
  *
  * Revision 1.1  2008/02/28 16:22:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -74,10 +78,6 @@ public class JdbcQueryListener extends JdbcListener {
 
 	public void setUpdateStatusToErrorQuery(String string) {
 		super.setUpdateStatusToErrorQuery(string);
-	}
-
-	public void setUpdateStatusToInProcessQuery(String string) {
-		super.setUpdateStatusToInProcessQuery(string);
 	}
 
 	public void setUpdateStatusToProcessedQuery(String string) {

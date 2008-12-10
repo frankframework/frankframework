@@ -1,6 +1,10 @@
 /*
  * $Log: JdbcTableListener.java,v $
- * Revision 1.5  2008-02-28 16:21:30  europe\L190409
+ * Revision 1.6  2008-12-10 08:35:55  L190409
+ * improved locking and selection mechanism: now works in multiple threads. 
+ * improved disaster recovery: no more specific 'in process' status, rolls back to original state (where apropriate)
+ *
+ * Revision 1.5  2008/02/28 16:21:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.4  2007/10/02 09:17:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -38,7 +42,6 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setTimestampField(String) timestampField}</td>  <td>(optional) field used to store the date and time of the last change of the status field</td><td>&nbsp;</td></tr>
 
  * <tr><td>{@link #setStatusValueAvailable(String) statusValueAvailable}</td> <td>(optional) value of status field indicating row is available to be processed. If not specified, any row not having any of the other status values is considered available.</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setStatusValueInProcess(String) statusValueInProcess}</td> <td>value of status field indicating row is currently being processed</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setStatusValueProcessed(String) statusValueProcessed}</td> <td>value of status field indicating row is processed OK</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setStatusValueError(String) statusValueError}</td>         <td>value of status field indicating the processing of the row resulted in an error</td><td>&nbsp;</td></tr>
 
@@ -60,7 +63,6 @@ public class JdbcTableListener extends JdbcListener {
 	private String timestampField;
 	
 	private String statusValueAvailable;
-	private String statusValueInProcess;
 	private String statusValueProcessed;
 	private String statusValueError;
 	
@@ -81,25 +83,18 @@ public class JdbcTableListener extends JdbcListener {
 		if (StringUtils.isEmpty(getStatusValueError())) {
 			throw new ConfigurationException(getLogPrefix()+"must specifiy statusValueError");
 		}
-		if (StringUtils.isEmpty(getStatusValueInProcess())) {
-			throw new ConfigurationException(getLogPrefix()+"must specifiy statusValueInProcess");
-		}
 		if (StringUtils.isEmpty(getStatusValueProcessed())) {
 			throw new ConfigurationException(getLogPrefix()+"must specifiy statusValueProcessed");
 		}
-		setLockQuery("LOCK TABLE "+getTableName()+" IN EXCLUSIVE MODE NOWAIT");
-		//setUnlockQuery("UNLOCK TABLE "+getTableName());
 		setSelectQuery("SELECT "+getKeyField()+
 						(StringUtils.isNotEmpty(getMessageField())?","+getMessageField():"")+
 						" FROM "+getTableName()+
 						" WHERE "+getStatusField()+
 						(StringUtils.isNotEmpty(getStatusValueAvailable())?
 						 "='"+getStatusValueAvailable()+"'":
-						 " NOT IN ('"+getStatusValueError()+"','"+getStatusValueInProcess()+"','"+getStatusValueProcessed()+"')")+
-						 " AND ROWNUM=1"+
+						 " NOT IN ('"+getStatusValueError()+"','"+getStatusValueProcessed()+"')")+
 						 (StringUtils.isNotEmpty(getOrderField())?
 						 " ORDER BY "+getOrderField():""));
-		setUpdateStatusToInProcessQuery(getUpdateStatusQuery(getStatusValueInProcess()));	
 		setUpdateStatusToProcessedQuery(getUpdateStatusQuery(getStatusValueProcessed()));				 
 		setUpdateStatusToErrorQuery(getUpdateStatusQuery(getStatusValueError())); 
 	}
@@ -165,13 +160,6 @@ public class JdbcTableListener extends JdbcListener {
 	}
 	public String getStatusValueError() {
 		return statusValueError;
-	}
-
-	public void setStatusValueInProcess(String string) {
-		statusValueInProcess = string;
-	}
-	public String getStatusValueInProcess() {
-		return statusValueInProcess;
 	}
 
 	public void setStatusValueProcessed(String string) {

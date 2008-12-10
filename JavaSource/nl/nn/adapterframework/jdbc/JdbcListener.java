@@ -1,6 +1,10 @@
 /*
  * $Log: JdbcListener.java,v $
- * Revision 1.8  2008-02-28 16:22:27  europe\L190409
+ * Revision 1.9  2008-12-10 08:35:55  L190409
+ * improved locking and selection mechanism: now works in multiple threads. 
+ * improved disaster recovery: no more specific 'in process' status, rolls back to original state (where apropriate)
+ *
+ * Revision 1.8  2008/02/28 16:22:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * use PipeLineSession.setListenerParameters()
  *
  * Revision 1.7  2007/12/10 10:05:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -48,21 +52,16 @@ import org.apache.commons.lang.StringUtils;
 
 /**
  * JdbcListener base class.
+ * 
  * @author  Gerrit van Brakel
  * @since   4.7
  * @version Id
  */
 public class JdbcListener extends JdbcFacade implements IPullingListener {
 
-	public static final String KEY_FIELD_KEY="KeyField";
-	public static final String MESSAGE_FIELD_KEY="MessageField";
-
 	private String startLocalTransactionQuery;
 	private String commitLocalTransactionQuery;
-	private String lockQuery;
-	private String unlockQuery;
 	private String selectQuery;
-	private String updateStatusToInProcessQuery;
 	private String updateStatusToProcessedQuery;
 	private String updateStatusToErrorQuery;
 
@@ -150,26 +149,30 @@ public class JdbcListener extends JdbcFacade implements IPullingListener {
 			if (!inTransaction) {
 				execute(conn,getStartLocalTransactionQuery());
 			}
-			try {
-				execute(conn,getLockQuery());
-			} catch (Throwable t) {
-				throw new ListenerException(getLogPrefix()+"was not able to obtain lock",t);
-			}
+
+			/*
+			 * see:
+			 * http://www.psoug.org/reference/deadlocks.html
+			 * http://www.psoug.org/reference/select.html
+			 * http://www.ss64.com/ora/select.html
+			 * http://forums.oracle.com/forums/thread.jspa?threadID=664986
+			 */
+			String query=getSelectQuery()+" FOR UPDATE NOWAIT SKIP LOCKED";
 			try {
 				Statement stmt= null;
 				try {
-//					log.debug("creating statement for ["+getSelectQuery()+"]");
 					stmt = conn.createStatement();
+					stmt.setFetchSize(1);
 					ResultSet rs=null;
 					try {
-						if (trace && log.isDebugEnabled()) log.debug("executing query for ["+getSelectQuery()+"]");
-						rs = stmt.executeQuery(getSelectQuery());
+						if (trace && log.isDebugEnabled()) log.debug("executing query for ["+query+"]");
+						rs = stmt.executeQuery(query);
 						if (rs.isAfterLast() || !rs.next()) {
 							return null;
 						}
 						Object result;
 						String key=rs.getString(getKeyField());
-						//threadContext.put(KEY_FIELD_KEY,key);
+						
 						if (StringUtils.isNotEmpty(getMessageField())) {
 							String message=rs.getString(getMessageField());
 							// log.debug("building wrapper for key ["+key+"], message ["+message+"]");
@@ -177,31 +180,23 @@ public class JdbcListener extends JdbcFacade implements IPullingListener {
 							mw.setId(key);
 							mw.setText(message);
 							result=mw;
-							//threadContext.put(MESSAGE_FIELD_KEY,rs.getString(getMessageField()));
 						} else {
 							result = key;
 						}
-						execute(conn,getUpdateStatusToInProcessQuery(),key);
 						return result;
 					} finally {
 						if (rs!=null) {
-//							log.debug("closing resultset");
 							rs.close();
 						}
 					}
 						
 				} finally {
-					try {
-						if (stmt!=null) {
-//							log.debug("closing statement");
-							stmt.close();
-						}
-					} finally {
-						execute(conn,getUnlockQuery());
+					if (stmt!=null) {
+						stmt.close();
 					}
 				}
 			} catch (Exception e) {
-				throw new ListenerException(getLogPrefix() + "caught exception retrieving message", e);
+				throw new ListenerException(getLogPrefix() + "caught exception retrieving message using query ["+query+"]", e);
 			}
 		} finally {
 			if (!inTransaction) {
@@ -321,20 +316,6 @@ public class JdbcListener extends JdbcFacade implements IPullingListener {
 		}
 	}
 
-	protected void setLockQuery(String string) {
-		lockQuery = string;
-	}
-	public String getLockQuery() {
-		return lockQuery;
-	}
-
-	protected void setUnlockQuery(String string) {
-		unlockQuery = string;
-	}
-	public String getUnlockQuery() {
-		return unlockQuery;
-	}
-
 	protected void setSelectQuery(String string) {
 		selectQuery = string;
 	}
@@ -352,13 +333,6 @@ public class JdbcListener extends JdbcFacade implements IPullingListener {
 
 	protected void setUpdateStatusToProcessedQuery(String string) {
 		updateStatusToProcessedQuery = string;
-	}
-	public String getUpdateStatusToInProcessQuery() {
-		return updateStatusToInProcessQuery;
-	}
-
-	protected void setUpdateStatusToInProcessQuery(String string) {
-		updateStatusToInProcessQuery = string;
 	}
 	public String getUpdateStatusToProcessedQuery() {
 		return updateStatusToProcessedQuery;
