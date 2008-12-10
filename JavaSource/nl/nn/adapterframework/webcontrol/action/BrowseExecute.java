@@ -1,6 +1,9 @@
 /*
  * $Log: BrowseExecute.java,v $
- * Revision 1.12  2008-07-24 12:39:44  europe\L190409
+ * Revision 1.13  2008-12-10 17:05:50  L190409
+ * fixed bug in export selected messages; now a valid zip file is returned
+ *
+ * Revision 1.12  2008/07/24 12:39:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed unused code
  *
  * Revision 1.11  2008/06/26 12:51:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -77,11 +80,11 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  * @since   4.3
  */
 public class BrowseExecute extends Browse {
-	public static final String version="$RCSfile: BrowseExecute.java,v $ $Revision: 1.12 $ $Date: 2008-07-24 12:39:44 $";
+	public static final String version="$RCSfile: BrowseExecute.java,v $ $Revision: 1.13 $ $Date: 2008-12-10 17:05:50 $";
     
     protected static final TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
     
-	protected void performAction(Adapter adapter, ReceiverBase receiver, String action, IMessageBrowser mb, String messageId, String selected[], HttpServletResponse response) {
+	protected boolean performAction(Adapter adapter, ReceiverBase receiver, String action, IMessageBrowser mb, String messageId, String selected[], HttpServletResponse response) {
         PlatformTransactionManager transactionManager = ibisManager.getTransactionManager();
 		log.debug("retrieved transactionManager ["+ClassUtils.nameOf(transactionManager)+"]["+transactionManager+"] from ibismanager ["+ibisManager+"]");
 
@@ -143,6 +146,9 @@ public class BrowseExecute extends Browse {
 						} else {
 							log.debug("id ["+id+"] msg ["+msg+"]");
 						}
+						if (StringUtils.isEmpty(id)) {
+							id=""+i; 
+						}
 						String filename="msg_"+id.replace(':','-')+".txt";
 						ZipEntry zipEntry=new ZipEntry(filename);
 						//zipEntry.setTime();
@@ -169,12 +175,14 @@ public class BrowseExecute extends Browse {
 					zipOutputStream.closeEntry();
 				}
 				zipOutputStream.close();
+				return true;
 			}
 
  
 		} catch (Throwable e) {
 			error(", ", "errors.generic", "Error occurred performing action [" + action + "]", e);
 		}
+		return false;
 	}
 
 	private void deleteMessage(IMessageBrowser mb, String messageId, PlatformTransactionManager transactionManager) throws Throwable {

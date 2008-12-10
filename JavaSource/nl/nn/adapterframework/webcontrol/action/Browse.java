@@ -1,6 +1,9 @@
 /*
  * $Log: Browse.java,v $
- * Revision 1.13  2008-11-06 10:23:14  europe\m168309
+ * Revision 1.14  2008-12-10 17:05:50  L190409
+ * fixed bug in export selected messages; now a valid zip file is returned
+ *
+ * Revision 1.13  2008/11/06 10:23:14  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * *** empty log message ***
  *
  * Revision 1.12  2008/08/12 16:04:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -47,6 +50,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -80,13 +84,16 @@ import org.apache.struts.action.DynaActionForm;
  * @since   4.4
  */
 public class Browse extends ActionBase {
-	public static final String version="$RCSfile: Browse.java,v $ $Revision: 1.13 $ $Date: 2008-11-06 10:23:14 $";
+	public static final String version="$RCSfile: Browse.java,v $ $Revision: 1.14 $ $Date: 2008-12-10 17:05:50 $";
 
 	private int maxMessages = AppConstants.getInstance().getInt("browse.messages.max",0); 
 	private int skipMessages=0;
 	
-	protected void performAction(Adapter adapter, ReceiverBase receiver, String action, IMessageBrowser mb, String messageId, String selected[], HttpServletResponse response) {
+	
+	// if performAction returns true, no forward should be returned
+	protected boolean performAction(Adapter adapter, ReceiverBase receiver, String action, IMessageBrowser mb, String messageId, String selected[], HttpServletResponse response) {
 		log.debug("performing action ["+action+"]");
+		return false;
 	}
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
@@ -174,7 +181,8 @@ public class Browse extends ActionBase {
 		} else {
 			ReceiverBase receiver = (ReceiverBase) adapter.getReceiverByName(receiverName);
 			mb = receiver.getErrorStorage();
-			performAction(adapter, receiver, action, mb, messageId, selected, response);
+			if (performAction(adapter, receiver, action, mb, messageId, selected, response))
+				return null;
 			listener = receiver.getListener();
 		}
 
@@ -250,7 +258,7 @@ public class Browse extends ActionBase {
 							Object rawmsg = mb.browseMessage(cId);
 							String msg=null;
 							if (listener!=null) {
-								msg = listener.getStringFromRawMessage(rawmsg,null);
+								msg = listener.getStringFromRawMessage(rawmsg,new HashMap());
 							} else {
 								msg=(String)rawmsg;
 							}
