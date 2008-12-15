@@ -1,6 +1,9 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.54  2008-11-25 10:16:09  m168309
+ * Revision 1.55  2008-12-15 12:20:48  m168309
+ * added skipDocTypeDeclaration
+ *
+ * Revision 1.54  2008/11/25 10:16:09  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added removeNamespaces
  *
  * Revision 1.53  2008/10/24 14:42:05  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -231,7 +234,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * @version Id
  */
 public class XmlUtils {
-	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.54 $ $Date: 2008-11-25 10:16:09 $";
+	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.55 $ $Date: 2008-12-15 12:20:48 $";
 	static Logger log = LogUtil.getLogger(XmlUtils.class);
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
@@ -484,6 +487,25 @@ public class XmlUtils {
 	public static String skipXmlDeclaration(String xmlString) {
 		if (xmlString!=null && xmlString.startsWith("<?xml")) {
 			int endPos = xmlString.indexOf("?>")+2;
+			if (endPos>0) {
+				try {
+					while (Character.isWhitespace(xmlString.charAt(endPos))) {
+						endPos++;
+					} 
+				} catch (IndexOutOfBoundsException e) {
+					// silently ignore...
+				}
+				return xmlString.substring(endPos);
+			} else {
+				throw new IllegalArgumentException("no valid xml declaration in string ["+xmlString+"]");
+			}
+		}
+		return xmlString;
+	}
+
+	public static String skipDocTypeDeclaration(String xmlString) {
+		if (xmlString!=null && xmlString.startsWith("<!DOCTYPE")) {
+			int endPos = xmlString.indexOf(">")+2;
 			if (endPos>0) {
 				try {
 					while (Character.isWhitespace(xmlString.charAt(endPos))) {
