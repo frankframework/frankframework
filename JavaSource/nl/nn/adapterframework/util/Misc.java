@@ -1,6 +1,9 @@
 /*
  * $Log: Misc.java,v $
- * Revision 1.19  2008-12-08 13:06:58  m168309
+ * Revision 1.20  2008-12-15 09:39:45  m168309
+ * getDeployedApplicationBindings: replaced property WAS_HOMES by user.install.root
+ *
+ * Revision 1.19  2008/12/08 13:06:58  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added createNumericUUID
  *
  * Revision 1.18  2008/11/25 10:17:10  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -73,7 +76,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class Misc {
-	public static final String version="$RCSfile: Misc.java,v $ $Revision: 1.19 $ $Date: 2008-12-08 13:06:58 $";
+	public static final String version="$RCSfile: Misc.java,v $ $Revision: 1.20 $ $Date: 2008-12-15 09:39:45 $";
 	static Logger log = LogUtil.getLogger(Misc.class);
 	public static final int BUFFERSIZE=20000;
 	public static final String DEFAULT_INPUT_STREAM_ENCODING="UTF-8";
@@ -507,7 +510,8 @@ public class Misc {
 
 	public static String getDeployedApplicationBindings(String appName) throws IOException {
 		String appBndPath =
-			"${WAS_HOME}"
+//			"${WAS_HOME}"
+			"${user.install.root}"
 				+ File.separator
 				+ "config"
 				+ File.separator
@@ -527,7 +531,9 @@ public class Misc {
 				+ "META-INF"
 				+ File.separator
 				+ "ibm-application-bnd.xmi";
-		String appBndFile = StringResolver.substVars(appBndPath, Misc.getEnvironmentVariables());
+		Properties props = Misc.getEnvironmentVariables();
+		props.putAll(System.getProperties());
+		String appBndFile = StringResolver.substVars(appBndPath, props);
 		log.debug("deployedApplicationBindingsFile [" + appBndFile + "]");
 		return fileToString(appBndFile);
 	}
