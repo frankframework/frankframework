@@ -1,6 +1,9 @@
 /*
  * $Log: Misc.java,v $
- * Revision 1.20  2008-12-15 09:39:45  m168309
+ * Revision 1.21  2008-12-15 12:21:06  m168309
+ * added getApplicationDeploymentDescriptor
+ *
+ * Revision 1.20  2008/12/15 09:39:45  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * getDeployedApplicationBindings: replaced property WAS_HOMES by user.install.root
  *
  * Revision 1.19  2008/12/08 13:06:58  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -76,7 +79,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class Misc {
-	public static final String version="$RCSfile: Misc.java,v $ $Revision: 1.20 $ $Date: 2008-12-15 09:39:45 $";
+	public static final String version="$RCSfile: Misc.java,v $ $Revision: 1.21 $ $Date: 2008-12-15 12:21:06 $";
 	static Logger log = LogUtil.getLogger(Misc.class);
 	public static final int BUFFERSIZE=20000;
 	public static final String DEFAULT_INPUT_STREAM_ENCODING="UTF-8";
@@ -509,7 +512,16 @@ public class Misc {
 	}
 
 	public static String getDeployedApplicationBindings(String appName) throws IOException {
-		String appBndPath =
+		String appBndFile =
+		getApplicationDeploymentDescriptorPath(appName)
+				+ File.separator
+				+ "ibm-application-bnd.xmi";
+		log.debug("deployedApplicationBindingsFile [" + appBndFile + "]");
+		return fileToString(appBndFile);
+	}
+
+	public static String getApplicationDeploymentDescriptorPath(String appName) throws IOException {
+		String appPath =
 //			"${WAS_HOME}"
 			"${user.install.root}"
 				+ File.separator
@@ -528,13 +540,19 @@ public class Misc {
 				+ File.separator
 				+ appName
 				+ File.separator
-				+ "META-INF"
-				+ File.separator
-				+ "ibm-application-bnd.xmi";
+				+ "META-INF";
 		Properties props = Misc.getEnvironmentVariables();
 		props.putAll(System.getProperties());
-		String appBndFile = StringResolver.substVars(appBndPath, props);
-		log.debug("deployedApplicationBindingsFile [" + appBndFile + "]");
-		return fileToString(appBndFile);
+		String resolvedAppPath = StringResolver.substVars(appPath, props);
+		return resolvedAppPath;
+	}
+
+	public static String getApplicationDeploymentDescriptor (String appName) throws IOException {
+		String appFile =
+			getApplicationDeploymentDescriptorPath(appName)
+				+ File.separator
+				+ "application.xml";
+		log.debug("applicationDeploymentDescriptor [" + appFile + "]");
+		return fileToString(appFile);
 	}
 }
