@@ -1,6 +1,9 @@
 /*
  * $Log: ShowSecurityItems.java,v $
- * Revision 1.1  2008-11-25 10:14:45  m168309
+ * Revision 1.2  2008-12-15 12:23:35  m168309
+ * improved Security Role Bindings
+ *
+ * Revision 1.1  2008/11/25 10:14:45  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * ShowUsedCertificates renamed to ShowSecurityItems
  *
  * Revision 1.2  2008/10/31 10:56:34  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -58,7 +61,7 @@ import org.apache.struts.action.ActionMapping;
  */
 
 public final class ShowSecurityItems extends ActionBase {
-	public static final String version = "$RCSfile: ShowSecurityItems.java,v $ $Revision: 1.1 $ $Date: 2008-11-25 10:14:45 $";
+	public static final String version = "$RCSfile: ShowSecurityItems.java,v $ $Revision: 1.2 $ $Date: 2008-12-15 12:23:35 $";
 
 	protected void addCertificateInfo(XmlBuilder certElem, final URL url, final String password, String keyStoreType, String prefix) {
 		try {
@@ -239,6 +242,20 @@ public final class ShowSecurityItems extends ActionBase {
 		}
 
 		String appName = Misc.getDeployedApplicationName();
+		XmlBuilder appDD = new XmlBuilder("applicationDeploymentDescriptor");
+		if (appName!=null) {
+			appDD.addAttribute("appName", appName);
+			String appDDString = null;
+			try {
+				appDDString = Misc.getApplicationDeploymentDescriptor(appName);
+				appDDString = XmlUtils.skipXmlDeclaration(appDDString);
+				appDDString = XmlUtils.skipDocTypeDeclaration(appDDString);
+			} catch (IOException e) {
+				appDDString = "*** ERROR ***";
+			}
+			appDD.setValue(appDDString, false);
+			securityItems.addSubElement(appDD);
+		}
 		XmlBuilder appBnd = new XmlBuilder("securityRoleBindings");
 		if (appName!=null) {
 			appBnd.addAttribute("appName", appName);
