@@ -1,6 +1,9 @@
 /*
  * $Log: TestPipeLineExecute.java,v $
- * Revision 1.11  2008-07-24 12:41:09  europe\L190409
+ * Revision 1.12  2008-12-16 13:37:50  L190409
+ * read messages in the right encoding
+ *
+ * Revision 1.11  2008/07/24 12:41:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * do not execute when cancelled
  *
  * Revision 1.10  2008/05/22 07:45:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -35,6 +38,7 @@ import javax.servlet.http.HttpServletResponse;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.struts.action.ActionForm;
@@ -53,7 +57,7 @@ import org.apache.struts.upload.FormFile;
  * @version Id
  */
 public final class TestPipeLineExecute extends ActionBase {
-	public static final String version="$RCSfile: TestPipeLineExecute.java,v $  $Revision: 1.11 $ $Date: 2008-07-24 12:41:09 $";
+	public static final String version="$RCSfile: TestPipeLineExecute.java,v $  $Revision: 1.12 $ $Date: 2008-12-16 13:37:50 $";
 	
 	public ActionForward execute(
 	    ActionMapping mapping,
@@ -133,7 +137,7 @@ public final class TestPipeLineExecute extends ActionBase {
 							}
 							rb+=chunk;
 						}
-						String currentMessage = new String(b,0,rb);
+						String currentMessage = XmlUtils.readXml(b,0,rb,request.getCharacterEncoding(),false);
 						PipeLineResult pipeLineResult =
 							adapter.processMessage(name+"_" + Misc.createSimpleUUID(), currentMessage);
 						form_resultText += name + ":" + pipeLineResult.getState() + "\n";
@@ -143,8 +147,10 @@ public final class TestPipeLineExecute extends ActionBase {
 	    		}
 	    		archive.close();
 	    	} else {
-				form_message = new String(form_file.getFileData());
+				form_message = XmlUtils.readXml(form_file.getFileData(),request.getCharacterEncoding(),false);
 	    	}
+	    } else {
+			form_message=new String(form_message.getBytes(),Misc.DEFAULT_INPUT_STREAM_ENCODING);
 	    }
 	
 		if(form_message != null && form_message.length() > 0) {

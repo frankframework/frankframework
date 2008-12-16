@@ -1,6 +1,9 @@
 /*
  * $Log: SendJmsMessageExecute.java,v $
- * Revision 1.6  2008-05-22 07:41:15  europe\L190409
+ * Revision 1.7  2008-12-16 13:37:50  L190409
+ * read messages in the right encoding
+ *
+ * Revision 1.6  2008/05/22 07:41:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * use inherited error() method
  *
  * Revision 1.5  2007/10/08 13:41:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -29,6 +32,7 @@ import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StringTagger;
+import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
@@ -44,7 +48,7 @@ import org.apache.struts.upload.FormFile;
  * @author  Johan Verrips
  */
 public final class SendJmsMessageExecute extends ActionBase {
-	public static final String version = "$RCSfile: SendJmsMessageExecute.java,v $ $Revision: 1.6 $ $Date: 2008-05-22 07:41:15 $";
+	public static final String version = "$RCSfile: SendJmsMessageExecute.java,v $ $Revision: 1.7 $ $Date: 2008-12-16 13:37:50 $";
 	
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 	
@@ -79,9 +83,11 @@ public final class SendJmsMessageExecute extends ActionBase {
 	
 	
 		if ((form_file!=null) && (form_file.getFileSize()>0)){
-			form_message=new String(form_file.getFileData());
+			form_message=XmlUtils.readXml(form_file.getFileData(),request.getCharacterEncoding(),false);
 			log.debug("Upload of file ["+form_file.getFileName()+"] ContentType["+form_file.getContentType()+"]");
 	
+		} else {
+			form_message=new String(form_message.getBytes(),Misc.DEFAULT_INPUT_STREAM_ENCODING);
 		}
 	    // initiate MessageSender
 	    JmsSender qms = new JmsSender();

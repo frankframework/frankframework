@@ -1,6 +1,9 @@
 /*
  * $Log: TestIfsaServiceExecute.java,v $
- * Revision 1.7  2008-05-22 07:44:07  europe\L190409
+ * Revision 1.8  2008-12-16 13:37:50  L190409
+ * read messages in the right encoding
+ *
+ * Revision 1.7  2008/05/22 07:44:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * use inherited error() method
  *
  * Revision 1.6  2007/10/08 13:41:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -38,6 +41,7 @@ import nl.nn.adapterframework.extensions.ifsa.IfsaRequesterSender;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StringTagger;
+import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
@@ -54,7 +58,7 @@ import org.apache.struts.upload.FormFile;
  * @version Id
  */
 public final class TestIfsaServiceExecute extends ActionBase {
-	public static final String version = "$RCSfile: TestIfsaServiceExecute.java,v $ $Revision: 1.7 $ $Date: 2008-05-22 07:44:07 $";
+	public static final String version = "$RCSfile: TestIfsaServiceExecute.java,v $ $Revision: 1.8 $ $Date: 2008-12-16 13:37:50 $";
 	
 	public ActionForward execute(
 	    ActionMapping mapping,
@@ -89,9 +93,10 @@ public final class TestIfsaServiceExecute extends ActionBase {
 	
 	
 		if ((form_file!=null) && (form_file.getFileSize()>0)){
-			form_message=new String(form_file.getFileData());
+			form_message=XmlUtils.readXml(form_file.getFileData(),request.getCharacterEncoding(),false);
 			log.debug("Upload of file ["+form_file.getFileName()+"] ContentType["+form_file.getContentType()+"]");
-	
+		} else {
+			form_message=new String(form_message.getBytes(),Misc.DEFAULT_INPUT_STREAM_ENCODING);
 		}
 	
 		IfsaRequesterSender sender;
