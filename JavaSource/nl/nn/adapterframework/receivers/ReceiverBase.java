@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.72  2008-12-10 13:32:16  m168309
+ * Revision 1.73  2008-12-16 15:03:44  L190409
+ * support for transactionAttribute
+ *
+ * Revision 1.72  2008/12/10 13:32:16  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * bugfix - when resend message from errorLog and an error occurs, the record in errorLog is not updated
  *
  * Revision 1.71  2008/12/05 09:46:23  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -362,7 +365,6 @@ import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.HasSender;
 import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.core.IbisTransaction;
 import nl.nn.adapterframework.core.IBulkDataListener;
 import nl.nn.adapterframework.core.IKnowsDeliveryCount;
 import nl.nn.adapterframework.core.IListener;
@@ -377,6 +379,7 @@ import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.IThreadCountControllable;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.IbisExceptionListener;
+import nl.nn.adapterframework.core.IbisTransaction;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -387,14 +390,16 @@ import nl.nn.adapterframework.monitoring.EventHandler;
 import nl.nn.adapterframework.monitoring.EventThrowing;
 import nl.nn.adapterframework.monitoring.MonitorManager;
 import nl.nn.adapterframework.util.Counter;
+import nl.nn.adapterframework.util.CounterStatistic;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.HasStatistics;
+import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.RunStateEnquiring;
 import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.RunStateManager;
-import nl.nn.adapterframework.util.CounterStatistic;
+import nl.nn.adapterframework.util.SpringTxManagerProxy;
 import nl.nn.adapterframework.util.StatisticsKeeper;
 import nl.nn.adapterframework.util.StatisticsKeeperIterationHandler;
 import nl.nn.adapterframework.util.TracingEventNumbers;
@@ -410,11 +415,10 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 /**
  * This {@link IReceiver Receiver} may be used as a base-class for developing receivers.
@@ -429,9 +433,24 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  * <tr><td>{@link #setNumThreadsPolling(int) numThreadsPolling}</td><td>the number of threads that are activily polling for messages concurrently. '0' means 'limited only by <code>numThreads</code>' (only for pulling listeners)</td><td>1</td></tr>
  * <tr><td>{@link #setOnError(String) onError}</td><td>one of 'continue' or 'close'. Controls the behaviour of the receiver when it encounters an error sending a reply or receives an exception asynchronously</td><td>continue</td></tr>
  * <tr><td>{@link #setReturnedSessionKeys(String) returnedSessionKeys}</td><td>comma separated list of keys of session variables that should be returned to caller, for correct results as well as for erronous results. (Only for listeners that support it, like JavaListener)</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setTransacted(boolean) transacted}</td><td>if set to <code>true</code>, messages will be received and processed under transaction control. If processing fails, messages will be sent to the error-sender. (see below)</code></td><td><code>false</code></td></tr>
+ * <tr><td>{@link #setTransacted(boolean) transacted} <i>deprecated</i></td><td>if set to <code>true</code>, messages will be received and processed under transaction control. If processing fails, messages will be sent to the error-sender. (see below)</code></td><td><code>false</code></td></tr>
+ * <tr><td>{@link #setTransactionAttribute(String) transactionAttribute}</td><td>Defines transaction and isolation behaviour. Equal to <A href="http://java.sun.com/j2ee/sdk_1.2.1/techdocs/guides/ejb/html/Transaction2.html#10494">EJB transaction attribute</a>. Possible values are: 
+ *   <table border="1">
+ *   <tr><th>transactionAttribute</th><th>callers Transaction</th><th>Pipeline excecuted in Transaction</th></tr>
+ *   <tr><td colspan="1" rowspan="2">Required</td>    <td>none</td><td>T2</td></tr>
+ * 											      <tr><td>T1</td>  <td>T1</td></tr>
+ *   <tr><td colspan="1" rowspan="2">RequiresNew</td> <td>none</td><td>T2</td></tr>
+ * 											      <tr><td>T1</td>  <td>T2</td></tr>
+ *   <tr><td colspan="1" rowspan="2">Mandatory</td>   <td>none</td><td>error</td></tr>
+ * 											      <tr><td>T1</td>  <td>T1</td></tr>
+ *   <tr><td colspan="1" rowspan="2">NotSupported</td><td>none</td><td>none</td></tr>
+ * 											      <tr><td>T1</td>  <td>none</td></tr>
+ *   <tr><td colspan="1" rowspan="2">Supports</td>    <td>none</td><td>none</td></tr>
+ * 											      <tr><td>T1</td>  <td>T1</td></tr>
+ *   <tr><td colspan="1" rowspan="2">Never</td>       <td>none</td><td>none</td></tr>
+ * 											      <tr><td>T1</td>  <td>error</td></tr>
+ *  </table></td><td>Supports</td></tr>
  * <tr><td>{@link #setTransactionTimeout(int) transactionTimeout}</td><td>Timeout (in seconds) of transaction started to receive and process a message.</td><td><code>0</code> (use system default)</code></td></tr>
- * <tr><td>{@link #setExecuteWithinClientTransaction(boolean) executeWithinClientTransaction}</td><td>if set to <code>true</code> and the client is running within a transaction, the receiver executes within the client's transaction; otherwise a new transaction is started (transacted=true) or the client's transaction will be suspended(transacted=false)</td><td><code>true</code></td></tr>
  * <tr><td>{@link #setMaxRetries(int) maxRetries}</td><td>The number of times a processing attempt is retried after an exception is caught or rollback is experienced</td><td>1</td></tr>
  * <tr><td>{@link #setCheckForDuplicates(boolean) checkForDuplicates}</td><td>if set to <code>true</code>, each message is checked for presence in the message log. If already present, it is not processed again. (only required for non XA compatible messaging). Requires messagelog!</code></td><td><code>false</code></td></tr>
  * <tr><td>{@link #setPollInterval(int) pollInterval}</td><td>The number of seconds waited after an unsuccesful poll attempt before another poll attempt is made. (only for polling listeners, not for e.g. IFSA, JMS, WebService or JavaListeners)</td><td>10</td></tr>
@@ -440,6 +459,16 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  * <tr><td>{@link #setAfterEvent(int) afterEvent}</td>        <td>METT eventnumber, fired just after message processing by this Receiver is finished</td><td>-1 (disabled)</td></tr>
  * <tr><td>{@link #setExceptionEvent(int) exceptionEvent}</td><td>METT eventnumber, fired when message processing by this Receiver resulted in an exception</td><td>-1 (disabled)</td></tr>
  * <tr><td>{@link #setCorrelationIDXPath(String) correlationIDXPath}</td><td>xpath expression to extract correlationID from message</td><td>&nbsp;</td></tr>
+ * </table>
+ * </p>
+ * <p>
+ * THE FOLLOWING TO BE UPDATED, attribute 'transacted' replaced by 'transactionAttribute'. 
+ * <table border="1">
+ * <tr><th>{@link #setTransactionAttribute(String) transactionAttribute}</th><th>{@link #setTransacted(boolean) transacted}</th></tr>
+ * <tr><td>Required</td><td>true</td></tr>
+ * <tr><td>RequiresNew</td><td>true</td></tr>
+ * <tr><td>Mandatory</td><td>true</td></tr>
+ * <tr><td>otherwise</td><td>false</td></tr>
  * </table>
  * </p>
  * <p>
@@ -491,14 +520,11 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  */
 public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHandler, EventThrowing, IbisExceptionListener, HasSender, HasStatistics, TracingEventNumbers, IThreadCountControllable, BeanFactoryAware {
     
-	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.72 $ $Date: 2008-12-10 13:32:16 $";
+	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.73 $ $Date: 2008-12-16 15:03:44 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
 	public final static TransactionDefinition TXREQUIRED = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED);
-	public final static TransactionDefinition TXREQUIRESNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
-	public final static TransactionDefinition TXSUPPORTS = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_SUPPORTS);
-	public final static TransactionDefinition TXNOTSUPPORTED = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_NOT_SUPPORTED);
 
 	public static final String RCV_CONFIGURED_MONITOR_EVENT = "Receiver Configured";
 	public static final String RCV_CONFIGURATIONEXCEPTION_MONITOR_EVENT = "Exception Configuring Receiver";
@@ -526,7 +552,6 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 
 	private boolean active=true;
 	private int transactionTimeout=0;
-	private boolean executeWithinClientTransaction=true;
 
 	private String name;
 	private String onError = ONERROR_CONTINUE; 
@@ -568,7 +593,8 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	
 	private int maxRetries=1;
     
-	private boolean transacted=false;
+	//private boolean transacted=false;
+	private int transactionAttribute=TransactionDefinition.PROPAGATION_SUPPORTS;
 
 	private TransformerPool correlationIDTp=null;
  
@@ -644,21 +670,6 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 			}
 		}
 		return pipelineSession;
-	}
-	private TransactionDefinition getTransactionDefinitionForProcessing() {
-		if (isTransacted()) {
-			if (isExecuteWithinClientTransaction()) {
-				return TXREQUIRED;
-			} else {
-				return TXREQUIRESNEW;
-			}
-		} else {
-			if (isExecuteWithinClientTransaction()) {
-				return TXSUPPORTS;
-			} else {
-				return TXNOTSUPPORTED;
-			}
-		}
 	}
 
 	private void putSessionKeysIntoThreadContext(Map threadContext, PipeLineSession pipelineSession) {
@@ -917,7 +928,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 //				}
 				
 				if (errorSender==null && errorStorage==null) {
-					warn(getLogPrefix()+"sets transacted=true, but has no errorSender or errorStorage. Messages processed with errors will be lost");
+					warn(getLogPrefix()+"sets transactionAttribute=" + getTransactionAttribute() + ", but has no errorSender or errorStorage. Messages processed with errors will be lost");
 				} else {
 //					if (errorSender!=null && !(errorSender instanceof IXAEnabled && ((IXAEnabled)errorSender).isTransacted())) {
 //						warn(getLogPrefix()+"sets transacted=true, but errorSender is not. Transactional integrity is not guaranteed"); 
@@ -1233,7 +1244,8 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 			numRetried.increase();
 		}
 
-		TransactionDefinition txDef = getTransactionDefinitionForProcessing();
+		int txOption = this.getTransactionAttributeNum();
+		TransactionDefinition txDef = SpringTxManagerProxy.getTransactionDefinition(txOption,getTransactionTimeout());
 		//TransactionStatus txStatus = txManager.getTransaction(txDef);
 		IbisTransaction itx = new IbisTransaction(txManager, txDef, "receiver [" + getName() + "]");
 		TransactionStatus txStatus = itx.getStatus();
@@ -1933,17 +1945,38 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	 * Controls the use of XA-transactions.
 	 */
 	public void setTransacted(boolean transacted) {
-		this.transacted = transacted;
+//		this.transacted = transacted;
+		if (transacted) {
+			log.warn("implementing setting of transacted=true as transactionAttribute=Required");
+			setTransactionAttributeNum(TransactionDefinition.PROPAGATION_REQUIRED);
+		} else {
+			log.warn("implementing setting of transacted=false as transactionAttribute=Supports");
+			setTransactionAttributeNum(TransactionDefinition.PROPAGATION_SUPPORTS);
+		}
 	}
 	public boolean isTransacted() {
-		return transacted;
+//		return transacted;
+		int txAtt = getTransactionAttributeNum();
+		return  txAtt==TransactionDefinition.PROPAGATION_REQUIRED || 
+				txAtt==TransactionDefinition.PROPAGATION_REQUIRES_NEW ||
+				txAtt==TransactionDefinition.PROPAGATION_MANDATORY;
 	}
 
-	public void setExecuteWithinClientTransaction(boolean executeWithinClientTransaction) {
-		this.executeWithinClientTransaction = executeWithinClientTransaction;
+	public void setTransactionAttribute(String attribute) throws ConfigurationException {
+		transactionAttribute = JtaUtil.getTransactionAttributeNum(attribute);
+		if (transactionAttribute<0) {
+			throw new ConfigurationException("illegal value for transactionAttribute ["+attribute+"]");
+		}
 	}
-	public boolean isExecuteWithinClientTransaction() {
-		return executeWithinClientTransaction;
+	public String getTransactionAttribute() {
+		return JtaUtil.getTransactionAttributeString(transactionAttribute);
+	}
+	
+	public void setTransactionAttributeNum(int i) {
+		transactionAttribute = i;
+	}
+	public int getTransactionAttributeNum() {
+		return transactionAttribute;
 	}
 
 	public void setOnError(String newOnError) {
@@ -1956,7 +1989,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	public boolean isOnErrorContinue() {
 		return ONERROR_CONTINUE.equalsIgnoreCase(getOnError());
 	}
-	protected IAdapter getAdapter() {
+	public IAdapter getAdapter() {
 		return adapter;
 	}
 
