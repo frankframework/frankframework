@@ -1,6 +1,10 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.55  2008-12-15 12:20:48  m168309
+ * Revision 1.56  2008-12-16 13:33:05  L190409
+ * added readXml(), to read a Xml message using the right character encoding
+ * added assertValidToSchema: a schema validation utility function
+ *
+ * Revision 1.55  2008/12/15 12:20:48  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added skipDocTypeDeclaration
  *
  * Revision 1.54  2008/11/25 10:16:09  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -184,9 +188,9 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Iterator;
@@ -210,6 +214,8 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
+import nl.nn.adapterframework.core.ListenerException;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
 import org.apache.commons.lang.exception.NestableException;
@@ -220,8 +226,11 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 import org.xml.sax.ContentHandler;
+import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
@@ -234,7 +243,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * @version Id
  */
 public class XmlUtils {
-	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.55 $ $Date: 2008-12-15 12:20:48 $";
+	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.56 $ $Date: 2008-12-16 13:33:05 $";
 	static Logger log = LogUtil.getLogger(XmlUtils.class);
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
@@ -521,6 +530,60 @@ public class XmlUtils {
 		}
 		return xmlString;
 	}
+
+	public static String readXml(byte[] source, String defaultEncoding, boolean skipDeclaration) throws UnsupportedEncodingException {
+		return readXml(source, 0, source.length, defaultEncoding, skipDeclaration);
+	}
+
+	public static String readXml(byte[] source, int offset, int length, String defaultEncoding, boolean skipDeclaration) throws UnsupportedEncodingException {
+		String charset;
+		
+		charset=defaultEncoding;
+		if (StringUtils.isEmpty(charset)) {
+			charset=Misc.DEFAULT_INPUT_STREAM_ENCODING;
+		}
+		
+		String firstPart = new String(source,offset,length<100?length:100,charset);
+		if (StringUtils.isEmpty(firstPart)) {
+			return null;
+		}
+		if (firstPart.startsWith("<?xml")) {
+			int endPos = firstPart.indexOf("?>")+2;
+			if (endPos>0) {
+				String declaration=firstPart.substring(6,endPos-2);
+				log.debug("parsed declaration ["+declaration+"]");			
+				final String encodingTarget= "encoding=\"";
+				int encodingStart=declaration.indexOf(encodingTarget);
+				if (encodingStart>0) {
+					encodingStart+=encodingTarget.length();
+					log.debug("encoding-declaration ["+declaration.substring(encodingStart)+"]");			
+					int encodingEnd=declaration.indexOf("\"",encodingStart);
+					if (encodingEnd>0) {
+						charset=declaration.substring(encodingStart,encodingEnd);
+						log.debug("parsed charset ["+charset+"]");			
+					} else {
+						log.warn("no end in encoding attribute in declaration ["+declaration+"]"); 
+					}					
+				} else {
+					log.warn("no encoding attribute in declaration ["+declaration+"]"); 
+				} 
+				if (skipDeclaration) {
+					try {
+						while (Character.isWhitespace(firstPart.charAt(endPos))) {
+							endPos++;
+						} 
+					} catch (IndexOutOfBoundsException e) {
+						// silently ignore...
+					}
+					return new String(source,offset+endPos,length-endPos,charset);
+				}
+			} else {
+				throw new IllegalArgumentException("no valid xml declaration in string ["+firstPart+"]");
+			}
+		}
+		return new String(source,offset,length,charset);
+	}
+
 
 	public static String createXPathEvaluatorSource(String XPathExpression)
 		throws TransformerConfigurationException {
@@ -1217,6 +1280,160 @@ public class XmlUtils {
 		}
 
 		return true;
+	}
+
+	public static void assertValidToSchema(String srcText, String schemaResource, boolean namespaceAware, String root) throws ListenerException {
+		Variant in = new Variant(srcText);
+		InputSource is = in.asXmlInputSource();
+		URL url = ClassUtils.getResourceURL(schemaResource);
+		if (url == null) {
+			throw new ListenerException("cannot retrieve schema [" + schemaResource + "]");
+		}
+		assertValidToSchema(is,url,namespaceAware,root);
+	}
+
+
+	public static class XmlErrorHandler implements ErrorHandler {
+		private boolean errorOccured = false;
+		private String reasons;
+		private XMLReader parser;
+		private XmlBuilder xmlReasons = new XmlBuilder("reasons");
+
+		public XmlErrorHandler(XMLReader parser) {
+			this.parser = parser;
+		}
+
+		public void addReason(String message, String location) {
+			try {
+				ContentHandler ch = parser.getContentHandler();
+				if (ch!=null && ch instanceof XmlFindingHandler) {
+					XmlFindingHandler xfh = (XmlFindingHandler)ch;
+
+					XmlBuilder reason = new XmlBuilder("reason");
+					XmlBuilder detail;
+					
+					detail = new XmlBuilder("message");;
+					detail.setCdataValue(message);
+					reason.addSubElement(detail);
+
+					detail = new XmlBuilder("elementName");;
+					detail.setValue(xfh.getElementName());
+					reason.addSubElement(detail);
+
+					detail = new XmlBuilder("xpath");;
+					detail.setValue(xfh.getXpath());
+					reason.addSubElement(detail);
+					
+					xmlReasons.addSubElement(reason);	
+				}
+			} catch (Throwable t) {
+				log.error("Exception handling errors",t);
+				
+				XmlBuilder reason = new XmlBuilder("reason");
+				XmlBuilder detail;
+					
+				detail = new XmlBuilder("message");;
+				detail.setCdataValue(t.getMessage());
+				reason.addSubElement(detail);
+
+				xmlReasons.addSubElement(reason);	
+			}
+
+			if (StringUtils.isNotEmpty(location)) {
+				message = location + ": " + message;
+			}
+			errorOccured = true;
+			if (reasons == null) {
+				 reasons = message;
+			 } else {
+				 reasons = reasons + "\n" + message;
+			 }
+		}
+		
+		public void addReason(Throwable t) {
+			String location=null;
+			if (t instanceof SAXParseException) {
+				SAXParseException spe = (SAXParseException)t;
+				location = "at ("+spe.getLineNumber()+ ","+spe.getColumnNumber()+")";
+			}
+			addReason(t.getMessage(),location);
+		}
+
+		public void warning(SAXParseException exception) {
+			addReason(exception);
+		}
+		public void error(SAXParseException exception) {
+			addReason(exception);
+		}
+		public void fatalError(SAXParseException exception) {
+			addReason(exception);
+		}
+
+		public boolean hasErrorOccured() {
+			return errorOccured;
+		}
+
+		 public String getReasons() {
+			return reasons;
+		}
+
+		public String getXmlReasons() {
+		   return xmlReasons.toXML();
+	   }
+	}
+
+
+	public static void assertValidToSchema(InputSource src, URL schema, boolean namespaceAware, String root) throws ListenerException {
+		XMLReader parser=null;
+		XmlErrorHandler xeh;
+		try {
+			parser = XMLReaderFactory.createXMLReader("org.apache.xerces.parsers.SAXParser");
+			parser.setFeature("http://xml.org/sax/features/validation", true);
+			parser.setFeature("http://xml.org/sax/features/namespaces", true);
+			parser.setFeature("http://apache.org/xml/features/validation/schema", true);
+			if (namespaceAware) {
+				log.debug("Give schemaLocation to parser: " + schema.toExternalForm());
+				parser.setProperty("http://apache.org/xml/properties/schema/external-schemaLocation", schema.toExternalForm());
+			} else {
+				log.debug("Give noNamespaceSchemaLocation to parser: " + schema.toExternalForm());
+				parser.setProperty("http://apache.org/xml/properties/schema/external-noNamespaceSchemaLocation", schema.toExternalForm());
+			}
+			if (StringUtils.isNotEmpty(root)) {    
+				parser.setContentHandler(new XmlFindingHandler());
+			}
+
+			if (parser==null) {
+				throw new ListenerException("could not obtain parser");
+			}
+			xeh = new XmlErrorHandler(parser);
+			parser.setErrorHandler(xeh);
+		} catch (SAXNotRecognizedException e) {
+			throw new ListenerException("parser does not recognize necessary feature", e);
+		} catch (SAXNotSupportedException e) {
+			throw new ListenerException("parser does not support necessary feature", e);
+		} catch (SAXException e) {
+			throw new ListenerException("error configuring the parser", e);
+		}
+
+		try {
+			parser.parse(src);
+		 } catch (Exception e) {
+		 	throw new ListenerException("parserError",e);
+		}
+
+		boolean illegalRoot = StringUtils.isNotEmpty(root) && 
+							!((XmlFindingHandler)parser.getContentHandler()).getRootElementName().equals(root);
+		if (illegalRoot) {
+			String str = "got xml with root element ["+((XmlFindingHandler)parser.getContentHandler()).getRootElementName()+"] instead of ["+root+"]";
+			throw new ListenerException(str);
+		} 
+		boolean isValid = !(xeh.hasErrorOccured());
+		
+		if (!isValid) { 
+			String mainReason = "got invalid xml according to schema [" + schema.toExternalForm() + "]";
+			throw new ListenerException(mainReason+": "+xeh.getXmlReasons());
+		}
+
 	}
 	
 	/*
