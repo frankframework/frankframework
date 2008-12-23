@@ -1,6 +1,9 @@
 /*
  * $Log: RecordXmlTransformer.java,v $
- * Revision 1.13  2008-07-17 16:13:37  europe\L190409
+ * Revision 1.14  2008-12-23 12:48:46  m168309
+ * added endOfRecord attribute
+ *
+ * Revision 1.13  2008/07/17 16:13:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.12  2008/03/27 10:33:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -75,6 +78,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setXpathExpression(String) xpathExpression}</td><td>alternatively: XPath-expression to create stylesheet from</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setOutputType(String) outputType}</td><td>either 'text' or 'xml'. Only valid for xpathExpression</td><td>text</td></tr>
  * <tr><td>{@link #setOmitXmlDeclaration(boolean) omitXmlDeclaration}</td><td>force the transformer generated from the XPath-expression to omit the xml declaration</td><td>true</td></tr>
+ * <tr><td>{@link #setEndOfRecord(String) endOfRecord}</td><td>string which ends the record and must be ignored</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * 
@@ -82,13 +86,14 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class RecordXmlTransformer extends AbstractRecordHandler {
-	public static final String version = "$RCSfile: RecordXmlTransformer.java,v $  $Revision: 1.13 $ $Date: 2008-07-17 16:13:37 $";
+	public static final String version = "$RCSfile: RecordXmlTransformer.java,v $  $Revision: 1.14 $ $Date: 2008-12-23 12:48:46 $";
 
 	private String rootTag="record";
 	private String xpathExpression=null;
 	private String styleSheetName;
 	private String outputType="text";
 	private boolean omitXmlDeclaration=true;
+	private String endOfRecord;
 
 	private TransformerPool transformerPool; 
 	private ParameterList parameterList = new ParameterList();
@@ -137,8 +142,15 @@ public class RecordXmlTransformer extends AbstractRecordHandler {
 			// get value
 			String value = "";
 			if (ndx < parsedRecord.size()) {
-				//value = (String)parsedRecord.get(ndx++);
-				value = XmlUtils.encodeChars((String)parsedRecord.get(ndx++));
+				value = (String)parsedRecord.get(ndx++);
+				//value = XmlUtils.encodeChars((String)parsedRecord.get(ndx++));
+				if (!it.hasNext() && !StringUtils.isEmpty(endOfRecord)) {
+					if (value.endsWith(endOfRecord)) {
+						int ei = value.length() - endOfRecord.length();
+						value = value.substring(0, ei);
+					}
+				}
+				value = XmlUtils.encodeChars(value);
 			}
 			// if tagname is empty, then it is not added to the XML
 			if (! StringUtils.isEmpty(tagName)) {
@@ -204,4 +216,10 @@ public class RecordXmlTransformer extends AbstractRecordHandler {
 		return omitXmlDeclaration;
 	}
 
+	public void setEndOfRecord(String string) {
+		endOfRecord = string;
+	}
+	public String getEndOfRecord() {
+		return endOfRecord;
+	}
 }
