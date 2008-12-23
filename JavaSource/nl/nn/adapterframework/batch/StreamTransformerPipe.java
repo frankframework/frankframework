@@ -1,6 +1,9 @@
 /*
  * $Log: StreamTransformerPipe.java,v $
- * Revision 1.15  2008-04-22 11:54:10  europe\L190409
+ * Revision 1.16  2008-12-23 12:50:25  m168309
+ * added storeOriginalBlock attribute
+ *
+ * Revision 1.15  2008/04/22 11:54:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * cosmetic change
  *
  * Revision 1.14  2008/03/27 10:52:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -78,6 +81,7 @@ import org.apache.commons.lang.StringUtils;
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>classname</td><td>nl.nn.adapterframework.batch.StreamTransformerPipe</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setStoreOriginalBlock(boolean) storeOriginalBlock}</td><td>when set <code>true</code> the original block is stored under the session key originalBlock</td><td>false</td></tr>
  * </table>
  * </p>
  * <table border="1">
@@ -98,7 +102,11 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class StreamTransformerPipe extends FixedForwardPipe {
-	public static final String version = "$RCSfile: StreamTransformerPipe.java,v $  $Revision: 1.15 $ $Date: 2008-04-22 11:54:10 $";
+	public static final String version = "$RCSfile: StreamTransformerPipe.java,v $  $Revision: 1.16 $ $Date: 2008-12-23 12:50:25 $";
+
+	public static final String originalBlockKey="originalBlock";
+
+	private boolean storeOriginalBlock=false;
 
 	private IRecordHandlerManager initialManager=null;
 	private IResultHandler defaultHandler=null;
@@ -429,6 +437,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	private Object transform(String streamId, BufferedReader reader, PipeLineSession session, ParameterResolutionContext prc) throws PipeRunException {
 		String rawRecord = null;
 		int linenumber = 0;
+		StringBuffer sb = new StringBuffer();
 		List prevParsedRecord = null; 
 		IRecordHandler prevHandler = null;
 
@@ -452,7 +461,18 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 				IResultHandler resultHandler = flow.getResultHandler();
 				closeBlock(session, streamId, resultHandler, flow, flow.getCloseBlockBeforeLine(),"closeBlockBeforeLine of flow ["+flow.getRecordKey()+"]", prc);
 				openBlock(session, streamId, resultHandler, flow, flow.getOpenBlockBeforeLine(), prc);
-				
+
+				if (isStoreOriginalBlock()) {
+					if (!session.containsKey(originalBlockKey)) {
+						sb = new StringBuffer();
+					}
+					if (sb.length()>0) {
+						sb.append(System.getProperty("line.separator"));
+					}
+					sb.append(rawRecord);
+					session.put(originalBlockKey, sb.toString());
+				}
+
 				IRecordHandler curHandler = flow.getRecordHandler(); 
 				if (curHandler != null) {
 					log.debug("manager ["+currentManager.getName()+"] key ["+flow.getRecordKey()+"] record handler ["+curHandler.getName()+"]: "+rawRecord);
@@ -531,4 +551,10 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 		return FileUtils.getNamesFromList(results, ';');
 	}
 	
+	public void setStoreOriginalBlock(boolean b) {
+		storeOriginalBlock = b;
+	}
+	public boolean isStoreOriginalBlock() {
+		return storeOriginalBlock;
+	}
 }

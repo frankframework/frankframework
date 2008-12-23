@@ -1,6 +1,9 @@
 /*
  * $Log: ResultBlock2Sender.java,v $
- * Revision 1.6  2007-10-08 12:14:56  europe\L190409
+ * Revision 1.7  2008-12-23 12:50:25  m168309
+ * added storeOriginalBlock attribute
+ *
+ * Revision 1.6  2007/10/08 12:14:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed HashMap to Map where possible
  *
  * Revision 1.5  2007/09/24 14:55:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -173,6 +176,10 @@ public class ResultBlock2Sender extends Result2StringWriter {
 					psender.sendMessage(streamId+"-"+incCounter(streamId),message,prc); 
 				} else {
 					sender.sendMessage(streamId+"-"+incCounter(streamId),message); 
+				}
+				// if BatchFileTransformerPipe.storeOriginalBlock="true"
+				if (session.containsKey(BatchFileTransformerPipe.originalBlockKey)) {
+					session.remove(BatchFileTransformerPipe.originalBlockKey);
 				}
 			}
 		}

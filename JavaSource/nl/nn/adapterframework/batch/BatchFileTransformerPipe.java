@@ -1,6 +1,9 @@
 /*
  * $Log: BatchFileTransformerPipe.java,v $
- * Revision 1.15  2008-02-19 09:23:48  europe\L190409
+ * Revision 1.16  2008-12-23 12:50:25  m168309
+ * added storeOriginalBlock attribute
+ *
+ * Revision 1.15  2008/02/19 09:23:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.14  2008/02/15 16:05:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -54,6 +57,7 @@ import nl.nn.adapterframework.util.FileUtils;
  * <tr><td>{@link #setNumberOfBackups(int) numberOfBackups}</td><td>number of copies held of a file with the same name. Backup files have a dot and a number suffixed to their name. If set to 0, no backups will be kept.</td><td>5</td></tr>
  * <tr><td>{@link #setOverwrite(boolean) overwrite}</td><td>when set <code>true</code>, the destination file will be deleted if it already exists</td><td>false</td></tr>
  * <tr><td>{@link #setDelete(boolean) delete}</td><td>when set <code>true</code>, the file processed will deleted after being processed, and not stored</td><td>false</td></tr>
+ * <tr><td>{@link #setStoreOriginalBlock(boolean) storeOriginalBlock}</td><td>when set <code>true</code> the original block is stored under the session key originalBlock</td><td>false</td></tr>
  * </table>
  * </p>
  * <table border="1">
@@ -74,7 +78,7 @@ import nl.nn.adapterframework.util.FileUtils;
  * @version Id
  */
 public class BatchFileTransformerPipe extends StreamTransformerPipe {
-	public static final String version = "$RCSfile: BatchFileTransformerPipe.java,v $  $Revision: 1.15 $ $Date: 2008-02-19 09:23:48 $";
+	public static final String version = "$RCSfile: BatchFileTransformerPipe.java,v $  $Revision: 1.16 $ $Date: 2008-12-23 12:50:25 $";
 
 	private String move2dirAfterTransform;
 	private String move2dirAfterError;
