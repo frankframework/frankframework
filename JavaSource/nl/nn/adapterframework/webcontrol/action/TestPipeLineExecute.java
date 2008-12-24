@@ -1,6 +1,9 @@
 /*
  * $Log: TestPipeLineExecute.java,v $
- * Revision 1.12  2008-12-16 13:37:50  L190409
+ * Revision 1.13  2008-12-24 10:57:52  m168309
+ * added context facility (in xml processing instructions)
+ *
+ * Revision 1.12  2008/12/16 13:37:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * read messages in the right encoding
  *
  * Revision 1.11  2008/07/24 12:41:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -27,7 +30,10 @@ package nl.nn.adapterframework.webcontrol.action;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -37,6 +43,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.PipeLineResult;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -57,7 +64,7 @@ import org.apache.struts.upload.FormFile;
  * @version Id
  */
 public final class TestPipeLineExecute extends ActionBase {
-	public static final String version="$RCSfile: TestPipeLineExecute.java,v $  $Revision: 1.12 $ $Date: 2008-12-16 13:37:50 $";
+	public static final String version="$RCSfile: TestPipeLineExecute.java,v $  $Revision: 1.13 $ $Date: 2008-12-24 10:57:52 $";
 	
 	public ActionForward execute(
 	    ActionMapping mapping,
@@ -138,8 +145,8 @@ public final class TestPipeLineExecute extends ActionBase {
 							rb+=chunk;
 						}
 						String currentMessage = XmlUtils.readXml(b,0,rb,request.getCharacterEncoding(),false);
-						PipeLineResult pipeLineResult =
-							adapter.processMessage(name+"_" + Misc.createSimpleUUID(), currentMessage);
+						//PipeLineResult pipeLineResult = adapter.processMessage(name+"_" + Misc.createSimpleUUID(), currentMessage);
+						PipeLineResult pipeLineResult = processMessage(adapter, name+"_" + Misc.createSimpleUUID(), currentMessage);
 						form_resultText += name + ":" + pipeLineResult.getState() + "\n";
 						form_resultState = pipeLineResult.getState();
 					}
@@ -155,7 +162,8 @@ public final class TestPipeLineExecute extends ActionBase {
 	
 		if(form_message != null && form_message.length() > 0) {
 	    // Execute the request
-			PipeLineResult pipeLineResult = adapter.processMessage("testmessage" + Misc.createSimpleUUID(), form_message);
+			//PipeLineResult pipeLineResult = adapter.processMessage("testmessage" + Misc.createSimpleUUID(), form_message);
+			PipeLineResult pipeLineResult = processMessage(adapter, "testmessage" + Misc.createSimpleUUID(), form_message);
 	    	form_resultText = pipeLineResult.getResult();
 			form_resultState = pipeLineResult.getState();
 		}
@@ -171,6 +179,29 @@ public final class TestPipeLineExecute extends ActionBase {
 	    log.debug("forward to success");
 	    return (mapping.findForward("success"));
 	
+	}
+
+	private PipeLineResult processMessage(IAdapter adapter, String messageId, String message) {
+		PipeLineSession pls=new PipeLineSession();
+		Map ibisContexts = XmlUtils.getIbisContext(message);
+		String technicalCorrelationId = null;
+		String contextDump = "ibisContext:";
+		for (Iterator it = ibisContexts.keySet().iterator(); it.hasNext();) {
+			String key = (String)it.next();
+			String value = (String)ibisContexts.get(key);
+			contextDump = contextDump + "\n " + key + "=[" + value + "]";
+			if (key.equals(PipeLineSession.technicalCorrelationIdKey)) {
+				technicalCorrelationId = value;
+			} else {
+				pls.put(key, value);
+			}
+		}
+		if (log.isDebugEnabled()) {
+			log.debug(contextDump);
+		}
+		Date now=new Date();
+		PipeLineSession.setListenerParameters(pls,messageId,technicalCorrelationId,now,now);
+		return adapter.processMessage(messageId, message, pls);
 	}
 
 	public void storeFormData(String result, String state, String message, DynaActionForm pipeLineTestForm) {
