@@ -1,6 +1,9 @@
 /*
  * $Log: OracleTransactionalStorage.java,v $
- * Revision 1.12  2007-12-27 16:02:55  europe\L190409
+ * Revision 1.13  2008-12-30 17:01:12  m168309
+ * added configuration warnings facility (in Show configurationStatus)
+ *
+ * Revision 1.12  2007/12/27 16:02:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * add grant to SYS.PENDING_TRANSACTIONS to create DDL-comments
  *
  * Revision 1.11  2007/12/10 10:06:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -38,7 +41,7 @@
 package nl.nn.adapterframework.jdbc;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 
 /**
  * Oracle implementation of {@link ITransactionalStorage}.
@@ -99,10 +102,12 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
  * @deprecated The functionality of the OracleTransactionalStorage has been incorporated in de JdbcTransactionalStorage.
  */
 public class OracleTransactionalStorage extends JdbcTransactionalStorage {
-	public static final String version = "$RCSfile: OracleTransactionalStorage.java,v $ $Revision: 1.12 $ $Date: 2007-12-27 16:02:55 $";
+	public static final String version = "$RCSfile: OracleTransactionalStorage.java,v $ $Revision: 1.13 $ $Date: 2008-12-30 17:01:12 $";
 
 	public void configure() throws ConfigurationException {
-		log.warn("Class OracleTransactionalStorage is no longer maintained. Please replace with JdbcTransactionalStorage");
+		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+		String msg = "Class OracleTransactionalStorage is no longer maintained. Please replace with JdbcTransactionalStorage";
+		configWarnings.add(log, msg);
 		super.configure();
 	}
 

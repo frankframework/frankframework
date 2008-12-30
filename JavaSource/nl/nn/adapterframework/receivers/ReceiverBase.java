@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.73  2008-12-16 15:03:44  L190409
+ * Revision 1.74  2008-12-30 17:01:13  m168309
+ * added configuration warnings facility (in Show configurationStatus)
+ *
+ * Revision 1.73  2008/12/16 15:03:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * support for transactionAttribute
  *
  * Revision 1.72  2008/12/10 13:32:16  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -361,6 +364,7 @@ import java.util.Map.Entry;
 import javax.xml.transform.TransformerConfigurationException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.HasSender;
@@ -520,7 +524,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  */
 public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHandler, EventThrowing, IbisExceptionListener, HasSender, HasStatistics, TracingEventNumbers, IThreadCountControllable, BeanFactoryAware {
     
-	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.73 $ $Date: 2008-12-16 15:03:44 $";
+	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.74 $ $Date: 2008-12-30 17:01:13 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -1843,7 +1847,9 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	 * @deprecated
 	 */
 	protected void setInProcessStorage(ITransactionalStorage inProcessStorage) {
-		log.warn(getLogPrefix()+"<*> In-Process Storage is not used anymore. Please remove from configuration. <*>");
+		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+		String msg = getLogPrefix()+"<*> In-Process Storage is not used anymore. Please remove from configuration. <*>";
+		configWarnings.add(log, msg);
 		// We do not use an in-process storage anymore, but we temporarily
 		// store it if it's set by the configuration.
 		// During configure, we check if we need to use the in-process storage
@@ -1946,11 +1952,14 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	 */
 	public void setTransacted(boolean transacted) {
 //		this.transacted = transacted;
+		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 		if (transacted) {
-			log.warn("implementing setting of transacted=true as transactionAttribute=Required");
+			String msg = "implementing setting of transacted=true as transactionAttribute=Required";
+			configWarnings.add(log, msg);
 			setTransactionAttributeNum(TransactionDefinition.PROPAGATION_REQUIRED);
 		} else {
-			log.warn("implementing setting of transacted=false as transactionAttribute=Supports");
+			String msg = "implementing setting of transacted=false as transactionAttribute=Supports";
+			configWarnings.add(log, msg);
 			setTransactionAttributeNum(TransactionDefinition.PROPAGATION_SUPPORTS);
 		}
 	}

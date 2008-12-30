@@ -1,6 +1,9 @@
 /*
  * $Log: XmlValidator.java,v $
- * Revision 1.26  2008-08-06 16:40:34  europe\L190409
+ * Revision 1.27  2008-12-30 17:01:12  m168309
+ * added configuration warnings facility (in Show configurationStatus)
+ *
+ * Revision 1.26  2008/08/06 16:40:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added support for flexible monitoring
  *
  * Revision 1.25  2008/02/28 16:24:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -79,6 +82,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URL;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -154,7 +158,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * @author Johan Verrips IOS / Jaco de Groot (***@dynasol.nl)
  */
 public class XmlValidator extends FixedForwardPipe {
-	public static final String version="$RCSfile: XmlValidator.java,v $ $Revision: 1.26 $ $Date: 2008-08-06 16:40:34 $";
+	public static final String version="$RCSfile: XmlValidator.java,v $ $Revision: 1.27 $ $Date: 2008-12-30 17:01:12 $";
 
 	public static final String XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT = "Invalid XML: parser error";
 	public static final String XML_VALIDATOR_ILLEGAL_ROOT_MONITOR_EVENT = "Invalid XML: wrong root";
@@ -544,7 +548,9 @@ public class XmlValidator extends FixedForwardPipe {
 	 * @deprecated attribute name changed to {@link #setSchemaSessionKey(String) schemaSessionKey}
 	 */
 	public void setSchemaSession(String schemaSessionKey) {
-		log.warn(getLogPrefix(null)+"attribute 'schemaSession' is deprecated. Please use 'schemaSessionKey' instead.");
+		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+		String msg = getLogPrefix(null)+"attribute 'schemaSession' is deprecated. Please use 'schemaSessionKey' instead.";
+		configWarnings.add(log, msg);
 		this.schemaSessionKey = schemaSessionKey;
 	}
 

@@ -1,6 +1,9 @@
 /*
  * $Log: StreamTransformerPipe.java,v $
- * Revision 1.16  2008-12-23 12:50:25  m168309
+ * Revision 1.17  2008-12-30 17:01:13  m168309
+ * added configuration warnings facility (in Show configurationStatus)
+ *
+ * Revision 1.16  2008/12/23 12:50:25  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added storeOriginalBlock attribute
  *
  * Revision 1.15  2008/04/22 11:54:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -63,6 +66,7 @@ import java.util.List;
 import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -102,7 +106,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class StreamTransformerPipe extends FixedForwardPipe {
-	public static final String version = "$RCSfile: StreamTransformerPipe.java,v $  $Revision: 1.16 $ $Date: 2008-12-23 12:50:25 $";
+	public static final String version = "$RCSfile: StreamTransformerPipe.java,v $  $Revision: 1.17 $ $Date: 2008-12-30 17:01:13 $";
 
 	public static final String originalBlockKey="originalBlock";
 
@@ -212,7 +216,9 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	 * @deprecated please use registerManager
 	 */
 	public void registerChild(IRecordHandlerManager manager) throws Exception {
-		log.warn("configuration using element 'child' is deprecated. Please use element 'manager'");
+		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+		String msg = "configuration using element 'child' is deprecated. Please use element 'manager'";
+		configWarnings.add(log, msg);
 		registerManager(manager);
 	}
 	/**
@@ -241,7 +247,9 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	 * @deprecated please use manager.addFlow()
 	 */
 	public void registerChild(RecordHandlingFlow flowEl) throws Exception {
-		log.warn("configuration using element 'child' is deprecated. Please use element 'flow' nested in element 'manager'");
+		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+		String msg = "configuration using element 'child' is deprecated. Please use element 'flow' nested in element 'manager'";
+		configWarnings.add(log, msg);
 		IRecordHandlerManager manager = (IRecordHandlerManager)registeredManagers.get(flowEl.getRecordHandlerManagerRef());
 		if (manager == null) {
 			throw new ConfigurationException("RecordHandlerManager [" + flowEl.getRecordHandlerManagerRef() + "] not found. Manager must be defined before the flows it contains");
@@ -257,7 +265,9 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	 * @deprecated please use registerRecordHandler()
 	 */
 	public void registerChild(IRecordHandler handler) throws Exception {
-		log.warn("configuration using element 'child' is deprecated. Please use element 'recordHandler'");
+		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+		String msg = "configuration using element 'child' is deprecated. Please use element 'recordHandler'";
+		configWarnings.add(log, msg);
 		registerRecordHandler(handler);
 	}
 	/**
@@ -281,7 +291,9 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	 * @deprecated Please use registerResultHandler()
 	 */
 	public void registerChild(IResultHandler handler) throws Exception {
-		log.warn("configuration using element 'child' is deprecated. Please use element 'resultHandler'");
+		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+		String msg = "configuration using element 'child' is deprecated. Please use element 'resultHandler'";
+		configWarnings.add(log, msg);
 		registerResultHandler(handler);
 	}
 	/**

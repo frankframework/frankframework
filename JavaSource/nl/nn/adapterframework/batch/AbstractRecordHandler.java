@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractRecordHandler.java,v $
- * Revision 1.13  2008-07-14 17:52:50  europe\L190409
+ * Revision 1.14  2008-12-30 17:01:13  m168309
+ * added configuration warnings facility (in Show configurationStatus)
+ *
+ * Revision 1.13  2008/07/14 17:52:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * return whole record when no fields or separator specified
  *
  * Revision 1.12  2008/02/19 09:23:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -48,6 +51,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IWithParameters;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
@@ -235,7 +239,9 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 		}
 	}
 	public void setFieldsDifferConditionForPrefix(String fieldNrs) {
-		log.warn(ClassUtils.nameOf(this) +"["+getName()+"]: the attribute 'fieldsDifferConditionForPrefix' has been renamed 'recordIdentifyingFields' since version 4.7");
+		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+		String msg = ClassUtils.nameOf(this) +"["+getName()+"]: the attribute 'fieldsDifferConditionForPrefix' has been renamed 'recordIdentifyingFields' since version 4.7";
+		configWarnings.add(log, msg);
 		setRecordIdentifyingFields(fieldNrs);
 	}
 
@@ -269,7 +275,9 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 	 * @deprecated typo has been fixed: please use 'inputSeparator' instead of 'inputSeperator'
 	 */
 	public void setInputSeperator(String string) {
-		log.warn(ClassUtils.nameOf(this) +"["+getName()+"]: typo has been fixed: please use 'inputSeparator' instead of 'inputSeperator'");
+		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+		String msg = ClassUtils.nameOf(this) +"["+getName()+"]: typo has been fixed: please use 'inputSeparator' instead of 'inputSeperator'";
+		configWarnings.add(log, msg);
 		setInputSeparator(string);
 	}
 	public void setInputSeparator(String string) {

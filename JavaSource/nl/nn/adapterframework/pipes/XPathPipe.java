@@ -1,6 +1,9 @@
 /*
  * $Log: XPathPipe.java,v $
- * Revision 1.7  2004-10-19 13:53:03  L190409
+ * Revision 1.8  2008-12-30 17:01:12  m168309
+ * added configuration warnings facility (in Show configurationStatus)
+ *
+ * Revision 1.7  2004/10/19 13:53:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * replaced by XsltPipe
  *
  * Revision 1.6  2004/10/05 10:57:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -24,6 +27,9 @@
  * 
  */
 package nl.nn.adapterframework.pipes;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 
 /**
  * <p><b>Configuration:</b>
@@ -49,4 +55,10 @@ package nl.nn.adapterframework.pipes;
  * @deprecated Please use XsltPipe, that has the same functionality
  */
 public class XPathPipe extends XsltPipe {
+	public void configure() throws ConfigurationException {
+		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+		String msg = getLogPrefix(null)+"The class ["+getClass().getName()+"] has been deprecated. Please change to ["+getClass().getSuperclass().getName()+"]";
+		configWarnings.add(log, msg);
+		super.configure();
+	}
 }

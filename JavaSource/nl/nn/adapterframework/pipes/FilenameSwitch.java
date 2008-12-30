@@ -1,6 +1,9 @@
 /*
  * $Log: FilenameSwitch.java,v $
- * Revision 1.2  2008-02-19 09:58:23  europe\L190409
+ * Revision 1.3  2008-12-30 17:01:12  m168309
+ * added configuration warnings facility (in Show configurationStatus)
+ *
+ * Revision 1.2  2008/02/19 09:58:23  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.1  2008/02/15 14:09:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -10,6 +13,7 @@
 package nl.nn.adapterframework.pipes;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -49,7 +53,9 @@ public class FilenameSwitch extends AbstractPipe {
 		super.configure();
 		if (getNotFoundForwardName()!=null) {
 			if (findForward(getNotFoundForwardName())==null){
-				log.warn(getLogPrefix(null)+"has a notFoundForwardName attribute. However, this forward ["+getNotFoundForwardName()+"] is not configured.");
+				ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+				String msg = getLogPrefix(null)+"has a notFoundForwardName attribute. However, this forward ["+getNotFoundForwardName()+"] is not configured.";
+				configWarnings.add(log, msg);
 			}
 		}
 	}

@@ -1,6 +1,9 @@
 /*
  * $Log: FieldPositionRecordHandlerManager.java,v $
- * Revision 1.9  2008-02-19 09:23:47  europe\L190409
+ * Revision 1.10  2008-12-30 17:01:13  m168309
+ * added configuration warnings facility (in Show configurationStatus)
+ *
+ * Revision 1.9  2008/02/19 09:23:47  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.8  2008/02/15 16:06:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -28,6 +31,7 @@
  */
 package nl.nn.adapterframework.batch;
 
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.util.ClassUtils;
 
@@ -50,7 +54,7 @@ import nl.nn.adapterframework.util.ClassUtils;
  * @author John Dekker
  */
 public class FieldPositionRecordHandlerManager extends RecordHandlerManager {
-	public static final String version = "$RCSfile: FieldPositionRecordHandlerManager.java,v $  $Revision: 1.9 $ $Date: 2008-02-19 09:23:47 $";
+	public static final String version = "$RCSfile: FieldPositionRecordHandlerManager.java,v $  $Revision: 1.10 $ $Date: 2008-12-30 17:01:13 $";
 
 	private int fieldNr;
 	private String separator;
@@ -86,7 +90,10 @@ public class FieldPositionRecordHandlerManager extends RecordHandlerManager {
 	 * @deprecated typo has been fixed: please use 'separator' instead of 'seperator'
 	 */
 	public void setSeperator(String string) {
-		log.warn(ClassUtils.nameOf(this) +"["+getName()+"]: typo has been fixed: please use 'separator' instead of 'seperator'");
+		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+		String msg = ClassUtils.nameOf(this) +"["+getName()+"]: typo has been fixed: please use 'separator' instead of 'seperator'";
+		configWarnings.add(log, msg);
+
 		separator = string;
 	}
 	public void setSeparator(String string) {

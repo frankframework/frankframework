@@ -1,6 +1,9 @@
 /*
  * $Log: LogSender.java,v $
- * Revision 1.9  2008-11-26 09:38:54  m168309
+ * Revision 1.10  2008-12-30 17:01:12  m168309
+ * added configuration warnings facility (in Show configurationStatus)
+ *
+ * Revision 1.9  2008/11/26 09:38:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * Fixed warning message in deprecated classes
  *
  * Revision 1.8  2008/08/07 11:40:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -32,6 +35,7 @@
 package nl.nn.adapterframework.pipes;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 
 /**
  * Sender that just logs its message.
@@ -51,7 +55,9 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 public class LogSender extends nl.nn.adapterframework.senders.LogSender {
 
 	public void configure() throws ConfigurationException {
+		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+		String msg = getLogPrefix()+"The class ["+getClass().getName()+"] has been deprecated. Please change to ["+getClass().getSuperclass().getName()+"]";
+		configWarnings.add(log, msg);
 		super.configure();
-		log.warn(getLogPrefix()+"The class ["+getClass().getName()+"] has been deprecated. Please change to ["+getClass().getSuperclass().getName()+"]");
 	}
 }

@@ -1,6 +1,9 @@
 /*
  * $Log: AttributeCheckingRule.java,v $
- * Revision 1.2  2008-03-28 10:14:21  europe\L190409
+ * Revision 1.3  2008-12-30 17:01:13  m168309
+ * added configuration warnings facility (in Show configurationStatus)
+ *
+ * Revision 1.2  2008/03/28 10:14:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved error message
  *
  * Revision 1.1  2007/05/11 09:36:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -30,6 +33,7 @@ import org.xml.sax.Locator;
  */
 public class AttributeCheckingRule extends Rule {
 	protected Logger log = LogUtil.getLogger(this);
+	private ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 
 	private String getObjectName(Object o) {
 		String result=o.getClass().getName();
@@ -59,7 +63,8 @@ public class AttributeCheckingRule extends Rule {
 				}
 				if (m==null) {
 					Locator loc = digester.getDocumentLocator();
-					log.warn("line "+loc.getLineNumber()+", col "+loc.getColumnNumber()+": "+getObjectName(top)+" does not have an attribute ["+name+"] to set to value ["+attributes.getValue(name)+"]");
+					String msg ="line "+loc.getLineNumber()+", col "+loc.getColumnNumber()+": "+getObjectName(top)+" does not have an attribute ["+name+"] to set to value ["+attributes.getValue(name)+"]";
+					configWarnings.add(log, msg);
 				}
 			}
 		}

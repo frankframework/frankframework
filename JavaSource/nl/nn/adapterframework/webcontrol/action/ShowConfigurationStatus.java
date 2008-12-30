@@ -1,6 +1,9 @@
 /*
  * $Log: ShowConfigurationStatus.java,v $
- * Revision 1.19  2008-10-24 14:42:45  europe\m168309
+ * Revision 1.20  2008-12-30 17:01:13  m168309
+ * added configuration warnings facility (in Show configurationStatus)
+ *
+ * Revision 1.19  2008/10/24 14:42:45  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adapters are shown case insensitive sorted
  *
  * Revision 1.18  2008/09/17 12:30:52  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -55,6 +58,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.HasSender;
@@ -84,7 +88,7 @@ import org.apache.struts.action.ActionMapping;
  * @version Id
  */
 public final class ShowConfigurationStatus extends ActionBase {
-	public static final String version = "$RCSfile: ShowConfigurationStatus.java,v $ $Revision: 1.19 $ $Date: 2008-10-24 14:42:45 $";
+	public static final String version = "$RCSfile: ShowConfigurationStatus.java,v $ $Revision: 1.20 $ $Date: 2008-12-30 17:01:13 $";
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 
@@ -95,6 +99,8 @@ public final class ShowConfigurationStatus extends ActionBase {
 			return (mapping.findForward("noconfig"));
 		}
 
+		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+
 		XmlBuilder adapters=new XmlBuilder("registeredAdapters");
 		if (config.getConfigurationException()!=null) {
 			XmlBuilder exceptionsXML=new XmlBuilder("exceptions");
@@ -102,6 +108,16 @@ public final class ShowConfigurationStatus extends ActionBase {
 			exceptionXML.setValue(config.getConfigurationException().getMessage());
 			exceptionsXML.addSubElement(exceptionXML);
 			adapters.addSubElement(exceptionsXML);
+		}
+		if (configWarnings.size()>0) {
+			XmlBuilder warningsXML=new XmlBuilder("warnings");
+			for (int j=0; j<configWarnings.size(); j++) {
+				XmlBuilder warningXML=new XmlBuilder("warnings");
+				warningXML=new XmlBuilder("warning");
+				warningXML.setValue((String)configWarnings.get(j));
+				warningsXML.addSubElement(warningXML);
+			}
+			adapters.addSubElement(warningsXML);
 		}
 		for(int j=0; j<config.getRegisteredAdapters().size(); j++) {
 			Adapter adapter = (Adapter)config.getRegisteredAdapter(j);

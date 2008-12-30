@@ -1,6 +1,9 @@
 /*
  * $Log: WebServiceSender.java,v $
- * Revision 1.20  2008-10-31 15:02:17  europe\m168309
+ * Revision 1.21  2008-12-30 17:01:13  m168309
+ * added configuration warnings facility (in Show configurationStatus)
+ *
+ * Revision 1.20  2008/10/31 15:02:17  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * WS-Security made possible
  *
  * Revision 1.19  2008/08/12 15:35:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -63,6 +66,7 @@
 package nl.nn.adapterframework.http;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -120,7 +124,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * @since 4.2c
  */
 public class WebServiceSender extends HttpSender {
-	public static final String version = "$RCSfile: WebServiceSender.java,v $ $Revision: 1.20 $ $Date: 2008-10-31 15:02:17 $";
+	public static final String version = "$RCSfile: WebServiceSender.java,v $ $Revision: 1.21 $ $Date: 2008-12-30 17:01:13 $";
 	
 	private String soapActionURI = "";
 	private String encodingStyleURI=null;
@@ -148,7 +152,9 @@ public class WebServiceSender extends HttpSender {
 		super.configure();
 		soapWrapper=SoapWrapper.getInstance();
 		if (StringUtils.isEmpty(getSoapActionURI())) {
-			log.warn(getLogPrefix()+"no soapActionURI found, please check if this is appropriate");
+			ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+			String msg = getLogPrefix()+"no soapActionURI found, please check if this is appropriate";
+			configWarnings.add(log, msg);
 		}
 		if (StringUtils.isNotEmpty(getWssAuthAlias()) || 
 			StringUtils.isNotEmpty(getWssUserName())) {

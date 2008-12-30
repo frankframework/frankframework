@@ -1,6 +1,9 @@
 /*
  * $Log: RecordXslTransformer.java,v $
- * Revision 1.12  2008-07-17 16:13:37  europe\L190409
+ * Revision 1.13  2008-12-30 17:01:13  m168309
+ * added configuration warnings facility (in Show configurationStatus)
+ *
+ * Revision 1.12  2008/07/17 16:13:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.11  2008/02/28 16:17:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -38,6 +41,7 @@
  */
 package nl.nn.adapterframework.batch;
 
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 
 /**
  * Translate a record using XSL.
@@ -64,13 +68,15 @@ package nl.nn.adapterframework.batch;
  * @version Id
  */
 public class RecordXslTransformer extends RecordXmlTransformer {
-	public static final String version = "$RCSfile: RecordXslTransformer.java,v $  $Revision: 1.12 $ $Date: 2008-07-17 16:13:37 $";
+	public static final String version = "$RCSfile: RecordXslTransformer.java,v $  $Revision: 1.13 $ $Date: 2008-12-30 17:01:13 $";
 
 	/**
 	 * @deprecated configuration using attribute 'xslFile' is deprecated. Please use attribute 'styleSheetName' 
 	 */
 	public void setXslFile(String xslFile) {
-		log.warn("configuration using attribute 'xslFile' is deprecated. Please use attribute 'styleSheetName'");
+		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+		String msg = "configuration using attribute 'xslFile' is deprecated. Please use attribute 'styleSheetName'";
+		configWarnings.add(log, msg);
 		setStyleSheetName(xslFile);
 	}
 

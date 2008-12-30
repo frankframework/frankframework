@@ -1,6 +1,9 @@
 /*
  * $Log: FxfSender.java,v $
- * Revision 1.6  2008-09-04 12:05:25  europe\L190409
+ * Revision 1.7  2008-12-30 17:01:12  m168309
+ * added configuration warnings facility (in Show configurationStatus)
+ *
+ * Revision 1.6  2008/09/04 12:05:25  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * test for version of fxf
  *
  * Revision 1.5  2008/08/27 15:55:41  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -25,6 +28,7 @@ package nl.nn.adapterframework.extensions.fxf;
 import java.io.File;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
@@ -86,7 +90,9 @@ public class FxfSender extends SenderWithParametersBase {
 		if (paramList!=null && paramList.size()>0) {
 			remoteFilenameParam=(Parameter)paramList.get(0);
 			if (!REMOTE_FILENAME_PARAM.equalsIgnoreCase(remoteFilenameParam.getName())) {
-				log.warn(getLogPrefix()+"name of parameter for remote filename ["+remoteFilenameParam.getName()+"] is not equal to ["+REMOTE_FILENAME_PARAM+"], as expected. Using it anyway" );
+				ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+				String msg = getLogPrefix()+"name of parameter for remote filename ["+remoteFilenameParam.getName()+"] is not equal to ["+REMOTE_FILENAME_PARAM+"], as expected. Using it anyway";
+				configWarnings.add(log, msg);
 			}
 		}
 		if (log.isDebugEnabled()) {

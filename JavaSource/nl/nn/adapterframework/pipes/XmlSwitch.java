@@ -1,6 +1,9 @@
 /*
  * $Log: XmlSwitch.java,v $
- * Revision 1.22  2008-08-06 16:40:34  europe\L190409
+ * Revision 1.23  2008-12-30 17:01:12  m168309
+ * added configuration warnings facility (in Show configurationStatus)
+ *
+ * Revision 1.22  2008/08/06 16:40:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added support for flexible monitoring
  *
  * Revision 1.21  2007/12/10 10:13:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -34,6 +37,7 @@
 package nl.nn.adapterframework.pipes;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -86,7 +90,7 @@ import java.util.Map;
  * @author Johan Verrips
  */
 public class XmlSwitch extends AbstractPipe {
-	public static final String version="$RCSfile: XmlSwitch.java,v $ $Revision: 1.22 $ $Date: 2008-08-06 16:40:34 $";
+	public static final String version="$RCSfile: XmlSwitch.java,v $ $Revision: 1.23 $ $Date: 2008-12-30 17:01:12 $";
 
 	public static final String XML_SWITCH_FORWARD_FOUND_MONITOR_EVENT = "Switch: Forward Found";
 	public static final String XML_SWITCH_FORWARD_NOT_FOUND_MONITOR_EVENT = "Switch: Forward Not Found";
@@ -107,7 +111,9 @@ public class XmlSwitch extends AbstractPipe {
 		if (getNotFoundForwardName()!=null) {
 			if (findForward(getNotFoundForwardName())==null){
 //				throw new ConfigurationException(getLogPrefix(null)+"has a notFoundForwardName attribute. However, this forward ["+getNotFoundForwardName()+"] is not configured.");
-				log.warn(getLogPrefix(null)+"has a notFoundForwardName attribute. However, this forward ["+getNotFoundForwardName()+"] is not configured.");
+				ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+				String msg = getLogPrefix(null)+"has a notFoundForwardName attribute. However, this forward ["+getNotFoundForwardName()+"] is not configured.";
+				configWarnings.add(log, msg);
 			}
 		}
 

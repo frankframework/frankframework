@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcQueryListener.java,v $
- * Revision 1.3  2008-12-10 08:35:55  L190409
+ * Revision 1.4  2008-12-30 17:01:12  m168309
+ * added configuration warnings facility (in Show configurationStatus)
+ *
+ * Revision 1.3  2008/12/10 08:35:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved locking and selection mechanism: now works in multiple threads. 
  * improved disaster recovery: no more specific 'in process' status, rolls back to original state (where apropriate)
  *
@@ -16,6 +19,7 @@ package nl.nn.adapterframework.jdbc;
 import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 
 /**
 
@@ -58,7 +62,9 @@ public class JdbcQueryListener extends JdbcListener {
 			throw new ConfigurationException("keyField must be specified");
 		}
 		if (StringUtils.isEmpty(getUpdateStatusToErrorQuery())) {
-			log.warn(getLogPrefix()+"has no updateStatusToErrorQuery specified, will use updateStatusToProcessedQuery instead");
+			ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+			String msg = getLogPrefix()+"has no updateStatusToErrorQuery specified, will use updateStatusToProcessedQuery instead";
+			configWarnings.add(log, msg);
 			setUpdateStatusToErrorQuery(getUpdateStatusToProcessedQuery());
 		}
 	}

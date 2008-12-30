@@ -1,6 +1,9 @@
 /*
  * $Log: CommandSender.java,v $
- * Revision 1.3  2008-11-26 09:38:54  m168309
+ * Revision 1.4  2008-12-30 17:01:12  m168309
+ * added configuration warnings facility (in Show configurationStatus)
+ *
+ * Revision 1.3  2008/11/26 09:38:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * Fixed warning message in deprecated classes
  *
  * Revision 1.2  2008/08/06 16:38:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -13,6 +16,7 @@
 package nl.nn.adapterframework.pipes;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 
 /**
  * Sender that executes either its input or a fixed line, with all parametervalues appended, as a command.
@@ -37,7 +41,9 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 public class CommandSender extends nl.nn.adapterframework.senders.CommandSender {
 
 	public void configure() throws ConfigurationException {
-		log.warn(getLogPrefix()+"The class ["+getClass().getName()+"] has been deprecated. Please change to ["+getClass().getSuperclass().getName()+"]");
+		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+		String msg = getLogPrefix()+"The class ["+getClass().getName()+"] has been deprecated. Please change to ["+getClass().getSuperclass().getName()+"]";
+		configWarnings.add(log, msg);
 		super.configure();
 	}
 }

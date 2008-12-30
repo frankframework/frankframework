@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractPipe.java,v $
- * Revision 1.33  2008-07-14 17:24:05  europe\L190409
+ * Revision 1.34  2008-12-30 17:01:12  m168309
+ * added configuration warnings facility (in Show configurationStatus)
+ *
+ * Revision 1.33  2008/07/14 17:24:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * support for flexibile monitoring
  *
  * Revision 1.32  2008/02/06 15:57:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -97,6 +100,7 @@ package nl.nn.adapterframework.pipes;
 import java.util.Hashtable;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.HasTransactionAttribute;
 import nl.nn.adapterframework.core.IExtendedPipe;
 import nl.nn.adapterframework.core.PipeForward;
@@ -184,7 +188,7 @@ import org.springframework.transaction.TransactionDefinition;
  * @see nl.nn.adapterframework.core.PipeLineSession
  */
 public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttribute, TracingEventNumbers, EventThrowing {
-	public static final String version="$RCSfile: AbstractPipe.java,v $ $Revision: 1.33 $ $Date: 2008-07-14 17:24:05 $";
+	public static final String version="$RCSfile: AbstractPipe.java,v $ $Revision: 1.34 $ $Date: 2008-12-30 17:01:12 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -307,7 +311,9 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 		if (current==null){
 			pipeForwards.put(forward.getName(), forward);
 		} else {
-			log.warn(getLogPrefix(null)+"PipeForward ["+forward.getName()+"] already registered, pointing to ["+current.getPath()+"]. Ignoring new one, that points to ["+forward.getPath()+"]");
+			ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+			String msg = getLogPrefix(null)+"PipeForward ["+forward.getName()+"] already registered, pointing to ["+current.getPath()+"]. Ignoring new one, that points to ["+forward.getPath()+"]";
+			configWarnings.add(log, msg);
 		}
  	}
 

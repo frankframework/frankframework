@@ -1,6 +1,9 @@
 /*
  * $Log: RecordTransformer.java,v $
- * Revision 1.17  2008-07-17 16:13:37  europe\L190409
+ * Revision 1.18  2008-12-30 17:01:13  m168309
+ * added configuration warnings facility (in Show configurationStatus)
+ *
+ * Revision 1.17  2008/07/17 16:13:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.16  2008/02/21 12:33:53  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -66,6 +69,7 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -110,7 +114,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class RecordTransformer extends AbstractRecordHandler {
-	public static final String version = "$RCSfile: RecordTransformer.java,v $  $Revision: 1.17 $ $Date: 2008-07-17 16:13:37 $";
+	public static final String version = "$RCSfile: RecordTransformer.java,v $  $Revision: 1.18 $ $Date: 2008-12-30 17:01:13 $";
 
 	private String outputSeparator;
 
@@ -716,7 +720,9 @@ public class RecordTransformer extends AbstractRecordHandler {
 	
 
 	public void setOutputSeperator(String string) {
-		log.warn(ClassUtils.nameOf(this) +"["+getName()+"]: typo has been fixed: please use 'outputSeparator' instead of 'outputSeperator'");
+		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+		String msg = ClassUtils.nameOf(this) +"["+getName()+"]: typo has been fixed: please use 'outputSeparator' instead of 'outputSeperator'";
+		configWarnings.add(log, msg);
 		setOutputSeparator(string);
 	}
 	public void setOutputSeparator(String string) {

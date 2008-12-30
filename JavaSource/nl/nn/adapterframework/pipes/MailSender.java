@@ -1,6 +1,9 @@
 /*
  * $Log: MailSender.java,v $
- * Revision 1.16  2008-11-26 09:38:54  m168309
+ * Revision 1.17  2008-12-30 17:01:12  m168309
+ * added configuration warnings facility (in Show configurationStatus)
+ *
+ * Revision 1.16  2008/11/26 09:38:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * Fixed warning message in deprecated classes
  *
  * Revision 1.15  2008/08/06 16:38:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -49,6 +52,7 @@
 package nl.nn.adapterframework.pipes;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 
 /**
  * {@link ISender} that sends a mail specified by an XML message. <br/>
@@ -115,7 +119,9 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 public class MailSender extends nl.nn.adapterframework.senders.MailSender {
 
 	public void configure() throws ConfigurationException {
-		log.warn("The class ["+getClass().getName()+"] has been deprecated. Please change to ["+getClass().getSuperclass().getName()+"]");
+		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+		String msg = getLogPrefix()+"The class ["+getClass().getName()+"] has been deprecated. Please change to ["+getClass().getSuperclass().getName()+"]";
+		configWarnings.add(log, msg);
 		super.configure();
 	}
 }
