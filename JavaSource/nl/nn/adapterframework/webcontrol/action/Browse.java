@@ -1,6 +1,9 @@
 /*
  * $Log: Browse.java,v $
- * Revision 1.14  2008-12-10 17:05:50  L190409
+ * Revision 1.15  2009-01-02 10:27:14  m168309
+ * export function restored (unjust removed in v4.9.3)
+ *
+ * Revision 1.14  2008/12/10 17:05:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fixed bug in export selected messages; now a valid zip file is returned
  *
  * Revision 1.13  2008/11/06 10:23:14  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -84,7 +87,7 @@ import org.apache.struts.action.DynaActionForm;
  * @since   4.4
  */
 public class Browse extends ActionBase {
-	public static final String version="$RCSfile: Browse.java,v $ $Revision: 1.14 $ $Date: 2008-12-10 17:05:50 $";
+	public static final String version="$RCSfile: Browse.java,v $ $Revision: 1.15 $ $Date: 2009-01-02 10:27:14 $";
 
 	private int maxMessages = AppConstants.getInstance().getInt("browse.messages.max",0); 
 	private int skipMessages=0;
@@ -177,7 +180,9 @@ public class Browse extends ActionBase {
 			MessageSendingPipe pipe=(MessageSendingPipe)adapter.getPipeLine().getPipe(pipeName);
 			mb=pipe.getMessageLog();
 			// actions 'deletemessage' and 'resendmessage' not allowed for messageLog	
-			//performAction(adapter, null, action, mb, messageId, selected, response);
+			if ("export selected".equalsIgnoreCase(action)) {
+				performAction(adapter, null, action, mb, messageId, selected, response);
+			}
 		} else {
 			ReceiverBase receiver = (ReceiverBase) adapter.getReceiverByName(receiverName);
 			mb = receiver.getErrorStorage();
