@@ -1,6 +1,9 @@
 /*
  * $Log: BrowseExecute.java,v $
- * Revision 1.13  2008-12-10 17:05:50  L190409
+ * Revision 1.14  2009-01-02 10:27:55  m168309
+ * fixed bug
+ *
+ * Revision 1.13  2008/12/10 17:05:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fixed bug in export selected messages; now a valid zip file is returned
  *
  * Revision 1.12  2008/07/24 12:39:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -80,7 +83,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  * @since   4.3
  */
 public class BrowseExecute extends Browse {
-	public static final String version="$RCSfile: BrowseExecute.java,v $ $Revision: 1.13 $ $Date: 2008-12-10 17:05:50 $";
+	public static final String version="$RCSfile: BrowseExecute.java,v $ $Revision: 1.14 $ $Date: 2009-01-02 10:27:55 $";
     
     protected static final TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
     
@@ -128,7 +131,10 @@ public class BrowseExecute extends Browse {
 				response.setContentType("application/x-zip-compressed");
 				response.setHeader("Content-Disposition","attachment; filename=\"messages-"+AppConstants.getInstance().getProperty("instance.name","")+"-"+Misc.getHostname()+".zip\"");
 				ZipOutputStream zipOutputStream = new ZipOutputStream(out);
-				IListener listener = receiver.getListener();
+				IListener listener = null;
+				if (receiver!=null) {
+					listener = receiver.getListener();
+				}
 				for(int i=0; i<selected.length; i++) {
 					try {
 						Object rawmsg = mb.browseMessage(selected[i]);
