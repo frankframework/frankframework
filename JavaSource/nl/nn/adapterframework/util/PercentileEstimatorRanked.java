@@ -1,6 +1,9 @@
 /*
  * $Log: PercentileEstimatorRanked.java,v $
- * Revision 1.4  2008-08-27 16:25:16  europe\L190409
+ * Revision 1.5  2009-01-08 16:43:33  L190409
+ * fixed bug in getSample()
+ *
+ * Revision 1.4  2008/08/27 16:25:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added clear()
  *
  * Revision 1.3  2006/09/07 08:37:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -194,7 +197,7 @@ public class PercentileEstimatorRanked extends PercentileEstimatorBase {
 			value=min;
 			rank=1;			
 		} else {
-			if (index>=local_count+2) {
+			if (index>=local_count+1) {
 				value=max;
 				rank=count;			
 			} else {
