@@ -1,6 +1,9 @@
 /*
  * $Log: LogSender.java,v $
- * Revision 1.10  2008-12-30 17:01:12  m168309
+ * Revision 1.11  2009-01-08 17:37:58  L190409
+ * fixed NPE in configure()
+ *
+ * Revision 1.10  2008/12/30 17:01:12  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added configuration warnings facility (in Show configurationStatus)
  *
  * Revision 1.9  2008/11/26 09:38:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -55,9 +58,9 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 public class LogSender extends nl.nn.adapterframework.senders.LogSender {
 
 	public void configure() throws ConfigurationException {
+		super.configure();
 		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 		String msg = getLogPrefix()+"The class ["+getClass().getName()+"] has been deprecated. Please change to ["+getClass().getSuperclass().getName()+"]";
 		configWarnings.add(log, msg);
-		super.configure();
 	}
 }
