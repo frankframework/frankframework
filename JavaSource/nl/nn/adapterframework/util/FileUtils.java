@@ -1,6 +1,9 @@
 /*
  * $Log: FileUtils.java,v $
- * Revision 1.13  2008-09-04 12:17:30  europe\L190409
+ * Revision 1.14  2009-01-08 16:40:36  L190409
+ * added getWeeklyRollingFile()
+ *
+ * Revision 1.13  2008/09/04 12:17:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added getDailyRollingFile()
  *
  * Revision 1.12  2008/07/15 12:16:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -69,7 +72,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class FileUtils {
-	public static final String version = "$RCSfile: FileUtils.java,v $  $Revision: 1.13 $ $Date: 2008-09-04 12:17:30 $";
+	public static final String version = "$RCSfile: FileUtils.java,v $  $Revision: 1.14 $ $Date: 2009-01-08 16:40:36 $";
 
 	/**
 	 * Construct a filename from a pattern and session variables. 
@@ -227,11 +230,18 @@ public class FileUtils {
 		File backupFile=new File(backupFilename);
 		targetFile.renameTo(backupFile);
 	}
+
+	public static File getWeeklyRollingFile(String directory, String filenamePrefix, String filenameSuffix, int retentionDays) {
+		return getRollingFile(directory, filenamePrefix, "yyyy'W'ww", filenameSuffix, retentionDays);
+	}
 	
 	public static File getDailyRollingFile(String directory, String filenamePrefix, String filenameSuffix, int retentionDays) {
+		return getRollingFile(directory, filenamePrefix, "yyyy-MM-dd", filenameSuffix, retentionDays);
+	}
+	
+	public static File getRollingFile(String directory, String filenamePrefix, String dateformat, String filenameSuffix, int retentionDays) {
 		
 		final long millisPerDay=24*60*60*1000;
-		String dateformat = "yyyy-MM-dd";
 
 		Date now=new Date();
 
