@@ -1,6 +1,9 @@
 /*
  * $Log: StatisticsKeeperLogger.java,v $
- * Revision 1.6  2008-09-04 12:19:05  europe\L190409
+ * Revision 1.7  2009-01-08 16:41:31  L190409
+ * made statisticsfile weekly rolling
+ *
+ * Revision 1.6  2008/09/04 12:19:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * log to daily rolling file
  *
  * Revision 1.5  2008/07/24 12:24:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -50,7 +53,7 @@ public class StatisticsKeeperLogger extends StatisticsKeeperXmlBuilder {
 		int retentionDays=ac.getInt("statistics.retention",7);
 		String filenamePattern=ac.getResolvedProperty("instance.name")+"-stats_";
 		String extension=".log";
-		File outfile=FileUtils.getDailyRollingFile(directory, filenamePattern, extension, retentionDays);
+		File outfile=FileUtils.getWeeklyRollingFile(directory, filenamePattern, extension, retentionDays);
 
 		FileWriter fw=null;
 		try {
