@@ -1,6 +1,9 @@
 /*
  * $Log: DirectoryListener.java,v $
- * Revision 1.15  2008-10-24 07:03:34  europe\m168309
+ * Revision 1.16  2009-01-14 10:54:58  L190409
+ * added fileTimeSensitive attribute
+ *
+ * Revision 1.15  2008/10/24 07:03:34  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * outputDirectory attribute is optional instead of obliged
  *
  * Revision 1.14  2008/08/13 13:41:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -73,6 +76,7 @@ import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -95,6 +99,7 @@ import org.apache.log4j.Logger;
  * <tr><td>{@link #setInputDirectory(String) inputDirectory}</td><td>Directory to look for files</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setWildcard(String) wildcard}</td><td>Filter of files to look for in inputDirectory</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setExcludeWildcard(String) excludeWildcard}</td><td>Filter of files to be excluded when looking in inputDirectory</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setFileTimeSensitive(boolean) fileTimeSensitive}</td><td>when <code>true</code>, the file modification time is used in addition to the filename to determine if a file has been seen before</td><td>false</td></tr>
  * <tr><td>{@link #setOutputDirectory(String) outputDirectory}</td><td>Directory where files are stored <i>while</i> being processed</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setOutputFilenamePattern(String) outputFilenamePattern}</td><td>Pattern for the name using the MessageFormat.format method. Params: 0=inputfilename, 1=inputfile extension, 2=unique uuid, 3=current date</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setProcessedDirectory(String) processedDirectory}</td><td>Directory where files are stored <i>after</i> being processed</td><td>&nbsp;</td></tr>
@@ -113,7 +118,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class DirectoryListener implements IPullingListener, INamedObject, HasPhysicalDestination {
-	public static final String version = "$RCSfile: DirectoryListener.java,v $  $Revision: 1.15 $ $Date: 2008-10-24 07:03:34 $";
+	public static final String version = "$RCSfile: DirectoryListener.java,v $  $Revision: 1.16 $ $Date: 2009-01-14 10:54:58 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -132,6 +137,7 @@ public class DirectoryListener implements IPullingListener, INamedObject, HasPhy
 	private boolean delete = false;
 	private int numberOfAttempts = 10;
 	private long waitBeforeRetry = 1000;
+	private boolean fileTimeSensitive=false;
 
 	//TODO: check if this is thread-safe
 	private String inputFileName=null;
@@ -236,7 +242,16 @@ public class DirectoryListener implements IPullingListener, INamedObject, HasPhy
 	 * Override this method for your specific needs! 
 	 */
 	public String getIdFromRawMessage(Object rawMessage, Map threadContext) throws ListenerException {
-		String correlationId = rawMessage.toString();
+		String filename= rawMessage.toString();
+		String correlationId=filename;
+		if (isFileTimeSensitive()) {
+			try {
+				File f=new File(filename);
+				correlationId+="-"+DateUtils.format(f.lastModified());
+			} catch (Exception e) {
+				throw new ListenerException("Could not get filetime from filename ["+filename+"]",e);
+			}
+		}
 		PipeLineSession.setListenerParameters(threadContext, correlationId, correlationId, null, null);
 		return correlationId;
 	}
@@ -300,7 +315,7 @@ public class DirectoryListener implements IPullingListener, INamedObject, HasPhy
 	}
 
 	public String getPhysicalDestinationName() {
-		return "pattern ["+getWildcard()+"] to exclusion of ["+getExcludeWildcard()+"] in directory ["+ getInputDirectory()+"]";
+		return "wildcard pattern ["+getWildcard()+"] "+(getExcludeWildcard()==null?"":"excluding ["+getExcludeWildcard()+"] ")+"inputDirectory ["+ getInputDirectory()+"]";
 	}
 
 	
@@ -452,6 +467,13 @@ public class DirectoryListener implements IPullingListener, INamedObject, HasPhy
 	}
 	public boolean isDelete() {
 		return delete;
+	}
+
+	public void setFileTimeSensitive(boolean b) {
+		fileTimeSensitive = b;
+	}
+	public boolean isFileTimeSensitive() {
+		return fileTimeSensitive;
 	}
 
 }
