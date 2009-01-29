@@ -1,6 +1,9 @@
 /*
  * $Log: Misc.java,v $
- * Revision 1.22  2009-01-28 11:21:29  m168309
+ * Revision 1.23  2009-01-29 07:02:29  m168309
+ * removed "j2c.properties resource path" from getEnvironmentVariables()
+ *
+ * Revision 1.22  2009/01/28 11:21:29  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added "j2c.properties resource path" to getEnvironmentVariables()
  *
  * Revision 1.21  2008/12/15 12:21:06  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -82,7 +85,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class Misc {
-	public static final String version="$RCSfile: Misc.java,v $ $Revision: 1.22 $ $Date: 2009-01-28 11:21:29 $";
+	public static final String version="$RCSfile: Misc.java,v $ $Revision: 1.23 $ $Date: 2009-01-29 07:02:29 $";
 	static Logger log = LogUtil.getLogger(Misc.class);
 	public static final int BUFFERSIZE=20000;
 	public static final String DEFAULT_INPUT_STREAM_ENCODING="UTF-8";
@@ -469,12 +472,6 @@ public class Misc {
 				props.setProperty(key,value);
 			}
 		}
-
-		URL url = ClassUtils.getResourceURL(Misc.class, "j2c.properties");
-		String key = "{j2c.properties resource path}";
-		String value = url.getPath();
-		props.setProperty(key,value);
-
 		return props;
 	}
 
