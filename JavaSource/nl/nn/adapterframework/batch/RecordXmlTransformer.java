@@ -1,6 +1,9 @@
 /*
  * $Log: RecordXmlTransformer.java,v $
- * Revision 1.14  2008-12-23 12:48:46  m168309
+ * Revision 1.15  2009-01-30 09:06:13  m168309
+ * bugfix - removed double xml escaping
+ *
+ * Revision 1.14  2008/12/23 12:48:46  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added endOfRecord attribute
  *
  * Revision 1.13  2008/07/17 16:13:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -86,7 +89,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class RecordXmlTransformer extends AbstractRecordHandler {
-	public static final String version = "$RCSfile: RecordXmlTransformer.java,v $  $Revision: 1.14 $ $Date: 2008-12-23 12:48:46 $";
+	public static final String version = "$RCSfile: RecordXmlTransformer.java,v $  $Revision: 1.15 $ $Date: 2009-01-30 09:06:13 $";
 
 	private String rootTag="record";
 	private String xpathExpression=null;
@@ -143,14 +146,12 @@ public class RecordXmlTransformer extends AbstractRecordHandler {
 			String value = "";
 			if (ndx < parsedRecord.size()) {
 				value = (String)parsedRecord.get(ndx++);
-				//value = XmlUtils.encodeChars((String)parsedRecord.get(ndx++));
 				if (!it.hasNext() && !StringUtils.isEmpty(endOfRecord)) {
 					if (value.endsWith(endOfRecord)) {
 						int ei = value.length() - endOfRecord.length();
 						value = value.substring(0, ei);
 					}
 				}
-				value = XmlUtils.encodeChars(value);
 			}
 			// if tagname is empty, then it is not added to the XML
 			if (! StringUtils.isEmpty(tagName)) {
