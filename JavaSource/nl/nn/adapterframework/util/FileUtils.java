@@ -1,6 +1,9 @@
 /*
  * $Log: FileUtils.java,v $
- * Revision 1.14  2009-01-08 16:40:36  L190409
+ * Revision 1.15  2009-02-04 13:04:07  m168309
+ * added appendFile()
+ *
+ * Revision 1.14  2009/01/08 16:40:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added getWeeklyRollingFile()
  *
  * Revision 1.13  2008/09/04 12:17:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -43,7 +46,9 @@
 package nl.nn.adapterframework.util;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FilenameFilter;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -63,6 +68,7 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 
 
 /**
@@ -72,7 +78,8 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class FileUtils {
-	public static final String version = "$RCSfile: FileUtils.java,v $  $Revision: 1.14 $ $Date: 2009-01-08 16:40:36 $";
+	public static final String version = "$RCSfile: FileUtils.java,v $  $Revision: 1.15 $ $Date: 2009-02-04 13:04:07 $";
+	static Logger log = LogUtil.getLogger(FileUtils.class);
 
 	/**
 	 * Construct a filename from a pattern and session variables. 
@@ -193,6 +200,40 @@ public class FileUtils {
 			}
 		}
 		return null;
+	}
+
+	public static String appendFile(File orgFile, File destFile, int nrRetries, long waitTime) throws InterruptedException {
+		int errCount = 0;
+		
+		while (errCount++ < nrRetries) {
+			boolean success = copyFile(orgFile, destFile, true);
+			
+			if (! success) {
+				Thread.sleep(waitTime);
+			}
+			else {
+				return destFile.getAbsolutePath();
+			}
+		}
+		return null;
+	}
+
+	private static boolean copyFile(File orgFile, File destFile, boolean append) {
+		try {
+			FileInputStream fis = new FileInputStream(orgFile);
+			FileOutputStream fos = new FileOutputStream(destFile, append);
+			byte[] buf = new byte[1024];
+			int len;
+			while ((len = fis.read(buf)) > 0) {
+				fos.write(buf, 0, len);
+			}
+			fis.close();
+			fos.close();
+		} catch (IOException e) {
+			log.warn("Could not copy file ["+orgFile.getPath()+"] to ["+destFile.getPath()+"]", e);
+			return false;
+		}
+		return true;
 	}
 
 	/**
