@@ -1,6 +1,9 @@
 /*
  * $Log: MoveFilePipe.java,v $
- * Revision 1.4  2008-02-19 09:58:31  europe\L190409
+ * Revision 1.5  2009-02-04 13:05:47  m168309
+ * added attributes move2file, move2fileSessionKey and append
+ *
+ * Revision 1.4  2008/02/19 09:58:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.3  2008/02/15 14:10:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -52,10 +55,13 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setName(String) name}</td><td>name of the sender</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setFilename(String) filename}</td><td>The name of the file to move (if not specified, the input for this pipe is assumed to be the name of the file</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMove2dir(String) move2dir}</td><td>destination directory</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setMove2file(String) move2file}</td><td>The name of the destination file (if not specified, the name of the file to move is taken)</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setMove2fileSessionKey(String) move2fileSessionKey}</td><td>The session key that contains the name of the file to use (only used if fileName is not set)</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setNumberOfBackups(int) numberOfBackups}</td><td>number of copies held of a file with the same name. Backup files have a dot and a number suffixed to their name. If set to 0, no backups will be kept.</td><td>5</td></tr>
  * <tr><td>{@link #setOverwrite(boolean) overwrite}</td><td>when set <code>true</code>, the destination file will be deleted if it already exists</td><td>false</td></tr>
  * <tr><td>{@link #setNumberOfAttempts(int) numberOfAttempts}</td><td>maximum number of attempts before throwing an exception</td><td>10</td></tr>
  * <tr><td>{@link #setWaitBeforeRetry(long) waitBeforeRetry}</td><td>Time between attempts</td><td>1000 [ms]</td></tr>
+ * <tr><td>{@link #setAppend(boolean) append}</td><td> when set <code>true</code> and the destination file already exists, the content of the file to move is written to the end of the destination file. This implies <code>overwrite=true</code></td><td>false</td></tr>
  * </table>
  * </p>
  * 
@@ -65,18 +71,24 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class MoveFilePipe extends FixedForwardPipe {
-	public static final String version = "$RCSfile: MoveFilePipe.java,v $  $Revision: 1.4 $ $Date: 2008-02-19 09:58:31 $";
+	public static final String version = "$RCSfile: MoveFilePipe.java,v $  $Revision: 1.5 $ $Date: 2009-02-04 13:05:47 $";
 
 	private String filename;
 	private String move2dir;
+	private String move2file;
+	protected String move2fileSessionKey;
 	private int numberOfAttempts = 10;
 	private long waitBeforeRetry = 1000;
 	private int numberOfBackups = 5;
 	private boolean overwrite = false;
+	private boolean append = false;
 	
 		
 	public void configure() throws ConfigurationException {
 		super.configure();
+		if (isAppend()) {
+			setOverwrite(false);
+		}
 		if (StringUtils.isEmpty(getMove2dir())) {
 			throw new ConfigurationException("Property [move2dir] is not set");
 		}
@@ -87,29 +99,45 @@ public class MoveFilePipe extends FixedForwardPipe {
 	 */
 	public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRunException {
 		String orgFilename;
+		String dstFilename;
+
 		if (StringUtils.isEmpty(getFilename())) {
 			orgFilename = input.toString();
 		} else {
 			orgFilename = getFilename();
 		}
-		try {
-			File srcFile = new File(orgFilename);
-			String dstFilename = srcFile.getName();
+		File srcFile = new File(orgFilename);
 
-			File dstFile = new File(getMove2dir(), dstFilename);
-			if (FileUtils.moveFile(srcFile, dstFile, isOverwrite(), getNumberOfBackups(), getNumberOfAttempts(), getWaitBeforeRetry()) == null) {
-				throw new PipeRunException(this, "Could not move file [" + orgFilename + "] directory ["+getMove2dir()+"]"); 
+		if (StringUtils.isEmpty(getMove2file())) {
+			if (StringUtils.isEmpty(getMove2fileSessionKey())) {
+				dstFilename = srcFile.getName();
 			} else {
-				log.info(getLogPrefix(session)+"moved ["+srcFile.getAbsolutePath()+"] to ["+dstFile.getAbsolutePath()+"]");
-			}			 
-			return new PipeRunResult(getForward(), dstFile.getAbsolutePath());
+				dstFilename = (String)session.get(getMove2fileSessionKey());
+			}
+		} else {
+			dstFilename = getMove2file();
 		}
-		catch(PipeRunException e) {
-			throw e;
+		File dstFile = new File(getMove2dir(), dstFilename);
+
+		try {
+			if (isAppend()) {
+				if (FileUtils.appendFile(srcFile,dstFile,getNumberOfAttempts(), getWaitBeforeRetry()) == null) {
+					throw new PipeRunException(this, "Could not move file [" + srcFile.getAbsolutePath() + "] to file ["+dstFile.getAbsolutePath()+"]"); 
+				} else {
+					srcFile.delete();
+					log.info(getLogPrefix(session)+"moved file ["+srcFile.getAbsolutePath()+"] to file ["+dstFile.getAbsolutePath()+"]");
+				}			 
+			} else {
+				if (FileUtils.moveFile(srcFile, dstFile, isOverwrite(), getNumberOfBackups(), getNumberOfAttempts(), getWaitBeforeRetry()) == null) {
+					throw new PipeRunException(this, "Could not move file [" + srcFile.getAbsolutePath() + "] to file ["+dstFile.getAbsolutePath()+"]"); 
+				} else {
+					log.info(getLogPrefix(session)+"moved file ["+srcFile.getAbsolutePath()+"] to file ["+dstFile.getAbsolutePath()+"]");
+				}			 
+			}
+		} catch(Exception e) {
+			throw new PipeRunException(this, "Error while moving file [" + srcFile.getAbsolutePath() + "] to file ["+dstFile.getAbsolutePath()+"]", e); 
 		}
-		catch(Exception e) {
-			throw new PipeRunException(this, "Error while moving file [" + orgFilename + "] to directory ["+getMove2dir()+"]", e); 
-		}
+		return new PipeRunResult(getForward(), dstFile.getAbsolutePath());
 	}
 
 
@@ -129,6 +157,19 @@ public class MoveFilePipe extends FixedForwardPipe {
 		return move2dir;
 	}
 
+	public void setMove2file(String string) {
+		move2file = string;
+	}
+	public String getMove2file() {
+		return move2file;
+	}
+
+	public void setMove2fileSessionKey(String move2fileSessionKey) {
+		this.move2fileSessionKey = move2fileSessionKey;
+	}
+	public String getMove2fileSessionKey() {
+		return move2fileSessionKey;
+	}
 
 	public void setNumberOfAttempts(int i) {
 		numberOfAttempts = i;
@@ -160,4 +201,10 @@ public class MoveFilePipe extends FixedForwardPipe {
 		return overwrite;
 	}
 
+	public void setAppend(boolean b) {
+		append = b;
+	}
+	public boolean isAppend() {
+		return append;
+	}
 }
