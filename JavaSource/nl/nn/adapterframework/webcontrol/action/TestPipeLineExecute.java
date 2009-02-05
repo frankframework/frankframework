@@ -1,6 +1,9 @@
 /*
  * $Log: TestPipeLineExecute.java,v $
- * Revision 1.13  2008-12-24 10:57:52  m168309
+ * Revision 1.14  2009-02-05 14:08:37  m168309
+ * bugfix - non xml strings results in error
+ *
+ * Revision 1.13  2008/12/24 10:57:52  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added context facility (in xml processing instructions)
  *
  * Revision 1.12  2008/12/16 13:37:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -64,7 +67,7 @@ import org.apache.struts.upload.FormFile;
  * @version Id
  */
 public final class TestPipeLineExecute extends ActionBase {
-	public static final String version="$RCSfile: TestPipeLineExecute.java,v $  $Revision: 1.13 $ $Date: 2008-12-24 10:57:52 $";
+	public static final String version="$RCSfile: TestPipeLineExecute.java,v $  $Revision: 1.14 $ $Date: 2009-02-05 14:08:37 $";
 	
 	public ActionForward execute(
 	    ActionMapping mapping,
@@ -185,19 +188,21 @@ public final class TestPipeLineExecute extends ActionBase {
 		PipeLineSession pls=new PipeLineSession();
 		Map ibisContexts = XmlUtils.getIbisContext(message);
 		String technicalCorrelationId = null;
-		String contextDump = "ibisContext:";
-		for (Iterator it = ibisContexts.keySet().iterator(); it.hasNext();) {
-			String key = (String)it.next();
-			String value = (String)ibisContexts.get(key);
-			contextDump = contextDump + "\n " + key + "=[" + value + "]";
-			if (key.equals(PipeLineSession.technicalCorrelationIdKey)) {
-				technicalCorrelationId = value;
-			} else {
-				pls.put(key, value);
+		if (ibisContexts!=null) {
+			String contextDump = "ibisContext:";
+			for (Iterator it = ibisContexts.keySet().iterator(); it.hasNext();) {
+				String key = (String)it.next();
+				String value = (String)ibisContexts.get(key);
+				contextDump = contextDump + "\n " + key + "=[" + value + "]";
+				if (key.equals(PipeLineSession.technicalCorrelationIdKey)) {
+					technicalCorrelationId = value;
+				} else {
+					pls.put(key, value);
+				}
 			}
-		}
-		if (log.isDebugEnabled()) {
-			log.debug(contextDump);
+			if (log.isDebugEnabled()) {
+				log.debug(contextDump);
+			}
 		}
 		Date now=new Date();
 		PipeLineSession.setListenerParameters(pls,messageId,technicalCorrelationId,now,now);
