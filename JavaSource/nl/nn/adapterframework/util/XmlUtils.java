@@ -1,6 +1,9 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.57  2008-12-24 10:53:47  m168309
+ * Revision 1.58  2009-02-05 14:07:25  m168309
+ * getIbisContext only for xml strings
+ *
+ * Revision 1.57  2008/12/24 10:53:47  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added getIbisContext
  *
  * Revision 1.56  2008/12/16 13:33:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -247,7 +250,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * @version Id
  */
 public class XmlUtils {
-	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.57 $ $Date: 2008-12-24 10:53:47 $";
+	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.58 $ $Date: 2009-02-05 14:07:25 $";
 	static Logger log = LogUtil.getLogger(XmlUtils.class);
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
@@ -1569,43 +1572,47 @@ public class XmlUtils {
 	}
 
 	public static Map getIbisContext(String input) {
-		String getIbisContext_xslt = XmlUtils.makeGetIbisContextXslt();
-		try {
-			Transformer t = XmlUtils.createTransformer(getIbisContext_xslt);
-			String str = XmlUtils.transformXml(t, input);
-			Map ibisContexts = new LinkedHashMap();
-			int indexBraceOpen = str.indexOf("{");
-			int indexBraceClose = 0;
-			int indexStartNextSearch = 0;
-			while (indexBraceOpen >= 0) {
-				indexBraceClose = str.indexOf("}",indexBraceOpen+1);
-				if (indexBraceClose > indexBraceOpen) {
-					String ibisContextLength = str.substring(indexBraceOpen+1, indexBraceClose);
-					int icLength = Integer.parseInt(ibisContextLength);
-					if (icLength > 0) {
-						indexStartNextSearch = indexBraceClose + 1 + icLength;
-						String ibisContext = str.substring(indexBraceClose+1, indexStartNextSearch);
-						int indexEqualSign = ibisContext.indexOf("=");
-						String key;
-						String value;
-						if (indexEqualSign < 0) {
-							key = ibisContext;
-							value = "";
+		if (isWellFormed(input)) {
+			String getIbisContext_xslt = XmlUtils.makeGetIbisContextXslt();
+			try {
+				Transformer t = XmlUtils.createTransformer(getIbisContext_xslt);
+				String str = XmlUtils.transformXml(t, input);
+				Map ibisContexts = new LinkedHashMap();
+				int indexBraceOpen = str.indexOf("{");
+				int indexBraceClose = 0;
+				int indexStartNextSearch = 0;
+				while (indexBraceOpen >= 0) {
+					indexBraceClose = str.indexOf("}",indexBraceOpen+1);
+					if (indexBraceClose > indexBraceOpen) {
+						String ibisContextLength = str.substring(indexBraceOpen+1, indexBraceClose);
+						int icLength = Integer.parseInt(ibisContextLength);
+						if (icLength > 0) {
+							indexStartNextSearch = indexBraceClose + 1 + icLength;
+							String ibisContext = str.substring(indexBraceClose+1, indexStartNextSearch);
+							int indexEqualSign = ibisContext.indexOf("=");
+							String key;
+							String value;
+							if (indexEqualSign < 0) {
+								key = ibisContext;
+								value = "";
+							} else {
+								key = ibisContext.substring(0,indexEqualSign);
+								value = ibisContext.substring(indexEqualSign+1);
+							}
+							ibisContexts.put(key, value);
 						} else {
-							key = ibisContext.substring(0,indexEqualSign);
-							value = ibisContext.substring(indexEqualSign+1);
+							indexStartNextSearch = indexBraceClose + 1;
 						}
-						ibisContexts.put(key, value);
 					} else {
-						indexStartNextSearch = indexBraceClose + 1;
+						indexStartNextSearch = indexBraceOpen + 1;
 					}
-				} else {
-					indexStartNextSearch = indexBraceOpen + 1;
+					indexBraceOpen = str.indexOf("{",indexStartNextSearch);
 				}
-				indexBraceOpen = str.indexOf("{",indexStartNextSearch);
+				return ibisContexts;
+			} catch (Exception e) {
+				return null;
 			}
-			return ibisContexts;
-		} catch (Exception e) {
+		} else {
 			return null;
 		}
 	}
