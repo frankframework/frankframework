@@ -1,6 +1,9 @@
 /*
  * $Log: JobDef.java,v $
- * Revision 1.10  2008-09-04 13:27:27  europe\L190409
+ * Revision 1.11  2009-02-10 10:46:19  m168309
+ * Replaced deprecated class
+ *
+ * Revision 1.10  2008/09/04 13:27:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * restructured job scheduling
  *
  * Revision 1.9  2008/08/27 16:21:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -23,7 +26,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.jdbc.DirectQuerySender;
-import nl.nn.adapterframework.pipes.IbisLocalSender;
+import nl.nn.adapterframework.senders.IbisLocalSender;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.HasStatistics;
 import nl.nn.adapterframework.util.LogUtil;

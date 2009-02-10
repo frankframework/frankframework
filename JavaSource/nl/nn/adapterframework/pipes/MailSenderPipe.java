@@ -1,10 +1,15 @@
 /*
  * $Log: MailSenderPipe.java,v $
- * Revision 1.5  2005-10-17 11:31:43  europe\L190409
+ * Revision 1.6  2009-02-10 10:44:10  m168309
+ * Replaced deprecated class
+ *
+ * Revision 1.5  2005/10/17 11:31:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * simplified code
  * 
  */
 package nl.nn.adapterframework.pipes;
+
+import nl.nn.adapterframework.senders.MailSender;
 
 /**
  * Pipe that sends a mail-message using a {@link MailSender} as its sender.
@@ -55,7 +60,7 @@ package nl.nn.adapterframework.pipes;
  */
 
 public class MailSenderPipe extends MessageSendingPipe {
-	public static final String version = "$RCSfile: MailSenderPipe.java,v $ $Revision: 1.5 $ $Date: 2005-10-17 11:31:43 $";
+	public static final String version = "$RCSfile: MailSenderPipe.java,v $ $Revision: 1.6 $ $Date: 2009-02-10 10:44:10 $";
 		
 	public MailSenderPipe() {
 		super();
