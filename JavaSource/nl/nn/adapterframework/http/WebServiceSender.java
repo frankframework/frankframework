@@ -1,6 +1,9 @@
 /*
  * $Log: WebServiceSender.java,v $
- * Revision 1.21  2008-12-30 17:01:13  m168309
+ * Revision 1.22  2009-02-10 10:58:23  m168309
+ * removed configuration warning when attribute SoapActionURI is empty
+ *
+ * Revision 1.21  2008/12/30 17:01:13  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added configuration warnings facility (in Show configurationStatus)
  *
  * Revision 1.20  2008/10/31 15:02:17  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -124,7 +127,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * @since 4.2c
  */
 public class WebServiceSender extends HttpSender {
-	public static final String version = "$RCSfile: WebServiceSender.java,v $ $Revision: 1.21 $ $Date: 2008-12-30 17:01:13 $";
+	public static final String version = "$RCSfile: WebServiceSender.java,v $ $Revision: 1.22 $ $Date: 2009-02-10 10:58:23 $";
 	
 	private String soapActionURI = "";
 	private String encodingStyleURI=null;
@@ -151,11 +154,13 @@ public class WebServiceSender extends HttpSender {
 	public void configure() throws ConfigurationException {
 		super.configure();
 		soapWrapper=SoapWrapper.getInstance();
+/*
 		if (StringUtils.isEmpty(getSoapActionURI())) {
 			ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 			String msg = getLogPrefix()+"no soapActionURI found, please check if this is appropriate";
 			configWarnings.add(log, msg);
 		}
+*/
 		if (StringUtils.isNotEmpty(getWssAuthAlias()) || 
 			StringUtils.isNotEmpty(getWssUserName())) {
 				wsscf = new CredentialFactory(getWssAuthAlias(), getWssUserName(), getWssPassword());
