@@ -9,8 +9,22 @@
 	<xsl:template match="browseJdbcTableExecuteREQ">
 		<xsl:choose>
 			<xsl:when test="$numberOfRowsOnly='true'">
-				<xsl:text>SELECT COUNT(*) AS ROWCOUNT FROM </xsl:text>
-				<xsl:value-of select="$tableName"/>
+				<xsl:choose>
+					<xsl:when test="string-length($order)&gt;0">
+						<xsl:text>SELECT </xsl:text>
+						<xsl:value-of select="$order"/>
+						<xsl:text>, COUNT(*) AS ROWCOUNT FROM </xsl:text>
+						<xsl:value-of select="$tableName"/>
+						<xsl:text> GROUP BY </xsl:text>
+						<xsl:value-of select="$order"/>
+						<xsl:text> ORDER BY </xsl:text>
+						<xsl:value-of select="$order"/>
+					</xsl:when>
+					<xsl:otherwise>
+						<xsl:text>SELECT COUNT(*) AS ROWCOUNT FROM </xsl:text>
+						<xsl:value-of select="$tableName"/>
+					</xsl:otherwise>
+				</xsl:choose>
 			</xsl:when>
 			<xsl:otherwise>
 				<xsl:if test="$rownumMin&gt;0 or $rownumMax&gt;0">
