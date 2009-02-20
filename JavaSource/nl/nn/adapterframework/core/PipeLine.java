@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.74  2008-12-05 09:46:23  m168309
+ * Revision 1.75  2009-02-20 12:52:28  m168309
+ * added attribute concurrentExecute
+ *
+ * Revision 1.74  2008/12/05 09:46:23  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * clarified transaction management logging
  *
  * Revision 1.73  2008/12/05 09:40:59  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -238,6 +241,8 @@ import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.RunStateEnum;
+import nl.nn.adapterframework.util.RunStateManager;
 import nl.nn.adapterframework.util.Semaphore;
 import nl.nn.adapterframework.util.SpringTxManagerProxy;
 import nl.nn.adapterframework.util.StatisticsKeeper;
@@ -285,6 +290,7 @@ import org.springframework.transaction.TransactionStatus;
  *  </table></td><td>Supports</td></tr>
  * <tr><td>{@link #setTransactionTimeout(int) transactionTimeout}</td><td>Timeout (in seconds) of transaction started to process a message.</td><td><code>0</code> (use system default)</code></td></tr>
  * <tr><td>{@link #setStoreOriginalMessageWithoutNamespaces(boolean) storeOriginalMessageWithoutNamespaces}</td><td>when set <code>true</code> the original message without namespaces (and prefixes) is stored under the session key originalMessageWithoutNamespaces</td><td>false</td></tr>
+ * <tr><td>{@link #setConcurrentExecute(boolean) concurrentExecute}</td><td>when set to <code>false</code> it is not possible to execute a pipeline concurrently. If the pipeline receives a message and it's already processing a message a PipeRunException is thrown</td><td>true</td></tr>
  * </table>
  * </p>
  * <table border="1">
@@ -324,7 +330,7 @@ import org.springframework.transaction.TransactionStatus;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.74 $ $Date: 2008-12-05 09:46:23 $";
+	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.75 $ $Date: 2009-02-20 12:52:28 $";
     private Logger log = LogUtil.getLogger(this);
 	private Logger durationLog = LogUtil.getLogger("LongDurationMessages");
     
@@ -356,6 +362,9 @@ public class PipeLine {
 	private boolean storeOriginalMessageWithoutNamespaces=false;
 
 	private List exitHandlers = new ArrayList();
+
+	private boolean concurrentExecute=true;
+	private RunStateManager runState = new RunStateManager();
     
 	/**
 	 * Register an Pipe at this pipeline.
@@ -544,31 +553,47 @@ public class PipeLine {
 	 * @throws PipeRunException when something went wrong in the pipes.
 	 */
 	public PipeLineResult process(String messageId, String message, PipeLineSession pipeLineSession) throws PipeRunException {
+		if (!isConcurrentExecute()) {
+			synchronized (runState) {
+				RunStateEnum currentRunState = runState.getRunState();
+				if (currentRunState.equals(RunStateEnum.STARTED)) {
+					throw new PipeRunException(null, "Pipeline of adapter ["+ owner.getName()+"] is already running");
+				} else {
+					runState.setRunState(RunStateEnum.STARTED);
+				}
+			}
+		}
+
+		try {
+			if (pipeLineSession==null) {
+				pipeLineSession= new PipeLineSession();
+			}
+			// reset the PipeLineSession and store the message and its id in the session
+			if (messageId==null) {
+					messageId=Misc.createSimpleUUID();
+					log.error("null value for messageId, setting to ["+messageId+"]");
 	
-		if (pipeLineSession==null) {
-			pipeLineSession= new PipeLineSession();
-		}
-		// reset the PipeLineSession and store the message and its id in the session
-		if (messageId==null) {
-				messageId=Misc.createSimpleUUID();
-				log.error("null value for messageId, setting to ["+messageId+"]");
-	
-		}
-		if (message == null) {
-			throw new PipeRunException(null, "Pipeline of adapter ["+ owner.getName()+"] received null message");
-		}
-		// store message and messageId in the pipeLineSession
-		pipeLineSession.set(message, messageId);
+			}
+			if (message == null) {
+				throw new PipeRunException(null, "Pipeline of adapter ["+ owner.getName()+"] received null message");
+			}
+			// store message and messageId in the pipeLineSession
+			pipeLineSession.set(message, messageId);
         
-        try {
-            return runPipeLineObeyingTransactionAttribute(
-                messageId,
-                message,
-                pipeLineSession);
-        } catch (RuntimeException e) {
-            throw new PipeRunException(null, "RuntimeException calling PipeLine with tx attribute ["
-                + getTransactionAttribute() + "]", e);
-        }
+			try {
+				return runPipeLineObeyingTransactionAttribute(
+					messageId,
+					message,
+					pipeLineSession);
+			} catch (RuntimeException e) {
+				throw new PipeRunException(null, "RuntimeException calling PipeLine with tx attribute ["
+					+ getTransactionAttribute() + "]", e);
+			}
+		} finally {
+			if (!isConcurrentExecute()) {
+				runState.setRunState(RunStateEnum.STOPPED);
+			}
+		}
 	}
     
     private PipeLineResult runPipeLineObeyingTransactionAttribute(String messageId, String message, PipeLineSession session) throws PipeRunException {
@@ -1104,5 +1129,12 @@ public class PipeLine {
 	}
 	public boolean isStoreOriginalMessageWithoutNamespaces() {
 		return storeOriginalMessageWithoutNamespaces;
+	}
+
+	public void setConcurrentExecute(boolean b) {
+		concurrentExecute = b;
+	}
+	public boolean isConcurrentExecute() {
+		return concurrentExecute;
 	}
 }
