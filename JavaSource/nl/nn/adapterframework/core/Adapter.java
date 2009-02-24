@@ -1,6 +1,9 @@
 /*
  * $Log: Adapter.java,v $
- * Revision 1.49  2008-09-22 13:28:45  europe\L190409
+ * Revision 1.50  2009-02-24 14:25:37  L190409
+ * avoid NPE on wait statistics while iterating over statistics
+ *
+ * Revision 1.49  2008/09/22 13:28:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * use CounterStatistics for counters
  * changed references to Hashtable to Map
  * output statistics in order of Pipes
@@ -221,7 +224,7 @@ import org.springframework.core.task.TaskExecutor;
  */
 
 public class Adapter implements IAdapter, NamedBean {
-	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.49 $ $Date: 2008-09-22 13:28:45 $";
+	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.50 $ $Date: 2009-02-24 14:25:37 $";
 	private Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -451,8 +454,12 @@ public class Adapter implements IAdapter, NamedBean {
 			String pipeName = pipe.getName();
 
 			StatisticsKeeper pstat = (StatisticsKeeper) pipelineStatistics.get(pipeName);
-			hski.handleStatisticsKeeper(pipestatData,pstat);
-			pstat.performAction(action);
+			if (pstat==null) {
+				log.warn("no statistics found for pipe ["+pipeName+"]");
+			} else {
+				hski.handleStatisticsKeeper(pipestatData,pstat);
+				pstat.performAction(action);
+			}
 			if (pipe instanceof HasStatistics) {
 				((HasStatistics) pipe).iterateOverStatistics(hski, pipestatData,action);
 			}
@@ -467,8 +474,10 @@ public class Adapter implements IAdapter, NamedBean {
 				IPipe pipe = (IPipe)it.next();
 				String pipeName = pipe.getName();
 				StatisticsKeeper pstat = (StatisticsKeeper) pipelineStatistics.get(pipeName);
-				hski.handleStatisticsKeeper(pipestatData,pstat);
-				pstat.performAction(action);
+				if (pstat!=null) {
+					hski.handleStatisticsKeeper(pipestatData,pstat);
+					pstat.performAction(action);
+				}
 			}
 			hski.closeGroup(pipestatData);
 		}
