@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.75  2009-02-20 12:52:28  m168309
+ * Revision 1.76  2009-02-24 09:45:27  m168309
+ * added configureScheduledJob method
+ *
+ * Revision 1.75  2009/02/20 12:52:28  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added attribute concurrentExecute
  *
  * Revision 1.74  2008/12/05 09:46:23  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -235,7 +238,9 @@ import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.debug.IbisDebugger;
+import nl.nn.adapterframework.scheduler.JobDef;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.JtaUtil;
@@ -330,7 +335,7 @@ import org.springframework.transaction.TransactionStatus;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.75 $ $Date: 2009-02-20 12:52:28 $";
+	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.76 $ $Date: 2009-02-24 09:45:27 $";
     private Logger log = LogUtil.getLogger(this);
 	private Logger durationLog = LogUtil.getLogger("LongDurationMessages");
     
@@ -364,6 +369,7 @@ public class PipeLine {
 	private List exitHandlers = new ArrayList();
 
 	private boolean concurrentExecute=true;
+	private boolean concurrentExecuteDeclared=false;
 	private RunStateManager runState = new RunStateManager();
     
 	/**
@@ -499,6 +505,16 @@ public class PipeLine {
 		txDef = SpringTxManagerProxy.getTransactionDefinition(txOption,getTransactionTimeout());
 		log.debug("Pipeline of ["+owner.getName()+"] successfully configured");
 	}
+
+	public void configureScheduledJob(JobDef jobDef) throws ConfigurationException {
+		if (!concurrentExecuteDeclared) {
+			ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+			String msg = "jobdef ["+jobDef.getName()+"] concurrentExecute for PipeLine is not set, concurrentExecute=true is assumed";
+			configWarnings.add(log, msg);
+		}
+	}
+
+
     /**
      * @return the number of pipes in the pipeline
      */
@@ -1133,6 +1149,7 @@ public class PipeLine {
 
 	public void setConcurrentExecute(boolean b) {
 		concurrentExecute = b;
+		concurrentExecuteDeclared = true;
 	}
 	public boolean isConcurrentExecute() {
 		return concurrentExecute;

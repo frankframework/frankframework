@@ -1,6 +1,9 @@
 /*
  * $Log: JobDef.java,v $
- * Revision 1.11  2009-02-10 10:46:19  m168309
+ * Revision 1.12  2009-02-24 09:45:42  m168309
+ * added configureScheduledJob method
+ *
+ * Revision 1.11  2009/02/10 10:46:19  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * Replaced deprecated class
  *
  * Revision 1.10  2008/09/04 13:27:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -24,6 +27,7 @@ package nl.nn.adapterframework.scheduler;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisManager;
+import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.jdbc.DirectQuerySender;
 import nl.nn.adapterframework.senders.IbisLocalSender;
@@ -384,6 +388,10 @@ public class JobDef {
 					}
 				}
 			}
+		}
+		if (getFunction().equalsIgnoreCase(JOB_FUNCTION_SEND_MESSAGE)) {
+			Adapter adapter = (Adapter) config.getRegisteredAdapter(getAdapterName());
+			adapter.getPipeLine().configureScheduledJob(this);
 		}
 	}
 
