@@ -1,6 +1,9 @@
 /*
  * $Log: IteratingPipe.java,v $
- * Revision 1.12  2008-06-26 12:53:00  europe\L190409
+ * Revision 1.13  2009-02-25 10:41:01  m168309
+ * added attribute item in result tag
+ *
+ * Revision 1.12  2008/06/26 12:53:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * itemno sessionkey
  *
  * Revision 1.11  2008/05/27 16:58:08  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -163,7 +166,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public abstract class IteratingPipe extends MessageSendingPipe {
-	public static final String version="$RCSfile: IteratingPipe.java,v $ $Revision: 1.12 $ $Date: 2008-06-26 12:53:00 $";
+	public static final String version="$RCSfile: IteratingPipe.java,v $ $Revision: 1.13 $ $Date: 2009-02-25 10:41:01 $";
 
 	private String stopConditionXPathExpression=null;
 	private boolean removeXmlDeclarationInResults=false;
@@ -290,7 +293,7 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 						itemResult = XmlUtils.skipXmlDeclaration(itemResult);
 					} 
 					if (log.isDebugEnabled()) log.debug(getLogPrefix(session)+"partial result ["+itemResult+"]");
-					itemResult = "<result>\n"+itemResult+"\n</result>";
+					itemResult = "<result item=\"" + count + "\">\n"+itemResult+"\n</result>";
 					results += itemResult+"\n";
 				}
 
