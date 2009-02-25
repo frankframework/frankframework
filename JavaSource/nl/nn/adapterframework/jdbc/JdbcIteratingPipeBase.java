@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcIteratingPipeBase.java,v $
- * Revision 1.3  2008-05-21 09:37:34  europe\L190409
+ * Revision 1.4  2009-02-25 10:43:05  m168309
+ * added lockRows attribute
+ *
+ * Revision 1.3  2008/05/21 09:37:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * allow for query to be passed as inputmessage
  *
  * Revision 1.2  2008/05/15 14:37:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -91,6 +94,7 @@ import nl.nn.adapterframework.util.JdbcUtil;
  * <tr><td>{@link #setRemoveXmlDeclarationInResults(boolean) removeXmlDeclarationInResults}</td><td>postprocess each partial result, to remove the xml-declaration, as this is not allowed inside an xml-document</td><td>false</td></tr>
  * <tr><td>{@link #setCollectResults(boolean) collectResults}</td><td>controls whether all the results of each iteration will be collected in one result message. If set <code>false</code>, only a small summary is returned</td><td>true</td></tr>
  * <tr><td>{@link #setQuery(String) query}</td><td>the SQL query text to be excecuted each time sendMessage() is called. When not set, the input message is taken as the query</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setLockRows(boolean) lockRows}</td><td>When set <code>true</code>, exclusive row-level locks are obtained on all the rows identified by the SELECT statement</td><td>false</td></tr>
  * <tr><td>{@link #setDatasourceName(String) datasourceName}</td><td>can be configured from JmsRealm, too</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setBlockSize(int) blockSize}</td><td>controls multiline behaviour. when set to a value greater than 0, it specifies the number of rows send in a block to the sender.</td><td>0 (one line at a time, no prefix of suffix)</td></tr>
  * <tr><td>{@link #setBlockPrefix(String) blockPrefix}</td><td>When <code>blockSize &gt; 0</code>, this string is inserted at the start of the set of lines.</td><td>&lt;block&gt;</td></tr>
@@ -123,15 +127,21 @@ import nl.nn.adapterframework.util.JdbcUtil;
 public abstract class JdbcIteratingPipeBase extends IteratingPipe {
 
 	private String query=null;
+	private boolean lockRows=false;
 	
 	protected JdbcQuerySenderBase querySender = new JdbcQuerySenderBase() {
 
 		protected PreparedStatement getStatement(Connection con, String correlationID, String message) throws JdbcException, SQLException {
+			String qry;
 			if (StringUtils.isNotEmpty(getQuery())) {
-				return prepareQuery(con,getQuery());
+				qry = getQuery();
 			} else {
-				return prepareQuery(con, message);
+				qry = message;
 			}
+			if (lockRows) {
+				qry = qry + " FOR UPDATE NOWAIT SKIP LOCKED";
+			}
+			return prepareQuery(con, qry);
 		}
 	};
 
@@ -236,4 +246,11 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe {
 		querySender.setJmsRealm(jmsRealmName);
 	}
 	
+	public void setLockRows(boolean b) {
+		lockRows = b;
+	}
+
+	public boolean isLockRows() {
+		return lockRows;
+	}
 }

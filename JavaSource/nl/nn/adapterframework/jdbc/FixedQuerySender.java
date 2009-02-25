@@ -1,6 +1,9 @@
 /*
  * $Log: FixedQuerySender.java,v $
- * Revision 1.17  2008-08-12 15:36:08  europe\L190409
+ * Revision 1.18  2009-02-25 10:43:05  m168309
+ * added lockRows attribute
+ *
+ * Revision 1.17  2008/08/12 15:36:08  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * test if query is specified
  *
  * Revision 1.16  2007/07/19 15:10:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -69,7 +72,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
  * <tr><td>classname</td><td>nl.nn.adapterframework.jdbc.FixedQuerySender</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td>  <td>name of the sender</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setQuery(String) query}</td><td>the SQL query text to be excecuted each time sendMessage() is called</td><td>&nbsp;</td></tr>
-
+ * <tr><td>{@link #setLockRows(boolean) lockRows}</td><td>When set <code>true</code>, exclusive row-level locks are obtained on all the rows identified by the SELECT statement</td><td>false</td></tr>
  * <tr><td>{@link #setDatasourceName(String) datasourceName}</td><td>can be configured from JmsRealm, too</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDatasourceNameXA(String) datasourceNameXA}</td><td>can be configured from JmsRealm, too</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setUsername(String) username}</td><td>username used to connect to datasource</td><td>&nbsp;</td></tr>
@@ -77,7 +80,6 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
  * <tr><td>{@link #setConnectionsArePooled(boolean) connectionsArePooled}</td><td>when true, it is assumed that an connectionpooling mechanism is present. Before a message is sent, a new connection is obtained, that is closed after the message is sent. When transacted is true, connectionsArePooled is true, too</td><td>true</td></tr>
  * <tr><td>{@link #setTransacted(boolean) transacted}</td><td>&nbsp;</td><td>false</td></tr>
  * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
-
  * <tr><td>{@link #setQueryType(String) queryType}</td><td>one of:
  * <ul><li>"select" for queries that return data</li>
  *     <li>"updateBlob" for queries that update a BLOB</li>
@@ -107,9 +109,10 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
  * @since 	4.1
  */
 public class FixedQuerySender extends JdbcQuerySenderBase {
-	public static final String version = "$RCSfile: FixedQuerySender.java,v $ $Revision: 1.17 $ $Date: 2008-08-12 15:36:08 $";
+	public static final String version = "$RCSfile: FixedQuerySender.java,v $ $Revision: 1.18 $ $Date: 2009-02-25 10:43:05 $";
 
 	private String query=null;
+	private boolean lockRows=false;
 
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -119,7 +122,11 @@ public class FixedQuerySender extends JdbcQuerySenderBase {
 	}
 		
 	protected PreparedStatement getStatement(Connection con, String correlationID, String message) throws JdbcException, SQLException {
-		return prepareQuery(con,getQuery());
+		String qry = getQuery();
+		if (lockRows) {
+			qry = qry + " FOR UPDATE NOWAIT SKIP LOCKED";
+		}
+		return prepareQuery(con, qry);
 	}
 
 	/**
@@ -133,5 +140,11 @@ public class FixedQuerySender extends JdbcQuerySenderBase {
 		return query;
 	}
 
+	public void setLockRows(boolean b) {
+		lockRows = b;
+	}
 
+	public boolean isLockRows() {
+		return lockRows;
+	}
 }
