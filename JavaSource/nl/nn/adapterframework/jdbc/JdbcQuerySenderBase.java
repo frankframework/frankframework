@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcQuerySenderBase.java,v $
- * Revision 1.36  2008-10-20 12:52:23  europe\m168309
+ * Revision 1.37  2009-03-03 14:38:35  L190409
+ * added support to put byte array as blob
+ *
+ * Revision 1.36  2008/10/20 12:52:23  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added blobSmartGet attribute
  *
  * Revision 1.35  2008/06/24 07:57:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -221,7 +224,7 @@ import sun.misc.BASE64Encoder;
  * @since 	4.1
  */
 public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
-	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.36 $ $Date: 2008-10-20 12:52:23 $";
+	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.37 $ $Date: 2009-03-03 14:38:35 $";
 
 	private String queryType = "other";
 	private int maxRows=-1; // return all rows
@@ -461,6 +464,8 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 					Misc.streamToStream(inStream,outStream);
 					outStream.close();
 				}
+			} else if (message instanceof byte[]) {
+				JdbcUtil.putByteArrayAsBlob(rs, blobColumn, (byte[])message, isBlobsCompressed());
 			} else {
 				JdbcUtil.putStringAsBlob(rs, blobColumn, (String)message, getBlobCharset(), isBlobsCompressed());
 			}
