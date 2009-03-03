@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcUtil.java,v $
- * Revision 1.18  2008-10-20 13:02:26  europe\m168309
+ * Revision 1.19  2009-03-03 14:34:41  L190409
+ * added putByteArrayAsBlob()
+ *
+ * Revision 1.18  2008/10/20 13:02:26  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * also show not compressed blobs and not serialized blobs
  *
  * Revision 1.17  2008/08/27 16:23:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -96,7 +99,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class JdbcUtil {
-	public static final String version = "$RCSfile: JdbcUtil.java,v $ $Revision: 1.18 $ $Date: 2008-10-20 13:02:26 $";
+	public static final String version = "$RCSfile: JdbcUtil.java,v $ $Revision: 1.19 $ $Date: 2009-03-03 14:34:41 $";
 	protected static Logger log = LogUtil.getLogger(JdbcUtil.class);
 	
 	private static final boolean useMetaData=false;
@@ -346,6 +349,22 @@ public class JdbcUtil {
 				dos.close();
 			} else {
 				out.write(content.getBytes(charset));
+			}
+			out.close();
+		} else {
+			log.warn("content to store in blob was null");
+		}
+	}
+
+	public static void putByteArrayAsBlob(final ResultSet rs, int columnIndex, byte content[], boolean compressBlob) throws IOException, JdbcException, SQLException {
+		if (content!=null) {
+			OutputStream out = getBlobUpdateOutputStream(rs, columnIndex);
+			if (compressBlob) {
+				DeflaterOutputStream dos = new DeflaterOutputStream(out);
+				dos.write(content);
+				dos.close();
+			} else {
+				out.write(content);
 			}
 			out.close();
 		} else {
