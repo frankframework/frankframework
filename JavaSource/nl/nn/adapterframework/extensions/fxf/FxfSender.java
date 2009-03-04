@@ -1,7 +1,8 @@
 /*
  * $Log: FxfSender.java,v $
- * Revision 1.7  2008-12-30 17:01:12  m168309
- * added configuration warnings facility (in Show configurationStatus)
+ * Revision 1.8  2009-03-04 15:57:38  L190409
+ * added support for FXF 2.0
+ * added local and remote filenames to fxf_init calls
  *
  * Revision 1.6  2008/09/04 12:05:25  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * test for version of fxf
@@ -27,13 +28,21 @@ package nl.nn.adapterframework.extensions.fxf;
 
 import java.io.File;
 
+import javax.jms.DeliveryMode;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.MessageProducer;
+import javax.jms.Session;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.jms.JMSFacade;
 import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.LogUtil;
@@ -50,16 +59,25 @@ import org.apache.log4j.Logger;
  * <tr><td>className</td><td>nl.nn.adapterframework.extensions.fxf.FxfListener</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setScript(String) script}</td><td>full pathname to the FXF script to be executed to transfer the file</td><td>/usr/local/bin/FXF_init</td></tr>
  * <tr><td>{@link #setTransfername(String) transfername}</td><td>FXF transfername</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setDestinationName(String) destinationName}</td><td>(FXF 2 only) name of the JMS queue used to send processedPutFile messages</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setFxf2Compatibility(boolean) fxf2Compatibility}</td><td>when set <code>true</code>, attributes only required for FXF 2.0 will be mandatory for FXF 1.3 too</td><td>true</td></tr>
  * <tr><td>{@link #setProcessedDirectory(String) processedDirectory}</td><td>Directory where files are stored after being processed</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setNumberOfBackups(int) numberOfBackups}</td><td>number of copies held of a file with the same name. Backup files have a dot and a number suffixed to their name. If set to 0, no backups will be kept.</td><td>5</td></tr>
  * <tr><td>{@link #setOverwrite(boolean) overwrite}</td><td>when set <code>true</code>, the destination file will be deleted if it already exists</td><td>false</td></tr>
  * <tr><td>{@link #setDelete(boolean) delete}</td><td>when set <code>true</code>, the file processed will deleted after being processed, and not stored</td><td>true</td></tr>
+ * <tr><td>{@link #setDestinationName(String) destinationName}</td><td>(since 2.0) JMS name of the FXF commit queue</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setTimeout(int) timeout}</td><td>(since 2.0) the timeout in seconds, which is the maximum time the application allows for the transfer of the file.</td><td>120</td></tr>
+ * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>(since 2.0)</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setForceMQCompliancy(String) forceMQCompliancy}</td><td>If the MQ destination is not a JMS receiver, format errors occur.
+	 To prevent this, settting <code>forceMQCompliancy</code> to MQ will inform
+	 MQ that the replyto queue is not JMS compliant. Setting <code>forceMQCompliancy</code>
+	 to "JMS" will cause that on mq the destination is identified as jms-compliant.</td><td>MQ</td></tr>
  * </table>
  * </p>
  * <table border="1">
  * <p><b>Parameters:</b>
  * <tr><th>name</th><th>type</th><th>remarks</th></tr>
- * <tr><td>remoteFilename</td><td><i>String</i></td><td>remote filename, used as 4th parameter of fxf command. When not specified, the remote filename is determined by FXF from the its configuration</td></tr>
+ * <tr><td>remoteFilename</td><td><i>String</i></td><td>remote filename, used as 4th parameter of fxf command. When not specified, the remote filename is determined by FXF from its configuration</td></tr>
  * </table>
  * </p>
  * 
@@ -67,7 +85,7 @@ import org.apache.log4j.Logger;
  * @since   4.8
  * @version Id
  */
-public class FxfSender extends SenderWithParametersBase {
+public class FxfSender extends JMSFacade implements ISenderWithParameters {
 	protected Logger log = LogUtil.getLogger(this);
 
 	public static final String REMOTE_FILENAME_PARAM="remoteFilename";
@@ -79,13 +97,30 @@ public class FxfSender extends SenderWithParametersBase {
 	private int numberOfBackups = 0;
 	private boolean overwrite = false;
 	private boolean delete = true;
+	private int timeout=120;
+	
+	private boolean atLeastVersion2=false;
+	private boolean fxf2Compatibility=true;
 	
 	private Parameter remoteFilenameParam=null;
+	
+	protected ParameterList paramList = null;
+
+	public FxfSender() {
+		super();
+		setForceMQCompliancy("MQ");
+	}
 
 	public void configure() throws ConfigurationException {
-		super.configure();
+		if (StringUtils.isEmpty(getScript())) {
+			throw new ConfigurationException("FxfSender ["+getName()+"] attribute script must be specified");
+		}
+//		File f = new File(getScript());
+//		if (!f.exists()) {
+//			throw new ConfigurationException("FxfSender ["+getName()+"] script ["+getScript()+"] does not exist");
+//		}
 		if (StringUtils.isEmpty(getTransfername())) {
-			throw new ConfigurationException("FxfSender ["+getName()+"] must specify transfername");
+			throw new ConfigurationException("FxfSender ["+getName()+"] attribute transfername must be specified");
 		}
 		if (paramList!=null && paramList.size()>0) {
 			remoteFilenameParam=(Parameter)paramList.get(0);
@@ -95,12 +130,48 @@ public class FxfSender extends SenderWithParametersBase {
 				configWarnings.add(log, msg);
 			}
 		}
-		if (log.isDebugEnabled()) {
-			String version=FxfUtil.getVersion(getScript());
-			log.debug(getLogPrefix()+"FxF version ["+version+"]");
+		if (paramList!=null) {
+			paramList.configure();
+		}
+		atLeastVersion2=FxfUtil.isAtLeastVersion2(getScript());
+		if (atLeastVersion2) {
+			setDestinationType("QUEUE");
+			super.configure();
+		} else {
+			if (isFxf2Compatibility() && StringUtils.isEmpty(getDestinationName())) {
+				throw new ConfigurationException("please specify destinationName for Fxf 2 Compatibility, or set fxf2Compatibility to false");
+			}
+		}
+ 	} 
+
+	public void open() throws SenderException {
+		if (atLeastVersion2) {
+			try {
+				openFacade();
+			}
+			catch (Exception e) {
+				throw new SenderException(e);
+			}
 		}
 	}
 
+	public void close() throws SenderException {
+		if (atLeastVersion2) {
+			try {
+				closeFacade();
+			}
+			catch (Throwable e) {
+				throw new SenderException(getLogPrefix() + "got error occured stopping sender", e);
+			}
+		}
+	}
+
+	public void addParameter(Parameter p) {
+		if (paramList==null) {
+			paramList=new ParameterList();
+		}
+		paramList.add(p);
+	}
 
 	public boolean isSynchronous() {
 		return false;
@@ -111,7 +182,15 @@ public class FxfSender extends SenderWithParametersBase {
 	}
 
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException {
-		String command = getScript()+" put "+getTransfername() +" "+message;
+		String action="put";
+		String transfername=getTransfername();
+		String filename=message;
+		
+		String command = getScript()+" "+action+" "+transfername +" "+filename;
+		if (atLeastVersion2) {
+			int timeout = getTimeout();
+			command = command + " " +timeout;
+		}
 		String remoteFilename = null;
 		if (remoteFilenameParam!=null && prc!=null) {
 			try {
@@ -121,22 +200,62 @@ public class FxfSender extends SenderWithParametersBase {
 				throw new SenderException("Could not resolve remote filename", e);
 			}
 		}
-		log.debug("sending local file ["+message+"] by executing command ["+command+"]");
-		String execResult=ProcessUtil.executeCommand(command);
-		log.debug("output of command ["+execResult+"]");
+		log.debug(getLogPrefix()+"sending local file ["+message+"] by executing command ["+command+"]");
+		String transporthandle=ProcessUtil.executeCommand(command);
+		log.debug(getLogPrefix()+"output of command ["+transporthandle+"]");
+		if (transporthandle!=null) {
+			transporthandle=transporthandle.trim();
+		}
 		
 		// delete file or move it to processed directory
 		if (isDelete() || StringUtils.isNotEmpty(getProcessedDirectory())) {
 			File f=new File(message);
 			try {
-				log.debug("moving or deleteing file ["+message+"]");
+				log.debug(getLogPrefix()+"moving or deleteing file ["+message+"]");
 				FileUtils.moveFileAfterProcessing(f, getProcessedDirectory(), isDelete(), isOverwrite(), getNumberOfBackups()); 
 			} catch (Exception e) {
 				throw new SenderException("Could not move file ["+message+"]",e);
 			}
 		}
-		return execResult;
+		if (atLeastVersion2) {
+			String commitMsg=FxfUtil.makeProcessedPutFileMessage(transporthandle);
+
+			Session s = null;
+			MessageProducer mp = null;
+
+			try {
+				s = createSession();
+				mp = getMessageProducer(s, getDestination());
+
+				// create message
+				Message msg = createTextMessage(s, correlationID, commitMsg);
+				mp.setDeliveryMode(DeliveryMode.PERSISTENT);
+
+				// send message	
+				send(mp, msg);
+				if (log.isInfoEnabled()) {
+					log.info(getLogPrefix()+ "sent message [" + message + "] to [" + getDestinationName() + "] " + 
+							"msgID [" + msg.getJMSMessageID() + "]" );;
+				}
+			} catch (Throwable e) {
+				throw new SenderException(e);
+			} finally {
+				if (mp != null) { 
+					try { 
+						mp.close(); 
+					} catch (JMSException e) { 
+						log.warn(getLogPrefix()+ "got exception closing message producer",e); 
+					}
+				}
+				closeSession(s);
+			}
+			
+		}
+		return transporthandle;
 	}
+
+
+
 
 	public void setScript(String string) {
 		script = string;
@@ -187,6 +306,29 @@ public class FxfSender extends SenderWithParametersBase {
 
 	public void setName(String name) {
 		this.name=name;
+	}
+
+
+	public void setTimeout(int i) {
+		timeout = i;
+	}
+	public int getTimeout() {
+		return timeout;
+	}
+
+	public void setFxf2Compatibility(boolean b) {
+		fxf2Compatibility = b;
+	}
+	public boolean isFxf2Compatibility() {
+		return fxf2Compatibility;
+	}
+
+	public String getPhysicalDestinationName() {
+		String result="transfername ["+getTransfername()+"]";
+		if (atLeastVersion2) {
+			result +=" "+ super.getPhysicalDestinationName();
+		}
+		return result;
 	}
 
 }
