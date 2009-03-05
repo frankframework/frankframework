@@ -1,6 +1,9 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.58  2009-02-05 14:07:25  m168309
+ * Revision 1.59  2009-03-05 09:51:31  m168309
+ * setTransformerParameters: changed WARN to INFO
+ *
+ * Revision 1.58  2009/02/05 14:07:25  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * getIbisContext only for xml strings
  *
  * Revision 1.57  2008/12/24 10:53:47  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -250,7 +253,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * @version Id
  */
 public class XmlUtils {
-	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.58 $ $Date: 2009-02-05 14:07:25 $";
+	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.59 $ $Date: 2009-03-05 09:51:31 $";
 	static Logger log = LogUtil.getLogger(XmlUtils.class);
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
@@ -1207,7 +1210,7 @@ public class XmlUtils {
 				log.debug("setting parameter [" + name+ "] on transformer");
 			} 
 			else {
-				log.warn("omitting setting of parameter ["+name+"] on transformer, as it has a null-value");
+				log.info("omitting setting of parameter ["+name+"] on transformer, as it has a null-value");
 			}
 		}
 	}
