@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.76  2009-02-24 09:45:27  m168309
+ * Revision 1.77  2009-03-10 11:15:33  m168309
+ * added configuration warnings facility (in Show configurationStatus)
+ *
+ * Revision 1.76  2009/02/24 09:45:27  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added configureScheduledJob method
  *
  * Revision 1.75  2009/02/20 12:52:28  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -335,7 +338,7 @@ import org.springframework.transaction.TransactionStatus;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.76 $ $Date: 2009-02-24 09:45:27 $";
+	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.77 $ $Date: 2009-03-10 11:15:33 $";
     private Logger log = LogUtil.getLogger(this);
 	private Logger durationLog = LogUtil.getLogger("LongDurationMessages");
     
@@ -1071,11 +1074,14 @@ public class PipeLine {
 
 	public void setTransacted(boolean transacted) {
 //		this.transacted = transacted;
+		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 		if (transacted) {
-			log.warn("implementing setting of transacted=true as transactionAttribute=Required");
+			String msg = "implementing setting of transacted=true as transactionAttribute=Required";
+			configWarnings.add(log, msg);
 			setTransactionAttributeNum(TransactionDefinition.PROPAGATION_REQUIRED);
 		} else {
-			log.warn("implementing setting of transacted=false as transactionAttribute=Supports");
+			String msg = "implementing setting of transacted=false as transactionAttribute=Supports";
+			configWarnings.add(log, msg);
 			setTransactionAttributeNum(TransactionDefinition.PROPAGATION_SUPPORTS);
 		}
 	}
