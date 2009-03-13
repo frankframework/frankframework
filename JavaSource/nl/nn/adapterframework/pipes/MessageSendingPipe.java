@@ -1,6 +1,9 @@
 /*
  * $Log: MessageSendingPipe.java,v $
- * Revision 1.49  2008-10-06 14:28:57  europe\L190409
+ * Revision 1.50  2009-03-13 14:32:36  m168309
+ * *** empty log message ***
+ *
+ * Revision 1.49  2008/10/06 14:28:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * avoid NPE
  *
  * Revision 1.48  2008/09/04 12:13:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -162,6 +165,7 @@ import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.errormessageformatters.ErrorMessageFormatter;
+import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
 import nl.nn.adapterframework.monitoring.EventThrowing;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
@@ -249,7 +253,7 @@ import org.apache.commons.lang.SystemUtils;
  */
 
 public class MessageSendingPipe extends FixedForwardPipe implements HasSender, HasStatistics, EventThrowing {
-	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.49 $ $Date: 2008-10-06 14:28:57 $";
+	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.50 $ $Date: 2009-03-13 14:32:36 $";
 
 	public static final String PIPE_TIMEOUT_MONITOR_EVENT = "Sender Timeout";
 	public static final String PIPE_CLEAR_TIMEOUT_MONITOR_EVENT = "Sender Received Result on Time";
@@ -690,7 +694,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 			if (StringUtils.isEmpty(messageLog.getSlotId())) {
 				messageLog.setSlotId(getName());
 			}
-			messageLog.setType("L");
+			messageLog.setType(JdbcTransactionalStorage.TYPE_MESSAGELOG);
 		}
 	}
 	public ITransactionalStorage getMessageLog() {

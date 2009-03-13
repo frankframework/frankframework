@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.75  2009-02-20 10:18:17  m168309
+ * Revision 1.76  2009-03-13 14:33:10  m168309
+ * *** empty log message ***
+ *
+ * Revision 1.75  2009/02/20 10:18:17  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * an addition to the javadoc
  *
  * Revision 1.74  2008/12/30 17:01:13  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -392,6 +395,7 @@ import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.jdbc.JdbcFacade;
+import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
 import nl.nn.adapterframework.jms.JMSFacade;
 import nl.nn.adapterframework.monitoring.EventHandler;
 import nl.nn.adapterframework.monitoring.EventThrowing;
@@ -527,7 +531,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  */
 public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHandler, EventThrowing, IbisExceptionListener, HasSender, HasStatistics, TracingEventNumbers, IThreadCountControllable, BeanFactoryAware {
     
-	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.75 $ $Date: 2009-02-20 10:18:17 $";
+	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.76 $ $Date: 2009-03-13 14:33:10 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -857,7 +861,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
                 if (this.errorSender == null && this.errorStorage == null) {
                     this.errorStorage = this.tmpInProcessStorage;
                     info(getLogPrefix()+"has errorStorage in inProcessStorage, setting inProcessStorage's type to 'errorStorage'. Please update the configuration to change the inProcessStorage element to an errorStorage element, since the inProcessStorage is no longer used.");
-                    errorStorage.setType("E");
+                    errorStorage.setType(JdbcTransactionalStorage.TYPE_ERRORSTORAGE);
                 } else {
                     info(getLogPrefix()+"has inProcessStorage defined but also has an errorStorage or errorSender. InProcessStorage is not used and can be removed from the configuration.");
                 }
@@ -1888,7 +1892,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 			if (StringUtils.isEmpty(errorStorage.getSlotId())) {
 				errorStorage.setSlotId(getName());
 			}
-			errorStorage.setType("E");
+			errorStorage.setType(JdbcTransactionalStorage.TYPE_ERRORSTORAGE);
 		}
 	}
 	
@@ -1902,7 +1906,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 			if (StringUtils.isEmpty(messageLog.getSlotId())) {
 				messageLog.setSlotId(getName());
 			}
-			messageLog.setType("L");
+			messageLog.setType(JdbcTransactionalStorage.TYPE_MESSAGELOG);
 		}
 	}
 	public ITransactionalStorage getMessageLog() {
