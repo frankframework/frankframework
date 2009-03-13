@@ -1,6 +1,9 @@
 /*
  * $Log: ConfigurationDigester.java,v $
- * Revision 1.25  2008-07-14 17:02:54  europe\L190409
+ * Revision 1.26  2009-03-13 14:21:02  m168309
+ * add locker to attributeChecker-rules
+ *
+ * Revision 1.25  2008/07/14 17:02:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added support for monitoring
  *
  * Revision 1.24  2008/05/21 08:37:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -123,7 +126,7 @@ import org.xml.sax.SAXParseException;
  * @see Configuration
  */
 abstract public class ConfigurationDigester implements BeanFactoryAware {
-	public static final String version = "$RCSfile: ConfigurationDigester.java,v $ $Revision: 1.25 $ $Date: 2008-07-14 17:02:54 $";
+	public static final String version = "$RCSfile: ConfigurationDigester.java,v $ $Revision: 1.26 $ $Date: 2009-03-13 14:21:02 $";
     protected static Logger log = LogUtil.getLogger(ConfigurationDigester.class);
 
 	private static final String CONFIGURATION_FILE_DEFAULT  = "Configuration.xml";
@@ -206,6 +209,7 @@ abstract public class ConfigurationDigester implements BeanFactoryAware {
 			digester.addRule("*/param", attributeChecker);
 			digester.addRule("*/pipeline/exits/exit", attributeChecker);
 			digester.addRule("*/scheduler/job", attributeChecker);
+			digester.addRule("*/locker", attributeChecker);
 			MonitorManager.getInstance().setDigesterRules(digester);
 
 // Resolving variables is now done by Digester
