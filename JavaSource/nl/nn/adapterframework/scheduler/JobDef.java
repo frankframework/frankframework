@@ -1,6 +1,10 @@
 /*
  * $Log: JobDef.java,v $
- * Revision 1.12  2009-02-24 09:45:42  m168309
+ * Revision 1.13  2009-03-13 14:47:27  m168309
+ * - added attributes transactionAttribute and transactionTimeout
+ * - added function "cleanupDatabase" for generic cleaning up the MessageLog and Locker
+ *
+ * Revision 1.12  2009/02/24 09:45:42  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added configureScheduledJob method
  *
  * Revision 1.11  2009/02/10 10:46:19  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -24,22 +28,44 @@
  */
 package nl.nn.adapterframework.scheduler;
 
+import java.sql.Connection;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.Adapter;
+import nl.nn.adapterframework.core.ITransactionalStorage;
+import nl.nn.adapterframework.core.IbisTransaction;
+import nl.nn.adapterframework.core.IPipe;
+import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.jdbc.DirectQuerySender;
+import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
+import nl.nn.adapterframework.jms.JmsRealm;
+import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.senders.IbisLocalSender;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.HasStatistics;
+import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.SpringTxManagerProxy;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.log4j.Logger;
 import org.quartz.JobDetail;
 import org.quartz.Scheduler;
+
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 /**
  * Definition / configuration of scheduler jobs.
@@ -57,7 +83,32 @@ import org.quartz.Scheduler;
  * <tr><td>{@link #setReceiverName(String) receiverName}</td><td>Receiver on which job operates. If function is 'sendMessage' is used this name is also used as name of JavaListener</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setQuery(String) query}</td><td>the SQL query text to be excecuted</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setTransactionAttribute(String) transactionAttribute}</td><td>Defines transaction and isolation behaviour. Equal to <A href="http://java.sun.com/j2ee/sdk_1.2.1/techdocs/guides/ejb/html/Transaction2.html#10494">EJB transaction attribute</a>. Possible values are: 
+ *   <table border="1">
+ *   <tr><th>transactionAttribute</th><th>callers Transaction</th><th>Pipeline excecuted in Transaction</th></tr>
+ *   <tr><td colspan="1" rowspan="2">Required</td>    <td>none</td><td>T2</td></tr>
+ * 											      <tr><td>T1</td>  <td>T1</td></tr>
+ *   <tr><td colspan="1" rowspan="2">RequiresNew</td> <td>none</td><td>T2</td></tr>
+ * 											      <tr><td>T1</td>  <td>T2</td></tr>
+ *   <tr><td colspan="1" rowspan="2">Mandatory</td>   <td>none</td><td>error</td></tr>
+ * 											      <tr><td>T1</td>  <td>T1</td></tr>
+ *   <tr><td colspan="1" rowspan="2">NotSupported</td><td>none</td><td>none</td></tr>
+ * 											      <tr><td>T1</td>  <td>none</td></tr>
+ *   <tr><td colspan="1" rowspan="2">Supports</td>    <td>none</td><td>none</td></tr>
+ * 											      <tr><td>T1</td>  <td>T1</td></tr>
+ *   <tr><td colspan="1" rowspan="2">Never</td>       <td>none</td><td>none</td></tr>
+ * 											      <tr><td>T1</td>  <td>error</td></tr>
+ *  </table></td><td>Supports</td></tr>
+ * <tr><td>{@link #setTransactionTimeout(int) transactionTimeout}</td><td>Timeout (in seconds) of transaction started to process a message.</td><td><code>0</code> (use system default)</code></td></tr>
  * </table>
+ * </p>
+ * <p>
+ * <table border="1">
+ * <tr><th>nested elements (accessible in descender-classes)</th><th>description</th></tr>
+ * <tr><td>{@link nl.nn.adapterframework.scheduler.Locker locker}</td><td>optional: the job will only be executed if a lock could be set successfully</td></tr>
+ * </table>
+ * </p>
+ * <p> 
  * <br>
  * Operation of scheduling:
  * <ul>
@@ -324,7 +375,8 @@ public class JobDef {
 	public static final String JOB_FUNCTION_SEND_MESSAGE="SendMessage";	
 	public static final String JOB_FUNCTION_QUERY="ExecuteQuery";	
 	public static final String JOB_FUNCTION_DUMPSTATS="dumpStatistics";	
-	
+	public static final String JOB_FUNCTION_CLEANUPDB="cleanupDatabase";
+
     private String name;
     private String cronExpression;
     private String function;
@@ -333,8 +385,50 @@ public class JobDef {
     private String receiverName;
 	private String query;
 	private String jmsRealm;
+	private Locker locker=null;
+
+	private int transactionAttribute=TransactionDefinition.PROPAGATION_SUPPORTS;
+	private int transactionTimeout=0;
+
+	private TransactionDefinition txDef=null;
+	private PlatformTransactionManager txManager;
 
     private String jobGroup=AppConstants.getInstance().getString("scheduler.defaultJobGroup", "DEFAULT");
+
+	private class MessageLogObject {
+		private String jmsRealmName;
+		private String tableName;
+		private String expiryDateField;
+
+		public MessageLogObject(String jmsRealmName, String tableName, String expiryDateField) {
+			this.jmsRealmName = jmsRealmName;
+			this.tableName = tableName;
+			this.expiryDateField = expiryDateField;
+		}
+
+		public boolean equals(Object o) {
+			MessageLogObject mlo = (MessageLogObject) o;
+			if (mlo.getJmsRealmName().equals(jmsRealmName) &&
+				mlo.getTableName().equals(tableName) &&
+				mlo.expiryDateField.equals(expiryDateField)) {
+				return true;
+			} else {
+				return false;
+			}
+		}
+
+		public String getJmsRealmName() {
+			return jmsRealmName;
+		}
+
+		public String getTableName() {
+			return tableName;
+		}
+
+		public String getExpiryDateField() {
+			return expiryDateField;
+		}
+	}
     
 	public String toString() {
 		return ToStringBuilder.reflectionToString(this);
@@ -350,7 +444,8 @@ public class JobDef {
 				getFunction().equalsIgnoreCase(JOB_FUNCTION_START_RECEIVER)||
 				getFunction().equalsIgnoreCase(JOB_FUNCTION_SEND_MESSAGE)||
 				getFunction().equalsIgnoreCase(JOB_FUNCTION_QUERY)||
-				getFunction().equalsIgnoreCase(JOB_FUNCTION_DUMPSTATS)
+				getFunction().equalsIgnoreCase(JOB_FUNCTION_DUMPSTATS) ||
+				getFunction().equalsIgnoreCase(JOB_FUNCTION_CLEANUPDB)
 			)) {
 			throw new ConfigurationException("jobdef ["+getName()+"] function ["+getFunction()+"] must be one of ["+
 			JOB_FUNCTION_STOP_ADAPTER+","+
@@ -360,9 +455,13 @@ public class JobDef {
 			JOB_FUNCTION_SEND_MESSAGE+","+
 			JOB_FUNCTION_QUERY+","+
 			JOB_FUNCTION_DUMPSTATS+","+
+			JOB_FUNCTION_CLEANUPDB+
 			"]");
 		}
 		if (getFunction().equalsIgnoreCase(JOB_FUNCTION_DUMPSTATS)) {
+			// nothing special for now
+		} else 
+		if (getFunction().equalsIgnoreCase(JOB_FUNCTION_CLEANUPDB)) {
 			// nothing special for now
 		} else 
 		if (getFunction().equalsIgnoreCase(JOB_FUNCTION_QUERY)) {
@@ -393,6 +492,11 @@ public class JobDef {
 			Adapter adapter = (Adapter) config.getRegisteredAdapter(getAdapterName());
 			adapter.getPipeLine().configureScheduledJob(this);
 		}
+		if (getLocker()!=null) {
+			getLocker().configure();
+		}
+
+		txDef = SpringTxManagerProxy.getTransactionDefinition(getTransactionAttributeNum(),getTransactionTimeout());
 	}
 
 	public JobDetail getJobDetail(IbisManager ibisManager) {
@@ -409,11 +513,54 @@ public class JobDef {
 
 
 	protected void executeJob(IbisManager ibisManager) {
+		IbisTransaction itx = null;
+		TransactionStatus txStatus = null;
+		if (getTxManager()!=null) {
+			//txStatus = getTxManager().getTransaction(txDef);
+			itx = new IbisTransaction(getTxManager(), txDef, "scheduled job ["+getName()+"]");
+			txStatus = itx.getStatus();
+		}
+		try {
+			if (getLocker()!=null) {
+				String objectId = null;
+				try {
+					try {
+						objectId = getLocker().lock();
+					} catch (Exception e) {
+						log.error(getLogPrefix()+"error while setting lock", e);
+					}
+					if (objectId!=null) {
+						runJob(ibisManager);
+					}
+				} finally {
+					if (objectId!=null) {
+						try {
+							getLocker().unlock(objectId);
+						} catch (Exception e) {
+							log.error(getLogPrefix()+"error while removing lock", e);
+						}
+					}
+				}
+			} else {
+				runJob(ibisManager);
+			}
+		} finally {
+			if (txStatus!=null) {
+				//getTxManager().commit(txStatus);
+				itx.commit();
+			}
+		}
+	}
+
+	protected void runJob(IbisManager ibisManager) {
 		String function = getFunction();
 
 		if (function.equalsIgnoreCase(JOB_FUNCTION_DUMPSTATS)) {
 			ibisManager.getConfiguration().dumpStatistics(HasStatistics.STATISTICS_ACTION_MARK);
 		} else 
+		if (function.equalsIgnoreCase(JOB_FUNCTION_CLEANUPDB)) {
+			cleanupDatabase(ibisManager);
+		} else
 		if (function.equalsIgnoreCase(JOB_FUNCTION_QUERY)) {
 			executeQueryJob();
 		} else
@@ -422,7 +569,67 @@ public class JobDef {
 		} else{
 			ibisManager.handleAdapter(getFunction(), getAdapterName(), getReceiverName(), "scheduled job ["+getName()+"]");
 		}
+	}
 
+	private void cleanupDatabase(IbisManager ibisManager) {
+		Date date = new Date();
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		String formattedDate = formatter.format(date);
+
+		Configuration config = ibisManager.getConfiguration();
+
+		List lockers = new ArrayList();
+		List scheduledJobs = config.getScheduledJobs();
+		for (Iterator iter = scheduledJobs.iterator(); iter.hasNext();) {
+			JobDef jobdef = (JobDef) iter.next();
+			if (jobdef.getLocker()!=null) {
+				String jmsRealmName = jobdef.getLocker().getJmsRealName();
+				if (!lockers.contains(jmsRealmName)) {
+					lockers.add(jmsRealmName);
+				}
+			}
+		}
+
+		for (Iterator iter = lockers.iterator(); iter.hasNext();) {
+			String jmsRealmName = (String) iter.next();
+			setJmsRealm(jmsRealmName);
+			String deleteQuery = "DELETE FROM IBISLOCK WHERE EXPIRYDATE < TO_TIMESTAMP('" + formattedDate + "', 'YYYY-MM-DD HH24:MI:SS')";
+			setQuery(deleteQuery);
+			executeQueryJob();
+		}
+
+		List messageLogs = new ArrayList();
+		for(int j=0; j<config.getRegisteredAdapters().size(); j++) {
+			Adapter adapter = (Adapter)config.getRegisteredAdapter(j);
+			PipeLine pipeline = adapter.getPipeLine();
+			for (int i=0; i<pipeline.getPipes().size(); i++) {
+				IPipe pipe = pipeline.getPipe(i);
+				if (pipe instanceof MessageSendingPipe) {
+					MessageSendingPipe msp=(MessageSendingPipe)pipe;
+					if (msp.getMessageLog()!=null) {
+						ITransactionalStorage transactionStorage = msp.getMessageLog();
+						if (transactionStorage instanceof JdbcTransactionalStorage) {
+							JdbcTransactionalStorage messageLog = (JdbcTransactionalStorage)transactionStorage;
+							String jmsRealmName = messageLog.getJmsRealName();
+							String expiryDateField = messageLog.getExpiryDateField();
+							String tableName = messageLog.getTableName();
+							MessageLogObject mlo = new MessageLogObject(jmsRealmName, tableName, expiryDateField);
+							if (!messageLogs.contains(mlo)) {
+								messageLogs.add(mlo);
+							}
+						}
+					}
+				}
+			}
+		}
+
+		for (Iterator iter = messageLogs.iterator(); iter.hasNext();) {
+			MessageLogObject mlo = (MessageLogObject) iter.next();
+			setJmsRealm(mlo.getJmsRealmName());
+			String deleteQuery = "DELETE FROM " + mlo.getTableName() + " WHERE TYPE='" + JdbcTransactionalStorage.TYPE_MESSAGELOG + "' AND " + mlo.getExpiryDateField() + " < TO_TIMESTAMP('" + formattedDate + "', 'YYYY-MM-DD HH24:MI:SS')";
+			setQuery(deleteQuery);
+			executeQueryJob();
+		}
 	}
 
 	private void executeQueryJob() {
@@ -540,4 +747,42 @@ public class JobDef {
 		return jmsRealm;
 	}
 
+	public void setLocker(Locker locker) {
+		this.locker = locker;
+		locker.setName("Locker of job ["+getName()+"]");
+	}
+	public Locker getLocker() {
+		return locker;
+	}
+
+	public void setTransactionAttribute(String attribute) throws ConfigurationException {
+		transactionAttribute = JtaUtil.getTransactionAttributeNum(attribute);
+		if (transactionAttribute<0) {
+			throw new ConfigurationException("illegal value for transactionAttribute ["+attribute+"]");
+		}
+	}
+	public String getTransactionAttribute() {
+		return JtaUtil.getTransactionAttributeString(transactionAttribute);
+	}
+
+	public void setTransactionAttributeNum(int i) {
+		transactionAttribute = i;
+	}
+	public int getTransactionAttributeNum() {
+		return transactionAttribute;
+	}
+
+	public void setTransactionTimeout(int i) {
+		transactionTimeout = i;
+	}
+	public int getTransactionTimeout() {
+		return transactionTimeout;
+	}
+
+	public void setTxManager(PlatformTransactionManager manager) {
+		txManager = manager;
+	}
+	public PlatformTransactionManager getTxManager() {
+		return txManager;
+	}
 }
