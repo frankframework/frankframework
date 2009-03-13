@@ -1,6 +1,9 @@
 /*
  * $Log: JmsMessageBrowser.java,v $
- * Revision 1.7  2008-07-24 12:18:36  europe\L190409
+ * Revision 1.8  2009-03-13 14:31:57  m168309
+ * added method getExpiryDate
+ *
+ * Revision 1.7  2008/07/24 12:18:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added messageCount
  *
  * Revision 1.6  2007/10/10 08:32:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -56,7 +59,7 @@ import nl.nn.adapterframework.core.ListenerException;
  * @see nl.nn.adapterframework.webcontrol.action.BrowseQueue
  */
 public class JmsMessageBrowser extends JMSFacade implements IMessageBrowser {
-	public static final String version = "$RCSfile: JmsMessageBrowser.java,v $ $Revision: 1.7 $ $Date: 2008-07-24 12:18:36 $";
+	public static final String version = "$RCSfile: JmsMessageBrowser.java,v $ $Revision: 1.8 $ $Date: 2009-03-13 14:31:57 $";
 
 	private long timeOut = 3000;
 	private String selector=null;
@@ -140,6 +143,10 @@ public class JmsMessageBrowser extends JMSFacade implements IMessageBrowser {
 		} catch (JMSException e) {
 			throw new ListenerException(e);
 		}
+	}
+
+	public Date getExpiryDate(Object iteratorItem) throws ListenerException {
+		return null;
 	}
 	
 	public String getCommentString(Object iteratorItem) throws ListenerException {
