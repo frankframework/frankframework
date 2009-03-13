@@ -1,6 +1,9 @@
 /*
  * $Log: IMessageBrowser.java,v $
- * Revision 1.3  2005-12-28 08:33:22  europe\L190409
+ * Revision 1.4  2009-03-13 14:23:22  m168309
+ * added method GetExpiryDate
+ *
+ * Revision 1.3  2005/12/28 08:33:22  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected javadoc
  *
  * Revision 1.2  2005/07/19 12:14:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -21,7 +24,7 @@ import java.util.Date;
  * @version Id
  */
 public interface IMessageBrowser extends IXAEnabled {
-	public static final String version = "$RCSfile: IMessageBrowser.java,v $ $Revision: 1.3 $ $Date: 2005-12-28 08:33:22 $";
+	public static final String version = "$RCSfile: IMessageBrowser.java,v $ $Revision: 1.4 $ $Date: 2009-03-13 14:23:22 $";
 
 	/**
 	 * Gets an enumeration of messages. This includes setting up connections, sessions etc.
@@ -32,6 +35,7 @@ public interface IMessageBrowser extends IXAEnabled {
 	public String getOriginalId(Object iteratorItem) throws ListenerException;
 	public String getCorrelationId(Object iteratorItem) throws ListenerException;
 	public Date   getInsertDate(Object iteratorItem) throws ListenerException;
+	public Date   getExpiryDate(Object iteratorItem) throws ListenerException;
 	public String getCommentString(Object iteratorItem) throws ListenerException;
 	
 	/**
