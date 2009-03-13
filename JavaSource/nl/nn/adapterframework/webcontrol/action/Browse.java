@@ -1,6 +1,9 @@
 /*
  * $Log: Browse.java,v $
- * Revision 1.15  2009-01-02 10:27:14  m168309
+ * Revision 1.16  2009-03-13 14:34:41  m168309
+ * added expiry date
+ *
+ * Revision 1.15  2009/01/02 10:27:14  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * export function restored (unjust removed in v4.9.3)
  *
  * Revision 1.14  2008/12/10 17:05:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -87,7 +90,7 @@ import org.apache.struts.action.DynaActionForm;
  * @since   4.4
  */
 public class Browse extends ActionBase {
-	public static final String version="$RCSfile: Browse.java,v $ $Revision: 1.15 $ $Date: 2009-01-02 10:27:14 $";
+	public static final String version="$RCSfile: Browse.java,v $ $Revision: 1.16 $ $Date: 2009-03-13 14:34:41 $";
 
 	private int maxMessages = AppConstants.getInstance().getInt("browse.messages.max",0); 
 	private int skipMessages=0;
@@ -284,6 +287,9 @@ public class Browse extends ActionBase {
 								message.addAttribute("host",ts.getHostString(iterItem));
 							}
 							message.addAttribute("insertDate",DateUtils.format(mb.getInsertDate(iterItem), DateUtils.FORMAT_FULL_GENERIC));
+							if (mb.getExpiryDate(iterItem)!=null) {
+								message.addAttribute("expiryDate",DateUtils.format(mb.getExpiryDate(iterItem), DateUtils.FORMAT_FULL_GENERIC));
+							}
 							message.addAttribute("comment",XmlUtils.encodeChars(mb.getCommentString(iterItem)));
 							messages.addSubElement(message);
 						}
