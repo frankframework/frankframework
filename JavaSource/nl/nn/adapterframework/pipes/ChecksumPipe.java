@@ -1,6 +1,9 @@
 /*
  * $Log: ChecksumPipe.java,v $
- * Revision 1.2  2008-08-07 10:56:12  europe\L190409
+ * Revision 1.3  2009-03-16 16:11:49  L190409
+ * clarified error message
+ *
+ * Revision 1.2  2008/08/07 10:56:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added attribute inputIsFile
  *
  * Revision 1.1  2008/08/07 07:57:06  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -157,7 +160,7 @@ public class ChecksumPipe extends FixedForwardPipe {
 			result=cg.getResult();
 			return new PipeRunResult(getForward(),result);
 		} catch (Exception e) {
-			throw new PipeRunException(this,"cannot calculate ["+getType()+"] using charset ["+getCharset()+"]",e);
+			throw new PipeRunException(this,"cannot calculate ["+getType()+"]"+(isInputIsFile()?" on file ["+input+"]":" using charset ["+getCharset()+"]"),e);
 		}
 	}
 
