@@ -1,6 +1,9 @@
 /*
  * $Log: StreamTransformerPipe.java,v $
- * Revision 1.17  2008-12-30 17:01:13  m168309
+ * Revision 1.18  2009-03-16 16:11:20  L190409
+ * added charset attribute, default charset is now UTF-8
+ *
+ * Revision 1.17  2008/12/30 17:01:13  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added configuration warnings facility (in Show configurationStatus)
  *
  * Revision 1.16  2008/12/23 12:50:25  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -59,6 +62,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -75,6 +79,7 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.util.FileUtils;
+import nl.nn.adapterframework.util.Misc;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -86,6 +91,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>classname</td><td>nl.nn.adapterframework.batch.StreamTransformerPipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setStoreOriginalBlock(boolean) storeOriginalBlock}</td><td>when set <code>true</code> the original block is stored under the session key originalBlock</td><td>false</td></tr>
+ * <tr><td>{@link #setCharset(String) charset}</td><td>characterset used for reading file or inputstream</td><td>UTF-8</td></tr>
  * </table>
  * </p>
  * <table border="1">
@@ -106,11 +112,12 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class StreamTransformerPipe extends FixedForwardPipe {
-	public static final String version = "$RCSfile: StreamTransformerPipe.java,v $  $Revision: 1.17 $ $Date: 2008-12-30 17:01:13 $";
+	public static final String version = "$RCSfile: StreamTransformerPipe.java,v $  $Revision: 1.18 $ $Date: 2009-03-16 16:11:20 $";
 
 	public static final String originalBlockKey="originalBlock";
 
 	private boolean storeOriginalBlock=false;
+	private String charset=Misc.DEFAULT_INPUT_STREAM_ENCODING;
 
 	private IRecordHandlerManager initialManager=null;
 	private IResultHandler defaultHandler=null;
@@ -319,7 +326,11 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 		return session.getMessageId();
 	}
 	protected Reader getReader(String streamId, Object input, PipeLineSession session) throws PipeRunException {
-		return new InputStreamReader((InputStream)input);
+		try {
+			return new InputStreamReader((InputStream)input,getCharset());
+		} catch (UnsupportedEncodingException e) {
+			throw new PipeRunException(this,"cannot use charset ["+getCharset()+"] to read stream ["+streamId+"]",e);
+		}
 	}
 	
 	/**
@@ -569,4 +580,12 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	public boolean isStoreOriginalBlock() {
 		return storeOriginalBlock;
 	}
+
+	public void setCharset(String string) {
+		charset = string;
+	}
+	public String getCharset() {
+		return charset;
+	}
+
 }

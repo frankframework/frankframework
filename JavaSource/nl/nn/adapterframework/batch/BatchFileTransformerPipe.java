@@ -1,6 +1,9 @@
 /*
  * $Log: BatchFileTransformerPipe.java,v $
- * Revision 1.16  2008-12-23 12:50:25  m168309
+ * Revision 1.17  2009-03-16 16:11:20  L190409
+ * added charset attribute, default charset is now UTF-8
+ *
+ * Revision 1.16  2008/12/23 12:50:25  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added storeOriginalBlock attribute
  *
  * Revision 1.15  2008/02/19 09:23:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -31,9 +34,11 @@
 package nl.nn.adapterframework.batch;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
+import java.io.InputStreamReader;
 import java.io.Reader;
+import java.io.UnsupportedEncodingException;
 
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -58,6 +63,7 @@ import nl.nn.adapterframework.util.FileUtils;
  * <tr><td>{@link #setOverwrite(boolean) overwrite}</td><td>when set <code>true</code>, the destination file will be deleted if it already exists</td><td>false</td></tr>
  * <tr><td>{@link #setDelete(boolean) delete}</td><td>when set <code>true</code>, the file processed will deleted after being processed, and not stored</td><td>false</td></tr>
  * <tr><td>{@link #setStoreOriginalBlock(boolean) storeOriginalBlock}</td><td>when set <code>true</code> the original block is stored under the session key originalBlock</td><td>false</td></tr>
+ * <tr><td>{@link #setCharset(String) charset}</td><td>characterset used for reading file</td><td>UTF-8</td></tr>
  * </table>
  * </p>
  * <table border="1">
@@ -78,7 +84,7 @@ import nl.nn.adapterframework.util.FileUtils;
  * @version Id
  */
 public class BatchFileTransformerPipe extends StreamTransformerPipe {
-	public static final String version = "$RCSfile: BatchFileTransformerPipe.java,v $  $Revision: 1.16 $ $Date: 2008-12-23 12:50:25 $";
+	public static final String version = "$RCSfile: BatchFileTransformerPipe.java,v $  $Revision: 1.17 $ $Date: 2009-03-16 16:11:20 $";
 
 	private String move2dirAfterTransform;
 	private String move2dirAfterError;
@@ -86,15 +92,16 @@ public class BatchFileTransformerPipe extends StreamTransformerPipe {
 	private boolean overwrite = false;
 	private boolean delete = false;
 
-
 	protected String getStreamId(Object input, PipeLineSession session) throws PipeRunException {
 		return ((File)input).getName();
 	}
 	protected Reader getReader(String streamId, Object input, PipeLineSession session) throws PipeRunException {
 		try {
-			return new FileReader(((File)input));
+			return new InputStreamReader(new FileInputStream((File)input),getCharset());
 		} catch (FileNotFoundException e) {
 			throw new PipeRunException(this,"cannot find file ["+streamId+"]",e);
+		} catch (UnsupportedEncodingException e) {
+			throw new PipeRunException(this,"cannot use charset ["+getCharset()+"] to open file ["+streamId+"]",e);
 		}
 	}
 	
@@ -177,5 +184,4 @@ public class BatchFileTransformerPipe extends StreamTransformerPipe {
 	public boolean isDelete() {
 		return delete;
 	}
-
 }
