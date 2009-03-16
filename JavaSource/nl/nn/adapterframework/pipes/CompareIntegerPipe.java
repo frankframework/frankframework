@@ -1,6 +1,9 @@
 /*
  * $Log: CompareIntegerPipe.java,v $
- * Revision 1.1  2007-06-21 07:06:06  europe\L190409
+ * Revision 1.2  2009-03-16 16:14:27  L190409
+ * corrected documentation
+ *
+ * Revision 1.1  2007/06/21 07:06:06  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added CompareIntegerPipe and IncreaseIntegerPipe
  *
  */
@@ -51,15 +54,15 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setAfterEvent(int) afterEvent}</td>        <td>METT eventnumber, fired just after message processing by this Pipe is finished</td><td>-1 (disabled)</td></tr>
  * <tr><td>{@link #setExceptionEvent(int) exceptionEvent}</td><td>METT eventnumber, fired when message processing by this Pipe resulted in an exception</td><td>-1 (disabled)</td></tr>
  * <tr><td>{@link #setSessionKey1(String) sessionKey1}</td><td>reference to one of the session variables to be compared</td><td></td></tr>
- * <tr><td>{@link #setSessionKey2(String) sessionKey1}</td><td>reference to the other session variables to be compared</td><td></td></tr>
+ * <tr><td>{@link #setSessionKey2(String) sessionKey2}</td><td>reference to the other session variables to be compared</td><td></td></tr>
  * </table>
  * </p>
  * <p><b>Exits:</b>
  * <table border="1">
  * <tr><th>state</th><th>condition</th></tr>
- * <tr><td>lessthan</td><td>when v2 &lt; v1</td></tr>
- * <tr><td>greaterthan</td><td>when v2 ^gt; v1</td></tr>
- * <tr><td>equals</td><td>when v2 = v1</td></tr>
+ * <tr><td>lessthan</td><td>when v1 &lt; v2</td></tr>
+ * <tr><td>greaterthan</td><td>when v1 &gt; v2</td></tr>
+ * <tr><td>equals</td><td>when v1 = v1</td></tr>
  * </table>
  * </p>
  * @version Id
@@ -100,8 +103,8 @@ public class CompareIntegerPipe extends AbstractPipe {
 		String sessionKey2StringValue = (String) session.get(sessionKey2);
 
 		if (log.isDebugEnabled()) {
-			log.debug("sessionKey1StringValue '" + sessionKey1StringValue + "'");
-			log.debug("sessionKey2StringValue '" + sessionKey2StringValue + "'");
+			log.debug("sessionKey1StringValue [" + sessionKey1StringValue + "]");
+			log.debug("sessionKey2StringValue [" + sessionKey2StringValue + "]");
 		}
 
 		Integer sessionKey1IntegerValue;
@@ -116,10 +119,10 @@ public class CompareIntegerPipe extends AbstractPipe {
 			throw prei;
 		}
 
-		if (sessionKey1IntegerValue.compareTo(sessionKey2IntegerValue) == 0)
+		int comparison=sessionKey1IntegerValue.compareTo(sessionKey2IntegerValue);
+		if (comparison == 0)
 			return new PipeRunResult(findForward(EQUALSFORWARD), input);
-		else if (
-			sessionKey1IntegerValue.compareTo(sessionKey2IntegerValue) < 0)
+		else if (comparison < 0)
 			return new PipeRunResult(findForward(LESSTHANFORWARD), input);
 		else
 			return new PipeRunResult(findForward(GREATERTHANFORWARD), input);
