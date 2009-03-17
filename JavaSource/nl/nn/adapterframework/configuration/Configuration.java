@@ -1,6 +1,9 @@
 /*
  * $Log: Configuration.java,v $
- * Revision 1.33  2008-10-23 14:16:51  europe\m168309
+ * Revision 1.34  2009-03-17 10:29:35  m168309
+ * added getScheduledJob method
+ *
+ * Revision 1.33  2008/10/23 14:16:51  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * XSLT 2.0 made possible
  *
  * Revision 1.32  2008/09/04 12:00:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -120,11 +123,12 @@ import org.apache.log4j.Logger;
  * @see    nl.nn.adapterframework.core.IAdapter
  */
 public class Configuration {
-	public static final String version="$RCSfile: Configuration.java,v $ $Revision: 1.33 $ $Date: 2008-10-23 14:16:51 $";
+	public static final String version="$RCSfile: Configuration.java,v $ $Revision: 1.34 $ $Date: 2009-03-17 10:29:35 $";
     protected Logger log=LogUtil.getLogger(this); 
      
     private Map adapterTable = new Hashtable();
 	private List adapters = new ArrayList();
+	private Map jobTable = new Hashtable();
     private List scheduledJobs = new ArrayList();
     
     private URL configurationURL;
@@ -356,6 +360,7 @@ public class Configuration {
      */
     public void registerScheduledJob(JobDef jobdef) throws ConfigurationException {
 		jobdef.configure(this);
+		jobTable.put(jobdef.getName(), jobdef);
         scheduledJobs.add(jobdef);
     }
     
@@ -451,6 +456,13 @@ public class Configuration {
 	 */
 	public void setDigesterRulesURL(URL url) {
 		digesterRulesURL = url;
+	}
+
+	public JobDef getScheduledJob(String name) {
+		return (JobDef) jobTable.get(name);
+	}
+	public JobDef getScheduledJob(int index) {
+		return (JobDef) scheduledJobs.get(index);
 	}
 
 	/**
