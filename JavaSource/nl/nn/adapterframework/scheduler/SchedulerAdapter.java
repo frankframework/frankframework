@@ -1,6 +1,9 @@
 /*
  * $Log: SchedulerAdapter.java,v $
- * Revision 1.5  2008-08-27 16:22:06  europe\L190409
+ * Revision 1.6  2009-03-17 10:34:29  m168309
+ * added getJobMessages method
+ *
+ * Revision 1.5  2008/08/27 16:22:06  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fixed scheduler client
  *
  * Revision 1.4  2007/02/12 14:08:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -11,6 +14,7 @@ package nl.nn.adapterframework.scheduler;
 
 import java.util.Date;
 
+import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
@@ -33,14 +37,14 @@ import org.quartz.Trigger;
  * @since 4.0
   */
 public class SchedulerAdapter {
-	public static final String version = "$RCSfile: SchedulerAdapter.java,v $ $Revision: 1.5 $ $Date: 2008-08-27 16:22:06 $";
+	public static final String version = "$RCSfile: SchedulerAdapter.java,v $ $Revision: 1.6 $ $Date: 2009-03-17 10:34:29 $";
 	protected Logger log=LogUtil.getLogger(this);
 	
     /**
      * Get all jobgroups, jobs within this group, the jobdetail and the
      * associated triggers in XML format.
      */
-    public XmlBuilder getJobGroupNamesWithJobsToXml(Scheduler theScheduler) {
+    public XmlBuilder getJobGroupNamesWithJobsToXml(Scheduler theScheduler, Configuration config) {
         XmlBuilder xbRoot = new XmlBuilder("jobGroups");
 
         try {
@@ -70,6 +74,9 @@ public class SchedulerAdapter {
                     XmlBuilder datamap = jobDataMapToXmlBuilder(theScheduler, jobNames[j], jgnames[i]);
                     jn.addSubElement(datamap);
                     jb.addSubElement(jn);
+
+					XmlBuilder ms= getJobMessages(config.getScheduledJob(jobNames[j]));
+					jn.addSubElement(ms);
                 }
                 el.addSubElement(jb);
                 xbRoot.addSubElement(el);
@@ -109,6 +116,17 @@ public class SchedulerAdapter {
 
         return xbRoot;
     }
+
+	public XmlBuilder getJobMessages(JobDef jobdef) {
+		XmlBuilder jobMessages = new XmlBuilder("jobMessages");
+		for (int t=0; t<jobdef.getMessageKeeper().size(); t++) {
+			XmlBuilder jobMessage=new XmlBuilder("jobMessage");
+			jobMessage.setValue(jobdef.getMessageKeeper().getMessage(t).getMessageText(),true);
+			jobMessage.addAttribute("date", DateUtils.format(jobdef.getMessageKeeper().getMessage(t).getMessageDate(), DateUtils.FORMAT_FULL_GENERIC));
+			jobMessages.addSubElement(jobMessage);
+		}
+		return jobMessages;
+	}
 
     public XmlBuilder getSchedulerCalendarNamesToXml(Scheduler theScheduler) {
         XmlBuilder xbRoot = new XmlBuilder("schedulerCalendars");
