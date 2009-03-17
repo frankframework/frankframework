@@ -1,6 +1,9 @@
 /*
  * $Log: ShowSchedulerStatus.java,v $
- * Revision 1.5  2008-08-27 16:30:42  europe\L190409
+ * Revision 1.6  2009-03-17 10:35:23  m168309
+ * *** empty log message ***
+ *
+ * Revision 1.5  2008/08/27 16:30:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * the good old version string
  *
  */
@@ -61,10 +64,10 @@ public final class ShowSchedulerStatus extends ActionBase {
 
 		if (log.isDebugEnabled()) {
 			log.debug("set metadata ["+sa.getSchedulerMetaDataToXml(scheduler).toXML()+"]");
-			log.debug("set jobdata ["+sa.getJobGroupNamesWithJobsToXml(scheduler).toXML()+"]");
+			log.debug("set jobdata ["+sa.getJobGroupNamesWithJobsToXml(scheduler, config).toXML()+"]");
 		}
 	    request.setAttribute("metadata", sa.getSchedulerMetaDataToXml(scheduler).toXML());
-        request.setAttribute("jobdata", sa.getJobGroupNamesWithJobsToXml(scheduler).toXML());
+        request.setAttribute("jobdata", sa.getJobGroupNamesWithJobsToXml(scheduler, config).toXML());
 
 
         // Forward control to the specified success URI
