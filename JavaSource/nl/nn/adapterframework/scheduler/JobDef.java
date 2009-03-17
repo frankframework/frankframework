@@ -1,6 +1,9 @@
 /*
  * $Log: JobDef.java,v $
- * Revision 1.13  2009-03-13 14:47:27  m168309
+ * Revision 1.14  2009-03-17 10:33:38  m168309
+ * added numThreads and messageKeeperSize attribute
+ *
+ * Revision 1.13  2009/03/13 14:47:27  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * - added attributes transactionAttribute and transactionTimeout
  * - added function "cleanupDatabase" for generic cleaning up the MessageLog and Locker
  *
@@ -54,6 +57,7 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.HasStatistics;
 import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.MessageKeeper;
 import nl.nn.adapterframework.util.SpringTxManagerProxy;
 
 import org.apache.commons.lang.StringUtils;
@@ -100,6 +104,8 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  * 											      <tr><td>T1</td>  <td>error</td></tr>
  *  </table></td><td>Supports</td></tr>
  * <tr><td>{@link #setTransactionTimeout(int) transactionTimeout}</td><td>Timeout (in seconds) of transaction started to process a message.</td><td><code>0</code> (use system default)</code></td></tr>
+ * <tr><td>{@link #setNumThreads(int) numThreads}</td><td>the number of threads that may execute concurrently</td><td>1</td></tr>
+ * <tr><td>{@link #setMessageKeeperSize(int) messageKeeperSize}</td><td>number of message displayed in IbisConsole</td><td>10</td></tr>
  * </table>
  * </p>
  * <p>
@@ -386,6 +392,11 @@ public class JobDef {
 	private String query;
 	private String jmsRealm;
 	private Locker locker=null;
+	private int numThreads = 1;
+	private int countThreads = 0;
+
+	private MessageKeeper messageKeeper; //instantiated in configure()
+	private int messageKeeperSize = 10; //default length
 
 	private int transactionAttribute=TransactionDefinition.PROPAGATION_SUPPORTS;
 	private int transactionTimeout=0;
@@ -435,6 +446,8 @@ public class JobDef {
 	}
 
 	public void configure(Configuration config) throws ConfigurationException {
+		MessageKeeper messageKeeper = getMessageKeeper();
+
 		if (StringUtils.isEmpty(getFunction())) {
 			throw new ConfigurationException("jobdef ["+getName()+"] function must be specified");
 		}
@@ -488,15 +501,13 @@ public class JobDef {
 				}
 			}
 		}
-		if (getFunction().equalsIgnoreCase(JOB_FUNCTION_SEND_MESSAGE)) {
-			Adapter adapter = (Adapter) config.getRegisteredAdapter(getAdapterName());
-			adapter.getPipeLine().configureScheduledJob(this);
-		}
 		if (getLocker()!=null) {
 			getLocker().configure();
 		}
 
 		txDef = SpringTxManagerProxy.getTransactionDefinition(getTransactionAttributeNum(),getTransactionTimeout());
+
+		messageKeeper.add("job successfully configured");
 	}
 
 	public JobDetail getJobDetail(IbisManager ibisManager) {
@@ -513,43 +524,71 @@ public class JobDef {
 
 
 	protected void executeJob(IbisManager ibisManager) {
-		IbisTransaction itx = null;
-		TransactionStatus txStatus = null;
-		if (getTxManager()!=null) {
-			//txStatus = getTxManager().getTransaction(txDef);
-			itx = new IbisTransaction(getTxManager(), txDef, "scheduled job ["+getName()+"]");
-			txStatus = itx.getStatus();
-		}
-		try {
-			if (getLocker()!=null) {
-				String objectId = null;
+		if (incrementCountThreads()) { 
+			try {
+				IbisTransaction itx = null;
+				TransactionStatus txStatus = null;
+				if (getTxManager()!=null) {
+					//txStatus = getTxManager().getTransaction(txDef);
+					itx = new IbisTransaction(getTxManager(), txDef, "scheduled job ["+getName()+"]");
+					txStatus = itx.getStatus();
+				}
 				try {
-					try {
-						objectId = getLocker().lock();
-					} catch (Exception e) {
-						log.error(getLogPrefix()+"error while setting lock", e);
-					}
-					if (objectId!=null) {
+					if (getLocker()!=null) {
+						String objectId = null;
+						try {
+							try {
+								objectId = getLocker().lock();
+							} catch (Exception e) {
+								String msg = "error while setting lock: " + e.getMessage();
+								getMessageKeeper().add(msg);
+								log.error(getLogPrefix()+msg);
+							}
+							if (objectId!=null) {
+								runJob(ibisManager);
+							}
+						} finally {
+							if (objectId!=null) {
+								try {
+									getLocker().unlock(objectId);
+								} catch (Exception e) {
+									String msg = "error while removing lock: " + e.getMessage();
+									getMessageKeeper().add(msg);
+									log.error(getLogPrefix()+msg);
+								}
+							}
+						}
+					} else {
 						runJob(ibisManager);
 					}
 				} finally {
-					if (objectId!=null) {
-						try {
-							getLocker().unlock(objectId);
-						} catch (Exception e) {
-							log.error(getLogPrefix()+"error while removing lock", e);
-						}
+					if (txStatus!=null) {
+						//getTxManager().commit(txStatus);
+						itx.commit();
 					}
 				}
-			} else {
-				runJob(ibisManager);
+			} finally {
+				decrementCountThreads();
 			}
-		} finally {
-			if (txStatus!=null) {
-				//getTxManager().commit(txStatus);
-				itx.commit();
-			}
+		} else {
+			String msg = "maximum number of threads that may execute concurrently [" + getNumThreads() + "] is exceeded, the processing of this thread will be interrupted";
+			getMessageKeeper().add(msg);
+			log.error(getLogPrefix()+msg);
 		}
+	}
+
+	public synchronized boolean incrementCountThreads() {
+		if (countThreads < getNumThreads()) {
+			countThreads++;
+			return true;
+		} else
+		{
+			return false;
+		}
+	}
+
+	public synchronized void decrementCountThreads() {
+		countThreads--;
 	}
 
 	protected void runJob(IbisManager ibisManager) {
@@ -643,12 +682,16 @@ public class JobDef {
 			String result = qs.sendMessage("dummy", getQuery());
 			log.info("result [" + result + "]");
 		} catch (Exception e) {
-			log.error(getLogPrefix()+"error while executing query ["+getQuery()+"] (as part of scheduled job execution)", e);
+			String msg = "error while executing query ["+getQuery()+"] (as part of scheduled job execution): " + e.getMessage();
+			getMessageKeeper().add(msg);
+			log.error(getLogPrefix()+msg);
 		} finally {
 			try {
 				qs.close();
 			} catch (SenderException e1) {
-				log.warn("Could not close query sender",e1);
+				String msg = "Could not close query sender" + e1.getMessage();
+				getMessageKeeper().add(msg);
+				log.warn(msg);
 			}
 		}
 	}
@@ -671,7 +714,9 @@ public class JobDef {
 			}
 		}
 		catch(Exception e) {
-			log.error("Error while sending message (as part of scheduled job execution)", e);
+			String msg = "Error while sending message (as part of scheduled job execution): " + e.getMessage();
+			getMessageKeeper().add(msg);
+			log.error(getLogPrefix()+msg);
 		}
 	}
 
@@ -758,7 +803,9 @@ public class JobDef {
 	public void setTransactionAttribute(String attribute) throws ConfigurationException {
 		transactionAttribute = JtaUtil.getTransactionAttributeNum(attribute);
 		if (transactionAttribute<0) {
-			throw new ConfigurationException("illegal value for transactionAttribute ["+attribute+"]");
+			String msg="illegal value for transactionAttribute ["+attribute+"]";
+			messageKeeper.add(msg);
+			throw new ConfigurationException(msg);
 		}
 	}
 	public String getTransactionAttribute() {
@@ -784,5 +831,22 @@ public class JobDef {
 	}
 	public PlatformTransactionManager getTxManager() {
 		return txManager;
+	}
+
+	public void setNumThreads(int newNumThreads) {
+		numThreads = newNumThreads;
+	}
+	public int getNumThreads() {
+		return numThreads;
+	}
+
+	public synchronized MessageKeeper getMessageKeeper() {
+		if (messageKeeper == null)
+			messageKeeper = new MessageKeeper(messageKeeperSize < 1 ? 1 : messageKeeperSize);
+		return messageKeeper;
+	}
+
+	public void setMessageKeeperSize(int size) {
+		this.messageKeeperSize = size;
 	}
 }
