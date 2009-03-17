@@ -1,6 +1,9 @@
 /*
  * $Log: TestPipeLineExecute.java,v $
- * Revision 1.14  2009-02-05 14:08:37  m168309
+ * Revision 1.15  2009-03-17 10:52:48  m168309
+ * slight error fixed
+ *
+ * Revision 1.14  2009/02/05 14:08:37  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * bugfix - non xml strings results in error
  *
  * Revision 1.13  2008/12/24 10:57:52  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -67,7 +70,7 @@ import org.apache.struts.upload.FormFile;
  * @version Id
  */
 public final class TestPipeLineExecute extends ActionBase {
-	public static final String version="$RCSfile: TestPipeLineExecute.java,v $  $Revision: 1.14 $ $Date: 2009-02-05 14:08:37 $";
+	public static final String version="$RCSfile: TestPipeLineExecute.java,v $  $Revision: 1.15 $ $Date: 2009-03-17 10:52:48 $";
 	
 	public ActionForward execute(
 	    ActionMapping mapping,
@@ -193,7 +196,9 @@ public final class TestPipeLineExecute extends ActionBase {
 			for (Iterator it = ibisContexts.keySet().iterator(); it.hasNext();) {
 				String key = (String)it.next();
 				String value = (String)ibisContexts.get(key);
-				contextDump = contextDump + "\n " + key + "=[" + value + "]";
+				if (log.isDebugEnabled()) {
+					contextDump = contextDump + "\n " + key + "=[" + value + "]";
+				}
 				if (key.equals(PipeLineSession.technicalCorrelationIdKey)) {
 					technicalCorrelationId = value;
 				} else {
