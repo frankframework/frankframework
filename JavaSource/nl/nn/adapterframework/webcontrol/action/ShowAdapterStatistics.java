@@ -1,6 +1,9 @@
 /*
  * $Log: ShowAdapterStatistics.java,v $
- * Revision 1.9  2008-09-22 13:33:18  europe\L190409
+ * Revision 1.10  2009-03-19 08:27:36  m168309
+ * Adapter statistics by the hour
+ *
+ * Revision 1.9  2008/09/22 13:33:18  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * exchanged name and type in statisticshandler
  * changed reference to Hashtable to Map
  *
@@ -92,7 +95,22 @@ public final class ShowAdapterStatistics extends ActionBase {
 	    
 	    StatisticsKeeper st = adapter.getStatsMessageProcessingDuration();
 	    adapterXML.addSubElement(statisticsKeeperToXmlBuilder(st, "messageProcessingDuration"));
-	
+
+		XmlBuilder messagesReceivedByHour = new XmlBuilder("messagesStartProcessingByHour");
+		adapterXML.addSubElement(messagesReceivedByHour);
+		long[] numOfMessagesStartProcessingByHour = adapter.getNumOfMessagesStartProcessingByHour();
+		for (int i=0; i<numOfMessagesStartProcessingByHour.length; i++) {
+			XmlBuilder item = new XmlBuilder("item");
+			messagesReceivedByHour.addSubElement(item);
+			String startTime;
+			if (i<10) {
+				startTime = "0" + i + ":00";
+			} else {
+				startTime = i + ":00";
+			}
+			item.addAttribute("startTime", startTime);
+			item.addAttribute("count", numOfMessagesStartProcessingByHour[i]);
+		}
 	    
 	    Iterator recIt=adapter.getReceiverIterator();
 	    if (recIt.hasNext()) {
