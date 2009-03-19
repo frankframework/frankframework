@@ -1,6 +1,9 @@
 /*
  * $Log: Adapter.java,v $
- * Revision 1.51  2009-03-19 08:14:53  m168309
+ * Revision 1.52  2009-03-19 14:07:45  m168309
+ * added numOfMessagesStartProcessingByHour
+ *
+ * Revision 1.51  2009/03/19 08:14:53  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added numOfMessagesStartProcessingByHour
  *
  * Revision 1.50  2009/02/24 14:25:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -228,7 +231,7 @@ import org.springframework.core.task.TaskExecutor;
  */
 
 public class Adapter implements IAdapter, NamedBean {
-	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.51 $ $Date: 2009-03-19 08:14:53 $";
+	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.52 $ $Date: 2009-03-19 14:07:45 $";
 	private Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -444,6 +447,19 @@ public class Adapter implements IAdapter, NamedBean {
 		statsMessageProcessingDuration.performAction(action);
 		numOfMessagesProcessed.performAction(action);
 		numOfMessagesInError.performAction(action);
+
+		Object hourData=hski.openGroup(adapterData,getName(),"processing by hour");
+		for (int i=0; i<getNumOfMessagesStartProcessingByHour().length; i++) {
+			String startTime;
+			if (i<10) {
+				startTime = "0" + i + ":00";
+			} else {
+				startTime = i + ":00";
+			}
+			hski.handleScalar(hourData, startTime, getNumOfMessagesStartProcessingByHour()[i]);
+		}
+		hski.closeGroup(hourData);
+
 		Object recsData=hski.openGroup(adapterData,getName(),"receivers");
 		Iterator recIt=getReceiverIterator();
 		if (recIt.hasNext()) {
