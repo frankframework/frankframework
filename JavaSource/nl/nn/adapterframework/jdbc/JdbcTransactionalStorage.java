@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcTransactionalStorage.java,v $
- * Revision 1.34  2009-03-13 14:30:35  m168309
+ * Revision 1.35  2009-03-19 11:11:54  m168309
+ * corrected comments create index for ibisstore
+ *
+ * Revision 1.34  2009/03/13 14:30:35  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added attributes expiryDateField, dateFieldType and retention
  *
  * Revision 1.33  2008/08/07 11:21:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -194,7 +197,8 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 	CONSTRAINT PK_IBISSTORE PRIMARY KEY (MESSAGEKEY)
 	);
 	
-	CREATE INDEX <schema_owner>.IX_IBISSTORE ON <schema_owner>.IBISSTORE (SLOTID, MESSAGEDATE, EXPIRYDATE);
+	CREATE INDEX <schema_owner>.IX_IBISSTORE ON <schema_owner>.IBISSTORE (SLOTID, MESSAGEDATE);
+	CREATE INDEX <schema_owner>.IX_IBISSTORE_02 ON <schema_owner>.IBISSTORE (EXPIRYDATE);
 	CREATE SEQUENCE <schema_owner>.SEQ_IBISSTORE;
 
 	GRANT DELETE, INSERT, SELECT, UPDATE ON <schema_owner>.IBISSTORE TO <rolenaam>;
@@ -236,7 +240,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  * @since 	4.1
  */
 public class JdbcTransactionalStorage extends JdbcFacade implements ITransactionalStorage {
-	public static final String version = "$RCSfile: JdbcTransactionalStorage.java,v $ $Revision: 1.34 $ $Date: 2009-03-13 14:30:35 $";
+	public static final String version = "$RCSfile: JdbcTransactionalStorage.java,v $ $Revision: 1.35 $ $Date: 2009-03-19 11:11:54 $";
 
 	public final static String TYPE_ERRORSTORAGE="E";
 	public final static String TYPE_MESSAGELOG="L";
