@@ -1,6 +1,9 @@
 /*
  * $Log: Adapter.java,v $
- * Revision 1.50  2009-02-24 14:25:37  L190409
+ * Revision 1.51  2009-03-19 08:14:53  m168309
+ * added numOfMessagesStartProcessingByHour
+ *
+ * Revision 1.50  2009/02/24 14:25:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * avoid NPE on wait statistics while iterating over statistics
  *
  * Revision 1.49  2008/09/22 13:28:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -151,6 +154,7 @@
  */
 package nl.nn.adapterframework.core;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -224,7 +228,7 @@ import org.springframework.core.task.TaskExecutor;
  */
 
 public class Adapter implements IAdapter, NamedBean {
-	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.50 $ $Date: 2009-02-24 14:25:37 $";
+	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.51 $ $Date: 2009-03-19 08:14:53 $";
 	private Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -239,6 +243,8 @@ public class Adapter implements IAdapter, NamedBean {
    
 	private CounterStatistic numOfMessagesProcessed = new CounterStatistic(0);
 	private CounterStatistic numOfMessagesInError = new CounterStatistic(0);
+	
+	private long[] numOfMessagesStartProcessingByHour = new long[24];
 	
 	private StatisticsKeeper statsMessageProcessingDuration = null;
 
@@ -339,6 +345,10 @@ public class Adapter implements IAdapter, NamedBean {
 		synchronized (statsMessageProcessingDuration) {
 			numOfMessagesInProcess++;
 			lastMessageDate = startTime;
+			Calendar cal = Calendar.getInstance();
+			cal.setTimeInMillis(startTime);
+			int hour = cal.get(Calendar.HOUR_OF_DAY);
+			numOfMessagesStartProcessingByHour[hour]++;
 		}
 	}
 	/**
@@ -520,6 +530,12 @@ public class Adapter implements IAdapter, NamedBean {
 	public int getNumOfMessagesInProcess() {
 		synchronized (statsMessageProcessingDuration) {
 			return numOfMessagesInProcess;
+		}
+	}
+
+	public long[] getNumOfMessagesStartProcessingByHour() {
+		synchronized (statsMessageProcessingDuration) {
+			return numOfMessagesStartProcessingByHour;
 		}
 	}
 	/**
