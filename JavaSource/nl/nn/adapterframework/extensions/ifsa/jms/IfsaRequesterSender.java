@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaRequesterSender.java,v $
- * Revision 1.12  2008-09-08 07:20:28  europe\L190409
+ * Revision 1.13  2009-03-23 16:50:47  L190409
+ * improved logging of ReportMessages
+ *
+ * Revision 1.12  2008/09/08 07:20:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * throw exceptions when appropriate
  *
  * Revision 1.11  2008/09/01 15:10:17  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -192,7 +195,7 @@ import com.ing.ifsa.IFSATimeOutMessage;
  * @since  4.2
  */
 public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParameters, HasStatistics {
-	public static final String version="$RCSfile: IfsaRequesterSender.java,v $ $Revision: 1.12 $ $Date: 2008-09-08 07:20:28 $";
+	public static final String version="$RCSfile: IfsaRequesterSender.java,v $ $Revision: 1.13 $ $Date: 2009-03-23 16:50:47 $";
 
 	private boolean throwExceptions=true;	
 	
@@ -422,9 +425,9 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 						if (msg instanceof IFSAReportMessage) {
 							IFSAReportMessage irm = (IFSAReportMessage)msg;
 							if (isThrowExceptions()) {
-								throw new SenderException(getLogPrefix()+"received IFSAReportMessage ["+irm.toString()+"]");
+								throw new SenderException(getLogPrefix()+"received IFSAReportMessage ["+ToStringBuilder.reflectionToString(irm)+"], NoReplyReason ["+irm.getNoReplyReason()+"]");
 							}
-							log.warn(getLogPrefix()+"received IFSAReportMessage ["+irm.toString()+"]");
+							log.warn(getLogPrefix()+"received IFSAReportMessage ["+ToStringBuilder.reflectionToString(irm)+"], NoReplyReason ["+irm.getNoReplyReason()+"]");
 							result = "<IFSAReport>"+
 										"<NoReplyReason>"+irm.getNoReplyReason()+"</NoReplyReason>"+
 									 "</IFSAReport>";
