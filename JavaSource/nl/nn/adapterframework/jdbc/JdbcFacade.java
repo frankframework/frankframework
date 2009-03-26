@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcFacade.java,v $
- * Revision 1.24  2007-11-23 14:47:36  europe\L190409
+ * Revision 1.25  2009-03-26 14:47:36  m168309
+ * added LOCKROWS_SUFFIX
+ *
+ * Revision 1.24  2007/11/23 14:47:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fix check on XA datasource
  *
  * Revision 1.23  2007/11/23 14:16:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -113,11 +116,13 @@ import org.apache.log4j.Logger;
  * @since 	4.1
  */
 public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version="$RCSfile: JdbcFacade.java,v $ $Revision: 1.24 $ $Date: 2007-11-23 14:47:36 $";
+	public static final String version="$RCSfile: JdbcFacade.java,v $ $Revision: 1.25 $ $Date: 2009-03-26 14:47:36 $";
     protected Logger log = LogUtil.getLogger(this);
 	
 	public final static int DATABASE_GENERIC=0;
 	public final static int DATABASE_ORACLE=1;
+
+	public final static String LOCKROWS_SUFFIX=" FOR UPDATE NOWAIT SKIP LOCKED";
 	
 	private String name;
     private String username=null;

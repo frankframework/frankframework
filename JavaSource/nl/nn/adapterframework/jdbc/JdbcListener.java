@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcListener.java,v $
- * Revision 1.9  2008-12-10 08:35:55  L190409
+ * Revision 1.10  2009-03-26 14:47:36  m168309
+ * added LOCKROWS_SUFFIX
+ *
+ * Revision 1.9  2008/12/10 08:35:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved locking and selection mechanism: now works in multiple threads. 
  * improved disaster recovery: no more specific 'in process' status, rolls back to original state (where apropriate)
  *
@@ -157,7 +160,7 @@ public class JdbcListener extends JdbcFacade implements IPullingListener {
 			 * http://www.ss64.com/ora/select.html
 			 * http://forums.oracle.com/forums/thread.jspa?threadID=664986
 			 */
-			String query=getSelectQuery()+" FOR UPDATE NOWAIT SKIP LOCKED";
+			String query=getSelectQuery()+JdbcFacade.LOCKROWS_SUFFIX;
 			try {
 				Statement stmt= null;
 				try {

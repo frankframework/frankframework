@@ -1,6 +1,9 @@
 /*
  * $Log: DirectQuerySender.java,v $
- * Revision 1.12  2009-02-25 10:43:05  m168309
+ * Revision 1.13  2009-03-26 14:47:36  m168309
+ * added LOCKROWS_SUFFIX
+ *
+ * Revision 1.12  2009/02/25 10:43:05  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added lockRows attribute
  *
  * Revision 1.11  2006/12/13 16:27:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -51,7 +54,7 @@ import java.sql.SQLException;
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>classname</td><td>nl.nn.adapterframework.jdbc.DirectQuerySender</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td>  <td>name of the sender</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setLockRows(boolean) lockRows}</td><td>When set <code>true</code>, exclusive row-level locks are obtained on all the rows identified by the SELECT statement</td><td>false</td></tr>
+ * <tr><td>{@link #setLockRows(boolean) lockRows}</td><td>When set <code>true</code>, exclusive row-level locks are obtained on all the rows identified by the SELECT statement (by appending ' FOR UPDATE NOWAIT SKIP LOCKED' to the end of the query)</td><td>false</td></tr>
  * <tr><td>{@link #setDatasourceName(String) datasourceName}</td><td>can be configured from JmsRealm, too</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDatasourceNameXA(String) datasourceNameXA}</td><td>can be configured from JmsRealm, too</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setUsername(String) username}</td><td>username used to connect to datasource</td><td>&nbsp;</td></tr>
@@ -88,14 +91,14 @@ import java.sql.SQLException;
  * @since 	4.1
  */
 public class DirectQuerySender extends JdbcQuerySenderBase {
-	public static final String version="$RCSfile: DirectQuerySender.java,v $ $Revision: 1.12 $ $Date: 2009-02-25 10:43:05 $";
+	public static final String version="$RCSfile: DirectQuerySender.java,v $ $Revision: 1.13 $ $Date: 2009-03-26 14:47:36 $";
 
 	private boolean lockRows=false;
 
 	protected PreparedStatement getStatement(Connection con, String correlationID, String message) throws SQLException {
 		String qry = message;
 		if (lockRows) {
-			qry = qry + " FOR UPDATE NOWAIT SKIP LOCKED";
+			qry = qry + JdbcFacade.LOCKROWS_SUFFIX;
 		}
 		return prepareQuery(con, qry);
 	}
