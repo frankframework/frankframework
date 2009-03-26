@@ -1,6 +1,9 @@
 /*
  * $Log: JavaListener.java,v $
- * Revision 1.28  2008-08-13 13:42:14  europe\L190409
+ * Revision 1.29  2009-03-26 14:26:45  m168309
+ * added throwException attribute
+ *
+ * Revision 1.28  2008/08/13 13:42:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed unused imports
  *
  * Revision 1.27  2007/12/10 10:14:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -141,13 +144,14 @@ import org.apache.log4j.Logger;
  * <tr><td>{@link #setIsolated(boolean) isolated}</td><td>when <code>true</code>, the call is made in a separate thread, possibly using a separate transaction. 
  * 		<br>N.B. do not use this attribute, set an appropriate <code>transactionAttribute</code>, like <code>NotSupported</code> or <code>RequiresNew</code> instead</td><td>false</td></tr>
  * <tr><td>{@link #setSynchronous(boolean) synchronous}</td><td> when set <code>false</code>, the request is executed asynchronously. This implies <code>isolated=true</code>. N.B. Be aware that there is no limit on the number of threads generated</td><td>true</td></tr>
+ * <tr><td>{@link #setThrowException(boolean) throwException}</td><td>Should the JavaListener throw a ListenerException when it occurs or return an error message</td><td><code>true</code></td></tr>
  * </table>
  * 
  * @author  Gerrit van Brakel
  * @version Id
  */
 public class JavaListener implements IPushingListener, RequestProcessor, HasPhysicalDestination {
-	public static final String version="$RCSfile: JavaListener.java,v $ $Revision: 1.28 $ $Date: 2008-08-13 13:42:14 $";
+	public static final String version="$RCSfile: JavaListener.java,v $ $Revision: 1.29 $ $Date: 2009-03-26 14:26:45 $";
 	protected Logger log = LogUtil.getLogger(this);
 	
 	private String name;
@@ -155,6 +159,7 @@ public class JavaListener implements IPushingListener, RequestProcessor, HasPhys
 	private boolean isolated=false;
 	private boolean synchronous=true;
 	private boolean opened=false;
+	private boolean throwException = true;
 
 	private static Map registeredListeners; 
 	private IMessageHandler handler;
@@ -234,7 +239,16 @@ public class JavaListener implements IPushingListener, RequestProcessor, HasPhys
 		if (log.isDebugEnabled()) {
 			log.debug("JavaListener [" + getName() + "] processing correlationId [" + correlationId + "]");
 		}
-		return handler.processRequest(this, correlationId, message, context);
+		if (throwException) {
+			return handler.processRequest(this, correlationId, message, context);
+		} else {
+			try {
+				return handler.processRequest(this, correlationId, message, context);
+			} 
+			catch (ListenerException e) {
+				return handler.formatException(null,correlationId, message,e);
+			}
+		}
 	}
 
 //	public String processRequest(String message) {
@@ -376,5 +390,10 @@ public class JavaListener implements IPushingListener, RequestProcessor, HasPhys
 		return opened;
 	}
 
-
+	public void setThrowException(boolean throwException) {
+		this.throwException = throwException;
+	}
+	public boolean isThrowException() {
+		return throwException;
+	}
 }
