@@ -1,6 +1,9 @@
 /*
  * $Log: Locker.java,v $
- * Revision 1.1  2009-03-13 14:36:11  m168309
+ * Revision 1.2  2009-03-27 10:56:16  m00f069
+ * Typo
+ *
+ * Revision 1.1  2009/03/13 14:36:11  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * Introduction of Locker (child element of Job)
  *
  */
@@ -35,7 +38,7 @@ import org.apache.log4j.Logger;
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>classname</td><td>nl.nn.adapterframework.scheduler.Locker</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setObjectId(String) objectId}</td><td>identifier for this lock</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setType(String) type}</td><td>type for this lock: P(ermanent) ot T(emporary). A temporary lock is deleted after the job has completed</td><td>T</td></tr>
+ * <tr><td>{@link #setType(String) type}</td><td>type for this lock: P(ermanent) or T(emporary). A temporary lock is deleted after the job has completed</td><td>T</td></tr>
  * <tr><td>{@link #setDateFormatSuffix(String) dateFormatSuffix}</td><td>format for date which is added after <code>objectId</code> (e.g. yyyyMMdd to be sure the job is executed only once a day)</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setRetention(int) retention}</td><td>the time (for type=P in days and for type=T in hours) to keep the record in the database before making it eligible for deletion by a cleanup process</td><td>30 days (type=P), 4 hours (type=T)</td></tr>
