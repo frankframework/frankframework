@@ -1,6 +1,9 @@
 /*
  * $Log: IReceiver.java,v $
- * Revision 1.7  2008-08-12 15:33:02  europe\L190409
+ * Revision 1.8  2009-03-30 12:23:22  L190409
+ * added counter for messagesRejected
+ *
+ * Revision 1.7  2008/08/12 15:33:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * receiver must implement HasStatistics
  * added property messagesRetried
  *
@@ -69,6 +72,10 @@ public interface IReceiver extends IManagable, HasStatistics {
 	 * get the number of duplicate messages received this receiver.
 	 */
 	public long getMessagesRetried();
+	/**
+	 * get the number of messages received this receiver that are not process, but are discarded or put in the errorstorage.
+	 */
+	public long getMessagesRejected();
 	
     /**
      * The processing of messages must be delegated to the <code>Adapter</code>

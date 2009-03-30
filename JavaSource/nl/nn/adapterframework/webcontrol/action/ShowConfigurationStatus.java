@@ -1,6 +1,9 @@
 /*
  * $Log: ShowConfigurationStatus.java,v $
- * Revision 1.20  2008-12-30 17:01:13  m168309
+ * Revision 1.21  2009-03-30 12:23:23  L190409
+ * added counter for messagesRejected
+ *
+ * Revision 1.20  2008/12/30 17:01:13  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added configuration warnings facility (in Show configurationStatus)
  *
  * Revision 1.19  2008/10/24 14:42:45  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -88,7 +91,7 @@ import org.apache.struts.action.ActionMapping;
  * @version Id
  */
 public final class ShowConfigurationStatus extends ActionBase {
-	public static final String version = "$RCSfile: ShowConfigurationStatus.java,v $ $Revision: 1.20 $ $Date: 2008-12-30 17:01:13 $";
+	public static final String version = "$RCSfile: ShowConfigurationStatus.java,v $ $Revision: 1.21 $ $Date: 2009-03-30 12:23:23 $";
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 
@@ -153,6 +156,7 @@ public final class ShowConfigurationStatus extends ActionBase {
 					receiverXML.addAttribute("class", ClassUtils.nameOf(receiver));
 					receiverXML.addAttribute("messagesReceived", ""+receiver.getMessagesReceived());
 					receiverXML.addAttribute("messagesRetried", ""+receiver.getMessagesRetried());
+					receiverXML.addAttribute("messagesRejected", ""+receiver.getMessagesRejected());
 					ISender sender=null;
 					if (receiver instanceof ReceiverBase ) {
 						ReceiverBase rb = (ReceiverBase) receiver;

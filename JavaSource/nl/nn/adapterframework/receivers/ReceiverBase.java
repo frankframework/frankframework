@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.76  2009-03-13 14:33:10  m168309
+ * Revision 1.77  2009-03-30 12:23:24  L190409
+ * added counter for messagesRejected
+ *
+ * Revision 1.76  2009/03/13 14:33:10  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * *** empty log message ***
  *
  * Revision 1.75  2009/02/20 10:18:17  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -531,7 +534,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  */
 public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHandler, EventThrowing, IbisExceptionListener, HasSender, HasStatistics, TracingEventNumbers, IThreadCountControllable, BeanFactoryAware {
     
-	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.76 $ $Date: 2009-03-13 14:33:10 $";
+	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.77 $ $Date: 2009-03-30 12:23:24 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -582,7 +585,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	// number of messages received
 	private CounterStatistic numReceived = new CounterStatistic(0);
 	private CounterStatistic numRetried = new CounterStatistic(0);
-//	private ScalarStatistic numRejected = new ScalarStatistic(0);
+	private CounterStatistic numRejected = new CounterStatistic(0);
 
 	private List processStatistics = new ArrayList();
 	private List idleStatistics = new ArrayList();
@@ -1249,6 +1252,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 			if (!isTransacted()) {
 				log.warn(getLogPrefix()+"received message with messageId [" + messageId + "] which is already stored in error storage or messagelog; aborting processing");
  			}
+			numRejected.increase();
 			return result;
 		}
 		if (getCachedProcessResult(messageId)!=null) {
@@ -1628,13 +1632,13 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		Object recData=hski.openGroup(data,getName(),"receiver");
 		hski.handleScalar(recData,"messagesReceived", getMessagesReceived());
 		hski.handleScalar(recData,"messagesRetried", getMessagesRetried());
-//		hski.handleScalar(recData,"messagesRejected", numRejected.getValue());
+		hski.handleScalar(recData,"messagesRejected", numRejected.getValue());
 		hski.handleScalar(recData,"messagesReceivedThisInterval", numReceived.getIntervalValue());
 		hski.handleScalar(recData,"messagesRetriedThisInterval", numRetried.getIntervalValue());
-//		hski.handleScalar(recData,"messagesRejectedThisInterval", numRejected.getIntervalValue());
+		hski.handleScalar(recData,"messagesRejectedThisInterval", numRejected.getIntervalValue());
 		numReceived.performAction(action);
 		numRetried.performAction(action);
-//		numRejected.performAction(action);
+		numRejected.performAction(action);
 		Iterator statsIter=getProcessStatisticsIterator();
 		Object pstatData=hski.openGroup(recData,null,"procStats");
 		if (statsIter != null) {
@@ -1928,6 +1932,14 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	 */
 	public long getMessagesRetried() {
 		return numRetried.getValue();
+	}
+
+	/**
+	 * Get the number of messages rejected (discarded or put in errorstorage).
+	  * @return long
+	 */
+	public long getMessagesRejected() {
+		return numRejected.getValue();
 	}
 
 	
