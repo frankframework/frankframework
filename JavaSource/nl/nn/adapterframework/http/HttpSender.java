@@ -1,6 +1,9 @@
 /*
  * $Log: HttpSender.java,v $
- * Revision 1.35  2008-08-14 14:52:54  europe\L190409
+ * Revision 1.36  2009-03-31 08:21:17  m168309
+ * bugfix in maxExecuteRetries and reduce the default maxRetries to 1
+ *
+ * Revision 1.35  2008/08/14 14:52:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * increased default maxConnections to 10
  *
  * Revision 1.34  2008/08/12 15:34:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -157,8 +160,8 @@ import nl.nn.adapterframework.util.Misc;
  * <tr><td>{@link #setContentType(String) contentType}</td><td>conent-type of the request, only for POST methods</td><td>text/html; charset=UTF-8</td></tr>
  * <tr><td>{@link #setTimeout(int) timeout}</td><td>timeout in ms of obtaining a connection/result. 0 means no timeout</td><td>60000</td></tr>
  * <tr><td>{@link #setMaxConnections(int) maxConnections}</td><td>the maximum number of concurrent connections</td><td>2</td></tr>
- * <tr><td>{@link #setMaxConnectionRetries(int) maxConnectionRetries}</td><td>the maximum number of times it is retried to obtain a connection</td><td>10</td></tr>
- * <tr><td>{@link #setMaxExecuteRetries(int) maxExecuteRetries}</td><td>the maximum number of times it the execution is retried</td><td>5</td></tr>
+ * <tr><td>{@link #setMaxConnectionRetries(int) maxConnectionRetries}</td><td>the maximum number of times it is retried to obtain a connection</td><td>1</td></tr>
+ * <tr><td>{@link #setMaxExecuteRetries(int) maxExecuteRetries}</td><td>the maximum number of times it the execution is retried</td><td>1</td></tr>
  * <tr><td>{@link #setAuthAlias(String) authAlias}</td><td>alias used to obtain credentials for authentication to host</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setUserName(String) userName}</td><td>username used in authentication to host</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setPassword(String) password}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
@@ -241,7 +244,7 @@ import nl.nn.adapterframework.util.Misc;
  * @since 4.2c
  */
 public class HttpSender extends SenderWithParametersBase implements HasPhysicalDestination {
-	public static final String version = "$RCSfile: HttpSender.java,v $ $Revision: 1.35 $ $Date: 2008-08-14 14:52:54 $";
+	public static final String version = "$RCSfile: HttpSender.java,v $ $Revision: 1.36 $ $Date: 2009-03-31 08:21:17 $";
 
 	private String url;
 	private String methodType="GET"; // GET or POST
@@ -250,8 +253,8 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 	private int timeout=60000;
 	private int maxConnections=10;
 	
-	private int maxConnectionRetries=10;
-	private int maxExecuteRetries=5;
+	private int maxConnectionRetries=1;
+	private int maxExecuteRetries=1;
 
 	private String authAlias;
 	private String userName;
@@ -559,7 +562,7 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 		int count=getMaxExecuteRetries();
 		String msg = null;
 		try {
-			while (count-->0 && statusCode==-1) {
+			while (count-->=0 && statusCode==-1) {
 				try {
 					log.debug(getLogPrefix()+"executing method");
 					statusCode = httpclient.executeMethod(httpmethod);
