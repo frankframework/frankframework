@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcSenderBase.java,v $
- * Revision 1.6  2007-06-19 12:09:17  europe\L190409
+ * Revision 1.7  2009-04-01 08:22:10  m168309
+ * added TimeOutException to SendMessage()
+ *
+ * Revision 1.6  2007/06/19 12:09:17  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improve javadoc
  *
  * Revision 1.5  2006/12/12 09:57:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -24,6 +27,7 @@ import java.sql.SQLException;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
@@ -54,7 +58,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * @since 	4.2.h
  */
 public abstract class JdbcSenderBase extends JdbcFacade implements ISenderWithParameters {
-	public static final String version="$RCSfile: JdbcSenderBase.java,v $ $Revision: 1.6 $ $Date: 2007-06-19 12:09:17 $";
+	public static final String version="$RCSfile: JdbcSenderBase.java,v $ $Revision: 1.7 $ $Date: 2009-04-01 08:22:10 $";
 
 	protected Connection connection=null;
 	protected ParameterList paramList = null;
@@ -110,11 +114,11 @@ public abstract class JdbcSenderBase extends JdbcFacade implements ISenderWithPa
 	    }
 	}
 	
-	public String sendMessage(String correlationID, String message) throws SenderException {
+	public String sendMessage(String correlationID, String message) throws SenderException, TimeOutException {
 		return sendMessage(correlationID, message, null);
 	}
 
-	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException {
+	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		if (isConnectionsArePooled()) {
 			Connection c = null;
 			try {
@@ -140,7 +144,7 @@ public abstract class JdbcSenderBase extends JdbcFacade implements ISenderWithPa
 		}
 	}
 
-	protected abstract String sendMessage(Connection connection, String correlationID, String message, ParameterResolutionContext prc) throws SenderException;
+	protected abstract String sendMessage(Connection connection, String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException;
 
 	public String toString() {
 		String result  = super.toString();
