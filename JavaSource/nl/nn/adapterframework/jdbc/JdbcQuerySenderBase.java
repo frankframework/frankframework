@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcQuerySenderBase.java,v $
- * Revision 1.37  2009-03-03 14:38:35  L190409
+ * Revision 1.38  2009-04-01 08:23:44  m168309
+ * added timeout attribute
+ *
+ * Revision 1.37  2009/03/03 14:38:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added support to put byte array as blob
  *
  * Revision 1.36  2008/10/20 12:52:23  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -140,6 +143,7 @@ import java.util.StringTokenizer;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.DB2XMLWriter;
 import nl.nn.adapterframework.util.JdbcUtil;
@@ -199,6 +203,7 @@ import sun.misc.BASE64Encoder;
  * <tr><td>{@link #setBlobsCompressed(boolean) blobsCompressed}</td><td>controls whether blobdata is stored compressed in the database</td><td>true</td></tr>
  * <tr><td>{@link #setColumnsReturned(String) columnsReturned}</td><td>comma separated list of columns whose values are to be returned. Works only if the driver implements JDBC 3.0 getGeneratedKeys()</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setBlobSmartGet(boolean) blobSmartGet}</td><td>controls automatically whether blobdata is stored compressed and/or serialized in the database</td><td>false</td></tr>
+ * <tr><td>{@link #setTimeout(int) timeout}</td><td>the number of seconds the driver will wait for a Statement object to execute. If the limit is exceeded, a TimeOutException is thrown. 0 means no timeout</td><td>0</td></tr>
  * </table>
  * </p>
  * <table border="1">
@@ -224,7 +229,7 @@ import sun.misc.BASE64Encoder;
  * @since 	4.1
  */
 public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
-	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.37 $ $Date: 2009-03-03 14:38:35 $";
+	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.38 $ $Date: 2009-04-01 08:23:44 $";
 
 	private String queryType = "other";
 	private int maxRows=-1; // return all rows
@@ -244,6 +249,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 	private String streamCharset = null;
 	private boolean blobsCompressed=true;
 	private boolean blobSmartGet=false;
+	private int timeout=0;
 
 	private String packageContent = "db2";
 	
@@ -295,10 +301,11 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		return st.getGeneratedKeys();
 	}
 
-	protected String sendMessage(Connection connection, String correlationID, String message, ParameterResolutionContext prc) throws SenderException {
+	protected String sendMessage(Connection connection, String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		PreparedStatement statement=null;
 		try {
 			statement = getStatement(connection, correlationID, message);
+			statement.setQueryTimeout(getTimeout());
 			if (prc != null && paramList != null) {
 				applyParameters(statement, prc.getValues(paramList));
 			}
@@ -349,6 +356,14 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 			}
 		} catch (ParameterException e) {
 			throw new SenderException(getLogPrefix() + "got exception evaluating parameters", e);
+		} catch (SenderException e) {
+			if (e.getCause() instanceof SQLException) {
+				SQLException sqle = (SQLException) e.getCause();
+				if  (sqle.getErrorCode() == 1013) {
+					throw new TimeOutException("Timeout of ["+timeout+"] ms expired");
+				}
+			}
+			throw new SenderException(e);
 		} catch (Throwable t) {
 			throw new SenderException(getLogPrefix() + "got exception sending message", t);
 		} finally {
@@ -914,4 +929,11 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		return streamCharset;
 	}
 
+	public int getTimeout() {
+		return timeout;
+	}
+
+	public void setTimeout(int i) {
+		timeout = i;
+	}
 }
