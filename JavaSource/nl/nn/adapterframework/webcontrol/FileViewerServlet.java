@@ -1,6 +1,9 @@
 /*
  * $Log: FileViewerServlet.java,v $
- * Revision 1.10  2007-09-24 13:05:02  europe\L190409
+ * Revision 1.11  2009-04-03 14:34:36  m168309
+ * added statistics file viewer
+ *
+ * Revision 1.10  2007/09/24 13:05:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * ability to download file, using correct filename
  *
  * Revision 1.9  2007/06/14 09:45:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -30,7 +33,10 @@ import java.io.IOException;
 import java.io.LineNumberReader;
 import java.io.PrintWriter;
 import java.io.Reader;
+import java.io.StringReader;
 import java.net.URL;
+import java.util.Hashtable;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 import javax.servlet.ServletException;
@@ -47,6 +53,7 @@ import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.EncapsulatingReader;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StatisticsUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
@@ -82,8 +89,8 @@ import org.apache.log4j.Logger;
  * @author Johan Verrips 
  */
 public class FileViewerServlet extends HttpServlet  {
-	public static final String version = "$RCSfile: FileViewerServlet.java,v $ $Revision: 1.10 $ $Date: 2007-09-24 13:05:02 $";
-	protected Logger log = LogUtil.getLogger(this);	
+	public static final String version = "$RCSfile: FileViewerServlet.java,v $ $Revision: 1.11 $ $Date: 2009-04-03 14:34:36 $";
+	protected static Logger log = LogUtil.getLogger(FileViewerServlet.class);	
 
 	// key that is looked up to retrieve texts to be signalled
 	private static String fvConfigKey="FileViewerServlet.signal";
@@ -92,6 +99,9 @@ public class FileViewerServlet extends HttpServlet  {
 	private static String log4j_text_xslt = "/xml/xsl/log4j_text.xsl";
 	private static String log4j_prefix    = "<log4j:log4j xmlns:log4j=\"http://jakarta.apache.org/log4\">\n\n";
 	private static String log4j_postfix	  = "</log4j:log4j>";
+	private static String stats_html_xslt = "/xml/xsl/stats_html.xsl";
+	private static String stats_prefix    = "<statisticsCollections>";
+	private static String stats_postfix	  = "</statisticsCollections>";
 
 	public static String makeConfiguredReplacements(String input) {
 		StringTokenizer tok=AppConstants.getInstance().getTokenizer(fvConfigKey);
@@ -105,12 +115,15 @@ public class FileViewerServlet extends HttpServlet  {
 	}
 
 
-	public static void transformReader(Reader reader, String filename, HttpServletResponse response, String input_prefix, String input_postfix, String stylesheetUrl, String instanceName, String title) throws DomBuilderException, TransformerException, IOException { 
+	public static void transformReader(Reader reader, String filename, Map parameters, HttpServletResponse response, String input_prefix, String input_postfix, String stylesheetUrl, String instanceName, String title) throws DomBuilderException, TransformerException, IOException { 
 		PrintWriter out = response.getWriter();
 		Reader fileReader = new EncapsulatingReader(reader, input_prefix, input_postfix, true);
 		URL xsltSource = ClassUtils.getResourceURL( FileViewerServlet.class, stylesheetUrl);
 		if (xsltSource!=null) {
 			Transformer transformer = XmlUtils.createTransformer(xsltSource);
+			if (parameters!=null) {
+				XmlUtils.setTransformerParameters(transformer, parameters);
+			}
 			XmlUtils.transformXml(transformer, new StreamSource(fileReader),out);
 			out.close();
 		} else {
@@ -159,8 +172,18 @@ public class FileViewerServlet extends HttpServlet  {
 		}
 		if (type.equalsIgnoreCase("xml")) {
 			response.setContentType("application/xml");
-			Reader fileReader = new EncapsulatingReader(reader, log4j_prefix, log4j_postfix, true);
-			LineNumberReader lnr = new LineNumberReader(fileReader);
+			LineNumberReader lnr;
+			if (filename.indexOf("_xml.log")>=0) {
+				Reader fileReader = new EncapsulatingReader(reader, log4j_prefix, log4j_postfix, true);
+				lnr = new LineNumberReader(fileReader);
+			} else {
+				if (filename.indexOf("-stats_")>=0) {
+					Reader fileReader = new EncapsulatingReader(reader, stats_prefix, stats_postfix, true);
+					lnr = new LineNumberReader(fileReader);
+				} else {
+					lnr = new LineNumberReader(reader);
+				}
+			}
 			String line;
 			while ((line=lnr.readLine())!=null) {
 				out.println(line+"\n");
@@ -178,6 +201,8 @@ public class FileViewerServlet extends HttpServlet  {
 	        if (fileName==null) { fileName=request.getParameter("fileName"); } 
 			String log4j = (String) request.getAttribute("log4j");
 			if (log4j == null) { log4j = request.getParameter("log4j"); }
+			String stats = (String) request.getAttribute("stats");
+			if (stats == null) { stats = request.getParameter("stats"); }
 	
 	        if (fileName==null) {
 				PrintWriter out = response.getWriter();
@@ -195,9 +220,29 @@ public class FileViewerServlet extends HttpServlet  {
 					response.setContentType("text/plain");
 					stylesheetUrl=log4j_text_xslt;
 	        	}
-				transformReader(new FileReader(fileName), fileName, response, log4j_prefix, log4j_postfix, stylesheetUrl, request.getContextPath().substring(1),fileName);
+				transformReader(new FileReader(fileName), fileName, null, response, log4j_prefix, log4j_postfix, stylesheetUrl, request.getContextPath().substring(1),fileName);
 	        } else {
-				showReaderContents(new FileReader(fileName), fileName ,type, response, request.getContextPath().substring(1),fileName);
+				boolean statsFlag = "xml".equalsIgnoreCase(stats) || "true".equalsIgnoreCase(stats);
+				if (statsFlag) {
+					Map parameters = new Hashtable();
+					String timestamp = (String) request.getAttribute("timestamp");
+					if (timestamp == null) { timestamp = request.getParameter("timestamp"); }
+					if (timestamp!= null) {
+						parameters.put("timestamp", timestamp);
+					}
+					String adapterName = (String) request.getAttribute("adapterName");
+					if (adapterName == null) { adapterName = request.getParameter("adapterName"); }
+					if (adapterName!= null) {
+						parameters.put("adapterName", adapterName);
+					}
+					String stylesheetUrl;
+					response.setContentType("text/html");
+					stylesheetUrl=stats_html_xslt;
+
+					transformReader(new StringReader(StatisticsUtil.fileToString(fileName, timestamp, adapterName)), fileName, parameters, response, stats_prefix, stats_postfix, stylesheetUrl, request.getContextPath().substring(1),fileName);
+				} else {
+					showReaderContents(new FileReader(fileName), fileName, type, response, request.getContextPath().substring(1),fileName);
+				}
 	        }
 	    } catch (IOException e) {
 		    log.error("FileViewerServlet caught IOException" , e);
