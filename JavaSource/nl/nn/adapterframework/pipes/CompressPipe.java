@@ -1,6 +1,9 @@
 /*
  * $Log: CompressPipe.java,v $
- * Revision 1.2  2008-03-20 12:06:09  europe\L190409
+ * Revision 1.3  2009-04-09 12:47:21  m168309
+ * facility to process multiple files
+ *
+ * Revision 1.2  2008/03/20 12:06:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.1  2006/08/23 11:35:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -44,6 +47,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.StringTokenizer;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import java.util.zip.ZipEntry;
@@ -58,6 +62,8 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.errormessageformatters.ErrorMessageFormatter;
 import nl.nn.adapterframework.util.FileUtils;
 
+import org.apache.commons.lang.StringUtils;
+
 /**
  * Pipe to zip or unzip a message or file.  
  * 
@@ -65,13 +71,13 @@ import nl.nn.adapterframework.util.FileUtils;
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>classname</td><td>nl.nn.ibis4fundation.BatchFileTransformerPipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setMessageIsContent(boolean) messageIsContent}</td><td>Flag indicates whether the message is the content or the path to a file with the contents</td><td>false</td></tr>
+ * <tr><td>{@link #setMessageIsContent(boolean) messageIsContent}</td><td>Flag indicates whether the message is the content or the path to a file with the contents. For multiple files use ';' as delimiter</td><td>false</td></tr>
  * <tr><td>{@link #setResultIsContent(boolean) resultIsContent}</td><td>Flag indicates whether the result must be written to the message or to a file (filename = message)</td><td>false</td></tr>
  * <tr><td>{@link #setOutputDirectory(String) outputDirectory}</td><td>Required if result is a file, the directory in which to store the result file</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setFilenamePattern(String) filenamePattern}</td><td>Required if result is a file, the pattern for the result filename</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setZipEntryPattern(String) zipEntryPattern}</td><td>The pattern for the zipentry name in case a zipfile is read or written</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setCompress(boolean) compress}</td><td>If <code>true</code> the pipe compresses, otherwise it decompress</td><td><code>false</code></td></tr>
- * <tr><td>{@link #setConvert2String(boolean) convert2String}</td><td>If <code>true</code> result is returned as a string, otherwise as a byte array</td><td><code>false</code></td></tr>
+ * <tr><td>{@link #setCompress(boolean) compress}</td><td>If <code>true</code> the pipe compresses, otherwise it decompress</td><td>false</td></tr>
+ * <tr><td>{@link #setConvert2String(boolean) convert2String}</td><td>If <code>true</code> result is returned as a string, otherwise as a byte array</td><td>false</td></tr>
  * <tr><td>{@link #setFileFormat(String) fileFormat}</td><td>When set to gz, the GZIP format is used. When set to another value, the ZIP format is used. If not set and direction is compress, the resultIsContent specifies the output format used (resultIsContent="true" -> GZIP format, resultIsContent="false" -> ZIP format) If not set and direction is decompress, the messageIsContent specifies the output format used (messageIsContent="true" -> GZIP format, messageIsContent="false" -> ZIP format)</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
@@ -104,6 +110,7 @@ public class CompressPipe extends FixedForwardPipe {
 			Object result;
 			InputStream in;
 			OutputStream out;
+			boolean zipMultipleFiles = false;
 			if (messageIsContent) {
 				if (input instanceof byte[]) {
 					in = new ByteArrayInputStream((byte[])input); 
@@ -111,7 +118,12 @@ public class CompressPipe extends FixedForwardPipe {
 					in = new ByteArrayInputStream(input.toString().getBytes()); 
 				}
 			} else {
-				in = new FileInputStream((String)input);
+				if (compress && StringUtils.contains((String)input,";")) {
+					zipMultipleFiles = true;
+					in = null;
+				} else {
+					in = new FileInputStream((String)input);
+				}
 			}
 			if (resultIsContent) {
 				out = new ByteArrayOutputStream();
@@ -127,43 +139,66 @@ public class CompressPipe extends FixedForwardPipe {
 				result = outFile.getAbsolutePath();
 				out =  new FileOutputStream(outFile);
 			}
-			if (compress) {
-				if ("gz".equals(fileFormat) || fileFormat == null && resultIsContent) {
-					out = new GZIPOutputStream(out);
-				} else {
-					ZipOutputStream zipper = new ZipOutputStream(out); 
-					String zipEntryName = getZipEntryName(input, session);
+			if (zipMultipleFiles) {
+				ZipOutputStream zipper = new ZipOutputStream(out); 
+				StringTokenizer st = new StringTokenizer((String)input, ";");
+				while (st.hasMoreElements()) {
+					String fn = st.nextToken();
+					String zipEntryName = getZipEntryName(fn, session);
 					zipper.putNextEntry(new ZipEntry(zipEntryName));
-					out = zipper;
-				}
-			} else {
-				if ("gz".equals(fileFormat) || fileFormat == null && messageIsContent) {
-					in = new GZIPInputStream(in);
-				} else {
-					ZipInputStream zipper = new ZipInputStream(in);
-					String zipEntryName = getZipEntryName(input, session);
-					if (zipEntryName.equals("")) {
-						// Use first entry found
-						zipper.getNextEntry();
-					} else {
-						// Position the stream at the specified entry
-						ZipEntry zipEntry = zipper.getNextEntry();
-						while (zipEntry != null && !zipEntry.getName().equals(zipEntryName)) {
-							zipEntry = zipper.getNextEntry();
+					in  = new FileInputStream(fn);
+					try {
+						int readLength = 0;
+						byte[] block = new byte[4096];
+						while ((readLength = in.read(block)) > 0) {
+							 zipper.write(block, 0, readLength);
 						}
+					} finally {
+						in.close();
+						zipper.closeEntry();
 					}
-					in = zipper;
 				}
-			}
-			try {
-				int readLength = 0;
-				byte[] block = new byte[4096];
-				while ((readLength = in.read(block)) > 0) {
-					 out.write(block, 0, readLength);
+				zipper.close();
+				out = zipper;
+			} else {
+				if (compress) {
+					if ("gz".equals(fileFormat) || fileFormat == null && resultIsContent) {
+						out = new GZIPOutputStream(out);
+					} else {
+						ZipOutputStream zipper = new ZipOutputStream(out); 
+						String zipEntryName = getZipEntryName(input, session);
+						zipper.putNextEntry(new ZipEntry(zipEntryName));
+						out = zipper;
+					}
+				} else {
+					if ("gz".equals(fileFormat) || fileFormat == null && messageIsContent) {
+						in = new GZIPInputStream(in);
+					} else {
+						ZipInputStream zipper = new ZipInputStream(in);
+						String zipEntryName = getZipEntryName(input, session);
+						if (zipEntryName.equals("")) {
+							// Use first entry found
+							zipper.getNextEntry();
+						} else {
+							// Position the stream at the specified entry
+							ZipEntry zipEntry = zipper.getNextEntry();
+							while (zipEntry != null && !zipEntry.getName().equals(zipEntryName)) {
+								zipEntry = zipper.getNextEntry();
+							}
+						}
+						in = zipper;
+					}
 				}
-			} finally {
-				out.close();
-				in.close();
+				try {
+					int readLength = 0;
+					byte[] block = new byte[4096];
+					while ((readLength = in.read(block)) > 0) {
+						 out.write(block, 0, readLength);
+					}
+				} finally {
+					out.close();
+					in.close();
+				}
 			}
 			return new PipeRunResult(getForward(), getResultMsg(result));
 		} catch(Exception e) {
