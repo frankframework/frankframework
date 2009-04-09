@@ -1,6 +1,9 @@
 /*
  * $Log: MessageSendingPipe.java,v $
- * Revision 1.50  2009-03-13 14:32:36  m168309
+ * Revision 1.51  2009-04-09 12:15:53  m168309
+ * store message from MailSender in mail-safe form to MessageLog
+ *
+ * Revision 1.50  2009/03/13 14:32:36  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * *** empty log message ***
  *
  * Revision 1.49  2008/10/06 14:28:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -170,6 +173,7 @@ import nl.nn.adapterframework.monitoring.EventThrowing;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.senders.MailSender;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.HasStatistics;
 import nl.nn.adapterframework.util.Misc;
@@ -253,7 +257,7 @@ import org.apache.commons.lang.SystemUtils;
  */
 
 public class MessageSendingPipe extends FixedForwardPipe implements HasSender, HasStatistics, EventThrowing {
-	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.50 $ $Date: 2009-03-13 14:32:36 $";
+	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.51 $ $Date: 2009-04-09 12:15:53 $";
 
 	public static final String PIPE_TIMEOUT_MONITOR_EVENT = "Sender Timeout";
 	public static final String PIPE_CLEAR_TIMEOUT_MONITOR_EVENT = "Sender Received Result on Time";
@@ -504,9 +508,17 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 							correlationID="-";
 						}
 					}
-					messageLog.storeMessage(storedMessageID,correlationID,new Date(),messageTrail,(String)input);
+					if (sender instanceof MailSender) {
+						String messageInMailSafeForm = (String)session.get("messageInMailSafeForm");
+						messageLog.storeMessage(storedMessageID,correlationID,new Date(),messageTrail,messageInMailSafeForm);
+					} else {
+						messageLog.storeMessage(storedMessageID,correlationID,new Date(),messageTrail,(String)input);
+					}
 				}
 
+				if (sender instanceof MailSender) {
+					session.remove("messageInMailSafeForm");
+				}
 				
 				if (replyListener != null) {
 					if (log.isDebugEnabled()) {
