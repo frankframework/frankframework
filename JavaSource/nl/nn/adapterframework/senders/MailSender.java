@@ -1,11 +1,15 @@
 /*
  * $Log: MailSender.java,v $
- * Revision 1.1  2008-08-06 16:36:39  europe\L190409
+ * Revision 1.2  2009-04-09 12:11:42  m168309
+ * store message in mail-safe form to MessageLog
+ *
+ * Revision 1.1  2008/08/06 16:36:39  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * moved from pipes to senders package
  *
  */
 package nl.nn.adapterframework.senders;
 
+import java.io.ByteArrayOutputStream;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Date;
@@ -36,6 +40,7 @@ import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.DomBuilderException;
+import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
@@ -193,56 +198,64 @@ public class MailSender extends SenderWithParametersBase {
 		ParameterValueList pvl;
 		ParameterValue pv;
 		
+		String messageInMailSafeForm;
 		if (paramList==null) {
-			return sendMessage(correlationID,message);
+			messageInMailSafeForm = sendEmail(message);
+		} else {
+			try {
+				pvl = prc.getValues(paramList);
+				pv = pvl.getParameterValue("from");
+				if (pv != null) {
+					from = pv.asStringValue(null);  
+					log.debug("MailSender ["+getName()+"] retrieved from-parameter ["+from+"]");
+				}
+				pv = pvl.getParameterValue("subject");
+				if (pv != null) {
+					subject = pv.asStringValue(null);  
+					log.debug("MailSender ["+getName()+"] retrieved subject-parameter ["+subject+"]");
+				}
+				pv = pvl.getParameterValue("message");
+				if (pv != null) {
+					message = pv.asStringValue(message);  
+					log.debug("MailSender ["+getName()+"] retrieved message-parameter ["+message+"]");
+				}
+				pv = pvl.getParameterValue("messageType");
+				if (pv != null) {
+					messageType = pv.asStringValue(null);  
+					log.debug("MailSender ["+getName()+"] retrieved messageType-parameter ["+messageType+"]");
+				}
+				pv = pvl.getParameterValue("messageBase64");
+				if (pv != null) {
+					messageBase64 = pv.asStringValue(null);  
+					log.debug("MailSender ["+getName()+"] retrieved messageBase64-parameter ["+messageBase64+"]");
+				}
+				pv = pvl.getParameterValue("recipients");
+				if (pv != null) {
+					recipients = pv.asCollection();  
+				}
+				pv = pvl.getParameterValue("attachments");
+				if (pv != null) {
+					attachments = pv.asCollection();  
+				}
+			} catch (ParameterException e) {
+				throw new SenderException("MailSender ["+getName()+"] got exception determining parametervalues",e);
+			}
+			messageInMailSafeForm = sendEmail(from, subject, message, recipients, attachments);
 		}
-		try {
-			pvl = prc.getValues(paramList);
-			pv = pvl.getParameterValue("from");
-			if (pv != null) {
-				from = pv.asStringValue(null);  
-				log.debug("MailSender ["+getName()+"] retrieved from-parameter ["+from+"]");
-			}
-			pv = pvl.getParameterValue("subject");
-			if (pv != null) {
-				subject = pv.asStringValue(null);  
-				log.debug("MailSender ["+getName()+"] retrieved subject-parameter ["+subject+"]");
-			}
-			pv = pvl.getParameterValue("message");
-			if (pv != null) {
-				message = pv.asStringValue(message);  
-				log.debug("MailSender ["+getName()+"] retrieved message-parameter ["+message+"]");
-			}
-			pv = pvl.getParameterValue("messageType");
-			if (pv != null) {
-				messageType = pv.asStringValue(null);  
-				log.debug("MailSender ["+getName()+"] retrieved messageType-parameter ["+messageType+"]");
-			}
-			pv = pvl.getParameterValue("messageBase64");
-			if (pv != null) {
-				messageBase64 = pv.asStringValue(null);  
-				log.debug("MailSender ["+getName()+"] retrieved messageBase64-parameter ["+messageBase64+"]");
-			}
-			pv = pvl.getParameterValue("recipients");
-			if (pv != null) {
-				recipients = pv.asCollection();  
-			}
-			pv = pvl.getParameterValue("attachments");
-			if (pv != null) {
-				attachments = pv.asCollection();  
-			}
-		} catch (ParameterException e) {
-			throw new SenderException("MailSender ["+getName()+"] got exception determining parametervalues",e);
-		}
-		
-		sendEmail(from, subject, message, recipients, attachments);
+		prc.getSession().put("messageInMailSafeForm", messageInMailSafeForm);
 		return correlationID;
 	}
 	
+	public String sendMessage(String correlationID, String input) throws SenderException {
+		sendEmail(input);
+		return correlationID;
+	}
+	
+
 	/**
 	 * Send a mail conforming to the XML input
 	 */
-	public String sendMessage(String correlationID, String input) throws SenderException {
+	protected String sendEmail(String input) throws SenderException {
 		// initialize this request
 		String from;
 		String subject;
@@ -270,13 +283,10 @@ public class MailSender extends SenderWithParametersBase {
 			throw new SenderException("exception parsing [" + input + "]", e);
 		}
 
-		sendEmail(from, subject, message, recipients, attachments);
-		return correlationID;
+		return sendEmail(from, subject, message, recipients, attachments);
 	}
-	
 
-
-	protected void sendEmail(String from, String subject, String message, Collection recipients, Collection attachments) throws SenderException {
+	protected String sendEmail(String from, String subject, String message, Collection recipients, Collection attachments) throws SenderException {
 
 		StringBuffer sb = new StringBuffer();
 
@@ -397,7 +407,11 @@ public class MailSender extends SenderWithParametersBase {
 			msg.saveChanges();
 			// send the message
 			putOnTransport(msg);
-
+			// return the mail in mail-safe from
+			ByteArrayOutputStream out = new ByteArrayOutputStream();
+			msg.writeTo(out);
+			byte[] byteArray = out.toByteArray();
+			return Misc.byteArrayToString(byteArray,"\n",false); 
 		} catch (Exception e) {
 			throw new SenderException("MailSender got error", e);
 		}
