@@ -1,6 +1,13 @@
 /*
  * $Log: MonitorManager.java,v $
- * Revision 1.8  2008-08-27 16:17:34  europe\L190409
+ * Revision 1.9  2009-04-15 14:06:31  l562891
+ * *** empty log message ***
+ *
+ * 
+ * Revision 1.9  2008/08/27 16:17:34  Martijn Onstwedder <martijn.onstwedder@ibissource.org>
+ * added heapSize and totalMemory attributes to monitorstatus xml
+
+ * Revision 1.8  2008/08/27 16:17:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added lastStateChangeDate
  *
  * Revision 1.7  2008/08/13 13:39:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -44,6 +51,8 @@ import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.Lock;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
+import nl.nn.adapterframework.util.ProcessMetrics;
+
 
 import org.apache.commons.digester.AbstractObjectCreationFactory;
 import org.apache.commons.digester.Digester;
@@ -364,11 +373,18 @@ public class MonitorManager implements EventHandler {
 	}
 
 	public XmlBuilder getStatusXml() {
+		
+		long freeMem = Runtime.getRuntime().freeMemory();
+		long totalMem = Runtime.getRuntime().totalMemory();
+		
 		XmlBuilder statusXml=new XmlBuilder("monitorstatus");
 		if (lastStateChange!=null) {
 			statusXml.addAttribute("lastStateChange",DateUtils.format(lastStateChange,DateUtils.FORMAT_FULL_GENERIC));
 		}
 		statusXml.addAttribute("timestamp",DateUtils.format(new Date()));
+		statusXml.addAttribute("heapSize", ProcessMetrics.normalizedNotation (totalMem-freeMem) );
+		statusXml.addAttribute("totalMemory", ProcessMetrics.normalizedNotation (totalMem) );
+		
 		for (int i=0; i<monitors.size(); i++) {
 			Monitor monitor=getMonitor(i);
 			statusXml.addSubElement(monitor.getStatusXml());
