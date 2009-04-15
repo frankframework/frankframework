@@ -1,6 +1,9 @@
 /*
  * $Log: PullingListenerContainer.java,v $
- * Revision 1.15  2008-08-13 13:50:36  europe\L190409
+ * Revision 1.16  2009-04-15 16:02:35  L190409
+ * removed static from definition of txNew
+ *
+ * Revision 1.15  2008/08/13 13:50:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * no changes
  *
  * Revision 1.14  2008/08/07 11:42:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -75,7 +78,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 public class PullingListenerContainer implements Runnable {
 	protected Logger log = LogUtil.getLogger(this);
 
-    private static TransactionDefinition txNew=null;
+    private TransactionDefinition txNew=null;
 
     private ReceiverBase receiver;
 	private PlatformTransactionManager txManager;
@@ -226,7 +229,7 @@ public class PullingListenerContainer implements Runnable {
             long stillRunning = threadsRunning.decrease();
             if (stillRunning > 0) {
 				receiver.info("a thread of Receiver [" + receiver.getName() + "] exited, [" + stillRunning + "] are still running");
-				receiver.throwEvent(receiver.RCV_THREAD_EXIT_MONITOR_EVENT);
+				receiver.throwEvent(ReceiverBase.RCV_THREAD_EXIT_MONITOR_EVENT);
                 return;
             }
 			receiver.info("the last thread of Receiver [" + receiver.getName() + "] exited, cleaning up");
@@ -237,8 +240,8 @@ public class PullingListenerContainer implements Runnable {
 
 	private void resetRetryInterval() {
 		synchronized (receiver) {
-			if (retryInterval > receiver.RCV_SUSPENSION_MESSAGE_THRESHOLD) {
-				receiver.throwEvent(receiver.RCV_SUSPENDED_MONITOR_EVENT);
+			if (retryInterval > ReceiverBase.RCV_SUSPENSION_MESSAGE_THRESHOLD) {
+				receiver.throwEvent(ReceiverBase.RCV_SUSPENDED_MONITOR_EVENT);
 			}
 			retryInterval = 1;
 		}
@@ -254,8 +257,8 @@ public class PullingListenerContainer implements Runnable {
 			}
 		}
 		receiver.error("caught Exception retrieving message, will continue retrieving messages in [" + currentInterval + "] seconds", t);
-		if (currentInterval*2 > receiver.RCV_SUSPENSION_MESSAGE_THRESHOLD) {
-			receiver.throwEvent(receiver.RCV_SUSPENDED_MONITOR_EVENT);
+		if (currentInterval*2 > ReceiverBase.RCV_SUSPENSION_MESSAGE_THRESHOLD) {
+			receiver.throwEvent(ReceiverBase.RCV_SUSPENDED_MONITOR_EVENT);
 		}
 		while (receiver.isInRunState(RunStateEnum.STARTED) && currentInterval-- > 0) {
 			try {
