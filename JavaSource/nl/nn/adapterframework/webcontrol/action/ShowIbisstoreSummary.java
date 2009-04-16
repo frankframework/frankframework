@@ -1,6 +1,9 @@
 /*
  * $Log: ShowIbisstoreSummary.java,v $
- * Revision 1.1  2009-04-16 08:58:04  L190409
+ * Revision 1.2  2009-04-16 10:10:21  L190409
+ * second version of ShowIbisstoreSummary
+ *
+ * Revision 1.1  2009/04/16 08:58:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * first version of ShowIbisstoreSummary
  *
  */
@@ -8,6 +11,8 @@
 package nl.nn.adapterframework.webcontrol.action;
 
 import java.io.IOException;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
@@ -18,6 +23,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import nl.nn.adapterframework.jdbc.DirectQuerySender;
+import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.XmlBuilder;
@@ -38,7 +44,7 @@ import org.apache.struts.action.ActionMapping;
  */
 
 public class ShowIbisstoreSummary extends ActionBase {
-	public static final String version = "$RCSfile: ShowIbisstoreSummary.java,v $ $Revision: 1.1 $ $Date: 2009-04-16 08:58:04 $";
+	public static final String version = "$RCSfile: ShowIbisstoreSummary.java,v $ $Revision: 1.2 $ $Date: 2009-04-16 10:10:21 $";
 
 	public static final String SHOWIBISSTORECOOKIE="ShowIbisstoreSummaryCookieName";
 
@@ -105,75 +111,75 @@ public class ShowIbisstoreSummary extends ActionBase {
 
 			try {
 				qs = new DirectQuerySender() {
-//					protected String getResult(ResultSet resultset) throws JdbcException, SQLException, IOException {
-//						XmlBuilder result = new XmlBuilder("result");
-//						String previousType=null;
-//						XmlBuilder typeXml=null;
-//						String previousSlot=null;
-//						XmlBuilder slotXml=null;
-//						int typeslotcount=0;
-//						int typedatecount=0;
-//						int typemsgcount=0;
-//						int slotdatecount=0;
-//						int slotmsgcount=0;
-//						while (resultset.next()) {
-//							String type = resultset.getString("type");
-//							String slotid = resultset.getString("slotid");
-//							String date =  resultset.getString("msgdate");
-//							int count =    resultset.getInt("msgcount");
-//							
-//						
-//							if (!type.equals(previousType)) {
-//								if (typeXml!=null) {
-//									typeXml.addAttribute("slotcount",typeslotcount);
-//									typeXml.addAttribute("datecount",typedatecount);
-//									typeXml.addAttribute("msgcount",typemsgcount);
-//									typeslotcount=0;
-//									typedatecount=0;
-//									typemsgcount=0;
-//									previousSlot=null;
-//								}
-//								typeXml=new XmlBuilder("type");
-//								typeXml.addAttribute("id",type);
-//								result.addSubElement(typeXml);
-//								previousType=type;
-//							}
-//							if (!slotid.equals(previousSlot)) {
-//								if (slotXml!=null) {
-//									slotXml.addAttribute("datelinecount",slotdatecount);
-//									slotXml.addAttribute("msgcount",slotmsgcount);
-//									slotdatecount=0;
-//									slotmsgcount=0;
-//								}
-//								slotXml=new XmlBuilder("slot");
-//								slotXml.addAttribute("id",slotid);
-//								typeXml.addSubElement(slotXml);
-//								previousSlot=slotid;
-//								typeslotcount++;
-//							}
-//							typemsgcount+=count;
-//							typedatecount++;
-//							slotmsgcount+=count;
-//							slotdatecount++;
-//							
-//							XmlBuilder dateXml=new XmlBuilder("date");
-//							dateXml.addAttribute("id",date);
-//							dateXml.addAttribute("count",count);
-//							slotXml.addSubElement(dateXml);
-//						}
-//						if (typeXml!=null) {
-//							typeXml.addAttribute("slotcount",typeslotcount);
-//							typeXml.addAttribute("datecount",typedatecount);
-//							typeXml.addAttribute("msgcount",typemsgcount);
-//						}
-//						if (slotXml!=null) {
-//							slotXml.addAttribute("datelinecount",slotdatecount);
-//							slotXml.addAttribute("msgcount",slotmsgcount);
-//							slotdatecount=0;
-//							slotmsgcount=0;
-//						}
-//						return result.toXML();
-//					}
+					protected String getResult(ResultSet resultset) throws JdbcException, SQLException, IOException {
+						XmlBuilder result = new XmlBuilder("result");
+						String previousType=null;
+						XmlBuilder typeXml=null;
+						String previousSlot=null;
+						XmlBuilder slotXml=null;
+						int typeslotcount=0;
+						int typedatecount=0;
+						int typemsgcount=0;
+						int slotdatecount=0;
+						int slotmsgcount=0;
+						while (resultset.next()) {
+							String type = resultset.getString("type");
+							String slotid = resultset.getString("slotid");
+							String date =  resultset.getString("msgdate");
+							int count =    resultset.getInt("msgcount");
+							
+						
+							if (!type.equals(previousType)) {
+								if (typeXml!=null) {
+									typeXml.addAttribute("slotcount",typeslotcount);
+									typeXml.addAttribute("datecount",typedatecount);
+									typeXml.addAttribute("msgcount",typemsgcount);
+									typeslotcount=0;
+									typedatecount=0;
+									typemsgcount=0;
+									previousSlot=null;
+								}
+								typeXml=new XmlBuilder("type");
+								typeXml.addAttribute("id",type);
+								result.addSubElement(typeXml);
+								previousType=type;
+							}
+							if (!slotid.equals(previousSlot)) {
+								if (slotXml!=null) {
+									slotXml.addAttribute("datecount",slotdatecount);
+									slotXml.addAttribute("msgcount",slotmsgcount);
+									slotdatecount=0;
+									slotmsgcount=0;
+								}
+								slotXml=new XmlBuilder("slot");
+								slotXml.addAttribute("id",slotid);
+								typeXml.addSubElement(slotXml);
+								previousSlot=slotid;
+								typeslotcount++;
+							}
+							typemsgcount+=count;
+							typedatecount++;
+							slotmsgcount+=count;
+							slotdatecount++;
+							
+							XmlBuilder dateXml=new XmlBuilder("date");
+							dateXml.addAttribute("id",date);
+							dateXml.addAttribute("count",count);
+							slotXml.addSubElement(dateXml);
+						}
+						if (typeXml!=null) {
+							typeXml.addAttribute("slotcount",typeslotcount);
+							typeXml.addAttribute("datecount",typedatecount);
+							typeXml.addAttribute("msgcount",typemsgcount);
+						}
+						if (slotXml!=null) {
+							slotXml.addAttribute("datecount",slotdatecount);
+							slotXml.addAttribute("msgcount",slotmsgcount);
+							slotdatecount=0;
+							slotmsgcount=0;
+						}
+						return result.toXML();
+					}
 				};
 				try {
 					qs.setName("QuerySender");
@@ -196,8 +202,8 @@ public class ShowIbisstoreSummary extends ActionBase {
 			} catch (Exception e) {
 				error("error occured on creating or closing connection",e);
 			}
-//			log.debug("result ["+result+"]");
-			showIbisstoreSummaryForm.set("result", result);
+			log.debug("result ["+result+"]");
+//			showIbisstoreSummaryForm.set("result", result);
 			request.setAttribute("result", result);
 
 		}
