@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.77  2009-03-30 12:23:24  L190409
+ * Revision 1.78  2009-04-16 14:01:45  m168309
+ * added hiddenInputSessionKeys attribute
+ *
+ * Revision 1.77  2009/03/30 12:23:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added counter for messagesRejected
  *
  * Revision 1.76  2009/03/13 14:33:10  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -473,6 +476,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  * <tr><td>{@link #setAfterEvent(int) afterEvent}</td>        <td>METT eventnumber, fired just after message processing by this Receiver is finished</td><td>-1 (disabled)</td></tr>
  * <tr><td>{@link #setExceptionEvent(int) exceptionEvent}</td><td>METT eventnumber, fired when message processing by this Receiver resulted in an exception</td><td>-1 (disabled)</td></tr>
  * <tr><td>{@link #setCorrelationIDXPath(String) correlationIDXPath}</td><td>xpath expression to extract correlationID from message</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setHiddenInputSessionKeys(String) hiddenInputSessionKeys}</td><td>comma separated list of keys of session variables which are available when the <code>PipeLineSession</code> is created and of which the value will not be shown in the log (replaced by asterisks)</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * <p>
@@ -534,7 +538,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  */
 public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHandler, EventThrowing, IbisExceptionListener, HasSender, HasStatistics, TracingEventNumbers, IThreadCountControllable, BeanFactoryAware {
     
-	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.77 $ $Date: 2009-03-30 12:23:24 $";
+	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.78 $ $Date: 2009-04-16 14:01:45 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -558,6 +562,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	private int pollInterval=10;
     
 	private String returnedSessionKeys=null;
+	private String hiddenInputSessionKeys=null;
 	private boolean checkForDuplicates=false;
 	private String correlationIDXPath;
 
@@ -671,6 +676,15 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		if (threadContext != null) {
 			pipelineSession.putAll(threadContext);
 			if (log.isDebugEnabled()) {
+				List hiddenSessionKeys = new ArrayList();
+				if (getHiddenInputSessionKeys()!=null) {
+					StringTokenizer st = new StringTokenizer(getHiddenInputSessionKeys(), " ,;");
+					while (st.hasMoreTokens()) {
+						String key = st.nextToken();
+						hiddenSessionKeys.add(key);
+					}
+				}
+
 				String contextDump = "PipeLineSession variables for messageId [" + messageId + "] correlationId [" + correlationId + "]:";
 				for (Iterator it = pipelineSession.keySet().iterator(); it.hasNext();) {
 					String key = (String) it.next();
@@ -678,12 +692,21 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 					if (key.equals("messageText")) {
 						value = "(... see elsewhere ...)";
 					}
-					contextDump += " " + key + "=[" + String.valueOf(value) + "]";
+					String strValue = String.valueOf(value);
+					contextDump += " " + key + "=[" + (hiddenSessionKeys.contains(key)?hide(strValue):strValue) + "]";
 				}
 				log.debug(getLogPrefix()+contextDump);
 			}
 		}
 		return pipelineSession;
+	}
+
+	private String hide(String string) {
+		String hiddenString = "";
+		for (int i = 0; i < string.toString().length(); i++) {
+			hiddenString = hiddenString + "*";
+		}
+		return hiddenString;
 	}
 
 	private void putSessionKeysIntoThreadContext(Map threadContext, PipeLineSession pipelineSession) {
@@ -2113,6 +2136,13 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	}
 	public String getReturnedSessionKeys() {
 		return returnedSessionKeys;
+	}
+
+	public void setHiddenInputSessionKeys(String string) {
+		hiddenInputSessionKeys = string;
+	}
+	public String getHiddenInputSessionKeys() {
+		return hiddenInputSessionKeys;
 	}
 
 	public void setTaskExecutor(TaskExecutor executor) {
