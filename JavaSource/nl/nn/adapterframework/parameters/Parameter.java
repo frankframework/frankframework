@@ -1,6 +1,9 @@
 /*
  * $Log: Parameter.java,v $
- * Revision 1.29  2008-10-23 14:16:51  europe\m168309
+ * Revision 1.30  2009-04-16 13:56:33  m168309
+ * added hidden attribute
+ *
+ * Revision 1.29  2008/10/23 14:16:51  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * XSLT 2.0 made possible
  *
  * Revision 1.28  2008/07/14 17:22:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -164,6 +167,7 @@ import org.w3c.dom.Node;
  * <tr><td>{@link #setDefaultValue(String) defaultValue}</td><td>If the result of sessionKey, XpathExpressen and/or Stylesheet returns null or an empty String, this value is returned</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setPattern(String) pattern}</td><td>Value of parameter is determined using substitution and formating. If fname is a parameter or session variable that resolves to Eric, then the pattern 'Hi {fname}, hoe gaat het?' resolves to 'Hi Eric, hoe gaat het?' </td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setValue(String) value}</td><td>A fixed value</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setHidden(boolean) hidden}</td><td>if set to <code>true</code>, the value of the parameter will not be shown in the log (replaced by asterisks)</td><td><code>false</code></td></tr>
  * </table>
  * </p>
  * Examples:
@@ -191,7 +195,7 @@ import org.w3c.dom.Node;
  * @author Gerrit van Brakel
  */
 public class Parameter implements INamedObject, IWithParameters {
-	public static final String version="$RCSfile: Parameter.java,v $ $Revision: 1.29 $ $Date: 2008-10-23 14:16:51 $";
+	public static final String version="$RCSfile: Parameter.java,v $ $Revision: 1.30 $ $Date: 2009-04-16 13:56:33 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private IbisDebugger ibisDebugger;
@@ -221,6 +225,7 @@ public class Parameter implements INamedObject, IWithParameters {
 	private String formatString = null;
 	private String decimalSeparator = null;
 	private String groupingSeparator = null;
+	private boolean hidden = false;
 
 	private DecimalFormatSymbols decimalFormatSymbols = null;
 	private TransformerPool transformerPool = null;
@@ -353,10 +358,12 @@ public class Parameter implements INamedObject, IWithParameters {
 			}
 		}
 		if (result != null) {
-			if (log.isDebugEnabled()) log.debug("Parameter ["+getName()+"] resolved to ["+result+"]");
+			if (log.isDebugEnabled()) {
+				log.debug("Parameter ["+getName()+"] resolved to ["+(isHidden()?hide(result.toString()):result)+"]");
+			}
 		} else {
 			// if value is null then return specified default value
-			log.debug("Parameter ["+getName()+"] resolved to defaultvalue ["+getDefaultValue()+"]");
+			log.debug("Parameter ["+getName()+"] resolved to defaultvalue ["+(isHidden()?hide(getDefaultValue()):getDefaultValue())+"]");
 			result=getDefaultValue();
 		}
 		if (log.isDebugEnabled() && ibisDebugger!=null) result = ibisDebugger.parameterResolvedTo(this, prc.getSession().getMessageId(), result);
@@ -399,6 +406,14 @@ public class Parameter implements INamedObject, IWithParameters {
 			}
 		}
 		return result; 
+	}
+
+	private String hide(String string) {
+		String hiddenString = "";
+		for (int i = 0; i < string.toString().length(); i++) {
+			hiddenString = hiddenString + "*";
+		}
+		return hiddenString;
 	}
 
 	private String format(ParameterValueList alreadyResolvedParameters, ParameterResolutionContext prc) throws ParameterException {
@@ -570,4 +585,12 @@ public class Parameter implements INamedObject, IWithParameters {
 	public void setIbisDebugger(IbisDebugger ibisDebugger) {
 		this.ibisDebugger = ibisDebugger;
 	}
+
+	public void setHidden(boolean b) {
+		hidden = b;
+	}
+	public boolean isHidden() {
+		return hidden;
+	}
+
 }
