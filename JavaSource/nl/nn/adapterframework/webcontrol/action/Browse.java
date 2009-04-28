@@ -1,6 +1,9 @@
 /*
  * $Log: Browse.java,v $
- * Revision 1.17  2009-04-28 09:32:52  L190409
+ * Revision 1.18  2009-04-28 11:36:31  L190409
+ * corrected dateClip handling
+ *
+ * Revision 1.17  2009/04/28 09:32:52  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added clip option to date filter
  *
  * Revision 1.16  2009/03/13 14:34:41  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -93,7 +96,7 @@ import org.apache.struts.action.DynaActionForm;
  * @since   4.4
  */
 public class Browse extends ActionBase {
-	public static final String version="$RCSfile: Browse.java,v $ $Revision: 1.17 $ $Date: 2009-04-28 09:32:52 $";
+	public static final String version="$RCSfile: Browse.java,v $ $Revision: 1.18 $ $Date: 2009-04-28 11:36:31 $";
 
 	private int maxMessages = AppConstants.getInstance().getInt("browse.messages.max",0); 
 	private int skipMessages=0;
@@ -269,7 +272,7 @@ public class Browse extends ActionBase {
 							}
 							if (startDateClip) {
 								String formattedInsertDate=DateUtils.formatOptimal(insertDate);
-								if (!formattedInsertDate.equals(formattedStartDate)) {
+								if (!formattedInsertDate.startsWith(formattedStartDate)) {
 									continue;
 								}
 							}
