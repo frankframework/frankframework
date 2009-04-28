@@ -1,6 +1,10 @@
 /*
  * $Log: ShowIbisstoreSummary.java,v $
- * Revision 1.3  2009-04-28 09:33:14  L190409
+ * Revision 1.4  2009-04-28 11:11:55  L190409
+ * added links to pipe messagelogs
+ * added empty result where it is null
+ *
+ * Revision 1.3  2009/04/28 09:33:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * made clickable
  *
  * Revision 1.2  2009/04/16 10:10:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -27,10 +31,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import nl.nn.adapterframework.core.Adapter;
+import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.ITransactionalStorage;
+import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.jdbc.DirectQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
+import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.XmlBuilder;
@@ -50,7 +57,7 @@ import org.apache.struts.action.ActionMapping;
  */
 
 public class ShowIbisstoreSummary extends ActionBase {
-	public static final String version = "$RCSfile: ShowIbisstoreSummary.java,v $ $Revision: 1.3 $ $Date: 2009-04-28 09:33:14 $";
+	public static final String version = "$RCSfile: ShowIbisstoreSummary.java,v $ $Revision: 1.4 $ $Date: 2009-04-28 11:11:55 $";
 
 	public static final String SHOWIBISSTORECOOKIE="ShowIbisstoreSummaryCookieName";
 	public static final String SHOWIBISSTOREQUERYKEY="ibisstore.summary.query";
@@ -59,15 +66,17 @@ public class ShowIbisstoreSummary extends ActionBase {
 		
 		String adapterName;
 		String receiverName;
+		String pipeName;
 		
-		SlotIdRecord(String adapterName, String receiverName) {
+		SlotIdRecord(String adapterName, String receiverName, String pipeName) {
 			super();
 			this.adapterName=adapterName;
 			this.receiverName=receiverName;
+			this.pipeName=pipeName;
 		}
 		
 	}
-	private Map errorslotmap = new HashMap();
+	private Map slotmap = new HashMap();
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 		IniDynaActionForm showIbisstoreSummaryForm = (IniDynaActionForm) form;
@@ -101,8 +110,25 @@ public class ShowIbisstoreSummary extends ActionBase {
 					if (errorStorage!=null) {
 						String slotId=errorStorage.getSlotId();
 						if (StringUtils.isNotEmpty(slotId)) {
-							SlotIdRecord sir=new SlotIdRecord(adapter.getName(),receiver.getName());
-							errorslotmap.put(slotId,sir);
+							SlotIdRecord sir=new SlotIdRecord(adapter.getName(),receiver.getName(),null);
+							slotmap.put(slotId,sir);
+						}
+					}
+				}
+				PipeLine pipeline=adapter.getPipeLine();
+				if (pipeline!=null) {
+					for (int i=0; i<pipeline.getPipeLineSize(); i++) {
+						IPipe pipe=pipeline.getPipe(i);
+						if (pipe instanceof MessageSendingPipe) {
+							MessageSendingPipe msp=(MessageSendingPipe)pipe;
+							ITransactionalStorage messageLog = msp.getMessageLog();
+							if (messageLog!=null) {
+								String slotId=messageLog.getSlotId();
+								if (StringUtils.isNotEmpty(slotId)) {
+									SlotIdRecord sir=new SlotIdRecord(adapter.getName(),null,msp.getName());
+									slotmap.put(slotId,sir);
+								}
+							}
 						}
 					}
 				}
@@ -124,7 +150,7 @@ public class ShowIbisstoreSummary extends ActionBase {
 			String formQuery=AppConstants.getInstance().getProperty(SHOWIBISSTOREQUERYKEY);
 
 			DirectQuerySender qs;
-			String result = "";
+			String result = "<none/>";
 
 			try {
 				qs = new DirectQuerySender() {
@@ -172,10 +198,15 @@ public class ShowIbisstoreSummary extends ActionBase {
 								slotXml=new XmlBuilder("slot");
 								slotXml.addAttribute("id",slotid);
 								if (StringUtils.isNotEmpty(slotid)) {
-									SlotIdRecord sir=(SlotIdRecord)errorslotmap.get(slotid);
+									SlotIdRecord sir=(SlotIdRecord)slotmap.get(slotid);
 									if (sir!=null) {
 										slotXml.addAttribute("adapter",sir.adapterName);
-										slotXml.addAttribute("receiver",sir.receiverName);
+										if (StringUtils.isNotEmpty(sir.receiverName) ) {
+											slotXml.addAttribute("receiver",sir.receiverName);
+										}
+										if (StringUtils.isNotEmpty(sir.pipeName) ) {
+											slotXml.addAttribute("pipe",sir.pipeName);
+										}
 									}
 								}
 								typeXml.addSubElement(slotXml);
