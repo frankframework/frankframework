@@ -1,6 +1,9 @@
 /*
  * $Log: Browse.java,v $
- * Revision 1.16  2009-03-13 14:34:41  m168309
+ * Revision 1.17  2009-04-28 09:32:52  L190409
+ * added clip option to date filter
+ *
+ * Revision 1.16  2009/03/13 14:34:41  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added expiry date
  *
  * Revision 1.15  2009/01/02 10:27:14  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -90,7 +93,7 @@ import org.apache.struts.action.DynaActionForm;
  * @since   4.4
  */
 public class Browse extends ActionBase {
-	public static final String version="$RCSfile: Browse.java,v $ $Revision: 1.16 $ $Date: 2009-03-13 14:34:41 $";
+	public static final String version="$RCSfile: Browse.java,v $ $Revision: 1.17 $ $Date: 2009-04-28 09:32:52 $";
 
 	private int maxMessages = AppConstants.getInstance().getInt("browse.messages.max",0); 
 	private int skipMessages=0;
@@ -131,19 +134,23 @@ public class Browse extends ActionBase {
 		String commentMask  = getAndSetProperty(request,browseForm,"commentMask");
 		String messageTextMask = getAndSetProperty(request,browseForm,"messageTextMask");
 		String startDateStr = getAndSetProperty(request,browseForm,"insertedAfter");
+		String startDateClipStr = getAndSetProperty(request,browseForm,"insertedAfterClip");
 		String viewAs = getAndSetProperty(request,browseForm,"viewAs", request.getParameter("type"));
 		String selected[] = (String[])browseForm.get("selected");
+
+		boolean startDateClip="on".equals(startDateClipStr);
 
 		if (StringUtils.isNotEmpty(submit)) {
 			action=submit;
 		}
 		
 		Date startDate=null;
+		String formattedStartDate=null;
 		if (StringUtils.isNotEmpty(startDateStr)) {
 			try {
 				startDate=DateUtils.parseAnyDate(startDateStr);
 				if (startDate!=null) {
-					String formattedStartDate=DateUtils.formatOptimal(startDate);
+					formattedStartDate=DateUtils.formatOptimal(startDate);
 					log.debug("parsed start date to ["+formattedStartDate+"]");
 					browseForm.set("insertedAfter",formattedStartDate);
 				} else {
@@ -256,8 +263,16 @@ public class Browse extends ActionBase {
 						if (StringUtils.isNotEmpty(correlationIdMask) && !cCorrelationId.startsWith(correlationIdMask)) {
 							continue;
 						}
-						if (startDate!=null && insertDate!=null && insertDate.before(startDate)) {
-							continue;
+						if (startDate!=null && insertDate!=null) {
+							if (insertDate.before(startDate)) {
+								continue;
+							}
+							if (startDateClip) {
+								String formattedInsertDate=DateUtils.formatOptimal(insertDate);
+								if (!formattedInsertDate.equals(formattedStartDate)) {
+									continue;
+								}
+							}
 						}
 						if (StringUtils.isNotEmpty(commentMask) && (StringUtils.isEmpty(comment) || comment.indexOf(commentMask)<0)) {
 							continue;
