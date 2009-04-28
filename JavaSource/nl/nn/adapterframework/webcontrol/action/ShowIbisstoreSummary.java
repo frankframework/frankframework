@@ -1,6 +1,9 @@
 /*
  * $Log: ShowIbisstoreSummary.java,v $
- * Revision 1.4  2009-04-28 11:11:55  L190409
+ * Revision 1.5  2009-04-28 11:35:33  L190409
+ * guard for debug logging
+ *
+ * Revision 1.4  2009/04/28 11:11:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added links to pipe messagelogs
  * added empty result where it is null
  *
@@ -57,7 +60,7 @@ import org.apache.struts.action.ActionMapping;
  */
 
 public class ShowIbisstoreSummary extends ActionBase {
-	public static final String version = "$RCSfile: ShowIbisstoreSummary.java,v $ $Revision: 1.4 $ $Date: 2009-04-28 11:11:55 $";
+	public static final String version = "$RCSfile: ShowIbisstoreSummary.java,v $ $Revision: 1.5 $ $Date: 2009-04-28 11:35:33 $";
 
 	public static final String SHOWIBISSTORECOOKIE="ShowIbisstoreSummaryCookieName";
 	public static final String SHOWIBISSTOREQUERYKEY="ibisstore.summary.query";
@@ -253,7 +256,7 @@ public class ShowIbisstoreSummary extends ActionBase {
 			} catch (Exception e) {
 				error("error occured on creating or closing connection",e);
 			}
-			log.debug("result ["+result+"]");
+			if (log.isDebugEnabled()) log.debug("result ["+result+"]");
 			request.setAttribute("result", result);
 
 		}
