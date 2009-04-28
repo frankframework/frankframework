@@ -1,6 +1,9 @@
 /*
  * $Log: ShowIbisstoreSummary.java,v $
- * Revision 1.2  2009-04-16 10:10:21  L190409
+ * Revision 1.3  2009-04-28 09:33:14  L190409
+ * made clickable
+ *
+ * Revision 1.2  2009/04/16 10:10:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * second version of ShowIbisstoreSummary
  *
  * Revision 1.1  2009/04/16 08:58:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -13,21 +16,24 @@ package nl.nn.adapterframework.webcontrol.action;
 import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Properties;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import nl.nn.adapterframework.core.Adapter;
+import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.jdbc.DirectQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
+import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.XmlBuilder;
-import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.webcontrol.IniDynaActionForm;
 
 import org.apache.commons.lang.StringUtils;
@@ -44,26 +50,24 @@ import org.apache.struts.action.ActionMapping;
  */
 
 public class ShowIbisstoreSummary extends ActionBase {
-	public static final String version = "$RCSfile: ShowIbisstoreSummary.java,v $ $Revision: 1.2 $ $Date: 2009-04-16 10:10:21 $";
+	public static final String version = "$RCSfile: ShowIbisstoreSummary.java,v $ $Revision: 1.3 $ $Date: 2009-04-28 09:33:14 $";
 
 	public static final String SHOWIBISSTORECOOKIE="ShowIbisstoreSummaryCookieName";
+	public static final String SHOWIBISSTOREQUERYKEY="ibisstore.summary.query";
 
-	public void addPropertiesToXmlBuilder(XmlBuilder container, Properties props, String setName) {
-		Enumeration enum = props.keys();
-		XmlBuilder propertySet = new XmlBuilder("propertySet");
-		propertySet.addAttribute("name", setName);
-		container.addSubElement(propertySet);
-
-		while (enum.hasMoreElements()) {
-			String propName = (String) enum.nextElement();
-			XmlBuilder property = new XmlBuilder("property");
-			property.addAttribute("name", XmlUtils.encodeCdataString(propName));
-			property.setCdataValue(XmlUtils.encodeCdataString(props.getProperty(propName)));
-			propertySet.addSubElement(property);
+	private class SlotIdRecord {
+		
+		String adapterName;
+		String receiverName;
+		
+		SlotIdRecord(String adapterName, String receiverName) {
+			super();
+			this.adapterName=adapterName;
+			this.receiverName=receiverName;
 		}
-
+		
 	}
-	
+	private Map errorslotmap = new HashMap();
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 		IniDynaActionForm showIbisstoreSummaryForm = (IniDynaActionForm) form;
@@ -88,6 +92,23 @@ public class ShowIbisstoreSummary extends ActionBase {
 			}
 		}
 
+		if (null!=config) {
+			for(Iterator adapterIt=config.getRegisteredAdapters().iterator(); adapterIt.hasNext();) {
+				Adapter adapter = (Adapter)adapterIt.next();
+				for(Iterator receiverIt=adapter.getReceiverIterator(); receiverIt.hasNext();) {
+					ReceiverBase receiver=(ReceiverBase)receiverIt.next();
+					ITransactionalStorage errorStorage=receiver.getErrorStorage();
+					if (errorStorage!=null) {
+						String slotId=errorStorage.getSlotId();
+						if (StringUtils.isNotEmpty(slotId)) {
+							SlotIdRecord sir=new SlotIdRecord(adapter.getName(),receiver.getName());
+							errorslotmap.put(slotId,sir);
+						}
+					}
+				}
+			}
+		}
+		
 		List jmsRealms = JmsRealmFactory.getInstance().getRegisteredRealmNamesAsList();
 		if (jmsRealms.size() == 0) {
 			jmsRealms.add("no realms defined");
@@ -100,11 +121,7 @@ public class ShowIbisstoreSummary extends ActionBase {
 
 		if (StringUtils.isNotEmpty(jmsRealm)) {
 
-			String formQuery=
-				"select type, slotid, to_char(MESSAGEDATE,'YYYY-MM-DD') msgdate, count(*) msgcount" 
-				+ " from ibisstore group by slotid, type, to_char(MESSAGEDATE,'YYYY-MM-DD')"
-				+ " order by type, slotid, to_char(MESSAGEDATE,'YYYY-MM-DD')"
-				;
+			String formQuery=AppConstants.getInstance().getProperty(SHOWIBISSTOREQUERYKEY);
 
 			DirectQuerySender qs;
 			String result = "";
@@ -127,6 +144,7 @@ public class ShowIbisstoreSummary extends ActionBase {
 							String slotid = resultset.getString("slotid");
 							String date =  resultset.getString("msgdate");
 							int count =    resultset.getInt("msgcount");
+							
 							
 						
 							if (!type.equals(previousType)) {
@@ -153,6 +171,13 @@ public class ShowIbisstoreSummary extends ActionBase {
 								}
 								slotXml=new XmlBuilder("slot");
 								slotXml.addAttribute("id",slotid);
+								if (StringUtils.isNotEmpty(slotid)) {
+									SlotIdRecord sir=(SlotIdRecord)errorslotmap.get(slotid);
+									if (sir!=null) {
+										slotXml.addAttribute("adapter",sir.adapterName);
+										slotXml.addAttribute("receiver",sir.receiverName);
+									}
+								}
 								typeXml.addSubElement(slotXml);
 								previousSlot=slotid;
 								typeslotcount++;
@@ -189,11 +214,6 @@ public class ShowIbisstoreSummary extends ActionBase {
 					qs.configure();
 					qs.open();
 					result = qs.sendMessage("dummy", formQuery);
-//					URL url= ClassUtils.getResourceURL(this,ExecuteJdbcQueryExecute.DB2XML_XSLT);
-//					if (url!=null) {
-//						Transformer t = XmlUtils.createTransformer(url);
-//						result = XmlUtils.transformXml(t,result);
-//					}
 				} catch (Throwable t) {
 					error("error occured on executing jdbc query",t);
 				} finally {
@@ -203,7 +223,6 @@ public class ShowIbisstoreSummary extends ActionBase {
 				error("error occured on creating or closing connection",e);
 			}
 			log.debug("result ["+result+"]");
-//			showIbisstoreSummaryForm.set("result", result);
 			request.setAttribute("result", result);
 
 		}
@@ -211,7 +230,7 @@ public class ShowIbisstoreSummary extends ActionBase {
 
 		if (!errors.isEmpty()) {
 			saveErrors(request, errors);
-			return (new ActionForward(mapping.getInput()));
+			return (mapping.findForward("success"));
 		}
 
 		//Successfull: store cookie
