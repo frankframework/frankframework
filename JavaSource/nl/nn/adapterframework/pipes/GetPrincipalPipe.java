@@ -1,12 +1,18 @@
 /*
  * $Log: GetPrincipalPipe.java,v $
- * Revision 1.1  2007-08-03 08:46:29  europe\L190409
+ * Revision 1.2  2009-04-28 09:22:18  m168309
+ * added check for principals absence
+ *
+ * Revision 1.1  2007/08/03 08:46:29  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * first version
  *
  */
 package nl.nn.adapterframework.pipes;
 
+import java.security.Principal;
+
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 
 /**
@@ -37,7 +43,19 @@ import nl.nn.adapterframework.core.PipeRunResult;
  */
 public class GetPrincipalPipe extends FixedForwardPipe {
 	
-	public PipeRunResult doPipe(Object input, PipeLineSession session) {
-		return new PipeRunResult(getForward(),session.getPrincipal());
+	public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRunException{
+		Principal principal=session.getPrincipal();
+		String principalName = "";
+		if (principal==null) {
+			log.warn(getLogPrefix(session)+"no principal found");
+		} else {
+			try {
+				principalName = principal.getName();
+			} catch (Throwable e) {
+				throw new PipeRunException(this,getLogPrefix(session)+"got exception getting name from principal",e);
+			}
+		}
+
+		return new PipeRunResult(getForward(),principalName);
 	}
 }
