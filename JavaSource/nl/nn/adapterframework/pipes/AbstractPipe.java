@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractPipe.java,v $
- * Revision 1.34  2008-12-30 17:01:12  m168309
+ * Revision 1.35  2009-05-06 11:39:50  L190409
+ * keep reference to pipeline
+ *
+ * Revision 1.34  2008/12/30 17:01:12  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added configuration warnings facility (in Show configurationStatus)
  *
  * Revision 1.33  2008/07/14 17:24:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -102,6 +105,7 @@ import java.util.Hashtable;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.HasTransactionAttribute;
+import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IExtendedPipe;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine;
@@ -188,7 +192,7 @@ import org.springframework.transaction.TransactionDefinition;
  * @see nl.nn.adapterframework.core.PipeLineSession
  */
 public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttribute, TracingEventNumbers, EventThrowing {
-	public static final String version="$RCSfile: AbstractPipe.java,v $ $Revision: 1.34 $ $Date: 2008-12-30 17:01:12 $";
+	public static final String version="$RCSfile: AbstractPipe.java,v $ $Revision: 1.35 $ $Date: 2009-05-06 11:39:50 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -213,6 +217,8 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	private boolean active=true;
 
 	private EventHandler eventHandler=null;
+	
+	private PipeLine pipeline;
  
  
 	/**
@@ -238,6 +244,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	 * Extension for IExtendedPipe that calls configure(void) in its implementation. 
 	 */
 	public void configure(PipeLine pipeline) throws ConfigurationException {
+		this.pipeline=pipeline;
 		configure();
 	}
 
@@ -381,6 +388,17 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 		if (eventHandler!=null) {
 			eventHandler.fireEvent(this,event);
 		}
+	}
+
+	public PipeLine getPipeLine() {
+		return pipeline;
+	}
+
+	public IAdapter getAdapter() {
+		if (getPipeLine()!=null) {
+			return getPipeLine().getAdapter();
+		}
+		return null;
 	}
 
 
