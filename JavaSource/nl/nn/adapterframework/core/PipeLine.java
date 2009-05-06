@@ -1,6 +1,10 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.78  2009-03-17 10:31:59  m168309
+ * Revision 1.79  2009-05-06 11:42:35  L190409
+ * improved configuration of validators
+ * log result at info-level
+ *
+ * Revision 1.78  2009/03/17 10:31:59  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * removed concurrentExecute attribute
  *
  * Revision 1.77  2009/03/10 11:15:33  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -232,7 +236,6 @@
 package nl.nn.adapterframework.core;
 
 import java.io.IOException;
-
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -255,7 +258,6 @@ import nl.nn.adapterframework.util.Semaphore;
 import nl.nn.adapterframework.util.SpringTxManagerProxy;
 import nl.nn.adapterframework.util.StatisticsKeeper;
 import nl.nn.adapterframework.util.TracingUtil;
-import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
@@ -337,7 +339,7 @@ import org.springframework.transaction.TransactionStatus;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.78 $ $Date: 2009-03-17 10:31:59 $";
+	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.79 $ $Date: 2009-05-06 11:42:35 $";
     private Logger log = LogUtil.getLogger(this);
 	private Logger durationLog = LogUtil.getLogger("LongDurationMessages");
     
@@ -434,12 +436,16 @@ public class PipeLine {
 	 * @see IPipe
 	 */
 	public void configurePipes() throws ConfigurationException {
+		INamedObject owner = getOwner();
+		IAdapter adapter=null;
+		if (owner instanceof IAdapter) {
+			adapter=(IAdapter)owner;
+		}
 		for (int i=0; i<pipes.size(); i++) {
 			IPipe pipe=getPipe(i);
 
 			String pipeName=pipe.getName();
 			log.debug("Pipeline of ["+owner.getName()+"] configuring Pipe ["+pipeName+"]");
-	
 			// register the global forwards at the Pipes
 			// the pipe will take care that if a local, pipe-specific
 			// forward is defined, it is not overwritten by the globals
@@ -487,7 +493,11 @@ public class PipeLine {
 			pf.setName("success");
 			getInputValidator().registerForward(pf);
 			getInputValidator().setName("inputValidator of "+owner.getName());
-			getInputValidator().configure();
+			if (getInputValidator() instanceof IExtendedPipe) {
+				((IExtendedPipe)getInputValidator()).configure(this);
+			} else {
+				getInputValidator().configure();
+			}
 		}
 		if (getOutputValidator()!=null) {
 			log.debug("Pipeline of ["+owner.getName()+"] configuring OutputValidator");
@@ -495,7 +505,11 @@ public class PipeLine {
 			pf.setName("success");
 			getOutputValidator().registerForward(pf);
 			getOutputValidator().setName("outputValidator of "+owner.getName());
-			getOutputValidator().configure();
+			if (adapter!=null && getOutputValidator() instanceof IExtendedPipe) {
+				((IExtendedPipe)getOutputValidator()).configure(this);
+			} else {
+				getOutputValidator().configure();
+			}
 		}
 
 		int txOption = this.getTransactionAttributeNum();
@@ -739,7 +753,7 @@ public class PipeLine {
 							sb.append(" current result ["+ object +"] ");
 						}
 					}
-					log.debug(sb.toString());
+					log.info(sb.toString());
 				}
 	
 				// start it
@@ -953,6 +967,9 @@ public class PipeLine {
         this.adapter = adapter;
         setOwner(adapter);
     }
+	public Adapter getAdapter() {
+		return adapter;
+	}
 
 	public void setOwner(INamedObject owner) {
 		this.owner = owner;
