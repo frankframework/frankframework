@@ -1,6 +1,9 @@
 /*
  * $Log: MessageSendingPipe.java,v $
- * Revision 1.51  2009-04-09 12:15:53  m168309
+ * Revision 1.52  2009-05-06 11:41:08  L190409
+ * improved configuration of validators
+ *
+ * Revision 1.51  2009/04/09 12:15:53  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * store message from MailSender in mail-safe form to MessageLog
  *
  * Revision 1.50  2009/03/13 14:32:36  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -154,6 +157,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.HasSender;
 import nl.nn.adapterframework.core.ICorrelatedPullingListener;
+import nl.nn.adapterframework.core.IExtendedPipe;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
@@ -257,7 +261,7 @@ import org.apache.commons.lang.SystemUtils;
  */
 
 public class MessageSendingPipe extends FixedForwardPipe implements HasSender, HasStatistics, EventThrowing {
-	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.51 $ $Date: 2009-04-09 12:15:53 $";
+	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.52 $ $Date: 2009-05-06 11:41:08 $";
 
 	public static final String PIPE_TIMEOUT_MONITOR_EVENT = "Sender Timeout";
 	public static final String PIPE_CLEAR_TIMEOUT_MONITOR_EVENT = "Sender Received Result on Time";
@@ -401,14 +405,22 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 			pf.setName("success");
 			getInputValidator().registerForward(pf);
 			getInputValidator().setName("inputValidator of "+getName());
-			getInputValidator().configure();
+			if (getInputValidator() instanceof IExtendedPipe) {
+				((IExtendedPipe)getInputValidator()).configure(getPipeLine());
+			} else {
+				getInputValidator().configure();
+			}
 		}
 		if (getOutputValidator()!=null) {
 			PipeForward pf = new PipeForward();
 			pf.setName("success");
 			getOutputValidator().registerForward(pf);
 			getOutputValidator().setName("outputValidator of "+getName());
-			getOutputValidator().configure();
+			if (getOutputValidator() instanceof IExtendedPipe) {
+				((IExtendedPipe)getOutputValidator()).configure(getPipeLine());
+			} else {
+				getOutputValidator().configure();
+			}
 		}
 
 		registerEvent(PIPE_TIMEOUT_MONITOR_EVENT);
