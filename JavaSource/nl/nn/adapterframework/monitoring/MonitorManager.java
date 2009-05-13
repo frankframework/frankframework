@@ -1,6 +1,9 @@
 /*
  * $Log: MonitorManager.java,v $
- * Revision 1.10  2009-04-15 14:28:16  l562891
+ * Revision 1.11  2009-05-13 08:18:50  L190409
+ * improved monitoring: triggers can now be filtered multiselectable on adapterlevel
+ *
+ * Revision 1.10  2009/04/15 14:28:16  Martijn Onstwedder <martijn.onstwedder@ibissource.org>
  * added attributes heapSize and totalMemory to monitorstatus tag in showmonitor.xml
  *
  *
@@ -32,17 +35,22 @@
 package nl.nn.adapterframework.monitoring;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import nl.nn.adapterframework.configuration.AttributeCheckingRule;
+import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.Lock;
@@ -52,7 +60,6 @@ import nl.nn.adapterframework.util.XmlBuilder;
 import org.apache.commons.digester.AbstractObjectCreationFactory;
 import org.apache.commons.digester.Digester;
 import org.apache.commons.digester.Rule;
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.xml.sax.Attributes;
 
@@ -66,35 +73,77 @@ import org.xml.sax.Attributes;
 public class MonitorManager implements EventHandler {
 	protected Logger log = LogUtil.getLogger(this);
 
-	List monitors = new ArrayList();
-	Map  eventsByThrower = new LinkedHashMap();
-	Map  eventsByThrowerType = new LinkedHashMap();
-	Map  throwersByEvent = new LinkedHashMap();
-	Map  throwerTypesByEvent = new LinkedHashMap();
-	Map  eventNotificationListeners = new LinkedHashMap();
+	private Configuration configuration;
+	private List monitors = new ArrayList();				// all monitors managed by this monitormanager
+	private Map destinations=new LinkedHashMap();	// all destinations (that can receive status messages) managed by this monitormanager
+
+	private Map  eventNotificationListeners = new LinkedHashMap(); // map by event of triggers that need to be notified of occurrence of event. 
+
+
+	private List eventThrowers = new ArrayList();			// static list of all throwers of events;
+
+	private Map  eventsByThrower = new LinkedHashMap();
+	private Map  eventsByThrowerType = new LinkedHashMap();
+	private Map  throwersByEvent = new LinkedHashMap();
+	private Map  throwerTypesByEvent = new LinkedHashMap();
+
+	private Map  throwersByAdapter = new LinkedHashMap();
+	private Map  adaptersByThrowers = new LinkedHashMap();
+	private Map  eventsByAdapter = new LinkedHashMap();
+	private Map  adaptersByEvent = new LinkedHashMap();
+	
+
 	
 	private boolean enabled;
 	private Date lastStateChange=null;
 	
-	Lock structureLock = new Lock();
+	private Lock structureLock = new Lock();
 
 	private static MonitorManager self=null;
 	
-	private Map destinations=new LinkedHashMap();
+	public static final boolean traceReconfigure=true;
+	
+	
 	
 	private MonitorManager() {
 	}
 
-	public void configure() throws ConfigurationException {
+	public void configure(Configuration configuration) throws ConfigurationException {
+		Collections.sort(eventThrowers,new EventThrowerComparator());
+		this.configuration=configuration;
+		reconfigure();
+	}
+	
+	/*
+	 * reconfigure all destinations and all monitors.
+	 * monitors will register all required eventNotificationListeners.
+	 */
+	public void reconfigure() throws ConfigurationException {
+		if (traceReconfigure && log.isDebugEnabled()) log.debug("reconfigure() clearing eventNotificationListeners");
 		eventNotificationListeners.clear();
+		if (traceReconfigure && log.isDebugEnabled()) log.debug("reconfigure() configuring destinations");
 		for (Iterator it=destinations.keySet().iterator(); it.hasNext();) {
 			String name=(String)it.next();
 			IMonitorAdapter destination = getDestination(name);
 			destination.configure();
 		}
+		if (traceReconfigure && log.isDebugEnabled()) log.debug("reconfigure() configuring monitors");
 		for (Iterator it=monitors.iterator(); it.hasNext();) {
 			Monitor monitor = (Monitor)it.next();
 			monitor.configure();
+		}
+	}
+
+	private class EventThrowerComparator implements Comparator {
+		public int compare(Object o1, Object o2) {
+			EventThrowing et1=(EventThrowing)o1;
+			EventThrowing et2=(EventThrowing)o2;
+			
+			int comp1=et1.getAdapter().getName().compareTo(et2.getAdapter().getName());
+			if (comp1!=0) {
+				return comp1;
+			}
+			return et1.getEventSourceName().compareTo(et2.getEventSourceName());
 		}
 	}
 
@@ -179,15 +228,30 @@ public class MonitorManager implements EventHandler {
 		d.addSetNext("*/alarm","registerAlarm");
 		d.addRule("*/alarm", attributeChecker);
 		
+		d.addCallMethod("*/alarm/events/event", "addEventCode", 0);
+
+		
 		d.addObjectCreate("*/clearing",Trigger.class);
 		d.addSetProperties("*/clearing");
 		d.addSetNext("*/clearing","registerClearing");
 		d.addRule("*/clearing", attributeChecker);
+
+		d.addCallMethod("*/clearing/events/event", "addEventCode", 0);
 		
 		d.addObjectCreate("*/trigger",Trigger.class);
 		d.addSetProperties("*/trigger");
 		d.addSetNext("*/trigger","registerTrigger");
 		d.addRule("*/trigger", attributeChecker);
+
+		d.addCallMethod("*/trigger/events/event", "addEventCode", 0);
+
+		d.addObjectCreate("*/adapterfilter",AdapterFilter.class);
+		d.addSetProperties("*/adapterfilter");
+		d.addSetNext("*/adapterfilter","registerAdapterFilter");
+		d.addRule("*/adapterfilter", attributeChecker);
+
+		d.addSetNext("*/adapterfilter/sources","setFilteringToLowerLevelObjects");
+		d.addCallMethod("*/adapterfilter/sources/source", "registerSubOject", 0);
 
 	}
 
@@ -243,9 +307,38 @@ public class MonitorManager implements EventHandler {
 		return monitors;
 	}
 
-	public List getEventCodes(EventThrowing thrower) {
-		if (thrower!=null) {
-			return (List)eventsByThrower.get(thrower);
+	public IAdapter findAdapterByName(String adapterName) {
+		return configuration.getRegisteredAdapter(adapterName);
+	}
+
+	/**
+	 * Returns a list of eventcodes that each can be thrown by at least one of the throwers in the list.
+	 * Used by EditTrigger to populate events-listbox.
+	 */
+	public List getEventCodesBySources(List throwers) {
+		if (log.isDebugEnabled()) {
+			log.debug("getEventCodesBySources() throwers:");
+			for (Iterator it=throwers.iterator(); it.hasNext();) {
+				EventThrowing thrower=(EventThrowing)it.next();
+				log.debug("getEventCodesBySources() thrower ["+thrower.getEventSourceName()+"]");
+			}
+		}
+		if (throwers!=null) {
+			List result = new ArrayList();
+			if (throwers.size()==0) {
+				return result;
+			}
+			result.addAll((List)eventsByThrower.get(throwers.get(0)));
+			for (int i=1; i<throwers.size(); i++) {
+				List extraEvents = (List)eventsByThrower.get(throwers.get(i));
+				for (Iterator it=extraEvents.iterator(); it.hasNext();) {
+					String eventCode=(String)it.next();
+					if (!result.contains(eventCode)) {
+						result.add(eventCode);
+					}
+				}
+			}
+			return result;
 		} else {
 			List result = new ArrayList();
 			for (Iterator it=throwersByEvent.keySet().iterator(); it.hasNext();) {
@@ -254,9 +347,90 @@ public class MonitorManager implements EventHandler {
 			return result;
 		}
 	}
-	public List getEventSources(String eventCode) {
-		if (eventCode!=null) {
-			return (List)throwersByEvent.get(eventCode);
+
+
+//	/**
+//	 * Returns a list of eventcodes that can be thrown by this thrower
+//	 * @param thrower
+//	 * @return
+//	 */
+//	public List getEventCodes(EventThrowing thrower) {
+//		if (thrower!=null) {
+//			return (List)eventsByThrower.get(thrower);
+//		} else {
+//			List result = new ArrayList();
+//			for (Iterator it=throwersByEvent.keySet().iterator(); it.hasNext();) {
+//				result.add(it.next());
+//			}
+//			return result;
+//		}
+//	}
+	
+	/**
+	 * Returns a list of eventcodes that can be thrown by at least one of the adapters in the list.
+	 * Used by EditTrigger to populate events-listbox.
+	 */
+	public List getEventCodesByAdapters(String[] adapters) {
+		List result = new ArrayList();
+		for (int j=0; j<adapters.length; j++) {
+			IAdapter adapter=findAdapterByName(adapters[j]);
+			if (adapter!=null) {
+				List events=(List)eventsByAdapter.get(adapter);
+				if (events!=null) {
+					for (int i=0; i<events.size(); i++) {
+						String event=(String)events.get(i);
+						if (!result.contains(event)) {
+							result.add(event);
+						}
+					}
+				}
+			}
+		}
+		return result;
+	}
+	
+	
+//	/**
+//	 * Returns a list of throwers that can throw this event.
+//	 */
+//	public List getEventSources(String eventCode) {
+//		if (eventCode!=null) {
+//			return (List)throwersByEvent.get(eventCode);
+//		} else {
+//			List result = new ArrayList();
+//			for (Iterator it=eventsByThrower.keySet().iterator(); it.hasNext();) {
+//				result.add(it.next());
+//			}
+//			return result;
+//		}
+//	}
+	/**
+	 * Returns a list of throwers that can throw at least one of the events in the list.
+	 */
+	public List getEventSources(List eventCodes) {
+		if (eventCodes!=null) {
+			if (eventCodes.size()==0) {
+				return new ArrayList();
+			} else {
+				List result=new LinkedList();
+				for (Iterator sit=eventsByThrower.keySet().iterator(); sit.hasNext();) {
+					EventThrowing thrower=(EventThrowing)sit.next();
+					log.debug("getEventSources() checks if thrower ["+thrower.getEventSourceName()+"] can throw one of the specified events");
+					List eventsOfThrower = (List)eventsByThrower.get(thrower);
+					boolean foundEvent=false;
+					for (Iterator eit=eventCodes.iterator(); !foundEvent && eit.hasNext();) {
+						String eventCode=(String)eit.next();
+						log.debug("getEventSources() checks if thrower ["+thrower.getEventSourceName()+"] can throw event ["+eventCode+"]");
+						
+						foundEvent=eventsOfThrower.contains(eventCode);
+					}
+					if (foundEvent) {
+						log.debug("getEventSources() adds ["+thrower.getEventSourceName()+"] to resultset");
+						result.add(thrower);			
+					}
+				}
+				return result;
+			}
 		} else {
 			List result = new ArrayList();
 			for (Iterator it=eventsByThrower.keySet().iterator(); it.hasNext();) {
@@ -265,78 +439,325 @@ public class MonitorManager implements EventHandler {
 			return result;
 		}
 	}
-	public List getEventSourceNames(String eventCode) {
+	/**
+	 * Returns a list of names of throwers that can throw at least one of the events in the list.
+	 * Used by EditTrigger to populate sources-listbox.
+	 */
+	public List getEventSourceNamesByEventCodes(List eventCodes) {
 		List result = new ArrayList();
-		List sources=getEventSources(eventCode);
+		List sources=getEventSources(eventCodes);
 		if (sources!=null) {
 			for (int i=0; i<sources.size(); i++) {
 				EventThrowing source=(EventThrowing)sources.get(i);
-				result.add(source.getEventSourceName());			
+				String adapterName=source.getAdapter()!=null?source.getAdapter().getName():"";
+				String eventSourceName=adapterName+" / "+source.getEventSourceName();
+				if (log.isDebugEnabled()) log.debug("getEventSourceNamesByEventCodes adding ["+eventSourceName+"]");
+				result.add(eventSourceName);			
 			}
+		}
+		Collections.sort(result);
+		return result;
+	}
+	/**
+	 * Returns a list of names of throwers that can throw at least one of the events in the list.
+	 * Used by EditTrigger to populate sources-listbox.
+	 */
+	public List getEventSourceNamesByAdapters(String[] adapters) {
+		List result = new ArrayList();
+		for (int j=0; j<adapters.length; j++) {
+			IAdapter adapter=findAdapterByName(adapters[j]);
+			if (adapter!=null) {
+				List sources=(List)throwersByAdapter.get(adapter);
+				if (sources!=null) {
+					for (int i=0; i<sources.size(); i++) {
+						EventThrowing source=(EventThrowing)sources.get(i);
+						String adapterName=source.getAdapter()!=null?source.getAdapter().getName():"";
+						result.add(adapterName+" / "+source.getEventSourceName());			
+					}
+				}
+			}
+		}
+		Collections.sort(result);
+		return result;
+	}
+
+
+	public List getAdapterNames() {
+		List result = new ArrayList();
+		for (Iterator it=eventsByAdapter.keySet().iterator();it.hasNext();) {
+			IAdapter adapter=(IAdapter)it.next();
+			result.add(adapter.getName());
+		}
+		Collections.sort(result);
+		return result;
+	}
+	public List getAdapterNamesByEventCodes(List eventCodes) {
+		List result = new ArrayList();
+		for (int i=0; i<eventCodes.size(); i++) {
+			String eventCode=(String)eventCodes.get(i);
+			List adapters=(List)adaptersByEvent.get(eventCode);
+			for (Iterator it=adapters.iterator();it.hasNext();) {
+				IAdapter adapter=(IAdapter)it.next();
+				if (!result.contains(adapter.getName())) {
+					result.add(adapter.getName());
+				}
+			}
+		}
+		Collections.sort(result);
+		return result;
+	}
+	public List getAdapterNamesBySources(List throwers) {
+		List result = new ArrayList();
+		for (int i=0; i<throwers.size(); i++) {
+			EventThrowing thrower=(EventThrowing)throwers.get(i);
+			List adapters=(List)adaptersByThrowers.get(thrower);
+			for (Iterator it=adapters.iterator();it.hasNext();) {
+				IAdapter adapter=(IAdapter)it.next();
+				if (!result.contains(adapter.getName())) {
+					result.add(adapter.getName());
+				}
+			}
+		}
+		Collections.sort(result);
+		return result;
+	}
+
+
+
+
+	private void addItemToMapOfLists(Map listMap, Object item, Object key, String mapname) {
+		if (item==null || key==null) {
+			log.warn("addItemToMapOfLists() null item or key in map ["+mapname+"] key ["+key+"] item ["+item+"]");
+		}
+		List subList = (List)listMap.get(key);
+		if (subList==null) {
+			subList = new ArrayList();
+			listMap.put(key,subList);
+		}
+		if (!subList.contains(item)) {
+			subList.add(item);
+		}
+	}
+
+	/**
+	 * any object in the configuration has to call this function at configuration
+	 * time to notifiy the monitoring system of any event that he may wish to throw. 
+	 */
+	public void registerEvent(EventThrowing thrower, String eventCode) {
+		
+		if (log.isDebugEnabled()) log.debug("registerEvent ["+eventCode+"] for adapter ["+thrower.getAdapter().getName()+"] object ["+thrower.getEventSourceName()+"]");
+		
+		addItemToMapOfLists(eventsByThrower, eventCode, thrower, "eventsByThrower");
+		addItemToMapOfLists(throwersByEvent, thrower, eventCode, "throwersByEvent");
+		addItemToMapOfLists(throwerTypesByEvent, thrower.getClass(), eventCode, "throwerTypesByEvent");
+		addItemToMapOfLists(eventsByThrowerType, eventCode, thrower.getClass(), "eventsByThrowerType");
+
+		addItemToMapOfLists(throwersByAdapter, thrower, thrower.getAdapter(), "throwersByAdapter");
+		addItemToMapOfLists(adaptersByThrowers, thrower.getAdapter(), thrower, "adaptersByThrowers");
+		addItemToMapOfLists(eventsByAdapter, eventCode, thrower.getAdapter(), "eventsByAdapter");
+		addItemToMapOfLists(adaptersByEvent, thrower.getAdapter(), eventCode, "adaptersByEvent");
+		
+		if (!eventThrowers.contains(thrower)) {
+			eventThrowers.add(thrower);
+		}
+
+	}
+
+	private class EventSourceIterator implements Iterator {
+
+		List eventCodes;
+		Map adapterFilters;
+		boolean filterOnLowerLevelObjects;
+		boolean filterInclusive;
+
+		Iterator sourceIterator=null;
+		
+		private EventThrowing currentEventSource=null;
+		private boolean nextCalled=false;
+		
+		public EventSourceIterator(List eventCodes, Map adapterFilters, boolean filterOnLowerLevelObjects, boolean filterInclusive) {
+			this.eventCodes=eventCodes;
+			this.adapterFilters=adapterFilters;
+			this.filterOnLowerLevelObjects=filterOnLowerLevelObjects;
+			this.filterInclusive=filterInclusive;
+			
+			sourceIterator=eventThrowers.iterator();
+		}
+
+		private void determineNextEventSource() {
+			while (sourceIterator.hasNext()) { 
+				currentEventSource = (EventThrowing)sourceIterator.next();
+				IAdapter adapter=currentEventSource.getAdapter();
+				if (adapterFilters!=null) { 
+					if (!(filterOnLowerLevelObjects && !filterInclusive ||
+					  	   adapterFilters.containsKey(adapter)==filterInclusive
+					  	 ) 
+				       ) {
+				    	// this adapter will not contain objects to be evaluated
+				    	continue;
+					}
+					if (filterOnLowerLevelObjects) {
+						// construct from the filter a list of throwers to match against potential throwers
+						List throwerFilter=(List)adapterFilters.get(adapter);
+						if (throwerFilter!=null &&
+						    (throwerFilter.contains(currentEventSource.getEventSourceName())!=filterInclusive)
+						   ) {
+						   	// this source is either excluded or not included by the filter
+						   	continue;
+						}
+					}
+				}
+				// when we are here, the currentEventSource has passed the adapterFilter
+				if (eventCodes==null) {
+					return;
+				}
+				List throwersEvents=(List)eventsByThrower.get(currentEventSource);
+				for (Iterator eventIterator=eventCodes.iterator(); eventIterator.hasNext();) {
+					String eventCode=(String)eventIterator.next();
+					if (throwersEvents.contains(eventCode)) {
+						return;
+					}
+				}
+			}
+			currentEventSource=null;
+		}
+
+		public boolean hasNext() {
+			if (nextCalled) {
+				determineNextEventSource();
+				nextCalled=false;
+			}
+			return currentEventSource!=null;
+		}
+
+		public Object next() {
+			if (nextCalled) {
+				determineNextEventSource();
+			}
+			nextCalled=true;
+			return currentEventSource;
+		}
+		
+		public void remove() {
+			// will not be used...
+		}
+	}
+
+	/**
+	 * Provides a list of items of type EventThrowing.
+	 */
+	public List filterEventSources(List eventCodes, Map adapterFilters, boolean filterOnLowerLevelObjects, boolean filterInclusive) {
+		List result = new LinkedList();
+		for (Iterator it = new EventSourceIterator(eventCodes, adapterFilters, filterOnLowerLevelObjects, filterInclusive); it.hasNext();) {
+			EventThrowing thrower = (EventThrowing)it.next();
+			result.add(thrower);
 		}
 		return result;
 	}
 
-	public void registerEvent(EventThrowing thrower, String eventCode) {
-		List throwersEvents = (List)eventsByThrower.get(thrower);
-		if (throwersEvents==null) {
-			throwersEvents = new ArrayList();
-			eventsByThrower.put(thrower, throwersEvents);
-		}
-		throwersEvents.add(eventCode);
-		
-		List eventsThrowers = (List)throwersByEvent.get(eventCode);
-		if (eventsThrowers==null) {
-			eventsThrowers = new ArrayList();
-			throwersByEvent.put(eventCode, eventsThrowers);
-		}
-		eventsThrowers.add(thrower);
-		
-		List eventThrowersTypes = (List)throwerTypesByEvent.get(eventCode);
-		if (eventThrowersTypes==null) {
-			eventThrowersTypes = new ArrayList();
-			throwerTypesByEvent.put(eventCode, eventThrowersTypes);
-		}
-		if (!eventThrowersTypes.contains(thrower.getClass())) {
-			eventThrowersTypes.add(thrower.getClass());
-		}
-
-		List throwersTypeEvents = (List)eventsByThrowerType.get(thrower.getClass());
-		if (throwersTypeEvents==null) {
-			throwersTypeEvents = new ArrayList();
-			eventsByThrowerType.put(thrower.getClass(), throwersTypeEvents);
-		}
-		if (!throwersTypeEvents.contains(eventCode)) {
-			throwersTypeEvents.add(eventCode);
-		}
-	}
-
-	public void registerEventNotificationListener(Trigger trigger, String eventCode, String thrower) throws MonitorException {
-		EventThrowing target=null; 	
-		if (StringUtils.isNotEmpty(thrower)) {
-			for (Iterator it=eventsByThrower.keySet().iterator(); target==null && it.hasNext();) {
-				EventThrowing candidate = (EventThrowing)it.next();
-				if (candidate.getEventSourceName().equals(thrower)) {
-					target=candidate;
+	public void registerEventNotificationListener(Trigger trigger, List eventCodes, Map adapterFilters, boolean filterOnLowerLevelObjects, boolean filterExclusive) throws MonitorException {
+		boolean performFiltering=adapterFilters!=null;
+		for (Iterator eventIt=eventCodes.iterator(); eventIt.hasNext();) {
+			String eventCode=(String)eventIt.next();
+			
+			if (traceReconfigure && log.isDebugEnabled()) log.debug("registerEventNotificationListener1() for event ["+eventCode+"]");
+			List eventAdapterList = (List)adaptersByEvent.get(eventCode);
+			if (eventAdapterList==null) {
+				log.warn("registerEventNotificationListener1() event ["+eventCode+"] is not registered by any adapter, ignoring...");
+			} else {
+				List eventThrowersList= (List)throwersByEvent.get(eventCode);
+				for (Iterator adapterIt=eventAdapterList.iterator();adapterIt.hasNext();) {
+					IAdapter adapter=(IAdapter)adapterIt.next();
+					String adaptername=adapter.getName();
+					AdapterFilter adapterFilter=null;
+					boolean adapterInFilter=false;
+					if (performFiltering) {
+						adapterFilter=(AdapterFilter)adapterFilters.get(adaptername);
+						adapterInFilter=(adapterFilter!=null);
+					}
+					boolean adapterNeedsRegistering=
+						!performFiltering || 							// if not filtered, always register
+						(adapterInFilter != filterExclusive) || 		// register all that pass on the adapterlevel 
+						(filterOnLowerLevelObjects && adapterInFilter);	// further evaluation required for lower levels
+					if (traceReconfigure && log.isDebugEnabled()) log.debug("registerEventNotificationListener1() for event ["+eventCode+"] adapter ["+adaptername+"] adapterNeedsRegistering ["+adapterNeedsRegistering+"]");
+					if (adapterNeedsRegistering) {
+						// when we are here, some (or all of) adapter's objects must be registered
+						List adapterThrowerList = (List)throwersByAdapter.get(adapter);
+						for (Iterator throwerIt=adapterThrowerList.iterator(); throwerIt.hasNext(); ) {
+							EventThrowing candidate = (EventThrowing)throwerIt.next();
+							if (eventThrowersList.contains(candidate)) {
+								// this subelement of the adapter can throw the event that we are looking for
+								// now do final evaluation.
+								// filtering out can only be on lower level
+								boolean candiateMustBeRegistered=
+									!performFiltering || !filterOnLowerLevelObjects || !adapterInFilter || 	 // otherwise registriation allways required
+									(adapterFilter.getSubObjectList().contains(candidate.getEventSourceName())!= filterExclusive); 
+								if (traceReconfigure && log.isDebugEnabled()) log.debug("registerEventNotificationListener1() for event ["+eventCode+"] adapter ["+adaptername+"] candidate ["+candidate.getEventSourceName()+"] candiateMustBeRegistered ["+candiateMustBeRegistered+"]");
+								
+								if (candiateMustBeRegistered) {
+									registerEventNotificationListener(trigger,eventCode,candidate);
+								}
+							}
+						}
+					
+					}
 				}
 			}
-			if (target==null) {
-				throw new MonitorException("cannot find thrower ["+thrower+"]");
-			}
 		}
-		registerEventNotificationListener(trigger,eventCode,target);
 	}
+
+	// structure of eventNotificationListeners	
+	// eventNotificationListeners = map by eventcode of map of notification listeners
+
+	// eventNotificationListeners = map(eventcode,map(trigger,throwerset or null))
+
 	
 	public void registerEventNotificationListener(Trigger trigger, String eventCode, EventThrowing thrower) throws MonitorException {
-		Map notificationListeners = (Map)eventNotificationListeners.get(eventCode);
-		if (notificationListeners==null) {
-			notificationListeners=new LinkedHashMap();
-			eventNotificationListeners.put(eventCode,notificationListeners);
+		if (traceReconfigure && log.isDebugEnabled()) {
+			String adapterName=thrower.getAdapter()==null?"<none>":thrower.getAdapter().getName();
+			log.debug("registerEventNotificationListener2() eventCode ["+eventCode+"] adapter ["+adapterName+"] thrower ["+thrower.getEventSourceName()+"]");
 		}
-		if (notificationListeners.containsKey(trigger)) {
-			throw new MonitorException("eventcode ["+eventCode+"] already registerd for Trigger ["+trigger+"]");
+			 
+		Map notificationListenersOfEvent = (Map)eventNotificationListeners.get(eventCode); 
+		if (notificationListenersOfEvent==null) {
+			notificationListenersOfEvent=new LinkedHashMap();
+			eventNotificationListeners.put(eventCode,notificationListenersOfEvent);
+//			if (traceReconfigure && log.isDebugEnabled()) log.debug("registerEventNotificationListener eventCode ["+eventCode+"] created map of notificationlisteners"); 
 		}
-		notificationListeners.put(trigger,thrower);
+		
+		// now notificationListenersOfEvent=map(trigger,throwerset or null)
+		// if mapentry is null, all throwers will cause triggering. 
+		// otherwise mapentry is a list of throwers that will cause triggering
+		
+		boolean triggerRegistered=notificationListenersOfEvent.containsKey(trigger);
+		Set throwerFilter = (Set)notificationListenersOfEvent.get(trigger);
+		if (triggerRegistered) {
+			if (throwerFilter==null) {
+				throw new MonitorException("unfiltered event notification for Trigger ["+trigger+"] eventcode ["+eventCode+"] already registered");
+			} else {
+				if (thrower==null) {
+					throw new MonitorException("Cannot register event notification for Trigger ["+trigger+"] eventcode ["+eventCode+"] both generic and for specific thrower ["+thrower.getEventSourceName()+"]");
+				}
+			}
+		}
+		if (thrower!=null) {
+			if (throwerFilter==null) {
+				throwerFilter=new HashSet();
+				notificationListenersOfEvent.put(trigger,throwerFilter);
+			}
+			throwerFilter.add(thrower);
+//			if (traceReconfigure && log.isDebugEnabled()) {
+//				String adapterName=thrower.getAdapter()==null?"<none>":thrower.getAdapter().getName();
+//				log.debug("registerEventNotificationListener eventCode ["+eventCode+"] adapter ["+adapterName+"] thrower ["+thrower.getEventSourceName()+"] added to throwerfilter");
+//		    }
+
+		} else {
+			notificationListenersOfEvent.put(trigger,null);
+//			if (traceReconfigure && log.isDebugEnabled()) {
+//				String adapterName=thrower.getAdapter()==null?"<none>":thrower.getAdapter().getName();
+//				log.debug("registerEventNotificationListener eventCode ["+eventCode+"] adapter ["+adapterName+"] thrower ["+thrower.getEventSourceName()+"] added pass-all throwerfilter");
+//			}
+		}
 	}
 
 	public void fireEvent(EventThrowing source, String eventCode) {
@@ -344,12 +765,12 @@ public class MonitorManager implements EventHandler {
 			try {
 				structureLock.acquireShared();
 				try {
-					Map notificationListeners = (Map)eventNotificationListeners.get(eventCode);
-					if (notificationListeners!=null) {
-						for (Iterator it=notificationListeners.keySet().iterator(); it.hasNext();) {
+					Map notificationListenersOfEvent = (Map)eventNotificationListeners.get(eventCode);
+					if (notificationListenersOfEvent!=null) {
+						for (Iterator it=notificationListenersOfEvent.keySet().iterator(); it.hasNext();) {
 							Trigger trigger = (Trigger)it.next();
-							EventThrowing filter = (EventThrowing)notificationListeners.get(trigger);
-							if (filter==null || filter==source) {
+							Set throwerFilter = (Set)notificationListenersOfEvent.get(trigger);
+							if (throwerFilter==null || throwerFilter.contains(source)) {
 								try {
 									trigger.evaluateEvent(source,eventCode);
 								} catch (MonitorException e) {
@@ -420,10 +841,17 @@ public class MonitorManager implements EventHandler {
 		return eventsByThrower.keySet().iterator();
 	}
 
-	public EventThrowing findThrower(String thrower) {
+	public List getAdapters() {
+		List result = new ArrayList(eventsByAdapter.keySet());
+		return result;
+	}
+
+
+
+	public EventThrowing findThrowerByName(String adapterName, String thrower) {
 		for(Iterator it=getThrowerIterator(); it.hasNext();) {
 			EventThrowing candidate = (EventThrowing)it.next();
-			if (candidate.getEventSourceName().equals(thrower)) {
+			if (candidate.getAdapter().getName().equals(adapterName) && candidate.getEventSourceName().equals(thrower)) {
 				return candidate;
 			}
 		}

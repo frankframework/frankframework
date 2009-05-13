@@ -1,6 +1,9 @@
 /*
  * $Log: Trigger.java,v $
- * Revision 1.5  2008-08-27 16:18:07  europe\L190409
+ * Revision 1.6  2009-05-13 08:18:50  L190409
+ * improved monitoring: triggers can now be filtered multiselectable on adapterlevel
+ *
+ * Revision 1.5  2008/08/27 16:18:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fixed period handling
  *
  * Revision 1.4  2008/08/07 11:31:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -18,15 +21,20 @@
  */
 package nl.nn.adapterframework.monitoring;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.log4j.Logger;
 
@@ -38,12 +46,19 @@ import org.apache.log4j.Logger;
 public class Trigger {
 	protected Logger log = LogUtil.getLogger(this);
 	
+	public static final int SOURCE_FILTERING_NONE=0;
+	public static final int SOURCE_FILTERING_BY_ADAPTER=1;
+	public static final int SOURCE_FILTERING_BY_LOWER_LEVEL_OBJECT=2;
+	
 	private Monitor owner;
 	private SeverityEnum severity;
 	private boolean alarm;
 
-	private String eventCode;
-	private String source;
+	private List eventCodes = new ArrayList();
+	private Map adapterFilters = new LinkedHashMap();
+	
+	private int sourceFiltering;
+	private boolean filterExclusive = false;
 		
 	private int threshold=0;
 	private int period=0;
@@ -52,15 +67,14 @@ public class Trigger {
 		
 
 	public void configure() throws ConfigurationException {
-		if (StringUtils.isEmpty(eventCode)) {
-			log.warn("trigger of Monitor ["+owner.getName()+"] should have eventCode specified");
+		if (eventCodes.size()==0) {
+			log.warn(getLogPrefix()+"configure() trigger of Monitor ["+owner.getName()+"] should have at least one eventCode specified");
 		}
-		if (StringUtils.isNotEmpty(eventCode)) {
-			try {
-				getOwner().registerEventNotificationListener(this,eventCode,source);
-			} catch (MonitorException e) {
-				throw new ConfigurationException(e);
-			}
+		try {
+			Map adapterFilterMap = (getSourceFiltering()!=SOURCE_FILTERING_NONE)?adapterFilters:null;
+			getOwner().registerEventNotificationListener(this,eventCodes,adapterFilterMap,isFilterOnLowerLevelObjects(), isFilterExclusive());
+		} catch (MonitorException e) {
+			throw new ConfigurationException(e);
 		}
 		if (threshold>0) {
 			if (eventDts==null) {
@@ -71,6 +85,9 @@ public class Trigger {
 		}
 	}
 	
+	public String getLogPrefix() {
+		return "("+this.hashCode()+") ";
+	}
 
 	public void evaluateEvent(EventThrowing source, String eventCode) throws MonitorException {
 		Date now = new Date();
@@ -106,10 +123,6 @@ public class Trigger {
 	public void toXml(XmlBuilder monitor) {
 		XmlBuilder trigger=new XmlBuilder(isAlarm()?"alarm":"clearing");
 		monitor.addSubElement(trigger);
-		trigger.addAttribute("eventCode",getEventCode());
-		if (StringUtils.isNotEmpty(getSource())) {
-			trigger.addAttribute("source",getSource());
-		}
 		if (getSeverity()!=null) {
 			trigger.addAttribute("severity",getSeverity());
 		}
@@ -118,6 +131,40 @@ public class Trigger {
 		}
 		if (getPeriod()>0) {
 			trigger.addAttribute("period",getPeriod());
+		}
+		XmlBuilder events=new XmlBuilder("events");
+		trigger.addSubElement(events);
+		for (int i=0; i<eventCodes.size(); i++) {
+			XmlBuilder event=new XmlBuilder("event");
+			events.addSubElement(event);
+			event.setValue((String)eventCodes.get(i));
+		}
+		if (getAdapterFilters()!=null) {
+			XmlBuilder filtersXml=new XmlBuilder("filters");
+			filtersXml.addAttribute("filterExclusive",isFilterExclusive());
+			trigger.addSubElement(filtersXml);
+			if (getSourceFiltering()!=SOURCE_FILTERING_NONE) {
+				for (Iterator it=getAdapterFilters().keySet().iterator(); it.hasNext(); ) {
+					String adapterName=(String)it.next();
+					AdapterFilter af = (AdapterFilter)getAdapterFilters().get(adapterName);
+					XmlBuilder adapter=new XmlBuilder("adapterfilter");
+					filtersXml.addSubElement(adapter);
+					adapter.addAttribute("adapter",adapterName);
+					if (isFilterOnLowerLevelObjects()) {
+						XmlBuilder sourcesXml=new XmlBuilder("sources");
+						adapter.addSubElement(sourcesXml);
+						List subobjectList=af.getSubObjectList();
+						if (subobjectList!=null) {
+							for (Iterator it2 =subobjectList.iterator(); it2.hasNext();) {
+								String subObjectName=(String)it2.next();
+								XmlBuilder sourceXml=new XmlBuilder("source");
+								sourcesXml.addSubElement(sourceXml);
+								sourceXml.setValue(subObjectName);
+							}
+						}
+					}
+				}
+			}
 		}
 	}
 
@@ -156,12 +203,173 @@ public class Trigger {
 		}
 	}
 
-	public void setEventCode(String string) {
-		eventCode = string;
+
+	public void clearEventCodes() {
+		eventCodes.clear();
 	}
-	public String getEventCode() {
-		return eventCode;
+	public void addEventCode(String code) {
+		eventCodes.add(code);
 	}
+	
+	public void setEventCode(String code) {
+		eventCodes.clear();
+		addEventCode(code);
+	}
+
+	public void setEventCodes(String[] arr) {
+		clearEventCodes();
+		for (int i=0;i<arr.length;i++) {
+			addEventCode(arr[i]);
+		}
+	}
+	public String[] getEventCodes() {
+		return (String[])eventCodes.toArray(new String[eventCodes.size()]);
+	}
+
+	public List getEventCodeList() {
+		return eventCodes;
+	}
+
+
+
+	/**
+	 * set List of all adapters that are present in the FilterMap, to be called from client
+	 */
+	public void setAdapters(String[] arr) {
+		log.debug(getLogPrefix()+"setAdapters()");
+		for (Iterator it=adapterFilters.keySet().iterator(); it.hasNext();) {
+			String adapterName=(String)it.next();
+			boolean found=true;
+			for(int i=0; i<arr.length; i++) {
+				if (adapterName.equals(arr[i])) {
+					break;
+				}
+				found=false;
+			}
+			if (!found) {
+				log.debug(getLogPrefix()+"setAdapters() removing adapter ["+adapterName+"] from filter");
+				it.remove();
+			}
+		}
+		for(int i=0; i<arr.length; i++) {
+			String adapterName=arr[i];
+			if (!adapterFilters.containsKey(adapterName)) {
+				log.debug(getLogPrefix()+"setAdapters() addding adapter ["+adapterName+"] to filter");
+				AdapterFilter af=new AdapterFilter();
+				af.setAdapter(adapterName);
+				registerAdapterFilter(af);
+			}
+		}
+	}
+	/**
+	 * get List of all adapters that are present in the FilterMap.
+	 */
+	public String[] getAdapters() {
+		String[] result=(String[])adapterFilters.keySet().toArray(new String[adapterFilters.size()]);
+		if (log.isDebugEnabled()) {
+			log.debug(getLogPrefix()+"getAdapters() returns results:");
+			for (int i=0; i<result.length; i++) {
+				log.debug(getLogPrefix()+"getAdapters() returns ["+ result[i]+"]");
+			}
+		}
+		return result;
+	}
+
+	public List getAdapterList() {
+		List result=new LinkedList();
+		MonitorManager mm=MonitorManager.getInstance();
+		for (Iterator it=adapterFilters.keySet(). iterator(); it.hasNext();) {
+			String adapterName=(String)it.next();
+			IAdapter adapter=mm.findAdapterByName(adapterName);
+			if (adapter!=null) {
+				result.add(adapter);
+				if (log.isDebugEnabled()) {
+					log.debug(getLogPrefix()+"getAdapterList() returns adapter ["+adapterName+"]");
+				}
+			} else {
+				log.warn(getLogPrefix()+"getAdapterList() cannot find adapter ["+adapterName+"]");
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * set List of all throwers that can trigger this Trigger.
+	 */
+	public void setSources(String[] sourcesArr) {
+		log.debug(getLogPrefix()+"setSources()");
+		List list=MonitorManager.getInstance().getEventSources((List)null);
+		log.debug(getLogPrefix()+"setSources() clearing adapterFilter");
+		adapterFilters.clear();
+		for (int i=0; i<list.size();i++) {
+			EventThrowing thrower=(EventThrowing)list.get(i);
+			IAdapter adapter = thrower.getAdapter();
+			String adaptername;
+			String sourcename;
+			if (adapter==null) {
+				adaptername="-";
+			} else {
+				adaptername=adapter.getName();
+			}
+			sourcename=adaptername+" / "+thrower.getEventSourceName();
+			//log.debug("setSources() checking for source ["+sourcename+"]");
+			for (int j=0; j<sourcesArr.length; j++) {
+				if (sourcesArr[j].equals(sourcename)) {
+					AdapterFilter af =(AdapterFilter)adapterFilters.get(adaptername);
+					if (af==null) {
+						af = new AdapterFilter();
+						af.setAdapter(adaptername);
+						log.debug(getLogPrefix()+"setSources() registered adapter ["+adaptername+"]");
+						registerAdapterFilter(af);
+					}
+					af.registerSubOject(thrower.getEventSourceName());
+					log.debug(getLogPrefix()+"setSources() registered source ["+thrower.getEventSourceName()+"] on adapter ["+adapter.getName()+"]");
+					break;
+				}
+			}
+		}
+	}
+	
+	/**
+	 * get List of all throwers that can trigger this Trigger.
+	 */
+	public String[] getSources() {
+		List list=new ArrayList();
+		for(Iterator adapterIterator=adapterFilters.entrySet().iterator();adapterIterator.hasNext();) {
+			Map.Entry entry= (Map.Entry)adapterIterator.next();
+			String adapterName=(String)entry.getKey();
+			AdapterFilter af=(AdapterFilter)entry.getValue();
+			for(Iterator subSourceIterator=af.getSubObjectList().iterator();subSourceIterator.hasNext();) {
+				String throwerName=(String)subSourceIterator.next();
+				String sourceName=adapterName+" / "+throwerName;
+				log.debug(getLogPrefix()+"getSources() adding returned source ["+sourceName+"]");
+				list.add(sourceName);
+			}
+		}
+		String[] result=new String[list.size()];
+		return result=(String[])list.toArray(result);
+	}
+
+
+	public List getSourceList() {
+		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"getSourceList() collecting sources:");
+		List list=new ArrayList();
+		MonitorManager mm = MonitorManager.getInstance();
+		for(Iterator adapterIterator=adapterFilters.entrySet().iterator();adapterIterator.hasNext();) {
+			Map.Entry entry= (Map.Entry)adapterIterator.next();
+			String adapterName=(String)entry.getKey();
+			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"getSourceList() collecting sources for adapter ["+adapterName+"]:");
+			AdapterFilter af=(AdapterFilter)entry.getValue();
+			for(Iterator subSourceIterator=af.getSubObjectList().iterator();subSourceIterator.hasNext();) {
+				String throwerName=(String)subSourceIterator.next();
+				EventThrowing thrower=mm.findThrowerByName(adapterName,throwerName);
+				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"getSourceList() adding source adapter ["+adapterName+"], source ["+thrower.getEventSourceName()+"]");
+				list.add(thrower);
+			}
+		}
+		return list;
+	}
+
 
 	public void setSeverity(String severity) {
 		setSeverityEnum((SeverityEnum)SeverityEnum.getEnumMap().get(severity));
@@ -190,11 +398,41 @@ public class Trigger {
 		return period;
 	}
 
-	public void setSource(String source) {
-		this.source = source;
+	public Map getAdapterFilters() {
+		return adapterFilters;
 	}
-	public String getSource() {
-		return source;
+
+	public void registerAdapterFilter(AdapterFilter af) {
+		adapterFilters.put(af.getAdapter(),af);
+		if (getSourceFiltering()==SOURCE_FILTERING_NONE) {
+			setSourceFiltering(SOURCE_FILTERING_BY_ADAPTER);
+		}
+	}
+
+
+	public void setFilterExclusive(boolean b) {
+		filterExclusive = b;
+	}
+	public boolean isFilterExclusive() {
+		return filterExclusive;
+	}
+
+	public void setFilteringToLowerLevelObjects(Object dummy) {
+		setSourceFiltering(SOURCE_FILTERING_BY_LOWER_LEVEL_OBJECT);
+	}
+
+	public boolean isFilterOnLowerLevelObjects() {
+		return sourceFiltering==SOURCE_FILTERING_BY_LOWER_LEVEL_OBJECT;
+	}
+	public boolean isFilterOnAdapters() {
+		return sourceFiltering==SOURCE_FILTERING_BY_ADAPTER;
+	}
+
+	public void setSourceFiltering(int i) {
+		sourceFiltering = i;
+	}
+	public int getSourceFiltering() {
+		return sourceFiltering;
 	}
 
 }

@@ -1,6 +1,9 @@
 /*
  * $Log: ShowMonitors.java,v $
- * Revision 1.7  2008-08-27 16:28:44  europe\L190409
+ * Revision 1.8  2009-05-13 08:19:30  L190409
+ * improved monitoring: triggers can now be filtered multiselectable on adapterlevel
+ *
+ * Revision 1.7  2008/08/27 16:28:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added getStatus in xml
  *
  * Revision 1.6  2008/08/13 13:46:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -106,7 +109,7 @@ public class ShowMonitors extends ActionBase {
 		} 
 		else { 
 
-			debugFormData(request,form);
+			//debugFormData(request,form);
 
 			String action 	 = request.getParameter("action");
 			String indexStr  = request.getParameter("index");
@@ -133,7 +136,7 @@ public class ShowMonitors extends ActionBase {
 					lock.acquireExclusive();
 					forward=performAction(monitorForm, action, index, triggerIndex, response);
 					log.debug("forward ["+forward+"] returned from performAction");
-					mm.configure();
+					mm.reconfigure();
 				} catch (Exception e) {
 					error("could not perform action ["+action+"] on monitorIndex ["+index+"] triggerIndex ["+triggerIndex+"]", e);
 				} finally {

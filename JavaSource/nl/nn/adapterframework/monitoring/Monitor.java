@@ -1,6 +1,9 @@
 /*
  * $Log: Monitor.java,v $
- * Revision 1.5  2008-08-27 16:16:50  europe\L190409
+ * Revision 1.6  2009-05-13 08:18:50  L190409
+ * improved monitoring: triggers can now be filtered multiselectable on adapterlevel
+ *
+ * Revision 1.5  2008/08/27 16:16:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added stateChangeDate
  *
  * Revision 1.4  2008/08/07 11:31:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -23,6 +26,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
@@ -47,6 +51,9 @@ public class Monitor {
 	private boolean raised=false;
 	private Date stateChangeDt=null;
 	
+	private int additionalHitCount=0;
+	private Date lastHit=null;
+	
 	private SeverityEnum alarmSeverity=null;  
 	private EventThrowing alarmSource=null;  
 
@@ -65,17 +72,20 @@ public class Monitor {
 	}
 	
 	public void configure() throws ConfigurationException {
+		if (MonitorManager.traceReconfigure && log.isDebugEnabled()) log.debug("monitor ["+getName()+"] configuring triggers");
 		for (Iterator it=triggers.iterator(); it.hasNext();) {
 			Trigger trigger = (Trigger)it.next();
 			trigger.configure();
 		}
 	}
 	
-	public void registerEventNotificationListener(Trigger trigger, String eventCode, String thrower) throws MonitorException {
-		getOwner().registerEventNotificationListener(trigger,eventCode,thrower);
+	public void registerEventNotificationListener(Trigger trigger, List eventCodes, Map adapterFilters, boolean filterOnLowerLevelObjects, boolean filterExclusive) throws MonitorException {
+		if (MonitorManager.traceReconfigure && log.isDebugEnabled()) log.debug("monitor ["+getName()+"] registerEventNotificationListener for trigger");
+		getOwner().registerEventNotificationListener(trigger, eventCodes, adapterFilters, filterOnLowerLevelObjects, filterExclusive);
 	}
 	
 	public void changeState(Date date, boolean alarm, SeverityEnum severity, EventThrowing source, String details, Throwable t) throws MonitorException {
+		boolean hit=alarm && (getAlarmSeverityEnum()==null || getAlarmSeverityEnum().compareTo(severity)<=0);
 		boolean up=alarm && (!raised || getAlarmSeverityEnum()==null || getAlarmSeverityEnum().compareTo(severity)<0);
 		boolean clear=raised && (!alarm || up && getAlarmSeverityEnum()!=null && getAlarmSeverityEnum()!=severity);
 		if (clear) {
@@ -89,13 +99,20 @@ public class Monitor {
 			changeMonitorState(date, source, getTypeEnum(), severity, details, t);
 			setAlarmSource(source);
 			setAlarmSeverityEnum(severity);
+			setLastHit(date);
+			setAdditionalHitCount(0);
+		} else {
+			if (hit) {
+				setLastHit(date);
+				setAdditionalHitCount(getAdditionalHitCount()+1);
+			}
 		}
 		raised=alarm;
 		notifyReverseTrigger(alarm,source);
 	}
 
 	public void changeMonitorState(Date date, EventThrowing subSource, EventTypeEnum eventType, SeverityEnum severity, String message, Throwable t) throws MonitorException {
-		String eventSource=subSource==null?"unknown":subSource.getEventSourceName();
+		String eventSource=subSource==null?"":subSource.getEventSourceName();
 		if (eventType==null) {
 			throw new MonitorException("eventType cannot be null");
 		}
@@ -173,9 +190,6 @@ public class Monitor {
 		//log.debug(getLogPrefix()+"entering getDestinations()");
 		String[] result=new String[destinationSet.size()];
 		result=(String[])destinationSet.toArray(result);
-//		for (int i=0;i<result.length;i++) {
-//			log.debug(getLogPrefix()+"destination["+i+"]=["+result[i]+"]");
-//		}
 		return result;
 	}
 	public void setDestinations(String newDestinations) {
@@ -311,9 +325,6 @@ public class Monitor {
 	public EventThrowing getAlarmSource() {
 		return alarmSource;
 	}
-	public String getAlarmSourceName() {
-		return alarmSource==null?null:alarmSource.getEventSourceName();
-	}
 	public void setAlarmSource(EventThrowing source) {
 		alarmSource = source;
 	}
@@ -331,5 +342,26 @@ public class Monitor {
 		}
 		return "";
 	}
+
+	public void setLastHit(Date date) {
+		lastHit = date;
+	}
+	public Date getLastHit() {
+		return lastHit;
+	}
+	public String getLastHitStr() {
+		if (lastHit!=null) {
+			return DateUtils.format(lastHit,DateUtils.FORMAT_FULL_GENERIC);
+		}
+		return "";
+	}
+
+	public void setAdditionalHitCount(int i) {
+		additionalHitCount = i;
+	}
+	public int getAdditionalHitCount() {
+		return additionalHitCount;
+	}
+
 
 }

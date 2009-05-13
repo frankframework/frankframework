@@ -1,6 +1,9 @@
 /*
  * $Log: EditTriggerExecute.java,v $
- * Revision 1.3  2008-08-14 14:53:51  europe\L190409
+ * Revision 1.4  2009-05-13 08:19:30  L190409
+ * improved monitoring: triggers can now be filtered multiselectable on adapterlevel
+ *
+ * Revision 1.3  2008/08/14 14:53:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fixed exit determination
  *
  * Revision 1.2  2008/08/07 11:32:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -42,9 +45,19 @@ public class EditTriggerExecute extends EditMonitorExecute {
 			Monitor monitor = mm.getMonitor(index);
 			Trigger trigger = monitor.getTrigger(triggerIndex);
 			Trigger formTrigger = (Trigger)monitorForm.get("trigger");
+			log.debug("copying form trigger ("+formTrigger.hashCode()+") values to trigger["+triggerIndex+"] ("+trigger.hashCode()+")");
 			trigger.setType(formTrigger.getType());
-			trigger.setEventCode(formTrigger.getEventCode());
-			trigger.setSource(formTrigger.getSource());
+			trigger.setEventCodes(formTrigger.getEventCodes());
+			trigger.setSourceFiltering(formTrigger.getSourceFiltering());
+			if (formTrigger.isFilterOnAdapters()) {
+				log.debug("setting trigger.adapters from selAdapters");
+				trigger.setAdapters((String[])monitorForm.get("selAdapters"));
+			}
+			if (formTrigger.isFilterOnLowerLevelObjects()) {
+				log.debug("setting trigger.sources from selSources");
+				trigger.setSources((String[])monitorForm.get("selSources"));
+			}
+			trigger.setFilterExclusive(formTrigger.isFilterExclusive());
 			trigger.setSeverity(formTrigger.getSeverity());
 			trigger.setThreshold(formTrigger.getThreshold());
 			trigger.setPeriod(formTrigger.getPeriod());

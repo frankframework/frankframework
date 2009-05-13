@@ -1,6 +1,9 @@
 /*
  * $Log: ConfigurationDigester.java,v $
- * Revision 1.26  2009-03-13 14:21:02  m168309
+ * Revision 1.27  2009-05-13 08:18:23  L190409
+ * improved monitoring: triggers can now be filtered multiselectable on adapterlevel
+ *
+ * Revision 1.26  2009/03/13 14:21:02  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * add locker to attributeChecker-rules
  *
  * Revision 1.25  2008/07/14 17:02:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -76,7 +79,6 @@ package nl.nn.adapterframework.configuration;
 
 import java.net.URL;
 
-import nl.nn.adapterframework.monitoring.Monitor;
 import nl.nn.adapterframework.monitoring.MonitorManager;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -126,7 +128,7 @@ import org.xml.sax.SAXParseException;
  * @see Configuration
  */
 abstract public class ConfigurationDigester implements BeanFactoryAware {
-	public static final String version = "$RCSfile: ConfigurationDigester.java,v $ $Revision: 1.26 $ $Date: 2009-03-13 14:21:02 $";
+	public static final String version = "$RCSfile: ConfigurationDigester.java,v $ $Revision: 1.27 $ $Date: 2009-05-13 08:18:23 $";
     protected static Logger log = LogUtil.getLogger(ConfigurationDigester.class);
 
 	private static final String CONFIGURATION_FILE_DEFAULT  = "Configuration.xml";
@@ -274,7 +276,7 @@ abstract public class ConfigurationDigester implements BeanFactoryAware {
         configuration.setDigesterRulesURL(digesterRulesURL);
         configuration.setConfigurationURL(configurationFileURL);
 		digestConfiguration(configuration,digesterRulesURL,configurationFileURL);
-		MonitorManager.getInstance().configure();
+		MonitorManager.getInstance().configure(configuration);
 
         log.info("************** Configuration completed **************");
 		return configuration;
