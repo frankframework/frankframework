@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcUtil.java,v $
- * Revision 1.19  2009-03-03 14:34:41  L190409
+ * Revision 1.20  2009-06-03 14:16:37  m168309
+ * fixed bug that caused a loop in QuerySender when getBlobSmart=true
+ *
+ * Revision 1.19  2009/03/03 14:34:41  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added putByteArrayAsBlob()
  *
  * Revision 1.18  2008/10/20 13:02:26  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -99,7 +102,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class JdbcUtil {
-	public static final String version = "$RCSfile: JdbcUtil.java,v $ $Revision: 1.19 $ $Date: 2009-03-03 14:34:41 $";
+	public static final String version = "$RCSfile: JdbcUtil.java,v $ $Revision: 1.20 $ $Date: 2009-06-03 14:16:37 $";
 	protected static Logger log = LogUtil.getLogger(JdbcUtil.class);
 	
 	private static final boolean useMetaData=false;
@@ -262,6 +265,9 @@ public class JdbcUtil {
 			while (!decompressor.finished()) {
 				try {
 					int count = decompressor.inflate(bufDecomp);
+					if (count==0) {
+						break;
+					}
 					bos.write(bufDecomp, 0, count);
 				} catch (DataFormatException e) {
 					log.debug("message in column ["+columnIndex+"] is not compressed");
