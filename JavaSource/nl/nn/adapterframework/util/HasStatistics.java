@@ -1,6 +1,10 @@
 /*
  * $Log: HasStatistics.java,v $
- * Revision 1.3  2008-09-04 12:17:53  europe\L190409
+ * Revision 1.4  2009-06-05 07:35:16  L190409
+ * support for adapter level only statistics
+ * added throws clause to iterateOverStatistics()
+ *
+ * Revision 1.3  2008/09/04 12:17:53  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added action codes
  *
  * Revision 1.2  2008/08/27 16:23:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -12,6 +16,8 @@
  */
 package nl.nn.adapterframework.util;
 
+import nl.nn.adapterframework.core.SenderException;
+
 /**
  * Interface to be implemented by objects like Pipes or Senders that maintain additional statistics themselves.
  * 
@@ -21,9 +27,11 @@ package nl.nn.adapterframework.util;
  */
 public interface HasStatistics {
 
-	public static final int STATISTICS_ACTION_NONE=0;
-	public static final int STATISTICS_ACTION_RESET=1;
-	public static final int STATISTICS_ACTION_MARK=2;
+	public static final int STATISTICS_ACTION_SUMMARY=0;
+	public static final int STATISTICS_ACTION_FULL=1;
+	public static final int STATISTICS_ACTION_RESET=2;
+	public static final int STATISTICS_ACTION_MARK_MAIN=3;
+	public static final int STATISTICS_ACTION_MARK_FULL=4;
 
-	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, int action);
+	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, int action) throws SenderException ;
 }
