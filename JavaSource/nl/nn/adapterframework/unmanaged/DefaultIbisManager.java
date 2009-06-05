@@ -1,6 +1,9 @@
 /*
  * $Log: DefaultIbisManager.java,v $
- * Revision 1.9  2008-09-04 12:16:52  europe\L190409
+ * Revision 1.10  2009-06-05 07:30:31  L190409
+ * perform full statistics dump when all adapters are stopped
+ *
+ * Revision 1.9  2008/09/04 12:16:52  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * collect interval statistics
  *
  * Revision 1.8  2008/08/21 17:56:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -295,7 +298,7 @@ public class DefaultIbisManager implements IbisManager, BeanFactoryAware {
      * @see nl.nn.adapterframework.configuration.IbisManager#stopAdapters()
      */
     public void stopAdapters() {
-		getConfiguration().dumpStatistics(HasStatistics.STATISTICS_ACTION_MARK);
+		getConfiguration().dumpStatistics(HasStatistics.STATISTICS_ACTION_MARK_FULL);
      	
         log.info("Stopping all adapters");
         List adapters = configuration.getRegisteredAdapters();
