@@ -1,6 +1,11 @@
 /*
  * $Log: ShowAdapterStatistics.java,v $
- * Revision 1.10  2009-03-19 08:27:36  m168309
+ * Revision 1.11  2009-06-05 07:54:34  L190409
+ * support for adapter level only statistics
+ * end-processing of statisticskeeperhandler in a finally clause
+ * added hidden 'deep' option, to output full contents of statisticskeeper
+ *
+ * Revision 1.10  2009/03/19 08:27:36  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * Adapter statistics by the hour
  *
  * Revision 1.9  2008/09/22 13:33:18  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -24,6 +29,7 @@ package nl.nn.adapterframework.webcontrol.action;
 
 import java.io.IOException;
 import java.text.DecimalFormat;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -35,6 +41,7 @@ import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.IReceiverStatistics;
+import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.HasStatistics;
 import nl.nn.adapterframework.util.StatisticsKeeper;
@@ -44,6 +51,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+
 /**
  * <code>Action</code> to retrieve the statistics from a
  * specific adapter. The pipeline statistics are sorted by
@@ -53,12 +61,12 @@ import org.apache.struts.action.ActionMapping;
  * @see nl.nn.adapterframework.core.PipeLine
  * @see nl.nn.adapterframework.core.Adapter
  */
-
-public final class ShowAdapterStatistics extends ActionBase {
+public class ShowAdapterStatistics extends ActionBase {
 
     private DecimalFormat df=new DecimalFormat(DateUtils.FORMAT_MILLISECONDS);
     private DecimalFormat pf=new DecimalFormat("##0.0");
     
+   
 	private void addNumber(XmlBuilder xml, String name, String value) {
 	    XmlBuilder item = new XmlBuilder("item");
 	
@@ -81,6 +89,8 @@ public final class ShowAdapterStatistics extends ActionBase {
 	    }
 	
 	    String adapterName = request.getParameter("adapterName");
+	    String deepString =  request.getParameter("deep");
+	    boolean deep = "true".equals(deepString);
 	
 	    Adapter adapter = (Adapter) config.getRegisteredAdapter(adapterName);
 	    XmlBuilder adapterXML = new XmlBuilder("adapterStatistics");
@@ -94,8 +104,9 @@ public final class ShowAdapterStatistics extends ActionBase {
 	    adapterXML.addAttribute("messagesInError",   ""+adapter.getNumOfMessagesInError());
 	    
 	    StatisticsKeeper st = adapter.getStatsMessageProcessingDuration();
-	    adapterXML.addSubElement(statisticsKeeperToXmlBuilder(st, "messageProcessingDuration"));
 
+	    adapterXML.addSubElement(statisticsKeeperToXmlBuilder(st, "messageProcessingDuration", deep));
+	
 		XmlBuilder messagesReceivedByHour = new XmlBuilder("messagesStartProcessingByHour");
 		adapterXML.addSubElement(messagesReceivedByHour);
 		long[] numOfMessagesStartProcessingByHour = adapter.getNumOfMessagesStartProcessingByHour();
@@ -143,7 +154,7 @@ public final class ShowAdapterStatistics extends ActionBase {
 //						procStatsXML.addSubElement(statisticsKeeperToXmlBuilder(statReceiver.getResponseSizeStatistics(), "stat"));
 					    while(statsIter.hasNext()) {				    
 					        StatisticsKeeper pstat = (StatisticsKeeper) statsIter.next();
-					        procStatsXML.addSubElement(statisticsKeeperToXmlBuilder(pstat, "stat"));
+					        procStatsXML.addSubElement(statisticsKeeperToXmlBuilder(pstat, "stat", deep));
 				        }
 						receiverXML.addSubElement(procStatsXML);
 				    }
@@ -153,7 +164,7 @@ public final class ShowAdapterStatistics extends ActionBase {
 				        XmlBuilder procStatsXML = new XmlBuilder("idleStats");
 					    while(statsIter.hasNext()) {				    
 					        StatisticsKeeper pstat = (StatisticsKeeper) statsIter.next();
-					        procStatsXML.addSubElement(statisticsKeeperToXmlBuilder(pstat, "stat"));
+					        procStatsXML.addSubElement(statisticsKeeperToXmlBuilder(pstat, "stat", deep));
 			  	      	}
 						receiverXML.addSubElement(procStatsXML);
 				    }
@@ -165,44 +176,52 @@ public final class ShowAdapterStatistics extends ActionBase {
 	    }
 	
 	    
-		StatisticsKeeperToXml handler = new StatisticsKeeperToXml(adapterXML);
+		StatisticsKeeperToXml handler = new StatisticsKeeperToXml(adapterXML, deep);
 		Object handle = handler.start();
-
-		Object pipelineData = handler.openGroup(handle,null,"pipeline");
-//	    XmlBuilder pipelineXML = new XmlBuilder("pipeline");
+		
+		try {
+			Object pipelineData = handler.openGroup(handle,null,"pipeline");
+//			XmlBuilder pipelineXML = new XmlBuilder("pipeline");
 	
-	    Map pipelineStatistics = adapter.getPipeLineStatistics();
+			Map pipelineStatistics = adapter.getPipeLineStatistics();
 	
-		Object pipeStatsData = handler.openGroup(pipelineData,null,"pipeStats");
-		for(Iterator it=adapter.getPipeLine().getPipes().iterator();it.hasNext();) {
-			IPipe pipe = (IPipe)it.next();
-			StatisticsKeeper pstat = (StatisticsKeeper) pipelineStatistics.get(pipe.getName());
-			handler.handleStatisticsKeeper(pipeStatsData,pstat);
-			if (pipe instanceof HasStatistics) {
-				((HasStatistics)pipe).iterateOverStatistics(handler,pipeStatsData,HasStatistics.STATISTICS_ACTION_NONE);
-			}
-		}
-	
-		pipelineStatistics = adapter.getWaitingStatistics();
-		if (pipelineStatistics.size()>0) {
-			Object waitStatsData = handler.openGroup(pipelineData,null,"waitStats");
+			Object pipeStatsData = handler.openGroup(pipelineData,null,"pipeStats");
 			for(Iterator it=adapter.getPipeLine().getPipes().iterator();it.hasNext();) {
 				IPipe pipe = (IPipe)it.next();
 				StatisticsKeeper pstat = (StatisticsKeeper) pipelineStatistics.get(pipe.getName());
-				if (pstat!=null) {
-					handler.handleStatisticsKeeper(waitStatsData,pstat);
+				handler.handleStatisticsKeeper(pipeStatsData,pstat);
+				if (pipe instanceof HasStatistics) {
+					try {
+						((HasStatistics)pipe).iterateOverStatistics(handler,pipeStatsData,HasStatistics.STATISTICS_ACTION_FULL);
+					} catch (SenderException e) {
+						error("Could not iterator over statistics of pipe ["+pipe.getName()+"]",e);
+					}
 				}
 			}
+			pipelineStatistics = adapter.getWaitingStatistics();
+			if (pipelineStatistics.size()>0) {
+				Object waitStatsData = handler.openGroup(pipelineData,null,"waitStats");
+				for(Iterator it=adapter.getPipeLine().getPipes().iterator();it.hasNext();) {
+					IPipe pipe = (IPipe)it.next();
+					StatisticsKeeper pstat = (StatisticsKeeper) pipelineStatistics.get(pipe.getName());
+					if (pstat!=null) {
+						handler.handleStatisticsKeeper(waitStatsData,pstat);
+					}
+				}
+			}
+		} finally {
+			handler.end(handle);
 		}
-//		if (log.isDebugEnabled()) {
-//			log.debug("about to set adapterStatistics ["+adapterXML.toXML()+"]");
-//			
+	
+		if (log.isDebugEnabled()) {
+			log.debug("about to set adapterStatistics ["+adapterXML.toXML()+"]");
+			
 //			XmlBuilder alt = new XmlBuilder("alt");
 //			StatisticsKeeperToXml hh = new StatisticsKeeperToXml(alt);
 //			adapter.forEachStatisticsKeeper(hh,HasStatistics.STATISTICS_ACTION_NONE);
 //			log.debug("alternative ["+alt.toXML()+"]");
-//			
-//		}
+			
+		}
 	    request.setAttribute("adapterStatistics", adapterXML.toXML());
 	
 	    // Forward control to the specified success URI
@@ -215,10 +234,12 @@ public final class ShowAdapterStatistics extends ActionBase {
 	private class StatisticsKeeperToXml implements StatisticsKeeperIterationHandler {
 
 		private XmlBuilder parent;
+		boolean deep;
 
-		public StatisticsKeeperToXml(XmlBuilder parent) {
+		public StatisticsKeeperToXml(XmlBuilder parent, boolean deep) {
 			super();
 			this.parent=parent; 
+			this.deep=deep;
 		}
 
 		public Object start() {
@@ -229,12 +250,21 @@ public final class ShowAdapterStatistics extends ActionBase {
 
 		public void handleStatisticsKeeper(Object data, StatisticsKeeper sk) {
 			XmlBuilder parent=(XmlBuilder)data;
-			XmlBuilder item=statisticsKeeperToXmlBuilder(sk,"stat");
+			XmlBuilder item=statisticsKeeperToXmlBuilder(sk,"stat", deep);
 			parent.addSubElement(item);
 		}
 
 		public void handleScalar(Object data, String scalarName, long value){
 			handleScalar(data,scalarName,""+value);
+		}
+		public void handleScalar(Object data, String scalarName, Date value){
+			String result;
+			if (value!=null) {
+				result = DateUtils.format(value, DateUtils.FORMAT_FULL_GENERIC);
+			} else {
+				result = "-";
+			}
+			handleScalar(data,scalarName,result);
 		}
 
 		public void handleScalar(Object data, String scalarName, String value){
@@ -245,7 +275,7 @@ public final class ShowAdapterStatistics extends ActionBase {
 		public Object openGroup(Object parentData, String name, String type) {
 			XmlBuilder parent=(XmlBuilder)parentData;
 			XmlBuilder group=new XmlBuilder(type);
-			group.addAttribute("name",name);
+			//group.addAttribute("name",name);
 			parent.addSubElement(group);
 			return group;
 		}
@@ -254,15 +284,18 @@ public final class ShowAdapterStatistics extends ActionBase {
 		}
 	}
 	
-	private XmlBuilder statisticsKeeperToXmlBuilder(StatisticsKeeper sk, String elementName) {
+	protected XmlBuilder statisticsKeeperToXmlBuilder(StatisticsKeeper sk, String elementName, boolean deep) {
 		if (sk==null) {
 			return null;
 		}
+		if (deep) {
+			 return sk.dumpToXml();
+		}
 		String name = sk.getName();
 		XmlBuilder container = new XmlBuilder(elementName);
-		if (name!=null)
+		if (name!=null) {
 			container.addAttribute("name", name);
-			
+		}
 		XmlBuilder stats = new XmlBuilder("summary");
 	
 	    for (int i=0; i<sk.getItemCount(); i++) {
