@@ -1,6 +1,9 @@
 /*
  * $Log: StatisticsKeeperLogger.java,v $
- * Revision 1.7  2009-01-08 16:41:31  L190409
+ * Revision 1.8  2009-06-05 07:37:36  L190409
+ * support for adapter level only statistics
+ *
+ * Revision 1.7  2009/01/08 16:41:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * made statisticsfile weekly rolling
  *
  * Revision 1.6  2008/09/04 12:19:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -41,8 +44,8 @@ import org.apache.log4j.Logger;
 public class StatisticsKeeperLogger extends StatisticsKeeperXmlBuilder {
 	protected Logger log = LogUtil.getLogger("nl.nn.adapterframework.statistics");
 
-	public StatisticsKeeperLogger(Date now, Date mark) {
-		super(now,mark);
+	public StatisticsKeeperLogger(Date now, Date mainMark, Date detailMark) {
+		super(now,mainMark, detailMark);
 	}
 
 	public void end(Object data) {

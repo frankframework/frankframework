@@ -1,6 +1,9 @@
 /*
  * $Log: StatisticsKeeper.java,v $
- * Revision 1.13  2008-09-04 13:26:10  europe\L190409
+ * Revision 1.14  2009-06-05 07:36:03  L190409
+ * support for adapter level only statistics
+ *
+ * Revision 1.13  2008/09/04 13:26:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * collect interval statistics
  *
  * Revision 1.12  2008/08/27 16:25:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -42,7 +45,7 @@ import java.util.StringTokenizer;
  * @version Id
  */
 public class StatisticsKeeper {
-	public static final String version="$RCSfile: StatisticsKeeper.java,v $ $Revision: 1.13 $ $Date: 2008-09-04 13:26:10 $";
+	public static final String version="$RCSfile: StatisticsKeeper.java,v $ $Revision: 1.14 $ $Date: 2009-06-05 07:36:03 $";
 
 	private static final boolean calculatePercentiles=true;
 	
@@ -127,13 +130,13 @@ public class StatisticsKeeper {
 	}
 	
 	public void performAction(int action) {
-		if (action==HasStatistics.STATISTICS_ACTION_NONE) {
+		if (action==HasStatistics.STATISTICS_ACTION_FULL || action==HasStatistics.STATISTICS_ACTION_SUMMARY) {
 			return;
 		}
 		if (action==HasStatistics.STATISTICS_ACTION_RESET) {
 			clear();
 		}
-		if (action==HasStatistics.STATISTICS_ACTION_MARK) {
+		if (action==HasStatistics.STATISTICS_ACTION_MARK_FULL || action==HasStatistics.STATISTICS_ACTION_MARK_MAIN) {
 			mark.mark(cumulative);
 		}
 	}
