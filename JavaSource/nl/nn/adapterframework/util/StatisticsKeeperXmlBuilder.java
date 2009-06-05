@@ -1,6 +1,10 @@
 /*
  * $Log: StatisticsKeeperXmlBuilder.java,v $
- * Revision 1.4  2009-01-08 16:45:32  L190409
+ * Revision 1.5  2009-06-05 07:38:51  L190409
+ * support for adapter level only statistics
+ * added heapSize and totalMemory attributes
+ *
+ * Revision 1.4  2009/01/08 16:45:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added period indicator attributes to generated XML
  *
  * Revision 1.3  2008/09/04 12:19:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -15,7 +19,9 @@
  */
 package nl.nn.adapterframework.util;
 
+import java.text.DateFormat;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import org.apache.log4j.Logger;
@@ -32,6 +38,9 @@ public class StatisticsKeeperXmlBuilder implements StatisticsKeeperIterationHand
 
 	private DecimalFormat df=new DecimalFormat(DateUtils.FORMAT_MILLISECONDS);
 	private DecimalFormat pf=new DecimalFormat("##0.0");
+
+	private DateFormat dtf=new SimpleDateFormat(DateUtils.FORMAT_FULL_GENERIC);
+
 
 	private static final String ROOT_ELEMENT="statisticsCollection";
 	private static final String GROUP_ELEMENT="statgroup";
@@ -60,12 +69,18 @@ public class StatisticsKeeperXmlBuilder implements StatisticsKeeperIterationHand
 
 	private XmlBuilder root;
 	private Date now;
-	private Date mark;
+	private Date mainMark;
+	private Date detailMark;
 
-	public StatisticsKeeperXmlBuilder(Date now, Date mark) {
+	public StatisticsKeeperXmlBuilder(Date now, Date mainMark, Date detailMark) {
 		super();
 		this.now=now;
-		this.mark=mark;
+		this.mainMark=mainMark;
+		this.detailMark=detailMark;
+	}
+
+	public StatisticsKeeperXmlBuilder(Date now, Date mainMark) {
+		this(now, mainMark, null);
 	}
 
 	public XmlBuilder getXml() {
@@ -73,23 +88,37 @@ public class StatisticsKeeperXmlBuilder implements StatisticsKeeperIterationHand
 	}
 
 	public Object start() {
-		log.debug("**********  start StatisticsKeeperXmlBuilder  **********");
+		log.debug("StatisticsKeeperXmlBuilder.start()");
+		
+		long freeMem = Runtime.getRuntime().freeMemory();
+		long totalMem = Runtime.getRuntime().totalMemory();
+		
 		root = new XmlBuilder(ROOT_ELEMENT);
 		root.addAttribute("version",STATISTICS_XML_VERSION);
+		root.addAttribute("heapSize", Long.toString (totalMem-freeMem) );
+		root.addAttribute("totalMemory", Long.toString(totalMem) );
 		root.addAttribute("timestamp",DateUtils.format(now,DateUtils.FORMAT_GENERICDATETIME));
-		root.addAttribute("intervalStart",DateUtils.format(mark,DateUtils.FORMAT_GENERICDATETIME));
+		root.addAttribute("intervalStart",DateUtils.format(mainMark,DateUtils.FORMAT_GENERICDATETIME));
 		root.addAttribute("host",Misc.getHostname());
 		root.addAttribute("instance",AppConstants.getInstance().getProperty("instance.name"));
-		addPeriodIndicator(root,new String[][]{PERIOD_FORMAT_HOUR,PERIOD_FORMAT_DATEHOUR},PERIOD_ALLOWED_LENGTH_HOUR);
-		addPeriodIndicator(root,new String[][]{PERIOD_FORMAT_DAY,PERIOD_FORMAT_DATE,PERIOD_FORMAT_WEEKDAY},PERIOD_ALLOWED_LENGTH_DAY);
-		addPeriodIndicator(root,new String[][]{PERIOD_FORMAT_WEEK,PERIOD_FORMAT_YEARWEEK},PERIOD_ALLOWED_LENGTH_WEEK);
-		addPeriodIndicator(root,new String[][]{PERIOD_FORMAT_MONTH,PERIOD_FORMAT_YEARMONTH},PERIOD_ALLOWED_LENGTH_MONTH);
-		addPeriodIndicator(root,new String[][]{PERIOD_FORMAT_YEAR},PERIOD_ALLOWED_LENGTH_YEAR);
+		addPeriodIndicator(root,new String[][]{PERIOD_FORMAT_HOUR,PERIOD_FORMAT_DATEHOUR},PERIOD_ALLOWED_LENGTH_HOUR,"",mainMark);
+		addPeriodIndicator(root,new String[][]{PERIOD_FORMAT_DAY,PERIOD_FORMAT_DATE,PERIOD_FORMAT_WEEKDAY},PERIOD_ALLOWED_LENGTH_DAY,"",mainMark);
+		addPeriodIndicator(root,new String[][]{PERIOD_FORMAT_WEEK,PERIOD_FORMAT_YEARWEEK},PERIOD_ALLOWED_LENGTH_WEEK,"",mainMark);
+		addPeriodIndicator(root,new String[][]{PERIOD_FORMAT_MONTH,PERIOD_FORMAT_YEARMONTH},PERIOD_ALLOWED_LENGTH_MONTH,"",mainMark);
+		addPeriodIndicator(root,new String[][]{PERIOD_FORMAT_YEAR},PERIOD_ALLOWED_LENGTH_YEAR,"",mainMark);
+		if (detailMark!=null) {
+			root.addAttribute("intervalStartDetail",DateUtils.format(detailMark,DateUtils.FORMAT_GENERICDATETIME));
+			addPeriodIndicator(root,new String[][]{PERIOD_FORMAT_HOUR,PERIOD_FORMAT_DATEHOUR},PERIOD_ALLOWED_LENGTH_HOUR,"Detail",detailMark);
+			addPeriodIndicator(root,new String[][]{PERIOD_FORMAT_DAY,PERIOD_FORMAT_DATE,PERIOD_FORMAT_WEEKDAY},PERIOD_ALLOWED_LENGTH_DAY,"Detail",detailMark);
+			addPeriodIndicator(root,new String[][]{PERIOD_FORMAT_WEEK,PERIOD_FORMAT_YEARWEEK},PERIOD_ALLOWED_LENGTH_WEEK,"Detail",detailMark);
+			addPeriodIndicator(root,new String[][]{PERIOD_FORMAT_MONTH,PERIOD_FORMAT_YEARMONTH},PERIOD_ALLOWED_LENGTH_MONTH,"Detail",detailMark);
+			addPeriodIndicator(root,new String[][]{PERIOD_FORMAT_YEAR},PERIOD_ALLOWED_LENGTH_YEAR,"Detail",detailMark);
+		}
 		return root;
 	}
 	
 	public void end(Object data) {
-		log.debug("**********  end StatisticsKeeperXmlBuilder  **********");
+		log.debug("StatisticsKeeperXmlBuilder.end()");
 	}
 
 	public void handleStatisticsKeeper(Object data, StatisticsKeeper sk) {
@@ -103,6 +132,13 @@ public class StatisticsKeeperXmlBuilder implements StatisticsKeeperIterationHand
 	public void handleScalar(Object data, String scalarName, long value){
 		handleScalar(data,scalarName,""+value);
 	}
+
+	public void handleScalar(Object data, String scalarName, Date value){
+		if (value!=null) {
+			handleScalar(data,scalarName,dtf.format(value));
+		} 
+	}
+
 
 	public void handleScalar(Object data, String scalarName, String value){
 		XmlBuilder context=(XmlBuilder)data;
@@ -121,14 +157,14 @@ public class StatisticsKeeperXmlBuilder implements StatisticsKeeperIterationHand
 	public void closeGroup(Object data) {
 	}
 
-	private void addPeriodIndicator(XmlBuilder xml, String[][] periods, long allowedLength) {
+	private void addPeriodIndicator(XmlBuilder xml, String[][] periods, long allowedLength, String suffix, Date mark) {
 		long intervalStart=mark.getTime(); 
 		long intervalEnd=now.getTime();
 		if ((intervalEnd-intervalStart)<=allowedLength) {
 			long midterm=(intervalEnd>>1)+(intervalStart>>1);
 			for (int i=0; i<periods.length; i++) {
 				String[] periodPair=periods[i];
-				xml.addAttribute(periodPair[0],DateUtils.format(new Date(midterm),periodPair[1]));
+				xml.addAttribute(periodPair[0]+suffix,DateUtils.format(new Date(midterm),periodPair[1]));
 			}
 		}
 	}
