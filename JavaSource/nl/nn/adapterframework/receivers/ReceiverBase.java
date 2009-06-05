@@ -1,6 +1,10 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.78  2009-04-16 14:01:45  m168309
+ * Revision 1.79  2009-06-05 07:27:16  L190409
+ * set pipeline result to formatted errormessage in case of exception
+ * added throws clause to iterateOverStatistics()
+ *
+ * Revision 1.78  2009/04/16 14:01:45  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added hiddenInputSessionKeys attribute
  *
  * Revision 1.77  2009/03/30 12:23:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -538,7 +542,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  */
 public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHandler, EventThrowing, IbisExceptionListener, HasSender, HasStatistics, TracingEventNumbers, IThreadCountControllable, BeanFactoryAware {
     
-	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.78 $ $Date: 2009-04-16 14:01:45 $";
+	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.79 $ $Date: 2009-06-05 07:27:16 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -1353,6 +1357,13 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 						}
 						errorMessage = t.getMessage();
 						messageInError = true;
+						if (pipeLineResult==null) {
+							pipeLineResult=new PipeLineResult();
+						}
+						if (StringUtils.isEmpty(pipeLineResult.getResult())) {
+							String formattedErrorMessage=adapter.formatErrorMessage("exception caught",t,message,messageId,this,startProcessingTimestamp);
+							pipeLineResult.setResult(formattedErrorMessage);
+						}
 						ListenerException l = wrapExceptionAsListenerException(t);
 						throw l;
 					}
@@ -1651,7 +1662,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	}
 	
 
-	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, int action) {
+	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, int action) throws SenderException {
 		Object recData=hski.openGroup(data,getName(),"receiver");
 		hski.handleScalar(recData,"messagesReceived", getMessagesReceived());
 		hski.handleScalar(recData,"messagesRetried", getMessagesRetried());
