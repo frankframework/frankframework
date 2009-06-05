@@ -1,6 +1,9 @@
 /*
  * $Log: ConnectionBase.java,v $
- * Revision 1.14  2008-07-24 12:20:00  europe\L190409
+ * Revision 1.15  2009-06-05 14:19:23  L190409
+ * removed 'synchronized' from getConnection()
+ *
+ * Revision 1.14  2008/07/24 12:20:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added support for authenticated JMS
  *
  * Revision 1.13  2008/01/03 15:49:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -55,6 +58,7 @@
 package nl.nn.adapterframework.jms;
 
 import java.util.Hashtable;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import javax.jms.Connection;
@@ -70,14 +74,19 @@ import javax.jms.TopicConnection;
 import javax.jms.TopicConnectionFactory;
 import javax.naming.Context;
 
+import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IbisException;
 import nl.nn.adapterframework.extensions.ifsa.IfsaException;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Counter;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.XmlBuilder;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
 import org.apache.log4j.Logger;
 
 /**
@@ -87,7 +96,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class ConnectionBase  {
-	public static final String version="$RCSfile: ConnectionBase.java,v $ $Revision: 1.14 $ $Date: 2008-07-24 12:20:00 $";
+	public static final String version="$RCSfile: ConnectionBase.java,v $ $Revision: 1.15 $ $Date: 2009-06-05 14:19:23 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private int referenceCount;
@@ -98,7 +107,7 @@ public class ConnectionBase  {
 	private final static String USE_SINGLE_DYNAMIC_REPLY_QUEUE_KEY="jms.useSingleDynamicReplyQueue";
 	private static Boolean useSingleDynamicReplyQueueStore=null; 
 	private final static String CLEANUP_ON_CLOSE_KEY="jms.cleanUpOnClose";
-	private static Boolean cleanUpOnClose=null; 
+	private static Boolean cleanUpOnCloseStore=null; 
 
 	private String authAlias;
 
@@ -113,6 +122,8 @@ public class ConnectionBase  {
 	
 	private Map siblingMap;
 	private Hashtable connectionTable; // hashtable is synchronized and does not permit nulls
+	
+	private Map requesterMap=new LinkedHashMap();
 
 	private Queue globalDynamicReplyQueue = null;
 	
@@ -124,6 +135,7 @@ public class ConnectionBase  {
 		this.connectionFactory=connectionFactory;
 		this.siblingMap=siblingMap;
 		siblingMap.put(id, this);
+		init();
 		if (connectionsArePooled()) {
 			connectionTable = new Hashtable();
 		}
@@ -131,10 +143,12 @@ public class ConnectionBase  {
 		log.debug(getLogPrefix()+"set id ["+id+"] context ["+context+"] connectionFactory ["+connectionFactory+"] authAlias ["+authAlias+"]");
 	}
 		
-	public synchronized boolean close() throws IbisException
+		
+	public synchronized boolean close(INamedObject requester) throws IbisException
 	{
-		if (--referenceCount<=0 && cleanUpOnClose()) {
-			log.debug(getLogPrefix()+"reference count ["+referenceCount+"], cleaning up global objects");
+		int refcount=decreaseReferences(requester);
+		if (refcount<=0 && cleanUpOnClose()) {
+			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"reference count ["+refcount+"], cleaning up global objects");
 			siblingMap.remove(getId());
 			try {
 				deleteDynamicQueue(globalDynamicReplyQueue);
@@ -162,17 +176,27 @@ public class ConnectionBase  {
 				return true;
 			}
 		} else {
-			log.debug(getLogPrefix()+"reference count ["+referenceCount+"], no cleanup");
+			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"reference count ["+referenceCount+"], no cleanup");
 			return false;
 		}
 	}
 
-	public synchronized void increaseReferences() {
+	public synchronized void increaseReferences(INamedObject requester) {
+		Object current=requesterMap.get(requester);
+		if (current!=null) {
+			log.warn(ClassUtils.nameOf(requester)+" ["+requester.getName()+"] already references a connection, reference count ["+referenceCount+"]");
+		} else {
+			requesterMap.put(requester.getName(),requester);
+		}
 		referenceCount++;
 	}
 	
-	public synchronized void decreaseReferences() {
-		referenceCount--;
+	public synchronized int decreaseReferences(INamedObject requester) {
+		Object current=requesterMap.remove(requester.getName());
+		if (current==null) {
+			log.warn(ClassUtils.nameOf(requester)+" ["+requester.getName()+"] is not registered as aconnection-requester, reference count ["+referenceCount+"]");
+		}
+		return --referenceCount;
 	}
 
 	public Context getContext() {
@@ -187,7 +211,7 @@ public class ConnectionBase  {
 	protected Connection createConnection() throws JMSException {
 		if (StringUtils.isNotEmpty(authAlias)) {
 			CredentialFactory cf = new CredentialFactory(authAlias,null,null);
-			log.debug("using userId ["+cf.getUsername()+"] to create Connection");
+			if (log.isDebugEnabled()) log.debug("using userId ["+cf.getUsername()+"] to create Connection");
 			if (connectionFactory instanceof QueueConnectionFactory) {
 				return ((QueueConnectionFactory)connectionFactory).createQueueConnection(cf.getUsername(),cf.getPassword());
 			} else {
@@ -204,14 +228,14 @@ public class ConnectionBase  {
 	private Connection createAndStartConnection() throws JMSException {
 		Connection connection;
 		// do not log, as this may happen very often
-//		log.debug(getLogPrefix()+"creating Connection, openConnectionCount before ["+openConnectionCount.getValue()+"]");
+//		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"creating Connection, openConnectionCount before ["+openConnectionCount.getValue()+"]");
 		connection = createConnection();
 		openConnectionCount.increase();
 		connection.start();
 		return connection;
 	}
 
-	private synchronized Connection getConnection() throws JMSException {
+	private Connection getConnection() throws JMSException {
 		if (connectionsArePooled()) {
 			return createAndStartConnection();
 		} else {
@@ -228,7 +252,7 @@ public class ConnectionBase  {
 		if (connection != null && connectionsArePooled()) {
 			try {
 				// do not log, as this may happen very often
-//				log.debug(getLogPrefix()+"closing Connection, openConnectionCount will become ["+(openConnectionCount.getValue()-1)+"]");
+//				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"closing Connection, openConnectionCount will become ["+(openConnectionCount.getValue()-1)+"]");
 				connection.close();
 				openConnectionCount.decrease();
 			} catch (JMSException e) {
@@ -247,7 +271,7 @@ public class ConnectionBase  {
 		}
 		try {
 			// do not log, as this may happen very often
-//			log.debug(getLogPrefix()+"creating Session, openSessionCount before ["+openSessionCount.getValue()+"]");
+//			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"creating Session, openSessionCount before ["+openSessionCount.getValue()+"]");
 			if (connection instanceof QueueConnection) {
 				session = ((QueueConnection)connection).createQueueSession(transacted, acknowledgeMode);
 			} else {
@@ -270,7 +294,7 @@ public class ConnectionBase  {
 				Connection connection = (Connection)connectionTable.remove(session);
 				try {
 					// do not log, as this may happen very often
-//					log.debug(getLogPrefix()+"closing Session, openSessionCount will become ["+(openSessionCount.getValue()-1)+"]");
+//					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"closing Session, openSessionCount will become ["+(openSessionCount.getValue()-1)+"]");
 					session.close();
 					openSessionCount.decrease();
 				} catch (JMSException e) {
@@ -280,7 +304,7 @@ public class ConnectionBase  {
 				}
 			} else {
 				try {
-					log.debug(getLogPrefix()+"closing Session");
+					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"closing Session");
 					session.close();
 				} catch (JMSException e) {
 					log.error(getLogPrefix()+"Exception closing Session", e);
@@ -289,41 +313,6 @@ public class ConnectionBase  {
 		}
 	}
 
-	protected synchronized boolean connectionsArePooled() {
-		if (connectionsArePooledStore==null) {
-			boolean pooled=AppConstants.getInstance().getBoolean(CONNECTIONS_ARE_POOLED_KEY, false);
-			connectionsArePooledStore = new Boolean(pooled);
-		}
-		return connectionsArePooledStore.booleanValue();
-	}
-
-	public synchronized boolean sessionsArePooled() {
-		if (sessionsArePooledStore==null) {
-			boolean pooled=AppConstants.getInstance().getBoolean(SESSIONS_ARE_POOLED_KEY, false);
-			sessionsArePooledStore = new Boolean(pooled);
-		}
-		return sessionsArePooledStore.booleanValue();
-	}
-
-	protected synchronized boolean useSingleDynamicReplyQueue() {
-		if (connectionsArePooled()) {
-			return false; // dynamic reply queues are connection-based.
-		}
-		if (useSingleDynamicReplyQueueStore==null) {
-			boolean useSingleQueue=AppConstants.getInstance().getBoolean(USE_SINGLE_DYNAMIC_REPLY_QUEUE_KEY, true);
-			useSingleDynamicReplyQueueStore = new Boolean(useSingleQueue);
-		}
-		return useSingleDynamicReplyQueueStore.booleanValue();
-	}
-
-
-	public synchronized boolean cleanUpOnClose() {
-		if (cleanUpOnClose==null) {
-			boolean cleanup=AppConstants.getInstance().getBoolean(CLEANUP_ON_CLOSE_KEY, true);
-			cleanUpOnClose = new Boolean(cleanup);
-		}
-		return cleanUpOnClose.booleanValue();
-	}
 
 
 	private void deleteDynamicQueue(Queue queue) throws IfsaException {
@@ -361,6 +350,112 @@ public class ConnectionBase  {
 			deleteDynamicQueue(replyQueue);
 		}
 	}
+
+	public void getPoolInfo(XmlBuilder info) {
+		info.addAttribute("referenceCount",referenceCount);
+		info.addAttribute("openConnectionCount",openConnectionCount.getValue());
+		info.addAttribute("openSessionCount",openSessionCount.getValue());
+		XmlBuilder contextXml=new XmlBuilder("context");
+		contextXml.addAttribute("class",context.getClass().getName());
+		contextXml.setValue(ToStringBuilder.reflectionToString(context,ToStringStyle.MULTI_LINE_STYLE));
+		info.addSubElement(contextXml);
+
+		XmlBuilder connectionfactoryXml=new XmlBuilder("connectionfactory");
+		connectionfactoryXml.addAttribute("class",connectionFactory.getClass().getName());
+		connectionfactoryXml.setValue(ToStringBuilder.reflectionToString(connectionFactory,ToStringStyle.MULTI_LINE_STYLE));
+		info.addSubElement(connectionfactoryXml);
+
+//		Connection connection=null;
+//		XmlBuilder connectionXml=null;
+//		try {
+//			connectionXml=new XmlBuilder("connection");
+//			info.addSubElement(connectionXml);
+//			connection=getConnection();
+//			connectionXml.addAttribute("class",connection.getClass().getName());
+//			connectionXml.setValue(ToStringBuilder.reflectionToString(connection,ToStringStyle.MULTI_LINE_STYLE));
+//			XmlBuilder requestersXml=new XmlBuilder("requesters");
+//			connectionXml.addSubElement(requestersXml);
+//			for (Iterator it=requesterMap.keySet().iterator();it.hasNext();) {
+//				String requester=(String)it.next();
+//				XmlBuilder requesterXml=new XmlBuilder("requester");
+//				requestersXml.addSubElement(requesterXml);
+//				requesterXml.addAttribute("name",requester);
+//			}
+//						
+//		} catch (JMSException e) {
+//			connectionXml.setValue(ToStringBuilder.reflectionToString(e.toString()));
+//		} finally {
+//			releaseConnection(connection);
+//		}
+		
+
+//		try {
+//			Object qcf = PropertyUtils.getProperty(connectionFactory,"qcf");
+//			if (qcf!=null) {
+//				XmlBuilder connectionManagerXml=new XmlBuilder("qcf");
+//				connectionManagerXml.addAttribute("class",qcf.getClass().getName());
+//				connectionManagerXml.setValue(ToStringBuilder.reflectionToString(qcf,ToStringStyle.MULTI_LINE_STYLE));
+//				info.addSubElement(connectionManagerXml);
+//			}
+//			
+//		} catch (Exception e) {
+//			log.error(e);
+//		}
+//		
+//		try {
+//			Object cxmgr = PropertyUtils.getProperty(connectionFactory,"cxManager");
+//			if (cxmgr!=null) {
+//				XmlBuilder connectionManagerXml=new XmlBuilder("connectionManager");
+//				connectionManagerXml.addAttribute("class",cxmgr.getClass().getName());
+//				connectionManagerXml.setValue(ToStringBuilder.reflectionToString(cxmgr,ToStringStyle.MULTI_LINE_STYLE));
+//				info.addSubElement(connectionManagerXml);
+//			}
+//			
+//		} catch (Exception e) {
+//			log.error(e);
+//		}
+//		
+	}
+
+	private static synchronized void init() {
+		if (cleanUpOnCloseStore==null) {
+			boolean cleanup=AppConstants.getInstance().getBoolean(CLEANUP_ON_CLOSE_KEY, true);
+			cleanUpOnCloseStore = new Boolean(cleanup);
+		}
+		if (connectionsArePooledStore==null) {
+			boolean pooled=AppConstants.getInstance().getBoolean(CONNECTIONS_ARE_POOLED_KEY, false);
+			connectionsArePooledStore = new Boolean(pooled);
+		}
+		if (sessionsArePooledStore==null) {
+			boolean pooled=AppConstants.getInstance().getBoolean(SESSIONS_ARE_POOLED_KEY, false);
+			sessionsArePooledStore = new Boolean(pooled);
+		}
+		if (!connectionsArePooledStore.booleanValue()) {
+			if (useSingleDynamicReplyQueueStore==null) {
+				boolean useSingleQueue=AppConstants.getInstance().getBoolean(USE_SINGLE_DYNAMIC_REPLY_QUEUE_KEY, true);
+				useSingleDynamicReplyQueueStore = new Boolean(useSingleQueue);
+			}
+		}
+	}
+
+	public boolean cleanUpOnClose() {
+		return cleanUpOnCloseStore.booleanValue();
+	}
+	protected boolean connectionsArePooled() {
+		return connectionsArePooledStore.booleanValue();
+	}
+
+	public boolean sessionsArePooled() {
+		return sessionsArePooledStore.booleanValue();
+	}
+
+	protected boolean useSingleDynamicReplyQueue() {
+		if (connectionsArePooled()) {
+			return false; // dynamic reply queues are connection-based.
+		}
+		return useSingleDynamicReplyQueueStore.booleanValue();
+	}
+
 
 
 	protected String getLogPrefix() {
