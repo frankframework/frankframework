@@ -1,6 +1,9 @@
 /*
  * $Log: SenderWrapper.java,v $
- * Revision 1.5  2008-09-04 12:16:03  europe\L190409
+ * Revision 1.6  2009-06-05 07:29:32  L190409
+ * added throws clause to iterateOverStatistics()
+ *
+ * Revision 1.5  2008/09/04 12:16:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * collect interval statistics
  *
  * Revision 1.4  2008/08/27 16:22:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -81,7 +84,7 @@ public class SenderWrapper extends SenderWrapperBase {
 		return result;
 	}
 
-	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, int action) {
+	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, int action) throws SenderException {
 		if (getSender() instanceof HasStatistics) {
 			((HasStatistics)getSender()).iterateOverStatistics(hski,data,action);
 		}

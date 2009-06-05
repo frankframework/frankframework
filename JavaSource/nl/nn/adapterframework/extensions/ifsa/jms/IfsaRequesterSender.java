@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaRequesterSender.java,v $
- * Revision 1.13  2009-03-23 16:50:47  L190409
+ * Revision 1.14  2009-06-05 07:23:22  L190409
+ * added throws clause to iterateOverStatistics()
+ *
+ * Revision 1.13  2009/03/23 16:50:47  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved logging of ReportMessages
  *
  * Revision 1.12  2008/09/08 07:20:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -195,7 +198,7 @@ import com.ing.ifsa.IFSATimeOutMessage;
  * @since  4.2
  */
 public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParameters, HasStatistics {
-	public static final String version="$RCSfile: IfsaRequesterSender.java,v $ $Revision: 1.13 $ $Date: 2009-03-23 16:50:47 $";
+	public static final String version="$RCSfile: IfsaRequesterSender.java,v $ $Revision: 1.14 $ $Date: 2009-06-05 07:23:22 $";
 
 	private boolean throwExceptions=true;	
 	
@@ -464,7 +467,7 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 	    return result;	
 	}
 
-	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, int action) {
+	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, int action) throws SenderException {
 		if (businessProcessTimes!=null) {
 			hski.handleStatisticsKeeper(data,businessProcessTimes);
 			businessProcessTimes.performAction(action);

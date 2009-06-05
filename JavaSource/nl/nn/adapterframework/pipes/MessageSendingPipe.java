@@ -1,6 +1,9 @@
 /*
  * $Log: MessageSendingPipe.java,v $
- * Revision 1.52  2009-05-06 11:41:08  L190409
+ * Revision 1.53  2009-06-05 07:24:55  L190409
+ * added throws clause to iterateOverStatistics()
+ *
+ * Revision 1.52  2009/05/06 11:41:08  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved configuration of validators
  *
  * Revision 1.51  2009/04/09 12:15:53  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -261,7 +264,7 @@ import org.apache.commons.lang.SystemUtils;
  */
 
 public class MessageSendingPipe extends FixedForwardPipe implements HasSender, HasStatistics, EventThrowing {
-	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.52 $ $Date: 2009-05-06 11:41:08 $";
+	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.53 $ $Date: 2009-06-05 07:24:55 $";
 
 	public static final String PIPE_TIMEOUT_MONITOR_EVENT = "Sender Timeout";
 	public static final String PIPE_CLEAR_TIMEOUT_MONITOR_EVENT = "Sender Received Result on Time";
@@ -686,7 +689,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 		}
 	}
 
-	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, int action) {
+	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, int action) throws SenderException {
 		if (sender instanceof HasStatistics) {
 			((HasStatistics)sender).iterateOverStatistics(hski,data,action);
 		}
