@@ -1,6 +1,9 @@
 /*
  * $Log: JobDef.java,v $
- * Revision 1.14  2009-03-17 10:33:38  m168309
+ * Revision 1.15  2009-06-05 07:28:48  L190409
+ * added function dumpStatisticsFull; function dumpStatistics now only dumps adapter level statistics
+ *
+ * Revision 1.14  2009/03/17 10:33:38  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added numThreads and messageKeeperSize attribute
  *
  * Revision 1.13  2009/03/13 14:47:27  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -31,8 +34,6 @@
  */
 package nl.nn.adapterframework.scheduler;
 
-import java.sql.Connection;
-
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -43,14 +44,13 @@ import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.Adapter;
+import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.IbisTransaction;
-import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.jdbc.DirectQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
-import nl.nn.adapterframework.jms.JmsRealm;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.senders.IbisLocalSender;
 import nl.nn.adapterframework.util.AppConstants;
@@ -65,11 +65,9 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.log4j.Logger;
 import org.quartz.JobDetail;
 import org.quartz.Scheduler;
-
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 /**
  * Definition / configuration of scheduler jobs.
@@ -381,6 +379,7 @@ public class JobDef {
 	public static final String JOB_FUNCTION_SEND_MESSAGE="SendMessage";	
 	public static final String JOB_FUNCTION_QUERY="ExecuteQuery";	
 	public static final String JOB_FUNCTION_DUMPSTATS="dumpStatistics";	
+	public static final String JOB_FUNCTION_DUMPSTATSFULL="dumpStatisticsFull";	
 	public static final String JOB_FUNCTION_CLEANUPDB="cleanupDatabase";
 
     private String name;
@@ -458,6 +457,7 @@ public class JobDef {
 				getFunction().equalsIgnoreCase(JOB_FUNCTION_SEND_MESSAGE)||
 				getFunction().equalsIgnoreCase(JOB_FUNCTION_QUERY)||
 				getFunction().equalsIgnoreCase(JOB_FUNCTION_DUMPSTATS) ||
+				getFunction().equalsIgnoreCase(JOB_FUNCTION_DUMPSTATSFULL) ||
 				getFunction().equalsIgnoreCase(JOB_FUNCTION_CLEANUPDB)
 			)) {
 			throw new ConfigurationException("jobdef ["+getName()+"] function ["+getFunction()+"] must be one of ["+
@@ -468,10 +468,14 @@ public class JobDef {
 			JOB_FUNCTION_SEND_MESSAGE+","+
 			JOB_FUNCTION_QUERY+","+
 			JOB_FUNCTION_DUMPSTATS+","+
+			JOB_FUNCTION_DUMPSTATSFULL+","+
 			JOB_FUNCTION_CLEANUPDB+
 			"]");
 		}
 		if (getFunction().equalsIgnoreCase(JOB_FUNCTION_DUMPSTATS)) {
+			// nothing special for now
+		} else 
+		if (getFunction().equalsIgnoreCase(JOB_FUNCTION_DUMPSTATSFULL)) {
 			// nothing special for now
 		} else 
 		if (getFunction().equalsIgnoreCase(JOB_FUNCTION_CLEANUPDB)) {
@@ -595,7 +599,10 @@ public class JobDef {
 		String function = getFunction();
 
 		if (function.equalsIgnoreCase(JOB_FUNCTION_DUMPSTATS)) {
-			ibisManager.getConfiguration().dumpStatistics(HasStatistics.STATISTICS_ACTION_MARK);
+			ibisManager.getConfiguration().dumpStatistics(HasStatistics.STATISTICS_ACTION_MARK_MAIN);
+		} else 
+		if (function.equalsIgnoreCase(JOB_FUNCTION_DUMPSTATSFULL)) {
+			ibisManager.getConfiguration().dumpStatistics(HasStatistics.STATISTICS_ACTION_MARK_FULL);
 		} else 
 		if (function.equalsIgnoreCase(JOB_FUNCTION_CLEANUPDB)) {
 			cleanupDatabase(ibisManager);
