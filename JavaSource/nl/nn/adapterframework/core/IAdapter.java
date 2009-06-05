@@ -1,6 +1,9 @@
 /*
  * $Log: IAdapter.java,v $
- * Revision 1.12  2008-09-04 12:02:50  europe\L190409
+ * Revision 1.13  2009-06-05 07:21:53  L190409
+ * added throws clause to forEachStatisticsKeeperBody()
+ *
+ * Revision 1.12  2008/09/04 12:02:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * collect interval statistics
  *
  * Revision 1.11  2008/08/27 15:54:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -35,13 +38,12 @@
  */
 package nl.nn.adapterframework.core;
 
+import java.util.Iterator;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.util.MessageKeeper;
 import nl.nn.adapterframework.util.StatisticsKeeperIterationHandler;
 
-import java.util.Iterator;
-
-import javax.transaction.UserTransaction;
 /**
  * The Adapter is the central manager in the framework. It has knowledge of both
  * <code>IReceiver</code>s as well as the <code>PipeLine</code> and statistics.
@@ -51,7 +53,7 @@ import javax.transaction.UserTransaction;
  * @version Id
  **/
 public interface IAdapter extends IManagable {
-	public static final String version = "$RCSfile: IAdapter.java,v $ $Revision: 1.12 $ $Date: 2008-09-04 12:02:50 $";
+	public static final String version = "$RCSfile: IAdapter.java,v $ $Revision: 1.13 $ $Date: 2009-06-05 07:21:53 $";
 
     /**
   	 * Instruct the adapter to configure itself. The adapter will call the
@@ -86,7 +88,7 @@ public interface IAdapter extends IManagable {
 		INamedObject objectInError,
 		long receivedTime);
 		
-	public void forEachStatisticsKeeperBody(StatisticsKeeperIterationHandler hski, Object data, int action);
+	public void forEachStatisticsKeeperBody(StatisticsKeeperIterationHandler hski, Object data, int action) throws SenderException ;
 
     /**
      * state to put in PipeLineResult when a PipeRunException occurs.
