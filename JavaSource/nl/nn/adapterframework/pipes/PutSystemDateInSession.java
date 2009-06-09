@@ -1,6 +1,9 @@
 /*
  * $Log: PutSystemDateInSession.java,v $
- * Revision 1.6  2009-06-09 08:35:15  m168309
+ * Revision 1.7  2009-06-09 09:16:16  m168309
+ * updated javadoc
+ *
+ * Revision 1.6  2009/06/09 08:35:15  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added returnFixedDate attribute
  *
  * Revision 1.5  2006/08/30 12:33:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -42,7 +45,7 @@ import java.text.SimpleDateFormat;
  * <tr><td>{@link #setSessionKey(String) sessionKey}</td><td>key of session variable to store result in</td><td>systemDate</td></tr>
  * <tr><td>{@link #setDateFormat(String) dateFormat}</td><td>format to store date in</td><td>fullIsoFormat: yyyy-MM-dd'T'hh:mm:sszzz</td></tr>
  * <tr><td>{@link #setTimeZone(String) timeZone}</td><td>the time zone to use for the formatter</td><td>the default time zone for the JVM</td></tr>
- * <tr><td>{@link #setSleepWhenEqualToPrevious(long) sleepWhenEqualToPrevious}</td><td>set to a time in millisecond to create a value that is different to the previous returned value by a PutSystemDateInSession pipe in this virtual machine. The thread will sleep for the specified time before recalculating a new value. Set the timezone to a value without daylight saving time to prevent this pipe to generate two equal value's when the clock is set back</td><td>-1 (disabled)</td></tr>
+ * <tr><td>{@link #setSleepWhenEqualToPrevious(long) sleepWhenEqualToPrevious}</td><td>set to a time in millisecond to create a value that is different to the previous returned value by a PutSystemDateInSession pipe in this virtual machine. The thread will sleep for the specified time before recalculating a new value. Set the timezone to a value without daylight saving time (like GMT+1) to prevent this pipe to generate two equal value's when the clock is set back. <b>Note:</b> When you're looking for a guid parameter for you XSLT it might be better to use &lt;param name=&quot;guid&quot; pattern=&quot;{hostname}_{uid}&quot;/&gt;, see {@link nl.nn.adapterframework.parameters.Parameter}</a></td><td>-1 (disabled)</td></tr>
  * <tr><td>{@link #setReturnFixedDate(boolean) returnFixedDate}</td><td>If <code>true</code>, the date/time returned will always be December 17, 2001, 09:30:47 (for testing purposes only)</td><td><code>false</code></td></tr>
  * <tr><td>{@link #setMaxThreads(int) maxThreads}</td><td>maximum number of threads that may call {@link #doPipe(Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously</td><td>0 (unlimited)</td></tr>
  * <tr><td>{@link #setForwardName(String) forwardName}</td>  <td>name of forward returned upon completion</td><td>"success"</td></tr>
@@ -54,7 +57,7 @@ import java.text.SimpleDateFormat;
  * @since   4.2c
  */
 public class PutSystemDateInSession extends FixedForwardPipe {
-	public static final String version="$RCSfile: PutSystemDateInSession.java,v $  $Revision: 1.6 $ $Date: 2009-06-09 08:35:15 $";
+	public static final String version="$RCSfile: PutSystemDateInSession.java,v $  $Revision: 1.7 $ $Date: 2009-06-09 09:16:16 $";
 
 	public final static String FIXEDDATETIME  ="2001-12-17 09:30:47";
 	public final static String FORMAT_FIXEDDATETIME  ="yyyy-MM-dd HH:mm:ss";
