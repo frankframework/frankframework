@@ -1,6 +1,9 @@
 /*
  * $Log: PutSystemDateInSession.java,v $
- * Revision 1.5  2006-08-30 12:33:15  europe\L190409
+ * Revision 1.6  2009-06-09 08:35:15  m168309
+ * added returnFixedDate attribute
+ *
+ * Revision 1.5  2006/08/30 12:33:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * set timezone only when set
  *
  * Revision 1.4  2006/08/22 12:55:06  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -26,6 +29,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
 
 import java.util.Date;
 import java.util.TimeZone;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
 /**
@@ -39,6 +43,7 @@ import java.text.SimpleDateFormat;
  * <tr><td>{@link #setDateFormat(String) dateFormat}</td><td>format to store date in</td><td>fullIsoFormat: yyyy-MM-dd'T'hh:mm:sszzz</td></tr>
  * <tr><td>{@link #setTimeZone(String) timeZone}</td><td>the time zone to use for the formatter</td><td>the default time zone for the JVM</td></tr>
  * <tr><td>{@link #setSleepWhenEqualToPrevious(long) sleepWhenEqualToPrevious}</td><td>set to a time in millisecond to create a value that is different to the previous returned value by a PutSystemDateInSession pipe in this virtual machine. The thread will sleep for the specified time before recalculating a new value. Set the timezone to a value without daylight saving time to prevent this pipe to generate two equal value's when the clock is set back</td><td>-1 (disabled)</td></tr>
+ * <tr><td>{@link #setReturnFixedDate(boolean) returnFixedDate}</td><td>If <code>true</code>, the date/time returned will always be December 17, 2001, 09:30:47 (for testing purposes only)</td><td><code>false</code></td></tr>
  * <tr><td>{@link #setMaxThreads(int) maxThreads}</td><td>maximum number of threads that may call {@link #doPipe(Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously</td><td>0 (unlimited)</td></tr>
  * <tr><td>{@link #setForwardName(String) forwardName}</td>  <td>name of forward returned upon completion</td><td>"success"</td></tr>
  * </table>
@@ -49,11 +54,15 @@ import java.text.SimpleDateFormat;
  * @since   4.2c
  */
 public class PutSystemDateInSession extends FixedForwardPipe {
-	public static final String version="$RCSfile: PutSystemDateInSession.java,v $  $Revision: 1.5 $ $Date: 2006-08-30 12:33:15 $";
+	public static final String version="$RCSfile: PutSystemDateInSession.java,v $  $Revision: 1.6 $ $Date: 2009-06-09 08:35:15 $";
+
+	public final static String FIXEDDATETIME  ="2001-12-17 09:30:47";
+	public final static String FORMAT_FIXEDDATETIME  ="yyyy-MM-dd HH:mm:ss";
 
 	private String sessionKey="systemDate";
 	private String dateFormat=DateUtils.fullIsoFormat;
 	private SimpleDateFormat formatter;
+	private boolean returnFixedDate=false;
 	private long sleepWhenEqualToPrevious = -1;
 	private TimeZone timeZone=null;
 	private String previousFormattedDate;
@@ -93,7 +102,18 @@ public class PutSystemDateInSession extends FixedForwardPipe {
 	public PipeRunResult doPipe(Object input, PipeLineSession session)
 		throws PipeRunException {
 
-		String formattedDate = formatter.format(new Date());
+		Date d;
+		if (isReturnFixedDate()) {
+			SimpleDateFormat formatterFrom = new SimpleDateFormat(FORMAT_FIXEDDATETIME);
+			try {
+				d = formatterFrom.parse(FIXEDDATETIME);
+			} catch (ParseException e) {
+				throw new PipeRunException(this,"cannot parse fixed date ["+FIXEDDATETIME+"] with format ["+FORMAT_FIXEDDATETIME+"]",e);
+			}
+		} else{
+			d = new Date();
+		}
+		String formattedDate = formatter.format(d);
 
 		if (sleepWhenEqualToPrevious > -1) {
 			// Synchronize on a static value to generate unique value's for the
@@ -154,5 +174,12 @@ public class PutSystemDateInSession extends FixedForwardPipe {
 		this.sleepWhenEqualToPrevious = sleepWhenEqualToPrevious;
 	}
 	
+	public void setReturnFixedDate(boolean b) {
+		returnFixedDate = b;
+	}
+
+	public boolean isReturnFixedDate() {
+		return returnFixedDate;
+	}
 }
 
