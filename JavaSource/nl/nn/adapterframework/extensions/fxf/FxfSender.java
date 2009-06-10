@@ -1,6 +1,9 @@
 /*
  * $Log: FxfSender.java,v $
- * Revision 1.8  2009-03-04 15:57:38  L190409
+ * Revision 1.9  2009-06-10 15:49:24  L190409
+ * added test for presence queueConnectionFactoryName, for fxf 2 compatibility
+ *
+ * Revision 1.8  2009/03/04 15:57:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added support for FXF 2.0
  * added local and remote filenames to fxf_init calls
  *
@@ -140,6 +143,9 @@ public class FxfSender extends JMSFacade implements ISenderWithParameters {
 		} else {
 			if (isFxf2Compatibility() && StringUtils.isEmpty(getDestinationName())) {
 				throw new ConfigurationException("please specify destinationName for Fxf 2 Compatibility, or set fxf2Compatibility to false");
+			}
+			if (isFxf2Compatibility() && StringUtils.isEmpty(getQueueConnectionFactoryName())) {
+				throw new ConfigurationException("please specify queueConnectionFactoryName (or applicable jmsRealm) for Fxf 2 Compatibility, or set fxf2Compatibility to false");
 			}
 		}
  	} 
