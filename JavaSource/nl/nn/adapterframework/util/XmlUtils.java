@@ -1,6 +1,9 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.59  2009-03-05 09:51:31  m168309
+ * Revision 1.60  2009-06-23 12:43:33  m168309
+ * adjusted xslt for skipEmptyTags (bug for CDATA sections)
+ *
+ * Revision 1.59  2009/03/05 09:51:31  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * setTransformerParameters: changed WARN to INFO
  *
  * Revision 1.58  2009/02/05 14:07:25  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -253,7 +256,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * @version Id
  */
 public class XmlUtils {
-	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.59 $ $Date: 2009-03-05 09:51:31 $";
+	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.60 $ $Date: 2009-06-23 12:43:33 $";
 	static Logger log = LogUtil.getLogger(XmlUtils.class);
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
@@ -288,13 +291,24 @@ public class XmlUtils {
 		super();
 	}
 
-
 	public static String makeSkipEmptyTagsXslt(boolean omitXmlDeclaration, boolean indent) {
 		return 	
 		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"2.0\">"
 			+ "<xsl:output method=\"xml\" indent=\""+(indent?"yes":"no")+"\" omit-xml-declaration=\""+(omitXmlDeclaration?"yes":"no")+"\"/>"
 			+ "<xsl:strip-space elements=\"*\"/>"
-			+ "<xsl:template match=\"* [.//text()] | text()|@*|comment()|processing-instruction()\">"
+			+ "<xsl:template match=\"*\">"
+			+ "<xsl:variable name=\"test\">"
+			+ "<xsl:for-each select=\"descendant-or-self::*\">"
+			+ "<xsl:if test=\"string-length(normalize-space(.))&gt;0\">x</xsl:if>"
+			+ "</xsl:for-each>"
+			+ "</xsl:variable>"
+			+ "<xsl:if test=\"string-length($test)&gt;0\">"
+			+ "<xsl:copy>"
+			+ "<xsl:apply-templates select=\"*|@*|comment()|processing-instruction()|text()\"/>"
+			+ "</xsl:copy>"
+			+ "</xsl:if>"
+			+ "</xsl:template>"
+			+ "<xsl:template match=\"@*|comment()|processing-instruction()|text()\">"
 			+ "<xsl:copy>"
 			+ "<xsl:apply-templates select=\"*|@*|comment()|processing-instruction()|text()\"/>"
 			+ "</xsl:copy>"
