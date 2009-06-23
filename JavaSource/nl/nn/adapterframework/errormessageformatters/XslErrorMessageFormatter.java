@@ -1,6 +1,9 @@
 /*
  * $Log: XslErrorMessageFormatter.java,v $
- * Revision 1.7  2007-05-08 15:52:32  europe\L190409
+ * Revision 1.8  2009-06-23 12:41:49  m168309
+ * allow use of parameters
+ *
+ * Revision 1.7  2007/05/08 15:52:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * add xpath-attribute
  *
  * Revision 1.6  2006/12/13 16:24:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -17,10 +20,17 @@ package nl.nn.adapterframework.errormessageformatters;
 
 
 import java.io.IOException;
+import java.util.Map;
 
 import javax.xml.transform.Transformer;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.ParameterList;
+import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -39,16 +49,24 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setXpathExpression(String) xpathExpression}</td><td>xpathExpression to use for transformation</td><td>&nbsp;</td></tr>
  * </table>
  *
+ * <p><table border="1">
+ * <tr><th>nested elements</th><th>description</th></tr>
+ * <tr><td>{@link nl.nn.adapterframework.parameters.Parameter param}</td><td>&nbsp;</td></tr>
+ * </table>
+ * </p>
+ *
  * Hint:  use <code>xpathExression="/errorMessage/@message"</code> for a single compact string errormessage.
  * @version Id
  * @author Johan Verrips IOS
  */
 public class XslErrorMessageFormatter extends ErrorMessageFormatter {
-	public static final String version = "$RCSfile: XslErrorMessageFormatter.java,v $ $Revision: 1.7 $ $Date: 2007-05-08 15:52:32 $";
+	public static final String version = "$RCSfile: XslErrorMessageFormatter.java,v $ $Revision: 1.8 $ $Date: 2009-06-23 12:41:49 $";
+
+	protected ParameterList paramList = null;
 
     private String styleSheet;
 	private String xpathExpression;
-    
+
 	public String format(
 	    String message,
 	    Throwable t,
@@ -73,6 +91,25 @@ public class XslErrorMessageFormatter extends ErrorMessageFormatter {
 //	            	}
 					errorTransformer = XmlUtils.createTransformer(XmlUtils.createXPathEvaluatorSource(xpath));
 	            }
+
+				ParameterList params = getParameterList();
+				if (params!=null) {
+					try {
+						params.configure();
+					} catch (ConfigurationException e) {
+						log.error("exception while configuring parameters",e);
+					}
+						ParameterResolutionContext prc = new ParameterResolutionContext(message, new PipeLineSession());
+
+					Map parametervalues = null;
+					try {
+						parametervalues = prc.getValueMap(params);
+					} catch (ParameterException e) {
+						log.error("got exception extracting parameters",e);
+					}
+
+					XmlUtils.setTransformerParameters(errorTransformer, parametervalues );
+				}
 	            result = XmlUtils.transformXml(errorTransformer, result);
 	        } catch (IOException e) {
 	            log.error(" cannot retrieve [" + styleSheet + "]", e);
@@ -87,6 +124,17 @@ public class XslErrorMessageFormatter extends ErrorMessageFormatter {
 	        log.warn("no stylesheet defined for XslErrorMessageFormatter");
 	    return result;
 		    
+	}
+
+	public void addParameter(Parameter p) {
+		if (paramList == null) {
+			paramList = new ParameterList();
+		}
+		paramList.add(p);
+	}
+
+	public ParameterList getParameterList() {
+		return paramList;
 	}
 	
 	/**
