@@ -1,6 +1,9 @@
 /*
  * $Log: ConfigurationDigester.java,v $
- * Revision 1.27  2009-05-13 08:18:23  L190409
+ * Revision 1.28  2009-07-03 06:32:14  m168309
+ * facilty to stub the configuration for testtool
+ *
+ * Revision 1.27  2009/05/13 08:18:23  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved monitoring: triggers can now be filtered multiselectable on adapterlevel
  *
  * Revision 1.26  2009/03/13 14:21:02  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -77,16 +80,22 @@
  */
 package nl.nn.adapterframework.configuration;
 
+import java.io.StringReader;
 import java.net.URL;
+
+import javax.xml.transform.Transformer;
 
 import nl.nn.adapterframework.monitoring.MonitorManager;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.digester.Digester;
 import org.apache.commons.digester.Rule;
 import org.apache.commons.digester.xmlrules.FromXmlRuleSet;
+import org.apache.commons.lang.SystemUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
@@ -128,13 +137,16 @@ import org.xml.sax.SAXParseException;
  * @see Configuration
  */
 abstract public class ConfigurationDigester implements BeanFactoryAware {
-	public static final String version = "$RCSfile: ConfigurationDigester.java,v $ $Revision: 1.27 $ $Date: 2009-05-13 08:18:23 $";
+	public static final String version = "$RCSfile: ConfigurationDigester.java,v $ $Revision: 1.28 $ $Date: 2009-07-03 06:32:14 $";
     protected static Logger log = LogUtil.getLogger(ConfigurationDigester.class);
 
 	private static final String CONFIGURATION_FILE_DEFAULT  = "Configuration.xml";
 	private static final String DIGESTER_RULES_DEFAULT      = "digester-rules.xml";
 	
 	private static final String CONFIGURATION_VALIDATION_KEY = "validate.configuration";
+	private static final String CONFIGURATION_STUB4TESTTOOL_KEY = "stub4testtool.configuration";
+
+	private static String stub4testtool_xslt = "/xml/xsl/stub4testtool.xsl";
 
 	private String configurationFile=null;
 	private String digesterRulesFile=DIGESTER_RULES_DEFAULT;
@@ -236,7 +248,23 @@ abstract public class ConfigurationDigester implements BeanFactoryAware {
 				XmlErrorHandler xeh = new XmlErrorHandler();
 				digester.setErrorHandler(xeh);
 			}
-			digester.parse(configurationFileURL);
+
+			boolean stub4testtool=AppConstants.getInstance().getBoolean(CONFIGURATION_STUB4TESTTOOL_KEY,false);
+			if (stub4testtool) {
+				URL xsltSource = ClassUtils.getResourceURL(this, stub4testtool_xslt);
+				if (xsltSource == null) {
+					throw new ConfigurationException("cannot find resource ["+stub4testtool_xslt+"]");
+				}
+				Transformer transformer = XmlUtils.createTransformer(xsltSource);
+				String lineSeparator=SystemUtils.LINE_SEPARATOR;
+				if (null==lineSeparator) lineSeparator="\n";
+				String configString=Misc.resourceToString(configurationFileURL, lineSeparator, false);
+				configString=XmlUtils.identityTransform(configString);
+				String stubbedConfigString = XmlUtils.transformXml(transformer, configString);
+				digester.parse(new StringReader(stubbedConfigString));
+			} else {
+				digester.parse(configurationFileURL);
+			}
 		} catch (Throwable t) {
 			// wrap exception to be sure it gets rendered via the IbisException-renderer
 			String currentElementName=digester.getCurrentElementName();
