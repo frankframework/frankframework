@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLineSession.java,v $
- * Revision 1.10  2008-02-28 16:17:53  europe\L190409
+ * Revision 1.11  2009-07-03 06:27:46  m168309
+ * setListenerParameter: messageId only set if not null (so it's not overridden for local test with testtool)
+ *
+ * Revision 1.10  2008/02/28 16:17:53  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added setListenerParameters()
  *
  * Revision 1.9  2006/08/22 06:47:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -53,7 +56,7 @@ import org.apache.commons.lang.NotImplementedException;
  * @since   version 3.2.2
  */
 public class PipeLineSession extends HashMap {
-	public static final String version="$RCSfile: PipeLineSession.java,v $ $Revision: 1.10 $ $Date: 2008-02-28 16:17:53 $";
+	public static final String version="$RCSfile: PipeLineSession.java,v $ $Revision: 1.11 $ $Date: 2009-07-03 06:27:46 $";
 
 	public static final String originalMessageKey="originalMessage";
 	public static final String messageIdKey="messageId";
@@ -109,7 +112,9 @@ public class PipeLineSession extends HashMap {
 	 * @param map
 	 */
 	public static void setListenerParameters(Map map, String messageId, String technicalCorrelationId, Date tsReceived, Date tsSent) {
-		map.put("id", messageId);
+		if (messageId!=null) {
+			map.put("id", messageId);
+		}
 		map.put(technicalCorrelationIdKey, technicalCorrelationId);
 		if (tsReceived==null) {
 			tsReceived=new Date();
