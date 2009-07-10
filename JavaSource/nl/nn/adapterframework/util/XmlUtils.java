@@ -1,6 +1,9 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.61  2009-06-24 13:20:01  m168309
+ * Revision 1.62  2009-07-10 14:04:26  m168309
+ * added replaceNonValidXmlCharacters and stripNonValidXmlCharacters methods
+ *
+ * Revision 1.61  2009/06/24 13:20:01  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * improved xslt for skipEmptyTags
  *
  * Revision 1.60  2009/06/23 12:43:33  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -259,7 +262,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * @version Id
  */
 public class XmlUtils {
-	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.61 $ $Date: 2009-06-24 13:20:01 $";
+	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.62 $ $Date: 2009-07-10 14:04:26 $";
 	static Logger log = LogUtil.getLogger(XmlUtils.class);
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
@@ -1175,18 +1178,7 @@ public class XmlUtils {
 	 * Replaces non-unicode-characters by '0x00BF'.
 	 */
 	public static String encodeCdataString(String string) {
-		int length = string.length();
-		char[] characters = new char[length];
-
-		string.getChars(0, length, characters, 0);
-		StringBuffer encoded = new StringBuffer();
-		for (int i = 0; i < length; i++) {
-			if (isPrintableUnicodeChar(characters[i]))
-				encoded.append(characters[i]);
-			else
-				encoded.append((char) 0x00BF);
-		}
-		return encoded.toString();
+		return replaceNonValidXmlCharacters(string, (char) 0x00BF);
 	}
 
 	public static boolean isPrintableUnicodeChar(char c) {
@@ -1198,7 +1190,33 @@ public class XmlUtils {
 			|| (c >= 0x0010000 && c <= 0x0010FFFF);
 	}
 
+	public static String replaceNonValidXmlCharacters(String string, char to) {
+		int length = string.length();
+		char[] characters = new char[length];
 
+		string.getChars(0, length, characters, 0);
+		StringBuffer encoded = new StringBuffer();
+		for (int i = 0; i < length; i++) {
+			if (isPrintableUnicodeChar(characters[i]))
+				encoded.append(characters[i]);
+			else
+				encoded.append(to);
+		}
+		return encoded.toString();
+	}
+
+	public static String stripNonValidXmlCharacters(String string) {
+		int length = string.length();
+		char[] characters = new char[length];
+
+		string.getChars(0, length, characters, 0);
+		StringBuffer encoded = new StringBuffer();
+		for (int i = 0; i < length; i++) {
+			if (isPrintableUnicodeChar(characters[i]))
+				encoded.append(characters[i]);
+		}
+		return encoded.toString();
+	}
 	
 	/**
 	 * sets all the parameters of the transformer using a Map with parameter values. 
