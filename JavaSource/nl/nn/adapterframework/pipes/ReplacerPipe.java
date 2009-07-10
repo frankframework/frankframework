@@ -1,7 +1,7 @@
 /*
  * $Log: ReplacerPipe.java,v $
- * Revision 1.4  2009-07-10 14:03:14  m168309
- * added replaceNonXmlChars and replaceNonXmlChar attributes
+ * Revision 1.5  2009-07-10 14:34:54  m168309
+ * made find attribute optional
  *
  * Revision 1.3  2004/08/24 06:48:50  unknown <unknown@ibissource.org>
  * Remove warnings
@@ -35,7 +35,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <tr><td>{@link #setReplace(String) replace}</td><td>string that will replace each of the strings found</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setLineSeparatorSymbol(String) lineSeparatorSymbol}</td><td>Sets the string the representation in find and replace of the line separator</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setReplaceNonXmlChars(boolean) replaceNonXmlChars}</td><td>Replace all non XML chars (not in the <a href="http://www.w3.org/TR/2006/REC-xml-20060816/#NT-Char">character range as specified by the XML specification</a>) with {@link #setReplaceNonValidXmlChar(String) replaceNonXmlChar}</td><td>true</td></tr>
- * <tr><td>{@link #setReplaceNonXmlChar(String) replaceNonXmlChar}</td><td>character that will replace each non valid XML character</td><td>0x00BF</td></tr>
+ * <tr><td>{@link #setReplaceNonXmlChar(String) replaceNonXmlChar}</td><td>character that will replace each non valid XML character (empty character is also possible)</td><td>0x00BF</td></tr>
  * <tr><td>{@link #setMaxThreads(int) maxThreads}</td><td>maximum number of threads that may call {@link #doPipe(Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously</td><td>0 (unlimited)</td></tr>
  * <tr><td>{@link #setForwardName(String) forwardName}</td>  <td>name of forward returned upon completion</td><td>"success"</td></tr>
  * </table>
@@ -52,7 +52,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @since 4.2
  */
 public class ReplacerPipe extends FixedForwardPipe {
-	public static final String version="$Id: ReplacerPipe.java,v 1.4 2009-07-10 14:03:14 m168309 Exp $";
+	public static final String version="$Id: ReplacerPipe.java,v 1.5 2009-07-10 14:34:54 m168309 Exp $";
 
 	private String find;
 	private String replace;
@@ -63,16 +63,18 @@ public class ReplacerPipe extends FixedForwardPipe {
 	
 	public void configure() throws ConfigurationException {
 		super.configure();
-		if (StringUtils.isEmpty(getFind())) {
-			throw new ConfigurationException(getLogPrefix(null) + "cannot have empty find-attribute");
-		}
-		if (getReplace() == null) {
-			throw new ConfigurationException(getLogPrefix(null) + "cannot have a null replace-attribute");
-		}		
-		log.info(getLogPrefix(null)+ "finds ["+getFind()+"] replaces with ["+getReplace()+"]");
-		if (!StringUtils.isEmpty(getLineSeparatorSymbol())) {
-			find=replace(find,lineSeparatorSymbol,System.getProperty("line.separator"));
-			replace=replace(replace,lineSeparatorSymbol,System.getProperty("line.separator"));
+//		if (StringUtils.isEmpty(getFind())) {
+//			throw new ConfigurationException(getLogPrefix(null) + "cannot have empty find-attribute");
+//		}
+		if (StringUtils.isNotEmpty(getFind())) {
+			if (getReplace() == null) {
+				throw new ConfigurationException(getLogPrefix(null) + "cannot have a null replace-attribute");
+			}		
+			log.info(getLogPrefix(null)+ "finds ["+getFind()+"] replaces with ["+getReplace()+"]");
+			if (!StringUtils.isEmpty(getLineSeparatorSymbol())) {
+				find=replace(find,lineSeparatorSymbol,System.getProperty("line.separator"));
+				replace=replace(replace,lineSeparatorSymbol,System.getProperty("line.separator"));
+			}
 		}
 		if (isReplaceNonXmlChars()) {
 			if (getReplaceNonXmlChar()!=null) {
@@ -111,7 +113,9 @@ public class ReplacerPipe extends FixedForwardPipe {
 	public PipeRunResult doPipe(Object input, PipeLineSession session)
 		throws PipeRunException {
 		String string = new Variant(input).asString();
-		string = replace(string,getFind(),getReplace());
+		if (StringUtils.isNotEmpty(getFind())) {
+			string = replace(string,getFind(),getReplace());
+		}
 		if (isReplaceNonXmlChars()) {
 			if (StringUtils.isEmpty(getReplaceNonXmlChar())) {
 				string = XmlUtils.stripNonValidXmlCharacters(string);
