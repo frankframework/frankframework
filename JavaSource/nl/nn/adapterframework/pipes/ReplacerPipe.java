@@ -1,6 +1,9 @@
 /*
  * $Log: ReplacerPipe.java,v $
- * Revision 1.3  2004-08-24 06:48:50  a1909356#db2admin
+ * Revision 1.4  2009-07-10 14:03:14  m168309
+ * added replaceNonXmlChars and replaceNonXmlChar attributes
+ *
+ * Revision 1.3  2004/08/24 06:48:50  unknown <unknown@ibissource.org>
  * Remove warnings
  *
  * Revision 1.2  2004/08/24 06:47:53  unknown <unknown@ibissource.org>
@@ -19,6 +22,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.util.Variant;
+import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Replaces all occurrences of one string with another.
@@ -30,6 +34,8 @@ import nl.nn.adapterframework.util.Variant;
  * <tr><td>{@link #setFind(String) find}</td><td>string to search for</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setReplace(String) replace}</td><td>string that will replace each of the strings found</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setLineSeparatorSymbol(String) lineSeparatorSymbol}</td><td>Sets the string the representation in find and replace of the line separator</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setReplaceNonXmlChars(boolean) replaceNonXmlChars}</td><td>Replace all non XML chars (not in the <a href="http://www.w3.org/TR/2006/REC-xml-20060816/#NT-Char">character range as specified by the XML specification</a>) with {@link #setReplaceNonValidXmlChar(String) replaceNonXmlChar}</td><td>true</td></tr>
+ * <tr><td>{@link #setReplaceNonXmlChar(String) replaceNonXmlChar}</td><td>character that will replace each non valid XML character</td><td>0x00BF</td></tr>
  * <tr><td>{@link #setMaxThreads(int) maxThreads}</td><td>maximum number of threads that may call {@link #doPipe(Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously</td><td>0 (unlimited)</td></tr>
  * <tr><td>{@link #setForwardName(String) forwardName}</td>  <td>name of forward returned upon completion</td><td>"success"</td></tr>
  * </table>
@@ -46,11 +52,14 @@ import nl.nn.adapterframework.util.Variant;
  * @since 4.2
  */
 public class ReplacerPipe extends FixedForwardPipe {
-	public static final String version="$Id: ReplacerPipe.java,v 1.3 2004-08-24 06:48:50 a1909356#db2admin Exp $";
+	public static final String version="$Id: ReplacerPipe.java,v 1.4 2009-07-10 14:03:14 m168309 Exp $";
 
 	private String find;
 	private String replace;
 	private String lineSeparatorSymbol=null;
+	private boolean replaceNonXmlChars=false;
+	private String replaceNonXmlString=null;
+	private char replaceNonXmlChar=0x00BF;
 	
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -60,10 +69,21 @@ public class ReplacerPipe extends FixedForwardPipe {
 		if (getReplace() == null) {
 			throw new ConfigurationException(getLogPrefix(null) + "cannot have a null replace-attribute");
 		}		
-		log.info(getLogPrefix(null)+ "finds ["+getFind()+"] relaces with ["+getReplace()+"]");
+		log.info(getLogPrefix(null)+ "finds ["+getFind()+"] replaces with ["+getReplace()+"]");
 		if (!StringUtils.isEmpty(getLineSeparatorSymbol())) {
 			find=replace(find,lineSeparatorSymbol,System.getProperty("line.separator"));
 			replace=replace(replace,lineSeparatorSymbol,System.getProperty("line.separator"));
+		}
+		if (isReplaceNonXmlChars()) {
+			if (getReplaceNonXmlChar()!=null) {
+				if (getReplaceNonXmlChar().length()>1) {
+					throw new ConfigurationException(getLogPrefix(null) + "replaceNonXmlChar ["+getReplaceNonXmlChar()+"] has to be one character");
+				} else {
+					if (getReplaceNonXmlChar().length()==1) {
+						replaceNonXmlChar = getReplaceNonXmlChar().charAt(0);
+					}
+				}
+			}
 		}
 	}
 
@@ -88,11 +108,18 @@ public class ReplacerPipe extends FixedForwardPipe {
 		return buffer.toString();
 	}
 
-
 	public PipeRunResult doPipe(Object input, PipeLineSession session)
 		throws PipeRunException {
-
-		return new PipeRunResult(getForward(),replace(new Variant(input).asString(),getFind(),getReplace()));
+		String string = new Variant(input).asString();
+		string = replace(string,getFind(),getReplace());
+		if (isReplaceNonXmlChars()) {
+			if (StringUtils.isEmpty(getReplaceNonXmlChar())) {
+				string = XmlUtils.stripNonValidXmlCharacters(string);
+			} else {
+				string = XmlUtils.replaceNonValidXmlCharacters(string,replaceNonXmlChar);
+			}
+		}
+		return new PipeRunResult(getForward(),string);
 	}
 	
 	/**
@@ -125,5 +152,19 @@ public class ReplacerPipe extends FixedForwardPipe {
 		lineSeparatorSymbol = string;
 	}
 
+	public void setReplaceNonXmlChars(boolean b) {
+		replaceNonXmlChars = b;
+	}
+
+	public boolean isReplaceNonXmlChars() {
+		return replaceNonXmlChars;
+	}
+
+	public void setReplaceNonXmlChar(String replaceNonXmlString) {
+		this.replaceNonXmlString = replaceNonXmlString;
+	}
+	public String getReplaceNonXmlChar() {
+		return replaceNonXmlString;
+	}
 }
 
