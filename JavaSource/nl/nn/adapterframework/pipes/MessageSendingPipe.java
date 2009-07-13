@@ -1,6 +1,9 @@
 /*
  * $Log: MessageSendingPipe.java,v $
- * Revision 1.54  2009-07-13 10:08:53  m168309
+ * Revision 1.55  2009-07-13 11:49:02  m168309
+ * added attribute correlationIDSessionKey
+ *
+ * Revision 1.54  2009/07/13 10:08:53  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted javadoc
  *
  * Revision 1.53  2009/06/05 07:24:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -236,6 +239,7 @@ import org.apache.commons.lang.SystemUtils;
  * <tr><td>{@link #setLinkMethod(String) linkMethod}</td><td>Indicates wether the server uses the correlationID or the messageID in the correlationID field of the reply. This requirers the sender to have set the correlationID at the time of sending.</td><td>CORRELATIONID</td></tr>
  * <tr><td>{@link #setAuditTrailXPath(String) auditTrailXPath}</td><td>xpath expression to extract audit trail from message</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setCorrelationIDXPath(String) correlationIDXPath}</td><td>xpath expression to extract correlationID from message</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setCorrelationIDSessionKey(String) correlationIDSessionKey}</td><td>Key of a PipeLineSession-variable. Is specified, the value of the PipeLineSession variable is used as input for the XpathExpression, instead of the current input message</td><td>&nbsp;</td></tr>
  * <tr><td><code>sender.*</td><td>any attribute of the sender instantiated by descendant classes</td><td>&nbsp;</td></tr>
  * </table>
  * <table border="1">
@@ -267,7 +271,7 @@ import org.apache.commons.lang.SystemUtils;
  */
 
 public class MessageSendingPipe extends FixedForwardPipe implements HasSender, HasStatistics, EventThrowing {
-	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.54 $ $Date: 2009-07-13 10:08:53 $";
+	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.55 $ $Date: 2009-07-13 11:49:02 $";
 
 	public static final String PIPE_TIMEOUT_MONITOR_EVENT = "Sender Timeout";
 	public static final String PIPE_CLEAR_TIMEOUT_MONITOR_EVENT = "Sender Received Result on Time";
@@ -295,6 +299,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	private String returnString;
 	private TransformerPool auditTrailTp=null;
 	private TransformerPool correlationIDTp=null;
+	private String correlationIDSessionKey = null;
      
 	private IPipe inputValidator=null;
 	private IPipe outputValidator=null;
@@ -521,7 +526,12 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 						storedMessageID="-";
 					}
 					if (correlationIDTp!=null) {
-						correlationID=correlationIDTp.transform((String)input,null);
+						if (StringUtils.isNotEmpty(getCorrelationIDSessionKey())) {
+							String sourceString = (String)(session.get(getCorrelationIDSessionKey()));
+							correlationID=correlationIDTp.transform(sourceString,null);
+						} else {
+							correlationID=correlationIDTp.transform((String)input,null);
+						}
 						if (StringUtils.isEmpty(correlationID)) {
 							correlationID="-";
 						}
@@ -839,4 +849,11 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 		return outputValidator;
 	}
 
+	public void setCorrelationIDSessionKey(String string) {
+		correlationIDSessionKey = string;
+	}
+
+	public String getCorrelationIDSessionKey() {
+		return correlationIDSessionKey;
+	}
 }
