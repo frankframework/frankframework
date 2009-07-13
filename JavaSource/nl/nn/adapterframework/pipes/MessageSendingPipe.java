@@ -1,6 +1,9 @@
 /*
  * $Log: MessageSendingPipe.java,v $
- * Revision 1.53  2009-06-05 07:24:55  L190409
+ * Revision 1.54  2009-07-13 10:08:53  m168309
+ * adjusted javadoc
+ *
+ * Revision 1.53  2009/06/05 07:24:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added throws clause to iterateOverStatistics()
  *
  * Revision 1.52  2009/05/06 11:41:08  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -232,7 +235,7 @@ import org.apache.commons.lang.SystemUtils;
  * <tr><td>{@link #setResultOnTimeOut(String) resultOnTimeOut}</td><td>result returned when no return-message was received within the timeout limit</td><td>"receiver timed out"</td></tr>
  * <tr><td>{@link #setLinkMethod(String) linkMethod}</td><td>Indicates wether the server uses the correlationID or the messageID in the correlationID field of the reply. This requirers the sender to have set the correlationID at the time of sending.</td><td>CORRELATIONID</td></tr>
  * <tr><td>{@link #setAuditTrailXPath(String) auditTrailXPath}</td><td>xpath expression to extract audit trail from message</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setCorrelationIDXPath(String) correationIdXPath}</td><td>xpath expression to extract correlationID from message</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setCorrelationIDXPath(String) correlationIDXPath}</td><td>xpath expression to extract correlationID from message</td><td>&nbsp;</td></tr>
  * <tr><td><code>sender.*</td><td>any attribute of the sender instantiated by descendant classes</td><td>&nbsp;</td></tr>
  * </table>
  * <table border="1">
@@ -264,7 +267,7 @@ import org.apache.commons.lang.SystemUtils;
  */
 
 public class MessageSendingPipe extends FixedForwardPipe implements HasSender, HasStatistics, EventThrowing {
-	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.53 $ $Date: 2009-06-05 07:24:55 $";
+	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.54 $ $Date: 2009-07-13 10:08:53 $";
 
 	public static final String PIPE_TIMEOUT_MONITOR_EVENT = "Sender Timeout";
 	public static final String PIPE_CLEAR_TIMEOUT_MONITOR_EVENT = "Sender Received Result on Time";

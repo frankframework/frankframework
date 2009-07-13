@@ -1,6 +1,9 @@
 /*
  * $Log: GenericMessageSendingPipe.java,v $
- * Revision 1.9  2008-05-14 09:56:21  europe\L190409
+ * Revision 1.10  2009-07-13 10:08:09  m168309
+ * adjusted javadoc
+ *
+ * Revision 1.9  2008/05/14 09:56:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved error message for non-sender senders
  *
  * Revision 1.8  2008/02/26 09:18:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -76,7 +79,7 @@ import nl.nn.adapterframework.util.ClassUtils;
  * <tr><td>{@link #setResultOnTimeOut(String) resultOnTimeOut}</td><td>result returned when no return-message was received within the timeout limit</td><td>"receiver timed out"</td></tr>
  * <tr><td>{@link #setLinkMethod(String) linkMethod}</td><td>Indicates wether the server uses the correlationID or the messageID in the correlationID field of the reply</td><td>CORRELATIONID</td></tr>
  * <tr><td>{@link #setAuditTrailXPath(String) auditTrailXPath}</td><td>xpath expression to extract audit trail from message</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setCorrelationIDXPath(String) correationIdXPath}</td><td>xpath expression to extract correlationID from message</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setCorrelationIDXPath(String) correlationIDXPath}</td><td>xpath expression to extract correlationID from message</td><td>&nbsp;</td></tr>
  * </table>
  * <table border="1">
  * <tr><th>nested elements</th><th>description</th></tr>
@@ -104,7 +107,7 @@ import nl.nn.adapterframework.util.ClassUtils;
  */
 
 public class GenericMessageSendingPipe extends MessageSendingPipe {
-	public static final String version="$RCSfile: GenericMessageSendingPipe.java,v $ $Revision: 1.9 $ $Date: 2008-05-14 09:56:21 $";
+	public static final String version="$RCSfile: GenericMessageSendingPipe.java,v $ $Revision: 1.10 $ $Date: 2009-07-13 10:08:09 $";
 
 	public void setListener(ICorrelatedPullingListener listener) {
 		super.setListener(listener);

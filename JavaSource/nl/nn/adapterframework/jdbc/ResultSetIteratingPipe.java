@@ -1,6 +1,9 @@
 /*
  * $Log: ResultSetIteratingPipe.java,v $
- * Revision 1.5  2009-03-26 14:47:36  m168309
+ * Revision 1.6  2009-07-13 10:07:29  m168309
+ * adjusted javadoc
+ *
+ * Revision 1.5  2009/03/26 14:47:36  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added LOCKROWS_SUFFIX
  *
  * Revision 1.4  2009/02/25 10:43:05  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -64,7 +67,7 @@ import nl.nn.adapterframework.core.SenderException;
  * <tr><td>{@link #setResultOnTimeOut(String) resultOnTimeOut}</td><td>result returned when no return-message was received within the timeout limit</td><td>"receiver timed out"</td></tr>
  * <tr><td>{@link #setLinkMethod(String) linkMethod}</td><td>Indicates wether the server uses the correlationID or the messageID in the correlationID field of the reply</td><td>CORRELATIONID</td></tr>
  * <tr><td>{@link #setAuditTrailXPath(String) auditTrailXPath}</td><td>xpath expression to extract audit trail from message</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setCorrelationIDXPath(String) correationIdXPath}</td><td>xpath expression to extract correlationID from message</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setCorrelationIDXPath(String) correlationIDXPath}</td><td>xpath expression to extract correlationID from message</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setStopConditionXPathExpression(String) stopConditionXPathExpression}</td><td>expression evaluated on each result if set. 
  * 		Iteration stops if condition returns anything other than <code>false</code> or an empty result.
  * For example, to stop after the second child element has been processed, one of the following expressions could be used:
