@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcQuerySenderBase.java,v $
- * Revision 1.38  2009-04-01 08:23:44  m168309
+ * Revision 1.39  2009-07-17 12:39:00  m168309
+ * added attribute useNamedParams
+ *
+ * Revision 1.38  2009/04/01 08:23:44  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added timeout attribute
  *
  * Revision 1.37  2009/03/03 14:38:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -144,6 +147,8 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.DB2XMLWriter;
 import nl.nn.adapterframework.util.JdbcUtil;
@@ -204,6 +209,7 @@ import sun.misc.BASE64Encoder;
  * <tr><td>{@link #setColumnsReturned(String) columnsReturned}</td><td>comma separated list of columns whose values are to be returned. Works only if the driver implements JDBC 3.0 getGeneratedKeys()</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setBlobSmartGet(boolean) blobSmartGet}</td><td>controls automatically whether blobdata is stored compressed and/or serialized in the database</td><td>false</td></tr>
  * <tr><td>{@link #setTimeout(int) timeout}</td><td>the number of seconds the driver will wait for a Statement object to execute. If the limit is exceeded, a TimeOutException is thrown. 0 means no timeout</td><td>0</td></tr>
+ * <tr><td>{@link #setUseNamedParams(boolean) useNamedParams}</td><td>when <code>true</code>, every string in the query which equals "?{<code>paramName</code>}" will be replaced by the setter method for the corresponding parameter (the parameters don't need to be in the correct order and unused parameters are skipped)</td><td>false</td></tr>
  * </table>
  * </p>
  * <table border="1">
@@ -229,7 +235,10 @@ import sun.misc.BASE64Encoder;
  * @since 	4.1
  */
 public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
-	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.38 $ $Date: 2009-04-01 08:23:44 $";
+	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.39 $ $Date: 2009-07-17 12:39:00 $";
+
+	private final static String UNP_START = "?{";
+	private final static String UNP_END = "}";
 
 	private String queryType = "other";
 	private int maxRows=-1; // return all rows
@@ -250,6 +259,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 	private boolean blobsCompressed=true;
 	private boolean blobSmartGet=false;
 	private int timeout=0;
+	private boolean useNamedParams=false;
 
 	private String packageContent = "db2";
 	
@@ -303,6 +313,9 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 
 	protected String sendMessage(Connection connection, String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		PreparedStatement statement=null;
+		if (isUseNamedParams()) {
+			message = adjustParamList(paramList, message);
+		}
 		try {
 			statement = getStatement(connection, correlationID, message);
 			statement.setQueryTimeout(getTimeout());
@@ -375,6 +388,51 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 				log.warn(new SenderException(getLogPrefix() + "got exception closing SQL statement",e ));
 			}
 		}
+	}
+
+	private String adjustParamList(ParameterList paramList, String message) throws SenderException {
+		StringBuffer buffer = new StringBuffer();
+		int startPos = message.indexOf(UNP_START);
+		if (startPos == -1)
+			return message;
+		char[] messageChars = message.toCharArray();
+		int copyFrom = 0;
+		ParameterList oldParamList = new ParameterList();
+		oldParamList = (ParameterList) paramList.clone();
+		paramList.clear();
+		while (startPos != -1) {
+			buffer.append(messageChars, copyFrom, startPos - copyFrom);
+			int nextStartPos =
+				message.indexOf(
+					UNP_START,
+					startPos + UNP_START.length());
+			if (nextStartPos == -1) {
+				nextStartPos = message.length();
+			}
+			int endPos =
+				message.indexOf(UNP_END, startPos + UNP_START.length());
+
+			if (endPos == -1 || endPos > nextStartPos) {
+				log.warn(getLogPrefix() + "Found a start delimiter without an end delimiter at position ["	+ startPos + "] in ["+ message+ "]");
+				buffer.append(messageChars, startPos, nextStartPos - startPos);
+				copyFrom = nextStartPos;
+			} else {
+				String namedParam = message.substring(startPos + UNP_START.length(),endPos);
+				Parameter param = oldParamList.findParameter(namedParam);
+				if (param!=null) {
+					paramList.add(param);
+					buffer.append("?");
+					copyFrom = endPos + UNP_END.length();
+				} else {
+					buffer.append(messageChars, startPos, nextStartPos - startPos);
+					copyFrom = nextStartPos;
+				}
+			}
+			startPos = message.indexOf(UNP_START, copyFrom);
+		}
+		buffer.append(messageChars, copyFrom, messageChars.length - copyFrom);
+
+		return buffer.toString();
 	}
 
 	protected String getResult(ResultSet resultset) throws JdbcException, SQLException, IOException {
@@ -935,5 +993,13 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 
 	public void setTimeout(int i) {
 		timeout = i;
+	}
+
+	public void setUseNamedParams(boolean b) {
+		useNamedParams = b;
+	}
+
+	public boolean isUseNamedParams() {
+		return useNamedParams;
 	}
 }
