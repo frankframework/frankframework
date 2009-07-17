@@ -1,6 +1,9 @@
 /*
  * $Log: FixedQuerySender.java,v $
- * Revision 1.19  2009-03-26 14:47:36  m168309
+ * Revision 1.20  2009-07-17 12:48:12  m168309
+ * updated javadoc
+ *
+ * Revision 1.19  2009/03/26 14:47:36  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added LOCKROWS_SUFFIX
  *
  * Revision 1.18  2009/02/25 10:43:05  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -98,6 +101,8 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
  * <tr><td>{@link #setBlobCharset(String) blobCharset}</td><td>charset used to read and write BLOBs</td><td>UTF-8</td></tr>
  * <tr><td>{@link #setBlobsCompressed(boolean) blobsCompressed}</td><td>controls whether blobdata is stored compressed in the database</td><td>true</td></tr>
  * <tr><td>{@link #setColumnsReturned(String) columnsReturned}</td><td>comma separated list of columns whose values are to be returned. Works only if the driver implements JDBC 3.0 getGeneratedKeys()</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setBlobSmartGet(boolean) blobSmartGet}</td><td>controls automatically whether blobdata is stored compressed and/or serialized in the database</td><td>false</td></tr>
+ * <tr><td>{@link #setTimeout(int) timeout}</td><td>the number of seconds the driver will wait for a Statement object to execute. If the limit is exceeded, a TimeOutException is thrown. 0 means no timeout</td><td>0</td></tr>
  * </table>
  * </p>
  * <table border="1">
@@ -112,7 +117,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
  * @since 	4.1
  */
 public class FixedQuerySender extends JdbcQuerySenderBase {
-	public static final String version = "$RCSfile: FixedQuerySender.java,v $ $Revision: 1.19 $ $Date: 2009-03-26 14:47:36 $";
+	public static final String version = "$RCSfile: FixedQuerySender.java,v $ $Revision: 1.20 $ $Date: 2009-07-17 12:48:12 $";
 
 	private String query=null;
 	private boolean lockRows=false;
