@@ -1,6 +1,9 @@
 /*
  * $Log: DirectQuerySender.java,v $
- * Revision 1.13  2009-03-26 14:47:36  m168309
+ * Revision 1.14  2009-07-17 09:56:24  m168309
+ * updated javadoc
+ *
+ * Revision 1.13  2009/03/26 14:47:36  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added LOCKROWS_SUFFIX
  *
  * Revision 1.12  2009/02/25 10:43:05  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -46,7 +49,7 @@ import java.sql.SQLException;
 
 
 /**
- * QuerySender that interprets the input message as a query.
+ * QuerySender that interprets the input message as a query, possibly with attributes.
  * Messages are expected to contain sql-text.
  *
  * <p><b>Configuration:</b>
@@ -91,7 +94,7 @@ import java.sql.SQLException;
  * @since 	4.1
  */
 public class DirectQuerySender extends JdbcQuerySenderBase {
-	public static final String version="$RCSfile: DirectQuerySender.java,v $ $Revision: 1.13 $ $Date: 2009-03-26 14:47:36 $";
+	public static final String version="$RCSfile: DirectQuerySender.java,v $ $Revision: 1.14 $ $Date: 2009-07-17 09:56:24 $";
 
 	private boolean lockRows=false;
 
