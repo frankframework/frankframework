@@ -1,6 +1,9 @@
 /*
  * $Log: PushingJmsListener.java,v $
- * Revision 1.16  2008-09-01 15:13:33  europe\L190409
+ * Revision 1.17  2009-07-28 12:44:24  L190409
+ * enable SOAP over JMS
+ *
+ * Revision 1.16  2008/09/01 15:13:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * made common baseclass for pushing and pulling jms listeners
  *
  * Revision 1.15  2008/08/27 16:15:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -183,7 +186,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class PushingJmsListener extends JmsListenerBase implements IPortConnectedListener, IThreadCountControllable, IKnowsDeliveryCount {
-    public static final String version="$RCSfile: PushingJmsListener.java,v $ $Revision: 1.16 $ $Date: 2008-09-01 15:13:33 $";
+    public static final String version="$RCSfile: PushingJmsListener.java,v $ $Revision: 1.17 $ $Date: 2009-07-28 12:44:24 $";
 
 	private String listenerPort;
 	private String cacheMode; 
@@ -260,7 +263,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 						}
 					}
 				}
-				send(session, replyTo, cid, plr.getResult(), getReplyMessageType(), timeToLive, stringToDeliveryMode(getReplyDeliveryMode()), getReplyPriority()); 
+				send(session, replyTo, cid, prepareReply(plr.getResult(),threadContext), getReplyMessageType(), timeToLive, stringToDeliveryMode(getReplyDeliveryMode()), getReplyPriority()); 
 			} else {
 				if (getSender()==null) {
 					log.info("["+getName()+"] has no sender, not sending the result.");

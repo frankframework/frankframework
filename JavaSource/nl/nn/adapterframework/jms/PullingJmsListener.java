@@ -1,6 +1,9 @@
 /*
  * $Log: PullingJmsListener.java,v $
- * Revision 1.5  2008-09-01 15:13:33  europe\L190409
+ * Revision 1.6  2009-07-28 12:44:24  L190409
+ * enable SOAP over JMS
+ *
+ * Revision 1.5  2008/09/01 15:13:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * made common baseclass for pushing and pulling jms listeners
  *
  * Revision 1.4  2008/02/28 16:23:18  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -181,7 +184,7 @@ import org.apache.commons.lang.StringUtils;
  * @since 4.0.1
  */
 public class PullingJmsListener extends JmsListenerBase implements IPostboxListener, ICorrelatedPullingListener, HasSender, RunStateEnquiring {
-	public static final String version="$RCSfile: PullingJmsListener.java,v $ $Revision: 1.5 $ $Date: 2008-09-01 15:13:33 $";
+	public static final String version="$RCSfile: PullingJmsListener.java,v $ $Revision: 1.6 $ $Date: 2009-07-28 12:44:24 $";
 
 	private final static String THREAD_CONTEXT_SESSION_KEY="session";
 	private final static String THREAD_CONTEXT_MESSAGECONSUMER_KEY="messageConsumer";
@@ -301,7 +304,7 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 				if (session==null) { 
 					try {
 						session=getSession(threadContext);
-						send(session, replyTo, cid, plr.getResult(), getReplyMessageType(), timeToLive, stringToDeliveryMode(getReplyDeliveryMode()), getReplyPriority());
+						send(session, replyTo, cid, prepareReply(plr.getResult(),threadContext), getReplyMessageType(), timeToLive, stringToDeliveryMode(getReplyDeliveryMode()), getReplyPriority());
 					} finally {
 						releaseSession(session);					 
 					}

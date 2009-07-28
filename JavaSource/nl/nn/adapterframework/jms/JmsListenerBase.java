@@ -1,6 +1,9 @@
 /*
  * $Log: JmsListenerBase.java,v $
- * Revision 1.2  2008-09-17 09:49:32  europe\L190409
+ * Revision 1.3  2009-07-28 12:44:24  L190409
+ * enable SOAP over JMS
+ *
+ * Revision 1.2  2008/09/17 09:49:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * implement interface HasSender
  *
  * Revision 1.1  2008/09/01 15:13:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -17,16 +20,49 @@ import javax.jms.JMSException;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
+import org.apache.commons.lang.StringUtils;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasSender;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.soap.SoapWrapper;
 import nl.nn.adapterframework.util.DateUtils;
 
 /**
  * Common baseclass for Pulling and Pushing JMS Listeners.
+ *
+ * <p><b>Configuration:</b>
+ * <table border="1">
+ * <tr><th>attributes</th><th>description</th><th>default</th></tr>
+ * <tr><td>className</td><td>nl.nn.adapterframework.jms.JmsListener</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setName(String) name}</td>  <td>name of the listener</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setDestinationName(String) destinationName}</td><td>name of the JMS destination (queue or topic) to use</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setDestinationType(String) destinationType}</td><td>either <code>QUEUE</code> or <code>TOPIC</code></td><td><code>QUEUE</code></td></tr>
+ * <tr><td>{@link #setQueueConnectionFactoryName(String) queueConnectionFactoryName}</td><td>jndi-name of the queueConnectionFactory, used when <code>destinationType<code>=</code>QUEUE</code></td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setTopicConnectionFactoryName(String) topicConnectionFactoryName}</td><td>jndi-name of the topicConnectionFactory, used when <code>destinationType<code>=</code>TOPIC</code></td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setMessageSelector(String) messageSelector}</td><td>When set, the value of this attribute is used as a selector to filter messages.</td><td>0 (unlimited)</td></tr>
+ * <tr><td>{@link #setJmsTransacted(boolean) jmsTransacted}</td><td><i>Deprecated</i> when true, sessions are explicitly committed (exit-state equals commitOnState) or rolled-back (other exit-states). Please do not use this mechanism, but control transactions using <code>transactionAttribute</code>s.</td><td>false</td></tr>
+ * <tr><td>{@link #setCommitOnState(String) commitOnState}</td><td><i>Deprecated</i> exit state to control commit or rollback of jmsSession. Only used if <code>jmsTransacted</code> is set true.</td><td>"success"</td></tr>
+ * <tr><td>{@link #setAcknowledgeMode(String) acknowledgeMode}</td><td>"auto", "dups" or "client"</td><td>"auto"</td></tr>
+ * <tr><td>{@link #setPersistent(boolean) persistent}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setTimeOut(long) timeOut}</td><td>receiver timeout, in milliseconds</td><td>3000 [ms]</td></tr>
+ * <tr><td>{@link #setUseReplyTo(boolean) useReplyTo}</td><td>&nbsp;</td><td>true</td></tr>
+ * <tr><td>{@link #setReplyMessageTimeToLive(long) replyMessageTimeToLive}</td><td>time that replymessage will live</td><td>0 [ms]</td></tr>
+ * <tr><td>{@link #setReplyMessageType(String) replyMessageType}</td><td>value of the JMSType field of the reply message</td><td>not set by application</td></tr>
+ * <tr><td>{@link #setReplyDeliveryMode(String) replyDeliveryMode}</td><td>controls mode that reply messages are sent with: either 'persistent' or 'non_persistent'</td><td>not set by application</td></tr>
+ * <tr><td>{@link #setReplyPriority(int) replyPriority}</td><td>sets the priority that is used to deliver the reply message. ranges from 0 to 9. Defaults to -1, meaning not set. Effectively the default priority is set by Jms to 4</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setForceMQCompliancy(String) forceMQCompliancy}</td><td>Possible values: 'MQ' or 'JMS'. Setting to 'MQ' informs the MQ-server that the replyto queue is not JMS compliant.</td><td>JMS</td></tr>
+ * <tr><td>{@link #setForceMessageIdAsCorrelationId(boolean) forceMessageIdAsCorrelationId}</td><td>
+ * forces that the CorrelationId that is received is ignored and replaced by the messageId that is received. Use this to create a new, globally unique correlationId to be used downstream. It also
+ * forces that not the Correlation ID of the received message is used in a reply as CorrelationId, but the MessageId.</td><td>false</td></tr>
+ * <tr><td>{@link #setSoap(boolean) soap}</td><td>when <code>true</code>, messages sent are put in a SOAP envelope</td><td><code>false</code></td></tr>
+ * <tr><td>{@link #setSoapAction(String) soapAction}</td><td>SoapAction string sent as messageproperty</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setSoapHeaderParam(String) soapHeaderParam}</td><td>name of parameter containing SOAP header</td><td>soapHeader</td></tr>
+ * </table>
  * 
  * @author  Gerrit van Brakel
  * @since   4.9
@@ -46,10 +82,20 @@ public class JmsListenerBase extends JMSFacade implements HasSender {
  
 	private String commitOnState="success";
 
+	private boolean soap=false;
+	private String replyEncodingStyleURI=null;
+	private String replyNamespaceURI=null;
+	private String replySoapAction=null;
+	private String soapHeaderSessionKey="soapHeader";
+	
+	private SoapWrapper soapWrapper=null;
 
 
 	public void configure() throws ConfigurationException {
 		super.configure();
+		if (isSoap()) {
+			soapWrapper=SoapWrapper.getInstance();
+		}
 		ISender sender = getSender();
 		if (sender != null) {
 			sender.configure();
@@ -195,14 +241,37 @@ public class JmsListenerBase extends JMSFacade implements HasSender {
 			log.error("message received by listener on ["+ getDestinationName()+ "] was not of type TextMessage, but ["+rawMessage.getClass().getName()+"]", e);
 			return null;
 		}
+		String rawMessageText;
 		try {
-			return message.getText();
-		} catch (JMSException e) {
+			rawMessageText= message.getText();
+			if (!isSoap()) {
+				return rawMessageText;
+			}
+			String messageText=soapWrapper.getBody(rawMessageText);
+			if (StringUtils.isNotEmpty(getSoapHeaderSessionKey())) {
+				String soapHeader=soapWrapper.getHeader(rawMessageText);
+				threadContext.put(getSoapHeaderSessionKey(),soapHeader);
+			}
+			
+			return messageText;
+		} catch (Exception e) {
 			throw new ListenerException(e);
 		}
 	}
 
 
+	public String prepareReply(String rawReply, Map threadContext) {
+		if (!isSoap()) {
+			return rawReply;
+		}
+		String replyMessage;
+		String soapHeader=null;
+		if (StringUtils.isNotEmpty(getSoapHeaderSessionKey())) {
+			soapHeader=(String)threadContext.get(getSoapHeaderSessionKey());
+		}
+		replyMessage = soapWrapper.putInEnvelope(rawReply, getReplyEncodingStyleURI(),getReplyNamespaceURI(),soapHeader);
+		return replyMessage;
+	}
 
 	public void setSender(ISender newSender) {
 		sender = newSender;
@@ -284,6 +353,41 @@ public class JmsListenerBase extends JMSFacade implements HasSender {
 	}
 	public long getReplyMessageTimeToLive() {
 		return replyMessageTimeToLive;
+	}
+
+	public void setSoap(boolean b) {
+		soap = b;
+	}
+	public boolean isSoap() {
+		return soap;
+	}
+
+	public void setReplyEncodingStyleURI(String string) {
+		replyEncodingStyleURI = string;
+	}
+	public String getReplyEncodingStyleURI() {
+		return replyEncodingStyleURI;
+	}
+
+	public void setReplyNamespaceURI(String string) {
+		replyNamespaceURI = string;
+	}
+	public String getReplyNamespaceURI() {
+		return replyNamespaceURI;
+	}
+
+	public void setReplySoapAction(String string) {
+		replySoapAction = string;
+	}
+	public String getReplySoapAction() {
+		return replySoapAction;
+	}
+
+	public void setSoapHeaderSessionKey(String string) {
+		soapHeaderSessionKey = string;
+	}
+	public String getSoapHeaderSessionKey() {
+		return soapHeaderSessionKey;
 	}
 
 }
