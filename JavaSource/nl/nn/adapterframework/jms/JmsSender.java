@@ -1,6 +1,9 @@
 /*
  * $Log: JmsSender.java,v $
- * Revision 1.28  2008-09-01 12:58:17  europe\L190409
+ * Revision 1.29  2009-07-28 12:42:33  L190409
+ * avoid NPE evaluating soapHeaderParam
+ *
+ * Revision 1.28  2008/09/01 12:58:17  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * modified logging
  *
  * Revision 1.27  2008/08/07 11:36:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -140,7 +143,7 @@ import javax.jms.Message;
  */
 
 public class JmsSender extends JMSFacade implements ISenderWithParameters, IPostboxSender {
-	public static final String version="$RCSfile: JmsSender.java,v $ $Revision: 1.28 $ $Date: 2008-09-01 12:58:17 $";
+	public static final String version="$RCSfile: JmsSender.java,v $ $Revision: 1.29 $ $Date: 2009-07-28 12:42:33 $";
 	private String replyToName = null;
 	private int deliveryMode = 0;
 	private String messageType = null;
@@ -229,7 +232,12 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 		if (isSoap()) {
 			String soapHeader=null;
 			if (pvl!=null && StringUtils.isNotEmpty(getSoapHeaderParam())) {
-				soapHeader=pvl.getParameterValue(getSoapHeaderParam()).asStringValue("");
+				ParameterValue soapHeaderParamValue=pvl.getParameterValue(getSoapHeaderParam());
+				if (soapHeaderParamValue==null) {
+					log.warn("no SoapHeader found using parameter ["+getSoapHeaderParam()+"]");
+				} else {
+					soapHeader=soapHeaderParamValue.asStringValue("");
+				}
 			}
 			message = soapWrapper.putInEnvelope(message, getEncodingStyleURI(),getServiceNamespaceURI(),soapHeader);
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"correlationId ["+correlationID+"] soap message ["+message+"]");
