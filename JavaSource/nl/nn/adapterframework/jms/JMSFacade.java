@@ -1,6 +1,9 @@
 /*
  * $Log: JMSFacade.java,v $
- * Revision 1.35  2008-07-24 12:20:00  europe\L190409
+ * Revision 1.36  2009-07-28 12:37:36  L190409
+ * updated javadoc
+ *
+ * Revision 1.35  2008/07/24 12:20:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added support for authenticated JMS
  *
  * Revision 1.34  2008/05/15 14:55:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -142,6 +145,10 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setMessageTimeToLive(long) messageTimeToLive}</td><td>the time it takes for the message to expire. If the message is not consumed before, it will be lost. Make sure to set it to a positive value for request/repy type of messages.</td><td>0 (unlimited)</td></tr>
  * <tr><td>{@link #setPersistent(boolean) persistent}</td><td>rather useless attribute, and not the same as <code>deliveryMode</code>. You probably want to use that.</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setAcknowledgeMode(String) acknowledgeMode}</td><td>&nbsp;</td><td>AUTO_ACKNOWLEDGE</td></tr>
+ * <tr><td>{@link #setForceMQCompliancy(String) forceMQCompliancy}</td><td>If the MQ destination is not a JMS receiver, format errors occur.
+	 To prevent this, settting <code>forceMQCompliancy</code> to MQ will inform
+	 MQ that the replyto queue is not JMS compliant. Setting <code>forceMQCompliancy</code>
+	 to "JMS" will cause that on mq the destination is identified as jms-compliant.</td><td>JMS</td></tr>
  * <tr><td>{@link #setTransacted(boolean) transacted}</td><td>&nbsp;</td><td>false</td></tr>
  * <tr><td>{@link #setAuthAlias(String) authAlias}</td><td>alias used to obtain credentials for authentication to JMS server</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
@@ -152,7 +159,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version="$RCSfile: JMSFacade.java,v $ $Revision: 1.35 $ $Date: 2008-07-24 12:20:00 $";
+	public static final String version="$RCSfile: JMSFacade.java,v $ $Revision: 1.36 $ $Date: 2009-07-28 12:37:36 $";
 
 	public static final String MODE_PERSISTENT="PERSISTENT";
 	public static final String MODE_NON_PERSISTENT="NON_PERSISTENT";
@@ -394,9 +401,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 			    ((MQQueue)queue).setTargetClient(JMSC.MQJMS_CLIENT_JMS_COMPLIANT);
 			    log.debug("MQ Compliancy for queue ["+queue.toString()+"] set to JMS");
 	    	}
-	    	
 	    }
- 
     }
 
 	public Destination getDestination() throws NamingException, JMSException, JmsException, IbisException  {
