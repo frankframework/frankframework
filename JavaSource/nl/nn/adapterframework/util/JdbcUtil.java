@@ -1,6 +1,10 @@
 /*
  * $Log: JdbcUtil.java,v $
- * Revision 1.20  2009-06-03 14:16:37  m168309
+ * Revision 1.21  2009-08-04 11:31:30  L190409
+ * support for CLOBs and BLOBs by name
+ * additional applyParameters and displayParameters methods
+ *
+ * Revision 1.20  2009/06/03 14:16:37  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * fixed bug that caused a loop in QuerySender when getBlobSmart=true
  *
  * Revision 1.19  2009/03/03 14:34:41  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -102,7 +106,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class JdbcUtil {
-	public static final String version = "$RCSfile: JdbcUtil.java,v $ $Revision: 1.20 $ $Date: 2009-06-03 14:16:37 $";
+	public static final String version = "$RCSfile: JdbcUtil.java,v $ $Revision: 1.21 $ $Date: 2009-08-04 11:31:30 $";
 	protected static Logger log = LogUtil.getLogger(JdbcUtil.class);
 	
 	private static final boolean useMetaData=false;
@@ -210,15 +214,26 @@ public class JdbcUtil {
 
 	
 	public static InputStream getBlobInputStream(ResultSet rs, int columnIndex) throws SQLException, JdbcException {
-		Blob blob = rs.getBlob(columnIndex);
+		return getBlobInputStream(rs.getBlob(columnIndex),columnIndex+"");
+	}
+	public static InputStream getBlobInputStream(ResultSet rs, String columnName) throws SQLException, JdbcException {
+		return getBlobInputStream(rs.getBlob(columnName),columnName);
+	}
+	public static InputStream getBlobInputStream(Blob blob, String column) throws SQLException, JdbcException {
 		if (blob==null) {
-			throw new JdbcException("no blob found in column ["+columnIndex+"]");
+			throw new JdbcException("no blob found in column ["+column+"]");
 		}
 		return blob.getBinaryStream();
 	}
 
 	public static InputStream getBlobInputStream(ResultSet rs, int columnIndex, boolean blobIsCompressed) throws SQLException, JdbcException {
-		InputStream input = getBlobInputStream(rs,columnIndex);
+		return getBlobInputStream(rs.getBlob(columnIndex),columnIndex+"",blobIsCompressed);
+	}
+	public static InputStream getBlobInputStream(ResultSet rs, String columnName, boolean blobIsCompressed) throws SQLException, JdbcException {
+		return getBlobInputStream(rs.getBlob(columnName),columnName,blobIsCompressed);
+	}
+	public static InputStream getBlobInputStream(Blob blob, String column, boolean blobIsCompressed) throws SQLException, JdbcException {
+		InputStream input = getBlobInputStream(blob,column);
 		if (blobIsCompressed) {
 			return new InflaterInputStream(input);
 		} else {
@@ -227,8 +242,14 @@ public class JdbcUtil {
 	}
 
 	public static Reader getBlobReader(final ResultSet rs, int columnIndex, String charset, boolean blobIsCompressed) throws IOException, JdbcException, SQLException {
+		return getBlobReader(rs.getBlob(columnIndex),columnIndex+"",charset,blobIsCompressed);
+	}
+	public static Reader getBlobReader(final ResultSet rs, String columnName, String charset, boolean blobIsCompressed) throws IOException, JdbcException, SQLException {
+		return getBlobReader(rs.getBlob(columnName),columnName,charset,blobIsCompressed);
+	}
+	public static Reader getBlobReader(Blob blob, String column, String charset, boolean blobIsCompressed) throws IOException, JdbcException, SQLException {
 		Reader result;
-		InputStream input = getBlobInputStream(rs,columnIndex);
+		InputStream input = getBlobInputStream(blob,column);
 		if (charset==null) {
 			charset = Misc.DEFAULT_INPUT_STREAM_ENCODING;
 		}
@@ -245,10 +266,15 @@ public class JdbcUtil {
 	}
 
 	public static String getBlobAsString(final ResultSet rs, int columnIndex, String charset, boolean xmlEncode, boolean blobIsCompressed, boolean blobSmartGet) throws IOException, JdbcException, SQLException {
+		return getBlobAsString(rs.getBlob(columnIndex),columnIndex+"",charset, xmlEncode, blobIsCompressed, blobSmartGet);
+	}
+	public static String getBlobAsString(final ResultSet rs, String columnName, String charset, boolean xmlEncode, boolean blobIsCompressed, boolean blobSmartGet) throws IOException, JdbcException, SQLException {
+		return getBlobAsString(rs.getBlob(columnName),columnName,charset, xmlEncode, blobIsCompressed, blobSmartGet);
+	}
+	public static String getBlobAsString(Blob blob, String column, String charset, boolean xmlEncode, boolean blobIsCompressed, boolean blobSmartGet) throws IOException, JdbcException, SQLException {
 		if (blobSmartGet) {
-			Blob blob = rs.getBlob(columnIndex);
 			if (blob==null) {
-				log.debug("no blob found in column ["+columnIndex+"]");
+				log.debug("no blob found in column ["+column+"]");
 				return null;
 			}
 			int bl = (int)blob.length();
@@ -270,7 +296,7 @@ public class JdbcUtil {
 					}
 					bos.write(bufDecomp, 0, count);
 				} catch (DataFormatException e) {
-					log.debug("message in column ["+columnIndex+"] is not compressed");
+					log.debug("message in column ["+column+"] is not compressed");
 					decompresOK = false;
 					break;
 				}
@@ -287,7 +313,7 @@ public class JdbcUtil {
 				ois = new ObjectInputStream(bis);
 				result = ois.readObject();
 			} catch (Exception e) {
-				log.debug("message in column ["+columnIndex+"] is not serialized");
+				log.debug("message in column ["+column+"] is not serialized");
 				objectOK=false;
 			}
 			if (ois!=null)
@@ -303,7 +329,7 @@ public class JdbcUtil {
 			String message = XmlUtils.encodeCdataString(rawMessage);
 			return message;
 		} else {
-			return Misc.readerToString(getBlobReader(rs,columnIndex,charset,blobIsCompressed),null,xmlEncode);
+			return Misc.readerToString(getBlobReader(blob,column,charset,blobIsCompressed),null,xmlEncode);
 		}
 	}
 
@@ -394,6 +420,13 @@ public class JdbcUtil {
 		}
 		return clob.getCharacterStream();
 	}
+	public static Reader getClobReader(ResultSet rs, String columnName) throws SQLException, JdbcException {
+		Clob clob = rs.getClob(columnName);
+		if (clob==null) {
+			throw new JdbcException("no clob found in column ["+columnName+"]");
+		}
+		return clob.getCharacterStream();
+	}
 
 	/**
 	 * retrieves an outputstream to a clob column from an updatable resultset.
@@ -416,6 +449,10 @@ public class JdbcUtil {
 
 	public static String getClobAsString(final ResultSet rs, int columnIndex, boolean xmlEncode) throws IOException, JdbcException, SQLException {
 		Reader reader = getClobReader(rs,columnIndex);
+		return Misc.readerToString(reader, null, xmlEncode);
+	}
+	public static String getClobAsString(final ResultSet rs, String columnName, boolean xmlEncode) throws IOException, JdbcException, SQLException {
+		Reader reader = getClobReader(rs,columnName);
 		return Misc.readerToString(reader, null, xmlEncode);
 	}
 
@@ -490,5 +527,275 @@ public class JdbcUtil {
 			}
 		}
 	}
+
+
+	private static String displayParameters(String param1, String param2) {
+		return (param1==null?"":(" param1 ["+param1+"]"+(param2==null?"":(" param2 ["+param2+"]"))));
+	}
+	private static String displayParameters(int param1, String param2, String param3) {
+		return " param1 ["+param1+"]"+(param2==null?"":(" param2 ["+param2+"]"+(param3==null?"":(" param3 ["+param3+"]"))));
+	}
+	private static String displayParameters(int param1, int param2, String param3, String param4) {
+		return " param1 ["+param1+"] param2 ["+param2+"]"+(param3==null?"":(" param3 ["+param3+"]"+(param4==null?"":(" param4 ["+param4+"]"))));
+	}
+	private static String displayParameters(int param1, int param2, int param3, String param4, String param5) {
+		return " param1 ["+param1+"] param2 ["+param2+"] param3 ["+param3+"]"+(param4==null?"":(" param4 ["+param4+"]"+(param5==null?"":(" param5 ["+param5+"]"))));
+	}
+	
+
+	private static void applyParameters(PreparedStatement stmt, String param1, String param2) throws SQLException {
+		if (param1!=null) {
+			//if (log.isDebugEnabled()) log.debug("set"+displayParameters(param1,param2));
+			stmt.setString(1,param1);
+			if (param2!=null) {
+				stmt.setString(2,param2);
+			}
+		}
+	}
+	private static void applyParameters(PreparedStatement stmt, int param1, String param2, String param3) throws SQLException {
+		//if (log.isDebugEnabled()) log.debug("set"+displayParameters(param1,param2,param3));
+		stmt.setInt(1,param1);
+		if (param2!=null) {
+			stmt.setString(2,param2);
+			if (param3!=null) {
+				stmt.setString(3,param3);
+			}
+		}
+	}
+	private static void applyParameters(PreparedStatement stmt, int param1, int param2, String param3, String param4) throws SQLException {
+		// if (log.isDebugEnabled()) log.debug("set"+displayParameters(param1,param2,param3,param4));
+		stmt.setInt(1,param1);
+		stmt.setInt(2,param2);
+		if (param3!=null) {
+			stmt.setString(3,param3);
+			if (param4!=null) {
+				stmt.setString(4,param4);
+			}
+		}
+	}
+	private static void applyParameters(PreparedStatement stmt, int param1, int param2, int param3, String param4, String param5) throws SQLException {
+		//if (log.isDebugEnabled()) log.debug("set"+displayParameters(param1,param2,param3,param4,param5));
+		stmt.setInt(1,param1);
+		stmt.setInt(2,param2);
+		stmt.setInt(3,param3);
+		if (param4!=null) {
+			stmt.setString(4,param4);
+			if (param5!=null) {
+				stmt.setString(5,param5);
+			}
+		}
+	}
+
+	public static int executeIntQuery(Connection connection, String query) throws JdbcException {
+		return executeIntQuery(connection,query,null,null);
+	}
+	public static int executeIntQuery(Connection connection, String query, String param) throws JdbcException {
+		return executeIntQuery(connection,query,param,null);
+	}
+
+	/**
+	 * exectues query that returns an integer. Returns -1 if no results are found. 
+	 */
+	public static int executeIntQuery(Connection connection, String query, String param1, String param2) throws JdbcException {
+		PreparedStatement stmt = null;
+
+		try {
+			if (log.isDebugEnabled()) log.debug("prepare and execute query ["+query+"]"+displayParameters(param1,param2));
+			stmt = connection.prepareStatement(query);
+			applyParameters(stmt,param1,param2);
+			ResultSet rs = stmt.executeQuery();
+			try {
+				if (!rs.next()) {
+					return -1;
+				}
+				return rs.getInt(1);
+			} finally {
+				rs.close();
+			}
+		} catch (Exception e) {
+			throw new JdbcException("could not obtain value using query ["+query+"]"+displayParameters(param1,param2),e);
+		} finally {
+			if (stmt!=null) {
+				try {
+					stmt.close();
+				} catch (Exception e) {
+					throw new JdbcException("could not close statement of query ["+query+"]"+displayParameters(param1,param2),e);
+				}
+			}
+		}
+	}
+
+	public static int executeIntQuery(Connection connection, String query, int param) throws JdbcException {
+		return executeIntQuery(connection,query,param,null,null);
+	}
+	public static int executeIntQuery(Connection connection, String query, int param1, String param2) throws JdbcException {
+		return executeIntQuery(connection,query,param1,param2,null);
+	}
+	
+	public static int executeIntQuery(Connection connection, String query, int param1, String param2, String param3) throws JdbcException {
+		PreparedStatement stmt = null;
+
+		try {
+			if (log.isDebugEnabled()) log.debug("prepare and execute query ["+query+"]"+displayParameters(param1,param2,param3));
+			stmt = connection.prepareStatement(query);
+			applyParameters(stmt,param1,param2,param3);
+			ResultSet rs = stmt.executeQuery();
+			try {
+				if (!rs.next()) {
+					return -1;
+				}
+				return rs.getInt(1);
+			} finally {
+				rs.close();
+			}
+		} catch (Exception e) {
+			throw new JdbcException("could not obtain value using query ["+query+"]"+displayParameters(param1,param2,param3),e);
+		} finally {
+			if (stmt!=null) {
+				try {
+					stmt.close();
+				} catch (Exception e) {
+					throw new JdbcException("could not close statement of query ["+query+"]"+displayParameters(param1,param2,param3),e);
+				}
+			}
+		}
+	}
+
+
+	public static int executeIntQuery(Connection connection, String query, int param1, int param2) throws JdbcException {
+		return executeIntQuery(connection,query,param1,param2,null,null);
+	}
+	public static int executeIntQuery(Connection connection, String query, int param1, int param2, String param3) throws JdbcException {
+		return executeIntQuery(connection,query,param1,param2,param3,null);
+	}
+	
+	public static int executeIntQuery(Connection connection, String query, int param1, int param2, String param3, String param4) throws JdbcException {
+		PreparedStatement stmt = null;
+
+		try {
+			if (log.isDebugEnabled()) log.debug("prepare and execute query ["+query+"]"+displayParameters(param1,param2,param3,param4));
+			stmt = connection.prepareStatement(query);
+			applyParameters(stmt,param1,param2,param3,param4);
+			ResultSet rs = stmt.executeQuery();
+			try {
+				if (!rs.next()) {
+					return -1;
+				}
+				return rs.getInt(1);
+			} finally {
+				rs.close();
+			}
+		} catch (Exception e) {
+			throw new JdbcException("could not obtain value using query ["+query+"]"+displayParameters(param1,param2,param3,param4),e);
+		} finally {
+			if (stmt!=null) {
+				try {
+					stmt.close();
+				} catch (Exception e) {
+					throw new JdbcException("could not close statement of query ["+query+"]"+displayParameters(param1,param2,param3,param4),e);
+				}
+			}
+		}
+	}
+
+
+	public static void executeStatement(Connection connection, String query) throws JdbcException {
+		executeStatement(connection,query,null,null);
+	}
+	public static void executeStatement(Connection connection, String query, String param) throws JdbcException {
+		executeStatement(connection,query,param,null);
+	}
+	
+	public static void executeStatement(Connection connection, String query, String param1, String param2) throws JdbcException {
+		PreparedStatement stmt = null;
+
+		try {
+			if (log.isDebugEnabled()) log.debug("prepare and execute query ["+query+"]"+displayParameters(param1,param2));
+			stmt = connection.prepareStatement(query);
+			applyParameters(stmt,param1,param2);
+			stmt.execute();
+		} catch (Exception e) {
+			throw new JdbcException("could not execute query ["+query+"]"+displayParameters(param1,param2),e);
+		} finally {
+			if (stmt!=null) {
+				try {
+					stmt.close();
+				} catch (Exception e) {
+					throw new JdbcException("could not close statement for query ["+query+"]"+displayParameters(param1,param2),e);
+				}
+			}
+		}
+	}
+
+	public static void executeStatement(Connection connection, String query, int param) throws JdbcException {
+		executeStatement(connection,query,param,null,null);
+	}
+	public static void executeStatement(Connection connection, String query, int param1, String param2) throws JdbcException {
+		executeStatement(connection,query,param1,param2,null);
+	}
+	
+	public static void executeStatement(Connection connection, String query, int param1, String param2, String param3) throws JdbcException {
+		PreparedStatement stmt = null;
+
+		try {
+			if (log.isDebugEnabled()) log.debug("prepare and execute query ["+query+"]"+displayParameters(param1,param2,param3));
+			stmt = connection.prepareStatement(query);
+			applyParameters(stmt,param1,param2,param3);
+			stmt.execute();
+		} catch (Exception e) {
+			throw new JdbcException("could not execute query ["+query+"]"+displayParameters(param1,param2,param3),e);
+		} finally {
+			if (stmt!=null) {
+				try {
+					stmt.close();
+				} catch (Exception e) {
+					throw new JdbcException("could not close statement for query ["+query+"]"+displayParameters(param1,param2,param3),e);
+				}
+			}
+		}
+	}
+
+	public static void executeStatement(Connection connection, String query, int param1, int param2, String param3, String param4) throws JdbcException {
+		PreparedStatement stmt = null;
+
+		try {
+			if (log.isDebugEnabled()) log.debug("prepare and execute query ["+query+"]"+displayParameters(param1,param2,param3,param4));
+			stmt = connection.prepareStatement(query);
+			applyParameters(stmt,param1,param2,param3,param4);
+			stmt.execute();
+		} catch (Exception e) {
+			throw new JdbcException("could not execute query ["+query+"]"+displayParameters(param1,param2,param3,param4),e);
+		} finally {
+			if (stmt!=null) {
+				try {
+					stmt.close();
+				} catch (Exception e) {
+					throw new JdbcException("could not close statement for query ["+query+"]"+displayParameters(param1,param2,param3,param4),e);
+				}
+			}
+		}
+	}
+
+	public static void executeStatement(Connection connection, String query, int param1, int param2, int param3, String param4, String param5) throws JdbcException {
+		PreparedStatement stmt = null;
+
+		try {
+			if (log.isDebugEnabled()) log.debug("prepare and execute query ["+query+"]"+displayParameters(param1,param2,param3,param4,param5));
+			stmt = connection.prepareStatement(query);
+			applyParameters(stmt,param1,param2,param3,param4,param5);
+			stmt.execute();
+		} catch (Exception e) {
+			throw new JdbcException("could not execute query ["+query+"]"+displayParameters(param1,param2,param3,param4,param5),e);
+		} finally {
+			if (stmt!=null) {
+				try {
+					stmt.close();
+				} catch (Exception e) {
+					throw new JdbcException("could not close statement for query ["+query+"]"+displayParameters(param1,param2,param3,param4,param5),e);
+				}
+			}
+		}
+	}
+
 
 }
