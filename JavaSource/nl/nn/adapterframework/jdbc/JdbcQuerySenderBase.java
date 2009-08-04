@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcQuerySenderBase.java,v $
- * Revision 1.39  2009-07-17 12:39:00  m168309
+ * Revision 1.40  2009-08-04 10:12:13  L190409
+ * corrected description of useNamedParams
+ *
+ * Revision 1.39  2009/07/17 12:39:00  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added attribute useNamedParams
  *
  * Revision 1.38  2009/04/01 08:23:44  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -209,7 +212,7 @@ import sun.misc.BASE64Encoder;
  * <tr><td>{@link #setColumnsReturned(String) columnsReturned}</td><td>comma separated list of columns whose values are to be returned. Works only if the driver implements JDBC 3.0 getGeneratedKeys()</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setBlobSmartGet(boolean) blobSmartGet}</td><td>controls automatically whether blobdata is stored compressed and/or serialized in the database</td><td>false</td></tr>
  * <tr><td>{@link #setTimeout(int) timeout}</td><td>the number of seconds the driver will wait for a Statement object to execute. If the limit is exceeded, a TimeOutException is thrown. 0 means no timeout</td><td>0</td></tr>
- * <tr><td>{@link #setUseNamedParams(boolean) useNamedParams}</td><td>when <code>true</code>, every string in the query which equals "?{<code>paramName</code>}" will be replaced by the setter method for the corresponding parameter (the parameters don't need to be in the correct order and unused parameters are skipped)</td><td>false</td></tr>
+ * <tr><td>{@link #setUseNamedParams(boolean) useNamedParams}</td><td>when <code>true</code>, every string in the message which equals "?{<code>paramName</code>}" will be replaced by the setter method for the corresponding parameter (the parameters don't need to be in the correct order and unused parameters are skipped)</td><td>false</td></tr>
  * </table>
  * </p>
  * <table border="1">
@@ -235,7 +238,7 @@ import sun.misc.BASE64Encoder;
  * @since 	4.1
  */
 public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
-	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.39 $ $Date: 2009-07-17 12:39:00 $";
+	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.40 $ $Date: 2009-08-04 10:12:13 $";
 
 	private final static String UNP_START = "?{";
 	private final static String UNP_END = "}";
