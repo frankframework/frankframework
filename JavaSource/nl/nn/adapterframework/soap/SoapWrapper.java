@@ -1,6 +1,9 @@
 /*
  * $Log: SoapWrapper.java,v $
- * Revision 1.9  2008-10-31 15:02:17  europe\m168309
+ * Revision 1.10  2009-08-04 11:33:33  L190409
+ * support for header extraction
+ *
+ * Revision 1.9  2008/10/31 15:02:17  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * WS-Security made possible
  *
  * Revision 1.8  2008/09/01 13:00:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -82,15 +85,17 @@ import org.w3c.dom.Document;
  * @version Id
  */
 public class SoapWrapper {
-	public static final String version="$RCSfile: SoapWrapper.java,v $ $Revision: 1.9 $ $Date: 2008-10-31 15:02:17 $";
+	public static final String version="$RCSfile: SoapWrapper.java,v $ $Revision: 1.10 $ $Date: 2009-08-04 11:33:33 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private TransformerPool extractBody;
+	private TransformerPool extractHeader;
 	private TransformerPool extractFaultCount;
 	private TransformerPool extractFaultCode;
 	private TransformerPool extractFaultString;
 	private final static String extractNamespaces="xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\"";
 	private final static String extractBodyXPath="/soapenv:Envelope/soapenv:Body/*";
+	private final static String extractHeaderXPath="/soapenv:Envelope/soapenv:Header/*";
 	private final static String extractFaultCountXPath="count(/soapenv:Envelope/soapenv:Body/soapenv:Fault)";
 	private final static String extractFaultCodeXPath="/soapenv:Envelope/soapenv:Body/soapenv:Fault/faultcode";
 	private final static String extractFaultStringXPath="/soapenv:Envelope/soapenv:Body/soapenv:Fault/faultstring";
@@ -104,6 +109,7 @@ public class SoapWrapper {
 	private void init() throws ConfigurationException {
 		try {
 			extractBody        = new TransformerPool(XmlUtils.createXPathEvaluatorSource(extractNamespaces,extractBodyXPath,"xml"));
+			extractHeader      = new TransformerPool(XmlUtils.createXPathEvaluatorSource(extractNamespaces,extractHeaderXPath,"xml"));
 			extractFaultCount  = new TransformerPool(XmlUtils.createXPathEvaluatorSource(extractNamespaces,extractFaultCountXPath,"text"));
 			extractFaultCode   = new TransformerPool(XmlUtils.createXPathEvaluatorSource(extractNamespaces,extractFaultCodeXPath,"text"));
 			extractFaultString = new TransformerPool(XmlUtils.createXPathEvaluatorSource(extractNamespaces,extractFaultStringXPath,"text"));
@@ -152,6 +158,13 @@ public class SoapWrapper {
 	}
 	public String getBody(InputStream request) throws TransformerException, IOException {
 		return extractBody.transform(new StreamSource(request),null);
+	}
+
+	public String getHeader(String message) throws DomBuilderException, TransformerException, IOException {
+		return extractHeader.transform(message,null,true);
+	}
+	public String getHeader(InputStream request) throws TransformerException, IOException {
+		return extractHeader.transform(new StreamSource(request),null);
 	}
 
 	public int getFaultCount(String message) throws NumberFormatException, DomBuilderException, TransformerException, IOException {
