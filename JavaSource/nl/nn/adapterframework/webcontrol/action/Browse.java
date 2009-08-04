@@ -1,6 +1,9 @@
 /*
  * $Log: Browse.java,v $
- * Revision 1.18  2009-04-28 11:36:31  L190409
+ * Revision 1.19  2009-08-04 11:46:58  L190409
+ * work around IE 6 issue, that prevents exporting messages under HTTPS
+ *
+ * Revision 1.18  2009/04/28 11:36:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected dateClip handling
  *
  * Revision 1.17  2009/04/28 09:32:52  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -96,14 +99,14 @@ import org.apache.struts.action.DynaActionForm;
  * @since   4.4
  */
 public class Browse extends ActionBase {
-	public static final String version="$RCSfile: Browse.java,v $ $Revision: 1.18 $ $Date: 2009-04-28 11:36:31 $";
+	public static final String version="$RCSfile: Browse.java,v $ $Revision: 1.19 $ $Date: 2009-08-04 11:46:58 $";
 
 	private int maxMessages = AppConstants.getInstance().getInt("browse.messages.max",0); 
 	private int skipMessages=0;
 	
 	
 	// if performAction returns true, no forward should be returned
-	protected boolean performAction(Adapter adapter, ReceiverBase receiver, String action, IMessageBrowser mb, String messageId, String selected[], HttpServletResponse response) {
+	protected boolean performAction(Adapter adapter, ReceiverBase receiver, String action, IMessageBrowser mb, String messageId, String selected[], HttpServletRequest request, HttpServletResponse response) {
 		log.debug("performing action ["+action+"]");
 		return false;
 	}
@@ -194,12 +197,12 @@ public class Browse extends ActionBase {
 			mb=pipe.getMessageLog();
 			// actions 'deletemessage' and 'resendmessage' not allowed for messageLog	
 			if ("export selected".equalsIgnoreCase(action)) {
-				performAction(adapter, null, action, mb, messageId, selected, response);
+				performAction(adapter, null, action, mb, messageId, selected, request, response);
 			}
 		} else {
 			ReceiverBase receiver = (ReceiverBase) adapter.getReceiverByName(receiverName);
 			mb = receiver.getErrorStorage();
-			if (performAction(adapter, receiver, action, mb, messageId, selected, response))
+			if (performAction(adapter, receiver, action, mb, messageId, selected, request, response))
 				return null;
 			listener = receiver.getListener();
 		}
