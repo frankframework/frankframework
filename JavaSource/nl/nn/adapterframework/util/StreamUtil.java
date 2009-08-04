@@ -1,6 +1,9 @@
 /*
  * $Log: StreamUtil.java,v $
- * Revision 1.1  2007-07-17 11:03:40  europe\L190409
+ * Revision 1.2  2009-08-04 11:35:28  L190409
+ * added openZipDownload
+ *
+ * Revision 1.1  2007/07/17 11:03:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * first version, copied from SRP
  *
  *
@@ -13,6 +16,9 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
+import java.util.zip.ZipOutputStream;
+
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * Functions to read and write from one stream to another.
@@ -116,5 +122,14 @@ public class StreamUtil {
 		}
 	}
 
+	public static ZipOutputStream openZipDownload(HttpServletResponse response, String filename) throws IOException {
+		OutputStream out = response.getOutputStream();
+		response.setContentType("application/x-zip-compressed");
+//		response.setHeader("Pragma","Public");
+//		response.setHeader("Cache-Control","max-age=0");
+		response.setHeader("Content-Disposition","attachment; filename=\""+filename+"\"");
+		ZipOutputStream zipOutputStream = new ZipOutputStream(out);
+		return zipOutputStream;
+	}
 
 }
