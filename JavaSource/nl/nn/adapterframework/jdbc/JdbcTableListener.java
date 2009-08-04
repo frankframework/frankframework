@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcTableListener.java,v $
- * Revision 1.6  2008-12-10 08:35:55  L190409
+ * Revision 1.7  2009-08-04 11:24:21  L190409
+ * support for messages in CLOBs and BLOBs
+ *
+ * Revision 1.6  2008/12/10 08:35:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved locking and selection mechanism: now works in multiple threads. 
  * improved disaster recovery: no more specific 'in process' status, rolls back to original state (where apropriate)
  *
@@ -40,6 +43,10 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setMessageField(String) messageField}</td>  <td>(optional) field containing the message data</td><td><i>same as keyField</i></td></tr>
  * <tr><td>{@link #setOrderField(String) orderField}</td>  <td>(optional) field determining the order in which messages are processed</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setTimestampField(String) timestampField}</td>  <td>(optional) field used to store the date and time of the last change of the status field</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setMessageFieldType(String) messageFieldType}</td>  <td>type of the field containing the message data: either String, clob or blob</td><td><i>String</i></td></tr>
+ * <tr><td>{@link #setBlobCharset(String) blobCharset}</td><td>charset used to read BLOBs</td><td>UTF-8</td></tr>
+ * <tr><td>{@link #setBlobsCompressed(boolean) blobsCompressed}</td><td>controls whether blobdata is considered stored compressed in the database</td><td>true</td></tr>
+ * <tr><td>{@link #setBlobSmartGet(boolean) blobSmartGet}</td><td>controls automatically whether blobdata is stored compressed and/or serialized in the database</td><td>false</td></tr>
 
  * <tr><td>{@link #setStatusValueAvailable(String) statusValueAvailable}</td> <td>(optional) value of status field indicating row is available to be processed. If not specified, any row not having any of the other status values is considered available.</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setStatusValueProcessed(String) statusValueProcessed}</td> <td>value of status field indicating row is processed OK</td><td>&nbsp;</td></tr>

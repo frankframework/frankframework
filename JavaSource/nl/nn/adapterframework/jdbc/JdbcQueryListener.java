@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcQueryListener.java,v $
- * Revision 1.4  2008-12-30 17:01:12  m168309
+ * Revision 1.5  2009-08-04 11:24:21  L190409
+ * support for messages in CLOBs and BLOBs
+ *
+ * Revision 1.4  2008/12/30 17:01:12  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added configuration warnings facility (in Show configurationStatus)
  *
  * Revision 1.3  2008/12/10 08:35:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -33,6 +36,10 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
  * <tr><td>{@link #setName(String) name}</td>  <td>name of the listener</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setKeyField(String) keyField}</td>  <td>primary key field of the table, used to identify messages</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMessageField(String) messageField}</td>  <td>(optional) field containing the message data</td><td><i>same as keyField</i></td></tr>
+ * <tr><td>{@link #setMessageFieldType(String) messageFieldType}</td>  <td>type of the field containing the message data: either String, clob or blob</td><td><i>String</i></td></tr>
+ * <tr><td>{@link #setBlobCharset(String) blobCharset}</td><td>charset used to read BLOBs</td><td>UTF-8</td></tr>
+ * <tr><td>{@link #setBlobsCompressed(boolean) blobsCompressed}</td><td>controls whether blobdata is considered stored compressed in the database</td><td>true</td></tr>
+ * <tr><td>{@link #setBlobSmartGet(boolean) blobSmartGet}</td><td>controls automatically whether blobdata is stored compressed and/or serialized in the database</td><td>false</td></tr>
 
  * <tr><td>{@link #setSelectQuery(String) selectQuery}</td> <td>query that returns a row to be processed. Must contain a key field and optionally a message field</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setUpdateStatusToProcessedQuery(String) updateStatusToProcessedQuery}</td> <td>SQL Statement to the status of a row to 'processed'. Must contain one parameter, that is set to the value of the key</td><td>&nbsp;</td></tr>
