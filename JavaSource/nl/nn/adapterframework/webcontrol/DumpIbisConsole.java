@@ -1,6 +1,9 @@
 /*
  * $Log: DumpIbisConsole.java,v $
- * Revision 1.11  2008-09-17 12:28:58  europe\L190409
+ * Revision 1.12  2009-08-04 11:36:35  L190409
+ * use openZipDownload
+ *
+ * Revision 1.11  2008/09/17 12:28:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * add SystemOut and statistics file to Dump
  *
  * Revision 1.10  2008/08/27 16:26:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -45,7 +48,6 @@ package nl.nn.adapterframework.webcontrol;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.Date;
@@ -65,6 +67,7 @@ import javax.servlet.http.HttpServletResponse;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.FileAppender;
@@ -120,7 +123,7 @@ public class DumpIbisConsole extends HttpServlet {
 		}
 	}
 
-	public void copyServletResponse(ZipOutputStream zipOutputStream, HttpServletRequest request, HttpServletResponse response, String resource, 
+	public void copyServletResponse(ZipOutputStream zipOutputStream, HttpServletRequest request, HttpServletResponse response, String resource,
 		String destinationFileName, Set resources, Set linkSet, String linkFilter) {
 		long timeStart = new Date().getTime();
 		try {
@@ -129,7 +132,12 @@ public class DumpIbisConsole extends HttpServlet {
 			requestDispatcher.include(request, ibisHttpServletResponseGrabber);
 			String htmlString = ibisHttpServletResponseGrabber.getStringWriter().toString();
 
-			zipOutputStream.putNextEntry(new ZipEntry(destinationFileName));
+			ZipEntry zipEntry=new ZipEntry(destinationFileName);
+//			if (resourceModificationTime!=0) {
+//				zipEntry.setTime(resourceModificationTime);
+//			}
+
+			zipOutputStream.putNextEntry(zipEntry);
 			
 			PrintWriter pw = new PrintWriter(zipOutputStream);
 			pw.print(htmlString);
@@ -226,10 +234,7 @@ public class DumpIbisConsole extends HttpServlet {
 			Set setFileViewer = new HashSet();
 			Set setShowAdapterStatistics = new HashSet();
 
-			OutputStream out = response.getOutputStream();
-			response.setContentType("application/x-zip-compressed");
-			response.setHeader("Content-Disposition","attachment; filename=\"IbisConsoleDump-"+AppConstants.getInstance().getProperty("instance.name","")+"-"+Misc.getHostname()+".zip\"");
-			ZipOutputStream zipOutputStream = new ZipOutputStream(out);
+			ZipOutputStream zipOutputStream = StreamUtil.openZipDownload(response,"IbisConsoleDump-"+AppConstants.getInstance().getProperty("instance.name","")+"-"+Misc.getHostname()+".zip");
 
 			copyServletResponse(zipOutputStream, request, response, "/showConfigurationStatus.do", directoryName + "showConfigurationStatus.html", resources, setShowAdapterStatistics, "showAdapterStatistics.do");
 
