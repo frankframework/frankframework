@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.79  2009-06-05 07:27:16  L190409
+ * Revision 1.80  2009-08-04 11:20:31  L190409
+ * set default for name when not specified
+ *
+ * Revision 1.79  2009/06/05 07:27:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * set pipeline result to formatted errormessage in case of exception
  * added throws clause to iterateOverStatistics()
  *
@@ -410,6 +413,7 @@ import nl.nn.adapterframework.jms.JMSFacade;
 import nl.nn.adapterframework.monitoring.EventHandler;
 import nl.nn.adapterframework.monitoring.EventThrowing;
 import nl.nn.adapterframework.monitoring.MonitorManager;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Counter;
 import nl.nn.adapterframework.util.CounterStatistic;
 import nl.nn.adapterframework.util.DateUtils;
@@ -542,7 +546,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  */
 public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHandler, EventThrowing, IbisExceptionListener, HasSender, HasStatistics, TracingEventNumbers, IThreadCountControllable, BeanFactoryAware {
     
-	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.79 $ $Date: 2009-06-05 07:27:16 $";
+	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.80 $ $Date: 2009-08-04 11:20:31 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -863,6 +867,13 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 
 	public void configure() throws ConfigurationException {		
 		try {
+			if (StringUtils.isEmpty(getName())) {
+				if (getListener()!=null) {
+					setName(ClassUtils.nameOf(getListener()));
+				} else {
+					setName(ClassUtils.nameOf(this));
+				}
+			}
 			eventHandler = MonitorManager.getEventHandler();
 			registerEvent(RCV_CONFIGURED_MONITOR_EVENT);
 			registerEvent(RCV_CONFIGURATIONEXCEPTION_MONITOR_EVENT);
