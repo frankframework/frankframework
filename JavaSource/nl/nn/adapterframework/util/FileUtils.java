@@ -1,6 +1,9 @@
 /*
  * $Log: FileUtils.java,v $
- * Revision 1.15  2009-02-04 13:04:07  m168309
+ * Revision 1.16  2009-08-05 14:24:56  L190409
+ * avoid NPE writing to null directory
+ *
+ * Revision 1.15  2009/02/04 13:04:07  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added appendFile()
  *
  * Revision 1.14  2009/01/08 16:40:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -78,7 +81,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class FileUtils {
-	public static final String version = "$RCSfile: FileUtils.java,v $  $Revision: 1.15 $ $Date: 2009-02-04 13:04:07 $";
+	public static final String version = "$RCSfile: FileUtils.java,v $  $Revision: 1.16 $ $Date: 2009-08-05 14:24:56 $";
 	static Logger log = LogUtil.getLogger(FileUtils.class);
 
 	/**
@@ -284,6 +287,9 @@ public class FileUtils {
 		
 		final long millisPerDay=24*60*60*1000;
 
+		if (directory==null) {
+			return null;
+		}
 		Date now=new Date();
 
 		String filename=filenamePrefix+DateUtils.format(now,dateformat)+filenameSuffix;
