@@ -1,6 +1,10 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.80  2009-08-04 11:20:31  L190409
+ * Revision 1.81  2009-08-11 07:43:06  L190409
+ * assign pipelinesession to threadcontext, to enable use of session
+ * variables in listener.afterMessageProcessed()
+ *
+ * Revision 1.80  2009/08/04 11:20:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * set default for name when not specified
  *
  * Revision 1.79  2009/06/05 07:27:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -546,7 +550,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  */
 public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHandler, EventThrowing, IbisExceptionListener, HasSender, HasStatistics, TracingEventNumbers, IThreadCountControllable, BeanFactoryAware {
     
-	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.80 $ $Date: 2009-08-04 11:20:31 $";
+	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.81 $ $Date: 2009-08-11 07:43:06 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -1328,6 +1332,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 			numReceived.increase();
 			// Note: errorMessage is used to pass value from catch-clause to finally-clause!
 			PipeLineSession pipelineSession = createProcessingContext(businessCorrelationId, threadContext, messageId);
+			threadContext=pipelineSession; // this is to enable Listeners to use session variables, for instance in afterProcessMessage()
 			try {
 				// TODO: What about Ibis42 compat mode?
 				if (isIbis42compatibility()) {
