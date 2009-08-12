@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcQuerySenderBase.java,v $
- * Revision 1.41  2009-08-12 07:17:19  m168309
+ * Revision 1.42  2009-08-12 07:38:28  m168309
+ * added warning for useNamedParams
+ *
+ * Revision 1.41  2009/08/12 07:17:19  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added warning for useNamedParams
  *
  * Revision 1.40  2009/08/04 10:12:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -241,7 +244,7 @@ import sun.misc.BASE64Encoder;
  * @since 	4.1
  */
 public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
-	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.41 $ $Date: 2009-08-12 07:17:19 $";
+	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.42 $ $Date: 2009-08-12 07:38:28 $";
 
 	private final static String UNP_START = "?{";
 	private final static String UNP_END = "}";
@@ -430,7 +433,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 					buffer.append("?");
 					copyFrom = endPos + UNP_END.length();
 				} else {
-					log.warn(getLogPrefix() + "Parameter ["	+ namedParam + "] is not found ["+ message+ "]");
+					log.warn(getLogPrefix() + "Parameter ["	+ namedParam + "] is not found");
 					buffer.append(messageChars, startPos, nextStartPos - startPos);
 					copyFrom = nextStartPos;
 				}
