@@ -1,6 +1,9 @@
 /*
  * $Log: CredentialFactory.java,v $
- * Revision 1.5  2007-02-12 14:09:04  europe\L190409
+ * Revision 1.6  2009-08-13 09:19:02  L190409
+ * made compatible with WAS 6
+ *
+ * Revision 1.5  2007/02/12 14:09:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Logger from LogUtil
  *
  * Revision 1.4  2006/03/20 13:51:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -21,7 +24,8 @@ package nl.nn.adapterframework.util;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 import javax.security.auth.Subject;
@@ -43,7 +47,7 @@ import org.apache.log4j.Logger;
  * 
  * Note:
  * In WSAD the aliases are named just as you type them.
- * In WebSphere 5 aliases are prefixed with the name of the server.
+ * In WebSphere 5 and 6, and in RAD7/RSA7 aliases are prefixed with the name of the server.
  * It is therefore sensible to use a environment setting to find the name of the alias.
  * 
  * @author  Gerrit van Brakel
@@ -65,58 +69,58 @@ public class CredentialFactory implements CallbackHandler {
 		setPassword(defaultPassword);
 	}
 	
-	public void invokeStringSetter(Object o, String name, String value) throws SecurityException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-		Class argsTypes[] = { name.getClass() };
-		Method setterMtd = o.getClass().getMethod(name, argsTypes ); 
-		Object args[] = { value };
-		setterMtd.invoke(o,args);
-	}
-	public Object invokeGetter(Object o, String name) throws SecurityException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-		Method getterMtd = o.getClass().getMethod(name, null ); 
-		return getterMtd.invoke(o,null);
-	}
-	public String invokeStringGetter(Object o, String name) throws SecurityException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-		return (String)invokeGetter(o,name);
-	}
 	public String invokeCharArrayGetter(Object o, String name) throws SecurityException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-		char arr[] = (char[])invokeGetter(o,name);
+		char arr[] = (char[])ClassUtils.invokeGetter(o,name);
 		StringBuffer sb=new StringBuffer();
 		for (int j=0; j<arr.length;j++) {
 			sb.append(arr[j]);
 		}
 		return sb.toString();
 	}
+
 	
 	public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
 		log.info("Handling callbacks for alias ["+getAlias()+"]");
 		for (int i=0; i<callbacks.length; i++) {
 			Callback cb=callbacks[i];
 //			log.info(i+") "+cb.getClass().getName()+" "+ToStringBuilder.reflectionToString(cb));
-//			if (cb instanceof WSManagedConnectionFactoryCallback) {
-//				WSManagedConnectionFactoryCallback cb_1 = (WSManagedConnectionFactoryCallback) cb;
-//			}
-//			if (cb instanceof WSAuthDataAliasCallback) {
-//				WSAuthDataAliasCallback cb_1 = (WSAuthDataAliasCallback) cb;
-//			}
 			Class cbc = cb.getClass();
+			if (cbc.getName().endsWith("MappingPropertiesCallback")) { // Websphere 6
+				try {
+					Map mappingProperties=new HashMap();
+					mappingProperties.put("com.ibm.mapping.authDataAlias", getAlias());
+					ClassUtils.invokeSetter(cb,"setProperties",mappingProperties,Map.class);
+					log.debug("MappingPropertiesCallback.properties set to entry key [com.ibm.mapping.authDataAlias], value ["+getAlias()+"]");
+					continue;
+				} catch (Exception e) {
+					log.warn("exception setting alias ["+getAlias()+"] on MappingPropertiesCallback", e);
+				}
+			}
+			if (cbc.getName().endsWith("AuthDataAliasCallback")) { // Websphere 5
+				try {
+					log.info("setting alias of AuthDataAliasCallback to alias ["+getAlias()+"]");
+					ClassUtils.invokeSetter(cb,"setAlias",getAlias());
+					continue;
+				} catch (Exception e) {
+					log.warn("exception setting alias ["+getAlias()+"] on AuthDataAliasCallback", e);
+				}
+			} 
+			if (cb instanceof NameCallback) {
+				NameCallback ncb = (NameCallback) cb;
+				log.info("setting name of NameCallback to alias ["+getAlias()+"]");
+				ncb.setName(getAlias());
+				continue;
+			} 
+			log.debug("ignoring callback of type ["+cb.getClass().getName()+"] for alias ["+getAlias()+"]");
+//			log.debug("contents of callback ["+ToStringBuilder.reflectionToString(cb)+"]");
 //			Class itf[] = cbc.getInterfaces();
 //			for (int j=0; j<itf.length; j++) {
 //				log.info("interface "+j+": "+itf[j].getName());
 //			}
-			if (cbc.getName().endsWith("AuthDataAliasCallback")) {
-				try {
-					log.info("setting alias of AuthDataAliasCallback to alias ["+getAlias()+"]");
-					invokeStringSetter(cb,"setAlias",getAlias());
-				} catch (Exception e) {
-					log.warn("exception setting alias ["+getAlias()+"]", e);
-				}
-			} else if (cb instanceof NameCallback) {
-				NameCallback ncb = (NameCallback) cb;
-				log.info("setting name of NameCallback to alias ["+getAlias()+"]");
-				ncb.setName(getAlias());
-			} else {
-				log.debug("ignoring callback of type ["+cb.getClass().getName()+"] for alias ["+getAlias()+"]");
-			}
+//			Method methods[] = cbc.getMethods();
+//			for (int j=0; j<methods.length; j++) {
+//				log.info("method "+j+": "+methods[j].getName()+", "+methods[j].toString());
+//			}
 //			if (cb instanceof ChoiceCallback) {
 //				ChoiceCallback ccb = (ChoiceCallback) cb;
 //				log.info("ChoiceCallback: "+ccb.getPrompt());
@@ -158,6 +162,9 @@ public class CredentialFactory implements CallbackHandler {
 	}
 
 
+	/** 
+	 * return a loginContext, obtained by logging in using the obtained credentials
+	 */
 	public LoginContext getLoginContext() throws LoginException {
 		String loginConfig="ClientContainer";
 		getCredentialsFromAlias();
@@ -183,7 +190,7 @@ public class CredentialFactory implements CallbackHandler {
 				Object pwcred = pcs.toArray()[0];
 	//			log.info("Pwcred:"+pwcred.toString()+" "+ToStringBuilder.reflectionToString(pwcred)); 
 
-				setUsername(invokeStringGetter(pwcred,"getUserName"));
+				setUsername(ClassUtils.invokeStringGetter(pwcred,"getUserName"));
 				setPassword(invokeCharArrayGetter(pwcred,"getPassword"));
 				gotCredentials=true;
 			} catch (Exception e) {
