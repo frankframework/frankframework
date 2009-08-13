@@ -1,6 +1,9 @@
 /*
  * $Log: ClassUtils.java,v $
- * Revision 1.15  2008-08-18 11:22:03  europe\L190409
+ * Revision 1.16  2009-08-13 09:18:00  L190409
+ * added method invokers
+ *
+ * Revision 1.15  2008/08/18 11:22:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed system.err.printline to log.error
  *
  * Revision 1.14  2007/12/10 10:22:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -44,6 +47,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -56,7 +61,7 @@ import org.apache.log4j.Logger;
  *
  */
 public class ClassUtils {
-	public static final String version = "$RCSfile: ClassUtils.java,v $ $Revision: 1.15 $ $Date: 2008-08-18 11:22:03 $";
+	public static final String version = "$RCSfile: ClassUtils.java,v $ $Revision: 1.16 $ $Date: 2009-08-13 09:18:00 $";
 	private static Logger log = LogUtil.getLogger(ClassUtils.class);
 
     /**
@@ -326,6 +331,23 @@ public class ClassUtils {
 		} else {
 			return name.substring(pos+1);
 		}
+	}
+
+	public static void invokeSetter(Object o, String name, Object value) throws SecurityException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+		invokeSetter(o,name,value,value.getClass());
+	}
+	public static void invokeSetter(Object o, String name, Object value, Class clazz) throws SecurityException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+		Class argsTypes[] = { clazz };
+		Method setterMtd = o.getClass().getMethod(name, argsTypes ); 
+		Object args[] = { value };
+		setterMtd.invoke(o,args);
+	}
+	public static Object invokeGetter(Object o, String name) throws SecurityException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+		Method getterMtd = o.getClass().getMethod(name, null ); 
+		return getterMtd.invoke(o,null);
+	}
+	public static String invokeStringGetter(Object o, String name) throws SecurityException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+		return (String)invokeGetter(o,name);
 	}
 
 }
