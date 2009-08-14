@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcQuerySenderBase.java,v $
- * Revision 1.42  2009-08-12 07:38:28  m168309
+ * Revision 1.43  2009-08-14 07:19:02  m168309
+ * fixed bug in useNamedParams (not thread safe)
+ *
+ * Revision 1.42  2009/08/12 07:38:28  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added warning for useNamedParams
  *
  * Revision 1.41  2009/08/12 07:17:19  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -244,7 +247,7 @@ import sun.misc.BASE64Encoder;
  * @since 	4.1
  */
 public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
-	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.42 $ $Date: 2009-08-12 07:38:28 $";
+	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.43 $ $Date: 2009-08-14 07:19:02 $";
 
 	private final static String UNP_START = "?{";
 	private final static String UNP_END = "}";
@@ -322,14 +325,16 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 
 	protected String sendMessage(Connection connection, String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		PreparedStatement statement=null;
+		ParameterList newParamList = new ParameterList();
+		newParamList = (ParameterList) paramList.clone();
 		if (isUseNamedParams()) {
-			message = adjustParamList(paramList, message);
+			message = adjustParamList(newParamList, message);
 		}
 		try {
 			statement = getStatement(connection, correlationID, message);
 			statement.setQueryTimeout(getTimeout());
 			if (prc != null && paramList != null) {
-				applyParameters(statement, prc.getValues(paramList));
+				applyParameters(statement, prc.getValues(newParamList));
 			}
 			if ("select".equalsIgnoreCase(getQueryType())) {
 				return executeSelectQuery(statement);
@@ -400,6 +405,10 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 	}
 
 	private String adjustParamList(ParameterList paramList, String message) throws SenderException {
+		if (log.isDebugEnabled()) {
+			log.debug(getLogPrefix() + "Adjusting list of parameters ["	+ paramListToString(paramList) + "]");
+		}
+
 		StringBuffer buffer = new StringBuffer();
 		int startPos = message.indexOf(UNP_START);
 		if (startPos == -1)
@@ -442,7 +451,24 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		}
 		buffer.append(messageChars, copyFrom, messageChars.length - copyFrom);
 
+		if (log.isDebugEnabled()) {
+			log.debug(getLogPrefix() + "Adjusted list of parameters ["	+ paramListToString(paramList) + "]");
+		}
+
 		return buffer.toString();
+	}
+
+	private String paramListToString(ParameterList paramList) {
+		String paramListString = "";
+		for (int i = 0; i < paramList.size(); i++) {
+			String key = paramList.getParameter(i).getName();
+			if (i ==0) {
+				paramListString = key;
+			} else {
+				paramListString = paramListString + ", " + key;
+			}
+		}
+		return paramListString;
 	}
 
 	protected String getResult(ResultSet resultset) throws JdbcException, SQLException, IOException {
