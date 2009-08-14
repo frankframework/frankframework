@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcQuerySenderBase.java,v $
- * Revision 1.43  2009-08-14 07:19:02  m168309
+ * Revision 1.44  2009-08-14 13:21:20  m168309
+ * fixed bug in useNamedParams
+ *
+ * Revision 1.43  2009/08/14 07:19:02  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * fixed bug in useNamedParams (not thread safe)
  *
  * Revision 1.42  2009/08/12 07:38:28  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -247,7 +250,7 @@ import sun.misc.BASE64Encoder;
  * @since 	4.1
  */
 public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
-	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.43 $ $Date: 2009-08-14 07:19:02 $";
+	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.44 $ $Date: 2009-08-14 13:21:20 $";
 
 	private final static String UNP_START = "?{";
 	private final static String UNP_END = "}";
@@ -326,7 +329,9 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 	protected String sendMessage(Connection connection, String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		PreparedStatement statement=null;
 		ParameterList newParamList = new ParameterList();
-		newParamList = (ParameterList) paramList.clone();
+		if (paramList != null) {
+			newParamList = (ParameterList) paramList.clone();
+		}
 		if (isUseNamedParams()) {
 			message = adjustParamList(newParamList, message);
 		}
