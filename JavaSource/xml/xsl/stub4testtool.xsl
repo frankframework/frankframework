@@ -9,7 +9,8 @@
 		- stub alle sender elements with parent pipe by an IbisJavaSender (serviceName="testtool-[pipe name]"), except the DirectQuerySender, FixedQuerySender, DelaySender, EchoSender, IbisLocalSender, LogSender, ParallelSenders, SenderSeries, SenderWrapper and XsltSender
 		- disable all elements sapSystems
 		- disable all elements jmsRealm with attribute queueConnectionFactoryName (if combined with the attribute datasourceName a new jmsRealm for this datasourceName is created)
-		- add the attribute returnFixedDate with value true to alle pipe elements PutSystemDateInSession
+		- add the attribute returnFixedDate with value true to all pipe elements PutSystemDateInSession
+		- replace the value '{now,...,...}' of the attribute pattern in all param elements with the value '{fixeddate,...,...}'
 	-->
 	<xsl:template match="/">
 		<xsl:apply-templates select="*|@*|comment()|processing-instruction()" />
@@ -121,10 +122,10 @@
 				<xsl:if test="@datasourceName">
 					<xsl:element name="jmsRealm">
 						<xsl:attribute name="realmName">
-							<xsl:value-of select="@realmName"/>
+							<xsl:value-of select="@realmName" />
 						</xsl:attribute>
 						<xsl:attribute name="datasourceName">
-							<xsl:value-of select="@datasourceName"/>
+							<xsl:value-of select="@datasourceName" />
 						</xsl:attribute>
 					</xsl:element>
 				</xsl:if>
@@ -133,6 +134,15 @@
 				<xsl:element name="pipe">
 					<xsl:apply-templates select="@*" />
 					<xsl:attribute name="returnFixedDate">true</xsl:attribute>
+					<xsl:apply-templates select="*|comment()|processing-instruction()|text()" />
+				</xsl:element>
+			</xsl:when>
+			<xsl:when test="name()='param' and starts-with(@pattern,'{now,')">
+				<xsl:element name="param">
+					<xsl:apply-templates select="@*[name()='pattern'=false()]" />
+					<xsl:attribute name="pattern">
+						<xsl:value-of select="concat('{fixedDate,',substring-after(@pattern,'{now,'))" />
+					</xsl:attribute>
 					<xsl:apply-templates select="*|comment()|processing-instruction()|text()" />
 				</xsl:element>
 			</xsl:when>
