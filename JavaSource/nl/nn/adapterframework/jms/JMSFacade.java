@@ -1,6 +1,9 @@
 /*
  * $Log: JMSFacade.java,v $
- * Revision 1.36  2009-07-28 12:37:36  L190409
+ * Revision 1.37  2009-08-20 12:12:33  L190409
+ * added generic getStringFromRawMessage
+ *
+ * Revision 1.36  2009/07/28 12:37:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.35  2008/07/24 12:20:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -109,19 +112,41 @@
  */
 package nl.nn.adapterframework.jms;
 
+import java.io.IOException;
+import java.util.Map;
+
+import javax.jms.DeliveryMode;
+import javax.jms.Destination;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
+import javax.jms.Queue;
+import javax.jms.QueueReceiver;
+import javax.jms.QueueSender;
+import javax.jms.QueueSession;
+import javax.jms.Session;
+import javax.jms.TextMessage;
+import javax.jms.Topic;
+import javax.jms.TopicPublisher;
+import javax.jms.TopicSession;
+import javax.jms.TopicSubscriber;
+import javax.naming.NamingException;
+import javax.xml.transform.TransformerException;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
+import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IXAEnabled;
 import nl.nn.adapterframework.core.IbisException;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.soap.SoapWrapper;
+import nl.nn.adapterframework.util.DomBuilderException;
+
+import org.apache.commons.lang.StringUtils;
 
 import com.ibm.mq.jms.JMSC;
 import com.ibm.mq.jms.MQQueue;
-import nl.nn.adapterframework.core.INamedObject;
-import javax.jms.*;
-import javax.naming.NamingException;
-
-import org.apache.commons.lang.StringUtils;
 
 
 /**
@@ -159,7 +184,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version="$RCSfile: JMSFacade.java,v $ $Revision: 1.36 $ $Date: 2009-07-28 12:37:36 $";
+	public static final String version="$RCSfile: JMSFacade.java,v $ $Revision: 1.37 $ $Date: 2009-08-20 12:12:33 $";
 
 	public static final String MODE_PERSISTENT="PERSISTENT";
 	public static final String MODE_NON_PERSISTENT="NON_PERSISTENT";
@@ -704,8 +729,31 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 		}
 	}
     
-
-
+	/**
+	 * Extracts string from message obtained from {@link #getRawMessage(Map)}. May also extract
+	 * other parameters from the message and put those in the threadContext.
+	 * @return String  input message for adapter.
+	 */
+	public String getStringFromRawMessage(Object rawMessage, Map context, boolean soap, String soapHeaderSessionKey, SoapWrapper soapWrapper) throws JMSException, DomBuilderException, TransformerException, IOException {
+		TextMessage message = null;
+		try {
+			message = (TextMessage) rawMessage;
+		} catch (ClassCastException e) {
+			log.error("message received by listener on ["+ getDestinationName()+ "] was not of type TextMessage, but ["+rawMessage.getClass().getName()+"]", e);
+			return null;
+		}
+		String rawMessageText;
+		rawMessageText= message.getText();
+		if (!soap) {
+			return rawMessageText;
+		}
+		String messageText=soapWrapper.getBody(rawMessageText);
+		if (StringUtils.isNotEmpty(soapHeaderSessionKey)) {
+			String soapHeader=soapWrapper.getHeader(rawMessageText);
+			context.put(soapHeaderSessionKey,soapHeader);
+		}
+		return messageText;
+	}
 
     
     public String toString() {
