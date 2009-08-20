@@ -1,6 +1,9 @@
 /*
  * $Log: JmsListenerBase.java,v $
- * Revision 1.3  2009-07-28 12:44:24  L190409
+ * Revision 1.4  2009-08-20 12:14:03  L190409
+ * user generic getStringFromRawMessage from JMSFacade
+ *
+ * Revision 1.3  2009/07/28 12:44:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * enable SOAP over JMS
  *
  * Revision 1.2  2008/09/17 09:49:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -20,8 +23,6 @@ import javax.jms.JMSException;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
-import org.apache.commons.lang.StringUtils;
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasSender;
 import nl.nn.adapterframework.core.ISender;
@@ -30,6 +31,8 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.soap.SoapWrapper;
 import nl.nn.adapterframework.util.DateUtils;
+
+import org.apache.commons.lang.StringUtils;
 
 /**
  * Common baseclass for Pulling and Pushing JMS Listeners.
@@ -234,26 +237,8 @@ public class JmsListenerBase extends JMSFacade implements HasSender {
 	 * @return String  input message for adapter.
 	 */
 	public String getStringFromRawMessage(Object rawMessage, Map threadContext) throws ListenerException {
-		TextMessage message = null;
 		try {
-			message = (TextMessage) rawMessage;
-		} catch (ClassCastException e) {
-			log.error("message received by listener on ["+ getDestinationName()+ "] was not of type TextMessage, but ["+rawMessage.getClass().getName()+"]", e);
-			return null;
-		}
-		String rawMessageText;
-		try {
-			rawMessageText= message.getText();
-			if (!isSoap()) {
-				return rawMessageText;
-			}
-			String messageText=soapWrapper.getBody(rawMessageText);
-			if (StringUtils.isNotEmpty(getSoapHeaderSessionKey())) {
-				String soapHeader=soapWrapper.getHeader(rawMessageText);
-				threadContext.put(getSoapHeaderSessionKey(),soapHeader);
-			}
-			
-			return messageText;
+			return getStringFromRawMessage(rawMessage, threadContext, isSoap(), getSoapHeaderSessionKey(),soapWrapper);
 		} catch (Exception e) {
 			throw new ListenerException(e);
 		}
