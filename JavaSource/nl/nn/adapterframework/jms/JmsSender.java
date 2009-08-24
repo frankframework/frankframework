@@ -1,6 +1,9 @@
 /*
  * $Log: JmsSender.java,v $
- * Revision 1.29  2009-07-28 12:42:33  L190409
+ * Revision 1.30  2009-08-24 08:21:14  L190409
+ * support for reply using dynamic reply queue
+ *
+ * Revision 1.29  2009/07/28 12:42:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * avoid NPE evaluating soapHeaderParam
  *
  * Revision 1.28  2008/09/01 12:58:17  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -86,25 +89,35 @@
  */
 package nl.nn.adapterframework.jms;
 
+import java.io.IOException;
+
+import javax.jms.Destination;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
+import javax.jms.QueueSession;
+import javax.jms.Session;
+import javax.naming.NamingException;
+import javax.xml.transform.TransformerException;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPostboxSender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
+import nl.nn.adapterframework.core.IbisException;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.soap.SoapWrapper;
+import nl.nn.adapterframework.util.DomBuilderException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
-
-import javax.jms.JMSException;
-import javax.jms.Session;
-import javax.jms.MessageProducer;
-import javax.jms.Message;
 
 /**
  * This class sends messages with JMS.
@@ -122,12 +135,16 @@ import javax.jms.Message;
  * <tr><td>{@link #setPriority(int) priority}</td><td>sets the priority that is used to deliver the message. ranges from 0 to 9. Defaults to -1, meaning not set. Effectively the default priority is set by Jms to 4</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setAcknowledgeMode(String) acknowledgeMode}</td><td>&nbsp;</td><td>AUTO_ACKNOWLEDGE</td></tr>
  * <tr><td>{@link #setTransacted(boolean) transacted}</td><td>&nbsp;</td><td>false</td></tr>
+ * <tr><td>{@link #setSynchronous(boolean) synchronous}</td><td>when <code>true</code>, the sender operates in RR mode: the a reply is expected, either on the queue specified in 'replyToName', or on a dynamically generated temporary queue</td><td>false</td></tr>
  * <tr><td>{@link #setReplyToName(String) replyToName}</td><td>Name of the queue the reply is expected on. This value is send in the JmsReplyTo-header with the message.</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setReplyTimeout(int) replyTimeout}</td><td>maximum time in ms to wait for a reply. (Only for synchronous=true)</td><td>5000</td></tr>
  * <tr><td>{@link #setPersistent(boolean) persistent}</td><td>rather useless attribute, and not the same as delivery mode. You probably want to use that.</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setUseDynamicReplyQueue(boolean) useDynamicReplyQueue}</td><td>when <code>true</code>, a temporary queue is used to receive a reply</td><td>false</td></tr>
  * <tr><td>{@link #setSoap(boolean) soap}</td><td>when <code>true</code>, messages sent are put in a SOAP envelope</td><td><code>false</code></td></tr>
  * <tr><td>{@link #setSoapAction(String) soapAction}</td><td>SoapAction string sent as messageproperty</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSoapHeaderParam(String) soapHeaderParam}</td><td>name of parameter containing SOAP header</td><td>soapHeader</td></tr>
+ * <tr><td>{@link #setReplySoapHeaderSessionKey(String) replySoapHeaderSessionKey}</td><td>session key to store SOAP header of reply</td><td>soapHeader</td></tr>
  * </table>
  * </p>
  * <table border="1">
@@ -143,11 +160,14 @@ import javax.jms.Message;
  */
 
 public class JmsSender extends JMSFacade implements ISenderWithParameters, IPostboxSender {
-	public static final String version="$RCSfile: JmsSender.java,v $ $Revision: 1.29 $ $Date: 2009-07-28 12:42:33 $";
+	public static final String version="$RCSfile: JmsSender.java,v $ $Revision: 1.30 $ $Date: 2009-08-24 08:21:14 $";
 	private String replyToName = null;
 	private int deliveryMode = 0;
 	private String messageType = null;
 	private int priority=-1;
+	private boolean synchronous=false;
+	private int replyTimeout=5000;
+	private String replySoapHeaderSessionKey="replySoapHeader";
 	private boolean soap=false;
 	private String encodingStyleURI=null;
 	private String serviceNamespaceURI=null;
@@ -208,15 +228,11 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 	}
 
 
-	public boolean isSynchronous() {
-		return false;
-	}
-
-	public String sendMessage(String correlationID, String message) throws SenderException {
+	public String sendMessage(String correlationID, String message) throws SenderException, TimeOutException {
 		return sendMessage(correlationID, message, null);
 	}
 
-	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException {
+	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		Session s = null;
 		MessageProducer mp = null;
 
@@ -245,6 +261,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 		try {
 			s = createSession();
 			mp = getMessageProducer(s, getDestination());
+			Destination replyQueue = null;
 
 			// create message
 			Message msg = createTextMessage(s, correlationID, message);
@@ -266,8 +283,15 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 				setProperties(msg, pvl);
 			}
 			if (replyToName != null) {
-				msg.setJMSReplyTo(getDestination(replyToName));
-				log.debug("replyTo set to [" + msg.getJMSReplyTo().toString() + "]");
+				replyQueue = getDestination(replyToName);
+			} else {
+				if (isSynchronous()) {
+					replyQueue = getConnection().getDynamicReplyQueue((QueueSession)s);
+				}
+			}
+			if (replyQueue!=null) {
+				msg.setJMSReplyTo(replyQueue);
+				if (log.isDebugEnabled()) log.debug("replyTo set to queue [" + replyQueue.toString() + "]");
 			}
 
 			// send message	
@@ -279,9 +303,42 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 						+ "] " + "using deliveryMode [" + getDeliveryMode() + "] "
 						+ ((replyToName != null) ? "replyTo [" + replyToName+"]" : ""));
 			}
+			if (isSynchronous()) {
+				String replyCorrelationId=null;
+				if (replyToName != null) {
+					replyCorrelationId=msg.getJMSMessageID();
+				}
+				MessageConsumer mc = getMessageConsumerForCorrelationId(s,replyQueue,replyCorrelationId);
+				try {
+					Message rawReplyMsg = mc.receive(getReplyTimeout());
+					if (rawReplyMsg==null) {
+						throw new TimeOutException("did not receive reply on [" + replyQueue.toString() + "] within ["+getReplyTimeout()+"] ms");
+					}
+					return getStringFromRawMessage(rawReplyMsg, prc.getSession(), isSoap(), getReplySoapHeaderSessionKey(),soapWrapper);
+				} finally {
+					if (mc != null) { 
+						try { 
+							mc.close(); 
+						} catch (JMSException e) { 
+							log.warn("JmsSender [" + getName() + "] got exception closing message consumer for reply",e); 
+						}
+					}
+				}
+			}
 			return msg.getJMSMessageID();
-		} catch (Throwable e) {
-			//log.error(getLogPrefix()+"got exception: " + ToStringBuilder.reflectionToString(e), e);
+		} catch (JMSException e) {
+			throw new SenderException(e);
+		} catch (IOException e) {
+			throw new SenderException(e);
+		} catch (NamingException e) {
+			throw new SenderException(e);
+		} catch (DomBuilderException e) {
+			throw new SenderException(e);
+		} catch (TransformerException e) {
+			throw new SenderException(e);
+		} catch (JmsException e) {
+			throw new SenderException(e);
+		} catch (IbisException e) {
 			throw new SenderException(e);
 		} finally {
 			if (mp != null) { 
@@ -343,6 +400,13 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 		result += ts.toString();
 		return result;
 
+	}
+
+	public void setSynchronous(boolean synchronous) {
+		this.synchronous=synchronous;
+	}
+	public boolean isSynchronous() {
+		return synchronous;
 	}
 
 	public String getReplyTo() {
@@ -415,6 +479,20 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 	}
 	public String getSoapHeaderParam() {
 		return soapHeaderParam;
+	}
+
+	public void setReplyTimeout(int i) {
+		replyTimeout = i;
+	}
+	public int getReplyTimeout() {
+		return replyTimeout;
+	}
+
+	public void setReplySoapHeaderSessionKey(String string) {
+		replySoapHeaderSessionKey = string;
+	}
+	public String getReplySoapHeaderSessionKey() {
+		return replySoapHeaderSessionKey;
 	}
 
 }
