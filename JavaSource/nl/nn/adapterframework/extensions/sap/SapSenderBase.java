@@ -1,6 +1,9 @@
 /*
  * $Log: SapSenderBase.java,v $
- * Revision 1.2  2008-01-30 14:41:58  europe\L190409
+ * Revision 1.3  2009-08-26 15:34:01  L190409
+ * updated javadoc
+ *
+ * Revision 1.2  2008/01/30 14:41:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * modified javadoc
  *
  * Revision 1.1  2008/01/29 15:37:22  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -33,6 +36,7 @@ import com.sap.mw.jco.JCO;
  * <tr><td>{@link #setSapSystemName(String) sapSystemName}</td><td>name of the {@link SapSystem} used by this object</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSapSystemNameParam(String) sapSystemNameParam}</td><td>name of the parameter used to indicate the name of the {@link SapSystem} used by this object if the attribute <code>sapSystemName</code> is empty</td><td>sapSystemName</td></tr>
  * <tr><td>{@link #setLuwHandleSessionKey(String) luwHandleSessionKey}</td><td>session key in which LUW information is stored. When set, actions that share a LUW-handle will be executed using the same client. Can only be used for synchronous functions</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setSynchronous(boolean) synchronous}</td><td>when <code>false</code>, the sender operates in RR mode: the a reply is expected from SAP, and the sender does not participate in a transaction. When <code>false</code>, the sender operates in FF mode: no reply is expected from SAP, and the sender joins the transaction, that must be present. The SAP transaction is committed right after the XA transaction is completed.</td><td>false</td></tr>
  * </table>
  * </p>
  * <table border="1">

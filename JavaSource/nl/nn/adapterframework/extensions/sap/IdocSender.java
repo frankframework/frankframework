@@ -1,6 +1,9 @@
 /*
  * $Log: IdocSender.java,v $
- * Revision 1.1  2008-01-30 14:44:17  europe\L190409
+ * Revision 1.2  2009-08-26 15:34:01  L190409
+ * updated javadoc
+ *
+ * Revision 1.1  2008/01/30 14:44:17  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * first version
  *
  */
@@ -26,6 +29,7 @@ import com.sap.mw.jco.JCO;
  * <tr><td>{@link #setSapSystemNameParam(String) sapSystemNameParam}</td><td>name of the parameter used to indicate the name of the {@link SapSystem} used by this object if the attribute <code>sapSystemName</code> is empty</td><td>sapSystemName</td></tr>
  * </table>
  * </p>
+ * N.B. The sending of the iDoc is committed right after the XA transaction is completed.
  * <table border="1">
  * <p><b>Parameters:</b>
  * <tr><th>name</th><th>type</th><th>remarks</th></tr>

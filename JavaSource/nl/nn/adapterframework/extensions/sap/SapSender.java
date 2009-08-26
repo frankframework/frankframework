@@ -1,6 +1,9 @@
 /*
  * $Log: SapSender.java,v $
- * Revision 1.11  2008-04-24 12:19:23  europe\L190409
+ * Revision 1.12  2009-08-26 15:34:01  L190409
+ * updated javadoc
+ *
+ * Revision 1.11  2008/04/24 12:19:23  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fix NPE in configure() when no parameters present
  *
  * Revision 1.10  2008/01/30 14:42:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -65,7 +68,7 @@ import com.sap.mw.jco.JCO;
  * <tr><td>{@link #setSapSystemNameParam(String) sapSystemNameParam}</td><td>name of the parameter used to indicate the name of the {@link SapSystem} used by this object if the attribute <code>sapSystemName</code> is empty</td><td>sapSystemName</td></tr>
  * <tr><td>{@link #setFunctionName(String) functionName}</td><td>Name of the RFC-function to be called in the SAP system</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setFunctionNameParam(String) functionNameParam}</td><td>name of the parameter used to obtain the functionName from if the attribute <code>functionName</code> is empty</td><td>functionName</td></tr>
- * <tr><td>{@link #setSynchronous(boolean) synchronous}</td><td>synchronous functions return a result, a-synchronous functions do not return a result and are excecuted in a transaction</td><td>true</td></tr>
+ * <tr><td>{@link #setSynchronous(boolean) synchronous}</td><td>when <code>false</code>, the sender operates in RR mode: the a reply is expected from SAP, and the sender does not participate in a transaction. When <code>false</code>, the sender operates in FF mode: no reply is expected from SAP, and the sender joins the transaction, that must be present. The SAP transaction is committed right after the XA transaction is completed.</td><td>true</td></tr>
  * <tr><td>{@link #setLuwHandleSessionKey(String) luwHandleSessionKey}</td><td>session key in which LUW information is stored. When set, actions that share a {@link SapLUWHandle LUW-handle} will be executed using the same client. Can only be used for synchronous functions</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setCorrelationIdFieldIndex(int) correlationIdFieldIndex}</td><td>Index of the field in the ImportParameterList of the RFC function that contains the correlationId</td><td>0</td></tr>
  * <tr><td>{@link #setCorrelationIdFieldName(String) correlationIdFieldName}</td><td>Name of the field in the ImportParameterList of the RFC function that contains the correlationId</td><td>&nbsp;</td></tr>
@@ -92,7 +95,7 @@ import com.sap.mw.jco.JCO;
  * @version Id
  */
 public class SapSender extends SapSenderBase {
-	public static final String version="$RCSfile: SapSender.java,v $  $Revision: 1.11 $ $Date: 2008-04-24 12:19:23 $";
+	public static final String version="$RCSfile: SapSender.java,v $  $Revision: 1.12 $ $Date: 2009-08-26 15:34:01 $";
 	
 	private String functionName=null;
 	private String functionNameParam="functionName";
