@@ -1,6 +1,9 @@
 /*
  * $Log: SendJmsMessageExecute.java,v $
- * Revision 1.7  2008-12-16 13:37:50  L190409
+ * Revision 1.8  2009-08-26 15:50:10  L190409
+ * catch TimeOutException
+ *
+ * Revision 1.7  2008/12/16 13:37:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * read messages in the right encoding
  *
  * Revision 1.6  2008/05/22 07:41:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -27,6 +30,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.util.AppConstants;
@@ -48,7 +52,7 @@ import org.apache.struts.upload.FormFile;
  * @author  Johan Verrips
  */
 public final class SendJmsMessageExecute extends ActionBase {
-	public static final String version = "$RCSfile: SendJmsMessageExecute.java,v $ $Revision: 1.7 $ $Date: 2008-12-16 13:37:50 $";
+	public static final String version = "$RCSfile: SendJmsMessageExecute.java,v $ $Revision: 1.8 $ $Date: 2009-08-26 15:50:10 $";
 	
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 	
@@ -104,7 +108,9 @@ public final class SendJmsMessageExecute extends ActionBase {
 	        qms.sendMessage("testmsg_"+Misc.createUUID(),form_message);
 	    } catch (SenderException e) {
 	        error("error occured sending message",e);
-	    }
+	    } catch (TimeOutException e) {
+			error("error occured sending message",e);
+		}
 	    try {
 		    qms.close();
 	    } catch (Exception e) {
