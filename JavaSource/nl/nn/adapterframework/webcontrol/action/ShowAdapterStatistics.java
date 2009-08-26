@@ -1,6 +1,9 @@
 /*
  * $Log: ShowAdapterStatistics.java,v $
- * Revision 1.11  2009-06-05 07:54:34  L190409
+ * Revision 1.12  2009-08-26 15:50:35  L190409
+ * support for separated adapter-only and detailed statistics
+ *
+ * Revision 1.11  2009/06/05 07:54:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * support for adapter level only statistics
  * end-processing of statisticskeeperhandler in a finally clause
  * added hidden 'deep' option, to output full contents of statisticskeeper
@@ -37,6 +40,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.IReceiver;
@@ -177,7 +181,8 @@ public class ShowAdapterStatistics extends ActionBase {
 	
 	    
 		StatisticsKeeperToXml handler = new StatisticsKeeperToXml(adapterXML, deep);
-		Object handle = handler.start();
+		handler.configure();
+		Object handle = handler.start(null,null,null);
 		
 		try {
 			Object pipelineData = handler.openGroup(handle,null,"pipeline");
@@ -242,7 +247,11 @@ public class ShowAdapterStatistics extends ActionBase {
 			this.deep=deep;
 		}
 
-		public Object start() {
+		public void configure() {
+		}
+
+
+		public Object start(Date now, Date mainMark, Date detailMark) {
 			return parent;
 		}
 		public void end(Object data) {
