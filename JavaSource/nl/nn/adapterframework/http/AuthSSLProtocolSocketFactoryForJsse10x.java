@@ -1,6 +1,9 @@
 /*
  * $Log: AuthSSLProtocolSocketFactoryForJsse10x.java,v $
- * Revision 1.9  2005-10-10 14:07:49  europe\L190409
+ * Revision 1.10  2009-08-26 11:47:31  L190409
+ * upgrade to HttpClient 3.0.1 - including idle connection cleanup
+ *
+ * Revision 1.9  2005/10/10 14:07:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Add allowSelfSignedCertificates, to easy up testing
  *
  * Revision 1.8  2005/10/07 14:12:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -52,6 +55,11 @@ import java.security.cert.X509Certificate;
 
 import javax.net.ssl.SSLSocket;
 
+import org.apache.commons.httpclient.ConnectTimeoutException;
+import org.apache.commons.httpclient.params.HttpConnectionParams;
+import org.apache.commons.httpclient.protocol.ControllerThreadSocketFactory;
+import org.apache.commons.httpclient.protocol.ReflectionSocketFactory;
+
 import com.sun.net.ssl.KeyManager;
 import com.sun.net.ssl.KeyManagerFactory;
 import com.sun.net.ssl.SSLContext;
@@ -86,12 +94,12 @@ public class AuthSSLProtocolSocketFactoryForJsse10x extends AuthSSLProtocolSocke
      *        authentication is not to be used.
      * @param truststorePassword Password to unlock the truststore.
      */
-    public AuthSSLProtocolSocketFactoryForJsse10x(
-        final URL keystoreUrl, final String keystorePassword, final String keystoreType, 
-        final URL truststoreUrl, final String truststorePassword, final String truststoreType, final boolean verifyHostname)
-    {
-        super(keystoreUrl, keystorePassword, keystoreType, truststoreUrl, truststorePassword, truststoreType, verifyHostname);
-    }
+	public AuthSSLProtocolSocketFactoryForJsse10x(
+		final URL keystoreUrl, final String keystorePassword, final String keystoreType, 
+		final URL truststoreUrl, final String truststorePassword, final String truststoreType, final boolean verifyHostname)
+	{
+		super(keystoreUrl, keystorePassword, keystoreType, truststoreUrl, truststorePassword, truststoreType, verifyHostname);
+	}
     
     private static KeyManager[] createKeyManagers(final KeyStore keystore, final String password)
         throws KeyStoreException, NoSuchAlgorithmException, UnrecoverableKeyException 
@@ -121,25 +129,27 @@ public class AuthSSLProtocolSocketFactoryForJsse10x extends AuthSSLProtocolSocke
     }
 
 
-    private SSLContext createSSLContext() throws NoSuchAlgorithmException, KeyStoreException, GeneralSecurityException, IOException {
-            KeyManager[] keymanagers = null;
-            TrustManager[] trustmanagers = null;
-            if (this.keystoreUrl != null) {
-                KeyStore keystore = createKeyStore(this.keystoreUrl, this.keystorePassword, this.keystoreType, "Certificate chain");
-                keymanagers = createKeyManagers(keystore, this.keystorePassword);
-            }
-            if (this.truststoreUrl != null) {
-                KeyStore keystore = createKeyStore(this.truststoreUrl, this.truststorePassword, this.truststoreType, "Trusted Certificate");
-                trustmanagers = createTrustManagers(keystore);
+	private SSLContext createSSLContext() throws NoSuchAlgorithmException, KeyStoreException, GeneralSecurityException, IOException {
+		KeyManager[] keymanagers = null;
+		TrustManager[] trustmanagers = null;
+		if (this.keystoreUrl != null) {
+			KeyStore keystore = createKeyStore(this.keystoreUrl, this.keystorePassword, this.keystoreType, "Certificate chain");
+			keymanagers = createKeyManagers(keystore, this.keystorePassword);
+		}
+		if (this.truststoreUrl != null) {
+			KeyStore keystore = createKeyStore(this.truststoreUrl, this.truststorePassword, this.truststoreType, "Trusted Certificate");
+			trustmanagers = createTrustManagers(keystore);
 
-				if (allowSelfSignedCertificates) {
-					trustmanagers = new TrustManager[] { new AuthSslTrustManager(keystore, trustmanagers)};
-				}
-            }
-            SSLContext sslcontext = SSLContext.getInstance(getProtocol(), new com.sun.net.ssl.internal.ssl.Provider());
-            sslcontext.init(keymanagers, trustmanagers, null);
-            return sslcontext;
-    }
+			if (allowSelfSignedCertificates) {
+				trustmanagers = new TrustManager[] {
+					new AuthSslTrustManager(keystore, trustmanagers)
+				};
+			}
+		}
+		SSLContext sslcontext = SSLContext.getInstance(getProtocol(), new com.sun.net.ssl.internal.ssl.Provider());
+		sslcontext.init(keymanagers, trustmanagers, null);
+		return sslcontext;
+	}
 
 	public void initSSLContext() throws NoSuchAlgorithmException, KeyStoreException, GeneralSecurityException, IOException {
 		if (this.sslContext == null) {
@@ -147,34 +157,26 @@ public class AuthSSLProtocolSocketFactoryForJsse10x extends AuthSSLProtocolSocke
 		}
 	}
 
-    private SSLContext getSSLContext() {
-        if (this.sslContext == null) {
+	private SSLContext getSSLContext() {
+		if (this.sslContext == null) {
 			initSSLContextNoExceptions();
-        }
-        return (SSLContext)this.sslContext;
-    }
+		}
+		return (SSLContext)this.sslContext;
+	}
 
     /**
      * @see SecureProtocolSocketFactory#createSocket(java.lang.String,int,java.net.InetAddress,int)
      */
-    public Socket createSocket(
-        String host,
-        int port,
-        InetAddress clientHost,
-        int clientPort)
-        throws IOException, UnknownHostException
-   {
-	SSLSocket sslSocket = (SSLSocket) getSSLContext().getSocketFactory().createSocket(host,port,clientHost,clientPort);
-	verifyHostname(sslSocket);
-	return sslSocket;
+    public Socket createSocket(String host, int port, InetAddress clientHost, int clientPort) throws IOException, UnknownHostException {
+		SSLSocket sslSocket = (SSLSocket) getSSLContext().getSocketFactory().createSocket(host,port,clientHost,clientPort);
+		verifyHostname(sslSocket);
+		return sslSocket;
     }
 
     /**
      * @see SecureProtocolSocketFactory#createSocket(java.lang.String,int)
      */
-    public Socket createSocket(String host, int port)
-        throws IOException, UnknownHostException
-    {
+    public Socket createSocket(String host, int port) throws IOException, UnknownHostException {
 		SSLSocket sslSocket = (SSLSocket) getSSLContext().getSocketFactory().createSocket(host,port);
 		verifyHostname(sslSocket);
 		return sslSocket;
@@ -183,13 +185,7 @@ public class AuthSSLProtocolSocketFactoryForJsse10x extends AuthSSLProtocolSocke
     /**
      * @see SecureProtocolSocketFactory#createSocket(java.net.Socket,java.lang.String,int,boolean)
      */
-    public Socket createSocket(
-        Socket socket,
-        String host,
-        int port,
-        boolean autoClose)
-        throws IOException, UnknownHostException
-    {
+    public Socket createSocket(Socket socket, String host, int port, boolean autoClose) throws IOException, UnknownHostException {
 		SSLSocket sslSocket = (SSLSocket) getSSLContext().getSocketFactory().createSocket(socket,host,port,autoClose);
 		verifyHostname(sslSocket);
 		return sslSocket;
@@ -214,6 +210,52 @@ public class AuthSSLProtocolSocketFactoryForJsse10x extends AuthSSLProtocolSocke
 	}
 
 	/**
+	 * Attempts to get a new socket connection to the given host within the given time limit.
+	 * <p>
+	 * This method employs several techniques to circumvent the limitations of older JREs that 
+	 * do not support connect timeout. When running in JRE 1.4 or above reflection is used to 
+	 * call Socket#connect(SocketAddress endpoint, int timeout) method. When executing in older 
+	 * JREs a controller thread is executed. The controller thread attempts to create a new socket
+	 * within the given limit of time. If socket constructor does not return until the timeout 
+	 * expires, the controller terminates and throws an {@link ConnectTimeoutException}
+	 * </p>
+	 *  
+	 * @param host the host name/IP
+	 * @param port the port on the host
+	 * @param localAddress the local host name/IP to bind the socket to
+	 * @param localPort the port on the local machine
+	 * @param params {@link HttpConnectionParams Http connection parameters}
+	 * 
+	 * @return Socket a new socket
+	 * 
+	 * @throws IOException if an I/O error occurs while creating the socket
+	 * @throws UnknownHostException if the IP address of the host cannot be
+	 * determined
+	 * 
+	 * @author Copied from HttpClient 3.0.1 SSLProtocolSocketFactory
+	 * @since 3.0
+	 */
+	public Socket createSocket(final String host, final int port, final InetAddress localAddress, final int localPort, final HttpConnectionParams params) throws IOException, UnknownHostException, ConnectTimeoutException {
+		if (params == null) {
+			throw new IllegalArgumentException("Parameters may not be null");
+		}
+		int timeout = params.getConnectionTimeout();
+		if (timeout == 0) {
+			return createSocket(host, port, localAddress, localPort);
+		} else {
+			// To be eventually deprecated when migrated to Java 1.4 or above
+			Socket socket = ReflectionSocketFactory.createSocket(
+				"javax.net.ssl.SSLSocketFactory", host, port, localAddress, localPort, timeout);
+			if (socket == null) {
+				socket = ControllerThreadSocketFactory.createSocket(
+					this, host, port, localAddress, localPort, timeout);
+			}
+			return socket;
+		}
+	}
+
+
+	/**
 	 * Helper class for testing certificates that are not verified by an 
 	 * authorized organisation
 	 * 
@@ -231,7 +273,7 @@ public class AuthSSLProtocolSocketFactoryForJsse10x extends AuthSSLProtocolSocke
 			if (trustmanagers.length != 1) {
 				throw new NoSuchAlgorithmException("Only works with X509 trustmanagers");
 			}
-			this.trustManager = (X509TrustManager)trustmanagers[0];
+			trustManager = (X509TrustManager)trustmanagers[0];
 		}
 
 		public boolean isClientTrusted(X509Certificate[] certs) {
@@ -257,5 +299,6 @@ public class AuthSSLProtocolSocketFactoryForJsse10x extends AuthSSLProtocolSocke
 			return trustManager.getAcceptedIssuers();
 		}
 	}
+
 }
 

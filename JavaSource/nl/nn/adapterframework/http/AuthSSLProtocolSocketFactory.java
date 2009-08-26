@@ -1,6 +1,9 @@
 /*
  * $Log: AuthSSLProtocolSocketFactory.java,v $
- * Revision 1.10  2005-10-10 14:07:48  europe\L190409
+ * Revision 1.11  2009-08-26 11:47:31  L190409
+ * upgrade to HttpClient 3.0.1 - including idle connection cleanup
+ *
+ * Revision 1.10  2005/10/10 14:07:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Add allowSelfSignedCertificates, to easy up testing
  *
  * Revision 1.9  2005/10/07 14:12:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -62,6 +65,11 @@ import javax.net.ssl.SSLSocket;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
+
+import org.apache.commons.httpclient.ConnectTimeoutException;
+import org.apache.commons.httpclient.params.HttpConnectionParams;
+import org.apache.commons.httpclient.protocol.ControllerThreadSocketFactory;
+import org.apache.commons.httpclient.protocol.ReflectionSocketFactory;
 
 /**
  * <p>
@@ -218,8 +226,6 @@ public class AuthSSLProtocolSocketFactory extends AuthSSLProtocolSocketFactoryBa
 
 
 	private SSLContext createSSLContext() throws NoSuchAlgorithmException, KeyStoreException, GeneralSecurityException, IOException {
-		SSLContext sslcontext = SSLContext.getInstance(getProtocol());
-
 		KeyManager[] keymanagers = null;
 		TrustManager[] trustmanagers = null;
 		if (this.keystoreUrl != null) {
@@ -232,11 +238,11 @@ public class AuthSSLProtocolSocketFactory extends AuthSSLProtocolSocketFactoryBa
 
 			if (allowSelfSignedCertificates) {
 				trustmanagers = new TrustManager[] {
-					new AuthSslTrustManager(keystore, trustmanagers)			
+					new AuthSslTrustManager(keystore, trustmanagers)
 				};
 			}
 		}
-			
+		SSLContext sslcontext = SSLContext.getInstance(getProtocol());
 		sslcontext.init(keymanagers, trustmanagers, null);
 		return sslcontext;
 	}
@@ -257,24 +263,16 @@ public class AuthSSLProtocolSocketFactory extends AuthSSLProtocolSocketFactoryBa
     /**
      * @see SecureProtocolSocketFactory#createSocket(java.lang.String,int,java.net.InetAddress,int)
      */
-    public Socket createSocket(
-        String host,
-        int port,
-        InetAddress clientHost,
-        int clientPort)
-        throws IOException, UnknownHostException
-   	{
-	   SSLSocket sslSocket = (SSLSocket) getSSLContext().getSocketFactory().createSocket(host,port,clientHost,clientPort);
-	   verifyHostname(sslSocket);
-	   return sslSocket;
+    public Socket createSocket(String host, int port, InetAddress clientHost, int clientPort) throws IOException, UnknownHostException {
+		SSLSocket sslSocket = (SSLSocket) getSSLContext().getSocketFactory().createSocket(host,port,clientHost,clientPort);
+		verifyHostname(sslSocket);
+		return sslSocket;
     }
 
     /**
      * @see SecureProtocolSocketFactory#createSocket(java.lang.String,int)
      */
-    public Socket createSocket(String host, int port)
-        throws IOException, UnknownHostException
-    {
+    public Socket createSocket(String host, int port) throws IOException, UnknownHostException {
 		SSLSocket sslSocket = (SSLSocket) getSSLContext().getSocketFactory().createSocket(host,port);
 		verifyHostname(sslSocket);
 		return sslSocket;
@@ -283,18 +281,12 @@ public class AuthSSLProtocolSocketFactory extends AuthSSLProtocolSocketFactoryBa
     /**
      * @see SecureProtocolSocketFactory#createSocket(java.net.Socket,java.lang.String,int,boolean)
      */
-    public Socket createSocket(
-        Socket socket,
-        String host,
-        int port,
-        boolean autoClose)
-        throws IOException, UnknownHostException
-    {
+    public Socket createSocket(Socket socket, String host, int port, boolean autoClose) throws IOException, UnknownHostException {
 		SSLSocket sslSocket = (SSLSocket) getSSLContext().getSocketFactory().createSocket(socket,host,port,autoClose);
 		verifyHostname(sslSocket);
 		return sslSocket;
     }
-    
+
 	/**
 	 * @see AuthSSLProtocolSocketFactoryBase#createSocket(InetAddress, int)
 	 */
@@ -314,6 +306,52 @@ public class AuthSSLProtocolSocketFactory extends AuthSSLProtocolSocketFactoryBa
 	}
 
 	/**
+	 * Attempts to get a new socket connection to the given host within the given time limit.
+	 * <p>
+	 * This method employs several techniques to circumvent the limitations of older JREs that 
+	 * do not support connect timeout. When running in JRE 1.4 or above reflection is used to 
+	 * call Socket#connect(SocketAddress endpoint, int timeout) method. When executing in older 
+	 * JREs a controller thread is executed. The controller thread attempts to create a new socket
+	 * within the given limit of time. If socket constructor does not return until the timeout 
+	 * expires, the controller terminates and throws an {@link ConnectTimeoutException}
+	 * </p>
+	 *  
+	 * @param host the host name/IP
+	 * @param port the port on the host
+	 * @param localAddress the local host name/IP to bind the socket to
+	 * @param localPort the port on the local machine
+	 * @param params {@link HttpConnectionParams Http connection parameters}
+	 * 
+	 * @return Socket a new socket
+	 * 
+	 * @throws IOException if an I/O error occurs while creating the socket
+	 * @throws UnknownHostException if the IP address of the host cannot be
+	 * determined
+	 * 
+	 * @author Copied from HttpClient 3.0.1 SSLProtocolSocketFactory
+	 * @since 3.0
+	 */
+	public Socket createSocket(final String host, final int port, final InetAddress localAddress, final int localPort, final HttpConnectionParams params) throws IOException, UnknownHostException, ConnectTimeoutException {
+		if (params == null) {
+			throw new IllegalArgumentException("Parameters may not be null");
+		}
+		int timeout = params.getConnectionTimeout();
+		if (timeout == 0) {
+			return createSocket(host, port, localAddress, localPort);
+		} else {
+			// To be eventually deprecated when migrated to Java 1.4 or above
+			Socket socket = ReflectionSocketFactory.createSocket(
+				"javax.net.ssl.SSLSocketFactory", host, port, localAddress, localPort, timeout);
+			if (socket == null) {
+				socket = ControllerThreadSocketFactory.createSocket(
+					this, host, port, localAddress, localPort, timeout);
+			}
+			return socket;
+		}
+	}
+
+
+	/**
 	 * Helper class for testing certificates that are not verified by an 
 	 * authorized organisation
 	 * 
@@ -331,11 +369,11 @@ public class AuthSSLProtocolSocketFactory extends AuthSSLProtocolSocketFactoryBa
 			if (trustmanagers.length != 1) {
 				throw new NoSuchAlgorithmException("Only works with X509 trustmanagers");
 			}
-			this.trustManager = (X509TrustManager)trustmanagers[0];
+			trustManager = (X509TrustManager)trustmanagers[0];
 		}
 
 		public void checkClientTrusted(X509Certificate[] certificates, String authType) throws CertificateException {
-			this.trustManager.checkClientTrusted(certificates, authType);
+			trustManager.checkClientTrusted(certificates, authType);
 		}
 
 		public void checkServerTrusted(X509Certificate[] certificates, String authType) throws CertificateException {
@@ -348,8 +386,9 @@ public class AuthSSLProtocolSocketFactory extends AuthSSLProtocolSocketFactoryBa
 		}
 
 		public X509Certificate[] getAcceptedIssuers() {
-			return this.trustManager.getAcceptedIssuers();
+			return trustManager.getAcceptedIssuers();
 		}
 	}
+
 }
 

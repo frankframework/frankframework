@@ -1,6 +1,9 @@
 /*
  * $Log: WebServiceSender.java,v $
- * Revision 1.22  2009-02-10 10:58:23  m168309
+ * Revision 1.23  2009-08-26 11:47:31  L190409
+ * upgrade to HttpClient 3.0.1 - including idle connection cleanup
+ *
+ * Revision 1.22  2009/02/10 10:58:23  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * removed configuration warning when attribute SoapActionURI is empty
  *
  * Revision 1.21  2008/12/30 17:01:13  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -68,6 +71,8 @@
  */
 package nl.nn.adapterframework.http;
 
+import java.io.IOException;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.SenderException;
@@ -127,7 +132,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * @since 4.2c
  */
 public class WebServiceSender extends HttpSender {
-	public static final String version = "$RCSfile: WebServiceSender.java,v $ $Revision: 1.22 $ $Date: 2009-02-10 10:58:23 $";
+	public static final String version = "$RCSfile: WebServiceSender.java,v $ $Revision: 1.23 $ $Date: 2009-08-26 11:47:31 $";
 	
 	private String soapActionURI = "";
 	private String encodingStyleURI=null;
@@ -184,7 +189,7 @@ public class WebServiceSender extends HttpSender {
 	}
 
 
-	public String extractResult(HttpMethod httpmethod) throws SenderException {
+	public String extractResult(HttpMethod httpmethod) throws SenderException, IOException {
 		String httpResult;
 		try {
 			httpResult = super.extractResult(httpmethod);
