@@ -1,6 +1,9 @@
 /*
  * $Log: Adapter.java,v $
- * Revision 1.53  2009-06-05 07:20:40  L190409
+ * Revision 1.54  2009-08-26 15:27:15  L190409
+ * support for separated adapter-only and detailed statistics
+ *
+ * Revision 1.53  2009/06/05 07:20:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * support for adapter level only statistics
  * added throws clause to forEachStatisticsKeeperBody()
  * end-processing of statisticskeeperhandler in a finally clause
@@ -166,24 +169,20 @@ package nl.nn.adapterframework.core;
 
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 import java.util.Vector;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.errormessageformatters.ErrorMessageFormatter;
 import nl.nn.adapterframework.receivers.ReceiverBase;
+import nl.nn.adapterframework.util.CounterStatistic;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.HasStatistics;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper;
 import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.RunStateManager;
-import nl.nn.adapterframework.util.CounterStatistic;
 import nl.nn.adapterframework.util.StatisticsKeeper;
 import nl.nn.adapterframework.util.StatisticsKeeperIterationHandler;
 
@@ -238,7 +237,7 @@ import org.springframework.core.task.TaskExecutor;
  */
 
 public class Adapter implements IAdapter, NamedBean {
-	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.53 $ $Date: 2009-06-05 07:20:40 $";
+	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.54 $ $Date: 2009-08-26 15:27:15 $";
 	private Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -445,8 +444,8 @@ public class Adapter implements IAdapter, NamedBean {
 		return messageKeeper;
 	}
 	
-	public void forEachStatisticsKeeper(StatisticsKeeperIterationHandler hski, int action) throws SenderException {
-		Object root=hski.start();
+	public void forEachStatisticsKeeper(StatisticsKeeperIterationHandler hski, Date now, Date mainMark, Date detailMark, int action) throws SenderException {
+		Object root=hski.start(now,mainMark,detailMark);
 		try {
 			forEachStatisticsKeeperBody(hski,root,action);
 		} finally {
