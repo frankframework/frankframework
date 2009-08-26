@@ -17,7 +17,6 @@
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/commons-pool-1.2.jar"/>
     <classpathentry kind="lib" path="sapjco.jar"/>
     <classpathentry kind="lib" path="WSAD51-security.jar"/>
-    <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/commons-httpclient-2.0.2.jar"/>
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/soap-2_3_1.jar"/>
     <classpathentry kind="lib" path="ojdbc14.jar"/>
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/xerces.jar"/>
@@ -52,5 +51,6 @@
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/wss4j-1.5.4.jar"/>
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/xmlsec-1.4.1.jar"/>
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/saaj.jar"/>
+    <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/commons-httpclient-3.0.1.jar"/>
     <classpathentry kind="output" path="bin"/>
 </classpath>
