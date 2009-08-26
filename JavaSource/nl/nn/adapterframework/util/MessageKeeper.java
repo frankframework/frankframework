@@ -1,3 +1,9 @@
+/*
+ * $Log: MessageKeeper.java,v $
+ * Revision 1.4  2009-08-26 15:37:34  L190409
+ * removed threading problem
+ *
+ */
 package nl.nn.adapterframework.util;
 
 import java.util.Date;
@@ -10,49 +16,27 @@ import java.util.Date;
  * @see MessageKeeperMessage
  */
 public class MessageKeeper extends SizeLimitedVector {
-	public static final String version="$Id: MessageKeeper.java,v 1.3 2004-03-26 10:42:41 NNVZNL01#L180564 Exp $";
-	
 
-/**
- * MessageKeeper constructor comment.
- */
-public MessageKeeper() {
-	super();
-}
-/**
- * MessageKeeper constructor comment.
- * @param maxSize int
- */
-public MessageKeeper(int maxSize) {
-	super(maxSize);
-}
-	public void add(String message){
+	public MessageKeeper() {
+		super();
+	}
+
+	public MessageKeeper(int maxSize) {
+		super(maxSize);
+	}
+	
+	public synchronized void add(String message) {
 		super.add(new MessageKeeperMessage(message));
 	}
-	public void add(String message, Date date) {
-		super.add(new MessageKeeperMessage(message,date));
-	}
-    /**
-     * Get a message by numer
-     * @return MessageKeeperMessage the Message
-     * @see MessageKeeperMessage
-     */
-	public MessageKeeperMessage getMessage(int i){
-		return (MessageKeeperMessage) super.get(i);
+	public synchronized void add(String message, Date date) {
+		super.add(new MessageKeeperMessage(message, date));
 	}
 	/**
-	 * for testing purposes a main method....
+	 * Get a message by number
+	 * @return MessageKeeperMessage the Message
+	 * @see MessageKeeperMessage
 	 */
-	public static void main (String arg[]) {
-		MessageKeeper ms=new MessageKeeper(5);
-		ms.add("just a message");
-		ms.add("test 2");
-		ms.add("met date ", new java.util.Date());
-		ms.add("test 4");
-		ms.add("test 5");
-		ms.add("test 6");
-		System.out.println(ms.toString());
-		System.out.println(ms.getMessage(2).getMessageText());
-		
+	public MessageKeeperMessage getMessage(int i) {
+		return (MessageKeeperMessage)super.get(i);
 	}
 }
