@@ -1,6 +1,9 @@
 /*
  * $Log: StatisticsKeeperLogger.java,v $
- * Revision 1.8  2009-06-05 07:37:36  L190409
+ * Revision 1.9  2009-08-26 15:43:15  L190409
+ * support for configurable statisticsHandlers
+ *
+ * Revision 1.8  2009/06/05 07:37:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * support for adapter level only statistics
  *
  * Revision 1.7  2009/01/08 16:41:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -30,9 +33,10 @@ package nl.nn.adapterframework.util;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Date;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.lang.StringUtils;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
 
 /**
  * Logs statistics-keeper contents to log.
@@ -42,39 +46,63 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class StatisticsKeeperLogger extends StatisticsKeeperXmlBuilder {
-	protected Logger log = LogUtil.getLogger("nl.nn.adapterframework.statistics");
 
-	public StatisticsKeeperLogger(Date now, Date mainMark, Date detailMark) {
-		super(now,mainMark, detailMark);
+	private String directory=null;
+	private int retentionDays=-1;
+
+	public void configure() throws ConfigurationException {
+		super.configure();
+		AppConstants ac = AppConstants.getInstance();
+		if (directory==null)	{
+			setDirectory(ac.getResolvedProperty("log.dir"));
+		}
+		if (retentionDays<0) {	
+			setRetentionDays(ac.getInt("statistics.retention",7));
+		}
 	}
+
 
 	public void end(Object data) {
 		super.end(data);
 
-		AppConstants ac = AppConstants.getInstance();		
-		String directory = ac.getResolvedProperty("log.dir");
-		int retentionDays=ac.getInt("statistics.retention",7);
-		String filenamePattern=ac.getResolvedProperty("instance.name")+"-stats_";
-		String extension=".log";
-		File outfile=FileUtils.getWeeklyRollingFile(directory, filenamePattern, extension, retentionDays);
+		if (StringUtils.isNotEmpty(getDirectory())) {
+			AppConstants ac = AppConstants.getInstance();		
+			String filenamePattern=ac.getResolvedProperty("instance.name")+"-stats_";
+			String extension=".log";
+			File outfile=FileUtils.getWeeklyRollingFile(directory, filenamePattern, extension, retentionDays);
 
-		FileWriter fw=null;
-		try {
-			fw = new FileWriter(outfile,true);
-			fw.write(getXml().toXML());
-			fw.write("\n");
-		} catch (IOException e) {
-			log.error("Could not write statistics to file ["+outfile.getPath()+"]",e);
-		} finally {
-			if (fw!=null) {
-				try {
-					fw.close();
-				} catch (Exception e) {
-					log.error("Could not close statistics file ["+outfile.getPath()+"]",e);
+			FileWriter fw=null;
+			try {
+				fw = new FileWriter(outfile,true);
+				fw.write(getXml(data).toXML());
+				fw.write("\n");
+			} catch (IOException e) {
+				log.error("Could not write statistics to file ["+outfile.getPath()+"]",e);
+			} finally {
+				if (fw!=null) {
+					try {
+						fw.close();
+					} catch (Exception e) {
+						log.error("Could not close statistics file ["+outfile.getPath()+"]",e);
+					}
 				}
 			}
 		}
 	}
 	
 	
+	public void setRetentionDays(int i) {
+		retentionDays = i;
+	}
+	public int getRetentionDays() {
+		return retentionDays;
+	}
+
+	public void setDirectory(String string) {
+		directory = string;
+	}
+	public String getDirectory() {
+		return directory;
+	}
+
 }
