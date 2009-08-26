@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   $Log: springCommon.xml,v $
-  Revision 1.12  2009-03-13 14:51:41  m168309
+  Revision 1.13  2009-08-26 15:21:27  L190409
+  support for configurable statisticsHandlers
+
+  Revision 1.12  2009/03/13 14:51:41  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
   added job
 
   Revision 1.11  2008/07/14 17:48:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -167,4 +170,13 @@
     <bean name="proto-job" class="nl.nn.adapterframework.scheduler.JobDef"
         autowire="byName" scope="prototype">
     </bean>
+
+    <bean name="proto-statisticsHandlers" class="nl.nn.adapterframework.util.StatisticsKeeperIterationHandlerCollection"
+        autowire="byName" scope="prototype">
+    </bean>
+
+    <bean name="proto-statisticsHandler" class="nl.nn.adapterframework.util.StatisticsKeeperIterationHandler"
+        autowire="byName" scope="prototype">
+    </bean>
+
 </beans>

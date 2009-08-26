@@ -1,6 +1,9 @@
 /*
  * $Log: Configuration.java,v $
- * Revision 1.35  2009-06-05 07:19:56  L190409
+ * Revision 1.36  2009-08-26 15:23:12  L190409
+ * support for configurable statisticsHandlers
+ *
+ * Revision 1.35  2009/06/05 07:19:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * support for adapter level only statistics
  * added throws clause to forEachStatisticsKeeperBody()
  * end-processing of statisticskeeperhandler in a finally clause
@@ -110,6 +113,7 @@ import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.scheduler.JobDef;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.HasStatistics;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StatisticsKeeperIterationHandler;
@@ -129,7 +133,7 @@ import org.apache.log4j.Logger;
  * @see    nl.nn.adapterframework.core.IAdapter
  */
 public class Configuration {
-	public static final String version="$RCSfile: Configuration.java,v $ $Revision: 1.35 $ $Date: 2009-06-05 07:19:56 $";
+	public static final String version="$RCSfile: Configuration.java,v $ $Revision: 1.36 $ $Date: 2009-08-26 15:23:12 $";
     protected Logger log=LogUtil.getLogger(this); 
      
     private Map adapterTable = new Hashtable();
@@ -141,6 +145,7 @@ public class Configuration {
     private URL digesterRulesURL;
     private String configurationName = "";
     private boolean enableJMX=false;
+    private StatisticsKeeperIterationHandler statisticsHandler=null;
     
     private AppConstants appConstants;
     
@@ -167,8 +172,8 @@ public class Configuration {
     	return enableJMX;
     }
 
-	public void forEachStatisticsKeeper(StatisticsKeeperIterationHandler hski, int action) throws SenderException {
-		Object root=hski.start();
+	public void forEachStatisticsKeeper(StatisticsKeeperIterationHandler hski, Date now, Date mainMark, Date detailMark, int action) throws SenderException {
+		Object root=hski.start(now,mainMark,detailMark);
 		try {
 			Object groupData=hski.openGroup(root,appConstants.getString("instance.name",""),"instance");
 			for (int i=0; i<adapters.size(); i++) {
@@ -186,11 +191,25 @@ public class Configuration {
 		boolean showDetails=(action==HasStatistics.STATISTICS_ACTION_FULL || 
 							 action==HasStatistics.STATISTICS_ACTION_MARK_FULL ||
 							 action==HasStatistics.STATISTICS_ACTION_RESET);
-		
-		StatisticsKeeperLogger skl = new StatisticsKeeperLogger(now,statisticsMarkDateMain, showDetails ?statisticsMarkDateDetails : null);
 		try {
-			forEachStatisticsKeeper(skl, action);
-		} catch (SenderException e) {
+			if (statisticsHandler==null) {
+				statisticsHandler =new StatisticsKeeperLogger(); 
+				statisticsHandler.configure();
+			}
+		
+//			StatisticsKeeperIterationHandlerCollection skihc = new StatisticsKeeperIterationHandlerCollection();
+//	
+//			StatisticsKeeperLogger skl =new StatisticsKeeperLogger(); 
+//			skl.configure();
+//			skihc.registerIterationHandler(skl);
+//			
+//			StatisticsKeeperStore skih = new StatisticsKeeperStore();
+//			skih.setJmsRealm("lokaal");
+//			skih.configure();
+//			skihc.registerIterationHandler(skih);
+		
+			forEachStatisticsKeeper(statisticsHandler, now, statisticsMarkDateMain, showDetails ?statisticsMarkDateDetails : null, action);
+		} catch (Exception e) {
 			log.error("dumpStatistics() caught exception", e);
 		}
 		if (action==HasStatistics.STATISTICS_ACTION_RESET || 
@@ -314,7 +333,12 @@ public class Configuration {
         scheduledJobs.add(jobdef);
     }
     
-    
+	public void registerStatisticsHandler(StatisticsKeeperIterationHandler handler) throws ConfigurationException {
+		log.debug("registerStatisticsHandler() registering ["+ClassUtils.nameOf(handler)+"]");		
+		statisticsHandler=handler;
+		handler.configure();
+	}
+  
     public String getInstanceInfo() {
 		String instanceInfo=appConstants.getProperty("application.name")+" "+
 							appConstants.getProperty("application.version")+" "+

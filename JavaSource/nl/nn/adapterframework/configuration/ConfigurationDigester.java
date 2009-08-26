@@ -1,6 +1,9 @@
 /*
  * $Log: ConfigurationDigester.java,v $
- * Revision 1.28  2009-07-03 06:32:14  m168309
+ * Revision 1.29  2009-08-26 15:25:19  L190409
+ * support for configurable statisticsHandlers
+ *
+ * Revision 1.28  2009/07/03 06:32:14  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * facilty to stub the configuration for testtool
  *
  * Revision 1.27  2009/05/13 08:18:23  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -137,7 +140,7 @@ import org.xml.sax.SAXParseException;
  * @see Configuration
  */
 abstract public class ConfigurationDigester implements BeanFactoryAware {
-	public static final String version = "$RCSfile: ConfigurationDigester.java,v $ $Revision: 1.28 $ $Date: 2009-07-03 06:32:14 $";
+	public static final String version = "$RCSfile: ConfigurationDigester.java,v $ $Revision: 1.29 $ $Date: 2009-08-26 15:25:19 $";
     protected static Logger log = LogUtil.getLogger(ConfigurationDigester.class);
 
 	private static final String CONFIGURATION_FILE_DEFAULT  = "Configuration.xml";
@@ -224,6 +227,8 @@ abstract public class ConfigurationDigester implements BeanFactoryAware {
 			digester.addRule("*/pipeline/exits/exit", attributeChecker);
 			digester.addRule("*/scheduler/job", attributeChecker);
 			digester.addRule("*/locker", attributeChecker);
+			digester.addRule("*/statistics", attributeChecker);
+			digester.addRule("*/handler", attributeChecker);
 			MonitorManager.getInstance().setDigesterRules(digester);
 
 // Resolving variables is now done by Digester
@@ -311,36 +316,29 @@ abstract public class ConfigurationDigester implements BeanFactoryAware {
     }
     
     
+	public void setConfigurationFile(String string) {
+		configurationFile = string;
+	}
 	public String getConfigurationFile() {
 		return configurationFile;
 	}
 
-	public String getDigesterRules() {
-		return digesterRulesFile;
-	}
-
-	public void setConfigurationFile(String string) {
-		configurationFile = string;
-	}
 
 	public void setDigesterRules(String string) {
 		digesterRulesFile = string;
 	}
+	public String getDigesterRules() {
+		return digesterRulesFile;
+	}
 
-    /**
-     * @return
-     */
-    public BeanFactory getBeanFactory() {
-        return beanFactory;
-    }
 
-    /**
-     * @param factory
-     */
     public void setBeanFactory(BeanFactory factory) {
         beanFactory = factory;
         AbstractSpringPoweredDigesterFactory.factory = (ListableBeanFactory) beanFactory;
     }
+	public BeanFactory getBeanFactory() {
+		return beanFactory;
+	}
 
     /**
      * This method is used from the Spring configuration file. The Configuration is available as a Spring Bean.
