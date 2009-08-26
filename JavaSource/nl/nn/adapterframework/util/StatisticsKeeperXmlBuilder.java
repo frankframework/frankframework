@@ -1,6 +1,9 @@
 /*
  * $Log: StatisticsKeeperXmlBuilder.java,v $
- * Revision 1.5  2009-06-05 07:38:51  L190409
+ * Revision 1.6  2009-08-26 15:44:31  L190409
+ * support for separated adapter-only and detailed statistics
+ *
+ * Revision 1.5  2009/06/05 07:38:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * support for adapter level only statistics
  * added heapSize and totalMemory attributes
  *
@@ -23,6 +26,8 @@ import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
 
 import org.apache.log4j.Logger;
 
@@ -49,51 +54,25 @@ public class StatisticsKeeperXmlBuilder implements StatisticsKeeperIterationHand
 	private static final String STATKEEPER_INTERVAL_ELEMENT="interval";
 	private static final String STATISTICS_XML_VERSION="1";
 
-	private static final long PERIOD_ALLOWED_LENGTH_HOUR=1100*60*60; // 10% extra
-	private static final long PERIOD_ALLOWED_LENGTH_DAY=PERIOD_ALLOWED_LENGTH_HOUR*24;
-	private static final long PERIOD_ALLOWED_LENGTH_WEEK=PERIOD_ALLOWED_LENGTH_DAY*7;
-	private static final long PERIOD_ALLOWED_LENGTH_MONTH=PERIOD_ALLOWED_LENGTH_DAY*31;
-	private static final long PERIOD_ALLOWED_LENGTH_YEAR=PERIOD_ALLOWED_LENGTH_DAY*366;
 
-
-	private static final String[] PERIOD_FORMAT_HOUR={"hour","HH"};
-	private static final String[] PERIOD_FORMAT_DATEHOUR={"datehour","yyyy-MM-dd HH"};
-	private static final String[] PERIOD_FORMAT_DAY={"day","dd"};
-	private static final String[] PERIOD_FORMAT_DATE={"date","yyyy-MM-dd"};
-	private static final String[] PERIOD_FORMAT_WEEKDAY={"weekday","E"};
-	private static final String[] PERIOD_FORMAT_WEEK={"week","ww"};
-	private static final String[] PERIOD_FORMAT_YEARWEEK={"yearweek","yyyy'W'ww"};
-	private static final String[] PERIOD_FORMAT_MONTH={"month","MM"};
-	private static final String[] PERIOD_FORMAT_YEARMONTH={"yearmonth","yyyy-MM"};
-	private static final String[] PERIOD_FORMAT_YEAR={"year","yyyy"};
-
-	private XmlBuilder root;
-	private Date now;
-	private Date mainMark;
-	private Date detailMark;
-
-	public StatisticsKeeperXmlBuilder(Date now, Date mainMark, Date detailMark) {
+	public StatisticsKeeperXmlBuilder() {
 		super();
-		this.now=now;
-		this.mainMark=mainMark;
-		this.detailMark=detailMark;
 	}
 
-	public StatisticsKeeperXmlBuilder(Date now, Date mainMark) {
-		this(now, mainMark, null);
+	public XmlBuilder getXml(Object data) {
+		return (XmlBuilder)data; 
 	}
 
-	public XmlBuilder getXml() {
-		return root; 
-	}
+	public void configure() throws ConfigurationException {
+	}	
 
-	public Object start() {
+	public Object start(Date now, Date mainMark, Date detailMark) {
 		log.debug("StatisticsKeeperXmlBuilder.start()");
 		
 		long freeMem = Runtime.getRuntime().freeMemory();
 		long totalMem = Runtime.getRuntime().totalMemory();
 		
-		root = new XmlBuilder(ROOT_ELEMENT);
+		XmlBuilder root = new XmlBuilder(ROOT_ELEMENT);
 		root.addAttribute("version",STATISTICS_XML_VERSION);
 		root.addAttribute("heapSize", Long.toString (totalMem-freeMem) );
 		root.addAttribute("totalMemory", Long.toString(totalMem) );
@@ -101,18 +80,18 @@ public class StatisticsKeeperXmlBuilder implements StatisticsKeeperIterationHand
 		root.addAttribute("intervalStart",DateUtils.format(mainMark,DateUtils.FORMAT_GENERICDATETIME));
 		root.addAttribute("host",Misc.getHostname());
 		root.addAttribute("instance",AppConstants.getInstance().getProperty("instance.name"));
-		addPeriodIndicator(root,new String[][]{PERIOD_FORMAT_HOUR,PERIOD_FORMAT_DATEHOUR},PERIOD_ALLOWED_LENGTH_HOUR,"",mainMark);
-		addPeriodIndicator(root,new String[][]{PERIOD_FORMAT_DAY,PERIOD_FORMAT_DATE,PERIOD_FORMAT_WEEKDAY},PERIOD_ALLOWED_LENGTH_DAY,"",mainMark);
-		addPeriodIndicator(root,new String[][]{PERIOD_FORMAT_WEEK,PERIOD_FORMAT_YEARWEEK},PERIOD_ALLOWED_LENGTH_WEEK,"",mainMark);
-		addPeriodIndicator(root,new String[][]{PERIOD_FORMAT_MONTH,PERIOD_FORMAT_YEARMONTH},PERIOD_ALLOWED_LENGTH_MONTH,"",mainMark);
-		addPeriodIndicator(root,new String[][]{PERIOD_FORMAT_YEAR},PERIOD_ALLOWED_LENGTH_YEAR,"",mainMark);
+		addPeriodIndicator(root,now,new String[][]{PERIOD_FORMAT_HOUR,PERIOD_FORMAT_DATEHOUR},PERIOD_ALLOWED_LENGTH_HOUR,"",mainMark);
+		addPeriodIndicator(root,now,new String[][]{PERIOD_FORMAT_DAY,PERIOD_FORMAT_DATE,PERIOD_FORMAT_WEEKDAY},PERIOD_ALLOWED_LENGTH_DAY,"",mainMark);
+		addPeriodIndicator(root,now,new String[][]{PERIOD_FORMAT_WEEK,PERIOD_FORMAT_YEARWEEK},PERIOD_ALLOWED_LENGTH_WEEK,"",mainMark);
+		addPeriodIndicator(root,now,new String[][]{PERIOD_FORMAT_MONTH,PERIOD_FORMAT_YEARMONTH},PERIOD_ALLOWED_LENGTH_MONTH,"",mainMark);
+		addPeriodIndicator(root,now,new String[][]{PERIOD_FORMAT_YEAR},PERIOD_ALLOWED_LENGTH_YEAR,"",mainMark);
 		if (detailMark!=null) {
 			root.addAttribute("intervalStartDetail",DateUtils.format(detailMark,DateUtils.FORMAT_GENERICDATETIME));
-			addPeriodIndicator(root,new String[][]{PERIOD_FORMAT_HOUR,PERIOD_FORMAT_DATEHOUR},PERIOD_ALLOWED_LENGTH_HOUR,"Detail",detailMark);
-			addPeriodIndicator(root,new String[][]{PERIOD_FORMAT_DAY,PERIOD_FORMAT_DATE,PERIOD_FORMAT_WEEKDAY},PERIOD_ALLOWED_LENGTH_DAY,"Detail",detailMark);
-			addPeriodIndicator(root,new String[][]{PERIOD_FORMAT_WEEK,PERIOD_FORMAT_YEARWEEK},PERIOD_ALLOWED_LENGTH_WEEK,"Detail",detailMark);
-			addPeriodIndicator(root,new String[][]{PERIOD_FORMAT_MONTH,PERIOD_FORMAT_YEARMONTH},PERIOD_ALLOWED_LENGTH_MONTH,"Detail",detailMark);
-			addPeriodIndicator(root,new String[][]{PERIOD_FORMAT_YEAR},PERIOD_ALLOWED_LENGTH_YEAR,"Detail",detailMark);
+			addPeriodIndicator(root,now,new String[][]{PERIOD_FORMAT_HOUR,PERIOD_FORMAT_DATEHOUR},PERIOD_ALLOWED_LENGTH_HOUR,"Detail",detailMark);
+			addPeriodIndicator(root,now,new String[][]{PERIOD_FORMAT_DAY,PERIOD_FORMAT_DATE,PERIOD_FORMAT_WEEKDAY},PERIOD_ALLOWED_LENGTH_DAY,"Detail",detailMark);
+			addPeriodIndicator(root,now,new String[][]{PERIOD_FORMAT_WEEK,PERIOD_FORMAT_YEARWEEK},PERIOD_ALLOWED_LENGTH_WEEK,"Detail",detailMark);
+			addPeriodIndicator(root,now,new String[][]{PERIOD_FORMAT_MONTH,PERIOD_FORMAT_YEARMONTH},PERIOD_ALLOWED_LENGTH_MONTH,"Detail",detailMark);
+			addPeriodIndicator(root,now,new String[][]{PERIOD_FORMAT_YEAR},PERIOD_ALLOWED_LENGTH_YEAR,"Detail",detailMark);
 		}
 		return root;
 	}
@@ -157,14 +136,14 @@ public class StatisticsKeeperXmlBuilder implements StatisticsKeeperIterationHand
 	public void closeGroup(Object data) {
 	}
 
-	private void addPeriodIndicator(XmlBuilder xml, String[][] periods, long allowedLength, String suffix, Date mark) {
+	private void addPeriodIndicator(XmlBuilder xml, Date now, String[][] periods, long allowedLength, String suffix, Date mark) {
 		long intervalStart=mark.getTime(); 
 		long intervalEnd=now.getTime();
 		if ((intervalEnd-intervalStart)<=allowedLength) {
-			long midterm=(intervalEnd>>1)+(intervalStart>>1);
+			Date midterm=new Date((intervalEnd>>1)+(intervalStart>>1));
 			for (int i=0; i<periods.length; i++) {
 				String[] periodPair=periods[i];
-				xml.addAttribute(periodPair[0]+suffix,DateUtils.format(new Date(midterm),periodPair[1]));
+				xml.addAttribute(periodPair[0]+suffix,DateUtils.format(midterm,periodPair[1]));
 			}
 		}
 	}
