@@ -1,6 +1,9 @@
 /*
  * $Log: SendJmsMessageExecute.java,v $
- * Revision 1.9  2009-08-31 09:48:27  m168309
+ * Revision 1.10  2009-08-31 12:44:28  m168309
+ * fixed cookie bug
+ *
+ * Revision 1.9  2009/08/31 09:48:27  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added context facility for the JMS correlationId (in xml processing instructions)
  *
  * Revision 1.8  2009/08/26 15:50:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -63,7 +66,7 @@ import org.apache.struts.upload.FormFile;
  * @author  Johan Verrips
  */
 public final class SendJmsMessageExecute extends ActionBase {
-	public static final String version = "$RCSfile: SendJmsMessageExecute.java,v $ $Revision: 1.9 $ $Date: 2009-08-31 09:48:27 $";
+	public static final String version = "$RCSfile: SendJmsMessageExecute.java,v $ $Revision: 1.10 $ $Date: 2009-08-31 12:44:28 $";
 	
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 	
@@ -115,10 +118,11 @@ public final class SendJmsMessageExecute extends ActionBase {
 		    qms.setReplyToName(form_replyToName);
 	
 		processMessage(qms, "testmsg_"+Misc.createUUID(), form_message);
+
+		StoreFormData(sendJmsMessageForm);
 	
 	    // Report any errors we have discovered back to the original form
 	    if (!errors.isEmpty()) {
-		    StoreFormData(sendJmsMessageForm);
 		    saveErrors(request, errors);
 	        return (new ActionForward(mapping.getInput()));
 	    }
