@@ -1,6 +1,9 @@
 /*
  * $Log: ResultBlock2Sender.java,v $
- * Revision 1.7  2008-12-23 12:50:25  m168309
+ * Revision 1.8  2009-08-31 09:21:58  m168309
+ * moved deleting of originalBlock sessionkey from ResultBlock2Sender to StreamTransformerPipe
+ *
+ * Revision 1.7  2008/12/23 12:50:25  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added storeOriginalBlock attribute
  *
  * Revision 1.6  2007/10/08 12:14:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -129,7 +132,7 @@ public class ResultBlock2Sender extends Result2StringWriter {
 		return result;
 	}
 
-	protected int getLevel(String streamId) throws SenderException {
+	public int getLevel(String streamId) throws SenderException {
 		Integer level = (Integer)levels.get(streamId);
 		if (level==null) {
 			throw new SenderException("no level found for stream ["+streamId+"]");
@@ -176,10 +179,6 @@ public class ResultBlock2Sender extends Result2StringWriter {
 					psender.sendMessage(streamId+"-"+incCounter(streamId),message,prc); 
 				} else {
 					sender.sendMessage(streamId+"-"+incCounter(streamId),message); 
-				}
-				// if BatchFileTransformerPipe.storeOriginalBlock="true"
-				if (session.containsKey(BatchFileTransformerPipe.originalBlockKey)) {
-					session.remove(BatchFileTransformerPipe.originalBlockKey);
 				}
 			}
 		}

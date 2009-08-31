@@ -1,6 +1,9 @@
 /*
  * $Log: StreamTransformerPipe.java,v $
- * Revision 1.18  2009-03-16 16:11:20  L190409
+ * Revision 1.19  2009-08-31 09:21:58  m168309
+ * moved deleting of originalBlock sessionkey from ResultBlock2Sender to StreamTransformerPipe
+ *
+ * Revision 1.18  2009/03/16 16:11:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added charset attribute, default charset is now UTF-8
  *
  * Revision 1.17  2008/12/30 17:01:13  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -112,7 +115,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class StreamTransformerPipe extends FixedForwardPipe {
-	public static final String version = "$RCSfile: StreamTransformerPipe.java,v $  $Revision: 1.18 $ $Date: 2009-03-16 16:11:20 $";
+	public static final String version = "$RCSfile: StreamTransformerPipe.java,v $  $Revision: 1.19 $ $Date: 2009-08-31 09:21:58 $";
 
 	public static final String originalBlockKey="originalBlock";
 
@@ -433,6 +436,14 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 				} else {
 					if (log.isDebugEnabled()) log.debug("closing block ["+blockName+"] for resultHandler ["+handler.getName()+"] due to "+reason);
 					handler.closeBlock(session, streamId, blockName, prc);
+					if (isStoreOriginalBlock()) {
+						if (handler instanceof ResultBlock2Sender) {
+							//TODO: move level functionality form ResultBlock2Sender to this class
+							if (((ResultBlock2Sender)handler).getLevel(streamId)==0) {
+								session.remove(originalBlockKey);
+							}
+						}
+					}
 				}
 			} else {
 				log.warn("closeBlock("+blockName+") without resultHandler");
@@ -486,14 +497,16 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 				openBlock(session, streamId, resultHandler, flow, flow.getOpenBlockBeforeLine(), prc);
 
 				if (isStoreOriginalBlock()) {
-					if (!session.containsKey(originalBlockKey)) {
-						sb = new StringBuffer();
+					if (resultHandler instanceof ResultBlock2Sender) {
+						if (!session.containsKey(originalBlockKey)) {
+							sb = new StringBuffer();
+						}
+						if (sb.length()>0) {
+							sb.append(System.getProperty("line.separator"));
+						}
+						sb.append(rawRecord);
+						session.put(originalBlockKey, sb.toString());
 					}
-					if (sb.length()>0) {
-						sb.append(System.getProperty("line.separator"));
-					}
-					sb.append(rawRecord);
-					session.put(originalBlockKey, sb.toString());
 				}
 
 				IRecordHandler curHandler = flow.getRecordHandler(); 
