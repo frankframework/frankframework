@@ -1,6 +1,9 @@
 /*
  * $Log: SendJmsMessageExecute.java,v $
- * Revision 1.8  2009-08-26 15:50:10  L190409
+ * Revision 1.9  2009-08-31 09:48:27  m168309
+ * added context facility for the JMS correlationId (in xml processing instructions)
+ *
+ * Revision 1.8  2009/08/26 15:50:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * catch TimeOutException
  *
  * Revision 1.7  2008/12/16 13:37:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -22,7 +25,9 @@
 package nl.nn.adapterframework.webcontrol.action;
 
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
@@ -47,12 +52,18 @@ import org.apache.struts.upload.FormFile;
 
 /**
  * Executes the sending of a message with JMS.
+ * <p>
+ * For setting the JMS correlationId a processing instruction with the name <code>ibiscontext</code> and key <code>tcid</code> has to be used<br/><br/>
+ * example:<br/><code><pre>
+ * &lt;?ibiscontext tcid=1234567890/&gt;
+ * &lt;message&gt;This is a Message&lt;/message&gt;
+ * </pre></code><br/>
  * 
  * @version Id
  * @author  Johan Verrips
  */
 public final class SendJmsMessageExecute extends ActionBase {
-	public static final String version = "$RCSfile: SendJmsMessageExecute.java,v $ $Revision: 1.8 $ $Date: 2009-08-26 15:50:10 $";
+	public static final String version = "$RCSfile: SendJmsMessageExecute.java,v $ $Revision: 1.9 $ $Date: 2009-08-31 09:48:27 $";
 	
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 	
@@ -103,19 +114,7 @@ public final class SendJmsMessageExecute extends ActionBase {
 	    if ((form_replyToName!=null) && (form_replyToName.length()>0))
 		    qms.setReplyToName(form_replyToName);
 	
-	    try {
-		    qms.open();
-	        qms.sendMessage("testmsg_"+Misc.createUUID(),form_message);
-	    } catch (SenderException e) {
-	        error("error occured sending message",e);
-	    } catch (TimeOutException e) {
-			error("error occured sending message",e);
-		}
-	    try {
-		    qms.close();
-	    } catch (Exception e) {
-			error("error occured on closing connection",e);
-	    }
+		processMessage(qms, "testmsg_"+Misc.createUUID(), form_message);
 	
 	    // Report any errors we have discovered back to the original form
 	    if (!errors.isEmpty()) {
@@ -149,6 +148,42 @@ public final class SendJmsMessageExecute extends ActionBase {
 	    log.debug("forward to success");
 	    return (mapping.findForward("success"));
 	
+	}
+
+	private void processMessage(JmsSender qms, String messageId, String message) {
+		//PipeLineSession pls=new PipeLineSession();
+		Map ibisContexts = XmlUtils.getIbisContext(message);
+		String technicalCorrelationId = messageId;
+		if (ibisContexts!=null) {
+			String contextDump = "ibisContext:";
+			for (Iterator it = ibisContexts.keySet().iterator(); it.hasNext();) {
+				String key = (String)it.next();
+				String value = (String)ibisContexts.get(key);
+				if (log.isDebugEnabled()) {
+					contextDump = contextDump + "\n " + key + "=[" + value + "]";
+				}
+				if (key.equals("tcid")) {
+					technicalCorrelationId = value;
+				}
+			}
+			if (log.isDebugEnabled()) {
+				log.debug(contextDump);
+			}
+		}
+
+		try {
+			qms.open();
+			qms.sendMessage(technicalCorrelationId,message);
+		} catch (SenderException e) {
+			error("error occured sending message",e);
+		} catch (TimeOutException e) {
+			error("error occured sending message",e);
+		}
+		try {
+			qms.close();
+		} catch (Exception e) {
+			error("error occured on closing connection",e);
+		}
 	}
 	
 	public void StoreFormData(DynaActionForm form){
