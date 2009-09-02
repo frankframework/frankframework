@@ -1,6 +1,9 @@
 /*
  * $Log: ActionBase.java,v $
- * Revision 1.8  2008-05-22 07:29:29  europe\L190409
+ * Revision 1.9  2009-09-02 13:22:31  L190409
+ * avoid NPE
+ *
+ * Revision 1.8  2008/05/22 07:29:29  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added error and warn methods
  *
  * Revision 1.7  2007/12/10 10:24:53  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -57,7 +60,7 @@ import org.apache.struts.util.MessageResources;
  * @see     org.apache.struts.action.Action
  */
 public abstract class ActionBase extends Action {
-	public static final String version="$RCSfile: ActionBase.java,v $ $Revision: 1.8 $ $Date: 2008-05-22 07:29:29 $";
+	public static final String version="$RCSfile: ActionBase.java,v $ $Revision: 1.9 $ $Date: 2009-09-02 13:22:31 $";
 	protected Logger log = LogUtil.getLogger(this);
 
     protected Locale locale;
@@ -181,14 +184,17 @@ public abstract class ActionBase extends Action {
         session = request.getSession();
         String attributeKey=AppConstants.getInstance().getProperty(ConfigurationServlet.KEY_MANAGER);
         ibisManager = (IbisManager) getServlet().getServletContext().getAttribute(attributeKey);
-        log.debug("retrieved ibisManager ["+ClassUtils.nameOf(ibisManager)+"]["+ibisManager+"] from servlet context attribute ["+attributeKey+"]");
-        // TODO: explain why this shouldn't happen too early
-        config = ibisManager.getConfiguration(); // NB: Hopefully this doesn't happen too early on in the game
-        log = LogUtil.getLogger(this); // logging category for this class
+		if (ibisManager==null) {
+			log.warn("Could not retrieve ibisManager from context");
+		} else {
+			log.debug("retrieved ibisManager ["+ClassUtils.nameOf(ibisManager)+"]["+ibisManager+"] from servlet context attribute ["+attributeKey+"]");
+			// TODO: explain why this shouldn't happen too early
+			config = ibisManager.getConfiguration(); // NB: Hopefully this doesn't happen too early on in the game
  
-        if (null == config) {
-            log.info("initAction(): configuration not present in context. Configuration probably has errors. see log");
-        }
+			if (null == config) {
+				log.info("initAction(): configuration not present in context. Configuration probably has errors. see log");
+			}
+		}
     }
 
     /**
