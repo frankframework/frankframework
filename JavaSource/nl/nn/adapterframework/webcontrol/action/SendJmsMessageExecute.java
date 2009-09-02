@@ -1,6 +1,9 @@
 /*
  * $Log: SendJmsMessageExecute.java,v $
- * Revision 1.10  2009-08-31 12:44:28  m168309
+ * Revision 1.11  2009-09-02 12:22:57  L190409
+ * corrected location of debug-guard
+ *
+ * Revision 1.10  2009/08/31 12:44:28  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * fixed cookie bug
  *
  * Revision 1.9  2009/08/31 09:48:27  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -66,7 +69,7 @@ import org.apache.struts.upload.FormFile;
  * @author  Johan Verrips
  */
 public final class SendJmsMessageExecute extends ActionBase {
-	public static final String version = "$RCSfile: SendJmsMessageExecute.java,v $ $Revision: 1.10 $ $Date: 2009-08-31 12:44:28 $";
+	public static final String version = "$RCSfile: SendJmsMessageExecute.java,v $ $Revision: 1.11 $ $Date: 2009-09-02 12:22:57 $";
 	
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 	
@@ -158,19 +161,19 @@ public final class SendJmsMessageExecute extends ActionBase {
 		//PipeLineSession pls=new PipeLineSession();
 		Map ibisContexts = XmlUtils.getIbisContext(message);
 		String technicalCorrelationId = messageId;
-		if (ibisContexts!=null) {
-			String contextDump = "ibisContext:";
-			for (Iterator it = ibisContexts.keySet().iterator(); it.hasNext();) {
-				String key = (String)it.next();
-				String value = (String)ibisContexts.get(key);
-				if (log.isDebugEnabled()) {
-					contextDump = contextDump + "\n " + key + "=[" + value + "]";
+		if (log.isDebugEnabled()) {
+			if (ibisContexts!=null) {
+				String contextDump = "ibisContext:";
+				for (Iterator it = ibisContexts.keySet().iterator(); it.hasNext();) {
+					String key = (String)it.next();
+					String value = (String)ibisContexts.get(key);
+					if (log.isDebugEnabled()) {
+						contextDump = contextDump + "\n " + key + "=[" + value + "]";
+					}
+					if (key.equals("tcid")) {
+						technicalCorrelationId = value;
+					}
 				}
-				if (key.equals("tcid")) {
-					technicalCorrelationId = value;
-				}
-			}
-			if (log.isDebugEnabled()) {
 				log.debug(contextDump);
 			}
 		}
