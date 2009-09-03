@@ -1,6 +1,9 @@
 /*
  * $Log: SendJmsMessageExecute.java,v $
- * Revision 1.11  2009-09-02 12:22:57  L190409
+ * Revision 1.12  2009-09-03 09:01:23  m168309
+ * added zipfile-upload facility
+ *
+ * Revision 1.11  2009/09/02 12:22:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected location of debug-guard
  *
  * Revision 1.10  2009/08/31 12:44:28  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -30,10 +33,13 @@
  */
 package nl.nn.adapterframework.webcontrol.action;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
@@ -61,7 +67,7 @@ import org.apache.struts.upload.FormFile;
  * <p>
  * For setting the JMS correlationId a processing instruction with the name <code>ibiscontext</code> and key <code>tcid</code> has to be used<br/><br/>
  * example:<br/><code><pre>
- * &lt;?ibiscontext tcid=1234567890/&gt;
+ * &lt;?ibiscontext tcid=1234567890?&gt;
  * &lt;message&gt;This is a Message&lt;/message&gt;
  * </pre></code><br/>
  * 
@@ -69,7 +75,7 @@ import org.apache.struts.upload.FormFile;
  * @author  Johan Verrips
  */
 public final class SendJmsMessageExecute extends ActionBase {
-	public static final String version = "$RCSfile: SendJmsMessageExecute.java,v $ $Revision: 1.11 $ $Date: 2009-09-02 12:22:57 $";
+	public static final String version = "$RCSfile: SendJmsMessageExecute.java,v $ $Revision: 1.12 $ $Date: 2009-09-03 09:01:23 $";
 	
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 	
@@ -101,26 +107,63 @@ public final class SendJmsMessageExecute extends ActionBase {
 	    String form_message = (String) sendJmsMessageForm.get("message");
 	    FormFile form_file=(FormFile) sendJmsMessageForm.get("file");
 	    String form_replyToName=(String) sendJmsMessageForm.get("replyToName");
-	
-	
-		if ((form_file!=null) && (form_file.getFileSize()>0)){
-			form_message=XmlUtils.readXml(form_file.getFileData(),request.getCharacterEncoding(),false);
+
+		// if upload is choosen, it prevails over the message
+		if ((form_file != null) && (form_file.getFileSize() > 0)) {
 			log.debug("Upload of file ["+form_file.getFileName()+"] ContentType["+form_file.getContentType()+"]");
-	
+			if (form_file.getFileName().endsWith(".zip")) {
+				ZipInputStream archive = new ZipInputStream(new ByteArrayInputStream(form_file.getFileData()));
+				for (ZipEntry entry=archive.getNextEntry(); entry!=null; entry=archive.getNextEntry()) {
+					String name = entry.getName();
+					int size = (int)entry.getSize();
+					if (size>0) {
+						byte[] b=new byte[size];
+						int rb=0;
+						int chunk=0;
+						while (((int)size - rb) > 0) {
+							chunk=archive.read(b,rb,(int)size - rb);
+							if (chunk==-1) {
+								break;
+							}
+							rb+=chunk;
+						}
+						String currentMessage = XmlUtils.readXml(b,0,rb,request.getCharacterEncoding(),false);
+						// initiate MessageSender
+						JmsSender qms = new JmsSender();
+						qms.setName("SendJmsMessageAction");
+						qms.setJmsRealm(form_jmsRealm);
+						qms.setDestinationName(form_destinationName);
+						qms.setPersistent(form_persistent);
+						qms.setDestinationType(form_destinationType);
+						if ((form_replyToName!=null) && (form_replyToName.length()>0))
+							qms.setReplyToName(form_replyToName);
+		
+						processMessage(qms, name+"_" + Misc.createSimpleUUID(), currentMessage);
+					}
+					archive.closeEntry();
+				}
+				archive.close();
+				form_message = null;
+			} else {
+				form_message = XmlUtils.readXml(form_file.getFileData(),request.getCharacterEncoding(),false);
+			}
 		} else {
 			form_message=new String(form_message.getBytes(),Misc.DEFAULT_INPUT_STREAM_ENCODING);
 		}
-	    // initiate MessageSender
-	    JmsSender qms = new JmsSender();
-	    qms.setName("SendJmsMessageAction");
-	    qms.setJmsRealm(form_jmsRealm);
-	    qms.setDestinationName(form_destinationName);
-	    qms.setPersistent(form_persistent);
-	    qms.setDestinationType(form_destinationType);
-	    if ((form_replyToName!=null) && (form_replyToName.length()>0))
-		    qms.setReplyToName(form_replyToName);
+			
+		if(form_message != null && form_message.length() > 0) {
+			// initiate MessageSender
+			JmsSender qms = new JmsSender();
+			qms.setName("SendJmsMessageAction");
+			qms.setJmsRealm(form_jmsRealm);
+			qms.setDestinationName(form_destinationName);
+			qms.setPersistent(form_persistent);
+			qms.setDestinationType(form_destinationType);
+			if ((form_replyToName!=null) && (form_replyToName.length()>0))
+				qms.setReplyToName(form_replyToName);
 	
-		processMessage(qms, "testmsg_"+Misc.createUUID(), form_message);
+			processMessage(qms, "testmsg_"+Misc.createUUID(), form_message);
+		}
 
 		StoreFormData(sendJmsMessageForm);
 	
