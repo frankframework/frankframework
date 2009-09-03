@@ -1,6 +1,9 @@
 /*
  * $Log: TestPipeLineExecute.java,v $
- * Revision 1.17  2009-09-03 08:48:00  m168309
+ * Revision 1.18  2009-09-03 08:58:10  m168309
+ * adjusted javadoc
+ *
+ * Revision 1.17  2009/09/03 08:48:00  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * bugfix: or upload or message
  *
  * Revision 1.16  2009/08/31 09:48:12  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -71,8 +74,8 @@ import org.apache.struts.upload.FormFile;
  * <p>
  * SessionKeys can be created by using processing instructions with the name <code>ibiscontext</code><br/><br/>
  * example:<br/><code><pre>
- * &lt;?ibiscontext ifsaServiceName=GETPIPELINENAME/&gt;
- * &lt;?ibiscontext tcid=1234567890/&gt;
+ * &lt;?ibiscontext ifsaServiceName=GETPIPELINENAME?&gt;
+ * &lt;?ibiscontext tcid=1234567890?&gt;
  * &lt;message&gt;This is a Message&lt;/message&gt;
  * </pre></code><br/>
  * When the key <code>tcid</code> is given, it is used as <code>technicalCorrelationId</code> in the <code>PipeLineSession</code>. 
@@ -84,7 +87,7 @@ import org.apache.struts.upload.FormFile;
  * @version Id
  */
 public final class TestPipeLineExecute extends ActionBase {
-	public static final String version="$RCSfile: TestPipeLineExecute.java,v $  $Revision: 1.17 $ $Date: 2009-09-03 08:48:00 $";
+	public static final String version="$RCSfile: TestPipeLineExecute.java,v $  $Revision: 1.18 $ $Date: 2009-09-03 08:58:10 $";
 	
 	public ActionForward execute(
 	    ActionMapping mapping,
