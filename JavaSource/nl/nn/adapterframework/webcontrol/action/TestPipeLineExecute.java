@@ -1,6 +1,9 @@
 /*
  * $Log: TestPipeLineExecute.java,v $
- * Revision 1.16  2009-08-31 09:48:12  m168309
+ * Revision 1.17  2009-09-03 08:48:00  m168309
+ * bugfix: or upload or message
+ *
+ * Revision 1.16  2009/08/31 09:48:12  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted javadoc
  *
  * Revision 1.15  2009/03/17 10:52:48  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -81,7 +84,7 @@ import org.apache.struts.upload.FormFile;
  * @version Id
  */
 public final class TestPipeLineExecute extends ActionBase {
-	public static final String version="$RCSfile: TestPipeLineExecute.java,v $  $Revision: 1.16 $ $Date: 2009-08-31 09:48:12 $";
+	public static final String version="$RCSfile: TestPipeLineExecute.java,v $  $Revision: 1.17 $ $Date: 2009-09-03 08:48:00 $";
 	
 	public ActionForward execute(
 	    ActionMapping mapping,
@@ -170,6 +173,7 @@ public final class TestPipeLineExecute extends ActionBase {
 					archive.closeEntry();
 	    		}
 	    		archive.close();
+	    		form_message = null;
 	    	} else {
 				form_message = XmlUtils.readXml(form_file.getFileData(),request.getCharacterEncoding(),false);
 	    	}

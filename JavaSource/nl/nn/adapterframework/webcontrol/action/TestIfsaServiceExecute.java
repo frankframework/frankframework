@@ -1,6 +1,9 @@
 /*
  * $Log: TestIfsaServiceExecute.java,v $
- * Revision 1.8  2008-12-16 13:37:50  L190409
+ * Revision 1.9  2009-09-03 08:47:27  m168309
+ * bugfix: or upload or message
+ *
+ * Revision 1.8  2008/12/16 13:37:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * read messages in the right encoding
  *
  * Revision 1.7  2008/05/22 07:44:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -28,9 +31,12 @@
  */
 package nl.nn.adapterframework.webcontrol.action;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
@@ -58,7 +64,7 @@ import org.apache.struts.upload.FormFile;
  * @version Id
  */
 public final class TestIfsaServiceExecute extends ActionBase {
-	public static final String version = "$RCSfile: TestIfsaServiceExecute.java,v $ $Revision: 1.8 $ $Date: 2008-12-16 13:37:50 $";
+	public static final String version = "$RCSfile: TestIfsaServiceExecute.java,v $ $Revision: 1.9 $ $Date: 2009-09-03 08:47:27 $";
 	
 	public ActionForward execute(
 	    ActionMapping mapping,
@@ -90,37 +96,90 @@ public final class TestIfsaServiceExecute extends ActionBase {
 	    String form_messageProtocol = (String) sendIfsaMessageForm.get("messageProtocol");
 	    String form_message = (String) sendIfsaMessageForm.get("message");
 	    FormFile form_file=(FormFile) sendIfsaMessageForm.get("file");
-	
-	
-		if ((form_file!=null) && (form_file.getFileSize()>0)){
-			form_message=XmlUtils.readXml(form_file.getFileData(),request.getCharacterEncoding(),false);
+
+		String result="";
+
+		// if upload is choosen, it prevails over the message
+		if ((form_file != null) && (form_file.getFileSize() > 0)) {
 			log.debug("Upload of file ["+form_file.getFileName()+"] ContentType["+form_file.getContentType()+"]");
+			if (form_file.getFileName().endsWith(".zip")) {
+				ZipInputStream archive = new ZipInputStream(new ByteArrayInputStream(form_file.getFileData()));
+				for (ZipEntry entry=archive.getNextEntry(); entry!=null; entry=archive.getNextEntry()) {
+					String name = entry.getName();
+					int size = (int)entry.getSize();
+					if (size>0) {
+						byte[] b=new byte[size];
+						int rb=0;
+						int chunk=0;
+						while (((int)size - rb) > 0) {
+							chunk=archive.read(b,rb,(int)size - rb);
+							if (chunk==-1) {
+								break;
+							}
+							rb+=chunk;
+						}
+						String currentMessage = XmlUtils.readXml(b,0,rb,request.getCharacterEncoding(),false);
+						result += name + ":";
+						IfsaRequesterSender sender;
+						try {
+							// initiate MessageSender
+							sender = new IfsaRequesterSender();
+							try {
+								sender.setName("testIfsaServiceAction");
+								sender.setApplicationId(form_applicationId);
+								sender.setServiceId(form_serviceId);
+								sender.setMessageProtocol(form_messageProtocol);
+			
+								sender.configure();
+								sender.open();
+								sender.sendMessage(name+"_" + Misc.createSimpleUUID(), currentMessage);
+								result += "success\n";
+							} catch (Throwable t) {
+								error("error occured sending message",t);
+								result += "failure\n";
+							} finally {
+								sender.close();
+							}
+						} catch (Exception e) {
+							error("error occured on creating object or closing connection",e);
+						}
+					}
+					archive.closeEntry();
+				}
+				archive.close();
+				form_message = null;
+			} else {
+				form_message = XmlUtils.readXml(form_file.getFileData(),request.getCharacterEncoding(),false);
+			}
 		} else {
 			form_message=new String(form_message.getBytes(),Misc.DEFAULT_INPUT_STREAM_ENCODING);
 		}
-	
-		IfsaRequesterSender sender;
-		String result="";
-	    try {
-			// initiate MessageSender
-			sender = new IfsaRequesterSender();
+			
+		if(form_message != null && form_message.length() > 0) {
+			IfsaRequesterSender sender;
+			result="";
 			try {
-				sender.setName("testIfsaServiceAction");
-				sender.setApplicationId(form_applicationId);
-				sender.setServiceId(form_serviceId);
-				sender.setMessageProtocol(form_messageProtocol);
+				// initiate MessageSender
+				sender = new IfsaRequesterSender();
+				try {
+					sender.setName("testIfsaServiceAction");
+					sender.setApplicationId(form_applicationId);
+					sender.setServiceId(form_serviceId);
+					sender.setMessageProtocol(form_messageProtocol);
+			
+					sender.configure();
+					sender.open();
+					result = sender.sendMessage("testmsg_"+Misc.createUUID(),form_message);
+				} catch (Throwable t) {
+					error("error occured sending message",t);
+				} finally {
+					sender.close();
+				}
+			} catch (Exception e) {
+				error("error occured on creating object or closing connection",e);
+			}
+		}
 	
-		    	sender.configure();
-			    sender.open();
-		        result = sender.sendMessage("testmsg_"+Misc.createUUID(),form_message);
-		    } catch (Throwable t) {
-		    	error("error occured sending message",t);
-		    } finally {
-				sender.close();
-		    }
-	    } catch (Exception e) {
-			error("error occured on creating object or closing connection",e);
-	    }
 		StoreFormData(form_message, result, sendIfsaMessageForm);
 	
 	    // Report any errors we have discovered back to the original form
