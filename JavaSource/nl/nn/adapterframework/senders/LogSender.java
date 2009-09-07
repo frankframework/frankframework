@@ -1,6 +1,9 @@
 /*
  * $Log: LogSender.java,v $
- * Revision 1.1  2008-08-06 16:36:39  europe\L190409
+ * Revision 1.2  2009-09-07 13:32:07  L190409
+ * use log from ancestor
+ *
+ * Revision 1.1  2008/08/06 16:36:39  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * moved from pipes to senders package
  *
  */
@@ -17,7 +20,6 @@ import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 
 /**
  * Sender that just logs its message.
@@ -39,7 +41,6 @@ public class LogSender extends SenderWithParametersBase implements IParameterHan
 	private String logCategory=null;
 
 	protected Level level;
-	protected Logger log;
 
 	public void configure() throws ConfigurationException {
 		super.configure();
