@@ -1,6 +1,10 @@
 /*
  * $Log: Locker.java,v $
- * Revision 1.2  2009-03-27 10:56:16  m00f069
+ * Revision 1.3  2009-09-07 13:30:40  L190409
+ * use log from ancestor
+ * removed unused code
+ *
+ * Revision 1.2  2009/03/27 10:56:16  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Typo
  *
  * Revision 1.1  2009/03/13 14:36:11  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -21,12 +25,9 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jdbc.JdbcFacade;
-import nl.nn.adapterframework.util.DateUtils;
-import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
 
 /**
  * Locker of scheduler jobs.
@@ -70,7 +71,6 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class Locker extends JdbcFacade {
-	protected Logger log=LogUtil.getLogger(this);
 
 	private String name;
 	private String objectId;
@@ -90,7 +90,6 @@ public class Locker extends JdbcFacade {
 		}
 		if (StringUtils.isNotEmpty(getDateFormatSuffix())) {
 			try {
-				Date currentDate = new Date();
 				formatter = new SimpleDateFormat(getDateFormatSuffix());
 			} catch (IllegalArgumentException ex){
 				throw new ConfigurationException(getLogPrefix()+"has an illegal value for dateFormat", ex);
@@ -116,7 +115,6 @@ public class Locker extends JdbcFacade {
 		log.debug("preparing to set lock [" + objectIdWithSuffix + "]");
 
 		Connection conn;
-		String result;
 		try {
 			conn = getConnection();
 		} catch (JdbcException e) {
@@ -157,7 +155,6 @@ public class Locker extends JdbcFacade {
 			log.debug("preparing to remove lock [" + objectIdWithSuffix + "]");
 
 			Connection conn;
-			String result;
 			try {
 				conn = getConnection();
 			} catch (JdbcException e) {
