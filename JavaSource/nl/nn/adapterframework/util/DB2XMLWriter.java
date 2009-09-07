@@ -1,6 +1,10 @@
 /*
  * $Log: DB2XMLWriter.java,v $
- * Revision 1.18  2009-09-07 13:33:34  L190409
+ * Revision 1.19  2009-09-07 13:45:51  L190409
+ * filled deliberatly empty catch blocks with debug statement
+ * replaced e.printStackTrace with log.error()
+ *
+ * Revision 1.18  2009/09/07 13:33:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * replaced new String() by literal
  * replaced '&' by '&&'
  *
@@ -89,7 +93,7 @@ import org.apache.log4j.Logger;
  **/
 
 public class DB2XMLWriter {
-	public static final String version="$RCSfile: DB2XMLWriter.java,v $ $Revision: 1.18 $ $Date: 2009-09-07 13:33:34 $";
+	public static final String version="$RCSfile: DB2XMLWriter.java,v $ $Revision: 1.19 $ $Date: 2009-09-07 13:45:51 $";
 	protected static Logger log = LogUtil.getLogger(DB2XMLWriter.class);
 
 	private String docname = "result";
@@ -265,7 +269,7 @@ public class DB2XMLWriter {
 			}
 			mainElement.addSubElement(queryresult);
 		} catch (Exception e) {
-			log.error("Error occured at row: " + rowCounter, e);
+			log.error("Error occured at row [" + rowCounter+"]", e);
 		}
 		String answer = mainElement.toXML();
 		return answer;
