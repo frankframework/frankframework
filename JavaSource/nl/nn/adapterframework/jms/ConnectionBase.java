@@ -1,6 +1,9 @@
 /*
  * $Log: ConnectionBase.java,v $
- * Revision 1.16  2009-06-29 12:12:09  L190409
+ * Revision 1.17  2009-09-07 13:18:24  L190409
+ * moved return statement out of finally clause
+ *
+ * Revision 1.16  2009/06/29 12:12:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed modifications for connection pooling tracing
  *
  * Revision 1.15  2009/06/05 14:19:23  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -93,7 +96,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class ConnectionBase  {
-	public static final String version="$RCSfile: ConnectionBase.java,v $ $Revision: 1.16 $ $Date: 2009-06-29 12:12:09 $";
+	public static final String version="$RCSfile: ConnectionBase.java,v $ $Revision: 1.17 $ $Date: 2009-09-07 13:18:24 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private int referenceCount;
@@ -165,8 +168,8 @@ public class ConnectionBase  {
 				connectionFactory = null;
 				globalConnection=null;
 				context = null;
-				return true;
 			}
+			return true;
 		} else {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"reference count ["+referenceCount+"], no cleanup");
 			return false;
