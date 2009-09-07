@@ -1,6 +1,9 @@
 /*
  * $Log: ParameterValue.java,v $
- * Revision 1.4  2007-02-12 13:59:42  europe\L190409
+ * Revision 1.5  2009-09-07 13:27:17  L190409
+ * added nested exception to new exception thrown
+ *
+ * Revision 1.4  2007/02/12 13:59:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Logger from LogUtil
  *
  * Revision 1.3  2004/10/14 16:08:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -35,7 +38,7 @@ import org.w3c.dom.Element;
  * @version Id
  */
 public class ParameterValue {
-	public static final String version="$RCSfile: ParameterValue.java,v $ $Revision: 1.4 $ $Date: 2007-02-12 13:59:42 $";
+	public static final String version="$RCSfile: ParameterValue.java,v $ $Revision: 1.5 $ $Date: 2009-09-07 13:27:17 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private Object value;
@@ -144,7 +147,7 @@ public class ParameterValue {
 			Element holder = XmlUtils.buildElement("<root>"+value+"</root>");
 			return XmlUtils.getChildTags(holder, "*");
 		} catch (DomBuilderException e) {
-			throw new ParameterException("Parameter ["+getDefinition().getName()+"] cannot create Collection from ["+value+"]");
+			throw new ParameterException("Parameter ["+getDefinition().getName()+"] cannot create Collection from ["+value+"]", e);
 		}
 	}
 }
