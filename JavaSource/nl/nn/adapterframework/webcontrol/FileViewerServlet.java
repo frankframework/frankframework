@@ -1,6 +1,9 @@
 /*
  * $Log: FileViewerServlet.java,v $
- * Revision 1.11  2009-04-03 14:34:36  m168309
+ * Revision 1.12  2009-09-07 13:54:23  L190409
+ * made some static variables final
+ *
+ * Revision 1.11  2009/04/03 14:34:36  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added statistics file viewer
  *
  * Revision 1.10  2007/09/24 13:05:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -89,19 +92,19 @@ import org.apache.log4j.Logger;
  * @author Johan Verrips 
  */
 public class FileViewerServlet extends HttpServlet  {
-	public static final String version = "$RCSfile: FileViewerServlet.java,v $ $Revision: 1.11 $ $Date: 2009-04-03 14:34:36 $";
+	public static final String version = "$RCSfile: FileViewerServlet.java,v $ $Revision: 1.12 $ $Date: 2009-09-07 13:54:23 $";
 	protected static Logger log = LogUtil.getLogger(FileViewerServlet.class);	
 
 	// key that is looked up to retrieve texts to be signalled
-	private static String fvConfigKey="FileViewerServlet.signal";
+	private static final String fvConfigKey="FileViewerServlet.signal";
 
-	private static String log4j_html_xslt = "/xml/xsl/log4j_html.xsl";
-	private static String log4j_text_xslt = "/xml/xsl/log4j_text.xsl";
-	private static String log4j_prefix    = "<log4j:log4j xmlns:log4j=\"http://jakarta.apache.org/log4\">\n\n";
-	private static String log4j_postfix	  = "</log4j:log4j>";
-	private static String stats_html_xslt = "/xml/xsl/stats_html.xsl";
-	private static String stats_prefix    = "<statisticsCollections>";
-	private static String stats_postfix	  = "</statisticsCollections>";
+	private static final String log4j_html_xslt = "/xml/xsl/log4j_html.xsl";
+	private static final String log4j_text_xslt = "/xml/xsl/log4j_text.xsl";
+	private static final String log4j_prefix    = "<log4j:log4j xmlns:log4j=\"http://jakarta.apache.org/log4\">\n\n";
+	private static final String log4j_postfix	  = "</log4j:log4j>";
+	private static final String stats_html_xslt = "/xml/xsl/stats_html.xsl";
+	private static final String stats_prefix    = "<statisticsCollections>";
+	private static final String stats_postfix	  = "</statisticsCollections>";
 
 	public static String makeConfiguredReplacements(String input) {
 		StringTokenizer tok=AppConstants.getInstance().getTokenizer(fvConfigKey);
@@ -241,6 +244,8 @@ public class FileViewerServlet extends HttpServlet  {
 
 					transformReader(new StringReader(StatisticsUtil.fileToString(fileName, timestamp, adapterName)), fileName, parameters, response, stats_prefix, stats_postfix, stylesheetUrl, request.getContextPath().substring(1),fileName);
 				} else {
+//					Reader r=new BufferedReader(new InputStreamReader(new FileInputStream(fileName),"ISO-8859-1"));
+//					showReaderContents(r, fileName, type, response, request.getContextPath().substring(1),fileName);
 					showReaderContents(new FileReader(fileName), fileName, type, response, request.getContextPath().substring(1),fileName);
 				}
 	        }
