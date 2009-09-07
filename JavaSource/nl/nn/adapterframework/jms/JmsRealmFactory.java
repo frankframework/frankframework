@@ -1,6 +1,9 @@
 /*
  * $Log: JmsRealmFactory.java,v $
- * Revision 1.6  2007-10-08 13:30:58  europe\L190409
+ * Revision 1.7  2009-09-07 13:19:51  L190409
+ * removed unused check for NPE
+ *
+ * Revision 1.6  2007/10/08 13:30:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed ArrayList to List where possible
  *
  * Revision 1.5  2007/02/12 13:58:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -36,7 +39,7 @@ import org.apache.log4j.Logger;
  * @see JmsRealm
  */
 public class JmsRealmFactory {
-	public static final String version="$RCSfile: JmsRealmFactory.java,v $ $Revision: 1.6 $ $Date: 2007-10-08 13:30:58 $";
+	public static final String version="$RCSfile: JmsRealmFactory.java,v $ $Revision: 1.7 $ $Date: 2009-09-07 13:19:51 $";
 	private Logger log;
 
 
@@ -53,7 +56,6 @@ public class JmsRealmFactory {
     }
     /**
      * Get a hold of the singleton JmsRealmFactory
-
      */
     public static synchronized JmsRealmFactory getInstance() {
         if (self == null) {
@@ -67,14 +69,8 @@ public class JmsRealmFactory {
      * @return JmsRealm the requested realm or null if none was found under that name
      */
     public JmsRealm getJmsRealm(String jmsRealmName) {
-        JmsRealm jmsRealm = null;
-        try {
-            jmsRealm = (JmsRealm) jmsRealms.get(jmsRealmName);
-            if (jmsRealm==null) {
-                log.error("no JmsRealm found under name ["+jmsRealmName+"], factory contents ["+toString()+"]");
-            }
-
-        } catch (NullPointerException ignore) {
+        JmsRealm jmsRealm = (JmsRealm) jmsRealms.get(jmsRealmName);
+        if (jmsRealm==null) {
             log.error("no JmsRealm found under name ["+jmsRealmName+"], factory contents ["+toString()+"]");
         }
         return jmsRealm;
