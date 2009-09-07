@@ -1,6 +1,10 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.62  2009-07-10 14:04:26  m168309
+ * Revision 1.63  2009-09-07 13:50:53  L190409
+ * filled deliberatly empty catch block with debug statement
+ * replaced e.printStackTrace with log.error()
+ *
+ * Revision 1.62  2009/07/10 14:04:26  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added replaceNonValidXmlCharacters and stripNonValidXmlCharacters methods
  *
  * Revision 1.61  2009/06/24 13:20:01  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -262,7 +266,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * @version Id
  */
 public class XmlUtils {
-	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.62 $ $Date: 2009-07-10 14:04:26 $";
+	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.63 $ $Date: 2009-09-07 13:50:53 $";
 	static Logger log = LogUtil.getLogger(XmlUtils.class);
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
@@ -538,7 +542,7 @@ public class XmlUtils {
 						endPos++;
 					} 
 				} catch (IndexOutOfBoundsException e) {
-					// silently ignore...
+					log.debug("ignoring IndexOutOfBoundsException, as this only happens for an xml document that contains only the xml declartion, and not any body");
 				}
 				return xmlString.substring(endPos);
 			} else {
@@ -557,7 +561,7 @@ public class XmlUtils {
 						endPos++;
 					} 
 				} catch (IndexOutOfBoundsException e) {
-					// silently ignore...
+					log.debug("ignoring IndexOutOfBoundsException, as this only happens for an xml document that contains only the DocType declartion, and not any body");
 				}
 				return xmlString.substring(endPos);
 			} else {
@@ -609,7 +613,7 @@ public class XmlUtils {
 							endPos++;
 						} 
 					} catch (IndexOutOfBoundsException e) {
-						// silently ignore...
+						log.debug("ignoring IndexOutOfBoundsException, as this only happens for an xml document that contains only the xml declartion, and not any body");
 					}
 					return new String(source,offset+endPos,length-endPos,charset);
 				}
@@ -1036,8 +1040,7 @@ public class XmlUtils {
 			num = Long.parseLong(str);
 		} catch (NumberFormatException e) {
 			num = defaultValue;
-			System.err.println("Tag " + tag + " has no integer value");
-			e.printStackTrace();
+			log.error("Tag [" + tag + "] has no integer value",e);
 		}
 		return num;
 	}
