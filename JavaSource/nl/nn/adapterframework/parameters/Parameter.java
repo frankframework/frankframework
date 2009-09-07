@@ -1,6 +1,9 @@
 /*
  * $Log: Parameter.java,v $
- * Revision 1.32  2009-08-18 13:29:02  m168309
+ * Revision 1.33  2009-09-07 13:26:07  L190409
+ * replaced a '&' by '&&'
+ *
+ * Revision 1.32  2009/08/18 13:29:02  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added 'fixeddate' variable
  *
  * Revision 1.31  2009/06/09 09:13:39  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -201,7 +204,7 @@ import org.w3c.dom.Node;
  * @author Gerrit van Brakel
  */
 public class Parameter implements INamedObject, IWithParameters {
-	public static final String version="$RCSfile: Parameter.java,v $ $Revision: 1.32 $ $Date: 2009-08-18 13:29:02 $";
+	public static final String version="$RCSfile: Parameter.java,v $ $Revision: 1.33 $ $Date: 2009-09-07 13:26:07 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private IbisDebugger ibisDebugger;
@@ -262,16 +265,16 @@ public class Parameter implements INamedObject, IWithParameters {
 				throw new ConfigurationException("Parameter ["+getName()+"] can only have parameters itself if a styleSheetName or xpathExpression is specified");
 			}
 	    }
-		if (TYPE_DATE.equals(getType()) & StringUtils.isEmpty(getFormatString())) {
+		if (TYPE_DATE.equals(getType()) && StringUtils.isEmpty(getFormatString())) {
 			setFormatString(TYPE_DATE_PATTERN);
 		}
-		if (TYPE_DATETIME.equals(getType()) & StringUtils.isEmpty(getFormatString())) {
+		if (TYPE_DATETIME.equals(getType()) && StringUtils.isEmpty(getFormatString())) {
 			setFormatString(TYPE_DATETIME_PATTERN);
 		}
-		if (TYPE_TIMESTAMP.equals(getType()) & StringUtils.isEmpty(getFormatString())) {
+		if (TYPE_TIMESTAMP.equals(getType()) && StringUtils.isEmpty(getFormatString())) {
 			setFormatString(TYPE_TIMESTAMP_PATTERN);
 		}
-		if (TYPE_TIME.equals(getType()) & StringUtils.isEmpty(getFormatString())) {
+		if (TYPE_TIME.equals(getType()) && StringUtils.isEmpty(getFormatString())) {
 			setFormatString(TYPE_TIME_PATTERN);
 		}
 		if (TYPE_NUMBER.equals(getType())) {
