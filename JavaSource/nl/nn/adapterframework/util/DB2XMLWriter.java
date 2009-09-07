@@ -1,6 +1,10 @@
 /*
  * $Log: DB2XMLWriter.java,v $
- * Revision 1.17  2008-10-20 13:03:27  europe\m168309
+ * Revision 1.18  2009-09-07 13:33:34  L190409
+ * replaced new String() by literal
+ * replaced '&' by '&&'
+ *
+ * Revision 1.17  2008/10/20 13:03:27  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * also show not compressed blobs and not serialized blobs
  *
  * Revision 1.16  2008/05/15 15:18:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -85,11 +89,11 @@ import org.apache.log4j.Logger;
  **/
 
 public class DB2XMLWriter {
-	public static final String version="$RCSfile: DB2XMLWriter.java,v $ $Revision: 1.17 $ $Date: 2008-10-20 13:03:27 $";
+	public static final String version="$RCSfile: DB2XMLWriter.java,v $ $Revision: 1.18 $ $Date: 2009-09-07 13:33:34 $";
 	protected static Logger log = LogUtil.getLogger(DB2XMLWriter.class);
 
-	private String docname = new String("result");
-	private String recordname = new String("rowset");
+	private String docname = "result";
+	private String recordname = "rowset";
 	private String nullValue = "";
 	private boolean trimSpaces=true;
 	private boolean decompressBlobs=false;
@@ -254,7 +258,7 @@ public class DB2XMLWriter {
 			//----------------------------------------
 	
 			XmlBuilder queryresult = new XmlBuilder(recordname);
-			while (rs.next() & rowCounter < maxlength) {
+			while (rs.next() && rowCounter < maxlength) {
 				XmlBuilder row = getRowXml(rs,rowCounter,rsmeta,getBlobCharset(),decompressBlobs,nullValue,trimSpaces,getBlobSmart);
 				queryresult.addSubElement(row);
 				rowCounter++;
