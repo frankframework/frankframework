@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcQuerySenderBase.java,v $
- * Revision 1.44  2009-08-14 13:21:20  m168309
+ * Revision 1.45  2009-09-07 13:16:39  L190409
+ * replaced a '&' by '&&'
+ *
+ * Revision 1.44  2009/08/14 13:21:20  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * fixed bug in useNamedParams
  *
  * Revision 1.43  2009/08/14 07:19:02  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -250,7 +253,7 @@ import sun.misc.BASE64Encoder;
  * @since 	4.1
  */
 public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
-	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.44 $ $Date: 2009-08-14 13:21:20 $";
+	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.45 $ $Date: 2009-09-07 13:16:39 $";
 
 	private final static String UNP_START = "?{";
 	private final static String UNP_END = "}";
@@ -690,7 +693,6 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 			}
 			int var = 1;
 			for (int i=0;i<paramArray.length;i++) {
-				Object object = paramArray[i];
 				if (paramArray[i] instanceof Timestamp) {
 					pstmt.setTimestamp(var, (Timestamp) paramArray[i]);
 					var++;
@@ -786,7 +788,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		String element=null;
 		try {		
 			if (packageInput.lastIndexOf(',') > 0) {
-				while ((packageInput.charAt(packageInput.length() - ix) != ',')	& (ix < packageInput.length())) {
+				while ((packageInput.charAt(packageInput.length() - ix) != ',')	&& (ix < packageInput.length())) {
 					ix++;
 				}
 				int eindInputs = beginOutput - ix;
