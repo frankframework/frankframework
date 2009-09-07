@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcFacade.java,v $
- * Revision 1.25  2009-03-26 14:47:36  m168309
+ * Revision 1.26  2009-09-07 13:14:48  L190409
+ * use log from ancestor
+ *
+ * Revision 1.25  2009/03/26 14:47:36  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added LOCKROWS_SUFFIX
  *
  * Revision 1.24  2007/11/23 14:47:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -93,10 +96,8 @@ import nl.nn.adapterframework.jms.JNDIBase;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
-import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
 
 /**
  * Provides functions for JDBC connections.
@@ -116,8 +117,7 @@ import org.apache.log4j.Logger;
  * @since 	4.1
  */
 public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version="$RCSfile: JdbcFacade.java,v $ $Revision: 1.25 $ $Date: 2009-03-26 14:47:36 $";
-    protected Logger log = LogUtil.getLogger(this);
+	public static final String version="$RCSfile: JdbcFacade.java,v $ $Revision: 1.26 $ $Date: 2009-09-07 13:14:48 $";
 	
 	public final static int DATABASE_GENERIC=0;
 	public final static int DATABASE_ORACLE=1;

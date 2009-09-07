@@ -1,6 +1,9 @@
 /*
  * $Log: FxfSender.java,v $
- * Revision 1.9  2009-06-10 15:49:24  L190409
+ * Revision 1.10  2009-09-07 13:14:02  L190409
+ * use log from ancestor
+ *
+ * Revision 1.9  2009/06/10 15:49:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added test for presence queueConnectionFactoryName, for fxf 2 compatibility
  *
  * Revision 1.8  2009/03/04 15:57:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -48,11 +51,9 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.FileUtils;
-import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.ProcessUtil;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
 
 /**
  * Sender for transferring files using the FxF protocol. Assumes sender input is local filename.
@@ -89,7 +90,6 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class FxfSender extends JMSFacade implements ISenderWithParameters {
-	protected Logger log = LogUtil.getLogger(this);
 
 	public static final String REMOTE_FILENAME_PARAM="remoteFilename";
 
