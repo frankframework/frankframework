@@ -1,6 +1,9 @@
 /*
  * $Log: CredentialFactory.java,v $
- * Revision 1.6  2009-08-13 09:19:02  L190409
+ * Revision 1.7  2009-09-08 14:35:27  L190409
+ * improved signalling of misconfiguration
+ *
+ * Revision 1.6  2009/08/13 09:19:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * made compatible with WAS 6
  *
  * Revision 1.5  2007/02/12 14:09:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -26,6 +29,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 import javax.security.auth.Subject;
@@ -61,6 +65,7 @@ public class CredentialFactory implements CallbackHandler {
 	private String username;
 	private String password;
 	private boolean gotCredentials=false;
+	private boolean useFallback=false;
 	
 	public CredentialFactory(String alias, String defaultUsername, String defaultPassword) {
 		super();
@@ -194,6 +199,11 @@ public class CredentialFactory implements CallbackHandler {
 				setPassword(invokeCharArrayGetter(pwcred,"getPassword"));
 				gotCredentials=true;
 			} catch (Exception e) {
+				if (!useFallback) {
+					NoSuchElementException nsee=new NoSuchElementException("cannot obtain credentials from authentication alias ["+getAlias()+"]"); 
+					nsee.initCause(e);
+					throw nsee;
+				}
 				log.error("exception obtaining credentials for alias ["+getAlias()+"]",e);
 
 				String usernameProp="alias."+getAlias()+".username";
