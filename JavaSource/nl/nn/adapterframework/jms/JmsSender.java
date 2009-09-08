@@ -1,6 +1,9 @@
 /*
  * $Log: JmsSender.java,v $
- * Revision 1.30  2009-08-24 08:21:14  L190409
+ * Revision 1.31  2009-09-08 14:22:07  L190409
+ * made linkMethod controllable using IDoubleASynchronous
+ *
+ * Revision 1.30  2009/08/24 08:21:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * support for reply using dynamic reply queue
  *
  * Revision 1.29  2009/07/28 12:42:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -102,6 +105,7 @@ import javax.naming.NamingException;
 import javax.xml.transform.TransformerException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IDoubleASynchronous;
 import nl.nn.adapterframework.core.IPostboxSender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.IbisException;
@@ -159,8 +163,8 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * @version Id
  */
 
-public class JmsSender extends JMSFacade implements ISenderWithParameters, IPostboxSender {
-	public static final String version="$RCSfile: JmsSender.java,v $ $Revision: 1.30 $ $Date: 2009-08-24 08:21:14 $";
+public class JmsSender extends JMSFacade implements ISenderWithParameters, IPostboxSender, IDoubleASynchronous {
+	public static final String version="$RCSfile: JmsSender.java,v $ $Revision: 1.31 $ $Date: 2009-09-08 14:22:07 $";
 	private String replyToName = null;
 	private int deliveryMode = 0;
 	private String messageType = null;
@@ -173,6 +177,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 	private String serviceNamespaceURI=null;
 	private String soapAction=null;
 	private String soapHeaderParam="soapHeader";
+	private String linkMethod="MESSAGEID";
 	
 	protected ParameterList paramList = null;
 	private SoapWrapper soapWrapper=null;
@@ -306,7 +311,11 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 			if (isSynchronous()) {
 				String replyCorrelationId=null;
 				if (replyToName != null) {
-					replyCorrelationId=msg.getJMSMessageID();
+					if ("CORRELATIONID".equalsIgnoreCase(getLinkMethod())) {
+						replyCorrelationId=correlationID;
+					} else {
+						replyCorrelationId=msg.getJMSMessageID();
+					}
 				}
 				MessageConsumer mc = getMessageConsumerForCorrelationId(s,replyQueue,replyCorrelationId);
 				try {
@@ -493,6 +502,13 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 	}
 	public String getReplySoapHeaderSessionKey() {
 		return replySoapHeaderSessionKey;
+	}
+
+	public void setLinkMethod(String method) {
+		linkMethod=method;
+	}
+	public String getLinkMethod() {
+		return linkMethod;
 	}
 
 }
