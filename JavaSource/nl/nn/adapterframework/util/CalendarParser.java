@@ -1,6 +1,9 @@
 /*
  * $Log: CalendarParser.java,v $
- * Revision 1.1  2008-06-03 15:53:36  europe\L190409
+ * Revision 1.2  2009-09-08 14:33:35  L190409
+ * cosmetic changes and some to please code checker
+ *
+ * Revision 1.1  2008/06/03 15:53:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * introduction of CalendarParser
  *
  * 
@@ -74,8 +77,7 @@ class ParserState
      *
      * @param order <tt>YY_MM_DD</tt>, <tt>MM_DD_YY</tt>, etc.
      */
-    ParserState(int order)
-    {
+    ParserState(int order) {
         yearBeforeMonth =
             (order & YEAR_BEFORE_MONTH) == YEAR_BEFORE_MONTH;
         yearBeforeDay =
@@ -97,8 +99,7 @@ class ParserState
      *
      * @return day of month
      */
-    int getDate()
-    {
+    int getDate() {
         return day;
     }
 
@@ -107,8 +108,7 @@ class ParserState
      *
      * @return hour
      */
-    int getHour()
-    {
+    int getHour() {
         return hour;
     }
 
@@ -117,8 +117,7 @@ class ParserState
      *
      * @return millisecond
      */
-    int getMillisecond()
-    {
+    int getMillisecond() {
         return milli;
     }
 
@@ -127,8 +126,7 @@ class ParserState
      *
      * @return minute
      */
-    int getMinute()
-    {
+    int getMinute() {
         return minute;
     }
 
@@ -137,8 +135,7 @@ class ParserState
      *
      * @return month
      */
-    int getMonth()
-    {
+    int getMonth() {
         return month;
     }
 
@@ -147,8 +144,7 @@ class ParserState
      *
      * @return second
      */
-    int getSecond()
-    {
+    int getSecond() {
         return second;
     }
 
@@ -157,8 +153,7 @@ class ParserState
      *
      * @return time zone (<tt>null</tt> if none was specified)
      */
-    TimeZone getTimeZone()
-    {
+    TimeZone getTimeZone() {
         return timeZone;
     }
 
@@ -167,8 +162,7 @@ class ParserState
      *
      * @return year
      */
-    int getYear()
-    {
+    int getYear() {
         return year;
     }
 
@@ -177,8 +171,7 @@ class ParserState
      *
      * @return <tt>true</tt> if a value has been assigned
      */
-    boolean isDateSet()
-    {
+    boolean isDateSet() {
         return (day != UNSET);
     }
 
@@ -187,8 +180,7 @@ class ParserState
      *
      * @return <tt>true</tt> if a value has been assigned
      */
-    boolean isHourSet()
-    {
+    boolean isHourSet() {
         return (hour != UNSET);
     }
 
@@ -197,8 +189,7 @@ class ParserState
      *
      * @return <tt>true</tt> if a value has been assigned
      */
-    boolean isMillisecondSet()
-    {
+    boolean isMillisecondSet() {
         return (milli != UNSET);
     }
 
@@ -207,8 +198,7 @@ class ParserState
      *
      * @return <tt>true</tt> if a value has been assigned
      */
-    boolean isMinuteSet()
-    {
+    boolean isMinuteSet() {
         return (minute != UNSET);
     }
 
@@ -217,8 +207,7 @@ class ParserState
      *
      * @return <tt>true</tt> if month is before day of month
      */
-    boolean isMonthBeforeDay()
-    {
+    boolean isMonthBeforeDay() {
         return monthBeforeDay;
     }
 
@@ -227,8 +216,7 @@ class ParserState
      *
      * @return <tt>true</tt> if a value has been assigned
      */
-    boolean isMonthSet()
-    {
+    boolean isMonthSet() {
         return (month != UNSET);
     }
 
@@ -237,8 +225,7 @@ class ParserState
      *
      * @return <tt>true</tt> if a value has been assigned
      */
-    boolean isSecondSet()
-    {
+    boolean isSecondSet() {
         return (second != UNSET);
     }
 
@@ -247,8 +234,7 @@ class ParserState
      *
      * @return <tt>true</tt> if time is P.M.
      */
-    boolean isTimePostMeridian()
-    {
+    boolean isTimePostMeridian() {
         return (timePostMeridian || hour > 12);
     }
 
@@ -257,8 +243,7 @@ class ParserState
      *
      * @return <tt>true</tt> if year is before day of month
      */
-    boolean isYearBeforeDay()
-    {
+    boolean isYearBeforeDay() {
         return yearBeforeDay;
     }
 
@@ -267,8 +252,7 @@ class ParserState
      *
      * @return <tt>true</tt> if year is before month
      */
-    boolean isYearBeforeMonth()
-    {
+    boolean isYearBeforeMonth() {
         return yearBeforeMonth;
     }
 
@@ -277,8 +261,7 @@ class ParserState
      *
      * @return <tt>true</tt> if a value has been assigned
      */
-    boolean isYearSet()
-    {
+    boolean isYearSet() {
         return (year != UNSET);
     }
 
@@ -292,9 +275,7 @@ class ParserState
      * @throws CalendarParserException if the date cannot be set for some
      *                                 reason
      */
-    void setCalendar(GregorianCalendar cal, boolean ignoreChanges)
-        throws CalendarParserException
-    {
+    void setCalendar(GregorianCalendar cal, boolean ignoreChanges) throws CalendarParserException {
         cal.clear();
         if (year != UNSET && month != UNSET && day != UNSET) {
             cal.set(Calendar.YEAR, year);
@@ -348,9 +329,7 @@ class ParserState
      *
      * @throws CalendarParserException if the value is not a valid day of month
      */
-    void setDate(int val)
-        throws CalendarParserException
-    {
+    void setDate(int val) throws CalendarParserException {
         if (val < 1 || val > 31) {
             throw new CalendarParserException("Bad day " + val);
         }
@@ -365,9 +344,7 @@ class ParserState
      *
      * @throws CalendarParserException if the value is not a valid hour
      */
-    void setHour(int val)
-        throws CalendarParserException
-    {
+    void setHour(int val) throws CalendarParserException {
         final int tmpHour;
         if (timePostMeridian) {
             tmpHour = val + 12;
@@ -390,9 +367,7 @@ class ParserState
      *
      * @throws CalendarParserException if the value is not a valid millisecond
      */
-    void setMillisecond(int val)
-        throws CalendarParserException
-    {
+    void setMillisecond(int val) throws CalendarParserException {
         if (val < 0 || val > 999) {
             throw new CalendarParserException("Bad millisecond " + val);
         }
@@ -407,9 +382,7 @@ class ParserState
      *
      * @throws CalendarParserException if the value is not a valid minute
      */
-    void setMinute(int val)
-        throws CalendarParserException
-    {
+    void setMinute(int val) throws CalendarParserException {
         if (val < 0 || val > 59) {
             throw new CalendarParserException("Bad minute " + val);
         }
@@ -424,9 +397,7 @@ class ParserState
      *
      * @throws CalendarParserException if the value is not a valid month
      */
-    void setMonth(int val)
-        throws CalendarParserException
-    {
+    void setMonth(int val) throws CalendarParserException {
         if (val < 1 || val > 12) {
             throw new CalendarParserException("Bad month " + val);
         }
@@ -441,9 +412,7 @@ class ParserState
      *
      * @throws CalendarParserException if the value is not a valid second
      */
-    void setSecond(int val)
-        throws CalendarParserException
-    {
+    void setSecond(int val) throws CalendarParserException {
         if (val < 0 || val > 59) {
             throw new CalendarParserException("Bad second " + val);
         }
@@ -456,8 +425,7 @@ class ParserState
      *
      * @param val <tt>true</tt> if time represented is after noon
      */
-    void setTimePostMeridian(boolean val)
-    {
+    void setTimePostMeridian(boolean val) {
         timePostMeridian = val;
     }
 
@@ -466,8 +434,7 @@ class ParserState
      *
      * @param tz time zone
      */
-    void setTimeZone(TimeZone tz)
-    {
+    void setTimeZone(TimeZone tz) {
         timeZone = tz;
     }
 
@@ -478,9 +445,7 @@ class ParserState
      *
      * @throws CalendarParserException if the value is not a valid year
      */
-    void setYear(int val)
-        throws CalendarParserException
-    {
+    void setYear(int val) throws CalendarParserException {
         if (val < 0) {
 //            throw new CalendarParserException("Bad year " + val);
 			val = new Date().getYear()-100;
@@ -493,8 +458,7 @@ class ParserState
 /**
  * A parser for arbitrary date/time strings.
  */
-public class CalendarParser
-{
+public class CalendarParser {
     /** bit indicating that the year comes before the month. */
     public static final int YEAR_BEFORE_MONTH = ParserState.YEAR_BEFORE_MONTH;
     /** bit indicating that the year comes before the day. */
@@ -552,8 +516,7 @@ public class CalendarParser
     private static final boolean DEBUG = false;
 
     /** list of weekday names. */
-    private static final String[] WEEKDAY_NAMES =
-    {
+    private static final String[] WEEKDAY_NAMES = {
         "sunday",
         "monday",
         "tuesday",
@@ -564,8 +527,7 @@ public class CalendarParser
     };
 
     /** list of month abbreviations and names. */
-    private static final String[][] MONTHS =
-    {
+    private static final String[][] MONTHS = {
         { "jan", "January" },
         { "feb", "February" },
         { "mar", "March" },
@@ -588,9 +550,7 @@ public class CalendarParser
      * @param needSpace <tt>true</tt> if a space character should be inserted
      *                  before any data
      */
-    private static final void appendTimeString(StringBuffer buf, Calendar cal,
-                                               boolean needSpace)
-    {
+    private static void appendTimeString(StringBuffer buf, Calendar cal, boolean needSpace) {
         final int hour = cal.get(Calendar.HOUR_OF_DAY);
         final int minute = cal.get(Calendar.MINUTE);
         final int second = cal.get(Calendar.SECOND);
@@ -669,8 +629,7 @@ public class CalendarParser
      *
      * @return order string
      */
-    public static final String getOrderString(int order)
-    {
+    public static final String getOrderString(int order) {
         switch (order) {
         case DD_MM_YY:
             return "DD_MM_YY";
@@ -703,8 +662,7 @@ public class CalendarParser
      *         <tt>CalendarParser.UNSET</tt> if the supplied string is not
      *         a valid ordinal number.
      */
-    private static final int getOrdinalNumber(String str)
-    {
+    private static int getOrdinalNumber(String str) {
         final int len = (str == null ? 0 : str.length());
         if (len >= 3) {
 
@@ -732,8 +690,7 @@ public class CalendarParser
      *
      * @return place name (<tt>"hour"</tt>, <tt>"minute"</tt>, etc.
      */
-    private static final String getTimePlaceString(int place)
-    {
+    private static String getTimePlaceString(int place) {
         switch (place) {
         case PLACE_HOUR:
             return "hour";
@@ -757,8 +714,7 @@ public class CalendarParser
      *
      * @return <tt>true</tt> if the supplied string is a weekday name.
      */
-    private static final boolean isWeekdayName(String str)
-    {
+    private static boolean isWeekdayName(String str) {
         if (str == null || str.length() < 3) {
             return false;
         }
@@ -780,8 +736,7 @@ public class CalendarParser
      *
      * @return <tt>null</tt> if time zone list cannot be loaded.
      */
-    private static final String[] loadTimeZoneNames()
-    {
+    private static String[] loadTimeZoneNames() {
         Class zoneInfo;
         try {
             zoneInfo = Class.forName("sun.util.calendar.ZoneInfo");
@@ -862,8 +817,7 @@ public class CalendarParser
      * @return the numeric month, or <tt>CalendarParser.UNSET</tt> if the
      *         supplied string is not a valid month name.
      */
-    public static int monthNameToNumber(String str)
-    {
+    public static int monthNameToNumber(String str) {
         if (str != null && str.length() >= 3) {
             String lstr = str.toLowerCase();
             for (int i = 0; i < MONTHS.length; i++) {
@@ -889,9 +843,7 @@ public class CalendarParser
      * @throws CalendarParserException if there was a problem
      *                             parsing the string.
      */
-    public static final Calendar parse(String dateStr)
-        throws CalendarParserException
-    {
+    public static final Calendar parse(String dateStr) throws CalendarParserException {
         return parse(dateStr, YY_MM_DD);
     }
 
@@ -908,9 +860,7 @@ public class CalendarParser
      * @throws CalendarParserException if there was a problem
      *                             parsing the string.
      */
-    public static final Calendar parse(String dateStr, int order)
-        throws CalendarParserException
-    {
+    public static final Calendar parse(String dateStr, int order) throws CalendarParserException {
         return parse(dateStr, order, true);
     }
 
@@ -929,10 +879,7 @@ public class CalendarParser
      * @throws CalendarParserException if there was a problem
      *                                 parsing the string.
      */
-    public static final Calendar parse(String dateStr, int order,
-                                       boolean ignoreChanges)
-        throws CalendarParserException
-    {
+    public static final Calendar parse(String dateStr, int order, boolean ignoreChanges) throws CalendarParserException {
         if (dateStr == null) {
             return null;
         }
@@ -950,11 +897,7 @@ public class CalendarParser
      * @throws CalendarParserException if there was a problem
      *                             parsing the token
      */
-    private static final void parseNonNumericToken(String dateStr,
-                                                   ParserState state,
-                                                   String token)
-        throws CalendarParserException
-    {
+    private static void parseNonNumericToken(String dateStr, ParserState state, String token) throws CalendarParserException {
         // if it's a weekday name, ignore it
         if (isWeekdayName(token)) {
             if (DEBUG) {
@@ -1184,10 +1127,7 @@ public class CalendarParser
      * @throws CalendarParserException if there was a problem
      *                             splitting the value
      */
-    private static final void parseNumericBlob(String dateStr,
-                                               ParserState state, int val)
-        throws CalendarParserException
-    {
+    private static void parseNumericBlob(String dateStr, ParserState state, int val) throws CalendarParserException {
         if (state.isYearSet() || state.isMonthSet() || state.isDateSet()) {
             throw new CalendarParserException("Unknown value " + val +
                                               " in date \"" + dateStr + "\"");
@@ -1266,11 +1206,7 @@ public class CalendarParser
      * @throws CalendarParserException if there was a problem
      *                             parsing the token
      */
-    private static final void parseNumericToken(String dateStr,
-                                                ParserState state,
-                                                int val)
-        throws CalendarParserException
-    {
+    private static void parseNumericToken(String dateStr, ParserState state, int val) throws CalendarParserException {
         // puke if we've already found 3 values
         if (state.isYearSet() && state.isMonthSet() && state.isDateSet()) {
             if (DEBUG) {
@@ -1575,10 +1511,7 @@ public class CalendarParser
      *
      * @throws CalendarParserException if no valid date was found.
      */
-    private static final Calendar parseString(String dateStr, int order,
-                                              boolean ignoreChanges)
-        throws CalendarParserException
-    {
+    private static Calendar parseString(String dateStr, int order, boolean ignoreChanges) throws CalendarParserException {
         ParserState state = new ParserState(order);
 
         Pattern pat = Pattern.compile("([\\s/,]+|(\\S)\\-)");
@@ -1698,10 +1631,7 @@ public class CalendarParser
      *
      * @throws CalendarParserException if there is a problem with the time
      */
-    private static final void parseTime(String dateStr, ParserState state,
-                                        String timeStr)
-        throws CalendarParserException
-    {
+    private static void parseTime(String dateStr, ParserState state, String timeStr) throws CalendarParserException {
         int place = PLACE_HOUR;
 
         String tmpTime;
@@ -1835,11 +1765,7 @@ public class CalendarParser
      *
      * @throws CalendarParserException if there is a problem with the time
      */
-    private static final void parseTimeZoneOffset(String dateStr,
-                                                  ParserState state,
-                                                  String zoneStr)
-        throws CalendarParserException
-    {
+    private static void parseTimeZoneOffset(String dateStr, ParserState state, String zoneStr) throws CalendarParserException {
         int place = PLACE_HOUR;
 
         final boolean isNegative = (zoneStr.charAt(0) == '-');
@@ -1911,8 +1837,7 @@ public class CalendarParser
      *
      * @return a printable string.
      */
-    public static final String prettyString(Calendar cal)
-    {
+    public static final String prettyString(Calendar cal) {
         if (cal == null) {
             return null;
         }
@@ -1960,8 +1885,7 @@ public class CalendarParser
      *
      * @return the basic string.
      */
-    public static final String toString(Calendar cal)
-    {
+    public static final String toString(Calendar cal) {
         if (cal == null) {
             return null;
         }
@@ -2007,8 +1931,7 @@ public class CalendarParser
      *
      * @return the SQL-friendly string.
      */
-    public static final String toSQLString(Calendar cal)
-    {
+    public static final String toSQLString(Calendar cal) {
         if (cal == null) {
             return null;
         }
