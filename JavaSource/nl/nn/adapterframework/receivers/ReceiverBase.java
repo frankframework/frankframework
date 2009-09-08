@@ -1,6 +1,10 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.82  2009-08-26 15:48:20  L190409
+ * Revision 1.83  2009-09-08 14:24:38  L190409
+ * fixed support for passing back context parameters, 
+ * while retaining use of context in afterMessageProcessed()
+ *
+ * Revision 1.82  2009/08/26 15:48:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * detailed logging of asynchronously received exceptions
  *
  * Revision 1.81  2009/08/11 07:43:06  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -553,7 +557,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  */
 public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHandler, EventThrowing, IbisExceptionListener, HasSender, HasStatistics, TracingEventNumbers, IThreadCountControllable, BeanFactoryAware {
     
-	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.82 $ $Date: 2009-08-26 15:48:20 $";
+	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.83 $ $Date: 2009-09-08 14:24:38 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -1314,6 +1318,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		// count in processing statistics includes messages that are rolled back to input
 		startProcessingMessage(waitingDuration);
 		
+		PipeLineSession pipelineSession = null;
 		String errorMessage="";
 		boolean messageInError = false;
 		try {
@@ -1334,8 +1339,8 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 			
 			numReceived.increase();
 			// Note: errorMessage is used to pass value from catch-clause to finally-clause!
-			PipeLineSession pipelineSession = createProcessingContext(businessCorrelationId, threadContext, messageId);
-			threadContext=pipelineSession; // this is to enable Listeners to use session variables, for instance in afterProcessMessage()
+			pipelineSession = createProcessingContext(businessCorrelationId, threadContext, messageId);
+//			threadContext=pipelineSession; // this is to enable Listeners to use session variables, for instance in afterProcessMessage()
 			try {
 				// TODO: What about Ibis42 compat mode?
 				if (isIbis42compatibility()) {
@@ -1411,10 +1416,19 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 				retryOrErrorStorage(rawMessage, startProcessingTimestamp, txStatus, errorMessage, message, messageId, businessCorrelationId, retry);
 			}
 			try {
+				Map afterMessageProcessedMap;
+				if (threadContext!=null) {
+					afterMessageProcessedMap=threadContext;
+					if (pipelineSession!=null) {
+						threadContext.putAll(pipelineSession);
+					}
+				} else {
+					afterMessageProcessedMap=pipelineSession;
+				}
 				// TODO: Should this be done in a finally, unconditionally?
 				// Perhaps better to have separate methods for correct processing,
 				// and cleanup after an error?
-				origin.afterMessageProcessed(pipeLineResult,rawMessage, threadContext);
+				origin.afterMessageProcessed(pipeLineResult,rawMessage, afterMessageProcessedMap);
 			} finally {
 				long finishProcessingTimestamp = System.currentTimeMillis();
 				finishProcessingMessage(finishProcessingTimestamp-startProcessingTimestamp);
