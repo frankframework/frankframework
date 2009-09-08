@@ -1,6 +1,9 @@
 /*
  * $Log: SapFunctionFacade.java,v $
- * Revision 1.16  2008-01-30 14:43:12  europe\L190409
+ * Revision 1.17  2009-09-08 14:20:27  L190409
+ * removed unneccesary warning
+ *
+ * Revision 1.16  2008/01/30 14:43:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * modified javadoc
  *
  * Revision 1.15  2008/01/29 15:43:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -99,7 +102,7 @@ import com.sap.mw.jco.JCO;
  * @version Id
  */
 public class SapFunctionFacade implements INamedObject, HasPhysicalDestination {
-	public static final String version="$RCSfile: SapFunctionFacade.java,v $  $Revision: 1.16 $ $Date: 2008-01-30 14:43:12 $";
+	public static final String version="$RCSfile: SapFunctionFacade.java,v $  $Revision: 1.17 $ $Date: 2009-09-08 14:20:27 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -352,7 +355,7 @@ public class SapFunctionFacade implements INamedObject, HasPhysicalDestination {
 		JCO.ParameterList output = function.getExportParameterList();
 		int replyFieldIndex = findFieldIndex(output, getReplyFieldIndex(), getReplyFieldName());
 		setParameters(function.getExportParameterList(),result, replyFieldIndex);
-		log.warn("SapFunctionFacade.message2FunctionResult, skipped setting of return table parameters");
+		//log.warn("SapFunctionFacade.message2FunctionResult, skipped setting of return table parameters");
 /*		
 		if (replyFieldIndex<=0) {
 			log.debug("SapFunctionFacade.message2FunctionResult, setting table parameters");
