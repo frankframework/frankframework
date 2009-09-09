@@ -4,11 +4,11 @@
 	<!--
 		This XSLT adjusts the IBIS configuration as follows:
 		- disable all receiver elements, except those with childs JdbcQueryListener, DirectoryListener and JavaListener
-		- add a default receiver (name="testtool-[adapter name]") with child JavaListener (serviceName="testtool-[adapter name]") to each adapter
-		- disable all listener elements with parent pipe		
-		- stub alle sender elements with parent pipe by an IbisJavaSender (serviceName="testtool-[pipe name]"), except the DirectQuerySender, FixedQuerySender, DelaySender, EchoSender, IbisLocalSender, LogSender, ParallelSenders, SenderSeries, SenderWrapper and XsltSender
+		- add a default receiver (name="testtool-[adapter name]") with a child JavaListener (serviceName="testtool-[adapter name]") to each adapter
+		- disable all listener elements which have a parent pipe
+		- stub all sender elements, which have a parent pipe, by an IbisJavaSender (serviceName="testtool-[pipe name]"), except the DirectQuerySender, FixedQuerySender, DelaySender, EchoSender, IbisLocalSender, LogSender, ParallelSenders, SenderSeries, SenderWrapper and XsltSender
 		- disable all elements sapSystems
-		- disable all elements jmsRealm with attribute queueConnectionFactoryName (if combined with the attribute datasourceName a new jmsRealm for this datasourceName is created)
+		- disable all elements jmsRealm which have an attribute queueConnectionFactoryName (if combined with the attribute datasourceName a new jmsRealm for this datasourceName is created)
 		- add the attribute returnFixedDate with value true to all pipe elements PutSystemDateInSession
 		- replace the value '{now,...,...}' of the attribute pattern in all param elements with the value '{fixeddate,...,...}'
 	-->
