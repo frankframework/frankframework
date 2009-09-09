@@ -1,11 +1,8 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.83  2009-09-08 14:24:38  L190409
- * fixed support for passing back context parameters, 
- * while retaining use of context in afterMessageProcessed()
- *
- * Revision 1.82  2009/08/26 15:48:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
- * detailed logging of asynchronously received exceptions
+ * Revision 1.81.2.1  2009-09-09 07:18:27  m168309
+ * - fixed support for passing back context parameters, while retaining use of context in afterMessageProcessed()
+ * - detailed logging of asynchronously received exceptions
  *
  * Revision 1.81  2009/08/11 07:43:06  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * assign pipelinesession to threadcontext, to enable use of session
@@ -557,7 +554,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  */
 public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHandler, EventThrowing, IbisExceptionListener, HasSender, HasStatistics, TracingEventNumbers, IThreadCountControllable, BeanFactoryAware {
     
-	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.83 $ $Date: 2009-09-08 14:24:38 $";
+	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.81.2.1 $ $Date: 2009-09-09 07:18:27 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
