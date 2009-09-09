@@ -1,6 +1,9 @@
 /*
  * $Log: JMSFacade.java,v $
- * Revision 1.37  2009-08-20 12:12:33  L190409
+ * Revision 1.38  2009-09-09 14:34:48  L190409
+ * fixed forced target client setting in secondary send() method
+ *
+ * Revision 1.37  2009/08/20 12:12:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added generic getStringFromRawMessage
  *
  * Revision 1.36  2009/07/28 12:37:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -184,7 +187,7 @@ import com.ibm.mq.jms.MQQueue;
  * @version Id
  */
 public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version="$RCSfile: JMSFacade.java,v $ $Revision: 1.37 $ $Date: 2009-08-20 12:12:33 $";
+	public static final String version="$RCSfile: JMSFacade.java,v $ $Revision: 1.38 $ $Date: 2009-09-09 14:34:48 $";
 
 	public static final String MODE_PERSISTENT="PERSISTENT";
 	public static final String MODE_NON_PERSISTENT="NON_PERSISTENT";
@@ -215,19 +218,17 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
     //MQ that the queue (or destination) on which a message is sent, is not JMS compliant.
     
     private String forceMQCompliancy=null;
+    private boolean forceTargetClientMQ=false;
+	private boolean forceTargetClientJMS=false;
     
     //---------------------------------------------------------------------
     // Queue fields
     //---------------------------------------------------------------------
     private String queueConnectionFactoryName;
-//	private String queueConnectionFactoryNameXA;
-//    private QueueConnectionFactory queueConnectionFactory = null;
     //---------------------------------------------------------------------
     // Topic fields
     //---------------------------------------------------------------------
     private String topicConnectionFactoryName;
-//	private String topicConnectionFactoryNameXA;
-//    private TopicConnectionFactory topicConnectionFactory = null;
 
 	//the MessageSelector will provide filter functionality, as specified
 	//javax.jms.Message.
@@ -261,32 +262,6 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 		return "["+getName()+"] ";
 	}
 
-// 	public String getConnectionFactoryName() throws JmsException {
-//		String result;
-//		if (useTopicFunctions) {
-//			result = isTransacted() ? getTopicConnectionFactoryNameXA() : getTopicConnectionFactoryName();
-//			if (StringUtils.isEmpty(result)) {
-//				result = isTransacted() ? getTopicConnectionFactoryName() : getTopicConnectionFactoryNameXA();
-//                if (StringUtils.isEmpty(result)) {
-//                    throw new JmsException(getLogPrefix()+"neither topicConnectionFactoryName nor topicConnectionFactoryNameXA are specified");
-//                }
-//                log.warn(getLogPrefix()+"correct topicConnectionFactoryName attribute not specified, will use ["+result+"]");
-//			}
-//		}
-//		else {
-//			result = isTransacted() ? getQueueConnectionFactoryNameXA() : getQueueConnectionFactoryName();
-//			if (StringUtils.isEmpty(result)) {
-//				result = isTransacted() ? getQueueConnectionFactoryName() : getQueueConnectionFactoryNameXA();
-//    			if (StringUtils.isEmpty(result)) {
-//    				throw new JmsException(getLogPrefix()+"neither queueConnectionFactoryName nor queueConnectionFactoryNameXA are specified; jms-realm:"+getJmsRealName());
-//    			}
-//                log.warn(getLogPrefix()+"correct queueConnectionFactoryName attribute not specified, will use ["+result+"]");
-//            }
-//		}
-//		log.debug(getLogPrefix()+"returning " + (isTransacted() ? "XA" : "")
-//            + "ConnectionFactoryName ["+result+"]");
-//		return result;
-//	}
 	public String getConnectionFactoryName() throws JmsException {
 		String result = useTopicFunctions ? getTopicConnectionFactoryName() : getQueueConnectionFactoryName();
 		if (StringUtils.isEmpty(result)) {
@@ -417,16 +392,15 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	 * this method has to be called prior to creating a <code>QueueSender</code>
 	 */
  	private void enforceMQCompliancy(Queue queue) throws JMSException {
-	    if (forceMQCompliancy!=null) {
-	    	if (forceMQCompliancy.equalsIgnoreCase("MQ")){
-			    ((MQQueue)queue).setTargetClient(JMSC.MQJMS_CLIENT_NONJMS_MQ);
-			    log.debug("["+name+"] MQ Compliancy for queue ["+queue.toString()+"] set to NONJMS");
-	    	} else
-	    	if (forceMQCompliancy.equalsIgnoreCase("JMS")) {
-			    ((MQQueue)queue).setTargetClient(JMSC.MQJMS_CLIENT_JMS_COMPLIANT);
-			    log.debug("MQ Compliancy for queue ["+queue.toString()+"] set to JMS");
-	    	}
-	    }
+ 		if (forceTargetClientMQ) {
+			((MQQueue)queue).setTargetClient(JMSC.MQJMS_CLIENT_NONJMS_MQ);
+			if (log.isDebugEnabled()) log.debug("["+name+"] MQ Compliancy for queue ["+queue.toString()+"] set to NONJMS");
+ 		} else {
+			if (forceTargetClientJMS) {
+				((MQQueue)queue).setTargetClient(JMSC.MQJMS_CLIENT_JMS_COMPLIANT);
+				if (log.isDebugEnabled()) log.debug("MQ Compliancy for queue ["+queue.toString()+"] set to JMS");
+			}
+ 		}
     }
 
 	public Destination getDestination() throws NamingException, JMSException, JmsException, IbisException  {
@@ -561,10 +535,8 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
      * @exception  javax.naming.NamingException  Description of the Exception
      * @exception  javax.jms.JMSException                  Description of the Exception
      */
-	private QueueReceiver getQueueReceiver(QueueSession session, Queue destination, String selector)
-	    throws NamingException, JMSException {
+	private QueueReceiver getQueueReceiver(QueueSession session, Queue destination, String selector) throws NamingException, JMSException {
 	    QueueReceiver queueReceiver = session.createReceiver(destination, selector);
-	//    log.debug("["+name+"] got receiver for queue " + queueReceiver.getQueue().getQueueName()+"]");
 	    return queueReceiver;
 	}
 	/**
@@ -574,51 +546,29 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	  * @exception  javax.naming.NamingException  Description of the Exception
 	  * @exception  javax.jms.JMSException
 	  */
-	private QueueSender getQueueSender(QueueSession session, Queue destination)
-	    throws NamingException, JMSException {
-	    QueueSender queueSender;
+	private QueueSender getQueueSender(QueueSession session, Queue destination) throws NamingException, JMSException {
 	    enforceMQCompliancy(destination);
-	    queueSender = session.createSender(destination);
-	
+		QueueSender queueSender = session.createSender(destination);
 	    return queueSender;
 	}
 	
 	/**
 	 * Gets a topicPublisher for a specified topic
 	 */
-	private TopicPublisher getTopicPublisher(TopicSession session, Topic topic)
-	    throws NamingException, JMSException {
+	private TopicPublisher getTopicPublisher(TopicSession session, Topic topic) throws NamingException, JMSException {
 	    return session.createPublisher(topic);
 	}
-	private TopicSubscriber getTopicSubscriber(
-	    TopicSession session,
-	    Topic topic,
-	    String selector)
-	    throws NamingException, JMSException {
+	private TopicSubscriber getTopicSubscriber(TopicSession session, Topic topic, String selector) throws NamingException, JMSException {
 	
 	    TopicSubscriber topicSubscriber;
 	    if (subscriberType.equalsIgnoreCase("DURABLE")) {
 	        topicSubscriber =
 	            session.createDurableSubscriber(topic, destinationName, selector, false);
-	        log.debug(
-	            "["
-	                + name
-	                + "] got durable subscriber for topic ["
-	                + destinationName
-	                + "] with selector ["
-	                + selector
-	                + "]");
+			if (log.isDebugEnabled()) log.debug("[" + name  + "] got durable subscriber for topic [" + destinationName + "] with selector [" + selector + "]");
 	
 	    } else {
 	        topicSubscriber = session.createSubscriber(topic, selector, false);
-	        log.debug(
-	            "["
-	                + name
-	                + "] got transient subscriber for topic ["
-	                + destinationName
-	                + "] with selector ["
-	                + selector
-	                + "]");
+			if (log.isDebugEnabled()) log.debug("[" + name + "] got transient subscriber for topic [" + destinationName + "] with selector [" + selector + "]");
 	    }
 	
 	    return topicSubscriber;
@@ -631,10 +581,10 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 		MessageProducer mp;
 
 		if ((session instanceof TopicSession) && (dest instanceof Topic)) {
-			mp = ((TopicSession)session).createPublisher((Topic)dest);
+			mp = getTopicPublisher((TopicSession)session, (Topic)dest);
 		} else {
 			if ((session instanceof QueueSession) && (dest instanceof Queue)) {
-				mp = ((QueueSession)session).createSender((Queue)dest);
+				mp = getQueueSender((QueueSession)session, (Queue)dest);
 			} else {
 				throw new SenderException("classes of Session ["+session.getClass().getName()+"] and Destination ["+dest.getClass().getName()+"] do not match (Queue vs Topic)");
 			}
@@ -762,11 +712,9 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
         if (useTopicFunctions) {
             sb.append("[topicName=" + destinationName + "]");
 	        sb.append("[topicConnectionFactoryName=" + topicConnectionFactoryName + "]");
-//	        sb.append("[topicConnectionFactoryNameXA=" + topicConnectionFactoryNameXA + "]");
         } else {
             sb.append("[queueName=" + destinationName + "]");
 	        sb.append("[queueConnectionFactoryName=" + queueConnectionFactoryName + "]");
-//	        sb.append("[queueConnectionFactoryNameXA=" + queueConnectionFactoryNameXA + "]");
         }
 	//  sb.append("[physicalDestinationName="+getPhysicalDestinationName()+"]");
         sb.append("[ackMode=" + getAcknowledgeModeAsString(ackMode) + "]");
@@ -913,8 +861,17 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	 * implemented. Defaults to "JMS".<br/>
 	 */
 	public void setForceMQCompliancy(String forceMQCompliancy) {
-		if ((!(forceMQCompliancy.equals("MQ")) && (!(forceMQCompliancy.equals("JMS")))))
-			throw new IllegalArgumentException("forceMQCompliancy has a wrong value ["+forceMQCompliancy+"] should be JMS or MQ");
+		if (forceMQCompliancy.equals("MQ")) {
+			forceTargetClientMQ=true; 
+			forceTargetClientJMS=false;
+		} else { 
+			if (forceMQCompliancy.equals("JMS")) {
+				forceTargetClientMQ=false; 
+				forceTargetClientJMS=true;
+			} else {
+				throw new IllegalArgumentException("forceMQCompliancy has a wrong value ["+forceMQCompliancy+"] should be 'JMS' or 'MQ'");
+			}
+		}
 		this.forceMQCompliancy=forceMQCompliancy;
 	}
 	public String getForceMQCompliancy() {
@@ -942,11 +899,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 		if (StringUtils.isNotEmpty(queueConnectionFactoryNameXA)) {
 			throw new IllegalArgumentException(getLogPrefix()+"use of attribute 'queueConnectionFactoryNameXA' is no longer supported. The queueConnectionFactory can now only be specified using attribute 'queueConnectionFactoryName'");
 		}
-//		this.queueConnectionFactoryNameXA = queueConnectionFactoryNameXA;
 	}
-//	public String getQueueConnectionFactoryNameXA() {
-//		return queueConnectionFactoryNameXA;
-//	}
 
 
 	/**
@@ -969,11 +922,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 		if (StringUtils.isNotEmpty(topicConnectionFactoryNameXA)) {
 			throw new IllegalArgumentException(getLogPrefix()+"use of attribute 'topicConnectionFactoryNameXA' is no longer supported. The topicConnectionFactory can now only be specified using attribute 'topicConnectionFactoryName'");
 		}
-//		this.topicConnectionFactoryNameXA = topicConnectionFactoryNameXA;
 	}
-//	public String getTopicConnectionFactoryNameXA() {
-//		return topicConnectionFactoryNameXA;
-//	}
 
 	/**
 	 * Controls the use of JMS transacted session.
