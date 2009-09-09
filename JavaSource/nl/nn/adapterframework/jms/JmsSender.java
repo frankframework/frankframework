@@ -1,6 +1,9 @@
 /*
  * $Log: JmsSender.java,v $
- * Revision 1.33  2009-09-09 07:34:09  L190409
+ * Revision 1.34  2009-09-09 13:54:24  L190409
+ * updated javadoc
+ *
+ * Revision 1.33  2009/09/09 07:34:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.32  2009/09/09 07:15:17  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -145,7 +148,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * <tr><td>{@link #setAcknowledgeMode(String) acknowledgeMode}</td><td>&nbsp;</td><td>AUTO_ACKNOWLEDGE</td></tr>
  * <tr><td>{@link #setTransacted(boolean) transacted}</td><td>&nbsp;</td><td>false</td></tr>
  * <tr><td>{@link #setSynchronous(boolean) synchronous}</td><td>when <code>true</code>, the sender operates in RR mode: the a reply is expected, either on the queue specified in 'replyToName', or on a dynamically generated temporary queue</td><td>false</td></tr>
- * <tr><td>{@link #setLinkMethod(String) linkMethod}</td><td>(Only used when synchronous="true" and and replyToName is set) Indicates wether the server uses the correlationID or the messageID in the correlationID field of the reply. This requires the sender to have set the correlationID at the time of sending.</td><td>MESSAGEID</td></tr>
+ * <tr><td>{@link #setLinkMethod(String) linkMethod}</td><td>(Only used when synchronous="true" and and replyToName is set) Eithter 'MESSAGEID' or 'CORRELATIONID'. Indicates wether the server uses the correlationID or the messageID in the correlationID field of the reply. This requires the sender to have set the correlationID at the time of sending.</td><td>MESSAGEID</td></tr>
  * <tr><td>{@link #setReplyToName(String) replyToName}</td><td>Name of the queue the reply is expected on. This value is send in the JmsReplyTo-header with the message.</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setReplyTimeout(int) replyTimeout}</td><td>maximum time in ms to wait for a reply. (Only for synchronous=true)</td><td>5000</td></tr>
  * <tr><td>{@link #setPersistent(boolean) persistent}</td><td>rather useless attribute, and not the same as delivery mode. You probably want to use that.</td><td>&nbsp;</td></tr>
@@ -170,7 +173,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  */
 
 public class JmsSender extends JMSFacade implements ISenderWithParameters, IPostboxSender {
-	public static final String version="$RCSfile: JmsSender.java,v $ $Revision: 1.33 $ $Date: 2009-09-09 07:34:09 $";
+	public static final String version="$RCSfile: JmsSender.java,v $ $Revision: 1.34 $ $Date: 2009-09-09 13:54:24 $";
 	private String replyToName = null;
 	private int deliveryMode = 0;
 	private String messageType = null;
