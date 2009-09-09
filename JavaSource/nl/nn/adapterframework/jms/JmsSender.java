@@ -1,6 +1,9 @@
 /*
  * $Log: JmsSender.java,v $
- * Revision 1.31  2009-09-08 14:22:07  L190409
+ * Revision 1.32  2009-09-09 07:15:17  L190409
+ * removed IDoubleAsynchronous
+ *
+ * Revision 1.31  2009/09/08 14:22:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * made linkMethod controllable using IDoubleASynchronous
  *
  * Revision 1.30  2009/08/24 08:21:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -105,7 +108,6 @@ import javax.naming.NamingException;
 import javax.xml.transform.TransformerException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IDoubleASynchronous;
 import nl.nn.adapterframework.core.IPostboxSender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.IbisException;
@@ -163,8 +165,8 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * @version Id
  */
 
-public class JmsSender extends JMSFacade implements ISenderWithParameters, IPostboxSender, IDoubleASynchronous {
-	public static final String version="$RCSfile: JmsSender.java,v $ $Revision: 1.31 $ $Date: 2009-09-08 14:22:07 $";
+public class JmsSender extends JMSFacade implements ISenderWithParameters, IPostboxSender {
+	public static final String version="$RCSfile: JmsSender.java,v $ $Revision: 1.32 $ $Date: 2009-09-09 07:15:17 $";
 	private String replyToName = null;
 	private int deliveryMode = 0;
 	private String messageType = null;
