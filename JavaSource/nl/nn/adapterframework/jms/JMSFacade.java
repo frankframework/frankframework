@@ -1,6 +1,9 @@
 /*
  * $Log: JMSFacade.java,v $
- * Revision 1.38  2009-09-09 14:34:48  L190409
+ * Revision 1.39  2009-09-17 08:21:13  L190409
+ * fixed timeout handling of JmsSender
+ *
+ * Revision 1.38  2009/09/09 14:34:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fixed forced target client setting in secondary send() method
  *
  * Revision 1.37  2009/08/20 12:12:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -187,7 +190,7 @@ import com.ibm.mq.jms.MQQueue;
  * @version Id
  */
 public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version="$RCSfile: JMSFacade.java,v $ $Revision: 1.38 $ $Date: 2009-09-09 14:34:48 $";
+	public static final String version="$RCSfile: JMSFacade.java,v $ $Revision: 1.39 $ $Date: 2009-09-17 08:21:13 $";
 
 	public static final String MODE_PERSISTENT="PERSISTENT";
 	public static final String MODE_NON_PERSISTENT="NON_PERSISTENT";
@@ -403,7 +406,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
  		}
     }
 
-	public Destination getDestination() throws NamingException, JMSException, JmsException, IbisException  {
+	public Destination getDestination() throws NamingException, JMSException, JmsException  {
 	
 	    if (destination == null) {
 	    	String destinationName = getDestinationName();

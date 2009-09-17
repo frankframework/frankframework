@@ -1,6 +1,9 @@
 /*
  * $Log: JmsSender.java,v $
- * Revision 1.34  2009-09-09 13:54:24  L190409
+ * Revision 1.35  2009-09-17 08:21:13  L190409
+ * fixed timeout handling of JmsSender
+ *
+ * Revision 1.34  2009/09/09 13:54:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.33  2009/09/09 07:34:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -173,7 +176,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  */
 
 public class JmsSender extends JMSFacade implements ISenderWithParameters, IPostboxSender {
-	public static final String version="$RCSfile: JmsSender.java,v $ $Revision: 1.34 $ $Date: 2009-09-09 13:54:24 $";
+	public static final String version="$RCSfile: JmsSender.java,v $ $Revision: 1.35 $ $Date: 2009-09-17 08:21:13 $";
 	private String replyToName = null;
 	private int deliveryMode = 0;
 	private String messageType = null;
@@ -355,8 +358,6 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 		} catch (TransformerException e) {
 			throw new SenderException(e);
 		} catch (JmsException e) {
-			throw new SenderException(e);
-		} catch (IbisException e) {
 			throw new SenderException(e);
 		} finally {
 			if (mp != null) { 
