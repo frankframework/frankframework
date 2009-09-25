@@ -1,6 +1,9 @@
 /*
  * $Log: BrowseJdbcTableExecute.java,v $
- * Revision 1.8  2008-11-12 12:34:24  europe\m168309
+ * Revision 1.9  2009-09-25 12:28:49  m168309
+ * added WHERE facility
+ *
+ * Revision 1.8  2008/11/12 12:34:24  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * fixed error in cookies
  *
  * Revision 1.7  2008/11/05 12:22:06  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -53,7 +56,7 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 
 public class BrowseJdbcTableExecute extends ActionBase {
-	public static final String version = "$RCSfile: BrowseJdbcTableExecute.java,v $ $Revision: 1.8 $ $Date: 2008-11-12 12:34:24 $";
+	public static final String version = "$RCSfile: BrowseJdbcTableExecute.java,v $ $Revision: 1.9 $ $Date: 2009-09-25 12:28:49 $";
 	public static final String DB2XML_XSLT = "xml/xsl/BrowseJdbcTableExecute.xsl";
 
 	public ActionForward execute(
@@ -82,6 +85,7 @@ public class BrowseJdbcTableExecute extends ActionBase {
 		IniDynaActionForm browseJdbcTableForm = (IniDynaActionForm) form;
 		String form_jmsRealm = (String) browseJdbcTableForm.get("jmsRealm");
 		String form_tableName = (String) browseJdbcTableForm.get("tableName");
+		String form_where = (String) browseJdbcTableForm.get("where");
 		boolean form_numberOfRowsOnly = false;
 		String form_order = (String) browseJdbcTableForm.get("order");
 		if (browseJdbcTableForm.get("numberOfRowsOnly") != null)
@@ -136,6 +140,9 @@ public class BrowseJdbcTableExecute extends ActionBase {
 								+ "<tableName>"
 								+ form_tableName
 								+ "</tableName>"
+								+ "<where>"
+								+ XmlUtils.encodeChars(form_where)
+								+ "</where>"
 								+ "<numberOfRowsOnly>"
 								+ form_numberOfRowsOnly
 								+ "</numberOfRowsOnly>"
@@ -193,6 +200,8 @@ public class BrowseJdbcTableExecute extends ActionBase {
 		cookieValue += "jmsRealm=\"" + form_jmsRealm + "\"";
 		cookieValue += " "; //separator
 		cookieValue += "tableName=\"" + form_tableName + "\"";
+		cookieValue += " "; //separator          
+		cookieValue += "where=\"" + form_where + "\"";
 		cookieValue += " "; //separator          
 		cookieValue += "numberOfRowsOnly=\"" + form_numberOfRowsOnly + "\"";
 		cookieValue += " "; //separator          

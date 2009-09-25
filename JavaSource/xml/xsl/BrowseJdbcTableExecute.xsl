@@ -3,6 +3,7 @@
 	<xsl:output method="text" indent="no"/>
 	<xsl:variable name="tableName" select="browseJdbcTableExecuteREQ/tableName"/>
 	<xsl:variable name="numberOfRowsOnly" select="browseJdbcTableExecuteREQ/numberOfRowsOnly"/>
+	<xsl:variable name="where" select="browseJdbcTableExecuteREQ/where"/>
 	<xsl:variable name="order" select="browseJdbcTableExecuteREQ/order"/>
 	<xsl:variable name="rownumMin" select="number(browseJdbcTableExecuteREQ/rownumMin)"/>
 	<xsl:variable name="rownumMax" select="number(browseJdbcTableExecuteREQ/rownumMax)"/>
@@ -15,6 +16,12 @@
 						<xsl:value-of select="$order"/>
 						<xsl:text>, COUNT(*) AS ROWCOUNT FROM </xsl:text>
 						<xsl:value-of select="$tableName"/>
+						
+						<xsl:if test="string-length($where)&gt;0">
+							<xsl:text> WHERE </xsl:text>			
+								<xsl:value-of select="$where"/>
+						</xsl:if>
+												
 						<xsl:text> GROUP BY </xsl:text>
 						<xsl:value-of select="$order"/>
 						<xsl:text> ORDER BY </xsl:text>
@@ -23,12 +30,16 @@
 					<xsl:otherwise>
 						<xsl:text>SELECT COUNT(*) AS ROWCOUNT FROM </xsl:text>
 						<xsl:value-of select="$tableName"/>
+						<xsl:if test="string-length($where)&gt;0">
+							<xsl:text> WHERE </xsl:text>			
+								<xsl:value-of select="$where"/>
+						</xsl:if>
 					</xsl:otherwise>
 				</xsl:choose>
 			</xsl:when>
 			<xsl:otherwise>
 				<xsl:if test="$rownumMin&gt;0 or $rownumMax&gt;0">
-					<xsl:text>SELECT * FROM (</xsl:text>
+					<xsl:text>SELECT * FROM (</xsl:text>					
 				</xsl:if>
 				<xsl:choose>
 					<xsl:when test="string-length($order)&gt;0">
@@ -66,6 +77,12 @@
 				</xsl:choose>
 				<xsl:text> FROM </xsl:text>
 				<xsl:value-of select="$tableName"/>
+				
+					<xsl:if test="string-length($where)&gt;0">
+						<xsl:text> WHERE </xsl:text>			
+							<xsl:value-of select="$where"/>
+					</xsl:if>
+				
 				<xsl:if test="$rownumMin&gt;0 or $rownumMax&gt;0">
 					<xsl:text>)</xsl:text>
 					<xsl:choose>
