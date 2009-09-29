@@ -45,6 +45,11 @@
 							<xsl:value-of select="concat('testtool-',parent::*[name()='adapter']/@name)" />
 						</xsl:attribute>
 					</xsl:element>
+					<xsl:for-each select="parent::*[name()='adapter']/receiver/errorStorage">
+						<xsl:if test="position()=1">
+							<xsl:copy-of select="." />
+						</xsl:if>
+					</xsl:for-each>
 				</xsl:element>
 				<xsl:call-template name="copy" />
 			</xsl:when>
