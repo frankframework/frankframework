@@ -1,6 +1,9 @@
 /*
  * $Log: CredentialFactory.java,v $
- * Revision 1.7  2009-09-08 14:35:27  L190409
+ * Revision 1.8  2009-10-01 12:55:51  L190409
+ * modified operation to get Java 2 Security working
+ *
+ * Revision 1.7  2009/09/08 14:35:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved signalling of misconfiguration
  *
  * Revision 1.6  2009/08/13 09:19:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -27,7 +30,12 @@ package nl.nn.adapterframework.util;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.security.AccessController;
+import java.security.Principal;
+import java.security.PrivilegedAction;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -179,21 +187,67 @@ public class CredentialFactory implements CallbackHandler {
 		return lc;
 	}
 
+//	private class PasswordGetter implements PrivilegedAction {
+//
+//		Subject s;
+//		
+//		public PasswordGetter(Subject s) {
+//			this.s=s;
+//		}
+//		
+//		public Object run() {
+//			//log.debug("Subject: "+s.toString());
+//			//			log.info("Subject: "+ToStringBuilder.reflectionToString(s));
+//			//			showSet(s.getPrincipals(),"principals");
+//			//			showSet(s.getPublicCredentials(),"PublicCredentials");
+//						Set pcs = s.getPrivateCredentials();
+//						return pcs.toArray()[0];
+//			//			log.info("Pwcred:"+pwcred.toString()+" "+ToStringBuilder.reflectionToString(pwcred)); 
+//		};
+//		
+//	}
+
+//	private void showSet(Set set, String string) {
+//		String msg=string+"("+set.getClass().getName()+"): ";
+//		for(Iterator it=set.iterator();it.hasNext();){
+//			Object item=it.next();
+//			msg+=item.getClass().getName()+" "+item+"; ";
+//		}
+//		log.debug(msg);
+//	}
+
+	
+	/*
+	 * Dummy principal, to populate subject, to have at least a principal.
+	 */
+	private class IbisPrincipal implements Principal{
+
+		public String getName() {
+			return "Ibis";
+		}
+		
+	}
 
 	protected void getCredentialsFromAlias() {
 		if (!gotCredentials && StringUtils.isNotEmpty(getAlias())) {
 			try {
+				Set principals = new HashSet();
+				Set publicCredentials = new HashSet();
+				Set privateCredentials = new HashSet();
+				Principal p = new IbisPrincipal();
+				principals.add(p);
+				Subject initialSubject= new Subject(false,principals,publicCredentials,privateCredentials);
 				String loginConfiguration = AppConstants.getInstance().getProperty("PrincipalMapping","DefaultPrincipalMapping");
-				LoginContext lc = new LoginContext(loginConfiguration, this);
+				LoginContext lc = new LoginContext(loginConfiguration, initialSubject, this);
 				lc.login();
 				Subject s = lc.getSubject();
-				//log.debug("Subject: "+s.toString());
-	//			log.info("Subject: "+ToStringBuilder.reflectionToString(s));
-	//			showSet(s.getPrincipals(),"principals");
-	//			showSet(s.getPublicCredentials(),"PublicCredentials");
-				Set pcs = s.getPrivateCredentials();
-				Object pwcred = pcs.toArray()[0];
-	//			log.info("Pwcred:"+pwcred.toString()+" "+ToStringBuilder.reflectionToString(pwcred)); 
+				//showSet(s.getPrincipals(),"principals");
+				//showSet(s.getPublicCredentials(),"PublicCredentials");
+				//showSet(s.getPrivateCredentials(),"PrivateCredentials");
+				//Object pwcred=Subject.doAsPrivileged(s,new PasswordGetter(s),AccessController.getContext());
+				//Object pwcred=AccessController.doPrivileged(new PasswordGetter(s));
+				
+				Object pwcred = s.getPrivateCredentials().toArray()[0];
 
 				setUsername(ClassUtils.invokeStringGetter(pwcred,"getUserName"));
 				setPassword(invokeCharArrayGetter(pwcred,"getPassword"));
@@ -214,6 +268,7 @@ public class CredentialFactory implements CallbackHandler {
 			}
 		}
 	}
+
 
 	public String toString() {
 		return getClass().getName()+": alias="+getAlias()+"; username="+username;
