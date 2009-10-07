@@ -1,6 +1,9 @@
 /*
  * $Log: DB2XMLWriter.java,v $
- * Revision 1.19  2009-09-07 13:45:51  L190409
+ * Revision 1.20  2009-10-07 14:32:19  m168309
+ * added facility to exclude the field definition
+ *
+ * Revision 1.19  2009/09/07 13:45:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * filled deliberatly empty catch blocks with debug statement
  * replaced e.printStackTrace with log.error()
  *
@@ -93,7 +96,7 @@ import org.apache.log4j.Logger;
  **/
 
 public class DB2XMLWriter {
-	public static final String version="$RCSfile: DB2XMLWriter.java,v $ $Revision: 1.19 $ $Date: 2009-09-07 13:45:51 $";
+	public static final String version="$RCSfile: DB2XMLWriter.java,v $ $Revision: 1.20 $ $Date: 2009-10-07 14:32:19 $";
 	protected static Logger log = LogUtil.getLogger(DB2XMLWriter.class);
 
 	private String docname = "result";
@@ -188,6 +191,10 @@ public class DB2XMLWriter {
 	 * Retrieve the Resultset as a well-formed XML string
 	 */
 	public synchronized String getXML(ResultSet rs, int maxlength) {
+		return getXML(rs, Integer.MAX_VALUE, true);
+	}
+
+	public synchronized String getXML(ResultSet rs, int maxlength, boolean includeFieldDefinition) {
 		if (null == rs)
 			return "";
 	
@@ -207,55 +214,57 @@ public class DB2XMLWriter {
 		int rowCounter=0;
 		try {
 			ResultSetMetaData rsmeta = rs.getMetaData();
-			int nfields = rsmeta.getColumnCount();
+			if (includeFieldDefinition) {
+				int nfields = rsmeta.getColumnCount();
 	
-			XmlBuilder fields = new XmlBuilder("fielddefinition");
-			for (int j = 1; j <= nfields; j++) {
-				XmlBuilder field = new XmlBuilder("field");
+				XmlBuilder fields = new XmlBuilder("fielddefinition");
+				for (int j = 1; j <= nfields; j++) {
+					XmlBuilder field = new XmlBuilder("field");
 	
-				field.addAttribute("name", "" + rsmeta.getColumnName(j));
+					field.addAttribute("name", "" + rsmeta.getColumnName(j));
 	
-				//Not every JDBC implementation implements these attributes!
-				try {
-					field.addAttribute("type", "" + getFieldType(rsmeta.getColumnType(j)));
-				} catch (SQLException e) {
-					log.debug("Could not determine columnType",e);
+					//Not every JDBC implementation implements these attributes!
+					try {
+						field.addAttribute("type", "" + getFieldType(rsmeta.getColumnType(j)));
+					} catch (SQLException e) {
+						log.debug("Could not determine columnType",e);
+					}
+					try {
+						field.addAttribute("columnDisplaySize", "" + rsmeta.getColumnDisplaySize(j));
+					} catch (SQLException e) {
+						log.debug("Could not determine columnDisplaySize",e);
+					}
+					try {
+						field.addAttribute("precision", "" + rsmeta.getPrecision(j));
+					} catch (SQLException e) {
+						log.warn("Could not determine precision",e);
+					} catch (NumberFormatException e2) {
+						if (log.isDebugEnabled()) log.debug("Could not determine precision: "+e2.getMessage());
+					}
+					try {
+						field.addAttribute("scale", "" + rsmeta.getScale(j));
+					} catch (SQLException e) {
+						log.debug("Could not determine scale",e);
+					}
+					try {
+						field.addAttribute("isCurrency", "" + rsmeta.isCurrency(j));
+					} catch (SQLException e) {
+						log.debug("Could not determine isCurrency",e);
+					}
+					try {
+						field.addAttribute("columnTypeName", "" + rsmeta.getColumnTypeName(j));
+					} catch (SQLException e) {
+						log.debug("Could not determine columnTypeName",e);
+					}
+					try {
+						field.addAttribute("columnClassName", "" + rsmeta.getColumnClassName(j));
+					} catch (SQLException e) {
+						log.debug("Could not determine columnClassName",e);
+					}
+					fields.addSubElement(field);
 				}
-				try {
-					field.addAttribute("columnDisplaySize", "" + rsmeta.getColumnDisplaySize(j));
-				} catch (SQLException e) {
-					log.debug("Could not determine columnDisplaySize",e);
-				}
-				try {
-					field.addAttribute("precision", "" + rsmeta.getPrecision(j));
-				} catch (SQLException e) {
-					log.warn("Could not determine precision",e);
-				} catch (NumberFormatException e2) {
-					if (log.isDebugEnabled()) log.debug("Could not determine precision: "+e2.getMessage());
-				}
-				try {
-					field.addAttribute("scale", "" + rsmeta.getScale(j));
-				} catch (SQLException e) {
-					log.debug("Could not determine scale",e);
-				}
-				try {
-					field.addAttribute("isCurrency", "" + rsmeta.isCurrency(j));
-				} catch (SQLException e) {
-					log.debug("Could not determine isCurrency",e);
-				}
-				try {
-					field.addAttribute("columnTypeName", "" + rsmeta.getColumnTypeName(j));
-				} catch (SQLException e) {
-					log.debug("Could not determine columnTypeName",e);
-				}
-				try {
-					field.addAttribute("columnClassName", "" + rsmeta.getColumnClassName(j));
-				} catch (SQLException e) {
-					log.debug("Could not determine columnClassName",e);
-				}
-				fields.addSubElement(field);
+				mainElement.addSubElement(fields);
 			}
-			mainElement.addSubElement(fields);
 		
 			//----------------------------------------
 			// Process result rows
