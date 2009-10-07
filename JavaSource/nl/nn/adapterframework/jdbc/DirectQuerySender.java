@@ -1,6 +1,9 @@
 /*
  * $Log: DirectQuerySender.java,v $
- * Revision 1.15  2009-07-17 12:48:12  m168309
+ * Revision 1.16  2009-10-07 13:35:12  m168309
+ * added attribute includeFieldDefinition
+ *
+ * Revision 1.15  2009/07/17 12:48:12  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * updated javadoc
  *
  * Revision 1.14  2009/07/17 09:56:24  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -86,6 +89,7 @@ import java.sql.SQLException;
  * <tr><td>{@link #setBlobSmartGet(boolean) blobSmartGet}</td><td>controls automatically whether blobdata is stored compressed and/or serialized in the database</td><td>false</td></tr>
  * <tr><td>{@link #setTimeout(int) timeout}</td><td>the number of seconds the driver will wait for a Statement object to execute. If the limit is exceeded, a TimeOutException is thrown. 0 means no timeout</td><td>0</td></tr>
  * <tr><td>{@link #setUseNamedParams(boolean) useNamedParams}</td><td>when <code>true</code>, every string in the query which equals "?{<code>paramName</code>}" will be replaced by the setter method for the corresponding parameter (the parameters don't need to be in the correct order and unused parameters are skipped)</td><td>false</td></tr>
+ * <tr><td>{@link #setIncludeFieldDefinition(boolean) includeFieldDefinition}</td><td>when <code>true</code>, the result contains besides the returned rows also a header with information about the fetched fields</td><td>true</td></tr>
  * </table>
  * </p>
  * <table border="1">
@@ -100,7 +104,7 @@ import java.sql.SQLException;
  * @since 	4.1
  */
 public class DirectQuerySender extends JdbcQuerySenderBase {
-	public static final String version="$RCSfile: DirectQuerySender.java,v $ $Revision: 1.15 $ $Date: 2009-07-17 12:48:12 $";
+	public static final String version="$RCSfile: DirectQuerySender.java,v $ $Revision: 1.16 $ $Date: 2009-10-07 13:35:12 $";
 
 	private boolean lockRows=false;
 

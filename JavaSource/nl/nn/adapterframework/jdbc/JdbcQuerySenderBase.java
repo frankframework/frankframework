@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcQuerySenderBase.java,v $
- * Revision 1.45  2009-09-07 13:16:39  L190409
+ * Revision 1.46  2009-10-07 13:35:12  m168309
+ * added attribute includeFieldDefinition
+ *
+ * Revision 1.45  2009/09/07 13:16:39  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * replaced a '&' by '&&'
  *
  * Revision 1.44  2009/08/14 13:21:20  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -228,6 +231,7 @@ import sun.misc.BASE64Encoder;
  * <tr><td>{@link #setBlobSmartGet(boolean) blobSmartGet}</td><td>controls automatically whether blobdata is stored compressed and/or serialized in the database</td><td>false</td></tr>
  * <tr><td>{@link #setTimeout(int) timeout}</td><td>the number of seconds the driver will wait for a Statement object to execute. If the limit is exceeded, a TimeOutException is thrown. 0 means no timeout</td><td>0</td></tr>
  * <tr><td>{@link #setUseNamedParams(boolean) useNamedParams}</td><td>when <code>true</code>, every string in the message which equals "?{<code>paramName</code>}" will be replaced by the setter method for the corresponding parameter (the parameters don't need to be in the correct order and unused parameters are skipped)</td><td>false</td></tr>
+ * <tr><td>{@link #setIncludeFieldDefinition(boolean) includeFieldDefinition}</td><td>when <code>true</code>, the result contains besides the returned rows also a header with information about the fetched fields</td><td>true</td></tr>
  * </table>
  * </p>
  * <table border="1">
@@ -253,7 +257,7 @@ import sun.misc.BASE64Encoder;
  * @since 	4.1
  */
 public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
-	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.45 $ $Date: 2009-09-07 13:16:39 $";
+	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.46 $ $Date: 2009-10-07 13:35:12 $";
 
 	private final static String UNP_START = "?{";
 	private final static String UNP_END = "}";
@@ -278,6 +282,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 	private boolean blobSmartGet=false;
 	private int timeout=0;
 	private boolean useNamedParams=false;
+	private boolean includeFieldDefinition=true;
 
 	private String packageContent = "db2";
 	
@@ -512,7 +517,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 			db2xml.setBlobCharset(getBlobCharset());
 			db2xml.setDecompressBlobs(isBlobsCompressed());
 			db2xml.setGetBlobSmart(isBlobSmartGet());
-			result = db2xml.getXML(resultset, getMaxRows());
+			result = db2xml.getXML(resultset, getMaxRows(), isIncludeFieldDefinition());
 		}
 		return result;
 	}
@@ -1044,5 +1049,13 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 
 	public boolean isUseNamedParams() {
 		return useNamedParams;
+	}
+
+	public boolean isIncludeFieldDefinition() {
+		return includeFieldDefinition;
+	}
+
+	public void setIncludeFieldDefinition(boolean b) {
+		includeFieldDefinition = b;
 	}
 }
