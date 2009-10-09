@@ -1,6 +1,9 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.63  2009-09-07 13:50:53  L190409
+ * Revision 1.64  2009-10-09 13:22:27  m168309
+ * added default includeFieldDefinition (true) for querySenders
+ *
+ * Revision 1.63  2009/09/07 13:50:53  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * filled deliberatly empty catch block with debug statement
  * replaced e.printStackTrace with log.error()
  *
@@ -266,7 +269,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * @version Id
  */
 public class XmlUtils {
-	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.63 $ $Date: 2009-09-07 13:50:53 $";
+	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.64 $ $Date: 2009-10-09 13:22:27 $";
 	static Logger log = LogUtil.getLogger(XmlUtils.class);
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
@@ -278,6 +281,7 @@ public class XmlUtils {
 	public static final String AUTO_RELOAD_KEY = "xslt.auto.reload";
 	public static final String XSLT_BUFFERSIZE_KEY = "xslt.bufsize";
 	public static final int XSLT_BUFFERSIZE_DEFAULT=4096;
+	public static final String INCLUDE_FIELD_DEFINITION_BY_DEFAULT_KEY = "query.includeFieldDefinition.default";
 
 	public final static String OPEN_FROM_FILE = "file";
 	public final static String OPEN_FROM_URL = "url";
@@ -285,6 +289,7 @@ public class XmlUtils {
 	public final static String OPEN_FROM_XML = "xml";
 	
 	private static Boolean namespaceAwareByDefault = null;
+	private static Boolean includeFieldDefinitionByDefault = null;
 	private static Boolean autoReload = null;
 	private static Integer buffersize=null;
 	private static TransformerFactory transfomerFactory=null;
@@ -358,6 +363,14 @@ public class XmlUtils {
 			namespaceAwareByDefault = new Boolean(aware);
 		}
 		return namespaceAwareByDefault.booleanValue();
+	}
+
+	public static synchronized boolean isIncludeFieldDefinitionByDefault() {
+		if (includeFieldDefinitionByDefault==null) {
+			boolean definition=AppConstants.getInstance().getBoolean(INCLUDE_FIELD_DEFINITION_BY_DEFAULT_KEY, true);
+			includeFieldDefinitionByDefault = new Boolean(definition);
+		}
+		return includeFieldDefinitionByDefault.booleanValue();
 	}
 
 	public static synchronized boolean isAutoReload() {
