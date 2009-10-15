@@ -1,6 +1,9 @@
 /*
  * $Log: Adapter.java,v $
- * Revision 1.54  2009-08-26 15:27:15  L190409
+ * Revision 1.55  2009-10-15 14:28:31  m168309
+ * replaced requestReplyLogging attribute by msgLogLevel attribute
+ *
+ * Revision 1.54  2009/08/26 15:27:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * support for separated adapter-only and detailed statistics
  *
  * Revision 1.53  2009/06/05 07:20:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -174,6 +177,7 @@ import java.util.Map;
 import java.util.Vector;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.errormessageformatters.ErrorMessageFormatter;
 import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.util.CounterStatistic;
@@ -181,6 +185,7 @@ import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.HasStatistics;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper;
+import nl.nn.adapterframework.util.MsgLogUtil;
 import nl.nn.adapterframework.util.RunStateEnum;
 import nl.nn.adapterframework.util.RunStateManager;
 import nl.nn.adapterframework.util.StatisticsKeeper;
@@ -221,7 +226,15 @@ import org.springframework.core.task.TaskExecutor;
  * <tr><td>{@link #setErrorState(String) errorState}</td><td>If an error occurs during
  * the pipeline execution, the state in the <code>PipeLineResult</code> is set to this state</td><td>ERROR</td></tr>
  * <tr><td>{@link #setMessageKeeperSize(int) messageKeeperSize}</td><td>number of message displayed in IbisConsole</td><td>10</td></tr>
- * <tr><td>{@link #setRequestReplyLogging(boolean) requestReplyLogging}</td><td>when <code>true</code>, the request and reply messages will be logged for each request processed</td><td>false</td></tr>
+ * <tr><td>{@link #setRequestReplyLogging(boolean) requestReplyLogging} <i>deprecated</i></td><td>when <code>true</code>, the request and reply messages will be logged for each request processed</td><td>false</td></tr>
+ * <tr><td>{@link #setMsgLogLevel(String) msgLogLevel}</td><td>defines behaviour for logging messages. Configuration is done in the MSG appender in log4j4ibis.properties. Possible values are: 
+ *   <table border="1">
+ *   <tr><th>msgLogLevel</th><th>messages which are logged</th></tr>
+ *   <tr><td colspan="1">None</td> <td>none</td></tr>
+ *   <tr><td colspan="1">Terse</td><td>at adapter level</td></tr>
+ *   <tr><td colspan="1">Basic</td><td>at adapter and sending pipe level (not yet available; only at adapter level)</td></tr>
+ *   <tr><td colspan="1">Full</td> <td>at adapter and pipe level (not yet available; only at adapter level)</td></tr>
+ *  </table></td><td>None</td></tr>
  *  </table></td><td>&nbsp;</td></tr>
  * </table>
  * 
@@ -237,8 +250,9 @@ import org.springframework.core.task.TaskExecutor;
  */
 
 public class Adapter implements IAdapter, NamedBean {
-	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.54 $ $Date: 2009-08-26 15:27:15 $";
+	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.55 $ $Date: 2009-10-15 14:28:31 $";
 	private Logger log = LogUtil.getLogger(this);
+	protected Logger msgLog = LogUtil.getLogger("MSG");
 
 	private String name;
 	private String targetDesignDocument;
@@ -267,6 +281,7 @@ public class Adapter implements IAdapter, NamedBean {
 	private int messageKeeperSize = 10; //default length
 	private boolean autoStart = true;
 	private boolean requestReplyLogging = false;
+	private int msgLogLevel = MsgLogUtil.getMsgLogLevelByDefault();
 
 	// state to put in PipeLineResult when a PipeRunException occurs;
 	private String errorState = "ERROR";
@@ -399,12 +414,13 @@ public class Adapter implements IAdapter, NamedBean {
 				originalMessage,
 				messageID,
 				receivedTime);
-			if (isRequestReplyLogging()) {
-				log.info("Adapter [" + getName() + "] messageId[" + messageID + "] formatted errormessage, result [" + formattedErrorMessage + "]");
-			} else {
-				if (log.isDebugEnabled()) {
-					log.info("Adapter [" + getName() + "] messageId[" + messageID + "] formatted errormessage, result [" + formattedErrorMessage + "]");
-				}
+			//if (isRequestReplyLogging()) {
+			String logMsg = "Adapter [" + getName() + "] messageId[" + messageID + "] formatted errormessage, result [" + formattedErrorMessage + "]";
+			if (isMsgLogTerseEnabled()) {
+				msgLog.info(logMsg);
+			}
+			if (log.isDebugEnabled()) {
+				log.debug(logMsg);
 			}
 			return formattedErrorMessage;
 		}
@@ -674,12 +690,13 @@ public class Adapter implements IAdapter, NamedBean {
 				}
 			}
 			result.setResult(formatErrorMessage(msg, t, message, messageId, objectInError, startTime));
-			if (isRequestReplyLogging()) {
-				log.info("Adapter [" + getName() + "] messageId [" + messageId + "] got exit-state [" + result.getState() + "] and result [" + result.toString() + "] from PipeLine");
-			} else {
-				if (log.isDebugEnabled()) {
-					log.debug("Adapter [" + getName() + "] messageId [" + messageId + "] got exit-state [" + result.getState() + "] and result [" + result.toString() + "] from PipeLine");
-				}
+			//if (isRequestReplyLogging()) {
+			String logMsg = "Adapter [" + getName() + "] messageId [" + messageId + "] got exit-state [" + result.getState() + "] and result [" + result.toString() + "] from PipeLine";
+			if (isMsgLogTerseEnabled()) {
+				msgLog.info(logMsg);
+			}
+			if (log.isDebugEnabled()) {
+				log.debug(logMsg);
 			}
 			return result;
 		}
@@ -708,25 +725,27 @@ public class Adapter implements IAdapter, NamedBean {
 			NDC.push(newNDC);
 		}
 		
-		if (isRequestReplyLogging()) {
-			if (log.isInfoEnabled()) log.info("Adapter [" + name + "] received message [" + message + "] with messageId [" + messageId + "]");
+		//if (isRequestReplyLogging()) {
+		String logMsg = "Adapter [" + name + "] received message [" + message + "] with messageId [" + messageId + "]";
+		if (isMsgLogTerseEnabled()) {
+			msgLog.info(logMsg);
+		}
+		if (log.isDebugEnabled()) { 
+			log.debug(logMsg);
 		} else {
-			if (log.isDebugEnabled()) { 
-				log.debug("Adapter [" + name + "] received message [" + message + "] with messageId [" + messageId + "]");
-			} else {
-				log.info("Adapter [" + name + "] received message with messageId [" + messageId + "]");
-			}
+			log.info("Adapter [" + name + "] received message with messageId [" + messageId + "]");
 		}
 
 
 		try {
 			result = pipeline.process(messageId, message,pipeLineSession);
-			if (isRequestReplyLogging()) {
-				log.info("Adapter [" + getName() + "] messageId[" + messageId + "] got exit-state [" + result.getState() + "] and result [" + result.toString() + "] from PipeLine");
-			} else {
-				if (log.isDebugEnabled()) {
-					log.debug("Adapter [" + getName() + "] messageId[" + messageId + "] got exit-state [" + result.getState() + "] and result [" + result.toString() + "] from PipeLine");
-				}
+			//if (isRequestReplyLogging()) {
+			logMsg = "Adapter [" + getName() + "] messageId[" + messageId + "] got exit-state [" + result.getState() + "] and result [" + result.toString() + "] from PipeLine";
+			if (isMsgLogTerseEnabled()) {
+				msgLog.info(logMsg);
+			}
+			if (log.isDebugEnabled()) {
+				log.debug(logMsg);
 			}
 			return result;
 	
@@ -1040,11 +1059,23 @@ public class Adapter implements IAdapter, NamedBean {
 	}
 	
 	public void setRequestReplyLogging(boolean requestReplyLogging) {
-		this.requestReplyLogging = requestReplyLogging;
+		//this.requestReplyLogging = requestReplyLogging;
+		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+		if (requestReplyLogging) {
+			String msg = "implementing setting of requestReplyLogging=true as msgLogLevel=Terse";
+			configWarnings.add(log, msg);
+			setMsgLogLevelNum(MsgLogUtil.MSGLOG_LEVEL_TERSE);
+		} else {
+			String msg = "implementing setting of requestReplyLogging=false as msgLogLevel=None";
+			configWarnings.add(log, msg);
+			setMsgLogLevelNum(MsgLogUtil.MSGLOG_LEVEL_NONE);
+		}
 	}
+/*
 	public boolean isRequestReplyLogging() {
 		return requestReplyLogging;
 	}
+*/
 
 	public void setActive(boolean b) {
 		active = b;
@@ -1074,4 +1105,26 @@ public class Adapter implements IAdapter, NamedBean {
         return name;
     }
 
+	public void setMsgLogLevel(String level) throws ConfigurationException {
+		msgLogLevel = MsgLogUtil.getMsgLogLevelNum(level);
+		if (msgLogLevel<0) {
+			throw new ConfigurationException("illegal value for msgLogLevel ["+level+"]");
+		}
+	}
+
+	public String getMsgLogLevel() {
+		return MsgLogUtil.getMsgLogLevelString(msgLogLevel);
+	}
+
+	public void setMsgLogLevelNum(int i) {
+		msgLogLevel = i;
+	}
+
+	private boolean isMsgLogTerseEnabled() {
+		if (msgLogLevel>=MsgLogUtil.MSGLOG_LEVEL_TERSE) {
+			return true;
+		} else {
+			return false;
+		}
+	}
 }
