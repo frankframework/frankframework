@@ -1,6 +1,9 @@
 /*
  * $Log: BrowseJdbcTableExecute.java,v $
- * Revision 1.9  2009-09-25 12:28:49  m168309
+ * Revision 1.10  2009-10-19 14:01:23  m168309
+ * includeFieldDefinition=true
+ *
+ * Revision 1.9  2009/09/25 12:28:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added WHERE facility
  *
  * Revision 1.8  2008/11/12 12:34:24  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -56,7 +59,7 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 
 public class BrowseJdbcTableExecute extends ActionBase {
-	public static final String version = "$RCSfile: BrowseJdbcTableExecute.java,v $ $Revision: 1.9 $ $Date: 2009-09-25 12:28:49 $";
+	public static final String version = "$RCSfile: BrowseJdbcTableExecute.java,v $ $Revision: 1.10 $ $Date: 2009-10-19 14:01:23 $";
 	public static final String DB2XML_XSLT = "xml/xsl/BrowseJdbcTableExecute.xsl";
 
 	public ActionForward execute(
@@ -131,6 +134,7 @@ public class BrowseJdbcTableExecute extends ActionBase {
 					if (form_numberOfRowsOnly || qs.getDatabaseType() == JdbcFacade.DATABASE_ORACLE) {
 						qs.setQueryType("select");
 						qs.setBlobSmartGet(true);
+						qs.setIncludeFieldDefinition(true);
 						qs.configure();
 						qs.open();
 						query = "SELECT * FROM " + form_tableName + " WHERE ROWNUM=0";
