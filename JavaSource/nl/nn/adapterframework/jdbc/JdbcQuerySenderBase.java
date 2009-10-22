@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcQuerySenderBase.java,v $
- * Revision 1.47  2009-10-09 13:26:20  m168309
+ * Revision 1.48  2009-10-22 13:42:55  m168309
+ * added attribute rowIdSessionKey
+ *
+ * Revision 1.47  2009/10/09 13:26:20  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added default includeFieldDefinition (true) for querySenders
  *
  * Revision 1.46  2009/10/07 13:35:12  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -174,6 +177,7 @@ import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.util.DB2XMLWriter;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.Misc;
@@ -236,6 +240,7 @@ import sun.misc.BASE64Encoder;
  * <tr><td>{@link #setTimeout(int) timeout}</td><td>the number of seconds the driver will wait for a Statement object to execute. If the limit is exceeded, a TimeOutException is thrown. 0 means no timeout</td><td>0</td></tr>
  * <tr><td>{@link #setUseNamedParams(boolean) useNamedParams}</td><td>when <code>true</code>, every string in the message which equals "?{<code>paramName</code>}" will be replaced by the setter method for the corresponding parameter (the parameters don't need to be in the correct order and unused parameters are skipped)</td><td>false</td></tr>
  * <tr><td>{@link #setIncludeFieldDefinition(boolean) includeFieldDefinition}</td><td>when <code>true</code>, the result contains besides the returned rows also a header with information about the fetched fields</td><td>application default (true)</td></tr>
+ * <tr><td>{@link #setRowIdSessionKey(boolean) rowIdSessionKey}</td><td>If specified, the ROWID of the processed row is put in the PipeLineSession under the specified key (only applicable for <code>queryType=other</code>). <b>Note:</b> If multiple rows are processed a SQLException is thrown.</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * <table border="1">
@@ -261,7 +266,7 @@ import sun.misc.BASE64Encoder;
  * @since 	4.1
  */
 public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
-	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.47 $ $Date: 2009-10-09 13:26:20 $";
+	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.48 $ $Date: 2009-10-22 13:42:55 $";
 
 	private final static String UNP_START = "?{";
 	private final static String UNP_END = "}";
@@ -287,6 +292,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 	private int timeout=0;
 	private boolean useNamedParams=false;
 	private boolean includeFieldDefinition=XmlUtils.isIncludeFieldDefinitionByDefault();
+	private String rowIdSessionKey=null;
 
 	private String packageContent = "db2";
 	
@@ -373,7 +379,23 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 						if ("package".equalsIgnoreCase(getQueryType())) {
 							return executePackageQuery(connection, statement, message);
 						} else {
-							int numRowsAffected = statement.executeUpdate();
+							int numRowsAffected = 0;
+							if (StringUtils.isNotEmpty(getRowIdSessionKey())) {
+								String callMessage = "BEGIN " + message + " RETURNING ROWID INTO ?; END;";
+								CallableStatement cstmt = connection.prepareCall(callMessage);
+								int ri = 1;
+								if (prc != null && paramList != null) {
+									ParameterValueList parameters = prc.getValues(newParamList);
+									applyParameters(cstmt, parameters);
+									ri = parameters.size() + 1;
+								}
+								cstmt.registerOutParameter(ri, Types.VARCHAR);
+								numRowsAffected = cstmt.executeUpdate();
+								String rowId = cstmt.getString(ri);
+								prc.getSession().put(getRowIdSessionKey(), rowId);
+							} else {
+								numRowsAffected = statement.executeUpdate();
+							}
 							if (StringUtils.isNotEmpty(getResultQuery())) {
 								Statement resStmt = null;
 								try { 
@@ -1061,5 +1083,13 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 
 	public void setIncludeFieldDefinition(boolean b) {
 		includeFieldDefinition = b;
+	}
+
+	public String getRowIdSessionKey() {
+		return rowIdSessionKey;
+	}
+
+	public void setRowIdSessionKey(String string) {
+		rowIdSessionKey = string;
 	}
 }
