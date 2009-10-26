@@ -1,6 +1,10 @@
 /*
  * $Log: JdbcTransactionalStorage.java,v $
- * Revision 1.35  2009-03-19 11:11:54  m168309
+ * Revision 1.36  2009-10-26 14:06:24  m168309
+ * - added MessageLog facility to receivers
+ * - added facility to disable records for deletion by the cleanup process
+ *
+ * Revision 1.35  2009/03/19 11:11:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * corrected comments create index for ibisstore
  *
  * Revision 1.34  2009/03/13 14:30:35  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -176,7 +180,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  * <tr><td>{@link #setSequenceName(String) sequenceName}</td><td>the name of the sequence used to generate the primary key (only for Oracle)<br>N.B. the default name has been changed in version 4.6</td><td>seq_ibisstore</td></tr>
  * <tr><td>{@link #setIndexName(String) indexName}</td><td>the name of the index, to be used in hints for query optimizer too (only for Oracle)</td><td>IX_IBISSTORE</td></tr>
  * <tr><td>{@link #setPrefix(String) prefix}</td><td>prefix to be prefixed on all database objects (tables, indices, sequences), e.q. to access a different Oracle Schema</td><td></td></tr>
- * <tr><td>{@link #setRetention(int) retention}</td><td>the time (in days) to keep the record in the database before making it eligible for deletion by a cleanup process</td><td>30</td></tr>
+ * <tr><td>{@link #setRetention(int) retention}</td><td>the time (in days) to keep the record in the database before making it eligible for deletion by a cleanup process. When set to -1, the record will live on forever</td><td>30</td></tr>
  * </table>
  * </p>
  * 
@@ -240,10 +244,11 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  * @since 	4.1
  */
 public class JdbcTransactionalStorage extends JdbcFacade implements ITransactionalStorage {
-	public static final String version = "$RCSfile: JdbcTransactionalStorage.java,v $ $Revision: 1.35 $ $Date: 2009-03-19 11:11:54 $";
+	public static final String version = "$RCSfile: JdbcTransactionalStorage.java,v $ $Revision: 1.36 $ $Date: 2009-10-26 14:06:24 $";
 
 	public final static String TYPE_ERRORSTORAGE="E";
-	public final static String TYPE_MESSAGELOG="L";
+	public final static String TYPE_MESSAGELOG_PIPE="L";
+	public final static String TYPE_MESSAGELOG_RECEIVER="A";
 
 	public final static TransactionDefinition TXREQUIRED = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED);
 	
@@ -554,12 +559,16 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 			stmt.setString(++parPos,correlationId);
 			stmt.setTimestamp(++parPos, receivedDateTime);
 			stmt.setString(++parPos, comments);
-			if (type.equalsIgnoreCase(TYPE_MESSAGELOG)) {
-				Date date = new Date();
-				Calendar cal = Calendar.getInstance();
-				cal.setTime(date);
-				cal.add(Calendar.DAY_OF_MONTH, getRetention());
-				stmt.setTimestamp(++parPos, new Timestamp(cal.getTime().getTime()));
+			if (type.equalsIgnoreCase(TYPE_MESSAGELOG_PIPE) || type.equalsIgnoreCase(TYPE_MESSAGELOG_RECEIVER)) {
+				if (getRetention()<0) {
+					stmt.setTimestamp(++parPos, null);
+				} else {
+					Date date = new Date();
+					Calendar cal = Calendar.getInstance();
+					cal.setTime(date);
+					cal.add(Calendar.DAY_OF_MONTH, getRetention());
+					stmt.setTimestamp(++parPos, new Timestamp(cal.getTime().getTime()));
+				}
 			} else {
 				stmt.setTimestamp(++parPos, null);
 			}
@@ -765,7 +774,11 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		if (StringUtils.isEmpty(getSlotId())) {
 			return null;
 		}
-		return getSlotIdField()+"='"+getSlotId()+"'";
+		if (StringUtils.isEmpty(getType())) {
+			return getSlotIdField()+"='"+getSlotId()+"'";
+		} else {
+			return getSlotIdField()+"='"+getSlotId()+"' AND "+getTypeField()+"='"+getType()+"'";
+		}
 	}
 	
 
