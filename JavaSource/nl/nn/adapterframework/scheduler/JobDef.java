@@ -1,6 +1,9 @@
 /*
  * $Log: JobDef.java,v $
- * Revision 1.15  2009-06-05 07:28:48  L190409
+ * Revision 1.16  2009-10-26 13:53:52  m168309
+ * added MessageLog facility to receivers
+ *
+ * Revision 1.15  2009/06/05 07:28:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added function dumpStatisticsFull; function dumpStatistics now only dumps adapter level statistics
  *
  * Revision 1.14  2009/03/17 10:33:38  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -672,7 +675,7 @@ public class JobDef {
 		for (Iterator iter = messageLogs.iterator(); iter.hasNext();) {
 			MessageLogObject mlo = (MessageLogObject) iter.next();
 			setJmsRealm(mlo.getJmsRealmName());
-			String deleteQuery = "DELETE FROM " + mlo.getTableName() + " WHERE TYPE='" + JdbcTransactionalStorage.TYPE_MESSAGELOG + "' AND " + mlo.getExpiryDateField() + " < TO_TIMESTAMP('" + formattedDate + "', 'YYYY-MM-DD HH24:MI:SS')";
+			String deleteQuery = "DELETE FROM " + mlo.getTableName() + " WHERE TYPE IN ('" + JdbcTransactionalStorage.TYPE_MESSAGELOG_PIPE + "','" + JdbcTransactionalStorage.TYPE_MESSAGELOG_RECEIVER + "') AND " + mlo.getExpiryDateField() + " < TO_TIMESTAMP('" + formattedDate + "', 'YYYY-MM-DD HH24:MI:SS')";
 			setQuery(deleteQuery);
 			executeQueryJob();
 		}

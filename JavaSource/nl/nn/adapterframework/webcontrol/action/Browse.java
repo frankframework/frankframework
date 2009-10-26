@@ -1,6 +1,9 @@
 /*
  * $Log: Browse.java,v $
- * Revision 1.19  2009-08-04 11:46:58  L190409
+ * Revision 1.20  2009-10-26 13:53:09  m168309
+ * added MessageLog facility to receivers
+ *
+ * Revision 1.19  2009/08/04 11:46:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * work around IE 6 issue, that prevents exporting messages under HTTPS
  *
  * Revision 1.18  2009/04/28 11:36:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -99,7 +102,7 @@ import org.apache.struts.action.DynaActionForm;
  * @since   4.4
  */
 public class Browse extends ActionBase {
-	public static final String version="$RCSfile: Browse.java,v $ $Revision: 1.19 $ $Date: 2009-08-04 11:46:58 $";
+	public static final String version="$RCSfile: Browse.java,v $ $Revision: 1.20 $ $Date: 2009-10-26 13:53:09 $";
 
 	private int maxMessages = AppConstants.getInstance().getInt("browse.messages.max",0); 
 	private int skipMessages=0;
@@ -193,8 +196,13 @@ public class Browse extends ActionBase {
 		IMessageBrowser mb;
 		IListener listener=null;
 		if ("messagelog".equals(storageType)) {
-			MessageSendingPipe pipe=(MessageSendingPipe)adapter.getPipeLine().getPipe(pipeName);
-			mb=pipe.getMessageLog();
+			if (StringUtils.isNotEmpty(pipeName)) {
+				MessageSendingPipe pipe=(MessageSendingPipe)adapter.getPipeLine().getPipe(pipeName);
+				mb=pipe.getMessageLog();
+			} else {
+				ReceiverBase receiver = (ReceiverBase) adapter.getReceiverByName(receiverName);
+				mb = receiver.getMessageLog();
+			}
 			// actions 'deletemessage' and 'resendmessage' not allowed for messageLog	
 			if ("export selected".equalsIgnoreCase(action)) {
 				performAction(adapter, null, action, mb, messageId, selected, request, response);
@@ -232,7 +240,7 @@ public class Browse extends ActionBase {
 					messages.addAttribute("storageType",storageType);
 					messages.addAttribute("action",action);
 					messages.addAttribute("adapterName",XmlUtils.encodeChars(adapterName));
-					if ("messagelog".equals(storageType)) {
+					if ("messagelog".equals(storageType) && StringUtils.isNotEmpty(pipeName)) {
 						messages.addAttribute("object","pipe ["+XmlUtils.encodeChars(pipeName)+"] of adapter ["+XmlUtils.encodeChars(adapterName)+"]");
 						messages.addAttribute("pipeName",XmlUtils.encodeChars(pipeName));
  					} else {

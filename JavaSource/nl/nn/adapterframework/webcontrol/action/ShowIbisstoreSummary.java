@@ -1,6 +1,9 @@
 /*
  * $Log: ShowIbisstoreSummary.java,v $
- * Revision 1.5  2009-04-28 11:35:33  L190409
+ * Revision 1.6  2009-10-26 13:53:09  m168309
+ * added MessageLog facility to receivers
+ *
+ * Revision 1.5  2009/04/28 11:35:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * guard for debug logging
  *
  * Revision 1.4  2009/04/28 11:11:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -60,7 +63,7 @@ import org.apache.struts.action.ActionMapping;
  */
 
 public class ShowIbisstoreSummary extends ActionBase {
-	public static final String version = "$RCSfile: ShowIbisstoreSummary.java,v $ $Revision: 1.5 $ $Date: 2009-04-28 11:35:33 $";
+	public static final String version = "$RCSfile: ShowIbisstoreSummary.java,v $ $Revision: 1.6 $ $Date: 2009-10-26 13:53:09 $";
 
 	public static final String SHOWIBISSTORECOOKIE="ShowIbisstoreSummaryCookieName";
 	public static final String SHOWIBISSTOREQUERYKEY="ibisstore.summary.query";
@@ -114,7 +117,17 @@ public class ShowIbisstoreSummary extends ActionBase {
 						String slotId=errorStorage.getSlotId();
 						if (StringUtils.isNotEmpty(slotId)) {
 							SlotIdRecord sir=new SlotIdRecord(adapter.getName(),receiver.getName(),null);
-							slotmap.put(slotId,sir);
+							String type = errorStorage.getType();
+							slotmap.put(type+"/"+slotId,sir);
+						}
+					}
+					ITransactionalStorage messageLog=receiver.getMessageLog();
+					if (messageLog!=null) {
+						String slotId=messageLog.getSlotId();
+						if (StringUtils.isNotEmpty(slotId)) {
+							SlotIdRecord sir=new SlotIdRecord(adapter.getName(),receiver.getName(),null);
+							String type = messageLog.getType();
+							slotmap.put(type+"/"+slotId,sir);
 						}
 					}
 				}
@@ -129,6 +142,8 @@ public class ShowIbisstoreSummary extends ActionBase {
 								String slotId=messageLog.getSlotId();
 								if (StringUtils.isNotEmpty(slotId)) {
 									SlotIdRecord sir=new SlotIdRecord(adapter.getName(),null,msp.getName());
+									String type = messageLog.getType();
+									slotmap.put(type+"/"+slotId,sir);
 									slotmap.put(slotId,sir);
 								}
 							}
@@ -188,6 +203,11 @@ public class ShowIbisstoreSummary extends ActionBase {
 								}
 								typeXml=new XmlBuilder("type");
 								typeXml.addAttribute("id",type);
+								if (type.equalsIgnoreCase("E")) {
+									typeXml.addAttribute("name","errorlog");
+								} else {
+									typeXml.addAttribute("name","messagelog");
+								}
 								result.addSubElement(typeXml);
 								previousType=type;
 							}
@@ -201,7 +221,7 @@ public class ShowIbisstoreSummary extends ActionBase {
 								slotXml=new XmlBuilder("slot");
 								slotXml.addAttribute("id",slotid);
 								if (StringUtils.isNotEmpty(slotid)) {
-									SlotIdRecord sir=(SlotIdRecord)slotmap.get(slotid);
+									SlotIdRecord sir=(SlotIdRecord)slotmap.get(type+"/"+slotid);
 									if (sir!=null) {
 										slotXml.addAttribute("adapter",sir.adapterName);
 										if (StringUtils.isNotEmpty(sir.receiverName) ) {

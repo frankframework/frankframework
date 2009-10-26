@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.83  2009-09-08 14:24:38  L190409
+ * Revision 1.84  2009-10-26 13:54:38  m168309
+ * added MessageLog facility to receivers
+ *
+ * Revision 1.83  2009/09/08 14:24:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fixed support for passing back context parameters, 
  * while retaining use of context in afterMessageProcessed()
  *
@@ -557,7 +560,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  */
 public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHandler, EventThrowing, IbisExceptionListener, HasSender, HasStatistics, TracingEventNumbers, IThreadCountControllable, BeanFactoryAware {
     
-	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.83 $ $Date: 2009-09-08 14:24:38 $";
+	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.84 $ $Date: 2009-10-26 13:54:38 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -1978,7 +1981,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 			if (StringUtils.isEmpty(messageLog.getSlotId())) {
 				messageLog.setSlotId(getName());
 			}
-			messageLog.setType(JdbcTransactionalStorage.TYPE_MESSAGELOG);
+			messageLog.setType(JdbcTransactionalStorage.TYPE_MESSAGELOG_RECEIVER);
 		}
 	}
 	public ITransactionalStorage getMessageLog() {
