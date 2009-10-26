@@ -1,6 +1,9 @@
 /*
  * $Log: MessageSendingPipe.java,v $
- * Revision 1.55  2009-07-13 11:49:02  m168309
+ * Revision 1.56  2009-10-26 14:01:20  m168309
+ * cosmetic change
+ *
+ * Revision 1.55  2009/07/13 11:49:02  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added attribute correlationIDSessionKey
  *
  * Revision 1.54  2009/07/13 10:08:53  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -271,7 +274,7 @@ import org.apache.commons.lang.SystemUtils;
  */
 
 public class MessageSendingPipe extends FixedForwardPipe implements HasSender, HasStatistics, EventThrowing {
-	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.55 $ $Date: 2009-07-13 11:49:02 $";
+	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.56 $ $Date: 2009-10-26 14:01:20 $";
 
 	public static final String PIPE_TIMEOUT_MONITOR_EVENT = "Sender Timeout";
 	public static final String PIPE_CLEAR_TIMEOUT_MONITOR_EVENT = "Sender Received Result on Time";
@@ -734,7 +737,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 			if (StringUtils.isEmpty(messageLog.getSlotId())) {
 				messageLog.setSlotId(getName());
 			}
-			messageLog.setType(JdbcTransactionalStorage.TYPE_MESSAGELOG);
+			messageLog.setType(JdbcTransactionalStorage.TYPE_MESSAGELOG_PIPE);
 		}
 	}
 	public ITransactionalStorage getMessageLog() {
