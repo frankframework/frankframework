@@ -1,6 +1,9 @@
 /*
  * $Log: IbisContext.java,v $
- * Revision 1.3  2009-10-29 13:32:07  m168309
+ * Revision 1.4  2009-10-29 15:41:52  m168309
+ * Run IBIS on Tomcat
+ *
+ * Revision 1.3  2009/10/29 13:32:07  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * Run IBIS on Tomcat
  *
  * Revision 1.2  2008/02/25 10:10:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -126,6 +129,7 @@ public class IbisContext {
 		if (ts_value!=null) {
 			log.info("* system property [" + ts_name + "] has value [" + ts_value + "]");
 		} else {
+			ts_value="WAS5";
 			System.setProperty(ts_name,ts_value);
 			log.info("* system property [" + ts_name + "] set to value [" + ts_value + "]");
 		}
