@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  $Log: springJOTM.xml,v $
+  Revision 1.1  2009-10-29 13:23:12  m168309
+  Run IBIS on Tomcat
+
+-->
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="
+            http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+            http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.0.xsd
+            ">
+
+    <!-- Transaction stuff -->
+    <!-- In order to properly handle 'Propagation: Supports', set property
+         'transactionSynchronization' to 'Synchronize on actual transaction'. -->
+    
+    <!-- Defining a open source transaction manager -->
+    <bean id="txManagerReal" class="org.springframework.transaction.jta.JtaTransactionManager"
+    	lazy-init="true">
+        <property name="transactionManager">
+            <bean class="org.springframework.transaction.jta.JotmFactoryBean"/>
+        </property>
+        <property name="transactionSynchronization">
+            <util:constant static-field="org.springframework.transaction.support.AbstractPlatformTransactionManager.SYNCHRONIZATION_ON_ACTUAL_TRANSACTION"/>
+        </property>
+    </bean>
+    
+    <!-- Replace with whatever TaskExecutor implementation suits best -->
+    <bean name="taskExecutor" class="org.springframework.core.task.SimpleAsyncTaskExecutor"
+        scope="singleton">
+    </bean>
+    
+    <bean id="messageListenerClassName" class="java.lang.String">
+        <constructor-arg value="org.springframework.jms.listener.DefaultMessageListenerContainer102"/>
+    </bean>
+</beans>

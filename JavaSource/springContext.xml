@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   $Log: springContext.xml,v $
-  Revision 1.5  2008-07-14 17:48:31  europe\L190409
+  Revision 1.6  2009-10-29 13:23:12  m168309
+  Run IBIS on Tomcat
+
+  Revision 1.5  2008/07/14 17:48:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
   support for debugger
 
   Revision 1.4  2007/12/27 16:05:08  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -22,7 +25,9 @@
             http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.0.xsd
             ">
 
-    <import resource="springWAS5.xml"/>
+    <import resource="spring${transaction.strategy}.xml"/>
+    <!-- <import resource="springJOTM.xml"/> -->
+    <!-- <import resource="springWAS5.xml"/> -->
     <!-- <import resource="springWAS6.xml"/> -->
     <import resource="springUnmanagedDeployment.xml"/>
     <!-- <import resource="springEjbDeployment.xml"/> -->
