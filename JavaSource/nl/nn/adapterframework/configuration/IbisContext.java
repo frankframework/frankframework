@@ -1,6 +1,9 @@
 /*
  * $Log: IbisContext.java,v $
- * Revision 1.2  2008-02-25 10:10:59  europe\L190409
+ * Revision 1.3  2009-10-29 13:32:07  m168309
+ * Run IBIS on Tomcat
+ *
+ * Revision 1.2  2008/02/25 10:10:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed JMX server starting
  *
  * Revision 1.1  2008/02/13 12:52:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -116,6 +119,16 @@ public class IbisContext {
 				+ "], Spring indicates JDK Major version: 1." + (JdkVersion.getMajorJavaVersion()+3));
 		// This should be made conditional, somehow
 //		startJmxServer();
+
+		// TODO: replace the setting of the default value for the property below (it should be done in the spring context file)
+		String ts_name = "transaction.strategy";
+		String ts_value = System.getProperty(ts_name);
+		if (ts_value!=null) {
+			log.info("* system property [" + ts_name + "] has value [" + ts_value + "]");
+		} else {
+			System.setProperty(ts_name,ts_value);
+			log.info("* system property [" + ts_name + "] set to value [" + ts_value + "]");
+		}
 		
 		beanFactory = createBeanFactory(springContext);
 		ibisManager = getIbisManager(beanFactory);
