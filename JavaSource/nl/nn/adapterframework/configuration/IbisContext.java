@@ -1,6 +1,9 @@
 /*
  * $Log: IbisContext.java,v $
- * Revision 1.4  2009-10-29 15:41:52  m168309
+ * Revision 1.5  2009-10-30 15:31:07  m168309
+ * Run IBIS on Tomcat
+ *
+ * Revision 1.4  2009/10/29 15:41:52  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * Run IBIS on Tomcat
  *
  * Revision 1.3  2009/10/29 13:32:07  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -48,6 +51,7 @@
  */
 package nl.nn.adapterframework.configuration;
 
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.log4j.Logger;
@@ -77,9 +81,11 @@ public class IbisContext {
     private final static Logger log = LogUtil.getLogger(IbisContext.class);
 
     public static final String DFLT_AUTOSTART = "TRUE";
-    public static final String DFLT_SPRING_CONTEXT = "/springContext.xml";
+	//public static final String DFLT_SPRING_CONTEXT = "/springContext.xml";
+	public static final String TRANSACTION_STRATEGY = "transaction.strategy";
     
     private ListableBeanFactory beanFactory;
+	private static String springContextFileName = null;
     private IbisManager ibisManager;
     
 	/**
@@ -88,7 +94,7 @@ public class IbisContext {
 	 * @return
 	 */
 	public boolean initConfig() {
-	    return initConfig(IbisContext.DFLT_SPRING_CONTEXT, IbisManager.DFLT_CONFIGURATION, IbisContext.DFLT_AUTOSTART);
+	    return initConfig(getSpringContextFileName(), IbisManager.DFLT_CONFIGURATION, IbisContext.DFLT_AUTOSTART);
 	}
     
     /**
@@ -122,17 +128,6 @@ public class IbisContext {
 				+ "], Spring indicates JDK Major version: 1." + (JdkVersion.getMajorJavaVersion()+3));
 		// This should be made conditional, somehow
 //		startJmxServer();
-
-		// TODO: replace the setting of the default value for the property below (it should be done in the spring context file)
-		String ts_name = "transaction.strategy";
-		String ts_value = System.getProperty(ts_name);
-		if (ts_value!=null) {
-			log.info("* system property [" + ts_name + "] has value [" + ts_value + "]");
-		} else {
-			ts_value="WAS5";
-			System.setProperty(ts_name,ts_value);
-			log.info("* system property [" + ts_name + "] set to value [" + ts_value + "]");
-		}
 		
 		beanFactory = createBeanFactory(springContext);
 		ibisManager = getIbisManager(beanFactory);
@@ -156,7 +151,7 @@ public class IbisContext {
 	static public XmlBeanFactory createBeanFactory(String springContext) throws BeansException {
 		// Reading in Spring Context
 		if (springContext == null) {
-		    springContext = DFLT_SPRING_CONTEXT;
+		    springContext = getSpringContextFileName();
 		}
 		log.info("* IBIS Startup: Creating Spring Bean Factory from file [" + springContext + "]");
 		Resource rs = new ClassPathResource(springContext);
@@ -249,18 +244,24 @@ public class IbisContext {
 //		}
 //		log.info("MBean server up and running. Monitor your application by pointing your browser to http://localhost:8082");
 //	}
-    
 
 	public void setBeanFactory(ListableBeanFactory factory) {
 		beanFactory = factory;
 	}
+
 	public ListableBeanFactory getBeanFactory() {
 		if (beanFactory==null) {
-			initContext(DFLT_SPRING_CONTEXT);
+			initContext(getSpringContextFileName());
 		}
 		return beanFactory;
 	}
 
+	private static String getSpringContextFileName() {
+		if (springContextFileName==null) {
+			springContextFileName = "/springContext" + AppConstants.getInstance().getString(TRANSACTION_STRATEGY, "") + ".xml";
+		}
+		return springContextFileName;
+	}
 
 	public IbisManager getIbisManager() {
 		return ibisManager;
@@ -268,7 +269,7 @@ public class IbisContext {
 
 	public static void main(String[] args) {
 		IbisContext im=new IbisContext();
-		im.initConfig(IbisContext.DFLT_SPRING_CONTEXT, IbisManager.DFLT_CONFIGURATION, IbisContext.DFLT_AUTOSTART);
+		im.initConfig(getSpringContextFileName(), IbisManager.DFLT_CONFIGURATION, IbisContext.DFLT_AUTOSTART);
 	}
 
 }

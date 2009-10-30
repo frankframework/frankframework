@@ -1,6 +1,9 @@
 /*
  * $Log: ConfigurationServlet.java,v $
- * Revision 1.15  2008-02-13 13:37:11  europe\L190409
+ * Revision 1.16  2009-10-30 15:31:07  m168309
+ * Run IBIS on Tomcat
+ *
+ * Revision 1.15  2008/02/13 13:37:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * renamed IbisMain to IbisContext
  *
  * Revision 1.14  2008/02/08 09:50:47  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -89,13 +92,13 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class ConfigurationServlet extends HttpServlet {
-	public static final String version = "$RCSfile: ConfigurationServlet.java,v $ $Revision: 1.15 $ $Date: 2008-02-13 13:37:11 $";
+	public static final String version = "$RCSfile: ConfigurationServlet.java,v $ $Revision: 1.16 $ $Date: 2009-10-30 15:31:07 $";
     protected Logger log = LogUtil.getLogger(this);
 
 	public static final String KEY_MANAGER = "KEY_MANAGER";
 
-    static final String DFLT_SPRING_CONTEXT = "springContext.xml";
-    static final String EJB_SPRING_CONTEXT = "springContextEjbWeb.xml";
+    //static final String DFLT_SPRING_CONTEXT = "springContext.xml";
+    //static final String EJB_SPRING_CONTEXT = "springContextEjbWeb.xml";
     static final String DFLT_CONFIGURATION = "Configuration.xml";
     static final String DFLT_AUTOSTART = "TRUE";
     
