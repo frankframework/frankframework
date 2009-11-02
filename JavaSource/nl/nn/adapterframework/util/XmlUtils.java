@@ -1,6 +1,9 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.64  2009-10-09 13:22:27  m168309
+ * Revision 1.65  2009-11-02 11:10:44  m168309
+ * bugfix replaceNonValidXmlCharacters
+ *
+ * Revision 1.64  2009/10/09 13:22:27  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added default includeFieldDefinition (true) for querySenders
  *
  * Revision 1.63  2009/09/07 13:50:53  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -269,7 +272,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * @version Id
  */
 public class XmlUtils {
-	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.64 $ $Date: 2009-10-09 13:22:27 $";
+	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.65 $ $Date: 2009-11-02 11:10:44 $";
 	static Logger log = LogUtil.getLogger(XmlUtils.class);
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
@@ -1207,18 +1210,22 @@ public class XmlUtils {
 	}
 
 	public static String replaceNonValidXmlCharacters(String string, char to) {
-		int length = string.length();
-		char[] characters = new char[length];
+		if (string==null) {
+			return null;
+		} else {
+			int length = string.length();
+			char[] characters = new char[length];
 
-		string.getChars(0, length, characters, 0);
-		StringBuffer encoded = new StringBuffer();
-		for (int i = 0; i < length; i++) {
-			if (isPrintableUnicodeChar(characters[i]))
-				encoded.append(characters[i]);
-			else
-				encoded.append(to);
+			string.getChars(0, length, characters, 0);
+			StringBuffer encoded = new StringBuffer();
+			for (int i = 0; i < length; i++) {
+				if (isPrintableUnicodeChar(characters[i]))
+					encoded.append(characters[i]);
+				else
+					encoded.append(to);
+			}
+			return encoded.toString();
 		}
-		return encoded.toString();
 	}
 
 	public static String stripNonValidXmlCharacters(String string) {
