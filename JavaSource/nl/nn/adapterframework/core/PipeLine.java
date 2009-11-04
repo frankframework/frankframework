@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.79  2009-05-06 11:42:35  L190409
+ * Revision 1.80  2009-11-04 08:28:35  m168309
+ * cosmetic change
+ *
+ * Revision 1.79  2009/05/06 11:42:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved configuration of validators
  * log result at info-level
  *
@@ -339,7 +342,7 @@ import org.springframework.transaction.TransactionStatus;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.79 $ $Date: 2009-05-06 11:42:35 $";
+	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.80 $ $Date: 2009-11-04 08:28:35 $";
     private Logger log = LogUtil.getLogger(this);
 	private Logger durationLog = LogUtil.getLogger("LongDurationMessages");
     
@@ -706,7 +709,6 @@ public class PipeLine {
 		if (isStoreOriginalMessageWithoutNamespaces()) {
 			if (XmlUtils.isWellFormed(message)) {
 				String removeNamespaces_xslt = XmlUtils.makeRemoveNamespacesXslt(true,true);
-				log.debug("test [" + removeNamespaces_xslt + "]");
 				try{
 					String xsltResult = null;
 					Transformer transformer = XmlUtils.createTransformer(removeNamespaces_xslt);
