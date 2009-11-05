@@ -1,6 +1,9 @@
 /*
  * $Log: IbisContext.java,v $
- * Revision 1.5  2009-10-30 15:31:07  m168309
+ * Revision 1.6  2009-11-05 14:20:31  m168309
+ * renamed property transaction.strategy to application.server.type
+ *
+ * Revision 1.5  2009/10/30 15:31:07  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * Run IBIS on Tomcat
  *
  * Revision 1.4  2009/10/29 15:41:52  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -82,7 +85,7 @@ public class IbisContext {
 
     public static final String DFLT_AUTOSTART = "TRUE";
 	//public static final String DFLT_SPRING_CONTEXT = "/springContext.xml";
-	public static final String TRANSACTION_STRATEGY = "transaction.strategy";
+	public static final String APPLICATION_SERVER_TYPE = "application.server.type";
     
     private ListableBeanFactory beanFactory;
 	private static String springContextFileName = null;
@@ -258,7 +261,7 @@ public class IbisContext {
 
 	private static String getSpringContextFileName() {
 		if (springContextFileName==null) {
-			springContextFileName = "/springContext" + AppConstants.getInstance().getString(TRANSACTION_STRATEGY, "") + ".xml";
+			springContextFileName = "/springContext" + AppConstants.getInstance().getString(APPLICATION_SERVER_TYPE, "") + ".xml";
 		}
 		return springContextFileName;
 	}
