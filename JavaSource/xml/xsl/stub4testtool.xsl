@@ -4,7 +4,7 @@
 	<!--
 		This XSLT adjusts the IBIS configuration as follows:
 		- disable all receiver elements, except those with childs JdbcQueryListener, DirectoryListener and JavaListener
-		- add a default receiver (name="testtool-[adapter name]") with a child JavaListener (serviceName="testtool-[adapter name]") to each adapter (and copy errorStorage from disabled receiver when present)
+		- add a default receiver (name="testtool-[adapter name]") with a child JavaListener (serviceName="testtool-[adapter name]") to each adapter (and copy errorStorage and messageLog from disabled receiver when present)
 		- disable all listener elements which have a parent pipe
 		- stub all sender elements, which have a parent pipe, by an IbisJavaSender (serviceName="testtool-[pipe name]"), except the DirectQuerySender, FixedQuerySender, DelaySender, EchoSender, IbisLocalSender, LogSender, ParallelSenders, SenderSeries, SenderWrapper and XsltSender
 		- disable all elements sapSystems
@@ -46,6 +46,11 @@
 						</xsl:attribute>
 					</xsl:element>
 					<xsl:for-each select="parent::*[name()='adapter']/receiver/errorStorage">
+						<xsl:if test="position()=1">
+							<xsl:copy-of select="." />
+						</xsl:if>
+					</xsl:for-each>
+					<xsl:for-each select="parent::*[name()='adapter']/receiver/messageLog">
 						<xsl:if test="position()=1">
 							<xsl:copy-of select="." />
 						</xsl:if>
