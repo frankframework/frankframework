@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractSpringPoweredDigesterFactory.java,v $
- * Revision 1.9  2008-02-13 12:51:35  europe\L190409
+ * Revision 1.10  2009-11-06 08:06:41  m168309
+ * added attributes with default value to configuration warnings
+ *
+ * Revision 1.9  2008/02/13 12:51:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * cosmetic changes
  *
  * Revision 1.8  2007/12/28 08:53:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -35,11 +38,15 @@
  */
 package nl.nn.adapterframework.configuration;
 
+import java.beans.PropertyDescriptor;
+import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import nl.nn.adapterframework.util.LogUtil;
 
+import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.digester.AbstractObjectCreationFactory;
 import org.apache.commons.digester.ObjectCreationFactory;
 import org.apache.log4j.Logger;
@@ -47,6 +54,7 @@ import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.xml.sax.Attributes;
+import org.xml.sax.Locator;
 
 /**
  * This is a factory for objects to be used with the 'factory-create-rule'
@@ -78,6 +86,7 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 
     public static ListableBeanFactory factory;
     protected final Logger log = LogUtil.getLogger(this);
+	private ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
     
     /**
      * 
@@ -173,8 +182,57 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
                     + "], Configured ClassName=[" + className
                     + "], Suggested Spring Bean Name=[" + getSuggestedBeanName() + "]");
         }
-        return createBeanFromClassName(className);
+
+		Object currObj = createBeanFromClassName(className);
+
+		for (Iterator it = attrs.keySet().iterator(); it.hasNext();) {
+			String key = (String)it.next();
+			String value = (String)attrs.get(key);
+			PropertyDescriptor pd = PropertyUtils.getPropertyDescriptor(currObj, key);
+			String name = (String)attrs.get("name");
+			if (pd!=null) {
+				Method rm = PropertyUtils.getReadMethod(pd);
+				if (rm!=null) {
+					try {
+						Object dv = rm.invoke(currObj, null);
+						if (dv!=null) {
+							if (dv instanceof String) {
+								if (value.equals(dv)) {
+									addConfigWarning(currObj, name, key, value);
+								}
+							} else {
+								if (dv instanceof Boolean) {
+									if (Boolean.valueOf(value).equals(dv)) {
+										addConfigWarning(currObj, name, key, value);
+									}
+								} else {
+									log.warn("Unknown returning type [" + rm.getReturnType() + "]" + "for getter method [" + rm.getName() + "], object [" + getObjectName(currObj, name) + "]");
+								}
+							}
+						}
+					} catch (Throwable t) {
+						log.warn("Error on getting default for object [" + getObjectName(currObj, name) + "] with method [" + rm.getName() + "]", t);
+					}
+				}
+			}
+		}
+
+		return currObj;
     }
+
+	private String getObjectName(Object o, String name) {
+		String result=o.getClass().getName();
+		if (name!=null) {
+			result+=" ["+name+"]";
+		}
+		return result;
+	}
+
+	private void addConfigWarning(Object currObj, String name, String key, String value) {
+		Locator loc = digester.getDocumentLocator();
+		String msg ="line "+loc.getLineNumber()+", col "+loc.getColumnNumber()+": "+getObjectName(currObj, name)+", attribute ["+key+"] has already a default value ["+value+"]";
+		configWarnings.add(log, msg);
+	}
 
     /**
      * Given a class-name, create a bean. The classname-parameter can be
