@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  $Log: springJOTM.xml,v $
-  Revision 1.1  2009-10-29 13:23:12  m168309
+  $Log: springTOMCAT6.xml,v $
+  Revision 1.1  2009-11-06 08:03:37  m168309
+  cosmetic change
+
+  Revision 1.1  2009/10/29 13:23:12  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
   Run IBIS on Tomcat
 
 -->
