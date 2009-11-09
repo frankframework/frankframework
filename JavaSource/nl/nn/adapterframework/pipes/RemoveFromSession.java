@@ -1,4 +1,14 @@
+/*
+ * $Log: RemoveFromSession.java,v $
+ * Revision 1.2  2009-11-09 08:28:02  m168309
+ * facility to remove multiple keys and facility to use input message
+ *
+ */
 package nl.nn.adapterframework.pipes;
+
+import java.util.StringTokenizer;
+
+import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -15,7 +25,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMaxThreads(int) maxThreads}</td><td>maximum number of threads that may call {@link #doPipe(Object, PipeLineSession)} simultaneously</td><td>0 (unlimited)</td></tr>
  * <tr><td>{@link #setForwardName(String) forwardName}</td>  <td>name of forward returned upon completion</td><td>"success"</td></tr>
- * <tr><td>{@link #setSessionKey(String) sessionKey}</td><td>name of the key in the <code>PipeLineSession</code> to remove</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setSessionKey(String) sessionKey}</td><td>name of the key in the <code>PipeLineSession</code> to remove. If this key is empty the input message is interpretted as key. For multiple keys use ',' as delimiter</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
  * <p><b>Exits:</b>
@@ -32,9 +42,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
  */
 
  public class RemoveFromSession  extends FixedForwardPipe {
-
-
- 	public static final String version="$Id: RemoveFromSession.java,v 1.1 2009-10-07 14:29:44 m168309 Exp $";
+ 	public static final String version="$Id: RemoveFromSession.java,v 1.2 2009-11-09 08:28:02 m168309 Exp $";
     private String sessionKey;
 	/**
      * checks wether the proper forward is defined.
@@ -43,24 +51,44 @@ import nl.nn.adapterframework.core.PipeRunResult;
     public void configure() throws ConfigurationException {
 	    super.configure();
 
+	/*
         if (null== getSessionKey()) {
             throw new ConfigurationException("Pipe [" + getName() + "]"
                     + " has a null value for sessionKey");
         }
+	*/
     }
 /**
  * This is where the action takes place. Pipes may only throw a PipeRunException,
  * to be handled by the caller of this object.
  */
 public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRunException {
+	String result = null;
 
-	Object result=session.remove(getSessionKey());
-	
-	if (result==null) {
-		log.warn(getLogPrefix(session)+"key ["+getSessionKey()+"] not found");
+	String sessionKeys = getSessionKey();
+	if (StringUtils.isEmpty(sessionKeys)) {
+		sessionKeys = (String)input;
+	}
+	if (StringUtils.isEmpty(sessionKeys)) {
+		log.warn(getLogPrefix(session)+"no key specified");
 		result="[null]";
 	} else {
-		log.debug(getLogPrefix(session) +"key ["+getSessionKey()+"] removed");
+		StringTokenizer st = new StringTokenizer(sessionKeys, ",");
+		while (st.hasMoreElements()) {
+			String sk = st.nextToken();
+			Object skResult = session.remove(sk);
+			if (skResult==null) {
+				log.warn(getLogPrefix(session)+"key ["+sk+"] not found");
+				skResult="[null]";
+			} else {
+				log.debug(getLogPrefix(session) +"key ["+sk+"] removed");
+			}
+			if (result == null) {
+				result = (String)skResult;
+			} else {
+				result = result + "," + skResult;
+			}
+		}
 	}
 	
 	return new PipeRunResult(getForward(), result);
