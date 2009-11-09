@@ -30,6 +30,7 @@
 				<include name="*.jar"/>
 			</fileset>
 		</path>
+		<!-- System variabels: path=c:\program files\ibm\websphere studio\application developer\v5.1.2\runtimes\base_v51\java\bin -->
 		<javadoc sourcepath="Java Source"
 				 classpathref="project.class.path"
 				 packagenames="nl.nn.adapterframework.*,nl.nn.coolgen.proxy"
