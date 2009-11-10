@@ -1,6 +1,9 @@
 /*
  * $Log: Misc.java,v $
- * Revision 1.23  2009-01-29 07:02:29  m168309
+ * Revision 1.24  2009-11-10 10:27:40  m168309
+ * method getEnvironmentVariables splitted for J2SE 1.4 and J2SE 5.0
+ *
+ * Revision 1.23  2009/01/29 07:02:29  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * removed "j2c.properties resource path" from getEnvironmentVariables()
  *
  * Revision 1.22  2009/01/28 11:21:29  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -61,11 +64,14 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.rmi.server.UID;
 import java.text.DecimalFormat;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
@@ -75,7 +81,6 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import java.util.zip.Inflater;
 
-import nl.nn.adapterframework.util.StringResolver;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -85,7 +90,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class Misc {
-	public static final String version="$RCSfile: Misc.java,v $ $Revision: 1.23 $ $Date: 2009-01-29 07:02:29 $";
+	public static final String version="$RCSfile: Misc.java,v $ $Revision: 1.24 $ $Date: 2009-11-10 10:27:40 $";
 	static Logger log = LogUtil.getLogger(Misc.class);
 	public static final int BUFFERSIZE=20000;
 	public static final String DEFAULT_INPUT_STREAM_ENCODING="UTF-8";
@@ -445,33 +450,53 @@ public class Misc {
 	}
 	
 	public static Properties getEnvironmentVariables() throws IOException {
-		BufferedReader br = null;
-		Process p = null;
-		Runtime r = Runtime.getRuntime();
-		String OS = System.getProperty("os.name").toLowerCase();
-		if (OS.indexOf("windows 9") > -1) {
-			p = r.exec("command.com /c set");
-		} else if (
-			(OS.indexOf("nt") > -1)
-				|| (OS.indexOf("windows 20") > -1)
-				|| (OS.indexOf("windows xp") > -1)) {
-			p = r.exec("cmd.exe /c set");
-		} else {
-			//assume Unix
-			p = r.exec("env");
-		}
-		Properties props=new Properties();
-//		props.load(p.getInputStream()); // this does not work, due to potential malformed escape sequences
-		br = new BufferedReader(new InputStreamReader(p.getInputStream()));
-		String line;
-		while ((line = br.readLine()) != null) {
-			int idx = line.indexOf('=');
-			if (idx>=0) {
-				String key = line.substring(0, idx);
-				String value = line.substring(idx + 1);
+		Properties props = new Properties();
+
+		try {
+			Method getenvs = System.class.getMethod( "getenv", (java.lang.Class[]) null );
+			Map env = (Map) getenvs.invoke( null, (java.lang.Object[]) null );
+			for (Iterator it = env.keySet().iterator(); it.hasNext();) {
+				String key = (String)it.next();
+				String value = (String)env.get(key);
 				props.setProperty(key,value);
 			}
+		} catch ( NoSuchMethodException e ) {
+			// ok, just not on JDK 1.5
+		} catch ( IllegalAccessException e ) {
+			// Unexpected error obtaining environment - using JDK 1.4 method
+		} catch ( InvocationTargetException e ) {
+			// Unexpected error obtaining environment - using JDK 1.4 method
 		}
+
+		if (props.size() == 0) {
+			BufferedReader br = null;
+			Process p = null;
+			Runtime r = Runtime.getRuntime();
+			String OS = System.getProperty("os.name").toLowerCase();
+			if (OS.indexOf("windows 9") > -1) {
+				p = r.exec("command.com /c set");
+			} else if (
+				(OS.indexOf("nt") > -1)
+					|| (OS.indexOf("windows 20") > -1)
+					|| (OS.indexOf("windows xp") > -1)) {
+				p = r.exec("cmd.exe /c set");
+			} else {
+				//assume Unix
+				p = r.exec("env");
+			}
+//			props.load(p.getInputStream()); // this does not work, due to potential malformed escape sequences
+			br = new BufferedReader(new InputStreamReader(p.getInputStream()));
+			String line;
+			while ((line = br.readLine()) != null) {
+				int idx = line.indexOf('=');
+				if (idx>=0) {
+					String key = line.substring(0, idx);
+					String value = line.substring(idx + 1);
+					props.setProperty(key,value);
+				}
+			}
+		}
+
 		return props;
 	}
 
