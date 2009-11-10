@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractSpringPoweredDigesterFactory.java,v $
- * Revision 1.10  2009-11-06 08:06:41  m168309
+ * Revision 1.11  2009-11-10 15:41:10  m168309
+ * added setMethod check on default value for Integers
+ *
+ * Revision 1.10  2009/11/06 08:06:41  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added attributes with default value to configuration warnings
  *
  * Revision 1.9  2008/02/13 12:51:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -206,7 +209,13 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 										addConfigWarning(currObj, name, key, value);
 									}
 								} else {
-									log.warn("Unknown returning type [" + rm.getReturnType() + "]" + "for getter method [" + rm.getName() + "], object [" + getObjectName(currObj, name) + "]");
+									if (dv instanceof Integer) {
+										if (Integer.valueOf(value).equals(dv)) {
+											addConfigWarning(currObj, name, key, value);
+										}
+									} else {
+										log.warn("Unknown returning type [" + rm.getReturnType() + "]" + "for getter method [" + rm.getName() + "], object [" + getObjectName(currObj, name) + "]");
+									}
 								}
 							}
 						}
