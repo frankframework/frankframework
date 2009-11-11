@@ -1,6 +1,9 @@
 /*
  * $Log: Adapter.java,v $
- * Revision 1.55  2009-10-15 14:28:31  m168309
+ * Revision 1.56  2009-11-11 13:14:50  m168309
+ * adjusted javadoc
+ *
+ * Revision 1.55  2009/10/15 14:28:31  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * replaced requestReplyLogging attribute by msgLogLevel attribute
  *
  * Revision 1.54  2009/08/26 15:27:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -234,8 +237,7 @@ import org.springframework.core.task.TaskExecutor;
  *   <tr><td colspan="1">Terse</td><td>at adapter level</td></tr>
  *   <tr><td colspan="1">Basic</td><td>at adapter and sending pipe level (not yet available; only at adapter level)</td></tr>
  *   <tr><td colspan="1">Full</td> <td>at adapter and pipe level (not yet available; only at adapter level)</td></tr>
- *  </table></td><td>None</td></tr>
- *  </table></td><td>&nbsp;</td></tr>
+ *  </table></td><td>application default (None)</td></tr>
  * </table>
  * 
  * @version Id
@@ -250,7 +252,7 @@ import org.springframework.core.task.TaskExecutor;
  */
 
 public class Adapter implements IAdapter, NamedBean {
-	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.55 $ $Date: 2009-10-15 14:28:31 $";
+	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.56 $ $Date: 2009-11-11 13:14:50 $";
 	private Logger log = LogUtil.getLogger(this);
 	protected Logger msgLog = LogUtil.getLogger("MSG");
 
