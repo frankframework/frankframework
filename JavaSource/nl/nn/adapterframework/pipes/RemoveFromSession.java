@@ -1,6 +1,9 @@
 /*
  * $Log: RemoveFromSession.java,v $
- * Revision 1.2  2009-11-09 08:28:02  m168309
+ * Revision 1.3  2009-11-11 10:07:03  m168309
+ * set attribute preserveInput default to true (instead of false)
+ *
+ * Revision 1.2  2009/11/09 08:28:02  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * facility to remove multiple keys and facility to use input message
  *
  */
@@ -17,7 +20,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
 
 /**
  * Removes a key specified by <code>{@link #setSessionKey(String) sessionKey}</code>
- * from the {@link PipeLineSession}. The contents of the key is returned.
+ * from the {@link PipeLineSession}.
  *
  * <p><b>Configuration:</b>
  * <table border="1">
@@ -26,6 +29,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
  * <tr><td>{@link #setMaxThreads(int) maxThreads}</td><td>maximum number of threads that may call {@link #doPipe(Object, PipeLineSession)} simultaneously</td><td>0 (unlimited)</td></tr>
  * <tr><td>{@link #setForwardName(String) forwardName}</td>  <td>name of forward returned upon completion</td><td>"success"</td></tr>
  * <tr><td>{@link #setSessionKey(String) sessionKey}</td><td>name of the key in the <code>PipeLineSession</code> to remove. If this key is empty the input message is interpretted as key. For multiple keys use ',' as delimiter</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setPreserveInput(boolean) preserveInput}</td><td>when set <code>true</code>, the result of this pipe will be the same as the input. Otherwise the content of the removed key is returned (and '[null]' when the key is not found)</td><td>true</td></tr>
  * </table>
  * </p>
  * <p><b>Exits:</b>
@@ -42,8 +46,13 @@ import nl.nn.adapterframework.core.PipeRunResult;
  */
 
  public class RemoveFromSession  extends FixedForwardPipe {
- 	public static final String version="$Id: RemoveFromSession.java,v 1.2 2009-11-09 08:28:02 m168309 Exp $";
+ 	public static final String version="$Id: RemoveFromSession.java,v 1.3 2009-11-11 10:07:03 m168309 Exp $";
     private String sessionKey;
+
+	public RemoveFromSession() {
+		super.setPreserveInput(true);
+	}
+    
 	/**
      * checks wether the proper forward is defined.
      * @throws ConfigurationException
