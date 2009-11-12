@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaFacade.java,v $
- * Revision 1.8  2008-10-06 14:30:36  europe\L190409
+ * Revision 1.9  2009-11-12 12:34:38  m168309
+ * prevent NullPointerException
+ *
+ * Revision 1.8  2008/10/06 14:30:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * use JMS transacted sessions for FF
  *
  * Revision 1.7  2008/09/02 11:43:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -218,7 +221,7 @@ import com.ing.ifsa.IFSATextMessage;
  * @since 4.2
  */
 public class IfsaFacade implements INamedObject, HasPhysicalDestination {
-	public static final String version = "$RCSfile: IfsaFacade.java,v $ $Revision: 1.8 $ $Date: 2008-10-06 14:30:36 $";
+	public static final String version = "$RCSfile: IfsaFacade.java,v $ $Revision: 1.9 $ $Date: 2009-11-12 12:34:38 $";
     protected Logger log = LogUtil.getLogger(this);
     
     private static int BASIC_ACK_MODE = Session.AUTO_ACKNOWLEDGE;
@@ -512,7 +515,11 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 	}
 
     public String getMessageProtocol() {
-        return messageProtocol.getName();
+		if (messageProtocol==null) {
+			return null;
+		} else {
+			return messageProtocol.getName();
+		}
     }
     public IfsaMessageProtocolEnum getMessageProtocolEnum() {
         return messageProtocol;
