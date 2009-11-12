@@ -1,6 +1,9 @@
 /*
  * $Log: HttpSender.java,v $
- * Revision 1.39  2009-11-12 14:12:56  L190409
+ * Revision 1.40  2009-11-12 14:38:38  m168309
+ * adjusted javadoc
+ *
+ * Revision 1.39  2009/11/12 14:12:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added setting of connection manager timeout
  * corrected release of connection in retry loop
  *
@@ -168,7 +171,6 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setContentType(String) contentType}</td><td>conent-type of the request, only for POST methods</td><td>text/html; charset=UTF-8</td></tr>
  * <tr><td>{@link #setTimeout(int) timeout}</td><td>timeout in ms of obtaining a connection/result. 0 means no timeout</td><td>10000</td></tr>
  * <tr><td>{@link #setMaxConnections(int) maxConnections}</td><td>the maximum number of concurrent connections</td><td>2</td></tr>
- * <tr><td>{@link #setMaxConnectionRetries(int) maxConnectionRetries}</td><td>the maximum number of times it is retried to obtain a connection</td><td>1</td></tr>
  * <tr><td>{@link #setMaxExecuteRetries(int) maxExecuteRetries}</td><td>the maximum number of times it the execution is retried</td><td>1</td></tr>
  * <tr><td>{@link #setAuthAlias(String) authAlias}</td><td>alias used to obtain credentials for authentication to host</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setUserName(String) userName}</td><td>username used in authentication to host</td><td>&nbsp;</td></tr>
@@ -252,7 +254,7 @@ import org.apache.commons.lang.StringUtils;
  * @since 4.2c
  */
 public class HttpSender extends SenderWithParametersBase implements HasPhysicalDestination {
-	public static final String version = "$RCSfile: HttpSender.java,v $ $Revision: 1.39 $ $Date: 2009-11-12 14:12:56 $";
+	public static final String version = "$RCSfile: HttpSender.java,v $ $Revision: 1.40 $ $Date: 2009-11-12 14:38:38 $";
 
 	private String url;
 	private String methodType="GET"; // GET or POST
