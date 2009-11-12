@@ -1,6 +1,9 @@
 /*
  * $Log: Misc.java,v $
- * Revision 1.24  2009-11-10 10:27:40  m168309
+ * Revision 1.25  2009-11-12 12:36:04  m168309
+ * Pipeline: added attributes messageSizeWarn and messageSizeError
+ *
+ * Revision 1.24  2009/11/10 10:27:40  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * method getEnvironmentVariables splitted for J2SE 1.4 and J2SE 5.0
  *
  * Revision 1.23  2009/01/29 07:02:29  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -90,10 +93,15 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class Misc {
-	public static final String version="$RCSfile: Misc.java,v $ $Revision: 1.24 $ $Date: 2009-11-10 10:27:40 $";
+	public static final String version="$RCSfile: Misc.java,v $ $Revision: 1.25 $ $Date: 2009-11-12 12:36:04 $";
 	static Logger log = LogUtil.getLogger(Misc.class);
 	public static final int BUFFERSIZE=20000;
 	public static final String DEFAULT_INPUT_STREAM_ENCODING="UTF-8";
+	public static final String MESSAGE_SIZE_WARN_BY_DEFAULT_KEY = "message.size.warn.default";
+	public static final String MESSAGE_SIZE_ERROR_BY_DEFAULT_KEY = "message.size.error.default";
+
+	private static Long messageSizeWarnByDefault = null;
+	private static Long messageSizeErrorByDefault = null;
 
 	public static String createSimpleUUID_old() {
 		StringBuffer sb = new StringBuffer();
@@ -585,5 +593,78 @@ public class Misc {
 				+ "application.xml";
 		log.debug("applicationDeploymentDescriptor [" + appFile + "]");
 		return fileToString(appFile);
+	}
+
+	public static long toFileSize(String value, long defaultValue) {
+		if(value == null)
+		  return defaultValue;
+
+		String s = value.trim().toUpperCase();
+		long multiplier = 1;
+		int index;
+
+		if((index = s.indexOf("KB")) != -1) {
+		  multiplier = 1024;
+		  s = s.substring(0, index);
+		}
+		else if((index = s.indexOf("MB")) != -1) {
+		  multiplier = 1024*1024;
+		  s = s.substring(0, index);
+		}
+		else if((index = s.indexOf("GB")) != -1) {
+		  multiplier = 1024*1024*1024;
+		  s = s.substring(0, index);
+		}
+		if(s != null) {
+			try {
+				return Long.valueOf(s).longValue() * multiplier;
+			}
+			catch (NumberFormatException e) {
+				log.error("[" + value + "] not in expected format", e);
+			}
+		}
+		return defaultValue;
+	  }
+
+	public static String toFileSize(long value) {
+		long divider = 1024*1024*1024;
+		String suffix = null;
+		if (value>=divider) {
+			suffix = "GB"; 
+		} else {
+			divider = 1024*1024;
+			if (value>=divider) {
+				suffix = "MB"; 
+			} else {
+				divider = 1024;
+				if (value>=divider) {
+					suffix = "KB"; 
+				}
+			}
+		}
+		if (suffix==null) {
+			return Long.toString(value);
+		} else {
+			float f = (float)value / divider;
+			return Math.round(f) + suffix;
+		}
+	}
+
+	public static synchronized long getMessageSizeWarnByDefault() {
+		if (messageSizeWarnByDefault==null) {
+			String definitionString=AppConstants.getInstance().getString(MESSAGE_SIZE_WARN_BY_DEFAULT_KEY, null);
+			long definition=toFileSize(definitionString, -1);
+			messageSizeWarnByDefault = new Long(definition);
+		}
+		return messageSizeWarnByDefault.longValue();
+	}
+
+	public static synchronized long getMessageSizeErrorByDefault() {
+		if (messageSizeErrorByDefault==null) {
+			String definitionString=AppConstants.getInstance().getString(MESSAGE_SIZE_ERROR_BY_DEFAULT_KEY, null);
+			long definition=toFileSize(definitionString, -1);
+			messageSizeErrorByDefault = new Long(definition);
+		}
+		return messageSizeErrorByDefault.longValue();
 	}
 }

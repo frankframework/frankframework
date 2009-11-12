@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.80  2009-11-04 08:28:35  m168309
+ * Revision 1.81  2009-11-12 12:36:35  m168309
+ * Pipeline: added attributes messageSizeWarn and messageSizeError
+ *
+ * Revision 1.80  2009/11/04 08:28:35  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * cosmetic change
  *
  * Revision 1.79  2009/05/06 11:42:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -303,6 +306,8 @@ import org.springframework.transaction.TransactionStatus;
  *  </table></td><td>Supports</td></tr>
  * <tr><td>{@link #setTransactionTimeout(int) transactionTimeout}</td><td>Timeout (in seconds) of transaction started to process a message.</td><td><code>0</code> (use system default)</code></td></tr>
  * <tr><td>{@link #setStoreOriginalMessageWithoutNamespaces(boolean) storeOriginalMessageWithoutNamespaces}</td><td>when set <code>true</code> the original message without namespaces (and prefixes) is stored under the session key originalMessageWithoutNamespaces</td><td>false</td></tr>
+ * <tr><td>{@link #setMessageSizeWarn(String) messageSizeWarn}</td><td>if messageSizeWarn>=0 and the size of the input or result pipe message exceeds the value specified a warning message is logged</td><td>application default (1MB)</td></tr>
+ * <tr><td>{@link #setMessageSizeError(String) messageSizeError}</td><td>if messageSizeError>=0 and the size of the input or result pipe message exceeds the value specified an error message is logged</td><td>application default (10MB)</td></tr>
  * </table>
  * </p>
  * <table border="1">
@@ -342,7 +347,7 @@ import org.springframework.transaction.TransactionStatus;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.80 $ $Date: 2009-11-04 08:28:35 $";
+	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.81 $ $Date: 2009-11-12 12:36:35 $";
     private Logger log = LogUtil.getLogger(this);
 	private Logger durationLog = LogUtil.getLogger("LongDurationMessages");
     
@@ -372,6 +377,8 @@ public class PipeLine {
 	
 	private String commitOnState="success"; // exit state on which receiver will commit XA transactions
 	private boolean storeOriginalMessageWithoutNamespaces=false;
+	private long messageSizeWarn=Misc.getMessageSizeWarnByDefault();
+	private long messageSizeError=Misc.getMessageSizeErrorByDefault();
 
 	private List exitHandlers = new ArrayList();
     
@@ -466,7 +473,9 @@ public class PipeLine {
 						epipe.registerEvent(IExtendedPipe.LONG_DURATION_MONITORING_EVENT);
 					}
 					epipe.registerEvent(IExtendedPipe.PIPE_EXCEPTION_MONITORING_EVENT);
-
+					if (getMessageSizeErrorNum() >= 0) {
+						epipe.registerEvent(IExtendedPipe.MESSAGE_SIZE_MONITORING_EVENT);
+					}
 				} else {
 					pipe.configure();
 				}
@@ -642,7 +651,11 @@ public class PipeLine {
 		IbisTransaction itx = new IbisTransaction(txManager, SpringTxManagerProxy.getTransactionDefinition(txOption,txTimeout), "pipe [" + pipe.getName() + "]");
 		TransactionStatus txStatus = itx.getStatus();
 		try {
-			return pipe.doPipe(message, session);
+			checkMessageSize(message, pipe, true);
+			PipeRunResult prr = pipe.doPipe(message, session);
+			Object result = prr.getResult();
+			checkMessageSize(result, pipe, false);
+			return prr;
 		} catch (Throwable t) {
 			log.debug("setting RollBackOnly for pipe [" + pipe.getName()+"] after catching exception");
 			txStatus.setRollbackOnly();
@@ -658,6 +671,34 @@ public class PipeLine {
 		} finally {
 			//txManager.commit(txStatus);
 			itx.commit();
+		}
+	}
+
+	private void checkMessageSize(Object message, IPipe pipe, boolean input) {
+		String logMessage = null;
+		if (getMessageSizeErrorNum()>=0) {
+			if (message instanceof String) {
+				int messageLength = message.toString().length();
+				if (messageLength>=getMessageSizeErrorNum()) {
+					logMessage = "pipe [" + pipe.getName() + "] of adapter [" + owner.getName() + "], " + (input ? "input" : "result") + " message size [" + Misc.toFileSize(messageLength) + "] exceeds [" + Misc.toFileSize(getMessageSizeErrorNum()) + "]";
+					log.error(logMessage);
+					if (pipe instanceof IExtendedPipe) {
+						IExtendedPipe pe = (IExtendedPipe)pipe;
+						pe.throwEvent(IExtendedPipe.MESSAGE_SIZE_MONITORING_EVENT);
+					}
+				}
+			}
+		}
+		if (logMessage == null) {
+			if (getMessageSizeWarnNum()>=0) {
+				if (message instanceof String) {
+					int messageLength = message.toString().length();
+					if (messageLength>=getMessageSizeWarnNum()) {
+						logMessage = "pipe [" + pipe.getName() + "] of adapter [" + owner.getName() + "], " + (input ? "input" : "result") + " message size [" + Misc.toFileSize(messageLength) + "] exceeds [" + Misc.toFileSize(getMessageSizeWarnNum()) + "]";
+						log.warn(logMessage);
+					}
+				}
+			}
 		}
 	}
 
@@ -1139,5 +1180,35 @@ public class PipeLine {
 	}
 	public boolean isStoreOriginalMessageWithoutNamespaces() {
 		return storeOriginalMessageWithoutNamespaces;
+	}
+
+	/**
+	 * The <b>MessageSizeWarn</b> option takes a long
+	 * integer in the range 0 - 2^63. You can specify the value
+	 * with the suffixes "KB", "MB" or "GB" so that the integer is
+	 * interpreted being expressed respectively in kilobytes, megabytes
+	 * or gigabytes. For example, the value "10KB" will be interpreted
+	 * as 10240.
+	 */
+	public void setMessageSizeWarn(String s) {
+		messageSizeWarn = Misc.toFileSize(s, messageSizeWarn + 1);
+	}
+	public long getMessageSizeWarnNum() {
+		return messageSizeWarn;
+	}
+
+	/**
+	 * The <b>MessageSizeError</b> option takes a long
+	 * integer in the range 0 - 2^63. You can specify the value
+	 * with the suffixes "KB", "MB" or "GB" so that the integer is
+	 * interpreted being expressed respectively in kilobytes, megabytes
+	 * or gigabytes. For example, the value "10KB" will be interpreted
+	 * as 10240.
+	 */
+	public void setMessageSizeError(String s) {
+		messageSizeError = Misc.toFileSize(s, messageSizeError + 1);
+	}
+	public long getMessageSizeErrorNum() {
+		return messageSizeError;
 	}
 }
