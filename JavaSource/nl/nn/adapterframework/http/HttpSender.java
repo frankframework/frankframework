@@ -1,6 +1,10 @@
 /*
  * $Log: HttpSender.java,v $
- * Revision 1.38  2009-11-12 13:50:03  L190409
+ * Revision 1.39  2009-11-12 14:12:56  L190409
+ * added setting of connection manager timeout
+ * corrected release of connection in retry loop
+ *
+ * Revision 1.38  2009/11/12 13:50:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added extra timeout setting
  * abort method on IOException
  *
@@ -248,7 +252,7 @@ import org.apache.commons.lang.StringUtils;
  * @since 4.2c
  */
 public class HttpSender extends SenderWithParametersBase implements HasPhysicalDestination {
-	public static final String version = "$RCSfile: HttpSender.java,v $ $Revision: 1.38 $ $Date: 2009-11-12 13:50:03 $";
+	public static final String version = "$RCSfile: HttpSender.java,v $ $Revision: 1.39 $ $Date: 2009-11-12 14:12:56 $";
 
 	private String url;
 	private String methodType="GET"; // GET or POST
@@ -257,7 +261,6 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 	private int timeout=10000;
 	private int maxConnections=10;
 	
-	private int maxConnectionRetries=1;
 	private int maxExecuteRetries=1;
 
 	private String authAlias;
@@ -290,55 +293,6 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 	private MultiThreadedHttpConnectionManager connectionManager;
 	protected HttpClient httpclient;
 
-//	/*
-//	 * connection manager that checks connections to be open before handing them to HttpMethod.
-//	 * Use of this connection manager prevents SocketExceptions to occur.
-//	 * 
-//	 */
-//	private class IbisMultiThreadedHttpConnectionManager extends MultiThreadedHttpConnectionManager {
-//		
-//		protected boolean checkConnection(HttpConnection connection)  {
-//			boolean status = connection.isOpen();
-//			//log.debug(getLogPrefix()+"IbisMultiThreadedHttpConnectionManager connection open ["+status+"]");
-//			if (status) {
-//				try {
-//					connection.setSoTimeout(connection.getSoTimeout());
-//				} catch (SocketException e) {
-//					log.warn(getLogPrefix()+"IbisMultiThreadedHttpConnectionManager SocketException while checking: "+ e.getMessage());
-//					connection.close();
-//					return false;
-//				} catch (IllegalStateException e) {
-//					log.warn(getLogPrefix()+"IbisMultiThreadedHttpConnectionManager IllegalStateException while checking: "+ e.getMessage());
-//					connection.close();
-//					return false;
-//				}
-//			}
-//			return true;
-//		}
-//				
-//		public HttpConnection getConnection(HostConfiguration hostConfiguration) {
-//			//log.debug(getLogPrefix()+"IbisMultiThreadedHttpConnectionManager getConnection(HostConfiguration)");
-//			HttpConnection result = super.getConnection(hostConfiguration);			
-//			int count=getMaxConnectionRetries();
-//			while (count-->0 && !checkConnection(result)) {
-//				log.info("releasing failed connection, connectionRetries left ["+count+"]");
-//				releaseConnection(result);
-//				result= super.getConnection(hostConfiguration);
-//			} 
-//			return result;
-//		}
-//		public HttpConnection getConnection(HostConfiguration hostConfiguration, long timeout) throws HttpException {
-//			//log.debug(getLogPrefix()+"IbisMultiThreadedHttpConnectionManager getConnection(HostConfiguration, timeout["+timeout+"])");
-//			HttpConnection result = super.getConnection(hostConfiguration, timeout);
-//			int count=getMaxConnectionRetries();
-//			while (count-->0 && !checkConnection(result)) {
-//				log.info("releasing failed connection, connectionRetries left ["+count+"]");
-//				releaseConnection(result);
-//				result= super.getConnection(hostConfiguration, timeout);
-//			} 
-//			return result;
-//		}
-//	}
 
 	protected void addProvider(String name) {
 		try {
@@ -569,41 +523,39 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 		int statusCode = -1;
 		int count=getMaxExecuteRetries();
 		String msg = null;
-		try {
-			while (count-->=0 && statusCode==-1) {
-				try {
-					log.debug(getLogPrefix()+"executing method");
-					statusCode = httpclient.executeMethod(httpmethod);
-					log.debug(getLogPrefix()+"executed method");
-					if (log.isDebugEnabled()) {
-						StatusLine statusline = httpmethod.getStatusLine();
-						if (statusline!=null) { 
-							log.debug(getLogPrefix()+"status:"+statusline.toString());
-						} else {
-							log.debug(getLogPrefix()+"no statusline found");
-						}
+		while (count-->=0 && statusCode==-1) {
+			try {
+				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"executing method");
+				statusCode = httpclient.executeMethod(httpmethod);
+				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"executed method");
+				if (log.isDebugEnabled()) {
+					StatusLine statusline = httpmethod.getStatusLine();
+					if (statusline!=null) { 
+						log.debug(getLogPrefix()+"status:"+statusline.toString());
+					} else {
+						log.debug(getLogPrefix()+"no statusline found");
 					}
-					result = extractResult(httpmethod);	
-					if (log.isDebugEnabled()) {
-						log.debug(getLogPrefix()+"retrieved result ["+result+"]");
-					}
-				} catch (HttpException e) {
-					Throwable throwable = e.getCause();
-					String cause = null;
-					if (throwable!=null) {
-						cause = throwable.toString();
-					}
-					if (e!=null) {
-						msg = e.getMessage();
-					}
-					log.warn("httpException with message [" + msg + "] and cause [" + cause + "], executeRetries left [" + count + "]");
-				} catch (IOException e) {
-					httpmethod.abort();
-					throw new SenderException(e);
 				}
+				result = extractResult(httpmethod);	
+				if (log.isDebugEnabled()) {
+					log.debug(getLogPrefix()+"retrieved result ["+result+"]");
+				}
+			} catch (HttpException e) {
+				Throwable throwable = e.getCause();
+				String cause = null;
+				if (throwable!=null) {
+					cause = throwable.toString();
+				}
+				if (e!=null) {
+					msg = e.getMessage();
+				}
+				log.warn("httpException with message [" + msg + "] and cause [" + cause + "], executeRetries left [" + count + "]");
+			} catch (IOException e) {
+				httpmethod.abort();
+				throw new SenderException(e);
+			} finally {
+				httpmethod.releaseConnection();
 			}
-		} finally {
-			httpmethod.releaseConnection();
 		}
 
 		if (statusCode==-1){
@@ -834,13 +786,6 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 
 	public void setTruststoreAuthAlias(String string) {
 		truststoreAuthAlias = string;
-	}
-
-	public void setMaxConnectionRetries(int i) {
-		maxConnectionRetries = i;
-	}
-	public int getMaxConnectionRetries() {
-		return maxConnectionRetries;
 	}
 
 	public void setMaxExecuteRetries(int i) {
