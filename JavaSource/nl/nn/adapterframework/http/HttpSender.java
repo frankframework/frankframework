@@ -1,6 +1,10 @@
 /*
  * $Log: HttpSender.java,v $
- * Revision 1.37  2009-08-26 11:47:31  L190409
+ * Revision 1.38  2009-11-12 13:50:03  L190409
+ * added extra timeout setting
+ * abort method on IOException
+ *
+ * Revision 1.37  2009/08/26 11:47:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * upgrade to HttpClient 3.0.1 - including idle connection cleanup
  *
  * Revision 1.36  2009/03/31 08:21:17  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -244,7 +248,7 @@ import org.apache.commons.lang.StringUtils;
  * @since 4.2c
  */
 public class HttpSender extends SenderWithParametersBase implements HasPhysicalDestination {
-	public static final String version = "$RCSfile: HttpSender.java,v $ $Revision: 1.37 $ $Date: 2009-08-26 11:47:31 $";
+	public static final String version = "$RCSfile: HttpSender.java,v $ $Revision: 1.38 $ $Date: 2009-11-12 13:50:03 $";
 
 	private String url;
 	private String methodType="GET"; // GET or POST
@@ -353,6 +357,7 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 		httpclient = new HttpClient();
 		httpclient.setTimeout(getTimeout());
 		httpclient.setConnectionTimeout(getTimeout());
+		httpclient.setHttpConnectionFactoryTimeout(getTimeout());
 		
 		if (paramList!=null) {
 			paramList.configure();
@@ -593,6 +598,7 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 					}
 					log.warn("httpException with message [" + msg + "] and cause [" + cause + "], executeRetries left [" + count + "]");
 				} catch (IOException e) {
+					httpmethod.abort();
 					throw new SenderException(e);
 				}
 			}
