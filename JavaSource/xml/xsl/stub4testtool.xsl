@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
 	<xsl:output method="xml" indent="yes" />
-	<xsl:variable name="stubs" select="document('../stub4testtool.xml')/stubs"/>
 	<!--
 		This XSLT adjusts the IBIS configuration as follows:
 		- disable all receiver elements, except those with childs JdbcQueryListener, DirectoryListener and JavaListener
@@ -12,14 +11,6 @@
 		- disable all elements jmsRealm which have an attribute queueConnectionFactoryName (if combined with the attribute datasourceName a new jmsRealm for this datasourceName is created)
 		- add the attribute returnFixedDate with value true to all pipe elements PutSystemDateInSession
 		- replace the value '{now,...,...}' of the attribute pattern in all param elements with the value '{fixeddate,...,...}'
-
-		It is possible to override the above. Put a file "stub4testtool.xml" in the subdirectory "xml" of the directory that contains the IBIS configuration file. This file should have the following layout:
-			<stubs>
-				<stub adapter="..." pipe="..." serviceName="..."/>
-				<stub adapter="..." receiver="" serviceName="..."/>
-			</stubs>
-		With the first stub tag a sender element, which has a parent pipe, is overridden. Instead of an IbisJavaSender with serviceName "testtool-[pipe name]" an IbisJavaSender with serviceName "..." is created
-		With the second stub tag the added default receiver is overridden. Instead of an JavaListener with serviceName "testtool-[adapter name]" an JavaListener with serviceName "..." is created
 	-->
 	<xsl:template match="/">
 		<xsl:apply-templates select="*|@*|comment()|processing-instruction()" />
@@ -43,7 +34,6 @@
 				</xsl:choose>
 			</xsl:when>
 			<xsl:when test="name()='pipeline'">
-				<xsl:variable name="adapterName" select="parent::*[name()='adapter']/@name"/>
 				<xsl:element name="receiver">
 					<xsl:attribute name="className">nl.nn.adapterframework.receivers.GenericReceiver</xsl:attribute>
 					<xsl:attribute name="name">
@@ -52,14 +42,7 @@
 					<xsl:element name="listener">
 						<xsl:attribute name="className">nl.nn.adapterframework.receivers.JavaListener</xsl:attribute>
 						<xsl:attribute name="serviceName">
-							<xsl:choose>
-								<xsl:when test="string-length($stubs/stub[@adapter=$adapterName and @receiver]/@serviceName)">
-									<xsl:value-of select="$stubs/stub[@adapter=$adapterName and @receiver]/@serviceName" />
-								</xsl:when>
-								<xsl:otherwise>
-									<xsl:value-of select="concat('testtool-',$adapterName)" />
-								</xsl:otherwise>
-							</xsl:choose>
+							<xsl:value-of select="concat('testtool-',parent::*[name()='adapter']/@name)" />
 						</xsl:attribute>
 					</xsl:element>
 					<xsl:for-each select="parent::*[name()='adapter']/receiver/errorStorage">
@@ -89,7 +72,6 @@
 				<xsl:choose>
 					<xsl:when test="parent::*[name()='pipe']">
 						<xsl:variable name="pipeName" select="parent::*[name()='pipe']/@name" />
-						<xsl:variable name="adapterName" select="ancestor::*[name()='adapter']/@name"/>
 						<xsl:choose>
 							<xsl:when test="@className='nl.nn.adapterframework.jdbc.DirectQuerySender'">
 								<xsl:call-template name="copy" />
@@ -130,14 +112,7 @@
 									</xsl:if>
 									<xsl:attribute name="className">nl.nn.adapterframework.senders.IbisJavaSender</xsl:attribute>
 									<xsl:attribute name="serviceName">
-										<xsl:choose>
-											<xsl:when test="string-length($stubs/stub[@adapter=$adapterName and @pipe=$pipeName]/@serviceName)">
-												<xsl:value-of select="$stubs/stub[@adapter=$adapterName and @pipe=$pipeName]/@serviceName" />
-											</xsl:when>
-											<xsl:otherwise>
-												<xsl:value-of select="concat('testtool-',$pipeName)" />
-											</xsl:otherwise>
-										</xsl:choose>
+										<xsl:value-of select="concat('testtool-',$pipeName)" />
 									</xsl:attribute>
 								</xsl:element>
 								<xsl:call-template name="disable" />
