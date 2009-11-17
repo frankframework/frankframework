@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcUtil.java,v $
- * Revision 1.21  2009-08-04 11:31:30  L190409
+ * Revision 1.22  2009-11-17 09:04:12  m168309
+ * blobSmartGet: fixed bug for MessageLog blobs
+ *
+ * Revision 1.21  2009/08/04 11:31:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * support for CLOBs and BLOBs by name
  * additional applyParameters and displayParameters methods
  *
@@ -106,7 +109,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class JdbcUtil {
-	public static final String version = "$RCSfile: JdbcUtil.java,v $ $Revision: 1.21 $ $Date: 2009-08-04 11:31:30 $";
+	public static final String version = "$RCSfile: JdbcUtil.java,v $ $Revision: 1.22 $ $Date: 2009-11-17 09:04:12 $";
 	protected static Logger log = LogUtil.getLogger(JdbcUtil.class);
 	
 	private static final boolean useMetaData=false;
@@ -320,8 +323,12 @@ public class JdbcUtil {
 				ois.close();
 		
 			String rawMessage;
-			if (objectOK && result instanceof IMessageWrapper) {
-				rawMessage = ((IMessageWrapper)result).getText();
+			if (objectOK) {
+				if (result instanceof IMessageWrapper) {
+					rawMessage = ((IMessageWrapper)result).getText();
+				} else {
+					rawMessage = (String)result;
+				}
 			} else {
 				rawMessage = new String(buf,charset);
 			}
