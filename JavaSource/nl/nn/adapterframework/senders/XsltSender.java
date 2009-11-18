@@ -1,6 +1,9 @@
 /*
  * $Log: XsltSender.java,v $
- * Revision 1.1  2008-05-15 15:08:27  europe\L190409
+ * Revision 1.2  2009-11-18 17:28:03  m00f069
+ * Added senders to IbisDebugger
+ *
+ * Revision 1.1  2008/05/15 15:08:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * created senders package
  * moved some sender to senders package
  * created special senders
@@ -15,6 +18,7 @@ import javax.xml.transform.TransformerConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
+import nl.nn.adapterframework.debug.IbisDebugger;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -44,6 +48,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @version Id
  */
 public class XsltSender extends SenderWithParametersBase {
+	private IbisDebugger ibisDebugger;
 
 	private String xpathExpression=null;
 	private String outputType="text";
@@ -116,6 +121,9 @@ public class XsltSender extends SenderWithParametersBase {
 //		if (log.isDebugEnabled()) {
 //			log.debug(getLogPrefix()+" transforming input ["+message+"] using prc ["+prc+"]");
 //		}
+		if (log.isDebugEnabled() && ibisDebugger!=null) {
+			message = ibisDebugger.senderInput(this, correlationID, message);
+		}
 
 		try {
 			Map parametervalues = null;
@@ -141,6 +149,9 @@ public class XsltSender extends SenderWithParametersBase {
 //				log.debug(getLogPrefix()+" transformed input ["+message+"] to ["+stringResult+"]");
 //			}
 
+			if (log.isDebugEnabled() && ibisDebugger!=null) {
+				stringResult = ibisDebugger.senderOutput(this, correlationID, stringResult);
+			}
 			return stringResult;
 		} 
 		catch (Exception e) {
@@ -205,6 +216,10 @@ public class XsltSender extends SenderWithParametersBase {
 	}
 	public boolean isIndentXml() {
 		return indentXml;
+	}
+	
+	public void setIbisDebugger(IbisDebugger ibisDebugger) {
+		this.ibisDebugger = ibisDebugger;
 	}
 
 

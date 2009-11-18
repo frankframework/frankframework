@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.81  2009-11-12 12:36:35  m168309
+ * Revision 1.82  2009-11-18 17:28:04  m00f069
+ * Added senders to IbisDebugger
+ *
+ * Revision 1.81  2009/11/12 12:36:35  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * Pipeline: added attributes messageSizeWarn and messageSizeError
  *
  * Revision 1.80  2009/11/04 08:28:35  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -347,7 +350,7 @@ import org.springframework.transaction.TransactionStatus;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.81 $ $Date: 2009-11-12 12:36:35 $";
+	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.82 $ $Date: 2009-11-18 17:28:04 $";
     private Logger log = LogUtil.getLogger(this);
 	private Logger durationLog = LogUtil.getLogger("LongDurationMessages");
     
@@ -620,7 +623,7 @@ public class PipeLine {
 			log.debug("setting RollBackOnly for pipeline after catching exception");
 			txStatus.setRollbackOnly();
 			if (log.isDebugEnabled() && ibisDebugger!=null) {
-				ibisDebugger.pipeLineRollback(this, messageId, t.getMessage());
+				t = ibisDebugger.pipeLineRollback(this, messageId, t);
 			}
 			if (t instanceof Error) {
 				throw (Error)t;
@@ -806,12 +809,12 @@ public class PipeLine {
 					if (StringUtils.isNotEmpty(pe.getGetInputFromSessionKey())) {
 						if (log.isDebugEnabled()) log.debug("Pipeline of adapter ["+owner.getName()+"] replacing input for pipe ["+pe.getName()+"] with contents of sessionKey ["+pe.getGetInputFromSessionKey()+"]");
 						object=pipeLineSession.get(pe.getGetInputFromSessionKey());
-						if (log.isDebugEnabled() && ibisDebugger!=null) object = ibisDebugger.pipeGetInputFromSessionKey(this, pe, messageId, object);
+						if (log.isDebugEnabled() && ibisDebugger!=null) object = ibisDebugger.getInputFromSessionKey(messageId, pe.getGetInputFromSessionKey(), object);
 					}
 					if (StringUtils.isNotEmpty(pe.getGetInputFromFixedValue())) {
 						if (log.isDebugEnabled()) log.debug("Pipeline of adapter ["+owner.getName()+"] replacing input for pipe ["+pe.getName()+"] with fixed value ["+pe.getGetInputFromFixedValue()+"]");
 						object=pe.getGetInputFromFixedValue();
-						if (log.isDebugEnabled() && ibisDebugger!=null) object = ibisDebugger.pipeGetInputFromFixedValue(this, pe, messageId, object);
+						if (log.isDebugEnabled() && ibisDebugger!=null) object = ibisDebugger.getInputFromFixedValue(messageId, object);
 					}
 				}
 			
@@ -865,7 +868,7 @@ public class PipeLine {
 						if (pipeRunResult!=null && StringUtils.isNotEmpty(pe.getStoreResultInSessionKey())) {
 							if (log.isDebugEnabled()) log.debug("Pipeline of adapter ["+owner.getName()+"] storing result for pipe ["+pe.getName()+"] under sessionKey ["+pe.getStoreResultInSessionKey()+"]");
 							Object result = pipeRunResult.getResult();
-							if (log.isDebugEnabled() && ibisDebugger!=null) result = ibisDebugger.pipeStoreResultInSessionKey(this, pe, messageId, result);
+							if (log.isDebugEnabled() && ibisDebugger!=null) result = ibisDebugger.storeResultInSessionKey(messageId, pe.getGetInputFromSessionKey(), result);
 							pipeLineSession.put(pe.getStoreResultInSessionKey(),result);
 						}
 						if (pe.isPreserveInput()) {

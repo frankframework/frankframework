@@ -1,10 +1,15 @@
 /*
  * $Log: IbisLocalSender.java,v $
- * Revision 1.1  2008-08-06 16:36:39  europe\L190409
+ * Revision 1.2  2009-11-18 17:28:03  m00f069
+ * Added senders to IbisDebugger
+ *
+ * Revision 1.1  2008/08/06 16:36:39  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * moved from pipes to senders package
  *
  */
 package nl.nn.adapterframework.senders;
+
+import java.util.HashMap;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
@@ -13,6 +18,7 @@ import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.debug.IbisDebugger;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.pipes.IsolatedServiceCaller;
 import nl.nn.adapterframework.receivers.JavaListener;
@@ -20,8 +26,6 @@ import nl.nn.adapterframework.receivers.ServiceDispatcher;
 import nl.nn.adapterframework.util.Misc;
 
 import org.apache.commons.lang.StringUtils;
-
-import java.util.HashMap;
 
 /**
  * Posts a message to another IBIS-adapter in the same IBIS instance.
@@ -92,6 +96,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 	private boolean checkDependency=true;
 	private int dependencyTimeOut=60;
 	private String returnedSessionKeys=null;
+	private IbisDebugger ibisDebugger;
 
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -139,6 +144,10 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 	}
 
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+		if (log.isDebugEnabled() && ibisDebugger!=null) {
+			message = ibisDebugger.senderInput(this, correlationID, message);
+		}
+		String result = null;
 		HashMap context = null;
 		if (paramList!=null) {
 			try {
@@ -156,15 +165,15 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 				if (isIsolated()) {
 					if (isSynchronous()) {
 						log.debug(getLogPrefix()+"calling service ["+getServiceName()+"] in separate Thread");
-						return IsolatedServiceCaller.callServiceIsolated(getServiceName(), correlationID, message, context, false);
+						result = IsolatedServiceCaller.callServiceIsolated(getServiceName(), correlationID, message, context, false, ibisDebugger);
 					} else {
 						log.debug(getLogPrefix()+"calling service ["+getServiceName()+"] in asynchronously");
-						IsolatedServiceCaller.callServiceAsynchronous(getServiceName(), correlationID, message, context, false);
-						return message;
+						IsolatedServiceCaller.callServiceAsynchronous(getServiceName(), correlationID, message, context, false, ibisDebugger);
+						result = message;
 					}
 				} else {
 					log.debug(getLogPrefix()+"calling service ["+getServiceName()+"] in same Thread");
-					return ServiceDispatcher.getInstance().dispatchRequestWithExceptions(getServiceName(), correlationID, message, context);
+					result = ServiceDispatcher.getInstance().dispatchRequestWithExceptions(getServiceName(), correlationID, message, context);
 				}
 			} catch (ListenerException e) {
 				throw new SenderException(getLogPrefix()+"exception calling service ["+getServiceName()+"]",e);
@@ -185,15 +194,15 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 				if (isIsolated()) {
 					if (isSynchronous()) {
 						log.debug(getLogPrefix()+"calling JavaListener ["+getJavaListener()+"] in separate Thread");
-						return IsolatedServiceCaller.callServiceIsolated(getJavaListener(), correlationID, message, context, true);
+						result = IsolatedServiceCaller.callServiceIsolated(getJavaListener(), correlationID, message, context, true, ibisDebugger);
 					} else {
 						log.debug(getLogPrefix()+"calling JavaListener ["+getJavaListener()+"] in asynchronously");
-						IsolatedServiceCaller.callServiceAsynchronous(getJavaListener(), correlationID, message, context, true);
-						return message;
+						IsolatedServiceCaller.callServiceAsynchronous(getJavaListener(), correlationID, message, context, true, ibisDebugger);
+						result = message;
 					}
 				} else {
 					log.debug(getLogPrefix()+"calling JavaListener ["+getJavaListener()+"] in same Thread");
-					return listener.processRequest(correlationID,message,context);
+					result = listener.processRequest(correlationID,message,context);
 				}
 			} catch (ListenerException e) {
 				throw new SenderException(getLogPrefix()+"exception calling JavaListener ["+getJavaListener()+"]",e);
@@ -206,6 +215,10 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 				}
 			}
 		}
+		if (log.isDebugEnabled() && ibisDebugger!=null) {
+			result = ibisDebugger.senderOutput(this, correlationID, result);
+		}
+		return result;
 	}
 
 
@@ -274,6 +287,10 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 	}
 	public String getReturnedSessionKeys() {
 		return returnedSessionKeys;
+	}
+
+	public void setIbisDebugger(IbisDebugger ibisDebugger) {
+		this.ibisDebugger = ibisDebugger;
 	}
 
 }

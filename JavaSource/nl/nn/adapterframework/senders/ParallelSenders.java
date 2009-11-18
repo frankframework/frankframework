@@ -1,6 +1,9 @@
 /*
  * $Log: ParallelSenders.java,v $
- * Revision 1.2  2008-05-21 10:54:44  europe\L190409
+ * Revision 1.3  2009-11-18 17:28:03  m00f069
+ * Added senders to IbisDebugger
+ *
+ * Revision 1.2  2008/05/21 10:54:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * collect results
  *
  * Revision 1.1  2008/05/15 15:08:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -19,9 +22,11 @@ import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.debug.IbisDebugger;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Guard;
+import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StatisticsKeeper;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -57,16 +62,24 @@ public class ParallelSenders extends SenderSeries {
 	 * The thread-pool for spawning threads, injected by Spring
 	 */
 	private TaskExecutor taskExecutor;
+	private IbisDebugger ibisDebugger;
 
 
 	protected String doSendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+		if (log.isDebugEnabled() && ibisDebugger!=null) {
+			message = ibisDebugger.senderInput(this, correlationID, message);
+		}
 		Guard guard= new Guard();
 		Map executorMap = new HashMap();
 		for (Iterator it=getSenderIterator();it.hasNext();) {
 			ISender sender = (ISender)it.next();
+			String threadID = Misc.createSimpleUUID();
 			guard.addResource();
-			SenderExecutor se=new SenderExecutor(sender, correlationID, message, prc, guard);
+			SenderExecutor se=new SenderExecutor(sender, correlationID, threadID, message, prc, guard);
 			executorMap.put(sender,se);
+			if (log.isDebugEnabled() && ibisDebugger!=null) {
+				ibisDebugger.createThread(threadID, correlationID);
+			}
 			getTaskExecutor().execute(se);
 		}
 		try {
@@ -94,7 +107,11 @@ public class ParallelSenders extends SenderSeries {
 			}
 			resultsXml.addSubElement(resultXml); 
 		}
-		return resultsXml.toXML();
+		String result = resultsXml.toXML();
+		if (log.isDebugEnabled() && ibisDebugger!=null) {
+			result = ibisDebugger.senderOutput(this, correlationID, result);
+		}
+		return result;
 	}
 
 
@@ -103,16 +120,18 @@ public class ParallelSenders extends SenderSeries {
 
 		ISender sender; 
 		String correlationID; 
+		String threadID;
 		String message;
 		ParameterResolutionContext prc;
 		Guard guard;
 
 		Object result;
 		
-		public SenderExecutor(ISender sender, String correlationID, String message, ParameterResolutionContext prc, Guard guard) {
+		public SenderExecutor(ISender sender, String correlationID, String threadID, String message, ParameterResolutionContext prc, Guard guard) {
 			super();
 			this.sender=sender;
 			this.correlationID=correlationID;
+			this.threadID = threadID;
 			this.message=message;
 			this.prc=prc;
 			this.guard=guard;
@@ -121,13 +140,23 @@ public class ParallelSenders extends SenderSeries {
 		public void run() {
 			try {
 				long t1 = System.currentTimeMillis();
+				if (log.isDebugEnabled() && ibisDebugger!=null) {
+					ibisDebugger.startThread(threadID, correlationID, message);
+				}
 				try {
 					if (sender instanceof ISenderWithParameters) {
 						result = ((ISenderWithParameters)sender).sendMessage(correlationID,message,prc);
 					} else {
 						result = sender.sendMessage(correlationID,message);
 					}
+					if (log.isDebugEnabled() && ibisDebugger!=null) {
+						ibisDebugger.endThread(correlationID, result);
+					}
 				} catch (Throwable tr) {
+					log.warn("SenderExecutor caught exception",tr);
+					if (log.isDebugEnabled() && ibisDebugger!=null) {
+						tr = ibisDebugger.abortThread(correlationID, tr);
+					}
 					result = tr;
 				}
 				long t2 = System.currentTimeMillis();
@@ -154,6 +183,10 @@ public class ParallelSenders extends SenderSeries {
 	}
 	public TaskExecutor getTaskExecutor() {
 		return taskExecutor;
+	}
+
+	public void setIbisDebugger(IbisDebugger ibisDebugger) {
+		this.ibisDebugger = ibisDebugger;
 	}
 
 }

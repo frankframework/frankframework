@@ -1,6 +1,9 @@
 /*
  * $Log: IbisJavaSender.java,v $
- * Revision 1.1  2008-08-06 16:36:39  europe\L190409
+ * Revision 1.2  2009-11-18 17:28:04  m00f069
+ * Added senders to IbisDebugger
+ *
+ * Revision 1.1  2008/08/06 16:36:39  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * moved from pipes to senders package
  *
  */
@@ -14,6 +17,7 @@ import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.debug.IbisDebugger;
 import nl.nn.adapterframework.dispatcher.DispatcherManager;
 import nl.nn.adapterframework.dispatcher.DispatcherManagerFactory;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
@@ -56,6 +60,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class IbisJavaSender extends SenderWithParametersBase implements HasPhysicalDestination {
+	private IbisDebugger ibisDebugger;
 	
 	private String name;
 	private String serviceName;
@@ -77,6 +82,9 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 	}
 
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+		if (log.isDebugEnabled() && ibisDebugger!=null) {
+			message = ibisDebugger.senderInput(this, correlationID, message);
+		}
 		HashMap context = null;
 		try {
 			if (paramList!=null) {
@@ -85,7 +93,11 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 				context=new HashMap();			
 			}
 			DispatcherManager dm = DispatcherManagerFactory.getDispatcherManager();
-			return dm.processRequest(getServiceName(),correlationID, message, context);
+			String result = dm.processRequest(getServiceName(),correlationID, message, context);
+			if (log.isDebugEnabled() && ibisDebugger!=null) {
+				result = ibisDebugger.senderOutput(this, correlationID, result);
+			}
+			return result;
 		} catch (ParameterException e) {
 			throw new SenderException(getLogPrefix()+"exception evaluating parameters",e);
 		} catch (Exception e) {
@@ -123,6 +135,9 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 	public String getReturnedSessionKeys() {
 		return returnedSessionKeys;
 	}
-
+	
+	public void setIbisDebugger(IbisDebugger ibisDebugger) {
+		this.ibisDebugger = ibisDebugger;
+	}
 
 }

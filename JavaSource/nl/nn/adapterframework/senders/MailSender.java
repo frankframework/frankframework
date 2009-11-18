@@ -1,6 +1,9 @@
 /*
  * $Log: MailSender.java,v $
- * Revision 1.2  2009-04-09 12:11:42  m168309
+ * Revision 1.3  2009-11-18 17:28:03  m00f069
+ * Added senders to IbisDebugger
+ *
+ * Revision 1.2  2009/04/09 12:11:42  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * store message in mail-safe form to MessageLog
  *
  * Revision 1.1  2008/08/06 16:36:39  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -35,6 +38,7 @@ import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.debug.IbisDebugger;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -111,6 +115,7 @@ import org.w3c.dom.Element;
  */
 
 public class MailSender extends SenderWithParametersBase {
+	private IbisDebugger ibisDebugger;
 
 	private String smtpHost;
 	private String smtpAuthAlias;
@@ -191,7 +196,10 @@ public class MailSender extends SenderWithParametersBase {
 
 
 	public String sendMessage(String correlationID,	String message,	ParameterResolutionContext prc) throws SenderException, TimeOutException {
-		String from=null;;
+		if (log.isDebugEnabled() && ibisDebugger!=null) {
+			message = ibisDebugger.senderInput(this, correlationID, message);
+		}
+		String from=null;
 		String subject=null;
 		Collection recipients=null;
 		Collection attachments=null;
@@ -243,6 +251,9 @@ public class MailSender extends SenderWithParametersBase {
 			messageInMailSafeForm = sendEmail(from, subject, message, recipients, attachments);
 		}
 		prc.getSession().put("messageInMailSafeForm", messageInMailSafeForm);
+		if (log.isDebugEnabled() && ibisDebugger!=null) {
+			correlationID = ibisDebugger.senderOutput(this, correlationID, correlationID);
+		}
 		return correlationID;
 	}
 	
@@ -513,6 +524,10 @@ public class MailSender extends SenderWithParametersBase {
 	}
 	public String getDefaultAttachmentType() {
 		return defaultAttachmentType;
+	}
+	
+	public void setIbisDebugger(IbisDebugger ibisDebugger) {
+		this.ibisDebugger = ibisDebugger;
 	}
 
 }

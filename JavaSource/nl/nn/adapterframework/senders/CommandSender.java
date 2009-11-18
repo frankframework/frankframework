@@ -1,6 +1,9 @@
 /*
  * $Log: CommandSender.java,v $
- * Revision 1.1  2008-08-06 16:36:39  europe\L190409
+ * Revision 1.2  2009-11-18 17:28:03  m00f069
+ * Added senders to IbisDebugger
+ *
+ * Revision 1.1  2008/08/06 16:36:39  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * moved from pipes to senders package
  *
  */
@@ -10,6 +13,7 @@ import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.debug.IbisDebugger;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.util.ProcessUtil;
@@ -36,11 +40,15 @@ import org.apache.commons.lang.StringUtils;
  * @author  Gerrit van Brakel
  */
 public class CommandSender extends SenderWithParametersBase {
+	private IbisDebugger ibisDebugger;
 	
 	private String command;
 	private boolean synchronous=true;
 
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+		if (log.isDebugEnabled() && ibisDebugger!=null) {
+			message = ibisDebugger.senderInput(this, correlationID, message);
+		}
 	
 		String commandline;
 		if (StringUtils.isNotEmpty(getCommand())) {
@@ -59,7 +67,11 @@ public class CommandSender extends SenderWithParametersBase {
 				commandline += " "+pvl.getParameterValue(i);
 			}
 		}
-		return ProcessUtil.executeCommand(commandline);
+		String result = ProcessUtil.executeCommand(commandline);
+		if (log.isDebugEnabled() && ibisDebugger!=null) {
+			result = ibisDebugger.senderOutput(this, correlationID, result);
+		}
+		return result;
 	}
 
 
@@ -72,6 +84,10 @@ public class CommandSender extends SenderWithParametersBase {
 	}
 	public String getCommand() {
 		return command;
+	}
+	
+	public void setIbisDebugger(IbisDebugger ibisDebugger) {
+		this.ibisDebugger = ibisDebugger;
 	}
 
 }

@@ -1,6 +1,9 @@
 /*
  * $Log: LogSender.java,v $
- * Revision 1.2  2009-09-07 13:32:07  L190409
+ * Revision 1.3  2009-11-18 17:28:03  m00f069
+ * Added senders to IbisDebugger
+ *
+ * Revision 1.2  2009/09/07 13:32:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * use log from ancestor
  *
  * Revision 1.1  2008/08/06 16:36:39  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -14,6 +17,7 @@ import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.debug.IbisDebugger;
 import nl.nn.adapterframework.parameters.IParameterHandler;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.LogUtil;
@@ -36,6 +40,7 @@ import org.apache.log4j.Level;
  * @version Id
  */
 public class LogSender extends SenderWithParametersBase implements IParameterHandler {
+	private IbisDebugger ibisDebugger;
 
 	private String logLevel="info";
 	private String logCategory=null;
@@ -53,6 +58,9 @@ public class LogSender extends SenderWithParametersBase implements IParameterHan
 	}
 
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+		if (log.isDebugEnabled() && ibisDebugger!=null) {
+			message = ibisDebugger.senderInput(this, correlationID, message);
+		}
 		log.log(level,message);
 		
 		if (prc != null) {
@@ -63,6 +71,9 @@ public class LogSender extends SenderWithParametersBase implements IParameterHan
 			}
 		}
 		
+		if (log.isDebugEnabled() && ibisDebugger!=null) {
+			message = ibisDebugger.senderOutput(this, correlationID, message);
+		}
 		return message;
 	}
 
@@ -94,6 +105,10 @@ public class LogSender extends SenderWithParametersBase implements IParameterHan
 
 	public String toString() {
 		return "LogSender ["+getName()+"] logLevel ["+getLogLevel()+"] logCategory ["+logCategory+"]";
+	}
+	
+	public void setIbisDebugger(IbisDebugger ibisDebugger) {
+		this.ibisDebugger = ibisDebugger;
 	}
 
 }

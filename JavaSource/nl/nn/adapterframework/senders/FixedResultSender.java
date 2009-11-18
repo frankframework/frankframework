@@ -1,6 +1,9 @@
 /*
  * $Log: FixedResultSender.java,v $
- * Revision 1.2  2008-08-18 11:21:21  europe\L190409
+ * Revision 1.3  2009-11-18 17:28:03  m00f069
+ * Added senders to IbisDebugger
+ *
+ * Revision 1.2  2008/08/18 11:21:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fixed javadoc
  *
  * Revision 1.1  2008/05/15 15:08:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -22,6 +25,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
+import nl.nn.adapterframework.debug.IbisDebugger;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -67,6 +71,7 @@ import org.apache.commons.lang.SystemUtils;
  * @version Id
  */
 public class FixedResultSender extends SenderWithParametersBase {
+	private IbisDebugger ibisDebugger;
 
 	private String fileName;
 	private String returnString;
@@ -102,6 +107,9 @@ public class FixedResultSender extends SenderWithParametersBase {
 	}
  
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException {
+		if (log.isDebugEnabled() && ibisDebugger!=null) {
+			message = ibisDebugger.senderInput(this, correlationID, message);
+		}
 		String result=returnString;
 
 		if (prc!=null) {
@@ -144,6 +152,10 @@ public class FixedResultSender extends SenderWithParametersBase {
 		}
 
 		log.debug("returning fixed result [" + result + "]");
+
+		if (log.isDebugEnabled() && ibisDebugger!=null) {
+			result = ibisDebugger.senderOutput(this, correlationID, result);
+		}
 	
 		return result;
 	}
@@ -221,6 +233,10 @@ public class FixedResultSender extends SenderWithParametersBase {
 	}
 	public void setStyleSheetName (String styleSheetName){
 		this.styleSheetName=styleSheetName;
+	}
+	
+	public void setIbisDebugger(IbisDebugger ibisDebugger) {
+		this.ibisDebugger = ibisDebugger;
 	}
 
 }

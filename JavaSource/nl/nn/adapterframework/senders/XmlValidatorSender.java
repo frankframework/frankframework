@@ -1,6 +1,9 @@
 /*
  * $Log: XmlValidatorSender.java,v $
- * Revision 1.2  2008-08-13 13:45:36  europe\L190409
+ * Revision 1.3  2009-11-18 17:28:04  m00f069
+ * Added senders to IbisDebugger
+ *
+ * Revision 1.2  2008/08/13 13:45:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected javadoc
  *
  * Revision 1.1  2008/05/15 15:08:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -21,6 +24,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
+import nl.nn.adapterframework.debug.IbisDebugger;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Misc;
@@ -87,6 +91,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * @version Id
  */
 public class XmlValidatorSender extends SenderWithParametersBase {
+	private IbisDebugger ibisDebugger;
 
 	private String schemaLocation = null;
 	private String noNamespaceSchemaLocation = null;
@@ -254,6 +259,9 @@ public class XmlValidatorSender extends SenderWithParametersBase {
 	}
 
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException {
+		if (log.isDebugEnabled() && ibisDebugger!=null) {
+			message = ibisDebugger.senderInput(this, correlationID, message);
+		}
 
 		PipeLineSession session=prc.getSession();
 		if (StringUtils.isNotEmpty(getReasonSessionKey())) {
@@ -321,7 +329,11 @@ public class XmlValidatorSender extends SenderWithParametersBase {
 		try {
 			parser.parse(is);
 		 } catch (Exception e) {
-			return handleFailures(xeh,message,session,"", e);
+		 	String result = handleFailures(xeh,message,session,"", e);
+			if (log.isDebugEnabled() && ibisDebugger!=null) {
+				result = ibisDebugger.senderOutput(this, correlationID, result);
+			}
+			return result;
 		}
 
 		boolean illegalRoot = StringUtils.isNotEmpty(getRoot()) && 
@@ -329,13 +341,24 @@ public class XmlValidatorSender extends SenderWithParametersBase {
 		if (illegalRoot) {
 			String str = "got xml with root element '"+((XmlFindingHandler)parser.getContentHandler()).getRootElementName()+"' instead of '"+getRoot()+"'";
 			xeh.addReason(str,"");
-			return handleFailures(xeh,message,session,"",null);
+			String result = handleFailures(xeh,message,session,"",null);
+			if (log.isDebugEnabled() && ibisDebugger!=null) {
+				result = ibisDebugger.senderOutput(this, correlationID, result);
+			}
+			return result;
 		} 
 		boolean isValid = !(xeh.hasErrorOccured());
 	
 		if (!isValid) { 
 			String mainReason = getLogPrefix() + "got invalid xml according to schema [" + Misc.concatStrings(schemaLocation," ",noNamespaceSchemaLocation) + "]";
-			return handleFailures(xeh,message,session,mainReason,null);
+			String result = handleFailures(xeh,message,session,mainReason,null);
+			if (log.isDebugEnabled() && ibisDebugger!=null) {
+				result = ibisDebugger.senderOutput(this, correlationID, result);
+			}
+			return result;
+		}
+		if (log.isDebugEnabled() && ibisDebugger!=null) {
+			message = ibisDebugger.senderOutput(this, correlationID, message);
 		}
 		return message;
 	}
@@ -493,6 +516,10 @@ public class XmlValidatorSender extends SenderWithParametersBase {
 	}
 	public String getCharset() {
 		return charset;
+	}
+	
+	public void setIbisDebugger(IbisDebugger ibisDebugger) {
+		this.ibisDebugger = ibisDebugger;
 	}
 
 }
