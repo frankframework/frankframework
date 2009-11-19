@@ -25,21 +25,39 @@
 				</section>
 			</manifest>		
 		</jar>
+	</target>
+	<!-- ================================================================== -->
+	<target name="javadoc" description="Create the javadoc documentation">
 		<path id="project.class.path">
 			<fileset dir="${lib_path}">
 				<include name="*.jar"/>
 			</fileset>
 		</path>
-		<!-- System variabels: path=c:\program files\ibm\websphere studio\application developer\v5.1.2\runtimes\base_v51\java\bin -->
-		<javadoc sourcepath="Java Source"
-				 classpathref="project.class.path"
-				 packagenames="nl.nn.adapterframework.*,nl.nn.coolgen.proxy"
-				 destdir="${build.dir}/api"
-				 windowtitle="${ac.application.name} v${ac.application.version} Developer Documentation"
-				 use="true"
-				 author="true">
-			<doctitle><![CDATA[<h1>IBIS AdapterFramework v${ac.application.version} Developer Documentation</h1>]]></doctitle>
-			<bottom><![CDATA[<i>MIX/IBIS</i>]]></bottom>
-		</javadoc>
+		<pathconvert refid="project.class.path" property="project.class.path.converted" targetos="windows"/>
+		<exec executable="c:\program files\ibm\websphere studio\application developer\v5.1.2\runtimes\base_v51\java\bin\javadoc">
+			<arg value="-sourcepath"/>
+			<arg value="${basedir}\Java Source"/>
+			<arg value="-classpath"/>
+			<arg value="${project.class.path.converted}"/>
+			<arg value="-d"/>
+			<arg value="${build.dir}/api"/>
+			<arg value="-subpackages"/>
+			<arg line="nl.nn.adapterframework:nl.nn.coolgen.proxy"/>
+			<arg value="-windowtitle"/>
+			<arg value="${ac.application.name} v${ac.application.version} Developer Documentation"/>
+			<arg value="-use"/>
+			<arg value="-author"/>
+			<arg value="-doctitle"/>
+			<arg value="&lt;h1&gt;IBIS AdapterFramework v${ac.application.version} Developer Documentation&lt;/h1&gt;"/>
+			<arg value="-bottom"/>
+			<arg value="&lt;i&gt;MIX/IBIS&lt;/i&gt;"/>
+		</exec>
+	</target>
+	<!-- ================================================================== -->
+	<target name="testproject" description="Create the jar file and copy it to a test project" depends="jar">
+		<property name="ibis.testproject" value="Ibis4TestIAFWEB"/>
+		<copy file="${build.dir}/AdapterFramework ${ac.application.version}.jar" todir="../${ibis.testproject}/WebContent/WEB-INF/lib"/>
+		<eclipse.convertPath fileSystemPath="../${ibis.testproject}/WebContent/WEB-INF/lib" property="project.resource2"/>
+		<eclipse.refreshLocal resource="${project.resource2}" depth="infinite"/>
 	</target>
 </project>
