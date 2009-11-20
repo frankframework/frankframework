@@ -1,6 +1,9 @@
 /*
  * $Log: Parameter.java,v $
- * Revision 1.33  2009-09-07 13:26:07  L190409
+ * Revision 1.34  2009-11-20 10:18:17  m168309
+ * facility to override fixeddate
+ *
+ * Revision 1.33  2009/09/07 13:26:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * replaced a '&' by '&&'
  *
  * Revision 1.32  2009/08/18 13:29:02  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -204,7 +207,7 @@ import org.w3c.dom.Node;
  * @author Gerrit van Brakel
  */
 public class Parameter implements INamedObject, IWithParameters {
-	public static final String version="$RCSfile: Parameter.java,v $ $Revision: 1.33 $ $Date: 2009-09-07 13:26:07 $";
+	public static final String version="$RCSfile: Parameter.java,v $ $Revision: 1.34 $ $Date: 2009-11-20 10:18:17 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private IbisDebugger ibisDebugger;
@@ -479,8 +482,12 @@ public class Parameter implements INamedObject, IWithParameters {
 			} else if ("fixeddate".equals(name.toLowerCase())) {
 				Date d;
 				SimpleDateFormat formatterFrom = new SimpleDateFormat(PutSystemDateInSession.FORMAT_FIXEDDATETIME);
+				String fixedDateTime = (String)prc.getSession().get(PutSystemDateInSession.FIXEDDATE_STUB4TESTTOOL_KEY);
+				if (StringUtils.isEmpty(fixedDateTime)) {
+					fixedDateTime = PutSystemDateInSession.FIXEDDATETIME;
+				}
 				try {
-					d = formatterFrom.parse(PutSystemDateInSession.FIXEDDATETIME);
+					d = formatterFrom.parse(fixedDateTime);
 				} catch (ParseException e) {
 					throw new ParameterException("Cannot parse fixed date ["+PutSystemDateInSession.FIXEDDATETIME+"] with format ["+PutSystemDateInSession.FORMAT_FIXEDDATETIME+"]",e);
 				}

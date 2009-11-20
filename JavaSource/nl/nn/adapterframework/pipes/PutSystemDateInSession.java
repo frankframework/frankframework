@@ -1,6 +1,9 @@
 /*
  * $Log: PutSystemDateInSession.java,v $
- * Revision 1.7  2009-06-09 09:16:16  m168309
+ * Revision 1.8  2009-11-20 10:18:01  m168309
+ * facility to override fixeddate
+ *
+ * Revision 1.7  2009/06/09 09:16:16  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * updated javadoc
  *
  * Revision 1.6  2009/06/09 08:35:15  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -35,6 +38,8 @@ import java.util.TimeZone;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
+import org.apache.commons.lang.StringUtils;
+
 /**
  * Puts the system date/time under a key in the {@link nl.nn.adapterframework.core.PipeLineSession pipeLineSession}.
  *
@@ -46,7 +51,7 @@ import java.text.SimpleDateFormat;
  * <tr><td>{@link #setDateFormat(String) dateFormat}</td><td>format to store date in</td><td>fullIsoFormat: yyyy-MM-dd'T'hh:mm:sszzz</td></tr>
  * <tr><td>{@link #setTimeZone(String) timeZone}</td><td>the time zone to use for the formatter</td><td>the default time zone for the JVM</td></tr>
  * <tr><td>{@link #setSleepWhenEqualToPrevious(long) sleepWhenEqualToPrevious}</td><td>set to a time in millisecond to create a value that is different to the previous returned value by a PutSystemDateInSession pipe in this virtual machine. The thread will sleep for the specified time before recalculating a new value. Set the timezone to a value without daylight saving time (like GMT+1) to prevent this pipe to generate two equal value's when the clock is set back. <b>Note:</b> When you're looking for a guid parameter for you XSLT it might be better to use &lt;param name=&quot;guid&quot; pattern=&quot;{hostname}_{uid}&quot;/&gt;, see {@link nl.nn.adapterframework.parameters.Parameter}</a></td><td>-1 (disabled)</td></tr>
- * <tr><td>{@link #setReturnFixedDate(boolean) returnFixedDate}</td><td>If <code>true</code>, the date/time returned will always be December 17, 2001, 09:30:47 (for testing purposes only)</td><td><code>false</code></td></tr>
+ * <tr><td>{@link #setReturnFixedDate(boolean) returnFixedDate}</td><td>If <code>true</code>, the date/time returned will always be December 17, 2001, 09:30:47 (for testing purposes only). It is overridden by the value of the pipeLineSession key <code>stub4testtool.fixeddate</code> when it exists</td><td><code>false</code></td></tr>
  * <tr><td>{@link #setMaxThreads(int) maxThreads}</td><td>maximum number of threads that may call {@link #doPipe(Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously</td><td>0 (unlimited)</td></tr>
  * <tr><td>{@link #setForwardName(String) forwardName}</td>  <td>name of forward returned upon completion</td><td>"success"</td></tr>
  * </table>
@@ -57,10 +62,11 @@ import java.text.SimpleDateFormat;
  * @since   4.2c
  */
 public class PutSystemDateInSession extends FixedForwardPipe {
-	public static final String version="$RCSfile: PutSystemDateInSession.java,v $  $Revision: 1.7 $ $Date: 2009-06-09 09:16:16 $";
+	public static final String version="$RCSfile: PutSystemDateInSession.java,v $  $Revision: 1.8 $ $Date: 2009-11-20 10:18:01 $";
 
 	public final static String FIXEDDATETIME  ="2001-12-17 09:30:47";
 	public final static String FORMAT_FIXEDDATETIME  ="yyyy-MM-dd HH:mm:ss";
+	public final static String FIXEDDATE_STUB4TESTTOOL_KEY  ="stub4testtool.fixeddate";
 
 	private String sessionKey="systemDate";
 	private String dateFormat=DateUtils.fullIsoFormat;
@@ -108,10 +114,14 @@ public class PutSystemDateInSession extends FixedForwardPipe {
 		Date d;
 		if (isReturnFixedDate()) {
 			SimpleDateFormat formatterFrom = new SimpleDateFormat(FORMAT_FIXEDDATETIME);
+			String fixedDateTime = (String)session.get(FIXEDDATE_STUB4TESTTOOL_KEY);
+			if (StringUtils.isEmpty(fixedDateTime)) {
+				fixedDateTime = FIXEDDATETIME;
+			}
 			try {
-				d = formatterFrom.parse(FIXEDDATETIME);
+				d = formatterFrom.parse(fixedDateTime);
 			} catch (ParseException e) {
-				throw new PipeRunException(this,"cannot parse fixed date ["+FIXEDDATETIME+"] with format ["+FORMAT_FIXEDDATETIME+"]",e);
+				throw new PipeRunException(this,"cannot parse fixed date ["+fixedDateTime+"] with format ["+FORMAT_FIXEDDATETIME+"]",e);
 			}
 		} else{
 			d = new Date();
