@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractSpringPoweredDigesterFactory.java,v $
- * Revision 1.12  2009-11-24 08:32:00  m168309
+ * Revision 1.13  2009-11-24 08:37:16  m168309
+ * cosmetic change
+ *
+ * Revision 1.12  2009/11/24 08:32:00  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * excluded ${property.key} values from default value check
  *
  * Revision 1.11  2009/11/10 15:41:10  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -244,7 +247,7 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 		String mergedKey = getDigester().getCurrentElementName() + "/" + (name==null?"":name) + "/" + key;
 		if (!configWarnings.containsDefaultValueExceptions(mergedKey)) {
 			Locator loc = digester.getDocumentLocator();
-			String msg ="line "+loc.getLineNumber()+", col "+loc.getColumnNumber()+": "+getObjectName(currObj, name)+", attribute ["+key+"] has already a default value ["+value+"]";
+			String msg ="line "+loc.getLineNumber()+", col "+loc.getColumnNumber()+": "+getObjectName(currObj, name)+", attribute ["+key+"] already has a default value ["+value+"]";
 			configWarnings.add(log, msg);
 		}
 	}
