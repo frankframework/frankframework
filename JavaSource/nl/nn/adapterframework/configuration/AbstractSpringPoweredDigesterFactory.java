@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractSpringPoweredDigesterFactory.java,v $
- * Revision 1.11  2009-11-10 15:41:10  m168309
+ * Revision 1.12  2009-11-24 08:32:00  m168309
+ * excluded ${property.key} values from default value check
+ *
+ * Revision 1.11  2009/11/10 15:41:10  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added setMethod check on default value for Integers
  *
  * Revision 1.10  2009/11/06 08:06:41  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -238,9 +241,12 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 	}
 
 	private void addConfigWarning(Object currObj, String name, String key, String value) {
-		Locator loc = digester.getDocumentLocator();
-		String msg ="line "+loc.getLineNumber()+", col "+loc.getColumnNumber()+": "+getObjectName(currObj, name)+", attribute ["+key+"] has already a default value ["+value+"]";
-		configWarnings.add(log, msg);
+		String mergedKey = getDigester().getCurrentElementName() + "/" + (name==null?"":name) + "/" + key;
+		if (!configWarnings.containsDefaultValueExceptions(mergedKey)) {
+			Locator loc = digester.getDocumentLocator();
+			String msg ="line "+loc.getLineNumber()+", col "+loc.getColumnNumber()+": "+getObjectName(currObj, name)+", attribute ["+key+"] has already a default value ["+value+"]";
+			configWarnings.add(log, msg);
+		}
 	}
 
     /**

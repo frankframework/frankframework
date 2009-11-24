@@ -1,6 +1,9 @@
 /*
  * $Log: ConfigurationDigester.java,v $
- * Revision 1.29  2009-08-26 15:25:19  L190409
+ * Revision 1.30  2009-11-24 08:32:00  m168309
+ * excluded ${property.key} values from default value check
+ *
+ * Revision 1.29  2009/08/26 15:25:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * support for configurable statisticsHandlers
  *
  * Revision 1.28  2009/07/03 06:32:14  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -85,6 +88,8 @@ package nl.nn.adapterframework.configuration;
 
 import java.io.StringReader;
 import java.net.URL;
+import java.util.Collection;
+import java.util.Iterator;
 
 import javax.xml.transform.Transformer;
 
@@ -103,6 +108,7 @@ import org.apache.log4j.Logger;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.ListableBeanFactory;
+import org.w3c.dom.Element;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXParseException;
 
@@ -140,8 +146,9 @@ import org.xml.sax.SAXParseException;
  * @see Configuration
  */
 abstract public class ConfigurationDigester implements BeanFactoryAware {
-	public static final String version = "$RCSfile: ConfigurationDigester.java,v $ $Revision: 1.29 $ $Date: 2009-08-26 15:25:19 $";
+	public static final String version = "$RCSfile: ConfigurationDigester.java,v $ $Revision: 1.30 $ $Date: 2009-11-24 08:32:00 $";
     protected static Logger log = LogUtil.getLogger(ConfigurationDigester.class);
+	private ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 
 	private static final String CONFIGURATION_FILE_DEFAULT  = "Configuration.xml";
 	private static final String DIGESTER_RULES_DEFAULT      = "digester-rules.xml";
@@ -150,6 +157,7 @@ abstract public class ConfigurationDigester implements BeanFactoryAware {
 	private static final String CONFIGURATION_STUB4TESTTOOL_KEY = "stub4testtool.configuration";
 
 	private static String stub4testtool_xslt = "/xml/xsl/stub4testtool.xsl";
+	private static String attributesGetter_xslt = "/xml/xsl/AttributesGetter.xsl";
 
 	private String configurationFile=null;
 	private String digesterRulesFile=DIGESTER_RULES_DEFAULT;
@@ -254,6 +262,8 @@ abstract public class ConfigurationDigester implements BeanFactoryAware {
 				digester.setErrorHandler(xeh);
 			}
 
+			fillConfigWarnDefaultValueExceptions(configurationFileURL);
+
 			boolean stub4testtool=AppConstants.getInstance().getBoolean(CONFIGURATION_STUB4TESTTOOL_KEY,false);
 			if (stub4testtool) {
 				URL xsltSource = ClassUtils.getResourceURL(this, stub4testtool_xslt);
@@ -280,6 +290,37 @@ abstract public class ConfigurationDigester implements BeanFactoryAware {
 			}
 			log.error(e);
 			throw (e);
+		}
+	}
+
+	public void fillConfigWarnDefaultValueExceptions(URL configurationFileURL) throws Exception {
+		URL xsltSource = ClassUtils.getResourceURL(this, attributesGetter_xslt);
+		if (xsltSource == null) {
+			throw new ConfigurationException("cannot find resource ["+stub4testtool_xslt+"]");
+		}
+		Transformer transformer = XmlUtils.createTransformer(xsltSource);
+		String lineSeparator=SystemUtils.LINE_SEPARATOR;
+		if (null==lineSeparator) lineSeparator="\n";
+		String configString=Misc.resourceToString(configurationFileURL, lineSeparator, false);
+		configString=XmlUtils.identityTransform(configString);
+		String attributes = XmlUtils.transformXml(transformer, configString);
+		Element attributesElement = XmlUtils.buildElement(attributes);
+		Collection attributeElements =	XmlUtils.getChildTags(attributesElement, "attribute");
+		Iterator iter = attributeElements.iterator();
+		while (iter.hasNext()) {
+			Element attributeElement = (Element) iter.next();
+			Element valueElement = XmlUtils.getFirstChildTag(attributeElement, "value");
+			String value = XmlUtils.getStringValue(valueElement);
+			if (value.startsWith("${") && value.endsWith("}")) {
+				Element keyElement = XmlUtils.getFirstChildTag(attributeElement, "key");
+				String key = XmlUtils.getStringValue(keyElement);
+				Element elementElement = XmlUtils.getFirstChildTag(attributeElement, "element");
+				String element = XmlUtils.getStringValue(elementElement);
+				Element nameElement = XmlUtils.getFirstChildTag(attributeElement, "name");
+				String name = XmlUtils.getStringValue(nameElement);
+				String mergedKey = element + "/" + (name==null?"":name) + "/" + key;
+				configWarnings.addDefaultValueExceptions(mergedKey);
+			}
 		}
 	}
 
