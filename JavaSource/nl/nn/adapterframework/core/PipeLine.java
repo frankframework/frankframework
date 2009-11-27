@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.82  2009-11-18 17:28:04  m00f069
+ * Revision 1.83  2009-11-27 13:38:20  m00f069
+ * Expose available session keys at the beginning of the pipeline to the debugger
+ *
+ * Revision 1.82  2009/11/18 17:28:04  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Added senders to IbisDebugger
  *
  * Revision 1.81  2009/11/12 12:36:35  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -250,6 +253,7 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeSet;
 
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
@@ -350,7 +354,7 @@ import org.springframework.transaction.TransactionStatus;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.82 $ $Date: 2009-11-18 17:28:04 $";
+	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.83 $ $Date: 2009-11-27 13:38:20 $";
     private Logger log = LogUtil.getLogger(this);
 	private Logger durationLog = LogUtil.getLogger("LongDurationMessages");
     
@@ -720,7 +724,17 @@ public class PipeLine {
     public PipeLineResult processPipeLine(String messageId, String message, PipeLineSession pipeLineSession, TransactionStatus txStatus) throws PipeRunException {
 	    // Object is the object that is passed to and returned from Pipes
 	    Object object = (Object) message;
-		if (log.isDebugEnabled() && ibisDebugger!=null) object = ibisDebugger.pipeLineInput(this, messageId, message);
+		if (log.isDebugEnabled() && ibisDebugger!=null) {
+			object = ibisDebugger.pipeLineInput(this, messageId, message);
+			TreeSet keys = new TreeSet(pipeLineSession.keySet());
+			Iterator iterator = keys.iterator();
+			while (iterator.hasNext()) {
+				String sessionKey = (String)iterator.next();
+				Object sessionValue = pipeLineSession.get(sessionKey);
+				sessionValue = ibisDebugger.pipeLineSessionKey(messageId, sessionKey, sessionValue);
+				pipeLineSession.put(sessionKey, sessionValue);
+			}
+		} 
 	    Object preservedObject = object;
 	    PipeRunResult pipeRunResult;
 	    // the PipeLineResult 

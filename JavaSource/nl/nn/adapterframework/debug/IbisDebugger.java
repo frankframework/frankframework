@@ -1,6 +1,9 @@
 /*
  * $Log: IbisDebugger.java,v $
- * Revision 1.2  2009-11-18 17:28:04  m00f069
+ * Revision 1.3  2009-11-27 13:38:20  m00f069
+ * Expose available session keys at the beginning of the pipeline to the debugger
+ *
+ * Revision 1.2  2009/11/18 17:28:04  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Added senders to IbisDebugger
  *
  * Revision 1.1  2008/07/14 17:07:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -27,6 +30,8 @@ import nl.nn.adapterframework.pipes.IsolatedServiceCaller;
 public interface IbisDebugger {
 
 	public Object pipeLineInput(PipeLine pipeLine, String messageId, Object input);
+
+	public Object pipeLineSessionKey(String messageId, String sessionKey, Object sessionValue);
 
 	public String pipeLineOutput(PipeLine pipeLine, String messageId, String output);
 
