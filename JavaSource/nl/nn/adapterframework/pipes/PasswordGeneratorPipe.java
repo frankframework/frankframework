@@ -1,6 +1,9 @@
 /*
  * $Log: PasswordGeneratorPipe.java,v $
- * Revision 1.2  2007-10-16 07:53:14  europe\m00f069
+ * Revision 1.3  2009-12-01 14:40:32  m00f069
+ * Fixed javadoc lCharacters -> LCharacters and uCharacters -> UCharacters
+ *
+ * Revision 1.2  2007/10/16 07:53:14  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Added set/get methods for lCharacters, uCharacters, numbers and signs. Fixed some typo's in javadoc.
  *
  * Revision 1.1  2006/09/18 13:08:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -31,8 +34,8 @@ import nl.nn.adapterframework.core.PipeRunResult;
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMaxThreads(int) maxThreads}</td><td>maximum number of threads that may call {@link #doPipe(Object, nl.nn.adapterframework.core.PipeLineSession)} simultaneously</td><td>0 (unlimited)</td></tr>
  * <tr><td>{@link #setForwardName(String) forwardName}</td>  <td>name of forward returned upon completion</td><td>"success"</td></tr>
- * <tr><td>{@link #setLCharacters(String) lCharacters}</td><td>The lowercase characters to use</td><td>('a'..'z')</td></tr>
- * <tr><td>{@link #setUCharacters(String) uCharacters}</td><td>The uppercase characters to use</td><td>('A'..'Z')</td></tr>
+ * <tr><td>{@link #setLCharacters(String) LCharacters}</td><td>The lowercase characters to use</td><td>('a'..'z')</td></tr>
+ * <tr><td>{@link #setUCharacters(String) UCharacters}</td><td>The uppercase characters to use</td><td>('A'..'Z')</td></tr>
  * <tr><td>{@link #setNumbers(String) numbers}</td><td>The numbers to use</td><td>('0'..'9')</td></tr>
  * <tr><td>{@link #setSigns(String) signs}</td><td>The signs to use</td><td>(;:_%$#@!&gt;&lt;)</td></tr>
  * <tr><td>{@link #setUseSecureRandom(boolean) useSecureRandom}</td>  <td>Whether the SecureRandom algorithm is to be used (slower)</td><td>true</td></tr>
@@ -54,7 +57,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
  * @since   4.5
  */
 public class PasswordGeneratorPipe extends FixedForwardPipe {
-	public static final String version = "$RCSfile: PasswordGeneratorPipe.java,v $ $Revision: 1.2 $ $Date: 2007-10-16 07:53:14 $";
+	public static final String version = "$RCSfile: PasswordGeneratorPipe.java,v $ $Revision: 1.3 $ $Date: 2009-12-01 14:40:32 $";
 	
 	private String lCharacters="abcdefghijklmnopqrstuvwxyz";
 	private String uCharacters="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
