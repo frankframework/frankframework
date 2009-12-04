@@ -1,6 +1,9 @@
 /*
  * $Log: CommandSender.java,v $
- * Revision 1.2  2009-11-18 17:28:03  m00f069
+ * Revision 1.3  2009-12-04 18:23:34  m00f069
+ * Added ibisDebugger.senderAbort and ibisDebugger.pipeRollback
+ *
+ * Revision 1.2  2009/11/18 17:28:03  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Added senders to IbisDebugger
  *
  * Revision 1.1  2008/08/06 16:36:39  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -13,7 +16,6 @@ import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.debug.IbisDebugger;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.util.ProcessUtil;
@@ -40,40 +42,37 @@ import org.apache.commons.lang.StringUtils;
  * @author  Gerrit van Brakel
  */
 public class CommandSender extends SenderWithParametersBase {
-	private IbisDebugger ibisDebugger;
 	
 	private String command;
 	private boolean synchronous=true;
 
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
-		if (log.isDebugEnabled() && ibisDebugger!=null) {
-			message = ibisDebugger.senderInput(this, correlationID, message);
-		}
-	
-		String commandline;
-		if (StringUtils.isNotEmpty(getCommand())) {
-			commandline=getCommand();
-		} else {
-			commandline=message;
-		}
-		if (paramList!=null) {
-			ParameterValueList pvl;
-			try {
-				pvl = prc.getValues(paramList);
-			} catch (ParameterException e) {
-				throw new SenderException("Could not extract parametervalues",e);
+		message = debugSenderInput(correlationID, message);
+		String result = null;
+		try {
+			String commandline;
+			if (StringUtils.isNotEmpty(getCommand())) {
+				commandline=getCommand();
+			} else {
+				commandline=message;
 			}
-			for (int i=0; i<pvl.size(); i++) {
-				commandline += " "+pvl.getParameterValue(i);
+			if (paramList!=null) {
+				ParameterValueList pvl;
+				try {
+					pvl = prc.getValues(paramList);
+				} catch (ParameterException e) {
+					throw new SenderException("Could not extract parametervalues",e);
+				}
+				for (int i=0; i<pvl.size(); i++) {
+					commandline += " "+pvl.getParameterValue(i);
+				}
 			}
+			result = ProcessUtil.executeCommand(commandline);
+		} catch(Throwable throwable) {
+			debugSenderAbort(correlationID, throwable);
 		}
-		String result = ProcessUtil.executeCommand(commandline);
-		if (log.isDebugEnabled() && ibisDebugger!=null) {
-			result = ibisDebugger.senderOutput(this, correlationID, result);
-		}
-		return result;
+		return debugSenderOutput(correlationID, result);
 	}
-
 
 	public boolean isSynchronous() {
 		return synchronous;
@@ -84,10 +83,6 @@ public class CommandSender extends SenderWithParametersBase {
 	}
 	public String getCommand() {
 		return command;
-	}
-	
-	public void setIbisDebugger(IbisDebugger ibisDebugger) {
-		this.ibisDebugger = ibisDebugger;
 	}
 
 }

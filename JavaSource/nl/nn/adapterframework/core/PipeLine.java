@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.83  2009-11-27 13:38:20  m00f069
+ * Revision 1.84  2009-12-04 18:23:34  m00f069
+ * Added ibisDebugger.senderAbort and ibisDebugger.pipeRollback
+ *
+ * Revision 1.83  2009/11/27 13:38:20  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Expose available session keys at the beginning of the pipeline to the debugger
  *
  * Revision 1.82  2009/11/18 17:28:04  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -354,7 +357,7 @@ import org.springframework.transaction.TransactionStatus;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.83 $ $Date: 2009-11-27 13:38:20 $";
+	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.84 $ $Date: 2009-12-04 18:23:34 $";
     private Logger log = LogUtil.getLogger(this);
 	private Logger durationLog = LogUtil.getLogger("LongDurationMessages");
     
@@ -644,7 +647,7 @@ public class PipeLine {
 		}
     }
     
-	private PipeRunResult runPipeObeyingTransactionAttribute(IPipe pipe, Object message, PipeLineSession session) throws PipeRunException {
+	private PipeRunResult runPipeObeyingTransactionAttribute(IPipe pipe, String messageId, Object message, PipeLineSession session) throws PipeRunException {
         int txOption;
         int txTimeout=0;
         if (pipe instanceof HasTransactionAttribute) {
@@ -666,6 +669,9 @@ public class PipeLine {
 		} catch (Throwable t) {
 			log.debug("setting RollBackOnly for pipe [" + pipe.getName()+"] after catching exception");
 			txStatus.setRollbackOnly();
+			if (log.isDebugEnabled() && ibisDebugger!=null) {
+				t = ibisDebugger.pipeRollback(this, pipe, messageId, t);
+			}
 			if (t instanceof Error) {
 				throw (Error)t;
 			} else if (t instanceof RuntimeException) {
@@ -846,7 +852,7 @@ public class PipeLine {
 							sk.addValue(waitingDuration);
 	
 							try { 
-								pipeRunResult = runPipeObeyingTransactionAttribute(pipeToRun,object, pipeLineSession);
+								pipeRunResult = runPipeObeyingTransactionAttribute(pipeToRun, messageId, object, pipeLineSession);
 							} catch (PipeRunException e) {
 								throw e;
 							} catch (Throwable t) {
@@ -865,7 +871,7 @@ public class PipeLine {
 						}
 					} else { //no restrictions on the maximum number of threads (s==null)
 						try {
-							pipeRunResult = runPipeObeyingTransactionAttribute(pipeToRun,object, pipeLineSession);
+							pipeRunResult = runPipeObeyingTransactionAttribute(pipeToRun, messageId, object, pipeLineSession);
 						} catch (PipeRunException e) {
 							throw e;
 						} catch (Throwable t) {

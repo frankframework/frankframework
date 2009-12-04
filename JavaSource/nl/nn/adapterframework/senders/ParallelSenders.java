@@ -1,6 +1,9 @@
 /*
  * $Log: ParallelSenders.java,v $
- * Revision 1.3  2009-11-18 17:28:03  m00f069
+ * Revision 1.4  2009-12-04 18:23:34  m00f069
+ * Added ibisDebugger.senderAbort and ibisDebugger.pipeRollback
+ *
+ * Revision 1.3  2009/11/18 17:28:03  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Added senders to IbisDebugger
  *
  * Revision 1.2  2008/05/21 10:54:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -22,7 +25,6 @@ import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.debug.IbisDebugger;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Guard;
@@ -62,13 +64,9 @@ public class ParallelSenders extends SenderSeries {
 	 * The thread-pool for spawning threads, injected by Spring
 	 */
 	private TaskExecutor taskExecutor;
-	private IbisDebugger ibisDebugger;
 
 
 	protected String doSendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
-		if (log.isDebugEnabled() && ibisDebugger!=null) {
-			message = ibisDebugger.senderInput(this, correlationID, message);
-		}
 		Guard guard= new Guard();
 		Map executorMap = new HashMap();
 		for (Iterator it=getSenderIterator();it.hasNext();) {
@@ -107,11 +105,7 @@ public class ParallelSenders extends SenderSeries {
 			}
 			resultsXml.addSubElement(resultXml); 
 		}
-		String result = resultsXml.toXML();
-		if (log.isDebugEnabled() && ibisDebugger!=null) {
-			result = ibisDebugger.senderOutput(this, correlationID, result);
-		}
-		return result;
+		return resultsXml.toXML();
 	}
 
 
@@ -183,10 +177,6 @@ public class ParallelSenders extends SenderSeries {
 	}
 	public TaskExecutor getTaskExecutor() {
 		return taskExecutor;
-	}
-
-	public void setIbisDebugger(IbisDebugger ibisDebugger) {
-		this.ibisDebugger = ibisDebugger;
 	}
 
 }

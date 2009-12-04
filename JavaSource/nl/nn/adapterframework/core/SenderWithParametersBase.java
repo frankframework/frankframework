@@ -1,6 +1,9 @@
 /*
  * $Log: SenderWithParametersBase.java,v $
- * Revision 1.4  2007-02-26 16:53:38  europe\L190409
+ * Revision 1.5  2009-12-04 18:23:34  m00f069
+ * Added ibisDebugger.senderAbort and ibisDebugger.pipeRollback
+ *
+ * Revision 1.4  2007/02/26 16:53:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * add throws clause to open and close
  *
  * Revision 1.3  2007/02/12 13:44:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -19,9 +22,7 @@ package nl.nn.adapterframework.core;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
-import nl.nn.adapterframework.util.LogUtil;
-
-import org.apache.log4j.Logger;
+import nl.nn.adapterframework.senders.SenderBase;
 
 /**
  * Provides a base class for senders with parameters.
@@ -30,13 +31,11 @@ import org.apache.log4j.Logger;
  * @since  4.3
  * @version Id
  */
-public abstract class SenderWithParametersBase implements ISenderWithParameters {
-	public static final String version="$RCSfile: SenderWithParametersBase.java,v $ $Revision: 1.4 $ $Date: 2007-02-26 16:53:38 $";
-	protected Logger log = LogUtil.getLogger(this);
+public abstract class SenderWithParametersBase extends SenderBase implements ISenderWithParameters {
+	public static final String version="$RCSfile: SenderWithParametersBase.java,v $ $Revision: 1.5 $ $Date: 2009-12-04 18:23:34 $";
 	
 	private String name;
 	protected ParameterList paramList = null;
-
 
 	public void configure() throws ConfigurationException {
 		if (paramList!=null) {
@@ -44,23 +43,8 @@ public abstract class SenderWithParametersBase implements ISenderWithParameters 
 		}
 	}
 
-	public void open() throws SenderException {
-	}
-
-	public void close() throws SenderException {
-	}
-
 	public String sendMessage(String correlationID, String message) throws SenderException, TimeOutException  {
 		return sendMessage(correlationID,message,null);
-	}
-
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
 	}
 
 	public void addParameter(Parameter p) {
@@ -68,10 +52,6 @@ public abstract class SenderWithParametersBase implements ISenderWithParameters 
 			paramList=new ParameterList();
 		}
 		paramList.add(p);
-	}
-
-	protected String getLogPrefix() {
-		return "["+this.getClass().getName()+"] ["+getName()+"] ";
 	}
 
 }

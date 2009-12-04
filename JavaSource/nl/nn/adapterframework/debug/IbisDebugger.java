@@ -1,6 +1,9 @@
 /*
  * $Log: IbisDebugger.java,v $
- * Revision 1.3  2009-11-27 13:38:20  m00f069
+ * Revision 1.4  2009-12-04 18:23:34  m00f069
+ * Added ibisDebugger.senderAbort and ibisDebugger.pipeRollback
+ *
+ * Revision 1.3  2009/11/27 13:38:20  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Expose available session keys at the beginning of the pipeline to the debugger
  *
  * Revision 1.2  2009/11/18 17:28:04  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -12,12 +15,10 @@
  */
 package nl.nn.adapterframework.debug;
 
-import nl.nn.adapterframework.core.IExtendedPipe;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.pipes.IsolatedServiceCaller;
 
 /**
  * Interface to be implemented by debuggers of Ibis Adapters. Debuggers are notified of
@@ -41,9 +42,13 @@ public interface IbisDebugger {
 	
 	public Object pipeOutput(PipeLine pipeLine, IPipe pipe, String messageId, Object output);
 
+	public Throwable pipeRollback(PipeLine pipeLine, IPipe pipe, String messageId, Throwable throwable);
+
 	public String senderInput(ISender sender, String messageId, Object input);
 
 	public String senderOutput(ISender sender, String messageId, Object output);
+
+	public Throwable senderAbort(ISender sender, String messageId, Throwable throwable);
 
 	public void createThread(String threadId, String messageId);
 

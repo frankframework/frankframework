@@ -1,6 +1,9 @@
 /*
  * $Log: LogSender.java,v $
- * Revision 1.3  2009-11-18 17:28:03  m00f069
+ * Revision 1.4  2009-12-04 18:23:34  m00f069
+ * Added ibisDebugger.senderAbort and ibisDebugger.pipeRollback
+ *
+ * Revision 1.3  2009/11/18 17:28:03  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Added senders to IbisDebugger
  *
  * Revision 1.2  2009/09/07 13:32:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -17,7 +20,6 @@ import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.debug.IbisDebugger;
 import nl.nn.adapterframework.parameters.IParameterHandler;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.LogUtil;
@@ -40,8 +42,6 @@ import org.apache.log4j.Level;
  * @version Id
  */
 public class LogSender extends SenderWithParametersBase implements IParameterHandler {
-	private IbisDebugger ibisDebugger;
-
 	private String logLevel="info";
 	private String logCategory=null;
 
@@ -58,23 +58,20 @@ public class LogSender extends SenderWithParametersBase implements IParameterHan
 	}
 
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
-		if (log.isDebugEnabled() && ibisDebugger!=null) {
-			message = ibisDebugger.senderInput(this, correlationID, message);
-		}
-		log.log(level,message);
-		
-		if (prc != null) {
-			try {
-				prc.forAllParameters(paramList, this);
-			} catch (ParameterException e) {
-				throw new SenderException("exception determining value of parameters", e);
+		message = debugSenderInput(correlationID, message);
+		try {
+			log.log(level,message);
+			if (prc != null) {
+				try {
+					prc.forAllParameters(paramList, this);
+				} catch (ParameterException e) {
+					throw new SenderException("exception determining value of parameters", e);
+				}
 			}
+		} catch(Throwable throwable) {
+			debugSenderAbort(correlationID, throwable);
 		}
-		
-		if (log.isDebugEnabled() && ibisDebugger!=null) {
-			message = ibisDebugger.senderOutput(this, correlationID, message);
-		}
-		return message;
+		return debugSenderOutput(correlationID, message);
 	}
 
 	public void handleParam(String paramName, Object value) {
@@ -105,10 +102,6 @@ public class LogSender extends SenderWithParametersBase implements IParameterHan
 
 	public String toString() {
 		return "LogSender ["+getName()+"] logLevel ["+getLogLevel()+"] logCategory ["+logCategory+"]";
-	}
-	
-	public void setIbisDebugger(IbisDebugger ibisDebugger) {
-		this.ibisDebugger = ibisDebugger;
 	}
 
 }

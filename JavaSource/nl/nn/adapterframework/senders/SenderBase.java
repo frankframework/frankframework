@@ -1,6 +1,9 @@
 /*
  * $Log: SenderBase.java,v $
- * Revision 1.1  2008-05-15 15:08:26  europe\L190409
+ * Revision 1.2  2009-12-04 18:23:34  m00f069
+ * Added ibisDebugger.senderAbort and ibisDebugger.pipeRollback
+ *
+ * Revision 1.1  2008/05/15 15:08:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * created senders package
  * moved some sender to senders package
  * created special senders
@@ -12,6 +15,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.debug.IbisDebugger;
 import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.log4j.Logger;
@@ -31,6 +35,7 @@ import org.apache.log4j.Logger;
  */
 public abstract class SenderBase implements ISender {
 	protected Logger log = LogUtil.getLogger(this);
+	protected IbisDebugger ibisDebugger;
 
 	private String name;
 
@@ -49,8 +54,8 @@ public abstract class SenderBase implements ISender {
 		return true;
 	}
 
-	protected String getLogPrefix(){
-		return "Sender ["+getName()+"] ";
+	protected String getLogPrefix() {
+		return "["+this.getClass().getName()+"] ["+getName()+"] ";
 	}
 
 	public void setName(String name) {
@@ -58,6 +63,37 @@ public abstract class SenderBase implements ISender {
 	}
 	public String getName() {
 		return name;
+	}
+
+	protected String debugSenderInput(String correlationID, String message) {
+		if (log.isDebugEnabled() && ibisDebugger!=null) {
+			message = ibisDebugger.senderInput(this, correlationID, message);
+		}
+		return message;
+	}
+
+	protected String debugSenderOutput(String correlationID, String message) {
+		if (log.isDebugEnabled() && ibisDebugger!=null) {
+			message = ibisDebugger.senderOutput(this, correlationID, message);
+		}
+		return message;
+	}
+
+	protected void debugSenderAbort(String correlationID, Throwable throwable) throws SenderException {
+		SenderException senderException;
+		if (throwable instanceof SenderException) {
+			senderException = (SenderException)throwable;
+		} else {
+			senderException = new SenderException(getLogPrefix()+"unexpected throwable",throwable);
+		}
+		if (log.isDebugEnabled() && ibisDebugger!=null) {
+			throwable = ibisDebugger.senderAbort(this, correlationID, throwable);
+		}
+		throw senderException;
+	}
+	
+	public void setIbisDebugger(IbisDebugger ibisDebugger) {
+		this.ibisDebugger = ibisDebugger;
 	}
 
 }

@@ -1,6 +1,9 @@
 /*
  * $Log: DelaySender.java,v $
- * Revision 1.2  2009-11-18 17:28:04  m00f069
+ * Revision 1.3  2009-12-04 18:23:34  m00f069
+ * Added ibisDebugger.senderAbort and ibisDebugger.pipeRollback
+ *
+ * Revision 1.2  2009/11/18 17:28:04  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Added senders to IbisDebugger
  *
  * Revision 1.1  2008/05/15 15:08:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -12,7 +15,6 @@
 package nl.nn.adapterframework.senders;
 
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.debug.IbisDebugger;
 
 /**
  * Sender that sleeps for a specified time, which defaults to 5000 msecs.
@@ -30,26 +32,24 @@ import nl.nn.adapterframework.debug.IbisDebugger;
  * @version Id
  */
 public class DelaySender extends SenderBase {
-	private IbisDebugger ibisDebugger;
 
 	private long delayTime=5000;
 
 
 	public String sendMessage(String correlationID, String message) throws SenderException {
-		if (log.isDebugEnabled() && ibisDebugger!=null) {
-			message = ibisDebugger.senderInput(this, correlationID, message);
-		}
+		message = debugSenderInput(correlationID, message);
 		try {
-			log.info(getLogPrefix()+"starts waiting for " + getDelayTime() + " ms.");
-			Thread.sleep(getDelayTime());
-		} catch (InterruptedException e) {
-			throw new SenderException(getLogPrefix()+"delay interrupted", e);
+			try {
+				log.info(getLogPrefix()+"starts waiting for " + getDelayTime() + " ms.");
+				Thread.sleep(getDelayTime());
+			} catch (InterruptedException e) {
+				throw new SenderException(getLogPrefix()+"delay interrupted", e);
+			}
+			log.info(getLogPrefix()+"ends waiting for " + getDelayTime() + " ms.");
+		} catch(Throwable throwable) {
+			debugSenderAbort(correlationID, throwable);
 		}
-		log.info(getLogPrefix()+"ends waiting for " + getDelayTime() + " ms.");
-		if (log.isDebugEnabled() && ibisDebugger!=null) {
-			message = ibisDebugger.senderOutput(this, correlationID, message);
-		}
-		return message;
+		return debugSenderOutput(correlationID, message);
 	}
 
 	/**
@@ -60,10 +60,6 @@ public class DelaySender extends SenderBase {
 	}
 	public long getDelayTime() {
 		return delayTime;
-	}
-	
-	public void setIbisDebugger(IbisDebugger ibisDebugger) {
-		this.ibisDebugger = ibisDebugger;
 	}
 
 }

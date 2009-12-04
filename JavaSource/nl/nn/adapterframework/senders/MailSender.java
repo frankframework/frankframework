@@ -1,6 +1,9 @@
 /*
  * $Log: MailSender.java,v $
- * Revision 1.3  2009-11-18 17:28:03  m00f069
+ * Revision 1.4  2009-12-04 18:23:34  m00f069
+ * Added ibisDebugger.senderAbort and ibisDebugger.pipeRollback
+ *
+ * Revision 1.3  2009/11/18 17:28:03  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Added senders to IbisDebugger
  *
  * Revision 1.2  2009/04/09 12:11:42  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -38,7 +41,6 @@ import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.debug.IbisDebugger;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -115,7 +117,6 @@ import org.w3c.dom.Element;
  */
 
 public class MailSender extends SenderWithParametersBase {
-	private IbisDebugger ibisDebugger;
 
 	private String smtpHost;
 	private String smtpAuthAlias;
@@ -196,65 +197,64 @@ public class MailSender extends SenderWithParametersBase {
 
 
 	public String sendMessage(String correlationID,	String message,	ParameterResolutionContext prc) throws SenderException, TimeOutException {
-		if (log.isDebugEnabled() && ibisDebugger!=null) {
-			message = ibisDebugger.senderInput(this, correlationID, message);
-		}
-		String from=null;
-		String subject=null;
-		Collection recipients=null;
-		Collection attachments=null;
-		ParameterValueList pvl;
-		ParameterValue pv;
-		
-		String messageInMailSafeForm;
-		if (paramList==null) {
-			messageInMailSafeForm = sendEmail(message);
-		} else {
-			try {
-				pvl = prc.getValues(paramList);
-				pv = pvl.getParameterValue("from");
-				if (pv != null) {
-					from = pv.asStringValue(null);  
-					log.debug("MailSender ["+getName()+"] retrieved from-parameter ["+from+"]");
+		message = debugSenderInput(correlationID, message);
+		try {
+			String from=null;
+			String subject=null;
+			Collection recipients=null;
+			Collection attachments=null;
+			ParameterValueList pvl;
+			ParameterValue pv;
+			
+			String messageInMailSafeForm;
+			if (paramList==null) {
+				messageInMailSafeForm = sendEmail(message);
+			} else {
+				try {
+					pvl = prc.getValues(paramList);
+					pv = pvl.getParameterValue("from");
+					if (pv != null) {
+						from = pv.asStringValue(null);  
+						log.debug("MailSender ["+getName()+"] retrieved from-parameter ["+from+"]");
+					}
+					pv = pvl.getParameterValue("subject");
+					if (pv != null) {
+						subject = pv.asStringValue(null);  
+						log.debug("MailSender ["+getName()+"] retrieved subject-parameter ["+subject+"]");
+					}
+					pv = pvl.getParameterValue("message");
+					if (pv != null) {
+						message = pv.asStringValue(message);  
+						log.debug("MailSender ["+getName()+"] retrieved message-parameter ["+message+"]");
+					}
+					pv = pvl.getParameterValue("messageType");
+					if (pv != null) {
+						messageType = pv.asStringValue(null);  
+						log.debug("MailSender ["+getName()+"] retrieved messageType-parameter ["+messageType+"]");
+					}
+					pv = pvl.getParameterValue("messageBase64");
+					if (pv != null) {
+						messageBase64 = pv.asStringValue(null);  
+						log.debug("MailSender ["+getName()+"] retrieved messageBase64-parameter ["+messageBase64+"]");
+					}
+					pv = pvl.getParameterValue("recipients");
+					if (pv != null) {
+						recipients = pv.asCollection();  
+					}
+					pv = pvl.getParameterValue("attachments");
+					if (pv != null) {
+						attachments = pv.asCollection();  
+					}
+				} catch (ParameterException e) {
+					throw new SenderException("MailSender ["+getName()+"] got exception determining parametervalues",e);
 				}
-				pv = pvl.getParameterValue("subject");
-				if (pv != null) {
-					subject = pv.asStringValue(null);  
-					log.debug("MailSender ["+getName()+"] retrieved subject-parameter ["+subject+"]");
-				}
-				pv = pvl.getParameterValue("message");
-				if (pv != null) {
-					message = pv.asStringValue(message);  
-					log.debug("MailSender ["+getName()+"] retrieved message-parameter ["+message+"]");
-				}
-				pv = pvl.getParameterValue("messageType");
-				if (pv != null) {
-					messageType = pv.asStringValue(null);  
-					log.debug("MailSender ["+getName()+"] retrieved messageType-parameter ["+messageType+"]");
-				}
-				pv = pvl.getParameterValue("messageBase64");
-				if (pv != null) {
-					messageBase64 = pv.asStringValue(null);  
-					log.debug("MailSender ["+getName()+"] retrieved messageBase64-parameter ["+messageBase64+"]");
-				}
-				pv = pvl.getParameterValue("recipients");
-				if (pv != null) {
-					recipients = pv.asCollection();  
-				}
-				pv = pvl.getParameterValue("attachments");
-				if (pv != null) {
-					attachments = pv.asCollection();  
-				}
-			} catch (ParameterException e) {
-				throw new SenderException("MailSender ["+getName()+"] got exception determining parametervalues",e);
+				messageInMailSafeForm = sendEmail(from, subject, message, recipients, attachments);
 			}
-			messageInMailSafeForm = sendEmail(from, subject, message, recipients, attachments);
+			prc.getSession().put("messageInMailSafeForm", messageInMailSafeForm);
+		} catch(Throwable throwable) {
+			debugSenderAbort(correlationID, throwable);
 		}
-		prc.getSession().put("messageInMailSafeForm", messageInMailSafeForm);
-		if (log.isDebugEnabled() && ibisDebugger!=null) {
-			correlationID = ibisDebugger.senderOutput(this, correlationID, correlationID);
-		}
-		return correlationID;
+		return debugSenderOutput(correlationID, correlationID);
 	}
 	
 	public String sendMessage(String correlationID, String input) throws SenderException {
@@ -524,10 +524,6 @@ public class MailSender extends SenderWithParametersBase {
 	}
 	public String getDefaultAttachmentType() {
 		return defaultAttachmentType;
-	}
-	
-	public void setIbisDebugger(IbisDebugger ibisDebugger) {
-		this.ibisDebugger = ibisDebugger;
 	}
 
 }

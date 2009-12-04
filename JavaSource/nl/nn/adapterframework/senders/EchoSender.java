@@ -1,6 +1,9 @@
 /*
  * $Log: EchoSender.java,v $
- * Revision 1.3  2009-11-18 17:28:03  m00f069
+ * Revision 1.4  2009-12-04 18:23:34  m00f069
+ * Added ibisDebugger.senderAbort and ibisDebugger.pipeRollback
+ *
+ * Revision 1.3  2009/11/18 17:28:03  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Added senders to IbisDebugger
  *
  * Revision 1.2  2008/07/17 16:17:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -20,7 +23,6 @@ package nl.nn.adapterframework.senders;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.debug.IbisDebugger;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 
 /**
@@ -38,16 +40,12 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
  * @version Id
  */
 public class EchoSender extends SenderWithParametersBase {
-	private IbisDebugger ibisDebugger;
 	
 	private boolean synchronous=true;
 
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
-		if (log.isDebugEnabled() && ibisDebugger!=null) {
-			message = ibisDebugger.senderInput(this, correlationID, message);
-			message = ibisDebugger.senderOutput(this, correlationID, message);
-		}
-		return message;
+		message = debugSenderInput(correlationID, message);
+		return debugSenderOutput(correlationID, message);
 	}
 
 	public void setSynchronous(boolean b) {
@@ -55,10 +53,6 @@ public class EchoSender extends SenderWithParametersBase {
 	}
 	public boolean isSynchronous() {
 		return synchronous;
-	}
-	
-	public void setIbisDebugger(IbisDebugger ibisDebugger) {
-		this.ibisDebugger = ibisDebugger;
 	}
 
 }
