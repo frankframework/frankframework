@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcFacade.java,v $
- * Revision 1.26  2009-09-07 13:14:48  L190409
+ * Revision 1.27  2009-12-08 14:49:26  m168309
+ * fixed NullPointerException on datatime parameters
+ *
+ * Revision 1.26  2009/09/07 13:14:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * use log from ancestor
  *
  * Revision 1.25  2009/03/26 14:47:36  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -83,6 +86,7 @@ import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.sql.Types;
 import java.util.Date;
 
 import javax.naming.NamingException;
@@ -117,7 +121,7 @@ import org.apache.commons.lang.StringUtils;
  * @since 	4.1
  */
 public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version="$RCSfile: JdbcFacade.java,v $ $Revision: 1.26 $ $Date: 2009-09-07 13:14:48 $";
+	public static final String version="$RCSfile: JdbcFacade.java,v $ $Revision: 1.27 $ $Date: 2009-12-08 14:49:26 $";
 	
 	public final static int DATABASE_GENERIC=0;
 	public final static int DATABASE_ORACLE=1;
@@ -294,11 +298,23 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 	//		log.debug("applying parameter ["+(i+1)+","+parameters.getParameterValue(i).getDefinition().getName()+"], value["+parameterValue+"]");
 
 			if (Parameter.TYPE_DATE.equals(paramType)) {
-				statement.setDate(i+1, new java.sql.Date(((Date)value).getTime()));
+				if (value==null) {
+					statement.setNull(i+1, Types.DATE);
+				} else {
+					statement.setDate(i+1, new java.sql.Date(((Date)value).getTime()));
+				}
 			} else if (Parameter.TYPE_DATETIME.equals(paramType)) {
-				statement.setTimestamp(i+1, new Timestamp(((Date)value).getTime()));
+				if (value==null) {
+					statement.setNull(i+1, Types.TIMESTAMP);
+				} else {
+					statement.setTimestamp(i+1, new Timestamp(((Date)value).getTime()));
+				}
 			} else if (Parameter.TYPE_TIME.equals(paramType)) {
-				statement.setTime(i+1, new java.sql.Time(((Date)value).getTime()));
+				if (value==null) {
+					statement.setNull(i+1, Types.TIME);
+				} else {
+					statement.setTime(i+1, new java.sql.Time(((Date)value).getTime()));
+				}
 			} else if (Parameter.TYPE_NUMBER.equals(paramType)) {
 				statement.setDouble(i+1, ((Number)value).doubleValue());
 			} else { 
