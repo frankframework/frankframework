@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.84  2009-12-04 18:23:34  m00f069
+ * Revision 1.85  2009-12-10 15:32:48  m00f069
+ * Show correct sessionKey name in Test Tool for storeResultInSessionKey (getGetInputFromSessionKey() was used)
+ *
+ * Revision 1.84  2009/12/04 18:23:34  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Added ibisDebugger.senderAbort and ibisDebugger.pipeRollback
  *
  * Revision 1.83  2009/11/27 13:38:20  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -357,7 +360,7 @@ import org.springframework.transaction.TransactionStatus;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.84 $ $Date: 2009-12-04 18:23:34 $";
+	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.85 $ $Date: 2009-12-10 15:32:48 $";
     private Logger log = LogUtil.getLogger(this);
 	private Logger durationLog = LogUtil.getLogger("LongDurationMessages");
     
@@ -888,7 +891,7 @@ public class PipeLine {
 						if (pipeRunResult!=null && StringUtils.isNotEmpty(pe.getStoreResultInSessionKey())) {
 							if (log.isDebugEnabled()) log.debug("Pipeline of adapter ["+owner.getName()+"] storing result for pipe ["+pe.getName()+"] under sessionKey ["+pe.getStoreResultInSessionKey()+"]");
 							Object result = pipeRunResult.getResult();
-							if (log.isDebugEnabled() && ibisDebugger!=null) result = ibisDebugger.storeResultInSessionKey(messageId, pe.getGetInputFromSessionKey(), result);
+							if (log.isDebugEnabled() && ibisDebugger!=null) result = ibisDebugger.storeResultInSessionKey(messageId, pe.getStoreResultInSessionKey(), result);
 							pipeLineSession.put(pe.getStoreResultInSessionKey(),result);
 						}
 						if (pe.isPreserveInput()) {
