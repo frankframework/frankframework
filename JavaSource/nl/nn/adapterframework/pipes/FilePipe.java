@@ -1,6 +1,11 @@
 /*
  * $Log: FilePipe.java,v $
- * Revision 1.18  2007-12-27 16:04:15  europe\L190409
+ * Revision 1.19  2009-12-11 15:04:44  l562891
+ * Revision 1.19  2009/12/11 10:04:15  europe\L562891
+ * Fixed problem with fileNameSessionKey when action is read file.
+ *
+ * 
+ * Revision 1.18  2007/12/27 16:04:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * force file to be created for action 'create'
  *
  * Revision 1.17  2007/12/17 13:21:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -119,7 +124,7 @@ import sun.misc.BASE64Encoder;
  *
  */
 public class FilePipe extends FixedForwardPipe {
-	public static final String version="$RCSfile: FilePipe.java,v $ $Revision: 1.18 $ $Date: 2007-12-27 16:04:15 $";
+	public static final String version="$RCSfile: FilePipe.java,v $ $Revision: 1.19 $ $Date: 2009-12-11 15:04:44 $";
 
 	protected String actions;
 	protected String directory;
@@ -354,10 +359,17 @@ public class FilePipe extends FixedForwardPipe {
 		}
 		public byte[] go(byte[] in, PipeLineSession session) throws Exception {
 			File file;
+			 
+			String name = (String)session.get(fileNameSessionKey);;
+			
+			if (StringUtils.isEmpty(name)) {
+				name = new String(in);
+			}
+															
 			if (StringUtils.isNotEmpty(getDirectory())) {
-				file = new File(getDirectory(), new String(in));
+				file = new File(getDirectory(), name);
 			} else {
-				file = new File(new String(in));
+				file = new File(name);
 			}
 			FileInputStream fis = new FileInputStream(file);
 			
@@ -379,6 +391,7 @@ public class FilePipe extends FixedForwardPipe {
 	 */
 	private class FileDeleter implements TransformerAction {
 		public void configure() throws ConfigurationException {
+						
 			if (StringUtils.isNotEmpty(getDirectory())) {
 				File file = new File(getDirectory());
 				if (! (file.exists() && file.isDirectory())) {
