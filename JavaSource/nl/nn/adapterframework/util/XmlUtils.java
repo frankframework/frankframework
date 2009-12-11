@@ -1,6 +1,9 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.65  2009-11-02 11:10:44  m168309
+ * Revision 1.66  2009-12-11 13:09:14  m168309
+ * replaced <xerces.jar> by <xercesImpl-2.9.1.jar>
+ *
+ * Revision 1.65  2009/11/02 11:10:44  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * bugfix replaceNonValidXmlCharacters
  *
  * Revision 1.64  2009/10/09 13:22:27  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -272,7 +275,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * @version Id
  */
 public class XmlUtils {
-	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.65 $ $Date: 2009-11-02 11:10:44 $";
+	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.66 $ $Date: 2009-12-11 13:09:14 $";
 	static Logger log = LogUtil.getLogger(XmlUtils.class);
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
@@ -1586,18 +1589,13 @@ public class XmlUtils {
 		sb.append("Apache-XML tool version info:"+SystemUtils.LINE_SEPARATOR);
 
 		try {
-			sb.append("Xerces-Version(old style)="+org.apache.xerces.framework.Version.fVersion+SystemUtils.LINE_SEPARATOR);
+			sb.append("Xerces-Version="+org.apache.xerces.impl.Version.getVersion()+SystemUtils.LINE_SEPARATOR);
 		}  catch (Throwable t) {
-			sb.append("Xerces-Version(old style) not found ("+t.getClass().getName()+": "+t.getMessage()+")"+SystemUtils.LINE_SEPARATOR);
-		}
-		try {
-			sb.append("Xerces-Version(new style)="+org.apache.xerces.impl.Version.getVersion()+SystemUtils.LINE_SEPARATOR);
-		}  catch (Throwable t) {
-			sb.append("Xerces-Version(new style) not found ("+t.getClass().getName()+": "+t.getMessage()+")"+SystemUtils.LINE_SEPARATOR);
+			sb.append("Xerces-Version not found ("+t.getClass().getName()+": "+t.getMessage()+")"+SystemUtils.LINE_SEPARATOR);
 		}
 			
 		try {
-			sb.append("Xalan-version="+org.apache.xalan.Version.getVersion()+SystemUtils.LINE_SEPARATOR);
+			sb.append("Xalan-Version="+org.apache.xalan.Version.getVersion()+SystemUtils.LINE_SEPARATOR);
 		}  catch (Throwable t) {
 			sb.append("Xalan-Version not found ("+t.getClass().getName()+": "+t.getMessage()+")"+SystemUtils.LINE_SEPARATOR);
 		}

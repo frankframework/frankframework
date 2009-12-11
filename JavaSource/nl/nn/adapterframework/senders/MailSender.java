@@ -1,6 +1,9 @@
 /*
  * $Log: MailSender.java,v $
- * Revision 1.4  2009-12-04 18:23:34  m00f069
+ * Revision 1.5  2009-12-11 13:09:14  m168309
+ * replaced <xerces.jar> by <xercesImpl-2.9.1.jar>
+ *
+ * Revision 1.4  2009/12/04 18:23:34  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Added ibisDebugger.senderAbort and ibisDebugger.pipeRollback
  *
  * Revision 1.3  2009/11/18 17:28:03  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -51,7 +54,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.soap.util.mime.ByteArrayDataSource;
-import org.apache.xerces.utils.Base64;
+import org.apache.xerces.impl.dv.util.Base64;
 import org.w3c.dom.Element;
 
 /**
@@ -429,16 +432,14 @@ public class MailSender extends SenderWithParametersBase {
 	}
 
 	private DataHandler decodeBase64 (String str) {
-			byte[] bytesEncoded = str.getBytes();
-			byte[] bytesDecoded = Base64.decode(bytesEncoded);
+			byte[] bytesDecoded = Base64.decode(str);
 			String encodingType = "application/octet-stream";
 			DataSource ads = new ByteArrayDataSource(bytesDecoded, encodingType);
 			return new DataHandler(ads);
 	}
 
 	private String decodeBase64ToString (String str) {
-			byte[] bytesEncoded = str.getBytes();
-			byte[] bytesDecoded = Base64.decode(bytesEncoded);
+			byte[] bytesDecoded = Base64.decode(str);
 			return new String(bytesDecoded);
 	}
 
