@@ -1,6 +1,9 @@
 /*
  * $Log: ConfigurationServlet.java,v $
- * Revision 1.16  2009-10-30 15:31:07  m168309
+ * Revision 1.17  2009-12-22 16:42:21  L190409
+ * set Struts upload-directory in init
+ *
+ * Revision 1.16  2009/10/30 15:31:07  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * Run IBIS on Tomcat
  *
  * Revision 1.15  2008/02/13 13:37:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -54,6 +57,7 @@
  */
 package nl.nn.adapterframework.webcontrol;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Date;
@@ -72,6 +76,7 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.RunStateEnum;
+import nl.nn.adapterframework.util.StringResolver;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -92,7 +97,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class ConfigurationServlet extends HttpServlet {
-	public static final String version = "$RCSfile: ConfigurationServlet.java,v $ $Revision: 1.16 $ $Date: 2009-10-30 15:31:07 $";
+	public static final String version = "$RCSfile: ConfigurationServlet.java,v $ $Revision: 1.17 $ $Date: 2009-12-22 16:42:21 $";
     protected Logger log = LogUtil.getLogger(this);
 
 	public static final String KEY_MANAGER = "KEY_MANAGER";
@@ -159,10 +164,29 @@ public class ConfigurationServlet extends HttpServlet {
 
 	public void init() throws ServletException {
 		super.init();
+		setUploadPathInServletContext();
 		loadConfig();
 		log.debug("Servlet init finished");
 	}
-   
+ 
+    private void setUploadPathInServletContext() {
+		try {
+			// set the directory for struts upload, that is used for instance in 'test a pipeline'
+	        ServletContext context = getServletContext();
+	        String path=AppConstants.getInstance().getResolvedProperty("upload.dir");
+	        
+	        // if the path is not found
+	        if (StringUtils.isEmpty(path)) {
+	        	path="/tmp";
+	        }
+	        log.debug("setting path for Struts file-upload to ["+path+"]");
+	        File tempDirFile = new File(path);
+	        context.setAttribute("javax.servlet.context.tempdir",tempDirFile);
+		} catch (Exception e) {
+			log.error("Could not set servlet context attribute 'javax.servlet.context.tempdir' to value of ${upload.dir}",e);
+		}
+    }
+
     /**
      * Initializes the configuration. Request parameters are used.
      * Request parameters:
