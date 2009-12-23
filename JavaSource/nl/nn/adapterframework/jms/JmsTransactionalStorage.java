@@ -1,6 +1,9 @@
 /*
  * $Log: JmsTransactionalStorage.java,v $
- * Revision 1.11  2008-01-11 14:51:55  europe\L190409
+ * Revision 1.12  2009-12-23 17:09:57  L190409
+ * modified MessageBrowsing interface to reenable and improve export of messages
+ *
+ * Revision 1.11  2008/01/11 14:51:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added getTypeString() and getHostString()
  *
  * Revision 1.10  2007/10/09 15:35:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -70,7 +73,7 @@ import nl.nn.adapterframework.core.SenderException;
  * @since   4.1
  */
 public class JmsTransactionalStorage extends JmsMessageBrowser implements ITransactionalStorage {
-	public static final String version = "$RCSfile: JmsTransactionalStorage.java,v $ $Revision: 1.11 $ $Date: 2008-01-11 14:51:55 $";
+	public static final String version = "$RCSfile: JmsTransactionalStorage.java,v $ $Revision: 1.12 $ $Date: 2009-12-23 17:09:57 $";
 
 	public static final String FIELD_TYPE="type";
 	public static final String FIELD_ORIGINAL_ID="originalId";
@@ -133,7 +136,7 @@ public class JmsTransactionalStorage extends JmsMessageBrowser implements ITrans
 	}
 
     public boolean containsMessageId(String originalMessageId) throws ListenerException {
-        Object msg = super.browseMessage(FIELD_ORIGINAL_ID, originalMessageId);
+        Object msg = doBrowse(FIELD_ORIGINAL_ID, originalMessageId);
         return msg != null;
     }
     
@@ -155,50 +158,6 @@ public class JmsTransactionalStorage extends JmsMessageBrowser implements ITrans
 		}
 	}
 
-
-	public String getOriginalId(Object iteratorItem) throws ListenerException {
-		ObjectMessage msg = (ObjectMessage)iteratorItem;
-		try {
-			return msg.getStringProperty(FIELD_ORIGINAL_ID);
-		} catch (JMSException e) {
-			throw new ListenerException(e);
-		}
-	}
-		
-	public Date getInsertDate(Object iteratorItem) throws ListenerException {
-		ObjectMessage msg = (ObjectMessage)iteratorItem;
-		try {
-			return new Date(msg.getLongProperty(FIELD_RECEIVED_DATE));
-		} catch (JMSException e) {
-			throw new ListenerException(e);
-		}
-	}
-	public String getCommentString(Object iteratorItem) throws ListenerException {
-		ObjectMessage msg = (ObjectMessage)iteratorItem;
-		try {
-			return msg.getStringProperty(FIELD_COMMENTS);
-		} catch (JMSException e) {
-			throw new ListenerException(e);
-		}
-	}
-
-	public String getTypeString(Object iteratorItem) throws ListenerException {
-		ObjectMessage msg = (ObjectMessage)iteratorItem;
-		try {
-			return msg.getStringProperty(FIELD_TYPE);
-		} catch (JMSException e) {
-			throw new ListenerException(e);
-		}
-	}
-
-	public String getHostString(Object iteratorItem) throws ListenerException {
-		ObjectMessage msg = (ObjectMessage)iteratorItem;
-		try {
-			return msg.getStringProperty(FIELD_HOST);
-		} catch (JMSException e) {
-			throw new ListenerException(e);
-		}
-	}
 
 
 

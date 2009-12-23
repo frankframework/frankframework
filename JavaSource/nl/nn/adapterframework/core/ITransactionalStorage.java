@@ -1,6 +1,9 @@
 /*
  * $Log: ITransactionalStorage.java,v $
- * Revision 1.8  2008-07-24 12:04:04  europe\L190409
+ * Revision 1.9  2009-12-23 17:05:16  L190409
+ * modified MessageBrowsing interface to reenable and improve export of messages
+ *
+ * Revision 1.8  2008/07/24 12:04:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added messageCount
  *
  * Revision 1.7  2008/01/11 14:48:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -42,7 +45,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
  * @version Id
 */
 public interface ITransactionalStorage extends IMessageBrowser, INamedObject {
-	public static final String version = "$RCSfile: ITransactionalStorage.java,v $ $Revision: 1.8 $ $Date: 2008-07-24 12:04:04 $";
+	public static final String version = "$RCSfile: ITransactionalStorage.java,v $ $Revision: 1.9 $ $Date: 2009-12-23 17:05:16 $";
 
 	/**
 	 * Prepares the object for operation. After this
@@ -53,9 +56,6 @@ public interface ITransactionalStorage extends IMessageBrowser, INamedObject {
 	
 	public void configure() throws ConfigurationException;
 
-	public String getTypeString(Object iteratorItem) throws ListenerException;
-	public String getHostString(Object iteratorItem) throws ListenerException;
-	
 	/**
 	 * Store the message, returns new messageId.
 	 * 

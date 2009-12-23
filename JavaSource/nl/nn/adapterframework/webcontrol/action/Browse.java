@@ -1,6 +1,9 @@
 /*
  * $Log: Browse.java,v $
- * Revision 1.20  2009-10-26 13:53:09  m168309
+ * Revision 1.21  2009-12-23 17:10:23  L190409
+ * modified MessageBrowsing interface to reenable and improve export of messages
+ *
+ * Revision 1.20  2009/10/26 13:53:09  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added MessageLog facility to receivers
  *
  * Revision 1.19  2009/08/04 11:46:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -78,6 +81,7 @@ import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
+import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.ReceiverBase;
@@ -102,7 +106,7 @@ import org.apache.struts.action.DynaActionForm;
  * @since   4.4
  */
 public class Browse extends ActionBase {
-	public static final String version="$RCSfile: Browse.java,v $ $Revision: 1.20 $ $Date: 2009-10-26 13:53:09 $";
+	public static final String version="$RCSfile: Browse.java,v $ $Revision: 1.21 $ $Date: 2009-12-23 17:10:23 $";
 
 	private int maxMessages = AppConstants.getInstance().getInt("browse.messages.max",0); 
 	private int skipMessages=0;
@@ -209,6 +213,10 @@ public class Browse extends ActionBase {
 			}
 		} else {
 			ReceiverBase receiver = (ReceiverBase) adapter.getReceiverByName(receiverName);
+			if (receiver==null) {
+				error("cannot find Receiver ["+receiverName+"]", null);
+				return null;
+			}
 			mb = receiver.getErrorStorage();
 			if (performAction(adapter, receiver, action, mb, messageId, selected, request, response))
 				return null;
@@ -249,83 +257,79 @@ public class Browse extends ActionBase {
  					}
 					int messageCount;
 					for (messageCount=0; mbi.hasNext(); ) {
-						Object iterItem = mbi.next();
-						String cType=null;
-						String cHost=null;
-						if (mb instanceof ITransactionalStorage) {
-							ITransactionalStorage ts =(ITransactionalStorage)mb;
-							cType=ts.getTypeString(iterItem);
-							cHost=ts.getHostString(iterItem);
-						}
-						String cId=mb.getId(iterItem);
-						String cMessageId=mb.getOriginalId(iterItem);
-						String cCorrelationId=mb.getCorrelationId(iterItem);
-						String comment=mb.getCommentString(iterItem);
-						Date insertDate=mb.getInsertDate(iterItem);
-						if (StringUtils.isNotEmpty(typeMask) && !cType.startsWith(typeMask)) {
-							continue;
-						}
-						if (StringUtils.isNotEmpty(hostMask) && !cHost.startsWith(hostMask)) {
-							continue;
-						}
-						if (StringUtils.isNotEmpty(currentIdMask) && !cId.startsWith(currentIdMask)) {
-							continue;
-						}
-						if (StringUtils.isNotEmpty(messageIdMask) && !cMessageId.startsWith(messageIdMask)) {
-							continue;
-						}
-						if (StringUtils.isNotEmpty(correlationIdMask) && !cCorrelationId.startsWith(correlationIdMask)) {
-							continue;
-						}
-						if (startDate!=null && insertDate!=null) {
-							if (insertDate.before(startDate)) {
+						IMessageBrowsingIteratorItem iterItem = mbi.next();
+						try {
+							String cType=iterItem.getType();
+							String cHost=iterItem.getHost();
+							String cId=iterItem.getId();
+							String cMessageId=iterItem.getOriginalId();
+							String cCorrelationId=iterItem.getCorrelationId();
+							String comment=iterItem.getCommentString();
+							Date insertDate=iterItem.getInsertDate();
+							if (StringUtils.isNotEmpty(typeMask) && !cType.startsWith(typeMask)) {
 								continue;
 							}
-							if (startDateClip) {
-								String formattedInsertDate=DateUtils.formatOptimal(insertDate);
-								if (!formattedInsertDate.startsWith(formattedStartDate)) {
+							if (StringUtils.isNotEmpty(hostMask) && !cHost.startsWith(hostMask)) {
+								continue;
+							}
+							if (StringUtils.isNotEmpty(currentIdMask) && !cId.startsWith(currentIdMask)) {
+								continue;
+							}
+							if (StringUtils.isNotEmpty(messageIdMask) && !cMessageId.startsWith(messageIdMask)) {
+								continue;
+							}
+							if (StringUtils.isNotEmpty(correlationIdMask) && !cCorrelationId.startsWith(correlationIdMask)) {
+								continue;
+							}
+							if (startDate!=null && insertDate!=null) {
+								if (insertDate.before(startDate)) {
+									continue;
+								}
+								if (startDateClip) {
+									String formattedInsertDate=DateUtils.formatOptimal(insertDate);
+									if (!formattedInsertDate.startsWith(formattedStartDate)) {
+										continue;
+									}
+								}
+							}
+							if (StringUtils.isNotEmpty(commentMask) && (StringUtils.isEmpty(comment) || comment.indexOf(commentMask)<0)) {
+								continue;
+							}
+							if (StringUtils.isNotEmpty(messageTextMask)) {
+								Object rawmsg = mb.browseMessage(cId);
+								String msg=null;
+								if (listener!=null) {
+									msg = listener.getStringFromRawMessage(rawmsg,new HashMap());
+								} else {
+									msg=(String)rawmsg;
+								}
+								if (msg==null || msg.indexOf(messageTextMask)<0) {
 									continue;
 								}
 							}
-						}
-						if (StringUtils.isNotEmpty(commentMask) && (StringUtils.isEmpty(comment) || comment.indexOf(commentMask)<0)) {
-							continue;
-						}
-						if (StringUtils.isNotEmpty(messageTextMask)) {
-							Object rawmsg = mb.browseMessage(cId);
-							String msg=null;
-							if (listener!=null) {
-								msg = listener.getStringFromRawMessage(rawmsg,new HashMap());
-							} else {
-								msg=(String)rawmsg;
+							messageCount++;
+							if (messageCount>skipMessages) { 
+								XmlBuilder message=new XmlBuilder("message");
+								message.addAttribute("id",cId);
+								message.addAttribute("pos",Integer.toString(messageCount));
+								message.addAttribute("originalId",cMessageId);
+								message.addAttribute("correlationId",cCorrelationId);
+								message.addAttribute("type",cType);
+								message.addAttribute("host",cHost);
+								message.addAttribute("insertDate",DateUtils.format(insertDate, DateUtils.FORMAT_FULL_GENERIC));
+								if (iterItem.getExpiryDate()!=null) {
+									message.addAttribute("expiryDate",DateUtils.format(iterItem.getExpiryDate(), DateUtils.FORMAT_FULL_GENERIC));
+								}
+								message.addAttribute("comment",XmlUtils.encodeChars(iterItem.getCommentString()));
+								messages.addSubElement(message);
 							}
-							if (msg==null || msg.indexOf(messageTextMask)<0) {
-								continue;
-							}
-						}
-						messageCount++;
-						if (messageCount>skipMessages) { 
-							XmlBuilder message=new XmlBuilder("message");
-							message.addAttribute("id",mb.getId(iterItem));
-							message.addAttribute("pos",Integer.toString(messageCount));
-							message.addAttribute("originalId",mb.getOriginalId(iterItem));
-							message.addAttribute("correlationId",mb.getCorrelationId(iterItem));
-							if (mb instanceof ITransactionalStorage) {
-								ITransactionalStorage ts = (ITransactionalStorage)mb;
-								message.addAttribute("type",ts.getTypeString(iterItem));
-								message.addAttribute("host",ts.getHostString(iterItem));
-							}
-							message.addAttribute("insertDate",DateUtils.format(mb.getInsertDate(iterItem), DateUtils.FORMAT_FULL_GENERIC));
-							if (mb.getExpiryDate(iterItem)!=null) {
-								message.addAttribute("expiryDate",DateUtils.format(mb.getExpiryDate(iterItem), DateUtils.FORMAT_FULL_GENERIC));
-							}
-							message.addAttribute("comment",XmlUtils.encodeChars(mb.getCommentString(iterItem)));
-							messages.addSubElement(message);
-						}
 
-						if (getMaxMessages()>0 && messageCount>=(getMaxMessages()+skipMessages)) {
-							log.warn("stopped iterating messages after ["+messageCount+"]: limit reached");
-							break;
+							if (getMaxMessages()>0 && messageCount>=(getMaxMessages()+skipMessages)) {
+								log.warn("stopped iterating messages after ["+messageCount+"]: limit reached");
+								break;
+							}
+						} finally {
+							iterItem.release();
 						}
 					}
 					messages.addAttribute("messageCount",Integer.toString(messageCount-skipMessages));

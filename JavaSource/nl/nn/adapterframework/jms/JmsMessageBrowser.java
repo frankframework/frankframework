@@ -1,6 +1,9 @@
 /*
  * $Log: JmsMessageBrowser.java,v $
- * Revision 1.8  2009-03-13 14:31:57  m168309
+ * Revision 1.9  2009-12-23 17:09:57  L190409
+ * modified MessageBrowsing interface to reenable and improve export of messages
+ *
+ * Revision 1.8  2009/03/13 14:31:57  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added method getExpiryDate
  *
  * Revision 1.7  2008/07/24 12:18:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -32,7 +35,6 @@
  */
 package nl.nn.adapterframework.jms;
 
-import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -46,11 +48,12 @@ import javax.jms.QueueBrowser;
 import javax.jms.QueueSession;
 import javax.jms.Session;
 
-import org.apache.commons.lang.StringUtils;
-
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
+import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
 import nl.nn.adapterframework.core.ListenerException;
+
+import org.apache.commons.lang.StringUtils;
 
 /**
  * Get the messages on a queue without deleting them
@@ -59,7 +62,7 @@ import nl.nn.adapterframework.core.ListenerException;
  * @see nl.nn.adapterframework.webcontrol.action.BrowseQueue
  */
 public class JmsMessageBrowser extends JMSFacade implements IMessageBrowser {
-	public static final String version = "$RCSfile: JmsMessageBrowser.java,v $ $Revision: 1.8 $ $Date: 2009-03-13 14:31:57 $";
+	public static final String version = "$RCSfile: JmsMessageBrowser.java,v $ $Revision: 1.9 $ $Date: 2009-12-23 17:09:57 $";
 
 	private long timeOut = 3000;
 	private String selector=null;
@@ -93,7 +96,7 @@ public class JmsMessageBrowser extends JMSFacade implements IMessageBrowser {
 				queueBrowser=session.createBrowser((Queue)getDestination(), getSelector());
 			}
 			int count=0;
-			for (Enumeration enum=queueBrowser.getEnumeration();enum.hasMoreElements();enum.nextElement()) {
+			for (Enumeration enm=queueBrowser.getEnumeration();enm.hasMoreElements();enm.nextElement()) {
 				count++;
 			}
 			return count;
@@ -111,52 +114,6 @@ public class JmsMessageBrowser extends JMSFacade implements IMessageBrowser {
 		}
 	}
 
-
-	
-	public String getId(Object iteratorItem) throws ListenerException {
-		Message msg = (Message)iteratorItem;
-		try {
-			return msg.getJMSMessageID();
-		} catch (JMSException e) {
-			throw new ListenerException(e);
-		}
-	}
-
-	public String getOriginalId(Object iteratorItem) throws ListenerException {
-		return getId(iteratorItem);
-	}
-
-	public String getCorrelationId(Object iteratorItem) throws ListenerException {
-		Message msg = (Message)iteratorItem;
-		try {
-			return msg.getJMSCorrelationID();
-		} catch (JMSException e) {
-			throw new ListenerException(e);
-		}
-	}
-
-	
-	public Date getInsertDate(Object iteratorItem) throws ListenerException {
-		Message msg = (Message)iteratorItem;
-		try {
-			return new Date(msg.getJMSTimestamp());
-		} catch (JMSException e) {
-			throw new ListenerException(e);
-		}
-	}
-
-	public Date getExpiryDate(Object iteratorItem) throws ListenerException {
-		return null;
-	}
-	
-	public String getCommentString(Object iteratorItem) throws ListenerException {
-		Message msg = (Message)iteratorItem;
-		try {
-			return "correlationId="+msg.getJMSCorrelationID();
-		} catch (JMSException e) {
-			throw new ListenerException(e);
-		}
-	}
 	
 	public Object getMessage(String messageId) throws ListenerException {
 		Session session=null;
@@ -181,21 +138,25 @@ public class JmsMessageBrowser extends JMSFacade implements IMessageBrowser {
 		}
 	}
 
+	public IMessageBrowsingIteratorItem getContext(String messageId) throws ListenerException {
+		return new JmsMessageBrowserIteratorItem(doBrowse("JMSMessageID", messageId));
+	}
+
 	public Object browseMessage(String messageId) throws ListenerException {
-		return browseMessage("JMSMessageID", messageId);
+		return doBrowse("JMSMessageID", messageId);
 	}
 	
     
-    protected Object browseMessage(Map selectors) throws ListenerException {
+    protected Message doBrowse(Map selectors) throws ListenerException {
 		QueueSession session=null;
-		Object msg = null;
+		Message msg = null;
 		QueueBrowser queueBrowser=null;
 		try {
 			session = (QueueSession)createSession();
 			queueBrowser = session.createBrowser((Queue)getDestination(),getCombinedSelector(selectors));
 			Enumeration msgenum = queueBrowser.getEnumeration();
 			if (msgenum.hasMoreElements()) {
-				msg=msgenum.nextElement();
+				msg=(Message)msgenum.nextElement();
 			}
 			return msg;
 		} catch (Exception e) {
@@ -212,10 +173,10 @@ public class JmsMessageBrowser extends JMSFacade implements IMessageBrowser {
 		}
     }
     
-    protected Object browseMessage(String selectorKey, String selectorValue) throws ListenerException {
+    protected Message doBrowse(String selectorKey, String selectorValue) throws ListenerException {
         Map selectorMap = new HashMap();
         selectorMap.put(selectorKey, selectorValue);
-        return browseMessage(selectorMap);
+        return doBrowse(selectorMap);
     }
     
 	public void deleteMessage(String messageId) throws ListenerException {

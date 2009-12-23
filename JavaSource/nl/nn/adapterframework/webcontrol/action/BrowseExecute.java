@@ -1,6 +1,9 @@
 /*
  * $Log: BrowseExecute.java,v $
- * Revision 1.15  2009-08-04 11:46:58  L190409
+ * Revision 1.16  2009-12-23 17:10:23  L190409
+ * modified MessageBrowsing interface to reenable and improve export of messages
+ *
+ * Revision 1.15  2009/08/04 11:46:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * work around IE 6 issue, that prevents exporting messages under HTTPS
  *
  * Revision 1.14  2009/01/02 10:27:55  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -69,6 +72,7 @@ import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IBulkDataListener;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IMessageBrowser;
+import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.util.AppConstants;
@@ -92,7 +96,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  * @since   4.3
  */
 public class BrowseExecute extends Browse {
-	public static final String version="$RCSfile: BrowseExecute.java,v $ $Revision: 1.15 $ $Date: 2009-08-04 11:46:58 $";
+	public static final String version="$RCSfile: BrowseExecute.java,v $ $Revision: 1.16 $ $Date: 2009-12-23 17:10:23 $";
     
     protected static final TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
     
@@ -189,64 +193,88 @@ public class BrowseExecute extends Browse {
 		}
 		try {
 			Object rawmsg = mb.browseMessage(id);
-			String msg=null;
-			String msgId=null;
-			HashMap context = new HashMap();
-			if (listener!=null) {
-				msg = listener.getStringFromRawMessage(rawmsg,context);
-				msgId= listener.getIdFromRawMessage(rawmsg,context);
-			} else {
-				msg=(String)rawmsg;
-			}
-			if (StringUtils.isEmpty(msg)) {
-				msg="<no message found>";
-			}
-			String filename="msg_"+id+"_"+msgId.replace(':','-');
-			ZipEntry zipEntry=new ZipEntry(filename+".txt");
+			IMessageBrowsingIteratorItem msgcontext=mb.getContext(id);
+			try {
+				String msg=null;
+				String msgId=msgcontext.getId();
+				String msgMid=msgcontext.getOriginalId();
+				String msgCid=msgcontext.getCorrelationId();
+				HashMap context = new HashMap();
+				if (listener!=null) {
+					msg = listener.getStringFromRawMessage(rawmsg,context);
+				} else {
+					msg=(String)rawmsg;
+				}
+				if (StringUtils.isEmpty(msg)) {
+					msg="<no message found>";
+				}
+				if (msgId==null) {
+					msgId="";
+				}
+				if (msgMid==null) {
+					msgMid="";
+				}
+				if (msgCid==null) {
+					msgCid="";
+				}
+				String filename="msg_"+id+"_id["+msgId.replace(':','-')+"]"+"_mid["+msgMid.replace(':','-')+"]"+"_cid["+msgCid.replace(':','-')+"]";
+				ZipEntry zipEntry=new ZipEntry(filename+".txt");
 
-			String sentDateString=(String)context.get(PipeLineSession.tsSentKey);
-			if (StringUtils.isNotEmpty(sentDateString)) {
-				try {
-					Date sentDate = DateUtils.parseToDate(sentDateString, DateUtils.FORMAT_FULL_GENERIC);
-					zipEntry.setTime(sentDate.getTime());
-				} catch (Throwable e) {
-					error(", ", "errors.generic", "Could not find date for message ["+id+"]", e);
-				} 
-			}
+				String sentDateString=(String)context.get(PipeLineSession.tsSentKey);
+				if (StringUtils.isNotEmpty(sentDateString)) {
+					try {
+						Date sentDate = DateUtils.parseToDate(sentDateString, DateUtils.FORMAT_FULL_GENERIC);
+						zipEntry.setTime(sentDate.getTime());
+					} catch (Throwable e) {
+						error(", ", "errors.generic", "Could not set date for message ["+id+"]", e);
+					} 
+				} else {
+					Date insertDate=msgcontext.getInsertDate();
+					if (insertDate!=null) {
+						zipEntry.setTime(insertDate.getTime());
+					}
+				}
+//				String comment=msgcontext.getCommentString();
+//				if (StringUtils.isNotEmpty(comment)) {
+//					zipEntry.setComment(comment);
+//				}
 
-			zipOutputStream.putNextEntry(zipEntry);
-			String encoding=Misc.DEFAULT_INPUT_STREAM_ENCODING;
-			if (msg.startsWith("<?xml")) {
-				int lastpos=msg.indexOf("?>");
-				if (lastpos>0) {
-					String prefix=msg.substring(6,lastpos);
-					int encodingStartPos=prefix.indexOf("encoding=\"");
-					if (encodingStartPos>0) {
-						int encodingEndPos=prefix.indexOf('"',encodingStartPos+10);
-						if (encodingEndPos>0) {
-							encoding=prefix.substring(encodingStartPos+10,encodingEndPos);
-							log.debug("parsed encoding ["+encoding+"] from prefix ["+prefix+"]");
+				zipOutputStream.putNextEntry(zipEntry);
+				String encoding=Misc.DEFAULT_INPUT_STREAM_ENCODING;
+				if (msg.startsWith("<?xml")) {
+					int lastpos=msg.indexOf("?>");
+					if (lastpos>0) {
+						String prefix=msg.substring(6,lastpos);
+						int encodingStartPos=prefix.indexOf("encoding=\"");
+						if (encodingStartPos>0) {
+							int encodingEndPos=prefix.indexOf('"',encodingStartPos+10);
+							if (encodingEndPos>0) {
+								encoding=prefix.substring(encodingStartPos+10,encodingEndPos);
+								log.debug("parsed encoding ["+encoding+"] from prefix ["+prefix+"]");
+							}
 						}
 					}
 				}
-			}
-			zipOutputStream.write(msg.getBytes(encoding));
-						
-			if (listener!=null && listener instanceof IBulkDataListener) {
-				IBulkDataListener bdl=(IBulkDataListener)listener;
-				String bulkfilename=bdl.retrieveBulkData(rawmsg,msg,context);
+				zipOutputStream.write(msg.getBytes(encoding));
+							
+				if (listener!=null && listener instanceof IBulkDataListener) {
+					IBulkDataListener bdl=(IBulkDataListener)listener;
+					String bulkfilename=bdl.retrieveBulkData(rawmsg,msg,context);
 
+					zipOutputStream.closeEntry();
+		
+					File bulkfile=new File(bulkfilename);
+
+					zipEntry=new ZipEntry(filename+"_"+bulkfile.getName());
+					zipEntry.setTime(bulkfile.lastModified());
+					zipOutputStream.putNextEntry(zipEntry);
+					StreamUtil.copyStream(new FileInputStream(bulkfile),zipOutputStream,32000);
+					bulkfile.delete();
+				}
 				zipOutputStream.closeEntry();
-	
-				File bulkfile=new File(bulkfilename);
-
-				zipEntry=new ZipEntry(filename+"_"+bulkfile.getName());
-				zipEntry.setTime(bulkfile.lastModified());
-				zipOutputStream.putNextEntry(zipEntry);
-				StreamUtil.copyStream(new FileInputStream(bulkfile),zipOutputStream,32000);
-				bulkfile.delete();
+			} finally {
+				msgcontext.release();
 			}
-			zipOutputStream.closeEntry();
 		} catch (Throwable e) {
 			error(", ", "errors.generic", "Could not export message with id ["+id+"]", e);
 		}

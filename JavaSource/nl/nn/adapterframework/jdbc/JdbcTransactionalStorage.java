@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcTransactionalStorage.java,v $
- * Revision 1.36  2009-10-26 14:06:24  m168309
+ * Revision 1.37  2009-12-23 17:09:57  L190409
+ * modified MessageBrowsing interface to reenable and improve export of messages
+ *
+ * Revision 1.36  2009/10/26 14:06:24  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * - added MessageLog facility to receivers
  * - added facility to disable records for deletion by the cleanup process
  *
@@ -133,6 +136,7 @@ import java.util.zip.ZipException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
+import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.SenderException;
@@ -244,7 +248,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  * @since 	4.1
  */
 public class JdbcTransactionalStorage extends JdbcFacade implements ITransactionalStorage {
-	public static final String version = "$RCSfile: JdbcTransactionalStorage.java,v $ $Revision: 1.36 $ $Date: 2009-10-26 14:06:24 $";
+	public static final String version = "$RCSfile: JdbcTransactionalStorage.java,v $ $Revision: 1.37 $ $Date: 2009-12-23 17:09:57 $";
 
 	public final static String TYPE_ERRORSTORAGE="E";
 	public final static String TYPE_MESSAGELOG_PIPE="L";
@@ -294,6 +298,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	protected String deleteQuery;
 	protected String selectKeyQuery;
 	protected String selectListQuery;
+	protected String selectContextQuery;
 	protected String selectDataQuery;
     protected String checkMessageIdQuery;
 	protected String getMessageCountQuery;
@@ -369,10 +374,12 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 						getWhereClause(getIdField()+"=?"+
 									" AND " +getCorrelationIdField()+"=?"+
 									" AND "+getDateField()+"=?");
-		selectListQuery = "SELECT "+provideIndexHint(databaseType)+getKeyField()+","+getIdField()+","+getCorrelationIdField()+","+getDateField()+","+getCommentField()+","+getExpiryDateField()+
+		String listClause=getKeyField()+","+getIdField()+","+getCorrelationIdField()+","+getDateField()+","+getExpiryDateField()+
 							(StringUtils.isNotEmpty(getTypeField())?","+getTypeField():"")+
 							(StringUtils.isNotEmpty(getHostField())?","+getHostField():"")+
-						  " FROM "+getPrefix()+getTableName()+ getWhereClause(null)+
+							","+getCommentField()+ " FROM "+getPrefix()+getTableName();
+		selectContextQuery = "SELECT "+listClause+ getWhereClause(getKeyField()+"=?");
+		selectListQuery = "SELECT "+provideIndexHint(databaseType)+ listClause+ getWhereClause(null)+
 						  " ORDER BY "+getDateField();
 		if (StringUtils.isNotEmpty(getOrder())) {
 			selectListQuery = selectListQuery + " " + getOrder();
@@ -732,7 +739,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 			return current;
 		}
 
-		public Object next() throws ListenerException {
+		public IMessageBrowsingIteratorItem next() throws ListenerException {
 			if (!current) {
 				advance();
 			}
@@ -740,7 +747,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 				throw new ListenerException("read beyond end of resultset");
 			}
 			current=false;
-			return rs;
+			return new JdbcTransactionalStorageIteratorItem(rs,false);
 		}
 
 		public void close() throws ListenerException {
@@ -907,6 +914,29 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 			}
 		}
     }
+ 
+	public IMessageBrowsingIteratorItem getContext(String messageId) throws ListenerException {
+		Connection conn;
+		try {
+			conn = getConnection();
+		} catch (JdbcException e) {
+			throw new ListenerException(e);
+		}
+		try {
+			PreparedStatement stmt = conn.prepareStatement(selectContextQuery);			
+			stmt.clearParameters();
+			stmt.setString(1,messageId);
+			ResultSet rs =  stmt.executeQuery();
+
+			if (!rs.next()) {
+				throw new ListenerException("could not retrieve context for messageid ["+ messageId+"]");
+			}
+			return new JdbcTransactionalStorageIteratorItem(rs,true);
+			
+		} catch (Exception e) {
+			throw new ListenerException("cannot read context",e);
+		}
+	}
     
     
 	public Object browseMessage(String messageId) throws ListenerException {
@@ -947,84 +977,92 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	}
 
 
+	private class JdbcTransactionalStorageIteratorItem implements IMessageBrowsingIteratorItem {
 
-	public String getId(Object iteratorItem)  throws ListenerException{
-		ResultSet row = (ResultSet) iteratorItem;
-		try {
-			return row.getString(getKeyField());
-		} catch (SQLException e) {
-			throw new ListenerException(e);
+		private ResultSet rs;
+		private boolean closeOnRelease;
+		
+		public JdbcTransactionalStorageIteratorItem(ResultSet rs, boolean closeOnRelease) {
+			super();
+			this.rs=rs;
+			this.closeOnRelease=closeOnRelease;
 		}
+		
+		public String getId() throws ListenerException {
+			try {
+				return rs.getString(getKeyField());
+			} catch (SQLException e) {
+				throw new ListenerException(e);
+			}
+		}
+		public String getOriginalId() throws ListenerException {
+			try {
+				return rs.getString(getIdField());
+			} catch (SQLException e) {
+				throw new ListenerException(e);
+			}
+		}
+		public String getCorrelationId() throws ListenerException {
+			try {
+				return rs.getString(getCorrelationIdField());
+			} catch (SQLException e) {
+				throw new ListenerException(e);
+			}
+		}
+		public Date getInsertDate() throws ListenerException {
+			try {
+				return rs.getTimestamp(getDateField());
+			} catch (SQLException e) {
+				throw new ListenerException(e);
+			}
+		}
+		public Date getExpiryDate() throws ListenerException {
+			try {
+				return rs.getTimestamp(getExpiryDateField());
+			} catch (SQLException e) {
+				throw new ListenerException(e);
+			}
+		}
+		public String getType() throws ListenerException {
+			if (StringUtils.isEmpty(getTypeField())) {
+				return null;
+			}
+			try {
+				return rs.getString(getTypeField());
+			} catch (SQLException e) {
+				throw new ListenerException(e);
+			}
+		}
+		public String getHost() throws ListenerException {
+			if (StringUtils.isEmpty(getHostField())) {
+				return null;
+			}
+			try {
+				return rs.getString(getHostField());
+			} catch (SQLException e) {
+				throw new ListenerException(e);
+			}
+		}
+
+		public String getCommentString() throws ListenerException {
+			try {
+				return rs.getString(getCommentField());
+			} catch (SQLException e) {
+				throw new ListenerException(e);
+			}
+		}
+
+		public void release() {
+			if (closeOnRelease) {
+				JdbcUtil.fullClose(rs);
+			}
+		}
+		
+		
 	}
 
-	public String getOriginalId(Object iteratorItem) throws ListenerException {
-		ResultSet row = (ResultSet) iteratorItem;
-		try {
-			return row.getString(getIdField());
-		} catch (SQLException e) {
-			throw new ListenerException(e);
-		}
-	}
 
-	public String getCorrelationId(Object iteratorItem) throws ListenerException {
-		ResultSet row = (ResultSet) iteratorItem;
-		try {
-			return row.getString(getCorrelationIdField());
-		} catch (SQLException e) {
-			throw new ListenerException(e);
-		}
-	}
 
-	public Date getInsertDate(Object iteratorItem)  throws ListenerException{
-		ResultSet row = (ResultSet) iteratorItem;
-		try {
-			return row.getTimestamp(getDateField());
-		} catch (SQLException e) {
-			throw new ListenerException(e);
-		}
-	}
-
-	public Date getExpiryDate(Object iteratorItem)  throws ListenerException{
-		ResultSet row = (ResultSet) iteratorItem;
-		try {
-			return row.getTimestamp(getExpiryDateField());
-		} catch (SQLException e) {
-			throw new ListenerException(e);
-		}
-	}
-
-	public String getCommentString(Object iteratorItem) throws ListenerException {
-		ResultSet row = (ResultSet) iteratorItem;
-		try {
-			return row.getString(getCommentField());
-		} catch (SQLException e) {
-			throw new ListenerException(e);
-		}
-	}
-
-	public String getTypeString(Object iteratorItem) throws ListenerException {
-		if (StringUtils.isEmpty(getTypeField())) {
-			return null;
-		}
-		ResultSet row = (ResultSet) iteratorItem;
-		try {
-			return row.getString(getTypeField());
-		} catch (SQLException e) {
-			throw new ListenerException(e);
-		}
-	}
-
-	public String getHostString(Object iteratorItem) throws ListenerException {
-		if (StringUtils.isEmpty(getHostField())) {
-			return null;
-		}
-		ResultSet row = (ResultSet) iteratorItem;
-		try {
-			return row.getString(getHostField());
-		} catch (SQLException e) {
-			throw new ListenerException(e);
-		}
-	}
 
 	public String getPhysicalDestinationName() {
 		return super.getPhysicalDestinationName()+" in table ["+getTableName()+"]";
@@ -1232,4 +1270,5 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	public int getRetention() {
 		return retention;
 	}
+
 }
