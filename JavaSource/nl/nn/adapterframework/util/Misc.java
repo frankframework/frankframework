@@ -1,6 +1,9 @@
 /*
  * $Log: Misc.java,v $
- * Revision 1.25  2009-11-12 12:36:04  m168309
+ * Revision 1.26  2009-12-24 08:27:55  m168309
+ * added methods getResponseBodySizeWarnByDefault and getResponseBodySizeErrorByDefault
+ *
+ * Revision 1.25  2009/11/12 12:36:04  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * Pipeline: added attributes messageSizeWarn and messageSizeError
  *
  * Revision 1.24  2009/11/10 10:27:40  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -93,15 +96,19 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class Misc {
-	public static final String version="$RCSfile: Misc.java,v $ $Revision: 1.25 $ $Date: 2009-11-12 12:36:04 $";
+	public static final String version="$RCSfile: Misc.java,v $ $Revision: 1.26 $ $Date: 2009-12-24 08:27:55 $";
 	static Logger log = LogUtil.getLogger(Misc.class);
 	public static final int BUFFERSIZE=20000;
 	public static final String DEFAULT_INPUT_STREAM_ENCODING="UTF-8";
 	public static final String MESSAGE_SIZE_WARN_BY_DEFAULT_KEY = "message.size.warn.default";
 	public static final String MESSAGE_SIZE_ERROR_BY_DEFAULT_KEY = "message.size.error.default";
+	public static final String RESPONSE_BODY_SIZE_WARN_BY_DEFAULT_KEY = "response.body.size.warn.default";
+	public static final String RESPONSE_BODY_SIZE_ERROR_BY_DEFAULT_KEY = "response.body.size.error.default";
 
 	private static Long messageSizeWarnByDefault = null;
 	private static Long messageSizeErrorByDefault = null;
+	private static Long responseBodySizeWarnByDefault = null;
+	private static Long responseBodySizeErrorByDefault = null;
 
 	public static String createSimpleUUID_old() {
 		StringBuffer sb = new StringBuffer();
@@ -666,5 +673,23 @@ public class Misc {
 			messageSizeErrorByDefault = new Long(definition);
 		}
 		return messageSizeErrorByDefault.longValue();
+	}
+
+	public static synchronized long getResponseBodySizeWarnByDefault() {
+		if (responseBodySizeWarnByDefault==null) {
+			String definitionString=AppConstants.getInstance().getString(RESPONSE_BODY_SIZE_WARN_BY_DEFAULT_KEY, null);
+			long definition=toFileSize(definitionString, -1);
+			responseBodySizeWarnByDefault = new Long(definition);
+		}
+		return responseBodySizeWarnByDefault.longValue();
+	}
+
+	public static synchronized long getResponseBodySizeErrorByDefault() {
+		if (responseBodySizeErrorByDefault==null) {
+			String definitionString=AppConstants.getInstance().getString(RESPONSE_BODY_SIZE_ERROR_BY_DEFAULT_KEY, null);
+			long definition=toFileSize(definitionString, -1);
+			responseBodySizeErrorByDefault = new Long(definition);
+		}
+		return responseBodySizeErrorByDefault.longValue();
 	}
 }
