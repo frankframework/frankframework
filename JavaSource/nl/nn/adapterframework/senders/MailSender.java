@@ -1,6 +1,9 @@
 /*
  * $Log: MailSender.java,v $
- * Revision 1.5  2009-12-11 13:09:14  m168309
+ * Revision 1.6  2009-12-24 13:14:15  m168309
+ * bugfix: decodeBase64ToString only  when message is not empty
+ *
+ * Revision 1.5  2009/12/11 13:09:14  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * replaced <xerces.jar> by <xercesImpl-2.9.1.jar>
  *
  * Revision 1.4  2009/12/04 18:23:34  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -334,7 +337,7 @@ public class MailSender extends SenderWithParametersBase {
 				sb.append("[base64=" + messageBase64 + "]");
 			}
 
-			if ("true".equalsIgnoreCase(messageBase64)) {
+			if ("true".equalsIgnoreCase(messageBase64) && StringUtils.isNotEmpty(message)) {
 				message=decodeBase64ToString(message);
 			}
 
