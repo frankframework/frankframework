@@ -1,6 +1,9 @@
 /*
  * $Log: HttpSender.java,v $
- * Revision 1.41  2009-12-24 08:31:28  m168309
+ * Revision 1.42  2009-12-24 12:35:18  m168309
+ * fixed TimeOutException
+ *
+ * Revision 1.41  2009/12/24 08:31:28  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * Prevent warning "Going to buffer response body of large or unknown size. Using getResponseAsStream instead is recommended"
  *
  * Revision 1.40  2009/11/12 14:38:38  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -130,6 +133,7 @@ package nl.nn.adapterframework.http;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.security.Security;
@@ -258,7 +262,7 @@ import org.apache.commons.lang.StringUtils;
  * @since 4.2c
  */
 public class HttpSender extends SenderWithParametersBase implements HasPhysicalDestination {
-	public static final String version = "$RCSfile: HttpSender.java,v $ $Revision: 1.41 $ $Date: 2009-12-24 08:31:28 $";
+	public static final String version = "$RCSfile: HttpSender.java,v $ $Revision: 1.42 $ $Date: 2009-12-24 12:35:18 $";
 
 	private String url;
 	private String methodType="GET"; // GET or POST
@@ -575,7 +579,11 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 				log.warn("httpException with message [" + msg + "] and cause [" + cause + "], executeRetries left [" + count + "]");
 			} catch (IOException e) {
 				httpmethod.abort();
-				throw new SenderException(e);
+				if (e instanceof SocketTimeoutException) {
+					throw new TimeOutException(e);
+				} else {
+					throw new SenderException(e);
+				}
 			} finally {
 				httpmethod.releaseConnection();
 			}
