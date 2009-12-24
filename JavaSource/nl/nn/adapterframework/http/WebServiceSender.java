@@ -1,6 +1,9 @@
 /*
  * $Log: WebServiceSender.java,v $
- * Revision 1.23  2009-08-26 11:47:31  L190409
+ * Revision 1.24  2009-12-24 08:32:31  m168309
+ * Prevent warning "Going to buffer response body of large or unknown size. Using getResponseAsStream instead is recommended"
+ *
+ * Revision 1.23  2009/08/26 11:47:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * upgrade to HttpClient 3.0.1 - including idle connection cleanup
  *
  * Revision 1.22  2009/02/10 10:58:23  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -132,7 +135,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * @since 4.2c
  */
 public class WebServiceSender extends HttpSender {
-	public static final String version = "$RCSfile: WebServiceSender.java,v $ $Revision: 1.23 $ $Date: 2009-08-26 11:47:31 $";
+	public static final String version = "$RCSfile: WebServiceSender.java,v $ $Revision: 1.24 $ $Date: 2009-12-24 08:32:31 $";
 	
 	private String soapActionURI = "";
 	private String encodingStyleURI=null;
@@ -194,12 +197,12 @@ public class WebServiceSender extends HttpSender {
 		try {
 			httpResult = super.extractResult(httpmethod);
 		} catch (SenderException e) {
-			soapWrapper.checkForSoapFault(httpmethod.getResponseBodyAsString(), e);
+			soapWrapper.checkForSoapFault(getResponseBodyAsString(httpmethod), e);
 			throw e;
 		}
 		
 		if (isThrowApplicationFaults()) {
-			soapWrapper.checkForSoapFault(httpmethod.getResponseBodyAsString(), null);
+			soapWrapper.checkForSoapFault(httpResult, null);
 		}
 		try {
 			String result = soapWrapper.getBody(httpResult);

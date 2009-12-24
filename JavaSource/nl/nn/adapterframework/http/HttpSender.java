@@ -1,6 +1,9 @@
 /*
  * $Log: HttpSender.java,v $
- * Revision 1.40  2009-11-12 14:38:38  m168309
+ * Revision 1.41  2009-12-24 08:31:28  m168309
+ * Prevent warning "Going to buffer response body of large or unknown size. Using getResponseAsStream instead is recommended"
+ *
+ * Revision 1.40  2009/11/12 14:38:38  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted javadoc
  *
  * Revision 1.39  2009/11/12 14:12:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -126,6 +129,7 @@
 package nl.nn.adapterframework.http;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.security.Security;
@@ -254,7 +258,7 @@ import org.apache.commons.lang.StringUtils;
  * @since 4.2c
  */
 public class HttpSender extends SenderWithParametersBase implements HasPhysicalDestination {
-	public static final String version = "$RCSfile: HttpSender.java,v $ $Revision: 1.40 $ $Date: 2009-11-12 14:38:38 $";
+	public static final String version = "$RCSfile: HttpSender.java,v $ $Revision: 1.41 $ $Date: 2009-12-24 08:31:28 $";
 
 	private String url;
 	private String methodType="GET"; // GET or POST
@@ -504,7 +508,24 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 		if (statusCode!=200) {
 			throw new SenderException(getLogPrefix()+"httpstatus "+statusCode+": "+httpmethod.getStatusText());
 		}
-		return httpmethod.getResponseBodyAsString();
+		//return httpmethod.getResponseBodyAsString();
+		return getResponseBodyAsString(httpmethod);
+	}
+
+	public String getResponseBodyAsString(HttpMethod httpmethod) throws IOException {
+		InputStream is = httpmethod.getResponseBodyAsStream();
+		String responseBody = Misc.streamToString(is,"\n",false);
+		int rbLength = responseBody.length();
+		long rbSizeError = Misc.getResponseBodySizeErrorByDefault();
+		if (rbLength >= rbSizeError) {
+			log.error(getLogPrefix()+"retrieved result size [" +Misc.toFileSize(rbLength)+"] exceeds ["+Misc.toFileSize(rbSizeError)+"]");
+		} else {
+			long rbSizeWarn = Misc.getResponseBodySizeWarnByDefault();
+			if (rbLength >= rbSizeWarn) {
+				log.warn(getLogPrefix()+"retrieved result size [" +Misc.toFileSize(rbLength)+"] exceeds ["+Misc.toFileSize(rbSizeWarn)+"]");
+			}
+		}
+		return responseBody;
 	}
 
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
