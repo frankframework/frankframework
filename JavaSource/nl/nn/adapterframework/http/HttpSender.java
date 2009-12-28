@@ -1,6 +1,9 @@
 /*
  * $Log: HttpSender.java,v $
- * Revision 1.42  2009-12-24 12:35:18  m168309
+ * Revision 1.43  2009-12-28 14:16:09  m168309
+ * getResponseBodyAsString: use correct charset instead of default
+ *
+ * Revision 1.42  2009/12/24 12:35:18  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * fixed TimeOutException
  *
  * Revision 1.41  2009/12/24 08:31:28  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -156,6 +159,7 @@ import org.apache.commons.httpclient.HostConfiguration;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpMethod;
+import org.apache.commons.httpclient.HttpMethodBase;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 import org.apache.commons.httpclient.StatusLine;
 import org.apache.commons.httpclient.URI;
@@ -262,7 +266,7 @@ import org.apache.commons.lang.StringUtils;
  * @since 4.2c
  */
 public class HttpSender extends SenderWithParametersBase implements HasPhysicalDestination {
-	public static final String version = "$RCSfile: HttpSender.java,v $ $Revision: 1.42 $ $Date: 2009-12-24 12:35:18 $";
+	public static final String version = "$RCSfile: HttpSender.java,v $ $Revision: 1.43 $ $Date: 2009-12-28 14:16:09 $";
 
 	private String url;
 	private String methodType="GET"; // GET or POST
@@ -517,8 +521,10 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 	}
 
 	public String getResponseBodyAsString(HttpMethod httpmethod) throws IOException {
+		String charset = ((HttpMethodBase)httpmethod).getResponseCharSet();
+		log.debug(getLogPrefix()+"response body uses charset ["+charset+"]");
 		InputStream is = httpmethod.getResponseBodyAsStream();
-		String responseBody = Misc.streamToString(is,"\n",false);
+		String responseBody = Misc.streamToString(is,"\n",charset,false);
 		int rbLength = responseBody.length();
 		long rbSizeError = Misc.getResponseBodySizeErrorByDefault();
 		if (rbLength >= rbSizeError) {
