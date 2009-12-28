@@ -1,6 +1,9 @@
 /*
  * $Log: Misc.java,v $
- * Revision 1.26  2009-12-24 08:27:55  m168309
+ * Revision 1.27  2009-12-28 12:53:07  m168309
+ * cosmetic changes
+ *
+ * Revision 1.26  2009/12/24 08:27:55  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added methods getResponseBodySizeWarnByDefault and getResponseBodySizeErrorByDefault
  *
  * Revision 1.25  2009/11/12 12:36:04  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -96,7 +99,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class Misc {
-	public static final String version="$RCSfile: Misc.java,v $ $Revision: 1.26 $ $Date: 2009-12-24 08:27:55 $";
+	public static final String version="$RCSfile: Misc.java,v $ $Revision: 1.27 $ $Date: 2009-12-28 12:53:07 $";
 	static Logger log = LogUtil.getLogger(Misc.class);
 	public static final int BUFFERSIZE=20000;
 	public static final String DEFAULT_INPUT_STREAM_ENCODING="UTF-8";
@@ -476,11 +479,11 @@ public class Misc {
 				props.setProperty(key,value);
 			}
 		} catch ( NoSuchMethodException e ) {
-			// ok, just not on JDK 1.5
+			log.debug("Caught NoSuchMethodException, just not on JDK 1.5",e);
 		} catch ( IllegalAccessException e ) {
-			// Unexpected error obtaining environment - using JDK 1.4 method
+			log.debug("Caught IllegalAccessException, using JDK 1.4 method",e);
 		} catch ( InvocationTargetException e ) {
-			// Unexpected error obtaining environment - using JDK 1.4 method
+			log.debug("Caught InvocationTargetException, using JDK 1.4 method",e);
 		}
 
 		if (props.size() == 0) {
