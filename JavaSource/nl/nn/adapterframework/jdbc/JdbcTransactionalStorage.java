@@ -1,6 +1,10 @@
 /*
  * $Log: JdbcTransactionalStorage.java,v $
- * Revision 1.37  2009-12-23 17:09:57  L190409
+ * Revision 1.38  2009-12-29 14:54:48  m168309
+ * - increased IBISSTORE with the field LABEL for adding user data
+ * - added attribute labelField
+ *
+ * Revision 1.37  2009/12/23 17:09:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * modified MessageBrowsing interface to reenable and improve export of messages
  *
  * Revision 1.36  2009/10/26 14:06:24  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -176,6 +180,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  * <tr><td>{@link #setMessageField(String) messageField}</td><td>the name of the column message themselves are stored in</td><td>message</td></tr>
  * <tr><td>{@link #setSlotIdField(String) slotIdField}</td><td>the name of the column slotIds are stored in</td><td>slotId</td></tr>
  * <tr><td>{@link #setExpiryDateField(String) expiryDateField}</td><td>the name of the column the timestamp for expiry is stored in</td><td>expiryDate</td></tr>
+ * <tr><td>{@link #setLabelField(String) labelField}</td><td>the name of the column labels are stored in</td><td>label</td></tr>
  * <tr><td>{@link #setKeyFieldType(String) keyFieldType}</td><td>the type of the column that contains the primary key of the table</td><td>INT DEFAULT AUTOINCREMENT</td></tr>
  * <tr><td>{@link #setDateFieldType(String) dateFieldType}</td><td>the type of the column the timestamps are stored in</td><td>TIMESTAMP</td></tr>
  * <tr><td>{@link #setTextFieldType(String) textFieldType}</td><td>the type of the columns messageId and correlationId, slotId and comments are stored in. N.B. (100) is appended for id's, (1000) is appended for comments.</td><td>VARCHAR</td></tr>
@@ -202,6 +207,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 	COMMENTS VARCHAR2(1000 CHAR),
 	MESSAGE BLOB,
 	EXPIRYDATE TIMESTAMP(6),
+	LABEL VARCHAR2(100 CHAR),
 	CONSTRAINT PK_IBISSTORE PRIMARY KEY (MESSAGEKEY)
 	);
 	
@@ -228,7 +234,8 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 	  messageDate TIMESTAMP, 
 	  comments VARCHAR(1000), 
 	  message LONG BINARY),
-	  expiryDate TIMESTAMP; 
+	  expiryDate TIMESTAMP, 
+	  label VARCHAR(100); 
 
 	CREATE INDEX ibisstore_idx ON ibisstore (slotId, messageDate, expiryDate);
  *  </pre>
@@ -248,7 +255,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  * @since 	4.1
  */
 public class JdbcTransactionalStorage extends JdbcFacade implements ITransactionalStorage {
-	public static final String version = "$RCSfile: JdbcTransactionalStorage.java,v $ $Revision: 1.37 $ $Date: 2009-12-23 17:09:57 $";
+	public static final String version = "$RCSfile: JdbcTransactionalStorage.java,v $ $Revision: 1.38 $ $Date: 2009-12-29 14:54:48 $";
 
 	public final static String TYPE_ERRORSTORAGE="E";
 	public final static String TYPE_MESSAGELOG_PIPE="L";
@@ -270,6 +277,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	private String messageField="message";
 	private String slotIdField="slotId";
 	private String expiryDateField="expiryDate";
+	private String labelField="label";
 	private String slotId=null;
 	private String typeField="type";
 	private String type = "";
@@ -363,11 +371,13 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 						(StringUtils.isNotEmpty(getTypeField())?getTypeField()+",":"")+
 						(StringUtils.isNotEmpty(getSlotId())?getSlotIdField()+",":"")+
 						(StringUtils.isNotEmpty(getHostField())?getHostField()+",":"")+
+						(StringUtils.isNotEmpty(getLabelField())?getLabelField()+",":"")+
 						getIdField()+","+getCorrelationIdField()+","+getDateField()+","+getCommentField()+","+getExpiryDateField()+","+getMessageField()+
 						") VALUES ("+
 						(StringUtils.isNotEmpty(getTypeField())?"?,":"")+
 						(StringUtils.isNotEmpty(getSlotId())?"?,":"")+
 						(StringUtils.isNotEmpty(getHostField())?"?,":"")+
+						(StringUtils.isNotEmpty(getLabelField())?"?,":"")+
 						"?,?,?,?,?,?)";
 		deleteQuery = "DELETE FROM "+getPrefix()+getTableName()+ getWhereClause(getKeyField()+"=?");
 		selectKeyQuery = "SELECT max("+getKeyField()+") FROM "+getPrefix()+getTableName()+ 
@@ -377,6 +387,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		String listClause=getKeyField()+","+getIdField()+","+getCorrelationIdField()+","+getDateField()+","+getExpiryDateField()+
 							(StringUtils.isNotEmpty(getTypeField())?","+getTypeField():"")+
 							(StringUtils.isNotEmpty(getHostField())?","+getHostField():"")+
+							(StringUtils.isNotEmpty(getLabelField())?","+getLabelField():"")+
 							","+getCommentField()+ " FROM "+getPrefix()+getTableName();
 		selectContextQuery = "SELECT "+listClause+ getWhereClause(getKeyField()+"=?");
 		selectListQuery = "SELECT "+provideIndexHint(databaseType)+ listClause+ getWhereClause(null)+
@@ -393,11 +404,13 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 							(StringUtils.isNotEmpty(getTypeField())?getTypeField()+",":"")+
 							(StringUtils.isNotEmpty(getSlotId())?getSlotIdField()+",":"")+
 							(StringUtils.isNotEmpty(getHostField())?getHostField()+",":"")+
+							(StringUtils.isNotEmpty(getLabelField())?getLabelField()+",":"")+
 							getIdField()+","+getCorrelationIdField()+","+getDateField()+","+getCommentField()+","+getExpiryDateField()+","+getMessageField()+
 							") VALUES ("+getPrefix()+getSequenceName()+".NEXTVAL,"+
 							(StringUtils.isNotEmpty(getTypeField())?"?,":"")+
 							(StringUtils.isNotEmpty(getSlotId())?"?,":"")+
 							(StringUtils.isNotEmpty(getHostField())?"?,":"")+
+							(StringUtils.isNotEmpty(getLabelField())?"?,":"")+
 							"?,?,?,?,?,empty_blob())";
 			selectKeyQuery = "SELECT "+getPrefix()+getSequenceName()+".currval FROM DUAL";
 			updateBlobQuery = "SELECT "+getMessageField()+
@@ -473,6 +486,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 						getCommentField()+" "+getTextFieldType()+"("+MAXCOMMENTLEN+"), "+
 						getMessageField()+" "+getMessageFieldType()+", "+
 						getExpiryDateField()+" "+getDateFieldType()+
+						(StringUtils.isNotEmpty(getLabelField())?getLabelField()+" "+getTextFieldType()+"("+MAXIDLEN+"), ":"")+
 					  ")";
 					  
 			log.debug(getLogPrefix()+"creating table ["+getPrefix()+getTableName()+"] using query ["+query+"]");
@@ -544,7 +558,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		}
 	}
 
-	protected String storeMessageInDatabase(Connection conn, String messageId, String correlationId, Timestamp receivedDateTime, String comments, Serializable message) throws IOException, SQLException, JdbcException, SenderException {
+	protected String storeMessageInDatabase(Connection conn, String messageId, String correlationId, Timestamp receivedDateTime, String comments, String label, Serializable message) throws IOException, SQLException, JdbcException, SenderException {
 		PreparedStatement stmt = null;
 		try { 
 			int databaseType=getDatabaseType();
@@ -561,6 +575,9 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 			}			
 			if (StringUtils.isNotEmpty(getHostField())) {
 				stmt.setString(++parPos,host);
+			}
+			if (StringUtils.isNotEmpty(getLabelField())) {
+				stmt.setString(++parPos,label);
 			}
 			stmt.setString(++parPos,messageId);
 			stmt.setString(++parPos,correlationId);
@@ -656,7 +673,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 
 
 
-	public String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, Serializable message) throws SenderException {
+	public String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, String label, Serializable message) throws SenderException {
 		TransactionStatus txStatus=null;
 		if (txManager!=null) {
 			txStatus = txManager.getTransaction(TXREQUIRED);
@@ -686,7 +703,10 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 				if (comments!=null && comments.length()>MAXCOMMENTLEN) {
 					comments=comments.substring(0,MAXCOMMENTLEN);
 				}
-				result = storeMessageInDatabase(conn, messageId, correlationId, receivedDateTime, comments, message);
+				if (label!=null && label.length()>MAXCOMMENTLEN) {
+					label=label.substring(0,MAXCOMMENTLEN);
+				}
+				result = storeMessageInDatabase(conn, messageId, correlationId, receivedDateTime, comments, label, message);
 				if (result==null) {
 					result=retrieveKey(conn,messageId,correlationId,receivedDateTime);
 				}
@@ -1044,6 +1064,17 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 			}
 		}
 
+		public String getLabel() throws ListenerException {
+			if (StringUtils.isEmpty(getLabelField())) {
+				return null;
+			}
+			try {
+				return rs.getString(getLabelField());
+			} catch (SQLException e) {
+				throw new ListenerException(e);
+			}
+		}
+
 		public String getCommentString() throws ListenerException {
 			try {
 				return rs.getString(getCommentField());
@@ -1118,6 +1149,10 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		return expiryDateField;
 	}
 
+	public String getLabelField() {
+		return labelField;
+	}
+
 	public void setCommentField(String string) {
 		commentField = string;
 	}
@@ -1128,6 +1163,10 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 
 	public void setExpiryDateField(String string) {
 		expiryDateField = string;
+	}
+
+	public void setLabelField(String string) {
+		labelField = string;
 	}
 
 	public String getCorrelationIdField() {
