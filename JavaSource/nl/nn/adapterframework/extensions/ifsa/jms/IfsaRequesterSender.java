@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaRequesterSender.java,v $
- * Revision 1.14  2009-06-05 07:23:22  L190409
+ * Revision 1.15  2009-12-29 14:33:24  L190409
+ * modified imports to reflect move of statistics classes to separate package
+ *
+ * Revision 1.14  2009/06/05 07:23:22  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added throws clause to iterateOverStatistics()
  *
  * Revision 1.13  2009/03/23 16:50:47  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -153,11 +156,11 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.statistics.HasStatistics;
+import nl.nn.adapterframework.statistics.StatisticsKeeper;
+import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
 import nl.nn.adapterframework.util.DateUtils;
-import nl.nn.adapterframework.util.HasStatistics;
 import nl.nn.adapterframework.util.JtaUtil;
-import nl.nn.adapterframework.util.StatisticsKeeper;
-import nl.nn.adapterframework.util.StatisticsKeeperIterationHandler;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 
@@ -198,7 +201,7 @@ import com.ing.ifsa.IFSATimeOutMessage;
  * @since  4.2
  */
 public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParameters, HasStatistics {
-	public static final String version="$RCSfile: IfsaRequesterSender.java,v $ $Revision: 1.14 $ $Date: 2009-06-05 07:23:22 $";
+	public static final String version="$RCSfile: IfsaRequesterSender.java,v $ $Revision: 1.15 $ $Date: 2009-12-29 14:33:24 $";
 
 	private boolean throwExceptions=true;	
 	

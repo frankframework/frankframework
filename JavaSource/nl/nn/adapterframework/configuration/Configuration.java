@@ -1,6 +1,9 @@
 /*
  * $Log: Configuration.java,v $
- * Revision 1.36  2009-08-26 15:23:12  L190409
+ * Revision 1.37  2009-12-29 14:32:20  L190409
+ * modified imports to reflect move of statistics classes to separate package
+ *
+ * Revision 1.36  2009/08/26 15:23:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * support for configurable statisticsHandlers
  *
  * Revision 1.35  2009/06/05 07:19:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -112,12 +115,12 @@ import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.scheduler.JobDef;
+import nl.nn.adapterframework.statistics.HasStatistics;
+import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
+import nl.nn.adapterframework.statistics.StatisticsKeeperLogger;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.HasStatistics;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.StatisticsKeeperIterationHandler;
-import nl.nn.adapterframework.util.StatisticsKeeperLogger;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
@@ -133,7 +136,7 @@ import org.apache.log4j.Logger;
  * @see    nl.nn.adapterframework.core.IAdapter
  */
 public class Configuration {
-	public static final String version="$RCSfile: Configuration.java,v $ $Revision: 1.36 $ $Date: 2009-08-26 15:23:12 $";
+	public static final String version="$RCSfile: Configuration.java,v $ $Revision: 1.37 $ $Date: 2009-12-29 14:32:20 $";
     protected Logger log=LogUtil.getLogger(this); 
      
     private Map adapterTable = new Hashtable();

@@ -1,6 +1,9 @@
 /*
  * $Log: SenderWrapper.java,v $
- * Revision 1.6  2009-06-05 07:29:32  L190409
+ * Revision 1.7  2009-12-29 14:37:28  L190409
+ * modified imports to reflect move of statistics classes to separate package
+ *
+ * Revision 1.6  2009/06/05 07:29:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added throws clause to iterateOverStatistics()
  *
  * Revision 1.5  2008/09/04 12:16:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -29,8 +32,8 @@ import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-import nl.nn.adapterframework.util.HasStatistics;
-import nl.nn.adapterframework.util.StatisticsKeeperIterationHandler;
+import nl.nn.adapterframework.statistics.HasStatistics;
+import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
 
 /**
  * Wrapper for senders, that allows to get input from a session variable, and to store output in a session variable.

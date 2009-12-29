@@ -1,6 +1,9 @@
 /*
  * $Log: StatisticsKeeperStore.java,v $
- * Revision 1.1  2009-08-26 15:35:11  L190409
+ * Revision 1.2  2009-12-29 14:33:24  L190409
+ * modified imports to reflect move of statistics classes to separate package
+ *
+ * Revision 1.1  2009/08/26 15:35:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * support for storing statistics in a database
  *
  */
@@ -20,12 +23,12 @@ import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.statistics.StatisticsKeeper;
+import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.util.StatisticsKeeper;
-import nl.nn.adapterframework.util.StatisticsKeeperIterationHandler;
 
 /**
  * StatisticsKeeperIterationHandler that stores all statisticsdata in a database.

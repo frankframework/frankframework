@@ -1,6 +1,9 @@
 /*
  * $Log: MessageSendingPipe.java,v $
- * Revision 1.56  2009-10-26 14:01:20  m168309
+ * Revision 1.57  2009-12-29 14:35:19  L190409
+ * modified imports to reflect move of statistics classes to separate package
+ *
+ * Revision 1.56  2009/10/26 14:01:20  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * cosmetic change
  *
  * Revision 1.55  2009/07/13 11:49:02  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -190,10 +193,10 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.senders.MailSender;
+import nl.nn.adapterframework.statistics.HasStatistics;
+import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
 import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.HasStatistics;
 import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.util.StatisticsKeeperIterationHandler;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -274,7 +277,7 @@ import org.apache.commons.lang.SystemUtils;
  */
 
 public class MessageSendingPipe extends FixedForwardPipe implements HasSender, HasStatistics, EventThrowing {
-	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.56 $ $Date: 2009-10-26 14:01:20 $";
+	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.57 $ $Date: 2009-12-29 14:35:19 $";
 
 	public static final String PIPE_TIMEOUT_MONITOR_EVENT = "Sender Timeout";
 	public static final String PIPE_CLEAR_TIMEOUT_MONITOR_EVENT = "Sender Received Result on Time";

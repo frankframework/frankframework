@@ -1,6 +1,9 @@
 /*
  * $Log: IReceiver.java,v $
- * Revision 1.8  2009-03-30 12:23:22  L190409
+ * Revision 1.9  2009-12-29 14:32:20  L190409
+ * modified imports to reflect move of statistics classes to separate package
+ *
+ * Revision 1.8  2009/03/30 12:23:22  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added counter for messagesRejected
  *
  * Revision 1.7  2008/08/12 15:33:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -23,7 +26,7 @@
 package nl.nn.adapterframework.core;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.util.HasStatistics;
+import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.util.RunStateEnum;
 
 /**

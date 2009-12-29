@@ -1,6 +1,9 @@
 /*
  * $Log: CounterStatistic.java,v $
- * Revision 1.3  2009-06-05 07:34:17  L190409
+ * Revision 1.4  2009-12-29 14:40:48  L190409
+ * modified imports to reflect move of statistics classes to separate package
+ *
+ * Revision 1.3  2009/06/05 07:34:17  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * support for adapter level only statistics
  *
  * Revision 1.2  2008/09/22 13:25:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -11,6 +14,8 @@
  *
  */
 package nl.nn.adapterframework.util;
+
+import nl.nn.adapterframework.statistics.HasStatistics;
 
 /**
  * Counter value that is maintained with statistics.

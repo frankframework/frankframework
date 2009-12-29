@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.85  2009-12-10 15:32:48  m00f069
+ * Revision 1.86  2009-12-29 14:32:20  L190409
+ * modified imports to reflect move of statistics classes to separate package
+ *
+ * Revision 1.85  2009/12/10 15:32:48  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Show correct sessionKey name in Test Tool for storeResultInSessionKey (getGetInputFromSessionKey() was used)
  *
  * Revision 1.84  2009/12/04 18:23:34  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -268,6 +271,7 @@ import javax.xml.transform.TransformerException;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.debug.IbisDebugger;
+import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.JtaUtil;
@@ -275,7 +279,6 @@ import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.Semaphore;
 import nl.nn.adapterframework.util.SpringTxManagerProxy;
-import nl.nn.adapterframework.util.StatisticsKeeper;
 import nl.nn.adapterframework.util.TracingUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -360,7 +363,7 @@ import org.springframework.transaction.TransactionStatus;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.85 $ $Date: 2009-12-10 15:32:48 $";
+	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.86 $ $Date: 2009-12-29 14:32:20 $";
     private Logger log = LogUtil.getLogger(this);
 	private Logger durationLog = LogUtil.getLogger("LongDurationMessages");
     

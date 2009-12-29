@@ -1,6 +1,9 @@
 /*
  * $Log: DefaultIbisManager.java,v $
- * Revision 1.10  2009-06-05 07:30:31  L190409
+ * Revision 1.11  2009-12-29 14:37:55  L190409
+ * modified imports to reflect move of statistics classes to separate package
+ *
+ * Revision 1.10  2009/06/05 07:30:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * perform full statistics dump when all adapters are stopped
  *
  * Revision 1.9  2008/09/04 12:16:52  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -65,10 +68,10 @@ import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.IThreadCountControllable;
 import nl.nn.adapterframework.ejb.ListenerPortPoller;
 import nl.nn.adapterframework.senders.IbisLocalSender;
+import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.scheduler.JobDef;
 import nl.nn.adapterframework.scheduler.SchedulerHelper;
 import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.HasStatistics;
 import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.log4j.Logger;

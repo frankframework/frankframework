@@ -1,6 +1,9 @@
 /*
  * $Log: JobDef.java,v $
- * Revision 1.16  2009-10-26 13:53:52  m168309
+ * Revision 1.17  2009-12-29 14:37:28  L190409
+ * modified imports to reflect move of statistics classes to separate package
+ *
+ * Revision 1.16  2009/10/26 13:53:52  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added MessageLog facility to receivers
  *
  * Revision 1.15  2009/06/05 07:28:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -56,8 +59,8 @@ import nl.nn.adapterframework.jdbc.DirectQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.senders.IbisLocalSender;
+import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.HasStatistics;
 import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper;

@@ -1,6 +1,9 @@
 /*
  * $Log: ParallelSenders.java,v $
- * Revision 1.4  2009-12-04 18:23:34  m00f069
+ * Revision 1.5  2009-12-29 14:37:28  L190409
+ * modified imports to reflect move of statistics classes to separate package
+ *
+ * Revision 1.4  2009/12/04 18:23:34  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Added ibisDebugger.senderAbort and ibisDebugger.pipeRollback
  *
  * Revision 1.3  2009/11/18 17:28:03  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -26,10 +29,10 @@ import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Guard;
 import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.util.StatisticsKeeper;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
