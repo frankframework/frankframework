@@ -1,6 +1,9 @@
 /*
  * $Log: MessageSendingPipe.java,v $
- * Revision 1.57  2009-12-29 14:35:19  L190409
+ * Revision 1.58  2009-12-29 15:00:02  m168309
+ * added attribute labelXPath
+ *
+ * Revision 1.57  2009/12/29 14:35:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * modified imports to reflect move of statistics classes to separate package
  *
  * Revision 1.56  2009/10/26 14:01:20  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -246,6 +249,7 @@ import org.apache.commons.lang.SystemUtils;
  * <tr><td>{@link #setAuditTrailXPath(String) auditTrailXPath}</td><td>xpath expression to extract audit trail from message</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setCorrelationIDXPath(String) correlationIDXPath}</td><td>xpath expression to extract correlationID from message</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setCorrelationIDSessionKey(String) correlationIDSessionKey}</td><td>Key of a PipeLineSession-variable. Is specified, the value of the PipeLineSession variable is used as input for the XpathExpression, instead of the current input message</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setLabelXPath(String) labelXPath}</td><td>xpath expression to extract label from message</td><td>&nbsp;</td></tr>
  * <tr><td><code>sender.*</td><td>any attribute of the sender instantiated by descendant classes</td><td>&nbsp;</td></tr>
  * </table>
  * <table border="1">
@@ -277,7 +281,7 @@ import org.apache.commons.lang.SystemUtils;
  */
 
 public class MessageSendingPipe extends FixedForwardPipe implements HasSender, HasStatistics, EventThrowing {
-	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.57 $ $Date: 2009-12-29 14:35:19 $";
+	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.58 $ $Date: 2009-12-29 15:00:02 $";
 
 	public static final String PIPE_TIMEOUT_MONITOR_EVENT = "Sender Timeout";
 	public static final String PIPE_CLEAR_TIMEOUT_MONITOR_EVENT = "Sender Received Result on Time";
@@ -296,6 +300,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	private String checkRootTag;
 	private String auditTrailXPath;
 	private String correlationIDXPath;
+	private String labelXPath;
 
 	private ISender sender = null;
 	private ICorrelatedPullingListener listener = null;
@@ -306,6 +311,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	private TransformerPool auditTrailTp=null;
 	private TransformerPool correlationIDTp=null;
 	private String correlationIDSessionKey = null;
+	private TransformerPool labelTp=null;
      
 	private IPipe inputValidator=null;
 	private IPipe outputValidator=null;
@@ -414,6 +420,13 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 					correlationIDTp = new TransformerPool(XmlUtils.createXPathEvaluatorSource(getCorrelationIDXPath()));
 				} catch (TransformerConfigurationException e) {
 					throw new ConfigurationException(getLogPrefix(null) + "cannot create transformer for correlationID ["+getCorrelationIDXPath()+"]",e);
+				}
+			}
+			if (StringUtils.isNotEmpty(getLabelXPath())) {
+				try {
+					labelTp = new TransformerPool(XmlUtils.createXPathEvaluatorSource(getLabelXPath()));
+				} catch (TransformerConfigurationException e) {
+					throw new ConfigurationException(getLogPrefix(null) + "cannot create transformer for label ["+getLabelXPath()+"]",e);
 				}
 			}
 		}
@@ -542,11 +555,15 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 							correlationID="-";
 						}
 					}
+					String label=null;
+					if (labelTp!=null) {
+						label=labelTp.transform((String)input,null);
+					}
 					if (sender instanceof MailSender) {
 						String messageInMailSafeForm = (String)session.get("messageInMailSafeForm");
-						messageLog.storeMessage(storedMessageID,correlationID,new Date(),messageTrail,messageInMailSafeForm);
+						messageLog.storeMessage(storedMessageID,correlationID,new Date(),messageTrail,label,messageInMailSafeForm);
 					} else {
-						messageLog.storeMessage(storedMessageID,correlationID,new Date(),messageTrail,(String)input);
+						messageLog.storeMessage(storedMessageID,correlationID,new Date(),messageTrail,label,(String)input);
 					}
 				}
 
@@ -835,6 +852,13 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	}
 	public String getCorrelationIDXPath() {
 		return correlationIDXPath;
+	}
+
+	public void setLabelXPath(String string) {
+		labelXPath = string;
+	}
+	public String getLabelXPath() {
+		return labelXPath;
 	}
 	
 	public void setInputValidator(IPipe inputValidator) {

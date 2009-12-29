@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.85  2009-12-29 14:35:19  L190409
+ * Revision 1.86  2009-12-29 15:01:33  m168309
+ * added attribute labelXPath
+ *
+ * Revision 1.85  2009/12/29 14:35:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * modified imports to reflect move of statistics classes to separate package
  *
  * Revision 1.84  2009/10/26 13:54:38  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -501,6 +504,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  * <tr><td>{@link #setAfterEvent(int) afterEvent}</td>        <td>METT eventnumber, fired just after message processing by this Receiver is finished</td><td>-1 (disabled)</td></tr>
  * <tr><td>{@link #setExceptionEvent(int) exceptionEvent}</td><td>METT eventnumber, fired when message processing by this Receiver resulted in an exception</td><td>-1 (disabled)</td></tr>
  * <tr><td>{@link #setCorrelationIDXPath(String) correlationIDXPath}</td><td>xpath expression to extract correlationID from message</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setLabelXPath(String) labelXPath}</td><td>xpath expression to extract label from message</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setHiddenInputSessionKeys(String) hiddenInputSessionKeys}</td><td>comma separated list of keys of session variables which are available when the <code>PipeLineSession</code> is created and of which the value will not be shown in the log (replaced by asterisks)</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
@@ -563,7 +567,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  */
 public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHandler, EventThrowing, IbisExceptionListener, HasSender, HasStatistics, TracingEventNumbers, IThreadCountControllable, BeanFactoryAware {
     
-	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.85 $ $Date: 2009-12-29 14:35:19 $";
+	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.86 $ $Date: 2009-12-29 15:01:33 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -590,6 +594,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	private String hiddenInputSessionKeys=null;
 	private boolean checkForDuplicates=false;
 	private String correlationIDXPath;
+	private String labelXPath;
 
 	public static final String ONERROR_CONTINUE = "continue";
 	public static final String ONERROR_CLOSE = "close";
@@ -641,6 +646,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	private int transactionAttribute=TransactionDefinition.PROPAGATION_SUPPORTS;
 
 	private TransformerPool correlationIDTp=null;
+	private TransformerPool labelTp=null;
  
 	// METT event numbers
 	private int beforeEvent=-1;
@@ -990,6 +996,13 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 				if (messageLog instanceof HasPhysicalDestination) {
 					info(getLogPrefix()+"has messageLog in "+((HasPhysicalDestination)messageLog).getPhysicalDestinationName());
 				}
+				if (StringUtils.isNotEmpty(getLabelXPath())) {
+					try {
+						labelTp = new TransformerPool(XmlUtils.createXPathEvaluatorSource(getLabelXPath()));
+					} catch (TransformerConfigurationException e) {
+						throw new ConfigurationException(getLogPrefix() + "cannot create transformer for label ["+getLabelXPath()+"]",e);
+					}
+				}
 			}
 			if (isTransacted()) {
 //				if (!(getListener() instanceof IXAEnabled && ((IXAEnabled)getListener()).isTransacted())) {
@@ -1136,7 +1149,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 				}
 			}
 			if (errorStorage!=null) {
-				errorStorage.storeMessage(originalMessageId, correlationId, receivedDate, comments, sobj);
+				errorStorage.storeMessage(originalMessageId, correlationId, receivedDate, comments, null, sobj);
 			} 
 			txManager.commit(txStatus);
 		} catch (Exception e) {
@@ -1244,7 +1257,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 					String receivedDateStr = (String)threadContext.get(PipeLineSession.tsReceivedKey);
 					Date receivedDate = DateUtils.parseToDate(receivedDateStr,DateUtils.FORMAT_FULL_GENERIC);
 					errorStorage.deleteMessage(messageId);
-					errorStorage.storeMessage(messageId,correlationId,receivedDate,"after retry: "+e.getMessage(),(Serializable)msg);	
+					errorStorage.storeMessage(messageId,correlationId,receivedDate,"after retry: "+e.getMessage(),null,(Serializable)msg);	
 				} else {
 					log.warn(getLogPrefix()+"retried message is not serializable, cannot update comments");
 				}
@@ -1303,6 +1316,14 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 			businessCorrelationId=messageId;
 		}
 		threadContext.put(PipeLineSession.businessCorrelationIdKey, businessCorrelationId);       
+		String label=null;
+		if (labelTp!=null) {
+			try {
+				label=labelTp.transform(message,null);
+			} catch (Exception e) {
+				throw new ListenerException(getLogPrefix()+"could not extract label",e);
+			}
+		}
 		if (checkTryCount(messageId, retry, rawMessage, message, threadContext, businessCorrelationId)) {
 			if (!isTransacted()) {
 				log.warn(getLogPrefix()+"received message with messageId [" + messageId + "] which is already stored in error storage or messagelog; aborting processing");
@@ -1363,7 +1384,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 					// back which might be too early.
 					try {
 						if (getMessageLog()!=null) {
-							getMessageLog().storeMessage(messageId, businessCorrelationId, new Date(),"log",pipelineMessage);
+							getMessageLog().storeMessage(messageId, businessCorrelationId, new Date(),"log",label,pipelineMessage);
 						}
 						pipeLineResult = adapter.processMessageWithExceptions(businessCorrelationId, pipelineMessage, pipelineSession);
 						result=pipeLineResult.getResult();
@@ -2307,4 +2328,10 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		return correlationIDXPath;
 	}
 
+	public void setLabelXPath(String string) {
+		labelXPath = string;
+	}
+	public String getLabelXPath() {
+		return labelXPath;
+	}
 }
