@@ -3,8 +3,34 @@
 	<xsl:output method="xml" indent="yes" omit-xml-declaration="yes"/>
 	<xsl:param name="timestamp"/>
 	<xsl:param name="adapterName"/>
-	<xsl:template match="statisticsCollections">
+
+	<xsl:template match="/">
 		<html>
+			<xsl:call-template name="htmlheading" />
+			<body>
+				<table class="page" width="100%">
+					<tr>
+						<td colspan="3">
+							<table width="100%">
+								<tr>
+									<td>
+										<h1>Show Adapter Statistics</h1>
+									</td>
+									<td/>
+								</tr>
+							</table>
+						</td>
+					</tr>
+					<tr>
+						<td colspan="3"/>
+					</tr>
+					<xsl:apply-templates select="*"/>
+				</table>
+			</body>
+		</html>
+	</xsl:template>
+
+	<xsl:template name="htmlheading" >
 			<head>
 				<link rel="stylesheet" type="text/css" href="ie4.css"/>
 				<title>Show Adapter Statistics</title>
@@ -53,87 +79,83 @@
 						</xsl:text>
 				</script>
 			</head>
-			<body>
-				<table class="page" width="100%">
+	</xsl:template>
+
+	<xsl:template name="bodyheading" >
+		<xsl:param name="timestamps" />
+		<xsl:param name="adapters" />
+		<tr>
+			<td width="50px"/>
+			<td class="pagePanel">
+				<table>
 					<tr>
-						<td colspan="3">
-							<table width="100%">
-								<tr>
-									<td>
-										<h1>Show Adapter Statistics</h1>
-									</td>
-									<td/>
-								</tr>
-							</table>
+						<td>Select an timestamp</td>
+						<td>
+							<select class="normal" name="timestamp" id="timestamp">
+								<option>-- select an timestamp --</option>
+								<xsl:for-each select="$timestamps">
+									<option>
+										<xsl:attribute name="value"><xsl:value-of select="."/></xsl:attribute>
+										<xsl:if test=".=$timestamp">
+											<xsl:attribute name="selected"/>
+										</xsl:if>
+										<xsl:value-of select="."/>
+									</option>
+								</xsl:for-each>
+							</select>
 						</td>
 					</tr>
 					<tr>
-						<td colspan="3"/>
-					</tr>
-					<tr>
-						<td width="50px"/>
-						<td class="pagePanel">
-							<table>
-								<tr>
-									<td>Select an timestamp</td>
-									<td>
-										<select class="normal" name="timestamp" id="timestamp">
-											<option value="-- select a timestamp --">-- select an timestamp --</option>
-											<xsl:for-each select="statisticsCollection">
-												<option>
-													<xsl:attribute name="value"><xsl:value-of select="@timestamp"/></xsl:attribute>
-													<xsl:if test="@timestamp=$timestamp">
-														<xsl:attribute name="selected"/>
-													</xsl:if>
-													<xsl:value-of select="@timestamp"/>
-												</option>
-											</xsl:for-each>
-										</select>
-									</td>
-								</tr>
-								<tr>
-									<td>Select an adapter</td>
-									<td>
-										<select class="normal" name="adapterName" id="adapterName">
-											<option value="-- select an adapter --">-- select an adapter --</option>
-											<xsl:for-each select="statisticsCollection/statgroup/statgroup">
-												<xsl:sort select="@name"/>
-												<xsl:variable name="name" select="@name"/>
-												<xsl:if test="(@name=preceding::*/@name)=false()">
-													<option>
-														<xsl:attribute name="value"><xsl:value-of select="@name"/></xsl:attribute>
-														<xsl:if test="@name=$adapterName">
-															<xsl:attribute name="selected"/>
-														</xsl:if>
-														<xsl:value-of select="@name"/>
-													</option>
-												</xsl:if>
-											</xsl:for-each>
-										</select>
-									</td>
-								</tr>
-								<tr>
-									<td/>
-									<td>
-										<input class="submit" onmouseover="changeBg(this,true);" onmouseout="changeBg(this,false);" type="button" value="send" onclick="createAndPostUrl()"/>
-									</td>
-								</tr>
-							</table>
+						<td>Select an adapter</td>
+						<td>
+							<select class="normal" name="adapterName" id="adapterName">
+								<option>-- select an adapter --</option>
+								<xsl:for-each select="$adapters">
+									<xsl:sort select="."/>
+									<xsl:variable name="name" select="@name"/>
+									<xsl:if test="(.=preceding)=false()">
+										<option>
+											<xsl:attribute name="value"><xsl:value-of select="."/></xsl:attribute>
+											<xsl:if test=".=$adapterName">
+												<xsl:attribute name="selected"/>
+											</xsl:if>
+											<xsl:value-of select="."/>
+										</option>
+									</xsl:if>
+								</xsl:for-each>
+							</select>
 						</td>
 					</tr>
 					<tr>
-						<td colspan="3"/>
-					</tr>
-					<tr>
-						<td width="50px"/>
-						<td class="pagePanel">
-							<xsl:apply-templates select="statisticsCollection[@timestamp=$timestamp]/statgroup/statgroup[@name=$adapterName]"/>
+						<td/>
+						<td>
+							<input class="submit" onmouseover="changeBg(this,true);" onmouseout="changeBg(this,false);" type="button" value="send" onclick="createAndPostUrl()"/>
 						</td>
 					</tr>
 				</table>
-			</body>
-		</html>
+			</td>
+		</tr>
+		<tr>
+			<td colspan="3"/>
+		</tr>
 	</xsl:template>
+
+	<xsl:key name="statgroups-by-adapter" match="/statisticsCollections/statisticsCollection/statgroup/statgroup" use="@name" />
+	
+	<xsl:template match="statisticsCollections">
+		<xsl:variable name="adapters" select="statisticsCollection/statgroup/statgroup[count(. | key('statgroups-by-adapter',@name)[1])=1]/@name" />
+		<xsl:call-template name="bodyheading">
+			<xsl:with-param name="timestamps" select="statisticsCollection/@timestamp" />
+			<xsl:with-param name="adapters" select="$adapters" />
+		</xsl:call-template>
+		<tr>
+			<td width="50px"/>
+			<td class="pagePanel">
+				<xsl:apply-templates select="statisticsCollection[@timestamp=$timestamp]/statgroup/statgroup[@name=$adapterName]"/>
+			</td>
+		</tr>
+	</xsl:template>
+	
 	<xsl:template match="statgroup">
 		<table>
 			<caption class="caption">Adapter Statistics</caption>
@@ -395,4 +417,39 @@
 			</table>
 		</xsl:for-each>
 	</xsl:template>
+	
+	<xsl:key name="item-by-name" match="/overview/data/stat/summary/item" use="@name" />
+
+	<xsl:template match="overview">
+		<xsl:call-template name="bodyheading">
+			<xsl:with-param name="timestamps" select="timestamps/timestamp/@value" />
+			<xsl:with-param name="adapters" select="data/stat/@name" />
+		</xsl:call-template>
+		<xsl:variable name="itemnames" select="data/stat/summary/item[count(. | key('item-by-name',@name)[1])=1]/@name" />
+		<tr>
+			<td width="50px"/>
+			<td class="pagePanel">
+				<table>
+					<caption class="caption">Adapter Statistics</caption>
+					<th class="colHeader">adapter</th>
+					<xsl:for-each select="$itemnames">
+						<th class="colHeader"><xsl:value-of select="."/></th>
+					</xsl:for-each>
+					<xsl:for-each select="data/stat">
+						<xsl:variable name="summary" select="summary" />
+						<tr>
+							<td class="filterRow"><xsl:value-of select="@name"/></td>
+							<xsl:for-each select="$itemnames">
+								<xsl:variable name="itemname" select="."/>
+								<td align="right" class="filterRow">
+									<xsl:value-of select="$summary/item[@name=$itemname]/@value"/>
+								</td>
+							</xsl:for-each>
+						</tr>
+					</xsl:for-each>
+				</table>
+			</td>
+		</tr>
+	</xsl:template>
+
 </xsl:stylesheet>
