@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   $Log: springCommon.xml,v $
-  Revision 1.13  2009-08-26 15:21:27  L190409
+  Revision 1.14  2009-12-29 14:48:05  L190409
+  moved statistics to separate package
+
+  Revision 1.13  2009/08/26 15:21:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
   support for configurable statisticsHandlers
 
   Revision 1.12  2009/03/13 14:51:41  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -171,11 +174,11 @@
         autowire="byName" scope="prototype">
     </bean>
 
-    <bean name="proto-statisticsHandlers" class="nl.nn.adapterframework.util.StatisticsKeeperIterationHandlerCollection"
+    <bean name="proto-statisticsHandlers" class="nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandlerCollection"
         autowire="byName" scope="prototype">
     </bean>
 
-    <bean name="proto-statisticsHandler" class="nl.nn.adapterframework.util.StatisticsKeeperIterationHandler"
+    <bean name="proto-statisticsHandler" class="nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler"
         autowire="byName" scope="prototype">
     </bean>
 

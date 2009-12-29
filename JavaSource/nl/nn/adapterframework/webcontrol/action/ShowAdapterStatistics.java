@@ -1,6 +1,9 @@
 /*
  * $Log: ShowAdapterStatistics.java,v $
- * Revision 1.12  2009-08-26 15:50:35  L190409
+ * Revision 1.13  2009-12-29 14:45:16  L190409
+ * moved statistics to separate package
+ *
+ * Revision 1.12  2009/08/26 15:50:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * support for separated adapter-only and detailed statistics
  *
  * Revision 1.11  2009/06/05 07:54:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -40,16 +43,16 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.IReceiverStatistics;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.statistics.HasStatistics;
+import nl.nn.adapterframework.statistics.ItemList;
+import nl.nn.adapterframework.statistics.StatisticsKeeper;
+import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
 import nl.nn.adapterframework.util.DateUtils;
-import nl.nn.adapterframework.util.HasStatistics;
-import nl.nn.adapterframework.util.StatisticsKeeper;
-import nl.nn.adapterframework.util.StatisticsKeeperIterationHandler;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 import org.apache.struts.action.ActionForm;
@@ -67,17 +70,10 @@ import org.apache.struts.action.ActionMapping;
  */
 public class ShowAdapterStatistics extends ActionBase {
 
-    private DecimalFormat df=new DecimalFormat(DateUtils.FORMAT_MILLISECONDS);
-    private DecimalFormat pf=new DecimalFormat("##0.0");
+    private DecimalFormat df=new DecimalFormat(ItemList.ITEM_FORMAT_TIME);
+    private DecimalFormat pf=new DecimalFormat(ItemList.ITEM_FORMAT_PERC);
     
    
-	private void addNumber(XmlBuilder xml, String name, String value) {
-	    XmlBuilder item = new XmlBuilder("item");
-	
-	    item.addAttribute("name", name);
-	    item.addAttribute("value", value);
-	    xml.addSubElement(item);
-	}
 	public ActionForward execute(
 	    ActionMapping mapping,
 	    ActionForm form,
@@ -297,35 +293,6 @@ public class ShowAdapterStatistics extends ActionBase {
 		if (sk==null) {
 			return null;
 		}
-		if (deep) {
-			 return sk.dumpToXml();
-		}
-		String name = sk.getName();
-		XmlBuilder container = new XmlBuilder(elementName);
-		if (name!=null) {
-			container.addAttribute("name", name);
-		}
-		XmlBuilder stats = new XmlBuilder("summary");
-	
-	    for (int i=0; i<sk.getItemCount(); i++) {
-		    Object item = sk.getItemValue(i);
-		    if (item==null) {
-		    	addNumber(stats, sk.getItemName(i), "-");
-		    } else {
-		    	switch (sk.getItemType(i)) {
-			    	case StatisticsKeeper.ITEM_TYPE_INTEGER: 
-				    	addNumber(stats, sk.getItemName(i), ""+ (Long)item);
-		  			  	break;
-			    	case StatisticsKeeper.ITEM_TYPE_TIME: 
-				    	addNumber(stats, sk.getItemName(i), df.format(item));
-		  			  	break;
-			    	case StatisticsKeeper.ITEM_TYPE_FRACTION:
-				    	addNumber(stats, sk.getItemName(i), ""+pf.format(((Double)item).doubleValue()*100)+ "%");
-		  			  	break;
-		    	}
-	    	}
-	    }
-	    container.addSubElement(stats);
-	    return container;
+		return sk.toXml(elementName, deep, df, pf);
 	}
 }
