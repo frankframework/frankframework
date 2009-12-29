@@ -1,6 +1,10 @@
 /*
  * $Log: FileViewerServlet.java,v $
- * Revision 1.12  2009-09-07 13:54:23  L190409
+ * Revision 1.13  2009-12-29 14:46:57  L190409
+ * moved statistics to separate package
+ * enabled overview over saved statistics file
+ *
+ * Revision 1.12  2009/09/07 13:54:23  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * made some static variables final
  *
  * Revision 1.11  2009/04/03 14:34:36  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -46,21 +50,24 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.stream.StreamSource;
 
+import nl.nn.adapterframework.statistics.StatisticsUtil;
+import nl.nn.adapterframework.statistics.parser.StatisticsParser;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.EncapsulatingReader;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.util.StatisticsUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.xml.sax.InputSource;
 
 /**
  * Shows a textfile either as HTML or as Text.
@@ -92,7 +99,7 @@ import org.apache.log4j.Logger;
  * @author Johan Verrips 
  */
 public class FileViewerServlet extends HttpServlet  {
-	public static final String version = "$RCSfile: FileViewerServlet.java,v $ $Revision: 1.12 $ $Date: 2009-09-07 13:54:23 $";
+	public static final String version = "$RCSfile: FileViewerServlet.java,v $ $Revision: 1.13 $ $Date: 2009-12-29 14:46:57 $";
 	protected static Logger log = LogUtil.getLogger(FileViewerServlet.class);	
 
 	// key that is looked up to retrieve texts to be signalled
@@ -132,6 +139,17 @@ public class FileViewerServlet extends HttpServlet  {
 		} else {
 			showReaderContents(fileReader,filename,"text",response,instanceName,title);
 		}
+	}
+
+	public static void transformSource(Source source, String filename, Map parameters, HttpServletResponse response, String stylesheetUrl, String instanceName, String title) throws DomBuilderException, TransformerException, IOException { 
+		PrintWriter out = response.getWriter();
+		URL xsltSource = ClassUtils.getResourceURL( FileViewerServlet.class, stylesheetUrl);
+		Transformer transformer = XmlUtils.createTransformer(xsltSource);
+		if (parameters!=null) {
+			XmlUtils.setTransformerParameters(transformer, parameters);
+		}
+		XmlUtils.transformXml(transformer, source, out);
+		out.close();
 	}
 
 	public static void showReaderContents(Reader reader, String filename, String type, HttpServletResponse response, String instanceName, String title) throws DomBuilderException, TransformerException, IOException {
@@ -235,14 +253,31 @@ public class FileViewerServlet extends HttpServlet  {
 					}
 					String adapterName = (String) request.getAttribute("adapterName");
 					if (adapterName == null) { adapterName = request.getParameter("adapterName"); }
-					if (adapterName!= null) {
-						parameters.put("adapterName", adapterName);
-					}
-					String stylesheetUrl;
-					response.setContentType("text/html");
-					stylesheetUrl=stats_html_xslt;
 
-					transformReader(new StringReader(StatisticsUtil.fileToString(fileName, timestamp, adapterName)), fileName, parameters, response, stats_prefix, stats_postfix, stylesheetUrl, request.getContextPath().substring(1),fileName);
+					//log.debug("adapterName ["+adapterName+"]");
+					String extract;
+					
+					if (StringUtils.isEmpty(adapterName)) {
+						StatisticsParser sp = new StatisticsParser(timestamp);
+						sp.digestStatistics(fileName);
+						extract=sp.toXml().toXML();
+					} else {
+						parameters.put("adapterName", adapterName);
+						extract=stats_prefix+StatisticsUtil.fileToString(fileName, timestamp, adapterName)+stats_postfix;
+					}
+					//log.debug(extract);
+					if ("xml".equals(request.getParameter("output"))) {
+						response.setContentType("text/xml;charset=UTF-8");
+						PrintWriter pw = response.getWriter();
+						pw.write(extract);
+						pw.close();
+					} else {
+						response.setContentType("text/html");
+						Source s= XmlUtils.stringToSourceForSingleUse(extract);
+						String stylesheetUrl=stats_html_xslt;
+						transformSource(s,fileName,parameters,response,stylesheetUrl,request.getContextPath().substring(1),fileName);
+					}
+
 				} else {
 //					Reader r=new BufferedReader(new InputStreamReader(new FileInputStream(fileName),"ISO-8859-1"));
 //					showReaderContents(r, fileName, type, response, request.getContextPath().substring(1),fileName);
