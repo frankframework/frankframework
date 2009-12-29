@@ -89,10 +89,10 @@
 			<td class="pagePanel">
 				<table>
 					<tr>
-						<td>Select an timestamp</td>
+						<td>Select a timestamp</td>
 						<td>
 							<select class="normal" name="timestamp" id="timestamp">
-								<option>-- select an timestamp --</option>
+								<option>-- select a timestamp --</option>
 								<xsl:for-each select="$timestamps">
 									<option>
 										<xsl:attribute name="value"><xsl:value-of select="."/></xsl:attribute>
