@@ -1,6 +1,9 @@
 /*
  * $Log: JmsTransactionalStorage.java,v $
- * Revision 1.12  2009-12-23 17:09:57  L190409
+ * Revision 1.13  2009-12-29 14:56:01  m168309
+ * increased IBISSTORE with the field LABEL for adding user data
+ *
+ * Revision 1.12  2009/12/23 17:09:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * modified MessageBrowsing interface to reenable and improve export of messages
  *
  * Revision 1.11  2008/01/11 14:51:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -73,7 +76,7 @@ import nl.nn.adapterframework.core.SenderException;
  * @since   4.1
  */
 public class JmsTransactionalStorage extends JmsMessageBrowser implements ITransactionalStorage {
-	public static final String version = "$RCSfile: JmsTransactionalStorage.java,v $ $Revision: 1.12 $ $Date: 2009-12-23 17:09:57 $";
+	public static final String version = "$RCSfile: JmsTransactionalStorage.java,v $ $Revision: 1.13 $ $Date: 2009-12-29 14:56:01 $";
 
 	public static final String FIELD_TYPE="type";
 	public static final String FIELD_ORIGINAL_ID="originalId";
@@ -114,7 +117,7 @@ public class JmsTransactionalStorage extends JmsMessageBrowser implements ITrans
 	
 	
 
-	public String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, Serializable message) throws SenderException {
+	public String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, String label, Serializable message) throws SenderException {
 		Session session=null;
 		try {
 			session = createSession();
@@ -127,6 +130,7 @@ public class JmsTransactionalStorage extends JmsMessageBrowser implements ITrans
 			if (StringUtils.isNotEmpty(getSlotId())) {
 				msg.setStringProperty(FIELD_SLOTID,getSlotId());
 			}
+			//msg.setStringProperty(FIELD_LABEL,label);
 			return send(session,getDestination(),msg);
 		} catch (Exception e) {
 			throw new SenderException(e);

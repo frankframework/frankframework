@@ -1,6 +1,9 @@
 /*
  * $Log: ITransactionalStorage.java,v $
- * Revision 1.9  2009-12-23 17:05:16  L190409
+ * Revision 1.10  2009-12-29 14:55:43  m168309
+ * increased IBISSTORE with the field LABEL for adding user data
+ *
+ * Revision 1.9  2009/12/23 17:05:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * modified MessageBrowsing interface to reenable and improve export of messages
  *
  * Revision 1.8  2008/07/24 12:04:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -45,7 +48,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
  * @version Id
 */
 public interface ITransactionalStorage extends IMessageBrowser, INamedObject {
-	public static final String version = "$RCSfile: ITransactionalStorage.java,v $ $Revision: 1.9 $ $Date: 2009-12-23 17:05:16 $";
+	public static final String version = "$RCSfile: ITransactionalStorage.java,v $ $Revision: 1.10 $ $Date: 2009-12-29 14:55:43 $";
 
 	/**
 	 * Prepares the object for operation. After this
@@ -61,7 +64,7 @@ public interface ITransactionalStorage extends IMessageBrowser, INamedObject {
 	 * 
 	 * The messageId should be unique.
 	 */
-	public String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, Serializable message) throws SenderException;
+	public String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, String label, Serializable message) throws SenderException;
 	
     /**
      * Check if the storage contains message with the given original messageId
