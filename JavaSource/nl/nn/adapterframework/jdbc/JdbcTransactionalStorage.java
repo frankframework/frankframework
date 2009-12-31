@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcTransactionalStorage.java,v $
- * Revision 1.38  2009-12-29 14:54:48  m168309
+ * Revision 1.39  2009-12-31 08:16:53  m168309
+ * added MAXLABELLEN
+ *
+ * Revision 1.38  2009/12/29 14:54:48  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * - increased IBISSTORE with the field LABEL for adding user data
  * - added attribute labelField
  *
@@ -255,7 +258,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  * @since 	4.1
  */
 public class JdbcTransactionalStorage extends JdbcFacade implements ITransactionalStorage {
-	public static final String version = "$RCSfile: JdbcTransactionalStorage.java,v $ $Revision: 1.38 $ $Date: 2009-12-29 14:54:48 $";
+	public static final String version = "$RCSfile: JdbcTransactionalStorage.java,v $ $Revision: 1.39 $ $Date: 2009-12-31 08:16:53 $";
 
 	public final static String TYPE_ERRORSTORAGE="E";
 	public final static String TYPE_MESSAGELOG_PIPE="L";
@@ -293,6 +296,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
    
 	protected static final int MAXIDLEN=100;		
 	protected static final int MAXCOMMENTLEN=1000;		
+	protected static final int MAXLABELLEN=1000;		
     // the following values are only used when the table is created. 
 	private String keyFieldType="INT DEFAULT AUTOINCREMENT";
 	private String dateFieldType="TIMESTAMP";
@@ -486,7 +490,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 						getCommentField()+" "+getTextFieldType()+"("+MAXCOMMENTLEN+"), "+
 						getMessageField()+" "+getMessageFieldType()+", "+
 						getExpiryDateField()+" "+getDateFieldType()+
-						(StringUtils.isNotEmpty(getLabelField())?getLabelField()+" "+getTextFieldType()+"("+MAXIDLEN+"), ":"")+
+						(StringUtils.isNotEmpty(getLabelField())?getLabelField()+" "+getTextFieldType()+"("+MAXLABELLEN+"), ":"")+
 					  ")";
 					  
 			log.debug(getLogPrefix()+"creating table ["+getPrefix()+getTableName()+"] using query ["+query+"]");
@@ -703,8 +707,8 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 				if (comments!=null && comments.length()>MAXCOMMENTLEN) {
 					comments=comments.substring(0,MAXCOMMENTLEN);
 				}
-				if (label!=null && label.length()>MAXCOMMENTLEN) {
-					label=label.substring(0,MAXCOMMENTLEN);
+				if (label!=null && label.length()>MAXLABELLEN) {
+					label=label.substring(0,MAXLABELLEN);
 				}
 				result = storeMessageInDatabase(conn, messageId, correlationId, receivedDateTime, comments, label, message);
 				if (result==null) {
