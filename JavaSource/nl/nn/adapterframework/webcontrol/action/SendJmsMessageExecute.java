@@ -1,6 +1,9 @@
 /*
  * $Log: SendJmsMessageExecute.java,v $
- * Revision 1.12  2009-09-03 09:01:23  m168309
+ * Revision 1.13  2009-12-31 10:06:52  m168309
+ * SendJmsMessage/TestIfsaService/TestPipeLine: made zipfile-upload facility case-insensitive
+ *
+ * Revision 1.12  2009/09/03 09:01:23  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added zipfile-upload facility
  *
  * Revision 1.11  2009/09/02 12:22:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -51,6 +54,7 @@ import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StringTagger;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -75,7 +79,7 @@ import org.apache.struts.upload.FormFile;
  * @author  Johan Verrips
  */
 public final class SendJmsMessageExecute extends ActionBase {
-	public static final String version = "$RCSfile: SendJmsMessageExecute.java,v $ $Revision: 1.12 $ $Date: 2009-09-03 09:01:23 $";
+	public static final String version = "$RCSfile: SendJmsMessageExecute.java,v $ $Revision: 1.13 $ $Date: 2009-12-31 10:06:52 $";
 	
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 	
@@ -111,7 +115,7 @@ public final class SendJmsMessageExecute extends ActionBase {
 		// if upload is choosen, it prevails over the message
 		if ((form_file != null) && (form_file.getFileSize() > 0)) {
 			log.debug("Upload of file ["+form_file.getFileName()+"] ContentType["+form_file.getContentType()+"]");
-			if (form_file.getFileName().endsWith(".zip")) {
+			if (FileUtils.extensionEqualsIgnoreCase(form_file.getFileName(),"zip")) {
 				ZipInputStream archive = new ZipInputStream(new ByteArrayInputStream(form_file.getFileData()));
 				for (ZipEntry entry=archive.getNextEntry(); entry!=null; entry=archive.getNextEntry()) {
 					String name = entry.getName();

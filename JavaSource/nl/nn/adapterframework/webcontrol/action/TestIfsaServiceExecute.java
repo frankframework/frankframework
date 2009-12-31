@@ -1,6 +1,9 @@
 /*
  * $Log: TestIfsaServiceExecute.java,v $
- * Revision 1.9  2009-09-03 08:47:27  m168309
+ * Revision 1.10  2009-12-31 10:06:52  m168309
+ * SendJmsMessage/TestIfsaService/TestPipeLine: made zipfile-upload facility case-insensitive
+ *
+ * Revision 1.9  2009/09/03 08:47:27  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * bugfix: or upload or message
  *
  * Revision 1.8  2008/12/16 13:37:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -45,6 +48,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import nl.nn.adapterframework.extensions.ifsa.IfsaRequesterSender;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StringTagger;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -64,7 +68,7 @@ import org.apache.struts.upload.FormFile;
  * @version Id
  */
 public final class TestIfsaServiceExecute extends ActionBase {
-	public static final String version = "$RCSfile: TestIfsaServiceExecute.java,v $ $Revision: 1.9 $ $Date: 2009-09-03 08:47:27 $";
+	public static final String version = "$RCSfile: TestIfsaServiceExecute.java,v $ $Revision: 1.10 $ $Date: 2009-12-31 10:06:52 $";
 	
 	public ActionForward execute(
 	    ActionMapping mapping,
@@ -102,7 +106,7 @@ public final class TestIfsaServiceExecute extends ActionBase {
 		// if upload is choosen, it prevails over the message
 		if ((form_file != null) && (form_file.getFileSize() > 0)) {
 			log.debug("Upload of file ["+form_file.getFileName()+"] ContentType["+form_file.getContentType()+"]");
-			if (form_file.getFileName().endsWith(".zip")) {
+			if (FileUtils.extensionEqualsIgnoreCase(form_file.getFileName(),"zip")) {
 				ZipInputStream archive = new ZipInputStream(new ByteArrayInputStream(form_file.getFileData()));
 				for (ZipEntry entry=archive.getNextEntry(); entry!=null; entry=archive.getNextEntry()) {
 					String name = entry.getName();

@@ -1,6 +1,9 @@
 /*
  * $Log: FileUtils.java,v $
- * Revision 1.16  2009-08-05 14:24:56  L190409
+ * Revision 1.17  2009-12-31 10:06:44  m168309
+ * SendJmsMessage/TestIfsaService/TestPipeLine: made zipfile-upload facility case-insensitive
+ *
+ * Revision 1.16  2009/08/05 14:24:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * avoid NPE writing to null directory
  *
  * Revision 1.15  2009/02/04 13:04:07  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -81,7 +84,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class FileUtils {
-	public static final String version = "$RCSfile: FileUtils.java,v $  $Revision: 1.16 $ $Date: 2009-08-05 14:24:56 $";
+	public static final String version = "$RCSfile: FileUtils.java,v $  $Revision: 1.17 $ $Date: 2009-12-31 10:06:44 $";
 	static Logger log = LogUtil.getLogger(FileUtils.class);
 
 	/**
@@ -472,5 +475,27 @@ public class FileUtils {
 		Arrays.fill(fill, fillchar);
 		return fill;
 	}
-	
+
+	public static String getFileNameExtension(String fileName) {
+		int idx = fileName.lastIndexOf('.');
+		if (idx<0) {
+			return null;
+		} else {
+			idx++;
+			if (idx >= fileName.length()) {
+				return null;
+			} else {
+				return fileName.substring(idx);
+			}
+		}
+	}
+
+	public static boolean extensionEqualsIgnoreCase(String fileName, String extension) {
+		String fileNameExtension = getFileNameExtension(fileName);
+		if (fileNameExtension==null) {
+			return false;
+		} else {
+			return fileNameExtension.equalsIgnoreCase(extension);
+		}
+	}
 }
