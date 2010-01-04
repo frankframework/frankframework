@@ -1,6 +1,9 @@
 /*
  * $Log: Browse.java,v $
- * Revision 1.21  2009-12-23 17:10:23  L190409
+ * Revision 1.22  2010-01-04 15:05:47  m168309
+ * added label
+ *
+ * Revision 1.21  2009/12/23 17:10:23  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * modified MessageBrowsing interface to reenable and improve export of messages
  *
  * Revision 1.20  2009/10/26 13:53:09  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -106,7 +109,7 @@ import org.apache.struts.action.DynaActionForm;
  * @since   4.4
  */
 public class Browse extends ActionBase {
-	public static final String version="$RCSfile: Browse.java,v $ $Revision: 1.21 $ $Date: 2009-12-23 17:10:23 $";
+	public static final String version="$RCSfile: Browse.java,v $ $Revision: 1.22 $ $Date: 2010-01-04 15:05:47 $";
 
 	private int maxMessages = AppConstants.getInstance().getInt("browse.messages.max",0); 
 	private int skipMessages=0;
@@ -146,6 +149,7 @@ public class Browse extends ActionBase {
 		String correlationIdMask    = getAndSetProperty(request,browseForm,"correlationIdMask");
 		String commentMask  = getAndSetProperty(request,browseForm,"commentMask");
 		String messageTextMask = getAndSetProperty(request,browseForm,"messageTextMask");
+		String labelMask  = getAndSetProperty(request,browseForm,"labelMask");
 		String startDateStr = getAndSetProperty(request,browseForm,"insertedAfter");
 		String startDateClipStr = getAndSetProperty(request,browseForm,"insertedAfterClip");
 		String viewAs = getAndSetProperty(request,browseForm,"viewAs", request.getParameter("type"));
@@ -266,6 +270,7 @@ public class Browse extends ActionBase {
 							String cCorrelationId=iterItem.getCorrelationId();
 							String comment=iterItem.getCommentString();
 							Date insertDate=iterItem.getInsertDate();
+							String cLabel=iterItem.getLabel();
 							if (StringUtils.isNotEmpty(typeMask) && !cType.startsWith(typeMask)) {
 								continue;
 							}
@@ -307,6 +312,9 @@ public class Browse extends ActionBase {
 									continue;
 								}
 							}
+							if (StringUtils.isNotEmpty(labelMask) && (StringUtils.isEmpty(cLabel) || !cLabel.startsWith(labelMask))) {
+								continue;
+							}
 							messageCount++;
 							if (messageCount>skipMessages) { 
 								XmlBuilder message=new XmlBuilder("message");
@@ -321,6 +329,7 @@ public class Browse extends ActionBase {
 									message.addAttribute("expiryDate",DateUtils.format(iterItem.getExpiryDate(), DateUtils.FORMAT_FULL_GENERIC));
 								}
 								message.addAttribute("comment",XmlUtils.encodeChars(iterItem.getCommentString()));
+								message.addAttribute("label",cLabel);
 								messages.addSubElement(message);
 							}
 

@@ -1,6 +1,9 @@
 /*
  * $Log: JmsMessageBrowserIteratorItem.java,v $
- * Revision 1.1  2009-12-23 17:09:57  L190409
+ * Revision 1.2  2010-01-04 15:05:47  m168309
+ * added label
+ *
+ * Revision 1.1  2009/12/23 17:09:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * modified MessageBrowsing interface to reenable and improve export of messages
  *
  */
@@ -79,6 +82,13 @@ public class JmsMessageBrowserIteratorItem implements IMessageBrowsingIteratorIt
 	public String getCommentString() throws ListenerException {
 		try {
 			return msg.getStringProperty(JmsTransactionalStorage.FIELD_COMMENTS);
+		} catch (JMSException e) {
+			throw new ListenerException(e);
+		}
+	}
+	public String getLabel() throws ListenerException {
+		try {
+			return msg.getStringProperty(JmsTransactionalStorage.FIELD_LABEL);
 		} catch (JMSException e) {
 			throw new ListenerException(e);
 		}

@@ -1,6 +1,9 @@
 /*
  * $Log: IMessageBrowsingIteratorItem.java,v $
- * Revision 1.1  2009-12-23 17:05:16  L190409
+ * Revision 1.2  2010-01-04 15:05:48  m168309
+ * added label
+ *
+ * Revision 1.1  2009/12/23 17:05:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * modified MessageBrowsing interface to reenable and improve export of messages
  *
  */
@@ -25,6 +28,7 @@ public interface IMessageBrowsingIteratorItem {
 	String getType() throws ListenerException;
 	String getHost() throws ListenerException;
 	String getCommentString() throws ListenerException;
+	String getLabel() throws ListenerException;
 	
 	/*
 	 * release must be called, in a finally clause, after the item is not used anymore, 

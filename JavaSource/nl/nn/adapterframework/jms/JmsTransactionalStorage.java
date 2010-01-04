@@ -1,6 +1,9 @@
 /*
  * $Log: JmsTransactionalStorage.java,v $
- * Revision 1.13  2009-12-29 14:56:01  m168309
+ * Revision 1.14  2010-01-04 15:05:47  m168309
+ * added label
+ *
+ * Revision 1.13  2009/12/29 14:56:01  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * increased IBISSTORE with the field LABEL for adding user data
  *
  * Revision 1.12  2009/12/23 17:09:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -76,7 +79,7 @@ import nl.nn.adapterframework.core.SenderException;
  * @since   4.1
  */
 public class JmsTransactionalStorage extends JmsMessageBrowser implements ITransactionalStorage {
-	public static final String version = "$RCSfile: JmsTransactionalStorage.java,v $ $Revision: 1.13 $ $Date: 2009-12-29 14:56:01 $";
+	public static final String version = "$RCSfile: JmsTransactionalStorage.java,v $ $Revision: 1.14 $ $Date: 2010-01-04 15:05:47 $";
 
 	public static final String FIELD_TYPE="type";
 	public static final String FIELD_ORIGINAL_ID="originalId";
@@ -84,6 +87,7 @@ public class JmsTransactionalStorage extends JmsMessageBrowser implements ITrans
 	public static final String FIELD_COMMENTS="comments";
 	public static final String FIELD_SLOTID="SlotId";
 	public static final String FIELD_HOST="host";
+	public static final String FIELD_LABEL="label";
 
 	private String slotId=null;
 	private String type=null;
@@ -130,7 +134,7 @@ public class JmsTransactionalStorage extends JmsMessageBrowser implements ITrans
 			if (StringUtils.isNotEmpty(getSlotId())) {
 				msg.setStringProperty(FIELD_SLOTID,getSlotId());
 			}
-			//msg.setStringProperty(FIELD_LABEL,label);
+			msg.setStringProperty(FIELD_LABEL,label);
 			return send(session,getDestination(),msg);
 		} catch (Exception e) {
 			throw new SenderException(e);
