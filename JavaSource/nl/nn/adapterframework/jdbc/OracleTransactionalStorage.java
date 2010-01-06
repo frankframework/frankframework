@@ -1,6 +1,9 @@
 /*
  * $Log: OracleTransactionalStorage.java,v $
- * Revision 1.13  2008-12-30 17:01:12  m168309
+ * Revision 1.14  2010-01-06 15:18:45  m168309
+ * added type to index ix_ibisstore
+ *
+ * Revision 1.13  2008/12/30 17:01:12  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added configuration warnings facility (in Show configurationStatus)
  *
  * Revision 1.12  2007/12/27 16:02:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -87,7 +90,7 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 	CONSTRAINT PK_IBISSTORE PRIMARY KEY (MESSAGEKEY)
 	);
 	
-	CREATE INDEX IX_IBISSTORE ON IBISSTORE (SLOTID, MESSAGEDATE);
+	CREATE INDEX IX_IBISSTORE ON IBISSTORE (TYPE, SLOTID, MESSAGEDATE);
 	CREATE SEQUENCE SEQ_IBISSTORE;
 
 	GRANT DELETE, INSERT, SELECT, UPDATE ON IBISSTORE TO <rolenaam>;
@@ -102,7 +105,7 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
  * @deprecated The functionality of the OracleTransactionalStorage has been incorporated in de JdbcTransactionalStorage.
  */
 public class OracleTransactionalStorage extends JdbcTransactionalStorage {
-	public static final String version = "$RCSfile: OracleTransactionalStorage.java,v $ $Revision: 1.13 $ $Date: 2008-12-30 17:01:12 $";
+	public static final String version = "$RCSfile: OracleTransactionalStorage.java,v $ $Revision: 1.14 $ $Date: 2010-01-06 15:18:45 $";
 
 	public void configure() throws ConfigurationException {
 		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();

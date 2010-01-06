@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcTransactionalStorage.java,v $
- * Revision 1.39  2009-12-31 08:16:53  m168309
+ * Revision 1.40  2010-01-06 15:18:45  m168309
+ * added type to index ix_ibisstore
+ *
+ * Revision 1.39  2009/12/31 08:16:53  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added MAXLABELLEN
  *
  * Revision 1.38  2009/12/29 14:54:48  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -214,7 +217,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 	CONSTRAINT PK_IBISSTORE PRIMARY KEY (MESSAGEKEY)
 	);
 	
-	CREATE INDEX <schema_owner>.IX_IBISSTORE ON <schema_owner>.IBISSTORE (SLOTID, MESSAGEDATE);
+	CREATE INDEX <schema_owner>.IX_IBISSTORE ON <schema_owner>.IBISSTORE (TYPE, SLOTID, MESSAGEDATE);
 	CREATE INDEX <schema_owner>.IX_IBISSTORE_02 ON <schema_owner>.IBISSTORE (EXPIRYDATE);
 	CREATE SEQUENCE <schema_owner>.SEQ_IBISSTORE;
 
@@ -258,7 +261,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  * @since 	4.1
  */
 public class JdbcTransactionalStorage extends JdbcFacade implements ITransactionalStorage {
-	public static final String version = "$RCSfile: JdbcTransactionalStorage.java,v $ $Revision: 1.39 $ $Date: 2009-12-31 08:16:53 $";
+	public static final String version = "$RCSfile: JdbcTransactionalStorage.java,v $ $Revision: 1.40 $ $Date: 2010-01-06 15:18:45 $";
 
 	public final static String TYPE_ERRORSTORAGE="E";
 	public final static String TYPE_MESSAGELOG_PIPE="L";
