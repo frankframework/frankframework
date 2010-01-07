@@ -1,15 +1,17 @@
 /*
  * $Log: StatGroupTable.java,v $
- * Revision 1.1  2009-08-26 15:35:11  L190409
+ * Revision 1.1  2010-01-07 13:16:10  L190409
+ * moved statistics related classes to statistics package
+ *
+ * Revision 1.1  2009/08/26 15:35:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * support for storing statistics in a database
  *
  */
-package nl.nn.adapterframework.jdbc;
+package nl.nn.adapterframework.statistics.jdbc;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 
+import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.LogUtil;
 
