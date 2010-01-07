@@ -1,6 +1,9 @@
 /*
  * $Log: SummaryRecord.java,v $
- * Revision 1.1  2009-12-29 14:25:18  L190409
+ * Revision 1.2  2010-01-07 13:18:15  L190409
+ * allow to show trends of statistics
+ *
+ * Revision 1.1  2009/12/29 14:25:18  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * moved statistics to separate package
  *
  */
@@ -17,7 +20,7 @@ import org.apache.log4j.Logger;
 /**
  * Record use to gather statistics data from a file.
  * @author  Gerrit van Brakel
- * @since   4.9.9
+ * @since   4.9.10
  * @version Id
  */
 public class SummaryRecord extends Basics {
@@ -45,6 +48,10 @@ public class SummaryRecord extends Basics {
 				totalSquare=Long.parseLong(value);
 			} 
 		}
+	}
+
+	public XmlBuilder toXml(String name, DecimalFormat timeFormat, DecimalFormat percentageFormat) {
+		return super.toXml("stat", name, timeFormat, percentageFormat);
 	}
 
 	public XmlBuilder toXml(DecimalFormat timeFormat, DecimalFormat percentageFormat) {

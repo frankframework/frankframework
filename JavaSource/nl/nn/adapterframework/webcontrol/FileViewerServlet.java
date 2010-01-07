@@ -1,6 +1,9 @@
 /*
  * $Log: FileViewerServlet.java,v $
- * Revision 1.13  2009-12-29 14:46:57  L190409
+ * Revision 1.14  2010-01-07 13:21:04  L190409
+ * allow to show trends of statistics
+ *
+ * Revision 1.13  2009/12/29 14:46:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * moved statistics to separate package
  * enabled overview over saved statistics file
  *
@@ -40,7 +43,6 @@ import java.io.IOException;
 import java.io.LineNumberReader;
 import java.io.PrintWriter;
 import java.io.Reader;
-import java.io.StringReader;
 import java.net.URL;
 import java.util.Hashtable;
 import java.util.Map;
@@ -67,7 +69,6 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.xml.sax.InputSource;
 
 /**
  * Shows a textfile either as HTML or as Text.
@@ -99,7 +100,7 @@ import org.xml.sax.InputSource;
  * @author Johan Verrips 
  */
 public class FileViewerServlet extends HttpServlet  {
-	public static final String version = "$RCSfile: FileViewerServlet.java,v $ $Revision: 1.13 $ $Date: 2009-12-29 14:46:57 $";
+	public static final String version = "$RCSfile: FileViewerServlet.java,v $ $Revision: 1.14 $ $Date: 2010-01-07 13:21:04 $";
 	protected static Logger log = LogUtil.getLogger(FileViewerServlet.class);	
 
 	// key that is looked up to retrieve texts to be signalled
@@ -257,8 +258,8 @@ public class FileViewerServlet extends HttpServlet  {
 					//log.debug("adapterName ["+adapterName+"]");
 					String extract;
 					
-					if (StringUtils.isEmpty(adapterName)) {
-						StatisticsParser sp = new StatisticsParser(timestamp);
+					if (StringUtils.isEmpty(adapterName) || StringUtils.isEmpty(timestamp)) {
+						StatisticsParser sp = new StatisticsParser(adapterName,timestamp);
 						sp.digestStatistics(fileName);
 						extract=sp.toXml().toXML();
 					} else {

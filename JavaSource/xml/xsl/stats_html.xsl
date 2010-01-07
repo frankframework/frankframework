@@ -84,6 +84,8 @@
 	<xsl:template name="bodyheading" >
 		<xsl:param name="timestamps" />
 		<xsl:param name="adapters" />
+		<xsl:param name="targetTimestamp" select="$timestamp"/>
+		<xsl:param name="targetAdapter"  select="$adapterName"/>
 		<tr>
 			<td width="50px"/>
 			<td class="pagePanel">
@@ -96,7 +98,7 @@
 								<xsl:for-each select="$timestamps">
 									<option>
 										<xsl:attribute name="value"><xsl:value-of select="."/></xsl:attribute>
-										<xsl:if test=".=$timestamp">
+										<xsl:if test=".=$targetTimestamp">
 											<xsl:attribute name="selected"/>
 										</xsl:if>
 										<xsl:value-of select="."/>
@@ -116,7 +118,7 @@
 									<xsl:if test="(.=preceding)=false()">
 										<option>
 											<xsl:attribute name="value"><xsl:value-of select="."/></xsl:attribute>
-											<xsl:if test=".=$adapterName">
+											<xsl:if test=".=$targetAdapter">
 												<xsl:attribute name="selected"/>
 											</xsl:if>
 											<xsl:value-of select="."/>
@@ -423,7 +425,9 @@
 	<xsl:template match="overview">
 		<xsl:call-template name="bodyheading">
 			<xsl:with-param name="timestamps" select="timestamps/timestamp/@value" />
-			<xsl:with-param name="adapters" select="data/stat/@name" />
+			<xsl:with-param name="adapters" select="adapters/adapter/@name" />
+			<xsl:with-param name="targetTimestamp" select="timestamps/@targetTimestamp" />
+			<xsl:with-param name="targetAdapter" select="adapters/@targetAdapter" />
 		</xsl:call-template>
 		<xsl:variable name="itemnames" select="data/stat/summary/item[count(. | key('item-by-name',@name)[1])=1]/@name" />
 		<tr>
