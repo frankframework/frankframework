@@ -1,6 +1,10 @@
 /*
  * $Log: ZipWriterPipe.java,v $
- * Revision 1.1  2010-01-06 17:57:35  L190409
+ * Revision 1.2  2010-01-07 13:14:20  L190409
+ * improved robustness: filename of file to be written must be specified
+ * by input message. Parameter is only used for logical filenames.
+ *
+ * Revision 1.1  2010/01/06 17:57:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * classes for reading and writing zip archives
  *
  */
@@ -39,7 +43,7 @@ import org.apache.log4j.lf5.util.StreamUtils;
  * <li>OutputStream</li>
  * <li>HttpResponse</li>
  * </ul>
- * If a parameter 'filename' is present, and the input is not OutputStream, then the parameter takes precedence over the filename specifed by the input.
+ * The parameter 'filename' is used to specify the filename if the input is a HttpResponse.
  *
  * <p><b>Configuration:</b>
  * <table border="1">
@@ -130,39 +134,29 @@ public class ZipWriterPipe extends FixedForwardPipe {
 	protected ZipWriter createZipWriter(PipeLineSession session, ParameterValueList pvl, Object input) throws PipeRunException {
 		if (log.isDebugEnabled()) log.debug(getLogPrefix(session)+"opening new zipstream");
 		OutputStream resultStream=null;
-		if (input!=null) {
-			if (input instanceof OutputStream) {
-				resultStream=(OutputStream)input;
-			} else if (input instanceof HttpServletResponse) {
-				ParameterValue pv=pvl.getParameterValue(PARAMETER_FILENAME);
-				if (pv==null) {
-					throw new PipeRunException(this,getLogPrefix(session)+"parameter 'filename' not found, but required if stream is HttpServletResponse");
-				}
-				String filename=pv.asStringValue("download.zip");
-				try {
-					HttpServletResponse response=(HttpServletResponse)input;
-					StreamUtil.openZipDownload(response,filename);
-					resultStream=response.getOutputStream();
-				} catch (IOException e) {
-					throw new PipeRunException(this,getLogPrefix(session)+"cannot open download for ["+filename+"]",e);
-				}
-			}
+		if (input==null) {
+			throw new PipeRunException(this,getLogPrefix(session)+"input cannot be null, must be OutputStream, HttpResponse or String containing filename");
 		}
-		if (resultStream==null) {
-			String filename;
-			if (filenameParameter!=null) {
-				ParameterValue pv=pvl.getParameterValue(PARAMETER_FILENAME);
-				filename=pv.asStringValue("");
-				if (StringUtils.isEmpty(filename)) {
-					throw new PipeRunException(this,getLogPrefix(session)+"parameter filename must contain a filename");
-				}
-			} else {
-				if (input instanceof String) {
-					filename=(String)input;
-				} else {
-					throw new PipeRunException(this,getLogPrefix(session)+"input message must contain a filename");
-				}
-			}			
+		if (input instanceof OutputStream) {
+			resultStream=(OutputStream)input;
+		} else if (input instanceof HttpServletResponse) {
+			ParameterValue pv=pvl.getParameterValue(PARAMETER_FILENAME);
+			if (pv==null) {
+				throw new PipeRunException(this,getLogPrefix(session)+"parameter 'filename' not found, but required if stream is HttpServletResponse");
+			}
+			String filename=pv.asStringValue("download.zip");
+			try {
+				HttpServletResponse response=(HttpServletResponse)input;
+				StreamUtil.openZipDownload(response,filename);
+				resultStream=response.getOutputStream();
+			} catch (IOException e) {
+				throw new PipeRunException(this,getLogPrefix(session)+"cannot open download for ["+filename+"]",e);
+			}
+		} else if (input instanceof String) {
+			String filename=(String)input;
+			if (StringUtils.isEmpty(filename)) {
+				throw new PipeRunException(this,getLogPrefix(session)+"input string cannot be empty but must contain a filename");
+			}
 			try {
 				resultStream =new FileOutputStream(filename);
 			} catch (FileNotFoundException e) {
