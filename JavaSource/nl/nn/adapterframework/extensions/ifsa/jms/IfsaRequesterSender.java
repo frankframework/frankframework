@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaRequesterSender.java,v $
- * Revision 1.15  2009-12-29 14:33:24  L190409
+ * Revision 1.16  2010-01-13 13:55:21  m168309
+ * added attribute bifNameSessionKey
+ *
+ * Revision 1.15  2009/12/29 14:33:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * modified imports to reflect move of statistics classes to separate package
  *
  * Revision 1.14  2009/06/05 07:23:22  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -162,6 +165,7 @@ import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.JtaUtil;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 
 import com.ing.ifsa.IFSAQueue;
@@ -188,6 +192,7 @@ import com.ing.ifsa.IFSATimeOutMessage;
  * </ul></td><td><td>&nbsp;</td></td></tr>
  * <tr><td>{@link #setTimeOut(long) timeOut}</td><td>receiver timeout, in milliseconds. To use the timeout defined as IFSA expiry, set this value to -1</td><td>20000 (20s)</td></tr>
  * <tr><td>{@link #setThrowExceptions(boolean) throwExceptions}</td><td>when <code>true</code>, IFSA reports and response messages consisting of a &lt;exception&gt;-element are converted into an exception</td><td><code>true</code></td></tr>
+ * <tr><td>{@link #setBifNameSessionKey(String) bifNameSessionKey}</td><td>The session key that contains the BIF name to use</td><td>&nbsp;</td></tr>
  * </table>
  * <table border="1">
  * <p><b>Parameters:</b>
@@ -201,9 +206,10 @@ import com.ing.ifsa.IFSATimeOutMessage;
  * @since  4.2
  */
 public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParameters, HasStatistics {
-	public static final String version="$RCSfile: IfsaRequesterSender.java,v $ $Revision: 1.15 $ $Date: 2009-12-29 14:33:24 $";
+	public static final String version="$RCSfile: IfsaRequesterSender.java,v $ $Revision: 1.16 $ $Date: 2010-01-13 13:55:21 $";
 
 	private boolean throwExceptions=true;	
+	protected String bifNameSessionKey;
 	
 	protected ParameterList paramList = null;
 	private StatisticsKeeper businessProcessTimes;
@@ -330,7 +336,10 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 			}
 		}
 		//IFSAMessage originatingMessage = (IFSAMessage)prc.getSession().get(PushingIfsaProviderListener.THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY);
-		String BIF=(String)prc.getSession().get(PushingIfsaProviderListener.THREAD_CONTEXT_BIFNAME_KEY);
+		String BIF = (String)prc.getSession().get(getBifNameSessionKey());
+		if (StringUtils.isEmpty(BIF)) {
+			BIF=(String)prc.getSession().get(PushingIfsaProviderListener.THREAD_CONTEXT_BIFNAME_KEY);
+		}
 		return sendMessage(dummyCorrelationId, message, params,BIF,null);
 	}
 
@@ -382,7 +391,7 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 			}
 			sender = createSender(session, queue);
 
-			log.debug(getLogPrefix()+"sending message");
+			log.debug(getLogPrefix()+"sending message with bifName [" + bifName + "]");
 
 		    TextMessage sentMessage=sendMessage(session, sender, message, udzMap, bifName, btcData);
 			log.debug(getLogPrefix()+"message sent");
@@ -502,4 +511,10 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 		return throwExceptions;
 	}
 
+	public void setBifNameSessionKey(String bifnameSessionKey) {
+		this.bifNameSessionKey = bifnameSessionKey;
+	}
+	public String getBifNameSessionKey() {
+		return bifNameSessionKey;
+	}
 }
