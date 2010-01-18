@@ -39,6 +39,11 @@
 					<xsl:attribute name="name">
 						<xsl:value-of select="concat('testtool-',parent::*[name()='adapter']/@name)" />
 					</xsl:attribute>
+					<xsl:if test="parent::*[name()='adapter']/receiver/@labelXPath">
+						<xsl:attribute name="labelXPath">
+							<xsl:value-of select="parent::*[name()='adapter']/receiver/@labelXPath" />
+						</xsl:attribute>
+					</xsl:if>
 					<xsl:element name="listener">
 						<xsl:attribute name="className">nl.nn.adapterframework.receivers.JavaListener</xsl:attribute>
 						<xsl:attribute name="serviceName">
