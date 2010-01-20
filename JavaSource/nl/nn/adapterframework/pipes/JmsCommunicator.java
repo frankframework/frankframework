@@ -1,5 +1,7 @@
 package nl.nn.adapterframework.pipes;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.ICorrelatedPullingListener;
 import nl.nn.adapterframework.jms.JmsSender;
 
@@ -44,15 +46,23 @@ import nl.nn.adapterframework.jms.JmsSender;
  * </p>
  * @version Id
  * @author Johan Verrips
+ * @deprecated please use GenericMessageSendingPipe with JmsSender (and if necessary JmsListener), that has same functionality
  */
 
 public class JmsCommunicator extends MessageSendingPipe {
-	public static final String version="$Id: JmsCommunicator.java,v 1.5 2004-08-23 13:10:09 L190409 Exp $";
+	public static final String version="$Id: JmsCommunicator.java,v 1.6 2010-01-20 09:53:19 m168309 Exp $";
 
 public JmsCommunicator() {
 	super();
 	setSender(new JmsSender());
 }
+
+	public void configure() throws ConfigurationException {
+		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+		String msg = getLogPrefix(null)+"The class ["+getClass().getName()+"] has been deprecated. Please change to ["+GenericMessageSendingPipe.class.getName()+"]";
+		configWarnings.add(log, msg);
+		super.configure();
+	}
 	public void setListener(ICorrelatedPullingListener listener) {
 		super.setListener(listener);
 	}
