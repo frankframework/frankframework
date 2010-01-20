@@ -1,6 +1,9 @@
 /*
  * $Log: PushingJmsListener.java,v $
- * Revision 1.17  2009-07-28 12:44:24  L190409
+ * Revision 1.18  2010-01-20 08:23:58  m168309
+ * bugfix - avoid NPE in getDeliveryCount
+ *
+ * Revision 1.17  2009/07/28 12:44:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * enable SOAP over JMS
  *
  * Revision 1.16  2008/09/01 15:13:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -186,7 +189,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class PushingJmsListener extends JmsListenerBase implements IPortConnectedListener, IThreadCountControllable, IKnowsDeliveryCount {
-    public static final String version="$RCSfile: PushingJmsListener.java,v $ $Revision: 1.17 $ $Date: 2009-07-28 12:44:24 $";
+    public static final String version="$RCSfile: PushingJmsListener.java,v $ $Revision: 1.18 $ $Date: 2010-01-20 08:23:58 $";
 
 	private String listenerPort;
 	private String cacheMode; 
@@ -427,8 +430,11 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 			int value = message.getIntProperty("JMSXDeliveryCount");
 			if (log.isDebugEnabled()) log.debug("determined delivery count ["+value+"]");
 			return value;
+		} catch (NumberFormatException nfe) {
+			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"NumberFormatException in determination of DeliveryCount");
+			return -1;
 		} catch (Exception e) {
-			log.error(getLogPrefix()+"exception in determination of DeliveryCount",e);
+			log.error(getLogPrefix()+"exception in determination of DeliveryCount", e);
 			return -1;
 		}
 	}
