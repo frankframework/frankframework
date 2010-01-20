@@ -1,9 +1,10 @@
 /*
  * $Log: FilePipe.java,v $
- * Revision 1.19  2009-12-11 15:04:44  l562891
- * Revision 1.19  2009/12/11 10:04:15  europe\L562891
- * Fixed problem with fileNameSessionKey when action is read file.
+ * Revision 1.20  2010-01-20 11:02:20  l562891
+ * FilePipe - FileDelete now accepts  filename, filenamesessionkey and/or directory
  *
+ * Revision 1.19  2009/12/11 15:04:44  Martijn Onstwedder <martijn.onstwedder@ibissource.org>
+ * Fixed problem with fileNameSessionKey when action is read file.
  * 
  * Revision 1.18  2007/12/27 16:04:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * force file to be created for action 'create'
@@ -124,7 +125,7 @@ import sun.misc.BASE64Encoder;
  *
  */
 public class FilePipe extends FixedForwardPipe {
-	public static final String version="$RCSfile: FilePipe.java,v $ $Revision: 1.19 $ $Date: 2009-12-11 15:04:44 $";
+	public static final String version="$RCSfile: FilePipe.java,v $ $Revision: 1.20 $ $Date: 2010-01-20 11:02:20 $";
 
 	protected String actions;
 	protected String directory;
@@ -391,25 +392,73 @@ public class FilePipe extends FixedForwardPipe {
 	 */
 	private class FileDeleter implements TransformerAction {
 		public void configure() throws ConfigurationException {
-						
+															
 			if (StringUtils.isNotEmpty(getDirectory())) {
 				File file = new File(getDirectory());
 				if (! (file.exists() && file.isDirectory())) {
 					throw new ConfigurationException(directory + " is not a directory");
 				}
 			}
-			else {
-				throw new ConfigurationException("directory is not specified");
-			}
+			
 		}
 		public byte[] go(byte[] in, PipeLineSession session) throws Exception {
 			File file;
-			if (getFileName() == null) {
-				file = new File(getDirectory(), new String(in));
-			} else {
-				file = new File(getDirectory(), getFileName());
+			
+			/* take filename from 
+			 * 1) filename param
+			 * 2) filenamesessionkey
+			 * 3) otherwise take the pipe input  
+			*/
+			//String theFilePath = new String("");
+			String name = fileName;
+			
+			if (StringUtils.isEmpty(name)) {
+				name = (String)session.get(fileNameSessionKey);
 			}
-			file.delete();
+			if (name == null ) {
+				name = new String(in); 
+			}
+
+			/* check for directory path 
+			 * first from filename 
+			 * from  directory param
+			 */					
+			 /*				 
+			file = new File ( name );
+			name = file.getName().toString();
+			if ( file.getParentFile()!= null) 
+			{
+				theFilePath = file.getParentFile().toString();
+			}								 				
+			
+			if ( getDirectory() == null )
+				{ 
+					directory = theFilePath; 
+				}
+			else
+				{ 
+					directory =  getDirectory();
+				}	
+			*/
+			
+			if ( getDirectory() != null )
+			{
+				file = new File(getDirectory(), name);
+			}
+			else
+			{
+				file = new File( name );
+			}
+											
+			
+						
+			/* delete the file */
+			boolean success = file.delete();
+			if (!success){
+			   log.warn( getLogPrefix(session) + "Filedelete failed (file: " + file.toString() +")");
+			 }else{
+			   log.debug(getLogPrefix(session) + "Filedelete success (file: " + file.toString() +")");
+			 }
 			return in;
 		}
 	}
