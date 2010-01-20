@@ -1,6 +1,10 @@
 /*
  * $Log: FilePipe.java,v $
- * Revision 1.21  2010-01-20 12:52:09  l562891
+ * Revision 1.22  2010-01-20 14:57:06  l562891
+ * FilePipe - FileDelete now accepts  filename, filenamesessionkey and/or directory
+ * also logs delete/failure of delete/file not exists.
+ *
+ * Revision 1.21  2010/01/20 12:52:09  Martijn Onstwedder <martijn.onstwedder@ibissource.org>
  * FilePipe - FileDelete now accepts  filename, filenamesessionkey and/or directory
  * also logs deletion.
  *
@@ -126,7 +130,7 @@ import sun.misc.BASE64Encoder;
  *
  */
 public class FilePipe extends FixedForwardPipe {
-	public static final String version="$RCSfile: FilePipe.java,v $ $Revision: 1.21 $ $Date: 2010-01-20 12:52:09 $";
+	public static final String version="$RCSfile: FilePipe.java,v $ $Revision: 1.22 $ $Date: 2010-01-20 14:57:06 $";
 
 	protected String actions;
 	protected String directory;
@@ -406,17 +410,19 @@ public class FilePipe extends FixedForwardPipe {
 			File file;
 			
 			/* take filename from 
-			 * 1) filename param
-			 * 2) filenamesessionkey
+			 * 1) fileName attribute
+			 * 2) fileNameSessionKey
 			 * 3) otherwise take the pipe input  
 			*/
+			
 			String name = fileName;
 			
-			if (StringUtils.isEmpty(name)) {
-				name = (String)session.get(fileNameSessionKey);
-			}
-			if (name == null ) {
-				name = new String(in); 
+			if (StringUtils.isEmpty(name))
+			{ 
+			 if (!(StringUtils.isEmpty(fileNameSessionKey)))
+			 { name = (String)session.get(fileNameSessionKey); }
+			  else 
+			 {	name = new String(in); }
 			}
 
 			/* check for directory path 
@@ -432,13 +438,20 @@ public class FilePipe extends FixedForwardPipe {
 				file = new File( name );
 			}
 											
-			/* delete the file */
-			boolean success = file.delete();
-			if (!success){
-			   log.warn( getLogPrefix(session) + "Filedelete failed (file: " + file.toString() +")");
-			 }else{
-			   log.debug(getLogPrefix(session) + "Filedelete success (file: " + file.toString() +")");
-			 }
+			/* if file exists, delete the file */
+			if (file.exists()) 
+			{
+				boolean success = file.delete();
+				if (!success){
+				   log.warn( getLogPrefix(session) + "could not delete file [" + file.toString() +"]");
+				 }else{
+				   log.debug(getLogPrefix(session) + "deleted file [" + file.toString() +"]");
+				 } 
+			}
+			else
+			{
+				log.warn( getLogPrefix(session) + "file [" + file.toString() +"] does not exist");
+			}
 			return in;
 		}
 	}
