@@ -1,7 +1,8 @@
 /*
  * $Log: FilePipe.java,v $
- * Revision 1.20  2010-01-20 11:02:20  l562891
+ * Revision 1.21  2010-01-20 12:52:09  l562891
  * FilePipe - FileDelete now accepts  filename, filenamesessionkey and/or directory
+ * also logs deletion.
  *
  * Revision 1.19  2009/12/11 15:04:44  Martijn Onstwedder <martijn.onstwedder@ibissource.org>
  * Fixed problem with fileNameSessionKey when action is read file.
@@ -125,7 +126,7 @@ import sun.misc.BASE64Encoder;
  *
  */
 public class FilePipe extends FixedForwardPipe {
-	public static final String version="$RCSfile: FilePipe.java,v $ $Revision: 1.20 $ $Date: 2010-01-20 11:02:20 $";
+	public static final String version="$RCSfile: FilePipe.java,v $ $Revision: 1.21 $ $Date: 2010-01-20 12:52:09 $";
 
 	protected String actions;
 	protected String directory;
@@ -409,7 +410,6 @@ public class FilePipe extends FixedForwardPipe {
 			 * 2) filenamesessionkey
 			 * 3) otherwise take the pipe input  
 			*/
-			//String theFilePath = new String("");
 			String name = fileName;
 			
 			if (StringUtils.isEmpty(name)) {
@@ -420,27 +420,9 @@ public class FilePipe extends FixedForwardPipe {
 			}
 
 			/* check for directory path 
-			 * first from filename 
-			 * from  directory param
+			 * if param directory not filled, 
+			 * then filename's filepath.
 			 */					
-			 /*				 
-			file = new File ( name );
-			name = file.getName().toString();
-			if ( file.getParentFile()!= null) 
-			{
-				theFilePath = file.getParentFile().toString();
-			}								 				
-			
-			if ( getDirectory() == null )
-				{ 
-					directory = theFilePath; 
-				}
-			else
-				{ 
-					directory =  getDirectory();
-				}	
-			*/
-			
 			if ( getDirectory() != null )
 			{
 				file = new File(getDirectory(), name);
@@ -450,8 +432,6 @@ public class FilePipe extends FixedForwardPipe {
 				file = new File( name );
 			}
 											
-			
-						
 			/* delete the file */
 			boolean success = file.delete();
 			if (!success){
