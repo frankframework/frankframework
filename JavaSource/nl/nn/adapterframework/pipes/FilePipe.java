@@ -1,6 +1,9 @@
 /*
  * $Log: FilePipe.java,v $
- * Revision 1.22  2010-01-20 14:57:06  l562891
+ * Revision 1.23  2010-01-22 09:17:09  l562891
+ * Updated to conform to convention
+ *
+ * Revision 1.22  2010/01/20 14:57:06  Martijn Onstwedder <martijn.onstwedder@ibissource.org>
  * FilePipe - FileDelete now accepts  filename, filenamesessionkey and/or directory
  * also logs delete/failure of delete/file not exists.
  *
@@ -130,7 +133,7 @@ import sun.misc.BASE64Encoder;
  *
  */
 public class FilePipe extends FixedForwardPipe {
-	public static final String version="$RCSfile: FilePipe.java,v $ $Revision: 1.22 $ $Date: 2010-01-20 14:57:06 $";
+	public static final String version="$RCSfile: FilePipe.java,v $ $Revision: 1.23 $ $Date: 2010-01-22 09:17:09 $";
 
 	protected String actions;
 	protected String directory;
@@ -417,39 +420,37 @@ public class FilePipe extends FixedForwardPipe {
 			
 			String name = fileName;
 			
-			if (StringUtils.isEmpty(name))
-			{ 
-			 if (!(StringUtils.isEmpty(fileNameSessionKey)))
-			 { name = (String)session.get(fileNameSessionKey); }
-			  else 
-			 {	name = new String(in); }
+			if (StringUtils.isEmpty(name)) { 
+				if (!(StringUtils.isEmpty(fileNameSessionKey))) { 
+					name = (String)session.get(fileNameSessionKey); 
+				}
+			  	else {	
+			  		name = new String(in); 
+			  	}
 			}
 
 			/* check for directory path 
 			 * if param directory not filled, 
 			 * then filename's filepath.
 			 */					
-			if ( getDirectory() != null )
-			{
+			if ( getDirectory() != null ) {
 				file = new File(getDirectory(), name);
-			}
-			else
-			{
+			} 
+			else {
 				file = new File( name );
 			}
 											
 			/* if file exists, delete the file */
-			if (file.exists()) 
-			{
+			if (file.exists()) {
 				boolean success = file.delete();
 				if (!success){
 				   log.warn( getLogPrefix(session) + "could not delete file [" + file.toString() +"]");
-				 }else{
+				} 
+				else {
 				   log.debug(getLogPrefix(session) + "deleted file [" + file.toString() +"]");
-				 } 
+				} 
 			}
-			else
-			{
+			else {
 				log.warn( getLogPrefix(session) + "file [" + file.toString() +"] does not exist");
 			}
 			return in;
