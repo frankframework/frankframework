@@ -1,6 +1,9 @@
 /*
  * $Log: ConfigurationDigester.java,v $
- * Revision 1.30  2009-11-24 08:32:00  m168309
+ * Revision 1.31  2010-01-27 15:32:55  L190409
+ * show name of last resolved entity in errormessages
+ *
+ * Revision 1.30  2009/11/24 08:32:00  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * excluded ${property.key} values from default value check
  *
  * Revision 1.29  2009/08/26 15:25:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -86,6 +89,7 @@
  */
 package nl.nn.adapterframework.configuration;
 
+import java.io.IOException;
 import java.io.StringReader;
 import java.net.URL;
 import java.util.Collection;
@@ -103,13 +107,17 @@ import nl.nn.adapterframework.util.XmlUtils;
 import org.apache.commons.digester.Digester;
 import org.apache.commons.digester.Rule;
 import org.apache.commons.digester.xmlrules.FromXmlRuleSet;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.w3c.dom.Element;
+import org.xml.sax.EntityResolver;
 import org.xml.sax.ErrorHandler;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 /**
@@ -146,7 +154,7 @@ import org.xml.sax.SAXParseException;
  * @see Configuration
  */
 abstract public class ConfigurationDigester implements BeanFactoryAware {
-	public static final String version = "$RCSfile: ConfigurationDigester.java,v $ $Revision: 1.30 $ $Date: 2009-11-24 08:32:00 $";
+	public static final String version = "$RCSfile: ConfigurationDigester.java,v $ $Revision: 1.31 $ $Date: 2010-01-27 15:32:55 $";
     protected static Logger log = LogUtil.getLogger(ConfigurationDigester.class);
 	private ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 
@@ -165,6 +173,8 @@ abstract public class ConfigurationDigester implements BeanFactoryAware {
     private BeanFactory beanFactory;
     
 	private Configuration configuration;
+	
+	String lastResolvedEntity=null;
 
     /**
      * This method is runtime implemented by Spring Framework to
@@ -187,6 +197,26 @@ abstract public class ConfigurationDigester implements BeanFactoryAware {
 			throw(exception);
 		}
 	}
+	
+	public class NameTrackingEntityResolver implements EntityResolver {
+
+		EntityResolver resolver;
+		
+		NameTrackingEntityResolver(EntityResolver resolver) {
+			super();
+			this.resolver=resolver;
+		}
+
+		public InputSource resolveEntity(String publicID, String systemID) throws SAXException, IOException {
+			if (StringUtils.isNotEmpty(systemID)) {
+				lastResolvedEntity=systemID;
+			} else { 
+				lastResolvedEntity=publicID;
+			}
+			return resolver.resolveEntity(publicID,systemID);
+		}
+	}
+	
     
     public void digestConfiguration(Object stackTop, URL digesterRulesURL, URL configurationFileURL) throws ConfigurationException {
 		
@@ -199,8 +229,7 @@ abstract public class ConfigurationDigester implements BeanFactoryAware {
 		Digester digester = createDigester();
 		//digester.setUseContextClassLoader(true);
 
-		//	set the entity resolver to load entity references from the classpath
-		//digester.setEntityResolver(new ClassPathEntityResolver());
+		digester.setEntityResolver(new NameTrackingEntityResolver(digester.getEntityResolver()));
 		
 		// push config on the stack
 		digester.push(stackTop);
@@ -284,7 +313,7 @@ abstract public class ConfigurationDigester implements BeanFactoryAware {
 			// wrap exception to be sure it gets rendered via the IbisException-renderer
 			String currentElementName=digester.getCurrentElementName();
 			ConfigurationException e = new ConfigurationException("error during unmarshalling configuration from file ["+configurationFileURL +
-			"] with digester-rules-file ["+digesterRulesURL+"] in element ["+currentElementName+"]", t);
+			"] with digester-rules-file ["+digesterRulesURL+"] in element ["+currentElementName+"]"+(StringUtils.isEmpty(lastResolvedEntity)?"":" last resolved entity ["+lastResolvedEntity+"]"), t);
 			if (configuration!=null) {
 				configuration.setConfigurationException(e);
 			}
