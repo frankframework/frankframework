@@ -1,6 +1,9 @@
 /*
  * $Log: Result2Filewriter.java,v $
- * Revision 1.16  2007-09-24 14:55:33  europe\L190409
+ * Revision 1.17  2010-01-27 13:34:43  L190409
+ * added documentation for attribute blockByRecordType
+ *
+ * Revision 1.16  2007/09/24 14:55:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * support for parameters
  *
  * Revision 1.15  2007/09/24 13:02:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -80,6 +83,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setOnOpenBlock(String) onOpenBlock}</td><td>String that is written before the start of each logical block, as defined in the flow</td><td>&lt;#name#&gt;</td></tr>
  * <tr><td>{@link #setOnCloseBlock(String) onCloseBlock}</td><td>String that is written after the end of each logical block, as defined in the flow</td><td>&lt;/#name#&gt;</td></tr>
  * <tr><td>{@link #setBlockNamePattern(String) blockNamePattern}</td><td>String that is replaced by name of block or name of stream in above strings</td><td>#name#</td></tr>
+ * <tr><td>{@link #setBlockByRecordType(boolean) blockByRecordType}</td><td>when set <code>true</code>(default), every group of records, as indicated by {@link IRecordHandler.isNewRecordType RecordHandler.newRecordType} is handled as a block.</td><td>true</td></tr>
  * <tr><td>{@link #setOutputDirectory(String) outputDirectory}</td><td>Directory in which the resultfile must be stored</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setFilenamePattern(String) filenamePattern}</td><td>Name of the file is created using the MessageFormat. Params: 1=inputfilename, 2=extension of file, 3=current date</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMove2dirAfterFinalize(String) move2dirAfterFinalize}</td><td>Directory to which the created file must be moved after finalization (is optional)</td><td>&nbsp;</td></tr>
@@ -90,7 +94,6 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class Result2Filewriter extends ResultWriter {
-	public static final String version = "$RCSfile: Result2Filewriter.java,v $  $Revision: 1.16 $ $Date: 2007-09-24 14:55:33 $";
 	
 	private String outputDirectory;
 	private String move2dirAfterFinalize;

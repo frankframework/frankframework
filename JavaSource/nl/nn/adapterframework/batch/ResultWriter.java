@@ -1,6 +1,9 @@
 /*
  * $Log: ResultWriter.java,v $
- * Revision 1.9  2010-01-27 12:21:51  L190409
+ * Revision 1.10  2010-01-27 13:33:39  L190409
+ * added documentation for attribute blockByRecordType
+ *
+ * Revision 1.9  2010/01/27 12:21:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed some debug logging
  *
  * Revision 1.8  2007/09/24 14:55:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -61,6 +64,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setOnOpenBlock(String) onOpenBlock}</td><td>String that is written before the start of each logical block, as defined in the flow</td><td>&lt;#name#&gt;</td></tr>
  * <tr><td>{@link #setOnCloseBlock(String) onCloseBlock}</td><td>String that is written after the end of each logical block, as defined in the flow</td><td>&lt;/#name#&gt;</td></tr>
  * <tr><td>{@link #setBlockNamePattern(String) blockNamePattern}</td><td>String that is replaced by name of block or name of stream in above strings</td><td>#name#</td></tr>
+ * <tr><td>{@link #setBlockByRecordType(boolean) blockByRecordType}</td><td>when set <code>true</code>(default), every group of records, as indicated by {@link IRecordHandler.isNewRecordType RecordHandler.newRecordType} is handled as a block.</td><td>true</td></tr>
  * </table>
  * </p>
  * 

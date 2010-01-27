@@ -1,6 +1,9 @@
 /*
  * $Log: ResultBlock2Sender.java,v $
- * Revision 1.8  2009-08-31 09:21:58  m168309
+ * Revision 1.9  2010-01-27 13:34:43  L190409
+ * added documentation for attribute blockByRecordType
+ *
+ * Revision 1.8  2009/08/31 09:21:58  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * moved deleting of originalBlock sessionkey from ResultBlock2Sender to StreamTransformerPipe
  *
  * Revision 1.7  2008/12/23 12:50:25  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -57,6 +60,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setOnOpenBlock(String) onOpenBlock}</td><td>String that is written before the start of each logical block, as defined in the flow</td><td>&lt;#name#&gt;</td></tr>
  * <tr><td>{@link #setOnCloseBlock(String) onCloseBlock}</td><td>String that is written after the end of each logical block, as defined in the flow</td><td>&lt;/#name#&gt;</td></tr>
  * <tr><td>{@link #setBlockNamePattern(String) blockNamePattern}</td><td>String that is replaced by name of block or name of stream in above strings</td><td>#name#</td></tr>
+ * <tr><td>{@link #setBlockByRecordType(boolean) blockByRecordType}</td><td>when set <code>true</code>(default), every group of records, as indicated by {@link IRecordHandler.isNewRecordType RecordHandler.newRecordType} is handled as a block.</td><td>true</td></tr>
  * </table>
  * </p>
  * <table border="1">

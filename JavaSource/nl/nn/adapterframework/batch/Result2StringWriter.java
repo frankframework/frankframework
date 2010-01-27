@@ -1,6 +1,9 @@
 /*
  * $Log: Result2StringWriter.java,v $
- * Revision 1.5  2008-02-19 09:49:17  europe\L190409
+ * Revision 1.6  2010-01-27 13:34:43  L190409
+ * added documentation for attribute blockByRecordType
+ *
+ * Revision 1.5  2008/02/19 09:49:17  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.4  2008/02/19 09:23:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -44,6 +47,7 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
  * <tr><td>{@link #setOnOpenBlock(String) onOpenBlock}</td><td>String that is written before the start of each logical block, as defined in the flow</td><td>&lt;#name#&gt;</td></tr>
  * <tr><td>{@link #setOnCloseBlock(String) onCloseBlock}</td><td>String that is written after the end of each logical block, as defined in the flow</td><td>&lt;/#name#&gt;</td></tr>
  * <tr><td>{@link #setBlockNamePattern(String) blockNamePattern}</td><td>String that is replaced by name of block or name of stream in above strings</td><td>#name#</td></tr>
+ * <tr><td>{@link #setBlockByRecordType(boolean) blockByRecordType}</td><td>when set <code>true</code>(default), every group of records, as indicated by {@link IRecordHandler.isNewRecordType RecordHandler.newRecordType} is handled as a block.</td><td>true</td></tr>
  * </table>
  * </p>
  * 
@@ -52,7 +56,6 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
  * @version Id
  */
 public class Result2StringWriter extends ResultWriter {
-	public static final String version = "$RCSfile: Result2StringWriter.java,v $  $Revision: 1.5 $ $Date: 2008-02-19 09:49:17 $";
 	
 	private Map openWriters = Collections.synchronizedMap(new HashMap());
 	
