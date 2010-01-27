@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractResultHandler.java,v $
- * Revision 1.14  2008-02-19 09:23:48  europe\L190409
+ * Revision 1.15  2010-01-27 13:33:03  L190409
+ * added attribute blockByRecordType
+ *
+ * Revision 1.14  2008/02/19 09:23:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.13  2007/09/24 14:55:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -45,12 +48,14 @@
 package nl.nn.adapterframework.batch;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IWithParameters;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.commons.lang.StringUtils;
@@ -68,6 +73,7 @@ import org.apache.log4j.Logger;
  * <tr><td>{@link #setPrefix(String) prefix}</td><td><i>Deprecated</i> Prefix that has to be written before record, if the record is in another block than the previous record</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSuffix(String) suffix}</td><td><i>Deprecated</i> Suffix that has to be written after the record, if the record is in another block than the next record. <br/>N.B. If a suffix is set without a prefix, it is only used at the end of processing (i.e. at the end of the file) as a final close</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDefault(boolean) default}</td><td>If set <code>true</code>, this ResultHandler is the default for all {@link RecordHandlingFlow flow}s that do not have a handler specified</td><td>false</td></tr>
+ * <tr><td>{@link #setBlockByRecordType(boolean) blockByRecordType}</td><td>when set <code>true</code>(default), every group of records, as indicated by {@link IRecordHandler.isNewRecordType RecordHandler.newRecordType} is handled as a block.</td><td>true</td></tr>
  * </table>
  * </p>
  * 
@@ -81,12 +87,17 @@ public abstract class AbstractResultHandler implements IResultHandler, IWithPara
 	private String prefix;
 	private String suffix;
 	private boolean defaultResultHandler;
+	private boolean blockByRecordType=true;
 	
 	protected ParameterList paramList = null;
 
 	public void configure() throws ConfigurationException {
 		if (paramList!=null) {
 			paramList.configure();
+		}
+		if (StringUtils.isNotEmpty(getPrefix()) || StringUtils.isNotEmpty(getSuffix())) {
+			ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+			configWarnings.add(ClassUtils.nameOf(this)+" ["+getName()+"]: the use of attributes prefix and suffix has been replaced by 'blocks'. Please replace with 'onBlockOpen' and 'onBlockClose', respectively");	 
 		}
 	}
 	public void open() throws SenderException {
@@ -138,4 +149,10 @@ public abstract class AbstractResultHandler implements IResultHandler, IWithPara
 		return defaultResultHandler;
 	}
 
+	public void setBlockByRecordType(boolean b) {
+		blockByRecordType = b;
+	}
+	public boolean isBlockByRecordType() {
+		return blockByRecordType;
+	}
 }
