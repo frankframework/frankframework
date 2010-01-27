@@ -1,6 +1,9 @@
 /*
  * $Log: ResultWriter.java,v $
- * Revision 1.8  2007-09-24 14:55:33  europe\L190409
+ * Revision 1.9  2010-01-27 12:21:51  L190409
+ * removed some debug logging
+ *
+ * Revision 1.8  2007/09/24 14:55:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * support for parameters
  *
  * Revision 1.7  2007/09/24 13:02:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -66,7 +69,6 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public abstract class ResultWriter extends AbstractResultHandler {
-	public static final String version = "$RCSfile: ResultWriter.java,v $  $Revision: 1.8 $ $Date: 2007-09-24 14:55:33 $";
 	
 	private String onOpenDocument="<document name=\"#name#\">";
 	private String onCloseDocument="</document>";
@@ -177,7 +179,7 @@ public abstract class ResultWriter extends AbstractResultHandler {
 
 
 	protected Writer getWriter(PipeLineSession session, String streamId, boolean create, ParameterResolutionContext prc) throws Exception {
-		log.debug("getWriter ["+streamId+"], create ["+create+"]");
+		//log.debug("getWriter ["+streamId+"], create ["+create+"]");
 		Writer writer;
 		writer = (Writer)openWriters.get(streamId);
 		if (writer != null) {
