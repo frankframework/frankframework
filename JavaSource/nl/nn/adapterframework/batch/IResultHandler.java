@@ -1,6 +1,9 @@
 /*
  * $Log: IResultHandler.java,v $
- * Revision 1.10  2007-09-24 14:55:33  europe\L190409
+ * Revision 1.11  2010-01-27 13:31:35  L190409
+ * added isBlockByRecordType()
+ *
+ * Revision 1.10  2007/09/24 14:55:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * support for parameters
  *
  * Revision 1.9  2007/09/19 11:15:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -101,4 +104,10 @@ public interface IResultHandler extends INamedObject {
 	void setDefault(boolean isDefault);
 	
 	boolean hasPrefix();
+
+	/**
+	 * @return true causes groups of identical records, indicated by {@link IRecordHandler.isNewRecordType newRecordType} to appear in a block. 
+	 */
+	boolean isBlockByRecordType();
+	
 }
