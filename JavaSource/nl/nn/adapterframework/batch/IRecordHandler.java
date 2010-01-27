@@ -1,6 +1,9 @@
 /*
  * $Log: IRecordHandler.java,v $
- * Revision 1.9  2007-10-08 13:28:57  europe\L190409
+ * Revision 1.10  2010-01-27 13:35:40  L190409
+ * added getRecordType()
+ *
+ * Revision 1.9  2007/10/08 13:28:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed ArrayList to List where possible
  *
  * Revision 1.8  2007/09/24 14:55:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -44,16 +47,7 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 public interface IRecordHandler extends INamedObject {
 
 	public void configure() throws ConfigurationException;
-
-	/**
-	 * This method will be called to start the sender. After this
-	 * method is called the sendMessage method may be called
-	 */ 
 	public void open() throws SenderException;
-
-	/**
-	 * Stop/close the sender and deallocate resources.
-	 */ 
 	public void close() throws SenderException;
 
 	/**
@@ -72,13 +66,8 @@ public interface IRecordHandler extends INamedObject {
 	 */	
 	Object handleRecord(PipeLineSession session, List parsedRecord, ParameterResolutionContext prc) throws Exception;
 	
-	/**
-	 * @param equalRecordTypes flag indicates if the previous record was of same type as the current
-	 * @param prevRecord values of the input fields of the previous record
-	 * @param curRecord values of the input fields of the current record
-	 * @return boolean that indicates whether a prefix must be added to the transformed result
-	 * @throws Exception
-	 */
 	boolean isNewRecordType(PipeLineSession session, boolean equalRecordTypes, List prevRecord, List curRecord) throws Exception;
+	
+	public String getRecordType(List record);
 	
 }
