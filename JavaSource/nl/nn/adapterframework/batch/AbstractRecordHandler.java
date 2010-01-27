@@ -1,6 +1,10 @@
 /*
  * $Log: AbstractRecordHandler.java,v $
- * Revision 1.14  2008-12-30 17:01:13  m168309
+ * Revision 1.15  2010-01-27 13:48:12  L190409
+ * added getRecordType()
+ * modified isNewRecordType, to better detect what is promised by its name
+ *
+ * Revision 1.14  2008/12/30 17:01:13  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added configuration warnings facility (in Show configurationStatus)
  *
  * Revision 1.13  2008/07/14 17:52:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -194,20 +198,43 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 		return result;
 	}
 	
-	public boolean isNewRecordType(PipeLineSession session, boolean equalRecordTypes, List prevRecord, List curRecord) {
-		if (! equalRecordTypes) {
+	public String getRecordType(List record) {
+		String result=null;
+		
+		for (Iterator it = recordIdentifyingFields.iterator(); it.hasNext();) {
+			int i = ((Integer)it.next()).intValue();
+			Object field=record.get(i-1);
+			String fieldValue=field==null?"":field.toString();
+			if (result==null) {
+				result=fieldValue;
+			} else {
+				result+="_"+fieldValue;
+			}
+		}
+		return result;
+	}
+	
+	public boolean isNewRecordType(PipeLineSession session, boolean equalRecordHandlers, List prevRecord, List curRecord) {
+		if (getRecordIdentifyingFieldList().size() == 0) {
+			log.debug("isNewRecordType(): no RecordIdentifyingFields specified, so returning false");
+			return false;
+		}
+		if (! equalRecordHandlers) {
+			log.debug("isNewRecordType(): equalRecordTypes ["+equalRecordHandlers+"], so returning true");
 			return true;
 		}
 			
-		if (getRecordIdentifyingFields().size() > 0) {
-			if (prevRecord == null) {
+		if (prevRecord == null) {
+			log.debug("isNewRecordType(): no previous record, so returning true");
+			return true;
+		}
+		for (Iterator it = recordIdentifyingFields.iterator(); it.hasNext();) {
+			int i = ((Integer)it.next()).intValue();
+			Object prevField=prevRecord.get(i-1);
+			Object curField=curRecord.get(i-1);
+			if (! prevField.equals(curField)) {
+				log.debug("isNewRecordType(): fields ["+i+"] different previous value ["+prevField+"] current value ["+curField+"], so returning true");
 				return true;
-			}
-			for (Iterator fieldNdxIt = recordIdentifyingFields.iterator(); fieldNdxIt.hasNext();) {
-				int ndx = ((Integer)fieldNdxIt.next()).intValue();
-				if (! prevRecord.get(ndx-1).equals(curRecord.get(ndx-1))) {
-					return true;
-				}
 			}
 		}
 		return false;
@@ -222,20 +249,23 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 		}
 	}
 
-
-//	public void setSeparatorWhenFieldsDiffer(List list) {
-//		recordIdentifyingFields = list;
-//	}
-	public List getRecordIdentifyingFields() {
+	/*
+	 * this method returns a List, and therefore cannot be called 'getRecordIdentifyingFields', 
+	 * because then setRecordIdentifyingFields is not found as a setter.
+	 */  
+	public List getRecordIdentifyingFieldList() {
 		return recordIdentifyingFields;
 	}
-
 
 	public void setRecordIdentifyingFields(String fieldNrs) {
 		StringTokenizer st = new StringTokenizer(fieldNrs, ",");
 		while (st.hasMoreTokens()) {
 			String token = st.nextToken().trim();
+			// log.debug("setRecordIdentifyingFields() found identifiying field ["+token+"]");
 			recordIdentifyingFields.add(new Integer(token));
+		}
+		if (recordIdentifyingFields.size()==0) {
+			log.warn("setRecordIdentifyingFields(): value ["+fieldNrs+"] did result in an empty list of tokens");
 		}
 	}
 	public void setFieldsDifferConditionForPrefix(String fieldNrs) {
