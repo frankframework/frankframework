@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcQuerySenderBase.java,v $
- * Revision 1.48  2009-10-22 13:42:55  m168309
+ * Revision 1.49  2010-01-28 09:47:04  m168309
+ * separate method for executing "other" queries
+ *
+ * Revision 1.48  2009/10/22 13:42:55  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added attribute rowIdSessionKey
  *
  * Revision 1.47  2009/10/09 13:26:20  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -266,7 +269,7 @@ import sun.misc.BASE64Encoder;
  * @since 	4.1
  */
 public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
-	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.48 $ $Date: 2009-10-22 13:42:55 $";
+	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.49 $ $Date: 2010-01-28 09:47:04 $";
 
 	private final static String UNP_START = "?{";
 	private final static String UNP_END = "}";
@@ -339,6 +342,13 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		return con.prepareStatement(query);
 	}
 
+	protected CallableStatement getCallWithRowIdReturned(Connection con, String correlationID, String message) throws SQLException {
+		String callMessage = "BEGIN " + message + " RETURNING ROWID INTO ?; END;";
+		if (log.isDebugEnabled()) {
+			log.debug(getLogPrefix() +"preparing statement for query ["+callMessage+"]");
+		}
+		return con.prepareCall(callMessage);
+	}
 
 	protected ResultSet getReturnedColumns(String[] columns, PreparedStatement st) throws SQLException {
 		return st.getGeneratedKeys();
@@ -379,49 +389,11 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 						if ("package".equalsIgnoreCase(getQueryType())) {
 							return executePackageQuery(connection, statement, message);
 						} else {
-							int numRowsAffected = 0;
-							if (StringUtils.isNotEmpty(getRowIdSessionKey())) {
-								String callMessage = "BEGIN " + message + " RETURNING ROWID INTO ?; END;";
-								CallableStatement cstmt = connection.prepareCall(callMessage);
-								int ri = 1;
-								if (prc != null && paramList != null) {
-									ParameterValueList parameters = prc.getValues(newParamList);
-									applyParameters(cstmt, parameters);
-									ri = parameters.size() + 1;
-								}
-								cstmt.registerOutParameter(ri, Types.VARCHAR);
-								numRowsAffected = cstmt.executeUpdate();
-								String rowId = cstmt.getString(ri);
-								prc.getSession().put(getRowIdSessionKey(), rowId);
-							} else {
-								numRowsAffected = statement.executeUpdate();
-							}
-							if (StringUtils.isNotEmpty(getResultQuery())) {
-								Statement resStmt = null;
-								try { 
-									resStmt = connection.createStatement();
-									log.debug("obtaining result from ["+getResultQuery()+"]");
-									ResultSet rs = resStmt.executeQuery(getResultQuery());
-									return getResult(rs);
-								} finally {
-									if (resStmt!=null) {
-										resStmt.close();
-									}
-								}
-							}
-							if (getColumnsReturnedList()!=null) {
-								return getResult(getReturnedColumns(getColumnsReturnedList(),statement));
-							}
-							if (isScalar()) {
-								return numRowsAffected+"";
-							}
-							return "<result><rowsupdated>" + numRowsAffected + "</rowsupdated></result>";
+							return executeOtherQuery(connection, correlationID, statement, message, prc, newParamList);
 						}
 					}
 				}
 			}
-		} catch (ParameterException e) {
-			throw new SenderException(getLogPrefix() + "got exception evaluating parameters", e);
 		} catch (SenderException e) {
 			if (e.getCause() instanceof SQLException) {
 				SQLException sqle = (SQLException) e.getCause();
@@ -791,6 +763,64 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 					new SenderException(
 						getLogPrefix() + "got exception closing resultset",
 						e));
+			}
+		}
+	}
+
+	protected String executeOtherQuery(Connection connection, String correlationID, PreparedStatement statement, String message, ParameterResolutionContext prc, ParameterList newParamList) throws SenderException{
+		ResultSet resultset=null;
+		try {
+			int numRowsAffected = 0;
+			if (StringUtils.isNotEmpty(getRowIdSessionKey())) {
+				CallableStatement cstmt = getCallWithRowIdReturned(connection, correlationID, message);
+				int ri = 1;
+				if (prc != null && paramList != null) {
+					ParameterValueList parameters = prc.getValues(newParamList);
+					applyParameters(cstmt, parameters);
+					ri = parameters.size() + 1;
+				}
+				cstmt.registerOutParameter(ri, Types.VARCHAR);
+				numRowsAffected = cstmt.executeUpdate();
+				String rowId = cstmt.getString(ri);
+				prc.getSession().put(getRowIdSessionKey(), cstmt.getString(ri));
+			} else {
+				numRowsAffected = statement.executeUpdate();
+			}
+			if (StringUtils.isNotEmpty(getResultQuery())) {
+				Statement resStmt = null;
+				try { 
+					resStmt = connection.createStatement();
+					log.debug("obtaining result from ["+getResultQuery()+"]");
+					ResultSet rs = resStmt.executeQuery(getResultQuery());
+					return getResult(rs);
+				} finally {
+					if (resStmt!=null) {
+						resStmt.close();
+					}
+				}
+			}
+			if (getColumnsReturnedList()!=null) {
+				return getResult(getReturnedColumns(getColumnsReturnedList(),statement));
+			}
+			if (isScalar()) {
+				return numRowsAffected+"";
+			}
+			return "<result><rowsupdated>" + numRowsAffected + "</rowsupdated></result>";
+		} catch (SQLException sqle) {
+			throw new SenderException(getLogPrefix() + "got exception executing a SQL command",sqle );
+		} catch (JdbcException e) {
+			throw new SenderException(getLogPrefix() + "got exception executing a SQL command",e );
+		} catch (IOException e) {
+			throw new SenderException(getLogPrefix() + "got exception executing a SQL command",e );
+		} catch (ParameterException e) {
+			throw new SenderException(getLogPrefix() + "got exception evaluating parameters", e);
+		} finally {
+			try {
+				if (resultset!=null) {
+					resultset.close();
+				}
+			} catch (SQLException e) {
+				log.warn(new SenderException(getLogPrefix() + "got exception closing resultset",e));
 			}
 		}
 	}
