@@ -1,6 +1,9 @@
 /*
  * $Log: PullingIfsaProviderListener.java,v $
- * Revision 1.3  2008-10-06 14:31:14  europe\L190409
+ * Revision 1.4  2010-01-28 15:05:14  L190409
+ * renamed 'Connection' classes to 'MessageSource'
+ *
+ * Revision 1.3  2008/10/06 14:31:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * encode contents of poisonmessage
  *
  * Revision 1.2  2008/02/28 16:20:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -225,7 +228,6 @@ import com.ing.ifsa.IFSATextMessage;
  * @version Id
  */
 public class PullingIfsaProviderListener extends IfsaFacade implements IPullingListener, INamedObject, RunStateEnquiring {
-	public static final String version = "$RCSfile: PullingIfsaProviderListener.java,v $ $Revision: 1.3 $ $Date: 2008-10-06 14:31:14 $";
 
     private final static String THREAD_CONTEXT_SESSION_KEY = "session";
     private final static String THREAD_CONTEXT_RECEIVER_KEY = "receiver";
@@ -353,7 +355,7 @@ public class PullingIfsaProviderListener extends IfsaFacade implements IPullingL
 	public void afterMessageProcessed(PipeLineResult plr, Object rawMessage, Map threadContext) throws ListenerException {	
 	    		    
 		try {
-			if (isJmsTransacted() && !(getConnection().isXaEnabledForSure() && JtaUtil.inTransaction())) {
+			if (isJmsTransacted() && !(getMessagingSource().isXaEnabledForSure() && JtaUtil.inTransaction())) {
 				QueueSession session = (QueueSession) threadContext.get(THREAD_CONTEXT_SESSION_KEY);
 			
 				try {
@@ -603,7 +605,7 @@ public class PullingIfsaProviderListener extends IfsaFacade implements IPullingL
 	{
 		try {
 			return isJmsTransacted() && 
-					!(getConnection().isXaEnabledForSure() && JtaUtil.inTransaction()) &&
+					!(getMessagingSource().isXaEnabledForSure() && JtaUtil.inTransaction()) &&
 					isSessionsArePooled()&&
 					result != null && 
 					!(result instanceof IFSAPoisonMessage) ;

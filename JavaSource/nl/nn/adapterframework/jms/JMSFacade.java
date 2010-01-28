@@ -1,6 +1,9 @@
 /*
  * $Log: JMSFacade.java,v $
- * Revision 1.39  2009-09-17 08:21:13  L190409
+ * Revision 1.40  2010-01-28 14:58:42  L190409
+ * renamed 'Connection' classes to 'MessageSource'
+ *
+ * Revision 1.39  2009/09/17 08:21:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fixed timeout handling of JmsSender
  *
  * Revision 1.38  2009/09/09 14:34:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -190,7 +193,6 @@ import com.ibm.mq.jms.MQQueue;
  * @version Id
  */
 public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version="$RCSfile: JMSFacade.java,v $ $Revision: 1.39 $ $Date: 2009-09-17 08:21:13 $";
 
 	public static final String MODE_PERSISTENT="PERSISTENT";
 	public static final String MODE_NON_PERSISTENT="NON_PERSISTENT";
@@ -210,7 +212,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 
     private String destinationType="QUEUE"; // QUEUE or TOPIC
 
-    protected JmsConnection connection;
+    protected MessagingSource messagingSource;
     private Destination destination;
 
 
@@ -273,21 +275,31 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 		return result;
 	}
 	
-	protected JmsConnection getConnection() throws JmsException {
+	protected JmsMessagingSource getJmsMessagingSource() throws JmsException {
+		return (JmsMessagingSource)getMessagingSource();
+	}
+	/*
+	 * Override this method in descender classes.
+	 */
+	protected MessagingSourceFactory getMessagingSourceFactory() {
+		return new JmsMessagingSourceFactory();
+	}
+	
+	protected MessagingSource getMessagingSource() throws JmsException {
 		// We use double-checked locking here
         // We're aware of the risks involved, but consider them
         // to be acceptable since this method is invoked first time
         // from 'configure', at which time only 1 single thread will
         // access the JMS Facade instance.
-        if (connection == null) {
+        if (messagingSource == null) {
             synchronized (this) {
-                if (connection == null) {
-                    log.debug("instantiating JmsConnectionFactory");
-                    JmsConnectionFactory jmsConnectionFactory = new JmsConnectionFactory();
+                if (messagingSource == null) {
+                    log.debug("instantiating MessagingSourceFactory");
+                    MessagingSourceFactory messagingSourceFactory = getMessagingSourceFactory();
                     try {
                         String connectionFactoryName = getConnectionFactoryName();
-                        log.debug("creating JmsConnection");
-						connection = (JmsConnection)jmsConnectionFactory.getConnection(connectionFactoryName,getAuthAlias());
+                        log.debug("creating MessagingSource");
+						messagingSource = messagingSourceFactory.getMessagingSource(connectionFactoryName,getAuthAlias());
                     } catch (IbisException e) {
                         if (e instanceof JmsException) {
                                 throw (JmsException)e;
@@ -297,7 +309,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
                 }
             }
 		}
-		return connection;
+		return messagingSource;
 	}
 
    
@@ -306,7 +318,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	 */
 	protected Session createSession() throws JmsException {
 		try {
-			return getConnection().createSession(isJmsTransacted(), getAckMode());
+			return getMessagingSource().createSession(isJmsTransacted(), getAckMode());
 		} catch (IbisException e) {
 			if (e instanceof JmsException) {
 				throw (JmsException)e;
@@ -317,7 +329,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 
 	protected void closeSession(Session session) {
 		try {
-			getConnection().releaseSession(session);
+			getMessagingSource().releaseSession(session);
 		} catch (JmsException e) {
 			log.warn("Exception releasing session", e);
 		}
@@ -346,7 +358,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	 */
 	public void openFacade() throws JmsException {
 		try {
-			getConnection();   // obtain and cache connection, then start it.
+			getMessagingSource();   // obtain and cache connection, then start it.
 			destination = getDestination();
 		} catch (Exception e) {
 			cleanUpAfterException();
@@ -359,9 +371,9 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	 */
 	public void closeFacade() throws JmsException {
 		try {
-			if (connection != null) {
+			if (messagingSource != null) {
 				try {
-					connection.close();
+					messagingSource.close();
 				} catch (IbisException e) {
 					if (e instanceof JmsException) {
 						throw (JmsException)e;
@@ -373,7 +385,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 		} finally {
 			// make sure all objects are reset, to be able to restart after IFSA parameters have changed (e.g. at iterative installation time)
 			destination = null;
-			connection = null;
+			messagingSource = null;
 		}
 	}
 
@@ -438,7 +450,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
      */
     
     public Destination getDestination(String destinationName) throws JmsException, NamingException {
-    	return getConnection().lookupDestination(destinationName);
+    	return getJmsMessagingSource().lookupDestination(destinationName);
     }
 
 	/**
@@ -527,6 +539,11 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	    result=getDestinationType()+"("+getDestinationName()+") ["+result+"]";
 		if (StringUtils.isNotEmpty(getMessageSelector())) {
 			result+=" selector ["+getMessageSelector()+"]";
+		}
+		try {
+			result+=" on "+getMessagingSource().getPhysicalName();
+		} catch (JmsException e) {
+			log.warn("[" + name + "] got exception in messagingSource.getPhysicalName", e);
 		}
 	    return result;
 	}
@@ -675,7 +692,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 
 	public boolean isSessionsArePooled() {
 		try {
-			return isTransacted() || getConnection().sessionsArePooled();
+			return isTransacted() || getMessagingSource().sessionsArePooled();
 		} catch (JmsException e) {
 			log.error("could not get session",e);
 			return false;

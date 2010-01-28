@@ -1,6 +1,9 @@
 /*
  * $Log: PushingJmsListener.java,v $
- * Revision 1.18  2010-01-20 08:23:58  m168309
+ * Revision 1.19  2010-01-28 15:00:03  L190409
+ * renamed 'Connection' classes to 'MessageSource'
+ *
+ * Revision 1.18  2010/01/20 08:23:58  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * bugfix - avoid NPE in getDeliveryCount
  *
  * Revision 1.17  2009/07/28 12:44:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -189,7 +192,6 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class PushingJmsListener extends JmsListenerBase implements IPortConnectedListener, IThreadCountControllable, IKnowsDeliveryCount {
-    public static final String version="$RCSfile: PushingJmsListener.java,v $ $Revision: 1.18 $ $Date: 2010-01-20 08:23:58 $";
 
 	private String listenerPort;
 	private String cacheMode; 
@@ -221,7 +223,7 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 			throw new ConfigurationException(getLogPrefix()+"could not get Destination",e);
 		}
         try {
-			jmsConnector.configureEndpointConnection(this, getConnection().getConnectionFactory(), destination, getExceptionListener(), getCacheMode(), isJmsTransacted(), getMessageSelector());
+			jmsConnector.configureEndpointConnection(this, getMessagingSource().getConnectionFactory(), destination, getExceptionListener(), getCacheMode(), isJmsTransacted(), getMessageSelector());
 		} catch (JmsException e) {
 			throw new ConfigurationException(e);
 		}

@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaFacade.java,v $
- * Revision 1.9  2009-11-12 12:34:38  m168309
+ * Revision 1.10  2010-01-28 15:08:15  L190409
+ * renamed 'Connection' classes to 'MessageSource'
+ *
+ * Revision 1.9  2009/11/12 12:34:38  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * prevent NullPointerException
  *
  * Revision 1.8  2008/10/06 14:30:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -219,9 +222,9 @@ import com.ing.ifsa.IFSATextMessage;
  * 
  * @author Johan Verrips / Gerrit van Brakel
  * @since 4.2
+ * @version Id
  */
 public class IfsaFacade implements INamedObject, HasPhysicalDestination {
-	public static final String version = "$RCSfile: IfsaFacade.java,v $ $Revision: 1.9 $ $Date: 2009-11-12 12:34:38 $";
     protected Logger log = LogUtil.getLogger(this);
     
     private static int BASIC_ACK_MODE = Session.AUTO_ACKNOWLEDGE;
@@ -240,7 +243,7 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 
     private IFSAQueue queue;
 
-	private IfsaConnection connection=null;
+	private IfsaMessagingSource messagingSource=null;
 	
 	private boolean requestor=false;
 	private boolean provider=false;
@@ -317,7 +320,7 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 	public void openService() throws IfsaException {
 		try {
 			log.debug(getLogPrefix()+"opening connection for service");
-			getConnection();   // obtain and cache connection, then start it.
+			getMessagingSource();
 			getServiceQueue(); // obtain and cache service queue
 		} catch (IfsaException e) {
 			cleanUpAfterException();
@@ -331,9 +334,9 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 	 */
 	public void closeService() throws IfsaException {
 	    try {
-	        if (connection != null) {
+	        if (messagingSource != null) {
 	            try {
-					connection.close();
+					messagingSource.close();
 				} catch (IbisException e) {
 					if (e instanceof IfsaException) {
 						throw (IfsaException)e;
@@ -345,7 +348,7 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 	    } finally {
 	    	// make sure all objects are reset, to be able to restart after IFSA parameters have changed (e.g. at iterative installation time)
 	        queue = null;
-	        connection = null;
+			messagingSource = null;
 	    }
 	}
 	
@@ -361,13 +364,13 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 		if (queue == null) {
 			if (isRequestor()) {
 				if (getServiceId() != null) {
-					queue = getConnection().lookupService(getServiceId());
+					queue = getMessagingSource().lookupService(getServiceId());
 					if (log.isDebugEnabled()) {
 						log.info(getLogPrefix()+ "got Queue to send messages on "+getPhysicalDestinationName());
 					}
 				}
 			} else {
-				queue = getConnection().lookupProviderInput();
+				queue = getMessagingSource().lookupProviderInput();
 				if (log.isDebugEnabled()) {
 					log.info(getLogPrefix()+ "got Queue to receive messages from "+getPhysicalDestinationName());
 				}
@@ -376,15 +379,15 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 		return queue;
 	}
 
-	protected IfsaConnection getConnection() throws IfsaException {
-		if (connection == null) {
+	protected IfsaMessagingSource getMessagingSource() throws IfsaException {
+		if (messagingSource == null) {
 			synchronized (this) {
-				if (connection == null) {
+				if (messagingSource == null) {
 					log.debug(getLogPrefix()+"instantiating IfsaConnectionFactory");
-					IfsaConnectionFactory ifsaConnectionFactory = new IfsaConnectionFactory();
+					IfsaMessagingSourceFactory ifsaConnectionFactory = new IfsaMessagingSourceFactory();
 					try {
 						log.debug(getLogPrefix()+"creating IfsaConnection");
-						connection = (IfsaConnection)ifsaConnectionFactory.getConnection(getApplicationId());
+						messagingSource = (IfsaMessagingSource)ifsaConnectionFactory.getConnection(getApplicationId());
 					} catch (IbisException e) {
 						if (e instanceof IfsaException) {
 							throw (IfsaException)e;
@@ -394,7 +397,7 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 				}
 			}
 		}
-		return connection;
+		return messagingSource;
 	}
 	
 	/**
@@ -403,10 +406,10 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 	protected QueueSession createSession() throws IfsaException {
 		try {
 			int mode = BASIC_ACK_MODE; 
-			if (isRequestor() && connection.canUseIfsaModeSessions()) {
+			if (isRequestor() && messagingSource.canUseIfsaModeSessions()) {
 				mode += IFSAConstants.QueueSession.IFSA_MODE; // let requestor receive IFSATimeOutMessages
 			}
-			return (QueueSession) connection.createSession(isJmsTransacted(), mode);
+			return (QueueSession) messagingSource.createSession(isJmsTransacted(), mode);
 		} catch (IbisException e) {
 			if (e instanceof IfsaException) {
 				throw (IfsaException)e;
@@ -417,7 +420,7 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 
 	protected void closeSession(Session session) {
 		try {
-			getConnection().releaseSession(session);
+			getMessagingSource().releaseSession(session);
 		} catch (IfsaException e) {
 			log.warn("Exception releasing session", e);
 		}
@@ -539,12 +542,12 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 	        throw new IfsaException("cannot get ReplyReceiver: Provider cannot act as Requestor");
 	    } 
 	
-		return getConnection().getReplyReceiver(session, sentMessage);
+		return getMessagingSource().getReplyReceiver(session, sentMessage);
 	}
 
 	public void closeReplyReceiver(QueueReceiver receiver) throws IfsaException {
 		log.debug(getLogPrefix()+"closing replyreceiver");
-		getConnection().closeReplyReceiver(receiver);
+		getMessagingSource().closeReplyReceiver(receiver);
 	}
 	
 	/**
@@ -596,7 +599,7 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 	        //Client side
 	        if (messageProtocol.equals(IfsaMessageProtocolEnum.REQUEST_REPLY)) {
 	            // set reply-to address
-	            Queue replyTo=getConnection().getClientReplyQueue(session);
+	            Queue replyTo=getMessagingSource().getClientReplyQueue(session);
 	            msg.setJMSReplyTo(replyTo);
 	            replyToQueueName=replyTo.getQueueName();
 	        }
@@ -623,7 +626,7 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 	        sender.send(msg);
 	
 	        // perform commit
-	        if (isJmsTransacted() && !(connection.isXaEnabledForSure() && JtaUtil.inTransaction())) {
+	        if (isJmsTransacted() && !(messagingSource.isXaEnabledForSure() && JtaUtil.inTransaction())) {
 	            session.commit();
 	            log.debug(getLogPrefix()+ "committing (send) transaction");
 	        }
@@ -683,7 +686,7 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
  
 	public boolean isSessionsArePooled() {
 		try {
-			return getConnection().sessionsArePooled();
+			return getMessagingSource().sessionsArePooled();
 		} catch (IfsaException e) {
 			log.error(getLogPrefix()+"could not get session",e);
 			return false;
@@ -728,11 +731,16 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 				result = getApplicationId();
 			}
 			log.debug("obtaining connection and servicequeue for "+result);
-			if (getConnection()!=null && getServiceQueue() != null) {
+			if (getMessagingSource()!=null && getServiceQueue() != null) {
 				result += " ["+ getServiceQueue().getQueueName()+"]";
 			}
 		} catch (Throwable t) {
 			log.warn(getLogPrefix()+"got exception in getPhysicalDestinationName", t);
+		}
+		try {
+			result+=" on "+getMessagingSource().getPhysicalName();
+		} catch (Exception e) {
+			log.warn("[" + name + "] got exception in messagingSource.getPhysicalName", e);
 		}
 		return result;
 	}
@@ -749,8 +757,8 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 	public String getServiceId() {
 		if (polishedServiceId==null && serviceId!=null) {
 			try {
-				IfsaConnection conn = getConnection();
-				polishedServiceId = conn.polishServiceId(serviceId);
+				IfsaMessagingSource messagingSource = getMessagingSource();
+				polishedServiceId = messagingSource.polishServiceId(serviceId);
 			} catch (IfsaException e) {
 				log.warn("could not obtain connection, no polishing of serviceId",e);
 				polishedServiceId = serviceId;

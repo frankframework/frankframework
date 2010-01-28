@@ -1,6 +1,9 @@
 /*
  * $Log: PushingIfsaProviderListener.java,v $
- * Revision 1.9  2008-10-06 14:31:41  europe\L190409
+ * Revision 1.10  2010-01-28 15:05:14  L190409
+ * renamed 'Connection' classes to 'MessageSource'
+ *
+ * Revision 1.9  2008/10/06 14:31:41  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * encode contents of poisonmessage
  *
  * Revision 1.8  2008/09/02 11:45:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -130,7 +133,6 @@ import com.ing.ifsa.IFSAServicesProvided;
  * @version Id
  */
 public class PushingIfsaProviderListener extends IfsaFacade implements IPortConnectedListener, IThreadCountControllable, IKnowsDeliveryCount {
-	public static final String version = "$RCSfile: PushingIfsaProviderListener.java,v $ $Revision: 1.9 $ $Date: 2008-10-06 14:31:41 $";
 
 	public final static String THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY = "originalRawMessage";
 	public final static String THREAD_CONTEXT_BIFNAME_KEY="IfsaBif";
@@ -170,7 +172,7 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 			throw new ConfigurationException(getLogPrefix()+"could not get Destination",e);
 		}
 		try {
-			jmsConnector.configureEndpointConnection(this, getConnection().getConnectionFactory(), destination, getExceptionListener(), getCacheMode(), isJmsTransacted(), getProviderSelector());
+			jmsConnector.configureEndpointConnection(this, getMessagingSource().getConnectionFactory(), destination, getExceptionListener(), getCacheMode(), isJmsTransacted(), getProviderSelector());
 		} catch (Exception e) {
 			throw new ConfigurationException(e);
 		}

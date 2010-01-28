@@ -1,6 +1,9 @@
 /*
  * $Log: JmsSender.java,v $
- * Revision 1.35  2009-09-17 08:21:13  L190409
+ * Revision 1.36  2010-01-28 14:59:09  L190409
+ * renamed 'Connection' classes to 'MessageSource'
+ *
+ * Revision 1.35  2009/09/17 08:21:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fixed timeout handling of JmsSender
  *
  * Revision 1.34  2009/09/09 13:54:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -176,7 +179,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  */
 
 public class JmsSender extends JMSFacade implements ISenderWithParameters, IPostboxSender {
-	public static final String version="$RCSfile: JmsSender.java,v $ $Revision: 1.35 $ $Date: 2009-09-17 08:21:13 $";
+	public static final String version="$RCSfile: JmsSender.java,v $ $Revision: 1.36 $ $Date: 2010-01-28 14:59:09 $";
 	private String replyToName = null;
 	private int deliveryMode = 0;
 	private String messageType = null;
@@ -303,7 +306,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 				replyQueue = getDestination(replyToName);
 			} else {
 				if (isSynchronous()) {
-					replyQueue = getConnection().getDynamicReplyQueue((QueueSession)s);
+					replyQueue = getMessagingSource().getDynamicReplyQueue((QueueSession)s);
 				}
 			}
 			if (replyQueue!=null) {
