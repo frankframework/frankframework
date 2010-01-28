@@ -78,29 +78,27 @@
 				<xsl:text> FROM </xsl:text>
 				<xsl:value-of select="$tableName"/>
 				
-					<xsl:if test="string-length($where)&gt;0">
+				<xsl:choose>
+					<xsl:when test="string-length($where)&gt;0">
 						<xsl:text> WHERE </xsl:text>			
-							<xsl:value-of select="$where"/>
-					</xsl:if>
+						<xsl:value-of select="$where"/>
+						<xsl:if test="$rownumMax&gt;0">
+							<xsl:text> AND ROWNUM &lt;= </xsl:text>
+							<xsl:value-of select="$rownumMax"/>
+						</xsl:if>
+					</xsl:when>
+					<xsl:otherwise>
+						<xsl:if test="$rownumMax&gt;0">
+							<xsl:text> WHERE ROWNUM &lt;= </xsl:text>
+							<xsl:value-of select="$rownumMax"/>
+						</xsl:if>
+					</xsl:otherwise>
+				</xsl:choose>
 				
-				<xsl:if test="$rownumMin&gt;0 or $rownumMax&gt;0">
+				<xsl:if test="$rownumMin&gt;0">
 					<xsl:text>)</xsl:text>
-					<xsl:choose>
-						<xsl:when test="$rownumMin&gt;0 and $rownumMax&gt;0">
-							<xsl:text> WHERE ROWNUMBER BETWEEN </xsl:text>
-							<xsl:value-of select="$rownumMin"/>
-							<xsl:text> AND </xsl:text>
-							<xsl:value-of select="$rownumMax"/>
-						</xsl:when>
-						<xsl:when test="$rownumMin&gt;0">
-							<xsl:text> WHERE ROWNUMBER &gt;= </xsl:text>
-							<xsl:value-of select="$rownumMin"/>
-						</xsl:when>
-						<xsl:when test="$rownumMax&gt;0">
-							<xsl:text> WHERE ROWNUMBER &lt;= </xsl:text>
-							<xsl:value-of select="$rownumMax"/>
-						</xsl:when>
-					</xsl:choose>
+					<xsl:text> WHERE ROWNUMBER &gt;= </xsl:text>
+					<xsl:value-of select="$rownumMin"/>
 				</xsl:if>
 			</xsl:otherwise>
 		</xsl:choose>
