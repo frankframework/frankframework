@@ -1,6 +1,9 @@
 /*
  * $Log: StatisticsKeeperStore.java,v $
- * Revision 1.1  2010-01-07 13:16:10  L190409
+ * Revision 1.2  2010-01-28 14:46:43  L190409
+ * reduced debug logging
+ *
+ * Revision 1.1  2010/01/07 13:16:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * moved statistics related classes to statistics package
  *
  * Revision 1.2  2009/12/29 14:33:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -60,6 +63,8 @@ public class StatisticsKeeperStore extends JdbcFacade implements StatisticsKeepe
 	private String selectNextValueQuery;
 
 	private int instanceKey;
+	
+	private final boolean trace=false;
 	
 	public StatisticsKeeperStore() {
 		super();
@@ -177,7 +182,7 @@ public class StatisticsKeeperStore extends JdbcFacade implements StatisticsKeepe
 					valuesClause+=",?";
 				}
 				insertEventQuery=insertClause+valuesClause+")";
-				if (log.isDebugEnabled()) log.debug("prepare and execute query ["+insertEventQuery+"]");
+				if (trace && log.isDebugEnabled()) log.debug("prepare and execute query ["+insertEventQuery+"]");
 				stmt = connection.prepareStatement(insertEventQuery);
 				int pos=1;
 				stmt.setInt(pos++,sessionInfo.eventKey);
@@ -222,7 +227,7 @@ public class StatisticsKeeperStore extends JdbcFacade implements StatisticsKeepe
 	}
 
 	private void applyParam(PreparedStatement stmt, int pos, long value) throws SQLException {
-		if (log.isDebugEnabled()) log.debug("pos ["+pos+"] set long param ["+value+"]");
+		if (trace && log.isDebugEnabled()) log.debug("pos ["+pos+"] set long param ["+value+"]");
 		if (value==Long.MAX_VALUE) {
 			stmt.setNull(pos,Types.NUMERIC);
 		} else {
@@ -231,10 +236,10 @@ public class StatisticsKeeperStore extends JdbcFacade implements StatisticsKeepe
 	}
 	private void applyParam(PreparedStatement stmt, int pos, double value) throws SQLException {
 		if (Double.isNaN(value)) {
-			if (log.isDebugEnabled()) log.debug("pos ["+pos+"] set double param ["+value+"], setting to NULL");
+			if (trace && log.isDebugEnabled()) log.debug("pos ["+pos+"] set double param ["+value+"], setting to NULL");
 			stmt.setNull(pos,Types.DOUBLE);
 		} else {
-			if (log.isDebugEnabled()) log.debug("pos ["+pos+"] set double param ["+value+"]");
+			if (trace && log.isDebugEnabled()) log.debug("pos ["+pos+"] set double param ["+value+"]");
 			stmt.setDouble(pos,value);
 		}
 	}
@@ -246,7 +251,7 @@ public class StatisticsKeeperStore extends JdbcFacade implements StatisticsKeepe
 		int statnamekey=-1;
 		try {
 			statnamekey=statnames.findOrInsert(sessionInfo.connection,sk.getName());
-			if (log.isDebugEnabled()) log.debug("prepare and execute query ["+insertStatKeeperQuery+"]");
+			if (trace && log.isDebugEnabled()) log.debug("prepare and execute query ["+insertStatKeeperQuery+"]");
 			stmt = sessionInfo.connection.prepareStatement(insertStatKeeperQuery);
 			int pos=1;
 			long count=sk.getCount();
@@ -292,7 +297,7 @@ public class StatisticsKeeperStore extends JdbcFacade implements StatisticsKeepe
 		int statnamekey=-1;
 		try {
 			statnamekey=statnames.findOrInsert(sessionInfo.connection,scalarName);
-			if (log.isDebugEnabled()) log.debug("prepare and execute query ["+insertNumQuery+"] params ["+sessionInfo.eventKey+","+ sessionInfo.groupKey +","+ statnamekey+","+ value +"]");
+			if (trace && log.isDebugEnabled()) log.debug("prepare and execute query ["+insertNumQuery+"] params ["+sessionInfo.eventKey+","+ sessionInfo.groupKey +","+ statnamekey+","+ value +"]");
 			stmt = sessionInfo.connection.prepareStatement(insertNumQuery);
 			stmt.setLong(1,sessionInfo.eventKey);
 			stmt.setLong(2,sessionInfo.groupKey);
@@ -319,7 +324,7 @@ public class StatisticsKeeperStore extends JdbcFacade implements StatisticsKeepe
 		int statnamekey=-1;
 		try {
 			statnamekey=statnames.findOrInsert(sessionInfo.connection,scalarName);
-			if (log.isDebugEnabled()) log.debug("prepare and execute query ["+insertTimestampQuery+"] params ["+sessionInfo.eventKey+","+ sessionInfo.groupKey +","+ statnamekey+","+ (value==null?"null":DateUtils.format(value)) +"]");
+			if (trace && log.isDebugEnabled()) log.debug("prepare and execute query ["+insertTimestampQuery+"] params ["+sessionInfo.eventKey+","+ sessionInfo.groupKey +","+ statnamekey+","+ (value==null?"null":DateUtils.format(value)) +"]");
 			stmt = sessionInfo.connection.prepareStatement(insertTimestampQuery);
 			stmt.setLong(1,sessionInfo.eventKey);
 			stmt.setLong(2,sessionInfo.groupKey);
