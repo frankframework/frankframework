@@ -1,6 +1,9 @@
 /*
  * $Log: Configuration.java,v $
- * Revision 1.37  2009-12-29 14:32:20  L190409
+ * Revision 1.38  2010-01-28 15:07:33  L190409
+ * removed some version displays
+ *
+ * Revision 1.37  2009/12/29 14:32:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * modified imports to reflect move of statistics classes to separate package
  *
  * Revision 1.36  2009/08/26 15:23:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -136,7 +139,7 @@ import org.apache.log4j.Logger;
  * @see    nl.nn.adapterframework.core.IAdapter
  */
 public class Configuration {
-	public static final String version="$RCSfile: Configuration.java,v $ $Revision: 1.37 $ $Date: 2009-12-29 14:32:20 $";
+	public static final String version="$RCSfile: Configuration.java,v $ $Revision: 1.38 $ $Date: 2010-01-28 15:07:33 $";
     protected Logger log=LogUtil.getLogger(this); 
      
     private Map adapterTable = new Hashtable();
@@ -384,8 +387,6 @@ public class Configuration {
     	sb.append(nl.nn.adapterframework.webcontrol.action.ShowConfigurationStatus.version+SystemUtils.LINE_SEPARATOR);
     	sb.append(nl.nn.adapterframework.scheduler.SchedulerAdapter.version +SystemUtils.LINE_SEPARATOR);
     	sb.append(nl.nn.adapterframework.extensions.coolgen.CoolGenWrapperPipe.version +SystemUtils.LINE_SEPARATOR);
-		sb.append(nl.nn.adapterframework.extensions.ifsa.IfsaRequesterSender.version +SystemUtils.LINE_SEPARATOR);
-		sb.append(nl.nn.adapterframework.extensions.ifsa.IfsaProviderListener.version +SystemUtils.LINE_SEPARATOR);
 		sb.append(nl.nn.adapterframework.extensions.rekenbox.RekenBoxCaller.version +SystemUtils.LINE_SEPARATOR);
 		sb.append(nl.nn.adapterframework.extensions.rekenbox.Adios2XmlPipe.version +SystemUtils.LINE_SEPARATOR);
 		sb.append(nl.nn.adapterframework.extensions.sap.SapFunctionFacade.version +SystemUtils.LINE_SEPARATOR);
