@@ -1,6 +1,9 @@
 /*
  * $Log: TibcoListener.java,v $
- * Revision 1.2  2008-07-24 12:30:05  europe\L190409
+ * Revision 1.3  2010-01-28 14:50:24  L190409
+ * renamed 'Connection' classes to 'MessageSource'
+ *
+ * Revision 1.2  2008/07/24 12:30:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added support for authenticated JMS
  *
  * Revision 1.1  2008/05/15 14:32:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -11,9 +14,10 @@ package nl.nn.adapterframework.extensions.tibco;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IbisException;
-import nl.nn.adapterframework.jms.JmsConnection;
+import nl.nn.adapterframework.jms.JmsMessagingSource;
 import nl.nn.adapterframework.jms.JmsException;
 import nl.nn.adapterframework.jms.JmsListener;
+import nl.nn.adapterframework.jms.MessagingSourceFactory;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -62,26 +66,14 @@ public class TibcoListener extends JmsListener {
 	}
 
 
-	protected JmsConnection getConnection() throws JmsException {
-		if (connection == null) {
-			synchronized (this) {
-				if (connection == null) {
-					log.debug("instantiating JmsConnectionFactory");
-					TibcoConnectionFactory tibcoConnectionFactory = new TibcoConnectionFactory(isUseTopicFunctions());
-					try {
-						String serverUrl = getServerUrl();
-						log.debug("creating JmsConnection");
-						connection = (TibcoConnection)tibcoConnectionFactory.getConnection(serverUrl, getAuthAlias());
-					} catch (IbisException e) {
-						if (e instanceof JmsException) {
-							throw (JmsException)e;
-						}
-						throw new JmsException(e);
-					}
-				}
-			}
-		}
-		return connection;
+	protected MessagingSourceFactory getMessagingSourceFactory() {
+		return new TibcoMessagingSourceFactory(isUseTopicFunctions());
+	}
+	/*
+	 * Tibco uses serverUrl instead of connectionFactoryName.
+	 */
+	public String getConnectionFactoryName() throws JmsException {
+		return getServerUrl();
 	}
 
 
