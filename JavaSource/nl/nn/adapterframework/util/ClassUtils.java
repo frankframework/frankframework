@@ -1,6 +1,9 @@
 /*
  * $Log: ClassUtils.java,v $
- * Revision 1.16  2009-08-13 09:18:00  L190409
+ * Revision 1.17  2010-01-28 14:45:42  L190409
+ * added some reflection methods
+ *
+ * Revision 1.16  2009/08/13 09:18:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added method invokers
  *
  * Revision 1.15  2008/08/18 11:22:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -47,11 +50,14 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import org.apache.commons.lang.builder.ReflectionToStringBuilder;
+import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.log4j.Logger;
 
 /**
@@ -61,7 +67,7 @@ import org.apache.log4j.Logger;
  *
  */
 public class ClassUtils {
-	public static final String version = "$RCSfile: ClassUtils.java,v $ $Revision: 1.16 $ $Date: 2009-08-13 09:18:00 $";
+	public static final String version = "$RCSfile: ClassUtils.java,v $ $Revision: 1.17 $ $Date: 2010-01-28 14:45:42 $";
 	private static Logger log = LogUtil.getLogger(ClassUtils.class);
 
     /**
@@ -342,12 +348,72 @@ public class ClassUtils {
 		Object args[] = { value };
 		setterMtd.invoke(o,args);
 	}
+	public static Object invokeGetterSafe(Object o, String name) {
+		try {
+			return invokeGetter(o,name);
+		} catch (Exception e) {
+			return nameOf(o)+"."+name+" "+nameOf(e)+": "+e.getMessage();
+		}
+	}
 	public static Object invokeGetter(Object o, String name) throws SecurityException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException, InvocationTargetException {
 		Method getterMtd = o.getClass().getMethod(name, null ); 
 		return getterMtd.invoke(o,null);
 	}
+
+	public static String invokeStringGetterSafe(Object o, String name) {
+		try {
+			return invokeStringGetter(o,name);
+		} catch (Exception e) {
+			return nameOf(o)+"."+name+" "+nameOf(e)+": "+e.getMessage();
+		}
+	}
 	public static String invokeStringGetter(Object o, String name) throws SecurityException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException, InvocationTargetException {
 		return (String)invokeGetter(o,name);
+	}
+	
+	public static Object getFieldValueSafe(Object o, String name) {
+		try {
+			return getFieldValue(o,name);
+		} catch (Exception e) {
+			return nameOf(o)+"."+name+" "+nameOf(e)+": "+e.getMessage();
+		}
+	}
+	public static Object getFieldValue(Object o, String name) throws IllegalArgumentException, SecurityException, IllegalAccessException, NoSuchFieldException {
+		return o.getClass().getField(name).get(o);
+	}
+
+	public static String debugObject(Object o) {
+		String result=nameOf(o)+" ";
+		Field fields[] = o.getClass().getDeclaredFields();
+		result +="fields.lentgth ["+fields.length+"] {";
+		for (int i=0; i<fields.length; i++) {
+			result +="field["+i+"] "+fields[i].getName()+": ["+getFieldValueSafe(o,fields[i].getName()+"]\n");
+		}
+		result +="} ";
+		Method methods[] = o.getClass().getMethods();
+		result +="methods.lentgth ["+methods.length+"] {";
+		for (int i=0; i<methods.length; i++) {
+			result +="method["+i+"] "+methods[i].getName()+": ["+invokeGetterSafe(o,methods[i].getName()+"]\n");
+		}
+		result +="} ";
+		result += " ["+o.toString()+"]";
+		result += " ["+ToStringBuilder.reflectionToString(o)+"]";
+		return result;
+	}
+	
+	public static String reflectionToString(final Object o, final String fieldnameEnd) {
+		String result=(new ReflectionToStringBuilder(o) {
+				protected boolean accept(Field f) {
+					if (super.accept(f)) {
+						log.debug(nameOf(o)+" field ["+f.getName()+"]");
+						return 	(
+									f.getName().endsWith(fieldnameEnd)
+								);
+					}
+					return false;
+				}
+			}).toString();
+		return result;
 	}
 
 }
