@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaRequesterSender.java,v $
- * Revision 1.16  2010-01-13 13:55:21  m168309
+ * Revision 1.17  2010-01-28 15:06:02  L190409
+ * removed version string
+ *
+ * Revision 1.16  2010/01/13 13:55:21  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added attribute bifNameSessionKey
  *
  * Revision 1.15  2009/12/29 14:33:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -204,9 +207,9 @@ import com.ing.ifsa.IFSATimeOutMessage;
  *
  * @author Johan Verrips / Gerrit van Brakel
  * @since  4.2
- */
+ * @version Id
+*/
 public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParameters, HasStatistics {
-	public static final String version="$RCSfile: IfsaRequesterSender.java,v $ $Revision: 1.16 $ $Date: 2010-01-13 13:55:21 $";
 
 	private boolean throwExceptions=true;	
 	protected String bifNameSessionKey;
@@ -374,7 +377,7 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 					int j = serviceId.indexOf('/', i + 1);
 					serviceId = serviceId.substring(0, i + 1) + occurrence + serviceId.substring(j);
 				}
-				queue = getConnection().lookupService(getConnection().polishServiceId(serviceId));
+				queue = getMessagingSource().lookupService(getMessagingSource().polishServiceId(serviceId));
 				if (queue==null) {
 					throw new SenderException(getLogPrefix()+"got null as queue for serviceId ["+serviceId+"]");
 				}
