@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaMessagingSource.java,v $
- * Revision 1.1  2010-01-28 14:49:06  L190409
+ * Revision 1.2  2010-01-28 15:01:57  L190409
+ * removed unused imports
+ *
+ * Revision 1.1  2010/01/28 14:49:06  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * renamed 'Connection' classes to 'MessageSource'
  *
  * Revision 1.3  2008/07/24 12:26:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -66,12 +69,9 @@ import javax.jms.QueueReceiver;
 import javax.jms.QueueSession;
 import javax.naming.NamingException;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
-
 import nl.nn.adapterframework.extensions.ifsa.IfsaException;
 import nl.nn.adapterframework.jms.MessagingSource;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.ClassUtils;
 
 import com.ing.ifsa.IFSAContext;
 import com.ing.ifsa.IFSAQueue;
