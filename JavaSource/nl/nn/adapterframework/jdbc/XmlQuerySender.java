@@ -1,6 +1,9 @@
 /*
  * $Log: XmlQuerySender.java,v $
- * Revision 1.1  2010-01-28 09:48:00  m168309
+ * Revision 1.2  2010-02-01 08:32:39  L190409
+ * setConfigWarning
+ *
+ * Revision 1.1  2010/01/28 09:48:00  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * initial version
  *
  */
@@ -21,17 +24,17 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Vector;
 
-import org.apache.commons.lang.StringUtils;
-import org.w3c.dom.Element;
-
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-import nl.nn.adapterframework.util.DB2XMLWriter;
 import nl.nn.adapterframework.util.DomBuilderException;
-import nl.nn.adapterframework.util.JdbcUtil;
-import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlUtils;
+
+import org.apache.commons.lang.StringUtils;
+import org.w3c.dom.Element;
 
 /**
  * QuerySender that transforms the input message to a query.
@@ -79,7 +82,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author  Peter Leeuwenburgh
  */
 public class XmlQuerySender extends DirectQuerySender {
-	public static final String version = "$RCSfile: XmlQuerySender.java,v $ $Revision: 1.1 $ $Date: 2010-01-28 09:48:00 $";
+	public static final String version = "$RCSfile: XmlQuerySender.java,v $ $Revision: 1.2 $ $Date: 2010-02-01 08:32:39 $";
 
 	public static final String TYPE_STRING = "string";
 	public static final String TYPE_NUMBER = "number";
@@ -511,4 +514,11 @@ public class XmlQuerySender extends DirectQuerySender {
 			}
 		}
 	}
+
+	public void configure(ParameterList parameterList) throws ConfigurationException {
+		super.configure(parameterList);
+		ConfigurationWarnings cw = ConfigurationWarnings.getInstance();
+		cw.add("The XmlSender is not released for production. The configuration options for this pipe will change in a non-backward compatible way");
+	}
+
 }
