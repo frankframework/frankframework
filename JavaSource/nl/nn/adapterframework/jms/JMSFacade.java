@@ -1,6 +1,9 @@
 /*
  * $Log: JMSFacade.java,v $
- * Revision 1.40  2010-01-28 14:58:42  L190409
+ * Revision 1.41  2010-02-02 14:34:49  m168309
+ * separate method for getting connectionfactory info
+ *
+ * Revision 1.40  2010/01/28 14:58:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * renamed 'Connection' classes to 'MessageSource'
  *
  * Revision 1.39  2009/09/17 08:21:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -273,6 +276,10 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 			throw new JmsException(getLogPrefix()+"no "+(useTopicFunctions ?"topic":"queue")+"ConnectionFactoryName specified");
 		}
 		return result;
+	}
+
+	public String getConnectionFactoryInfo() throws JmsException {
+		return getMessagingSource().getPhysicalName();
 	}
 	
 	protected JmsMessagingSource getJmsMessagingSource() throws JmsException {
