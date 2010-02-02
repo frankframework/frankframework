@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcFacade.java,v $
- * Revision 1.27  2009-12-08 14:49:26  m168309
+ * Revision 1.28  2010-02-02 14:31:47  m168309
+ * separate method for getting datasource info
+ *
+ * Revision 1.27  2009/12/08 14:49:26  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * fixed NullPointerException on datatime parameters
  *
  * Revision 1.26  2009/09/07 13:14:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -121,7 +124,7 @@ import org.apache.commons.lang.StringUtils;
  * @since 	4.1
  */
 public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version="$RCSfile: JdbcFacade.java,v $ $Revision: 1.27 $ $Date: 2009-12-08 14:49:26 $";
+	public static final String version="$RCSfile: JdbcFacade.java,v $ $Revision: 1.28 $ $Date: 2010-02-02 14:31:47 $";
 	
 	public final static int DATABASE_GENERIC=0;
 	public final static int DATABASE_ORACLE=1;
@@ -179,28 +182,9 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 				if (datasource==null) {
 					throw new JdbcException("Could not find Datasource ["+dsName+"]");
 				}
-				String dsinfo=datasource.toString();
-				Connection conn=null;
-				try {
-					conn=getConnection();
-					DatabaseMetaData md=conn.getMetaData();
-					String product=md.getDatabaseProductName();
-					String productVersion=md.getDatabaseProductVersion();
-					String driver=md.getDriverName();
-					String driverVersion=md.getDriverVersion();
-					String url=md.getURL();
-					String user=md.getUserName();
-					dsinfo ="user ["+user+"] url ["+url+"] product ["+product+"] version ["+productVersion+"] driver ["+driver+"] version ["+driverVersion+"]";
-				} catch (SQLException e) {
-					log.warn("Exception determining databaseinfo",e);
-				} finally {
-					if (conn!=null) {
-						try {
-							conn.close();
-						} catch (SQLException e1) {
-							log.warn("exception closing connection for metadata",e1);
-						}
-					}
+				String dsinfo=getDatasourceInfo();
+				if (dsinfo==null) {
+					dsinfo=datasource.toString();
 				}
 				log.info(getLogPrefix()+"looked up Datasource ["+dsName+"]: ["+dsinfo+"]");
 			} catch (NamingException e) {
@@ -216,6 +200,34 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 		}
 		return datasource;
 	}
+
+	public String getDatasourceInfo() throws JdbcException {
+		String dsinfo=null;
+		Connection conn=null;
+		try {
+			conn=getConnection();
+			DatabaseMetaData md=conn.getMetaData();
+			String product=md.getDatabaseProductName();
+			String productVersion=md.getDatabaseProductVersion();
+			String driver=md.getDriverName();
+			String driverVersion=md.getDriverVersion();
+			String url=md.getURL();
+			String user=md.getUserName();
+			dsinfo ="user ["+user+"] url ["+url+"] product ["+product+"] version ["+productVersion+"] driver ["+driver+"] version ["+driverVersion+"]";
+		} catch (SQLException e) {
+			log.warn("Exception determining databaseinfo",e);
+		} finally {
+			if (conn!=null) {
+				try {
+					conn.close();
+				} catch (SQLException e1) {
+					log.warn("exception closing connection for metadata",e1);
+				}
+			}
+		}
+		return dsinfo;
+	}
+
 	
 	public void setDatabaseType(int type) {
 		databaseType=type;
