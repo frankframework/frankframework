@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractSpringPoweredDigesterFactory.java,v $
- * Revision 1.13  2009-11-24 08:37:16  m168309
+ * Revision 1.14  2010-02-03 14:20:26  L190409
+ * solved NPE in attribute default checker
+ *
+ * Revision 1.13  2009/11/24 08:37:16  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * cosmetic change
  *
  * Revision 1.12  2009/11/24 08:32:00  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -92,14 +95,11 @@ import org.xml.sax.Locator;
  * 
  */
 public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjectCreationFactory implements ObjectCreationFactory {
+	protected Logger log = LogUtil.getLogger(this);
 
     public static ListableBeanFactory factory;
-    protected final Logger log = LogUtil.getLogger(this);
 	private ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
     
-    /**
-     * 
-     */
     public AbstractSpringPoweredDigesterFactory() {
         super();
     }
@@ -195,9 +195,9 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 		Object currObj = createBeanFromClassName(className);
 
 		for (Iterator it = attrs.keySet().iterator(); it.hasNext();) {
-			String key = (String)it.next();
-			String value = (String)attrs.get(key);
-			PropertyDescriptor pd = PropertyUtils.getPropertyDescriptor(currObj, key);
+			String attributeName = (String)it.next();
+			String value = (String)attrs.get(attributeName);
+			PropertyDescriptor pd = PropertyUtils.getPropertyDescriptor(currObj, attributeName);
 			String name = (String)attrs.get("name");
 			if (pd!=null) {
 				Method rm = PropertyUtils.getReadMethod(pd);
@@ -207,17 +207,21 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 						if (dv!=null) {
 							if (dv instanceof String) {
 								if (value.equals(dv)) {
-									addConfigWarning(currObj, name, key, value);
+									addSetToDefaultConfigWarning(currObj, name, attributeName, value);
 								}
 							} else {
 								if (dv instanceof Boolean) {
 									if (Boolean.valueOf(value).equals(dv)) {
-										addConfigWarning(currObj, name, key, value);
+										addSetToDefaultConfigWarning(currObj, name, attributeName, value);
 									}
 								} else {
 									if (dv instanceof Integer) {
-										if (Integer.valueOf(value).equals(dv)) {
-											addConfigWarning(currObj, name, key, value);
+										try {
+											if (Integer.valueOf(value).equals(dv)) {
+												addSetToDefaultConfigWarning(currObj, name, attributeName, value);
+											}
+										} catch (NumberFormatException e) {
+											addConfigWarning(currObj, name, "attribute ["+ attributeName+"] String ["+value+"] cannot be converted to Integer: "+e.getMessage());
 										}
 									} else {
 										log.warn("Unknown returning type [" + rm.getReturnType() + "]" + "for getter method [" + rm.getName() + "], object [" + getObjectName(currObj, name) + "]");
@@ -243,13 +247,17 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 		return result;
 	}
 
-	private void addConfigWarning(Object currObj, String name, String key, String value) {
+	private void addSetToDefaultConfigWarning(Object currObj, String name, String key, String value) {
 		String mergedKey = getDigester().getCurrentElementName() + "/" + (name==null?"":name) + "/" + key;
 		if (!configWarnings.containsDefaultValueExceptions(mergedKey)) {
-			Locator loc = digester.getDocumentLocator();
-			String msg ="line "+loc.getLineNumber()+", col "+loc.getColumnNumber()+": "+getObjectName(currObj, name)+", attribute ["+key+"] already has a default value ["+value+"]";
-			configWarnings.add(log, msg);
+			addConfigWarning(currObj, name, "attribute ["+key+"] already has a default value ["+value+"]");
 		}
+	}
+
+	private void addConfigWarning(Object currObj, String name, String message) {
+		Locator loc = digester.getDocumentLocator();
+		String msg ="line "+loc.getLineNumber()+", col "+loc.getColumnNumber()+": "+getObjectName(currObj, name)+": "+message;
+		configWarnings.add(log, msg);
 	}
 
     /**
