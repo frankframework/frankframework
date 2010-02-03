@@ -1,6 +1,9 @@
 /*
  * $Log: MessageSendingPipe.java,v $
- * Revision 1.58  2009-12-29 15:00:02  m168309
+ * Revision 1.59  2010-02-03 14:27:33  L190409
+ * check for interrupt
+ *
+ * Revision 1.58  2009/12/29 15:00:02  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added attribute labelXPath
  *
  * Revision 1.57  2009/12/29 14:35:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -281,7 +284,7 @@ import org.apache.commons.lang.SystemUtils;
  */
 
 public class MessageSendingPipe extends FixedForwardPipe implements HasSender, HasStatistics, EventThrowing {
-	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.58 $ $Date: 2009-12-29 15:00:02 $";
+	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.59 $ $Date: 2010-02-03 14:27:33 $";
 
 	public static final String PIPE_TIMEOUT_MONITOR_EVENT = "Sender Timeout";
 	public static final String PIPE_CLEAR_TIMEOUT_MONITOR_EVENT = "Sender Received Result on Time";
@@ -459,9 +462,6 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	}
 
 	public PipeRunResult doPipe(Object input, PipeLineSession session)	throws PipeRunException {
-//		if (input==null) {
-//			throw new PipeRunException(this, "received null as input");
-//		}
 
 		String result = null;
 
@@ -499,10 +499,6 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 				} else {
 					log.info(getLogPrefix(session)+"returning result from static stub ["+getStubFileName()+"]");
 				}
-//				// Use remaining params as outgoing UDZs
-//				Map udzMap = new HashMap();
-//				udzMap.putAll(params);
-//				udzMap.remove(STUBFILENAME);
 			} else {
 				log.info(getLogPrefix(session)+"returning result from static stub ["+getStubFileName()+"]");
 			}
@@ -515,6 +511,9 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 				String messageID = null;
 				// sendResult has a messageID for async senders, the result for sync senders
 				String sendResult = sendMessage(input, session, correlationID, getSender(), threadContext);
+				if (Thread.interrupted()) {
+					throw new TimeOutException(getLogPrefix(session)+"Thread interrupted");
+				}
 	
 				if (getSender().isSynchronous()) {
 					if (log.isInfoEnabled()) {

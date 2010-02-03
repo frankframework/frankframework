@@ -1,6 +1,9 @@
 /*
  * $Log: IteratingPipe.java,v $
- * Revision 1.14  2009-07-13 10:08:09  m168309
+ * Revision 1.15  2010-02-03 14:28:32  L190409
+ * check for interrupt
+ *
+ * Revision 1.14  2009/07/13 10:08:09  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted javadoc
  *
  * Revision 1.13  2009/02/25 10:41:01  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -169,7 +172,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public abstract class IteratingPipe extends MessageSendingPipe {
-	public static final String version="$RCSfile: IteratingPipe.java,v $ $Revision: 1.14 $ $Date: 2009-07-13 10:08:09 $";
+	public static final String version="$RCSfile: IteratingPipe.java,v $ $Revision: 1.15 $ $Date: 2010-02-03 14:28:32 $";
 
 	private String stopConditionXPathExpression=null;
 	private boolean removeXmlDeclarationInResults=false;
@@ -337,6 +340,9 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 				iterateInput(input,session,correlationID, threadContext, callback);
 			} else {
 				while (keepGoing && it.hasNext()) {
+					if (Thread.currentThread().isInterrupted()) {
+						throw new TimeOutException("Thread has been interrupted");
+					}
 					StringBuffer items = new StringBuffer();
 					if (getBlockSize()>0) {
 						items.append(getBlockPrefix());

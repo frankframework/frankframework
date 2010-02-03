@@ -1,6 +1,9 @@
 /*
  * $Log: ForEachChildElementPipe.java,v $
- * Revision 1.20  2008-09-08 14:58:51  europe\L190409
+ * Revision 1.21  2010-02-03 14:29:32  L190409
+ * check for interrupt
+ *
+ * Revision 1.20  2008/09/08 14:58:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected in error logging
  *
  * Revision 1.19  2008/05/27 16:56:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -126,10 +129,10 @@ import org.xml.sax.helpers.DefaultHandler;
  * @author Gerrit van Brakel
  * @since 4.6.1
  * 
- * $Id: ForEachChildElementPipe.java,v 1.20 2008-09-08 14:58:51 europe\L190409 Exp $
+ * $Id: ForEachChildElementPipe.java,v 1.21 2010-02-03 14:29:32 L190409 Exp $
  */
 public class ForEachChildElementPipe extends IteratingPipe {
-	public static final String version="$RCSfile: ForEachChildElementPipe.java,v $ $Revision: 1.20 $ $Date: 2008-09-08 14:58:51 $";
+	public static final String version="$RCSfile: ForEachChildElementPipe.java,v $ $Revision: 1.21 $ $Date: 2010-02-03 14:29:32 $";
 
 	private String elementXPathExpression=null;
 	private boolean processFile=false;
@@ -188,8 +191,17 @@ public class ForEachChildElementPipe extends IteratingPipe {
 			}
 			startLength=elementbuffer.length();
 		}
+
+		private void checkInterrupt() throws SAXException {
+			if (Thread.currentThread().isInterrupted()) {
+				rootException = new InterruptedException("Thread has been interrupted");
+				rootException.fillInStackTrace();
+				throw new SAXException("Thread has been interrupted");
+			}
+		}
 		
 		public void characters(char[] ch, int start, int length) throws SAXException {
+			checkInterrupt();
 			if (elementLevel>1) {
 				if (!contentSeen) {
 					contentSeen=true;
@@ -200,6 +212,7 @@ public class ForEachChildElementPipe extends IteratingPipe {
 		}
 
 		public void endElement(String uri, String localName, String qname) throws SAXException {
+			checkInterrupt();
 			if (elementLevel>1) {
 				if (!contentSeen) {
 					contentSeen=true;
@@ -237,6 +250,7 @@ public class ForEachChildElementPipe extends IteratingPipe {
 
 
 		public void startElement(String uri, String localName, String qName, Attributes attributes)	throws SAXException {
+			checkInterrupt();
 			if (elementLevel>1 && !contentSeen) {
 				elementbuffer.append(">");
 			}
