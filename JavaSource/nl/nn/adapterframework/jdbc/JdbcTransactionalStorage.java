@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcTransactionalStorage.java,v $
- * Revision 1.40  2010-01-06 15:18:45  m168309
+ * Revision 1.41  2010-02-03 14:26:41  L190409
+ * verify index configuration
+ *
+ * Revision 1.40  2010/01/06 15:18:45  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added type to index ix_ibisstore
  *
  * Revision 1.39  2009/12/31 08:16:53  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -145,6 +148,7 @@ import java.util.zip.InflaterInputStream;
 import java.util.zip.ZipException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
 import nl.nn.adapterframework.core.ITransactionalStorage;
@@ -261,7 +265,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  * @since 	4.1
  */
 public class JdbcTransactionalStorage extends JdbcFacade implements ITransactionalStorage {
-	public static final String version = "$RCSfile: JdbcTransactionalStorage.java,v $ $Revision: 1.40 $ $Date: 2010-01-06 15:18:45 $";
+	public static final String version = "$RCSfile: JdbcTransactionalStorage.java,v $ $Revision: 1.41 $ $Date: 2010-02-03 14:26:41 $";
 
 	public final static String TYPE_ERRORSTORAGE="E";
 	public final static String TYPE_MESSAGELOG_PIPE="L";
@@ -331,6 +335,62 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		return "JdbcTransactionalStorage ["+getName()+"] ";
 	}
 	
+	
+	private boolean checkIndexPresent(Connection connection, String indexName) {
+		String query="select count(*) from all_indexes where table_name='"+getTableName().toUpperCase()+"'and index_name=?";
+		try {
+			if (JdbcUtil.executeIntQuery(connection, query,indexName.toUpperCase())>=1) {
+				return true;
+			} else {
+				ConfigurationWarnings.getInstance().add(getLogPrefix()+"Index ["+indexName+"] on table ["+getTableName()+"] not present");
+			}
+		} catch (Exception e) {
+			ConfigurationWarnings.getInstance().add(getLogPrefix()+"Could not determine presence of Index ["+indexName+"] on table ["+getTableName()+"]: "+e.getMessage());
+		}
+		return false;
+	}
+
+	private void checkIndexColumnPresent(Connection connection, String indexName, String columnName, int position) {
+		String query1="select count(*) from all_ind_columns where table_name='"+getTableName().toUpperCase()+"'and index_name=? and column_name=?";
+		String query2="select column_position from all_ind_columns where table_name='"+getTableName().toUpperCase()+"'and index_name=? and column_name=?";
+		try {
+			if (JdbcUtil.executeIntQuery(connection, query1, indexName.toUpperCase(), columnName.toUpperCase())<1) {
+				ConfigurationWarnings.getInstance().add(getLogPrefix()+"Index ["+indexName+"] on table ["+getTableName()+"] has no column ["+columnName+"]");
+			} else {
+				int columnPos=JdbcUtil.executeIntQuery(connection, query2, indexName.toUpperCase(), columnName.toUpperCase());
+				if (columnPos!=position) {
+					ConfigurationWarnings.getInstance().add(getLogPrefix()+"Index ["+indexName+"] on table ["+getTableName()+"] column ["+columnName+"] has position ["+columnPos+"] instead of ["+position+"]");
+				}
+			}
+		} catch (Exception e) {
+			ConfigurationWarnings.getInstance().add(getLogPrefix()+"Could not determine correct presence of Index ["+indexName+"] on table ["+getTableName()+"]: "+e.getMessage());
+		}
+	}
+
+	private void checkIndices() {
+
+		Connection connection=null;
+		try {
+			connection=getConnection();
+			if (checkIndexPresent(connection,getIndexName())) {
+				checkIndexColumnPresent(connection,getIndexName(),getTypeField(),1);
+				checkIndexColumnPresent(connection,getIndexName(),getSlotIdField(),2);
+				checkIndexColumnPresent(connection,getIndexName(),getDateField(),3);
+			}
+			if (checkIndexPresent(connection,"IX_IBISSTORE_02")) {
+				checkIndexColumnPresent(connection,"IX_IBISSTORE_02",getExpiryDateField(),1);
+			}
+		} catch (JdbcException e) {
+			ConfigurationWarnings.getInstance().add(getLogPrefix()+"Could not determine correct presence of indices on table ["+getTableName()+"]: "+e.getMessage());
+		} finally {
+			try {
+				connection.close();
+			} catch (SQLException e1) {
+				log.warn("could not close connection",e1);
+			}
+		}
+	}
+	
 	/**
 	 * Creates a connection, checks if the table is existing and creates it when necessary
 	 */
@@ -345,6 +405,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 			host=Misc.getHostname();
 		}
 		createQueryTexts(databaseType);
+		checkIndices();
 	}
 
 	public void open() throws SenderException {
