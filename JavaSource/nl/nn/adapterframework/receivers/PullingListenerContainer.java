@@ -1,6 +1,9 @@
 /*
  * $Log: PullingListenerContainer.java,v $
- * Revision 1.16  2009-04-15 16:02:35  L190409
+ * Revision 1.17  2010-02-03 14:46:03  L190409
+ * container now starts its own threads
+ *
+ * Revision 1.16  2009/04/15 16:02:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed static from definition of txNew
  *
  * Revision 1.15  2008/08/13 13:50:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -63,6 +66,7 @@ import nl.nn.adapterframework.util.TracingUtil;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.NDC;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
@@ -85,7 +89,12 @@ public class PullingListenerContainer implements Runnable {
     private Counter threadsRunning = new Counter(0);
     private Semaphore pollToken = null;
     private int retryInterval=1;
-    
+ 
+	/**
+	 * The thread-pool for spawning threads, injected by Spring
+	 */
+	private TaskExecutor taskExecutor;
+   
     private PullingListenerContainer() {
         super();
     }
@@ -102,6 +111,22 @@ public class PullingListenerContainer implements Runnable {
 			txNew=txDef;
         }
     }
+    
+    public void start(int numThreads) {
+//    	if (taskExecutor instanceof SchedulingTaskExecutor && 
+//    		((SchedulingTaskExecutor)taskExecutor).prefersShortLivedTasks()) {
+//    			// tja, wat dan...
+//    	} else {
+    		for (int i=0; i<numThreads; i++) {
+				taskExecutor.execute(this);
+    		}
+//    	}
+    	
+    }
+    
+    public void stop() {
+    }
+    
     
 	/**
 	 * Starts the receiver. This method is called by the startRunning method.<br/>
@@ -283,6 +308,13 @@ public class PullingListenerContainer implements Runnable {
 	}
 	public PlatformTransactionManager getTxManager() {
 		return txManager;
+	}
+
+	public void setTaskExecutor(TaskExecutor executor) {
+		taskExecutor = executor;
+	}
+	public TaskExecutor getTaskExecutor() {
+		return taskExecutor;
 	}
 
 	public int getThreadsRunning() {
