@@ -1,6 +1,10 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.86  2009-12-29 15:01:33  m168309
+ * Revision 1.87  2010-02-03 14:54:53  L190409
+ * check for expiration of timeouts
+ * moved taskexecutor to pulling listener container
+ *
+ * Revision 1.86  2009/12/29 15:01:33  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added attribute labelXPath
  *
  * Revision 1.85  2009/12/29 14:35:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -436,6 +440,7 @@ import nl.nn.adapterframework.monitoring.MonitorManager;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
+import nl.nn.adapterframework.task.TimeoutGuard;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Counter;
 import nl.nn.adapterframework.util.CounterStatistic;
@@ -458,7 +463,6 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.NDC;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
-import org.springframework.core.task.TaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
@@ -567,7 +571,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  */
 public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHandler, EventThrowing, IbisExceptionListener, HasSender, HasStatistics, TracingEventNumbers, IThreadCountControllable, BeanFactoryAware {
     
-	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.86 $ $Date: 2009-12-29 15:01:33 $";
+	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.87 $ $Date: 2010-02-03 14:54:53 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -661,10 +665,6 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 
 	private EventHandler eventHandler=null;
     
-	/**
-	 * The thread-pool for spawning threads, injected by Spring
-	 */
-	private TaskExecutor taskExecutor;
     
 	/**
 	 * Map containing message-ids which are currently being processed.
@@ -813,24 +813,9 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		throwEvent(RCV_STARTED_RUNNING_MONITOR_EVENT);
 		if (getListener() instanceof IPullingListener){
 			// start all threads
-			if (getNumThreads() > 1) {
-				for (int i = 1; i <= getNumThreads(); i++) {
-					addThread("[" + i+"]");
-				}
-			} else {
-				addThread("");
-			}
+			listenerContainer.start(getNumThreads());
 		}
 	}
-
-	private void addThread(String nameSuffix) {
-		if (getListener() instanceof IPullingListener){
-			//Thread t = new Thread(this, getName() + (nameSuffix==null ? "" : nameSuffix));
-			//t.start();
-			taskExecutor.execute(listenerContainer);
-		}
-	}
-
 
 	protected void tellResourcesToStop() throws ListenerException {
 		 // must lead to a 'closeAllResources()'
@@ -1371,6 +1356,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 			try {
 				// TODO: What about Ibis42 compat mode?
 				if (isIbis42compatibility()) {
+					log.debug(getLogPrefix()+"processing message in Ibis42compatibility-mode");
 					pipeLineResult = adapter.processMessage(businessCorrelationId, pipelineMessage, pipelineSession);
 					result=pipeLineResult.getResult();
 					errorMessage = result;
@@ -1386,11 +1372,26 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 						if (getMessageLog()!=null) {
 							getMessageLog().storeMessage(messageId, businessCorrelationId, new Date(),"log",label,pipelineMessage);
 						}
-						pipeLineResult = adapter.processMessageWithExceptions(businessCorrelationId, pipelineMessage, pipelineSession);
-						result=pipeLineResult.getResult();
-						errorMessage = "exitState ["+pipeLineResult.getState()+"], result ["+result+"]";
-						if (log.isDebugEnabled()) { log.debug(getLogPrefix()+"received result: "+errorMessage); }
-						messageInError=txStatus.isRollbackOnly();
+						log.debug(getLogPrefix()+"preparing TimeoutGuard");
+						TimeoutGuard tg = new TimeoutGuard("Receiver "+getName());
+						try {
+							if (log.isDebugEnabled()) log.debug(getLogPrefix()+"activating TimeoutGuard with transactionTimeout ["+transactionTimeout+"]s");
+							tg.activateGuard(getTransactionTimeout());
+							pipeLineResult = adapter.processMessageWithExceptions(businessCorrelationId, pipelineMessage, pipelineSession);
+							result=pipeLineResult.getResult();
+							errorMessage = "exitState ["+pipeLineResult.getState()+"], result ["+result+"]";
+							if (log.isDebugEnabled()) { log.debug(getLogPrefix()+"received result: "+errorMessage); }
+							messageInError=txStatus.isRollbackOnly();
+						} finally {
+							log.debug(getLogPrefix()+"canceling TimeoutGuard, isInterrupted ["+Thread.currentThread().isInterrupted()+"]");
+							if (tg.cancel()) {
+								errorMessage = "timeout exceeded";
+								if (StringUtils.isEmpty(result)) {
+									result="<timeout/>";
+								}
+								messageInError=true;
+							}
+						}
 						if (!messageInError && !isTransacted()) {
 							String commitOnState=((Adapter)adapter).getPipeLine().getCommitOnState();
 							
@@ -2217,12 +2218,6 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		return hiddenInputSessionKeys;
 	}
 
-	public void setTaskExecutor(TaskExecutor executor) {
-		taskExecutor = executor;
-	}
-	public TaskExecutor getTaskExecutor() {
-		return taskExecutor;
-	}
 
 
 	public void setTxManager(PlatformTransactionManager manager) {
