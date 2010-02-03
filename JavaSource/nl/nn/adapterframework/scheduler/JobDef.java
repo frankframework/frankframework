@@ -1,6 +1,9 @@
 /*
  * $Log: JobDef.java,v $
- * Revision 1.17  2009-12-29 14:37:28  L190409
+ * Revision 1.18  2010-02-03 14:57:00  L190409
+ * check for expiration of timeouts
+ *
+ * Revision 1.17  2009/12/29 14:37:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * modified imports to reflect move of statistics classes to separate package
  *
  * Revision 1.16  2009/10/26 13:53:52  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -60,6 +63,7 @@ import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.senders.IbisLocalSender;
 import nl.nn.adapterframework.statistics.HasStatistics;
+import nl.nn.adapterframework.task.TimeoutGuard;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.LogUtil;
@@ -555,7 +559,15 @@ public class JobDef {
 								log.error(getLogPrefix()+msg);
 							}
 							if (objectId!=null) {
-								runJob(ibisManager);
+								TimeoutGuard tg = new TimeoutGuard("Job "+getName());
+								try {
+									tg.activateGuard(getTransactionTimeout());
+									runJob(ibisManager);
+								} finally {
+									if (tg.cancel()) {
+										log.error(getLogPrefix()+"thread has been interrupted");
+									} 
+								}
 							}
 						} finally {
 							if (objectId!=null) {
