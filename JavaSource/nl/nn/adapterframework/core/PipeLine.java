@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.86  2009-12-29 14:32:20  L190409
+ * Revision 1.87  2010-02-03 14:39:19  L190409
+ * check for expiration of timeouts
+ *
+ * Revision 1.86  2009/12/29 14:32:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * modified imports to reflect move of statistics classes to separate package
  *
  * Revision 1.85  2009/12/10 15:32:48  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -272,7 +275,9 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.debug.IbisDebugger;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
+import nl.nn.adapterframework.task.TimeoutGuard;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.LogUtil;
@@ -363,7 +368,7 @@ import org.springframework.transaction.TransactionStatus;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.86 $ $Date: 2009-12-29 14:32:20 $";
+	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.87 $ $Date: 2010-02-03 14:39:19 $";
     private Logger log = LogUtil.getLogger(this);
 	private Logger durationLog = LogUtil.getLogger("LongDurationMessages");
     
@@ -631,7 +636,24 @@ public class PipeLine {
 		IbisTransaction itx = new IbisTransaction(txManager, txDef, "pipeline of adapter [" + owner.getName() + "]");
 		TransactionStatus txStatus = itx.getStatus();
 		try {
-			return processPipeLine(messageId, message, session, txStatus);
+			TimeoutGuard tg = new TimeoutGuard("pipeline of adapter [" + owner.getName() + "]");
+			Throwable tCaught=null;
+			try {
+				tg.activateGuard(getTransactionTimeout());
+				PipeLineResult result = processPipeLine(messageId, message, session, txStatus);
+				return result;
+			} catch (Throwable t) {
+				tCaught=t;
+				throw tCaught;
+			} finally {
+				if (tg.cancel()) {
+					if (tCaught==null) {
+						throw new InterruptedException(tg.getDescription()+" was interrupted");
+					} else {
+						log.warn("Thread interrupted, but propagating other caught exception of type ["+ClassUtils.nameOf(tCaught)+"]");
+					}
+				}
+			}
 		} catch (Throwable t) {
 			log.debug("setting RollBackOnly for pipeline after catching exception");
 			txStatus.setRollbackOnly();
@@ -667,11 +689,27 @@ public class PipeLine {
 		IbisTransaction itx = new IbisTransaction(txManager, SpringTxManagerProxy.getTransactionDefinition(txOption,txTimeout), "pipe [" + pipe.getName() + "]");
 		TransactionStatus txStatus = itx.getStatus();
 		try {
-			checkMessageSize(message, pipe, true);
-			PipeRunResult prr = pipe.doPipe(message, session);
-			Object result = prr.getResult();
-			checkMessageSize(result, pipe, false);
-			return prr;
+			TimeoutGuard tg = new TimeoutGuard("pipeline of adapter [" + owner.getName() + "] running pipe ["+pipe.getName()+"]");
+			Throwable tCaught=null;
+			try {
+				tg.activateGuard(txTimeout);
+				checkMessageSize(message, pipe, true);
+				PipeRunResult prr = pipe.doPipe(message, session);
+				Object result = prr.getResult();
+				checkMessageSize(result, pipe, false);
+				return prr;
+			} catch (Throwable t) {
+				tCaught=t;
+				throw tCaught;
+			} finally {
+				if (tg.cancel()) {
+					if (tCaught==null) {
+						throw new PipeRunException(pipe,tg.getDescription()+" was interrupted");
+					} else {
+						log.warn("Thread interrupted, but propagating other caught exception of type ["+ClassUtils.nameOf(tCaught)+"]");
+					}
+				}
+			}
 		} catch (Throwable t) {
 			log.debug("setting RollBackOnly for pipe [" + pipe.getName()+"] after catching exception");
 			txStatus.setRollbackOnly();
@@ -733,7 +771,7 @@ public class PipeLine {
 	 * @return
 	 * @throws PipeRunException
 	 */
-    public PipeLineResult processPipeLine(String messageId, String message, PipeLineSession pipeLineSession, TransactionStatus txStatus) throws PipeRunException {
+    private PipeLineResult processPipeLine(String messageId, String message, PipeLineSession pipeLineSession, TransactionStatus txStatus) throws PipeRunException {
 	    // Object is the object that is passed to and returned from Pipes
 	    Object object = (Object) message;
 		if (log.isDebugEnabled() && ibisDebugger!=null) {
@@ -976,7 +1014,7 @@ public class PipeLine {
 						}
 						ready=true;
 						if (log.isDebugEnabled()){  // for performance reasons
-							log.debug("Pipeline of adapter ["+ owner.getName()+ "] finished processing messageId ["+messageId+"] result: ["+ object.toString()+ "] with exit-state ["+state+"]");
+							log.debug("Pipeline of adapter ["+ owner.getName()+ "] finished processing messageId ["+messageId+"] result: ["+ object+ "] with exit-state ["+state+"]");
 						}
 					}
 				} else {
