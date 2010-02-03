@@ -1,6 +1,9 @@
 /*
  * $Log: StreamTransformerPipe.java,v $
- * Revision 1.20  2010-01-27 13:53:05  L190409
+ * Revision 1.21  2010-02-03 14:17:09  L190409
+ * check for interrupt
+ *
+ * Revision 1.20  2010/01/27 13:53:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added support for blocks by recordType
  *
  * Revision 1.19  2009/08/31 09:21:58  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -118,7 +121,6 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class StreamTransformerPipe extends FixedForwardPipe {
-	public static final String version = "$RCSfile: StreamTransformerPipe.java,v $  $Revision: 1.20 $ $Date: 2010-01-27 13:53:05 $";
 
 	public static final String originalBlockKey="originalBlock";
 
@@ -482,6 +484,9 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 		try {
 			openDocument(session,streamId, prc);
 			while ((rawRecord = reader.readLine()) != null) {
+				if (Thread.currentThread().isInterrupted()) {
+					throw new InterruptedException();
+				}
 				linenumber++; // remember linenumber for exception handler
 				if (StringUtils.isEmpty(rawRecord)) {
 					continue; // ignore empty line
