@@ -1,6 +1,9 @@
 /*
  * $Log: ShowSecurityItems.java,v $
- * Revision 1.3  2010-02-03 11:15:25  m168309
+ * Revision 1.4  2010-02-03 11:25:01  m168309
+ * removed a debug logging
+ *
+ * Revision 1.3  2010/02/03 11:15:25  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added information about JmsRealms
  *
  * Revision 1.2  2008/12/15 12:23:35  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -71,7 +74,7 @@ import org.apache.struts.action.ActionMapping;
  */
 
 public final class ShowSecurityItems extends ActionBase {
-	public static final String version = "$RCSfile: ShowSecurityItems.java,v $ $Revision: 1.3 $ $Date: 2010-02-03 11:15:25 $";
+	public static final String version = "$RCSfile: ShowSecurityItems.java,v $ $Revision: 1.4 $ $Date: 2010-02-03 11:25:01 $";
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 
@@ -90,7 +93,6 @@ public final class ShowSecurityItems extends ActionBase {
 		addSecurityRoleBindings(securityItems, appName);
 		addJmsRealms(securityItems);
 
-		log.debug("secItems [" + securityItems.toXML() + "]");
 		request.setAttribute("secItems", securityItems.toXML());
 
 		// Forward control to the specified success URI
