@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   $Log: springContextWAS5.xml,v $
-  Revision 1.1  2009-10-30 15:31:07  m168309
+  Revision 1.2  2010-02-03 15:00:21  L190409
+  updated spring xsds to 2.5
+
+  Revision 1.1  2009/10/30 15:31:07  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
   Run IBIS on Tomcat
 
   Revision 1.6  2009/10/29 13:23:12  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -24,8 +27,7 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="
-            http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
-            http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.0.xsd
+            http://www.springframework.org/schema/beans xml/xsd/spring-beans-2.5.xsd
             ">
 
     <import resource="springWAS5.xml"/>

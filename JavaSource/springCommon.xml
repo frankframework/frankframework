@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   $Log: springCommon.xml,v $
-  Revision 1.14  2009-12-29 14:48:05  L190409
+  Revision 1.15  2010-02-03 15:00:21  L190409
+  updated spring xsds to 2.5
+
+  Revision 1.14  2009/12/29 14:48:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
   moved statistics to separate package
 
   Revision 1.13  2009/08/26 15:21:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -62,8 +65,8 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:util="http://www.springframework.org/schema/util"
        xsi:schemaLocation="
-            http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
-            http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.0.xsd
+            http://www.springframework.org/schema/beans xml/xsd/spring-beans-2.5.xsd
+            http://www.springframework.org/schema/util xml/xsd/spring-util-2.5.xsd
             ">
 
     <!-- IBIS Beans -->
