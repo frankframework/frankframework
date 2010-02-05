@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcTransactionalStorage.java,v $
- * Revision 1.41  2010-02-03 14:26:41  L190409
+ * Revision 1.42  2010-02-05 08:03:35  m168309
+ * disable 'verify index configuration'
+ *
+ * Revision 1.41  2010/02/03 14:26:41  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * verify index configuration
  *
  * Revision 1.40  2010/01/06 15:18:45  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -265,7 +268,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  * @since 	4.1
  */
 public class JdbcTransactionalStorage extends JdbcFacade implements ITransactionalStorage {
-	public static final String version = "$RCSfile: JdbcTransactionalStorage.java,v $ $Revision: 1.41 $ $Date: 2010-02-03 14:26:41 $";
+	public static final String version = "$RCSfile: JdbcTransactionalStorage.java,v $ $Revision: 1.42 $ $Date: 2010-02-05 08:03:35 $";
 
 	public final static String TYPE_ERRORSTORAGE="E";
 	public final static String TYPE_MESSAGELOG_PIPE="L";
@@ -405,7 +408,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 			host=Misc.getHostname();
 		}
 		createQueryTexts(databaseType);
-		checkIndices();
+		//checkIndices();
 	}
 
 	public void open() throws SenderException {
