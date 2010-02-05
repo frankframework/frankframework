@@ -40,7 +40,7 @@
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/IbisServiceDispatcher-1.1.jar"/>
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/sapidoc-1.0.1.jar"/>
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/sapidocjco-1.0.2.jar"/>
-    <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/spring-2.5.1.jar"/>
+    <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/spring-2.5.6-sec01.jar"/>
     <classpathentry kind="var" path="WAS_50_PLUGINDIR/lib/ws-config-servers.jar"/>
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/commons-beanutils-core-1.7.0.jar"/>
     <classpathentry kind="var" path="WAS_50_PLUGINDIR/lib/runtime.jar"/>
