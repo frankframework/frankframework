@@ -1,6 +1,5 @@
 package nl.nn.adapterframework.util;
 
-import nl.nn.adapterframework.core.TimeOutException;
 
 /**
  * A semaphore is a flag used to check whether a resource is currently being 
@@ -35,16 +34,25 @@ public class Semaphore {
     }
     /**
      * Decrements internal counter, blocking if the counter is already
-     * zero.
+     * zero or less.
      *
      * @exception InterruptedException passed from this.wait().
      */
     public synchronized void acquire() throws InterruptedException {
-        while (counter == 0) {
+        while (counter <= 0) {
             this.wait();
         }
         counter--;
     }
+
+	/**
+	 * non blocking decrements internal counter.
+	 *
+	 * @exception InterruptedException passed from this.wait().
+	 */
+	public synchronized void tighten() {
+		counter--;
+	}
 
 //	/**
 //	 * Decrements internal counter, blocking if the counter is already
@@ -54,7 +62,7 @@ public class Semaphore {
 //	 * @exception TimeOutException if the time specified has passed, but the counter cannot be decreased.
 //	 */
 //	public synchronized void acquire(long timeout) throws InterruptedException, TimeOutException {
-//		if (counter == 0) {
+//		if (counter <= 0) {
 //			this.wait(timeout);
 //		}
 //		if (counter==0) {
