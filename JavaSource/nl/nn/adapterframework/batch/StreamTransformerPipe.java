@@ -1,6 +1,9 @@
 /*
  * $Log: StreamTransformerPipe.java,v $
- * Revision 1.21  2010-02-03 14:17:09  L190409
+ * Revision 1.22  2010-02-08 14:35:41  L190409
+ * preserve order of result writers
+ *
+ * Revision 1.21  2010/02/03 14:17:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * check for interrupt
  *
  * Revision 1.20  2010/01/27 13:53:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -75,6 +78,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -131,7 +135,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	private IResultHandler defaultHandler=null;
 	private Map registeredManagers= new HashMap();
 	private Map registeredRecordHandlers= new HashMap();
-	private Map registeredResultHandlers= new HashMap();
+	private Map registeredResultHandlers= new LinkedHashMap();
 	
 	public void configure() throws ConfigurationException {
 		super.configure();
