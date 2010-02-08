@@ -1,3 +1,9 @@
+/*
+ * $Log: Semaphore.java,v $
+ * Revision 1.8  2010-02-08 14:43:08  L190409
+ * added log keyword
+ *
+ */
 package nl.nn.adapterframework.util;
 
 
@@ -17,11 +23,10 @@ package nl.nn.adapterframework.util;
  * If a semaphore is fully occupied, new threads wanting to use it will wait until some thread releases its l
  * ock by upping the semaphore. For a semaphore to work, the check for full, and the decrement must be done 
  * all in one atomic uninterruptible instruction. This is done by the {@link #release()} method.</p>
- * @version Id
  *
+ * @author  Gerrit van Brakel 
+ * @version Id
  */
-
-
 public class Semaphore {
     private int counter;
     
