@@ -1,6 +1,9 @@
 /*
  * $Log: MessagingSource.java,v $
- * Revision 1.1  2010-01-28 14:48:42  L190409
+ * Revision 1.2  2010-02-10 13:51:09  L190409
+ * improved getPhysicalName()
+ *
+ * Revision 1.1  2010/01/28 14:48:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * renamed 'Connection' classes to 'MessageSource'
  *
  * Revision 1.17  2009/09/07 13:18:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -66,7 +69,6 @@
  */
 package nl.nn.adapterframework.jms;
 
-import java.lang.reflect.Field;
 import java.util.Hashtable;
 import java.util.Map;
 
@@ -92,8 +94,6 @@ import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.ReflectionToStringBuilder;
-import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.log4j.Logger;
 
 /**
@@ -198,10 +198,20 @@ public class MessagingSource  {
 		return connectionFactory;
 	}
 
+	protected ConnectionFactory getConnectionFactoryDelegate() throws IllegalArgumentException, SecurityException, IllegalAccessException, NoSuchFieldException {
+		return getConnectionFactory();
+	}
 
 	public String getPhysicalName() {
 		String result="";
-		result+=ClassUtils.reflectionToString(connectionFactory, "factory");
+		try {
+			ConnectionFactory qcf = getConnectionFactoryDelegate();
+			Object managedConnectionFacory = ClassUtils.invokeGetter(qcf,"getManagedConnectionFactory",true);
+			result+=ClassUtils.reflectionToString(managedConnectionFacory, "perties"); //catches properties as well as Properties... 
+			// result+=ClassUtils.reflectionToString(qcf, "factory");
+		} catch (Exception e) {
+			result+= ClassUtils.nameOf(connectionFactory)+".getManagedConnectionFactory() "+ClassUtils.nameOf(e)+": "+e.getMessage();
+		}
 		return result;
 	}
 	

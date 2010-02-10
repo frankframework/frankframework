@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaMessagingSource.java,v $
- * Revision 1.3  2010-02-10 09:36:24  L190409
+ * Revision 1.4  2010-02-10 13:51:09  L190409
+ * improved getPhysicalName()
+ *
+ * Revision 1.3  2010/02/10 09:36:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fixed getPhysicalName()
  *
  * Revision 1.2  2010/01/28 15:01:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -65,6 +68,7 @@ package nl.nn.adapterframework.extensions.ifsa.jms;
 
 import java.util.Map;
 
+import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.Queue;
@@ -249,15 +253,8 @@ public class IfsaMessagingSource extends MessagingSource {
 		return cleanUpOnClose.booleanValue();
 	}
 
-	public String getPhysicalName() {
-		String result="";
-		try {
-			QueueConnectionFactory qcf = (QueueConnectionFactory)ClassUtils.getDeclaredFieldValue(getConnectionFactory(),"qcf");
-			result+=ClassUtils.reflectionToString(qcf, "factory");
-		} catch (Exception e) {
-			result+=ClassUtils.nameOf(e)+": "+e.getMessage();
-		}
-		return result;
+	protected ConnectionFactory getConnectionFactoryDelegate() throws IllegalArgumentException, SecurityException, IllegalAccessException, NoSuchFieldException {
+		return (QueueConnectionFactory)ClassUtils.getDeclaredFieldValue(getConnectionFactory(),"qcf");
 	}
 
 	public boolean xaCapabilityCanBeDetermined() {
