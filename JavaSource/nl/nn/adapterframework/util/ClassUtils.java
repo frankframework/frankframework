@@ -1,6 +1,9 @@
 /*
  * $Log: ClassUtils.java,v $
- * Revision 1.17  2010-01-28 14:45:42  L190409
+ * Revision 1.18  2010-02-10 09:34:52  L190409
+ * added getDeclaredFieldValue()
+ *
+ * Revision 1.17  2010/01/28 14:45:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added some reflection methods
  *
  * Revision 1.16  2009/08/13 09:18:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -67,8 +70,10 @@ import org.apache.log4j.Logger;
  *
  */
 public class ClassUtils {
-	public static final String version = "$RCSfile: ClassUtils.java,v $ $Revision: 1.17 $ $Date: 2010-01-28 14:45:42 $";
+	public static final String version = "$RCSfile: ClassUtils.java,v $ $Revision: 1.18 $ $Date: 2010-02-10 09:34:52 $";
 	private static Logger log = LogUtil.getLogger(ClassUtils.class);
+	
+	private static final boolean trace=false;
 
     /**
      * Return the context classloader.
@@ -382,18 +387,47 @@ public class ClassUtils {
 		return o.getClass().getField(name).get(o);
 	}
 
+	public static Object getDeclaredFieldValue(Object o, String name) throws IllegalArgumentException, SecurityException, IllegalAccessException, NoSuchFieldException {
+		Field f = o.getClass().getDeclaredField(name);
+		try {
+			f.setAccessible(true);
+			return f.get(o);
+		} catch (Exception e) {
+			log.error(e);
+			return e.getMessage();
+		}
+	}
+
 	public static String debugObject(Object o) {
 		String result=nameOf(o)+" ";
 		Field fields[] = o.getClass().getDeclaredFields();
 		result +="fields.lentgth ["+fields.length+"] {";
 		for (int i=0; i<fields.length; i++) {
-			result +="field["+i+"] "+fields[i].getName()+": ["+getFieldValueSafe(o,fields[i].getName()+"]\n");
+			Field f=fields[i];
+			Object value;
+			try {
+				f.setAccessible(true);
+				value=f.get(o);
+			} catch (Exception e) {
+				value="Could not get value: "+ClassUtils.nameOf(e)+": "+e.getMessage();
+			}
+			result +="field["+i+"] "+f.getName()+": ["+value+"]\n";
 		}
 		result +="} ";
 		Method methods[] = o.getClass().getMethods();
 		result +="methods.lentgth ["+methods.length+"] {";
 		for (int i=0; i<methods.length; i++) {
-			result +="method["+i+"] "+methods[i].getName()+": ["+invokeGetterSafe(o,methods[i].getName()+"]\n");
+			Method m=methods[i];
+			result +="method["+i+"] "+m.getName();
+//			Object value;
+//			try {
+//				m.setAccessible(true);
+//				value=m.invoke(o,null);
+//			} catch (Exception e) {
+//				value="Could not get value: "+ClassUtils.nameOf(e)+": "+e.getMessage();
+//			}
+//			result +=": ["+value+"]\n";
+			result +="\n";
 		}
 		result +="} ";
 		result += " ["+o.toString()+"]";
@@ -405,10 +439,8 @@ public class ClassUtils {
 		String result=(new ReflectionToStringBuilder(o) {
 				protected boolean accept(Field f) {
 					if (super.accept(f)) {
-						log.debug(nameOf(o)+" field ["+f.getName()+"]");
-						return 	(
-									f.getName().endsWith(fieldnameEnd)
-								);
+						if (trace) log.debug(nameOf(o)+" field ["+f.getName()+"]");
+						return f.getName().endsWith(fieldnameEnd);
 					}
 					return false;
 				}
