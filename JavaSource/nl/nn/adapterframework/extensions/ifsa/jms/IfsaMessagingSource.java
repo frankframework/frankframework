@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaMessagingSource.java,v $
- * Revision 1.2  2010-01-28 15:01:57  L190409
+ * Revision 1.3  2010-02-10 09:36:24  L190409
+ * fixed getPhysicalName()
+ *
+ * Revision 1.2  2010/01/28 15:01:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed unused imports
  *
  * Revision 1.1  2010/01/28 14:49:06  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -65,6 +68,7 @@ import java.util.Map;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.Queue;
+import javax.jms.QueueConnectionFactory;
 import javax.jms.QueueReceiver;
 import javax.jms.QueueSession;
 import javax.naming.NamingException;
@@ -72,6 +76,7 @@ import javax.naming.NamingException;
 import nl.nn.adapterframework.extensions.ifsa.IfsaException;
 import nl.nn.adapterframework.jms.MessagingSource;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.ClassUtils;
 
 import com.ing.ifsa.IFSAContext;
 import com.ing.ifsa.IFSAQueue;
@@ -246,11 +251,12 @@ public class IfsaMessagingSource extends MessagingSource {
 
 	public String getPhysicalName() {
 		String result="";
-//		try {
-//			result+=ToStringBuilder.reflectionToString(getClass().getDeclaredField("qcf").get(this));
-//		} catch (Exception e) {
-//			result+=ClassUtils.nameOf(e)+": "+e.getMessage();
-//		}
+		try {
+			QueueConnectionFactory qcf = (QueueConnectionFactory)ClassUtils.getDeclaredFieldValue(getConnectionFactory(),"qcf");
+			result+=ClassUtils.reflectionToString(qcf, "factory");
+		} catch (Exception e) {
+			result+=ClassUtils.nameOf(e)+": "+e.getMessage();
+		}
 		return result;
 	}
 
