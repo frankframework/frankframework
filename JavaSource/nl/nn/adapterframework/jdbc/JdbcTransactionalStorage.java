@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcTransactionalStorage.java,v $
- * Revision 1.42  2010-02-05 08:03:35  m168309
+ * Revision 1.43  2010-02-11 14:27:00  m168309
+ * verify database configuration
+ *
+ * Revision 1.42  2010/02/05 08:03:35  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * disable 'verify index configuration'
  *
  * Revision 1.41  2010/02/03 14:26:41  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -190,6 +193,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  * <tr><td>{@link #setIdField(String) idField}</td><td>the name of the column messageids are stored in</td><td>messageId</td></tr>
  * <tr><td>{@link #setCorrelationIdField(String) correlationIdField}</td><td>the name of the column correlation-ids are stored in</td><td>correlationId</td></tr>
  * <tr><td>{@link #setDateField(String) dateField}</td><td>the name of the column the timestamp is stored in</td><td>messageDate</td></tr>
+ * <tr><td>{@link #setCommentField(String) commentField}</td><td>the name of the column comments are stored in</td><td>comments</td></tr>
  * <tr><td>{@link #setMessageField(String) messageField}</td><td>the name of the column message themselves are stored in</td><td>message</td></tr>
  * <tr><td>{@link #setSlotIdField(String) slotIdField}</td><td>the name of the column slotIds are stored in</td><td>slotId</td></tr>
  * <tr><td>{@link #setExpiryDateField(String) expiryDateField}</td><td>the name of the column the timestamp for expiry is stored in</td><td>expiryDate</td></tr>
@@ -201,8 +205,10 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  * <tr><td>{@link #setBlobsCompressed(boolean) blobsCompressed}</td><td>when set to <code>true</code>, the messages are stored compressed</td><td><code>true</code></td></tr>
  * <tr><td>{@link #setSequenceName(String) sequenceName}</td><td>the name of the sequence used to generate the primary key (only for Oracle)<br>N.B. the default name has been changed in version 4.6</td><td>seq_ibisstore</td></tr>
  * <tr><td>{@link #setIndexName(String) indexName}</td><td>the name of the index, to be used in hints for query optimizer too (only for Oracle)</td><td>IX_IBISSTORE</td></tr>
+ * <tr><td>{@link #setIndex2Name(String) index2Name}</td><td>the name of the index, to be used in hints for the cleanup database query optimizer too (only for Oracle)</td><td>IX_IBISSTORE_02</td></tr>
  * <tr><td>{@link #setPrefix(String) prefix}</td><td>prefix to be prefixed on all database objects (tables, indices, sequences), e.q. to access a different Oracle Schema</td><td></td></tr>
  * <tr><td>{@link #setRetention(int) retention}</td><td>the time (in days) to keep the record in the database before making it eligible for deletion by a cleanup process. When set to -1, the record will live on forever</td><td>30</td></tr>
+ * <tr><td>{@link #setSchemaOwner4Check(String) schemaOwner4Check}</td><td>schema owner to be used to check the database</td><td>&lt;current_schema&gt; (only for Oracle)</td></tr>
  * </table>
  * </p>
  * 
@@ -268,7 +274,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  * @since 	4.1
  */
 public class JdbcTransactionalStorage extends JdbcFacade implements ITransactionalStorage {
-	public static final String version = "$RCSfile: JdbcTransactionalStorage.java,v $ $Revision: 1.42 $ $Date: 2010-02-05 08:03:35 $";
+	public static final String version = "$RCSfile: JdbcTransactionalStorage.java,v $ $Revision: 1.43 $ $Date: 2010-02-11 14:27:00 $";
 
 	public final static String TYPE_ERRORSTORAGE="E";
 	public final static String TYPE_MESSAGELOG_PIPE="L";
@@ -299,8 +305,10 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	private boolean active=true;
 	private boolean blobsCompressed=true;
 	private String indexName="IX_IBISSTORE";
+	private String index2Name="IX_IBISSTORE_02";
 	private String prefix="";
 	private int retention = 30;
+	private String schemaOwner4Check=null;
 	
 	private String order=AppConstants.getInstance().getString("browse.messages.order","");
    
@@ -312,7 +320,6 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	private String dateFieldType="TIMESTAMP";
 	private String messageFieldType="LONG BINARY";
 	private String textFieldType="VARCHAR";
-	int databaseType=-1;
 
 	private PlatformTransactionManager txManager;
 
@@ -337,54 +344,128 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	protected String getLogPrefix() {
 		return "JdbcTransactionalStorage ["+getName()+"] ";
 	}
-	
-	
-	private boolean checkIndexPresent(Connection connection, String indexName) {
-		String query="select count(*) from all_indexes where table_name='"+getTableName().toUpperCase()+"'and index_name=?";
-		try {
-			if (JdbcUtil.executeIntQuery(connection, query,indexName.toUpperCase())>=1) {
-				return true;
-			} else {
-				ConfigurationWarnings.getInstance().add(getLogPrefix()+"Index ["+indexName+"] on table ["+getTableName()+"] not present");
+
+	private void checkTableColumnPresent(Connection connection, String columnName) {
+		if (StringUtils.isNotEmpty(columnName)) {
+			if (!JdbcUtil.isTableColumnPresent(connection, getDatabaseType(), getSchemaOwner4Check(), getTableName(), columnName)) {
+				String msg="Table ["+getTableName()+"] has no column ["+columnName+"]";
+				ConfigurationWarnings.getInstance().add(getLogPrefix()+msg);
 			}
-		} catch (Exception e) {
-			ConfigurationWarnings.getInstance().add(getLogPrefix()+"Could not determine presence of Index ["+indexName+"] on table ["+getTableName()+"]: "+e.getMessage());
 		}
-		return false;
 	}
 
 	private void checkIndexColumnPresent(Connection connection, String indexName, String columnName, int position) {
-		String query1="select count(*) from all_ind_columns where table_name='"+getTableName().toUpperCase()+"'and index_name=? and column_name=?";
-		String query2="select column_position from all_ind_columns where table_name='"+getTableName().toUpperCase()+"'and index_name=? and column_name=?";
-		try {
-			if (JdbcUtil.executeIntQuery(connection, query1, indexName.toUpperCase(), columnName.toUpperCase())<1) {
-				ConfigurationWarnings.getInstance().add(getLogPrefix()+"Index ["+indexName+"] on table ["+getTableName()+"] has no column ["+columnName+"]");
+		if (StringUtils.isNotEmpty(columnName)) {
+			if (!JdbcUtil.isIndexColumnPresent(connection, getDatabaseType(), getSchemaOwner4Check(), getTableName(), indexName, columnName)) {
+				String msg="Index ["+indexName+"] on table ["+getTableName()+"] has no column ["+columnName+"]";
+				ConfigurationWarnings.getInstance().add(getLogPrefix()+msg);
 			} else {
-				int columnPos=JdbcUtil.executeIntQuery(connection, query2, indexName.toUpperCase(), columnName.toUpperCase());
+				int columnPos=JdbcUtil.getIndexColumnPosition(connection, getDatabaseType(), getSchemaOwner4Check(), getTableName(), indexName, columnName);
 				if (columnPos!=position) {
-					ConfigurationWarnings.getInstance().add(getLogPrefix()+"Index ["+indexName+"] on table ["+getTableName()+"] column ["+columnName+"] has position ["+columnPos+"] instead of ["+position+"]");
+					String msg="Index ["+indexName+"] on table ["+getTableName()+"] column ["+columnName+"] has position ["+columnPos+"] instead of ["+position+"]";
+					ConfigurationWarnings.getInstance().add(getLogPrefix()+msg);
 				}
 			}
-		} catch (Exception e) {
-			ConfigurationWarnings.getInstance().add(getLogPrefix()+"Could not determine correct presence of Index ["+indexName+"] on table ["+getTableName()+"]: "+e.getMessage());
 		}
 	}
 
-	private void checkIndices() {
+	private void checkTable(Connection connection) {
+		if (JdbcUtil.isTablePresent(connection, getDatabaseType(), getSchemaOwner4Check(), getTableName())) {
+			checkTableColumnPresent(connection,getKeyField());
+			checkTableColumnPresent(connection,getTypeField());
+			checkTableColumnPresent(connection,getSlotIdField());
+			checkTableColumnPresent(connection,getHostField());
+			checkTableColumnPresent(connection,getIdField());
+			checkTableColumnPresent(connection,getCorrelationIdField());
+			checkTableColumnPresent(connection,getDateField());
+			checkTableColumnPresent(connection,getCommentField());
+			checkTableColumnPresent(connection,getMessageField());
+			checkTableColumnPresent(connection,getExpiryDateField());
+			checkTableColumnPresent(connection,getLabelField());
+		} else {
+			String msg="Table ["+getTableName()+"] not present";
+			ConfigurationWarnings.getInstance().add(getLogPrefix()+msg);
+		}
+	}
 
+	private void checkIndex(Connection connection) {
+		if (JdbcUtil.isIndexPresent(connection, getDatabaseType(), getSchemaOwner4Check(), getTableName(), getIndexName())) {
+			int pos = 0;
+			if (StringUtils.isNotEmpty(getTypeField())) {
+				pos++;
+				checkIndexColumnPresent(connection,getIndexName(),getTypeField(),pos);
+			}
+			if (StringUtils.isNotEmpty(getSlotIdField())) {
+				pos++;
+				checkIndexColumnPresent(connection,getIndexName(),getSlotIdField(),pos);
+			}
+			if (StringUtils.isNotEmpty(getDateField())) {
+				pos++;
+				checkIndexColumnPresent(connection,getIndexName(),getDateField(),pos);
+			}
+		} else {
+			String msg="Index ["+getIndexName()+"] on table ["+getTableName()+"] not present";
+			ConfigurationWarnings.getInstance().add(getLogPrefix()+msg);
+		}
+	}
+
+	private void checkSequence(Connection connection) {
+		if (JdbcUtil.isSequencePresent(connection, getDatabaseType(), getSchemaOwner4Check(), getSequenceName())) {
+			//no more checks
+		} else {
+			String msg="Sequence ["+getSequenceName()+"] not present";
+			ConfigurationWarnings.getInstance().add(getLogPrefix()+msg);
+		}
+	}
+
+	private void checkIndex2(Connection connection) {
+		if (JdbcUtil.isIndexPresent(connection, getDatabaseType(), getSchemaOwner4Check(), getTableName(), getIndex2Name())) {
+			int pos = 0;
+			if (StringUtils.isNotEmpty(getExpiryDateField())) {
+				pos++;
+				checkIndexColumnPresent(connection,getIndex2Name(),getExpiryDateField(),pos);
+			}
+		} else {
+			String msg="Index ["+getIndex2Name()+"] on table ["+getTableName()+"] not present";
+			ConfigurationWarnings.getInstance().add(getLogPrefix()+msg);
+		}
+	}
+
+
+	private void checkDatabase() throws ConfigurationException {
 		Connection connection=null;
 		try {
-			connection=getConnection();
-			if (checkIndexPresent(connection,getIndexName())) {
-				checkIndexColumnPresent(connection,getIndexName(),getTypeField(),1);
-				checkIndexColumnPresent(connection,getIndexName(),getSlotIdField(),2);
-				checkIndexColumnPresent(connection,getIndexName(),getDateField(),3);
-			}
-			if (checkIndexPresent(connection,"IX_IBISSTORE_02")) {
-				checkIndexColumnPresent(connection,"IX_IBISSTORE_02",getExpiryDateField(),1);
+			if (getDatabaseType()==DATABASE_ORACLE) {
+				if (StringUtils.isNotEmpty(getSchemaOwner4Check())){
+					connection=getConnection();
+					if (StringUtils.isNotEmpty(getTableName())) {
+						checkTable(connection);
+					} else {
+						throw new ConfigurationException("Attribute [tableName] is not set");
+					}
+					if (StringUtils.isNotEmpty(getIndexName())) {
+						checkIndex(connection);
+					} else {
+						throw new ConfigurationException("Attribute [indexName] is not set");
+					}
+					if (StringUtils.isNotEmpty(getSequenceName())) {
+						checkSequence(connection);
+					} else {
+						throw new ConfigurationException("Attribute [sequenceName] is not set");
+					}
+					if (StringUtils.isNotEmpty(getIndex2Name())) {
+						checkIndex2(connection);
+					} else {
+						throw new ConfigurationException("Attribute [index2Name] is not set");
+					}
+				} else {
+					ConfigurationWarnings.getInstance().add(getLogPrefix()+"Could not check database regarding table [" + getTableName() + "]: Schema owner is unknown");
+				}
+			} else {
+				ConfigurationWarnings.getInstance().add(getLogPrefix()+"Could not check database regarding table [" + getTableName() + "]: Not an Oracle database");
 			}
 		} catch (JdbcException e) {
-			ConfigurationWarnings.getInstance().add(getLogPrefix()+"Could not determine correct presence of indices on table ["+getTableName()+"]: "+e.getMessage());
+			ConfigurationWarnings.getInstance().add(getLogPrefix()+"Could not check database regarding table [" + getTableName() + "]: "+e.getMessage());
 		} finally {
 			try {
 				connection.close();
@@ -399,21 +480,28 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	 */
 	public void configure() throws ConfigurationException {
 //		super.configure();
-		try {
-			databaseType = getDatabaseType();
-		} catch (Exception e) {
-			throw new ConfigurationException("Could not determine databasetype",e);
+		if (StringUtils.isEmpty(getTableName())) {
+			throw new ConfigurationException("Attribute [tableName] is not set");
+		}
+		if (StringUtils.isEmpty(getIndexName())) {
+			throw new ConfigurationException("Attribute [indexName] is not set");
+		}
+		if (StringUtils.isEmpty(getSequenceName())) {
+			throw new ConfigurationException("Attribute [sequenceName] is not set");
+		}
+		if (StringUtils.isEmpty(getIndex2Name())) {
+			throw new ConfigurationException("Attribute [index2Name] is not set");
 		}
 		if (StringUtils.isNotEmpty(getHostField())) {
 			host=Misc.getHostname();
 		}
-		createQueryTexts(databaseType);
-		//checkIndices();
+		createQueryTexts(getDatabaseType());
+		checkDatabase();
 	}
 
 	public void open() throws SenderException {
 		try {
-			initialize(databaseType);
+			initialize(getDatabaseType());
 		} catch (JdbcException e) {
 			throw new SenderException(e);
 		} catch (SQLException e) {
@@ -603,7 +691,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		
 		try {			
 			stmt = conn.prepareStatement(selectKeyQuery);			
-			if (databaseType!=DATABASE_ORACLE) {
+			if (getDatabaseType()!=DATABASE_ORACLE) {
 				stmt.clearParameters();
 				stmt.setString(1,messageId);
 				stmt.setString(2,correlationId);
@@ -1359,6 +1447,13 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		return indexName;
 	}
 
+	public void setIndex2Name(String string) {
+		index2Name = string;
+	}
+	public String getIndex2Name() {
+		return index2Name;
+	}
+
 	public void setTxManager(PlatformTransactionManager manager) {
 		txManager = manager;
 	}
@@ -1381,4 +1476,27 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		return retention;
 	}
 
+	public void setSchemaOwner4Check(String string) {
+		schemaOwner4Check = string;
+	}
+
+	public String getSchemaOwner4Check() {
+		if (schemaOwner4Check==null) {
+			Connection conn=null;
+			try {
+				conn=getConnection();
+				schemaOwner4Check=JdbcUtil.getSchemaOwner(conn, getDatabaseType());
+			} catch (Exception e) {
+				log.warn("Exception determining current schema", e);
+				return "";
+			} finally {
+				try {
+					conn.close();
+				} catch (SQLException e1) {
+					log.warn("exception closing connection for schema owner",e1);
+				}
+			}
+		}
+		return schemaOwner4Check;
+	}
 }
