@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcUtil.java,v $
- * Revision 1.22  2009-11-17 09:04:12  m168309
+ * Revision 1.23  2010-02-11 14:22:50  m168309
+ * added several methods for checking IBISSTORE
+ *
+ * Revision 1.22  2009/11/17 09:04:12  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * blobSmartGet: fixed bug for MessageLog blobs
  *
  * Revision 1.21  2009/08/04 11:31:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -109,7 +112,11 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class JdbcUtil {
-	public static final String version = "$RCSfile: JdbcUtil.java,v $ $Revision: 1.22 $ $Date: 2009-11-17 09:04:12 $";
+	public static final String version = "$RCSfile: JdbcUtil.java,v $ $Revision: 1.23 $ $Date: 2010-02-11 14:22:50 $";
+
+	public final static int DATABASE_GENERIC=0;
+	public final static int DATABASE_ORACLE=1;
+
 	protected static Logger log = LogUtil.getLogger(JdbcUtil.class);
 	
 	private static final boolean useMetaData=false;
@@ -169,7 +176,137 @@ public class JdbcUtil {
 		}
 	}
 
+	public static boolean isTablePresent(Connection conn, int databaseType, String schemaOwner, String tableName) {
+		if (databaseType==DATABASE_ORACLE) {
+			String query="select count(*) from all_tables where owner='"+schemaOwner.toUpperCase()+"' and table_name='"+tableName.toUpperCase()+"'";
+			try {
+				if (JdbcUtil.executeIntQuery(conn, query)>=1) {
+					return true;
+				} else {
+					return false;
+				}
+			} catch (Exception e) {
+				log.warn("could not determine presence of table ["+tableName+"]",e);
+				return false;
+			}
+		} else {
+			log.warn("could not determine presence of table ["+tableName+"] (not an Oracle database)");
+			return true;
+		}
+	}
 
+	public static boolean isIndexPresent(Connection conn, int databaseType, String schemaOwner, String tableName, String indexName) {
+		if (databaseType==DATABASE_ORACLE) {
+			String query="select count(*) from all_indexes where owner='"+schemaOwner.toUpperCase()+"' and table_name='"+tableName.toUpperCase()+"' and index_name='"+indexName.toUpperCase()+"'";
+			try {
+				if (JdbcUtil.executeIntQuery(conn, query)>=1) {
+					return true;
+				} else {
+					return false;
+				}
+			} catch (Exception e) {
+				log.warn("could not determine presence of index ["+indexName+"] on table ["+tableName+"]",e);
+				return false;
+			}
+		} else {
+			log.warn("could not determine presence of index ["+indexName+"] on table ["+tableName+"] (not an Oracle database)");
+			return true;
+		}
+	}
+
+	public static boolean isSequencePresent(Connection conn, int databaseType, String schemaOwner, String sequenceName) {
+		if (databaseType==DATABASE_ORACLE) {
+			String query="select count(*) from all_sequences where sequence_owner='"+schemaOwner.toUpperCase()+"' and sequence_name='"+sequenceName.toUpperCase()+"'";
+			try {
+				if (JdbcUtil.executeIntQuery(conn, query)>=1) {
+					return true;
+				} else {
+					return false;
+				}
+			} catch (Exception e) {
+				log.warn("could not determine presence of sequence ["+sequenceName+"]",e);
+				return false;
+			}
+		} else {
+			log.warn("could not determine presence of sequence ["+sequenceName+"] (not an Oracle database)");
+			return true;
+		}
+	}
+
+	public static boolean isTableColumnPresent(Connection conn, int databaseType, String schemaOwner, String tableName, String columnName) {
+		if (databaseType==DATABASE_ORACLE) {
+			String query="select count(*) from all_tab_columns where owner='"+schemaOwner.toUpperCase()+"' and table_name='"+tableName.toUpperCase()+"' and column_name=?";
+			try {
+				if (JdbcUtil.executeIntQuery(conn, query, columnName.toUpperCase())>=1) {
+					return true;	
+				} else {
+					return false;
+				}
+			} catch (Exception e) {
+				log.warn("could not determine correct presence of column ["+columnName+"] of table ["+tableName+"]",e);
+				return false;
+			}
+		} else {
+			log.warn("could not determine correct presence of column ["+columnName+"] of table ["+tableName+"] (not an Oracle database)");
+			return true;
+		}
+	}
+
+	public static boolean isIndexColumnPresent(Connection conn, int databaseType, String schemaOwner, String tableName, String indexName, String columnName) {
+		if (databaseType==DATABASE_ORACLE) {
+			String query="select count(*) from all_ind_columns where index_owner='"+schemaOwner.toUpperCase()+"' and table_name='"+tableName.toUpperCase()+"' and index_name='"+indexName.toUpperCase()+"' and column_name=?";
+			try {
+				if (JdbcUtil.executeIntQuery(conn, query, columnName.toUpperCase())>=1) {
+					return true;
+				} else {
+					return false;
+				}
+			} catch (Exception e) {
+				log.warn("could not determine correct presence of column ["+columnName+"] of index ["+indexName+"] on table ["+tableName+"]",e);
+				return false;
+			}
+		} else {
+			log.warn("could not determine correct presence of column ["+columnName+"] of index ["+indexName+"] on table ["+tableName+"] (not an Oracle database)");
+			return true;
+		}
+	}
+
+	public static int getIndexColumnPosition(Connection conn, int databaseType, String schemaOwner, String tableName, String indexName, String columnName) {
+		if (databaseType==DATABASE_ORACLE) {
+			String query="select column_position from all_ind_columns where index_owner='"+schemaOwner.toUpperCase()+"' and table_name='"+tableName.toUpperCase()+"' and index_name='"+indexName.toUpperCase()+"' and column_name=?";
+			try {
+				return JdbcUtil.executeIntQuery(conn, query, columnName.toUpperCase());
+			} catch (Exception e) {
+				log.warn("could not determine correct presence of column ["+columnName+"] of index ["+indexName+"] on table ["+tableName+"]",e);
+				return -1;
+			}
+		} else {
+			log.warn("could not determine correct presence of column ["+columnName+"] of index ["+indexName+"] on table ["+tableName+"] (not an Oracle database)");
+			return -1;
+		}
+	}
+
+	public static int getDatabaseType(Connection conn) throws SQLException {
+		DatabaseMetaData md=conn.getMetaData();
+		String product=md.getDatabaseProductName();
+		if ("Oracle".equals(product)) {
+			log.debug("Setting databasetype to ORACLE");
+			return DATABASE_ORACLE;
+		} else {
+			log.debug("Setting databasetype to GENERIC");
+			return DATABASE_GENERIC;
+		}
+	}
+
+	public static String getSchemaOwner(Connection conn, int databaseType) throws SQLException, JdbcException  {
+		if (databaseType==DATABASE_ORACLE) {
+			String query="SELECT SYS_CONTEXT('USERENV','CURRENT_SCHEMA') FROM DUAL";
+			return executeStringQuery(conn, query);
+		} else {
+			log.warn("could not determine current schema (not an Oracle database)");
+			return "";
+		}
+	}
 
 	public static String warningsToString(SQLWarning warnings) {
 		XmlBuilder warningsElem = warningsToXmlBuilder(warnings);
@@ -592,6 +729,38 @@ public class JdbcUtil {
 			}
 		}
 	}
+
+	/**
+	 * exectues query that returns a string. Returns null if no results are found. 
+	 */
+	public static String executeStringQuery(Connection connection, String query) throws JdbcException {
+		PreparedStatement stmt = null;
+
+		try {
+			if (log.isDebugEnabled()) log.debug("prepare and execute query ["+query+"]");
+			stmt = connection.prepareStatement(query);
+			ResultSet rs = stmt.executeQuery();
+			try {
+				if (!rs.next()) {
+					return null;
+				}
+				return rs.getString(1);
+			} finally {
+				rs.close();
+			}
+		} catch (Exception e) {
+			throw new JdbcException("could not obtain value using query ["+query+"]",e);
+		} finally {
+			if (stmt!=null) {
+				try {
+					stmt.close();
+				} catch (Exception e) {
+					throw new JdbcException("could not close statement of query ["+query+"]",e);
+				}
+			}
+		}
+	}
+
 
 	public static int executeIntQuery(Connection connection, String query) throws JdbcException {
 		return executeIntQuery(connection,query,null,null);
