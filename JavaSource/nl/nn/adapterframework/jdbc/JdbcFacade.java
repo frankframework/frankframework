@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcFacade.java,v $
- * Revision 1.28  2010-02-02 14:31:47  m168309
+ * Revision 1.29  2010-02-11 14:25:22  m168309
+ * moved determination of databaseType to JdbcUtil
+ *
+ * Revision 1.28  2010/02/02 14:31:47  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * separate method for getting datasource info
  *
  * Revision 1.27  2009/12/08 14:49:26  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -103,6 +106,7 @@ import nl.nn.adapterframework.jms.JNDIBase;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.util.JdbcUtil;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -124,7 +128,7 @@ import org.apache.commons.lang.StringUtils;
  * @since 	4.1
  */
 public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version="$RCSfile: JdbcFacade.java,v $ $Revision: 1.28 $ $Date: 2010-02-02 14:31:47 $";
+	public static final String version="$RCSfile: JdbcFacade.java,v $ $Revision: 1.29 $ $Date: 2010-02-11 14:25:22 $";
 	
 	public final static int DATABASE_GENERIC=0;
 	public final static int DATABASE_ORACLE=1;
@@ -233,21 +237,21 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 		databaseType=type;
 	}
 
-	public int getDatabaseType() throws SQLException, JdbcException {
+	public int getDatabaseType() {
 		if (databaseType<0) {
-			Connection conn=getConnection();
+			Connection conn=null;
 			try {
-				DatabaseMetaData md=conn.getMetaData();
-				String product=md.getDatabaseProductName();
-				if ("Oracle".equals(product)) {
-					log.debug("Setting databasetype to ORACLE");
-					databaseType=DATABASE_ORACLE;
-				} else {
-					log.debug("Setting databasetype to GENERIC");
-					databaseType=DATABASE_GENERIC;
-				}
+				conn=getConnection();
+				databaseType=JdbcUtil.getDatabaseType(conn);
+			} catch (Exception e) {
+				log.warn("Exception determining databasetype", e);
+				return -1;
 			} finally {
-				conn.close();
+				try {
+					conn.close();
+				} catch (SQLException e1) {
+					log.warn("exception closing connection for databasetype",e1);
+				}
 			}
 		}
 		return databaseType;
