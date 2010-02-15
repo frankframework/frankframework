@@ -1,6 +1,9 @@
 /*
  * $Log: ShowConfigurationStatus.java,v $
- * Revision 1.21  2009-03-30 12:23:23  L190409
+ * Revision 1.22  2010-02-15 09:49:21  m168309
+ * added counters for Summary
+ *
+ * Revision 1.21  2009/03/30 12:23:23  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added counter for messagesRejected
  *
  * Revision 1.20  2008/12/30 17:01:13  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -91,7 +94,7 @@ import org.apache.struts.action.ActionMapping;
  * @version Id
  */
 public final class ShowConfigurationStatus extends ActionBase {
-	public static final String version = "$RCSfile: ShowConfigurationStatus.java,v $ $Revision: 1.21 $ $Date: 2009-03-30 12:23:23 $";
+	public static final String version = "$RCSfile: ShowConfigurationStatus.java,v $ $Revision: 1.22 $ $Date: 2010-02-15 09:49:21 $";
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 
@@ -122,6 +125,16 @@ public final class ShowConfigurationStatus extends ActionBase {
 			}
 			adapters.addSubElement(warningsXML);
 		}
+		int countAdapterStateStarting=0;
+		int countAdapterStateStarted=0;
+		int countAdapterStateStopping=0;
+		int countAdapterStateStopped=0;
+		int countAdapterStateError=0;
+		int countReceiverStateStarting=0;
+		int countReceiverStateStarted=0;
+		int countReceiverStateStopping=0;
+		int countReceiverStateStopped=0;
+		int countReceiverStateError=0;
 		for(int j=0; j<config.getRegisteredAdapters().size(); j++) {
 			Adapter adapter = (Adapter)config.getRegisteredAdapter(j);
 
@@ -134,6 +147,17 @@ public final class ShowConfigurationStatus extends ActionBase {
 			adapterXML.addAttribute("nameUC",StringUtils.upperCase(adapter.getName()));
 			adapterXML.addAttribute("started", ""+(adapterRunState.equals(RunStateEnum.STARTED)));
 			adapterXML.addAttribute("state", adapterRunState.toString());
+			if (adapterRunState.equals(RunStateEnum.STARTING)) {
+				countAdapterStateStarting++;
+			} else if ((adapterRunState.equals(RunStateEnum.STARTED))) {
+				countAdapterStateStarted++;
+			} else if ((adapterRunState.equals(RunStateEnum.STOPPING))) {
+				countAdapterStateStopping++;
+			} else if ((adapterRunState.equals(RunStateEnum.STOPPED))) {
+				countAdapterStateStopped++;
+			} else if ((adapterRunState.equals(RunStateEnum.ERROR))) {
+				countAdapterStateError++;
+			}
 			adapterXML.addAttribute("configured", ""+adapter.configurationSucceeded());
 			adapterXML.addAttribute("upSince", adapter.getStatsUpSince());
 			adapterXML.addAttribute("lastMessageDate", adapter.getLastMessageDate());
@@ -152,6 +176,17 @@ public final class ShowConfigurationStatus extends ActionBase {
 					 
 					receiverXML.addAttribute("isStarted", ""+(receiverRunState.equals(RunStateEnum.STARTED)));
 					receiverXML.addAttribute("state", receiverRunState.toString());
+					if (receiverRunState.equals(RunStateEnum.STARTING)) {
+						countReceiverStateStarting++;
+					} else if ((receiverRunState.equals(RunStateEnum.STARTED))) {
+						countReceiverStateStarted++;
+					} else if ((receiverRunState.equals(RunStateEnum.STOPPING))) {
+						countReceiverStateStopping++;
+					} else if ((receiverRunState.equals(RunStateEnum.STOPPED))) {
+						countReceiverStateStopped++;
+					} else if ((receiverRunState.equals(RunStateEnum.ERROR))) {
+						countReceiverStateError++;
+					}
 					receiverXML.addAttribute("name",receiver.getName());
 					receiverXML.addAttribute("class", ClassUtils.nameOf(receiver));
 					receiverXML.addAttribute("messagesReceived", ""+receiver.getMessagesReceived());
@@ -270,6 +305,23 @@ public final class ShowConfigurationStatus extends ActionBase {
 			}
 
 		}
+
+		XmlBuilder summaryXML=new XmlBuilder("summary");
+		XmlBuilder adapterStateXML=new XmlBuilder("adapterState");
+		adapterStateXML.addAttribute("starting",countAdapterStateStarting+"");
+		adapterStateXML.addAttribute("started",countAdapterStateStarted+"");
+		adapterStateXML.addAttribute("stopping",countAdapterStateStopping+"");
+		adapterStateXML.addAttribute("stopped",countAdapterStateStopped+"");
+		adapterStateXML.addAttribute("error",countAdapterStateError+"");
+		summaryXML.addSubElement(adapterStateXML);
+		XmlBuilder receiverStateXML=new XmlBuilder("receiverState");
+		receiverStateXML.addAttribute("starting",countReceiverStateStarting+"");
+		receiverStateXML.addAttribute("started",countReceiverStateStarted+"");
+		receiverStateXML.addAttribute("stopping",countReceiverStateStopping+"");
+		receiverStateXML.addAttribute("stopped",countReceiverStateStopped+"");
+		receiverStateXML.addAttribute("error",countReceiverStateError+"");
+		summaryXML.addSubElement(receiverStateXML);
+		adapters.addSubElement(summaryXML);
 		request.setAttribute("adapters", adapters.toXML());
 
 		// Forward control to the specified success URI
