@@ -1,6 +1,13 @@
 /*
  * $Log: CommandSender.java,v $
- * Revision 1.3  2009-12-04 18:23:34  m00f069
+ * Revision 1.4  2010-02-19 13:45:27  m00f069
+ * - Added support for (sender) stubbing by debugger
+ * - Added reply listener and reply sender to debugger
+ * - Use IbisDebuggerDummy by default
+ * - Enabling/disabling debugger handled by debugger instead of log level
+ * - Renamed messageId to correlationId in debugger interface
+ *
+ * Revision 1.3  2009/12/04 18:23:34  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Added ibisDebugger.senderAbort and ibisDebugger.pipeRollback
  *
  * Revision 1.2  2009/11/18 17:28:03  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -47,31 +54,34 @@ public class CommandSender extends SenderWithParametersBase {
 	private boolean synchronous=true;
 
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
-		message = debugSenderInput(correlationID, message);
+		message = ibisDebugger.senderInput(this, correlationID, message);
 		String result = null;
 		try {
-			String commandline;
-			if (StringUtils.isNotEmpty(getCommand())) {
-				commandline=getCommand();
-			} else {
-				commandline=message;
-			}
-			if (paramList!=null) {
-				ParameterValueList pvl;
-				try {
-					pvl = prc.getValues(paramList);
-				} catch (ParameterException e) {
-					throw new SenderException("Could not extract parametervalues",e);
+			if (!ibisDebugger.stubSender(this, correlationID)) {
+				String commandline;
+				if (StringUtils.isNotEmpty(getCommand())) {
+					commandline=getCommand();
+				} else {
+					commandline=message;
 				}
-				for (int i=0; i<pvl.size(); i++) {
-					commandline += " "+pvl.getParameterValue(i);
+				if (paramList!=null) {
+					ParameterValueList pvl;
+					try {
+						pvl = prc.getValues(paramList);
+					} catch (ParameterException e) {
+						throw new SenderException("Could not extract parametervalues",e);
+					}
+					for (int i=0; i<pvl.size(); i++) {
+						commandline += " "+pvl.getParameterValue(i);
+					}
 				}
+				result = ProcessUtil.executeCommand(commandline);
 			}
-			result = ProcessUtil.executeCommand(commandline);
 		} catch(Throwable throwable) {
-			debugSenderAbort(correlationID, throwable);
+			throwable = ibisDebugger.senderAbort(this, correlationID, throwable);
+			throwSenderOrTimeOutException(throwable);
 		}
-		return debugSenderOutput(correlationID, result);
+		return ibisDebugger.senderOutput(this, correlationID, result);
 	}
 
 	public boolean isSynchronous() {

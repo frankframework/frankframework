@@ -1,6 +1,13 @@
 /*
  * $Log: SenderBase.java,v $
- * Revision 1.2  2009-12-04 18:23:34  m00f069
+ * Revision 1.3  2010-02-19 13:45:27  m00f069
+ * - Added support for (sender) stubbing by debugger
+ * - Added reply listener and reply sender to debugger
+ * - Use IbisDebuggerDummy by default
+ * - Enabling/disabling debugger handled by debugger instead of log level
+ * - Renamed messageId to correlationId in debugger interface
+ *
+ * Revision 1.2  2009/12/04 18:23:34  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Added ibisDebugger.senderAbort and ibisDebugger.pipeRollback
  *
  * Revision 1.1  2008/05/15 15:08:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -12,6 +19,7 @@
 package nl.nn.adapterframework.senders;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
@@ -55,7 +63,11 @@ public abstract class SenderBase implements ISender {
 	}
 
 	protected String getLogPrefix() {
-		return "["+this.getClass().getName()+"] ["+getName()+"] ";
+		return getLogPrefix(this);
+	}
+
+	public static String getLogPrefix(INamedObject object) {
+		return "["+object.getClass().getName()+"] ["+object.getName()+"] ";
 	}
 
 	public void setName(String name) {
@@ -65,31 +77,28 @@ public abstract class SenderBase implements ISender {
 		return name;
 	}
 
-	protected String debugSenderInput(String correlationID, String message) {
-		if (log.isDebugEnabled() && ibisDebugger!=null) {
-			message = ibisDebugger.senderInput(this, correlationID, message);
-		}
-		return message;
+	public void throwSenderException(Throwable throwable) throws SenderException {
+		throwSenderException(this, throwable);
 	}
-
-	protected String debugSenderOutput(String correlationID, String message) {
-		if (log.isDebugEnabled() && ibisDebugger!=null) {
-			message = ibisDebugger.senderOutput(this, correlationID, message);
-		}
-		return message;
-	}
-
-	protected void debugSenderAbort(String correlationID, Throwable throwable) throws SenderException {
-		SenderException senderException;
+	
+	public static void throwSenderException(ISender sender, Throwable throwable) throws SenderException {
 		if (throwable instanceof SenderException) {
-			senderException = (SenderException)throwable;
+			throw (SenderException)throwable;
 		} else {
-			senderException = new SenderException(getLogPrefix()+"unexpected throwable",throwable);
+			throw new SenderException(SenderBase.getLogPrefix(sender)+"unexpected throwable",throwable);
 		}
-		if (log.isDebugEnabled() && ibisDebugger!=null) {
-			throwable = ibisDebugger.senderAbort(this, correlationID, throwable);
+	}
+	
+	public void throwSenderOrTimeOutException(Throwable throwable) throws SenderException, TimeOutException {
+		throwSenderOrTimeOutException(this, throwable);
+	}
+	
+	public static void throwSenderOrTimeOutException(ISender sender, Throwable throwable) throws SenderException, TimeOutException {
+		if (throwable instanceof TimeOutException) {
+			throw (TimeOutException)throwable;
+		} else {
+			throwSenderException(sender, throwable);
 		}
-		throw senderException;
 	}
 	
 	public void setIbisDebugger(IbisDebugger ibisDebugger) {

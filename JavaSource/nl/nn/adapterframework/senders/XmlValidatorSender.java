@@ -1,6 +1,13 @@
 /*
  * $Log: XmlValidatorSender.java,v $
- * Revision 1.4  2009-12-04 18:23:34  m00f069
+ * Revision 1.5  2010-02-19 13:45:27  m00f069
+ * - Added support for (sender) stubbing by debugger
+ * - Added reply listener and reply sender to debugger
+ * - Use IbisDebuggerDummy by default
+ * - Enabling/disabling debugger handled by debugger instead of log level
+ * - Renamed messageId to correlationId in debugger interface
+ *
+ * Revision 1.4  2009/12/04 18:23:34  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Added ibisDebugger.senderAbort and ibisDebugger.pipeRollback
  *
  * Revision 1.3  2009/11/18 17:28:04  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -260,100 +267,100 @@ public class XmlValidatorSender extends SenderWithParametersBase {
 	}
 
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException {
-		message = debugSenderInput(correlationID, message);
+		message = ibisDebugger.senderInput(this, correlationID, message);
 		try {
-			PipeLineSession session=prc.getSession();
-			if (StringUtils.isNotEmpty(getReasonSessionKey())) {
-				log.debug(getLogPrefix()+ "removing contents of sessionKey ["+getReasonSessionKey()+ "]");
-				session.remove(getReasonSessionKey());
-			}
-	
-			if (StringUtils.isNotEmpty(getXmlReasonSessionKey())) {
-				log.debug(getLogPrefix()+ "removing contents of sessionKey ["+getXmlReasonSessionKey()+ "]");
-				session.remove(getXmlReasonSessionKey());
-			}
-	
-			String schemaLocation = getSchemaLocation();
-			String noNamespaceSchemaLocation = getNoNamespaceSchemaLocation();
-	
-			// Do filename to URL translation if schemaLocation and
-			// noNamespaceSchemaLocation are not set. 
-			if (schemaLocation == null && noNamespaceSchemaLocation == null) {
-				// now look for the new session way
-				String schemaToBeUsed = getSchemaSessionKey();
-				if (session.containsKey(schemaToBeUsed)) {
-					noNamespaceSchemaLocation = session.get(schemaToBeUsed).toString();
-				} else {
-					throw new SenderException(getLogPrefix()+ "cannot retrieve xsd from session variable [" + getSchemaSessionKey() + "]");
+			if (!ibisDebugger.stubSender(this, correlationID)) {
+				PipeLineSession session=prc.getSession();
+				if (StringUtils.isNotEmpty(getReasonSessionKey())) {
+					log.debug(getLogPrefix()+ "removing contents of sessionKey ["+getReasonSessionKey()+ "]");
+					session.remove(getReasonSessionKey());
 				}
-	
-				URL url = ClassUtils.getResourceURL(this, noNamespaceSchemaLocation);
-				if (url == null) {
-					throw new SenderException(getLogPrefix()+ "cannot retrieve [" + noNamespaceSchemaLocation + "]");
-				}
-	
-				noNamespaceSchemaLocation = url.toExternalForm();
-			}
-	
-			XmlErrorHandler xeh;
-			XMLReader parser=null;
-			try {
-				parser=getParser(schemaLocation,noNamespaceSchemaLocation);
-				if (parser==null) {
-					throw new SenderException(getLogPrefix()+ "could not obtain parser");
-				}
-				xeh = new XmlErrorHandler(parser);
-				parser.setErrorHandler(xeh);
-			} catch (SAXNotRecognizedException e) {
-				throw new SenderException(getLogPrefix()+ "parser does not recognize necessary feature", e);
-			} catch (SAXNotSupportedException e) {
-				throw new SenderException(getLogPrefix()+ "parser does not support necessary feature", e);
-			} catch (SAXException e) {
-				throw new SenderException(getLogPrefix()+ "error configuring the parser", e);
-			}
-	
-			InputSource is;
-			if (isValidateFile()) {
-				try {
-					is = new InputSource(new InputStreamReader(new FileInputStream(message),getCharset()));
-				} catch (FileNotFoundException e) {
-					throw new SenderException(getLogPrefix()+"could not find file ["+message+"]",e);
-				} catch (UnsupportedEncodingException e) {
-					throw new SenderException(getLogPrefix()+"could not use charset ["+getCharset()+"]",e);
-				}
-			} else {
-				is = new Variant(message).asXmlInputSource();
-			}
-	
-			try {
-				parser.parse(is);
-			 } catch (Exception e) {
-			 	String result = handleFailures(xeh,message,session,"", e);
-				result = debugSenderOutput(correlationID, result);
-				return result;
-			}
-	
-			boolean illegalRoot = StringUtils.isNotEmpty(getRoot()) && 
-								!((XmlFindingHandler)parser.getContentHandler()).getRootElementName().equals(getRoot());
-			if (illegalRoot) {
-				String str = "got xml with root element '"+((XmlFindingHandler)parser.getContentHandler()).getRootElementName()+"' instead of '"+getRoot()+"'";
-				xeh.addReason(str,"");
-				String result = handleFailures(xeh,message,session,"",null);
-				result = debugSenderOutput(correlationID, result);
-				return result;
-			} 
-			boolean isValid = !(xeh.hasErrorOccured());
 		
-			if (!isValid) { 
-				String mainReason = getLogPrefix() + "got invalid xml according to schema [" + Misc.concatStrings(schemaLocation," ",noNamespaceSchemaLocation) + "]";
-				String result = handleFailures(xeh,message,session,mainReason,null);
-				result = debugSenderOutput(correlationID, result);
-				return result;
+				if (StringUtils.isNotEmpty(getXmlReasonSessionKey())) {
+					log.debug(getLogPrefix()+ "removing contents of sessionKey ["+getXmlReasonSessionKey()+ "]");
+					session.remove(getXmlReasonSessionKey());
+				}
+		
+				String schemaLocation = getSchemaLocation();
+				String noNamespaceSchemaLocation = getNoNamespaceSchemaLocation();
+		
+				// Do filename to URL translation if schemaLocation and
+				// noNamespaceSchemaLocation are not set. 
+				if (schemaLocation == null && noNamespaceSchemaLocation == null) {
+					// now look for the new session way
+					String schemaToBeUsed = getSchemaSessionKey();
+					if (session.containsKey(schemaToBeUsed)) {
+						noNamespaceSchemaLocation = session.get(schemaToBeUsed).toString();
+					} else {
+						throw new SenderException(getLogPrefix()+ "cannot retrieve xsd from session variable [" + getSchemaSessionKey() + "]");
+					}
+		
+					URL url = ClassUtils.getResourceURL(this, noNamespaceSchemaLocation);
+					if (url == null) {
+						throw new SenderException(getLogPrefix()+ "cannot retrieve [" + noNamespaceSchemaLocation + "]");
+					}
+		
+					noNamespaceSchemaLocation = url.toExternalForm();
+				}
+		
+				XmlErrorHandler xeh;
+				XMLReader parser=null;
+				try {
+					parser=getParser(schemaLocation,noNamespaceSchemaLocation);
+					if (parser==null) {
+						throw new SenderException(getLogPrefix()+ "could not obtain parser");
+					}
+					xeh = new XmlErrorHandler(parser);
+					parser.setErrorHandler(xeh);
+				} catch (SAXNotRecognizedException e) {
+					throw new SenderException(getLogPrefix()+ "parser does not recognize necessary feature", e);
+				} catch (SAXNotSupportedException e) {
+					throw new SenderException(getLogPrefix()+ "parser does not support necessary feature", e);
+				} catch (SAXException e) {
+					throw new SenderException(getLogPrefix()+ "error configuring the parser", e);
+				}
+		
+				InputSource is;
+				if (isValidateFile()) {
+					try {
+						is = new InputSource(new InputStreamReader(new FileInputStream(message),getCharset()));
+					} catch (FileNotFoundException e) {
+						throw new SenderException(getLogPrefix()+"could not find file ["+message+"]",e);
+					} catch (UnsupportedEncodingException e) {
+						throw new SenderException(getLogPrefix()+"could not use charset ["+getCharset()+"]",e);
+					}
+				} else {
+					is = new Variant(message).asXmlInputSource();
+				}
+		
+				try {
+					parser.parse(is);
+				 } catch (Exception e) {
+				 	String result = handleFailures(xeh,message,session,"", e);
+					return ibisDebugger.senderOutput(this, correlationID, result);
+				}
+		
+				boolean illegalRoot = StringUtils.isNotEmpty(getRoot()) && 
+									!((XmlFindingHandler)parser.getContentHandler()).getRootElementName().equals(getRoot());
+				if (illegalRoot) {
+					String str = "got xml with root element '"+((XmlFindingHandler)parser.getContentHandler()).getRootElementName()+"' instead of '"+getRoot()+"'";
+					xeh.addReason(str,"");
+					String result = handleFailures(xeh,message,session,"",null);
+					return ibisDebugger.senderOutput(this, correlationID, result);
+				} 
+				boolean isValid = !(xeh.hasErrorOccured());
+			
+				if (!isValid) { 
+					String mainReason = getLogPrefix() + "got invalid xml according to schema [" + Misc.concatStrings(schemaLocation," ",noNamespaceSchemaLocation) + "]";
+					String result = handleFailures(xeh,message,session,mainReason,null);
+					return ibisDebugger.senderOutput(this, correlationID, result);
+				}
 			}
 		} catch(Throwable throwable) {
-			debugSenderAbort(correlationID, throwable);
+			throwable = ibisDebugger.senderAbort(this, correlationID, throwable);
+			throwSenderException(throwable);
 		}
-		return debugSenderOutput(correlationID, message);
+		return ibisDebugger.senderOutput(this, correlationID, message);
 	}
 
 

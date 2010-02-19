@@ -1,6 +1,13 @@
 /*
  * $Log: FxfSender.java,v $
- * Revision 1.10  2009-09-07 13:14:02  L190409
+ * Revision 1.11  2010-02-19 13:45:29  m00f069
+ * - Added support for (sender) stubbing by debugger
+ * - Added reply listener and reply sender to debugger
+ * - Use IbisDebuggerDummy by default
+ * - Enabling/disabling debugger handled by debugger instead of log level
+ * - Renamed messageId to correlationId in debugger interface
+ *
+ * Revision 1.10  2009/09/07 13:14:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * use log from ancestor
  *
  * Revision 1.9  2009/06/10 15:49:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -46,10 +53,12 @@ import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.debug.IbisDebugger;
 import nl.nn.adapterframework.jms.JMSFacade;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.senders.SenderBase;
 import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.ProcessUtil;
 
@@ -92,6 +101,8 @@ import org.apache.commons.lang.StringUtils;
 public class FxfSender extends JMSFacade implements ISenderWithParameters {
 
 	public static final String REMOTE_FILENAME_PARAM="remoteFilename";
+
+	private IbisDebugger ibisDebugger;
 
 	private String name;
 	private String script="/usr/local/bin/FXF_init";
@@ -188,76 +199,85 @@ public class FxfSender extends JMSFacade implements ISenderWithParameters {
 	}
 
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException {
-		String action="put";
-		String transfername=getTransfername();
-		String filename=message;
-		
-		String command = getScript()+" "+action+" "+transfername +" "+filename;
-		if (atLeastVersion2) {
-			int timeout = getTimeout();
-			command = command + " " +timeout;
-		}
-		String remoteFilename = null;
-		if (remoteFilenameParam!=null && prc!=null) {
-			try {
-				remoteFilename=(String)prc.getValues(paramList).getParameterValue(0).getValue();
-				command += " "+remoteFilename;
-			} catch (ParameterException e) {
-				throw new SenderException("Could not resolve remote filename", e);
-			}
-		}
-		log.debug(getLogPrefix()+"sending local file ["+message+"] by executing command ["+command+"]");
-		String transporthandle=ProcessUtil.executeCommand(command);
-		log.debug(getLogPrefix()+"output of command ["+transporthandle+"]");
-		if (transporthandle!=null) {
-			transporthandle=transporthandle.trim();
-		}
-		
-		// delete file or move it to processed directory
-		if (isDelete() || StringUtils.isNotEmpty(getProcessedDirectory())) {
-			File f=new File(message);
-			try {
-				log.debug(getLogPrefix()+"moving or deleteing file ["+message+"]");
-				FileUtils.moveFileAfterProcessing(f, getProcessedDirectory(), isDelete(), isOverwrite(), getNumberOfBackups()); 
-			} catch (Exception e) {
-				throw new SenderException("Could not move file ["+message+"]",e);
-			}
-		}
-		if (atLeastVersion2) {
-			String commitMsg=FxfUtil.makeProcessedPutFileMessage(transporthandle);
-
-			Session s = null;
-			MessageProducer mp = null;
-
-			try {
-				s = createSession();
-				mp = getMessageProducer(s, getDestination());
-
-				// create message
-				Message msg = createTextMessage(s, correlationID, commitMsg);
-				mp.setDeliveryMode(DeliveryMode.PERSISTENT);
-
-				// send message	
-				send(mp, msg);
-				if (log.isInfoEnabled()) {
-					log.info(getLogPrefix()+ "sent message [" + message + "] to [" + getDestinationName() + "] " + 
-							"msgID [" + msg.getJMSMessageID() + "]" );;
+		message = ibisDebugger.senderInput(this, correlationID, message);
+		String transporthandle = null;
+		try {
+			if (!ibisDebugger.stubSender(this, correlationID)) {
+				String action="put";
+				String transfername=getTransfername();
+				String filename=message;
+				
+				String command = getScript()+" "+action+" "+transfername +" "+filename;
+				if (atLeastVersion2) {
+					int timeout = getTimeout();
+					command = command + " " +timeout;
 				}
-			} catch (Throwable e) {
-				throw new SenderException(e);
-			} finally {
-				if (mp != null) { 
-					try { 
-						mp.close(); 
-					} catch (JMSException e) { 
-						log.warn(getLogPrefix()+ "got exception closing message producer",e); 
+				String remoteFilename = null;
+				if (remoteFilenameParam!=null && prc!=null) {
+					try {
+						remoteFilename=(String)prc.getValues(paramList).getParameterValue(0).getValue();
+						command += " "+remoteFilename;
+					} catch (ParameterException e) {
+						throw new SenderException("Could not resolve remote filename", e);
 					}
 				}
-				closeSession(s);
+				log.debug(getLogPrefix()+"sending local file ["+message+"] by executing command ["+command+"]");
+				transporthandle=ProcessUtil.executeCommand(command);
+				log.debug(getLogPrefix()+"output of command ["+transporthandle+"]");
+				if (transporthandle!=null) {
+					transporthandle=transporthandle.trim();
+				}
+				
+				// delete file or move it to processed directory
+				if (isDelete() || StringUtils.isNotEmpty(getProcessedDirectory())) {
+					File f=new File(message);
+					try {
+						log.debug(getLogPrefix()+"moving or deleteing file ["+message+"]");
+						FileUtils.moveFileAfterProcessing(f, getProcessedDirectory(), isDelete(), isOverwrite(), getNumberOfBackups()); 
+					} catch (Exception e) {
+						throw new SenderException("Could not move file ["+message+"]",e);
+					}
+				}
+				if (atLeastVersion2) {
+					String commitMsg=FxfUtil.makeProcessedPutFileMessage(transporthandle);
+		
+					Session s = null;
+					MessageProducer mp = null;
+		
+					try {
+						s = createSession();
+						mp = getMessageProducer(s, getDestination());
+		
+						// create message
+						Message msg = createTextMessage(s, correlationID, commitMsg);
+						mp.setDeliveryMode(DeliveryMode.PERSISTENT);
+		
+						// send message	
+						send(mp, msg);
+						if (log.isInfoEnabled()) {
+							log.info(getLogPrefix()+ "sent message [" + message + "] to [" + getDestinationName() + "] " + 
+									"msgID [" + msg.getJMSMessageID() + "]" );;
+						}
+					} catch (Throwable e) {
+						throw new SenderException(e);
+					} finally {
+						if (mp != null) { 
+							try { 
+								mp.close(); 
+							} catch (JMSException e) { 
+								log.warn(getLogPrefix()+ "got exception closing message producer",e); 
+							}
+						}
+						closeSession(s);
+					}
+					
+				}
 			}
-			
+		} catch(Throwable throwable) {
+			throwable = ibisDebugger.senderAbort(this, correlationID, throwable);
+			SenderBase.throwSenderException(this, throwable);
 		}
-		return transporthandle;
+		return ibisDebugger.senderOutput(this, correlationID, transporthandle);
 	}
 
 
@@ -335,6 +355,10 @@ public class FxfSender extends JMSFacade implements ISenderWithParameters {
 			result +=" "+ super.getPhysicalDestinationName();
 		}
 		return result;
+	}
+	
+	public void setIbisDebugger(IbisDebugger ibisDebugger) {
+		this.ibisDebugger = ibisDebugger;
 	}
 
 }

@@ -1,6 +1,13 @@
 /*
  * $Log: DelaySender.java,v $
- * Revision 1.3  2009-12-04 18:23:34  m00f069
+ * Revision 1.4  2010-02-19 13:45:27  m00f069
+ * - Added support for (sender) stubbing by debugger
+ * - Added reply listener and reply sender to debugger
+ * - Use IbisDebuggerDummy by default
+ * - Enabling/disabling debugger handled by debugger instead of log level
+ * - Renamed messageId to correlationId in debugger interface
+ *
+ * Revision 1.3  2009/12/04 18:23:34  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Added ibisDebugger.senderAbort and ibisDebugger.pipeRollback
  *
  * Revision 1.2  2009/11/18 17:28:04  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -37,19 +44,22 @@ public class DelaySender extends SenderBase {
 
 
 	public String sendMessage(String correlationID, String message) throws SenderException {
-		message = debugSenderInput(correlationID, message);
+		message = ibisDebugger.senderInput(this, correlationID, message);
 		try {
-			try {
-				log.info(getLogPrefix()+"starts waiting for " + getDelayTime() + " ms.");
-				Thread.sleep(getDelayTime());
-			} catch (InterruptedException e) {
-				throw new SenderException(getLogPrefix()+"delay interrupted", e);
+			if (!ibisDebugger.stubSender(this, correlationID)) {
+				try {
+					log.info(getLogPrefix()+"starts waiting for " + getDelayTime() + " ms.");
+					Thread.sleep(getDelayTime());
+				} catch (InterruptedException e) {
+					throw new SenderException(getLogPrefix()+"delay interrupted", e);
+				}
+				log.info(getLogPrefix()+"ends waiting for " + getDelayTime() + " ms.");
 			}
-			log.info(getLogPrefix()+"ends waiting for " + getDelayTime() + " ms.");
 		} catch(Throwable throwable) {
-			debugSenderAbort(correlationID, throwable);
+			ibisDebugger.senderAbort(this, correlationID, throwable);
+			throwSenderException(throwable);
 		}
-		return debugSenderOutput(correlationID, message);
+		return ibisDebugger.senderOutput(this, correlationID, message);
 	}
 
 	/**

@@ -1,6 +1,13 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.87  2010-02-03 14:54:53  L190409
+ * Revision 1.88  2010-02-19 13:45:29  m00f069
+ * - Added support for (sender) stubbing by debugger
+ * - Added reply listener and reply sender to debugger
+ * - Use IbisDebuggerDummy by default
+ * - Enabling/disabling debugger handled by debugger instead of log level
+ * - Renamed messageId to correlationId in debugger interface
+ *
+ * Revision 1.87  2010/02/03 14:54:53  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * check for expiration of timeouts
  * moved taskexecutor to pulling listener container
  *
@@ -422,6 +429,7 @@ import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.IPushingListener;
 import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.IReceiverStatistics;
+import nl.nn.adapterframework.core.IReplySender;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.IThreadCountControllable;
 import nl.nn.adapterframework.core.ITransactionalStorage;
@@ -571,7 +579,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  */
 public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHandler, EventThrowing, IbisExceptionListener, HasSender, HasStatistics, TracingEventNumbers, IThreadCountControllable, BeanFactoryAware {
     
-	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.87 $ $Date: 2010-02-03 14:54:53 $";
+	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.88 $ $Date: 2010-02-19 13:45:29 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -641,7 +649,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	private ITransactionalStorage errorStorage=null;
 	// See configure() for explanation on this field
 	private ITransactionalStorage tmpInProcessStorage=null;
-	private ISender sender=null; // answer-sender
+	private ISender sender=null; // reply-sender
 	private ITransactionalStorage messageLog=null;
 	
 	private int maxRetries=1;
@@ -946,17 +954,26 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 				info(getLogPrefix()+"has listener on "+((HasPhysicalDestination)getListener()).getPhysicalDestinationName());
 			}
 			if (getListener() instanceof HasSender) {
-				// only informational
 				ISender sender = ((HasSender)getListener()).getSender();
+				if (sender instanceof IReplySender) {
+					((IReplySender)sender).isReplySender(true);
+				} else {
+					throw new ConfigurationException("Sender ["+ClassUtils.nameOf(sender)+"] on listener of receiver ["+getName()+"] is not a reply-sender");
+				}
 				if (sender instanceof HasPhysicalDestination) {
-					info("Listener of receiver ["+getName()+"] has answer-sender on "+((HasPhysicalDestination)sender).getPhysicalDestinationName());
+					info("Listener of receiver ["+getName()+"] has reply-sender on "+((HasPhysicalDestination)sender).getPhysicalDestinationName());
 				}
 			}
 			ISender sender = getSender();
 			if (sender!=null) {
+				if (sender instanceof IReplySender) {
+					((IReplySender)sender).isReplySender(true);
+				} else {
+					throw new ConfigurationException("Sender ["+ClassUtils.nameOf(sender)+"] on receiver ["+getName()+"] is not a reply-sender");
+				}
 				sender.configure();
 				if (sender instanceof HasPhysicalDestination) {
-					info(getLogPrefix()+"has answer-sender on "+((HasPhysicalDestination)sender).getPhysicalDestinationName());
+					info(getLogPrefix()+"has reply-sender on "+((HasPhysicalDestination)sender).getPhysicalDestinationName());
 				}
 			}
 			

@@ -1,6 +1,13 @@
 /*
  * $Log: IbisDebugger.java,v $
- * Revision 1.4  2009-12-04 18:23:34  m00f069
+ * Revision 1.5  2010-02-19 13:45:28  m00f069
+ * - Added support for (sender) stubbing by debugger
+ * - Added reply listener and reply sender to debugger
+ * - Use IbisDebuggerDummy by default
+ * - Enabling/disabling debugger handled by debugger instead of log level
+ * - Renamed messageId to correlationId in debugger interface
+ *
+ * Revision 1.4  2009/12/04 18:23:34  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Added ibisDebugger.senderAbort and ibisDebugger.pipeRollback
  *
  * Revision 1.3  2009/11/27 13:38:20  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -16,6 +23,8 @@
 package nl.nn.adapterframework.debug;
 
 import nl.nn.adapterframework.core.IPipe;
+import nl.nn.adapterframework.core.IReplyListener;
+import nl.nn.adapterframework.core.IReplySender;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -30,40 +39,58 @@ import nl.nn.adapterframework.parameters.Parameter;
  */
 public interface IbisDebugger {
 
-	public Object pipeLineInput(PipeLine pipeLine, String messageId, Object input);
+	public Object pipeLineInput(PipeLine pipeLine, String correlationId, Object input);
 
-	public Object pipeLineSessionKey(String messageId, String sessionKey, Object sessionValue);
+	public Object pipeLineSessionKey(String correlationId, String sessionKey, Object sessionValue);
 
-	public String pipeLineOutput(PipeLine pipeLine, String messageId, String output);
+	public String pipeLineOutput(PipeLine pipeLine, String correlationId, String output);
 
-	public Throwable pipeLineRollback(PipeLine pipeLine, String messageId, Throwable throwable);
+	public Throwable pipeLineRollback(PipeLine pipeLine, String correlationId, Throwable throwable);
 
-	public Object pipeInput(PipeLine pipeLine, IPipe pipe, String messageId, Object input);
+	public Object pipeInput(PipeLine pipeLine, IPipe pipe, String correlationId, Object input);
 	
-	public Object pipeOutput(PipeLine pipeLine, IPipe pipe, String messageId, Object output);
+	public Object pipeOutput(PipeLine pipeLine, IPipe pipe, String correlationId, Object output);
 
-	public Throwable pipeRollback(PipeLine pipeLine, IPipe pipe, String messageId, Throwable throwable);
+	public Throwable pipeRollback(PipeLine pipeLine, IPipe pipe, String correlationId, Throwable throwable);
 
-	public String senderInput(ISender sender, String messageId, Object input);
+	public String senderInput(ISender sender, String correlationId, String input);
 
-	public String senderOutput(ISender sender, String messageId, Object output);
+	public String senderOutput(ISender sender, String correlationId, String output);
 
-	public Throwable senderAbort(ISender sender, String messageId, Throwable throwable);
+	public Throwable senderAbort(ISender sender, String correlationId, Throwable throwable);
 
-	public void createThread(String threadId, String messageId);
+	public String replySenderInput(IReplySender sender, String correlationId, String input);
 
-	public Object startThread(String threadId, String messageId, String input);
+	public String replySenderOutput(IReplySender sender, String correlationId, String output);
 
-	public Object endThread(String messageId, Object output);
+	public Throwable replySenderAbort(IReplySender sender, String correlationId, Throwable throwable);
 
-	public Throwable abortThread(String messageId, Throwable throwable);
+	public String replyListenerInput(IReplyListener listener, String correlationId, String input);
 
-	public Object getInputFromSessionKey(String messageId, String sessionKey, Object sessionValue);
+	public String replyListenerOutput(IReplyListener listener, String correlationId, String output);
 
-	public Object getInputFromFixedValue(String messageId, Object fixedValue);
+	public Throwable replyListenerAbort(IReplyListener listener, String correlationId, Throwable throwable);
 
-	public Object parameterResolvedTo(Parameter parameter, String messageId, Object value);
+	public void createThread(ISender sender, String threadId, String correlationId);
+
+	public Object startThread(ISender sender, String threadId, String correlationId, String input);
+
+	public Object endThread(ISender sender, String correlationId, Object output);
+
+	public Throwable abortThread(ISender sender, String correlationId, Throwable throwable);
+
+	public Object getInputFromSessionKey(String correlationId, String sessionKey, Object sessionValue);
+
+	public Object getInputFromFixedValue(String correlationId, Object fixedValue);
+
+	public Object parameterResolvedTo(Parameter parameter, String correlationId, Object value);
 	
-	public Object storeResultInSessionKey(String messageId, String sessionKey, Object result);
+	public Object storeResultInSessionKey(String correlationId, String sessionKey, Object result);
+	
+	public boolean stubSender(ISender sender, String correlationId);
+	
+	public boolean stubReplySender(IReplySender sender, String correlationId);
+	
+	public boolean stubReplyListener(IReplyListener listener, String correlationId);
 
 }

@@ -1,6 +1,13 @@
 /*
  * $Log: LdapSender.java,v $
- * Revision 1.31  2008-06-03 15:46:24  europe\L190409
+ * Revision 1.32  2010-02-19 13:45:29  m00f069
+ * - Added support for (sender) stubbing by debugger
+ * - Added reply listener and reply sender to debugger
+ * - Use IbisDebuggerDummy by default
+ * - Enabling/disabling debugger handled by debugger instead of log level
+ * - Renamed messageId to correlationId in debugger interface
+ *
+ * Revision 1.31  2008/06/03 15:46:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * set some INFO logging to DEBUG
  *
  * Revision 1.30  2008/05/27 11:21:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -83,10 +90,12 @@ import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.debug.IbisDebugger;
 import nl.nn.adapterframework.jms.JNDIBase;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.senders.SenderBase;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.XmlBuilder;
 
@@ -284,7 +293,8 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class LdapSender extends JNDIBase implements ISenderWithParameters {
-	public static final String version = "$RCSfile: LdapSender.java,v $  $Revision: 1.31 $ $Date: 2008-06-03 15:46:24 $";
+	public static final String version = "$RCSfile: LdapSender.java,v $  $Revision: 1.32 $ $Date: 2010-02-19 13:45:29 $";
+	protected IbisDebugger ibisDebugger;
 
 	private String FILTER = "filterExpression";
 	private String ENTRYNAME = "entryName";
@@ -943,11 +953,21 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 	}
 
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException {
+		ibisDebugger.senderInput(this, correlationID, message);
+		String result = null;
 		try {
-			return performOperation(message, prc);
-		} catch (Exception e) {
-			throw new SenderException("cannot obtain resultset for [" + message + "]", e);
+			if (!ibisDebugger.stubSender(this, correlationID)) {
+				try {
+					result = performOperation(message, prc);
+				} catch (Exception e) {
+					throw new SenderException("cannot obtain resultset for [" + message + "]", e);
+				}
+			}
+		} catch(Throwable throwable) {
+			throwable = ibisDebugger.senderAbort(this, correlationID, throwable);
+			SenderBase.throwSenderException(this, throwable);
 		}
+		return ibisDebugger.senderOutput(this, correlationID, result);
 	}
 
 	//	protected Attributes getAttributesFromParameters(ParameterResolutionContext prc) throws ParameterException {
@@ -1174,6 +1194,10 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 	}
 	public int getMaxEntriesReturned() {
 		return maxEntriesReturned;
+	}
+	
+	public void setIbisDebugger(IbisDebugger ibisDebugger) {
+		this.ibisDebugger = ibisDebugger;
 	}
 
 }

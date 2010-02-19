@@ -1,6 +1,13 @@
 /*
  * $Log: SenderWrapperBase.java,v $
- * Revision 1.6  2009-12-29 14:37:28  L190409
+ * Revision 1.7  2010-02-19 13:45:27  m00f069
+ * - Added support for (sender) stubbing by debugger
+ * - Added reply listener and reply sender to debugger
+ * - Use IbisDebuggerDummy by default
+ * - Enabling/disabling debugger handled by debugger instead of log level
+ * - Renamed messageId to correlationId in debugger interface
+ *
+ * Revision 1.6  2009/12/29 14:37:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * modified imports to reflect move of statistics classes to separate package
  *
  * Revision 1.5  2009/12/04 18:23:34  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -74,32 +81,35 @@ public abstract class SenderWrapperBase extends SenderWithParametersBase impleme
 	protected abstract String doSendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException; 
 
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
-		message = debugSenderInput(correlationID, message);
+		message = ibisDebugger.senderInput(this, correlationID, message);
 		String result = null;
-		try {
-			String senderInput=message;
-			if (StringUtils.isNotEmpty(getGetInputFromSessionKey())) {
-				senderInput=(String)prc.getSession().get(getGetInputFromSessionKey());
-				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"set contents of session variable ["+getGetInputFromSessionKey()+"] as input ["+senderInput+"]");
-				if (log.isDebugEnabled() && ibisDebugger!=null) senderInput = (String)ibisDebugger.getInputFromSessionKey(correlationID, getGetInputFromSessionKey(), senderInput);
-			} else {
-				if (StringUtils.isNotEmpty(getGetInputFromFixedValue())) {
-					senderInput=getGetInputFromFixedValue();
-					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"set input to fixed value ["+senderInput+"]");
-					if (log.isDebugEnabled() && ibisDebugger!=null) senderInput = (String)ibisDebugger.getInputFromFixedValue(correlationID, senderInput);
+		if (!ibisDebugger.stubSender(this, correlationID)) {
+			try {
+				String senderInput=message;
+				if (StringUtils.isNotEmpty(getGetInputFromSessionKey())) {
+					senderInput=(String)prc.getSession().get(getGetInputFromSessionKey());
+					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"set contents of session variable ["+getGetInputFromSessionKey()+"] as input ["+senderInput+"]");
+					senderInput = (String)ibisDebugger.getInputFromSessionKey(correlationID, getGetInputFromSessionKey(), senderInput);
+				} else {
+					if (StringUtils.isNotEmpty(getGetInputFromFixedValue())) {
+						senderInput=getGetInputFromFixedValue();
+						if (log.isDebugEnabled()) log.debug(getLogPrefix()+"set input to fixed value ["+senderInput+"]");
+						senderInput = (String)ibisDebugger.getInputFromFixedValue(correlationID, senderInput);
+					}
 				}
+				result = doSendMessage(correlationID, senderInput, prc);
+				if (StringUtils.isNotEmpty(getStoreResultInSessionKey())) {
+					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"storing results in session variable ["+getStoreResultInSessionKey()+"]");
+					result = (String)ibisDebugger.storeResultInSessionKey(correlationID, getStoreResultInSessionKey(), result);
+					prc.getSession().put(getStoreResultInSessionKey(),result);
+				}
+				result = isPreserveInput()?message:result;
+			} catch(Throwable throwable) {
+				throwable = ibisDebugger.senderAbort(this, correlationID, throwable);
+				throwSenderOrTimeOutException(throwable);
 			}
-			result = doSendMessage(correlationID, senderInput, prc);
-			if (StringUtils.isNotEmpty(getStoreResultInSessionKey())) {
-				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"storing results in session variable ["+getStoreResultInSessionKey()+"]");
-				if (log.isDebugEnabled() && ibisDebugger!=null) result = (String)ibisDebugger.storeResultInSessionKey(correlationID, getStoreResultInSessionKey(), result);
-				prc.getSession().put(getStoreResultInSessionKey(),result);
-			}
-		} catch(Throwable throwable) {
-			debugSenderAbort(correlationID, throwable);
 		}
-		result = isPreserveInput()?message:result;
-		return debugSenderOutput(correlationID, result);
+		return ibisDebugger.senderOutput(this, correlationID, result);
 	}
 
 	protected String getLogPrefix() {

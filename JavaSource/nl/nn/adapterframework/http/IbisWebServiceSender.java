@@ -1,6 +1,13 @@
 /*
  * $Log: IbisWebServiceSender.java,v $
- * Revision 1.5  2007-05-29 11:08:14  europe\L190409
+ * Revision 1.6  2010-02-19 13:45:28  m00f069
+ * - Added support for (sender) stubbing by debugger
+ * - Added reply listener and reply sender to debugger
+ * - Use IbisDebuggerDummy by default
+ * - Enabling/disabling debugger handled by debugger instead of log level
+ * - Renamed messageId to correlationId in debugger interface
+ *
+ * Revision 1.5  2007/05/29 11:08:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected version string
  *
  * Revision 1.4  2007/05/29 11:07:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -24,15 +31,17 @@ package nl.nn.adapterframework.http;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import org.apache.soap.SOAPException;
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.debug.IbisDebugger;
 import nl.nn.adapterframework.receivers.ServiceDispatcher_ServiceProxy;
+import nl.nn.adapterframework.senders.SenderBase;
 import nl.nn.adapterframework.util.AppConstants;
+
+import org.apache.soap.SOAPException;
 
 /**
  * Posts a message to another IBIS-adapter as a WebService.
@@ -52,7 +61,9 @@ import nl.nn.adapterframework.util.AppConstants;
  * @since 4.2
  */
 public class IbisWebServiceSender implements ISender, HasPhysicalDestination {
-	public static final String version="$RCSfile: IbisWebServiceSender.java,v $ $Revision: 1.5 $ $Date: 2007-05-29 11:08:14 $";
+	public static final String version="$RCSfile: IbisWebServiceSender.java,v $ $Revision: 1.6 $ $Date: 2010-02-19 13:45:28 $";
+
+	private IbisDebugger ibisDebugger;
 
 	private String name;
 	private String ibisHost = "localhost";
@@ -84,12 +95,22 @@ public class IbisWebServiceSender implements ISender, HasPhysicalDestination {
 
 	public String sendMessage(String correlationID, String message)
 		throws SenderException, TimeOutException {
+		message = ibisDebugger.senderInput(this, correlationID, message);
+		String result = null;
 		try {
-			//TODO: afvangen als server gestopt is, en timeout van maken ofzo.
-			return proxy.dispatchRequest(getServiceName(),correlationID,message);
-		} catch (SOAPException e) {
-			throw new SenderException("exception sending message with correlationID ["+correlationID+"] to endPoint["+getEndPoint()+"]",e);
+			if (!ibisDebugger.stubSender(this, correlationID)) {
+				try {
+					//TODO: afvangen als server gestopt is, en timeout van maken ofzo.
+					result = proxy.dispatchRequest(getServiceName(),correlationID,message);
+				} catch (SOAPException e) {
+					throw new SenderException("exception sending message with correlationID ["+correlationID+"] to endPoint["+getEndPoint()+"]",e);
+				}
+			}
+		} catch(Throwable throwable) {
+			throwable = ibisDebugger.senderAbort(this, correlationID, throwable);
+			SenderBase.throwSenderOrTimeOutException(this, throwable);
 		}
+		return ibisDebugger.senderOutput(this, correlationID, result);
 	}
 
 	protected String getEndPoint() {
@@ -126,6 +147,10 @@ public class IbisWebServiceSender implements ISender, HasPhysicalDestination {
 	}
 	public void setServiceName(String serviceName) {
 		this.serviceName=serviceName;
+	}
+	
+	public void setIbisDebugger(IbisDebugger ibisDebugger) {
+		this.ibisDebugger = ibisDebugger;
 	}
 
 }

@@ -1,6 +1,13 @@
 /*
  * $Log: SchedulerSender.java,v $
- * Revision 1.4  2007-10-10 09:40:07  europe\L190409
+ * Revision 1.5  2010-02-19 13:45:28  m00f069
+ * - Added support for (sender) stubbing by debugger
+ * - Added reply listener and reply sender to debugger
+ * - Use IbisDebuggerDummy by default
+ * - Enabling/disabling debugger handled by debugger instead of log level
+ * - Renamed messageId to correlationId in debugger interface
+ *
+ * Revision 1.4  2007/10/10 09:40:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Direct copy from Ibis-EJB:
  * version using IbisManager
  *
@@ -96,22 +103,32 @@ public class SchedulerSender extends SenderWithParametersBase {
 	}
 
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException {
+		message = ibisDebugger.senderInput(this, correlationID, message);
+		String result = null;
 		try {
-			ParameterValueList values = prc.getValues(paramList);
-			String jobName = getName() + correlationID;
-			String cronExpression = values.getParameterValue("_cronexpression").getValue().toString();
-			if (StringUtils.isNotEmpty(jobNamePattern)) {
-				jobName = values.getParameterValue("_jobname").getValue().toString();;	
+			if (!ibisDebugger.stubSender(this, correlationID)) {
+				try {
+					ParameterValueList values = prc.getValues(paramList);
+					String jobName = getName() + correlationID;
+					String cronExpression = values.getParameterValue("_cronexpression").getValue().toString();
+					if (StringUtils.isNotEmpty(jobNamePattern)) {
+						jobName = values.getParameterValue("_jobname").getValue().toString();;	
+					}
+					schedule(jobName, cronExpression, correlationID, message);
+					result = jobName;
+				}
+				catch(SenderException e) {
+					throw e;
+				}
+				catch(Exception e) {
+					throw new SenderException("Error during scheduling " + message, e);
+				}
 			}
-			schedule(jobName, cronExpression, correlationID, message);
-			return jobName;
+		} catch(Throwable throwable) {
+			throwable = ibisDebugger.senderAbort(this, correlationID, throwable);
+			throwSenderException(throwable);
 		}
-		catch(SenderException e) {
-			throw e;
-		}
-		catch(Exception e) {
-			throw new SenderException("Error during scheduling " + message, e);
-		}
+		return ibisDebugger.senderOutput(this, correlationID, result);
 	}
 
 	/*

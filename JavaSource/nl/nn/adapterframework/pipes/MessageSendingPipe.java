@@ -1,6 +1,13 @@
 /*
  * $Log: MessageSendingPipe.java,v $
- * Revision 1.59  2010-02-03 14:27:33  L190409
+ * Revision 1.60  2010-02-19 13:45:28  m00f069
+ * - Added support for (sender) stubbing by debugger
+ * - Added reply listener and reply sender to debugger
+ * - Use IbisDebuggerDummy by default
+ * - Enabling/disabling debugger handled by debugger instead of log level
+ * - Renamed messageId to correlationId in debugger interface
+ *
+ * Revision 1.59  2010/02/03 14:27:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * check for interrupt
  *
  * Revision 1.58  2009/12/29 15:00:02  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -180,6 +187,7 @@ import nl.nn.adapterframework.core.HasSender;
 import nl.nn.adapterframework.core.ICorrelatedPullingListener;
 import nl.nn.adapterframework.core.IExtendedPipe;
 import nl.nn.adapterframework.core.IPipe;
+import nl.nn.adapterframework.core.IReplyListener;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.ITransactionalStorage;
@@ -192,6 +200,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.debug.IbisDebugger;
 import nl.nn.adapterframework.errormessageformatters.ErrorMessageFormatter;
 import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
 import nl.nn.adapterframework.monitoring.EventThrowing;
@@ -284,7 +293,7 @@ import org.apache.commons.lang.SystemUtils;
  */
 
 public class MessageSendingPipe extends FixedForwardPipe implements HasSender, HasStatistics, EventThrowing {
-	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.59 $ $Date: 2010-02-03 14:27:33 $";
+	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.60 $ $Date: 2010-02-19 13:45:28 $";
 
 	public static final String PIPE_TIMEOUT_MONITOR_EVENT = "Sender Timeout";
 	public static final String PIPE_CLEAR_TIMEOUT_MONITOR_EVENT = "Sender Received Result on Time";
@@ -294,6 +303,8 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	private final static String EXCEPTIONFORWARD = "exception";
 	private final static String ILLEGALRESULTFORWARD = "illegalResult";
 	private final static String STUBFILENAME = "stubFileName";
+
+	private IbisDebugger ibisDebugger;
 
 	private String resultOnTimeOut = "receiver timed out";
 	private String linkMethod = "CORRELATIONID";
@@ -382,11 +393,17 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 			if (getSender() instanceof HasPhysicalDestination) {
 				log.info(getLogPrefix(null)+"has sender on "+((HasPhysicalDestination)getSender()).getPhysicalDestinationName());
 			}
-			if (getListener() != null) {
+			ICorrelatedPullingListener listener = getListener();
+			if (listener != null) {
 				if (getSender().isSynchronous()) {
 					throw new ConfigurationException(
 						getLogPrefix(null)
 							+ "cannot have listener with synchronous sender");
+				}
+				if (listener instanceof IReplyListener) {
+					((IReplyListener)listener).isReplyListener(true);
+				} else {
+					throw new ConfigurationException("Listener of pipe ["+getName()+"] is not a reply-listener");
 				}
 				try {
 					getListener().configure();
@@ -507,6 +524,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 			Map threadContext=new HashMap();
 			try {
 				String correlationID = session.getMessageId();
+				String originalCorrelationID = correlationID;
 	
 				String messageID = null;
 				// sendResult has a messageID for async senders, the result for sync senders
@@ -571,18 +589,26 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 				}
 				
 				if (replyListener != null) {
-					if (log.isDebugEnabled()) {
-						log.debug(getLogPrefix(session)	+ "starts listening for return message with correlationID ["+ correlationID	+ "]");
+					correlationID = ibisDebugger.replyListenerInput((IReplyListener)replyListener, originalCorrelationID, correlationID);
+					try {
+						if (!ibisDebugger.stubReplyListener((IReplyListener)replyListener, originalCorrelationID)) {
+							if (log.isDebugEnabled()) {
+								log.debug(getLogPrefix(session)	+ "starts listening for return message with correlationID ["+ correlationID	+ "]");
+							}
+							threadContext = replyListener.openThread();
+							Object msg = replyListener.getRawMessage(correlationID, threadContext);
+							if (msg==null) {	
+								log.info(getLogPrefix(session)+"received null reply message");
+							} else {
+								log.info(getLogPrefix(session)+"received reply message");
+							}
+							result = replyListener.getStringFromRawMessage(msg, threadContext);
+						}
+					} catch(Throwable throwable) {
+						throwable = ibisDebugger.replyListenerAbort((IReplyListener)replyListener, originalCorrelationID, throwable);
+						throw throwable;
 					}
-					threadContext = replyListener.openThread();
-					Object msg = replyListener.getRawMessage(correlationID, threadContext);
-					if (msg==null) {	
-						log.info(getLogPrefix(session)+"received null reply message");
-					} else {
-						log.info(getLogPrefix(session)+"received reply message");
-					}
-					result =
-						replyListener.getStringFromRawMessage(msg, threadContext);
+					result = ibisDebugger.replyListenerOutput((IReplyListener)replyListener, originalCorrelationID, result);
 				} else {
 					result = sendResult;
 				}
@@ -738,7 +764,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 		log.debug(
 			"pipe ["
 				+ getName()
-				+ " registered listener ["
+				+ "] registered listener ["
 				+ listener.toString()
 				+ "]");
 	}
@@ -774,7 +800,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 		log.debug(
 			"pipe ["
 				+ getName()
-				+ " registered sender ["
+				+ "] registered sender ["
 				+ sender.getName()
 				+ "] with properties ["
 				+ sender.toString()
@@ -884,5 +910,9 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 
 	public String getCorrelationIDSessionKey() {
 		return correlationIDSessionKey;
+	}
+	
+	public void setIbisDebugger(IbisDebugger ibisDebugger) {
+		this.ibisDebugger = ibisDebugger;
 	}
 }

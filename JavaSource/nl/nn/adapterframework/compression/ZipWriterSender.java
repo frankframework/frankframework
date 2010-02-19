@@ -1,6 +1,13 @@
 /*
  * $Log: ZipWriterSender.java,v $
- * Revision 1.1  2010-01-06 17:57:35  L190409
+ * Revision 1.2  2010-02-19 13:45:29  m00f069
+ * - Added support for (sender) stubbing by debugger
+ * - Added reply listener and reply sender to debugger
+ * - Use IbisDebuggerDummy by default
+ * - Enabling/disabling debugger handled by debugger instead of log level
+ * - Renamed messageId to correlationId in debugger interface
+ *
+ * Revision 1.1  2010/01/06 17:57:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * classes for reading and writing zip archives
  *
  */
@@ -70,57 +77,65 @@ public class ZipWriterSender extends SenderWithParametersBase {
 
 
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
-		ParameterValueList pvl;
+		message = ibisDebugger.senderInput(this, correlationID, message);
 		try {
-			pvl = prc.getValues(paramList);
-		} catch (ParameterException e) {
-			throw new SenderException("cannot determine filename and/or contents of zip entry",e);
-		}
-
-		PipeLineSession session = prc.getSession();
-		ZipWriter sessionData=ZipWriter.getZipWriter(session,getZipWriterHandle());
-		if (sessionData==null) {
-			throw new SenderException("zipWriterHandle in session key ["+getZipWriterHandle()+"] is not open");		
-		} 
-		String filename=filenameParameter==null?message:(String)pvl.getParameterValue(PARAMETER_FILENAME).getValue();
-		byte[] contents=null;
-		try {
-			if (contentsParameter==null) {
-				if (message!=null) {
-						contents=message.getBytes(getCharset());
+			if (!ibisDebugger.stubSender(this, correlationID)) {
+				ParameterValueList pvl;
+				try {
+					pvl = prc.getValues(paramList);
+				} catch (ParameterException e) {
+					throw new SenderException("cannot determine filename and/or contents of zip entry",e);
 				}
-			} else {
-				Object paramValue=pvl.getParameterValue(PARAMETER_CONTENTS).getValue();
-				if (paramValue!=null) {
-					if (paramValue instanceof byte[]) {
-						contents=(byte[])paramValue;
+		
+				PipeLineSession session = prc.getSession();
+				ZipWriter sessionData=ZipWriter.getZipWriter(session,getZipWriterHandle());
+				if (sessionData==null) {
+					throw new SenderException("zipWriterHandle in session key ["+getZipWriterHandle()+"] is not open");		
+				} 
+				String filename=filenameParameter==null?message:(String)pvl.getParameterValue(PARAMETER_FILENAME).getValue();
+				byte[] contents=null;
+				try {
+					if (contentsParameter==null) {
+						if (message!=null) {
+								contents=message.getBytes(getCharset());
+						}
 					} else {
-						contents=paramValue.toString().getBytes(getCharset());
+						Object paramValue=pvl.getParameterValue(PARAMETER_CONTENTS).getValue();
+						if (paramValue!=null) {
+							if (paramValue instanceof byte[]) {
+								contents=(byte[])paramValue;
+							} else {
+								contents=paramValue.toString().getBytes(getCharset());
+							}
+						}
 					}
+				} catch (UnsupportedEncodingException e) {
+					throw new SenderException(getLogPrefix()+"cannot encode zip entry", e);
+				}
+				if (StringUtils.isEmpty(filename)) {
+					throw new SenderException("filename cannot be empty");		
+				}
+				try {
+					sessionData.openEntry(filename);
+					try {
+						if (contents!=null) {
+							sessionData.getZipoutput().write(contents);
+						} else { 
+							log.warn(getLogPrefix()+"contents of zip entry is null");
+						}
+						sessionData.closeEntry();
+					} catch (IOException e) {
+						throw new SenderException("cannot add data to zipentry for ["+filename+"]",e);
+					}
+				} catch (CompressionException e) {
+					throw new SenderException("cannot add zipentry for ["+filename+"]",e);
 				}
 			}
-		} catch (UnsupportedEncodingException e) {
-			throw new SenderException(getLogPrefix()+"cannot encode zip entry", e);
+		} catch(Throwable throwable) {
+			throwable = ibisDebugger.senderAbort(this, correlationID, throwable);
+			throwSenderOrTimeOutException(throwable);
 		}
-		if (StringUtils.isEmpty(filename)) {
-			throw new SenderException("filename cannot be empty");		
-		}
-		try {
-			sessionData.openEntry(filename);
-			try {
-				if (contents!=null) {
-					sessionData.getZipoutput().write(contents);
-				} else { 
-					log.warn(getLogPrefix()+"contents of zip entry is null");
-				}
-				sessionData.closeEntry();
-			} catch (IOException e) {
-				throw new SenderException("cannot add data to zipentry for ["+filename+"]",e);
-			}
-		} catch (CompressionException e) {
-			throw new SenderException("cannot add zipentry for ["+filename+"]",e);
-		}
-		return message;
+		return ibisDebugger.senderOutput(this, correlationID, message);
 	}
 
 

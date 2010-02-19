@@ -1,6 +1,13 @@
 /*
  * $Log: XComSender.java,v $
- * Revision 1.11  2005-12-19 17:18:55  europe\L190409
+ * Revision 1.12  2010-02-19 13:45:28  m00f069
+ * - Added support for (sender) stubbing by debugger
+ * - Added reply listener and reply sender to debugger
+ * - Use IbisDebuggerDummy by default
+ * - Enabling/disabling debugger handled by debugger instead of log level
+ * - Renamed messageId to correlationId in debugger interface
+ *
+ * Revision 1.11  2005/12/19 17:18:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected typos in javadoc
  *
  * Revision 1.10  2005/12/19 17:14:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -89,7 +96,7 @@ import org.apache.commons.lang.StringUtils;
  * @author: John Dekker
  */
 public class XComSender extends SenderWithParametersBase {
-	public static final String version = "$RCSfile: XComSender.java,v $  $Revision: 1.11 $ $Date: 2005-12-19 17:18:55 $";
+	public static final String version = "$RCSfile: XComSender.java,v $  $Revision: 1.12 $ $Date: 2010-02-19 13:45:28 $";
 
 	private File workingDir;
 	private String name;
@@ -175,47 +182,55 @@ public class XComSender extends SenderWithParametersBase {
 	 * @see nl.nn.adapterframework.core.ISender#sendMessage(java.lang.String, java.lang.String)
 	 */
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
-		for (Iterator filenameIt = getFileList(message).iterator(); filenameIt.hasNext(); ) {
-			String filename = (String)filenameIt.next();
-			log.debug("Start sending " + filename);
-		
-			// get file to send
-			File localFile = new File(filename);
+		message = ibisDebugger.senderInput(this, correlationID, message);
+		try {
+			if (!ibisDebugger.stubSender(this, correlationID)) {
+				for (Iterator filenameIt = getFileList(message).iterator(); filenameIt.hasNext(); ) {
+					String filename = (String)filenameIt.next();
+					log.debug("Start sending " + filename);
+				
+					// get file to send
+					File localFile = new File(filename);
+					
+					// execute command in a new operating process
+					try {
+						String cmd = getCommand(prc.getSession(), localFile, true);
+						
+						Process p = Runtime.getRuntime().exec(cmd, null, workingDir);
 			
-			// execute command in a new operating process
-			try {
-				String cmd = getCommand(prc.getSession(), localFile, true);
-				
-				Process p = Runtime.getRuntime().exec(cmd, null, workingDir);
-	
-				// read the output of the process
-				BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
-				StringBuffer output = new StringBuffer();
-				String line = null;
-				while ((line = br.readLine()) != null) {
-					output.append(line);
-				}
-	
-				// wait until the process is completely finished
-				try {
-					p.waitFor();
-				}
-				catch(InterruptedException e) {
-				}
-	
-				log.debug("output for " + localFile.getName() + " = " + output.toString());
-				log.debug(localFile.getName() + " exits with " + p.exitValue());
-				
-				// throw an exception if the command returns an error exit value
-				if (p.exitValue() != 0) {
-					throw new SenderException("XComSender failed for file " + localFile.getAbsolutePath() + "\r\n" + output.toString());
+						// read the output of the process
+						BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
+						StringBuffer output = new StringBuffer();
+						String line = null;
+						while ((line = br.readLine()) != null) {
+							output.append(line);
+						}
+			
+						// wait until the process is completely finished
+						try {
+							p.waitFor();
+						}
+						catch(InterruptedException e) {
+						}
+			
+						log.debug("output for " + localFile.getName() + " = " + output.toString());
+						log.debug(localFile.getName() + " exits with " + p.exitValue());
+						
+						// throw an exception if the command returns an error exit value
+						if (p.exitValue() != 0) {
+							throw new SenderException("XComSender failed for file " + localFile.getAbsolutePath() + "\r\n" + output.toString());
+						}
+					}
+					catch(IOException e) {
+						throw new SenderException("Error while executing command " + getCommand(prc.getSession(), localFile, false), e);
+					}
 				}
 			}
-			catch(IOException e) {
-				throw new SenderException("Error while executing command " + getCommand(prc.getSession(), localFile, false), e);
-			}
+		} catch(Throwable throwable) {
+			throwable = ibisDebugger.senderAbort(this, correlationID, throwable);
+			throwSenderOrTimeOutException(throwable);
 		}
-		return message;
+		return ibisDebugger.senderOutput(this, correlationID, message);
 	}
 	
 	private String getCommand(PipeLineSession session, File localFile, boolean inclPasswd) throws SenderException {

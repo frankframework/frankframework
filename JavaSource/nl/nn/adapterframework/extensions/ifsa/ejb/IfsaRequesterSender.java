@@ -1,6 +1,13 @@
 /*
  * $Log: IfsaRequesterSender.java,v $
- * Revision 1.2  2007-11-22 08:48:20  europe\L190409
+ * Revision 1.3  2010-02-19 13:45:28  m00f069
+ * - Added support for (sender) stubbing by debugger
+ * - Added reply listener and reply sender to debugger
+ * - Use IbisDebuggerDummy by default
+ * - Enabling/disabling debugger handled by debugger instead of log level
+ * - Renamed messageId to correlationId in debugger interface
+ *
+ * Revision 1.2  2007/11/22 08:48:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * update from ejb-branch
  *
  * Revision 1.1.2.5  2007/11/06 12:33:07  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
@@ -23,7 +30,24 @@
 
 package nl.nn.adapterframework.extensions.ifsa.ejb;
 
-import com.ing.ifsa.exceptions.IFSAException;
+import java.util.HashMap;
+import java.util.Map;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.HasPhysicalDestination;
+import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.core.ISenderWithParameters;
+import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.debug.IbisDebugger;
+import nl.nn.adapterframework.extensions.ifsa.IfsaMessageProtocolEnum;
+import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.ParameterList;
+import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.senders.SenderBase;
+
 import com.ing.ifsa.api.BusinessMessage;
 import com.ing.ifsa.api.Connection;
 import com.ing.ifsa.api.ConnectionManager;
@@ -32,20 +56,7 @@ import com.ing.ifsa.api.RequestReplyAccessBean;
 import com.ing.ifsa.api.ServiceReply;
 import com.ing.ifsa.api.ServiceRequest;
 import com.ing.ifsa.api.ServiceURI;
-import java.util.HashMap;
-import java.util.Map;
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.HasPhysicalDestination;
-import nl.nn.adapterframework.core.INamedObject;
-import nl.nn.adapterframework.core.ISenderWithParameters;
-import nl.nn.adapterframework.core.ParameterException;
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.extensions.ifsa.IfsaMessageProtocolEnum;
-import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.parameters.ParameterList;
-import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-import nl.nn.adapterframework.parameters.ParameterValueList;
+import com.ing.ifsa.exceptions.IFSAException;
 
 /**
  * IFSA Request sender for FF and RR requests implemented using the IFSA
@@ -55,7 +66,8 @@ import nl.nn.adapterframework.parameters.ParameterValueList;
  * @version Id
  */
 public class IfsaRequesterSender extends IfsaEjbBase implements ISenderWithParameters, INamedObject, HasPhysicalDestination {
-    public static final String version = "$RCSfile: IfsaRequesterSender.java,v $ $Revision: 1.2 $ $Date: 2007-11-22 08:48:20 $";
+    public static final String version = "$RCSfile: IfsaRequesterSender.java,v $ $Revision: 1.3 $ $Date: 2010-02-19 13:45:28 $";
+	private IbisDebugger ibisDebugger;
     
     protected ParameterList paramList = null;
     public void configure() throws ConfigurationException {
@@ -113,63 +125,72 @@ public class IfsaRequesterSender extends IfsaEjbBase implements ISenderWithParam
      * @return in Request/Reply, the retrieved message or TIMEOUT, otherwise null
      */
     public String sendMessage(String dummyCorrelationId, String message, Map params) throws SenderException, TimeOutException {
-        Connection conn = null;
-        Map udzMap = null;
-        
-        try {
-            String realServiceId;
-            // Extract parameters
-            if (params != null && params.size() > 0) {
-                // Use first param as serviceId
-                realServiceId = (String)params.get("serviceId");
-                if (realServiceId == null) {
-                        realServiceId = getServiceId();
-                }
-                String occurrence = (String)params.get("occurrence");
-                if (occurrence != null) {
-                    int i = realServiceId.indexOf('/', realServiceId.indexOf('/', realServiceId.indexOf('/', realServiceId.indexOf('/') + 1) + 1) + 1);
-                    int j = realServiceId.indexOf('/', i + 1);
-                    realServiceId = realServiceId.substring(0, i + 1) + occurrence + realServiceId.substring(j);
-                }
-
-                // Use remaining params as outgoing UDZs
-                udzMap = new HashMap(params);
-                udzMap.remove("serviceId");
-                udzMap.remove("occurrence");
-            } else {
-                realServiceId = getServiceId();
-            }
-            
-            // Open connection to the Application ID
-            conn = ConnectionManager.getConnection(getApplicationId());
-
-            // Create the request, and set the Service URI to the Service ID
-            ServiceRequest request = new ServiceRequest(new BusinessMessage(message));
-            request.setServiceURI(new ServiceURI(realServiceId));
-            addUdzMapToRequest(udzMap, request);
-            if (isSynchronous()) {
-                // RR handling
-                if (timeOut > 0) {
-                    request.setTimeout(timeOut);
-                }
-                RequestReplyAccessBean rrBean = RequestReplyAccessBean.getInstance();
-                ServiceReply reply = rrBean.sendReceive(conn, request);
-                return reply.getBusinessMessage().getText();
-            } else {
-                // FF handling
-                FireForgetAccessBean ffBean = FireForgetAccessBean.getInstance();
-                ffBean.send(conn, request);
-                return null;
-            }
-        } catch (com.ing.ifsa.exceptions.TimeoutException toe) {
-            throw new TimeOutException(toe);
-        } catch (IFSAException e) {
-            throw new SenderException(e);
-        } finally {
-            if (conn != null) {
-                conn.close();
-            }
-        }
+		message = ibisDebugger.senderInput(this, dummyCorrelationId, message);
+		String result = null;
+		try {
+			if (!ibisDebugger.stubSender(this, dummyCorrelationId)) {
+		        Connection conn = null;
+		        Map udzMap = null;
+		        
+		        try {
+		            String realServiceId;
+		            // Extract parameters
+		            if (params != null && params.size() > 0) {
+		                // Use first param as serviceId
+		                realServiceId = (String)params.get("serviceId");
+		                if (realServiceId == null) {
+		                        realServiceId = getServiceId();
+		                }
+		                String occurrence = (String)params.get("occurrence");
+		                if (occurrence != null) {
+		                    int i = realServiceId.indexOf('/', realServiceId.indexOf('/', realServiceId.indexOf('/', realServiceId.indexOf('/') + 1) + 1) + 1);
+		                    int j = realServiceId.indexOf('/', i + 1);
+		                    realServiceId = realServiceId.substring(0, i + 1) + occurrence + realServiceId.substring(j);
+		                }
+		
+		                // Use remaining params as outgoing UDZs
+		                udzMap = new HashMap(params);
+		                udzMap.remove("serviceId");
+		                udzMap.remove("occurrence");
+		            } else {
+		                realServiceId = getServiceId();
+		            }
+		            
+		            // Open connection to the Application ID
+		            conn = ConnectionManager.getConnection(getApplicationId());
+		
+		            // Create the request, and set the Service URI to the Service ID
+		            ServiceRequest request = new ServiceRequest(new BusinessMessage(message));
+		            request.setServiceURI(new ServiceURI(realServiceId));
+		            addUdzMapToRequest(udzMap, request);
+		            if (isSynchronous()) {
+		                // RR handling
+		                if (timeOut > 0) {
+		                    request.setTimeout(timeOut);
+		                }
+		                RequestReplyAccessBean rrBean = RequestReplyAccessBean.getInstance();
+		                ServiceReply reply = rrBean.sendReceive(conn, request);
+		                result = reply.getBusinessMessage().getText();
+		            } else {
+		                // FF handling
+		                FireForgetAccessBean ffBean = FireForgetAccessBean.getInstance();
+		                ffBean.send(conn, request);
+		            }
+		        } catch (com.ing.ifsa.exceptions.TimeoutException toe) {
+		            throw new TimeOutException(toe);
+		        } catch (IFSAException e) {
+		            throw new SenderException(e);
+		        } finally {
+		            if (conn != null) {
+		                conn.close();
+		            }
+		        }
+			}
+		} catch(Throwable throwable) {
+			throwable = ibisDebugger.senderAbort(this, dummyCorrelationId, throwable);
+			SenderBase.throwSenderOrTimeOutException(this, throwable);
+		}
+		return ibisDebugger.senderOutput(this, dummyCorrelationId, result);
     }
         
     public void addParameter(Parameter p) {
@@ -178,5 +199,9 @@ public class IfsaRequesterSender extends IfsaEjbBase implements ISenderWithParam
         }
         paramList.add(p);
     }
+	
+	public void setIbisDebugger(IbisDebugger ibisDebugger) {
+		this.ibisDebugger = ibisDebugger;
+	}
 
 }

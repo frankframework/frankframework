@@ -1,6 +1,13 @@
 /*
  * $Log: SapSender.java,v $
- * Revision 1.12  2009-08-26 15:34:01  L190409
+ * Revision 1.13  2010-02-19 13:45:28  m00f069
+ * - Added support for (sender) stubbing by debugger
+ * - Added reply listener and reply sender to debugger
+ * - Use IbisDebuggerDummy by default
+ * - Enabling/disabling debugger handled by debugger instead of log level
+ * - Renamed messageId to correlationId in debugger interface
+ *
+ * Revision 1.12  2009/08/26 15:34:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.11  2008/04/24 12:19:23  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -49,9 +56,11 @@ package nl.nn.adapterframework.extensions.sap;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.debug.IbisDebugger;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.senders.SenderBase;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -95,8 +104,10 @@ import com.sap.mw.jco.JCO;
  * @version Id
  */
 public class SapSender extends SapSenderBase {
-	public static final String version="$RCSfile: SapSender.java,v $  $Revision: 1.12 $ $Date: 2009-08-26 15:34:01 $";
+	public static final String version="$RCSfile: SapSender.java,v $  $Revision: 1.13 $ $Date: 2010-02-19 13:45:28 $";
 	
+	private IbisDebugger ibisDebugger;
+
 	private String functionName=null;
 	private String functionNameParam="functionName";
 
@@ -151,43 +162,53 @@ public class SapSender extends SapSenderBase {
 	}
 
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
-		String tid=null;
+		message = ibisDebugger.senderInput(this, correlationID, message);
+		String result = null;
 		try {
-			ParameterValueList pvl = null;
-			if (prc!=null) {
-				pvl=prc.getValues(paramList);
-			}
-			SapSystem sapSystem = getSystem(pvl);
-			
-			JCO.Function function=getFunction(sapSystem, pvl);
-
-			if (StringUtils.isEmpty(getSapSystemName())) {
-				pvl.removeParameterValue(getSapSystemNameParam());
-			}
-			if (StringUtils.isEmpty(getFunctionName())) {
-				pvl.removeParameterValue(getFunctionNameParam());
-			}
-		    message2FunctionCall(function, message, correlationID, pvl);
-		    if (log.isDebugEnabled()) log.debug(getLogPrefix()+" function call ["+functionCall2message(function)+"]");
-			JCO.Client client = getClient(prc.getSession(), sapSystem);
-			try {
-				tid = getTid(client,sapSystem);
-				if (StringUtils.isEmpty(tid)) {
-					client.execute(function);
-				} else {
-					client.execute(function,tid);
+			if (!ibisDebugger.stubSender(this, correlationID)) {
+				String tid=null;
+				try {
+					ParameterValueList pvl = null;
+					if (prc!=null) {
+						pvl=prc.getValues(paramList);
+					}
+					SapSystem sapSystem = getSystem(pvl);
+					
+					JCO.Function function=getFunction(sapSystem, pvl);
+		
+					if (StringUtils.isEmpty(getSapSystemName())) {
+						pvl.removeParameterValue(getSapSystemNameParam());
+					}
+					if (StringUtils.isEmpty(getFunctionName())) {
+						pvl.removeParameterValue(getFunctionNameParam());
+					}
+				    message2FunctionCall(function, message, correlationID, pvl);
+				    if (log.isDebugEnabled()) log.debug(getLogPrefix()+" function call ["+functionCall2message(function)+"]");
+					JCO.Client client = getClient(prc.getSession(), sapSystem);
+					try {
+						tid = getTid(client,sapSystem);
+						if (StringUtils.isEmpty(tid)) {
+							client.execute(function);
+						} else {
+							client.execute(function,tid);
+						}
+					} finally {
+						releaseClient(client,sapSystem);
+					}
+					if (isSynchronous()) {
+						result = functionResult2message(function);
+					} else {
+						result = tid;
+					}
+				} catch (Exception e) {
+					throw new SenderException(e);
 				}
-			} finally {
-				releaseClient(client,sapSystem);
 			}
-			if (isSynchronous()) {
-				return functionResult2message(function);
-			} else {
-				return tid;
-			}
-		} catch (Exception e) {
-			throw new SenderException(e);
+		} catch(Throwable throwable) {
+			throwable = ibisDebugger.senderAbort(this, correlationID, throwable);
+			SenderBase.throwSenderOrTimeOutException(this, throwable);
 		}
+		return ibisDebugger.senderOutput(this, correlationID, result);
 	}
 
 	public void setSynchronous(boolean b) {
@@ -208,6 +229,10 @@ public class SapSender extends SapSenderBase {
 	}
 	public String getFunctionNameParam() {
 		return functionNameParam;
+	}
+	
+	public void setIbisDebugger(IbisDebugger ibisDebugger) {
+		this.ibisDebugger = ibisDebugger;
 	}
 
 }

@@ -1,6 +1,13 @@
 /*
  * $Log: XsltSender.java,v $
- * Revision 1.3  2009-12-04 18:23:34  m00f069
+ * Revision 1.4  2010-02-19 13:45:28  m00f069
+ * - Added support for (sender) stubbing by debugger
+ * - Added reply listener and reply sender to debugger
+ * - Use IbisDebuggerDummy by default
+ * - Enabling/disabling debugger handled by debugger instead of log level
+ * - Renamed messageId to correlationId in debugger interface
+ *
+ * Revision 1.3  2009/12/04 18:23:34  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Added ibisDebugger.senderAbort and ibisDebugger.pipeRollback
  *
  * Revision 1.2  2009/11/18 17:28:03  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -116,48 +123,51 @@ public class XsltSender extends SenderWithParametersBase {
 	 * via the configure() and start() methods.
 	 */
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException {
-		message = debugSenderInput(correlationID, message);
+		message = ibisDebugger.senderInput(this, correlationID, message);
 		String stringResult = null;
 		try {
-			if (message==null) {
-				throw new SenderException(getLogPrefix()+"got null input");
+			if (!ibisDebugger.stubSender(this, correlationID)) {
+				if (message==null) {
+					throw new SenderException(getLogPrefix()+"got null input");
+				}
+		//		if (log.isDebugEnabled()) {
+		//			log.debug(getLogPrefix()+" transforming input ["+message+"] using prc ["+prc+"]");
+		//		}
+		
+				try {
+					Map parametervalues = null;
+					if (paramList!=null) {
+						parametervalues = prc.getValueMap(paramList);
+					}
+		//			if (log.isDebugEnabled()) {
+		//				log.debug(getLogPrefix()+" transformerPool ["+transformerPool+"] transforming using prc ["+prc+"] and parameterValues ["+parametervalues+"]");
+		//				log.debug(getLogPrefix()+" prc.inputsource ["+prc.getInputSource()+"]");
+		//			}
+					
+					stringResult = transformerPool.transform(prc.getInputSource(), parametervalues); 
+		
+					if (isSkipEmptyTags()) {
+						log.debug(getLogPrefix()+ " skipping empty tags from result [" + stringResult + "]");
+						//URL xsltSource = ClassUtils.getResourceURL( this, skipEmptyTags_xslt);
+						//Transformer transformer = XmlUtils.createTransformer(xsltSource);
+						//stringResult = XmlUtils.transformXml(transformer, stringResult);
+						ParameterResolutionContext prc_SkipEmptyTags = new ParameterResolutionContext(stringResult, prc.getSession(), prc.isNamespaceAware()); 
+						stringResult = transformerPoolSkipEmptyTags.transform(prc_SkipEmptyTags.getInputSource(), null); 
+					}
+		//			if (log.isDebugEnabled()) {
+		//				log.debug(getLogPrefix()+" transformed input ["+message+"] to ["+stringResult+"]");
+		//			}
+				} 
+				catch (Exception e) {
+					log.warn(getLogPrefix()+"intermediate exception logging",e);
+					throw new SenderException(getLogPrefix()+" Exception on transforming input", e);
+				} 
 			}
-	//		if (log.isDebugEnabled()) {
-	//			log.debug(getLogPrefix()+" transforming input ["+message+"] using prc ["+prc+"]");
-	//		}
-	
-			try {
-				Map parametervalues = null;
-				if (paramList!=null) {
-					parametervalues = prc.getValueMap(paramList);
-				}
-	//			if (log.isDebugEnabled()) {
-	//				log.debug(getLogPrefix()+" transformerPool ["+transformerPool+"] transforming using prc ["+prc+"] and parameterValues ["+parametervalues+"]");
-	//				log.debug(getLogPrefix()+" prc.inputsource ["+prc.getInputSource()+"]");
-	//			}
-				
-				stringResult = transformerPool.transform(prc.getInputSource(), parametervalues); 
-	
-				if (isSkipEmptyTags()) {
-					log.debug(getLogPrefix()+ " skipping empty tags from result [" + stringResult + "]");
-					//URL xsltSource = ClassUtils.getResourceURL( this, skipEmptyTags_xslt);
-					//Transformer transformer = XmlUtils.createTransformer(xsltSource);
-					//stringResult = XmlUtils.transformXml(transformer, stringResult);
-					ParameterResolutionContext prc_SkipEmptyTags = new ParameterResolutionContext(stringResult, prc.getSession(), prc.isNamespaceAware()); 
-					stringResult = transformerPoolSkipEmptyTags.transform(prc_SkipEmptyTags.getInputSource(), null); 
-				}
-	//			if (log.isDebugEnabled()) {
-	//				log.debug(getLogPrefix()+" transformed input ["+message+"] to ["+stringResult+"]");
-	//			}
-			} 
-			catch (Exception e) {
-				log.warn(getLogPrefix()+"intermediate exception logging",e);
-				throw new SenderException(getLogPrefix()+" Exception on transforming input", e);
-			} 
 		} catch(Throwable throwable) {
-			debugSenderAbort(correlationID, throwable);
+			ibisDebugger.senderAbort(this, correlationID, throwable);
+			throwSenderException(throwable);
 		}
-		return debugSenderOutput(correlationID, stringResult);
+		return ibisDebugger.senderOutput(this, correlationID, stringResult);
 	}
 
 	public boolean isSynchronous() {

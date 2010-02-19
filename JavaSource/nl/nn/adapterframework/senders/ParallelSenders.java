@@ -1,6 +1,13 @@
 /*
  * $Log: ParallelSenders.java,v $
- * Revision 1.5  2009-12-29 14:37:28  L190409
+ * Revision 1.6  2010-02-19 13:45:28  m00f069
+ * - Added support for (sender) stubbing by debugger
+ * - Added reply listener and reply sender to debugger
+ * - Use IbisDebuggerDummy by default
+ * - Enabling/disabling debugger handled by debugger instead of log level
+ * - Renamed messageId to correlationId in debugger interface
+ *
+ * Revision 1.5  2009/12/29 14:37:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * modified imports to reflect move of statistics classes to separate package
  *
  * Revision 1.4  2009/12/04 18:23:34  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -78,9 +85,7 @@ public class ParallelSenders extends SenderSeries {
 			guard.addResource();
 			SenderExecutor se=new SenderExecutor(sender, correlationID, threadID, message, prc, guard);
 			executorMap.put(sender,se);
-			if (log.isDebugEnabled() && ibisDebugger!=null) {
-				ibisDebugger.createThread(threadID, correlationID);
-			}
+			ibisDebugger.createThread(sender, threadID, correlationID);
 			getTaskExecutor().execute(se);
 		}
 		try {
@@ -137,24 +142,17 @@ public class ParallelSenders extends SenderSeries {
 		public void run() {
 			try {
 				long t1 = System.currentTimeMillis();
-				if (log.isDebugEnabled() && ibisDebugger!=null) {
-					ibisDebugger.startThread(threadID, correlationID, message);
-				}
+				ibisDebugger.startThread(sender, threadID, correlationID, message);
 				try {
 					if (sender instanceof ISenderWithParameters) {
 						result = ((ISenderWithParameters)sender).sendMessage(correlationID,message,prc);
 					} else {
 						result = sender.sendMessage(correlationID,message);
 					}
-					if (log.isDebugEnabled() && ibisDebugger!=null) {
-						ibisDebugger.endThread(correlationID, result);
-					}
+					ibisDebugger.endThread(sender, correlationID, result);
 				} catch (Throwable tr) {
 					log.warn("SenderExecutor caught exception",tr);
-					if (log.isDebugEnabled() && ibisDebugger!=null) {
-						tr = ibisDebugger.abortThread(correlationID, tr);
-					}
-					result = tr;
+					result = ibisDebugger.abortThread(sender, correlationID, tr);
 				}
 				long t2 = System.currentTimeMillis();
 				StatisticsKeeper sk = getStatisticsKeeper(sender);

@@ -1,6 +1,13 @@
 /*
  * $Log: MailSender.java,v $
- * Revision 1.6  2009-12-24 13:14:15  m168309
+ * Revision 1.7  2010-02-19 13:45:27  m00f069
+ * - Added support for (sender) stubbing by debugger
+ * - Added reply listener and reply sender to debugger
+ * - Use IbisDebuggerDummy by default
+ * - Enabling/disabling debugger handled by debugger instead of log level
+ * - Renamed messageId to correlationId in debugger interface
+ *
+ * Revision 1.6  2009/12/24 13:14:15  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * bugfix: decodeBase64ToString only  when message is not empty
  *
  * Revision 1.5  2009/12/11 13:09:14  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -203,64 +210,67 @@ public class MailSender extends SenderWithParametersBase {
 
 
 	public String sendMessage(String correlationID,	String message,	ParameterResolutionContext prc) throws SenderException, TimeOutException {
-		message = debugSenderInput(correlationID, message);
+		message = ibisDebugger.senderInput(this, correlationID, message);
 		try {
-			String from=null;
-			String subject=null;
-			Collection recipients=null;
-			Collection attachments=null;
-			ParameterValueList pvl;
-			ParameterValue pv;
-			
-			String messageInMailSafeForm;
-			if (paramList==null) {
-				messageInMailSafeForm = sendEmail(message);
-			} else {
-				try {
-					pvl = prc.getValues(paramList);
-					pv = pvl.getParameterValue("from");
-					if (pv != null) {
-						from = pv.asStringValue(null);  
-						log.debug("MailSender ["+getName()+"] retrieved from-parameter ["+from+"]");
+			if (!ibisDebugger.stubSender(this, correlationID)) {
+				String from=null;
+				String subject=null;
+				Collection recipients=null;
+				Collection attachments=null;
+				ParameterValueList pvl;
+				ParameterValue pv;
+				
+				String messageInMailSafeForm;
+				if (paramList==null) {
+					messageInMailSafeForm = sendEmail(message);
+				} else {
+					try {
+						pvl = prc.getValues(paramList);
+						pv = pvl.getParameterValue("from");
+						if (pv != null) {
+							from = pv.asStringValue(null);  
+							log.debug("MailSender ["+getName()+"] retrieved from-parameter ["+from+"]");
+						}
+						pv = pvl.getParameterValue("subject");
+						if (pv != null) {
+							subject = pv.asStringValue(null);  
+							log.debug("MailSender ["+getName()+"] retrieved subject-parameter ["+subject+"]");
+						}
+						pv = pvl.getParameterValue("message");
+						if (pv != null) {
+							message = pv.asStringValue(message);  
+							log.debug("MailSender ["+getName()+"] retrieved message-parameter ["+message+"]");
+						}
+						pv = pvl.getParameterValue("messageType");
+						if (pv != null) {
+							messageType = pv.asStringValue(null);  
+							log.debug("MailSender ["+getName()+"] retrieved messageType-parameter ["+messageType+"]");
+						}
+						pv = pvl.getParameterValue("messageBase64");
+						if (pv != null) {
+							messageBase64 = pv.asStringValue(null);  
+							log.debug("MailSender ["+getName()+"] retrieved messageBase64-parameter ["+messageBase64+"]");
+						}
+						pv = pvl.getParameterValue("recipients");
+						if (pv != null) {
+							recipients = pv.asCollection();  
+						}
+						pv = pvl.getParameterValue("attachments");
+						if (pv != null) {
+							attachments = pv.asCollection();  
+						}
+					} catch (ParameterException e) {
+						throw new SenderException("MailSender ["+getName()+"] got exception determining parametervalues",e);
 					}
-					pv = pvl.getParameterValue("subject");
-					if (pv != null) {
-						subject = pv.asStringValue(null);  
-						log.debug("MailSender ["+getName()+"] retrieved subject-parameter ["+subject+"]");
-					}
-					pv = pvl.getParameterValue("message");
-					if (pv != null) {
-						message = pv.asStringValue(message);  
-						log.debug("MailSender ["+getName()+"] retrieved message-parameter ["+message+"]");
-					}
-					pv = pvl.getParameterValue("messageType");
-					if (pv != null) {
-						messageType = pv.asStringValue(null);  
-						log.debug("MailSender ["+getName()+"] retrieved messageType-parameter ["+messageType+"]");
-					}
-					pv = pvl.getParameterValue("messageBase64");
-					if (pv != null) {
-						messageBase64 = pv.asStringValue(null);  
-						log.debug("MailSender ["+getName()+"] retrieved messageBase64-parameter ["+messageBase64+"]");
-					}
-					pv = pvl.getParameterValue("recipients");
-					if (pv != null) {
-						recipients = pv.asCollection();  
-					}
-					pv = pvl.getParameterValue("attachments");
-					if (pv != null) {
-						attachments = pv.asCollection();  
-					}
-				} catch (ParameterException e) {
-					throw new SenderException("MailSender ["+getName()+"] got exception determining parametervalues",e);
+					messageInMailSafeForm = sendEmail(from, subject, message, recipients, attachments);
 				}
-				messageInMailSafeForm = sendEmail(from, subject, message, recipients, attachments);
+				prc.getSession().put("messageInMailSafeForm", messageInMailSafeForm);
 			}
-			prc.getSession().put("messageInMailSafeForm", messageInMailSafeForm);
 		} catch(Throwable throwable) {
-			debugSenderAbort(correlationID, throwable);
+			throwable = ibisDebugger.senderAbort(this, correlationID, throwable);
+			throwSenderOrTimeOutException(throwable);
 		}
-		return debugSenderOutput(correlationID, correlationID);
+		return ibisDebugger.senderOutput(this, correlationID, correlationID);
 	}
 	
 	public String sendMessage(String correlationID, String input) throws SenderException {

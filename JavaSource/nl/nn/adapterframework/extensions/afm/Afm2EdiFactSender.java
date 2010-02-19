@@ -1,6 +1,13 @@
 /*
  * $Log: Afm2EdiFactSender.java,v $
- * Revision 1.3  2007-02-12 13:47:04  europe\L190409
+ * Revision 1.4  2010-02-19 13:45:29  m00f069
+ * - Added support for (sender) stubbing by debugger
+ * - Added reply listener and reply sender to debugger
+ * - Use IbisDebuggerDummy by default
+ * - Enabling/disabling debugger handled by debugger instead of log level
+ * - Renamed messageId to correlationId in debugger interface
+ *
+ * Revision 1.3  2007/02/12 13:47:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Logger from LogUtil
  *
  * Revision 1.2  2005/02/24 12:20:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -18,6 +25,8 @@ import java.util.Date;
 
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.debug.IbisDebugger;
+import nl.nn.adapterframework.senders.SenderBase;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -44,8 +53,10 @@ import org.w3c.dom.NodeList;
  * @author: Erik van de Wetering, fine tuned and wrapped for Ibis by Gerrit van Brakel
  */
 public class Afm2EdiFactSender implements ISender {
-	public static final String version="$RCSfile: Afm2EdiFactSender.java,v $ $Revision: 1.3 $ $Date: 2007-02-12 13:47:04 $";
+	public static final String version="$RCSfile: Afm2EdiFactSender.java,v $ $Revision: 1.4 $ $Date: 2010-02-19 13:45:29 $";
 	protected Logger logger = LogUtil.getLogger(this);
+
+	private IbisDebugger ibisDebugger;
 
 	public final static String VERWERKTAG = "VRWRKCD";
 	public final static String TPNRTAG = "AL_RECCRT";
@@ -75,11 +86,21 @@ public class Afm2EdiFactSender implements ISender {
 	}
 
 	public String sendMessage(String correlationID, String message)	throws SenderException {
+		message = ibisDebugger.senderInput(this, correlationID, message);
+		String result = null;
 		try {
-			return execute(message);
-		} catch (Exception e) {
-			throw new SenderException("transforming AFM-XML to EdiFact",e);
+			if (!ibisDebugger.stubSender(this, correlationID)) {
+				try {
+					result = execute(message);
+				} catch (Exception e) {
+					throw new SenderException("transforming AFM-XML to EdiFact",e);
+				}
+			}
+		} catch(Throwable throwable) {
+			throwable = ibisDebugger.senderAbort(this, correlationID, throwable);
+			SenderBase.throwSenderException(this, throwable);
 		}
+		return ibisDebugger.senderOutput(this, correlationID, result);
 	}
 
 	private void appendArray(char aArray[], StringBuffer aRes) {
@@ -315,5 +336,9 @@ public class Afm2EdiFactSender implements ISender {
 	}
 	public String getTpnummer() {
 		return tpnummer;
+	}
+	
+	public void setIbisDebugger(IbisDebugger ibisDebugger) {
+		this.ibisDebugger = ibisDebugger;
 	}
 }
