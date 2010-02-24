@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.88  2010-02-19 13:45:29  m00f069
+ * Revision 1.89  2010-02-24 11:27:50  m00f069
+ * Bugfix: HasSender can return null on getSender (for example in case of an FxfListener).
+ *
+ * Revision 1.88  2010/02/19 13:45:29  Jaco de Groot <jaco.de.groot@ibissource.org>
  * - Added support for (sender) stubbing by debugger
  * - Added reply listener and reply sender to debugger
  * - Use IbisDebuggerDummy by default
@@ -579,7 +582,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  */
 public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHandler, EventThrowing, IbisExceptionListener, HasSender, HasStatistics, TracingEventNumbers, IThreadCountControllable, BeanFactoryAware {
     
-	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.88 $ $Date: 2010-02-19 13:45:29 $";
+	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.89 $ $Date: 2010-02-24 11:27:50 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -955,13 +958,15 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 			}
 			if (getListener() instanceof HasSender) {
 				ISender sender = ((HasSender)getListener()).getSender();
-				if (sender instanceof IReplySender) {
-					((IReplySender)sender).isReplySender(true);
-				} else {
-					throw new ConfigurationException("Sender ["+ClassUtils.nameOf(sender)+"] on listener of receiver ["+getName()+"] is not a reply-sender");
-				}
-				if (sender instanceof HasPhysicalDestination) {
-					info("Listener of receiver ["+getName()+"] has reply-sender on "+((HasPhysicalDestination)sender).getPhysicalDestinationName());
+				if (sender!=null) {
+					if (sender instanceof IReplySender) {
+						((IReplySender)sender).isReplySender(true);
+					} else {
+						throw new ConfigurationException("Sender ["+ClassUtils.nameOf(sender)+"] on listener of receiver ["+getName()+"] is not a reply-sender");
+					}
+					if (sender instanceof HasPhysicalDestination) {
+						info("Listener of receiver ["+getName()+"] has reply-sender on "+((HasPhysicalDestination)sender).getPhysicalDestinationName());
+					}
 				}
 			}
 			ISender sender = getSender();
