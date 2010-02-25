@@ -1,6 +1,9 @@
 /*
  * $Log: MessageSendingPipe.java,v $
- * Revision 1.60  2010-02-19 13:45:28  m00f069
+ * Revision 1.61  2010-02-25 13:32:03  m168309
+ * removed default value and adjusted functioning of resultOnTimeOut attribute
+ *
+ * Revision 1.60  2010/02/19 13:45:28  Jaco de Groot <jaco.de.groot@ibissource.org>
  * - Added support for (sender) stubbing by debugger
  * - Added reply listener and reply sender to debugger
  * - Use IbisDebuggerDummy by default
@@ -256,7 +259,7 @@ import org.apache.commons.lang.SystemUtils;
  * <tr><td>{@link #setAfterEvent(int) afterEvent}</td>        <td>METT eventnumber, fired just after message processing by this Pipe is finished</td><td>-1 (disabled)</td></tr>
  * <tr><td>{@link #setExceptionEvent(int) exceptionEvent}</td><td>METT eventnumber, fired when message processing by this Pipe resulted in an exception</td><td>-1 (disabled)</td></tr>
  * <tr><td>{@link #setForwardName(String) forwardName}</td>  <td>name of forward returned upon completion</td><td>"success"</td></tr>
- * <tr><td>{@link #setResultOnTimeOut(String) resultOnTimeOut}</td><td>result returned when no return-message was received within the timeout limit</td><td>"receiver timed out"</td></tr>
+ * <tr><td>{@link #setResultOnTimeOut(String) resultOnTimeOut}</td><td>result returned when no return-message was received within the timeout limit (e.g. "receiver timed out").</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setLinkMethod(String) linkMethod}</td><td>Indicates wether the server uses the correlationID or the messageID in the correlationID field of the reply. This requirers the sender to have set the correlationID at the time of sending.</td><td>CORRELATIONID</td></tr>
  * <tr><td>{@link #setAuditTrailXPath(String) auditTrailXPath}</td><td>xpath expression to extract audit trail from message</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setCorrelationIDXPath(String) correlationIDXPath}</td><td>xpath expression to extract correlationID from message</td><td>&nbsp;</td></tr>
@@ -284,7 +287,7 @@ import org.apache.commons.lang.SystemUtils;
  * <tr><th>state</th><th>condition</th></tr>
  * <tr><td>"success"</td><td>default when a good message was retrieved (synchronous sender), or the message was successfully sent and no listener was specified and the sender was not synchronous</td></tr>
  * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified, and otherwise under same condition as "success"</td></tr>
- * <tr><td>"timeout"</td><td>no data was received (timeout on listening), if the sender was synchronous or a listener was specified.</td></tr>
+ * <tr><td>"timeout"</td><td>no data was received (timeout on listening), if the sender was synchronous or a listener was specified. If "timeout" and <code>resultOnTimeOut</code> are not specified, "exception" is used in such a case</td></tr>
  * <tr><td>"exception"</td><td>an exception was thrown by the Sender or its reply-Listener. The result passed to the next pipe is the exception that was caught.</td></tr>
  * </table>
  * </p>
@@ -293,7 +296,7 @@ import org.apache.commons.lang.SystemUtils;
  */
 
 public class MessageSendingPipe extends FixedForwardPipe implements HasSender, HasStatistics, EventThrowing {
-	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.60 $ $Date: 2010-02-19 13:45:28 $";
+	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.61 $ $Date: 2010-02-25 13:32:03 $";
 
 	public static final String PIPE_TIMEOUT_MONITOR_EVENT = "Sender Timeout";
 	public static final String PIPE_CLEAR_TIMEOUT_MONITOR_EVENT = "Sender Received Result on Time";
@@ -306,7 +309,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 
 	private IbisDebugger ibisDebugger;
 
-	private String resultOnTimeOut = "receiver timed out";
+	private String resultOnTimeOut;
 	private String linkMethod = "CORRELATIONID";
 
 	private String stubFileName;
@@ -626,13 +629,31 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 					throwEvent(PIPE_CLEAR_TIMEOUT_MONITOR_EVENT);
 				}
 				PipeForward timeoutForward = findForward(TIMEOUTFORWARD);
+				log.warn(getLogPrefix(session) + "timeout occured");
 				if (timeoutForward==null) {
-					log.warn(getLogPrefix(session) + "timeout occured, but no timeout-forward defined", toe);
-					timeoutForward=getForward();
-				} else {
-					log.warn(getLogPrefix(session) + "timeout occured", toe);
+					if (StringUtils.isEmpty(getResultOnTimeOut())) {
+						timeoutForward=findForward(EXCEPTIONFORWARD);
+					} else {
+						timeoutForward=getForward();
+					}
 				}
-				return new PipeRunResult(timeoutForward,getResultOnTimeOut());
+				if (timeoutForward!=null) {
+					String resultmsg;
+					if (StringUtils.isNotEmpty(getResultOnTimeOut())) {
+						resultmsg =getResultOnTimeOut();
+					} else {
+						if (input instanceof String) {
+							resultmsg=new ErrorMessageFormatter().format(getLogPrefix(session),toe,this,(String)input,session.getMessageId(),0);
+						} else {
+							if (input==null) {
+								input="null";
+							}
+							resultmsg=new ErrorMessageFormatter().format(getLogPrefix(session),toe,this,input.toString(),session.getMessageId(),0);
+						}
+					}
+					return new PipeRunResult(timeoutForward,resultmsg);
+				}
+				throw new PipeRunException(this, getLogPrefix(session) + "caught timeout-exception", toe);
 	
 			} catch (Throwable t) {
 				throwEvent(PIPE_EXCEPTION_MONITOR_EVENT);
