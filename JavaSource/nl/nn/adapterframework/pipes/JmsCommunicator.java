@@ -22,7 +22,7 @@ import nl.nn.adapterframework.jms.JmsSender;
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMaxThreads(int) maxThreads}</td><td>maximum number of threads that may call {@link #doPipe(Object, PipeLineSession)} simultaneously</td><td>0 (unlimited)</td></tr>
  * <tr><td>{@link #setForwardName(String) forwardName}</td>  <td>name of forward returned upon completion</td><td>"success"</td></tr>
- * <tr><td>{@link #setResultOnTimeOut(String) resultOnTimeOut}</td><td>result returned when no return-message was received within the timeout limit</td><td>"receiver timed out"</td></tr>
+ * <tr><td>{@link #setResultOnTimeOut(String) resultOnTimeOut}</td><td>result returned when no return-message was received within the timeout limit (e.g. "receiver timed out").</td><td>&nbsp;</td></tr>
  * <tr><td>{@link JmsSender#setReplyToName(String) sender.replyToName}</td><td>name of the queue the receiving party should reply to, as included in the message that is sent</td><td>&nbsp;</td></tr>
  * <tr><td>{@link JmsSender#setName(String) sender.Name}</td><td>name of the sender object</td><td>&nbsp;</td></tr>
  * <tr><td>{@link JmsSender#setDestinationName(String) sender.destinationName}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
@@ -50,7 +50,7 @@ import nl.nn.adapterframework.jms.JmsSender;
  */
 
 public class JmsCommunicator extends MessageSendingPipe {
-	public static final String version="$Id: JmsCommunicator.java,v 1.6 2010-01-20 09:53:19 m168309 Exp $";
+	public static final String version="$Id: JmsCommunicator.java,v 1.7 2010-02-25 13:41:54 m168309 Exp $";
 
 public JmsCommunicator() {
 	super();

@@ -1,6 +1,9 @@
 /*
  * $Log: IteratingPipe.java,v $
- * Revision 1.15  2010-02-03 14:28:32  L190409
+ * Revision 1.16  2010-02-25 13:41:54  m168309
+ * adjusted javadoc for resultOnTimeOut attribute
+ *
+ * Revision 1.15  2010/02/03 14:28:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * check for interrupt
  *
  * Revision 1.14  2009/07/13 10:08:09  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -105,7 +108,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setAfterEvent(int) afterEvent}</td>        <td>METT eventnumber, fired just after message processing by this Pipe is finished</td><td>-1 (disabled)</td></tr>
  * <tr><td>{@link #setExceptionEvent(int) exceptionEvent}</td><td>METT eventnumber, fired when message processing by this Pipe resulted in an exception</td><td>-1 (disabled)</td></tr>
  * <tr><td>{@link #setForwardName(String) forwardName}</td>  <td>name of forward returned upon completion</td><td>"success"</td></tr>
- * <tr><td>{@link #setResultOnTimeOut(String) resultOnTimeOut}</td><td>result returned when no return-message was received within the timeout limit</td><td>"receiver timed out"</td></tr>
+ * <tr><td>{@link #setResultOnTimeOut(String) resultOnTimeOut}</td><td>result returned when no return-message was received within the timeout limit (e.g. "receiver timed out").</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setLinkMethod(String) linkMethod}</td><td>Indicates wether the server uses the correlationID or the messageID in the correlationID field of the reply</td><td>CORRELATIONID</td></tr>
  * <tr><td>{@link #setAuditTrailXPath(String) auditTrailXPath}</td><td>xpath expression to extract audit trail from message</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setCorrelationIDXPath(String) correlationIDXPath}</td><td>xpath expression to extract correlationID from message</td><td>&nbsp;</td></tr>
@@ -172,7 +175,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public abstract class IteratingPipe extends MessageSendingPipe {
-	public static final String version="$RCSfile: IteratingPipe.java,v $ $Revision: 1.15 $ $Date: 2010-02-03 14:28:32 $";
+	public static final String version="$RCSfile: IteratingPipe.java,v $ $Revision: 1.16 $ $Date: 2010-02-25 13:41:54 $";
 
 	private String stopConditionXPathExpression=null;
 	private boolean removeXmlDeclarationInResults=false;

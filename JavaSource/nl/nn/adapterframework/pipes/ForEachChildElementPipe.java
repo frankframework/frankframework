@@ -1,6 +1,9 @@
 /*
  * $Log: ForEachChildElementPipe.java,v $
- * Revision 1.21  2010-02-03 14:29:32  L190409
+ * Revision 1.22  2010-02-25 13:41:54  m168309
+ * adjusted javadoc for resultOnTimeOut attribute
+ *
+ * Revision 1.21  2010/02/03 14:29:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * check for interrupt
  *
  * Revision 1.20  2008/09/08 14:58:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -92,7 +95,7 @@ import org.xml.sax.helpers.DefaultHandler;
  * <tr><td>{@link #setStoreResultInSessionKey(String) storeResultInSessionKey}</td><td>when set, the result is stored under this session key</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setNamespaceAware(boolean) namespaceAware}</td><td>controls namespace-awareness of possible XML parsing in descender-classes</td><td>application default</td></tr>
  * <tr><td>{@link #setForwardName(String) forwardName}</td>  <td>name of forward returned upon completion</td><td>"success"</td></tr>
- * <tr><td>{@link #setResultOnTimeOut(String) resultOnTimeOut}</td><td>result returned when no return-message was received within the timeout limit</td><td>"receiver timed out"</td></tr>
+ * <tr><td>{@link #setResultOnTimeOut(String) resultOnTimeOut}</td><td>result returned when no return-message was received within the timeout limit (e.g. "receiver timed out").</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setLinkMethod(String) linkMethod}</td><td>Indicates wether the server uses the correlationID or the messageID in the correlationID field of the reply</td><td>CORRELATIONID</td></tr>
  * <tr><td>{@link #setStopConditionXPathExpression(String) stopConditionXPathExpression}</td><td>expression evaluated on each result if set. 
  * 		Iteration stops if condition returns anything other than <code>false</code> or an empty result.
@@ -129,10 +132,10 @@ import org.xml.sax.helpers.DefaultHandler;
  * @author Gerrit van Brakel
  * @since 4.6.1
  * 
- * $Id: ForEachChildElementPipe.java,v 1.21 2010-02-03 14:29:32 L190409 Exp $
+ * $Id: ForEachChildElementPipe.java,v 1.22 2010-02-25 13:41:54 m168309 Exp $
  */
 public class ForEachChildElementPipe extends IteratingPipe {
-	public static final String version="$RCSfile: ForEachChildElementPipe.java,v $ $Revision: 1.21 $ $Date: 2010-02-03 14:29:32 $";
+	public static final String version="$RCSfile: ForEachChildElementPipe.java,v $ $Revision: 1.22 $ $Date: 2010-02-25 13:41:54 $";
 
 	private String elementXPathExpression=null;
 	private boolean processFile=false;

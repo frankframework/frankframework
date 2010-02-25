@@ -1,6 +1,9 @@
 /*
  * $Log: FileLineIteratorPipe.java,v $
- * Revision 1.4  2008-05-21 09:40:34  europe\L190409
+ * Revision 1.5  2010-02-25 13:41:54  m168309
+ * adjusted javadoc for resultOnTimeOut attribute
+ *
+ * Revision 1.4  2008/05/21 09:40:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added block info to javadoc
  *
  * Revision 1.3  2007/10/08 12:23:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -52,7 +55,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setStoreResultInSessionKey(String) storeResultInSessionKey}</td><td>when set, the result is stored under this session key</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setNamespaceAware(boolean) namespaceAware}</td><td>controls namespace-awareness of possible XML parsing in descender-classes</td><td>application default</td></tr>
  * <tr><td>{@link #setForwardName(String) forwardName}</td>  <td>name of forward returned upon completion</td><td>"success"</td></tr>
- * <tr><td>{@link #setResultOnTimeOut(String) resultOnTimeOut}</td><td>result returned when no return-message was received within the timeout limit</td><td>"receiver timed out"</td></tr>
+ * <tr><td>{@link #setResultOnTimeOut(String) resultOnTimeOut}</td><td>result returned when no return-message was received within the timeout limit (e.g. "receiver timed out").</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setLinkMethod(String) linkMethod}</td><td>Indicates wether the server uses the correlationID or the messageID in the correlationID field of the reply</td><td>CORRELATIONID</td></tr>
  * <tr><td>{@link #setStopConditionXPathExpression(String) stopConditionXPathExpression}</td><td>expression evaluated on each result if set. 
  * 		Iteration stops if condition returns anything other than <code>false</code> or an empty result.
@@ -83,7 +86,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class FileLineIteratorPipe extends StreamLineIteratorPipe {
-	public static final String version = "$RCSfile: FileLineIteratorPipe.java,v $  $Revision: 1.4 $ $Date: 2008-05-21 09:40:34 $";
+	public static final String version = "$RCSfile: FileLineIteratorPipe.java,v $  $Revision: 1.5 $ $Date: 2010-02-25 13:41:54 $";
 
 	private String move2dirAfterTransform;
 	private String move2dirAfterError;

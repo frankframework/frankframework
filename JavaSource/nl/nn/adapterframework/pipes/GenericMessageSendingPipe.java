@@ -1,6 +1,9 @@
 /*
  * $Log: GenericMessageSendingPipe.java,v $
- * Revision 1.10  2009-07-13 10:08:09  m168309
+ * Revision 1.11  2010-02-25 13:41:54  m168309
+ * adjusted javadoc for resultOnTimeOut attribute
+ *
+ * Revision 1.10  2009/07/13 10:08:09  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted javadoc
  *
  * Revision 1.9  2008/05/14 09:56:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -76,7 +79,7 @@ import nl.nn.adapterframework.util.ClassUtils;
  * <tr><td>{@link #setAfterEvent(int) afterEvent}</td>        <td>METT eventnumber, fired just after message processing by this Pipe is finished</td><td>-1 (disabled)</td></tr>
  * <tr><td>{@link #setExceptionEvent(int) exceptionEvent}</td><td>METT eventnumber, fired when message processing by this Pipe resulted in an exception</td><td>-1 (disabled)</td></tr>
  * <tr><td>{@link #setForwardName(String) forwardName}</td>  <td>name of forward returned upon completion</td><td>"success"</td></tr>
- * <tr><td>{@link #setResultOnTimeOut(String) resultOnTimeOut}</td><td>result returned when no return-message was received within the timeout limit</td><td>"receiver timed out"</td></tr>
+ * <tr><td>{@link #setResultOnTimeOut(String) resultOnTimeOut}</td><td>result returned when no return-message was received within the timeout limit (e.g. "receiver timed out").</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setLinkMethod(String) linkMethod}</td><td>Indicates wether the server uses the correlationID or the messageID in the correlationID field of the reply</td><td>CORRELATIONID</td></tr>
  * <tr><td>{@link #setAuditTrailXPath(String) auditTrailXPath}</td><td>xpath expression to extract audit trail from message</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setCorrelationIDXPath(String) correlationIDXPath}</td><td>xpath expression to extract correlationID from message</td><td>&nbsp;</td></tr>
@@ -107,7 +110,7 @@ import nl.nn.adapterframework.util.ClassUtils;
  */
 
 public class GenericMessageSendingPipe extends MessageSendingPipe {
-	public static final String version="$RCSfile: GenericMessageSendingPipe.java,v $ $Revision: 1.10 $ $Date: 2009-07-13 10:08:09 $";
+	public static final String version="$RCSfile: GenericMessageSendingPipe.java,v $ $Revision: 1.11 $ $Date: 2010-02-25 13:41:54 $";
 
 	public void setListener(ICorrelatedPullingListener listener) {
 		super.setListener(listener);
