@@ -1,6 +1,9 @@
 /*
  * $Log: XmlQuerySender.java,v $
- * Revision 1.2  2010-02-01 08:32:39  L190409
+ * Revision 1.3  2010-03-03 08:55:17  m168309
+ * fixed '(EOFException) Unexpected end of ZLIB input stream'
+ *
+ * Revision 1.2  2010/02/01 08:32:39  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * setConfigWarning
  *
  * Revision 1.1  2010/01/28 09:48:00  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -82,7 +85,7 @@ import org.w3c.dom.Element;
  * @author  Peter Leeuwenburgh
  */
 public class XmlQuerySender extends DirectQuerySender {
-	public static final String version = "$RCSfile: XmlQuerySender.java,v $ $Revision: 1.2 $ $Date: 2010-02-01 08:32:39 $";
+	public static final String version = "$RCSfile: XmlQuerySender.java,v $ $Revision: 1.3 $ $Date: 2010-03-03 08:55:17 $";
 
 	public static final String TYPE_STRING = "string";
 	public static final String TYPE_NUMBER = "number";
@@ -295,6 +298,7 @@ public class XmlQuerySender extends DirectQuerySender {
 			}
 			PreparedStatement statement = getStatement(connection, correlationID, query);
 			statement.setQueryTimeout(getTimeout());
+			setBlobSmartGet(true);
 			return executeSelectQuery(statement);
 		} catch (SQLException e) {
 			throw new SenderException(getLogPrefix() + "got exception executing a SELECT SQL command", e);
