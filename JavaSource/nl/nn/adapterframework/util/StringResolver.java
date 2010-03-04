@@ -1,6 +1,9 @@
 /*
  * $Log: StringResolver.java,v $
- * Revision 1.10  2008-06-03 15:59:03  europe\L190409
+ * Revision 1.11  2010-03-04 16:00:19  m168309
+ * added attribute labelStyleSheet
+ *
+ * Revision 1.10  2008/06/03 15:59:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * avoid NPE in solving keys to properties
  *
  * Revision 1.9  2008/03/28 14:24:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -38,7 +41,7 @@ import org.apache.log4j.Logger;
  * @author Johan Verrips 
  */
 public class StringResolver {
-	public static final String version="$RCSfile: StringResolver.java,v $ $Revision: 1.10 $ $Date: 2008-06-03 15:59:03 $";
+	public static final String version="$RCSfile: StringResolver.java,v $ $Revision: 1.11 $ $Date: 2010-03-04 16:00:19 $";
 	protected static Logger log = LogUtil.getLogger(StringResolver.class);
 	
     static String DELIM_START = "${";
@@ -137,4 +140,17 @@ public class StringResolver {
         }
     }
 
+	public static boolean isResolvable(String string) {
+		int j = string.indexOf(DELIM_START);
+		if (j == -1) {
+			return false;
+		} else {
+			int k = string.indexOf(DELIM_STOP, j);
+			if (k == -1) {
+				return false;
+			} else {
+				return true;
+			}			
+		}
+	}
 }

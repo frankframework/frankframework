@@ -1,6 +1,9 @@
 /*
  * $Log: FixedResult.java,v $
- * Revision 1.20  2008-08-18 11:20:19  europe\L190409
+ * Revision 1.21  2010-03-04 16:00:20  m168309
+ * added attribute labelStyleSheet
+ *
+ * Revision 1.20  2008/08/18 11:20:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fixed javadoc
  *
  * Revision 1.19  2008/06/03 15:50:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -56,6 +59,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.Misc;
@@ -113,7 +117,7 @@ import org.apache.commons.lang.SystemUtils;
  * @author Johan Verrips
  */
 public class FixedResult extends FixedForwardPipe {
-	public static final String version="$RCSfile: FixedResult.java,v $ $Revision: 1.20 $ $Date: 2008-08-18 11:20:19 $";
+	public static final String version="$RCSfile: FixedResult.java,v $ $Revision: 1.21 $ $Date: 2010-03-04 16:00:20 $";
 	
     private String fileName;
     private String returnString;
@@ -192,7 +196,8 @@ public class FixedResult extends FixedForwardPipe {
 		}
 
 		if (getSubstituteVars()){
-			result=StringResolver.substVars(returnString, session);
+			//result=StringResolver.substVars(returnString, session);
+			result=StringResolver.substVars(returnString, AppConstants.getInstance());
 		}
 
 		if (StringUtils.isNotEmpty(styleSheetName)) {
