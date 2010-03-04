@@ -1,6 +1,9 @@
 /*
  * $Log: MessageSendingPipe.java,v $
- * Revision 1.61  2010-02-25 13:32:03  m168309
+ * Revision 1.62  2010-03-04 15:51:20  m168309
+ * added attribute labelStyleSheet
+ *
+ * Revision 1.61  2010/02/25 13:32:03  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * removed default value and adjusted functioning of resultOnTimeOut attribute
  *
  * Revision 1.60  2010/02/19 13:45:28  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -265,6 +268,7 @@ import org.apache.commons.lang.SystemUtils;
  * <tr><td>{@link #setCorrelationIDXPath(String) correlationIDXPath}</td><td>xpath expression to extract correlationID from message</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setCorrelationIDSessionKey(String) correlationIDSessionKey}</td><td>Key of a PipeLineSession-variable. Is specified, the value of the PipeLineSession variable is used as input for the XpathExpression, instead of the current input message</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setLabelXPath(String) labelXPath}</td><td>xpath expression to extract label from message</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setLabelStyleSheet(String) labelStyleSheet}</td><td>stylesheet to extract label from message</td><td>&nbsp;</td></tr>
  * <tr><td><code>sender.*</td><td>any attribute of the sender instantiated by descendant classes</td><td>&nbsp;</td></tr>
  * </table>
  * <table border="1">
@@ -296,7 +300,7 @@ import org.apache.commons.lang.SystemUtils;
  */
 
 public class MessageSendingPipe extends FixedForwardPipe implements HasSender, HasStatistics, EventThrowing {
-	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.61 $ $Date: 2010-02-25 13:32:03 $";
+	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.62 $ $Date: 2010-03-04 15:51:20 $";
 
 	public static final String PIPE_TIMEOUT_MONITOR_EVENT = "Sender Timeout";
 	public static final String PIPE_CLEAR_TIMEOUT_MONITOR_EVENT = "Sender Received Result on Time";
@@ -318,6 +322,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	private String auditTrailXPath;
 	private String correlationIDXPath;
 	private String labelXPath;
+	private String labelStyleSheet;
 
 	private ISender sender = null;
 	private ICorrelatedPullingListener listener = null;
@@ -445,12 +450,8 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 					throw new ConfigurationException(getLogPrefix(null) + "cannot create transformer for correlationID ["+getCorrelationIDXPath()+"]",e);
 				}
 			}
-			if (StringUtils.isNotEmpty(getLabelXPath())) {
-				try {
-					labelTp = new TransformerPool(XmlUtils.createXPathEvaluatorSource(getLabelXPath()));
-				} catch (TransformerConfigurationException e) {
-					throw new ConfigurationException(getLogPrefix(null) + "cannot create transformer for label ["+getLabelXPath()+"]",e);
-				}
+			if (StringUtils.isNotEmpty(getLabelXPath()) || StringUtils.isNotEmpty(getLabelStyleSheet())) {
+				labelTp=TransformerPool.configureTransformer(getLogPrefix(null),getLabelXPath(), getLabelStyleSheet(),"text",false,null);
 			}
 		}
 		if (getInputValidator()!=null) {
@@ -905,6 +906,13 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	}
 	public String getLabelXPath() {
 		return labelXPath;
+	}
+
+	public void setLabelStyleSheet(String string) {
+		labelStyleSheet = string;
+	}
+	public String getLabelStyleSheet() {
+		return labelStyleSheet;
 	}
 	
 	public void setInputValidator(IPipe inputValidator) {

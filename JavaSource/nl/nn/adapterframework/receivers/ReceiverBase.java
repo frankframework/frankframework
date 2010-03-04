@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.89  2010-02-24 11:27:50  m00f069
+ * Revision 1.90  2010-03-04 15:51:38  m168309
+ * added attribute labelStyleSheet
+ *
+ * Revision 1.89  2010/02/24 11:27:50  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Bugfix: HasSender can return null on getSender (for example in case of an FxfListener).
  *
  * Revision 1.88  2010/02/19 13:45:29  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -520,6 +523,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  * <tr><td>{@link #setExceptionEvent(int) exceptionEvent}</td><td>METT eventnumber, fired when message processing by this Receiver resulted in an exception</td><td>-1 (disabled)</td></tr>
  * <tr><td>{@link #setCorrelationIDXPath(String) correlationIDXPath}</td><td>xpath expression to extract correlationID from message</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setLabelXPath(String) labelXPath}</td><td>xpath expression to extract label from message</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setLabelStyleSheet(String) labelStyleSheet}</td><td>stylesheet to extract label from message</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setHiddenInputSessionKeys(String) hiddenInputSessionKeys}</td><td>comma separated list of keys of session variables which are available when the <code>PipeLineSession</code> is created and of which the value will not be shown in the log (replaced by asterisks)</td><td>&nbsp;</td></tr>
  * </table>
  * </p>
@@ -582,7 +586,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  */
 public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHandler, EventThrowing, IbisExceptionListener, HasSender, HasStatistics, TracingEventNumbers, IThreadCountControllable, BeanFactoryAware {
     
-	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.89 $ $Date: 2010-02-24 11:27:50 $";
+	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.90 $ $Date: 2010-03-04 15:51:38 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -610,6 +614,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	private boolean checkForDuplicates=false;
 	private String correlationIDXPath;
 	private String labelXPath;
+	private String labelStyleSheet;
 
 	public static final String ONERROR_CONTINUE = "continue";
 	public static final String ONERROR_CLOSE = "close";
@@ -1003,12 +1008,8 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 				if (messageLog instanceof HasPhysicalDestination) {
 					info(getLogPrefix()+"has messageLog in "+((HasPhysicalDestination)messageLog).getPhysicalDestinationName());
 				}
-				if (StringUtils.isNotEmpty(getLabelXPath())) {
-					try {
-						labelTp = new TransformerPool(XmlUtils.createXPathEvaluatorSource(getLabelXPath()));
-					} catch (TransformerConfigurationException e) {
-						throw new ConfigurationException(getLogPrefix() + "cannot create transformer for label ["+getLabelXPath()+"]",e);
-					}
+				if (StringUtils.isNotEmpty(getLabelXPath()) || StringUtils.isNotEmpty(getLabelStyleSheet())) {
+					labelTp=TransformerPool.configureTransformer(getLogPrefix(),getLabelXPath(), getLabelStyleSheet(),"text",false,null);
 				}
 			}
 			if (isTransacted()) {
@@ -2350,5 +2351,12 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	}
 	public String getLabelXPath() {
 		return labelXPath;
+	}
+
+	public void setLabelStyleSheet(String string) {
+		labelStyleSheet = string;
+	}
+	public String getLabelStyleSheet() {
+		return labelStyleSheet;
 	}
 }
