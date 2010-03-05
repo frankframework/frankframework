@@ -4,7 +4,7 @@
 	<!--
 		This XSLT adjusts the IBIS configuration as follows:
 		- disable all receiver elements, except those with childs JdbcQueryListener, DirectoryListener and JavaListener
-		- add a default receiver (name="testtool-[adapter name]") with a child JavaListener (serviceName="testtool-[adapter name]") to each adapter (and copy errorStorage and messageLog from disabled receiver when present)
+		- add a default receiver (name="testtool-[adapter name]") with a child JavaListener (serviceName="testtool-[adapter name]") to each adapter (and copy all attributes, errorStorage and messageLog from disabled receiver when present)
 		- disable all listener elements which have a parent pipe
 		- stub all sender elements, which have a parent pipe, by an IbisJavaSender (serviceName="testtool-[pipe name]"), except the DirectQuerySender, FixedQuerySender, XmlQuerySender, DelaySender, EchoSender, IbisLocalSender, LogSender, ParallelSenders, SenderSeries, SenderWrapper and XsltSender
 		- disable all elements sapSystems
@@ -39,16 +39,7 @@
 					<xsl:attribute name="name">
 						<xsl:value-of select="concat('testtool-',parent::*[name()='adapter']/@name)" />
 					</xsl:attribute>
-					<xsl:if test="parent::*[name()='adapter']/receiver/@labelXPath">
-						<xsl:attribute name="labelXPath">
-							<xsl:value-of select="parent::*[name()='adapter']/receiver/@labelXPath" />
-						</xsl:attribute>
-					</xsl:if>
-					<xsl:if test="parent::*[name()='adapter']/receiver/@labelStyleSheet">
-						<xsl:attribute name="labelStyleSheet">
-							<xsl:value-of select="parent::*[name()='adapter']/receiver/@labelStyleSheet" />
-						</xsl:attribute>
-					</xsl:if>
+					<xsl:apply-templates select="parent::*[name()='adapter']/receiver/@*" />
 					<xsl:element name="listener">
 						<xsl:attribute name="className">nl.nn.adapterframework.receivers.JavaListener</xsl:attribute>
 						<xsl:attribute name="serviceName">
