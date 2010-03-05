@@ -1,6 +1,9 @@
 /*
  * $Log: MessageSendingPipe.java,v $
- * Revision 1.62  2010-03-04 15:51:20  m168309
+ * Revision 1.63  2010-03-05 15:49:51  m168309
+ * added attribute correlationIDStyleSheet
+ *
+ * Revision 1.62  2010/03/04 15:51:20  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added attribute labelStyleSheet
  *
  * Revision 1.61  2010/02/25 13:32:03  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -266,7 +269,8 @@ import org.apache.commons.lang.SystemUtils;
  * <tr><td>{@link #setLinkMethod(String) linkMethod}</td><td>Indicates wether the server uses the correlationID or the messageID in the correlationID field of the reply. This requirers the sender to have set the correlationID at the time of sending.</td><td>CORRELATIONID</td></tr>
  * <tr><td>{@link #setAuditTrailXPath(String) auditTrailXPath}</td><td>xpath expression to extract audit trail from message</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setCorrelationIDXPath(String) correlationIDXPath}</td><td>xpath expression to extract correlationID from message</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setCorrelationIDSessionKey(String) correlationIDSessionKey}</td><td>Key of a PipeLineSession-variable. Is specified, the value of the PipeLineSession variable is used as input for the XpathExpression, instead of the current input message</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setCorrelationIDStyleSheet(String) correlationIDStyleSheet}</td><td>stylesheet to extract correlationID from message</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setCorrelationIDSessionKey(String) correlationIDSessionKey}</td><td>Key of a PipeLineSession-variable. Is specified, the value of the PipeLineSession variable is used as input for the XpathExpression or StyleSheet, instead of the current input message</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setLabelXPath(String) labelXPath}</td><td>xpath expression to extract label from message</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setLabelStyleSheet(String) labelStyleSheet}</td><td>stylesheet to extract label from message</td><td>&nbsp;</td></tr>
  * <tr><td><code>sender.*</td><td>any attribute of the sender instantiated by descendant classes</td><td>&nbsp;</td></tr>
@@ -300,7 +304,7 @@ import org.apache.commons.lang.SystemUtils;
  */
 
 public class MessageSendingPipe extends FixedForwardPipe implements HasSender, HasStatistics, EventThrowing {
-	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.62 $ $Date: 2010-03-04 15:51:20 $";
+	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.63 $ $Date: 2010-03-05 15:49:51 $";
 
 	public static final String PIPE_TIMEOUT_MONITOR_EVENT = "Sender Timeout";
 	public static final String PIPE_CLEAR_TIMEOUT_MONITOR_EVENT = "Sender Received Result on Time";
@@ -321,6 +325,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	private String checkRootTag;
 	private String auditTrailXPath;
 	private String correlationIDXPath;
+	private String correlationIDStyleSheet;
 	private String labelXPath;
 	private String labelStyleSheet;
 
@@ -443,12 +448,8 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 					throw new ConfigurationException(getLogPrefix(null) + "cannot create transformer for audittrail ["+getAuditTrailXPath()+"]",e);
 				}
 			}
-			if (StringUtils.isNotEmpty(getCorrelationIDXPath())) {
-				try {
-					correlationIDTp = new TransformerPool(XmlUtils.createXPathEvaluatorSource(getCorrelationIDXPath()));
-				} catch (TransformerConfigurationException e) {
-					throw new ConfigurationException(getLogPrefix(null) + "cannot create transformer for correlationID ["+getCorrelationIDXPath()+"]",e);
-				}
+			if (StringUtils.isNotEmpty(getCorrelationIDXPath()) || StringUtils.isNotEmpty(getCorrelationIDStyleSheet())) {
+				correlationIDTp=TransformerPool.configureTransformer(getLogPrefix(null),getCorrelationIDXPath(), getCorrelationIDStyleSheet(),"text",false,null);
 			}
 			if (StringUtils.isNotEmpty(getLabelXPath()) || StringUtils.isNotEmpty(getLabelStyleSheet())) {
 				labelTp=TransformerPool.configureTransformer(getLogPrefix(null),getLabelXPath(), getLabelStyleSheet(),"text",false,null);
@@ -899,6 +900,13 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	}
 	public String getCorrelationIDXPath() {
 		return correlationIDXPath;
+	}
+
+	public void setCorrelationIDStyleSheet(String string) {
+		correlationIDStyleSheet = string;
+	}
+	public String getCorrelationIDStyleSheet() {
+		return correlationIDStyleSheet;
 	}
 
 	public void setLabelXPath(String string) {

@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.90  2010-03-04 15:51:38  m168309
+ * Revision 1.91  2010-03-05 15:49:44  m168309
+ * added attribute correlationIDStyleSheet
+ *
+ * Revision 1.90  2010/03/04 15:51:38  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added attribute labelStyleSheet
  *
  * Revision 1.89  2010/02/24 11:27:50  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -522,6 +525,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  * <tr><td>{@link #setAfterEvent(int) afterEvent}</td>        <td>METT eventnumber, fired just after message processing by this Receiver is finished</td><td>-1 (disabled)</td></tr>
  * <tr><td>{@link #setExceptionEvent(int) exceptionEvent}</td><td>METT eventnumber, fired when message processing by this Receiver resulted in an exception</td><td>-1 (disabled)</td></tr>
  * <tr><td>{@link #setCorrelationIDXPath(String) correlationIDXPath}</td><td>xpath expression to extract correlationID from message</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setCorrelationIDStyleSheet(String) correlationIDStyleSheet}</td><td>stylesheet to extract correlationID from message</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setLabelXPath(String) labelXPath}</td><td>xpath expression to extract label from message</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setLabelStyleSheet(String) labelStyleSheet}</td><td>stylesheet to extract label from message</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setHiddenInputSessionKeys(String) hiddenInputSessionKeys}</td><td>comma separated list of keys of session variables which are available when the <code>PipeLineSession</code> is created and of which the value will not be shown in the log (replaced by asterisks)</td><td>&nbsp;</td></tr>
@@ -586,7 +590,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  */
 public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHandler, EventThrowing, IbisExceptionListener, HasSender, HasStatistics, TracingEventNumbers, IThreadCountControllable, BeanFactoryAware {
     
-	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.90 $ $Date: 2010-03-04 15:51:38 $";
+	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.91 $ $Date: 2010-03-05 15:49:44 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -613,6 +617,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	private String hiddenInputSessionKeys=null;
 	private boolean checkForDuplicates=false;
 	private String correlationIDXPath;
+	private String correlationIDStyleSheet;
 	private String labelXPath;
 	private String labelStyleSheet;
 
@@ -1029,12 +1034,8 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 				}
 			} 
 
-			if (StringUtils.isNotEmpty(getCorrelationIDXPath())) {
-				try {
-					correlationIDTp = new TransformerPool(XmlUtils.createXPathEvaluatorSource(getCorrelationIDXPath()));
-				} catch (TransformerConfigurationException e) {
-					throw new ConfigurationException(getLogPrefix() + "cannot create transformer for correlationID ["+getCorrelationIDXPath()+"]",e);
-				}
+			if (StringUtils.isNotEmpty(getCorrelationIDXPath()) || StringUtils.isNotEmpty(getCorrelationIDStyleSheet())) {
+				correlationIDTp=TransformerPool.configureTransformer(getLogPrefix(),getCorrelationIDXPath(), getCorrelationIDStyleSheet(),"text",false,null);
 			}
 
 			if (adapter != null) {
@@ -1307,12 +1308,18 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 				throw new ListenerException(getLogPrefix()+"could not extract businessCorrelationId",e);
 			}
 			if (StringUtils.isEmpty(businessCorrelationId)) {
+				String cidText;
+				if (StringUtils.isNotEmpty(getCorrelationIDXPath())) {
+					cidText = "xpathExpression ["+getCorrelationIDXPath()+"]";
+				} else {
+					cidText = "styleSheet ["+getCorrelationIDStyleSheet()+"]";
+				}
 				if (StringUtils.isNotEmpty(technicalCorrelationId)) {
-					log.warn(getLogPrefix()+"did not find correlationId using XpathExpression ["+getCorrelationIDXPath()+"], reverting to correlationId of transfer ["+technicalCorrelationId+"]");
+					log.warn(getLogPrefix()+"did not find correlationId using "+cidText+", reverting to correlationId of transfer ["+technicalCorrelationId+"]");
 					businessCorrelationId=technicalCorrelationId;
 				} else {
 					if (StringUtils.isNotEmpty(messageId)) {
-						log.warn(getLogPrefix()+"did not find correlationId using XpathExpression ["+getCorrelationIDXPath()+"] or technical correlationId, reverting to messageId ["+messageId+"]");
+						log.warn(getLogPrefix()+"did not find correlationId using "+cidText+" or technical correlationId, reverting to messageId ["+messageId+"]");
 						businessCorrelationId=messageId;
 					}
 				}
@@ -2344,6 +2351,13 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	}
 	public String getCorrelationIDXPath() {
 		return correlationIDXPath;
+	}
+
+	public void setCorrelationIDStyleSheet(String string) {
+		correlationIDStyleSheet = string;
+	}
+	public String getCorrelationIDStyleSheet() {
+		return correlationIDStyleSheet;
 	}
 
 	public void setLabelXPath(String string) {
