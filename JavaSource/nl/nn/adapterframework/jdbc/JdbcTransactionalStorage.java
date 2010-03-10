@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcTransactionalStorage.java,v $
- * Revision 1.43  2010-02-11 14:27:00  m168309
+ * Revision 1.44  2010-03-10 11:05:09  m168309
+ * increased length of CORRELATIONID
+ *
+ * Revision 1.43  2010/02/11 14:27:00  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * verify database configuration
  *
  * Revision 1.42  2010/02/05 08:03:35  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -221,7 +224,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 	SLOTID VARCHAR2(100 CHAR),
 	HOST VARCHAR2(100 CHAR),
 	MESSAGEID VARCHAR2(100 CHAR),
-	CORRELATIONID VARCHAR2(100 CHAR),
+	CORRELATIONID VARCHAR2(256 CHAR),
 	MESSAGEDATE TIMESTAMP(6),
 	COMMENTS VARCHAR2(1000 CHAR),
 	MESSAGE BLOB,
@@ -249,7 +252,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 	  slotId VARCHAR(100), 
 	  host VARCHAR(100),
 	  messageId VARCHAR(100), 
-	  correlationId VARCHAR(100), 
+	  correlationId VARCHAR(256), 
 	  messageDate TIMESTAMP, 
 	  comments VARCHAR(1000), 
 	  message LONG BINARY),
@@ -274,7 +277,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  * @since 	4.1
  */
 public class JdbcTransactionalStorage extends JdbcFacade implements ITransactionalStorage {
-	public static final String version = "$RCSfile: JdbcTransactionalStorage.java,v $ $Revision: 1.43 $ $Date: 2010-02-11 14:27:00 $";
+	public static final String version = "$RCSfile: JdbcTransactionalStorage.java,v $ $Revision: 1.44 $ $Date: 2010-03-10 11:05:09 $";
 
 	public final static String TYPE_ERRORSTORAGE="E";
 	public final static String TYPE_MESSAGELOG_PIPE="L";
@@ -313,6 +316,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	private String order=AppConstants.getInstance().getString("browse.messages.order","");
    
 	protected static final int MAXIDLEN=100;		
+	protected static final int MAXCIDLEN=256;		
 	protected static final int MAXCOMMENTLEN=1000;		
 	protected static final int MAXLABELLEN=1000;		
     // the following values are only used when the table is created. 
@@ -640,7 +644,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 						(StringUtils.isNotEmpty(getSlotId())? getSlotIdField()+" "+getTextFieldType()+"("+MAXIDLEN+"), ":"")+
 						(StringUtils.isNotEmpty(getHostField())?getHostField()+" "+getTextFieldType()+"("+MAXIDLEN+"), ":"")+
 						getIdField()+" "+getTextFieldType()+"("+MAXIDLEN+"), "+
-						getCorrelationIdField()+" "+getTextFieldType()+"("+MAXIDLEN+"), "+
+						getCorrelationIdField()+" "+getTextFieldType()+"("+MAXCIDLEN+"), "+
 						getDateField()+" "+getDateFieldType()+", "+
 						getCommentField()+" "+getTextFieldType()+"("+MAXCOMMENTLEN+"), "+
 						getMessageField()+" "+getMessageFieldType()+", "+
@@ -856,8 +860,8 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 				if (messageId.length()>MAXIDLEN) {
 					messageId=messageId.substring(0,MAXIDLEN);
 				}
-				if (correlationId.length()>MAXIDLEN) {
-					correlationId=correlationId.substring(0,MAXIDLEN);
+				if (correlationId.length()>MAXCIDLEN) {
+					correlationId=correlationId.substring(0,MAXCIDLEN);
 				}
 				if (comments!=null && comments.length()>MAXCOMMENTLEN) {
 					comments=comments.substring(0,MAXCOMMENTLEN);
