@@ -1,6 +1,9 @@
 /*
  * $Log: ForEachChildElementPipe.java,v $
- * Revision 1.22  2010-02-25 13:41:54  m168309
+ * Revision 1.23  2010-03-10 10:16:03  m168309
+ * added TimeOutException to iterateInput
+ *
+ * Revision 1.22  2010/02/25 13:41:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted javadoc for resultOnTimeOut attribute
  *
  * Revision 1.21  2010/02/03 14:29:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -60,6 +63,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -132,10 +136,10 @@ import org.xml.sax.helpers.DefaultHandler;
  * @author Gerrit van Brakel
  * @since 4.6.1
  * 
- * $Id: ForEachChildElementPipe.java,v 1.22 2010-02-25 13:41:54 m168309 Exp $
+ * $Id: ForEachChildElementPipe.java,v 1.23 2010-03-10 10:16:03 m168309 Exp $
  */
 public class ForEachChildElementPipe extends IteratingPipe {
-	public static final String version="$RCSfile: ForEachChildElementPipe.java,v $ $Revision: 1.22 $ $Date: 2010-02-25 13:41:54 $";
+	public static final String version="$RCSfile: ForEachChildElementPipe.java,v $ $Revision: 1.23 $ $Date: 2010-03-10 10:16:03 $";
 
 	private String elementXPathExpression=null;
 	private boolean processFile=false;
@@ -185,6 +189,7 @@ public class ForEachChildElementPipe extends IteratingPipe {
 		int startLength;		
 		boolean contentSeen;
 		boolean stopRequested;
+		TimeOutException timeOutException;
 		
 		public ItemCallbackCallingHandler(ItemCallback callback) {
 			this.callback=callback;
@@ -235,6 +240,9 @@ public class ForEachChildElementPipe extends IteratingPipe {
 					}
 					itemCounter=0;
 				} catch (Exception e) {
+					if (e instanceof TimeOutException) {
+						timeOutException = (TimeOutException)e;
+					}
 					rootException =e;
 					Throwable rootCause = e;
 					while (rootCause.getCause()!=null) {
@@ -273,10 +281,13 @@ public class ForEachChildElementPipe extends IteratingPipe {
 			return stopRequested;
 		}
 
+		public TimeOutException getTimeOutException() {
+			return timeOutException;
+		}
 	}
 
 
-	protected void iterateInput(Object input, PipeLineSession session, String correlationID, Map threadContext, ItemCallback callback) throws SenderException {
+	protected void iterateInput(Object input, PipeLineSession session, String correlationID, Map threadContext, ItemCallback callback) throws SenderException, TimeOutException {
 		Reader reader=null;
 		try {
 			if (input instanceof Reader) {
@@ -307,6 +318,9 @@ public class ForEachChildElementPipe extends IteratingPipe {
 				transformedStream.setHandler(handler);
 				getExtractElementsTp().transform(src, transformedStream, null);
 			} catch (Exception e) {
+				if (handler.getTimeOutException()!=null) {
+					throw handler.getTimeOutException();
+				}
 				if (!handler.isStopRequested()) {
 					throw new SenderException("Could not extract list of elements using xpath ["+getElementXPathExpression()+"]",e);
 				}
@@ -320,6 +334,9 @@ public class ForEachChildElementPipe extends IteratingPipe {
 					XmlUtils.parseXml(handler,(String)input);
 				}
 			} catch (Exception e) {
+				if (handler.getTimeOutException()!=null) {
+					throw handler.getTimeOutException();
+				}
 				if (!handler.isStopRequested()) {
 					throw new SenderException("Could not parse input",e);
 				}

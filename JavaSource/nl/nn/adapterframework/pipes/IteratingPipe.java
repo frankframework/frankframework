@@ -1,6 +1,9 @@
 /*
  * $Log: IteratingPipe.java,v $
- * Revision 1.16  2010-02-25 13:41:54  m168309
+ * Revision 1.17  2010-03-10 10:15:19  m168309
+ * added TimeOutException to iterateInput
+ *
+ * Revision 1.16  2010/02/25 13:41:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted javadoc for resultOnTimeOut attribute
  *
  * Revision 1.15  2010/02/03 14:28:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -175,7 +178,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public abstract class IteratingPipe extends MessageSendingPipe {
-	public static final String version="$RCSfile: IteratingPipe.java,v $ $Revision: 1.16 $ $Date: 2010-02-25 13:41:54 $";
+	public static final String version="$RCSfile: IteratingPipe.java,v $ $Revision: 1.17 $ $Date: 2010-03-10 10:15:19 $";
 
 	private String stopConditionXPathExpression=null;
 	private boolean removeXmlDeclarationInResults=false;
@@ -225,7 +228,7 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 		return null;
 	}
 
-	protected void iterateInput(Object input, PipeLineSession session, String correlationID, Map threadContext, ItemCallback callback) throws SenderException {
+	protected void iterateInput(Object input, PipeLineSession session, String correlationID, Map threadContext, ItemCallback callback) throws SenderException, TimeOutException {
 		 throw new SenderException("Could not obtain iterator and no iterateInput method provided by class ["+ClassUtils.nameOf(this)+"]");
 	}
 
