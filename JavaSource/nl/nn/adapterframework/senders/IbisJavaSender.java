@@ -1,11 +1,7 @@
 /*
  * $Log: IbisJavaSender.java,v $
- * Revision 1.4  2010-02-19 13:45:27  m00f069
- * - Added support for (sender) stubbing by debugger
- * - Added reply listener and reply sender to debugger
- * - Use IbisDebuggerDummy by default
- * - Enabling/disabling debugger handled by debugger instead of log level
- * - Renamed messageId to correlationId in debugger interface
+ * Revision 1.5  2010-03-10 14:30:05  m168309
+ * rolled back testtool adjustments (IbisDebuggerDummy)
  *
  * Revision 1.3  2009/12/04 18:23:34  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Added ibisDebugger.senderAbort and ibisDebugger.pipeRollback
@@ -90,37 +86,34 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 	}
 
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
-		message = ibisDebugger.senderInput(this, correlationID, message);
+		message = debugSenderInput(correlationID, message);
 		String result = null;
 		try {
-			if (!ibisDebugger.stubSender(this, correlationID)) {
-				HashMap context = null;
-				try {
-					if (paramList!=null) {
-						context = prc.getValueMap(paramList);
-					} else {
-						context=new HashMap();			
-					}
-					DispatcherManager dm = DispatcherManagerFactory.getDispatcherManager();
-					result = dm.processRequest(getServiceName(),correlationID, message, context);
-				} catch (ParameterException e) {
-					throw new SenderException(getLogPrefix()+"exception evaluating parameters",e);
-				} catch (Exception e) {
-					throw new SenderException(getLogPrefix()+"exception processing message using request processor ["+getServiceName()+"]",e);
-				} finally {
-					if (log.isDebugEnabled() && StringUtils.isNotEmpty(getReturnedSessionKeys())) {
-						log.debug("returning values of session keys ["+getReturnedSessionKeys()+"]");
-					}
-					if (prc!=null) {
-						Misc.copyContext(getReturnedSessionKeys(),context, prc.getSession());
-					}
+			HashMap context = null;
+			try {
+				if (paramList!=null) {
+					context = prc.getValueMap(paramList);
+				} else {
+					context=new HashMap();			
+				}
+				DispatcherManager dm = DispatcherManagerFactory.getDispatcherManager();
+				result = dm.processRequest(getServiceName(),correlationID, message, context);
+			} catch (ParameterException e) {
+				throw new SenderException(getLogPrefix()+"exception evaluating parameters",e);
+			} catch (Exception e) {
+				throw new SenderException(getLogPrefix()+"exception processing message using request processor ["+getServiceName()+"]",e);
+			} finally {
+				if (log.isDebugEnabled() && StringUtils.isNotEmpty(getReturnedSessionKeys())) {
+					log.debug("returning values of session keys ["+getReturnedSessionKeys()+"]");
+				}
+				if (prc!=null) {
+					Misc.copyContext(getReturnedSessionKeys(),context, prc.getSession());
 				}
 			}
 		} catch(Throwable throwable) {
-			throwable = ibisDebugger.senderAbort(this, correlationID, throwable);
-			throwSenderOrTimeOutException(throwable);
+			debugSenderAbort(correlationID, throwable);
 		}
-		return ibisDebugger.senderOutput(this, correlationID, result);
+		return debugSenderOutput(correlationID, result);
 	}
 
 

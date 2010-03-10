@@ -1,11 +1,7 @@
 /*
  * $Log: Parameter.java,v $
- * Revision 1.35  2010-02-19 13:45:29  m00f069
- * - Added support for (sender) stubbing by debugger
- * - Added reply listener and reply sender to debugger
- * - Use IbisDebuggerDummy by default
- * - Enabling/disabling debugger handled by debugger instead of log level
- * - Renamed messageId to correlationId in debugger interface
+ * Revision 1.36  2010-03-10 14:30:06  m168309
+ * rolled back testtool adjustments (IbisDebuggerDummy)
  *
  * Revision 1.34  2009/11/20 10:18:17  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * facility to override fixeddate
@@ -214,7 +210,7 @@ import org.w3c.dom.Node;
  * @author Gerrit van Brakel
  */
 public class Parameter implements INamedObject, IWithParameters {
-	public static final String version="$RCSfile: Parameter.java,v $ $Revision: 1.35 $ $Date: 2010-02-19 13:45:29 $";
+	public static final String version="$RCSfile: Parameter.java,v $ $Revision: 1.36 $ $Date: 2010-03-10 14:30:06 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private IbisDebugger ibisDebugger;
@@ -385,9 +381,7 @@ public class Parameter implements INamedObject, IWithParameters {
 			log.debug("Parameter ["+getName()+"] resolved to defaultvalue ["+(isHidden()?hide(getDefaultValue()):getDefaultValue())+"]");
 			result=getDefaultValue();
 		}
-		if (ibisDebugger != null) {
-			result = ibisDebugger.parameterResolvedTo(this, prc.getSession().getMessageId(), result);
-		}
+		if (log.isDebugEnabled() && ibisDebugger!=null) result = ibisDebugger.parameterResolvedTo(this, prc.getSession().getMessageId(), result);
 		if (result !=null && result instanceof String) {
 			if (TYPE_NODE.equals(getType())) {
 				try {

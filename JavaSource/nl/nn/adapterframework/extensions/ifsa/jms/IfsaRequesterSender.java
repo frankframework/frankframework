@@ -1,11 +1,7 @@
 /*
  * $Log: IfsaRequesterSender.java,v $
- * Revision 1.18  2010-02-19 13:45:28  m00f069
- * - Added support for (sender) stubbing by debugger
- * - Added reply listener and reply sender to debugger
- * - Use IbisDebuggerDummy by default
- * - Enabling/disabling debugger handled by debugger instead of log level
- * - Renamed messageId to correlationId in debugger interface
+ * Revision 1.19  2010-03-10 14:30:06  m168309
+ * rolled back testtool adjustments (IbisDebuggerDummy)
  *
  * Revision 1.17  2010/01/28 15:06:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed version string
@@ -163,14 +159,12 @@ import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.debug.IbisDebugger;
 import nl.nn.adapterframework.extensions.ifsa.IfsaException;
 import nl.nn.adapterframework.extensions.ifsa.IfsaMessageProtocolEnum;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
-import nl.nn.adapterframework.senders.SenderBase;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
@@ -219,7 +213,6 @@ import com.ing.ifsa.IFSATimeOutMessage;
  * @version Id
 */
 public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParameters, HasStatistics {
-	private IbisDebugger ibisDebugger;
 
 	private boolean throwExceptions=true;	
 	protected String bifNameSessionKey;
@@ -319,50 +312,41 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 	}
 
 	public String sendMessage(String dummyCorrelationId, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
-		message = ibisDebugger.senderInput(this, dummyCorrelationId, message);
-		String result = null;
-		try {
-			if (!ibisDebugger.stubSender(this, dummyCorrelationId)) {
-				try {
-					if (isSynchronous()) {
-						if (JtaUtil.inTransaction()) {
-							throw new SenderException("cannot send RR message from within a transaction");
-						}
-					} else {
-						if (!JtaUtil.inTransaction()) {
-							log.warn("FF messages should be sent from within a transaction");
-						}
-					}
-				} catch (Exception e) { // N.B. do not move this catch clause down; this will catch TimeOutExceptions unwantedly
-					throw new SenderException(e);
-				}
 		
-				ParameterValueList paramValueList;
-				try {
-					paramValueList = prc.getValues(paramList);
-				} catch (ParameterException e) {
-					throw new SenderException(getLogPrefix()+"caught ParameterException in sendMessage() determining serviceId",e);
+		try {
+			if (isSynchronous()) {
+				if (JtaUtil.inTransaction()) {
+					throw new SenderException("cannot send RR message from within a transaction");
 				}
-				Map params = new HashMap();
-				if (paramValueList != null && paramList != null) {
-					for (int i = 0; i < paramList.size(); i++) {
-						String key = paramList.getParameter(i).getName();
-						String value = paramValueList.getParameterValue(i).asStringValue(null);
-						params.put(key, value);
-					}
+			} else {
+				if (!JtaUtil.inTransaction()) {
+					log.warn("FF messages should be sent from within a transaction");
 				}
-				//IFSAMessage originatingMessage = (IFSAMessage)prc.getSession().get(PushingIfsaProviderListener.THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY);
-				String BIF = (String)prc.getSession().get(getBifNameSessionKey());
-				if (StringUtils.isEmpty(BIF)) {
-					BIF=(String)prc.getSession().get(PushingIfsaProviderListener.THREAD_CONTEXT_BIFNAME_KEY);
-				}
-				result = sendMessage(dummyCorrelationId, message, params,BIF,null);
 			}
-		} catch(Throwable throwable) {
-			throwable = ibisDebugger.senderAbort(this, dummyCorrelationId, throwable);
-			SenderBase.throwSenderOrTimeOutException(this, throwable);
+		} catch (Exception e) { // N.B. do not move this catch clause down; this will catch TimeOutExceptions unwantedly
+			throw new SenderException(e);
 		}
-		return ibisDebugger.senderOutput(this, dummyCorrelationId, result);
+
+		ParameterValueList paramValueList;
+		try {
+			paramValueList = prc.getValues(paramList);
+		} catch (ParameterException e) {
+			throw new SenderException(getLogPrefix()+"caught ParameterException in sendMessage() determining serviceId",e);
+		}
+		Map params = new HashMap();
+		if (paramValueList != null && paramList != null) {
+			for (int i = 0; i < paramList.size(); i++) {
+				String key = paramList.getParameter(i).getName();
+				String value = paramValueList.getParameterValue(i).asStringValue(null);
+				params.put(key, value);
+			}
+		}
+		//IFSAMessage originatingMessage = (IFSAMessage)prc.getSession().get(PushingIfsaProviderListener.THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY);
+		String BIF = (String)prc.getSession().get(getBifNameSessionKey());
+		if (StringUtils.isEmpty(BIF)) {
+			BIF=(String)prc.getSession().get(PushingIfsaProviderListener.THREAD_CONTEXT_BIFNAME_KEY);
+		}
+		return sendMessage(dummyCorrelationId, message, params,BIF,null);
 	}
 
 	public String sendMessage(String dummyCorrelationId, String message, Map params) throws SenderException, TimeOutException {
@@ -538,9 +522,5 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 	}
 	public String getBifNameSessionKey() {
 		return bifNameSessionKey;
-	}
-	
-	public void setIbisDebugger(IbisDebugger ibisDebugger) {
-		this.ibisDebugger = ibisDebugger;
 	}
 }

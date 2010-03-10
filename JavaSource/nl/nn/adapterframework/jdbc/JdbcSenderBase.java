@@ -1,11 +1,7 @@
 /*
  * $Log: JdbcSenderBase.java,v $
- * Revision 1.8  2010-02-19 13:45:28  m00f069
- * - Added support for (sender) stubbing by debugger
- * - Added reply listener and reply sender to debugger
- * - Use IbisDebuggerDummy by default
- * - Enabling/disabling debugger handled by debugger instead of log level
- * - Renamed messageId to correlationId in debugger interface
+ * Revision 1.9  2010-03-10 14:30:05  m168309
+ * rolled back testtool adjustments (IbisDebuggerDummy)
  *
  * Revision 1.7  2009/04/01 08:22:10  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added TimeOutException to SendMessage()
@@ -35,11 +31,9 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.debug.IbisDebugger;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-import nl.nn.adapterframework.senders.SenderBase;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 
@@ -67,9 +61,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * @since 	4.2.h
  */
 public abstract class JdbcSenderBase extends JdbcFacade implements ISenderWithParameters {
-	public static final String version="$RCSfile: JdbcSenderBase.java,v $ $Revision: 1.8 $ $Date: 2010-02-19 13:45:28 $";
-
-	private IbisDebugger ibisDebugger;
+	public static final String version="$RCSfile: JdbcSenderBase.java,v $ $Revision: 1.9 $ $Date: 2010-03-10 14:30:05 $";
 
 	protected Connection connection=null;
 	protected ParameterList paramList = null;
@@ -130,38 +122,29 @@ public abstract class JdbcSenderBase extends JdbcFacade implements ISenderWithPa
 	}
 
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
-		message = ibisDebugger.senderInput(this, correlationID, message);
-		String result = null;
-		try {
-			if (!ibisDebugger.stubSender(this, correlationID)) {
-				if (isConnectionsArePooled()) {
-					Connection c = null;
+		if (isConnectionsArePooled()) {
+			Connection c = null;
+			try {
+				c = getConnection();
+				String result = sendMessage(c, correlationID, message, prc);
+				return result;
+			} catch (JdbcException e) {
+				throw new SenderException(e);
+			} finally {
+				if (c!=null) {
 					try {
-						c = getConnection();
-						result = sendMessage(c, correlationID, message, prc);
-					} catch (JdbcException e) {
-						throw new SenderException(e);
-					} finally {
-						if (c!=null) {
-							try {
-								c.close();
-							} catch (SQLException e) {
-								log.warn(new SenderException(getLogPrefix() + "caught exception closing sender after sending message, ID=["+correlationID+"]", e));
-							}
-						}
-					}
-					
-				} else {
-					synchronized (connection) {
-						result = sendMessage(connection, correlationID, message, prc);
+						c.close();
+					} catch (SQLException e) {
+						log.warn(new SenderException(getLogPrefix() + "caught exception closing sender after sending message, ID=["+correlationID+"]", e));
 					}
 				}
 			}
-		} catch(Throwable throwable) {
-			throwable = ibisDebugger.senderAbort(this, correlationID, throwable);
-			SenderBase.throwSenderOrTimeOutException(this, throwable);
+			
+		} else {
+			synchronized (connection) {
+				return sendMessage(connection, correlationID, message, prc);
+			}
 		}
-		return ibisDebugger.senderOutput(this, correlationID, result);
 	}
 
 	protected abstract String sendMessage(Connection connection, String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException;
@@ -175,8 +158,5 @@ public abstract class JdbcSenderBase extends JdbcFacade implements ISenderWithPa
         return result;
 	}
 	
-	public void setIbisDebugger(IbisDebugger ibisDebugger) {
-		this.ibisDebugger = ibisDebugger;
-	}
 
 }

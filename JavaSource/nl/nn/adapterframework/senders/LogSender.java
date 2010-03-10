@@ -1,11 +1,7 @@
 /*
  * $Log: LogSender.java,v $
- * Revision 1.5  2010-02-19 13:45:27  m00f069
- * - Added support for (sender) stubbing by debugger
- * - Added reply listener and reply sender to debugger
- * - Use IbisDebuggerDummy by default
- * - Enabling/disabling debugger handled by debugger instead of log level
- * - Renamed messageId to correlationId in debugger interface
+ * Revision 1.6  2010-03-10 14:30:04  m168309
+ * rolled back testtool adjustments (IbisDebuggerDummy)
  *
  * Revision 1.4  2009/12/04 18:23:34  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Added ibisDebugger.senderAbort and ibisDebugger.pipeRollback
@@ -65,23 +61,20 @@ public class LogSender extends SenderWithParametersBase implements IParameterHan
 	}
 
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
-		message = ibisDebugger.senderInput(this, correlationID, message);
+		message = debugSenderInput(correlationID, message);
 		try {
-			if (!ibisDebugger.stubSender(this, correlationID)) {
-				log.log(level,message);
-				if (prc != null) {
-					try {
-						prc.forAllParameters(paramList, this);
-					} catch (ParameterException e) {
-						throw new SenderException("exception determining value of parameters", e);
-					}
+			log.log(level,message);
+			if (prc != null) {
+				try {
+					prc.forAllParameters(paramList, this);
+				} catch (ParameterException e) {
+					throw new SenderException("exception determining value of parameters", e);
 				}
 			}
 		} catch(Throwable throwable) {
-			throwable = ibisDebugger.senderAbort(this, correlationID, throwable);
-			throwSenderOrTimeOutException(throwable);
+			debugSenderAbort(correlationID, throwable);
 		}
-		return ibisDebugger.senderOutput(this, correlationID, message);
+		return debugSenderOutput(correlationID, message);
 	}
 
 	public void handleParam(String paramName, Object value) {

@@ -1,11 +1,7 @@
 /*
  * $Log: IsolatedServiceCaller.java,v $
- * Revision 1.10  2010-02-19 13:45:28  m00f069
- * - Added support for (sender) stubbing by debugger
- * - Added reply listener and reply sender to debugger
- * - Use IbisDebuggerDummy by default
- * - Enabling/disabling debugger handled by debugger instead of log level
- * - Renamed messageId to correlationId in debugger interface
+ * Revision 1.11  2010-03-10 14:30:05  m168309
+ * rolled back testtool adjustments (IbisDebuggerDummy)
  *
  * Revision 1.9  2009/11/18 17:28:04  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Added senders to IbisDebugger
@@ -39,7 +35,6 @@ package nl.nn.adapterframework.pipes;
 
 import java.util.HashMap;
 
-import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.debug.IbisDebugger;
 import nl.nn.adapterframework.receivers.JavaListener;
@@ -57,11 +52,10 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class IsolatedServiceCaller extends Thread {
-	public static final String version="$RCSfile: IsolatedServiceCaller.java,v $ $Revision: 1.10 $ $Date: 2010-02-19 13:45:28 $";
+	public static final String version="$RCSfile: IsolatedServiceCaller.java,v $ $Revision: 1.11 $ $Date: 2010-03-10 14:30:05 $";
 	protected Logger log = LogUtil.getLogger(this);
 	private IbisDebugger ibisDebugger;
 
-	ISender sender;
 	String serviceName;
 	String correlationID;
 	String message;
@@ -72,27 +66,28 @@ public class IsolatedServiceCaller extends Thread {
 	String threadID;
 	
 	
-	private IsolatedServiceCaller(ISender sender, String serviceName, String correlationID, String message, HashMap context, boolean targetIsJavaListener, IbisDebugger ibisDebugger) {
+	private IsolatedServiceCaller(String serviceName, String correlationID, String message, HashMap context, boolean targetIsJavaListener, IbisDebugger ibisDebugger) {
 		super();
 		threadID = Misc.createSimpleUUID();
 		setName(serviceName + " " + threadID);
-		this.sender=sender;
 		this.serviceName= serviceName;
 		this.correlationID=correlationID;
 		this.message=message;
 		this.context=context;
 		this.targetIsJavaListener=targetIsJavaListener;
 		this.ibisDebugger = ibisDebugger;
-		ibisDebugger.createThread(sender, threadID, correlationID);
+		if (log.isDebugEnabled() && ibisDebugger!=null) {
+			ibisDebugger.createThread(threadID, correlationID);
+		}
 	}
 
-	public static void callServiceAsynchronous(ISender sender, String serviceName, String correlationID, String message, HashMap context, boolean targetIsJavaListener, IbisDebugger ibisDebugger) throws ListenerException {
-		IsolatedServiceCaller call = new IsolatedServiceCaller(sender, serviceName, correlationID,  message,  context, targetIsJavaListener, ibisDebugger);
+	public static void callServiceAsynchronous(String serviceName, String correlationID, String message, HashMap context, boolean targetIsJavaListener, IbisDebugger ibisDebugger) throws ListenerException {
+		IsolatedServiceCaller call = new IsolatedServiceCaller(serviceName, correlationID,  message,  context, targetIsJavaListener, ibisDebugger);
 		call.start();
 	}
 	
-	public static String callServiceIsolated(ISender sender, String serviceName, String correlationID, String message, HashMap context, boolean targetIsJavaListener, IbisDebugger ibisDebugger) throws ListenerException {
-		IsolatedServiceCaller call = new IsolatedServiceCaller(sender, serviceName, correlationID,  message,  context, targetIsJavaListener, ibisDebugger);
+	public static String callServiceIsolated(String serviceName, String correlationID, String message, HashMap context, boolean targetIsJavaListener, IbisDebugger ibisDebugger) throws ListenerException {
+		IsolatedServiceCaller call = new IsolatedServiceCaller(serviceName, correlationID,  message,  context, targetIsJavaListener, ibisDebugger);
 		call.start();
 		try {
 			call.join();
@@ -113,16 +108,23 @@ public class IsolatedServiceCaller extends Thread {
 	
 	public void run() {
 		try {
-			ibisDebugger.startThread(sender, threadID, correlationID, message);
+			if (log.isDebugEnabled() && ibisDebugger!=null) {
+				ibisDebugger.startThread(threadID, correlationID, message);
+			}
 			if (targetIsJavaListener) {
 				result = JavaListener.getListener(serviceName).processRequest(correlationID, message, context); 
 			} else {
 				result = ServiceDispatcher.getInstance().dispatchRequestWithExceptions(serviceName, correlationID, message, context); 
 			}
-			ibisDebugger.endThread(sender, correlationID, result);
+			if (log.isDebugEnabled() && ibisDebugger!=null) {
+				ibisDebugger.endThread(correlationID, result);
+			}
 		} catch (Throwable t) {
 			log.warn("IsolatedServiceCaller caught exception",t);
-			this.t=ibisDebugger.abortThread(sender, correlationID, t);
+			if (log.isDebugEnabled() && ibisDebugger!=null) {
+				t = ibisDebugger.abortThread(correlationID, t);
+			}
+			this.t=t;
 		}
 	}
 

@@ -1,11 +1,7 @@
 /*
  * $Log: PullingJmsListener.java,v $
- * Revision 1.7  2010-02-19 13:45:28  m00f069
- * - Added support for (sender) stubbing by debugger
- * - Added reply listener and reply sender to debugger
- * - Use IbisDebuggerDummy by default
- * - Enabling/disabling debugger handled by debugger instead of log level
- * - Renamed messageId to correlationId in debugger interface
+ * Revision 1.8  2010-03-10 14:30:05  m168309
+ * rolled back testtool adjustments (IbisDebuggerDummy)
  *
  * Revision 1.6  2009/07/28 12:44:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * enable SOAP over JMS
@@ -112,7 +108,6 @@ import javax.jms.TextMessage;
 import nl.nn.adapterframework.core.HasSender;
 import nl.nn.adapterframework.core.ICorrelatedPullingListener;
 import nl.nn.adapterframework.core.IPostboxListener;
-import nl.nn.adapterframework.core.IReplyListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -191,12 +186,11 @@ import org.apache.commons.lang.StringUtils;
  * @author Gerrit van Brakel
  * @since 4.0.1
  */
-public class PullingJmsListener extends JmsListenerBase implements IPostboxListener, ICorrelatedPullingListener, IReplyListener, HasSender, RunStateEnquiring {
-	public static final String version="$RCSfile: PullingJmsListener.java,v $ $Revision: 1.7 $ $Date: 2010-02-19 13:45:28 $";
+public class PullingJmsListener extends JmsListenerBase implements IPostboxListener, ICorrelatedPullingListener, HasSender, RunStateEnquiring {
+	public static final String version="$RCSfile: PullingJmsListener.java,v $ $Revision: 1.8 $ $Date: 2010-03-10 14:30:05 $";
 
 	private final static String THREAD_CONTEXT_SESSION_KEY="session";
 	private final static String THREAD_CONTEXT_MESSAGECONSUMER_KEY="messageConsumer";
-	private boolean isReplyListener=false;
 	private RunStateEnquirer runStateEnquirer=null;
 	
   
@@ -380,7 +374,7 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 	public Object getRawMessage(String correlationId, Map threadContext) throws ListenerException, TimeOutException {
 		Object msg = getRawMessageFromDestination(correlationId, threadContext);
 		if (msg==null) {
-			throw new TimeOutException(getLogPrefix()+" timed out waiting for message with correlationId ["+correlationId+"]");
+			throw new TimeOutException("waiting for message with correlationId ["+correlationId+"]");
 		}
 		if (log.isDebugEnabled()) {
 			log.debug("JmsListener ["+getName()+"] received for correlationId ["+correlationId+"] replymessage ["+msg+"]");
@@ -455,13 +449,7 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 		}
 	}
 	
-	public void isReplyListener(boolean isReplyListener) {
-		this.isReplyListener = isReplyListener;
-	}
 
-	public boolean isReplyListener() {
-		return isReplyListener;
-	}
 
 	protected boolean canGoOn() {
 		return runStateEnquirer!=null && runStateEnquirer.isInState(RunStateEnum.STARTED);
@@ -476,4 +464,3 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 
 
 }
-

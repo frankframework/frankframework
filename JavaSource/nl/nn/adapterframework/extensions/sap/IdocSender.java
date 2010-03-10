@@ -1,11 +1,7 @@
 /*
  * $Log: IdocSender.java,v $
- * Revision 1.3  2010-02-19 13:45:28  m00f069
- * - Added support for (sender) stubbing by debugger
- * - Added reply listener and reply sender to debugger
- * - Use IbisDebuggerDummy by default
- * - Enabling/disabling debugger handled by debugger instead of log level
- * - Renamed messageId to correlationId in debugger interface
+ * Revision 1.4  2010-03-10 14:30:05  m168309
+ * rolled back testtool adjustments (IbisDebuggerDummy)
  *
  * Revision 1.2  2009/08/26 15:34:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
@@ -18,10 +14,8 @@ package nl.nn.adapterframework.extensions.sap;
 
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.debug.IbisDebugger;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
-import nl.nn.adapterframework.senders.SenderBase;
 import nl.nn.adapterframework.util.XmlUtils;
 
 import com.sap.mw.idoc.IDoc;
@@ -51,8 +45,7 @@ import com.sap.mw.jco.JCO;
  * @version Id
  */
 public class IdocSender extends SapSenderBase {
-	private IbisDebugger ibisDebugger;
-	
+
 	protected IDoc.Document parseIdoc(SapSystem sapSystem, String message) throws SenderException {
 		
 		IdocXmlHandler handler = new IdocXmlHandler(sapSystem);
@@ -70,54 +63,40 @@ public class IdocSender extends SapSenderBase {
 
 	
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
-		message = ibisDebugger.senderInput(this, correlationID, message);
-		String result = null;
+		String tid=null;
 		try {
-			if (!ibisDebugger.stubSender(this, correlationID)) {
-				String tid=null;
-				try {
-					ParameterValueList pvl = null;
-					if (prc!=null) {
-						pvl=prc.getValues(paramList);
-					}
-					SapSystem sapSystem = getSystem(pvl);
-					
-					IDoc.Document idoc = parseIdoc(sapSystem,message);
-					
-					try {
-						log.debug(getLogPrefix()+"checking syntax");
-						idoc.checkSyntax();
-					}
-					catch ( IDoc.Exception e ) {
-						throw new SenderException("Syntax error in idoc", e);
-					}
-		
-					if (log.isDebugEnabled()) { log.debug(getLogPrefix()+"parsed idoc ["+idoc.toXML()+"]"); } 
-		
-					JCO.Client client = getClient(prc.getSession(), sapSystem);
-					try {
-						tid=getTid(client,sapSystem);
-						if (tid==null) {
-							throw new SenderException("could not obtain TID to send Idoc");
-						}
-						client.send(idoc,tid);
-					} finally {
-						releaseClient(client,sapSystem);
-					}
-					result = tid;
-				} catch (Exception e) {
-					throw new SenderException(e);
-				}
+			ParameterValueList pvl = null;
+			if (prc!=null) {
+				pvl=prc.getValues(paramList);
 			}
-		} catch(Throwable throwable) {
-			throwable = ibisDebugger.senderAbort(this, correlationID, throwable);
-			SenderBase.throwSenderOrTimeOutException(this, throwable);
+			SapSystem sapSystem = getSystem(pvl);
+			
+			IDoc.Document idoc = parseIdoc(sapSystem,message);
+			
+			try {
+				log.debug(getLogPrefix()+"checking syntax");
+				idoc.checkSyntax();
+			}
+			catch ( IDoc.Exception e ) {
+				throw new SenderException("Syntax error in idoc", e);
+			}
+
+			if (log.isDebugEnabled()) { log.debug(getLogPrefix()+"parsed idoc ["+idoc.toXML()+"]"); } 
+
+			JCO.Client client = getClient(prc.getSession(), sapSystem);
+			try {
+				tid=getTid(client,sapSystem);
+				if (tid==null) {
+					throw new SenderException("could not obtain TID to send Idoc");
+				}
+				client.send(idoc,tid);
+			} finally {
+				releaseClient(client,sapSystem);
+			}
+			return tid;
+		} catch (Exception e) {
+			throw new SenderException(e);
 		}
-		return ibisDebugger.senderOutput(this, correlationID, result);
-	}
-	
-	public void setIbisDebugger(IbisDebugger ibisDebugger) {
-		this.ibisDebugger = ibisDebugger;
 	}
 
 }

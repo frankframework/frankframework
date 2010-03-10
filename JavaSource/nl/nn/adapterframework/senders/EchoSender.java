@@ -1,11 +1,7 @@
 /*
  * $Log: EchoSender.java,v $
- * Revision 1.5  2010-02-19 13:45:27  m00f069
- * - Added support for (sender) stubbing by debugger
- * - Added reply listener and reply sender to debugger
- * - Use IbisDebuggerDummy by default
- * - Enabling/disabling debugger handled by debugger instead of log level
- * - Renamed messageId to correlationId in debugger interface
+ * Revision 1.6  2010-03-10 14:30:04  m168309
+ * rolled back testtool adjustments (IbisDebuggerDummy)
  *
  * Revision 1.4  2009/12/04 18:23:34  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Added ibisDebugger.senderAbort and ibisDebugger.pipeRollback
@@ -51,8 +47,8 @@ public class EchoSender extends SenderWithParametersBase {
 	private boolean synchronous=true;
 
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
-		message = ibisDebugger.senderInput(this, correlationID, message);
-		return ibisDebugger.senderOutput(this, correlationID, message);
+		message = debugSenderInput(correlationID, message);
+		return debugSenderOutput(correlationID, message);
 	}
 
 	public void setSynchronous(boolean b) {

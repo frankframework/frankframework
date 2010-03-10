@@ -1,11 +1,7 @@
 /*
  * $Log: HttpSender.java,v $
- * Revision 1.44  2010-02-19 13:45:28  m00f069
- * - Added support for (sender) stubbing by debugger
- * - Added reply listener and reply sender to debugger
- * - Use IbisDebuggerDummy by default
- * - Enabling/disabling debugger handled by debugger instead of log level
- * - Renamed messageId to correlationId in debugger interface
+ * Revision 1.45  2010-03-10 14:30:05  m168309
+ * rolled back testtool adjustments (IbisDebuggerDummy)
  *
  * Revision 1.43  2009/12/28 14:16:09  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * getResponseBodyAsString: use correct charset instead of default
@@ -273,7 +269,7 @@ import org.apache.commons.lang.StringUtils;
  * @since 4.2c
  */
 public class HttpSender extends SenderWithParametersBase implements HasPhysicalDestination {
-	public static final String version = "$RCSfile: HttpSender.java,v $ $Revision: 1.44 $ $Date: 2010-02-19 13:45:28 $";
+	public static final String version = "$RCSfile: HttpSender.java,v $ $Revision: 1.45 $ $Date: 2010-03-10 14:30:05 $";
 
 	private String url;
 	private String methodType="GET"; // GET or POST
@@ -546,79 +542,72 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 	}
 
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
-		message = ibisDebugger.senderInput(this, correlationID, message);
-		String result = null;
+		ParameterValueList pvl = null;
 		try {
-			if (!ibisDebugger.stubSender(this, correlationID)) {
-				ParameterValueList pvl = null;
-				try {
-					if (prc !=null && paramList !=null) {
-						pvl=prc.getValues(paramList);
-					}
-				} catch (ParameterException e) {
-					throw new SenderException(getLogPrefix()+"Sender ["+getName()+"] caught exception evaluating parameters",e);
-				}
-				HttpMethod httpmethod=getMethod(message, pvl);
-				if (!"POST".equals(getMethodType())) {
-					httpmethod.setFollowRedirects(isFollowRedirects());
-				}
-				
-				int statusCode = -1;
-				int count=getMaxExecuteRetries();
-				String msg = null;
-				while (count-->=0 && statusCode==-1) {
-					try {
-						if (log.isDebugEnabled()) log.debug(getLogPrefix()+"executing method");
-						statusCode = httpclient.executeMethod(httpmethod);
-						if (log.isDebugEnabled()) log.debug(getLogPrefix()+"executed method");
-						if (log.isDebugEnabled()) {
-							StatusLine statusline = httpmethod.getStatusLine();
-							if (statusline!=null) { 
-								log.debug(getLogPrefix()+"status:"+statusline.toString());
-							} else {
-								log.debug(getLogPrefix()+"no statusline found");
-							}
-						}
-						result = extractResult(httpmethod);	
-						if (log.isDebugEnabled()) {
-							log.debug(getLogPrefix()+"retrieved result ["+result+"]");
-						}
-					} catch (HttpException e) {
-						Throwable throwable = e.getCause();
-						String cause = null;
-						if (throwable!=null) {
-							cause = throwable.toString();
-						}
-						if (e!=null) {
-							msg = e.getMessage();
-						}
-						log.warn("httpException with message [" + msg + "] and cause [" + cause + "], executeRetries left [" + count + "]");
-					} catch (IOException e) {
-						httpmethod.abort();
-						if (e instanceof SocketTimeoutException) {
-							throw new TimeOutException(e);
-						} else {
-							throw new SenderException(e);
-						}
-					} finally {
-						httpmethod.releaseConnection();
-					}
-				}
-		
-				if (statusCode==-1){
-					if (StringUtils.contains(msg.toUpperCase(), "TIMEOUTEXCEPTION")) {
-						//java.net.SocketTimeoutException: Read timed out
-						throw new TimeOutException("Failed to recover from timeout exception");
-					} else {
-						throw new SenderException("Failed to recover from exception");
-					}
-				}
+			if (prc !=null && paramList !=null) {
+				pvl=prc.getValues(paramList);
 			}
-		} catch(Throwable throwable) {
-			throwable = ibisDebugger.senderAbort(this, correlationID, throwable);
-			throwSenderOrTimeOutException(this, throwable);
+		} catch (ParameterException e) {
+			throw new SenderException(getLogPrefix()+"Sender ["+getName()+"] caught exception evaluating parameters",e);
 		}
-		return ibisDebugger.senderOutput(this, correlationID, result);
+		HttpMethod httpmethod=getMethod(message, pvl);
+		if (!"POST".equals(getMethodType())) {
+			httpmethod.setFollowRedirects(isFollowRedirects());
+		}
+		
+		String result = null;
+		int statusCode = -1;
+		int count=getMaxExecuteRetries();
+		String msg = null;
+		while (count-->=0 && statusCode==-1) {
+			try {
+				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"executing method");
+				statusCode = httpclient.executeMethod(httpmethod);
+				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"executed method");
+				if (log.isDebugEnabled()) {
+					StatusLine statusline = httpmethod.getStatusLine();
+					if (statusline!=null) { 
+						log.debug(getLogPrefix()+"status:"+statusline.toString());
+					} else {
+						log.debug(getLogPrefix()+"no statusline found");
+					}
+				}
+				result = extractResult(httpmethod);	
+				if (log.isDebugEnabled()) {
+					log.debug(getLogPrefix()+"retrieved result ["+result+"]");
+				}
+			} catch (HttpException e) {
+				Throwable throwable = e.getCause();
+				String cause = null;
+				if (throwable!=null) {
+					cause = throwable.toString();
+				}
+				if (e!=null) {
+					msg = e.getMessage();
+				}
+				log.warn("httpException with message [" + msg + "] and cause [" + cause + "], executeRetries left [" + count + "]");
+			} catch (IOException e) {
+				httpmethod.abort();
+				if (e instanceof SocketTimeoutException) {
+					throw new TimeOutException(e);
+				} else {
+					throw new SenderException(e);
+				}
+			} finally {
+				httpmethod.releaseConnection();
+			}
+		}
+
+		if (statusCode==-1){
+			if (StringUtils.contains(msg.toUpperCase(), "TIMEOUTEXCEPTION")) {
+				//java.net.SocketTimeoutException: Read timed out
+				throw new TimeOutException("Failed to recover from timeout exception");
+			} else {
+				throw new SenderException("Failed to recover from exception");
+			}
+		}
+
+		return result;	
 	}
 
 	public String sendMessage(String correlationID, String message) throws SenderException, TimeOutException {

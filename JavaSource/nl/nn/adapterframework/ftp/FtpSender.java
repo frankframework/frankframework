@@ -1,11 +1,7 @@
 /*
  * $Log: FtpSender.java,v $
- * Revision 1.14  2010-02-19 13:45:29  m00f069
- * - Added support for (sender) stubbing by debugger
- * - Added reply listener and reply sender to debugger
- * - Use IbisDebuggerDummy by default
- * - Enabling/disabling debugger handled by debugger instead of log level
- * - Renamed messageId to correlationId in debugger interface
+ * Revision 1.15  2010-03-10 14:30:06  m168309
+ * rolled back testtool adjustments (IbisDebuggerDummy)
  *
  * Revision 1.13  2007/12/28 12:15:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added getPassword
@@ -103,7 +99,7 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
  * @author: John Dekker
  */
 public class FtpSender extends SenderWithParametersBase {
-	public static final String version = "$RCSfile: FtpSender.java,v $  $Revision: 1.14 $ $Date: 2010-02-19 13:45:29 $";
+	public static final String version = "$RCSfile: FtpSender.java,v $  $Revision: 1.15 $ $Date: 2010-03-10 14:30:06 $";
 
 	private FtpSession ftpSession;
 	
@@ -124,26 +120,18 @@ public class FtpSender extends SenderWithParametersBase {
 	}
 
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
-		message = ibisDebugger.senderInput(this, correlationID, message);
 		try {
-			if (!ibisDebugger.stubSender(this, correlationID)) {
-				try {
-					PipeLineSession session=null;
-					if (prc!=null) {
-						session=prc.getSession();
-					}
-					ftpSession.put(paramList, session, message, remoteDirectory, remoteFilenamePattern, true);
-				} catch(SenderException e) {
-					throw e;
-				} catch(Exception e) {
-					throw new SenderException("Error during ftp-ing " + message, e);
-				}
+			PipeLineSession session=null;
+			if (prc!=null) {
+				session=prc.getSession();
 			}
-		} catch(Throwable throwable) {
-			ibisDebugger.senderAbort(this, correlationID, throwable);
-			throwSenderOrTimeOutException(this, throwable);
+			ftpSession.put(paramList, session, message, remoteDirectory, remoteFilenamePattern, true);
+		} catch(SenderException e) {
+			throw e;
+		} catch(Exception e) {
+			throw new SenderException("Error during ftp-ing " + message, e);
 		}
-		return ibisDebugger.senderOutput(this, correlationID, message);
+		return message;
 	}
 	
 

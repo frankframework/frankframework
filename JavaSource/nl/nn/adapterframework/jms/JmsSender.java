@@ -1,11 +1,7 @@
 /*
  * $Log: JmsSender.java,v $
- * Revision 1.37  2010-02-19 13:45:28  m00f069
- * - Added support for (sender) stubbing by debugger
- * - Added reply listener and reply sender to debugger
- * - Use IbisDebuggerDummy by default
- * - Enabling/disabling debugger handled by debugger instead of log level
- * - Renamed messageId to correlationId in debugger interface
+ * Revision 1.38  2010-03-10 14:30:05  m168309
+ * rolled back testtool adjustments (IbisDebuggerDummy)
  *
  * Revision 1.36  2010/01/28 14:59:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * renamed 'Connection' classes to 'MessageSource'
@@ -128,18 +124,16 @@ import javax.xml.transform.TransformerException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPostboxSender;
-import nl.nn.adapterframework.core.IReplySender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
+import nl.nn.adapterframework.core.IbisException;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.debug.IbisDebugger;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
-import nl.nn.adapterframework.senders.SenderBase;
 import nl.nn.adapterframework.soap.SoapWrapper;
 import nl.nn.adapterframework.util.DomBuilderException;
 
@@ -187,9 +181,8 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * @version Id
  */
 
-public class JmsSender extends JMSFacade implements ISenderWithParameters, IPostboxSender, IReplySender {
-	public static final String version="$RCSfile: JmsSender.java,v $ $Revision: 1.37 $ $Date: 2010-02-19 13:45:28 $";
-	private IbisDebugger ibisDebugger;
+public class JmsSender extends JMSFacade implements ISenderWithParameters, IPostboxSender {
+	public static final String version="$RCSfile: JmsSender.java,v $ $Revision: 1.38 $ $Date: 2010-03-10 14:30:05 $";
 	private String replyToName = null;
 	private int deliveryMode = 0;
 	private String messageType = null;
@@ -203,7 +196,6 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 	private String soapAction=null;
 	private String soapHeaderParam="soapHeader";
 	private String linkMethod="MESSAGEID";
-	private boolean isReplySender=false;
 	
 	protected ParameterList paramList = null;
 	private SoapWrapper soapWrapper=null;
@@ -264,153 +256,124 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 	}
 
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
-		if (isReplySender()) {
-			message = ibisDebugger.replySenderInput(this, correlationID, message);
-		} else {
-			message = ibisDebugger.senderInput(this, correlationID, message);
+		Session s = null;
+		MessageProducer mp = null;
+
+		ParameterValueList pvl=null;
+		if (prc != null && paramList != null) {
+			try {
+				pvl=prc.getValues(paramList);
+			} catch (ParameterException e) {
+				throw new SenderException(getLogPrefix()+"cannot extract parameters",e);
+			}
 		}
-		String result = null;
+
+		if (isSoap()) {
+			String soapHeader=null;
+			if (pvl!=null && StringUtils.isNotEmpty(getSoapHeaderParam())) {
+				ParameterValue soapHeaderParamValue=pvl.getParameterValue(getSoapHeaderParam());
+				if (soapHeaderParamValue==null) {
+					log.warn("no SoapHeader found using parameter ["+getSoapHeaderParam()+"]");
+				} else {
+					soapHeader=soapHeaderParamValue.asStringValue("");
+				}
+			}
+			message = soapWrapper.putInEnvelope(message, getEncodingStyleURI(),getServiceNamespaceURI(),soapHeader);
+			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"correlationId ["+correlationID+"] soap message ["+message+"]");
+		}
 		try {
-			boolean stub;
-			if (isReplySender()) {
-				stub = ibisDebugger.stubReplySender(this, correlationID);
-			} else {
-				stub = ibisDebugger.stubSender(this, correlationID);
+			s = createSession();
+			mp = getMessageProducer(s, getDestination());
+			Destination replyQueue = null;
+
+			// create message
+			Message msg = createTextMessage(s, correlationID, message);
+
+			if (getMessageType()!=null) {
+				msg.setJMSType(getMessageType());
 			}
-			if (!stub) {
-				Session s = null;
-				MessageProducer mp = null;
-		
-				ParameterValueList pvl=null;
-				if (prc != null && paramList != null) {
-					try {
-						pvl=prc.getValues(paramList);
-					} catch (ParameterException e) {
-						throw new SenderException(getLogPrefix()+"cannot extract parameters",e);
+			if (getDeliveryModeInt()>0) {
+				msg.setJMSDeliveryMode(getDeliveryModeInt());
+				mp.setDeliveryMode(getDeliveryModeInt());
+			}
+			if (getPriority()>=0) {
+				msg.setJMSPriority(getPriority());
+				mp.setPriority(getPriority());
+			}
+
+			// set properties
+			if (pvl != null) {
+				setProperties(msg, pvl);
+			}
+			if (replyToName != null) {
+				replyQueue = getDestination(replyToName);
+			} else {
+				if (isSynchronous()) {
+					replyQueue = getMessagingSource().getDynamicReplyQueue((QueueSession)s);
+				}
+			}
+			if (replyQueue!=null) {
+				msg.setJMSReplyTo(replyQueue);
+				if (log.isDebugEnabled()) log.debug("replyTo set to queue [" + replyQueue.toString() + "]");
+			}
+
+			// send message	
+			send(mp, msg);
+			if (log.isInfoEnabled()) {
+				log.info(
+					"[" + getName() + "] " + "sent Message: [" + message + "] " + "to [" + getDestinationName()
+						+ "] " + "msgID [" + msg.getJMSMessageID() + "] " + "correlationID [" + msg.getJMSCorrelationID()
+						+ "] " + "using deliveryMode [" + getDeliveryMode() + "] "
+						+ ((replyToName != null) ? "replyTo [" + replyToName+"]" : ""));
+			}
+			if (isSynchronous()) {
+				String replyCorrelationId=null;
+				if (replyToName != null) {
+					if ("CORRELATIONID".equalsIgnoreCase(getLinkMethod())) {
+						replyCorrelationId=correlationID;
+					} else {
+						replyCorrelationId=msg.getJMSMessageID();
 					}
 				}
-		
-				if (isSoap()) {
-					String soapHeader=null;
-					if (pvl!=null && StringUtils.isNotEmpty(getSoapHeaderParam())) {
-						ParameterValue soapHeaderParamValue=pvl.getParameterValue(getSoapHeaderParam());
-						if (soapHeaderParamValue==null) {
-							log.warn("no SoapHeader found using parameter ["+getSoapHeaderParam()+"]");
-						} else {
-							soapHeader=soapHeaderParamValue.asStringValue("");
-						}
-					}
-					message = soapWrapper.putInEnvelope(message, getEncodingStyleURI(),getServiceNamespaceURI(),soapHeader);
-					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"correlationId ["+correlationID+"] soap message ["+message+"]");
-				}
+				MessageConsumer mc = getMessageConsumerForCorrelationId(s,replyQueue,replyCorrelationId);
 				try {
-					s = createSession();
-					mp = getMessageProducer(s, getDestination());
-					Destination replyQueue = null;
-		
-					// create message
-					Message msg = createTextMessage(s, correlationID, message);
-		
-					if (getMessageType()!=null) {
-						msg.setJMSType(getMessageType());
+					Message rawReplyMsg = mc.receive(getReplyTimeout());
+					if (rawReplyMsg==null) {
+						throw new TimeOutException("did not receive reply on [" + replyQueue.toString() + "] within ["+getReplyTimeout()+"] ms");
 					}
-					if (getDeliveryModeInt()>0) {
-						msg.setJMSDeliveryMode(getDeliveryModeInt());
-						mp.setDeliveryMode(getDeliveryModeInt());
-					}
-					if (getPriority()>=0) {
-						msg.setJMSPriority(getPriority());
-						mp.setPriority(getPriority());
-					}
-		
-					// set properties
-					if (pvl != null) {
-						setProperties(msg, pvl);
-					}
-					if (replyToName != null) {
-						replyQueue = getDestination(replyToName);
-					} else {
-						if (isSynchronous()) {
-							replyQueue = getMessagingSource().getDynamicReplyQueue((QueueSession)s);
-						}
-					}
-					if (replyQueue!=null) {
-						msg.setJMSReplyTo(replyQueue);
-						if (log.isDebugEnabled()) log.debug("replyTo set to queue [" + replyQueue.toString() + "]");
-					}
-		
-					// send message	
-					send(mp, msg);
-					if (log.isInfoEnabled()) {
-						log.info(
-							"[" + getName() + "] " + "sent Message: [" + message + "] " + "to [" + getDestinationName()
-								+ "] " + "msgID [" + msg.getJMSMessageID() + "] " + "correlationID [" + msg.getJMSCorrelationID()
-								+ "] " + "using deliveryMode [" + getDeliveryMode() + "] "
-								+ ((replyToName != null) ? "replyTo [" + replyToName+"]" : ""));
-					}
-					if (isSynchronous()) {
-						String replyCorrelationId=null;
-						if (replyToName != null) {
-							if ("CORRELATIONID".equalsIgnoreCase(getLinkMethod())) {
-								replyCorrelationId=correlationID;
-							} else {
-								replyCorrelationId=msg.getJMSMessageID();
-							}
-						}
-						MessageConsumer mc = getMessageConsumerForCorrelationId(s,replyQueue,replyCorrelationId);
-						try {
-							Message rawReplyMsg = mc.receive(getReplyTimeout());
-							if (rawReplyMsg==null) {
-								throw new TimeOutException("did not receive reply on [" + replyQueue.toString() + "] within ["+getReplyTimeout()+"] ms");
-							}
-							result = getStringFromRawMessage(rawReplyMsg, prc.getSession(), isSoap(), getReplySoapHeaderSessionKey(),soapWrapper);
-						} finally {
-							if (mc != null) { 
-								try { 
-									mc.close(); 
-								} catch (JMSException e) { 
-									log.warn("JmsSender [" + getName() + "] got exception closing message consumer for reply",e); 
-								}
-							}
-						}
-					} else {
-						result = msg.getJMSMessageID();
-					}
-				} catch (JMSException e) {
-					throw new SenderException(e);
-				} catch (IOException e) {
-					throw new SenderException(e);
-				} catch (NamingException e) {
-					throw new SenderException(e);
-				} catch (DomBuilderException e) {
-					throw new SenderException(e);
-				} catch (TransformerException e) {
-					throw new SenderException(e);
-				} catch (JmsException e) {
-					throw new SenderException(e);
+					return getStringFromRawMessage(rawReplyMsg, prc.getSession(), isSoap(), getReplySoapHeaderSessionKey(),soapWrapper);
 				} finally {
-					if (mp != null) { 
+					if (mc != null) { 
 						try { 
-							mp.close(); 
+							mc.close(); 
 						} catch (JMSException e) { 
-							log.warn("JmsSender [" + getName() + "] got exception closing message producer",e); 
+							log.warn("JmsSender [" + getName() + "] got exception closing message consumer for reply",e); 
 						}
 					}
-					closeSession(s);
 				}
 			}
-		} catch(Throwable throwable) {
-			if (isReplySender()) {
-				throwable = ibisDebugger.replySenderAbort(this, correlationID, throwable);
-			} else {
-				throwable = ibisDebugger.senderAbort(this, correlationID, throwable);
+			return msg.getJMSMessageID();
+		} catch (JMSException e) {
+			throw new SenderException(e);
+		} catch (IOException e) {
+			throw new SenderException(e);
+		} catch (NamingException e) {
+			throw new SenderException(e);
+		} catch (DomBuilderException e) {
+			throw new SenderException(e);
+		} catch (TransformerException e) {
+			throw new SenderException(e);
+		} catch (JmsException e) {
+			throw new SenderException(e);
+		} finally {
+			if (mp != null) { 
+				try { 
+					mp.close(); 
+				} catch (JMSException e) { 
+					log.warn("JmsSender [" + getName() + "] got exception closing message producer",e); 
+				}
 			}
-			SenderBase.throwSenderOrTimeOutException(this, throwable);
-		}
-		if (isReplySender()) {
-			return ibisDebugger.replySenderOutput(this, correlationID, result);
-		} else {
-			return ibisDebugger.senderOutput(this, correlationID, result);
+			closeSession(s);
 		}
 	}
 
@@ -562,18 +525,6 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 	}
 	public String getLinkMethod() {
 		return linkMethod;
-	}
-
-	public void isReplySender(boolean isReplySender) {
-		this.isReplySender = isReplySender;
-	}
-
-	public boolean isReplySender() {
-		return isReplySender;
-	}
-
-	public void setIbisDebugger(IbisDebugger ibisDebugger) {
-		this.ibisDebugger = ibisDebugger;
 	}
 
 }
