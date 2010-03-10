@@ -1,7 +1,7 @@
 /*
  * $Log: AppConstants.java,v $
- * Revision 1.16  2010-03-04 16:00:19  m168309
- * added attribute labelStyleSheet
+ * Revision 1.17  2010-03-10 13:57:50  m168309
+ * committed to soon...
  *
  * Revision 1.15  2008/06/03 16:04:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * let custom properties override appConstants and DeploymentSpecifics
@@ -122,7 +122,7 @@ import org.apache.log4j.Logger;
  * 
  */
 public final class AppConstants extends Properties implements Serializable{
-	public static final String version = "$RCSfile: AppConstants.java,v $ $Revision: 1.16 $ $Date: 2010-03-04 16:00:19 $";
+	public static final String version = "$RCSfile: AppConstants.java,v $ $Revision: 1.17 $ $Date: 2010-03-10 13:57:50 $";
 	private Logger log = LogUtil.getLogger(this);
 	
 	public final static String propertiesFileName="AppConstants.properties";
@@ -278,13 +278,7 @@ public final class AppConstants extends Properties implements Serializable{
 	     
 	    while (tokenizer.hasMoreTokens()) {
 	        String theFilename=((String) (tokenizer.nextToken())).trim();
-
 	        try {
-				if (StringResolver.isResolvable(theFilename)) {
-					Properties props = Misc.getEnvironmentVariables();
-					props.putAll(System.getProperties());
-					theFilename = StringResolver.substVars(theFilename, props);
-				}
 	            URL url = ClassUtils.getResourceURL(this, theFilename);
 	
 				if (url==null) {
