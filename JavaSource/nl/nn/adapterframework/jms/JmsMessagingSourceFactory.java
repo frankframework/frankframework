@@ -1,6 +1,10 @@
 /*
  * $Log: JmsMessagingSourceFactory.java,v $
- * Revision 1.1  2010-01-28 14:48:42  L190409
+ * Revision 1.2  2010-03-10 14:20:37  L190409
+ * wrapped connectionfactories, to work around bug in IBM implementation of 
+ * QueueConnectionFactory, that shows up when SSL is used in combination with Spring
+ *
+ * Revision 1.1  2010/01/28 14:48:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * renamed 'Connection' classes to 'MessageSource'
  *
  * Revision 1.4  2008/07/24 12:20:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -22,6 +26,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.jms.ConnectionFactory;
+import javax.jms.JMSException;
+import javax.jms.QueueConnection;
+import javax.jms.QueueConnectionFactory;
+import javax.jms.TopicConnection;
+import javax.jms.TopicConnectionFactory;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -59,6 +68,48 @@ public class JmsMessagingSourceFactory extends MessagingSourceFactory {
 
 	protected ConnectionFactory createConnectionFactory(Context context, String cfName) throws IbisException, NamingException {
 		ConnectionFactory connectionFactory = (ConnectionFactory) getContext().lookup(cfName);
+		// wrap ConnectionFactory, to work around bug in JMSQueueConnectionFactoryHandle in combination with Spring
+		// see http://forum.springsource.org/archive/index.php/t-43700.html
+		if (connectionFactory instanceof QueueConnectionFactory) {
+			connectionFactory = new QueueConnectionFactoryWrapper((QueueConnectionFactory)connectionFactory);
+		} else if (connectionFactory instanceof TopicConnectionFactory) {
+			connectionFactory = new TopicConnectionFactoryWrapper((TopicConnectionFactory)connectionFactory);
+		}
 		return connectionFactory;
 	}
+	
+	private class QueueConnectionFactoryWrapper implements QueueConnectionFactory {
+		private QueueConnectionFactory wrapped;
+
+		public QueueConnectionFactoryWrapper(QueueConnectionFactory connectionFactory) {
+			super();
+			wrapped=connectionFactory;
+		}
+
+		public QueueConnection createQueueConnection() throws JMSException {
+			return wrapped.createQueueConnection();
+		}
+
+		public QueueConnection createQueueConnection(String arg0, String arg1) throws JMSException {
+			return wrapped.createQueueConnection(arg0,arg1);
+		}
+	}
+
+	private class TopicConnectionFactoryWrapper implements TopicConnectionFactory {
+		private TopicConnectionFactory wrapped;
+
+		public TopicConnectionFactoryWrapper(TopicConnectionFactory connectionFactory) {
+			super();
+			wrapped=connectionFactory;
+		}
+
+		public TopicConnection createTopicConnection() throws JMSException {
+			return wrapped.createTopicConnection();
+		}
+
+		public TopicConnection createTopicConnection(String arg0, String arg1) throws JMSException {
+			return wrapped.createTopicConnection(arg0,arg1);
+		}
+	}
+
 }
