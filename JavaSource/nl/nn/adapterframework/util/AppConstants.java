@@ -1,6 +1,9 @@
 /*
  * $Log: AppConstants.java,v $
- * Revision 1.17  2010-03-10 13:57:50  m168309
+ * Revision 1.18  2010-03-17 11:26:33  m168309
+ * added StageSpecifics_${otap.stage}.properties file
+ *
+ * Revision 1.17  2010/03/10 13:57:50  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * committed to soon...
  *
  * Revision 1.15  2008/06/03 16:04:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -122,7 +125,7 @@ import org.apache.log4j.Logger;
  * 
  */
 public final class AppConstants extends Properties implements Serializable{
-	public static final String version = "$RCSfile: AppConstants.java,v $ $Revision: 1.17 $ $Date: 2010-03-10 13:57:50 $";
+	public static final String version = "$RCSfile: AppConstants.java,v $ $Revision: 1.18 $ $Date: 2010-03-17 11:26:33 $";
 	private Logger log = LogUtil.getLogger(this);
 	
 	public final static String propertiesFileName="AppConstants.properties";
@@ -279,6 +282,11 @@ public final class AppConstants extends Properties implements Serializable{
 	    while (tokenizer.hasMoreTokens()) {
 	        String theFilename=((String) (tokenizer.nextToken())).trim();
 	        try {
+				if (StringResolver.needsResolution(theFilename)) {
+					Properties props = Misc.getEnvironmentVariables();
+					props.putAll(System.getProperties());
+					theFilename = StringResolver.substVars(theFilename, props);
+				}
 	            URL url = ClassUtils.getResourceURL(this, theFilename);
 	
 				if (url==null) {
