@@ -1,7 +1,7 @@
 /*
  * $Log: FixedResult.java,v $
- * Revision 1.21  2010-03-04 16:00:20  m168309
- * added attribute labelStyleSheet
+ * Revision 1.22  2010-03-17 11:24:44  m168309
+ * extended substituteVars with application properties
  *
  * Revision 1.20  2008/08/18 11:20:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fixed javadoc
@@ -87,7 +87,7 @@ import org.apache.commons.lang.SystemUtils;
  * <tr><td>{@link #setForwardName(String) forwardName}</td>  <td>name of forward returned upon completion</td><td>"success"</td></tr>
  * <tr><td>{@link #setFileName(String) fileName}</td>        <td>name of the file containing the resultmessage</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setReturnString(String) returnString}</td><td>returned message</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSubstituteVars(boolean) substituteVars}</td><td>Should values between ${ and } be resolved from the PipeLineSession</td><td>False</td></tr>
+ * <tr><td>{@link #setSubstituteVars(boolean) substituteVars}</td><td>Should values between ${ and } be resolved from the PipeLineSession (search order: 1) system properties 2) pipeLineSession variables 3) application properties)</td><td>False</td></tr>
  * <tr><td>{@link #setReplaceFrom(String) replaceFrom}</td><td>string to search for in the returned message</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setReplaceTo(String) replaceTo}</td><td>string that will replace each of the strings found in the returned message</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setStyleSheetName(String) styleSheetName}</td><td>stylesheet to apply to the output message</td><td>&nbsp;</td></tr>
@@ -117,7 +117,7 @@ import org.apache.commons.lang.SystemUtils;
  * @author Johan Verrips
  */
 public class FixedResult extends FixedForwardPipe {
-	public static final String version="$RCSfile: FixedResult.java,v $ $Revision: 1.21 $ $Date: 2010-03-04 16:00:20 $";
+	public static final String version="$RCSfile: FixedResult.java,v $ $Revision: 1.22 $ $Date: 2010-03-17 11:24:44 $";
 	
     private String fileName;
     private String returnString;
@@ -196,8 +196,7 @@ public class FixedResult extends FixedForwardPipe {
 		}
 
 		if (getSubstituteVars()){
-			//result=StringResolver.substVars(returnString, session);
-			result=StringResolver.substVars(returnString, AppConstants.getInstance());
+			result=StringResolver.substVars(returnString, session, AppConstants.getInstance());
 		}
 
 		if (StringUtils.isNotEmpty(styleSheetName)) {
