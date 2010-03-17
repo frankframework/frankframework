@@ -1,6 +1,9 @@
 /*
  * $Log: StringResolver.java,v $
- * Revision 1.12  2010-03-10 13:59:06  m168309
+ * Revision 1.13  2010-03-17 11:20:40  m168309
+ * added method needsResolution and extended method substVars with extra Properties object
+ *
+ * Revision 1.12  2010/03/10 13:59:06  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * committed to soon...
  *
  * Revision 1.10  2008/06/03 15:59:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -41,7 +44,7 @@ import org.apache.log4j.Logger;
  * @author Johan Verrips 
  */
 public class StringResolver {
-	public static final String version="$RCSfile: StringResolver.java,v $ $Revision: 1.12 $ $Date: 2010-03-10 13:59:06 $";
+	public static final String version="$RCSfile: StringResolver.java,v $ $Revision: 1.13 $ $Date: 2010-03-17 11:20:40 $";
 	protected static Logger log = LogUtil.getLogger(StringResolver.class);
 	
     static String DELIM_START = "${";
@@ -82,8 +85,11 @@ public class StringResolver {
 	  * will print <code>this is a name with again</code>
 	  * <p> First it looks in the System properties, if none is found and a <code>Properties</code>
 	  * object is specified, it looks in the specified <code>Properties</code> object.
+	  * If two <code>Properties</code> objects are specified, first it look in the first object. If
+	  * none is found, it looks in the second object.
+	  * 
 	  */ 
-	public static String substVars(String val, Map props)
+	public static String substVars(String val, Map props1, Map props2)
         throws IllegalArgumentException {
 
         StringBuffer sbuf = new StringBuffer();
@@ -113,17 +119,26 @@ public class StringResolver {
                     // first try in System properties
                     String replacement = getSystemProperty(key, null);
                     // then try props parameter
-                    if (replacement == null && props != null) {
-                    	if (props instanceof Properties){
-                    		replacement=((Properties)props).getProperty(key);
+                    if (replacement == null && props1 != null) {
+                    	if (props1 instanceof Properties){
+                    		replacement=((Properties)props1).getProperty(key);
                     	} else {
-                    		Object replacementSource = props.get(key); 
+                    		Object replacementSource = props1.get(key); 
                     		if (replacementSource!=null) {
 								replacement = replacementSource.toString();
                     		}
 						}
-
                     }
+					if (replacement == null && props2 != null) {
+						if (props2 instanceof Properties){
+							replacement=((Properties)props2).getProperty(key);
+						} else {
+							Object replacementSource = props2.get(key); 
+							if (replacementSource!=null) {
+								replacement = replacementSource.toString();
+							}
+						}
+					}
 
                     if (replacement != null) {
                         // Do variable substitution on the replacement string
@@ -131,7 +146,7 @@ public class StringResolver {
                         // the where the properties are
 						// x1=${x2}
                         // x2=p2
-                        String recursiveReplacement = substVars(replacement, props);
+                        String recursiveReplacement = substVars(replacement, props1, props2);
                         sbuf.append(recursiveReplacement);
                     }
                     i = k + DELIM_STOP_LEN;
@@ -140,4 +155,22 @@ public class StringResolver {
         }
     }
 
+	public static String substVars(String val, Map props)
+		throws IllegalArgumentException {
+		return substVars(val, props, null);
+	}
+
+	public static boolean needsResolution(String string) {
+		int j = string.indexOf(DELIM_START);
+		if (j == -1) {
+			return false;
+		} else {
+			int k = string.indexOf(DELIM_STOP, j);
+			if (k == -1) {
+				return false;
+			} else {
+				return true;
+			}			
+		}
+	}
 }
