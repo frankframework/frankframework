@@ -1,6 +1,11 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.92  2010-03-10 14:30:06  m168309
+ * Revision 1.93  2010-03-17 14:06:59  m168309
+ * bugfix - retry from ErrorLog ignores transactionTimeout
+ * warning instead of exception in case of error during correlationIDXpath or labelXPath
+ * cosmetic change for determining businessCorrelationId
+ *
+ * Revision 1.92  2010/03/10 14:30:06  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * rolled back testtool adjustments (IbisDebuggerDummy)
  *
  * Revision 1.91  2010/03/05 15:49:44  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -585,10 +590,11 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  */
 public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHandler, EventThrowing, IbisExceptionListener, HasSender, HasStatistics, TracingEventNumbers, IThreadCountControllable, BeanFactoryAware {
     
-	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.92 $ $Date: 2010-03-10 14:30:06 $";
+	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.93 $ $Date: 2010-03-17 14:06:59 $";
 	protected Logger log = LogUtil.getLogger(this);
 
-	public final static TransactionDefinition TXNEW = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+	public final static TransactionDefinition TXNEW_CTRL = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+	public TransactionDefinition TXNEW_PROC;
 	public final static TransactionDefinition TXREQUIRED = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED);
 
 	public static final String RCV_CONFIGURED_MONITOR_EVENT = "Receiver Configured";
@@ -906,6 +912,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 			registerEvent(RCV_SUSPENDED_MONITOR_EVENT);
 			registerEvent(RCV_RESUMED_MONITOR_EVENT);
 			registerEvent(RCV_THREAD_EXIT_MONITOR_EVENT);
+			TXNEW_PROC = SpringTxManagerProxy.getTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW,getTransactionTimeout());
             // Check if we need to use the in-process storage as
             // error-storage.
             // In-process storage is no longer used, but is often
@@ -1228,7 +1235,9 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 			throw new ListenerException(getLogPrefix()+"has no errorStorage, cannot retry messageId ["+messageId+"]");
 		}
 		PlatformTransactionManager txManager = getTxManager(); 
-		TransactionStatus txStatus = txManager.getTransaction(TXNEW);
+		//TransactionStatus txStatus = txManager.getTransaction(TXNEW);
+		IbisTransaction itx = new IbisTransaction(txManager, TXNEW_PROC, "receiver [" + getName() + "]");
+		TransactionStatus txStatus = itx.getStatus();
 		Map threadContext = new HashMap();
 		Object msg=null;
 		try {
@@ -1243,7 +1252,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 				txManager.commit(txStatus);
 			}
 		} catch (ListenerException e) {
-			txStatus = txManager.getTransaction(TXNEW);
+			txStatus = txManager.getTransaction(TXNEW_CTRL);
 			try {	
 				if (msg instanceof Serializable) {
 					String correlationId = (String)threadContext.get(PipeLineSession.businessCorrelationIdKey);
@@ -1284,12 +1293,13 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 				log.debug(getLogPrefix()+"generated messageId ["+messageId+"]");
 		}
 
-		String businessCorrelationId=technicalCorrelationId;
+		String businessCorrelationId=null;
 		if (correlationIDTp!=null) {
 			try {
 				businessCorrelationId=correlationIDTp.transform(message,null);
 			} catch (Exception e) {
-				throw new ListenerException(getLogPrefix()+"could not extract businessCorrelationId",e);
+				//throw new ListenerException(getLogPrefix()+"could not extract businessCorrelationId",e);
+				log.warn(getLogPrefix()+"could not extract businessCorrelationId");
 			}
 			if (StringUtils.isEmpty(businessCorrelationId)) {
 				String cidText;
@@ -1301,26 +1311,26 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 				if (StringUtils.isNotEmpty(technicalCorrelationId)) {
 					log.warn(getLogPrefix()+"did not find correlationId using "+cidText+", reverting to correlationId of transfer ["+technicalCorrelationId+"]");
 					businessCorrelationId=technicalCorrelationId;
-				} else {
-					if (StringUtils.isNotEmpty(messageId)) {
-						log.warn(getLogPrefix()+"did not find correlationId using "+cidText+" or technical correlationId, reverting to messageId ["+messageId+"]");
-						businessCorrelationId=messageId;
-					}
 				}
 			}
-			log.info(getLogPrefix()+"messageId [" + messageId + "] technicalCorrelationId [" + technicalCorrelationId + "] businessCorrelationId [" + businessCorrelationId + "]");
+		} else {
+			businessCorrelationId=technicalCorrelationId;
 		}
 		if (StringUtils.isEmpty(businessCorrelationId)) {
-			if (log.isDebugEnabled()) { log.debug(getLogPrefix()+"did not find businessCorrelationId, reverting to correlationId of transfer ["+technicalCorrelationId+"]"); } 
-			businessCorrelationId=messageId;
+			if (StringUtils.isNotEmpty(messageId)) {
+				log.warn(getLogPrefix()+"did not find (technical) correlationId, reverting to messageId ["+messageId+"]");
+				businessCorrelationId=messageId;
+			}
 		}
+		log.info(getLogPrefix()+"messageId [" + messageId + "] technicalCorrelationId [" + technicalCorrelationId + "] businessCorrelationId [" + businessCorrelationId + "]");
 		threadContext.put(PipeLineSession.businessCorrelationIdKey, businessCorrelationId);       
 		String label=null;
 		if (labelTp!=null) {
 			try {
 				label=labelTp.transform(message,null);
 			} catch (Exception e) {
-				throw new ListenerException(getLogPrefix()+"could not extract label",e);
+				//throw new ListenerException(getLogPrefix()+"could not extract label",e);
+				log.warn(getLogPrefix()+"could not extract label");
 			}
 		}
 		if (checkTryCount(messageId, retry, rawMessage, message, threadContext, businessCorrelationId)) {
@@ -1662,12 +1672,12 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 				// to error location (OR LOST!)
 				log.error(getLogPrefix()+"message with id ["+messageId+"] retry count exceeded;");
 				//removeMessageRetryCount(messageId);
-				moveInProcessToError(messageId, correlationId, message, new Date(startProcessingTimestamp), errorMessage, rawMessage, TXNEW);
+				moveInProcessToError(messageId, correlationId, message, new Date(startProcessingTimestamp), errorMessage, rawMessage, TXNEW_CTRL);
 				return false;
 			}
 		} else {
 			log.error(getLogPrefix()+"not transacted, message with id ["+messageId+"] will not be retried");
-			moveInProcessToError(messageId, correlationId, message, new Date(startProcessingTimestamp), errorMessage, rawMessage, TXNEW);
+			moveInProcessToError(messageId, correlationId, message, new Date(startProcessingTimestamp), errorMessage, rawMessage, TXNEW_CTRL);
 			return false;
 		}
 	}
