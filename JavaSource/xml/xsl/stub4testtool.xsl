@@ -11,6 +11,7 @@
 		- disable all elements jmsRealm which have an attribute queueConnectionFactoryName (if combined with the attribute datasourceName a new jmsRealm for this datasourceName is created)
 		- add the attribute returnFixedDate with value true to all pipe elements PutSystemDateInSession
 		- replace the value '{now,...,...}' of the attribute pattern in all param elements with the value '{fixeddate,...,...}'
+		- stub the pipe element FtpFileRetrieverPipe by a pipe element GenericMessageSendingPipe (and copy the attributes name, storeResultInSessionKey, getInputFromSessionKey and getInputFromFixedValue) with a child Ibis4JavaSender (serviceName="testtool-[pipe name]")
 	-->
 	<xsl:template match="/">
 		<xsl:apply-templates select="*|@*|comment()|processing-instruction()" />
@@ -150,6 +151,23 @@
 					<xsl:attribute name="returnFixedDate">true</xsl:attribute>
 					<xsl:apply-templates select="*|comment()|processing-instruction()|text()" />
 				</xsl:element>
+			</xsl:when>
+			<xsl:when test="name()='pipe' and @className='nl.nn.adapterframework.ftp.FtpFileRetrieverPipe'">
+				<xsl:element name="pipe">
+					<xsl:attribute name="name">
+						<xsl:value-of select="@name"/>
+					</xsl:attribute>
+					<xsl:apply-templates select="@*[name()='storeResultInSessionKey' or name()='getInputFromSessionKey' or name()='getInputFromFixedValue']" />
+					<xsl:attribute name="className">nl.nn.adapterframework.pipes.GenericMessageSendingPipe</xsl:attribute>
+					<xsl:element name="sender">
+						<xsl:attribute name="className">nl.nn.adapterframework.senders.IbisJavaSender</xsl:attribute>
+						<xsl:attribute name="serviceName">
+							<xsl:value-of select="concat('testtool-',@name)" />
+						</xsl:attribute>
+					</xsl:element>
+					<xsl:apply-templates select="*|comment()|processing-instruction()|text()" />
+				</xsl:element>
+				<xsl:call-template name="disable" />
 			</xsl:when>
 			<xsl:when test="name()='param' and starts-with(@pattern,'{now,')">
 				<xsl:element name="param">
