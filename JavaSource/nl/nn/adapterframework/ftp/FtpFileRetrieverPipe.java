@@ -1,6 +1,9 @@
 /*
  * $Log: FtpFileRetrieverPipe.java,v $
- * Revision 1.9  2006-01-05 14:17:44  europe\L190409
+ * Revision 1.10  2010-03-18 11:27:39  m168309
+ * fixed javadoc
+ *
+ * Revision 1.9  2006/01/05 14:17:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.8  2005/12/19 17:22:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -45,9 +48,9 @@ import nl.nn.adapterframework.pipes.FixedForwardPipe;
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.ftp.FtpFileRetrieverPipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the pipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setLocalFilenamePattern(String) filenamePattern}</td><td>pattern (in MessageFormat) of the local filename</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setLocalDirectory(String) directory}</td><td>local directory in which files have to be downloaded</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setRemoteDirectory(String) directory}</td><td>remote directory</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setLocalFilenamePattern(String) localFilenamePattern}</td><td>pattern (in MessageFormat) of the local filename</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setLocalDirectory(String) localDirectory}</td><td>local directory in which files have to be downloaded</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setRemoteDirectory(String) remoteDirectory}</td><td>remote directory</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDeleteAfterGet(boolean) deleteAfterGet}</td><td>if true, the remote file is deleted after it is retrieved</td><td>false</td></tr>
  * 
  * <tr><td>{@link #setHost(String) host}</td><td>name or ip adres of remote host</td><td>&nbsp;</td></tr>
@@ -99,7 +102,7 @@ import nl.nn.adapterframework.pipes.FixedForwardPipe;
  * @since   4.4
  */
 public class FtpFileRetrieverPipe extends FixedForwardPipe {
-	public static final String version = "$RCSfile: FtpFileRetrieverPipe.java,v $  $Revision: 1.9 $ $Date: 2006-01-05 14:17:44 $";
+	public static final String version = "$RCSfile: FtpFileRetrieverPipe.java,v $  $Revision: 1.10 $ $Date: 2010-03-18 11:27:39 $";
 
 	private FtpSession ftpSession;
 
