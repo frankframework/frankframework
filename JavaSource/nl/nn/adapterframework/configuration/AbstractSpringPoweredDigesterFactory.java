@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractSpringPoweredDigesterFactory.java,v $
- * Revision 1.14  2010-02-03 14:20:26  L190409
+ * Revision 1.15  2010-03-18 10:13:01  m168309
+ * cosmetic change
+ *
+ * Revision 1.14  2010/02/03 14:20:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * solved NPE in attribute default checker
  *
  * Revision 1.13  2009/11/24 08:37:16  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -193,51 +196,57 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
         }
 
 		Object currObj = createBeanFromClassName(className);
+		checkAttributes(currObj, attrs);
+		return currObj;
+    }
 
+	protected void checkAttributes(Object currObj, Map attrs) throws Exception {
+		String beanName = (String)attrs.get("name");
 		for (Iterator it = attrs.keySet().iterator(); it.hasNext();) {
 			String attributeName = (String)it.next();
 			String value = (String)attrs.get(attributeName);
-			PropertyDescriptor pd = PropertyUtils.getPropertyDescriptor(currObj, attributeName);
-			String name = (String)attrs.get("name");
-			if (pd!=null) {
-				Method rm = PropertyUtils.getReadMethod(pd);
-				if (rm!=null) {
-					try {
-						Object dv = rm.invoke(currObj, null);
-						if (dv!=null) {
-							if (dv instanceof String) {
-								if (value.equals(dv)) {
-									addSetToDefaultConfigWarning(currObj, name, attributeName, value);
+			checkAttribute(currObj, beanName, attributeName, value);
+		}
+	}
+
+	protected void checkAttribute(Object currObj, String beanName, String attributeName, String value) throws Exception {
+		PropertyDescriptor pd = PropertyUtils.getPropertyDescriptor(currObj, attributeName);
+		if (pd!=null) {
+			Method rm = PropertyUtils.getReadMethod(pd);
+			if (rm!=null) {
+				try {
+					Object dv = rm.invoke(currObj, null);
+					if (dv!=null) {
+						if (dv instanceof String) {
+							if (value.equals(dv)) {
+								addSetToDefaultConfigWarning(currObj, beanName, attributeName, value);
+							}
+						} else {
+							if (dv instanceof Boolean) {
+								if (Boolean.valueOf(value).equals(dv)) {
+									addSetToDefaultConfigWarning(currObj, beanName, attributeName, value);
 								}
 							} else {
-								if (dv instanceof Boolean) {
-									if (Boolean.valueOf(value).equals(dv)) {
-										addSetToDefaultConfigWarning(currObj, name, attributeName, value);
+								if (dv instanceof Integer) {
+									try {
+										if (Integer.valueOf(value).equals(dv)) {
+											addSetToDefaultConfigWarning(currObj, beanName, attributeName, value);
+										}
+									} catch (NumberFormatException e) {
+										addConfigWarning(currObj, beanName, "attribute ["+ attributeName+"] String ["+value+"] cannot be converted to Integer: "+e.getMessage());
 									}
 								} else {
-									if (dv instanceof Integer) {
-										try {
-											if (Integer.valueOf(value).equals(dv)) {
-												addSetToDefaultConfigWarning(currObj, name, attributeName, value);
-											}
-										} catch (NumberFormatException e) {
-											addConfigWarning(currObj, name, "attribute ["+ attributeName+"] String ["+value+"] cannot be converted to Integer: "+e.getMessage());
-										}
-									} else {
-										log.warn("Unknown returning type [" + rm.getReturnType() + "]" + "for getter method [" + rm.getName() + "], object [" + getObjectName(currObj, name) + "]");
-									}
+									log.warn("Unknown returning type [" + rm.getReturnType() + "]" + "for getter method [" + rm.getName() + "], object [" + getObjectName(currObj, beanName) + "]");
 								}
 							}
 						}
-					} catch (Throwable t) {
-						log.warn("Error on getting default for object [" + getObjectName(currObj, name) + "] with method [" + rm.getName() + "]", t);
 					}
+				} catch (Throwable t) {
+					log.warn("Error on getting default for object [" + getObjectName(currObj, beanName) + "] with method [" + rm.getName() + "]", t);
 				}
 			}
 		}
-
-		return currObj;
-    }
+	}
 
 	private String getObjectName(Object o, String name) {
 		String result=o.getClass().getName();
