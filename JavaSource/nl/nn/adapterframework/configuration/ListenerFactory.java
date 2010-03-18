@@ -1,6 +1,9 @@
 /*
  * $Log: ListenerFactory.java,v $
- * Revision 1.6  2007-11-22 08:36:31  europe\L190409
+ * Revision 1.7  2010-03-18 10:15:27  m168309
+ * Overrided method copyAttrsToMap instead of createObject so that check of attributes is included
+ *
+ * Revision 1.6  2007/11/22 08:36:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved logging
  *
  * Revision 1.2.2.4  2007/11/09 12:32:05  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
@@ -70,22 +73,17 @@ public class ListenerFactory extends AbstractSpringPoweredDigesterFactory {
         return "proto-jmsListener";
     }
     
-    /**
-     * @see nl.nn.adapterframework.configuration.AbstractSpringPoweredDigesterFactory#createObject(org.xml.sax.Attributes)
-     */
-    public Object createObject(Attributes attrs) throws Exception {
-        String className = attrs.getValue("className");
-        if (className != null && getDigester().peek() instanceof MessageSendingPipe && className.endsWith(JMS_LISTENER_CLASSNAME_SUFFIX)) {
-            if (log.isDebugEnabled()) {
-                log.debug("JmsListener is created as part of a MessageSendingPipe; replace classname with '" + CORRELATED_LISTENER_CLASSNAME + "' to ensure compatibility");
-            }
-            return createBeanFromClassName(CORRELATED_LISTENER_CLASSNAME);
-        } else {
-            if (log.isDebugEnabled()) {
-                log.debug("Creating Listener class '" + className + "'");
-            }
-            return createBeanFromClassName(className);
-        }
-    }
+	protected Map copyAttrsToMap(Attributes attrs) {
+		Map map = super.copyAttrsToMap(attrs); 
+		String className = attrs.getValue("className");
+		if (className != null && getDigester().peek() instanceof MessageSendingPipe && className.endsWith(JMS_LISTENER_CLASSNAME_SUFFIX)) {
+			if (log.isDebugEnabled()) {
+				log.debug("JmsListener is created as part of a MessageSendingPipe; replace classname with '" + CORRELATED_LISTENER_CLASSNAME + "' to ensure compatibility");
+			}
+			map.put("className",CORRELATED_LISTENER_CLASSNAME);
+		}
+		return map;
+	}
+
 
 }
