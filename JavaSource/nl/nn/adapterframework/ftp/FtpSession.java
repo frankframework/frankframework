@@ -1,6 +1,9 @@
 /*
  * $Log: FtpSession.java,v $
- * Revision 1.15  2007-05-07 08:35:55  europe\L190409
+ * Revision 1.16  2010-03-19 07:22:32  m168309
+ * default port for FTP is 21 instead of 22 (which is for SFTP)
+ *
+ * Revision 1.15  2007/05/07 08:35:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * cosmetic change
  *
  * Revision 1.14  2007/02/12 13:50:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -96,7 +99,7 @@ import com.sshtools.j2ssh.transport.publickey.SshPrivateKeyFile;
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.ftp.FtpSession</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setHost(String) host}</td><td>name or ip adres of remote host</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setPort(int) port}</td><td>portnumber of remote host</td><td>22</td></tr>
+ * <tr><td>{@link #setPort(int) port}</td><td>portnumber of remote host</td><td>21</td></tr>
  * <tr><td>{@link #setAuthAlias(String) authAlias}</td><td>name of the alias to obtain credentials to authenticatie on remote server</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setUsername(String) username}</td><td>name of the user to authenticatie on remote server</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setPassword(String) password}</td><td>name of the password to authenticatie on remote server</td><td>&nbsp;</td></tr>
@@ -135,7 +138,7 @@ import com.sshtools.j2ssh.transport.publickey.SshPrivateKeyFile;
  * @author John Dekker
  */
 public class FtpSession {
-	public static final String version = "$RCSfile: FtpSession.java,v $  $Revision: 1.15 $ $Date: 2007-05-07 08:35:55 $";
+	public static final String version = "$RCSfile: FtpSession.java,v $  $Revision: 1.16 $ $Date: 2010-03-19 07:22:32 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	// types of ftp transports
@@ -150,7 +153,7 @@ public class FtpSession {
 	
 	// configuration parameters, global for all types
 	private String host;
-	private int port = 22;
+	private int port = 21;
 	private String authAlias;
 	private String username;
 	private String password;

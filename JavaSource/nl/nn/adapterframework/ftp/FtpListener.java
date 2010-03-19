@@ -1,6 +1,9 @@
 /*
  * $Log: FtpListener.java,v $
- * Revision 1.11  2008-02-28 16:20:57  europe\L190409
+ * Revision 1.12  2010-03-19 07:22:32  m168309
+ * default port for FTP is 21 instead of 22 (which is for SFTP)
+ *
+ * Revision 1.11  2008/02/28 16:20:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * use PipeLineSession.setListenerParameters()
  *
  * Revision 1.10  2007/10/03 08:36:29  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -69,7 +72,7 @@ import org.apache.commons.lang.builder.ToStringStyle;
  * <tr><td>{@link #setResponseTime(long) responseTime}</td><td>time between pollings</td><td>3600000 (one hour)</td></tr>
  * 
  * <tr><td>{@link #setHost(String) host}</td><td>name or ip adres of remote host</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setPort(int) port}</td><td>portnumber of remote host</td><td>22</td></tr>
+ * <tr><td>{@link #setPort(int) port}</td><td>portnumber of remote host</td><td>21</td></tr>
  * <tr><td>{@link #setAuthAlias(String) authAlias}</td><td>name of the alias to obtain credentials to authenticatie on remote server</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setUsername(String) username}</td><td>name of the user to authenticatie on remote server</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setPassword(String) password}</td><td>name of the password to authenticatie on remote server</td><td>&nbsp;</td></tr>
@@ -109,7 +112,7 @@ import org.apache.commons.lang.builder.ToStringStyle;
  * @version Id
  */
 public class FtpListener extends FtpSession implements IPullingListener, INamedObject, RunStateEnquiring {
-	public static final String version = "$RCSfile: FtpListener.java,v $  $Revision: 1.11 $ $Date: 2008-02-28 16:20:57 $";
+	public static final String version = "$RCSfile: FtpListener.java,v $  $Revision: 1.12 $ $Date: 2010-03-19 07:22:32 $";
 
 	private LinkedList remoteFilenames;
 	private RunStateEnquirer runStateEnquirer=null;

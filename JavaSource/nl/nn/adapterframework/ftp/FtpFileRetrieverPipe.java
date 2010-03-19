@@ -1,6 +1,9 @@
 /*
  * $Log: FtpFileRetrieverPipe.java,v $
- * Revision 1.10  2010-03-18 11:27:39  m168309
+ * Revision 1.11  2010-03-19 07:22:32  m168309
+ * default port for FTP is 21 instead of 22 (which is for SFTP)
+ *
+ * Revision 1.10  2010/03/18 11:27:39  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * fixed javadoc
  *
  * Revision 1.9  2006/01/05 14:17:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -54,7 +57,7 @@ import nl.nn.adapterframework.pipes.FixedForwardPipe;
  * <tr><td>{@link #setDeleteAfterGet(boolean) deleteAfterGet}</td><td>if true, the remote file is deleted after it is retrieved</td><td>false</td></tr>
  * 
  * <tr><td>{@link #setHost(String) host}</td><td>name or ip adres of remote host</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setPort(int) port}</td><td>portnumber of remote host</td><td>22</td></tr>
+ * <tr><td>{@link #setPort(int) port}</td><td>portnumber of remote host</td><td>21</td></tr>
  * <tr><td>{@link #setAuthAlias(String) authAlias}</td><td>name of the alias to obtain credentials to authenticatie on remote server</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setUsername(String) username}</td><td>name of the user to authenticatie on remote server</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setPassword(String) password}</td><td>name of the password to authenticatie on remote server</td><td>&nbsp;</td></tr>
@@ -102,7 +105,7 @@ import nl.nn.adapterframework.pipes.FixedForwardPipe;
  * @since   4.4
  */
 public class FtpFileRetrieverPipe extends FixedForwardPipe {
-	public static final String version = "$RCSfile: FtpFileRetrieverPipe.java,v $  $Revision: 1.10 $ $Date: 2010-03-18 11:27:39 $";
+	public static final String version = "$RCSfile: FtpFileRetrieverPipe.java,v $  $Revision: 1.11 $ $Date: 2010-03-19 07:22:32 $";
 
 	private FtpSession ftpSession;
 
