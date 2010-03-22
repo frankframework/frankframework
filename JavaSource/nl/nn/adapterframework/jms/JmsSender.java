@@ -1,6 +1,9 @@
 /*
  * $Log: JmsSender.java,v $
- * Revision 1.38  2010-03-10 14:30:05  m168309
+ * Revision 1.39  2010-03-22 11:08:13  m168309
+ * moved message logging from INFO level to DEBUG level
+ *
+ * Revision 1.38  2010/03/10 14:30:05  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * rolled back testtool adjustments (IbisDebuggerDummy)
  *
  * Revision 1.36  2010/01/28 14:59:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -182,7 +185,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  */
 
 public class JmsSender extends JMSFacade implements ISenderWithParameters, IPostboxSender {
-	public static final String version="$RCSfile: JmsSender.java,v $ $Revision: 1.38 $ $Date: 2010-03-10 14:30:05 $";
+	public static final String version="$RCSfile: JmsSender.java,v $ $Revision: 1.39 $ $Date: 2010-03-22 11:08:13 $";
 	private String replyToName = null;
 	private int deliveryMode = 0;
 	private String messageType = null;
@@ -319,12 +322,20 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 
 			// send message	
 			send(mp, msg);
-			if (log.isInfoEnabled()) {
-				log.info(
-					"[" + getName() + "] " + "sent Message: [" + message + "] " + "to [" + getDestinationName()
+			if (log.isDebugEnabled()) {
+				log.debug(
+					"[" + getName() + "] " + "sent message [" + message + "] " + "to [" + getDestinationName()
 						+ "] " + "msgID [" + msg.getJMSMessageID() + "] " + "correlationID [" + msg.getJMSCorrelationID()
 						+ "] " + "using deliveryMode [" + getDeliveryMode() + "] "
 						+ ((replyToName != null) ? "replyTo [" + replyToName+"]" : ""));
+			} else {
+				if (log.isInfoEnabled()) {
+					log.info(
+						"[" + getName() + "] " + "sent message to [" + getDestinationName()
+							+ "] " + "msgID [" + msg.getJMSMessageID() + "] " + "correlationID [" + msg.getJMSCorrelationID()
+							+ "] " + "using deliveryMode [" + getDeliveryMode() + "] "
+							+ ((replyToName != null) ? "replyTo [" + replyToName+"]" : ""));
+				}
 			}
 			if (isSynchronous()) {
 				String replyCorrelationId=null;

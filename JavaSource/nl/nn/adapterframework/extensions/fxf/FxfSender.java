@@ -1,6 +1,9 @@
 /*
  * $Log: FxfSender.java,v $
- * Revision 1.12  2010-03-10 14:30:06  m168309
+ * Revision 1.13  2010-03-22 11:08:12  m168309
+ * moved message logging from INFO level to DEBUG level
+ *
+ * Revision 1.12  2010/03/10 14:30:06  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * rolled back testtool adjustments (IbisDebuggerDummy)
  *
  * Revision 1.10  2009/09/07 13:14:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -242,9 +245,14 @@ public class FxfSender extends JMSFacade implements ISenderWithParameters {
 
 				// send message	
 				send(mp, msg);
-				if (log.isInfoEnabled()) {
-					log.info(getLogPrefix()+ "sent message [" + message + "] to [" + getDestinationName() + "] " + 
+				if (log.isDebugEnabled()) {
+					log.debug(getLogPrefix()+ "sent message [" + message + "] to [" + getDestinationName() + "] " + 
 							"msgID [" + msg.getJMSMessageID() + "]" );;
+				} else {
+					if (log.isInfoEnabled()) {
+						log.info(getLogPrefix()+ "sent message to [" + getDestinationName() + "] " + 
+								"msgID [" + msg.getJMSMessageID() + "]" );;
+					}
 				}
 			} catch (Throwable e) {
 				throw new SenderException(e);

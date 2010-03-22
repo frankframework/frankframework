@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaFacade.java,v $
- * Revision 1.10  2010-01-28 15:08:15  L190409
+ * Revision 1.11  2010-03-22 11:08:13  m168309
+ * moved message logging from INFO level to DEBUG level
+ *
+ * Revision 1.10  2010/01/28 15:08:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * renamed 'Connection' classes to 'MessageSource'
  *
  * Revision 1.9  2009/11/12 12:34:38  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -613,15 +616,26 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 				msg.setBtcData(btcData);
 			}
 	
-	        log.info(getLogPrefix()
-	        	    + " messageProtocol ["
-	                + messageProtocol
-	                + "] replyToQueueName ["
-	                + replyToQueueName
-	                + "] sending message ["
-	                + message
-	                + "]");
-	
+			if (log.isDebugEnabled()) {
+				log.debug(getLogPrefix()
+						+ " messageProtocol ["
+						+ messageProtocol
+						+ "] replyToQueueName ["
+						+ replyToQueueName
+						+ "] sending message ["
+						+ message
+						+ "]");
+			} else {
+				if (log.isInfoEnabled()) {
+					log.info(getLogPrefix()
+							+ " messageProtocol ["
+							+ messageProtocol
+							+ "] replyToQueueName ["
+							+ replyToQueueName
+							+ "] sending message");
+				}
+			}
+
 	        // send the message
 	        sender.send(msg);
 	
