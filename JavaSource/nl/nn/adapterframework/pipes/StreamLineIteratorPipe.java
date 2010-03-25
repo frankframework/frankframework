@@ -1,6 +1,9 @@
 /*
  * $Log: StreamLineIteratorPipe.java,v $
- * Revision 1.6  2010-02-25 13:41:54  m168309
+ * Revision 1.7  2010-03-25 12:58:09  L190409
+ * added attribute closeInputstreamOnExit
+ *
+ * Revision 1.6  2010/02/25 13:41:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted javadoc for resultOnTimeOut attribute
  *
  * Revision 1.5  2008/05/21 09:40:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -71,6 +74,7 @@ import nl.nn.adapterframework.util.ReaderLineIterator;
  * <tr><td>{@link #setBlockSize(int) blockSize}</td><td>controls multiline behaviour. when set to a value greater than 0, it specifies the number of rows send in a block to the sender.</td><td>0 (one line at a time, no prefix of suffix)</td></tr>
  * <tr><td>{@link #setBlockPrefix(String) blockPrefix}</td><td>When <code>blockSize &gt; 0</code>, this string is inserted at the start of the set of lines.</td><td>&lt;block&gt;</td></tr>
  * <tr><td>{@link #setBlockSuffix(String) blockSuffix}</td><td>When <code>blockSize &gt; 0</code>, this string is inserted at the end of the set of lines.</td><td>&lt;/block&gt;</td></tr>
+ * <tr><td>{@link #setCloseInputstreamOnExit(boolean) closeInputstreamOnExit}</td><td>when set to <code>false</code>, the inputstream is not closed after it has been used</td><td>true</td></tr>
  * </table>
  * <table border="1">
  * <tr><th>nested elements</th><th>description</th></tr>
@@ -93,7 +97,7 @@ import nl.nn.adapterframework.util.ReaderLineIterator;
  * @version Id
  */
 public class StreamLineIteratorPipe extends IteratingPipe {
-	public static final String version="$RCSfile: StreamLineIteratorPipe.java,v $ $Revision: 1.6 $ $Date: 2010-02-25 13:41:54 $";
+	public static final String version="$RCSfile: StreamLineIteratorPipe.java,v $ $Revision: 1.7 $ $Date: 2010-03-25 12:58:09 $";
 
 	protected Reader getReader(Object input, PipeLineSession session, String correlationID, Map threadContext) throws SenderException {
 		if (input==null) {
@@ -108,6 +112,13 @@ public class StreamLineIteratorPipe extends IteratingPipe {
 
 	protected IDataIterator getIterator(Object input, PipeLineSession session, String correlationID, Map threadContext) throws SenderException {
 		return new ReaderLineIterator(getReader(input,session, correlationID,threadContext));
+	}
+
+	public void setCloseInputstreamOnExit(boolean b) {
+		setCloseIteratorOnExit(b);
+	}
+	public boolean isCloseInputstreamOnExit() {
+		return isCloseIteratorOnExit();
 	}
 
 }

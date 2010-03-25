@@ -1,6 +1,9 @@
 /*
  * $Log: ZipWriterSender.java,v $
- * Revision 1.3  2010-03-10 14:30:06  m168309
+ * Revision 1.4  2010-03-25 12:55:31  L190409
+ * added attribute closeInputstreamOnExit
+ *
+ * Revision 1.3  2010/03/10 14:30:06  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * rolled back testtool adjustments (IbisDebuggerDummy)
  *
  * Revision 1.1  2010/01/06 17:57:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -13,6 +16,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
@@ -22,8 +26,6 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.util.StreamUtil;
-
-import org.apache.commons.lang.StringUtils;
 
 /**
  * Sender that writes an entry to a ZipStream, similar to ZipWriterPipe with action='write'.
@@ -36,7 +38,8 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>className</td><td>nl.nn.adapterframework.compression.ZipWriterSender</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setZipWriterHandle(String) zipWriterHandle}</td>  <td>session key used to refer to zip session. Must be used if ZipWriterPipes are nested</td><td>"zipwriterhandle"</td></tr>
- * <tr><td>{@link #setCharset(String) charset}</td><td>charset used to write strings to zip entries</td><td>UTF-8</td></tr>
+ * <tr><td>{@link #setCloseInputstreamOnExit(boolean) closeInputstreamOnExit}</td><td>when set to <code>false</code>, the inputstream is not closed after it has been used</td><td>true</td></tr>
+ * <tr><td>{@link #setCharset(String) charset}</td><td>characterset used for writing zip entry</td><td>UTF-8</td></tr>
  * </table>
  * </p>
  * <table border="1">
@@ -56,6 +59,7 @@ public class ZipWriterSender extends SenderWithParametersBase {
 	private static final String PARAMETER_CONTENTS="contents";
  
 	private String zipWriterHandle="zipwriterhandle";
+	private boolean closeInputstreamOnExit=true;
 	private String charset=StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 	
 	private Parameter filenameParameter=null;
@@ -86,46 +90,36 @@ public class ZipWriterSender extends SenderWithParametersBase {
 			throw new SenderException("zipWriterHandle in session key ["+getZipWriterHandle()+"] is not open");		
 		} 
 		String filename=filenameParameter==null?message:(String)pvl.getParameterValue(PARAMETER_FILENAME).getValue();
-		byte[] contents=null;
 		try {
 			if (contentsParameter==null) {
 				if (message!=null) {
-						contents=message.getBytes(getCharset());
+					sessionData.writeEntry(filename,message,isCloseInputstreamOnExit(),getCharset());
 				}
 			} else {
 				Object paramValue=pvl.getParameterValue(PARAMETER_CONTENTS).getValue();
-				if (paramValue!=null) {
-					if (paramValue instanceof byte[]) {
-						contents=(byte[])paramValue;
-					} else {
-						contents=paramValue.toString().getBytes(getCharset());
-					}
-				}
+				sessionData.writeEntry(filename,paramValue,isCloseInputstreamOnExit(),getCharset());
 			}
+			return message;
 		} catch (UnsupportedEncodingException e) {
 			throw new SenderException(getLogPrefix()+"cannot encode zip entry", e);
-		}
-		if (StringUtils.isEmpty(filename)) {
-			throw new SenderException("filename cannot be empty");		
-		}
-		try {
-			sessionData.openEntry(filename);
-			try {
-				if (contents!=null) {
-					sessionData.getZipoutput().write(contents);
-				} else { 
-					log.warn(getLogPrefix()+"contents of zip entry is null");
-				}
-				sessionData.closeEntry();
-			} catch (IOException e) {
-				throw new SenderException("cannot add data to zipentry for ["+filename+"]",e);
-			}
 		} catch (CompressionException e) {
-			throw new SenderException("cannot add zipentry for ["+filename+"]",e);
+			throw new SenderException(getLogPrefix()+"cannot store zip entry", e);
+		} catch (IOException e) {
+			throw new SenderException(getLogPrefix()+"cannot store zip entry", e);
 		}
-		return message;
 	}
 
+
+	public void setCloseInputstreamOnExit(boolean b) {
+		closeInputstreamOnExit = b;
+	}
+	public void setCloseStreamOnExit(boolean b) {
+		ConfigurationWarnings.getInstance().add("attribute 'closeStreamOnExit' has been renamed into 'closeInputstreamOnExit'");
+		setCloseInputstreamOnExit(b);
+	}
+	public boolean isCloseInputstreamOnExit() {
+		return closeInputstreamOnExit;
+	}
 
 	public void setCharset(String string) {
 		charset = string;
@@ -133,7 +127,7 @@ public class ZipWriterSender extends SenderWithParametersBase {
 	public String getCharset() {
 		return charset;
 	}
-
+	
 	public void setZipWriterHandle(String string) {
 		zipWriterHandle = string;
 	}

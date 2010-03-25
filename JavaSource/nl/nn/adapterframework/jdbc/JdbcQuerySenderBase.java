@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcQuerySenderBase.java,v $
- * Revision 1.49  2010-01-28 09:47:04  m168309
+ * Revision 1.50  2010-03-25 12:57:03  L190409
+ * added attribute closeInputstreamOnExit
+ *
+ * Revision 1.49  2010/01/28 09:47:04  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * separate method for executing "other" queries
  *
  * Revision 1.48  2009/10/22 13:42:55  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -236,6 +239,7 @@ import sun.misc.BASE64Encoder;
  * <tr><td>{@link #setSynchronous(boolean) synchronous}</td><td>&nbsp;</td><td>true</td></tr>
  * <tr><td>{@link #setTrimSpaces(boolean) trimSpaces}</td><td>remove trailing blanks from all values.</td><td>true</td></tr>
  * <tr><td>{@link #setBlobCharset(String) blobCharset}</td><td>charset used to read and write BLOBs</td><td>UTF-8</td></tr>
+ * <tr><td>{@link #setCloseInputstreamOnExit(boolean) closeInputstreamOnExit}</td><td>when set to <code>false</code>, the inputstream is not closed after it has been used</td><td>true</td></tr>
  * <tr><td>{@link #setStreamCharset(String) streamCharset}</td><td>charset used when reading a stream (that is e.g. going to be written to a BLOB or CLOB). When empty, the stream is copied directly to the BLOB, without conversion</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setBlobsCompressed(boolean) blobsCompressed}</td><td>controls whether blobdata is stored compressed in the database</td><td>true</td></tr>
  * <tr><td>{@link #setColumnsReturned(String) columnsReturned}</td><td>comma separated list of columns whose values are to be returned. Works only if the driver implements JDBC 3.0 getGeneratedKeys()</td><td>&nbsp;</td></tr>
@@ -269,7 +273,7 @@ import sun.misc.BASE64Encoder;
  * @since 	4.1
  */
 public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
-	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.49 $ $Date: 2010-01-28 09:47:04 $";
+	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.50 $ $Date: 2010-03-25 12:57:03 $";
 
 	private final static String UNP_START = "?{";
 	private final static String UNP_END = "}";
@@ -289,6 +293,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 	private String resultQuery=null;
 	private boolean trimSpaces=true;
 	private String blobCharset = Misc.DEFAULT_INPUT_STREAM_ENCODING;
+	private boolean closeInputstreamOnExit=true;
 	private String streamCharset = null;
 	private boolean blobsCompressed=true;
 	private boolean blobSmartGet=false;
@@ -570,18 +575,18 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 			if (message instanceof Reader) {
 				Reader inReader = (Reader)message;
 				Writer writer = JdbcUtil.getBlobWriter(rs, blobColumn, getBlobCharset(), isBlobsCompressed());
-				Misc.readerToWriter(inReader,writer);
+				Misc.readerToWriter(inReader,writer,isCloseInputstreamOnExit());
 				writer.close();
 			} else if (message instanceof InputStream) {
 				InputStream inStream = (InputStream)message;
 				if (StringUtils.isNotEmpty(getStreamCharset())) {
 					Writer writer = JdbcUtil.getBlobWriter(rs, blobColumn, getBlobCharset(), isBlobsCompressed());
 					Reader reader = new InputStreamReader(inStream,getStreamCharset());
-					Misc.readerToWriter(reader,writer);
+					Misc.readerToWriter(reader,writer,isCloseInputstreamOnExit());
 					writer.close();
 				} else {
 					OutputStream outStream = JdbcUtil.getBlobOutputStream(rs, blobColumn, isBlobsCompressed());
-					Misc.streamToStream(inStream,outStream);
+					Misc.streamToStream(inStream,outStream,isCloseInputstreamOnExit());
 					outStream.close();
 				}
 			} else if (message instanceof byte[]) {
@@ -618,7 +623,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 			if (message instanceof Reader) {
 				Reader inReader = (Reader)message;
 				Writer writer = JdbcUtil.getClobWriter(rs, clobColumn);
-				Misc.readerToWriter(inReader,writer);
+				Misc.readerToWriter(inReader,writer,isCloseInputstreamOnExit());
 				writer.close();
 			} else if (message instanceof InputStream) {
 				InputStream inStream = (InputStream)message;
@@ -629,7 +634,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 					reader = new InputStreamReader(inStream);
 				}
 				Writer writer = JdbcUtil.getClobWriter(rs, clobColumn);
-				Misc.readerToWriter(reader,writer);
+				Misc.readerToWriter(reader,writer,isCloseInputstreamOnExit());
 				writer.close();
 			} else {
 				JdbcUtil.putStringAsClob(rs, clobColumn, (String)message);
@@ -1032,7 +1037,6 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		return trimSpaces;
 	}
 
-
 	public void setBlobsCompressed(boolean b) {
 		blobsCompressed = b;
 	}
@@ -1083,6 +1087,12 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		return clobSessionKey;
 	}
 
+	public void setCloseInputstreamOnExit(boolean b) {
+		closeInputstreamOnExit = b;
+	}
+	public boolean isCloseInputstreamOnExit() {
+		return closeInputstreamOnExit;
+	}
 
 	public void setStreamCharset(String string) {
 		streamCharset = string;

@@ -1,6 +1,9 @@
 /*
  * $Log: StreamTransformerPipe.java,v $
- * Revision 1.22  2010-02-08 14:35:41  L190409
+ * Revision 1.23  2010-03-25 12:55:31  L190409
+ * added attribute closeInputstreamOnExit
+ *
+ * Revision 1.22  2010/02/08 14:35:41  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * preserve order of result writers
  *
  * Revision 1.21  2010/02/03 14:17:09  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -104,6 +107,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>classname</td><td>nl.nn.adapterframework.batch.StreamTransformerPipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setStoreOriginalBlock(boolean) storeOriginalBlock}</td><td>when set <code>true</code> the original block is stored under the session key originalBlock</td><td>false</td></tr>
+ * <tr><td>{@link #setCloseInputstreamOnExit(boolean) closeInputstreamOnExit}</td><td>when set to <code>false</code>, the inputstream is not closed after it has been used</td><td>true</td></tr>
  * <tr><td>{@link #setCharset(String) charset}</td><td>characterset used for reading file or inputstream</td><td>UTF-8</td></tr>
  * </table>
  * </p>
@@ -129,6 +133,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	public static final String originalBlockKey="originalBlock";
 
 	private boolean storeOriginalBlock=false;
+	private boolean closeInputstreamOnExit=true;
 	private String charset=Misc.DEFAULT_INPUT_STREAM_ENCODING;
 
 	private IRecordHandlerManager initialManager=null;
@@ -369,10 +374,12 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 		try {
 			transformationResult = transform(streamId, breader, session, prc);
 		} finally {
-			try {
-				reader.close();
-			} catch (IOException e) {
-				log.warn(getLogPrefix(session)+"Exception closing reader",e);
+			if (isCloseInputstreamOnExit()) {
+				try {
+					reader.close();
+				} catch (IOException e) {
+					log.warn(getLogPrefix(session)+"Exception closing reader",e);
+				}
 			}
 		}
 		return new PipeRunResult(getForward(),transformationResult);
@@ -618,6 +625,13 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	}
 	public boolean isStoreOriginalBlock() {
 		return storeOriginalBlock;
+	}
+
+	public void setCloseInputstreamOnExit(boolean b) {
+		closeInputstreamOnExit = b;
+	}
+	public boolean isCloseInputstreamOnExit() {
+		return closeInputstreamOnExit;
 	}
 
 	public void setCharset(String string) {
