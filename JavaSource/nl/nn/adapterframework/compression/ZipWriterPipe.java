@@ -1,6 +1,10 @@
 /*
  * $Log: ZipWriterPipe.java,v $
- * Revision 1.2  2010-01-07 13:14:20  L190409
+ * Revision 1.3  2010-03-25 12:56:38  L190409
+ * renamed attribute closeStreamOnExit into closeOutputstreamOnExit
+ * added attribute closeInputstreamOnExit
+ *
+ * Revision 1.2  2010/01/07 13:14:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved robustness: filename of file to be written must be specified
  * by input message. Parameter is only used for logical filenames.
  *
@@ -13,12 +17,12 @@ package nl.nn.adapterframework.compression;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 
 import javax.servlet.http.HttpServletResponse;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -29,11 +33,9 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
-import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.StreamUtil;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.lf5.util.StreamUtils;
 
 /**
  * Pipe that creates a ZipStream.
@@ -66,7 +68,8 @@ import org.apache.log4j.lf5.util.StreamUtils;
  *   <li>stream: create a new zip entry, and provide an outputstream that another pipe can use to write the contents</li> 
  * </ul></td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setZipWriterHandle(String) zipWriterHandle}</td>  <td>session key used to refer to zip session. Must be used if ZipWriterPipes are nested</td><td>"zipwriterhandle"</td></tr>
- * <tr><td>{@link #setCloseStreamOnExit(boolean) closeStreamOnExit}</td>  <td>only for action="open": if set true, the stream will be closed after the zip creation is finished</td><td>true</td></tr>
+ * <tr><td>{@link #setCloseOutputstreamOnExit(boolean) closeOutputstreamOnExit}</td>  <td>only for action="open": when set to <code>false</code>, the outputstream is not closed after the zip creation is finished</td><td>true</td></tr>
+ * <tr><td>{@link #setCloseInputstreamOnExit(boolean) closeInputstreamOnExit}</td>  <td>only for action="write": when set to <code>false</code>, the inputstream is not closed after the zip entry is written</td><td>true</td></tr>
  * <tr><td>{@link #setCharset(String) charset}</td><td>only for action="write": charset used to write strings to zip entries</td><td>UTF-8</td></tr>
  * </table>
  * </p>
@@ -98,7 +101,8 @@ public class ZipWriterPipe extends FixedForwardPipe {
  
  	private String action=null;
 	private String zipWriterHandle="zipwriterhandle";
-	private boolean closeStreamOnExit=true;
+	private boolean closeInputstreamOnExit=true;
+	private boolean closeOutputstreamOnExit=true;
 	private String charset=StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 	
 	private Parameter filenameParameter=null; //used for with action=open for main filename, with action=write for entryfilename
@@ -166,7 +170,7 @@ public class ZipWriterPipe extends FixedForwardPipe {
 		if (resultStream==null) {
 			throw new PipeRunException(this,getLogPrefix(session)+"Dit not find OutputStream or HttpResponse, and could not find filename");
 		}
-		ZipWriter sessionData=ZipWriter.createZipWriter(session,getZipWriterHandle(),resultStream,isCloseStreamOnExit());
+		ZipWriter sessionData=ZipWriter.createZipWriter(session,getZipWriterHandle(),resultStream,isCloseOutputstreamOnExit());
 		return sessionData;
 	}
 
@@ -223,42 +227,45 @@ public class ZipWriterPipe extends FixedForwardPipe {
 			throw new PipeRunException(this,getLogPrefix(session)+"filename cannot be empty");		
 		}
 		try {
-			sessionData.openEntry(filename);
-			if (ACTION_WRITE.equals(getAction())) {
-				try {
-					if (msg!=null) {
-						sessionData.getZipoutput().write(msg.getBytes(getCharset()));
-					} else
-					if (input instanceof InputStream) {
-						InputStream dataStream=(InputStream)input;
-						StreamUtils.copy(dataStream, sessionData.getZipoutput());
-					} else { 
-						throw new PipeRunException(this,getLogPrefix(session)+"input is ["+ClassUtils.nameOf(input)+"] must be either String or InputStream");
-					}
-					sessionData.closeEntry();
-				} catch (IOException e) {
-					throw new PipeRunException(this,getLogPrefix(session)+"cannot add data to zipentry for ["+filename+"]",e);
-				}
-			}
 			if (ACTION_STREAM.equals(getAction())) {
+				sessionData.openEntry(filename);
 				PipeRunResult prr = new PipeRunResult(getForward(),sessionData.getZipoutput());
 				return prr;
 			}
+			if (ACTION_WRITE.equals(getAction())) {
+				try {
+					sessionData.writeEntry(filename, input, isCloseInputstreamOnExit(), getCharset());
+				} catch (IOException e) {
+					throw new PipeRunException(this,getLogPrefix(session)+"cannot add data to zipentry for ["+filename+"]",e);
+				}
+				return new PipeRunResult(getForward(),input);
+			}
+			throw new PipeRunException(this,getLogPrefix(session)+"illegal action ["+getAction()+"]");
 		} catch (CompressionException e) {
 			throw new PipeRunException(this,getLogPrefix(session)+"cannot add zipentry for ["+filename+"]",e);
 		}
-		return new PipeRunResult(getForward(),input);
 	}
 
 	protected String getLogPrefix(PipeLineSession session) {
 		return super.getLogPrefix(session)+"action ["+getAction()+"] ";
 	}
 	
-	public void setCloseStreamOnExit(boolean b) {
-		closeStreamOnExit = b;
+	public void setCloseInputstreamOnExit(boolean b) {
+		closeInputstreamOnExit = b;
 	}
-	public boolean isCloseStreamOnExit() {
-		return closeStreamOnExit;
+	public boolean isCloseInputstreamOnExit() {
+		return closeInputstreamOnExit;
+	}
+
+	public void setCloseOutputstreamOnExit(boolean b) {
+		closeOutputstreamOnExit = b;
+	}
+	public void setCloseStreamOnExit(boolean b) {
+		ConfigurationWarnings.getInstance().add("attribute 'closeStreamOnExit' has been renamed into 'closeOutputstreamOnExit'");
+		setCloseOutputstreamOnExit(b);
+	}
+	public boolean isCloseOutputstreamOnExit() {
+		return closeOutputstreamOnExit;
 	}
 
 	public void setCharset(String string) {
