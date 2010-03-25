@@ -1,6 +1,9 @@
 /*
  * $Log: Misc.java,v $
- * Revision 1.27  2009-12-28 12:53:07  m168309
+ * Revision 1.28  2010-03-25 12:58:28  L190409
+ * made close optional in readerToWriter
+ *
+ * Revision 1.27  2009/12/28 12:53:07  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * cosmetic changes
  *
  * Revision 1.26  2009/12/24 08:27:55  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -99,7 +102,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class Misc {
-	public static final String version="$RCSfile: Misc.java,v $ $Revision: 1.27 $ $Date: 2009-12-28 12:53:07 $";
+	public static final String version="$RCSfile: Misc.java,v $ $Revision: 1.28 $ $Date: 2010-03-25 12:58:28 $";
 	static Logger log = LogUtil.getLogger(Misc.class);
 	public static final int BUFFERSIZE=20000;
 	public static final String DEFAULT_INPUT_STREAM_ENCODING="UTF-8";
@@ -218,6 +221,9 @@ public class Misc {
 	}
 
 	public static void readerToWriter(Reader reader, Writer writer) throws IOException {
+		readerToWriter(reader,writer,true);
+	}
+	public static void readerToWriter(Reader reader, Writer writer, boolean closeInput) throws IOException {
 		if (reader!=null) {
 			char buffer[]=new char[BUFFERSIZE]; 
 				
@@ -225,7 +231,9 @@ public class Misc {
 			while ((charsRead=reader.read(buffer,0,BUFFERSIZE))>0) {
 				writer.write(buffer,0,charsRead);
 			}
-			reader.close();
+			if (closeInput) {
+				reader.close();
+			}
 		}
 	}
 
@@ -479,7 +487,7 @@ public class Misc {
 				props.setProperty(key,value);
 			}
 		} catch ( NoSuchMethodException e ) {
-			log.debug("Caught NoSuchMethodException, just not on JDK 1.5",e);
+			log.debug("Caught NoSuchMethodException, just not on JDK 1.5: "+e.getMessage());
 		} catch ( IllegalAccessException e ) {
 			log.debug("Caught IllegalAccessException, using JDK 1.4 method",e);
 		} catch ( InvocationTargetException e ) {
