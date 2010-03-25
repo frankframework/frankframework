@@ -1,6 +1,9 @@
 /*
  * $Log: ZipIteratorPipe.java,v $
- * Revision 1.2  2010-02-25 13:41:54  m168309
+ * Revision 1.3  2010-03-25 12:56:18  L190409
+ * renamed attribute closeStreamOnExit into closeInputstreamOnExit
+ *
+ * Revision 1.2  2010/02/25 13:41:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted javadoc for resultOnTimeOut attribute
  *
  * Revision 1.1  2010/01/06 17:57:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -20,6 +23,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IDataIterator;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
@@ -77,8 +81,8 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setBlockPrefix(String) blockPrefix}</td><td>When <code>blockSize &gt; 0</code>, this string is inserted at the start of the set of lines.</td><td>&lt;block&gt;</td></tr>
  * <tr><td>{@link #setBlockSuffix(String) blockSuffix}</td><td>When <code>blockSize &gt; 0</code>, this string is inserted at the end of the set of lines.</td><td>&lt;/block&gt;</td></tr>
  * <tr><td>{@link #setContentsSessionKey(String) contentsSessionKey}</td><td>session key used to store contents of each zip entry</td><td>zipdata</td></tr>
- * <tr><td>{@link #setStreamingContents(boolean) streamingContents}</td><td>when set to <code>false</code>, the contents of the entry is placed under the session key, instead of the inputstream to the contents</td><td>true</td></tr>
- * <tr><td>{@link #setCloseStreamOnExit(boolean) closeStreamOnExit}</td><td>when set to <code>false</code>, the contents the inputstream is not closed after it has been used</td><td>true</td></tr>
+ * <tr><td>{@link #setStreamingContents(boolean) streamingContents}</td><td>when set to <code>false</code>, a string containing the contents of the entry is placed under the session key, instead of the inputstream to the contents</td><td>true</td></tr>
+ * <tr><td>{@link #setCloseInputstreamOnExit(boolean) closeInputstreamOnExit}</td><td>when set to <code>false</code>, the inputstream is not closed after it has been used</td><td>true</td></tr>
  * <tr><td>{@link #setCharset(String) charset}</td><td>charset used when reading the contents of the entry (only used if streamingContens=false></td><td>UTF-8</td></tr>
  * </table>
  * <table border="1">
@@ -100,7 +104,7 @@ public class ZipIteratorPipe extends IteratingPipe {
 
 	private String contentsSessionKey="zipdata";
 	private boolean streamingContents=true;
-	private boolean closeStreamOnExit=true;
+	private boolean closeInputstreamOnExit=true;
 	private String charset=Misc.DEFAULT_INPUT_STREAM_ENCODING;
 
 	public void configure() throws ConfigurationException {
@@ -175,7 +179,7 @@ public class ZipIteratorPipe extends IteratingPipe {
 
 		public void close() throws SenderException {
 			try {
-				if (isCloseStreamOnExit()) {
+				if (isCloseInputstreamOnExit()) {
 					source.close();
 				}
 				session.remove(getContentsSessionKey());
@@ -240,18 +244,22 @@ public class ZipIteratorPipe extends IteratingPipe {
 		return streamingContents;
 	}
 
+	public void setCloseInputstreamOnExit(boolean b) {
+		closeInputstreamOnExit = b;
+	}
+	public void setCloseStreamOnExit(boolean b) {
+		ConfigurationWarnings.getInstance().add("attribute 'closeStreamOnExit' has been renamed into 'closeInputstreamOnExit'");
+		setCloseInputstreamOnExit(b);
+	}
+	public boolean isCloseInputstreamOnExit() {
+		return closeInputstreamOnExit;
+	}
+
 	public void setCharset(String string) {
 		charset = string;
 	}
 	public String getCharset() {
 		return charset;
-	}
-
-	public void setCloseStreamOnExit(boolean b) {
-		closeStreamOnExit = b;
-	}
-	public boolean isCloseStreamOnExit() {
-		return closeStreamOnExit;
 	}
 
 }
