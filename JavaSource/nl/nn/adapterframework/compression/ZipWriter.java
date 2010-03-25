@@ -1,19 +1,25 @@
 /*
  * $Log: ZipWriter.java,v $
- * Revision 1.1  2010-01-06 17:57:35  L190409
+ * Revision 1.2  2010-03-25 12:55:53  L190409
+ * added writeEntry()
+ *
+ * Revision 1.1  2010/01/06 17:57:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * classes for reading and writing zip archives
  *
  */
 package nl.nn.adapterframework.compression;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.Misc;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 /**
@@ -82,6 +88,33 @@ public class ZipWriter {
 			throw new CompressionException("Cannot close ZipStream",e);
 		}
 	}
+
+	public void writeEntry(String filename, Object contents, boolean close, String charset) throws CompressionException, IOException {
+		if (StringUtils.isEmpty(filename)) {
+			throw new CompressionException("filename cannot be empty");		
+		}
+		openEntry(filename);
+		if (contents!=null) {
+			if (contents instanceof byte[]) {
+				getZipoutput().write((byte[])contents);
+			} else if (contents instanceof InputStream) {
+				InputStream is = (InputStream)contents;
+				try {
+					Misc.streamToStream(is,getZipoutput());
+				} finally {
+					if (close) {
+						is.close();
+					}
+				}
+			} else {
+				getZipoutput().write(contents.toString().getBytes(charset));
+			}
+		} else { 
+			log.warn("contents of zip entry ["+filename+"] is null");
+		}
+		closeEntry();
+	}
+
 
 	public String getLogPrefix(String handlekey) {
 		return "ZipWriterHandle ["+handlekey+"] ";
