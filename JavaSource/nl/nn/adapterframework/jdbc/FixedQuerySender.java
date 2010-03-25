@@ -1,6 +1,9 @@
 /*
  * $Log: FixedQuerySender.java,v $
- * Revision 1.21  2009-10-07 13:35:12  m168309
+ * Revision 1.22  2010-03-25 12:57:17  L190409
+ * javadoc: added attribute closeInputstreamOnExit
+ *
+ * Revision 1.21  2009/10/07 13:35:12  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added attribute includeFieldDefinition
  *
  * Revision 1.20  2009/07/17 12:48:12  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -107,6 +110,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
  * <tr><td>{@link #setBlobSmartGet(boolean) blobSmartGet}</td><td>controls automatically whether blobdata is stored compressed and/or serialized in the database</td><td>false</td></tr>
  * <tr><td>{@link #setTimeout(int) timeout}</td><td>the number of seconds the driver will wait for a Statement object to execute. If the limit is exceeded, a TimeOutException is thrown. 0 means no timeout</td><td>0</td></tr>
  * <tr><td>{@link #setIncludeFieldDefinition(boolean) includeFieldDefinition}</td><td>when <code>true</code>, the result contains besides the returned rows also a header with information about the fetched fields</td><td>true</td></tr>
+ * <tr><td>{@link #setCloseInputstreamOnExit(boolean) closeInputstreamOnExit}</td><td>when set to <code>false</code>, the inputstream is not closed after it has been used</td><td>true</td></tr>
  * </table>
  * </p>
  * <table border="1">
@@ -121,7 +125,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
  * @since 	4.1
  */
 public class FixedQuerySender extends JdbcQuerySenderBase {
-	public static final String version = "$RCSfile: FixedQuerySender.java,v $ $Revision: 1.21 $ $Date: 2009-10-07 13:35:12 $";
+	public static final String version = "$RCSfile: FixedQuerySender.java,v $ $Revision: 1.22 $ $Date: 2010-03-25 12:57:17 $";
 
 	private String query=null;
 	private boolean lockRows=false;
