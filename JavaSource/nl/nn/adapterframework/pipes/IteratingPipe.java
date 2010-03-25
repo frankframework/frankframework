@@ -1,6 +1,9 @@
 /*
  * $Log: IteratingPipe.java,v $
- * Revision 1.17  2010-03-10 10:15:19  m168309
+ * Revision 1.18  2010-03-25 12:57:53  L190409
+ * added protected attribute closeIteratorOnExit
+ *
+ * Revision 1.17  2010/03/10 10:15:19  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added TimeOutException to iterateInput
  *
  * Revision 1.16  2010/02/25 13:41:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -178,7 +181,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public abstract class IteratingPipe extends MessageSendingPipe {
-	public static final String version="$RCSfile: IteratingPipe.java,v $ $Revision: 1.17 $ $Date: 2010-03-10 10:15:19 $";
+	public static final String version="$RCSfile: IteratingPipe.java,v $ $Revision: 1.18 $ $Date: 2010-03-25 12:57:53 $";
 
 	private String stopConditionXPathExpression=null;
 	private boolean removeXmlDeclarationInResults=false;
@@ -190,6 +193,8 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 	private String itemNoSessionKey=null;
 	
 	private boolean ignoreExceptions=false;
+
+	private boolean closeIteratorOnExit=true;
 	
 	private String blockPrefix="<block>";
 	private String blockSuffix="</block>";
@@ -375,7 +380,9 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 		} finally {
 			if (it!=null) {
 				try {
-					it.close();
+					if (isCloseIteratorOnExit()) {
+						it.close();
+					}
 				} catch (Exception e) {
 					log.warn("Exception closing iterator", e);
 				} 
@@ -483,6 +490,13 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 	}
 	public String getItemNoSessionKey() {
 		return itemNoSessionKey;
+	}
+
+	protected void setCloseIteratorOnExit(boolean b) {
+		closeIteratorOnExit = b;
+	}
+	protected boolean isCloseIteratorOnExit() {
+		return closeIteratorOnExit;
 	}
 
 }
