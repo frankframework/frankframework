@@ -1,6 +1,9 @@
 /*
  * $Log: JmsMessagingSource.java,v $
- * Revision 1.1  2010-01-28 14:48:42  L190409
+ * Revision 1.2  2010-04-01 12:01:52  L190409
+ * fixed getConnectionFactoryDelegate()
+ *
+ * Revision 1.1  2010/01/28 14:48:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * renamed 'Connection' classes to 'MessageSource'
  *
  * Revision 1.7  2008/07/24 12:20:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -25,6 +28,8 @@ import javax.jms.Destination;
 import javax.naming.Context;
 import javax.naming.NamingException;
 
+import nl.nn.adapterframework.util.ClassUtils;
+
 /**
  * {@link MessagingSource} for JMS connections.
  * 
@@ -42,6 +47,10 @@ public class JmsMessagingSource extends MessagingSource {
 		Destination dest=null;
 		dest=(Destination) getContext().lookup(destinationName);
 		return dest;
+	}
+
+	protected ConnectionFactory getConnectionFactoryDelegate() throws IllegalArgumentException, SecurityException, IllegalAccessException, NoSuchFieldException {
+		return (ConnectionFactory)ClassUtils.getDeclaredFieldValue(getConnectionFactory(),"wrapped");
 	}
 	
 }
