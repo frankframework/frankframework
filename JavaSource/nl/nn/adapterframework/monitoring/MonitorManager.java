@@ -1,6 +1,9 @@
 /*
  * $Log: MonitorManager.java,v $
- * Revision 1.11  2009-05-13 08:18:50  L190409
+ * Revision 1.12  2010-04-01 12:03:37  L190409
+ * disabled debug tracing
+ *
+ * Revision 1.11  2009/05/13 08:18:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved monitoring: triggers can now be filtered multiselectable on adapterlevel
  *
  * Revision 1.10  2009/04/15 14:28:16  Martijn Onstwedder <martijn.onstwedder@ibissource.org>
@@ -101,7 +104,7 @@ public class MonitorManager implements EventHandler {
 
 	private static MonitorManager self=null;
 	
-	public static final boolean traceReconfigure=true;
+	public static final boolean traceReconfigure=false;
 	
 	
 	
