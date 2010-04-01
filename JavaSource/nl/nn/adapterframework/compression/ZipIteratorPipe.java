@@ -1,6 +1,9 @@
 /*
  * $Log: ZipIteratorPipe.java,v $
- * Revision 1.3  2010-03-25 12:56:18  L190409
+ * Revision 1.4  2010-04-01 11:57:27  L190409
+ * improved configwarning
+ *
+ * Revision 1.3  2010/03/25 12:56:18  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * renamed attribute closeStreamOnExit into closeInputstreamOnExit
  *
  * Revision 1.2  2010/02/25 13:41:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -248,7 +251,7 @@ public class ZipIteratorPipe extends IteratingPipe {
 		closeInputstreamOnExit = b;
 	}
 	public void setCloseStreamOnExit(boolean b) {
-		ConfigurationWarnings.getInstance().add("attribute 'closeStreamOnExit' has been renamed into 'closeInputstreamOnExit'");
+		ConfigurationWarnings.getInstance().add(getLogPrefix(null)+"attribute 'closeStreamOnExit' has been renamed into 'closeInputstreamOnExit'");
 		setCloseInputstreamOnExit(b);
 	}
 	public boolean isCloseInputstreamOnExit() {

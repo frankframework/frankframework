@@ -1,6 +1,9 @@
 /*
  * $Log: ZipWriterPipe.java,v $
- * Revision 1.3  2010-03-25 12:56:38  L190409
+ * Revision 1.4  2010-04-01 11:56:33  L190409
+ * improved configwarning
+ *
+ * Revision 1.3  2010/03/25 12:56:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * renamed attribute closeStreamOnExit into closeOutputstreamOnExit
  * added attribute closeInputstreamOnExit
  *
@@ -261,7 +264,7 @@ public class ZipWriterPipe extends FixedForwardPipe {
 		closeOutputstreamOnExit = b;
 	}
 	public void setCloseStreamOnExit(boolean b) {
-		ConfigurationWarnings.getInstance().add("attribute 'closeStreamOnExit' has been renamed into 'closeOutputstreamOnExit'");
+		ConfigurationWarnings.getInstance().add(getLogPrefix(null)+"attribute 'closeStreamOnExit' has been renamed into 'closeOutputstreamOnExit'");
 		setCloseOutputstreamOnExit(b);
 	}
 	public boolean isCloseOutputstreamOnExit() {
