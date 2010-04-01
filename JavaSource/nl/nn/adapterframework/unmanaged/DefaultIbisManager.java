@@ -1,6 +1,9 @@
 /*
  * $Log: DefaultIbisManager.java,v $
- * Revision 1.11  2009-12-29 14:37:55  L190409
+ * Revision 1.12  2010-04-01 13:01:35  L190409
+ * replaced BeanFactory by ApplicationContext to enable AOP proxies
+ *
+ * Revision 1.11  2009/12/29 14:37:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * modified imports to reflect move of statistics classes to separate package
  *
  * Revision 1.10  2009/06/05 07:30:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -67,19 +70,17 @@ import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.IThreadCountControllable;
 import nl.nn.adapterframework.ejb.ListenerPortPoller;
-import nl.nn.adapterframework.senders.IbisLocalSender;
-import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.scheduler.JobDef;
 import nl.nn.adapterframework.scheduler.SchedulerHelper;
+import nl.nn.adapterframework.senders.IbisLocalSender;
+import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.log4j.Logger;
 import org.quartz.SchedulerException;
-import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.BeanFactoryAware;
-import org.springframework.beans.factory.xml.XmlBeanFactory;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.transaction.PlatformTransactionManager;
 
 /**
@@ -90,7 +91,7 @@ import org.springframework.transaction.PlatformTransactionManager;
  * @since   4.8
  * @version Id
  */
-public class DefaultIbisManager implements IbisManager, BeanFactoryAware {
+public class DefaultIbisManager implements IbisManager, ApplicationContextAware {
     protected Logger log=LogUtil.getLogger(this);
 	
     public static final String DFLT_DIGESTER_RULES = "digester-rules.xml";
@@ -102,7 +103,7 @@ public class DefaultIbisManager implements IbisManager, BeanFactoryAware {
     private int deploymentMode;
     private PlatformTransactionManager transactionManager;
     private ListenerPortPoller listenerPortPoller;
-    private XmlBeanFactory beanFactory;
+    private ApplicationContext applicationContext;
     
     protected final String[] deploymentModes = new String[] {DEPLOYMENT_MODE_UNMANAGED_STRING, DEPLOYMENT_MODE_EJB_STRING};
     
@@ -160,9 +161,10 @@ public class DefaultIbisManager implements IbisManager, BeanFactoryAware {
         // to never finalize the Bean Factory.
         // Singleton Beans in the Bean Factory are explicitly destroyed,
         // to ensure that they release their resources.
-        AbstractSpringPoweredDigesterFactory.factory = null;
-        beanFactory.destroySingletons();
-        beanFactory = null;
+        AbstractSpringPoweredDigesterFactory.applicationContext = null;
+        
+		// applicationContext.destroySingletons();
+		applicationContext = null;
         log.info("* IBIS Shutdown: Shutdown complete for instance [" + name + "]");
     }
     
@@ -416,7 +418,7 @@ public class DefaultIbisManager implements IbisManager, BeanFactoryAware {
         this.listenerPortPoller = listenerPortPoller;
     }
 
-    public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
-        this.beanFactory = (XmlBeanFactory) beanFactory;
+    public void setApplicationContext(ApplicationContext applicationContext) {
+        this.applicationContext = applicationContext;
     }
 }

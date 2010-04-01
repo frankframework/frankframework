@@ -1,6 +1,9 @@
 /*
  * $Log: ConfigurationDigester.java,v $
- * Revision 1.31  2010-01-27 15:32:55  L190409
+ * Revision 1.32  2010-04-01 13:01:35  L190409
+ * replaced BeanFactory by ApplicationContext to enable AOP proxies
+ *
+ * Revision 1.31  2010/01/27 15:32:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * show name of last resolved entity in errormessages
  *
  * Revision 1.30  2009/11/24 08:32:00  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -110,9 +113,8 @@ import org.apache.commons.digester.xmlrules.FromXmlRuleSet;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
 import org.apache.log4j.Logger;
-import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.BeanFactoryAware;
-import org.springframework.beans.factory.ListableBeanFactory;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.w3c.dom.Element;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.ErrorHandler;
@@ -153,8 +155,8 @@ import org.xml.sax.SAXParseException;
  * @author Johan Verrips
  * @see Configuration
  */
-abstract public class ConfigurationDigester implements BeanFactoryAware {
-	public static final String version = "$RCSfile: ConfigurationDigester.java,v $ $Revision: 1.31 $ $Date: 2010-01-27 15:32:55 $";
+abstract public class ConfigurationDigester implements ApplicationContextAware {
+	public static final String version = "$RCSfile: ConfigurationDigester.java,v $ $Revision: 1.32 $ $Date: 2010-04-01 13:01:35 $";
     protected static Logger log = LogUtil.getLogger(ConfigurationDigester.class);
 	private ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 
@@ -169,8 +171,6 @@ abstract public class ConfigurationDigester implements BeanFactoryAware {
 
 	private String configurationFile=null;
 	private String digesterRulesFile=DIGESTER_RULES_DEFAULT;
-    
-    private BeanFactory beanFactory;
     
 	private Configuration configuration;
 	
@@ -402,13 +402,11 @@ abstract public class ConfigurationDigester implements BeanFactoryAware {
 	}
 
 
-    public void setBeanFactory(BeanFactory factory) {
-        beanFactory = factory;
-        AbstractSpringPoweredDigesterFactory.factory = (ListableBeanFactory) beanFactory;
+    public void setApplicationContext(ApplicationContext applicationContext) {
+    	log.debug("ConfigurationDigester.setApplicationContext() applicationContext ["+ClassUtils.nameOf(applicationContext)+"]");
+//        beanFactory = factory;
+        AbstractSpringPoweredDigesterFactory.applicationContext = applicationContext;
     }
-	public BeanFactory getBeanFactory() {
-		return beanFactory;
-	}
 
     /**
      * This method is used from the Spring configuration file. The Configuration is available as a Spring Bean.

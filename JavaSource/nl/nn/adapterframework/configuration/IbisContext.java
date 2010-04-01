@@ -1,6 +1,9 @@
 /*
  * $Log: IbisContext.java,v $
- * Revision 1.6  2009-11-05 14:20:31  m168309
+ * Revision 1.7  2010-04-01 13:01:35  L190409
+ * replaced BeanFactory by ApplicationContext to enable AOP proxies
+ *
+ * Revision 1.6  2009/11/05 14:20:31  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * renamed property transaction.strategy to application.server.type
  *
  * Revision 1.5  2009/10/30 15:31:07  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -59,13 +62,9 @@ import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.BeanFactoryAware;
-import org.springframework.beans.factory.ListableBeanFactory;
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
-import org.springframework.beans.factory.xml.XmlBeanFactory;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.core.JdkVersion;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
 
 /**
  * Main entry point for creating and starting Ibis instances from
@@ -87,7 +86,7 @@ public class IbisContext {
 	//public static final String DFLT_SPRING_CONTEXT = "/springContext.xml";
 	public static final String APPLICATION_SERVER_TYPE = "application.server.type";
     
-    private ListableBeanFactory beanFactory;
+    private ApplicationContext applicationContext;
 	private static String springContextFileName = null;
     private IbisManager ibisManager;
     
@@ -132,8 +131,8 @@ public class IbisContext {
 		// This should be made conditional, somehow
 //		startJmxServer();
 		
-		beanFactory = createBeanFactory(springContext);
-		ibisManager = getIbisManager(beanFactory);
+		applicationContext = createApplicationContext(springContext);
+		ibisManager = (IbisManager) applicationContext.getBean("ibisManager");
 	}
 
 	/**
@@ -151,80 +150,77 @@ public class IbisContext {
 	 * @throws BeansException If the Factory can not be created.
 	 * 
 	 */
-	static public XmlBeanFactory createBeanFactory(String springContext) throws BeansException {
+	static public ApplicationContext createApplicationContext(String springContext) throws BeansException {
 		// Reading in Spring Context
 		if (springContext == null) {
 		    springContext = getSpringContextFileName();
 		}
-		log.info("* IBIS Startup: Creating Spring Bean Factory from file [" + springContext + "]");
-		Resource rs = new ClassPathResource(springContext);
-		XmlBeanFactory bf = new XmlBeanFactory(rs);
-		return bf;
+		log.info("* IBIS Startup: Creating Spring ApplicationContext from file [" + springContext + "]");
+//		Resource rs = new ClassPathResource(springContext);
+//		XmlBeanFactory bf = new XmlBeanFactory(rs);
+		ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext(springContext);
+		return applicationContext;
 	}
 
-	static private IbisManager getIbisManager(ListableBeanFactory beanFactory) throws BeansException {
-		return (IbisManager) beanFactory.getBean("ibisManager");
-	}
+//	public Object getAutoWiredObject(Class clazz) throws ConfigurationException {
+//		return getAutoWiredObject(clazz, null);
+//	}
+//	
+//	public Object getAutoWiredObject(Class clazz, String prototypeName) throws ConfigurationException {
+//		
+//		String beanName;
+//		
+//		prototypeName="proto-"+prototypeName;
+//		// No explicit classname given; get bean from Spring Factory
+//		if (clazz == null) {
+//			beanName = prototypeName;
+//		} else {
+//			// Get all beans matching the classname given
+//			String[] matchingBeans = getBeanFactory().getBeanNamesForType(clazz);
+//			if (matchingBeans.length == 1) {
+//				// Only 1 bean of this type, so create it
+//				beanName = matchingBeans[0];
+//			} else if (matchingBeans.length > 1) {
+//				// multiple beans; find if there's one with the
+//				// same name as from 'getBeanName'.
+//				beanName = prototypeName;
+//			} else {
+//				// No beans matching the type.
+//				// Create instance, and if the instance implements
+//				// Spring's BeanFactoryAware interface, use it to
+//				// set BeanFactory attribute on this Bean.
+//				try {
+//					return createBeanAndAutoWire(clazz, prototypeName);
+//				} catch (Exception e) {
+//					throw new ConfigurationException(e);
+//				}
+//			}
+//		}
+//        
+//		// Only accept prototype-beans!
+//		if (!getBeanFactory().isPrototype(beanName)) {
+//			throw new ConfigurationException("Beans created from the BeanFactory must be prototype-beans, bean ["
+//				+ beanName + "] of class [" + clazz.getName() + "] is not.");
+//		}
+//		if (log.isDebugEnabled()) {
+//			log.debug("Creating bean with actual bean-name [" + beanName + "], bean-class [" + (clazz != null ? clazz.getName() : "null") + "] from Spring Bean Factory.");
+//		}
+//		return getBeanFactory().getBean(beanName, clazz);
+//	}
 
-	public Object getAutoWiredObject(Class clazz) throws ConfigurationException {
-		return getAutoWiredObject(clazz, null);
-	}
-	
-	public Object getAutoWiredObject(Class clazz, String prototypeName) throws ConfigurationException {
-		
-		String beanName;
-		
-		prototypeName="proto-"+prototypeName;
-		// No explicit classname given; get bean from Spring Factory
-		if (clazz == null) {
-			beanName = prototypeName;
-		} else {
-			// Get all beans matching the classname given
-			String[] matchingBeans = getBeanFactory().getBeanNamesForType(clazz);
-			if (matchingBeans.length == 1) {
-				// Only 1 bean of this type, so create it
-				beanName = matchingBeans[0];
-			} else if (matchingBeans.length > 1) {
-				// multiple beans; find if there's one with the
-				// same name as from 'getBeanName'.
-				beanName = prototypeName;
-			} else {
-				// No beans matching the type.
-				// Create instance, and if the instance implements
-				// Spring's BeanFactoryAware interface, use it to
-				// set BeanFactory attribute on this Bean.
-				try {
-					return createBeanAndAutoWire(clazz, prototypeName);
-				} catch (Exception e) {
-					throw new ConfigurationException(e);
-				}
-			}
-		}
-        
-		// Only accept prototype-beans!
-		if (!getBeanFactory().isPrototype(beanName)) {
-			throw new ConfigurationException("Beans created from the BeanFactory must be prototype-beans, bean ["
-				+ beanName + "] of class [" + clazz.getName() + "] is not.");
-		}
-		if (log.isDebugEnabled()) {
-			log.debug("Creating bean with actual bean-name [" + beanName + "], bean-class [" + (clazz != null ? clazz.getName() : "null") + "] from Spring Bean Factory.");
-		}
-		return getBeanFactory().getBean(beanName, clazz);
-	}
-
-	protected Object createBeanAndAutoWire(Class beanClass, String prototype) throws InstantiationException, IllegalAccessException {
-		if (log.isDebugEnabled()) {
-			log.debug("Bean class [" + beanClass.getName() + "] not found in Spring Bean Factory, instantiating directly and using Spring Factory for auto-wiring support.");
-		}
-		Object o = beanClass.newInstance();
-		if (getBeanFactory() instanceof AutowireCapableBeanFactory) {
-			((AutowireCapableBeanFactory)getBeanFactory()).autowireBeanProperties(o,AutowireCapableBeanFactory.AUTOWIRE_BY_NAME,false);
-			o = ((AutowireCapableBeanFactory)getBeanFactory()).initializeBean(o, prototype);
-		} else if (o instanceof BeanFactoryAware) {
-			((BeanFactoryAware)o).setBeanFactory(getBeanFactory());
-		}
-		return o;
-	}
+//	protected Object createBeanAndAutoWire(Class beanClass, String prototype) throws InstantiationException, IllegalAccessException {
+//		if (log.isDebugEnabled()) {
+//			log.debug("Bean class [" + beanClass.getName() + "] not found in Spring Bean Factory, instantiating directly and using Spring Factory for auto-wiring support.");
+//		}
+//		Object o = beanClass.newInstance();
+//		if (getBeanFactory() instanceof AutowireCapableBeanFactory) {
+//			((AutowireCapableBeanFactory)getBeanFactory()).autowireBeanProperties(o,AutowireCapableBeanFactory.AUTOWIRE_BY_NAME,false);
+//			o = ((AutowireCapableBeanFactory)getBeanFactory()).initializeBean(o, prototype);
+//		} else if (o instanceof BeanFactoryAware) {
+//			((BeanFactoryAware)o).setBeanFactory(getBeanFactory());
+//		}
+//		return o;
+//	}
 
 //	private void startJmxServer() {
 //		//Start MBean server
@@ -248,15 +244,15 @@ public class IbisContext {
 //		log.info("MBean server up and running. Monitor your application by pointing your browser to http://localhost:8082");
 //	}
 
-	public void setBeanFactory(ListableBeanFactory factory) {
-		beanFactory = factory;
-	}
+//	public void setBeanFactory(ListableBeanFactory factory) {
+//		beanFactory = factory;
+//	}
 
-	public ListableBeanFactory getBeanFactory() {
-		if (beanFactory==null) {
+	public ApplicationContext getApplicationContext() {
+		if (applicationContext==null) {
 			initContext(getSpringContextFileName());
 		}
-		return beanFactory;
+		return applicationContext;
 	}
 
 	private static String getSpringContextFileName() {

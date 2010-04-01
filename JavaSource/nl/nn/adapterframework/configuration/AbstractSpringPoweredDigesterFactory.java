@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractSpringPoweredDigesterFactory.java,v $
- * Revision 1.15  2010-03-18 10:13:01  m168309
+ * Revision 1.16  2010-04-01 13:01:35  L190409
+ * replaced BeanFactory by ApplicationContext to enable AOP proxies
+ *
+ * Revision 1.15  2010/03/18 10:13:01  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * cosmetic change
  *
  * Revision 1.14  2010/02/03 14:20:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -63,11 +66,9 @@ import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.digester.AbstractObjectCreationFactory;
-import org.apache.commons.digester.ObjectCreationFactory;
 import org.apache.log4j.Logger;
-import org.springframework.beans.factory.BeanFactoryAware;
-import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+import org.springframework.context.ApplicationContext;
 import org.xml.sax.Attributes;
 import org.xml.sax.Locator;
 
@@ -97,10 +98,10 @@ import org.xml.sax.Locator;
  * @version Id
  * 
  */
-public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjectCreationFactory implements ObjectCreationFactory {
+public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjectCreationFactory {
 	protected Logger log = LogUtil.getLogger(this);
 
-    public static ListableBeanFactory factory;
+    public static ApplicationContext applicationContext;
 	private ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
     
     public AbstractSpringPoweredDigesterFactory() {
@@ -295,7 +296,7 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
         } else {
             // Get all beans matching the classname given
             beanClass = Class.forName(className);
-            String[] matchingBeans = factory.getBeanNamesForType(beanClass);
+            String[] matchingBeans = applicationContext.getBeanNamesForType(beanClass);
             if (matchingBeans.length == 1) {
                 // Only 1 bean of this type, so create it
                 beanName = matchingBeans[0];
@@ -313,27 +314,24 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
         }
         
         // Only accept prototype-beans!
-        if (isPrototypesOnly() && !factory.isPrototype(beanName)) {
+        if (isPrototypesOnly() && !applicationContext.isPrototype(beanName)) {
             throw new ConfigurationException("Beans created from the BeanFactory must be prototype-beans, bean ["
                 + beanName + "] of class [" + className + "] is not.");
         }
         if (log.isDebugEnabled()) {
             log.debug("Creating bean with actual bean-name [" + beanName + "], bean-class [" + (beanClass != null ? beanClass.getName() : "null") + "] from Spring Bean Factory.");
         }
-        return factory.getBean(beanName, beanClass);
+        return applicationContext.getBean(beanName, beanClass);
     }
 
     protected Object createBeanAndAutoWire(Class beanClass) throws InstantiationException, IllegalAccessException {
-        if (log.isDebugEnabled()) {
-            log.debug("Bean class [" + beanClass.getName() + "] not found in Spring Bean Factory, instantiating directly and using Spring Factory for auto-wiring support.");
+		if (log.isDebugEnabled()) {
+            log.debug("Bean class [" + beanClass.getName() + "], autowire bean name [" + getSuggestedBeanName() + "] not found in Spring Bean Factory, instantiating directly and using Spring Factory for auto-wiring support.");
         }
-        Object o = beanClass.newInstance();
-        if (factory instanceof AutowireCapableBeanFactory) {
-            ((AutowireCapableBeanFactory)factory).autowireBeanProperties(o,AutowireCapableBeanFactory.AUTOWIRE_BY_NAME,false);
-            o = ((AutowireCapableBeanFactory)factory).initializeBean(o, getSuggestedBeanName());
-        } else if (o instanceof BeanFactoryAware) {
-            ((BeanFactoryAware)o).setBeanFactory(factory);
-        }
+
+		AutowireCapableBeanFactory awcbf = applicationContext.getAutowireCapableBeanFactory();
+		Object o = awcbf.createBean(beanClass,AutowireCapableBeanFactory.AUTOWIRE_BY_NAME,false);
+   
         return o;
     }
     

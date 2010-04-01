@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractEJBBase.java,v $
- * Revision 1.6  2008-02-13 12:53:28  europe\L190409
+ * Revision 1.7  2010-04-01 13:01:35  L190409
+ * replaced BeanFactory by ApplicationContext to enable AOP proxies
+ *
+ * Revision 1.6  2008/02/13 12:53:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * renamed IbisMain to IbisContext
  *
  * Revision 1.5  2007/12/28 08:55:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -42,13 +45,15 @@ import javax.ejb.EJBContext;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.util.LogUtil;
+
 import org.apache.log4j.Logger;
-import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+import org.springframework.context.ApplicationContext;
 import org.springframework.jndi.JndiLookupFailureException;
 
 /**
@@ -64,7 +69,7 @@ abstract public class AbstractEJBBase {
     protected static IbisContext main;
     protected static IbisManager manager;
     protected static Configuration config;
-    private static ListableBeanFactory beanFactory;
+    private static ApplicationContext applicationContext;
     
     private Context context;
     
@@ -81,7 +86,7 @@ abstract public class AbstractEJBBase {
         manager = main.getIbisManager();
         config = manager.getConfiguration();
         manager.startIbis();
-        beanFactory = main.getBeanFactory();
+		applicationContext = main.getApplicationContext();
     }
     
     abstract protected EJBContext getEJBContext();
@@ -91,7 +96,7 @@ abstract public class AbstractEJBBase {
      */
     public AbstractEJBBase() {
         // Apply auto-wiring and initialization to self
-		AutowireCapableBeanFactory acbf = (AutowireCapableBeanFactory)beanFactory;
+		AutowireCapableBeanFactory acbf = applicationContext.getAutowireCapableBeanFactory();
 		acbf.autowireBeanProperties(this, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
 		acbf.initializeBean(this, "IbisEJB");
     }
