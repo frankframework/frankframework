@@ -1,6 +1,9 @@
 /*
  * $Log: ForEachChildElementPipe.java,v $
- * Revision 1.23  2010-03-10 10:16:03  m168309
+ * Revision 1.24  2010-04-08 09:59:13  m168309
+ * added attribute xslt2
+ *
+ * Revision 1.23  2010/03/10 10:16:03  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added TimeOutException to iterateInput
  *
  * Revision 1.22  2010/02/25 13:41:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -116,6 +119,7 @@ import org.xml.sax.helpers.DefaultHandler;
  * <tr><td>{@link #setBlockSize(int) blockSize}</td><td>controls multiline behaviour. when set to a value greater than 0, it specifies the number of rows send in a block to the sender.</td><td>0 (one line at a time, no prefix of suffix)</td></tr>
  * <tr><td>{@link #setBlockPrefix(String) blockPrefix}</td><td>When <code>blockSize &gt; 0</code>, this string is inserted at the start of the set of lines.</td><td>&lt;block&gt;</td></tr>
  * <tr><td>{@link #setBlockSuffix(String) blockSuffix}</td><td>When <code>blockSize &gt; 0</code>, this string is inserted at the end of the set of lines.</td><td>&lt;/block&gt;</td></tr>
+ * <tr><td>{@link #setXslt2(boolean) xslt2}</td><td>when set <code>true</code> XSLT processor 2.0 (net.sf.saxon) will be used for <code>elementXPathExpression</code>, otherwise XSLT processor 1.0 (org.apache.xalan)</td><td>false</td></tr>
  * </table>
  * <table border="1">
  * <tr><th>nested elements</th><th>description</th></tr>
@@ -136,10 +140,10 @@ import org.xml.sax.helpers.DefaultHandler;
  * @author Gerrit van Brakel
  * @since 4.6.1
  * 
- * $Id: ForEachChildElementPipe.java,v 1.23 2010-03-10 10:16:03 m168309 Exp $
+ * $Id: ForEachChildElementPipe.java,v 1.24 2010-04-08 09:59:13 m168309 Exp $
  */
 public class ForEachChildElementPipe extends IteratingPipe {
-	public static final String version="$RCSfile: ForEachChildElementPipe.java,v $ $Revision: 1.23 $ $Date: 2010-03-10 10:16:03 $";
+	public static final String version="$RCSfile: ForEachChildElementPipe.java,v $ $Revision: 1.24 $ $Date: 2010-04-08 09:59:13 $";
 
 	private String elementXPathExpression=null;
 	private boolean processFile=false;
@@ -147,7 +151,7 @@ public class ForEachChildElementPipe extends IteratingPipe {
 
 	private TransformerPool identityTp;
 	private TransformerPool extractElementsTp=null;
-
+	private boolean xslt2=false;
 
 
 	public void configure() throws ConfigurationException {
@@ -155,7 +159,7 @@ public class ForEachChildElementPipe extends IteratingPipe {
 		try {
 			identityTp=new TransformerPool(XmlUtils.IDENTITY_TRANSFORM);
 			if (StringUtils.isNotEmpty(getElementXPathExpression())) {
-				extractElementsTp=new TransformerPool(makeEncapsulatingXslt("root",getElementXPathExpression()));
+				extractElementsTp=new TransformerPool(makeEncapsulatingXslt("root",getElementXPathExpression()), isXslt2());
 			}
 		} catch (TransformerConfigurationException e) {
 			throw new ConfigurationException(getLogPrefix(null)+"elementXPathExpression ["+getElementXPathExpression()+"]",e);
@@ -466,4 +470,11 @@ public class ForEachChildElementPipe extends IteratingPipe {
 		return charset;
 	}
 
+	public boolean isXslt2() {
+		return xslt2;
+	}
+
+	public void setXslt2(boolean b) {
+		xslt2 = b;
+	}
 }
