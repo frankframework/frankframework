@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.93  2010-03-17 14:06:59  m168309
+ * Revision 1.94  2010-04-15 12:49:55  m168309
+ * added facility for an infinite number of retries (maxRetries < 0)
+ *
+ * Revision 1.93  2010/03/17 14:06:59  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * bugfix - retry from ErrorLog ignores transactionTimeout
  * warning instead of exception in case of error during correlationIDXpath or labelXPath
  * cosmetic change for determining businessCorrelationId
@@ -517,7 +520,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  * 											      <tr><td>T1</td>  <td>error</td></tr>
  *  </table></td><td>Supports</td></tr>
  * <tr><td>{@link #setTransactionTimeout(int) transactionTimeout}</td><td>Timeout (in seconds) of transaction started to receive and process a message.</td><td><code>0</code> (use system default)</code></td></tr>
- * <tr><td>{@link #setMaxRetries(int) maxRetries}</td><td>The number of times a processing attempt is retried after an exception is caught or rollback is experienced (only applicable for transacted receivers)</td><td>1</td></tr>
+ * <tr><td>{@link #setMaxRetries(int) maxRetries}</td><td>The number of times a processing attempt is retried after an exception is caught or rollback is experienced (only applicable for transacted receivers). If maxRetries &lt; 0 the number of attempts is infinite</td><td>1</td></tr>
  * <tr><td>{@link #setCheckForDuplicates(boolean) checkForDuplicates}</td><td>if set to <code>true</code>, each message is checked for presence in the message log. If already present, it is not processed again. (only required for non XA compatible messaging). Requires messagelog!</code></td><td><code>false</code></td></tr>
  * <tr><td>{@link #setPollInterval(int) pollInterval}</td><td>The number of seconds waited after an unsuccesful poll attempt before another poll attempt is made. (only for polling listeners, not for e.g. IFSA, JMS, WebService or JavaListeners)</td><td>10</td></tr>
  * <tr><td>{@link #setIbis42compatibility(boolean) ibis42compatibility}</td><td>if set to <code>true</code>, the result of a failed processing of a message is a formatted errormessage. Otherwise a listener specific error handling is performed</code></td><td><code>false</code></td></tr>
@@ -590,7 +593,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  */
 public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHandler, EventThrowing, IbisExceptionListener, HasSender, HasStatistics, TracingEventNumbers, IThreadCountControllable, BeanFactoryAware {
     
-	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.93 $ $Date: 2010-03-17 14:06:59 $";
+	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.94 $ $Date: 2010-04-15 12:49:55 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static TransactionDefinition TXNEW_CTRL = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -1580,7 +1583,11 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 					}
 					prci.tryCount++;
 				}
-				
+
+				if (getMaxRetries()<0) {
+					increaseRetryIntervalAndWait(null,getLogPrefix()+"message with messageId ["+messageId+"] has already been processed ["+(deliveryCount-1)+"] times; maxRetries=["+getMaxRetries()+"]");
+					return false;
+				}
 				if (deliveryCount<=getMaxRetries()+1) {
 					log.warn(getLogPrefix()+"message with messageId ["+messageId+"] has already been processed ["+(deliveryCount-1)+"] times, will try again");
 					resetRetryInterval();
@@ -1664,7 +1671,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 			// If not yet exceeded the max retry count,
 			// mark TX as rollback-only and throw an
 			// exception
-			if (retryCount < maxRetries) {
+			if (retryCount < maxRetries || maxRetries<0) {
 				log.error(getLogPrefix()+"message with id ["+messageId+"] will be retried; transaction marked rollback-only");
 				return true;
 			} else {
