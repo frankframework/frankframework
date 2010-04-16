@@ -1,6 +1,9 @@
 /*
  * $Log: ErrorMessageFormatter.java,v $
- * Revision 1.7  2007-02-12 14:30:56  europe\L190409
+ * Revision 1.8  2010-04-16 11:31:55  m168309
+ * fixed bug CDATA in CDATA
+ *
+ * Revision 1.7  2007/02/12 14:30:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected version string
  *
  * Revision 1.6  2007/02/12 13:44:29  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -48,7 +51,7 @@ import org.apache.log4j.Logger;
  * @author  Gerrit van Brakel
  */
 public class ErrorMessageFormatter implements IErrorMessageFormatter {
-	public static final String version = "$RCSfile: ErrorMessageFormatter.java,v $ $Revision: 1.7 $ $Date: 2007-02-12 14:30:56 $";
+	public static final String version = "$RCSfile: ErrorMessageFormatter.java,v $ $Revision: 1.8 $ $Date: 2010-04-16 11:31:55 $";
     protected Logger log = LogUtil.getLogger(this);
 	
 	/**
@@ -91,7 +94,8 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter {
 	    
 	    if (details != null && !details.equals("")) {
 		    XmlBuilder detailsXml = new XmlBuilder("details");
-	    	detailsXml.setCdataValue(details);
+	    	//detailsXml.setCdataValue(details);
+	    	detailsXml.setValue(details, true);
 		    errorXml.addSubElement(detailsXml);
 		}
 			
@@ -100,7 +104,8 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter {
 	    if (receivedTime!=0) {
 			originalMessageXml.addAttribute("receivedTime", new Date(receivedTime).toString());
 	    }
-	   	originalMessageXml.setCdataValue(originalMessage);
+	   	//originalMessageXml.setCdataValue(originalMessage);
+		originalMessageXml.setValue(originalMessage, true);
 	    errorXml.addSubElement(originalMessageXml);
 	
 	    return errorXml.toXML();
