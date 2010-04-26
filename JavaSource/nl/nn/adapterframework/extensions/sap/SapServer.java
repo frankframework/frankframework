@@ -1,6 +1,9 @@
 /* 
  * $Log: SapServer.java,v $
- * Revision 1.10  2008-01-30 14:42:16  europe\L190409
+ * Revision 1.11  2010-04-26 14:08:01  m168309
+ * support Unicode SAP system
+ *
+ * Revision 1.10  2008/01/30 14:42:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * modified javadoc
  *
  * Revision 1.9  2008/01/29 15:36:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -68,9 +71,10 @@ public class SapServer extends JCoIDoc.Server implements JCO.ServerExceptionList
 	
 	public SapServer(SapSystem system, String progid, SapFunctionHandler handler) {
 		super(system.getGwhost(), system.getGwserv(), progid, system.getJcoRepository(), system.getIDocRepository());
+		this.setProperty("jco.server.unicode", system.isUnicode()?"1":"0");
 		this.handler = handler;
 		this.system=system;
-		log.info(getLogPrefix()+"connected to ["+system.getGwhost()+":"+system.getGwserv()+"]");
+		log.info(getLogPrefix()+"connected to ["+system.getGwhost()+":"+system.getGwserv()+"] with unicode ["+system.isUnicode()+"]");
 
 //		JCO.addServerExceptionListener(this);
 //		JCO.addServerErrorListener(this);
