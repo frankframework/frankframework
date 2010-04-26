@@ -1,6 +1,9 @@
 /*
  * $Log: SapSystem.java,v $
- * Revision 1.10  2008-01-29 15:34:11  europe\L190409
+ * Revision 1.11  2010-04-26 14:21:58  m168309
+ * added attribute unicode (only for SapListeners, not for SapSenders)
+ *
+ * Revision 1.10  2008/01/29 15:34:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added support for idocs and for multiple sap system objects
  *
  * Revision 1.9  2007/05/01 14:20:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -64,13 +67,14 @@ import com.sap.mw.jco.JCO;
  * <tr><td>{@link #setSystemnr(String) systemnr}</td><td>SAP system nr</td><td>00</td></tr>
  * <tr><td>{@link #setTraceLevel(int) traceLevel}</td><td>trace level (effective only when logging level is debug). 0=none, 10= maximum</td><td>0</td></tr>
  * <tr><td>{@link #setServiceOffset(int) serviceOffset}</td><td>number added to systemNr to find corresponding RFC service number</td><td>3300</td></tr>
+ * <tr><td>{@link #setUnicode(boolean) unicode}</td><td>when set <code>true</code> the SAP system is interpreted as Unicode SAP system, otherwise as non-Unicode (only applies to SapListeners, not to SapSenders)</td><td>false</td></tr>
  * </table>
  * </p>
  * @author Gerrit van Brakel
  * @since 4.1.1
  */
 public class SapSystem extends GlobalListItem  implements JCO.ServerStateChangedListener  {
-	public static final String version="$RCSfile: SapSystem.java,v $  $Revision: 1.10 $ $Date: 2008-01-29 15:34:11 $";
+	public static final String version="$RCSfile: SapSystem.java,v $  $Revision: 1.11 $ $Date: 2010-04-26 14:21:58 $";
 
 	private int maxConnections = 10;
 
@@ -85,6 +89,8 @@ public class SapSystem extends GlobalListItem  implements JCO.ServerStateChanged
 	private int    traceLevel = 0;
 
 	private int serviceOffset = 3300;
+
+	private boolean unicode = false;
 
 	private IRepository jcoRepository = null;
 	private IDoc.Repository idocRepository = null;
@@ -333,6 +339,11 @@ public class SapSystem extends GlobalListItem  implements JCO.ServerStateChanged
 		traceLevel = i;
 	}
 
+	public boolean isUnicode() {
+		return unicode;
+	}
 
-
+	public void setUnicode(boolean b) {
+		unicode = b;
+	}
 }
