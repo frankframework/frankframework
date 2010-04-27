@@ -1,6 +1,9 @@
 /*
  * $Log: JmsSender.java,v $
- * Revision 1.39  2010-03-22 11:08:13  m168309
+ * Revision 1.40  2010-04-27 09:25:56  L190409
+ * improved logging of waiting for reply
+ *
+ * Revision 1.39  2010/03/22 11:08:13  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * moved message logging from INFO level to DEBUG level
  *
  * Revision 1.38  2010/03/10 14:30:05  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -128,7 +131,6 @@ import javax.xml.transform.TransformerException;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPostboxSender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
-import nl.nn.adapterframework.core.IbisException;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
@@ -185,7 +187,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  */
 
 public class JmsSender extends JMSFacade implements ISenderWithParameters, IPostboxSender {
-	public static final String version="$RCSfile: JmsSender.java,v $ $Revision: 1.39 $ $Date: 2010-03-22 11:08:13 $";
+	public static final String version="$RCSfile: JmsSender.java,v $ $Revision: 1.40 $ $Date: 2010-04-27 09:25:56 $";
 	private String replyToName = null;
 	private int deliveryMode = 0;
 	private String messageType = null;
@@ -346,11 +348,12 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 						replyCorrelationId=msg.getJMSMessageID();
 					}
 				}
+				if (log.isDebugEnabled()) log.debug("[" + getName() + "] start waiting for reply on [" + replyQueue.toString() + "] requestMsgId ["+msg.getJMSMessageID()+"] replyCorrelationId ["+replyCorrelationId+"] for ["+getReplyTimeout()+"] ms");
 				MessageConsumer mc = getMessageConsumerForCorrelationId(s,replyQueue,replyCorrelationId);
 				try {
 					Message rawReplyMsg = mc.receive(getReplyTimeout());
 					if (rawReplyMsg==null) {
-						throw new TimeOutException("did not receive reply on [" + replyQueue.toString() + "] within ["+getReplyTimeout()+"] ms");
+						throw new TimeOutException("did not receive reply on [" + replyQueue.toString() + "] requestMsgId ["+msg.getJMSMessageID()+"] replyCorrelationId ["+replyCorrelationId+"] within ["+getReplyTimeout()+"] ms");
 					}
 					return getStringFromRawMessage(rawReplyMsg, prc.getSession(), isSoap(), getReplySoapHeaderSessionKey(),soapWrapper);
 				} finally {
