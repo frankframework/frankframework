@@ -1,6 +1,10 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.66  2009-12-11 13:09:14  m168309
+ * Revision 1.67  2010-04-27 15:03:14  L190409
+ * optimized memory consumption of replaceNonValidXmlCharacters() 
+ * and stripNonValidXmlCharacters()
+ *
+ * Revision 1.66  2009/12/11 13:09:14  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * replaced <xerces.jar> by <xercesImpl-2.9.1.jar>
  *
  * Revision 1.65  2009/11/02 11:10:44  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -275,7 +279,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * @version Id
  */
 public class XmlUtils {
-	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.66 $ $Date: 2009-12-11 13:09:14 $";
+	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.67 $ $Date: 2010-04-27 15:03:14 $";
 	static Logger log = LogUtil.getLogger(XmlUtils.class);
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
@@ -1217,15 +1221,16 @@ public class XmlUtils {
 			return null;
 		} else {
 			int length = string.length();
-			char[] characters = new char[length];
-
-			string.getChars(0, length, characters, 0);
-			StringBuffer encoded = new StringBuffer();
+			if (log.isDebugEnabled()) log.debug("replacing non valid xml characters to ["+to+"] in string of length ["+length+"]");
+			
+			StringBuffer encoded = new StringBuffer(length);
 			for (int i = 0; i < length; i++) {
-				if (isPrintableUnicodeChar(characters[i]))
-					encoded.append(characters[i]);
-				else
+				char c=string.charAt(i);
+				if (isPrintableUnicodeChar(c)) {
+					encoded.append(c);
+				} else {
 					encoded.append(to);
+				}
 			}
 			return encoded.toString();
 		}
@@ -1233,13 +1238,14 @@ public class XmlUtils {
 
 	public static String stripNonValidXmlCharacters(String string) {
 		int length = string.length();
-		char[] characters = new char[length];
+		if (log.isDebugEnabled()) log.debug("stripping non valid xml characters in string of length ["+length+"]");
 
-		string.getChars(0, length, characters, 0);
-		StringBuffer encoded = new StringBuffer();
+		StringBuffer encoded = new StringBuffer(length);
 		for (int i = 0; i < length; i++) {
-			if (isPrintableUnicodeChar(characters[i]))
-				encoded.append(characters[i]);
+			char c=string.charAt(i);
+			if (isPrintableUnicodeChar(c)) {
+				encoded.append(c);
+			}
 		}
 		return encoded.toString();
 	}
