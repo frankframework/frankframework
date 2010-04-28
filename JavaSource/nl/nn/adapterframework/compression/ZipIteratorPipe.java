@@ -1,6 +1,10 @@
 /*
  * $Log: ZipIteratorPipe.java,v $
- * Revision 1.4  2010-04-01 11:57:27  L190409
+ * Revision 1.5  2010-04-28 09:49:31  L190409
+ * store stream to contents of zip entries each time, to allow 
+ * reuse of the session key when an item is optionally encoded
+ *
+ * Revision 1.4  2010/04/01 11:57:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved configwarning
  *
  * Revision 1.3  2010/03/25 12:56:18  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -130,10 +134,6 @@ public class ZipIteratorPipe extends IteratingPipe {
 			super();
 			this.source=source;
 			this.session=session;
-			if (isStreamingContents()) {
-				if (log.isDebugEnabled()) log.debug(getLogPrefix(session)+"storing stream to contents of zip entries under session key ["+getContentsSessionKey()+"]");
-				session.put(getContentsSessionKey(),source);
-			}
 		}
 
 		private void skipCurrent() throws IOException {
@@ -167,12 +167,12 @@ public class ZipIteratorPipe extends IteratingPipe {
 					log.debug(getLogPrefix(session)+"found zipEntry name ["+current.getName()+"] size ["+current.getSize()+"] compressed size ["+current.getCompressedSize()+"]");
 				}
 				String filename=current.getName();
-				if (!isStreamingContents()) {
+				if (isStreamingContents()) {
+					if (log.isDebugEnabled()) log.debug(getLogPrefix(session)+"storing stream to contents of zip entries under session key ["+getContentsSessionKey()+"]");
+					session.put(getContentsSessionKey(),source); // do this each time, to allow reuse of the session key when an item is optionally encoded
+				} else { 
 					if (log.isDebugEnabled()) log.debug(getLogPrefix(session)+"storing contents of zip entry under session key ["+getContentsSessionKey()+"]");
 					session.put(getContentsSessionKey(),StreamUtil.streamToString(source,null,getCharset()));
-				} else {
-					// stream allready stored  under session key
-					if (log.isDebugEnabled()) log.debug(getLogPrefix(session)+"storing stream to contents of zip entry under session key ["+getContentsSessionKey()+"]");
 				}
 				return filename;
 			} catch (IOException e) {
