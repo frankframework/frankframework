@@ -1,6 +1,10 @@
 /*
  * $Log: Base64Pipe.java,v $
- * Revision 1.5  2008-12-16 13:40:52  L190409
+ * Revision 1.6  2010-04-28 09:53:22  L190409
+ * enabled use of InputStream as input. 
+ * replaced Base64 codec by Apache Commons Codec 1.4
+ *
+ * Revision 1.5  2008/12/16 13:40:52  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added charset attribute
  *
  * Revision 1.4  2008/03/20 12:06:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -20,9 +24,8 @@ package nl.nn.adapterframework.pipes;
 
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-
-import org.apache.commons.lang.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -30,8 +33,10 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.util.Misc;
 
-import sun.misc.BASE64Decoder;
-import sun.misc.BASE64Encoder;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.codec.binary.Base64InputStream;
+import org.apache.commons.lang.StringUtils;
+
 
 
 /**
@@ -52,7 +57,7 @@ import sun.misc.BASE64Encoder;
  * @version Id
  */
 public class Base64Pipe extends FixedForwardPipe {
-	public static final String version="$RCSfile: Base64Pipe.java,v $ $Revision: 1.5 $ $Date: 2008-12-16 13:40:52 $";
+	public static final String version="$RCSfile: Base64Pipe.java,v $ $Revision: 1.6 $ $Date: 2010-04-28 09:53:22 $";
 
 	private String direction="encode";
 	private boolean convert2String=true;
@@ -73,33 +78,46 @@ public class Base64Pipe extends FixedForwardPipe {
 		Object result=null;
 		if (invoer!=null) {
 			if ("encode".equalsIgnoreCase(getDirection())) {
-				BASE64Encoder encoder = new BASE64Encoder();
 				if (convert2String) {
 					if (StringUtils.isEmpty(getCharset())) {
-						result=encoder.encode(invoer.toString().getBytes());
+						result=Base64.encodeBase64String(invoer.toString().getBytes());
 					} else {
 						try {
-							result=encoder.encode(invoer.toString().getBytes(getCharset()));
+							result=Base64.encodeBase64String(invoer.toString().getBytes(getCharset()));
 						} catch (UnsupportedEncodingException e) {
 							throw new PipeRunException(this,"cannot encode message using charset ["+getCharset()+"]",e);
 						}
 					}
+				} else if (invoer instanceof InputStream) {
+					try {
+						result=Misc.streamToString(new Base64InputStream((InputStream)invoer,true),null,false);
+					} catch (IOException e) {
+						throw new PipeRunException(this,"cannot encode message from inputstream",e);
+					}
 				} else {
-					result=encoder.encode((byte[])invoer);
+					result=Base64.encodeBase64String((byte[])invoer);
 				}
 			} else {
-				BASE64Decoder decoder = new BASE64Decoder();
-				String in=invoer.toString();
+				String in;
+				if (invoer instanceof InputStream) {
+					try {
+						in=Misc.streamToString((InputStream)invoer,null,false);
+					} catch (IOException e) {
+						throw new PipeRunException(this,"cannot read inputstream",e);
+					}
+				} else {
+					in=invoer.toString();
+				}
 				try {
+					byte[] data=Base64.decodeBase64(in);
 					if (convert2String) {
 						if (StringUtils.isEmpty(getCharset())) {
-							result=new String(decoder.decodeBuffer(in));
-						}
-						else {
-							result=new String(decoder.decodeBuffer(in),getCharset());
+							result=new String(data);
+						} else {
+							result=new String(data,getCharset());
 						}
 					} else {
-						result=decoder.decodeBuffer(in);
+						result=data;
 					}
 				} catch (IOException e) {
 					throw new PipeRunException(this, getLogPrefix(session)+"cannot decode base64, charset ["+getCharset()+"]", e);
