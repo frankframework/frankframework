@@ -52,5 +52,6 @@
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/xmlsec-1.4.1.jar"/>
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/saaj.jar"/>
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/commons-httpclient-3.0.1.jar"/>
+    <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/commons-codec-1.4.jar"/>
     <classpathentry kind="output" path="bin"/>
 </classpath>
