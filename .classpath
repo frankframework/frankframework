@@ -19,7 +19,7 @@
     <classpathentry kind="lib" path="WSAD51-security.jar"/>
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/soap-2_3_1.jar"/>
     <classpathentry kind="lib" path="ojdbc14.jar"/>
-    <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/xerces.jar"/>
+    <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/xercesImpl-2.9.1.jar"/>
     <classpathentry kind="lib" path="jsse.jar"/>
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/j2ssh.jar"/>
     <classpathentry kind="lib" path="ifsajmsXA-22.10.055(beta).jar"/>
