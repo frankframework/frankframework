@@ -1,6 +1,9 @@
 /*
  * $Log: BatchFileTransformerPipe.java,v $
- * Revision 1.17  2009-03-16 16:11:20  L190409
+ * Revision 1.18  2010-05-03 17:01:03  L190409
+ * reworked stream handling, to allow for binary records.
+ *
+ * Revision 1.17  2009/03/16 16:11:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added charset attribute, default charset is now UTF-8
  *
  * Revision 1.16  2008/12/23 12:50:25  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -36,9 +39,7 @@ package nl.nn.adapterframework.batch;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.UnsupportedEncodingException;
+import java.io.InputStream;
 
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -68,7 +69,11 @@ import nl.nn.adapterframework.util.FileUtils;
  * </p>
  * <table border="1">
  * <tr><th>nested elements</th><th>description</th></tr>
- * <tr><td>{@link nl.nn.adapterframework.batch.IRecordHandlerManager manager}</td><td>Manager determines which handlers are to be used for the current line</td></tr>
+ * <tr><td>{@link nl.nn.adapterframework.batch.IInputStreamReaderFactory readerFactory}</td><td>Factory for reader of inputstream. Default implementation {@link nl.nn.adapterframework.batch.InputStreamReaderFactory} just converts using the specified characterset</td></tr>
+ * <tr><td>{@link nl.nn.adapterframework.batch.IRecordHandlerManager manager}</td><td>Manager determines which handlers are to be used for the current line. 
+ * 			If no manager is specified, a default manager and flow are created. The default manager 
+ * 			always uses the default flow. The default flow always uses the first registered recordHandler 
+ * 			(if available) and the first registered resultHandler (if available).</td></tr>
  * <tr><td>{@link nl.nn.adapterframework.batch.RecordHandlingFlow manager/flow}</td><td>Element that contains the handlers for a specific record type, to be assigned to the manager</td></tr>
  * <tr><td>{@link nl.nn.adapterframework.batch.IRecordHandler recordHandler}</td><td>Handler for transforming records of a specific type</td></tr>
  * <tr><td>{@link nl.nn.adapterframework.batch.IResultHandler resultHandler}</td><td>Handler for processing transformed records</td></tr>
@@ -84,7 +89,7 @@ import nl.nn.adapterframework.util.FileUtils;
  * @version Id
  */
 public class BatchFileTransformerPipe extends StreamTransformerPipe {
-	public static final String version = "$RCSfile: BatchFileTransformerPipe.java,v $  $Revision: 1.17 $ $Date: 2009-03-16 16:11:20 $";
+	public static final String version = "$RCSfile: BatchFileTransformerPipe.java,v $  $Revision: 1.18 $ $Date: 2010-05-03 17:01:03 $";
 
 	private String move2dirAfterTransform;
 	private String move2dirAfterError;
@@ -95,13 +100,11 @@ public class BatchFileTransformerPipe extends StreamTransformerPipe {
 	protected String getStreamId(Object input, PipeLineSession session) throws PipeRunException {
 		return ((File)input).getName();
 	}
-	protected Reader getReader(String streamId, Object input, PipeLineSession session) throws PipeRunException {
+	protected InputStream getInputStream(String streamId, Object input, PipeLineSession session) throws PipeRunException {
 		try {
-			return new InputStreamReader(new FileInputStream((File)input),getCharset());
+			return new FileInputStream((File)input);
 		} catch (FileNotFoundException e) {
 			throw new PipeRunException(this,"cannot find file ["+streamId+"]",e);
-		} catch (UnsupportedEncodingException e) {
-			throw new PipeRunException(this,"cannot use charset ["+getCharset()+"] to open file ["+streamId+"]",e);
 		}
 	}
 	

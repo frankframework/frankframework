@@ -1,6 +1,9 @@
 /*
  * $Log: BatchTransformerPipeBase.java,v $
- * Revision 1.1  2007-08-03 08:44:05  europe\L190409
+ * Revision 1.2  2010-05-03 17:04:32  L190409
+ * reworked stream handling, to allow for binary records.
+ *
+ * Revision 1.1  2007/08/03 08:44:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * renamed TransformingPipes to TransformerPipes
  *
  * Revision 1.1  2007/07/26 16:16:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -9,6 +12,7 @@
  */
 package nl.nn.adapterframework.jdbc;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.sql.Connection;
@@ -61,23 +65,17 @@ public abstract class BatchTransformerPipeBase extends StreamTransformerPipe {
 		}
 	}
 
-	public class ResultSetReader extends Reader {
+	public class ResultSetReader extends BufferedReader {
 		ResultSet rs;		
-		Reader reader;
 
 		ResultSetReader(ResultSet rs, Reader reader) {
-			super();
+			super(reader);
 			this.rs=rs;
-			this.reader=reader;
-		}
-
-		public int read(char[] cbuf, int off, int len) throws IOException {
-			return reader.read(cbuf,off,len);
 		}
 
 		public void close() throws IOException {
 			try {
-				reader.close();
+				super.close();
 			} finally {
 				JdbcUtil.fullClose(rs);
 			}
@@ -85,9 +83,9 @@ public abstract class BatchTransformerPipeBase extends StreamTransformerPipe {
 		
 	}
 
-	protected abstract Reader getReader(ResultSet rs) throws SenderException;
+	protected abstract Reader getReader(ResultSet rs, String charset, String streamId, PipeLineSession session) throws SenderException;
 
-	protected Reader getReader(String streamId, Object input, PipeLineSession session) throws PipeRunException {
+	protected BufferedReader getReader(String streamId, Object input, PipeLineSession session) throws PipeRunException {
 		Connection connection = null;
 		try {
 			connection = querySender.getConnection();
@@ -102,7 +100,7 @@ public abstract class BatchTransformerPipeBase extends StreamTransformerPipe {
 			if (rs==null || !rs.next()) {
 				throw new SenderException("query has empty resultset");
 			}
-			return new ResultSetReader(rs,getReader(rs));
+			return new ResultSetReader(rs,getReader(rs, getCharset(), streamId, session));
 		} catch (Exception e) {
 			throw new PipeRunException(this,"cannot open reader",e);
 		}

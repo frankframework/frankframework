@@ -1,6 +1,9 @@
 /*
  * $Log: StreamTransformerPipe.java,v $
- * Revision 1.23  2010-03-25 12:55:31  L190409
+ * Revision 1.24  2010-05-03 17:01:03  L190409
+ * reworked stream handling, to allow for binary records.
+ *
+ * Revision 1.23  2010/03/25 12:55:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added attribute closeInputstreamOnExit
  *
  * Revision 1.22  2010/02/08 14:35:41  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -75,9 +78,7 @@ package nl.nn.adapterframework.batch;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.Reader;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -113,7 +114,11 @@ import org.apache.commons.lang.StringUtils;
  * </p>
  * <table border="1">
  * <tr><th>nested elements</th><th>description</th></tr>
- * <tr><td>{@link nl.nn.adapterframework.batch.IRecordHandlerManager manager}</td><td>Manager determines which handlers are to be used for the current line</td></tr>
+ * <tr><td>{@link nl.nn.adapterframework.batch.IInputStreamReaderFactory readerFactory}</td><td>Factory for reader of inputstream. Default implementation {@link nl.nn.adapterframework.batch.InputStreamReaderFactory} just converts using the specified characterset</td></tr>
+ * <tr><td>{@link nl.nn.adapterframework.batch.IRecordHandlerManager manager}</td><td>Manager determines which handlers are to be used for the current line. 
+ * 			If no manager is specified, a default manager and flow are created. The default manager 
+ * 			always uses the default flow. The default flow always uses the first registered recordHandler 
+ * 			(if available) and the first registered resultHandler (if available).</td></tr>
  * <tr><td>{@link nl.nn.adapterframework.batch.RecordHandlingFlow manager/flow}</td><td>Element that contains the handlers for a specific record type, to be assigned to the manager</td></tr>
  * <tr><td>{@link nl.nn.adapterframework.batch.IRecordHandler recordHandler}</td><td>Handler for transforming records of a specific type</td></tr>
  * <tr><td>{@link nl.nn.adapterframework.batch.IResultHandler resultHandler}</td><td>Handler for processing transformed records</td></tr>
@@ -141,6 +146,33 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	private Map registeredManagers= new HashMap();
 	private Map registeredRecordHandlers= new HashMap();
 	private Map registeredResultHandlers= new LinkedHashMap();
+	
+	private IInputStreamReaderFactory readerFactory=new InputStreamReaderFactory();
+
+	protected String getStreamId(Object input, PipeLineSession session) throws PipeRunException {
+		return session.getMessageId();
+	}
+	
+	/*
+	 * obtain data inputstream.
+	 */
+	protected InputStream getInputStream(String streamId, Object input, PipeLineSession session) throws PipeRunException {
+		return (InputStream)input;
+	}
+	/*
+	 * method called by doPipe to obtain reader.
+	 */
+	protected BufferedReader getReader(String streamId, Object input, PipeLineSession session) throws PipeRunException {
+		try {
+			Reader reader=getReaderFactory().getReader(getInputStream(streamId, input,session),getCharset(),streamId,session);
+			if (reader instanceof BufferedReader) {
+				return (BufferedReader)reader;
+			}
+			return new BufferedReader(reader);
+		} catch (SenderException e) {
+			throw new PipeRunException(this,getLogPrefix(session)+"cannot create reader",e);
+		}
+	}
 	
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -336,19 +368,6 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	}
 	
 	
-
-
-
-	protected String getStreamId(Object input, PipeLineSession session) throws PipeRunException {
-		return session.getMessageId();
-	}
-	protected Reader getReader(String streamId, Object input, PipeLineSession session) throws PipeRunException {
-		try {
-			return new InputStreamReader((InputStream)input,getCharset());
-		} catch (UnsupportedEncodingException e) {
-			throw new PipeRunException(this,"cannot use charset ["+getCharset()+"] to read stream ["+streamId+"]",e);
-		}
-	}
 	
 	/**
 	 * Open a reader for the file named according the input messsage and transform it.
@@ -359,20 +378,14 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	 */
 	public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRunException {
 		String streamId = getStreamId(input, session);
-		Reader reader = getReader(streamId, input,session);
+		BufferedReader reader = getReader(streamId, input,session);
 		if (reader==null) {
 			throw new PipeRunException(this,"could not obtain reader for ["+streamId+"]");
-		}
-		BufferedReader breader;
-		if (reader instanceof BufferedReader) {
-			breader = (BufferedReader)reader;
-		} else {
-			breader = new BufferedReader(reader);
 		}
 		Object transformationResult=null;
 		ParameterResolutionContext prc = new ParameterResolutionContext("", session);
 		try {
-			transformationResult = transform(streamId, breader, session, prc);
+			transformationResult = transform(streamId, reader, session, prc);
 		} finally {
 			if (isCloseInputstreamOnExit()) {
 				try {
@@ -533,7 +546,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 
 				IRecordHandler curHandler = flow.getRecordHandler(); 
 				if (curHandler != null) {
-					log.debug("manager ["+currentManager.getName()+"] key ["+flow.getRecordKey()+"] record handler ["+curHandler.getName()+"]: "+rawRecord);
+					log.debug("manager ["+currentManager.getName()+"] key ["+flow.getRecordKey()+"] record handler ["+curHandler.getName()+"] line ["+linenumber+"]: "+rawRecord);
 					// there is a record handler, so transform the line
 					List parsedRecord = curHandler.parse(session, rawRecord);
 					Object result = curHandler.handleRecord(session, parsedRecord, prc);
@@ -639,6 +652,13 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	}
 	public String getCharset() {
 		return charset;
+	}
+
+	public void setReaderFactory(IInputStreamReaderFactory factory) {
+		readerFactory = factory;
+	}
+	public IInputStreamReaderFactory getReaderFactory() {
+		return readerFactory;
 	}
 
 }

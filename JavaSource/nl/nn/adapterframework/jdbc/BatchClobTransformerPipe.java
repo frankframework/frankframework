@@ -1,6 +1,9 @@
 /*
  * $Log: BatchClobTransformerPipe.java,v $
- * Revision 1.2  2010-02-25 13:41:54  m168309
+ * Revision 1.3  2010-05-03 17:04:32  L190409
+ * reworked stream handling, to allow for binary records.
+ *
+ * Revision 1.2  2010/02/25 13:41:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted javadoc for resultOnTimeOut attribute
  *
  * Revision 1.1  2007/08/03 08:44:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -15,6 +18,7 @@ package nl.nn.adapterframework.jdbc;
 import java.io.Reader;
 import java.sql.ResultSet;
 
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 
 /**
@@ -40,11 +44,16 @@ import nl.nn.adapterframework.core.SenderException;
  * <table border="1">
  * <tr><th>nested elements</th><th>description</th></tr>
  * <tr><td>{@link nl.nn.adapterframework.batch.IRecordHandlerManager manager}</td><td>Manager determines which handlers are to be used for the current line</td></tr>
- * <tr><td>{@link nl.nn.adapterframework.batch.RecordHandlingFlow manager/flow}</td><td>Element that contains the handlers for a specific record type, to be assigned to the manager</td></tr>
+ * <tr><td>{@link nl.nn.adapterframework.batch.IRecordHandlerManager manager}</td><td>Manager determines which handlers are to be used for the current line. 
+ * 			If no manager is specified, a default manager and flow are created. The default manager 
+ * 			always uses the default flow. The default flow always uses the first registered recordHandler 
+ * 			(if available) and the first registered resultHandler (if available).</td></tr>
  * <tr><td>{@link nl.nn.adapterframework.batch.IRecordHandler recordHandler}</td><td>Handler for transforming records of a specific type</td></tr>
  * <tr><td>{@link nl.nn.adapterframework.batch.IResultHandler resultHandler}</td><td>Handler for processing transformed records</td></tr>
  * </table>
  * </p>
+ * 
+ * N.B. the readerFactory is not used by this class.
  * 
  * @author  Gerrit van Brakel
  * @since   4.7
@@ -53,7 +62,7 @@ import nl.nn.adapterframework.core.SenderException;
 public class BatchClobTransformerPipe extends BatchTransformerPipeBase {
 
 
-	protected Reader getReader(ResultSet rs) throws SenderException {
+	protected Reader getReader(ResultSet rs, String charset, String streamId, PipeLineSession session) throws SenderException {
 		try {
 			return rs.getCharacterStream(1);
 		} catch (Exception e) {
