@@ -1,6 +1,9 @@
 /*
  * $Log: RecordXslTransformer.java,v $
- * Revision 1.13  2008-12-30 17:01:13  m168309
+ * Revision 1.14  2010-05-03 16:58:08  L190409
+ * deprecated
+ *
+ * Revision 1.13  2008/12/30 17:01:13  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added configuration warnings facility (in Show configurationStatus)
  *
  * Revision 1.12  2008/07/17 16:13:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -41,6 +44,7 @@
  */
 package nl.nn.adapterframework.batch;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 
 /**
@@ -66,9 +70,17 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
  * 
  * @author  John Dekker
  * @version Id
+ * @deprecated Please replace by RecordXmlTransformer.
  */
 public class RecordXslTransformer extends RecordXmlTransformer {
-	public static final String version = "$RCSfile: RecordXslTransformer.java,v $  $Revision: 1.13 $ $Date: 2008-12-30 17:01:13 $";
+	public static final String version = "$RCSfile: RecordXslTransformer.java,v $  $Revision: 1.14 $ $Date: 2010-05-03 16:58:08 $";
+
+	public void configure() throws ConfigurationException {
+		super.configure();
+		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+		String msg = "class ["+this.getClass().getName()+"] is deprecated. Please replace by ["+super.getClass().getName()+"]";
+		configWarnings.add(log, msg);
+	}
 
 	/**
 	 * @deprecated configuration using attribute 'xslFile' is deprecated. Please use attribute 'styleSheetName' 
