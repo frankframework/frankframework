@@ -1,6 +1,9 @@
 /*
  * $Log: SapFunctionFacade.java,v $
- * Revision 1.17  2009-09-08 14:20:27  L190409
+ * Revision 1.18  2010-05-06 12:49:27  L190409
+ * alternative way to set tables from XML
+ *
+ * Revision 1.17  2009/09/08 14:20:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed unneccesary warning
  *
  * Revision 1.16  2008/01/30 14:43:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -75,6 +78,7 @@ import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
+import org.apache.commons.digester.Digester;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
@@ -102,7 +106,7 @@ import com.sap.mw.jco.JCO;
  * @version Id
  */
 public class SapFunctionFacade implements INamedObject, HasPhysicalDestination {
-	public static final String version="$RCSfile: SapFunctionFacade.java,v $  $Revision: 1.17 $ $Date: 2009-09-08 14:20:27 $";
+	public static final String version="$RCSfile: SapFunctionFacade.java,v $  $Revision: 1.18 $ $Date: 2010-05-06 12:49:27 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -206,6 +210,30 @@ public class SapFunctionFacade implements INamedObject, HasPhysicalDestination {
 			}
 		}
 	}
+
+	static protected void setTables(JCO.ParameterList tableParams, String message) throws SapException {
+		if (tableParams != null && StringUtils.isNotEmpty(message)) {
+			String paramsName=tableParams.getName();
+			TransformerPool tp = (TransformerPool)extractors.get(paramsName);
+			if (tp==null) {
+				try {
+//					log.debug("creating evaluator for parameter ["+paramName+"]");
+					tp = new TransformerPool(XmlUtils.createXPathEvaluatorSource("/*/"+paramsName,"xml"));
+					extractors.put(paramsName,tp);
+				} catch (Exception e) {
+					throw new SapException("exception creating Extractor for  ["+paramsName+"]", e);
+				}
+			}
+			try {
+				String paramsXml = tp.transform(message,null);
+				TableDigester td = new TableDigester();
+				td.digestTableXml(tableParams,paramsXml);
+			} catch (Exception e) {
+				throw new SapException("exception extracting ["+paramsName+"]", e);
+			}
+		}
+	}
+
 
 	/**
 	 * This method must be called from configure().
@@ -356,12 +384,10 @@ public class SapFunctionFacade implements INamedObject, HasPhysicalDestination {
 		int replyFieldIndex = findFieldIndex(output, getReplyFieldIndex(), getReplyFieldName());
 		setParameters(function.getExportParameterList(),result, replyFieldIndex);
 		//log.warn("SapFunctionFacade.message2FunctionResult, skipped setting of return table parameters");
-/*		
 		if (replyFieldIndex<=0) {
 			log.debug("SapFunctionFacade.message2FunctionResult, setting table parameters");
-			setParameters(function.getTableParameterList(), result, 0);
+			setTables(function.getTableParameterList(), result);
 		}
-*/		
 	}
 	
 
