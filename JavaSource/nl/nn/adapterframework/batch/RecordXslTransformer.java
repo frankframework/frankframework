@@ -1,6 +1,9 @@
 /*
  * $Log: RecordXslTransformer.java,v $
- * Revision 1.14  2010-05-03 16:58:08  L190409
+ * Revision 1.15  2010-05-14 16:52:00  L190409
+ * corrected deprecation warning
+ *
+ * Revision 1.14  2010/05/03 16:58:08  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * deprecated
  *
  * Revision 1.13  2008/12/30 17:01:13  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -73,12 +76,12 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
  * @deprecated Please replace by RecordXmlTransformer.
  */
 public class RecordXslTransformer extends RecordXmlTransformer {
-	public static final String version = "$RCSfile: RecordXslTransformer.java,v $  $Revision: 1.14 $ $Date: 2010-05-03 16:58:08 $";
+	public static final String version = "$RCSfile: RecordXslTransformer.java,v $  $Revision: 1.15 $ $Date: 2010-05-14 16:52:00 $";
 
 	public void configure() throws ConfigurationException {
 		super.configure();
 		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-		String msg = "class ["+this.getClass().getName()+"] is deprecated. Please replace by ["+super.getClass().getName()+"]";
+		String msg = "class ["+this.getClass().getName()+"] is deprecated. Please replace by [nl.nn.adapterframework.batch.RecordXmlTransformer]";
 		configWarnings.add(log, msg);
 	}
 
