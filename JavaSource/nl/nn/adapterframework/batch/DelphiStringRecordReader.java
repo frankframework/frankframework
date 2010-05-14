@@ -1,6 +1,10 @@
 /*
  * $Log: DelphiStringRecordReader.java,v $
- * Revision 1.1  2010-05-03 17:03:06  L190409
+ * Revision 1.2  2010-05-14 16:51:30  L190409
+ * added separatorReplacement
+ * fixed operation of stringsPerRecord
+ *
+ * Revision 1.1  2010/05/03 17:03:06  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * IInputstreamReader-classes to enable reading Delphi String records
  *
  */
@@ -12,7 +16,9 @@ import java.io.InputStream;
 import java.io.Reader;
 
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.Misc;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 /**
@@ -29,6 +35,7 @@ public class DelphiStringRecordReader extends Reader {
 	private int stringLength;
 	private int stringsPerRecord; // 0 means read till end of file
 	private String separator;
+	private String separatorReplacement;
 	
 	private StringBuffer buffer;
 	private int bufferLen=0;
@@ -37,13 +44,14 @@ public class DelphiStringRecordReader extends Reader {
 	
 	private final boolean trace=false;
 
-	public DelphiStringRecordReader(InputStream in, String charsetName, int stringLength, int stringsPerRecord, String separator) {
+	public DelphiStringRecordReader(InputStream in, String charsetName, int stringLength, int stringsPerRecord, String separator, String separatorReplacement) {
 		super();
 		this.in=in;
 		this.charsetName=charsetName;
 		this.stringLength=stringLength;
 		this.stringsPerRecord=stringsPerRecord;
 		this.separator=separator;
+		this.separatorReplacement=separatorReplacement;
 	}
 	
 	/*
@@ -100,6 +108,9 @@ public class DelphiStringRecordReader extends Reader {
 			in.skip(stringLength-pos);
 		}
 		String result=new String(buf,charsetName);
+		if (StringUtils.isNotEmpty(separatorReplacement)) {
+			result=Misc.replace(result,separator,separatorReplacement);
+		}
 		if (trace && log.isDebugEnabled()) log.debug("read string ["+result+"]");
 		return result;
 	}
@@ -119,9 +130,11 @@ public class DelphiStringRecordReader extends Reader {
 				stringsRead++;
 			}
 		}
+		if (trace && log.isDebugEnabled()) log.debug("read ["+stringsRead+"] strings");
 		if (stringsRead==0) {
 			buffer=null;
 		} else {
+			buffer.append("\n");
 			bufferLen=buffer.length();
 			bufferPos=0;
 		}
