@@ -1,6 +1,9 @@
 /*
  * $Log: ConfigurationDigester.java,v $
- * Revision 1.32  2010-04-01 13:01:35  L190409
+ * Revision 1.33  2010-05-14 16:52:50  L190409
+ * added checkerrules for BatchPipe children
+ *
+ * Revision 1.32  2010/04/01 13:01:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * replaced BeanFactory by ApplicationContext to enable AOP proxies
  *
  * Revision 1.31  2010/01/27 15:32:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -156,7 +159,7 @@ import org.xml.sax.SAXParseException;
  * @see Configuration
  */
 abstract public class ConfigurationDigester implements ApplicationContextAware {
-	public static final String version = "$RCSfile: ConfigurationDigester.java,v $ $Revision: 1.32 $ $Date: 2010-04-01 13:01:35 $";
+	public static final String version = "$RCSfile: ConfigurationDigester.java,v $ $Revision: 1.33 $ $Date: 2010-05-14 16:52:50 $";
     protected static Logger log = LogUtil.getLogger(ConfigurationDigester.class);
 	private ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 
@@ -258,6 +261,11 @@ abstract public class ConfigurationDigester implements ApplicationContextAware {
 			digester.addRule("*/inProcessStorage", attributeChecker);
 			digester.addRule("*/errorStorage", attributeChecker);
 			digester.addRule("*/pipe", attributeChecker);
+			digester.addRule("*/readerFactory", attributeChecker);
+			digester.addRule("*/manager", attributeChecker);
+			digester.addRule("*/manager/flow", attributeChecker);
+			digester.addRule("*/recordHandler", attributeChecker);
+			digester.addRule("*/resultHandler", attributeChecker);
 			digester.addRule("*/forward", attributeChecker);
 			digester.addRule("*/child", attributeChecker);
 			digester.addRule("*/param", attributeChecker);
