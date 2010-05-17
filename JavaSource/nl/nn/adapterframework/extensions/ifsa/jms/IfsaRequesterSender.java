@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaRequesterSender.java,v $
- * Revision 1.19  2010-03-10 14:30:06  m168309
+ * Revision 1.20  2010-05-17 08:41:50  m168309
+ * log ifsa reply in debug mode
+ *
+ * Revision 1.19  2010/03/10 14:30:06  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * rolled back testtool adjustments (IbisDebuggerDummy)
  *
  * Revision 1.17  2010/01/28 15:06:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -168,6 +171,7 @@ import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.JtaUtil;
 
@@ -275,9 +279,19 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 			long timeout = getExpiry(queue);
 			log.debug(getLogPrefix()+"start waiting at most ["+timeout+"] ms for reply on message using selector ["+selector+"]");
 		    msg = replyReceiver.receive(timeout);
-		    if (msg!=null) {
-		    	log.debug(getLogPrefix()+"received reply");
-		    }
+			if (msg==null) {	
+				log.info(getLogPrefix()+"received null reply");
+			} else {
+				if (log.isDebugEnabled()) {
+					if (AppConstants.getInstance().getBoolean("log.logIntermediaryResults",false)) {
+						log.debug(getLogPrefix()+"received reply ["+msg+"]");
+					} else {
+						log.debug(getLogPrefix()+"received reply");
+					}
+				} else {
+					log.info(getLogPrefix()+"received reply");
+				}
+			}
 
 	    } catch (Exception e) {
 	        throw new SenderException(getLogPrefix()+"got exception retrieving reply", e);
