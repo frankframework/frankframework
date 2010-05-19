@@ -1,6 +1,9 @@
 /*
  * $Log: ConfigurationDigester.java,v $
- * Revision 1.33  2010-05-14 16:52:50  L190409
+ * Revision 1.34  2010-05-19 10:29:25  m168309
+ * remove inactive elements from configuration
+ *
+ * Revision 1.33  2010/05/14 16:52:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added checkerrules for BatchPipe children
  *
  * Revision 1.32  2010/04/01 13:01:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -108,6 +111,7 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StringResolver;
 import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.digester.Digester;
@@ -159,11 +163,11 @@ import org.xml.sax.SAXParseException;
  * @see Configuration
  */
 abstract public class ConfigurationDigester implements ApplicationContextAware {
-	public static final String version = "$RCSfile: ConfigurationDigester.java,v $ $Revision: 1.33 $ $Date: 2010-05-14 16:52:50 $";
+	public static final String version = "$RCSfile: ConfigurationDigester.java,v $ $Revision: 1.34 $ $Date: 2010-05-19 10:29:25 $";
     protected static Logger log = LogUtil.getLogger(ConfigurationDigester.class);
 	private ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 
-	private static final String CONFIGURATION_FILE_DEFAULT  = "Configuration.xml";
+	//private static final String CONFIGURATION_FILE_DEFAULT  = "Configuration.xml";
 	private static final String DIGESTER_RULES_DEFAULT      = "digester-rules.xml";
 	
 	private static final String CONFIGURATION_VALIDATION_KEY = "validate.configuration";
@@ -227,7 +231,7 @@ abstract public class ConfigurationDigester implements ApplicationContextAware {
 			digesterRulesURL = ClassUtils.getResourceURL(stackTop, DIGESTER_RULES_DEFAULT);
 		}
         if (configurationFileURL == null) {
-            configurationFileURL = ClassUtils.getResourceURL(stackTop, CONFIGURATION_FILE_DEFAULT);
+            configurationFileURL = ClassUtils.getResourceURL(stackTop, IbisManager.DFLT_CONFIGURATION);
         }
 		Digester digester = createDigester();
 		//digester.setUseContextClassLoader(true);
@@ -301,22 +305,19 @@ abstract public class ConfigurationDigester implements ApplicationContextAware {
 
 			fillConfigWarnDefaultValueExceptions(configurationFileURL);
 
-			boolean stub4testtool=AppConstants.getInstance().getBoolean(CONFIGURATION_STUB4TESTTOOL_KEY,false);
-			if (stub4testtool) {
-				URL xsltSource = ClassUtils.getResourceURL(this, stub4testtool_xslt);
-				if (xsltSource == null) {
-					throw new ConfigurationException("cannot find resource ["+stub4testtool_xslt+"]");
-				}
-				Transformer transformer = XmlUtils.createTransformer(xsltSource);
-				String lineSeparator=SystemUtils.LINE_SEPARATOR;
-				if (null==lineSeparator) lineSeparator="\n";
-				String configString=Misc.resourceToString(configurationFileURL, lineSeparator, false);
-				configString=XmlUtils.identityTransform(configString);
-				String stubbedConfigString = XmlUtils.transformXml(transformer, configString);
-				digester.parse(new StringReader(stubbedConfigString));
-			} else {
-				digester.parse(configurationFileURL);
-			}
+			String lineSeparator = SystemUtils.LINE_SEPARATOR;
+			if (null==lineSeparator) lineSeparator = "\n";
+			String configString = Misc.resourceToString(configurationFileURL, lineSeparator, false);
+			configString = XmlUtils.identityTransform(configString);
+			configString = StringResolver.substVars(configString, AppConstants.getInstance());
+
+			configString = ConfigurationUtils.getActivatedConfiguration(configString);
+
+			if (ConfigurationUtils.stubConfiguration()) {
+				configString = ConfigurationUtils.getStubbedConfiguration(configString);
+			}			
+
+			digester.parse(new StringReader(configString));
 		} catch (Throwable t) {
 			// wrap exception to be sure it gets rendered via the IbisException-renderer
 			String currentElementName=digester.getCurrentElementName();
