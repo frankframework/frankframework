@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaRequesterSender.java,v $
- * Revision 1.20  2010-05-17 08:41:50  m168309
+ * Revision 1.21  2010-05-19 10:16:42  m168309
+ * log ifsa reply in debug mode (2nd attempt)
+ *
+ * Revision 1.20  2010/05/17 08:41:50  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * log ifsa reply in debug mode
  *
  * Revision 1.19  2010/03/10 14:30:06  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -282,15 +285,7 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 			if (msg==null) {	
 				log.info(getLogPrefix()+"received null reply");
 			} else {
-				if (log.isDebugEnabled()) {
-					if (AppConstants.getInstance().getBoolean("log.logIntermediaryResults",false)) {
-						log.debug(getLogPrefix()+"received reply ["+msg+"]");
-					} else {
-						log.debug(getLogPrefix()+"received reply");
-					}
-				} else {
-					log.info(getLogPrefix()+"received reply");
-				}
+				log.info(getLogPrefix()+"received reply");
 			}
 
 	    } catch (Exception e) {
@@ -473,8 +468,19 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 						result = msg.toString();
 					}
 				}
-				log.debug(getLogPrefix()+"reply received");
-					
+				if (result==null) {	
+					log.info(getLogPrefix()+"received null reply");
+				} else {
+					if (log.isDebugEnabled()) {
+						if (AppConstants.getInstance().getBoolean("log.logIntermediaryResults",false)) {
+							log.debug(getLogPrefix()+"received reply ["+result+"]");
+						} else {
+							log.debug(getLogPrefix()+"received reply");
+						}
+					} else {
+						log.info(getLogPrefix()+"received reply");
+					}
+				}
 		    } else{
 		    	 result=sentMessage.getJMSMessageID(); 
 		    }
