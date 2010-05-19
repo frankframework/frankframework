@@ -1,6 +1,9 @@
 /*
  * $Log: MailSender.java,v $
- * Revision 1.8  2010-03-10 14:30:05  m168309
+ * Revision 1.9  2010-05-19 10:25:22  m168309
+ * support diacritics in every charset
+ *
+ * Revision 1.8  2010/03/10 14:30:05  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * rolled back testtool adjustments (IbisDebuggerDummy)
  *
  * Revision 1.6  2009/12/24 13:14:15  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -375,12 +378,28 @@ public class MailSender extends SenderWithParametersBase {
 				throw new SenderException("MailSender [" + getName() + "] did not find any valid recipients");
 			}
 
+			String messageTypeWithCharset;
+			String charset1 = System.getProperty("mail.mime.charset");
+			String charset2 = System.getProperty("file.encoding");
+			if (charset1!=null) {
+				messageTypeWithCharset = messageType + ";charset=" + charset1;
+			} else {
+				if (charset2!=null) {
+					messageTypeWithCharset = messageType + ";charset=" + charset2;
+				} else {
+					messageTypeWithCharset = messageType;
+				}
+			}
+			log.debug("MailSender [" + getName() + "] uses encoding ["+messageTypeWithCharset+"]");
+
 			if (attachments==null || attachments.size()==0) {
-				msg.setContent(message, messageType);
+				//msg.setContent(message, messageType);
+				msg.setContent(message, messageTypeWithCharset);
 			} else {
 				Multipart multipart = new MimeMultipart();
 				BodyPart messageBodyPart = new MimeBodyPart();
-				messageBodyPart.setContent(message, messageType);
+				//messageBodyPart.setContent(message, messageType);
+				messageBodyPart.setContent(message, messageTypeWithCharset);
 				multipart.addBodyPart(messageBodyPart);
 				
 				iter = attachments.iterator();
