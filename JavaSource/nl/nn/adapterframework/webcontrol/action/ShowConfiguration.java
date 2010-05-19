@@ -1,6 +1,9 @@
 /*
  * $Log: ShowConfiguration.java,v $
- * Revision 1.11  2008-06-03 16:00:23  europe\L190409
+ * Revision 1.12  2010-05-19 10:31:08  m168309
+ * show loaded configuration instead of original configuration
+ *
+ * Revision 1.11  2008/06/03 16:00:23  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * encode errorMessages
  *
  * Revision 1.10  2007/08/30 15:12:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -42,6 +45,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.LogUtil;
@@ -69,7 +74,7 @@ import org.apache.struts.action.DynaActionForm;
  */
 
 public final class ShowConfiguration extends ActionBase {
-	public static final String version = "$RCSfile: ShowConfiguration.java,v $ $Revision: 1.11 $ $Date: 2008-06-03 16:00:23 $";
+	public static final String version = "$RCSfile: ShowConfiguration.java,v $ $Revision: 1.12 $ $Date: 2010-05-19 10:31:08 $";
 	
 	private static final String KEYWORD_INCLUDE="<include";
 	private static final String KEYWORD_CONFIG="configuration=\"";
@@ -138,8 +143,14 @@ public final class ShowConfiguration extends ActionBase {
 	        } catch(DomBuilderException e){
 	        	log.error(e);
 	        }
-	        if (AppConstants.getInstance().getBoolean("showConfiguration.resolve.variables", true))
+//	        if (AppConstants.getInstance().getBoolean("showConfiguration.resolve.variables", true))
 				result=StringResolver.substVars(result, AppConstants.getInstance());
+
+			result = ConfigurationUtils.getActivatedConfiguration(result);
+
+			if (ConfigurationUtils.stubConfiguration()) {
+				result = ConfigurationUtils.getStubbedConfiguration(result);
+			}			
 	        
 	    } catch (MalformedURLException e) {
 	        result =
@@ -147,6 +158,9 @@ public final class ShowConfiguration extends ActionBase {
 	    } catch (IOException e) {
 	        result =
 	            "<b>error occured retrieving configurationfile:" + XmlUtils.encodeChars(e.getMessage()) + "</b>";
+		} catch (ConfigurationException e) {
+			result =
+				"<b>error occured retrieving configurationfile:" + XmlUtils.encodeChars(e.getMessage()) + "</b>";
 	    }
 			
 	    request.setAttribute("configXML", result);
