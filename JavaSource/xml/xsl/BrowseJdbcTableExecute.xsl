@@ -38,27 +38,15 @@
 				</xsl:choose>
 			</xsl:when>
 			<xsl:otherwise>
-				<xsl:if test="$rownumMin&gt;0 or $rownumMax&gt;0">
-					<xsl:text>SELECT * FROM (</xsl:text>					
-				</xsl:if>
-				<xsl:choose>
-					<xsl:when test="string-length($order)&gt;0">
-						<xsl:text>SELECT ROW_NUMBER() OVER (ORDER BY </xsl:text>
-						<xsl:value-of select="$order"/>
-						<xsl:text>) AS ROWNUMBER, </xsl:text>
-					</xsl:when>
-					<xsl:otherwise>
-						<xsl:text>SELECT ROWNUM AS ROWNUMBER, </xsl:text>
-					</xsl:otherwise>
-				</xsl:choose>
+				<xsl:text>SELECT * FROM (SELECT /*+ FIRST_ROWS(</xsl:text>
+				<xsl:value-of select="$rownumMax - $rownumMin + 1"/>
+				<xsl:text>) */ rownum rnum, x.* FROM (SELECT </xsl:text>
 				<xsl:choose>
 					<xsl:when test="$rownumMax!=$rownumMin and result/fielddefinition/field[@type='BLOB' or @type='CLOB']">
 						<xsl:for-each select="result/fielddefinition/field">
 							<xsl:if test="@type='BLOB' or @type='CLOB'">
 								<xsl:text>LENGTH(</xsl:text>
 							</xsl:if>
-							<xsl:value-of select="$tableName"/>
-							<xsl:text>.</xsl:text>
 							<xsl:value-of select="@name"/>
 							<xsl:if test="@type='BLOB' or @type='CLOB'">
 								<xsl:text>) AS &quot;LENGTH </xsl:text>
@@ -71,35 +59,23 @@
 						</xsl:for-each>
 					</xsl:when>
 					<xsl:otherwise>
-						<xsl:value-of select="$tableName"/>
-						<xsl:text>.*</xsl:text>
+						<xsl:text>*</xsl:text>
 					</xsl:otherwise>
 				</xsl:choose>
 				<xsl:text> FROM </xsl:text>
 				<xsl:value-of select="$tableName"/>
-				
-				<xsl:choose>
-					<xsl:when test="string-length($where)&gt;0">
-						<xsl:text> WHERE </xsl:text>			
-						<xsl:value-of select="$where"/>
-						<xsl:if test="$rownumMax&gt;0">
-							<xsl:text> AND ROWNUM &lt;= </xsl:text>
-							<xsl:value-of select="$rownumMax"/>
-						</xsl:if>
-					</xsl:when>
-					<xsl:otherwise>
-						<xsl:if test="$rownumMax&gt;0">
-							<xsl:text> WHERE ROWNUM &lt;= </xsl:text>
-							<xsl:value-of select="$rownumMax"/>
-						</xsl:if>
-					</xsl:otherwise>
-				</xsl:choose>
-				
-				<xsl:if test="$rownumMin&gt;0">
-					<xsl:text>)</xsl:text>
-					<xsl:text> WHERE ROWNUMBER &gt;= </xsl:text>
-					<xsl:value-of select="$rownumMin"/>
+				<xsl:if test="string-length($where)&gt;0">
+					<xsl:text> WHERE </xsl:text>			
+					<xsl:value-of select="$where"/>
 				</xsl:if>
+				<xsl:if test="string-length($order)&gt;0">
+					<xsl:text> ORDER BY </xsl:text>
+					<xsl:value-of select="$order"/>
+				</xsl:if>
+				<xsl:text>) x WHERE rownum &lt;= </xsl:text>
+				<xsl:value-of select="$rownumMax"/>
+				<xsl:text>) x WHERE rnum &gt;= </xsl:text>
+				<xsl:value-of select="$rownumMin"/>
 			</xsl:otherwise>
 		</xsl:choose>
 	</xsl:template>
