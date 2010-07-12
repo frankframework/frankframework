@@ -1,6 +1,9 @@
 /*
  * $Log: SenderMonitorAdapter.java,v $
- * Revision 1.1  2008-08-07 11:31:27  europe\L190409
+ * Revision 1.2  2010-07-12 12:40:22  L190409
+ * removed unused imports
+ *
+ * Revision 1.1  2008/08/07 11:31:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * rework
  *
  * Revision 1.3  2008/07/24 12:34:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -15,20 +18,17 @@
  */
 package nl.nn.adapterframework.monitoring;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.Iterator;
 import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.http.WebServiceSender;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.PropertyUtilsBean;
-import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.lang.StringUtils;
 
 /**
