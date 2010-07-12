@@ -1,6 +1,9 @@
 /*
  * $Log: MessageSendingPipe.java,v $
- * Revision 1.64  2010-03-10 14:30:05  m168309
+ * Revision 1.65  2010-07-12 12:54:00  L190409
+ * allow to specfiy namespace prefixes to be used in XPath-epressions
+ *
+ * Revision 1.64  2010/03/10 14:30:05  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * rolled back testtool adjustments (IbisDebuggerDummy)
  *
  * Revision 1.63  2010/03/05 15:49:51  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -262,10 +265,13 @@ import org.apache.commons.lang.SystemUtils;
  * <tr><td>{@link #setResultOnTimeOut(String) resultOnTimeOut}</td><td>result returned when no return-message was received within the timeout limit (e.g. "receiver timed out").</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setLinkMethod(String) linkMethod}</td><td>Indicates wether the server uses the correlationID or the messageID in the correlationID field of the reply. This requirers the sender to have set the correlationID at the time of sending.</td><td>CORRELATIONID</td></tr>
  * <tr><td>{@link #setAuditTrailXPath(String) auditTrailXPath}</td><td>xpath expression to extract audit trail from message</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setAuditTrailNamespaceDefs(String) auditTrailNamespaceDefs}</td><td>namespace defintions for auditTrailXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setCorrelationIDXPath(String) correlationIDXPath}</td><td>xpath expression to extract correlationID from message</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setCorrelationIDNamespaceDefs(String) correlationIDXPathNamespaceDefs}</td><td>namespace defintions for correlationIDXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setCorrelationIDStyleSheet(String) correlationIDStyleSheet}</td><td>stylesheet to extract correlationID from message</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setCorrelationIDSessionKey(String) correlationIDSessionKey}</td><td>Key of a PipeLineSession-variable. Is specified, the value of the PipeLineSession variable is used as input for the XpathExpression or StyleSheet, instead of the current input message</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setLabelXPath(String) labelXPath}</td><td>xpath expression to extract label from message</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setLabelNamespaceDefs(String) labelNamespaceDefs}</td><td>namespace defintions for labelXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setLabelStyleSheet(String) labelStyleSheet}</td><td>stylesheet to extract label from message</td><td>&nbsp;</td></tr>
  * <tr><td><code>sender.*</td><td>any attribute of the sender instantiated by descendant classes</td><td>&nbsp;</td></tr>
  * </table>
@@ -298,7 +304,7 @@ import org.apache.commons.lang.SystemUtils;
  */
 
 public class MessageSendingPipe extends FixedForwardPipe implements HasSender, HasStatistics, EventThrowing {
-	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.64 $ $Date: 2010-03-10 14:30:05 $";
+	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.65 $ $Date: 2010-07-12 12:54:00 $";
 
 	public static final String PIPE_TIMEOUT_MONITOR_EVENT = "Sender Timeout";
 	public static final String PIPE_CLEAR_TIMEOUT_MONITOR_EVENT = "Sender Received Result on Time";
@@ -316,9 +322,12 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	private boolean checkXmlWellFormed = false;
 	private String checkRootTag;
 	private String auditTrailXPath;
+	private String auditTrailNamespaceDefs;
 	private String correlationIDXPath;
+	private String correlationIDNamespaceDefs;
 	private String correlationIDStyleSheet;
 	private String labelXPath;
+	private String labelXNamespaceDefs;
 	private String labelStyleSheet;
 
 	private ISender sender = null;
@@ -428,17 +437,13 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 		if (messageLog!=null) {
 			messageLog.configure();
 			if (StringUtils.isNotEmpty(getAuditTrailXPath())) {
-				try {
-					auditTrailTp = new TransformerPool(XmlUtils.createXPathEvaluatorSource(getAuditTrailXPath()));
-				} catch (TransformerConfigurationException e) {
-					throw new ConfigurationException(getLogPrefix(null) + "cannot create transformer for audittrail ["+getAuditTrailXPath()+"]",e);
-				}
+				auditTrailTp = TransformerPool.configureTransformer(getLogPrefix(null),getAuditTrailNamespaceDefs(), getAuditTrailXPath(), null,"text",false,null);
 			}
 			if (StringUtils.isNotEmpty(getCorrelationIDXPath()) || StringUtils.isNotEmpty(getCorrelationIDStyleSheet())) {
-				correlationIDTp=TransformerPool.configureTransformer(getLogPrefix(null),getCorrelationIDXPath(), getCorrelationIDStyleSheet(),"text",false,null);
+				correlationIDTp=TransformerPool.configureTransformer(getLogPrefix(null),getCorrelationIDNamespaceDefs(), getCorrelationIDXPath(), getCorrelationIDStyleSheet(),"text",false,null);
 			}
 			if (StringUtils.isNotEmpty(getLabelXPath()) || StringUtils.isNotEmpty(getLabelStyleSheet())) {
-				labelTp=TransformerPool.configureTransformer(getLogPrefix(null),getLabelXPath(), getLabelStyleSheet(),"text",false,null);
+				labelTp=TransformerPool.configureTransformer(getLogPrefix(null),getLabelXNamespaceDefs(), getLabelXPath(), getLabelStyleSheet(),"text",false,null);
 			}
 		}
 		if (getInputValidator()!=null) {
@@ -924,6 +929,30 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 
 	public String getCorrelationIDSessionKey() {
 		return correlationIDSessionKey;
+	}
+
+	public String getAuditTrailNamespaceDefs() {
+		return auditTrailNamespaceDefs;
+	}
+
+	public void setAuditTrailNamespaceDefs(String auditTrailNamespaceDefs) {
+		this.auditTrailNamespaceDefs = auditTrailNamespaceDefs;
+	}
+
+	public String getCorrelationIDNamespaceDefs() {
+		return correlationIDNamespaceDefs;
+	}
+
+	public void setCorrelationIDNamespaceDefs(String correlationIDNamespaceDefs) {
+		this.correlationIDNamespaceDefs = correlationIDNamespaceDefs;
+	}
+
+	public String getLabelXNamespaceDefs() {
+		return labelXNamespaceDefs;
+	}
+
+	public void setLabelXNamespaceDefs(String labelXNamespaceDefs) {
+		this.labelXNamespaceDefs = labelXNamespaceDefs;
 	}
 	
 }

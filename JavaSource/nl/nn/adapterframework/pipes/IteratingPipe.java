@@ -1,6 +1,9 @@
 /*
  * $Log: IteratingPipe.java,v $
- * Revision 1.18  2010-03-25 12:57:53  L190409
+ * Revision 1.19  2010-07-12 12:52:00  L190409
+ * allow to specfiy namespace prefixes to be used in XPath-epressions
+ *
+ * Revision 1.18  2010/03/25 12:57:53  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added protected attribute closeIteratorOnExit
  *
  * Revision 1.17  2010/03/10 10:15:19  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -120,6 +123,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setCorrelationIDXPath(String) correlationIDXPath}</td><td>xpath expression to extract correlationID from message</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setStyleSheetName(String) styleSheetName}</td><td>stylesheet to apply to each message, before sending it</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setXpathExpression(String) xpathExpression}</td><td>alternatively: XPath-expression to create stylesheet from</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setNamespaceDefs(String) namespaceDefs}</td><td>namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setOutputType(String) outputType}</td><td>either 'text' or 'xml'. Only valid for xpathExpression</td><td>text</td></tr>
  * <tr><td>{@link #setOmitXmlDeclaration(boolean) omitXmlDeclaration}</td><td>force the transformer generated from the XPath-expression to omit the xml declaration</td><td>true</td></tr>
  * <tr><td>{@link #setIgnoreExceptions(boolean) ignoreExceptions}</td><td>when <code>true</code> ignore any exception thrown by executing sender</td><td>false</td></tr>
@@ -181,12 +185,13 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public abstract class IteratingPipe extends MessageSendingPipe {
-	public static final String version="$RCSfile: IteratingPipe.java,v $ $Revision: 1.18 $ $Date: 2010-03-25 12:57:53 $";
+	public static final String version="$RCSfile: IteratingPipe.java,v $ $Revision: 1.19 $ $Date: 2010-07-12 12:52:00 $";
 
 	private String stopConditionXPathExpression=null;
 	private boolean removeXmlDeclarationInResults=false;
 	private boolean collectResults=true;
 	private String xpathExpression=null;
+	private String namespaceDefs = null; 
 	private String outputType="text";
 	private String styleSheetName;
 	private boolean omitXmlDeclaration=true;
@@ -219,7 +224,7 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 
 	public void configure() throws ConfigurationException {
 		super.configure();
-		msgTransformerPool = TransformerPool.configureTransformer(getLogPrefix(null), getXpathExpression(), getStyleSheetName(), getOutputType(), !isOmitXmlDeclaration(), getParameterList(), false);
+		msgTransformerPool = TransformerPool.configureTransformer(getLogPrefix(null), getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), getOutputType(), !isOmitXmlDeclaration(), getParameterList(), false);
 		try {
 			if (StringUtils.isNotEmpty(getStopConditionXPathExpression())) {
 				stopConditionTp=new TransformerPool(XmlUtils.createXPathEvaluatorSource(null,getStopConditionXPathExpression(),"xml",false));
@@ -262,6 +267,7 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 				session.put(getItemNoSessionKey(),""+count);
 			}
 			ParameterResolutionContext prc=null;
+			// TODO check for bug: sessionKey params not resolved when only parameters set on sender. Next line should check sender.parameterlist too.
 			if (psender !=null || msgTransformerPool!=null && getParameterList()!=null) {
 				//TODO find out why ParameterResolutionContext cannot be constructed using dom-source
 				prc = new ParameterResolutionContext(item, session, isNamespaceAware());
@@ -447,6 +453,13 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 	}
 	public String getXpathExpression() {
 		return xpathExpression;
+	}
+
+	public void setNamespaceDefs(String namespaceDefs) {
+		this.namespaceDefs = namespaceDefs;
+	}
+	public String getNamespaceDefs() {
+		return namespaceDefs;
 	}
 
 	public void setOutputType(String string) {

@@ -1,6 +1,9 @@
 /*
  * $Log: XsltPipe.java,v $
- * Revision 1.32  2008-10-24 14:41:41  europe\m168309
+ * Revision 1.33  2010-07-12 12:52:24  L190409
+ * allow to specfiy namespace prefixes to be used in XPath-epressions
+ *
+ * Revision 1.32  2008/10/24 14:41:41  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * XSLT 2.0 made possible
  *
  * Revision 1.31  2008/10/23 14:16:51  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -108,6 +111,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setNamespaceAware(boolean) namespaceAware}</td><td>controls namespace-awareness of transformation</td><td>application default</td></tr>
  * <tr><td>{@link #setStyleSheetName(String) styleSheetName}</td><td>stylesheet to apply to the input message</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setXpathExpression(String) xpathExpression}</td><td>alternatively: XPath-expression to create stylesheet from</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setNamespaceDefs(String) namespaceDefs}</td><td>namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setOutputType(String) outputType}</td><td>either 'text' or 'xml'. Only valid for xpathExpression</td><td>text</td></tr>
  * <tr><td>{@link #setOmitXmlDeclaration(boolean) omitXmlDeclaration}</td><td>force the transformer generated from the XPath-expression to omit the xml declaration</td><td>true</td></tr>
  * <tr><td>{@link #setSessionKey(String) sessionKey}</td><td>If specified, the result is put 
@@ -136,10 +140,11 @@ import org.apache.commons.lang.StringUtils;
  */
 
 public class XsltPipe extends FixedForwardPipe {
-	public static final String version="$RCSfile: XsltPipe.java,v $ $Revision: 1.32 $ $Date: 2008-10-24 14:41:41 $";
+	public static final String version="$RCSfile: XsltPipe.java,v $ $Revision: 1.33 $ $Date: 2010-07-12 12:52:24 $";
 
 	private TransformerPool transformerPool;
 	private String xpathExpression=null;
+	private String namespaceDefs = null; 
 	private String outputType="text";
 	private String styleSheetName;
 	private boolean omitXmlDeclaration=true;
@@ -161,7 +166,7 @@ public class XsltPipe extends FixedForwardPipe {
 	public void configure() throws ConfigurationException {
 	    super.configure();
 	
-		transformerPool = TransformerPool.configureTransformer0(getLogPrefix(null), getXpathExpression(), getStyleSheetName(), getOutputType(), !isOmitXmlDeclaration(), getParameterList(), isXslt2());
+		transformerPool = TransformerPool.configureTransformer0(getLogPrefix(null), getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), getOutputType(), !isOmitXmlDeclaration(), getParameterList(), isXslt2());
 		if (isSkipEmptyTags()) {
 			String skipEmptyTags_xslt = XmlUtils.makeSkipEmptyTagsXslt(isOmitXmlDeclaration(),isIndentXml());
 			log.debug("test [" + skipEmptyTags_xslt + "]");
@@ -315,6 +320,13 @@ public class XsltPipe extends FixedForwardPipe {
 	}
 	public String getXpathExpression() {
 		return xpathExpression;
+	}
+
+	public void setNamespaceDefs(String namespaceDefs) {
+		this.namespaceDefs = namespaceDefs;
+	}
+	public String getNamespaceDefs() {
+		return namespaceDefs;
 	}
 
 	/**

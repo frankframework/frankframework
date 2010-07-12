@@ -1,6 +1,9 @@
 /*
  * $Log: RecordXmlTransformer.java,v $
- * Revision 1.15  2009-01-30 09:06:13  m168309
+ * Revision 1.16  2010-07-12 12:50:39  L190409
+ * allow to specfiy namespace prefixes to be used in XPath-epressions
+ *
+ * Revision 1.15  2009/01/30 09:06:13  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * bugfix - removed double xml escaping
  *
  * Revision 1.14  2008/12/23 12:48:46  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -79,6 +82,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setRecordIdentifyingFields(String) recordIdentifyingFields}</td><td>Comma separated list of numbers of those fields that are compared with the previous record to determine if a prefix must be written. If any of these fields is not equal in both records, the record types are assumed to be different</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setStyleSheetName(String) styleSheetName}</td><td>name of stylesheet to transform an individual record</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setXpathExpression(String) xpathExpression}</td><td>alternatively: XPath-expression to create stylesheet from</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setNamespaceDefs(String) namespaceDefs}</td><td>namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setOutputType(String) outputType}</td><td>either 'text' or 'xml'. Only valid for xpathExpression</td><td>text</td></tr>
  * <tr><td>{@link #setOmitXmlDeclaration(boolean) omitXmlDeclaration}</td><td>force the transformer generated from the XPath-expression to omit the xml declaration</td><td>true</td></tr>
  * <tr><td>{@link #setEndOfRecord(String) endOfRecord}</td><td>string which ends the record and must be ignored</td><td>&nbsp;</td></tr>
@@ -89,10 +93,11 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class RecordXmlTransformer extends AbstractRecordHandler {
-	public static final String version = "$RCSfile: RecordXmlTransformer.java,v $  $Revision: 1.15 $ $Date: 2009-01-30 09:06:13 $";
+	public static final String version = "$RCSfile: RecordXmlTransformer.java,v $  $Revision: 1.16 $ $Date: 2010-07-12 12:50:39 $";
 
 	private String rootTag="record";
 	private String xpathExpression=null;
+	private String namespaceDefs = null; 
 	private String styleSheetName;
 	private String outputType="text";
 	private boolean omitXmlDeclaration=true;
@@ -118,7 +123,7 @@ public class RecordXmlTransformer extends AbstractRecordHandler {
 			}
 		}
 		if (StringUtils.isNotEmpty(getStyleSheetName())||StringUtils.isNotEmpty(getXpathExpression())) {
-			transformerPool = TransformerPool.configureTransformer(ClassUtils.nameOf(this)+" ["+getName()+"]", getXpathExpression(), getStyleSheetName(), getOutputType(), !isOmitXmlDeclaration(), getParameterList());
+			transformerPool = TransformerPool.configureTransformer(ClassUtils.nameOf(this)+" ["+getName()+"] ", getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), getOutputType(), !isOmitXmlDeclaration(), getParameterList());
 		}
 	}
 
@@ -194,6 +199,13 @@ public class RecordXmlTransformer extends AbstractRecordHandler {
 	}
 	public String getXpathExpression() {
 		return xpathExpression;
+	}
+
+	public void setNamespaceDefs(String namespaceDefs) {
+		this.namespaceDefs = namespaceDefs;
+	}
+	public String getNamespaceDefs() {
+		return namespaceDefs;
 	}
 
 	public void setStyleSheetName(String string) {
