@@ -1,6 +1,9 @@
 /*
  * $Log: XsltSender.java,v $
- * Revision 1.5  2010-03-10 14:30:05  m168309
+ * Revision 1.6  2010-07-12 13:03:40  L190409
+ * allow to specfiy namespace prefixes to be used in XPath-epressions
+ *
+ * Revision 1.5  2010/03/10 14:30:05  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * rolled back testtool adjustments (IbisDebuggerDummy)
  *
  * Revision 1.3  2009/12/04 18:23:34  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -37,6 +40,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <tr><td>className</td><td>nl.nn.adapterframework.senders.XsltSender</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setStyleSheetName(String) styleSheetName}</td><td>stylesheet to apply to the input message</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setXpathExpression(String) xpathExpression}</td><td>alternatively: XPath-expression to create stylesheet from</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setNamespaceDefs(String) namespaceDefs}</td><td>namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setOutputType(String) outputType}</td><td>either 'text' or 'xml'. Only valid for xpathExpression</td><td>text</td></tr>
  * <tr><td>{@link #setOmitXmlDeclaration(boolean) omitXmlDeclaration}</td><td>force the transformer generated from the XPath-expression to omit the xml declaration</td><td>true</td></tr>
  * <tr><td>{@link #setSkipEmptyTags(boolean) skipEmptyTags}</td><td>when set <code>true</code> empty tags in the output are removed</td><td>false</td></tr>
@@ -55,6 +59,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 public class XsltSender extends SenderWithParametersBase {
 
 	private String xpathExpression=null;
+	private String namespaceDefs = null; 
 	private String outputType="text";
 	private String styleSheetName;
 	private boolean omitXmlDeclaration=true;
@@ -73,7 +78,7 @@ public class XsltSender extends SenderWithParametersBase {
 	public void configure() throws ConfigurationException {
 		super.configure();
 	
-		transformerPool = TransformerPool.configureTransformer(getLogPrefix(), getXpathExpression(), getStyleSheetName(), getOutputType(), !isOmitXmlDeclaration(), paramList);
+		transformerPool = TransformerPool.configureTransformer(getLogPrefix(), getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), getOutputType(), !isOmitXmlDeclaration(), paramList);
 		if (isSkipEmptyTags()) {
 			String skipEmptyTags_xslt = XmlUtils.makeSkipEmptyTagsXslt(isOmitXmlDeclaration(),isIndentXml());
 			log.debug("test [" + skipEmptyTags_xslt + "]");
@@ -197,7 +202,12 @@ public class XsltSender extends SenderWithParametersBase {
 		return xpathExpression;
 	}
 
-
+	public void setNamespaceDefs(String namespaceDefs) {
+		this.namespaceDefs = namespaceDefs;
+	}
+	public String getNamespaceDefs() {
+		return namespaceDefs;
+	}
 
 	public void setOutputType(String string) {
 		outputType = string;
