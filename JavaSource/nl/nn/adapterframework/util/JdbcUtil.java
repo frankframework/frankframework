@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcUtil.java,v $
- * Revision 1.23  2010-02-11 14:22:50  m168309
+ * Revision 1.24  2010-07-12 12:25:38  L190409
+ * improved debug message
+ *
+ * Revision 1.23  2010/02/11 14:22:50  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added several methods for checking IBISSTORE
  *
  * Revision 1.22  2009/11/17 09:04:12  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -112,7 +115,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class JdbcUtil {
-	public static final String version = "$RCSfile: JdbcUtil.java,v $ $Revision: 1.23 $ $Date: 2010-02-11 14:22:50 $";
+	public static final String version = "$RCSfile: JdbcUtil.java,v $ $Revision: 1.24 $ $Date: 2010-07-12 12:25:38 $";
 
 	public final static int DATABASE_GENERIC=0;
 	public final static int DATABASE_ORACLE=1;
@@ -453,7 +456,7 @@ public class JdbcUtil {
 				ois = new ObjectInputStream(bis);
 				result = ois.readObject();
 			} catch (Exception e) {
-				log.debug("message in column ["+column+"] is not serialized");
+				log.debug("message in column ["+column+"] is probably not a serialized object: "+e.getClass().getName());
 				objectOK=false;
 			}
 			if (ois!=null)
