@@ -1,6 +1,10 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.94  2010-04-15 12:49:55  m168309
+ * Revision 1.95  2010-07-12 13:03:06  L190409
+ * allow to tune number of threads on PullingListenerContainer
+ * allow to specfiy namespace prefixes to be used in XPath-epressions
+ *
+ * Revision 1.94  2010/04/15 12:49:55  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added facility for an infinite number of retries (maxRetries < 0)
  *
  * Revision 1.93  2010/03/17 14:06:59  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -528,8 +532,10 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  * <tr><td>{@link #setAfterEvent(int) afterEvent}</td>        <td>METT eventnumber, fired just after message processing by this Receiver is finished</td><td>-1 (disabled)</td></tr>
  * <tr><td>{@link #setExceptionEvent(int) exceptionEvent}</td><td>METT eventnumber, fired when message processing by this Receiver resulted in an exception</td><td>-1 (disabled)</td></tr>
  * <tr><td>{@link #setCorrelationIDXPath(String) correlationIDXPath}</td><td>xpath expression to extract correlationID from message</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setCorrelationIDNamespaceDefs(String) correlationIDXPathNamespaceDefs}</td><td>namespace defintions for correlationIDXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setCorrelationIDStyleSheet(String) correlationIDStyleSheet}</td><td>stylesheet to extract correlationID from message</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setLabelXPath(String) labelXPath}</td><td>xpath expression to extract label from message</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setLabelNamespaceDefs(String) labelNamespaceDefs}</td><td>namespace defintions for labelXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setLabelStyleSheet(String) labelStyleSheet}</td><td>stylesheet to extract label from message</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setHiddenInputSessionKeys(String) hiddenInputSessionKeys}</td><td>comma separated list of keys of session variables which are available when the <code>PipeLineSession</code> is created and of which the value will not be shown in the log (replaced by asterisks)</td><td>&nbsp;</td></tr>
  * </table>
@@ -593,7 +599,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  */
 public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHandler, EventThrowing, IbisExceptionListener, HasSender, HasStatistics, TracingEventNumbers, IThreadCountControllable, BeanFactoryAware {
     
-	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.94 $ $Date: 2010-04-15 12:49:55 $";
+	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.95 $ $Date: 2010-07-12 13:03:06 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static TransactionDefinition TXNEW_CTRL = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -620,8 +626,10 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	private String returnedSessionKeys=null;
 	private String hiddenInputSessionKeys=null;
 	private boolean checkForDuplicates=false;
+	private String correlationIDNamespaceDefs;
 	private String correlationIDXPath;
 	private String correlationIDStyleSheet;
+	private String labelNamespaceDefs;
 	private String labelXPath;
 	private String labelStyleSheet;
 
@@ -838,7 +846,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		throwEvent(RCV_STARTED_RUNNING_MONITOR_EVENT);
 		if (getListener() instanceof IPullingListener){
 			// start all threads
-			listenerContainer.start(getNumThreads());
+			listenerContainer.start();
 		}
 	}
 
@@ -1008,7 +1016,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 					info(getLogPrefix()+"has messageLog in "+((HasPhysicalDestination)messageLog).getPhysicalDestinationName());
 				}
 				if (StringUtils.isNotEmpty(getLabelXPath()) || StringUtils.isNotEmpty(getLabelStyleSheet())) {
-					labelTp=TransformerPool.configureTransformer(getLogPrefix(),getLabelXPath(), getLabelStyleSheet(),"text",false,null);
+					labelTp=TransformerPool.configureTransformer(getLogPrefix(),getLabelNamespaceDefs(), getLabelXPath(), getLabelStyleSheet(),"text",false,null);
 				}
 			}
 			if (isTransacted()) {
@@ -1029,7 +1037,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 			} 
 
 			if (StringUtils.isNotEmpty(getCorrelationIDXPath()) || StringUtils.isNotEmpty(getCorrelationIDStyleSheet())) {
-				correlationIDTp=TransformerPool.configureTransformer(getLogPrefix(),getCorrelationIDXPath(), getCorrelationIDStyleSheet(),"text",false,null);
+				correlationIDTp=TransformerPool.configureTransformer(getLogPrefix(), getCorrelationIDNamespaceDefs(), getCorrelationIDXPath(), getCorrelationIDStyleSheet(),"text",false,null);
 			}
 
 			if (adapter != null) {
@@ -1822,6 +1830,9 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 			
 			return tcc.isThreadCountControllable();
 		}
+		if (getListener() instanceof IPullingListener) {
+			return true;
+		}
 		return false;
 	}
 
@@ -1832,7 +1843,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 			return tcc.getCurrentThreadCount();
 		}
 		if (getListener() instanceof IPullingListener) {
-			return listenerContainer.getThreadsRunning();
+			return listenerContainer.getCurrentThreadCount();
 		}
 		return -1;
 	}
@@ -1844,7 +1855,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 			return tcc.getMaxThreadCount();
 		}
 		if (getListener() instanceof IPullingListener) {
-			return getNumThreads();
+			listenerContainer.getMaxThreadCount();
 		}
 		return -1;
 	}
@@ -1855,6 +1866,9 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 			
 			tcc.increaseThreadCount();
 		}
+		if (getListener() instanceof IPullingListener) {
+			listenerContainer.increaseThreadCount();
+		}
 	}
 
 	public void decreaseThreadCount() {
@@ -1862,6 +1876,9 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 			IThreadCountControllable tcc = (IThreadCountControllable)getListener();
 			
 			tcc.decreaseThreadCount();
+		}
+		if (getListener() instanceof IPullingListener) {
+			listenerContainer.decreaseThreadCount();
 		}
 	}
 
@@ -2354,6 +2371,13 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		return correlationIDXPath;
 	}
 
+	public String getCorrelationIDNamespaceDefs() {
+		return correlationIDNamespaceDefs;
+	}
+	public void setCorrelationIDNamespaceDefs(String correlationIDNamespaceDefs) {
+		this.correlationIDNamespaceDefs = correlationIDNamespaceDefs;
+	}
+
 	public void setCorrelationIDStyleSheet(String string) {
 		correlationIDStyleSheet = string;
 	}
@@ -2368,6 +2392,13 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		return labelXPath;
 	}
 
+	public String getLabelNamespaceDefs() {
+		return labelNamespaceDefs;
+	}
+	public void setLabelNamespaceDefs(String labelNamespaceDefs) {
+		this.labelNamespaceDefs = labelNamespaceDefs;
+	}
+	
 	public void setLabelStyleSheet(String string) {
 		labelStyleSheet = string;
 	}
