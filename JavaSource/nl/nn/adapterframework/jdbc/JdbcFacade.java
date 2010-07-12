@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcFacade.java,v $
- * Revision 1.29  2010-02-11 14:25:22  m168309
+ * Revision 1.30  2010-07-12 12:38:13  L190409
+ * avoid NPE when connection is null
+ *
+ * Revision 1.29  2010/02/11 14:25:22  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * moved determination of databaseType to JdbcUtil
  *
  * Revision 1.28  2010/02/02 14:31:47  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -128,7 +131,7 @@ import org.apache.commons.lang.StringUtils;
  * @since 	4.1
  */
 public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version="$RCSfile: JdbcFacade.java,v $ $Revision: 1.29 $ $Date: 2010-02-11 14:25:22 $";
+	public static final String version="$RCSfile: JdbcFacade.java,v $ $Revision: 1.30 $ $Date: 2010-07-12 12:38:13 $";
 	
 	public final static int DATABASE_GENERIC=0;
 	public final static int DATABASE_ORACLE=1;
@@ -248,7 +251,9 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 				return -1;
 			} finally {
 				try {
-					conn.close();
+					if (conn!=null) { 
+						conn.close();
+					}
 				} catch (SQLException e1) {
 					log.warn("exception closing connection for databasetype",e1);
 				}

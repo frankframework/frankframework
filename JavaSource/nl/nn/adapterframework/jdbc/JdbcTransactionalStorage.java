@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcTransactionalStorage.java,v $
- * Revision 1.44  2010-03-10 11:05:09  m168309
+ * Revision 1.45  2010-07-12 12:37:01  L190409
+ * avoid NPE when connection is null
+ *
+ * Revision 1.44  2010/03/10 11:05:09  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * increased length of CORRELATIONID
  *
  * Revision 1.43  2010/02/11 14:27:00  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -277,7 +280,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  * @since 	4.1
  */
 public class JdbcTransactionalStorage extends JdbcFacade implements ITransactionalStorage {
-	public static final String version = "$RCSfile: JdbcTransactionalStorage.java,v $ $Revision: 1.44 $ $Date: 2010-03-10 11:05:09 $";
+	public static final String version = "$RCSfile: JdbcTransactionalStorage.java,v $ $Revision: 1.45 $ $Date: 2010-07-12 12:37:01 $";
 
 	public final static String TYPE_ERRORSTORAGE="E";
 	public final static String TYPE_MESSAGELOG_PIPE="L";
@@ -472,7 +475,9 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 			ConfigurationWarnings.getInstance().add(getLogPrefix()+"Could not check database regarding table [" + getTableName() + "]: "+e.getMessage());
 		} finally {
 			try {
-				connection.close();
+				if (connection!=null) {
+					connection.close();
+				}
 			} catch (SQLException e1) {
 				log.warn("could not close connection",e1);
 			}
