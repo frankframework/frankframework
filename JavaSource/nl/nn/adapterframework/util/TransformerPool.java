@@ -1,6 +1,9 @@
 /*
  * $Log: TransformerPool.java,v $
- * Revision 1.19  2008-10-23 14:16:51  europe\m168309
+ * Revision 1.20  2010-07-12 12:49:05  L190409
+ * enabled to specfiy namespace prefixes to be used in XPath-expressions
+ *
+ * Revision 1.19  2008/10/23 14:16:51  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * XSLT 2.0 made possible
  *
  * Revision 1.18  2008/05/15 15:21:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -98,7 +101,7 @@ import org.w3c.dom.Document;
  * @author Gerrit van Brakel
  */
 public class TransformerPool {
-	public static final String version = "$RCSfile: TransformerPool.java,v $ $Revision: 1.19 $ $Date: 2008-10-23 14:16:51 $";
+	public static final String version = "$RCSfile: TransformerPool.java,v $ $Revision: 1.20 $ $Date: 2010-07-12 12:49:05 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private TransformerFactory tFactory;
@@ -181,25 +184,25 @@ public class TransformerPool {
 		}
 	}
 
-	public static TransformerPool configureTransformer(String logPrefix, String xPathExpression, String styleSheetName, String outputType, boolean includeXmlDeclaration, ParameterList params, boolean mandatory) throws ConfigurationException {
+	public static TransformerPool configureTransformer(String logPrefix, String namespaceDefs, String xPathExpression, String styleSheetName, String outputType, boolean includeXmlDeclaration, ParameterList params, boolean mandatory) throws ConfigurationException {
 		if (mandatory || StringUtils.isNotEmpty(xPathExpression) || StringUtils.isNotEmpty(styleSheetName)) {
-			return configureTransformer(logPrefix,xPathExpression,styleSheetName, outputType, includeXmlDeclaration, params);
+			return configureTransformer(logPrefix,namespaceDefs,xPathExpression,styleSheetName, outputType, includeXmlDeclaration, params);
 		} 
 		return null;
 	}
 	
-	public static TransformerPool configureTransformer(String logPrefix, String xPathExpression, String styleSheetName, String outputType, boolean includeXmlDeclaration, ParameterList params) throws ConfigurationException {
-		return configureTransformer0(logPrefix,xPathExpression,styleSheetName,outputType,includeXmlDeclaration,params,false);
+	public static TransformerPool configureTransformer(String logPrefix, String namespaceDefs, String xPathExpression, String styleSheetName, String outputType, boolean includeXmlDeclaration, ParameterList params) throws ConfigurationException {
+		return configureTransformer0(logPrefix,namespaceDefs,xPathExpression,styleSheetName,outputType,includeXmlDeclaration,params,false);
 	}
 
-	public static TransformerPool configureTransformer0(String logPrefix, String xPathExpression, String styleSheetName, String outputType, boolean includeXmlDeclaration, ParameterList params, boolean xslt2) throws ConfigurationException {
+	public static TransformerPool configureTransformer0(String logPrefix, String namespaceDefs, String xPathExpression, String styleSheetName, String outputType, boolean includeXmlDeclaration, ParameterList params, boolean xslt2) throws ConfigurationException {
 		TransformerPool result;
 		if (logPrefix==null) {
 			logPrefix="";
 		}
-		if (!StringUtils.isEmpty(xPathExpression)) {
-			if (!StringUtils.isEmpty(styleSheetName)) {
-				throw new ConfigurationException(logPrefix+"cannot have both an xpathExpression and a styleSheetName specified");
+		if (StringUtils.isNotEmpty(xPathExpression)) {
+			if (StringUtils.isNotEmpty(styleSheetName)) {
+				throw new ConfigurationException(logPrefix+" cannot have both an xpathExpression and a styleSheetName specified");
 			}
 			try {
 				List paramNames = null;
@@ -210,30 +213,33 @@ public class TransformerPool {
 						paramNames.add(((Parameter)iterator.next()).getName());
 					}
 				}
-				result = new TransformerPool(XmlUtils.createXPathEvaluatorSource("",xPathExpression, outputType, includeXmlDeclaration, paramNames), xslt2);
+				result = new TransformerPool(XmlUtils.createXPathEvaluatorSource(namespaceDefs,xPathExpression, outputType, includeXmlDeclaration, paramNames), xslt2);
 			} 
 			catch (TransformerConfigurationException te) {
-				throw new ConfigurationException(logPrefix+"got error creating transformer from xpathExpression [" + xPathExpression + "]", te);
+				throw new ConfigurationException(logPrefix+" got error creating transformer from xpathExpression [" + xPathExpression + "] namespaceDefs [" + namespaceDefs + "]", te);
 			}
 		} 
 		else {
+			if (StringUtils.isNotEmpty(namespaceDefs)) {
+				throw new ConfigurationException(logPrefix+" cannot have namespaceDefs specified for a styleSheetName");
+			}
 			if (!StringUtils.isEmpty(styleSheetName)) {
 				URL resource = ClassUtils.getResourceURL(TransformerPool.class, styleSheetName);
 				if (resource==null) {
-					throw new ConfigurationException(logPrefix+"cannot find ["+ styleSheetName + "]"); 
+					throw new ConfigurationException(logPrefix+" cannot find ["+ styleSheetName + "]"); 
 				}
 				try {
 					result = new TransformerPool(resource, xslt2);
 				} catch (IOException e) {
 					throw new ConfigurationException(logPrefix+"cannot retrieve ["+ styleSheetName + "], resource ["+resource.toString()+"]", e);
 				} catch (TransformerConfigurationException te) {
-					throw new ConfigurationException(logPrefix+"got error creating transformer from file [" + styleSheetName + "]", te);
+					throw new ConfigurationException(logPrefix+" got error creating transformer from file [" + styleSheetName + "]", te);
 				}
 				if (XmlUtils.isAutoReload()) {
 					result.reloadURL=resource;
 				}
 			} else {
-				throw new ConfigurationException(logPrefix+"either xpathExpression or styleSheetName must be specified");
+				throw new ConfigurationException(logPrefix+" either xpathExpression or styleSheetName must be specified");
 			}
 		}
 		return result;

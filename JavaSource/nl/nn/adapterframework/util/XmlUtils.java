@@ -1,6 +1,9 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.67  2010-04-27 15:03:14  L190409
+ * Revision 1.68  2010-07-12 12:49:05  L190409
+ * enabled to specfiy namespace prefixes to be used in XPath-expressions
+ *
+ * Revision 1.67  2010/04/27 15:03:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * optimized memory consumption of replaceNonValidXmlCharacters() 
  * and stripNonValidXmlCharacters()
  *
@@ -279,7 +282,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * @version Id
  */
 public class XmlUtils {
-	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.67 $ $Date: 2010-04-27 15:03:14 $";
+	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.68 $ $Date: 2010-07-12 12:49:05 $";
 	static Logger log = LogUtil.getLogger(XmlUtils.class);
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
@@ -648,27 +651,8 @@ public class XmlUtils {
 	}
 
 
-	public static String createXPathEvaluatorSource(String XPathExpression)
-		throws TransformerConfigurationException {
-			/*
-		if (StringUtils.isEmpty(XPathExpression))
-			throw new TransformerConfigurationException("XPathExpression must be filled");
-
-		String xsl =
-			"<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-				+ "<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"1.0\" xmlns:xalan=\"http://xml.apache.org/xslt\">"
-				+ "<xsl:output method=\"text\"/>"
-				+ "<xsl:strip-space elements=\"*\"/>"
-				+ "<xsl:template match=\"/\">"
-				+ "<xsl:value-of select=\""
-				+ XPathExpression
-				+ "\"/>"
-				+ "</xsl:template>"
-				+ "</xsl:stylesheet>";
-
-		return xsl;
-			*/
-			return createXPathEvaluatorSource(XPathExpression,"text");
+	public static String createXPathEvaluatorSource(String XPathExpression)	throws TransformerConfigurationException {
+		return createXPathEvaluatorSource(XPathExpression,"text");
 	}
 
 	/*
@@ -685,9 +669,22 @@ public class XmlUtils {
 		if (StringUtils.isEmpty(XPathExpression))
 			throw new TransformerConfigurationException("XPathExpression must be filled");
 		
-		if (namespaceDefs==null) {
-			namespaceDefs="";
+		String namespaceClause="";
+		if (namespaceDefs!=null) {
+			StringTokenizer st1 = new StringTokenizer(namespaceDefs,", \t\r\n\f");
+			while (st1.hasMoreTokens()) {
+				String namespaceDef=st1.nextToken();
+				log.debug("namespaceDef ["+namespaceDef+"]");
+				int separatorPos=namespaceDef.indexOf('=');
+				if (separatorPos<1) {
+					throw new TransformerConfigurationException("cannot parse namespace definition from string ["+namespaceDef+"]");
+				} else {
+					namespaceClause+=" xmlns:"+namespaceDef.substring(0,separatorPos)+"=\""+namespaceDef.substring(separatorPos+1)+"\"";
+				}
+			}
+			log.debug("namespaceClause ["+namespaceClause+"]");
 		}
+		
 		
 		String copyMethod;	
 		if ("xml".equals(outputMethod)) {
@@ -709,7 +706,7 @@ public class XmlUtils {
 			"<xsl:strip-space elements=\"*\"/>" +
 			paramsString +
 			"<xsl:template match=\"/\">" +
-			"<xsl:"+copyMethod+" "+namespaceDefs+" select=\"" + XPathExpression + "\"/>" +
+			"<xsl:"+copyMethod+" "+namespaceClause+" select=\"" + XPathExpression + "\"/>" +
 			"</xsl:template>" +
 			"</xsl:stylesheet>";
 	
