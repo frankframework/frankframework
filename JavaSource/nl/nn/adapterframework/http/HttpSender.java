@@ -1,6 +1,9 @@
 /*
  * $Log: HttpSender.java,v $
- * Revision 1.45  2010-03-10 14:30:05  m168309
+ * Revision 1.46  2010-07-12 12:44:37  L190409
+ * only set proxy credentials if proxyUsername specified
+ *
+ * Revision 1.45  2010/03/10 14:30:05  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * rolled back testtool adjustments (IbisDebuggerDummy)
  *
  * Revision 1.43  2009/12/28 14:16:09  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -269,7 +272,7 @@ import org.apache.commons.lang.StringUtils;
  * @since 4.2c
  */
 public class HttpSender extends SenderWithParametersBase implements HasPhysicalDestination {
-	public static final String version = "$RCSfile: HttpSender.java,v $ $Revision: 1.45 $ $Date: 2010-03-10 14:30:05 $";
+	public static final String version = "$RCSfile: HttpSender.java,v $ $Revision: 1.46 $ $Date: 2010-07-12 12:44:37 $";
 
 	private String url;
 	private String methodType="GET"; // GET or POST
@@ -412,11 +415,13 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 				Credentials defaultcreds = new UsernamePasswordCredentials(cf.getUsername(), cf.getPassword());
 				httpclient.getState().setCredentials(null, uri.getHost(), defaultcreds);
 			}
-			if (!StringUtils.isEmpty(getProxyHost())) {
+			if (StringUtils.isNotEmpty(getProxyHost())) {
 				CredentialFactory pcf = new CredentialFactory(getProxyAuthAlias(), getProxyUserName(), getProxyPassword());
 				httpclient.getHostConfiguration().setProxy(getProxyHost(), getProxyPort());
-				httpclient.getState().setProxyCredentials(getProxyRealm(), getProxyHost(),
-				new UsernamePasswordCredentials(pcf.getUsername(), pcf.getPassword()));
+				if (StringUtils.isNotEmpty(pcf.getUsername())) {
+					httpclient.getState().setProxyCredentials(getProxyRealm(), getProxyHost(),
+					new UsernamePasswordCredentials(pcf.getUsername(), pcf.getPassword()));
+				}
 			}
 	
 
