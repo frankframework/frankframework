@@ -1,6 +1,9 @@
 /*
  * $Log: FxfListener.java,v $
- * Revision 1.14  2009-03-04 15:56:57  L190409
+ * Revision 1.15  2010-07-12 12:49:45  L190409
+ * use modified way of specifying namespace definitions
+ *
+ * Revision 1.14  2009/03/04 15:56:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added support for FXF 2.0
  *
  * Revision 1.13  2008/09/04 12:05:25  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -183,9 +186,9 @@ public class FxfListener extends JmsListener implements IBulkDataListener {
 			if (isFxf2Compatibility() && StringUtils.isEmpty(getFxfDestinationName())) {
 				throw new ConfigurationException("please specify fxfDestinationName for FxF 2 Compatibility, or set fxf2Compatibility to false");
 			}
-			extractTransfername=TransformerPool.configureTransformer(getLogPrefix(),FXF1_EXTRACT_TRANSFERNAME_XPATH,null,"text",false,null);
-			extractLocalname=TransformerPool.configureTransformer(getLogPrefix(),FXF1_EXTRACT_LOCALNAME_XPATH,null,"text",false,null);
-			extractRemotename=TransformerPool.configureTransformer(getLogPrefix(),FXF1_EXTRACT_REMOTENAME_XPATH,null,"text",false,null);
+			extractTransfername=TransformerPool.configureTransformer(getLogPrefix(),null,FXF1_EXTRACT_TRANSFERNAME_XPATH,null,"text",false,null);
+			extractLocalname=TransformerPool.configureTransformer(getLogPrefix(),null,FXF1_EXTRACT_LOCALNAME_XPATH,null,"text",false,null);
+			extractRemotename=TransformerPool.configureTransformer(getLogPrefix(),null,FXF1_EXTRACT_REMOTENAME_XPATH,null,"text",false,null);
 		} else {
 			if (StringUtils.isNotEmpty(getApplicationId())) {
 				log.warn(getLogPrefix()+"applicationId ["+getApplicationId()+"] is not used in this version of FXF");
