@@ -1,6 +1,9 @@
 /*
  * $Log: FilePipe.java,v $
- * Revision 1.23  2010-01-22 09:17:09  l562891
+ * Revision 1.24  2010-08-09 13:06:24  m168309
+ * added attribute testCanWrite and adjusted check for write permissions
+ *
+ * Revision 1.23  2010/01/22 09:17:09  Martijn Onstwedder <martijn.onstwedder@ibissource.org>
  * Updated to conform to convention
  *
  * Revision 1.22  2010/01/20 14:57:06  Martijn Onstwedder <martijn.onstwedder@ibissource.org>
@@ -78,6 +81,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.util.FileUtils;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -117,6 +121,7 @@ import sun.misc.BASE64Encoder;
  * <tr><td>{@link #setWriteSuffix(String) writeSuffix}</td><td>suffix of the file to be created (only used if fileName and fileNameSession are not set)</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setCreateDirectory(boolean) createDirectory}</td><td>when set to <code>true</code>, the directory to read from is created if it does not exist</td><td>false</td></tr>
  * <tr><td>{@link #setWriteLineSeparator(boolean) writeLineSeparator}</td><td>when set to <code>true</code>, a line separator is written after the content is written</td><td>false</td></tr>
+ * <tr><td>{@link #setTestCanWrite(boolean) testCanWrite}</td><td>when set to <code>true</code>, a test is performed to find out if a temporary file can be created and deleted in the specified directory (only used if directory is set and combined with the action write, write_append or create)</td><td>true</td></tr>
  * </table>
  * </p>
  * <p><b>Exits:</b>
@@ -133,7 +138,7 @@ import sun.misc.BASE64Encoder;
  *
  */
 public class FilePipe extends FixedForwardPipe {
-	public static final String version="$RCSfile: FilePipe.java,v $ $Revision: 1.23 $ $Date: 2010-01-22 09:17:09 $";
+	public static final String version="$RCSfile: FilePipe.java,v $ $Revision: 1.24 $ $Date: 2010-08-09 13:06:24 $";
 
 	protected String actions;
 	protected String directory;
@@ -142,6 +147,7 @@ public class FilePipe extends FixedForwardPipe {
 	protected String fileNameSessionKey;
 	protected boolean createDirectory = false;
 	protected boolean writeLineSeparator = false;
+	protected boolean testCanWrite = true;
 
 	private List transformers;
 	protected byte[] eolArray=null;
@@ -286,12 +292,9 @@ public class FilePipe extends FixedForwardPipe {
 		// create the directory structure if not exists and
 		// check the permissions
 		public void configure() throws ConfigurationException {
-			if (StringUtils.isNotEmpty(getDirectory())) {
-				File file = new File(getDirectory());
-				if (!file.exists()) {
-					file.mkdirs();
-				} else if (!(file.isDirectory() && file.canWrite())) {
-					throw new ConfigurationException(getLogPrefix(null)+"directory ["+ directory + "] is not a directory, or no write permission");
+			if (StringUtils.isNotEmpty(getDirectory()) && isTestCanWrite()) {
+				if (!FileUtils.canWrite(getDirectory())) {
+					throw new ConfigurationException(getLogPrefix(null)+"directory ["+ getDirectory() + "] is not a directory, or no write permission");
 				}
 			}
 		}
@@ -323,12 +326,9 @@ public class FilePipe extends FixedForwardPipe {
 		// create the directory structure if not exists and
 		// check the permissions
 		public void configure() throws ConfigurationException {
-			if (StringUtils.isNotEmpty(getDirectory())) {
-				File file = new File(getDirectory());
-				if (!file.exists()) {
-					file.mkdirs();
-				} else if (!(file.isDirectory() && file.canWrite())) {
-					throw new ConfigurationException(getLogPrefix(null)+"directory ["+ directory + "] is not a directory, or no write permission");
+			if (StringUtils.isNotEmpty(getDirectory()) && isTestCanWrite()) {
+				if (!FileUtils.canWrite(getDirectory())) {
+					throw new ConfigurationException(getLogPrefix(null)+"directory ["+ getDirectory() + "] is not a directory, or no write permission");
 				}
 			}
 		}
@@ -522,5 +522,12 @@ public class FilePipe extends FixedForwardPipe {
 	}
 	public boolean isWriteLineSeparator() {
 		return writeLineSeparator;
+	}
+
+	public void setTestCanWrite(boolean b) {
+		testCanWrite = b;
+	}
+	public boolean isTestCanWrite() {
+		return testCanWrite;
 	}
 }
