@@ -1,6 +1,9 @@
 /*
  * $Log: FileUtils.java,v $
- * Revision 1.17  2009-12-31 10:06:44  m168309
+ * Revision 1.18  2010-08-09 13:03:40  m168309
+ * added canWrite()
+ *
+ * Revision 1.17  2009/12/31 10:06:44  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * SendJmsMessage/TestIfsaService/TestPipeLine: made zipfile-upload facility case-insensitive
  *
  * Revision 1.16  2009/08/05 14:24:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -84,7 +87,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class FileUtils {
-	public static final String version = "$RCSfile: FileUtils.java,v $  $Revision: 1.17 $ $Date: 2009-12-31 10:06:44 $";
+	public static final String version = "$RCSfile: FileUtils.java,v $  $Revision: 1.18 $ $Date: 2010-08-09 13:03:40 $";
 	static Logger log = LogUtil.getLogger(FileUtils.class);
 
 	/**
@@ -496,6 +499,32 @@ public class FileUtils {
 			return false;
 		} else {
 			return fileNameExtension.equalsIgnoreCase(extension);
+		}
+	}
+
+	public static boolean canWrite(String directory) {
+		try {
+			File file = new File(directory);
+			if (!file.exists()) {
+				file.mkdirs();
+			}
+			if (!file.isDirectory()) {
+				log.debug("Directory [" + directory + "] is not a directory");
+				return false;
+			}
+			File tmpFile = File.createTempFile("ibis", null, file);
+			try {
+				tmpFile.delete();
+			} catch (Throwable t) {
+				log.warn("Exception while deleting temporary file [" + tmpFile.getName() + "] in directory [" + directory + "]",t);
+			}
+			return true;
+		} catch (IOException ioe) {
+			log.debug("Exception while creating a temporary file in directory [" + directory + "]",ioe);
+			return false;
+		} catch (SecurityException se) {
+			log.debug("Exception while testing if the application is allowed to write to directory [" + directory + "]",se);
+			return false;
 		}
 	}
 }
