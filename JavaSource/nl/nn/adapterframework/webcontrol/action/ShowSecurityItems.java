@@ -1,6 +1,9 @@
 /*
  * $Log: ShowSecurityItems.java,v $
- * Revision 1.4  2010-02-03 11:25:01  m168309
+ * Revision 1.5  2010-08-13 12:43:28  m168309
+ * fixed bug empty Security Role Bindings
+ *
+ * Revision 1.4  2010/02/03 11:25:01  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * removed a debug logging
  *
  * Revision 1.3  2010/02/03 11:15:25  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -74,7 +77,7 @@ import org.apache.struts.action.ActionMapping;
  */
 
 public final class ShowSecurityItems extends ActionBase {
-	public static final String version = "$RCSfile: ShowSecurityItems.java,v $ $Revision: 1.4 $ $Date: 2010-02-03 11:25:01 $";
+	public static final String version = "$RCSfile: ShowSecurityItems.java,v $ $Revision: 1.5 $ $Date: 2010-08-13 12:43:28 $";
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 
@@ -87,8 +90,7 @@ public final class ShowSecurityItems extends ActionBase {
 
 		XmlBuilder securityItems = new XmlBuilder("securityItems");
 		addRegisteredAdapters(securityItems);
-		//[PL]String appName = Misc.getDeployedApplicationName();
-		String appName = "Ibis4TestIAF-035_20100202-1549";
+		String appName = Misc.getDeployedApplicationName();
 		addApplicationDeploymentDescriptor(securityItems, appName);
 		addSecurityRoleBindings(securityItems, appName);
 		addJmsRealms(securityItems);
