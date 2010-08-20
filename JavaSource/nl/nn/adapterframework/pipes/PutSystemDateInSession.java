@@ -1,6 +1,9 @@
 /*
  * $Log: PutSystemDateInSession.java,v $
- * Revision 1.8  2009-11-20 10:18:01  m168309
+ * Revision 1.9  2010-08-20 07:45:40  m168309
+ * returnFixedDate attribute only available in stub mode
+ *
+ * Revision 1.8  2009/11/20 10:18:01  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * facility to override fixeddate
  *
  * Revision 1.7  2009/06/09 09:16:16  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -29,6 +32,7 @@ package nl.nn.adapterframework.pipes;
 
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -62,7 +66,7 @@ import org.apache.commons.lang.StringUtils;
  * @since   4.2c
  */
 public class PutSystemDateInSession extends FixedForwardPipe {
-	public static final String version="$RCSfile: PutSystemDateInSession.java,v $  $Revision: 1.8 $ $Date: 2009-11-20 10:18:01 $";
+	public static final String version="$RCSfile: PutSystemDateInSession.java,v $  $Revision: 1.9 $ $Date: 2010-08-20 07:45:40 $";
 
 	public final static String FIXEDDATETIME  ="2001-12-17 09:30:47";
 	public final static String FORMAT_FIXEDDATETIME  ="yyyy-MM-dd HH:mm:ss";
@@ -91,7 +95,13 @@ public class PutSystemDateInSession extends FixedForwardPipe {
 		if (getDateFormat() == null) {
 			throw new ConfigurationException(getLogPrefix(null)+"has a null value for dateFormat");
 		}
-		
+
+		if (isReturnFixedDate()) {
+			if (!ConfigurationUtils.stubConfiguration()) {
+				throw new ConfigurationException(getLogPrefix(null)+"returnFixedDate only allowed in stub mode");
+			}
+		}
+
 		// check the dateformat
 		try {
 			Date currentDate = new Date();
