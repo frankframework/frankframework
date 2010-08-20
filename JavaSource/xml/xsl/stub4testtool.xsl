@@ -12,6 +12,7 @@
 		- add the attribute returnFixedDate with value true to all pipe elements PutSystemDateInSession
 		- replace the value '{now,...,...}' of the attribute pattern in all param elements with the value '{fixeddate,...,...}'
 		- stub the pipe element FtpFileRetrieverPipe by a pipe element GenericMessageSendingPipe (and copy the attributes name, storeResultInSessionKey, getInputFromSessionKey and getInputFromFixedValue) with a child Ibis4JavaSender (serviceName="testtool-[pipe name]")
+		- add the attribute timeOutOnResult with value '[timeout]' and attribute exceptionOnResult with value '[error]' to all pipe elements GenericMessageSendingPipe
 	-->
 	<xsl:template match="/">
 		<xsl:apply-templates select="*|@*|comment()|processing-instruction()" />
@@ -168,6 +169,14 @@
 					<xsl:apply-templates select="*|comment()|processing-instruction()|text()" />
 				</xsl:element>
 				<xsl:call-template name="disable" />
+			</xsl:when>
+			<xsl:when test="name()='pipe' and @className='nl.nn.adapterframework.pipes.GenericMessageSendingPipe'">
+				<xsl:element name="pipe">
+					<xsl:apply-templates select="@*" />
+					<xsl:attribute name="timeOutOnResult">[timeout]</xsl:attribute>
+					<xsl:attribute name="exceptionOnResult">[error]</xsl:attribute>
+					<xsl:apply-templates select="*|comment()|processing-instruction()|text()" />
+				</xsl:element>
 			</xsl:when>
 			<xsl:when test="name()='param' and starts-with(@pattern,'{now,')">
 				<xsl:element name="param">
