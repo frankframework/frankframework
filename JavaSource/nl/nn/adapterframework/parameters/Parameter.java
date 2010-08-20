@@ -1,6 +1,9 @@
 /*
  * $Log: Parameter.java,v $
- * Revision 1.37  2010-07-12 12:51:13  L190409
+ * Revision 1.38  2010-08-20 07:54:18  m168309
+ * 'fixeddate' variable only available in stub mode
+ *
+ * Revision 1.37  2010/07/12 12:51:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * allow to specfiy namespace prefixes to be used in XPath-epressions
  *
  * Revision 1.36  2010/03/10 14:30:06  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -133,6 +136,7 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.dom.DOMResult;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IWithParameters;
 import nl.nn.adapterframework.core.ParameterException;
@@ -214,7 +218,7 @@ import org.w3c.dom.Node;
  * @author Gerrit van Brakel
  */
 public class Parameter implements INamedObject, IWithParameters {
-	public static final String version="$RCSfile: Parameter.java,v $ $Revision: 1.37 $ $Date: 2010-07-12 12:51:13 $";
+	public static final String version="$RCSfile: Parameter.java,v $ $Revision: 1.38 $ $Date: 2010-08-20 07:54:18 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private IbisDebugger ibisDebugger;
@@ -488,6 +492,9 @@ public class Parameter implements INamedObject, IWithParameters {
 			} else if ("hostname".equals(name.toLowerCase())) {
 				substitutionValue = Misc.getHostname();
 			} else if ("fixeddate".equals(name.toLowerCase())) {
+				if (!ConfigurationUtils.stubConfiguration()) {
+					throw new ParameterException("Parameter pattern [" + name + "] only allowed in stub mode");
+				}
 				Date d;
 				SimpleDateFormat formatterFrom = new SimpleDateFormat(PutSystemDateInSession.FORMAT_FIXEDDATETIME);
 				String fixedDateTime = (String)prc.getSession().get(PutSystemDateInSession.FIXEDDATE_STUB4TESTTOOL_KEY);
