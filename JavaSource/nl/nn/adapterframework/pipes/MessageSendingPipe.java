@@ -1,6 +1,9 @@
 /*
  * $Log: MessageSendingPipe.java,v $
- * Revision 1.65  2010-07-12 12:54:00  L190409
+ * Revision 1.66  2010-08-20 07:36:26  m168309
+ * added timeOutOnResult and exceptionOnResult attribute
+ *
+ * Revision 1.65  2010/07/12 12:54:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * allow to specfiy namespace prefixes to be used in XPath-epressions
  *
  * Revision 1.64  2010/03/10 14:30:05  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -190,6 +193,7 @@ import java.util.Map;
 import javax.xml.transform.TransformerConfigurationException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.HasSender;
 import nl.nn.adapterframework.core.ICorrelatedPullingListener;
@@ -273,6 +277,8 @@ import org.apache.commons.lang.SystemUtils;
  * <tr><td>{@link #setLabelXPath(String) labelXPath}</td><td>xpath expression to extract label from message</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setLabelNamespaceDefs(String) labelNamespaceDefs}</td><td>namespace defintions for labelXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setLabelStyleSheet(String) labelStyleSheet}</td><td>stylesheet to extract label from message</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setTimeOutOnResult(String) timeOutOnResult}</td><td>when not empty, a TimeOutException is thrown when the result equals this value (for testing purposes only)</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setExceptionOnResult(String) exceptionOnResult}</td><td>when not empty, a PipeRunException is thrown when the result equals this value (for testing purposes only)</td><td>&nbsp;</td></tr>
  * <tr><td><code>sender.*</td><td>any attribute of the sender instantiated by descendant classes</td><td>&nbsp;</td></tr>
  * </table>
  * <table border="1">
@@ -304,7 +310,7 @@ import org.apache.commons.lang.SystemUtils;
  */
 
 public class MessageSendingPipe extends FixedForwardPipe implements HasSender, HasStatistics, EventThrowing {
-	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.65 $ $Date: 2010-07-12 12:54:00 $";
+	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.66 $ $Date: 2010-08-20 07:36:26 $";
 
 	public static final String PIPE_TIMEOUT_MONITOR_EVENT = "Sender Timeout";
 	public static final String PIPE_CLEAR_TIMEOUT_MONITOR_EVENT = "Sender Received Result on Time";
@@ -329,6 +335,8 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	private String labelXPath;
 	private String labelXNamespaceDefs;
 	private String labelStyleSheet;
+	private String timeOutOnResult;
+	private String exceptionOnResult;
 
 	private ISender sender = null;
 	private ICorrelatedPullingListener listener = null;
@@ -432,6 +440,14 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 				if (findForward(ILLEGALRESULTFORWARD) == null)
 					throw new ConfigurationException(getLogPrefix(null) + "has no forward with name [illegalResult]");
 			}
+			if (!ConfigurationUtils.stubConfiguration()) {
+				if (StringUtils.isNotEmpty(getTimeOutOnResult())) {
+					throw new ConfigurationException(getLogPrefix(null)+"timeOutOnResult only allowed in stub mode");
+				}
+				if (StringUtils.isNotEmpty(getExceptionOnResult())) {
+					throw new ConfigurationException(getLogPrefix(null)+"exceptionOnResult only allowed in stub mode");
+				}
+			}			
 		}
 		ITransactionalStorage messageLog = getMessageLog();
 		if (messageLog!=null) {
@@ -526,6 +542,12 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 				String sendResult = sendMessage(input, session, correlationID, getSender(), threadContext);
 				if (Thread.interrupted()) {
 					throw new TimeOutException(getLogPrefix(session)+"Thread interrupted");
+				}
+				if (StringUtils.isNotEmpty(getTimeOutOnResult()) && getTimeOutOnResult().equals(sendResult)) {
+					throw new TimeOutException(getLogPrefix(session)+"timeOutOnResult ["+getTimeOutOnResult()+"]");
+				}
+				if (StringUtils.isNotEmpty(getExceptionOnResult()) && getExceptionOnResult().equals(sendResult)) {
+					throw new PipeRunException(this, getLogPrefix(session)+"exceptionOnResult ["+getExceptionOnResult()+"]");
 				}
 	
 				if (getSender().isSynchronous()) {
@@ -955,4 +977,19 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 		this.labelXNamespaceDefs = labelXNamespaceDefs;
 	}
 	
+	public void setTimeOutOnResult(String string) {
+		timeOutOnResult = string;
+	}
+
+	public String getTimeOutOnResult() {
+		return timeOutOnResult;
+	}
+
+	public void setExceptionOnResult(String string) {
+		exceptionOnResult = string;
+	}
+
+	public String getExceptionOnResult() {
+		return exceptionOnResult;
+	}
 }
