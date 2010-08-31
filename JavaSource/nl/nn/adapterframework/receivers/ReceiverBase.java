@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.95  2010-07-12 13:03:06  L190409
+ * Revision 1.96  2010-08-31 12:04:59  m168309
+ * changed WARN to INFO
+ *
+ * Revision 1.95  2010/07/12 13:03:06  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * allow to tune number of threads on PullingListenerContainer
  * allow to specfiy namespace prefixes to be used in XPath-epressions
  *
@@ -599,7 +602,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  */
 public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHandler, EventThrowing, IbisExceptionListener, HasSender, HasStatistics, TracingEventNumbers, IThreadCountControllable, BeanFactoryAware {
     
-	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.95 $ $Date: 2010-07-12 13:03:06 $";
+	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.96 $ $Date: 2010-08-31 12:04:59 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static TransactionDefinition TXNEW_CTRL = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -1320,7 +1323,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 					cidText = "styleSheet ["+getCorrelationIDStyleSheet()+"]";
 				}
 				if (StringUtils.isNotEmpty(technicalCorrelationId)) {
-					log.warn(getLogPrefix()+"did not find correlationId using "+cidText+", reverting to correlationId of transfer ["+technicalCorrelationId+"]");
+					log.info(getLogPrefix()+"did not find correlationId using "+cidText+", reverting to correlationId of transfer ["+technicalCorrelationId+"]");
 					businessCorrelationId=technicalCorrelationId;
 				}
 			}
@@ -1329,7 +1332,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		}
 		if (StringUtils.isEmpty(businessCorrelationId)) {
 			if (StringUtils.isNotEmpty(messageId)) {
-				log.warn(getLogPrefix()+"did not find (technical) correlationId, reverting to messageId ["+messageId+"]");
+				log.info(getLogPrefix()+"did not find (technical) correlationId, reverting to messageId ["+messageId+"]");
 				businessCorrelationId=messageId;
 			}
 		}
