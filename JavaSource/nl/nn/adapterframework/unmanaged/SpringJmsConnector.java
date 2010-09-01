@@ -1,6 +1,9 @@
 /*
  * $Log: SpringJmsConnector.java,v $
- * Revision 1.20  2008-10-07 08:46:26  europe\L190409
+ * Revision 1.21  2010-09-01 09:17:30  L190409
+ * set all default cache levels to cach_none
+ *
+ * Revision 1.20  2008/10/07 08:46:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * do not commit JMS transacted sessions from within a global transaction
  *
  * Revision 1.19  2008/09/01 15:14:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -132,7 +135,8 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 	private String messageListenerClassName;
     
     public static final int DEFAULT_CACHE_LEVEL_TRANSACTED=DefaultMessageListenerContainer.CACHE_NONE;
-	public static final int DEFAULT_CACHE_LEVEL_NON_TRANSACTED=DefaultMessageListenerContainer.CACHE_CONSUMER;
+//	public static final int DEFAULT_CACHE_LEVEL_NON_TRANSACTED=DefaultMessageListenerContainer.CACHE_CONSUMER;
+	public static final int DEFAULT_CACHE_LEVEL_NON_TRANSACTED=DefaultMessageListenerContainer.CACHE_NONE;
 //	public static final int MAX_MESSAGES_PER_TASK=100;
 	public static final int IDLE_TASK_EXECUTION_LIMIT=1000;
  
