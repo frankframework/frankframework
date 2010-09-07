@@ -1,6 +1,9 @@
 /*
  * $Log: IsolatedServiceCaller.java,v $
- * Revision 1.11  2010-03-10 14:30:05  m168309
+ * Revision 1.12  2010-09-07 15:55:13  m00f069
+ * Removed IbisDebugger, made it possible to use AOP to implement IbisDebugger functionality.
+ *
+ * Revision 1.11  2010/03/10 14:30:05  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * rolled back testtool adjustments (IbisDebuggerDummy)
  *
  * Revision 1.9  2009/11/18 17:28:04  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -35,14 +38,17 @@ package nl.nn.adapterframework.pipes;
 
 import java.util.HashMap;
 
+import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.debug.IbisDebugger;
+import nl.nn.adapterframework.core.RequestReplyExecutor;
 import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
+import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.Guard;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
 
 import org.apache.log4j.Logger;
+import org.springframework.core.task.TaskExecutor;
 
 /**
  * Helper class for IbisLocalSender that wraps around {@link ServiceDispatcher} to make calls to a local Ibis adapter in a separate thread.
@@ -51,85 +57,82 @@ import org.apache.log4j.Logger;
  * @since   4.3
  * @version Id
  */
-public class IsolatedServiceCaller extends Thread {
-	public static final String version="$RCSfile: IsolatedServiceCaller.java,v $ $Revision: 1.11 $ $Date: 2010-03-10 14:30:05 $";
+public class IsolatedServiceCaller {
+	public static final String version="$RCSfile: IsolatedServiceCaller.java,v $ $Revision: 1.12 $ $Date: 2010-09-07 15:55:13 $";
 	protected Logger log = LogUtil.getLogger(this);
-	private IbisDebugger ibisDebugger;
+	
+	/**
+	 * The thread-pool for spawning threads, injected by Spring
+	 */
+	private TaskExecutor taskExecutor;
 
-	String serviceName;
-	String correlationID;
-	String message;
-	HashMap context;
-	boolean targetIsJavaListener;
-	String result = null;
-	Throwable t = null;
-	String threadID;
-	
-	
-	private IsolatedServiceCaller(String serviceName, String correlationID, String message, HashMap context, boolean targetIsJavaListener, IbisDebugger ibisDebugger) {
-		super();
-		threadID = Misc.createSimpleUUID();
-		setName(serviceName + " " + threadID);
-		this.serviceName= serviceName;
-		this.correlationID=correlationID;
-		this.message=message;
-		this.context=context;
-		this.targetIsJavaListener=targetIsJavaListener;
-		this.ibisDebugger = ibisDebugger;
-		if (log.isDebugEnabled() && ibisDebugger!=null) {
-			ibisDebugger.createThread(threadID, correlationID);
-		}
+	public void setTaskExecutor(TaskExecutor executor) {
+		taskExecutor = executor;
 	}
 
-	public static void callServiceAsynchronous(String serviceName, String correlationID, String message, HashMap context, boolean targetIsJavaListener, IbisDebugger ibisDebugger) throws ListenerException {
-		IsolatedServiceCaller call = new IsolatedServiceCaller(serviceName, correlationID,  message,  context, targetIsJavaListener, ibisDebugger);
-		call.start();
+	public TaskExecutor getTaskExecutor() {
+		return taskExecutor;
+	}
+
+	public void callServiceAsynchronous(String serviceName, String correlationID, String message, HashMap context, boolean targetIsJavaListener) throws ListenerException {
+		IsolatedServiceExecutor ise=new IsolatedServiceExecutor(serviceName, correlationID, message, context, targetIsJavaListener, null);
+		getTaskExecutor().execute(ise);
 	}
 	
-	public static String callServiceIsolated(String serviceName, String correlationID, String message, HashMap context, boolean targetIsJavaListener, IbisDebugger ibisDebugger) throws ListenerException {
-		IsolatedServiceCaller call = new IsolatedServiceCaller(serviceName, correlationID,  message,  context, targetIsJavaListener, ibisDebugger);
-		call.start();
+	public String callServiceIsolated(String serviceName, String correlationID, String message, HashMap context, boolean targetIsJavaListener) throws ListenerException {
+		Guard guard= new Guard();
+		guard.addResource();
+		IsolatedServiceExecutor ise=new IsolatedServiceExecutor(serviceName, correlationID, message, context, targetIsJavaListener, guard);
+		getTaskExecutor().execute(ise);
 		try {
-			call.join();
+			guard.waitForAllResources();
 		} catch (InterruptedException e) {
-			throw new ListenerException(e);
+			throw new ListenerException(ClassUtils.nameOf(this)+" was interupted",e);
 		}
-
-		if (call.t!=null) {
-			if (call.t instanceof ListenerException) {
-				throw (ListenerException)call.t;
+		if (ise.getThrowable()!=null) {
+			if (ise.getThrowable() instanceof ListenerException) {
+				throw (ListenerException)ise.getThrowable();
 			} else {
-				throw new ListenerException(call.t);
+				throw new ListenerException(ise.getThrowable());
 			}
 		} else {
-			return call.result; 
-		}
-	}
-	
-	public void run() {
-		try {
-			if (log.isDebugEnabled() && ibisDebugger!=null) {
-				ibisDebugger.startThread(threadID, correlationID, message);
-			}
-			if (targetIsJavaListener) {
-				result = JavaListener.getListener(serviceName).processRequest(correlationID, message, context); 
-			} else {
-				result = ServiceDispatcher.getInstance().dispatchRequestWithExceptions(serviceName, correlationID, message, context); 
-			}
-			if (log.isDebugEnabled() && ibisDebugger!=null) {
-				ibisDebugger.endThread(correlationID, result);
-			}
-		} catch (Throwable t) {
-			log.warn("IsolatedServiceCaller caught exception",t);
-			if (log.isDebugEnabled() && ibisDebugger!=null) {
-				t = ibisDebugger.abortThread(correlationID, t);
-			}
-			this.t=t;
+			return (String)ise.getReply();
 		}
 	}
 
-	public void setIbisDebugger(IbisDebugger ibisDebugger) {
-		this.ibisDebugger = ibisDebugger;
+	public class IsolatedServiceExecutor extends RequestReplyExecutor {
+		String serviceName; 
+		HashMap context;
+		boolean targetIsJavaListener;
+		Guard guard;
+		
+		public IsolatedServiceExecutor(String serviceName, String correlationID, String message, HashMap context, boolean targetIsJavaListener, Guard guard) {
+			super();
+			this.serviceName=serviceName;
+			this.correlationID=correlationID;
+			request=message;
+			this.context=context;
+			this.targetIsJavaListener=targetIsJavaListener;
+			this.guard=guard;
+		}
+
+		public void run() {
+			try {
+				if (targetIsJavaListener) {
+					reply = JavaListener.getListener(serviceName).processRequest(correlationID, request, context);
+				} else {
+					reply = ServiceDispatcher.getInstance().dispatchRequestWithExceptions(serviceName, correlationID, request, context);
+				}
+			} catch (Throwable t) {
+				log.warn("IsolatedServiceCaller caught exception",t);
+				throwable=t;
+			} finally {
+				if (guard != null) {
+					guard.releaseResource();
+				}
+			}
+		}
+
 	}
 
 }

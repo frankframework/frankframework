@@ -1,6 +1,9 @@
 /*
  * $Log: FixedResultSender.java,v $
- * Revision 1.6  2010-03-10 14:30:05  m168309
+ * Revision 1.7  2010-09-07 15:55:13  m00f069
+ * Removed IbisDebugger, made it possible to use AOP to implement IbisDebugger functionality.
+ *
+ * Revision 1.6  2010/03/10 14:30:05  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * rolled back testtool adjustments (IbisDebuggerDummy)
  *
  * Revision 1.4  2009/12/04 18:23:34  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -111,53 +114,48 @@ public class FixedResultSender extends SenderWithParametersBase {
 	}
  
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException {
-		message = debugSenderInput(correlationID, message);
 		String result=returnString;
-		try {
-			if (prc!=null) {
-				ParameterValueList pvl;
-				try {
-					pvl = prc.getValues(paramList);
-				} catch (ParameterException e) {
-					throw new SenderException("exception extracting parameters",e);
-				}
-				if (pvl!=null) {
-					for (int i=0; i<pvl.size(); i++) {
-						ParameterValue pv = pvl.getParameterValue(i);
-						result=replace(result,"${"+pv.getDefinition().getName()+"}",pv.asStringValue(""));
-					}
+		if (prc!=null) {
+			ParameterValueList pvl;
+			try {
+				pvl = prc.getValues(paramList);
+			} catch (ParameterException e) {
+				throw new SenderException("exception extracting parameters",e);
+			}
+			if (pvl!=null) {
+				for (int i=0; i<pvl.size(); i++) {
+					ParameterValue pv = pvl.getParameterValue(i);
+					result=replace(result,"${"+pv.getDefinition().getName()+"}",pv.asStringValue(""));
 				}
 			}
-	
-			if (getSubstituteVars()){
-				result=StringResolver.substVars(returnString, prc.getSession());
-			}
-	
-			if (StringUtils.isNotEmpty(styleSheetName)) {
-				URL xsltSource = ClassUtils.getResourceURL(this, styleSheetName);
-				if (xsltSource!=null) {
-					try{
-						String xsltResult = null;
-						Transformer transformer = XmlUtils.createTransformer(xsltSource);
-						xsltResult = XmlUtils.transformXml(transformer, result);
-						result = xsltResult;
-					} catch (IOException e) {
-						throw new SenderException("cannot retrieve ["+ styleSheetName + "], resource [" + xsltSource.toString() + "]", e);
-					} catch (TransformerConfigurationException te) {
-						throw new SenderException("got error creating transformer from file [" + styleSheetName + "]", te);
-					} catch (TransformerException te) {
-						throw new SenderException("got error transforming resource [" + xsltSource.toString() + "] from [" + styleSheetName + "]", te);
-					} catch (DomBuilderException te) {
-						throw new SenderException("caught DomBuilderException", te);
-					}
-				}
-			}
-	
-			log.debug("returning fixed result [" + result + "]");
-		} catch(Throwable throwable) {
-			debugSenderAbort(correlationID, throwable);
 		}
-		return debugSenderOutput(correlationID, result);
+
+		if (getSubstituteVars()){
+			result=StringResolver.substVars(returnString, prc.getSession());
+		}
+
+		if (StringUtils.isNotEmpty(styleSheetName)) {
+			URL xsltSource = ClassUtils.getResourceURL(this, styleSheetName);
+			if (xsltSource!=null) {
+				try{
+					String xsltResult = null;
+					Transformer transformer = XmlUtils.createTransformer(xsltSource);
+					xsltResult = XmlUtils.transformXml(transformer, result);
+					result = xsltResult;
+				} catch (IOException e) {
+					throw new SenderException("cannot retrieve ["+ styleSheetName + "], resource [" + xsltSource.toString() + "]", e);
+				} catch (TransformerConfigurationException te) {
+					throw new SenderException("got error creating transformer from file [" + styleSheetName + "]", te);
+				} catch (TransformerException te) {
+					throw new SenderException("got error transforming resource [" + xsltSource.toString() + "] from [" + styleSheetName + "]", te);
+				} catch (DomBuilderException te) {
+					throw new SenderException("caught DomBuilderException", te);
+				}
+			}
+		}
+
+		log.debug("returning fixed result [" + result + "]");
+		return result;
 	}
 
 	public static String replace (String target, String from, String to) {   

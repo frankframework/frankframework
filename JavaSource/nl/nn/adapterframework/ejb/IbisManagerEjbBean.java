@@ -1,6 +1,9 @@
 /*
  * $Log: IbisManagerEjbBean.java,v $
- * Revision 1.5  2007-11-22 08:47:43  europe\L190409
+ * Revision 1.6  2010-09-07 15:55:14  m00f069
+ * Removed IbisDebugger, made it possible to use AOP to implement IbisDebugger functionality.
+ *
+ * Revision 1.5  2007/11/22 08:47:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * update from ejb-branch
  *
  * Revision 1.4.2.3  2007/10/29 10:37:25  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
@@ -92,51 +95,52 @@ public class IbisManagerEjbBean extends AbstractEJBBase implements SessionBean, 
     }
 
     public Configuration getConfiguration() {
-        return manager.getConfiguration();
+        return ibisManager.getConfiguration();
     }
 
     public void handleAdapter(String action, String adapterName, String receiverName, String commandIssuedBy) {
-        manager.handleAdapter(action, adapterName, receiverName, commandIssuedBy);
+		ibisManager.handleAdapter(action, adapterName, receiverName, commandIssuedBy);
     }
 
     public void startIbis() {
-        manager.startIbis();
+		ibisManager.startIbis();
     }
 
     public void shutdownIbis() {
-        manager.shutdownIbis();
+		ibisManager.shutdownIbis();
+		ibisContext.destroyConfig();
     }
     
     public void startAdapters() {
-        manager.startAdapters();
+		ibisManager.startAdapters();
     }
 
     public void stopAdapters() {
-        manager.stopAdapters();
+		ibisManager.stopAdapters();
     }
 
     public void startAdapter(IAdapter adapter) {
-        manager.startAdapter(adapter);
+		ibisManager.startAdapter(adapter);
     }
 
     public void stopAdapter(IAdapter adapter) {
-        manager.stopAdapter(adapter);
+		ibisManager.stopAdapter(adapter);
     }
 
     public void loadConfigurationFile(String configurationFile) {
-        manager.loadConfigurationFile(configurationFile);
+		ibisManager.loadConfigurationFile(configurationFile);
     }
 
     public String getDeploymentModeString() {
-        return manager.getDeploymentModeString();
+        return ibisManager.getDeploymentModeString();
     }
 
     public int getDeploymentMode() {
-        return manager.getDeploymentMode();
+        return ibisManager.getDeploymentMode();
     }
 
     public PlatformTransactionManager getTransactionManager() {
-        return manager.getTransactionManager();
+        return ibisManager.getTransactionManager();
     }
 
     /* (non-Javadoc)

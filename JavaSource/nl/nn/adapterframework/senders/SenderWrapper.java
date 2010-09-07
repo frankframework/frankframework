@@ -1,6 +1,9 @@
 /*
  * $Log: SenderWrapper.java,v $
- * Revision 1.7  2009-12-29 14:37:28  L190409
+ * Revision 1.8  2010-09-07 15:55:13  m00f069
+ * Removed IbisDebugger, made it possible to use AOP to implement IbisDebugger functionality.
+ *
+ * Revision 1.7  2009/12/29 14:37:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * modified imports to reflect move of statistics classes to separate package
  *
  * Revision 1.6  2009/06/05 07:29:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -77,7 +80,7 @@ public class SenderWrapper extends SenderWrapperBase {
 		getSender().close();
 	}
 
-	protected String doSendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+	public String doSendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		String result;
 		if (sender instanceof ISenderWithParameters) {
 			result = ((ISenderWithParameters)sender).sendMessage(correlationID,message,prc);

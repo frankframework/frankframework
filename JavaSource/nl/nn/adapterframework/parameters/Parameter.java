@@ -1,6 +1,9 @@
 /*
  * $Log: Parameter.java,v $
- * Revision 1.38  2010-08-20 07:54:18  m168309
+ * Revision 1.39  2010-09-07 15:55:14  m00f069
+ * Removed IbisDebugger, made it possible to use AOP to implement IbisDebugger functionality.
+ *
+ * Revision 1.38  2010/08/20 07:54:18  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * 'fixeddate' variable only available in stub mode
  *
  * Revision 1.37  2010/07/12 12:51:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -140,7 +143,6 @@ import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IWithParameters;
 import nl.nn.adapterframework.core.ParameterException;
-import nl.nn.adapterframework.debug.IbisDebugger;
 import nl.nn.adapterframework.pipes.PutSystemDateInSession;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
@@ -171,7 +173,7 @@ import org.w3c.dom.Node;
  * <ul>
  * 	<li><code>string</code>: renders the contents of the first node (in combination with xslt or xpath)</li>
  * 	<li><code>xml</code>:  renders a xml-nodeset as an xml-string (in combination with xslt or xpath)</li>
- * 	<li><code>node</code>: renders the CONTENTS of the first node as a nodeset that can be used as such when passed as xslt-parameter (only for XSLT 1.0). Please note that the nodeset may contain multiple nodes, without a common root node. N.B. The result is the set of children of what you might expect it to be...</li>
+ * 	<li><code>node</code>: renders the contents of the first node as a nodeset that can be used as such when passed as xslt-parameter (only for XSLT 1.0). Please note that the nodeset may contain multiple nodes, without a common root node</li>
  * 	<li><code>domdoc</code>: renders xml as a DOM document; similar to <code>node</code> with the distinction that there is always a common root node (required for XSLT 2.0)</li>
  * 	<li><code>date</code>: converts the result to a Date, by default using formatString <code>yyyy-MM-dd</code>. When applied as a JDBC parameter, the method setDate() is used</li>
  * 	<li><code>time</code>: converts the result to a Date, by default using formatString <code>HH:mm:ss</code>. When applied as a JDBC parameter, the method setTime() is used</li>
@@ -185,7 +187,6 @@ import org.w3c.dom.Node;
  * <tr><td>{@link #setGroupingSeparator(String) groupingSeparator}</td><td>used in combination with type <code>number</code></td><td>system default</td></tr>
  * <tr><td>{@link #setSessionKey(String) sessionKey}</td><td>Key of a PipeLineSession-variable. Is specified, the value of the PipeLineSession variable is used as input for the XpathExpression or Stylesheet, instead of the current input message. If no xpathExpression or Stylesheet are specified, the value itself is returned.</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setXpathExpression(String) xpathExpression}</td><td>The xpath expression to extract the parameter value from the (xml formatted) input or session-variable.</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setNamespaceDefs(String) namespaceDefs}</td><td>namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setStyleSheetName(String) styleSheetName}</td><td>URL to a stylesheet that wil be applied to the contents of the message or the value of the session-variable.</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDefaultValue(String) defaultValue}</td><td>If the result of sessionKey, XpathExpressen and/or Stylesheet returns null or an empty String, this value is returned</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setPattern(String) pattern}</td><td>Value of parameter is determined using substitution and formating. The expression can contain references to session-variables or other parameters using {name-of-parameter} and is formatted using java.text.MessageFormat. {now}, {uid}, {hostname} and {fixeddate} are named constants that can be used in the expression. If fname is a parameter or session variable that resolves to Eric, then the pattern 'Hi {fname}, hoe gaat het?' resolves to 'Hi Eric, hoe gaat het?'. A guid can be generated using {hostname}_{uid}, see also <a href="http://java.sun.com/j2se/1.4.2/docs/api/java/rmi/server/UID.html">http://java.sun.com/j2se/1.4.2/docs/api/java/rmi/server/UID.html</a> for more information about (g)uid's.</td><td>&nbsp;</td></tr>
@@ -218,10 +219,8 @@ import org.w3c.dom.Node;
  * @author Gerrit van Brakel
  */
 public class Parameter implements INamedObject, IWithParameters {
-	public static final String version="$RCSfile: Parameter.java,v $ $Revision: 1.38 $ $Date: 2010-08-20 07:54:18 $";
+	public static final String version="$RCSfile: Parameter.java,v $ $Revision: 1.39 $ $Date: 2010-09-07 15:55:14 $";
 	protected Logger log = LogUtil.getLogger(this);
-
-	private IbisDebugger ibisDebugger;
 
 	public final static String TYPE_XML="xml";
 	public final static String TYPE_NODE="node";
@@ -328,7 +327,7 @@ public class Parameter implements INamedObject, IWithParameters {
 	 * @return the raw value as object
 	 * @throws IbisException
 	 */
-	Object getValue(ParameterValueList alreadyResolvedParameters, ParameterResolutionContext prc) throws ParameterException {
+	public Object getValue(ParameterValueList alreadyResolvedParameters, ParameterResolutionContext prc) throws ParameterException {
 		Object result = null;
 		log.debug("Calculating value for Parameter ["+getName()+"]");
 		if (!configured) {
@@ -390,7 +389,6 @@ public class Parameter implements INamedObject, IWithParameters {
 			log.debug("Parameter ["+getName()+"] resolved to defaultvalue ["+(isHidden()?hide(getDefaultValue()):getDefaultValue())+"]");
 			result=getDefaultValue();
 		}
-		if (log.isDebugEnabled() && ibisDebugger!=null) result = ibisDebugger.parameterResolvedTo(this, prc.getSession().getMessageId(), result);
 		if (result !=null && result instanceof String) {
 			if (TYPE_NODE.equals(getType())) {
 				try {
@@ -621,10 +619,6 @@ public class Parameter implements INamedObject, IWithParameters {
 	}
 	public String getGroupingSeparator() {
 		return groupingSeparator;
-	}
-	
-	public void setIbisDebugger(IbisDebugger ibisDebugger) {
-		this.ibisDebugger = ibisDebugger;
 	}
 
 	public void setHidden(boolean b) {

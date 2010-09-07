@@ -1,6 +1,9 @@
 /*
  * $Log: DefaultIbisManager.java,v $
- * Revision 1.12  2010-04-01 13:01:35  L190409
+ * Revision 1.13  2010-09-07 15:55:14  m00f069
+ * Removed IbisDebugger, made it possible to use AOP to implement IbisDebugger functionality.
+ *
+ * Revision 1.12  2010/04/01 13:01:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * replaced BeanFactory by ApplicationContext to enable AOP proxies
  *
  * Revision 1.11  2009/12/29 14:37:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -91,7 +94,7 @@ import org.springframework.transaction.PlatformTransactionManager;
  * @since   4.8
  * @version Id
  */
-public class DefaultIbisManager implements IbisManager, ApplicationContextAware {
+public class DefaultIbisManager implements IbisManager {
     protected Logger log=LogUtil.getLogger(this);
 	
     public static final String DFLT_DIGESTER_RULES = "digester-rules.xml";
@@ -103,7 +106,6 @@ public class DefaultIbisManager implements IbisManager, ApplicationContextAware 
     private int deploymentMode;
     private PlatformTransactionManager transactionManager;
     private ListenerPortPoller listenerPortPoller;
-    private ApplicationContext applicationContext;
     
     protected final String[] deploymentModes = new String[] {DEPLOYMENT_MODE_UNMANAGED_STRING, DEPLOYMENT_MODE_EJB_STRING};
     
@@ -154,17 +156,6 @@ public class DefaultIbisManager implements IbisManager, ApplicationContextAware 
         if (listenerPortPoller != null) {
             listenerPortPoller.clear();
         }
-        
-        // Clean up the Spring Bean Factory and references to it
-        // In particular, clean up the static reference from the
-        // Digester factory, since that can cause the garbage-collector
-        // to never finalize the Bean Factory.
-        // Singleton Beans in the Bean Factory are explicitly destroyed,
-        // to ensure that they release their resources.
-        AbstractSpringPoweredDigesterFactory.applicationContext = null;
-        
-		// applicationContext.destroySingletons();
-		applicationContext = null;
         log.info("* IBIS Shutdown: Shutdown complete for instance [" + name + "]");
     }
     
@@ -417,8 +408,4 @@ public class DefaultIbisManager implements IbisManager, ApplicationContextAware 
     public void setListenerPortPoller(ListenerPortPoller listenerPortPoller) {
         this.listenerPortPoller = listenerPortPoller;
     }
-
-    public void setApplicationContext(ApplicationContext applicationContext) {
-        this.applicationContext = applicationContext;
     }
-}

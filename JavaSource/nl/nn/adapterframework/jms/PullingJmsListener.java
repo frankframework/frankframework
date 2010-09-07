@@ -1,6 +1,9 @@
 /*
  * $Log: PullingJmsListener.java,v $
- * Revision 1.8  2010-03-10 14:30:05  m168309
+ * Revision 1.9  2010-09-07 15:55:14  m00f069
+ * Removed IbisDebugger, made it possible to use AOP to implement IbisDebugger functionality.
+ *
+ * Revision 1.8  2010/03/10 14:30:05  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * rolled back testtool adjustments (IbisDebuggerDummy)
  *
  * Revision 1.6  2009/07/28 12:44:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -187,7 +190,7 @@ import org.apache.commons.lang.StringUtils;
  * @since 4.0.1
  */
 public class PullingJmsListener extends JmsListenerBase implements IPostboxListener, ICorrelatedPullingListener, HasSender, RunStateEnquiring {
-	public static final String version="$RCSfile: PullingJmsListener.java,v $ $Revision: 1.8 $ $Date: 2010-03-10 14:30:05 $";
+	public static final String version="$RCSfile: PullingJmsListener.java,v $ $Revision: 1.9 $ $Date: 2010-09-07 15:55:14 $";
 
 	private final static String THREAD_CONTEXT_SESSION_KEY="session";
 	private final static String THREAD_CONTEXT_MESSAGECONSUMER_KEY="messageConsumer";
@@ -374,7 +377,7 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 	public Object getRawMessage(String correlationId, Map threadContext) throws ListenerException, TimeOutException {
 		Object msg = getRawMessageFromDestination(correlationId, threadContext);
 		if (msg==null) {
-			throw new TimeOutException("waiting for message with correlationId ["+correlationId+"]");
+			throw new TimeOutException(getLogPrefix()+" timed out waiting for message with correlationId ["+correlationId+"]");
 		}
 		if (log.isDebugEnabled()) {
 			log.debug("JmsListener ["+getName()+"] received for correlationId ["+correlationId+"] replymessage ["+msg+"]");

@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLineSession.java,v $
- * Revision 1.11  2009-07-03 06:27:46  m168309
+ * Revision 1.12  2010-09-07 15:55:13  m00f069
+ * Removed IbisDebugger, made it possible to use AOP to implement IbisDebugger functionality.
+ *
+ * Revision 1.11  2009/07/03 06:27:46  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * setListenerParameter: messageId only set if not null (so it's not overridden for local test with testtool)
  *
  * Revision 1.10  2008/02/28 16:17:53  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -56,7 +59,7 @@ import org.apache.commons.lang.NotImplementedException;
  * @since   version 3.2.2
  */
 public class PipeLineSession extends HashMap {
-	public static final String version="$RCSfile: PipeLineSession.java,v $ $Revision: 1.11 $ $Date: 2009-07-03 06:27:46 $";
+	public static final String version="$RCSfile: PipeLineSession.java,v $ $Revision: 1.12 $ $Date: 2010-09-07 15:55:13 $";
 
 	public static final String originalMessageKey="originalMessage";
 	public static final String messageIdKey="messageId";
@@ -94,14 +97,14 @@ public class PipeLineSession extends HashMap {
 	public String getOriginalMessage() {
 		return (String) get(originalMessageKey);
 	}
+
 	/**
 	 * This method is exclusively to be called by the <code>PipeLine</code>.
 	 * It clears the contents of the session, and stores the message that was
 	 * passed to the <code>PipeLine</code> under the key <code>orininalMessageKey</code>
 	 * 
 	 */
-	
-	protected void set(String message, String messageId) {
+	public void set(String message, String messageId) {
 		// clear(); Dat moet niet meer!
 		put(originalMessageKey, message);
 	    put(messageIdKey, messageId);

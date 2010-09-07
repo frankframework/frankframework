@@ -1,6 +1,9 @@
 /*
  * $Log: IbisLocalSender.java,v $
- * Revision 1.5  2010-03-10 14:30:05  m168309
+ * Revision 1.6  2010-09-07 15:55:13  m00f069
+ * Removed IbisDebugger, made it possible to use AOP to implement IbisDebugger functionality.
+ *
+ * Revision 1.5  2010/03/10 14:30:05  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * rolled back testtool adjustments (IbisDebuggerDummy)
  *
  * Revision 1.3  2009/12/04 18:23:34  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -27,6 +30,7 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.pipes.IsolatedServiceCaller;
 import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
+import nl.nn.adapterframework.util.Guard;
 import nl.nn.adapterframework.util.Misc;
 
 import org.apache.commons.lang.StringUtils;
@@ -100,6 +104,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 	private boolean checkDependency=true;
 	private int dependencyTimeOut=60;
 	private String returnedSessionKeys=null;
+	private IsolatedServiceCaller isolatedServiceCaller;
 
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -147,80 +152,75 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 	}
 
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException {
-		message = debugSenderInput(correlationID, message);
 		String result = null;
-		try {
-			HashMap context = null;
-			if (paramList!=null) {
-				try {
-					context = prc.getValueMap(paramList);
-				} catch (ParameterException e) {
-					throw new SenderException(getLogPrefix()+"exception evaluating parameters",e);
-				}
-			} else {
-				if (StringUtils.isNotEmpty(getReturnedSessionKeys())) {
-					context = new HashMap();
-				}
+		HashMap context = null;
+		if (paramList!=null) {
+			try {
+				context = prc.getValueMap(paramList);
+			} catch (ParameterException e) {
+				throw new SenderException(getLogPrefix()+"exception evaluating parameters",e);
 			}
-			if (StringUtils.isNotEmpty(getServiceName())) {
-				try {
-					if (isIsolated()) {
-						if (isSynchronous()) {
-							log.debug(getLogPrefix()+"calling service ["+getServiceName()+"] in separate Thread");
-							result = IsolatedServiceCaller.callServiceIsolated(getServiceName(), correlationID, message, context, false, ibisDebugger);
-						} else {
-							log.debug(getLogPrefix()+"calling service ["+getServiceName()+"] in asynchronously");
-							IsolatedServiceCaller.callServiceAsynchronous(getServiceName(), correlationID, message, context, false, ibisDebugger);
-							result = message;
-						}
-					} else {
-						log.debug(getLogPrefix()+"calling service ["+getServiceName()+"] in same Thread");
-						result = ServiceDispatcher.getInstance().dispatchRequestWithExceptions(getServiceName(), correlationID, message, context);
-					}
-				} catch (ListenerException e) {
-					throw new SenderException(getLogPrefix()+"exception calling service ["+getServiceName()+"]",e);
-				} finally {
-					if (log.isDebugEnabled() && StringUtils.isNotEmpty(getReturnedSessionKeys())) {
-						log.debug("returning values of session keys ["+getReturnedSessionKeys()+"]");
-					}
-					if (prc!=null) {
-						Misc.copyContext(getReturnedSessionKeys(),context, prc.getSession());
-					}
-				} 
-			}  else {
-				try {
-					JavaListener listener= JavaListener.getListener(getJavaListener());
-					if (listener==null) {
-						throw new SenderException("could not find JavaListener ["+getJavaListener()+"]");
-					}
-					if (isIsolated()) {
-						if (isSynchronous()) {
-							log.debug(getLogPrefix()+"calling JavaListener ["+getJavaListener()+"] in separate Thread");
-							result = IsolatedServiceCaller.callServiceIsolated(getJavaListener(), correlationID, message, context, true, ibisDebugger);
-						} else {
-							log.debug(getLogPrefix()+"calling JavaListener ["+getJavaListener()+"] in asynchronously");
-							IsolatedServiceCaller.callServiceAsynchronous(getJavaListener(), correlationID, message, context, true, ibisDebugger);
-							result = message;
-						}
-					} else {
-						log.debug(getLogPrefix()+"calling JavaListener ["+getJavaListener()+"] in same Thread");
-						result = listener.processRequest(correlationID,message,context);
-					}
-				} catch (ListenerException e) {
-					throw new SenderException(getLogPrefix()+"exception calling JavaListener ["+getJavaListener()+"]",e);
-				} finally {
-					if (log.isDebugEnabled() && StringUtils.isNotEmpty(getReturnedSessionKeys())) {
-						log.debug("returning values of session keys ["+getReturnedSessionKeys()+"]");
-					}
-					if (prc!=null) {
-						Misc.copyContext(getReturnedSessionKeys(),context, prc.getSession());
-					}
-				}
+		} else {
+			if (StringUtils.isNotEmpty(getReturnedSessionKeys())) {
+				context = new HashMap();
 			}
-		} catch(Throwable throwable) {
-			debugSenderAbort(correlationID, throwable);
 		}
-		return debugSenderOutput(correlationID, result);
+		if (StringUtils.isNotEmpty(getServiceName())) {
+			try {
+				if (isIsolated()) {
+					if (isSynchronous()) {
+						log.debug(getLogPrefix()+"calling service ["+getServiceName()+"] in separate Thread");
+						result = isolatedServiceCaller.callServiceIsolated(getServiceName(), correlationID, message, context, false);
+					} else {
+						log.debug(getLogPrefix()+"calling service ["+getServiceName()+"] in asynchronously");
+						isolatedServiceCaller.callServiceAsynchronous(getServiceName(), correlationID, message, context, false);
+						result = message;
+					}
+				} else {
+					log.debug(getLogPrefix()+"calling service ["+getServiceName()+"] in same Thread");
+					result = ServiceDispatcher.getInstance().dispatchRequestWithExceptions(getServiceName(), correlationID, message, context);
+				}
+			} catch (ListenerException e) {
+				throw new SenderException(getLogPrefix()+"exception calling service ["+getServiceName()+"]",e);
+			} finally {
+				if (log.isDebugEnabled() && StringUtils.isNotEmpty(getReturnedSessionKeys())) {
+					log.debug("returning values of session keys ["+getReturnedSessionKeys()+"]");
+				}
+				if (prc!=null) {
+					Misc.copyContext(getReturnedSessionKeys(),context, prc.getSession());
+				}
+			} 
+		}  else {
+			try {
+				JavaListener listener= JavaListener.getListener(getJavaListener());
+				if (listener==null) {
+					throw new SenderException("could not find JavaListener ["+getJavaListener()+"]");
+				}
+				if (isIsolated()) {
+					if (isSynchronous()) {
+						log.debug(getLogPrefix()+"calling JavaListener ["+getJavaListener()+"] in separate Thread");
+						result = isolatedServiceCaller.callServiceIsolated(getJavaListener(), correlationID, message, context, true);
+					} else {
+						log.debug(getLogPrefix()+"calling JavaListener ["+getJavaListener()+"] in asynchronously");
+						isolatedServiceCaller.callServiceAsynchronous(getJavaListener(), correlationID, message, context, true);
+						result = message;
+					}
+				} else {
+					log.debug(getLogPrefix()+"calling JavaListener ["+getJavaListener()+"] in same Thread");
+					result = listener.processRequest(correlationID,message,context);
+				}
+			} catch (ListenerException e) {
+				throw new SenderException(getLogPrefix()+"exception calling JavaListener ["+getJavaListener()+"]",e);
+			} finally {
+				if (log.isDebugEnabled() && StringUtils.isNotEmpty(getReturnedSessionKeys())) {
+					log.debug("returning values of session keys ["+getReturnedSessionKeys()+"]");
+				}
+				if (prc!=null) {
+					Misc.copyContext(getReturnedSessionKeys(),context, prc.getSession());
+				}
+			}
+		}
+		return result;
 	}
 
 
@@ -289,6 +289,10 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 	}
 	public String getReturnedSessionKeys() {
 		return returnedSessionKeys;
+	}
+
+	public void setIsolatedServiceCaller(IsolatedServiceCaller isolatedServiceCaller) {
+		this.isolatedServiceCaller = isolatedServiceCaller;
 	}
 
 }

@@ -1,6 +1,9 @@
 /*
  * $Log: SenderBase.java,v $
- * Revision 1.4  2010-03-10 14:30:04  m168309
+ * Revision 1.5  2010-09-07 15:55:13  m00f069
+ * Removed IbisDebugger, made it possible to use AOP to implement IbisDebugger functionality.
+ *
+ * Revision 1.4  2010/03/10 14:30:04  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * rolled back testtool adjustments (IbisDebuggerDummy)
  *
  * Revision 1.2  2009/12/04 18:23:34  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -18,7 +21,6 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
-import nl.nn.adapterframework.debug.IbisDebugger;
 import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.log4j.Logger;
@@ -38,7 +40,6 @@ import org.apache.log4j.Logger;
  */
 public abstract class SenderBase implements ISender {
 	protected Logger log = LogUtil.getLogger(this);
-	protected IbisDebugger ibisDebugger;
 
 	private String name;
 
@@ -66,37 +67,6 @@ public abstract class SenderBase implements ISender {
 	}
 	public String getName() {
 		return name;
-	}
-
-	protected String debugSenderInput(String correlationID, String message) {
-		if (log.isDebugEnabled() && ibisDebugger!=null) {
-			message = ibisDebugger.senderInput(this, correlationID, message);
-		}
-		return message;
-	}
-
-	protected String debugSenderOutput(String correlationID, String message) {
-		if (log.isDebugEnabled() && ibisDebugger!=null) {
-			message = ibisDebugger.senderOutput(this, correlationID, message);
-		}
-		return message;
-	}
-
-	protected void debugSenderAbort(String correlationID, Throwable throwable) throws SenderException {
-		SenderException senderException;
-		if (throwable instanceof SenderException) {
-			senderException = (SenderException)throwable;
-		} else {
-			senderException = new SenderException(getLogPrefix()+"unexpected throwable",throwable);
-		}
-		if (log.isDebugEnabled() && ibisDebugger!=null) {
-			throwable = ibisDebugger.senderAbort(this, correlationID, throwable);
-		}
-		throw senderException;
-	}
-	
-	public void setIbisDebugger(IbisDebugger ibisDebugger) {
-		this.ibisDebugger = ibisDebugger;
 	}
 
 }

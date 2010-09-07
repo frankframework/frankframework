@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractSpringPoweredDigesterFactory.java,v $
- * Revision 1.16  2010-04-01 13:01:35  L190409
+ * Revision 1.17  2010-09-07 15:55:13  m00f069
+ * Removed IbisDebugger, made it possible to use AOP to implement IbisDebugger functionality.
+ *
+ * Revision 1.16  2010/04/01 13:01:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * replaced BeanFactory by ApplicationContext to enable AOP proxies
  *
  * Revision 1.15  2010/03/18 10:13:01  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -101,11 +104,15 @@ import org.xml.sax.Locator;
 public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjectCreationFactory {
 	protected Logger log = LogUtil.getLogger(this);
 
-    public static ApplicationContext applicationContext;
+    private static IbisContext ibisContext;
 	private ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
     
     public AbstractSpringPoweredDigesterFactory() {
         super();
+    }
+    
+    public static void setIbisContext(IbisContext ibisContext) {
+		AbstractSpringPoweredDigesterFactory.ibisContext = ibisContext;
     }
     
     /**
@@ -296,7 +303,7 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
         } else {
             // Get all beans matching the classname given
             beanClass = Class.forName(className);
-            String[] matchingBeans = applicationContext.getBeanNamesForType(beanClass);
+            String[] matchingBeans = ibisContext.getBeanNamesForType(beanClass);
             if (matchingBeans.length == 1) {
                 // Only 1 bean of this type, so create it
                 beanName = matchingBeans[0];
@@ -314,14 +321,14 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
         }
         
         // Only accept prototype-beans!
-        if (isPrototypesOnly() && !applicationContext.isPrototype(beanName)) {
+        if (isPrototypesOnly() && !ibisContext.isPrototype(beanName)) {
             throw new ConfigurationException("Beans created from the BeanFactory must be prototype-beans, bean ["
                 + beanName + "] of class [" + className + "] is not.");
         }
         if (log.isDebugEnabled()) {
             log.debug("Creating bean with actual bean-name [" + beanName + "], bean-class [" + (beanClass != null ? beanClass.getName() : "null") + "] from Spring Bean Factory.");
         }
-        return applicationContext.getBean(beanName, beanClass);
+        return ibisContext.getBean(beanName, beanClass);
     }
 
     protected Object createBeanAndAutoWire(Class beanClass) throws InstantiationException, IllegalAccessException {
@@ -329,8 +336,7 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
             log.debug("Bean class [" + beanClass.getName() + "], autowire bean name [" + getSuggestedBeanName() + "] not found in Spring Bean Factory, instantiating directly and using Spring Factory for auto-wiring support.");
         }
 
-		AutowireCapableBeanFactory awcbf = applicationContext.getAutowireCapableBeanFactory();
-		Object o = awcbf.createBean(beanClass,AutowireCapableBeanFactory.AUTOWIRE_BY_NAME,false);
+		Object o = ibisContext.createBean(beanClass,AutowireCapableBeanFactory.AUTOWIRE_BY_NAME,false);
    
         return o;
     }

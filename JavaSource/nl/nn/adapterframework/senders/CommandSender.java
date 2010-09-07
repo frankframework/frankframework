@@ -1,6 +1,9 @@
 /*
  * $Log: CommandSender.java,v $
- * Revision 1.5  2010-03-10 14:30:04  m168309
+ * Revision 1.6  2010-09-07 15:55:13  m00f069
+ * Removed IbisDebugger, made it possible to use AOP to implement IbisDebugger functionality.
+ *
+ * Revision 1.5  2010/03/10 14:30:04  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * rolled back testtool adjustments (IbisDebuggerDummy)
  *
  * Revision 1.3  2009/12/04 18:23:34  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -50,31 +53,24 @@ public class CommandSender extends SenderWithParametersBase {
 	private boolean synchronous=true;
 
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
-		message = debugSenderInput(correlationID, message);
-		String result = null;
-		try {
-			String commandline;
-			if (StringUtils.isNotEmpty(getCommand())) {
-				commandline=getCommand();
-			} else {
-				commandline=message;
-			}
-			if (paramList!=null) {
-				ParameterValueList pvl;
-				try {
-					pvl = prc.getValues(paramList);
-				} catch (ParameterException e) {
-					throw new SenderException("Could not extract parametervalues",e);
-				}
-				for (int i=0; i<pvl.size(); i++) {
-					commandline += " "+pvl.getParameterValue(i);
-				}
-			}
-			result = ProcessUtil.executeCommand(commandline);
-		} catch(Throwable throwable) {
-			debugSenderAbort(correlationID, throwable);
+		String commandline;
+		if (StringUtils.isNotEmpty(getCommand())) {
+			commandline=getCommand();
+		} else {
+			commandline=message;
 		}
-		return debugSenderOutput(correlationID, result);
+		if (paramList!=null) {
+			ParameterValueList pvl;
+			try {
+				pvl = prc.getValues(paramList);
+			} catch (ParameterException e) {
+				throw new SenderException("Could not extract parametervalues",e);
+			}
+			for (int i=0; i<pvl.size(); i++) {
+				commandline += " "+pvl.getParameterValue(i);
+			}
+		}
+		return ProcessUtil.executeCommand(commandline);
 	}
 
 	public boolean isSynchronous() {

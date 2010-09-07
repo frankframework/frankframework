@@ -1,6 +1,9 @@
 /*
  * $Log: SenderWrapperBase.java,v $
- * Revision 1.8  2010-03-10 14:30:05  m168309
+ * Revision 1.9  2010-09-07 15:55:13  m00f069
+ * Removed IbisDebugger, made it possible to use AOP to implement IbisDebugger functionality.
+ *
+ * Revision 1.8  2010/03/10 14:30:05  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * rolled back testtool adjustments (IbisDebuggerDummy)
  *
  * Revision 1.6  2009/12/29 14:37:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -32,6 +35,7 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.processors.SenderWrapperBaseProcessor;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.util.ClassUtils;
 
@@ -60,8 +64,9 @@ public abstract class SenderWrapperBase extends SenderWithParametersBase impleme
 	private String getInputFromFixedValue=null;
 	private String storeResultInSessionKey; 
 	private boolean preserveInput=false; 
+	protected SenderWrapperBaseProcessor senderWrapperBaseProcessor;
 
-
+	
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (!isSenderConfigured()) {
@@ -74,38 +79,13 @@ public abstract class SenderWrapperBase extends SenderWithParametersBase impleme
 
 	protected abstract boolean isSenderConfigured();
 
-	protected abstract String doSendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException; 
+	public abstract String doSendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException; 
 
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
-		message = debugSenderInput(correlationID, message);
-		String result = null;
-		try {
-			String senderInput=message;
-			if (StringUtils.isNotEmpty(getGetInputFromSessionKey())) {
-				senderInput=(String)prc.getSession().get(getGetInputFromSessionKey());
-				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"set contents of session variable ["+getGetInputFromSessionKey()+"] as input ["+senderInput+"]");
-				if (log.isDebugEnabled() && ibisDebugger!=null) senderInput = (String)ibisDebugger.getInputFromSessionKey(correlationID, getGetInputFromSessionKey(), senderInput);
-			} else {
-				if (StringUtils.isNotEmpty(getGetInputFromFixedValue())) {
-					senderInput=getGetInputFromFixedValue();
-					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"set input to fixed value ["+senderInput+"]");
-					if (log.isDebugEnabled() && ibisDebugger!=null) senderInput = (String)ibisDebugger.getInputFromFixedValue(correlationID, senderInput);
-				}
-			}
-			result = doSendMessage(correlationID, senderInput, prc);
-			if (StringUtils.isNotEmpty(getStoreResultInSessionKey())) {
-				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"storing results in session variable ["+getStoreResultInSessionKey()+"]");
-				if (log.isDebugEnabled() && ibisDebugger!=null) result = (String)ibisDebugger.storeResultInSessionKey(correlationID, getStoreResultInSessionKey(), result);
-				prc.getSession().put(getStoreResultInSessionKey(),result);
-			}
-		} catch(Throwable throwable) {
-			debugSenderAbort(correlationID, throwable);
-		}
-		result = isPreserveInput()?message:result;
-		return debugSenderOutput(correlationID, result);
+		return senderWrapperBaseProcessor.sendMessage(this, correlationID, message, prc);
 	}
 
-	protected String getLogPrefix() {
+	public String getLogPrefix() {
 		return ClassUtils.nameOf(this)+" ["+getName()+"] ";
 	}
 
@@ -139,6 +119,10 @@ public abstract class SenderWrapperBase extends SenderWithParametersBase impleme
 	}
 	public boolean isPreserveInput() {
 		return preserveInput;
+	}
+
+	public void setSenderWrapperBaseProcessor(SenderWrapperBaseProcessor senderWrapperBaseProcessor) {
+		this.senderWrapperBaseProcessor = senderWrapperBaseProcessor;
 	}
 
 }

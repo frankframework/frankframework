@@ -1,6 +1,9 @@
 /*
  * $Log: EchoSender.java,v $
- * Revision 1.6  2010-03-10 14:30:04  m168309
+ * Revision 1.7  2010-09-07 15:55:13  m00f069
+ * Removed IbisDebugger, made it possible to use AOP to implement IbisDebugger functionality.
+ *
+ * Revision 1.6  2010/03/10 14:30:04  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * rolled back testtool adjustments (IbisDebuggerDummy)
  *
  * Revision 1.4  2009/12/04 18:23:34  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -47,8 +50,7 @@ public class EchoSender extends SenderWithParametersBase {
 	private boolean synchronous=true;
 
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
-		message = debugSenderInput(correlationID, message);
-		return debugSenderOutput(correlationID, message);
+		return message;
 	}
 
 	public void setSynchronous(boolean b) {

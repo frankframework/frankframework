@@ -1,6 +1,9 @@
 /*
  * $Log: DelaySender.java,v $
- * Revision 1.5  2010-03-10 14:30:04  m168309
+ * Revision 1.6  2010-09-07 15:55:13  m00f069
+ * Removed IbisDebugger, made it possible to use AOP to implement IbisDebugger functionality.
+ *
+ * Revision 1.5  2010/03/10 14:30:04  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * rolled back testtool adjustments (IbisDebuggerDummy)
  *
  * Revision 1.3  2009/12/04 18:23:34  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -40,19 +43,14 @@ public class DelaySender extends SenderBase {
 
 
 	public String sendMessage(String correlationID, String message) throws SenderException {
-		message = debugSenderInput(correlationID, message);
 		try {
-			try {
-				log.info(getLogPrefix()+"starts waiting for " + getDelayTime() + " ms.");
-				Thread.sleep(getDelayTime());
-			} catch (InterruptedException e) {
-				throw new SenderException(getLogPrefix()+"delay interrupted", e);
-			}
-			log.info(getLogPrefix()+"ends waiting for " + getDelayTime() + " ms.");
-		} catch(Throwable throwable) {
-			debugSenderAbort(correlationID, throwable);
+			log.info(getLogPrefix()+"starts waiting for " + getDelayTime() + " ms.");
+			Thread.sleep(getDelayTime());
+		} catch (InterruptedException e) {
+			throw new SenderException(getLogPrefix()+"delay interrupted", e);
 		}
-		return debugSenderOutput(correlationID, message);
+		log.info(getLogPrefix()+"ends waiting for " + getDelayTime() + " ms.");
+		return message;
 	}
 
 	/**

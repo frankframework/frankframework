@@ -1,6 +1,9 @@
 /*
  * $Log: XsltSender.java,v $
- * Revision 1.6  2010-07-12 13:03:40  L190409
+ * Revision 1.7  2010-09-07 15:55:13  m00f069
+ * Removed IbisDebugger, made it possible to use AOP to implement IbisDebugger functionality.
+ *
+ * Revision 1.6  2010/07/12 13:03:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * allow to specfiy namespace prefixes to be used in XPath-epressions
  *
  * Revision 1.5  2010/03/10 14:30:05  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -124,48 +127,43 @@ public class XsltSender extends SenderWithParametersBase {
 	 * via the configure() and start() methods.
 	 */
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException {
-		message = debugSenderInput(correlationID, message);
 		String stringResult = null;
-		try {
-			if (message==null) {
-				throw new SenderException(getLogPrefix()+"got null input");
-			}
-	//		if (log.isDebugEnabled()) {
-	//			log.debug(getLogPrefix()+" transforming input ["+message+"] using prc ["+prc+"]");
-	//		}
-	
-			try {
-				Map parametervalues = null;
-				if (paramList!=null) {
-					parametervalues = prc.getValueMap(paramList);
-				}
-	//			if (log.isDebugEnabled()) {
-	//				log.debug(getLogPrefix()+" transformerPool ["+transformerPool+"] transforming using prc ["+prc+"] and parameterValues ["+parametervalues+"]");
-	//				log.debug(getLogPrefix()+" prc.inputsource ["+prc.getInputSource()+"]");
-	//			}
-				
-				stringResult = transformerPool.transform(prc.getInputSource(), parametervalues); 
-	
-				if (isSkipEmptyTags()) {
-					log.debug(getLogPrefix()+ " skipping empty tags from result [" + stringResult + "]");
-					//URL xsltSource = ClassUtils.getResourceURL( this, skipEmptyTags_xslt);
-					//Transformer transformer = XmlUtils.createTransformer(xsltSource);
-					//stringResult = XmlUtils.transformXml(transformer, stringResult);
-					ParameterResolutionContext prc_SkipEmptyTags = new ParameterResolutionContext(stringResult, prc.getSession(), prc.isNamespaceAware()); 
-					stringResult = transformerPoolSkipEmptyTags.transform(prc_SkipEmptyTags.getInputSource(), null); 
-				}
-	//			if (log.isDebugEnabled()) {
-	//				log.debug(getLogPrefix()+" transformed input ["+message+"] to ["+stringResult+"]");
-	//			}
-			} 
-			catch (Exception e) {
-				log.warn(getLogPrefix()+"intermediate exception logging",e);
-				throw new SenderException(getLogPrefix()+" Exception on transforming input", e);
-			} 
-		} catch(Throwable throwable) {
-			debugSenderAbort(correlationID, throwable);
+		if (message==null) {
+			throw new SenderException(getLogPrefix()+"got null input");
 		}
-		return debugSenderOutput(correlationID, stringResult);
+//		if (log.isDebugEnabled()) {
+//			log.debug(getLogPrefix()+" transforming input ["+message+"] using prc ["+prc+"]");
+//		}
+
+		try {
+			Map parametervalues = null;
+			if (paramList!=null) {
+				parametervalues = prc.getValueMap(paramList);
+			}
+//			if (log.isDebugEnabled()) {
+//				log.debug(getLogPrefix()+" transformerPool ["+transformerPool+"] transforming using prc ["+prc+"] and parameterValues ["+parametervalues+"]");
+//				log.debug(getLogPrefix()+" prc.inputsource ["+prc.getInputSource()+"]");
+//			}
+			
+			stringResult = transformerPool.transform(prc.getInputSource(), parametervalues); 
+
+			if (isSkipEmptyTags()) {
+				log.debug(getLogPrefix()+ " skipping empty tags from result [" + stringResult + "]");
+				//URL xsltSource = ClassUtils.getResourceURL( this, skipEmptyTags_xslt);
+				//Transformer transformer = XmlUtils.createTransformer(xsltSource);
+				//stringResult = XmlUtils.transformXml(transformer, stringResult);
+				ParameterResolutionContext prc_SkipEmptyTags = new ParameterResolutionContext(stringResult, prc.getSession(), prc.isNamespaceAware()); 
+				stringResult = transformerPoolSkipEmptyTags.transform(prc_SkipEmptyTags.getInputSource(), null); 
+			}
+//			if (log.isDebugEnabled()) {
+//				log.debug(getLogPrefix()+" transformed input ["+message+"] to ["+stringResult+"]");
+//			}
+		} 
+		catch (Exception e) {
+			log.warn(getLogPrefix()+"intermediate exception logging",e);
+			throw new SenderException(getLogPrefix()+" Exception on transforming input", e);
+		} 
+		return stringResult;
 	}
 
 	public boolean isSynchronous() {

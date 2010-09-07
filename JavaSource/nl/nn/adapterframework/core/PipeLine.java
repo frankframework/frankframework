@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.89  2010-03-10 14:30:05  m168309
+ * Revision 1.90  2010-09-07 15:55:13  m00f069
+ * Removed IbisDebugger, made it possible to use AOP to implement IbisDebugger functionality.
+ *
+ * Revision 1.89  2010/03/10 14:30:05  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * rolled back testtool adjustments (IbisDebuggerDummy)
  *
  * Revision 1.87  2010/02/03 14:39:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -268,7 +271,6 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeSet;
 
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
@@ -276,18 +278,14 @@ import javax.xml.transform.TransformerException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.debug.IbisDebugger;
+import nl.nn.adapterframework.processors.PipeLineProcessor;
+import nl.nn.adapterframework.processors.PipeProcessor;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
-import nl.nn.adapterframework.task.TimeoutGuard;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.util.Semaphore;
 import nl.nn.adapterframework.util.SpringTxManagerProxy;
-import nl.nn.adapterframework.util.TracingUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
@@ -371,11 +369,10 @@ import org.springframework.transaction.TransactionStatus;
  * @author  Johan Verrips
  */
 public class PipeLine {
-	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.89 $ $Date: 2010-03-10 14:30:05 $";
+	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.90 $ $Date: 2010-09-07 15:55:13 $";
     private Logger log = LogUtil.getLogger(this);
-	private Logger durationLog = LogUtil.getLogger("LongDurationMessages");
-    
-	private IbisDebugger ibisDebugger;
+
+	private PipeLineProcessor pipeLineProcessor;
 
 	private Adapter adapter;    // for transaction managing
 	private INamedObject owner; // for logging purposes
@@ -391,13 +388,11 @@ public class PipeLine {
 	private IPipe outputValidator=null;
      
 	private TransactionDefinition txDef=null;
-	private PlatformTransactionManager txManager;
     
     private Map pipesByName=new Hashtable();
     private List pipes=new ArrayList();
     // set of exits paths with their state
     private Map pipeLineExits=new Hashtable();
-	private Map pipeThreadCounts=new Hashtable();
 	
 	private String commitOnState="success"; // exit state on which receiver will commit XA transactions
 	private boolean storeOriginalMessageWithoutNamespaces=false;
@@ -573,28 +568,6 @@ public class PipeLine {
 	public Map getPipeWaitingStatistics(){
 		return pipeWaitingStatistics;
 	}
-	
-	private Semaphore getSemaphore(IPipe pipeToRun) {
-	    int maxThreads;
-	
-	    maxThreads = pipeToRun.getMaxThreads();
-	    if (maxThreads > 0) {
-	
-	        Semaphore s;
-	
-	        synchronized (pipeThreadCounts) {
-	            if (pipeThreadCounts.containsKey(pipeToRun)) {
-	                s = (Semaphore) pipeThreadCounts.get(pipeToRun);
-	            } else {
-	                s = new Semaphore(maxThreads);
-	                pipeThreadCounts.put(pipeToRun, s);
-	            }
-	        }
-	        return s;
-	    }
-	    return null;
-	
-	}
 
 	/**
 	 * The <code>process</code> method does the processing of a message.<br/>
@@ -607,457 +580,7 @@ public class PipeLine {
 	 * @throws PipeRunException when something went wrong in the pipes.
 	 */
 	public PipeLineResult process(String messageId, String message, PipeLineSession pipeLineSession) throws PipeRunException {
-	
-		if (pipeLineSession==null) {
-			pipeLineSession= new PipeLineSession();
-		}
-		// reset the PipeLineSession and store the message and its id in the session
-		if (messageId==null) {
-				messageId=Misc.createSimpleUUID();
-				log.error("null value for messageId, setting to ["+messageId+"]");
-	
-		}
-		if (message == null) {
-			throw new PipeRunException(null, "Pipeline of adapter ["+ owner.getName()+"] received null message");
-		}
-		// store message and messageId in the pipeLineSession
-		pipeLineSession.set(message, messageId);
-        
-        try {
-            return runPipeLineObeyingTransactionAttribute(
-                messageId,
-                message,
-                pipeLineSession);
-        } catch (RuntimeException e) {
-            throw new PipeRunException(null, "RuntimeException calling PipeLine with tx attribute ["
-                + getTransactionAttribute() + "]", e);
-        }
-	}
-    
-    private PipeLineResult runPipeLineObeyingTransactionAttribute(String messageId, String message, PipeLineSession session) throws PipeRunException {
-		//TransactionStatus txStatus = txManager.getTransaction(txDef);
-		IbisTransaction itx = new IbisTransaction(txManager, txDef, "pipeline of adapter [" + owner.getName() + "]");
-		TransactionStatus txStatus = itx.getStatus();
-		try {
-			TimeoutGuard tg = new TimeoutGuard("pipeline of adapter [" + owner.getName() + "]");
-			Throwable tCaught=null;
-			try {
-				tg.activateGuard(getTransactionTimeout());
-				PipeLineResult result = processPipeLine(messageId, message, session, txStatus);
-				return result;
-			} catch (Throwable t) {
-				tCaught=t;
-				throw tCaught;
-			} finally {
-				if (tg.cancel()) {
-					if (tCaught==null) {
-						throw new InterruptedException(tg.getDescription()+" was interrupted");
-					} else {
-						log.warn("Thread interrupted, but propagating other caught exception of type ["+ClassUtils.nameOf(tCaught)+"]");
-					}
-				}
-			}
-		} catch (Throwable t) {
-			log.debug("setting RollBackOnly for pipeline after catching exception");
-			txStatus.setRollbackOnly();
-			if (log.isDebugEnabled() && ibisDebugger!=null) {
-				t = ibisDebugger.pipeLineRollback(this, messageId, t);
-			}
-			if (t instanceof Error) {
-				throw (Error)t;
-			} else if (t instanceof RuntimeException) {
-				throw (RuntimeException)t;
-			} else if (t instanceof PipeRunException) {
-				throw (PipeRunException)t;
-			} else {
-				throw new PipeRunException(null, "Caught unknown checked exception", t);
-			}
-		} finally {
-			//txManager.commit(txStatus);
-			itx.commit();
-		}
-    }
-    
-	private PipeRunResult runPipeObeyingTransactionAttribute(IPipe pipe, String messageId, Object message, PipeLineSession session) throws PipeRunException {
-        int txOption;
-        int txTimeout=0;
-        if (pipe instanceof HasTransactionAttribute) {
-            HasTransactionAttribute taPipe = (HasTransactionAttribute) pipe;
-            txOption = taPipe.getTransactionAttributeNum();
-            txTimeout= taPipe.getTransactionTimeout();
-        } else {
-            txOption = TransactionDefinition.PROPAGATION_SUPPORTS;
-        }
-		//TransactionStatus txStatus = txManager.getTransaction(SpringTxManagerProxy.getTransactionDefinition(txOption,txTimeout));
-		IbisTransaction itx = new IbisTransaction(txManager, SpringTxManagerProxy.getTransactionDefinition(txOption,txTimeout), "pipe [" + pipe.getName() + "]");
-		TransactionStatus txStatus = itx.getStatus();
-		try {
-			TimeoutGuard tg = new TimeoutGuard("pipeline of adapter [" + owner.getName() + "] running pipe ["+pipe.getName()+"]");
-			Throwable tCaught=null;
-			try {
-				tg.activateGuard(txTimeout);
-				checkMessageSize(message, pipe, true);
-				PipeRunResult prr = pipe.doPipe(message, session);
-				Object result = prr.getResult();
-				checkMessageSize(result, pipe, false);
-				return prr;
-			} catch (Throwable t) {
-				tCaught=t;
-				throw tCaught;
-			} finally {
-				if (tg.cancel()) {
-					if (tCaught==null) {
-						throw new PipeRunException(pipe,tg.getDescription()+" was interrupted");
-					} else {
-						log.warn("Thread interrupted, but propagating other caught exception of type ["+ClassUtils.nameOf(tCaught)+"]");
-					}
-				}
-			}
-		} catch (Throwable t) {
-			log.debug("setting RollBackOnly for pipe [" + pipe.getName()+"] after catching exception");
-			txStatus.setRollbackOnly();
-			if (log.isDebugEnabled() && ibisDebugger!=null) {
-				t = ibisDebugger.pipeRollback(this, pipe, messageId, t);
-			}
-			if (t instanceof Error) {
-				throw (Error)t;
-			} else if (t instanceof RuntimeException) {
-				throw (RuntimeException)t;
-			} else if (t instanceof PipeRunException) {
-				throw (PipeRunException)t;
-			} else {
-				throw new PipeRunException(pipe, "Caught unknown checked exception", t);
-			}
-		} finally {
-			//txManager.commit(txStatus);
-			itx.commit();
-		}
-	}
-
-	private void checkMessageSize(Object message, IPipe pipe, boolean input) {
-		String logMessage = null;
-		if (getMessageSizeErrorNum()>=0) {
-			if (message instanceof String) {
-				int messageLength = message.toString().length();
-				if (messageLength>=getMessageSizeErrorNum()) {
-					logMessage = "pipe [" + pipe.getName() + "] of adapter [" + owner.getName() + "], " + (input ? "input" : "result") + " message size [" + Misc.toFileSize(messageLength) + "] exceeds [" + Misc.toFileSize(getMessageSizeErrorNum()) + "]";
-					log.error(logMessage);
-					if (pipe instanceof IExtendedPipe) {
-						IExtendedPipe pe = (IExtendedPipe)pipe;
-						pe.throwEvent(IExtendedPipe.MESSAGE_SIZE_MONITORING_EVENT);
-					}
-				}
-			}
-		}
-		if (logMessage == null) {
-			if (getMessageSizeWarnNum()>=0) {
-				if (message instanceof String) {
-					int messageLength = message.toString().length();
-					if (messageLength>=getMessageSizeWarnNum()) {
-						logMessage = "pipe [" + pipe.getName() + "] of adapter [" + owner.getName() + "], " + (input ? "input" : "result") + " message size [" + Misc.toFileSize(messageLength) + "] exceeds [" + Misc.toFileSize(getMessageSizeWarnNum()) + "]";
-						log.warn(logMessage);
-					}
-				}
-			}
-		}
-	}
-
-	/**
-     * Run a PipeLine, without observing transaction status of the PipeLine.
-     * 
-     * This method is meant to be executed from the IPipeLineExecutor
-     * implementation.
-     * 
-	 * @param messageId
-	 * @param message
-	 * @param pipeLineSession
-	 * @return
-	 * @throws PipeRunException
-	 */
-    private PipeLineResult processPipeLine(String messageId, String message, PipeLineSession pipeLineSession, TransactionStatus txStatus) throws PipeRunException {
-	    // Object is the object that is passed to and returned from Pipes
-	    Object object = (Object) message;
-		if (log.isDebugEnabled() && ibisDebugger!=null) {
-			object = ibisDebugger.pipeLineInput(this, messageId, message);
-			TreeSet keys = new TreeSet(pipeLineSession.keySet());
-			Iterator iterator = keys.iterator();
-			while (iterator.hasNext()) {
-				String sessionKey = (String)iterator.next();
-				Object sessionValue = pipeLineSession.get(sessionKey);
-				sessionValue = ibisDebugger.pipeLineSessionKey(messageId, sessionKey, sessionValue);
-				pipeLineSession.put(sessionKey, sessionValue);
-			}
-		} 
-	    Object preservedObject = object;
-	    PipeRunResult pipeRunResult;
-	    // the PipeLineResult 
-		PipeLineResult pipeLineResult=new PipeLineResult();   
-	
-	
-		
-	    // ready indicates wether the pipeline processing is complete
-	    boolean ready=false;
-
-		// get the first pipe to run
-		IPipe pipeToRun = getPipe(firstPipe);
-
-		IPipe inputValidator = getInputValidator();
-		if (inputValidator!=null) {
-			PipeRunResult validationResult = inputValidator.doPipe(message,pipeLineSession);
-			if (validationResult!=null && !validationResult.getPipeForward().getName().equals("success")) {
-				PipeForward validationForward=validationResult.getPipeForward();
-				if (validationForward.getPath()==null) {
-					throw new PipeRunException(pipeToRun,"forward ["+validationForward.getName()+"] of inputValidator has emtpy forward path");
-				}	
-				log.warn("setting first pipe to ["+validationForward.getPath()+"] due to validation fault");
-				pipeToRun = getPipe(validationForward.getPath());
-				if (pipeToRun==null) {
-					throw new PipeRunException(pipeToRun,"forward ["+validationForward.getName()+"], path ["+validationForward.getPath()+"] does not correspond to a pipe");
-				}
-			}
-		}
-
-		if (isStoreOriginalMessageWithoutNamespaces()) {
-			if (XmlUtils.isWellFormed(message)) {
-				String removeNamespaces_xslt = XmlUtils.makeRemoveNamespacesXslt(true,true);
-				try{
-					String xsltResult = null;
-					Transformer transformer = XmlUtils.createTransformer(removeNamespaces_xslt);
-					xsltResult = XmlUtils.transformXml(transformer, message);
-					pipeLineSession.put("originalMessageWithoutNamespaces", xsltResult);
-				} catch (IOException e) {
-					throw new PipeRunException(pipeToRun,"cannot retrieve removeNamespaces", e);
-				} catch (TransformerConfigurationException te) {
-					throw new PipeRunException(pipeToRun,"got error creating transformer from removeNamespaces", te);
-				} catch (TransformerException te) {
-					throw new PipeRunException(pipeToRun,"got error transforming removeNamespaces", te);
-				} catch (DomBuilderException te) {
-					throw new PipeRunException(pipeToRun,"caught DomBuilderException", te);
-				}
-			} else {
-				log.warn("original message is not well-formed");
-				pipeLineSession.put("originalMessageWithoutNamespaces", message);
-			}
-		}
-	
-		boolean outputValidated=false;
-		try {    
-			while (!ready){
-				IExtendedPipe pe=null;
-			
-				if (pipeToRun instanceof IExtendedPipe) {
-					pe = (IExtendedPipe)pipeToRun;
-				}
-	    	
-				TracingUtil.beforeEvent(pipeToRun);
-				long pipeStartTime= System.currentTimeMillis();
-			
-				if (log.isDebugEnabled()){  // for performance reasons
-					StringBuffer sb=new StringBuffer();
-					String ownerName=owner==null?"<null>":owner.getName();
-					String pipeToRunName=pipeToRun==null?"<null>":pipeToRun.getName();
-					sb.append("Pipeline of adapter ["+ownerName+"] messageId ["+messageId+"] is about to call pipe ["+ pipeToRunName+"]");
-					if (ibisDebugger!=null) {
-						object = ibisDebugger.pipeInput(this, pipeToRun, messageId, object);
-					} 
-	
-					if (AppConstants.getInstance().getProperty("log.logIntermediaryResults")!=null) {
-						if (AppConstants.getInstance().getProperty("log.logIntermediaryResults").equalsIgnoreCase("true")) {
-							sb.append(" current result ["+ object +"] ");
-						}
-					}
-					log.info(sb.toString());
-				}
-	
-				// start it
-				long pipeDuration = -1;
-			
-				if (pe!=null) {
-					if (StringUtils.isNotEmpty(pe.getGetInputFromSessionKey())) {
-						if (log.isDebugEnabled()) log.debug("Pipeline of adapter ["+owner.getName()+"] replacing input for pipe ["+pe.getName()+"] with contents of sessionKey ["+pe.getGetInputFromSessionKey()+"]");
-						object=pipeLineSession.get(pe.getGetInputFromSessionKey());
-						if (log.isDebugEnabled() && ibisDebugger!=null) object = ibisDebugger.getInputFromSessionKey(messageId, pe.getGetInputFromSessionKey(), object);
-					}
-					if (StringUtils.isNotEmpty(pe.getGetInputFromFixedValue())) {
-						if (log.isDebugEnabled()) log.debug("Pipeline of adapter ["+owner.getName()+"] replacing input for pipe ["+pe.getName()+"] with fixed value ["+pe.getGetInputFromFixedValue()+"]");
-						object=pe.getGetInputFromFixedValue();
-						if (log.isDebugEnabled() && ibisDebugger!=null) object = ibisDebugger.getInputFromFixedValue(messageId, object);
-					}
-				}
-			
-				try {
-					Semaphore s = getSemaphore(pipeToRun);
-					if (s != null) {
-						long waitingDuration = 0;
-						try {
-							// keep waiting statistics for thread-limited pipes
-							long startWaiting = System.currentTimeMillis();
-							s.acquire();
-							waitingDuration = System.currentTimeMillis() - startWaiting;
-	
-							StatisticsKeeper sk = (StatisticsKeeper) pipeWaitingStatistics.get(pipeToRun.getName());
-							sk.addValue(waitingDuration);
-	
-							try { 
-								pipeRunResult = runPipeObeyingTransactionAttribute(pipeToRun, messageId, object, pipeLineSession);
-							} catch (PipeRunException e) {
-								throw e;
-							} catch (Throwable t) {
-								throw new PipeRunException(pipeToRun, "caught exception", t);
-							} finally {
-								long pipeEndTime = System.currentTimeMillis();
-								pipeDuration = pipeEndTime - pipeStartTime - waitingDuration;
-		
-								sk = (StatisticsKeeper) pipeStatistics.get(pipeToRun.getName());
-								sk.addValue(pipeDuration);
-							}
-						} catch (InterruptedException e) {
-							throw new PipeRunException(pipeToRun, "Interrupted waiting for pipe", e);
-						} finally { 
-							s.release();
-						}
-					} else { //no restrictions on the maximum number of threads (s==null)
-						try {
-							pipeRunResult = runPipeObeyingTransactionAttribute(pipeToRun, messageId, object, pipeLineSession);
-						} catch (PipeRunException e) {
-							throw e;
-						} catch (Throwable t) {
-							throw new PipeRunException(pipeToRun, "caught exception", t);
-						} finally {
-							long pipeEndTime = System.currentTimeMillis();
-							pipeDuration = pipeEndTime - pipeStartTime;
-	
-							StatisticsKeeper sk = (StatisticsKeeper) pipeStatistics.get(pipeToRun.getName());
-							sk.addValue(pipeDuration);
-						}
-					}
-					if (pe !=null) {
-						if (pipeRunResult!=null && StringUtils.isNotEmpty(pe.getStoreResultInSessionKey())) {
-							if (log.isDebugEnabled()) log.debug("Pipeline of adapter ["+owner.getName()+"] storing result for pipe ["+pe.getName()+"] under sessionKey ["+pe.getStoreResultInSessionKey()+"]");
-							Object result = pipeRunResult.getResult();
-							if (log.isDebugEnabled() && ibisDebugger!=null) result = ibisDebugger.storeResultInSessionKey(messageId, pe.getStoreResultInSessionKey(), result);
-							pipeLineSession.put(pe.getStoreResultInSessionKey(),result);
-						}
-						if (pe.isPreserveInput()) {
-							pipeRunResult.setResult(preservedObject);
-						}
-					}
-				} catch (PipeRunException pre) {
-					TracingUtil.exceptionEvent(pipeToRun);
-					if (pe!=null) {
-						pe.throwEvent(IExtendedPipe.PIPE_EXCEPTION_MONITORING_EVENT);
-					}
-					throw pre;
-				} catch (RuntimeException re) {
-					TracingUtil.exceptionEvent(pipeToRun);
-					if (pe!=null) {
-						pe.throwEvent(IExtendedPipe.PIPE_EXCEPTION_MONITORING_EVENT);
-					}
-					throw new PipeRunException(pipeToRun, "Uncaught runtime exception running pipe '"
-                            + (pipeToRun==null?"null":pipeToRun.getName()) + "'", re);
-				} finally {
-					TracingUtil.afterEvent(pipeToRun);
-					if (pe!=null) {
-						if (pe.getDurationThreshold() >= 0 && pipeDuration > pe.getDurationThreshold()) {
-							durationLog.info("Pipe ["+pe.getName()+"] of ["+owner.getName()+"] duration ["+pipeDuration+"] ms exceeds max ["+ pe.getDurationThreshold()+ "], message ["+object+"]");
-							pe.throwEvent(IExtendedPipe.LONG_DURATION_MONITORING_EVENT);
-						}
-					}
-				}
-	        	        
-				if (pipeRunResult==null){
-					throw new PipeRunException(pipeToRun, "Pipeline of ["+owner.getName()+"] received null result from pipe ["+pipeToRun.getName()+"]d");
-				}
-				object=pipeRunResult.getResult();
-				if (log.isDebugEnabled() && ibisDebugger!=null) object = ibisDebugger.pipeOutput(this, pipeToRun, messageId, object);
-				preservedObject=object;
-				PipeForward pipeForward=pipeRunResult.getPipeForward();
-	
-	                
-				if (pipeForward==null){
-					throw new PipeRunException(pipeToRun, "Pipeline of ["+owner.getName()+"] received result from pipe ["+pipeToRun.getName()+"] without a pipeForward");
-				}
-				// get the next pipe to run
-				String nextPath=pipeForward.getPath();
-				if ((null==nextPath) || (nextPath.length()==0)){
-					throw new PipeRunException(pipeToRun, "Pipeline of ["+owner.getName()+"] got an path that equals null or has a zero-length value from pipe ["+pipeToRun.getName()+"]. Check the configuration, probably forwards are not defined for this pipe.");
-				}
-	
-				PipeLineExit plExit=(PipeLineExit)pipeLineExits.get(nextPath);
-				if (null!=plExit){
-					IPipe outputValidator = getOutputValidator();
-					if (outputValidator !=null && !outputValidated) {
-						outputValidated=true;
-						log.debug("validating PipeLineResult");
-						PipeRunResult validationResult = outputValidator.doPipe(object,pipeLineSession);
-						if (validationResult!=null && !validationResult.getPipeForward().getName().equals("success")) {
-							PipeForward validationForward=validationResult.getPipeForward();
-							if (validationForward.getPath()==null) {
-								throw new PipeRunException(pipeToRun,"forward ["+validationForward.getName()+"] of outputValidator has emtpy forward path");
-							}	
-							log.warn("setting next pipe to ["+validationForward.getPath()+"] due to validation fault");
-							pipeToRun = getPipe(validationForward.getPath());
-							if (pipeToRun==null) {
-								throw new PipeRunException(pipeToRun,"forward ["+validationForward.getName()+"], path ["+validationForward.getPath()+"] does not correspond to a pipe");
-							}
-						} else {
-							log.debug("validation succeeded");
-							ready=true;
-						}
-					} else {
-						ready=true;
-					}
-					if (ready) {
-						String state=plExit.getState();
-						pipeLineResult.setState(state);
-						if (object!=null) {
-							pipeLineResult.setResult(object.toString());
-						} else { 
-							pipeLineResult.setResult(null);
-						}
-						ready=true;
-						if (log.isDebugEnabled()){  // for performance reasons
-							log.debug("Pipeline of adapter ["+ owner.getName()+ "] finished processing messageId ["+messageId+"] result: ["+ object+ "] with exit-state ["+state+"]");
-						}
-					}
-				} else {
-					pipeToRun=getPipe(pipeForward.getPath());
-					if (pipeToRun==null) {
-						throw new PipeRunException(null, "Pipeline of adapter ["+ owner.getName()+"] got an erroneous definition. Pipe to execute ["+pipeForward.getPath()+ "] is not defined.");
-					}
-				}
-			}
-		} finally {
-			for (int i=0; i<exitHandlers.size(); i++) {
-				IPipeLineExitHandler exitHandler = (IPipeLineExitHandler)exitHandlers.get(i);
-				try {
-					if (log.isDebugEnabled()) log.debug("processing ExitHandler ["+exitHandler.getName()+"]");
-					exitHandler.atEndOfPipeLine(messageId,pipeLineResult,pipeLineSession);
-				} catch (Throwable t) {
-					log.warn("Caught Exception processing ExitHandler ["+exitHandler.getName()+"]",t);
-				}
-			}
-		}
-		boolean mustRollback=false;
-				
-		if (pipeLineResult==null) {
-			mustRollback=true;
-			log.warn("Pipeline received null result for messageId ["+messageId+"], transaction (when present and active) will be rolled back");
-		} else {
-			if (StringUtils.isNotEmpty(getCommitOnState()) && !getCommitOnState().equalsIgnoreCase(pipeLineResult.getState())) {
-				mustRollback=true;
-				log.warn("Pipeline result state ["+pipeLineResult.getState()+"] for messageId ["+messageId+"] is not equal to commitOnState ["+getCommitOnState()+"], transaction (when present and active) will be rolled back");
-			}
-		}
-		if (mustRollback) {
-			try {
-				txStatus.setRollbackOnly();
-			} catch (Exception e) {
-				throw new PipeRunException(null,"Could not set RollBackOnly",e);
-			}
-		}
-		if (log.isDebugEnabled() && ibisDebugger!=null) pipeLineResult.setResult(ibisDebugger.pipeLineOutput(this, messageId, pipeLineResult.getResult()));
-	    return pipeLineResult;
+		return pipeLineProcessor.processPipeLine(this, messageId, message, pipeLineSession);
 	}
 	
    /**
@@ -1071,6 +594,10 @@ public class PipeLine {
     public void registerPipeLineExit(PipeLineExit exit) {
 	    pipeLineExits.put(exit.getPath(), exit);
     }
+	
+	public void setPipeLineProcessor(PipeLineProcessor pipeLineProcessor) {
+		this.pipeLineProcessor = pipeLineProcessor;
+	}
     
     /**
      * Register the adapterName of this Pipelineprocessor. 
@@ -1211,8 +738,7 @@ public class PipeLine {
 	public int getTransactionAttributeNum() {
 		return transactionAttribute;
 	}
-
-		
+	
 	public void setInputValidator(IPipe inputValidator) {
 		this.inputValidator = inputValidator;
 	}
@@ -1227,22 +753,11 @@ public class PipeLine {
 		return outputValidator;
 	}
 
-	public void setTxManager(PlatformTransactionManager txManager) {
-		this.txManager = txManager;
-	}
-	public PlatformTransactionManager getTxManager() {
-		return txManager;
-	}
-
 	public void setTransactionTimeout(int i) {
 		transactionTimeout = i;
 	}
 	public int getTransactionTimeout() {
 		return transactionTimeout;
-	}
-
-	public void setIbisDebugger(IbisDebugger ibisDebugger) {
-		this.ibisDebugger = ibisDebugger;
 	}
 
 	public void setStoreOriginalMessageWithoutNamespaces(boolean b) {
@@ -1281,4 +796,21 @@ public class PipeLine {
 	public long getMessageSizeErrorNum() {
 		return messageSizeError;
 	}
+	
+	public TransactionDefinition getTxDef() {
+		return txDef;
+	}
+
+	public String getFirstPipe() {
+		return firstPipe;
+	}
+	
+	public Map getPipeLineExits() {
+		return pipeLineExits;
+	}
+	
+	public List getExitHandlers() {
+		return exitHandlers;
+	}
+
 }

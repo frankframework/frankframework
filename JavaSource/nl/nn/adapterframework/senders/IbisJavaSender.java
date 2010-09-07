@@ -1,6 +1,9 @@
 /*
  * $Log: IbisJavaSender.java,v $
- * Revision 1.5  2010-03-10 14:30:05  m168309
+ * Revision 1.6  2010-09-07 15:55:13  m00f069
+ * Removed IbisDebugger, made it possible to use AOP to implement IbisDebugger functionality.
+ *
+ * Revision 1.5  2010/03/10 14:30:05  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * rolled back testtool adjustments (IbisDebuggerDummy)
  *
  * Revision 1.3  2009/12/04 18:23:34  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -86,34 +89,29 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 	}
 
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
-		message = debugSenderInput(correlationID, message);
 		String result = null;
+		HashMap context = null;
 		try {
-			HashMap context = null;
-			try {
-				if (paramList!=null) {
-					context = prc.getValueMap(paramList);
-				} else {
-					context=new HashMap();			
-				}
-				DispatcherManager dm = DispatcherManagerFactory.getDispatcherManager();
-				result = dm.processRequest(getServiceName(),correlationID, message, context);
-			} catch (ParameterException e) {
-				throw new SenderException(getLogPrefix()+"exception evaluating parameters",e);
-			} catch (Exception e) {
-				throw new SenderException(getLogPrefix()+"exception processing message using request processor ["+getServiceName()+"]",e);
-			} finally {
-				if (log.isDebugEnabled() && StringUtils.isNotEmpty(getReturnedSessionKeys())) {
-					log.debug("returning values of session keys ["+getReturnedSessionKeys()+"]");
-				}
-				if (prc!=null) {
-					Misc.copyContext(getReturnedSessionKeys(),context, prc.getSession());
-				}
+			if (paramList!=null) {
+				context = prc.getValueMap(paramList);
+			} else {
+				context=new HashMap();			
 			}
-		} catch(Throwable throwable) {
-			debugSenderAbort(correlationID, throwable);
+			DispatcherManager dm = DispatcherManagerFactory.getDispatcherManager();
+			result = dm.processRequest(getServiceName(),correlationID, message, context);
+		} catch (ParameterException e) {
+			throw new SenderException(getLogPrefix()+"exception evaluating parameters",e);
+		} catch (Exception e) {
+			throw new SenderException(getLogPrefix()+"exception processing message using request processor ["+getServiceName()+"]",e);
+		} finally {
+			if (log.isDebugEnabled() && StringUtils.isNotEmpty(getReturnedSessionKeys())) {
+				log.debug("returning values of session keys ["+getReturnedSessionKeys()+"]");
+			}
+			if (prc!=null) {
+				Misc.copyContext(getReturnedSessionKeys(),context, prc.getSession());
+			}
 		}
-		return debugSenderOutput(correlationID, result);
+		return result;
 	}
 
 

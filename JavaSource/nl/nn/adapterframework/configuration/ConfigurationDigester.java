@@ -1,6 +1,9 @@
 /*
  * $Log: ConfigurationDigester.java,v $
- * Revision 1.34  2010-05-19 10:29:25  m168309
+ * Revision 1.35  2010-09-07 15:55:13  m00f069
+ * Removed IbisDebugger, made it possible to use AOP to implement IbisDebugger functionality.
+ *
+ * Revision 1.34  2010/05/19 10:29:25  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * remove inactive elements from configuration
  *
  * Revision 1.33  2010/05/14 16:52:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -162,8 +165,8 @@ import org.xml.sax.SAXParseException;
  * @author Johan Verrips
  * @see Configuration
  */
-abstract public class ConfigurationDigester implements ApplicationContextAware {
-	public static final String version = "$RCSfile: ConfigurationDigester.java,v $ $Revision: 1.34 $ $Date: 2010-05-19 10:29:25 $";
+abstract public class ConfigurationDigester {
+	public static final String version = "$RCSfile: ConfigurationDigester.java,v $ $Revision: 1.35 $ $Date: 2010-09-07 15:55:13 $";
     protected static Logger log = LogUtil.getLogger(ConfigurationDigester.class);
 	private ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 
@@ -409,13 +412,6 @@ abstract public class ConfigurationDigester implements ApplicationContextAware {
 	public String getDigesterRules() {
 		return digesterRulesFile;
 	}
-
-
-    public void setApplicationContext(ApplicationContext applicationContext) {
-    	log.debug("ConfigurationDigester.setApplicationContext() applicationContext ["+ClassUtils.nameOf(applicationContext)+"]");
-//        beanFactory = factory;
-        AbstractSpringPoweredDigesterFactory.applicationContext = applicationContext;
-    }
 
     /**
      * This method is used from the Spring configuration file. The Configuration is available as a Spring Bean.

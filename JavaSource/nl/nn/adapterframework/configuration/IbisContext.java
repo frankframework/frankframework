@@ -1,6 +1,9 @@
 /*
  * $Log: IbisContext.java,v $
- * Revision 1.7  2010-04-01 13:01:35  L190409
+ * Revision 1.8  2010-09-07 15:55:13  m00f069
+ * Removed IbisDebugger, made it possible to use AOP to implement IbisDebugger functionality.
+ *
+ * Revision 1.7  2010/04/01 13:01:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * replaced BeanFactory by ApplicationContext to enable AOP proxies
  *
  * Revision 1.6  2009/11/05 14:20:31  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -133,6 +136,7 @@ public class IbisContext {
 		
 		applicationContext = createApplicationContext(springContext);
 		ibisManager = (IbisManager) applicationContext.getBean("ibisManager");
+		AbstractSpringPoweredDigesterFactory.setIbisContext(this);
 	}
 
 	/**
@@ -160,6 +164,15 @@ public class IbisContext {
 //		XmlBeanFactory bf = new XmlBeanFactory(rs);
 		ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext(springContext);
 		return applicationContext;
+	}
+	
+	public void destroyConfig() {
+		// Clean up the Spring Bean Factory and reference to it, since that can
+		// cause the garbage-collector to never finalize the Bean Factory.
+		// Singleton Beans in the Bean Factory are explicitly destroyed,
+		// to ensure that they release their resources.
+		// applicationContext.destroySingletons();
+		applicationContext = null;
 	}
 
 //	public Object getAutoWiredObject(Class clazz) throws ConfigurationException {
@@ -248,12 +261,6 @@ public class IbisContext {
 //		beanFactory = factory;
 //	}
 
-	public ApplicationContext getApplicationContext() {
-		if (applicationContext==null) {
-			initContext(getSpringContextFileName());
-		}
-		return applicationContext;
-	}
 
 	private static String getSpringContextFileName() {
 		if (springContextFileName==null) {
@@ -269,6 +276,34 @@ public class IbisContext {
 	public static void main(String[] args) {
 		IbisContext im=new IbisContext();
 		im.initConfig(getSpringContextFileName(), IbisManager.DFLT_CONFIGURATION, IbisContext.DFLT_AUTOSTART);
+	}
+	
+	public Object getBean(String beanName) {
+		return applicationContext.getBean(beanName);
+	}
+	
+	public Object getBean(String beanName, Class beanClass) {
+		return applicationContext.getBean(beanName, beanClass);
+	}
+
+	public Object createBean(Class beanClass, int autowireMode, boolean dependencyCheck) {
+		return applicationContext.getAutowireCapableBeanFactory().createBean(beanClass, autowireMode, false);
+	}
+	
+	public void autowireBeanProperties(Object existingBean, int autowireMode, boolean dependencyCheck) {
+		applicationContext.getAutowireCapableBeanFactory().autowireBeanProperties(existingBean, autowireMode, dependencyCheck);
+	}
+	
+	public void initializeBean(Object existingBean, String beanName) {
+		applicationContext.getAutowireCapableBeanFactory().initializeBean(existingBean, beanName);
+	}
+
+	public String[] getBeanNamesForType(Class beanClass) {
+		return applicationContext.getBeanNamesForType(beanClass);
+	}
+
+	public boolean isPrototype(String beanName) {
+		return applicationContext.isPrototype(beanName);
 	}
 
 }

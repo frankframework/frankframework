@@ -1,6 +1,9 @@
 /*
  * $Log: MessageSendingPipe.java,v $
- * Revision 1.66  2010-08-20 07:36:26  m168309
+ * Revision 1.67  2010-09-07 15:55:13  m00f069
+ * Removed IbisDebugger, made it possible to use AOP to implement IbisDebugger functionality.
+ *
+ * Revision 1.66  2010/08/20 07:36:26  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added timeOutOnResult and exceptionOnResult attribute
  *
  * Revision 1.65  2010/07/12 12:54:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -217,6 +220,7 @@ import nl.nn.adapterframework.monitoring.EventThrowing;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
+import nl.nn.adapterframework.processors.ListenerProcessor;
 import nl.nn.adapterframework.senders.MailSender;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
@@ -310,7 +314,7 @@ import org.apache.commons.lang.SystemUtils;
  */
 
 public class MessageSendingPipe extends FixedForwardPipe implements HasSender, HasStatistics, EventThrowing {
-	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.66 $ $Date: 2010-08-20 07:36:26 $";
+	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.67 $ $Date: 2010-09-07 15:55:13 $";
 
 	public static final String PIPE_TIMEOUT_MONITOR_EVENT = "Sender Timeout";
 	public static final String PIPE_CLEAR_TIMEOUT_MONITOR_EVENT = "Sender Received Result on Time";
@@ -353,6 +357,8 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	private IPipe outputValidator=null;
 	
 	private boolean timeoutPending=false;
+
+	private ListenerProcessor listenerProcessor;
 
 	protected void propagateName() {
 		ISender sender=getSender();
@@ -532,7 +538,6 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 				log.info(getLogPrefix(session)+"returning result from static stub ["+getStubFileName()+"]");
 			}
 		} else {
-			ICorrelatedPullingListener replyListener = getListener();
 			Map threadContext=new HashMap();
 			try {
 				String correlationID = session.getMessageId();
@@ -605,19 +610,8 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 					session.remove("messageInMailSafeForm");
 				}
 				
-				if (replyListener != null) {
-					if (log.isDebugEnabled()) {
-						log.debug(getLogPrefix(session)	+ "starts listening for return message with correlationID ["+ correlationID	+ "]");
-					}
-					threadContext = replyListener.openThread();
-					Object msg = replyListener.getRawMessage(correlationID, threadContext);
-					if (msg==null) {	
-						log.info(getLogPrefix(session)+"received null reply message");
-					} else {
-						log.info(getLogPrefix(session)+"received reply message");
-					}
-					result =
-						replyListener.getStringFromRawMessage(msg, threadContext);
+				if (getListener() != null) {
+					result = listenerProcessor.getMessage(getListener(), correlationID, session);
 				} else {
 					result = sendResult;
 				}
@@ -678,14 +672,6 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 					return new PipeRunResult(exceptionForward,resultmsg);
 				}
 				throw new PipeRunException(this, getLogPrefix(session) + "caught exception", t);
-			} finally {
-				if (getListener()!=null)
-					try {
-						log.debug(getLogPrefix(session)+"is closing listener");
-						replyListener.closeThread(threadContext);
-					} catch (ListenerException le) {
-						log.error(getLogPrefix(session)+"got error closing listener", le);
-					}
 			}
 		}
 		if (!validResult(result)) {
@@ -992,4 +978,9 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	public String getExceptionOnResult() {
 		return exceptionOnResult;
 	}
+
+	public void setListenerProcessor(ListenerProcessor listenerProcessor) {
+		this.listenerProcessor = listenerProcessor;
+	}
+
 }

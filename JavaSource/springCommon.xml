@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   $Log: springCommon.xml,v $
-  Revision 1.15  2010-02-03 15:00:21  L190409
+  Revision 1.16  2010-09-07 15:55:13  m00f069
+  Removed IbisDebugger, made it possible to use AOP to implement IbisDebugger functionality.
+
+  Revision 1.15  2010/02/03 15:00:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
   updated spring xsds to 2.5
 
   Revision 1.14  2009/12/29 14:48:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -61,13 +64,16 @@
   first version in HEAD
 
 -->
-<beans xmlns="http://www.springframework.org/schema/beans"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xmlns:util="http://www.springframework.org/schema/util"
-       xsi:schemaLocation="
-            http://www.springframework.org/schema/beans xml/xsd/spring-beans-2.5.xsd
-            http://www.springframework.org/schema/util xml/xsd/spring-util-2.5.xsd
-            ">
+<beans
+	xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation=
+		"
+		http://www.springframework.org/schema/beans xml/xsd/spring-beans-2.5.xsd
+		http://www.springframework.org/schema/util xml/xsd/spring-util-2.5.xsd
+		"
+	>
 
     <!-- IBIS Beans -->
     <bean name="configuration" class="nl.nn.adapterframework.configuration.Configuration"
@@ -126,6 +132,97 @@
     </bean>
     
     <alias name="txManagerProxy" alias="txManager"/>
+
+    <bean name="isolatedServiceCaller" class="nl.nn.adapterframework.pipes.IsolatedServiceCaller"
+        autowire="byName" scope="singleton">
+    </bean>
+
+	<bean
+		name="pipeLineProcessor"
+		class="nl.nn.adapterframework.processors.InputOutputPipeLineProcessor"
+		autowire="byName"
+		scope="prototype"
+		>
+		<property name="pipeLineProcessor">
+			<bean
+				class="nl.nn.adapterframework.processors.TransactionAttributePipeLineProcessor"
+				autowire="byName"
+				scope="prototype"
+				>
+				<property name="pipeLineProcessor">
+					<bean
+						class="nl.nn.adapterframework.processors.CorePipeLineProcessor"
+						autowire="byName"
+						scope="prototype"
+						>
+
+	<property name="pipeProcessor">
+		<bean
+			class="nl.nn.adapterframework.processors.TracingEventsPipeProcessor"
+			autowire="byName"
+			scope="prototype"
+			>
+			<property name="pipeProcessor">
+				<bean
+					class="nl.nn.adapterframework.processors.InputOutputPipeProcessor"
+					autowire="byName"
+					scope="prototype"
+					>
+					<property name="pipeProcessor">
+						<bean
+							class="nl.nn.adapterframework.processors.CheckSemaphorePipeProcessor"
+							autowire="byName"
+							scope="prototype"
+							>
+							<property name="pipeProcessor">
+								<bean
+									class="nl.nn.adapterframework.processors.TransactionAttributePipeProcessor"
+									autowire="byName"
+									scope="prototype"
+									>
+									<property name="pipeProcessor">
+										<bean
+											class="nl.nn.adapterframework.processors.CheckMessageSizePipeProcessor"
+											autowire="byName"
+											scope="prototype"
+											>
+											<property name="pipeProcessor">
+												<bean
+													class="nl.nn.adapterframework.processors.CorePipeProcessor"
+													autowire="byName"
+													scope="prototype"
+												/>
+											</property>
+										</bean>
+									</property>
+								</bean>
+							</property>
+						</bean>
+					</property>
+				</bean>
+			</property>
+		</bean>
+	</property>
+
+					</bean>
+				</property>
+			</bean>
+		</property>
+	</bean>
+    
+    <bean
+		name="senderWrapperBaseProcessor"
+		class="nl.nn.adapterframework.processors.SenderWrapperBaseProcessor"
+		autowire="byName"
+		scope="prototype"
+	/>
+	
+	<bean
+		name="listenerProcessor"
+		class="nl.nn.adapterframework.processors.CoreListenerProcessor"
+		autowire="byName"
+		scope="prototype"
+	/>
     
     <!-- Beans created from Configuration.xml, but prototyped here for
          extra dependencies which cannot be created otherwise.

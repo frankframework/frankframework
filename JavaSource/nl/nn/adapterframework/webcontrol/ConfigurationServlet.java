@@ -1,6 +1,9 @@
 /*
  * $Log: ConfigurationServlet.java,v $
- * Revision 1.17  2009-12-22 16:42:21  L190409
+ * Revision 1.18  2010-09-07 15:55:14  m00f069
+ * Removed IbisDebugger, made it possible to use AOP to implement IbisDebugger functionality.
+ *
+ * Revision 1.17  2009/12/22 16:42:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * set Struts upload-directory in init
  *
  * Revision 1.16  2009/10/30 15:31:07  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -97,10 +100,10 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class ConfigurationServlet extends HttpServlet {
-	public static final String version = "$RCSfile: ConfigurationServlet.java,v $ $Revision: 1.17 $ $Date: 2009-12-22 16:42:21 $";
+	public static final String version = "$RCSfile: ConfigurationServlet.java,v $ $Revision: 1.18 $ $Date: 2010-09-07 15:55:14 $";
     protected Logger log = LogUtil.getLogger(this);
 
-	public static final String KEY_MANAGER = "KEY_MANAGER";
+	public static final String KEY_CONTEXT = "KEY_CONTEXT";
 
     //static final String DFLT_SPRING_CONTEXT = "springContext.xml";
     //static final String EJB_SPRING_CONTEXT = "springContextEjbWeb.xml";
@@ -147,8 +150,14 @@ public class ConfigurationServlet extends HttpServlet {
             if (ibisManager != null) {
 				ibisManager.shutdownIbis();
             } else {
-            	log.error("Cannot find configuration to shutdown");
+            	log.error("Cannot find manager to shutdown");
             }
+			IbisContext ibisContext = getIbisContext();
+			if (ibisContext != null) {
+				ibisContext.destroyConfig();
+			} else {
+				log.error("Cannot find configuration to destroy");
+			}
          } catch (Exception e) {
             log("Error stopping adapters on closing", e);
         }
@@ -226,20 +235,20 @@ public class ConfigurationServlet extends HttpServlet {
  
 	private boolean loadConfig() {
 		if (areAdaptersStopped()) {
-			IbisContext im = new IbisContext();
+			IbisContext ibisContext = new IbisContext();
 			String configurationFile = getInitParameter("configuration");
 			String autoStart = getInitParameter("autoStart");
 			String springContext = getInitParameter("springContext");
-			boolean success = im.initConfig(springContext, configurationFile, autoStart);
+			boolean success = ibisContext.initConfig(springContext, configurationFile, autoStart);
 			if (success) {
 				log.info("Configuration succeeded");
 			} else {
 				log.warn("Configuration did not succeed, please examine log");
 			}
 			ServletContext ctx = getServletContext();
-			String attributeKey = AppConstants.getInstance().getResolvedProperty(KEY_MANAGER);
-			ctx.setAttribute(attributeKey, im.getIbisManager());
-			log.debug("stored IbisManager [" + ClassUtils.nameOf(im.getIbisManager()) + "]["+ im.getIbisManager() + "] in ServletContext under key ["+ attributeKey	+ "]");
+			String attributeKey = AppConstants.getInstance().getResolvedProperty(KEY_CONTEXT);
+			ctx.setAttribute(attributeKey, ibisContext);
+			log.debug("stored IbisContext [" + ClassUtils.nameOf(ibisContext) + "]["+ ibisContext + "] in ServletContext under key ["+ attributeKey	+ "]");
 			return success;
 		} else {
 			log.warn("Not all adapters are stopped, cancelling ConfigurationServlet");
@@ -260,10 +269,19 @@ public class ConfigurationServlet extends HttpServlet {
         return config;
     }
     
+	public IbisContext getIbisContext() {
+		ServletContext ctx = getServletContext();
+		IbisContext context = null;
+		context = (IbisContext) ctx.getAttribute(AppConstants.getInstance().getResolvedProperty(KEY_CONTEXT));
+		return context;
+	}
+    
     public IbisManager getIbisManager() {
-        ServletContext ctx = getServletContext();
+        IbisContext ibisContext = getIbisContext();
         IbisManager manager = null;
-        manager = (IbisManager) ctx.getAttribute(AppConstants.getInstance().getResolvedProperty(KEY_MANAGER));
+        if (ibisContext != null) {
+			manager = ibisContext.getIbisManager();
+        }
         return manager;
     }
     

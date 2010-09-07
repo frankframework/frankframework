@@ -1,6 +1,9 @@
 /*
  * $Log: LogSender.java,v $
- * Revision 1.6  2010-03-10 14:30:04  m168309
+ * Revision 1.7  2010-09-07 15:55:13  m00f069
+ * Removed IbisDebugger, made it possible to use AOP to implement IbisDebugger functionality.
+ *
+ * Revision 1.6  2010/03/10 14:30:04  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * rolled back testtool adjustments (IbisDebuggerDummy)
  *
  * Revision 1.4  2009/12/04 18:23:34  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -61,20 +64,15 @@ public class LogSender extends SenderWithParametersBase implements IParameterHan
 	}
 
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
-		message = debugSenderInput(correlationID, message);
-		try {
-			log.log(level,message);
-			if (prc != null) {
-				try {
-					prc.forAllParameters(paramList, this);
-				} catch (ParameterException e) {
-					throw new SenderException("exception determining value of parameters", e);
-				}
+		log.log(level,message);
+		if (prc != null) {
+			try {
+				prc.forAllParameters(paramList, this);
+			} catch (ParameterException e) {
+				throw new SenderException("exception determining value of parameters", e);
 			}
-		} catch(Throwable throwable) {
-			debugSenderAbort(correlationID, throwable);
 		}
-		return debugSenderOutput(correlationID, message);
+		return message;
 	}
 
 	public void handleParam(String paramName, Object value) {
