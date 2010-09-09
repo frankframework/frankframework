@@ -1,6 +1,9 @@
 /*
  * $Log: StreamTransformerPipe.java,v $
- * Revision 1.24  2010-05-03 17:01:03  L190409
+ * Revision 1.25  2010-09-09 11:44:05  m00f069
+ * Changed error message "at line" to "at or after line".
+ *
+ * Revision 1.24  2010/05/03 17:01:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * reworked stream handling, to allow for binary records.
  *
  * Revision 1.23  2010/03/25 12:55:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -594,7 +597,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 		 	} catch(Throwable t) {
 				log.error("Unexpected error during finalizeResult of [" + streamId + "]", t);
 			}
-			throw new PipeRunException(this, "Error while transforming [" + streamId + "] at line [" + linenumber+"]", e);		
+			throw new PipeRunException(this, "Error while transforming [" + streamId + "] at or after line [" + linenumber+"]", e);		
 		} finally {
 			closeDocument(session,streamId, prc);
 		}
