@@ -1,6 +1,9 @@
 /*
  * $Log: FxfSender.java,v $
- * Revision 1.13  2010-03-22 11:08:12  m168309
+ * Revision 1.14  2010-09-09 11:42:02  m00f069
+ * Removed double destinationName in javadoc
+ *
+ * Revision 1.13  2010/03/22 11:08:12  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * moved message logging from INFO level to DEBUG level
  *
  * Revision 1.12  2010/03/10 14:30:06  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -75,7 +78,6 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setNumberOfBackups(int) numberOfBackups}</td><td>number of copies held of a file with the same name. Backup files have a dot and a number suffixed to their name. If set to 0, no backups will be kept.</td><td>5</td></tr>
  * <tr><td>{@link #setOverwrite(boolean) overwrite}</td><td>when set <code>true</code>, the destination file will be deleted if it already exists</td><td>false</td></tr>
  * <tr><td>{@link #setDelete(boolean) delete}</td><td>when set <code>true</code>, the file processed will deleted after being processed, and not stored</td><td>true</td></tr>
- * <tr><td>{@link #setDestinationName(String) destinationName}</td><td>(since 2.0) JMS name of the FXF commit queue</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setTimeout(int) timeout}</td><td>(since 2.0) the timeout in seconds, which is the maximum time the application allows for the transfer of the file.</td><td>120</td></tr>
  * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>(since 2.0)</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setForceMQCompliancy(String) forceMQCompliancy}</td><td>If the MQ destination is not a JMS receiver, format errors occur.
