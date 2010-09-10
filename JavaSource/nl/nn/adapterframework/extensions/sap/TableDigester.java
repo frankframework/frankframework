@@ -1,6 +1,9 @@
 /*
  * $Log: TableDigester.java,v $
- * Revision 1.2  2010-05-06 17:39:54  L190409
+ * Revision 1.3  2010-09-10 11:30:56  L190409
+ * added xml structure to javadoc
+ *
+ * Revision 1.2  2010/05/06 17:39:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * alternative way, as digester seemed to be not working
  *
  * Revision 1.1  2010/05/06 12:49:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -24,6 +27,15 @@ import com.sap.mw.jco.JCO;
 
 /**
  * Class to parse table xml and store it into SAP table.
+ * XML structure is like:
+ * <TABLES>
+ *		<INSOBJECTPARTNER> <!-- tabel -->
+ *			<item> <!-- rij -->
+ *				<BANK_ID_OUT>123</BANK_ID_OUT> <!-- kolom -->
+ *			</item>
+ *		</INSOBJECTPARTNER>
+ * </TABLES>
+ * 
  * 
  * @author  Gerrit van Brakel
  * @since   4.11  
