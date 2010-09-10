@@ -1,6 +1,9 @@
 /*
  * $Log: WebServiceSender.java,v $
- * Revision 1.26  2010-07-12 12:43:55  L190409
+ * Revision 1.27  2010-09-10 11:34:28  L190409
+ * removed superfluous logging
+ *
+ * Revision 1.26  2010/07/12 12:43:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fixed javadoc for timeout
  *
  * Revision 1.25  2010/02/11 12:59:28  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -141,7 +144,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * @since 4.2c
  */
 public class WebServiceSender extends HttpSender {
-	public static final String version = "$RCSfile: WebServiceSender.java,v $ $Revision: 1.26 $ $Date: 2010-07-12 12:43:55 $";
+	public static final String version = "$RCSfile: WebServiceSender.java,v $ $Revision: 1.27 $ $Date: 2010-09-10 11:34:28 $";
 	
 	private String soapActionURI = "";
 	private String encodingStyleURI=null;
@@ -212,9 +215,6 @@ public class WebServiceSender extends HttpSender {
 		}
 		try {
 			String result = soapWrapper.getBody(httpResult);
-			if (log.isDebugEnabled()) {
-				log.debug(getLogPrefix()+"retrieved result ["+result+"]");
-			}
 			return (result);
 		} catch (Exception e) {
 			throw new SenderException("cannot retrieve result message",e);
