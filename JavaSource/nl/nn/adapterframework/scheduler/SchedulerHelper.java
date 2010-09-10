@@ -1,6 +1,9 @@
 /*
  * $Log: SchedulerHelper.java,v $
- * Revision 1.6  2008-09-04 13:27:26  europe\L190409
+ * Revision 1.7  2010-09-10 11:37:18  L190409
+ * added warning for empty cronExpression
+ *
+ * Revision 1.6  2008/09/04 13:27:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * restructured job scheduling
  *
  * Revision 1.5  2007/12/12 09:09:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -67,9 +70,13 @@ public class SchedulerHelper {
 				throw new SchedulerException("Job with name [" + jobName + "] already exists");
 		}
 
-		CronTrigger cronTrigger = new CronTrigger(jobName, jobGroup);
-		cronTrigger.setCronExpression(cronExpression);
-		sched.scheduleJob(jobDetail, cronTrigger);
+		if (StringUtils.isNotEmpty(cronExpression)) {
+			CronTrigger cronTrigger = new CronTrigger(jobName, jobGroup);
+			cronTrigger.setCronExpression(cronExpression);
+			sched.scheduleJob(jobDetail, cronTrigger);
+		} else {
+			log.warn("no cronexpression for job [" + jobName + "], cannot schedule");
+		}
 	}
 	
 	public Trigger getTrigger(String jobName) throws SchedulerException {
