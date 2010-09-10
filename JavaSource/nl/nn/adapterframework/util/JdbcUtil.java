@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcUtil.java,v $
- * Revision 1.24  2010-07-12 12:25:38  L190409
+ * Revision 1.25  2010-09-10 11:42:44  L190409
+ * improved error  handling for tableExists()
+ *
+ * Revision 1.24  2010/07/12 12:25:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved debug message
  *
  * Revision 1.23  2010/02/11 14:22:50  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -115,7 +118,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class JdbcUtil {
-	public static final String version = "$RCSfile: JdbcUtil.java,v $ $Revision: 1.24 $ $Date: 2010-07-12 12:25:38 $";
+	public static final String version = "$RCSfile: JdbcUtil.java,v $ $Revision: 1.25 $ $Date: 2010-09-10 11:42:44 $";
 
 	public final static int DATABASE_GENERIC=0;
 	public final static int DATABASE_ORACLE=1;
@@ -134,8 +137,9 @@ public class JdbcUtil {
 			ResultSet tableset = dbmeta.getTables(null, null, tableName, null);
 			return !tableset.isAfterLast();
 		} else {
+			String query=null;
 			try {
-				String query="select count(*) from "+tableName;
+				query="select count(*) from "+tableName;
 				log.debug("create statement to check for existence of ["+tableName+"] using query ["+query+"]");
 				stmt = conn.prepareStatement(query);
 				log.debug("execute statement");
@@ -144,6 +148,7 @@ public class JdbcUtil {
 				rs.close();
 				return true;
 			} catch (SQLException e) {
+				if (log.isDebugEnabled()) log.debug("exception checking for existence of ["+tableName+"] using query ["+query+"]", e);
 				return false;
 			} finally {
 				if (stmt!=null) {
@@ -155,8 +160,9 @@ public class JdbcUtil {
 	
 	public static boolean columnExists(Connection conn, String tableName, String columnName) throws SQLException {
 		PreparedStatement stmt = null;
+		String query=null;
 		try {
-			String query = "SELECT count(" + columnName + ") FROM " + tableName;
+			query = "SELECT count(" + columnName + ") FROM " + tableName;
 			stmt = conn.prepareStatement(query);
 
 			ResultSet rs = null;
@@ -164,6 +170,7 @@ public class JdbcUtil {
 				rs = stmt.executeQuery();
 				return true;
 			} catch (SQLException e) {
+				if (log.isDebugEnabled()) log.debug("exception checking for existence of column ["+columnName+"] in table ["+tableName+"] executing query ["+query+"]", e);
 				return false;
 			} finally {
 				if (rs != null) {
@@ -171,6 +178,7 @@ public class JdbcUtil {
 				}
 			}
 		} catch (SQLException e) {
+			log.warn("exception checking for existence of column ["+columnName+"] in table ["+tableName+"] preparing query ["+query+"]", e);
 			return false;
 		} finally {
 			if (stmt != null) {
