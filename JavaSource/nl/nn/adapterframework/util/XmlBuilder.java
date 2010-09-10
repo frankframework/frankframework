@@ -1,6 +1,9 @@
 /*
  * $Log: XmlBuilder.java,v $
- * Revision 1.9  2008-07-14 17:29:16  europe\L190409
+ * Revision 1.10  2010-09-10 07:46:38  m00f069
+ * Made indent level threadsafe
+ *
+ * Revision 1.9  2008/07/14 17:29:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * reformatted
  *
  * Revision 1.8  2007/10/08 13:35:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -27,7 +30,7 @@ import java.util.Vector;
  * @author Johan Verrips
  **/
 public class XmlBuilder {
-	public static final String version = "$RCSfile: XmlBuilder.java,v $ $Revision: 1.9 $ $Date: 2008-07-14 17:29:16 $";
+	public static final String version = "$RCSfile: XmlBuilder.java,v $ $Revision: 1.10 $ $Date: 2010-09-10 07:46:38 $";
 
 	private List attributeNames = new ArrayList();
 	private Hashtable attributes = new Hashtable();
@@ -65,8 +68,6 @@ public class XmlBuilder {
 	 * a quote like &quote;
 	 */
 	public final static String QUOTE = "\"";
-
-	protected static int indentlevel; //level of indentation
 
 	public XmlBuilder() {
 	}
@@ -128,10 +129,15 @@ public class XmlBuilder {
 		else
 			this.value = value;
 	}
+
 	/**
 	 * returns the xmlelement and all subElements as an xml string.
 	 */
 	public String toXML() {
+		return toXML(0);
+	}
+
+	private String toXML(int indentlevel) {
 		String attributeName;
 
 		StringBuffer sb = new StringBuffer();
@@ -178,7 +184,7 @@ public class XmlBuilder {
 			} else {
 				sb.append(NEWLINE);
 			}
-			sb.append(sub.toXML());
+			sb.append(sub.toXML(indentlevel));
 			indentlevel = indentlevel - 1;
 		}
 		// indent
