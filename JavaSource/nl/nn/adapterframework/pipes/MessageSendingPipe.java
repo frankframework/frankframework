@@ -1,6 +1,9 @@
 /*
  * $Log: MessageSendingPipe.java,v $
- * Revision 1.67  2010-09-07 15:55:13  m00f069
+ * Revision 1.68  2010-09-10 11:21:45  L190409
+ * corrected labelNamespaceDefs
+ *
+ * Revision 1.67  2010/09/07 15:55:13  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Removed IbisDebugger, made it possible to use AOP to implement IbisDebugger functionality.
  *
  * Revision 1.66  2010/08/20 07:36:26  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -193,8 +196,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.xml.transform.TransformerConfigurationException;
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
@@ -275,7 +276,7 @@ import org.apache.commons.lang.SystemUtils;
  * <tr><td>{@link #setAuditTrailXPath(String) auditTrailXPath}</td><td>xpath expression to extract audit trail from message</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setAuditTrailNamespaceDefs(String) auditTrailNamespaceDefs}</td><td>namespace defintions for auditTrailXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setCorrelationIDXPath(String) correlationIDXPath}</td><td>xpath expression to extract correlationID from message</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setCorrelationIDNamespaceDefs(String) correlationIDXPathNamespaceDefs}</td><td>namespace defintions for correlationIDXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setCorrelationIDNamespaceDefs(String) correlationIDNamespaceDefs}</td><td>namespace defintions for correlationIDXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setCorrelationIDStyleSheet(String) correlationIDStyleSheet}</td><td>stylesheet to extract correlationID from message</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setCorrelationIDSessionKey(String) correlationIDSessionKey}</td><td>Key of a PipeLineSession-variable. Is specified, the value of the PipeLineSession variable is used as input for the XpathExpression or StyleSheet, instead of the current input message</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setLabelXPath(String) labelXPath}</td><td>xpath expression to extract label from message</td><td>&nbsp;</td></tr>
@@ -314,7 +315,7 @@ import org.apache.commons.lang.SystemUtils;
  */
 
 public class MessageSendingPipe extends FixedForwardPipe implements HasSender, HasStatistics, EventThrowing {
-	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.67 $ $Date: 2010-09-07 15:55:13 $";
+	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.68 $ $Date: 2010-09-10 11:21:45 $";
 
 	public static final String PIPE_TIMEOUT_MONITOR_EVENT = "Sender Timeout";
 	public static final String PIPE_CLEAR_TIMEOUT_MONITOR_EVENT = "Sender Received Result on Time";
@@ -337,7 +338,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	private String correlationIDNamespaceDefs;
 	private String correlationIDStyleSheet;
 	private String labelXPath;
-	private String labelXNamespaceDefs;
+	private String labelNamespaceDefs;
 	private String labelStyleSheet;
 	private String timeOutOnResult;
 	private String exceptionOnResult;
@@ -465,7 +466,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 				correlationIDTp=TransformerPool.configureTransformer(getLogPrefix(null),getCorrelationIDNamespaceDefs(), getCorrelationIDXPath(), getCorrelationIDStyleSheet(),"text",false,null);
 			}
 			if (StringUtils.isNotEmpty(getLabelXPath()) || StringUtils.isNotEmpty(getLabelStyleSheet())) {
-				labelTp=TransformerPool.configureTransformer(getLogPrefix(null),getLabelXNamespaceDefs(), getLabelXPath(), getLabelStyleSheet(),"text",false,null);
+				labelTp=TransformerPool.configureTransformer(getLogPrefix(null),getLabelNamespaceDefs(), getLabelXPath(), getLabelStyleSheet(),"text",false,null);
 			}
 		}
 		if (getInputValidator()!=null) {
@@ -496,6 +497,18 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 		registerEvent(PIPE_EXCEPTION_MONITOR_EVENT);
 	}
 
+//	public boolean isCongestionSensing() {
+//		if (getSender() instanceof ICongestionSensor) {
+//			return ((ICongestionSensor) getSender()).isCongestionSensing();
+//		}
+//		return false;
+//	}
+//
+//	public INamedObject isCongested() throws SenderException {
+//		return ((ICongestionSensor) getSender()).isCongested();
+//	}
+	
+	
 	public PipeRunResult doPipe(Object input, PipeLineSession session)	throws PipeRunException {
 
 		String result = null;
@@ -612,7 +625,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 				
 				if (getListener() != null) {
 					result = listenerProcessor.getMessage(getListener(), correlationID, session);
-				} else {
+					} else {
 					result = sendResult;
 				}
 				if (result == null) {
@@ -672,8 +685,8 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 					return new PipeRunResult(exceptionForward,resultmsg);
 				}
 				throw new PipeRunException(this, getLogPrefix(session) + "caught exception", t);
+					}
 			}
-		}
 		if (!validResult(result)) {
 			PipeForward illegalResultForward = findForward(ILLEGALRESULTFORWARD);
 			return new PipeRunResult(illegalResultForward, result);
@@ -942,7 +955,6 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	public String getAuditTrailNamespaceDefs() {
 		return auditTrailNamespaceDefs;
 	}
-
 	public void setAuditTrailNamespaceDefs(String auditTrailNamespaceDefs) {
 		this.auditTrailNamespaceDefs = auditTrailNamespaceDefs;
 	}
@@ -950,23 +962,20 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	public String getCorrelationIDNamespaceDefs() {
 		return correlationIDNamespaceDefs;
 	}
-
 	public void setCorrelationIDNamespaceDefs(String correlationIDNamespaceDefs) {
 		this.correlationIDNamespaceDefs = correlationIDNamespaceDefs;
 	}
 
-	public String getLabelXNamespaceDefs() {
-		return labelXNamespaceDefs;
+	public String getLabelNamespaceDefs() {
+		return labelNamespaceDefs;
 	}
-
-	public void setLabelXNamespaceDefs(String labelXNamespaceDefs) {
-		this.labelXNamespaceDefs = labelXNamespaceDefs;
+	public void setLabelNamespaceDefs(String labelXNamespaceDefs) {
+		this.labelNamespaceDefs = labelXNamespaceDefs;
 	}
 	
 	public void setTimeOutOnResult(String string) {
 		timeOutOnResult = string;
 	}
-
 	public String getTimeOutOnResult() {
 		return timeOutOnResult;
 	}
@@ -974,7 +983,6 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	public void setExceptionOnResult(String string) {
 		exceptionOnResult = string;
 	}
-
 	public String getExceptionOnResult() {
 		return exceptionOnResult;
 	}
