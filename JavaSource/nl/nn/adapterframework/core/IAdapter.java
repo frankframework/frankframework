@@ -1,6 +1,9 @@
 /*
  * $Log: IAdapter.java,v $
- * Revision 1.14  2009-12-29 14:32:20  L190409
+ * Revision 1.15  2010-09-13 13:35:50  L190409
+ * renamed configurePipes() into configure() (javadoc only)
+ *
+ * Revision 1.14  2009/12/29 14:32:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * modified imports to reflect move of statistics classes to separate package
  *
  * Revision 1.13  2009/06/05 07:21:53  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -56,14 +59,14 @@ import nl.nn.adapterframework.util.MessageKeeper;
  * @version Id
  **/
 public interface IAdapter extends IManagable {
-	public static final String version = "$RCSfile: IAdapter.java,v $ $Revision: 1.14 $ $Date: 2009-12-29 14:32:20 $";
+	public static final String version = "$RCSfile: IAdapter.java,v $ $Revision: 1.15 $ $Date: 2010-09-13 13:35:50 $";
 
     /**
   	 * Instruct the adapter to configure itself. The adapter will call the
   	 * pipeline to configure itself, the pipeline will call the individual
   	 * pipes to configure themselves.
   	 * @see nl.nn.adapterframework.pipes.AbstractPipe#configure()
-  	 * @see PipeLine#configurePipes()
+  	 * @see PipeLine#configure()
   	 */
   	public void configure() throws ConfigurationException;
   	
@@ -82,14 +85,8 @@ public interface IAdapter extends IManagable {
   	public void setName(String name);
   	public boolean isAutoStart();
 	public String toString();
-	
-	public String formatErrorMessage(
-		String errorMessage,
-		Throwable t,
-		String originalMessage,
-		String messageID,
-		INamedObject objectInError,
-		long receivedTime);
+
+	public String formatErrorMessage(String errorMessage, Throwable t, String originalMessage, String messageID, INamedObject objectInError, long receivedTime);
 		
 	public void forEachStatisticsKeeperBody(StatisticsKeeperIterationHandler hski, Object data, int action) throws SenderException ;
 
