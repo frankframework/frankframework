@@ -1,6 +1,9 @@
 /*
  * $Log: CorePipeProcessor.java,v $
- * Revision 1.2  2010-09-07 15:55:13  m00f069
+ * Revision 1.3  2010-09-13 13:53:00  L190409
+ * reformatted
+ *
+ * Revision 1.2  2010/09/07 15:55:13  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Removed IbisDebugger, made it possible to use AOP to implement IbisDebugger functionality.
  *
  */
@@ -18,9 +21,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
  */
 public class CorePipeProcessor implements PipeProcessor {
 	
-	public PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe,
-			String messageId, Object message, PipeLineSession pipeLineSession
-			) throws PipeRunException {
+	public PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, String messageId, Object message, PipeLineSession pipeLineSession) throws PipeRunException {
 		return pipe.doPipe(message, pipeLineSession);
 	}
 
