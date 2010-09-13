@@ -1,6 +1,10 @@
 /*
  * $Log: Adapter.java,v $
- * Revision 1.57  2009-12-29 14:32:20  L190409
+ * Revision 1.58  2010-09-13 13:34:25  L190409
+ * renamed configurePipes() into configure()
+ * improved error logging
+ *
+ * Revision 1.57  2009/12/29 14:32:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * modified imports to reflect move of statistics classes to separate package
  *
  * Revision 1.56  2009/11/11 13:14:50  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -253,9 +257,8 @@ import org.springframework.core.task.TaskExecutor;
  * @see    nl.nn.adapterframework.core.PipeLineResult
  * 
  */
-
 public class Adapter implements IAdapter, NamedBean {
-	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.57 $ $Date: 2009-12-29 14:32:20 $";
+	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.58 $ $Date: 2010-09-13 13:34:25 $";
 	private Logger log = LogUtil.getLogger(this);
 	protected Logger msgLog = LogUtil.getLogger("MSG");
 
@@ -323,7 +326,7 @@ public class Adapter implements IAdapter, NamedBean {
 
 		try {
 			pipeline.setAdapter(this);
-			pipeline.configurePipes();
+			pipeline.configure();
 
 			messageKeeper.add("pipeline successfully configured");
 			Iterator it = receivers.iterator();
@@ -360,10 +363,10 @@ public class Adapter implements IAdapter, NamedBean {
 	 */
 	protected void error(boolean critical, String msg, Throwable t) {
 		log.error("Adapter [" + getName() + "] "+msg, t);
+		if (!(t instanceof IbisException)) {
+			msg+=" (" + t.getClass().getName()+")";
+		}
 		getMessageKeeper().add("ERROR: " + msg+": "+t.getMessage());
-		
-//		String prefix=critical?"ADPTERROR ":"ADPTWARN ";
-//		fireMonitorEvent(EventTypeEnum.TECHNICAL,critical?SeverityEnum.CRITICAL:SeverityEnum.WARNING, prefix+msg,t);
 	}
 
 
@@ -931,7 +934,6 @@ public class Adapter implements IAdapter, NamedBean {
                 }
                 catch (Throwable t) {
 					error(true, "got error starting Adapter", t);
-                    log.error("error running adapter [" + getName() + "]", t);
                     runState.setRunState(RunStateEnum.ERROR);
                 }
             } // End Runnable.run()
@@ -1133,3 +1135,4 @@ public class Adapter implements IAdapter, NamedBean {
 		}
 	}
 }
+
