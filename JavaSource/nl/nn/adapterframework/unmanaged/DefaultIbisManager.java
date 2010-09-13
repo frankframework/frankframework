@@ -1,6 +1,9 @@
 /*
  * $Log: DefaultIbisManager.java,v $
- * Revision 1.13  2010-09-07 15:55:14  m00f069
+ * Revision 1.14  2010-09-13 14:11:34  L190409
+ * shutdown cacheManager on shutdown()
+ *
+ * Revision 1.13  2010/09/07 15:55:14  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Removed IbisDebugger, made it possible to use AOP to implement IbisDebugger functionality.
  *
  * Revision 1.12  2010/04/01 13:01:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -65,10 +68,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 
-import nl.nn.adapterframework.configuration.AbstractSpringPoweredDigesterFactory;
+import nl.nn.adapterframework.cache.IbisCacheManager;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationDigester;
 import nl.nn.adapterframework.configuration.IbisManager;
+import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.IThreadCountControllable;
@@ -82,8 +86,6 @@ import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.log4j.Logger;
 import org.quartz.SchedulerException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.transaction.PlatformTransactionManager;
 
 /**
@@ -156,6 +158,7 @@ public class DefaultIbisManager implements IbisManager {
         if (listenerPortPoller != null) {
             listenerPortPoller.clear();
         }
+        IbisCacheManager.shutdown();
         log.info("* IBIS Shutdown: Shutdown complete for instance [" + name + "]");
     }
     
@@ -262,7 +265,7 @@ public class DefaultIbisManager implements IbisManager {
                 schedulerHelper.scheduleJob(this, jobdef);
                 log.info("job scheduled with properties :" + jobdef.toString());
             } catch (Exception e) {
-                log.error("Could not schedule job ["+jobdef.getName()+"]",e);
+                log.error("Could not schedule job ["+jobdef.getName()+"] cron ["+jobdef.getCronExpression()+"]",e);
             }
         }
         try {
@@ -408,4 +411,5 @@ public class DefaultIbisManager implements IbisManager {
     public void setListenerPortPoller(ListenerPortPoller listenerPortPoller) {
         this.listenerPortPoller = listenerPortPoller;
     }
-    }
+
+}
