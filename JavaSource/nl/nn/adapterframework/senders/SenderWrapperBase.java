@@ -1,6 +1,11 @@
 /*
  * $Log: SenderWrapperBase.java,v $
- * Revision 1.9  2010-09-07 15:55:13  m00f069
+ * Revision 1.10  2010-09-13 14:09:52  L190409
+ * renamed processor
+ * added cache facility
+ * implemented open() and close()
+ *
+ * Revision 1.9  2010/09/07 15:55:13  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Removed IbisDebugger, made it possible to use AOP to implement IbisDebugger functionality.
  *
  * Revision 1.8  2010/03/10 14:30:05  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -29,13 +34,15 @@
  */
 package nl.nn.adapterframework.senders;
 
+import nl.nn.adapterframework.cache.ICacheAdapter;
+import nl.nn.adapterframework.cache.ICacheEnabled;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-import nl.nn.adapterframework.processors.SenderWrapperBaseProcessor;
+import nl.nn.adapterframework.processors.SenderWrapperProcessor;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.util.ClassUtils;
 
@@ -53,18 +60,25 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setPreserveInput(boolean) preserveInput}</td><td>when set <code>true</code>, the input of a pipe is restored before processing the next one</td><td>false</td></tr>
  * </table>
  * </p>
+ * <table border="1">
+ * <tr><th>nested elements</th><th>description</th></tr>
+ * <tr><td>&lt;cache ... /&gt;</td><td>optional {@link nl.nn.adapterframework.cache.EhCache cache} definition</td></tr>
+ * </table>
+ * </p>
  * 
  * @author  Gerrit van Brakel
  * @since   4.9
  * @version Id
  */
-public abstract class SenderWrapperBase extends SenderWithParametersBase implements HasStatistics {
+public abstract class SenderWrapperBase extends SenderWithParametersBase implements HasStatistics, ICacheEnabled {
 
 	private String getInputFromSessionKey; 
 	private String getInputFromFixedValue=null;
 	private String storeResultInSessionKey; 
 	private boolean preserveInput=false; 
-	protected SenderWrapperBaseProcessor senderWrapperBaseProcessor;
+	protected SenderWrapperProcessor senderWrapperProcessor;
+	
+	private ICacheAdapter cache=null;
 
 	
 	public void configure() throws ConfigurationException {
@@ -75,6 +89,26 @@ public abstract class SenderWrapperBase extends SenderWithParametersBase impleme
 		if (StringUtils.isNotEmpty(getGetInputFromSessionKey()) && StringUtils.isNotEmpty(getGetInputFromFixedValue())) {
 			throw new ConfigurationException(getLogPrefix()+"cannot have both attributes inputFromSessionKey and inputFromFixedValue configured");
 		}
+		if (cache!=null) {
+			cache.configure(getName());
+		}
+	}
+
+	public void open() throws SenderException {
+		if (cache!=null) {
+			cache.open();
+		}
+		super.open();
+	}
+
+	public void close() throws SenderException {
+		try {
+			super.close();
+		} finally {
+			if (cache!=null) {
+				cache.close();
+			}
+		}
 	}
 
 	protected abstract boolean isSenderConfigured();
@@ -82,13 +116,21 @@ public abstract class SenderWrapperBase extends SenderWithParametersBase impleme
 	public abstract String doSendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException; 
 
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
-		return senderWrapperBaseProcessor.sendMessage(this, correlationID, message, prc);
+		return senderWrapperProcessor.sendMessage(this, correlationID, message, prc);
 	}
 
 	public String getLogPrefix() {
 		return ClassUtils.nameOf(this)+" ["+getName()+"] ";
 	}
 
+	public void registerCache(ICacheAdapter cache) {
+		this.cache=cache;
+	}
+	public ICacheAdapter getCache() {
+		return cache;
+	}
+
+	
 	public abstract boolean isSynchronous() ;
 
 	public abstract void setSender(ISender sender);
@@ -121,8 +163,8 @@ public abstract class SenderWrapperBase extends SenderWithParametersBase impleme
 		return preserveInput;
 	}
 
-	public void setSenderWrapperBaseProcessor(SenderWrapperBaseProcessor senderWrapperBaseProcessor) {
-		this.senderWrapperBaseProcessor = senderWrapperBaseProcessor;
+	public void setSenderWrapperProcessor(SenderWrapperProcessor senderWrapperProcessor) {
+		this.senderWrapperProcessor = senderWrapperProcessor;
 	}
 
 }
