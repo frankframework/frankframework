@@ -1,5 +1,5 @@
 <digester-rules>
-	<!-- $Id: digester-rules.xml,v 1.12 2010-05-03 17:06:32 L190409 Exp $ -->
+	<!-- $Id: digester-rules.xml,v 1.13 2010-09-13 14:12:52 L190409 Exp $ -->
     
     <!-- Objects created using a factory-create-rule are created via the Spring Beans Factory. 
          Objects created using an object-create-rule are created directly by the Apache Digester,
@@ -197,4 +197,9 @@
         <set-next-rule methodname="registerStatisticsHandler"/>
     </pattern>
     
+    <pattern value="*/cache">
+        <factory-create-rule classname="nl.nn.adapterframework.configuration.GenericFactory"/> 
+        <set-properties-rule/>
+        <set-next-rule methodname="registerCache"/>
+    </pattern>
 </digester-rules>
