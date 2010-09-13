@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractPipe.java,v $
- * Revision 1.35  2009-05-06 11:39:50  L190409
+ * Revision 1.36  2010-09-13 13:43:01  L190409
+ * removed 'final' modifier at findForward()
+ *
+ * Revision 1.35  2009/05/06 11:39:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * keep reference to pipeline
  *
  * Revision 1.34  2008/12/30 17:01:12  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -101,6 +104,7 @@
 package nl.nn.adapterframework.pipes;
 
 import java.util.Hashtable;
+import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
@@ -192,12 +196,12 @@ import org.springframework.transaction.TransactionDefinition;
  * @see nl.nn.adapterframework.core.PipeLineSession
  */
 public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttribute, TracingEventNumbers, EventThrowing {
-	public static final String version="$RCSfile: AbstractPipe.java,v $ $Revision: 1.35 $ $Date: 2009-05-06 11:39:50 $";
+	public static final String version="$RCSfile: AbstractPipe.java,v $ $Revision: 1.36 $ $Date: 2010-09-13 13:43:01 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String name;
 	
-	private Hashtable pipeForwards=new Hashtable();
+	private Map pipeForwards=new Hashtable();
 	private int maxThreads = 0;
 	private ParameterList parameterList = new ParameterList();
 	private long durationThreshold = -1;
@@ -283,7 +287,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
      * @param forward   Name of the forward
      * @return PipeForward
      */
-    public final PipeForward findForward(String forward){
+    public PipeForward findForward(String forward){
     	if (StringUtils.isEmpty(forward)) {
     		return null;
     	}
