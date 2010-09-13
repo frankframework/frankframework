@@ -1,6 +1,10 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.90  2010-09-07 15:55:13  m00f069
+ * Revision 1.91  2010-09-13 13:39:39  L190409
+ * renamed configurePipes() into configure()
+ * added cache facility
+ *
+ * Revision 1.90  2010/09/07 15:55:13  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Removed IbisDebugger, made it possible to use AOP to implement IbisDebugger functionality.
  *
  * Revision 1.89  2010/03/10 14:30:05  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -265,34 +269,26 @@
  */
 package nl.nn.adapterframework.core;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
-
+import nl.nn.adapterframework.cache.ICacheAdapter;
+import nl.nn.adapterframework.cache.ICacheEnabled;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.processors.PipeLineProcessor;
-import nl.nn.adapterframework.processors.PipeProcessor;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
-import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.SpringTxManagerProxy;
-import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.TransactionStatus;
 
 /**
  * Processor and keeper of a line of {@link IPipe Pipes}.
@@ -337,6 +333,7 @@ import org.springframework.transaction.TransactionStatus;
  * <tr><td>&lt;exits&gt; one or more {@link nl.nn.adapterframework.core.PipeLineExit exits}&lt;/exits&gt;</td><td>specifications of exit-paths, in the form &lt;exit path="<i>forwardname</i>" state="<i>statename</i>"/&gt;</td></tr>
  * <tr><td>&lt;inputValidator&gt;</td><td>specification of Pipe to validate input messages</td></tr>
  * <tr><td>&lt;outputValidator&gt;</td><td>specification of Pipe to validate output messages</td></tr>
+ * <tr><td>&lt;cache ... /&gt;</td><td>optional {@link nl.nn.adapterframework.cache.EhCache cache} definition</td></tr>
  * </table>
  * </p>
  *
@@ -368,10 +365,10 @@ import org.springframework.transaction.TransactionStatus;
  * @version Id
  * @author  Johan Verrips
  */
-public class PipeLine {
-	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.90 $ $Date: 2010-09-07 15:55:13 $";
+public class PipeLine implements ICacheEnabled {
+	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.91 $ $Date: 2010-09-13 13:39:39 $";
     private Logger log = LogUtil.getLogger(this);
-
+    
 	private PipeLineProcessor pipeLineProcessor;
 
 	private Adapter adapter;    // for transaction managing
@@ -400,6 +397,8 @@ public class PipeLine {
 	private long messageSizeError=Misc.getMessageSizeErrorByDefault();
 
 	private List exitHandlers = new ArrayList();
+	//private CongestionSensorList congestionSensors = new CongestionSensorList();
+	private ICacheAdapter cache;
     
 	/**
 	 * Register an Pipe at this pipeline.
@@ -464,11 +463,14 @@ public class PipeLine {
 	 * registers the <code>PipeLineSession</code> object at the pipes.
 	 * @see IPipe
 	 */
-	public void configurePipes() throws ConfigurationException {
+	public void configure() throws ConfigurationException {
 		INamedObject owner = getOwner();
 		IAdapter adapter=null;
 		if (owner instanceof IAdapter) {
 			adapter=(IAdapter)owner;
+		}
+		if (cache!=null) {
+			cache.configure(owner.getName()+"-Pipeline");
 		}
 		for (int i=0; i<pipes.size(); i++) {
 			IPipe pipe=getPipe(i);
@@ -498,6 +500,7 @@ public class PipeLine {
 				} else {
 					pipe.configure();
 				}
+				//congestionSensors.addSensor(pipe);
 			} catch (Throwable t) {
 				if (t instanceof ConfigurationException) {
 					throw (ConfigurationException)t;
@@ -568,7 +571,17 @@ public class PipeLine {
 	public Map getPipeWaitingStatistics(){
 		return pipeWaitingStatistics;
 	}
+	
 
+//	public boolean isCongestionSensing() {
+//		return congestionSensors.isCongestionSensing();
+//	}
+//
+//	public INamedObject isCongested() throws SenderException {
+//		return congestionSensors.isCongested();
+//	}
+
+	
 	/**
 	 * The <code>process</code> method does the processing of a message.<br/>
 	 * It retrieves the first pipe to execute from the <code>firstPipe</code field,
@@ -581,9 +594,9 @@ public class PipeLine {
 	 */
 	public PipeLineResult process(String messageId, String message, PipeLineSession pipeLineSession) throws PipeRunException {
 		return pipeLineProcessor.processPipeLine(this, messageId, message, pipeLineSession);
-	}
+		}
 	
-   /**
+	/**
     * Register global forwards.
     */
    public void registerForward(PipeForward forward){
@@ -594,7 +607,7 @@ public class PipeLine {
     public void registerPipeLineExit(PipeLineExit exit) {
 	    pipeLineExits.put(exit.getPath(), exit);
     }
-	
+    
 	public void setPipeLineProcessor(PipeLineProcessor pipeLineProcessor) {
 		this.pipeLineProcessor = pipeLineProcessor;
 	}
@@ -639,7 +652,12 @@ public class PipeLine {
     }
 	public void start() throws PipeStartException {
 	    log.info("Pipeline of ["+owner.getName()+"] is starting pipeline");
-	
+
+		if (cache!=null) {
+		    log.debug("Pipeline of ["+owner.getName()+"] starting cache");
+			cache.open();
+		}
+	    
 		for (int i=0; i<pipes.size(); i++) {
 			IPipe pipe = getPipe(i);
 			String pipeName = pipe.getName();
@@ -666,6 +684,11 @@ public class PipeLine {
 			log.debug("Pipeline of ["+owner.getName()+"] is stopping [" + pipeName+"]");
 			pipe.stop();
 			log.debug("Pipeline of ["+owner.getName()+"] successfully stopped pipe [" + pipeName + "]");
+		}
+
+		if (cache!=null) {
+		    log.debug("Pipeline of ["+owner.getName()+"] closing cache");
+			cache.close();
 		}
 	    log.debug("Pipeline of ["+owner.getName()+"] successfully closed pipeline");
 	
@@ -738,7 +761,8 @@ public class PipeLine {
 	public int getTransactionAttributeNum() {
 		return transactionAttribute;
 	}
-	
+
+		
 	public void setInputValidator(IPipe inputValidator) {
 		this.inputValidator = inputValidator;
 	}
@@ -811,6 +835,13 @@ public class PipeLine {
 	
 	public List getExitHandlers() {
 		return exitHandlers;
+	}
+
+	public void registerCache(ICacheAdapter cache) {
+		this.cache=cache;
+	}
+	public ICacheAdapter getCache() {
+		return cache;
 	}
 
 }
