@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   $Log: springCommon.xml,v $
-  Revision 1.16  2010-09-07 15:55:13  m00f069
+  Revision 1.17  2010-09-13 14:14:22  L190409
+  split senderWrapper processing in separate processors
+  added cache processors
+
+  Revision 1.16  2010/09/07 15:55:13  Jaco de Groot <jaco.de.groot@ibissource.org>
   Removed IbisDebugger, made it possible to use AOP to implement IbisDebugger functionality.
 
   Revision 1.15  2010/02/03 15:00:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -145,16 +149,22 @@
 		>
 		<property name="pipeLineProcessor">
 			<bean
-				class="nl.nn.adapterframework.processors.TransactionAttributePipeLineProcessor"
+				class="nl.nn.adapterframework.processors.CachePipeLineProcessor"
 				autowire="byName"
 				scope="prototype"
 				>
 				<property name="pipeLineProcessor">
 					<bean
-						class="nl.nn.adapterframework.processors.CorePipeLineProcessor"
+						class="nl.nn.adapterframework.processors.TransactionAttributePipeLineProcessor"
 						autowire="byName"
 						scope="prototype"
 						>
+						<property name="pipeLineProcessor">
+							<bean
+								class="nl.nn.adapterframework.processors.CorePipeLineProcessor"
+								autowire="byName"
+								scope="prototype"
+								>
 
 	<property name="pipeProcessor">
 		<bean
@@ -204,19 +214,38 @@
 		</bean>
 	</property>
 
+							</bean>
+						</property>
 					</bean>
 				</property>
 			</bean>
 		</property>
 	</bean>
     
-    <bean
-		name="senderWrapperBaseProcessor"
-		class="nl.nn.adapterframework.processors.SenderWrapperBaseProcessor"
+	<bean
+		name="senderWrapperProcessor"
+		class="nl.nn.adapterframework.processors.InputOutputSenderWrapperProcessor"
 		autowire="byName"
 		scope="prototype"
-	/>
-	
+		>
+		<property name="senderWrapperProcessor">
+			<bean
+				class="nl.nn.adapterframework.processors.CacheSenderWrapperProcessor"
+				autowire="byName"
+				scope="prototype"
+				>
+				<property name="senderWrapperProcessor">
+					<bean
+						class="nl.nn.adapterframework.processors.CoreSenderWrapperProcessor"
+						autowire="byName"
+						scope="prototype"
+						>
+					</bean>
+				</property>
+			</bean>
+		</property>
+	</bean>
+
 	<bean
 		name="listenerProcessor"
 		class="nl.nn.adapterframework.processors.CoreListenerProcessor"
@@ -279,6 +308,10 @@
     </bean>
 
     <bean name="proto-statisticsHandler" class="nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler"
+        autowire="byName" scope="prototype">
+    </bean>
+
+    <bean name="proto-cache" class="nl.nn.adapterframework.cache.EhCache"
         autowire="byName" scope="prototype">
     </bean>
 
