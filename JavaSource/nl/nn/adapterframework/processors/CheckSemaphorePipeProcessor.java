@@ -1,6 +1,9 @@
 /*
  * $Log: CheckSemaphorePipeProcessor.java,v $
- * Revision 1.2  2010-09-07 15:55:13  m00f069
+ * Revision 1.3  2010-09-13 13:53:51  L190409
+ * now extends baseclass
+ *
+ * Revision 1.2  2010/09/07 15:55:13  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Removed IbisDebugger, made it possible to use AOP to implement IbisDebugger functionality.
  *
  */
@@ -21,13 +24,9 @@ import nl.nn.adapterframework.util.Semaphore;
  * @author Jaco de Groot
  * @version Id
  */
-public class CheckSemaphorePipeProcessor implements PipeProcessor {
-	private PipeProcessor pipeProcessor;
-	private Map pipeThreadCounts=new Hashtable();
+public class CheckSemaphorePipeProcessor extends PipeProcessorBase {
 
-	public void setPipeProcessor(PipeProcessor pipeProcessor) {
-		this.pipeProcessor = pipeProcessor;
-	}
+	private Map pipeThreadCounts=new Hashtable();
 
 	public PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe,
 			String messageId, Object message, PipeLineSession pipeLineSession

@@ -1,6 +1,9 @@
 /*
  * $Log: TracingEventsPipeProcessor.java,v $
- * Revision 1.2  2010-09-07 15:55:13  m00f069
+ * Revision 1.3  2010-09-13 13:57:37  L190409
+ * now extends baseclass
+ *
+ * Revision 1.2  2010/09/07 15:55:13  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Removed IbisDebugger, made it possible to use AOP to implement IbisDebugger functionality.
  *
  */
@@ -23,18 +26,10 @@ import org.apache.log4j.Logger;
  * @author Jaco de Groot
  * @version Id
  */
-public class TracingEventsPipeProcessor implements PipeProcessor {
-	private Logger log = LogUtil.getLogger(this);
+public class TracingEventsPipeProcessor extends PipeProcessorBase {
 	private Logger durationLog = LogUtil.getLogger("LongDurationMessages");
-	private PipeProcessor pipeProcessor;
 
-	public void setPipeProcessor(PipeProcessor pipeProcessor) {
-		this.pipeProcessor = pipeProcessor;
-	}
-
-	public PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe,
-			String messageId, Object message, PipeLineSession pipeLineSession
-			) throws PipeRunException {
+	public PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, String messageId, Object message, PipeLineSession pipeLineSession) throws PipeRunException {
 		PipeRunResult pipeRunResult = null;
 
 		IExtendedPipe pe=null;
