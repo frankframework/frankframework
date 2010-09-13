@@ -1,6 +1,9 @@
 /*
  * $Log: SenderWrapper.java,v $
- * Revision 1.8  2010-09-07 15:55:13  m00f069
+ * Revision 1.9  2010-09-13 14:07:54  L190409
+ * call super in open() and close()
+ *
+ * Revision 1.8  2010/09/07 15:55:13  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Removed IbisDebugger, made it possible to use AOP to implement IbisDebugger functionality.
  *
  * Revision 1.7  2009/12/29 14:37:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -75,8 +78,10 @@ public class SenderWrapper extends SenderWrapperBase {
 	}
 	public void open() throws SenderException {
 		getSender().open();
+		super.open();
 	}
 	public void close() throws SenderException {
+		super.close();
 		getSender().close();
 	}
 
