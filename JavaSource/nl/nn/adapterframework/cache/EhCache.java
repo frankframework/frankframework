@@ -1,6 +1,9 @@
 /*
  * $Log: EhCache.java,v $
- * Revision 1.2  2010-09-20 14:37:23  L190409
+ * Revision 1.3  2010-09-20 15:49:24  L190409
+ * use default cache configuration parameters from appConstants
+ *
+ * Revision 1.2  2010/09/20 14:37:23  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * modified defaults
  *
  * Revision 1.1  2010/09/13 13:28:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -16,6 +19,7 @@ import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
 import net.sf.ehcache.store.MemoryStoreEvictionPolicy;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.util.AppConstants;
 
 /**
  * General Cache provider.
@@ -45,6 +49,17 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
  */
 public class EhCache extends CacheAdapterBase {
 	
+	private final String KEY_PREFIX="cache.default."; 
+	private final String KEY_MAX_ELEMENTS_IN_MEMORY=KEY_PREFIX+"maxElementsInMemory"; 
+	private final String KEY_MEMORYSTORE_EVICTION_POLICY=KEY_PREFIX+"memoryStoreEvictionPolicy"; 
+	private final String KEY_ETERNAL=KEY_PREFIX+"eternal"; 
+	private final String KEY_TIME_TO_LIVE_SECONDS=KEY_PREFIX+"timeToLiveSeconds"; 
+	private final String KEY_TIME_TO_IDLE_SECONDS=KEY_PREFIX+"timeToIdleSeconds"; 
+	private final String KEY_OVERFLOW_TO_DISK=KEY_PREFIX+"overflowToDisk"; 
+	private final String KEY_MAX_ELEMENTS_ON_DISK=KEY_PREFIX+"maxElementsOnDisk"; 
+	private final String KEY_DISK_PERSISTENT=KEY_PREFIX+"diskPersistent"; 
+	private final String KEY_DISK_EXPIRY_THREAD_INTERVAL_SECONDS=KEY_PREFIX+"diskExpiryThreadIntervalSeconds"; 
+	
 	private int maxElementsInMemory=100;
 	private String memoryStoreEvictionPolicy="LRU";
 	private boolean eternal=false;
@@ -57,6 +72,20 @@ public class EhCache extends CacheAdapterBase {
 	
 	private Ehcache cache=null;
 	private IbisCacheManager cacheManager=null;
+	
+	public EhCache() {
+		super();
+		AppConstants ac = AppConstants.getInstance();
+		maxElementsInMemory=ac.getInt(KEY_MAX_ELEMENTS_IN_MEMORY, maxElementsInMemory);
+		memoryStoreEvictionPolicy=ac.getProperty(KEY_MEMORYSTORE_EVICTION_POLICY, memoryStoreEvictionPolicy);
+		eternal=ac.getBoolean(KEY_ETERNAL, eternal);
+		timeToLiveSeconds=ac.getInt(KEY_TIME_TO_LIVE_SECONDS, timeToLiveSeconds);
+		timeToIdleSeconds=ac.getInt(KEY_TIME_TO_IDLE_SECONDS, timeToIdleSeconds);
+		overflowToDisk=ac.getBoolean(KEY_OVERFLOW_TO_DISK, overflowToDisk);
+		maxElementsOnDisk=ac.getInt(KEY_MAX_ELEMENTS_ON_DISK, maxElementsOnDisk);
+		diskPersistent=ac.getBoolean(KEY_DISK_PERSISTENT, diskPersistent);
+		diskExpiryThreadIntervalSeconds=ac.getInt(KEY_DISK_EXPIRY_THREAD_INTERVAL_SECONDS, diskExpiryThreadIntervalSeconds);
+	}
 	
 	public void configure(String ownerName) throws ConfigurationException {
 		super.configure(ownerName);
