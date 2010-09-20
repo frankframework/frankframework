@@ -1,6 +1,9 @@
 /*
  * $Log: CacheAdapterBase.java,v $
- * Revision 1.1  2010-09-13 13:28:19  L190409
+ * Revision 1.2  2010-09-20 15:48:41  L190409
+ * added warning for empty key
+ *
+ * Revision 1.1  2010/09/13 13:28:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added cache facility
  *
  */
@@ -59,7 +62,11 @@ public abstract class CacheAdapterBase implements ICacheAdapter {
 	public String transformKey(String input) {
 		if (keyTp!=null) {
 			try {
-				return keyTp.transform(input, null);
+				String key=keyTp.transform(input, null);
+				if (StringUtils.isEmpty(key)) {
+					log.warn("determined empty cache key");
+				}
+				return key;
 			} catch (Exception e) {
 			   log.error(getLogPrefix()+"cannot determine cache key",e);
 			}
