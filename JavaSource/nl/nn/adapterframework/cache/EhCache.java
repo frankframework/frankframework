@@ -1,6 +1,9 @@
 /*
  * $Log: EhCache.java,v $
- * Revision 1.1  2010-09-13 13:28:19  L190409
+ * Revision 1.2  2010-09-20 14:37:23  L190409
+ * modified defaults
+ *
+ * Revision 1.1  2010/09/13 13:28:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added cache facility
  *
  */
@@ -24,13 +27,13 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
  * <tr><td>{@link #setKeyXPath(String) keyXPath}</td><td>xpath expression to extract cache key from message</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setKeyNamespaceDefs(String) keyNamespaceDefs}</td><td>namespace defintions for keyXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setKeyStyleSheet(String) keyStyleSheet}</td><td>stylesheet to extract cache key from message</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setMaxElementsInMemory(String) maxElementsInMemory}</td><td>the maximum number of elements in memory, before they are evicted</td><td>10000</td></tr>
- * <tr><td>{@link #setMemoryStoreEvictionPolicy(String) memoryStoreEvictionPolicy}</td><td>either <code>LRU</code>,<code>LFU</code> or <code>FIFO</code></td><td>"LRU"</td></tr>
+ * <tr><td>{@link #setMaxElementsInMemory(String) maxElementsInMemory}</td><td>the maximum number of elements in memory, before they are evicted</td><td>100</td></tr>
+ * <tr><td>{@link #setMemoryStoreEvictionPolicy(String) memoryStoreEvictionPolicy}</td><td>either <code>LRU</code>=LeastRecentUse,<code>LFU</code>=LeastFrequentUse or <code>FIFO</code>=FirstInFirstOut</td><td>"LRU"</td></tr>
  * <tr><td>{@link #setEternal(boolean) eternal}</td><td>If <code>true</code>, the elements in the cache are eternal, i.e. never expire</td><td><code>false</code></td></tr>
- * <tr><td>{@link #setTimeToLiveSeconds(int) timeToLiveSeconds}</td><td>the amount of time to live for an element from its creation date</td><td>3600</td></tr>
- * <tr><td>{@link #setTimeToIdleSeconds(int) timeToIdleSeconds}</td><td>the amount of time to live for an element from its last accessed or modified date</td><td>3600</td></tr>
+ * <tr><td>{@link #setTimeToLiveSeconds(int) timeToLiveSeconds}</td><td>the amount of time to live for an element from its creation date</td><td>36000 (=10 hours)</td></tr>
+ * <tr><td>{@link #setTimeToIdleSeconds(int) timeToIdleSeconds}</td><td>the amount of time to live for an element from its last accessed or modified date</td><td>36000 (=10 hours)</td></tr>
  * <tr><td>{@link #setOverflowToDisk(boolean) overflowToDisk}</td><td>If <code>true</code>, the elements that are evicted from memory are spooled to disk</td><td><code>false</code></td></tr>
- * <tr><td>{@link #setMaxElementsOnDisk(String) maxElementsOnDisk}</td><td>the maximum number of elements on disk, before they are removed</td><td>1000000</td></tr>
+ * <tr><td>{@link #setMaxElementsOnDisk(String) maxElementsOnDisk}</td><td>the maximum number of elements on disk, before they are removed</td><td>10000</td></tr>
  * <tr><td>{@link #setDiskPersistent(boolean) diskPersistent}</td><td>If <code>true</code>, the the cache is reloaded after the JVM restarts</td><td><code>false</code></td></tr>
  * <tr><td>{@link #setDiskExpiryThreadIntervalSeconds(int) diskExpiryThreadIntervalSeconds}</td>  <td>how often to run the disk store expiry thread</td><td>600</td></tr>
  * </table>
@@ -42,13 +45,13 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
  */
 public class EhCache extends CacheAdapterBase {
 	
-	private int maxElementsInMemory=10000;
+	private int maxElementsInMemory=100;
 	private String memoryStoreEvictionPolicy="LRU";
 	private boolean eternal=false;
-	private int timeToLiveSeconds=3600;
-	private int timeToIdleSeconds=3600;
+	private int timeToLiveSeconds=36000;
+	private int timeToIdleSeconds=36000;
 	private boolean overflowToDisk=false;
-	private int maxElementsOnDisk=1000000;
+	private int maxElementsOnDisk=10000;
 	private boolean diskPersistent=false;
 	private int diskExpiryThreadIntervalSeconds=600;
 	
