@@ -53,5 +53,7 @@
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/commons-httpclient-3.0.1.jar"/>
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/commons-codec-1.4.jar"/>
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/log4j-1.2.16.jar"/>
+    <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/ehcache-1.5.0.jar"/>
+    <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/backport-util-concurrent-3.0.jar"/>
     <classpathentry kind="output" path="bin"/>
 </classpath>
