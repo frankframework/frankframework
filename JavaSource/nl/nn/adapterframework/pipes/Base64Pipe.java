@@ -1,6 +1,9 @@
 /*
  * $Log: Base64Pipe.java,v $
- * Revision 1.6  2010-04-28 09:53:22  L190409
+ * Revision 1.6.4.1  2010-09-22 06:23:57  m168309
+ * lineLength and separator configurable
+ *
+ * Revision 1.6  2010/04/28 09:53:22  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * enabled use of InputStream as input. 
  * replaced Base64 codec by Apache Commons Codec 1.4
  *
@@ -23,6 +26,7 @@
 package nl.nn.adapterframework.pipes;
 
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -49,6 +53,8 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setDirection(String) direction}</td><td>either <code>encode</code> or <code>decode</code></td><td>"encode"</td></tr>
  * <tr><td>{@link #setConvert2String(boolean) convert2String}</td><td>If <code>true</code> and decoding, result is returned as a string, otherwise as a byte array. If <code>true</code> and encoding, input is read as a string, otherwise as a byte array.</td><td><code>true</code></td></tr>
  * <tr><td>{@link #setCharset(String) charset}</td>  <td>character encoding to be used to encode or decode message to or from string. (only used when convert2String=true)</td><td>UTF-8</td></tr>
+ * <tr><td>{@link #setLineLength(int) lineLength}</td>  <td> (only used when direction=encode) Each line of encoded data will be at most of the given length (rounded down to nearest multiple of 4). If lineLength <= 0, then the output will not be divided into lines</td><td>auto</td></tr>
+ * <tr><td>{@link #setLineSeparator(String) lineSeparator}</td>  <td> (only used when direction=encode) defines separator between lines. Special values: <code>auto</code>: platform default, <code>dos</code>: CRLF, <code>unix</code>: LF</td><td>auto</td></tr>
  * </table>
  * </p>
  * 
@@ -57,12 +63,15 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class Base64Pipe extends FixedForwardPipe {
-	public static final String version="$RCSfile: Base64Pipe.java,v $ $Revision: 1.6 $ $Date: 2010-04-28 09:53:22 $";
 
 	private String direction="encode";
 	private boolean convert2String=true;
+	private int lineLength=76;
+	private String lineSeparator="auto";
 	private String charset=Misc.DEFAULT_INPUT_STREAM_ENCODING;
 
+	private byte lineSeparatorArray[];
+	
 	public void configure() throws ConfigurationException {
 		super.configure();
 		String dir=getDirection();
@@ -72,30 +81,49 @@ public class Base64Pipe extends FixedForwardPipe {
 		if (!dir.equalsIgnoreCase("encode") && !dir.equalsIgnoreCase("decode")) {
 			throw new ConfigurationException(getLogPrefix(null)+"illegal value for direction ["+dir+"], must be 'encode' or 'decode'");
 		}
+		if (dir.equalsIgnoreCase("encode")) {
+			if (StringUtils.isEmpty(getLineSeparator())) {
+				setLineSeparatorArray("");
+			} else if (getLineSeparator().equalsIgnoreCase("auto")) {
+				setLineSeparatorArray(System.getProperty ( "line.separator" ));
+			} else if (getLineSeparator().equalsIgnoreCase("dos")) {
+				setLineSeparatorArray("\r\n");
+			} else if (getLineSeparator().equalsIgnoreCase("unix")) {
+				setLineSeparatorArray("\n");
+			} else {
+				setLineSeparatorArray(getLineSeparator());
+			}
+		}
 	}
 
+	private void setLineSeparatorArray(String separator) {
+		lineSeparatorArray=separator.getBytes();
+	}
+	
 	public PipeRunResult doPipe(Object invoer, PipeLineSession session) throws PipeRunException {
 		Object result=null;
 		if (invoer!=null) {
 			if ("encode".equalsIgnoreCase(getDirection())) {
+				InputStream binaryInputStream;
 				if (convert2String) {
 					if (StringUtils.isEmpty(getCharset())) {
-						result=Base64.encodeBase64String(invoer.toString().getBytes());
+						binaryInputStream = new ByteArrayInputStream(invoer.toString().getBytes());
 					} else {
 						try {
-							result=Base64.encodeBase64String(invoer.toString().getBytes(getCharset()));
+							binaryInputStream = new ByteArrayInputStream(invoer.toString().getBytes(getCharset()));
 						} catch (UnsupportedEncodingException e) {
 							throw new PipeRunException(this,"cannot encode message using charset ["+getCharset()+"]",e);
 						}
 					}
 				} else if (invoer instanceof InputStream) {
-					try {
-						result=Misc.streamToString(new Base64InputStream((InputStream)invoer,true),null,false);
-					} catch (IOException e) {
-						throw new PipeRunException(this,"cannot encode message from inputstream",e);
-					}
+					binaryInputStream = (InputStream)invoer;
 				} else {
-					result=Base64.encodeBase64String((byte[])invoer);
+					binaryInputStream = new ByteArrayInputStream((byte[])invoer);
+				}
+				try {
+					result=Misc.streamToString(new Base64InputStream(binaryInputStream,true,getLineLength(),lineSeparatorArray),null,false);
+				} catch (IOException e) {
+					throw new PipeRunException(this,"cannot encode message from inputstream",e);
 				}
 			} else {
 				String in;
@@ -146,6 +174,20 @@ public class Base64Pipe extends FixedForwardPipe {
 	}
 	public String getCharset() {
 		return charset;
+	}
+
+	public void setLineSeparator(String lineSeparator) {
+		this.lineSeparator = lineSeparator;
+	}
+	public String getLineSeparator() {
+		return lineSeparator;
+	}
+
+	public void setLineLength(int lineLength) {
+		this.lineLength = lineLength;
+	}
+	public int getLineLength() {
+		return lineLength;
 	}
 
 }
