@@ -1,6 +1,9 @@
 /*
  * $Log: LogUtil.java,v $
- * Revision 1.6  2010-09-21 16:26:48  m00f069
+ * Revision 1.7  2010-09-23 09:18:56  m00f069
+ * Print exception class name also when an exception is thrown
+ *
+ * Revision 1.6  2010/09/21 16:26:48  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Moved log4j4ibis.properties to AF jar
  * Use EnhancedPatternLayout instead of PatternLayout as adviced by PatternLayout javadoc
  *
@@ -42,7 +45,7 @@ import org.apache.log4j.spi.RootLogger;
  * @version Id
  */
 public class LogUtil {
-	public static final String version="$RCSfile: LogUtil.java,v $  $Revision: 1.6 $ $Date: 2010-09-21 16:26:48 $";
+	public static final String version="$RCSfile: LogUtil.java,v $  $Revision: 1.7 $ $Date: 2010-09-23 09:18:56 $";
 	public static final String DEBUG_LOG_PREFIX = "Ibis LogUtil class ";
 	public static final String DEBUG_LOG_SUFFIX = "";
 	public static final String WARN_LOG_PREFIX = DEBUG_LOG_PREFIX;
@@ -116,7 +119,7 @@ public class LogUtil {
 			}
 		} catch (IOException e) {
 			properties = null;
-			System.out.println(WARN_LOG_PREFIX + "could not read " + url + " ( "+ e.getMessage() + ")" + WARN_LOG_SUFFIX);
+			System.out.println(WARN_LOG_PREFIX + "could not read " + url + " (" + e.getClass().getName() + ": " + e.getMessage() + ")" + WARN_LOG_SUFFIX);
 		}
 		return properties;
 	}
