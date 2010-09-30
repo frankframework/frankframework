@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.96  2010-08-31 12:04:59  m168309
+ * Revision 1.97  2010-09-30 14:55:47  m168309
+ * fixed bug maxRetries in listeners that cann't find out he delivery count (IKnowsDeliveryCount)
+ *
+ * Revision 1.96  2010/08/31 12:04:59  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * changed WARN to INFO
  *
  * Revision 1.95  2010/07/12 13:03:06  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -602,7 +605,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  */
 public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHandler, EventThrowing, IbisExceptionListener, HasSender, HasStatistics, TracingEventNumbers, IThreadCountControllable, BeanFactoryAware {
     
-	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.96 $ $Date: 2010-08-31 12:04:59 $";
+	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.97 $ $Date: 2010-09-30 14:55:47 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static TransactionDefinition TXNEW_CTRL = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -1590,9 +1593,8 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 					}
 				} else {
 					if (deliveryCount<1) {
-						deliveryCount=prci.tryCount;
+						deliveryCount=prci.tryCount+1;
 					}
-					prci.tryCount++;
 				}
 
 				if (getMaxRetries()<0) {
@@ -1600,7 +1602,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 					return false;
 				}
 				if (deliveryCount<=getMaxRetries()+1) {
-					log.warn(getLogPrefix()+"message with messageId ["+messageId+"] has already been processed ["+(deliveryCount-1)+"] times, will try again");
+					log.warn(getLogPrefix()+"message with messageId ["+messageId+"] has already been processed ["+(deliveryCount-1)+"] times, will try again; maxRetries=["+getMaxRetries()+"]");
 					resetRetryInterval();
 					return false;
 				}
