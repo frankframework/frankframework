@@ -1,6 +1,9 @@
 /*
  * $Log: Misc.java,v $
- * Revision 1.28  2010-03-25 12:58:28  L190409
+ * Revision 1.29  2010-10-18 09:22:04  L190409
+ * modified UUID generation
+ *
+ * Revision 1.28  2010/03/25 12:58:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * made close optional in readerToWriter
  *
  * Revision 1.27  2009/12/28 12:53:07  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -102,7 +105,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class Misc {
-	public static final String version="$RCSfile: Misc.java,v $ $Revision: 1.28 $ $Date: 2010-03-25 12:58:28 $";
+	public static final String version="$RCSfile: Misc.java,v $ $Revision: 1.29 $ $Date: 2010-10-18 09:22:04 $";
 	static Logger log = LogUtil.getLogger(Misc.class);
 	public static final int BUFFERSIZE=20000;
 	public static final String DEFAULT_INPUT_STREAM_ENCODING="UTF-8";
@@ -116,13 +119,6 @@ public class Misc {
 	private static Long responseBodySizeWarnByDefault = null;
 	private static Long responseBodySizeErrorByDefault = null;
 
-	public static String createSimpleUUID_old() {
-		StringBuffer sb = new StringBuffer();
-		sb.append(System.currentTimeMillis());
-		sb.append('-');
-		sb.append(Math.round(Math.random() * 1000000));
-		return sb.toString();
-	}
 
 	/**
 	* Creates a Universally Unique Identifier, via the java.rmi.server.UID class.
@@ -130,8 +126,9 @@ public class Misc {
 	public static String createSimpleUUID() {
 		UID uid = new UID();
 
+		String uidString=asHex(getIPAddress())+"-"+uid.toString();
 		// Replace semi colons by underscores, so IBIS will support it
-		String uidString = uid.toString().replace(':', '_');
+		uidString = uidString.replace(':', '_');
 		return uidString;
 	}
 	/**
@@ -145,7 +142,7 @@ public class Misc {
 	*/
 	static public String createUUID() {
 		String user = System.getProperty("user.name");
-		String ipAddress = getIPAddress();
+		String ipAddress = asHex(getIPAddress());
 
 		StringBuffer s = new StringBuffer();
 
@@ -156,28 +153,40 @@ public class Misc {
 		return s.toString();
 	}
 
-	static private String getIPAddress() {
+	
+	private static final char[] HEX_CHARS = "0123456789abcdef".toCharArray();
+
+    public static String asHex(byte[] buf)
+    {
+        char[] chars = new char[2 * buf.length];
+        for (int i = 0; i < buf.length; ++i)
+        {
+            chars[2 * i] = HEX_CHARS[(buf[i] & 0xF0) >>> 4];
+            chars[2 * i + 1] = HEX_CHARS[buf[i] & 0x0F];
+        }
+        return new String(chars);
+    }
+	
+	static private byte[] getIPAddress() {
 		InetAddress inetAddress = null;
-		String ipAddress = null;
 
 		try {
 			inetAddress = InetAddress.getLocalHost();
-			return inetAddress.getHostAddress();
+			return inetAddress.getAddress();
 		}
 
 		catch (UnknownHostException uhe) {
-			return "127.0.0.1";
+			return new byte[] {127,0,0,1};
 		}
 	}
 
 	static public String createNumericUUID() {
-		String ipAddress = getIPAddress();
+		byte[] ipAddress = getIPAddress();
 		DecimalFormat df = new DecimalFormat("000");
-		String[] iaArray = ipAddress.split("[.]");
-		String ia1 = df.format(Integer.parseInt(iaArray[0]));
-		String ia2 = df.format(Integer.parseInt(iaArray[1]));
-		String ia3 = df.format(Integer.parseInt(iaArray[2]));
-		String ia4 = df.format(Integer.parseInt(iaArray[3]));
+		String ia1 = df.format(ipAddress[0]);
+		String ia2 = df.format(ipAddress[1]);
+		String ia3 = df.format(ipAddress[2]);
+		String ia4 = df.format(ipAddress[3]);
 		String ia = ia1 + ia2 + ia3 + ia4;
 
 		long hashL = Math.round(Math.random() * 1000000);
