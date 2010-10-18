@@ -1,6 +1,9 @@
 /*
  * $Log: PullingJmsListener.java,v $
- * Revision 1.9  2010-09-07 15:55:14  m00f069
+ * Revision 1.10  2010-10-18 10:13:47  m168309
+ * set default timeout to 20s (instead of 3s)
+ *
+ * Revision 1.9  2010/09/07 15:55:14  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Removed IbisDebugger, made it possible to use AOP to implement IbisDebugger functionality.
  *
  * Revision 1.8  2010/03/10 14:30:05  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -137,7 +140,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setCommitOnState(String) commitOnState}</td><td>&nbsp;</td><td>"success"</td></tr>
  * <tr><td>{@link #setAcknowledgeMode(String) acknowledgeMode}</td><td>"auto", "dups" or "client"</td><td>"auto"</td></tr>
  * <tr><td>{@link #setPersistent(boolean) persistent}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setTimeOut(long) timeOut}</td><td>receiver timeout, in milliseconds</td><td>3000 [ms]</td></tr>
+ * <tr><td>{@link #setTimeOut(long) timeOut}</td><td>receiver timeout, in milliseconds</td><td>20000 [ms]</td></tr>
  * <tr><td>{@link #setUseReplyTo(boolean) useReplyTo}</td><td>&nbsp;</td><td>true</td></tr>
  * <tr><td>{@link #setReplyMessageTimeToLive(long) replyMessageTimeToLive}</td><td>time that replymessage will live</td><td>0 [ms]</td></tr>
  * <tr><td>{@link #setReplyMessageType(String) replyMessageType}</td><td>value of the JMSType field of the reply message</td><td>not set by application</td></tr>
@@ -190,13 +193,15 @@ import org.apache.commons.lang.StringUtils;
  * @since 4.0.1
  */
 public class PullingJmsListener extends JmsListenerBase implements IPostboxListener, ICorrelatedPullingListener, HasSender, RunStateEnquiring {
-	public static final String version="$RCSfile: PullingJmsListener.java,v $ $Revision: 1.9 $ $Date: 2010-09-07 15:55:14 $";
+	public static final String version="$RCSfile: PullingJmsListener.java,v $ $Revision: 1.10 $ $Date: 2010-10-18 10:13:47 $";
 
 	private final static String THREAD_CONTEXT_SESSION_KEY="session";
 	private final static String THREAD_CONTEXT_MESSAGECONSUMER_KEY="messageConsumer";
 	private RunStateEnquirer runStateEnquirer=null;
 	
-  
+	public PullingJmsListener() {  
+		setTimeOut(20000);
+	}
 
 	protected Session getSession(Map threadContext) throws ListenerException {
 		if (isSessionsArePooled()) {
