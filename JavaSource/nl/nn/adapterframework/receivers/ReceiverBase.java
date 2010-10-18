@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.97  2010-09-30 14:55:47  m168309
+ * Revision 1.98  2010-10-18 09:20:53  L190409
+ * removed name from generated uuid
+ *
+ * Revision 1.97  2010/09/30 14:55:47  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * fixed bug maxRetries in listeners that cann't find out he delivery count (IKnowsDeliveryCount)
  *
  * Revision 1.96  2010/08/31 12:04:59  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -434,8 +437,6 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.Map.Entry;
 
-import javax.xml.transform.TransformerConfigurationException;
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.Adapter;
@@ -538,7 +539,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  * <tr><td>{@link #setAfterEvent(int) afterEvent}</td>        <td>METT eventnumber, fired just after message processing by this Receiver is finished</td><td>-1 (disabled)</td></tr>
  * <tr><td>{@link #setExceptionEvent(int) exceptionEvent}</td><td>METT eventnumber, fired when message processing by this Receiver resulted in an exception</td><td>-1 (disabled)</td></tr>
  * <tr><td>{@link #setCorrelationIDXPath(String) correlationIDXPath}</td><td>xpath expression to extract correlationID from message</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setCorrelationIDNamespaceDefs(String) correlationIDXPathNamespaceDefs}</td><td>namespace defintions for correlationIDXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setCorrelationIDNamespaceDefs(String) correlationIDNamespaceDefs}</td><td>namespace defintions for correlationIDXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setCorrelationIDStyleSheet(String) correlationIDStyleSheet}</td><td>stylesheet to extract correlationID from message</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setLabelXPath(String) labelXPath}</td><td>xpath expression to extract label from message</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setLabelNamespaceDefs(String) labelNamespaceDefs}</td><td>namespace defintions for labelXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions</td><td>&nbsp;</td></tr>
@@ -605,7 +606,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  */
 public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHandler, EventThrowing, IbisExceptionListener, HasSender, HasStatistics, TracingEventNumbers, IThreadCountControllable, BeanFactoryAware {
     
-	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.97 $ $Date: 2010-09-30 14:55:47 $";
+	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.98 $ $Date: 2010-10-18 09:20:53 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static TransactionDefinition TXNEW_CTRL = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -1305,7 +1306,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 		log.debug(getLogPrefix()+"received message with messageId ["+messageId+"] (technical) correlationId ["+technicalCorrelationId+"]");
 
 		if (StringUtils.isEmpty(messageId)) {
-			messageId=getName()+"-"+Misc.createSimpleUUID();
+			messageId=Misc.createSimpleUUID();
 			if (log.isDebugEnabled()) 
 				log.debug(getLogPrefix()+"generated messageId ["+messageId+"]");
 		}
@@ -1347,7 +1348,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 				label=labelTp.transform(message,null);
 			} catch (Exception e) {
 				//throw new ListenerException(getLogPrefix()+"could not extract label",e);
-				log.warn(getLogPrefix()+"could not extract label");
+				log.warn(getLogPrefix()+"could not extract label: ("+ClassUtils.nameOf(e)+") "+e.getMessage());
 			}
 		}
 		if (checkTryCount(messageId, retry, rawMessage, message, threadContext, businessCorrelationId)) {
@@ -2410,4 +2411,5 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	public String getLabelStyleSheet() {
 		return labelStyleSheet;
 	}
+
 }
