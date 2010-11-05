@@ -1,6 +1,9 @@
 /*
  * $Log: DumpIbisConsole.java,v $
- * Revision 1.12  2009-08-04 11:36:35  L190409
+ * Revision 1.13  2010-11-05 13:59:20  m168309
+ * retry copying resources with preceding slash when inputstream is null
+ *
+ * Revision 1.12  2009/08/04 11:36:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * use openZipDownload
  *
  * Revision 1.11  2008/09/17 12:28:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -98,12 +101,24 @@ public class DumpIbisConsole extends HttpServlet {
 
 	public void copyResource(ZipOutputStream zipOutputStream, String resource) {
 		try {
-			String fileName = directoryName + resource;
+			String rsc = resource;
+			String fileName = directoryName + rsc;
 
-			InputStream inputStream = servletContext.getResourceAsStream(resource);
-			zipOutputStream.putNextEntry(new ZipEntry(fileName));
-			Misc.streamToStream(inputStream,zipOutputStream);
-			zipOutputStream.closeEntry();
+			InputStream inputStream = servletContext.getResourceAsStream(rsc);
+			if (inputStream==null) {
+				log.debug("did not find resource [" + rsc + "], try again with added preceding slash");
+				rsc = '/'  + rsc;
+				inputStream = servletContext.getResourceAsStream(rsc);
+			}
+			if (inputStream==null) {
+				log.warn("did not find resource [" + rsc + "]");
+			} else
+			{
+				zipOutputStream.putNextEntry(new ZipEntry(fileName));
+				Misc.streamToStream(inputStream,zipOutputStream);
+				zipOutputStream.closeEntry();
+				log.debug("copied resource [" + rsc + "]");
+			}
 		} catch (Exception e) {
 			log.error("Error copying resource", e);
 		}
@@ -118,6 +133,7 @@ public class DumpIbisConsole extends HttpServlet {
 			pw.print(resourceContents);
 			pw.flush();
 			zipOutputStream.closeEntry();
+			log.debug("copied resource [" + resourceName + "]");
 		} catch (Exception e) {
 			log.error("Error copying resource", e);
 		}
