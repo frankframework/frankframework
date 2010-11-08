@@ -1,6 +1,9 @@
 /*
  * $Log: FxfListener.java,v $
- * Revision 1.15  2010-07-12 12:49:45  L190409
+ * Revision 1.16  2010-11-08 08:40:40  L190409
+ * store transfername for FXF2 too
+ *
+ * Revision 1.15  2010/07/12 12:49:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * use modified way of specifying namespace definitions
  *
  * Revision 1.14  2009/03/04 15:56:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -278,7 +281,9 @@ public class FxfListener extends JmsListener implements IBulkDataListener {
 				if (localname!=null) {
 					localname=localname.trim();
 				}
+				context.put(TRANSFERNAME_SESSION_KEY,transfername);
 				context.put(LOCALNAME_SESSION_KEY,localname);
+				context.put(REMOTENAME_SESSION_KEY,transfer.getFilename());
 			} catch (SenderException e1) {
 				throw new ListenerException(e1);
 			}
