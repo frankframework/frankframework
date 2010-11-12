@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractPipe.java,v $
- * Revision 1.36  2010-09-13 13:43:01  L190409
+ * Revision 1.37  2010-11-12 15:12:14  m168309
+ * improved check on forwards
+ *
+ * Revision 1.36  2010/09/13 13:43:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed 'final' modifier at findForward()
  *
  * Revision 1.35  2009/05/06 11:39:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -104,6 +107,7 @@
 package nl.nn.adapterframework.pipes;
 
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -111,8 +115,10 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.HasTransactionAttribute;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IExtendedPipe;
+import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine;
+import nl.nn.adapterframework.core.PipeLineExit;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -196,7 +202,7 @@ import org.springframework.transaction.TransactionDefinition;
  * @see nl.nn.adapterframework.core.PipeLineSession
  */
 public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttribute, TracingEventNumbers, EventThrowing {
-	public static final String version="$RCSfile: AbstractPipe.java,v $ $Revision: 1.36 $ $Date: 2010-09-13 13:43:01 $";
+	public static final String version="$RCSfile: AbstractPipe.java,v $ $Revision: 1.37 $ $Date: 2010-11-12 15:12:14 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -241,6 +247,31 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 				throw new ConfigurationException(getLogPrefix(null)+"while configuring parameters",e);
 			}
 		}
+
+		if (pipeForwards.isEmpty()) {
+			ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+			String msg = getLogPrefix(null)+"has no forwards defined.";
+			configWarnings.add(log, msg);
+		} else {
+			for (Iterator it = pipeForwards.keySet().iterator(); it.hasNext();) {
+				String forwardName = (String)it.next();
+				PipeForward forward=(PipeForward)pipeForwards.get(forwardName);
+				if (forward!=null) {
+					String path=forward.getPath();
+					if (path!=null) {
+						PipeLineExit plExit=(PipeLineExit)pipeline.getPipeLineExits().get(path);
+						if (plExit==null){
+							if (pipeline.getPipe(path)==null){
+								ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+								String msg = getLogPrefix(null)+"has a forward of which the pipe to execute ["+path+"] is not defined.";
+								configWarnings.add(log, msg);
+							}
+						}
+					}
+				}
+			}
+		}
+
 		eventHandler = MonitorManager.getEventHandler();
 	}
 
@@ -322,9 +353,13 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 		if (current==null){
 			pipeForwards.put(forward.getName(), forward);
 		} else {
-			ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-			String msg = getLogPrefix(null)+"PipeForward ["+forward.getName()+"] already registered, pointing to ["+current.getPath()+"]. Ignoring new one, that points to ["+forward.getPath()+"]";
-			configWarnings.add(log, msg);
+			if (forward.getPath().equals(current.getPath())) {
+				ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+				String msg = getLogPrefix(null)+"PipeForward ["+forward.getName()+"] pointing to ["+forward.getPath()+"] already registered";
+				configWarnings.add(log, msg);
+			} else {
+				log.info(getLogPrefix(null)+"PipeForward ["+forward.getName()+"] already registered, pointing to ["+current.getPath()+"]. Ignoring new one, that points to ["+forward.getPath()+"]");
+			}
 		}
  	}
 
