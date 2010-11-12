@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.91  2010-09-13 13:39:39  L190409
+ * Revision 1.92  2010-11-12 15:15:10  m168309
+ * added possibility to force fixed forwards (attribute forceFixedForwarding) and added possibility to set next pipe as default success forward
+ *
+ * Revision 1.91  2010/09/13 13:39:39  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * renamed configurePipes() into configure()
  * added cache facility
  *
@@ -279,6 +282,7 @@ import nl.nn.adapterframework.cache.ICacheAdapter;
 import nl.nn.adapterframework.cache.ICacheEnabled;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.processors.PipeLineProcessor;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.util.JtaUtil;
@@ -326,6 +330,7 @@ import org.springframework.transaction.TransactionDefinition;
  * <tr><td>{@link #setStoreOriginalMessageWithoutNamespaces(boolean) storeOriginalMessageWithoutNamespaces}</td><td>when set <code>true</code> the original message without namespaces (and prefixes) is stored under the session key originalMessageWithoutNamespaces</td><td>false</td></tr>
  * <tr><td>{@link #setMessageSizeWarn(String) messageSizeWarn}</td><td>if messageSizeWarn>=0 and the size of the input or result pipe message exceeds the value specified a warning message is logged</td><td>application default (1MB)</td></tr>
  * <tr><td>{@link #setMessageSizeError(String) messageSizeError}</td><td>if messageSizeError>=0 and the size of the input or result pipe message exceeds the value specified an error message is logged</td><td>application default (10MB)</td></tr>
+ * <tr><td>{@link #setForceFixedForwarding(boolean) forceFixedForwarding}</td><td>forces that each pipe in the pipeline is not automatically added to the globalForwards table</td><td>application default</td></tr>
  * </table>
  * </p>
  * <table border="1">
@@ -366,7 +371,7 @@ import org.springframework.transaction.TransactionDefinition;
  * @author  Johan Verrips
  */
 public class PipeLine implements ICacheEnabled {
-	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.91 $ $Date: 2010-09-13 13:39:39 $";
+	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.92 $ $Date: 2010-11-12 15:15:10 $";
     private Logger log = LogUtil.getLogger(this);
     
 	private PipeLineProcessor pipeLineProcessor;
@@ -395,6 +400,7 @@ public class PipeLine implements ICacheEnabled {
 	private boolean storeOriginalMessageWithoutNamespaces=false;
 	private long messageSizeWarn=Misc.getMessageSizeWarnByDefault();
 	private long messageSizeError=Misc.getMessageSizeErrorByDefault();
+	private boolean forceFixedForwarding=Misc.isForceFixedForwardingByDefault();
 
 	private List exitHandlers = new ArrayList();
 	//private CongestionSensorList congestionSensors = new CongestionSensorList();
@@ -432,14 +438,17 @@ public class PipeLine implements ICacheEnabled {
 	        pipeWaitingStatistics.put(name, new StatisticsKeeper(name));
 	    }
 	    log.debug("added pipe [" + pipe.toString() + "]");
-	    if (globalForwards.get(name) == null) {
-	        PipeForward pw = new PipeForward();
-	        pw.setName(name);
-	        pw.setPath(name);
-	        registerForward(pw);
-	    } else {
-	        log.info("already had a pipeForward with name ["+ name+ "] skipping the implicit one to Pipe ["+ pipe.getName()+ "]");
-	    }
+		if (!isForceFixedForwarding())
+		{
+			if (globalForwards.get(name) == null) {
+				PipeForward pw = new PipeForward();
+				pw.setName(name);
+				pw.setPath(name);
+				registerForward(pw);
+			} else {
+				log.info("already had a pipeForward with name ["+ name+ "] skipping the implicit one to Pipe ["+ pipe.getName()+ "]");
+			}
+		}
 	}
 	
 	public IPipe getPipe(String pipeName) {
@@ -486,6 +495,29 @@ public class PipeLine implements ICacheEnabled {
 				PipeForward pipeForward= (PipeForward) globalForwards.get(gfName);
 				pipe.registerForward(pipeForward);
 			}
+
+			if (pipe instanceof FixedForwardPipe) {
+				FixedForwardPipe ffpipe = (FixedForwardPipe)pipe;
+				if (ffpipe.findForward("success")==null) {
+					int i2 = i + 1;
+					if (i2<pipes.size()) {
+						String nextPipeName = getPipe(i2).getName();
+						PipeForward pf = new PipeForward();
+						pf.setName("success");
+						pf.setPath(nextPipeName);
+						pipe.registerForward(pf);
+					} else {
+						PipeLineExit plexit = findExitByState("success");
+						if (plexit!=null) {
+							PipeForward pf = new PipeForward();
+							pf.setName("success");
+							pf.setPath(plexit.getPath());
+							pipe.registerForward(pf);
+						}
+					}
+				}
+			}
+
 			try {
 				if (pipe instanceof IExtendedPipe) {
 					IExtendedPipe epipe=(IExtendedPipe)pipe;
@@ -551,6 +583,19 @@ public class PipeLine implements ICacheEnabled {
 		txDef = SpringTxManagerProxy.getTransactionDefinition(txOption,getTransactionTimeout());
 		log.debug("Pipeline of ["+owner.getName()+"] successfully configured");
 	}
+
+	public PipeLineExit findExitByState(String state) {
+		Iterator exitKeys=pipeLineExits.keySet().iterator();
+		while (exitKeys.hasNext()){
+			String exitPath=(String)exitKeys.next();
+			PipeLineExit pe=(PipeLineExit)pipeLineExits.get(exitPath);
+			if (pe.getState().equals(state)) {
+				return pe;
+			}
+		}
+		return null;
+	}
+
     /**
      * @return the number of pipes in the pipeline
      */
@@ -844,4 +889,10 @@ public class PipeLine implements ICacheEnabled {
 		return cache;
 	}
 
+	public void setForceFixedForwarding(boolean b) {
+		forceFixedForwarding = b;
+	}
+	public boolean isForceFixedForwarding() {
+		return forceFixedForwarding;
+	}
 }
