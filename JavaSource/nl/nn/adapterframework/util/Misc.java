@@ -1,6 +1,9 @@
 /*
  * $Log: Misc.java,v $
- * Revision 1.30  2010-10-18 13:04:57  m168309
+ * Revision 1.31  2010-11-12 15:11:14  m168309
+ * added isForceFixedForwardingByDefault
+ *
+ * Revision 1.30  2010/10/18 13:04:57  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * modified UUID generation (2)
  *
  * Revision 1.29  2010/10/18 09:22:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -108,7 +111,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class Misc {
-	public static final String version="$RCSfile: Misc.java,v $ $Revision: 1.30 $ $Date: 2010-10-18 13:04:57 $";
+	public static final String version="$RCSfile: Misc.java,v $ $Revision: 1.31 $ $Date: 2010-11-12 15:11:14 $";
 	static Logger log = LogUtil.getLogger(Misc.class);
 	public static final int BUFFERSIZE=20000;
 	public static final String DEFAULT_INPUT_STREAM_ENCODING="UTF-8";
@@ -116,12 +119,13 @@ public class Misc {
 	public static final String MESSAGE_SIZE_ERROR_BY_DEFAULT_KEY = "message.size.error.default";
 	public static final String RESPONSE_BODY_SIZE_WARN_BY_DEFAULT_KEY = "response.body.size.warn.default";
 	public static final String RESPONSE_BODY_SIZE_ERROR_BY_DEFAULT_KEY = "response.body.size.error.default";
+	public static final String FORCE_FIXED_FORWARDING_BY_DEFAULT_KEY = "force.fixed.forwarding.default";
 
 	private static Long messageSizeWarnByDefault = null;
 	private static Long messageSizeErrorByDefault = null;
 	private static Long responseBodySizeWarnByDefault = null;
 	private static Long responseBodySizeErrorByDefault = null;
-
+	private static Boolean forceFixedForwardingByDefault = null;
 
 	/**
 	* Creates a Universally Unique Identifier, via the java.rmi.server.UID class.
@@ -702,5 +706,13 @@ public class Misc {
 			responseBodySizeErrorByDefault = new Long(definition);
 		}
 		return responseBodySizeErrorByDefault.longValue();
+	}
+
+	public static synchronized boolean isForceFixedForwardingByDefault() {
+		if (forceFixedForwardingByDefault==null) {
+			boolean force=AppConstants.getInstance().getBoolean(FORCE_FIXED_FORWARDING_BY_DEFAULT_KEY, false);
+			forceFixedForwardingByDefault = new Boolean(force);
+		}
+		return forceFixedForwardingByDefault.booleanValue();
 	}
 }
