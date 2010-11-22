@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcQueryListener.java,v $
- * Revision 1.5  2009-08-04 11:24:21  L190409
+ * Revision 1.6  2010-11-22 13:09:02  m168309
+ * replaced configuration warning "has no updateStatusToErrorQuery specified, will use updateStatusToProcessedQuery instead" by info logging message
+ *
+ * Revision 1.5  2009/08/04 11:24:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * support for messages in CLOBs and BLOBs
  *
  * Revision 1.4  2008/12/30 17:01:12  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -69,9 +72,7 @@ public class JdbcQueryListener extends JdbcListener {
 			throw new ConfigurationException("keyField must be specified");
 		}
 		if (StringUtils.isEmpty(getUpdateStatusToErrorQuery())) {
-			ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-			String msg = getLogPrefix()+"has no updateStatusToErrorQuery specified, will use updateStatusToProcessedQuery instead";
-			configWarnings.add(log, msg);
+			log.info(getLogPrefix()+"has no updateStatusToErrorQuery specified, will use updateStatusToProcessedQuery instead");
 			setUpdateStatusToErrorQuery(getUpdateStatusToProcessedQuery());
 		}
 	}
