@@ -1,6 +1,9 @@
 /*
  * $Log: FileViewerServlet.java,v $
- * Revision 1.14  2010-01-07 13:21:04  L190409
+ * Revision 1.15  2010-11-24 12:06:02  L190409
+ * support for click on stats overview
+ *
+ * Revision 1.14  2010/01/07 13:21:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * allow to show trends of statistics
  *
  * Revision 1.13  2009/12/29 14:46:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -100,7 +103,7 @@ import org.apache.log4j.Logger;
  * @author Johan Verrips 
  */
 public class FileViewerServlet extends HttpServlet  {
-	public static final String version = "$RCSfile: FileViewerServlet.java,v $ $Revision: 1.14 $ $Date: 2010-01-07 13:21:04 $";
+	public static final String version = "$RCSfile: FileViewerServlet.java,v $ $Revision: 1.15 $ $Date: 2010-11-24 12:06:02 $";
 	protected static Logger log = LogUtil.getLogger(FileViewerServlet.class);	
 
 	// key that is looked up to retrieve texts to be signalled
@@ -225,7 +228,10 @@ public class FileViewerServlet extends HttpServlet  {
 			if (log4j == null) { log4j = request.getParameter("log4j"); }
 			String stats = (String) request.getAttribute("stats");
 			if (stats == null) { stats = request.getParameter("stats"); }
-	
+//			String pipeSplit = (String) request.getAttribute("pipeSplit");
+//			if (pipeSplit == null) { pipeSplit = request.getParameter("pipeSplit"); }
+
+			
 	        if (fileName==null) {
 				PrintWriter out = response.getWriter();
 	            response.setContentType("text/html");
@@ -246,12 +252,15 @@ public class FileViewerServlet extends HttpServlet  {
 	        } else {
 				boolean statsFlag = "xml".equalsIgnoreCase(stats) || "true".equalsIgnoreCase(stats);
 				if (statsFlag) {
+//					boolean pipeSplitFlag = "true".equalsIgnoreCase(pipeSplit);
 					Map parameters = new Hashtable();
 					String timestamp = (String) request.getAttribute("timestamp");
 					if (timestamp == null) { timestamp = request.getParameter("timestamp"); }
 					if (timestamp!= null) {
 						parameters.put("timestamp", timestamp);
 					}
+					String servletPath="FileViewerServlet?resultType="+type+"&fileName="+fileName+"&stats="+stats+"&";
+					parameters.put("servletPath",servletPath);
 					String adapterName = (String) request.getAttribute("adapterName");
 					if (adapterName == null) { adapterName = request.getParameter("adapterName"); }
 
@@ -259,7 +268,7 @@ public class FileViewerServlet extends HttpServlet  {
 					String extract;
 					
 					if (StringUtils.isEmpty(adapterName) || StringUtils.isEmpty(timestamp)) {
-						StatisticsParser sp = new StatisticsParser(adapterName,timestamp);
+						StatisticsParser sp = new StatisticsParser(adapterName,timestamp); // split by pipe not yet supported
 						sp.digestStatistics(fileName);
 						extract=sp.toXml().toXML();
 					} else {
