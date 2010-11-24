@@ -3,6 +3,7 @@
 	<xsl:output method="xml" indent="yes" omit-xml-declaration="yes"/>
 	<xsl:param name="timestamp"/>
 	<xsl:param name="adapterName"/>
+	<xsl:param name="servletPath"/>
 
 	<xsl:template match="/">
 		<html>
@@ -423,11 +424,20 @@
 	<xsl:key name="item-by-name" match="/overview/data/stat/summary/item" use="@name" />
 
 	<xsl:template match="overview">
+		<xsl:variable name="targetTimestamp" select="timestamps/@targetTimestamp" />
+		<xsl:variable name="targetAdapter"   select="adapters/@targetAdapter" />
+<!-- 		<xsl:variable name="pipeSplit"   select="adapters/@pipeSplit" /> -->
+		<xsl:variable name="firstCol">
+			<xsl:choose>
+				<xsl:when test="$targetAdapter">timestamp</xsl:when>
+				<xsl:otherwise>adapter</xsl:otherwise>
+			</xsl:choose>
+		</xsl:variable>
 		<xsl:call-template name="bodyheading">
 			<xsl:with-param name="timestamps" select="timestamps/timestamp/@value" />
 			<xsl:with-param name="adapters" select="adapters/adapter/@name" />
-			<xsl:with-param name="targetTimestamp" select="timestamps/@targetTimestamp" />
-			<xsl:with-param name="targetAdapter" select="adapters/@targetAdapter" />
+			<xsl:with-param name="targetTimestamp" select="$targetTimestamp" />
+			<xsl:with-param name="targetAdapter" select="$targetAdapter" />
 		</xsl:call-template>
 		<xsl:variable name="itemnames" select="data/stat/summary/item[count(. | key('item-by-name',@name)[1])=1]/@name" />
 		<tr>
@@ -435,14 +445,32 @@
 			<td class="pagePanel">
 				<table>
 					<caption class="caption">Adapter Statistics</caption>
-					<th class="colHeader">adapter</th>
+					<th class="colHeader"><xsl:value-of select="$firstCol"/></th>
 					<xsl:for-each select="$itemnames">
 						<th class="colHeader"><xsl:value-of select="."/></th>
 					</xsl:for-each>
 					<xsl:for-each select="data/stat">
 						<xsl:variable name="summary" select="summary" />
 						<tr>
-							<td class="filterRow"><xsl:value-of select="@name"/></td>
+							<td class="filterRow">
+								<xsl:variable name="href">
+									<xsl:value-of select="$servletPath"/>
+									<xsl:choose>
+										<xsl:when test="$firstCol!='adapter'">adapterName=<xsl:value-of select="$targetAdapter"/>&amp;timestamp=<xsl:value-of select="@name"/></xsl:when>
+										<xsl:otherwise>adapterName=<xsl:value-of select="@name"/>&amp;timestamp=<xsl:value-of select="$targetTimestamp"/></xsl:otherwise>
+									</xsl:choose>
+								</xsl:variable>
+								<!-- 
+								(<xsl:element name="a">
+									<xsl:attribute name="href" ><xsl:value-of select="$href"/>&amp;pipeSplit=true</xsl:attribute>
+									+
+								</xsl:element>)
+								 -->
+								<xsl:element name="a">
+									<xsl:attribute name="href" ><xsl:value-of select="$href"/></xsl:attribute>
+									<xsl:value-of select="@name"/>
+								</xsl:element>
+							</td>
 							<xsl:for-each select="$itemnames">
 								<xsl:variable name="itemname" select="."/>
 								<td align="right" class="filterRow">
