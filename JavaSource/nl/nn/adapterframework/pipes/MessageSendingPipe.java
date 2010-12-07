@@ -1,6 +1,9 @@
 /*
  * $Log: MessageSendingPipe.java,v $
- * Revision 1.68  2010-09-10 11:21:45  L190409
+ * Revision 1.69  2010-12-07 14:31:21  m168309
+ * added retry facility (new attributes maxRetries, retryMinInterval, retryMaxInterval, retryXPath and retryNamespaceDefs)
+ *
+ * Revision 1.68  2010/09/10 11:21:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected labelNamespaceDefs
  *
  * Revision 1.67  2010/09/07 15:55:13  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -198,6 +201,7 @@ import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.HasSender;
 import nl.nn.adapterframework.core.ICorrelatedPullingListener;
@@ -284,6 +288,11 @@ import org.apache.commons.lang.SystemUtils;
  * <tr><td>{@link #setLabelStyleSheet(String) labelStyleSheet}</td><td>stylesheet to extract label from message</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setTimeOutOnResult(String) timeOutOnResult}</td><td>when not empty, a TimeOutException is thrown when the result equals this value (for testing purposes only)</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setExceptionOnResult(String) exceptionOnResult}</td><td>when not empty, a PipeRunException is thrown when the result equals this value (for testing purposes only)</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setMaxRetries(int) maxRetries}</td><td>the number of times a processing attempt is retried after a timeout or an exception is caught or after a incorrect reply is received (see also <code>retryXPath</code>)</td><td>0</td></tr>
+ * <tr><td>{@link #setRetryMinInterval(int) retryMinInterval}</td><td>The starting number of seconds waited after an unsuccessful processing attempt before another processing attempt is made. Each next retry this interval is doubled with a upper limit of <code>retryMaxInterval</code></td><td>1</td></tr>
+ * <tr><td>{@link #setRetryMaxInterval(int) retryMaxInterval}</td><td>The maximum number of seconds waited after an unsuccessful processing attempt before another processing attempt is made</td><td>600</td></tr>
+ * <tr><td>{@link #setRetryXPath(String) retryXPath}</td><td>xpath expression evaluated on each technical successful reply. Retry is done if condition returns true</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setRetryNamespaceDefs(String) retryNamespaceDefs}</td><td>namespace defintions for retryXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions</td><td>&nbsp;</td></tr>
  * <tr><td><code>sender.*</td><td>any attribute of the sender instantiated by descendant classes</td><td>&nbsp;</td></tr>
  * </table>
  * <table border="1">
@@ -315,7 +324,7 @@ import org.apache.commons.lang.SystemUtils;
  */
 
 public class MessageSendingPipe extends FixedForwardPipe implements HasSender, HasStatistics, EventThrowing {
-	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.68 $ $Date: 2010-09-10 11:21:45 $";
+	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.69 $ $Date: 2010-12-07 14:31:21 $";
 
 	public static final String PIPE_TIMEOUT_MONITOR_EVENT = "Sender Timeout";
 	public static final String PIPE_CLEAR_TIMEOUT_MONITOR_EVENT = "Sender Received Result on Time";
@@ -325,6 +334,9 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	private final static String EXCEPTIONFORWARD = "exception";
 	private final static String ILLEGALRESULTFORWARD = "illegalResult";
 	private final static String STUBFILENAME = "stubFileName";
+
+	public static final int MIN_RETRY_INTERVAL=1;
+	public static final int MAX_RETRY_INTERVAL=600;
 
 	private String resultOnTimeOut;
 	private String linkMethod = "CORRELATIONID";
@@ -343,6 +355,12 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	private String timeOutOnResult;
 	private String exceptionOnResult;
 
+	private int maxRetries=0;
+	private int retryMinInterval=1;
+	private int retryMaxInterval=1;
+	private String retryXPath;
+	private String retryNamespaceDefs;
+
 	private ISender sender = null;
 	private ICorrelatedPullingListener listener = null;
 	private ITransactionalStorage messageLog=null;
@@ -353,6 +371,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	private TransformerPool correlationIDTp=null;
 	private String correlationIDSessionKey = null;
 	private TransformerPool labelTp=null;
+	private TransformerPool retryTp=null;
      
 	private IPipe inputValidator=null;
 	private IPipe outputValidator=null;
@@ -455,6 +474,24 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 					throw new ConfigurationException(getLogPrefix(null)+"exceptionOnResult only allowed in stub mode");
 				}
 			}			
+			if (getMaxRetries()>0) {
+				ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+				if (getRetryMinInterval() < MIN_RETRY_INTERVAL) {
+					String msg = "retryMinInterval ["+getRetryMinInterval()+"] should be greater than or equal to ["+MIN_RETRY_INTERVAL+"], assuming the lower limit";
+					configWarnings.add(log, msg);
+					setRetryMinInterval(MIN_RETRY_INTERVAL);
+				}
+				if (getRetryMaxInterval() > MAX_RETRY_INTERVAL) {
+					String msg = "retryMaxInterval ["+getRetryMaxInterval()+"] should be less than or equal to ["+MAX_RETRY_INTERVAL+"], assuming the upper limit";
+					configWarnings.add(log, msg);
+					setRetryMaxInterval(MAX_RETRY_INTERVAL);
+				}
+				if (getRetryMaxInterval() < getRetryMinInterval()) {
+					String msg = "retryMaxInterval ["+getRetryMaxInterval()+"] should be greater than or equal to ["+getRetryMinInterval()+"], assuming the lower limit";
+					configWarnings.add(log, msg);
+					setRetryMaxInterval(getRetryMinInterval());
+				}
+			}
 		}
 		ITransactionalStorage messageLog = getMessageLog();
 		if (messageLog!=null) {
@@ -468,6 +505,9 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 			if (StringUtils.isNotEmpty(getLabelXPath()) || StringUtils.isNotEmpty(getLabelStyleSheet())) {
 				labelTp=TransformerPool.configureTransformer(getLogPrefix(null),getLabelNamespaceDefs(), getLabelXPath(), getLabelStyleSheet(),"text",false,null);
 			}
+		}
+		if (StringUtils.isNotEmpty(getRetryXPath())) {
+			retryTp = TransformerPool.configureTransformer(getLogPrefix(null),getRetryNamespaceDefs(), getRetryXPath(), null,"text",false,null);
 		}
 		if (getInputValidator()!=null) {
 			PipeForward pf = new PipeForward();
@@ -557,15 +597,47 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	
 				String messageID = null;
 				// sendResult has a messageID for async senders, the result for sync senders
-				String sendResult = sendMessage(input, session, correlationID, getSender(), threadContext);
-				if (Thread.interrupted()) {
-					throw new TimeOutException(getLogPrefix(session)+"Thread interrupted");
+				int retryInterval = getRetryMinInterval();
+				String sendResult = null;
+				boolean replyIsValid = false;
+				int retriesLeft = 0;
+				if (getMaxRetries()>0) {
+					retriesLeft = getMaxRetries() + 1;
+				} else {
+					retriesLeft = 1;
 				}
-				if (StringUtils.isNotEmpty(getTimeOutOnResult()) && getTimeOutOnResult().equals(sendResult)) {
-					throw new TimeOutException(getLogPrefix(session)+"timeOutOnResult ["+getTimeOutOnResult()+"]");
+				while (retriesLeft-->=1 && !replyIsValid) {
+					try {
+						sendResult = sendMessage(input, session, correlationID, getSender(), threadContext);
+						if (retryTp!=null) {
+							String retry=retryTp.transform(sendResult,null);
+							if (retry.equalsIgnoreCase("true")) {
+								if (retriesLeft>=1) {
+									retryInterval = increaseRetryIntervalAndWait(session, retryInterval, "xpathRetry result ["+retry+"], retries left [" + retriesLeft + "]");
+								}
+							} else {
+								replyIsValid = true;
+							} 
+						} else {
+							replyIsValid = true;
+						}
+					} catch (TimeOutException toe) {
+						if (retriesLeft>=1) {
+							retryInterval = increaseRetryIntervalAndWait(session, retryInterval, "timeout occured, retries left [" + retriesLeft + "]");
+						} else {
+							throw toe;
+						}
+					} catch (SenderException se) {
+						if (retriesLeft>=1) {
+							retryInterval = increaseRetryIntervalAndWait(session, retryInterval, "exception ["+(se!=null?se.getMessage():"")+"] occured, retries left [" + retriesLeft + "]");
+						} else {
+							throw se;
+						}
+					}
 				}
-				if (StringUtils.isNotEmpty(getExceptionOnResult()) && getExceptionOnResult().equals(sendResult)) {
-					throw new PipeRunException(this, getLogPrefix(session)+"exceptionOnResult ["+getExceptionOnResult()+"]");
+
+				if (!replyIsValid){
+					throw new PipeRunException(this, getLogPrefix(session)+"invalid reply message is received");
 				}
 	
 				if (getSender().isSynchronous()) {
@@ -711,7 +783,21 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 		return validResult;
 	}
 
-	protected String sendMessage(Object input, PipeLineSession session, String correlationID, ISender sender, Map threadContext) throws SenderException, TimeOutException {
+	protected String sendMessage(Object input, PipeLineSession session, String correlationID, ISender sender, Map threadContext) throws SenderException, TimeOutException, InterruptedException {
+		String sendResult = sendTextMessage(input, session, correlationID, getSender(), threadContext);
+		if (Thread.currentThread().isInterrupted()) {
+			throw new InterruptedException();
+		}
+		if (StringUtils.isNotEmpty(getTimeOutOnResult()) && getTimeOutOnResult().equals(sendResult)) {
+			throw new TimeOutException(getLogPrefix(session)+"timeOutOnResult ["+getTimeOutOnResult()+"]");
+		}
+		if (StringUtils.isNotEmpty(getExceptionOnResult()) && getExceptionOnResult().equals(sendResult)) {
+			throw new SenderException(getLogPrefix(session)+"exceptionOnResult ["+getExceptionOnResult()+"]");
+		}
+		return sendResult;
+	}
+	
+	protected String sendTextMessage(Object input, PipeLineSession session, String correlationID, ISender sender, Map threadContext) throws SenderException, TimeOutException {
 		if (input!=null && !(input instanceof String)) {
 			throw new SenderException("String expected, got a [" + input.getClass().getName() + "]");
 		}
@@ -722,6 +808,25 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 			return psender.sendMessage(correlationID, (String) input, prc);
 		} 
 		return sender.sendMessage(correlationID, (String) input);
+	}
+
+	public int increaseRetryIntervalAndWait(PipeLineSession session, int retryInterval, String description) throws InterruptedException {
+		long currentInterval;
+		synchronized (this) {
+			if (retryInterval < getRetryMinInterval()) {
+				retryInterval = getRetryMinInterval();
+			}
+			if (retryInterval > getRetryMaxInterval()) {
+				retryInterval = getRetryMaxInterval();
+			}
+			currentInterval = retryInterval;
+			retryInterval = retryInterval * 2;
+		}
+		log.warn(getLogPrefix(session)+description+", starts waiting for [" + currentInterval + "] seconds");
+		while (currentInterval-->0) {
+			Thread.sleep(1000);
+		}
+		return retryInterval;
 	}
 
 	public void start() throws PipeStartException {
@@ -991,4 +1096,43 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 		this.listenerProcessor = listenerProcessor;
 	}
 
+	public int getMaxRetries() {
+		return maxRetries;
+	}
+
+	public void setMaxRetries(int i) {
+		maxRetries = i;
+	}
+
+	public int getRetryMinInterval() {
+		return retryMinInterval;
+	}
+
+	public void setRetryMinInterval(int i) {
+		retryMinInterval = i;
+	}
+
+	public int getRetryMaxInterval() {
+		return retryMaxInterval;
+	}
+
+	public void setRetryMaxInterval(int i) {
+		retryMaxInterval = i;
+	}
+
+	public void setRetryXPath(String string) {
+		retryXPath = string;
+	}
+
+	public String getRetryXPath() {
+		return retryXPath;
+	}
+
+	public String getRetryNamespaceDefs() {
+		return retryNamespaceDefs;
+	}
+
+	public void setRetryNamespaceDefs(String retryXNamespaceDefs) {
+		this.retryNamespaceDefs = retryXNamespaceDefs;
+	}
 }
