@@ -1,6 +1,9 @@
 /*
  * $Log: ClassUtils.java,v $
- * Revision 1.19  2010-02-10 13:47:53  L190409
+ * Revision 1.20  2010-12-13 13:30:06  L190409
+ * added more class-debug methods
+ *
+ * Revision 1.19  2010/02/10 13:47:53  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved reflection methods
  *
  * Revision 1.18  2010/02/10 09:34:52  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -72,7 +75,7 @@ import org.apache.log4j.Logger;
  *
  */
 public class ClassUtils {
-	public static final String version = "$RCSfile: ClassUtils.java,v $ $Revision: 1.19 $ $Date: 2010-02-10 13:47:53 $";
+	public static final String version = "$RCSfile: ClassUtils.java,v $ $Revision: 1.20 $ $Date: 2010-12-13 13:30:06 $";
 	private static Logger log = LogUtil.getLogger(ClassUtils.class);
 	
 	private static final boolean trace=false;
@@ -391,12 +394,15 @@ public class ClassUtils {
 			return nameOf(o)+"."+name+" "+nameOf(e)+": "+e.getMessage();
 		}
 	}
+	public static Object getFieldValue(Object o, Class c, String name) throws IllegalArgumentException, SecurityException, IllegalAccessException, NoSuchFieldException {
+		return c.getField(name).get(o);
+	}
 	public static Object getFieldValue(Object o, String name) throws IllegalArgumentException, SecurityException, IllegalAccessException, NoSuchFieldException {
-		return o.getClass().getField(name).get(o);
+		return getFieldValue(o, o.getClass(), name);
 	}
 
-	public static Object getDeclaredFieldValue(Object o, String name) throws IllegalArgumentException, SecurityException, IllegalAccessException, NoSuchFieldException {
-		Field f = o.getClass().getDeclaredField(name);
+	public static Object getDeclaredFieldValue(Object o, Class c, String name) throws IllegalArgumentException, SecurityException, IllegalAccessException, NoSuchFieldException {
+		Field f = c.getDeclaredField(name);
 		try {
 			f.setAccessible(true);
 			return f.get(o);
@@ -405,42 +411,62 @@ public class ClassUtils {
 			return e.getMessage();
 		}
 	}
+	public static Object getDeclaredFieldValue(Object o, String name) throws IllegalArgumentException, SecurityException, IllegalAccessException, NoSuchFieldException {
+		return getDeclaredFieldValue(o, o.getClass(), name);
+	}
 
-	public static String debugObject(Object o) {
-		String result=nameOf(o)+" ";
-		Field fields[] = o.getClass().getDeclaredFields();
-		result +="fields.lentgth ["+fields.length+"] {";
-		for (int i=0; i<fields.length; i++) {
-			Field f=fields[i];
-			Object value;
-			try {
-				f.setAccessible(true);
-				value=f.get(o);
-			} catch (Exception e) {
-				value="Could not get value: "+ClassUtils.nameOf(e)+": "+e.getMessage();
+	private static void appendFieldsAndMethods(StringBuffer result, Object o, String type, Class c) {
+		Field fields[] = c.getDeclaredFields();
+		Method methods[] = c.getDeclaredMethods();
+		result.append(type+ " "+c.getName()+" #fields ["+fields.length+"] #methods ["+methods.length+"]");
+		if (fields.length>0 || methods.length>0) {
+			result.append(" {\n");
+			for (int i=0; i<fields.length; i++) {
+				Field f=fields[i];
+				Object value;
+				try {
+					f.setAccessible(true);
+					value=f.get(o);
+				} catch (Exception e) {
+					value="Could not get value: "+ClassUtils.nameOf(e)+": "+e.getMessage();
+				}
+				result.append("  field["+i+"] "+f.getName()+"("+f.getType().getName()+"): ["+value+"]\n");
 			}
-			result +="field["+i+"] "+f.getType().getName()+" "+f.getName()+": ["+value+"]\n";
+			for (int i=0; i<methods.length; i++) {
+				Method m=methods[i];
+				result.append("  method["+i+"] "+m.getName());
+//				Object value;
+//				try {
+//					m.setAccessible(true);
+//					value=m.invoke(o,null);
+//				} catch (Exception e) {
+//					value="Could not get value: "+ClassUtils.nameOf(e)+": "+e.getMessage();
+//				}
+//				result +=": ["+value+"]\n";
+				result.append("\n");
+			}
+			result.append("}");
 		}
-		result +="} ";
-		Method methods[] = o.getClass().getMethods();
-		result +="methods.lentgth ["+methods.length+"] {";
-		for (int i=0; i<methods.length; i++) {
-			Method m=methods[i];
-			result +="method["+i+"] "+m.getName();
-//			Object value;
-//			try {
-//				m.setAccessible(true);
-//				value=m.invoke(o,null);
-//			} catch (Exception e) {
-//				value="Could not get value: "+ClassUtils.nameOf(e)+": "+e.getMessage();
-//			}
-//			result +=": ["+value+"]\n";
-			result +="\n";
+		result.append("\n");
+	}
+	
+	public static String debugObject(Object o) {
+		if (o==null) {
+			return null;
 		}
-		result +="} ";
-		result += " ["+o.toString()+"]";
-		result += " ["+reflectionToString(o,null)+"]";
-		return result;
+		StringBuffer result=new StringBuffer(nameOf(o)+"\n");
+		Class c=o.getClass();
+		Class interfaces[] = c.getInterfaces();
+		for (int i=0;i<interfaces.length; i++) {
+			appendFieldsAndMethods(result,o,"Interface",interfaces[i]);
+		}
+		while (c!=Object.class) {
+			appendFieldsAndMethods(result,o,"Class",c);
+			c=c.getSuperclass();
+		}
+		result.append("toString=["+o.toString()+"]\n");
+		result.append("reflectionToString=["+reflectionToString(o,null)+"]\n");
+		return result.toString();
 	}
 	
 	public static String reflectionToString(final Object o, final String fieldnameEnd) {
