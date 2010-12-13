@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLineSession.java,v $
- * Revision 1.12  2010-09-07 15:55:13  m00f069
+ * Revision 1.13  2010-12-13 13:23:59  L190409
+ * added setSecurityHandler method
+ *
+ * Revision 1.12  2010/09/07 15:55:13  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Removed IbisDebugger, made it possible to use AOP to implement IbisDebugger functionality.
  *
  * Revision 1.11  2009/07/03 06:27:46  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -59,7 +62,7 @@ import org.apache.commons.lang.NotImplementedException;
  * @since   version 3.2.2
  */
 public class PipeLineSession extends HashMap {
-	public static final String version="$RCSfile: PipeLineSession.java,v $ $Revision: 1.12 $ $Date: 2010-09-07 15:55:13 $";
+	public static final String version="$RCSfile: PipeLineSession.java,v $ $Revision: 1.13 $ $Date: 2010-12-13 13:23:59 $";
 
 	public static final String originalMessageKey="originalMessage";
 	public static final String messageIdKey="messageId";
@@ -128,6 +131,13 @@ public class PipeLineSession extends HashMap {
 		}
 	}
 
+	/*
+	 * Sets securitHandler. SecurityHandler can also be set via key in PipeLineSession.
+	 */
+	public void setSecurityHandler(ISecurityHandler handler) {
+		securityHandler = handler;
+		put(securityHandlerKey,handler);
+	}
 	public ISecurityHandler getSecurityHandler() throws NotImplementedException {
 		if (securityHandler==null) {
 			securityHandler=(ISecurityHandler)get(securityHandlerKey);
