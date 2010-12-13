@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaFacade.java,v $
- * Revision 1.12  2010-12-13 13:17:13  L190409
+ * Revision 1.13  2010-12-13 15:44:24  L190409
+ * enable ackmode setting in configuration
+ *
+ * Revision 1.12  2010/12/13 13:17:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * made acknowledgemode configurable
  *
  * Revision 1.11  2010/03/22 11:08:13  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -307,20 +310,22 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 					+ IfsaMessageProtocolEnum.getNames());
 		}
 		try {
-			if (getMessageProtocolEnum()==IfsaMessageProtocolEnum.FIRE_AND_FORGET) {
-				if (isRequestor()) {
-					setAckMode(DEFAULT_REQUESTER_ACKNOWLEDGMODE_FF);
+			if (getAckMode()<0) {
+				if (getMessageProtocolEnum()==IfsaMessageProtocolEnum.FIRE_AND_FORGET) {
+					if (isRequestor()) {
+						setAckMode(DEFAULT_REQUESTER_ACKNOWLEDGMODE_FF);
+					} else {
+						setAckMode(DEFAULT_PROVIDER_ACKNOWLEDGMODE_FF);
+					}
+				} else if (getMessageProtocolEnum()==IfsaMessageProtocolEnum.REQUEST_REPLY) {
+					if (isRequestor()) {
+						setAckMode(DEFAULT_REQUESTER_ACKNOWLEDGMODE_RR);
+					} else {
+						setAckMode(DEFAULT_PROVIDER_ACKNOWLEDGMODE_RR);
+					}
 				} else {
-					setAckMode(DEFAULT_PROVIDER_ACKNOWLEDGMODE_FF);
+					throw new ConfigurationException(getLogPrefix()+"illegal messageProtocol");
 				}
-			} else if (getMessageProtocolEnum()==IfsaMessageProtocolEnum.REQUEST_REPLY) {
-				if (isRequestor()) {
-					setAckMode(DEFAULT_REQUESTER_ACKNOWLEDGMODE_RR);
-				} else {
-					setAckMode(DEFAULT_PROVIDER_ACKNOWLEDGMODE_RR);
-				}
-			} else {
-				throw new ConfigurationException(getLogPrefix()+"illegal messageProtocol");
 			}
 		} catch(IfsaException e) {
 			throw new ConfigurationException(getLogPrefix()+"cannot set acknowledgemode",e);
@@ -437,9 +442,9 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 	protected QueueSession createSession() throws IfsaException {
 		try {
 			int mode = getAckMode(); 
-			if (isRequestor() && messagingSource.canUseIfsaModeSessions()) {
-				mode |= IFSAConstants.QueueSession.IFSA_MODE; // let requestor receive IFSATimeOutMessages
-			}
+//			if (isRequestor() && messagingSource.canUseIfsaModeSessions()) {
+//				mode |= IFSAConstants.QueueSession.IFSA_MODE; // let requestor receive IFSATimeOutMessages
+//			}
 			return (QueueSession) messagingSource.createSession(isJmsTransacted(), mode);
 		} catch (IbisException e) {
 			if (e instanceof IfsaException) {
