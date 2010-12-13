@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaFacade.java,v $
- * Revision 1.13  2010-12-13 15:44:24  L190409
+ * Revision 1.14  2010-12-13 15:57:10  L190409
+ * restored setting of IFSA_MODE session
+ *
+ * Revision 1.13  2010/12/13 15:44:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * enable ackmode setting in configuration
  *
  * Revision 1.12  2010/12/13 13:17:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -442,9 +445,9 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 	protected QueueSession createSession() throws IfsaException {
 		try {
 			int mode = getAckMode(); 
-//			if (isRequestor() && messagingSource.canUseIfsaModeSessions()) {
-//				mode |= IFSAConstants.QueueSession.IFSA_MODE; // let requestor receive IFSATimeOutMessages
-//			}
+			if (isRequestor() && messagingSource.canUseIfsaModeSessions()) {
+				mode += IFSAConstants.QueueSession.IFSA_MODE; // let requestor receive IFSATimeOutMessages
+			}
 			return (QueueSession) messagingSource.createSession(isJmsTransacted(), mode);
 		} catch (IbisException e) {
 			if (e instanceof IfsaException) {
