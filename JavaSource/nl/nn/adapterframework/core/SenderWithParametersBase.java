@@ -1,6 +1,10 @@
 /*
  * $Log: SenderWithParametersBase.java,v $
- * Revision 1.5  2009-12-04 18:23:34  m00f069
+ * Revision 1.6  2010-12-13 13:14:07  L190409
+ * removed unused code
+ * added documentation
+ *
+ * Revision 1.5  2009/12/04 18:23:34  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Added ibisDebugger.senderAbort and ibisDebugger.pipeRollback
  *
  * Revision 1.4  2007/02/26 16:53:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -27,14 +31,19 @@ import nl.nn.adapterframework.senders.SenderBase;
 /**
  * Provides a base class for senders with parameters.
  * 
+ * <p><b>Configuration:</b>
+ * <table border="1">
+ * <tr><th>attributes</th><th>description</th><th>default</th></tr>
+ * <tr><td>{@link #setName(String) name}</td><td>name of the Sender</td><td>&nbsp;</td></tr>
+ * </table>
+ * 
  * @author Gerrit van Brakel
  * @since  4.3
  * @version Id
  */
 public abstract class SenderWithParametersBase extends SenderBase implements ISenderWithParameters {
-	public static final String version="$RCSfile: SenderWithParametersBase.java,v $ $Revision: 1.5 $ $Date: 2009-12-04 18:23:34 $";
+	public static final String version="$RCSfile: SenderWithParametersBase.java,v $ $Revision: 1.6 $ $Date: 2010-12-13 13:14:07 $";
 	
-	private String name;
 	protected ParameterList paramList = null;
 
 	public void configure() throws ConfigurationException {
