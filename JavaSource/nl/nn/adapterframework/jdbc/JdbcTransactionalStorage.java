@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcTransactionalStorage.java,v $
- * Revision 1.45  2010-07-12 12:37:01  L190409
+ * Revision 1.46  2010-12-13 13:28:28  L190409
+ * made JdbcTransactionalStorabe query generation configurable
+ *
+ * Revision 1.45  2010/07/12 12:37:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * avoid NPE when connection is null
  *
  * Revision 1.44  2010/03/10 11:05:09  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -280,7 +283,6 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  * @since 	4.1
  */
 public class JdbcTransactionalStorage extends JdbcFacade implements ITransactionalStorage {
-	public static final String version = "$RCSfile: JdbcTransactionalStorage.java,v $ $Revision: 1.45 $ $Date: 2010-07-12 12:37:01 $";
 
 	public final static String TYPE_ERRORSTORAGE="E";
 	public final static String TYPE_MESSAGELOG_PIPE="L";
@@ -343,6 +345,26 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	private String sequenceName="seq_ibisstore";
 	protected String updateBlobQuery;		
 	
+	private final String CONTROL_PROPERTY_PREFIX="jdbc.storage.";
+	private final String PROPERTY_USE_INDEX_HINT=CONTROL_PROPERTY_PREFIX+"useIndexHint";
+	private final String PROPERTY_USE_FIRST_ROWS_HINT=CONTROL_PROPERTY_PREFIX+"useFirstRowsHint";
+	private final String PROPERTY_USE_PARAMETERS=CONTROL_PROPERTY_PREFIX+"useParameters";
+	private final String PROPERTY_ASSUME_PRIMARY_KEY_UNIQUE=CONTROL_PROPERTY_PREFIX+"assumePrimaryKeyUnique";
+	private final String PROPERTY_CHECK_TABLE=CONTROL_PROPERTY_PREFIX+"checkTable";
+	private final String PROPERTY_CHECK_INDICES=CONTROL_PROPERTY_PREFIX+"checkIndices";
+	private final String PROPERTY_CHECK_INDEXNAMES=CONTROL_PROPERTY_PREFIX+"checkIndexNames";
+	
+	
+	private final boolean documentQueries=false;
+	private boolean useIndexHint;
+	private boolean useFirstRowsHint;
+	private boolean useParameters;
+	private boolean assumePrimaryKeyUnique;
+	private boolean checkTable;
+	private boolean checkIndices;
+	private boolean checkIndexNames;
+	
+	
 	public JdbcTransactionalStorage() {
 		super();
 		setTransacted(true);
@@ -352,6 +374,17 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		return "JdbcTransactionalStorage ["+getName()+"] ";
 	}
 
+	private void setOperationControls() {
+		AppConstants ac = AppConstants.getInstance();
+		useIndexHint = ac.getBoolean(PROPERTY_USE_INDEX_HINT, false);
+		useFirstRowsHint = ac.getBoolean(PROPERTY_USE_FIRST_ROWS_HINT, true);
+		useParameters = ac.getBoolean(PROPERTY_USE_PARAMETERS, true);
+		assumePrimaryKeyUnique = ac.getBoolean(PROPERTY_ASSUME_PRIMARY_KEY_UNIQUE, true);
+		checkTable = ac.getBoolean(PROPERTY_CHECK_TABLE, false);
+		checkIndices = ac.getBoolean(PROPERTY_CHECK_INDICES, true);
+		checkIndexNames = ac.getBoolean(PROPERTY_CHECK_INDEXNAMES, true);
+	}
+	
 	private void checkTableColumnPresent(Connection connection, String columnName) {
 		if (StringUtils.isNotEmpty(columnName)) {
 			if (!JdbcUtil.isTableColumnPresent(connection, getDatabaseType(), getSchemaOwner4Check(), getTableName(), columnName)) {
@@ -443,30 +476,38 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		Connection connection=null;
 		try {
 			if (getDatabaseType()==DATABASE_ORACLE) {
-				if (StringUtils.isNotEmpty(getSchemaOwner4Check())){
-					connection=getConnection();
-					if (StringUtils.isNotEmpty(getTableName())) {
-						checkTable(connection);
+				if (checkTable || checkIndices) {
+					if (StringUtils.isNotEmpty(getSchemaOwner4Check())){
+						connection=getConnection();
+						if (checkTable) {
+							if (StringUtils.isNotEmpty(getTableName())) {
+							checkTable(connection);
+							} else {
+								throw new ConfigurationException("Attribute [tableName] is not set");
+							}
+							if (StringUtils.isNotEmpty(getSequenceName())) {
+								checkSequence(connection);
+							} else {
+								throw new ConfigurationException("Attribute [sequenceName] is not set");
+							}
+						}
+						if (checkIndices) {
+							if (StringUtils.isNotEmpty(getIndexName())) {
+								checkIndex(connection);
+							} else {
+								throw new ConfigurationException("Attribute [indexName] is not set");
+							}
+							if (StringUtils.isNotEmpty(getIndex2Name())) {
+								checkIndex2(connection);
+							} else {
+								throw new ConfigurationException("Attribute [index2Name] is not set");
+							}
+						}
 					} else {
-						throw new ConfigurationException("Attribute [tableName] is not set");
-					}
-					if (StringUtils.isNotEmpty(getIndexName())) {
-						checkIndex(connection);
-					} else {
-						throw new ConfigurationException("Attribute [indexName] is not set");
-					}
-					if (StringUtils.isNotEmpty(getSequenceName())) {
-						checkSequence(connection);
-					} else {
-						throw new ConfigurationException("Attribute [sequenceName] is not set");
-					}
-					if (StringUtils.isNotEmpty(getIndex2Name())) {
-						checkIndex2(connection);
-					} else {
-						throw new ConfigurationException("Attribute [index2Name] is not set");
+						ConfigurationWarnings.getInstance().add(getLogPrefix()+"Could not check database regarding table [" + getTableName() + "]: Schema owner is unknown");
 					}
 				} else {
-					ConfigurationWarnings.getInstance().add(getLogPrefix()+"Could not check database regarding table [" + getTableName() + "]: Schema owner is unknown");
+					log.info(getLogPrefix()+"checking of table and indices is not enabled");
 				}
 			} else {
 				ConfigurationWarnings.getInstance().add(getLogPrefix()+"Could not check database regarding table [" + getTableName() + "]: Not an Oracle database");
@@ -489,6 +530,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	 */
 	public void configure() throws ConfigurationException {
 //		super.configure();
+		setOperationControls();
 		if (StringUtils.isEmpty(getTableName())) {
 			throw new ConfigurationException("Attribute [tableName] is not set");
 		}
@@ -547,25 +589,25 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 						(StringUtils.isNotEmpty(getHostField())?"?,":"")+
 						(StringUtils.isNotEmpty(getLabelField())?"?,":"")+
 						"?,?,?,?,?,?)";
-		deleteQuery = "DELETE FROM "+getPrefix()+getTableName()+ getWhereClause(getKeyField()+"=?");
+		deleteQuery = "DELETE FROM "+getPrefix()+getTableName()+ getWhereClause(getKeyField()+"=?",true);
 		selectKeyQuery = "SELECT max("+getKeyField()+") FROM "+getPrefix()+getTableName()+ 
 						getWhereClause(getIdField()+"=?"+
 									" AND " +getCorrelationIdField()+"=?"+
-									" AND "+getDateField()+"=?");
+									" AND "+getDateField()+"=?",false);
 		String listClause=getKeyField()+","+getIdField()+","+getCorrelationIdField()+","+getDateField()+","+getExpiryDateField()+
 							(StringUtils.isNotEmpty(getTypeField())?","+getTypeField():"")+
 							(StringUtils.isNotEmpty(getHostField())?","+getHostField():"")+
 							(StringUtils.isNotEmpty(getLabelField())?","+getLabelField():"")+
 							","+getCommentField()+ " FROM "+getPrefix()+getTableName();
-		selectContextQuery = "SELECT "+listClause+ getWhereClause(getKeyField()+"=?");
-		selectListQuery = "SELECT "+provideIndexHint(databaseType)+ listClause+ getWhereClause(null)+
+		selectContextQuery = "SELECT "+listClause+ getWhereClause(getKeyField()+"=?",true);
+		selectListQuery = "SELECT "+provideIndexHint(databaseType)+provideFirstRowsHint(databaseType)+ listClause+ getWhereClause(null,false)+
 						  " ORDER BY "+getDateField();
 		if (StringUtils.isNotEmpty(getOrder())) {
 			selectListQuery = selectListQuery + " " + getOrder();
 		}
-		selectDataQuery = "SELECT "+getMessageField()+  " FROM "+getPrefix()+getTableName()+ getWhereClause(getKeyField()+"=?");
-        checkMessageIdQuery = "SELECT "+provideIndexHint(databaseType) + getIdField() +" FROM "+getPrefix()+getTableName()+ getWhereClause(getIdField() +"=?");
-		getMessageCountQuery = "SELECT "+provideIndexHint(databaseType) + "COUNT(*) FROM "+getPrefix()+getTableName()+ getWhereClause(null);
+		selectDataQuery = "SELECT "+getMessageField()+  " FROM "+getPrefix()+getTableName()+ getWhereClause(getKeyField()+"=?",true);
+        checkMessageIdQuery = "SELECT "+provideIndexHint(databaseType) + getIdField() +" FROM "+getPrefix()+getTableName()+ getWhereClause(getIdField() +"=?",false);
+		getMessageCountQuery = "SELECT "+provideIndexHint(databaseType) + "COUNT(*) FROM "+getPrefix()+getTableName()+ getWhereClause(null,false);
 		if (databaseType==DATABASE_ORACLE) {
 			insertQuery = "INSERT INTO "+getPrefix()+getTableName()+" ("+
 							getKeyField()+","+
@@ -586,12 +628,41 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 							  " WHERE "+getKeyField()+"=?"+ 
 							  " FOR UPDATE";
 		}
+		if (documentQueries && log.isDebugEnabled()) {
+			log.debug(
+					documentQuery("insertQuery",insertQuery,"Voeg een regel toe aan de tabel")+
+					documentQuery("deleteQuery",deleteQuery,"Verwijder een regel uit de tabel, via de primary key")+
+					documentQuery("selectKeyQuery",selectKeyQuery,"Haal de huidige waarde op van de sequence voor messageKey")+
+					documentQuery("selectContextQuery",selectContextQuery,"Haal de niet blob velden van een regel op, via de primary key")+
+					documentQuery("selectListQuery",selectListQuery,"Haal een lijst van regels op, op volgorde van de index. Haalt niet altijd alle regels op")+
+					documentQuery("selectDataQuery",selectDataQuery,"Haal de blob van een regel op, via de primary key")+
+					documentQuery("checkMessageIdQuery",checkMessageIdQuery,"bekijk of een messageId bestaat, NIET via de primary key. Echter: het aantal fouten is over het algemeen relatief klein. De index selecteert dus een beperkt aantal rijen uit een groot aantal.")+
+					documentQuery("getMessageCountQuery",getMessageCountQuery,"tel het aantal regels in een gedeelte van de tabel. Kan via index.")+
+					documentQuery("updateBlobQuery",updateBlobQuery,"Geef de blob een waarde, via de primary key")
+//					+"\n"
+//					+"\n- slotId en type zou via ? kunnen"
+//					+"\n- selectListQuery zou in sommige gevallen extra filters in de where clause kunnen krijgen"
+//					+"\n- selectListQuery zou FIRST_ROWS(500) hint kunnen krijgen"
+//					+"\n- we zouden de index hint via een custom property aan en uit kunnen zetten"
+					);
+		}
 	}
 
+	
+	private String documentQuery(String name, String query, String purpose) {
+		return "\n"+name+(purpose!=null?"\n"+purpose:"")+"\n"+query+"\n";
+	}
 
 	private String provideIndexHint(int databaseType) {
-		if (databaseType==DATABASE_ORACLE && StringUtils.isNotEmpty(getIndexName())) {
+		if (useIndexHint && databaseType==DATABASE_ORACLE && StringUtils.isNotEmpty(getIndexName())) {
 			return " /*+ INDEX ( "+getPrefix()+getTableName()+ " "+getPrefix()+getIndexName()+" ) */ "; 
+		}
+		return "";
+	}
+
+	private String provideFirstRowsHint(int databaseType) {
+		if (useFirstRowsHint && databaseType==DATABASE_ORACLE) {
+			return " /*+ FIRST_ROWS( "+100+" ) */ "; 
 		}
 		return "";
 	}
@@ -675,8 +746,8 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		}
 	}	
 	
-	protected String getWhereClause(String clause) {
-		if (StringUtils.isEmpty(getSlotId())) {
+	protected String getWhereClause(String clause, boolean primaryKeyIsPartOfClause) {
+		if (primaryKeyIsPartOfClause && assumePrimaryKeyUnique || StringUtils.isEmpty(getSlotId())) {
 			if (StringUtils.isEmpty(clause)) {
 				return "";
 			} else {
@@ -690,6 +761,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 			return result;
 		}
 	}
+
 
 
 	/**
@@ -958,6 +1030,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		try {
 			log.debug("preparing selectListQuery ["+selectListQuery+"]");
 			PreparedStatement stmt = conn.prepareStatement(selectListQuery);
+			applyStandardParameters(stmt, false, false);
 			ResultSet rs =  stmt.executeQuery();
 			return new ResultSetIterator(conn,rs);
 		} catch (SQLException e) {
@@ -970,13 +1043,35 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 			return null;
 		}
 		if (StringUtils.isEmpty(getType())) {
-			return getSlotIdField()+"='"+getSlotId()+"'";
+			return getSlotIdField()+"="+(useParameters?"?":"'"+getSlotId()+"'");
 		} else {
-			return getSlotIdField()+"='"+getSlotId()+"' AND "+getTypeField()+"='"+getType()+"'";
+			return getSlotIdField()+"="+(useParameters?"?":"'"+getSlotId()+"'")+" AND "+getTypeField()+"="+(useParameters?"?":"'"+getType()+"'");
 		}
 	}
-	
 
+	private int applyStandardParameters(PreparedStatement stmt, boolean moreParametersFollow, boolean primaryKeyIsPartOfClause) throws SQLException {
+		int position=1;
+		if (!(primaryKeyIsPartOfClause && assumePrimaryKeyUnique) && useParameters && StringUtils.isNotEmpty(getSlotId())) {
+			stmt.clearParameters();
+			stmt.setString(position++, getSlotId());
+			if (StringUtils.isNotEmpty(getType())) {
+				stmt.setString(position++, getType());
+			}
+		} else {
+			if (moreParametersFollow) {
+				stmt.clearParameters();
+			}
+		}
+		return position;
+	}
+	private int applyStandardParameters(PreparedStatement stmt, String paramValue, boolean primaryKeyIsPartOfClause) throws SQLException {
+		int position=applyStandardParameters(stmt,true,primaryKeyIsPartOfClause);
+		stmt.setString(position++,paramValue);
+		return position;
+	}
+
+	
+	
 
 	public void deleteMessage(String messageId) throws ListenerException {
 		Connection conn;
@@ -986,9 +1081,8 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 			throw new ListenerException(e);
 		}
 		try {
-			PreparedStatement stmt = conn.prepareStatement(deleteQuery);			
-			stmt.clearParameters();
-			stmt.setString(1,messageId);
+			PreparedStatement stmt = conn.prepareStatement(deleteQuery);	
+			applyStandardParameters(stmt, messageId, true);
 			stmt.execute();
 			
 		} catch (SQLException e) {
@@ -1053,6 +1147,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		}
 		try {
 			PreparedStatement stmt = conn.prepareStatement(getMessageCountQuery);			
+			applyStandardParameters(stmt, false, false);
 			ResultSet rs =  stmt.executeQuery();
 
 			if (!rs.next()) {
@@ -1082,8 +1177,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		}
 		try {
 			PreparedStatement stmt = conn.prepareStatement(checkMessageIdQuery);			
-			stmt.clearParameters();
-			stmt.setString(1,originalMessageId);
+			applyStandardParameters(stmt, originalMessageId, false);
 			ResultSet rs =  stmt.executeQuery();
 
 			if (!rs.next()) {
@@ -1112,8 +1206,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		}
 		try {
 			PreparedStatement stmt = conn.prepareStatement(selectContextQuery);			
-			stmt.clearParameters();
-			stmt.setString(1,messageId);
+			applyStandardParameters(stmt, messageId, true);
 			ResultSet rs =  stmt.executeQuery();
 
 			if (!rs.next()) {
@@ -1136,8 +1229,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		}
 		try {
 			PreparedStatement stmt = conn.prepareStatement(selectDataQuery);			
-			stmt.clearParameters();
-			stmt.setString(1,messageId);
+			applyStandardParameters(stmt, messageId, true);
 			ResultSet rs =  stmt.executeQuery();
 
 			if (!rs.next()) {
