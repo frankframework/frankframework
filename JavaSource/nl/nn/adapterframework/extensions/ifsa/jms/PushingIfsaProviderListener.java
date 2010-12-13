@@ -1,6 +1,9 @@
 /*
  * $Log: PushingIfsaProviderListener.java,v $
- * Revision 1.10  2010-01-28 15:05:14  L190409
+ * Revision 1.11  2010-12-13 13:17:13  L190409
+ * made acknowledgemode configurable
+ *
+ * Revision 1.10  2010/01/28 15:05:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * renamed 'Connection' classes to 'MessageSource'
  *
  * Revision 1.9  2008/10/06 14:31:41  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -172,7 +175,7 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 			throw new ConfigurationException(getLogPrefix()+"could not get Destination",e);
 		}
 		try {
-			jmsConnector.configureEndpointConnection(this, getMessagingSource().getConnectionFactory(), destination, getExceptionListener(), getCacheMode(), isJmsTransacted(), getProviderSelector());
+			jmsConnector.configureEndpointConnection(this, getMessagingSource().getConnectionFactory(), destination, getExceptionListener(), getCacheMode(), getAckMode(), isJmsTransacted(), getProviderSelector());
 		} catch (Exception e) {
 			throw new ConfigurationException(e);
 		}
@@ -647,6 +650,5 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 			return -1;
 		}
 	}
-
 
 }

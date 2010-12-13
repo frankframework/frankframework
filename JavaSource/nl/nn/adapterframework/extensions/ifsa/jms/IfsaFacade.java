@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaFacade.java,v $
- * Revision 1.11  2010-03-22 11:08:13  m168309
+ * Revision 1.12  2010-12-13 13:17:13  L190409
+ * made acknowledgemode configurable
+ *
+ * Revision 1.11  2010/03/22 11:08:13  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * moved message logging from INFO level to DEBUG level
  *
  * Revision 1.10  2010/01/28 15:08:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -230,12 +233,16 @@ import com.ing.ifsa.IFSATextMessage;
 public class IfsaFacade implements INamedObject, HasPhysicalDestination {
     protected Logger log = LogUtil.getLogger(this);
     
-    private static int BASIC_ACK_MODE = Session.AUTO_ACKNOWLEDGE;
- 
  	private final static String USE_SELECTOR_FOR_PROVIDER_KEY="ifsa.provider.useSelectors";
+ 	private final static int DEFAULT_PROVIDER_ACKNOWLEDGMODE_RR=Session.CLIENT_ACKNOWLEDGE;
+ 	private final static int DEFAULT_PROVIDER_ACKNOWLEDGMODE_FF=Session.AUTO_ACKNOWLEDGE;
+ 	private final static int DEFAULT_REQUESTER_ACKNOWLEDGMODE_RR=Session.AUTO_ACKNOWLEDGE;
+ 	private final static int DEFAULT_REQUESTER_ACKNOWLEDGMODE_FF=Session.AUTO_ACKNOWLEDGE;
+ 	
 	private static Boolean useSelectorsStore=null; 
 
-    
+    private int ackMode = -1;
+   
 	private String name;
 	private String applicationId;
 	private String serviceId;
@@ -289,14 +296,35 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 	public void configure() throws ConfigurationException {
 
 		// perform some basic checks
-		if (StringUtils.isEmpty(getApplicationId()))
+		if (StringUtils.isEmpty(getApplicationId())) {
 			throw new ConfigurationException(getLogPrefix()+"applicationId is not specified");
-		if (getMessageProtocolEnum() == null)
+		}
+		if (getMessageProtocolEnum() == null) {
 			throw new ConfigurationException(getLogPrefix()+
 				"invalid messageProtocol specified ["
 					+ getMessageProtocolEnum()
 					+ "], should be one of the following "
 					+ IfsaMessageProtocolEnum.getNames());
+		}
+		try {
+			if (getMessageProtocolEnum()==IfsaMessageProtocolEnum.FIRE_AND_FORGET) {
+				if (isRequestor()) {
+					setAckMode(DEFAULT_REQUESTER_ACKNOWLEDGMODE_FF);
+				} else {
+					setAckMode(DEFAULT_PROVIDER_ACKNOWLEDGMODE_FF);
+				}
+			} else if (getMessageProtocolEnum()==IfsaMessageProtocolEnum.REQUEST_REPLY) {
+				if (isRequestor()) {
+					setAckMode(DEFAULT_REQUESTER_ACKNOWLEDGMODE_RR);
+				} else {
+					setAckMode(DEFAULT_PROVIDER_ACKNOWLEDGMODE_RR);
+				}
+			} else {
+				throw new ConfigurationException(getLogPrefix()+"illegal messageProtocol");
+			}
+		} catch(IfsaException e) {
+			throw new ConfigurationException(getLogPrefix()+"cannot set acknowledgemode",e);
+		}
 		// TODO: check if serviceId is specified, either as attribute or as parameter
 //		try {
 //			log.debug(getLogPrefix()+"opening connection for service, to obtain info about XA awareness");
@@ -408,9 +436,9 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 	 */
 	protected QueueSession createSession() throws IfsaException {
 		try {
-			int mode = BASIC_ACK_MODE; 
+			int mode = getAckMode(); 
 			if (isRequestor() && messagingSource.canUseIfsaModeSessions()) {
-				mode += IFSAConstants.QueueSession.IFSA_MODE; // let requestor receive IFSATimeOutMessages
+				mode |= IFSAConstants.QueueSession.IFSA_MODE; // let requestor receive IFSATimeOutMessages
 			}
 			return (QueueSession) messagingSource.createSession(isJmsTransacted(), mode);
 		} catch (IbisException e) {
@@ -812,5 +840,27 @@ public class IfsaFacade implements INamedObject, HasPhysicalDestination {
 		this.timeOut = timeOut;
 	}
 
+	public void setAckMode(int ackMode) {
+		this.ackMode = ackMode;
+	}
+	public int getAckMode() {
+		return ackMode;
+	}
+	public void setAcknowledgeMode(String acknowledgeMode) {
 
+		if (acknowledgeMode.equalsIgnoreCase("auto") || acknowledgeMode.equalsIgnoreCase("AUTO_ACKNOWLEDGE")) {
+			ackMode = Session.AUTO_ACKNOWLEDGE;
+		} else
+			if (acknowledgeMode.equalsIgnoreCase("dups") || acknowledgeMode.equalsIgnoreCase("DUPS_OK_ACKNOWLEDGE")) {
+				ackMode = Session.DUPS_OK_ACKNOWLEDGE;
+			} else
+				if (acknowledgeMode.equalsIgnoreCase("client") || acknowledgeMode.equalsIgnoreCase("CLIENT_ACKNOWLEDGE")) {
+					ackMode = Session.CLIENT_ACKNOWLEDGE;
+				} else {
+					// ignore all ack modes, to test no acking
+					log.warn("["+name+"] invalid acknowledgemode:[" + acknowledgeMode + "] setting no acknowledge");
+					ackMode = -1;
+				}
+
+	}
 }

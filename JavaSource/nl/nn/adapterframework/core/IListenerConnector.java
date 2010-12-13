@@ -1,6 +1,9 @@
 /*
  * $Log: IListenerConnector.java,v $
- * Revision 1.4  2008-09-01 15:08:27  europe\L190409
+ * Revision 1.5  2010-12-13 13:16:05  L190409
+ * made acknowledgemode configurable
+ *
+ * Revision 1.4  2008/09/01 15:08:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added session key to store session
  *
  * Revision 1.3  2008/01/03 15:41:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -43,7 +46,7 @@ public interface IListenerConnector {
 	public final static String THREAD_CONTEXT_SESSION_KEY="JmsSession";
 
    
-    void configureEndpointConnection(IPortConnectedListener listener, ConnectionFactory connectionFactory, Destination destination, IbisExceptionListener exceptionListener, String cacheMode, boolean sessionTransacted, String selector) throws ConfigurationException;
+    void configureEndpointConnection(IPortConnectedListener listener, ConnectionFactory connectionFactory, Destination destination, IbisExceptionListener exceptionListener, String cacheMode, int acknowledgeMode, boolean sessionTransacted, String selector) throws ConfigurationException;
 
 	/**
 	 * Start Listener-port to which the Listener is connected.

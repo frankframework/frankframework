@@ -1,6 +1,9 @@
 /*
  * $Log: IfsaProviderListener.java,v $
- * Revision 1.4  2008-03-27 11:55:53  europe\L190409
+ * Revision 1.5  2010-12-13 13:17:13  L190409
+ * made acknowledgemode configurable
+ *
+ * Revision 1.4  2008/03/27 11:55:53  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * modified cid handling
  *
  * Revision 1.3  2008/01/03 15:45:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -76,7 +79,7 @@ import com.ing.ifsa.api.ServiceURI;
  * @version Id
  */
 public class IfsaProviderListener extends IfsaEjbBase implements IPortConnectedListener {
-    public static final String version = "$RCSfile: IfsaProviderListener.java,v $ $Revision: 1.4 $ $Date: 2008-03-27 11:55:53 $";
+    public static final String version = "$RCSfile: IfsaProviderListener.java,v $ $Revision: 1.5 $ $Date: 2010-12-13 13:17:13 $";
     
     private IMessageHandler handler;
     private IbisExceptionListener exceptionListener;
@@ -93,7 +96,7 @@ public class IfsaProviderListener extends IfsaEjbBase implements IPortConnectedL
 
     public void configure() throws ConfigurationException {
         super.configure();
-        listenerPortConnector.configureEndpointConnection(this, null, null, getExceptionListener(), null, false, null);
+        listenerPortConnector.configureEndpointConnection(this, null, null, getExceptionListener(), null, Session.AUTO_ACKNOWLEDGE, false, null);
     }
 
     public void open() throws ListenerException {

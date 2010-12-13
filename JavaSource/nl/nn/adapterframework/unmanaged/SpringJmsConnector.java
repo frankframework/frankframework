@@ -1,6 +1,9 @@
 /*
  * $Log: SpringJmsConnector.java,v $
- * Revision 1.21  2010-09-01 09:17:30  L190409
+ * Revision 1.22  2010-12-13 13:16:05  L190409
+ * made acknowledgemode configurable
+ *
+ * Revision 1.21  2010/09/01 09:17:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * set all default cache levels to cach_none
  *
  * Revision 1.20  2008/10/07 08:46:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -137,6 +140,7 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
     public static final int DEFAULT_CACHE_LEVEL_TRANSACTED=DefaultMessageListenerContainer.CACHE_NONE;
 //	public static final int DEFAULT_CACHE_LEVEL_NON_TRANSACTED=DefaultMessageListenerContainer.CACHE_CONSUMER;
 	public static final int DEFAULT_CACHE_LEVEL_NON_TRANSACTED=DefaultMessageListenerContainer.CACHE_NONE;
+	
 //	public static final int MAX_MESSAGES_PER_TASK=100;
 	public static final int IDLE_TASK_EXECUTION_LIMIT=1000;
  
@@ -157,7 +161,7 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 	/* (non-Javadoc)
 	 * @see nl.nn.adapterframework.configuration.IListenerConnector#configureReceiver(nl.nn.adapterframework.jms.PushingJmsListener)
 	 */
-	public void configureEndpointConnection(final IPortConnectedListener jmsListener, ConnectionFactory connectionFactory, Destination destination, IbisExceptionListener exceptionListener, String cacheMode, boolean sessionTransacted, String messageSelector) throws ConfigurationException {
+	public void configureEndpointConnection(final IPortConnectedListener jmsListener, ConnectionFactory connectionFactory, Destination destination, IbisExceptionListener exceptionListener, String cacheMode, int acknowledgeMode, boolean sessionTransacted, String messageSelector) throws ConfigurationException {
 		super.configureEndpointConnection(jmsListener, connectionFactory, destination, exceptionListener);
         
 		// Create the Message Listener Container manually.
@@ -208,6 +212,9 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 			} else {
 				jmsContainer.setCacheLevel(DEFAULT_CACHE_LEVEL_NON_TRANSACTED);
 			}
+		}
+		if (acknowledgeMode>=0) {
+			jmsContainer.setSessionAcknowledgeMode(acknowledgeMode);
 		}
 		jmsContainer.setMessageListener(this);
 		// Use Spring BeanFactory to complete the auto-wiring of the JMS Listener Container,

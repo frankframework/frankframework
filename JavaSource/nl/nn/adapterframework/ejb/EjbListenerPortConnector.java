@@ -1,6 +1,9 @@
 /*
  * $Log: EjbListenerPortConnector.java,v $
- * Revision 1.4  2008-01-03 15:42:47  europe\L190409
+ * Revision 1.5  2010-12-13 13:17:13  L190409
+ * made acknowledgemode configurable
+ *
+ * Revision 1.4  2008/01/03 15:42:47  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * rework port connected listener interfaces
  *
  * Revision 1.3  2007/11/22 08:47:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -91,7 +94,7 @@ public class EjbListenerPortConnector implements IListenerConnector {
         return destination;
     }
 
-    public void configureEndpointConnection(IPortConnectedListener listener, ConnectionFactory connectionFactory, Destination destination, IbisExceptionListener exceptionListener, String cacheMode, boolean sessionTransacted, String selector) throws ConfigurationException {
+    public void configureEndpointConnection(IPortConnectedListener listener, ConnectionFactory connectionFactory, Destination destination, IbisExceptionListener exceptionListener, String cacheMode, int acknowledgeMode, boolean sessionTransacted, String selector) throws ConfigurationException {
         try {
             this.listener = listener;
             this.listenerPortMBean = lookupListenerPortMBean(listener);
