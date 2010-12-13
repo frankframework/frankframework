@@ -1,6 +1,9 @@
 /*
  * $Log: CachePipeLineProcessor.java,v $
- * Revision 1.1  2010-09-13 13:50:51  L190409
+ * Revision 1.2  2010-12-13 13:29:01  L190409
+ * optimize debugging
+ *
+ * Revision 1.1  2010/09/13 13:50:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * created cache processors
  *
  */
@@ -29,18 +32,18 @@ public class CachePipeLineProcessor extends PipeLineProcessorBase {
 		
 		String key=cache.transformKey(message);
 		if (key==null) {
-			log.debug("cache key is null, will not use cache");
+			if (log.isDebugEnabled()) log.debug("cache key is null, will not use cache");
 			return pipeLineProcessor.processPipeLine(pipeLine, messageId, message, pipeLineSession);
 		}
-		log.debug("cache key ["+key+"]");
+		if (log.isDebugEnabled()) log.debug("cache key ["+key+"]");
 		PipeLineResult prr=(PipeLineResult)cache.get(key);
 		if (prr==null) {
-			log.debug("no cached results found using key ["+key+"]");
+			if (log.isDebugEnabled()) log.debug("no cached results found using key ["+key+"]");
 			prr=pipeLineProcessor.processPipeLine(pipeLine, messageId, message, pipeLineSession);
-			log.debug("caching result using key ["+key+"]");
+			if (log.isDebugEnabled()) log.debug("caching result using key ["+key+"]");
 			cache.put(key, prr);
 		} else {
-			log.debug("retrieved result from cache using key ["+key+"]");
+			if (log.isDebugEnabled()) log.debug("retrieved result from cache using key ["+key+"]");
 		}
 		return prr;
 	}

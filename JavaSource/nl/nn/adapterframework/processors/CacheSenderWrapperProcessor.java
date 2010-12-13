@@ -1,6 +1,9 @@
 /*
  * $Log: CacheSenderWrapperProcessor.java,v $
- * Revision 1.1  2010-09-13 13:50:51  L190409
+ * Revision 1.2  2010-12-13 13:29:01  L190409
+ * optimize debugging
+ *
+ * Revision 1.1  2010/09/13 13:50:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * created cache processors
  *
  */
@@ -29,18 +32,18 @@ public class CacheSenderWrapperProcessor extends SenderWrapperProcessorBase {
 		
 		String key=cache.transformKey(message);
 		if (key==null) {
-			log.debug("cache key is null, will not use cache");
+			if (log.isDebugEnabled()) log.debug("cache key is null, will not use cache");
 			return senderWrapperProcessor.sendMessage(senderWrapperBase, correlationID, message, prc);
 		}
-		log.debug("cache key ["+key+"]");
+		if (log.isDebugEnabled()) log.debug("cache key ["+key+"]");
 		String result=cache.getString(key);
 		if (result==null) {
-			log.debug("no cached results found using key ["+key+"]");
+			if (log.isDebugEnabled()) log.debug("no cached results found using key ["+key+"]");
 			result=senderWrapperProcessor.sendMessage(senderWrapperBase, correlationID, message, prc);
-			log.debug("caching result using key ["+key+"]");
+			if (log.isDebugEnabled()) log.debug("caching result using key ["+key+"]");
 			cache.putString(key, result);
 		} else {
-			log.debug("retrieved result from cache using key ["+key+"]");
+			if (log.isDebugEnabled()) log.debug("retrieved result from cache using key ["+key+"]");
 		}
 		return result;
 	}
