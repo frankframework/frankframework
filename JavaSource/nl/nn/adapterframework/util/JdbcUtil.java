@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcUtil.java,v $
- * Revision 1.25  2010-09-10 11:42:44  L190409
+ * Revision 1.26  2010-12-20 10:39:47  L190409
+ * added hasIndexOnColumn() and hasIndexOnColumns()
+ *
+ * Revision 1.25  2010/09/10 11:42:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved error  handling for tableExists()
  *
  * Revision 1.24  2010/07/12 12:25:38  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -100,6 +103,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.sql.Statement;
+import java.util.List;
 import java.util.zip.DataFormatException;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.Inflater;
@@ -118,7 +122,6 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class JdbcUtil {
-	public static final String version = "$RCSfile: JdbcUtil.java,v $ $Revision: 1.25 $ $Date: 2010-09-10 11:42:44 $";
 
 	public final static int DATABASE_GENERIC=0;
 	public final static int DATABASE_ORACLE=1;
@@ -294,6 +297,56 @@ public class JdbcUtil {
 		} else {
 			log.warn("could not determine correct presence of column ["+columnName+"] of index ["+indexName+"] on table ["+tableName+"] (not an Oracle database)");
 			return -1;
+		}
+	}
+
+	public static boolean hasIndexOnColumn(Connection conn, int databaseType, String schemaOwner, String tableName, String columnName) {
+		if (databaseType==DATABASE_ORACLE) {
+			String query="select count(*) from all_ind_columns";
+			query+=" where TABLE_OWNER='"+schemaOwner.toUpperCase()+"' and TABLE_NAME='"+tableName.toUpperCase()+"'";
+			query+=" and column_name=?";
+			query+=" and column_position=1";
+			try {
+				if (JdbcUtil.executeIntQuery(conn, query, columnName.toUpperCase())>=1) {
+					return true;
+				} else {
+					return false;
+				}
+			} catch (Exception e) {
+				log.warn("could not determine presence of index column ["+columnName+"] on table ["+tableName+"] using query ["+query+"]",e);
+				return false;
+			}
+		} else {
+			log.warn("could not determine presence of index column ["+columnName+"] on table ["+tableName+"] (not an Oracle database)");
+			return true;
+		}
+	}
+	public static boolean hasIndexOnColumns(Connection conn, int databaseType, String schemaOwner, String tableName, List columns) {
+		if (databaseType==DATABASE_ORACLE) {
+			String query="select count(*) from all_indexes ai";
+			for (int i=1;i<=columns.size();i++) {
+				query+=", all_ind_columns aic"+i;
+			}
+			query+=" where ai.TABLE_OWNER='"+schemaOwner.toUpperCase()+"' and ai.TABLE_NAME='"+tableName.toUpperCase()+"'";
+			for (int i=1;i<=columns.size();i++) {
+				query+=" and ai.OWNER=aic"+i+".INDEX_OWNER";
+				query+=" and ai.INDEX_NAME=aic"+i+".INDEX_NAME";
+				query+=" and aic"+i+".column_name='"+((String)columns.get(i-1)).toUpperCase()+"'";
+				query+=" and aic"+i+".column_position="+i;
+			}
+			try {
+				if (JdbcUtil.executeIntQuery(conn, query)>=1) {
+					return true;
+				} else {
+					return false;
+				}
+			} catch (Exception e) {
+				log.warn("could not determine presence of index columns on table ["+tableName+"] using query ["+query+"]",e);
+				return false;
+			}
+		} else {
+			log.warn("could not determine presence of index columns on table ["+tableName+"] (not an Oracle database)");
+			return true;
 		}
 	}
 
