@@ -1,6 +1,9 @@
 /*
  * $Log: ExceptionPipe.java,v $
- * Revision 1.5  2007-07-24 08:53:00  europe\L190409
+ * Revision 1.6  2010-12-30 09:21:13  m168309
+ * improved javadoc
+ *
+ * Revision 1.5  2007/07/24 08:53:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * set default noThrow message
  *
  * Revision 1.4  2007/07/24 08:06:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -31,7 +34,7 @@ import org.apache.commons.lang.StringUtils;
  * <p><b>Configuration:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setThrowException(boolean) throwException}</td><td>when <code>true</code>, a PipeRunException is thrown. Otherwise the output is only logged as an error</td><td>true</td></tr>
+ * <tr><td>{@link #setThrowException(boolean) throwException}</td><td>when <code>true</code>, a PipeRunException is thrown. Otherwise the output is only logged as an error (and no rollback is performed).</td><td>true</td></tr>
  * </table>
  * </p>
  * <p><b>Exits:</b>
