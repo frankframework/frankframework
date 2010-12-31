@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcFacade.java,v $
- * Revision 1.30  2010-07-12 12:38:13  L190409
+ * Revision 1.31  2010-12-31 09:32:15  m168309
+ * *** empty log message ***
+ *
+ * Revision 1.30  2010/07/12 12:38:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * avoid NPE when connection is null
  *
  * Revision 1.29  2010/02/11 14:25:22  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -131,7 +134,7 @@ import org.apache.commons.lang.StringUtils;
  * @since 	4.1
  */
 public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version="$RCSfile: JdbcFacade.java,v $ $Revision: 1.30 $ $Date: 2010-07-12 12:38:13 $";
+	public static final String version="$RCSfile: JdbcFacade.java,v $ $Revision: 1.31 $ $Date: 2010-12-31 09:32:15 $";
 	
 	public final static int DATABASE_GENERIC=0;
 	public final static int DATABASE_ORACLE=1;
@@ -181,32 +184,40 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 	}
 
 	protected DataSource getDatasource() throws JdbcException {
-		if (datasource==null) {
-			String dsName = getDataSourceNameToUse();
-			try {
-				log.debug(getLogPrefix()+"looking up Datasource ["+dsName+"]");
-				datasource =(DataSource) getContext().lookup( dsName );
-				if (datasource==null) {
-					throw new JdbcException("Could not find Datasource ["+dsName+"]");
-				}
-				String dsinfo=getDatasourceInfo();
-				if (dsinfo==null) {
-					dsinfo=datasource.toString();
-				}
-				log.info(getLogPrefix()+"looked up Datasource ["+dsName+"]: ["+dsinfo+"]");
-			} catch (NamingException e) {
+		// TODO: create bean jndiContextPrefix instead of multiple attempts
+			if (datasource==null) {
+				String dsName = getDataSourceNameToUse();
 				try {
-					String tomcatDsName="java:comp/env/"+dsName;
-					log.debug(getLogPrefix()+"could not find ["+dsName+"], now trying ["+tomcatDsName+"]");
-					datasource =(DataSource) getContext().lookup( tomcatDsName );
-					log.debug(getLogPrefix()+"looked up Datasource ["+tomcatDsName+"]: ["+datasource+"]");
-				} catch (NamingException e2) {
-					throw new JdbcException(getLogPrefix()+"cannot find Datasource ["+dsName+"]", e);
+					log.debug(getLogPrefix()+"looking up Datasource ["+dsName+"]");
+					datasource =(DataSource) getContext().lookup( dsName );
+					if (datasource==null) {
+						throw new JdbcException("Could not find Datasource ["+dsName+"]");
+					}
+					String dsinfo=getDatasourceInfo();
+					if (dsinfo==null) {
+						dsinfo=datasource.toString();
+					}
+					log.info(getLogPrefix()+"looked up Datasource ["+dsName+"]: ["+dsinfo+"]");
+				} catch (NamingException e) {
+					try {
+						String tomcatDsName="java:comp/env/"+dsName;
+						log.debug(getLogPrefix()+"could not find ["+dsName+"], now trying ["+tomcatDsName+"]");
+						datasource =(DataSource) getContext().lookup( tomcatDsName );
+						log.debug(getLogPrefix()+"looked up Datasource ["+tomcatDsName+"]: ["+datasource+"]");
+					} catch (NamingException e2) {
+						try {
+							String jbossDsName="java:/"+dsName;
+							log.debug(getLogPrefix()+"could not find ["+dsName+"], now trying ["+jbossDsName+"]");
+							datasource =(DataSource) getContext().lookup( jbossDsName );
+							log.debug(getLogPrefix()+"looked up Datasource ["+jbossDsName+"]: ["+datasource+"]");
+						} catch (NamingException e3) {
+							throw new JdbcException(getLogPrefix()+"cannot find Datasource ["+dsName+"]", e);
+						}
+					}
 				}
 			}
+			return datasource;
 		}
-		return datasource;
-	}
 
 	public String getDatasourceInfo() throws JdbcException {
 		String dsinfo=null;
