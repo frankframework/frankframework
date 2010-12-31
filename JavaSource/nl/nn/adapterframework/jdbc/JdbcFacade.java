@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcFacade.java,v $
- * Revision 1.31  2010-12-31 09:32:15  m168309
+ * Revision 1.32  2010-12-31 09:33:01  m168309
+ * try to prefix with java:/ to find datasource, for JBoss compatibiltity
+ *
+ * Revision 1.31  2010/12/31 09:32:15  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * *** empty log message ***
  *
  * Revision 1.30  2010/07/12 12:38:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -134,7 +137,7 @@ import org.apache.commons.lang.StringUtils;
  * @since 	4.1
  */
 public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version="$RCSfile: JdbcFacade.java,v $ $Revision: 1.31 $ $Date: 2010-12-31 09:32:15 $";
+	public static final String version="$RCSfile: JdbcFacade.java,v $ $Revision: 1.32 $ $Date: 2010-12-31 09:33:01 $";
 	
 	public final static int DATABASE_GENERIC=0;
 	public final static int DATABASE_ORACLE=1;
@@ -184,7 +187,7 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 	}
 
 	protected DataSource getDatasource() throws JdbcException {
-		// TODO: create bean jndiContextPrefix instead of multiple attempts
+		// TODO: create bean jndiContextPrefix instead of doing multiple attempts
 			if (datasource==null) {
 				String dsName = getDataSourceNameToUse();
 				try {
