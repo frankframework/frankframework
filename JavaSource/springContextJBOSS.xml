@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  $Log: springContextJBOSS.xml,v $
+  Revision 1.1  2010-12-31 09:45:46  m168309
+  Added Jboss Spring Configuration files
+
+-->
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+            http://www.springframework.org/schema/beans xml/xsd/spring-beans-2.5.xsd
+            ">
+
+    <import resource="springJBOSS.xml"/>
+    <import resource="springUnmanagedDeployment.xml"/>
+    <!-- <import resource="springEjbDeployment.xml"/> -->
+    <import resource="springCommon.xml"/>
+    <import resource="springCustom.xml"/>
+    
+</beans>
