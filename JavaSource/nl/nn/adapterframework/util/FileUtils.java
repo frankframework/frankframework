@@ -1,6 +1,9 @@
 /*
  * $Log: FileUtils.java,v $
- * Revision 1.18  2010-08-09 13:03:40  m168309
+ * Revision 1.19  2010-12-31 10:08:33  m168309
+ * added encodeFileName()
+ *
+ * Revision 1.18  2010/08/09 13:03:40  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added canWrite()
  *
  * Revision 1.17  2009/12/31 10:06:44  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -87,7 +90,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class FileUtils {
-	public static final String version = "$RCSfile: FileUtils.java,v $  $Revision: 1.18 $ $Date: 2010-08-09 13:03:40 $";
+	public static final String version = "$RCSfile: FileUtils.java,v $  $Revision: 1.19 $ $Date: 2010-12-31 10:08:33 $";
 	static Logger log = LogUtil.getLogger(FileUtils.class);
 
 	/**
@@ -526,5 +529,27 @@ public class FileUtils {
 			log.debug("Exception while testing if the application is allowed to write to directory [" + directory + "]",se);
 			return false;
 		}
+	}
+
+	static public String encodeFileName(String fileName) {
+		String mark = "-_.+=";
+		StringBuffer encodedFileName = new StringBuffer();
+		int len = fileName.length();
+		for (int i = 0; i < len; i++) {
+			char c = fileName.charAt(i);
+			if ((c >= '0' && c <= '9')
+				|| (c >= 'a' && c <= 'z')
+				|| (c >= 'A' && c <= 'Z'))
+				encodedFileName.append(c);
+			else {
+				int imark = mark.indexOf(c);
+				if (imark >= 0) {
+					encodedFileName.append(c);
+				} else {
+					encodedFileName.append('_');
+				}
+			}
+		}
+		return encodedFileName.toString();
 	}
 }
