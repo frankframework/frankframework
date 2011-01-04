@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   $Log: springJBOSS.xml,v $
-  Revision 1.1  2010-12-31 09:45:46  m168309
+  Revision 1.2  2011-01-04 14:24:56  m168309
+  *** empty log message ***
+
+  Revision 1.1  2010/12/31 09:45:46  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
   Added Jboss Spring Configuration files
 
 -->
@@ -33,8 +36,4 @@
     <bean id="messageListenerClassName" class="java.lang.String">
         <constructor-arg value="org.springframework.jms.listener.DefaultMessageListenerContainer102"/>
     </bean>
-    
-	<bean id="customerService" class="nl.nn.adapterframework.jms.JNDIBase">
-		<property name="jndiContextPrefix" value="java:/" />
-	</bean>
 </beans>
