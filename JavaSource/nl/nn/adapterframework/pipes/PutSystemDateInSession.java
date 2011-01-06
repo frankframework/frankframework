@@ -1,6 +1,9 @@
 /*
  * $Log: PutSystemDateInSession.java,v $
- * Revision 1.10  2011-01-06 08:54:18  m168309
+ * Revision 1.11  2011-01-06 09:04:51  m168309
+ * fixed bug in sleepWhenEqualToPrevious
+ *
+ * Revision 1.10  2011/01/06 08:54:18  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * fixed bug in sleepWhenEqualToPrevious combined with returnFixedDate
  *
  * Revision 1.9  2010/08/20 07:45:40  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -69,7 +72,7 @@ import org.apache.commons.lang.StringUtils;
  * @since   4.2c
  */
 public class PutSystemDateInSession extends FixedForwardPipe {
-	public static final String version="$RCSfile: PutSystemDateInSession.java,v $  $Revision: 1.10 $ $Date: 2011-01-06 08:54:18 $";
+	public static final String version="$RCSfile: PutSystemDateInSession.java,v $  $Revision: 1.11 $ $Date: 2011-01-06 09:04:51 $";
 
 	public final static String FIXEDDATETIME  ="2001-12-17 09:30:47";
 	public final static String FORMAT_FIXEDDATETIME  ="yyyy-MM-dd HH:mm:ss";
@@ -139,11 +142,11 @@ public class PutSystemDateInSession extends FixedForwardPipe {
 			}
 			formattedDate = formatter.format(d);
 		} else{
-			formattedDate = formatter.format(new Date());
 			if (sleepWhenEqualToPrevious > -1) {
 				// Synchronize on a static value to generate unique value's for the
 				// whole virtual machine.
 				synchronized (version) {
+					formattedDate = formatter.format(new Date());
 					while (formattedDate.equals(previousFormattedDate)) {
 						try {
 							Thread.sleep(sleepWhenEqualToPrevious);
@@ -153,6 +156,8 @@ public class PutSystemDateInSession extends FixedForwardPipe {
 					}
 					previousFormattedDate = formattedDate;
 				}
+			} else {
+				formattedDate = formatter.format(new Date());
 			}
 		}
 
