@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcFacade.java,v $
- * Revision 1.32  2010-12-31 09:33:01  m168309
+ * Revision 1.33  2011-01-06 09:48:33  m168309
+ * *** empty log message ***
+ *
+ * Revision 1.32  2010/12/31 09:33:01  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * try to prefix with java:/ to find datasource, for JBoss compatibiltity
  *
  * Revision 1.31  2010/12/31 09:32:15  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -137,7 +140,7 @@ import org.apache.commons.lang.StringUtils;
  * @since 	4.1
  */
 public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version="$RCSfile: JdbcFacade.java,v $ $Revision: 1.32 $ $Date: 2010-12-31 09:33:01 $";
+	public static final String version="$RCSfile: JdbcFacade.java,v $ $Revision: 1.33 $ $Date: 2011-01-06 09:48:33 $";
 	
 	public final static int DATABASE_GENERIC=0;
 	public final static int DATABASE_ORACLE=1;
@@ -339,6 +342,12 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 					statement.setDate(i+1, new java.sql.Date(((Date)value).getTime()));
 				}
 			} else if (Parameter.TYPE_DATETIME.equals(paramType)) {
+				if (value==null) {
+					statement.setNull(i+1, Types.TIMESTAMP);
+				} else {
+					statement.setTimestamp(i+1, new Timestamp(((Date)value).getTime()));
+				}
+			} else if (Parameter.TYPE_TIMESTAMP.equals(paramType)) {
 				if (value==null) {
 					statement.setNull(i+1, Types.TIMESTAMP);
 				} else {
