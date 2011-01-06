@@ -1,6 +1,9 @@
 /*
  * $Log: PutSystemDateInSession.java,v $
- * Revision 1.9  2010-08-20 07:45:40  m168309
+ * Revision 1.10  2011-01-06 08:54:18  m168309
+ * fixed bug in sleepWhenEqualToPrevious combined with returnFixedDate
+ *
+ * Revision 1.9  2010/08/20 07:45:40  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * returnFixedDate attribute only available in stub mode
  *
  * Revision 1.8  2009/11/20 10:18:01  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -66,7 +69,7 @@ import org.apache.commons.lang.StringUtils;
  * @since   4.2c
  */
 public class PutSystemDateInSession extends FixedForwardPipe {
-	public static final String version="$RCSfile: PutSystemDateInSession.java,v $  $Revision: 1.9 $ $Date: 2010-08-20 07:45:40 $";
+	public static final String version="$RCSfile: PutSystemDateInSession.java,v $  $Revision: 1.10 $ $Date: 2011-01-06 08:54:18 $";
 
 	public final static String FIXEDDATETIME  ="2001-12-17 09:30:47";
 	public final static String FORMAT_FIXEDDATETIME  ="yyyy-MM-dd HH:mm:ss";
@@ -121,35 +124,35 @@ public class PutSystemDateInSession extends FixedForwardPipe {
 	public PipeRunResult doPipe(Object input, PipeLineSession session)
 		throws PipeRunException {
 
-		Date d;
+		String formattedDate;
 		if (isReturnFixedDate()) {
 			SimpleDateFormat formatterFrom = new SimpleDateFormat(FORMAT_FIXEDDATETIME);
 			String fixedDateTime = (String)session.get(FIXEDDATE_STUB4TESTTOOL_KEY);
 			if (StringUtils.isEmpty(fixedDateTime)) {
 				fixedDateTime = FIXEDDATETIME;
 			}
+			Date d;
 			try {
 				d = formatterFrom.parse(fixedDateTime);
 			} catch (ParseException e) {
 				throw new PipeRunException(this,"cannot parse fixed date ["+fixedDateTime+"] with format ["+FORMAT_FIXEDDATETIME+"]",e);
 			}
+			formattedDate = formatter.format(d);
 		} else{
-			d = new Date();
-		}
-		String formattedDate = formatter.format(d);
-
-		if (sleepWhenEqualToPrevious > -1) {
-			// Synchronize on a static value to generate unique value's for the
-			// whole virtual machine.
-			synchronized (version) {
-				while (formattedDate.equals(previousFormattedDate)) {
-					try {
-						Thread.sleep(sleepWhenEqualToPrevious);
-					} catch(InterruptedException e) {
+			formattedDate = formatter.format(new Date());
+			if (sleepWhenEqualToPrevious > -1) {
+				// Synchronize on a static value to generate unique value's for the
+				// whole virtual machine.
+				synchronized (version) {
+					while (formattedDate.equals(previousFormattedDate)) {
+						try {
+							Thread.sleep(sleepWhenEqualToPrevious);
+						} catch(InterruptedException e) {
+						}
+						formattedDate = formatter.format(new Date());
 					}
-					formattedDate = formatter.format(new Date());
+					previousFormattedDate = formattedDate;
 				}
-				previousFormattedDate = formattedDate;
 			}
 		}
 
