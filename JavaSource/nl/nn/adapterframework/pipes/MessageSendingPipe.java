@@ -1,6 +1,9 @@
 /*
  * $Log: MessageSendingPipe.java,v $
- * Revision 1.69  2010-12-07 14:31:21  m168309
+ * Revision 1.70  2011-01-13 12:30:15  m168309
+ * added check on existence messageLog for asynchronous senders with sibling listener
+ *
+ * Revision 1.69  2010/12/07 14:31:21  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added retry facility (new attributes maxRetries, retryMinInterval, retryMaxInterval, retryXPath and retryNamespaceDefs)
  *
  * Revision 1.68  2010/09/10 11:21:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -229,6 +232,7 @@ import nl.nn.adapterframework.processors.ListenerProcessor;
 import nl.nn.adapterframework.senders.MailSender;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.TransformerPool;
@@ -324,7 +328,7 @@ import org.apache.commons.lang.SystemUtils;
  */
 
 public class MessageSendingPipe extends FixedForwardPipe implements HasSender, HasStatistics, EventThrowing {
-	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.69 $ $Date: 2010-12-07 14:31:21 $";
+	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.70 $ $Date: 2011-01-13 12:30:15 $";
 
 	public static final String PIPE_TIMEOUT_MONITOR_EVENT = "Sender Timeout";
 	public static final String PIPE_CLEAR_TIMEOUT_MONITOR_EVENT = "Sender Received Result on Time";
@@ -377,6 +381,8 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	private IPipe outputValidator=null;
 	
 	private boolean timeoutPending=false;
+
+	boolean checkMessageLog = AppConstants.getInstance().getBoolean("messageLog.check", false);
 
 	private ListenerProcessor listenerProcessor;
 
@@ -494,6 +500,15 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 			}
 		}
 		ITransactionalStorage messageLog = getMessageLog();
+		if (checkMessageLog) {
+			if (!getSender().isSynchronous() && getListener()==null) {
+				if (messageLog==null) {
+					ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+					String msg = "asynchronous sender [" + getSender().getName() + "] without sibling listener has no messageLog. Integrity check not possible";
+					configWarnings.add(log, msg);
+				}
+			}
+		}
 		if (messageLog!=null) {
 			messageLog.configure();
 			if (StringUtils.isNotEmpty(getAuditTrailXPath())) {
