@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcTransactionalStorage.java,v $
- * Revision 1.47  2010-12-20 10:44:15  L190409
+ * Revision 1.48  2011-01-26 16:25:22  L190409
+ * added attribute storeFullMessage
+ *
+ * Revision 1.47  2010/12/20 10:44:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * check indices on columns but not by specifying the index name
  *
  * Revision 1.46  2010/12/13 13:28:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -216,7 +219,8 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  * <tr><td>{@link #setDateFieldType(String) dateFieldType}</td><td>the type of the column the timestamps are stored in</td><td>TIMESTAMP</td></tr>
  * <tr><td>{@link #setTextFieldType(String) textFieldType}</td><td>the type of the columns messageId and correlationId, slotId and comments are stored in. N.B. (100) is appended for id's, (1000) is appended for comments.</td><td>VARCHAR</td></tr>
  * <tr><td>{@link #setMessageFieldType(String) messageFieldType}</td><td>the type of the column message themselves are stored in</td><td>LONG BINARY</td></tr>
- * <tr><td>{@link #setBlobsCompressed(boolean) blobsCompressed}</td><td>when set to <code>true</code>, the messages are stored compressed</td><td><code>true</code></td></tr>
+ * <tr><td>{@link #setStoreFullMessage(boolean) storeFullMessage}</td><td>when set to <code>true</code>, the messages are stored compressed</td><td><code>true</code></td></tr>
+ * <tr><td>{@link #setBlobsCompressed(boolean) blobsCompressed}</td><td>when set to <code>true</code>, the full message is stored with the log. Can be set to <code>false</code> to reduce table size, by avoiding to store the full message</td><td><code>true</code></td></tr>
  * <tr><td>{@link #setSequenceName(String) sequenceName}</td><td>the name of the sequence used to generate the primary key (only for Oracle)<br>N.B. the default name has been changed in version 4.6</td><td>seq_ibisstore</td></tr>
  * <tr><td>{@link #setIndexName(String) indexName}</td><td>the name of the index, to be used in hints for query optimizer too (only for Oracle)</td><td>IX_IBISSTORE</td></tr>
  * <tr><td>{@link #setPrefix(String) prefix}</td><td>prefix to be prefixed on all database objects (tables, indices, sequences), e.q. to access a different Oracle Schema</td><td></td></tr>
@@ -316,6 +320,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	private String host;
 	private boolean active=true;
 	private boolean blobsCompressed=true;
+	private boolean storeFullMessage=true;
 	private String indexName="IX_IBISSTORE";
 //	private String index2Name="IX_IBISSTORE_02";
 	private String prefix="";
@@ -425,7 +430,9 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 			checkTableColumnPresent(connection,getCorrelationIdField());
 			checkTableColumnPresent(connection,getDateField());
 			checkTableColumnPresent(connection,getCommentField());
-			checkTableColumnPresent(connection,getMessageField());
+			if (isStoreFullMessage()) {
+				checkTableColumnPresent(connection,getMessageField());
+			}
 			checkTableColumnPresent(connection,getExpiryDateField());
 			checkTableColumnPresent(connection,getLabelField());
 		} else {
@@ -629,13 +636,15 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 						(StringUtils.isNotEmpty(getSlotId())?getSlotIdField()+",":"")+
 						(StringUtils.isNotEmpty(getHostField())?getHostField()+",":"")+
 						(StringUtils.isNotEmpty(getLabelField())?getLabelField()+",":"")+
-						getIdField()+","+getCorrelationIdField()+","+getDateField()+","+getCommentField()+","+getExpiryDateField()+","+getMessageField()+
+						getIdField()+","+getCorrelationIdField()+","+getDateField()+","+getCommentField()+","+getExpiryDateField()+
+						(isStoreFullMessage()?","+getMessageField():"")+
 						") VALUES ("+
 						(StringUtils.isNotEmpty(getTypeField())?"?,":"")+
 						(StringUtils.isNotEmpty(getSlotId())?"?,":"")+
 						(StringUtils.isNotEmpty(getHostField())?"?,":"")+
 						(StringUtils.isNotEmpty(getLabelField())?"?,":"")+
-						"?,?,?,?,?,?)";
+						"?,?,?,?,?"+
+						(isStoreFullMessage()?",?":"");
 		deleteQuery = "DELETE FROM "+getPrefix()+getTableName()+ getWhereClause(getKeyField()+"=?",true);
 		selectKeyQuery = "SELECT max("+getKeyField()+") FROM "+getPrefix()+getTableName()+ 
 						getWhereClause(getIdField()+"=?"+
@@ -662,13 +671,15 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 							(StringUtils.isNotEmpty(getSlotId())?getSlotIdField()+",":"")+
 							(StringUtils.isNotEmpty(getHostField())?getHostField()+",":"")+
 							(StringUtils.isNotEmpty(getLabelField())?getLabelField()+",":"")+
-							getIdField()+","+getCorrelationIdField()+","+getDateField()+","+getCommentField()+","+getExpiryDateField()+","+getMessageField()+
+							getIdField()+","+getCorrelationIdField()+","+getDateField()+","+getCommentField()+","+getExpiryDateField()+
+							(isStoreFullMessage()?","+getMessageField():"")+
 							") VALUES ("+getPrefix()+getSequenceName()+".NEXTVAL,"+
 							(StringUtils.isNotEmpty(getTypeField())?"?,":"")+
 							(StringUtils.isNotEmpty(getSlotId())?"?,":"")+
 							(StringUtils.isNotEmpty(getHostField())?"?,":"")+
 							(StringUtils.isNotEmpty(getLabelField())?"?,":"")+
-							"?,?,?,?,?,empty_blob())";
+							"?,?,?,?,?"+
+							(isStoreFullMessage()?",empty_blob()":"")+")";
 			selectKeyQuery = "SELECT "+getPrefix()+getSequenceName()+".currval FROM DUAL";
 			updateBlobQuery = "SELECT "+getMessageField()+
 							  " FROM "+getPrefix()+getTableName()+
@@ -884,6 +895,9 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 				stmt.setTimestamp(++parPos, null);
 			}
 	
+			if (!isStoreFullMessage()) {
+				return null;
+			}
 			if (databaseType!=DATABASE_ORACLE) {
 				ByteArrayOutputStream out = new ByteArrayOutputStream();
 				
@@ -926,8 +940,8 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 					if (!rs.next()) {
 						throw new SenderException("could not retrieve row for stored message ["+ messageId+"]");
 					}
-//					String newKey = rs.getString(1);
-//					BLOB blob = (BLOB)rs.getBlob(2);
+//						String newKey = rs.getString(1);
+//						BLOB blob = (BLOB)rs.getBlob(2);
 					OutputStream out = JdbcUtil.getBlobUpdateOutputStream(rs,1);
 					if (isBlobsCompressed()) {
 						DeflaterOutputStream dos = new DeflaterOutputStream(out);
@@ -948,7 +962,6 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 						rs.close();
 					}
 				}
-				
 			}
 	
 		} finally {
@@ -1648,5 +1661,12 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 			}
 		}
 		return schemaOwner4Check;
+	}
+
+	public boolean isStoreFullMessage() {
+		return storeFullMessage;
+	}
+	public void setStoreFullMessage(boolean storeFullMessage) {
+		this.storeFullMessage = storeFullMessage;
 	}
 }
