@@ -1,6 +1,9 @@
 /*
  * $Log: FtpFileRetrieverPipe.java,v $
- * Revision 1.11  2010-03-19 07:22:32  m168309
+ * Revision 1.12  2011-01-26 14:02:47  L190409
+ * fixed detection of exception forward
+ *
+ * Revision 1.11  2010/03/19 07:22:32  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * default port for FTP is 21 instead of 22 (which is for SFTP)
  *
  * Revision 1.10  2010/03/18 11:27:39  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -35,9 +38,8 @@
  */
 package nl.nn.adapterframework.ftp;
 
-import java.io.IOException;
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -105,7 +107,6 @@ import nl.nn.adapterframework.pipes.FixedForwardPipe;
  * @since   4.4
  */
 public class FtpFileRetrieverPipe extends FixedForwardPipe {
-	public static final String version = "$RCSfile: FtpFileRetrieverPipe.java,v $  $Revision: 1.11 $ $Date: 2010-03-19 07:22:32 $";
 
 	private FtpSession ftpSession;
 
@@ -123,13 +124,15 @@ public class FtpFileRetrieverPipe extends FixedForwardPipe {
 	
 	public void configure() throws ConfigurationException {
 		super.configure();
-		
+//		PipeForward exceptionForward = findForward(EXCEPTIONFORWARD);
+//		if (exceptionForward==null) {
+//			throw new ConfigurationException(getLogPrefix(null)+"must specify forward ["+EXCEPTIONFORWARD+"]"); 
+//		}
 		ftpSession.configure();
 	}
 	
 	public void stop() {
 		super.stop();
-
 		try {		
 			ftpSession.closeClient();
 		} catch(Exception e) {
@@ -150,16 +153,15 @@ public class FtpFileRetrieverPipe extends FixedForwardPipe {
 			} 
 			return new PipeRunResult(getForward(), localFilename);
 		}
-		catch(IOException e) {
-			PipeRunResult result = new PipeRunResult(findForward(EXCEPTIONFORWARD), input);
-			if (result != null ) {
-				log.warn("Error while getting file " + remoteDirectory + "/" + input, e);
-				return result;
-			}
-			throw new PipeRunException(this, "Error while getting file [" + orgFilename + "]", e); 
-		}
 		catch(Exception e) {
-			throw new PipeRunException(this, "Error while getting file [" + orgFilename + "]", e); 
+			String msg="Error while getting file [" + remoteDirectory + "/" + input+"]";
+			PipeForward exceptionForward = findForward(EXCEPTIONFORWARD);
+			if (exceptionForward!=null) {
+				log.warn(msg, e);
+				return new PipeRunResult(exceptionForward, input);
+			} else { 
+				throw new PipeRunException(this, msg, e);
+			}
 		}
 	}
 
