@@ -1,6 +1,9 @@
 /*
  * $Log: CommandSender.java,v $
- * Revision 1.7  2011-01-26 11:05:49  L190409
+ * Revision 1.8  2011-01-26 14:32:50  L190409
+ * moved splitting of command to ProcessUtil
+ *
+ * Revision 1.7  2011/01/26 11:05:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Added timeOut and commandWithArguments attributes
  *
  * Revision 1.6  2010/09/07 15:55:13  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -86,13 +89,11 @@ public class CommandSender extends SenderWithParametersBase {
 	}
 
 	private List commandToList(String command) {
-		List list = new ArrayList();
+		List list;
 		if (commandWithArguments) {
-			StringTokenizer stringTokenizer = new StringTokenizer(command);
-			while (stringTokenizer.hasMoreElements()) {
-				list.add(stringTokenizer.nextToken());
-			}
+			list=ProcessUtil.splitUpCommandString(command);
 		} else {
+			list = new ArrayList();
 			list.add(command);
 		}
 		return list;

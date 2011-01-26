@@ -1,6 +1,9 @@
 /*
  * $Log: ExecutePipe.java,v $
- * Revision 1.4  2011-01-26 11:03:49  L190409
+ * Revision 1.5  2011-01-26 14:32:12  L190409
+ * moved splitting of command to ProcessUtil
+ *
+ * Revision 1.4  2011/01/26 11:03:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * adapted to new style procesUtil
  * deprecated
  *
@@ -47,7 +50,7 @@ import org.apache.commons.lang.StringUtils;
  * @deprecated please use CommandSender
  */
 public class ExecutePipe extends FixedForwardPipe {
-	public static final String version = "$RCSfile: ExecutePipe.java,v $ $Revision: 1.4 $ $Date: 2011-01-26 11:03:49 $";
+	public static final String version = "$RCSfile: ExecutePipe.java,v $ $Revision: 1.5 $ $Date: 2011-01-26 14:32:12 $";
 	
 	private String command;
 	private String commandSessionKey;
@@ -69,21 +72,12 @@ public class ExecutePipe extends FixedForwardPipe {
 			command = (String)input;
 		}
 		try {
-			return new PipeRunResult(getForward(), ProcessUtil.executeCommand(commandToList(command),0));
+			return new PipeRunResult(getForward(), ProcessUtil.executeCommand(command));
 		} catch(SenderException e) {
 			throw new PipeRunException(this, "Error executing command", e);
 		} catch(TimeOutException e) {
 			throw new PipeRunException(this, "Error executing command", e);
 		}
-	}
-
-	private List commandToList(String command) {
-		List list = new ArrayList();
-		StringTokenizer stringTokenizer = new StringTokenizer(command);
-		while (stringTokenizer.hasMoreElements()) {
-			list.add(stringTokenizer.nextToken());
-		}
-		return list;
 	}
 
 	public void setCommand(String command) {
