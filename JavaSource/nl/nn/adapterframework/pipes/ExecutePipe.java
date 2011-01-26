@@ -1,6 +1,10 @@
 /*
  * $Log: ExecutePipe.java,v $
- * Revision 1.3  2008-02-13 12:58:41  europe\L190409
+ * Revision 1.4  2011-01-26 11:03:49  L190409
+ * adapted to new style procesUtil
+ * deprecated
+ *
+ * Revision 1.3  2008/02/13 12:58:41  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * now uses ProcessUtils
  *
  * Revision 1.2  2007/07/10 07:52:29  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -12,10 +16,17 @@
  */
 package nl.nn.adapterframework.pipes;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringTokenizer;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.util.ProcessUtil;
 
 import org.apache.commons.lang.StringUtils;
@@ -33,12 +44,20 @@ import org.apache.commons.lang.StringUtils;
  * 
  * @version Id
  * @author Jaco de Groot (***@dynasol.nl)
+ * @deprecated please use CommandSender
  */
 public class ExecutePipe extends FixedForwardPipe {
-	public static final String version = "$RCSfile: ExecutePipe.java,v $ $Revision: 1.3 $ $Date: 2008-02-13 12:58:41 $";
+	public static final String version = "$RCSfile: ExecutePipe.java,v $ $Revision: 1.4 $ $Date: 2011-01-26 11:03:49 $";
 	
 	private String command;
 	private String commandSessionKey;
+	
+	public void configure() throws ConfigurationException {
+		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+		String msg = getLogPrefix(null)+"The class ["+getClass().getName()+"] has been deprecated. Please change to ["+CommandSender.class.getName()+"]";
+		configWarnings.add(log, msg);
+		super.configure();
+	}
 
 	public PipeRunResult doPipe(Object input, PipeLineSession session) throws PipeRunException {
 		String command;
@@ -50,10 +69,21 @@ public class ExecutePipe extends FixedForwardPipe {
 			command = (String)input;
 		}
 		try {
-			return new PipeRunResult(getForward(), ProcessUtil.executeCommand(command));
+			return new PipeRunResult(getForward(), ProcessUtil.executeCommand(commandToList(command),0));
 		} catch(SenderException e) {
 			throw new PipeRunException(this, "Error executing command", e);
+		} catch(TimeOutException e) {
+			throw new PipeRunException(this, "Error executing command", e);
 		}
+	}
+
+	private List commandToList(String command) {
+		List list = new ArrayList();
+		StringTokenizer stringTokenizer = new StringTokenizer(command);
+		while (stringTokenizer.hasMoreElements()) {
+			list.add(stringTokenizer.nextToken());
+		}
+		return list;
 	}
 
 	public void setCommand(String command) {
