@@ -1,6 +1,9 @@
 /*
  * $Log: TimeoutGuard.java,v $
- * Revision 1.1  2010-02-03 14:36:39  L190409
+ * Revision 1.2  2011-01-26 10:39:36  L190409
+ * added getter for thread killed (JdG)
+ *
+ * Revision 1.1  2010/02/03 14:36:39  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * first version
  *
  */
@@ -88,4 +91,7 @@ public class TimeoutGuard {
 		description = string;
 	}
 
+	public boolean threadKilled() {
+		return threadKilled;
+	}
 }
