@@ -1,6 +1,9 @@
 /*
  * $Log: CommandSender.java,v $
- * Revision 1.6  2010-09-07 15:55:13  m00f069
+ * Revision 1.7  2011-01-26 11:05:49  L190409
+ * Added timeOut and commandWithArguments attributes
+ *
+ * Revision 1.6  2010/09/07 15:55:13  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Removed IbisDebugger, made it possible to use AOP to implement IbisDebugger functionality.
  *
  * Revision 1.5  2010/03/10 14:30:04  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -18,6 +21,10 @@
  */
 package nl.nn.adapterframework.senders;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringTokenizer;
+
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
@@ -34,12 +41,15 @@ import org.apache.commons.lang.StringUtils;
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.pipes.CommandSender</td><td>&nbsp;</td></tr>
+ * <tr><td>command</td><td>the command to execute. When not specified the input message is supposed to be the command</td><td>&nbsp;</td></tr>
+ * <tr><td>commandWithArguments</td><td>whether the command is supposed to contain arguments or not. When the command contains arguments but is executed as a command without arguments you probably get an error=123</td><td>&nbsp;</td></tr>
+ * <tr><td>timeOut</td><td>timeout in seconds. To disable the timeout and keep waiting until the process in completely finished, set this value to 0</td><td>0</td></tr>
  * </table>
  * </p>
  * <table border="1">
  * <p><b>Parameters:</b>
  * <tr><th>name</th><th>type</th><th>remarks</th></tr>
- * <tr><td>&nbsp;</td><td>the values of all parameters present are concatenated to the command line</td></tr>
+ * <tr><td>&nbsp;</td><td>the values of all parameters present are appended as arguments to the command</td></tr>
  * </table>
  * </p>
  * 
@@ -50,14 +60,16 @@ import org.apache.commons.lang.StringUtils;
 public class CommandSender extends SenderWithParametersBase {
 	
 	private String command;
+	private int timeOut = 0;
+	private boolean commandWithArguments = false;
 	private boolean synchronous=true;
 
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
-		String commandline;
+		List commandline;
 		if (StringUtils.isNotEmpty(getCommand())) {
-			commandline=getCommand();
+			commandline = commandToList(getCommand());
 		} else {
-			commandline=message;
+			commandline = commandToList(message);
 		}
 		if (paramList!=null) {
 			ParameterValueList pvl;
@@ -67,10 +79,23 @@ public class CommandSender extends SenderWithParametersBase {
 				throw new SenderException("Could not extract parametervalues",e);
 			}
 			for (int i=0; i<pvl.size(); i++) {
-				commandline += " "+pvl.getParameterValue(i);
+				commandline.add(pvl.getParameterValue(i).getValue());
 			}
 		}
-		return ProcessUtil.executeCommand(commandline);
+		return ProcessUtil.executeCommand(commandline, timeOut);
+	}
+
+	private List commandToList(String command) {
+		List list = new ArrayList();
+		if (commandWithArguments) {
+			StringTokenizer stringTokenizer = new StringTokenizer(command);
+			while (stringTokenizer.hasMoreElements()) {
+				list.add(stringTokenizer.nextToken());
+			}
+		} else {
+			list.add(command);
+		}
+		return list;
 	}
 
 	public boolean isSynchronous() {
@@ -82,6 +107,20 @@ public class CommandSender extends SenderWithParametersBase {
 	}
 	public String getCommand() {
 		return command;
+	}
+
+	public void setTimeOut(int timeOut) {
+		this.timeOut = timeOut;
+	}
+	public int getTimeOut() {
+		return timeOut;
+	}
+
+	public void setCommandWithArguments(boolean commandWithArguments) {
+		this.commandWithArguments = commandWithArguments;
+	}
+	public boolean getCommandWithArguments() {
+		return commandWithArguments;
 	}
 
 }
