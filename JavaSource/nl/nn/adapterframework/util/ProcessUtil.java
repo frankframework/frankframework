@@ -1,6 +1,9 @@
 /*
  * $Log: ProcessUtil.java,v $
- * Revision 1.3  2011-01-26 13:42:43  L190409
+ * Revision 1.4  2011-01-26 14:46:25  L190409
+ * restored old style methods
+ *
+ * Revision 1.3  2011/01/26 13:42:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Added timeOut and list style passing of command
  *
  * Revision 1.2  2009/05/06 11:43:53  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -16,7 +19,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.StringTokenizer;
 
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
@@ -60,7 +65,27 @@ public class ProcessUtil {
 		}
 		return result;
 	}
-	
+
+	public static List splitUpCommandString(String command) {
+		List list = new ArrayList();
+		StringTokenizer stringTokenizer = new StringTokenizer(command);
+		while (stringTokenizer.hasMoreElements()) {
+			list.add(stringTokenizer.nextToken());
+		}
+		return list;
+	}
+
+
+	public static String executeCommand(String command) throws SenderException {
+		try {
+			return executeCommand(splitUpCommandString(command),0);
+		} catch (TimeOutException e) {
+			throw new SenderException(e);
+		}
+	}
+	public static String executeCommand(String command, int timeout) throws TimeOutException, SenderException {
+		return executeCommand(splitUpCommandString(command),timeout);
+	}
 	/**
 	 * Execute a command as a process in the operating system.
 	 *  
