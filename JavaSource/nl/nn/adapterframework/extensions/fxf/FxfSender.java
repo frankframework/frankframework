@@ -1,6 +1,9 @@
 /*
  * $Log: FxfSender.java,v $
- * Revision 1.14  2010-09-09 11:42:02  m00f069
+ * Revision 1.15  2011-01-26 14:42:56  L190409
+ * new style ProcessUtil
+ *
+ * Revision 1.14  2010/09/09 11:42:02  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Removed double destinationName in javadoc
  *
  * Revision 1.13  2010/03/22 11:08:12  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -195,7 +198,7 @@ public class FxfSender extends JMSFacade implements ISenderWithParameters {
 		return sendMessage(correlationID, message, null);
 	}
 
-	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException {
+	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		String action="put";
 		String transfername=getTransfername();
 		String filename=message;
@@ -215,7 +218,7 @@ public class FxfSender extends JMSFacade implements ISenderWithParameters {
 			}
 		}
 		log.debug(getLogPrefix()+"sending local file ["+message+"] by executing command ["+command+"]");
-		String transporthandle=ProcessUtil.executeCommand(command);
+		String transporthandle=ProcessUtil.executeCommand(command,getTimeout()*2);
 		log.debug(getLogPrefix()+"output of command ["+transporthandle+"]");
 		if (transporthandle!=null) {
 			transporthandle=transporthandle.trim();

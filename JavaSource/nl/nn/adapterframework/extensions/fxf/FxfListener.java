@@ -1,6 +1,9 @@
 /*
  * $Log: FxfListener.java,v $
- * Revision 1.16  2010-11-08 08:40:40  L190409
+ * Revision 1.17  2011-01-26 14:42:56  L190409
+ * new style ProcessUtil
+ *
+ * Revision 1.16  2010/11/08 08:40:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * store transfername for FXF2 too
  *
  * Revision 1.15  2010/07/12 12:49:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -68,6 +71,7 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.jms.JmsListener;
 import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.ProcessUtil;
@@ -244,10 +248,12 @@ public class FxfListener extends JmsListener implements IBulkDataListener {
 			}
 			log.debug(getLogPrefix()+"retrieving local file ["+localname+"] by executing command ["+command+"]");
 			try {
-				String execResult=ProcessUtil.executeCommand(command);
+				String execResult=ProcessUtil.executeCommand(command,getTimeOut()*2); // allow FxF's own timeout to kick in first
 				log.debug(getLogPrefix()+"output of command ["+execResult+"]");
-			} catch (SenderException e1) {
-				throw new ListenerException(e1);
+			} catch (TimeOutException e) {
+				throw new ListenerException(e);
+			} catch (SenderException e) {
+				throw new ListenerException(e);
 			}
 		} else {
 			if (StringUtils.isNotEmpty(getXmlSchema())) {
@@ -322,10 +328,12 @@ public class FxfListener extends JmsListener implements IBulkDataListener {
 				}
 				log.debug(getLogPrefix()+"confirming FXF processing of file ["+localname+"] by executing command ["+command+"]");
 				try {
-					String execResult=ProcessUtil.executeCommand(command);
+					String execResult=ProcessUtil.executeCommand(command,getTimeOut()*2); // allow FxF's own timeout to kick in first
 					log.debug(getLogPrefix()+"output of command ["+execResult+"]");
-				} catch (SenderException e1) {
-					throw new ListenerException(e1);
+				} catch (SenderException e) {
+					throw new ListenerException(e);
+				} catch (TimeOutException e) {
+					throw new ListenerException(e);
 				}
 			} else {
 				String cid     = (String) threadContext.get(PipeLineSession.technicalCorrelationIdKey);

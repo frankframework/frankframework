@@ -1,6 +1,9 @@
 /*
  * $Log: FxfUtil.java,v $
- * Revision 1.2  2009-03-04 15:56:57  L190409
+ * Revision 1.3  2011-01-26 14:42:56  L190409
+ * new style ProcessUtil
+ *
+ * Revision 1.2  2009/03/04 15:56:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added support for FXF 2.0
  *
  * Revision 1.1  2008/09/04 12:05:25  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -44,7 +47,7 @@ public class FxfUtil {
 			try {
 				String command = script+" version";
 				log.debug("checking FXF version by executing command ["+command+"]");
-				String execResult=ProcessUtil.executeCommand(command);
+				String execResult=ProcessUtil.executeCommand(command,10);
 				log.debug("output of command ["+execResult+"]");
 				result=execResult;
 			} catch (SenderException e) {
