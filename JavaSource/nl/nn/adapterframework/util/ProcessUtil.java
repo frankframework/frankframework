@@ -1,6 +1,9 @@
 /*
  * $Log: ProcessUtil.java,v $
- * Revision 1.2  2009-05-06 11:43:53  L190409
+ * Revision 1.3  2011-01-26 13:42:43  L190409
+ * Added timeOut and list style passing of command
+ *
+ * Revision 1.2  2009/05/06 11:43:53  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * show error output when available
  *
  * Revision 1.1  2008/02/13 12:57:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -13,8 +16,11 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.List;
 
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.task.TimeoutGuard;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -44,42 +50,70 @@ public class ProcessUtil {
 		return result.toString();
 	}
 
-	public static String executeCommand(String commandline) throws SenderException {
+	protected static String getCommandLine(List command) {
+		if (command==null || command.isEmpty()) {
+			return "";
+		}
+		String result=(String)command.get(0);
+		for (int i=1;i<command.size();i++) {
+			result+=" "+command.get(i);
+		}
+		return result;
+	}
+	
+	/**
+	 * Execute a command as a process in the operating system.
+	 *  
+	 * @param name: the command to be executed
+	 * @param timeout: timeout in milliseconds, or 0 to wait indefinetely until the process ends
+	 * @param commandline 
+	 * @return
+	 * @throws TimeOutException
+	 * @throws SenderException
+	 */
+	public static String executeCommand(List command, int timeout) throws TimeOutException, SenderException {
 		String output;
 		String errors;
 
 		Process process;
 		try {
-			process = Runtime.getRuntime().exec(commandline);
+			process = Runtime.getRuntime().exec((String[])command.toArray(new String[0]));
 		} catch (IOException e) {
-			throw new SenderException("Could not execute command ["+commandline+"]",e);
+			throw new SenderException("Could not execute command ["+getCommandLine(command)+"]",e);
+		}
+		TimeoutGuard tg = new TimeoutGuard("ProcessUtil ");
+		tg.activateGuard(timeout);
+		try {
+			// Wait until the process is completely finished, or timeout is expired
+			process.waitFor();
+		} catch(InterruptedException e) {
+			if (tg.threadKilled()) {
+				throw new TimeOutException("command ["+getCommandLine(command)+"] timed out",e);
+			} else {
+				throw new SenderException("command ["+getCommandLine(command)+"] interrupted while waiting for process",e);
+			}
+		} finally {
+			tg.cancel();
 		}
 		// Read the output of the process
 		try {
 			output=readStream(process.getInputStream());
 		} catch (IOException e) {
-			throw new SenderException("Could not read output of command ["+commandline+"]",e);
+			throw new SenderException("Could not read output of command ["+getCommandLine(command)+"]",e);
 		}
 		// Read the errors of the process
 		try {
 			errors=readStream(process.getErrorStream());
 		} catch (IOException e) {
-			throw new SenderException("Could not read errors of command ["+commandline+"]",e);
-		}
-
-		// Wait until the process is completely finished
-		try {
-			process.waitFor();
-		} catch(InterruptedException e) {
-			throw new SenderException("Interrupted while waiting for process",e);
+			throw new SenderException("Could not read errors of command ["+getCommandLine(command)+"]",e);
 		}
 		// Throw an exception if the command returns an error exit value
 		int exitValue = process.exitValue();
 		if (exitValue != 0) {
-			throw new SenderException("Nonzero exit value [" + exitValue + "] for command [" + commandline + "], process output was [" + output + "], error output was [" + errors + "]");
+			throw new SenderException("Nonzero exit value [" + exitValue + "] for command  ["+getCommandLine(command)+"], process output was [" + output + "], error output was [" + errors + "]");
 		}
 		if (StringUtils.isNotEmpty(errors)) {
-			log.warn("command [" + commandline + "] had error output [" + errors + "]");
+			log.warn("command ["+getCommandLine(command)+"] had error output [" + errors + "]");
 		}
 		return output;
 	}
