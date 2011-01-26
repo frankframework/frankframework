@@ -1,6 +1,9 @@
 /*
  * $Log: ExecutePipe.java,v $
- * Revision 1.5  2011-01-26 14:32:12  L190409
+ * Revision 1.6  2011-01-26 14:44:49  L190409
+ * simplified
+ *
+ * Revision 1.5  2011/01/26 14:32:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * moved splitting of command to ProcessUtil
  *
  * Revision 1.4  2011/01/26 11:03:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -19,17 +22,12 @@
  */
 package nl.nn.adapterframework.pipes;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.StringTokenizer;
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.util.ProcessUtil;
 
 import org.apache.commons.lang.StringUtils;
@@ -50,7 +48,7 @@ import org.apache.commons.lang.StringUtils;
  * @deprecated please use CommandSender
  */
 public class ExecutePipe extends FixedForwardPipe {
-	public static final String version = "$RCSfile: ExecutePipe.java,v $ $Revision: 1.5 $ $Date: 2011-01-26 14:32:12 $";
+	public static final String version = "$RCSfile: ExecutePipe.java,v $ $Revision: 1.6 $ $Date: 2011-01-26 14:44:49 $";
 	
 	private String command;
 	private String commandSessionKey;
@@ -74,8 +72,6 @@ public class ExecutePipe extends FixedForwardPipe {
 		try {
 			return new PipeRunResult(getForward(), ProcessUtil.executeCommand(command));
 		} catch(SenderException e) {
-			throw new PipeRunException(this, "Error executing command", e);
-		} catch(TimeOutException e) {
 			throw new PipeRunException(this, "Error executing command", e);
 		}
 	}
