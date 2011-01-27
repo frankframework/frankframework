@@ -1,6 +1,9 @@
 /*
  * $Log: MailSender.java,v $
- * Revision 1.10  2010-09-07 15:55:13  m00f069
+ * Revision 1.11  2011-01-27 13:25:15  L190409
+ * added attribute timeout
+ *
+ * Revision 1.10  2010/09/07 15:55:13  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Removed IbisDebugger, made it possible to use AOP to implement IbisDebugger functionality.
  *
  * Revision 1.9  2010/05/19 10:25:22  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -104,6 +107,7 @@ import org.w3c.dom.Element;
  * <tr><td>{@link #setDefaultSubject(String) defaultSubject}</td><td>value of the Subject: header if not specified in message itself</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDefaultAttachmentType(String) defaultAttachmentType}</td><td>&nbsp;</td><td>text</td></tr>
  * <tr><td>{@link #setDefaultAttachmentName(String) defaultAttachmentName}</td><td>&nbsp;</td><td>attachment</td></tr>
+ * <tr><td>{@link #setTimeout(int) timeout}</td><td>timeout (in milliseconds). Used for socket connection timeout and socket I/O timeout</td><td>20000</td></tr>
  * </table>
  * <table border="1">
  * <p><b>Parameters:</b>
@@ -143,6 +147,8 @@ public class MailSender extends SenderWithParametersBase {
 	private String defaultMessageBase64 = "false";
 	private String messageType = null;
 	private String messageBase64 = null;
+	
+	private int timeout=20000;
 
 	// defaults
 	private String defaultSubject;
@@ -161,6 +167,8 @@ public class MailSender extends SenderWithParametersBase {
 		} catch (Throwable t) {
 			throw new ConfigurationException("MailSender ["+getName()+"] cannot set smtpHost ["+getSmtpHost()+"] in properties");
 		}
+		properties.put("mail.smtp.connectiontimeout", getTimeout()+"");
+		properties.put("mail.smtp.timeout", getTimeout()+"");
 		if (paramList!=null) {
 			paramList.configure();
 		}
@@ -548,6 +556,14 @@ public class MailSender extends SenderWithParametersBase {
 	}
 	public String getDefaultAttachmentType() {
 		return defaultAttachmentType;
+	}
+
+	public int getTimeout() {
+		return timeout;
+	}
+
+	public void setTimeout(int timeout) {
+		this.timeout = timeout;
 	}
 
 }
