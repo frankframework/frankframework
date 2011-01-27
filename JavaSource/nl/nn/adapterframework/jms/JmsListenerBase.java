@@ -1,6 +1,9 @@
 /*
  * $Log: JmsListenerBase.java,v $
- * Revision 1.4  2009-08-20 12:14:03  L190409
+ * Revision 1.5  2011-01-27 08:45:05  L190409
+ * timeout as int
+ *
+ * Revision 1.4  2009/08/20 12:14:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * user generic getStringFromRawMessage from JMSFacade
  *
  * Revision 1.3  2009/07/28 12:44:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -73,7 +76,7 @@ import org.apache.commons.lang.StringUtils;
  */
 public class JmsListenerBase extends JMSFacade implements HasSender {
 
-	private long timeOut = 3000;
+	private int timeOut = 3000;
 	private boolean useReplyTo=true;
 	private String replyMessageType=null;
 	private long replyMessageTimeToLive=0;
@@ -293,10 +296,10 @@ public class JmsListenerBase extends JMSFacade implements HasSender {
 		return commitOnState;
 	}
 
-	public void setTimeOut(long newTimeOut) {
+	public void setTimeOut(int newTimeOut) {
 		timeOut = newTimeOut;
 	}
-	public long getTimeOut() {
+	public int getTimeOut() {
 		return timeOut;
 	}
 
