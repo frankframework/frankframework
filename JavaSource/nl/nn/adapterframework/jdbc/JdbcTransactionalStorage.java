@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcTransactionalStorage.java,v $
- * Revision 1.48  2011-01-26 16:25:22  L190409
+ * Revision 1.49  2011-01-27 12:57:58  L190409
+ * fixed bug in store without full message
+ *
+ * Revision 1.48  2011/01/26 16:25:22  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added attribute storeFullMessage
  *
  * Revision 1.47  2010/12/20 10:44:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -156,6 +159,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.sql.Blob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -896,6 +900,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 			}
 	
 			if (!isStoreFullMessage()) {
+				stmt.execute();
 				return null;
 			}
 			if (databaseType!=DATABASE_ORACLE) {
@@ -1159,10 +1164,14 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	private Object retrieveObject(ResultSet rs, int columnIndex, boolean compressed) throws ClassNotFoundException, JdbcException, IOException, SQLException {
 		InputStream blobStream=null;
 		try {
+			Blob blob = rs.getBlob(columnIndex);
+			if (blob==null) {
+				return null;
+			}
 			if (compressed) {
-				blobStream=new InflaterInputStream(JdbcUtil.getBlobInputStream(rs, columnIndex));
+				blobStream=new InflaterInputStream(JdbcUtil.getBlobInputStream(blob, columnIndex+""));
 			} else {
-				blobStream=JdbcUtil.getBlobInputStream(rs, columnIndex);
+				blobStream=JdbcUtil.getBlobInputStream(blob, columnIndex+"");
 			}
 			ObjectInputStream ois = new ObjectInputStream(blobStream);
 			Object result = ois.readObject();
