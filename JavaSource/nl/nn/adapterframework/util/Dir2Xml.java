@@ -1,6 +1,9 @@
 /*
  * $Log: Dir2Xml.java,v $
- * Revision 1.8  2007-02-12 14:09:31  europe\L190409
+ * Revision 1.9  2011-02-04 15:35:45  m168309
+ * avoid NPE
+ *
+ * Revision 1.8  2007/02/12 14:09:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Logger from LogUtil
  *
  * Revision 1.7  2006/01/05 14:52:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -32,7 +35,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class Dir2Xml  {
-	public static final String version="$RCSfile: Dir2Xml.java,v $ $Revision: 1.8 $ $Date: 2007-02-12 14:09:31 $";
+	public static final String version="$RCSfile: Dir2Xml.java,v $ $Revision: 1.9 $ $Date: 2011-02-04 15:35:45 $";
 	protected Logger log = LogUtil.getLogger(this);
 	
   	private String path;
@@ -46,12 +49,17 @@ public class Dir2Xml  {
 		WildCardFilter filter = new WildCardFilter(wildcard);
 		File dir = new File(path);
 		File files[] = dir.listFiles(filter);
-		Arrays.sort(files, new FileNameComparator());
+		if (files != null) {
+			Arrays.sort(files, new FileNameComparator());
+		}
 		int count = (files == null ? 0 : files.length);
 		XmlBuilder dirXml = new XmlBuilder("directory");
 		dirXml.addAttribute("name", path);
 		if (includeDirectories) {
-			dirXml.addSubElement(getFileAsXmlBuilder(dir.getParentFile(),".."));
+			File parent = dir.getParentFile();
+			if (parent != null) {
+				dirXml.addSubElement(getFileAsXmlBuilder(parent,".."));
+			}
 		}
 		for (int i = 0; i < count; i++) {
 			File file = files[i];
