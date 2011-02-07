@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractSpringPoweredDigesterFactory.java,v $
- * Revision 1.17  2010-09-07 15:55:13  m00f069
+ * Revision 1.18  2011-02-07 15:24:36  m168309
+ * configuration warning when non String attribute is empty
+ *
+ * Revision 1.17  2010/09/07 15:55:13  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Removed IbisDebugger, made it possible to use AOP to implement IbisDebugger functionality.
  *
  * Revision 1.16  2010/04/01 13:01:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -230,21 +233,25 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 								addSetToDefaultConfigWarning(currObj, beanName, attributeName, value);
 							}
 						} else {
-							if (dv instanceof Boolean) {
-								if (Boolean.valueOf(value).equals(dv)) {
-									addSetToDefaultConfigWarning(currObj, beanName, attributeName, value);
-								}
+							if (value.length()==0) {
+								addConfigWarning(currObj, beanName, "attribute ["+ attributeName+"] with type ["+dv.getClass().getName()+"] has no value");
 							} else {
-								if (dv instanceof Integer) {
-									try {
-										if (Integer.valueOf(value).equals(dv)) {
-											addSetToDefaultConfigWarning(currObj, beanName, attributeName, value);
-										}
-									} catch (NumberFormatException e) {
-										addConfigWarning(currObj, beanName, "attribute ["+ attributeName+"] String ["+value+"] cannot be converted to Integer: "+e.getMessage());
+								if (dv instanceof Boolean) {
+									if (Boolean.valueOf(value).equals(dv)) {
+										addSetToDefaultConfigWarning(currObj, beanName, attributeName, value);
 									}
 								} else {
-									log.warn("Unknown returning type [" + rm.getReturnType() + "]" + "for getter method [" + rm.getName() + "], object [" + getObjectName(currObj, beanName) + "]");
+									if (dv instanceof Integer) {
+										try {
+											if (Integer.valueOf(value).equals(dv)) {
+												addSetToDefaultConfigWarning(currObj, beanName, attributeName, value);
+											}
+										} catch (NumberFormatException e) {
+											addConfigWarning(currObj, beanName, "attribute ["+ attributeName+"] String ["+value+"] cannot be converted to Integer: "+e.getMessage());
+										}
+									} else {
+										log.warn("Unknown returning type [" + rm.getReturnType() + "]" + "for getter method [" + rm.getName() + "], object [" + getObjectName(currObj, beanName) + "]");
+									}
 								}
 							}
 						}
