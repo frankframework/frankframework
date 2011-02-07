@@ -1,6 +1,9 @@
 /*
  * $Log: JmsSender.java,v $
- * Revision 1.40  2010-04-27 09:25:56  L190409
+ * Revision 1.41  2011-02-07 13:10:57  m168309
+ * updated javadoc
+ *
+ * Revision 1.40  2010/04/27 09:25:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved logging of waiting for reply
  *
  * Revision 1.39  2010/03/22 11:08:13  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -164,7 +167,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * <tr><td>{@link #setSynchronous(boolean) synchronous}</td><td>when <code>true</code>, the sender operates in RR mode: the a reply is expected, either on the queue specified in 'replyToName', or on a dynamically generated temporary queue</td><td>false</td></tr>
  * <tr><td>{@link #setLinkMethod(String) linkMethod}</td><td>(Only used when synchronous="true" and and replyToName is set) Eithter 'MESSAGEID' or 'CORRELATIONID'. Indicates wether the server uses the correlationID or the messageID in the correlationID field of the reply. This requires the sender to have set the correlationID at the time of sending.</td><td>MESSAGEID</td></tr>
  * <tr><td>{@link #setReplyToName(String) replyToName}</td><td>Name of the queue the reply is expected on. This value is send in the JmsReplyTo-header with the message.</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setReplyTimeout(int) replyTimeout}</td><td>maximum time in ms to wait for a reply. (Only for synchronous=true)</td><td>5000</td></tr>
+ * <tr><td>{@link #setReplyTimeout(int) replyTimeout}</td><td>maximum time in ms to wait for a reply. 0 means no timeout. (Only for synchronous=true)</td><td>5000</td></tr>
  * <tr><td>{@link #setPersistent(boolean) persistent}</td><td>rather useless attribute, and not the same as delivery mode. You probably want to use that.</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setUseDynamicReplyQueue(boolean) useDynamicReplyQueue}</td><td>when <code>true</code>, a temporary queue is used to receive a reply</td><td>false</td></tr>
@@ -187,7 +190,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  */
 
 public class JmsSender extends JMSFacade implements ISenderWithParameters, IPostboxSender {
-	public static final String version="$RCSfile: JmsSender.java,v $ $Revision: 1.40 $ $Date: 2010-04-27 09:25:56 $";
+	public static final String version="$RCSfile: JmsSender.java,v $ $Revision: 1.41 $ $Date: 2011-02-07 13:10:57 $";
 	private String replyToName = null;
 	private int deliveryMode = 0;
 	private String messageType = null;
