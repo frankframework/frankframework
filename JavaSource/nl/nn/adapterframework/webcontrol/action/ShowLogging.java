@@ -1,6 +1,9 @@
 /*
  * $Log: ShowLogging.java,v $
- * Revision 1.4  2005-10-20 15:28:07  europe\L190409
+ * Revision 1.5  2011-02-14 12:55:57  m168309
+ * show error message when error occurs
+ *
+ * Revision 1.4  2005/10/20 15:28:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added option to show directories
  *
  */
@@ -36,7 +39,7 @@ import java.io.IOException;
  * @author Johan Verrips IOS
  */
 public class ShowLogging extends ActionBase {
-	public static final String version="$RCSfile: ShowLogging.java,v $ $Revision: 1.4 $ $Date: 2005-10-20 15:28:07 $";
+	public static final String version="$RCSfile: ShowLogging.java,v $ $Revision: 1.5 $ $Date: 2011-02-14 12:55:57 $";
 	
 	boolean showDirectories = AppConstants.getInstance().getBoolean("logging.showdirectories", false);
 	
@@ -62,7 +65,7 @@ public class ShowLogging extends ActionBase {
 	    try {
 		    listresult=dx.getDirList(showDirectories);
 	    } catch (Exception e) {
-		    log.error("probably a misdefinition in property logging.path", e);
+			error("error occured on getting directory list",e);
 		    log.warn("returning empty result for directory listing");
 		    listresult="<directory/>";
 	    }
