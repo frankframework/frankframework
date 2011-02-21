@@ -1,6 +1,9 @@
 /*
  * $Log: WebServiceListener.java,v $
- * Revision 1.10  2007-10-17 09:07:24  europe\L190409
+ * Revision 1.11  2011-02-21 18:07:10  L190409
+ * implemented HasPhysicalDestinationName
+ *
+ * Revision 1.10  2007/10/17 09:07:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed unused imports
  *
  * Revision 1.9  2007/10/08 12:18:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -50,6 +53,7 @@ import java.io.Serializable;
 import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IMessageHandler;
 import nl.nn.adapterframework.core.IPushingListener;
 import nl.nn.adapterframework.core.IbisExceptionListener;
@@ -82,8 +86,8 @@ import org.apache.log4j.Logger;
  * @author  Gerrit van Brakel 
  * @version Id
  */
-public class WebServiceListener  implements IPushingListener, ServiceClient2, Serializable {
-	public static final String version="$RCSfile: WebServiceListener.java,v $ $Revision: 1.10 $ $Date: 2007-10-17 09:07:24 $";
+public class WebServiceListener  implements IPushingListener, ServiceClient2, Serializable, HasPhysicalDestination {
+	public static final String version="$RCSfile: WebServiceListener.java,v $ $Revision: 1.11 $ $Date: 2011-02-21 18:07:10 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private IMessageHandler handler;        	
@@ -99,15 +103,23 @@ public class WebServiceListener  implements IPushingListener, ServiceClient2, Se
 			if (handler==null) {
 				throw new ConfigurationException("handler has not been set");
 			}
-			if (StringUtils.isEmpty(getServiceNamespaceURI())) {
-				log.debug("registering listener ["+name+"] with ServiceDispatcher");
-				ServiceDispatcher.getInstance().registerServiceClient(name, this);
-			} else {
+			if (StringUtils.isNotEmpty(getServiceNamespaceURI())) {
 				log.debug("registering listener ["+name+"] with ServiceDispatcher by serviceNamespaceURI ["+getServiceNamespaceURI()+"]");
 				ServiceDispatcher.getInstance().registerServiceClient(getServiceNamespaceURI(), this);
+			} else {
+				log.debug("registering listener ["+name+"] with ServiceDispatcher");
+				ServiceDispatcher.getInstance().registerServiceClient(name, this);
 			}
 		} catch (Exception e){
 			throw new ConfigurationException(e);
+		}
+	}
+
+	public String getPhysicalDestinationName() {
+		if (StringUtils.isNotEmpty(getServiceNamespaceURI())) {
+			return "serviceNamespaceURI: "+getServiceNamespaceURI();
+		} else {
+			return "name: "+name;
 		}
 	}
 
@@ -205,6 +217,5 @@ public class WebServiceListener  implements IPushingListener, ServiceClient2, Se
 	public void setApplicationFaultsAsSoapFaults(boolean b) {
 		applicationFaultsAsSoapFaults = b;
 	}
-
 
 }
