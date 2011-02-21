@@ -1,6 +1,9 @@
 /*
  * $Log: SoapGenericProvider.java,v $
- * Revision 1.3  2007-10-08 12:24:48  europe\L190409
+ * Revision 1.4  2011-02-21 17:55:25  L190409
+ * improved errorhandling and logging
+ *
+ * Revision 1.3  2007/10/08 12:24:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed HashMap to Map where possible
  *
  * Revision 1.2  2007/02/12 14:06:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -30,6 +33,7 @@ import nl.nn.adapterframework.http.HttpSecurityHandler;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
 import nl.nn.adapterframework.util.LogUtil;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.soap.Constants;
 import org.apache.soap.Envelope;
@@ -46,7 +50,7 @@ import org.apache.soap.util.Provider;
  * @author Gerrit van Brakel
  */
 public class SoapGenericProvider implements Provider {
-	public static final String version = "$RCSfile: SoapGenericProvider.java,v $ $Revision: 1.3 $ $Date: 2007-10-08 12:24:48 $";
+	public static final String version = "$RCSfile: SoapGenericProvider.java,v $ $Revision: 1.4 $ $Date: 2011-02-21 17:55:25 $";
 	protected Logger log=LogUtil.getLogger(this);
 	
 	private final String TARGET_OBJECT_URI_KEY = "TargetObjectNamespaceURI";
@@ -69,9 +73,15 @@ public class SoapGenericProvider implements Provider {
 				throw new SOAPException(Constants.FAULT_CODE_SERVER, "cannot instantiate SoapWrapper");
 			}
 		}
-		
+		if (StringUtils.isEmpty(targetObjectURI)) {
+			String msg="no targetObjectURI specified";
+			log.warn(msg);
+			throw new SOAPException(Constants.FAULT_CODE_SERVER, msg);
+		}
 		if (!sd.isRegisteredServiceListener(targetObjectURI)){
-			throw new SOAPException(Constants.FAULT_CODE_SERVER, "["+targetObjectURI+"] is not a registered receiver");
+			String msg="no receiver registered for targetObjectURI ["+targetObjectURI+"]";
+			log.warn(msg);
+			throw new SOAPException(Constants.FAULT_CODE_SERVER, msg);
 		}
 		reqContext.setProperty(TARGET_OBJECT_URI_KEY, targetObjectURI);
 	}
@@ -97,7 +107,7 @@ public class SoapGenericProvider implements Provider {
 			if ( e instanceof SOAPException ) {
 				throw (SOAPException ) e;
 			} 
-			throw new SOAPException( Constants.FAULT_CODE_SERVER, e.toString() );
+			throw new SOAPException( Constants.FAULT_CODE_SERVER, "GenericSoapProvider caught exception: "+e.toString() );
 		 }
 	}
 	
