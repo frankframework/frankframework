@@ -1,6 +1,9 @@
 /*
  * $Log: Parameter.java,v $
- * Revision 1.40  2010-09-10 09:23:58  L190409
+ * Revision 1.41  2011-02-21 17:56:51  L190409
+ * cosmetic improvement in toString()
+ *
+ * Revision 1.40  2010/09/10 09:23:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * restored some javadoc
  *
  * Revision 1.39  2010/09/07 15:55:14  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -223,7 +226,7 @@ import org.w3c.dom.Node;
  * @author Gerrit van Brakel
  */
 public class Parameter implements INamedObject, IWithParameters {
-	public static final String version="$RCSfile: Parameter.java,v $ $Revision: 1.40 $ $Date: 2010-09-10 09:23:58 $";
+	public static final String version="$RCSfile: Parameter.java,v $ $Revision: 1.41 $ $Date: 2011-02-21 17:56:51 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static String TYPE_XML="xml";
@@ -554,8 +557,7 @@ public class Parameter implements INamedObject, IWithParameters {
 	}
 
 	public String toString() {
-		return "name=["+name+"] defaultValue=["+defaultValue+"] sessionKey=["+sessionKey+"]" + "xpathExpression=["+xpathExpression+ "]" + "type=["+type+ "]" + "value=["+value+ "]";
-
+		return "Paramter name=["+name+"] defaultValue=["+defaultValue+"] sessionKey=["+sessionKey+"] xpathExpression=["+xpathExpression+ "] type=["+type+ "] value=["+value+ "]";
 	}
 
 	/**
