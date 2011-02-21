@@ -1,6 +1,9 @@
 /*
  * $Log: HttpSender.java,v $
- * Revision 1.46  2010-07-12 12:44:37  L190409
+ * Revision 1.47  2011-02-21 18:03:51  L190409
+ * can now specify url dynamically too
+ *
+ * Revision 1.46  2010/07/12 12:44:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * only set proxy credentials if proxyUsername specified
  *
  * Revision 1.45  2010/03/10 14:30:05  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -146,6 +149,8 @@ import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.security.Security;
+import java.util.HashSet;
+import java.util.Set;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
@@ -153,6 +158,7 @@ import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderWithParametersBase;
 import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -166,6 +172,7 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.HttpMethodBase;
+import org.apache.commons.httpclient.HttpState;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 import org.apache.commons.httpclient.StatusLine;
 import org.apache.commons.httpclient.URI;
@@ -185,6 +192,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>classname</td><td>nl.nn.adapterframework.http.HttpSender</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the sender</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setUrl(String) url}</td><td>URL or base of URL to be used </td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setUrlParam(String) urlParam}</td><td>parameter that is used to obtain url; overrides url-attribute.</td><td>url</td></tr>
  * <tr><td>{@link #setMethodType(String) methodType}</td><td>type of method to be executed, either 'GET' or 'POST'</td><td>GET</td></tr>
  * <tr><td>{@link #setContentType(String) contentType}</td><td>conent-type of the request, only for POST methods</td><td>text/html; charset=UTF-8</td></tr>
  * <tr><td>{@link #setTimeout(int) timeout}</td><td>timeout in ms of obtaining a connection/result. 0 means no timeout</td><td>10000</td></tr>
@@ -272,9 +280,10 @@ import org.apache.commons.lang.StringUtils;
  * @since 4.2c
  */
 public class HttpSender extends SenderWithParametersBase implements HasPhysicalDestination {
-	public static final String version = "$RCSfile: HttpSender.java,v $ $Revision: 1.46 $ $Date: 2010-07-12 12:44:37 $";
+	public static final String version = "$RCSfile: HttpSender.java,v $ $Revision: 1.47 $ $Date: 2011-02-21 18:03:51 $";
 
 	private String url;
+	private String urlParam="url";
 	private String methodType="GET"; // GET or POST
 	private String contentType="text/html; charset="+Misc.DEFAULT_INPUT_STREAM_ENCODING;
 
@@ -309,9 +318,18 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 	private boolean staleChecking=true;
 	private boolean encodeMessages=false;
 
-	protected URI uri;
+	protected Parameter urlParameter;
+	
+	protected URI staticUri;
 	private MultiThreadedHttpConnectionManager connectionManager;
 	protected HttpClient httpclient;
+	protected HostConfiguration hostconfigurationBase; // hostconfiguration shared by all requests
+	protected HttpState httpState;					   // global http state	
+	private Credentials credentials;
+	
+	private AuthSSLProtocolSocketFactoryBase socketfactory =null;
+	
+	private Set parametersToSkip=new HashSet();
 
 
 	protected void addProvider(String name) {
@@ -323,6 +341,36 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 		}
 	}
 
+	protected void addParameterToSkip(Parameter param) {
+		if (param!=null) {
+			parametersToSkip.add(param);
+		}
+	}
+	
+	protected URI getURI(String url) throws URIException {
+		URI uri = new URI(url);
+
+		if (uri.getPath()==null) {
+			uri.setPath("/");
+		}
+
+		log.info(getLogPrefix()+"created uri: scheme=["+uri.getScheme()+"] host=["+uri.getHost()+"] path=["+uri.getPath()+"]");
+		return uri;
+	}
+	
+	protected int getPort(URI uri) {
+		int port = uri.getPort();
+		if (port<1) {
+			try {
+				log.debug(getLogPrefix()+"looking up protocol for scheme ["+uri.getScheme()+"]");
+				port = Protocol.getProtocol(uri.getScheme()).getDefaultPort();
+			} catch (IllegalStateException e) {
+				log.debug(getLogPrefix()+"protocol for scheme ["+uri.getScheme()+"] not found, setting port to 80",e);
+				port=80; 
+			}
+		}
+		return port;
+	}
 	
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -332,34 +380,25 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 		httpclient.setTimeout(getTimeout());
 		httpclient.setConnectionTimeout(getTimeout());
 		httpclient.setHttpConnectionFactoryTimeout(getTimeout());
+		hostconfigurationBase = httpclient.getHostConfiguration();		           
 		
 		if (paramList!=null) {
 			paramList.configure();
-		}
-		if (StringUtils.isEmpty(getUrl())) {
-			throw new ConfigurationException(getLogPrefix()+"Url must be specified");
+			if (StringUtils.isNotEmpty(getUrlParam())) {
+				urlParameter = paramList.findParameter(getUrlParam());
+				addParameterToSkip(urlParameter);
+			}
 		}
 		if (getMaxConnections()<=0) {
 			throw new ConfigurationException(getLogPrefix()+"maxConnections is set to ["+getMaxConnections()+"], which is not enough for adequate operation");
 		}
 		try {
-			uri = new URI(getUrl());
-
-			int port = uri.getPort();
-			if (port<1) {
-				try {
-					log.debug(getLogPrefix()+"looking up protocol for scheme ["+uri.getScheme()+"]");
-					port = Protocol.getProtocol(uri.getScheme()).getDefaultPort();
-				} catch (IllegalStateException e) {
-					log.debug(getLogPrefix()+"protocol for scheme ["+uri.getScheme()+"] not found, setting port to 80",e);
-					port=80; 
+			if (urlParameter==null) {
+				if (StringUtils.isEmpty(getUrl())) {
+					throw new ConfigurationException(getLogPrefix()+"url must be specified, either as attribute, or as parameter");
 				}
+				staticUri=getURI(getUrl());
 			}
-			if (uri.getPath()==null) {
-				uri.setPath("/");
-			}
-
-			log.info(getLogPrefix()+"created uri: scheme=["+uri.getScheme()+"] host=["+uri.getHost()+"] port=["+port+"] path=["+uri.getPath()+"]");
 
 			URL certificateUrl=null;
 			URL truststoreUrl=null;
@@ -379,10 +418,9 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 				log.info(getLogPrefix()+"resolved truststore-URL to ["+truststoreUrl.toString()+"]");
 			}
 
-			HostConfiguration hostconfiguration = httpclient.getHostConfiguration();		           
 			
 			if (certificateUrl!=null || truststoreUrl!=null) {
-				AuthSSLProtocolSocketFactoryBase socketfactory ;
+				//AuthSSLProtocolSocketFactoryBase socketfactory ;
 				try {
 					CredentialFactory certificateCf = new CredentialFactory(getCertificateAuthAlias(), null, getCertificatePassword());
 					CredentialFactory truststoreCf  = new CredentialFactory(getTruststoreAuthAlias(),  null, getTruststorePassword());
@@ -402,24 +440,19 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 				} catch (Throwable t) {
 					throw new ConfigurationException(getLogPrefix()+"cannot create or initialize SocketFactory",t);
 				}
-				Protocol authhttps = new Protocol(uri.getScheme(), socketfactory, port);
-				hostconfiguration.setHost(uri.getHost(),port,authhttps);
-			} else {
-				hostconfiguration.setHost(uri.getHost(),port,uri.getScheme());
 			}
-			log.info(getLogPrefix()+"configured httpclient for host ["+hostconfiguration.getHostURL()+"]");
+			httpState = new HttpState();
 			
 			CredentialFactory cf = new CredentialFactory(getAuthAlias(), getUserName(), getPassword());
 			if (!StringUtils.isEmpty(cf.getUsername())) {
-				httpclient.getState().setAuthenticationPreemptive(true);
-				Credentials defaultcreds = new UsernamePasswordCredentials(cf.getUsername(), cf.getPassword());
-				httpclient.getState().setCredentials(null, uri.getHost(), defaultcreds);
+				httpState.setAuthenticationPreemptive(true);
+				credentials = new UsernamePasswordCredentials(cf.getUsername(), cf.getPassword());
 			}
 			if (StringUtils.isNotEmpty(getProxyHost())) {
 				CredentialFactory pcf = new CredentialFactory(getProxyAuthAlias(), getProxyUserName(), getProxyPassword());
-				httpclient.getHostConfiguration().setProxy(getProxyHost(), getProxyPort());
+				hostconfigurationBase.setProxy(getProxyHost(), getProxyPort());
 				if (StringUtils.isNotEmpty(pcf.getUsername())) {
-					httpclient.getState().setProxyCredentials(getProxyRealm(), getProxyHost(),
+					httpState.setProxyCredentials(getProxyRealm(), getProxyHost(),
 					new UsernamePasswordCredentials(pcf.getUsername(), pcf.getPassword()));
 				}
 			}
@@ -457,6 +490,10 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 			log.debug(getLogPrefix()+"appending ["+parameters.size()+"] parameters");
 		}
 		for(int i=0; i<parameters.size(); i++) {
+			if (parametersToSkip.contains(paramList.get(i))) {
+				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"skipping ["+paramList.get(i)+"]");
+				continue;
+			}
 			if (parametersAppended) {
 				path.append("&");
 			} else {
@@ -465,18 +502,19 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 			}
 			ParameterValue pv = parameters.getParameterValue(i);
 			String parameterToAppend=pv.getDefinition().getName()+"="+URLEncoder.encode(pv.asStringValue(""));
-			log.debug(getLogPrefix()+"appending parameter ["+parameterToAppend+"]");
+			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appending parameter ["+parameterToAppend+"]");
 			path.append(parameterToAppend);
 		}
 		return parametersAppended;
 	}
 
-	protected HttpMethod getMethod(String message, ParameterValueList parameters) throws SenderException {
+	protected HttpMethod getMethod(URI uri, String message, ParameterValueList parameters) throws SenderException {
 		try { 
 			boolean queryParametersAppended = false;
 			if (isEncodeMessages()) {
 				message = URLEncoder.encode(message);
 			}
+			
 			StringBuffer path = new StringBuffer(uri.getPath());
 			if (!StringUtils.isEmpty(uri.getQuery())) {
 				path.append("?"+uri.getQuery());
@@ -489,7 +527,7 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 					log.debug(getLogPrefix()+"path after appending of parameters ["+path.toString()+"]");
 				}
 				GetMethod result = new GetMethod(path+(parameters==null? message:""));
-				log.debug(getLogPrefix()+"HttpSender constructed GET-method ["+result.getQueryString()+"]");
+				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"HttpSender constructed GET-method ["+result.getQueryString()+"]");
 				return result;
 			} else {
 				if (getMethodType().equals("POST")) {
@@ -555,9 +593,37 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 		} catch (ParameterException e) {
 			throw new SenderException(getLogPrefix()+"Sender ["+getName()+"] caught exception evaluating parameters",e);
 		}
-		HttpMethod httpmethod=getMethod(message, pvl);
-		if (!"POST".equals(getMethodType())) {
-			httpmethod.setFollowRedirects(isFollowRedirects());
+		URI uri;
+		HttpMethod httpmethod;
+		HostConfiguration hostconfiguration=new HostConfiguration(hostconfigurationBase);
+		try {
+			if (urlParameter!=null) {
+				String url=(String)pvl.getParameterValue(getUrlParam()).getValue();
+				uri=getURI(url);
+			} else {
+				uri=staticUri;
+			}
+			httpmethod=getMethod(uri, message, pvl);
+			if (!"POST".equals(getMethodType())) {
+				httpmethod.setFollowRedirects(isFollowRedirects());
+			}
+			
+	
+			int port = getPort(uri);
+		
+			if (socketfactory!=null && "https".equals(uri.getScheme())) {
+				Protocol authhttps = new Protocol(uri.getScheme(), socketfactory, port);
+				hostconfiguration.setHost(uri.getHost(),port,authhttps);
+			} else {
+				hostconfiguration.setHost(uri.getHost(),port,uri.getScheme());
+			}
+			log.info(getLogPrefix()+"configured httpclient for host ["+hostconfiguration.getHostURL()+"]");
+		
+			if (credentials!=null) {
+				httpState.setCredentials(null, uri.getHost(), credentials);
+			}
+		} catch (URIException e) {
+			throw new SenderException(e);
 		}
 		
 		String result = null;
@@ -567,7 +633,7 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 		while (count-->=0 && statusCode==-1) {
 			try {
 				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"executing method");
-				statusCode = httpclient.executeMethod(httpmethod);
+				statusCode = httpclient.executeMethod(hostconfiguration,httpmethod,httpState);
 				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"executed method");
 				if (log.isDebugEnabled()) {
 					StatusLine statusline = httpmethod.getStatusLine();
@@ -587,9 +653,7 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 				if (throwable!=null) {
 					cause = throwable.toString();
 				}
-				if (e!=null) {
-					msg = e.getMessage();
-				}
+				msg = e.getMessage();
 				log.warn("httpException with message [" + msg + "] and cause [" + cause + "], executeRetries left [" + count + "]");
 			} catch (IOException e) {
 				httpmethod.abort();
@@ -622,6 +686,9 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 
 
 	public String getPhysicalDestinationName() {
+		if (urlParameter!=null) {
+			return "dynamic url";
+		}
 		return getUrl();
 	}
 
@@ -630,39 +697,41 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 	public String getUrl() {
 		return url;
 	}
+	public void setUrl(String string) {
+		url = string;
+	}
+
+	public String getUrlParam() {
+		return urlParam;
+	}
+	public void setUrlParam(String urlParam) {
+		this.urlParam = urlParam;
+	}
 
 	public String getProxyHost() {
 		return proxyHost;
+	}
+	public void setProxyHost(String string) {
+		proxyHost = string;
 	}
 
 	public String getProxyPassword() {
 		return proxyPassword;
 	}
+	public void setProxyPassword(String string) {
+		proxyPassword = string;
+	}
 
 	public int getProxyPort() {
 		return proxyPort;
+	}
+	public void setProxyPort(int i) {
+		proxyPort = i;
 	}
 
 	public String getProxyUserName() {
 		return proxyUserName;
 	}
-
-	public void setUrl(String string) {
-		url = string;
-	}
-
-	public void setProxyHost(String string) {
-		proxyHost = string;
-	}
-
-	public void setProxyPassword(String string) {
-		proxyPassword = string;
-	}
-
-	public void setProxyPort(int i) {
-		proxyPort = i;
-	}
-
 	public void setProxyUserName(String string) {
 		proxyUserName = string;
 	}
@@ -670,54 +739,49 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 	public String getProxyRealm() {
 		return proxyRealm;
 	}
-
 	public void setProxyRealm(String string) {
 		proxyRealm = string;
-	}
-
-	public String getPassword() {
-		return password;
 	}
 
 	public String getUserName() {
 		return userName;
 	}
-
-	public void setPassword(String string) {
-		password = string;
-	}
-
 	public void setUserName(String string) {
 		userName = string;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+	public void setPassword(String string) {
+		password = string;
 	}
 
 	public String getMethodType() {
 		return methodType;
 	}
-
 	public void setMethodType(String string) {
 		methodType = string;
 	}
+
+	
 	public String getCertificate() {
 		return certificate;
+	}
+	public void setCertificate(String string) {
+		certificate = string;
 	}
 
 	public String getCertificatePassword() {
 		return certificatePassword;
 	}
-
-	public String getKeystoreType() {
-		return keystoreType;
-	}
-
-	public void setCertificate(String string) {
-		certificate = string;
-	}
-
 	public void setCertificatePassword(String string) {
 		certificatePassword = string;
 	}
 
+	public String getKeystoreType() {
+		return keystoreType;
+	}
 	public void setKeystoreType(String string) {
 		keystoreType = string;
 	}
@@ -725,73 +789,15 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 	public String getTruststore() {
 		return truststore;
 	}
-
-	public String getTruststorePassword() {
-		return truststorePassword;
-	}
-
 	public void setTruststore(String string) {
 		truststore = string;
 	}
 
+	public String getTruststorePassword() {
+		return truststorePassword;
+	}
 	public void setTruststorePassword(String string) {
 		truststorePassword = string;
-	}
-
-	public int getTimeout() {
-		return timeout;
-	}
-
-	public void setTimeout(int i) {
-		timeout = i;
-	}
-
-	public int getMaxConnections() {
-		return maxConnections;
-	}
-
-	public void setMaxConnections(int i) {
-		maxConnections = i;
-	}
-
-	public boolean isJdk13Compatibility() {
-		return jdk13Compatibility;
-	}
-
-	public void setJdk13Compatibility(boolean b) {
-		jdk13Compatibility = b;
-	}
-
-	public boolean isEncodeMessages() {
-		return encodeMessages;
-	}
-
-	public void setEncodeMessages(boolean b) {
-		encodeMessages = b;
-	}
-
-	public boolean isStaleChecking() {
-		return staleChecking;
-	}
-
-	public void setStaleChecking(boolean b) {
-		staleChecking = b;
-	}
-
-	public boolean isVerifyHostname() {
-		return verifyHostname;
-	}
-
-	public void setVerifyHostname(boolean b) {
-		verifyHostname = b;
-	}
-
-	public boolean isFollowRedirects() {
-		return followRedirects;
-	}
-
-	public void setFollowRedirects(boolean b) {
-		followRedirects = b;
 	}
 
 	public String getTruststoreType() {
@@ -799,6 +805,55 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 	}
 	public void setTruststoreType(String string) {
 		truststoreType = string;
+	}
+
+	public int getTimeout() {
+		return timeout;
+	}
+	public void setTimeout(int i) {
+		timeout = i;
+	}
+
+	public int getMaxConnections() {
+		return maxConnections;
+	}
+	public void setMaxConnections(int i) {
+		maxConnections = i;
+	}
+
+	public boolean isJdk13Compatibility() {
+		return jdk13Compatibility;
+	}
+	public void setJdk13Compatibility(boolean b) {
+		jdk13Compatibility = b;
+	}
+
+	public boolean isEncodeMessages() {
+		return encodeMessages;
+	}
+	public void setEncodeMessages(boolean b) {
+		encodeMessages = b;
+	}
+
+	public boolean isStaleChecking() {
+		return staleChecking;
+	}
+	public void setStaleChecking(boolean b) {
+		staleChecking = b;
+	}
+
+	public boolean isVerifyHostname() {
+		return verifyHostname;
+	}
+	public void setVerifyHostname(boolean b) {
+		verifyHostname = b;
+	}
+
+	public boolean isFollowRedirects() {
+		return followRedirects;
+	}
+	public void setFollowRedirects(boolean b) {
+		followRedirects = b;
 	}
 
 	public String getAuthAlias() {
@@ -846,5 +901,4 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 	public String getContentType() {
 		return contentType;
 	}
-
 }
