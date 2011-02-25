@@ -1,6 +1,9 @@
 /*
  * $Log: MessageSendingPipe.java,v $
- * Revision 1.70  2011-01-13 12:30:15  m168309
+ * Revision 1.71  2011-02-25 11:06:49  m168309
+ * adjusted javadoc
+ *
+ * Revision 1.70  2011/01/13 12:30:15  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added check on existence messageLog for asynchronous senders with sibling listener
  *
  * Revision 1.69  2010/12/07 14:31:21  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -321,6 +324,7 @@ import org.apache.commons.lang.SystemUtils;
  * <tr><td><i>{@link #setForwardName(String) forwardName}</i></td><td>if specified, and otherwise under same condition as "success"</td></tr>
  * <tr><td>"timeout"</td><td>no data was received (timeout on listening), if the sender was synchronous or a listener was specified. If "timeout" and <code>resultOnTimeOut</code> are not specified, "exception" is used in such a case</td></tr>
  * <tr><td>"exception"</td><td>an exception was thrown by the Sender or its reply-Listener. The result passed to the next pipe is the exception that was caught.</td></tr>
+ * <tr><td>"illegalResult"</td><td>the received data does not comply with <code>checkXmlWellFormed</code> or <code>checkRootTag</code>.</td></tr>
  * </table>
  * </p>
  * @author  Gerrit van Brakel
@@ -328,7 +332,7 @@ import org.apache.commons.lang.SystemUtils;
  */
 
 public class MessageSendingPipe extends FixedForwardPipe implements HasSender, HasStatistics, EventThrowing {
-	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.70 $ $Date: 2011-01-13 12:30:15 $";
+	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.71 $ $Date: 2011-02-25 11:06:49 $";
 
 	public static final String PIPE_TIMEOUT_MONITOR_EVENT = "Sender Timeout";
 	public static final String PIPE_CLEAR_TIMEOUT_MONITOR_EVENT = "Sender Received Result on Time";
