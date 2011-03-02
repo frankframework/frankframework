@@ -1,6 +1,9 @@
 /*
  * $Log: WebServiceSender.java,v $
- * Revision 1.28  2011-02-21 18:05:57  L190409
+ * Revision 1.29  2011-03-02 09:32:06  m168309
+ * removed config warning "no soapActionURI found, neither as attribute nor as parameter, please check if this is appropriate"
+ *
+ * Revision 1.28  2011/02/21 18:05:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * can now specify serviceNamespaceURI and soapActionURI dynamically too
  *
  * Revision 1.27  2010/09/10 11:34:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -150,7 +153,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * @since 4.2c
  */
 public class WebServiceSender extends HttpSender {
-	public static final String version = "$RCSfile: WebServiceSender.java,v $ $Revision: 1.28 $ $Date: 2011-02-21 18:05:57 $";
+	public static final String version = "$RCSfile: WebServiceSender.java,v $ $Revision: 1.29 $ $Date: 2011-03-02 09:32:06 $";
 	
 	private String soapActionURI = "";
 	private String soapActionURIParam = "soapAction";
@@ -189,12 +192,6 @@ public class WebServiceSender extends HttpSender {
 			addParameterToSkip(serviceNamespaceURIParameter);
 		}
 		
-		if (soapActionURIParameter==null && StringUtils.isEmpty(getSoapActionURI())) {
-			ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-			String msg = getLogPrefix()+"no soapActionURI found, neither as attribute nor as parameter, please check if this is appropriate";
-			configWarnings.add(log, msg);
-		}
-
 		if (StringUtils.isNotEmpty(getWssAuthAlias()) || 
 			StringUtils.isNotEmpty(getWssUserName())) {
 				wsscf = new CredentialFactory(getWssAuthAlias(), getWssUserName(), getWssPassword());
