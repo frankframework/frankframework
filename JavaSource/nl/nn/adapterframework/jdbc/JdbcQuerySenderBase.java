@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcQuerySenderBase.java,v $
- * Revision 1.50  2010-03-25 12:57:03  L190409
+ * Revision 1.51  2011-03-04 15:02:42  m01e194
+ * Corrected timeout exception message (from ms to sec)
+ *
+ * Revision 1.50  2010/03/25 12:57:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added attribute closeInputstreamOnExit
  *
  * Revision 1.49  2010/01/28 09:47:04  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -273,7 +276,7 @@ import sun.misc.BASE64Encoder;
  * @since 	4.1
  */
 public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
-	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.50 $ $Date: 2010-03-25 12:57:03 $";
+	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.51 $ $Date: 2011-03-04 15:02:42 $";
 
 	private final static String UNP_START = "?{";
 	private final static String UNP_END = "}";
@@ -403,7 +406,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 			if (e.getCause() instanceof SQLException) {
 				SQLException sqle = (SQLException) e.getCause();
 				if  (sqle.getErrorCode() == 1013) {
-					throw new TimeOutException("Timeout of ["+timeout+"] ms expired");
+					throw new TimeOutException("Timeout of ["+timeout+"] sec expired");
 				}
 			}
 			throw new SenderException(e);
