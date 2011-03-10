@@ -1,6 +1,9 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.69  2011-03-10 07:22:59  m168309
+ * Revision 1.70  2011-03-10 07:30:03  m168309
+ * added method canonicalize()
+ *
+ * Revision 1.69  2011/03/10 07:22:59  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * *** empty log message ***
  *
  * Revision 1.68  2010/07/12 12:49:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -289,7 +292,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * @version Id
  */
 public class XmlUtils {
-	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.69 $ $Date: 2011-03-10 07:22:59 $";
+	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.70 $ $Date: 2011-03-10 07:30:03 $";
 	static Logger log = LogUtil.getLogger(XmlUtils.class);
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
@@ -1676,7 +1679,7 @@ public class XmlUtils {
 		}
 	}
 
-	public static String canonicalize(String input)throws DocumentException, IOException{  
+	public static String canonicalize(String input) throws DocumentException, IOException {
 		if (StringUtils.isEmpty(input)) {
 			return null;
 		}
@@ -1688,4 +1691,5 @@ public class XmlUtils {
 		xw.write(doc);
 		return sw.toString();
 	}
+
 }
