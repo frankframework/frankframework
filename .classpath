@@ -55,5 +55,6 @@
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/log4j-1.2.16.jar"/>
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/ehcache-1.5.0.jar"/>
     <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/backport-util-concurrent-3.0.jar"/>
+    <classpathentry kind="lib" path="/IbisWar/Web Content/WEB-INF/lib/dom4j-1.4.jar"/>
     <classpathentry kind="output" path="bin"/>
 </classpath>
