@@ -1,6 +1,9 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.68  2010-07-12 12:49:05  L190409
+ * Revision 1.69  2011-03-10 07:22:59  m168309
+ * *** empty log message ***
+ *
+ * Revision 1.68  2010/07/12 12:49:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * enabled to specfiy namespace prefixes to be used in XPath-expressions
  *
  * Revision 1.67  2010/04/27 15:03:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -259,6 +262,10 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
 import org.apache.commons.lang.exception.NestableException;
 import org.apache.log4j.Logger;
+import org.dom4j.DocumentException;
+import org.dom4j.DocumentHelper;
+import org.dom4j.io.OutputFormat;
+import org.dom4j.io.XMLWriter;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -282,7 +289,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * @version Id
  */
 public class XmlUtils {
-	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.68 $ $Date: 2010-07-12 12:49:05 $";
+	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.69 $ $Date: 2011-03-10 07:22:59 $";
 	static Logger log = LogUtil.getLogger(XmlUtils.class);
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
@@ -1667,5 +1674,18 @@ public class XmlUtils {
 		} else {
 			return null;
 		}
+	}
+
+	public static String canonicalize(String input)throws DocumentException, IOException{  
+		if (StringUtils.isEmpty(input)) {
+			return null;
+		}
+		org.dom4j.Document doc = DocumentHelper.parseText(input);
+		StringWriter sw = new StringWriter();
+		OutputFormat format = OutputFormat.createPrettyPrint();
+		format.setExpandEmptyElements(true);
+		XMLWriter xw = new XMLWriter(sw, format);
+		xw.write(doc);
+		return sw.toString();
 	}
 }
