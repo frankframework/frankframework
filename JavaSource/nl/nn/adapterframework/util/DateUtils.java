@@ -1,6 +1,9 @@
 /*
  * $Log: DateUtils.java,v $
- * Revision 1.14  2008-09-01 15:54:25  europe\L190409
+ * Revision 1.15  2011-03-16 16:38:01  L190409
+ * added nextHigerValue()
+ *
+ * Revision 1.14  2008/09/01 15:54:25  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * make generic dateformat more generic
  *
  * Revision 1.13  2008/09/01 15:36:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -48,7 +51,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class DateUtils {
-	public static final String version = "$RCSfile: DateUtils.java,v $ $Revision: 1.14 $ $Date: 2008-09-01 15:54:25 $";
+	public static final String version = "$RCSfile: DateUtils.java,v $ $Revision: 1.15 $ $Date: 2011-03-16 16:38:01 $";
 	protected static Logger log = LogUtil.getLogger(DateUtils.class);
 	
 
@@ -147,6 +150,31 @@ public class DateUtils {
 			result = format(d,"yyyy-MM-dd HH:mm:ss.SSS");
 		}
 		return result;
+	}
+
+	/**
+	 * returns the next higher value, as if it was formatted optimally using formatOptimal().
+	 */
+	static public Date nextHigherValue(Date d)  {
+		int delta;
+		if ((d.getTime()%1000)==0 ) {
+			if (d.getSeconds()==0) {
+				if (d.getMinutes()==0 && d.getHours()==0) {
+					delta = 24*60*60*1000;
+					// result = format(d,"yyyy-MM-dd");
+				} else {
+					delta = 60*1000;
+					//result = format(d,"yyyy-MM-dd HH:mm");
+				}
+			} else {
+				delta = 1000;
+				//result = format(d,"yyyy-MM-dd HH:mm:ss");
+			}
+		} else {
+			delta=1;
+			//result = format(d,"yyyy-MM-dd HH:mm:ss.SSS");
+		}
+		return new Date(d.getTime()+delta);
 	}
 
 
