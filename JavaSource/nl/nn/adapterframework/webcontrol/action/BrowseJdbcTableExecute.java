@@ -1,6 +1,9 @@
 /*
  * $Log: BrowseJdbcTableExecute.java,v $
- * Revision 1.10  2009-10-19 14:01:23  m168309
+ * Revision 1.11  2011-03-16 16:38:39  L190409
+ * databasetype now defined in DbmsSupportFactory
+ *
+ * Revision 1.10  2009/10/19 14:01:23  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * includeFieldDefinition=true
  *
  * Revision 1.9  2009/09/25 12:28:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -41,11 +44,10 @@ import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import javax.xml.transform.Transformer;
 
 import nl.nn.adapterframework.jdbc.DirectQuerySender;
-import nl.nn.adapterframework.jdbc.JdbcFacade;
+import nl.nn.adapterframework.jdbc.dbms.DbmsSupportFactory;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -53,13 +55,12 @@ import nl.nn.adapterframework.util.StringTagger;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.webcontrol.IniDynaActionForm;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 
 public class BrowseJdbcTableExecute extends ActionBase {
-	public static final String version = "$RCSfile: BrowseJdbcTableExecute.java,v $ $Revision: 1.10 $ $Date: 2009-10-19 14:01:23 $";
+	public static final String version = "$RCSfile: BrowseJdbcTableExecute.java,v $ $Revision: 1.11 $ $Date: 2011-03-16 16:38:39 $";
 	public static final String DB2XML_XSLT = "xml/xsl/BrowseJdbcTableExecute.xsl";
 
 	public ActionForward execute(
@@ -131,7 +132,7 @@ public class BrowseJdbcTableExecute extends ActionBase {
 					qs.setName("QuerySender");
 					qs.setJmsRealm(form_jmsRealm);
 
-					if (form_numberOfRowsOnly || qs.getDatabaseType() == JdbcFacade.DATABASE_ORACLE) {
+					if (form_numberOfRowsOnly || qs.getDatabaseType() == DbmsSupportFactory.DBMS_ORACLE) {
 						qs.setQueryType("select");
 						qs.setBlobSmartGet(true);
 						qs.setIncludeFieldDefinition(true);
