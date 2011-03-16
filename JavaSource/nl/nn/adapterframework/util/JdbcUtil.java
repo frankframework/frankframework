@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcUtil.java,v $
- * Revision 1.26  2010-12-20 10:39:47  L190409
+ * Revision 1.27  2011-03-16 16:38:13  L190409
+ * moved detection of databaseType to DbmsSupportFactory
+ *
+ * Revision 1.26  2010/12/20 10:39:47  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added hasIndexOnColumn() and hasIndexOnColumns()
  *
  * Revision 1.25  2010/09/10 11:42:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -111,6 +114,7 @@ import java.util.zip.InflaterInputStream;
 
 import nl.nn.adapterframework.core.IMessageWrapper;
 import nl.nn.adapterframework.jdbc.JdbcException;
+import nl.nn.adapterframework.jdbc.dbms.DbmsSupportFactory;
 
 import org.apache.log4j.Logger;
 
@@ -122,20 +126,16 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class JdbcUtil {
-
-	public final static int DATABASE_GENERIC=0;
-	public final static int DATABASE_ORACLE=1;
-
 	protected static Logger log = LogUtil.getLogger(JdbcUtil.class);
-	
-	private static final boolean useMetaData=false;
+
+	private static final boolean useMetaDataForTableExists=false;
 	/**
 	 * @return true if tableName exists in database in this connection
 	 */
 	public static boolean tableExists(Connection conn, String tableName ) throws SQLException {
 		
 		PreparedStatement stmt = null;
-		if (useMetaData) {
+		if (useMetaDataForTableExists) {
 			DatabaseMetaData dbmeta = conn.getMetaData();
 			ResultSet tableset = dbmeta.getTables(null, null, tableName, null);
 			return !tableset.isAfterLast();
@@ -191,7 +191,7 @@ public class JdbcUtil {
 	}
 
 	public static boolean isTablePresent(Connection conn, int databaseType, String schemaOwner, String tableName) {
-		if (databaseType==DATABASE_ORACLE) {
+		if (databaseType==DbmsSupportFactory.DBMS_ORACLE) {
 			String query="select count(*) from all_tables where owner='"+schemaOwner.toUpperCase()+"' and table_name='"+tableName.toUpperCase()+"'";
 			try {
 				if (JdbcUtil.executeIntQuery(conn, query)>=1) {
@@ -210,7 +210,7 @@ public class JdbcUtil {
 	}
 
 	public static boolean isIndexPresent(Connection conn, int databaseType, String schemaOwner, String tableName, String indexName) {
-		if (databaseType==DATABASE_ORACLE) {
+		if (databaseType==DbmsSupportFactory.DBMS_ORACLE) {
 			String query="select count(*) from all_indexes where owner='"+schemaOwner.toUpperCase()+"' and table_name='"+tableName.toUpperCase()+"' and index_name='"+indexName.toUpperCase()+"'";
 			try {
 				if (JdbcUtil.executeIntQuery(conn, query)>=1) {
@@ -229,7 +229,7 @@ public class JdbcUtil {
 	}
 
 	public static boolean isSequencePresent(Connection conn, int databaseType, String schemaOwner, String sequenceName) {
-		if (databaseType==DATABASE_ORACLE) {
+		if (databaseType==DbmsSupportFactory.DBMS_ORACLE) {
 			String query="select count(*) from all_sequences where sequence_owner='"+schemaOwner.toUpperCase()+"' and sequence_name='"+sequenceName.toUpperCase()+"'";
 			try {
 				if (JdbcUtil.executeIntQuery(conn, query)>=1) {
@@ -248,7 +248,7 @@ public class JdbcUtil {
 	}
 
 	public static boolean isTableColumnPresent(Connection conn, int databaseType, String schemaOwner, String tableName, String columnName) {
-		if (databaseType==DATABASE_ORACLE) {
+		if (databaseType==DbmsSupportFactory.DBMS_ORACLE) {
 			String query="select count(*) from all_tab_columns where owner='"+schemaOwner.toUpperCase()+"' and table_name='"+tableName.toUpperCase()+"' and column_name=?";
 			try {
 				if (JdbcUtil.executeIntQuery(conn, query, columnName.toUpperCase())>=1) {
@@ -267,7 +267,7 @@ public class JdbcUtil {
 	}
 
 	public static boolean isIndexColumnPresent(Connection conn, int databaseType, String schemaOwner, String tableName, String indexName, String columnName) {
-		if (databaseType==DATABASE_ORACLE) {
+		if (databaseType==DbmsSupportFactory.DBMS_ORACLE) {
 			String query="select count(*) from all_ind_columns where index_owner='"+schemaOwner.toUpperCase()+"' and table_name='"+tableName.toUpperCase()+"' and index_name='"+indexName.toUpperCase()+"' and column_name=?";
 			try {
 				if (JdbcUtil.executeIntQuery(conn, query, columnName.toUpperCase())>=1) {
@@ -286,7 +286,7 @@ public class JdbcUtil {
 	}
 
 	public static int getIndexColumnPosition(Connection conn, int databaseType, String schemaOwner, String tableName, String indexName, String columnName) {
-		if (databaseType==DATABASE_ORACLE) {
+		if (databaseType==DbmsSupportFactory.DBMS_ORACLE) {
 			String query="select column_position from all_ind_columns where index_owner='"+schemaOwner.toUpperCase()+"' and table_name='"+tableName.toUpperCase()+"' and index_name='"+indexName.toUpperCase()+"' and column_name=?";
 			try {
 				return JdbcUtil.executeIntQuery(conn, query, columnName.toUpperCase());
@@ -301,7 +301,7 @@ public class JdbcUtil {
 	}
 
 	public static boolean hasIndexOnColumn(Connection conn, int databaseType, String schemaOwner, String tableName, String columnName) {
-		if (databaseType==DATABASE_ORACLE) {
+		if (databaseType==DbmsSupportFactory.DBMS_ORACLE) {
 			String query="select count(*) from all_ind_columns";
 			query+=" where TABLE_OWNER='"+schemaOwner.toUpperCase()+"' and TABLE_NAME='"+tableName.toUpperCase()+"'";
 			query+=" and column_name=?";
@@ -322,7 +322,7 @@ public class JdbcUtil {
 		}
 	}
 	public static boolean hasIndexOnColumns(Connection conn, int databaseType, String schemaOwner, String tableName, List columns) {
-		if (databaseType==DATABASE_ORACLE) {
+		if (databaseType==DbmsSupportFactory.DBMS_ORACLE) {
 			String query="select count(*) from all_indexes ai";
 			for (int i=1;i<=columns.size();i++) {
 				query+=", all_ind_columns aic"+i;
@@ -350,20 +350,8 @@ public class JdbcUtil {
 		}
 	}
 
-	public static int getDatabaseType(Connection conn) throws SQLException {
-		DatabaseMetaData md=conn.getMetaData();
-		String product=md.getDatabaseProductName();
-		if ("Oracle".equals(product)) {
-			log.debug("Setting databasetype to ORACLE");
-			return DATABASE_ORACLE;
-		} else {
-			log.debug("Setting databasetype to GENERIC");
-			return DATABASE_GENERIC;
-		}
-	}
-
 	public static String getSchemaOwner(Connection conn, int databaseType) throws SQLException, JdbcException  {
-		if (databaseType==DATABASE_ORACLE) {
+		if (databaseType==DbmsSupportFactory.DBMS_ORACLE) {
 			String query="SELECT SYS_CONTEXT('USERENV','CURRENT_SCHEMA') FROM DUAL";
 			return executeStringQuery(conn, query);
 		} else {
