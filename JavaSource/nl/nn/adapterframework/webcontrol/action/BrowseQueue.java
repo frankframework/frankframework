@@ -1,6 +1,9 @@
 /*
  * $Log: BrowseQueue.java,v $
- * Revision 1.2  2007-10-08 13:41:35  europe\L190409
+ * Revision 1.3  2011-03-16 16:38:47  L190409
+ * cosmetic change
+ *
+ * Revision 1.2  2007/10/08 13:41:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed ArrayList to List where possible
  *
  * Revision 1.1  2004/06/16 12:25:52  Johan Verrips <johan.verrips@ibissource.org>
@@ -37,15 +40,10 @@ import org.apache.struts.action.ActionMapping;
  * @version Id
  */
 public class BrowseQueue extends ActionBase {
-	public static final String version = "$RCSfile: BrowseQueue.java,v $ $Revision: 1.2 $ $Date: 2007-10-08 13:41:35 $";
+	public static final String version = "$RCSfile: BrowseQueue.java,v $ $Revision: 1.3 $ $Date: 2011-03-16 16:38:47 $";
 	
 
-public ActionForward execute(
-	ActionMapping mapping,
-	ActionForm form,
-	HttpServletRequest request,
-	HttpServletResponse response)
-	throws IOException, ServletException {
+public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 
 	// Initialize action
 	initAction(request);
@@ -55,8 +53,7 @@ public ActionForward execute(
 
 
 	if (form == null) {
-		log.debug(
-			" Creating new browseQueueForm bean under key " + mapping.getAttribute());
+		log.debug(" Creating new browseQueueForm bean under key [" + mapping.getAttribute()+"]");
 
 		IniDynaActionForm browseQueueForm = new IniDynaActionForm();
 
@@ -79,15 +76,9 @@ public ActionForward execute(
 
 				log.debug("restoring values from cookie: " + cs.toString());
 				try {
-					browseQueueForm.set(
-						"jmsRealm",
-						cs.Value("jmsRealm"));
-					browseQueueForm.set(
-						"destinationName",
-						cs.Value("destinationName"));
-					browseQueueForm.set(
-						"destinationType",
-						cs.Value("destinationType"));
+					browseQueueForm.set("jmsRealm",	       cs.Value("jmsRealm"));
+					browseQueueForm.set("destinationName", cs.Value("destinationName"));
+					browseQueueForm.set("destinationType", cs.Value("destinationType"));
 					browseQueueForm.set("numberOfMessagesOnly", new Boolean(cs.Value("numberOfMessagesOnly")));
 					browseQueueForm.set("showPayload", new Boolean(cs.Value("showPayload")));
 				} catch (Exception e) {
