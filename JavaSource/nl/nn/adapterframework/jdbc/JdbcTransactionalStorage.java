@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcTransactionalStorage.java,v $
- * Revision 1.49  2011-01-27 12:57:58  L190409
+ * Revision 1.50  2011-03-16 16:42:40  L190409
+ * introduction of DbmsSupport, including support for MS SQL Server
+ *
+ * Revision 1.49  2011/01/27 12:57:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fixed bug in store without full message
  *
  * Revision 1.48  2011/01/26 16:25:22  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -181,6 +184,8 @@ import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.jdbc.dbms.DbmsSupportFactory;
+import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.JdbcUtil;
@@ -261,6 +266,29 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 	
 	COMMIT;
  *  </pre>
+ * For an MS SQL Server database the following objects are used by default:
+ *  <pre>
+	CREATE TABLE IBISSTORE
+	(
+	MESSAGEKEY int identity,
+	TYPE CHAR(1),
+	SLOTID VARCHAR(100),
+	HOST VARCHAR(100),
+	MESSAGEID VARCHAR(100),
+	CORRELATIONID VARCHAR(256),
+	MESSAGEDATE datetime,
+	COMMENTS VARCHAR(1000),
+	MESSAGE varbinary(max),
+	EXPIRYDATE datetime,
+	LABEL VARCHAR(100),
+	CONSTRAINT PK_IBISSTORE PRIMARY KEY (MESSAGEKEY)
+	);
+	
+	CREATE INDEX IX_IBISSTORE ON IBISSTORE (TYPE, SLOTID, MESSAGEDATE);
+	CREATE INDEX IX_IBISSTORE_02 ON IBISSTORE (EXPIRYDATE);
+
+	COMMIT;
+ *  </pre>
  * 
  * For a generic database the following objects are used by default:
  *  <pre>
@@ -338,10 +366,10 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	protected static final int MAXCOMMENTLEN=1000;		
 	protected static final int MAXLABELLEN=1000;		
     // the following values are only used when the table is created. 
-	private String keyFieldType="INT DEFAULT AUTOINCREMENT";
-	private String dateFieldType="TIMESTAMP";
-	private String messageFieldType="LONG BINARY";
-	private String textFieldType="VARCHAR";
+	private String keyFieldType="";
+	private String dateFieldType="";
+	private String messageFieldType="";
+	private String textFieldType="";
 
 	private PlatformTransactionManager txManager;
 
@@ -354,6 +382,8 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
     protected String checkMessageIdQuery;
 	protected String getMessageCountQuery;
     
+	protected boolean selectKeyQueryIsDbmsSupported;
+	
 	// the following for Oracle
 	private String sequenceName="seq_ibisstore";
 	protected String updateBlobQuery;		
@@ -532,7 +562,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	private void checkDatabase() throws ConfigurationException {
 		Connection connection=null;
 		try {
-			if (getDatabaseType()==DATABASE_ORACLE) {
+			if (getDatabaseType()==DbmsSupportFactory.DBMS_ORACLE) {
 				if (checkTable || checkIndices) {
 					if (StringUtils.isNotEmpty(getSchemaOwner4Check())){
 						connection=getConnection();
@@ -604,13 +634,13 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		if (StringUtils.isNotEmpty(getHostField())) {
 			host=Misc.getHostname();
 		}
-		createQueryTexts(getDatabaseType());
+		createQueryTexts(getDbmsSupport());
 		checkDatabase();
 	}
 
 	public void open() throws SenderException {
 		try {
-			initialize(getDatabaseType());
+			initialize(getDbmsSupport());
 		} catch (JdbcException e) {
 			throw new SenderException(e);
 		} catch (SQLException e) {
@@ -624,18 +654,19 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	/**
 	 * change datatypes used for specific database vendor. 
 	 */
-	protected void setDataTypes(int databaseType) {
-		if (databaseType==DATABASE_ORACLE) {
-			setKeyFieldType("NUMBER(10)");
-			setDateFieldType("TIMESTAMP");
-			setTextFieldType("VARCHAR2");
-			setMessageFieldType("BLOB");
-		}
+	protected void setDataTypes(IDbmsSupport dbmsSupport) {
+		if (StringUtils.isEmpty(getKeyFieldType())) setKeyFieldType(dbmsSupport.getAutoIncrementKeyFieldType());
+		if (StringUtils.isEmpty(getDateFieldType())) setDateFieldType(dbmsSupport.getTimestampFieldType());
+		if (StringUtils.isEmpty(getTextFieldType())) setTextFieldType(dbmsSupport.getTextFieldType());
+		if (StringUtils.isEmpty(getMessageFieldType())) setMessageFieldType(dbmsSupport.getBlobFieldType());
 	}
 
-	protected void createQueryTexts(int databaseType) throws ConfigurationException {
-		setDataTypes(databaseType);
+	protected void createQueryTexts(IDbmsSupport dbmsSupport) throws ConfigurationException {
+		setDataTypes(dbmsSupport);
+		boolean keyFieldsNeedsInsert=dbmsSupport.autoIncrementKeyMustBeInserted();
+		boolean blobFieldsNeedsEmptyBlobInsert=dbmsSupport.mustInsertEmptyBlobBeforeData();
 		insertQuery = "INSERT INTO "+getPrefix()+getTableName()+" ("+
+						(keyFieldsNeedsInsert?getKeyField()+",":"")+
 						(StringUtils.isNotEmpty(getTypeField())?getTypeField()+",":"")+
 						(StringUtils.isNotEmpty(getSlotId())?getSlotIdField()+",":"")+
 						(StringUtils.isNotEmpty(getHostField())?getHostField()+",":"")+
@@ -643,52 +674,31 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 						getIdField()+","+getCorrelationIdField()+","+getDateField()+","+getCommentField()+","+getExpiryDateField()+
 						(isStoreFullMessage()?","+getMessageField():"")+
 						") VALUES ("+
+						(keyFieldsNeedsInsert?dbmsSupport.autoIncrementInsertValue(getPrefix()+getSequenceName())+",":"")+
 						(StringUtils.isNotEmpty(getTypeField())?"?,":"")+
 						(StringUtils.isNotEmpty(getSlotId())?"?,":"")+
 						(StringUtils.isNotEmpty(getHostField())?"?,":"")+
 						(StringUtils.isNotEmpty(getLabelField())?"?,":"")+
 						"?,?,?,?,?"+
-						(isStoreFullMessage()?",?":"");
+						(isStoreFullMessage()?","+(blobFieldsNeedsEmptyBlobInsert?dbmsSupport.emptyBlobValue():"?"):"")+")";
 		deleteQuery = "DELETE FROM "+getPrefix()+getTableName()+ getWhereClause(getKeyField()+"=?",true);
-		selectKeyQuery = "SELECT max("+getKeyField()+") FROM "+getPrefix()+getTableName()+ 
-						getWhereClause(getIdField()+"=?"+
-									" AND " +getCorrelationIdField()+"=?"+
-									" AND "+getDateField()+"=?",false);
-		String listClause=getKeyField()+","+getIdField()+","+getCorrelationIdField()+","+getDateField()+","+getExpiryDateField()+
-							(StringUtils.isNotEmpty(getTypeField())?","+getTypeField():"")+
-							(StringUtils.isNotEmpty(getHostField())?","+getHostField():"")+
-							(StringUtils.isNotEmpty(getLabelField())?","+getLabelField():"")+
-							","+getCommentField()+ " FROM "+getPrefix()+getTableName();
-		selectContextQuery = "SELECT "+listClause+ getWhereClause(getKeyField()+"=?",true);
-		selectListQuery = "SELECT "+provideIndexHint(databaseType)+provideFirstRowsHint(databaseType)+ listClause+ getWhereClause(null,false)+
-						  " ORDER BY "+getDateField();
-		if (StringUtils.isNotEmpty(getOrder())) {
-			selectListQuery = selectListQuery + " " + getOrder();
+		selectKeyQuery = dbmsSupport.getInsertedAutoIncrementValueQuery(getSequenceName());
+		selectKeyQueryIsDbmsSupported=StringUtils.isNotEmpty(selectKeyQuery);
+		if (!selectKeyQueryIsDbmsSupported) {
+			selectKeyQuery = "SELECT max("+getKeyField()+") FROM "+getPrefix()+getTableName()+ 
+							getWhereClause(getIdField()+"=?"+
+										" AND " +getCorrelationIdField()+"=?"+
+										" AND "+getDateField()+"=?",false);
 		}
+		String listClause=getListClause();
+		selectContextQuery = "SELECT "+listClause+ getWhereClause(getKeyField()+"=?",true);
+		selectListQuery = "SELECT "+provideIndexHintAfterFirstKeyword(dbmsSupport)+provideFirstRowsHintAfterFirstKeyword(dbmsSupport)+ listClause+ getWhereClause(null,false)+
+						  " ORDER BY "+getDateField()+(StringUtils.isNotEmpty(getOrder())?" " + getOrder():"")+provideTrailingFirstRowsHint(dbmsSupport);
 		selectDataQuery = "SELECT "+getMessageField()+  " FROM "+getPrefix()+getTableName()+ getWhereClause(getKeyField()+"=?",true);
-        checkMessageIdQuery = "SELECT "+provideIndexHint(databaseType) + getIdField() +" FROM "+getPrefix()+getTableName()+ getWhereClause(getIdField() +"=?",false);
-		getMessageCountQuery = "SELECT "+provideIndexHint(databaseType) + "COUNT(*) FROM "+getPrefix()+getTableName()+ getWhereClause(null,false);
-		if (databaseType==DATABASE_ORACLE) {
-			insertQuery = "INSERT INTO "+getPrefix()+getTableName()+" ("+
-							getKeyField()+","+
-							(StringUtils.isNotEmpty(getTypeField())?getTypeField()+",":"")+
-							(StringUtils.isNotEmpty(getSlotId())?getSlotIdField()+",":"")+
-							(StringUtils.isNotEmpty(getHostField())?getHostField()+",":"")+
-							(StringUtils.isNotEmpty(getLabelField())?getLabelField()+",":"")+
-							getIdField()+","+getCorrelationIdField()+","+getDateField()+","+getCommentField()+","+getExpiryDateField()+
-							(isStoreFullMessage()?","+getMessageField():"")+
-							") VALUES ("+getPrefix()+getSequenceName()+".NEXTVAL,"+
-							(StringUtils.isNotEmpty(getTypeField())?"?,":"")+
-							(StringUtils.isNotEmpty(getSlotId())?"?,":"")+
-							(StringUtils.isNotEmpty(getHostField())?"?,":"")+
-							(StringUtils.isNotEmpty(getLabelField())?"?,":"")+
-							"?,?,?,?,?"+
-							(isStoreFullMessage()?",empty_blob()":"")+")";
-			selectKeyQuery = "SELECT "+getPrefix()+getSequenceName()+".currval FROM DUAL";
-			updateBlobQuery = "SELECT "+getMessageField()+
-							  " FROM "+getPrefix()+getTableName()+
-							  " WHERE "+getKeyField()+"=?"+ 
-							  " FOR UPDATE";
+        checkMessageIdQuery = "SELECT "+provideIndexHintAfterFirstKeyword(dbmsSupport) + getIdField() +" FROM "+getPrefix()+getTableName()+ getWhereClause(getIdField() +"=?",false);
+		getMessageCountQuery = "SELECT "+provideIndexHintAfterFirstKeyword(dbmsSupport) + "COUNT(*) FROM "+getPrefix()+getTableName()+ getWhereClause(null,false);
+		if (dbmsSupport.mustInsertEmptyBlobBeforeData()) {
+			updateBlobQuery = dbmsSupport.getUpdateBlobQuery(getPrefix()+getTableName(), getMessageField(), getKeyField()); 
 		}
 		if (documentQueries && log.isDebugEnabled()) {
 			log.debug(
@@ -710,21 +720,47 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		}
 	}
 
+	private String getListClause() {
+		return getKeyField()+","+getIdField()+","+getCorrelationIdField()+","+getDateField()+","+getExpiryDateField()+
+		(StringUtils.isNotEmpty(getTypeField())?","+getTypeField():"")+
+		(StringUtils.isNotEmpty(getHostField())?","+getHostField():"")+
+		(StringUtils.isNotEmpty(getLabelField())?","+getLabelField():"")+
+		","+getCommentField()+ " FROM "+getPrefix()+getTableName();
+	}
+	
+	private String getSelectListQuery(IDbmsSupport dbmsSupport, Date startTime, Date endTime, boolean forceDescending) {
+		String whereClause=null;
+		if (startTime!=null) {
+			whereClause=getDateField()+">=?";
+		}
+		if (endTime!=null) {
+			whereClause=Misc.concatStrings(whereClause, " AND ", getDateField()+"<?");
+		}
+		return "SELECT "+provideIndexHintAfterFirstKeyword(dbmsSupport)+provideFirstRowsHintAfterFirstKeyword(dbmsSupport)+ getListClause()+ getWhereClause(whereClause,false)+
+		  " ORDER BY "+getDateField()+(forceDescending?" DESC ":" "+getOrder()+" ")+provideTrailingFirstRowsHint(dbmsSupport);
+	}
+	
 	
 	private String documentQuery(String name, String query, String purpose) {
 		return "\n"+name+(purpose!=null?"\n"+purpose:"")+"\n"+query+"\n";
 	}
 
-	private String provideIndexHint(int databaseType) {
-		if (useIndexHint && databaseType==DATABASE_ORACLE && StringUtils.isNotEmpty(getIndexName())) {
-			return " /*+ INDEX ( "+getPrefix()+getTableName()+ " "+getPrefix()+getIndexName()+" ) */ "; 
+	private String provideIndexHintAfterFirstKeyword(IDbmsSupport dbmsSupport) {
+		if (useIndexHint) {
+			return dbmsSupport.provideIndexHintAfterFirstKeyword(getPrefix()+getTableName(), getPrefix()+getIndexName());
 		}
 		return "";
 	}
 
-	private String provideFirstRowsHint(int databaseType) {
-		if (useFirstRowsHint && databaseType==DATABASE_ORACLE) {
-			return " /*+ FIRST_ROWS( "+100+" ) */ "; 
+	private String provideFirstRowsHintAfterFirstKeyword(IDbmsSupport dbmsSupport) {
+		if (useFirstRowsHint) {
+			return dbmsSupport.provideFirstRowsHintAfterFirstKeyword(100);
+		}
+		return "";
+	}
+	private String provideTrailingFirstRowsHint(IDbmsSupport dbmsSupport) {
+		if (useFirstRowsHint) {
+			return dbmsSupport.provideTrailingFirstRowsHint(100);
 		}
 		return "";
 	}
@@ -732,7 +768,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	/**
 	 *	Checks if table exists, and creates when necessary. 
 	 */
-	public void initialize(int databaseType) throws JdbcException, SQLException, SenderException {
+	public void initialize(IDbmsSupport dbmsSupport) throws JdbcException, SQLException, SenderException {
 		Connection conn = getConnection();
 		try {
 			boolean tableMustBeCreated;
@@ -757,7 +793,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 				log.info(getLogPrefix()+"creating table ["+getPrefix()+getTableName()+"] for transactional storage");
 				Statement stmt = conn.createStatement();
 				try {
-					createStorage(conn, stmt, databaseType);
+					createStorage(conn, stmt, dbmsSupport);
 				} finally {
 					stmt.close();
 					conn.commit();
@@ -773,7 +809,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	/**
 	 *	Acutaly creates storage. Can be overridden in descender classes 
 	 */
-	protected void createStorage(Connection conn, Statement stmt, int databaseType) throws JdbcException {
+	protected void createStorage(Connection conn, Statement stmt, IDbmsSupport dbmsSupport) throws JdbcException {
 		String query=null;
 		try {
 			query="CREATE TABLE "+getPrefix()+getTableName()+" ("+
@@ -797,7 +833,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 				log.debug(getLogPrefix()+"creating index ["+getPrefix()+getIndexName()+"] using query ["+query+"]");
 				stmt.execute(query);
 			}
-			if (databaseType==DATABASE_ORACLE) {
+			if (dbmsSupport.autoIncrementUsesSequenceObject()) {
 				query="CREATE SEQUENCE "+getPrefix()+getSequenceName()+" START WITH 1 INCREMENT BY 1";
 				log.debug(getLogPrefix()+"creating sequence for table ["+getPrefix()+getTableName()+"] using query ["+query+"]");
 				stmt.execute(query);
@@ -833,12 +869,13 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		PreparedStatement stmt=null;
 		
 		try {			
+			if (log.isDebugEnabled()) log.debug("preparing key retrieval statement ["+selectKeyQuery+"]");
 			stmt = conn.prepareStatement(selectKeyQuery);			
-			if (getDatabaseType()!=DATABASE_ORACLE) {
-				stmt.clearParameters();
-				stmt.setString(1,messageId);
-				stmt.setString(2,correlationId);
-				stmt.setTimestamp(3, receivedDateTime);
+			if (!selectKeyQueryIsDbmsSupported) {
+				int paramPos=applyStandardParameters(stmt, true, false);
+				stmt.setString(paramPos++,messageId);
+				stmt.setString(paramPos++,correlationId);
+				stmt.setTimestamp(paramPos++, receivedDateTime);
 			}
 	
 			ResultSet rs = null;
@@ -863,8 +900,8 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	protected String storeMessageInDatabase(Connection conn, String messageId, String correlationId, Timestamp receivedDateTime, String comments, String label, Serializable message) throws IOException, SQLException, JdbcException, SenderException {
 		PreparedStatement stmt = null;
 		try { 
-			int databaseType=getDatabaseType();
-			log.debug("preparing insert statement ["+insertQuery+"]");
+			IDbmsSupport dbmsSupport=getDbmsSupport();
+			if (log.isDebugEnabled()) log.debug("preparing insert statement ["+insertQuery+"]");
 			stmt = conn.prepareStatement(insertQuery);			
 			stmt.clearParameters();
 			int parPos=0;
@@ -903,7 +940,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 				stmt.execute();
 				return null;
 			}
-			if (databaseType!=DATABASE_ORACLE) {
+			if (!dbmsSupport.mustInsertEmptyBlobBeforeData()) {
 				ByteArrayOutputStream out = new ByteArrayOutputStream();
 				
 				if (isBlobsCompressed()) {
@@ -923,7 +960,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 			} else {
 				stmt.execute();
 
-				log.debug("preparing select statement ["+selectKeyQuery+"]");
+				if (log.isDebugEnabled()) log.debug("preparing select statement ["+selectKeyQuery+"]");
 				stmt = conn.prepareStatement(selectKeyQuery);			
 				ResultSet rs = null;
 				try {
@@ -936,7 +973,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 					rs.close();
 
 					// and update the blob
-					log.debug("preparing update statement ["+updateBlobQuery+"]");
+					if (log.isDebugEnabled()) log.debug("preparing update statement ["+updateBlobQuery+"]");
 					stmt = conn.prepareStatement(updateBlobQuery);			
 					stmt.clearParameters();
 					stmt.setString(1,newKey);
@@ -1086,6 +1123,9 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	}
 
 	public IMessageBrowsingIterator getIterator() throws ListenerException {
+		return getIterator(null,null,false);
+	}
+	public IMessageBrowsingIterator getIterator(Date startTime, Date endTime, boolean forceDescending) throws ListenerException {
 		Connection conn;
 		try {
 			conn = getConnection();
@@ -1093,9 +1133,25 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 			throw new ListenerException(e);
 		}
 		try {
-			log.debug("preparing selectListQuery ["+selectListQuery+"]");
-			PreparedStatement stmt = conn.prepareStatement(selectListQuery);
-			applyStandardParameters(stmt, false, false);
+			String query;
+			if (startTime==null && endTime==null) {
+				query=selectListQuery;
+			} else {
+				query=getSelectListQuery(getDbmsSupport(), startTime, endTime, forceDescending);
+			}
+			if (log.isDebugEnabled()) log.debug("preparing selectListQuery ["+query+"]");
+			PreparedStatement stmt = conn.prepareStatement(query);
+			if (startTime==null && endTime==null) {
+				applyStandardParameters(stmt, false, false);
+			} else {
+				int paramPos=applyStandardParameters(stmt, true, false);
+				if (startTime!=null) {
+					stmt.setTimestamp(paramPos++, new Timestamp(startTime.getTime()));
+				}
+				if (endTime!=null) {
+					stmt.setTimestamp(paramPos++, new Timestamp(endTime.getTime()));
+				}
+			}
 			ResultSet rs =  stmt.executeQuery();
 			return new ResultSetIterator(conn,rs);
 		} catch (SQLException e) {

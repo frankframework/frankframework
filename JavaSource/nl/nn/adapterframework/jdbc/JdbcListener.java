@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcListener.java,v $
- * Revision 1.11  2009-08-04 11:24:21  L190409
+ * Revision 1.12  2011-03-16 16:42:40  L190409
+ * introduction of DbmsSupport, including support for MS SQL Server
+ *
+ * Revision 1.11  2009/08/04 11:24:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * support for messages in CLOBs and BLOBs
  *
  * Revision 1.10  2009/03/26 14:47:36  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -102,6 +105,8 @@ public class JdbcListener extends JdbcFacade implements IPullingListener {
 	
 	protected Connection connection=null;
 
+	private String preparedSelectQuery;
+
 	private static final boolean trace=false;
 
 	public void configure() throws ConfigurationException {
@@ -109,6 +114,11 @@ public class JdbcListener extends JdbcFacade implements IPullingListener {
 			if (getDatasource()==null) {
 				throw new ConfigurationException(getLogPrefix()+"has no datasource");
 			}
+		} catch (JdbcException e) {
+			throw new ConfigurationException(e);
+		}
+		try {
+			preparedSelectQuery = getDbmsSupport().prepareQueryTextForWorkQueueReading(1, getSelectQuery());
 		} catch (JdbcException e) {
 			throw new ConfigurationException(e);
 		}
@@ -182,14 +192,7 @@ public class JdbcListener extends JdbcFacade implements IPullingListener {
 				execute(conn,getStartLocalTransactionQuery());
 			}
 
-			/*
-			 * see:
-			 * http://www.psoug.org/reference/deadlocks.html
-			 * http://www.psoug.org/reference/select.html
-			 * http://www.ss64.com/ora/select.html
-			 * http://forums.oracle.com/forums/thread.jspa?threadID=664986
-			 */
-			String query=getSelectQuery()+JdbcFacade.LOCKROWS_SUFFIX;
+			String query=preparedSelectQuery;
 			try {
 				Statement stmt= null;
 				try {

@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcFacade.java,v $
- * Revision 1.33  2011-01-06 09:48:33  m168309
+ * Revision 1.34  2011-03-16 16:42:40  L190409
+ * introduction of DbmsSupport, including support for MS SQL Server
+ *
+ * Revision 1.33  2011/01/06 09:48:33  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * *** empty log message ***
  *
  * Revision 1.32  2010/12/31 09:33:01  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -114,11 +117,12 @@ import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IXAEnabled;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.jdbc.dbms.DbmsSupportFactory;
+import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.jms.JNDIBase;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
-import nl.nn.adapterframework.util.JdbcUtil;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -140,12 +144,7 @@ import org.apache.commons.lang.StringUtils;
  * @since 	4.1
  */
 public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version="$RCSfile: JdbcFacade.java,v $ $Revision: 1.33 $ $Date: 2011-01-06 09:48:33 $";
-	
-	public final static int DATABASE_GENERIC=0;
-	public final static int DATABASE_ORACLE=1;
-
-	public final static String LOCKROWS_SUFFIX=" FOR UPDATE NOWAIT SKIP LOCKED";
+	public static final String version="$RCSfile: JdbcFacade.java,v $ $Revision: 1.34 $ $Date: 2011-03-16 16:42:40 $";
 	
 	private String name;
     private String username=null;
@@ -158,7 +157,7 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 	private boolean transacted = false;
 	private boolean connectionsArePooled=true;
 	
-	private int databaseType=-1;
+	private IDbmsSupport dbms=null;
 
 	protected String getLogPrefix() {
 		return "["+this.getClass().getName()+"] ["+getName()+"] ";
@@ -253,30 +252,39 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 	}
 
 	
-	public void setDatabaseType(int type) {
-		databaseType=type;
+	public void setDbmsSupport(IDbmsSupport dbmsSupport) {
+		this.dbms=dbmsSupport;
 	}
 
 	public int getDatabaseType() {
-		if (databaseType<0) {
+		dbms=getDbmsSupport();
+		if (dbms==null) {
+			return -1;
+		}
+		return dbms.getDatabaseType();
+	}
+	
+	public IDbmsSupport getDbmsSupport() {
+		if (dbms==null) {
 			Connection conn=null;
 			try {
 				conn=getConnection();
-				databaseType=JdbcUtil.getDatabaseType(conn);
+				setDbmsSupport(DbmsSupportFactory.getDbmsSupport(conn));
+				//databaseType=DbmsUtil.getDatabaseType(conn);
 			} catch (Exception e) {
-				log.warn("Exception determining databasetype", e);
-				return -1;
+				log.warn("Exception determining dbmssupport", e);
+				return null;
 			} finally {
 				try {
 					if (conn!=null) { 
 						conn.close();
 					}
 				} catch (SQLException e1) {
-					log.warn("exception closing connection for databasetype",e1);
+					log.warn("exception closing connection for dbmssupport",e1);
 				}
 			}
 		}
-		return databaseType;
+		return dbms;
 	}
 	/**
 	 * Obtains a connection to the datasource. 

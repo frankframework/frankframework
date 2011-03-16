@@ -1,6 +1,9 @@
 /*
  * $Log: DirectQuerySender.java,v $
- * Revision 1.17  2010-03-25 12:57:17  L190409
+ * Revision 1.18  2011-03-16 16:42:40  L190409
+ * introduction of DbmsSupport, including support for MS SQL Server
+ *
+ * Revision 1.17  2010/03/25 12:57:17  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * javadoc: added attribute closeInputstreamOnExit
  *
  * Revision 1.16  2009/10/07 13:35:12  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -108,14 +111,13 @@ import java.sql.SQLException;
  * @since 	4.1
  */
 public class DirectQuerySender extends JdbcQuerySenderBase {
-	public static final String version="$RCSfile: DirectQuerySender.java,v $ $Revision: 1.17 $ $Date: 2010-03-25 12:57:17 $";
 
 	private boolean lockRows=false;
 
-	protected PreparedStatement getStatement(Connection con, String correlationID, String message) throws SQLException {
+	protected PreparedStatement getStatement(Connection con, String correlationID, String message) throws SQLException, JdbcException {
 		String qry = message;
 		if (lockRows) {
-			qry = qry + JdbcFacade.LOCKROWS_SUFFIX;
+			qry = getDbmsSupport().prepareQueryTextForWorkQueueReading(-1, qry);
 		}
 		return prepareQuery(con, qry);
 	}

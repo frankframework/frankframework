@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcIteratingPipeBase.java,v $
- * Revision 1.7  2010-02-25 13:41:54  m168309
+ * Revision 1.8  2011-03-16 16:42:40  L190409
+ * introduction of DbmsSupport, including support for MS SQL Server
+ *
+ * Revision 1.7  2010/02/25 13:41:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted javadoc for resultOnTimeOut attribute
  *
  * Revision 1.6  2009/07/13 10:07:29  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -39,8 +42,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IDataIterator;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -50,6 +51,8 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.pipes.IteratingPipe;
 import nl.nn.adapterframework.util.JdbcUtil;
+
+import org.apache.commons.lang.StringUtils;
 
 
 /**
@@ -148,7 +151,7 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe {
 				qry = message;
 			}
 			if (lockRows) {
-				qry = qry + JdbcFacade.LOCKROWS_SUFFIX;
+				qry = getDbmsSupport().prepareQueryTextForWorkQueueReading(-1, qry);
 			}
 			return prepareQuery(con, qry);
 		}
@@ -194,7 +197,7 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe {
 			String msg = (String)input;
 			statement = querySender.getStatement(connection, correlationID, msg);
 			ParameterResolutionContext prc = new ParameterResolutionContext(msg,session);
-			if (prc != null && querySender.paramList != null) {
+			if (querySender.paramList != null) {
 				querySender.applyParameters(statement, prc.getValues(querySender.paramList));
 			}
 			rs = statement.executeQuery();

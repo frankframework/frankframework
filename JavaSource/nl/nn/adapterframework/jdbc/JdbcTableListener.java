@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcTableListener.java,v $
- * Revision 1.7  2009-08-04 11:24:21  L190409
+ * Revision 1.8  2011-03-16 16:42:40  L190409
+ * introduction of DbmsSupport, including support for MS SQL Server
+ *
+ * Revision 1.7  2009/08/04 11:24:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * support for messages in CLOBs and BLOBs
  *
  * Revision 1.6  2008/12/10 08:35:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -74,7 +77,6 @@ public class JdbcTableListener extends JdbcListener {
 	private String statusValueError;
 	
 	public void configure() throws ConfigurationException {
-		super.configure();
 		if (StringUtils.isEmpty(getTableName())) {
 			throw new ConfigurationException(getLogPrefix()+"must specifiy tableName");
 		}
@@ -104,12 +106,13 @@ public class JdbcTableListener extends JdbcListener {
 						 " ORDER BY "+getOrderField():""));
 		setUpdateStatusToProcessedQuery(getUpdateStatusQuery(getStatusValueProcessed()));				 
 		setUpdateStatusToErrorQuery(getUpdateStatusQuery(getStatusValueError())); 
+		super.configure();
 	}
 
 	protected String getUpdateStatusQuery(String fieldValue) {
 		return "UPDATE "+getTableName()+ 
 				" SET "+getStatusField()+"='"+fieldValue+"'"+
-				(StringUtils.isNotEmpty(getTimestampField())?","+getTimestampField()+"=SYSDATE":"")+
+				(StringUtils.isNotEmpty(getTimestampField())?","+getTimestampField()+"="+getDbmsSupport().getSysDate():"")+
 				" WHERE "+getKeyField()+"=?";
 	}
 

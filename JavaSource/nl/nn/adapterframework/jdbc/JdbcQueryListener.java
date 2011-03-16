@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcQueryListener.java,v $
- * Revision 1.6  2010-11-22 13:09:02  m168309
+ * Revision 1.7  2011-03-16 16:42:40  L190409
+ * introduction of DbmsSupport, including support for MS SQL Server
+ *
+ * Revision 1.6  2010/11/22 13:09:02  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * replaced configuration warning "has no updateStatusToErrorQuery specified, will use updateStatusToProcessedQuery instead" by info logging message
  *
  * Revision 1.5  2009/08/04 11:24:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -61,7 +64,6 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 public class JdbcQueryListener extends JdbcListener {
 
 	public void configure() throws ConfigurationException {
-		super.configure();
 		if (StringUtils.isEmpty(getSelectQuery())) {
 			throw new ConfigurationException("selectQuery must be specified");
 		}
@@ -75,6 +77,7 @@ public class JdbcQueryListener extends JdbcListener {
 			log.info(getLogPrefix()+"has no updateStatusToErrorQuery specified, will use updateStatusToProcessedQuery instead");
 			setUpdateStatusToErrorQuery(getUpdateStatusToProcessedQuery());
 		}
+		super.configure();
 	}
 	
 

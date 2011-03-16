@@ -1,6 +1,9 @@
 /*
  * $Log: XmlQuerySender.java,v $
- * Revision 1.3  2010-03-03 08:55:17  m168309
+ * Revision 1.4  2011-03-16 16:42:40  L190409
+ * introduction of DbmsSupport, including support for MS SQL Server
+ *
+ * Revision 1.3  2010/03/03 08:55:17  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * fixed '(EOFException) Unexpected end of ZLIB input stream'
  *
  * Revision 1.2  2010/02/01 08:32:39  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -85,7 +88,7 @@ import org.w3c.dom.Element;
  * @author  Peter Leeuwenburgh
  */
 public class XmlQuerySender extends DirectQuerySender {
-	public static final String version = "$RCSfile: XmlQuerySender.java,v $ $Revision: 1.3 $ $Date: 2010-03-03 08:55:17 $";
+	public static final String version = "$RCSfile: XmlQuerySender.java,v $ $Revision: 1.4 $ $Date: 2011-03-16 16:42:40 $";
 
 	public static final String TYPE_STRING = "string";
 	public static final String TYPE_NUMBER = "number";
@@ -266,12 +269,14 @@ public class XmlQuerySender extends DirectQuerySender {
 			}
 		} catch (DomBuilderException e) {
 			throw new SenderException(getLogPrefix() + "got exception parsing [" + message + "]", e);
+		} catch (JdbcException e) {
+			throw new SenderException(getLogPrefix() + "got exception preparing [" + message + "]", e);
 		}
 
 		return result;
 	}
 
-	private String selectQuery(Connection connection, String correlationID, String tableName, Vector columns, String where, String order) throws SenderException {
+	private String selectQuery(Connection connection, String correlationID, String tableName, Vector columns, String where, String order) throws SenderException, JdbcException {
 		try {
 			String query = "SELECT ";
 			if (columns != null) {
@@ -331,7 +336,7 @@ public class XmlQuerySender extends DirectQuerySender {
 		}
 	}
 
-	private String deleteQuery(Connection connection, String correlationID, String tableName, String where) throws SenderException {
+	private String deleteQuery(Connection connection, String correlationID, String tableName, String where) throws SenderException, JdbcException {
 		try {
 			String query = "DELETE FROM " + tableName;
 			if (where != null) {

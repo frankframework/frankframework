@@ -1,6 +1,9 @@
 /*
  * $Log: FixedQuerySender.java,v $
- * Revision 1.22  2010-03-25 12:57:17  L190409
+ * Revision 1.23  2011-03-16 16:42:40  L190409
+ * introduction of DbmsSupport, including support for MS SQL Server
+ *
+ * Revision 1.22  2010/03/25 12:57:17  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * javadoc: added attribute closeInputstreamOnExit
  *
  * Revision 1.21  2009/10/07 13:35:12  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -71,9 +74,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-import org.apache.commons.lang.StringUtils;
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
+
+import org.apache.commons.lang.StringUtils;
 
 /**
  * QuerySender that assumes a fixed query, possibly with attributes.
@@ -125,7 +128,6 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
  * @since 	4.1
  */
 public class FixedQuerySender extends JdbcQuerySenderBase {
-	public static final String version = "$RCSfile: FixedQuerySender.java,v $ $Revision: 1.22 $ $Date: 2010-03-25 12:57:17 $";
 
 	private String query=null;
 	private boolean lockRows=false;
@@ -140,7 +142,7 @@ public class FixedQuerySender extends JdbcQuerySenderBase {
 	protected PreparedStatement getStatement(Connection con, String correlationID, String message) throws JdbcException, SQLException {
 		String qry = getQuery();
 		if (lockRows) {
-			qry = qry + JdbcFacade.LOCKROWS_SUFFIX;
+			qry = getDbmsSupport().prepareQueryTextForWorkQueueReading(-1, qry);
 		}
 		return prepareQuery(con, qry);
 	}
