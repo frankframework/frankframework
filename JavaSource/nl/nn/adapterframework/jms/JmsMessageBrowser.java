@@ -1,6 +1,9 @@
 /*
  * $Log: JmsMessageBrowser.java,v $
- * Revision 1.9  2009-12-23 17:09:57  L190409
+ * Revision 1.10  2011-03-16 16:37:09  L190409
+ * added getIterator() with time and order parameters
+ *
+ * Revision 1.9  2009/12/23 17:09:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * modified MessageBrowsing interface to reenable and improve export of messages
  *
  * Revision 1.8  2009/03/13 14:31:57  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -35,6 +38,7 @@
  */
 package nl.nn.adapterframework.jms;
 
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -52,6 +56,8 @@ import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.Misc;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -62,7 +68,7 @@ import org.apache.commons.lang.StringUtils;
  * @see nl.nn.adapterframework.webcontrol.action.BrowseQueue
  */
 public class JmsMessageBrowser extends JMSFacade implements IMessageBrowser {
-	public static final String version = "$RCSfile: JmsMessageBrowser.java,v $ $Revision: 1.9 $ $Date: 2009-12-23 17:09:57 $";
+	public static final String version = "$RCSfile: JmsMessageBrowser.java,v $ $Revision: 1.10 $ $Date: 2011-03-16 16:37:09 $";
 
 	private long timeOut = 3000;
 	private String selector=null;
@@ -80,6 +86,21 @@ public class JmsMessageBrowser extends JMSFacade implements IMessageBrowser {
 	public IMessageBrowsingIterator getIterator() throws ListenerException {
 		try {
 			return new JmsQueueBrowserIterator(this,(Queue)getDestination(),getSelector());
+		} catch (Exception e) {
+			throw new ListenerException(e);
+		}
+	}
+
+	public IMessageBrowsingIterator getIterator(Date startTime, Date endTime, boolean forceDescending) throws ListenerException {
+		String selector=getSelector();
+		if (startTime!=null) {
+			selector=Misc.concatStrings(selector, " AND ", "JMSTimestamp >= "+DateUtils.format(startTime));
+		}
+		if (endTime!=null) {
+			selector=Misc.concatStrings(selector, " AND ", "JMSTimestamp < "+DateUtils.format(endTime));
+		}
+		try {
+			return new JmsQueueBrowserIterator(this,(Queue)getDestination(),selector);
 		} catch (Exception e) {
 			throw new ListenerException(e);
 		}
