@@ -1,6 +1,9 @@
 /*
  * $Log: Browse.java,v $
- * Revision 1.22  2010-01-04 15:05:47  m168309
+ * Revision 1.23  2011-03-16 16:37:32  L190409
+ * use datetime parameters to improve browsing performance
+ *
+ * Revision 1.22  2010/01/04 15:05:47  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added label
  *
  * Revision 1.21  2009/12/23 17:10:23  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -85,7 +88,6 @@ import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
-import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.ReceiverBase;
 import nl.nn.adapterframework.util.AppConstants;
@@ -109,7 +111,7 @@ import org.apache.struts.action.DynaActionForm;
  * @since   4.4
  */
 public class Browse extends ActionBase {
-	public static final String version="$RCSfile: Browse.java,v $ $Revision: 1.22 $ $Date: 2010-01-04 15:05:47 $";
+	public static final String version="$RCSfile: Browse.java,v $ $Revision: 1.23 $ $Date: 2011-03-16 16:37:32 $";
 
 	private int maxMessages = AppConstants.getInstance().getInt("browse.messages.max",0); 
 	private int skipMessages=0;
@@ -152,6 +154,8 @@ public class Browse extends ActionBase {
 		String labelMask  = getAndSetProperty(request,browseForm,"labelMask");
 		String startDateStr = getAndSetProperty(request,browseForm,"insertedAfter");
 		String startDateClipStr = getAndSetProperty(request,browseForm,"insertedAfterClip");
+		String endDateStr = request.getParameter("insertedBefore"); // not yet supported in actionForm
+		String forceDescStr = request.getParameter("forceDescending"); // not yet supported in actionForm
 		String viewAs = getAndSetProperty(request,browseForm,"viewAs", request.getParameter("type"));
 		String selected[] = (String[])browseForm.get("selected");
 
@@ -162,6 +166,7 @@ public class Browse extends ActionBase {
 		}
 		
 		Date startDate=null;
+		Date endDate=null;
 		String formattedStartDate=null;
 		if (StringUtils.isNotEmpty(startDateStr)) {
 			try {
@@ -170,8 +175,22 @@ public class Browse extends ActionBase {
 					formattedStartDate=DateUtils.formatOptimal(startDate);
 					log.debug("parsed start date to ["+formattedStartDate+"]");
 					browseForm.set("insertedAfter",formattedStartDate);
+					if (startDateClip) {
+						endDate=DateUtils.nextHigherValue(startDate);
+					}
 				} else {
 					warn("could not parse date from ["+startDateStr+"]");
+				}
+			} catch (CalendarParserException e) {
+				warn("could not parse date from ["+startDateStr+"]", e);
+			}
+		}
+
+		if (StringUtils.isNotEmpty(endDateStr)) {
+			try {
+				endDate=DateUtils.parseAnyDate(endDateStr);
+				if (startDate==null) {
+					warn("could not parse date from ["+endDateStr+"]");
 				}
 			} catch (CalendarParserException e) {
 				warn("could not parse date from ["+startDateStr+"]", e);
@@ -246,7 +265,7 @@ public class Browse extends ActionBase {
 				FileViewerServlet.showReaderContents(new StringReader(msg),"msg"+messageId,type,response, request.getContextPath().substring(1),"message ["+messageId+"]");
 				return null;
 			} else {
-				IMessageBrowsingIterator mbi=mb.getIterator();
+				IMessageBrowsingIterator mbi=mb.getIterator(startDate,endDate,"true".equals(forceDescStr));
 				try {
 					XmlBuilder messages=new XmlBuilder("messages");
 					messages.addAttribute("storageType",storageType);
@@ -348,7 +367,7 @@ public class Browse extends ActionBase {
 				}
 			}
 		} catch (Throwable e) {
-			log.error(e);
+			error("Caught Exception", e);
 			throw new ServletException(e);
 		}
 		
