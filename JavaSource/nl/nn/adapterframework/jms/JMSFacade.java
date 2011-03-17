@@ -1,6 +1,9 @@
 /*
  * $Log: JMSFacade.java,v $
- * Revision 1.41  2010-02-02 14:34:49  m168309
+ * Revision 1.42  2011-03-17 08:12:19  L190409
+ * separate method extractMessageBody()
+ *
+ * Revision 1.41  2010/02/02 14:34:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * separate method for getting connectionfactory info
  *
  * Revision 1.40  2010/01/28 14:58:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -724,7 +727,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 		if (!soap) {
 			return rawMessageText;
 		}
-		String messageText=soapWrapper.getBody(rawMessageText);
+		String messageText=extractMessageBody(rawMessageText, context, soapWrapper);
 		if (StringUtils.isNotEmpty(soapHeaderSessionKey)) {
 			String soapHeader=soapWrapper.getHeader(rawMessageText);
 			context.put(soapHeaderSessionKey,soapHeader);
@@ -732,7 +735,11 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 		return messageText;
 	}
 
+	protected String extractMessageBody(String rawMessageText, Map context, SoapWrapper soapWrapper) throws DomBuilderException, TransformerException, IOException {
+		return soapWrapper.getBody(rawMessageText);
+	}
     
+   
     public String toString() {
         StringBuffer sb = new StringBuffer();
         sb.append(super.toString());
@@ -824,13 +831,13 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
 	 */
 	public void setAcknowledgeMode(String acknowledgeMode) {
 
-		if (acknowledgeMode.equalsIgnoreCase("auto")) {
+		if (acknowledgeMode.equalsIgnoreCase("auto") || acknowledgeMode.equalsIgnoreCase("AUTO_ACKNOWLEDGE")) {
 			ackMode = Session.AUTO_ACKNOWLEDGE;
 		} else
-			if (acknowledgeMode.equalsIgnoreCase("dups")) {
+			if (acknowledgeMode.equalsIgnoreCase("dups") || acknowledgeMode.equalsIgnoreCase("DUPS_OK_ACKNOWLEDGE")) {
 				ackMode = Session.DUPS_OK_ACKNOWLEDGE;
 			} else
-				if (acknowledgeMode.equalsIgnoreCase("client")) {
+				if (acknowledgeMode.equalsIgnoreCase("client") || acknowledgeMode.equalsIgnoreCase("CLIENT_ACKNOWLEDGE")) {
 					ackMode = Session.CLIENT_ACKNOWLEDGE;
 				} else {
 					// ignore all ack modes, to test no acking
