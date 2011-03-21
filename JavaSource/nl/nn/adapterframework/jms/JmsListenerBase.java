@@ -1,6 +1,9 @@
 /*
  * $Log: JmsListenerBase.java,v $
- * Revision 1.5  2011-01-27 08:45:05  L190409
+ * Revision 1.6  2011-03-21 14:58:28  m168309
+ * added throws ListenerException to prepareReply()
+ *
+ * Revision 1.5  2011/01/27 08:45:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * timeout as int
  *
  * Revision 1.4  2009/08/20 12:14:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -248,7 +251,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender {
 	}
 
 
-	public String prepareReply(String rawReply, Map threadContext) {
+	public String prepareReply(String rawReply, Map threadContext) throws ListenerException {
 		if (!isSoap()) {
 			return rawReply;
 		}
