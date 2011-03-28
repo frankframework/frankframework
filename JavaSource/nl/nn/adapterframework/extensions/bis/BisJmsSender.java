@@ -1,6 +1,9 @@
 /*
  * $Log: BisJmsSender.java,v $
- * Revision 1.1  2011-03-21 14:55:01  m168309
+ * Revision 1.2  2011-03-28 14:20:43  m168309
+ * added check on soap fault
+ *
+ * Revision 1.1  2011/03/21 14:55:01  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * first version
  *
  */
@@ -29,7 +32,9 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <br/>
  * For example request and reply, see {@link BisJmsListener}.
  * <br/>
- * If synchronous=true, the tag Result exists in the reply soap body and Result/Status differs from 'OK' a SenderException is thrown.
+ * If synchronous=true and one of the following conditions is true a SenderException is thrown:
+ * - Result/Status in the reply soap body equals 'ERROR'
+ * - faultcode in the reply soap fault is not empty
  * <br/>
  *
  * <p><b>Configuration:</b>
@@ -48,13 +53,15 @@ public class BisJmsSender extends JmsSender {
 
 	private final static String soapNamespaceDefs = "soapenv=http://schemas.xmlsoap.org/soap/envelope/";
 	private final static String soapBodyXPath = "soapenv:Envelope/soapenv:Body";
-	private final static String resultStatusXPath = "bis:Result/bis:Status='OK'";
+	private final static String resultStatusXPath = "bis:Result/bis:Status='ERROR'";
 	private final static String resultStatusNamespaceDefs = "bis=http://www.ing.com/CSP/XSD/General/Message_2";
+	private final static String faultCodeXPath = "soapenv:Fault/faultcode";
 
 	private String responseXPath = null;
 	private String responseNamespaceDefs = null;
 
 	private TransformerPool resultStatusTp;
+	private TransformerPool faultCodeTp;
 	private TransformerPool responseTp;
 
 	public BisJmsSender() {
@@ -68,6 +75,7 @@ public class BisJmsSender extends JmsSender {
 		}
 		try {
 			resultStatusTp = new TransformerPool(XmlUtils.createXPathEvaluatorSource(soapNamespaceDefs + "\n" + resultStatusNamespaceDefs, soapBodyXPath + "/" + resultStatusXPath, "text"));
+			faultCodeTp = new TransformerPool(XmlUtils.createXPathEvaluatorSource(soapNamespaceDefs, soapBodyXPath + "/" + faultCodeXPath, "text"));
 			responseTp = new TransformerPool(XmlUtils.createXPathEvaluatorSource(soapNamespaceDefs + "\n" + getResponseNamespaceDefs(), soapBodyXPath + "/" + getResponseXPath(), "xml"));
 		} catch (TransformerConfigurationException e) {
 			throw new ConfigurationException(getLogPrefix() + "cannot create transformer", e);
@@ -81,14 +89,19 @@ public class BisJmsSender extends JmsSender {
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		String soapBody = super.sendMessage(correlationID, message, prc);
 		if (isSynchronous()) {
-			String ok;
+			String resultStatusResult;
+			String faultCodeResult;
 			try {
-				ok = resultStatusTp.transform(soapBody, null, true);
+				resultStatusResult = resultStatusTp.transform(soapBody, null, true);
+				faultCodeResult = faultCodeTp.transform(soapBody, null, true);
 			} catch (Exception e) {
 				throw new SenderException(e);
 			}
-			if (!Boolean.valueOf(ok).booleanValue()) {
-				throw new SenderException("resultStatus is not OK");
+			if (Boolean.valueOf(resultStatusResult).booleanValue()) {
+				throw new SenderException("resultStatus equals ERROR");
+			}
+			if (faultCodeResult.length() > 0) {
+				throw new SenderException("faultCode is not empty");
 			}
 			try {
 				return responseTp.transform(soapBody, null, true);
