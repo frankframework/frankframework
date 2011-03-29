@@ -1,6 +1,9 @@
 /*
  * $Log: BisJmsListener.java,v $
- * Revision 1.1  2011-03-21 14:55:01  m168309
+ * Revision 1.2  2011-03-29 13:01:48  m168309
+ * cosmetic change
+ *
+ * Revision 1.1  2011/03/21 14:55:01  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * first version
  *
  */
@@ -135,9 +138,16 @@ public class BisJmsListener extends JmsListener {
 
 	private final static String soapNamespaceDefs = "soapenv=http://schemas.xmlsoap.org/soap/envelope/";
 	private final static String soapBodyXPath = "soapenv:Envelope/soapenv:Body";
+	private final static String bisNamespaceDefs = "bis=http://www.ing.com/CSP/XSD/General/Message_2";
 	private final static String messageHeaderConversationIdXPath = "bis:MessageHeader/bis:HeaderFields/bis:ConversationId";
 	private final static String messageHeaderExternalRefToMessageIdXPath = "bis:MessageHeader/bis:HeaderFields/bis:MessageId";
-	private final static String messageHeaderNamespaceDefs = "bis=http://www.ing.com/CSP/XSD/General/Message_2";
+
+	private final static String[][] BISERRORS = { { "ERR6002", "Service Interface Request Time Out" }, {
+			"ERR6003", "Invalid Request Message" }, {
+			"ERR6004", "Invalid Backend system response" }, {
+			"ERR6005", "Backend system failure response" }, {
+			"ERR6999", "Unspecified Errors" }
+	};
 
 	private String requestXPath = null;
 	private String requestNamespaceDefs = null;
@@ -161,8 +171,8 @@ public class BisJmsListener extends JmsListener {
 			throw new ConfigurationException(getLogPrefix() + "soap must be true");
 		}
 		try {
-			messageHeaderConversationIdTp = new TransformerPool(XmlUtils.createXPathEvaluatorSource(soapNamespaceDefs + "\n" + messageHeaderNamespaceDefs, soapBodyXPath + "/" + messageHeaderConversationIdXPath, "text"));
-			messageHeaderExternalRefToMessageIdTp = new TransformerPool(XmlUtils.createXPathEvaluatorSource(soapNamespaceDefs + "\n" + messageHeaderNamespaceDefs, soapBodyXPath + "/" + messageHeaderExternalRefToMessageIdXPath, "text"));
+			messageHeaderConversationIdTp = new TransformerPool(XmlUtils.createXPathEvaluatorSource(soapNamespaceDefs + "\n" + bisNamespaceDefs, soapBodyXPath + "/" + messageHeaderConversationIdXPath, "text"));
+			messageHeaderExternalRefToMessageIdTp = new TransformerPool(XmlUtils.createXPathEvaluatorSource(soapNamespaceDefs + "\n" + bisNamespaceDefs, soapBodyXPath + "/" + messageHeaderExternalRefToMessageIdXPath, "text"));
 			if (StringUtils.isNotEmpty(getRequestXPath())) {
 				requestTp = new TransformerPool(XmlUtils.createXPathEvaluatorSource(soapNamespaceDefs + "\n" + getRequestNamespaceDefs(), soapBodyXPath + "/" + getRequestXPath(), "xml"));
 			}
@@ -253,24 +263,9 @@ public class BisJmsListener extends JmsListener {
 					reason.setCdataValue(et);
 				}
 			} else {
-				if (errorCode.equals("ERR6002")) {
-					reason.setValue("Service Interface Request Time Out");
-				} else {
-					if (errorCode.equals("ERR6003")) {
-						reason.setValue("Invalid Request Message");
-					} else {
-						if (errorCode.equals("ERR6004")) {
-							reason.setValue("Invalid Backend system response");
-						} else {
-							if (errorCode.equals("ERR6005")) {
-								reason.setValue("Backend system failure response");
-							} else {
-								if (errorCode.equals("ERR6999")) {
-									reason.setValue("Unspecified Errors");
-								}
-							}
-						}
-					}
+				String errorText = errorCodeToText(errorCode);
+				if (errorText != null) {
+					reason.setValue(errorText);
 				}
 			}
 			error.addSubElement(reason);
@@ -318,6 +313,15 @@ public class BisJmsListener extends JmsListener {
 			result.addSubElement(errorList);
 		}
 		return result.toXML();
+	}
+
+	private String errorCodeToText(String errorCode) {
+		for (int i = 0; i < BISERRORS.length; i++) {
+			if (errorCode.equals(BISERRORS[i][0])) {
+				return BISERRORS[i][1];
+			}
+		}
+		return null;
 	}
 
 	public void setRequestXPath(String requestXPath) {
