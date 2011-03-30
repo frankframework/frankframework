@@ -1,6 +1,9 @@
 /*
  * $Log: BisJmsListener.java,v $
- * Revision 1.2  2011-03-29 13:01:48  m168309
+ * Revision 1.3  2011-03-30 14:48:57  m168309
+ * moved prepareMessageHeader() and prepareResult() to BisUtils
+ *
+ * Revision 1.2  2011/03/29 13:01:48  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * cosmetic change
  *
  * Revision 1.1  2011/03/21 14:55:01  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -11,25 +14,20 @@ package nl.nn.adapterframework.extensions.bis;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Map;
 
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
-import org.apache.commons.lang.StringUtils;
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.jms.JmsListener;
 import nl.nn.adapterframework.soap.SoapWrapper;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
-import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.TransformerPool;
-import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
+
+import org.apache.commons.lang.StringUtils;
 
 /**
  * Bis (Business Integration Services) extension of JmsListener.
@@ -126,7 +124,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  *   <tr><td>ERR6005</td><td>Backend system failure response</td></tr>
  *   <tr><td>ERR6999</td><td>Unspecified Errors</td></tr>
  *  </table></td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setErrorReasonKey(String) errorReasonSessionKey}</td><td>key of session variable to store error reason in (if an error occurs)</td><td>bisErrorReason</td></tr>
+ * <tr><td>{@link #setErrorReasonSessionKey(String) errorReasonSessionKey}</td><td>key of session variable to store error reason in (if an error occurs)</td><td>bisErrorReason</td></tr>
  * <tr><td>{@link #setServiceName(String) serviceName}</td><td>name of the service; used in the error reply</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setActionName(String) actionName}</td><td>name of the operation; used in the error reply</td><td>&nbsp;</td></tr>
  * </p>
@@ -138,9 +136,6 @@ public class BisJmsListener extends JmsListener {
 
 	private final static String soapNamespaceDefs = "soapenv=http://schemas.xmlsoap.org/soap/envelope/";
 	private final static String soapBodyXPath = "soapenv:Envelope/soapenv:Body";
-	private final static String bisNamespaceDefs = "bis=http://www.ing.com/CSP/XSD/General/Message_2";
-	private final static String messageHeaderConversationIdXPath = "bis:MessageHeader/bis:HeaderFields/bis:ConversationId";
-	private final static String messageHeaderExternalRefToMessageIdXPath = "bis:MessageHeader/bis:HeaderFields/bis:MessageId";
 
 	private final static String[][] BISERRORS = { { "ERR6002", "Service Interface Request Time Out" }, {
 			"ERR6003", "Invalid Request Message" }, {
@@ -158,8 +153,8 @@ public class BisJmsListener extends JmsListener {
 	private String actionName = null;
 
 	private TransformerPool requestTp;
-	private TransformerPool messageHeaderConversationIdTp;
-	private TransformerPool messageHeaderExternalRefToMessageIdTp;
+
+	private BisUtils bisUtils = null;
 
 	public BisJmsListener() {
 		setSoap(true);
@@ -171,8 +166,7 @@ public class BisJmsListener extends JmsListener {
 			throw new ConfigurationException(getLogPrefix() + "soap must be true");
 		}
 		try {
-			messageHeaderConversationIdTp = new TransformerPool(XmlUtils.createXPathEvaluatorSource(soapNamespaceDefs + "\n" + bisNamespaceDefs, soapBodyXPath + "/" + messageHeaderConversationIdXPath, "text"));
-			messageHeaderExternalRefToMessageIdTp = new TransformerPool(XmlUtils.createXPathEvaluatorSource(soapNamespaceDefs + "\n" + bisNamespaceDefs, soapBodyXPath + "/" + messageHeaderExternalRefToMessageIdXPath, "text"));
+			bisUtils = BisUtils.getInstance();
 			if (StringUtils.isNotEmpty(getRequestXPath())) {
 				requestTp = new TransformerPool(XmlUtils.createXPathEvaluatorSource(soapNamespaceDefs + "\n" + getRequestNamespaceDefs(), soapBodyXPath + "/" + getRequestXPath(), "xml"));
 			}
@@ -194,7 +188,7 @@ public class BisJmsListener extends JmsListener {
 			errorCode = (String) threadContext.get(getErrorCodeSessionKey());
 		}
 		try {
-			messages.add(prepareMessageHeader(originalSoapBody));
+			messages.add(bisUtils.prepareMessageHeader(originalSoapBody));
 			messages.add(rawReply);
 			messages.add(prepareResult(errorCode, threadContext));
 		} catch (Exception e) {
@@ -207,112 +201,28 @@ public class BisJmsListener extends JmsListener {
 		return super.prepareReply(sb.toString(), threadContext);
 	}
 
-	public String prepareMessageHeader(String originalSoapBody) throws DomBuilderException, IOException, TransformerException {
-		XmlBuilder messageHeader = new XmlBuilder("MessageHeader");
-		messageHeader.addAttribute("xmlns", "http://www.ing.com/CSP/XSD/General/Message_2");
-		XmlBuilder from = new XmlBuilder("From");
-		XmlBuilder id = new XmlBuilder("Id");
-		id.setValue(AppConstants.getInstance().getProperty("instance.name", ""));
-		from.addSubElement(id);
-		messageHeader.addSubElement(from);
-		XmlBuilder headerFields = new XmlBuilder("HeaderFields");
-		XmlBuilder conversationId = new XmlBuilder("ConversationId");
-		if (messageHeaderConversationIdTp != null) {
-			conversationId.setValue(messageHeaderConversationIdTp.transform(originalSoapBody, null, true));
-		} else {
-			conversationId.setValue("?");
-		}
-		headerFields.addSubElement(conversationId);
-		XmlBuilder messageId = new XmlBuilder("MessageId");
-		messageId.setValue(Misc.getHostname() + "_" + Misc.createSimpleUUID());
-		headerFields.addSubElement(messageId);
-		XmlBuilder externalRefToMessageId = new XmlBuilder("ExternalRefToMessageId");
-		if (messageHeaderExternalRefToMessageIdTp != null) {
-			externalRefToMessageId.setValue(messageHeaderExternalRefToMessageIdTp.transform(originalSoapBody, null, true));
-		} else {
-			externalRefToMessageId.setValue("?");
-		}
-		headerFields.addSubElement(externalRefToMessageId);
-		XmlBuilder timestamp = new XmlBuilder("Timestamp");
-		timestamp.setValue(DateUtils.format(new Date(), "yyyy-MM-dd'T'HH:mm:ss"));
-		headerFields.addSubElement(timestamp);
-		messageHeader.addSubElement(headerFields);
-		return messageHeader.toXML();
-	}
-
 	public String prepareResult(String errorCode, Map threadContext) throws DomBuilderException, IOException, TransformerException {
-		XmlBuilder result = new XmlBuilder("Result");
-		result.addAttribute("xmlns", "http://www.ing.com/CSP/XSD/General/Message_2");
-		XmlBuilder status = new XmlBuilder("Status");
-		if (errorCode == null) {
-			status.setValue("OK");
-		} else {
-			status.setValue("ERROR");
-		}
-		result.addSubElement(status);
+		String errorText = null;
+		String serviceName = null;
+		String actionName = null;
+		String detailText = null;
 		if (errorCode != null) {
-			XmlBuilder errorList = new XmlBuilder("ErrorList");
-			XmlBuilder error = new XmlBuilder("Error");
-			XmlBuilder code = new XmlBuilder("Code");
-			code.setValue(errorCode);
-			error.addSubElement(code);
-			XmlBuilder reason = new XmlBuilder("Reason");
 			if (StringUtils.isNotEmpty(getErrorTextSessionKey())) {
-				String et = (String) threadContext.get(getErrorTextSessionKey());
-				if (et != null) {
-					reason.setCdataValue(et);
-				}
+				errorText = (String) threadContext.get(getErrorTextSessionKey());
 			} else {
-				String errorText = errorCodeToText(errorCode);
-				if (errorText != null) {
-					reason.setValue(errorText);
-				}
+				errorText = errorCodeToText(errorCode);
 			}
-			error.addSubElement(reason);
-			XmlBuilder service = new XmlBuilder("Service");
-			XmlBuilder serviceName = new XmlBuilder("Name");
 			if (StringUtils.isNotEmpty(getServiceName())) {
-				String sn = (String) threadContext.get(getServiceName());
-				if (sn != null) {
-					serviceName.setValue(sn);
-				}
+				serviceName = (String) threadContext.get(getServiceName());
 			}
-			service.addSubElement(serviceName);
-			XmlBuilder serviceContext = new XmlBuilder("Context");
-			serviceContext.setValue("1");
-			service.addSubElement(serviceContext);
-			XmlBuilder action = new XmlBuilder("Action");
-			XmlBuilder actionName = new XmlBuilder("Name");
 			if (StringUtils.isNotEmpty(getActionName())) {
-				String an = (String) threadContext.get(getActionName());
-				if (an != null) {
-					actionName.setValue(an);
-				}
+				actionName = (String) threadContext.get(getActionName());
 			}
-			action.addSubElement(actionName);
-			XmlBuilder actionVersion = new XmlBuilder("Version");
-			actionVersion.setValue("1");
-			action.addSubElement(actionVersion);
-			service.addSubElement(action);
-			error.addSubElement(service);
-			XmlBuilder detailList = new XmlBuilder("DetailList");
-			XmlBuilder detail = new XmlBuilder("Detail");
-			XmlBuilder detailCode = new XmlBuilder("Code");
-			detail.addSubElement(detailCode);
-			XmlBuilder detailText = new XmlBuilder("Text");
 			if (StringUtils.isNotEmpty(getErrorReasonSessionKey())) {
-				String er = (String) threadContext.get(getErrorReasonSessionKey());
-				if (er != null) {
-					detailText.setCdataValue(er);
-				}
+				detailText = (String) threadContext.get(getErrorReasonSessionKey());
 			}
-			detail.addSubElement(detailText);
-			detailList.addSubElement(detail);
-			error.addSubElement(detailList);
-			errorList.addSubElement(error);
-			result.addSubElement(errorList);
 		}
-		return result.toXML();
+		return bisUtils.prepareResult(errorCode, errorText, serviceName, actionName, detailText);
 	}
 
 	private String errorCodeToText(String errorCode) {
