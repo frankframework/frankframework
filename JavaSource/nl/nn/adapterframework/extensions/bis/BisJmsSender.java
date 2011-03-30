@@ -1,6 +1,9 @@
 /*
  * $Log: BisJmsSender.java,v $
- * Revision 1.3  2011-03-29 12:02:14  m168309
+ * Revision 1.4  2011-03-30 14:51:06  m168309
+ * added MessageHeader to request
+ *
+ * Revision 1.3  2011/03/29 12:02:14  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * cosmetic change
  *
  * Revision 1.2  2011/03/28 14:20:43  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -13,6 +16,7 @@
 package nl.nn.adapterframework.extensions.bis;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Map;
 
 import javax.xml.transform.TransformerConfigurationException;
@@ -45,6 +49,8 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <tr><td>{@link #setSoap(boolean) soap}</td><td>when <code>true</code>, messages sent are put in a SOAP envelope</td><td><code>true</code></td></tr>
  * <tr><td>{@link #setResponseXPath(String) responseXPath}</td><td>xpath expression to extract the message from the reply which is passed to the pipeline. When soap=true the initial message is the content of the soap body</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setResponseNamespaceDefs(String) responseNamespaceDefs}</td><td>namespace defintions for responseXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setConversationIdSessionKey(String) conversationIdSessionKey}</td><td>key of session variable to store ConversationId in; used in the MessageHeader of the request</td><td>bisConversationId</td></tr>
+ * <tr><td>{@link #setExternalRefToMessageIdSessionKey(String) externalRefToMessageIdSessionKey}</td><td>key of session variable to store ExternalRefToMessageId in; used in the MessageHeader of the request</td><td>bisExternalRefToMessageId</td></tr>
  * </p>
  * 
  * @author  Peter Leeuwenburgh
@@ -59,9 +65,13 @@ public class BisJmsSender extends JmsSender {
 
 	private String responseXPath = null;
 	private String responseNamespaceDefs = null;
+	private String conversationIdSessionKey = "bisConversationId";
+	private String externalRefToMessageIdSessionKey = "bisExternalRefToMessageId";
 
 	private TransformerPool bisErrorTp;
 	private TransformerPool responseTp;
+
+	private BisUtils bisUtils = null;
 
 	public BisJmsSender() {
 		setSoap(true);
@@ -73,6 +83,7 @@ public class BisJmsSender extends JmsSender {
 			throw new ConfigurationException(getLogPrefix() + "soap must be true");
 		}
 		try {
+			bisUtils = BisUtils.getInstance();
 			bisErrorTp = new TransformerPool(XmlUtils.createXPathEvaluatorSource(soapNamespaceDefs + "\n" + bisNamespaceDefs, bisErrorXPath, "text"));
 			responseTp = new TransformerPool(XmlUtils.createXPathEvaluatorSource(soapNamespaceDefs + "\n" + getResponseNamespaceDefs(), soapBodyXPath + "/" + getResponseXPath(), "xml"));
 		} catch (TransformerConfigurationException e) {
@@ -85,7 +96,18 @@ public class BisJmsSender extends JmsSender {
 	}
 
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
-		String soapBody = super.sendMessage(correlationID, message, prc);
+		ArrayList messages = new ArrayList();
+		try {
+			messages.add(bisUtils.prepareMessageHeader(null, (String) prc.getSession().get(getConversationIdSessionKey()), (String) prc.getSession().get(getExternalRefToMessageIdSessionKey())));
+		} catch (Exception e) {
+			throw new SenderException(e);
+		}
+		messages.add(message);
+		StringBuffer sb = new StringBuffer();
+		for (int i = 0; i < messages.size(); i++) {
+			sb.append((String) messages.get(i));
+		}
+		String soapBody = super.sendMessage(correlationID, sb.toString(), prc);
 		if (isSynchronous()) {
 			String bisError;
 			try {
@@ -121,5 +143,21 @@ public class BisJmsSender extends JmsSender {
 
 	public String getResponseNamespaceDefs() {
 		return responseNamespaceDefs;
+	}
+
+	public void setExternalRefToMessageIdSessionKey(String externalRefToMessageIdSessionKey) {
+		this.externalRefToMessageIdSessionKey = externalRefToMessageIdSessionKey;
+	}
+
+	public String getExternalRefToMessageIdSessionKey() {
+		return externalRefToMessageIdSessionKey;
+	}
+
+	public void setConversationIdSessionKey(String conversationIdSessionKey) {
+		this.conversationIdSessionKey = conversationIdSessionKey;
+	}
+
+	public String getConversationIdSessionKey() {
+		return conversationIdSessionKey;
 	}
 }
