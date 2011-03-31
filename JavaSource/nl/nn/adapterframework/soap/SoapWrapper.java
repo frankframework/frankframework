@@ -1,6 +1,9 @@
 /*
  * $Log: SoapWrapper.java,v $
- * Revision 1.11  2010-07-12 12:49:45  L190409
+ * Revision 1.12  2011-03-31 07:13:09  m168309
+ * added namespaceDefs attribute
+ *
+ * Revision 1.11  2010/07/12 12:49:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * use modified way of specifying namespace definitions
  *
  * Revision 1.10  2009/08/04 11:33:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -51,6 +54,7 @@ package nl.nn.adapterframework.soap;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.StringTokenizer;
 
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -88,7 +92,7 @@ import org.w3c.dom.Document;
  * @version Id
  */
 public class SoapWrapper {
-	public static final String version="$RCSfile: SoapWrapper.java,v $ $Revision: 1.11 $ $Date: 2010-07-12 12:49:45 $";
+	public static final String version="$RCSfile: SoapWrapper.java,v $ $Revision: 1.12 $ $Date: 2011-03-31 07:13:09 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private TransformerPool extractBody;
@@ -185,6 +189,10 @@ public class SoapWrapper {
 	}
 
 	public String putInEnvelope(String message, String encodingStyleUri, String targetObjectNamespace, String soapHeader) {
+		return putInEnvelope(message, encodingStyleUri, targetObjectNamespace, soapHeader, null);
+	}
+
+	public String putInEnvelope(String message, String encodingStyleUri, String targetObjectNamespace, String soapHeader, String namespaceDefs) {
 		
 		String encodingStyle="";
 		String targetObjectNamespaceClause="";
@@ -199,12 +207,28 @@ public class SoapWrapper {
 		} else {
 			soapHeader="";
 		}
+		String namespaceClause="";
+		if (StringUtils.isNotEmpty(namespaceDefs)) {
+			StringTokenizer st1 = new StringTokenizer(namespaceDefs,", \t\r\n\f");
+			while (st1.hasMoreTokens()) {
+				String namespaceDef=st1.nextToken();
+				log.debug("namespaceDef ["+namespaceDef+"]");
+				int separatorPos=namespaceDef.indexOf('=');
+				if (separatorPos<1) {
+					namespaceClause+=" xmlns=\""+namespaceDef+"\"";
+				} else {
+					namespaceClause+=" xmlns:"+namespaceDef.substring(0,separatorPos)+"=\""+namespaceDef.substring(separatorPos+1)+"\"";
+				}
+			}
+			log.debug("namespaceClause ["+namespaceClause+"]");
+		}
 		String soapmsg= 
 		"<soapenv:Envelope " + 
 			"xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" "+encodingStyle +
 			targetObjectNamespaceClause +
 //			"xmlns:xsi=\"http://www.w3.org/1999/XMLSchema-instance\" " + 
 //			"xmlns:xsd=\"http://www.w3.org/1999/XMLSchema\" " +
+			namespaceClause +
 			">" + 
 			soapHeader+
 			"<soapenv:Body>" + 	
