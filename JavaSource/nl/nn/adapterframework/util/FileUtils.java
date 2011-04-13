@@ -1,6 +1,9 @@
 /*
  * $Log: FileUtils.java,v $
- * Revision 1.19  2010-12-31 10:08:33  m168309
+ * Revision 1.20  2011-04-13 08:48:20  L190409
+ * added createTempFile()
+ *
+ * Revision 1.19  2010/12/31 10:08:33  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added encodeFileName()
  *
  * Revision 1.18  2010/08/09 13:03:40  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -90,7 +93,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class FileUtils {
-	public static final String version = "$RCSfile: FileUtils.java,v $  $Revision: 1.19 $ $Date: 2010-12-31 10:08:33 $";
+	public static final String version = "$RCSfile: FileUtils.java,v $  $Revision: 1.20 $ $Date: 2011-04-13 08:48:20 $";
 	static Logger log = LogUtil.getLogger(FileUtils.class);
 
 	/**
@@ -248,9 +251,26 @@ public class FileUtils {
 		return true;
 	}
 
-	/**
-	 * 
-	 */
+	public static File createTempFile() throws IOException {
+		return createTempFile(null);
+	}
+	public static File createTempFile(String suffix) throws IOException {
+		return createTempFile(null,null);
+	}
+	public static File createTempFile(String prefix, String suffix) throws IOException {
+		String directory=AppConstants.getInstance().getProperty("upload.dir", "/tmp");
+		if (StringUtils.isEmpty(prefix)) {
+			prefix="ibis";
+		}
+		if (StringUtils.isEmpty(suffix)) {
+			suffix=".tmp";
+		}
+		File tmpFile = File.createTempFile(prefix, suffix, new File(directory));
+		tmpFile.deleteOnExit();
+		return tmpFile;
+	}
+	
+	
 	public static void makeBackups(File targetFile, int numBackups)  {
 		if (numBackups<=0 || !targetFile.exists()) {
 			return;
