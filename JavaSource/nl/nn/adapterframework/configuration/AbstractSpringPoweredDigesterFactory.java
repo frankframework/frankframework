@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractSpringPoweredDigesterFactory.java,v $
- * Revision 1.18  2011-02-07 15:24:36  m168309
+ * Revision 1.19  2011-04-13 08:19:26  L190409
+ * added Long type to checkAttribute
+ *
+ * Revision 1.18  2011/02/07 15:24:36  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * configuration warning when non String attribute is empty
  *
  * Revision 1.17  2010/09/07 15:55:13  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -74,7 +77,6 @@ import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.digester.AbstractObjectCreationFactory;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
-import org.springframework.context.ApplicationContext;
 import org.xml.sax.Attributes;
 import org.xml.sax.Locator;
 
@@ -109,6 +111,8 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 
     private static IbisContext ibisContext;
 	private ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+	
+	private static final boolean DEBUG=false;
     
     public AbstractSpringPoweredDigesterFactory() {
         super();
@@ -250,7 +254,17 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 											addConfigWarning(currObj, beanName, "attribute ["+ attributeName+"] String ["+value+"] cannot be converted to Integer: "+e.getMessage());
 										}
 									} else {
-										log.warn("Unknown returning type [" + rm.getReturnType() + "]" + "for getter method [" + rm.getName() + "], object [" + getObjectName(currObj, beanName) + "]");
+										if (dv instanceof Long) {
+											try {
+												if (Long.valueOf(value).equals(dv)) {
+													addSetToDefaultConfigWarning(currObj, beanName, attributeName, value);
+												}
+											} catch (NumberFormatException e) {
+												addConfigWarning(currObj, beanName, "attribute ["+ attributeName+"] String ["+value+"] cannot be converted to Long: "+e.getMessage());
+											}
+										} else {
+											log.warn("Unknown returning type [" + rm.getReturnType() + "] for getter method [" + rm.getName() + "], object [" + getObjectName(currObj, beanName) + "]");
+										}
 									}
 								}
 							}
@@ -305,6 +319,7 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
         
         // No explicit classname given; get bean from Spring Factory
         if (className == null) {
+        	if (DEBUG && log.isDebugEnabled()) log.debug("createBeanFromClassName(): className is null");
             beanName = getSuggestedBeanName();
             beanClass = null;
         } else {
@@ -314,15 +329,29 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
             if (matchingBeans.length == 1) {
                 // Only 1 bean of this type, so create it
                 beanName = matchingBeans[0];
+               	if (DEBUG && log.isDebugEnabled()) log.debug("createBeanFromClassName(): only bean ["+beanName+"] matches class ["+beanClass.getName()+"]");
             } else if (matchingBeans.length > 1) {
                 // multiple beans; find if there's one with the
                 // same name as from 'getBeanName'.
                 beanName = getSuggestedBeanName();
+               	if (DEBUG && log.isDebugEnabled()) log.debug("createBeanFromClassName(): multiple beans match class ["+beanClass.getName()+"], using suggested ["+beanName+"]");
             } else {
                 // No beans matching the type.
                 // Create instance, and if the instance implements
                 // Spring's BeanFactoryAware interface, use it to
                 // set BeanFactory attribute on this Bean.
+               	if (DEBUG && log.isDebugEnabled()) log.debug("createBeanFromClassName(): no beans match class ["+beanClass.getName()+"]");
+//               	try {
+//	               	Object o=ibisContext.getBean(getSuggestedBeanName(), beanClass);
+//	               	if (o!=null) {
+//	                   	if (DEBUG && log.isDebugEnabled()) log.debug("createBeanFromClassName(): found bean ["+o+"] by suggested name ["+getSuggestedBeanName()+"] match class ["+beanClass.getName()+"]");
+//	               		return o;
+//	               	}
+//               	} catch (NoSuchBeanDefinitionException e) {
+//                  	if (DEBUG && log.isDebugEnabled()) log.debug("createBeanFromClassName(): no bean ["+getSuggestedBeanName()+"] found for class ["+beanClass.getName()+"]: "+e.getMessage());
+//               	} catch (BeanNotOfRequiredTypeException e) {
+//                  	if (DEBUG && log.isDebugEnabled()) log.debug("createBeanFromClassName(): bean ["+getSuggestedBeanName()+"] found for class ["+beanClass.getName()+"]: "+e.getMessage());
+//               	}
                 return createBeanAndAutoWire(beanClass);
             }
         }
