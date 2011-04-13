@@ -1,6 +1,9 @@
 /*
  * $Log: DB2XMLWriter.java,v $
- * Revision 1.20  2009-10-07 14:32:19  m168309
+ * Revision 1.21  2011-04-13 08:48:03  L190409
+ * treat VARBINARY and LONGVARBINARY as BLOB
+ *
+ * Revision 1.20  2009/10/07 14:32:19  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added facility to exclude the field definition
  *
  * Revision 1.19  2009/09/07 13:45:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -96,7 +99,7 @@ import org.apache.log4j.Logger;
  **/
 
 public class DB2XMLWriter {
-	public static final String version="$RCSfile: DB2XMLWriter.java,v $ $Revision: 1.20 $ $Date: 2009-10-07 14:32:19 $";
+	public static final String version="$RCSfile: DB2XMLWriter.java,v $ $Revision: 1.21 $ $Date: 2011-04-13 08:48:03 $";
 	protected static Logger log = LogUtil.getLogger(DB2XMLWriter.class);
 
 	private String docname = "result";
@@ -142,7 +145,8 @@ public class DB2XMLWriter {
     {
         switch(type)
         {
-        	// return "undefined" for types that cannot be rendered to strings easily
+	        case Types.LONGVARBINARY :
+	        case Types.VARBINARY :
 			case Types.BLOB :
 				try {
 					return JdbcUtil.getBlobAsString(rs,colNum,blobCharset,false,decompressBlobs,getBlobSmart);
@@ -157,10 +161,9 @@ public class DB2XMLWriter {
 					log.debug("Caught JdbcException, assuming no clob found",e);
 					return nullValue;
 				}
+        	// return "undefined" for types that cannot be rendered to strings easily
             case Types.ARRAY :
             case Types.DISTINCT :
-            case Types.LONGVARBINARY :
-            case Types.VARBINARY :
             case Types.BINARY :
             case Types.REF :
             case Types.STRUCT :
