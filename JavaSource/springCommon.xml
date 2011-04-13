@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   $Log: springCommon.xml,v $
-  Revision 1.17  2010-09-13 14:14:22  L190409
+  Revision 1.18  2011-04-13 08:47:23  L190409
+  ListenerFactory now extends GeneircFactory
+  Spring configurable DbmsSupport
+
+  Revision 1.17  2010/09/13 14:14:22  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
   split senderWrapper processing in separate processors
   added cache processors
 
@@ -277,11 +281,7 @@
     <bean name="proto-pipe" class="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
         autowire="byName" scope="prototype">
     </bean>
-    
-    <bean name="proto-jmsListener" class="nl.nn.adapterframework.jms.JmsListener"
-        autowire="byName" scope="prototype">
-    </bean>
-    
+
     <bean name="proto-RecordHandlingFlow" class="nl.nn.adapterframework.batch.RecordHandlingFlow"
         autowire="byName" scope="prototype">
     </bean>
@@ -314,5 +314,15 @@
     <bean name="proto-cache" class="nl.nn.adapterframework.cache.EhCache"
         autowire="byName" scope="prototype">
     </bean>
+
+	<bean id="dbmsSupportFactoryDefault" class="nl.nn.adapterframework.jdbc.dbms.DbmsSupportFactory" 
+	>
+		<property name="dbmsSupportMap">
+			<props >
+			    <prop key="Oracle">nl.nn.adapterframework.jdbc.dbms.OracleDbmsSupport</prop>
+			    <prop key="Microsoft SQL Server">nl.nn.adapterframework.jdbc.dbms.MsSqlServerDbmsSupport</prop>
+			</props>
+		</property>
+	</bean>
 
 </beans>
