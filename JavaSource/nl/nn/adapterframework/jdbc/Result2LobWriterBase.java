@@ -1,6 +1,9 @@
 /*
  * $Log: Result2LobWriterBase.java,v $
- * Revision 1.3  2007-09-24 14:58:54  europe\L190409
+ * Revision 1.4  2011-04-13 08:39:36  L190409
+ * Blob and Clob support using DbmsSupport
+ *
+ * Revision 1.3  2007/09/24 14:58:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * support for parameters
  *
  * Revision 1.2  2007/09/19 13:06:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -24,6 +27,7 @@ import nl.nn.adapterframework.batch.ResultWriter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.util.JdbcUtil;
 
@@ -59,10 +63,11 @@ import nl.nn.adapterframework.util.JdbcUtil;
  * @version Id
  */
 public abstract class Result2LobWriterBase extends ResultWriter {
-	public static final String version = "$RCSfile: Result2LobWriterBase.java,v $  $Revision: 1.3 $ $Date: 2007-09-24 14:58:54 $";
+	public static final String version = "$RCSfile: Result2LobWriterBase.java,v $  $Revision: 1.4 $ $Date: 2011-04-13 08:39:36 $";
 	
 	protected Map openStreams = Collections.synchronizedMap(new HashMap());
 	protected Map openResultSets = Collections.synchronizedMap(new HashMap());
+	protected Map openLobHandles = Collections.synchronizedMap(new HashMap());
 
 	protected FixedQuerySender querySender = new FixedQuerySender();
 
@@ -85,24 +90,31 @@ public abstract class Result2LobWriterBase extends ResultWriter {
 		}
 	}
 
-	protected abstract Writer getWriter(ResultSet rs) throws SenderException;
+	protected abstract Object getLobHandle(IDbmsSupport dbmsSupport, ResultSet rs)                   throws SenderException;
+	protected abstract Writer getWriter   (IDbmsSupport dbmsSupport, Object lobHandle, ResultSet rs) throws SenderException;
+	protected abstract void   updateLob   (IDbmsSupport dbmsSupport, Object lobHandle, ResultSet rs) throws SenderException;
 	
 	protected Writer createWriter(PipeLineSession session, String streamId, ParameterResolutionContext prc) throws Exception {
 		querySender.sendMessage(streamId, streamId);
 		Connection conn=querySender.getConnection();
 		
-		PreparedStatement stmt = querySender.getStatement(conn,session.getMessageId(),streamId);
+		PreparedStatement stmt = querySender.getStatement(conn,session.getMessageId(),streamId, true);
 		ResultSet rs =stmt.executeQuery();
 		openResultSets.put(streamId,rs);
-		return getWriter(rs);
+		IDbmsSupport dbmsSupport=querySender.getDbmsSupport();
+		Object lobHandle=getLobHandle(dbmsSupport, rs);
+		openLobHandles.put(streamId, lobHandle);
+		return getWriter(dbmsSupport, lobHandle, rs);
 	}
 	
 	public Object finalizeResult(PipeLineSession session, String streamId, boolean error, ParameterResolutionContext prc) throws Exception {
 		try {
 			return super.finalizeResult(session,streamId, error, prc);
 		} finally {
+			Object lobHandle = openLobHandles.get(streamId);
 			ResultSet rs = (ResultSet)openResultSets.get(streamId);
 			if (rs!=null) {
+				updateLob(querySender.getDbmsSupport(), lobHandle, rs);
 				JdbcUtil.fullClose(rs);
 			}
 		}

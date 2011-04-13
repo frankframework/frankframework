@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcUtil.java,v $
- * Revision 1.27  2011-03-16 16:38:13  L190409
+ * Revision 1.28  2011-04-13 08:49:04  L190409
+ * Blob and Clob support using DbmsSupport
+ *
+ * Revision 1.27  2011/03/16 16:38:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * moved detection of databaseType to DbmsSupportFactory
  *
  * Revision 1.26  2010/12/20 10:39:47  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -115,6 +118,7 @@ import java.util.zip.InflaterInputStream;
 import nl.nn.adapterframework.core.IMessageWrapper;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jdbc.dbms.DbmsSupportFactory;
+import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 
 import org.apache.log4j.Logger;
 
@@ -529,20 +533,20 @@ public class JdbcUtil {
 		}
 	}
 
-	/**
-	 * retrieves an outputstream to a blob column from an updatable resultset.
-	 */
-	public static OutputStream getBlobUpdateOutputStream(ResultSet rs, int columnIndex) throws SQLException, JdbcException {
-		Blob blob = rs.getBlob(columnIndex);
-		if (blob==null) {
-			throw new JdbcException("no blob found in column ["+columnIndex+"]");
-		}
-		return blob.setBinaryStream(1L);
-	}
+//	/**
+//	 * retrieves an outputstream to a blob column from an updatable resultset.
+//	 */
+//	public static OutputStream getBlobUpdateOutputStream(IDbmsSupport dbmsSupport, Object blobUpdateHandle, ResultSet rs, int columnIndex) throws SQLException, JdbcException {
+//		Blob blob = rs.getBlob(columnIndex);
+//		if (blob==null) {
+//			throw new JdbcException("no blob found in column ["+columnIndex+"]");
+//		}
+//		return blob.setBinaryStream(1L);
+//	}
 
-	public static OutputStream getBlobOutputStream(final ResultSet rs, int columnIndex, boolean compressBlob) throws IOException, JdbcException, SQLException {
+	public static OutputStream getBlobOutputStream(IDbmsSupport dbmsSupport, Object blobUpdateHandle, final ResultSet rs, int columnIndex, boolean compressBlob) throws IOException, JdbcException, SQLException {
 		OutputStream result;
-		OutputStream out = getBlobUpdateOutputStream(rs, columnIndex);
+		OutputStream out = dbmsSupport.getBlobOutputStream(rs, columnIndex, blobUpdateHandle);
 		if (compressBlob) {
 			result = new DeflaterOutputStream(out);
 		} else {
@@ -551,9 +555,9 @@ public class JdbcUtil {
 		return result;	
 	}
 
-	public static Writer getBlobWriter(final ResultSet rs, int columnIndex, String charset, boolean compressBlob) throws IOException, JdbcException, SQLException {
+	public static Writer getBlobWriter(IDbmsSupport dbmsSupport, Object blobUpdateHandle, final ResultSet rs, int columnIndex, String charset, boolean compressBlob) throws IOException, JdbcException, SQLException {
 		Writer result;
-		OutputStream out = getBlobUpdateOutputStream(rs, columnIndex);
+		OutputStream out = dbmsSupport.getBlobOutputStream(rs, columnIndex, blobUpdateHandle);
 		if (charset==null) {
 			charset = Misc.DEFAULT_INPUT_STREAM_ENCODING;
 		}
@@ -565,9 +569,10 @@ public class JdbcUtil {
 		return result;	
 	}
 
-	public static void putStringAsBlob(final ResultSet rs, int columnIndex, String content, String charset, boolean compressBlob) throws IOException, JdbcException, SQLException {
+	public static void putStringAsBlob(IDbmsSupport dbmsSupport, final ResultSet rs, int columnIndex, String content, String charset, boolean compressBlob) throws IOException, JdbcException, SQLException {
 		if (content!=null) {
-			OutputStream out = getBlobUpdateOutputStream(rs, columnIndex);
+			Object blobHandle=dbmsSupport.getBlobUpdateHandle(rs, columnIndex);
+			OutputStream out = dbmsSupport.getBlobOutputStream(rs, columnIndex, blobHandle);
 			if (charset==null) {
 				charset = Misc.DEFAULT_INPUT_STREAM_ENCODING;
 			}
@@ -579,14 +584,16 @@ public class JdbcUtil {
 				out.write(content.getBytes(charset));
 			}
 			out.close();
+			dbmsSupport.updateBlob(rs, columnIndex, blobHandle);
 		} else {
 			log.warn("content to store in blob was null");
 		}
 	}
 
-	public static void putByteArrayAsBlob(final ResultSet rs, int columnIndex, byte content[], boolean compressBlob) throws IOException, JdbcException, SQLException {
+	public static void putByteArrayAsBlob(IDbmsSupport dbmsSupport, final ResultSet rs, int columnIndex, byte content[], boolean compressBlob) throws IOException, JdbcException, SQLException {
 		if (content!=null) {
-			OutputStream out = getBlobUpdateOutputStream(rs, columnIndex);
+			Object blobHandle=dbmsSupport.getBlobUpdateHandle(rs, columnIndex);
+			OutputStream out = dbmsSupport.getBlobOutputStream(rs, columnIndex, blobHandle);
 			if (compressBlob) {
 				DeflaterOutputStream dos = new DeflaterOutputStream(out);
 				dos.write(content);
@@ -595,6 +602,7 @@ public class JdbcUtil {
 				out.write(content);
 			}
 			out.close();
+			dbmsSupport.updateBlob(rs, columnIndex, blobHandle);
 		} else {
 			log.warn("content to store in blob was null");
 		}
@@ -627,7 +635,7 @@ public class JdbcUtil {
 	/**
 	 * retrieves an outputstream to a clob column from an updatable resultset.
 	 */
-	public static OutputStream getClobUpdateOutputStream(ResultSet rs, int columnIndex) throws SQLException, JdbcException {
+	public static OutputStream getClobUpdateOutputStreamxxx(ResultSet rs, int columnIndex) throws SQLException, JdbcException {
 		Clob clob = rs.getClob(columnIndex);
 		if (clob==null) {
 			throw new JdbcException("no clob found in column ["+columnIndex+"]");
@@ -635,13 +643,13 @@ public class JdbcUtil {
 		return clob.setAsciiStream(1L);
 	}
 
-	public static Writer getClobWriter(ResultSet rs, int columnIndex) throws SQLException, JdbcException {
-		Clob clob = rs.getClob(columnIndex);
-		if (clob==null) {
-			throw new JdbcException("no clob found in column ["+columnIndex+"]");
-		}
-		return clob.setCharacterStream(1L);
-	}
+//	public static Writer getClobWriterxxx(ResultSet rs, int columnIndex) throws SQLException, JdbcException {
+//		Clob clob = rs.getClob(columnIndex);
+//		if (clob==null) {
+//			throw new JdbcException("no clob found in column ["+columnIndex+"]");
+//		}
+//		return clob.setCharacterStream(1L);
+//	}
 
 	public static String getClobAsString(final ResultSet rs, int columnIndex, boolean xmlEncode) throws IOException, JdbcException, SQLException {
 		Reader reader = getClobReader(rs,columnIndex);
@@ -652,11 +660,13 @@ public class JdbcUtil {
 		return Misc.readerToString(reader, null, xmlEncode);
 	}
 
-	public static void putStringAsClob(final ResultSet rs, int columnIndex, String content) throws IOException, JdbcException, SQLException {
+	public static void putStringAsClob(IDbmsSupport dbmsSupport, final ResultSet rs, int columnIndex, String content) throws IOException, JdbcException, SQLException {
 		if (content!=null) {
-			Writer writer = getClobWriter(rs, columnIndex);
+			Object clobHandle=dbmsSupport.getClobUpdateHandle(rs, columnIndex);
+			Writer writer = dbmsSupport.getClobWriter(rs, columnIndex, clobHandle);
 			writer.write(content);
 			writer.close();
+			dbmsSupport.updateClob(rs, columnIndex, clobHandle);
 		} else {
 			log.warn("content to store in blob was null");
 		}

@@ -1,6 +1,9 @@
 /*
  * $Log: Result2ClobWriter.java,v $
- * Revision 1.2  2007-09-24 14:58:54  europe\L190409
+ * Revision 1.3  2011-04-13 08:39:36  L190409
+ * Blob and Clob support using DbmsSupport
+ *
+ * Revision 1.2  2007/09/24 14:58:54  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * support for parameters
  *
  * Revision 1.1  2007/08/03 08:43:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -13,7 +16,7 @@ import java.io.Writer;
 import java.sql.ResultSet;
 
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.util.JdbcUtil;
+import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 
 
 /**
@@ -48,11 +51,25 @@ import nl.nn.adapterframework.util.JdbcUtil;
  * @version Id
  */
 public class Result2ClobWriter extends Result2LobWriterBase {
-	public static final String version = "$RCSfile: Result2ClobWriter.java,v $  $Revision: 1.2 $ $Date: 2007-09-24 14:58:54 $";
 	
-	protected Writer getWriter(ResultSet rs) throws SenderException {
+	protected Object getLobHandle(IDbmsSupport dbmsSupport, ResultSet rs) throws SenderException {
 		try {
-			return JdbcUtil.getClobWriter(rs,querySender.getClobColumn());
+			return dbmsSupport.getClobUpdateHandle(rs, querySender.getClobColumn());
+		} catch (Exception e) {
+			throw new SenderException(e);
+		}
+	}
+	protected void   updateLob(IDbmsSupport dbmsSupport, Object lobHandle, ResultSet rs) throws SenderException {
+		try {
+			dbmsSupport.updateClob(rs, querySender.getClobColumn(), lobHandle);
+		} catch (Exception e) {
+			throw new SenderException(e);
+		}
+	}
+
+	protected Writer getWriter(IDbmsSupport dbmsSupport, Object lobHandle, ResultSet rs) throws SenderException {
+		try {
+			return dbmsSupport.getClobWriter(rs,querySender.getClobColumn(), lobHandle);
 		} catch (Exception e) {
 			throw new SenderException(e);
 		}

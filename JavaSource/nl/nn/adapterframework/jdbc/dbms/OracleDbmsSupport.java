@@ -1,10 +1,16 @@
 /*
  * $Log: OracleDbmsSupport.java,v $
- * Revision 1.1  2011-03-16 16:47:26  L190409
+ * Revision 1.2  2011-04-13 08:45:23  L190409
+ * Blob and Clob support using DbmsSupport
+ *
+ * Revision 1.1  2011/03/16 16:47:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * introduction of DbmsSupport, including support for MS SQL Server
  *
  */
 package nl.nn.adapterframework.jdbc.dbms;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 import nl.nn.adapterframework.jdbc.JdbcException;
 
@@ -93,6 +99,24 @@ public class OracleDbmsSupport extends GenericDbmsSupport {
 
 	public String provideFirstRowsHintAfterFirstKeyword(int rowCount) {
 		return " /*+ FIRST_ROWS( "+rowCount+" ) */ "; 
+	}
+
+	public void updateClob(ResultSet rs, int column, Object clobUpdateHandle) throws SQLException {
+		// updateClob is not required for Oracle
+		// rs.updateClob(column, (Clob)clobUpdateHandle);
+	}
+	public void updateClob(ResultSet rs, String column, Object clobUpdateHandle) throws SQLException {
+		// updateClob is not required for Oracle
+		// rs.updateClob(column, (Clob)clobUpdateHandle);
+	}
+
+	public void updateBlob(ResultSet rs, int column, Object blobUpdateHandle) throws SQLException {
+		// updateBlob is not required for Oracle
+		// rs.updateBlob(column, (Blob)blobUpdateHandle);
+	}
+	public void updateBlob(ResultSet rs, String column, Object blobUpdateHandle) throws SQLException {
+		// updateBlob is not required for Oracle
+		// rs.updateBlob(column, (Blob)blobUpdateHandle);
 	}
 
 }

@@ -1,12 +1,25 @@
 /*
  * $Log: GenericDbmsSupport.java,v $
- * Revision 1.1  2011-03-16 16:47:26  L190409
+ * Revision 1.2  2011-04-13 08:43:34  L190409
+ * Blob and Clob support using DbmsSupport
+ *
+ * Revision 1.1  2011/03/16 16:47:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * introduction of DbmsSupport, including support for MS SQL Server
  *
  */
 package nl.nn.adapterframework.jdbc.dbms;
 
+import java.io.OutputStream;
+import java.io.Writer;
+import java.sql.Blob;
+import java.sql.Clob;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.List;
+
 import nl.nn.adapterframework.jdbc.JdbcException;
+import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.commons.lang.StringUtils;
@@ -58,20 +71,104 @@ public class GenericDbmsSupport implements IDbmsSupport {
 		return "TIMESTAMP";
 	}
 
+	public String getClobFieldType() {
+		return "LONG BINARY";
+	}
+	public boolean mustInsertEmptyClobBeforeData() {
+		return false;
+	}
+	public String getUpdateClobQuery(String table, String clobField, String keyField) {
+		return null;
+	}
+	public String emptyClobValue() {
+		return null;
+	}
+
+	public Object getClobUpdateHandle(ResultSet rs, int column) throws SQLException, JdbcException {
+		Clob clob = rs.getClob(column);
+		if (clob==null) {
+			throw new JdbcException("no clob found in column ["+column+"]");
+		}
+		return clob;
+	}
+	public Object getClobUpdateHandle(ResultSet rs, String column) throws SQLException, JdbcException {
+		Clob clob = rs.getClob(column);
+		if (clob==null) {
+			throw new JdbcException("no clob found in column ["+column+"]");
+		}
+		return clob;
+	}
+	
+	public Writer getClobWriter(ResultSet rs, int column, Object clobUpdateHandle) throws SQLException, JdbcException {
+		Writer out = ((Clob)clobUpdateHandle).setCharacterStream(1L);
+		return out;
+	}
+	public Writer getClobWriter(ResultSet rs, String column, Object clobUpdateHandle) throws SQLException, JdbcException {
+		Writer out = ((Clob)clobUpdateHandle).setCharacterStream(1L);
+		return out;
+	}
+	
+	public void updateClob(ResultSet rs, int column, Object clobUpdateHandle) throws SQLException, JdbcException {
+		// updateClob is not implemented by the WebSphere implementation of ResultSet
+		rs.updateClob(column, (Clob)clobUpdateHandle);
+	}
+	public void updateClob(ResultSet rs, String column, Object clobUpdateHandle) throws SQLException, JdbcException {
+		// updateClob is not implemented by the WebSphere implementation of ResultSet
+		rs.updateClob(column, (Clob)clobUpdateHandle);
+	}
+
+	
 	public String getBlobFieldType() {
 		return "LONG BINARY";
 	}
-
 	public boolean mustInsertEmptyBlobBeforeData() {
 		return false;
 	}
 	public String getUpdateBlobQuery(String table, String blobField, String keyField) {
 		return null;
 	}
-
 	public String emptyBlobValue() {
 		return null;
 	}
+
+	public Object getBlobUpdateHandle(ResultSet rs, int column) throws SQLException, JdbcException {
+		Blob blob = rs.getBlob(column);
+		if (blob==null) {
+			throw new JdbcException("no blob found in column ["+column+"]");
+		}
+		return blob;
+	}
+	public Object getBlobUpdateHandle(ResultSet rs, String column) throws SQLException, JdbcException {
+		Blob blob = rs.getBlob(column);
+		if (blob==null) {
+			throw new JdbcException("no blob found in column ["+column+"]");
+		}
+		return blob;
+	}
+	
+	protected  OutputStream getBlobOutputStream(ResultSet rs, Object blobUpdateHandle) throws SQLException, JdbcException {
+		OutputStream out = ((Blob)blobUpdateHandle).setBinaryStream(1L);
+		return out;
+	}
+	
+	public OutputStream getBlobOutputStream(ResultSet rs, int column, Object blobUpdateHandle) throws SQLException, JdbcException {
+		return getBlobOutputStream(rs,blobUpdateHandle);
+	}
+	public OutputStream getBlobOutputStream(ResultSet rs, String column, Object blobUpdateHandle) throws SQLException, JdbcException {
+		return getBlobOutputStream(rs,blobUpdateHandle);
+	}
+	
+	public void updateBlob(ResultSet rs, int column, Object blobUpdateHandle) throws SQLException, JdbcException {
+		// updateBlob is not implemented by the WebSphere implementation of ResultSet
+		rs.updateBlob(column, (Blob)blobUpdateHandle);
+	}
+	public void updateBlob(ResultSet rs, String column, Object blobUpdateHandle) throws SQLException, JdbcException {
+		// updateBlob is not implemented by the WebSphere implementation of ResultSet
+		rs.updateBlob(column, (Blob)blobUpdateHandle);
+	}
+
+	
+	
 	public String getTextFieldType() {
 		return "VARCHAR";
 	}
@@ -96,4 +193,165 @@ public class GenericDbmsSupport implements IDbmsSupport {
 		return "";
 	}
 
+	public boolean isTablePresent(Connection conn, int databaseType, String schemaOwner, String tableName) {
+		if (databaseType==DbmsSupportFactory.DBMS_ORACLE) {
+			String query="select count(*) from all_tables where owner='"+schemaOwner.toUpperCase()+"' and table_name='"+tableName.toUpperCase()+"'";
+			try {
+				if (JdbcUtil.executeIntQuery(conn, query)>=1) {
+					return true;
+				} else {
+					return false;
+				}
+			} catch (Exception e) {
+				log.warn("could not determine presence of table ["+tableName+"]",e);
+				return false;
+			}
+		} else {
+			log.warn("could not determine presence of table ["+tableName+"] (not an Oracle database)");
+			return true;
+		}
+	}
+
+	public boolean isIndexPresent(Connection conn, int databaseType, String schemaOwner, String tableName, String indexName) {
+		if (databaseType==DbmsSupportFactory.DBMS_ORACLE) {
+			String query="select count(*) from all_indexes where owner='"+schemaOwner.toUpperCase()+"' and table_name='"+tableName.toUpperCase()+"' and index_name='"+indexName.toUpperCase()+"'";
+			try {
+				if (JdbcUtil.executeIntQuery(conn, query)>=1) {
+					return true;
+				} else {
+					return false;
+				}
+			} catch (Exception e) {
+				log.warn("could not determine presence of index ["+indexName+"] on table ["+tableName+"]",e);
+				return false;
+			}
+		} else {
+			log.warn("could not determine presence of index ["+indexName+"] on table ["+tableName+"] (not an Oracle database)");
+			return true;
+		}
+	}
+
+	public boolean isSequencePresent(Connection conn, int databaseType, String schemaOwner, String sequenceName) {
+		if (databaseType==DbmsSupportFactory.DBMS_ORACLE) {
+			String query="select count(*) from all_sequences where sequence_owner='"+schemaOwner.toUpperCase()+"' and sequence_name='"+sequenceName.toUpperCase()+"'";
+			try {
+				if (JdbcUtil.executeIntQuery(conn, query)>=1) {
+					return true;
+				} else {
+					return false;
+				}
+			} catch (Exception e) {
+				log.warn("could not determine presence of sequence ["+sequenceName+"]",e);
+				return false;
+			}
+		} else {
+			log.warn("could not determine presence of sequence ["+sequenceName+"] (not an Oracle database)");
+			return true;
+		}
+	}
+
+	public boolean isTableColumnPresent(Connection conn, int databaseType, String schemaOwner, String tableName, String columnName) {
+		if (databaseType==DbmsSupportFactory.DBMS_ORACLE) {
+			String query="select count(*) from all_tab_columns where owner='"+schemaOwner.toUpperCase()+"' and table_name='"+tableName.toUpperCase()+"' and column_name=?";
+			try {
+				if (JdbcUtil.executeIntQuery(conn, query, columnName.toUpperCase())>=1) {
+					return true;	
+				} else {
+					return false;
+				}
+			} catch (Exception e) {
+				log.warn("could not determine correct presence of column ["+columnName+"] of table ["+tableName+"]",e);
+				return false;
+			}
+		} else {
+			log.warn("could not determine correct presence of column ["+columnName+"] of table ["+tableName+"] (not an Oracle database)");
+			return true;
+		}
+	}
+
+	public boolean isIndexColumnPresent(Connection conn, int databaseType, String schemaOwner, String tableName, String indexName, String columnName) {
+		if (databaseType==DbmsSupportFactory.DBMS_ORACLE) {
+			String query="select count(*) from all_ind_columns where index_owner='"+schemaOwner.toUpperCase()+"' and table_name='"+tableName.toUpperCase()+"' and index_name='"+indexName.toUpperCase()+"' and column_name=?";
+			try {
+				if (JdbcUtil.executeIntQuery(conn, query, columnName.toUpperCase())>=1) {
+					return true;
+				} else {
+					return false;
+				}
+			} catch (Exception e) {
+				log.warn("could not determine correct presence of column ["+columnName+"] of index ["+indexName+"] on table ["+tableName+"]",e);
+				return false;
+			}
+		} else {
+			log.warn("could not determine correct presence of column ["+columnName+"] of index ["+indexName+"] on table ["+tableName+"] (not an Oracle database)");
+			return true;
+		}
+	}
+
+	public int getIndexColumnPosition(Connection conn, int databaseType, String schemaOwner, String tableName, String indexName, String columnName) {
+		if (databaseType==DbmsSupportFactory.DBMS_ORACLE) {
+			String query="select column_position from all_ind_columns where index_owner='"+schemaOwner.toUpperCase()+"' and table_name='"+tableName.toUpperCase()+"' and index_name='"+indexName.toUpperCase()+"' and column_name=?";
+			try {
+				return JdbcUtil.executeIntQuery(conn, query, columnName.toUpperCase());
+			} catch (Exception e) {
+				log.warn("could not determine correct presence of column ["+columnName+"] of index ["+indexName+"] on table ["+tableName+"]",e);
+				return -1;
+			}
+		} else {
+			log.warn("could not determine correct presence of column ["+columnName+"] of index ["+indexName+"] on table ["+tableName+"] (not an Oracle database)");
+			return -1;
+		}
+	}
+
+	public boolean hasIndexOnColumn(Connection conn, int databaseType, String schemaOwner, String tableName, String columnName) {
+		if (databaseType==DbmsSupportFactory.DBMS_ORACLE) {
+			String query="select count(*) from all_ind_columns";
+			query+=" where TABLE_OWNER='"+schemaOwner.toUpperCase()+"' and TABLE_NAME='"+tableName.toUpperCase()+"'";
+			query+=" and column_name=?";
+			query+=" and column_position=1";
+			try {
+				if (JdbcUtil.executeIntQuery(conn, query, columnName.toUpperCase())>=1) {
+					return true;
+				} else {
+					return false;
+				}
+			} catch (Exception e) {
+				log.warn("could not determine presence of index column ["+columnName+"] on table ["+tableName+"] using query ["+query+"]",e);
+				return false;
+			}
+		} else {
+			log.warn("could not determine presence of index column ["+columnName+"] on table ["+tableName+"] (not an Oracle database)");
+			return true;
+		}
+	}
+	public boolean hasIndexOnColumns(Connection conn, int databaseType, String schemaOwner, String tableName, List columns) {
+		if (databaseType==DbmsSupportFactory.DBMS_ORACLE) {
+			String query="select count(*) from all_indexes ai";
+			for (int i=1;i<=columns.size();i++) {
+				query+=", all_ind_columns aic"+i;
+			}
+			query+=" where ai.TABLE_OWNER='"+schemaOwner.toUpperCase()+"' and ai.TABLE_NAME='"+tableName.toUpperCase()+"'";
+			for (int i=1;i<=columns.size();i++) {
+				query+=" and ai.OWNER=aic"+i+".INDEX_OWNER";
+				query+=" and ai.INDEX_NAME=aic"+i+".INDEX_NAME";
+				query+=" and aic"+i+".column_name='"+((String)columns.get(i-1)).toUpperCase()+"'";
+				query+=" and aic"+i+".column_position="+i;
+			}
+			try {
+				if (JdbcUtil.executeIntQuery(conn, query)>=1) {
+					return true;
+				} else {
+					return false;
+				}
+			} catch (Exception e) {
+				log.warn("could not determine presence of index columns on table ["+tableName+"] using query ["+query+"]",e);
+				return false;
+			}
+		} else {
+			log.warn("could not determine presence of index columns on table ["+tableName+"] (not an Oracle database)");
+			return true;
+		}
+	}
+	
+	
 }

@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcTransactionalStorage.java,v $
- * Revision 1.50  2011-03-16 16:42:40  L190409
+ * Revision 1.51  2011-04-13 08:38:26  L190409
+ * Blob and Clob support using DbmsSupport
+ *
+ * Revision 1.50  2011/03/16 16:42:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * introduction of DbmsSupport, including support for MS SQL Server
  *
  * Revision 1.49  2011/01/27 12:57:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -984,7 +987,9 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 					}
 //						String newKey = rs.getString(1);
 //						BLOB blob = (BLOB)rs.getBlob(2);
-					OutputStream out = JdbcUtil.getBlobUpdateOutputStream(rs,1);
+					Object blobHandle=dbmsSupport.getBlobUpdateHandle(rs, 1);
+					OutputStream out = dbmsSupport.getBlobOutputStream(rs, 1, blobHandle);
+//					OutputStream out = JdbcUtil.getBlobUpdateOutputStream(rs,1);
 					if (isBlobsCompressed()) {
 						DeflaterOutputStream dos = new DeflaterOutputStream(out);
 						ObjectOutputStream oos = new ObjectOutputStream(dos);
@@ -997,6 +1002,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 						oos.close();
 					}
 					out.close();
+					dbmsSupport.updateBlob(rs, 1, blobHandle);
 					return newKey;
 				
 				} finally {
