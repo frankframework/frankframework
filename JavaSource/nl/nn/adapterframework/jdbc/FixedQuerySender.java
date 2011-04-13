@@ -1,6 +1,9 @@
 /*
  * $Log: FixedQuerySender.java,v $
- * Revision 1.23  2011-03-16 16:42:40  L190409
+ * Revision 1.24  2011-04-13 08:27:53  L190409
+ * Indicate updatability of resultset explicitly using method-parameter
+ *
+ * Revision 1.23  2011/03/16 16:42:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * introduction of DbmsSupport, including support for MS SQL Server
  *
  * Revision 1.22  2010/03/25 12:57:17  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -139,12 +142,12 @@ public class FixedQuerySender extends JdbcQuerySenderBase {
 		}
 	}
 		
-	protected PreparedStatement getStatement(Connection con, String correlationID, String message) throws JdbcException, SQLException {
+	protected PreparedStatement getStatement(Connection con, String correlationID, String message, boolean updateable) throws JdbcException, SQLException {
 		String qry = getQuery();
 		if (lockRows) {
 			qry = getDbmsSupport().prepareQueryTextForWorkQueueReading(-1, qry);
 		}
-		return prepareQuery(con, qry);
+		return prepareQuery(con, qry, updateable);
 	}
 
 	/**

@@ -1,6 +1,9 @@
 /*
  * $Log: BatchTransformerPipeBase.java,v $
- * Revision 1.2  2010-05-03 17:04:32  L190409
+ * Revision 1.3  2011-04-13 08:27:00  L190409
+ * Indicate updatability of resultset explicitly using method-parameter
+ *
+ * Revision 1.2  2010/05/03 17:04:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * reworked stream handling, to allow for binary records.
  *
  * Revision 1.1  2007/08/03 08:44:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -91,9 +94,9 @@ public abstract class BatchTransformerPipeBase extends StreamTransformerPipe {
 			connection = querySender.getConnection();
 			PreparedStatement statement=null;
 			String msg = (String)input;
-			statement = querySender.getStatement(connection, streamId, msg);
+			statement = querySender.getStatement(connection, streamId, msg, false);
 			ParameterResolutionContext prc = new ParameterResolutionContext(msg,session);
-			if (prc != null && querySender.paramList != null) {
+			if (querySender.paramList != null) {
 				querySender.applyParameters(statement, prc.getValues(querySender.paramList));
 			}
 			ResultSet rs = statement.executeQuery();
