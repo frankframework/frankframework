@@ -1,6 +1,9 @@
 /*
  * $Log: ListenerFactory.java,v $
- * Revision 1.7  2010-03-18 10:15:27  m168309
+ * Revision 1.8  2011-04-13 08:23:13  L190409
+ * now extends GeneircFactory
+ *
+ * Revision 1.7  2010/03/18 10:15:27  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * Overrided method copyAttrsToMap instead of createObject so that check of attributes is included
  *
  * Revision 1.6  2007/11/22 08:36:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -49,30 +52,17 @@ import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import org.xml.sax.Attributes;
 
 /**
- * 
+ * Factory for instantiating listeners from the Digester framework.
+ * Instantiates correlated listener in the context of a MessageSendingPipe.
  * 
  * @author  Tim van der Leeuw
  * @since   4.8
  * @version Id
  */
-public class ListenerFactory extends AbstractSpringPoweredDigesterFactory {
+public class ListenerFactory extends GenericFactory {
     public static final String JMS_LISTENER_CLASSNAME_SUFFIX = ".JmsListener";
     protected static final String CORRELATED_LISTENER_CLASSNAME = "nl.nn.adapterframework.jms.PullingJmsListener";
 
-    /**
-     * Default bean to create from the Spring factory is 'proto-jmsListener',
-     * a JMS Listener bean.
-     * 
-     * This is different from the old situation, where the default class was
-     * in fact an interface and therefore className could not be left out
-     * of the configuration of a Listener.
-     * 
-     * @see nl.nn.adapterframework.configuration.AbstractSpringPoweredDigesterFactory#getBeanName()
-     */
-    public String getSuggestedBeanName() {
-        return "proto-jmsListener";
-    }
-    
 	protected Map copyAttrsToMap(Attributes attrs) {
 		Map map = super.copyAttrsToMap(attrs); 
 		String className = attrs.getValue("className");
@@ -84,6 +74,5 @@ public class ListenerFactory extends AbstractSpringPoweredDigesterFactory {
 		}
 		return map;
 	}
-
 
 }
