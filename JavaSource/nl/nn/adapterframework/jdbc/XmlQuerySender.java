@@ -1,6 +1,9 @@
 /*
  * $Log: XmlQuerySender.java,v $
- * Revision 1.4  2011-03-16 16:42:40  L190409
+ * Revision 1.5  2011-04-13 08:40:02  L190409
+ * Indicate updatability of resultset explicitly using method-parameter
+ *
+ * Revision 1.4  2011/03/16 16:42:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * introduction of DbmsSupport, including support for MS SQL Server
  *
  * Revision 1.3  2010/03/03 08:55:17  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -88,7 +91,7 @@ import org.w3c.dom.Element;
  * @author  Peter Leeuwenburgh
  */
 public class XmlQuerySender extends DirectQuerySender {
-	public static final String version = "$RCSfile: XmlQuerySender.java,v $ $Revision: 1.4 $ $Date: 2011-03-16 16:42:40 $";
+	public static final String version = "$RCSfile: XmlQuerySender.java,v $ $Revision: 1.5 $ $Date: 2011-04-13 08:40:02 $";
 
 	public static final String TYPE_STRING = "string";
 	public static final String TYPE_NUMBER = "number";
@@ -301,7 +304,7 @@ public class XmlQuerySender extends DirectQuerySender {
 			if (order != null) {
 				query = query + " ORDER BY " + order;
 			}
-			PreparedStatement statement = getStatement(connection, correlationID, query);
+			PreparedStatement statement = getStatement(connection, correlationID, query, false);
 			statement.setQueryTimeout(getTimeout());
 			setBlobSmartGet(true);
 			return executeSelectQuery(statement);
@@ -342,7 +345,7 @@ public class XmlQuerySender extends DirectQuerySender {
 			if (where != null) {
 				query = query + " WHERE " + where;
 			}
-			PreparedStatement statement = getStatement(connection, correlationID, query);
+			PreparedStatement statement = getStatement(connection, correlationID, query, false);
 			statement.setQueryTimeout(getTimeout());
 			return executeOtherQuery(connection, correlationID, statement, query, null, null);
 		} catch (SQLException e) {
@@ -391,7 +394,7 @@ public class XmlQuerySender extends DirectQuerySender {
 					Column column = (Column) iter.next();
 					if (column.getType().equalsIgnoreCase(TYPE_BLOB) || column.getType().equalsIgnoreCase(TYPE_CLOB)) {
 						query = "SELECT " + column.getName() + " FROM " + tableName + " WHERE ROWID=?" + " FOR UPDATE";
-						PreparedStatement statement = getStatement(connection, correlationID, query);
+						PreparedStatement statement = getStatement(connection, correlationID, query, true);
 						statement.setString(1, rowId);
 						statement.setQueryTimeout(getTimeout());
 						if (column.getType().equalsIgnoreCase(TYPE_BLOB)) {
@@ -403,7 +406,7 @@ public class XmlQuerySender extends DirectQuerySender {
 				}
 				return "<result><rowsupdated>" + numRowsAffected + "</rowsupdated></result>";
 			} else {
-				PreparedStatement statement = getStatement(connection, correlationID, query);
+				PreparedStatement statement = getStatement(connection, correlationID, query, false);
 				applyParameters(statement, columns);
 				statement.setQueryTimeout(getTimeout());
 				return executeOtherQuery(connection, correlationID, statement, query, null, null);
