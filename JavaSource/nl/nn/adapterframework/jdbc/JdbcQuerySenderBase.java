@@ -1,6 +1,10 @@
 /*
  * $Log: JdbcQuerySenderBase.java,v $
- * Revision 1.51  2011-03-04 15:02:42  m01e194
+ * Revision 1.52  2011-04-13 08:38:03  L190409
+ * Indicate updatability of resultset explicitly using method-parameter
+ * Blob and Clob support using DbmsSupport
+ *
+ * Revision 1.51  2011/03/04 15:02:42  Sanne Hoekstra <sanne.hoekstra@ibissource.org>
  * Corrected timeout exception message (from ms to sec)
  *
  * Revision 1.50  2010/03/25 12:57:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -276,7 +280,7 @@ import sun.misc.BASE64Encoder;
  * @since 	4.1
  */
 public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
-	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.51 $ $Date: 2011-03-04 15:02:42 $";
+	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.52 $ $Date: 2011-04-13 08:38:03 $";
 
 	private final static String UNP_START = "?{";
 	private final static String UNP_END = "}";
@@ -333,13 +337,13 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 	 * Obtain a prepared statement to be executed.
 	 * Method-stub to be overridden in descender-classes.
 	 */
-	protected abstract PreparedStatement getStatement(Connection con, String correlationID, String message) throws JdbcException, SQLException;
+	protected abstract PreparedStatement getStatement(Connection con, String correlationID, String message, boolean updateable) throws JdbcException, SQLException;
 	
 	private PreparedStatement prepareQueryWithColunmsReturned(Connection con, String query, String[] columnsReturned) throws SQLException {
 		return con.prepareStatement(query,columnsReturned);
 	}
 
-	protected PreparedStatement prepareQuery(Connection con, String query) throws SQLException {
+	protected PreparedStatement prepareQuery(Connection con, String query, boolean updateable) throws SQLException {
 		if (log.isDebugEnabled()) {
 			log.debug(getLogPrefix() +"preparing statement for query ["+query+"]");
 		}
@@ -347,7 +351,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		if (columnsReturned!=null) {
 			return prepareQueryWithColunmsReturned(con,query,columnsReturned);
 		}
-		return con.prepareStatement(query);
+		return con.prepareStatement(query,ResultSet.TYPE_FORWARD_ONLY,updateable?ResultSet.CONCUR_UPDATABLE:ResultSet.CONCUR_READ_ONLY);
 	}
 
 	protected CallableStatement getCallWithRowIdReturned(Connection con, String correlationID, String message) throws SQLException {
@@ -372,7 +376,9 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 			message = adjustParamList(newParamList, message);
 		}
 		try {
-			statement = getStatement(connection, correlationID, message);
+			boolean updateBlob="updateBlob".equalsIgnoreCase(getQueryType());
+			boolean updateClob="updateClob".equalsIgnoreCase(getQueryType());
+			statement = getStatement(connection, correlationID, message, updateBlob||updateClob);
 			statement.setQueryTimeout(getTimeout());
 			if (prc != null && paramList != null) {
 				applyParameters(statement, prc.getValues(newParamList));
@@ -380,14 +386,14 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 			if ("select".equalsIgnoreCase(getQueryType())) {
 				return executeSelectQuery(statement);
 			} else {
-				if ("updateBlob".equalsIgnoreCase(getQueryType())) {
+				if (updateBlob) {
 					if (StringUtils.isEmpty(getBlobSessionKey())) {
 						return executeUpdateBlobQuery(statement,message);
 					} else {
 						return executeUpdateBlobQuery(statement,prc.getSession().get(getBlobSessionKey()));
 					}
 				} else {
-					if ("updateClob".equalsIgnoreCase(getQueryType())) {
+					if (updateClob) {
 						if (StringUtils.isEmpty(getClobSessionKey())) {
 							return executeUpdateClobQuery(statement,message);
 						} else {
@@ -576,27 +582,33 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 			JdbcUtil.warningsToXml(statement.getWarnings(),result);
 			rs.next();
 			if (message instanceof Reader) {
+				Object blobHandle=getDbmsSupport().getBlobUpdateHandle(rs, blobColumn);
 				Reader inReader = (Reader)message;
-				Writer writer = JdbcUtil.getBlobWriter(rs, blobColumn, getBlobCharset(), isBlobsCompressed());
+				Writer writer = JdbcUtil.getBlobWriter(getDbmsSupport(), blobHandle, rs, blobColumn, getBlobCharset(), isBlobsCompressed());
 				Misc.readerToWriter(inReader,writer,isCloseInputstreamOnExit());
 				writer.close();
+				getDbmsSupport().updateBlob(rs, blobColumn, blobHandle);
 			} else if (message instanceof InputStream) {
+				Object blobHandle=getDbmsSupport().getBlobUpdateHandle(rs, blobColumn);
 				InputStream inStream = (InputStream)message;
 				if (StringUtils.isNotEmpty(getStreamCharset())) {
-					Writer writer = JdbcUtil.getBlobWriter(rs, blobColumn, getBlobCharset(), isBlobsCompressed());
+					Writer writer = JdbcUtil.getBlobWriter(getDbmsSupport(), blobHandle, rs, blobColumn, getBlobCharset(), isBlobsCompressed());
 					Reader reader = new InputStreamReader(inStream,getStreamCharset());
 					Misc.readerToWriter(reader,writer,isCloseInputstreamOnExit());
 					writer.close();
 				} else {
-					OutputStream outStream = JdbcUtil.getBlobOutputStream(rs, blobColumn, isBlobsCompressed());
+					OutputStream outStream = JdbcUtil.getBlobOutputStream(getDbmsSupport(), blobHandle, rs, blobColumn, isBlobsCompressed());
 					Misc.streamToStream(inStream,outStream,isCloseInputstreamOnExit());
 					outStream.close();
 				}
+				getDbmsSupport().updateBlob(rs, blobColumn, blobHandle);
 			} else if (message instanceof byte[]) {
-				JdbcUtil.putByteArrayAsBlob(rs, blobColumn, (byte[])message, isBlobsCompressed());
+				JdbcUtil.putByteArrayAsBlob(getDbmsSupport(), rs, blobColumn, (byte[])message, isBlobsCompressed());
 			} else {
-				JdbcUtil.putStringAsBlob(rs, blobColumn, (String)message, getBlobCharset(), isBlobsCompressed());
+				JdbcUtil.putStringAsBlob(getDbmsSupport(), rs, blobColumn, (String)message, getBlobCharset(), isBlobsCompressed());
 			}
+			
+			rs.updateRow();
 			JdbcUtil.warningsToXml(rs.getWarnings(),result);
 			return result.toXML();
 		} catch (SQLException sqle) {
@@ -624,11 +636,14 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 			JdbcUtil.warningsToXml(statement.getWarnings(),result);
 			rs.next();
 			if (message instanceof Reader) {
+				Object clobHandle=getDbmsSupport().getClobUpdateHandle(rs, clobColumn);
 				Reader inReader = (Reader)message;
-				Writer writer = JdbcUtil.getClobWriter(rs, clobColumn);
+				Writer writer = getDbmsSupport().getClobWriter(rs, clobColumn, clobHandle);
 				Misc.readerToWriter(inReader,writer,isCloseInputstreamOnExit());
 				writer.close();
+				getDbmsSupport().updateClob(rs, clobColumn, clobHandle);
 			} else if (message instanceof InputStream) {
+				Object clobHandle=getDbmsSupport().getClobUpdateHandle(rs, clobColumn);
 				InputStream inStream = (InputStream)message;
 				Reader reader;
 				if (StringUtils.isNotEmpty(getStreamCharset())) {
@@ -636,12 +651,14 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 				} else {
 					reader = new InputStreamReader(inStream);
 				}
-				Writer writer = JdbcUtil.getClobWriter(rs, clobColumn);
+				Writer writer = getDbmsSupport().getClobWriter(rs, clobColumn, clobHandle);
 				Misc.readerToWriter(reader,writer,isCloseInputstreamOnExit());
 				writer.close();
+				getDbmsSupport().updateClob(rs, clobColumn, clobHandle);
 			} else {
-				JdbcUtil.putStringAsClob(rs, clobColumn, (String)message);
+				JdbcUtil.putStringAsClob(getDbmsSupport(), rs, clobColumn, (String)message);
 			}
+			rs.updateRow();
 			JdbcUtil.warningsToXml(rs.getWarnings(),result);
 			return result.toXML();
 		} catch (SQLException sqle) {
