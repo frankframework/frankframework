@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcFacade.java,v $
- * Revision 1.34  2011-03-16 16:42:40  L190409
+ * Revision 1.35  2011-04-13 08:36:55  L190409
+ * Spring configurable DbmsSupport
+ *
+ * Revision 1.34  2011/03/16 16:42:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * introduction of DbmsSupport, including support for MS SQL Server
  *
  * Revision 1.33  2011/01/06 09:48:33  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -119,6 +122,7 @@ import nl.nn.adapterframework.core.IXAEnabled;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.jdbc.dbms.DbmsSupportFactory;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
+import nl.nn.adapterframework.jdbc.dbms.IDbmsSupportFactory;
 import nl.nn.adapterframework.jms.JNDIBase;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterValue;
@@ -144,7 +148,6 @@ import org.apache.commons.lang.StringUtils;
  * @since 	4.1
  */
 public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDestination, IXAEnabled {
-	public static final String version="$RCSfile: JdbcFacade.java,v $ $Revision: 1.34 $ $Date: 2011-03-16 16:42:40 $";
 	
 	private String name;
     private String username=null;
@@ -157,7 +160,9 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 	private boolean transacted = false;
 	private boolean connectionsArePooled=true;
 	
-	private IDbmsSupport dbms=null;
+	private IDbmsSupportFactory dbmsSupportFactoryDefault=null;
+	private IDbmsSupportFactory dbmsSupportFactory=null;
+	private IDbmsSupport dbmsSupport=null;
 
 	protected String getLogPrefix() {
 		return "["+this.getClass().getName()+"] ["+getName()+"] ";
@@ -252,28 +257,49 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 	}
 
 	
-	public void setDbmsSupport(IDbmsSupport dbmsSupport) {
-		this.dbms=dbmsSupport;
-	}
-
 	public int getDatabaseType() {
-		dbms=getDbmsSupport();
+		IDbmsSupport dbms=getDbmsSupport();
 		if (dbms==null) {
 			return -1;
 		}
 		return dbms.getDatabaseType();
 	}
+
+	public IDbmsSupportFactory getDbmsSupportFactoryDefault() {
+		if (dbmsSupportFactoryDefault==null) {
+			dbmsSupportFactoryDefault=new DbmsSupportFactory();
+		}
+		return dbmsSupportFactoryDefault;
+	}
+	public void setDbmsSupportFactoryDefault(IDbmsSupportFactory dbmsSupportFactory) {
+		this.dbmsSupportFactoryDefault=dbmsSupportFactory;
+	}
 	
+	public IDbmsSupportFactory getDbmsSupportFactory() {
+		if (dbmsSupportFactory==null) {
+			dbmsSupportFactory=getDbmsSupportFactoryDefault();
+		}
+		return dbmsSupportFactory;
+	}
+	public void setDbmsSupportFactory(IDbmsSupportFactory dbmsSupportFactory) {
+		this.dbmsSupportFactory=dbmsSupportFactory;
+	}
+
+	public void setDbmsSupport(IDbmsSupport dbmsSupport) {
+		this.dbmsSupport=dbmsSupport;
+	}
+		
 	public IDbmsSupport getDbmsSupport() {
-		if (dbms==null) {
+		if (dbmsSupport==null) {
 			Connection conn=null;
 			try {
 				conn=getConnection();
-				setDbmsSupport(DbmsSupportFactory.getDbmsSupport(conn));
-				//databaseType=DbmsUtil.getDatabaseType(conn);
 			} catch (Exception e) {
-				log.warn("Exception determining dbmssupport", e);
-				return null;
+				throw new RuntimeException("Cannot obtain connection to determine dbmssupport", e);
+			}
+			try {
+				setDbmsSupport(getDbmsSupportFactory().getDbmsSupport(conn));
+				//databaseType=DbmsUtil.getDatabaseType(conn);
 			} finally {
 				try {
 					if (conn!=null) { 
@@ -284,7 +310,7 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 				}
 			}
 		}
-		return dbms;
+		return dbmsSupport;
 	}
 	/**
 	 * Obtains a connection to the datasource. 
