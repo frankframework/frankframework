@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcQuerySenderBase.java,v $
- * Revision 1.52  2011-04-13 08:38:03  L190409
+ * Revision 1.53  2011-04-27 10:01:53  m168309
+ * used timeout attribute in getting connection too
+ *
+ * Revision 1.52  2011/04/13 08:38:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Indicate updatability of resultset explicitly using method-parameter
  * Blob and Clob support using DbmsSupport
  *
@@ -280,7 +283,7 @@ import sun.misc.BASE64Encoder;
  * @since 	4.1
  */
 public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
-	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.52 $ $Date: 2011-04-13 08:38:03 $";
+	public static final String version="$RCSfile: JdbcQuerySenderBase.java,v $ $Revision: 1.53 $ $Date: 2011-04-27 10:01:53 $";
 
 	private final static String UNP_START = "?{";
 	private final static String UNP_END = "}";
@@ -364,6 +367,10 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 
 	protected ResultSet getReturnedColumns(String[] columns, PreparedStatement st) throws SQLException {
 		return st.getGeneratedKeys();
+	}
+
+	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+		return sendMessage(correlationID, message, prc, getTimeout());
 	}
 
 	protected String sendMessage(Connection connection, String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {

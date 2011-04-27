@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcFacade.java,v $
- * Revision 1.35  2011-04-13 08:36:55  L190409
+ * Revision 1.36  2011-04-27 10:01:53  m168309
+ * used timeout attribute in getting connection too
+ *
+ * Revision 1.35  2011/04/13 08:36:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Spring configurable DbmsSupport
  *
  * Revision 1.34  2011/03/16 16:42:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -120,6 +123,7 @@ import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IXAEnabled;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.jdbc.dbms.DbmsSupportFactory;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupportFactory;
@@ -127,6 +131,7 @@ import nl.nn.adapterframework.jms.JNDIBase;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.task.TimeoutGuard;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -325,6 +330,21 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 			}
 		} catch (SQLException e) {
 			throw new JdbcException(getLogPrefix()+"cannot open connection on datasource ["+getDataSourceNameToUse()+"]", e);
+		}
+	}
+
+	public Connection getConnection(int timeout) throws JdbcException, TimeOutException {
+		if (timeout<=0) {
+			return getConnection();
+		}
+		TimeoutGuard tg = new TimeoutGuard("Connection ");
+		try {
+			tg.activateGuard(timeout);
+			return getConnection();
+		} finally {
+			if (tg.cancel()) {
+				throw new TimeOutException(getLogPrefix()+"thread has been interrupted");
+			} 
 		}
 	}
 

@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcSenderBase.java,v $
- * Revision 1.9  2010-03-10 14:30:05  m168309
+ * Revision 1.10  2011-04-27 10:01:53  m168309
+ * used timeout attribute in getting connection too
+ *
+ * Revision 1.9  2010/03/10 14:30:05  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * rolled back testtool adjustments (IbisDebuggerDummy)
  *
  * Revision 1.7  2009/04/01 08:22:10  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -61,7 +64,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * @since 	4.2.h
  */
 public abstract class JdbcSenderBase extends JdbcFacade implements ISenderWithParameters {
-	public static final String version="$RCSfile: JdbcSenderBase.java,v $ $Revision: 1.9 $ $Date: 2010-03-10 14:30:05 $";
+	public static final String version="$RCSfile: JdbcSenderBase.java,v $ $Revision: 1.10 $ $Date: 2011-04-27 10:01:53 $";
 
 	protected Connection connection=null;
 	protected ParameterList paramList = null;
@@ -122,10 +125,14 @@ public abstract class JdbcSenderBase extends JdbcFacade implements ISenderWithPa
 	}
 
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+		return sendMessage(correlationID, message, prc, 0);
+	}
+
+	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc, int timeout) throws SenderException, TimeOutException {
 		if (isConnectionsArePooled()) {
 			Connection c = null;
 			try {
-				c = getConnection();
+				c = getConnection(timeout);
 				String result = sendMessage(c, correlationID, message, prc);
 				return result;
 			} catch (JdbcException e) {
