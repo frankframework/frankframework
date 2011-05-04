@@ -1,6 +1,9 @@
 /*
  * $Log: SoapWrapper.java,v $
- * Revision 1.12  2011-03-31 07:13:09  m168309
+ * Revision 1.13  2011-05-04 11:42:56  L190409
+ * improved robustness of getFaultCount
+ *
+ * Revision 1.12  2011/03/31 07:13:09  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added namespaceDefs attribute
  *
  * Revision 1.11  2010/07/12 12:49:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -92,7 +95,7 @@ import org.w3c.dom.Document;
  * @version Id
  */
 public class SoapWrapper {
-	public static final String version="$RCSfile: SoapWrapper.java,v $ $Revision: 1.12 $ $Date: 2011-03-31 07:13:09 $";
+	public static final String version="$RCSfile: SoapWrapper.java,v $ $Revision: 1.13 $ $Date: 2011-05-04 11:42:56 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private TransformerPool extractBody;
@@ -175,7 +178,17 @@ public class SoapWrapper {
 	}
 
 	public int getFaultCount(String message) throws NumberFormatException, DomBuilderException, TransformerException, IOException {
-		return Integer.parseInt(extractFaultCount.transform(message,null,true));
+		if (StringUtils.isEmpty(message)) {
+			log.warn("getFaultCount(): message is empty");
+			return 0;
+		}
+		String faultCount=extractFaultCount.transform(message,null,true);
+		if (StringUtils.isEmpty(faultCount)) {
+			log.warn("getFaultCount(): could not extract fault count, result is empty");
+			return 0;
+		}
+		if (log.isDebugEnabled()) log.debug("getFaultCount(): transformation result ["+faultCount+"]");
+		return Integer.parseInt(faultCount);
 	}
 	public String getFaultCode(String message) throws DomBuilderException, TransformerException, IOException {
 		return extractFaultCode.transform(message,null,true);
