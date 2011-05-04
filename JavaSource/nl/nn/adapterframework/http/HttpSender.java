@@ -1,6 +1,9 @@
 /*
  * $Log: HttpSender.java,v $
- * Revision 1.47  2011-02-21 18:03:51  L190409
+ * Revision 1.48  2011-05-04 11:52:10  L190409
+ * log warning when result is not 200 - OK
+ *
+ * Revision 1.47  2011/02/21 18:03:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * can now specify url dynamically too
  *
  * Revision 1.46  2010/07/12 12:44:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -152,6 +155,8 @@ import java.security.Security;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.servlet.http.HttpServletResponse;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.ParameterException;
@@ -280,7 +285,7 @@ import org.apache.commons.lang.StringUtils;
  * @since 4.2c
  */
 public class HttpSender extends SenderWithParametersBase implements HasPhysicalDestination {
-	public static final String version = "$RCSfile: HttpSender.java,v $ $Revision: 1.47 $ $Date: 2011-02-21 18:03:51 $";
+	public static final String version = "$RCSfile: HttpSender.java,v $ $Revision: 1.48 $ $Date: 2011-05-04 11:52:10 $";
 
 	private String url;
 	private String urlParam="url";
@@ -559,7 +564,7 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 	
 	public String extractResult(HttpMethod httpmethod) throws SenderException, IOException {
 		int statusCode = httpmethod.getStatusCode();
-		if (statusCode!=200) {
+		if (statusCode!=HttpServletResponse.SC_OK) {
 			throw new SenderException(getLogPrefix()+"httpstatus "+statusCode+": "+httpmethod.getStatusText());
 		}
 		//return httpmethod.getResponseBodyAsString();
@@ -635,18 +640,19 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"executing method");
 				statusCode = httpclient.executeMethod(hostconfiguration,httpmethod,httpState);
 				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"executed method");
-				if (log.isDebugEnabled()) {
+				
+				if (statusCode!=HttpServletResponse.SC_OK) {
 					StatusLine statusline = httpmethod.getStatusLine();
 					if (statusline!=null) { 
-						log.debug(getLogPrefix()+"status:"+statusline.toString());
+						log.warn(getLogPrefix()+"status ["+statusline.toString()+"]");
 					} else {
-						log.debug(getLogPrefix()+"no statusline found");
+						log.warn(getLogPrefix()+"no statusline found");
 					}
+				} else {
+					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"status ["+statusCode+"]");
 				}
 				result = extractResult(httpmethod);	
-				if (log.isDebugEnabled()) {
-					log.debug(getLogPrefix()+"retrieved result ["+result+"]");
-				}
+				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"retrieved result ["+result+"]");
 			} catch (HttpException e) {
 				Throwable throwable = e.getCause();
 				String cause = null;
