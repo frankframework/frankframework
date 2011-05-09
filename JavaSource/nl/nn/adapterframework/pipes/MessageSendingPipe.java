@@ -1,6 +1,9 @@
 /*
  * $Log: MessageSendingPipe.java,v $
- * Revision 1.71  2011-02-25 11:06:49  m168309
+ * Revision 1.72  2011-05-09 15:27:11  L190409
+ * fixed bug in timeout monitoring
+ *
+ * Revision 1.71  2011/02/25 11:06:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted javadoc
  *
  * Revision 1.70  2011/01/13 12:30:15  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -332,7 +335,7 @@ import org.apache.commons.lang.SystemUtils;
  */
 
 public class MessageSendingPipe extends FixedForwardPipe implements HasSender, HasStatistics, EventThrowing {
-	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.71 $ $Date: 2011-02-25 11:06:49 $";
+	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.72 $ $Date: 2011-05-09 15:27:11 $";
 
 	public static final String PIPE_TIMEOUT_MONITOR_EVENT = "Sender Timeout";
 	public static final String PIPE_CLEAR_TIMEOUT_MONITOR_EVENT = "Sender Received Result on Time";
@@ -724,13 +727,13 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 				}
 				if (timeoutPending) {
 					timeoutPending=false;
-					throwEvent(PIPE_TIMEOUT_MONITOR_EVENT);
+					throwEvent(PIPE_CLEAR_TIMEOUT_MONITOR_EVENT);
 				}
 		
 			} catch (TimeOutException toe) {
+				throwEvent(PIPE_TIMEOUT_MONITOR_EVENT);
 				if (!timeoutPending) {
 					timeoutPending=true;
-					throwEvent(PIPE_CLEAR_TIMEOUT_MONITOR_EVENT);
 				}
 				PipeForward timeoutForward = findForward(TIMEOUTFORWARD);
 				log.warn(getLogPrefix(session) + "timeout occured");
