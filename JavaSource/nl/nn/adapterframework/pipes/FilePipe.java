@@ -1,6 +1,9 @@
 /*
  * $Log: FilePipe.java,v $
- * Revision 1.24  2010-08-09 13:06:24  m168309
+ * Revision 1.25  2011-05-12 13:50:34  m168309
+ * added list action
+ *
+ * Revision 1.24  2010/08/09 13:06:24  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added attribute testCanWrite and adjusted check for write permissions
  *
  * Revision 1.23  2010/01/22 09:17:09  Martijn Onstwedder <martijn.onstwedder@ibissource.org>
@@ -81,6 +84,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.util.Dir2Xml;
 import nl.nn.adapterframework.util.FileUtils;
 
 import org.apache.commons.lang.StringUtils;
@@ -117,6 +121,7 @@ import sun.misc.BASE64Encoder;
  * <li>read_delete: read the contents, then delete</li>
  * <li>encode: encode base64</li>
  * <li>decode: decode base64</li>
+ * <li>list: returns the files and directories in the directory that satisfy the specified filter (see {@link nl.nn.adapterframework.util.Dir2Xml dir2xml})</li>
  * </ul></td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setWriteSuffix(String) writeSuffix}</td><td>suffix of the file to be created (only used if fileName and fileNameSession are not set)</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setCreateDirectory(boolean) createDirectory}</td><td>when set to <code>true</code>, the directory to read from is created if it does not exist</td><td>false</td></tr>
@@ -138,7 +143,7 @@ import sun.misc.BASE64Encoder;
  *
  */
 public class FilePipe extends FixedForwardPipe {
-	public static final String version="$RCSfile: FilePipe.java,v $ $Revision: 1.24 $ $Date: 2010-08-09 13:06:24 $";
+	public static final String version="$RCSfile: FilePipe.java,v $ $Revision: 1.25 $ $Date: 2011-05-12 13:50:34 $";
 
 	protected String actions;
 	protected String directory;
@@ -183,6 +188,8 @@ public class FilePipe extends FixedForwardPipe {
 				transformers.add(new Encoder());
 			else if ("decode".equalsIgnoreCase(token))
 				transformers.add(new Decoder());
+			else if ("list".equalsIgnoreCase(token))
+				transformers.add(new FileListener());
 			else
 				throw new ConfigurationException(getLogPrefix(null)+"Action [" + token + "] is not supported");
 		}
@@ -456,6 +463,39 @@ public class FilePipe extends FixedForwardPipe {
 			return in;
 		}
 	}
+
+	private class FileListener implements TransformerAction {
+		public void configure() throws ConfigurationException {
+			if (StringUtils.isNotEmpty(getDirectory())) {
+				File file = new File(getDirectory());
+				if (! (file.exists() && file.isDirectory() && file.canRead())) {
+					throw new ConfigurationException(directory + " is not a directory, or no read permission");
+				}
+			}
+		}
+
+		public byte[] go(byte[] in, PipeLineSession session) throws Exception {
+			String name = fileName;
+			
+			if (StringUtils.isEmpty(name)) { 
+				if (!(StringUtils.isEmpty(fileNameSessionKey))) { 
+					name = (String)session.get(fileNameSessionKey); 
+				}
+				else {	
+					name = new String(in); 
+				}
+			}
+
+			Dir2Xml dx=new Dir2Xml();
+			dx.setPath(getDirectory());
+			if (StringUtils.isNotEmpty(name)) { 
+				dx.setWildCard(name);
+			}
+			String listResult=dx.getDirList();
+			return listResult.getBytes();
+		}
+	}
+
 
 	/**
 	 * @param actions all the actions the pipe has to do
