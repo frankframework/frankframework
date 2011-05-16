@@ -1,6 +1,9 @@
 /*
  * $Log: FilePipe.java,v $
- * Revision 1.25  2011-05-12 13:50:34  m168309
+ * Revision 1.26  2011-05-16 12:29:41  m168309
+ * list action: if a directory is not specified, the fileName is expected to include the directory
+ *
+ * Revision 1.25  2011/05/12 13:50:34  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added list action
  *
  * Revision 1.24  2010/08/09 13:06:24  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -121,7 +124,7 @@ import sun.misc.BASE64Encoder;
  * <li>read_delete: read the contents, then delete</li>
  * <li>encode: encode base64</li>
  * <li>decode: decode base64</li>
- * <li>list: returns the files and directories in the directory that satisfy the specified filter (see {@link nl.nn.adapterframework.util.Dir2Xml dir2xml})</li>
+ * <li>list: returns the files and directories in the directory that satisfy the specified filter (see {@link nl.nn.adapterframework.util.Dir2Xml dir2xml}). If a directory is not specified, the fileName is expected to include the directory</li>
  * </ul></td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setWriteSuffix(String) writeSuffix}</td><td>suffix of the file to be created (only used if fileName and fileNameSession are not set)</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setCreateDirectory(boolean) createDirectory}</td><td>when set to <code>true</code>, the directory to read from is created if it does not exist</td><td>false</td></tr>
@@ -143,7 +146,7 @@ import sun.misc.BASE64Encoder;
  *
  */
 public class FilePipe extends FixedForwardPipe {
-	public static final String version="$RCSfile: FilePipe.java,v $ $Revision: 1.25 $ $Date: 2011-05-12 13:50:34 $";
+	public static final String version="$RCSfile: FilePipe.java,v $ $Revision: 1.26 $ $Date: 2011-05-16 12:29:41 $";
 
 	protected String actions;
 	protected String directory;
@@ -486,8 +489,18 @@ public class FilePipe extends FixedForwardPipe {
 				}
 			}
 
+			String dir = getDirectory();
+			if (StringUtils.isEmpty(dir)) {
+				File file = new File(name);
+				String parent = file.getParent();
+				if (parent!=null) {
+					dir = parent;
+					name = file.getName();
+				}
+			}
+
 			Dir2Xml dx=new Dir2Xml();
-			dx.setPath(getDirectory());
+			dx.setPath(dir);
 			if (StringUtils.isNotEmpty(name)) { 
 				dx.setWildCard(name);
 			}
