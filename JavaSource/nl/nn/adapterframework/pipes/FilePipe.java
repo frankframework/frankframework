@@ -1,6 +1,9 @@
 /*
  * $Log: FilePipe.java,v $
- * Revision 1.26  2011-05-16 12:29:41  m168309
+ * Revision 1.27  2011-05-16 14:49:44  L190409
+ * renamed FileListener to FileLister
+ *
+ * Revision 1.26  2011/05/16 12:29:41  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * list action: if a directory is not specified, the fileName is expected to include the directory
  *
  * Revision 1.25  2011/05/12 13:50:34  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -146,7 +149,6 @@ import sun.misc.BASE64Encoder;
  *
  */
 public class FilePipe extends FixedForwardPipe {
-	public static final String version="$RCSfile: FilePipe.java,v $ $Revision: 1.26 $ $Date: 2011-05-16 12:29:41 $";
 
 	protected String actions;
 	protected String directory;
@@ -192,7 +194,7 @@ public class FilePipe extends FixedForwardPipe {
 			else if ("decode".equalsIgnoreCase(token))
 				transformers.add(new Decoder());
 			else if ("list".equalsIgnoreCase(token))
-				transformers.add(new FileListener());
+				transformers.add(new FileLister());
 			else
 				throw new ConfigurationException(getLogPrefix(null)+"Action [" + token + "] is not supported");
 		}
@@ -226,7 +228,7 @@ public class FilePipe extends FixedForwardPipe {
 			return new PipeRunResult(getForward(), inValue == null ? null : new String(inValue));
 		}
 		catch(Exception e) {
-			throw new PipeRunException(this, "Error while transforming input", e); 
+			throw new PipeRunException(this, getLogPrefix(session)+"Error while transforming input", e); 
 		}
 	}
 	
@@ -467,7 +469,7 @@ public class FilePipe extends FixedForwardPipe {
 		}
 	}
 
-	private class FileListener implements TransformerAction {
+	private class FileLister implements TransformerAction {
 		public void configure() throws ConfigurationException {
 			if (StringUtils.isNotEmpty(getDirectory())) {
 				File file = new File(getDirectory());
