@@ -1,19 +1,19 @@
+/* 
+ * $Log: ServiceClient.java,v $
+ * Revision 1.4  2011-05-19 14:58:46  L190409
+ * simplified into one single interace ServiceClient
+ *
+ */ 
 package nl.nn.adapterframework.receivers;
+
+import java.util.Map;
+
+import nl.nn.adapterframework.core.ListenerException;
 
 /**
  * The interface clients (users) of a service may use.
- *
- * @version Id
- * @author Johan Verrips IOS
  */
 public interface ServiceClient {
-	public static final String version="$Id: ServiceClient.java,v 1.3 2004-03-26 10:43:03 NNVZNL01#L180564 Exp $";
 	
-	public String processRequest(String message);
-/**
- * Does a processRequest with a correlationId from the client. This is usefull for logging purposes,
- * as the correlationId is logged also.
- * @since 4.0
- */	
-public String processRequest(String correlationId, String message);
+	public String processRequest(String correlationId, String message, Map requestContext) throws ListenerException;
 }
