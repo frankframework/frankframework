@@ -1,6 +1,9 @@
 /*
  * $Log: HttpListener.java,v $
- * Revision 1.4  2007-10-08 12:18:20  europe\L190409
+ * Revision 1.5  2011-05-19 15:09:57  L190409
+ * now extends PushingListenerAdapter
+ *
+ * Revision 1.4  2007/10/08 12:18:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed HashMap to Map where possible
  *
  * Revision 1.3  2007/10/03 08:37:49  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -15,21 +18,11 @@
  */
 package nl.nn.adapterframework.http;
 
-import java.util.Map;
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IMessageHandler;
 import nl.nn.adapterframework.core.IPushingListener;
-import nl.nn.adapterframework.core.IbisExceptionListener;
-import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.core.PipeLineResult;
-import nl.nn.adapterframework.receivers.ServiceClient2;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
-import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.log4j.Logger;
 
 /**
  * Implementation of a {@link IPushingListener} that enables a {@link nl.nn.adapterframework.receivers.GenericReceiver}
@@ -51,23 +44,16 @@ import org.apache.log4j.Logger;
  * @since   4.4.x (still experimental)
  * @version Id
  */
-public class HttpListener  implements IPushingListener, ServiceClient2 {
-	public static final String version="$RCSfile: HttpListener.java,v $ $Revision: 1.4 $ $Date: 2007-10-08 12:18:20 $";
-	protected Logger log = LogUtil.getLogger(this);
+public class HttpListener extends PushingListenerAdapter {
 
-	private IMessageHandler handler;        	
-	private String name;
 	private String serviceName;
-	private boolean applicationFaultsAsExceptions=false;
 
 	/**
 	 * initialize listener and register <code>this</code> to the JNDI
 	 */
 	public void configure() throws ConfigurationException {
+		super.configure();
 		try {
-			if (handler==null) {
-				throw new ConfigurationException("handler has not been set");
-			}
 			if (StringUtils.isEmpty(getServiceName())) {
 				log.debug("registering listener ["+getName()+"] with ServiceDispatcher");
 				ServiceDispatcher.getInstance().registerServiceClient(getName(), this);
@@ -80,80 +66,6 @@ public class HttpListener  implements IPushingListener, ServiceClient2 {
 		}
 	}
 
-	public void open() {
-		// do nothing special
-	}
-	public void close() {
-		// do nothing special
-	}
-
-
-	public String getIdFromRawMessage(Object rawMessage, Map threadContext)  {
-		return null;
-	}
-	public String getStringFromRawMessage(Object rawMessage, Map threadContext) {
-		return (String) rawMessage;
-	}
-	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessage, Map threadContext) throws ListenerException {
-	}
-
-
-	public String processRequest(String message) {
-		try {
-			return handler.processRequest(this, message);
-		} catch (ListenerException e) {
-			return handler.formatException(null,null, message,e);
-		}
-	}
-
-	public String processRequest(String correlationId, String message) {
-		try {
-			log.debug("HttpListener processRequest for correlationId ["+correlationId+"]");
-			return handler.processRequest(this, correlationId, message);
-		} catch (ListenerException e) {
-			return handler.formatException(null,correlationId, message,e);
-		}
-	}
-
-	public String processRequestWithExceptions(String correlationId, String message, Map requestContext) throws ListenerException {
-		try {
-			log.debug("HttpListener processRequestWithExceptions for correlationId ["+correlationId+"]");
-			return handler.processRequest(this, correlationId, message, requestContext);
-		} catch (ListenerException e) {
-			if (isApplicationFaultsAsExceptions()) {
-				log.debug("processRequestWithExceptions rethrows ListenerException...");
-				throw e;
-			} 
-			log.debug("processRequestWithExceptions formats ListenerException to errormessage");
-			return handler.formatException(null,correlationId, message,e);
-		}
-	}
-
-
-	public String toString() {
-		return ToStringBuilder.reflectionToString(this);
-	}
-
-	/**
-	 * Returns the name of the Listener. 
-	 */
-	public String getName() {
-		return name;
-	}
-	/**
-	 * Sets the name of the Listener. 
-	 */
-	public void setName(String name) {
-		this.name=name;
-	}
-
-	public void setHandler(IMessageHandler handler) {
-		this.handler=handler;
-	}
-
-	public void setExceptionListener(IbisExceptionListener listener) {
-		// do nothing, no exceptions known
-	}
 
 	public String getServiceName() {
 		return serviceName;
@@ -161,13 +73,5 @@ public class HttpListener  implements IPushingListener, ServiceClient2 {
 	public void setServiceName(String string) {
 		serviceName = string;
 	}
-
-	public boolean isApplicationFaultsAsExceptions() {
-		return applicationFaultsAsExceptions;
-	}
-	public void setApplicationFaultsAsExceptions(boolean b) {
-		applicationFaultsAsExceptions = b;
-	}
-
 
 }

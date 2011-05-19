@@ -1,6 +1,9 @@
 /*
  * $Log: WebServiceListener.java,v $
- * Revision 1.11  2011-02-21 18:07:10  L190409
+ * Revision 1.12  2011-05-19 15:11:03  L190409
+ * now extends PushingListenerAdapter
+ *
+ * Revision 1.11  2011/02/21 18:07:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * implemented HasPhysicalDestinationName
  *
  * Revision 1.10  2007/10/17 09:07:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -50,22 +53,13 @@
 package nl.nn.adapterframework.http;
 
 import java.io.Serializable;
-import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
-import nl.nn.adapterframework.core.IMessageHandler;
 import nl.nn.adapterframework.core.IPushingListener;
-import nl.nn.adapterframework.core.IbisExceptionListener;
-import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.core.PipeLineResult;
-import nl.nn.adapterframework.receivers.ServiceClient2;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
-import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.log4j.Logger;
 
 /**
  * Implementation of a {@link IPushingListener} that enables a {@link nl.nn.adapterframework.receivers.GenericReceiver}
@@ -86,29 +80,22 @@ import org.apache.log4j.Logger;
  * @author  Gerrit van Brakel 
  * @version Id
  */
-public class WebServiceListener  implements IPushingListener, ServiceClient2, Serializable, HasPhysicalDestination {
-	public static final String version="$RCSfile: WebServiceListener.java,v $ $Revision: 1.11 $ $Date: 2011-02-21 18:07:10 $";
-	protected Logger log = LogUtil.getLogger(this);
+public class WebServiceListener extends PushingListenerAdapter implements Serializable, HasPhysicalDestination {
 
-	private IMessageHandler handler;        	
-	private String name;
 	private String serviceNamespaceURI;
-	private boolean applicationFaultsAsSoapFaults=true;
 
 	/**
 	 * initialize listener and register <code>this</code> to the JNDI
 	 */
 	public void configure() throws ConfigurationException {
+		super.configure();
 		try {
-			if (handler==null) {
-				throw new ConfigurationException("handler has not been set");
-			}
 			if (StringUtils.isNotEmpty(getServiceNamespaceURI())) {
-				log.debug("registering listener ["+name+"] with ServiceDispatcher by serviceNamespaceURI ["+getServiceNamespaceURI()+"]");
+				log.debug("registering listener ["+getName()+"] with ServiceDispatcher by serviceNamespaceURI ["+getServiceNamespaceURI()+"]");
 				ServiceDispatcher.getInstance().registerServiceClient(getServiceNamespaceURI(), this);
 			} else {
-				log.debug("registering listener ["+name+"] with ServiceDispatcher");
-				ServiceDispatcher.getInstance().registerServiceClient(name, this);
+				log.debug("registering listener ["+getName()+"] with ServiceDispatcher");
+				ServiceDispatcher.getInstance().registerServiceClient(getName(), this);
 			}
 		} catch (Exception e){
 			throw new ConfigurationException(e);
@@ -119,103 +106,16 @@ public class WebServiceListener  implements IPushingListener, ServiceClient2, Se
 		if (StringUtils.isNotEmpty(getServiceNamespaceURI())) {
 			return "serviceNamespaceURI: "+getServiceNamespaceURI();
 		} else {
-			return "name: "+name;
+			return "name: "+getName();
 		}
 	}
 
-	public void open() {
-		// do nothing special
-	}
-	public void close() {
-		// do nothing special
-	}
-
-
-	public String getIdFromRawMessage(Object rawMessage, Map threadContext)  {
-		return null;
-	}
-	public String getStringFromRawMessage(Object rawMessage, Map threadContext) {
-		return (String) rawMessage;
-	}
-	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessage, Map threadContext) throws ListenerException {
-	}
-
-
-	public String processRequest(String message) {
-		try {
-			return handler.processRequest(this, message);
-		} catch (ListenerException e) {
-			return handler.formatException(null,null, message,e);
-		}
-	}
-
-	public String processRequest(String correlationId, String message) {
-		try {
-			log.debug("WebServiceListener processRequest for correlationId ["+correlationId+"]");
-			return handler.processRequest(this, correlationId, message);
-		} catch (ListenerException e) {
-			return handler.formatException(null,correlationId, message,e);
-		}
-	}
-
-	public String processRequestWithExceptions(String correlationId, String message, Map requestContext) throws ListenerException {
-		try {
-			log.debug("WebServiceListener processRequestWithExceptions for correlationId ["+correlationId+"]");
-			return handler.processRequest(this, correlationId, message, requestContext);
-		} catch (ListenerException e) {
-			if (isApplicationFaultsAsSoapFaults()) {
-				log.debug("processRequestWithExceptions rethrows ListenerException...");
-				throw e;
-			} 
-			log.debug("processRequestWithExceptions formats ListenerException to errormessage");
-			return handler.formatException(null,correlationId, message,e);
-		}
-	}
-
-
- 	/**
-     * The <code>toString()</code> method retrieves its value
-     * by reflection.
-     * @see org.apache.commons.lang.builder.ToStringBuilder#reflectionToString
-     *
-     **/
-	public String toString() {
-		return ToStringBuilder.reflectionToString(this);
-	}
-
-	/**
-	 * Returns the name of the Listener. 
-	 */
-	public String getName() {
-		return name;
-	}
-	/**
-	 * Sets the name of the Listener. 
-	 */
-	public void setName(String name) {
-		this.name=name;
-	}
-
-	public void setHandler(IMessageHandler handler) {
-		this.handler=handler;
-	}
-
-	public void setExceptionListener(IbisExceptionListener listener) {
-		// do nothing, no exceptions known
-	}
 
 	public String getServiceNamespaceURI() {
 		return serviceNamespaceURI;
 	}
 	public void setServiceNamespaceURI(String string) {
 		serviceNamespaceURI = string;
-	}
-
-	public boolean isApplicationFaultsAsSoapFaults() {
-		return applicationFaultsAsSoapFaults;
-	}
-	public void setApplicationFaultsAsSoapFaults(boolean b) {
-		applicationFaultsAsSoapFaults = b;
 	}
 
 }
