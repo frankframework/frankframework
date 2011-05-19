@@ -1,6 +1,9 @@
 /*
  * $Log: Configuration.java,v $
- * Revision 1.38  2010-01-28 15:07:33  L190409
+ * Revision 1.39  2011-05-19 15:06:18  L190409
+ * do not print versions anymore
+ *
+ * Revision 1.38  2010/01/28 15:07:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed some version displays
  *
  * Revision 1.37  2009/12/29 14:32:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -114,6 +117,7 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import nl.nn.adapterframework.cache.IbisCacheManager;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.SenderException;
@@ -139,7 +143,6 @@ import org.apache.log4j.Logger;
  * @see    nl.nn.adapterframework.core.IAdapter
  */
 public class Configuration {
-	public static final String version="$RCSfile: Configuration.java,v $ $Revision: 1.38 $ $Date: 2010-01-28 15:07:33 $";
     protected Logger log=LogUtil.getLogger(this); 
      
     private Map adapterTable = new Hashtable();
@@ -186,6 +189,7 @@ public class Configuration {
 				IAdapter adapter = getRegisteredAdapter(i);
 				adapter.forEachStatisticsKeeperBody(hski,groupData,action);
 			}
+			IbisCacheManager.iterateOverStatistics(hski, groupData, action);
 			hski.closeGroup(groupData);
 		} finally {
 			hski.end(root);
@@ -360,39 +364,6 @@ public class Configuration {
     public String VersionInfo() {
     	StringBuffer sb=new StringBuffer();
     	sb.append(getInstanceInfo()+SystemUtils.LINE_SEPARATOR);
-    	sb.append(version+SystemUtils.LINE_SEPARATOR);
-    	sb.append(ConfigurationDigester.version+SystemUtils.LINE_SEPARATOR);
-    	sb.append(nl.nn.adapterframework.core.IReceiver.version+SystemUtils.LINE_SEPARATOR);
-    	sb.append(nl.nn.adapterframework.core.IPullingListener.version+SystemUtils.LINE_SEPARATOR);
-    	sb.append(nl.nn.adapterframework.core.Adapter.version+SystemUtils.LINE_SEPARATOR);
-    	sb.append(nl.nn.adapterframework.core.IPipe.version+SystemUtils.LINE_SEPARATOR);
-    	sb.append(nl.nn.adapterframework.core.PipeLine.version+SystemUtils.LINE_SEPARATOR);
-    	sb.append(nl.nn.adapterframework.receivers.ServiceDispatcher.version+SystemUtils.LINE_SEPARATOR);
-		sb.append(nl.nn.adapterframework.receivers.ReceiverBase.version+SystemUtils.LINE_SEPARATOR);
-    	sb.append(nl.nn.adapterframework.util.AppConstants.version+SystemUtils.LINE_SEPARATOR);
-    	sb.append(nl.nn.adapterframework.util.Variant.version+SystemUtils.LINE_SEPARATOR);
-    	sb.append(nl.nn.adapterframework.pipes.AbstractPipe.version+SystemUtils.LINE_SEPARATOR);
-    	sb.append(nl.nn.adapterframework.pipes.MessageSendingPipe.version+SystemUtils.LINE_SEPARATOR);
-    	sb.append(nl.nn.adapterframework.pipes.XmlValidator.version+SystemUtils.LINE_SEPARATOR);
-    	sb.append(nl.nn.adapterframework.pipes.XmlSwitch.version+SystemUtils.LINE_SEPARATOR);
-    	sb.append(nl.nn.adapterframework.errormessageformatters.ErrorMessageFormatter.version+SystemUtils.LINE_SEPARATOR);
-		sb.append(nl.nn.adapterframework.http.HttpSender.version +SystemUtils.LINE_SEPARATOR);
-		sb.append(nl.nn.adapterframework.http.WebServiceSender.version +SystemUtils.LINE_SEPARATOR);
-		sb.append(nl.nn.adapterframework.http.IbisWebServiceSender.version +SystemUtils.LINE_SEPARATOR);
-		sb.append(nl.nn.adapterframework.http.WebServiceListener.version +SystemUtils.LINE_SEPARATOR);
-    	sb.append(nl.nn.adapterframework.webcontrol.ConfigurationServlet.version+SystemUtils.LINE_SEPARATOR);
-    	sb.append(nl.nn.adapterframework.webcontrol.IniDynaActionForm.version+SystemUtils.LINE_SEPARATOR);
-    	sb.append(nl.nn.adapterframework.webcontrol.action.ActionBase.version+SystemUtils.LINE_SEPARATOR);
-    	sb.append(nl.nn.adapterframework.webcontrol.action.ShowConfiguration.version+SystemUtils.LINE_SEPARATOR);
-    	sb.append(nl.nn.adapterframework.webcontrol.action.ShowConfigurationStatus.version+SystemUtils.LINE_SEPARATOR);
-    	sb.append(nl.nn.adapterframework.scheduler.SchedulerAdapter.version +SystemUtils.LINE_SEPARATOR);
-    	sb.append(nl.nn.adapterframework.extensions.coolgen.CoolGenWrapperPipe.version +SystemUtils.LINE_SEPARATOR);
-		sb.append(nl.nn.adapterframework.extensions.rekenbox.RekenBoxCaller.version +SystemUtils.LINE_SEPARATOR);
-		sb.append(nl.nn.adapterframework.extensions.rekenbox.Adios2XmlPipe.version +SystemUtils.LINE_SEPARATOR);
-		sb.append(nl.nn.adapterframework.extensions.sap.SapFunctionFacade.version +SystemUtils.LINE_SEPARATOR);
-		sb.append(nl.nn.adapterframework.extensions.sap.SapListener.version +SystemUtils.LINE_SEPARATOR);
-		sb.append(nl.nn.adapterframework.extensions.sap.SapSender.version +SystemUtils.LINE_SEPARATOR);
-		sb.append(nl.nn.adapterframework.extensions.sap.SapSystem.version +SystemUtils.LINE_SEPARATOR);
 		sb.append(nl.nn.adapterframework.util.XmlUtils.getVersionInfo());
     	return sb.toString();
     	
