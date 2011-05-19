@@ -1,6 +1,9 @@
 /*
  * $Log: SoapGenericProvider.java,v $
- * Revision 1.4  2011-02-21 17:55:25  L190409
+ * Revision 1.5  2011-05-19 15:08:55  L190409
+ * use simplified ServiceDispatcher
+ *
+ * Revision 1.4  2011/02/21 17:55:25  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved errorhandling and logging
  *
  * Revision 1.3  2007/10/08 12:24:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -50,7 +53,7 @@ import org.apache.soap.util.Provider;
  * @author Gerrit van Brakel
  */
 public class SoapGenericProvider implements Provider {
-	public static final String version = "$RCSfile: SoapGenericProvider.java,v $ $Revision: 1.4 $ $Date: 2011-02-21 17:55:25 $";
+	public static final String version = "$RCSfile: SoapGenericProvider.java,v $ $Revision: 1.5 $ $Date: 2011-05-19 15:08:55 $";
 	protected Logger log=LogUtil.getLogger(this);
 	
 	private final String TARGET_OBJECT_URI_KEY = "TargetObjectNamespaceURI";
@@ -98,7 +101,7 @@ public class SoapGenericProvider implements Provider {
 			ISecurityHandler securityHandler = new HttpSecurityHandler(httpRequest);
 			Map messageContext= new HashMap();
 			messageContext.put(PipeLineSession.securityHandlerKey, securityHandler);
-			String result=sd.dispatchRequestWithExceptions(targetObjectURI, null, message, messageContext);
+			String result=sd.dispatchRequest(targetObjectURI, null, message, messageContext);
 			resContext.setRootPart( soapWrapper.putInEnvelope(result,null), Constants.HEADERVAL_CONTENT_TYPE_UTF8);
 				
 		 }

@@ -1,6 +1,9 @@
 /*
  * $Log: IsolatedServiceCaller.java,v $
- * Revision 1.12  2010-09-07 15:55:13  m00f069
+ * Revision 1.13  2011-05-19 15:07:30  L190409
+ * use simplified ServiceDispatcher
+ *
+ * Revision 1.12  2010/09/07 15:55:13  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Removed IbisDebugger, made it possible to use AOP to implement IbisDebugger functionality.
  *
  * Revision 1.11  2010/03/10 14:30:05  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -38,7 +41,6 @@ package nl.nn.adapterframework.pipes;
 
 import java.util.HashMap;
 
-import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.RequestReplyExecutor;
 import nl.nn.adapterframework.receivers.JavaListener;
@@ -58,7 +60,7 @@ import org.springframework.core.task.TaskExecutor;
  * @version Id
  */
 public class IsolatedServiceCaller {
-	public static final String version="$RCSfile: IsolatedServiceCaller.java,v $ $Revision: 1.12 $ $Date: 2010-09-07 15:55:13 $";
+	public static final String version="$RCSfile: IsolatedServiceCaller.java,v $ $Revision: 1.13 $ $Date: 2011-05-19 15:07:30 $";
 	protected Logger log = LogUtil.getLogger(this);
 	
 	/**
@@ -121,7 +123,7 @@ public class IsolatedServiceCaller {
 				if (targetIsJavaListener) {
 					reply = JavaListener.getListener(serviceName).processRequest(correlationID, request, context);
 				} else {
-					reply = ServiceDispatcher.getInstance().dispatchRequestWithExceptions(serviceName, correlationID, request, context);
+					reply = ServiceDispatcher.getInstance().dispatchRequest(serviceName, correlationID, request, context);
 				}
 			} catch (Throwable t) {
 				log.warn("IsolatedServiceCaller caught exception",t);

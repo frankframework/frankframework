@@ -1,6 +1,9 @@
 /*
  * $Log: IbisLocalSender.java,v $
- * Revision 1.6  2010-09-07 15:55:13  m00f069
+ * Revision 1.7  2011-05-19 15:07:06  L190409
+ * use simplified ServiceDispatcher
+ *
+ * Revision 1.6  2010/09/07 15:55:13  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Removed IbisDebugger, made it possible to use AOP to implement IbisDebugger functionality.
  *
  * Revision 1.5  2010/03/10 14:30:05  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -178,7 +181,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 					}
 				} else {
 					log.debug(getLogPrefix()+"calling service ["+getServiceName()+"] in same Thread");
-					result = ServiceDispatcher.getInstance().dispatchRequestWithExceptions(getServiceName(), correlationID, message, context);
+					result = ServiceDispatcher.getInstance().dispatchRequest(getServiceName(), correlationID, message, context);
 				}
 			} catch (ListenerException e) {
 				throw new SenderException(getLogPrefix()+"exception calling service ["+getServiceName()+"]",e);

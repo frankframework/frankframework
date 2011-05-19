@@ -1,6 +1,9 @@
 /*
  * $Log: HttpListenerServlet.java,v $
- * Revision 1.3  2007-10-08 12:18:19  europe\L190409
+ * Revision 1.4  2011-05-19 15:10:12  L190409
+ * use simplified ServiceDispatcher
+ *
+ * Revision 1.3  2007/10/08 12:18:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed HashMap to Map where possible
  *
  * Revision 1.2  2007/02/12 13:55:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -39,7 +42,6 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class HttpListenerServlet extends HttpServlet {
-	public static final String version = "$RCSfile: HttpListenerServlet.java,v $ $Revision: 1.3 $ $Date: 2007-10-08 12:18:19 $";
 	protected Logger log=LogUtil.getLogger(this);
 	
 	public final String SERVICE_ID_PARAM = "service";
@@ -71,7 +73,7 @@ public class HttpListenerServlet extends HttpServlet {
 		}
 		try {
 			log.debug("HttpListenerServlet calling service ["+service+"]");
-			String result=sd.dispatchRequestWithExceptions(service, null, message, messageContext);
+			String result=sd.dispatchRequest(service, null, message, messageContext);
 			response.getWriter().print(result);
 		} catch (ListenerException e) {
 			log.warn("HttpListenerServlet caught exception, will rethrow as ServletException",e);

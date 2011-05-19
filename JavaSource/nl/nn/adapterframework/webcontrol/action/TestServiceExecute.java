@@ -1,6 +1,9 @@
 /*
  * $Log: TestServiceExecute.java,v $
- * Revision 1.6  2008-12-16 13:37:50  L190409
+ * Revision 1.7  2011-05-19 15:03:33  L190409
+ * use simplified ServiceDispatcher
+ *
+ * Revision 1.6  2008/12/16 13:37:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * read messages in the right encoding
  *
  * Revision 1.5  2008/05/22 07:46:18  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -14,8 +17,10 @@ package nl.nn.adapterframework.webcontrol.action;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -37,7 +42,6 @@ import org.apache.struts.upload.FormFile;
  * @author Johan Verrips
  */
 public class TestServiceExecute extends ActionBase {
-	public static final String version = "$RCSfile: TestServiceExecute.java,v $ $Revision: 1.6 $ $Date: 2008-12-16 13:37:50 $";
 	
     public ActionForward execute(
         ActionMapping mapping,
@@ -108,8 +112,9 @@ public class TestServiceExecute extends ActionBase {
         form_result = "";
         // Execute the request
         try {
+        	Map context = new HashMap();
             form_result =
-                ServiceDispatcher.getInstance().dispatchRequest(form_serviceName, form_message);
+                ServiceDispatcher.getInstance().dispatchRequest(form_serviceName, null, form_message, context);
         } catch (Exception e) {
         	warn("Service with specified name [" + form_serviceName + "] got error",e);
         }
