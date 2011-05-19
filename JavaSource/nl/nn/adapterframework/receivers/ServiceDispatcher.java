@@ -1,6 +1,9 @@
 /*
  * $Log: ServiceDispatcher.java,v $
- * Revision 1.11  2008-08-13 13:43:29  europe\L190409
+ * Revision 1.12  2011-05-19 15:00:47  L190409
+ * simplified, now uses a single dispatch-method
+ *
+ * Revision 1.11  2008/08/13 13:43:29  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed reference to ServiceListener
  *
  * Revision 1.10  2007/10/08 12:24:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -21,9 +24,9 @@
  */
 package nl.nn.adapterframework.receivers;
 
-import java.util.Map;
-import java.util.Hashtable;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -38,60 +41,36 @@ import org.apache.log4j.Logger;
  * the <code>ServiceClient</code> interface.<br/>
  * This class is exposed as a webservice, to be able to provide a single point
  * of entry to all adapters that have a ServiceListener as a IReceiver.
- * <p>Creation date: (24-03-2003 11:06:48)</p>
+ *
  * @version Id
  * @author Johan Verrips
  * @see ServiceClient
  * @see ServiceListener
- * @see ServiceDispatcherBean
  */
 public class ServiceDispatcher  {
-	public static final String version = "$RCSfile: ServiceDispatcher.java,v $ $Revision: 1.11 $ $Date: 2008-08-13 13:43:29 $";
 	protected Logger log = LogUtil.getLogger(this);
 	
-	private Hashtable registeredListeners=new Hashtable();
+	private Map registeredListeners=new HashMap();
 	private static ServiceDispatcher self=null;
 
-    /** 
-     * Dispatch a request.
-     * @param serviceName the name of the IReceiver object
-     * @param request the <code>String</code> with the request/input
-     * @return String with the result of processing the <code>request</code> throught the <code>serviceName</code>
+	
+    /**
+     * Use this method to get hold of the <code>ServiceDispatcher</code>
+     * @return an instance of this class
      */
-	public String dispatchRequest(String serviceName, String request){
-		return dispatchRequest(serviceName, null, request);
+	public static synchronized ServiceDispatcher getInstance() {
+		if (self == null) {
+			self = new ServiceDispatcher();
+		}
+		return (self);
 	}
 
 	/**
 	 * Dispatch a request.
-	 * @param serviceName the name of the IReceiver object
-	 * @param correlationId the correlationId of this request;
-	 * @param request the <code>String</code> with the request/input
-	 * @return String with the result of processing the <code>request</code> throught the <code>serviceName</code>
-	 * @since 4.0
+	 * 
+	 * @since 4.3
 	 */
-	public String dispatchRequest(String serviceName, String correlationId, String request){
-		if (log.isDebugEnabled()) {
-			log.debug("dispatchRequest for service ["+serviceName+"] request ["+request+"]");
-		}
-		ServiceClient client=(ServiceClient)registeredListeners.get(serviceName);
-		if (client==null) {
-			String msg="service request for service ["+serviceName+"] is not registered";
-			log.error(msg);
-			return msg;
-		}
-		String result=client.processRequest(correlationId, request);
-		if (result==null) {
-			log.warn("result is null!");
-		}			
-		return result;
-	}
-	
-	/**
-     * Dispatch a request.
-     * @since 4.3
-     */
-	public String dispatchRequestWithExceptions(String serviceName, String correlationId, String request, Map requestContext) throws ListenerException {
+	public String dispatchRequest(String serviceName, String correlationId, String request, Map requestContext) throws ListenerException {
 		if (log.isDebugEnabled()) {
 			log.debug("dispatchRequest for service ["+serviceName+"] correlationId ["+correlationId+"]");
 		}
@@ -99,29 +78,13 @@ public class ServiceDispatcher  {
 		if (client==null) {
             throw new ListenerException("service ["+serviceName+"] is not registered");
 		}
-		String result;
-		if (client instanceof ServiceClient2) {
-			result=((ServiceClient2)client).processRequestWithExceptions(correlationId, request, requestContext);
-		} else { 
-			result=client.processRequest(correlationId, request);
-		} 
+		String result=client.processRequest(correlationId, request, requestContext);
 		if (result==null) {
 			log.warn("result is null!");
 		}			
 		return result;
 	}
-    /**
-     * Use this method to get hold of the <code>ServiceDispatcher</code>
-     * @return an instance of this class
-     */
-	public static synchronized ServiceDispatcher getInstance(){
-		 if( self == null )
-        {
-            self = new ServiceDispatcher();
-        }
-        return( self );
-		
-	}
+	
     /**
      * Retrieve the names of the registered listeners in alphabetical order.
      * @return Iterator with the names.
@@ -130,6 +93,7 @@ public class ServiceDispatcher  {
 	      SortedSet sortedKeys = new TreeSet(registeredListeners.keySet());
       return sortedKeys.iterator(); 
     }
+	
 	/**
      * Check wether a servicename is registered at the <code>ServiceDispatcher</code>.
      * @param name
@@ -138,13 +102,6 @@ public class ServiceDispatcher  {
 	public boolean isRegisteredServiceListener(String name) {
 		return (registeredListeners.get(name)!=null);
 	}
-//    /**
-//     * Registers a ServiceListener implementation
-//     * @param listener a ServiceListener implementation
-//     */
-//	public  void registerServiceListener(ServiceListener listener) throws ListenerException{
-//		registerServiceClient(listener.getName(), listener);
-//	}
 
 	public  void registerServiceClient(String name, ServiceClient listener) throws ListenerException{
 		if (isRegisteredServiceListener(name)) {
