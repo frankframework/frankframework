@@ -1,6 +1,9 @@
 /*
  * $Log: RestUriComparator.java,v $
- * Revision 1.1  2011-05-19 15:11:27  L190409
+ * Revision 1.2  2011-05-23 15:32:59  L190409
+ * first bugfixes
+ *
+ * Revision 1.1  2011/05/19 15:11:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * first version of Rest-provider support
  *
  */
@@ -21,9 +24,9 @@ public class RestUriComparator implements Comparator {
 		String uri1=(String) o1;
 		String uri2=(String) o2;
 		if (StringUtils.isEmpty(uri1)) {
-			return StringUtils.isEmpty(uri1)?0:1;
+			return StringUtils.isEmpty(uri2)?0:1;
 		}
-		int result=uri1.length()-uri2.length();
+		int result=uri2.length()-uri1.length();
 		if (result==0) {
 			result=uri1.compareTo(uri2);
 		}
