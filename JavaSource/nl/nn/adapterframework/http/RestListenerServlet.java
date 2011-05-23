@@ -1,6 +1,9 @@
 /*
  * $Log: RestListenerServlet.java,v $
- * Revision 1.1  2011-05-19 15:11:27  L190409
+ * Revision 1.2  2011-05-23 13:12:55  L190409
+ * removed unused code
+ *
+ * Revision 1.1  2011/05/19 15:11:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * first version of Rest-provider support
  *
  */
@@ -10,7 +13,6 @@ import java.io.IOException;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.StringTokenizer;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -47,13 +49,6 @@ public class RestListenerServlet extends HttpServlet {
 	protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		
 		String path=request.getPathInfo();
-		if (log.isDebugEnabled()) log.debug("path ["+path+"]");
-	
-//		StringTokenizer st = new StringTokenizer(path,"/");
-//		String contextpart  = st.nextToken();
-//		String domain  = st.nextToken();
-//		String service = st.nextToken();
-//		String key = st.nextToken();
 		String body=Misc.streamToString(request.getInputStream(),"\n",false);
 		
 		String etag=request.getHeader("etag");
