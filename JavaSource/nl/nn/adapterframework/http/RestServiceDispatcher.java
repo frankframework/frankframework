@@ -1,6 +1,9 @@
 /*
  * $Log: RestServiceDispatcher.java,v $
- * Revision 1.1  2011-05-19 15:11:27  L190409
+ * Revision 1.2  2011-05-23 13:13:16  L190409
+ * first bugfixes
+ *
+ * Revision 1.1  2011/05/19 15:11:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * first version of Rest-provider support
  *
  */
@@ -59,18 +62,19 @@ public class RestServiceDispatcher  {
 		
 		if (log.isDebugEnabled()) log.debug("searching listener for uri ["+uri+"] method ["+method+"]");
 		
-		String uriPattern=null;
+		String matchingPattern=null;
 		for (Iterator it=patternClients.keySet().iterator();it.hasNext();) {
-			uriPattern=(String)it.next();
-			if (log.isDebugEnabled()) log.debug("comparing uri to pattern ["+uriPattern+"]");
+			String uriPattern=(String)it.next();
+			if (log.isDebugEnabled()) log.debug("comparing uri to pattern ["+uriPattern+"] ");
 			if (uri.startsWith(uriPattern)) {
+				matchingPattern=uriPattern;
 				break;
 			}
 		}
-		if (uriPattern==null) {
+		if (matchingPattern==null) {
 			throw new ListenerException("no REST listener configured for uri ["+uri+"]");
 		}
-		Map patternEntry=(Map)patternClients.get(uriPattern);
+		Map patternEntry=(Map)patternClients.get(matchingPattern);
 		
 		Map methodConfig = (Map)patternEntry.get(method);
 		if (methodConfig==null) {
@@ -92,6 +96,7 @@ public class RestServiceDispatcher  {
 		Map requestContext=new HashMap();
 		if (etagKey!=null) requestContext.put(etagKey,etag);
 		if (contentTypeKey!=null) requestContext.put(contentTypeKey,contentType);
+		if (log.isDebugEnabled()) log.debug("dispatching request, uri ["+uri+"] listener pattern ["+matchingPattern+"] method ["+method+"] etag ["+etag+"] contentType ["+contentType+"]");
 		String result=listener.processRequest(null, request, requestContext);
 		if (result==null) {
 			log.warn("result is null!");
@@ -99,10 +104,17 @@ public class RestServiceDispatcher  {
 		return result;
 	}
 	
-	public  void registerServiceClient(String name, ServiceClient listener,
+	public  void registerServiceClient(ServiceClient listener,
 			String uriPattern, String method, 
 			String etagSessionKey, String contentTypeSessionKey) throws ConfigurationException {
 		
+		if (StringUtils.isEmpty(uriPattern)) {
+			uriPattern="/";
+		} else {
+			if (!uriPattern.startsWith("/")) {
+				uriPattern="/"+uriPattern;
+			}
+		}
 		if (StringUtils.isEmpty(method)) {
 			method=WILDCARD;
 		}
