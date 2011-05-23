@@ -1,6 +1,9 @@
 /*
  * $Log: SummaryRecord.java,v $
- * Revision 1.2  2010-01-07 13:18:15  L190409
+ * Revision 1.3  2011-05-23 13:41:51  L190409
+ * renamed 'total' fields to 'sum'
+ *
+ * Revision 1.2  2010/01/07 13:18:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * allow to show trends of statistics
  *
  * Revision 1.1  2009/12/29 14:25:18  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -42,10 +45,10 @@ public class SummaryRecord extends Basics {
 				max=Long.parseLong(value);
 			} else
 			if (ITEM_NAME_SUM.equals(name)) {
-				total=Long.parseLong(value);
+				sum=Long.parseLong(value);
 			} else
 			if (ITEM_NAME_SUMSQ.equals(name)) {
-				totalSquare=Long.parseLong(value);
+				sumOfSquares=Long.parseLong(value);
 			} 
 		}
 	}

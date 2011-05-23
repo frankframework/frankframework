@@ -1,6 +1,9 @@
 /*
  * $Log: StatisticsKeeper.java,v $
- * Revision 1.1  2009-12-29 14:25:18  L190409
+ * Revision 1.2  2011-05-23 13:41:13  L190409
+ * renamed 'total' fields to 'sum'
+ *
+ * Revision 1.1  2009/12/29 14:25:18  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * moved statistics to separate package
  *
  * Revision 1.14  2009/06/05 07:36:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -54,7 +57,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @version Id
  */
 public class StatisticsKeeper implements ItemList {
-	public static final String version="$RCSfile: StatisticsKeeper.java,v $ $Revision: 1.1 $ $Date: 2009-12-29 14:25:18 $";
+	public static final String version="$RCSfile: StatisticsKeeper.java,v $ $Revision: 1.2 $ $Date: 2011-05-23 13:41:13 $";
 
 	private static final boolean calculatePercentiles=true;
 	
@@ -265,8 +268,8 @@ public class StatisticsKeeper implements ItemList {
 			case 1: if (cumulative.getCount() == mark.getCount()) return null; else return new Long(mark.getMin());
 			case 2: if (cumulative.getCount() == mark.getCount()) return null; else return new Long(mark.getMax());
 			case 3: if (cumulative.getCount() == mark.getCount()) return null; else return new Double(cumulative.getIntervalAverage(mark));
-			case 4: return new Long(cumulative.getIntervalTotal(mark));
-			case 5: return new Long(cumulative.getIntervalTotalSquare(mark));
+			case 4: return new Long(cumulative.getIntervalSum(mark));
+			case 5: return new Long(cumulative.getIntervalSumOfSquares(mark));
 			default : return null;
 		}
 	}
@@ -287,7 +290,7 @@ public class StatisticsKeeper implements ItemList {
 		items.addSubElement(item);
 		item.addAttribute("index","-1");
 		item.addAttribute("name","sumofsquares");
-		item.addAttribute("value",""+cumulative.getTotalSquare());
+		item.addAttribute("value",""+cumulative.getSumOfSquares());
 
 		XmlBuilder samples = new XmlBuilder("samples");
 		result.addSubElement(samples);
@@ -337,10 +340,10 @@ public class StatisticsKeeper implements ItemList {
     	return Math.sqrt(getVariance());
     }
     public long getTotal() {
-        return cumulative.getTotal();
+        return cumulative.getSum();
     }
     public long getTotalSquare(){
-    	return cumulative.getTotalSquare();
+    	return cumulative.getSumOfSquares();
     }
     public double getVariance() {
     	return cumulative.getVariance();

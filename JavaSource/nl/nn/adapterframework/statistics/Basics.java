@@ -1,6 +1,9 @@
 /*
  * $Log: Basics.java,v $
- * Revision 1.1  2009-12-29 14:25:18  L190409
+ * Revision 1.2  2011-05-23 13:41:13  L190409
+ * renamed 'total' fields to 'sum'
+ *
+ * Revision 1.1  2009/12/29 14:25:18  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * moved statistics to separate package
  *
  */
@@ -11,6 +14,9 @@ import java.text.DecimalFormat;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
+ * Container for basic statistical estimators.
+ * 
+ * 
  * @author  Gerrit van Brakel
  * @since   4.9.9
  * @version Id
@@ -19,48 +25,61 @@ public class Basics implements ItemList {
 
 	public static final int NUM_BASIC_ITEMS=6;   
 
+/*
+ * Capacity calculation.
+ * c: number of bits in count
+ * d: number of databits
+ * 
+ * int:  32 bits
+ * long: 64 bits
+ * 
+ * lengths
+ * count: c
+ * sum: c+d
+ * sumOfSquares: c+2d 
+ */
+	
 	
 	protected long count = 0;
-	protected long min = Integer.MAX_VALUE;
+	protected long min = Long.MAX_VALUE;
 	protected long max = 0;
-	protected long total = 0;
-	protected long totalSquare=0;
+	protected long sum = 0;
+	protected long sumOfSquares=0;
 	
 	public void reset() {
 		count = 0;
-		min = Integer.MAX_VALUE;
+		min = Long.MAX_VALUE;
 		max = 0;
-		total = 0;
-		totalSquare=0;
+		sum = 0;
+		sumOfSquares=0;
 	}
 
 	public void mark(Basics other) {
-		min = Integer.MAX_VALUE;
+		min = Long.MAX_VALUE;
 		max = 0;
 		count = other.count;
-		total = other.total;
-		totalSquare=other.totalSquare;
+		sum = other.sum;
+		sumOfSquares=other.sumOfSquares;
 	}
 	
 	public void addValue(long value) {
 		++count;
-		if (value < min) {
-			min = value;
-		}
-		if (value > max) {
-			max = value;
-		}
-		total += value;
-		totalSquare += value * value;
+		checkMinMax(value);
+		addSums(value);
 	}
 	
-	public void checkMinMax(long value) {
+	protected void checkMinMax(long value) {
 		if (value < min) {
 			min = value;
 		}
 		if (value > max) {
 			max = value;
 		}
+	}
+
+	protected void addSums(long value) {
+		sum += value;
+		sumOfSquares += value * value;
 	}
 
 	public void addRecord(Basics record) {
@@ -71,17 +90,15 @@ public class Basics implements ItemList {
 		if (record.getMax() > max) {
 			max = record.getMax();
 		}
-		total += record.getTotal();
-		totalSquare += record.getTotalSquare();
+		sum += record.getSum();
+		sumOfSquares += record.getSumOfSquares();
 	}
 	
-	private double calculateVariance(long count, long total, long totalSquare) {
+	private double calculateVariance(long count, long sum, long sumOfSquares) {
 		double result;
 		if (count>1) {
-			result=(totalSquare-((total*total)/count))/(count-1);
-
-		}
-		else result=Double.NaN;
+			result=(sumOfSquares-((sum*sum)/count))/(count-1);
+		} else result=Double.NaN;
 		return result;
 	}
 
@@ -121,7 +138,7 @@ public class Basics implements ItemList {
 			case 2: if (getCount() == 0) return null; else return new Long(getMax());
 			case 3: if (getCount() == 0) return null; else return new Double(getAverage());
 			case 4: if (getCount() == 0) return null; else return new Double(getStdDev());
-			case 5: if (getCount() == 0) return null; else return new Long(getTotal());
+			case 5: if (getCount() == 0) return null; else return new Long(getSum());
 			default : throw new IllegalArgumentException("item index ["+index+"] outside allowed range [0,"+(NUM_BASIC_ITEMS-1)+"]");
 		}
 	}
@@ -147,39 +164,39 @@ public class Basics implements ItemList {
 		return min;
 	}
 
-	public long getTotal() {
-		return total;
+	public long getSum() {
+		return sum;
 	}
-	public long getIntervalTotal(Basics mark) {
-		return total-mark.getTotal();
+	public long getSumOfSquares() {
+		return sumOfSquares;
 	}
 
-	public long getTotalSquare() {
-		return totalSquare;
+	public long getIntervalSum(Basics mark) {
+		return sum-mark.getSum();
 	}
-	public long getIntervalTotalSquare(Basics mark) {
-		return totalSquare-mark.getTotalSquare();
+	public long getIntervalSumOfSquares(Basics mark) {
+		return sumOfSquares-mark.getSumOfSquares();
 	}
 
 	public double getAverage() {
 		if (count == 0) {
 			return 0;
 		}
-		return (total / (double)count);
+		return (sum / (double)count);
 	}
 	public double getIntervalAverage(Basics mark) {
 		long intervalCount=getIntervalCount(mark);
 		if (intervalCount==0) {
 			return 0;
 		}
-		return getIntervalTotal(mark)/(double)(intervalCount);
+		return getIntervalSum(mark)/(double)(intervalCount);
 	}
 
 	public double getVariance() {
-		return calculateVariance(count, total, totalSquare);
+		return calculateVariance(count, sum, sumOfSquares);
 	}
 	public double getIntervalVariance(Basics mark) {
-		return calculateVariance(count-mark.getCount(), total-mark.getTotal(), totalSquare-mark.getTotalSquare());
+		return calculateVariance(count-mark.getCount(), sum-mark.getSum(), sumOfSquares-mark.getSumOfSquares());
 	}
 
 	public double getStdDev() {
