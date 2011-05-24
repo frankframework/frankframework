@@ -1,6 +1,9 @@
 /*
  * $Log: HttpListener.java,v $
- * Revision 1.5  2011-05-19 15:09:57  L190409
+ * Revision 1.6  2011-05-24 12:40:08  L190409
+ * added physical destination name
+ *
+ * Revision 1.5  2011/05/19 15:09:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * now extends PushingListenerAdapter
  *
  * Revision 1.4  2007/10/08 12:18:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -19,6 +22,7 @@
 package nl.nn.adapterframework.http;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IPushingListener;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
 
@@ -44,7 +48,7 @@ import org.apache.commons.lang.StringUtils;
  * @since   4.4.x (still experimental)
  * @version Id
  */
-public class HttpListener extends PushingListenerAdapter {
+public class HttpListener extends PushingListenerAdapter implements HasPhysicalDestination {
 
 	private String serviceName;
 
@@ -64,6 +68,10 @@ public class HttpListener extends PushingListenerAdapter {
 		} catch (Exception e){
 			throw new ConfigurationException(e);
 		}
+	}
+
+	public String getPhysicalDestinationName() {
+		return "serviceName: "+getServiceName();
 	}
 
 

@@ -1,6 +1,9 @@
 /*
  * $Log: RestListener.java,v $
- * Revision 1.2  2011-05-23 13:13:36  L190409
+ * Revision 1.3  2011-05-24 12:40:08  L190409
+ * added physical destination name
+ *
+ * Revision 1.2  2011/05/23 13:13:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added comments
  *
  * Revision 1.1  2011/05/19 15:11:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -10,6 +13,7 @@
 package nl.nn.adapterframework.http;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IPushingListener;
 
 /**
@@ -34,7 +38,7 @@ import nl.nn.adapterframework.core.IPushingListener;
  * @author  Gerrit van Brakel 
  * @version Id
  */
-public class RestListener extends PushingListenerAdapter {
+public class RestListener extends PushingListenerAdapter implements HasPhysicalDestination {
 
 	private String uriPattern;
 	private String method;
@@ -49,6 +53,11 @@ public class RestListener extends PushingListenerAdapter {
 		RestServiceDispatcher.getInstance().registerServiceClient(this, getUriPattern(), method, etagSessionKey, contentTypeSessionKey);
 	}
 
+	public String getPhysicalDestinationName() {
+		return "uriPattern: "+(getUriPattern()==null?"-any-":getUriPattern())+"; method: "+(getMethod()==null?"all":getMethod());
+	}
+
+	
 	public String getUriPattern() {
 		return uriPattern;
 	}
