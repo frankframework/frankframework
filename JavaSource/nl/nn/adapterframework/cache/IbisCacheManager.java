@@ -1,6 +1,9 @@
 /*
  * $Log: IbisCacheManager.java,v $
- * Revision 1.2  2011-05-25 07:32:48  L190409
+ * Revision 1.3  2011-05-25 10:00:56  L190409
+ * fixed resolution of cache directory
+ *
+ * Revision 1.2  2011/05/25 07:32:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * collect statistics
  *
  * Revision 1.1  2010/09/13 13:28:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -41,7 +44,7 @@ public class IbisCacheManager {
 	
 	private IbisCacheManager() {
 		Configuration cacheManagerConfig = new Configuration();
-		String cacheDir = AppConstants.getInstance().getProperty(CACHE_DIR_KEY,null);
+		String cacheDir = AppConstants.getInstance().getResolvedProperty(CACHE_DIR_KEY);
 		if (StringUtils.isNotEmpty(cacheDir)) {
 			log.debug("setting cache directory to ["+cacheDir+"]");
 			DiskStoreConfiguration diskStoreConfiguration = new DiskStoreConfiguration();
