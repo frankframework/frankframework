@@ -1,6 +1,9 @@
 /*
  * $Log: DirectoryListener.java,v $
- * Revision 1.16  2009-01-14 10:54:58  L190409
+ * Revision 1.17  2011-05-25 08:11:24  L190409
+ * Added attribute minStableTime. Removed waiting loops. Waiting will now be performed by (and configured at) Receiver, where required.
+ *
+ * Revision 1.16  2009/01/14 10:54:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added fileTimeSensitive attribute
  *
  * Revision 1.15  2008/10/24 07:03:34  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -70,6 +73,7 @@ import java.io.IOException;
 import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPullingListener;
@@ -106,11 +110,12 @@ import org.apache.log4j.Logger;
  * <tr><td>{@link #setNumberOfBackups(int) numberOfBackups}</td><td>number of copies held of a file with the same name. Backup files have a dot and a number suffixed to their name. If set to 0, no backups will be kept.</td><td>5</td></tr>
  * <tr><td>{@link #setOverwrite(boolean) overwrite}</td><td>when set <code>true</code>, the destination file will be deleted if it already exists</td><td>false</td></tr>
  * <tr><td>{@link #setDelete(boolean) delete}</td><td>when set <code>true</code>, the file processed will deleted after being processed, and not stored</td><td>false</td></tr>
- * <tr><td>{@link #setResponseTime(long) responseTime}</td><td>Waittime to wait between polling</td><td>10000 [ms]</td></tr>
- * <tr><td>{@link #setNumberOfAttempts(int) numberOfAttempts}</td><td>maximum number of move attempts before throwing an exception</td><td>10</td></tr>
- * <tr><td>{@link #setWaitBeforeRetry(long) waitBeforeRetry}</td><td>time waited after unsuccesful try</td><td>1000</td></tr>
+ * <tr><td>{@link #setMinStableTime(long) minStableTime}</td><td>minimal age of file in milliseconds, to avoid receiving a file while it is still being written</td><td>1000 [ms]</td></tr>
  * <tr><td>{@link #setPassWithoutDirectory(boolean) passWithoutDirectory}</td><td>pass the filename without the <code>outputDirectory</code> to the pipeline</td><td>false</td></tr>
  * <tr><td>{@link #setCreateInputDirectory(boolean) createInputDirectory}</td><td>when set to <code>true</code>, the directory to look for files is created if it does not exist</td><td>false</td></tr>
+ * <tr><td>{@link #setResponseTime(long) responseTime}</td><td>Waittime to wait between polling. N.B. not used anymore. Please use pollInterval on the Receiver instead</td><td>10000 [ms]</td></tr>
+ * <tr><td>{@link #setNumberOfAttempts(int) numberOfAttempts}</td><td>maximum number of move attempts before throwing an exception. N.B. not used anymore. Please use maxRetries on the Receiver instead</td><td>1</td></tr>
+ * <tr><td>{@link #setWaitBeforeRetry(long) waitBeforeRetry}</td><td>time waited after unsuccesful try. N.B. not used anymore.</td><td>1000 [ms]</td></tr>
  * </table>
  * </p>
  *
@@ -118,7 +123,6 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class DirectoryListener implements IPullingListener, INamedObject, HasPhysicalDestination {
-	public static final String version = "$RCSfile: DirectoryListener.java,v $  $Revision: 1.16 $ $Date: 2009-01-14 10:54:58 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String name;
@@ -127,7 +131,7 @@ public class DirectoryListener implements IPullingListener, INamedObject, HasPhy
 	private String excludeWildcard;
 	private String outputDirectory;
 	private String outputFilenamePattern;
-	private long responseTime = 10000;
+	private long responseTime = 0;
 	private boolean passWithoutDirectory = false;
 	protected boolean createInputDirectory = false;
 
@@ -135,12 +139,11 @@ public class DirectoryListener implements IPullingListener, INamedObject, HasPhy
 	private int numberOfBackups = 0;
 	private boolean overwrite = false;
 	private boolean delete = false;
-	private int numberOfAttempts = 10;
+	private int numberOfAttempts = 1;
 	private long waitBeforeRetry = 1000;
 	private boolean fileTimeSensitive=false;
 
-	//TODO: check if this is thread-safe
-	private String inputFileName=null;
+	private long minStableTime = 1000;
 	
 	/**
 	 * Configure does some basic checks (directoryProcessedFiles is a directory,  inputDirectory is a directory, wildcard is filled etc.);
@@ -167,8 +170,15 @@ public class DirectoryListener implements IPullingListener, INamedObject, HasPhy
 			}
 		}
 		if (!inp.isDirectory()) {
-			throw new ConfigurationException("The value for inputDirectory [" + getInputDirectory() + "] is invalid. It is not a directory ");
-
+			throw new ConfigurationException("The value for inputDirectory [" + getInputDirectory() + "] is invalid. It is not a directory.");
+		}
+		if (getResponseTime()>0) {
+			String msg="The use of the attribute responseTime [" + getResponseTime() + "] is no longer used; Please set the attribute pollInterval on the receiver instead, which is specified in seconds instead of milliseconds";
+			ConfigurationWarnings.getInstance().add(log,msg);
+		}
+		if (getNumberOfAttempts()>1) {
+			String msg="The use of the attribute numberOfAttempts [" + getNumberOfAttempts() + "] is no longer used; Please set the attribute maxRetries on the receiver instead";
+			ConfigurationWarnings.getInstance().add(log,msg);
 		}
 	}
 
@@ -207,10 +217,9 @@ public class DirectoryListener implements IPullingListener, INamedObject, HasPhy
 	protected String archiveFile(PipeLineSession session, File file) throws ListenerException {
 		// Move file to new directory
 		String newFilename = null;
-		
 		try {
-			File rename2 = new File(getOutputDirectory(), FileUtils.getFilename(null, session, file, outputFilenamePattern));
-			newFilename = FileUtils.moveFile(file, rename2, isOverwrite(), getNumberOfBackups(), numberOfAttempts, waitBeforeRetry);
+			File rename2 = new File(getOutputDirectory(), FileUtils.getFilename(null, session, file, getOutputFilenamePattern()));
+			newFilename = FileUtils.moveFile(file, rename2, isOverwrite(), getNumberOfBackups(), getNumberOfAttempts(), getWaitBeforeRetry());
 
 			if (newFilename == null) {
 				throw new ListenerException(getName() + " was unable to rename file [" + file.getAbsolutePath() + "] to [" + getOutputDirectory() + "]");
@@ -260,16 +269,12 @@ public class DirectoryListener implements IPullingListener, INamedObject, HasPhy
 	 * is a new file to process and returns the first record.
 	 */
 	public synchronized Object getRawMessage(Map threadContext) throws ListenerException {
-		File inputFile;
-		if (StringUtils.isEmpty(getExcludeWildcard())) { 
-			inputFile = FileUtils.getFirstMatchingFile(inputDirectory, wildcard);
-		} else {
-			inputFile = FileUtils.getFirstMatchingFile(inputDirectory, wildcard, excludeWildcard);
-		}
+		File inputFile = FileUtils.getFirstMatchingFile(getInputDirectory(), getWildcard(), getExcludeWildcard(), getMinStableTime());
 		if (inputFile == null) {
-			return waitAWhile();
+			return null;
 		}
-		
+
+		String inputFileName=null;
 		try {
 			inputFileName = inputFile.getCanonicalPath();
 		} catch (IOException e) {
@@ -279,7 +284,7 @@ public class DirectoryListener implements IPullingListener, INamedObject, HasPhy
 		if (StringUtils.isNotEmpty(getOutputDirectory())) {
 			String inprocessFile = archiveFile(getSession(threadContext), inputFile);
 			if (inprocessFile == null) { // moving was unsuccessful, probably becausing writing was not finished
-				return waitAWhile();
+				return null;
 			}
 			return inprocessFile;
 		} else {
@@ -297,25 +302,9 @@ public class DirectoryListener implements IPullingListener, INamedObject, HasPhy
 		return session;
 	}
 
-	private Object waitAWhile() throws ListenerException {
-		try {
-			for (long waitedTime=0; waitedTime<responseTime; waitedTime+=1000) {
-				if (responseTime-waitedTime < 1000) {
-					Thread.sleep(responseTime-waitedTime);
-				} else {
-					Thread.sleep(1000);
-				}
-			}
-			return null;
-		}
-		catch(InterruptedException e) {		
-			throw new ListenerException("Interrupted while listening", e);
-		}
-		
-	}
 
 	public String getPhysicalDestinationName() {
-		return "wildcard pattern ["+getWildcard()+"] "+(getExcludeWildcard()==null?"":"excluding ["+getExcludeWildcard()+"] ")+"inputDirectory ["+ getInputDirectory()+"]";
+		return "wildcard pattern ["+getWildcard()+"] "+(getExcludeWildcard()==null?"":"excluding ["+getExcludeWildcard()+"] ")+"inputDirectory ["+ getInputDirectory()+"] outputDirectory ["+ getOutputDirectory()+"]";
 	}
 
 	
@@ -400,26 +389,48 @@ public class DirectoryListener implements IPullingListener, INamedObject, HasPhy
 
 	/**
 	 * set the time to delay when no records are to be processed and this class has to look for the arrival of a new file
+	 * @deprecated
 	 */
 	public void setResponseTime(long responseTime) {
 		this.responseTime = responseTime;
 	}
+	/**
+	 * @deprecated
+	 */
 	public long getResponseTime() {
 		return responseTime;
 	}
 
+	public void setMinStableTime(long minStableTime) {
+		this.minStableTime = minStableTime;
+	}
+	public long getMinStableTime() {
+		return minStableTime;
+	}
 
+	/**
+	 * @deprecated
+	 */
 	public void setNumberOfAttempts(int i) {
 		numberOfAttempts = i;
 	}
+	/**
+	 * @deprecated
+	 */
 	public int getNumberOfAttempts() {
 		return numberOfAttempts;
 	}
 
 
+	/**
+	 * @deprecated
+	 */
 	public void setWaitBeforeRetry(long l) {
 		waitBeforeRetry = l;
 	}
+	/**
+	 * @deprecated
+	 */
 	public long getWaitBeforeRetry() {
 		return waitBeforeRetry;
 	}
