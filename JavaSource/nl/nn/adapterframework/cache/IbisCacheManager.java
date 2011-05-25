@@ -1,6 +1,9 @@
 /*
  * $Log: IbisCacheManager.java,v $
- * Revision 1.1  2010-09-13 13:28:19  L190409
+ * Revision 1.2  2011-05-25 07:32:48  L190409
+ * collect statistics
+ *
+ * Revision 1.1  2010/09/13 13:28:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added cache facility
  *
  */
@@ -9,9 +12,12 @@ package nl.nn.adapterframework.cache;
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Ehcache;
+import net.sf.ehcache.Statistics;
 import net.sf.ehcache.config.CacheConfiguration;
 import net.sf.ehcache.config.Configuration;
 import net.sf.ehcache.config.DiskStoreConfiguration;
+import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -73,6 +79,26 @@ public class IbisCacheManager {
 	public void removeCache(String cacheName) {
 		log.debug("deregistering cache ["+cacheName+"]");
 		cacheManager.removeCache(cacheName);
+	}
+
+	public static void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, int action) throws SenderException {
+		if (self==null) {
+			return;
+		}
+		String cacheNames[]=self.cacheManager.getCacheNames();
+		for (int i=0;i<cacheNames.length;i++) {
+			Object subdata=hski.openGroup(data, cacheNames[i], "cache");
+			Ehcache cache=self.cacheManager.getEhcache(cacheNames[i]);
+			Statistics stats = cache.getStatistics();
+			stats.getAverageGetTime();
+			hski.handleScalar(subdata, "CacheHits", stats.getCacheHits());
+			hski.handleScalar(subdata, "CacheMisses", stats.getCacheMisses());
+			hski.handleScalar(subdata, "EvictionCount", stats.getEvictionCount());
+			hski.handleScalar(subdata, "InMemoryHits", stats.getInMemoryHits());
+			hski.handleScalar(subdata, "ObjectCount", stats.getObjectCount());
+			hski.handleScalar(subdata, "OnDiskHits", stats.getOnDiskHits());
+			hski.closeGroup(subdata);
+		}
 	}
 	
 }
