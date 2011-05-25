@@ -1,6 +1,9 @@
 /*
  * $Log: Adapter.java,v $
- * Revision 1.58  2010-09-13 13:34:25  L190409
+ * Revision 1.59  2011-05-25 07:39:35  L190409
+ * collect cache statistics
+ *
+ * Revision 1.58  2010/09/13 13:34:25  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * renamed configurePipes() into configure()
  * improved error logging
  *
@@ -186,6 +189,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Vector;
 
+import nl.nn.adapterframework.cache.ICacheAdapter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.errormessageformatters.ErrorMessageFormatter;
@@ -236,7 +240,6 @@ import org.springframework.core.task.TaskExecutor;
  * <tr><td>{@link #setErrorState(String) errorState}</td><td>If an error occurs during
  * the pipeline execution, the state in the <code>PipeLineResult</code> is set to this state</td><td>ERROR</td></tr>
  * <tr><td>{@link #setMessageKeeperSize(int) messageKeeperSize}</td><td>number of message displayed in IbisConsole</td><td>10</td></tr>
- * <tr><td>{@link #setRequestReplyLogging(boolean) requestReplyLogging} <i>deprecated</i></td><td>when <code>true</code>, the request and reply messages will be logged for each request processed</td><td>false</td></tr>
  * <tr><td>{@link #setMsgLogLevel(String) msgLogLevel}</td><td>defines behaviour for logging messages. Configuration is done in the MSG appender in log4j4ibis.properties. Possible values are: 
  *   <table border="1">
  *   <tr><th>msgLogLevel</th><th>messages which are logged</th></tr>
@@ -258,7 +261,6 @@ import org.springframework.core.task.TaskExecutor;
  * 
  */
 public class Adapter implements IAdapter, NamedBean {
-	public static final String version = "$RCSfile: Adapter.java,v $ $Revision: 1.58 $ $Date: 2010-09-13 13:34:25 $";
 	private Logger log = LogUtil.getLogger(this);
 	protected Logger msgLog = LogUtil.getLogger("MSG");
 
@@ -288,7 +290,6 @@ public class Adapter implements IAdapter, NamedBean {
 	private MessageKeeper messageKeeper; //instantiated in configure()
 	private int messageKeeperSize = 10; //default length
 	private boolean autoStart = true;
-	private boolean requestReplyLogging = false;
 	private int msgLogLevel = MsgLogUtil.getMsgLogLevelByDefault();
 
 	// state to put in PipeLineResult when a PipeRunException occurs;
@@ -514,6 +515,11 @@ public class Adapter implements IAdapter, NamedBean {
 			}
 			hski.closeGroup(recsData);
 
+			ICacheAdapter cache=pipeline.getCache();
+			if (cache!=null && cache instanceof HasStatistics) {
+				((HasStatistics)cache).iterateOverStatistics(hski, recsData, action);
+			}
+			
 			Object pipelineData=hski.openGroup(adapterData,null,"pipeline");
 
 			Map pipelineStatistics = getPipeLineStatistics();
