@@ -1,6 +1,9 @@
 /*
  * $Log: FileUtils.java,v $
- * Revision 1.20  2011-04-13 08:48:20  L190409
+ * Revision 1.21  2011-05-25 08:09:30  L190409
+ * support for minStability while listing files
+ *
+ * Revision 1.20  2011/04/13 08:48:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added createTempFile()
  *
  * Revision 1.19  2010/12/31 10:08:33  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -62,12 +65,11 @@ package nl.nn.adapterframework.util;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FilenameFilter;
 import java.io.FileOutputStream;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -93,7 +95,6 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class FileUtils {
-	public static final String version = "$RCSfile: FileUtils.java,v $  $Revision: 1.20 $ $Date: 2011-04-13 08:48:20 $";
 	static Logger log = LogUtil.getLogger(FileUtils.class);
 
 	/**
@@ -183,7 +184,7 @@ public class FileUtils {
 		return moveFile(orgFile, rename2File, overwrite, numBackups, 5, 500);
 	}
 
-	public static String moveFile(File orgFile, File rename2File, boolean overwrite, int numBackups, int nrRetries, long waitTime) throws InterruptedException, IOException {
+	public static String moveFile(File orgFile, File rename2File, boolean overwrite, int numBackups, int numberOfAttempts, long waitTime) throws InterruptedException, IOException {
 		if (orgFile.exists()) {
 			if (numBackups>0) {
 				makeBackups(rename2File,numBackups);
@@ -193,17 +194,17 @@ public class FileUtils {
 				}
 			}
 		}
-		String result=moveFile(orgFile, rename2File, nrRetries, waitTime);
+		String result=moveFile(orgFile, rename2File, numberOfAttempts, waitTime);
 		if (result==null) {
 			throw new IOException("Could not move file ["+orgFile.getPath()+"] to ["+rename2File.getPath()+"]");
 		}
 		return result;
 	}
 
-	public static String moveFile(File orgFile, File rename2File, int nrRetries, long waitTime) throws InterruptedException {
+	public static String moveFile(File orgFile, File rename2File, int numberOfAttempts, long waitTime) throws InterruptedException {
 		int errCount = 0;
 		
-		while (errCount++ < nrRetries) {
+		while (errCount++ < numberOfAttempts) {
 			// Move file to new directory
 			boolean success = orgFile.renameTo(rename2File);
 			
@@ -352,20 +353,17 @@ public class FileUtils {
 
 	}
 
-
-	public static File[] getFiles(String directory, String wildcard) {
-		return getFiles(directory, wildcard, null);
-	}
-
-	public static File[] getFiles(String directory, String wildcard, String excludeWildcard) {
+	public static File[] getFiles(String directory, String wildcard, String excludeWildcard, long minStability) {
 		WildCardFilter filter = new WildCardFilter(wildcard);
 		File dir = new File(directory);
 		File[] files = dir.listFiles(filter);
 
 		WildCardFilter excludeFilter = null;
-		if (excludeWildcard!=null) {
+		if (StringUtils.isNotEmpty(excludeWildcard)) {
 			excludeFilter = new WildCardFilter(excludeWildcard);
 		}
+		
+		long lastChangedAllowed=minStability>0?new Date().getTime()-minStability:0;
 		
 		List result = new ArrayList();
 		int count = (files == null ? 0 : files.length);
@@ -377,17 +375,16 @@ public class FileUtils {
 			if (excludeFilter!=null && excludeFilter.accept(dir, file.getName())) {
 				continue;
 			}
+			if (minStability>0 && file.lastModified()>lastChangedAllowed) {
+				continue;
+			}
 			result.add(file);
 		}
 		return (File[])result.toArray(new File[0]);
 	}
 
-	public static File getFirstMatchingFile(String directory, String wildcard) {
-		return getFirstMatchingFile(directory, wildcard, null);
-	}
-
-	public static File getFirstMatchingFile(String directory, String wildcard, String excludeWildcard) {
-		File[] files = getFiles(directory, wildcard, excludeWildcard);
+	public static File getFirstMatchingFile(String directory, String wildcard, String excludeWildcard, long minStability) {
+		File[] files = getFiles(directory, wildcard, excludeWildcard, minStability);
 		if (files.length > 0)
 			return files[0];
 
