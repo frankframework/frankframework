@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractPipe.java,v $
- * Revision 1.37  2010-11-12 15:12:14  m168309
+ * Revision 1.38  2011-05-25 07:41:24  L190409
+ * removed unused imports
+ *
+ * Revision 1.37  2010/11/12 15:12:14  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * improved check on forwards
  *
  * Revision 1.36  2010/09/13 13:43:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -115,7 +118,6 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.HasTransactionAttribute;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IExtendedPipe;
-import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineExit;
@@ -202,7 +204,6 @@ import org.springframework.transaction.TransactionDefinition;
  * @see nl.nn.adapterframework.core.PipeLineSession
  */
 public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttribute, TracingEventNumbers, EventThrowing {
-	public static final String version="$RCSfile: AbstractPipe.java,v $ $Revision: 1.37 $ $Date: 2010-11-12 15:12:14 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String name;
