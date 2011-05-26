@@ -1,6 +1,9 @@
 /*
  * $Log: WebServiceListener.java,v $
- * Revision 1.12  2011-05-19 15:11:03  L190409
+ * Revision 1.13  2011-05-26 11:34:12  L190409
+ * corrected default for application fault handling
+ *
+ * Revision 1.12  2011/05/19 15:11:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * now extends PushingListenerAdapter
  *
  * Revision 1.11  2011/02/21 18:07:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -104,9 +107,9 @@ public class WebServiceListener extends PushingListenerAdapter implements Serial
 
 	public String getPhysicalDestinationName() {
 		if (StringUtils.isNotEmpty(getServiceNamespaceURI())) {
-			return "serviceNamespaceURI: "+getServiceNamespaceURI();
+			return "serviceNamespaceURI ["+getServiceNamespaceURI()+"]";
 		} else {
-			return "name: "+getName();
+			return "name ["+getName()+"]";
 		}
 	}
 
@@ -116,6 +119,14 @@ public class WebServiceListener extends PushingListenerAdapter implements Serial
 	}
 	public void setServiceNamespaceURI(String string) {
 		serviceNamespaceURI = string;
+	}
+
+
+	public boolean isApplicationFaultsAsSoapFaults() {
+		return isApplicationFaultsAsExceptions();
+	}
+	public void setApplicationFaultsAsSoapFaults(boolean b) {
+		setApplicationFaultsAsExceptions(b);
 	}
 
 }

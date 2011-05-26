@@ -1,6 +1,9 @@
 /*
  * $Log: PushingListenerAdapter.java,v $
- * Revision 1.1  2011-05-19 14:57:02  L190409
+ * Revision 1.2  2011-05-26 11:34:12  L190409
+ * corrected default for application fault handling
+ *
+ * Revision 1.1  2011/05/19 14:57:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * first version
  *
  */
@@ -36,7 +39,7 @@ import org.apache.log4j.Logger;
  * </td><td>true</td></tr>
  * </table>
  * @author  Gerrit van Brakel 
- * @since   4.11
+ * @since   4.12
  * @version Id
  */
 public class PushingListenerAdapter implements IPushingListener, ServiceClient {
@@ -44,7 +47,7 @@ public class PushingListenerAdapter implements IPushingListener, ServiceClient {
 
 	private IMessageHandler handler;        	
 	private String name;
-	private boolean applicationFaultsAsExceptions=false;
+	private boolean applicationFaultsAsExceptions=true;
 //	private IbisExceptionListener exceptionListener;
 	private boolean running;
 
