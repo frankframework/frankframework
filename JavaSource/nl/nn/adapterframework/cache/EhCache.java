@@ -1,6 +1,9 @@
 /*
  * $Log: EhCache.java,v $
- * Revision 1.4  2010-09-20 15:54:02  L190409
+ * Revision 1.5  2011-05-30 07:54:57  L190409
+ * improved javadoc
+ *
+ * Revision 1.4  2010/09/20 15:54:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added javadoc comment
  *
  * Revision 1.3  2010/09/20 15:49:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -45,7 +48,7 @@ import nl.nn.adapterframework.util.AppConstants;
  * <tr><td>{@link #setDiskExpiryThreadIntervalSeconds(int) diskExpiryThreadIntervalSeconds}</td>  <td>how often to run the disk store expiry thread</td><td>600</td></tr>
  * </table>
  * </p>
- * N.B. the default values shown can be overridden using properties in appConstants.
+ * N.B. the default values shown can be overridden using properties in appConstants. The property names are found by prefixing the attribute name with <code>cache.default.</code>.
  * </p>
  * 
  * 
