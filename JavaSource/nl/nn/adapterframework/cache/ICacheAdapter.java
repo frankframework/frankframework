@@ -1,12 +1,16 @@
 /*
  * $Log: ICacheAdapter.java,v $
- * Revision 1.1  2010-09-13 13:28:19  L190409
+ * Revision 1.2  2011-05-31 15:29:44  L190409
+ * added transformValue()
+ *
+ * Revision 1.1  2010/09/13 13:28:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added cache facility
  *
  */
 package nl.nn.adapterframework.cache;
 
 import java.io.Serializable;
+import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 
@@ -24,10 +28,16 @@ public interface ICacheAdapter {
 	void close();
 
 	/**
-	 * Transform the input of the current element to a key in the cache-map.
+	 * Transform the the current request message to a key in the cache-map.
 	 * Allows for instance XPath translations.
 	 */
-	String transformKey(String input);
+	String transformKey(String input, Map sessionContext);
+	
+	/**
+	 * Transform the the current response message to a value in the cache-map.
+	 * Allows for instance XPath translations.
+	 */
+	String transformValue(String input, Map sessionContext);
 	
 
 	/**
