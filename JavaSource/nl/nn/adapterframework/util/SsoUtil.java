@@ -1,6 +1,9 @@
 /*
  * $Log: SsoUtil.java,v $
- * Revision 1.1  2008-02-07 12:13:27  europe\L190409
+ * Revision 1.2  2011-05-31 15:31:19  L190409
+ * updated Base64 codec
+ *
+ * Revision 1.1  2008/02/07 12:13:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * first version
  *
  */
@@ -12,14 +15,13 @@ import java.util.Set;
 import javax.security.auth.Subject;
 import javax.security.auth.login.CredentialExpiredException;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.httpclient.Cookie;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.HttpState;
 import org.apache.commons.httpclient.URI;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-
-import sun.misc.BASE64Encoder;
 
 import com.ibm.websphere.security.WSSecurityException;
 import com.ibm.websphere.security.auth.CredentialDestroyedException;
@@ -56,11 +58,9 @@ public class SsoUtil {
 			Object pc = it.next();
 			if (pc instanceof WSCredentialImpl) {
 				WSCredentialImpl wsci = (WSCredentialImpl)pc;
-				BASE64Encoder  encoder = new BASE64Encoder();
 				byte token[] = wsci.getCredentialToken();
 				if (token!=null && token.length>0) {
-					String list=encoder.encode(token);
-					result = list.replaceAll("\\s","");
+					result=Base64.encodeBase64String(token);
 				}
 			}
 		}
