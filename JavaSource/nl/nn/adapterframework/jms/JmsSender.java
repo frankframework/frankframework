@@ -1,6 +1,9 @@
 /*
  * $Log: JmsSender.java,v $
- * Revision 1.41  2011-02-07 13:10:57  m168309
+ * Revision 1.42  2011-06-06 12:26:16  m168309
+ * added soapHeader to method sendMessage
+ *
+ * Revision 1.41  2011/02/07 13:10:57  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * updated javadoc
  *
  * Revision 1.40  2010/04/27 09:25:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -190,7 +193,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  */
 
 public class JmsSender extends JMSFacade implements ISenderWithParameters, IPostboxSender {
-	public static final String version="$RCSfile: JmsSender.java,v $ $Revision: 1.41 $ $Date: 2011-02-07 13:10:57 $";
+	public static final String version="$RCSfile: JmsSender.java,v $ $Revision: 1.42 $ $Date: 2011-06-06 12:26:16 $";
 	private String replyToName = null;
 	private int deliveryMode = 0;
 	private String messageType = null;
@@ -264,6 +267,10 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 	}
 
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
+		return sendMessage(correlationID, message, null, null);
+	}
+
+	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc, String soapHeader) throws SenderException, TimeOutException {
 		Session s = null;
 		MessageProducer mp = null;
 
@@ -277,13 +284,14 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 		}
 
 		if (isSoap()) {
-			String soapHeader=null;
-			if (pvl!=null && StringUtils.isNotEmpty(getSoapHeaderParam())) {
-				ParameterValue soapHeaderParamValue=pvl.getParameterValue(getSoapHeaderParam());
-				if (soapHeaderParamValue==null) {
-					log.warn("no SoapHeader found using parameter ["+getSoapHeaderParam()+"]");
-				} else {
-					soapHeader=soapHeaderParamValue.asStringValue("");
+			if (soapHeader==null) {
+				if (pvl!=null && StringUtils.isNotEmpty(getSoapHeaderParam())) {
+					ParameterValue soapHeaderParamValue=pvl.getParameterValue(getSoapHeaderParam());
+					if (soapHeaderParamValue==null) {
+						log.warn("no SoapHeader found using parameter ["+getSoapHeaderParam()+"]");
+					} else {
+						soapHeader=soapHeaderParamValue.asStringValue("");
+					}
 				}
 			}
 			message = soapWrapper.putInEnvelope(message, getEncodingStyleURI(),getServiceNamespaceURI(),soapHeader);
