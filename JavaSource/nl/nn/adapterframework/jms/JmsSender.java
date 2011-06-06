@@ -1,6 +1,9 @@
 /*
  * $Log: JmsSender.java,v $
- * Revision 1.42  2011-06-06 12:26:16  m168309
+ * Revision 1.43  2011-06-06 14:32:29  L190409
+ * fixed NPE in getting contents of reply message
+ *
+ * Revision 1.42  2011/06/06 12:26:16  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added soapHeader to method sendMessage
  *
  * Revision 1.41  2011/02/07 13:10:57  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -193,7 +196,6 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  */
 
 public class JmsSender extends JMSFacade implements ISenderWithParameters, IPostboxSender {
-	public static final String version="$RCSfile: JmsSender.java,v $ $Revision: 1.42 $ $Date: 2011-06-06 12:26:16 $";
 	private String replyToName = null;
 	private int deliveryMode = 0;
 	private String messageType = null;
@@ -267,7 +269,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 	}
 
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
-		return sendMessage(correlationID, message, null, null);
+		return sendMessage(correlationID, message, prc, null);
 	}
 
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc, String soapHeader) throws SenderException, TimeOutException {
@@ -359,14 +361,14 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 						replyCorrelationId=msg.getJMSMessageID();
 					}
 				}
-				if (log.isDebugEnabled()) log.debug("[" + getName() + "] start waiting for reply on [" + replyQueue.toString() + "] requestMsgId ["+msg.getJMSMessageID()+"] replyCorrelationId ["+replyCorrelationId+"] for ["+getReplyTimeout()+"] ms");
+				if (log.isDebugEnabled()) log.debug("[" + getName() + "] start waiting for reply on [" + replyQueue + "] requestMsgId ["+msg.getJMSMessageID()+"] replyCorrelationId ["+replyCorrelationId+"] for ["+getReplyTimeout()+"] ms");
 				MessageConsumer mc = getMessageConsumerForCorrelationId(s,replyQueue,replyCorrelationId);
 				try {
 					Message rawReplyMsg = mc.receive(getReplyTimeout());
 					if (rawReplyMsg==null) {
-						throw new TimeOutException("did not receive reply on [" + replyQueue.toString() + "] requestMsgId ["+msg.getJMSMessageID()+"] replyCorrelationId ["+replyCorrelationId+"] within ["+getReplyTimeout()+"] ms");
+						throw new TimeOutException("did not receive reply on [" + replyQueue + "] requestMsgId ["+msg.getJMSMessageID()+"] replyCorrelationId ["+replyCorrelationId+"] within ["+getReplyTimeout()+"] ms");
 					}
-					return getStringFromRawMessage(rawReplyMsg, prc.getSession(), isSoap(), getReplySoapHeaderSessionKey(),soapWrapper);
+					return getStringFromRawMessage(rawReplyMsg, prc!=null?prc.getSession():null, isSoap(), getReplySoapHeaderSessionKey(),soapWrapper);
 				} finally {
 					if (mc != null) { 
 						try { 
@@ -444,7 +446,6 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 		String result = super.toString();
 		ToStringBuilder ts = new ToStringBuilder(this);
 		ts.append("name", getName());
-		ts.append("version", version);
 		ts.append("replyToName", replyToName);
 		ts.append("deliveryMode", getDeliveryMode());
 		result += ts.toString();
