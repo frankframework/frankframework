@@ -1,6 +1,9 @@
 /*
  * $Log: JmsListenerBase.java,v $
- * Revision 1.6  2011-03-21 14:58:28  m168309
+ * Revision 1.7  2011-06-06 12:26:32  m168309
+ * added soapHeader to method prepareReply
+ *
+ * Revision 1.6  2011/03/21 14:58:28  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added throws ListenerException to prepareReply()
  *
  * Revision 1.5  2011/01/27 08:45:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -250,15 +253,19 @@ public class JmsListenerBase extends JMSFacade implements HasSender {
 		}
 	}
 
-
 	public String prepareReply(String rawReply, Map threadContext) throws ListenerException {
+		return prepareReply(rawReply, threadContext, null);
+	}
+
+	public String prepareReply(String rawReply, Map threadContext, String soapHeader) throws ListenerException {
 		if (!isSoap()) {
 			return rawReply;
 		}
 		String replyMessage;
-		String soapHeader=null;
-		if (StringUtils.isNotEmpty(getSoapHeaderSessionKey())) {
-			soapHeader=(String)threadContext.get(getSoapHeaderSessionKey());
+		if (soapHeader==null) {
+			if (StringUtils.isNotEmpty(getSoapHeaderSessionKey())) {
+				soapHeader=(String)threadContext.get(getSoapHeaderSessionKey());
+			}
 		}
 		replyMessage = soapWrapper.putInEnvelope(rawReply, getReplyEncodingStyleURI(),getReplyNamespaceURI(),soapHeader);
 		return replyMessage;
