@@ -1,6 +1,9 @@
 /*
  * $Log: BisJmsSender.java,v $
- * Revision 1.4  2011-03-30 14:51:06  m168309
+ * Revision 1.5  2011-06-06 12:27:26  m168309
+ * BisJmsSender/BisJmsListener: added messageHeaderInSoapBody attribute
+ *
+ * Revision 1.4  2011/03/30 14:51:06  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added MessageHeader to request
  *
  * Revision 1.3  2011/03/29 12:02:14  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -32,6 +35,8 @@ import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
+import org.apache.commons.lang.StringUtils;
+
 /**
  * Bis (Business Integration Services) extension of JmsSender.
  * <br/>
@@ -47,8 +52,9 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>classname</td><td>nl.nn.adapterframework.extensions.bis.BisSoapJmsSender</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSoap(boolean) soap}</td><td>when <code>true</code>, messages sent are put in a SOAP envelope</td><td><code>true</code></td></tr>
- * <tr><td>{@link #setResponseXPath(String) responseXPath}</td><td>xpath expression to extract the message from the reply which is passed to the pipeline. When soap=true the initial message is the content of the soap body</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setResponseXPath(String) responseXPath}</td><td>xpath expression to extract the message from the reply which is passed to the pipeline. When soap=true the initial message is the content of the soap body. If empty, the content of the soap body is passed (without the root body)</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setResponseNamespaceDefs(String) responseNamespaceDefs}</td><td>namespace defintions for responseXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setMessageHeaderInSoapBody(boolean) messageHeaderInSoapBody}</td><td>when <code>true</code>, the MessageHeader is put in the SOAP body instead of in the SOAP header (old BIS standard)</td><td><code>false</code></td></tr>
  * <tr><td>{@link #setConversationIdSessionKey(String) conversationIdSessionKey}</td><td>key of session variable to store ConversationId in; used in the MessageHeader of the request</td><td>bisConversationId</td></tr>
  * <tr><td>{@link #setExternalRefToMessageIdSessionKey(String) externalRefToMessageIdSessionKey}</td><td>key of session variable to store ExternalRefToMessageId in; used in the MessageHeader of the request</td><td>bisExternalRefToMessageId</td></tr>
  * </p>
@@ -65,6 +71,7 @@ public class BisJmsSender extends JmsSender {
 
 	private String responseXPath = null;
 	private String responseNamespaceDefs = null;
+	private boolean messageHeaderInSoapBody = false;
 	private String conversationIdSessionKey = "bisConversationId";
 	private String externalRefToMessageIdSessionKey = "bisExternalRefToMessageId";
 
@@ -85,7 +92,7 @@ public class BisJmsSender extends JmsSender {
 		try {
 			bisUtils = BisUtils.getInstance();
 			bisErrorTp = new TransformerPool(XmlUtils.createXPathEvaluatorSource(soapNamespaceDefs + "\n" + bisNamespaceDefs, bisErrorXPath, "text"));
-			responseTp = new TransformerPool(XmlUtils.createXPathEvaluatorSource(soapNamespaceDefs + "\n" + getResponseNamespaceDefs(), soapBodyXPath + "/" + getResponseXPath(), "xml"));
+			responseTp = new TransformerPool(XmlUtils.createXPathEvaluatorSource(StringUtils.isNotEmpty(getResponseNamespaceDefs())?soapNamespaceDefs + "\n" + getResponseNamespaceDefs():soapNamespaceDefs, StringUtils.isNotEmpty(getResponseXPath())?soapBodyXPath + "/" + getResponseXPath():soapBodyXPath + "/*", "xml"));
 		} catch (TransformerConfigurationException e) {
 			throw new ConfigurationException(getLogPrefix() + "cannot create transformer", e);
 		}
@@ -97,17 +104,22 @@ public class BisJmsSender extends JmsSender {
 
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
 		ArrayList messages = new ArrayList();
+		String messageHeader;
 		try {
-			messages.add(bisUtils.prepareMessageHeader(null, (String) prc.getSession().get(getConversationIdSessionKey()), (String) prc.getSession().get(getExternalRefToMessageIdSessionKey())));
+			messageHeader = bisUtils.prepareMessageHeader(null, isMessageHeaderInSoapBody(), (String) prc.getSession().get(getConversationIdSessionKey()), (String) prc.getSession().get(getExternalRefToMessageIdSessionKey()));
 		} catch (Exception e) {
 			throw new SenderException(e);
+		}
+		if (isMessageHeaderInSoapBody()) {
+			messages.add(messageHeader);
+			messageHeader = null;
 		}
 		messages.add(message);
 		StringBuffer sb = new StringBuffer();
 		for (int i = 0; i < messages.size(); i++) {
 			sb.append((String) messages.get(i));
 		}
-		String soapBody = super.sendMessage(correlationID, sb.toString(), prc);
+		String soapBody = super.sendMessage(correlationID, sb.toString(), prc, messageHeader);
 		if (isSynchronous()) {
 			String bisError;
 			try {
@@ -143,6 +155,14 @@ public class BisJmsSender extends JmsSender {
 
 	public String getResponseNamespaceDefs() {
 		return responseNamespaceDefs;
+	}
+
+	public void setMessageHeaderInSoapBody(boolean b) {
+		messageHeaderInSoapBody = b;
+	}
+
+	public boolean isMessageHeaderInSoapBody() {
+		return messageHeaderInSoapBody;
 	}
 
 	public void setExternalRefToMessageIdSessionKey(String externalRefToMessageIdSessionKey) {

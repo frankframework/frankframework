@@ -1,6 +1,9 @@
 /*
  * $Log: BisUtils.java,v $
- * Revision 1.1  2011-03-30 14:48:57  m168309
+ * Revision 1.2  2011-06-06 12:27:26  m168309
+ * BisJmsSender/BisJmsListener: added messageHeaderInSoapBody attribute
+ *
+ * Revision 1.1  2011/03/30 14:48:57  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * moved prepareMessageHeader() and prepareResult() to BisUtils
  *
  */
@@ -29,9 +32,10 @@ import nl.nn.adapterframework.util.XmlUtils;
  */
 
 public class BisUtils {
-	public static final String version = "$RCSfile: BisUtils.java,v $ $Revision: 1.1 $ $Date: 2011-03-30 14:48:57 $";
+	public static final String version = "$RCSfile: BisUtils.java,v $ $Revision: 1.2 $ $Date: 2011-06-06 12:27:26 $";
 
 	private final static String soapNamespaceDefs = "soapenv=http://schemas.xmlsoap.org/soap/envelope/";
+	private final static String soapHeaderXPath = "soapenv:Envelope/soapenv:Header";
 	private final static String soapBodyXPath = "soapenv:Envelope/soapenv:Body";
 	private final static String bisNamespaceDefs = "bis=http://www.ing.com/CSP/XSD/General/Message_2";
 	private final static String messageHeaderConversationIdXPath = "bis:MessageHeader/bis:HeaderFields/bis:ConversationId";
@@ -39,13 +43,17 @@ public class BisUtils {
 
 	private TransformerPool messageHeaderConversationIdTp;
 	private TransformerPool messageHeaderExternalRefToMessageIdTp;
+	private TransformerPool messageHeaderOldConversationIdTp;
+	private TransformerPool messageHeaderOldExternalRefToMessageIdTp;
 
 	private static BisUtils self = null;
 
 	private void init() throws ConfigurationException {
 		try {
-			messageHeaderConversationIdTp = new TransformerPool(XmlUtils.createXPathEvaluatorSource(soapNamespaceDefs + "\n" + bisNamespaceDefs, soapBodyXPath + "/" + messageHeaderConversationIdXPath, "text"));
-			messageHeaderExternalRefToMessageIdTp = new TransformerPool(XmlUtils.createXPathEvaluatorSource(soapNamespaceDefs + "\n" + bisNamespaceDefs, soapBodyXPath + "/" + messageHeaderExternalRefToMessageIdXPath, "text"));
+			messageHeaderOldConversationIdTp = new TransformerPool(XmlUtils.createXPathEvaluatorSource(soapNamespaceDefs + "\n" + bisNamespaceDefs, soapBodyXPath + "/" + messageHeaderConversationIdXPath, "text"));
+			messageHeaderOldExternalRefToMessageIdTp = new TransformerPool(XmlUtils.createXPathEvaluatorSource(soapNamespaceDefs + "\n" + bisNamespaceDefs, soapBodyXPath + "/" + messageHeaderExternalRefToMessageIdXPath, "text"));
+			messageHeaderConversationIdTp = new TransformerPool(XmlUtils.createXPathEvaluatorSource(soapNamespaceDefs + "\n" + bisNamespaceDefs, soapHeaderXPath + "/" + messageHeaderConversationIdXPath, "text"));
+			messageHeaderExternalRefToMessageIdTp = new TransformerPool(XmlUtils.createXPathEvaluatorSource(soapNamespaceDefs + "\n" + bisNamespaceDefs, soapHeaderXPath + "/" + messageHeaderExternalRefToMessageIdXPath, "text"));
 		} catch (TransformerConfigurationException e) {
 			throw new ConfigurationException("cannot create SOAP transformer", e);
 		}
@@ -59,11 +67,11 @@ public class BisUtils {
 		return self;
 	}
 
-	public String prepareMessageHeader(String originalSoapBody) throws DomBuilderException, IOException, TransformerException {
-		return prepareMessageHeader(originalSoapBody, null, null);
+	public String prepareMessageHeader(String originalSoapBody, boolean messageHeaderInSoapBody) throws DomBuilderException, IOException, TransformerException {
+		return prepareMessageHeader(originalSoapBody, messageHeaderInSoapBody, null, null);
 	}
 
-	public String prepareMessageHeader(String originalSoapBody, String conversationId, String externalRefToMessageId) throws DomBuilderException, IOException, TransformerException {
+	public String prepareMessageHeader(String originalSoapBody, boolean messageHeaderInSoapBody, String conversationId, String externalRefToMessageId) throws DomBuilderException, IOException, TransformerException {
 		XmlBuilder messageHeaderElement = new XmlBuilder("MessageHeader");
 		messageHeaderElement.addAttribute("xmlns", "http://www.ing.com/CSP/XSD/General/Message_2");
 		XmlBuilder fromElement = new XmlBuilder("From");
@@ -76,8 +84,14 @@ public class BisUtils {
 		if (originalSoapBody == null) {
 			conversationIdElement.setValue(conversationId);
 		} else {
-			if (messageHeaderConversationIdTp != null) {
-				conversationIdElement.setValue(messageHeaderConversationIdTp.transform(originalSoapBody, null, true));
+			if (messageHeaderInSoapBody) {
+				if (messageHeaderOldConversationIdTp != null) {
+					conversationIdElement.setValue(messageHeaderOldConversationIdTp.transform(originalSoapBody, null, true));
+				}
+			} else {
+				if (messageHeaderConversationIdTp != null) {
+					conversationIdElement.setValue(messageHeaderConversationIdTp.transform(originalSoapBody, null, true));
+				}
 			}
 		}
 		headerFieldsElement.addSubElement(conversationIdElement);
@@ -88,8 +102,14 @@ public class BisUtils {
 		if (originalSoapBody == null) {
 			externalRefToMessageIdElement.setValue(externalRefToMessageId);
 		} else {
-			if (messageHeaderExternalRefToMessageIdTp != null) {
-				externalRefToMessageIdElement.setValue(messageHeaderExternalRefToMessageIdTp.transform(originalSoapBody, null, true));
+			if (messageHeaderInSoapBody) {
+				if (messageHeaderOldExternalRefToMessageIdTp != null) {
+					externalRefToMessageIdElement.setValue(messageHeaderOldExternalRefToMessageIdTp.transform(originalSoapBody, null, true));
+				}
+			} else {
+				if (messageHeaderExternalRefToMessageIdTp != null) {
+					externalRefToMessageIdElement.setValue(messageHeaderExternalRefToMessageIdTp.transform(originalSoapBody, null, true));
+				}
 			}
 		}
 		headerFieldsElement.addSubElement(externalRefToMessageIdElement);
