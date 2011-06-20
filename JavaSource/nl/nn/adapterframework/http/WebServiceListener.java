@@ -1,6 +1,9 @@
 /*
  * $Log: WebServiceListener.java,v $
- * Revision 1.13  2011-05-26 11:34:12  L190409
+ * Revision 1.14  2011-06-20 13:20:11  L190409
+ * added configwarning for old style call model, using servicedispatcher-proxy
+ *
+ * Revision 1.13  2011/05/26 11:34:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * corrected default for application fault handling
  *
  * Revision 1.12  2011/05/19 15:11:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -58,9 +61,11 @@ package nl.nn.adapterframework.http;
 import java.io.Serializable;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IPushingListener;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
+import nl.nn.adapterframework.util.ClassUtils;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -99,6 +104,9 @@ public class WebServiceListener extends PushingListenerAdapter implements Serial
 			} else {
 				log.debug("registering listener ["+getName()+"] with ServiceDispatcher");
 				ServiceDispatcher.getInstance().registerServiceClient(getName(), this);
+				ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+				String msg = ClassUtils.nameOf(this) +"["+getName()+"]: calling webservices via de ServiceDispatcher_ServiceProxy is deprecated. Please specify a serviceNamespaceURI and modify the call accordingly";
+				configWarnings.add(log, msg);
 			}
 		} catch (Exception e){
 			throw new ConfigurationException(e);
@@ -108,9 +116,7 @@ public class WebServiceListener extends PushingListenerAdapter implements Serial
 	public String getPhysicalDestinationName() {
 		if (StringUtils.isNotEmpty(getServiceNamespaceURI())) {
 			return "serviceNamespaceURI ["+getServiceNamespaceURI()+"]";
-		} else {
-			return "name ["+getName()+"]";
-		}
+		} 		return "name ["+getName()+"]";
 	}
 
 
