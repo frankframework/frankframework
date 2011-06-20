@@ -1,6 +1,9 @@
 /*
  * $Log: Monitor.java,v $
- * Revision 1.6  2009-05-13 08:18:50  L190409
+ * Revision 1.7  2011-06-20 13:21:29  L190409
+ * Java 5.0 compatibility
+ *
+ * Revision 1.6  2009/05/13 08:18:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved monitoring: triggers can now be filtered multiselectable on adapterlevel
  *
  * Revision 1.5  2008/08/27 16:16:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -298,8 +301,8 @@ public class Monitor {
 	public String getType() {
 		return type==null?null:type.getName();
 	}
-	public void setTypeEnum(EventTypeEnum enum) {
-		type = enum;
+	public void setTypeEnum(EventTypeEnum enumeration) {
+		type = enumeration;
 	}
 	public EventTypeEnum getTypeEnum() {
 		return type;
@@ -315,8 +318,8 @@ public class Monitor {
 	public String getAlarmSeverity() {
 		return alarmSeverity==null?null:alarmSeverity.getName();
 	}
-	public void setAlarmSeverityEnum(SeverityEnum enum) {
-		alarmSeverity = enum;
+	public void setAlarmSeverityEnum(SeverityEnum enumeration) {
+		alarmSeverity = enumeration;
 	}
 	public SeverityEnum getAlarmSeverityEnum() {
 		return alarmSeverity;

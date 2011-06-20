@@ -1,6 +1,9 @@
 /*
  * $Log: Download.java,v $
- * Revision 1.1  2009-08-04 11:42:51  L190409
+ * Revision 1.2  2011-06-20 13:26:18  L190409
+ * Java 5.0 compatibility
+ *
+ * Revision 1.1  2009/08/04 11:42:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * introduced servlet to work around IE 6 issue, that prevented downloading files from a POST.
  *
  */
@@ -52,8 +55,8 @@ public class Download extends HttpServlet {
 		String url=request.getRequestURI();
 		Map params=new LinkedHashMap();
 		
-		for (Enumeration enum=request.getParameterNames();enum.hasMoreElements();) {
-			String name=(String)enum.nextElement();
+		for (Enumeration enumeration=request.getParameterNames();enumeration.hasMoreElements();) {
+			String name=(String)enumeration.nextElement();
 			String values[]=request.getParameterValues(name);
 			params.put(name,values);
 		}

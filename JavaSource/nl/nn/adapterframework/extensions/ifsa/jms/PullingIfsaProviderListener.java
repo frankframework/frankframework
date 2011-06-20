@@ -1,6 +1,9 @@
 /*
  * $Log: PullingIfsaProviderListener.java,v $
- * Revision 1.4  2010-01-28 15:05:14  L190409
+ * Revision 1.5  2011-06-20 13:18:41  L190409
+ * Java 5.0 compatibility
+ *
+ * Revision 1.4  2010/01/28 15:05:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * renamed 'Connection' classes to 'MessageSource'
  *
  * Revision 1.3  2008/10/06 14:31:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -247,9 +250,8 @@ public class PullingIfsaProviderListener extends IfsaFacade implements IPullingL
 			} catch (IfsaException e) {
 				throw new ListenerException(getLogPrefix()+"exception creating QueueSession", e);
 			}
-		} else {
-			return (QueueSession) threadContext.get(THREAD_CONTEXT_SESSION_KEY);
-		}
+		} 
+		return (QueueSession) threadContext.get(THREAD_CONTEXT_SESSION_KEY);
 	}
 	
 	protected void releaseSession(Session session) throws ListenerException {
@@ -265,9 +267,8 @@ public class PullingIfsaProviderListener extends IfsaFacade implements IPullingL
 			} catch (IfsaException e) {
 				throw new ListenerException(getLogPrefix()+"exception creating QueueReceiver", e);
 			}
-		} else {
-			return (QueueReceiver) threadContext.get(THREAD_CONTEXT_RECEIVER_KEY);
-		}
+		} 
+		return (QueueReceiver) threadContext.get(THREAD_CONTEXT_RECEIVER_KEY);
 	}
 	
 	protected void releaseReceiver(QueueReceiver receiver) throws ListenerException {
@@ -576,8 +577,8 @@ public class PullingIfsaProviderListener extends IfsaFacade implements IPullingL
 	private String displayHeaders(IFSAMessage message) {
 		StringBuffer result= new StringBuffer();
 		try { 
-			for(Enumeration enum = message.getPropertyNames(); enum.hasMoreElements();) {
-				String tagName = (String)enum.nextElement();
+			for(Enumeration enumeration = message.getPropertyNames(); enumeration.hasMoreElements();) {
+				String tagName = (String)enumeration.nextElement();
 				Object value = message.getObjectProperty(tagName);
 				result.append("\n").append(tagName).append(": ");
 				if (value==null) {

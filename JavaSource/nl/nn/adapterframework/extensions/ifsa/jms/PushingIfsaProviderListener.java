@@ -1,6 +1,9 @@
 /*
  * $Log: PushingIfsaProviderListener.java,v $
- * Revision 1.11  2010-12-13 13:17:13  L190409
+ * Revision 1.12  2011-06-20 13:18:41  L190409
+ * Java 5.0 compatibility
+ *
+ * Revision 1.11  2010/12/13 13:17:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * made acknowledgemode configurable
  *
  * Revision 1.10  2010/01/28 15:05:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -447,8 +450,8 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 	private String displayHeaders(IFSAMessage message) {
 		StringBuffer result= new StringBuffer();
 		try { 
-			for(Enumeration enum = message.getPropertyNames(); enum.hasMoreElements();) {
-				String tagName = (String)enum.nextElement();
+			for(Enumeration enumeration = message.getPropertyNames(); enumeration.hasMoreElements();) {
+				String tagName = (String)enumeration.nextElement();
 				Object value = message.getObjectProperty(tagName);
 				result.append("\n").append(tagName).append(": ");
 				if (value==null) {

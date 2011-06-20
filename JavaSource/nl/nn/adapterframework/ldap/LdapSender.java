@@ -1,6 +1,9 @@
 /*
  * $Log: LdapSender.java,v $
- * Revision 1.33  2010-03-10 14:30:06  m168309
+ * Revision 1.34  2011-06-20 13:20:59  L190409
+ * Java 5.0 compatibility
+ *
+ * Revision 1.33  2010/03/10 14:30:06  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * rolled back testtool adjustments (IbisDebuggerDummy)
  *
  * Revision 1.31  2008/06/03 15:46:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -287,7 +290,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public class LdapSender extends JNDIBase implements ISenderWithParameters {
-	public static final String version = "$RCSfile: LdapSender.java,v $  $Revision: 1.33 $ $Date: 2010-03-10 14:30:06 $";
+	public static final String version = "$RCSfile: LdapSender.java,v $  $Revision: 1.34 $ $Date: 2011-06-20 13:20:59 $";
 
 	private String FILTER = "filterExpression";
 	private String ENTRYNAME = "entryName";
@@ -985,9 +988,9 @@ public class LdapSender extends JNDIBase implements ISenderWithParameters {
 	protected Attributes removeValuesFromAttributes(Attributes input) {
 		Attributes result = new BasicAttributes(true);
 		// ignore attribute name case
-		NamingEnumeration enum = input.getIDs();
-		while (enum.hasMoreElements()) {
-			String attrId = (String) enum.nextElement();
+		NamingEnumeration enumeration = input.getIDs();
+		while (enumeration.hasMoreElements()) {
+			String attrId = (String) enumeration.nextElement();
 			result.put(new BasicAttribute(attrId));
 		}
 		return result;

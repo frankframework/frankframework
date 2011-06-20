@@ -1,6 +1,9 @@
 /*
  * $Log: ShowMonitors.java,v $
- * Revision 1.8  2009-05-13 08:19:30  L190409
+ * Revision 1.9  2011-06-20 13:29:20  L190409
+ * Java 5.0 compatibility
+ *
+ * Revision 1.8  2009/05/13 08:19:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved monitoring: triggers can now be filtered multiselectable on adapterlevel
  *
  * Revision 1.7  2008/08/27 16:28:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -130,18 +133,17 @@ public class ShowMonitors extends ActionBase {
 				out.print(mm.getStatusXml().toXML());
 				out.close();
 				return null;
-			} else {
-				Lock lock = mm.getStructureLock();
-				try {
-					lock.acquireExclusive();
-					forward=performAction(monitorForm, action, index, triggerIndex, response);
-					log.debug("forward ["+forward+"] returned from performAction");
-					mm.reconfigure();
-				} catch (Exception e) {
-					error("could not perform action ["+action+"] on monitorIndex ["+index+"] triggerIndex ["+triggerIndex+"]", e);
-				} finally {
-					lock.releaseExclusive();
-				}
+			} 
+			Lock lock = mm.getStructureLock();
+			try {
+				lock.acquireExclusive();
+				forward=performAction(monitorForm, action, index, triggerIndex, response);
+				log.debug("forward ["+forward+"] returned from performAction");
+				mm.reconfigure();
+			} catch (Exception e) {
+				error("could not perform action ["+action+"] on monitorIndex ["+index+"] triggerIndex ["+triggerIndex+"]", e);
+			} finally {
+				lock.releaseExclusive();
 			}
 			if (response.isCommitted()) {
 				return null;
@@ -165,8 +167,8 @@ public class ShowMonitors extends ActionBase {
 	}
 
 	public void debugFormData(HttpServletRequest request, ActionForm form) {
-		for (Enumeration enum=request.getParameterNames();enum.hasMoreElements();) {
-			String name=(String)enum.nextElement();
+		for (Enumeration enumeration=request.getParameterNames();enumeration.hasMoreElements();) {
+			String name=(String)enumeration.nextElement();
 			String[] values=request.getParameterValues(name);
 			if (values.length==1) {
 				log.debug("Parameter ["+name+"] value ["+values[0]+"]");

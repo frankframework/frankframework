@@ -1,6 +1,9 @@
 /*
  * $Log: Trigger.java,v $
- * Revision 1.6  2009-05-13 08:18:50  L190409
+ * Revision 1.7  2011-06-20 13:21:29  L190409
+ * Java 5.0 compatibility
+ *
+ * Revision 1.6  2009/05/13 08:18:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved monitoring: triggers can now be filtered multiselectable on adapterlevel
  *
  * Revision 1.5  2008/08/27 16:18:07  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -374,8 +377,8 @@ public class Trigger {
 	public void setSeverity(String severity) {
 		setSeverityEnum((SeverityEnum)SeverityEnum.getEnumMap().get(severity));
 	}
-	public void setSeverityEnum(SeverityEnum enum) {
-		severity = enum;
+	public void setSeverityEnum(SeverityEnum enumeration) {
+		severity = enumeration;
 	}
 	public SeverityEnum getSeverityEnum() {
 		return severity;
