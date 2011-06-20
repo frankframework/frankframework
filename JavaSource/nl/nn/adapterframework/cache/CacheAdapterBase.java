@@ -1,6 +1,9 @@
 /*
  * $Log: CacheAdapterBase.java,v $
- * Revision 1.3  2011-05-31 15:30:02  L190409
+ * Revision 1.4  2011-06-20 13:14:03  L190409
+ * added output-types for xpath expressions
+ *
+ * Revision 1.3  2011/05/31 15:30:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * support for transformation of values,
  * support for configurable caching of empty keys and values
  *
@@ -32,11 +35,13 @@ import org.apache.log4j.Logger;
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Cache, will be set from owner</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setKeyXPath(String) keyXPath}</td><td>xpath expression to extract cache key from request message</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setKeyXPathOutputType(String) keyXPathOutputType}</td><td>output type of xpath expression to extract cache key from request message, must be 'xml' or 'text'</td><td>text</td></tr>
  * <tr><td>{@link #setKeyNamespaceDefs(String) keyNamespaceDefs}</td><td>namespace defintions for keyXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setKeyStyleSheet(String) keyStyleSheet}</td><td>stylesheet to extract cache key from request message. Use in combination with {@link #setCacheEmptyKeys(String) cacheEmptyKeys} to inhibit caching for certain groups of request messages</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setKeyInputSessionKey(String) keyInputSessionKey}</td><td>session key to use as input for transformation of request message to key by keyXPath or keyStyleSheet</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setCacheEmptyKeys(String) cacheEmptyKeys}</td><td>controls whether empty keys are used for caching. When set true, cache entries with empty keys can exist.</td><td>false</td></tr>
  * <tr><td>{@link #setValueXPath(String) valueXPath}</td><td>xpath expression to extract value to be cached key from response message. Use in combination with {@link #setCacheEmptyValues(String) cacheEmptyValues} to inhibit caching for certain groups of response messages</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setValueKeyXPathOutputType(String) valueXPathOutputType}</td><td>output type of xpath expression to extract value to be cached key from response message, must be 'xml' or 'text'</td><td>xml</td></tr>
  * <tr><td>{@link #setValueNamespaceDefs(String) valueNamespaceDefs}</td><td>namespace defintions for valueXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setValueStyleSheet(String) valueStyleSheet}</td><td>stylesheet to extract value to be cached from response message</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setValueInputSessionKey(String) valueInputSessionKey}</td><td>session key to use as input for transformation of response message to cached value by valueXPath or valueStyleSheet</td><td>&nbsp;</td></tr>
@@ -54,12 +59,14 @@ public abstract class CacheAdapterBase implements ICacheAdapter {
 	private String name;
 
 	private String keyXPath;
+	private String keyXPathOutputType="text";
 	private String keyNamespaceDefs;
 	private String keyStyleSheet;
 	private String keyInputSessionKey;
 	private boolean cacheEmptyKeys=false;
 
 	private String valueXPath;
+	private String valueXPathOutputType="xml";
 	private String valueNamespaceDefs;
 	private String valueStyleSheet;
 	private String valueInputSessionKey;
@@ -72,11 +79,17 @@ public abstract class CacheAdapterBase implements ICacheAdapter {
 		if (StringUtils.isEmpty(getName())) {
 			setName(ownerName+"Cache");
 		}
+		if (!("xml".equals(getKeyXPathOutputType()) || "text".equals(getKeyXPathOutputType()))) {
+			throw new ConfigurationException(getLogPrefix()+"keyXPathOutputType ["+getKeyXPathOutputType()+"] must be either 'xml' or 'text'");
+		}
+		if (!("xml".equals(getValueXPathOutputType()) || "text".equals(getValueXPathOutputType()))) {
+			throw new ConfigurationException(getLogPrefix()+"valueXPathOutputType ["+getValueXPathOutputType()+"] must be either 'xml' or 'text'");
+		}
 		if (StringUtils.isNotEmpty(getKeyXPath()) || StringUtils.isNotEmpty(getKeyStyleSheet())) {
-			keyTp=TransformerPool.configureTransformer(getLogPrefix(),getKeyNamespaceDefs(), getKeyXPath(), getKeyStyleSheet(),"text",false,null);
+			keyTp=TransformerPool.configureTransformer(getLogPrefix(),getKeyNamespaceDefs(), getKeyXPath(), getKeyStyleSheet(),getKeyXPathOutputType(),false,null);
 		}
 		if (StringUtils.isNotEmpty(getValueXPath()) || StringUtils.isNotEmpty(getValueStyleSheet())) {
-			valueTp=TransformerPool.configureTransformer(getLogPrefix(),getValueNamespaceDefs(), getValueXPath(), getValueStyleSheet(),"text",false,null);
+			valueTp=TransformerPool.configureTransformer(getLogPrefix(),getValueNamespaceDefs(), getValueXPath(), getValueStyleSheet(),getValueXPathOutputType(),false,null);
 		}
 	}
 	
@@ -157,6 +170,12 @@ public abstract class CacheAdapterBase implements ICacheAdapter {
 	public void setKeyXPath(String keyXPath) {
 		this.keyXPath = keyXPath;
 	}
+	public String getKeyXPathOutputType() {
+		return keyXPathOutputType;
+	}
+	public void setKeyXPathOutputType(String keyXPathOutputType) {
+		this.keyXPathOutputType = keyXPathOutputType;
+	}
 	public String getKeyNamespaceDefs() {
 		return keyNamespaceDefs;
 	}
@@ -189,6 +208,12 @@ public abstract class CacheAdapterBase implements ICacheAdapter {
 	}
 	public void setValueXPath(String valueXPath) {
 		this.valueXPath = valueXPath;
+	}
+	public String getValueXPathOutputType() {
+		return valueXPathOutputType;
+	}
+	public void setValueXPathOutputType(String valueXPathOutputType) {
+		this.valueXPathOutputType = valueXPathOutputType;
 	}
 	public String getValueNamespaceDefs() {
 		return valueNamespaceDefs;
