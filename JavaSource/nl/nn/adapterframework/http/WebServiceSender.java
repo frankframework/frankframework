@@ -1,6 +1,9 @@
 /*
  * $Log: WebServiceSender.java,v $
- * Revision 1.31  2011-03-31 07:13:10  m168309
+ * Revision 1.32  2011-06-22 10:44:40  m168309
+ * improved logging
+ *
+ * Revision 1.31  2011/03/31 07:13:10  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added namespaceDefs attribute
  *
  * Revision 1.30  2011/03/16 16:37:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -167,7 +170,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * @since 4.2c
  */
 public class WebServiceSender extends HttpSender {
-	public static final String version = "$RCSfile: WebServiceSender.java,v $ $Revision: 1.31 $ $Date: 2011-03-31 07:13:10 $";
+	public static final String version = "$RCSfile: WebServiceSender.java,v $ $Revision: 1.32 $ $Date: 2011-06-22 10:44:40 $";
 	
 	private String soapAction = "";
 	private String soapActionParam = "soapAction";
@@ -235,7 +238,7 @@ public class WebServiceSender extends HttpSender {
 		if (wsscf!=null) {
 			soapmsg = soapWrapper.signMessage(soapmsg,wsscf.getUsername(),wsscf.getPassword());
 		}
-		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"SOAPMSG [" + soapmsg + "]");
+		if (log.isDebugEnabled()) log.debug("wrapped message [" + soapmsg + "]");
 
 		HttpMethod method = super.getMethod(uri, soapmsg,parameters);
 		if (log.isDebugEnabled()) log.debug("setting Content-Type and SOAPAction header ["+soapActionURI+"]");

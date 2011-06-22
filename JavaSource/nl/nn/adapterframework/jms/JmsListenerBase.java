@@ -1,6 +1,9 @@
 /*
  * $Log: JmsListenerBase.java,v $
- * Revision 1.7  2011-06-06 12:26:32  m168309
+ * Revision 1.8  2011-06-22 10:44:40  m168309
+ * improved logging
+ *
+ * Revision 1.7  2011/06/06 12:26:32  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added soapHeader to method prepareReply
  *
  * Revision 1.6  2011/03/21 14:58:28  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -268,6 +271,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender {
 			}
 		}
 		replyMessage = soapWrapper.putInEnvelope(rawReply, getReplyEncodingStyleURI(),getReplyNamespaceURI(),soapHeader);
+		if (log.isDebugEnabled()) log.debug("wrapped message [" + replyMessage + "]");
 		return replyMessage;
 	}
 
