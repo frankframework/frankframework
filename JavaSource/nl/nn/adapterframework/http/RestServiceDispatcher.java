@@ -1,6 +1,9 @@
 /*
  * $Log: RestServiceDispatcher.java,v $
- * Revision 1.2  2011-05-23 13:13:16  L190409
+ * Revision 1.3  2011-06-22 11:46:48  m01e194
+ * Corrected adding sessionKey's to context.
+ *
+ * Revision 1.2  2011/05/23 13:13:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * first bugfixes
  *
  * Revision 1.1  2011/05/19 15:11:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -93,11 +96,11 @@ public class RestServiceDispatcher  {
 		ServiceClient listener=(ServiceClient)methodConfig.get(KEY_LISTENER);
 		String etagKey=(String)methodConfig.get(KEY_ETAG_KEY);
 		String contentTypeKey=(String)methodConfig.get(KEY_CONTENT_TYPE_KEY);
-		Map requestContext=new HashMap();
-		if (etagKey!=null) requestContext.put(etagKey,etag);
-		if (contentTypeKey!=null) requestContext.put(contentTypeKey,contentType);
+		
+		if (etagKey!=null) context.put(etagKey,etag);
+		if (contentTypeKey!=null) context.put(contentTypeKey,contentType);
 		if (log.isDebugEnabled()) log.debug("dispatching request, uri ["+uri+"] listener pattern ["+matchingPattern+"] method ["+method+"] etag ["+etag+"] contentType ["+contentType+"]");
-		String result=listener.processRequest(null, request, requestContext);
+		String result=listener.processRequest(null, request, context);
 		if (result==null) {
 			log.warn("result is null!");
 		}			
