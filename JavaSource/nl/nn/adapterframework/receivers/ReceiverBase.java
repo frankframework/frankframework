@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.98  2010-10-18 09:20:53  L190409
+ * Revision 1.99  2011-06-27 15:54:32  L190409
+ * improved configWarnings
+ *
+ * Revision 1.98  2010/10/18 09:20:53  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed name from generated uuid
  *
  * Revision 1.97  2010/09/30 14:55:47  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -606,7 +609,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  */
 public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHandler, EventThrowing, IbisExceptionListener, HasSender, HasStatistics, TracingEventNumbers, IThreadCountControllable, BeanFactoryAware {
     
-	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.98 $ $Date: 2010-10-18 09:20:53 $";
+	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.99 $ $Date: 2011-06-27 15:54:32 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static TransactionDefinition TXNEW_CTRL = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -2009,7 +2012,7 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 	 */
 	protected void setInProcessStorage(ITransactionalStorage inProcessStorage) {
 		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-		String msg = getLogPrefix()+"<*> In-Process Storage is not used anymore. Please remove from configuration. <*>";
+		String msg = getLogPrefix()+"In-Process Storage is not used anymore. Please remove from configuration.";
 		configWarnings.add(log, msg);
 		// We do not use an in-process storage anymore, but we temporarily
 		// store it if it's set by the configuration.
@@ -2123,11 +2126,11 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 //		this.transacted = transacted;
 		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 		if (transacted) {
-			String msg = "implementing setting of transacted=true as transactionAttribute=Required";
+			String msg = getLogPrefix()+"implementing setting of transacted=true as transactionAttribute=Required";
 			configWarnings.add(log, msg);
 			setTransactionAttributeNum(TransactionDefinition.PROPAGATION_REQUIRED);
 		} else {
-			String msg = "implementing setting of transacted=false as transactionAttribute=Supports";
+			String msg = getLogPrefix()+"implementing setting of transacted=false as transactionAttribute=Supports";
 			configWarnings.add(log, msg);
 			setTransactionAttributeNum(TransactionDefinition.PROPAGATION_SUPPORTS);
 		}
