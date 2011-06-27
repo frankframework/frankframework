@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.92  2010-11-12 15:15:10  m168309
+ * Revision 1.93  2011-06-27 15:15:51  L190409
+ * improved configWarnings
+ *
+ * Revision 1.92  2010/11/12 15:15:10  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added possibility to force fixed forwards (attribute forceFixedForwarding) and added possibility to set next pipe as default success forward
  *
  * Revision 1.91  2010/09/13 13:39:39  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -371,7 +374,7 @@ import org.springframework.transaction.TransactionDefinition;
  * @author  Johan Verrips
  */
 public class PipeLine implements ICacheEnabled {
-	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.92 $ $Date: 2010-11-12 15:15:10 $";
+	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.93 $ $Date: 2011-06-27 15:15:51 $";
     private Logger log = LogUtil.getLogger(this);
     
 	private PipeLineProcessor pipeLineProcessor;
@@ -770,11 +773,11 @@ public class PipeLine implements ICacheEnabled {
 //		this.transacted = transacted;
 		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 		if (transacted) {
-			String msg = "implementing setting of transacted=true as transactionAttribute=Required";
+			String msg = "Pipeline of ["+owner.getName()+"] implementing setting of transacted=true as transactionAttribute=Required";
 			configWarnings.add(log, msg);
 			setTransactionAttributeNum(TransactionDefinition.PROPAGATION_REQUIRED);
 		} else {
-			String msg = "implementing setting of transacted=false as transactionAttribute=Supports";
+			String msg = "Pipeline of ["+owner.getName()+"] implementing setting of transacted=false as transactionAttribute=Supports";
 			configWarnings.add(log, msg);
 			setTransactionAttributeNum(TransactionDefinition.PROPAGATION_SUPPORTS);
 		}

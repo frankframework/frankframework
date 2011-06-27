@@ -1,6 +1,9 @@
 /*
  * $Log: Adapter.java,v $
- * Revision 1.59  2011-05-25 07:39:35  L190409
+ * Revision 1.60  2011-06-27 15:15:51  L190409
+ * improved configWarnings
+ *
+ * Revision 1.59  2011/05/25 07:39:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * collect cache statistics
  *
  * Revision 1.58  2010/09/13 13:34:25  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -1075,11 +1078,11 @@ public class Adapter implements IAdapter, NamedBean {
 		//this.requestReplyLogging = requestReplyLogging;
 		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 		if (requestReplyLogging) {
-			String msg = "implementing setting of requestReplyLogging=true as msgLogLevel=Terse";
+			String msg = "Adapter [" + getName() + "] implementing setting of requestReplyLogging=true as msgLogLevel=Terse";
 			configWarnings.add(log, msg);
 			setMsgLogLevelNum(MsgLogUtil.MSGLOG_LEVEL_TERSE);
 		} else {
-			String msg = "implementing setting of requestReplyLogging=false as msgLogLevel=None";
+			String msg = "Adapter [" + getName() + "] implementing setting of requestReplyLogging=false as msgLogLevel=None";
 			configWarnings.add(log, msg);
 			setMsgLogLevelNum(MsgLogUtil.MSGLOG_LEVEL_NONE);
 		}
