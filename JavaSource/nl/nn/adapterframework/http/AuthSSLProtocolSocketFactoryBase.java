@@ -1,6 +1,9 @@
 /*
  * $Log: AuthSSLProtocolSocketFactoryBase.java,v $
- * Revision 1.9  2007-02-12 13:55:57  europe\L190409
+ * Revision 1.10  2011-06-27 15:52:59  L190409
+ * allow to set keyManagerAlgorithm and trustManagerAlgorithm
+ *
+ * Revision 1.9  2007/02/12 13:55:57  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Logger from LogUtil
  *
  * Revision 1.8  2006/08/23 11:23:52  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -181,9 +184,11 @@ public abstract class AuthSSLProtocolSocketFactoryBase implements SocketFactory,
 	protected URL keystoreUrl = null;
 	protected String keystorePassword = null;
 	protected String keystoreType = "null";
+	protected String keyManagerAlgorithm = null;
 	protected URL truststoreUrl = null;
 	protected String truststorePassword = null;
 	protected String truststoreType = "null";
+	protected String trustManagerAlgorithm = null;
 	protected Object sslContext = null;
 	protected boolean verifyHostname=true;
 
@@ -208,22 +213,23 @@ public abstract class AuthSSLProtocolSocketFactoryBase implements SocketFactory,
      * 		  <code>false</code> host name verification is turned off.
      */
     public AuthSSLProtocolSocketFactoryBase (
-        final URL keystoreUrl, final String keystorePassword, final String keystoreType, 
-        final URL truststoreUrl, final String truststorePassword, final String truststoreType, final boolean verifyHostname)
-    {
+    		final URL keystoreUrl, final String keystorePassword, final String keystoreType, final String keyManagerAlgorithm,
+    		final URL truststoreUrl, final String truststorePassword, final String truststoreType, final String trustManagerAlgorithm, final boolean verifyHostname) {
         super();
         this.keystoreUrl = keystoreUrl;
         this.keystorePassword = keystorePassword;
 		this.keystoreType = keystoreType;
+		this.keyManagerAlgorithm = keyManagerAlgorithm;
         this.truststoreUrl = truststoreUrl;
         this.truststorePassword = truststorePassword;
 		this.truststoreType = truststoreType;
+		this.trustManagerAlgorithm = trustManagerAlgorithm;
         this.verifyHostname = verifyHostname;
     }
 
 	public static AuthSSLProtocolSocketFactoryBase createSocketFactory(
-		final URL certificateUrl, final String certificateAuthAlias, final String certificatePassword, final String certificateType, 
-		final URL truststoreUrl, final String truststoreAuthAlias, final String truststorePassword, final String truststoreType, 
+		final URL certificateUrl, final String certificateAuthAlias, final String certificatePassword, final String certificateType, final String keyManagerAlgorithm, 
+		final URL truststoreUrl, final String truststoreAuthAlias, final String truststorePassword, final String truststoreType, final String trustManagerAlgorithm, 
 		final boolean verifyHostname, boolean jdk13Compatible)
  			throws NoSuchAlgorithmException, KeyStoreException, GeneralSecurityException, IOException 
  	{
@@ -241,9 +247,11 @@ public abstract class AuthSSLProtocolSocketFactoryBase implements SocketFactory,
 					certificateUrl,
 					certificatePassword,
 					certificateType,
+					keyManagerAlgorithm,
 					truststoreUrl,
 					certificateCf.getPassword(),
 					truststoreType,
+					trustManagerAlgorithm,
 					verifyHostname);
 		}
 		else {
@@ -252,9 +260,11 @@ public abstract class AuthSSLProtocolSocketFactoryBase implements SocketFactory,
 					certificateUrl,
 					certificatePassword,
 					certificateType,
+					keyManagerAlgorithm,
 					truststoreUrl,
 					truststoreCf.getPassword(),
 					truststoreType,
+					trustManagerAlgorithm,
 					verifyHostname);
 		}
 

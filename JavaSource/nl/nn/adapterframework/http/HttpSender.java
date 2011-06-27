@@ -1,6 +1,9 @@
 /*
  * $Log: HttpSender.java,v $
- * Revision 1.48  2011-05-04 11:52:10  L190409
+ * Revision 1.49  2011-06-27 15:52:59  L190409
+ * allow to set keyManagerAlgorithm and trustManagerAlgorithm
+ *
+ * Revision 1.48  2011/05/04 11:52:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * log warning when result is not 200 - OK
  *
  * Revision 1.47  2011/02/21 18:03:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -213,6 +216,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setProxyPassword(String) proxyPassword}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setProxyRealm(String) proxyRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setKeystoreType(String) keystoreType}</td><td>&nbsp;</td><td>pkcs12</td></tr>
+ * <tr><td>{@link #setKeyManagerAlgorithm(String) keyManagerAlgorithm}</td><td>&nbsp;</td><td></td></tr>
  * <tr><td>{@link #setCertificate(String) certificate}</td><td>resource URL to certificate to be used for authentication</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setCertificatePassword(String) certificatePassword}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setCertificateAuthAlias(String) certificateAuthAlias}</td><td>alias used to obtain certificate password</td><td>&nbsp;</td></tr>
@@ -220,6 +224,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setTruststorePassword(String) truststorePassword}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setTruststoreAuthAlias(String) truststoreAuthAlias}</td><td>alias used to obtain truststore password</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setTruststoreType(String) truststoreType}</td><td>&nbsp;</td><td>jks</td></tr>
+ * <tr><td>{@link #setTrustManagerAlgorithm(String) trustManagerAlgorithm}</td><td>&nbsp;</td><td></td></tr>
  * <tr><td>{@link #setFollowRedirects(boolean) followRedirects}</td><td>when true, a redirect request will be honoured, e.g. to switch to https</td><td>true</td></tr>
  * <tr><td>{@link #setVerifyHostname(boolean) verifyHostname}</td><td>when true, the hostname in the certificate will be checked against the actual hostname</td><td>true</td></tr>
  * <tr><td>{@link #setJdk13Compatibility(boolean) jdk13Compatibility}</td><td>enables the use of certificates on JDK 1.3.x. The SUN reference implementation JSSE 1.0.3 is included for convenience</td><td>false</td></tr>
@@ -247,6 +252,11 @@ import org.apache.commons.lang.StringUtils;
  * <code>Error in loading the keystore: Private key decryption error: (java.lang.SecurityException: Unsupported keysize or algorithm parameters</code> is observed.
  * For IBM JDKs these files can be downloaded from http://www.ibm.com/developerworks/java/jdk/security/50/ (scroll down to 'IBM SDK Policy files')
  * </p>
+ * Replace in the directory java\jre\lib\security the following files:
+ * <ul>
+ * <li>local_policy.jar</li>
+ * <li>US_export_policy.jar</li>
+ * </ul>
  * <p>
  * Note 2:
  * To debug ssl-related problems, set the following system property:
@@ -279,13 +289,16 @@ import org.apache.commons.lang.StringUtils;
  *   <li>instead of IBM ikeyman you can use the standard java tool <code>keytool</code> as follows: 
  *      <code>keytool -import -alias <i>yourAlias</i> -file <i>pathToSavedCertificate</i></code></li>
  * </ul>
+ * <p>
+ * Note 4:
+ * In case <code>cannot create or initialize SocketFactory: (IOException) Unable to verify MAC</code>-exceptions are thrown,
+ * please check password or authAlias configuration of the correspondig certificate. 
  *  
  * </p>
  * @author Gerrit van Brakel
  * @since 4.2c
  */
 public class HttpSender extends SenderWithParametersBase implements HasPhysicalDestination {
-	public static final String version = "$RCSfile: HttpSender.java,v $ $Revision: 1.48 $ $Date: 2011-05-04 11:52:10 $";
 
 	private String url;
 	private String urlParam="url";
@@ -309,6 +322,7 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 	private String proxyRealm=null;
 
 	private String keystoreType="pkcs12";
+	private String keyManagerAlgorithm=null;
 	private String certificate;
 	private String certificateAuthAlias;
 	private String certificatePassword;
@@ -316,6 +330,7 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 	private String truststorePassword=null;
 	private String truststoreAuthAlias;
 	private String truststoreType="jks";
+	private String trustManagerAlgorithm=null;
 	
 	private boolean verifyHostname=true;
 	private boolean followRedirects=true;
@@ -434,12 +449,12 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 						addProvider("com.sun.net.ssl.internal.ssl.Provider");
 						System.setProperty("java.protocol.handler.pkgs","com.sun.net.ssl.internal.www.protocol");
 						socketfactory = new AuthSSLProtocolSocketFactoryForJsse10x(
-							certificateUrl, certificateCf.getPassword(), getKeystoreType(),
-							truststoreUrl,  truststoreCf.getPassword(),  getTruststoreType(), isVerifyHostname());
+							certificateUrl, certificateCf.getPassword(), getKeystoreType(), getKeyManagerAlgorithm(),
+							truststoreUrl,  truststoreCf.getPassword(),  getTruststoreType(), getTrustManagerAlgorithm(), isVerifyHostname());
 					} else {
 						socketfactory = new AuthSSLProtocolSocketFactory(
-							certificateUrl, certificateCf.getPassword(), getKeystoreType(),
-							truststoreUrl,  truststoreCf.getPassword(),  getTruststoreType(),isVerifyHostname());
+							certificateUrl, certificateCf.getPassword(), getKeystoreType(), getKeyManagerAlgorithm(),
+							truststoreUrl,  truststoreCf.getPassword(),  getTruststoreType(), getTrustManagerAlgorithm(),isVerifyHostname());
 					}
 					socketfactory.initSSLContext();	
 				} catch (Throwable t) {
@@ -492,7 +507,7 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 
 	protected boolean appendParameters(boolean parametersAppended, StringBuffer path, ParameterValueList parameters) {
 		if (parameters!=null) {
-			log.debug(getLogPrefix()+"appending ["+parameters.size()+"] parameters");
+			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appending ["+parameters.size()+"] parameters");
 		}
 		for(int i=0; i<parameters.size(); i++) {
 			if (parametersToSkip.contains(paramList.get(i))) {
@@ -529,33 +544,31 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 			if (getMethodType().equals("GET")) {
 				if (parameters!=null) {
 					queryParametersAppended = appendParameters(queryParametersAppended,path,parameters);
-					log.debug(getLogPrefix()+"path after appending of parameters ["+path.toString()+"]");
+					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"path after appending of parameters ["+path.toString()+"]");
 				}
 				GetMethod result = new GetMethod(path+(parameters==null? message:""));
 				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"HttpSender constructed GET-method ["+result.getQueryString()+"]");
 				return result;
-			} else {
-				if (getMethodType().equals("POST")) {
-					PostMethod postMethod = new PostMethod(path.toString());
-					if (StringUtils.isNotEmpty(getContentType())) {
-						postMethod.setRequestHeader("Content-Type",getContentType());
-					}
-					if (parameters!=null) {
-						StringBuffer msg = new StringBuffer(message);
-						appendParameters(true,msg,parameters);
-						if (StringUtils.isEmpty(message) && msg.length()>1) {
-							message=msg.substring(1);
-						} else {
-							message=msg.toString();
-						}
-					}
-					postMethod.setRequestBody(message);
-				
-					return postMethod;
-				} else {
-					throw new SenderException("unknown methodtype ["+getMethodType()+"], must be either POST or GET");
+			} 
+			if (getMethodType().equals("POST")) {
+				PostMethod postMethod = new PostMethod(path.toString());
+				if (StringUtils.isNotEmpty(getContentType())) {
+					postMethod.setRequestHeader("Content-Type",getContentType());
 				}
+				if (parameters!=null) {
+					StringBuffer msg = new StringBuffer(message);
+					appendParameters(true,msg,parameters);
+					if (StringUtils.isEmpty(message) && msg.length()>1) {
+						message=msg.substring(1);
+					} else {
+						message=msg.toString();
+					}
+				}
+				postMethod.setRequestBody(message);
+			
+				return postMethod;
 			}
+			throw new SenderException("unknown methodtype ["+getMethodType()+"], must be either POST or GET");
 		} catch (URIException e) {
 			throw new SenderException(getLogPrefix()+"cannot find path from url ["+getUrl()+"]", e);
 		}
@@ -573,7 +586,7 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 
 	public String getResponseBodyAsString(HttpMethod httpmethod) throws IOException {
 		String charset = ((HttpMethodBase)httpmethod).getResponseCharSet();
-		log.debug(getLogPrefix()+"response body uses charset ["+charset+"]");
+		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"response body uses charset ["+charset+"]");
 		InputStream is = httpmethod.getResponseBodyAsStream();
 		String responseBody = Misc.streamToString(is,"\n",charset,false);
 		int rbLength = responseBody.length();
@@ -660,14 +673,13 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 					cause = throwable.toString();
 				}
 				msg = e.getMessage();
-				log.warn("httpException with message [" + msg + "] and cause [" + cause + "], executeRetries left [" + count + "]");
+				log.warn(getLogPrefix()+"httpException with message [" + msg + "] and cause [" + cause + "], executeRetries left [" + count + "]");
 			} catch (IOException e) {
 				httpmethod.abort();
 				if (e instanceof SocketTimeoutException) {
 					throw new TimeOutException(e);
-				} else {
-					throw new SenderException(e);
-				}
+				} 
+				throw new SenderException(e);
 			} finally {
 				httpmethod.releaseConnection();
 			}
@@ -677,9 +689,8 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 			if (StringUtils.contains(msg.toUpperCase(), "TIMEOUTEXCEPTION")) {
 				//java.net.SocketTimeoutException: Read timed out
 				throw new TimeOutException("Failed to recover from timeout exception");
-			} else {
-				throw new SenderException("Failed to recover from exception");
 			}
+			throw new SenderException("Failed to recover from exception");
 		}
 
 		return result;	
@@ -792,6 +803,13 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 		keystoreType = string;
 	}
 
+	public void setKeyManagerAlgorithm(String keyManagerAlgorithm) {
+		this.keyManagerAlgorithm = keyManagerAlgorithm;
+	}
+	public String getKeyManagerAlgorithm() {
+		return keyManagerAlgorithm;
+	}
+
 	public String getTruststore() {
 		return truststore;
 	}
@@ -811,6 +829,13 @@ public class HttpSender extends SenderWithParametersBase implements HasPhysicalD
 	}
 	public void setTruststoreType(String string) {
 		truststoreType = string;
+	}
+
+	public void setTrustManagerAlgorithm(String trustManagerAlgorithm) {
+		this.trustManagerAlgorithm = trustManagerAlgorithm;
+	}
+	public String getTrustManagerAlgorithm() {
+		return trustManagerAlgorithm;
 	}
 
 	public int getTimeout() {

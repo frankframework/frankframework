@@ -1,6 +1,9 @@
 /*
  * $Log: WebServiceSender.java,v $
- * Revision 1.32  2011-06-22 10:44:40  m168309
+ * Revision 1.33  2011-06-27 15:52:59  L190409
+ * allow to set keyManagerAlgorithm and trustManagerAlgorithm
+ *
+ * Revision 1.32  2011/06/22 10:44:40  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * improved logging
  *
  * Revision 1.31  2011/03/31 07:13:10  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -149,6 +152,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * <tr><td>{@link #setProxyPassword(String) proxyPassword}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setProxyRealm(String) proxyRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setKeystoreType(String) keystoreType}</td><td>&nbsp;</td><td>pkcs12</td></tr>
+ * <tr><td>{@link #setKeyManagerAlgorithm(String) keyManagerAlgorithm}</td><td>&nbsp;</td><td></td></tr>
  * <tr><td>{@link #setCertificate(String) certificate}</td><td>resource URL to certificate to be used for authentication</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setCertificatePassword(String) certificatePassword}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setCertificateAuthAlias(String) certificateAuthAlias}</td><td>alias used to obtain certificate password</td><td>&nbsp;</td></tr>
@@ -156,6 +160,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * <tr><td>{@link #setTruststorePassword(String) truststorePassword}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setTruststoreAuthAlias(String) truststoreAuthAlias}</td><td>alias used to obtain truststore password</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setTruststoreType(String) truststoreType}</td><td>&nbsp;</td><td>jks</td></tr>
+ * <tr><td>{@link #setTrustManagerAlgorithm(String) trustManagerAlgorithm}</td><td>&nbsp;</td><td></td></tr>
  * <tr><td>{@link #setFollowRedirects(boolean) followRedirects}</td><td>when true, a redirect request will be honoured, e.g. to switch to https</td><td>true</td></tr>
  * <tr><td>{@link #setVerifyHostname(boolean) verifyHostname}</td><td>when true, the hostname in the certificate will be checked against the actual hostname</td><td>true</td></tr>
  * <tr><td>{@link #setJdk13Compatibility(boolean) jdk13Compatibility}</td><td>enables the use of certificates on JDK 1.3.x. The SUN reference implementation JSSE 1.0.3 is included for convenience</td><td>false</td></tr>
@@ -170,7 +175,6 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * @since 4.2c
  */
 public class WebServiceSender extends HttpSender {
-	public static final String version = "$RCSfile: WebServiceSender.java,v $ $Revision: 1.32 $ $Date: 2011-06-22 10:44:40 $";
 	
 	private String soapAction = "";
 	private String soapActionParam = "soapAction";
@@ -238,10 +242,10 @@ public class WebServiceSender extends HttpSender {
 		if (wsscf!=null) {
 			soapmsg = soapWrapper.signMessage(soapmsg,wsscf.getUsername(),wsscf.getPassword());
 		}
-		if (log.isDebugEnabled()) log.debug("wrapped message [" + soapmsg + "]");
+		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"SOAPMSG [" + soapmsg + "]");
 
 		HttpMethod method = super.getMethod(uri, soapmsg,parameters);
-		if (log.isDebugEnabled()) log.debug("setting Content-Type and SOAPAction header ["+soapActionURI+"]");
+		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"setting Content-Type and SOAPAction header ["+soapActionURI+"]");
 		method.addRequestHeader("SOAPAction",soapActionURI);
 		return method;
 	}

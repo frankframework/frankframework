@@ -1,6 +1,9 @@
 /*
  * $Log: AuthSSLProtocolSocketFactory.java,v $
- * Revision 1.11  2009-08-26 11:47:31  L190409
+ * Revision 1.12  2011-06-27 15:52:59  L190409
+ * allow to set keyManagerAlgorithm and trustManagerAlgorithm
+ *
+ * Revision 1.11  2009/08/26 11:47:31  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * upgrade to HttpClient 3.0.1 - including idle connection cleanup
  *
  * Revision 1.10  2005/10/10 14:07:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -70,6 +73,7 @@ import org.apache.commons.httpclient.ConnectTimeoutException;
 import org.apache.commons.httpclient.params.HttpConnectionParams;
 import org.apache.commons.httpclient.protocol.ControllerThreadSocketFactory;
 import org.apache.commons.httpclient.protocol.ReflectionSocketFactory;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * <p>
@@ -191,34 +195,43 @@ public class AuthSSLProtocolSocketFactory extends AuthSSLProtocolSocketFactoryBa
      * @param truststorePassword Password to unlock the truststore.
      */
 	public AuthSSLProtocolSocketFactory(
-		final URL keystoreUrl, final String keystorePassword, final String keystoreType, 
-		final URL truststoreUrl, final String truststorePassword, final String truststoreType, final boolean verifyHostname)
-	{
-		super(keystoreUrl, keystorePassword, keystoreType, truststoreUrl, truststorePassword, truststoreType, verifyHostname);
+    		final URL keystoreUrl, final String keystorePassword, final String keystoreType, final String keyManagerAlgorithm,
+    		final URL truststoreUrl, final String truststorePassword, final String truststoreType, final String trustManagerAlgorithm, final boolean verifyHostname) {
+		super(keystoreUrl, keystorePassword, keystoreType, keyManagerAlgorithm, truststoreUrl, truststorePassword, truststoreType, trustManagerAlgorithm, verifyHostname);
 	}
     
-    private static KeyManager[] createKeyManagers(final KeyStore keystore, final String password)
-        throws KeyStoreException, NoSuchAlgorithmException, UnrecoverableKeyException 
+    private static KeyManager[] createKeyManagers(final KeyStore keystore, final String password, String algorithm)
+        throws KeyStoreException, NoSuchAlgorithmException, UnrecoverableKeyException
     {
         if (keystore == null) {
             throw new IllegalArgumentException("Keystore may not be null");
         }
         log.debug("Initializing key manager");
-        KeyManagerFactory kmfactory = KeyManagerFactory.getInstance(
-            KeyManagerFactory.getDefaultAlgorithm());
+        if (StringUtils.isEmpty(algorithm)) {
+        	algorithm=KeyManagerFactory.getDefaultAlgorithm();
+        	log.debug("using default KeyManager algorithm ["+algorithm+"]");
+        } else {
+        	log.debug("using configured KeyManager algorithm ["+algorithm+"]");
+        }
+        KeyManagerFactory kmfactory = KeyManagerFactory.getInstance(algorithm);
         kmfactory.init(keystore, password != null ? password.toCharArray(): null);
         return kmfactory.getKeyManagers(); 
     }
 
-    private static TrustManager[] createTrustManagers(final KeyStore keystore)
+    private static TrustManager[] createTrustManagers(final KeyStore keystore, String algorithm)
         throws KeyStoreException, NoSuchAlgorithmException
     { 
         if (keystore == null) {
             throw new IllegalArgumentException("Keystore may not be null");
         }
         log.debug("Initializing trust manager");
-        TrustManagerFactory tmfactory = TrustManagerFactory.getInstance(
-            TrustManagerFactory.getDefaultAlgorithm());
+        if (StringUtils.isEmpty(algorithm)) {
+        	algorithm=TrustManagerFactory.getDefaultAlgorithm();
+        	log.debug("using default TrustManager algorithm ["+algorithm+"]");
+        } else {
+        	log.debug("using configured TrustManager algorithm ["+algorithm+"]");
+        }
+        TrustManagerFactory tmfactory = TrustManagerFactory.getInstance(algorithm);
         tmfactory.init(keystore);
         TrustManager[] trustmanagers = tmfactory.getTrustManagers();
         return trustmanagers; 
@@ -230,11 +243,11 @@ public class AuthSSLProtocolSocketFactory extends AuthSSLProtocolSocketFactoryBa
 		TrustManager[] trustmanagers = null;
 		if (this.keystoreUrl != null) {
 			KeyStore keystore = createKeyStore(this.keystoreUrl, this.keystorePassword, this.keystoreType, "Certificate chain");
-			keymanagers = createKeyManagers(keystore, this.keystorePassword);
+			keymanagers = createKeyManagers(keystore, this.keystorePassword, this.keyManagerAlgorithm);
 		}
 		if (this.truststoreUrl != null) {
 			KeyStore keystore = createKeyStore(this.truststoreUrl, this.truststorePassword, this.truststoreType, "Trusted Certificate");
-			trustmanagers = createTrustManagers(keystore);
+			trustmanagers = createTrustManagers(keystore, this.trustManagerAlgorithm);
 
 			if (allowSelfSignedCertificates) {
 				trustmanagers = new TrustManager[] {
@@ -338,16 +351,15 @@ public class AuthSSLProtocolSocketFactory extends AuthSSLProtocolSocketFactoryBa
 		int timeout = params.getConnectionTimeout();
 		if (timeout == 0) {
 			return createSocket(host, port, localAddress, localPort);
-		} else {
-			// To be eventually deprecated when migrated to Java 1.4 or above
-			Socket socket = ReflectionSocketFactory.createSocket(
-				"javax.net.ssl.SSLSocketFactory", host, port, localAddress, localPort, timeout);
-			if (socket == null) {
-				socket = ControllerThreadSocketFactory.createSocket(
-					this, host, port, localAddress, localPort, timeout);
-			}
-			return socket;
 		}
+		// To be eventually deprecated when migrated to Java 1.4 or above
+		Socket socket = ReflectionSocketFactory.createSocket(
+			"javax.net.ssl.SSLSocketFactory", host, port, localAddress, localPort, timeout);
+		if (socket == null) {
+			socket = ControllerThreadSocketFactory.createSocket(
+				this, host, port, localAddress, localPort, timeout);
+		}
+		return socket;
 	}
 
 
