@@ -1,6 +1,9 @@
 /*
  * $Log: BisJmsListener.java,v $
- * Revision 1.4  2011-06-06 12:27:26  m168309
+ * Revision 1.5  2011-06-27 12:03:23  m168309
+ * improved logging
+ *
+ * Revision 1.4  2011/06/06 12:27:26  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * BisJmsSender/BisJmsListener: added messageHeaderInSoapBody attribute
  *
  * Revision 1.3  2011/03/30 14:48:57  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -182,6 +185,7 @@ public class BisJmsListener extends JmsListener {
 
 	public String extractMessageBody(String rawMessageText, Map context, SoapWrapper soapWrapper) throws DomBuilderException, TransformerException, IOException {
 		context.put("messageText", rawMessageText);
+		log.debug("extract messageBody from message ["+rawMessageText+"]");
 		return requestTp.transform(rawMessageText, null, true);
 	}
 
