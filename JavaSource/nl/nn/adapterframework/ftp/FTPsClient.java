@@ -1,6 +1,10 @@
 /*
  * $Log: FTPsClient.java,v $
- * Revision 1.9  2007-10-08 13:30:10  europe\L190409
+ * Revision 1.10  2011-06-27 15:39:05  L190409
+ * enabled KeyboardInteractive login (experimental)
+ * allow to set keyManagerAlgorithm and trustManagerAlgorithm
+ *
+ * Revision 1.9  2007/10/08 13:30:10  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * changed ArrayList to List where possible
  *
  * Revision 1.8  2007/05/11 09:39:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -63,7 +67,6 @@ import org.apache.log4j.Logger;
  * @author John Dekker
  */
 public class FTPsClient extends FTPClient {
-	public static final String version = "$RCSfile: FTPsClient.java,v $  $Revision: 1.9 $ $Date: 2007-10-08 13:30:10 $";
 	protected Logger log = LogUtil.getLogger(this);
 	
 	private FtpSession session;
@@ -89,9 +92,8 @@ public class FTPsClient extends FTPClient {
 	protected void checkReply(String cmd) throws IOException  {
 		if (!FTPReply.isPositiveCompletion(getReplyCode())) {
 			throw new IOException("Command [" + cmd + "] returned error [" + getReplyString() + "]");
-		} else {
-			log.debug("Command [" + cmd + "] returned " + getReplyString());
-		}
+		} 
+		log.debug("Command [" + cmd + "] returned " + getReplyString());
 	}
 
 	// FTPsClient did hang when positive completion was send without 
@@ -236,10 +238,12 @@ public class FTPsClient extends FTPClient {
 			session.getCertificateAuthAlias(),
 			session.getCertificatePassword(),
 			session.getCertificateType(),
+			session.getKeyManagerAlgorithm(),
 			truststoreUrl,
 			session.getTruststoreAuthAlias(),
 			session.getTruststorePassword(),
 			session.getTruststoreType(),
+			session.getTrustManagerAlgorithm(),
 			session.isVerifyHostname(),
 			session.isJdk13Compatibility());
 			
@@ -318,10 +322,10 @@ public class FTPsClient extends FTPClient {
 	
 		log.debug("_readReply ["+reply.toString()+"]");
 	
-		if (concatenateLines)
+		if (concatenateLines) {
 			return reply.toString();
-		else
-			return (String[])replyList.toArray(new String[0]);
+		}
+		return (String[])replyList.toArray(new String[0]);
 	}
 	
 }

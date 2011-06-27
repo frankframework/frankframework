@@ -1,6 +1,10 @@
 /*
  * $Log: FtpSession.java,v $
- * Revision 1.16  2010-03-19 07:22:32  m168309
+ * Revision 1.17  2011-06-27 15:39:05  L190409
+ * enabled KeyboardInteractive login (experimental)
+ * allow to set keyManagerAlgorithm and trustManagerAlgorithm
+ *
+ * Revision 1.16  2010/03/19 07:22:32  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * default port for FTP is 21 instead of 22 (which is for SFTP)
  *
  * Revision 1.15  2007/05/07 08:35:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -80,6 +84,9 @@ import org.apache.log4j.Logger;
 import com.sshtools.j2ssh.SftpClient;
 import com.sshtools.j2ssh.SshClient;
 import com.sshtools.j2ssh.authentication.AuthenticationProtocolState;
+import com.sshtools.j2ssh.authentication.KBIAuthenticationClient;
+import com.sshtools.j2ssh.authentication.KBIPrompt;
+import com.sshtools.j2ssh.authentication.KBIRequestHandler;
 import com.sshtools.j2ssh.authentication.PasswordAuthenticationClient;
 import com.sshtools.j2ssh.authentication.PublicKeyAuthenticationClient;
 import com.sshtools.j2ssh.authentication.SshAuthenticationClient;
@@ -122,23 +129,25 @@ import com.sshtools.j2ssh.transport.publickey.SshPrivateKeyFile;
  * <tr><td>{@link #setConsoleKnownHostsVerifier(boolean) consoleKnownHostsVerifier}</td><td>(SFTP) &nbsp;</td><td>false</td></tr>
  * <tr><td>{@link #setCertificate(String) certificate}</td><td>(FTPS) resource URL to certificate to be used for authentication</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setCertificateType(String) certificateType}</td><td>(FTPS) &nbsp;</td><td>pkcs12</td></tr>
+ * <tr><td>{@link #setKeyManagerAlgorithm(String) keyManagerAlgorithm}</td><td>selects the algorithm to generate keymanagers. Can be left empty to use the servers default algorithm</td><td>WebSphere: IbmX509</td></tr>
  * <tr><td>{@link #setCertificateAuthAlias(String) certificateAuthAlias}</td><td>(FTPS) alias used to obtain certificate password</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setCertificatePassword(String) certificatePassword}</td><td>(FTPS) &nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setTruststore(String) truststore}</td><td>(FTPS) resource URL to truststore to be used for authentication</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setTruststoreType(String) truststoreType}</td><td>(FTPS) &nbsp;</td><td>jks</td></tr>
+ * <tr><td>{@link #setTrustManagerAlgorithm(String) trustManagerAlgorithm}</td><td>selects the algorithm to generate trustmanagers. Can be left empty to use the servers default algorithm</td><td>WebSphere: IbmX509</td></tr>
  * <tr><td>{@link #setTruststoreAuthAlias(String) truststoreAuthAlias}</td><td>(FTPS) alias used to obtain truststore password</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setTruststorePassword(String) truststorePassword}</td><td>(FTPS) &nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setJdk13Compatibility(boolean) jdk13Compatibility}</td><td>(FTPS) enables the use of certificates on JDK 1.3.x. The SUN reference implementation JSSE 1.0.3 is included for convenience</td><td>false</td></tr>
  * <tr><td>{@link #setVerifyHostname(boolean) verifyHostname}</td><td>(FTPS) when true, the hostname in the certificate will be checked against the actual hostname</td><td>true</td></tr>
  * <tr><td>{@link #setAllowSelfSignedCertificates(boolean) allowSelfSignedCertificates}</td><td>(FTPS) if true, the server certificate can be self signed</td><td>false</td></tr>
  * <tr><td>{@link #setProtP(boolean) protP}</td><td>(FTPS) if true, the server returns data via another socket</td><td>false</td></tr>
+ * <tr><td>{@link #setKeyboardInteractive(boolean) keyboardInteractive}</td><td>when true, KeyboardInteractive is used to login</td><td>false</td></tr>
  * </table>
  * </p>
  * 
  * @author John Dekker
  */
 public class FtpSession {
-	public static final String version = "$RCSfile: FtpSession.java,v $  $Revision: 1.16 $ $Date: 2010-03-19 07:22:32 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	// types of ftp transports
@@ -166,6 +175,7 @@ public class FtpSession {
 	private String fileType = null;
 	private boolean messageIsContent=false;
 	private boolean passive=true;
+	private boolean keyboardInteractive=false;
 	
 	// configuration property for sftp
 	private int proxyTransportType = SshConnectionProperties.USE_SOCKS5_PROXY;
@@ -182,10 +192,12 @@ public class FtpSession {
 	private String certificateType="pkcs12";
 	private String certificateAuthAlias;
 	private String certificatePassword;
+	private String keyManagerAlgorithm=null;
 	private String truststore = null;
 	private String truststoreType="jks";
 	private String truststoreAuthAlias;
 	private String truststorePassword = null;
+	private String trustManagerAlgorithm=null;
 	private boolean jdk13Compatibility = false;
 	private boolean verifyHostname = true;
 	private boolean allowSelfSignedCertificates = false;
@@ -301,10 +313,35 @@ public class FtpSession {
 				sshClient.connect(sshProp, new IgnoreHostKeyVerification());
 			}
 			
-			// pass the authentication information
-			SshAuthenticationClient sac = getSshAuthentication();
-			
+			SshAuthenticationClient sac;
+			if (!isKeyboardInteractive()) {
+				// pass the authentication information
+				sac = getSshAuthentication();
+			} else {
+				
+				// TODO: detecteren dat sshClient.getAvailableAuthMethods("ftpmsg")
+				// wel keyboard-interactive terug geeft, maar geen password en dan deze methode
+				// gebruiken
+				final CredentialFactory credentialFactory = new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
+				KBIAuthenticationClient kbiAuthenticationClient = new KBIAuthenticationClient();
+				kbiAuthenticationClient.setUsername(credentialFactory.getUsername());
+				kbiAuthenticationClient.setKBIRequestHandler(
+					new KBIRequestHandler() {
+						public void showPrompts(String name, String instruction, KBIPrompt[] prompts) {
+							//deze 3 regels in x.zip naar Zenz gemaild, hielp ook niet
+							if(prompts==null) {
+								return;
+							}
+							for(int i=0; i<prompts.length; i++) {
+								prompts[i].setResponse(credentialFactory.getPassword());
+							}
+						}
+					}
+				);
+				sac=kbiAuthenticationClient;
+			}
 			int result = sshClient.authenticate(sac);
+			
 			if (result != AuthenticationProtocolState.COMPLETE) {
 				closeSftpClient();
 				throw new IOException("Could not authenticate to sftp server " + result);
@@ -347,9 +384,8 @@ public class FtpSession {
 	protected void checkReply(String cmd) throws IOException  {
 		if (!FTPReply.isPositiveCompletion(ftpClient.getReplyCode())) {
 			throw new IOException("Command [" + cmd + "] returned error [" + ftpClient.getReplyCode() + "]: " + ftpClient.getReplyString());
-		} else {
-			log.debug("Command [" + cmd + "] returned " + ftpClient.getReplyString());
-		}
+		} 
+		if (log.isDebugEnabled()) log.debug("Command [" + cmd + "] returned " + ftpClient.getReplyString());
 	}
 	
 
@@ -446,10 +482,8 @@ public class FtpSession {
 		if (messageIsContent) {
 			return _put(params, session, message, remoteDirectory, remoteFilenamePattern, closeAfterSend);
 		}
-		else {
-			List remoteFilenames = _put(params, session, FileUtils.getListFromNames(message, ';'), remoteDirectory, remoteFilenamePattern, closeAfterSend);
-			return FileUtils.getNamesFromList(remoteFilenames, ';');	
-		}
+		List remoteFilenames = _put(params, session, FileUtils.getListFromNames(message, ';'), remoteDirectory, remoteFilenamePattern, closeAfterSend);
+		return FileUtils.getNamesFromList(remoteFilenames, ';');	
 	}
 	
 	/**
@@ -558,9 +592,7 @@ public class FtpSession {
 				}
 				return result;
 			}
-			else {
-				return FileUtils.getListFromNames(ftpClient.listNames());
-			}
+			return FileUtils.getListFromNames(ftpClient.listNames());
 		}
 		finally {
 			if (closeAfterSend) {
@@ -578,10 +610,8 @@ public class FtpSession {
 		if (messageIsContent) {
 			return _get(remoteDirectory, FileUtils.getListFromNames(filenames, ';'), closeAfterGet);
 		}
-		else {
-			List result = _get(params, session, localDirectory, remoteDirectory, FileUtils.getListFromNames(filenames, ';'), localFilenamePattern, closeAfterGet);
-			return FileUtils.getNamesFromList(result, ';');	
-		}
+		List result = _get(params, session, localDirectory, remoteDirectory, FileUtils.getListFromNames(filenames, ';'), localFilenamePattern, closeAfterGet);
+		return FileUtils.getNamesFromList(result, ';');	
 	}
 	
 	public void deleteRemote(String remoteDirectory, String filename, boolean closeAfterDelete) throws Exception {
@@ -895,6 +925,14 @@ public class FtpSession {
 		return certificatePassword;
 	}
 
+	public String getKeyManagerAlgorithm() {
+		return keyManagerAlgorithm;
+	}
+
+	public void setKeyManagerAlgorithm(String keyManagerAlgorithm) {
+		this.keyManagerAlgorithm = keyManagerAlgorithm;
+	}
+
 
 	public void setTruststore(String string) {
 		truststore = string;
@@ -922,6 +960,14 @@ public class FtpSession {
 	}
 	String getTruststorePassword() {
 		return truststorePassword;
+	}
+
+	public String getTrustManagerAlgorithm() {
+		return trustManagerAlgorithm;
+	}
+
+	public void setTrustManagerAlgorithm(String trustManagerAlgorithm) {
+		this.trustManagerAlgorithm = trustManagerAlgorithm;
 	}
 
 
@@ -953,6 +999,14 @@ public class FtpSession {
 	}
 	boolean isProtp() {
 		return protP;
+	}
+
+	public boolean isKeyboardInteractive() {
+		return keyboardInteractive;
+	}
+
+	public void setKeyboardInteractive(boolean keyboardInteractive) {
+		this.keyboardInteractive = keyboardInteractive;
 	}
 
 }

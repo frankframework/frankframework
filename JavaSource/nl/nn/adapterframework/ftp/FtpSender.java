@@ -1,6 +1,10 @@
 /*
  * $Log: FtpSender.java,v $
- * Revision 1.16  2010-03-19 07:22:32  m168309
+ * Revision 1.17  2011-06-27 15:39:05  L190409
+ * enabled KeyboardInteractive login (experimental)
+ * allow to set keyManagerAlgorithm and trustManagerAlgorithm
+ *
+ * Revision 1.16  2010/03/19 07:22:32  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * default port for FTP is 21 instead of 22 (which is for SFTP)
  *
  * Revision 1.15  2010/03/10 14:30:06  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -86,23 +90,25 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
  * <tr><td>{@link #setConsoleKnownHostsVerifier(boolean) consoleKnownHostsVerifier}</td><td>(SFTP) &nbsp;</td><td>false</td></tr>
  * <tr><td>{@link #setCertificate(String) certificate}</td><td>(FTPS) resource URL to certificate to be used for authentication</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setCertificateType(String) certificateType}</td><td>(FTPS) &nbsp;</td><td>pkcs12</td></tr>
+ * <tr><td>{@link #setKeyManagerAlgorithm(String) keyManagerAlgorithm}</td><td>selects the algorithm to generate keymanagers. Can be left empty to use the servers default algorithm</td><td>WebSphere: IbmX509</td></tr>
  * <tr><td>{@link #setCertificateAuthAlias(String) certificateAuthAlias}</td><td>(FTPS) alias used to obtain certificate password</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setCertificatePassword(String) certificatePassword}</td><td>(FTPS) &nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setTruststore(String) truststore}</td><td>(FTPS) resource URL to truststore to be used for authentication</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setTruststoreType(String) truststoreType}</td><td>(FTPS) &nbsp;</td><td>jks</td></tr>
+ * <tr><td>{@link #setTrustManagerAlgorithm(String) trustManagerAlgorithm}</td><td>selects the algorithm to generate trustmanagers. Can be left empty to use the servers default algorithm</td><td>WebSphere: IbmX509</td></tr>
  * <tr><td>{@link #setTruststoreAuthAlias(String) truststoreAuthAlias}</td><td>(FTPS) alias used to obtain truststore password</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setTruststorePassword(String) truststorePassword}</td><td>(FTPS) &nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setJdk13Compatibility(boolean) jdk13Compatibility}</td><td>(FTPS) enables the use of certificates on JDK 1.3.x. The SUN reference implementation JSSE 1.0.3 is included for convenience</td><td>false</td></tr>
  * <tr><td>{@link #setVerifyHostname(boolean) verifyHostname}</td><td>(FTPS) when true, the hostname in the certificate will be checked against the actual hostname</td><td>true</td></tr>
  * <tr><td>{@link #setAllowSelfSignedCertificates(boolean) allowSelfSignedCertificates}</td><td>(FTPS) if true, the server certificate can be self signed</td><td>false</td></tr>
  * <tr><td>{@link #setProtP(boolean) protP}</td><td>(FTPS) if true, the server returns data via another socket</td><td>false</td></tr>
+ * <tr><td>{@link #setKeyboardInteractive(boolean) keyboardInteractive}</td><td>when true, KeyboardInteractive is used to login</td><td>false</td></tr>
  * </table>
  * </p>
  *  
  * @author: John Dekker
  */
 public class FtpSender extends SenderWithParametersBase {
-	public static final String version = "$RCSfile: FtpSender.java,v $  $Revision: 1.16 $ $Date: 2010-03-19 07:22:32 $";
 
 	private FtpSession ftpSession;
 	
@@ -243,6 +249,9 @@ public class FtpSender extends SenderWithParametersBase {
 	public String getCertificateType() {
 		return ftpSession.getCertificateType();
 	}
+	public void setKeyManagerAlgorithm(String keyManagerAlgorithm) {
+		ftpSession.setKeyManagerAlgorithm(keyManagerAlgorithm);
+	}
 	public void setCertificateAuthAlias(String certificateAuthAlias) {
 		ftpSession.setCertificateAuthAlias(certificateAuthAlias);
 	}
@@ -263,6 +272,9 @@ public class FtpSender extends SenderWithParametersBase {
 	public void setTruststoreType(String truststoreType) {
 		ftpSession.setTruststoreType(truststoreType);
 	}
+	public void setTrustManagerAlgorithm(String trustManagerAlgorithm) {
+		ftpSession.setTrustManagerAlgorithm(trustManagerAlgorithm);
+	}
 	public void setTruststoreAuthAlias(String truststoreAuthAlias) {
 		ftpSession.setTruststoreAuthAlias(truststoreAuthAlias);
 	}
@@ -282,6 +294,7 @@ public class FtpSender extends SenderWithParametersBase {
 	public void setProtP(boolean protP) {
 		ftpSession.setProtP(protP);
 	}
-	
-
+	public void setKeyboardInteractive(boolean keyboardInteractive) {
+		ftpSession.setKeyboardInteractive(keyboardInteractive);
+	}
 }
