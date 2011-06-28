@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcFacade.java,v $
- * Revision 1.36  2011-04-27 10:01:53  m168309
+ * Revision 1.37  2011-06-28 14:29:00  L190409
+ * use TransactionAwareDataSourceProxy to get connections
+ *
+ * Revision 1.36  2011/04/27 10:01:53  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * used timeout attribute in getting connection too
  *
  * Revision 1.35  2011/04/13 08:36:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -134,6 +137,7 @@ import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.task.TimeoutGuard;
 
 import org.apache.commons.lang.StringUtils;
+import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy;
 
 /**
  * Provides functions for JDBC connections.
@@ -160,7 +164,6 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
     
 	private DataSource datasource = null;
 	private String datasourceName = null;
-//	private String datasourceNameXA = null;
 
 	private boolean transacted = false;
 	private boolean connectionsArePooled=true;
@@ -173,23 +176,6 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 		return "["+this.getClass().getName()+"] ["+getName()+"] ";
 	}
 
-//	/**
-//	 * Returns either {@link #getDatasourceName() datasourceName} or {@link #getDatasourceNameXA() datasourceNameXA},
-//	 * depending on the value of {@link #isTransacted()}.
-//	 * If the right one is not specified, the other is used. 
-//	 */
-//	public String getDataSourceNameToUse() throws JdbcException {
-//		String result = isTransacted() ? getDatasourceNameXA() : getDatasourceName();
-//		if (StringUtils.isEmpty(result)) {
-//			// try the alternative...
-//			result = isTransacted() ? getDatasourceName() : getDatasourceNameXA();
-//			if (StringUtils.isEmpty(result)) {
-//				throw new JdbcException(getLogPrefix()+"neither datasourceName nor datasourceNameXA are specified");
-//			}
-//			log.warn(getLogPrefix()+"correct datasourceName attribute not specified, will use ["+result+"]");
-//		}
-//		return result;
-//	}
 	public String getDataSourceNameToUse() throws JdbcException {
 		String result = getDatasourceName();
 		if (StringUtils.isEmpty(result)) {
@@ -322,12 +308,12 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 	 */
 	// TODO: consider making this one protected.
 	public Connection getConnection() throws JdbcException {
+		DataSource ds=new TransactionAwareDataSourceProxy(getDatasource());
 		try {
 			if (StringUtils.isNotEmpty(getUsername())) {
-				return getDatasource().getConnection(getUsername(),getPassword());
-			} else {
-				return getDatasource().getConnection();
+				return ds.getConnection(getUsername(),getPassword());
 			}
+			return ds.getConnection();
 		} catch (SQLException e) {
 			throw new JdbcException(getLogPrefix()+"cannot open connection on datasource ["+getDataSourceNameToUse()+"]", e);
 		}
