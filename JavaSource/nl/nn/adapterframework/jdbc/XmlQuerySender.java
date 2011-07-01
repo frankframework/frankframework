@@ -1,6 +1,9 @@
 /*
  * $Log: XmlQuerySender.java,v $
- * Revision 1.5  2011-04-13 08:40:02  L190409
+ * Revision 1.6  2011-07-01 09:46:49  m168309
+ * added sql element
+ *
+ * Revision 1.5  2011/04/13 08:40:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Indicate updatability of resultset explicitly using method-parameter
  *
  * Revision 1.4  2011/03/16 16:42:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -64,6 +67,9 @@ import org.w3c.dom.Element;
  *  alter - sequenceName
  *        - startWith
  * <br/>
+ *  sql   - type [0..1] one of {select;other}, other by default
+ *        - query
+ * <br/>
  * </pre></code><br/>
  * <p><b>Configuration:</b>
  * <table border="1">
@@ -91,7 +97,7 @@ import org.w3c.dom.Element;
  * @author  Peter Leeuwenburgh
  */
 public class XmlQuerySender extends DirectQuerySender {
-	public static final String version = "$RCSfile: XmlQuerySender.java,v $ $Revision: 1.5 $ $Date: 2011-04-13 08:40:02 $";
+	public static final String version = "$RCSfile: XmlQuerySender.java,v $ $Revision: 1.6 $ $Date: 2011-07-01 09:46:49 $";
 
 	public static final String TYPE_STRING = "string";
 	public static final String TYPE_NUMBER = "number";
@@ -264,7 +270,13 @@ public class XmlQuerySender extends DirectQuerySender {
 								int startWith = Integer.parseInt(XmlUtils.getChildTagAsString(queryElement, "startWith"));
 								result = alterQuery(connection, sequenceName, startWith);
 							} else {
-								throw new SenderException(getLogPrefix() + "unknown root element [" + root + "]");
+								if (root.equalsIgnoreCase("sql")) {
+									String type = XmlUtils.getChildTagAsString(queryElement, "type");
+									String query = XmlUtils.getChildTagAsString(queryElement, "query");
+									result = sql(connection, correlationID, query, type);
+								} else {
+									throw new SenderException(getLogPrefix() + "unknown root element [" + root + "]");
+								}
 							}
 						}
 					}
@@ -374,6 +386,21 @@ public class XmlQuerySender extends DirectQuerySender {
 			return executeUpdate(connection, correlationID, tableName, query, columns);
 		} catch (SenderException t) {
 			throw new SenderException(getLogPrefix() + "got exception executing an UPDATE SQL command", t);
+		}
+	}
+
+	private String sql(Connection connection, String correlationID, String query, String type) throws SenderException, JdbcException {
+		try {
+			PreparedStatement statement = getStatement(connection, correlationID, query, false);
+			statement.setQueryTimeout(getTimeout());
+			setBlobSmartGet(true);
+			if (StringUtils.isNotEmpty(type) && type.equalsIgnoreCase("select")) {
+				return executeSelectQuery(statement);
+			} else {
+				return executeOtherQuery(connection, correlationID, statement, query, null, null);
+			}
+		} catch (SQLException e) {
+			throw new SenderException(getLogPrefix() + "got exception executing a SQL command", e);
 		}
 	}
 
