@@ -1,6 +1,9 @@
 /*
  * $Log: EventTypeEnum.java,v $
- * Revision 1.1  2007-09-27 12:55:42  europe\L190409
+ * Revision 1.2  2011-07-06 06:54:19  m168309
+ * replaced <commons-lang-2.0.jar> by <commons-lang-2.6.jar>
+ *
+ * Revision 1.1  2007/09/27 12:55:42  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * introduction of monitoring
  *
  */
@@ -10,7 +13,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang.enum.Enum;
+import org.apache.commons.lang.enums.Enum;
 /**
  * Enumeration of Event Types for monitoring.
  * 

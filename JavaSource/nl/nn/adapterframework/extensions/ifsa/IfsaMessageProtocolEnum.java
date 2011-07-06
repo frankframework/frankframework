@@ -4,7 +4,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.List;
 
-import org.apache.commons.lang.enum.Enum;
+import org.apache.commons.lang.enums.Enum;
 /**
  * Enumeration of IFSA message protocols.
  *

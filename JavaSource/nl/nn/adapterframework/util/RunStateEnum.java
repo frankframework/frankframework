@@ -1,6 +1,6 @@
 package nl.nn.adapterframework.util;
 
-import org.apache.commons.lang.enum.Enum;
+import org.apache.commons.lang.enums.Enum;
 
 import java.util.Iterator;
 import java.util.List;
@@ -11,7 +11,7 @@ import java.util.Map;
  * @author Gerrit van Brakel
  */
 public class RunStateEnum extends Enum {
-	public static final String version="$Id: RunStateEnum.java,v 1.3 2004-03-26 10:42:43 NNVZNL01#L180564 Exp $";
+	public static final String version="$Id: RunStateEnum.java,v 1.4 2011-07-06 06:54:19 m168309 Exp $";
 	
 	
    public static final RunStateEnum STOPPED = new RunStateEnum("Stopped");
