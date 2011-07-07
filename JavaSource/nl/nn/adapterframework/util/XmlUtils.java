@@ -1,6 +1,9 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.70  2011-03-10 07:30:03  m168309
+ * Revision 1.71  2011-07-07 12:14:10  m168309
+ * added method nodeToString
+ *
+ * Revision 1.70  2011/03/10 07:30:03  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added method canonicalize()
  *
  * Revision 1.69  2011/03/10 07:22:59  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -249,6 +252,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
@@ -292,7 +296,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * @version Id
  */
 public class XmlUtils {
-	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.70 $ $Date: 2011-03-10 07:30:03 $";
+	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.71 $ $Date: 2011-07-07 12:14:10 $";
 	static Logger log = LogUtil.getLogger(XmlUtils.class);
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
@@ -1692,4 +1696,11 @@ public class XmlUtils {
 		return sw.toString();
 	}
 
+	public static String nodeToString(Node node) throws TransformerException {
+		Transformer t = getTransformerFactory().newTransformer();
+		t.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+		StringWriter sw = new StringWriter();
+		t.transform(new DOMSource(node), new StreamResult(sw));
+		return sw.toString();
+	}
 }
