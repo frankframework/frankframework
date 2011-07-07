@@ -1,6 +1,9 @@
 /*
  * $Log: BisJmsListener.java,v $
- * Revision 1.5  2011-06-27 12:03:23  m168309
+ * Revision 1.6  2011-07-07 12:13:24  m168309
+ * added resultInPayload attribute
+ *
+ * Revision 1.5  2011/06/27 12:03:23  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * improved logging
  *
  * Revision 1.4  2011/06/06 12:27:26  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -30,10 +33,13 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.jms.JmsListener;
 import nl.nn.adapterframework.soap.SoapWrapper;
 import nl.nn.adapterframework.util.DomBuilderException;
+import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
 
 /**
  * Bis (Business Integration Services) extension of JmsListener.
@@ -81,10 +87,12 @@ import org.apache.commons.lang.StringUtils;
  *			&lt;/bis:MessageHeader&gt;
  *		&lt;/soap:Header&gt;
  *		&lt;soap:Body&gt;
- *			<i>&lt;pcr:GetResponse xmlns:pcr="http://www.ing.com/nl/pcretail/ts/migrationauditdata_01"/&gt;</i>
- *			&lt;bis:Result xmlns:bis="http://www.ing.com/CSP/XSD/General/Message_2"&gt;
- *				&lt;bis:Status&gt;OK&lt;/bis:Status&gt;
- *			&lt;/bis:Result&gt;
+ *			<i>&lt;GetResponse xmlns="http://www.ing.com/nl/pcretail/ts/migrationcasedata_01"&gt;</i>
+ *				&lt;bis:Result xmlns:bis="http://www.ing.com/CSP/XSD/General/Message_2"&gt;
+ *					&lt;bis:Status&gt;OK&lt;/bis:Status&gt;
+ *				&lt;/bis:Result&gt;
+ *				<i>&lt;CaseData&gt;...&lt;/CaseData&gt;</i>
+ *			<i>&lt;/GetResponse&gt;</i>
  *		&lt;/soap:Body&gt;
  *	&lt;/soap:Envelope&gt;
  * </pre></code><br/>
@@ -95,8 +103,8 @@ import org.apache.commons.lang.StringUtils;
  *		&lt;bis:Status&gt;ERROR&lt;/bis:Status&gt;
  *		&lt;bis:ErrorList&gt;
  *			&lt;bis:Error&gt;
- *				&lt;bis:Code&gt;102&lt;/bis:Code&gt;
- *				&lt;bis:Reason&gt;Message not according to XSD definition&lt;/bis:Reason&gt;
+ *				&lt;bis:Code&gt;ERR6003&lt;/bis:Code&gt;
+ *				&lt;bis:Reason&gt;Invalid Request Message&lt;/bis:Reason&gt;
  *				&lt;bis:Service&gt;
  *					&lt;bis:Name&gt;migrationauditdata_01&lt;/bis:Name&gt;
  *					&lt;bis:Context&gt;1&lt;/bis:Context&gt;
@@ -122,7 +130,8 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setSoap(boolean) soap}</td><td>when <code>true</code>, messages sent are put in a SOAP envelope</td><td><code>true</code></td></tr>
  * <tr><td>{@link #setRequestXPath(String) requestXPath}</td><td>xpath expression to extract the message which is passed to the pipeline. When soap=true the initial message is the content of the soap body. If empty, the content of the soap body is passed (without the root body)</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setRequestNamespaceDefs(String) requestNamespaceDefs}</td><td>namespace defintions for requestXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setMessageHeaderInSoapBody(boolean) messageHeaderInSoapBody}</td><td>when <code>true</code>, the MessageHeader is put in the SOAP body instead of in the SOAP header (old BIS standard)</td><td><code>false</code></td></tr>
+ * <tr><td>{@link #setMessageHeaderInSoapBody(boolean) messageHeaderInSoapBody}</td><td>when <code>true</code>, the MessageHeader is put in the SOAP body instead of in the SOAP header (first one is the old BIS standard)</td><td><code>false</code></td></tr>
+ * <tr><td>{@link #setResultInPayload(boolean) resultInPayload}</td><td>when <code>true</code>, the Result is put in the payload (as first child in root tag) instead of in the SOAP body as sibling of the payload (last one is the old BIS standard)</td><td><code>true</code></td></tr>
  * <tr><td>{@link #setErrorCodeSessionKey(String) errorCodeSessionKey}</td><td>key of session variable to store error code in (if an error occurs)</td><td>bisErrorCode</td></tr>
  * <tr><td>{@link #setErrorTextSessionKey(String) errorTextSessionKey}</td><td>key of session variable to store error text in (if an error occurs). If not specified, the following error text is derived from the error code: 
  *   <table border="1">
@@ -156,6 +165,7 @@ public class BisJmsListener extends JmsListener {
 	private String requestXPath = null;
 	private String requestNamespaceDefs = null;
 	private boolean messageHeaderInSoapBody = false;
+	private boolean resultInPayload = true;
 	private String errorCodeSessionKey = "bisErrorCode";
 	private String errorTextSessionKey = null;
 	private String errorReasonSessionKey = "bisErrorReason";
@@ -185,7 +195,7 @@ public class BisJmsListener extends JmsListener {
 
 	public String extractMessageBody(String rawMessageText, Map context, SoapWrapper soapWrapper) throws DomBuilderException, TransformerException, IOException {
 		context.put("messageText", rawMessageText);
-		log.debug("extract messageBody from message ["+rawMessageText+"]");
+		log.debug("extract messageBody from message [" + rawMessageText + "]");
 		return requestTp.transform(rawMessageText, null, true);
 	}
 
@@ -207,16 +217,25 @@ public class BisJmsListener extends JmsListener {
 			messageHeader = null;
 		}
 		messages.add(rawReply);
+
+		String payload = null;
 		try {
-			messages.add(prepareResult(errorCode, threadContext));
+			String result = prepareResult(errorCode, threadContext);
+			if (isResultInPayload()) {
+				String message = Misc.arrayListToString(messages);
+				Document messageDoc = XmlUtils.buildDomDocument(message);
+				Node messageRootNode = messageDoc.getFirstChild();
+				Node resultNode = messageDoc.importNode(XmlUtils.buildNode(result), true);
+				messageRootNode.insertBefore(resultNode, messageRootNode.getFirstChild());
+				payload = XmlUtils.nodeToString(messageDoc);
+			} else {
+				messages.add(result);
+				payload = Misc.arrayListToString(messages);
+			}
 		} catch (Exception e) {
 			throw new ListenerException(e);
 		}
-		StringBuffer sb = new StringBuffer();
-		for (int i = 0; i < messages.size(); i++) {
-			sb.append((String) messages.get(i));
-		}
-		return super.prepareReply(sb.toString(), threadContext, messageHeader);
+		return super.prepareReply(payload, threadContext, messageHeader);
 	}
 
 	public String prepareResult(String errorCode, Map threadContext) throws DomBuilderException, IOException, TransformerException {
@@ -274,6 +293,14 @@ public class BisJmsListener extends JmsListener {
 
 	public boolean isMessageHeaderInSoapBody() {
 		return messageHeaderInSoapBody;
+	}
+
+	public void setResultInPayload(boolean b) {
+		resultInPayload = b;
+	}
+
+	public boolean isResultInPayload() {
+		return resultInPayload;
 	}
 
 	public void setErrorCodeSessionKey(String errorCodeSessionKey) {

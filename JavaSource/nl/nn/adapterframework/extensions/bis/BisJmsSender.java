@@ -1,6 +1,9 @@
 /*
  * $Log: BisJmsSender.java,v $
- * Revision 1.5  2011-06-06 12:27:26  m168309
+ * Revision 1.6  2011-07-07 12:13:24  m168309
+ * added resultInPayload attribute
+ *
+ * Revision 1.5  2011/06/06 12:27:26  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * BisJmsSender/BisJmsListener: added messageHeaderInSoapBody attribute
  *
  * Revision 1.4  2011/03/30 14:51:06  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -36,6 +39,7 @@ import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
+import org.w3c.dom.Element;
 
 /**
  * Bis (Business Integration Services) extension of JmsSender.
@@ -54,7 +58,8 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setSoap(boolean) soap}</td><td>when <code>true</code>, messages sent are put in a SOAP envelope</td><td><code>true</code></td></tr>
  * <tr><td>{@link #setResponseXPath(String) responseXPath}</td><td>xpath expression to extract the message from the reply which is passed to the pipeline. When soap=true the initial message is the content of the soap body. If empty, the content of the soap body is passed (without the root body)</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setResponseNamespaceDefs(String) responseNamespaceDefs}</td><td>namespace defintions for responseXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setMessageHeaderInSoapBody(boolean) messageHeaderInSoapBody}</td><td>when <code>true</code>, the MessageHeader is put in the SOAP body instead of in the SOAP header (old BIS standard)</td><td><code>false</code></td></tr>
+ * <tr><td>{@link #setMessageHeaderInSoapBody(boolean) messageHeaderInSoapBody}</td><td>when <code>true</code>, the MessageHeader is put in the SOAP body instead of in the SOAP header (first one is the old BIS standard)</td><td><code>false</code></td></tr>
+ * <tr><td>{@link #setResultInPayload(boolean) resultInPayload}</td><td>when <code>true</code>, the Result is put in the payload (as first child in root tag) instead of in the SOAP body as sibling of the payload (last one is the old BIS standard)</td><td><code>true</code></td></tr>
  * <tr><td>{@link #setConversationIdSessionKey(String) conversationIdSessionKey}</td><td>key of session variable to store ConversationId in; used in the MessageHeader of the request</td><td>bisConversationId</td></tr>
  * <tr><td>{@link #setExternalRefToMessageIdSessionKey(String) externalRefToMessageIdSessionKey}</td><td>key of session variable to store ExternalRefToMessageId in; used in the MessageHeader of the request</td><td>bisExternalRefToMessageId</td></tr>
  * </p>
@@ -67,11 +72,13 @@ public class BisJmsSender extends JmsSender {
 	private final static String soapNamespaceDefs = "soapenv=http://schemas.xmlsoap.org/soap/envelope/";
 	private final static String soapBodyXPath = "soapenv:Envelope/soapenv:Body";
 	private final static String bisNamespaceDefs = "bis=http://www.ing.com/CSP/XSD/General/Message_2";
-	private final static String bisErrorXPath = "soapenv:Envelope/soapenv:Body/bis:Result/bis:Status='ERROR' or string-length(soapenv:Envelope/soapenv:Body/soapenv:Fault/faultcode)&gt;0";
+	private final static String bisErrorXPath_OLD = "soapenv:Envelope/soapenv:Body/bis:Result/bis:Status='ERROR' or string-length(soapenv:Envelope/soapenv:Body/soapenv:Fault/faultcode)&gt;0";
+	private final static String bisErrorXPath_NEW = "soapenv:Envelope/soapenv:Body/*/bis:Result/bis:Status='ERROR' or string-length(soapenv:Envelope/soapenv:Body/soapenv:Fault/faultcode)&gt;0";
 
 	private String responseXPath = null;
 	private String responseNamespaceDefs = null;
 	private boolean messageHeaderInSoapBody = false;
+	private boolean resultInPayload = true;
 	private String conversationIdSessionKey = "bisConversationId";
 	private String externalRefToMessageIdSessionKey = "bisExternalRefToMessageId";
 
@@ -91,8 +98,8 @@ public class BisJmsSender extends JmsSender {
 		}
 		try {
 			bisUtils = BisUtils.getInstance();
-			bisErrorTp = new TransformerPool(XmlUtils.createXPathEvaluatorSource(soapNamespaceDefs + "\n" + bisNamespaceDefs, bisErrorXPath, "text"));
-			responseTp = new TransformerPool(XmlUtils.createXPathEvaluatorSource(StringUtils.isNotEmpty(getResponseNamespaceDefs())?soapNamespaceDefs + "\n" + getResponseNamespaceDefs():soapNamespaceDefs, StringUtils.isNotEmpty(getResponseXPath())?soapBodyXPath + "/" + getResponseXPath():soapBodyXPath + "/*", "xml"));
+			bisErrorTp = new TransformerPool(XmlUtils.createXPathEvaluatorSource(soapNamespaceDefs + "\n" + bisNamespaceDefs, (isResultInPayload() ? bisErrorXPath_NEW : bisErrorXPath_OLD), "text"));
+			responseTp = new TransformerPool(XmlUtils.createXPathEvaluatorSource(StringUtils.isNotEmpty(getResponseNamespaceDefs()) ? soapNamespaceDefs + "\n" + getResponseNamespaceDefs() : soapNamespaceDefs, StringUtils.isNotEmpty(getResponseXPath()) ? soapBodyXPath + "/" + getResponseXPath() : soapBodyXPath + "/*", "xml"));
 		} catch (TransformerConfigurationException e) {
 			throw new ConfigurationException(getLogPrefix() + "cannot create transformer", e);
 		}
@@ -128,10 +135,20 @@ public class BisJmsSender extends JmsSender {
 				throw new SenderException(e);
 			}
 			if (Boolean.valueOf(bisError).booleanValue()) {
-				throw new SenderException("bisErrorXPath [" + bisErrorXPath + "] returns true");
+				throw new SenderException("bisErrorXPath [" + (isResultInPayload() ? bisErrorXPath_NEW : bisErrorXPath_OLD) + "] returns true");
 			}
 			try {
-				return responseTp.transform(soapBody, null, true);
+				soapBody = responseTp.transform(soapBody, null, true);
+				if (isResultInPayload()) {
+					Element soapBodyElement = XmlUtils.buildElement(soapBody, true);
+					Element resultElement = XmlUtils.getFirstChildTag(soapBodyElement, "Result");
+					if (resultElement != null) {
+						soapBodyElement.removeChild(resultElement);
+					}
+					soapBody = XmlUtils.nodeToString(soapBodyElement);
+				}
+				return soapBody;
+
 			} catch (Exception e) {
 				throw new SenderException(e);
 			}
@@ -163,6 +180,14 @@ public class BisJmsSender extends JmsSender {
 
 	public boolean isMessageHeaderInSoapBody() {
 		return messageHeaderInSoapBody;
+	}
+
+	public void setResultInPayload(boolean b) {
+		resultInPayload = b;
+	}
+
+	public boolean isResultInPayload() {
+		return resultInPayload;
 	}
 
 	public void setExternalRefToMessageIdSessionKey(String externalRefToMessageIdSessionKey) {
