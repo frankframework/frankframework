@@ -1,6 +1,9 @@
 /*
  * $Log: Misc.java,v $
- * Revision 1.31  2010-11-12 15:11:14  m168309
+ * Revision 1.32  2011-07-07 12:13:51  m168309
+ * added method arrayListToString
+ *
+ * Revision 1.31  2010/11/12 15:11:14  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added isForceFixedForwardingByDefault
  *
  * Revision 1.30  2010/10/18 13:04:57  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -92,6 +95,7 @@ import java.net.URL;
 import java.net.UnknownHostException;
 import java.rmi.server.UID;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
@@ -111,7 +115,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class Misc {
-	public static final String version="$RCSfile: Misc.java,v $ $Revision: 1.31 $ $Date: 2010-11-12 15:11:14 $";
+	public static final String version="$RCSfile: Misc.java,v $ $Revision: 1.32 $ $Date: 2011-07-07 12:13:51 $";
 	static Logger log = LogUtil.getLogger(Misc.class);
 	public static final int BUFFERSIZE=20000;
 	public static final String DEFAULT_INPUT_STREAM_ENCODING="UTF-8";
@@ -714,5 +718,13 @@ public class Misc {
 			forceFixedForwardingByDefault = new Boolean(force);
 		}
 		return forceFixedForwardingByDefault.booleanValue();
+	}
+
+	public static String arrayListToString(ArrayList arrayList) {
+		StringBuffer sb = new StringBuffer();
+		for (int i = 0; i < arrayList.size(); i++) {
+			sb.append((String) arrayList.get(i));
+		}
+		return sb.toString();
 	}
 }
