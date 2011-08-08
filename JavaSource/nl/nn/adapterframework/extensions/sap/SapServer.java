@@ -1,6 +1,9 @@
 /* 
  * $Log: SapServer.java,v $
- * Revision 1.11  2010-04-26 14:08:01  m168309
+ * Revision 1.12  2011-08-08 15:16:21  L190409
+ * disable trace when level < 1
+ *
+ * Revision 1.11  2010/04/26 14:08:01  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * support Unicode SAP system
  *
  * Revision 1.10  2008/01/30 14:42:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -45,8 +48,6 @@
  */
 package nl.nn.adapterframework.extensions.sap;
 
-import nl.nn.adapterframework.extensions.sap.SapFunctionHandler;
-import nl.nn.adapterframework.extensions.sap.SapSystem;
 import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.log4j.Logger;
@@ -74,6 +75,7 @@ public class SapServer extends JCoIDoc.Server implements JCO.ServerExceptionList
 		this.setProperty("jco.server.unicode", system.isUnicode()?"1":"0");
 		this.handler = handler;
 		this.system=system;
+		setTrace(system.getTraceLevel()>0);
 		log.info(getLogPrefix()+"connected to ["+system.getGwhost()+":"+system.getGwserv()+"] with unicode ["+system.isUnicode()+"]");
 
 //		JCO.addServerExceptionListener(this);
