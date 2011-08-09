@@ -1,6 +1,9 @@
 /*
  * $Log: DB2XMLWriter.java,v $
- * Revision 1.21  2011-04-13 08:48:03  L190409
+ * Revision 1.22  2011-08-09 10:11:24  L190409
+ * use JdbcUtil.getValue()
+ *
+ * Revision 1.21  2011/04/13 08:48:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * treat VARBINARY and LONGVARBINARY as BLOB
  *
  * Revision 1.20  2009/10/07 14:32:19  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -55,7 +58,6 @@
  */
 package nl.nn.adapterframework.util;
 
-import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -63,7 +65,6 @@ import java.sql.Statement;
 import java.sql.Types;
 
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.jdbc.JdbcException;
 
 import org.apache.log4j.Logger;
 
@@ -99,7 +100,6 @@ import org.apache.log4j.Logger;
  **/
 
 public class DB2XMLWriter {
-	public static final String version="$RCSfile: DB2XMLWriter.java,v $ $Revision: 1.21 $ $Date: 2011-04-13 08:48:03 $";
 	protected static Logger log = LogUtil.getLogger(DB2XMLWriter.class);
 
 	private String docname = "result";
@@ -138,50 +138,6 @@ public class DB2XMLWriter {
      	return ("Unknown");
     }
        
-    /**
-     * This method gets the value of the specified column
-     */
-    private static String getValue(final ResultSet rs, int colNum, int type, String blobCharset, boolean decompressBlobs, String nullValue, boolean trimSpaces, boolean getBlobSmart) throws JdbcException, IOException, SQLException
-    {
-        switch(type)
-        {
-	        case Types.LONGVARBINARY :
-	        case Types.VARBINARY :
-			case Types.BLOB :
-				try {
-					return JdbcUtil.getBlobAsString(rs,colNum,blobCharset,false,decompressBlobs,getBlobSmart);
-				} catch (JdbcException e) {
-					log.debug("Caught JdbcException, assuming no blob found",e);
-					return nullValue;
-				}
-			case Types.CLOB :
-				try {
-					return JdbcUtil.getClobAsString(rs,colNum,false);
-				} catch (JdbcException e) {
-					log.debug("Caught JdbcException, assuming no clob found",e);
-					return nullValue;
-				}
-        	// return "undefined" for types that cannot be rendered to strings easily
-            case Types.ARRAY :
-            case Types.DISTINCT :
-            case Types.BINARY :
-            case Types.REF :
-            case Types.STRUCT :
-                return "undefined";
-            default :
-            {
-                String value = rs.getString(colNum);
-                if(value == null)
-                    return nullValue;
-                else
-                	if (trimSpaces) {
-                		return value.trim();
-                	}
-					return value;
-
-            }
-        }
-    }
 
    /**
     * Retrieve the Resultset as a well-formed XML string
@@ -194,7 +150,7 @@ public class DB2XMLWriter {
 	 * Retrieve the Resultset as a well-formed XML string
 	 */
 	public synchronized String getXML(ResultSet rs, int maxlength) {
-		return getXML(rs, Integer.MAX_VALUE, true);
+		return getXML(rs, maxlength, true);
 	}
 
 	public synchronized String getXML(ResultSet rs, int maxlength, boolean includeFieldDefinition) {
@@ -297,7 +253,7 @@ public class DB2XMLWriter {
 			resultField.addAttribute("name", "" + rsmeta.getColumnName(i));
 	
 			try {
-				String value = getValue(rs, i, rsmeta.getColumnType(i), blobCharset, decompressBlobs, nullValue, trimSpaces, getBlobSmart);
+				String value = JdbcUtil.getValue(rs, i, rsmeta, blobCharset, decompressBlobs, nullValue, trimSpaces, getBlobSmart, false);
 				if (rs.wasNull()) {
 					resultField.addAttribute("null","true");
 				}
