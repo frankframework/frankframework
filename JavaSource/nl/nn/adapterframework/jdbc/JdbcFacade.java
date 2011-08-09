@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcFacade.java,v $
- * Revision 1.37  2011-06-28 14:29:00  L190409
+ * Revision 1.38  2011-08-09 09:39:15  L190409
+ * use default dbmsSupport when no one found
+ *
+ * Revision 1.37  2011/06/28 14:29:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * use TransactionAwareDataSourceProxy to get connections
  *
  * Revision 1.36  2011/04/27 10:01:53  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -128,6 +131,7 @@ import nl.nn.adapterframework.core.IXAEnabled;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.jdbc.dbms.DbmsSupportFactory;
+import nl.nn.adapterframework.jdbc.dbms.GenericDbmsSupport;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupportFactory;
 import nl.nn.adapterframework.jms.JNDIBase;
@@ -300,6 +304,9 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 					log.warn("exception closing connection for dbmssupport",e1);
 				}
 			}
+		}
+		if (dbmsSupport==null) {
+			dbmsSupport=new GenericDbmsSupport();
 		}
 		return dbmsSupport;
 	}
