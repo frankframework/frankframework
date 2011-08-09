@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcQuerySenderBase.java,v $
- * Revision 1.54  2011-08-09 10:02:04  L190409
+ * Revision 1.55  2011-08-09 10:07:00  L190409
+ * updated javadoc
+ *
+ * Revision 1.54  2011/08/09 10:02:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * moved timeout to JdbcSenderBase
  * added blob stream facility
  *
@@ -235,8 +238,8 @@ import org.apache.commons.lang.StringUtils;
  * </ul></td><td>"other"</td></tr>
  * <tr><td>{@link #setBlobColumn(int) blobColumn}</td><td>only for queryType 'updateBlob': column that contains the blob to be updated</td><td>1</td></tr>
  * <tr><td>{@link #setClobColumn(int) clobColumn}</td><td>only for queryType 'updateClob': column that contains the clob to be updated</td><td>1</td></tr>
- * <tr><td>{@link #setBlobSessionKey(String) blobSessionKey}</td><td>only for queryType 'updateBlob': key of session variable that contains the data (String or InputStream) to be loaded to the blob. When empty, the input of the pipe, which then must be a String, is used</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setClobSessionKey(String) clobSessionKey}</td><td>only for queryType 'updateClob': key of session variable that contains the clob (String or InputStream) to be loaded to the clob. When empty, the input of the pipe, which then must be a String, is used</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setBlobSessionKey(String) blobSessionKey}</td><td>for queryType 'updateBlob': key of session variable that contains the data (String or InputStream) to be loaded to the blob. When empty, the input of the pipe, which then must be a String, is used. For queryType 'select': key of session variable that contains the OutputStream, Writer or filename to write the Blob to</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setClobSessionKey(String) clobSessionKey}</td><td>for queryType 'updateClob': key of session variable that contains the clob (String or InputStream) to be loaded to the clob. When empty, the input of the pipe, which then must be a String, is used. For queryType 'select': key of session variable that contains the OutputStream, Writer or filename to write the Clob to</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMaxRows(int) maxRows}</td><td>maximum number of rows returned</td><td>-1 (unlimited)</td></tr>
  * <tr><td>{@link #setStartRow(int) startRow}</td><td>the number of the first row returned from the output</td><td>1</td></tr>
  * <tr><td>{@link #setScalar(boolean) scalar}</td><td>when true, the value of the first column of the first row (or the StartRow) is returned as the only result, as a simple non-XML value</td><td>false</td></tr>
@@ -251,6 +254,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setTrimSpaces(boolean) trimSpaces}</td><td>remove trailing blanks from all values.</td><td>true</td></tr>
  * <tr><td>{@link #setBlobCharset(String) blobCharset}</td><td>charset used to read and write BLOBs</td><td>UTF-8</td></tr>
  * <tr><td>{@link #setCloseInputstreamOnExit(boolean) closeInputstreamOnExit}</td><td>when set to <code>false</code>, the inputstream is not closed after it has been used</td><td>true</td></tr>
+ * <tr><td>{@link #setCloseOutputstreamOnExit(boolean) closeOutputstreamOnExit}</td><td>when set to <code>false</code>, the outputstream is not closed after Blob or Clob has been written to it</td><td>true</td></tr>
  * <tr><td>{@link #setStreamCharset(String) streamCharset}</td><td>charset used when reading a stream (that is e.g. going to be written to a BLOB or CLOB). When empty, the stream is copied directly to the BLOB, without conversion</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setBlobsCompressed(boolean) blobsCompressed}</td><td>controls whether blobdata is stored compressed in the database</td><td>true</td></tr>
  * <tr><td>{@link #setColumnsReturned(String) columnsReturned}</td><td>comma separated list of columns whose values are to be returned. Works only if the driver implements JDBC 3.0 getGeneratedKeys()</td><td>&nbsp;</td></tr>
