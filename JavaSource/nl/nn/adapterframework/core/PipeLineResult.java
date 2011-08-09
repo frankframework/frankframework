@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLineResult.java,v $
- * Revision 1.5  2008-07-14 17:10:00  europe\L190409
+ * Revision 1.6  2011-08-09 07:42:19  L190409
+ * simplified toString()
+ *
+ * Revision 1.5  2008/07/14 17:10:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added serialVersionUID
  *
  * Revision 1.4  2004/03/30 07:29:53  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -9,7 +12,6 @@
  */
 package nl.nn.adapterframework.core;
 
-import java.io.Serializable;
 
 /**
  * The PipeLineResult is a type to store both the
@@ -22,16 +24,15 @@ import java.io.Serializable;
  * @version Id
  * @author Johan Verrips
  */
-public class PipeLineResult implements Serializable {
-	public static final String version = "$RCSfile: PipeLineResult.java,v $ $Revision: 1.5 $ $Date: 2008-07-14 17:10:00 $";
-
-	static final long serialVersionUID = 1;
+public class PipeLineResult {
 
 	private String result;
 	private String state;
-	public PipeLineResult() {
-		super();
+
+	public String toString(){
+		return "result=["+result+"] state=["+state+"]";
 	}
+
 	/**
 	 * Get the result of the pipeline processing
 	 * @return java.lang.String
@@ -40,27 +41,22 @@ public class PipeLineResult implements Serializable {
 		return result;
 	}
 	/**
-	 * Get the exit-state of the pipeliness
-	 * @return java.lang.String
+	 * set the result of the PipeLine processing to the specified value.
+	 */
+	public void setResult(String newResult) {
+		result = newResult;
+	}
+
+	/**
+	 * Get the exit-state of the pipeline
 	 */
 	public String getState() {
 		return state;
 	}
 	/**
-	 * set the result of the PipeLine processing to the specified value.
-	 * @param newResult java.lang.String
-	 */
-	public void setResult(String newResult) {
-		result = newResult;
-	}
-	/**
 	 * set the state of the pipeline. 
-	 * @param newState java.lang.String
 	 */
 	public void setState(String newState) {
 		state = newState;
-	}
-	public String toString(){
-		return "[result=["+result+"] state=["+state+"] version=["+version+"]]";
 	}
 }
