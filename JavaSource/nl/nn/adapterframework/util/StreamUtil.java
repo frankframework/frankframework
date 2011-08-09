@@ -1,6 +1,9 @@
 /*
  * $Log: StreamUtil.java,v $
- * Revision 1.2  2009-08-04 11:35:28  L190409
+ * Revision 1.3  2011-08-09 07:55:13  L190409
+ * added functions to obtain an OutputStream or Writer
+ *
+ * Revision 1.2  2009/08/04 11:35:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added openZipDownload
  *
  * Revision 1.1  2007/07/17 11:03:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -10,6 +13,8 @@
  */
 package nl.nn.adapterframework.util;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -20,6 +25,8 @@ import java.util.zip.ZipOutputStream;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.StringUtils;
+
 /**
  * Functions to read and write from one stream to another.
  * 
@@ -28,6 +35,36 @@ import javax.servlet.http.HttpServletResponse;
  */
 public class StreamUtil {
 	public static final String DEFAULT_INPUT_STREAM_ENCODING="UTF-8";
+	
+	public static OutputStream getOutputStream(Object target) throws IOException {
+		if (target instanceof OutputStream) {
+			return (OutputStream) target;
+		} 
+		if (target instanceof String) {
+			String filename=(String)target;
+			if (StringUtils.isEmpty(filename)) {
+				throw new IOException("target string cannot be empty but must contain a filename");
+			}
+			try {
+				return new FileOutputStream(filename);
+			} catch (FileNotFoundException e) {
+				FileNotFoundException fnfe = new FileNotFoundException("cannot create file ["+filename+"]");
+				fnfe.initCause(e);
+				throw fnfe;					
+			}
+		}
+		return null;
+	}
+
+	public static Writer getWriter(Object target) throws IOException {
+		if (target instanceof HttpServletResponse) {
+			return ((HttpServletResponse)target).getWriter();
+		}
+		if (target instanceof Writer) {
+			return (Writer)target;
+		}
+		return null;
+	}
 	
 	public static String readerToString(Reader reader, String endOfLineString) throws IOException {
 		StringBuffer sb = new StringBuffer();
@@ -125,8 +162,6 @@ public class StreamUtil {
 	public static ZipOutputStream openZipDownload(HttpServletResponse response, String filename) throws IOException {
 		OutputStream out = response.getOutputStream();
 		response.setContentType("application/x-zip-compressed");
-//		response.setHeader("Pragma","Public");
-//		response.setHeader("Cache-Control","max-age=0");
 		response.setHeader("Content-Disposition","attachment; filename=\""+filename+"\"");
 		ZipOutputStream zipOutputStream = new ZipOutputStream(out);
 		return zipOutputStream;
