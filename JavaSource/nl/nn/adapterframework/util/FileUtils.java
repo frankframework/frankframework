@@ -1,6 +1,9 @@
 /*
  * $Log: FileUtils.java,v $
- * Revision 1.21  2011-05-25 08:09:30  L190409
+ * Revision 1.22  2011-08-09 07:52:53  L190409
+ * fixed location of temp-file
+ *
+ * Revision 1.21  2011/05/25 08:09:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * support for minStability while listing files
  *
  * Revision 1.20  2011/04/13 08:48:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -259,13 +262,14 @@ public class FileUtils {
 		return createTempFile(null,null);
 	}
 	public static File createTempFile(String prefix, String suffix) throws IOException {
-		String directory=AppConstants.getInstance().getProperty("upload.dir", "/tmp");
+		String directory=AppConstants.getInstance().getResolvedProperty("upload.dir");
 		if (StringUtils.isEmpty(prefix)) {
 			prefix="ibis";
 		}
 		if (StringUtils.isEmpty(suffix)) {
 			suffix=".tmp";
 		}
+		if (log.isDebugEnabled()) log.debug("creating tempfile prefix ["+prefix+"] suffix ["+suffix+"] directory ["+directory+"]");
 		File tmpFile = File.createTempFile(prefix, suffix, new File(directory));
 		tmpFile.deleteOnExit();
 		return tmpFile;
@@ -417,9 +421,9 @@ public class FileUtils {
 
 	public static File getFirstMatchingFile(String directory, String[] names) {
 		File[] files = getFiles(directory, names);
-		if (files.length > 0)
+		if (files.length > 0) {
 			return files[0];
-
+		}
 		return null;
 	}
 
@@ -433,8 +437,9 @@ public class FileUtils {
 	}
 
 	public static List getListFromNames(String[] names) {
-		if (names == null)
+		if (names == null) {
 			return null;
+		}
 		return Arrays.asList(names);
 	}
 
@@ -475,16 +480,13 @@ public class FileUtils {
 	public static void align(StringBuffer result, String val, int length, boolean leftAlign, char fillchar) {
 		if (val.length() > length) {
 			result.append(val.substring(0, length));
-		}
-		else if (val.length() == length) {
+		} else if (val.length() == length) {
 			result.append(val);
-		}
-		else {
+		} else {
 			char[] fill = getFilledArray(length - val.length(), fillchar);
 			if (leftAlign) {
 				result.append(val).append(fill);			
-			}
-			else {
+			} else {
 				result.append(fill).append(val);
 			}
 		}
@@ -503,23 +505,20 @@ public class FileUtils {
 		int idx = fileName.lastIndexOf('.');
 		if (idx<0) {
 			return null;
-		} else {
-			idx++;
-			if (idx >= fileName.length()) {
-				return null;
-			} else {
-				return fileName.substring(idx);
-			}
-		}
+		} 
+		idx++;
+		if (idx >= fileName.length()) {
+			return null;
+		} 
+		return fileName.substring(idx);
 	}
 
 	public static boolean extensionEqualsIgnoreCase(String fileName, String extension) {
 		String fileNameExtension = getFileNameExtension(fileName);
 		if (fileNameExtension==null) {
 			return false;
-		} else {
-			return fileNameExtension.equalsIgnoreCase(extension);
-		}
+		} 
+		return fileNameExtension.equalsIgnoreCase(extension);
 	}
 
 	public static boolean canWrite(String directory) {
