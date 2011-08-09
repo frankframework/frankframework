@@ -1,6 +1,9 @@
 /*
  * $Log: XmlQuerySender.java,v $
- * Revision 1.6  2011-07-01 09:46:49  m168309
+ * Revision 1.7  2011-08-09 10:13:48  L190409
+ * follow modified interface of ancestor
+ *
+ * Revision 1.6  2011/07/01 09:46:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added sql element
  *
  * Revision 1.5  2011/04/13 08:40:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -97,7 +100,6 @@ import org.w3c.dom.Element;
  * @author  Peter Leeuwenburgh
  */
 public class XmlQuerySender extends DirectQuerySender {
-	public static final String version = "$RCSfile: XmlQuerySender.java,v $ $Revision: 1.6 $ $Date: 2011-07-01 09:46:49 $";
 
 	public static final String TYPE_STRING = "string";
 	public static final String TYPE_NUMBER = "number";
@@ -275,12 +277,12 @@ public class XmlQuerySender extends DirectQuerySender {
 									String query = XmlUtils.getChildTagAsString(queryElement, "query");
 									result = sql(connection, correlationID, query, type);
 								} else {
-									throw new SenderException(getLogPrefix() + "unknown root element [" + root + "]");
-								}
+								throw new SenderException(getLogPrefix() + "unknown root element [" + root + "]");
 							}
 						}
 					}
 				}
+			}
 			}
 		} catch (DomBuilderException e) {
 			throw new SenderException(getLogPrefix() + "got exception parsing [" + message + "]", e);
@@ -319,7 +321,7 @@ public class XmlQuerySender extends DirectQuerySender {
 			PreparedStatement statement = getStatement(connection, correlationID, query, false);
 			statement.setQueryTimeout(getTimeout());
 			setBlobSmartGet(true);
-			return executeSelectQuery(statement);
+			return executeSelectQuery(statement,null,null);
 		} catch (SQLException e) {
 			throw new SenderException(getLogPrefix() + "got exception executing a SELECT SQL command", e);
 		}
@@ -395,10 +397,9 @@ public class XmlQuerySender extends DirectQuerySender {
 			statement.setQueryTimeout(getTimeout());
 			setBlobSmartGet(true);
 			if (StringUtils.isNotEmpty(type) && type.equalsIgnoreCase("select")) {
-				return executeSelectQuery(statement);
-			} else {
-				return executeOtherQuery(connection, correlationID, statement, query, null, null);
-			}
+				return executeSelectQuery(statement,null,null);
+			} 
+			return executeOtherQuery(connection, correlationID, statement, query, null, null);
 		} catch (SQLException e) {
 			throw new SenderException(getLogPrefix() + "got exception executing a SQL command", e);
 		}
@@ -432,12 +433,11 @@ public class XmlQuerySender extends DirectQuerySender {
 					}
 				}
 				return "<result><rowsupdated>" + numRowsAffected + "</rowsupdated></result>";
-			} else {
-				PreparedStatement statement = getStatement(connection, correlationID, query, false);
-				applyParameters(statement, columns);
-				statement.setQueryTimeout(getTimeout());
-				return executeOtherQuery(connection, correlationID, statement, query, null, null);
 			}
+			PreparedStatement statement = getStatement(connection, correlationID, query, false);
+			applyParameters(statement, columns);
+			statement.setQueryTimeout(getTimeout());
+			return executeOtherQuery(connection, correlationID, statement, query, null, null);
 		} catch (Throwable t) {
 			throw new SenderException(t);
 		}
@@ -519,9 +519,8 @@ public class XmlQuerySender extends DirectQuerySender {
 				columns.add(column);
 			}
 			return columns;
-		} else {
-			return null;
 		}
+		return null;
 	}
 
 	private void applyParameters(PreparedStatement statement, Vector columns) throws SQLException {
