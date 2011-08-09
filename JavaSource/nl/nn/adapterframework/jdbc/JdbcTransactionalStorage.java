@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcTransactionalStorage.java,v $
- * Revision 1.51  2011-04-13 08:38:26  L190409
+ * Revision 1.52  2011-08-09 09:53:04  L190409
+ * use isTablePresent() and isTableColumnPresent() from dbmsSupport
+ *
+ * Revision 1.51  2011/04/13 08:38:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Blob and Clob support using DbmsSupport
  *
  * Revision 1.50  2011/03/16 16:42:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -187,7 +190,6 @@ import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.jdbc.dbms.DbmsSupportFactory;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -333,7 +335,6 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 
 	public final static TransactionDefinition TXREQUIRED = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED);
 	
-	// the following currently only for debug.... 
 	boolean checkIfTableExists=true;
 	boolean forceCreateTable=false;
 
@@ -431,9 +432,9 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 //		checkIndexNames = ac.getBoolean(PROPERTY_CHECK_INDEXNAMES, true);
 	}
 	
-	private void checkTableColumnPresent(Connection connection, String columnName) {
+	private void checkTableColumnPresent(Connection connection, IDbmsSupport dbms, String columnName) throws JdbcException {
 		if (StringUtils.isNotEmpty(columnName)) {
-			if (!JdbcUtil.isTableColumnPresent(connection, getDatabaseType(), getSchemaOwner4Check(), getTableName(), columnName)) {
+			if (!dbms.isTableColumnPresent(connection, getSchemaOwner4Check(), getTableName(), columnName)) {
 				String msg="Table ["+getTableName()+"] has no column ["+columnName+"]";
 				ConfigurationWarnings.getInstance().add(getLogPrefix()+msg);
 			}
@@ -457,21 +458,24 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 
 
 	
-	private void checkTable(Connection connection) {
-		if (JdbcUtil.isTablePresent(connection, getDatabaseType(), getSchemaOwner4Check(), getTableName())) {
-			checkTableColumnPresent(connection,getKeyField());
-			checkTableColumnPresent(connection,getTypeField());
-			checkTableColumnPresent(connection,getSlotIdField());
-			checkTableColumnPresent(connection,getHostField());
-			checkTableColumnPresent(connection,getIdField());
-			checkTableColumnPresent(connection,getCorrelationIdField());
-			checkTableColumnPresent(connection,getDateField());
-			checkTableColumnPresent(connection,getCommentField());
+	private void checkTable(Connection connection) throws JdbcException {
+		IDbmsSupport dbms=getDbmsSupport();
+		String schemaOwner=getSchemaOwner4Check();
+		log.debug("checking for presence of table ["+getTableName()+"] in schema/catalog ["+schemaOwner+"]");
+		if (dbms.isTablePresent(connection, getSchemaOwner4Check(), getTableName())) {
+			checkTableColumnPresent(connection,dbms,getKeyField());
+			checkTableColumnPresent(connection,dbms,getTypeField());
+			checkTableColumnPresent(connection,dbms,getSlotIdField());
+			checkTableColumnPresent(connection,dbms,getHostField());
+			checkTableColumnPresent(connection,dbms,getIdField());
+			checkTableColumnPresent(connection,dbms,getCorrelationIdField());
+			checkTableColumnPresent(connection,dbms,getDateField());
+			checkTableColumnPresent(connection,dbms,getCommentField());
 			if (isStoreFullMessage()) {
-				checkTableColumnPresent(connection,getMessageField());
+				checkTableColumnPresent(connection,dbms,getMessageField());
 			}
-			checkTableColumnPresent(connection,getExpiryDateField());
-			checkTableColumnPresent(connection,getLabelField());
+			checkTableColumnPresent(connection,dbms,getExpiryDateField());
+			checkTableColumnPresent(connection,dbms,getLabelField());
 		} else {
 			String msg="Table ["+getTableName()+"] not present";
 			ConfigurationWarnings.getInstance().add(getLogPrefix()+msg);
@@ -565,7 +569,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 	private void checkDatabase() throws ConfigurationException {
 		Connection connection=null;
 		try {
-			if (getDatabaseType()==DbmsSupportFactory.DBMS_ORACLE) {
+//			if (getDatabaseType()==DbmsSupportFactory.DBMS_ORACLE) {
 				if (checkTable || checkIndices) {
 					if (StringUtils.isNotEmpty(getSchemaOwner4Check())){
 						connection=getConnection();
@@ -600,9 +604,9 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 				} else {
 					log.info(getLogPrefix()+"checking of table and indices is not enabled");
 				}
-			} else {
-				ConfigurationWarnings.getInstance().add(getLogPrefix()+"Could not check database regarding table [" + getTableName() + "]: Not an Oracle database");
-			}
+//			} else {
+//				ConfigurationWarnings.getInstance().add(getLogPrefix()+"Could not check database regarding table [" + getTableName() + "]: Not an Oracle database");
+//			}
 		} catch (JdbcException e) {
 			ConfigurationWarnings.getInstance().add(getLogPrefix()+"Could not check database regarding table [" + getTableName() + "]: "+e.getMessage());
 		} finally {
@@ -851,16 +855,14 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		if (primaryKeyIsPartOfClause && assumePrimaryKeyUnique || StringUtils.isEmpty(getSlotId())) {
 			if (StringUtils.isEmpty(clause)) {
 				return "";
-			} else {
-				return " WHERE "+clause; 
-			}
-		} else {
-			String result = " WHERE "+getSelector();
-			if (StringUtils.isNotEmpty(clause)) {
-				result += " AND "+clause;
-			}
-			return result;
+			}  
+			return " WHERE "+clause; 
 		}
+		String result = " WHERE "+getSelector();
+		if (StringUtils.isNotEmpty(clause)) {
+			result += " AND "+clause;
+		}
+		return result;
 	}
 
 
@@ -960,55 +962,54 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 
 				stmt.execute();
 				return null;
-			} else {
-				stmt.execute();
+			}
+			stmt.execute();
 
-				if (log.isDebugEnabled()) log.debug("preparing select statement ["+selectKeyQuery+"]");
-				stmt = conn.prepareStatement(selectKeyQuery);			
-				ResultSet rs = null;
-				try {
-					// retrieve the key
-					rs = stmt.executeQuery();
-					if (!rs.next()) {
-						throw new SenderException("could not retrieve key of stored message");
-					}
-					String newKey = rs.getString(1);
-					rs.close();
+			if (log.isDebugEnabled()) log.debug("preparing select statement ["+selectKeyQuery+"]");
+			stmt = conn.prepareStatement(selectKeyQuery);			
+			ResultSet rs = null;
+			try {
+				// retrieve the key
+				rs = stmt.executeQuery();
+				if (!rs.next()) {
+					throw new SenderException("could not retrieve key of stored message");
+				}
+				String newKey = rs.getString(1);
+				rs.close();
 
-					// and update the blob
-					if (log.isDebugEnabled()) log.debug("preparing update statement ["+updateBlobQuery+"]");
-					stmt = conn.prepareStatement(updateBlobQuery);			
-					stmt.clearParameters();
-					stmt.setString(1,newKey);
-	
-					rs = stmt.executeQuery();
-					if (!rs.next()) {
-						throw new SenderException("could not retrieve row for stored message ["+ messageId+"]");
-					}
+				// and update the blob
+				if (log.isDebugEnabled()) log.debug("preparing update statement ["+updateBlobQuery+"]");
+				stmt = conn.prepareStatement(updateBlobQuery);			
+				stmt.clearParameters();
+				stmt.setString(1,newKey);
+
+				rs = stmt.executeQuery();
+				if (!rs.next()) {
+					throw new SenderException("could not retrieve row for stored message ["+ messageId+"]");
+				}
 //						String newKey = rs.getString(1);
 //						BLOB blob = (BLOB)rs.getBlob(2);
-					Object blobHandle=dbmsSupport.getBlobUpdateHandle(rs, 1);
-					OutputStream out = dbmsSupport.getBlobOutputStream(rs, 1, blobHandle);
+				Object blobHandle=dbmsSupport.getBlobUpdateHandle(rs, 1);
+				OutputStream out = dbmsSupport.getBlobOutputStream(rs, 1, blobHandle);
 //					OutputStream out = JdbcUtil.getBlobUpdateOutputStream(rs,1);
-					if (isBlobsCompressed()) {
-						DeflaterOutputStream dos = new DeflaterOutputStream(out);
-						ObjectOutputStream oos = new ObjectOutputStream(dos);
-						oos.writeObject(message);
-						oos.close();
-						dos.close();
-					} else {
-						ObjectOutputStream oos = new ObjectOutputStream(out);
-						oos.writeObject(message);
-						oos.close();
-					}
-					out.close();
-					dbmsSupport.updateBlob(rs, 1, blobHandle);
-					return newKey;
-				
-				} finally {
-					if (rs!=null) {
-						rs.close();
-					}
+				if (isBlobsCompressed()) {
+					DeflaterOutputStream dos = new DeflaterOutputStream(out);
+					ObjectOutputStream oos = new ObjectOutputStream(dos);
+					oos.writeObject(message);
+					oos.close();
+					dos.close();
+				} else {
+					ObjectOutputStream oos = new ObjectOutputStream(out);
+					oos.writeObject(message);
+					oos.close();
+				}
+				out.close();
+				dbmsSupport.updateBlob(rs, 1, blobHandle);
+				return newKey;
+			
+			} finally {
+				if (rs!=null) {
+					rs.close();
 				}
 			}
 	
@@ -1171,9 +1172,8 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 		}
 		if (StringUtils.isEmpty(getType())) {
 			return getSlotIdField()+"="+(useParameters?"?":"'"+getSlotId()+"'");
-		} else {
-			return getSlotIdField()+"="+(useParameters?"?":"'"+getSlotId()+"'")+" AND "+getTypeField()+"="+(useParameters?"?":"'"+getType()+"'");
 		}
+		return getSlotIdField()+"="+(useParameters?"?":"'"+getSlotId()+"'")+" AND "+getTypeField()+"="+(useParameters?"?":"'"+getType()+"'");
 	}
 
 	private int applyStandardParameters(PreparedStatement stmt, boolean moreParametersFollow, boolean primaryKeyIsPartOfClause) throws SQLException {
@@ -1256,13 +1256,12 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 					log.warn(getLogPrefix()+"could not extract compressed blob, trying non-compressed: ("+ClassUtils.nameOf(e1)+") "+e1.getMessage());
 					return retrieveObject(rs,columnIndex,false);
 				}
-			} else {
-				try {
-					return retrieveObject(rs,columnIndex,false);
-				} catch (Exception e1) {
-					log.warn(getLogPrefix()+"could not extract non-compressed blob, trying compressed: ("+ClassUtils.nameOf(e1)+") "+e1.getMessage());
-					return retrieveObject(rs,columnIndex,true);
-				}
+			}
+			try {
+				return retrieveObject(rs,columnIndex,false);
+			} catch (Exception e1) {
+				log.warn(getLogPrefix()+"could not extract non-compressed blob, trying compressed: ("+ClassUtils.nameOf(e1)+") "+e1.getMessage());
+				return retrieveObject(rs,columnIndex,true);
 			}
 		} catch (Exception e2) {
 			throw new JdbcException("could not extract message", e2);
@@ -1714,10 +1713,11 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 
 	public String getSchemaOwner4Check() {
 		if (schemaOwner4Check==null) {
+			IDbmsSupport dbms=getDbmsSupport();
 			Connection conn=null;
 			try {
 				conn=getConnection();
-				schemaOwner4Check=JdbcUtil.getSchemaOwner(conn, getDatabaseType());
+				schemaOwner4Check=dbms.getSchema(conn);
 			} catch (Exception e) {
 				log.warn("Exception determining current schema", e);
 				return "";
