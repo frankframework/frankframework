@@ -1,6 +1,9 @@
 /*
  * $Log: IDbmsSupport.java,v $
- * Revision 1.2  2011-04-13 08:43:00  L190409
+ * Revision 1.3  2011-08-09 08:07:30  L190409
+ * added getSchema(), isTablePresent() and isTableColumnPresent()
+ *
+ * Revision 1.2  2011/04/13 08:43:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Blob and Clob support using DbmsSupport
  *
  * Revision 1.1  2011/03/16 16:47:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -11,6 +14,7 @@ package nl.nn.adapterframework.jdbc.dbms;
 
 import java.io.OutputStream;
 import java.io.Writer;
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
@@ -75,5 +79,10 @@ public interface IDbmsSupport {
 	String provideIndexHintAfterFirstKeyword(String tableName, String indexName);
 	String provideFirstRowsHintAfterFirstKeyword(int rowCount);
 	String provideTrailingFirstRowsHint(int rowCount);
+
+	String getSchema(Connection conn) throws JdbcException;
+ 
+	boolean isTablePresent(Connection conn, String schemaName, String tableName) throws JdbcException;
+	boolean isTableColumnPresent(Connection conn, String schemaName, String tableName, String columnName) throws JdbcException;
 
 }

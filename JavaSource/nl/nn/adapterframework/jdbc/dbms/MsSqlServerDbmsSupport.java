@@ -1,12 +1,18 @@
 /*
  * $Log: MsSqlServerDbmsSupport.java,v $
- * Revision 1.1  2011-03-16 16:47:26  L190409
+ * Revision 1.2  2011-08-09 08:07:30  L190409
+ * added getSchema(), isTablePresent() and isTableColumnPresent()
+ *
+ * Revision 1.1  2011/03/16 16:47:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * introduction of DbmsSupport, including support for MS SQL Server
  *
  */
 package nl.nn.adapterframework.jdbc.dbms;
 
+import java.sql.Connection;
+
 import nl.nn.adapterframework.jdbc.JdbcException;
+import nl.nn.adapterframework.util.JdbcUtil;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -75,6 +81,18 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 
 	public String provideTrailingFirstRowsHint(int rowCount) {
 		return " OPTION (FAST "+rowCount+")";
+	}
+
+	public String getSchema(Connection conn) throws JdbcException {
+		return JdbcUtil.executeStringQuery(conn, "SELECT DB_NAME()");
+	}
+
+	public boolean isTablePresent(Connection conn, String schemaName, String tableName) throws JdbcException {
+		return doIsTablePresent(conn, "INFORMATION_SCHEMA.TABLES", "TABLE_CATALOG", "TABLE_NAME", schemaName, tableName.toUpperCase());
+	}
+	
+	public boolean isTableColumnPresent(Connection conn, String schemaName, String tableName, String columnName) throws JdbcException {
+		return doIsTableColumnPresent(conn, "INFORMATION_SCHEMA.COLUMNS", "TABLE_CATALOG", "TABLE_NAME", "COLUMN_NAME", schemaName, tableName, columnName);
 	}
 
 }

@@ -1,6 +1,9 @@
 /*
  * $Log: OracleDbmsSupport.java,v $
- * Revision 1.2  2011-04-13 08:45:23  L190409
+ * Revision 1.3  2011-08-09 08:07:30  L190409
+ * added getSchema(), isTablePresent() and isTableColumnPresent()
+ *
+ * Revision 1.2  2011/04/13 08:45:23  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Blob and Clob support using DbmsSupport
  *
  * Revision 1.1  2011/03/16 16:47:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -9,10 +12,12 @@
  */
 package nl.nn.adapterframework.jdbc.dbms;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import nl.nn.adapterframework.jdbc.JdbcException;
+import nl.nn.adapterframework.util.JdbcUtil;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -117,6 +122,19 @@ public class OracleDbmsSupport extends GenericDbmsSupport {
 	public void updateBlob(ResultSet rs, String column, Object blobUpdateHandle) throws SQLException {
 		// updateBlob is not required for Oracle
 		// rs.updateBlob(column, (Blob)blobUpdateHandle);
+	}
+
+	public String getSchema(Connection conn) throws JdbcException {
+		return JdbcUtil.executeStringQuery(conn, "SELECT SYS_CONTEXT('USERENV','CURRENT_SCHEMA') FROM DUAL");
+	}
+
+	
+	public boolean isTablePresent(Connection conn, String schemaName, String tableName) throws JdbcException {
+		return doIsTablePresent(conn, "all_tables", "owner", "table_name", schemaName, tableName);
+	}
+
+	public boolean isTableColumnPresent(Connection conn, String schemaName, String tableName, String columnName) throws JdbcException {
+		return doIsTableColumnPresent(conn, "all_tab_columns", "owner", "table_name", "column_name", schemaName, tableName, columnName);
 	}
 
 }
