@@ -1,6 +1,9 @@
 /*
  * $Log: Misc.java,v $
- * Revision 1.32  2011-07-07 12:13:51  m168309
+ * Revision 1.33  2011-08-09 10:14:43  L190409
+ * renamed arrayListToString to listToString
+ *
+ * Revision 1.32  2011/07/07 12:13:51  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added method arrayListToString
  *
  * Revision 1.31  2010/11/12 15:11:14  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -95,8 +98,8 @@ import java.net.URL;
 import java.net.UnknownHostException;
 import java.rmi.server.UID;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
@@ -106,7 +109,6 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import java.util.zip.Inflater;
 
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
@@ -115,7 +117,6 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public class Misc {
-	public static final String version="$RCSfile: Misc.java,v $ $Revision: 1.32 $ $Date: 2011-07-07 12:13:51 $";
 	static Logger log = LogUtil.getLogger(Misc.class);
 	public static final int BUFFERSIZE=20000;
 	public static final String DEFAULT_INPUT_STREAM_ENCODING="UTF-8";
@@ -720,10 +721,10 @@ public class Misc {
 		return forceFixedForwardingByDefault.booleanValue();
 	}
 
-	public static String arrayListToString(ArrayList arrayList) {
+	public static String listToString(List list) {
 		StringBuffer sb = new StringBuffer();
-		for (int i = 0; i < arrayList.size(); i++) {
-			sb.append((String) arrayList.get(i));
+		for (Iterator it=list.iterator(); it.hasNext();) {
+			sb.append((String) it.next());
 		}
 		return sb.toString();
 	}
