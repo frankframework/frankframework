@@ -1,6 +1,11 @@
 /*
  * $Log: JdbcUtil.java,v $
- * Revision 1.28  2011-04-13 08:49:04  L190409
+ * Revision 1.29  2011-08-09 10:10:43  L190409
+ * moved isTablePresent() and isTableColumnPresent() to DbmsSupport
+ * added isBlobType(), isClobType(), getValue(), streamBlob, streamClob
+ * replaced base64 library
+ *
+ * Revision 1.28  2011/04/13 08:49:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Blob and Clob support using DbmsSupport
  *
  * Revision 1.27  2011/03/16 16:38:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -106,9 +111,11 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.sql.Statement;
+import java.sql.Types;
 import java.util.List;
 import java.util.zip.DataFormatException;
 import java.util.zip.DeflaterOutputStream;
@@ -120,6 +127,7 @@ import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jdbc.dbms.DbmsSupportFactory;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 
+import org.apache.commons.codec.binary.Base64InputStream;
 import org.apache.log4j.Logger;
 
 /**
@@ -143,24 +151,23 @@ public class JdbcUtil {
 			DatabaseMetaData dbmeta = conn.getMetaData();
 			ResultSet tableset = dbmeta.getTables(null, null, tableName, null);
 			return !tableset.isAfterLast();
-		} else {
-			String query=null;
-			try {
-				query="select count(*) from "+tableName;
-				log.debug("create statement to check for existence of ["+tableName+"] using query ["+query+"]");
-				stmt = conn.prepareStatement(query);
-				log.debug("execute statement");
-				ResultSet rs = stmt.executeQuery();
-				log.debug("statement executed");
-				rs.close();
-				return true;
-			} catch (SQLException e) {
-				if (log.isDebugEnabled()) log.debug("exception checking for existence of ["+tableName+"] using query ["+query+"]", e);
-				return false;
-			} finally {
-				if (stmt!=null) {
-					stmt.close();
-				}
+		} 
+		String query=null;
+		try {
+			query="select count(*) from "+tableName;
+			log.debug("create statement to check for existence of ["+tableName+"] using query ["+query+"]");
+			stmt = conn.prepareStatement(query);
+			log.debug("execute statement");
+			ResultSet rs = stmt.executeQuery();
+			log.debug("statement executed");
+			rs.close();
+			return true;
+		} catch (SQLException e) {
+			if (log.isDebugEnabled()) log.debug("exception checking for existence of ["+tableName+"] using query ["+query+"]", e);
+			return false;
+		} finally {
+			if (stmt!=null) {
+				stmt.close();
 			}
 		}
 	}
@@ -194,42 +201,21 @@ public class JdbcUtil {
 		}
 	}
 
-	public static boolean isTablePresent(Connection conn, int databaseType, String schemaOwner, String tableName) {
-		if (databaseType==DbmsSupportFactory.DBMS_ORACLE) {
-			String query="select count(*) from all_tables where owner='"+schemaOwner.toUpperCase()+"' and table_name='"+tableName.toUpperCase()+"'";
-			try {
-				if (JdbcUtil.executeIntQuery(conn, query)>=1) {
-					return true;
-				} else {
-					return false;
-				}
-			} catch (Exception e) {
-				log.warn("could not determine presence of table ["+tableName+"]",e);
-				return false;
-			}
-		} else {
-			log.warn("could not determine presence of table ["+tableName+"] (not an Oracle database)");
-			return true;
-		}
-	}
-
 	public static boolean isIndexPresent(Connection conn, int databaseType, String schemaOwner, String tableName, String indexName) {
 		if (databaseType==DbmsSupportFactory.DBMS_ORACLE) {
 			String query="select count(*) from all_indexes where owner='"+schemaOwner.toUpperCase()+"' and table_name='"+tableName.toUpperCase()+"' and index_name='"+indexName.toUpperCase()+"'";
 			try {
 				if (JdbcUtil.executeIntQuery(conn, query)>=1) {
 					return true;
-				} else {
-					return false;
-				}
+				} 
+				return false;
 			} catch (Exception e) {
 				log.warn("could not determine presence of index ["+indexName+"] on table ["+tableName+"]",e);
 				return false;
 			}
-		} else {
-			log.warn("could not determine presence of index ["+indexName+"] on table ["+tableName+"] (not an Oracle database)");
-			return true;
-		}
+		} 
+		log.warn("could not determine presence of index ["+indexName+"] on table ["+tableName+"] (not an Oracle database)");
+		return true;
 	}
 
 	public static boolean isSequencePresent(Connection conn, int databaseType, String schemaOwner, String sequenceName) {
@@ -238,37 +224,17 @@ public class JdbcUtil {
 			try {
 				if (JdbcUtil.executeIntQuery(conn, query)>=1) {
 					return true;
-				} else {
-					return false;
-				}
+				} 
+				return false;
 			} catch (Exception e) {
 				log.warn("could not determine presence of sequence ["+sequenceName+"]",e);
 				return false;
 			}
-		} else {
-			log.warn("could not determine presence of sequence ["+sequenceName+"] (not an Oracle database)");
-			return true;
-		}
+		} 
+		log.warn("could not determine presence of sequence ["+sequenceName+"] (not an Oracle database)");
+		return true;
 	}
 
-	public static boolean isTableColumnPresent(Connection conn, int databaseType, String schemaOwner, String tableName, String columnName) {
-		if (databaseType==DbmsSupportFactory.DBMS_ORACLE) {
-			String query="select count(*) from all_tab_columns where owner='"+schemaOwner.toUpperCase()+"' and table_name='"+tableName.toUpperCase()+"' and column_name=?";
-			try {
-				if (JdbcUtil.executeIntQuery(conn, query, columnName.toUpperCase())>=1) {
-					return true;	
-				} else {
-					return false;
-				}
-			} catch (Exception e) {
-				log.warn("could not determine correct presence of column ["+columnName+"] of table ["+tableName+"]",e);
-				return false;
-			}
-		} else {
-			log.warn("could not determine correct presence of column ["+columnName+"] of table ["+tableName+"] (not an Oracle database)");
-			return true;
-		}
-	}
 
 	public static boolean isIndexColumnPresent(Connection conn, int databaseType, String schemaOwner, String tableName, String indexName, String columnName) {
 		if (databaseType==DbmsSupportFactory.DBMS_ORACLE) {
@@ -276,17 +242,15 @@ public class JdbcUtil {
 			try {
 				if (JdbcUtil.executeIntQuery(conn, query, columnName.toUpperCase())>=1) {
 					return true;
-				} else {
-					return false;
-				}
+				} 
+				return false;
 			} catch (Exception e) {
 				log.warn("could not determine correct presence of column ["+columnName+"] of index ["+indexName+"] on table ["+tableName+"]",e);
 				return false;
 			}
-		} else {
-			log.warn("could not determine correct presence of column ["+columnName+"] of index ["+indexName+"] on table ["+tableName+"] (not an Oracle database)");
-			return true;
-		}
+		} 
+		log.warn("could not determine correct presence of column ["+columnName+"] of index ["+indexName+"] on table ["+tableName+"] (not an Oracle database)");
+		return true;
 	}
 
 	public static int getIndexColumnPosition(Connection conn, int databaseType, String schemaOwner, String tableName, String indexName, String columnName) {
@@ -298,10 +262,9 @@ public class JdbcUtil {
 				log.warn("could not determine correct presence of column ["+columnName+"] of index ["+indexName+"] on table ["+tableName+"]",e);
 				return -1;
 			}
-		} else {
-			log.warn("could not determine correct presence of column ["+columnName+"] of index ["+indexName+"] on table ["+tableName+"] (not an Oracle database)");
-			return -1;
-		}
+		} 
+		log.warn("could not determine correct presence of column ["+columnName+"] of index ["+indexName+"] on table ["+tableName+"] (not an Oracle database)");
+		return -1;
 	}
 
 	public static boolean hasIndexOnColumn(Connection conn, int databaseType, String schemaOwner, String tableName, String columnName) {
@@ -313,17 +276,15 @@ public class JdbcUtil {
 			try {
 				if (JdbcUtil.executeIntQuery(conn, query, columnName.toUpperCase())>=1) {
 					return true;
-				} else {
-					return false;
-				}
+				} 
+				return false;
 			} catch (Exception e) {
 				log.warn("could not determine presence of index column ["+columnName+"] on table ["+tableName+"] using query ["+query+"]",e);
 				return false;
 			}
-		} else {
-			log.warn("could not determine presence of index column ["+columnName+"] on table ["+tableName+"] (not an Oracle database)");
-			return true;
-		}
+		} 
+		log.warn("could not determine presence of index column ["+columnName+"] on table ["+tableName+"] (not an Oracle database)");
+		return true;
 	}
 	public static boolean hasIndexOnColumns(Connection conn, int databaseType, String schemaOwner, String tableName, List columns) {
 		if (databaseType==DbmsSupportFactory.DBMS_ORACLE) {
@@ -341,27 +302,24 @@ public class JdbcUtil {
 			try {
 				if (JdbcUtil.executeIntQuery(conn, query)>=1) {
 					return true;
-				} else {
-					return false;
-				}
+				} 
+				return false;
 			} catch (Exception e) {
 				log.warn("could not determine presence of index columns on table ["+tableName+"] using query ["+query+"]",e);
 				return false;
 			}
-		} else {
-			log.warn("could not determine presence of index columns on table ["+tableName+"] (not an Oracle database)");
-			return true;
-		}
+		} 
+		log.warn("could not determine presence of index columns on table ["+tableName+"] (not an Oracle database)");
+		return true;
 	}
 
 	public static String getSchemaOwner(Connection conn, int databaseType) throws SQLException, JdbcException  {
 		if (databaseType==DbmsSupportFactory.DBMS_ORACLE) {
 			String query="SELECT SYS_CONTEXT('USERENV','CURRENT_SCHEMA') FROM DUAL";
 			return executeStringQuery(conn, query);
-		} else {
-			log.warn("could not determine current schema (not an Oracle database)");
-			return "";
-		}
+		} 
+		log.warn("could not determine current schema (not an Oracle database)");
+		return "";
 	}
 
 	public static String warningsToString(SQLWarning warnings) {
@@ -408,6 +366,67 @@ public class JdbcUtil {
 		return null;
 	}
 
+	public static boolean isBlobType(final ResultSet rs, final int colNum, final ResultSetMetaData rsmeta) throws SQLException {
+        switch(rsmeta.getColumnType(colNum))
+        {
+	        case Types.LONGVARBINARY :
+	        case Types.VARBINARY :
+			case Types.BLOB :
+				return true;
+			default:
+				return false;
+        }
+	}
+
+	public static boolean isClobType(final ResultSet rs, final int colNum, final ResultSetMetaData rsmeta) throws SQLException {
+		switch (rsmeta.getColumnType(colNum)) {
+			case Types.CLOB:
+				return true;
+			default:
+				return false;
+		}
+	}
+	
+	public static String getValue(final ResultSet rs, final int colNum, final ResultSetMetaData rsmeta, String blobCharset, boolean decompressBlobs, String nullValue, boolean trimSpaces, boolean getBlobSmart, boolean encodeBlobBase64) throws JdbcException, IOException, SQLException {
+        switch(rsmeta.getColumnType(colNum))
+        {
+	        case Types.LONGVARBINARY :
+	        case Types.VARBINARY :
+			case Types.BLOB :
+				try {
+					return JdbcUtil.getBlobAsString(rs,colNum,blobCharset,false,decompressBlobs,getBlobSmart,encodeBlobBase64);
+				} catch (JdbcException e) {
+					log.debug("Caught JdbcException, assuming no blob found",e);
+					return nullValue;
+				}
+			case Types.CLOB :
+				try {
+					return JdbcUtil.getClobAsString(rs,colNum,false);
+				} catch (JdbcException e) {
+					log.debug("Caught JdbcException, assuming no clob found",e);
+					return nullValue;
+				}
+        	// return "undefined" for types that cannot be rendered to strings easily
+            case Types.ARRAY :
+            case Types.DISTINCT :
+            case Types.BINARY :
+            case Types.REF :
+            case Types.STRUCT :
+                return "undefined";
+            default :
+            {
+                String value = rs.getString(colNum);
+                if (value == null) {
+                    return nullValue;
+                }
+            	if (trimSpaces) {
+            		return value.trim();
+            	}
+				return value;
+            }
+        }
+    }
+		
 	
 	public static InputStream getBlobInputStream(ResultSet rs, int columnIndex) throws SQLException, JdbcException {
 		return getBlobInputStream(rs.getBlob(columnIndex),columnIndex+"");
@@ -432,9 +451,8 @@ public class JdbcUtil {
 		InputStream input = getBlobInputStream(blob,column);
 		if (blobIsCompressed) {
 			return new InflaterInputStream(input);
-		} else {
-			return input;
-		}
+		} 
+		return input;
 	}
 
 	public static Reader getBlobReader(final ResultSet rs, int columnIndex, String charset, boolean blobIsCompressed) throws IOException, JdbcException, SQLException {
@@ -457,17 +475,85 @@ public class JdbcUtil {
 		return result;
 	}
 
-	public static String getBlobAsString(final ResultSet rs, int columnIndex, String charset, boolean xmlEncode, boolean blobIsCompressed) throws IOException, JdbcException, SQLException {
-		return getBlobAsString(rs, columnIndex, charset, xmlEncode, blobIsCompressed, false);
+	public static void streamBlob(final ResultSet rs, int columnIndex, String charset, boolean blobIsCompressed, Object target, boolean close) throws JdbcException, SQLException, IOException {
+		streamBlob(rs.getBlob(columnIndex),columnIndex+"",charset,blobIsCompressed,target,close);
+	}
+	public static void streamBlob(final ResultSet rs, String columnName, String charset, boolean blobIsCompressed, Object target, boolean close) throws JdbcException, SQLException, IOException {
+		streamBlob(rs.getBlob(columnName),columnName,charset,blobIsCompressed,target,close);
+	}
+	
+	public static void streamBlob(Blob blob, String column, String charset, boolean blobIsCompressed, Object target, boolean close) throws JdbcException, SQLException, IOException {
+		if (target==null) {
+			throw new JdbcException("cannot stream Blob to null object");
+		}
+		OutputStream outputStream=StreamUtil.getOutputStream(target);
+		if (outputStream!=null) {
+			InputStream inputstream = JdbcUtil.getBlobInputStream(blob, column, blobIsCompressed);
+			StreamUtil.copyStream(inputstream, outputStream, 50000);
+			if (close) {
+				outputStream.close();
+			}
+			return;
+		}
+		Writer writer = StreamUtil.getWriter(target);
+		if (writer !=null) {
+			Reader reader = JdbcUtil.getBlobReader(blob, column, charset, blobIsCompressed);
+			StreamUtil.copyReaderToWriter(reader, writer, 50000, false, false);
+			if (close) {
+				writer.close();
+			}
+			return;
+		}
+		throw new IOException("cannot stream Blob to ["+target.getClass().getName()+"]");
 	}
 
-	public static String getBlobAsString(final ResultSet rs, int columnIndex, String charset, boolean xmlEncode, boolean blobIsCompressed, boolean blobSmartGet) throws IOException, JdbcException, SQLException {
-		return getBlobAsString(rs.getBlob(columnIndex),columnIndex+"",charset, xmlEncode, blobIsCompressed, blobSmartGet);
+	public static void streamClob(final ResultSet rs, int columnIndex, Object target, boolean close) throws JdbcException, SQLException, IOException {
+		streamClob(rs.getClob(columnIndex),columnIndex+"",target,close);
 	}
-	public static String getBlobAsString(final ResultSet rs, String columnName, String charset, boolean xmlEncode, boolean blobIsCompressed, boolean blobSmartGet) throws IOException, JdbcException, SQLException {
-		return getBlobAsString(rs.getBlob(columnName),columnName,charset, xmlEncode, blobIsCompressed, blobSmartGet);
+	public static void streamClob(final ResultSet rs, String columnName, Object target, boolean close) throws JdbcException, SQLException, IOException {
+		streamClob(rs.getClob(columnName),columnName,target,close);
 	}
-	public static String getBlobAsString(Blob blob, String column, String charset, boolean xmlEncode, boolean blobIsCompressed, boolean blobSmartGet) throws IOException, JdbcException, SQLException {
+	
+	public static void streamClob(Clob clob, String column, Object target, boolean close) throws JdbcException, SQLException, IOException {
+		if (target==null) {
+			throw new NullPointerException("cannot stream Clob to null object");
+		}
+		OutputStream outputStream=StreamUtil.getOutputStream(target);
+		if (outputStream!=null) {
+			InputStream inputstream = JdbcUtil.getClobInputStream(clob);
+			StreamUtil.copyStream(inputstream, outputStream, 50000);
+			if (close) {
+				outputStream.close();
+			}
+			return;
+		}
+		Writer writer = StreamUtil.getWriter(target);
+		if (writer !=null) {
+			Reader reader = JdbcUtil.getClobReader(clob);
+			StreamUtil.copyReaderToWriter(reader, writer, 50000, false, false);
+			if (close) {
+				writer.close();
+			}
+			return;
+		}
+		throw new IOException("cannot stream Clob to ["+target.getClass().getName()+"]");
+	}
+	
+	public static String getBlobAsString(final ResultSet rs, int columnIndex, String charset, boolean xmlEncode, boolean blobIsCompressed) throws IOException, JdbcException, SQLException {
+		return getBlobAsString(rs, columnIndex, charset, xmlEncode, blobIsCompressed, false, false);
+	}
+
+	public static String getBlobAsString(final ResultSet rs, int columnIndex, String charset, boolean xmlEncode, boolean blobIsCompressed, boolean blobSmartGet, boolean encodeBlobBase64) throws IOException, JdbcException, SQLException {
+		return getBlobAsString(rs.getBlob(columnIndex),columnIndex+"",charset, xmlEncode, blobIsCompressed, blobSmartGet, encodeBlobBase64);
+	}
+	public static String getBlobAsString(final ResultSet rs, String columnName, String charset, boolean xmlEncode, boolean blobIsCompressed, boolean blobSmartGet, boolean encodeBlobBase64) throws IOException, JdbcException, SQLException {
+		return getBlobAsString(rs.getBlob(columnName),columnName,charset, xmlEncode, blobIsCompressed, blobSmartGet, encodeBlobBase64);
+	}
+	public static String getBlobAsString(Blob blob, String column, String charset, boolean xmlEncode, boolean blobIsCompressed, boolean blobSmartGet, boolean encodeBlobBase64) throws IOException, JdbcException, SQLException {
+		if (encodeBlobBase64) {
+			InputStream blobStream = JdbcUtil.getBlobInputStream(blob, column, blobIsCompressed);
+			return Misc.streamToString(new Base64InputStream(blobStream,true),null,false);
+		}
 		if (blobSmartGet) {
 			if (blob==null) {
 				log.debug("no blob found in column ["+column+"]");
@@ -528,9 +614,8 @@ public class JdbcUtil {
 
 			String message = XmlUtils.encodeCdataString(rawMessage);
 			return message;
-		} else {
-			return Misc.readerToString(getBlobReader(blob,column,charset,blobIsCompressed),null,xmlEncode);
-		}
+		} 
+		return Misc.readerToString(getBlobReader(blob,column,charset,blobIsCompressed),null,xmlEncode);
 	}
 
 //	/**
@@ -614,6 +699,10 @@ public class JdbcUtil {
 		if (clob==null) {
 			throw new JdbcException("no clob found in column ["+columnIndex+"]");
 		}
+		return getClobInputStream(clob);
+	}
+
+	public static InputStream getClobInputStream(Clob clob) throws SQLException, JdbcException {
 		return clob.getAsciiStream();
 	}
 
@@ -622,16 +711,20 @@ public class JdbcUtil {
 		if (clob==null) {
 			throw new JdbcException("no clob found in column ["+columnIndex+"]");
 		}
-		return clob.getCharacterStream();
+		return getClobReader(clob);
 	}
 	public static Reader getClobReader(ResultSet rs, String columnName) throws SQLException, JdbcException {
 		Clob clob = rs.getClob(columnName);
 		if (clob==null) {
 			throw new JdbcException("no clob found in column ["+columnName+"]");
 		}
+		return getClobReader(clob);
+	}
+	public static Reader getClobReader(Clob clob) throws SQLException, JdbcException {
 		return clob.getCharacterStream();
 	}
-
+	
+	
 	/**
 	 * retrieves an outputstream to a clob column from an updatable resultset.
 	 */
