@@ -1,6 +1,9 @@
 /*
  * $Log: Adapter.java,v $
- * Revision 1.60  2011-06-27 15:15:51  L190409
+ * Revision 1.61  2011-08-09 07:41:26  L190409
+ * improved result logging
+ *
+ * Revision 1.60  2011/06/27 15:15:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved configWarnings
  *
  * Revision 1.59  2011/05/25 07:39:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -708,7 +711,7 @@ public class Adapter implements IAdapter, NamedBean {
 			}
 			result.setResult(formatErrorMessage(msg, t, message, messageId, objectInError, startTime));
 			//if (isRequestReplyLogging()) {
-			String logMsg = "Adapter [" + getName() + "] messageId [" + messageId + "] got exit-state [" + result.getState() + "] and result [" + result.toString() + "] from PipeLine";
+			String logMsg = "Adapter [" + getName() + "] messageId [" + messageId + "] got exit-state [" + result.getState() + "] and result [" + result.getResult() + "] from PipeLine";
 			if (isMsgLogTerseEnabled()) {
 				msgLog.info(logMsg);
 			}
@@ -797,6 +800,7 @@ public class Adapter implements IAdapter, NamedBean {
 			}
 		}
 	}
+
 	/**
 	 * Register a PipeLine at this adapter. On registering, the adapter performs
 	 * a <code>Pipeline.configurePipes()</code>, as to configure the individual pipes.
@@ -808,8 +812,8 @@ public class Adapter implements IAdapter, NamedBean {
 		this.pipeline = pipeline;
 		pipeline.setAdapter(this);
 		log.debug("Adapter [" + name + "] registered pipeline [" + pipeline.toString() + "]");
-
 	}
+
 	/**
 	 * Register a receiver for this Adapter
 	 * @param receiver
@@ -827,6 +831,7 @@ public class Adapter implements IAdapter, NamedBean {
 			log.debug("Adapter ["	+ name 	+ "] did not register inactive receiver [" + receiver.getName() + "] with properties [" + receiver.toString() + "]");
 		}
 	}
+	
 	/**
 	 *  some functional description of the <code>Adapter</code>/
 	 */
@@ -1139,9 +1144,8 @@ public class Adapter implements IAdapter, NamedBean {
 	private boolean isMsgLogTerseEnabled() {
 		if (msgLogLevel>=MsgLogUtil.MSGLOG_LEVEL_TERSE) {
 			return true;
-		} else {
-			return false;
-		}
+		} 
+		return false;
 	}
 }
 
