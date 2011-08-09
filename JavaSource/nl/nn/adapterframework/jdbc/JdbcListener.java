@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcListener.java,v $
- * Revision 1.12  2011-03-16 16:42:40  L190409
+ * Revision 1.13  2011-08-09 10:09:06  L190409
+ * use modified getBlobAsString
+ *
+ * Revision 1.12  2011/03/16 16:42:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * introduction of DbmsSupport, including support for MS SQL Server
  *
  * Revision 1.11  2009/08/04 11:24:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -107,7 +110,7 @@ public class JdbcListener extends JdbcFacade implements IPullingListener {
 
 	private String preparedSelectQuery;
 
-	private static final boolean trace=false;
+	private  boolean trace=false;
 
 	public void configure() throws ConfigurationException {
 		try {
@@ -171,10 +174,9 @@ public class JdbcListener extends JdbcFacade implements IPullingListener {
 				}
 			}
 			
-		} else {
-			synchronized (connection) {
-				return getRawMessage(connection,threadContext);
-			}
+		} 
+		synchronized (connection) {
+			return getRawMessage(connection,threadContext);
 		}
 	}
 
@@ -214,7 +216,7 @@ public class JdbcListener extends JdbcFacade implements IPullingListener {
 								message=JdbcUtil.getClobAsString(rs,getMessageField(),false);
 							} else {
 								if ("blob".equalsIgnoreCase(getMessageFieldType())) {
-									message=JdbcUtil.getBlobAsString(rs,getMessageField(),getBlobCharset(),false,isBlobsCompressed(),isBlobSmartGet());
+									message=JdbcUtil.getBlobAsString(rs,getMessageField(),getBlobCharset(),false,isBlobsCompressed(),isBlobSmartGet(),false);
 								} else {
 									message=rs.getString(getMessageField());
 								}
@@ -436,6 +438,13 @@ public class JdbcListener extends JdbcFacade implements IPullingListener {
 	}
 	public boolean isBlobSmartGet() {
 		return blobSmartGet;
+	}
+
+	public boolean isTrace() {
+		return trace;
+	}
+	public void setTrace(boolean trace) {
+		this.trace = trace;
 	}
 
 }
