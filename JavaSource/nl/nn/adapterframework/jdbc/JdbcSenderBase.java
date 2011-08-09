@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcSenderBase.java,v $
- * Revision 1.10  2011-04-27 10:01:53  m168309
+ * Revision 1.11  2011-08-09 09:57:32  L190409
+ * added timeout
+ *
+ * Revision 1.10  2011/04/27 10:01:53  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * used timeout attribute in getting connection too
  *
  * Revision 1.9  2010/03/10 14:30:05  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -56,6 +59,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * <tr><td>{@link #setConnectionsArePooled(boolean) connectionsArePooled}</td><td>when true, it is assumed that an connectionpooling mechanism is present. Before a message is sent, a new connection is obtained, that is closed after the message is sent. When transacted is true, connectionsArePooled is true, too</td><td>true</td></tr>
  * <tr><td>{@link #setTransacted(boolean) transacted}</td><td>&nbsp;</td><td>false</td></tr>
  * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setTimeout(int) timeout}</td><td>the number of seconds the driver will wait for a Statement object to execute. If the limit is exceeded, a TimeOutException is thrown. 0 means no timeout</td><td>0</td></tr>
  * </table>
 
  *  * </p>
@@ -64,7 +68,8 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * @since 	4.2.h
  */
 public abstract class JdbcSenderBase extends JdbcFacade implements ISenderWithParameters {
-	public static final String version="$RCSfile: JdbcSenderBase.java,v $ $Revision: 1.10 $ $Date: 2011-04-27 10:01:53 $";
+
+	private int timeout = 0;
 
 	protected Connection connection=null;
 	protected ParameterList paramList = null;
@@ -125,14 +130,10 @@ public abstract class JdbcSenderBase extends JdbcFacade implements ISenderWithPa
 	}
 
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException, TimeOutException {
-		return sendMessage(correlationID, message, prc, 0);
-	}
-
-	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc, int timeout) throws SenderException, TimeOutException {
 		if (isConnectionsArePooled()) {
 			Connection c = null;
 			try {
-				c = getConnection(timeout);
+				c = getConnection(getTimeout());
 				String result = sendMessage(c, correlationID, message, prc);
 				return result;
 			} catch (JdbcException e) {
@@ -147,10 +148,9 @@ public abstract class JdbcSenderBase extends JdbcFacade implements ISenderWithPa
 				}
 			}
 			
-		} else {
-			synchronized (connection) {
-				return sendMessage(connection, correlationID, message, prc);
-			}
+		} 
+		synchronized (connection) {
+			return sendMessage(connection, correlationID, message, prc);
 		}
 	}
 
@@ -160,10 +160,15 @@ public abstract class JdbcSenderBase extends JdbcFacade implements ISenderWithPa
 		String result  = super.toString();
         ToStringBuilder ts=new ToStringBuilder(this);
         ts.append("name", getName() );
-        ts.append("version", version);
         result += ts.toString();
         return result;
 	}
-	
+
+	public int getTimeout() {
+		return timeout;
+	}
+	public void setTimeout(int i) {
+		timeout = i;
+	}
 
 }
