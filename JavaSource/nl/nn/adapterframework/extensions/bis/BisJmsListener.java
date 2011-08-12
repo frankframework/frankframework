@@ -1,6 +1,9 @@
 /*
  * $Log: BisJmsListener.java,v $
- * Revision 1.6  2011-07-07 12:13:24  m168309
+ * Revision 1.7  2011-08-12 11:43:22  m168309
+ * *** empty log message ***
+ *
+ * Revision 1.6  2011/07/07 12:13:24  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added resultInPayload attribute
  *
  * Revision 1.5  2011/06/27 12:03:23  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -222,7 +225,7 @@ public class BisJmsListener extends JmsListener {
 		try {
 			String result = prepareResult(errorCode, threadContext);
 			if (isResultInPayload()) {
-				String message = Misc.arrayListToString(messages);
+				String message = Misc.listToString(messages);
 				Document messageDoc = XmlUtils.buildDomDocument(message);
 				Node messageRootNode = messageDoc.getFirstChild();
 				Node resultNode = messageDoc.importNode(XmlUtils.buildNode(result), true);
@@ -230,7 +233,7 @@ public class BisJmsListener extends JmsListener {
 				payload = XmlUtils.nodeToString(messageDoc);
 			} else {
 				messages.add(result);
-				payload = Misc.arrayListToString(messages);
+				payload = Misc.listToString(messages);
 			}
 		} catch (Exception e) {
 			throw new ListenerException(e);
