@@ -1,6 +1,9 @@
 /*
  * $Log: CheckSemaphorePipeProcessor.java,v $
- * Revision 1.3  2010-09-13 13:53:51  L190409
+ * Revision 1.4  2011-08-18 14:40:27  L190409
+ * use modified interface for statistics
+ *
+ * Revision 1.3  2010/09/13 13:53:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * now extends baseclass
  *
  * Revision 1.2  2010/09/07 15:55:13  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -40,7 +43,7 @@ public class CheckSemaphorePipeProcessor extends PipeProcessorBase {
 				long startWaiting = System.currentTimeMillis();
 				s.acquire();
 				waitingDuration = System.currentTimeMillis() - startWaiting;
-				StatisticsKeeper sk = (StatisticsKeeper) pipeLine.getPipeWaitingStatistics().get(pipe.getName());
+				StatisticsKeeper sk = pipeLine.getPipeWaitingStatistics(pipe);
 				sk.addValue(waitingDuration);
 				pipeRunResult = pipeProcessor.processPipe(pipeLine, pipe, messageId, message, pipeLineSession);
 			} catch(InterruptedException e) {
