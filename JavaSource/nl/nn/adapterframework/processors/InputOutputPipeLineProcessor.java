@@ -1,6 +1,9 @@
 /*
  * $Log: InputOutputPipeLineProcessor.java,v $
- * Revision 1.2  2010-09-07 15:55:13  m00f069
+ * Revision 1.3  2011-08-18 14:41:00  L190409
+ * now extends PipeLineProcessorBase
+ *
+ * Revision 1.2  2010/09/07 15:55:13  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Removed IbisDebugger, made it possible to use AOP to implement IbisDebugger functionality.
  *
  */
@@ -10,22 +13,13 @@ import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
-import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
-
-import org.apache.log4j.Logger;
 
 /**
  * @author Jaco de Groot
  * @version Id
  */
-public class InputOutputPipeLineProcessor implements PipeLineProcessor {
-	private Logger log = LogUtil.getLogger(this);
-	private PipeLineProcessor pipeLineProcessor;
-
-	public void setPipeLineProcessor(PipeLineProcessor pipeLineProcessor) {
-		this.pipeLineProcessor = pipeLineProcessor;
-	}
+public class InputOutputPipeLineProcessor extends PipeLineProcessorBase {
 	
 	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId,
 			String message, PipeLineSession pipeLineSession
