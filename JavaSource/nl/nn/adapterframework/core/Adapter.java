@@ -1,6 +1,10 @@
 /*
  * $Log: Adapter.java,v $
- * Revision 1.61  2011-08-09 07:41:26  L190409
+ * Revision 1.62  2011-08-18 14:34:48  L190409
+ * moved pipe statistics iteration to PipeLine
+ * modified interface for statistics
+ *
+ * Revision 1.61  2011/08/09 07:41:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved result logging
  *
  * Revision 1.60  2011/06/27 15:15:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -527,42 +531,7 @@ public class Adapter implements IAdapter, NamedBean {
 			}
 			
 			Object pipelineData=hski.openGroup(adapterData,null,"pipeline");
-
-			Map pipelineStatistics = getPipeLineStatistics();
-			Object pipestatData=hski.openGroup(pipelineData,null,"pipeStats");
-
-			for(Iterator it=getPipeLine().getPipes().iterator();it.hasNext();) {
-				IPipe pipe = (IPipe)it.next();
-				String pipeName = pipe.getName();
-
-				StatisticsKeeper pstat = (StatisticsKeeper) pipelineStatistics.get(pipeName);
-				if (pstat==null) {
-					log.warn("no statistics found for pipe ["+pipeName+"]");
-				} else {
-					hski.handleStatisticsKeeper(pipestatData,pstat);
-					pstat.performAction(action);
-				}
-				if (pipe instanceof HasStatistics) {
-					((HasStatistics) pipe).iterateOverStatistics(hski, pipestatData,action);
-				}
-			}
-			hski.closeGroup(pipestatData);
-
-			pipelineStatistics = getWaitingStatistics();
-			if (pipelineStatistics.size()>0) {
-				pipestatData=hski.openGroup(pipelineData,null,"idleStats");
-
-				for(Iterator it=getPipeLine().getPipes().iterator();it.hasNext();) {
-					IPipe pipe = (IPipe)it.next();
-					String pipeName = pipe.getName();
-					StatisticsKeeper pstat = (StatisticsKeeper) pipelineStatistics.get(pipeName);
-					if (pstat!=null) {
-						hski.handleStatisticsKeeper(pipestatData,pstat);
-						pstat.performAction(action);
-					}
-				}
-				hski.closeGroup(pipestatData);
-			}
+			getPipeLine().iterateOverStatistics(hski, pipelineData, action);
 			hski.closeGroup(pipelineData);
 		}
 	}
@@ -621,9 +590,7 @@ public class Adapter implements IAdapter, NamedBean {
 			return numOfMessagesProcessed.getValue();
 		}
 	}
-	public Map getPipeLineStatistics() {
-		return pipeline.getPipeStatistics();
-	}
+
 	public IReceiver getReceiverByName(String receiverName) {
 		Iterator it = receivers.iterator();
 		while (it.hasNext()) {
@@ -669,12 +636,7 @@ public class Adapter implements IAdapter, NamedBean {
 	public Date getStatsUpSinceDate() {
 		return new Date(statsUpSince);
 	}
-	/**
-	 * Retrieve the waiting statistics as a <code>Hashtable</code>
-	 */
-	public Map getWaitingStatistics() {
-		return pipeline.getPipeWaitingStatistics();
-	}
+
 	/**
 	 *
 	 * Process the receiving of a message

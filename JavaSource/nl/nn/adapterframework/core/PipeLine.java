@@ -1,6 +1,10 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.93  2011-06-27 15:15:51  L190409
+ * Revision 1.94  2011-08-18 14:34:48  L190409
+ * moved pipe statistics iteration to PipeLine
+ * modified interface for statistics
+ *
+ * Revision 1.93  2011/06/27 15:15:51  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved configWarnings
  *
  * Revision 1.92  2010/11/12 15:15:10  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -287,7 +291,9 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.processors.PipeLineProcessor;
+import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
+import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
 import nl.nn.adapterframework.util.JtaUtil;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
@@ -373,8 +379,7 @@ import org.springframework.transaction.TransactionDefinition;
  * @version Id
  * @author  Johan Verrips
  */
-public class PipeLine implements ICacheEnabled {
-	public static final String version = "$RCSfile: PipeLine.java,v $ $Revision: 1.93 $ $Date: 2011-06-27 15:15:51 $";
+public class PipeLine implements ICacheEnabled, HasStatistics {
     private Logger log = LogUtil.getLogger(this);
     
 	private PipeLineProcessor pipeLineProcessor;
@@ -539,9 +544,8 @@ public class PipeLine implements ICacheEnabled {
 			} catch (Throwable t) {
 				if (t instanceof ConfigurationException) {
 					throw (ConfigurationException)t;
-				} else {
-					throw new ConfigurationException("Exception configuring Pipe ["+pipeName+"]",t);
 				}
+				throw new ConfigurationException("Exception configuring Pipe ["+pipeName+"]",t);
 			}
 			if (log.isDebugEnabled()) log.debug("Pipeline of ["+owner.getName()+"]: Pipe ["+pipeName+"] successfully configured: ["+pipe.toString()+"]");
 			
@@ -561,24 +565,26 @@ public class PipeLine implements ICacheEnabled {
 			PipeForward pf = new PipeForward();
 			pf.setName("success");
 			getInputValidator().registerForward(pf);
-			getInputValidator().setName("inputValidator of "+owner.getName());
+			getInputValidator().setName("- pipeline inputValidator");
 			if (getInputValidator() instanceof IExtendedPipe) {
 				((IExtendedPipe)getInputValidator()).configure(this);
 			} else {
 				getInputValidator().configure();
 			}
+		    pipeStatistics.put(getInputValidator().getName(), new StatisticsKeeper(getInputValidator().getName()));
 		}
 		if (getOutputValidator()!=null) {
 			log.debug("Pipeline of ["+owner.getName()+"] configuring OutputValidator");
 			PipeForward pf = new PipeForward();
 			pf.setName("success");
 			getOutputValidator().registerForward(pf);
-			getOutputValidator().setName("outputValidator of "+owner.getName());
+			getOutputValidator().setName("- pipeline outputValidator");
 			if (adapter!=null && getOutputValidator() instanceof IExtendedPipe) {
 				((IExtendedPipe)getOutputValidator()).configure(this);
 			} else {
 				getOutputValidator().configure();
 			}
+		    pipeStatistics.put(getOutputValidator().getName(), new StatisticsKeeper(getOutputValidator().getName()));
 		}
 
 		int txOption = this.getTransactionAttributeNum();
@@ -605,19 +611,42 @@ public class PipeLine implements ICacheEnabled {
     public int getPipeLineSize(){
         return pipesByName.size();
     }
-    /**
-     * @return a Hashtable with in the key the pipenames and in the
-     * value a {@link StatisticsKeeper} object with the statistics
-     */
-	public Map getPipeStatistics(){
-		return pipeStatistics;
+    
+	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, int action) throws SenderException {
+		Object pipeStatsData = hski.openGroup(data,null,"pipeStats");
+		handlePipeStat(getInputValidator(),pipeStatistics,pipeStatsData,hski, true, action);
+		handlePipeStat(getOutputValidator(),pipeStatistics,pipeStatsData,hski, true, action);
+		for(Iterator it=adapter.getPipeLine().getPipes().iterator();it.hasNext();) {
+			IPipe pipe = (IPipe)it.next();
+			handlePipeStat(pipe,pipeStatistics,pipeStatsData,hski, true, action);
+		}
+		if (pipeWaitingStatistics.size()>0) {
+			Object waitStatsData = hski.openGroup(data,null,"waitStats");
+			for(Iterator it=adapter.getPipeLine().getPipes().iterator();it.hasNext();) {
+				IPipe pipe = (IPipe)it.next();
+				handlePipeStat(pipe,pipeWaitingStatistics,waitStatsData,hski, false, action);
+			}
+		}
+		hski.closeGroup(pipeStatsData);
 	}
-    /**
-     * @return a Hashtable with in the key the pipenames and in the
-     * value a {@link StatisticsKeeper} object with the statistics
-     */
-	public Map getPipeWaitingStatistics(){
-		return pipeWaitingStatistics;
+
+	private void handlePipeStat(IPipe pipe, Map pipelineStatistics, Object pipeStatsData, StatisticsKeeperIterationHandler handler, boolean deep, int action) throws SenderException {
+		if (pipe==null) {
+			return;
+		}
+		StatisticsKeeper pstat = (StatisticsKeeper) pipelineStatistics.get(pipe.getName());
+		handler.handleStatisticsKeeper(pipeStatsData,pstat);
+		if (deep && pipe instanceof HasStatistics) {
+			((HasStatistics)pipe).iterateOverStatistics(handler,pipeStatsData,action);
+		}
+	}
+
+	
+	public StatisticsKeeper getPipeStatistics(IPipe pipe){
+		return (StatisticsKeeper)pipeStatistics.get(pipe.getName());
+	}
+	public StatisticsKeeper getPipeWaitingStatistics(IPipe pipe){
+		return (StatisticsKeeper)pipeWaitingStatistics.get(pipe.getName());
 	}
 	
 
@@ -898,4 +927,5 @@ public class PipeLine implements ICacheEnabled {
 	public boolean isForceFixedForwarding() {
 		return forceFixedForwarding;
 	}
+
 }
