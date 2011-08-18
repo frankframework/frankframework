@@ -1,6 +1,9 @@
 /*
  * $Log: ShowAdapterStatistics.java,v $
- * Revision 1.13  2009-12-29 14:45:16  L190409
+ * Revision 1.14  2011-08-18 14:36:39  L190409
+ * moved pipe statistics iteration to PipeLine, modified interface for statistics
+ *
+ * Revision 1.13  2009/12/29 14:45:16  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * moved statistics to separate package
  *
  * Revision 1.12  2009/08/26 15:50:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -37,14 +40,12 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.Date;
 import java.util.Iterator;
-import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import nl.nn.adapterframework.core.Adapter;
-import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.IReceiverStatistics;
 import nl.nn.adapterframework.core.SenderException;
@@ -74,12 +75,7 @@ public class ShowAdapterStatistics extends ActionBase {
     private DecimalFormat pf=new DecimalFormat(ItemList.ITEM_FORMAT_PERC);
     
    
-	public ActionForward execute(
-	    ActionMapping mapping,
-	    ActionForm form,
-	    HttpServletRequest request,
-	    HttpServletResponse response)
-	    throws IOException, ServletException {
+	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 	
 	    // Initialize action
 	    initAction(request);
@@ -181,35 +177,10 @@ public class ShowAdapterStatistics extends ActionBase {
 		Object handle = handler.start(null,null,null);
 		
 		try {
-			Object pipelineData = handler.openGroup(handle,null,"pipeline");
-//			XmlBuilder pipelineXML = new XmlBuilder("pipeline");
-	
-			Map pipelineStatistics = adapter.getPipeLineStatistics();
-	
-			Object pipeStatsData = handler.openGroup(pipelineData,null,"pipeStats");
-			for(Iterator it=adapter.getPipeLine().getPipes().iterator();it.hasNext();) {
-				IPipe pipe = (IPipe)it.next();
-				StatisticsKeeper pstat = (StatisticsKeeper) pipelineStatistics.get(pipe.getName());
-				handler.handleStatisticsKeeper(pipeStatsData,pstat);
-				if (pipe instanceof HasStatistics) {
-					try {
-						((HasStatistics)pipe).iterateOverStatistics(handler,pipeStatsData,HasStatistics.STATISTICS_ACTION_FULL);
-					} catch (SenderException e) {
-						error("Could not iterator over statistics of pipe ["+pipe.getName()+"]",e);
-					}
-				}
-			}
-			pipelineStatistics = adapter.getWaitingStatistics();
-			if (pipelineStatistics.size()>0) {
-				Object waitStatsData = handler.openGroup(pipelineData,null,"waitStats");
-				for(Iterator it=adapter.getPipeLine().getPipes().iterator();it.hasNext();) {
-					IPipe pipe = (IPipe)it.next();
-					StatisticsKeeper pstat = (StatisticsKeeper) pipelineStatistics.get(pipe.getName());
-					if (pstat!=null) {
-						handler.handleStatisticsKeeper(waitStatsData,pstat);
-					}
-				}
-			}
+			Object pipelineData = handler.openGroup(handle,null,"pipeline");		
+			adapter.getPipeLine().iterateOverStatistics(handler, pipelineData, HasStatistics.STATISTICS_ACTION_FULL);
+		} catch (SenderException e) {
+			log.error(e);
 		} finally {
 			handler.end(handle);
 		}
@@ -230,7 +201,6 @@ public class ShowAdapterStatistics extends ActionBase {
 	    return (mapping.findForward("success"));
 	
 	}
-
 	
 	private class StatisticsKeeperToXml implements StatisticsKeeperIterationHandler {
 
