@@ -1,6 +1,9 @@
 /*
  * $Log: MessageSendingPipe.java,v $
- * Revision 1.72  2011-05-09 15:27:11  L190409
+ * Revision 1.73  2011-08-18 14:38:43  L190409
+ * added validator statistics
+ *
+ * Revision 1.72  2011/05/09 15:27:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fixed bug in timeout monitoring
  *
  * Revision 1.71  2011/02/25 11:06:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -237,6 +240,7 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.processors.ListenerProcessor;
 import nl.nn.adapterframework.senders.MailSender;
 import nl.nn.adapterframework.statistics.HasStatistics;
+import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -335,7 +339,6 @@ import org.apache.commons.lang.SystemUtils;
  */
 
 public class MessageSendingPipe extends FixedForwardPipe implements HasSender, HasStatistics, EventThrowing {
-	public static final String version = "$RCSfile: MessageSendingPipe.java,v $ $Revision: 1.72 $ $Date: 2011-05-09 15:27:11 $";
 
 	public static final String PIPE_TIMEOUT_MONITOR_EVENT = "Sender Timeout";
 	public static final String PIPE_CLEAR_TIMEOUT_MONITOR_EVENT = "Sender Received Result on Time";
@@ -386,6 +389,8 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
      
 	private IPipe inputValidator=null;
 	private IPipe outputValidator=null;
+	private StatisticsKeeper inputValidatorStatistics=null;
+	private StatisticsKeeper outputValidatorStatistics=null;
 	
 	private boolean timeoutPending=false;
 
@@ -541,6 +546,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 			} else {
 				getInputValidator().configure();
 			}
+			inputValidatorStatistics=new StatisticsKeeper("- "+getName()+": validate input ");
 		}
 		if (getOutputValidator()!=null) {
 			PipeForward pf = new PipeForward();
@@ -552,6 +558,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 			} else {
 				getOutputValidator().configure();
 			}
+			outputValidatorStatistics=new StatisticsKeeper("- "+getName()+": validate output ");
 		}
 
 		registerEvent(PIPE_TIMEOUT_MONITOR_EVENT);
@@ -559,17 +566,6 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 		registerEvent(PIPE_EXCEPTION_MONITOR_EVENT);
 	}
 
-//	public boolean isCongestionSensing() {
-//		if (getSender() instanceof ICongestionSensor) {
-//			return ((ICongestionSensor) getSender()).isCongestionSensing();
-//		}
-//		return false;
-//	}
-//
-//	public INamedObject isCongested() throws SenderException {
-//		return ((ICongestionSensor) getSender()).isCongested();
-//	}
-	
 	
 	public PipeRunResult doPipe(Object input, PipeLineSession session)	throws PipeRunException {
 
@@ -577,9 +573,16 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 
 		if (getInputValidator()!=null) {
 			log.debug(getLogPrefix(session)+"validating input");
-			PipeRunResult validationResult = getInputValidator().doPipe(input,session);
-			if (validationResult!=null && !validationResult.getPipeForward().getName().equals("success")) {
-				return validationResult;
+			long validationStartTime= System.currentTimeMillis();
+			try {
+				PipeRunResult validationResult = getInputValidator().doPipe(input,session);
+				if (validationResult!=null && !validationResult.getPipeForward().getName().equals("success")) {
+					return validationResult;
+				}
+			} finally  {
+				long validationEndTime = System.currentTimeMillis();
+				long validationDuration = validationEndTime - validationStartTime;
+				inputValidatorStatistics.addValue(validationDuration);
 			}
 		}
 
@@ -787,9 +790,16 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 		}
 		if (getOutputValidator()!=null) {
 			log.debug(getLogPrefix(session)+"validating response");
-			PipeRunResult validationResult = getOutputValidator().doPipe(result,session);
-			if (validationResult!=null && !validationResult.getPipeForward().getName().equals("success")) {
-				return validationResult;
+			long validationStartTime= System.currentTimeMillis();
+			try {
+				PipeRunResult validationResult = getOutputValidator().doPipe(result,session);
+				if (validationResult!=null && !validationResult.getPipeForward().getName().equals("success")) {
+					return validationResult;
+				}
+			} finally  {
+				long validationEndTime = System.currentTimeMillis();
+				long validationDuration = validationEndTime - validationStartTime;
+				outputValidatorStatistics.addValue(validationDuration);
 			}
 		}
 		return new PipeRunResult(getForward(), result);
@@ -904,8 +914,20 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	}
 
 	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, int action) throws SenderException {
+		if (inputValidatorStatistics!=null) {
+			hski.handleStatisticsKeeper(data, inputValidatorStatistics);
+		}
+		if (getInputValidator()!=null && getInputValidator() instanceof HasStatistics) {
+			((HasStatistics)getInputValidator()).iterateOverStatistics(hski,data,action);
+		}
 		if (sender instanceof HasStatistics) {
 			((HasStatistics)sender).iterateOverStatistics(hski,data,action);
+		}
+		if (outputValidatorStatistics!=null) {
+			hski.handleStatisticsKeeper(data, outputValidatorStatistics);
+		}
+		if (getOutputValidator()!=null && getOutputValidator() instanceof HasStatistics) {
+			((HasStatistics)getOutputValidator()).iterateOverStatistics(hski,data,action);
 		}
 	}
 
@@ -1154,7 +1176,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 		return retryNamespaceDefs;
 	}
 
-	public void setRetryNamespaceDefs(String retryXNamespaceDefs) {
-		this.retryNamespaceDefs = retryXNamespaceDefs;
+	public void setRetryNamespaceDefs(String retryNamespaceDefs) {
+		this.retryNamespaceDefs = retryNamespaceDefs;
 	}
 }

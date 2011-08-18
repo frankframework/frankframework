@@ -1,6 +1,9 @@
 /*
  * $Log: CorePipeLineProcessor.java,v $
- * Revision 1.2  2010-09-07 15:55:13  m00f069
+ * Revision 1.3  2011-08-18 14:39:19  L190409
+ * added validator statistics
+ *
+ * Revision 1.2  2010/09/07 15:55:13  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Removed IbisDebugger, made it possible to use AOP to implement IbisDebugger functionality.
  *
  */
@@ -55,17 +58,24 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 
 		IPipe inputValidator = pipeLine.getInputValidator();
 		if (inputValidator!=null) {
-			PipeRunResult validationResult = inputValidator.doPipe(message,pipeLineSession);
-			if (validationResult!=null && !validationResult.getPipeForward().getName().equals("success")) {
-				PipeForward validationForward=validationResult.getPipeForward();
-				if (validationForward.getPath()==null) {
-					throw new PipeRunException(pipeToRun,"forward ["+validationForward.getName()+"] of inputValidator has emtpy forward path");
-				}	
-				log.warn("setting first pipe to ["+validationForward.getPath()+"] due to validation fault");
-				pipeToRun = pipeLine.getPipe(validationForward.getPath());
-				if (pipeToRun==null) {
-					throw new PipeRunException(pipeToRun,"forward ["+validationForward.getName()+"], path ["+validationForward.getPath()+"] does not correspond to a pipe");
+			long validationStartTime= System.currentTimeMillis();
+			try {
+				PipeRunResult validationResult = inputValidator.doPipe(message,pipeLineSession);
+				if (validationResult!=null && !validationResult.getPipeForward().getName().equals("success")) {
+					PipeForward validationForward=validationResult.getPipeForward();
+					if (validationForward.getPath()==null) {
+						throw new PipeRunException(pipeToRun,"forward ["+validationForward.getName()+"] of inputValidator has emtpy forward path");
+					}	
+					log.warn("setting first pipe to ["+validationForward.getPath()+"] due to validation fault");
+					pipeToRun = pipeLine.getPipe(validationForward.getPath());
+					if (pipeToRun==null) {
+						throw new PipeRunException(pipeToRun,"forward ["+validationForward.getName()+"], path ["+validationForward.getPath()+"] does not correspond to a pipe");
+					}
 				}
+			} finally {
+				long validationEndTime = System.currentTimeMillis();
+				long validationDuration = validationEndTime - validationStartTime;
+				pipeLine.getPipeStatistics(inputValidator).addValue(validationDuration);
 			}
 		}
 
@@ -115,22 +125,29 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 				if (null!=plExit){
 					IPipe outputValidator = pipeLine.getOutputValidator();
 					if (outputValidator !=null && !outputValidated) {
-						outputValidated=true;
-						log.debug("validating PipeLineResult");
-						PipeRunResult validationResult = outputValidator.doPipe(object,pipeLineSession);
-						if (validationResult!=null && !validationResult.getPipeForward().getName().equals("success")) {
-							PipeForward validationForward=validationResult.getPipeForward();
-							if (validationForward.getPath()==null) {
-								throw new PipeRunException(pipeToRun,"forward ["+validationForward.getName()+"] of outputValidator has emtpy forward path");
-							}	
-							log.warn("setting next pipe to ["+validationForward.getPath()+"] due to validation fault");
-							pipeToRun = pipeLine.getPipe(validationForward.getPath());
-							if (pipeToRun==null) {
-								throw new PipeRunException(pipeToRun,"forward ["+validationForward.getName()+"], path ["+validationForward.getPath()+"] does not correspond to a pipe");
+						long validationStartTime= System.currentTimeMillis();
+						try {
+							outputValidated=true;
+							log.debug("validating PipeLineResult");
+							PipeRunResult validationResult = outputValidator.doPipe(object,pipeLineSession);
+							if (validationResult!=null && !validationResult.getPipeForward().getName().equals("success")) {
+								PipeForward validationForward=validationResult.getPipeForward();
+								if (validationForward.getPath()==null) {
+									throw new PipeRunException(pipeToRun,"forward ["+validationForward.getName()+"] of outputValidator has emtpy forward path");
+								}	
+								log.warn("setting next pipe to ["+validationForward.getPath()+"] due to validation fault");
+								pipeToRun = pipeLine.getPipe(validationForward.getPath());
+								if (pipeToRun==null) {
+									throw new PipeRunException(pipeToRun,"forward ["+validationForward.getName()+"], path ["+validationForward.getPath()+"] does not correspond to a pipe");
+								}
+							} else {
+								log.debug("validation succeeded");
+								ready=true;
 							}
-						} else {
-							log.debug("validation succeeded");
-							ready=true;
+						} finally {
+							long validationEndTime = System.currentTimeMillis();
+							long validationDuration = validationEndTime - validationStartTime;
+							pipeLine.getPipeStatistics(outputValidator).addValue(validationDuration);
 						}
 					} else {
 						ready=true;
