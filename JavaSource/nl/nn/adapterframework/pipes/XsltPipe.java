@@ -1,6 +1,9 @@
 /*
  * $Log: XsltPipe.java,v $
- * Revision 1.33  2010-07-12 12:52:24  L190409
+ * Revision 1.34  2011-08-22 14:26:50  L190409
+ * set size statistics on by default
+ *
+ * Revision 1.33  2010/07/12 12:52:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * allow to specfiy namespace prefixes to be used in XPath-epressions
  *
  * Revision 1.32  2008/10/24 14:41:41  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -140,7 +143,6 @@ import org.apache.commons.lang.StringUtils;
  */
 
 public class XsltPipe extends FixedForwardPipe {
-	public static final String version="$RCSfile: XsltPipe.java,v $ $Revision: 1.33 $ $Date: 2010-07-12 12:52:24 $";
 
 	private TransformerPool transformerPool;
 	private String xpathExpression=null;
@@ -157,6 +159,9 @@ public class XsltPipe extends FixedForwardPipe {
 	private TransformerPool transformerPoolSkipEmptyTags;
 	private TransformerPool transformerPoolRemoveNamespaces;
 
+	{
+		setSizeStatistics(true);
+	}
 	
 	/**
 	 * The <code>configure()</code> method instantiates a transformer for the specified
@@ -283,10 +288,9 @@ public class XsltPipe extends FixedForwardPipe {
 
 			if (StringUtils.isEmpty(getSessionKey())){
 				return new PipeRunResult(getForward(), stringResult);
-			} else {
-				session.put(getSessionKey(), stringResult);
-				return new PipeRunResult(getForward(), input);
 			}
+			session.put(getSessionKey(), stringResult);
+			return new PipeRunResult(getForward(), input);
 	    } 
 	    catch (Exception e) {
 	        throw new PipeRunException(this, getLogPrefix(session)+" Exception on transforming input", e);

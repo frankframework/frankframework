@@ -1,6 +1,9 @@
 /*
  * $Log: MessageSendingPipe.java,v $
- * Revision 1.73  2011-08-18 14:38:43  L190409
+ * Revision 1.74  2011-08-22 14:26:50  L190409
+ * set size statistics on by default
+ *
+ * Revision 1.73  2011/08/18 14:38:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added validator statistics
  *
  * Revision 1.72  2011/05/09 15:27:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -397,6 +400,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	boolean checkMessageLog = AppConstants.getInstance().getBoolean("messageLog.check", false);
 
 	private ListenerProcessor listenerProcessor;
+
 
 	protected void propagateName() {
 		ISender sender=getSender();
@@ -1178,5 +1182,9 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 
 	public void setRetryNamespaceDefs(String retryNamespaceDefs) {
 		this.retryNamespaceDefs = retryNamespaceDefs;
+	}
+
+	public boolean hasSizeStatistics() {
+		return getSender().isSynchronous();
 	}
 }

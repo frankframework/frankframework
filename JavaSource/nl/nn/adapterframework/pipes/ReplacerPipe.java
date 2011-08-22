@@ -1,6 +1,9 @@
 /*
  * $Log: ReplacerPipe.java,v $
- * Revision 1.5  2009-07-10 14:34:54  m168309
+ * Revision 1.6  2011-08-22 14:26:50  L190409
+ * set size statistics on by default
+ *
+ * Revision 1.5  2009/07/10 14:34:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * made find attribute optional
  *
  * Revision 1.3  2004/08/24 06:48:50  unknown <unknown@ibissource.org>
@@ -52,7 +55,6 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @since 4.2
  */
 public class ReplacerPipe extends FixedForwardPipe {
-	public static final String version="$Id: ReplacerPipe.java,v 1.5 2009-07-10 14:34:54 m168309 Exp $";
 
 	private String find;
 	private String replace;
@@ -60,7 +62,11 @@ public class ReplacerPipe extends FixedForwardPipe {
 	private boolean replaceNonXmlChars=false;
 	private String replaceNonXmlString=null;
 	private char replaceNonXmlChar=0x00BF;
-	
+
+	{
+		setSizeStatistics(true);
+	}
+
 	public void configure() throws ConfigurationException {
 		super.configure();
 //		if (StringUtils.isEmpty(getFind())) {
@@ -80,10 +86,9 @@ public class ReplacerPipe extends FixedForwardPipe {
 			if (getReplaceNonXmlChar()!=null) {
 				if (getReplaceNonXmlChar().length()>1) {
 					throw new ConfigurationException(getLogPrefix(null) + "replaceNonXmlChar ["+getReplaceNonXmlChar()+"] has to be one character");
-				} else {
-					if (getReplaceNonXmlChar().length()==1) {
-						replaceNonXmlChar = getReplaceNonXmlChar().charAt(0);
-					}
+				}
+				if (getReplaceNonXmlChar().length()==1) {
+					replaceNonXmlChar = getReplaceNonXmlChar().charAt(0);
 				}
 			}
 		}
