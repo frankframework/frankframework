@@ -1,6 +1,9 @@
 /*
  * $Log: IAdapter.java,v $
- * Revision 1.15  2010-09-13 13:35:50  L190409
+ * Revision 1.16  2011-08-22 14:21:39  L190409
+ * removed unused methods
+ *
+ * Revision 1.15  2010/09/13 13:35:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * renamed configurePipes() into configure() (javadoc only)
  *
  * Revision 1.14  2009/12/29 14:32:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -59,7 +62,6 @@ import nl.nn.adapterframework.util.MessageKeeper;
  * @version Id
  **/
 public interface IAdapter extends IManagable {
-	public static final String version = "$RCSfile: IAdapter.java,v $ $Revision: 1.15 $ $Date: 2010-09-13 13:35:50 $";
 
     /**
   	 * Instruct the adapter to configure itself. The adapter will call the
@@ -77,8 +79,7 @@ public interface IAdapter extends IManagable {
 	public MessageKeeper getMessageKeeper();
 	public IReceiver getReceiverByName(String receiverName);
 	public Iterator getReceiverIterator();
-	public PipeLineResult processMessage(String correlationID, String message);
-	public PipeLineResult processMessage(String correlationID, String message, PipeLineSession pipeLineSession);
+	public PipeLineResult processMessage(String messageId, String message, PipeLineSession pipeLineSession);
 	public PipeLineResult processMessageWithExceptions(String messageId, String message, PipeLineSession pipeLineSession) throws ListenerException;
 
   	public void registerPipeLine (PipeLine pipeline) throws ConfigurationException;
@@ -93,5 +94,5 @@ public interface IAdapter extends IManagable {
     /**
      * state to put in PipeLineResult when a PipeRunException occurs.
      */
-    String getErrorState();
+	public String getErrorState();
 }

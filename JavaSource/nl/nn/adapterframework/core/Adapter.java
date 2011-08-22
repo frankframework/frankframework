@@ -1,6 +1,9 @@
 /*
  * $Log: Adapter.java,v $
- * Revision 1.62  2011-08-18 14:34:48  L190409
+ * Revision 1.63  2011-08-22 14:21:39  L190409
+ * removed unused methods
+ *
+ * Revision 1.62  2011/08/18 14:34:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * moved pipe statistics iteration to PipeLine
  * modified interface for statistics
  *
@@ -196,7 +199,6 @@ package nl.nn.adapterframework.core;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Vector;
 
 import nl.nn.adapterframework.cache.ICacheAdapter;
@@ -637,19 +639,6 @@ public class Adapter implements IAdapter, NamedBean {
 		return new Date(statsUpSince);
 	}
 
-	/**
-	 *
-	 * Process the receiving of a message
-	 * After all Pipes have been run in the PipeLineProcessor, the Object.toString() function
-	 * is called. The result is returned to the Receiver.
-	 *
-	 */
-	public PipeLineResult processMessage(String messageId, String message) {
-		PipeLineSession pls=new PipeLineSession();
-		Date now=new Date();
-		PipeLineSession.setListenerParameters(pls,messageId,null,now,now);
-		return processMessage(messageId, message, pls);
-	}
 
 	public PipeLineResult processMessage(String messageId, String message, PipeLineSession pipeLineSession) {
 		long startTime = System.currentTimeMillis();
