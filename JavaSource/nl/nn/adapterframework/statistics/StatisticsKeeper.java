@@ -1,6 +1,9 @@
 /*
  * $Log: StatisticsKeeper.java,v $
- * Revision 1.2  2011-05-23 13:41:13  L190409
+ * Revision 1.3  2011-08-22 14:31:32  L190409
+ * support for size statistics
+ *
+ * Revision 1.2  2011/05/23 13:41:13  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * renamed 'total' fields to 'sum'
  *
  * Revision 1.1  2009/12/29 14:25:18  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -57,25 +60,26 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @version Id
  */
 public class StatisticsKeeper implements ItemList {
-	public static final String version="$RCSfile: StatisticsKeeper.java,v $ $Revision: 1.2 $ $Date: 2011-05-23 13:41:13 $";
+	public static final String version="$RCSfile: StatisticsKeeper.java,v $ $Revision: 1.3 $ $Date: 2011-08-22 14:31:32 $";
 
 	private static final boolean calculatePercentiles=true;
 	
 	private String name = null;
 	private long first=Long.MIN_VALUE;
     private long last=0;
-    private Basics cumulative = new Basics();
-	private Basics mark = new Basics();
+    private Basics cumulative;
+	private Basics mark;
     private long classBoundaries[];
     private long classCounts[];
     
     
 
-   	// key that is looked up to retrieve texts to be signalled
-	private static final String statConfigKey="Statistics.boundaries";
  
  	public static final int NUM_STATIC_ITEMS=8;   
 	public static final int NUM_INTERVAL_ITEMS=6;   
+
+   	// key that is looked up to retrieve texts to be signalled
+	private static final String statConfigKey="Statistics.boundaries";
     public static final String DEFAULT_BOUNDARY_LIST="100,500,1000,5000";
     
 	public static final String ITEM_NAME_FIRST="first";
@@ -94,11 +98,22 @@ public class StatisticsKeeper implements ItemList {
 	 * @see AppConstants
 	 */
 	public StatisticsKeeper(String name) {
+		this(name, Basics.class, statConfigKey, DEFAULT_BOUNDARY_LIST);
+	}
+
+	protected StatisticsKeeper(String name, Class basicsClass, String boundaryConfigKey, String defaultBoundaryList) {
 	    super();
 	    this.name = name;
+	    try {
+			cumulative=(Basics)basicsClass.newInstance();
+			mark=(Basics)basicsClass.newInstance();
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	    
 	    List classBoundariesBuffer = new ArrayList();
 	
-	    StringTokenizer tok = AppConstants.getInstance().getTokenizer(statConfigKey,DEFAULT_BOUNDARY_LIST);
+	    StringTokenizer tok = AppConstants.getInstance().getTokenizer(boundaryConfigKey,defaultBoundaryList);
 	
 	    while (tok.hasMoreTokens()) {
 	        classBoundariesBuffer.add(new Long(Long.parseLong(tok.nextToken())));
@@ -113,6 +128,10 @@ public class StatisticsKeeper implements ItemList {
 //			pest = new PercentileEstimatorBase(percentileConfigKey,DEFAULT_P_LIST,1000);
 			pest = new PercentileEstimatorRanked(percentileConfigKey,DEFAULT_P_LIST,100);
 		}
+	}
+	
+	public String getUnits() {
+		return "ms";
 	}
 	
 	public void performAction(int action) {
@@ -182,7 +201,7 @@ public class StatisticsKeeper implements ItemList {
 			case 6: return ITEM_NAME_FIRST;
 			case 7: return ITEM_NAME_LAST;
 		    default : if ((index-NUM_STATIC_ITEMS) < classBoundaries.length) { 
-				return "< "+classBoundaries[index-NUM_STATIC_ITEMS]+"ms";
+				return "< "+classBoundaries[index-NUM_STATIC_ITEMS]+getUnits();
 		    }
 		    if (calculatePercentiles) {
 				return "p"+pest.getPercentage(index-NUM_STATIC_ITEMS-classBoundaries.length);

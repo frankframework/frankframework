@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractPipe.java,v $
- * Revision 1.38  2011-05-25 07:41:24  L190409
+ * Revision 1.39  2011-08-22 14:25:55  L190409
+ * support for size statistics
+ *
+ * Revision 1.38  2011/05/25 07:41:24  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * removed unused imports
  *
  * Revision 1.37  2010/11/12 15:12:14  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -219,6 +222,7 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	private boolean namespaceAware=XmlUtils.isNamespaceAwareByDefault();
 	private int transactionAttribute=TransactionDefinition.PROPAGATION_SUPPORTS;
 	private int transactionTimeout=0;
+	private boolean sizeStatistics=false;
  
 	// METT event numbers
 	private int beforeEvent=-1;
@@ -571,6 +575,13 @@ public abstract class AbstractPipe implements IExtendedPipe, HasTransactionAttri
 	}
 	public int getTransactionTimeout() {
 		return transactionTimeout;
+	}
+
+	public boolean hasSizeStatistics() {
+		return sizeStatistics;
+	}
+	public void setSizeStatistics(boolean sizeStatistics) {
+		this.sizeStatistics = sizeStatistics;
 	}
 
 }

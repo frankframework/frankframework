@@ -1,6 +1,9 @@
 /*
  * $Log: IExtendedPipe.java,v $
- * Revision 1.8  2009-11-12 12:37:15  m168309
+ * Revision 1.9  2011-08-22 14:22:32  L190409
+ * support for size statistics
+ *
+ * Revision 1.8  2009/11/12 12:37:15  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added 'Pipe Message Size Exceeding' event
  *
  * Revision 1.7  2008/08/12 15:32:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -97,5 +100,7 @@ public interface IExtendedPipe extends IPipe {
 	 * @param description
 	 */
 	public void throwEvent(String event);
+
+	public boolean hasSizeStatistics();
 
 }

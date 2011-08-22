@@ -1,6 +1,9 @@
 /*
  * $Log: PipeLine.java,v $
- * Revision 1.94  2011-08-18 14:34:48  L190409
+ * Revision 1.95  2011-08-22 14:22:32  L190409
+ * support for size statistics
+ *
+ * Revision 1.94  2011/08/18 14:34:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * moved pipe statistics iteration to PipeLine
  * modified interface for statistics
  *
@@ -292,6 +295,7 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.processors.PipeLineProcessor;
 import nl.nn.adapterframework.statistics.HasStatistics;
+import nl.nn.adapterframework.statistics.SizeStatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
 import nl.nn.adapterframework.util.JtaUtil;
@@ -389,7 +393,10 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 
     private Map pipeStatistics = new Hashtable();
     private Map pipeWaitingStatistics = new Hashtable();
-    private Map globalForwards = new Hashtable();
+	private StatisticsKeeper requestSizeStats;
+	private Map pipeSizeStats = new Hashtable();
+
+	private Map globalForwards = new Hashtable();
     private String firstPipe;
 	private int transactionAttribute=TransactionDefinition.PROPAGATION_SUPPORTS;
 	private int transactionTimeout=0;
@@ -413,6 +420,7 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 	private List exitHandlers = new ArrayList();
 	//private CongestionSensorList congestionSensors = new CongestionSensorList();
 	private ICacheAdapter cache;
+	
     
 	/**
 	 * Register an Pipe at this pipeline.
@@ -537,6 +545,9 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 					if (getMessageSizeErrorNum() >= 0) {
 						epipe.registerEvent(IExtendedPipe.MESSAGE_SIZE_MONITORING_EVENT);
 					}
+					if (epipe.hasSizeStatistics()) {
+						pipeSizeStats.put(pipe.getName(), new SizeStatisticsKeeper(pipe.getName()));
+					}
 				} else {
 					pipe.configure();
 				}
@@ -586,6 +597,8 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 			}
 		    pipeStatistics.put(getOutputValidator().getName(), new StatisticsKeeper(getOutputValidator().getName()));
 		}
+		
+		requestSizeStats = new SizeStatisticsKeeper("- pipeline in");
 
 		int txOption = this.getTransactionAttributeNum();
 		if (log.isDebugEnabled()) log.debug("creating TransactionDefinition for transactionAttribute ["+getTransactionAttribute()+"], timeout ["+getTransactionTimeout()+"]");
@@ -628,6 +641,13 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 			}
 		}
 		hski.closeGroup(pipeStatsData);
+		Object sizeStatsData = hski.openGroup(data,null,"sizeStats");
+		hski.handleStatisticsKeeper(sizeStatsData,getRequestSizeStats());
+		for(Iterator it=adapter.getPipeLine().getPipes().iterator();it.hasNext();) {
+			IPipe pipe = (IPipe)it.next();
+			handlePipeStat(pipe,pipeSizeStats,sizeStatsData,hski, false, action);
+		}
+		hski.closeGroup(sizeStatsData);
 	}
 
 	private void handlePipeStat(IPipe pipe, Map pipelineStatistics, Object pipeStatsData, StatisticsKeeperIterationHandler handler, boolean deep, int action) throws SenderException {
@@ -647,6 +667,9 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 	}
 	public StatisticsKeeper getPipeWaitingStatistics(IPipe pipe){
 		return (StatisticsKeeper)pipeWaitingStatistics.get(pipe.getName());
+	}
+	public StatisticsKeeper getPipeSizeStatistics(IPipe pipe){
+		return (StatisticsKeeper)pipeSizeStats.get(pipe.getName());
 	}
 	
 
@@ -670,8 +693,8 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 	 * @throws PipeRunException when something went wrong in the pipes.
 	 */
 	public PipeLineResult process(String messageId, String message, PipeLineSession pipeLineSession) throws PipeRunException {
-		return pipeLineProcessor.processPipeLine(this, messageId, message, pipeLineSession);
-		}
+		return pipeLineProcessor.processPipeLine(this, messageId, message, pipeLineSession, firstPipe);
+	}
 	
 	/**
     * Register global forwards.
@@ -926,6 +949,10 @@ public class PipeLine implements ICacheEnabled, HasStatistics {
 	}
 	public boolean isForceFixedForwarding() {
 		return forceFixedForwarding;
+	}
+
+	public StatisticsKeeper getRequestSizeStats() {
+		return requestSizeStats;
 	}
 
 }

@@ -1,6 +1,9 @@
 /*
  * $Log: CorePipeLineProcessor.java,v $
- * Revision 1.3  2011-08-18 14:39:19  L190409
+ * Revision 1.4  2011-08-22 14:28:58  L190409
+ * support for size statistics
+ *
+ * Revision 1.3  2011/08/18 14:39:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added validator statistics
  *
  * Revision 1.2  2010/09/07 15:55:13  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -23,6 +26,7 @@ import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -41,9 +45,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 		this.pipeProcessor = pipeProcessor;
 	}
 	
-	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId,
-			String message, PipeLineSession pipeLineSession
-			) throws PipeRunException {
+	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId, String message, PipeLineSession pipeLineSession, String firstPipe) throws PipeRunException {
 		// Object is the object that is passed to and returned from Pipes
 		Object object = (Object) message;
 		PipeRunResult pipeRunResult;
@@ -79,6 +81,8 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 			}
 		}
 
+		pipeLine.getRequestSizeStats().addValue(message.length());
+		
 		if (pipeLine.isStoreOriginalMessageWithoutNamespaces()) {
 			if (XmlUtils.isWellFormed(message)) {
 				String removeNamespaces_xslt = XmlUtils.makeRemoveNamespacesXslt(true,true);
@@ -108,6 +112,13 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 				
 				pipeRunResult = pipeProcessor.processPipe(pipeLine, pipeToRun, messageId, object, pipeLineSession);
 				object=pipeRunResult.getResult();
+	
+				if (object!=null && object instanceof String) {
+					StatisticsKeeper sizeStat = pipeLine.getPipeSizeStatistics(pipeToRun);
+					if (sizeStat!=null) {
+						sizeStat.addValue(((String)object).length());
+					}
+				}
 				
 				PipeForward pipeForward=pipeRunResult.getPipeForward();
 	
