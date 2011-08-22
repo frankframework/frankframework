@@ -1,6 +1,9 @@
 /*
  * $Log: InputOutputPipeLineProcessor.java,v $
- * Revision 1.3  2011-08-18 14:41:00  L190409
+ * Revision 1.4  2011-08-22 14:29:58  L190409
+ * added first pipe to interface
+ *
+ * Revision 1.3  2011/08/18 14:41:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * now extends PipeLineProcessorBase
  *
  * Revision 1.2  2010/09/07 15:55:13  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -22,7 +25,7 @@ import nl.nn.adapterframework.util.Misc;
 public class InputOutputPipeLineProcessor extends PipeLineProcessorBase {
 	
 	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId,
-			String message, PipeLineSession pipeLineSession
+			String message, PipeLineSession pipeLineSession, String firstPipe
 			) throws PipeRunException {
 		if (pipeLineSession==null) {
 			pipeLineSession= new PipeLineSession();
@@ -38,7 +41,7 @@ public class InputOutputPipeLineProcessor extends PipeLineProcessorBase {
 		}
 		// store message and messageId in the pipeLineSession
 		pipeLineSession.set(message, messageId);
-		return pipeLineProcessor.processPipeLine(pipeLine, messageId, message, pipeLineSession);
+		return pipeLineProcessor.processPipeLine(pipeLine, messageId, message, pipeLineSession, firstPipe);
 	}
 
 }

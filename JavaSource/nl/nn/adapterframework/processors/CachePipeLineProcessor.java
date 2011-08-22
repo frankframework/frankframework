@@ -1,6 +1,9 @@
 /*
  * $Log: CachePipeLineProcessor.java,v $
- * Revision 1.3  2011-05-31 15:30:35  L190409
+ * Revision 1.4  2011-08-22 14:29:59  L190409
+ * added first pipe to interface
+ *
+ * Revision 1.3  2011/05/31 15:30:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * support for new cache features
  *
  * Revision 1.2  2010/12/13 13:29:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -27,16 +30,16 @@ import nl.nn.adapterframework.core.PipeRunException;
  */
 public class CachePipeLineProcessor extends PipeLineProcessorBase {
 	
-	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId, String message, PipeLineSession pipeLineSession) throws PipeRunException {
+	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId, String message, PipeLineSession pipeLineSession, String firstPipe) throws PipeRunException {
 		ICacheAdapter cache=pipeLine.getCache();
 		if (cache==null) {
-			return pipeLineProcessor.processPipeLine(pipeLine, messageId, message, pipeLineSession);
+			return pipeLineProcessor.processPipeLine(pipeLine, messageId, message, pipeLineSession, firstPipe);
 		}
 		
 		String key=cache.transformKey(message, pipeLineSession);
 		if (key==null) {
 			if (log.isDebugEnabled()) log.debug("cache key is null, will not use cache");
-			return pipeLineProcessor.processPipeLine(pipeLine, messageId, message, pipeLineSession);
+			return pipeLineProcessor.processPipeLine(pipeLine, messageId, message, pipeLineSession, firstPipe);
 		}
 		if (log.isDebugEnabled()) log.debug("cache key ["+key+"]");
 		String result;
@@ -53,7 +56,7 @@ public class CachePipeLineProcessor extends PipeLineProcessorBase {
 			return prr;
 		}
 		if (log.isDebugEnabled()) log.debug("no cached results found using key ["+key+"]");
-		PipeLineResult prr=pipeLineProcessor.processPipeLine(pipeLine, messageId, message, pipeLineSession);
+		PipeLineResult prr=pipeLineProcessor.processPipeLine(pipeLine, messageId, message, pipeLineSession, firstPipe);
 		if (log.isDebugEnabled()) log.debug("caching result using key ["+key+"]");
 		String cacheValue=cache.transformValue(prr.getResult(), pipeLineSession);
 		synchronized (cache) {

@@ -1,6 +1,9 @@
 /*
  * $Log: TransactionAttributePipeLineProcessor.java,v $
- * Revision 1.3  2010-09-13 14:03:02  L190409
+ * Revision 1.4  2011-08-22 14:29:58  L190409
+ * added first pipe to interface
+ *
+ * Revision 1.3  2010/09/13 14:03:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * now extends baseclass
  *
  * Revision 1.2  2010/09/07 15:55:13  Jaco de Groot <jaco.de.groot@ibissource.org>
@@ -30,7 +33,7 @@ public class TransactionAttributePipeLineProcessor extends PipeLineProcessorBase
 	private PlatformTransactionManager txManager;
 
 	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId,
-			String message, PipeLineSession pipeLineSession
+			String message, PipeLineSession pipeLineSession, String firstPipe
 			) throws PipeRunException {
 		try {
 			//TransactionStatus txStatus = txManager.getTransaction(txDef);
@@ -41,7 +44,7 @@ public class TransactionAttributePipeLineProcessor extends PipeLineProcessorBase
 				Throwable tCaught=null;
 				try {
 					tg.activateGuard(pipeLine.getTransactionTimeout());
-					PipeLineResult pipeLineResult = pipeLineProcessor.processPipeLine(pipeLine, messageId, message, pipeLineSession);
+					PipeLineResult pipeLineResult = pipeLineProcessor.processPipeLine(pipeLine, messageId, message, pipeLineSession, firstPipe);
 
 					boolean mustRollback=false;
 				
