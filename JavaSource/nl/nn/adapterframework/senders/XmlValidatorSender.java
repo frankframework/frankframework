@@ -1,6 +1,9 @@
 /*
  * $Log: XmlValidatorSender.java,v $
- * Revision 1.7  2010-09-07 15:55:13  m00f069
+ * Revision 1.8  2011-08-22 14:30:30  L190409
+ * now based on XmlValidatorBase
+ *
+ * Revision 1.7  2010/09/07 15:55:13  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Removed IbisDebugger, made it possible to use AOP to implement IbisDebugger functionality.
  *
  * Revision 1.6  2010/03/10 14:30:05  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -23,35 +26,14 @@
  */
 package nl.nn.adapterframework.senders;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
-import java.net.URL;
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.SenderWithParametersBase;
+import nl.nn.adapterframework.core.TimeOutException;
+import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
-import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.util.StreamUtil;
-import nl.nn.adapterframework.util.Variant;
-import nl.nn.adapterframework.util.XmlBuilder;
-import nl.nn.adapterframework.util.XmlFindingHandler;
-import nl.nn.adapterframework.util.XmlUtils;
-
-import org.apache.commons.lang.StringUtils;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.ErrorHandler;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXNotRecognizedException;
-import org.xml.sax.SAXNotSupportedException;
-import org.xml.sax.SAXParseException;
-import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.XMLReaderFactory;
+import nl.nn.adapterframework.util.XmlValidatorBase;
 
 
 /**
@@ -98,412 +80,62 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * @since  
  * @version Id
  */
-public class XmlValidatorSender extends SenderWithParametersBase {
+public class XmlValidatorSender extends XmlValidatorBase implements ISenderWithParameters {
 
-	private String schemaLocation = null;
-	private String noNamespaceSchemaLocation = null;
-	private String schemaSessionKey = null;
-	private boolean throwException = false;
-	private boolean fullSchemaChecking = false;
-	private String reasonSessionKey = null;
-	private String xmlReasonSessionKey = null;
-	private String root = null;
-	private boolean validateFile=false;
-	private String charset=StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
-
-	public class XmlErrorHandler implements ErrorHandler {
-		private boolean errorOccured = false;
-		private String reasons;
-		private XMLReader parser;
-		private XmlBuilder xmlReasons = new XmlBuilder("reasons");
-
-
-		public XmlErrorHandler(XMLReader parser) {
-			this.parser = parser;
-		}
-
-		public void addReason(String message, String location) {
-			try {
-				ContentHandler ch = parser.getContentHandler();
-				if (ch!=null && ch instanceof XmlFindingHandler) {
-					XmlFindingHandler xfh = (XmlFindingHandler)ch;
-
-					XmlBuilder reason = new XmlBuilder("reason");
-					XmlBuilder detail;
-				
-					detail = new XmlBuilder("message");;
-					detail.setCdataValue(message);
-					reason.addSubElement(detail);
-
-					detail = new XmlBuilder("elementName");;
-					detail.setValue(xfh.getElementName());
-					reason.addSubElement(detail);
-
-					detail = new XmlBuilder("xpath");;
-					detail.setValue(xfh.getXpath());
-					reason.addSubElement(detail);
-				
-					xmlReasons.addSubElement(reason);	
-				}
-			} catch (Throwable t) {
-				log.error("Exception handling errors",t);
-			
-				XmlBuilder reason = new XmlBuilder("reason");
-				XmlBuilder detail;
-				
-				detail = new XmlBuilder("message");;
-				detail.setCdataValue(t.getMessage());
-				reason.addSubElement(detail);
-
-				xmlReasons.addSubElement(reason);	
-			}
-
-			if (StringUtils.isNotEmpty(location)) {
-				message = location + ": " + message;
-			}
-			errorOccured = true;
-			if (reasons == null) {
-				 reasons = message;
-			 } else {
-				 reasons = reasons + "\n" + message;
-			 }
-		}
+	private String name;
 	
-		public void addReason(Throwable t) {
-			String location=null;
-			if (t instanceof SAXParseException) {
-				SAXParseException spe = (SAXParseException)t;
-				location = "at ("+spe.getLineNumber()+ ","+spe.getColumnNumber()+")";
-			}
-			addReason(t.getMessage(),location);
-		}
-
-		public void warning(SAXParseException exception) {
-			addReason(exception);
-		}
-		public void error(SAXParseException exception) {
-			addReason(exception);
-		}
-		public void fatalError(SAXParseException exception) {
-			addReason(exception);
-		}
-
-		public boolean hasErrorOccured() {
-			return errorOccured;
-		}
-
-		 public String getReasons() {
-			return reasons;
-		}
-
-		public String getXmlReasons() {
-		   return xmlReasons.toXML();
-	   }
-	}
-
-	/**
-	 * Configure the XmlValidator
-	 * @throws ConfigurationException when:
-	 * <ul><li>the schema cannot be found</li>
-	 * <ul><li><{@link #isThrowException()} is false and there is no forward defined
-	 * for "failure"</li>
-	 * <li>when the parser does not accept setting the properties for validating</li>
-	 * </ul>
-	 */
 	public void configure() throws ConfigurationException {
-		super.configure();
-    
-		if ((StringUtils.isNotEmpty(getNoNamespaceSchemaLocation()) ||
-			 StringUtils.isNotEmpty(getSchemaLocation())) &&
-			StringUtils.isNotEmpty(getSchemaSessionKey())) {
-				throw new ConfigurationException(getLogPrefix()+"cannot have schemaSessionKey together with schemaLocation or noNamespaceSchemaLocation");
-		}
-		if (StringUtils.isNotEmpty(getSchemaLocation())) {
-			String resolvedLocations = XmlUtils.resolveSchemaLocations(getSchemaLocation());
-			log.info(getLogPrefix()+"resolved schemaLocation ["+getSchemaLocation()+"] to ["+resolvedLocations+"]");
-			setSchemaLocation(resolvedLocations);
-		}
-		if (StringUtils.isNotEmpty(getNoNamespaceSchemaLocation())) {
-			URL url = ClassUtils.getResourceURL(this, getNoNamespaceSchemaLocation());
-			if (url==null) {
-				throw new ConfigurationException(getLogPrefix()+"could not find schema at ["+getNoNamespaceSchemaLocation()+"]");
-			}
-			String resolvedLocation =url.toExternalForm();
-			log.info(getLogPrefix()+"resolved noNamespaceSchemaLocation to ["+resolvedLocation+"]");
-			setNoNamespaceSchemaLocation(resolvedLocation);
-		}
-		if (StringUtils.isEmpty(getNoNamespaceSchemaLocation()) &&
-			StringUtils.isEmpty(getSchemaLocation()) &&
-			StringUtils.isEmpty(getSchemaSessionKey())) {
-				throw new ConfigurationException(getLogPrefix()+"must have either schemaSessionKey, schemaLocation or noNamespaceSchemaLocation");
-		}
+		configure(getLogPrefix());
+	}
+	
+	public void close() throws SenderException {
+	}
+	public void open() throws SenderException {
 	}
 
-	protected String handleFailures(XmlErrorHandler xeh, String input, PipeLineSession session, String mainReason, Throwable t) throws SenderException {
-	
-		String fullReasons=mainReason;
-		if (StringUtils.isNotEmpty(xeh.getReasons())) {
-			if (StringUtils.isNotEmpty(mainReason)) {
-				fullReasons+=":\n"+xeh.getReasons();
-			} else {
-				fullReasons=xeh.getReasons();
-			}
-		}
-		if (isThrowException()) {
-			throw new SenderException(fullReasons, t);
-		} else {
-			log.warn(fullReasons, t);
-			if (StringUtils.isNotEmpty(getReasonSessionKey())) {
-				log.debug(getLogPrefix() + "storing reasons under sessionKey ["+getReasonSessionKey()+"]");
-				session.put(getReasonSessionKey(),fullReasons);
-			}
-			if (StringUtils.isNotEmpty(getXmlReasonSessionKey())) {
-				log.debug(getLogPrefix() + "storing reasons (in xml format) under sessionKey ["+getXmlReasonSessionKey()+"]");
-				session.put(getXmlReasonSessionKey(),xeh.getXmlReasons());
-			}
-			return input;
-		}
+	public String sendMessage(String correlationID, String message) throws SenderException, TimeOutException {
+		return sendMessage(correlationID,message,null);
 	}
+	public void addParameter(Parameter p) {
+	}
+
 
 	public String sendMessage(String correlationID, String message, ParameterResolutionContext prc) throws SenderException {
 		PipeLineSession session=prc.getSession();
-		if (StringUtils.isNotEmpty(getReasonSessionKey())) {
-			log.debug(getLogPrefix()+ "removing contents of sessionKey ["+getReasonSessionKey()+ "]");
-			session.remove(getReasonSessionKey());
-		}
-
-		if (StringUtils.isNotEmpty(getXmlReasonSessionKey())) {
-			log.debug(getLogPrefix()+ "removing contents of sessionKey ["+getXmlReasonSessionKey()+ "]");
-			session.remove(getXmlReasonSessionKey());
-		}
-
-		String schemaLocation = getSchemaLocation();
-		String noNamespaceSchemaLocation = getNoNamespaceSchemaLocation();
-
-		// Do filename to URL translation if schemaLocation and
-		// noNamespaceSchemaLocation are not set. 
-		if (schemaLocation == null && noNamespaceSchemaLocation == null) {
-			// now look for the new session way
-			String schemaToBeUsed = getSchemaSessionKey();
-			if (session.containsKey(schemaToBeUsed)) {
-				noNamespaceSchemaLocation = session.get(schemaToBeUsed).toString();
-			} else {
-				throw new SenderException(getLogPrefix()+ "cannot retrieve xsd from session variable [" + getSchemaSessionKey() + "]");
-			}
-
-			URL url = ClassUtils.getResourceURL(this, noNamespaceSchemaLocation);
-			if (url == null) {
-				throw new SenderException(getLogPrefix()+ "cannot retrieve [" + noNamespaceSchemaLocation + "]");
-			}
-
-			noNamespaceSchemaLocation = url.toExternalForm();
-		}
-
-		XmlErrorHandler xeh;
-		XMLReader parser=null;
+		String fullReasons="tja";
 		try {
-			parser=getParser(schemaLocation,noNamespaceSchemaLocation);
-			if (parser==null) {
-				throw new SenderException(getLogPrefix()+ "could not obtain parser");
+			String resultEvent = validate(message, session, getLogPrefix());
+			
+			if (XmlValidatorBase.XML_VALIDATOR_VALID_MONITOR_EVENT.equals(resultEvent)) {
+				return message;
 			}
-			xeh = new XmlErrorHandler(parser);
-			parser.setErrorHandler(xeh);
-		} catch (SAXNotRecognizedException e) {
-			throw new SenderException(getLogPrefix()+ "parser does not recognize necessary feature", e);
-		} catch (SAXNotSupportedException e) {
-			throw new SenderException(getLogPrefix()+ "parser does not support necessary feature", e);
-		} catch (SAXException e) {
-			throw new SenderException(getLogPrefix()+ "error configuring the parser", e);
-		}
-
-		InputSource is;
-		if (isValidateFile()) {
-			try {
-				is = new InputSource(new InputStreamReader(new FileInputStream(message),getCharset()));
-			} catch (FileNotFoundException e) {
-				throw new SenderException(getLogPrefix()+"could not find file ["+message+"]",e);
-			} catch (UnsupportedEncodingException e) {
-				throw new SenderException(getLogPrefix()+"could not use charset ["+getCharset()+"]",e);
+			fullReasons = resultEvent; // TODO: find real fullReasons
+			if (isThrowException()) {
+				throw new SenderException(fullReasons);
 			}
-		} else {
-			is = new Variant(message).asXmlInputSource();
+			log.warn(fullReasons);
+			return message;
+		} catch (Exception e) {
+			if (isThrowException()) {
+				throw new SenderException(e);
+			}
+			log.warn(fullReasons, e);
+			return message;
 		}
-
-		try {
-			parser.parse(is);
-		 } catch (Exception e) {
-			return handleFailures(xeh,message,session,"", e);
-		}
-
-		boolean illegalRoot = StringUtils.isNotEmpty(getRoot()) && 
-							!((XmlFindingHandler)parser.getContentHandler()).getRootElementName().equals(getRoot());
-		if (illegalRoot) {
-			String str = "got xml with root element '"+((XmlFindingHandler)parser.getContentHandler()).getRootElementName()+"' instead of '"+getRoot()+"'";
-			xeh.addReason(str,"");
-			return handleFailures(xeh,message,session,"",null);
-		} 
-		boolean isValid = !(xeh.hasErrorOccured());
-	
-		if (!isValid) { 
-			String mainReason = getLogPrefix() + "got invalid xml according to schema [" + Misc.concatStrings(schemaLocation," ",noNamespaceSchemaLocation) + "]";
-			return handleFailures(xeh,message,session,mainReason,null);
-		}
-		return message;
-	}
-
-
-	/**
-	 * Get a configured parser.
-	 */
-	private XMLReader getParser(String schemaLocation, String noNamespaceSchemaLocation) throws SAXNotRecognizedException, SAXNotSupportedException, SAXException {
-		XMLReader parser = null;
-		parser = XMLReaderFactory.createXMLReader("org.apache.xerces.parsers.SAXParser");
-		parser.setFeature("http://xml.org/sax/features/validation", true);
-		parser.setFeature("http://xml.org/sax/features/namespaces", true);
-		parser.setFeature("http://apache.org/xml/features/validation/schema", true);
-		if (schemaLocation != null) {
-			log.debug("Give schemaLocation to parser: " + schemaLocation);
-			parser.setProperty("http://apache.org/xml/properties/schema/external-schemaLocation", schemaLocation);
-		}
-		if (noNamespaceSchemaLocation != null) {
-			log.debug("Give noNamespaceSchemaLocation to parser: " + noNamespaceSchemaLocation);
-			parser.setProperty("http://apache.org/xml/properties/schema/external-noNamespaceSchemaLocation", noNamespaceSchemaLocation);
-		}
-		if (isFullSchemaChecking()) {
-			parser.setFeature("http://apache.org/xml/features/validation/schema-full-checking", true);
-		}
-		if (StringUtils.isNotEmpty(getRoot()) || StringUtils.isNotEmpty(getXmlReasonSessionKey())) {    
-			parser.setContentHandler(new XmlFindingHandler());
-		}
-		return parser;
 	}
 
 	public boolean isSynchronous() {
 		return true;
 	}
 
-
-	/**
-	 * Enable full schema grammar constraint checking, including
-	 * checking which may be time-consuming or memory intensive.
-	 *  Currently, particle unique attribution constraint checking and particle
-	 * derivation resriction checking are controlled by this option.
-	 * <p> see property http://apache.org/xml/features/validation/schema-full-checking</p>
-	 * Defaults to <code>false</code>;
-	 */
-	public void setFullSchemaChecking(boolean fullSchemaChecking) {
-		this.fullSchemaChecking = fullSchemaChecking;
+	protected String getLogPrefix() {
+		return "["+this.getClass().getName()+"] ["+getName()+"] ";
 	}
-	public boolean isFullSchemaChecking() {
-		return fullSchemaChecking;
+	
+	public String getName() {
+		return name;
 	}
-
-	/**
-	 * <p>The filename of the schema on the classpath. The filename (which e.g.
-	 * can contain spaces) is translated to an URI with the
-	 * ClassUtils.getResourceURL(Object,String) method (e.g. spaces are translated to %20).
-	 * It is not possible to specify a namespace using this attribute.
-	 * <p>An example value would be "xml/xsd/GetPartyDetail.xsd"</p>
-	 * <p>The value of the schema attribute is only used if the schemaLocation
-	 * attribute and the noNamespaceSchemaLocation are not set</p>
-	 * @see ClassUtils.getResource(Object,String)
-	 */
-	public void setSchema(String schema) {
-		setNoNamespaceSchemaLocation(schema);
+	public void setName(String name) {
+		this.name=name;
 	}
-	public String getSchema() {
-		return getNoNamespaceSchemaLocation();
-	}
-
-	/**
-	 * <p>Pairs of URI references (one for the namespace name, and one for a
-	 * hint as to the location of a schema document defining names for that
-	 * namespace name).</p>
-	 * <p> The syntax is the same as for schemaLocation attributes
-	 * in instance documents: e.g, "http://www.example.com file%20name.xsd".</p>
-	 * <p>The user can specify more than one XML Schema in the list.</p>
-	 * <p><b>Note</b> that spaces are considered separators for this attributed. 
-	 * This means that, for example, spaces in filenames should be escaped to %20.
-	 * </p>
-	 * 
-	 * N.B. since 4.3.0 schema locations are resolved automatically, without the need for ${baseResourceURL}
-	 */
-	public void setSchemaLocation(String schemaLocation) {
-		this.schemaLocation = schemaLocation;
-	}
-	public String getSchemaLocation() {
-		return schemaLocation;
-	}
-
-	/**
-	 * <p>A URI reference as a hint as to the location of a schema document with
-	 * no target namespace.</p>
-	 */
-	public void setNoNamespaceSchemaLocation(String noNamespaceSchemaLocation) {
-		this.noNamespaceSchemaLocation = noNamespaceSchemaLocation;
-	}
-	public String getNoNamespaceSchemaLocation() {
-		return noNamespaceSchemaLocation;
-	}
-
-	/**
-	 * <p>The sessionkey to a value that is the uri to the schema definition.</P>
-	 */
-	public void setSchemaSessionKey(String schemaSessionKey) {
-		this.schemaSessionKey = schemaSessionKey;
-	}
-	public String getSchemaSessionKey() {
-		return schemaSessionKey;
-	}
-
-
-	/**
-	 * Indicates wether to throw an error (piperunexception) when
-	 * the xml is not compliant.
-	 */
-	public void setThrowException(boolean throwException) {
-		this.throwException = throwException;
-	}
-	public boolean isThrowException() {
-		return throwException;
-	}
-
-	/**
-	 * The sessionkey to store the reasons of misvalidation in.
-	 */
-	public void setReasonSessionKey(String reasonSessionKey) {
-		this.reasonSessionKey = reasonSessionKey;
-	}
-	public String getReasonSessionKey() {
-		return reasonSessionKey;
-	}
-
-	public void setXmlReasonSessionKey(String xmlReasonSessionKey) {
-		this.xmlReasonSessionKey = xmlReasonSessionKey;
-	}
-	public String getXmlReasonSessionKey() {
-		return xmlReasonSessionKey;
-	}
-
-	public void setRoot(String root) {
-		this.root = root;
-	}
-	public String getRoot() {
-		return root;
-	}
-
-	public void setValidateFile(boolean b) {
-		validateFile = b;
-	}
-	public boolean isValidateFile() {
-		return validateFile;
-	}
-
-	public void setCharset(String string) {
-		charset = string;
-	}
-	public String getCharset() {
-		return charset;
-	}
-
 }
