@@ -1,6 +1,9 @@
 /*
  * $Log: ShowIbisstoreSummary.java,v $
- * Revision 1.6  2009-10-26 13:53:09  m168309
+ * Revision 1.7  2011-08-22 13:19:16  L190409
+ * fixed NPEs
+ *
+ * Revision 1.6  2009/10/26 13:53:09  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added MessageLog facility to receivers
  *
  * Revision 1.5  2009/04/28 11:35:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -63,7 +66,7 @@ import org.apache.struts.action.ActionMapping;
  */
 
 public class ShowIbisstoreSummary extends ActionBase {
-	public static final String version = "$RCSfile: ShowIbisstoreSummary.java,v $ $Revision: 1.6 $ $Date: 2009-10-26 13:53:09 $";
+	public static final String version = "$RCSfile: ShowIbisstoreSummary.java,v $ $Revision: 1.7 $ $Date: 2011-08-22 13:19:16 $";
 
 	public static final String SHOWIBISSTORECOOKIE="ShowIbisstoreSummaryCookieName";
 	public static final String SHOWIBISSTOREQUERYKEY="ibisstore.summary.query";
@@ -189,7 +192,12 @@ public class ShowIbisstoreSummary extends ActionBase {
 							String date =  resultset.getString("msgdate");
 							int count =    resultset.getInt("msgcount");
 							
-							
+							if (type==null) {
+								type="";
+							}
+							if (slotid==null) {
+								slotid="";
+							}
 						
 							if (!type.equals(previousType)) {
 								if (typeXml!=null) {
