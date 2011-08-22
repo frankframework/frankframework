@@ -1,6 +1,9 @@
 /*
  * $Log: BrowseJdbcTableExecute.java,v $
- * Revision 1.11  2011-03-16 16:38:39  L190409
+ * Revision 1.12  2011-08-22 08:37:05  m168309
+ * fixed incomplete cookies
+ *
+ * Revision 1.11  2011/03/16 16:38:39  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * databasetype now defined in DbmsSupportFactory
  *
  * Revision 1.10  2009/10/19 14:01:23  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -60,7 +63,7 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 
 public class BrowseJdbcTableExecute extends ActionBase {
-	public static final String version = "$RCSfile: BrowseJdbcTableExecute.java,v $ $Revision: 1.11 $ $Date: 2011-03-16 16:38:39 $";
+	public static final String version = "$RCSfile: BrowseJdbcTableExecute.java,v $ $Revision: 1.12 $ $Date: 2011-08-22 08:37:05 $";
 	public static final String DB2XML_XSLT = "xml/xsl/BrowseJdbcTableExecute.xsl";
 
 	public ActionForward execute(
@@ -207,6 +210,8 @@ public class BrowseJdbcTableExecute extends ActionBase {
 		cookieValue += "tableName=\"" + form_tableName + "\"";
 		cookieValue += " "; //separator          
 		cookieValue += "where=\"" + form_where + "\"";
+		cookieValue += " "; //separator          
+		cookieValue += "order=\"" + form_order + "\"";
 		cookieValue += " "; //separator          
 		cookieValue += "numberOfRowsOnly=\"" + form_numberOfRowsOnly + "\"";
 		cookieValue += " "; //separator          

@@ -1,6 +1,9 @@
 /*
  * $Log: BrowseJdbcTable.java,v $
- * Revision 1.4  2008-11-12 12:34:24  europe\m168309
+ * Revision 1.5  2011-08-22 08:37:05  m168309
+ * fixed incomplete cookies
+ *
+ * Revision 1.4  2008/11/12 12:34:24  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * fixed error in cookies
  *
  * Revision 1.3  2007/10/08 13:41:35  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -34,7 +37,7 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 
 public class BrowseJdbcTable extends ActionBase {
-	public static final String version = "$RCSfile: BrowseJdbcTable.java,v $ $Revision: 1.4 $ $Date: 2008-11-12 12:34:24 $";
+	public static final String version = "$RCSfile: BrowseJdbcTable.java,v $ $Revision: 1.5 $ $Date: 2011-08-22 08:37:05 $";
 
 	public ActionForward execute(
 		ActionMapping mapping,
@@ -85,6 +88,9 @@ public class BrowseJdbcTable extends ActionBase {
 						browseJdbcTableForm.set(
 							"tableName",
 							cs.Value("tableName"));
+						browseJdbcTableForm.set(
+							"where",
+							cs.Value("where"));
 						browseJdbcTableForm.set(
 							"order",
 						cs.Value("order"));
