@@ -1,6 +1,9 @@
 /*
  * $Log: XmlWellFormedChecker.java,v $
- * Revision 1.3  2008-12-09 12:47:00  m168309
+ * Revision 1.4  2011-08-22 14:28:18  L190409
+ * constants moved to XmlValidatorBase
+ *
+ * Revision 1.3  2008/12/09 12:47:00  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added forward parserError
  *
  * Revision 1.2  2008/08/06 16:40:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -18,6 +21,7 @@ import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.util.XmlValidatorBase;
 
 /**
  *<code>Pipe</code> that checks the well-formedness of the input message.
@@ -47,24 +51,22 @@ public class XmlWellFormedChecker extends FixedForwardPipe {
 
 	public void configure() throws ConfigurationException {
 		super.configure();
-		registerEvent(XmlValidator.XML_VALIDATOR_VALID_MONITOR_EVENT);
-		registerEvent(XmlValidator.XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT);
+		registerEvent(XmlValidatorBase.XML_VALIDATOR_VALID_MONITOR_EVENT);
+		registerEvent(XmlValidatorBase.XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT);
 	}
 
 
 	public PipeRunResult doPipe(Object input, PipeLineSession session) {
 		if (XmlUtils.isWellFormed(input.toString(), getRoot())) {
-			throwEvent(XmlValidator.XML_VALIDATOR_VALID_MONITOR_EVENT);
+			throwEvent(XmlValidatorBase.XML_VALIDATOR_VALID_MONITOR_EVENT);
 			return new PipeRunResult(getForward(), input);
 		}
-		else {
-			throwEvent(XmlValidator.XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT);
-			PipeForward forward = findForward("parserError");
-			if (forward==null) {
-				forward = findForward("failure");
-			}
-			return new PipeRunResult(forward, input);
+		throwEvent(XmlValidatorBase.XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT);
+		PipeForward forward = findForward("parserError");
+		if (forward==null) {
+			forward = findForward("failure");
 		}
+		return new PipeRunResult(forward, input);
 	}
 
 	public void setRoot(String root) {
