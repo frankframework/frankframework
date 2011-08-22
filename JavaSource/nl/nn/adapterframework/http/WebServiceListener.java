@@ -1,6 +1,9 @@
 /*
  * $Log: WebServiceListener.java,v $
- * Revision 1.14  2011-06-20 13:20:11  L190409
+ * Revision 1.15  2011-08-22 09:45:33  L190409
+ * temporarily disabled deprecation warning
+ *
+ * Revision 1.14  2011/06/20 13:20:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added configwarning for old style call model, using servicedispatcher-proxy
  *
  * Revision 1.13  2011/05/26 11:34:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -91,6 +94,7 @@ import org.apache.commons.lang.StringUtils;
 public class WebServiceListener extends PushingListenerAdapter implements Serializable, HasPhysicalDestination {
 
 	private String serviceNamespaceURI;
+	private boolean nag=false; // controls warning about deprecated call via ServiceDispatcher_ServiceProxy 
 
 	/**
 	 * initialize listener and register <code>this</code> to the JNDI
@@ -104,9 +108,11 @@ public class WebServiceListener extends PushingListenerAdapter implements Serial
 			} else {
 				log.debug("registering listener ["+getName()+"] with ServiceDispatcher");
 				ServiceDispatcher.getInstance().registerServiceClient(getName(), this);
-				ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-				String msg = ClassUtils.nameOf(this) +"["+getName()+"]: calling webservices via de ServiceDispatcher_ServiceProxy is deprecated. Please specify a serviceNamespaceURI and modify the call accordingly";
-				configWarnings.add(log, msg);
+				if (nag) { 
+					ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+					String msg = ClassUtils.nameOf(this) +"["+getName()+"]: calling webservices via de ServiceDispatcher_ServiceProxy is deprecated. Please specify a serviceNamespaceURI and modify the call accordingly";
+					configWarnings.add(log, msg);
+				}
 			}
 		} catch (Exception e){
 			throw new ConfigurationException(e);
