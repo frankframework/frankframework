@@ -1,6 +1,9 @@
 /*
  * $Log: MessageSendingPipe.java,v $
- * Revision 1.74  2011-08-22 14:26:50  L190409
+ * Revision 1.75  2011-08-25 14:33:58  m00f069
+ * Exclude IbisLocalSender from check on messageLog
+ *
+ * Revision 1.74  2011/08/22 14:26:50  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * set size statistics on by default
  *
  * Revision 1.73  2011/08/18 14:38:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -517,7 +520,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 		}
 		ITransactionalStorage messageLog = getMessageLog();
 		if (checkMessageLog) {
-			if (!getSender().isSynchronous() && getListener()==null) {
+			if (!getSender().isSynchronous() && getListener()==null && !(getSender() instanceof nl.nn.adapterframework.senders.IbisLocalSender)) {
 				if (messageLog==null) {
 					ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 					String msg = "asynchronous sender [" + getSender().getName() + "] without sibling listener has no messageLog. Integrity check not possible";
