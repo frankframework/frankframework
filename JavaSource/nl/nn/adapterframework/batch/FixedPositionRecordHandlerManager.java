@@ -1,6 +1,9 @@
 /*
  * $Log: FixedPositionRecordHandlerManager.java,v $
- * Revision 1.11  2008-06-30 08:54:20  europe\L190409
+ * Revision 1.12  2011-08-25 12:39:38  m168309
+ * avoid StringIndexOutOfBoundsException
+ *
+ * Revision 1.11  2008/06/30 08:54:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * allow for variable endPosition
  *
  * Revision 1.10  2008/02/19 09:23:48  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -58,7 +61,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
  * @author John Dekker
  */
 public class FixedPositionRecordHandlerManager extends RecordHandlerManager {
-	public static final String version = "$RCSfile: FixedPositionRecordHandlerManager.java,v $  $Revision: 1.11 $ $Date: 2008-06-30 08:54:20 $";
+	public static final String version = "$RCSfile: FixedPositionRecordHandlerManager.java,v $  $Revision: 1.12 $ $Date: 2011-08-25 12:39:38 $";
 
 	private int startPosition;
 	private int endPosition=-1;
@@ -73,9 +76,12 @@ public class FixedPositionRecordHandlerManager extends RecordHandlerManager {
 			RecordHandlingFlow rhf = null;
 			for(Iterator it=valueHandlersMap.keySet().iterator();it.hasNext() && rhf == null;) {
 				String name=(String)it.next();
-				value = record.substring(startPosition, name.length());
-				if (value.equals(name)) {
-					rhf = (RecordHandlingFlow)valueHandlersMap.get(name);
+				log.debug("determining value for record ["+record+"] with key ["+name+"] and startPosition ["+startPosition+"]");
+				if (name.length()<=record.length()) {
+					value = record.substring(startPosition, name.length());
+					if (value.equals(name)) {
+						rhf = (RecordHandlingFlow)valueHandlersMap.get(name);
+					}
 				}
 			}
 			if  (rhf == null) {
