@@ -1,6 +1,9 @@
 /*
  * $Log: BisJmsSender.java,v $
- * Revision 1.6  2011-07-07 12:13:24  m168309
+ * Revision 1.7  2011-08-31 13:39:28  m168309
+ * moved result tag from first child of root to last child of root
+ *
+ * Revision 1.6  2011/07/07 12:13:24  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added resultInPayload attribute
  *
  * Revision 1.5  2011/06/06 12:27:26  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -59,7 +62,7 @@ import org.w3c.dom.Element;
  * <tr><td>{@link #setResponseXPath(String) responseXPath}</td><td>xpath expression to extract the message from the reply which is passed to the pipeline. When soap=true the initial message is the content of the soap body. If empty, the content of the soap body is passed (without the root body)</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setResponseNamespaceDefs(String) responseNamespaceDefs}</td><td>namespace defintions for responseXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMessageHeaderInSoapBody(boolean) messageHeaderInSoapBody}</td><td>when <code>true</code>, the MessageHeader is put in the SOAP body instead of in the SOAP header (first one is the old BIS standard)</td><td><code>false</code></td></tr>
- * <tr><td>{@link #setResultInPayload(boolean) resultInPayload}</td><td>when <code>true</code>, the Result is put in the payload (as first child in root tag) instead of in the SOAP body as sibling of the payload (last one is the old BIS standard)</td><td><code>true</code></td></tr>
+ * <tr><td>{@link #setResultInPayload(boolean) resultInPayload}</td><td>when <code>true</code>, the Result is put in the payload (as last child in root tag) instead of in the SOAP body as sibling of the payload (last one is the old BIS standard)</td><td><code>true</code></td></tr>
  * <tr><td>{@link #setConversationIdSessionKey(String) conversationIdSessionKey}</td><td>key of session variable to store ConversationId in; used in the MessageHeader of the request</td><td>bisConversationId</td></tr>
  * <tr><td>{@link #setExternalRefToMessageIdSessionKey(String) externalRefToMessageIdSessionKey}</td><td>key of session variable to store ExternalRefToMessageId in; used in the MessageHeader of the request</td><td>bisExternalRefToMessageId</td></tr>
  * </p>

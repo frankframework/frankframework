@@ -1,6 +1,9 @@
 /*
  * $Log: BisJmsListener.java,v $
- * Revision 1.7  2011-08-12 11:43:22  m168309
+ * Revision 1.8  2011-08-31 13:39:28  m168309
+ * moved result tag from first child of root to last child of root
+ *
+ * Revision 1.7  2011/08/12 11:43:22  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * *** empty log message ***
  *
  * Revision 1.6  2011/07/07 12:13:24  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -91,10 +94,10 @@ import org.w3c.dom.Node;
  *		&lt;/soap:Header&gt;
  *		&lt;soap:Body&gt;
  *			<i>&lt;GetResponse xmlns="http://www.ing.com/nl/pcretail/ts/migrationcasedata_01"&gt;</i>
+ *				<i>&lt;CaseData&gt;...&lt;/CaseData&gt;</i>
  *				&lt;bis:Result xmlns:bis="http://www.ing.com/CSP/XSD/General/Message_2"&gt;
  *					&lt;bis:Status&gt;OK&lt;/bis:Status&gt;
  *				&lt;/bis:Result&gt;
- *				<i>&lt;CaseData&gt;...&lt;/CaseData&gt;</i>
  *			<i>&lt;/GetResponse&gt;</i>
  *		&lt;/soap:Body&gt;
  *	&lt;/soap:Envelope&gt;
@@ -134,7 +137,8 @@ import org.w3c.dom.Node;
  * <tr><td>{@link #setRequestXPath(String) requestXPath}</td><td>xpath expression to extract the message which is passed to the pipeline. When soap=true the initial message is the content of the soap body. If empty, the content of the soap body is passed (without the root body)</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setRequestNamespaceDefs(String) requestNamespaceDefs}</td><td>namespace defintions for requestXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setMessageHeaderInSoapBody(boolean) messageHeaderInSoapBody}</td><td>when <code>true</code>, the MessageHeader is put in the SOAP body instead of in the SOAP header (first one is the old BIS standard)</td><td><code>false</code></td></tr>
- * <tr><td>{@link #setResultInPayload(boolean) resultInPayload}</td><td>when <code>true</code>, the Result is put in the payload (as first child in root tag) instead of in the SOAP body as sibling of the payload (last one is the old BIS standard)</td><td><code>true</code></td></tr>
+ * <tr><td>{@link #setResultInPayload(boolean) resultInPayload}</td><td>when <code>true</code>, the Result is put in the payload (as last child in root tag) instead of in the SOAP body as sibling of the payload (last one is the old BIS standard)</td><td><code>true</code></td></tr>
+ * <tr><td>{@link #setOmitResult(boolean) omitResult}</td><td>when <code>true</code>, the Result is omitted and instead of Result/Status 'ERROR' a ListenerException is thrown (this functionality will be used during migration from IFSA to TIBCO)</td><td><code>false</code></td></tr>
  * <tr><td>{@link #setErrorCodeSessionKey(String) errorCodeSessionKey}</td><td>key of session variable to store error code in (if an error occurs)</td><td>bisErrorCode</td></tr>
  * <tr><td>{@link #setErrorTextSessionKey(String) errorTextSessionKey}</td><td>key of session variable to store error text in (if an error occurs). If not specified, the following error text is derived from the error code: 
  *   <table border="1">
@@ -169,6 +173,7 @@ public class BisJmsListener extends JmsListener {
 	private String requestNamespaceDefs = null;
 	private boolean messageHeaderInSoapBody = false;
 	private boolean resultInPayload = true;
+	private boolean omitResult = false;
 	private String errorCodeSessionKey = "bisErrorCode";
 	private String errorTextSessionKey = null;
 	private String errorReasonSessionKey = "bisErrorReason";
@@ -223,17 +228,21 @@ public class BisJmsListener extends JmsListener {
 
 		String payload = null;
 		try {
-			String result = prepareResult(errorCode, threadContext);
-			if (isResultInPayload()) {
-				String message = Misc.listToString(messages);
-				Document messageDoc = XmlUtils.buildDomDocument(message);
-				Node messageRootNode = messageDoc.getFirstChild();
-				Node resultNode = messageDoc.importNode(XmlUtils.buildNode(result), true);
-				messageRootNode.insertBefore(resultNode, messageRootNode.getFirstChild());
-				payload = XmlUtils.nodeToString(messageDoc);
-			} else {
-				messages.add(result);
+			if (isOmitResult()) {
 				payload = Misc.listToString(messages);
+			} else {
+				String result = prepareResult(errorCode, threadContext);
+				if (isResultInPayload()) {
+					String message = Misc.listToString(messages);
+					Document messageDoc = XmlUtils.buildDomDocument(message);
+					Node messageRootNode = messageDoc.getFirstChild();
+					Node resultNode = messageDoc.importNode(XmlUtils.buildNode(result), true);
+					messageRootNode.appendChild(resultNode);
+					payload = XmlUtils.nodeToString(messageDoc);
+				} else {
+					messages.add(result);
+					payload = Misc.listToString(messages);
+				}
 			}
 		} catch (Exception e) {
 			throw new ListenerException(e);
@@ -304,6 +313,14 @@ public class BisJmsListener extends JmsListener {
 
 	public boolean isResultInPayload() {
 		return resultInPayload;
+	}
+
+	public void setOmitResult(boolean b) {
+		omitResult = b;
+	}
+
+	public boolean isOmitResult() {
+		return omitResult;
 	}
 
 	public void setErrorCodeSessionKey(String errorCodeSessionKey) {
