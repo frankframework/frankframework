@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcIteratingPipeBase.java,v $
- * Revision 1.9  2011-04-13 08:37:34  L190409
+ * Revision 1.10  2011-09-05 09:43:37  l190409
+ * perform close also when resultset is empty
+ *
+ * Revision 1.9  2011/04/13 08:37:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Indicate updatability of resultset explicitly using method-parameter
  *
  * Revision 1.8  2011/03/16 16:42:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -208,6 +211,7 @@ public abstract class JdbcIteratingPipeBase extends IteratingPipe {
 				throw new SenderException("resultset is null");
 			}
 			if (!rs.next()) {
+				JdbcUtil.fullClose(rs);
 				return null; // no results
 			}
 			return getIterator(rs);
