@@ -1,6 +1,9 @@
 /*
  * $Log: RecordXml2Sender.java,v $
- * Revision 1.13  2008-07-17 16:13:37  europe\L190409
+ * Revision 1.14  2011-09-08 09:43:41  m00f069
+ * Pass correlationId to sender
+ *
+ * Revision 1.13  2008/07/17 16:13:37  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.12  2008/02/28 16:17:06  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -81,7 +84,7 @@ import nl.nn.adapterframework.util.ClassUtils;
  * @version Id
  */
 public class RecordXml2Sender extends RecordXmlTransformer {
-	public static final String version = "$RCSfile: RecordXml2Sender.java,v $  $Revision: 1.13 $ $Date: 2008-07-17 16:13:37 $";
+	public static final String version = "$RCSfile: RecordXml2Sender.java,v $  $Revision: 1.14 $ $Date: 2011-09-08 09:43:41 $";
 
 	private ISender sender = null; 
 	
@@ -106,9 +109,9 @@ public class RecordXml2Sender extends RecordXmlTransformer {
 		ISender sender = getSender();
 		if (sender instanceof ISenderWithParameters) {
 			ISenderWithParameters psender = (ISenderWithParameters)sender;
-			return psender.sendMessage(null, xml,prc); 
+			return psender.sendMessage(session.getMessageId(), xml,prc); 
 		} else {
-			return sender.sendMessage(null, xml); 
+			return sender.sendMessage(session.getMessageId(), xml); 
 		}
 	}
 	
