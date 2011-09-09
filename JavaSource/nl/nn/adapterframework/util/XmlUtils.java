@@ -1,6 +1,10 @@
 /*
  * $Log: XmlUtils.java,v $
- * Revision 1.71  2011-07-07 12:14:10  m168309
+ * Revision 1.72  2011-09-09 15:04:18  europe\m168309
+ * - added methods getRootNamespace() and added method addRootNamespace()
+ * - createTransformer: XSLT 2.0 made possible
+ *
+ * Revision 1.71  2011/07/07 12:14:10  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added method nodeToString
  *
  * Revision 1.70  2011/03/10 07:30:03  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -296,7 +300,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * @version Id
  */
 public class XmlUtils {
-	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.71 $ $Date: 2011-07-07 12:14:10 $";
+	public static final String version = "$RCSfile: XmlUtils.java,v $ $Revision: 1.72 $ $Date: 2011-09-09 15:04:18 $";
 	static Logger log = LogUtil.getLogger(XmlUtils.class);
 
 	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
@@ -380,6 +384,31 @@ public class XmlUtils {
 			+ "<xsl:text>}</xsl:text>"
 			+ "<xsl:value-of select=\"$ic\"/>"
 			+ "</xsl:for-each>"
+			+ "</xsl:template>"
+			+ "</xsl:stylesheet>";
+	}
+
+	public static String makeGetRootNamespaceXslt() {
+		return 	
+		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"2.0\">"
+			+ "<xsl:output method=\"text\"/>"
+			+ "<xsl:template match=\"*\">"
+			+ "<xsl:value-of select=\"namespace-uri()\"/>"
+			+ "</xsl:template>"
+			+ "</xsl:stylesheet>";
+	}
+
+	public static String makeAddRootNamespaceXslt(String namespace, boolean omitXmlDeclaration, boolean indent) {
+		return 	
+		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"1.0\" xmlns=\""+namespace+"\">"
+			+ "<xsl:output method=\"xml\" indent=\""+(indent?"yes":"no")+"\" omit-xml-declaration=\""+(omitXmlDeclaration?"yes":"no")+"\"/>"
+			+ "<xsl:template match=\"*\">"
+			+ "<xsl:element name=\"{local-name()}\">"
+			+ "<xsl:apply-templates select=\"@* | node()\"/>"
+			+ "</xsl:element>"
+			+ "</xsl:template>"
+			+ "<xsl:template match=\"@*\">"
+			+ "<xsl:copy-of select=\".\"/>"
 			+ "</xsl:template>"
 			+ "</xsl:stylesheet>";
 	}
@@ -780,28 +809,46 @@ public class XmlUtils {
 	public static synchronized Transformer createTransformer(String xsltString)
 		throws TransformerConfigurationException {
 
+		return createTransformer(xsltString, false);
+	}
+	public static synchronized Transformer createTransformer(String xsltString, boolean xslt2)
+		throws TransformerConfigurationException {
+
 		StringReader sr = new StringReader(xsltString);
 
 		StreamSource stylesource = new StreamSource(sr);
-		return createTransformer(stylesource);
+		return createTransformer(stylesource, xslt2);
 	}
 	public static synchronized Transformer createTransformer(URL url)
 		throws TransformerConfigurationException, IOException {
 
+		return createTransformer(url, false);
+	}
+	public static synchronized Transformer createTransformer(URL url, boolean xslt2)
+		throws TransformerConfigurationException, IOException {
+
 		StreamSource stylesource = new StreamSource(url.openStream(),Misc.DEFAULT_INPUT_STREAM_ENCODING);
 		stylesource.setSystemId(url.toString());
-		return createTransformer(stylesource);
+		return createTransformer(stylesource, xslt2);
 	}
 	public static synchronized Transformer createTransformer(Source source)
 		throws TransformerConfigurationException {
+			return createTransformer(source, false);
+	}
+	public static synchronized Transformer createTransformer(Source source, boolean xslt2)
+		throws TransformerConfigurationException {
 
-		TransformerFactory tFactory = getTransformerFactory();
+		TransformerFactory tFactory = getTransformerFactory(xslt2);
 		Transformer result = tFactory.newTransformer(source);
 
 		return result;
-	}
+		}
 
 	public static synchronized TransformerFactory getTransformerFactory() {
+		return getTransformerFactory(false);
+	}
+
+	public static synchronized TransformerFactory getTransformerFactory(boolean xslt2) {
 		if (transfomerFactory==null) {
 			String transformerFactoryClassName = AppConstants.getInstance().getProperty(TRANSFORMERFACTORY_KEY,null);
 			try {
@@ -822,7 +869,11 @@ public class XmlUtils {
 				log.debug("no explicit TransformerFactory configured, now instantiated class ["+transfomerFactory.getClass().getName()+"]");
 			}
 		}
-		return transfomerFactory.newInstance();
+		if (xslt2) {
+			return new net.sf.saxon.TransformerFactoryImpl();
+		} else {
+			return transfomerFactory.newInstance();
+		}
 	}
 	
 	/**
@@ -1627,10 +1678,32 @@ public class XmlUtils {
 	}
 
 	public static String removeNamespaces(String input) {
-		String removeNamespaces_xslt = XmlUtils.makeRemoveNamespacesXslt(true,false);
+		String removeNamespaces_xslt = makeRemoveNamespacesXslt(true,false);
 		try {
-			Transformer t = XmlUtils.createTransformer(removeNamespaces_xslt);
-			String query = XmlUtils.transformXml(t, input);
+			Transformer t = createTransformer(removeNamespaces_xslt);
+			String query = transformXml(t, input);
+			return query;
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
+	public static String getRootNamespace(String input) {
+		String getRootNamespace_xslt = makeGetRootNamespaceXslt();
+		try {
+			Transformer t = createTransformer(getRootNamespace_xslt, true);
+			String query = transformXml(t, input);
+			return query;
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
+	public static String addRootNamespace(String input, String namespace) {
+		String addRootNamespace_xslt = makeAddRootNamespaceXslt(namespace,true,false);
+		try {
+			Transformer t = createTransformer(addRootNamespace_xslt);
+			String query = transformXml(t, input);
 			return query;
 		} catch (Exception e) {
 			return null;
