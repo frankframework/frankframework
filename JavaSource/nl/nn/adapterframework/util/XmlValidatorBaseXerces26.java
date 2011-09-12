@@ -1,6 +1,9 @@
 /*
  * $Log: XmlValidatorBaseXerces26.java,v $
- * Revision 1.1  2011-08-22 09:52:02  L190409
+ * Revision 1.2  2011-09-12 14:27:40  l190409
+ * fixed schemaLocation handling using public and systemIds
+ *
+ * Revision 1.1  2011/08/22 09:52:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * baseclasse for XmlValidation, that uses Xerces grammar pool
  *
  */
@@ -13,6 +16,7 @@ import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.StringTokenizer;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -133,7 +137,17 @@ public class XmlValidatorBaseXerces26 extends XmlValidatorBaseBase {
 				globalSchema=getNoNamespaceSchemaLocation();
 			}
 			try {
-				parseSchema(globalSchema);
+				if (StringUtils.isEmpty(getSchemaLocation())) {
+					parseSchema(null,globalSchema);
+				} else {
+					StringTokenizer st = new StringTokenizer(globalSchema);
+					while (st.hasMoreElements()) {
+						String publicId=st.nextToken();
+						String systemId=st.nextToken();
+						log.debug("parsing publicId ["+publicId+"] for systemId ["+systemId+"]");
+						parseSchema(publicId,systemId);
+					}
+				}
 			} catch (XmlValidatorException e) {
 				throw new ConfigurationException(e);
 			} catch (Exception e) {
@@ -151,13 +165,13 @@ public class XmlValidatorBaseXerces26 extends XmlValidatorBaseBase {
         }
 	}
  
-	private synchronized void parseSchema(String schema) throws XmlValidatorException {
-    	if (!loadedSchemas.contains(schema)) {
+	private synchronized void parseSchema(String publicId, String systemId) throws XmlValidatorException {
+    	if (!loadedSchemas.contains(systemId)) {
     		try {
-    			Grammar g = preparser.preparseGrammar(XMLGrammarDescription.XML_SCHEMA, stringToXIS(schema));
-        		loadedSchemas.add(schema);
+    			Grammar g = preparser.preparseGrammar(XMLGrammarDescription.XML_SCHEMA, stringToXIS(publicId,systemId));
+        		loadedSchemas.add(systemId);
 			} catch (Exception e) {
-				throw new XmlValidatorException("cannot compile schema for [" + schema + "]",e);
+				throw new XmlValidatorException("cannot compile schema for [" + systemId + "]",e);
 			}
     	}
 	}
@@ -194,7 +208,7 @@ public class XmlValidatorBaseXerces26 extends XmlValidatorBaseBase {
    			} else {
    				throw new XmlValidatorException(logPrefix+ "cannot retrieve xsd from session variable [" + getSchemaSessionKey() + "]");
     		}
-   			parseSchema(schemaLocation);
+   			parseSchema(null,schemaLocation);
         }
 		
 		XmlErrorHandler xeh;
@@ -264,8 +278,8 @@ public class XmlValidatorBaseXerces26 extends XmlValidatorBaseBase {
         return parser;
     }
 
-    private static XMLInputSource stringToXIS(String uri) {
-        return new XMLInputSource(null, uri, null);
+    private static XMLInputSource stringToXIS(String publicId, String systemId) {
+        return new XMLInputSource(publicId, systemId, null);
     }
 
    
