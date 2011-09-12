@@ -1,6 +1,9 @@
 /*
  * $Log: BisJmsListener.java,v $
- * Revision 1.8  2011-08-31 13:39:28  m168309
+ * Revision 1.9  2011-09-12 07:23:10  europe\m168309
+ * BisJmsSender/BisJmsListener: added functionality on behalf of DINN (migration from IFSA to TIBCO)
+ *
+ * Revision 1.8  2011/08/31 13:39:28  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * moved result tag from first child of root to last child of root
  *
  * Revision 1.7  2011/08/12 11:43:22  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -28,7 +31,6 @@
 package nl.nn.adapterframework.extensions.bis;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Map;
 
 import javax.xml.transform.TransformerConfigurationException;
@@ -39,13 +41,10 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.jms.JmsListener;
 import nl.nn.adapterframework.soap.SoapWrapper;
 import nl.nn.adapterframework.util.DomBuilderException;
-import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
 
 /**
  * Bis (Business Integration Services) extension of JmsListener.
@@ -139,6 +138,8 @@ import org.w3c.dom.Node;
  * <tr><td>{@link #setMessageHeaderInSoapBody(boolean) messageHeaderInSoapBody}</td><td>when <code>true</code>, the MessageHeader is put in the SOAP body instead of in the SOAP header (first one is the old BIS standard)</td><td><code>false</code></td></tr>
  * <tr><td>{@link #setResultInPayload(boolean) resultInPayload}</td><td>when <code>true</code>, the Result is put in the payload (as last child in root tag) instead of in the SOAP body as sibling of the payload (last one is the old BIS standard)</td><td><code>true</code></td></tr>
  * <tr><td>{@link #setOmitResult(boolean) omitResult}</td><td>when <code>true</code>, the Result is omitted and instead of Result/Status 'ERROR' a ListenerException is thrown (this functionality will be used during migration from IFSA to TIBCO)</td><td><code>false</code></td></tr>
+ * <tr><td>{@link #setRemoveRequestNamespaces(boolean) removeRequestNamespaces}</td><td>when set <code>true</code> namespaces (and prefixes) in the request are removed (this functionality will be used during migration from IFSA to TIBCO)</td><td>false</td></tr>
+ * <tr><td>{@link #setLayByNamespace(boolean) layByNamespace}</td><td>when <code>true</code>, the namespace of the request is laid by and afterwards added to the reply (this functionality will be used during migration from IFSA to TIBCO)</td><td><code>false</code></td></tr>
  * <tr><td>{@link #setErrorCodeSessionKey(String) errorCodeSessionKey}</td><td>key of session variable to store error code in (if an error occurs)</td><td>bisErrorCode</td></tr>
  * <tr><td>{@link #setErrorTextSessionKey(String) errorTextSessionKey}</td><td>key of session variable to store error text in (if an error occurs). If not specified, the following error text is derived from the error code: 
  *   <table border="1">
@@ -159,21 +160,16 @@ import org.w3c.dom.Node;
  */
 public class BisJmsListener extends JmsListener {
 
-	private final static String soapNamespaceDefs = "soapenv=http://schemas.xmlsoap.org/soap/envelope/";
-	private final static String soapBodyXPath = "soapenv:Envelope/soapenv:Body";
-
-	private final static String[][] BISERRORS = { { "ERR6002", "Service Interface Request Time Out" }, {
-			"ERR6003", "Invalid Request Message" }, {
-			"ERR6004", "Invalid Backend system response" }, {
-			"ERR6005", "Backend system failure response" }, {
-			"ERR6999", "Unspecified Errors" }
-	};
+	private static final String MESSAGETEXT_KEY = "messageText";
+	private static final String MESSAGEBODYNAMESPACE_KEY = "messageBodyNamespace";
 
 	private String requestXPath = null;
 	private String requestNamespaceDefs = null;
 	private boolean messageHeaderInSoapBody = false;
 	private boolean resultInPayload = true;
 	private boolean omitResult = false;
+	private boolean removeRequestNamespaces = false;
+	private boolean layByNamespace = false;
 	private String errorCodeSessionKey = "bisErrorCode";
 	private String errorTextSessionKey = null;
 	private String errorReasonSessionKey = "bisErrorReason";
@@ -195,59 +191,54 @@ public class BisJmsListener extends JmsListener {
 		}
 		try {
 			bisUtils = BisUtils.getInstance();
-			requestTp = new TransformerPool(XmlUtils.createXPathEvaluatorSource(StringUtils.isNotEmpty(getRequestNamespaceDefs()) ? soapNamespaceDefs + "\n" + getRequestNamespaceDefs() : soapNamespaceDefs, StringUtils.isNotEmpty(getRequestXPath()) ? soapBodyXPath + "/" + getRequestXPath() : soapBodyXPath + "/*", "xml"));
+			requestTp = new TransformerPool(XmlUtils.createXPathEvaluatorSource(StringUtils.isNotEmpty(getRequestNamespaceDefs()) ? bisUtils.getSoapNamespaceDefs() + "\n" + getRequestNamespaceDefs() : bisUtils.getSoapNamespaceDefs(), StringUtils.isNotEmpty(getRequestXPath()) ? bisUtils.getSoapBodyXPath() + "/" + getRequestXPath() : bisUtils.getSoapBodyXPath() + "/*", "xml"));
 		} catch (TransformerConfigurationException e) {
 			throw new ConfigurationException(getLogPrefix() + "cannot create transformer", e);
 		}
 	}
 
 	public String extractMessageBody(String rawMessageText, Map context, SoapWrapper soapWrapper) throws DomBuilderException, TransformerException, IOException {
-		context.put("messageText", rawMessageText);
+		context.put(MESSAGETEXT_KEY, rawMessageText);
 		log.debug("extract messageBody from message [" + rawMessageText + "]");
-		return requestTp.transform(rawMessageText, null, true);
+		String messageBody = requestTp.transform(rawMessageText, null, true);
+		if (isLayByNamespace()) {
+			String messageBodyNamespace = XmlUtils.getRootNamespace(messageBody);
+			if (messageBodyNamespace != null) {
+				context.put(MESSAGEBODYNAMESPACE_KEY, messageBodyNamespace);
+			}
+			if (isRemoveRequestNamespaces()) {
+				messageBody = XmlUtils.removeNamespaces(messageBody);
+			}
+		}
+		return messageBody;
 	}
 
 	public String prepareReply(String rawReply, Map threadContext) throws ListenerException {
-		String originalSoapBody = (String) threadContext.get("messageText");
-		ArrayList messages = new ArrayList();
+		String originalMessageText = (String) threadContext.get(MESSAGETEXT_KEY);
+		String messageBodyNamespace = (String) threadContext.get(MESSAGEBODYNAMESPACE_KEY);
+		if (isLayByNamespace() && messageBodyNamespace != null) {
+			rawReply = XmlUtils.addRootNamespace(rawReply, messageBodyNamespace);
+		}
 		String errorCode = null;
 		if (StringUtils.isNotEmpty(getErrorCodeSessionKey())) {
 			errorCode = (String) threadContext.get(getErrorCodeSessionKey());
 		}
 		String messageHeader;
+		String payload;
+		String result;
 		try {
-			messageHeader = bisUtils.prepareMessageHeader(originalSoapBody, isMessageHeaderInSoapBody());
-		} catch (Exception e) {
-			throw new ListenerException(e);
-		}
-		if (isMessageHeaderInSoapBody()) {
-			messages.add(messageHeader);
-			messageHeader = null;
-		}
-		messages.add(rawReply);
-
-		String payload = null;
-		try {
+			messageHeader = bisUtils.prepareMessageHeader(originalMessageText, isMessageHeaderInSoapBody());
 			if (isOmitResult()) {
-				payload = Misc.listToString(messages);
+				result = null;
 			} else {
-				String result = prepareResult(errorCode, threadContext);
-				if (isResultInPayload()) {
-					String message = Misc.listToString(messages);
-					Document messageDoc = XmlUtils.buildDomDocument(message);
-					Node messageRootNode = messageDoc.getFirstChild();
-					Node resultNode = messageDoc.importNode(XmlUtils.buildNode(result), true);
-					messageRootNode.appendChild(resultNode);
-					payload = XmlUtils.nodeToString(messageDoc);
-				} else {
-					messages.add(result);
-					payload = Misc.listToString(messages);
-				}
+				result = prepareResult(errorCode, threadContext);
 			}
+			payload = bisUtils.prepareReply(rawReply, isMessageHeaderInSoapBody() ? messageHeader : null, result, isResultInPayload());
+
 		} catch (Exception e) {
 			throw new ListenerException(e);
 		}
-		return super.prepareReply(payload, threadContext, messageHeader);
+		return super.prepareReply(payload, threadContext, isMessageHeaderInSoapBody() ? null : messageHeader);
 	}
 
 	public String prepareResult(String errorCode, Map threadContext) throws DomBuilderException, IOException, TransformerException {
@@ -259,7 +250,7 @@ public class BisJmsListener extends JmsListener {
 			if (StringUtils.isNotEmpty(getErrorTextSessionKey())) {
 				errorText = (String) threadContext.get(getErrorTextSessionKey());
 			} else {
-				errorText = errorCodeToText(errorCode);
+				errorText = bisUtils.errorCodeToText(errorCode);
 			}
 			if (StringUtils.isNotEmpty(getServiceName())) {
 				serviceName = (String) threadContext.get(getServiceName());
@@ -272,15 +263,6 @@ public class BisJmsListener extends JmsListener {
 			}
 		}
 		return bisUtils.prepareResult(errorCode, errorText, serviceName, actionName, detailText);
-	}
-
-	private String errorCodeToText(String errorCode) {
-		for (int i = 0; i < BISERRORS.length; i++) {
-			if (errorCode.equals(BISERRORS[i][0])) {
-				return BISERRORS[i][1];
-			}
-		}
-		return null;
 	}
 
 	public void setRequestXPath(String requestXPath) {
@@ -321,6 +303,22 @@ public class BisJmsListener extends JmsListener {
 
 	public boolean isOmitResult() {
 		return omitResult;
+	}
+
+	public void setRemoveRequestNamespaces(boolean b) {
+		removeRequestNamespaces = b;
+	}
+
+	public boolean isRemoveRequestNamespaces() {
+		return removeRequestNamespaces;
+	}
+
+	public void setLayByNamespace(boolean b) {
+		layByNamespace = b;
+	}
+
+	public boolean isLayByNamespace() {
+		return layByNamespace;
 	}
 
 	public void setErrorCodeSessionKey(String errorCodeSessionKey) {
