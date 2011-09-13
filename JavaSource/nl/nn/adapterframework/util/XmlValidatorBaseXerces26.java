@@ -1,6 +1,9 @@
 /*
  * $Log: XmlValidatorBaseXerces26.java,v $
- * Revision 1.2  2011-09-12 14:27:40  l190409
+ * Revision 1.3  2011-09-13 13:40:01  l190409
+ * avoid NPE in error handling when rootElement not yet parsed
+ *
+ * Revision 1.2  2011/09/12 14:27:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fixed schemaLocation handling using public and systemIds
  *
  * Revision 1.1  2011/08/22 09:52:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -252,13 +255,15 @@ public class XmlValidatorBaseXerces26 extends XmlValidatorBaseBase {
 			return handleFailures(xeh,session,"", "parserError", XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT, e);
         }
 
-		boolean illegalRoot = StringUtils.isNotEmpty(getRoot()) && 
-							!((XmlFindingHandler)parser.getContentHandler()).getRootElementName().equals(getRoot());
-		if (illegalRoot) {
-			String str = "got xml with root element '"+((XmlFindingHandler)parser.getContentHandler()).getRootElementName()+"' instead of '"+getRoot()+"'";
-			xeh.addReason(str,"");
-			return handleFailures(xeh,session,"","illegalRoot", XML_VALIDATOR_ILLEGAL_ROOT_MONITOR_EVENT, null);
-		} 
+        if (StringUtils.isNotEmpty(getRoot())) {
+        	String parsedRootElementName=((XmlFindingHandler)parser.getContentHandler()).getRootElementName();
+    		boolean illegalRoot = !getRoot().equals(parsedRootElementName);
+			if (illegalRoot) {
+				String str = "got xml with root element ["+parsedRootElementName+"] instead of ["+getRoot()+"]";
+				xeh.addReason(str,"");
+				return handleFailures(xeh,session,"","illegalRoot", XML_VALIDATOR_ILLEGAL_ROOT_MONITOR_EVENT, null);
+			} 
+        }
 		boolean isValid = !(xeh.hasErrorOccured());
 		
 		if (!isValid) { 
