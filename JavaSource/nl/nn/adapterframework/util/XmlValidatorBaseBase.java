@@ -1,6 +1,9 @@
 /*
  * $Log: XmlValidatorBaseBase.java,v $
- * Revision 1.1  2011-08-22 09:51:36  L190409
+ * Revision 1.2  2011-09-13 13:39:48  l190409
+ * added getLogPrefix()
+ *
+ * Revision 1.1  2011/08/22 09:51:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * new baseclasses for XmlValidation
  *
  */
@@ -11,6 +14,7 @@ import java.net.URL;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IbisException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -109,7 +113,7 @@ public abstract class XmlValidatorBaseBase {
 					xmlReasons.addSubElement(reason);	
 				}
 			} catch (Throwable t) {
-				log.error("Exception handling errors",t);
+				log.error(getLogPrefix(null)+"Exception handling errors",t);
 				
 				XmlBuilder reason = new XmlBuilder("reason");
 				XmlBuilder detail;
@@ -219,17 +223,17 @@ public abstract class XmlValidatorBaseBase {
 			}
 		}
 		if (StringUtils.isNotEmpty(getReasonSessionKey())) {
-			log.debug("storing reasons under sessionKey ["+getReasonSessionKey()+"]");
+			log.debug(getLogPrefix(session)+"storing reasons under sessionKey ["+getReasonSessionKey()+"]");
 			session.put(getReasonSessionKey(),fullReasons);
 		}
 		if (StringUtils.isNotEmpty(getXmlReasonSessionKey())) {
-			log.debug("storing reasons (in xml format) under sessionKey ["+getXmlReasonSessionKey()+"]");
+			log.debug(getLogPrefix(session)+"storing reasons (in xml format) under sessionKey ["+getXmlReasonSessionKey()+"]");
 			session.put(getXmlReasonSessionKey(),xeh.getXmlReasons());
 		}
 		if (isThrowException()) {
 			throw new XmlValidatorException(fullReasons, t);
 		}
-		log.warn(fullReasons, t);
+		log.warn(getLogPrefix(session)+"validation failed: "+fullReasons, t);
 		return event;
 	}
 
@@ -325,6 +329,17 @@ public abstract class XmlValidatorBaseBase {
 		this.schemaSessionKey = schemaSessionKey;
 	}
 
+	protected String getLogPrefix(PipeLineSession session){
+		  StringBuffer sb=new StringBuffer();
+		  sb.append(ClassUtils.nameOf(this)).append(' ');
+		  if (this instanceof INamedObject) {
+			  sb.append("["+((INamedObject)this).getName()+"] ");
+		  }
+		  if (session!=null) {
+			  sb.append("msgId ["+session.getMessageId()+"] ");
+		  }
+		  return sb.toString();
+	}
 
     /**
      * Indicates wether to throw an error (piperunexception) when
