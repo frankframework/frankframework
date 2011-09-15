@@ -1,6 +1,10 @@
 /*
  * $Log: JdbcUtil.java,v $
- * Revision 1.29  2011-08-09 10:10:43  L190409
+ * Revision 1.30  2011-09-15 11:53:58  europe\l562891
+ * added streamBlob' base64 encoding/decoding
+ *
+ * 
+ * Revision 1.29  2011/08/09 10:10:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * moved isTablePresent() and isTableColumnPresent() to DbmsSupport
  * added isBlobType(), isClobType(), getValue(), streamBlob, streamClob
  * replaced base64 library
@@ -475,21 +479,32 @@ public class JdbcUtil {
 		return result;
 	}
 
-	public static void streamBlob(final ResultSet rs, int columnIndex, String charset, boolean blobIsCompressed, Object target, boolean close) throws JdbcException, SQLException, IOException {
-		streamBlob(rs.getBlob(columnIndex),columnIndex+"",charset,blobIsCompressed,target,close);
+	public static void streamBlob(final ResultSet rs, int columnIndex, String charset, boolean blobIsCompressed, String blobBase64Direction, Object target, boolean close) throws JdbcException, SQLException, IOException {
+		streamBlob(rs.getBlob(columnIndex),columnIndex+"",charset,blobIsCompressed,blobBase64Direction,target,close);
 	}
-	public static void streamBlob(final ResultSet rs, String columnName, String charset, boolean blobIsCompressed, Object target, boolean close) throws JdbcException, SQLException, IOException {
-		streamBlob(rs.getBlob(columnName),columnName,charset,blobIsCompressed,target,close);
+	public static void streamBlob(final ResultSet rs, String columnName, String charset, boolean blobIsCompressed, String blobBase64Direction, Object target, boolean close) throws JdbcException, SQLException, IOException {
+		streamBlob(rs.getBlob(columnName),columnName,charset,blobIsCompressed,blobBase64Direction,target,close);
 	}
 	
-	public static void streamBlob(Blob blob, String column, String charset, boolean blobIsCompressed, Object target, boolean close) throws JdbcException, SQLException, IOException {
+	public static void streamBlob(Blob blob, String column, String charset, boolean blobIsCompressed, String blobBase64Direction, Object target, boolean close) throws JdbcException, SQLException, IOException {
 		if (target==null) {
 			throw new JdbcException("cannot stream Blob to null object");
 		}
 		OutputStream outputStream=StreamUtil.getOutputStream(target);
 		if (outputStream!=null) {
-			InputStream inputstream = JdbcUtil.getBlobInputStream(blob, column, blobIsCompressed);
-			StreamUtil.copyStream(inputstream, outputStream, 50000);
+			InputStream inputStream = JdbcUtil.getBlobInputStream(blob, column, blobIsCompressed);
+			if ("decode".equalsIgnoreCase(blobBase64Direction)){
+				Base64InputStream decodedStream = new Base64InputStream (inputStream);
+				StreamUtil.copyStream(decodedStream, outputStream, 50000);   					
+			}
+			else if ("encode".equalsIgnoreCase(blobBase64Direction)){
+				Base64InputStream base64Stream = new Base64InputStream (inputStream, true);
+				StreamUtil.copyStream(base64Stream, outputStream, 50000);   									
+			}
+			else {	
+				StreamUtil.copyStream(inputStream, outputStream, 50000);
+			}
+			
 			if (close) {
 				outputStream.close();
 			}
