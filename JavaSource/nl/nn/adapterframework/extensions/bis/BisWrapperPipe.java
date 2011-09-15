@@ -1,6 +1,9 @@
 /*
  * $Log: BisWrapperPipe.java,v $
- * Revision 1.1  2011-09-14 14:13:50  europe\m168309
+ * Revision 1.2  2011-09-15 10:19:42  europe\m168309
+ * corrected javadoc
+ *
+ * Revision 1.1  2011/09/14 14:13:50  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * first version
  *
  *
@@ -122,7 +125,8 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setXpathExpression(String) xpathExpression}</td><td>(only used when direction=unwrap) xpath expression to extract the message which is returned. The initial message is the content of the soap body. If empty, the content of the soap body is passed (without the root body)</td></td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setDirection(String) direction}</td><td>either <code>wrap</code> or <code>unwrap</code></td><td>wrap</td></tr>
+ * <tr><td>{@link #setXpathExpression(String) xpathExpression}</td><td>(only used when direction=unwrap) xpath expression to extract the message which is returned. The initial message is the content of the soap body. If empty, the content of the soap body is passed (without the root body)</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setNamespaceDefs(String) namespaceDefs}</td><td>(only used when direction=unwrap) namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setBisMessageHeaderInSoapBody(boolean) bisMessageHeaderInSoapBody}</td><td>when <code>true</code>, the bis message header is put in the SOAP body instead of in the SOAP header (first one is the old bis standard)</td><td><code>false</code></td></tr>
  * <tr><td>{@link #setBisMessageHeaderSessionKey(String) bisMessageHeaderSessionKey}</td><td>
@@ -148,7 +152,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <tr><td>{@link #setBisServiceName(String) bisServiceName}</td><td>(only used when direction=wrap) name of the bis service; used in the bis error response</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setBisActionName(String) bisActionName}</td><td>(only used when direction=wrap) name of the bis operation; used in the bis error response
  * </td><td>&nbsp;</td></tr>
- * </p>
+ * </table></p>
  * <p><b>Exits:</b>
  * <table border="1">
  * <tr><th>state</th><th>condition</th></tr>
@@ -462,7 +466,7 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 		return bisResultInPayload;
 	}
 
-	public void setBisonversationIdSessionKey(String bisConversationIdSessionKey) {
+	public void setBisConversationIdSessionKey(String bisConversationIdSessionKey) {
 		this.bisConversationIdSessionKey = bisConversationIdSessionKey;
 	}
 
