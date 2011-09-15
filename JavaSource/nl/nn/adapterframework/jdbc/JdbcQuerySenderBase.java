@@ -1,6 +1,10 @@
 /*
  * $Log: JdbcQuerySenderBase.java,v $
- * Revision 1.55  2011-08-09 10:07:00  L190409
+ * Revision 1.56  2011-09-15 11:55:03  europe\l562891
+ * blobBase64Direction added for streamBlob
+ *
+ *
+ * Revision 1.55  2011/08/09 10:07:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * updated javadoc
  *
  * Revision 1.54  2011/08/09 10:02:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -257,6 +261,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setCloseOutputstreamOnExit(boolean) closeOutputstreamOnExit}</td><td>when set to <code>false</code>, the outputstream is not closed after Blob or Clob has been written to it</td><td>true</td></tr>
  * <tr><td>{@link #setStreamCharset(String) streamCharset}</td><td>charset used when reading a stream (that is e.g. going to be written to a BLOB or CLOB). When empty, the stream is copied directly to the BLOB, without conversion</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setBlobsCompressed(boolean) blobsCompressed}</td><td>controls whether blobdata is stored compressed in the database</td><td>true</td></tr>
+ * <tr><td>{@link #setBlobBase64Direction(String) blobBase64Direction}</td><td>controls whether the streamed blobdata will need to be base64 <code>encode</code> or <code>decode</code> or not.</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setColumnsReturned(String) columnsReturned}</td><td>comma separated list of columns whose values are to be returned. Works only if the driver implements JDBC 3.0 getGeneratedKeys()</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setBlobSmartGet(boolean) blobSmartGet}</td><td>controls automatically whether blobdata is stored compressed and/or serialized in the database</td><td>false</td></tr>
  * <tr><td>{@link #setTimeout(int) timeout}</td><td>the number of seconds the driver will wait for a Statement object to execute. If the limit is exceeded, a TimeOutException is thrown. 0 means no timeout</td><td>0</td></tr>
@@ -309,21 +314,23 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 	private String blobCharset = Misc.DEFAULT_INPUT_STREAM_ENCODING;
 	private boolean closeInputstreamOnExit=true;
 	private boolean closeOutputstreamOnExit=true;
+	private String blobBase64Direction=null;
 	private String streamCharset = null;
 	private boolean blobsCompressed=true;
 	private boolean blobSmartGet=false;
 	private boolean useNamedParams=false;
 	private boolean includeFieldDefinition=XmlUtils.isIncludeFieldDefinitionByDefault();
 	private String rowIdSessionKey=null;
-
 	private String packageContent = "db2";
-	
 	protected String[] columnsReturnedList=null;
-
-
 
 	public void configure() throws ConfigurationException {
 		super.configure();
+		
+		String dir=getBlobBase64Direction();
+			if (dir != null && !dir.equalsIgnoreCase("encode") && !dir.equalsIgnoreCase("decode")) {
+				throw new ConfigurationException(getLogPrefix()+"illegal value for direction ["+dir+"], must be 'encode' or 'decode' or empty");
+			}
 		
 		if (StringUtils.isNotEmpty(getColumnsReturned())) {
 			List tempList = new ArrayList();
@@ -516,7 +523,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 				//result = resultset.getString(1);
 				ResultSetMetaData rsmeta = resultset.getMetaData();
 				if (blobSessionVar!=null && JdbcUtil.isBlobType(resultset, 1, rsmeta)) {
-					JdbcUtil.streamBlob(resultset, 1, getBlobCharset(), isBlobsCompressed(), blobSessionVar, isCloseOutputstreamOnExit());
+					JdbcUtil.streamBlob(resultset, 1, getBlobCharset(), isBlobsCompressed(), getBlobBase64Direction(), blobSessionVar, isCloseOutputstreamOnExit());
 					return "";
 				} 
 				if (clobSessionVar!=null && JdbcUtil.isClobType(resultset, 1, rsmeta)) {
@@ -1045,6 +1052,14 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		return blobsCompressed;
 	}
 
+	public void setBlobBase64Direction(String string) {
+		blobBase64Direction = string;
+	}
+	
+	public String getBlobBase64Direction() {
+		return blobBase64Direction;
+	}
+	
 	public void setBlobSmartGet(boolean b) {
 		blobSmartGet = b;
 	}
