@@ -1,6 +1,9 @@
 /*
  * $Log: SoapWrapper.java,v $
- * Revision 1.13  2011-05-04 11:42:56  L190409
+ * Revision 1.14  2011-09-16 12:02:17  europe\m168309
+ * added method createSoapFaultMessage()
+ *
+ * Revision 1.13  2011/05/04 11:42:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * improved robustness of getFaultCount
  *
  * Revision 1.12  2011/03/31 07:13:09  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -95,7 +98,7 @@ import org.w3c.dom.Document;
  * @version Id
  */
 public class SoapWrapper {
-	public static final String version="$RCSfile: SoapWrapper.java,v $ $Revision: 1.13 $ $Date: 2011-05-04 11:42:56 $";
+	public static final String version="$RCSfile: SoapWrapper.java,v $ $Revision: 1.14 $ $Date: 2011-09-16 12:02:17 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private TransformerPool extractBody;
@@ -255,7 +258,18 @@ public class SoapWrapper {
 		return putInEnvelope(message, encodingStyleUri, null);
 	}
 
+	public String createSoapFaultMessage(String faultcode, String faultstring) {
+		String fault= 
+		"<soapenv:Fault>" + 	
+			"<faultcode>" + faultcode + "</faultcode>" +
+			"<faultstring>" + faultstring + "</faultstring>" +
+		"</soapenv:Fault>";
+		return putInEnvelope(fault, null, null, null);
+	}
 
+	public String createSoapFaultMessage(String faultstring) {
+		return createSoapFaultMessage("SOAP-ENV:Server", faultstring);
+	}
 
 	public String signMessage(String soapMessage, String user, String password) throws SenderException {
 		try {
