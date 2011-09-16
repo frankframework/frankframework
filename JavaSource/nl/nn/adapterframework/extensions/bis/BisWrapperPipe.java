@@ -1,6 +1,10 @@
 /*
  * $Log: BisWrapperPipe.java,v $
- * Revision 1.2  2011-09-15 10:19:42  europe\m168309
+ * Revision 1.3  2011-09-16 13:11:05  europe\m168309
+ * - renamed attributes xpathExpression and namespaceDefs to inputXPath and inputNamespaceDefs
+ * - added attributes outputRoot and outputNamespace
+ *
+ * Revision 1.2  2011/09/15 10:19:42  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * corrected javadoc
  *
  * Revision 1.1  2011/09/14 14:13:50  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -126,8 +130,8 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDirection(String) direction}</td><td>either <code>wrap</code> or <code>unwrap</code></td><td>wrap</td></tr>
- * <tr><td>{@link #setXpathExpression(String) xpathExpression}</td><td>(only used when direction=unwrap) xpath expression to extract the message which is returned. The initial message is the content of the soap body. If empty, the content of the soap body is passed (without the root body)</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setNamespaceDefs(String) namespaceDefs}</td><td>(only used when direction=unwrap) namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setInputXPath(String) inputXPath}</td><td>(only used when direction=unwrap) xpath expression to extract the message which is returned. The initial message is the content of the soap body. If empty, the content of the soap body is passed (without the root body)</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setInputNamespaceDefs(String) inputNamespaceDefs}</td><td>(only used when direction=unwrap) namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setBisMessageHeaderInSoapBody(boolean) bisMessageHeaderInSoapBody}</td><td>when <code>true</code>, the bis message header is put in the SOAP body instead of in the SOAP header (first one is the old bis standard)</td><td><code>false</code></td></tr>
  * <tr><td>{@link #setBisMessageHeaderSessionKey(String) bisMessageHeaderSessionKey}</td><td>
  * <table> 
@@ -148,7 +152,9 @@ import nl.nn.adapterframework.util.XmlUtils;
  *   <tr><td>ERR6005</td><td>Backend system failure response</td></tr>
  *   <tr><td>ERR6999</td><td>Unspecified Errors</td></tr>
  *  </table></td><td>bisErrorText</td></tr>
- * <tr><td>{@link #setBisErrorReasonSessionKey(String) bisErrorReasonSessionKey}</td><td>(only used when direction=wrap) key of session variable to store bis error reason in (if an error occurs)</td><td>bisErrorReason</td></tr>
+ * <tr><td>{@link #setBisErrorReasonSessionKey(String) bisErrorReasonSessionKey}</td><td>(only used when direction=wrap and an error occurs) key of session variable to store bis error reason in</td><td>bisErrorReason</td></tr>
+ * <tr><td>{@link #setOutputRoot(String) outputRoot}</td><td>(only used when direction=wrap and an error occurs) name of output root element in the SOAP body. If empty, the input message is used in the response</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setOutputNamespace(String) outputNamespace}</td><td>(only used when direction=wrap and an error occurs) namespace of the output root element in the SOAP body</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setBisServiceName(String) bisServiceName}</td><td>(only used when direction=wrap) name of the bis service; used in the bis error response</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setBisActionName(String) bisActionName}</td><td>(only used when direction=wrap) name of the bis operation; used in the bis error response
  * </td><td>&nbsp;</td></tr>
@@ -181,8 +187,10 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 			"ERR6999", "Unspecified Errors" }
 	};
 
-	private String xpathExpression = null;
-	private String namespaceDefs = null;
+	private String inputXPath = null;
+	private String inputNamespaceDefs = null;
+	private String outputRoot = null;
+	private String outputNamespace = null;
 	private boolean bisMessageHeaderInSoapBody = false;
 	private String bisMessageHeaderSessionKey = "bisMessageHeader";
 	private boolean bisResultInPayload = true;
@@ -210,9 +218,9 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 			throw new ConfigurationException(getLogPrefix(null) + "messageHeaderSessionKey must be set");
 		}
 		try {
-			if (StringUtils.isNotEmpty(getXpathExpression())) {
-				String bodyMessageNd = StringUtils.isNotEmpty(getNamespaceDefs()) ? soapNamespaceDefs + "\n" + getNamespaceDefs() : soapNamespaceDefs;
-				String bodyMessageXe = StringUtils.isNotEmpty(getXpathExpression()) ? soapBodyXPath + "/" + getXpathExpression() : soapBodyXPath + "/*";
+			if (StringUtils.isNotEmpty(getInputXPath())) {
+				String bodyMessageNd = StringUtils.isNotEmpty(getInputNamespaceDefs()) ? soapNamespaceDefs + "\n" + getInputNamespaceDefs() : soapNamespaceDefs;
+				String bodyMessageXe = StringUtils.isNotEmpty(getInputXPath()) ? soapBodyXPath + "/" + getInputXPath() : soapBodyXPath + "/*";
 				bodyMessageTp = new TransformerPool(XmlUtils.createXPathEvaluatorSource(bodyMessageNd, bodyMessageXe, "xml"));
 			}
 			String bisMessageHeaderNd = soapNamespaceDefs + "\n" + bisNamespaceDefs;
@@ -275,7 +283,17 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 				}
 				String bisResult = prepareResult(bisErrorCode, bisErrorText, getBisServiceName(), getBisActionName(), bisDetailText);
 
-				String payload = prepareReply(input.toString(), isBisMessageHeaderInSoapBody() ? messageHeader : null, bisResult, isBisResultInPayload());
+				String payload;
+				if (bisErrorCode == null || StringUtils.isEmpty(getOutputRoot())) {
+					payload = prepareReply(input.toString(), isBisMessageHeaderInSoapBody() ? messageHeader : null, bisResult, isBisResultInPayload());
+				} else {
+					XmlBuilder outputElement = new XmlBuilder(getOutputRoot());
+					if (StringUtils.isNotEmpty(getOutputNamespace())) {
+						outputElement.addAttribute("xmlns", getOutputNamespace());
+					}
+					payload = prepareReply(outputElement.toXML(), isBisMessageHeaderInSoapBody() ? messageHeader : null, bisResult, isBisResultInPayload());
+				}
+
 				result = wrapMessage(payload, isBisMessageHeaderInSoapBody() ? null : messageHeader);
 			} else {
 				if (bisMessageHeaderTp != null) {
@@ -426,20 +444,36 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 		return payload;
 	}
 
-	public void setXpathExpression(String string) {
-		xpathExpression = string;
+	public void setInputXPath(String inputXPath) {
+		this.inputXPath = inputXPath;
 	}
 
-	public String getXpathExpression() {
-		return xpathExpression;
+	public String getInputXPath() {
+		return inputXPath;
 	}
 
-	public void setNamespaceDefs(String namespaceDefs) {
-		this.namespaceDefs = namespaceDefs;
+	public void setInputNamespaceDefs(String inputNamespaceDefs) {
+		this.inputNamespaceDefs = inputNamespaceDefs;
 	}
 
-	public String getNamespaceDefs() {
-		return namespaceDefs;
+	public String getInputNamespaceDefs() {
+		return inputNamespaceDefs;
+	}
+
+	public void setOutputRoot(String outputRoot) {
+		this.outputRoot = outputRoot;
+	}
+
+	public String getOutputRoot() {
+		return outputRoot;
+	}
+
+	public void setOutputNamespace(String outputNamespace) {
+		this.outputNamespace = outputNamespace;
+	}
+
+	public String getOutputNamespace() {
+		return outputNamespace;
 	}
 
 	public void setBisMessageHeaderInSoapBody(boolean b) {
