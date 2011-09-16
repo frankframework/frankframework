@@ -1,6 +1,9 @@
 /*
  * $Log: BisWrapperPipe.java,v $
- * Revision 1.3  2011-09-16 13:11:05  europe\m168309
+ * Revision 1.4  2011-09-16 13:30:21  europe\m168309
+ * added check on soap body not empty in case of unwrap
+ *
+ * Revision 1.3  2011/09/16 13:11:05  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * - renamed attributes xpathExpression and namespaceDefs to inputXPath and inputNamespaceDefs
  * - added attributes outputRoot and outputNamespace
  *
@@ -296,6 +299,10 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 
 				result = wrapMessage(payload, isBisMessageHeaderInSoapBody() ? null : messageHeader);
 			} else {
+				String body = unwrapMessage(input.toString());
+				if (StringUtils.isEmpty(body)) {
+					throw new PipeRunException(this, getLogPrefix(session) + "SOAP body is empty or message is not a SOAP message");
+				}
 				if (bisMessageHeaderTp != null) {
 					String messageHeader = bisMessageHeaderTp.transform(input.toString(), null, true);
 					if (messageHeader != null) {
@@ -312,7 +319,7 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 				if (bodyMessageTp != null) {
 					result = bodyMessageTp.transform(input.toString(), null, true);
 				} else {
-					result = unwrapMessage(input.toString());
+					result = body;
 				}
 			}
 		} catch (Throwable t) {
