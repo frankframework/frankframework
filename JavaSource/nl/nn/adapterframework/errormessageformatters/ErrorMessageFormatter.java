@@ -1,6 +1,9 @@
 /*
  * $Log: ErrorMessageFormatter.java,v $
- * Revision 1.8  2010-04-16 11:31:55  m168309
+ * Revision 1.9  2011-09-16 12:05:52  europe\m168309
+ * moved getting message to separate method
+ *
+ * Revision 1.8  2010/04/16 11:31:55  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * fixed bug CDATA in CDATA
  *
  * Revision 1.7  2007/02/12 14:30:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -51,7 +54,7 @@ import org.apache.log4j.Logger;
  * @author  Gerrit van Brakel
  */
 public class ErrorMessageFormatter implements IErrorMessageFormatter {
-	public static final String version = "$RCSfile: ErrorMessageFormatter.java,v $ $Revision: 1.8 $ $Date: 2010-04-16 11:31:55 $";
+	public static final String version = "$RCSfile: ErrorMessageFormatter.java,v $ $Revision: 1.9 $ $Date: 2011-09-16 12:05:52 $";
     protected Logger log = LogUtil.getLogger(this);
 	
 	/**
@@ -68,12 +71,8 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter {
 	    long receivedTime) {
 	
 		String details = null;
+		message = getMessage(message, t);
 		if (t != null) {
-			if (message == null || message.equals("")) {
-				message = t.getMessage();
-			} else {
-				message += ": "+t.getMessage();
-			}
 			details = ExceptionUtils.getStackTrace(t);
 		}
 		 
@@ -109,5 +108,16 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter {
 	    errorXml.addSubElement(originalMessageXml);
 	
 	    return errorXml.toXML();
+	}
+
+	protected String getMessage(String message, Throwable t) {
+		if (t != null) {
+			if (message == null || message.equals("")) {
+				message = t.getMessage();
+			} else {
+				message += ": "+t.getMessage();
+			}
+		}
+		return message;
 	}
 }
