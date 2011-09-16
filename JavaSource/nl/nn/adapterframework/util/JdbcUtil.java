@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcUtil.java,v $
- * Revision 1.30  2011-09-15 11:53:58  europe\l562891
+ * Revision 1.31  2011-09-16 07:41:50  europe\l562891
+ * renamed some local variables in streamBlob to less confusing names.
+ *
+ * Revision 1.30  2011/09/15 11:53:58  Martijn Onstwedder <martijn.onstwedder@ibissource.org>
  * added streamBlob' base64 encoding/decoding
  *
  * 
@@ -494,12 +497,12 @@ public class JdbcUtil {
 		if (outputStream!=null) {
 			InputStream inputStream = JdbcUtil.getBlobInputStream(blob, column, blobIsCompressed);
 			if ("decode".equalsIgnoreCase(blobBase64Direction)){
-				Base64InputStream decodedStream = new Base64InputStream (inputStream);
-				StreamUtil.copyStream(decodedStream, outputStream, 50000);   					
+				Base64InputStream base64DecodedStream = new Base64InputStream (inputStream);
+				StreamUtil.copyStream(base64DecodedStream, outputStream, 50000);   					
 			}
 			else if ("encode".equalsIgnoreCase(blobBase64Direction)){
-				Base64InputStream base64Stream = new Base64InputStream (inputStream, true);
-				StreamUtil.copyStream(base64Stream, outputStream, 50000);   									
+				Base64InputStream base64EncodedStream = new Base64InputStream (inputStream, true);
+				StreamUtil.copyStream(base64EncodedStream, outputStream, 50000);   									
 			}
 			else {	
 				StreamUtil.copyStream(inputStream, outputStream, 50000);
