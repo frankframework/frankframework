@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcQuerySenderBase.java,v $
- * Revision 1.56  2011-09-15 11:55:03  europe\l562891
+ * Revision 1.57  2011-09-20 07:56:12  l190409
+ * used isNotEmpty instead of !=null
+ *
+ * Revision 1.56  2011/09/15 11:55:03  Martijn Onstwedder <martijn.onstwedder@ibissource.org>
  * blobBase64Direction added for streamBlob
  *
  *
@@ -328,7 +331,7 @@ public abstract class JdbcQuerySenderBase extends JdbcSenderBase {
 		super.configure();
 		
 		String dir=getBlobBase64Direction();
-			if (dir != null && !dir.equalsIgnoreCase("encode") && !dir.equalsIgnoreCase("decode")) {
+			if (StringUtils.isNotEmpty(dir) && !dir.equalsIgnoreCase("encode") && !dir.equalsIgnoreCase("decode")) {
 				throw new ConfigurationException(getLogPrefix()+"illegal value for direction ["+dir+"], must be 'encode' or 'decode' or empty");
 			}
 		
