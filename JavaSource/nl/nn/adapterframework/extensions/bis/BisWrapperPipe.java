@@ -1,6 +1,9 @@
 /*
  * $Log: BisWrapperPipe.java,v $
- * Revision 1.4  2011-09-16 13:30:21  europe\m168309
+ * Revision 1.5  2011-09-22 08:45:22  europe\m168309
+ * added attributes removeOutputNamespaces, omitResult and addOutputNamespace for the purpose of the migration from IFSA to TIBCO
+ *
+ * Revision 1.4  2011/09/16 13:30:21  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added check on soap body not empty in case of unwrap
  *
  * Revision 1.3  2011/09/16 13:11:05  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -159,8 +162,14 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <tr><td>{@link #setOutputRoot(String) outputRoot}</td><td>(only used when direction=wrap and an error occurs) name of output root element in the SOAP body. If empty, the input message is used in the response</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setOutputNamespace(String) outputNamespace}</td><td>(only used when direction=wrap and an error occurs) namespace of the output root element in the SOAP body</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setBisServiceName(String) bisServiceName}</td><td>(only used when direction=wrap) name of the bis service; used in the bis error response</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setBisActionName(String) bisActionName}</td><td>(only used when direction=wrap) name of the bis operation; used in the bis error response
- * </td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setBisActionName(String) bisActionName}</td><td>(only used when direction=wrap) name of the bis operation; used in the bis error response</td><td>&nbsp;</td></tr>
+ * </table></p>
+ * <p><b>The following attributes are created for the purpose of the migration from IFSA to TIBCO (and will be removed afterwards):</b>
+ * <table border="1">
+ * <tr><th>attributes</th><th>description</th><th>default</th></tr>
+ * <tr><td>{@link #setRemoveOutputNamespaces(boolean) removeOutputNamespaces}</td><td>(only used when direction=unwrap) when set <code>true</code> namespaces (and prefixes) in the output are removed</td><td>false</td></tr>
+ * <tr><td>{@link #setOmitResult(boolean) omitResult}</td>(only used when direction=wrap) <td>when <code>true</code>, the Result is omitted and instead of Result/Status 'ERROR' a PipeRunException is thrown</td><td><code>false</code></td></tr>
+ * <tr><td>{@link #setAddOutputNamespace(boolean) addOutputNamespace}</td><td>(only used when direction=unwrap) when set <code>true</code> the <code>outputNamespace</code> is added to the output root element in the SOAP body</td><td>false</td></tr>
  * </table></p>
  * <p><b>Exits:</b>
  * <table border="1">
@@ -204,6 +213,9 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 	private String bisErrorReasonSessionKey = "bisErrorReason";
 	private String bisServiceName = null;
 	private String bisActionName = null;
+	private boolean removeOutputNamespaces = false;
+	private boolean omitResult = false;
+	private boolean addOutputNamespace = false;
 
 	private TransformerPool bodyMessageTp;
 	private TransformerPool bisMessageHeaderTp;
@@ -211,6 +223,8 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 	private TransformerPool bisMessageHeaderExternalRefToMessageIdTp;
 	private TransformerPool bisErrorTp;
 	private String bisErrorXe;
+	private TransformerPool removeOutputNamespacesTp;
+	private TransformerPool addOutputNamespaceTp;
 
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -219,6 +233,9 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 		}
 		if (StringUtils.isEmpty(getBisMessageHeaderSessionKey())) {
 			throw new ConfigurationException(getLogPrefix(null) + "messageHeaderSessionKey must be set");
+		}
+		if (isAddOutputNamespace() && StringUtils.isEmpty(outputNamespace)) {
+			throw new ConfigurationException(getLogPrefix(null) + "outputNamespace must be set when addOutputnamespace=true");
 		}
 		try {
 			if (StringUtils.isNotEmpty(getInputXPath())) {
@@ -245,6 +262,14 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 			}
 			bisErrorXe = bisErrorXe + " or string-length(" + soapBodyXPath + "/" + soapErrorXPath + ")&gt;0";
 			bisErrorTp = new TransformerPool(XmlUtils.createXPathEvaluatorSource(bisErrorNd, bisErrorXe, "text"));
+			if (isRemoveOutputNamespaces()) {
+				String removeOutputNamespaces_xslt = XmlUtils.makeRemoveNamespacesXslt(true, false);
+				removeOutputNamespacesTp = new TransformerPool(removeOutputNamespaces_xslt);
+			}
+			if (isAddOutputNamespace()) {
+				String addOutputNamespace_xslt = XmlUtils.makeAddRootNamespaceXslt(getOutputNamespace(), true, false);
+				addOutputNamespaceTp = new TransformerPool(addOutputNamespace_xslt);
+			}
 		} catch (TransformerConfigurationException e) {
 			throw new ConfigurationException(getLogPrefix(null) + "cannot create transformer", e);
 		}
@@ -283,12 +308,20 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 					if (StringUtils.isNotEmpty(getBisErrorReasonSessionKey())) {
 						bisDetailText = (String) session.get(getBisErrorReasonSessionKey());
 					}
+					if (isOmitResult()) {
+						throw new PipeRunException(this, getLogPrefix(session) + "bisError occured: errorCode [" + bisErrorCode + "], errorText [" + bisErrorText + "]");
+					}
 				}
 				String bisResult = prepareResult(bisErrorCode, bisErrorText, getBisServiceName(), getBisActionName(), bisDetailText);
 
 				String payload;
 				if (bisErrorCode == null || StringUtils.isEmpty(getOutputRoot())) {
-					payload = prepareReply(input.toString(), isBisMessageHeaderInSoapBody() ? messageHeader : null, bisResult, isBisResultInPayload());
+					if (addOutputNamespaceTp != null) {
+						payload = addOutputNamespaceTp.transform(input.toString(), null, true);
+					} else {
+						payload = input.toString();
+					}
+					payload = prepareReply(payload, isBisMessageHeaderInSoapBody() ? messageHeader : null, bisResult, isBisResultInPayload());
 				} else {
 					XmlBuilder outputElement = new XmlBuilder(getOutputRoot());
 					if (StringUtils.isNotEmpty(getOutputNamespace())) {
@@ -320,6 +353,9 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 					result = bodyMessageTp.transform(input.toString(), null, true);
 				} else {
 					result = body;
+				}
+				if (removeOutputNamespacesTp != null) {
+					result = removeOutputNamespacesTp.transform(result, null, true);
 				}
 			}
 		} catch (Throwable t) {
@@ -561,5 +597,29 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 
 	public String getBisActionName() {
 		return bisActionName;
+	}
+
+	public void setRemoveOutputNamespaces(boolean b) {
+		removeOutputNamespaces = b;
+	}
+
+	public boolean isRemoveOutputNamespaces() {
+		return removeOutputNamespaces;
+	}
+
+	public void setOmitResult(boolean b) {
+		omitResult = b;
+	}
+
+	public boolean isOmitResult() {
+		return omitResult;
+	}
+
+	public void setAddOutputNamespace(boolean b) {
+		addOutputNamespace = b;
+	}
+
+	public boolean isAddOutputNamespace() {
+		return addOutputNamespace;
 	}
 }
