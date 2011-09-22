@@ -1,6 +1,9 @@
 /*
  * $Log: BisUtils.java,v $
- * Revision 1.3  2011-09-12 07:23:10  europe\m168309
+ * Revision 1.4  2011-09-22 14:17:07  europe\m168309
+ * Deprecated BisJmsSender/BisJmsListener
+ *
+ * Revision 1.3  2011/09/12 07:23:10  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * BisJmsSender/BisJmsListener: added functionality on behalf of DINN (migration from IFSA to TIBCO)
  *
  * Revision 1.2  2011/06/06 12:27:26  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -38,10 +41,11 @@ import nl.nn.adapterframework.util.XmlUtils;
  * 
  * @author Peter Leeuwenburgh
  * @version Id
+ * @deprecated Please use BisWrapperPipe
  */
 
 public class BisUtils {
-	public static final String version = "$RCSfile: BisUtils.java,v $ $Revision: 1.3 $ $Date: 2011-09-12 07:23:10 $";
+	public static final String version = "$RCSfile: BisUtils.java,v $ $Revision: 1.4 $ $Date: 2011-09-22 14:17:07 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private final static String soapNamespaceDefs = "soapenv=http://schemas.xmlsoap.org/soap/envelope/";

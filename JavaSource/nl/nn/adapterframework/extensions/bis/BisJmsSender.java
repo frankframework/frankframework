@@ -1,6 +1,9 @@
 /*
  * $Log: BisJmsSender.java,v $
- * Revision 1.8  2011-09-12 07:23:10  europe\m168309
+ * Revision 1.9  2011-09-22 14:17:07  europe\m168309
+ * Deprecated BisJmsSender/BisJmsListener
+ *
+ * Revision 1.8  2011/09/12 07:23:10  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * BisJmsSender/BisJmsListener: added functionality on behalf of DINN (migration from IFSA to TIBCO)
  *
  * Revision 1.7  2011/08/31 13:39:28  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -34,6 +37,7 @@ import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeOutException;
 import nl.nn.adapterframework.jms.JmsSender;
@@ -74,6 +78,7 @@ import org.w3c.dom.Element;
  * 
  * @author  Peter Leeuwenburgh
  * @version Id
+ * @deprecated Please use JmsSender combined with BisWrapperPipe
  */
 public class BisJmsSender extends JmsSender {
 
@@ -98,6 +103,9 @@ public class BisJmsSender extends JmsSender {
 	}
 
 	public void configure() throws ConfigurationException {
+		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+		String msg = getLogPrefix()+"The class ["+getClass().getName()+"] has been deprecated. Please change to JmsSender combined with BisWrapperPipe";
+		configWarnings.add(log, msg);
 		super.configure();
 		if (!isSoap()) {
 			throw new ConfigurationException(getLogPrefix() + "soap must be true");
