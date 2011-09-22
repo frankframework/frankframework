@@ -1,6 +1,9 @@
 /*
  * $Log: JmsListenerBase.java,v $
- * Revision 1.8  2011-06-22 10:44:40  m168309
+ * Revision 1.9  2011-09-22 14:18:01  europe\m168309
+ * Deprecated attribute soap=true in JmsSender/JmsListener
+ *
+ * Revision 1.8  2011/06/22 10:44:40  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * improved logging
  *
  * Revision 1.7  2011/06/06 12:26:32  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -36,12 +39,14 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.HasSender;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.soap.SoapWrapper;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DateUtils;
 
 import org.apache.commons.lang.StringUtils;
@@ -74,7 +79,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setForceMessageIdAsCorrelationId(boolean) forceMessageIdAsCorrelationId}</td><td>
  * forces that the CorrelationId that is received is ignored and replaced by the messageId that is received. Use this to create a new, globally unique correlationId to be used downstream. It also
  * forces that not the Correlation ID of the received message is used in a reply as CorrelationId, but the MessageId.</td><td>false</td></tr>
- * <tr><td>{@link #setSoap(boolean) soap}</td><td>when <code>true</code>, messages sent are put in a SOAP envelope</td><td><code>false</code></td></tr>
+ * <tr><td>{@link #setSoap(boolean) soap} <i>deprecated</i></td><td>when <code>true</code>, messages sent are put in a SOAP envelope</td><td><code>false</code></td></tr>
  * <tr><td>{@link #setSoapAction(String) soapAction}</td><td>SoapAction string sent as messageproperty</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSoapHeaderParam(String) soapHeaderParam}</td><td>name of parameter containing SOAP header</td><td>soapHeader</td></tr>
  * </table>
@@ -358,6 +363,11 @@ public class JmsListenerBase extends JMSFacade implements HasSender {
 	}
 
 	public void setSoap(boolean b) {
+		if (b) {
+			ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+			String msg = ClassUtils.nameOf(this)+" ["+getName()+"]: the use of attribute soap=true has been deprecated. Please change to SoapWrapperPipe";
+			configWarnings.add(log, msg);
+		}
 		soap = b;
 	}
 	public boolean isSoap() {

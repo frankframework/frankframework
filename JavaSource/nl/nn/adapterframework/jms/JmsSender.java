@@ -1,6 +1,9 @@
 /*
  * $Log: JmsSender.java,v $
- * Revision 1.43  2011-06-06 14:32:29  L190409
+ * Revision 1.44  2011-09-22 14:18:01  europe\m168309
+ * Deprecated attribute soap=true in JmsSender/JmsListener
+ *
+ * Revision 1.43  2011/06/06 14:32:29  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fixed NPE in getting contents of reply message
  *
  * Revision 1.42  2011/06/06 12:26:16  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -138,6 +141,7 @@ import javax.naming.NamingException;
 import javax.xml.transform.TransformerException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IPostboxSender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.ParameterException;
@@ -149,6 +153,7 @@ import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.soap.SoapWrapper;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
 
 import org.apache.commons.lang.StringUtils;
@@ -177,7 +182,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * <tr><td>{@link #setPersistent(boolean) persistent}</td><td>rather useless attribute, and not the same as delivery mode. You probably want to use that.</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setUseDynamicReplyQueue(boolean) useDynamicReplyQueue}</td><td>when <code>true</code>, a temporary queue is used to receive a reply</td><td>false</td></tr>
- * <tr><td>{@link #setSoap(boolean) soap}</td><td>when <code>true</code>, messages sent are put in a SOAP envelope</td><td><code>false</code></td></tr>
+ * <tr><td>{@link #setSoap(boolean) soap} <i>deprecated</i></td><td>when <code>true</code>, messages sent are put in a SOAP envelope</td><td><code>false</code></td></tr>
  * <tr><td>{@link #setSoapAction(String) soapAction}</td><td>SoapAction string sent as messageproperty</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSoapHeaderParam(String) soapHeaderParam}</td><td>name of parameter containing SOAP header</td><td>soapHeader</td></tr>
  * <tr><td>{@link #setReplySoapHeaderSessionKey(String) replySoapHeaderSessionKey}</td><td>session key to store SOAP header of reply</td><td>soapHeader</td></tr>
@@ -498,6 +503,11 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 	}
 
 	public void setSoap(boolean b) {
+		if (b) {
+			ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+			String msg = ClassUtils.nameOf(this)+" ["+getName()+"]: the use of attribute soap=true has been deprecated. Please change to SoapWrapperPipe";
+			configWarnings.add(log, msg);
+		}
 		soap = b;
 	}
 	public boolean isSoap() {
