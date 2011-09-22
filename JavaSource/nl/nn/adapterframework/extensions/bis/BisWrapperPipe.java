@@ -1,6 +1,9 @@
 /*
  * $Log: BisWrapperPipe.java,v $
- * Revision 1.5  2011-09-22 08:45:22  europe\m168309
+ * Revision 1.6  2011-09-22 08:54:07  europe\m168309
+ * corrected javadoc
+ *
+ * Revision 1.5  2011/09/22 08:45:22  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added attributes removeOutputNamespaces, omitResult and addOutputNamespace for the purpose of the migration from IFSA to TIBCO
  *
  * Revision 1.4  2011/09/16 13:30:21  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -168,7 +171,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>{@link #setRemoveOutputNamespaces(boolean) removeOutputNamespaces}</td><td>(only used when direction=unwrap) when set <code>true</code> namespaces (and prefixes) in the output are removed</td><td>false</td></tr>
- * <tr><td>{@link #setOmitResult(boolean) omitResult}</td>(only used when direction=wrap) <td>when <code>true</code>, the Result is omitted and instead of Result/Status 'ERROR' a PipeRunException is thrown</td><td><code>false</code></td></tr>
+ * <tr><td>{@link #setOmitResult(boolean) omitResult}</td><td>(only used when direction=wrap) when <code>true</code>, the Result is omitted and instead of Result/Status 'ERROR' a PipeRunException is thrown</td><td><code>false</code></td></tr>
  * <tr><td>{@link #setAddOutputNamespace(boolean) addOutputNamespace}</td><td>(only used when direction=unwrap) when set <code>true</code> the <code>outputNamespace</code> is added to the output root element in the SOAP body</td><td>false</td></tr>
  * </table></p>
  * <p><b>Exits:</b>
