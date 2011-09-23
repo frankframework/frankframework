@@ -1,6 +1,9 @@
 /*
  * $Log: SoapWrapperPipe.java,v $
- * Revision 1.1  2011-09-14 14:14:01  europe\m168309
+ * Revision 1.2  2011-09-23 11:33:25  europe\m168309
+ * added attributes encodingStyle and serviceNamespace
+ *
+ * Revision 1.1  2011/09/14 14:14:01  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * first version
  *
  *
@@ -29,6 +32,8 @@ import nl.nn.adapterframework.util.DomBuilderException;
  * <tr><td>{@link #setName(String) name}</td><td>name of the Pipe</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setDirection(String) direction}</td><td>either <code>wrap</code> or <code>unwrap</code></td><td>wrap</td></tr>
  * <tr><td>{@link #setSoapHeaderSessionKey(String) soapHeaderSessionKey}</td><td>
+ * <tr><td>{@link #setEncodingStyle(String) encodingStyle}</td><td>the encodingStyle to be set in the messageheader</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setServiceNamespace(String) serviceNamespace}</td><td>the namespace of the message sent. Identifies the service to be called. May be overriden by an actual namespace setting in the message to be sent</td><td>&nbsp;</td></tr>
  * <table> 
  * <tr><td><code>direction=unwrap</code></td><td>name of the session key to store the SOAP header from the request in</td></tr>
  * <tr><td><code>direction=wrap</code></td><td>name of the session key to retrieve the SOAP header for the response from</td></tr>
@@ -49,6 +54,8 @@ import nl.nn.adapterframework.util.DomBuilderException;
 public class SoapWrapperPipe extends FixedForwardPipe {
 	private String direction = "wrap";
 	private String soapHeaderSessionKey;
+	private String encodingStyle = null;
+	private String serviceNamespace = null;
 
 	private SoapWrapper soapWrapper = null;
 
@@ -84,7 +91,7 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 	}
 
 	protected String wrapMessage(String message, String soapHeader) throws DomBuilderException, TransformerException, IOException {
-		return soapWrapper.putInEnvelope(message, null, null, soapHeader);
+		return soapWrapper.putInEnvelope(message, getEncodingStyle(), getServiceNamespace(), soapHeader);
 	}
 
 	public String getDirection() {
@@ -99,5 +106,19 @@ public class SoapWrapperPipe extends FixedForwardPipe {
 	}
 	public String getSoapHeaderSessionKey() {
 		return soapHeaderSessionKey;
+	}
+
+	public void setEncodingStyle(String string) {
+		encodingStyle = string;
+	}
+	public String getEncodingStyle() {
+		return encodingStyle;
+	}
+
+	public void setServiceNamespace(String string) {
+		serviceNamespace = string;
+	}
+	public String getServiceNamespace() {
+		return serviceNamespace;
 	}
 }
