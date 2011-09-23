@@ -1,6 +1,9 @@
 /*
  * $Log: JmsListenerBase.java,v $
- * Revision 1.9  2011-09-22 14:18:01  europe\m168309
+ * Revision 1.10  2011-09-23 12:10:38  europe\m168309
+ * moved configWarning from method setSoap() to method Configuration()
+ *
+ * Revision 1.9  2011/09/22 14:18:01  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * Deprecated attribute soap=true in JmsSender/JmsListener
  *
  * Revision 1.8  2011/06/22 10:44:40  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -46,7 +49,6 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.soap.SoapWrapper;
-import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DateUtils;
 
 import org.apache.commons.lang.StringUtils;
@@ -114,6 +116,9 @@ public class JmsListenerBase extends JMSFacade implements HasSender {
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (isSoap()) {
+			ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+			String msg = getLogPrefix()+"the use of attribute soap=true has been deprecated. Please change to SoapWrapperPipe";
+			configWarnings.add(log, msg);
 			soapWrapper=SoapWrapper.getInstance();
 		}
 		ISender sender = getSender();
@@ -363,11 +368,6 @@ public class JmsListenerBase extends JMSFacade implements HasSender {
 	}
 
 	public void setSoap(boolean b) {
-		if (b) {
-			ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-			String msg = ClassUtils.nameOf(this)+" ["+getName()+"]: the use of attribute soap=true has been deprecated. Please change to SoapWrapperPipe";
-			configWarnings.add(log, msg);
-		}
 		soap = b;
 	}
 	public boolean isSoap() {
