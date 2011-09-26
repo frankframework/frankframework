@@ -1,6 +1,9 @@
 /*
  * $Log: SoapWrapper.java,v $
- * Revision 1.14  2011-09-16 12:02:17  europe\m168309
+ * Revision 1.15  2011-09-26 11:46:40  l190409
+ * corrected namespace prefix for faultcode
+ *
+ * Revision 1.14  2011/09/16 12:02:17  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added method createSoapFaultMessage()
  *
  * Revision 1.13  2011/05/04 11:42:56  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -98,7 +101,6 @@ import org.w3c.dom.Document;
  * @version Id
  */
 public class SoapWrapper {
-	public static final String version="$RCSfile: SoapWrapper.java,v $ $Revision: 1.14 $ $Date: 2011-09-16 12:02:17 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private TransformerPool extractBody;
@@ -268,7 +270,7 @@ public class SoapWrapper {
 	}
 
 	public String createSoapFaultMessage(String faultstring) {
-		return createSoapFaultMessage("SOAP-ENV:Server", faultstring);
+		return createSoapFaultMessage("soapenv:Server", faultstring);
 	}
 
 	public String signMessage(String soapMessage, String user, String password) throws SenderException {
