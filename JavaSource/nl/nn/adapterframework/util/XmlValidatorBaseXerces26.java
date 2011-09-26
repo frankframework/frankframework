@@ -1,6 +1,9 @@
 /*
  * $Log: XmlValidatorBaseXerces26.java,v $
- * Revision 1.4  2011-09-26 11:25:40  l190409
+ * Revision 1.5  2011-09-26 17:05:47  l190409
+ * fixed dynamic schema selection
+ *
+ * Revision 1.4  2011/09/26 11:25:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * fix for threading problem (experimental)
  * show xsdlocation in error message for dynamic schemas too
  *
@@ -21,8 +24,9 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
-import java.util.HashSet;
-import java.util.Set;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -38,7 +42,6 @@ import org.apache.xerces.parsers.XMLGrammarPreparser;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.SynchronizedSymbolTable;
 import org.apache.xerces.util.XMLGrammarPoolImpl;
-import org.apache.xerces.xni.grammars.Grammar;
 import org.apache.xerces.xni.grammars.XMLGrammarDescription;
 import org.apache.xerces.xni.parser.XMLInputSource;
 import org.apache.xerces.xni.parser.XMLParserConfiguration;
@@ -118,12 +121,9 @@ public class XmlValidatorBaseXerces26 extends XmlValidatorBaseBase {
     
     
 	private String globalSchema=null;
+	private XMLParserConfiguration globalParserConfig=null;
+	private Map parserConfigurations;
 
-	private SymbolTable sym = new SymbolTable(BIG_PRIME);
-	private XMLGrammarPreparser preparser = new XMLGrammarPreparser(sym);
-	private XMLGrammarPoolImpl grammarPool = new XMLGrammarPoolImpl();
-	private XMLParserConfiguration parserConfiguration;
-	private Set loadedSchemas=new HashSet();
 	
 	// a larg(ish) prime to use for a symbol table to be shared
     // among
@@ -133,12 +133,6 @@ public class XmlValidatorBaseXerces26 extends XmlValidatorBaseBase {
 	
 	public void configure(String logPrefix) throws ConfigurationException {
 		super.configure(logPrefix);
-        preparser.registerPreparser(XMLGrammarDescription.XML_SCHEMA, null);
-        preparser.setProperty(GRAMMAR_POOL, grammarPool);
-        preparser.setFeature(NAMESPACES_FEATURE_ID, true);
-        preparser.setFeature(VALIDATION_FEATURE_ID, true);
-        preparser.setFeature(SCHEMA_VALIDATION_FEATURE_ID, true);
-        preparser.setFeature(SCHEMA_FULL_CHECKING_FEATURE_ID, isFullSchemaChecking());
 		if (StringUtils.isNotEmpty(getNoNamespaceSchemaLocation()) ||
 			StringUtils.isNotEmpty(getSchemaLocation())) {
 			globalSchema=getSchemaLocation();
@@ -147,45 +141,72 @@ public class XmlValidatorBaseXerces26 extends XmlValidatorBaseBase {
 			}
 			try {
 				if (StringUtils.isEmpty(getSchemaLocation())) {
-					parseSchema(null,globalSchema);
+					globalParserConfig = createParserConfiguration(globalSchema, true);
 				} else {
-					StringTokenizer st = new StringTokenizer(globalSchema);
-					while (st.hasMoreElements()) {
-						String publicId=st.nextToken();
-						String systemId=st.nextToken();
-						log.debug("parsing publicId ["+publicId+"] for systemId ["+systemId+"]");
-						parseSchema(publicId,systemId);
-					}
+					globalParserConfig = createParserConfiguration(globalSchema, false);
 				}
 			} catch (XmlValidatorException e) {
 				throw new ConfigurationException(e);
 			} catch (Exception e) {
 				throw new ConfigurationException("cannot compile schema for [" + globalSchema + "]", e);
 			}
+		} else {
+			parserConfigurations=new HashMap();
 		}
-        parserConfiguration = new IntegratedParserConfiguration(new SynchronizedSymbolTable(sym), new CachingParserPool.SynchronizedGrammarPool(grammarPool));
-        try{
-            parserConfiguration.setFeature(NAMESPACES_FEATURE_ID, true);
-            parserConfiguration.setFeature(VALIDATION_FEATURE_ID, true);
-            parserConfiguration.setFeature(SCHEMA_VALIDATION_FEATURE_ID, true);
-            parserConfiguration.setFeature(SCHEMA_FULL_CHECKING_FEATURE_ID, isFullSchemaChecking());
-        } catch (Exception e) {
-			throw new ConfigurationException("cannot set parser features", e);
-        }
 	}
  
-	private synchronized void parseSchema(String publicId, String systemId) throws XmlValidatorException {
-    	if (!loadedSchemas.contains(systemId)) {
-    		try {
-    			Grammar g = preparser.preparseGrammar(XMLGrammarDescription.XML_SCHEMA, stringToXIS(publicId,systemId));
-        		loadedSchemas.add(systemId);
-			} catch (Exception e) {
-				throw new XmlValidatorException("cannot compile schema for [" + systemId + "]",e);
-			}
-    	}
+	private void parseSchema(XMLGrammarPreparser preparser, String publicId, String systemId) throws XmlValidatorException {
+		try {
+			preparser.preparseGrammar(XMLGrammarDescription.XML_SCHEMA, stringToXIS(publicId,systemId));
+		} catch (Exception e) {
+			throw new XmlValidatorException("cannot compile schema for [" + systemId + "]",e);
+		}
 	}
 	
+	private XMLParserConfiguration createParserConfiguration(String schemas, boolean singleSchema) throws XmlValidatorException {
+		SymbolTable sym = new SymbolTable(BIG_PRIME);
+		XMLGrammarPreparser preparser = new XMLGrammarPreparser(sym);
+		XMLGrammarPoolImpl grammarPool = new XMLGrammarPoolImpl();
+		XMLParserConfiguration parserConfiguration;
+		
+        preparser.registerPreparser(XMLGrammarDescription.XML_SCHEMA, null);
+        preparser.setProperty(GRAMMAR_POOL, grammarPool);
+        preparser.setFeature(NAMESPACES_FEATURE_ID, true);
+        preparser.setFeature(VALIDATION_FEATURE_ID, true);
+        preparser.setFeature(SCHEMA_VALIDATION_FEATURE_ID, true);
+        preparser.setFeature(SCHEMA_FULL_CHECKING_FEATURE_ID, isFullSchemaChecking());
 
+		if (singleSchema) {
+			parseSchema(preparser, null,schemas);
+		} else {
+			StringTokenizer st = new StringTokenizer(schemas);
+			while (st.hasMoreElements()) {
+				String publicId=st.nextToken();
+				String systemId=st.nextToken();
+				log.debug("parsing publicId ["+publicId+"] for systemId ["+systemId+"]");
+				parseSchema(preparser, publicId,systemId);
+			}
+		}
+        
+        parserConfiguration = new IntegratedParserConfiguration(new SynchronizedSymbolTable(sym), new CachingParserPool.SynchronizedGrammarPool(grammarPool));
+
+        parserConfiguration.setFeature(NAMESPACES_FEATURE_ID, true);
+        parserConfiguration.setFeature(VALIDATION_FEATURE_ID, true);
+        parserConfiguration.setFeature(SCHEMA_VALIDATION_FEATURE_ID, true);
+        parserConfiguration.setFeature(SCHEMA_FULL_CHECKING_FEATURE_ID, isFullSchemaChecking());
+        
+        return parserConfiguration;
+	}
+
+	private synchronized XMLParserConfiguration getParserConfiguration(String schemas, boolean singleSchema) throws XmlValidatorException {
+		XMLParserConfiguration result=(XMLParserConfiguration)parserConfigurations.get(schemas);
+		if (result==null) {
+			result=createParserConfiguration(schemas,singleSchema);
+			parserConfigurations.put(schemas, result);
+		}
+		return result;
+	}
+	
 	/**
       * Validate the XML string
       * @param input a String
@@ -208,7 +229,8 @@ public class XmlValidatorBaseXerces26 extends XmlValidatorBaseBase {
 		}
 
 		String schema=globalSchema;
-		if (globalSchema==null) {
+		XMLParserConfiguration parserConfig=globalParserConfig;
+		if (parserConfig==null) {
    			// now look for the new session way
    			String schemaSessionKey = getSchemaSessionKey();
    			String schemaLocation;
@@ -217,7 +239,14 @@ public class XmlValidatorBaseXerces26 extends XmlValidatorBaseBase {
    			} else {
    				throw new XmlValidatorException(logPrefix+ "cannot retrieve xsd from session variable [" + getSchemaSessionKey() + "]");
     		}
-   			parseSchema(null,schemaLocation);
+			URL url = ClassUtils.getResourceURL(this, schemaLocation);
+			if (url==null) {
+				throw new XmlValidatorException(logPrefix+"could not find schema at ["+schemaLocation+"]");
+			}
+			String resolvedLocation =url.toExternalForm();
+			log.info(logPrefix+"resolved noNamespaceSchemaLocation ["+schemaLocation+"] to ["+resolvedLocation+"]");
+
+			parserConfig=getParserConfiguration(resolvedLocation, true);
    			schema=schemaLocation;
         }
 		
@@ -225,7 +254,7 @@ public class XmlValidatorBaseXerces26 extends XmlValidatorBaseBase {
 		
 		XMLReader parser=null;
 		try {
-			parser=getParser();
+			parser=getParser(parserConfig);
 			if (parser==null) {
 				throw new XmlValidatorException(logPrefix+ "could not obtain parser");
 			}
@@ -284,7 +313,7 @@ public class XmlValidatorBaseXerces26 extends XmlValidatorBaseBase {
     /**
      * Get a configured parser.
      */
-    private XMLReader getParser() throws SAXNotRecognizedException, SAXNotSupportedException, SAXException {
+    private XMLReader getParser(XMLParserConfiguration parserConfiguration) throws SAXNotRecognizedException, SAXNotSupportedException, SAXException {
     	
     	XMLReader parser = new SAXParser(parserConfiguration); 
         return parser;
