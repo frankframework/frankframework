@@ -1,6 +1,10 @@
 /*
  * $Log: XmlValidatorBaseXerces26.java,v $
- * Revision 1.3  2011-09-13 13:40:01  l190409
+ * Revision 1.4  2011-09-26 11:25:40  l190409
+ * fix for threading problem (experimental)
+ * show xsdlocation in error message for dynamic schemas too
+ *
+ * Revision 1.3  2011/09/13 13:40:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * avoid NPE in error handling when rootElement not yet parsed
  *
  * Revision 1.2  2011/09/12 14:27:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -27,10 +31,12 @@ import nl.nn.adapterframework.core.PipeRunException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.xerces.impl.Constants;
+import org.apache.xerces.parsers.CachingParserPool;
 import org.apache.xerces.parsers.IntegratedParserConfiguration;
 import org.apache.xerces.parsers.SAXParser;
 import org.apache.xerces.parsers.XMLGrammarPreparser;
 import org.apache.xerces.util.SymbolTable;
+import org.apache.xerces.util.SynchronizedSymbolTable;
 import org.apache.xerces.util.XMLGrammarPoolImpl;
 import org.apache.xerces.xni.grammars.Grammar;
 import org.apache.xerces.xni.grammars.XMLGrammarDescription;
@@ -157,7 +163,7 @@ public class XmlValidatorBaseXerces26 extends XmlValidatorBaseBase {
 				throw new ConfigurationException("cannot compile schema for [" + globalSchema + "]", e);
 			}
 		}
-        parserConfiguration = new IntegratedParserConfiguration(sym, grammarPool);
+        parserConfiguration = new IntegratedParserConfiguration(new SynchronizedSymbolTable(sym), new CachingParserPool.SynchronizedGrammarPool(grammarPool));
         try{
             parserConfiguration.setFeature(NAMESPACES_FEATURE_ID, true);
             parserConfiguration.setFeature(VALIDATION_FEATURE_ID, true);
@@ -212,6 +218,7 @@ public class XmlValidatorBaseXerces26 extends XmlValidatorBaseBase {
    				throw new XmlValidatorException(logPrefix+ "cannot retrieve xsd from session variable [" + getSchemaSessionKey() + "]");
     		}
    			parseSchema(null,schemaLocation);
+   			schema=schemaLocation;
         }
 		
 		XmlErrorHandler xeh;
