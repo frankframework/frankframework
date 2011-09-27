@@ -1,6 +1,9 @@
 /*
  * $Log: XmlValidatorBaseXerces26.java,v $
- * Revision 1.6  2011-09-26 17:18:47  l190409
+ * Revision 1.7  2011-09-27 15:16:03  l190409
+ * remove hard coding
+ *
+ * Revision 1.6  2011/09/26 17:18:47  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * document schemaSessionKey
  *
  * Revision 1.5  2011/09/26 17:05:47  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -111,16 +114,20 @@ public class XmlValidatorBaseXerces26 extends XmlValidatorBaseBase {
     // feature ids
 
     /** Namespaces feature id (http://xml.org/sax/features/namespaces). */
-    protected static final String NAMESPACES_FEATURE_ID = "http://xml.org/sax/features/namespaces";
+    protected static final String NAMESPACES_FEATURE_ID = Constants.SAX_FEATURE_PREFIX+Constants.NAMESPACES_FEATURE;
 
     /** Validation feature id (http://xml.org/sax/features/validation). */
-    protected static final String VALIDATION_FEATURE_ID = "http://xml.org/sax/features/validation";
+    protected static final String VALIDATION_FEATURE_ID = Constants.SAX_FEATURE_PREFIX+Constants.VALIDATION_FEATURE;
 
     /** Schema validation feature id (http://apache.org/xml/features/validation/schema). */
-    protected static final String SCHEMA_VALIDATION_FEATURE_ID = "http://apache.org/xml/features/validation/schema";
+    protected static final String SCHEMA_VALIDATION_FEATURE_ID = Constants.XERCES_FEATURE_PREFIX+Constants.SCHEMA_VALIDATION_FEATURE;
 
     /** Schema full checking feature id (http://apache.org/xml/features/validation/schema-full-checking). */
-    protected static final String SCHEMA_FULL_CHECKING_FEATURE_ID = "http://apache.org/xml/features/validation/schema-full-checking";
+    protected static final String SCHEMA_FULL_CHECKING_FEATURE_ID = Constants.XERCES_FEATURE_PREFIX+Constants.SCHEMA_FULL_CHECKING;
+    
+    protected static final String REASON_ERROR="parserError";
+    protected static final String REASON_INVALID="failure";
+    protected static final String REASON_WRONG_ROOT="illegalRoot";
     
     
 	private String globalSchema=null;
@@ -214,8 +221,9 @@ public class XmlValidatorBaseXerces26 extends XmlValidatorBaseBase {
       * Validate the XML string
       * @param input a String
       * @param session a {@link nl.nn.adapterframework.core.PipeLineSession Pipelinesession}
+      * @return MonitorEvent declared in{@link XmlValidatorBaseBase} 
 
-      * @throws PipeRunException when <code>isThrowException</code> is true and a validationerror occurred.
+      * @throws XmlValidatorException when <code>isThrowException</code> is true and a validationerror occurred.
       */
     public String validate(Object input, PipeLineSession session, String logPrefix) throws XmlValidatorException {
 
@@ -291,7 +299,7 @@ public class XmlValidatorBaseXerces26 extends XmlValidatorBaseBase {
         try {
             parser.parse(is);
          } catch (Exception e) {
-			return handleFailures(xeh,session,"", "parserError", XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT, e);
+			return handleFailures(xeh,session,"", REASON_ERROR, XML_VALIDATOR_PARSER_ERROR_MONITOR_EVENT, e);
         }
 
         if (StringUtils.isNotEmpty(getRoot())) {
@@ -300,14 +308,14 @@ public class XmlValidatorBaseXerces26 extends XmlValidatorBaseBase {
 			if (illegalRoot) {
 				String str = "got xml with root element ["+parsedRootElementName+"] instead of ["+getRoot()+"]";
 				xeh.addReason(str,"");
-				return handleFailures(xeh,session,"","illegalRoot", XML_VALIDATOR_ILLEGAL_ROOT_MONITOR_EVENT, null);
+				return handleFailures(xeh,session,"",REASON_WRONG_ROOT, XML_VALIDATOR_ILLEGAL_ROOT_MONITOR_EVENT, null);
 			} 
         }
 		boolean isValid = !(xeh.hasErrorOccured());
 		
 		if (!isValid) { 
 			String mainReason = logPrefix + "got invalid xml according to schema [" + schema + "]";
-			return handleFailures(xeh,session,mainReason,"failure", XML_VALIDATOR_NOT_VALID_MONITOR_EVENT, null);
+			return handleFailures(xeh,session,mainReason,REASON_INVALID, XML_VALIDATOR_NOT_VALID_MONITOR_EVENT, null);
         }
 		return XML_VALIDATOR_VALID_MONITOR_EVENT;
     }
