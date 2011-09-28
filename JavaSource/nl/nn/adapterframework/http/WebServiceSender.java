@@ -1,6 +1,9 @@
 /*
  * $Log: WebServiceSender.java,v $
- * Revision 1.34  2011-09-28 06:49:08  europe\m168309
+ * Revision 1.35  2011-09-28 08:01:11  europe\m168309
+ * removed configWarning soap=true
+ *
+ * Revision 1.34  2011/09/28 06:49:08  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added soap attribute
  *
  * Revision 1.33  2011/06/27 15:52:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -210,11 +213,11 @@ public class WebServiceSender extends HttpSender {
 
 	public void configure() throws ConfigurationException {
 		super.configure();
-		/*if (isSoap()) {
-			ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-			String msg = getLogPrefix()+"the use of attribute soap=true has been deprecated. Please change to SoapWrapperPipe";
-			configWarnings.add(log, msg);
-		}*/
+		if (isSoap()) {
+			//ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+			//String msg = getLogPrefix()+"the use of attribute soap=true has been deprecated. Please change to SoapWrapperPipe";
+			//configWarnings.add(log, msg);
+		}
 		soapWrapper=SoapWrapper.getInstance();
 		
 		if (paramList!=null && StringUtils.isNotEmpty(getSoapActionParam())) {

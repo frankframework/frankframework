@@ -1,6 +1,9 @@
 /*
  * $Log: JmsSender.java,v $
- * Revision 1.46  2011-09-28 06:40:23  europe\m168309
+ * Revision 1.47  2011-09-28 08:01:11  europe\m168309
+ * removed configWarning soap=true
+ *
+ * Revision 1.46  2011/09/28 06:40:23  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * removed configWarning soap=true
  *
  * Revision 1.45  2011/09/23 12:10:37  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -237,12 +240,12 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 			paramList.configure();
 		}
 		super.configure();
-		/*if (isSoap()) {
-			ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-			String msg = getLogPrefix()+"the use of attribute soap=true has been deprecated. Please change to SoapWrapperPipe";
-			configWarnings.add(log, msg);
+		if (isSoap()) {
+			//ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+			//String msg = getLogPrefix()+"the use of attribute soap=true has been deprecated. Please change to SoapWrapperPipe";
+			//configWarnings.add(log, msg);
 			soapWrapper=SoapWrapper.getInstance();
-		}*/
+		}
 	}
 
 	/**

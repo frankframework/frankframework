@@ -1,6 +1,9 @@
 /*
  * $Log: WebServiceListener.java,v $
- * Revision 1.16  2011-09-28 06:49:08  europe\m168309
+ * Revision 1.17  2011-09-28 08:01:11  europe\m168309
+ * removed configWarning soap=true
+ *
+ * Revision 1.16  2011/09/28 06:49:08  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added soap attribute
  *
  * Revision 1.15  2011/08/22 09:45:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -110,12 +113,12 @@ public class WebServiceListener extends PushingListenerAdapter implements Serial
 	 */
 	public void configure() throws ConfigurationException {
 		super.configure();
-		/*if (isSoap()) {
-			ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-			String msg = ClassUtils.nameOf(this) +"["+getName()+"]: the use of attribute soap=true has been deprecated. Please change to SoapWrapperPipe";
-			configWarnings.add(log, msg);
+		if (isSoap()) {
+			//ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+			//String msg = ClassUtils.nameOf(this) +"["+getName()+"]: the use of attribute soap=true has been deprecated. Please change to SoapWrapperPipe";
+			//configWarnings.add(log, msg);
 			soapWrapper=SoapWrapper.getInstance();
-		}*/
+		}
 		try {
 			if (StringUtils.isNotEmpty(getServiceNamespaceURI())) {
 				log.debug("registering listener ["+getName()+"] with ServiceDispatcher by serviceNamespaceURI ["+getServiceNamespaceURI()+"]");
