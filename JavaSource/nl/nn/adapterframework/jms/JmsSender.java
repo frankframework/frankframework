@@ -1,6 +1,9 @@
 /*
  * $Log: JmsSender.java,v $
- * Revision 1.45  2011-09-23 12:10:37  europe\m168309
+ * Revision 1.46  2011-09-28 06:40:23  europe\m168309
+ * removed configWarning soap=true
+ *
+ * Revision 1.45  2011/09/23 12:10:37  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * moved configWarning from method setSoap() to method Configuration()
  *
  * Revision 1.44  2011/09/22 14:18:01  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -144,7 +147,7 @@ import javax.naming.NamingException;
 import javax.xml.transform.TransformerException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+//import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IPostboxSender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.ParameterException;
@@ -234,12 +237,12 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, IPost
 			paramList.configure();
 		}
 		super.configure();
-		if (isSoap()) {
+		/*if (isSoap()) {
 			ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 			String msg = getLogPrefix()+"the use of attribute soap=true has been deprecated. Please change to SoapWrapperPipe";
 			configWarnings.add(log, msg);
 			soapWrapper=SoapWrapper.getInstance();
-		}
+		}*/
 	}
 
 	/**

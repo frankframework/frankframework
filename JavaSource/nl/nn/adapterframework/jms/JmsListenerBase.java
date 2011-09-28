@@ -1,6 +1,9 @@
 /*
  * $Log: JmsListenerBase.java,v $
- * Revision 1.10  2011-09-23 12:10:38  europe\m168309
+ * Revision 1.11  2011-09-28 06:40:11  europe\m168309
+ * removed configWarning soap=true
+ *
+ * Revision 1.10  2011/09/23 12:10:38  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * moved configWarning from method setSoap() to method Configuration()
  *
  * Revision 1.9  2011/09/22 14:18:01  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -42,7 +45,7 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+//import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.HasSender;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ListenerException;
@@ -115,12 +118,12 @@ public class JmsListenerBase extends JMSFacade implements HasSender {
 
 	public void configure() throws ConfigurationException {
 		super.configure();
-		if (isSoap()) {
+		/*if (isSoap()) {
 			ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 			String msg = getLogPrefix()+"the use of attribute soap=true has been deprecated. Please change to SoapWrapperPipe";
 			configWarnings.add(log, msg);
 			soapWrapper=SoapWrapper.getInstance();
-		}
+		}*/
 		ISender sender = getSender();
 		if (sender != null) {
 			sender.configure();
