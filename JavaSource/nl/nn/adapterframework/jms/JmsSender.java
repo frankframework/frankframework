@@ -1,6 +1,9 @@
 /*
  * $Log: JmsSender.java,v $
- * Revision 1.47  2011-09-28 08:01:11  europe\m168309
+ * Revision 1.48  2011-09-28 08:30:07  europe\m168309
+ * corrected javadoc
+ *
+ * Revision 1.47  2011/09/28 08:01:11  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * removed configWarning soap=true
  *
  * Revision 1.46  2011/09/28 06:40:23  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -190,7 +193,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * <tr><td>{@link #setPersistent(boolean) persistent}</td><td>rather useless attribute, and not the same as delivery mode. You probably want to use that.</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setJmsRealm(String) jmsRealm}</td><td>&nbsp;</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setUseDynamicReplyQueue(boolean) useDynamicReplyQueue}</td><td>when <code>true</code>, a temporary queue is used to receive a reply</td><td>false</td></tr>
- * <tr><td>{@link #setSoap(boolean) soap} <i>deprecated</i></td><td>when <code>true</code>, messages sent are put in a SOAP envelope</td><td><code>false</code></td></tr>
+ * <tr><td>{@link #setSoap(boolean) soap}</td><td>when <code>true</code>, messages sent are put in a SOAP envelope</td><td><code>false</code></td></tr>
  * <tr><td>{@link #setSoapAction(String) soapAction}</td><td>SoapAction string sent as messageproperty</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSoapHeaderParam(String) soapHeaderParam}</td><td>name of parameter containing SOAP header</td><td>soapHeader</td></tr>
  * <tr><td>{@link #setReplySoapHeaderSessionKey(String) replySoapHeaderSessionKey}</td><td>session key to store SOAP header of reply</td><td>soapHeader</td></tr>

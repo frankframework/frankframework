@@ -1,6 +1,9 @@
 /*
  * $Log: JmsListenerBase.java,v $
- * Revision 1.12  2011-09-28 08:01:11  europe\m168309
+ * Revision 1.13  2011-09-28 08:30:07  europe\m168309
+ * corrected javadoc
+ *
+ * Revision 1.12  2011/09/28 08:01:11  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * removed configWarning soap=true
  *
  * Revision 1.11  2011/09/28 06:40:11  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -87,7 +90,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setForceMessageIdAsCorrelationId(boolean) forceMessageIdAsCorrelationId}</td><td>
  * forces that the CorrelationId that is received is ignored and replaced by the messageId that is received. Use this to create a new, globally unique correlationId to be used downstream. It also
  * forces that not the Correlation ID of the received message is used in a reply as CorrelationId, but the MessageId.</td><td>false</td></tr>
- * <tr><td>{@link #setSoap(boolean) soap} <i>deprecated</i></td><td>when <code>true</code>, messages sent are put in a SOAP envelope</td><td><code>false</code></td></tr>
+ * <tr><td>{@link #setSoap(boolean) soap}</td><td>when <code>true</code>, messages sent are put in a SOAP envelope</td><td><code>false</code></td></tr>
  * <tr><td>{@link #setSoapAction(String) soapAction}</td><td>SoapAction string sent as messageproperty</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSoapHeaderParam(String) soapHeaderParam}</td><td>name of parameter containing SOAP header</td><td>soapHeader</td></tr>
  * </table>

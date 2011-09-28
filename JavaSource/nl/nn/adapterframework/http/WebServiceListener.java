@@ -1,6 +1,9 @@
 /*
  * $Log: WebServiceListener.java,v $
- * Revision 1.17  2011-09-28 08:01:11  europe\m168309
+ * Revision 1.18  2011-09-28 08:30:07  europe\m168309
+ * corrected javadoc
+ *
+ * Revision 1.17  2011/09/28 08:01:11  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * removed configWarning soap=true
  *
  * Revision 1.16  2011/09/28 06:49:08  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -89,7 +92,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.http.WebServiceListener</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the listener as known to the adapter</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setSoap(boolean) soap} <i>deprecated</i></td><td>when <code>true</code>, messages sent are put in a SOAP envelope</td><td><code>true</code></td></tr>
+ * <tr><td>{@link #setSoap(boolean) soap}</td><td>when <code>true</code>, messages sent are put in a SOAP envelope</td><td><code>true</code></td></tr>
  * <tr><td>{@link #setServiceNamespaceURI(String) serviceNamespaceURI}</td><td>namespace of the service that is provided by the adapter of this listener</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setApplicationFaultsAsSoapFaults(boolean) applicationFaultsAsSoapFaults}</td><td>Controls the behavior when an application-fault occurrs: 
  *   <table>
