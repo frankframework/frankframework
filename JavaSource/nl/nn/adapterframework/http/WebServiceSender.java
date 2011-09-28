@@ -1,6 +1,9 @@
 /*
  * $Log: WebServiceSender.java,v $
- * Revision 1.33  2011-06-27 15:52:59  L190409
+ * Revision 1.34  2011-09-28 06:49:08  europe\m168309
+ * added soap attribute
+ *
+ * Revision 1.33  2011/06/27 15:52:59  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * allow to set keyManagerAlgorithm and trustManagerAlgorithm
  *
  * Revision 1.32  2011/06/22 10:44:40  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -128,6 +131,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * <tr><td>{@link #setUrl(String) url}</td><td>URL or base of URL to be used </td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setUrlParam(String) urlParam}</td><td>parameter that is used to obtain url; overrides url-attribute.</td><td>url</td></tr>
  * <tr><td>{@link #setContentType(String) contentType}</td><td>content-type of the request, only for POST methods</td><td>text/xml; charset=UTF-8</td></tr>
+ * <tr><td>{@link #setSoap(boolean) soap} <i>deprecated</i></td><td>when <code>true</code>, messages sent are put in a SOAP envelope</td><td><code>true</code></td></tr>
  * <tr><td>{@link #setSoapAction(String) soapAction}</td><td>the SOAPActionUri to be set in the requestheader</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSoapActionURI(String) soapActionURI}</td><td>deprecated: Please use soapAction instead</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setSoapActionParam(String) soapActionParam}</td><td>parameter to obtain the SOAPActionUri</td><td>&nbsp;</td></tr>
@@ -176,6 +180,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  */
 public class WebServiceSender extends HttpSender {
 	
+	private boolean soap = true;
 	private String soapAction = "";
 	private String soapActionParam = "soapAction";
 	private String encodingStyle=null;
@@ -205,6 +210,11 @@ public class WebServiceSender extends HttpSender {
 
 	public void configure() throws ConfigurationException {
 		super.configure();
+		/*if (isSoap()) {
+			ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+			String msg = getLogPrefix()+"the use of attribute soap=true has been deprecated. Please change to SoapWrapperPipe";
+			configWarnings.add(log, msg);
+		}*/
 		soapWrapper=SoapWrapper.getInstance();
 		
 		if (paramList!=null && StringUtils.isNotEmpty(getSoapActionParam())) {
@@ -237,12 +247,16 @@ public class WebServiceSender extends HttpSender {
 			soapActionURI=getSoapAction();
 		}
 
-		String soapmsg= soapWrapper.putInEnvelope(message, getEncodingStyle(),serviceNamespaceURI, null, getNamespaceDefs());
+		String soapmsg;
+		if (isSoap()) {
+			soapmsg = soapWrapper.putInEnvelope(message, getEncodingStyle(),serviceNamespaceURI, null, getNamespaceDefs());
+		} else {
+			soapmsg = message;
+		}
 
 		if (wsscf!=null) {
 			soapmsg = soapWrapper.signMessage(soapmsg,wsscf.getUsername(),wsscf.getPassword());
 		}
-		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"SOAPMSG [" + soapmsg + "]");
 
 		HttpMethod method = super.getMethod(uri, soapmsg,parameters);
 		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"setting Content-Type and SOAPAction header ["+soapActionURI+"]");
@@ -276,6 +290,12 @@ public class WebServiceSender extends HttpSender {
 		return ToStringBuilder.reflectionToString(this);
 	}
 
+	public void setSoap(boolean b) {
+		soap = b;
+	}
+	public boolean isSoap() {
+		return soap;
+	}
 
 	/**
 	 * @deprecated please use setSoapAction() instead

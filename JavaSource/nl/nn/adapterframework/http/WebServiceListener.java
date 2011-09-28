@@ -1,6 +1,9 @@
 /*
  * $Log: WebServiceListener.java,v $
- * Revision 1.15  2011-08-22 09:45:33  L190409
+ * Revision 1.16  2011-09-28 06:49:08  europe\m168309
+ * added soap attribute
+ *
+ * Revision 1.15  2011/08/22 09:45:33  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * temporarily disabled deprecation warning
  *
  * Revision 1.14  2011/06/20 13:20:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -62,12 +65,15 @@
 package nl.nn.adapterframework.http;
 
 import java.io.Serializable;
+import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
-import nl.nn.adapterframework.core.IPushingListener;
+//import nl.nn.adapterframework.core.IPushingListener;
+import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
+import nl.nn.adapterframework.soap.SoapWrapper;
 import nl.nn.adapterframework.util.ClassUtils;
 
 import org.apache.commons.lang.StringUtils;
@@ -80,6 +86,7 @@ import org.apache.commons.lang.StringUtils;
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
  * <tr><td>className</td><td>nl.nn.adapterframework.http.WebServiceListener</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setName(String) name}</td><td>name of the listener as known to the adapter</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setSoap(boolean) soap} <i>deprecated</i></td><td>when <code>true</code>, messages sent are put in a SOAP envelope</td><td><code>true</code></td></tr>
  * <tr><td>{@link #setServiceNamespaceURI(String) serviceNamespaceURI}</td><td>namespace of the service that is provided by the adapter of this listener</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setApplicationFaultsAsSoapFaults(boolean) applicationFaultsAsSoapFaults}</td><td>Controls the behavior when an application-fault occurrs: 
  *   <table>
@@ -93,14 +100,22 @@ import org.apache.commons.lang.StringUtils;
  */
 public class WebServiceListener extends PushingListenerAdapter implements Serializable, HasPhysicalDestination {
 
+	private boolean soap = true;
 	private String serviceNamespaceURI;
 	private boolean nag=false; // controls warning about deprecated call via ServiceDispatcher_ServiceProxy 
+	private SoapWrapper soapWrapper=null;
 
 	/**
 	 * initialize listener and register <code>this</code> to the JNDI
 	 */
 	public void configure() throws ConfigurationException {
 		super.configure();
+		/*if (isSoap()) {
+			ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+			String msg = ClassUtils.nameOf(this) +"["+getName()+"]: the use of attribute soap=true has been deprecated. Please change to SoapWrapperPipe";
+			configWarnings.add(log, msg);
+			soapWrapper=SoapWrapper.getInstance();
+		}*/
 		try {
 			if (StringUtils.isNotEmpty(getServiceNamespaceURI())) {
 				log.debug("registering listener ["+getName()+"] with ServiceDispatcher by serviceNamespaceURI ["+getServiceNamespaceURI()+"]");
@@ -119,12 +134,33 @@ public class WebServiceListener extends PushingListenerAdapter implements Serial
 		}
 	}
 
+	public String processRequest(String correlationId, String message, Map requestContext) throws ListenerException {
+		if (isSoap()) {
+			try {
+				String request = soapWrapper.getBody(message);
+				String result = super.processRequest(correlationId, request, requestContext);
+				String reply = soapWrapper.putInEnvelope(result,null);
+				return reply;
+			} catch (Exception e) {
+				throw new ListenerException(e);
+			}
+		} else {
+			return super.processRequest(correlationId, message, requestContext);
+		}
+	}
+
 	public String getPhysicalDestinationName() {
 		if (StringUtils.isNotEmpty(getServiceNamespaceURI())) {
 			return "serviceNamespaceURI ["+getServiceNamespaceURI()+"]";
 		} 		return "name ["+getName()+"]";
 	}
 
+	public void setSoap(boolean b) {
+		soap = b;
+	}
+	public boolean isSoap() {
+		return soap;
+	}
 
 	public String getServiceNamespaceURI() {
 		return serviceNamespaceURI;
