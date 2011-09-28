@@ -1,6 +1,9 @@
 /*
  * $Log: SoapGenericProvider.java,v $
- * Revision 1.5  2011-05-19 15:08:55  L190409
+ * Revision 1.6  2011-09-28 06:52:25  europe\m168309
+ * disabled automatic (un)wrapping soap envelope
+ *
+ * Revision 1.5  2011/05/19 15:08:55  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * use simplified ServiceDispatcher
  *
  * Revision 1.4  2011/02/21 17:55:25  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -29,7 +32,7 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
+//import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISecurityHandler;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.http.HttpSecurityHandler;
@@ -53,13 +56,13 @@ import org.apache.soap.util.Provider;
  * @author Gerrit van Brakel
  */
 public class SoapGenericProvider implements Provider {
-	public static final String version = "$RCSfile: SoapGenericProvider.java,v $ $Revision: 1.5 $ $Date: 2011-05-19 15:08:55 $";
+	public static final String version = "$RCSfile: SoapGenericProvider.java,v $ $Revision: 1.6 $ $Date: 2011-09-28 06:52:25 $";
 	protected Logger log=LogUtil.getLogger(this);
 	
 	private final String TARGET_OBJECT_URI_KEY = "TargetObjectNamespaceURI";
 
 	private ServiceDispatcher sd=null;
-	private SoapWrapper soapWrapper=null;
+	//private SoapWrapper soapWrapper=null;
 
 	public void locate(DeploymentDescriptor dd, Envelope env, Call call, String methodName, String targetObjectURI, SOAPContext reqContext)
 		throws SOAPException {
@@ -69,13 +72,13 @@ public class SoapGenericProvider implements Provider {
 		if (sd==null) {
 			sd= ServiceDispatcher.getInstance();
 		}
-		if (soapWrapper==null) {
+		/*if (soapWrapper==null) {
 			try {
 				soapWrapper = SoapWrapper.getInstance();
 			} catch (ConfigurationException e) {
 				throw new SOAPException(Constants.FAULT_CODE_SERVER, "cannot instantiate SoapWrapper");
 			}
-		}
+		}*/
 		if (StringUtils.isEmpty(targetObjectURI)) {
 			String msg="no targetObjectURI specified";
 			log.warn(msg);
@@ -96,13 +99,15 @@ public class SoapGenericProvider implements Provider {
 			if (log.isDebugEnabled()){
 				log.debug("Invoking service for targetObjectURI=[" +targetObjectURI+"]");
 			}
-			String message=soapWrapper.getBody(reqContext.getBodyPart(0).getContent().toString());
+			//String message=soapWrapper.getBody(reqContext.getBodyPart(0).getContent().toString());
+			String message=reqContext.getBodyPart(0).getContent().toString();
 			HttpServletRequest httpRequest=(HttpServletRequest) reqContext.getProperty(Constants.BAG_HTTPSERVLETREQUEST);
 			ISecurityHandler securityHandler = new HttpSecurityHandler(httpRequest);
 			Map messageContext= new HashMap();
 			messageContext.put(PipeLineSession.securityHandlerKey, securityHandler);
 			String result=sd.dispatchRequest(targetObjectURI, null, message, messageContext);
-			resContext.setRootPart( soapWrapper.putInEnvelope(result,null), Constants.HEADERVAL_CONTENT_TYPE_UTF8);
+			//resContext.setRootPart( soapWrapper.putInEnvelope(result,null), Constants.HEADERVAL_CONTENT_TYPE_UTF8);
+			resContext.setRootPart( result, Constants.HEADERVAL_CONTENT_TYPE_UTF8);
 				
 		 }
 		 catch( Exception e ) {
