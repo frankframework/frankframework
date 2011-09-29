@@ -1,6 +1,9 @@
 /*
  * $Log: IteratingPipe.java,v $
- * Revision 1.19  2010-07-12 12:52:00  L190409
+ * Revision 1.20  2011-09-29 09:28:50  europe\m168309
+ * added attributes addInputToResult and removeDuplicates
+ *
+ * Revision 1.19  2010/07/12 12:52:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * allow to specfiy namespace prefixes to be used in XPath-epressions
  *
  * Revision 1.18  2010/03/25 12:57:53  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -63,6 +66,7 @@ package nl.nn.adapterframework.pipes;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.Vector;
 
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -141,6 +145,8 @@ import org.apache.commons.lang.StringUtils;
  * <tr><td>{@link #setBlockPrefix(String) blockPrefix}</td><td>When <code>blockSize &gt; 0</code>, this string is inserted at the start of the set of lines.</td><td>&lt;block&gt;</td></tr>
  * <tr><td>{@link #setBlockSuffix(String) blockSuffix}</td><td>When <code>blockSize &gt; 0</code>, this string is inserted at the end of the set of lines.</td><td>&lt;/block&gt;</td></tr>
  * <tr><td>{@link #setItemNoSessionKey(String) itemNoSessionKey}</td><td>key of session variable to store number of item processed.</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setAddInputToResult(boolean) addInputToResult}</td><td>when <code>true</code> the input is added to the result in an input element</td><td>false</td></tr>
+ * <tr><td>{@link #setRemoveDuplicates(boolean) removeDuplicates}</td><td>when <code>true</code> duplicate input elements are removed</td><td>false</td></tr>
  * </table>
  * <table border="1">
  * <tr><th>nested elements</th><th>description</th></tr>
@@ -185,7 +191,7 @@ import org.apache.commons.lang.StringUtils;
  * @version Id
  */
 public abstract class IteratingPipe extends MessageSendingPipe {
-	public static final String version="$RCSfile: IteratingPipe.java,v $ $Revision: 1.19 $ $Date: 2010-07-12 12:52:00 $";
+	public static final String version="$RCSfile: IteratingPipe.java,v $ $Revision: 1.20 $ $Date: 2011-09-29 09:28:50 $";
 
 	private String stopConditionXPathExpression=null;
 	private boolean removeXmlDeclarationInResults=false;
@@ -196,6 +202,8 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 	private String styleSheetName;
 	private boolean omitXmlDeclaration=true;
 	private String itemNoSessionKey=null;
+	private boolean addInputToResult=false;
+	private boolean removeDuplicates=false;
 	
 	private boolean ignoreExceptions=false;
 
@@ -251,6 +259,7 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 		
 		private String results="";
 		int count=0;
+		private Vector inputItems = new Vector();
 		
 		public ItemCallback(PipeLineSession session, String correlationID, ISender sender) {
 			this.session=session;
@@ -261,6 +270,14 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 			}		
 		}
 		public boolean handleItem(String item) throws SenderException, TimeOutException {
+			if (isRemoveDuplicates()) {
+				if (inputItems.indexOf(item)>=0) {
+					log.debug(getLogPrefix(session)+"duplicate item ["+item+"] will not be processed");
+					return true;
+				} else {
+					inputItems.add(item);
+				}
+			}
 			String itemResult=null;
 			count++;
 			if (StringUtils.isNotEmpty(getItemNoSessionKey())) {
@@ -316,7 +333,11 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 						itemResult = XmlUtils.skipXmlDeclaration(itemResult);
 					} 
 					if (log.isDebugEnabled()) log.debug(getLogPrefix(session)+"partial result ["+itemResult+"]");
-					itemResult = "<result item=\"" + count + "\">\n"+itemResult+"\n</result>";
+					String itemInput="";
+					if (isAddInputToResult()) {
+						itemInput = "<input>"+(isRemoveXmlDeclarationInResults()?XmlUtils.skipXmlDeclaration(item):item)+"</input>";
+					}
+					itemResult = "<result item=\"" + count + "\">\n"+itemInput+itemResult+"\n</result>";
 					results += itemResult+"\n";
 				}
 
@@ -505,11 +526,24 @@ public abstract class IteratingPipe extends MessageSendingPipe {
 		return itemNoSessionKey;
 	}
 
+	public void setAddInputToResult(boolean b) {
+		addInputToResult = b;
+	}
+	public boolean isAddInputToResult() {
+		return addInputToResult;
+	}
+
+	public void setRemoveDuplicates(boolean b) {
+		removeDuplicates = b;
+	}
+	public boolean isRemoveDuplicates() {
+		return removeDuplicates;
+	}
+
 	protected void setCloseIteratorOnExit(boolean b) {
 		closeIteratorOnExit = b;
 	}
 	protected boolean isCloseIteratorOnExit() {
 		return closeIteratorOnExit;
 	}
-
 }
