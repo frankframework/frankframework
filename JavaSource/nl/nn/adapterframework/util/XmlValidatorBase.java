@@ -1,6 +1,9 @@
 /*
  * $Log: XmlValidatorBase.java,v $
- * Revision 1.2  2011-09-27 15:15:40  l190409
+ * Revision 1.3  2011-10-03 09:16:57  l190409
+ * fixed multithreading issue
+ *
+ * Revision 1.2  2011/09/27 15:15:40  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * restore old XmlValidator
  *
  * Revision 1.1  2011/08/22 09:51:36  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -42,5 +45,5 @@ package nl.nn.adapterframework.util;
  * N.B. noNamespaceSchemaLocation may contain spaces, but not if the schema is stored in a .jar or .zip file on the class path.
  * @author Gerrit van Brakel
  */
-public class XmlValidatorBase extends XmlValidatorBaseOld {
+public class XmlValidatorBase extends XmlValidatorBaseXerces26 {
 }
