@@ -1,6 +1,9 @@
 /*
  * $Log: FixedPositionRecordHandlerManager.java,v $
- * Revision 1.12  2011-08-25 12:39:38  m168309
+ * Revision 1.13  2011-10-04 09:51:51  l190409
+ * fixed typo in javadoc
+ *
+ * Revision 1.12  2011/08/25 12:39:38  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * avoid StringIndexOutOfBoundsException
  *
  * Revision 1.11  2008/06/30 08:54:20  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -54,14 +57,14 @@ import nl.nn.adapterframework.core.PipeLineSession;
  * <tr><td>{@link #setName(String) name}</td><td>Name of the manager</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setInitial(boolean) initial}</td><td>This manager is the initial manager, i.e. to be used for the first record</td><td>false</td></tr>
  * <tr><td>{@link #setStartPosition(int) startPosition}</td><td>Startposition of the field in the record that identifies the recordtype (first character is 0)</td><td>0</td></tr>
- * <tr><td>{@link #setEndPosition(int) endPosition}</td><td>if endPosition >= 0 the this field contains the endposition of the recordtype field in the record (else it depends on the length of the recordKey in the flow</td><td>-1</td></tr>
+ * <tr><td>{@link #setEndPosition(int) endPosition}</td><td>if endPosition >= 0 then this field contains the endposition of the recordtype field in the record; All characters beyond this position are ignored. Else, if endposition < 0 then it depends on the length of the recordKey in the flow</td><td>-1</td></tr>
  * </table>
  * </p>
  * 
  * @author John Dekker
  */
 public class FixedPositionRecordHandlerManager extends RecordHandlerManager {
-	public static final String version = "$RCSfile: FixedPositionRecordHandlerManager.java,v $  $Revision: 1.12 $ $Date: 2011-08-25 12:39:38 $";
+	public static final String version = "$RCSfile: FixedPositionRecordHandlerManager.java,v $  $Revision: 1.13 $ $Date: 2011-10-04 09:51:51 $";
 
 	private int startPosition;
 	private int endPosition=-1;
