@@ -1,5 +1,5 @@
 <digester-rules>
-	<!-- $Id: digester-rules.xml,v 1.13 2010-09-13 14:12:52 L190409 Exp $ -->
+	<!-- $Id: digester-rules.xml,v 1.14 2011-10-04 09:54:28 l190409 Exp $ -->
     
     <!-- Objects created using a factory-create-rule are created via the Spring Beans Factory. 
          Objects created using an object-create-rule are created directly by the Apache Digester,
@@ -20,7 +20,7 @@
         <set-properties-rule/>
     </pattern>
     <pattern value="*/jmsRealm">
-        <object-create-rule classname="nl.nn.adapterframework.jms.JmsRealm"/>
+        <factory-create-rule classname="nl.nn.adapterframework.configuration.GenericFactory"/>
         <set-properties-rule/>
         <set-next-rule methodname="registerJmsRealm"/>
     </pattern>
