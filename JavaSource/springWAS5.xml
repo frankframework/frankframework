@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   $Log: springWAS5.xml,v $
-  Revision 1.5  2011-04-13 08:47:34  L190409
+  Revision 1.6  2011-10-04 09:54:07  l190409
+  added bean appServerJndiContextPrefix
+
+  Revision 1.5  2011/04/13 08:47:34  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
   Spring configurable DbmsSupport
 
   Revision 1.4  2010/02/03 15:00:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -63,4 +66,5 @@
 		
 	</bean>
 
+    <bean id="appServerJndiContextPrefix" class="java.lang.String"/>
 </beans>
