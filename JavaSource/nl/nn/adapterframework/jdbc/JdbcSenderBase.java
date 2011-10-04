@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcSenderBase.java,v $
- * Revision 1.11  2011-08-09 09:57:32  L190409
+ * Revision 1.12  2011-10-04 09:57:11  l190409
+ * test for empty datasourceName instead of null Datasource
+ *
+ * Revision 1.11  2011/08/09 09:57:32  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added timeout
  *
  * Revision 1.10  2011/04/27 10:01:53  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -41,6 +44,7 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterResolutionContext;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 
 /**
@@ -91,13 +95,13 @@ public abstract class JdbcSenderBase extends JdbcFacade implements ISenderWithPa
 	}
 
 	public void configure() throws ConfigurationException {
-		try {
-			if (getDatasource()==null) {
+//		try {
+			if (StringUtils.isEmpty(getDatasourceName())) {
 				throw new ConfigurationException(getLogPrefix()+"has no datasource");
 			}
-		} catch (JdbcException e) {
-			throw new ConfigurationException(e);
-		}
+//		} catch (JdbcException e) {
+//			throw new ConfigurationException(e);
+//		}
 		if (paramList!=null) {
 			paramList.configure();
 		}
