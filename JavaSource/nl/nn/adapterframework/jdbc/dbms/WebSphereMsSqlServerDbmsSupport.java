@@ -1,6 +1,9 @@
 /*
  * $Log: WebSphereMsSqlServerDbmsSupport.java,v $
- * Revision 1.1  2011-04-13 08:46:11  L190409
+ * Revision 1.2  2011-10-04 09:54:55  l190409
+ * added getDbmsName()
+ *
+ * Revision 1.1  2011/04/13 08:46:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * Blob and Clob support using DbmsSupport
  *
  */
@@ -30,6 +33,10 @@ import nl.nn.adapterframework.util.StreamUtil;
  */
 public class WebSphereMsSqlServerDbmsSupport extends MsSqlServerDbmsSupport {
 
+
+	public String getDbmsName() {
+		return "MS SQL for WebSphere";
+	}
 
 	public Object getClobUpdateHandle(ResultSet rs, int column) throws SQLException, JdbcException {
 		try {

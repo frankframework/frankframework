@@ -1,6 +1,9 @@
 /*
  * $Log: OracleDbmsSupport.java,v $
- * Revision 1.3  2011-08-09 08:07:30  L190409
+ * Revision 1.4  2011-10-04 09:54:55  l190409
+ * added getDbmsName()
+ *
+ * Revision 1.3  2011/08/09 08:07:30  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added getSchema(), isTablePresent() and isTableColumnPresent()
  *
  * Revision 1.2  2011/04/13 08:45:23  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -32,6 +35,9 @@ public class OracleDbmsSupport extends GenericDbmsSupport {
 		return DbmsSupportFactory.DBMS_ORACLE;
 	}
 
+	public String getDbmsName() {
+		return "Oracle";
+	}
 
 	public String getSysDate() {
 		return "SYSDATE";

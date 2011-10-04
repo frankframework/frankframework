@@ -1,6 +1,9 @@
 /*
  * $Log: Db2DbmsSupport.java,v $
- * Revision 1.1  2011-03-16 16:47:26  L190409
+ * Revision 1.2  2011-10-04 09:54:55  l190409
+ * added getDbmsName()
+ *
+ * Revision 1.1  2011/03/16 16:47:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * introduction of DbmsSupport, including support for MS SQL Server
  *
  */
@@ -23,6 +26,10 @@ public class Db2DbmsSupport extends GenericDbmsSupport {
 		return DbmsSupportFactory.DBMS_DB2;
 	}
 	
+	public String getDbmsName() {
+		return "DB2";
+	}
+
 	public String prepareQueryTextForWorkQueueReading(int batchSize, String selectQuery) throws JdbcException {
 		if (StringUtils.isEmpty(selectQuery) || !selectQuery.toLowerCase().startsWith(KEYWORD_SELECT)) {
 			throw new JdbcException("query ["+selectQuery+"] must start with keyword ["+KEYWORD_SELECT+"]");
