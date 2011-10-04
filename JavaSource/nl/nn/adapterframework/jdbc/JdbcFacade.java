@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcFacade.java,v $
- * Revision 1.38  2011-08-09 09:39:15  L190409
+ * Revision 1.39  2011-10-04 09:56:48  l190409
+ * use jndiContextPrefix
+ *
+ * Revision 1.38  2011/08/09 09:39:15  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * use default dbmsSupport when no one found
  *
  * Revision 1.37  2011/06/28 14:29:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -205,20 +208,28 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 					log.info(getLogPrefix()+"looked up Datasource ["+dsName+"]: ["+dsinfo+"]");
 				} catch (NamingException e) {
 					try {
-						String tomcatDsName="java:comp/env/"+dsName;
-						log.debug(getLogPrefix()+"could not find ["+dsName+"], now trying ["+tomcatDsName+"]");
-						datasource =(DataSource) getContext().lookup( tomcatDsName );
-						log.debug(getLogPrefix()+"looked up Datasource ["+tomcatDsName+"]: ["+datasource+"]");
+						String prefixedDsName=getJndiContextPrefix()+dsName;
+						log.debug(getLogPrefix()+"could not find ["+dsName+"]",e);
+						log.debug(getLogPrefix()+"now trying for prefixed ["+prefixedDsName+"]");
+						datasource =(DataSource) getContext().lookup( prefixedDsName );
+						log.debug(getLogPrefix()+"looked up Datasource ["+prefixedDsName+"]: ["+datasource+"]");
 					} catch (NamingException e2) {
-						try {
-							String jbossDsName="java:/"+dsName;
-							log.debug(getLogPrefix()+"could not find ["+dsName+"], now trying ["+jbossDsName+"]");
-							datasource =(DataSource) getContext().lookup( jbossDsName );
-							log.debug(getLogPrefix()+"looked up Datasource ["+jbossDsName+"]: ["+datasource+"]");
-						} catch (NamingException e3) {
-							throw new JdbcException(getLogPrefix()+"cannot find Datasource ["+dsName+"]", e);
-						}
+						log.debug(getLogPrefix()+"could not find prefixed datasource",e2);
+						log.debug(getLogPrefix()+"will now rethrow original exception");
+						throw new JdbcException(getLogPrefix()+"cannot find Datasource ["+dsName+"]", e);
+//						try {
+//							String jbossDsName="java:/"+dsName;
+//							log.debug(getLogPrefix()+"could not find for TomCat",e2);
+//							log.debug(getLogPrefix()+"now trying for JBoss ["+jbossDsName+"]");
+//							datasource =(DataSource) getContext().lookup( jbossDsName );
+//							log.debug(getLogPrefix()+"looked up Datasource ["+jbossDsName+"]: ["+datasource+"]");
+//						} catch (NamingException e3) {
+//							log.debug(getLogPrefix()+"could not find for JBoss",e3);
+//							log.debug(getLogPrefix()+"will now rethrow original exception");
+//							throw new JdbcException(getLogPrefix()+"cannot find Datasource ["+dsName+"]", e);
+//						}
 					}
+//					throw new JdbcException(getLogPrefix()+"cannot find Datasource ["+dsName+"]", e);
 				}
 			}
 			return datasource;
@@ -293,8 +304,12 @@ public class JdbcFacade extends JNDIBase implements INamedObject, HasPhysicalDes
 				throw new RuntimeException("Cannot obtain connection to determine dbmssupport", e);
 			}
 			try {
-				setDbmsSupport(getDbmsSupportFactory().getDbmsSupport(conn));
-				//databaseType=DbmsUtil.getDatabaseType(conn);
+				dbmsSupport=getDbmsSupportFactory().getDbmsSupport(conn);
+				if (dbmsSupport==null) {
+					log.warn(getLogPrefix()+"Could not determine database type from connection");
+				} else {
+					log.debug(getLogPrefix()+"determined database connection of type ["+dbmsSupport.getDbmsName()+"]");
+				}
 			} finally {
 				try {
 					if (conn!=null) { 

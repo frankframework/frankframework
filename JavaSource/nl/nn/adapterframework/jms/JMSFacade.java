@@ -1,6 +1,9 @@
 /*
  * $Log: JMSFacade.java,v $
- * Revision 1.42  2011-03-17 08:12:19  L190409
+ * Revision 1.43  2011-10-04 09:55:27  l190409
+ * use jndiContextPrefix
+ *
+ * Revision 1.42  2011/03/17 08:12:19  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * separate method extractMessageBody()
  *
  * Revision 1.41  2010/02/02 14:34:49  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -309,7 +312,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
                     try {
                         String connectionFactoryName = getConnectionFactoryName();
                         log.debug("creating MessagingSource");
-						messagingSource = messagingSourceFactory.getMessagingSource(connectionFactoryName,getAuthAlias());
+						messagingSource = messagingSourceFactory.getMessagingSource(getJndiContextPrefix()+connectionFactoryName,getAuthAlias());
                     } catch (IbisException e) {
                         if (e instanceof JmsException) {
                                 throw (JmsException)e;
@@ -460,7 +463,7 @@ public class JMSFacade extends JNDIBase implements INamedObject, HasPhysicalDest
      */
     
     public Destination getDestination(String destinationName) throws JmsException, NamingException {
-    	return getJmsMessagingSource().lookupDestination(destinationName);
+    	return getJmsMessagingSource().lookupDestination(getJndiContextPrefix()+destinationName);
     }
 
 	/**
