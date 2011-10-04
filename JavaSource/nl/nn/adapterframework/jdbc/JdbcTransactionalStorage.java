@@ -1,6 +1,9 @@
 /*
  * $Log: JdbcTransactionalStorage.java,v $
- * Revision 1.52  2011-08-09 09:53:04  L190409
+ * Revision 1.53  2011-10-04 14:26:03  l190409
+ * added prefix in sequence select query
+ *
+ * Revision 1.52  2011/08/09 09:53:04  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * use isTablePresent() and isTableColumnPresent() from dbmsSupport
  *
  * Revision 1.51  2011/04/13 08:38:26  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -689,7 +692,7 @@ public class JdbcTransactionalStorage extends JdbcFacade implements ITransaction
 						"?,?,?,?,?"+
 						(isStoreFullMessage()?","+(blobFieldsNeedsEmptyBlobInsert?dbmsSupport.emptyBlobValue():"?"):"")+")";
 		deleteQuery = "DELETE FROM "+getPrefix()+getTableName()+ getWhereClause(getKeyField()+"=?",true);
-		selectKeyQuery = dbmsSupport.getInsertedAutoIncrementValueQuery(getSequenceName());
+		selectKeyQuery = dbmsSupport.getInsertedAutoIncrementValueQuery(getPrefix()+getSequenceName());
 		selectKeyQueryIsDbmsSupported=StringUtils.isNotEmpty(selectKeyQuery);
 		if (!selectKeyQueryIsDbmsSupported) {
 			selectKeyQuery = "SELECT max("+getKeyField()+") FROM "+getPrefix()+getTableName()+ 
