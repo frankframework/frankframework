@@ -1,6 +1,9 @@
 /*
  * $Log: ConfigurationDigester.java,v $
- * Revision 1.35  2010-09-07 15:55:13  m00f069
+ * Revision 1.36  2011-10-04 10:00:28  l190409
+ * added attributeCheckerRule for cache
+ *
+ * Revision 1.35  2010/09/07 15:55:13  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Removed IbisDebugger, made it possible to use AOP to implement IbisDebugger functionality.
  *
  * Revision 1.34  2010/05/19 10:29:25  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -166,7 +169,7 @@ import org.xml.sax.SAXParseException;
  * @see Configuration
  */
 abstract public class ConfigurationDigester {
-	public static final String version = "$RCSfile: ConfigurationDigester.java,v $ $Revision: 1.35 $ $Date: 2010-09-07 15:55:13 $";
+	public static final String version = "$RCSfile: ConfigurationDigester.java,v $ $Revision: 1.36 $ $Date: 2011-10-04 10:00:28 $";
     protected static Logger log = LogUtil.getLogger(ConfigurationDigester.class);
 	private ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
 
@@ -243,6 +246,7 @@ abstract public class ConfigurationDigester {
 		
 		// push config on the stack
 		digester.push(stackTop);
+		digester.push("URL", configurationFileURL);
 		try {
 			// digester-rules.xml bevat de rules voor het digesten
             
@@ -281,6 +285,7 @@ abstract public class ConfigurationDigester {
 			digester.addRule("*/locker", attributeChecker);
 			digester.addRule("*/statistics", attributeChecker);
 			digester.addRule("*/handler", attributeChecker);
+			digester.addRule("*/cache", attributeChecker);
 			MonitorManager.getInstance().setDigesterRules(digester);
 
 // Resolving variables is now done by Digester
