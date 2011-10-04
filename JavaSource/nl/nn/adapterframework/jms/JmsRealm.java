@@ -1,6 +1,9 @@
 /*
  * $Log: JmsRealm.java,v $
- * Revision 1.14  2008-07-24 12:20:00  europe\L190409
+ * Revision 1.15  2011-10-04 09:57:58  l190409
+ * added jndiContextPrefix
+ *
+ * Revision 1.14  2008/07/24 12:20:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added support for authenticated JMS
  *
  * Revision 1.13  2007/10/10 08:23:11  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -60,7 +63,7 @@ import org.apache.log4j.Logger;
  */
 public class JmsRealm {
 	//TODO: change to J2eeRealm
-	public static final String version="$RCSfile: JmsRealm.java,v $ $Revision: 1.14 $ $Date: 2008-07-24 12:20:00 $";
+	public static final String version="$RCSfile: JmsRealm.java,v $ $Revision: 1.15 $ $Date: 2011-10-04 09:57:58 $";
 	private Logger log = LogUtil.getLogger(this);
 
 	private String realmName;
@@ -74,6 +77,8 @@ public class JmsRealm {
 	private String jndiAuthAlias = null;
     private String urlPkgPrefixes = null;
     private String securityProtocol = null;
+	private String jndiContextPrefix = "";
+	private String jndiProperties = null;
 
 	private String queueConnectionFactoryName;
 	private String topicConnectionFactoryName;
@@ -293,6 +298,20 @@ public class JmsRealm {
 	}
 	public String getAuthAlias() {
 		return authAlias;
+	}
+
+	public void setJndiContextPrefix(String string) {
+		jndiContextPrefix = string;
+	}
+	public String getJndiContextPrefix() {
+		return jndiContextPrefix;
+	}
+
+	public String getJndiProperties() {
+		return jndiProperties;
+	}
+	public void setJndiProperties(String jndiProperties) {
+		this.jndiProperties = jndiProperties;
 	}
 
 }

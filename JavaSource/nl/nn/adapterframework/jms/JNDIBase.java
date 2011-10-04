@@ -1,6 +1,9 @@
 /*
  * $Log: JNDIBase.java,v $
- * Revision 1.13  2007-10-10 08:24:25  europe\L190409
+ * Revision 1.14  2011-10-04 09:57:58  l190409
+ * added jndiContextPrefix
+ *
+ * Revision 1.13  2007/10/10 08:24:25  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * added jmsRealmName, to be able to report it
  *
  * Revision 1.12  2007/07/10 07:20:02  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -38,13 +41,18 @@
  */
 package nl.nn.adapterframework.jms;
 
+import java.io.IOException;
+import java.net.URL;
 import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Properties;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -74,7 +82,6 @@ import org.apache.log4j.Logger;
  * @author Johan Verrips IOS
  */
 public class JNDIBase {
-	public static final String version = "$RCSfile: JNDIBase.java,v $ $Revision: 1.13 $ $Date: 2007-10-10 08:24:25 $";
 	protected Logger log = LogUtil.getLogger(this);
 
     // JNDI
@@ -87,10 +94,10 @@ public class JNDIBase {
     private String jmsRealmName = null;
     private String urlPkgPrefixes = null;
     private String securityProtocol = null;
+	private String jndiContextPrefix = "";
+	private String jndiProperties = null;
 
 	private Context context = null;
-
-
 
     public void closeContext() throws javax.naming.NamingException {
         if (null != context) {
@@ -100,9 +107,20 @@ public class JNDIBase {
         }
     }
     
-	protected Hashtable getJndiEnv() {
-		Hashtable jndiEnv = new Hashtable();
+	protected Hashtable getJndiEnv() throws NamingException {
+		Properties jndiEnv = new Properties();
 
+		if (StringUtils.isNotEmpty(getJndiProperties())) {
+			URL url = ClassUtils.getResourceURL(this, getJndiProperties());
+			if (url==null) {
+				throw new NamingException("cannot find jndiProperties from ["+getJndiProperties()+"]");
+			}
+			try {
+				jndiEnv.load(url.openStream());
+			} catch (IOException e) {
+				throw new NamingException("cannot load jndiProperties ["+getJndiProperties()+"] from url ["+url.toString()+"]");
+			}
+		}
 		if (getInitialContextFactoryName() != null)
 			jndiEnv.put(Context.INITIAL_CONTEXT_FACTORY, getInitialContextFactoryName());
 		if (getProviderURL() != null)
@@ -120,6 +138,14 @@ public class JNDIBase {
 			jndiEnv.put(Context.URL_PKG_PREFIXES, getUrlPkgPrefixes());
 		if (getSecurityProtocol() != null)
 			jndiEnv.put(Context.SECURITY_PROTOCOL, getSecurityProtocol());
+		
+		if (log.isDebugEnabled()) {
+			for(Iterator it=jndiEnv.keySet().iterator(); it.hasNext();) {
+				String key=(String) it.next();
+				String value=jndiEnv.getProperty(key);
+				log.debug("jndiEnv ["+key+"] = ["+value+"]");
+			}
+		}
 		return jndiEnv;
 	}
 	
@@ -258,4 +284,17 @@ public class JNDIBase {
 		return jndiAuthAlias;
 	}
 
+	public void setJndiContextPrefix(String string) {
+		jndiContextPrefix = string;
+	}
+	public String getJndiContextPrefix() {
+		return jndiContextPrefix;
+	}
+
+	public String getJndiProperties() {
+		return jndiProperties;
+	}
+	public void setJndiProperties(String jndiProperties) {
+		this.jndiProperties = jndiProperties;
+	}
 }
