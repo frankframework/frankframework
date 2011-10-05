@@ -1,6 +1,9 @@
 /*
  * $Log: ShowSecurityItems.java,v $
- * Revision 1.5  2010-08-13 12:43:28  m168309
+ * Revision 1.6  2011-10-05 11:21:54  europe\m168309
+ * ShowSecurityItems: added Used Authentication Entries
+ *
+ * Revision 1.5  2010/08/13 12:43:28  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * fixed bug empty Security Role Bindings
  *
  * Revision 1.4  2010/02/03 11:25:01  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -24,22 +27,22 @@
  */
 package nl.nn.adapterframework.webcontrol.action;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.security.KeyStore;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
-import java.util.StringTokenizer;
 
-import javax.jms.ConnectionFactory;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.xml.transform.Transformer;
 
+import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.HasSender;
 import nl.nn.adapterframework.core.IPipe;
@@ -63,10 +66,10 @@ import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.SystemUtils;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.w3c.dom.Element;
 
 /**
  * Shows the used certificate.
@@ -77,7 +80,8 @@ import org.apache.struts.action.ActionMapping;
  */
 
 public final class ShowSecurityItems extends ActionBase {
-	public static final String version = "$RCSfile: ShowSecurityItems.java,v $ $Revision: 1.5 $ $Date: 2010-08-13 12:43:28 $";
+	public static final String version = "$RCSfile: ShowSecurityItems.java,v $ $Revision: 1.6 $ $Date: 2011-10-05 11:21:54 $";
+	public static final String AUTHALIAS_XSLT = "xml/xsl/authAlias.xsl";
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 
@@ -94,6 +98,7 @@ public final class ShowSecurityItems extends ActionBase {
 		addApplicationDeploymentDescriptor(securityItems, appName);
 		addSecurityRoleBindings(securityItems, appName);
 		addJmsRealms(securityItems);
+		addAuthEntries(securityItems);
 
 		request.setAttribute("secItems", securityItems.toXML());
 
@@ -356,6 +361,47 @@ public final class ShowSecurityItems extends ActionBase {
 				jr.addAttribute("name", jmsRealm);
 				jr.addAttribute("topicConnectionFactoryName", tcfName);
 			}
+		}
+	}
+
+	private void addAuthEntries(XmlBuilder securityItems) {
+		XmlBuilder aes = new XmlBuilder("authEntries");
+		securityItems.addSubElement(aes);
+		Collection entries = null;
+		try {
+			URL url = ClassUtils.getResourceURL(this, AUTHALIAS_XSLT);
+			if (url != null) {
+				Transformer t = XmlUtils.createTransformer(url, true);
+				String authEntries = XmlUtils.transformXml(t, ConfigurationUtils.getOriginalConfiguration(config.getConfigurationURL()));
+				Element authEntriesElement = XmlUtils.buildElement(authEntries);
+				entries = XmlUtils.getChildTags(authEntriesElement, "entry");
+			}
+		} catch (Exception e) {
+			XmlBuilder ae = new XmlBuilder("entry");
+			aes.addSubElement(ae);
+			ae.addAttribute("alias", "*** ERROR ***");
+		}
+
+		Iterator iter = entries.iterator();
+		while (iter.hasNext()) {
+			Element itemElement = (Element) iter.next();
+			String alias = itemElement.getAttribute("alias");
+			CredentialFactory cf = new CredentialFactory(alias, null, null);
+			XmlBuilder ae = new XmlBuilder("entry");
+			aes.addSubElement(ae);
+			ae.addAttribute("alias", alias);
+			String userName;
+			String passWord;
+			try {
+				userName = cf.getUsername();
+				passWord = StringUtils.repeat("*", cf.getPassword().length());
+
+			} catch (Exception e) {
+				userName = "*** ERROR ***";
+				passWord = "*** ERROR ***";
+			}
+			ae.addAttribute("userName", userName);
+			ae.addAttribute("passWord", passWord);
 		}
 	}
 }
