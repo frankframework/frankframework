@@ -1,6 +1,9 @@
 /*
  * $Log: ShowSecurityItems.java,v $
- * Revision 1.6  2011-10-05 11:21:54  europe\m168309
+ * Revision 1.7  2011-10-05 12:54:41  europe\m168309
+ * ShowSecurityItems: added Used Authentication Entries
+ *
+ * Revision 1.6  2011/10/05 11:21:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * ShowSecurityItems: added Used Authentication Entries
  *
  * Revision 1.5  2010/08/13 12:43:28  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -58,10 +61,12 @@ import nl.nn.adapterframework.jms.JmsException;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.RunStateEnum;
+import nl.nn.adapterframework.util.StringResolver;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -80,7 +85,7 @@ import org.w3c.dom.Element;
  */
 
 public final class ShowSecurityItems extends ActionBase {
-	public static final String version = "$RCSfile: ShowSecurityItems.java,v $ $Revision: 1.6 $ $Date: 2011-10-05 11:21:54 $";
+	public static final String version = "$RCSfile: ShowSecurityItems.java,v $ $Revision: 1.7 $ $Date: 2011-10-05 12:54:41 $";
 	public static final String AUTHALIAS_XSLT = "xml/xsl/authAlias.xsl";
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
@@ -372,7 +377,10 @@ public final class ShowSecurityItems extends ActionBase {
 			URL url = ClassUtils.getResourceURL(this, AUTHALIAS_XSLT);
 			if (url != null) {
 				Transformer t = XmlUtils.createTransformer(url, true);
-				String authEntries = XmlUtils.transformXml(t, ConfigurationUtils.getOriginalConfiguration(config.getConfigurationURL()));
+				String configString = ConfigurationUtils.getOriginalConfiguration(config.getConfigurationURL());
+				configString = StringResolver.substVars(configString, AppConstants.getInstance());
+				configString = ConfigurationUtils.getActivatedConfiguration(configString);
+				String authEntries = XmlUtils.transformXml(t, configString);
 				Element authEntriesElement = XmlUtils.buildElement(authEntries);
 				entries = XmlUtils.getChildTags(authEntriesElement, "entry");
 			}
