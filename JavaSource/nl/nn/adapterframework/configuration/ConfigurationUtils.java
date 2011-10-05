@@ -1,6 +1,9 @@
 /*
  * $Log: ConfigurationUtils.java,v $
- * Revision 1.2  2011-10-05 11:19:09  europe\m168309
+ * Revision 1.3  2011-10-05 11:44:59  europe\m168309
+ * do not print versions anymore
+ *
+ * Revision 1.2  2011/10/05 11:19:09  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * added method getOriginalConfiguration()
  *
  * Revision 1.1  2010/05/19 10:27:51  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -31,8 +34,6 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @version Id
  */
 public class ConfigurationUtils {
-	public static final String version = "$Id: ConfigurationUtils.java,v 1.2 2011-10-05 11:19:09 europe\m168309 Exp $";
-
 	private static final String CONFIGURATION_STUB4TESTTOOL_KEY = "stub4testtool.configuration";
 
 	private static String stub4testtool_xslt = "/xml/xsl/stub4testtool.xsl";
