@@ -1,6 +1,9 @@
 /*
  * $Log: ConfigurationUtils.java,v $
- * Revision 1.1  2010-05-19 10:27:51  m168309
+ * Revision 1.2  2011-10-05 11:19:09  europe\m168309
+ * added method getOriginalConfiguration()
+ *
+ * Revision 1.1  2010/05/19 10:27:51  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * first version
  *
  */
@@ -13,9 +16,12 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
+import org.apache.commons.lang.SystemUtils;
+
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
+import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -25,7 +31,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @version Id
  */
 public class ConfigurationUtils {
-	public static final String version = "$Id: ConfigurationUtils.java,v 1.1 2010-05-19 10:27:51 m168309 Exp $";
+	public static final String version = "$Id: ConfigurationUtils.java,v 1.2 2011-10-05 11:19:09 europe\m168309 Exp $";
 
 	private static final String CONFIGURATION_STUB4TESTTOOL_KEY = "stub4testtool.configuration";
 
@@ -65,6 +71,19 @@ public class ConfigurationUtils {
 			throw new ConfigurationException("got error creating transformer from file [" + stub4testtool_xslt + "]", tce);
 		} catch (TransformerException te) {
 			throw new ConfigurationException("got error transforming resource [" + stub4testtool_xsltSource.toString() + "] from [" + stub4testtool_xslt + "]", te);
+		} catch (DomBuilderException de) {
+			throw new ConfigurationException("caught DomBuilderException", de);
+		}
+	}
+
+	public static String getOriginalConfiguration(URL configURL) throws ConfigurationException {
+		String lineSeparator = SystemUtils.LINE_SEPARATOR;
+		if (null==lineSeparator) lineSeparator = "\n";
+		try {
+			String configString = Misc.resourceToString(configURL, lineSeparator, false);
+			return XmlUtils.identityTransform(configString);
+		} catch (IOException ie) {
+			throw new ConfigurationException("got exception loading [" + configURL.toString() + "]", ie);
 		} catch (DomBuilderException de) {
 			throw new ConfigurationException("caught DomBuilderException", de);
 		}
