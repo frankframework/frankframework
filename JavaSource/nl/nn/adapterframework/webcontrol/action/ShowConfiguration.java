@@ -1,6 +1,9 @@
 /*
  * $Log: ShowConfiguration.java,v $
- * Revision 1.13  2011-05-09 14:04:55  m168309
+ * Revision 1.14  2011-10-05 11:21:04  europe\m168309
+ * moved code to separate method in ConfigurationUtils
+ *
+ * Revision 1.13  2011/05/09 14:04:55  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * showConfiguration: added options "show original configuration" and "show loaded configuration"
  *
  * Revision 1.12  2010/05/19 10:31:08  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -36,12 +39,8 @@
  */
 package nl.nn.adapterframework.webcontrol.action;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.ServletException;
@@ -51,13 +50,10 @@ import javax.servlet.http.HttpServletResponse;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StringResolver;
 import nl.nn.adapterframework.util.XmlUtils;
 
-import org.apache.commons.lang.SystemUtils;
-import org.apache.log4j.Logger;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
@@ -115,30 +111,10 @@ public final class ShowConfiguration extends ActionBase {
 			}
 		}
 	     
-	     
 	    URL configURL = config.getConfigurationURL();
 	    String result = "";
-	    List linklist = new ArrayList();
 	    try {
-	
-	        // Read all the text returned by the server
-	        BufferedReader in =
-	            new BufferedReader(new InputStreamReader(configURL.openStream()));
-	        String str;
-	        String lineSeparator=SystemUtils.LINE_SEPARATOR;
-	        if (null==lineSeparator) lineSeparator="\n";
-	        while ((str = in.readLine()) != null) {
-	            // str is one line of text; readLine() strips the newline character(s)
-//				checkForInclude(str,linklist);
-	            result += str+lineSeparator;
-	        }
-	        
-	        in.close();
-	        try {
-	        result=XmlUtils.identityTransform(result);
-	        } catch(DomBuilderException e){
-	        	log.error(e);
-	        }
+			result=ConfigurationUtils.getOriginalConfiguration(configURL);
 			if (!AppConstants.getInstance().getBoolean("showConfiguration.original", false)) {
 				result=StringResolver.substVars(result, AppConstants.getInstance());
 				result = ConfigurationUtils.getActivatedConfiguration(result);
@@ -146,13 +122,6 @@ public final class ShowConfiguration extends ActionBase {
 					result = ConfigurationUtils.getStubbedConfiguration(result);
 				}			
 			}			
-	        
-	    } catch (MalformedURLException e) {
-	        result =
-	            "<b>error occured retrieving configurationfile:" + XmlUtils.encodeChars(e.getMessage()) + "</b>";
-	    } catch (IOException e) {
-	        result =
-	            "<b>error occured retrieving configurationfile:" + XmlUtils.encodeChars(e.getMessage()) + "</b>";
 		} catch (ConfigurationException e) {
 			result =
 				"<b>error occured retrieving configurationfile:" + XmlUtils.encodeChars(e.getMessage()) + "</b>";
