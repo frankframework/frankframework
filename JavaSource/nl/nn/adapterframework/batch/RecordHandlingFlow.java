@@ -1,6 +1,9 @@
 /*
  * $Log: RecordHandlingFlow.java,v $
- * Revision 1.13  2008-03-27 10:53:08  europe\L190409
+ * Revision 1.14  2011-10-10 12:49:30  europe\m168309
+ * added openBlockBeforeLineNumber attribute
+ *
+ * Revision 1.13  2008/03/27 10:53:08  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * javadoc for autoclose block on forced close, too
  *
  * Revision 1.12  2008/03/20 11:57:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -62,6 +65,7 @@ import org.apache.log4j.Logger;
  * <tr><td>{@link #setResultHandlerRef(String) resultHandlerRef}</td><td>Name of the resulthandler to be used to handle the transformed result</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setNextRecordHandlerManagerRef(String) nextRecordHandlerManagerRef}</td><td>Name of the manager to be used after handling this record</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setOpenBlockBeforeLine(String) openBlockBeforeLine}</td><td>instructs the resultHandler to start a new block before the parsed line is processed</td><td>&nbsp;</td></tr>
+ * <tr><td>{@link #setOpenBlockBeforeLineNumber(int) openBlockBeforeLineNumber}</td><td>when &gt;0 the <code>openBlockBeforeLine</code> instruction is only performed when the current line number is a multiple of this value</td><td>0</td></tr>
  * <tr><td>{@link #setCloseBlockBeforeLine(String) closeBlockBeforeLine}</td><td>instructs the resultHandler to end the specified block before the parsed line is processed</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setOpenBlockAfterLine(String) openBlockAfterLine}</td><td>instructs the resultHandler to start a new block after the parsed line is processed</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setCloseBlockAfterLine(String) closeBlockAfterLine}</td><td>instructs the resultHandler to end the specified block after the parsed line is processed</td><td>&nbsp;</td></tr>
@@ -73,7 +77,7 @@ import org.apache.log4j.Logger;
  * @version Id
  */
 public final class RecordHandlingFlow {
-	public static final String version = "$RCSfile: RecordHandlingFlow.java,v $  $Revision: 1.13 $ $Date: 2008-03-27 10:53:08 $";
+	public static final String version = "$RCSfile: RecordHandlingFlow.java,v $  $Revision: 1.14 $ $Date: 2011-10-10 12:49:30 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String recordKey;
@@ -87,6 +91,7 @@ public final class RecordHandlingFlow {
 	private String openBlockAfterLine=null;
 	private String closeBlockAfterLine=null;
 	private boolean autoCloseBlock=true;
+	private int openBlockBeforeLineNumber=0;
 	
 	private IRecordHandler recordHandler;
 	private IRecordHandlerManager nextRecordHandlerManager;
@@ -230,4 +235,10 @@ public final class RecordHandlingFlow {
 	}
 
 
+	public void setOpenBlockBeforeLineNumber(int i) {
+		openBlockBeforeLineNumber = i;
+	}
+	public int getOpenBlockBeforeLineNumber() {
+		return openBlockBeforeLineNumber;
+	}
 }
