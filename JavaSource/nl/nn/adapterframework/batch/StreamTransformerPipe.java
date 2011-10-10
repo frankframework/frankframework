@@ -1,6 +1,9 @@
 /*
  * $Log: StreamTransformerPipe.java,v $
- * Revision 1.25  2010-09-09 11:44:05  m00f069
+ * Revision 1.26  2011-10-10 12:52:41  europe\m168309
+ * RecordHandlingFlow: added openBlockBeforeLineNumber attribute
+ *
+ * Revision 1.25  2010/09/09 11:44:05  Jaco de Groot <jaco.de.groot@ibissource.org>
  * Changed error message "at line" to "at or after line".
  *
  * Revision 1.24  2010/05/03 17:01:03  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
@@ -503,6 +506,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	private Object transform(String streamId, BufferedReader reader, PipeLineSession session, ParameterResolutionContext prc) throws PipeRunException {
 		String rawRecord = null;
 		int linenumber = 0;
+		int counter = 0;
 		StringBuffer sb = null;
 		List prevParsedRecord = null; 
 		IRecordHandler prevHandler = null;
@@ -529,7 +533,15 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 				}
 				IResultHandler resultHandler = flow.getResultHandler();
 				closeBlock(session, resultHandler, streamId, flow, flow.getCloseBlockBeforeLine(),"closeBlockBeforeLine of flow ["+flow.getRecordKey()+"]", prc);
-				openBlock(session, resultHandler, streamId, flow, flow.getOpenBlockBeforeLine(), prc);
+				String obbl = null;
+				if (flow.getOpenBlockBeforeLineNumber()>0) {
+					if (counter%flow.getOpenBlockBeforeLineNumber()==0) {
+						obbl = flow.getOpenBlockBeforeLine();
+					}
+				} else {
+					obbl = flow.getOpenBlockBeforeLine();				
+				}
+				openBlock(session, resultHandler, streamId, flow, obbl, prc);
 
 				if (isStoreOriginalBlock()) {
 					if (resultHandler instanceof ResultBlock2Sender) {
@@ -553,6 +565,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 					// there is a record handler, so transform the line
 					List parsedRecord = curHandler.parse(session, rawRecord);
 					Object result = curHandler.handleRecord(session, parsedRecord, prc);
+					counter++;
 				
 					// if there is a result handler, write the transformed result
 					if (result != null && resultHandler != null) {
@@ -663,5 +676,4 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	public IInputStreamReaderFactory getReaderFactory() {
 		return readerFactory;
 	}
-
 }
