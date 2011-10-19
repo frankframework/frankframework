@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?><project-modules id="moduleCoreId" project-version="1.5.0">
+    <wb-module deploy-name="Ibis">
+        <module-type module-type-id="jst.utility">
+            <version/>
+        </module-type>
+        <wb-resource deploy-path="/" source-path="/Java Source"/>
+        <wb-resource deploy-path="/" source-path="/JavaSource"/>
+    </wb-module>
+</project-modules>
