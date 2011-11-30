@@ -1,0 +1,347 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  $Log: springCommon.xml,v $
+  Revision 1.21  2011-11-30 13:51:45  europe\m168309
+  adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
+
+  Revision 1.1  2011/10/19 14:49:47  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
+  Upgraded from WebSphere v5.1 to WebSphere v6.1
+
+  Revision 1.19  2011/10/04 09:53:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+  set default for auto-wire, added proto for jmsRealm and sender
+
+  Revision 1.18  2011/04/13 08:47:23  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+  ListenerFactory now extends GeneircFactory
+  Spring configurable DbmsSupport
+
+  Revision 1.17  2010/09/13 14:14:22  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+  split senderWrapper processing in separate processors
+  added cache processors
+
+  Revision 1.16  2010/09/07 15:55:13  Jaco de Groot <jaco.de.groot@ibissource.org>
+  Removed IbisDebugger, made it possible to use AOP to implement IbisDebugger functionality.
+
+  Revision 1.15  2010/02/03 15:00:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+  updated spring xsds to 2.5
+
+  Revision 1.14  2009/12/29 14:48:05  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+  moved statistics to separate package
+
+  Revision 1.13  2009/08/26 15:21:27  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+  support for configurable statisticsHandlers
+
+  Revision 1.12  2009/03/13 14:51:41  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
+  added job
+
+  Revision 1.11  2008/07/14 17:48:00  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+  param via spring (for debugger)
+  support for flexible monitoring
+
+  Revision 1.10  2008/02/13 13:44:58  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+  typo in comment
+
+  Revision 1.9  2008/01/11 14:57:28  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+  removed external pipe and pipeline executors
+
+  Revision 1.8  2007/12/12 09:10:44  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+  disable validation temporarily
+
+  Revision 1.7  2007/12/10 10:26:14  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+  added input/output validation
+
+  Revision 1.6  2007/11/22 09:20:01  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+  update from ejb-branch
+
+  Revision 1.3.2.3  2007/11/19 16:21:24  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
+  Lazy-load the transaction manager and wrap it in a proxy, to attempt creating the transaction-manager instance and looking up things in websphere JNDI at a point in time where it's not yet allowed.
+
+  Revision 1.3.2.2  2007/10/24 15:04:44  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
+  Let runstate of receivers/listeners follow the state of WebSphere ListenerPorts if they are changed outside the control of IBIS.
+
+  Revision 1.3.2.1  2007/10/24 09:39:49  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
+  Merge changes from HEAD
+
+  Revision 1.5  2007/10/23 11:59:31  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
+  Fix mixup between 2 beans
+
+  Revision 1.4  2007/10/23 09:23:57  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
+  Rename a couple of beans to match their names to what the configuration.GenericFactory would look them up by. Add bean for jms.JmsRealmFactory.
+
+  Revision 1.3  2007/10/15 13:16:21  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+  removed JmsConfigurator
+
+  Revision 1.1.2.3  2007/10/12 14:29:31  Tim van der Leeuw <tim.van.der.leeuw@ibissource.org>
+  Several fixes and improvements to get EJB deployment mode running
+
+  Revision 1.1.2.2  2007/10/10 14:30:45  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+  synchronize with HEAD (4.8-alpha1)
+
+  Revision 1.2  2007/10/10 07:54:12  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
+  Direct copy from Ibis-EJB:
+  first version in HEAD
+
+-->
+<beans
+	xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:util="http://www.springframework.org/schema/util"
+	default-autowire="byName"
+	xsi:schemaLocation=
+		"
+		http://www.springframework.org/schema/beans xml/xsd/spring-beans-2.5.xsd
+		http://www.springframework.org/schema/util xml/xsd/spring-util-2.5.xsd
+		"
+	>
+
+    <!-- IBIS Beans -->
+    <bean name="configuration" class="nl.nn.adapterframework.configuration.Configuration"
+        autowire="byName"
+        init-method="init">
+    </bean>
+    
+    <bean name="configurationDigester" class="nl.nn.adapterframework.configuration.ConfigurationDigester" 
+        autowire="byName">
+        <lookup-method name="createDigester" bean="digester"/>
+    </bean>
+    
+    <bean name="digester" class="org.apache.commons.digester.Digester"
+        autowire="byName" scope="prototype">
+        <property name="substitutor">
+            <bean class="org.apache.commons.digester.substitution.VariableSubstitutor">
+                <constructor-arg ref="variableExpander"/>
+            </bean>
+        </property>
+        <property name="useContextClassLoader" value="true"/>
+        <property name="entityResolver">
+            <bean class="nl.nn.adapterframework.util.ClassPathEntityResolver"/>
+        </property>
+    </bean>
+    
+    <bean name="variableExpander" class="nl.nn.adapterframework.configuration.IbisMultiSourceExpander">
+        <property name="environmentFallback" value="false"/>
+        <property name="sources">
+            <list>
+                <bean class="java.lang.System" factory-method="getProperties"/>
+                <ref bean="appConstants"/>
+            </list>
+        </property>
+    </bean>
+    
+    <bean name="appConstants" class="nl.nn.adapterframework.util.AppConstants"
+        autowire="byName"
+        factory-method="getInstance">
+    </bean>
+    
+    <bean name="jmsRealmsFactory" class="nl.nn.adapterframework.jms.JmsRealmFactory"
+        autowire="byName"
+        factory-method="getInstance">
+    </bean>
+
+    <bean name="proto-jmsRealm" class="nl.nn.adapterframework.jms.JmsRealm"
+        autowire="byName" scope="prototype">
+    	<property name="jndiContextPrefix"><ref bean="appServerJndiContextPrefix" /></property>
+    </bean>
+    
+    <bean name="listenerContainer" class="nl.nn.adapterframework.receivers.PullingListenerContainer"
+        autowire="byName" scope="prototype">
+    </bean>
+    
+    <bean id="schedulerHelper" class="nl.nn.adapterframework.scheduler.SchedulerHelper"
+        autowire="byName" lazy-init="true">
+    </bean>
+    
+    <bean id="txManagerProxy" class="nl.nn.adapterframework.util.SpringTxManagerProxy">
+    	<property name="realTxManagerBeanName"><idref bean="txManagerReal"/></property>
+    </bean>
+    
+    <alias name="txManagerProxy" alias="txManager"/>
+
+    <bean name="isolatedServiceCaller" class="nl.nn.adapterframework.pipes.IsolatedServiceCaller"
+        autowire="byName" scope="singleton">
+    </bean>
+
+	<bean
+		name="pipeLineProcessor"
+		class="nl.nn.adapterframework.processors.InputOutputPipeLineProcessor"
+		autowire="byName"
+		scope="prototype"
+		>
+		<property name="pipeLineProcessor">
+			<bean
+				class="nl.nn.adapterframework.processors.CachePipeLineProcessor"
+				autowire="byName"
+				scope="prototype"
+				>
+				<property name="pipeLineProcessor">
+					<bean
+						class="nl.nn.adapterframework.processors.TransactionAttributePipeLineProcessor"
+						autowire="byName"
+						scope="prototype"
+						>
+						<property name="pipeLineProcessor">
+							<bean
+								class="nl.nn.adapterframework.processors.CorePipeLineProcessor"
+								autowire="byName"
+								scope="prototype"
+								>
+
+	<property name="pipeProcessor">
+		<bean
+			class="nl.nn.adapterframework.processors.TracingEventsPipeProcessor"
+			autowire="byName"
+			scope="prototype"
+			>
+			<property name="pipeProcessor">
+				<bean
+					class="nl.nn.adapterframework.processors.InputOutputPipeProcessor"
+					autowire="byName"
+					scope="prototype"
+					>
+					<property name="pipeProcessor">
+						<bean
+							class="nl.nn.adapterframework.processors.CheckSemaphorePipeProcessor"
+							autowire="byName"
+							scope="prototype"
+							>
+							<property name="pipeProcessor">
+								<bean
+									class="nl.nn.adapterframework.processors.TransactionAttributePipeProcessor"
+									autowire="byName"
+									scope="prototype"
+									>
+									<property name="pipeProcessor">
+										<bean
+											class="nl.nn.adapterframework.processors.CheckMessageSizePipeProcessor"
+											autowire="byName"
+											scope="prototype"
+											>
+											<property name="pipeProcessor">
+												<bean
+													class="nl.nn.adapterframework.processors.CorePipeProcessor"
+													autowire="byName"
+													scope="prototype"
+												/>
+											</property>
+										</bean>
+									</property>
+								</bean>
+							</property>
+						</bean>
+					</property>
+				</bean>
+			</property>
+		</bean>
+	</property>
+
+							</bean>
+						</property>
+					</bean>
+				</property>
+			</bean>
+		</property>
+	</bean>
+    
+	<bean
+		name="senderWrapperProcessor"
+		class="nl.nn.adapterframework.processors.InputOutputSenderWrapperProcessor"
+		autowire="byName"
+		scope="prototype"
+		>
+		<property name="senderWrapperProcessor">
+			<bean
+				class="nl.nn.adapterframework.processors.CacheSenderWrapperProcessor"
+				autowire="byName"
+				scope="prototype"
+				>
+				<property name="senderWrapperProcessor">
+					<bean
+						class="nl.nn.adapterframework.processors.CoreSenderWrapperProcessor"
+						autowire="byName"
+						scope="prototype"
+						>
+					</bean>
+				</property>
+			</bean>
+		</property>
+	</bean>
+
+	<bean
+		name="listenerProcessor"
+		class="nl.nn.adapterframework.processors.CoreListenerProcessor"
+		autowire="byName"
+		scope="prototype"
+	/>
+    
+    <!-- Beans created from Configuration.xml, but prototyped here for
+         extra dependencies which cannot be created otherwise.
+         Bean names are prefixed with 'proto-' so that autowiring by
+         name doesn't create unnessecary instances. -->
+    <bean name="proto-adapter" class="nl.nn.adapterframework.core.Adapter"
+        autowire="byName" scope="prototype">
+    </bean>
+    
+    <bean name="proto-pipeline" class="nl.nn.adapterframework.core.PipeLine"
+        autowire="byName" scope="prototype">
+    </bean>
+    
+    <bean name="proto-param" class="nl.nn.adapterframework.parameters.Parameter"
+        autowire="byName" scope="prototype">
+    </bean>
+    
+    <bean name="proto-receiver" class="nl.nn.adapterframework.receivers.GenericReceiver"
+        autowire="byName" scope="prototype">
+    </bean>
+    
+    <!-- Default pipe is a message-sending pipe -->
+    <bean name="proto-pipe" class="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+        autowire="byName" scope="prototype">
+    </bean>
+
+    <bean name="proto-sender" class="nl.nn.adapterframework.core.ISender"
+        autowire="byName" scope="prototype">
+    </bean>
+
+    <bean name="proto-RecordHandlingFlow" class="nl.nn.adapterframework.batch.RecordHandlingFlow"
+        autowire="byName" scope="prototype">
+    </bean>
+
+    <bean name="proto-monitor" class="nl.nn.adapterframework.monitoring.Monitor"
+        autowire="byName" scope="prototype">
+    </bean>
+    <bean name="proto-trigger" class="nl.nn.adapterframework.monitoring.Trigger"
+        autowire="byName" scope="prototype">
+    </bean>
+    <bean name="proto-alarm" class="nl.nn.adapterframework.monitoring.Trigger"
+        autowire="byName" scope="prototype">
+    </bean>
+    <bean name="proto-clearing" class="nl.nn.adapterframework.monitoring.Trigger"
+        autowire="byName" scope="prototype">
+    </bean>
+
+    <bean name="proto-job" class="nl.nn.adapterframework.scheduler.JobDef"
+        autowire="byName" scope="prototype">
+    </bean>
+
+    <bean name="proto-statisticsHandlers" class="nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandlerCollection"
+        autowire="byName" scope="prototype">
+    </bean>
+
+    <bean name="proto-statisticsHandler" class="nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler"
+        autowire="byName" scope="prototype">
+    </bean>
+
+    <bean name="proto-cache" class="nl.nn.adapterframework.cache.EhCache"
+        autowire="byName" scope="prototype">
+    </bean>
+
+	<bean id="dbmsSupportFactoryDefault" class="nl.nn.adapterframework.jdbc.dbms.DbmsSupportFactory" 
+	>
+		<property name="dbmsSupportMap">
+			<props >
+			    <prop key="Oracle">nl.nn.adapterframework.jdbc.dbms.OracleDbmsSupport</prop>
+			    <prop key="Microsoft SQL Server">nl.nn.adapterframework.jdbc.dbms.MsSqlServerDbmsSupport</prop>
+			</props>
+		</property>
+	</bean>
+
+</beans>
