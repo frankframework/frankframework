@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractSpringPoweredDigesterFactory.java,v $
- * Revision 1.22  2011-12-05 10:21:43  l190409
+ * Revision 1.23  2011-12-05 15:13:09  l190409
+ * corrected extra source for name
+ *
+ * Revision 1.22  2011/12/05 10:21:43  Gerrit van Brakel <gerrit.van.brakel@ibissource.org>
  * extra source for name
  *
  * Revision 1.21  2011/11/30 13:51:56  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -80,6 +83,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.util.LogUtil;
 
 import org.apache.commons.beanutils.PropertyUtils;
