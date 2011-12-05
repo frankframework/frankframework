@@ -1,6 +1,9 @@
 /*
  * $Log: PushingIfsaProviderListener.java,v $
- * Revision 1.14  2011-11-30 13:51:43  europe\m168309
+ * Revision 1.15  2011-12-05 15:31:02  l190409
+ * allow for check that transactionality is configured, warn if not
+ *
+ * Revision 1.14  2011/11/30 13:51:43  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:50  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -66,6 +69,7 @@ import nl.nn.adapterframework.core.IMessageWrapper;
 import nl.nn.adapterframework.core.IPortConnectedListener;
 import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.IThreadCountControllable;
+import nl.nn.adapterframework.core.ITransactionRequirements;
 import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
@@ -144,7 +148,7 @@ import com.ing.ifsa.IFSAServicesProvided;
  * @since   4.2
  * @version Id
  */
-public class PushingIfsaProviderListener extends IfsaFacade implements IPortConnectedListener, IThreadCountControllable, IKnowsDeliveryCount {
+public class PushingIfsaProviderListener extends IfsaFacade implements IPortConnectedListener, IThreadCountControllable, IKnowsDeliveryCount, ITransactionRequirements {
 
 	public final static String THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY = "originalRawMessage";
 	public final static String THREAD_CONTEXT_BIFNAME_KEY="IfsaBif";
@@ -220,7 +224,13 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 		}
 	}
 	
+	public boolean transactionalRequired() {
+		return this.getMessageProtocolEnum()==IfsaMessageProtocolEnum.FIRE_AND_FORGET;
+	}
 
+	public boolean transactionalAllowed() {
+		return true;
+	}
 
 	public void afterMessageProcessed(PipeLineResult plr, Object rawMessage, Map threadContext) throws ListenerException {	
 		QueueSession session= (QueueSession) threadContext.get(IListenerConnector.THREAD_CONTEXT_SESSION_KEY);
