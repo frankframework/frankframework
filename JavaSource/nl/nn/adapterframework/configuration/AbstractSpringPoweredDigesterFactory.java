@@ -1,6 +1,9 @@
 /*
  * $Log: AbstractSpringPoweredDigesterFactory.java,v $
- * Revision 1.21  2011-11-30 13:51:56  europe\m168309
+ * Revision 1.22  2011-12-05 10:21:43  l190409
+ * extra source for name
+ *
+ * Revision 1.21  2011/11/30 13:51:56  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:48  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -285,6 +288,9 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 
 	private String getObjectName(Object o, String name) {
 		String result=o.getClass().getName();
+		if (name==null && o instanceof INamedObject) {
+			name=((INamedObject)o).getName();
+		}
 		if (name!=null) {
 			result+=" ["+name+"]";
 		}
