@@ -1,6 +1,9 @@
 /*
  * $Log: ReceiverBase.java,v $
- * Revision 1.101  2011-11-30 13:51:54  europe\m168309
+ * Revision 1.102  2011-12-05 15:29:21  l190409
+ * warn if transactionality is not configured when it should
+ *
+ * Revision 1.101  2011/11/30 13:51:54  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
  * adjusted/reversed "Upgraded from WebSphere v5.1 to WebSphere v6.1"
  *
  * Revision 1.1  2011/10/19 14:49:43  Peter Leeuwenburgh <peter.leeuwenburgh@ibissource.org>
@@ -464,6 +467,7 @@ import nl.nn.adapterframework.core.IReceiver;
 import nl.nn.adapterframework.core.IReceiverStatistics;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.IThreadCountControllable;
+import nl.nn.adapterframework.core.ITransactionRequirements;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.IbisTransaction;
@@ -614,8 +618,6 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  * @since 4.2
  */
 public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHandler, EventThrowing, IbisExceptionListener, HasSender, HasStatistics, TracingEventNumbers, IThreadCountControllable, BeanFactoryAware {
-    
-	public static final String version="$RCSfile: ReceiverBase.java,v $ $Revision: 1.101 $ $Date: 2011-11-30 13:51:54 $";
 	protected Logger log = LogUtil.getLogger(this);
 
 	public final static TransactionDefinition TXNEW_CTRL = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -1000,6 +1002,14 @@ public class ReceiverBase implements IReceiver, IReceiverStatistics, IMessageHan
 				ISender sender = ((HasSender)getListener()).getSender();
 				if (sender instanceof HasPhysicalDestination) {
 					info("Listener of receiver ["+getName()+"] has answer-sender on "+((HasPhysicalDestination)sender).getPhysicalDestinationName());
+				}
+			}
+			if (getListener() instanceof ITransactionRequirements) {
+				ITransactionRequirements tr=(ITransactionRequirements)getListener();
+				if (tr.transactionalRequired() && !isTransacted()) {
+					String msg=getLogPrefix()+"listener type ["+ClassUtils.nameOf(getListener())+"] requires transactional processing";
+					ConfigurationWarnings.getInstance().add(msg);
+					//throw new ConfigurationException(msg);
 				}
 			}
 			ISender sender = getSender();
